@@ -8,6 +8,7 @@
 #include <vtkDataSet.h>
 #include <vtkCellData.h>
 #include <vtkUnsignedIntArray.h>
+#include <vtkVisItUtility.h>
 
 
 // ****************************************************************************
@@ -50,6 +51,8 @@ avtActualZoneCoordsQuery::~avtActualZoneCoordsQuery()
 //  Creation:   June 2, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Wed Oct 20 17:10:21 PDT 2004
+//    Use vtkVisItUtility method to compute cell center.
 //    
 // ****************************************************************************
 
@@ -112,10 +115,6 @@ avtActualZoneCoordsQuery::Execute(vtkDataSet *ds, const int dom)
             actualId = -1;
             return;
         }
-
-        float parametricCenter[3];
-        float weights[28];
-        int subId = cell->GetParametricCenter(parametricCenter);
-        cell->EvaluateLocation(subId, parametricCenter, actualCoords, weights);
+        vtkVisItUtility::GetCellCenter(cell, actualCoords);
     }
 }

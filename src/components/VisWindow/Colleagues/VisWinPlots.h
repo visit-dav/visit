@@ -123,6 +123,10 @@ class avtTransparencyActor;
 //    Kathleen Bonnell, Wed Dec  3 16:48:23 PST 2003 
 //    Added method TransparenciesExist.
 //
+//    Chris Wojtan, Mon Jul 26 16:22:56 PDT 2004
+//    Added 4 functions for suspending and resuming opaque and
+//    translucent geometry.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinPlots : public VisWinColleague
@@ -182,6 +186,11 @@ class VISWINDOW_API VisWinPlots : public VisWinColleague
     virtual void                  FullFrameOff(void);
 
     bool                          TransparenciesExist(void);
+
+    void                          SuspendOpaqueGeometry(void);
+    void                          SuspendTranslucentGeometry(void);
+    void                          ResumeOpaqueGeometry(void);
+    void                          ResumeTranslucentGeometry(void);
 
   protected:
     std::vector< avtActor_p >     plots;

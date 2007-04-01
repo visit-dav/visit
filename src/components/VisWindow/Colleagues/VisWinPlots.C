@@ -1742,3 +1742,94 @@ VisWinPlots::TransparenciesExist()
     return transparencyActor->TransparenciesExist();
 }
 
+
+
+// ****************************************************************************
+//  Method: VisWinPlots::SuspendOpaqueGeometry
+//
+//  Purpose:
+//    Make opaque geometry invisible
+//
+//  Programmer: Chris Wojtan
+//  Creation:   Mon Jul 26 15:32:06 PDT 2004
+//
+// ***************************************************************************
+
+void
+VisWinPlots::SuspendOpaqueGeometry()
+{
+    for(int i=0; i<plots.size(); i++)
+    {
+        if( plots[i]->IsVisible() )
+        {
+            plots[i]->OpaqueVisibilityOff();
+        }
+    }
+}
+
+// ****************************************************************************
+//  Method: VisWinPlots::SuspendTranslucentGeometry
+//
+//  Purpose:
+//    Make translucent geometry invisible
+//
+//  Programmer: Chris Wojtan
+//  Creation:   Mon Jul 26 15:32:06 PDT 2004
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Oct 21 13:39:48 PDT 2004
+//    Had it change on the transparency actor as a whole because it is
+//    less error prone (and easier and more efficient).
+//
+// ***************************************************************************
+
+void
+VisWinPlots::SuspendTranslucentGeometry()
+{
+    transparencyActor->SuspendRendering();
+}
+
+// ****************************************************************************
+//  Method: VisWinPlots::ResumeOpaqueGeometry
+//
+//  Purpose:
+//    Make opaque geometry visible again
+//
+//  Programmer: Chris Wojtan
+//  Creation:   Mon Jul 26 15:32:06 PDT 2004
+//
+// ***************************************************************************
+
+void
+VisWinPlots::ResumeOpaqueGeometry()
+{
+    for(int i=0; i<plots.size(); i++)
+    {
+        if( plots[i]->IsVisible() )
+        {
+            plots[i]->OpaqueVisibilityOn();
+        }
+    }
+}
+
+// ****************************************************************************
+//  Method: VisWinPlots::ResumeTranslucentGeometry
+//
+//  Purpose:
+//    Make translucent geometry visible again
+//
+//  Programmer: Chris Wojtan
+//  Creation:   Mon Jul 26 15:32:06 PDT 2004
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Oct 21 13:39:48 PDT 2004
+//    Had it change on the transparency actor as a whole because it is
+//    less error prone (and easier and more efficient).
+//
+// ***************************************************************************
+
+void
+VisWinPlots::ResumeTranslucentGeometry()
+{
+    transparencyActor->ResumeRendering();
+}

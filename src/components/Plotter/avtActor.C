@@ -32,6 +32,10 @@
 //
 //    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
 //    Elminated extRenderedImagesActor and extRenderedImageId
+//
+//    Chris Wojtan, Fri Jul 23 14:13:44 PDT 2004
+//    Initialize isVisible to true.
+//
 // ****************************************************************************
 
 avtActor::avtActor()
@@ -42,6 +46,7 @@ avtActor::avtActor()
     renderer               = NULL;
     transparencyActor      = NULL;
     transparencyIndex      = -1;
+    isVisible              = true;
 }
 
 
@@ -425,6 +430,9 @@ avtActor::GetLegend(void)
 //    Use the concept of 'visibility' for the transparency actor, rather
 //    than turning it on and off.
 //
+//    Chris Wojtan, Fri Jul 23 14:13:44 PDT 2004
+//    set isVisible to false
+//
 // ****************************************************************************
 
 void
@@ -436,6 +444,7 @@ avtActor::VisibilityOff(void)
     }
 
     drawable->VisibilityOff();
+    isVisible = false;
 
     if (transparencyActor != NULL && transparencyIndex >= 0)
     {
@@ -463,6 +472,9 @@ avtActor::VisibilityOff(void)
 //    Use the concept of 'visibility' for the transparency actor, rather
 //    than turning it on and off.
 //
+//    Chris Wojtan, Fri Jul 23 14:14:08 PDT 2004
+//    set isVisible to true
+//
 // ****************************************************************************
 
 void
@@ -474,6 +486,7 @@ avtActor::VisibilityOn(void)
     }
 
     drawable->VisibilityOn();
+    isVisible = true;
 
     if (transparencyActor != NULL && transparencyIndex >= 0)
     {
@@ -776,5 +789,60 @@ avtActor::SetSpecularProperties(bool flag, float coeff, float power,
         else
             drawable->SetSpecularProperties(false,0,0,ColorAttribute(0,0,0));
     }
+}
+
+
+// *******************************************************************************
+//   Method: avtActor::IsVisible
+//
+//   Purpose:
+//       returns true if this actor is supposed to be drawn to the screen,
+//       false otherwise.
+//
+//   Programmer: Chris Wojtan
+//   Creation:   Fri Jul 23 14:00:09 PDT 2004
+//
+// *******************************************************************************
+
+bool
+avtActor::IsVisible()
+{
+    return isVisible;
+}
+
+
+// ******************************************************************************
+//   Method: avtActor::OpaqueVisibilityOn
+//
+//   Purpose:
+//       make the actor visible if it is opaque
+//
+//   Programmer: Chris Wojtan
+//   Creation:   Mon Jul 26 17:22:57 PDT 2004
+//
+// ******************************************************************************
+
+void
+avtActor::OpaqueVisibilityOn()
+{
+    drawable->VisibilityOn();
+}
+
+
+// ******************************************************************************
+//   Method: avtActor::OpaqueVisibilityOff
+//
+//   Purpose:
+//       make the actor invisible if it is opaque
+//
+//   Programmer: Chris Wojtan
+//   Creation:   Mon Jul 26 17:22:57 PDT 2004
+//
+// ******************************************************************************
+
+void
+avtActor::OpaqueVisibilityOff()
+{
+    drawable->VisibilityOff();
 }
 

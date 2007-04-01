@@ -1,4 +1,4 @@
-#                            Copyright 2001-2004
+#                            Copyright 1991 - 2004
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -30,19 +30,9 @@
 # the University of  California,  and shall not  be  used for  advertising  or
 # product endorsement purposes.
 #
-#
-# Modifications:
-#    Hank Childs, Thu Jan 22 13:29:23 PST 2004
-#    Moved all files from the former Pipeline/PublicFilters to this directory.
-#
-#    Brad Whitlock, Fri Apr 23 15:53:11 PST 2004
-#    Added more libraries so we can prebind on MacOS X.
-#
-#    Jeremy Meredith, Wed Jul  7 12:12:52 PDT 2004
-#    I changed _ser.o to simply be .o.
-#
-#    Jeremy Meredith, Wed Sep  1 09:56:48 PDT 2004
-#    Added avtTiledImageCompositor.
+#  Modifications:
+#    Jeremy Meredith, Mon Aug 30 16:56:10 PDT 2004
+#    Created.
 #
 ##############################################################################
 
@@ -57,52 +47,32 @@
 ##
 ## Files...
 ##
-SRC=\
- avtCondenseDatasetFilter.C \
- avtContourFilter.C \
- avtCoordSystemConvert.C \
- avtCurrentExtentFilter.C \
- avtCurveConstructorFilter.C \
- avtFacelistFilter.C \
- avtFeatureEdgesFilter.C \
- avtGhostZoneAndFacelistFilter.C \
- avtGhostZoneFilter.C \
- avtImageCommunicator.C \
- avtImageCompositer.C \
- avtPointToGlyphFilter.C \
- avtRayCompositer.C \
- avtRayTracer.C \
- avtResampleFilter.C \
- avtSamplePointCommunicator.C \
- avtSamplePointExtractor.C \
- avtSamplePointToSurfaceFilter.C \
- avtShiftCenteringFilter.C \
- avtSimilarityTransformFilter.C \
- avtSmoothPolyDataFilter.C \
- avtSummationFilter.C \
- avtTiledImageCompositor.C \
- avtTransform.C \
- avtVertexNormalsFilter.C \
- avtWholeImageCompositerWithZ.C \
- avtWholeImageCompositerNoZ.C \
- avtWorldSpaceToImageSpaceTransform.C
+SRC=vtkParallelImageSpaceRedistributor.C
 
-CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@
+CPPFLAGS=@VISIT_VTK_CPPFLAGS@ @CPPFLAGS@ -I.
 
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
-LIB=libavtfilters
-COMMONLIBS=-ldbatts -lstate -lcomm -lmisc -lavtexceptions -lparser -lutility -lavtview -lvisit_vtk -llightweight_visit_vtk
-SERLIBS=$(COMMONLIBS) -lpipeline_ser -lavtmath_ser $(VTK_LIBS)
-PARLIBS=$(COMMONLIBS) -lpipeline_par -lavtmath_par $(VTK_LIBS)
+LIB=libparallel_visit_vtk
+LIBS=@VTK_LIBS@ $(X_LIBS) -lmisc
+
 
 ##
 ## Standard targets...
 ##
-all: $(LIBSHAREDSER) @LIBSHAREDPAR@
+all: message $(LIBSHAREDSER) @LIBSHAREDPAR@
 
 clean:
 	$(RM) $(SEROBJ) $(PAROBJ) $(LIBSHAREDSER) @LIBSHAREDPAR@
+
+##
+## Other targets...
+##
+message:
+	@echo
+	@echo "****************************************************************************"
+	@echo "*** Building visit_vtk Library ($(LIB))"
+	@echo "****************************************************************************"
 
 ##
 ## Automatic dependency stuff

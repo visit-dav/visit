@@ -89,6 +89,10 @@ class     VisitInteractor;
 //    Hank Childs, Mon May 10 08:31:01 PDT 2004
 //    Removed immediate mode rendering method.
 //
+//    Chris Wojtan, Mon Jul 26 16:21:08 PDT 2004
+//    Added 4 functions for suspending and resuming opaque and
+//    translucent geometry.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowProtectionProxy
@@ -155,6 +159,11 @@ class VISWINDOW_API VisWindowProtectionProxy
     void                ProxiedReAddToolsToRenderWindow();
     void                ProxiedGetFrameAndState(int &,int &,int &,int &,
                                                 int &,int &,int &) const;
+
+    void                ProxiedSuspendOpaqueGeometry();
+    void                ProxiedSuspendTranslucentGeometry();
+    void                ProxiedResumeOpaqueGeometry();
+    void                ProxiedResumeTranslucentGeometry();
 };
 
 

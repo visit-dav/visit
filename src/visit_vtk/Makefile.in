@@ -35,13 +35,16 @@
 #   Hank Childs, Thu Jan 22 17:36:11 PST 2004
 #   Created.
 #
+#   Jeremy Meredith, Tue Aug 31 09:33:32 PDT 2004
+#   Added "parallel" directory.
+#
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 @DIRTARGETS@
 
-SUBDIRS=lightweight full sl_io
+SUBDIRS=lightweight full sl_io parallel
 
 message:
 	@echo

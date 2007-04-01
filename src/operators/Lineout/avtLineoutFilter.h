@@ -39,6 +39,10 @@ class vtkPolyData;
 //    Kathleen Bonnell, Thu Jul 29 09:55:49 PDT 2004 
 //    Added Sampling, NoSampling, and CreatePolys methods.
 //
+//    Kathleen Bonnell, Wed Oct 20 17:35:10 PDT 2004 
+//    Added arg to CreatePolys, added method CreatePolysFromOriginalCells, 
+//    added var useOriginalCells. 
+//
 // ****************************************************************************
 
 class avtLineoutFilter : public avtPluginStreamer
@@ -68,10 +72,13 @@ class avtLineoutFilter : public avtPluginStreamer
                               PerformRestriction(avtPipelineSpecification_p);
 
   private:
+    bool                      useOriginalCells;
     vtkDataSet               *Sampling(vtkDataSet *, int);
     vtkDataSet               *NoSampling(vtkDataSet *, int);
-    vtkPolyData              *CreatePolys(vtkDataSet *, float *, vtkPoints *, 
-                                          vtkIdList *);
+    vtkPolyData              *CreatePolys(vtkDataSet *, float *, float *,
+                                          vtkPoints *, vtkIdList *);
+    vtkPolyData              *CreatePolysFromOrigCells(vtkDataSet *, float *, float *,
+                                          vtkPoints *, vtkIdList *);
 };
 
 #endif

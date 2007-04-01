@@ -336,6 +336,10 @@ $0 = shift @ARGV;
 #    Mark C. Miller, Tue Oct  5 12:56:54 PDT 2004
 #    Changed appearance of '-help' option. Added a '-fullhelp' option
 #
+#    Jeremy Meredith, Wed Oct 20 16:31:08 PDT 2004
+#    Fixed security key for totalview.  Made "visit -env" print to 
+#    stdout instead of stderr so it is easier to capture/redirect.
+#
 ###############################################################################
 
 
@@ -1403,7 +1407,7 @@ else
     {
         # Run totalview
         @debugcmd = ("totalview", $exe_name, "-a", "-dograb", @visitargs);
-        push(@debugcmd, "-key $security_key") if ($security_key_set);
+        if ($security_key_set) { push @debugcmd, "-key", $security_key; }
         print STDERR "Running: @debugcmd\n";
         $exec_totalview_failed = 0;
         exec @debugcmd or $exec_totalview_failed = 1;
@@ -1593,7 +1597,7 @@ sub RunComponent {
 sub PrintEnvironment {
     if ($envonly)
     {
-        print STDERR <<"EOF"
+        print STDOUT <<"EOF"
 LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}
 LD_LIBRARY32_PATH=$ENV{LD_LIBRARY32_PATH}
 LD_LIBRARYN32_PATH=$ENV{LD_LIBRARYN32_PATH}

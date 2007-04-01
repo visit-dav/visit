@@ -25,6 +25,12 @@
 #include <DebugStream.h>
 #include <TimingsManager.h>
 
+// HACK HACK
+#include <GL/gl.h>
+extern "C" {
+void mglDepthMask(GLboolean);
+void mglColorMask(GLboolean,GLboolean,GLboolean,GLboolean);
+}
 
 static void RemoveCullers(vtkRenderer *);
 
@@ -761,11 +767,27 @@ VisWinRendering::GetCaptureRegion(int& r0, int& c0, int& w, int& h,
 //    and foreground layer order to just remove foreground layer and re-add
 //    it at the end.
 //
+//    Chris Wojtan, Wed Jul 21 15:17:52 PDT 2004
+//    Created separate passes for opaque and translucent data
+//
+//    Chris Wojtan, Fri Jul 30 14:37:06 PDT 2004
+//    Load data from the first rendering pass in the second rendering pass
+//
+//    Jeremy Meredith, Thu Oct 21 17:14:42 PDT 2004
+//    Fixed the stuffing of rgb/z data into the second pass.  Turned off
+//    erasing if we are in the second pass.  Put in a big hack to allow
+//    this to work even if we are doing two-pass rendering with OpenGL
+//    (which isn't supported right now anyway).
+//
 // ****************************************************************************
 
 avtImage_p
-VisWinRendering::ScreenCapture(bool doViewportOnly, bool doCanvasZBufferToo)
+VisWinRendering::ScreenCapture(bool doViewportOnly, bool doCanvasZBufferToo, 
+                               bool doOpaque, bool doTranslucent,
+                               avtImage_p input)
 {
+    bool second_pass = (*input != NULL);
+
     float *zb = NULL;
     vtkRenderWindow *renWin = GetRenderWindow();
     bool extRequestMode = false;
@@ -780,16 +802,76 @@ VisWinRendering::ScreenCapture(bool doViewportOnly, bool doCanvasZBufferToo)
         renWin->RemoveRenderer(foreground);
     }
 
-    //
-    // Make sure that the window is up-to-date.
-    //
-    renWin->Render();
+    // hide the appropriate geometry here
+    if(!doOpaque)
+        mediator.SuspendOpaqueGeometry();
+    if(!doTranslucent)
+        mediator.SuspendTranslucentGeometry();
 
     //
     // Set region origin/size to be captured
     //
     int r0, c0, w, h;
     GetCaptureRegion(r0, c0, w, h, doViewportOnly);
+    
+    // if we already finished the first pass, 
+    // then we should load the existing data from the input image
+    if (second_pass)
+    {
+        float         *zbuf = input->GetImage().GetZBuffer();
+        unsigned char *rgbbuf = input->GetImage().GetRGBBuffer();
+
+        // Okay, this is a horrible, horrible, ugly hack, and I know it.
+        // For now, it's perfectly safe -- there's just no good way to 
+        // get the VTK render window to draw both the pixel and Z buffer
+        // data.  Unless I override vtkRenderWindow, vtkOpenGLRenderWindow,
+        // vtkXOpenGLRenderWindow, vtkWin32OpenGLRenderWindow,
+        // vtkMesaRenderWindow, vtkXMesaRenderWindow, and so on....
+        if (renWin->IsA("vtkMesaRenderWindow"))
+        {
+            mglDepthMask(GL_FALSE);
+            renWin->SetPixelData(r0,c0,w-1,h-1,rgbbuf,renWin->GetDoubleBuffer());
+            mglDepthMask(GL_TRUE);
+
+            mglColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
+            renWin->SetZbufferData(r0,c0,w-1,h-1,zbuf);
+            mglColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
+        }
+        else
+        {
+            glDepthMask(GL_FALSE);
+            renWin->SetPixelData(r0,c0,w-1,h-1,rgbbuf,renWin->GetDoubleBuffer());
+            glDepthMask(GL_TRUE);
+
+            glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
+            renWin->SetZbufferData(r0,c0,w-1,h-1,zbuf);
+            glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
+        }
+    }
+
+    //
+    // Make sure that the window is up-to-date.
+    //
+    if (second_pass)
+    {
+        // We can't erase the rgb/z data we just worked
+        // so hard to put there a second ago!
+        renWin->EraseOff();
+        renWin->Render();
+        renWin->EraseOn();
+    }
+    else
+    {
+        // Okay, this is either the first pass or the only pass, 
+        // so we better darn well allow erasing before drawing.
+        renWin->Render();
+    }
+
+    //
+    // Set region origin/size to be captured
+    //
+    GetCaptureRegion(r0, c0, w, h, doViewportOnly);
+    
 
     if (doCanvasZBufferToo)
     {
@@ -835,6 +917,12 @@ VisWinRendering::ScreenCapture(bool doViewportOnly, bool doCanvasZBufferToo)
        if (extRequestMode)
           mediator.EnableExternalRenderRequests();
     }
+
+    // return geometry from hidden status
+    if(!doOpaque)
+        mediator.ResumeOpaqueGeometry();
+    if(!doTranslucent)
+        mediator.ResumeTranslucentGeometry();
 
     return img;
 }

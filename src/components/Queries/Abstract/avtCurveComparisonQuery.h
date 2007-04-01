@@ -21,6 +21,10 @@ class     avtDatasetSink;
 //  Programmer: Hank Childs
 //  Creation:   October 4, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Oct 14 17:19:01 PDT 2004
+//    Added method 'AverageYValsForDuplicateX'.
+//
 // ****************************************************************************
 
 class QUERY_API avtCurveComparisonQuery : public avtMultipleInputQuery
@@ -45,6 +49,12 @@ class QUERY_API avtCurveComparisonQuery : public avtMultipleInputQuery
                                  const float *, int, const float *,
                                  const float *, std::vector<float> &,
                                  std::vector<float> &, std::vector<float> &);
+    void                      AverageYValsForDuplicateX(int n, 
+                                                        const float *x, 
+                                                        const float *y, 
+                                                        vector<float> &X, 
+                                                        vector<float> &Y);
+ 
 };
 
 

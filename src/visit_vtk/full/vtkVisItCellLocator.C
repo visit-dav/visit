@@ -17,6 +17,7 @@
 =========================================================================*/
 #include "vtkVisItCellLocator.h"
 
+#include <vtkUnsignedIntArray.h>
 #include <vtkBox.h>
 #include <vtkCell.h>
 #include <vtkCellArray.h>
@@ -45,6 +46,8 @@
 #include <vtkWedge.h>
 
 #include <TimingsManager.h>
+#include <vtkVisItUtility.h>
+
 
 
 #include <stdlib.h>
@@ -3056,16 +3059,18 @@ EdgeLineIsect(vtkCell *cell, const float *p1, const float *p2, float *x)
 // Method:    vtkVisItCellLocator::IntersectWithLine
 //
 // Description:
-// Return intersection points AND cellids of all cells intersected by
-// the finite line.
+//   Return intersection points AND cellids of all cells intersected by
+//   the finite line.
 //
 // Programmer:  Kathleen Bonnell
 // Creation:    July 27, 2004 
 //
 // Modifications:
+//   Hank Childs, Fri Aug 27 15:15:20 PDT 2004
+//   Rename ghost data array.
 //
-//    Hank Childs, Fri Aug 27 15:15:20 PDT 2004
-//    Rename ghost data array.
+//   Kathleen Bonnell, Wed Oct 20 17:35:10 PDT 2004 
+//   Return the cell-centers in pts instead of intersection points. 
 //
 // ****************************************************************************
 int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3], 
@@ -3212,6 +3217,7 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3],
                 if (CellIntersectWithLine(cell, a0, a1, tempT, tempX, pc, tempId))
                   {
                   cells->InsertNextId(cId);
+                  vtkVisItUtility::GetCellCenter(cell, tempX);
                   pts->InsertNextPoint(tempX);
                   } // cell Isected line
                 } // if (hitCellBounds)

@@ -1039,6 +1039,9 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
 //    Kathleen Bonnell, Thu Sep 23 17:38:15 PDT 2004 
 //    Added logic to search for ghost zones, if ghostType == AVT_HAS_GHOSTS. 
 //
+//    Kathleen Bonnell, Thu Oct 21 18:02:50 PDT 2004 
+//    Correct test for whether a zone is ghost or not. 
+//
 // ****************************************************************************
 
 bool
@@ -1079,7 +1082,7 @@ avtPickQuery::RetrieveZones(vtkDataSet *ds, int foundNode)
         int nGhosts = 0;
         for (int i = 0; i < nCells; i++)
         {
-            if (ghosts && ghosts[cells[i]] == 1)
+            if (ghosts && ghosts[cells[i]] > 0)
             {
                 if (ghostType == AVT_HAS_GHOSTS)
                 {

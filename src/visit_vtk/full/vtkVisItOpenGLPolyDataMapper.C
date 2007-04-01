@@ -32,7 +32,7 @@
 #include "vtkProperty.h"
 #include "vtkTimerLog.h"
 #include "vtkTriangle.h"
-#include "vtkOpenGLRenderWindow.h"
+#include "vtkRenderWindow.h"
 
 static const int dlSize = 8192;
 

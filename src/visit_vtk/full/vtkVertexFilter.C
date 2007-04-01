@@ -47,6 +47,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
+#include <vtkVisItUtility.h>
 
 // **************************************************************************
 //  Modifications:
@@ -71,6 +72,9 @@ vtkVertexFilter::vtkVertexFilter()
 //
 //    Eric Brugger, Tue May 14 15:27:24 PDT 2002
 //    Modified to work properly with cell centered variables.
+//
+//    Kathleen Bonnell, Wed Oct 20 17:10:21 PDT 2004 
+//    Use vtkVisItUtility method to compute cell center. 
 //
 // ****************************************************************************
 
@@ -149,22 +153,7 @@ void vtkVertexFilter::Execute(void)
     float point[3];
     for (i = 0 ; i < nOutPts ; i++)
       {
-      vtkCell *cell = input->GetCell(i);
-      if (cell->GetNumberOfPoints() <= 27)
-        {
-        float pcoord[3];
-        float weights[27];
-        cell->GetParametricCenter(pcoord);
-        cell->EvaluateLocation(subId, pcoord, point, weights);
-        }
-      else
-        {
-        float pcoord[3];
-        float *weights = new float[cell->GetNumberOfPoints()];
-        cell->GetParametricCenter(pcoord);
-        cell->EvaluateLocation(subId, pcoord, point, weights);
-        delete [] weights;
-        }
+      vtkVisItUtility::GetCellCenter(input->GetCell(i), point);
       outPts->SetPoint(i, point);
       outPD->CopyData(inCd, i, i);
       }

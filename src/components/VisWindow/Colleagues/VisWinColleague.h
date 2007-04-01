@@ -64,6 +64,10 @@ class     ColorAttribute;
 //    Jeremy Meredith, Fri Nov 14 17:13:53 PST 2003
 //    Added specular properties.
 //
+//    Chris Wojtan, Mon Jul 26 16:30:43 PDT 2004
+//    Added 4 functions for suspending and resuming opaque and
+//    translucent geometry.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinColleague
@@ -115,6 +119,11 @@ class VISWINDOW_API VisWinColleague
 
     virtual void              SetFrameAndState(int, int, int, int,
                                                int, int, int) {;};
+
+    virtual void              SuspendOpaqueGeometry(void)      {;};
+    virtual void              SuspendTransparentGeometry(void) {;};
+    virtual void              ResumeOpaqueGeometry(void)       {;};
+    virtual void              ResumeTransparentGeometry(void)  {;};
 
   protected:
     VisWindowColleagueProxy  &mediator;

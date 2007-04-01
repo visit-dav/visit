@@ -5,6 +5,7 @@
 #include <vtkVisItUtility.h>
 
 #include <float.h>
+#include <vtkCell.h>
 #include <vtkFieldData.h>
 #include <vtkGenericCell.h>
 #include <vtkIntArray.h>
@@ -679,3 +680,46 @@ vtkVisItUtility::ZoneGhostIdFromNonGhost(vtkDataSet *ds, const int zone)
 {
     return CalculateGhostIdFromNonGhost(ds, zone, true);
 }
+
+
+// ****************************************************************************
+//  Function: GetCellCenter
+//
+//  Purpose:
+//    Calculates the coordinates of the cell center.
+//
+//  Arguments:
+//    cell      The cell.
+//    center    Storage for the coordinates.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   October 7, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+vtkVisItUtility::GetCellCenter(vtkCell* cell, float center[3])
+{
+    float parametricCenter[3] = {0., 0., 0.};
+    float coord[3] = {0., 0., 0.};
+    int subId = -1;
+    if (cell->GetNumberOfPoints() <= 27)
+    {
+        float weights[27];
+        subId = cell->GetParametricCenter(parametricCenter);
+        cell->EvaluateLocation(subId, parametricCenter, coord, weights);
+    }
+    else
+    {
+        float *weights = new float[cell->GetNumberOfPoints()];
+        subId = cell->GetParametricCenter(parametricCenter);
+        cell->EvaluateLocation(subId, parametricCenter, coord, weights);
+        delete [] weights;
+    }
+    center[0] = coord[0];
+    center[1] = coord[1];
+    center[2] = coord[2];
+}
+ 

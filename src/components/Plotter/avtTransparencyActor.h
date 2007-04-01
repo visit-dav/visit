@@ -19,6 +19,7 @@ class     vtkMatrix4x4;
 class     vtkPolyData;
 class     vtkPolyDataMapper;
 class     vtkRenderer;
+class     vtkParallelImageSpaceRedistributor;
 
 
 // ****************************************************************************
@@ -54,10 +55,16 @@ class     vtkRenderer;
 //    Added TransparenciesExist method.
 //
 //    Chris Wojtan, Fri Jun 25 15:15 PDT 2004
-//    Added is2Dimensional bool and functions to get and set its value
+//    Added is2Dimensional bool and a function to set and retrieve its value
 //
 //    Hank Childs, Wed Sep  8 17:55:34 PDT 2004
 //    No longer inline is2Dimensional.
+//
+//    Chris Wojtan, Wed Jul 7 10:27 PDT 2004
+//    Added MyParallelFilter for improved parallel transparency
+//
+//    Jeremy Meredith, Thu Oct 21 12:09:00 PDT 2004
+//    Renamed the parallel filter.
 //
 // ****************************************************************************
 
@@ -92,6 +99,9 @@ class PLOTTER_API avtTransparencyActor
     void                             RemoveFromRenderer(vtkRenderer *);
     void                             ScaleByVector(const float vec[3]);
 
+    void                             SuspendRendering() { renderingSuspended = true;  }
+    void                             ResumeRendering()  { renderingSuspended = false; }
+
     bool                             GetIs2Dimensional()
                                                     { return is2Dimensional; };
     void                             SetIs2Dimensional(bool val);
@@ -109,14 +119,17 @@ class PLOTTER_API avtTransparencyActor
     bool                                             inputModified;
 
     vtkAppendPolyData                               *appender;
+    vtkParallelImageSpaceRedistributor              *parallelFilter;
     vtkActor                                        *myActor;
     vtkPolyDataMapper                               *myMapper;
 
     vtkAxisDepthSort                                *axisSort;
     vtkDepthSortPolyData                            *perfectSort;
     bool                                             usePerfectSort;
-    vtkMatrix4x4                                    *lastCamera;
     bool                                             is2Dimensional;
+    vtkMatrix4x4                                    *lastCamera;
+
+    bool                                             renderingSuspended;
 
     void                                             SetUpActor(void);
     void                                             PrepareDataset(int, int);

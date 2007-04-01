@@ -639,18 +639,15 @@ avtMinMaxQuery::GetNodeCoord(vtkDataSet *ds, const int id, float coord[3])
 //  Creation:   October 28, 2003 
 //
 //  Modifications:
+//    Kathleen Bonnell, Wed Oct 20 17:10:21 PDT 2004
+//    Use vtkVisItUtility method to compute cell center.
 //
 // ****************************************************************************
 
 void
 avtMinMaxQuery::GetCellCoord(vtkDataSet *ds, const int id, float coord[3])
 {
-    vtkCell *cell = ds->GetCell(id);
-    float parametricCenter[3];
-    float *weights = new float[cell->GetNumberOfPoints()];
-    int subId = cell->GetParametricCenter(parametricCenter);
-    cell->EvaluateLocation(subId, parametricCenter, coord, weights);
-    delete [] weights;
+    vtkVisItUtility::GetCellCenter(ds->GetCell(id), coord);
 }
 
 

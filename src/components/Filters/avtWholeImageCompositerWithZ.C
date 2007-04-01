@@ -28,7 +28,7 @@ int avtWholeImageCompositerWithZ::objectCount = 0;
 //               to perform collective buffer merge operations.  Merges
 //               frame and z-buffers.
 //
-// Programmer:   Mark C. Miller (plagerized from Katherine Price)
+// Programmer:   Mark C. Miller (plagiarized from Katherine Price)
 // Date:         26Feb03 
 // ****************************************************************************
 
@@ -203,11 +203,16 @@ avtWholeImageCompositerWithZ::~avtWholeImageCompositerWithZ()
 //  Programmer: Mark C. Miller (modified from orig code by Kat Price)
 //  Creation:   February 18, 2003
 //
+//  Modifications:
+//    Jeremy Meredith, October 20, 2004
+//    Allowed for the use of an allreduce instead of a simple reduce.
+//    
 // ****************************************************************************
 
 void
 avtWholeImageCompositerWithZ::Execute(void)
-{   int i, numRows, numCols;
+{
+    int i, numRows, numCols;
     float *ioz = NULL, *rioz = NULL;
     unsigned char *iorgb, *riorgb;
     vtkImageData *mergedLocalImage, *mergedGlobalImage;
@@ -259,8 +264,8 @@ avtWholeImageCompositerWithZ::Execute(void)
 
     if (mpiRoot >= 0)
     {
-       // only root allocates output AVT imge
-       if (mpiRank == mpiRoot)
+       // only root allocates output AVT image (for a non-allreduce)
+       if (allReduce || mpiRank == mpiRoot)
        {
           mergedGlobalImage = avtImageRepresentation::NewImage(outCols, outRows);
           riorgb = (unsigned char *) mergedGlobalImage->GetScalarPointer(0, 0, 0);
@@ -278,7 +283,7 @@ avtWholeImageCompositerWithZ::Execute(void)
           delete [] ioz;
        }
 
-       if (mpiRank == mpiRoot)
+       if (allReduce || mpiRank == mpiRoot)
        {
           if (shouldOutputZBuffer)
           {
@@ -333,7 +338,7 @@ avtWholeImageCompositerWithZ::Execute(void)
 }
 
 // ****************************************************************************
-// Function:     MergeBuffers
+// Function:     avtWholeImageCompositer::MergeBuffers
 //
 // Purpose:      Merge images represented by separate z and rgb buffers. 
 //               The merge is broken into chunks to help MPI to digest it and
@@ -347,12 +352,20 @@ avtWholeImageCompositerWithZ::Execute(void)
 //               one extr ZFPixel for this purpose.
 //   
 //
-// Programmer:   Mark C. Miller (plagerized from Kat Price's MeshTV version)
-// Date:         04Mar03 
+// Programmer:   Mark C. Miller (plagiarized from Kat Price's MeshTV version)
+// Date:         04Mar03
+//
+// Modifications:
+//   Jeremy Meredith, October 20, 2004
+//   Allowed for the use of an allreduce instead of a simple reduce.
+//
 // ****************************************************************************
 void
 avtWholeImageCompositerWithZ::MergeBuffers(int npixels, bool doParallel,
-   const float *inz, const unsigned char *inrgb, float *ioz, unsigned char *iorgb)
+                                           const float *inz,
+                                           const unsigned char *inrgb,
+                                           float *ioz,
+                                           unsigned char *iorgb)
 {
 
    int io;
@@ -370,22 +383,22 @@ avtWholeImageCompositerWithZ::MergeBuffers(int npixels, bool doParallel,
       // In serial, however, it also needs to be populated before the MergeZFBuffers 
       for (int i = 0, j = io; i < len; i++, j++)
       {
-            int jj = 3*j;
-         inzf[i].z = inz[j];
-         inzf[i].r = inrgb[jj+0];
-         inzf[i].g = inrgb[jj+1];
-         inzf[i].b = inrgb[jj+2];
+          int jj = 3*j;
+          inzf[i].z = inz[j];
+          inzf[i].r = inrgb[jj+0];
+          inzf[i].g = inrgb[jj+1];
+          inzf[i].b = inrgb[jj+2];
       }
 
       if (!doParallel)
       {
          for (int i = 0, j = io; i < len; i++, j++)
          {
-               int jj = 3*j;
-            iozf[i].z = ioz[j];
-            iozf[i].r = iorgb[jj+0];
-            iozf[i].g = iorgb[jj+1];
-            iozf[i].b = iorgb[jj+2];
+             int jj = 3*j;
+             iozf[i].z = ioz[j];
+             iozf[i].r = iorgb[jj+0];
+             iozf[i].g = iorgb[jj+1];
+             iozf[i].b = iorgb[jj+2];
          }
       }
 
@@ -396,33 +409,52 @@ avtWholeImageCompositerWithZ::MergeBuffers(int npixels, bool doParallel,
 
 #ifdef PARALLEL
       if (doParallel)
-         MPI_Reduce(inzf, iozf, len+1, avtWholeImageCompositerWithZ::mpiTypeZFPixel,
-            avtWholeImageCompositerWithZ::mpiOpMergeZFPixelBuffers, mpiRoot, mpiComm);
+      {
+          if (allReduce)
+          {
+              MPI_Allreduce(inzf, iozf, len+1,
+                        avtWholeImageCompositerWithZ::mpiTypeZFPixel,
+                        avtWholeImageCompositerWithZ::mpiOpMergeZFPixelBuffers,
+                        mpiComm);
+          }
+          else
+          {
+              MPI_Reduce(inzf, iozf, len+1,
+                        avtWholeImageCompositerWithZ::mpiTypeZFPixel,
+                        avtWholeImageCompositerWithZ::mpiOpMergeZFPixelBuffers,
+                        mpiRoot, mpiComm);
+          }
+      }
       else
-      {  int adjustedLen = len+1;
-         MergeZFPixelBuffers(inzf, iozf, &adjustedLen, NULL);
+      {
+          int adjustedLen = len+1;
+          MergeZFPixelBuffers(inzf, iozf, &adjustedLen, NULL);
       }
 #else
       if (doParallel)
+      {
          EXCEPTION0(ImproperUseException);
-      {  int adjustedLen = len+1;
-         MergeZFPixelBuffers(inzf, iozf, &adjustedLen, NULL);
       }
+
+      int adjustedLen = len+1;
+      MergeZFPixelBuffers(inzf, iozf, &adjustedLen, NULL);
 #endif
 
-      if (!doParallel || mpiRank == mpiRoot)
+      if (!doParallel || allReduce || mpiRank == mpiRoot)
       {
          for (int i = 0; i < len; i++, io++)
          {
-                 int ii = 3*io;
-                ioz[io] = iozf[i].z;
-            iorgb[ii+0] = iozf[i].r;
-            iorgb[ii+1] = iozf[i].g;
-            iorgb[ii+2] = iozf[i].b;
+             int ii = 3*io;
+             ioz[io] = iozf[i].z;
+             iorgb[ii+0] = iozf[i].r;
+             iorgb[ii+1] = iozf[i].g;
+             iorgb[ii+2] = iozf[i].b;
          }
       }
       else
-         io += len;
+      {
+          io += len;
+      }
 
       npixels -= len;
    }

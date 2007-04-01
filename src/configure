@@ -15994,7 +15994,8 @@ TOOLS_FILES="tools/Makefile
 VISIT_VTK_FILES="visit_vtk/Makefile
                  visit_vtk/lightweight/Makefile
                  visit_vtk/full/Makefile
-                 visit_vtk/sl_io/Makefile"
+                 visit_vtk/sl_io/Makefile
+                 visit_vtk/parallel/Makefile"
 COMPONENT_FILES="components/Makefile
                  components/DBAtts/Makefile
                  components/Database/Makefile
