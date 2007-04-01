@@ -150,6 +150,11 @@ NetworkManager::~NetworkManager(void)
 //    Brad Whitlock, Thu Feb 26 11:58:58 PDT 2004
 //    I replaced the commented out cerr with debug3.
 //
+//    Hank Childs, Sun Mar  7 16:05:03 PST 2004
+//    Delete the networks before the databases, since the networks have
+//    references to the databases (and the previous ordering yielded dangling
+//    pointers).
+//
 // ****************************************************************************
 void
 NetworkManager::ClearAllNetworks(void)
@@ -157,18 +162,18 @@ NetworkManager::ClearAllNetworks(void)
     debug3 << "NetworkManager::ClearAllNetworks(void)" << endl;
     int i;
 
-    for (i = 0; i < databaseCache.size(); i++)
-    {
-        if (databaseCache[i] != NULL)
-            delete databaseCache[i];
-        databaseCache[i] = NULL;
-    }
-
     for (i = 0; i < networkCache.size(); i++)
     {
         if (networkCache[i] != NULL)
             delete networkCache[i];
         networkCache[i] = NULL;
+    }
+
+    for (i = 0; i < databaseCache.size(); i++)
+    {
+        if (databaseCache[i] != NULL)
+            delete databaseCache[i];
+        databaseCache[i] = NULL;
     }
 
     for (i = 0 ; i < globalCellCounts.size() ; i++)
@@ -460,6 +465,10 @@ NetworkManager::GetDBFromCache(const string &filename, int time)
 //    Jeremy Meredith, Fri Oct 31 13:05:26 PST 2003
 //    Made the error message for no-real-variables more informative.
 //
+//    Hank Childs, Sun Mar  7 16:05:03 PST 2004
+//    Do not make the database be a node for the network.  Also add the EEF
+//    as a node.
+//
 // ****************************************************************************
 void
 NetworkManager::StartNetwork(const string &filename, const string &var,
@@ -500,7 +509,6 @@ NetworkManager::StartNetwork(const string &filename, const string &var,
     workingNet = new DataNetwork;
     NetnodeDB *netDB = GetDBFromCache(filename, time);
     workingNet->SetNetDB(netDB);
-    workingNet->AddNode(netDB);
     netDB->SetDBInfo(filename, leaf, time);
 
     // Put an ExpressionEvaluatorFilter right after the netDB to handle
@@ -512,6 +520,7 @@ NetworkManager::StartNetwork(const string &filename, const string &var,
     // Push the ExpressionEvaluator onto the working list.
     workingNetnodeList.push_back(filt);
 
+    workingNet->AddNode(filt);
     // Push the variable name onto the name stack.
     nameStack.push_back(var);
     debug5 << "NetworkManager::AddDB: Adding " << var.c_str()
