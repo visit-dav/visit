@@ -41,6 +41,9 @@
 #   Renamed the MOC target so it would always get rebuilt.  There wasn't
 #   enough dependency information to determine if the Qt version changed.
 #
+#   Eric Brugger, Tue Oct  5 10:47:23 PDT 2004
+#   I replaced QTDIR with QT_BIN.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -52,9 +55,9 @@ NOT_DISTRIB= run_doxygen
 all: mocprogram
 
 mocprogram:
-	if test -n "@QTDIR@"; then               \
+	if test -n "@QT_BIN@"; then               \
 	    $(RM) moc                        ;   \
-	    ln -s @QTDIR@/bin/moc moc        ;   \
+	    ln -s @QT_BIN@/moc moc        ;   \
 	fi
 
 clean:

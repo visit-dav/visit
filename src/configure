@@ -8477,16 +8477,15 @@ if test "$enable_gui" = "yes"; then
     VIEWER_CPPFLAGS="$VIEWER_CPPFLAGS $SILO_INCLUDE"
 
 
-                if test -z "$QTDIR"; then
-       { { echo "$as_me:$LINENO: error: The QTDIR environment variable must be set in order to find Qt" >&5
-echo "$as_me: error: The QTDIR environment variable must be set in order to find Qt" >&2;}
+                if test -z "$QT_BIN" || test -z "$QT_INCLUDE" || test -z "$QT_LIB"; then
+       { { echo "$as_me:$LINENO: error: The QT_BIN, QT_INCLUDE and QT_LIB environment variables must be set in order to find Qt" >&5
+echo "$as_me: error: The QT_BIN, QT_INCLUDE and QT_LIB environment variables must be set in order to find Qt" >&2;}
    { (exit 1); exit 1; }; }
     fi
-
     echo "$as_me:$LINENO: checking for supported Qt version" >&5
 echo $ECHO_N "checking for supported Qt version... $ECHO_C" >&6
     QtVersion=""
-    QtGlobalInc="$QTDIR/include/qglobal.h"
+    QtGlobalInc="$QT_INCLUDE/qglobal.h"
 
     if test -f $QtGlobalInc; then
         ## Check for supported versions of Qt.
@@ -8508,19 +8507,17 @@ echo $ECHO_N "checking for supported Qt version... $ECHO_C" >&6
 echo "$as_me: error:   Sorry, but you need Qt version 2.3.0 or higher to compile VisIt. " >&2;}
    { (exit 1); exit 1; }; }
     else
-        echo "$as_me:$LINENO: result: Qt $QtVersion in $QTDIR" >&5
-echo "${ECHO_T}Qt $QtVersion in $QTDIR" >&6
+        echo "$as_me:$LINENO: result: Qt $QtVersion in $QT_INCLUDE" >&5
+echo "${ECHO_T}Qt $QtVersion in $QT_INCLUDE" >&6
     fi
+
+
 
     QT_LIBS=-lqt
 
     QT_LDFLAGS=""
 
-    if test -d $QTDIR/staticlib; then
-        QT_STATICLDFLAGS=-L$QTDIR/staticlib
-    else
-        QT_STATICLDFLAGS=-L$QTDIR/lib
-    fi
+    QT_STATICLDFLAGS=-L$QT_LIB
 
     if test "$SHORT_UNAME" = "darwin"; then
         QTMAC_FLAGS="-DMACOSX_102"
@@ -8532,7 +8529,11 @@ echo "${ECHO_T}Qt $QtVersion in $QTDIR" >&6
 else
             X_LIBS=""
 
-    QTDIR=""
+    QT_BIN=""
+
+    QT_INCLUDE=""
+
+    QT_LIB=""
 
     QT_LIBS=""
 
@@ -16728,7 +16729,9 @@ s,@PREPROCESSOR_PARALLEL_SRC@,$PREPROCESSOR_PARALLEL_SRC,;t t
 s,@COMPONENT_CPPFLAGS@,$COMPONENT_CPPFLAGS,;t t
 s,@VISIT_VTK_CPPFLAGS@,$VISIT_VTK_CPPFLAGS,;t t
 s,@VIEWER_CPPFLAGS@,$VIEWER_CPPFLAGS,;t t
-s,@QTDIR@,$QTDIR,;t t
+s,@QT_BIN@,$QT_BIN,;t t
+s,@QT_INCLUDE@,$QT_INCLUDE,;t t
+s,@QT_LIB@,$QT_LIB,;t t
 s,@QT_LIBS@,$QT_LIBS,;t t
 s,@QT_LDFLAGS@,$QT_LDFLAGS,;t t
 s,@QT_STATICLDFLAGS@,$QT_STATICLDFLAGS,;t t

@@ -43,6 +43,9 @@
 #    Eric Brugger, Tue Jul 27 14:24:57 PDT 2004
 #    I added -I$(TOPDIR)/include/visit to pick up visitstream.h.
 #
+#    Eric Brugger, Tue Oct  5 13:00:24 PDT 2004
+#    I replaced QTDIR with QT_BIN.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -85,7 +88,7 @@ CPPFLAGS=@CPPFLAGS@ -I$(TOPDIR)/include/visit -I../xml -I.
 	$(CXX) -c $< $(CPPFLAGS) $(CXXFLAGS)
 
 .h_moc.C:
-	@QTDIR@/bin/moc $< > $@
+	@QT_BIN@/moc $< > $@
 
 all: $(tmpbin)/xmledit
 

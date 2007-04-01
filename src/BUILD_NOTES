@@ -442,11 +442,15 @@ setenv LD_LIBRARYN32_PATH $QTDIR/lib:$LD_LIBRARYN32_PATH     # SGI
 setenv LD_LIBRARY64_PATH $QTDIR/lib:$LD_LIBRARY64_PATH       # SGI
 # Use the appropriate configure command based on the operating system on
 # which you are building Qt.
-./configure -platform aix-g++ -shared -no-largefile -qt-libpng
-./configure -platform irix-cc-64 -shared -qt-libpng
-./configure -platform linux-g++ -shared -qt-libpng
-./configure -platform solaris-g++ -shared -qt-libpng
-./configure -platform tru64-g++ -shared -qt-libpng
+./configure -platform aix-g++ -shared -no-largefile -no-imgfmt-png -no-imgfmt-jpeg -no-imgfmt-mng
+./configure -platform irix-cc-64 -shared -no-imgfmt-png -no-imgfmt-jpeg -no-imgfmt-mng
+./configure -platform linux-g++ -shared -no-imgfmt-png -no-imgfmt-jpeg -no-imgfmt-mng
+./configure -platform solaris-g++ -shared -no-imgfmt-png -no-imgfmt-jpeg -no-imgfmt-mng
+./configure -platform tru64-g++ -shared -no-imgfmt-png -no-imgfmt-jpeg -no-imgfmt-mng
+#
+# When you build qt, not all of qt will build successfully because support
+# for png, jpeg and mng are missing.  This is ok because the library and
+# the executables that we care about get built.
 #
 # On tru64 systems you will need to make the following changes to
 # the file mkspecs/tru64-g++/qmake.conf:
@@ -514,7 +518,7 @@ mkdir $VISITDIR/qt/3.3.2
 mkdir $VISITDIR/qt/3.3.2/$VISITARCH
 mkdir $VISITDIR/qt/3.3.2/$VISITARCH/{bin,include,lib}
 mkdir $VISITDIR/qt/3.3.2/$VISITARCH/include/private
-cp bin/{designer,findtr,moc,qt20fix,qtrename140} $VISITDIR/qt/3.3.2/$VISITARCH/bin
+cp bin/{findtr,moc,qt20fix,qtrename140} $VISITDIR/qt/3.3.2/$VISITARCH/bin
 cd include; cp *.h $VISITDIR/qt/3.3.2/$VISITARCH/include
 cp private/*.h $VISITDIR/qt/3.3.2/$VISITARCH/include/private
 cd ../lib;find . -print | cpio -pvmud $VISITDIR/qt/3.3.2/$VISITARCH/lib

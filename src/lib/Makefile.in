@@ -72,6 +72,9 @@
 #    Brad Whitlock, Wed Apr 28 15:50:23 PST 2004
 #    I made it create links to Mili and HDF5 on MacOS X.
 #
+#    Eric Brugger, Tue Oct  5 10:49:26 PDT 2004
+#    I replaced QTDIR with QT_LIB.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -174,9 +177,9 @@ libosmesa:
 	ln -s @MESA_DIR@/lib/$(LIBOSMESA)  .
 
 libqt:
-	if test -n "@QTDIR@"; then              \
+	if test -n "@QT_LIB@"; then              \
 	    $(RM) $(LIBQT)*                 ;   \
-	    ln -s @QTDIR@/lib/$(LIBQT)* .   ;   \
+	    ln -s @QT_LIB@/$(LIBQT)* .   ;   \
 	fi
 
 pythondir:
