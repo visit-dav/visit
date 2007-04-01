@@ -877,19 +877,34 @@ vtkQtRenderWindow::TriggerRender()
 // Programmer: Hank Childs
 // Creation:   May 9, 2004
 //
+// Modifications:
+//
+//   Hank Childs, Fri May 28 13:38:47 PDT 2004
+//   Q_GLX is not used in newer version of Qt, so improve the test.  Also make
+//   sure that we are using the right graphics context.
+//
 // **************************************************************************** 
 
 int
 vtkQtRenderWindow::IsDirect(void)
 {
-#ifdef Q_GLX
-    return glXIsDirect((Display *) GetGenericDisplayId(), 
-                       (GLXContext) GetGenericContext());
+#if defined(Q_GLX) || (defined(Q_WS_X11) && defined(QT_MODULE_OPENGL))
+    MakeCurrent();
+    GLXContext ctx = glXGetCurrentContext();
+    return glXIsDirect((Display *) GetGenericDisplayId(), ctx);
+#elif defined(Q_WS_WIN)
+    // If we are running on Windows, we are almost certainly on someone's
+    // local machine, so declare direct.
+    return 1;
+#elif defined(Q_WS_MACX)
+    // If we are running on Mac, we are almost certainly on someone's
+    // local machine, so declare direct.
+    return 1;
 #else
-    // We don't have X -- so this is probably Windows.  In which case it is
-    // almost certainly being run on someone's local laptop.  
-    // So declare this to be direct.
-    return true;
+    // Its not a Mac and its not Windows and it didn't like the test at the
+    // top.  Declare it as "not direct", so that we will still use display
+    // lists.
+    return 0;
 #endif
 }
 
