@@ -43,7 +43,7 @@ operating systems.  It is suggested that you use the same compilers.
 
    Operating System          Compiler
    ================          ========
-   AIX 5.1                   g++ 3.3.3
+   AIX 5.1                   g++ 3.2.3
    IRIX64 6.5                MIPSpro 7.3.1.2m and MIPSpro 7.4
    Linux 7.1 and 7.2         g++ 2.96 or g++ 3.2.3
    Solaris 7                 g++ 2.95.2 or g++ 3.2
@@ -55,6 +55,7 @@ compile VisIt or will generate bad code.
    Operating System          Compiler
    ================          ========
    Linux 7.1 and 7.2         g++ 3.3 -> 3.3.3
+   AIX 5.1                   g++ 3.3 -> 3.3.3
 
 It is essential that you build all the dependent packages and VisIt using
 the same c++ compiler or you will encounter linking problems because different
@@ -249,6 +250,16 @@ cd VTK
 #
 
 #
+# On linux systems the link line generated for the Hybrid and Rendering
+# libraries will have the X11 library directory listed before the mesa
+# library directory which may cause the library to be linked against the
+# osmesa library in the X11 directory instead of the one that comes with
+# our version of mangled mesa.  To correct this problem you will need to
+# edit the Makefiles in the Hybrid and Rendering directories to swap the
+# order of the X11 library directory and the mesa library directory.
+#
+
+#
 # On tru64 systems using g++ 3.0.4, several files in the Imaging directory
 # will not compile because of an internal compiler error.  You will need to
 # comment out the code in the method ThreadedExecute (with "#if 0" as the
@@ -348,9 +359,7 @@ make
 mkdir $VISITDIR/qt
 mkdir $VISITDIR/qt/2.3.0
 mkdir $VISITDIR/qt/2.3.0/$VISITARCH
-mkdir $VISITDIR/qt/2.3.0/$VISITARCH/bin
-mkdir $VISITDIR/qt/2.3.0/$VISITARCH/include
-mkdir $VISITDIR/qt/2.3.0/$VISITARCH/lib
+mkdir $VISITDIR/qt/2.3.0/$VISITARCH/{bin,include,lib}
 cp bin/{designer,findtr,moc,qt20fix,qtrename140} $VISITDIR/qt/2.3.0/$VISITARCH/bin
 cd include; cp *.h $VISITDIR/qt/2.3.0/$VISITARCH/include
 cd ../lib;find . -print | cpio -pvmud $VISITDIR/qt/2.3.0/$VISITARCH/lib
@@ -397,9 +406,7 @@ make
 mkdir $VISITDIR/qt
 mkdir $VISITDIR/qt/3.0.2
 mkdir $VISITDIR/qt/3.0.2/$VISITARCH
-mkdir $VISITDIR/qt/3.0.2/$VISITARCH/bin
-mkdir $VISITDIR/qt/3.0.2/$VISITARCH/include
-mkdir $VISITDIR/qt/3.0.2/$VISITARCH/lib
+mkdir $VISITDIR/qt/2.3.0/$VISITARCH/{bin,include,lib}
 cp bin/{designer,findtr,moc,qt20fix,qtrename140} $VISITDIR/qt/3.0.2/$VISITARCH/bin
 cd include; cp *.h $VISITDIR/qt/3.0.2/$VISITARCH/include
 cp private/*.h $VISITDIR/qt/3.0.2/$VISITARCH/include/private
@@ -472,10 +479,20 @@ setenv LD_LIBRARY64_PATH $QTDIR/lib:$LD_LIBRARY64_PATH       # SGI
 # #   define NAN (::nan())
 # #endif
 #
-# On aix systems you will need to make the following changes to
-# the file mkspecs/aix-g++/qmake.conf:
+# On aix systems qt will normally find non c++ compliant X11 header files in
+# /usr/lpp/X11/include.  You will need to make the following changes to the
+# file mkspecs/aix-g++/qmake.conf:
 # remove "/usr/X11R6/include" from QMAKE_INCDIR_X11
 # remove "/usr/X11R6/include" from QMAKE_INCDIR_OPENGL
+#
+# On linux systems if the OpenGL library is built with threading support,
+# qt won't by default compile the QGL widget.  To overcome this problem you
+# will need to add "-thread" to the configure line.  When qt creates the
+# qt library it will name it qt-mt instead of qt.  This will cause problems
+# linking visit.  To fix this you should first build qt, having it create
+# libqt-mt.so.  Then remove all occurances of "-mt" from src/Makefile and
+# issue the make command again.  It will now create the qt library properly
+# named for visit.
 #
 make
 
@@ -485,10 +502,8 @@ make
 mkdir $VISITDIR/qt
 mkdir $VISITDIR/qt/3.3.2
 mkdir $VISITDIR/qt/3.3.2/$VISITARCH
-mkdir $VISITDIR/qt/3.3.2/$VISITARCH/bin
-mkdir $VISITDIR/qt/3.3.2/$VISITARCH/include
+mkdir $VISITDIR/qt/3.3.2/$VISITARCH/{bin,include,lib}
 mkdir $VISITDIR/qt/3.3.2/$VISITARCH/include/private
-mkdir $VISITDIR/qt/3.3.2/$VISITARCH/lib
 cp bin/{designer,findtr,moc,qt20fix,qtrename140} $VISITDIR/qt/3.3.2/$VISITARCH/bin
 cd include; cp *.h $VISITDIR/qt/3.3.2/$VISITARCH/include
 cp private/*.h $VISITDIR/qt/3.3.2/$VISITARCH/include/private
@@ -507,6 +522,7 @@ Silo
 Silo is a self-describing, machine-independent scientific file format.
 Silo is one of the file formats supported by VisIt.  Follow the directions
 listed below to build Silo.  If you have any problems building or installing
+Silo, read the BUILD_NOTES file in the Silo distribution for more information.
 
 On itanium (ia64) systems, the -fpic flag is needed.  You can replace
 CFLAGS=-O2 with CFLAGS="-fpic -O2" in the configure command below.
@@ -528,13 +544,10 @@ make
 mkdir $VISITDIR/silo
 mkdir $VISITDIR/silo/4.4
 mkdir $VISITDIR/silo/4.4/$VISITARCH
-mkdir $VISITDIR/silo/4.4/$VISITARCH/include
-mkdir $VISITDIR/silo/4.4/$VISITARCH/lib
-cp silo/silo/silo.h   $VISITDIR/silo/4.4/$VISITARCH/include
-cp silo/silo/silo.inc $VISITDIR/silo/4.4/$VISITARCH/include
-cp silo/sdx/sdx.h     $VISITDIR/silo/4.4/$VISITARCH/include
-cp silo/sdx/sdx.inc   $VISITDIR/silo/4.4/$VISITARCH/include
-cp lib/libsilo.a      $VISITDIR/silo/4.4/$VISITARCH/lib
+mkdir $VISITDIR/silo/4.4/$VISITARCH/{include,lib}
+cp silo/silo/silo.{h,inc}   $VISITDIR/silo/4.4/$VISITARCH/include
+cp silo/sdx/sdx.{h,inc}     $VISITDIR/silo/4.4/$VISITARCH/include
+cp lib/libsilo.a            $VISITDIR/silo/4.4/$VISITARCH/lib
 cd ..
 
 
@@ -612,9 +625,9 @@ env command for configure.
 #
 # Build and install it in the visit directory.
 #
-gunzip visit040719.tar.gz
-tar xf visit040719.tar
-cd visit040719/config-site
+gunzip visit040816.tar.gz
+tar xf visit040816.tar
+cd visit040816/config-site
 echo VISITHOME=$VISITDIR > `hostname`.conf
 sed "s/ARCH/$VISITARCH/" Template.conf >> `hostname`.conf
 cd ..
@@ -623,11 +636,11 @@ make
 clearcase_bin/visit-bin-dist
 # Use the appropriate install command based on the operating system on
 # which you built VisIt.
-clearcase_bin/visit-install 1.3.3 aix $VISITDIR
-clearcase_bin/visit-install 1.3.3 irix6 $VISITDIR
-clearcase_bin/visit-install 1.3.3 linux $VISITDIR
-clearcase_bin/visit-install 1.3.3 osf1 $VISITDIR
-clearcase_bin/visit-install 1.3.3 sunos5 $VISITDIR
+clearcase_bin/visit-install 1.3.4 aix $VISITDIR
+clearcase_bin/visit-install 1.3.4 irix6 $VISITDIR
+clearcase_bin/visit-install 1.3.4 linux $VISITDIR
+clearcase_bin/visit-install 1.3.4 osf1 $VISITDIR
+clearcase_bin/visit-install 1.3.4 sunos5 $VISITDIR
 
 When running the configure script you can enable or disable certain dependent
 packages.  All the configure options are listed at the beginning of the

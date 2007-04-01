@@ -73,15 +73,31 @@ avtMagnitudeFilter::~avtMagnitudeFilter()
 //    Kathleen Bonnell, Thu Jan  2 15:16:50 PST 2003 
 //    Replace MakeObject() with NewInstance() to match new vtk api. 
 //
+//    Kathleen Bonnell, Wed Aug 18 16:55:49 PDT 2004 
+//    Retrieve vectorValues array based on activeVariableName. (There may be
+//    a Vectors array in both the CellData and the PointData, and the old way
+//    would always retrieve the PointData vectors in this instance).  We are
+//    assuming that the PoinData Vectors and CellData Vectors will have 
+//    different names.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtMagnitudeFilter::DeriveVariable(vtkDataSet *in_ds)
 {
-    vtkDataArray *vectorValues = in_ds->GetPointData()->GetVectors();
+    //
+    // The base class will set the variable of interest to be the 
+    // 'activeVariable'.  This is a by-product of how the base class sets its
+    // input.  If that method should change (SetActiveVariable), this
+    // technique for inferring the variable name may stop working.
+    //
+    const char *varname = activeVariable;
+
+    vtkDataArray *vectorValues = in_ds->GetPointData()->GetArray(varname);
+    
     if (vectorValues == NULL)
     {
-        vectorValues = in_ds->GetCellData()->GetVectors();
+        vectorValues = in_ds->GetCellData()->GetArray(varname);
     }
     if (vectorValues == NULL)
     {
