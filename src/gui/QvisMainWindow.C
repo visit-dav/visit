@@ -1016,6 +1016,9 @@ QvisMainWindow::UpdateFileMenuPopup(QPopupMenu *m, int menuId)
 //   Brad Whitlock, Fri Sep 13 15:48:27 PST 2002
 //   I changed it so it also updates the new Active window menu.
 //
+//   Brad Whitlock, Fri Apr 15 09:42:58 PDT 2005
+//   I added some code that prevents an update unless it is really needed.
+//
 // ****************************************************************************
 
 void
@@ -1027,21 +1030,28 @@ QvisMainWindow::UpdateWindowList(bool doList)
 
     if(doList)
     {
-        // Update the Active window combo box.
-        activeWindowComboBox->clear();
-        for(i = 0; i < indices.size(); ++i)
-        {
-            QString temp; temp.sprintf("%d", indices[i]);
-            activeWindowComboBox->insertItem(temp);
-        }
+        intVector oldIndices;
+        for(i = 0; i < activeWindowComboBox->count(); ++i)
+            oldIndices.push_back(activeWindowComboBox->text(i).toInt());
 
-        // Update the Active window menu
-        activeWindowPopup->clear();
-        for(i = 0; i < indices.size(); ++i)
+        // Update the Active window combo box.
+        if(oldIndices != indices)
         {
-            QString str; str.sprintf("Window %d", indices[i]);
-            activeWindowPopup->insertItem(str, i);
-            activeWindowPopup->setItemChecked(i, indices[i] == index);
+            activeWindowComboBox->clear();
+            for(i = 0; i < indices.size(); ++i)
+            {
+                QString temp; temp.sprintf("%d", indices[i]);
+                activeWindowComboBox->insertItem(temp);
+            }
+
+            // Update the Active window menu
+            activeWindowPopup->clear();
+            for(i = 0; i < indices.size(); ++i)
+            {
+                QString str; str.sprintf("Window %d", indices[i]);
+                activeWindowPopup->insertItem(str, i);
+                activeWindowPopup->setItemChecked(i, indices[i] == index);
+            }
         }
     }
     else

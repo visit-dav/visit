@@ -477,7 +477,7 @@ BoundaryViewerPluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
 int
 BoundaryViewerPluginInfo::GetVariableTypes() const
 {
-    return VAR_CATEGORY_SUBSET;
+    return VAR_CATEGORY_MATERIAL;
 }
 
 

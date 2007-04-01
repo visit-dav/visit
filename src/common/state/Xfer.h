@@ -33,7 +33,11 @@ class VisItRPC;
 //    Brad Whitlock, Thu Feb 27 10:57:26 PDT 2003
 //    Added support for special opcodes, which are opcodes that the user
 //    can inject into the command stream to cause immediate effects.
-//    
+//
+//    Brad Whitlock, Thu Apr 14 16:37:24 PST 2005
+//    Added a method to give access to the buffered input so we can store
+//    objects directly in it.
+//
 // ****************************************************************************
 
 class STATE_API Xfer : public SimpleObserver
@@ -50,6 +54,7 @@ public:
     void SetOutputConnection(Connection *);
     Connection *GetInputConnection() const;
     Connection *GetOutputConnection() const;
+    Connection *GetBufferedInputConnection();
 
     virtual void Process();
     virtual bool ReadPendingMessages();

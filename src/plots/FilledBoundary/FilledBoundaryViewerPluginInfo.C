@@ -492,7 +492,7 @@ FilledBoundaryViewerPluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
 int
 FilledBoundaryViewerPluginInfo::GetVariableTypes() const
 {
-    return VAR_CATEGORY_SUBSET;
+    return VAR_CATEGORY_MATERIAL;
 }
 
 

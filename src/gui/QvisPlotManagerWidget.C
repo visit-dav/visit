@@ -486,9 +486,6 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
         return;
     }
 
-    // Get whether or not we are allowed to modify things.
-    bool canChange = !globalAtts->GetExecuting();
-
     //
     // Initialize the class members that are used in various methods to tell
     // us whether updating the menu enabled state is required.
@@ -579,13 +576,6 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
         applyOperatorToggle->blockSignals(true);
         applyOperatorToggle->setChecked(globalAtts->GetApplyOperator());
         applyOperatorToggle->blockSignals(false);
-
-        // Set the enabled state for the whole widget based on whether
-        // or not the engine is busy.
-        activePlots->setEnabled(canChange);
-        plotListBox->setEnabled(canChange);
-        UpdateHideDeleteDrawButtonsEnabledState();
-        applyOperatorToggle->setEnabled(canChange);
 
         //
         // When the globalAtts change, we might have to update the
@@ -822,7 +812,10 @@ QvisPlotManagerWidget::UpdateSourceList(bool updateActiveSourceOnly)
 // Creation:   Wed Sep 10 09:05:26 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Apr 15 09:18:35 PDT 2005
+//   Removed the code that prevented the controls from being enabled when
+//   the engine is busy.
+//
 // ****************************************************************************
 
 void
@@ -843,10 +836,9 @@ QvisPlotManagerWidget::UpdateHideDeleteDrawButtonsEnabledState() const
            ++nHideablePlots;
     }
 
-    bool canChange = !globalAtts->GetExecuting();
-    hideButton->setEnabled(nHideablePlots > 0 && canChange);
-    deleteButton->setEnabled(plotList->GetNumPlots() > 0 && canChange);
-    drawButton->setEnabled(plotList->GetNumPlots() > 0 && canChange);
+    hideButton->setEnabled(nHideablePlots > 0);
+    deleteButton->setEnabled(plotList->GetNumPlots() > 0);
+    drawButton->setEnabled(plotList->GetNumPlots() > 0);
 }
 
 // ****************************************************************************
@@ -1193,6 +1185,9 @@ QvisPlotManagerWidget::UpdatePlotVariableMenu()
 //   set instead of doing it all over the place. This allows me to set the
 //   menu state consistently without code duplication.
 //
+//   Brad Whitlock, Fri Apr 15 09:20:00 PDT 2005
+//   I removed code to disable the widgets when the engine is executing.
+//
 // ****************************************************************************
 
 void
@@ -1233,21 +1228,6 @@ QvisPlotManagerWidget::UpdatePlotAndOperatorMenuEnabledState()
                               (plotList->GetNumPlots() > 0) &&
                               someOperatorMenusEnabled;
         varMenuEnabled = (varMenu->count() > 0);
-    }
-
-    //
-    // If the number of variables is less than the cutoff then we want to
-    // disable the menus when the viewer is executing. If the number of
-    // variables is too large then we don't want to change the menu enabled
-    // states because it is too expensive.
-    //
-    if(this->maxVarCount < VARIABLE_CUTOFF)
-    {
-        plotMenuEnabled &= !globalAtts->GetExecuting();
-        operatorMenuEnabled &= !globalAtts->GetExecuting();
-        varMenuEnabled &= !globalAtts->GetExecuting();
-        plotAttsMenuEnabled = !globalAtts->GetExecuting();
-        operatorAttsMenuEnabled = !globalAtts->GetExecuting();
     }
 
     //

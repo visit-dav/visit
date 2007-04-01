@@ -339,6 +339,10 @@ class ViewerToolbar;
 //    Mark C. Miller, Fri Mar  4 13:05:02 PST 2005
 //    Changed GetNumTriangles to GetNumPrimitives
 //
+//    Brad Whitlock, Wed Apr 13 17:06:32 PST 2005
+//    removed a method to set the popup menu's enabled state since we can
+//    get at the menu directly.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow
@@ -400,7 +404,6 @@ public:
     bool GetToolLock() const;
     void SetPerspectiveProjection(const bool mode);
     bool GetPerspectiveProjection() const;
-    void SetPopupEnabled(bool val);
     void UpdateColorTable(const char *ctName);
     void RedrawWindow();
     void ClearWindow();

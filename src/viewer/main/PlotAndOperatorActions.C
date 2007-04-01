@@ -737,7 +737,7 @@ SetOperatorOptionsAction::Execute()
 // ****************************************************************************
 
 AddPlotAction::AddPlotAction(ViewerWindow *win) : ViewerMultipleAction(win,
-    "AddPlotAction"), host(), database(), pluginEntries(), menuPopulator()
+    "AddPlotAction"), pluginEntries(), menuPopulator()
 {
     SetAllText("Add plot");
     SetExclusive(false);
@@ -843,6 +843,12 @@ AddPlotAction::~AddPlotAction()
 //   I updated the code to use a new interface to
 //   VariableMenuPopulator::UpdateSingleVariableMenu.
 //
+//   Brad Whitlock, Fri Apr 15 13:39:32 PST 2005
+//   Added code to clear the menu since the menu populator no longer does
+//   menu clearing. I also made the variable menu populator responsible for
+//   deciding when the menu must be cleared since it does a better overall
+//   job.
+//
 // ****************************************************************************
 
 void
@@ -851,25 +857,11 @@ AddPlotAction::Update()
     if(pluginEntries.size() > 0)
     {
         ViewerPlotList *plotList = window->GetPlotList();
-        const std::string &newHost = plotList->GetHostName();
-        const std::string &newDB = plotList->GetDatabaseName();
+        const std::string &host = plotList->GetHostName();
+        const std::string &database = plotList->GetDatabaseName();
 
-        //
-        // If the new host and database are valid and they differ from the old values
-        // then we need to update the variable menu.
-        //
-        if(newHost.size() > 0 && newDB.size() > 0 && 
-           (host != newHost || database != newDB))
+        if(host.size() > 0 && database.size() > 0)
         {
-            host = newHost;
-            database = newDB;
-
-            // Print to the debug logs.
-            debug4 << "AddPlotAction::Update: Either the host or the database " << endl
-                   << "changed so we need to update the variable menu!" << endl
-                   << "\thost=" << host.c_str() << endl
-                   << "\tdb=" << database.c_str() << endl;
-
             // Get the metadata and SIL for the file.
             ViewerFileServer *fileServer = ViewerFileServer::Instance();
             const avtDatabaseMetaData *md = fileServer->GetMetaData(host, database);
@@ -883,22 +875,31 @@ AddPlotAction::Update()
             if(menuPopulator.PopulateVariableLists(plotList->GetHostDatabaseName(),
                                                    md, sil, exprList))
             {
+                // Print to the debug logs.
+                debug4 << "AddPlotAction::Update: Either the host or the database " << endl
+                       << "changed so we need to update the variable menu!" << endl
+                       << "\thost=" << host.c_str() << endl
+                       << "\tdb=" << database.c_str() << endl;
+
                 //
                 // Update the variable menus for the actions.
                 //
                 bool menuEnabled = false;
                 for(int i = 0; i < pluginEntries.size(); ++i)
                 {
-                    menuPopulator.UpdateSingleVariableMenu(pluginEntries[i].varMenu,
+                    pluginEntries[i].varMenu->clear();
+                    int varCount = menuPopulator.UpdateSingleVariableMenu(
+                        pluginEntries[i].varMenu,
                         pluginEntries[i].varTypes, this, 
                         SLOT(addPlot(int, const QString &)));
-
-                    bool enabled = menuPopulator.ItemEnabled(pluginEntries[i].varTypes);
+                    bool hasEntries = (varCount > 0);
 
                     // Set the new menu's enabled state based on the variable type.
-                    actionMenu->setItemEnabled(i, enabled);
-                    menu->setItemEnabled(i, enabled);
-                    menuEnabled |= enabled;
+                    if(hasEntries != actionMenu->isItemEnabled(i))
+                        actionMenu->setItemEnabled(i, hasEntries);
+                    if(hasEntries != menu->isItemEnabled(i))
+                        menu->setItemEnabled(i, hasEntries);
+                    menuEnabled |= hasEntries;
                 }
 
                 menu->setEnabled(menuEnabled);
@@ -1171,7 +1172,9 @@ AddPlotAction::ConstructToolbar(QToolBar *toolbar)
 // Creation:   Thu Mar 20 12:50:41 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Apr 15 13:37:32 PST 2005
+//   Changed to the no argument Activate call.
+//
 // ****************************************************************************
 
 void
@@ -1186,7 +1189,7 @@ AddPlotAction::addPlot(int index, const QString &var)
     args.SetVariable(var.latin1());
 
     // Execute the action.
-    Activate(false);
+    Activate();
 }
 
 // ****************************************************************************

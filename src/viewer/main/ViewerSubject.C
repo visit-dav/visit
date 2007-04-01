@@ -58,6 +58,7 @@
 #include <QueryOverTimeAttributes.h>
 #include <Utility.h>
 
+#include <ViewerActionBase.h>
 #include <ViewerActionManager.h>
 #include <ViewerConnectionProgressDialog.h>
 #include <ParsingExprList.h>
@@ -141,10 +142,13 @@ using std::string;
 //    Mark C. Miller, Tue Mar  8 18:06:19 PST 2005
 //    Added procAtts
 //
+//    Brad Whitlock, Fri Apr 15 10:42:31 PDT 2005
+//    Added postponedAction.
+//
 // ****************************************************************************
 
-ViewerSubject::ViewerSubject() : parent(), xfer(), viewerRPC(),
-    borders(), shift(), preshift(), geometry()
+ViewerSubject::ViewerSubject() : parent(), xfer(), viewerRPC(), 
+    postponedAction(), borders(), shift(), preshift(), geometry()
 {
     //
     // Initialize pointers to some Qt objects that don't get created
@@ -203,6 +207,7 @@ ViewerSubject::ViewerSubject() : parent(), xfer(), viewerRPC(),
     //
     keepAliveTimer = 0;
     viewerRPCObserver = 0;
+    postponedActionObserver = 0;
     syncObserver = 0;
     messageAtts = 0;
     statusAtts = 0;
@@ -253,12 +258,16 @@ ViewerSubject::ViewerSubject() : parent(), xfer(), viewerRPC(),
 //    Mark C. Miller, Tue Mar  8 18:06:19 PST 2005
 //    Added procAtts
 //
+//    Brad Whitlock, Fri Apr 15 11:11:17 PDT 2005
+//    Added postponedActionObserver.
+//
 // ****************************************************************************
 
 ViewerSubject::~ViewerSubject()
 {
     delete messageBuffer;
     delete viewerRPCObserver;
+    delete postponedActionObserver;
     delete plotFactory;
     delete operatorFactory;
     delete configMgr;
@@ -541,6 +550,9 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
 //   Mark C. Miller, Tue Mar  8 18:06:19 PST 2005
 //   Added procAtts
 //
+//   Brad Whitlock, Fri Apr 15 10:42:00 PDT 2005
+//   Added postponedAction.
+//
 // ****************************************************************************
 
 void
@@ -556,6 +568,7 @@ ViewerSubject::ConnectXfer()
     //
     // Connect the client attribute subjects.
     //
+    xfer.Add(&postponedAction);
     xfer.Add(syncAtts);
     xfer.Add(appearanceAtts);
     xfer.Add(pluginAtts);
@@ -611,9 +624,12 @@ ViewerSubject::ConnectXfer()
 // Creation:   Tue Jun 17 14:56:26 PST 2003
 //
 // Modifications:
-//    Jeremy Meredith, Tue Mar 30 10:52:06 PST 2004
-//    Added an engine key used to index (and restart) engines.
-//   
+//   Jeremy Meredith, Tue Mar 30 10:52:06 PST 2004
+//   Added an engine key used to index (and restart) engines.
+//
+//   Brad Whitlock, Fri Apr 15 11:13:18 PDT 2005
+//   Added a new observer to handle postponed actions.
+//
 // ****************************************************************************
 
 void
@@ -663,6 +679,14 @@ ViewerSubject::ConnectObjectsAndHandlers()
     viewerRPCObserver = new ViewerRPCObserver(&viewerRPC);
     connect(viewerRPCObserver, SIGNAL(executeRPC()),
             this, SLOT(HandleViewerRPC()));
+
+    //
+    // Create an observer for the postponedAction object. The actions are
+    // actually handled by the ViewerSubject by a slot function.
+    //
+    postponedActionObserver = new ViewerRPCObserver(&postponedAction);
+    connect(postponedActionObserver, SIGNAL(executeRPC()),
+            this, SLOT(HandlePostponedAction()));
 
     //
     // Create an observer for the syncAtts object. Each time the object
@@ -6832,6 +6856,106 @@ ViewerSubject::HandleViewerRPC()
     //
     if(!actionHandled)
         ViewerWindowManager::Instance()->UpdateActions();
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::PostponeAction
+//
+// Purpose: 
+//   Postpones an action by copying its serialized contents into the
+//   xfer object's input connection. This allows us to safely schedule its
+//   execution.
+//
+// Arguments:
+//   action : The action to postpone.
+//
+// Note:       All interactive user actions (popup menu, toolbar) are queued
+//             up using this method so we can record which window they came
+//             from and schedule them to be executed later when we resume
+//             processing input from the client. This makes it safe to allow
+//             the controls to be available all the time.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr 14 16:27:31 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::PostponeAction(ViewerActionBase *action)
+{
+    //
+    // Okay so this is a little weird. We store the action's RPC information
+    // into a postponedAction object which we then write into the
+    // xfer object's buffered input connection so it is as though
+    // the object came directly from the client socket. We write into the
+    // buffered input connection because it is guaranteed to contain only
+    // whole messages. Also, we write into a postponedAction object because
+    // we have to be able to record which window originated the action
+    // so we get it right later when we execute it. If we just wrote the
+    // action's RPC to the buffer actions would only work for the active window.
+    //
+
+    // Store the action information into the postponedAction object.
+    postponedAction.SetWindow(action->GetWindow()->GetWindowId());
+    postponedAction.SetRPC(action->GetArgs());
+
+    // Write the postponedAction object into the buffered input.
+    Connection *input = xfer.GetBufferedInputConnection();
+    input->WriteInt(postponedAction.GetGuido());
+    int sz = postponedAction.CalculateMessageSize(*input);
+    input->WriteInt(sz);
+    postponedAction.Write(*input);
+
+    debug4 << "Postponing execution of  " << action->GetName()
+           << " action." << endl;
+
+    // Call ProcessFromParent on a timer so we can process the new input later.
+    QTimer::singleShot(100, this, SLOT(ProcessFromParent()));
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::HandlePostponedAction
+//
+// Purpose: 
+//   Handles postponed actions that have been queued up in the client input.
+//
+// Note:       This method executes actions that have been postponed. Note
+//             that only ViewerRPC's that are handled in the viewer as
+//             actions can be executed through this method because it takes
+//             an interactive widget, etc to get an action queued in the
+//             first place.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 15 10:52:10 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::HandlePostponedAction()
+{
+    int index = postponedAction.GetWindow();
+    ViewerRPC::ViewerRPCType t = postponedAction.GetRPC().GetRPCType();
+    const char *tName = ViewerRPC::ViewerRPCType_ToString(t).c_str();
+    ViewerWindow *win = ViewerWindowManager::Instance()->GetWindow(index);
+    if(win != 0)
+    {
+        ViewerActionManager *actionMgr = win->GetActionManager();
+
+        debug1 << "Handling postponed action "
+               << tName << " for window " << (win->GetWindowId()+1) << "."
+               << endl;
+
+        actionMgr->HandleAction(postponedAction.GetRPC());
+    }
+    else
+    {
+        debug1 << "Could not handle postponed action "
+               << tName << " because its window is gone." << endl;
+    }
 }
 
 // ****************************************************************************
