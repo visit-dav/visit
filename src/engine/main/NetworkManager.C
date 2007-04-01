@@ -349,7 +349,7 @@ NetworkManager::GetDBFromCache(const string &filename, int time)
         databaseCache.push_back(netDB);
 
         netDB->SetDBInfo(filename, "", time);
-        const   avtIOInformation & ioinfo = db->GetIOInformation();
+        const   avtIOInformation & ioinfo = db->GetIOInformation(time);
         loadBalancer->AddDatabase(filename, ioinfo);
       
         // The code here should be:
@@ -699,7 +699,7 @@ NetworkManager::DefineDB(const string &dbName, const string &dbPath,
         databaseCache.push_back(netDB);
 
         // Add the database to the load balancer.
-        const   avtIOInformation & ioinfo = db->GetIOInformation();
+        const   avtIOInformation & ioinfo = db->GetIOInformation(time);
         loadBalancer->AddDatabase(dbName, ioinfo);
     }
     CATCH(DatabaseException)

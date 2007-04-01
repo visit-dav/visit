@@ -154,6 +154,9 @@ class    avtVariableCache;
 //    Mark C. Miller, Mon Feb 23 20:38:47 PST 2004
 //    Added ts argument to ActivateTimestep and made it pure virtual 
 //
+//    Mark C. Miller, Tue Mar 16 14:09:43 PST 2004
+//    Added time step argument to PopulateIOInformation. Made it pure virtual
+//
 // ****************************************************************************
 
 class DATABASE_API avtFileFormatInterface
@@ -173,6 +176,7 @@ class DATABASE_API avtFileFormatInterface
 
     virtual void            FreeUpResources(int, int) = 0;
     virtual void            ActivateTimestep(int ts) = 0;
+    virtual void            PopulateIOInformation(int ts, avtIOInformation &) = 0;
 
     bool                    HasInvariantMetaData(void);
     bool                    HasInvariantSIL(void);
@@ -183,7 +187,6 @@ class DATABASE_API avtFileFormatInterface
     const char             *GetType(void);
     bool                    HasVarsDefinedOnSubMeshes(void);
     bool                    PerformsMaterialSelection(void);
-    void                    PopulateIOInformation(avtIOInformation &);
     void                    RegisterVariableList(const char *,
                                               const std::vector<CharStrRef> &);
     void                    SetCache(avtVariableCache *);

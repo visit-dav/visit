@@ -76,33 +76,6 @@ avtFileFormatInterface::RegisterVariableList(const char *var,
 
 
 // ****************************************************************************
-//  Method: avtFileFormatInterface::PopulateIOInformation
-//
-//  Purpose:
-//      Collect information about the best way to do I/O.
-//
-//  Programmer: Hank Childs
-//  Creation:   March 14, 2003
-//
-// ****************************************************************************
-
-void
-avtFileFormatInterface::PopulateIOInformation(avtIOInformation &ioInfo)
-{
-    int nFormats = GetNumberOfFileFormats();
-    if (nFormats > 0)
-    {
-        //
-        // There is an assumption here that each file format has as much info
-        // as the next about the best I/O layout.
-        //
-        avtFileFormat *ff = GetFormat(0);
-        ff->PopulateIOInformation(ioInfo);
-    }
-}
-
-
-// ****************************************************************************
 //  Method: avtFileFormatInterface::GetType
 //
 //  Purpose:

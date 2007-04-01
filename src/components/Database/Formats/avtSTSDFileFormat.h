@@ -14,6 +14,8 @@
 class     vtkDataSet;
 class     vtkDataArray;
 
+class     avtIOInformation;
+
 
 // ****************************************************************************
 //  Class: avtSTSDFileFormat
@@ -47,6 +49,9 @@ class     vtkDataArray;
 //    Mark C. Miller, Mon Feb 23 20:38:47 PST 2004
 //    Added method, ActivateTimestep
 //
+//    Mark C. Miller, Tue Mar 16 14:28:42 PST 2004
+//    Added method, PopulateIOInformation
+//
 // ****************************************************************************
 
 class DATABASE_API avtSTSDFileFormat : public avtFileFormat
@@ -72,6 +77,8 @@ class DATABASE_API avtSTSDFileFormat : public avtFileFormat
 
     virtual void           ActivateTimestep(void)
                                { avtFileFormat::ActivateTimestep(); };
+    virtual void           PopulateIOInformation(avtIOInformation& ioInfo)
+                               { avtFileFormat::PopulateIOInformation(ioInfo); };
 
   protected:
     char                  *filename;

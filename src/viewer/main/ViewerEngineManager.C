@@ -45,6 +45,11 @@ using std::string;
 //
 // Define some boiler plate macros that wrap blocking RPCs.
 //
+// EngineProxy Macro Modifications:
+//    Jeremy Meredith, Wed Mar 17 15:09:07 PST 2004
+//    Inserted "false" before numRestarts so that it wouldn't take numRestarts
+//    as the value for skipChooser. 
+//
 #define ENGINE_PROXY_RPC_BEGIN(rpcname)  \
     const char *hostName = RealHostName(hostName_); \
     bool retval = false; \
@@ -59,7 +64,7 @@ using std::string;
                    << " RPC before an engine was started" << endl \
                    << "**** on " << hostName << ". Starting an engine on " \
                    << hostName << ".\n****" << endl; \
-            CreateEngine(hostName_, restartArguments, numRestarts); \
+            CreateEngine(hostName_, restartArguments, false, numRestarts); \
             engineIndex = GetEngineIndex(hostName); \
         } \
         if(engineIndex >= 0) \
@@ -81,7 +86,7 @@ using std::string;
                    retry = true; \
                    RemoveFailedEngine(engineIndex); \
                    LaunchMessage(hostName); \
-                   CreateEngine(hostName_, restartArguments, numRestarts); \
+                   CreateEngine(hostName_, restartArguments,false,numRestarts); \
                    ++numAttempts; \
                 } \
                 else \
@@ -929,6 +934,10 @@ ViewerEngineManager::SendKeepAlives()
 //   Brad Whitlock, Mon Dec 30 15:42:12 PST 2002
 //   I made it use the restart arguments.
 //
+//   Jeremy Meredith, Wed Mar 17 15:09:07 PST 2004
+//   Inserted "false" before numRestarts so that it wouldn't take numRestarts
+//   as the value for skipChooser.
+//
 // ****************************************************************************
 
 EngineProxy *
@@ -951,7 +960,7 @@ ViewerEngineManager::GetEngine(const char *hostName_)
         LaunchMessage(hostName);
 
         // Try to launch an engine.
-        CreateEngine(hostName, restartArguments, numRestarts);
+        CreateEngine(hostName, restartArguments, false, numRestarts);
 
         // Lookup the engine to see if it launched.
         engineIndex = GetEngineIndex(hostName);

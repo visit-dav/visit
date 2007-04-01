@@ -507,7 +507,6 @@ avtSTSDFileFormatInterface::FreeUpResources(int ts, int)
     }
 }
 
-
 // ****************************************************************************
 //  Method: avtSTSDFileFormatInterface::ActivateTimestep
 //
@@ -530,5 +529,28 @@ avtSTSDFileFormatInterface::ActivateTimestep(int ts)
     for (int j = 0 ; j < nBlocks ; j++)
     {
         timesteps[ts][j]->ActivateTimestep();
+    }
+}
+
+// ****************************************************************************
+//  Method: avtSTSDFileFormatInterface::PopulateIOInformation
+//
+//  Purpose: Populate information regarding domain's assignment to files 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   March 16, 2004 
+//
+// ****************************************************************************
+
+void
+avtSTSDFileFormatInterface::PopulateIOInformation(int ts, avtIOInformation& ioInfo)
+{
+    if (ts < 0 || ts >= nTimesteps)
+    {
+        EXCEPTION2(BadIndexException, ts, nTimesteps);
+    }
+    for (int j = 0 ; j < nBlocks ; j++)
+    {
+        timesteps[ts][j]->PopulateIOInformation(ioInfo);
     }
 }

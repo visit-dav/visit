@@ -154,6 +154,13 @@ typedef struct {
 //    Added virtual GetDomainName, defined here so derived types don't
 //    have to. 
 //
+//    Mark C. Miller, Tue Mar 16 09:38:19 PST 2004
+//    Added ActivateTimestep method
+//
+//    Mark C. Miller, Tue Mar 16 14:40:19 PST 2004
+//    Added stateIndex argument to GetIOInformation.
+//    Implemented PopulateIOInformation here instead of in file
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -173,6 +180,10 @@ class DATABASE_API avtDatabase
     avtSIL                     *GetSIL(int stateIndex);
     int                         GetMostRecentTimestep() const;
 
+    virtual void                ActivateTimestep(int stateIndex) {;}; 
+    virtual void                PopulateIOInformation(int stateIndex,
+                                    avtIOInformation& ioInfo) {;};
+
     virtual void                ClearCache(void);
     virtual void                FreeUpResources(void);
     virtual bool                CanDoDynamicLoadBalancing(void);
@@ -180,7 +191,7 @@ class DATABASE_API avtDatabase
     virtual bool                SILIsInvariant(void);
     virtual int                 NumStagesForFetch(avtDataSpecification_p);
 
-    const avtIOInformation     &GetIOInformation(void);
+    const avtIOInformation     &GetIOInformation(int stateIndex);
 
     static bool                 OnlyServeUpMetaData(void)
                                      { return onlyServeUpMetaData; };
@@ -221,7 +232,6 @@ class DATABASE_API avtDatabase
     virtual avtDataObjectSource *CreateSource(const char *, int) = 0;
     virtual void                SetDatabaseMetaData(avtDatabaseMetaData *,int=0) = 0;
     virtual void                PopulateSIL(avtSIL *, int=0) = 0;
-    virtual void                PopulateIOInformation(avtIOInformation &);
 
     void                        PopulateDataObjectInformation(avtDataObject_p&,
                                                   const char *,

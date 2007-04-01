@@ -16,7 +16,7 @@
 // Silo does not define its own compile-time symbols for API versions.
 // Define SILO_VERSION_4_4 if you have Silo 4.4 or later and want to
 // write extents on Silo's multi-objects.
-//#define SILO_VERSION_4_4
+#define SILO_VERSION_4_4
 
 using std::map;
 using std::string;

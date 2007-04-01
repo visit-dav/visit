@@ -399,3 +399,21 @@ avtMTSDFileFormatInterface::ActivateTimestep(int ts)
         domains[i]->ActivateTimestep(ts);
     }
 }
+
+// ****************************************************************************
+//  Method: avtMTSDFileFormatInterface::PopulateIOInformation
+//
+//  Purpose: Populate information regarding domain's assignment to files 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   March 16, 2004 
+//
+// ****************************************************************************
+void
+avtMTSDFileFormatInterface::PopulateIOInformation(int ts, avtIOInformation &ioInfo)
+{
+    for (int i = 0 ; i < nDomains ; i++)
+    {
+        domains[i]->PopulateIOInformation(ts, ioInfo);
+    }
+}

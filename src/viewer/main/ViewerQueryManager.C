@@ -16,6 +16,7 @@
 #include <avtTypes.h>
 #include <DataNode.h>
 #include <DebugStream.h>
+#include <InvalidVariableException.h>
 #include <Line.h>
 #include <LineoutListItem.h>
 #include <LostConnectionException.h>
@@ -1491,6 +1492,10 @@ ViewerQueryManager::ClearPickPoints()
 //    I renamed the routine to ComputePick, made it return a bool, and moved
 //    the code that adds the pick point to the window to the Pick method.
 //
+//    Kathleen Bonnell, Tue Mar 16 16:02:05 PST 2004 
+//    Determine VarTypes, and only pass along to Pick the valid ones.
+//    Set invalidVars in PickAtts so that user will get a message. 
+//
 // ****************************************************************************
 
 bool
@@ -1574,7 +1579,16 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom, const int e
         vector<string> userVars = pickAtts->GetVariables();
         vector<string> uniqueVars; 
         GetUniqueVars(userVars, activeVar, uniqueVars);
-        pickAtts->SetVariables(uniqueVars);
+        vector<string> validVars;
+        vector<string> invalidVars;
+        for (int i = 0; i < uniqueVars.size(); i++)
+        {
+            if (DetermineVarType(host, db, uniqueVars[i].c_str()) != AVT_UNKNOWN_TYPE)
+                validVars.push_back(uniqueVars[i]);
+            else 
+                invalidVars.push_back(uniqueVars[i]);
+        }
+        pickAtts->SetVariables(validVars);
         pickAtts->SetPickLetter(designator);
         pickAtts->SetTimeStep(t);
         pickAtts->SetDatabaseName(db);
@@ -1660,6 +1674,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom, const int e
                    // Reset the vars to what the user actually typed.
                    //
                    pickAtts->SetVariables(userVars);
+                   pickAtts->SetInvalidVars(invalidVars);
 
                    //
                    // At this point, pickAtts contains information for a 
@@ -2176,6 +2191,9 @@ ViewerQueryManager::SetGlobalLineoutAttsFromClient()
 //      Sean Ahern, Mon Mar 17 22:30:07 America/Los_Angeles 2003
 //      Changed to the new expression interface.
 // 
+//      Kathleen Bonnell, Tue Mar 16 16:02:05 PST 2004 
+//      Added TRY-CATCH.
+// 
 // ****************************************************************************
 
 avtVarType
@@ -2198,10 +2216,18 @@ ViewerQueryManager::DetermineVarType(const char *hName, const char *dbName, cons
                                                string(dbName));
         if (md != 0)
         {
-            // 
-            // Get the type for the variable.
-            // 
-            retval = md->DetermineVarType(string(varName));
+            TRY
+            {
+                // 
+                // Get the type for the variable.
+                // 
+                retval = md->DetermineVarType(string(varName));
+            }
+            CATCH2(InvalidVariableException, e)
+            {
+                debug5 << e.Message().c_str() << endl;
+            }
+            ENDTRY
         }
     }
 

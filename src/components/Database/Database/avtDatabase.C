@@ -254,7 +254,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
                                            int ts,
                                            avtDataSpecification *spec)
 {
-    int   i, j;
+    int   i;
 
     int timerHandle = visitTimer->StartTimer();
 
@@ -558,7 +558,7 @@ avtDatabase::GetNewMetaData(int timeState)
 
     if (! OnlyServeUpMetaData())
     {
-        PopulateIOInformation(ioInfo);
+        PopulateIOInformation(timeState, ioInfo);
         gotIOInfo = true;
     }
 
@@ -852,28 +852,6 @@ avtDatabase::FreeUpResources(void)
     ;
 }
 
-
-// ****************************************************************************
-//  Method: avtDatabase::PopulateIOInformation
-//
-//  Purpose:
-//      This is defined so the derived types don't have to.  It should
-//      populate the "I/O Hints", which allows domains that should be processed
-//      on the same processor to be groups together when the load balancing
-//      occurs.
-//
-//  Programmer: Hank Childs
-//  Creation:   May 11, 2001
-//
-// ****************************************************************************
-
-void
-avtDatabase::PopulateIOInformation(avtIOInformation &)
-{
-    ;
-}
-
-
 // ****************************************************************************
 //  Method: avtDatabase::GetIOInformation
 //
@@ -883,20 +861,17 @@ avtDatabase::PopulateIOInformation(avtIOInformation &)
 //  Programmer: Hank Childs
 //  Creation:   August 31, 2001
 //
+//  Modifications:
+//    Mark C. Miller, Tue Mar 16 14:49:26 PST 2004
+//    Made it call PopulateIOInformation directly 
+//
 // ****************************************************************************
 
 const avtIOInformation &
-avtDatabase::GetIOInformation(void)
+avtDatabase::GetIOInformation(int stateIndex)
 {
     if (!gotIOInfo)
-    {
-        //
-        // Getting the meta-data will force the I/O information to be read in.
-        // It also does the correct preconditions so that getting the I/O info
-        // will be meaningful. We assume this info does not change with time
-        //
-        GetMetaData(0);
-    }
+        PopulateIOInformation(stateIndex, ioInfo);
     return ioInfo;
 }
 
@@ -1077,6 +1052,9 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    Kathleen Bonnell, Mon Mar  8 15:34:13 PST 2004 
 //    Allow vars that already have info to be skipped. 
 //    
+//    Kathleen Bonnell, Tue Mar 16 15:55:18 PST 2004 
+//    Don't remove any pickVarInfo's, let Pick handle that.
+//    
 // ****************************************************************************
 
 void               
@@ -1165,7 +1143,6 @@ avtDatabase::Query(PickAttributes *pa)
     QueryMesh(pa->GetActiveVariable(), ts, foundDomain, meshInfo);
     pa->SetMeshInfo(meshInfo);
 
-    intVector removeMe;
     for (int varNum = 0; varNum < userVars.size(); varNum++)
     {
         vName = userVars[varNum];
@@ -1223,7 +1200,8 @@ avtDatabase::Query(PickAttributes *pa)
                    pa->GetPickVarInfo(varNum).SetVariableType("species");
                    break; 
                 case AVT_MESH : 
-                   removeMe.push_back(varNum);
+                   if (!pa->GetPickVarInfo(varNum).HasInfo())
+                       pa->GetPickVarInfo(varNum).SetVariableType("mesh");
                    break; 
                 default : 
                    break; 
@@ -1239,17 +1217,7 @@ avtDatabase::Query(PickAttributes *pa)
         ENDTRY 
     }
 
-    // 
-    // Remove any PickVarInfos (genenerally for vars whose type is AVT_MESH)
-    // 
-    if (removeMe.size() > 0)
-    {
-        for (int i = removeMe.size() -1; i >= 0; --i)
-            pa->RemovePickVarInfo(removeMe[i]); 
-    }
-
     const char *fname = GetFilename(ts);
     pa->SetDatabaseName(fname);
 }
-
 
