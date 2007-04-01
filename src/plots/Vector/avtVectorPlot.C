@@ -361,6 +361,9 @@ avtVectorPlot::CustomizeMapper(avtDataObjectInformation &doi)
 //    Kathleen Bonnell, Mon Aug  9 14:33:26 PDT 2004 
 //    Moved some code into SetMapperColors and added call to this new method. 
 //
+//    Eric Brugger, Wed Nov 24 10:21:36 PST 2004
+//    I added scaleByMagnitude and autoScale.
+//
 //    Kathleen Bonnell, Wed Dec 22 17:01:09 PST 2004 
 //    Added call to SetLimitsMode. 
 //
@@ -403,6 +406,8 @@ avtVectorPlot::SetAtts(const AttributeGroup *a)
     }
     glyph->SetOriginOffset(offset);
 
+    glyphMapper->SetScaleByMagnitude(atts.GetScaleByMagnitude());
+    glyphMapper->SetAutoScale(atts.GetAutoScale());
     glyphMapper->SetScale(atts.GetScale());
 
     SetMapperColors();

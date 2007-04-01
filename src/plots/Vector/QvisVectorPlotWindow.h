@@ -38,6 +38,9 @@ class VectorAttributes;
 //   Jeremy Meredith, Fri Nov 21 12:06:46 PST 2003
 //   Added radio buttons for vector origin.
 //
+//   Eric Brugger, Tue Nov 23 10:13:05 PST 2004
+//   Added scaleByMagnitude and autoScale.
+//
 //   Kathleen Bonnell, Wed Dec 22 16:42:35 PST 2004 
 //   Added widgets for min/max and limitsSelection.
 //
@@ -66,6 +69,8 @@ private slots:
     void lineWidthChanged(int newWidth);
     void vectorColorChanged(const QColor &color);
     void processScaleText();
+    void scaleByMagnitudeToggled();
+    void autoScaleToggled();
     void processHeadSizeText();
     void reduceMethodChanged(int index);
     void processNVectorsText();
@@ -95,6 +100,8 @@ private:
     QvisColorTableButton *colorTableButton;
     QGroupBox            *scaleGroupBox;    
     QLineEdit            *scaleLineEdit;
+    QCheckBox            *scaleByMagnitudeToggle;
+    QCheckBox            *autoScaleToggle;
     QLineEdit            *headSizeLineEdit;
     QGroupBox            *reduceGroupBox;
     QButtonGroup         *reduceButtonGroup;

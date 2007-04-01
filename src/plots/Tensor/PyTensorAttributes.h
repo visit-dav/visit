@@ -16,5 +16,7 @@ PyObject       *PyTensorAttributes_WrapPyObject(const TensorAttributes *attr);
 void            PyTensorAttributes_SetLogging(bool val);
 void            PyTensorAttributes_SetDefaults(const TensorAttributes *atts);
 
+PyObject       *PyTensorAttributes_StringRepresentation(const TensorAttributes *atts);
+
 #endif
 

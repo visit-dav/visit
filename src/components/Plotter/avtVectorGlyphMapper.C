@@ -12,6 +12,8 @@
 #include <vtkVisItGlyph3D.h>
 #include <vtkVisItPolyDataNormals.h>
 
+#include <avtExtents.h>
+
 #include <BadIndexException.h>
 
 
@@ -49,6 +51,9 @@
 //    Kathleen Bonnell, Mon Aug  9 13:54:42 PDT 2004 
 //    Initialize colorByScalar.
 //
+//    Eric Brugger, Tue Nov 23 12:28:20 PST 2004
+//    Added scaleByMagnitude and autoScale.
+//
 //    Kathleen Bonnell, Wed Dec 22 16:42:35 PST 2004 
 //    Initialize setMin, setMax and limitsMode.
 //
@@ -64,6 +69,8 @@ avtVectorGlyphMapper::avtVectorGlyphMapper(vtkPolyData *g)
     colorByMag        = true;
     colorByScalar     = false;
     scale             = 0.2;
+    scaleByMagnitude  = true;
+    autoScale         = true;
     glyphFilter       = 0;
     normalsFilter     = NULL;
     nGlyphFilters     = 0;
@@ -147,6 +154,9 @@ avtVectorGlyphMapper::~avtVectorGlyphMapper()
 //    Kathleen Bonnell, Mon Aug  9 13:54:42 PDT 2004 
 //    Test for flag colorByScalar. 
 //
+//    Eric Brugger, Tue Nov 23 12:28:20 PST 2004
+//    Added scaleByMagnitude.
+//
 //    Kathleen Bonnell, Wed Dec 22 16:42:35 PST 2004 
 //    Added code for setting min and max.
 //
@@ -186,7 +196,10 @@ avtVectorGlyphMapper::CustomizeMappers(void)
             if (glyphFilter[i] != NULL)
             {
                 glyphFilter[i]->SetSource(glyph);
-                glyphFilter[i]->SetScaleModeToScaleByVector();
+                if (scaleByMagnitude)
+                    glyphFilter[i]->SetScaleModeToScaleByVector();
+                else
+                    glyphFilter[i]->SetScaleModeToDataScalingOff();
             }
             if (normalsFilter[i] != NULL)
             {
@@ -439,12 +452,49 @@ avtVectorGlyphMapper::SetLineStyle(_LineStyle ls)
 //  Programmer:  Hank Childs 
 //  Creation:    March 23, 2001 
 //
+//  Modifications:
+//    Eric Brugger, Tue Nov 23 12:28:20 PST 2004
+//    Added scaleByMagnitude and autoScale.
+//
 // ****************************************************************************
 
 void
 avtVectorGlyphMapper::SetScale(float s)
 {
     scale = s;
+
+    //
+    // If auto scale is enable, then set the scale based on the spatial
+    // extents and possibly the data extents.
+    //
+    if (autoScale)
+    {
+        avtDataset_p input = GetTypedInput();
+        if (*input != 0)
+        {
+            avtDataAttributes &atts=input->GetInfo().GetAttributes();
+            avtExtents *extents = atts.GetTrueSpatialExtents();
+            int nDims = extents->GetDimension();
+            double exts[6];
+            extents->CopyTo(exts);
+            double dist = 0.;
+            int i;
+            for (i = 0; i < nDims; i++)
+            {
+                dist += (exts[2*i+1] - exts[2*i]) * (exts[2*i+1] - exts[2*i]);
+            }
+            dist = sqrt(dist);
+
+            extents = atts.GetTrueDataExtents();
+            extents->CopyTo(exts);
+
+            if (scaleByMagnitude)
+                scale = (scale * dist * 0.2) / exts[1];
+            else
+                scale = scale * dist * 0.2;
+        }
+    }
+
     if (glyphFilter != NULL)
     {
         for (int i = 0 ; i < nGlyphFilters ; i++)
@@ -455,6 +505,62 @@ avtVectorGlyphMapper::SetScale(float s)
             }
         }
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtVectorGlyphMapper::SetScaleByMagnitude
+//
+//  Purpose:
+//      Sets the scale by magnitude mode.
+//
+//  Arguments:
+//      val      The new scale by magnitude mode.
+//
+//  Programmer:  Eric Brugger
+//  Creation:    November 23, 2004 
+//
+// ****************************************************************************
+
+void
+avtVectorGlyphMapper::SetScaleByMagnitude(bool val)
+{
+    scaleByMagnitude = val;
+
+    if (glyphFilter != NULL)
+    {
+        for (int i = 0 ; i < nGlyphFilters ; i++)
+        {
+            if (glyphFilter[i] != NULL)
+            {
+                if (scaleByMagnitude)
+                    glyphFilter[i]->SetScaleModeToScaleByVector();
+                else
+                    glyphFilter[i]->SetScaleModeToDataScalingOff();
+            }
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtVectorGlyphMapper::SetAutoScale
+//
+//  Purpose:
+//      Sets the auto scale mode.
+//
+//  Arguments:
+//      val      The new auto scale mode.
+//
+//  Programmer:  Eric Brugger
+//  Creation:    November 23, 2004 
+//
+// ****************************************************************************
+
+void
+avtVectorGlyphMapper::SetAutoScale(bool val)
+{
+    autoScale = val;
 }
 
 

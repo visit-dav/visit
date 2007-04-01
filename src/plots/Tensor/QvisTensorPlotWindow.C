@@ -76,6 +76,10 @@ QvisTensorPlotWindow::~QvisTensorPlotWindow()
 // Programmer: Hank Childs
 // Creation:   September 23, 2003
 //
+// Modifications:
+//   Eric Brugger, Wed Nov 24 11:43:13 PST 2004
+//   Added scaleByMagnitude and autoScale.
+//
 // ****************************************************************************
 
 void
@@ -131,7 +135,7 @@ QvisTensorPlotWindow::CreateWindowContents()
     QVBoxLayout *sgTopLayout = new QVBoxLayout(scaleGroupBox);
     sgTopLayout->setMargin(10);
     sgTopLayout->addSpacing(15);
-    QGridLayout *sgLayout = new QGridLayout(sgTopLayout, 2, 2);
+    QGridLayout *sgLayout = new QGridLayout(sgTopLayout, 3, 2);
     sgLayout->setSpacing(10);
     sgLayout->setColStretch(1, 10);
 
@@ -142,6 +146,16 @@ QvisTensorPlotWindow::CreateWindowContents()
     sgLayout->addWidget(scaleLineEdit, 0, 1);
     QLabel *scaleLabel = new QLabel(scaleLineEdit, "Scale", scaleGroupBox, "scaleLabel");
     sgLayout->addWidget(scaleLabel, 0, 0, AlignRight | AlignVCenter);
+
+    // Add the scale by magnitude toggle button.
+    scaleByMagnitudeToggle = new QCheckBox("Scale by magnitude", scaleGroupBox, "scaleByMagnitudeToggle");
+    connect(scaleByMagnitudeToggle, SIGNAL(clicked()), this, SLOT(scaleByMagnitudeToggled()));
+    sgLayout->addMultiCellWidget(scaleByMagnitudeToggle, 1, 1, 0, 1);
+
+    // Add the auto scale toggle button.
+    autoScaleToggle = new QCheckBox("Auto scale", scaleGroupBox, "autoScaleToggle");
+    connect(autoScaleToggle, SIGNAL(clicked()), this, SLOT(autoScaleToggled()));
+    sgLayout->addMultiCellWidget(autoScaleToggle, 2, 2, 0, 1);
 
     //
     // Create the reduce-related widgets.
@@ -214,6 +228,9 @@ QvisTensorPlotWindow::CreateWindowContents()
 //   Replaced simple QString::sprintf's with a setNum because there seems
 //   to be a bug causing numbers to be incremented by .00001.  See '5263.
 //
+//   Eric Brugger, Wed Nov 24 11:43:13 PST 2004
+//   Added scaleByMagnitude and autoScale.
+//
 // ****************************************************************************
 
 void
@@ -254,17 +271,27 @@ QvisTensorPlotWindow::UpdateWindow(bool doAll)
             temp.setNum(tensorAtts->GetScale());
             scaleLineEdit->setText(temp);
             break;
-        case 4: // colorByEigenvalues
+        case 4: // scaleByMagnitude
+            scaleByMagnitudeToggle->blockSignals(true);
+            scaleByMagnitudeToggle->setChecked(tensorAtts->GetScaleByMagnitude());
+            scaleByMagnitudeToggle->blockSignals(false);
+            break;
+        case 5: // autoScale
+            autoScaleToggle->blockSignals(true);
+            autoScaleToggle->setChecked(tensorAtts->GetAutoScale());
+            autoScaleToggle->blockSignals(false);
+            break;
+        case 6: // colorByEigenvalues
             colorButtonGroup->blockSignals(true);
             colorButtonGroup->setButton(tensorAtts->GetColorByEigenvalues() ? 0 : 1);
             colorButtonGroup->blockSignals(false);
             break;
-        case 5: // useLegend
+        case 7: // useLegend
             legendToggle->blockSignals(true);
             legendToggle->setChecked(tensorAtts->GetUseLegend());
             legendToggle->blockSignals(false);
             break;
-        case 6: // tensorColor
+        case 8: // tensorColor
             { // new scope
             QColor temp(tensorAtts->GetTensorColor().Red(),
                         tensorAtts->GetTensorColor().Green(),
@@ -273,7 +300,7 @@ QvisTensorPlotWindow::UpdateWindow(bool doAll)
             tensorColor->setButtonColor(temp);
             tensorColor->blockSignals(false);
             }
-        case 7: // colorTableName
+        case 9: // colorTableName
             colorTableButton->setColorTable(tensorAtts->GetColorTableName().c_str());
             break;
         }
@@ -466,6 +493,44 @@ void
 QvisTensorPlotWindow::processScaleText()
 {
     GetCurrentValues(0);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisTensorPlotWindow::scaleByMagnitudeToggled
+//
+// Purpose:
+//   This is a Qt slot function that is called when the user toggles the
+//   window's scale by magnitude toggle button.
+//
+// Programmer: Eric Brugger
+// Creation:   November 24, 2004
+//
+// ****************************************************************************
+
+void
+QvisTensorPlotWindow::scaleByMagnitudeToggled()
+{
+    tensorAtts->SetScaleByMagnitude(!tensorAtts->GetScaleByMagnitude());
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisTensorPlotWindow::autoScaleToggled
+//
+// Purpose:
+//   This is a Qt slot function that is called when the user toggles the
+//   window's auto scale toggle button.
+//
+// Programmer: Eric Brugger
+// Creation:   November 24, 2004
+//
+// ****************************************************************************
+
+void
+QvisTensorPlotWindow::autoScaleToggled()
+{
+    tensorAtts->SetAutoScale(!tensorAtts->GetAutoScale());
     Apply();
 }
 

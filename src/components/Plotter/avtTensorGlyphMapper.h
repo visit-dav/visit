@@ -30,6 +30,9 @@ class     vtkVisItPolyDataNormals;
 //    Hank Childs, Wed May  5 16:23:29 PDT 2004
 //    Add normals calculation.
 //
+//    Eric Brugger, Wed Nov 24 12:58:22 PST 2004
+//    Added scaleByMagnitude and autoScale.
+//
 // ****************************************************************************
 
 class PLOTTER_API  avtTensorGlyphMapper : public avtMapper
@@ -41,6 +44,8 @@ class PLOTTER_API  avtTensorGlyphMapper : public avtMapper
     void                       ColorByMagOn(void);
     void                       ColorByMagOff(const unsigned char [3]);
     void                       SetScale(float);
+    void                       SetScaleByMagnitude(bool);
+    void                       SetAutoScale(bool);
     void                       SetLookupTable(vtkLookupTable *lut);
 
   protected:
@@ -49,6 +54,8 @@ class PLOTTER_API  avtTensorGlyphMapper : public avtMapper
     bool                       colorByMag;
     unsigned char              glyphColor[3];
     float                      scale;
+    bool                       scaleByMagnitude;
+    bool                       autoScale;
 
     vtkTensorGlyph           **tensorFilter;
     vtkVisItPolyDataNormals  **normalsFilter;

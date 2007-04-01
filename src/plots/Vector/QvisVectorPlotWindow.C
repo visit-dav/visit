@@ -103,6 +103,9 @@ QvisVectorPlotWindow::~QvisVectorPlotWindow()
 //   Jeremy Meredith, Fri Nov 21 12:29:29 PST 2003
 //   Added vector origin type radio buttons.
 //
+//   Eric Brugger, Tue Nov 23 10:18:29 PST 2004
+//   Added scaleByMagnitude and autoScale.
+//
 //   Kathleen Bonnell, Wed Dec 22 16:42:35 PST 2004
 //   Added widgets for min/max and limits selection. 
 //
@@ -219,7 +222,7 @@ QvisVectorPlotWindow::CreateWindowContents()
     QVBoxLayout *sgTopLayout = new QVBoxLayout(scaleGroupBox);
     sgTopLayout->setMargin(10);
     sgTopLayout->addSpacing(15);
-    QGridLayout *sgLayout = new QGridLayout(sgTopLayout, 2, 2);
+    QGridLayout *sgLayout = new QGridLayout(sgTopLayout, 4, 2);
     sgLayout->setSpacing(10);
     sgLayout->setColStretch(1, 10);
 
@@ -231,14 +234,24 @@ QvisVectorPlotWindow::CreateWindowContents()
     QLabel *scaleLabel = new QLabel(scaleLineEdit, "Scale", scaleGroupBox, "scaleLabel");
     sgLayout->addWidget(scaleLabel, 0, 0, AlignRight | AlignVCenter);
 
+    // Add the scale by magnitude toggle button.
+    scaleByMagnitudeToggle = new QCheckBox("Scale by magnitude", scaleGroupBox, "scaleByMagnitudeToggle");
+    connect(scaleByMagnitudeToggle, SIGNAL(clicked()), this, SLOT(scaleByMagnitudeToggled()));
+    sgLayout->addMultiCellWidget(scaleByMagnitudeToggle, 1, 1, 0, 1);
+
+    // Add the auto scale toggle button.
+    autoScaleToggle = new QCheckBox("Auto scale", scaleGroupBox, "autoScaleToggle");
+    connect(autoScaleToggle, SIGNAL(clicked()), this, SLOT(autoScaleToggled()));
+    sgLayout->addMultiCellWidget(autoScaleToggle, 2, 2, 0, 1);
+
     // Add the head size edit.
     headSizeLineEdit = new QLineEdit(scaleGroupBox, "headSizeLineEdit");
     connect(headSizeLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processHeadSizeText()));
-    sgLayout->addWidget(headSizeLineEdit, 1, 1);
+    sgLayout->addWidget(headSizeLineEdit, 3, 1);
     QLabel *headSizeLabel = new QLabel(headSizeLineEdit, "Head size",
                                        scaleGroupBox, "headSizeLabel");
-    sgLayout->addWidget(headSizeLabel, 1, 0, AlignRight | AlignVCenter);
+    sgLayout->addWidget(headSizeLabel, 3, 0, AlignRight | AlignVCenter);
 
     //
     // Create the reduce-related widgets.
@@ -349,6 +362,9 @@ QvisVectorPlotWindow::CreateWindowContents()
 //   Replaced simple QString::sprintf's with a setNum because there seems
 //   to be a bug causing numbers to be incremented by .00001.  See '5263.
 //
+//   Eric Brugger, Tue Nov 23 10:18:29 PST 2004
+//   Added scaleByMagnitude and autoScale.
+//
 //   Kathleen Bonnell, Wed Dec 22 16:42:35 PST 2004
 //   Update widgets for min/max and limits selection. 
 //
@@ -402,27 +418,37 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
             temp.setNum(vectorAtts->GetScale());
             scaleLineEdit->setText(temp);
             break;
-        case 6: // headSize
+        case 6: // scaleByMagnitude
+            scaleByMagnitudeToggle->blockSignals(true);
+            scaleByMagnitudeToggle->setChecked(vectorAtts->GetScaleByMagnitude());
+            scaleByMagnitudeToggle->blockSignals(false);
+            break;
+        case 7: // autoScale
+            autoScaleToggle->blockSignals(true);
+            autoScaleToggle->setChecked(vectorAtts->GetAutoScale());
+            autoScaleToggle->blockSignals(false);
+            break;
+        case 8: // headSize
             temp.setNum(vectorAtts->GetHeadSize());
             headSizeLineEdit->setText(temp);
             break;
-        case 7: // headOn
+        case 9: // headOn
             drawHeadToggle->blockSignals(true);
             drawHeadToggle->setChecked(vectorAtts->GetHeadOn());
             drawHeadToggle->blockSignals(false);
             break;
-        case 8: // colorByMag
+        case 10: // colorByMag
             colorButtonGroup->blockSignals(true);
             colorButtonGroup->setButton(vectorAtts->GetColorByMag() ? 0 : 1);
             colorButtonGroup->blockSignals(false);
             limitsGroupBox->setEnabled(vectorAtts->GetColorByMag());
             break;
-        case 9: // useLegend
+        case 11: // useLegend
             legendToggle->blockSignals(true);
             legendToggle->setChecked(vectorAtts->GetUseLegend());
             legendToggle->blockSignals(false);
             break;
-        case 10: // vectorColor
+        case 12: // vectorColor
             { // new scope
             QColor temp(vectorAtts->GetVectorColor().Red(),
                         vectorAtts->GetVectorColor().Green(),
@@ -431,10 +457,10 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
             vectorColor->setButtonColor(temp);
             vectorColor->blockSignals(false);
             }
-        case 11: // colorTableName
+        case 13: // colorTableName
             colorTableButton->setColorTable(vectorAtts->GetColorTableName().c_str());
             break;
-        case 12: // vectorOrigin
+        case 14: // vectorOrigin
             originButtonGroup->blockSignals(true);
             switch (vectorAtts->GetVectorOrigin())
             {
@@ -450,7 +476,7 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
             }
             originButtonGroup->blockSignals(false);
           break;
-        case 13: // minFlag
+        case 15: // minFlag
             // Disconnect the slot before setting the toggle and
             // reconnect it after. This prevents multiple updates.
             disconnect(minToggle, SIGNAL(toggled(bool)),
@@ -460,7 +486,7 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
             connect(minToggle, SIGNAL(toggled(bool)),
                     this, SLOT(minToggled(bool)));
             break;
-        case 14: // maxFlag
+        case 16: // maxFlag
             // Disconnect the slot before setting the toggle and
             // reconnect it after. This prevents multiple updates.
             disconnect(maxToggle, SIGNAL(toggled(bool)),
@@ -470,16 +496,16 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
             connect(maxToggle, SIGNAL(toggled(bool)),
                     this, SLOT(maxToggled(bool)));
            break;
-        case 15: // limitsMode
+        case 17: // limitsMode
             limitsSelect->blockSignals(true);
             limitsSelect->setCurrentItem(vectorAtts->GetLimitsMode());
             limitsSelect->blockSignals(false);
             break;
-        case 16: // min
+        case 18: // min
             temp.setNum(vectorAtts->GetMin());
             minLineEdit->setText(temp);
             break;
-        case 17: // max
+        case 19: // max
             temp.setNum(vectorAtts->GetMax());
             maxLineEdit->setText(temp);
             break;
@@ -798,6 +824,48 @@ void
 QvisVectorPlotWindow::processScaleText()
 {
     GetCurrentValues(0);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::scaleByMagnitudeToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user toggles the
+//   window's scale by magnitude toggle button.
+//
+// Programmer: Eric Brugger
+// Creation:   Tue Nov 23 10:18:29 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVectorPlotWindow::scaleByMagnitudeToggled()
+{
+    vectorAtts->SetScaleByMagnitude(!vectorAtts->GetScaleByMagnitude());
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::autoScaleToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user toggles the
+//   window's auto scale toggle button.
+//
+// Programmer: Eric Brugger
+// Creation:   Tue Nov 23 10:18:29 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVectorPlotWindow::autoScaleToggled()
+{
+    vectorAtts->SetAutoScale(!vectorAtts->GetAutoScale());
     Apply();
 }
 
