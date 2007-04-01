@@ -27,6 +27,9 @@
 //   Brad Whitlock, Fri Jan 30 14:16:18 PST 2004
 //   Added showSelFiles.
 //
+//   Brad Whitlock, Fri Apr 9 14:14:09 PST 2004
+//   Added allowFileSelectionChangeToggle.
+//
 // ****************************************************************************
 
 QvisPreferencesWindow::QvisPreferencesWindow(
@@ -42,6 +45,8 @@ QvisPreferencesWindow::QvisPreferencesWindow(
     timeStateDisplayMode = 0;
     showSelFiles = true;
     selectedFilesToggle = 0;
+    allowFileSelChange = true;
+    allowFileSelectionChangeToggle = 0;
 }
 
 
@@ -85,6 +90,10 @@ QvisPreferencesWindow::~QvisPreferencesWindow()
 //   Brad Whitlock, Fri Jan 30 14:16:40 PST 2004
 //   I added a toggle button for showing the selected files.
 //
+//   Brad Whitlock, Fri Apr 9 14:14:22 PST 2004
+//   I added a toggle button for highlighting the selected files. I also
+//   turned the group box from "Time formatting" to "File panel properties".
+//
 // ****************************************************************************
 
 void
@@ -104,41 +113,53 @@ QvisPreferencesWindow::CreateWindowContents()
             this, SLOT(postWindowsWhenShownToggled(bool)));
     topLayout->addWidget(postWindowsWhenShownToggle);
 
-    selectedFilesToggle = new QCheckBox("Show selected files", central,
-        "selectedFilesToggle");
-    selectedFilesToggle->setChecked(showSelFiles);
-    connect(selectedFilesToggle, SIGNAL(toggled(bool)),
-            this, SLOT(selectedFilesToggled(bool)));
-    topLayout->addWidget(selectedFilesToggle);
-
     //
     // Create group box for time controls.
     //
-    QGroupBox *timeControlsGroup = new QGroupBox(central, "timeControlsGroup");
-    timeControlsGroup->setTitle("Time formatting");
-    topLayout->addWidget(timeControlsGroup, 5);
-    QVBoxLayout *innerTopLayout = new QVBoxLayout(timeControlsGroup);
+    QGroupBox *filePanelControlsGroup = new QGroupBox(central, "filePanelControlsGroup");
+    filePanelControlsGroup->setTitle("File panel properties");
+    topLayout->addWidget(filePanelControlsGroup, 5);
+    QVBoxLayout *innerTopLayout = new QVBoxLayout(filePanelControlsGroup);
     innerTopLayout->setMargin(10);
     innerTopLayout->addSpacing(15);
     innerTopLayout->setSpacing(10);
+    QGridLayout *tsModeLayout = new QGridLayout(innerTopLayout, 5, 3);
+    tsModeLayout->setSpacing(5);
+
+    //
+    // Widgets that let you control the file panel.
+    //
+    selectedFilesToggle = new QCheckBox("Show selected files",
+        filePanelControlsGroup, "selectedFilesToggle");
+    selectedFilesToggle->setChecked(showSelFiles);
+    connect(selectedFilesToggle, SIGNAL(toggled(bool)),
+            this, SLOT(selectedFilesToggled(bool)));
+    tsModeLayout->addMultiCellWidget(selectedFilesToggle, 0, 0, 0, 3);
+
+    allowFileSelectionChangeToggle = new QCheckBox(
+        "Automatically highlight open file", filePanelControlsGroup,
+        "allowFileSelectionChangeToggle");
+    allowFileSelectionChangeToggle->setChecked(allowFileSelChange);
+    connect(allowFileSelectionChangeToggle, SIGNAL(toggled(bool)),
+            this, SLOT(allowFileSelectionChangeToggled(bool)));
+    tsModeLayout->addMultiCellWidget(allowFileSelectionChangeToggle,
+        1, 1, 0, 3);
 
     //
     // Create radio button controls to let us change the timestate display mode.
     //
-    QGridLayout *tsModeLayout = new QGridLayout(innerTopLayout, 3, 3);
-    tsModeLayout->setSpacing(5);
     tsModeLayout->addMultiCellWidget(new QLabel("Display time using:",
-        timeControlsGroup), 0, 0, 0, 2);
+        filePanelControlsGroup), 2, 2, 0, 2);
     timeStateDisplayMode = new QButtonGroup(0, "timeStateDisplayMode");
-    QRadioButton *rb = new QRadioButton("Cycles", timeControlsGroup);
+    QRadioButton *rb = new QRadioButton("Cycles", filePanelControlsGroup);
     timeStateDisplayMode->insert(rb);
-    tsModeLayout->addWidget(rb, 1, 0);
-    rb = new QRadioButton("Times", timeControlsGroup);
+    tsModeLayout->addWidget(rb, 3, 0);
+    rb = new QRadioButton("Times", filePanelControlsGroup);
     timeStateDisplayMode->insert(rb);
-    tsModeLayout->addWidget(rb, 1, 1);
-    rb = new QRadioButton("Cycles and times", timeControlsGroup);
+    tsModeLayout->addWidget(rb, 3, 1);
+    rb = new QRadioButton("Cycles and times", filePanelControlsGroup);
     timeStateDisplayMode->insert(rb);
-    tsModeLayout->addWidget(rb, 1, 2);
+    tsModeLayout->addWidget(rb, 3, 2);
     timeStateDisplayMode->setButton(int(tsFormat.GetDisplayMode()));
     connect(timeStateDisplayMode, SIGNAL(clicked(int)),
             this, SLOT(handleTimeStateDisplayModeChange(int)));
@@ -147,13 +168,13 @@ QvisPreferencesWindow::CreateWindowContents()
     // Create widgets that let you set the time format.
     //
     tsModeLayout->addMultiCellWidget(
-        new QLabel("Number of significant digits", timeControlsGroup),
-        2, 2, 0, 1);
-    timeStateNDigits = new QSpinBox(1, 16, 1, timeControlsGroup, "timeStateNDigits");
+        new QLabel("Number of significant digits", filePanelControlsGroup),
+        4, 4, 0, 1);
+    timeStateNDigits = new QSpinBox(1, 16, 1, filePanelControlsGroup, "timeStateNDigits");
     timeStateNDigits->setValue(tsFormat.GetPrecision());
     connect(timeStateNDigits, SIGNAL(valueChanged(int)),
             this, SLOT(timeStateNDigitsChanged(int)));
-    tsModeLayout->addWidget(timeStateNDigits, 2, 2);
+    tsModeLayout->addWidget(timeStateNDigits, 4, 2);
 
     topLayout->addStretch(100);
 }
@@ -173,6 +194,9 @@ QvisPreferencesWindow::CreateWindowContents()
 //
 //   Brad Whitlock, Fri Jan 30 14:19:11 PST 2004
 //   I added a toggle for showing the selected files.
+//
+//   Brad Whitlock, Fri Apr 9 14:22:34 PST 2004
+//   I added a toggle for automatically highlighting the open file.
 //
 // ****************************************************************************
 
@@ -199,6 +223,14 @@ QvisPreferencesWindow::UpdateWindow(bool doAll)
         selectedFilesToggle->blockSignals(true);
         selectedFilesToggle->setChecked(showSelFiles);
         selectedFilesToggle->blockSignals(false);
+
+        selectedFilesToggle->blockSignals(true);
+        selectedFilesToggle->setChecked(showSelFiles);
+        selectedFilesToggle->blockSignals(false);
+
+        allowFileSelectionChangeToggle->blockSignals(true);
+        allowFileSelectionChangeToggle->setChecked(allowFileSelChange);
+        allowFileSelectionChangeToggle->blockSignals(false);
     }
 }
 
@@ -257,6 +289,32 @@ QvisPreferencesWindow::SetShowSelectedFiles(bool val)
         selectedFilesToggle->blockSignals(true);
         selectedFilesToggle->setChecked(showSelFiles);
         selectedFilesToggle->blockSignals(false);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisPreferencesWindow::SetAllowFileSelectionChange
+//
+// Purpose: 
+//   This method sets the toggle for the automatic file highlighting.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 9 14:24:33 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPreferencesWindow::SetAllowFileSelectionChange(bool val)
+{
+    allowFileSelChange = val;
+
+    if(allowFileSelectionChangeToggle != 0)
+    {
+        allowFileSelectionChangeToggle->blockSignals(true);
+        allowFileSelectionChangeToggle->setChecked(allowFileSelChange);
+        allowFileSelectionChangeToggle->blockSignals(false);
     }
 }
 
@@ -408,4 +466,28 @@ QvisPreferencesWindow::selectedFilesToggled(bool val)
 {
     showSelFiles = val;
     emit showSelectedFiles(val);
+}
+
+// ****************************************************************************
+// Method: QvisPreferencesWindow::allowFileSelectionChangeToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the
+//    allowFileSelectionChange toggle is clicked.
+//
+// Arguments:
+//   val : Whether the selected files should show.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 30 14:28:44 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPreferencesWindow::allowFileSelectionChangeToggled(bool val)
+{
+    allowFileSelChange = val;
+    emit allowFileSelectionChange(val);
 }

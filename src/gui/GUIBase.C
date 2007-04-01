@@ -374,6 +374,9 @@ GUIBase::RestoreCursor()
 //   renamed the method and ripped out the code that told the viewer to
 //   open the database. I removed the addDefaultPlots argument.
 //
+//   Brad Whitlock, Tue Apr 6 08:26:37 PDT 2004
+//   I removed some code that set globalAtts.
+//
 // ****************************************************************************
 
 bool
@@ -381,9 +384,7 @@ GUIBase::SetOpenDataFile(const QualifiedFilename &qf, int timeState,
     SimpleObserver *sob, bool reOpen)
 {
     bool retval = true;
-#ifdef BEFORE_NEW_FILE_SELECTION
-    GlobalAttributes *globalAtts = viewer->GetGlobalAttributes();
-#endif
+
     //
     // Clears any information about the specified file and causes it to be
     // read again from the mdserver.
@@ -392,6 +393,8 @@ GUIBase::SetOpenDataFile(const QualifiedFilename &qf, int timeState,
     {
         fileServer->ClearFile(qf);
         fileServer->CloseFile();
+        if(sob)
+            sob->SetUpdate(false);
         fileServer->Notify();
     }
 
@@ -404,8 +407,16 @@ GUIBase::SetOpenDataFile(const QualifiedFilename &qf, int timeState,
         {
             // Display a message while we open the file.
             QString msg;
-            msg.sprintf("Opening %s on %s", qf.filename.c_str(),
-                qf.host.c_str());
+            if(reOpen)
+            {
+                msg.sprintf("Reopening %s on %s", qf.filename.c_str(),
+                            qf.host.c_str());
+            }
+            else
+            {
+                msg.sprintf("Opening %s on %s", qf.filename.c_str(),
+                            qf.host.c_str());
+            }
             Status(msg);
 
             // Tell the fileServer to open the file specified by filename.
@@ -420,14 +431,6 @@ GUIBase::SetOpenDataFile(const QualifiedFilename &qf, int timeState,
                 sob->SetUpdate(false);
             fileServer->Notify();
             ClearStatus();
-
-#ifdef BEFORE_NEW_FILE_SELECTION
-            // Set some important values in the globalAtts and tell the viewer.
-            globalAtts->SetCurrentFile(qf.FullName());
-            if(sob)
-                sob->SetUpdate(false);
-            globalAtts->Notify();
-#endif
         }
         CATCH2(GetMetaDataException, gmde)
         {

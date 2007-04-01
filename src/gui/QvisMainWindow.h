@@ -117,6 +117,10 @@ class WindowInformation;
 //   Brad Whitlock, Mon Apr 5 15:20:29 PST 2004
 //   Added support for reopen and close coming up under an advanced menu.
 //
+//   Brad Whitlock, Tue Apr 6 14:13:14 PST 2004
+//   Added a method to set whether the file panel is allowed to update the
+//   file selection.
+//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -138,6 +142,7 @@ public:
     void SetOrientation(int orientation);
     const TimeFormat &GetTimeStateFormat() const;
     bool GetShowSelectedFiles() const;
+    bool GetAllowFileSelectionChange() const;
 signals:
     void iconifyWindows();
     void deIconifyWindows();
@@ -191,6 +196,7 @@ public slots:
     void unreadOutput(bool);
     void SetTimeStateFormat(const TimeFormat &fmt);
     void SetShowSelectedFiles(bool);
+    void SetAllowFileSelectionChange(bool);
 protected:
     virtual void closeEvent(QCloseEvent*);
     virtual void hideEvent(QHideEvent *);

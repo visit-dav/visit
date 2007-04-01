@@ -102,7 +102,8 @@
 
 // Some defines
 #define VISIT_GUI_CONFIG_FILE "guiconfig"
-#define VIEWER_READY_TAG      100
+#define VIEWER_READY_TAG       100
+#define SET_FILE_HIGHLIGHT_TAG 101
 
 // Some internal prototypes.
 static void QPrinterToPrinterAttributes(QPrinter *, PrinterAttributes *);
@@ -291,6 +292,9 @@ LongFileName(const char *shortName)
 //   Brad Whitlock, Fri Mar 12 13:47:37 PST 2004
 //   I added keepAliveTimer.
 //
+//   Brad Whitlock, Fri Apr 9 14:09:03 PST 2004
+//   I added allowFileSelectionChange.
+//
 // ****************************************************************************
 
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
@@ -333,6 +337,7 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     fromViewer = 0;
     allowSocketRead = false;
     keepAliveTimer = 0;
+    allowFileSelectionChange = true;
 
     // Create the viewer, statusSubject, and fileServer for GUIBase.
     viewer = new ViewerProxy;
@@ -730,7 +735,9 @@ QvisGUIApplication::Synchronize(int tag)
 // Creation:   Wed Jun 18 16:12:18 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Apr 9 12:24:44 PDT 2004
+//   Added a tag to set the file panel's file highlight mode.
+//
 // ****************************************************************************
 
 void
@@ -739,6 +746,12 @@ QvisGUIApplication::HandleSynchronize(int val)
     if(val == VIEWER_READY_TAG)
     {
         QTimer::singleShot(10, this, SLOT(FinalInitialization()));
+    }
+    else if(val == SET_FILE_HIGHLIGHT_TAG)
+    {
+        // Set the appropriate file highlight for the file panel now that
+        // we're ready for user operation.
+        mainWin->SetAllowFileSelectionChange(allowFileSelectionChange);
     }
 }
 
@@ -1659,6 +1672,9 @@ QvisGUIApplication::CreateMainWindow()
 //   Kathleen Bonnell, Wed Mar 31 10:13:43 PST 2004 
 //   Added QueryOverTime window. 
 //
+//   Brad Whitlock, Fri Apr 9 14:32:05 PST 2004
+//   I connected a new signal from the preferences window.
+//
 // ****************************************************************************
 
 bool
@@ -1911,6 +1927,8 @@ QvisGUIApplication::CreateWindows(int startPercent, int endPercent)
                 mainWin, SLOT(SetTimeStateFormat(const TimeFormat &)));
         connect(preferencesWin, SIGNAL(showSelectedFiles(bool)),
                 mainWin, SLOT(SetShowSelectedFiles(bool)));
+        connect(preferencesWin, SIGNAL(allowFileSelectionChange(bool)),
+                mainWin, SLOT(SetAllowFileSelectionChange(bool)));
         otherWindows.push_back(preferencesWin);
         break;
     case 24:
@@ -1928,6 +1946,7 @@ QvisGUIApplication::CreateWindows(int startPercent, int endPercent)
         // engine window.
         engineWin->ConnectStatusAttributes(viewer->GetStatusAttributes());
         mainWin->ConnectViewerStatusAttributes(viewer->GetStatusAttributes());
+        break;
     case 25:
         // Create the database correlation list window.
         SplashScreenProgress("Creating Correlation window...", PERCENT);
@@ -2166,6 +2185,10 @@ QvisGUIApplication::CreatePluginWindows()
 //    database name.  The actual plots won't get saved anyway, due to 
 //    ViewerPlotList::CreateNode.
 //
+//    Brad Whitlock, Fri Apr 9 14:00:49 PST 2004
+//    Added code to save whether we're allowing the file panel's selection
+//    to be updated.
+//
 // ****************************************************************************
 
 void
@@ -2228,6 +2251,10 @@ QvisGUIApplication::WriteConfigFile(const char *filename)
     // Save whether the selected files list should be shown.
     guiNode->AddNode(
         new DataNode("showSelectedFiles", mainWin->GetShowSelectedFiles()));
+    // Save whether the selected files list highlight should ever get changed.
+    guiNode->AddNode(
+        new DataNode("allowFileSelectionChange",
+                     mainWin->GetAllowFileSelectionChange()));
 
     // Try to open the output file.
     if((fp = fopen(filename, "wt")) == 0)
@@ -2609,6 +2636,10 @@ QvisGUIApplication::ProcessConfigSettings(DataNode *node, bool systemConfig)
 //   Brad Whitlock, Fri Jan 30 14:41:50 PST 2004
 //   I added code to set whether the selected files should be shown.
 //
+//   Brad Whitlock, Fri Apr 9 14:03:51 PST 2004
+//   I added code to set whether the file panel's highlight should ever
+//   be changed.
+//
 // ****************************************************************************
 
 void
@@ -2661,6 +2692,15 @@ QvisGUIApplication::ProcessWindowConfigSettings(DataNode *node)
     {
         mainWin->SetShowSelectedFiles(ssfNode->AsBool());
         preferencesWin->SetShowSelectedFiles(ssfNode->AsBool());
+    }
+
+    // Get whether the selected files should be shown.
+    DataNode *afscNode = 0;
+    if((afscNode = guiNode->GetNode("allowFileSelectionChange")) != 0)
+    {
+        allowFileSelectionChange = afscNode->AsBool();
+        mainWin->SetAllowFileSelectionChange(afscNode->AsBool());
+        preferencesWin->SetAllowFileSelectionChange(afscNode->AsBool());
     }
 
     // Read the config file stuff for the plugin windows.
@@ -3121,6 +3161,10 @@ QvisGUIApplication::RefreshFileListAndNextFrame()
 //   I added code to prevent the file from being loaded if a session file
 //   name was given on the command line.
 //
+//   Brad Whitlock, Tue Apr 6 14:39:18 PST 2004
+//   I added code to allow the file selection to change when we're loading
+//   a file.
+//
 // ****************************************************************************
 
 void
@@ -3134,6 +3178,9 @@ QvisGUIApplication::LoadFile(bool addDefaultPlots)
     else if(!loadFile.Empty())
     {
         int timeid = visitTimer->StartTimer();
+
+        // Let the file panel highlight the new file.
+        mainWin->SetAllowFileSelectionChange(true);
 
         // Temporarily save the old settings.
         std::string oldHost(fileServer->GetHost());
@@ -3272,6 +3319,10 @@ QvisGUIApplication::LoadFile(bool addDefaultPlots)
             Error(msgStr);
         }
         ENDTRY
+
+        // Create a trigger that will cause the GUI to prevent the file
+        // panel from updating once the viewer is done loading the file.
+        Synchronize(SET_FILE_HIGHLIGHT_TAG);
 
         visitTimer->StopTimer(timeid, "Loading initial file.");
     }

@@ -59,6 +59,10 @@
 #    Brad Whitlock, Wed Apr 7 17:21:25 PST 2004
 #    I removed keyframing tests from the skip list.
 #
+#    Brad Whitlock, Tue Apr 13 11:30:09 PDT 2004
+#    I added -notrackmem to runtest so memory checking will be disabled so
+#    we can see if that is what was hanging the test suite.
+#
 #    Mark C. Miller, Mon Apr 12 17:11:22 PDT 2004
 #    I removed multi-format2.py,  operators.py, and gradient.py tests
 #    from scalable,parallel skip
@@ -200,7 +204,7 @@ skipList="parallel:tests/databases/samrai.py \
 error=0
 cd test
 for m in $modes; do
-   ./runtest -q -p -s "$skipList" -m "$m" -d "$curdate"
+   ./runtest -q -p -s "$skipList" -m "$m" -d "$curdate" -notrackmem
    curerror=$?
    if test ! "$curerror" = "0"; then
       error=1

@@ -110,6 +110,11 @@ avtQueryFactory::Instance()
 //  Programmer: Kathleen Bonnell 
 //  Creation:   March 30, 2004 
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Apr 13 12:50:51 PDT 2004
+//    Allow for surface area to have multiple aliases.
+//
 // ****************************************************************************
 
 
@@ -121,7 +126,8 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
 
     avtDataObjectQuery *query = NULL;
 
-    if (qname == "Surface area")
+    if (qname == "Surface area" || qname == "2D area" ||
+        qname == "3D surface area")
     {
         query = new avtTotalSurfaceAreaQuery();
     }

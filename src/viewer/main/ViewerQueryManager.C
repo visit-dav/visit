@@ -2721,6 +2721,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004
 //    Made some queries 'time' queries (can perform queries-over-time). 
 //   
+//    Hank Childs, Tue Apr 13 12:45:33 PDT 2004
+//    Do a better job distinguishing between 2D and 3D area.
+//
 // ****************************************************************************
 
 void
@@ -2745,7 +2748,8 @@ ViewerQueryManager::InitializeQueryList()
                                    QueryList::WorldSpace, 2);
     queryTypes->AddQuery("Revolved volume", QueryList::DatabaseQuery);
     queryTypes->AddQuery("Revolved surface area", QueryList::DatabaseQuery);
-    queryTypes->AddTimeQuery("Surface area", QueryList::DatabaseQuery);
+    queryTypes->AddTimeQuery("2D area", QueryList::DatabaseQuery);
+    queryTypes->AddTimeQuery("3D surface area", QueryList::DatabaseQuery);
     queryTypes->AddTimeQuery("Volume", QueryList::DatabaseQuery);
     queryTypes->AddTimeQuery("Variable Sum", QueryList::DatabaseQuery);
     queryTypes->AddTimeQuery("Weighted Variable Sum", QueryList::DatabaseQuery);
