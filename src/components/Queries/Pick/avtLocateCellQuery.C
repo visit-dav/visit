@@ -9,6 +9,7 @@
 #include <vtkDataSet.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkUnsignedCharArray.h>
+#include <vtkVisItCellLocator.h>
 #include <vtkVisItUtility.h>
 
 #include <avtTerminatingSource.h>
@@ -110,6 +111,9 @@ avtLocateCellQuery::~avtLocateCellQuery()
 //    Kathleen Bonnell, Tue May 18 13:12:09 PDT 2004 
 //    Move node-specific code to avtLocateNodeQuery. 
 //
+//    Kathleen Bonnell, Wed Jul  7 14:48:44 PDT 2004 
+//    Added call to FindClosestCell for line data. 
+//
 // ****************************************************************************
 
 void
@@ -120,14 +124,20 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
         return;
     }
     int dim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension(); 
-    float dist, isect[3] = { 0., 0., 0.};
-    int foundCell;
+    int topodim = GetInput()->GetInfo().GetAttributes().GetTopologicalDimension(); 
+
+
+    float dist = minDist, isect[3] = { 0., 0., 0.};
+    int foundCell = -1;
 
     // Find the cell, intersection point, and distance along the ray.
     //
     if (ds->GetDataObjectType() != VTK_RECTILINEAR_GRID)
     {
-        foundCell = LocatorFindCell(ds, dist, isect); 
+        if (topodim == 1 && dim == 2) // Lines
+            foundCell = FindClosestCell(ds, dist, isect);
+        else 
+            foundCell = LocatorFindCell(ds, dist, isect); 
     }
     else
     {
@@ -240,4 +250,62 @@ avtLocateCellQuery::RGridFindCell(vtkDataSet *ds, float &dist, float *isect)
     }
     return cellId;
 }
+
+
+// ****************************************************************************
+//  Method: avtLocateQuery::FindClosestCell
+//
+//  Purpose:
+//    Uses a locator to find the closest cell to the given point. 
+//
+//  Arguments:
+//    ds      The dataset to query.
+//    minDist The current minimum distance.
+//    isect   The intersection point. 
+//
+//  Returns:
+//    The id of the closest cell (-1 if none found).
+//
+//  Programmer: Kathleen Bonnell  
+//  Creation:   July 7, 2004 
+//
+//  Modifications:
+//    
+// ****************************************************************************
+
+int
+avtLocateCellQuery::FindClosestCell(vtkDataSet *ds, float &minDist, float isect[3])
+{
+    if (ds->GetNumberOfPoints() == 0)
+    {
+        return -1;
+    }
+    int foundCell = -1;
+    float *rayPt1 = pickAtts.GetRayPoint1();
+    float pt[3] = {rayPt1[0], rayPt1[1], 0.};
+    float dist, rad = minDist;
+
+    vtkVisItCellLocator *cellLocator = vtkVisItCellLocator::New();
+    cellLocator->SetDataSet(ds);
+    cellLocator->IgnoreGhostsOn();
+    cellLocator->BuildLocator();
+
+    int subId = 0;
+    float cp[3] = {0., 0., 0.};
+    int success = cellLocator->FindClosestPointWithinRadius(pt, rad, cp, 
+                               foundCell, subId, dist);
+
+    if (success == 1 && dist < minDist)
+    {
+        isect[0] = cp[0];
+        isect[1] = cp[1];
+        isect[2] = cp[2];
+        minDist = dist;
+    }
+
+    cellLocator->Delete();
+
+    return foundCell;
+}
+
 

@@ -62,6 +62,8 @@ avtPickByNodeQuery::~avtPickByNodeQuery()
 //  Creation:   May 10, 2004
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Jul  8 16:42:05 PDT 2004
+//    Changed the way that nodeid is modified when accounting for ghost zones.
 //
 // ****************************************************************************
 
@@ -74,41 +76,30 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
     }
 
     int nodeid = pickAtts.GetElementNumber();
-    int type = ds->GetDataObjectType();
-    bool needRealId = ghostType == AVT_HAS_GHOSTS &&
-            (type == VTK_STRUCTURED_GRID || type == VTK_RECTILINEAR_GRID || 
-             ds->GetFieldData()->GetArray("vtkOriginalDimensions") != NULL );
-
-
-    // Doing a PickByNode or PickByZone, verify the element number is in range.
     int maxEls = ds->GetNumberOfPoints(); 
+
+    // Verify the node number is in range.
     if (nodeid < 0 || nodeid >= maxEls)
     {
         EXCEPTION2(BadNodeException, nodeid, maxEls);
     } 
 
+    int type = ds->GetDataObjectType();
+
+    bool needRealId = ghostType == AVT_HAS_GHOSTS &&
+            (type == VTK_STRUCTURED_GRID || type == VTK_RECTILINEAR_GRID || 
+             ds->GetFieldData()->GetArray("vtkOriginalDimensions") != NULL );
+
+    if (needRealId)
+    {
+        // Need to convert a nodeid that is Non-Ghost relative
+        // to a nodeid that is ghost-relative.
+        nodeid = vtkVisItUtility::NodeGhostIdFromNonGhost(ds, nodeid);
+        pickAtts.SetElementNumber(nodeid);
+    }
+
     if (!pickAtts.GetMatSelected() && ghostType != AVT_CREATED_GHOSTS)
     {
-        if (needRealId)
-        {
-            int dims[3], ijk[3] = {0, 0, 0};
-            vtkVisItUtility::GetDimensions(ds, dims);
-            vtkVisItUtility::GetLogicalIndices(ds, false, nodeid, ijk, false, 
-                                               false);
-            vtkIntArray *realDims =
-                (vtkIntArray*)ds->GetFieldData()->GetArray("avtRealDims");
-            if (realDims != NULL)
-            {
-                ijk[0] += realDims->GetValue(0);
-                ijk[1] += realDims->GetValue(2);
-                ijk[2] += realDims->GetValue(4);
-            }
-            nodeid = ijk[0] +
-                     ijk[1] * dims[0] +
-                     ijk[2] * dims[0] * dims[1];
-            pickAtts.SetElementNumber(nodeid);
-        }
-            
         GetNodeCoords(ds, nodeid);    
         if (RetrieveZones(ds, nodeid))
         {

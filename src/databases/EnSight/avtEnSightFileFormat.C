@@ -43,7 +43,7 @@ using std::string;
 // ****************************************************************************
 
 avtEnSightFileFormat::avtEnSightFileFormat(const char *fname)
-    : avtMTSDFileFormat(&fname, 1)
+    : avtMTMDFileFormat(fname)
 {
     InstantiateReader(fname);
     doneUpdate = false;
@@ -64,6 +64,10 @@ avtEnSightFileFormat::avtEnSightFileFormat(const char *fname)
 //    Kathleen Bonnell, Thu Feb 12 16:06:21 PST 2004
 //    Use vtkVisIt EnSight readers, until we update to the VTK version that
 //    has the ByteOrder fix (Dated January 30, 2004 or later).
+//
+//    Hank Childs, Fri Jul  9 07:16:59 PDT 2004
+//    Account for timestep and file set numbers in case file.  Also allow for
+//    wildcards in geometry file names.
 //
 // ****************************************************************************
 
@@ -136,21 +140,50 @@ avtEnSightFileFormat::InstantiateReader(const char *fname)
         EXCEPTION1(InvalidFilesException, fname);
     }
 
-    len = strlen(model_line);
-    char *start = strstr(model_line, "model:");
-    start += strlen("model:");
-    char *model_file = NULL;
-    while (isspace(*start) && ((start-model_line) < len))
-        start++;
-    if ((start-model_line) < len)
-        model_file = start;
-    else
+    //
+    // The model line has syntax: model: [ts] [fs] geo_name
+    // We want geo_name.  So just find the start of the last word in the
+    // line.
+    //
+    int len2 = strlen(model_line);
+    bool lastWasSpace = false;
+    int lastword = -1;
+    for (i = 0 ; i < len2 ; i++)
+    {
+        if (lastWasSpace && !(isspace(model_line[i])))
+            lastword = i;
+        lastWasSpace = (isspace(model_line[i]) != 0);
+    }
+    if (lastword <= 0)
         EXCEPTION1(InvalidFilesException, fname);
 
+    //
+    // There may be wildcards in the case name.  If so, then substitute in
+    // 001 for any *** (or 0001 for ****, etc).  This way we can get the
+    // name of a valid geometry file to open.
+    //
+    char model_name[1024];
+    strcpy(model_name, model_line+lastword);
+    len2 = strlen(model_name);
+    for (i = 0 ; i < len2 ; i++)
+    {
+        if (model_name[i] == '*')
+        {
+            if (i+1 < len && model_name[i+1] == '*')
+                model_name[i] = '0';
+            else
+                model_name[i] = '1';
+        }
+    }
     char geo_filename[1024];
-    sprintf(geo_filename, "%s%s", path, model_file);
+    sprintf(geo_filename, "%s%s", path, model_name);
  
     ifstream geo_file(geo_filename);
+    if (geo_file.fail())
+    {
+        EXCEPTION1(InvalidFilesException, fname);
+    }
+
     char buff[256];
     geo_file.read(buff, 256);
     
@@ -222,6 +255,9 @@ avtEnSightFileFormat::~avtEnSightFileFormat()
 //    Kathleen Bonnell, Thu Feb 12 16:06:21 PST 2004
 //    Reader's access to PointData and CellData has changed.
 //
+//    Hank Childs, Fri Jul  9 08:01:47 PDT 2004
+//    Allow for "parts" to be specified as a variable.
+//
 // ****************************************************************************
 
 void
@@ -246,6 +282,8 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
     {
         if (strcmp(vars[j], "mesh") == 0)
             continue;
+        if (strcmp(vars[j], "parts") == 0)
+            continue;
 
         const char *name = vars[j];
 
@@ -257,7 +295,7 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
             for (i = 0 ; i < nsn ; i++)
             {
                 const char *desc = reader->GetDescription(i, 
-                                            vtkVisItEnSightReader::SCALAR_PER_NODE);
+                                       vtkVisItEnSightReader::SCALAR_PER_NODE);
                 if (strcmp(name, desc) == 0)
                 {
                     isNodal = true;
@@ -272,7 +310,7 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
             for (i = 0 ; i < nsz ; i++)
             {
                 const char *desc = reader->GetDescription(i, 
-                                         vtkVisItEnSightReader::SCALAR_PER_ELEMENT);
+                                    vtkVisItEnSightReader::SCALAR_PER_ELEMENT);
                 if (strcmp(name, desc) == 0)
                 {
                     isNodal = false;
@@ -287,7 +325,7 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
             for (i = 0 ; i < nsn ; i++)
             {
                 const char *desc = reader->GetDescription(i, 
-                                            vtkVisItEnSightReader::VECTOR_PER_NODE);
+                                       vtkVisItEnSightReader::VECTOR_PER_NODE);
                 if (strcmp(name, desc) == 0)
                 {
                     isNodal = true;
@@ -302,7 +340,7 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
             for (i = 0 ; i < nsz ; i++)
             {
                 const char *desc = reader->GetDescription(i, 
-                                         vtkVisItEnSightReader::VECTOR_PER_ELEMENT);
+                                    vtkVisItEnSightReader::VECTOR_PER_ELEMENT);
                 if (strcmp(name, desc) == 0)
                 {
                     isNodal = false;
@@ -382,10 +420,15 @@ avtEnSightFileFormat::GetNTimesteps(void)
 //  Programmer: Hank Childs
 //  Creation:   April 22, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Jul  9 07:37:46 PDT 2004
+//    Account for multiple parts.
+//
 // ****************************************************************************
 
 vtkDataSet *
-avtEnSightFileFormat::GetMesh(int ts, const char *name)
+avtEnSightFileFormat::GetMesh(int ts, int dom, const char *name)
 {
     if (ts < 0 || ts >= GetNTimesteps())
     {
@@ -404,8 +447,8 @@ avtEnSightFileFormat::GetMesh(int ts, const char *name)
         reader->Update();
         doneUpdate = true;
     }
-    vtkDataSet *rv = (vtkDataSet *) reader->GetOutput()->NewInstance();
-    rv->CopyStructure(reader->GetOutput()); // This shouldn't be necessary.
+    vtkDataSet *rv = (vtkDataSet *) reader->GetOutput(dom)->NewInstance();
+    rv->CopyStructure(reader->GetOutput(dom));
 
     return rv;
 }
@@ -424,10 +467,15 @@ avtEnSightFileFormat::GetMesh(int ts, const char *name)
 //  Programmer:   Hank Childs
 //  Creation:     April 22, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Jul  9 07:37:46 PDT 2004
+//    Account for multiple parts.  Also, allow for multiple variables.
+//
 // ****************************************************************************
 
 vtkDataArray *
-avtEnSightFileFormat::GetVar(int ts, const char *name)
+avtEnSightFileFormat::GetVar(int ts, int dom, const char *name)
 {
     if (ts < 0)
     {
@@ -443,15 +491,17 @@ avtEnSightFileFormat::GetVar(int ts, const char *name)
     }
 
     vtkDataArray *rv = NULL;
-    if (reader->GetOutput()->GetPointData()->GetScalars() != NULL)
+    if (reader->GetOutput(dom)->GetPointData()->GetArray(name) != NULL)
     {
-        vtkDataArray *dat = reader->GetOutput()->GetPointData()->GetScalars();
+        vtkDataArray *dat = 
+                       reader->GetOutput(dom)->GetPointData()->GetArray(name);
         rv = dat;
         rv->Register(NULL);
     }
-    else if (reader->GetOutput()->GetCellData()->GetScalars() != NULL)
+    else if (reader->GetOutput(dom)->GetCellData()->GetArray(name) != NULL)
     {
-        vtkDataArray *dat = reader->GetOutput()->GetCellData()->GetScalars();
+        vtkDataArray *dat =
+                        reader->GetOutput(dom)->GetCellData()->GetArray(name);
         rv = dat;
         rv->Register(NULL);
     }
@@ -475,12 +525,18 @@ avtEnSightFileFormat::GetVar(int ts, const char *name)
 //      name      The variable name.
 //
 //  Programmer:   Hank Childs
-//  Creation:     April 22, 20032
+//  Creation:     April 22, 2003
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Jul  9 07:37:46 PDT 2004
+//    Account for multiple parts.  Also allow for the reading of multiple
+//    variables.
 //
 // ****************************************************************************
 
 vtkDataArray *
-avtEnSightFileFormat::GetVectorVar(int ts, const char *name)
+avtEnSightFileFormat::GetVectorVar(int ts, int dom, const char *name)
 {
     if (ts < 0)
     {
@@ -496,15 +552,17 @@ avtEnSightFileFormat::GetVectorVar(int ts, const char *name)
     }
 
     vtkDataArray *rv = NULL;
-    if (reader->GetOutput()->GetPointData()->GetVectors() != NULL)
+    if (reader->GetOutput(dom)->GetPointData()->GetArray(name) != NULL)
     {
-        vtkDataArray *dat = reader->GetOutput()->GetPointData()->GetVectors();
+        vtkDataArray *dat = 
+                       reader->GetOutput(dom)->GetPointData()->GetArray(name);
         rv = dat;
         rv->Register(NULL);
     }
-    else if (reader->GetOutput()->GetCellData()->GetVectors() != NULL)
+    else if (reader->GetOutput(dom)->GetCellData()->GetArray(name) != NULL)
     {
-        vtkDataArray *dat = reader->GetOutput()->GetCellData()->GetVectors();
+        vtkDataArray *dat =
+                        reader->GetOutput(dom)->GetCellData()->GetArray(name);
         rv = dat;
         rv->Register(NULL);
     }
@@ -526,6 +584,11 @@ avtEnSightFileFormat::GetVectorVar(int ts, const char *name)
 //  Programmer: Hank Childs
 //  Creation:   May 3, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Jul  9 07:37:46 PDT 2004
+//    Add support for multiple blocks.
+//
 // ****************************************************************************
 
 void
@@ -533,13 +596,21 @@ avtEnSightFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
     reader->ExecuteInformation();
 
+    // Need this to get number of outputs.
+    reader->SetReadAllVariables(0);
+    reader->GetPointDataArraySelection()->RemoveAllArrays();
+    reader->GetCellDataArraySelection()->RemoveAllArrays();
+    reader->Update(); 
+
     int  i;
 
     avtMeshMetaData *mesh = new avtMeshMetaData;
     mesh->name = "mesh";
     mesh->meshType = AVT_UNSTRUCTURED_MESH;
-    mesh->numBlocks = 1;
-    mesh->blockOrigin = 0;
+    mesh->numBlocks = reader->GetNumberOfOutputs();
+    mesh->blockOrigin = 1;
+    mesh->blockTitle = "parts";
+    mesh->blockPieceName = "part";
     mesh->spatialDimension = 3;
     mesh->topologicalDimension = 3;
     mesh->hasSpatialExtents = false;
@@ -548,28 +619,28 @@ avtEnSightFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     for (i = 0 ; i < reader->GetNumberOfScalarsPerNode() ; i++)
     {
         const char *name = reader->GetDescription(i, 
-                                            vtkVisItEnSightReader::SCALAR_PER_NODE);
+                                       vtkVisItEnSightReader::SCALAR_PER_NODE);
         AddScalarVarToMetaData(md, name, "mesh", AVT_NODECENT);
     }
 
     for (i = 0 ; i < reader->GetNumberOfScalarsPerElement() ; i++)
     {
         const char *name = reader->GetDescription(i, 
-                                         vtkVisItEnSightReader::SCALAR_PER_ELEMENT);
+                                    vtkVisItEnSightReader::SCALAR_PER_ELEMENT);
         AddScalarVarToMetaData(md, name, "mesh", AVT_ZONECENT);
     }
 
     for (i = 0 ; i < reader->GetNumberOfVectorsPerNode() ; i++)
     {
         const char *name = reader->GetDescription(i, 
-                                            vtkVisItEnSightReader::VECTOR_PER_NODE);
+                                       vtkVisItEnSightReader::VECTOR_PER_NODE);
         AddVectorVarToMetaData(md, name, "mesh", AVT_NODECENT);
     }
 
     for (i = 0 ; i < reader->GetNumberOfVectorsPerElement() ; i++)
     {
         const char *name = reader->GetDescription(i, 
-                                         vtkVisItEnSightReader::VECTOR_PER_ELEMENT);
+                                    vtkVisItEnSightReader::VECTOR_PER_ELEMENT);
         AddVectorVarToMetaData(md, name, "mesh", AVT_ZONECENT);
     }
 }

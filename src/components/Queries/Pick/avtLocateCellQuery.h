@@ -49,6 +49,9 @@ class vtkDataSet;
 //    Inherit from avtLocateQuery.  Moved Node specific code to 
 //    avtLocateNodeQuery. 
 //
+//    Kathleen Bonnell, Wed Jul  7 14:48:44 PDT 2004 
+//    Added FindClosestCell, for use with line plots. 
+//
 // ****************************************************************************
 
 class QUERY_API avtLocateCellQuery : public avtLocateQuery
@@ -66,6 +69,9 @@ class QUERY_API avtLocateCellQuery : public avtLocateQuery
     virtual void                    Execute(vtkDataSet *, const int);
     int                             RGridFindCell(vtkDataSet *, 
                                                     float &, float*);
+    int                             FindClosestCell(vtkDataSet *ds, 
+                                                    float &minDist, 
+                                                    float isect[3]);
 };
 
 
