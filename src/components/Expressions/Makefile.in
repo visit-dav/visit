@@ -75,6 +75,9 @@
 #   Jeremy Meredith, Wed Jul  7 12:12:52 PDT 2004
 #   I changed _ser.o to simply be .o.
 #
+#   Hank Childs, Sat Sep 18 08:51:41 PDT 2004
+#   Added neighbor evaluator filter.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -116,6 +119,7 @@ General_src= \
   General/avtMagnitudeFilter.C \
   General/avtMeshCoordinateFilter.C \
   General/avtNMatsFilter.C \
+  General/avtNeighborEvaluatorFilter.C \
   General/avtProcessorIdFilter.C \
   General/avtRandomFilter.C \
   General/avtRecenterFilter.C \

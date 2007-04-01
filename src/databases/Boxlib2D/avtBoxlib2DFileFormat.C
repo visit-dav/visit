@@ -445,6 +445,9 @@ avtBoxlib2DFileFormat::GetMesh(int patch, const char *mesh_name)
 //    Hank Childs, Thu Apr  1 17:16:15 PST 2004
 //    g++-3.0.4 does bogus parsing of doubles, so do it ourselves.
 //
+//    Hank Childs, Sat Sep 18 08:58:23 PDT 2004
+//    Replace commas with underscores.
+//
 // ****************************************************************************
 
 void
@@ -476,6 +479,13 @@ avtBoxlib2DFileFormat::ReadHeader(void)
     for (i = 0; i < nVars; ++i)
     {
         in.getline(buf, 1024); // Read in var names
+      
+        // Replace commas with underscores
+        int len = strlen(buf);
+        for (int j = 0 ; j < len ; j++)
+            if (buf[j] == ',')
+                buf[j] = '_';
+
         varNames[i] = buf;
     }
     // Read in dimension
