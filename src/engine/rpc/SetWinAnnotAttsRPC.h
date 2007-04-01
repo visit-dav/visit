@@ -44,6 +44,9 @@ using std::vector;
 //
 //    Mark C. Miller, Tue Oct 19 19:44:00 PDT 2004
 //    Added string for color table name
+//
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added window id
 // ****************************************************************************
 class ENGINE_RPC_API SetWinAnnotAttsRPC : public BlockingRPC
 {
@@ -59,7 +62,8 @@ public:
                     const VisualCueList*,
                     const int*,
                     const double*,
-                    const string);
+                    const string,
+                    const int);
 
     // Property selection methods
     virtual void SelectAll();
@@ -73,6 +77,7 @@ public:
     void SetFrameAndState(const int*);
     void SetViewExtents(const double*);
     void SetChangedCtName(const string);
+    void SetWindowID(int);
 
     // Property getting methods
     const WindowAttributes &GetWindowAtts() const;
@@ -83,6 +88,7 @@ public:
     const int* GetFrameAndState() const;
     const double *GetViewExtents() const;
     const string &GetChangedCtName() const;
+    const int GetWindowID() const;
 
 private:
     WindowAttributes win;
@@ -93,6 +99,7 @@ private:
     int fands[7];
     double vexts[6];
     string ctname;
+    int windowID;
 };
 
 #endif

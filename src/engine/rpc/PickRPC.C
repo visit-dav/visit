@@ -12,9 +12,13 @@
 //  Programmer: Kathleen Bonnell
 //  Creation:   November 20, 2001
 //
+//  Modifications:
+//
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added window id
 // ****************************************************************************
 
-PickRPC::PickRPC() : BlockingRPC("ia", &returnAtts)
+PickRPC::PickRPC() : BlockingRPC("iai", &returnAtts)
 {
 }
 
@@ -48,13 +52,16 @@ PickRPC::~PickRPC()
 //  Creation:   November 20, 2001
 //
 //  Modifications:
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added window id
 // ****************************************************************************
 
 PickAttributes
-PickRPC::operator()(const int nid, const PickAttributes *atts)
+PickRPC::operator()(const int nid, const PickAttributes *atts, int wid)
 {
     SetNetId(nid);
     SetPickAtts(atts);
+    SetWinId(wid);
     Execute();
 
     return returnAtts;
@@ -71,6 +78,11 @@ PickRPC::operator()(const int nid, const PickAttributes *atts)
 //  Programmer: Kathleen Bonnell
 //  Creation:   November 20, 2001
 //
+//  Modifications:
+//
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added window id
+//
 // ****************************************************************************
 
 void
@@ -78,6 +90,7 @@ PickRPC::SelectAll()
 {
     Select(0, (void*)&netId);
     Select(1, (void*)&pickAtts);
+    Select(2, (void*)&winId);
 }
 
 
@@ -140,6 +153,20 @@ PickRPC::SetNetId(const int nid)
     Select(0, (void*)&netId);
 }
 
+// ****************************************************************************
+//  Method: PickRPC::SetWinId
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   December 15, 2004 
+//
+// ****************************************************************************
+void
+PickRPC::SetWinId(const int wid)
+{
+    winId = wid;
+    Select(2, (void*)&winId);
+}
+
 
 // ****************************************************************************
 //  Method: PickRPC::GetNetId
@@ -158,3 +185,15 @@ PickRPC::GetNetId()
     return netId;
 }
 
+// ****************************************************************************
+//  Method: PickRPC::SetWinId
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   December 15, 2004 
+//
+// ****************************************************************************
+int
+PickRPC::GetWinId() const
+{
+    return winId;
+}

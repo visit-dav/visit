@@ -56,6 +56,9 @@ class ENGINE_RPC_API PreparePlotRPC : public BlockingRPC
 //    Jeremy Meredith, Fri Mar 19 14:56:55 PST 2004
 //    Modified the rpc to pass data extents.
 //
+//    Mark C. Miller, Wed Dec 15 21:56:26 PST 2004
+//    Added windowID
+//
 // ****************************************************************************
 
 class ENGINE_RPC_API MakePlotRPC : public BlockingRPC
@@ -76,7 +79,7 @@ class ENGINE_RPC_API MakePlotRPC : public BlockingRPC
     virtual ~MakePlotRPC();
 
     int operator()(const std::string&, const AttributeSubject*,
-                   const std::vector<double> &);
+                   const std::vector<double> &, int);
 
     virtual void SelectAll();
 
@@ -84,9 +87,11 @@ class ENGINE_RPC_API MakePlotRPC : public BlockingRPC
     AttributeSubject *GetAtts();
     const std::vector<double> &GetDataExtents() const;
     PreparePlotRPC &GetPreparePlotRPC();
+    int GetWindowID() const;
 
     void SetAtts(AttributeSubject*);
     void SetDataExtents(const std::vector<double> &);
+    void SetWindowID(int id);
 
     virtual void SetXfer(Xfer *x);
 
@@ -95,6 +100,7 @@ class ENGINE_RPC_API MakePlotRPC : public BlockingRPC
     std::vector<double> dataExtents;
     PreparePlotRPC preparePlotRPC;
     NetworkID networkID;
+    int       windowID;
 };
 
 #endif

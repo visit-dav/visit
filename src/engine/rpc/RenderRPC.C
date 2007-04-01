@@ -20,9 +20,12 @@
 //
 //    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
 //    Changed 3D annotation flag to integer mode
+//
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added window id
 // ****************************************************************************
 
-RenderRPC::RenderRPC() : NonBlockingRPC("i*bi")
+RenderRPC::RenderRPC() : NonBlockingRPC("i*bii")
 {
 }
 
@@ -62,15 +65,19 @@ RenderRPC::~RenderRPC()
 //
 //    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
 //    Changed 3D annotation flag to integer mode
+//
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added window id
 // ****************************************************************************
 
 void
 RenderRPC::operator()(const intVector& ids_, bool sendZBuffer_,
-    int annotMode_)
+    int annotMode_, int windowID_)
 {
     SetIDs(ids_);
     SetSendZBuffer(sendZBuffer_);
     SetAnnotMode(annotMode_);
+    SetWindowID(windowID_);
 
     Execute();
 }
@@ -90,6 +97,9 @@ RenderRPC::operator()(const intVector& ids_, bool sendZBuffer_,
 //
 //    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
 //    Changed 3D annotation flag to integer mode
+//
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added window id
 // ****************************************************************************
 
 void
@@ -98,6 +108,7 @@ RenderRPC::SelectAll()
     Select(0, (void*)&ids);
     Select(1, (void*)&sendZBuffer);
     Select(2, (void*)&annotMode);
+    Select(3, (void*)&windowID);
 }
 
 
@@ -118,6 +129,9 @@ RenderRPC::SelectAll()
 //
 //    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
 //    Changed 3D annotation flag to integer mode
+//
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added window id
 // ****************************************************************************
 
 void
@@ -141,6 +155,13 @@ RenderRPC::SetAnnotMode(int annotMode_)
     Select(2, (void*)&annotMode);
 }
 
+void
+RenderRPC::SetWindowID(int windowID_)
+{
+    windowID = windowID_;
+    Select(3, (void*)&windowID_);
+}
+
 
 
 // ****************************************************************************
@@ -159,6 +180,9 @@ RenderRPC::SetAnnotMode(int annotMode_)
 //
 //    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
 //    Changed 3D annotation flag to integer mode
+//
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added window id
 // ****************************************************************************
 
 const intVector&
@@ -179,3 +203,8 @@ RenderRPC::GetAnnotMode() const
     return annotMode;
 }
 
+int
+RenderRPC::GetWindowID() const
+{
+    return windowID;
+}

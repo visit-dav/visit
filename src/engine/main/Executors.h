@@ -385,6 +385,9 @@ RPCExecutor<PreparePlotRPC>::Execute(PreparePlotRPC *rpc)
 //    Eric Brugger, Fri Mar 19 15:19:13 PST 2004
 //    Modified the rpc to pass the data extents to the engine.
 //
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added code to pass window id
+//
 // ****************************************************************************
 template<>
 void
@@ -398,7 +401,7 @@ RPCExecutor<MakePlotRPC>::Execute(MakePlotRPC *rpc)
     {
         netmgr->MakePlot(rpc->GetID().c_str(), rpc->GetAtts(),
                          rpc->GetDataExtents());
-        MakePlotRPC::NetworkID id(netmgr->EndNetwork());
+        MakePlotRPC::NetworkID id(netmgr->EndNetwork(rpc->GetWindowID()));
         rpc->SendReply(&id);
     }
     CATCH2(VisItException, e)
@@ -539,6 +542,8 @@ RPCExecutor<UpdatePlotAttsRPC>::Execute(UpdatePlotAttsRPC *rpc)
 //    Kathleen Bonnell, Fri Oct 10 10:58:10 PDT 2003 
 //    Set up callbacks for DataObjectQuery.
 //
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added window id to pick rpc
 // ****************************************************************************
 template<>
 void
@@ -555,7 +560,7 @@ RPCExecutor<PickRPC>::Execute(PickRPC *rpc)
         LoadBalancer::RegisterProgressCallback(NULL, NULL);
         avtTerminatingSource::RegisterInitializeProgressCallback(NULL, NULL);
         avtDataObjectQuery::RegisterInitializeProgressCallback(NULL, NULL);
-        netmgr->Pick(rpc->GetNetId(), rpc->GetPickAtts());
+        netmgr->Pick(rpc->GetNetId(), rpc->GetWinId(), rpc->GetPickAtts());
         rpc->SendReply(rpc->GetPickAtts());
     }
     CATCH2(VisItException, e)
@@ -655,6 +660,9 @@ RPCExecutor<StartPickRPC>::Execute(StartPickRPC *rpc)
 //
 //    Mark C. Miller, Tue Oct 19 19:44:00 PDT 2004
 //    Added arg to pass changed color table name
+//
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added window id to SetWinAnnotAttsRPC
 // ****************************************************************************
 template<>
 void
@@ -671,11 +679,13 @@ RPCExecutor<SetWinAnnotAttsRPC>::Execute(SetWinAnnotAttsRPC *rpc)
         netmgr->SetWindowAttributes(rpc->GetWindowAtts(),
                                     rpc->GetExtentTypeString(),
                                     rpc->GetViewExtents(),
-                                    rpc->GetChangedCtName());
+                                    rpc->GetChangedCtName(),
+                                    rpc->GetWindowID());
         netmgr->SetAnnotationAttributes(rpc->GetAnnotationAtts(),
                                         rpc->GetAnnotationObjectList(),
                                         rpc->GetVisualCueList(),
-                                        rpc->GetFrameAndState());
+                                        rpc->GetFrameAndState(),
+                                        rpc->GetWindowID());
         rpc->SendReply();
     }
     CATCH2(VisItException, e)
@@ -764,6 +774,8 @@ RPCExecutor<SetWinAnnotAttsRPC>::Execute(SetWinAnnotAttsRPC *rpc)
 //    Mark C. Miller, Mon Aug 23 20:24:31 PDT 2004
 //    Moved code to get cellCountMultiplier to inside GetOutput
 //
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added code to operate on specific window id
 // ****************************************************************************
 template<>
 void
@@ -799,6 +811,7 @@ RPCExecutor<ExecuteRPC>::Execute(ExecuteRPC *rpc)
         bool shouldSendAbort = false;
         float cellCountMultiplier;
         int netId = netmgr->GetCurrentNetworkId();
+        int winId = netmgr->GetCurrentWindowId();
         avtNullData abortDob(NULL);
 
         // Get the output of the network manager. This does the job of
@@ -823,8 +836,8 @@ RPCExecutor<ExecuteRPC>::Execute(ExecuteRPC *rpc)
         writingData = visitTimer->StartTimer();
 
         // set params influencing scalable rendering 
-        int scalableThreshold = netmgr->GetScalableThreshold();
-        int currentTotalGlobalCellCount = netmgr->GetTotalGlobalCellCounts();
+        int scalableThreshold = netmgr->GetScalableThreshold(winId);
+        int currentTotalGlobalCellCount = netmgr->GetTotalGlobalCellCounts(winId);
         int currentNetworkGlobalCellCount = 0;
         bool scalableThresholdExceeded = false;
 
@@ -1132,6 +1145,9 @@ RPCExecutor<DefineVirtualDatabaseRPC>::Execute(DefineVirtualDatabaseRPC *rpc)
 //
 //    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
 //    Changed bool flag for 3D annots to integer mode
+//
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added code to operate on specific window id
 // ****************************************************************************
 template<>
 void
@@ -1155,7 +1171,7 @@ RPCExecutor<RenderRPC>::Execute(RenderRPC *rpc)
         // do the render
         avtDataObjectWriter_p writer =
             netmgr->Render(rpc->GetIDs(),rpc->GetSendZBuffer(),
-                           rpc->GetAnnotMode());
+                           rpc->GetAnnotMode(), rpc->GetWindowID());
 
         // Send the data back to the viewer.
         engine->WriteData(rpc, writer);

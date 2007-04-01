@@ -193,6 +193,9 @@ class avtDatabaseMetaData;
 //
 //    Mark C. Miller, Mon Dec 13 17:25:55 PST 2004
 //    Removed InRender, Begin/EndEngineRender
+//
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added window Id to various calls to support multiwindow SR
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -232,15 +235,13 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     bool ExternalRender(const ExternalRenderRequestInfo& reqInfo,
                         bool& shouldTurnOfScalableRendering,
                         bool doAllAnnotations,
-                        std::vector<avtImage_p>& imgList);
+                        std::vector<avtImage_p>& imgList,
+                        int winID);
 
     avtDataObjectReader_p GetDataObjectReader(ViewerPlot *const plot);
     avtDataObjectReader_p UseDataObjectReader(ViewerPlot *const plot,
                                               bool turningOffScalableRendering);
-    avtDataObjectReader_p GetDataObjectReader(bool sendZBuffer,
-                                              const EngineKey &ek,
-                                              intVector ids,
-                                              bool doAllAnnotations);
+
     void GetImage(int index, avtDataObject_p &);
     void UpdatePlotAttributes(const std::string &,int index,AttributeSubject*);
     void ClearCacheForAllEngines();
@@ -265,10 +266,10 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
                        const AttributeSubject *atts);
     bool MakePlot(const EngineKey &ek, const char *name,
                   const AttributeSubject *atts, const vector<double> &,
-                  int *networkId);
+                  int winID, int *networkId);
     bool UpdatePlotAttributes(const EngineKey &ek, const char *name,
                               int id, const AttributeSubject *atts);
-    bool Pick(const EngineKey &ek, const int nid,
+    bool Pick(const EngineKey &ek, const int nid, int wid,
               const PickAttributes *atts, PickAttributes &retAtts);
     bool StartPick(const EngineKey &ek, const bool forZones,
                    const bool flag, const int nid);
@@ -279,7 +280,8 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
                          const VisualCueList *visCues,
                          const int *frameAndState,
                          const double *viewExtents,
-                         const std::string ctName);
+                         const std::string ctName,
+                         const int winID);
     bool ClearCache(const EngineKey &ek, const char *dbName = 0);
     bool Query(const EngineKey &ek, const std::vector<int> &networkIds, 
                const QueryAttributes *atts, QueryAttributes &retAtts);

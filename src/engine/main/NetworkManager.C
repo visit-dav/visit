@@ -64,6 +64,7 @@
 #include <TimingsManager.h>
 
 #include <set>
+#include <map>
 using std::set;
 
 static double RenderBalance(int numTrianglesIHave);
@@ -96,6 +97,10 @@ static void   DumpImage(avtImage_p, const char *fmt, bool allprocs=true);
 //    Kathleen Bonnell, Wed Jun  2 09:48:29 PDT 2004 
 //    Initialize requireOriginalNodes. 
 //
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Made the viswin part of a map of EngineVisWinInfo objects
+//    Removed some unnecessary initialization
+//
 // ****************************************************************************
 NetworkManager::NetworkManager(void) : virtualDatabases()
 {
@@ -106,20 +111,8 @@ NetworkManager::NetworkManager(void) : virtualDatabases()
     uniqueNetworkId = 0;
     dumpRenders = false;
 
-    // stuff to support scalable rendering
-    viswin = new VisWindow();
-
-    annotationAttributes = *(viswin->GetAnnotationAtts());
-    annotationAttributes.SetUserInfoFlag(false);
-    annotationAttributes.SetDatabaseInfoFlag(false);
-    annotationAttributes.SetLegendInfoFlag(false);
-    annotationAttributes.SetTriadFlag(false);
-    annotationAttributes.SetBboxFlag(false);
-    annotationAttributes.SetAxesFlag(false);
-    annotationAttributes.SetAxesFlag2D(false);
-    viswin->SetAnnotationAtts(&annotationAttributes);
-
-    viswin->DisableUpdates();
+    // stuff to support scalable rendering. We always have window 0
+    viswinMap[0].viswin = new VisWindow();
 }
 
 // ****************************************************************************
@@ -136,9 +129,16 @@ NetworkManager::NetworkManager(void) : virtualDatabases()
 //    Hank Childs, Mon Jan  5 16:30:04 PST 2004
 //    Don't assume the caches are valid.
 //
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added code to delete VisWindow objects
+//
 // ****************************************************************************
 NetworkManager::~NetworkManager(void)
 {
+    std::map<int, EngineVisWinInfo>::iterator it;
+    for (it = viswinMap.begin(); it != viswinMap.end(); it++)
+        delete it->second.viswin;
+
     for (int i = 0; i < networkCache.size(); i++)
         if (networkCache[i] != NULL)
             delete networkCache[i];
@@ -180,12 +180,22 @@ NetworkManager::~NetworkManager(void)
 //    Protected call to clear viswin and plotsCurrentlyInWindow with test
 //    for emptiness
 //
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added code to delete VisWindow objects
+//
 // ****************************************************************************
 void
 NetworkManager::ClearAllNetworks(void)
 {
     debug3 << "NetworkManager::ClearAllNetworks(void)" << endl;
     int i;
+
+    std::map<int, EngineVisWinInfo>::iterator it;
+    for (it = viswinMap.begin(); it != viswinMap.end(); it++)
+    {
+        it->second.viswin->ClearPlots();
+        it->second.plotsCurrentlyInWindow.clear();
+    }
 
     for (i = 0; i < networkCache.size(); i++)
     {
@@ -204,12 +214,6 @@ NetworkManager::ClearAllNetworks(void)
     for (i = 0 ; i < globalCellCounts.size() ; i++)
     {
         globalCellCounts[i] = -1;
-    }
-
-    if (!plotsCurrentlyInWindow.empty())
-    {
-        viswin->ClearPlots();
-        plotsCurrentlyInWindow.clear();
     }
 }
 
@@ -236,6 +240,9 @@ NetworkManager::ClearAllNetworks(void)
 //    Mark C. Miller, Mon Sep 13 18:30:26 PDT 2004
 //    Moved code to delete the networkCache entry to after the clearning
 //    of the viswin.
+//
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Modified for viswinMap object
 // ****************************************************************************
 void
 NetworkManager::ClearNetworksWithDatabase(const std::string &db)
@@ -256,12 +263,15 @@ NetworkManager::ClearNetworksWithDatabase(const std::string &db)
             {
                 if (ndb->GetFilename() == db)
                 {
-                    for (j = 0 ; j < plotsCurrentlyInWindow.size() ; j++)
+                    int winID = networkCache[i]->GetWinID();
+                    EngineVisWinInfo &viswinInfo = viswinMap[winID];
+
+                    for (j = 0 ; j < viswinInfo.plotsCurrentlyInWindow.size() ; j++)
                     {
-                        if (plotsCurrentlyInWindow[j] == i)
+                        if (viswinInfo.plotsCurrentlyInWindow[j] == i)
                         {
-                            viswin->ClearPlots();
-                            plotsCurrentlyInWindow.clear();
+                            viswinInfo.viswin->ClearPlots();
+                            viswinInfo.plotsCurrentlyInWindow.clear();
                             break;
                         }
                     }
@@ -905,9 +915,12 @@ NetworkManager::MakePlot(const string &id, const AttributeGroup *atts,
 //    Hank Childs, Mon Jan  5 16:04:57 PST 2004
 //    Make sure that the network id is always unique for each network.
 //
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added code to set network's window ID and manage multiple VisWindow
+//    objects
 // ****************************************************************************
 int
-NetworkManager::EndNetwork(void)
+NetworkManager::EndNetwork(int windowID)
 {
     // Checking to see if the network has been built successfully.
     if (workingNetnodeList.size() != 1)
@@ -929,11 +942,22 @@ NetworkManager::EndNetwork(void)
     workingNet->SetTerminalNode(workingNetnodeList[0]);
 
     // Push the working net onto the network caches.
-    workingNet->SetID(uniqueNetworkId++);
+    workingNet->SetNetID(uniqueNetworkId++);
+    workingNet->SetWinID(windowID);
     networkCache.push_back(workingNet);
     globalCellCounts.push_back(-1);
 
-    return workingNet->GetID();
+    //
+    // If this plot this network is associated with is in a window we haven't
+    // seen before, make a new VisWindow for it
+    //
+    if (viswinMap.find(windowID) == viswinMap.end())
+    {
+        debug1 << "Creating new VisWindow for id=" << windowID << endl;
+        viswinMap[windowID].viswin = new VisWindow;
+    }
+
+    return workingNet->GetNetID();
 }
 
 // ****************************************************************************
@@ -974,6 +998,9 @@ NetworkManager::CancelNetwork(void)
 //    Hank Childs, Mon Jan  5 16:39:06 PST 2004
 //    Make sure that the id requested hasn't already been cleared.
 //
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Changed workingNet->GetID to workingNet->GetNetID
+//
 // ****************************************************************************
 void
 NetworkManager::UseNetwork(int id)
@@ -1005,10 +1032,10 @@ NetworkManager::UseNetwork(int id)
     int pipelineIndex = workingNet->GetPipelineSpec()->GetPipelineIndex();
     loadBalancer->ResetPipeline(pipelineIndex);
 
-    if (id != workingNet->GetID())
+    if (id != workingNet->GetNetID())
     {
         debug1 << "Internal error: network at position[" << id <<
-            "] does not have same id (" << workingNet->GetID() << ")"
+            "] does not have same id (" << workingNet->GetNetID() << ")"
             << endl;
         EXCEPTION0(ImproperUseException);
     }
@@ -1044,16 +1071,42 @@ NetworkManager::GetPlot(void)
 //  Programmer: Hank Childs
 //  Creation:   September 9, 2002
 //
+//  Modifications:
+//
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Changed workingNet->GetID to workingNet->GetNetID
+//
 // ****************************************************************************
 int
-NetworkManager::GetCurrentNetworkId(void)
+NetworkManager::GetCurrentNetworkId(void) const
 {
     if (workingNet == NULL)
     {
         EXCEPTION0(ImproperUseException);
     }
 
-    return workingNet->GetID();
+    return workingNet->GetNetID();
+}
+
+// ****************************************************************************
+//  Method: NetworkManager::GetCurrentWindowId
+//
+//  Purpose:
+//      Gets the window id of the current network.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   January 4, 2005 
+//
+// ****************************************************************************
+int
+NetworkManager::GetCurrentWindowId(void) const
+{
+    if (workingNet == NULL)
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+
+    return workingNet->GetWinID();
 }
 
 // ****************************************************************************
@@ -1070,21 +1123,30 @@ NetworkManager::GetCurrentNetworkId(void)
 //    Hank Childs, Thu Dec  2 09:48:29 PST 2004
 //    Look out for overflow.
 //
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Modified to compute counts for networks in only the specified window
+//
 // ****************************************************************************
 int
-NetworkManager::GetTotalGlobalCellCounts(void) const
+NetworkManager::GetTotalGlobalCellCounts(int winID) const
 {
    int i, sum = 0;
-   for (i = 0; i < globalCellCounts.size(); i++)
-   {
-      // Make sure we don't have an overflow issue.
-      if (globalCellCounts[i] == INT_MAX)
-          return INT_MAX;
 
-      if (globalCellCounts[i] >= 0)
-          sum += globalCellCounts[i];
-   }
-   return sum;
+    std::map<int, EngineVisWinInfo>::const_iterator it;
+    it = viswinMap.find(winID);
+    const std::vector<int> &plotsCurrentlyInWindow =
+       it->second.plotsCurrentlyInWindow;
+
+    for (i = 0; i < plotsCurrentlyInWindow.size(); i++)
+    {
+        // Make sure we don't have an overflow issue.
+        if (globalCellCounts[plotsCurrentlyInWindow[i]] == INT_MAX)
+            return INT_MAX;
+
+        if (globalCellCounts[plotsCurrentlyInWindow[i]] >= 0)
+            sum += globalCellCounts[plotsCurrentlyInWindow[i]];
+    }
+    return sum;
 }
 
 // ****************************************************************************
@@ -1112,21 +1174,35 @@ NetworkManager::SetGlobalCellCount(int netId, int cellCount)
 //  Programmer: Mark C. Miller 
 //  Creation:   May 11, 2004
 //
+//  Modifications:
+//
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Modified to get information for specific window
+//
 // ****************************************************************************
 int
-NetworkManager::GetScalableThreshold(void) const
+NetworkManager::GetScalableThreshold(int windowID) const
 {
     int scalableAutoThreshold;
     RenderingAttributes::TriStateMode scalableActivationMode;
+
+    // since we're in a const method, we can't use the [] operator to index
+    // into the map directly becuase that operator will modify the map if the
+    // key is new
+    std::map<int, EngineVisWinInfo>::const_iterator it;
+    it = viswinMap.find(windowID);
+    const EngineVisWinInfo &viswinInfo = it->second;
+    const WindowAttributes &windowAttributes = viswinInfo.windowAttributes; 
 
     scalableAutoThreshold =
         windowAttributes.GetRenderAtts().GetScalableAutoThreshold();
     scalableActivationMode = 
         windowAttributes.GetRenderAtts().GetScalableActivationMode();
 
-    return RenderingAttributes::GetEffectiveScalableThreshold(
+    int t = RenderingAttributes::GetEffectiveScalableThreshold(
                                     scalableActivationMode,
                                     scalableAutoThreshold);
+    return t;
 }
 
 // ****************************************************************************
@@ -1152,13 +1228,18 @@ NetworkManager::GetScalableThreshold(void) const
 //    Moved the code to clear the vis window and plots currently in the 
 //    vis window to inside the test for non-NULL networkCache
 //
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Modified to manage multiple VisWindow objects
+//
 // ****************************************************************************
 void
 NetworkManager::DoneWithNetwork(int id)
 {
+    int i;
+
     if (id >= networkCache.size())
     {
-        debug1 << "Internal error: asked to reuse network ID (" << id
+        debug1 << "Internal error: Done with network ID (" << id
             << " >= num saved networks (" << networkCache.size() << ")"
             << endl;
         EXCEPTION0(ImproperUseException);
@@ -1166,25 +1247,46 @@ NetworkManager::DoneWithNetwork(int id)
 
     if (networkCache[id] != NULL)
     {
+        int thisNetworksWinID = networkCache[id]->GetWinID();
 
-        for (int i = 0 ; i < plotsCurrentlyInWindow.size() ; i++)
+        viswinMap[thisNetworksWinID].viswin->ClearPlots();
+        viswinMap[thisNetworksWinID].plotsCurrentlyInWindow.clear();
+
+        //
+        // Delete the associated VisWindow if this is the last plot that
+        // references it
+        //
+        bool otherNetsUseThisWindow = false;
+        for (i = 0; i < networkCache.size(); i++)
         {
-            if (plotsCurrentlyInWindow[i] == id)
+            if (i == id)
+                continue;
+            if (networkCache[i] && (thisNetworksWinID ==
+                                    networkCache[i]->GetWinID()))
             {
-                viswin->ClearPlots();
-                plotsCurrentlyInWindow.clear();
+                otherNetsUseThisWindow = true;
                 break;
             }
         }
+        if (!otherNetsUseThisWindow && thisNetworksWinID) // never delete window 0
+        {
+            debug1 << "Deleting VisWindow for id=" << thisNetworksWinID << endl;
+            delete viswinMap[thisNetworksWinID].viswin;
+            viswinMap.erase(thisNetworksWinID);
+        }
 
         networkCache[id]->ReleaseData();
+        networkCache[id] = NULL;
         globalCellCounts[id] = -1;
+
     }
     else
     {
         debug1 << "Warning: DoneWithNetwork called on previously cleared "
                << "network." << endl;
     }
+
+
 }
 
 // ****************************************************************************
@@ -1205,6 +1307,9 @@ NetworkManager::DoneWithNetwork(int id)
 //    Hank Childs, Mon Jan  5 16:39:06 PST 2004
 //    Make sure the network hasn't already been cleared.
 //
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Changed networkCache[id]->GetID() to networkCache[id]->GetNetID()
+//
 // ****************************************************************************
 void
 NetworkManager::UpdatePlotAtts(int id, const AttributeGroup *atts)
@@ -1223,11 +1328,11 @@ NetworkManager::UpdatePlotAtts(int id, const AttributeGroup *atts)
                << "already been cleared." << endl;
         EXCEPTION0(ImproperUseException);
     }
-    if (networkCache[id]->GetID() != id)
+    if (networkCache[id]->GetNetID() != id)
     {
         debug1 << "Internal error: network at position[" << id
             << "] does not have " << "the same id ("
-            << networkCache[id]->GetID() << ")" << endl;
+            << networkCache[id]->GetNetID() << ")" << endl;
         EXCEPTION0(ImproperUseException);
     }
 
@@ -1304,7 +1409,11 @@ NetworkManager::UpdatePlotAtts(int id, const AttributeGroup *atts)
 //    Mark C. Miller, Mon Aug 23 20:24:31 PDT 2004
 //    Added cellCountMultiplier arg and call to get and set it
 //
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 200
+//    Modified to use viswinMap
+//
 // ****************************************************************************
+
 avtDataObjectWriter_p
 NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender,
     float *cellCountMultiplier)
@@ -1319,6 +1428,9 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender,
 
     TRY
     {
+        int winID = workingNet->GetWinID();
+        WindowAttributes &windowAttributes = viswinMap[winID].windowAttributes;
+
         // Hook up the network
         avtDataObject_p output = workingNet->GetOutput();
 
@@ -1475,12 +1587,33 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender,
 //    Fixed problem where wrong cell-count (un multiplied one) was being used
 //    to update global cell counts on the networks
 //
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 200
+//    Modified to use viswinMap
+//
 // ****************************************************************************
 avtDataObjectWriter_p
-NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
+NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
+    int windowID)
 {
     int i;
     DataNetwork *origWorkingNet = workingNet;
+
+    if (viswinMap.find(windowID) == viswinMap.end())
+    {
+        char tmpStr[256];
+        SNPRINTF(tmpStr, sizeof(tmpStr), "Attempt to render on invalid window id=%d", windowID);
+        EXCEPTION1(ImproperUseException, tmpStr);
+    }
+
+    EngineVisWinInfo &viswinInfo = viswinMap[windowID];
+    VisWindow *viswin = viswinInfo.viswin;
+    WindowAttributes &windowAttributes = viswinInfo.windowAttributes;
+    std::string &changedCtName = viswinInfo.changedCtName;
+    AnnotationAttributes &annotationAttributes = viswinInfo.annotationAttributes;
+    AnnotationObjectList &annotationObjectList = viswinInfo.annotationObjectList;
+    VisualCueList &visualCueList = viswinInfo.visualCueList;
+    int *const &frameAndState = viswinInfo.frameAndState;
+    std::vector<int>& plotsCurrentlyInWindow = viswinMap[windowID].plotsCurrentlyInWindow;
 
     TRY
     {
@@ -1581,16 +1714,16 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
 
             // update the global cell counts for each network
             for (i = 0; i < plotIds.size(); i++)
-                SetGlobalCellCount(plotIds[i], cellCounts[i]);
+                SetGlobalCellCount(plotIds[i], cellCounts[i+plotIds.size()]);
 
             plotsCurrentlyInWindow = plotIds;
             visitTimer->StopTimer(t2, "Setting up window contents");
         }
 
-        int  scalableThreshold = GetScalableThreshold(); 
+        int  scalableThreshold = GetScalableThreshold(windowID); 
         // scalable threshold test (the 0.5 is to add some hysteresus to avoid 
         // the misfortune of oscillating switching of modes around the threshold)
-        if (GetTotalGlobalCellCounts() < 0.5 * scalableThreshold)
+        if (GetTotalGlobalCellCounts(windowID) < 0.5 * scalableThreshold)
         {
             debug5 << "Cell count has fallen below SR threshold. Sending the "
                       "AVT_NULL_IMAGE_MSG data object to viewer" << endl;
@@ -1662,7 +1795,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
             //
             SetAnnotationAttributes(annotationAttributes,
                                     annotationObjectList, visualCueList,
-                                    frameAndState, annotMode);
+                                    frameAndState, windowID, annotMode);
 
             debug5 << "Rendering " << viswin->GetNumTriangles() 
                    << " triangles.  Balanced speedup = " 
@@ -1701,7 +1834,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
             visitTimer->StopTimer(t3, "Screen capture for SR");
 
             if (dumpRenders)
-                DumpImage(theImage, "before_ImageCompositer");
+                DumpImage(theImage, "before_OpaqueComposite");
 
             avtWholeImageCompositer *imageCompositer;
             bool haveImagePlots = imageBasedPlots.size();
@@ -1754,7 +1887,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
             // in the compositor, and this only happens in two pass mode.
             if (dumpRenders)
                 DumpImage(compositedImageAsDataObject,
-                          "after_first_ImageCompositer", two_pass_mode);
+                          "after_OpaqueComposite", two_pass_mode);
 
 
             // ************************************************************
@@ -1785,7 +1918,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
                 visitTimer->StopTimer(t1, "Second-pass screen capture for SR");
 
                 if (dumpRenders)
-                    DumpImage(theImage2, "before_second_ImageCompositer");
+                    DumpImage(theImage2, "before_TranslucentComposite");
 
                 avtTiledImageCompositor imageCompositer2;
 
@@ -1886,7 +2019,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
             }
 
             //
-            // If the engine is doing more than just 3D attributes,
+            // If the engine is doing more than just 3D annotations,
             // post-process the composited image.
             //
             if (imageBasedPlots.size() > 0)
@@ -1921,7 +2054,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
 
             if (dumpRenders)
                 DumpImage(compositedImageAsDataObject,
-                          "after_ImageCompositer", false);
+                          "after_AllComposites", false);
             delete imageCompositer;
         }
         
@@ -1991,13 +2124,28 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
 //    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
 //    Added code to deal with view extents
 //
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 200
+//    Modified to use viswinMap
+//
 // ****************************************************************************
 void
 NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
                                     const std::string& extstr,
                                     const double *vexts,
-                                    const std::string& ctName)
+                                    const std::string& ctName,
+                                    int windowID)
 {
+    if (viswinMap.find(windowID) == viswinMap.end())
+    {
+        debug1 << "Creating new VisWindow for id=" << windowID << endl;
+        viswinMap[windowID].viswin = new VisWindow;
+    }
+
+    EngineVisWinInfo &viswinInfo = viswinMap[windowID];
+    VisWindow *viswin = viswinInfo.viswin;
+    WindowAttributes &windowAttributes = viswinInfo.windowAttributes;
+    std::string &extentTypeString = viswinInfo.extentTypeString;
+    std::string &changedCtName = viswinInfo.changedCtName;
 
     // do nothing if nothing changed
     if ((windowAttributes == atts) && (extentTypeString == extstr) &&
@@ -2138,13 +2286,31 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
 //
 //    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
 //    Changed bool flag for 3D annotations to an integer mode
+//
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 200
+//    Modified to use viswinMap
+//
 // ****************************************************************************
 void
 NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
     const AnnotationObjectList &aolist, const VisualCueList &visCues,
-    const int *fns, int annotMode)
+    const int *fns, int windowID, int annotMode)
 {
-   int i;
+
+    if (viswinMap.find(windowID) == viswinMap.end())
+    {
+        debug1 << "Creating new VisWindow for id=" << windowID << endl;
+        viswinMap[windowID].viswin = new VisWindow;
+    }
+
+    EngineVisWinInfo &viswinInfo = viswinMap[windowID];
+    VisWindow *viswin = viswinInfo.viswin;
+    AnnotationAttributes &annotationAttributes = viswinInfo.annotationAttributes;
+    AnnotationObjectList &annotationObjectList = viswinInfo.annotationObjectList;
+    VisualCueList &visualCueList = viswinInfo.visualCueList;
+    int *const &frameAndState = viswinInfo.frameAndState;
+
+    int i;
 
 #ifdef PARALLEL
    if (PAR_Rank() == 0)
@@ -2355,10 +2521,13 @@ NetworkManager::StopPickMode(void)
 //    TopologicalDimension, because during SR mode the DataAtts may get
 //    overwritten with incorrect values. 
 //
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 200
+//    Modified to use specific window id
+//
 // ****************************************************************************
 
 void
-NetworkManager::Pick(const int id, PickAttributes *pa)
+NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
 {
     if (id >= networkCache.size())
     {
@@ -2374,10 +2543,10 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
         EXCEPTION0(ImproperUseException);
     }
 
-    if (id != networkCache[id]->GetID())
+    if (id != networkCache[id]->GetNetID())
     {
         debug1 << "Internal error: network at position[" << id << "] "
-               << "does not have same id (" << networkCache[id]->GetID()
+               << "does not have same id (" << networkCache[id]->GetNetID()
                << ")" << endl;
         EXCEPTION0(ImproperUseException);
     }
@@ -2405,7 +2574,7 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
             //
             intVector pids;
             pids.push_back(id);
-            Render(pids, false, 0);
+            Render(pids, false, 0, winId);
         }
         int d = -1, e = -1;
         double t = +FLT_MAX; 
@@ -2415,6 +2584,7 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
         // Retrieve the necessary information from the renderer on the 
         // VisWindow. 
         //
+        VisWindow *viswin = viswinMap[winId].viswin;
         viswin->GlyphPick(pa->GetRayPoint1(), pa->GetRayPoint2(), d, e, fc, t, false);
         //
         // Make sure all processors are on the same page. 
@@ -2688,10 +2858,10 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
             EXCEPTION0(ImproperUseException);
         }
 
-        if (id != networkCache[id]->GetID())
+        if (id != networkCache[id]->GetNetID())
         {
             debug1 << "Internal error: network at position[" << id << "] "
-                   << "does not have same id (" << networkCache[id]->GetID()
+                   << "does not have same id (" << networkCache[id]->GetNetID()
                    << ")" << endl;
             EXCEPTION0(ImproperUseException);
         }
@@ -2869,12 +3039,12 @@ NetworkManager::CloneNetwork(const int id)
         EXCEPTION1(ImproperUseException, error);
     }
 
-    if (id != networkCache[id]->GetID())
+    if (id != networkCache[id]->GetNetID())
     {
         
         debug1 << "Internal error: network at position[" << id 
                << "] does not have same id (" 
-               << networkCache[id]->GetID() << ")" << endl;
+               << networkCache[id]->GetNetID() << ")" << endl;
         EXCEPTION0(ImproperUseException);
     }
 
@@ -2984,6 +3154,11 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 21, 2004
 //
+//  Modifications:
+//
+//    Mark C. Miller, Thu Dec 16 10:25:09 PST 2004
+//    Added numDumpsAll to correct numbering in output images in parallel
+//
 // ****************************************************************************
 static void
 DumpImage(avtDataObject_p img, const char *fmt, bool allprocs)
@@ -2992,12 +3167,13 @@ DumpImage(avtDataObject_p img, const char *fmt, bool allprocs)
         return;
 
     static int numDumps = 0;
+    static int numDumpsAll = 0;
     char tmpName[256];
     avtFileWriter *fileWriter = new avtFileWriter();
 
 #ifdef PARALLEL
     if (allprocs)
-        sprintf(tmpName, "%s_%03d_%03d.tif", fmt, PAR_Rank(), numDumps);
+        sprintf(tmpName, "%s_%03d_%03d.tif", fmt, PAR_Rank(), numDumpsAll);
     else
         sprintf(tmpName, "%s_%03d.tif", fmt, numDumps);
 #else
@@ -3008,7 +3184,10 @@ DumpImage(avtDataObject_p img, const char *fmt, bool allprocs)
     int useLZW = 6;
     fileWriter->Write(tmpName, img, 100, false, useLZW, false);
 
-    numDumps++;
+    if (allprocs)
+        numDumpsAll++;
+    else
+        numDumps++;
 }
 
 // ****************************************************************************

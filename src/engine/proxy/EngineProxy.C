@@ -401,13 +401,16 @@ EngineProxy::ApplyOperator(const string &name, const AttributeSubject *atts)
 //    Eric Brugger, Fri Mar 19 15:14:34 PST 2004
 //    I modified the rpc to pass the data limits to the engine.
 //
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added window id
+//
 // ****************************************************************************
 int
 EngineProxy::MakePlot(const string &name, const AttributeSubject *atts,
-                      const vector<double> &extents)
+                      const vector<double> &extents, int winID)
 {
     int id;
-    id = makePlotRPC(name, atts, extents);
+    id = makePlotRPC(name, atts, extents, winID);
     if (makePlotRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(makePlotRPC.GetExceptionType(),
@@ -502,6 +505,9 @@ EngineProxy::UpdatePlotAttributes(const string &name, int id,
 //    Mark C. Miller, Tue Oct 19 20:18:22 PDT 2004
 //    Added argument for color table name
 //
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added winID
+//
 // ****************************************************************************
 
 void
@@ -512,10 +518,11 @@ EngineProxy::SetWinAnnotAtts(const WindowAttributes *winAtts,
                              const VisualCueList *visCues,
                              const int *frameAndState,
                              const double *viewExtents,
-                             const string ctName)
+                             const string ctName,
+                             const int winID)
 {
     setWinAnnotAttsRPC(winAtts, annotAtts, aoList, extStr, visCues,
-        frameAndState, viewExtents, ctName);
+        frameAndState, viewExtents, ctName, winID);
     if (setWinAnnotAttsRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(setWinAnnotAttsRPC.GetExceptionType(),
@@ -777,18 +784,21 @@ EngineProxy::DefineVirtualDatabase(const std::string &fileFormat,
 //
 //    Mark C. Miller, Sat Nov 13 09:35:51 PST 2004
 //    Disabled callback to waitCB
+//
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added windowID
 // ****************************************************************************
 
 avtDataObjectReader_p
 EngineProxy::Render(bool sendZBuffer, const intVector& networkIDs,
-    int annotMode, void (*waitCB)(void *), void *cbData)
+    int annotMode, int windowID, void (*waitCB)(void *), void *cbData)
 {
 
     // Send a status message indicating that we're starting a scalable render 
     Status("Scalable Rendering.");
 
     // Do it!
-    renderRPC(networkIDs, sendZBuffer, annotMode);
+    renderRPC(networkIDs, sendZBuffer, annotMode, windowID);
 
     // Get the reply and update the progress bar
     while (renderRPC.GetStatus() == VisItRPC::incomplete ||
@@ -1023,13 +1033,16 @@ EngineProxy::Interrupt()
 //    Kathleen Bonnell, Tue Mar  5 09:27:51 PST 2002  
 //    Remove unnecessary debug lines.
 //
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added wid
+//
 // ****************************************************************************
 
 void 
 EngineProxy::Pick(const int nid, const PickAttributes *atts,
-                  PickAttributes &retAtts)
+                  PickAttributes &retAtts, int wid)
 {
-    retAtts = pickRPC(nid, atts);
+    retAtts = pickRPC(nid, atts, wid);
 
     if (pickRPC.GetStatus() == VisItRPC::error)
     {

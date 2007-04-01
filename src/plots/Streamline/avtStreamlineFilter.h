@@ -10,7 +10,6 @@ class vtkVisItStreamLine;
 class vtkTubeFilter;
 class vtkPolyData;
 class vtkRibbonFilter;
-class vtkRungeKutta4;
 class vtkAppendPolyData;
 
 #define STREAMLINE_SOURCE_POINT      0
@@ -43,6 +42,9 @@ class vtkAppendPolyData;
 //   Brad Whitlock, Mon Jan 3 10:56:47 PDT 2005
 //   Added SetZToZero to ensure that we can set restrict streamline sources
 //   to 2D when the input data is 2D.
+//
+//   Brad Whitlock, Tue Jan 4 10:56:47 PDT 2005
+//   Removed the integrator member since it was not being used.
 //
 // ****************************************************************************
 
@@ -99,7 +101,6 @@ class avtStreamlineFilter : public avtStreamer
     vtkVisItStreamLine       *streamline;
     vtkTubeFilter            *tubes;
     vtkRibbonFilter          *ribbons;
-    vtkRungeKutta4           *integrator;
 
     virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
     virtual void              RefashionDataObjectInfo(void);

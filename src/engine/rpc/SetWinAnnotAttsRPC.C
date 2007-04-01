@@ -32,9 +32,12 @@
 //
 //    Mark C. Miller, Tue Oct 19 19:44:00 PDT 2004
 //    Added string for color table name
+//
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added window id
 // ****************************************************************************
 
-SetWinAnnotAttsRPC::SetWinAnnotAttsRPC() : BlockingRPC("aaasaIDs")
+SetWinAnnotAttsRPC::SetWinAnnotAttsRPC() : BlockingRPC("aaasaIDsi")
 {
 }
 
@@ -87,6 +90,9 @@ SetWinAnnotAttsRPC::~SetWinAnnotAttsRPC()
 //
 //    Mark C. Miller, Tue Oct 19 19:44:00 PDT 2004
 //    Added string for color table name
+//
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added window id
 // ****************************************************************************
 
 void
@@ -97,7 +103,8 @@ SetWinAnnotAttsRPC::operator()(const WindowAttributes *winAtts,
                                const VisualCueList *cueList,
                                const int *frameAndState,
                                const double *viewExtents,
-                               const string ctName)
+                               const string ctName,
+                               int winID)
 {
     if (winAtts)
        SetWindowAtts(winAtts);
@@ -122,6 +129,8 @@ SetWinAnnotAttsRPC::operator()(const WindowAttributes *winAtts,
 
     if (ctName.size())
        SetChangedCtName(ctName);
+
+    SetWindowID(winID);
 
     if (winAtts || annotAtts || aoList || extStr.size() || cueList ||
         frameAndState || viewExtents || ctName.size())
@@ -155,6 +164,9 @@ SetWinAnnotAttsRPC::operator()(const WindowAttributes *winAtts,
 //
 //    Mark C. Miller, Tue Oct 19 19:44:00 PDT 2004
 //    Added string for color table name
+//
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added window id
 // ****************************************************************************
 
 void
@@ -168,6 +180,7 @@ SetWinAnnotAttsRPC::SelectAll()
     Select(5, (void*)fands, sizeof(fands)/sizeof(fands[0]));
     Select(6, (void*)vexts, sizeof(vexts)/sizeof(vexts[0]));
     Select(7, (void*)&ctname);
+    Select(8, (void*)&windowID);
 }
 
 
@@ -318,6 +331,21 @@ SetWinAnnotAttsRPC::SetChangedCtName(const string ctname_)
 }
 
 // ****************************************************************************
+//  Method: SetWinAnnotAttsRPC::SetWindowID
+//
+//  Programmer: Mark C. Miller
+//  Creation:   December 15, 2004 
+//
+// ****************************************************************************
+
+void
+SetWinAnnotAttsRPC::SetWindowID(const int id)
+{
+    windowID = id;
+    Select(8, (void*)&windowID);
+}
+
+// ****************************************************************************
 //  Method: SetWinAnnotAttsRPC::GetWindowAtts
 //
 //  Purpose: 
@@ -439,4 +467,18 @@ const string&
 SetWinAnnotAttsRPC::GetChangedCtName() const
 {
     return ctname;
+}
+
+// ****************************************************************************
+//  Method: SetWinAnnotAttsRPC::GetWindowID
+//
+//  Programmer: Mark C. Miller
+//  Creation:   December 15, 2004 
+//
+// ****************************************************************************
+
+const int 
+SetWinAnnotAttsRPC::GetWindowID() const
+{
+    return windowID;
 }

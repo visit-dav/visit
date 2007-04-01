@@ -3167,6 +3167,9 @@ ViewerPlot::SetSpatialExtentsType(avtExtentType extsType)
 //    Eric Brugger, Tue Mar 30 15:26:33 PST 2004
 //    Added the data extents to the call to MakePlot.
 //
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added WindowID to calls to MakePlot
+//
 // ****************************************************************************
 
 bool
@@ -3185,12 +3188,12 @@ ViewerPlot::ExecuteEngineRPC()
     if (viewerPlotList->GetMaintainDataMode())
     {
         successful = engineMgr->MakePlot(engineKey, viewerPluginInfo->GetID(),
-            curPlotAtts, dataExtents, &networkID);
+            curPlotAtts, dataExtents, GetWindowId(), &networkID);
     }
     else
     {
         successful = engineMgr->MakePlot(engineKey, viewerPluginInfo->GetID(),
-            curPlotAtts, nullDataExtents, &networkID);
+            curPlotAtts, nullDataExtents, GetWindowId(), &networkID);
     }
 
     if(!successful)
