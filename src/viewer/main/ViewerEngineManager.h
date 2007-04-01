@@ -168,6 +168,9 @@ class WindowAttributes;
 //    Kathleen Bonnell, Tue Jun  1 17:57:52 PDT 2004 
 //    Added bool arg to StartPick method. 
 //
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Added VisualCueList arg to SetWinAnnotAtts
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -238,7 +241,8 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     bool SetWinAnnotAtts(const EngineKey &ek, const WindowAttributes *wa,
                          const AnnotationAttributes *aa,
                          const AnnotationObjectList *ao,
-                         const std::string extStr);
+                         const std::string extStr,
+                         const VisualCueList *visCues);
     bool ClearCache(const EngineKey &ek, const char *dbName = 0);
     bool Query(const EngineKey &ek, const std::vector<int> &networkIds, 
                const QueryAttributes *atts, QueryAttributes &retAtts);

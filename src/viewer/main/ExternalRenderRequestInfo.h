@@ -12,6 +12,7 @@
 #include <AnnotationObjectList.h>
 #include <AttributeSubject.h>
 #include <EngineKey.h>
+#include <VisualCueList.h>
 #include <WindowAttributes.h>
 
 using std::vector;
@@ -26,6 +27,11 @@ using std::string;
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   May 25, 2004 
+//
+//  Modifications:
+//
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Added member for visual cue list
 // ****************************************************************************
 
 
@@ -39,6 +45,7 @@ typedef struct _ExternalRenderRequestInfo
     AnnotationAttributes                  annotAtts;
     AnnotationObjectList                  annotObjs;
     string                                extStr;
+    VisualCueList                         visCues;
 } ExternalRenderRequestInfo;
 
 #endif

@@ -3,13 +3,18 @@
 #include <engine_rpc_exports.h>
 
 #include <string>
+#include <vector>
 
-#include <VisItRPC.h>
 #include <AnnotationAttributes.h>
 #include <AnnotationObjectList.h>
+#include <VisItRPC.h>
+#include <VisualCueList.h>
 #include <WindowAttributes.h>
 
+class AttributeGroup;
+
 using std::string;
+using std::vector;
 
 // ****************************************************************************
 //  Class:  SetWinAnnotAttsRPC
@@ -28,6 +33,9 @@ using std::string;
 //    Mark C. Miller, Tue May 25 17:06:12 PDT 2004
 //    Added AnnotationObjectList member
 //
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Added visual cue list data member
+//
 // ****************************************************************************
 class ENGINE_RPC_API SetWinAnnotAttsRPC : public BlockingRPC
 {
@@ -39,7 +47,8 @@ public:
     void operator()(const WindowAttributes*,
                     const AnnotationAttributes*,
                     const AnnotationObjectList*,
-                    const string);
+                    const string,
+                    const VisualCueList*);
 
     // Property selection methods
     virtual void SelectAll();
@@ -49,18 +58,21 @@ public:
     void SetAnnotationAtts(const AnnotationAttributes*);
     void SetAnnotationObjectList(const AnnotationObjectList*);
     void SetExtentTypeString(const string);
+    void SetVisualCueList(const VisualCueList*);
 
     // Property getting methods
     const WindowAttributes &GetWindowAtts() const;
     const AnnotationAttributes &GetAnnotationAtts() const;
     const AnnotationObjectList &GetAnnotationObjectList() const;
     const string &GetExtentTypeString() const;
+    const VisualCueList &GetVisualCueList() const;
 
 private:
     WindowAttributes win;
     AnnotationAttributes annot;
     AnnotationObjectList aolist;
     string extstr;
+    VisualCueList cuelist;
 };
 
 #endif

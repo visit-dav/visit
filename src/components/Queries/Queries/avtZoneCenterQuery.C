@@ -58,6 +58,9 @@ avtZoneCenterQuery::~avtZoneCenterQuery()
 //
 //  Modifications:
 //
+//    Mark C. Miller, Wed Jun  9 21:50:12 PDT 2004
+//    Eliminated use of MPI_ANY_TAG and modified to use GetUniqueMessageTags
+//
 // ****************************************************************************
 
 void
@@ -129,6 +132,8 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
     int myRank, numProcs;
     MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
     MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
+    int mpiGoodTag = GetUniqueMessageTag();
+    int mpiCoordTag = GetUniqueMessageTag();
 
     if (myRank == 0)
     {
@@ -137,10 +142,10 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
         for (int i = 1; i < numProcs; i++)
         {
             MPI_Recv(&good, 1, MPI_INT, MPI_ANY_SOURCE,
-                     MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
+                     mpiGoodTag, MPI_COMM_WORLD, &stat);
             if (good)
             {
-                MPI_Recv(coord, 3, MPI_FLOAT, stat.MPI_SOURCE, MPI_ANY_TAG,
+                MPI_Recv(coord, 3, MPI_FLOAT, stat.MPI_SOURCE, mpiCoordTag,
                          MPI_COMM_WORLD, &stat2);
                 success = good;
             }
@@ -148,10 +153,10 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
     }
     else
     {
-        MPI_Send(&success, 1, MPI_INT, 0, myRank, MPI_COMM_WORLD);
+        MPI_Send(&success, 1, MPI_INT, 0, mpiGoodTag, MPI_COMM_WORLD);
         if (success)
         {
-            MPI_Send(coord, 3, MPI_FLOAT, 0, myRank, MPI_COMM_WORLD);
+            MPI_Send(coord, 3, MPI_FLOAT, 0, mpiCoordTag, MPI_COMM_WORLD);
         }    
         return;    
     }

@@ -9,6 +9,7 @@
 
 #ifdef PARALLEL
 #include <mpi.h>
+#include <avtParallel.h>
 #endif
 
 // ****************************************************************************
@@ -60,6 +61,9 @@ avtNumZonesQuery::~avtNumZonesQuery()
 //    Kathleen Bonnell, Tue Apr 20 12:49:46 PDT 2004 
 //    Modified msg creation so that it works properly on all platforms. 
 //
+//    Mark C. Miller, Wed Jun  9 21:50:12 PDT 2004
+//    Eliminated use of MPI_ANY_TAG and modified to use GetUniqueMessageTags
+//
 // ****************************************************************************
 
 void
@@ -97,6 +101,8 @@ avtNumZonesQuery::PerformQuery(QueryAttributes *qA)
     int myRank, numProcs;
     MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
     MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
+    int mpiUsedDomsTag = GetUniqueMessageTag();
+    int mpiTzTag = GetUniqueMessageTag();
 
     if (myRank == 0)
     {
@@ -105,11 +111,11 @@ avtNumZonesQuery::PerformQuery(QueryAttributes *qA)
         for (int i = 1; i < numProcs; i++)
         {
             MPI_Recv(&usedDomains, 1, MPI_INT, MPI_ANY_SOURCE,
-                     MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
+                     mpiUsedDomsTag, MPI_COMM_WORLD, &stat);
             if (usedDomains)
             {
                 int tz[2];
-                MPI_Recv(tz, 2, MPI_INT, stat.MPI_SOURCE, MPI_ANY_TAG,
+                MPI_Recv(tz, 2, MPI_INT, stat.MPI_SOURCE, mpiTzTag,
                          MPI_COMM_WORLD, &stat2);
                 totalZones[0] += tz[0];
                 totalZones[1] += tz[1];
@@ -118,10 +124,10 @@ avtNumZonesQuery::PerformQuery(QueryAttributes *qA)
     }
     else
     {
-        MPI_Send(&usedDomains, 1, MPI_INT, 0, myRank, MPI_COMM_WORLD);
+        MPI_Send(&usedDomains, 1, MPI_INT, 0, mpiUsedDomsTag, MPI_COMM_WORLD);
         if (usedDomains)
         {
-            MPI_Send(totalZones, 2, MPI_INT, 0, myRank, MPI_COMM_WORLD);
+            MPI_Send(totalZones, 2, MPI_INT, 0, mpiTzTag, MPI_COMM_WORLD);
         }    
         return;    
     }

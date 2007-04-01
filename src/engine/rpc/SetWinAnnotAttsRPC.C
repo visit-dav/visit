@@ -21,9 +21,12 @@
 //    Mark C. Miller, Tue May 25 17:06:12 PDT 2004
 //    Added data member for AnnotationObjectList
 //
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Added data member for VisualCueList 
+//
 // ****************************************************************************
 
-SetWinAnnotAttsRPC::SetWinAnnotAttsRPC() : BlockingRPC("aaas")
+SetWinAnnotAttsRPC::SetWinAnnotAttsRPC() : BlockingRPC("aaasa")
 {
 }
 
@@ -64,13 +67,17 @@ SetWinAnnotAttsRPC::~SetWinAnnotAttsRPC()
 //
 //    Mark C. Miller, Tue May 25 17:06:12 PDT 2004
 //    Added argument for AnnotationObjectList
+//
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Added arg for VisualCueList
 // ****************************************************************************
 
 void
 SetWinAnnotAttsRPC::operator()(const WindowAttributes *winAtts,
                                const AnnotationAttributes *annotAtts,
                                const AnnotationObjectList *aoList,
-                               const string extStr)
+                               const string extStr,
+                               const VisualCueList *cueList) 
 {
     if (winAtts)
        SetWindowAtts(winAtts);
@@ -84,7 +91,10 @@ SetWinAnnotAttsRPC::operator()(const WindowAttributes *winAtts,
     if (extStr.size())
        SetExtentTypeString(extStr);
 
-    if (winAtts || annotAtts || extStr.size())
+    if (cueList)
+       SetVisualCueList(cueList);
+
+    if (winAtts || annotAtts || aoList || extStr.size() || cueList)
        Execute();
 }
 
@@ -103,6 +113,9 @@ SetWinAnnotAttsRPC::operator()(const WindowAttributes *winAtts,
 //
 //    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
 //    Added data member for extents type string
+//
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Added visual cue list data member
 // ****************************************************************************
 
 void
@@ -112,6 +125,7 @@ SetWinAnnotAttsRPC::SelectAll()
     Select(1, (void*)&annot);
     Select(2, (void*)&aolist);
     Select(3, (void*)&extstr);
+    Select(4, (void*)&cuelist);
 }
 
 
@@ -200,6 +214,21 @@ SetWinAnnotAttsRPC::SetExtentTypeString(const string extstr_)
 }
 
 // ****************************************************************************
+//  Method: SetWinAnnotAttsRPC::SetVisualCueList
+//
+//  Programmer: Mark C. Miller
+//  Creation:   June 7, 2004 
+//
+// ****************************************************************************
+
+void
+SetWinAnnotAttsRPC::SetVisualCueList(const VisualCueList* cueList) 
+{
+    cuelist = *cueList;
+    Select(4,(void*)&cuelist);
+}
+
+// ****************************************************************************
 //  Method: SetWinAnnotAttsRPC::GetWindowAtts
 //
 //  Purpose: 
@@ -265,4 +294,18 @@ const string&
 SetWinAnnotAttsRPC::GetExtentTypeString() const
 {
     return extstr;
+}
+
+// ****************************************************************************
+//  Method: SetWinAnnotAttsRPC::GetVisualCues
+//
+//  Programmer: Mark C. Miller
+//  Creation:   June 7, 2004 
+//
+// ****************************************************************************
+
+const VisualCueList&
+SetWinAnnotAttsRPC::GetVisualCueList() const
+{
+    return cuelist;
 }

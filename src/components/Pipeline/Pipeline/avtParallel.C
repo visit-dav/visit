@@ -809,6 +809,11 @@ void BroadcastStringVectorVector(vector< vector<string> > &vvs, int myrank)
 //  Programmer: Hank Childs
 //  Creation:   August 8, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Jun  9 21:50:12 PDT 2004
+//    Eliminated use of MPI_ANY_TAG and modified to use GetUniqueMessageTags
+//
 // ****************************************************************************
 
 bool GetListToRootProc(std::vector<std::string> &vars, int total)
@@ -819,6 +824,9 @@ bool GetListToRootProc(std::vector<std::string> &vars, int total)
     int red_val = 10000000;
     if (vars.size() == total)
         red_val = rank;
+
+    int mpiSizeTag = GetUniqueMessageTag();
+    int mpiDataTag = GetUniqueMessageTag();
        
     int lowest_with_list = 0;
     MPI_Allreduce(&red_val, &lowest_with_list, 1, MPI_INT, MPI_MIN,
@@ -832,9 +840,9 @@ bool GetListToRootProc(std::vector<std::string> &vars, int total)
         for (int i = 0 ; i < total ; i++)
         {
             int size = strlen(vars[i].c_str());
-            MPI_Send(&size, 1, MPI_INT, 0, rank, MPI_COMM_WORLD);
+            MPI_Send(&size, 1, MPI_INT, mpiSizeTag, rank, MPI_COMM_WORLD);
             void *ptr = (void *) vars[i].c_str();
-            MPI_Send(ptr, size, MPI_CHAR, 0, rank, MPI_COMM_WORLD);
+            MPI_Send(ptr, size, MPI_CHAR, mpiDataTag, rank, MPI_COMM_WORLD);
         }
     }
     else if (rank == 0)
@@ -844,11 +852,11 @@ bool GetListToRootProc(std::vector<std::string> &vars, int total)
         {
             int len;
             MPI_Status stat;
-            MPI_Recv(&len, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG,
+            MPI_Recv(&len, 1, MPI_INT, MPI_ANY_SOURCE, mpiSizeTag,
                      MPI_COMM_WORLD, &stat);
             char *varname = new char[len+1];
             void *buff = (void *) varname;
-            MPI_Recv(buff, len, MPI_CHAR, stat.MPI_SOURCE, MPI_ANY_TAG,
+            MPI_Recv(buff, len, MPI_CHAR, stat.MPI_SOURCE, mpiDataTag,
                      MPI_COMM_WORLD, &stat);
             varname[len] = '\0';
             vars.push_back(varname);
@@ -862,3 +870,27 @@ bool GetListToRootProc(std::vector<std::string> &vars, int total)
 }
 
 
+// ****************************************************************************
+//  Function: GetUniqueMessageTag
+//
+//  Purpose: Returns a suitable, unique message tag to be used in MPI_Send/Recv 
+//           Calls. NOTE, IF ANY PROCESSOR CALLS THIS FUNCTION FROM SOME POINT
+//           IN VISIT'S EXECUTION, THEN ALL MUST CALL IT FROM THAT POINT.
+//           Otherwise, processors won't agree on message tags
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   June 9, 2004 
+//
+// ****************************************************************************
+
+int GetUniqueMessageTag()
+{
+    static int retval = 0;
+#ifdef PARALLEL
+    if (retval == MPI_TAG_UB)
+        retval = 0;
+    else
+        retval++;
+#endif
+    return retval;
+}

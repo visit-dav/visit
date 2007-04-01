@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+  <Attribute name="VisualCueInfo" purpose="attributes necessary to describe a visual cue in a VisWindow (e.g. pick point or refline)" persistent="false" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="VisualCueInfo.code">
+    <Enum name="CueType">
+      PickPoint
+      RefLine
+      Unknown
+    </Enum>
+    <Field name="points" label="points" type="doubleVector">
+    </Field>
+    <Field name="cueType" label="cueType" type="enum" subtype="CueType">
+      Unknown
+    </Field>
+    <Field name="color" label="color" type="color">
+      0
+      0
+      0
+      255
+    </Field>
+    <Field name="glyphType" label="glyphType" type="string">
+    </Field>
+    <Field name="label" label="label" type="string">
+    </Field>
+    <Field name="showLabel" label="showLabel" type="bool">
+      false
+    </Field>
+    <Field name="lineStyle" label="lineStyle" type="linestyle">
+      0
+    </Field>
+    <Field name="lineWidth" label="lineWidth" type="linewidth">
+      0
+    </Field>
+    <Field name="opacity" label="opacity" type="opacity">
+      1.000000
+    </Field>
+    <Function name="SetPointF" user="true" member="true">
+    </Function>
+    <Function name="GetPointF" user="true" member="true">
+    </Function>
+    <Function name="SetFromP" user="true" member="true">
+    </Function>
+    <Function name="SetFromL" user="true" member="true">
+    </Function>
+    <Function name="SetPointD" user="true" member="true">
+    </Function>
+    <Function name="GetPointD" user="true" member="true">
+    </Function>
+    <Include file="header" quoted="false">
+      PickAttributes.h
+    </Include>
+    <Include file="header" quoted="false">
+      Line.h
+    </Include>
+  </Attribute>

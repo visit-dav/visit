@@ -73,6 +73,9 @@ VisWinQuery::~VisWinQuery()
 //    Kathleen Bonnell, Tue Apr 15 15:38:14 PDT 2002 
 //    Add support for lineout.
 //
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Modified to use PickEntry and LineEntry vectors
+//
 // ****************************************************************************
 
 void
@@ -81,15 +84,15 @@ VisWinQuery::StartBoundingBox(void)
     //
     // Hide all of the pick point letters. 
     //
-    std::vector< avtPickActor_p >::iterator it;
+    std::vector< PickEntry >::iterator it;
     for (it = pickPoints.begin() ; it != pickPoints.end() ; it++)
     {
-        (*it)->Hide();
+        it->pickActor->Hide();
     }
-    std::vector< avtLineoutActor_p >::iterator it2;
+    std::vector< LineEntry >::iterator it2;
     for (it2 = lineOuts.begin() ; it2 != lineOuts.end() ; it2++)
     {
-        (*it2)->Hide();
+        it2->lineActor->Hide();
     }
     hidden = true;
 }
@@ -114,6 +117,9 @@ VisWinQuery::StartBoundingBox(void)
 //    Kathleen Bonnell, Tue Apr 15 15:38:14 PDT 2002 
 //    Add support for lineout.
 //
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Modified to use PickEntry and LineEntry vectors
+//
 // ****************************************************************************
 
 void
@@ -122,15 +128,15 @@ VisWinQuery::EndBoundingBox(void)
     //
     // Unhide all of the pick points. 
     //
-    std::vector< avtPickActor_p >::iterator it;
+    std::vector< PickEntry >::iterator it;
     for (it = pickPoints.begin() ; it != pickPoints.end() ; it++)
     {
-        (*it)->UnHide();
+        it->pickActor->UnHide();
     }
-    std::vector< avtLineoutActor_p >::iterator it2;
+    std::vector< LineEntry >::iterator it2;
     for (it2 = lineOuts.begin() ; it2 != lineOuts.end() ; it2++)
     {
-        (*it2)->UnHide();
+        it2->lineActor->UnHide();
     }
     hidden = false;
 }
@@ -154,6 +160,9 @@ VisWinQuery::EndBoundingBox(void)
 //    Kathleen Bonnell, Tue Mar 26 16:08:23 PST 2002 
 //    Use avtPickActor methods.
 //
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Modified to use PickEntry and LineEntry vectors
+//
 // ****************************************************************************
 
 void
@@ -162,10 +171,10 @@ VisWinQuery::SetForegroundColor(float fr, float fg, float fb)
     //
     // Set the color for the pick points.
     //
-    std::vector< avtPickActor_p >::iterator it;
+    std::vector< PickEntry >::iterator it;
     for (it = pickPoints.begin() ; it != pickPoints.end() ; it++)
     {
-        (*it)->SetForegroundColor(fr, fg, fb);
+        it->pickActor->SetForegroundColor(fr, fg, fb);
     }
 }
 
@@ -200,6 +209,9 @@ VisWinQuery::SetForegroundColor(float fr, float fg, float fb)
 //    For picks, use LetterPosition instead of AttachmentPoint to determine
 //    scale.
 //
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Modified to use PickEntry and LineEntry vectors
+//
 // ****************************************************************************
 
 void
@@ -207,7 +219,7 @@ VisWinQuery::UpdateView()
 {
     if (!pickPoints.empty() && !hidden)
     {
-        std::vector< avtPickActor_p >::iterator it;
+        std::vector< PickEntry >::iterator it;
 
         float transVec[3];
         float shiftVec[3];
@@ -223,27 +235,26 @@ VisWinQuery::UpdateView()
 
         for (it = pickPoints.begin() ; it != pickPoints.end() ; it++)
         {
-            const float *pos = (*it)->GetLetterPosition();
-            (*it)->SetScale(mediator.ComputeVectorTextScaleFactor(pos));
+            const float *pos = it->pickActor->GetLetterPosition();
             if (mediator.GetMode() != WINMODE_3D)
             {
-                (*it)->Shift(shiftVec);
+                it->pickActor->Shift(shiftVec);
                 if (mediator.GetFullFrameMode())
                 {
-                    (*it)->Translate(transVec);
+                    it->pickActor->Translate(transVec);
                 }
             }
-            (*it)->UpdateView();
+            it->pickActor->UpdateView();
         }
     }
     if (!lineOuts.empty() && !hidden)
     {
-        std::vector< avtLineoutActor_p >::iterator it;
+        std::vector< LineEntry >::iterator it;
         for (it = lineOuts.begin() ; it != lineOuts.end() ; it++)
         {
-            const float *pos = (*it)->GetAttachmentPoint();
-            (*it)->SetScale(mediator.ComputeVectorTextScaleFactor(pos));
-            (*it)->UpdateView();
+            const float *pos = it->lineActor->GetAttachmentPoint();
+            it->lineActor->SetScale(mediator.ComputeVectorTextScaleFactor(pos));
+            it->lineActor->UpdateView();
         }
     }
 }
@@ -276,19 +287,21 @@ VisWinQuery::UpdateView()
 //    Kathleen Bonnell, Wed Jun 25 14:30:39 PDT 2003 
 //    Removed QueryType. 
 //
+//    Mark C. Miller Wed Jun  9 17:44:38 PDT 2004
+//    Modified to use VisualCueInfo arguments
 // ****************************************************************************
 
 void
-VisWinQuery::QueryIsValid(const PickAttributes *pa, const Line *lineAtts)
+VisWinQuery::QueryIsValid(const VisualCueInfo *vqPoint, const VisualCueInfo *vqLine)
 {
-    if (pa != NULL)
+    if (vqPoint != NULL)
     {
-        Pick(pa);
+        Pick(vqPoint);
         mediator.Render();
     }
-    else if (lineAtts != NULL)
+    else if (vqLine != NULL)
     {
-        Lineout(lineAtts);
+        Lineout(vqLine);
         mediator.Render();
     }
 }
@@ -347,12 +360,16 @@ VisWinQuery::QueryIsValid(const PickAttributes *pa, const Line *lineAtts)
 //    Kathleen Bonnell, Tue Jun  1 15:26:10 PDT 2004 
 //    Account for expansion of pick types. 
 //
+//    Mark C. Miller Wed Jun  9 17:44:38 PDT 2004
+//    Modified to use VisualCueInfo arguments
+//
 // ****************************************************************************
 
 void 
-VisWinQuery::Pick(const PickAttributes *pa)
+VisWinQuery::Pick(const VisualCueInfo *vq)
 {
-    const float *pt = pa->GetPickPoint();
+    float pt[3];
+    vq->GetPointF(0,pt);
 
     avtPickActor_p pp = new avtPickActor;
     float distance = CalculateShiftDistance();
@@ -367,10 +384,9 @@ VisWinQuery::Pick(const PickAttributes *pa)
         pp->SetAttachmentPoint(pt[0], pt[1], distance);
     }
 
-    pp->UseGlyph(pa->GetPickType() != PickAttributes::Zone &&
-                 pa->GetPickType() != PickAttributes::DomainZone);
+    pp->UseGlyph(vq->GetGlyphType() != "");
     
-    pp->SetDesignator(pa->GetPickLetter().c_str());
+    pp->SetDesignator(vq->GetLabel().c_str());
 
     float fg[3];
     mediator.GetForegroundColor(fg);
@@ -415,7 +431,8 @@ VisWinQuery::Pick(const PickAttributes *pa)
     //
     //  Save this for removal later.
     //
-    pickPoints.push_back(pp);
+    PickEntry tmp = {pp,*vq};
+    pickPoints.push_back(tmp);
 
 
     //
@@ -434,6 +451,11 @@ VisWinQuery::Pick(const PickAttributes *pa)
 //  Programmer: Kathleen Bonnell 
 //  Creation:   March 13, 2002 
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Modified to use PickEntry and LineEntry vectors
+//
 // ****************************************************************************
 void 
 VisWinQuery::ClearPickPoints()
@@ -442,10 +464,10 @@ VisWinQuery::ClearPickPoints()
     {
         return;
     }
-    std::vector< avtPickActor_p >::iterator it;
+    std::vector< PickEntry >::iterator it;
     for (it = pickPoints.begin() ; it != pickPoints.end() ; it++)
     {
-        (*it)->Remove();
+        it->pickActor->Remove();
     }
     pickPoints.clear();
 }
@@ -481,10 +503,13 @@ VisWinQuery::ClearPickPoints()
 //    Set lineoutActor's attachment and secondary points directly, rather
 //    than through (now defunct) members attachmentPoint and secondaryPoint. 
 //    
+//    Mark C. Miller Wed Jun  9 17:44:38 PDT 2004
+//    Modified to use VisualCueInfo argument
+//
 // ****************************************************************************
 
 void 
-VisWinQuery::Lineout(const Line *lineAtts)
+VisWinQuery::Lineout(const VisualCueInfo *vq)
 {
     //
     //  Create the lineout actor, and set its properties.
@@ -492,9 +517,9 @@ VisWinQuery::Lineout(const Line *lineAtts)
 
     avtLineoutActor_p lo = new avtLineoutActor;
 
-    lo->SetDesignator(lineAtts->GetDesignator());
+    lo->SetDesignator(vq->GetLabel());
     double color[4];
-    lineAtts->GetColor().GetRgba(color);
+    vq->GetColor().GetRgba(color);
     lo->SetForegroundColor(color[0], color[1], color[2]);
 
     if (mediator.GetMode() == WINMODE_3D)
@@ -505,7 +530,7 @@ VisWinQuery::Lineout(const Line *lineAtts)
     {
         lo->SetMode3D(false);
     }
-    lo->SetShowLabels(lineAtts->GetReflineLabels());
+    lo->SetShowLabels(vq->GetShowLabel());
 
     //
     // Pull the lineout actors a little closer to the camera to make sure
@@ -518,8 +543,10 @@ VisWinQuery::Lineout(const Line *lineAtts)
     z_foc = mediator.GetCanvas()->GetActiveCamera()->GetFocalPoint()[2];
     z_proj = distance*(z_pos - z_foc);
 
-    const double *pt1 = lineAtts->GetPoint1();
-    const double *pt2 = lineAtts->GetPoint2();
+    double pt1[3];
+    double pt2[3];
+    vq->GetPointD(0,pt1);
+    vq->GetPointD(1,pt2);
 
     lo->SetAttachmentPoint(pt1[0], pt1[1], pt1[2] + z_proj);
     lo->SetPoint2(pt2[0], pt2[1], pt2[2] + z_proj);
@@ -536,7 +563,8 @@ VisWinQuery::Lineout(const Line *lineAtts)
     //
     //  Save this for removal later.
     //
-    lineOuts.push_back(lo);
+    LineEntry tmp = {lo,*vq};
+    lineOuts.push_back(tmp);
 }
 
 
@@ -550,6 +578,11 @@ VisWinQuery::Lineout(const Line *lineAtts)
 //  Programmer: Kathleen Bonnell 
 //  Creation:   January 10, 2001 
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Modified to use PickEntry and LineEntry vectors
+//
 // ****************************************************************************
 void 
 VisWinQuery::ClearLineouts()
@@ -559,10 +592,10 @@ VisWinQuery::ClearLineouts()
         return;
     }
 
-    std::vector< avtLineoutActor_p >::iterator it;
+    std::vector< LineEntry >::iterator it;
     for (it = lineOuts.begin() ; it != lineOuts.end() ; it++)
     {
-        (*it)->Remove();
+        it->lineActor->Remove();
     }
     lineOuts.clear();
 }
@@ -595,16 +628,19 @@ VisWinQuery::ClearLineouts()
 //    Kathleen Bonnell, Fri Jun 27 16:39:52 PDT 2003   
 //    Set lineoutActor's attachment and secondary points directly, rather
 //    than through (now defunct) members attachmentPoint and secondaryPoint. 
+//
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Modified to use PickEntry and LineEntry vectors
 //    
 // ****************************************************************************
  
 void
-VisWinQuery::UpdateQuery(const Line *lineAtts)
+VisWinQuery::UpdateQuery(const VisualCueInfo *vq)
 {
-    std::vector< avtLineoutActor_p >::iterator it;
+    std::vector< LineEntry >::iterator it;
     for (it = lineOuts.begin() ; it != lineOuts.end() ; it++)
     {
-        if ((*it)->GetDesignator() == lineAtts->GetDesignator())
+        if (it->lineActor->GetDesignator() == vq->GetLabel())
         {
             //
             // Pull the lineout actors a little closer to the camera to make sure
@@ -617,24 +653,26 @@ VisWinQuery::UpdateQuery(const Line *lineAtts)
             z_foc = mediator.GetCanvas()->GetActiveCamera()->GetFocalPoint()[2];
             z_proj = distance*(z_pos - z_foc);
 
-            const double *pt1 = lineAtts->GetPoint1();
-            const double *pt2 = lineAtts->GetPoint2();
+            double pt1[3];
+            double pt2[3];
+            vq->GetPointD(0,pt1);
+            vq->GetPointD(1,pt2);
 
-            (*it)->SetAttachmentPoint(pt1[0], pt1[1], pt1[2] + z_proj);
-            (*it)->SetPoint2(pt2[0], pt2[1], pt2[2] + z_proj);
+            it->lineActor->SetAttachmentPoint(pt1[0], pt1[1], pt1[2] + z_proj);
+            it->lineActor->SetPoint2(pt2[0], pt2[1], pt2[2] + z_proj);
 
-            (*it)->SetLineWidth(lineAtts->GetLineWidth());
-            (*it)->SetLineStyle(lineAtts->GetLineStyle());
+            it->lineActor->SetLineWidth(vq->GetLineWidth());
+            it->lineActor->SetLineStyle(vq->GetLineStyle());
  
             double c[4];
-            lineAtts->GetColor().GetRgba(c);
-            (*it)->SetForegroundColor(c[0], c[1], c[2]);
-            (*it)->SetShowLabels(lineAtts->GetReflineLabels());
+            vq->GetColor().GetRgba(c);
+            it->lineActor->SetForegroundColor(c[0], c[1], c[2]);
+            it->lineActor->SetShowLabels(vq->GetShowLabel());
             if (mediator.GetFullFrameMode())
             {
                 float transVec[3];
                 CreateTranslationVector(transVec);
-                (*it)->Translate(transVec);
+                it->lineActor->Translate(transVec);
             }
         }
     }
@@ -661,17 +699,20 @@ VisWinQuery::UpdateQuery(const Line *lineAtts)
 //    Kathleen Bonnell, Mon Jul 15 15:38:43 PDT 2002 
 //    Add break from loop when correct actor found.
 //
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Modified to use PickEntry and LineEntry vectors
+//
 // ****************************************************************************
  
 void
-VisWinQuery::DeleteQuery(const Line *lineAtts)
+VisWinQuery::DeleteQuery(const VisualCueInfo *vq)
 {
-    std::vector< avtLineoutActor_p >::iterator it;
+    std::vector< LineEntry >::iterator it;
     for (it = lineOuts.begin() ; it != lineOuts.end() ; it++)
     {
-        if ((*it)->GetDesignator() == lineAtts->GetDesignator())
+        if (it->lineActor->GetDesignator() == vq->GetLabel())
         {
-            (*it)->Remove();
+            it->lineActor->Remove();
             lineOuts.erase(it);
             break;
         }
@@ -701,6 +742,9 @@ VisWinQuery::DeleteQuery(const Line *lineAtts)
 //    Kathleen Bonnell, Fri Feb 20 12:37:26 PST 2004
 //    Call new method 'CreateTranslationVector'.
 //
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Modified to use PickEntry and LineEntry vectors
+//
 // ****************************************************************************
  
 void
@@ -710,15 +754,15 @@ VisWinQuery::FullFrameOn(const double scale, const int type)
     {
         float vec[3]; 
         CreateTranslationVector(scale, type, vec);
-        std::vector< avtPickActor_p >::iterator it;
+        std::vector< PickEntry >::iterator it;
         for (it = pickPoints.begin() ; it != pickPoints.end() ; it++)
         {
-            (*it)->Translate(vec);
+            it->pickActor->Translate(vec);
         }
-        std::vector< avtLineoutActor_p >::iterator it2;
+        std::vector< LineEntry >::iterator it2;
         for (it2 = lineOuts.begin() ; it2 != lineOuts.end() ; it2++)
         {
-            (*it2)->Translate(vec);
+            it2->lineActor->Translate(vec);
         }
     }
 }
@@ -738,6 +782,9 @@ VisWinQuery::FullFrameOn(const double scale, const int type)
 //    Kathleen Bonnell, Fri Feb 20 12:37:26 PST 2004
 //    Use new methods 'CalculateShiftDistance' & 'CreateShiftVector'.
 //
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Modified to use PickEntry and LineEntry vectors
+//
 // ****************************************************************************
 
 void
@@ -748,18 +795,18 @@ VisWinQuery::FullFrameOff()
         float distance = CalculateShiftDistance();
         float shiftVec[3];
         CreateShiftVector(shiftVec, distance);
-        std::vector< avtPickActor_p >::iterator it;
+        std::vector< PickEntry >::iterator it;
         for (it = pickPoints.begin() ; it != pickPoints.end() ; it++)
         {
-            (*it)->ResetPosition(shiftVec);
+            it->pickActor->ResetPosition(shiftVec);
         }
     }
     if (!lineOuts.empty())
     {
-        std::vector< avtLineoutActor_p >::iterator it2;
+        std::vector< LineEntry >::iterator it2;
         for (it2 = lineOuts.begin() ; it2 != lineOuts.end() ; it2++)
         {
-            (*it2)->ResetPosition();
+            it2->lineActor->ResetPosition();
         }
     }
 }
@@ -775,6 +822,11 @@ VisWinQuery::FullFrameOff()
 //  Programmer: Kathleen Bonnell
 //  Creation:   July 8, 2003 
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Modified to use PickEntry and LineEntry vectors
+//
 // ****************************************************************************
 
 void
@@ -783,11 +835,11 @@ VisWinQuery::ReAddToWindow()
     if (lineOuts.empty())
         return;
 
-    std::vector< avtLineoutActor_p >::iterator it2;
+    std::vector< LineEntry >::iterator it2;
     for (it2 = lineOuts.begin() ; it2 != lineOuts.end() ; it2++)
     {
-        (*it2)->Remove();
-        (*it2)->Add(mediator.GetCanvas());
+        it2->lineActor->Remove();
+        it2->lineActor->Add(mediator.GetCanvas());
     }
 }
 
@@ -956,3 +1008,35 @@ VisWinQuery::CalculateShiftDistance()
     return distance;
 }
 
+
+// ****************************************************************************
+//  Method: VisWinQuery::GetVisualCues
+//
+//  Purpose:
+//    Returns a vector of visual cues of the specified type currently in the
+//    VisWindow
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   June 7, 2004 
+//
+// ****************************************************************************
+void
+VisWinQuery::GetVisualCues(const VisualCueInfo::CueType cueType,
+    std::vector<const VisualCueInfo*>& cues) const
+{
+    int i;
+
+    if ((cueType == VisualCueInfo::PickPoint) ||
+        (cueType == VisualCueInfo::Unknown))
+    {
+        for (i = 0; i < pickPoints.size(); i++)
+            cues.push_back(&(pickPoints[i].vqInfo));
+    }
+
+    if ((cueType == VisualCueInfo::RefLine) ||
+        (cueType == VisualCueInfo::Unknown))
+    {
+        for (i = 0; i < lineOuts.size(); i++)
+            cues.push_back(&(lineOuts[i].vqInfo));
+    }
+}

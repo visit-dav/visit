@@ -33,6 +33,7 @@
 #include <avtRadianToDegreeFilter.h>
 #include <avtRevolvedVolume.h>
 #include <avtRevolvedSurfaceArea.h>
+#include <avtSpecMFFilter.h>
 #include <avtTanFilter.h>
 #include <avtAbsValFilter.h>
 #include <avtNaturalLogFilter.h>
@@ -281,6 +282,9 @@ EngineVectorExpr::CreateFilters(ExprPipelineState *state)
 //      Hank Childs, Wed Dec 10 11:01:07 PST 2003
 //      Added recenter.
 //
+//      Jeremy Meredith, Wed Jun  9 09:16:25 PDT 2004
+//      Added specmf.
+//
 // ****************************************************************************
 void
 EngineFunctionExpr::CreateFilters(ExprPipelineState *state)
@@ -323,6 +327,8 @@ EngineFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtBinaryMultiplyFilter();
     else if (functionName == "matvf")
         f = new avtMatvfFilter();
+    else if (functionName == "specmf")
+        f = new avtSpecMFFilter();
     else if (functionName == "nmats")
         f = new avtNMatsFilter();
     else if (functionName == "recenter")

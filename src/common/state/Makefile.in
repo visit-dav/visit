@@ -225,6 +225,9 @@
 #    Brad Whitlock, Thu Apr 22 10:42:08 PDT 2004
 #    Added -lmisc to the libs since that's needed for the Mac.
 #
+#    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+#    Added source files for VisualCues
+#
 ##############################################################################
 
 ##
@@ -312,6 +315,8 @@ SRC=    AnimationAttributes.C \
         ViewAttributes.C \
         ViewCurveAttributes.C \
 	VisItRPC.C \
+        VisualCueInfo.C \
+	VisualCueList.C \
         WindowAttributes.C \
         WindowInformation.C \
         Xfer.C

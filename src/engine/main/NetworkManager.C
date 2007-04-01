@@ -16,6 +16,8 @@
 #include <OperatorPluginInfo.h>
 #include <AnnotationObjectList.h>
 #include <PickAttributes.h>
+#include <VisualCueInfo.h>
+#include <VisualCueList.h>
 #include <avtCallback.h>
 #include <avtColorTables.h>
 #include <avtExtents.h>
@@ -1369,6 +1371,9 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
 //    Removed window attributes arg from GetActor method
 //    Added code to push colors into all plots
 //    Made triangle count a debug5 statement (from debug1)
+//
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Added visualCueList arg to SetAnnotationAttributes
 // ****************************************************************************
 avtDataObjectWriter_p
 NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
@@ -1483,8 +1488,10 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
           // Add annotations if necessary 
           //
           if (!do3DAnnotsOnly)
+          {
               SetAnnotationAttributes(annotationAttributes,
-                                      annotationObjectList, false);
+                                      annotationObjectList, visualCueList, false);
+          }
 
           debug5 << "Rendering " << viswin->GetNumTriangles() << " triangles. " 
                  << "Balanced speedup = " << RenderBalance(viswin->GetNumTriangles())
@@ -1735,11 +1742,17 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
 //
 //    Mark C. Miller, Tue May 25 20:44:10 PDT 2004
 //    Added arg for annotation object list
+//
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Added code to deal with VisualCueList
 // ****************************************************************************
 void
 NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
-    const AnnotationObjectList &aolist, bool do3DAnnotsOnly)
+    const AnnotationObjectList &aolist, const VisualCueList &visCues,
+    bool do3DAnnotsOnly)
 {
+   int i;
+
 #ifdef PARALLEL
    if (PAR_Rank() == 0)
 #endif
@@ -1758,6 +1771,30 @@ NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
 
       viswin->SetAnnotationAtts(&newAtts);
 
+      //
+      // Set up all the visual cues (which are 3D annotations)
+      //
+      if (visCues != visualCueList)
+      {
+          viswin->ClearPickPoints();
+          viswin->ClearRefLines();
+          for (i = 0; i < visCues.GetNumVisualCueInfos(); i++)
+          {
+              const VisualCueInfo& cue = visCues.GetVisualCueInfo(i);
+              switch (cue.GetCueType())
+              {
+                  case VisualCueInfo::PickPoint:
+                      viswin->QueryIsValid(&cue, NULL);
+                      break;
+                  case VisualCueInfo::RefLine:
+                      viswin->QueryIsValid(NULL, &cue);
+                      break;
+                  default:
+                      break;
+              }
+          }
+      }
+
       if (do3DAnnotsOnly)
           viswin->DeleteAllAnnotationObjects();
       else
@@ -1770,6 +1807,8 @@ NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
 
    annotationAttributes = atts;
    annotationObjectList = aolist;
+   visualCueList = visCues;
+
 }
 
 // ****************************************************************************

@@ -188,6 +188,9 @@ class StatusAttributes;
 //
 //    Kathleen Bonnell, Wed Jun  2 09:43:07 PDT 2004 
 //    Added another bool arg to StartPick.
+//
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Added VisualCueList argument to SetWinAnnotAtts
 // 
 // ****************************************************************************
 
@@ -241,7 +244,9 @@ public:
     void                     SetWinAnnotAtts(const WindowAttributes*,
                                              const AnnotationAttributes*,
                                              const AnnotationObjectList*,
-                                             std::string);
+                                             std::string,
+                                             const VisualCueList*); 
+
     avtDataObjectReader_p    Render(bool, const intVector&, bool,
                                     void (*waitCB)(void *), void *cbData);
 
