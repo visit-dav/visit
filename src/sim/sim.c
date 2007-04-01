@@ -6,14 +6,23 @@
 #include <sys/types.h>
 #include <time.h>
 #include <errno.h>
+#include <dlfcn.h>
+#include <string.h>
 
 int consoleinputdescriptor = 0;
-int engineinputdescriptor = 10;
+int engineinputdescriptor = -1;
 
 int runflag = 0;
 int quitflag = 0;
 
 int cycle = 0;
+
+void *(*v_loadengine)() = NULL;
+int   (*v_getdescriptor)(void*) = NULL;
+void  (*v_processinput)(void*) = NULL;
+void  (*v_initialize)(void*,int,char**) = NULL;
+void  (*v_connectviewer)(void*,int,char**) = NULL;
+void *v_engine = NULL;
 
 void ControlCHandler(int sig)
 {
@@ -46,20 +55,85 @@ void RunSimulation()
     }
 }
 
+void ConnectToViewer()
+{
+    char v_host[256];
+    char v_port[256];
+    char v_key[256];
+    char *argv[10];
+    int nargs = 9;
+
+    fprintf(stderr, "host: ");
+    gets(v_host);
+
+    fprintf(stderr, "port: ");
+    gets(v_port);
+
+    fprintf(stderr, "key : ");
+    gets(v_key);
+
+
+    argv[0] = strdup("engine");
+    argv[1] = strdup("-host");
+    argv[2] = strdup(v_host);
+    argv[3] = strdup("-port");
+    argv[4] = strdup(v_port);
+    argv[5] = strdup("-key");
+    argv[6] = strdup(v_key);
+    argv[7] = strdup("-debug");
+    argv[8] = strdup("5");
+    argv[9] = NULL;
+
+    v_initialize(v_engine, nargs, argv);
+    v_connectviewer(v_engine, nargs, argv);
+}
+
+void OpenVisit()
+{
+    void *handle = dlopen("libewrap.so", RTLD_LAZY | RTLD_GLOBAL);
+
+    if (!handle)
+    {
+        fprintf(stderr, "couldn't dlopen libewrap.so: %s\n", dlerror());
+        return;
+    }
+
+    v_loadengine = dlsym(handle, "load_engine");
+    if (!v_loadengine) { fprintf(stderr, "couldn't find symbol: %s\n", dlerror()); return; }
+
+    v_getdescriptor = dlsym(handle, "get_descriptor");
+    if (!v_getdescriptor) { fprintf(stderr, "couldn't find symbol: %s\n", dlerror()); return; }
+
+    v_processinput = dlsym(handle, "process_input");
+    if (!v_processinput) { fprintf(stderr, "couldn't find symbol: %s\n", dlerror()); return; }
+
+    v_initialize = dlsym(handle, "initialize");
+    if (!v_initialize) { fprintf(stderr, "couldn't find symbol: %s\n", dlerror()); return; }
+
+    v_connectviewer = dlsym(handle, "connect_to_viewer");
+    if (!v_connectviewer) { fprintf(stderr, "couldn't find symbol: %s\n", dlerror()); return; }
+
+    v_engine = v_loadengine();
+
+    ConnectToViewer();
+
+    engineinputdescriptor = v_getdescriptor(v_engine);
+}
+
 void ProcessConsoleCommand()
 {
     // Read A Command
     char buff[10000];
     int iseof = (fgets(buff, 10000, stdin) == NULL);
 
-    if (buff[strlen(buff)-1] == '\n')
-        buff[strlen(buff)-1] = '\0';
-
     if (iseof)
     {
         sprintf(buff, "quit");
         printf("quit\n");
     }
+
+    if (strlen(buff)>0 && buff[strlen(buff)-1] == '\n')
+        buff[strlen(buff)-1] = '\0';
 
     if (!strcmp(buff, "quit"))
     {
@@ -75,7 +149,7 @@ void ProcessConsoleCommand()
     }
     else if (!strcmp(buff, "visit"))
     {
-        printf("connecting to visit unimplemented so far\n");
+        OpenVisit();
     }
     else if (!strcmp(buff, ""))
     {
@@ -90,6 +164,7 @@ void ProcessConsoleCommand()
 void ProcessEngineCommand()
 {
     printf("Received engine command\n");
+    v_processinput(v_engine);
 }
 
 void MainLoop()
@@ -111,7 +186,8 @@ void MainLoop()
         FD_ZERO(&readSet);
 
         FD_SET(consoleinputdescriptor, &readSet);
-        //FD_SET(engineinputdescriptor, &readSet);
+        if (engineinputdescriptor > 0)
+            FD_SET(engineinputdescriptor, &readSet);
         ret = select(maxdescriptor+1, &readSet, (fd_set *)NULL, (fd_set *)NULL,
                      NULL);
 
@@ -154,8 +230,41 @@ void MainLoop()
 }
 
 
+void AddVisItLibraryPaths(int argc, char *argv[])
+{
+    int i;
+    char *buff;
+    char **argv2;
+
+    if (getenv("VISIT_PATHS_SET"))
+        return;
+
+    /*if (getenv("LD_LIBRARY_PATH")) printf("ld_library_path=%s\n", getenv("LD_LIBRARY_PATH")); else printf("ld_library_path=(null)\n");*/
+    buff = malloc(10000);
+    if (getenv("LD_LIBRARY_PATH"))
+        sprintf(buff, "LD_LIBRARY_PATH=.:../lib:%s", getenv("LD_LIBRARY_PATH"));
+    else
+        sprintf(buff, "LD_LIBRARY_PATH=.:../lib");
+    putenv(buff);
+
+    buff = strdup("VISIT_PATHS_SET=1");
+    putenv(buff);
+
+    argv2 = malloc(argc * sizeof(char*));
+    for (i=0; i<argc; i++)
+    {
+        argv2[i] = strdup(argv[i]);
+    }
+    execv(argv[0],argv2);
+    fprintf(stderr, "exec failed\n");
+    exit(-1);
+}
+
 int main(int argc, char *argv[])
 {
+    if (getenv("LD_LIBRARY_PATH")) printf("ld_library_path=%s\n", getenv("LD_LIBRARY_PATH")); else printf("ld_library_path=(null)\n");
+    AddVisItLibraryPaths(argc, argv);
+
     printf("\n          >>> STARTING SIMULATION PROTOTYPE <<<\n\n\n");
 
     printf("Known Commands:\n"

@@ -43,6 +43,11 @@ class Xfer;
 //  Programmer:  Jeremy Meredith
 //  Creation:    July  9, 2003
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Jan 14 10:38:48 PST 2004
+//    Made some changes so that the engine can be used from within an
+//    external event loop.
+//
 // ****************************************************************************
 
 class Engine
@@ -63,6 +68,10 @@ class Engine
     // Get the network manager
     NetworkManager *GetNetMgr()                   { return netmgr; }
 
+    // Methods needed for an external event loop
+    int             GetInputSocket();
+    void            ProcessInput();
+
     // Method to write data back to the viewer
     void            WriteData(NonBlockingRPC *, avtDataObjectWriter_p &);
 
@@ -81,7 +90,6 @@ class Engine
   protected:
                     Engine();
     void            ProcessCommandLine(int argc, char *argv[]);
-    void            ProcessInput();
     void            ResetTimeout(int timeout);
 
     static void     AlarmHandler(int signal);

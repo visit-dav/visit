@@ -51,7 +51,8 @@ using std::vector;
 using std::string;
 
 // the version of the SAMRAI writer the current reader code matches 
- static const float        expected_version_number = 2.0;
+static const float        expected_version_number = 2.0;
+static const char        *inferredVoidMatName = "inferred void";
 static const int MAX_GHOST_LAYERS = 2;
 static const int MAX_GHOST_CODES = MAX_GHOST_LAYERS *
                                    MAX_GHOST_LAYERS *
@@ -150,6 +151,7 @@ avtSAMRAIFileFormat::avtSAMRAIFileFormat(const char *fname)
     ghosting_is_consistent = true;
 
     has_mats = false;
+    inferVoidMaterial = false;
     num_mats = 0;
     mat_num_ghosts = 0;
     mat_names = 0;
@@ -172,7 +174,7 @@ avtSAMRAIFileFormat::avtSAMRAIFileFormat(const char *fname)
 // ****************************************************************************
 avtSAMRAIFileFormat::~avtSAMRAIFileFormat()
 {
-    int i;
+    int i,v;
 
     DELETE(xlo);
     DELETE(dx);
@@ -181,7 +183,7 @@ avtSAMRAIFileFormat::~avtSAMRAIFileFormat()
     DELETE(patch_extents);
     
     if (var_extents != NULL) {
-        for(int v=0; v<num_vars; v++) {
+        for(v=0; v<num_vars; v++) {
             delete[] var_extents[v];
         }
         delete[] var_extents;
@@ -257,13 +259,15 @@ avtSAMRAIFileFormat::~avtSAMRAIFileFormat()
     //
     if (cached_patches != 0)
     {
-        for (int p=0; p<num_patches; p++)
+        int p;
+        for (p=0; p<num_patches; p++)
         {
             if (cached_patches[p] != 0)
             {
                 if (has_ghost)
                 {
-                    for (int g=0; g<MAX_GHOST_CODES; g++) {
+                    int g;
+                    for (g=0; g<MAX_GHOST_CODES; g++) {
                         // XXX is it necessary??
                         if (cached_patches[p][g] != 0)
                             cached_patches[p][g]->Delete();
@@ -600,121 +604,33 @@ avtSAMRAIFileFormat::ReadMesh(int patch)
 //    Kathleen Bonnell, Mon Dec 22 15:06:41 PST 2003
 //    Added code to delete hdims, max_hdims.
 //
+//    Mark C. Miller, Tue Jan 13 14:23:38 PST 2004
+//    Replaced with call to ReadVar to reduce duplication of code
+//
 // ****************************************************************************
 vtkDataArray *
 avtSAMRAIFileFormat::GetVar(int patch, const char *visit_var_name)
 {
+    return ReadVar(patch, visit_var_name);
+}
 
-    debug5 << "avtSAMRAIFileFormat::GetVar for variable " << visit_var_name <<
-        "on patch " << patch << endl;
-
-    string var_name = visit_var_name;
-
-    std::map<std::string, var_t>::const_iterator cur_var;
-    cur_var = var_names_num_components.find(var_name);
-
-    if (cur_var == var_names_num_components.end())
-    {
-        EXCEPTION1(InvalidVariableException, var_name);
-    }
-    
-    int num_components = (*cur_var).second.num_components;
-    int cell_centered  = (*cur_var).second.cell_centered;
-    int num_ghosts[3] = {(*cur_var).second.num_ghosts[0],
-                         (*cur_var).second.num_ghosts[1],
-                         (*cur_var).second.num_ghosts[2]};
-        
-    if (num_components != 1 )
-    {
-        EXCEPTION1(InvalidVariableException, var_name);
-    }
-
-    for (int v = 0; v < num_vars; v++) {
-        if (var_names[v] == var_name) {
-            if (!var_extents[v][patch].data_is_defined) {
-                return NULL;
-            }
-            break;
-        }
-    }
-
-    int extent = cell_centered == 1 ? 1 : 2;
-    int dim = num_dim_problem < 3 ? num_dim_problem: 3;
-    int num_data_samples = 1;
-    for (int i=0; i<dim; i++) {
-        num_data_samples *= patch_extents[patch].upper[i] - 
-                            patch_extents[patch].lower[i] + extent + 2 * num_ghosts[i];
-    }
-
-    char file[2048];   
-    sprintf(file, "%sprocessor_cluster.%05d.samrai",
-            dir_name.c_str(), patch_map[patch].file_cluster_number);
-
-    char variable[100];
-    sprintf(variable, "/processor.%05d/level.%05d/patch.%05d/%s",
-            patch_map[patch].processor_number,
-            patch_map[patch].level_number,
-            patch_map[patch].patch_number, 
-            var_name.c_str());
-
-    hid_t h5f_file = H5Fopen(file, H5F_ACC_RDONLY, H5P_DEFAULT); 
-    if (h5f_file < 0)
-    {
-        EXCEPTION1(InvalidFilesException, file);
-    }
-
-    hid_t h5d_variable = H5Dopen(h5f_file, variable);
-    if (h5d_variable < 0)
-    {
-        EXCEPTION1(InvalidFilesException, file);
-    }
-
-    // check dataset size agrees with what we computed for num_data_samples
-    hid_t h5d_space = H5Dget_space(h5d_variable);
-    int hndims = H5Sget_simple_extent_ndims(h5d_space);
-    hsize_t *hdims = new hsize_t[hndims];
-    hsize_t *max_hdims = new hsize_t[hndims];
-    H5Sget_simple_extent_dims(h5d_space, hdims, max_hdims);
-    hsize_t hsum = 1;
-    for (int i = 0; i < hndims; i++)
-        hsum *= hdims[i];
-    if ((hsize_t) num_data_samples != hsum)
-    {
-        EXCEPTION2(UnexpectedValueException, hsum, num_data_samples);
-    }
-    H5Sclose(h5d_space);
-    delete [] hdims;
-    delete [] max_hdims;
-
-    vtkFloatArray *scalars = vtkFloatArray::New();
-    scalars->SetNumberOfTuples(num_data_samples);
-    float *var_data = scalars->GetPointer(0);
-
-    H5Dread(h5d_variable, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
-            var_data);
-
-    H5Dclose(h5d_variable);      
-    H5Fclose(h5f_file);
-
-    // update last patch/var information
-    last_visit_var_name = visit_var_name;
-    last_patch = patch;
-
-    return scalars;
+vtkDataArray *
+avtSAMRAIFileFormat::GetVectorVar(int patch, const char *visit_var_name)
+{
+    return ReadVar(patch, visit_var_name);
 }
 
 // ****************************************************************************
-//  Method:  avtSAMRAIFileFormat::GetVectorVar
+//  Method:  avtSAMRAIFileFormat::ReadVar
 //
 //  Purpose:
-//    Reads the vector variable with the given name for the given domain.
-//
-//  Note:  The Generic Database (which calls this function) already handles
-//         caching for a single time step.
+//    Reads a scalar, vector or tensor variable with the given name for the
+//    given domain.
 //
 //  Arguments:
 //    patch                the patch number
 //    visit_var_name       the name of the variable to read
+//    expected_num_comps   the expected number of components
 //
 //  Programmer:  Walter Herrera Jimenez
 //  Creation:    July 18, 2003
@@ -731,31 +647,36 @@ avtSAMRAIFileFormat::GetVar(int patch, const char *visit_var_name)
 //    copies. Now, HDF5 reads the data directly into the buffer space allocated
 //    by VTK in the vtkFloatArray object.
 //
+//    Mark C. Miller, Tue Jan 13 13:45:31 PST 2004
+//    Renamed from GetVectorVar to ReadVar
+//
 // ****************************************************************************
 vtkDataArray *
-avtSAMRAIFileFormat::GetVectorVar(int patch, 
-                                  const char *visit_var_name)
+avtSAMRAIFileFormat::ReadVar(int patch, 
+                             const char *visit_var_name)
 {
-    debug5 << "avtSAMRAIFileFormat::GetVectorVar for variable " <<
-        visit_var_name << "on patch " << patch << endl;
+
+    debug5 << "avtSAMRAIFileFormat::ReadVar for variable " << visit_var_name
+           << "on patch " << patch << endl;
 
     string var_name = visit_var_name; 
 
+    // find the variable name in our variable list
     std::map<std::string, var_t>::const_iterator cur_var;
     cur_var = var_names_num_components.find(var_name);
-
     if (cur_var == var_names_num_components.end())
     {
         EXCEPTION1(InvalidVariableException, visit_var_name);
     }
     
+    // get component count, centering and ghost information for this variable
     int num_components = (*cur_var).second.num_components;
-    num_components = num_components <= 3 ? num_components : 3;
     int cell_centered =  (*cur_var).second.cell_centered;
     int num_ghosts[3] = {(*cur_var).second.num_ghosts[0],
                          (*cur_var).second.num_ghosts[1],
                          (*cur_var).second.num_ghosts[2]};
         
+    // compute total number of samples
     int extent = cell_centered == 1 ? 1 : 2;
     int dim = num_dim_problem < 3 ? num_dim_problem: 3;
     int num_data_samples = 1;
@@ -764,6 +685,7 @@ avtSAMRAIFileFormat::GetVectorVar(int patch,
                             patch_extents[patch].lower[i] + extent + 2 * num_ghosts[i];
     }
 
+    // verify we actually have data on this patch
     for (int v = 0; v < num_vars; v++) {
         if (var_names[v] == var_name) {
             if (!var_extents[v][patch].data_is_defined) {
@@ -773,30 +695,84 @@ avtSAMRAIFileFormat::GetVectorVar(int patch,
         }
     }
 
+    // determine the name of the file that contains the variable and open it 
     char file[2048];   
     sprintf(file, "%sprocessor_cluster.%05d.samrai",
             dir_name.c_str(), patch_map[patch].file_cluster_number);
-
     hid_t h5f_file = H5Fopen(file, H5F_ACC_RDONLY, H5P_DEFAULT); 
     if (h5f_file < 0)
     {
         EXCEPTION1(InvalidFilesException, file);
     }
 
+    // guess var_type from problem dimensions and number of components
+    avtVarType var_type = AVT_UNKNOWN_TYPE;
+    if (num_components == 1)
+        var_type = AVT_SCALAR_VAR;
+    else if (num_dim_problem == 2)
+    {
+        if (num_components == 2)
+            var_type = AVT_VECTOR_VAR;
+        else if (num_components == 3)
+            var_type = AVT_SYMMETRIC_TENSOR_VAR;
+        else if (num_components == 4)
+            var_type = AVT_TENSOR_VAR;
+    }
+    else if (num_dim_problem == 3)
+    {
+        if (num_components == 3)
+            var_type = AVT_VECTOR_VAR;
+        else if (num_components == 6)
+            var_type = AVT_SYMMETRIC_TENSOR_VAR;
+        else if (num_components == 9)
+            var_type = AVT_TENSOR_VAR;
+    }
+    if (var_type == AVT_UNKNOWN_TYPE)
+    {
+        EXCEPTION1(InvalidVariableException, visit_var_name);
+    }
 
-    vtkFloatArray *vectors = vtkFloatArray::New();
-    vectors->SetNumberOfComponents(3);
-    vectors->SetNumberOfTuples(num_data_samples);
-    float *fbuf = (float*) vectors->GetVoidPointer(0);
+    // determine number of components to allocate in VTK data array
+    int num_alloc_comps = 0;
+    switch (var_type)
+    {
+        case AVT_SCALAR_VAR: num_alloc_comps = 1; break;
+        case AVT_VECTOR_VAR: num_alloc_comps = 3; break;
+        case AVT_SYMMETRIC_TENSOR_VAR:
+        case AVT_TENSOR_VAR: num_alloc_comps = 9; break;
+        default: break;
+    }
+    if (num_alloc_comps == 0)
+    {
+        EXCEPTION2(UnexpectedValueException, num_alloc_comps, "a value other than zero");
+    }
+
+    // allocate VTK data array for this variable 
+    vtkFloatArray *var_data = vtkFloatArray::New();
+    var_data->SetNumberOfComponents(num_alloc_comps);
+    var_data->SetNumberOfTuples(num_data_samples);
+    float *fbuf = (float*) var_data->GetVoidPointer(0);
 
     for (int i = 0 ; i < num_components ; i++) {
-        char variable[100];
-        sprintf(variable, "/processor.%05d/level.%05d/patch.%05d/%s.%02d",
-                patch_map[patch].processor_number,
-                patch_map[patch].level_number,
-                patch_map[patch].patch_number, 
-                var_name.c_str(), i);
 
+        // determine name of the HDF5 dataset and open it 
+        char variable[256];
+        if (var_type == AVT_SCALAR_VAR)
+        {
+            sprintf(variable, "/processor.%05d/level.%05d/patch.%05d/%s",
+                    patch_map[patch].processor_number,
+                    patch_map[patch].level_number,
+                    patch_map[patch].patch_number, 
+                    var_name.c_str());
+        }
+        else
+        {
+            sprintf(variable, "/processor.%05d/level.%05d/patch.%05d/%s.%02d",
+                    patch_map[patch].processor_number,
+                    patch_map[patch].level_number,
+                    patch_map[patch].patch_number, 
+                    var_name.c_str(), i);
+        }
         hid_t h5d_variable = H5Dopen(h5f_file, variable);
         if (h5d_variable < 0)
         {
@@ -821,10 +797,10 @@ avtSAMRAIFileFormat::GetVectorVar(int patch,
         delete [] max_hdims;
 
         // create dataspace and selection to read directly into fbuf
-        hsize_t nvals = 3*num_data_samples;
+        hsize_t nvals = num_components * num_data_samples;
         hid_t memspace = H5Screate_simple(1, &nvals, &nvals);
         hssize_t start = i;
-        hsize_t stride = 3;
+        hsize_t stride = num_components;
         hsize_t count = num_data_samples;
         H5Sselect_hyperslab(memspace, H5S_SELECT_SET, &start, &stride, &count, NULL);
 
@@ -836,19 +812,23 @@ avtSAMRAIFileFormat::GetVectorVar(int patch,
 
     H5Fclose(h5f_file);
 
-    // set 3rd component to 0 if necessary
-    if (num_components == 2)
+    // fill in 0's when necessary
+    if (num_alloc_comps != num_components)
     {
         int i;
-        for (i = 2; i < num_data_samples*3; i+=3)
-            fbuf[i] = 0.0;
+        for (i=0; i < num_data_samples; i++)
+        {
+            int j;
+            for (j = num_components; j < num_alloc_comps; j++)
+                fbuf[i * num_alloc_comps + j] = 0.0;
+        }
     }
 
     // update last patch/var information
     last_visit_var_name = visit_var_name;
     last_patch = patch;
 
-    return vectors;
+    return var_data;
 }
 
 // ****************************************************************************
@@ -873,6 +853,13 @@ avtSAMRAIFileFormat::ReadMatSpecFractions(int patch, string mat_name,
 
     debug5 << "avtSAMRAIFileFormat::ReadMatSpecFractions for material "
            << mat_name.c_str() << ", on patch " << patch << endl;
+
+    // if we ever get here expecting to actually read fractions for the
+    // inferred void material, something is really wrong
+    if (mat_name == inferredVoidMatName)
+    {
+        EXCEPTION2(UnexpectedValueException, mat_name, "something other than void");
+    }
 
     int matNo = -1;
     for (i = 0; i < num_mats; i++)
@@ -1001,6 +988,10 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
     std::vector<int> matList;
     for (i = 0; i < num_mats; i++)
     {
+        // since the inferred "void" material doesn't really exist, we skip it
+        if (mat_names[i] == inferredVoidMatName)
+            continue;
+
         int matCompFlag = mat_names_matinfo[mat_names[i]][patch].mat_comp_flag;
 
         switch (matCompFlag)
@@ -1027,8 +1018,6 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
     {
         EXCEPTION1(InvalidVariableException, matObjName);
     }
-
-    matList.size();
 
     // if we encountered the 'one mat' case, above, make sure we only got
     // one material
@@ -1060,7 +1049,7 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
 
     avtMaterial *mat = NULL;
 
-    if (matList.size() == 1)
+    if (oneMat)
     {
         // create a matlist array for this single material
         int *matlist = new int[ncells];
@@ -1089,11 +1078,28 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
     else
     {
        // read the volume fractions for each material
-       float **vfracs = new float*[matList.size()];
+       float **vfracs = new float*[matList.size()==1?2:matList.size()];
        for (i = 0; i < matList.size(); i++)
        {
            vfracs[i] = ReadMatSpecFractions(patch, mat_names[matList[i]]);
            bytesInFile += (ncells * sizeof(float));
+       }
+
+       // check to see if we've hit the case where we need to infer
+       // the void material for this patch and that it is ok to do so
+       if (matList.size() == 1)
+       {
+           if (inferVoidMaterial == false)
+           {
+               EXCEPTION2(UnexpectedValueException, 1, "2 or more materials");
+           }
+
+           // infer the void's volume fractions
+           for (i = 0; i < ncells; i++)
+               vfracs[1][i] = 1.0 - vfracs[0][i];
+
+           // tack on the material number for the inferred void material
+           matList.push_back(num_mats-1);
        }
 
        int *matfield;
@@ -1390,6 +1396,10 @@ avtSAMRAIFileFormat::GetSpecies(int patch, const char *specObjName)
     vector<int> matList;
     for (i = 0; i < num_mats; i++)
     {
+        // since the inferred "void" material doesn't really exist, we skip it
+        if (mat_names[i] == inferredVoidMatName)
+            continue;
+
         int matCompFlag = mat_names_matinfo[mat_names[i]][patch].mat_comp_flag;
 
         switch (matCompFlag)
@@ -1590,10 +1600,11 @@ avtSAMRAIFileFormat::ConvertMassFractionFields(vector<int> matIds,
             else
             {
 #ifdef USE_UNIQUE_SPECIES
-                float mf_vec[nmatspec[matNum]];
+                float *mf_vec = new float[nmatspec[matNum]];
                 for (j = 0; j < nmatspec[matNum]; j++)
                     mf_vec[j] = matSpecFracs[matNum][j][i];
                 speclist[i] = uniq_species_mf.IndexOfMFVector(mf_vec, nmatspec[matNum]);
+                delete [] mf_vec;
 #else
                 speclist[i] = nspecies_mf;
                 for (j = 0; j < nmatspec[matNum]; j++)
@@ -1619,10 +1630,11 @@ avtSAMRAIFileFormat::ConvertMassFractionFields(vector<int> matIds,
                 }
 
 #ifdef USE_UNIQUE_SPECIES
-                float mf_vec[nmatspec[matNum]];
+                float *mf_vec = new float[nmatspec[matNum]];
                 for (j = 0; j < nmatspec[matNum]; j++)
                     mf_vec[j] = matSpecFracs[matNum][j][i];
                 mixlist[mixidx] = uniq_species_mf.IndexOfMFVector(mf_vec, nmatspec[matNum]);
+                delete [] mf_vec;
 #else
                 mixlist[mixidx] = nspecies_mf;
                 for (j = 0; j < nmatspec[matNum]; j++)
@@ -1840,12 +1852,14 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         //
         if (has_mats == true)
         {
+            // re-format the material names for avt's API
             vector<string> matnames;
             for (i = 0; i < num_mats; i++)
                 matnames.push_back(mat_names[i]);
 
-            avtMaterialMetaData *mmd = new avtMaterialMetaData("materials",
-                                               mesh_name, num_mats, matnames);
+            // add the material object
+            avtMaterialMetaData *mmd = new avtMaterialMetaData("materials", mesh_name,
+                                               num_mats, matnames);
             md->Add(mmd);
 
             //
@@ -1906,23 +1920,32 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             char *var_name = new char[(*var_it).first.size() + 20];
             sprintf(var_name, "%s", (*var_it).first.c_str());
           
-            if ((*var_it).second.num_components == 1) { // scalar field
-              if ( (*var_it).second.cell_centered == 1) {
-                AddScalarVarToMetaData(md, var_name, mesh_name, AVT_ZONECENT);
-              } else {
-                AddScalarVarToMetaData(md, var_name, mesh_name, AVT_NODECENT);
-              }
+            // set the centering
+            avtCentering centering;
+            if ( (*var_it).second.cell_centered == 1)
+                centering = AVT_ZONECENT;
+            else
+                centering = AVT_NODECENT;
+
+            if ((*var_it).second.num_components == 1)                    // scalar field
+            {
+                AddScalarVarToMetaData(md, var_name, mesh_name, centering);
             }
-            else if ((*var_it).second.num_components <= 3) { // vector field
-              if ( (*var_it).second.cell_centered == 1) {
-                AddVectorVarToMetaData(md, var_name, mesh_name, AVT_ZONECENT,
-                                       //(*var_it).second.num_components);
-                                       3);
-              } else {
-                AddVectorVarToMetaData(md, var_name, mesh_name, AVT_NODECENT,
-                                       //(*var_it).second.num_components);
-                                       3);
-              }
+            else if ((*var_it).second.num_components == num_dim_problem) // vector field
+            {
+                AddVectorVarToMetaData(md, var_name, mesh_name, centering, 3);
+            }
+            else if (((num_dim_problem == 2) && ((*var_it).second.num_components == 3)) ||
+                     ((num_dim_problem == 3) && ((*var_it).second.num_components == 6)))
+            {
+                AddSymmetricTensorVarToMetaData(md, var_name, mesh_name, centering,
+                    (*var_it).second.num_components);
+            }
+            else if (((num_dim_problem == 2) && ((*var_it).second.num_components == 4)) ||
+                     ((num_dim_problem == 3) && ((*var_it).second.num_components == 9)))
+            {
+                AddTensorVarToMetaData(md, var_name, mesh_name, centering,
+                    (*var_it).second.num_components);
             }
             else {
               EXCEPTION1(InvalidVariableException, (*var_it).first.c_str());
@@ -3105,14 +3128,16 @@ avtSAMRAIFileFormat::ReadMaterialInfo(hid_t &h5_file)
     if (has_mats == false)
         return;
 
-    // if we do have materials, all the remaining information is required 
-    isOptional = false;
-
     // read names of material-specific variables
     num_mat_vars = -1;
     mat_var_names = 0;
     ReadDataset(h5_file, "/materials/material_variable_names", "string",
         1, &num_mat_vars, (void**) &mat_var_names, isOptional);
+    if (num_mat_vars == -1)
+        num_mat_vars = 0;
+
+    // if we do have materials, all the remaining information is required 
+    isOptional = false;
 
     // read information on ghosting for material variables
     int numVals = 3;
@@ -3156,6 +3181,53 @@ avtSAMRAIFileFormat::ReadMaterialInfo(hid_t &h5_file)
             
             mat_var_names_matinfo[mat_names[m]][mat_var_names[mv]] = tmpInfo;
         }
+    }
+
+    // check if we'll ever need to infer the "void" material for this database
+    inferVoidMaterial = false;
+    int p;
+    for (p = 0; p < num_patches; p++)
+    {
+        int i, n0 = 0, n1 = 0, n2 = 0;
+        for (i = 0; i < num_mats; i++)
+        {
+            int matCompFlag = mat_names_matinfo[mat_names[i]][p].mat_comp_flag;
+            switch (matCompFlag)
+            {
+                case 0: // this material covers no part of the patch 
+                    n0++;
+                    break;
+                case 1: // this material covers the patch, wholly
+                    n1++;
+                    break;
+                case 2: // this material covers the patch, partially
+                    n2++;
+                    break;
+            }
+        }
+
+        if (n1 == 0 && n2 == 1)
+        {
+            inferVoidMaterial = true;
+            break;
+        }
+    }
+
+    // if we need to infer the "void" material, adjust the material count/names 
+    if (inferVoidMaterial)
+    {
+        string *new_mat_names = new string[num_mats+1];
+
+        // copy over the existing names
+        int i;
+        for (i = 0; i < num_mats; i++)
+            new_mat_names[i] = mat_names[i];
+        new_mat_names[num_mats] = inferredVoidMatName; 
+
+        DELETE(mat_names);
+        mat_names = new_mat_names;
+
+        num_mats++;
     }
 }
 
@@ -3201,12 +3273,17 @@ avtSAMRAIFileFormat::ReadSpeciesInfo(hid_t &h5_file)
         char matSpecName[512];
         sprintf(matSpecName,"/materials/species/%s", mat_names[i].c_str());
 
-        nmatspec[i] = -1;
         string* tmpString = 0;
-        ReadDataset(h5_file, matSpecName, "string", 1, &nmatspec[i],
-            (void**) &tmpString, isOptional);
+        if (mat_names[i] != inferredVoidMatName)
+        {
+            nmatspec[i] = -1;
+            ReadDataset(h5_file, matSpecName, "string", 1, &nmatspec[i],
+                (void**) &tmpString, isOptional);
+        }
+        else
+            nmatspec[i] = 0;
 
-        // if the given material has no constituent species, its count is 1
+        // if the given material has no constituent species, its count is 0
         if (nmatspec[i] == 0)
         {
             mat_specs[mat_names[i]] = 0;
@@ -3607,6 +3684,8 @@ avtSAMRAIFileFormat::ReadDataset(hid_t &hdfFile, const char *dsPath,
 
         H5Dread(h5_dataset, h5_mem_datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
             tmp_data);
+
+        H5Tclose(h5_mem_datatype);
 
         *data = (void *) tmp_data;
     }

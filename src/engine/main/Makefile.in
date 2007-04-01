@@ -182,6 +182,9 @@
 #    Brad Whitlock, Fri May 16 16:42:20 PST 2003
 #    I changed it so it works on MacOS X.
 #
+#    Jeremy Meredith, Mon Jan 12 14:25:42 PST 2004
+#    Made the engine build most of itself into a library.
+#
 ##############################################################################
 
 ##
@@ -191,6 +194,8 @@
 @VARIABLES@
 @MPI_CC@
 @MPI_CXX@
+
+LIB=libengine
 
 CPPFLAGS= -I@tmpinc@ @ENGINE_CPPFLAGS@ @CPPFLAGS@ \
          -I. -I../../include/visit
@@ -233,39 +238,43 @@ SRC= \
     EngineExprNodeFactory.C \
     LoadBalancer.C \
     Netnodes.C \
-    NetworkManager.C \
-    main.C
+    NetworkManager.C
+
+MAINSRC=main.C
 
 SEROBJ=$(SRC:.C=_ser.o)
 PAROBJ=$(SRC:.C=_par.o)
 
+MAINSEROBJ=$(MAINSRC:.C=_ser.o)
+MAINPAROBJ=$(MAINSRC:.C=_par.o)
 
 ##
 ## Standard targets...
 ##
-all: @ENGINE_SER@ @ENGINE_PAR@
+all: $(LIBSHAREDSER) @LIBSHAREDPAR@ @ENGINE_SER@ @ENGINE_PAR@
 
 clean:
-	$(RM) $(SEROBJ) @ENGINE_SER@
-	$(RM) $(PAROBJ) @ENGINE_PAR@
+	$(RM) $(SEROBJ) @ENGINE_SER@ $(LIBSHAREDSER)
+	$(RM) $(PAROBJ) @ENGINE_PAR@  @LIBSHAREDPAR@
 
 ##
 ## Other targets...
 ##
-@ENGINE_SER@ or_no_ser: $(SERLIBDEP) $(SEROBJ)
-	$(CXX) -o $@ $(LDFLAGS) $(SEROBJ) $(SERLIBS)
+@ENGINE_SER@ or_no_ser: $(SERLIBDEP) $(SEROBJ) $(MAINSEROBJ)
+	$(CXX) -o $@ $(LDFLAGS) $(MAINSEROBJ) -lengine_ser $(SERLIBS)
 
-@ENGINE_PAR@ or_no_par: $(PARLIBDEP) $(PAROBJ)
-	$(CXX) -o $@ $(LDFLAGS) $(PAROBJ) $(PARLIBS)
+@ENGINE_PAR@ or_no_par: $(PARLIBDEP) $(PAROBJ) $(MAINPAROBJ)
+	$(CXX) -o $@ $(LDFLAGS) $(MAINPAROBJ) -lengine_par $(PARLIBS)
 
 purify: $(SERLIBDEP) $(SEROBJ)
-	purify -chain-length=64 $(CXX) -o @ENGINE_SER@ $(LDFLAGS) $(SEROBJ) $(SERLIBS)
-	purify -chain-length=64 -follow-child-processes=yes $(CXX) -o @ENGINE_PAR@ $(LDFLAGS) $(PAROBJ) $(PARLIBS)
+	purify -chain-length=64	$(CXX) -o @ENGINE_SER@ $(LDFLAGS) $(MAINSEROBJ) -lengine_ser $(SERLIBS)
+	purify -chain-length=64 -follow-child-processes=yes $(CXX) -o @ENGINE_PAR@ $(LDFLAGS) $(MAINPAROBJ) -lengine_par $(PARLIBS)
 
 quantify: $(SERLIBDEP) $(SEROBJ)
-	quantify $(CXX) -o @ENGINE_SER@ $(LDFLAGS) $(SEROBJ) $(SERLIBS)
+	quantify $(CXX) -o @ENGINE_SER@ $(LDFLAGS) $(MAINSEROBJ) -lengine_ser $(SERLIBS)
 
 ##
 ## Automatic dependency stuff
 ##
 @TARGETS@
+@PARLIBTARGETS@
