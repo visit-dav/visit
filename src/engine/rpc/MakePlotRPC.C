@@ -334,7 +334,7 @@ MakePlotRPC::operator()(const string &n, const AttributeSubject *a,
     if (preparePlotRPC.GetStatus() == VisItRPC::error)
     {
         reply.SetStatus(VisItRPC::error);
-        reply.SetMessage(preparePlotRPC.GetMessage());
+        reply.SetMessage(preparePlotRPC.Message());
         reply.SetExceptionType(preparePlotRPC.GetExceptionType());
         return -1;
     }

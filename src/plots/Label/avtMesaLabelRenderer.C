@@ -1,8 +1,7 @@
 #include <avtMesaLabelRenderer.h>
 
-#if !defined(_WIN32)
+// Mangle the GL calls to mgl.
 #include <GL/gl_mangle.h>
-#endif
 
 //
 // Define avtOpenGLLabelRenderer as avtMesaLabelRenderer so we can include

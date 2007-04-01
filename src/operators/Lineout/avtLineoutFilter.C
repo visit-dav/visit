@@ -32,12 +32,12 @@
 using std::map;
 using std::set;
 
-typedef struct Point
+struct Point
 {
     float x[3];
 };
 
-typedef struct CellInfo
+struct CellInfo
 {
     int origCell;
     int origDomain;
@@ -617,6 +617,8 @@ avtLineoutFilter::Sampling(vtkDataSet *in_ds, int domain)
 //  Creation:   July 27, 2004 
 //
 //  Modifications:
+//    Brad Whitlock, Wed Nov 3 10:16:32 PDT 2004
+//    Fixed on win32.
 //
 // ****************************************************************************
 
@@ -789,9 +791,9 @@ avtLineoutFilter::CreatePolysFromOrigCells(vtkDataSet *ds, float *pt1, float *pt
         for (i = 0; i < outPts->GetNumberOfPoints(); i++)
         {
             x = outPts->GetPoint(i)[0];
-            sortedIds.insert(map < float, int> ::value_type(x, i));
+            sortedIds.insert(std::map < float, int> ::value_type(x, i));
         }
-        map <float, int>::iterator it;
+        std::map <float, int>::iterator it;
         for (it = sortedIds.begin(); it != sortedIds.end(); it++)
         {
             sortedPts->InsertNextPoint(outPts->GetPoint((*it).second));

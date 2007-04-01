@@ -56,6 +56,10 @@ using     std::vector;
 //    Enhanced parallel support.  Made it use avtParallel code instead of
 //    ifdefs so we didn't have to build a parallel version of this library.
 //
+//    Brad Whitlock, Mon Nov 1 15:33:56 PST 2004
+//    Passed rank and size into the image space redistributor so that
+//    library could be built on MacOS X.
+//
 // ****************************************************************************
 
 avtTransparencyActor::avtTransparencyActor()
@@ -67,6 +71,7 @@ avtTransparencyActor::avtTransparencyActor()
     myActor->SetMapper(myMapper);
     
     parallelFilter = vtkParallelImageSpaceRedistributor::New();
+    parallelFilter->SetRankAndSize(PAR_Rank(), PAR_Size());
 
     //
     // Tell the mapper that we are going to set up an RGBA field ourselves.

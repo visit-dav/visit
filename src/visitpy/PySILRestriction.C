@@ -176,7 +176,7 @@ SILRestriction_SetIndex(PyObject *self, PyObject *args)
     }
     CATCH2(VisItException, e)
     {
-        VisItErrorFunc(e.GetMessage().c_str());
+        VisItErrorFunc(e.Message().c_str());
         CATCH_RETURN2(1, NULL);
     }
     ENDTRY
@@ -220,7 +220,7 @@ SILRestriction_SetName(PyObject *self, PyObject *args)
     }
     CATCH2(VisItException, e)
     {
-        VisItErrorFunc(e.GetMessage().c_str());
+        VisItErrorFunc(e.Message().c_str());
         CATCH_RETURN2(1, NULL);
     }
     ENDTRY
@@ -351,7 +351,7 @@ SILRestriction_TurnOnAll(PyObject *self, PyObject *args)
     }
     CATCH2(VisItException, e)
     {
-        VisItErrorFunc(e.GetMessage().c_str());
+        VisItErrorFunc(e.Message().c_str());
         CATCH_RETURN2(1, NULL);
     }
     ENDTRY
@@ -390,7 +390,7 @@ SILRestriction_TurnOffAll(PyObject *self, PyObject *args)
     }
     CATCH2(VisItException, e)
     {
-        VisItErrorFunc(e.GetMessage().c_str());
+        VisItErrorFunc(e.Message().c_str());
         CATCH_RETURN2(1, NULL);
     }
     ENDTRY
@@ -433,7 +433,7 @@ SILRestriction_TurnOnSet(PyObject *self, PyObject *args)
     }
     CATCH2(VisItException, e)
     {
-        VisItErrorFunc(e.GetMessage().c_str());
+        VisItErrorFunc(e.Message().c_str());
         CATCH_RETURN2(1, NULL);
     }
     ENDTRY
@@ -476,7 +476,7 @@ SILRestriction_TurnOffSet(PyObject *self, PyObject *args)
     }
     CATCH2(VisItException, e)
     {
-        VisItErrorFunc(e.GetMessage().c_str());
+        VisItErrorFunc(e.Message().c_str());
         CATCH_RETURN2(1, NULL);
     }
     ENDTRY
@@ -522,7 +522,7 @@ SILRestriction_TurnSet(PyObject *self, PyObject *args)
     }
     CATCH2(VisItException, e)
     {
-        VisItErrorFunc(e.GetMessage().c_str());
+        VisItErrorFunc(e.Message().c_str());
         CATCH_RETURN2(1, NULL);
     }
     ENDTRY
@@ -593,7 +593,7 @@ SILRestriction_UsesData(PyObject *self, PyObject *args)
     }
     CATCH2(VisItException, e)
     {
-        VisItErrorFunc(e.GetMessage().c_str());
+        VisItErrorFunc(e.Message().c_str());
         CATCH_RETURN2(1, NULL);
     }
     ENDTRY

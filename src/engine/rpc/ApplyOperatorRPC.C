@@ -283,7 +283,7 @@ ApplyOperatorRPC::operator()(const string &n, const AttributeSubject *a)
     if (prepareOperatorRPC.GetStatus() == VisItRPC::error)
     {
         reply.SetStatus(VisItRPC::error);
-        reply.SetMessage(prepareOperatorRPC.GetMessage());
+        reply.SetMessage(prepareOperatorRPC.Message());
         reply.SetExceptionType(prepareOperatorRPC.GetExceptionType());
         return;
     }

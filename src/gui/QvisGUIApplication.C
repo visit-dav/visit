@@ -22,6 +22,13 @@
 #endif
 #endif
 
+#if defined(Q_WS_MACX)
+// On MacOS X, we manage the printer options window instead of letting
+// Qt do it when we use the Mac or Aqua style.
+#include <Carbon/Carbon.h>
+#include <qstyle.h>
+#endif
+
 #include <qtimer.h>
 #include <QvisGUIApplication.h>
 
@@ -4248,36 +4255,192 @@ QvisGUIApplication::SaveWindow()
 //   that is rarely done. We can do it when we want to open the printer
 //   window.
 //
+//   Brad Whitlock, Thu Nov 4 18:00:10 PST 2004
+//   I added MacOS X specific coding that lets us handle the setting up of
+//   the printer options so we can actually print.
+//
 // ****************************************************************************
-
+    
 void
 QvisGUIApplication::SetPrinterOptions()
 {
+#if defined(Q_WS_MACX)
     //
-    // If we've never set up the printer options, set them up now.
+    // If we're on MacOS X and the Mac application style is being used, manage
+    // the printer setup ourselves since the QPrinter object does not return
+    // enough information when it uses the native MacOS X printer dialog. Here
+    // we use the native MacOS X printer dialog but we get what we need out
+    // of it.
     //
-    if(printer == 0)
+    if(qApp->style().inherits("QMacStyle"))
     {
-        int timeid = visitTimer->StartTimer();
-        printer = new QPrinter;
-        printerObserver = new ObserverToCallback(viewer->GetPrinterAttributes(),
-            UpdatePrinterAttributes, (void *)printer);
-        viewer->GetPrinterAttributes()->SetCreator(viewer->GetLocalUserName());
-        PrinterAttributesToQPrinter(viewer->GetPrinterAttributes(), printer);
-        visitTimer->StopTimer(timeid, "Setting up printer");
-    }
+        PMPageFormat pformat;
+        PMPrintSettings psettings;
+        PMPrintSession psession;
+        int nObjectsToFree = 0;
+        bool okayToPrint = true;
+    
+        TRY
+        {
+            if(PMCreateSession(&psession) != kPMNoError)
+            {
+            EXCEPTION0(VisItException);
+            }
+            nObjectsToFree = 1;
+        
+            if(PMCreatePrintSettings(&psettings) != kPMNoError)
+            {
+                EXCEPTION0(VisItException);
+            }
+            nObjectsToFree = 2;
+            if(PMSessionDefaultPrintSettings(psession, psettings) != kPMNoError)
+            {
+                EXCEPTION0(VisItException);
+            }
+        
+            if(PMCreatePageFormat(&pformat) != kPMNoError)
+            {
+                EXCEPTION0(VisItException);
+            }
+            nObjectsToFree = 3;
+            if(PMSessionDefaultPageFormat(psession, pformat) != kPMNoError)
+            {
+                EXCEPTION0(VisItException);
+            }
+    
+            //
+            // Show the MacOS X printer window and allow the user to select
+            // the printer to use when printing images in VisIt.
+            //
+            Boolean accepted = false;
+            if(PMSessionPrintDialog(psession, psettings, pformat, &accepted) == kPMNoError &&
+               accepted == true)
+            {
+                PrinterAttributes *p = viewer->GetPrinterAttributes();
+        
+                // Get the name of the printer to use for printing the image.
+                CFArrayRef printerList = NULL;
+                CFIndex currentIndex;
+                PMPrinter currentPrinter;
+                if(PMSessionCreatePrinterList(psession, &printerList, &currentIndex,
+                   &currentPrinter) == kPMNoError)
+                {
+                    if(printerList != NULL)
+                    {
+                        const void *pData = CFArrayGetValueAtIndex(printerList,
+                            currentIndex);
+                        if(pData != NULL)
+                        {
+                            CFStringRef pName = (CFStringRef)pData;
+                            char buf[1000]; buf[0] = '\0';
+                            CFStringGetCString(pName, buf, 1000,
+                                kCFStringEncodingMacRoman);
+                            p->SetPrinterName(buf);
+                        }
+                        else
+                        {
+                            debug4 << "Could not find printer name" << endl;
+                            CFRelease(printerList);
+                            EXCEPTION0(VisItException);
+                        }
+                    
+                        // Free the printerList
+                        CFRelease(printerList);
+                    }
+                    else
+                    {
+                        debug4 << "Could not return the list of printer names"
+                               << endl;
+                        EXCEPTION0(VisItException);
+                    }
+                }
 
-    if(printer->setup(mainWin))
-    {
+                // Get the options from the psettings object.
+                PMOrientation orient;
+                PMGetOrientation(pformat, &orient);
+                p->SetPortrait(orient == kPMPortrait || orient == kPMReversePortrait);
+        
+                // Set the number of copies
+                UInt32 ncopies = 1;
+                PMGetCopies(psettings, &ncopies);
+                p->SetNumCopies(int(ncopies));
+     
+                // Set some of the last properties
+                p->SetOutputToFile(false);
+                p->SetPrintColor(true);
+                p->SetCreator(viewer->GetLocalUserName());
+
+                // Tell the viewer what the properties are.
+                if(printerObserver != 0)             
+                    printerObserver->SetUpdate(false);
+                p->Notify();
+            }
+            else
+                debug4 << "User cancelled the printer options window." << endl;
+        }
+        CATCH(VisItException)
+        {
+            Error("VisIt encountered an error while setting up printer options.");
+            okayToPrint = false;
+        }
+        ENDTRY
+    
         //
-        // Send all of the Qt printer options to the viewer
+        // Free the PM objects that we created.
         //
-        PrinterAttributes *p = viewer->GetPrinterAttributes();
-        QPrinterToPrinterAttributes(printer, p);
-        p->SetCreator(viewer->GetLocalUserName());
-        printerObserver->SetUpdate(false);
-        p->Notify();
+        switch(nObjectsToFree)
+        {
+        case 3:
+            PMRelease(pformat);
+            // Fall through
+        case 2:
+            PMRelease(psettings);
+            // Fall through
+        case 1:
+            PMRelease(psession);       
+        }
+    
+        //
+        // Tell the viewer to print the image because the MacOS X printer
+        // dialog has the word "Print" to click when you're done setting
+        // options. This says to me that MacOS X applications expect to
+        // print once the options are set.
+        //
+        if(okayToPrint)
+            viewer->PrintWindow();
     }
+    else
+    {
+#endif
+        //
+        // If we've never set up the printer options, set them up now using
+        // Qt's printer object and printer dialog.
+        //
+        if(printer == 0)
+        {
+            int timeid = visitTimer->StartTimer();
+            printer = new QPrinter;
+            printerObserver = new ObserverToCallback(viewer->GetPrinterAttributes(),
+                UpdatePrinterAttributes, (void *)printer);
+            viewer->GetPrinterAttributes()->SetCreator(viewer->GetLocalUserName());
+            PrinterAttributesToQPrinter(viewer->GetPrinterAttributes(), printer);
+            visitTimer->StopTimer(timeid, "Setting up printer");
+        }
+
+        if(printer->setup(mainWin))
+        {
+            //
+            // Send all of the Qt printer options to the viewer
+            //
+            PrinterAttributes *p = viewer->GetPrinterAttributes();
+            QPrinterToPrinterAttributes(printer, p);
+            p->SetCreator(viewer->GetLocalUserName());
+            printerObserver->SetUpdate(false);
+            p->Notify();
+        }
+#if defined(Q_WS_MACX)
+    }
+#endif
 }
 
 // ****************************************************************************

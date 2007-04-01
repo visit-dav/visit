@@ -148,7 +148,7 @@ avtSourceFromDatabase::FetchDataset(avtDataSpecification_p spec,
         debug1 << "Catching the exception at the database level." << endl;
         avtDataValidity &v = GetOutput()->GetInfo().GetValidity();
         v.ErrorOccurred();
-        string tmp = e.GetMessage(); // Otherwise there is a const problem.
+        string tmp = e.Message(); // Otherwise there is a const problem.
         v.SetErrorMessage(tmp);
         tree = new avtDataTree();
     }

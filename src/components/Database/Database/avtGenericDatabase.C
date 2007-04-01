@@ -344,7 +344,7 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
         debug1 << "Catching the exception at the generic database level." << endl;
         avtDataValidity &v = src->GetOutput()->GetInfo().GetValidity();
         v.ErrorOccurred();
-        string tmp = e.GetMessage(); // Otherwise there is a const problem.
+        string tmp = e.Message(); // Otherwise there is a const problem.
         v.SetErrorMessage(tmp);
     }
     ENDTRY
@@ -3263,7 +3263,8 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
     // Some file formats are interested in knowing about data selections
     //
     vector<avtDataSelection_p> selList = spec->GetAllDataSelections();
-    for (int i = 0; i < selList.size(); i++)
+    int i;
+    for (i = 0; i < selList.size(); i++)
         selectionsApplied.push_back(false);
     Interface->RegisterDataSelections(selList, &selectionsApplied);
 
@@ -3279,7 +3280,7 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
     src->DatabaseProgress(0, 0, progressString);
     int nDomains = domains.size();
     avtSILRestrictionTraverser trav(silr);
-    for (int i = 0 ; i < nDomains ; i++)
+    for (i = 0 ; i < nDomains ; i++)
     {
         vector<string> labels;
         vector<string> matnames;

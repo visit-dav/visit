@@ -167,7 +167,7 @@ RPCExecutor<ReadRPC>::Execute(ReadRPC *rpc)
     CATCH2(VisItException, e)
     {
         netmgr->CancelNetwork();
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
+        rpc->SendError(e.Message(), e.GetExceptionType());
     }
     ENDTRY
 }
@@ -237,7 +237,7 @@ RPCExecutor<PrepareOperatorRPC>::Execute(PrepareOperatorRPC *rpc)
     CATCH2(VisItException, e)
     {
         netmgr->CancelNetwork();
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
+        rpc->SendError(e.Message(), e.GetExceptionType());
     }
     ENDTRY
 }
@@ -283,7 +283,7 @@ RPCExecutor<ApplyOperatorRPC>::Execute(ApplyOperatorRPC *rpc)
     CATCH2(VisItException, e)
     {
         netmgr->CancelNetwork();
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
+        rpc->SendError(e.Message(), e.GetExceptionType());
     }
     ENDTRY
 }
@@ -351,7 +351,7 @@ RPCExecutor<PreparePlotRPC>::Execute(PreparePlotRPC *rpc)
     CATCH2(VisItException, e)
     {
         netmgr->CancelNetwork();
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
+        rpc->SendError(e.Message(), e.GetExceptionType());
     }
     ENDTRY
 }
@@ -404,7 +404,7 @@ RPCExecutor<MakePlotRPC>::Execute(MakePlotRPC *rpc)
     CATCH2(VisItException, e)
     {
         netmgr->CancelNetwork();
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
+        rpc->SendError(e.Message(), e.GetExceptionType());
     }
     ENDTRY
 }
@@ -438,7 +438,7 @@ RPCExecutor<UseNetworkRPC>::Execute(UseNetworkRPC *rpc)
     }
     CATCH2(VisItException, e)
     {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
+        rpc->SendError(e.Message(), e.GetExceptionType());
     }
     ENDTRY
 }
@@ -480,7 +480,7 @@ RPCExecutor<PrepareUpdatePlotAttsRPC>::Execute(PrepareUpdatePlotAttsRPC *rpc)
     }
     CATCH2(VisItException, e)
     {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
+        rpc->SendError(e.Message(), e.GetExceptionType());
     }
     ENDTRY
 }
@@ -516,7 +516,7 @@ RPCExecutor<UpdatePlotAttsRPC>::Execute(UpdatePlotAttsRPC *rpc)
     }
     CATCH2(VisItException, e)
     {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
+        rpc->SendError(e.Message(), e.GetExceptionType());
     }
     ENDTRY
 }
@@ -560,7 +560,7 @@ RPCExecutor<PickRPC>::Execute(PickRPC *rpc)
     }
     CATCH2(VisItException, e)
     {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
+        rpc->SendError(e.Message(), e.GetExceptionType());
     }
     ENDTRY
 
@@ -612,7 +612,7 @@ RPCExecutor<StartPickRPC>::Execute(StartPickRPC *rpc)
     }
     CATCH2(VisItException, e)
     {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
+        rpc->SendError(e.Message(), e.GetExceptionType());
     }
     ENDTRY
 }
@@ -680,7 +680,7 @@ RPCExecutor<SetWinAnnotAttsRPC>::Execute(SetWinAnnotAttsRPC *rpc)
     }
     CATCH2(VisItException, e)
     {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
+        rpc->SendError(e.Message(), e.GetExceptionType());
     }
     ENDTRY
 }
@@ -852,7 +852,7 @@ RPCExecutor<ExecuteRPC>::Execute(ExecuteRPC *rpc)
     }
     CATCH2(VisItException, e)
     {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
+        rpc->SendError(e.Message(), e.GetExceptionType());
     }
     ENDTRY
 
@@ -914,7 +914,7 @@ RPCExecutor<ClearCacheRPC>::Execute(ClearCacheRPC *rpc)
     }
     CATCH2(VisItException, e)
     {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
+        rpc->SendError(e.Message(), e.GetExceptionType());
     }
     ENDTRY
 }
@@ -966,7 +966,7 @@ RPCExecutor<QueryRPC>::Execute(QueryRPC *rpc)
     }
     CATCH2(VisItException, e)
     {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
+        rpc->SendError(e.Message(), e.GetExceptionType());
     }
     ENDTRY
 
@@ -1012,7 +1012,7 @@ RPCExecutor<ReleaseDataRPC>::Execute(ReleaseDataRPC *rpc)
     }
     CATCH2(VisItException, e)
     {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
+        rpc->SendError(e.Message(), e.GetExceptionType());
     }
     ENDTRY
 }
@@ -1162,7 +1162,7 @@ RPCExecutor<RenderRPC>::Execute(RenderRPC *rpc)
     }
     CATCH2(VisItException, e)
     {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
+        rpc->SendError(e.Message(), e.GetExceptionType());
     }
     ENDTRY
 
@@ -1208,7 +1208,7 @@ RPCExecutor<CloneNetworkRPC>::Execute(CloneNetworkRPC *rpc)
     CATCH2(VisItException, e)
     {
         netmgr->CancelNetwork();
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
+        rpc->SendError(e.Message(), e.GetExceptionType());
     }
     ENDTRY
 }

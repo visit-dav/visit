@@ -430,7 +430,7 @@ QvisEngineWindow::UpdateStatusArea()
     StatusAttributes *s = pos.data();
     if(s->GetClearStatus())
     {
-        s->SetMessage("");
+        s->SetStatusMessage("");
         totalStatusLabel->setText("Total Status:");
         totalProgressBar->reset();
         stageStatusLabel->setText("Stage Status:");
@@ -451,7 +451,7 @@ QvisEngineWindow::UpdateStatusArea()
 
         if(s->GetMessageType() == 1)
         {
-            totalStatusLabel->setText(QString(s->GetMessage().c_str()));
+            totalStatusLabel->setText(QString(s->GetStatusMessage().c_str()));
             stageStatusLabel->setText("Stage Status:");
         }
         else if (s->GetMessageType() == 2)

@@ -28,8 +28,15 @@
 // HACK HACK
 #include <GL/gl.h>
 extern "C" {
+#if defined(_WIN32)
+// On Windows, we get these functions from a DLL so we have to have
+// the proper API macros.
+GLAPI void GLAPIENTRY mglDepthMask(GLboolean);
+GLAPI void GLAPIENTRY mglColorMask(GLboolean,GLboolean,GLboolean,GLboolean);
+#else
 void mglDepthMask(GLboolean);
 void mglColorMask(GLboolean,GLboolean,GLboolean,GLboolean);
+#endif
 }
 
 static void RemoveCullers(vtkRenderer *);

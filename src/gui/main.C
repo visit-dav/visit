@@ -71,7 +71,7 @@ main(int argc, char **argv)
     CATCH2(VisItException, e)
     {
         cerr << "VisIt encountered the following fatal error during "
-                "initialization: " << endl << e.GetMessage().c_str() << endl;
+                "initialization: " << endl << e.Message().c_str() << endl;
         retval = -1;
     }
     ENDTRY

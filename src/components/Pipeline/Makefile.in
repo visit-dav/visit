@@ -182,6 +182,9 @@
 #    Mark C. Miller, Tue Sep 28 19:32:50 PDT 2004
 #    Added Data Selections
 #
+#    Brad Whitlock, Mon Nov 1 15:31:13 PST 2004
+#    Fixed for MacOS X.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -320,8 +323,8 @@ CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libpipeline
-SERLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lutility -lparser -lavtmath_ser @VTK_LIBS@ $(X_LIBS) @LIBS@
-PARLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lutility -lparser -lavtmath_par @VTK_LIBS@ $(X_LIBS) @LIBS@ @SHLIB_MPI_LIBS@
+SERLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lutility -lparser -lavtmath_ser -llightweight_visit_vtk @VTK_LIBS@ $(X_LIBS) @LIBS@
+PARLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lutility -lparser -lavtmath_par -llightweight_visit_vtk @VTK_LIBS@ $(X_LIBS) @LIBS@ @SHLIB_MPI_LIBS@
 
 ##
 ## Standard targets...

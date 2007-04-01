@@ -10,14 +10,7 @@
 #include <ViewerPasswordWindow.h>
 #include <ViewerMessaging.h>
 
-#if defined(_WIN32)
-// Get around a macro problem on Windows
-#define GetMessageA GetMessage
-#endif
-
-
 static void ErrorCallback(void *, const char *);
-
 
 // ****************************************************************************
 //  Method: main
@@ -122,7 +115,7 @@ main(int argc, char *argv[])
                    "exception: " << e.GetExceptionType().c_str()
                    << " from (" << e.GetFilename().c_str()
                    << ":" << e.GetLine() << ")" << endl
-                   << e.GetMessage().c_str() << endl;
+                   << e.Message().c_str() << endl;
             retval = -1;
         }
         ENDTRY
@@ -131,7 +124,7 @@ main(int argc, char *argv[])
     {
         debug1 << "VisIt's viewer encountered the following fatal "
                   "initialization error: " << endl
-               << e.GetMessage().c_str() << endl;
+               << e.Message().c_str() << endl;
         retval = -1;
     }
     ENDTRY

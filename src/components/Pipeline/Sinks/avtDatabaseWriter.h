@@ -39,6 +39,10 @@ class     avtDatabaseMetaData;
 //    Add support for repartitioning the chunks.  Also support reading only
 //    one variable.
 //
+//    Brad Whitlock, Mon Nov 1 15:51:32 PST 2004
+//    I replaced long long with VISIT_LONG_LONG so the code can build 
+//    on Windows using the MSVC 6.0 compiler.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatabaseWriter : public avtOriginatingDatasetSink
@@ -55,7 +59,7 @@ class PIPELINE_API avtDatabaseWriter : public avtOriginatingDatasetSink
                              { shouldAlwaysDoMIR = s; };
 
     bool               SetTargetChunks(int nChunks);
-    bool               SetTargetZones(long long nTotalZones);
+    bool               SetTargetZones(VISIT_LONG_LONG nTotalZones);
     void               SetVariableList(std::vector<std::string> &);
 
   protected:
@@ -66,7 +70,7 @@ class PIPELINE_API avtDatabaseWriter : public avtOriginatingDatasetSink
     bool               shouldChangeChunks;
     bool               shouldChangeTotalZones;
     int                nTargetChunks;
-    long long          targetTotalZones;
+    VISIT_LONG_LONG    targetTotalZones;
 
     virtual bool       CanHandleMaterials(void) { return false; };
 

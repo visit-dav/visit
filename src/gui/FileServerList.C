@@ -1347,7 +1347,7 @@ FileServerList::OpenAndGetMetaData(const QualifiedFilename &filename,
             CATCH2(GetMetaDataException, gmde)
             {
                 // Save the reason of why the metadata could be read.
-                reason = gmde.GetMessage();
+                reason = gmde.Message();
 
                 //Is there much to do here?
                 if(changedHosts)
@@ -1356,7 +1356,7 @@ FileServerList::OpenAndGetMetaData(const QualifiedFilename &filename,
             CATCH2(LostConnectionException, lce)
             {
                 // Save the reason of why the connection was lost.
-                reason = lce.GetMessage();
+                reason = lce.Message();
 
                 ++numAttempts;
                 tryAgain = (numAttempts < 2);

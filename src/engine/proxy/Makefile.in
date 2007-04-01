@@ -62,6 +62,9 @@
 #    Brad Whitlock, Fri Apr 23 09:08:26 PDT 2004
 #    I added some more libraries to get prebinding working on MacOS X.
 #
+#    Brad Whitlock, Tue Nov 2 13:33:36 PST 2004
+#    Added still more libraries to get prebinding working again on MacOS X.
+#
 ##############################################################################
 
 ##
@@ -80,7 +83,7 @@ SRC=EngineProxy.C
 HDR=EngineProxy.h
 OBJ=$(SRC:.C=.o)
 LIB=libengineproxy
-LIBS=-lenginerpc -ldbatts -lpipeline_ser -lavtmath_ser -lavtexceptions -lcomm -lmisc -lstate -lplugin -lparser -lutility -lproxybase $(VTK_LIBS)
+LIBS=-lenginerpc -ldbatts -lpipeline_ser -lavtmath_ser -lavtexceptions -lcomm -lmisc -lstate -lplugin -lparser -lutility -lproxybase -llightweight_visit_vtk $(VTK_LIBS)
 
 
 ##

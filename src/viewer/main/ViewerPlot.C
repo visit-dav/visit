@@ -2595,7 +2595,7 @@ ViewerPlot::CreateActor(bool createNew,
             //
             SNPRINTF(message, sizeof(message), "%s:  %s", 
                      viewerPluginInfo->GetName(),
-                     e.GetMessage().c_str());
+                     e.Message().c_str());
         }
         else
         {
@@ -2607,7 +2607,7 @@ ViewerPlot::CreateActor(bool createNew,
             SNPRINTF(message, sizeof(message), "%s:  (%s)\n%s", 
                      viewerPluginInfo->GetName(),
                      e.GetExceptionType().c_str(),
-                     e.GetMessage().c_str());
+                     e.Message().c_str());
         }
      
         Error(message);
@@ -2737,7 +2737,7 @@ ViewerPlot::CreateActor(bool createNew,
         char message[2048];
         SNPRINTF(message, sizeof(message), "%s:  %s", 
                  viewerPluginInfo->GetName(),
-                 e.GetMessage().c_str());
+                 e.Message().c_str());
         Error(message);
 
         // Indicate that this plot has an error.
@@ -2755,7 +2755,7 @@ ViewerPlot::CreateActor(bool createNew,
         SNPRINTF(message, sizeof(message), "%s (%s):  %s", 
                  viewerPluginInfo->GetName(),
                  e.GetExceptionType().c_str(),
-                 e.GetMessage().c_str());
+                 e.Message().c_str());
 
         Error(message);
 
@@ -3994,7 +3994,7 @@ ViewerPlot::CheckCache(const int i0, const int i1, const bool force)
                 char message[2048];
                 SNPRINTF(message, sizeof(message), "%s:  %s",
                          viewerPluginInfo->GetName(),
-                         e.GetMessage().c_str());
+                         e.Message().c_str());
                 Error(message);
 
                 // Indicate that this plot has an error.

@@ -37,7 +37,7 @@ public:
         int               GetStatus() const;
 
         void              SetMessage(const std::string &msg);
-        const std::string  &GetMessage() const;
+        const std::string  &Message() const;
 
         void              SetExceptionType(const std::string &type);
         const std::string  &GetExceptionType() const;
@@ -56,7 +56,7 @@ public:
     virtual ~VisItRPC();
 
     int       GetStatus() const;
-    const std::string &GetMessage() const;
+    const std::string &Message() const;
     const std::string &GetExceptionType() const;
     RPCReply *GetReply();
 

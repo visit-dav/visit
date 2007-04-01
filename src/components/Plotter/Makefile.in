@@ -150,6 +150,9 @@
 #    Hank Childs, Sun Oct 24 08:17:46 PDT 2004
 #    Added avtSoftwareShader.
 #
+#    Brad Whitlock, Tue Nov 2 11:38:28 PDT 2004
+#    Added -lparallel_visit_vtk_ser to the list of required libs.
+#
 ##############################################################################
 
 ##
@@ -180,7 +183,7 @@ CPPFLAGS=-I../../include/visit @COMPONENT_CPPFLAGS@ @CPPFLAGS@ @MESA_INCLUDE@
 
 OBJ=$(SRC:.C=.o)
 LIB=libplotter
-LIBS=-ldbatts -lmisc -lcomm -lstate -lparser -lutility -lpipeline_ser -lavtview -lavtmath_ser -lavtfilters_ser -lavtexceptions -lvisit_vtk -llightweight_visit_vtk $(VTK_LIBS) $(X_LIBS)
+LIBS=-ldbatts -lmisc -lcomm -lstate -lparser -lutility -lpipeline_ser -lavtview -lavtmath_ser -lavtfilters_ser -lavtexceptions -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser $(VTK_LIBS) $(X_LIBS)
 
 ##
 ## Standard targets...

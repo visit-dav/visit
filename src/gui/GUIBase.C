@@ -441,7 +441,7 @@ GUIBase::SetOpenDataFile(const QualifiedFilename &qf, int timeState,
             QString msg;
             msg.sprintf("VisIt could not open the file %s.\n\nThe metadata "
                         "server returned the following message:\n\n%s",
-                        qf.FullName().c_str(), gmde.GetMessage().c_str());
+                        qf.FullName().c_str(), gmde.Message().c_str());
             Error(msg);
             retval = false;
         }

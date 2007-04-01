@@ -99,7 +99,7 @@ GetMetaDataRPC::operator()(const string &f, int ts)
     // If the RPC returned an error, throw an exception.
     if(GetReply()->GetStatus() == error)
     {
-        EXCEPTION1(GetMetaDataException, GetReply()->GetMessage());
+        EXCEPTION1(GetMetaDataException, GetReply()->Message());
     }
 
     return &metaData;

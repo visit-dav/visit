@@ -90,7 +90,7 @@ GetSILRPCExecutor::Update(Subject *s)
     }
     CATCH2(DatabaseException, dbe)
     {
-        rpc->SendError(dbe.GetMessage(), dbe.GetExceptionType());
+        rpc->SendError(dbe.Message(), dbe.GetExceptionType());
     }
     CATCH2(VisItException, ve)
     {

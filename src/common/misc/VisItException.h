@@ -14,13 +14,6 @@
 
 #include <misc_exports.h>
 
-#if defined(_WIN32) && defined(GetMessage)
-// The windows.h header file defines GetMessage to be GetMessageA, which
-// interferes with us calling VisItException::GetMessage. Make sure that
-// GetMessage is not defined.
-#undef GetMessage
-#endif
-
 #ifdef FAKE_EXCEPTIONS
 #define VISIT_THROW_NOTHING
 #else
@@ -69,6 +62,10 @@
 //    Brad Whitlock, Mon Aug 25 15:05:14 PST 2003
 //    Added LogCatch.
 //
+//    Brad Whitlock, Mon Nov 1 16:13:22 PST 2004
+//    Removed GetMessage method once and for all. Too many times has it
+//    been confused with GetMessageA on Windows.
+//
 // ****************************************************************************
 
 class MISC_API VisItException
@@ -83,7 +80,6 @@ class MISC_API VisItException
     void               SetThrowLocation(int, char *);
     void               SetType(char *t) { type = t; };
     void               SetType(const std::string &t) { type = t; };
-    const std::string &GetMessage() { return msg; };
     const std::string &Message() { return msg; };
     const std::string &GetExceptionType() { return type; };
 

@@ -2570,9 +2570,9 @@ ViewerEngineManager::Update(Subject *TheChangedSubject)
     {
         // The message field was selected.
         if (EngineExists(ek))
-            Status(ek.ID().c_str(), statusAtts->GetMessage().c_str());
+            Status(ek.ID().c_str(), statusAtts->GetStatusMessage().c_str());
         else
-            Status(statusAtts->GetMessage().c_str());
+            Status(statusAtts->GetStatusMessage().c_str());
     }
     else if (statusAtts->GetMessageType() == 3)
     {
@@ -2583,11 +2583,11 @@ ViewerEngineManager::Update(Subject *TheChangedSubject)
             string tmp2(ek.HostName());
             string tmp3(" issued the following warning: ");
             string tmp;
-            tmp = tmp1 + tmp2 + tmp3 + statusAtts->GetMessage();
+            tmp = tmp1 + tmp2 + tmp3 + statusAtts->GetStatusMessage();
             Warning(tmp.c_str());
         }
         else
-            Warning(statusAtts->GetMessage().c_str());
+            Warning(statusAtts->GetStatusMessage().c_str());
     }
     else if (EngineExists(ek))
     {

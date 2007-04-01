@@ -15,9 +15,6 @@
 #ifdef THREADS
 #if defined(_WIN32)
 #include <windows.h>
-#ifdef GetMessage
-#undef GetMessage
-#endif
 #else
 #include <pthread.h>
 #endif
@@ -238,7 +235,7 @@ public:
             // If the message field is selected, use it. Otherwise, make up
             // a message based on the other fields.
             if(statusAtts->GetMessageType() == 1)
-                fprintf(stderr, "%s\n", statusAtts->GetMessage().c_str());
+                fprintf(stderr, "%s\n", statusAtts->GetStatusMessage().c_str());
             else if (statusAtts->GetMessageType() == 2)
             {
                 int total;

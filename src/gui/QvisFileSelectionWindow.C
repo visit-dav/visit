@@ -1239,6 +1239,11 @@ QvisFileSelectionWindow::GetCurrentValues(bool allowPathChange)
 //    Brad Whitlock, Thu Jul 29 15:02:10 PST 2004
 //    I changed how the routine handles bad hosts.
 //
+//    Brad Whitlock, Wed Nov 3 17:19:06 PST 2004
+//    I made this window be the active window after changing hosts and I
+//    made the window raise itself so it comes to the front after being
+//    partially covered by the viewer window on MacOS X.
+//
 // ****************************************************************************
 
 bool
@@ -1308,6 +1313,10 @@ QvisFileSelectionWindow::ChangeHosts()
 
             // Restore the last cursor.
             RestoreCursor();
+
+            // Make this window be the active window and raise it.
+            topLevelWidget()->setActiveWindow();
+            topLevelWidget()->raise();
         }
     }
 

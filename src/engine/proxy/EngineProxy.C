@@ -17,11 +17,6 @@
 
 #include <stdio.h>
 
-#if defined(_WIN32)
-// Windows compiler kludge
-#define GetMessageA GetMessage
-#endif
-
 // ****************************************************************************
 //  Method: EngineProxy constructor
 //
@@ -339,7 +334,7 @@ EngineProxy::ReadDataObject(const string &format, const string &file,
     if (readRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(readRPC.GetExceptionType(),
-                               readRPC.GetMessage());
+                               readRPC.Message());
     }
     delete atts;
 }
@@ -374,7 +369,7 @@ EngineProxy::ApplyOperator(const string &name, const AttributeSubject *atts)
     if (applyOperatorRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(applyOperatorRPC.GetExceptionType(),
-                               applyOperatorRPC.GetMessage());
+                               applyOperatorRPC.Message());
     }
 }
 
@@ -416,7 +411,7 @@ EngineProxy::MakePlot(const string &name, const AttributeSubject *atts,
     if (makePlotRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(makePlotRPC.GetExceptionType(),
-                               makePlotRPC.GetMessage());
+                               makePlotRPC.Message());
     }
     return id;
 }
@@ -442,7 +437,7 @@ EngineProxy::UseNetwork(int id)
     if (useNetworkRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(useNetworkRPC.GetExceptionType(),
-                               useNetworkRPC.GetMessage());
+                               useNetworkRPC.Message());
     }
 }
 
@@ -470,7 +465,7 @@ EngineProxy::UpdatePlotAttributes(const string &name, int id,
     if (updatePlotAttsRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(updatePlotAttsRPC.GetExceptionType(),
-                               updatePlotAttsRPC.GetMessage());
+                               updatePlotAttsRPC.Message());
     }
 }
 
@@ -524,7 +519,7 @@ EngineProxy::SetWinAnnotAtts(const WindowAttributes *winAtts,
     if (setWinAnnotAttsRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(setWinAnnotAttsRPC.GetExceptionType(),
-                               setWinAnnotAttsRPC.GetMessage());
+                               setWinAnnotAttsRPC.Message());
     }
 }
 
@@ -610,8 +605,8 @@ EngineProxy::Execute(bool respondWithNull, void (*waitCB)(void *), void *cbData)
         }
         else if(executeRPC.GetStatus() == VisItRPC::warning)
         {
-            debug4 << "Warning: " << executeRPC.GetMessage().c_str() << endl;
-            Warning(executeRPC.GetMessage().c_str());
+            debug4 << "Warning: " << executeRPC.Message().c_str() << endl;
+            Warning(executeRPC.Message().c_str());
         }
 
         // If we passed a callback function, execute it.
@@ -629,7 +624,7 @@ EngineProxy::Execute(bool respondWithNull, void (*waitCB)(void *), void *cbData)
     if (executeRPC.GetStatus() == VisItRPC::error)    
     {
         RECONSTITUTE_EXCEPTION(executeRPC.GetExceptionType(),
-                               executeRPC.GetMessage());
+                               executeRPC.Message());
     }
 
     // Send a status message that indicates the output of the engine is
@@ -807,8 +802,8 @@ EngineProxy::Render(bool sendZBuffer, const intVector& networkIDs,
         }
         else if(renderRPC.GetStatus() == VisItRPC::warning)
         {
-            debug4 << "Warning: " << renderRPC.GetMessage().c_str() << endl;
-            Warning(renderRPC.GetMessage().c_str());
+            debug4 << "Warning: " << renderRPC.Message().c_str() << endl;
+            Warning(renderRPC.Message().c_str());
         }
     }
 
@@ -822,7 +817,7 @@ EngineProxy::Render(bool sendZBuffer, const intVector& networkIDs,
     if (renderRPC.GetStatus() == VisItRPC::error)    
     {
         RECONSTITUTE_EXCEPTION(renderRPC.GetExceptionType(),
-                               renderRPC.GetMessage());
+                               renderRPC.Message());
     }
 
     // Send a status message that indicates the output of the engine is
@@ -897,7 +892,7 @@ EngineProxy::Status(const char *message)
 {
     statusAtts->SetClearStatus(false);
     statusAtts->SetMessageType(1);
-    statusAtts->SetMessage(message);
+    statusAtts->SetStatusMessage(message);
     statusAtts->Notify();
 }
 
@@ -959,7 +954,7 @@ EngineProxy::Warning(const char *message)
 {
     statusAtts->SetClearStatus(false);
     statusAtts->SetMessageType(3);
-    statusAtts->SetMessage(message);
+    statusAtts->SetStatusMessage(message);
     statusAtts->Notify();
 }
 
@@ -1030,7 +1025,7 @@ EngineProxy::Pick(const int nid, const PickAttributes *atts,
     if (pickRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(pickRPC.GetExceptionType(),
-                             pickRPC.GetMessage());
+                             pickRPC.Message());
     }
 }
 
@@ -1060,7 +1055,7 @@ EngineProxy::StartPick(const bool forZones, const bool flag, const int nid)
     if (startPickRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(startPickRPC.GetExceptionType(),
-                             startPickRPC.GetMessage());
+                             startPickRPC.Message());
     }
 }
 
@@ -1107,8 +1102,8 @@ EngineProxy::Query(const std::vector<int> &nid, const QueryAttributes *atts,
         }
         else if(queryRPC.GetStatus() == VisItRPC::warning)
         {
-            debug4 << "Warning: " << queryRPC.GetMessage().c_str() << endl;
-            Warning(queryRPC.GetMessage().c_str());
+            debug4 << "Warning: " << queryRPC.Message().c_str() << endl;
+            Warning(queryRPC.Message().c_str());
         }
     }
  
@@ -1123,7 +1118,7 @@ EngineProxy::Query(const std::vector<int> &nid, const QueryAttributes *atts,
     if (queryRPC.GetStatus() == VisItRPC::error)    
     {
         RECONSTITUTE_EXCEPTION(queryRPC.GetExceptionType(),
-                               queryRPC.GetMessage());
+                               queryRPC.Message());
     }
     retAtts = queryRPC.GetReturnAtts();
     ClearStatus();
@@ -1151,7 +1146,7 @@ EngineProxy::ReleaseData(const int id)
     if (releaseDataRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(releaseDataRPC.GetExceptionType(),
-                               releaseDataRPC.GetMessage());
+                               releaseDataRPC.Message());
     }
 }
 
@@ -1177,7 +1172,7 @@ EngineProxy::CloneNetwork(const int id, const QueryOverTimeAttributes *qa)
     if (cloneNetworkRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(cloneNetworkRPC.GetExceptionType(),
-                               cloneNetworkRPC.GetMessage());
+                               cloneNetworkRPC.Message());
     }
 }
 

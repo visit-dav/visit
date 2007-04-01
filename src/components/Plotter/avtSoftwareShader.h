@@ -4,13 +4,13 @@
 
 #ifndef AVT_SOFTWARE_SHADER_H
 #define AVT_SOFTWARE_SHADER_H
-
+#include <plotter_exports.h>
 #include <avtImage.h>
 
 
 class  LightAttributes;
 
-class  avtView3D;
+struct  avtView3D;
 
 
 // ****************************************************************************
@@ -29,7 +29,7 @@ class  avtView3D;
 //
 // ****************************************************************************
 
-class avtSoftwareShader
+class PLOTTER_API avtSoftwareShader
 {
   public:
     static bool  GetLightDirection(const LightAttributes &, const avtView3D &,

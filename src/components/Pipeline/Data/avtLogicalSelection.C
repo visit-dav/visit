@@ -34,13 +34,18 @@ avtLogicalSelection::avtLogicalSelection()
 //  Programmer: Mark C. Miller 
 //  Creation:   September 22, 2004 
 //
+//  Modifications:
+//    Brad Whitlock, Wed Nov 3 09:40:46 PDT 2004
+//    Fixed for win32.
+//
 // ****************************************************************************
 void
 avtLogicalSelection::SetStarts(const int *_starts)
 {
-    for (int i = 0; i < ndims; i++)
+    int i;
+    for (i = 0; i < ndims; i++)
         starts[i] = _starts[i];
-    for (int i = ndims; i < 3; i++)
+    for (i = ndims; i < 3; i++)
         starts[i] = 0;
 }
 
@@ -50,13 +55,18 @@ avtLogicalSelection::SetStarts(const int *_starts)
 //  Programmer: Mark C. Miller 
 //  Creation:   September 22, 2004 
 //
+//  Modifications:
+//    Brad Whitlock, Wed Nov 3 09:40:46 PDT 2004
+//    Fixed for win32.
+//
 // ****************************************************************************
 void
 avtLogicalSelection::SetStops(const int *_stops)
 {
-    for (int i = 0; i < ndims; i++)
+    int i;
+    for (i = 0; i < ndims; i++)
         stops[i] = _stops[i];
-    for (int i = ndims; i < 3; i++)
+    for (i = ndims; i < 3; i++)
         stops[i] = 0;
 }
 
@@ -66,13 +76,18 @@ avtLogicalSelection::SetStops(const int *_stops)
 //  Programmer: Mark C. Miller 
 //  Creation:   September 22, 2004 
 //
+//  Modifications:
+//    Brad Whitlock, Wed Nov 3 09:40:46 PDT 2004
+//    Fixed for win32.
+//
 // ****************************************************************************
 void
 avtLogicalSelection::SetStrides(const int *_strides)
 {
-    for (int i = 0; i < ndims; i++)
+    int i;
+    for (i = 0; i < ndims; i++)
         strides[i] = _strides[i];
-    for (int i = ndims; i < 3; i++)
+    for (i = ndims; i < 3; i++)
         strides[i] = 0;
 }
 
@@ -82,13 +97,18 @@ avtLogicalSelection::SetStrides(const int *_strides)
 //  Programmer: Mark C. Miller 
 //  Creation:   September 22, 2004 
 //
+//  Modifications:
+//    Brad Whitlock, Wed Nov 3 09:40:46 PDT 2004
+//    Fixed for win32.
+//
 // ****************************************************************************
 void
 avtLogicalSelection::GetStarts(int *_starts) const
 {
-    for (int i = 0; i < ndims; i++)
+    int i;
+    for (i = 0; i < ndims; i++)
         _starts[i] = starts[i];
-    for (int i = ndims; i < 3; i++)
+    for (i = ndims; i < 3; i++)
         _starts[i] = 0;
 }
 
@@ -98,13 +118,18 @@ avtLogicalSelection::GetStarts(int *_starts) const
 //  Programmer: Mark C. Miller 
 //  Creation:   September 22, 2004 
 //
+//  Modifications:
+//    Brad Whitlock, Wed Nov 3 09:40:46 PDT 2004
+//    Fixed for win32.
+//
 // ****************************************************************************
 void
 avtLogicalSelection::GetStops(int *_stops) const
 {
-    for (int i = 0; i < ndims; i++)
+    int i;
+    for (i = 0; i < ndims; i++)
         _stops[i] = stops[i];
-    for (int i = ndims; i < 3; i++)
+    for (i = ndims; i < 3; i++)
         _stops[i] = 0;
 }
 
@@ -114,13 +139,18 @@ avtLogicalSelection::GetStops(int *_stops) const
 //  Programmer: Mark C. Miller 
 //  Creation:   September 22, 2004 
 //
+//  Modifications:
+//    Brad Whitlock, Wed Nov 3 09:40:46 PDT 2004
+//    Fixed for win32.
+//
 // ****************************************************************************
 void
 avtLogicalSelection::GetStrides(int *_strides) const
 {
-    for (int i = 0; i < ndims; i++)
+    int i;
+    for (i = 0; i < ndims; i++)
         _strides[i] = strides[i];
-    for (int i = ndims; i < 3; i++)
+    for (i = ndims; i < 3; i++)
         _strides[i] = 0;
 }
 
@@ -198,20 +228,24 @@ avtLogicalSelection::Compose(const avtLogicalSelection &sel)
 //  Programmer: Mark C. Miller 
 //  Creation:   September 26, 2004 
 //
+//  Modifications:
+//    Brad Whitlock, Wed Nov 3 09:40:46 PDT 2004
+//    Fixed for win32.
+//
 // ****************************************************************************
 bool
 avtLogicalSelection::FactorBestPowerOf2(avtLogicalSelection &pow2Sel,
                                         avtLogicalSelection &otherSel) const
 {
 
-    int pow2Strides[31];
-    for (int i = 0; i < 31; i++)
+    int i, pow2Strides[31];
+    for (i = 0; i < 31; i++)
         pow2Strides[i] = 1<<i;
 
     int pow2SelStrides[3] = {1, 1, 1};
 
     bool foundFactor = false;
-    for (int i = 0; i < 3; i++)
+    for (i = 0; i < 3; i++)
     {
         for (int j = 30; j > 0; j--)
         {
@@ -227,7 +261,7 @@ avtLogicalSelection::FactorBestPowerOf2(avtLogicalSelection &pow2Sel,
     if (foundFactor == false)
         return false;
 
-    for (int i = 0; i < 3; i++)
+    for (i = 0; i < 3; i++)
     {
         pow2Sel.starts[i] = starts[i];
         pow2Sel.stops[i] = stops[i];

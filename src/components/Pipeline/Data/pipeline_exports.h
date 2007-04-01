@@ -18,9 +18,22 @@
 #pragma warning(disable:4786)
 // Turn off warning about forcing value to bool 'true' or 'false'
 #pragma warning(disable:4800)
+
+// Define VISIT_LONG_LONG so the Windows compiler can handle it.
+#ifndef VISIT_LONG_LONG
+#if defined(USING_MSVC6)
+#define VISIT_LONG_LONG __int64
+#else
+#define VISIT_LONG_LONG long long
+#endif
+#endif
+
 #endif
 #else
 #define PIPELINE_API
+#ifndef VISIT_LONG_LONG
+#define VISIT_LONG_LONG long long
+#endif
 #endif
 
 #endif
