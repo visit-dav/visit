@@ -77,6 +77,9 @@ void CreateBasis(const avtVector &N, const avtVector &UP,
 //    Kathleen Bonnell, Thu Jul 29 09:49:00 PDT 2004 
 //    Set lineAtts SamplingOn from temp. 
 //
+//    Kathleen Bonnell, Thu Nov 18 17:56:00 PST 2004 
+//    Added call to SendVisualCue. 
+//
 // ***********************************************************************
 
 ViewerQuery::ViewerQuery(ViewerWindow *origWin, ViewerWindow *resWin, 
@@ -89,10 +92,11 @@ ViewerQuery::ViewerQuery(ViewerWindow *origWin, ViewerWindow *resWin,
     originatingWindow = origWin;
     resultsWindow = resWin;
     lineAtts->CopyAttributes(lA);
+
     CreateLineout(fromDefault);
 
     //  
-    // Retrieve the interactivity from Lineout Ops.
+    // Retrieve the interactivity and sampling setting from LineoutOp Atts.
     //
     int id = resultsPlot->GetNOperators();
     Line *temp = (Line *)resultsPlot->GetOperator(id-1)->GetOperatorAtts()->
@@ -100,13 +104,9 @@ ViewerQuery::ViewerQuery(ViewerWindow *origWin, ViewerWindow *resWin,
     lineAtts->SetInteractive(temp->GetInteractive()); 
     lineAtts->SetReflineLabels(temp->GetReflineLabels()); 
     lineAtts->SetSamplingOn(temp->GetSamplingOn()); 
-    //
-    // Ensure that lineAtts sent to VisWindow will have the correct value
-    // for ReflineLabels. 
-    //
-    lA->SetReflineLabels(temp->GetReflineLabels()); 
     delete temp;
 
+    SendVisualCue();
     //
     // Connect to the resultsPlot
     //
@@ -251,6 +251,10 @@ ViewerQuery::StopObservingPlot()
 //    Jeremy Meredith, Tue Mar 30 16:18:00 PST 2004
 //    Added code to set the engine key for the new plot list.
 //
+//    Kathleen Bonnell, Thu Nov 18 18:12:56 PST 2004 
+//    Removed call to SendVisualCue (called elsewhere).  Added call to 
+//    set Lineout operator atts from GlobalLineoutAttributes.
+//
 // ****************************************************************************
 
 void
@@ -326,13 +330,13 @@ ViewerQuery::CreateLineout(const bool fromDefault)
     //  so now update them with the lineAtts.
     //
     resultsPlot->SetPlotAtts(lineAtts);
+
     int id = resultsPlot->GetNOperators() -1;
-
-
     resultsPlot->GetOperator(id)->SetOperatorAtts(lineAtts);
+    resultsPlot->GetOperator(id)->SetOperatorAtts(
+        ViewerQueryManager::Instance()->GetGlobalLineoutAtts());
 
     plotList->RealizePlots();
-    SendVisualCue();
 }
 
 
@@ -857,14 +861,27 @@ ViewerQuery::SendVisualCue()
 //  Programmer: Kathleen Bonnell 
 //  Creation:   March 4, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Nov 18 17:56:00 PST 2004
+//    Added  call to SendVisualCue.
+// 
 // ****************************************************************************
 
 void
 ViewerQuery::ReCreateLineout()
 {
     StopObservingPlot();
+    //  
+    // Retrieve the ReflineLabels from Lineout Ops.
+    //
+    int id = resultsPlot->GetNOperators();
+    Line *temp = (Line *)resultsPlot->GetOperator(id-1)->GetOperatorAtts()->
+                   CreateCompatible("Line");
+    lineAtts->SetReflineLabels(temp->GetReflineLabels()); 
+    delete temp;
     resultsWindow->GetPlotList()->DeletePlot(resultsPlot, false);   
     CreateLineout();
+    SendVisualCue();
     StartObservingPlot();
 }
 
