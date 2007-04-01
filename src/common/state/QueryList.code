@@ -1,5 +1,5 @@
 Function: AddQuery
-Declaration: void AddQuery(const std::string &name, QueryType t, Groups g, CoordinateRepresentation r, WindowType w, int num_input, int allowedVars, bool timeQ); 
+Declaration: void AddQuery(const std::string &name, QueryType t, Groups g, WindowType w, int num_input, int allowedVars, bool timeQ); 
 Definition:
 // ****************************************************************************
 //  Method:  AddQuery
@@ -24,12 +24,11 @@ Definition:
 // ****************************************************************************
  
 void
-QueryList::AddQuery(const std::string &name, QueryType t, Groups g, CoordinateRepresentation r, WindowType w, int num_input, int allowedVars, bool timeQ)
+QueryList::AddQuery(const std::string &name, QueryType t, Groups g, WindowType w, int num_input, int allowedVars, bool timeQ)
 {
     names.push_back(name);
     types.push_back((int)t);
     groups.push_back((int)g);
-    coordRep.push_back((int)r);
     numInputs.push_back(num_input);
     allowedVarTypes.push_back(allowedVars);
     timeQuery.push_back((int)timeQ);
@@ -37,7 +36,7 @@ QueryList::AddQuery(const std::string &name, QueryType t, Groups g, CoordinateRe
 }
 
 Function: QueryExists
-Declaration: bool QueryExists(const std::string &name, QueryType t, CoordinateRepresentation rep = WorldSpace);
+Declaration: bool QueryExists(const std::string &name, QueryType t);
 Definition:
 // ****************************************************************************
 //  Method:  QueryExists
@@ -51,8 +50,7 @@ Definition:
 // ****************************************************************************
  
 bool
-QueryList::QueryExists(const std::string &name, QueryType t,
-    CoordinateRepresentation rep)
+QueryList::QueryExists(const std::string &name, QueryType t)
 {
     int i;
     bool match = false;
@@ -60,7 +58,7 @@ QueryList::QueryExists(const std::string &name, QueryType t,
     {
         if (name == names[i]) 
         {
-            if (t == types[i] && rep == coordRep[i])
+            if (t == types[i])
             {
                 match = true;
             }

@@ -5,10 +5,6 @@
       PointQuery
       LineQuery
     </Enum>
-    <Enum name="CoordinateRepresentation">
-      WorldSpace
-      ScreenSpace
-    </Enum>
     <Enum name="WindowType">
       Basic
       SinglePoint
@@ -30,8 +26,6 @@
     <Field name="types" label="types" type="intVector">
     </Field>
     <Field name="groups" label="groups" type="intVector">
-    </Field>
-    <Field name="coordRep" label="coordRep" type="intVector">
     </Field>
     <Field name="numInputs" label="numInputs" type="intVector">
     </Field>

@@ -393,7 +393,6 @@ void vtkVerticalScalarBarActor::BuildRange(vtkViewport *viewport)
 
   this->RangeActor->SetProperty(this->GetProperty());
 
-
 }
 
 // ****************************************************************************
@@ -422,6 +421,9 @@ void vtkVerticalScalarBarActor::BuildRange(vtkViewport *viewport)
 //    Eric Brugger, Tue Jul 15 11:28:43 PDT 2003
 //    I added nLabels argument.
 //
+//    Hank Childs, Wed Sep  8 17:51:43 PDT 2004
+//    Allocate a big enough buffer for long labels.
+//
 // ****************************************************************************
 
 void vtkVerticalScalarBarActor:: 
@@ -429,7 +431,7 @@ BuildLabels(vtkViewport * viewport, float bo, float bw, float bh, int nLabels)
 {
   int i, idx;
   float val;
-  char labelString[30];
+  char labelString[1024];
   float labelOrig[3] = { 0., 0., 0. };
   float delta; 
   int* viewSize = viewport->GetSize(); 
@@ -967,10 +969,19 @@ void vtkVerticalScalarBarActor::SetDefinedLabels(const stringVector &labels)
   this->definedLabels = labels;
 }
 
+
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Wed Sep  8 17:51:43 PDT 2004
+//    Allocate a big enough buffer for long labels.
+//
+// ****************************************************************************
+
 void vtkVerticalScalarBarActor::SetDefinedLabels(const doubleVector &values)
 {
   this->definedLabels.clear();
-  char labelString[30];
+  char labelString[1024];
   for (int i = 0; i < values.size(); ++i)
     {
     sprintf(labelString, this->LabelFormat, values[i]);

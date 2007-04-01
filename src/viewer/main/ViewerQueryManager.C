@@ -2360,6 +2360,10 @@ ViewerQueryManager::HandlePickCache()
 //    Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004
 //    Added bool arg to support queries-over-time. 
 //
+//    Kathleen Bonnell, Wed Sep  8 09:36:30 PDT 2004 
+//    Renamed 'Pick' to 'ScreenZonePick', 'NodePick' to 'ScreenNodePick' and
+//    'WorldPick' to 'Pick', 'WorldNodePick' to 'NodePick'.
+//    
 // ****************************************************************************
 
 void         
@@ -2367,28 +2371,28 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
                     const stringVector &vars, const int arg1, const int arg2,
                     const bool doTime)
 {
-    if (qName == "ZonePick" || qName == "Pick")
+    if (qName == "ScreenZonePick") 
     {
         if (!vars.empty())
             pickAtts->SetVariables(vars);
         ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
         win->Pick((int)pt[0], (int)pt[1], ZONE_PICK);
     }
-    else if (qName == "NodePick") 
+    else if (qName == "ScreenNodePick") 
     {
         if (!vars.empty())
             pickAtts->SetVariables(vars);
         ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
         win->Pick((int)pt[0], (int)pt[1], NODE_PICK);
     }
-    else if (qName == "WorldPick" || qName == "WorldNodePick")
+    else if (qName == "Pick" || qName == "NodePick")
     {
         ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
         if (!vars.empty())
             pickAtts->SetVariables(vars);
 
         INTERACTION_MODE imode  = win->GetInteractionMode();
-        if (qName == "WorldPick")
+        if (qName == "Pick")
             win->SetInteractionMode(ZONE_PICK);
         else
             win->SetInteractionMode(NODE_PICK);
@@ -2750,6 +2754,12 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Kathleen Bonnell, Sat Sep  4 11:44:00 PDT 2004 
 //    Parameters required for AddQuery have changed. 
 //
+//    Kathleen Bonnell, Wed Sep  8 10:33:24 PDT 2004 
+//    Removed references to QueryList::CoordinateRepresentation, no longer 
+//    exists.   Removed screen-coords pick 'Pick' and 'NodePick', changed
+//    world-space picks 'WorldPick'  and 'WorldNodePick' to 'Pick' and
+//    'NodePick' respectively.
+//
 // ****************************************************************************
 
 void
@@ -2760,14 +2770,11 @@ ViewerQueryManager::InitializeQueryList()
     //    std::string                            queryName
     //    QueryList::QueryType                   queryType
     //    QueryList::Groups                      group
-    //    QueryList::CoordinateRepresentation    coordRep
     //    QueryList::WindowType                  winType
     //    int                                    numInputs
     //    int                                    allowedVarTypes
     //    bool                                   isTimeQuery
     //
-    QueryList::CoordinateRepresentation ws = QueryList::WorldSpace;
-    QueryList::CoordinateRepresentation ss = QueryList::ScreenSpace;
 
     QueryList::QueryType pq = QueryList::PointQuery;
     QueryList::QueryType dq = QueryList::DatabaseQuery;
@@ -2779,7 +2786,7 @@ ViewerQueryManager::InitializeQueryList()
     QueryList::WindowType dn = QueryList::DomainNode;
     QueryList::WindowType dz = QueryList::DomainZone;
     QueryList::WindowType ad = QueryList::ActualData;
-    QueryList::WindowType av = QueryList::ActualDataVars;
+    //QueryList::WindowType av = QueryList::ActualDataVars;
 
     QueryList::Groups cr = QueryList::CurveRelated;
     QueryList::Groups mr = QueryList::MeshRelated;
@@ -2788,47 +2795,44 @@ ViewerQueryManager::InitializeQueryList()
     QueryList::Groups vr = QueryList::VariableRelated;
 
     
-    queryTypes->AddQuery("ZonePick", pq, pr, ss, sp, 1, 0, true);
-    queryTypes->AddQuery("NodePick", pq, pr, ss, sp, 1, 0, true);
-
     if (PlotPluginManager::Instance()->PluginAvailable("Curve_1.0") &&
         OperatorPluginManager::Instance()->PluginAvailable("Lineout_1.0")) 
     {
-        queryTypes->AddQuery("Lineout", lq, vr, ws, dp, 1, 0, false);
+        queryTypes->AddQuery("Lineout", lq, vr, dp, 1, 0, false);
     }
-    queryTypes->AddQuery("Eulerian", dq, mr, ws, basic, 1, 0, false);
-    queryTypes->AddQuery("Compactness", dq, mr, ws, basic, 1, 0, false);
-    queryTypes->AddQuery("Cycle", dq, tr, ws, basic, 1, 0, false);
-    queryTypes->AddQuery("Time", dq, tr, ws, basic, 1, 0, false);
-    queryTypes->AddQuery("L2Norm", dq, cr, ws, basic, 1, 0, false);
-    queryTypes->AddQuery("Integrate", dq, cr, ws, basic, 1, 0, false);
-    queryTypes->AddQuery("L2Norm Between Curves", dq, cr, ws, basic, 2, 0, false);
-    queryTypes->AddQuery("Area Between Curves", dq, cr, ws, basic, 2, 0, false);
-    queryTypes->AddQuery("Revolved volume", dq, mr, ws, basic, 1, 0, false);
-    queryTypes->AddQuery("Revolved surface area", dq, mr, ws, basic, 1, 0, false);
-    queryTypes->AddQuery("2D area", dq, mr, ws, basic, 1, 0, true);
-    queryTypes->AddQuery("3D surface area", dq, mr, ws, basic, 1, 0, true);
-    queryTypes->AddQuery("Volume", dq, mr, ws, basic, 1, 0, true);
-    queryTypes->AddQuery("Variable Sum", dq, vr, ws, basic, 1, 0, true);
-    queryTypes->AddQuery("Weighted Variable Sum", dq, vr, ws, basic, 1, 0, true);
-    queryTypes->AddQuery("WorldPick", pq, pr, ws, sp, 1, 0, true);
-    queryTypes->AddQuery("WorldNodePick", pq, pr, ws, sp, 1, 0, true);
-    queryTypes->AddQuery("Variable by Zone", dq, vr, ws, dz, 1, 0, true);
-    queryTypes->AddQuery("Variable by Node", dq, vr, ws, dn, 1, 0, true);
+    queryTypes->AddQuery("Eulerian", dq, mr, basic, 1, 0, false);
+    queryTypes->AddQuery("Compactness", dq, mr, basic, 1, 0, false);
+    queryTypes->AddQuery("Cycle", dq, tr, basic, 1, 0, false);
+    queryTypes->AddQuery("Time", dq, tr, basic, 1, 0, false);
+    queryTypes->AddQuery("L2Norm", dq, cr, basic, 1, 0, false);
+    queryTypes->AddQuery("Integrate", dq, cr, basic, 1, 0, false);
+    queryTypes->AddQuery("L2Norm Between Curves", dq, cr, basic, 2, 0, false);
+    queryTypes->AddQuery("Area Between Curves", dq, cr, basic, 2, 0, false);
+    queryTypes->AddQuery("Revolved volume", dq, mr, basic, 1, 0, false);
+    queryTypes->AddQuery("Revolved surface area", dq, mr, basic, 1, 0, false);
+    queryTypes->AddQuery("2D area", dq, mr, basic, 1, 0, true);
+    queryTypes->AddQuery("3D surface area", dq, mr, basic, 1, 0, true);
+    queryTypes->AddQuery("Volume", dq, mr, basic, 1, 0, true);
+    queryTypes->AddQuery("Variable Sum", dq, vr, basic, 1, 0, true);
+    queryTypes->AddQuery("Weighted Variable Sum", dq, vr, basic, 1, 0, true);
+    queryTypes->AddQuery("Pick", pq, pr, sp, 1, 0, true);
+    queryTypes->AddQuery("NodePick", pq, pr, sp, 1, 0, true);
+    queryTypes->AddQuery("Variable by Zone", dq, vr, dz, 1, 0, true);
+    queryTypes->AddQuery("Variable by Node", dq, vr, dn, 1, 0, true);
 
     int MinMaxVars = QUERY_SCALAR_VAR | QUERY_TENSOR_VAR | QUERY_VECTOR_VAR | 
             QUERY_SYMMETRIC_TENSOR_VAR | QUERY_MATSPECIES_VAR | QUERY_CURVE_VAR;
 
-    queryTypes->AddQuery("MinMax", dq, vr, ws, ad, 1, MinMaxVars, false);
-    queryTypes->AddQuery("Min", dq, vr, ws, ad, 1, MinMaxVars, true);
-    queryTypes->AddQuery("Max", dq, vr, ws, ad, 1, MinMaxVars, true);
-    queryTypes->AddQuery("SpatialExtents", dq, mr, ws, ad, 1, 0, false);
-    queryTypes->AddQuery("NumNodes", dq, mr, ws, ad, 1, 0, false);
-    queryTypes->AddQuery("NumZones", dq, mr, ws, ad, 1, 0, false);
-    queryTypes->AddQuery("PickByZone", pq, pr, ws, dz, 1, 0, true);
-    queryTypes->AddQuery("PickByNode", pq, pr, ws, dn, 1, 0, true);
-    queryTypes->AddQuery("Zone Center", dq, mr, ws, dz, 1, 0, false);
-    queryTypes->AddQuery("Node Coords", dq, mr, ws, dn, 1, 0, false);
+    queryTypes->AddQuery("MinMax", dq, vr, ad, 1, MinMaxVars, false);
+    queryTypes->AddQuery("Min", dq, vr, ad, 1, MinMaxVars, true);
+    queryTypes->AddQuery("Max", dq, vr, ad, 1, MinMaxVars, true);
+    queryTypes->AddQuery("SpatialExtents", dq, mr, ad, 1, 0, false);
+    queryTypes->AddQuery("NumNodes", dq, mr, ad, 1, 0, false);
+    queryTypes->AddQuery("NumZones", dq, mr, ad, 1, 0, false);
+    queryTypes->AddQuery("PickByZone", pq, pr, dz, 1, 0, true);
+    queryTypes->AddQuery("PickByNode", pq, pr, dn, 1, 0, true);
+    queryTypes->AddQuery("Zone Center", dq, mr, dz, 1, 0, false);
+    queryTypes->AddQuery("Node Coords", dq, mr, dn, 1, 0, false);
                           
     queryTypes->SelectAll();
 }

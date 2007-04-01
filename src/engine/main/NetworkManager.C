@@ -171,6 +171,10 @@ NetworkManager::~NetworkManager(void)
 //    references to the databases (and the previous ordering yielded dangling
 //    pointers).
 //
+//    Mark C. Miller, Wed Sep  8 17:06:25 PDT 2004
+//    Added code to clear the vis window and the list of plots currently in
+//    the window.
+//
 // ****************************************************************************
 void
 NetworkManager::ClearAllNetworks(void)
@@ -196,6 +200,9 @@ NetworkManager::ClearAllNetworks(void)
     {
         globalCellCounts[i] = -1;
     }
+
+    viswin->ClearPlots();
+    plotsCurrentlyInWindow.clear();
 }
 
 // ****************************************************************************
@@ -214,12 +221,15 @@ NetworkManager::ClearAllNetworks(void)
 //    Brad Whitlock, Thu Feb 26 11:58:58 PDT 2004
 //    I replaced the commented out cerr with debug3.
 //
+//    Mark C. Miller, Wed Sep  8 17:06:25 PDT 2004
+//    Added code to clear the vis window and the list of plots currently in
+//    the window for the first plot id it encounters in this db
 // ****************************************************************************
 void
 NetworkManager::ClearNetworksWithDatabase(const std::string &db)
 {
     debug3 << "NetworkManager::ClearNetworksWithDatabase()" << endl;
-    int i;
+    int i,j;
 
     // 
     // Clear out the networks before the databases.  This is because if we
@@ -237,6 +247,15 @@ NetworkManager::ClearNetworksWithDatabase(const std::string &db)
                     delete networkCache[i];
                     networkCache[i] = NULL;
                     globalCellCounts[i] = -1;
+                    for (j = 0 ; j < plotsCurrentlyInWindow.size() ; j++)
+                    {
+                        if (plotsCurrentlyInWindow[j] == i)
+                        {
+                            viswin->ClearPlots();
+                            plotsCurrentlyInWindow.clear();
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -1114,6 +1133,10 @@ NetworkManager::GetScalableThreshold(void) const
 //    If this plot is currently located in the vis window (for SR-mode), then
 //    clear it out of the window before cleaning up the network.
 //
+//    Mark C. Miller, Wed Sep  8 17:06:25 PDT 2004
+//    Moved the code to clear the vis window and plots currently in the 
+//    vis window to inside the test for non-NULL networkCache
+//
 // ****************************************************************************
 void
 NetworkManager::DoneWithNetwork(int id)
@@ -1127,18 +1150,19 @@ NetworkManager::DoneWithNetwork(int id)
         EXCEPTION0(ImproperUseException);
     }
 
-    for (int i = 0 ; i < plotsCurrentlyInWindow.size() ; i++)
-    {
-        if (plotsCurrentlyInWindow[i] == id)
-        {
-            viswin->ClearPlots();
-            plotsCurrentlyInWindow.clear();
-            break;
-        }
-    }
-
     if (networkCache[id] != NULL)
     {
+
+        for (int i = 0 ; i < plotsCurrentlyInWindow.size() ; i++)
+        {
+            if (plotsCurrentlyInWindow[i] == id)
+            {
+                viswin->ClearPlots();
+                plotsCurrentlyInWindow.clear();
+                break;
+            }
+        }
+
         networkCache[id]->ReleaseData();
         globalCellCounts[id] = -1;
     }

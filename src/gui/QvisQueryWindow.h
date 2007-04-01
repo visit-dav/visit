@@ -52,6 +52,9 @@ class QueryList;
 //   UpdateQueryList, changed arg in UpdateArgumentPanel from int to QString.
 //   All to allow query lists to be sorted and grouped functionally.
 //
+//   Kathleen Bonnell, Wed Sep  8 10:06:16 PDT 2004 
+//   Removed coordLabel, removed 'rep' arg from GetPoint.
+//
 // ****************************************************************************
 
 class GUI_API QvisQueryWindow : public QvisPostableWindowSimpleObserver
@@ -80,7 +83,7 @@ private:
     void UpdateArgumentPanel(const QString &);
 
     void Apply(bool ignore = false, bool doTime = false);
-    bool GetPoint(int index, const QString &pname, int rep, double pt[3]);
+    bool GetPoint(int index, const QString &pname, double pt[3]);
     bool GetNumber(int index, int *num);
     bool GetVars(int index, stringVector &vars);
 private slots:
@@ -98,7 +101,6 @@ private:
     PlotList        *plotList;
 
     QComboBox       *displayMode;
-    QLabel          *coordLabel;
     QListBox        *queryList;
     QPushButton     *queryButton;
     QPushButton     *timeQueryButton;

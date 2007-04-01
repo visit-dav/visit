@@ -16,6 +16,7 @@
 #include <DebugStream.h>
 
 #include <vtkVisItCellLocator.h>
+#include <vtkDataSetRemoveGhostCells.h>
 #include <vtkPoints.h>
 #include <vtkIdList.h>
 #include <vtkMath.h>
@@ -494,11 +495,20 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
 //    Kathleen Bonnell, Tue Jul 27 10:18:14 PDT 2004
 //    Moved from 'ExecueData' method. 
 // 
+//    Hank Childs, Wed Sep  8 19:57:21 PDT 2004
+//    Remove ghost zones before doing a lineout.  This is because the
+//    vtkLineoutFilter is a bit touchy about ghost zone values.  If you have
+//    values > 1, then it can do interpolations to nodal data that can 
+//    mistakenly identify real zones as ghost.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtLineoutFilter::Sampling(vtkDataSet *in_ds, int domain)
 {
+    vtkDataSetRemoveGhostCells *ghosts = vtkDataSetRemoveGhostCells::New();
+    ghosts->SetInput(in_ds);
+
     vtkLineoutFilter *filter = vtkLineoutFilter::New();
     double *dpt = atts.GetPoint1();
 
@@ -506,7 +516,7 @@ avtLineoutFilter::Sampling(vtkDataSet *in_ds, int domain)
     dpt = atts.GetPoint2();
     float pt2[3] = {dpt[0], dpt[1], dpt[2]};
 
-    filter->SetInput(in_ds);
+    filter->SetInput(ghosts->GetOutput());
     filter->SetPoint1(pt1);
     filter->SetPoint2(pt2);
     filter->SetNumberOfSamplePoints(atts.GetNumberOfSamplePoints());
@@ -525,6 +535,7 @@ avtLineoutFilter::Sampling(vtkDataSet *in_ds, int domain)
 
     ManageMemory(rv);
     filter->Delete();
+    ghosts->Delete();
 
     return rv;
 }

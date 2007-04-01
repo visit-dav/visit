@@ -112,6 +112,11 @@ avtIndexSelectFilter::SetAtts(const AttributeGroup *a)
 //  Programmer: Hank Childs
 //  Creation:   June 25, 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Sep  8 09:36:30 PDT 2004
+//    Always Set IncludeBoundary to true for filters, so they can handle
+//    modulo prolbems (eg sample rate of 3, but dimension is 10).
+//
 // ****************************************************************************
 
 void
@@ -167,16 +172,8 @@ avtIndexSelectFilter::PrepareFilters(int groupIndices[3])
     curvilinearFilter->SetSampleRate(sampleRate);
     rectilinearFilter->SetSampleRate(sampleRate);
 
-    if (atts.GetWhichData() == IndexSelectAttributes::OneGroup)
-    {
-        curvilinearFilter->SetIncludeBoundary(1);
-        rectilinearFilter->SetIncludeBoundary(1);
-    }
-    else
-    {
-        curvilinearFilter->SetIncludeBoundary(0);
-        rectilinearFilter->SetIncludeBoundary(0);
-    }
+    curvilinearFilter->SetIncludeBoundary(1);
+    rectilinearFilter->SetIncludeBoundary(1);
 }
 
 
