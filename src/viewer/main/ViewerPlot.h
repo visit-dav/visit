@@ -183,6 +183,10 @@ class avtToolInterface;
 //    I added a copy constructor and made changes to make keyframing work
 //    again.
 //
+//    Mark C. Miller, Tue Apr 20 07:44:34 PDT 2004
+//    Added actorHasNoData arg. to CreateActor. Eliminated default values for
+//    other args to CreateActor
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPlot
@@ -292,8 +296,9 @@ class VIEWER_API ViewerPlot
     avtActor_p &GetActor() const;
     avtDataObjectReader_p &GetReader() const;
     bool NoActorExists() const;
-    void CreateActor(bool createNew = true,
-                     bool turningOffScalableRendering = true);
+    void CreateActor(bool createNew,
+                     bool turningOffScalableRendering,
+                     bool &actorHasNoData);
     void ClearActors();
     void ClearCurrentActor();
     void TransmuteActor(bool turningOffScalableRendering);

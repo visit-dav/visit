@@ -1041,6 +1041,9 @@ RPCExecutor<DefineVirtualDatabaseRPC>::Execute(DefineVirtualDatabaseRPC *rpc)
 //    Mark C. Miller, Mon Mar 29 14:27:10 PST 200
 //    Added stuff to pass knowledge of annotations to render method
 //
+//    Mark C. Miller, Tue Apr 20 07:44:34 PDT 2004
+//    Added code to set the warning call back
+//
 // ****************************************************************************
 template<>
 void
@@ -1058,7 +1061,7 @@ RPCExecutor<RenderRPC>::Execute(RenderRPC *rpc)
     avtDataObjectSource::RegisterProgressCallback(NULL, NULL);
     LoadBalancer::RegisterProgressCallback(NULL, NULL);
     avtTerminatingSource::RegisterInitializeProgressCallback(NULL, NULL);
-    avtCallback::RegisterWarningCallback(NULL, NULL);
+    avtCallback::RegisterWarningCallback(Engine::EngineWarningCallback, (void*)rpc);
     TRY 
     {
         // do the render

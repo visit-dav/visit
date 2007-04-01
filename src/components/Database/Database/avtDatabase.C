@@ -1063,6 +1063,9 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    Kathleen Bonnell, Tue Mar 16 15:55:18 PST 2004 
 //    Don't remove any pickVarInfo's, let Pick handle that.
 //    
+//    Kathleen Bonnell, Mon Apr 19 15:49:05 PDT 2004 
+//    Ensure that the timestep being queried is the active one.
+//    
 // ****************************************************************************
 
 void               
@@ -1081,6 +1084,11 @@ avtDatabase::Query(PickAttributes *pa)
     std::vector<std::string> bzoneCoords  = pa->GetBzoneCoords();
     vector<string> userVars = pa->GetVariables();
     std::string vName; 
+
+    //
+    //  Ensure that the timestep being queried is the active one. 
+    //
+    ActivateTimestep(ts);
 
     //
     //  Filling the incidentElements is usually done by PickQuery,

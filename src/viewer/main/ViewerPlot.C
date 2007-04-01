@@ -2459,13 +2459,19 @@ ViewerPlot::GetReader() const
 //    Mark C. Miller, Mon Apr 19 12:00:52 PDT 2004
 //    Added code to issue a warning message if actor has no data
 //
+//    Mark C. Miller, Mon Apr 19 16:17:37 PDT 2004
+//    Added returned bool argument, actorHasNoData and removed code that 
+//    issues the no data warning message to the caller of this method
+//
 // ****************************************************************************
 
 // only place in ViewerPlot where ViewerWindowManager is needed
 #include <ViewerWindowManager.h>
 
 void
-ViewerPlot::CreateActor(bool createNew, bool turningOffScalableRendering)
+ViewerPlot::CreateActor(bool createNew,
+                        bool turningOffScalableRendering,
+                        bool& actorHasNoData)
 {
     avtDataObjectReader_p reader;
 
@@ -2629,22 +2635,15 @@ ViewerPlot::CreateActor(bool createNew, bool turningOffScalableRendering)
     plotList[cacheIndex]->SetIndex(networkID);
     plotList[cacheIndex]->SetCurrentSILRestriction(silr);
 
+    // assume the actor has data
+    actorHasNoData = false;
     TRY
     {
         avtActor_p actor = plotList[cacheIndex]->Execute(reader);
 
-        //
-        // Issue a warning if this actor has no data
-        //
-        bool polysOnly = false;
-        if (actor->GetDataObject()->GetNumberOfCells(polysOnly) == 0)
-        {
-            char message[128];
-            SNPRINTF(message, sizeof(message),
-                "The %s plot of \"%s\" yielded no data",
-                GetPlotName(), GetVariableName().c_str());
-            Warning(message);
-        }
+        bool countPolysOnly = false;
+        if (actor->GetDataObject()->GetNumberOfCells(countPolysOnly) == 0)
+            actorHasNoData = true;
 
         this->SetActor(actor);
 
@@ -2830,7 +2829,8 @@ ViewerPlot::ClearActors(const int i0, const int i1)
 void
 ViewerPlot::TransmuteActor(bool turningOffScalableRendering)
 {
-    CreateActor(false, turningOffScalableRendering);
+    bool dummyBool;
+    CreateActor(false, turningOffScalableRendering, dummyBool);
 } 
 
 // ****************************************************************************

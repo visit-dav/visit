@@ -5311,6 +5311,9 @@ PthreadAttrInit(pthread_attr_t *attr)
 //    Jeremy Meredith, Tue Mar 30 10:39:20 PST 2004
 //    Added an engine key to map plots to the engine used to create them.
 //
+//    Mark C. Miller, Tue Apr 20 07:44:34 PDT 2004
+//    Added code to issue warning message if a created actor has no data
+//
 // ****************************************************************************
 
 void *
@@ -5325,7 +5328,25 @@ CreatePlot(void *info)
                                                plotInfo->plot->GetEngineKey());
 
         if(success)
-            plotInfo->plot->CreateActor();
+        {
+            bool createNewActor = true;
+            bool turningOffScalableRendering = false;
+            bool actorHasNoData = false;
+            plotInfo->plot->CreateActor(createNewActor,
+                                        turningOffScalableRendering,
+                                        actorHasNoData);
+
+            if (actorHasNoData && !plotInfo->window->GetScalableRendering())
+            {
+                char message[256];
+                SNPRINTF(message, sizeof(message),
+                    "The %s plot of variable \"%s\" yielded no data.",
+                    plotInfo->plot->GetPlotName(),
+                    plotInfo->plot->GetVariableName().c_str());
+                Warning(message);
+            }
+
+        }
         else
             plotInfo->plotList->InterruptUpdatePlotList();
     }

@@ -1712,6 +1712,10 @@ ViewerEngineManager::UseDataObjectReader(ViewerPlot *const plot,
 //    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
 //    Use a map of engines based on a key, and be aware of simulations.
 //
+//    Mark C. Miller, Tue Apr 20 07:44:34 PDT 2004
+//    Added args to the proxy's render method to support warning call backs
+//    comming from the engine.
+//
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -1728,7 +1732,9 @@ ViewerEngineManager::GetDataObjectReader(bool sendZBuffer,
 
     TRY
     {
-        retval = engines[ek]->Render(sendZBuffer, ids, !doAllAnnotations);
+        retval = engines[ek]->Render(sendZBuffer, ids, !doAllAnnotations,
+                                     ViewerSubject::ProcessEventsCB,
+                                     (void *)viewerSubject);
     }
     CATCH(LostConnectionException)
     {
