@@ -1148,3 +1148,35 @@ GetFloatArrayToRootProc(float *fa, int nf, bool &success)
 }
 
 
+// ****************************************************************************
+//  Function: UnifyMaximumValue
+//
+//  Purpose:
+//      Makes a collective call across all processors to unify the maximum
+//      values in the intVector over all processors.
+//
+//  Arguments:
+//      mymax    The maximum values on this processor.
+//      results  The maximum values over all processors. 
+//
+//  Returns:     The maximum over all processors.
+//
+//  Programmer:  Kathleen Bonnell
+//  Creation:    November 9, 2004 
+//
+// ****************************************************************************
+
+/* ARGSUSED */
+void 
+UnifyMaximumValue(vector<int> &mymax, vector<int> &results)
+{
+#ifdef PARALLEL
+    results.resize(mymax.size());
+    MPI_Allreduce(&mymax[0], &results[0], mymax.size(), MPI_INT, MPI_MAX, 
+                  MPI_COMM_WORLD);
+#else
+    results = mymax;
+#endif
+}
+
+
