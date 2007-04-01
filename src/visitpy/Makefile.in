@@ -90,6 +90,9 @@
 #    In particular, on gps the wrong libstdc++ gets loaded and the cli
 #    crashes on startup.
 #
+#    Jeremy Meredith, Fri Oct 29 16:48:40 PDT 2004
+#    Added support for lighting.
+#
 ##############################################################################
 
 ##
@@ -108,6 +111,7 @@ SRC= \
     PyHostProfile.C \
     PyInteractorAttributes.C \
     PyKeyframeAttributes.C \
+    PyLightAttributes.C \
     PyMaterialAttributes.C \
     PyPickAttributes.C \
     PyPrinterAttributes.C \
@@ -131,6 +135,7 @@ HDR= \
     PyHostProfile.h \
     PyInteractorAttributes.h \
     PyKeyframeAttributes.h \
+    PyLightAttributes.h \
     PyMaterialAttributes.h \
     PyPickAttributes.h \
     PyPrinterAttributes.h \
