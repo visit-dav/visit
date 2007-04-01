@@ -7,13 +7,17 @@
 #include <zlib.h>
 
 #include <visitstream.h>
+#include <visit-config.h>
 
 #include <vtkFloatArray.h>
 #include <vtkRectilinearGrid.h>
 
+#include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
 #include <avtIntervalTree.h>
+#include <avtStructuredDomainBoundaries.h>
 #include <avtTypes.h>
+#include <avtVariableCache.h>
 
 #include <DebugStream.h>
 #include <BadDomainException.h>
@@ -495,6 +499,7 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
 #else
         machineEndianIsLittle = true;
 #endif
+   
         if (littleEndian != machineEndianIsLittle)
         {
             if (!byteData)
@@ -624,6 +629,9 @@ avtBOVFileFormat::GetAuxiliaryData(const char *var, int domain,
 //    Hank Childs, Mon Sep 15 09:51:16 PDT 2003
 //    Account for the possibility of zonal variables.
 //
+//    Hank Childs, Sat Sep 11 16:15:20 PDT 2004
+//    Create domain boundary information.
+//
 // ****************************************************************************
 
 void
@@ -649,6 +657,36 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     AddScalarVarToMetaData(md, varname, "mesh",
                                (nodalCentering ? AVT_NODECENT : AVT_ZONECENT));
+
+    if (!avtDatabase::OnlyServeUpMetaData() && nbricks > 1)
+    {
+        avtRectilinearDomainBoundaries *rdb = 
+                                      new avtRectilinearDomainBoundaries(true);
+        rdb->SetNumDomains(nbricks);
+        for (int i = 0 ; i < nbricks ; i++)
+        {
+            int nx = full_size[0] / bricklet_size[0];
+            int ny = full_size[1] / bricklet_size[1];
+            int nz = full_size[2] / bricklet_size[2];
+            int z_off = i / (nx*ny);
+            int y_off = (i % (nx*ny)) / nx;
+            int x_off = i % nx;
+            int extents[6];
+            extents[0] = x_off * (bricklet_size[0]-1);
+            extents[1]  = (x_off+1) * (bricklet_size[0]-1);
+            extents[2] = y_off * (bricklet_size[1]-1);
+            extents[3]  = (y_off+1) * (bricklet_size[1]-1);
+            extents[4] = z_off * (bricklet_size[2]-1);
+            extents[5]  = (z_off+1) * (bricklet_size[2]-1);
+            rdb->SetIndicesForRectGrid(i, extents);
+        }
+        rdb->CalculateBoundaries();
+
+        void_ref_ptr vr = void_ref_ptr(rdb,
+                                   avtStructuredDomainBoundaries::Destruct);
+        cache->CacheVoidRef("any_mesh",
+                       AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, -1, -1, vr);
+    }
 }
 
 

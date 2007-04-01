@@ -1,0 +1,435 @@
+// ************************************************************************* //
+//                               avtBOVWriter.C                              //
+// ************************************************************************* //
+
+#include <avtBOVWriter.h>
+
+#include <float.h>
+#include <zlib.h>
+#include <vector>
+
+#include <visit-config.h>
+#include <visitstream.h>
+
+#include <vtkDataArray.h>
+#include <vtkPointData.h>
+#include <vtkRectilinearGrid.h>
+
+#include <avtDatabaseMetaData.h>
+
+#include <ImproperUseException.h>
+
+
+using     std::string;
+using     std::vector;
+
+
+// ****************************************************************************
+//  Method: avtBOVWriter::OpenFile
+//
+//  Purpose:
+//      Does no actual work.  Just records the stem name for the files.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 11, 2004
+//
+// ****************************************************************************
+
+void
+avtBOVWriter::OpenFile(const string &stemname)
+{
+    stem = stemname;
+}
+
+
+// ****************************************************************************
+//  Method: avtBOVWriter::WriteHeaders
+//
+//  Purpose:
+//      Writes out the BOV header file.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 11, 2004
+//
+// ****************************************************************************
+
+void
+avtBOVWriter::WriteHeaders(const avtDatabaseMetaData *md,
+                           vector<string> &scalars, vector<string> &vectors,
+                           vector<string> &materials)
+{
+    //
+    // We can only handle single block files.
+    //
+    if (md->GetMesh(0)->numBlocks != 1)
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+   
+    // 
+    // Don't bother writing the header now.  We only support single block
+    // datasets and we need to examine that dataset before we can write out
+    // the header.  So just punt on writing the header and do it when we get
+    // the single block.
+    //
+}
+
+
+// ****************************************************************************
+//  Function: ResampleGrid
+//
+//  Purpose:
+//      Resamples a rectilinear grid onto another rectilinear grid.  Note that
+//      this isn't a generally useful thing to do, but it is good for scaling
+//      studies.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 11, 2004
+//
+// ****************************************************************************
+
+static void
+ResampleGrid(vtkRectilinearGrid *rgrid, float *ptr, float *samples, 
+             float *brick_bounds, int *brick_dims)
+{
+    int  i, j, k;
+
+    float x_step = (brick_bounds[1] - brick_bounds[0]) / (brick_dims[0]-1);
+    float y_step = (brick_bounds[3] - brick_bounds[2]) / (brick_dims[1]-1);
+    float z_step = (brick_bounds[5] - brick_bounds[4]) / (brick_dims[2]-1);
+
+    int grid_dims[3];
+    rgrid->GetDimensions(grid_dims);
+
+    float *x_prop = new float[brick_dims[0]];
+    int   *x_ind  = new int[brick_dims[0]];
+    for (i = 0 ; i < brick_dims[0] ; i++)
+    {
+        float x = brick_bounds[0] + x_step*i;
+        if (i == brick_dims[0]-1)
+            x = brick_bounds[1];  // floating-point roundoff screws up <,>
+        for (j = 0 ; j < grid_dims[0]-1 ; j++)
+        {
+            float x1 = rgrid->GetXCoordinates()->GetTuple1(j);
+            float x2 = rgrid->GetXCoordinates()->GetTuple1(j+1);
+            if (x1 <= x && x <= x2)
+            {
+                x_ind[i] = j;
+                float dist = x2-x1;
+                if (dist == 0)
+                    x_prop[i] = 0.;
+                else
+                {
+                    float offset = x-x1;
+                    x_prop[i] = offset / dist;
+                }
+                break;
+            }
+        }
+    }
+
+    float *y_prop = new float[brick_dims[1]];
+    int   *y_ind  = new int[brick_dims[1]];
+    for (i = 0 ; i < brick_dims[1] ; i++)
+    {
+        float y = brick_bounds[2] + y_step*i;
+        if (i == brick_dims[1]-1)
+            y = brick_bounds[3];  // floating-point roundoff screws up <,>
+        for (j = 0 ; j < grid_dims[1]-1 ; j++)
+        {
+            float y1 = rgrid->GetYCoordinates()->GetTuple1(j);
+            float y2 = rgrid->GetYCoordinates()->GetTuple1(j+1);
+            if (y1 <= y && y <= y2)
+            {
+                y_ind[i] = j;
+                float dist = y2-y1;
+                if (dist == 0)
+                    y_prop[i] = 0.;
+                else
+                {
+                    float offset = y-y1;
+                    y_prop[i] = offset / dist;
+                }
+                break;
+            }
+        }
+    }
+
+    float *z_prop = new float[brick_dims[2]];
+    int   *z_ind  = new int[brick_dims[2]];
+    for (i = 0 ; i < brick_dims[2] ; i++)
+    {
+        float z = brick_bounds[4] + z_step*i;
+        if (i == brick_dims[2]-1)
+            z = brick_bounds[5];  // floating-point roundoff screws up <,>
+        for (j = 0 ; j < grid_dims[2]-1 ; j++)
+        {
+            float z1 = rgrid->GetZCoordinates()->GetTuple1(j);
+            float z2 = rgrid->GetZCoordinates()->GetTuple1(j+1);
+            if (z1 <= z && z <= z2)
+            {
+                z_ind[i] = j;
+                float dist = z2-z1;
+                if (dist == 0)
+                    z_prop[i] = 0.;
+                else
+                {
+                    float offset = z-z1;
+                    z_prop[i] = offset / dist;
+                }
+                break;
+            }
+        }
+    }
+
+    for (k = 0 ; k < brick_dims[2] ; k++)
+    {
+        for (j = 0 ; j < brick_dims[1] ; j++)
+        {
+            for (i = 0 ; i < brick_dims[0] ; i++)
+            {
+                // Tri-linear interpolation.
+                float val = 0.;
+                for (int l = 0 ; l < 8 ; l++)
+                {
+                    int i_ = x_ind[i] + (l & 1 ? 1 : 0);
+                    int j_ = y_ind[j] + (l & 2 ? 1 : 0);
+                    int k_ = z_ind[k] + (l & 4 ? 1 : 0);
+                    float x_prop_ = (l & 1 ? x_prop[i] : 1.-x_prop[i]);
+                    float y_prop_ = (l & 2 ? y_prop[j] : 1.-y_prop[j]);
+                    float z_prop_ = (l & 4 ? z_prop[k] : 1.-z_prop[k]);
+                    int pt = k_*grid_dims[1]*grid_dims[0]
+                           + j_*grid_dims[0] + i_;
+                    val += x_prop_*y_prop_*z_prop_*ptr[pt];
+                }
+
+                int pt = k*brick_dims[1]*brick_dims[0] + j*brick_dims[0] + i;
+                samples[pt] = val;
+            }
+        }
+    }
+
+    delete [] x_prop;
+    delete [] x_ind;
+    delete [] y_prop;
+    delete [] y_ind;
+    delete [] z_prop;
+    delete [] z_ind;
+}
+
+
+// ****************************************************************************
+//  Method: avtBOVWriter::WriteChunk
+//
+//  Purpose:
+//      This writes out one chunk of an avtDataset.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 11, 2004
+//
+// ****************************************************************************
+
+void
+avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
+{
+    int   i;
+
+    if (ds->GetDataObjectType() != VTK_RECTILINEAR_GRID)
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+    vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) ds;
+
+    //
+    // We are only set up to operate on one nodal array.  Which array we 
+    // operate on should be set by the commanding program (ie convert).
+    //
+    vtkDataArray *arr = rgrid->GetPointData()->GetScalars();
+    if (arr == NULL)
+    {
+        int nPtVars = rgrid->GetPointData()->GetNumberOfArrays();
+        for (i = 0 ; nPtVars ; i++)
+        {
+            vtkDataArray *arr2 = rgrid->GetPointData()->GetArray(i);
+            if (arr2->GetNumberOfComponents() == 1)
+            {
+                arr = arr2;
+                break;
+            }
+        }
+
+        if (arr == NULL)
+            EXCEPTION0(ImproperUseException);
+    }
+
+    if (arr->GetDataType() != VTK_FLOAT)
+        EXCEPTION0(ImproperUseException);
+    float *ptr = (float *) arr->GetVoidPointer(0);
+
+    char filename[1024];
+    sprintf(filename, "%s.bov", stem.c_str());
+    ofstream ofile(filename);
+    ofile << "#BOV version: 1.0" << endl;
+    ofile << "# file written by VisIt conversion program " << endl;
+
+    int dims[3];
+    rgrid->GetDimensions(dims);
+
+    int nBricklets = 1;
+    int brickletsPerX = 1;
+    int brickletsPerY = 1;
+    int brickletsPerZ = 1;
+    int brickletNI = dims[0];
+    int brickletNJ = dims[1];
+    int brickletNK = dims[2];
+    if (shouldChangeChunks)
+    {
+        double cubeRoot = pow(nTargetChunks, 0.3333);
+        int approxCubeRoot = ((int) cubeRoot);
+        if (approxCubeRoot*approxCubeRoot*approxCubeRoot != nTargetChunks)
+            approxCubeRoot += 1;
+        brickletsPerX = approxCubeRoot;
+        brickletsPerY = approxCubeRoot;
+        brickletsPerZ = approxCubeRoot;
+        nBricklets = brickletsPerX*brickletsPerY*brickletsPerZ;
+    }
+    if (shouldChangeTotalZones)
+    {
+        long long zonesPerBricklet = targetTotalZones / (long long) nBricklets;
+        zonesPerBricklet += 1;
+        double cubeRoot = pow( (double) zonesPerBricklet, 0.3333);
+        int approxCubeRoot = ((int) cubeRoot) + 1;
+
+        brickletNI = approxCubeRoot;
+        brickletNJ = approxCubeRoot;
+        brickletNK = approxCubeRoot;
+    }
+
+    if (nBricklets > 1)
+    {
+        char str[1024];
+        sprintf(str, "%s_%%0.4d.bof.gz", stem.c_str());
+        ofile << "DATA_FILE: " << str << endl;
+    }
+    else
+    {
+        ofile << "DATA_FILE: " << stem << endl;
+    }
+
+    ofile << "DATA SIZE: " << brickletsPerX*brickletNI << " "
+            << brickletsPerY*brickletNJ << " " << brickletsPerZ*brickletNK
+            << endl;
+
+    if (nBricklets > 1)
+        ofile << "DATA_BRICKLETS: " << brickletNI << " " << brickletNJ
+                << " " << brickletNK << endl;
+
+    ofile << "DATA FORMAT: FLOATS" << endl;
+
+    ofile << "VARIABLE: " << arr->GetName() << endl;
+    float max = -FLT_MAX;
+    float min = +FLT_MAX;
+    int nvals = dims[0]*dims[1]*dims[2];
+    for (i = 0 ; i < nvals ; i++)
+    {
+        min = (min < ptr[i] ? min : ptr[i]);
+        max = (max > ptr[i] ? max : ptr[i]);
+    }
+    ofile << "VARIABLE PALETTE MIN: " << min << endl;
+    ofile << "VARIABLE PALETTE MAX: " << max << endl;
+     
+    float bounds[6];
+    rgrid->GetBounds(bounds);
+    ofile << "BRICK ORIGIN: " << bounds[0] << " " << bounds[2] << " "
+            << bounds[4] << endl;
+    ofile << "BRICK SIZE: " << bounds[1]-bounds[0] << " " 
+            << bounds[3]-bounds[2] << " "
+            << bounds[5]-bounds[4] << endl;
+    ofile << "BRICK X_AXIS: 1.000 0.000 0.000" << endl;
+    ofile << "BRICK Y_AXIS: 0.000 1.000 0.000" << endl;
+    ofile << "BRICK Z_AXIS: 0.000 0.000 1.000" << endl;
+
+    // 
+    // The information below is good to have.  But if we write it out, then
+    // we are breaking with the "standard" BOV format.  But if we are writing
+    // out multiple bricks, then we are already breaking with the format, so
+    // we may as well.
+    //
+#ifdef WORDS_BIGENDIAN
+    char *endian_str = "BIG";
+#else
+    char *endian_str = "LITTLE";
+#endif
+    if (nBricklets > 1)
+    {
+        ofile << "DATA_ENDIAN: " << endian_str << endl;
+        ofile << "CENTERING: nodal" << endl;
+    }
+
+    if (nBricklets == 1 && brickletNI == dims[0] && brickletNJ == dims[1]
+        && brickletNJ == dims[2])
+    {
+        //
+        // No resampling necessary.  Also, don't gzip, so we can stay 
+        // compatible with the "standard" BOV format.
+        //
+        FILE *file_handle = fopen(stem.c_str(), "w");
+        fwrite(ptr, sizeof(float), nvals, file_handle);
+        fclose(file_handle);
+    }
+    else
+    {
+        int vals_per_bricklet = brickletNI*brickletNJ*brickletNK;
+        float *samples = new float[vals_per_bricklet];
+        for (int i = 0 ; i < brickletsPerX ; i++)
+        {
+            for (int j = 0 ; j < brickletsPerY ; j++)
+            {
+                for (int k = 0 ; k < brickletsPerZ ; k++)
+                {
+                    float brick_bounds[6];
+                    float x_step = (bounds[1] - bounds[0]) / brickletsPerX;
+                    brick_bounds[0] = bounds[0] + i*x_step;
+                    brick_bounds[1] = bounds[0] + (i+1)*x_step;
+                    float y_step = (bounds[3] - bounds[2]) / brickletsPerY;
+                    brick_bounds[2] = bounds[2] + j*y_step;
+                    brick_bounds[3] = bounds[2] + (j+1)*y_step;
+                    float z_step = (bounds[5] - bounds[4]) / brickletsPerZ;
+                    brick_bounds[4] = bounds[4] + k*z_step;
+                    brick_bounds[5] = bounds[4] + (k+1)*z_step;
+                    int brick_dims[3] = { brickletNI, brickletNJ, brickletNK };
+                    ResampleGrid(rgrid, ptr, samples, brick_bounds,brick_dims);
+                    char str[1024];
+                    int brick = k*brickletsPerY*brickletsPerX 
+                              + j*brickletsPerX + i;
+                    sprintf(str, "%s_%0.4d.bof.gz", stem.c_str(), brick);
+                    void *gz_handle = gzopen(str, "w");
+                    gzwrite(gz_handle, samples, 
+                            vals_per_bricklet*sizeof(float));
+                    gzclose(gz_handle);
+                }
+            }
+        }
+        delete [] samples;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtBOVWriter::CloseFile
+//
+//  Purpose:
+//      Closes the file.  This does nothing in this case.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 11, 2004
+//
+// ****************************************************************************
+
+void
+avtBOVWriter::CloseFile(void)
+{
+    // Just needed to meet interface.
+}
+
+

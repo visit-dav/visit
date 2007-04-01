@@ -35,6 +35,10 @@ class     avtDatabaseMetaData;
 //    Moved inlined destructor definition to .C file because certain compilers 
 //    have problems with them.
 //
+//    Hank Childs, Sat Sep 11 10:03:49 PDT 2004
+//    Add support for repartitioning the chunks.  Also support reading only
+//    one variable.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatabaseWriter : public avtOriginatingDatasetSink
@@ -44,13 +48,25 @@ class PIPELINE_API avtDatabaseWriter : public avtOriginatingDatasetSink
     virtual           ~avtDatabaseWriter();
    
     void               Write(const std::string &, const avtDatabaseMetaData *);
+    void               Write(const std::string &, const avtDatabaseMetaData *,
+                             std::vector<std::string> &);
+
     void               SetShouldAlwaysDoMIR(bool s)
                              { shouldAlwaysDoMIR = s; };
+
+    bool               SetTargetChunks(int nChunks);
+    bool               SetTargetZones(long long nTotalZones);
+    void               SetVariableList(std::vector<std::string> &);
 
   protected:
     bool               shouldAlwaysDoMIR;
     bool               mustGetMaterialsAdditionally;
     bool               hasMaterialsInProblem;
+
+    bool               shouldChangeChunks;
+    bool               shouldChangeTotalZones;
+    int                nTargetChunks;
+    long long          targetTotalZones;
 
     virtual bool       CanHandleMaterials(void) { return false; };
 
@@ -60,6 +76,9 @@ class PIPELINE_API avtDatabaseWriter : public avtOriginatingDatasetSink
                            std::vector<std::string> &) = 0;
     virtual void       WriteChunk(vtkDataSet *, int) = 0;
     virtual void       CloseFile(void) = 0;
+
+    virtual bool       SupportsTargetChunks(void) { return false; };
+    virtual bool       SupportsTargetZones(void) { return false; };
 };
 
 

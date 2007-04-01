@@ -18,6 +18,11 @@
 //  Programmer: Hank Childs
 //  Creation:   September 12, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Sep 11 12:14:31 PDT 2004
+//    Initialized new data members for target chunks, total zones.
+//
 // ****************************************************************************
 
 avtDatabaseWriter::avtDatabaseWriter()
@@ -25,6 +30,11 @@ avtDatabaseWriter::avtDatabaseWriter()
     shouldAlwaysDoMIR = false;
     hasMaterialsInProblem = false;
     mustGetMaterialsAdditionally = false;
+
+    shouldChangeChunks = false;
+    shouldChangeTotalZones = false;
+    nTargetChunks = 1;
+    targetTotalZones = 1;
 }
 
 
@@ -47,6 +57,66 @@ avtDatabaseWriter::~avtDatabaseWriter()
 
 
 // ****************************************************************************
+//  Method: avtDatabaseWriter::SetTargetChunks
+//
+//  Purpose:
+//      Tells the writer what its target number of chunks is.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 11, 2004
+//
+// ****************************************************************************
+
+bool
+avtDatabaseWriter::SetTargetChunks(int nChunks)
+{
+    shouldChangeChunks = true;
+    nTargetChunks = nChunks;
+    return SupportsTargetChunks();
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseWriter::SetTargetZones
+//
+//  Purpose:
+//      Tells the writer what its target number of zones is.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 11, 2004
+//
+// ****************************************************************************
+
+bool
+avtDatabaseWriter::SetTargetZones(long long nZones)
+{
+    shouldChangeTotalZones = true;
+    targetTotalZones = nZones;
+    return SupportsTargetZones();
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseWriter::Write
+//
+//  Purpose:
+//      Writes out a database making use of virtual function calls.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 11, 2004
+//
+// ****************************************************************************
+
+void
+avtDatabaseWriter::Write(const std::string &filename,
+                         const avtDatabaseMetaData *md)
+{
+    std::vector<std::string> varlist;
+    Write(filename, md, varlist);
+}
+
+
+// ****************************************************************************
 //  Method: avtDatabaseWriter::Write
 //
 //  Purpose:
@@ -55,13 +125,19 @@ avtDatabaseWriter::~avtDatabaseWriter()
 //  Programmer: Hank Childs
 //  Creation:   September 10, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Sep 11 12:14:31 PDT 2004
+//    Added argument for variable list.
+//
 // ****************************************************************************
 
 void
 avtDatabaseWriter::Write(const std::string &filename,
-                         const avtDatabaseMetaData *md)
+                         const avtDatabaseMetaData *md,
+                         std::vector<std::string> &varlist)
 {
-    int  i;
+    int  i, j;
 
     avtDataObject_p dob = GetInput();
     if (*dob == NULL)
@@ -82,25 +158,78 @@ avtDatabaseWriter::Write(const std::string &filename,
     //
     std::vector<std::string> scalarList;
     std::vector<std::string> vectorList;
+    if (varlist.size() > 0)
+    {
+        for (j = 0 ; j < varlist.size() ; j++)
+        {
+            for (i = 0 ; i < md->GetNumScalars() ; i++)
+            {
+                const avtScalarMetaData *smd = md->GetScalar(i);
+                if (smd->name == varlist[j])
+                   scalarList.push_back(smd->name);
+            }
+            for (i = 0 ; i < md->GetNumVectors() ; i++)
+            {
+                const avtVectorMetaData *vmd = md->GetVector(i);
+                if (vmd->name == varlist[j])
+                   scalarList.push_back(vmd->name);
+            }
+            ds->AddSecondaryVariable(varlist[j].c_str());
+        }
+    }
+    else
+    {
+        for (i = 0 ; i < md->GetNumScalars() ; i++)
+        {
+            const avtScalarMetaData *smd = md->GetScalar(i);
+            if (md->MeshForVar(smd->name) == mmd->name)
+            {
+                ds->AddSecondaryVariable(smd->name.c_str());
+                scalarList.push_back(smd->name);
+            }
+        }
+        for (i = 0 ; i < md->GetNumVectors() ; i++)
+        {
+            const avtVectorMetaData *vmd = md->GetVector(i);
+            if (md->MeshForVar(vmd->name) == mmd->name)
+            {
+                ds->AddSecondaryVariable(vmd->name.c_str());
+                vectorList.push_back(vmd->name);
+            }
+        }
+
+        /* 
+         * Expressions currently only work on the engine, so don't add them.
+         *
+        // We only want the expressions that correspond to the mesh we are
+        // operating on.  If there is more than one mesh, then we don't 
+        // really know, so don't add expressions.
+        if (md->GetNumMeshes() == 1)
+        {
+            for (i = 0 ; i < md->GetNumberOfExpressions() ; i++)
+            {
+                const Expression *expr = md->GetExpression(i);
+                Expression::ExprType type = expr->GetType();
+                bool shouldAdd = false;
+                if (type == Expression::ScalarMeshVar)
+                {
+                    shouldAdd = true;
+                    scalarList.push_back(expr->GetName());
+                }
+                else if (type == Expression::VectorMeshVar)
+                {
+                    shouldAdd = true;
+                    vectorList.push_back(expr->GetName());
+                }
+                if (shouldAdd)
+                    ds->AddSecondaryVariable(expr->GetName().c_str());
+            }
+        }
+         *
+         */
+    }
+
     std::vector<std::string> materialList;
-    for (i = 0 ; i < md->GetNumScalars() ; i++)
-    {
-        const avtScalarMetaData *smd = md->GetScalar(i);
-        if (md->MeshForVar(smd->name) == mmd->name)
-        {
-            ds->AddSecondaryVariable(smd->name.c_str());
-            scalarList.push_back(smd->name);
-        }
-    }
-    for (i = 0 ; i < md->GetNumVectors() ; i++)
-    {
-        const avtVectorMetaData *vmd = md->GetVector(i);
-        if (md->MeshForVar(vmd->name) == mmd->name)
-        {
-            ds->AddSecondaryVariable(vmd->name.c_str());
-            vectorList.push_back(vmd->name);
-        }
-    }
     for (i = 0 ; i < md->GetNumMaterials() ; i++)
     {
         const avtMaterialMetaData *mat_md = md->GetMaterial(i);
@@ -121,35 +250,6 @@ avtDatabaseWriter::Write(const std::string &filename,
         }
     }
 
-/* 
- * Expressions currently only work on the engine, so don't add them.
- *
-    // We only want the expressions that correspond to the mesh we are
-    // operating on.  If there is more than one mesh, then we don't 
-    // really know, so don't add expressions.
-    if (md->GetNumMeshes() == 1)
-    {
-        for (i = 0 ; i < md->GetNumberOfExpressions() ; i++)
-        {
-            const Expression *expr = md->GetExpression(i);
-            Expression::ExprType type = expr->GetType();
-            bool shouldAdd = false;
-            if (type == Expression::ScalarMeshVar)
-            {
-                shouldAdd = true;
-                scalarList.push_back(expr->GetName());
-            }
-            else if (type == Expression::VectorMeshVar)
-            {
-                shouldAdd = true;
-                vectorList.push_back(expr->GetName());
-            }
-            if (shouldAdd)
-                ds->AddSecondaryVariable(expr->GetName().c_str());
-        }
-    }
- *
- */
 
     //
     // Actually force the read of the data.
@@ -172,7 +272,6 @@ avtDatabaseWriter::Write(const std::string &filename,
     // This 'for' loop is a bit tricky.  We are adding to the nodelist as we
     // go, so nodelist.size() keeps going.  This is in lieu of recursion.
     //
-    cerr << "About to iterate over chunks..." << endl;
     for (int cur_index = 0 ; cur_index < nodelist.size() ; cur_index++)
     {
         avtDataTree_p dt = nodelist[cur_index];
@@ -187,7 +286,6 @@ avtDatabaseWriter::Write(const std::string &filename,
         {
             vtkDataSet *in_ds = dt->GetDataRepresentation().GetDataVTK();
             int chunk = dt->GetDataRepresentation().GetDomain();
-            cerr << "Working on chunk " << chunk << endl;
             WriteChunk(in_ds, chunk);
         }
     }

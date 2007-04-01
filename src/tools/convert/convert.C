@@ -32,6 +32,9 @@ static void UsageAndExit(const char *);
 //    Hank Childs, Mon Mar  1 09:08:11 PST 2004
 //    Send timestep to database factory.
 //
+//    Hank Childs, Sat Sep 11 12:10:53 PDT 2004
+//    Add support for target chunks, target zones, -variable.
+//
 // ****************************************************************************
 
 int main(int argc, char *argv[])
@@ -48,20 +51,51 @@ int main(int argc, char *argv[])
     DatabasePluginManager::Initialize(DatabasePluginManager::Engine, parallel);
     DatabasePluginManager::Instance()->LoadPluginsNow();
 
-    //
-    // Print a usage statement.
-    //
     bool doClean = false;
-    if (argc == 5)
+    bool doSpecificVariable = false;
+    const char *var = NULL;
+    int target_chunks = -1;
+    long long target_zones = -1;
+    if (argc > 4)
     {
-        if (strcmp(argv[4], "-clean") == 0)
-            doClean = true;
-        else
-            UsageAndExit(argv[0]);
-    }
-    else if (argc != 4)
-    {
-        UsageAndExit(argv[0]);
+        for (int i = 4 ; i < argc ; i++)
+        {
+            if (strcmp(argv[i], "-clean") == 0)
+                doClean = true;
+            else if (strcmp(argv[i], "-variable") == 0)
+            {
+                if ((i+1) >= argc)
+                    UsageAndExit(argv[0]);
+                doSpecificVariable = true;
+                i++;
+                var = argv[i];
+            }
+            else if (strcmp(argv[i], "-target_chunks") == 0)
+            {
+                if ((i+1) >= argc)
+                    UsageAndExit(argv[0]);
+                i++;
+                target_chunks = atoi(argv[i]);
+            }
+            else if (strcmp(argv[i], "-target_zones") == 0)
+            {
+                if ((i+1) >= argc)
+                    UsageAndExit(argv[0]);
+                i++;
+                target_zones = 0;
+                int nchars = strlen(argv[i]);
+                for (int j = 0 ; j < nchars ; j++)
+                {
+                    if (isdigit(argv[i][j]))
+                    {
+                        target_zones *= 10;
+                        target_zones += argv[i][j] - '0';
+                    }
+                }
+            }
+            else
+                UsageAndExit(argv[0]);
+        }
     }
 
     //
@@ -98,6 +132,26 @@ int main(int argc, char *argv[])
     }
     if (doClean)
         wrtr->SetShouldAlwaysDoMIR(doClean);
+    if (target_zones > 0)
+    {
+        bool canDoIt = wrtr->SetTargetZones(target_zones);
+        if (!canDoIt)
+        {
+            cerr << "This writer does not support the \"-target_zones\" option"
+                 << endl;
+            UsageAndExit(argv[0]);
+        }
+    }
+    if (target_chunks > 0)
+    {
+        bool canDoIt = wrtr->SetTargetChunks(target_chunks);
+        if (!canDoIt)
+        {
+            cerr << "This writer does not support the \"-target_chunks\" "
+                 << "option" << endl;
+            UsageAndExit(argv[0]);
+        }
+    }
 
     //
     // Instantiate the database.
@@ -140,7 +194,16 @@ int main(int argc, char *argv[])
          else
              sprintf(filename, "%04d.%s", i, argv[2]);
         
-         wrtr->Write(filename, md);
+         if (doSpecificVariable)
+         {
+             std::vector<std::string> varlist;
+             varlist.push_back(var);
+             wrtr->Write(filename, md, varlist);
+         }
+         else
+         {
+             wrtr->Write(filename, md);
+         } 
     }
 }
 
@@ -154,20 +217,36 @@ int main(int argc, char *argv[])
 //  Programmer: Hank Childs
 //  Creation:   September 10, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Sep 11 11:22:09 PDT 2004
+//    Added "-target_chunks", "-target_zones", and "-variables".
+//
 // ****************************************************************************
 
 static void
 UsageAndExit(const char *progname)
 {
     cerr << "Usage: " << progname << " <input-file-name> "
-         << "<output-file-name>\\\n\t\t <output-file-type> [-clean]" << endl;
+         << "<output-file-name>\\\n\t\t <output-file-type> [-clean] "
+         << "[-target_chunks #] \\\n\t\t[-target_zones #] "
+         << "[-variable var]" << endl;
     cerr << "\t-clean should be specified when all clean zones are desired.\n"
          << "\tIn this case material interface reconstruction will be "
          << "performed." << endl;
-    cerr << "Example (one timestep): " << progname 
+    cerr << "\t-target_zones specifies what the total number of zones in the "
+         << "output \n\tshould be.\n";
+    cerr << "\t-target_chunks should be specified when the chunks should "
+         << "be \n\trepartitioned.  This is often used in conjunction with "
+         << "-target_zones.\n";
+    cerr << "\t-variable specifies which variable should be processed.\n";
+    cerr << "Example (one timestep):\n " << progname 
          << " run1.exodus run1.silo Silo" << endl;
-    cerr << "Example (multi-timestep): " << progname
+    cerr << "Example (multi-timestep):\n " << progname
          << " run1.exodus run%04d.silo Silo" << endl;
+    cerr << "Example (scaling study):\n " << progname
+         << " rect.silo rect BOV -target_chunks 512 \\\n\t\t -target_zones "
+         << "512000000 -variable var1" << endl;
     cerr << "Acceptable output types are: " << endl;
     DatabasePluginManager *dbmgr = DatabasePluginManager::Instance();
     for (int i = 0 ; i < dbmgr->GetNEnabledPlugins() ; i++)
