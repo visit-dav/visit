@@ -43,6 +43,9 @@ class     avtDatabaseMetaData;
 //    I replaced long long with VISIT_LONG_LONG so the code can build 
 //    on Windows using the MSVC 6.0 compiler.
 //
+//    Jeremy Meredith, Wed Feb 16 15:01:40 PST 2005
+//    Added ability to disable MIR and Expressions.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatabaseWriter : public avtOriginatingDatasetSink
@@ -58,12 +61,20 @@ class PIPELINE_API avtDatabaseWriter : public avtOriginatingDatasetSink
     void               SetShouldAlwaysDoMIR(bool s)
                              { shouldAlwaysDoMIR = s; };
 
+    void               SetShouldNeverDoMIR(bool s)
+                             { shouldNeverDoMIR = s; };
+
+    void               SetShouldNeverDoExpressions(bool s)
+                             { shouldNeverDoExpressions = s; };
+
     bool               SetTargetChunks(int nChunks);
     bool               SetTargetZones(VISIT_LONG_LONG nTotalZones);
     void               SetVariableList(std::vector<std::string> &);
 
   protected:
     bool               shouldAlwaysDoMIR;
+    bool               shouldNeverDoMIR;
+    bool               shouldNeverDoExpressions;
     bool               mustGetMaterialsAdditionally;
     bool               hasMaterialsInProblem;
 

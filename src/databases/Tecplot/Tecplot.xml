@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="TecPlot" type="database" label="TecPlot" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false">
+  <Plugin name="Tecplot" type="database" label="Tecplot" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="true">
     <Extensions>
       tp
       plt

@@ -54,6 +54,9 @@ $0 = shift @ARGV;
 #    Jeremy Meredith, Thu Feb 17 15:29:20 PST 2005
 #    Added support for valgrind.
 #
+#    Jeremy Meredith, Tue Feb 22 18:57:58 PST 2005
+#    Renamed convert to visitconvert because it is more unique.
+#
 ###############################################################################
 
 
@@ -506,7 +509,7 @@ if ((($parallel) or ($launchengine)) and
     # confuse the script, we turn off the parallel flag. So we
     # translate the executable name here.
     #
-    if (($exe_name eq "makemili") or ($exe_name eq "convert"))
+    if (($exe_name eq "makemili") or ($exe_name eq "visitconvert"))
     {
         $exe_name .= "_par";
     }
@@ -630,7 +633,7 @@ if (!$part_set && (substr($launch,0,4) eq "psub"))
 
 # If we still think the exe_name is makemili or convert, we're not running 
 # in parallel.
-if (($exe_name eq "makemili") or ($exe_name eq "convert"))
+if (($exe_name eq "makemili") or ($exe_name eq "visitconvert"))
 {
     $exe_name .= "_ser" if (!$parallel);
 }

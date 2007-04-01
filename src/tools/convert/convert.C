@@ -46,6 +46,13 @@ static void UsageAndExit(const char *);
 //    Hank Childs, Wed Dec 22 11:33:30 PST 2004
 //    Make expressions work ('5701), also add better error handling ('5771).
 //
+//    Jeremy Meredith, Tue Feb 22 18:16:46 PST 2005
+//    Added better argument error checking.  Added ability to turn off
+//    expression conversion.  Added ability to turn off MIR even when
+//    the writer doesn't support mixed materials.  Moved database writer
+//    creation to the engine plugin, and moved the test to see if a database
+//    plugin has a writer to the general plugin info.
+//
 // ****************************************************************************
 
 int main(int argc, char *argv[])
@@ -64,7 +71,14 @@ int main(int argc, char *argv[])
     DatabasePluginManager::Initialize(DatabasePluginManager::Engine, parallel);
     DatabasePluginManager::Instance()->LoadPluginsNow();
 
+    if (argc < 4)
+    {
+        UsageAndExit(argv[0]);
+    }
+
     bool doClean = false;
+    bool disableMIR = false;
+    bool disableExpressions = false;
     bool doSpecificVariable = false;
     const char *var = NULL;
     int target_chunks = -1;
@@ -75,6 +89,10 @@ int main(int argc, char *argv[])
         {
             if (strcmp(argv[i], "-clean") == 0)
                 doClean = true;
+            else if (strcmp(argv[i], "-nomir") == 0)
+                disableMIR = true;
+            else if (strcmp(argv[i], "-noexpr") == 0)
+                disableExpressions = true;
             else if (strcmp(argv[i], "-variable") == 0)
             {
                 if ((i+1) >= argc)
@@ -116,18 +134,18 @@ int main(int argc, char *argv[])
     // conversion for them now.
     //
     DatabasePluginManager *dbmgr = DatabasePluginManager::Instance();
-    CommonDatabasePluginInfo *cdpi = NULL;
-    for (int i = 0 ; i < dbmgr->GetNEnabledPlugins() ; i++)
+    EngineDatabasePluginInfo *edpi = NULL;
+    int index = dbmgr->GetAllIndexFromName(argv[3]);
+    if (index >= 0)
     {
-        std::string name = dbmgr->GetPluginName(dbmgr->GetEnabledID(i));
-        if (name == argv[3])
+        std::string id = dbmgr->GetAllID(index);
+        if (dbmgr->PluginAvailable(id))
         {
-            cdpi = dbmgr->GetCommonPluginInfo(dbmgr->GetEnabledID(i));
-            break;
+            edpi = dbmgr->GetEnginePluginInfo(id);
         }
     }
 
-    if (cdpi == NULL)
+    if (edpi == NULL)
     {
         cerr << "Was not able to load file type " << argv[3]<<"\n\n"<<endl;
         UsageAndExit(argv[0]);
@@ -136,7 +154,7 @@ int main(int argc, char *argv[])
     //
     // Make sure this format has a writer.
     //
-    avtDatabaseWriter *wrtr = cdpi->GetWriter();
+    avtDatabaseWriter *wrtr = edpi->GetWriter();
     if (wrtr == NULL)
     {
         cerr << "No writer defined for file type " << argv[3] << ".\n"
@@ -145,6 +163,10 @@ int main(int argc, char *argv[])
     }
     if (doClean)
         wrtr->SetShouldAlwaysDoMIR(doClean);
+    if (disableMIR)
+        wrtr->SetShouldNeverDoMIR(disableMIR);
+    if (disableExpressions)
+        wrtr->SetShouldNeverDoExpressions(disableExpressions);
     if (target_zones > 0)
     {
         bool canDoIt = wrtr->SetTargetZones(target_zones);
@@ -189,14 +211,17 @@ int main(int argc, char *argv[])
     const avtMeshMetaData *mmd = md->GetMesh(0);
 
     //
-    // Hook up the expressions we have associated with the databse, so
+    // Hook up the expressions we have associated with the database, so
     // we can get those as well.
     //
     Parser *p = new ExprParser(new avtExprNodeFactory());
     ParsingExprList *l = new ParsingExprList(p);
     ExpressionList *list = l->GetList();
     for (i = 0 ; i < md->GetNumberOfExpressions() ; i++)
-        list->AddExpression(*md->GetExpression(i));
+    {
+        const Expression *e = md->GetExpression(i);
+        list->AddExpression(*e);
+    }
 
     cerr << "Operating on " << md->GetNumStates() << " timestep(s)." << endl;
     for (i = 0 ; i < md->GetNumStates() ; i++)
@@ -254,6 +279,10 @@ int main(int argc, char *argv[])
 //    Hank Childs, Sat Sep 11 11:22:09 PDT 2004
 //    Added "-target_chunks", "-target_zones", and "-variables".
 //
+//    Jeremy Meredith, Tue Feb 22 18:27:05 PST 2005
+//    Changed it to loop over all the plugins, because the test for
+//    having a writer is in the general plugin info.
+//
 // ****************************************************************************
 
 static void
@@ -281,15 +310,11 @@ UsageAndExit(const char *progname)
          << "512000000 -variable var1" << endl;
     cerr << "Acceptable output types are: " << endl;
     DatabasePluginManager *dbmgr = DatabasePluginManager::Instance();
-    for (int i = 0 ; i < dbmgr->GetNEnabledPlugins() ; i++)
+    for (int i = 0 ; i < dbmgr->GetNAllPlugins() ; i++)
     {
-         CommonDatabasePluginInfo *cdpi = 
-                      dbmgr->GetCommonPluginInfo(dbmgr->GetEnabledID(i));
-         avtDatabaseWriter *wrtr = cdpi->GetWriter();
-         if (wrtr == NULL)
-             continue;
-         std::string name = dbmgr->GetPluginName(dbmgr->GetEnabledID(i));
-         cerr << "\t" << name << endl;
+        string plugin = dbmgr->GetAllID(i);
+        if (dbmgr->PluginHasWriter(plugin))
+            cerr << "\t" << dbmgr->GetPluginName(plugin) << endl;
     }
 
     exit(EXIT_FAILURE);

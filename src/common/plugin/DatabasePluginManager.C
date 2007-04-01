@@ -103,6 +103,31 @@ DatabasePluginManager::Instance()
 }
 
 // ****************************************************************************
+//  Method: DatabasePluginManager::GetEnginePluginInfo
+//
+//  Purpose:
+//    Return a pointer to the engine database plugin information for the
+//    specified database type.
+//
+//  Arguments:
+//    id        The id of the database type.
+//
+//  Returns:    The engine database plugin information for the database type.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   February 22, 2005
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+EngineDatabasePluginInfo *
+DatabasePluginManager::GetEnginePluginInfo(const string &id)
+{
+    return enginePluginInfo[loadedindexmap[id]];
+}
+
+// ****************************************************************************
 //  Method: DatabasePluginManager::GetCommonPluginInfo
 //
 //  Purpose:
@@ -140,6 +165,9 @@ DatabasePluginManager::GetCommonPluginInfo(const string &id)
 //    Jeremy Meredith, Wed Nov  5 13:28:03 PST 2003
 //    Use the default value for enabled status instead of always true.
 //
+//    Jeremy Meredith, Tue Feb 22 15:22:29 PST 2005
+//    Added a way to determine directly if a plugin has a writer.
+//
 // ****************************************************************************
 
 bool
@@ -168,10 +196,11 @@ DatabasePluginManager::LoadGeneralPluginInfo()
 
     // Success!  Add it to the list.
     allindexmap[info->GetID()] = ids.size();
-    ids     .push_back(info->GetID());
-    names   .push_back(info->GetName());
-    versions.push_back(info->GetVersion());
-    enabled .push_back(info->EnabledByDefault());
+    ids      .push_back(info->GetID());
+    names    .push_back(info->GetName());
+    versions .push_back(info->GetVersion());
+    enabled  .push_back(info->EnabledByDefault());
+    haswriter.push_back(info->HasWriter());
     return true;
 }
 
@@ -304,3 +333,29 @@ DatabasePluginManager::ReloadPlugins()
         LoadPluginsNow();
 }
 
+// ****************************************************************************
+//  Method:  DatabasePluginManager::PluginHasWriter
+//
+//  Purpose:
+//    Returns true if a database plugin has a writer method.
+//
+//  Arguments:
+//    id         the plugin id
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 22, 2005
+//
+// ****************************************************************************
+bool
+DatabasePluginManager::PluginHasWriter(const string &id)
+{
+    bool retval = false;
+    if(allindexmap.find(id) != allindexmap.end())
+    {
+        int index = allindexmap[id];
+        if(index < names.size())
+            retval = haswriter[index];
+    }
+
+    return retval;
+}

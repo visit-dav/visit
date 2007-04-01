@@ -1615,6 +1615,11 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
 //    Brad Whitlock, Fri Feb 18 09:43:25 PDT 2005
 //    I made it use the list of expressions according to the plot.
 //
+//    Brad Whitlock, Tue Feb 22 12:09:21 PDT 2005
+//    I fixed the code that retrieved the file format from the metadata
+//    since it was possible to call methods on a NULL metadata pointer,
+//    thus crashing the viewer.
+//
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -1641,24 +1646,29 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
         // 
         if (!plot->CloneNetwork())
         {
+            std::string defaultFormat;
             int state = plot->GetState();
-
-            // Is the plot's database a virtual database? If it is, then we
-            // need define the virtual database on the engine.
-            ViewerFileServer *fileServer = ViewerFileServer::Instance();
-            const avtDatabaseMetaData *md =
-                fileServer->GetMetaData(plot->GetHostName(),
-                                        plot->GetDatabaseName());
-            if(md && md->GetIsVirtualDatabase())
+            const avtDatabaseMetaData *md = plot->GetMetaData();
+            if(md != 0)
             {
-                engine->DefineVirtualDatabase(md->GetFileFormat().c_str(),
-                                              plot->GetDatabaseName(),
-                                              md->GetTimeStepPath(),
-                                              md->GetTimeStepNames(), state);
+                // Set the default format using the metadata so the engine
+                // can open it using the right plugin the first time.
+                defaultFormat = md->GetFileFormat();
+
+                // Is the plot's database a virtual database? If it is, then
+                // we need define the virtual database on the engine.
+                if(md->GetIsVirtualDatabase())
+                {
+                    engine->DefineVirtualDatabase(defaultFormat,
+                                                  plot->GetDatabaseName(),
+                                                  md->GetTimeStepPath(),
+                                                  md->GetTimeStepNames(),
+                                                  state);
+                }
             }
 
             // Tell the engine to generate the plot
-            engine->ReadDataObject(md->GetFileFormat(), 
+            engine->ReadDataObject(defaultFormat, 
                                    plot->GetDatabaseName(),
                                    plot->GetVariableName(),
                                    state, plot->GetSILRestriction(),

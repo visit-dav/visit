@@ -46,12 +46,10 @@ vtkQtImagePrinter::New()
 // Creation:   Thu Feb 21 15:56:22 PST 2002
 //
 // Modifications:
-//   Brad Whitlock, Wed Feb 16 11:50:02 PDT 2005
-//   Made it use higher resolution for the printed image.
 //
 // ****************************************************************************
 
-vtkQtImagePrinter::vtkQtImagePrinter() : print(QPrinter::HighResolution)
+vtkQtImagePrinter::vtkQtImagePrinter() : print()
 {
     this->FileLowerLeft = 1;
 }
@@ -71,24 +69,17 @@ vtkQtImagePrinter::vtkQtImagePrinter() : print(QPrinter::HighResolution)
 // Creation:   Thu Feb 21 15:55:05 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Feb 22 09:34:09 PDT 2005
+//   I rewrote the code so it makes a single call to QPainter::drawImage
+//   instead of drawing each scanline independently so we don't get horizontal
+//   stripes in the output image. This uses more memory but it looks way better
+//   in the printed image.
+//
 // ****************************************************************************
 
 void
 vtkQtImagePrinter::WriteFile(ofstream *, vtkImageData *data, int extent[6])
-{
-    int rowLength, columnHeight, i;
-    unsigned char *ptr;
-    int bpp;
-    unsigned long count = 0;
-    unsigned long target;
-    float progress = this->Progress;
-    float area;
-    int *wExtent;
-  
-    // Get the number of bits per pixel.
-    bpp = data->GetNumberOfScalarComponents();
-  
+{  
     // Make sure we actually have data.
     if(!data->GetPointData()->GetScalars())
     {
@@ -115,20 +106,8 @@ vtkQtImagePrinter::WriteFile(ofstream *, vtkImageData *data, int extent[6])
     // window to use for the painter.
     QPaintDeviceMetrics metrics(&print);
     // Find the image dimensions
-    rowLength = extent[1] - extent[0] + 1;
-    columnHeight = extent[3] - extent[2] + 1;
-
-    //
-    // Create a temp scanline buffer that we'll use to create images.
-    //
-    unsigned char *imageData = 0;
-    unsigned char *uptr = 0;
-    if(bpp < 4)
-    {
-        imageData = new unsigned char[rowLength * 4];
-        for(i = 0; i < rowLength * 4; ++i)
-            imageData[i] = 0;
-    }
+    int rowLength = extent[1] - extent[0] + 1;
+    int columnHeight = extent[3] - extent[2] + 1;
 
     //
     // Figure out a viewport that will center the image on the printer page.
@@ -187,23 +166,13 @@ vtkQtImagePrinter::WriteFile(ofstream *, vtkImageData *data, int extent[6])
     // viewport larger for now.
     float scale = 6.3333f;
     paint.setViewport(vptX*scale, vptY*scale, vptW*scale, vptH*scale);
+//    qDebug("paint.setViewport1(%d,%d,%d,%d)", vptX*scale, vptY*scale, vptW*scale, vptH*scale);
 #else
     paint.setViewport(vptX, vptY, vptW, vptH);
+//    qDebug("paint.setViewport2(%d,%d,%d,%d)", vptX, vptY, vptW, vptH);
 #endif
     paint.setWindow(0, 0, rowLength, columnHeight);
-
-    //
-    // Initialize some variables.
-    //
-    wExtent = this->GetInput()->GetWholeExtent();
-    area = ((extent[5] - extent[4] + 1)*(extent[3] - extent[2] + 1)*
-            (extent[1] - extent[0] + 1)) / 
-           ((wExtent[5] -wExtent[4] + 1)*(wExtent[3] -wExtent[2] + 1)*
-            (wExtent[1] -wExtent[0] + 1));
-    
-    target = (unsigned long)((extent[5]-extent[4]+1)*
-                             (extent[3]-extent[2]+1)/(50.0*area));
-    target++;
+//    qDebug("paint.setWindow(0,0,%d,%d)", rowLength, columnHeight);
 
     //
     // Crudely determine the machine endianness.
@@ -213,75 +182,80 @@ vtkQtImagePrinter::WriteFile(ofstream *, vtkImageData *data, int extent[6])
     bool bigEndian = (endianuptr[0] != 1);
 
     //
-    // Draw the scanlines on the printer surface.
+    // Set up a pointer to the buffer that we'll use to create the image.
     //
-    for(int y = extent[3]; y >= extent[2]; --y)
+    int bpp = data->GetNumberOfScalarComponents();
+//    qDebug("bpp = %d", bpp);
+    unsigned char *imageData = 0;
+    bool ownImageData = false;
+    if(bpp < 4)
     {
-        // Output progress
-        if(!(count%target))
-        {
-            this->UpdateProgress(progress + count/(50.0*target));
-        }
-        count++;
+        imageData = (unsigned char *)(new unsigned int[rowLength * columnHeight]);
+        unsigned char *uptr = imageData;
+        ownImageData = true;
 
-        // Draw the scanline
-        ptr = (unsigned char *)data->GetScalarPointer(extent[0], y, 0);
-        if(bpp == 1)
+        // Rearrange memory into the format the QImage wants so we can make
+        // a single call to QPrinter::drawImage.
+        for(int y = extent[3]; y >= extent[2]; --y)
         {
-            uptr = imageData;
-            for(i = 0; i < rowLength; ++i)
+            unsigned char *ptr = (unsigned char *)data->GetScalarPointer(extent[0], y, 0);
+            if(bpp == 3)
             {
-                *uptr++ = ptr[i];
-                *uptr++ = ptr[i];
-                *uptr++ = ptr[i];
-                *uptr++ = ptr[i];
-            }
-            ptr = imageData;
-        }
-        else if(bpp == 2)
-        {
-            uptr = imageData;
-            for(i = 0; i < rowLength; ++i, ptr += 2)
-            {
-                *uptr++ = ptr[0];
-                *uptr++ = ptr[0];
-                *uptr++ = ptr[0];
-                *uptr++ = ptr[0];
-            }
-            ptr = imageData;
-        }
-        else if(bpp == 3)
-        {
-            uptr = imageData;
-            if(bigEndian)
-            {
-                for(i = 0; i < rowLength; ++i, ptr += 3)
+                if(bigEndian)
                 {
-                    *uptr++ = 255;
-                    *uptr++ = ptr[0];
-                    *uptr++ = ptr[1];
-                    *uptr++ = ptr[2];
+                    for(int i = 0; i < rowLength; ++i, ptr += 3)
+                    {
+                        *uptr++ = 255;
+                        *uptr++ = ptr[0];
+                        *uptr++ = ptr[1];
+                        *uptr++ = ptr[2];
+                    }
+                }
+                else
+                {
+                    for(int i = 0; i < rowLength; ++i, ptr += 3)
+                    {
+                        *uptr++ = ptr[2];
+                        *uptr++ = ptr[1];
+                        *uptr++ = ptr[0];
+                        *uptr++ = 255;
+                    }
                 }
             }
-            else
+            else if(bpp == 1)
             {
-                for(i = 0; i < rowLength; ++i, ptr += 3)
+                for(int i = 0; i < rowLength; ++i)
                 {
-                    *uptr++ = ptr[2];
-                    *uptr++ = ptr[1];
-                    *uptr++ = ptr[0];
-                    *uptr++ = 255;
+                    *uptr++ = ptr[i];
+                    *uptr++ = ptr[i];
+                    *uptr++ = ptr[i];
+                    *uptr++ = ptr[i];
                 }
             }
-            ptr = imageData;
+            else if(bpp == 2)
+            {
+                for(int i = 0; i < rowLength; ++i, ptr += 2)
+                {
+                    *uptr++ = ptr[0];
+                    *uptr++ = ptr[0];
+                    *uptr++ = ptr[0];
+                    *uptr++ = ptr[0];
+                }
+            }
         }
-
-        QImage image((unsigned char *)ptr, rowLength, 1, 32, 0, 0, QImage::IgnoreEndian);
-        paint.drawImage(QPoint(extent[0], extent[3] - y), image);
     }
+    else
+        imageData = (unsigned char *)data->GetScalarPointer(extent[0], extent[2], 0);
+
+    //
+    // Draw the image on the printer surface.
+    //
+    QImage image(imageData, rowLength, columnHeight, 32, 0, 0, QImage::IgnoreEndian);
+    paint.drawImage(QPoint(0, 0), image);
 
     // Indicate that we're done drawing.
     paint.end();
 
-    delete [] imageData;
+    if(ownImageData)
+        delete [] imageData;
 }

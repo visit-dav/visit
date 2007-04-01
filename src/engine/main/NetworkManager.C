@@ -536,9 +536,15 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
 //    refactored the best one into ParsingExprList::GetRealVariable
 //    and made this one point to it.
 //
+//    Brad Whitlock, Tue Feb 22 12:13:44 PDT 2005
+//    Made format argument come first. I also made it possible for an empty
+//    format string to make the code behave as through no format was specified.
+//
 // ****************************************************************************
+
 void
-NetworkManager::StartNetwork(const string &filename, const string &format,
+NetworkManager::StartNetwork(const string &format,
+                             const string &filename,
                              const string &var,
                              int time,
                              const CompactSILRestrictionAttributes &atts,
@@ -548,9 +554,14 @@ NetworkManager::StartNetwork(const string &filename, const string &format,
     // name to work with.
     string leaf = ParsingExprList::GetRealVariable(var);
 
+    // Make empty strings behave as though no format was specified.
+    const char *defaultFormat = 0;
+    if(format.size() > 0)
+        defaultFormat = format.c_str();
+
     // Start up the DataNetwork and add the database to it.
     workingNet = new DataNetwork;
-    NetnodeDB *netDB = GetDBFromCache(filename, time, format.c_str());
+    NetnodeDB *netDB = GetDBFromCache(filename, time, defaultFormat);
     workingNet->SetNetDB(netDB);
     netDB->SetDBInfo(filename, leaf, time);
 
@@ -619,7 +630,12 @@ NetworkManager::StartNetwork(const string &filename, const string &format,
 //   Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
 //   Added code to pass avtDatabaseMetaData to LoadBalancer->AddDatabase
 //
+//   Brad Whitlock, Tue Feb 22 12:17:27 PDT 2005
+//   I changed the code so it an empty format string behaves as though no
+//   format was specified.
+//
 // ****************************************************************************
+
 void
 NetworkManager::DefineDB(const string &dbName, const string &dbPath,
     const stringVector &files, int time, const string &format)
@@ -703,6 +719,11 @@ NetworkManager::DefineDB(const string &dbName, const string &dbPath,
         avtDatabase *db = NULL;
         const char *dbName_c = dbName.c_str();
 
+        // Make empty strings behave as though no format was specified.
+        const char *defaultFormat = 0;
+        if(format.size() > 0)
+            defaultFormat = format.c_str();
+
         if (filesWithPath.size() > 0)
         {
             // Make an array of pointers that we can pass to the database
@@ -712,7 +733,7 @@ NetworkManager::DefineDB(const string &dbName, const string &dbPath,
             for(int i = 0; i < filesWithPath.size(); ++i)
                 names[i] = filesWithPath[i].c_str();
             db = avtDatabaseFactory::FileList(names, filesWithPath.size(),
-                                              time, format.c_str());
+                                              time, defaultFormat);
             delete [] names;
             names = 0;
 
@@ -722,10 +743,10 @@ NetworkManager::DefineDB(const string &dbName, const string &dbPath,
                    << "definition for " << dbName.c_str() << endl;
         }
         else if (dbName.substr(dbName.length() - 6) == ".visit")
-            db = avtDatabaseFactory::VisitFile(dbName_c, time, format.c_str());
+            db = avtDatabaseFactory::VisitFile(dbName_c, time, defaultFormat);
         else
             db = avtDatabaseFactory::FileList(&dbName_c, 1, time,
-                                              format.c_str());
+                                              defaultFormat);
 
         // If we want to open the file at a later timestep, get the
         // metadata and the SIL so that it contains the right data.

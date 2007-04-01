@@ -1,8 +1,8 @@
 // ************************************************************************* //
-//                            avtTecPlotFileFormat.C                           //
+//                            avtTecplotFileFormat.C                           //
 // ************************************************************************* //
 
-#include <avtTecPlotFileFormat.h>
+#include <avtTecplotFileFormat.h>
 
 #include <string>
 
@@ -28,7 +28,7 @@ using std::vector;
 #endif
 
 // ****************************************************************************
-//  Method:  avtTecPlotFileFormat::PushBackToken
+//  Method:  avtTecplotFileFormat::PushBackToken
 //
 //  Purpose:
 //    Needed for faking one-token lookahead.
@@ -41,13 +41,13 @@ using std::vector;
 //
 // ****************************************************************************
 void
-avtTecPlotFileFormat::PushBackToken(const string &tok)
+avtTecplotFileFormat::PushBackToken(const string &tok)
 {
     saved_token = tok;
 }
 
 // ****************************************************************************
-//  Method:  avtTecPlotFileFormat::GetNextToken
+//  Method:  avtTecplotFileFormat::GetNextToken
 //
 //  Purpose:
 //    The scanner.  It probably makes some serious assumptions about tecplot.
@@ -60,7 +60,7 @@ avtTecPlotFileFormat::PushBackToken(const string &tok)
 //
 // ****************************************************************************
 string
-avtTecPlotFileFormat::GetNextToken()
+avtTecplotFileFormat::GetNextToken()
 {
     // this is where we fake a one-token lookahead
     if (!saved_token.empty())
@@ -204,7 +204,7 @@ avtTecPlotFileFormat::GetNextToken()
 //
 // ****************************************************************************
 vtkPoints*
-avtTecPlotFileFormat::ParseNodesPoint(int numNodes)
+avtTecplotFileFormat::ParseNodesPoint(int numNodes)
 {
     vtkPoints *points = vtkPoints::New();
     points->SetNumberOfPoints(numNodes);
@@ -279,7 +279,7 @@ avtTecPlotFileFormat::ParseNodesPoint(int numNodes)
 //
 // ****************************************************************************
 vtkPoints*
-avtTecPlotFileFormat::ParseNodesBlock(int numNodes)
+avtTecplotFileFormat::ParseNodesBlock(int numNodes)
 {
     vtkPoints *points = vtkPoints::New();
     points->SetNumberOfPoints(numNodes);
@@ -324,7 +324,7 @@ avtTecPlotFileFormat::ParseNodesBlock(int numNodes)
 }
 
 // ****************************************************************************
-//  Method:  avtTecPlotFileFormat::ParseElements
+//  Method:  avtTecplotFileFormat::ParseElements
 //
 //  Purpose:
 //    Parses the element connectivity arrays.
@@ -338,7 +338,7 @@ avtTecPlotFileFormat::ParseNodesBlock(int numNodes)
 //
 // ****************************************************************************
 vtkUnstructuredGrid *
-avtTecPlotFileFormat::ParseElements(int numElements, const string &elemType)
+avtTecplotFileFormat::ParseElements(int numElements, const string &elemType)
 {
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
 
@@ -414,7 +414,7 @@ avtTecPlotFileFormat::ParseElements(int numElements, const string &elemType)
 }
 
 // ****************************************************************************
-//  Method:  avtTecPlotFileFormat::ParseFEBLOCK
+//  Method:  avtTecplotFileFormat::ParseFEBLOCK
 //
 //  Purpose:
 //    Parses an FEBLOCK zone
@@ -429,7 +429,7 @@ avtTecPlotFileFormat::ParseElements(int numElements, const string &elemType)
 //
 // ****************************************************************************
 void
-avtTecPlotFileFormat::ParseFEBLOCK(int numNodes, int numElements,
+avtTecplotFileFormat::ParseFEBLOCK(int numNodes, int numElements,
                                    const string &elemType)
 {
     vtkPoints *points = ParseNodesBlock(numNodes);
@@ -444,7 +444,7 @@ avtTecPlotFileFormat::ParseFEBLOCK(int numNodes, int numElements,
 }
 
 // ****************************************************************************
-//  Method:  avtTecPlotFileFormat::ParseFEPOINT
+//  Method:  avtTecplotFileFormat::ParseFEPOINT
 //
 //  Purpose:
 //    Parses an FEPOINT zone
@@ -459,7 +459,7 @@ avtTecPlotFileFormat::ParseFEBLOCK(int numNodes, int numElements,
 //
 // ****************************************************************************
 void
-avtTecPlotFileFormat::ParseFEPOINT(int numNodes, int numElements,
+avtTecplotFileFormat::ParseFEPOINT(int numNodes, int numElements,
                                    const string &elemType)
 {
     vtkPoints *points = ParseNodesPoint(numNodes);
@@ -474,7 +474,7 @@ avtTecPlotFileFormat::ParseFEPOINT(int numNodes, int numElements,
 }
 
 // ****************************************************************************
-//  Method:  avtTecPlotFileFormat::ParseBLOCK
+//  Method:  avtTecplotFileFormat::ParseBLOCK
 //
 //  Purpose:
 //    Parses a structured BLOCK zone
@@ -487,7 +487,7 @@ avtTecPlotFileFormat::ParseFEPOINT(int numNodes, int numElements,
 //
 // ****************************************************************************
 void
-avtTecPlotFileFormat::ParseBLOCK(int numI, int numJ, int numK)
+avtTecplotFileFormat::ParseBLOCK(int numI, int numJ, int numK)
 {
     int numNodes = numI * numJ * numK;
 
@@ -514,7 +514,7 @@ avtTecPlotFileFormat::ParseBLOCK(int numI, int numJ, int numK)
 }
 
 // ****************************************************************************
-//  Method:  avtTecPlotFileFormat::ParsePOINT
+//  Method:  avtTecplotFileFormat::ParsePOINT
 //
 //  Purpose:
 //    Parses a structured POINT zone
@@ -527,7 +527,7 @@ avtTecPlotFileFormat::ParseBLOCK(int numI, int numJ, int numK)
 //
 // ****************************************************************************
 void
-avtTecPlotFileFormat::ParsePOINT(int numI, int numJ, int numK)
+avtTecplotFileFormat::ParsePOINT(int numI, int numJ, int numK)
 {
     int numNodes = numI * numJ * numK;
 
@@ -554,7 +554,7 @@ avtTecPlotFileFormat::ParsePOINT(int numI, int numJ, int numK)
 }
 
 // ****************************************************************************
-//  Method:  avtTecPlotFileFormat::ReadFile
+//  Method:  avtTecplotFileFormat::ReadFile
 //
 //  Purpose:
 //    Top-level method to re-read the whole file.
@@ -567,7 +567,7 @@ avtTecPlotFileFormat::ParsePOINT(int numI, int numJ, int numK)
 //
 // ****************************************************************************
 void
-avtTecPlotFileFormat::ReadFile()
+avtTecplotFileFormat::ReadFile()
 {
     file.open(filename.c_str());
     string tok = GetNextToken();
@@ -772,7 +772,7 @@ avtTecPlotFileFormat::ReadFile()
                 else if (tok == "D")
                 {
                     EXCEPTION2(InvalidFilesException, filename,
-                               "TecPlot Zone record parameter 'D' is "
+                               "Tecplot Zone record parameter 'D' is "
                                "currently unsupported.  Please contact a "
                                "VisIt developer if you need support for this "
                                "parameter.");
@@ -847,14 +847,14 @@ avtTecPlotFileFormat::ReadFile()
 }
 
 // ****************************************************************************
-//  Method: avtTecPlot constructor
+//  Method: avtTecplot constructor
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   November  7, 2004
 //
 // ****************************************************************************
 
-avtTecPlotFileFormat::avtTecPlotFileFormat(const char *fname)
+avtTecplotFileFormat::avtTecplotFileFormat(const char *fname)
     : avtSTMDFileFormat(&fname, 1)
 {
     file_read = false;
@@ -874,7 +874,7 @@ avtTecPlotFileFormat::avtTecPlotFileFormat(const char *fname)
 
 
 // ****************************************************************************
-//  Method: avtTecPlotFileFormat::FreeUpResources
+//  Method: avtTecplotFileFormat::FreeUpResources
 //
 //  Purpose:
 //      When VisIt is done focusing on a particular timestep, it asks that
@@ -888,7 +888,7 @@ avtTecPlotFileFormat::avtTecPlotFileFormat(const char *fname)
 // ****************************************************************************
 
 void
-avtTecPlotFileFormat::FreeUpResources(void)
+avtTecplotFileFormat::FreeUpResources(void)
 {
     file_read = false;
     filename = "";
@@ -929,7 +929,7 @@ avtTecPlotFileFormat::FreeUpResources(void)
 
 
 // ****************************************************************************
-//  Method: avtTecPlotFileFormat::PopulateDatabaseMetaData
+//  Method: avtTecplotFileFormat::PopulateDatabaseMetaData
 //
 //  Purpose:
 //      This database meta-data object is like a table of contents for the
@@ -942,7 +942,7 @@ avtTecPlotFileFormat::FreeUpResources(void)
 // ****************************************************************************
 
 void
-avtTecPlotFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
+avtTecplotFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
     if (!file_read)
         ReadFile();
@@ -1057,7 +1057,7 @@ avtTecPlotFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
 
 // ****************************************************************************
-//  Method: avtTecPlotFileFormat::GetMesh
+//  Method: avtTecplotFileFormat::GetMesh
 //
 //  Purpose:
 //      Gets the mesh associated with this file.  The mesh is returned as a
@@ -1077,7 +1077,7 @@ avtTecPlotFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 // ****************************************************************************
 
 vtkDataSet *
-avtTecPlotFileFormat::GetMesh(int domain, const char *meshname)
+avtTecplotFileFormat::GetMesh(int domain, const char *meshname)
 {
     if (topologicalDimension == 2 || topologicalDimension == 3)
     {
@@ -1140,7 +1140,7 @@ avtTecPlotFileFormat::GetMesh(int domain, const char *meshname)
 
 
 // ****************************************************************************
-//  Method: avtTecPlotFileFormat::GetVar
+//  Method: avtTecplotFileFormat::GetVar
 //
 //  Purpose:
 //      Gets a scalar variable associated with this file.  Although VTK has
@@ -1159,7 +1159,7 @@ avtTecPlotFileFormat::GetMesh(int domain, const char *meshname)
 // ****************************************************************************
 
 vtkDataArray *
-avtTecPlotFileFormat::GetVar(int domain, const char *varname)
+avtTecplotFileFormat::GetVar(int domain, const char *varname)
 {
     vars[varname][domain]->Register(NULL);
     return vars[varname][domain];
@@ -1167,7 +1167,7 @@ avtTecPlotFileFormat::GetVar(int domain, const char *varname)
 
 
 // ****************************************************************************
-//  Method: avtTecPlotFileFormat::GetVectorVar
+//  Method: avtTecplotFileFormat::GetVectorVar
 //
 //  Purpose:
 //      Gets a vector variable associated with this file.  Although VTK has
@@ -1186,7 +1186,7 @@ avtTecPlotFileFormat::GetVar(int domain, const char *varname)
 // ****************************************************************************
 
 vtkDataArray *
-avtTecPlotFileFormat::GetVectorVar(int domain, const char *varname)
+avtTecplotFileFormat::GetVectorVar(int domain, const char *varname)
 {
     return NULL;
 }

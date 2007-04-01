@@ -191,6 +191,9 @@
 #    Added support for version-specific visit scripts and the ability to
 #    launch tools without passing them as an argument to the visit script.
 #
+#    Jeremy Meredith, Tue Feb 22 18:55:53 PST 2005
+#    Renamed convert to the more unique visitconver.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -610,9 +613,9 @@ cp $VisItDir/exe/curv3dprep    $bindir
 # copy text2polys and time_annotation
 cp $VisItDir/exe/text2polys    $bindir
 cp $VisItDir/exe/time_annotation $bindir
-cp $VisItDir/exe/convert_ser $bindir
-if(-e $VisItDir/exe/convert_par) then
-   cp $VisItDir/exe/convert_par $bindir/convert_par
+cp $VisItDir/exe/visitconvert_ser $bindir
+if(-e $VisItDir/exe/visitconvert_par) then
+   cp $VisItDir/exe/visitconvert_par $bindir/visitconvert_par
 endif
 if(-e $VisItDir/exe/makemili_ser) then
    cp $VisItDir/exe/makemili_ser $bindir/makemili_ser
@@ -627,7 +630,7 @@ cp $VisItDir/exe/surfcomp      $bindir
 #
 # Make symlinks for the programs
 #
-ln -s frontendlauncher distribution/visit/bin/convert
+ln -s frontendlauncher distribution/visit/bin/visitconvert
 ln -s frontendlauncher distribution/visit/bin/curv3dprep
 ln -s frontendlauncher distribution/visit/bin/makemili
 ln -s frontendlauncher distribution/visit/bin/mpeg_encode

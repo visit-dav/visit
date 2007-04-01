@@ -1,9 +1,9 @@
 // ************************************************************************* //
-//                            avtTecPlotFileFormat.h                           //
+//                            avtTecplotFileFormat.h                           //
 // ************************************************************************* //
 
-#ifndef AVT_TecPlot_FILE_FORMAT_H
-#define AVT_TecPlot_FILE_FORMAT_H
+#ifndef AVT_Tecplot_FILE_FORMAT_H
+#define AVT_Tecplot_FILE_FORMAT_H
 
 #include <avtSTMDFileFormat.h>
 
@@ -16,23 +16,23 @@ class vtkPoints;
 class vtkUnstructuredGrid;
 
 // ****************************************************************************
-//  Class: avtTecPlotFileFormat
+//  Class: avtTecplotFileFormat
 //
 //  Purpose:
-//      Reads in TecPlot files as a plugin to VisIt.
+//      Reads in Tecplot files as a plugin to VisIt.
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   November 16, 2004
 //
 // ****************************************************************************
 
-class avtTecPlotFileFormat : public avtSTMDFileFormat
+class avtTecplotFileFormat : public avtSTMDFileFormat
 {
   public:
-                       avtTecPlotFileFormat(const char *);
-    virtual           ~avtTecPlotFileFormat() {;};
+                       avtTecplotFileFormat(const char *);
+    virtual           ~avtTecplotFileFormat() {;};
 
-    virtual const char    *GetType(void)   { return "TecPlot"; };
+    virtual const char    *GetType(void)   { return "Tecplot"; };
     virtual void           FreeUpResources(void); 
 
     virtual vtkDataSet    *GetMesh(int, const char *);

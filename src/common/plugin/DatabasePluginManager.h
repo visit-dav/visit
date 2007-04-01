@@ -25,11 +25,13 @@ class EngineDatabasePluginInfo;
 //  Creation:   August 21, 2002
 //
 //  Modifications:
-//
 //    Jeremy Meredith, Fri Feb 28 12:26:45 PST 2003
 //    Renamed LoadCommonPluginInfo to LoadGeneralPluginInfo to clarify its
 //    purpose (which really is unrelated to FreeCommonPluginInfo and 
 //    GetCommonPluginInfo).
+//
+//    Jeremy Meredith, Tue Feb 22 15:20:03 PST 2005
+//    Added way to determine directly if a plugin has a writer.
 //
 // ****************************************************************************
 
@@ -44,6 +46,8 @@ class PLUGIN_API DatabasePluginManager : public PluginManager
     virtual void                    ReloadPlugins();
 
     CommonDatabasePluginInfo       *GetCommonPluginInfo(const std::string&);
+    EngineDatabasePluginInfo       *GetEnginePluginInfo(const std::string&);
+    bool                            PluginHasWriter(const std::string&);
 
   private:
                                     DatabasePluginManager();
@@ -56,6 +60,9 @@ class PLUGIN_API DatabasePluginManager : public PluginManager
 
     // the plugin manager instance
     static DatabasePluginManager               *instance;
+
+    // arrays containing all plugins (appends the ones in PluginManager.C)
+    std::vector<bool>                       haswriter;
 
     // arrays containing enabled plugins
     std::vector<CommonDatabasePluginInfo*>      commonPluginInfo;
