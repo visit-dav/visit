@@ -25,13 +25,19 @@ class     avtImageRepresentation;
 //  Programmer: Hank Childs
 //  Creation:   June 1, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers
+//    have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtImageSource : virtual public avtDataObjectSource
 {
   public:
                                 avtImageSource();
-    virtual                    ~avtImageSource() {;};
+    virtual                    ~avtImageSource();
 
     virtual avtDataObject_p     GetOutput(void);
     vtkImageData               *GetVTKOutput(void);

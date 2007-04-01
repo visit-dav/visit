@@ -1,5 +1,11 @@
+// ************************************************************************* //
+//                           avtTwoPassDatasetQuery.C                        //
+// ************************************************************************* //
+
 #include <avtTwoPassDatasetQuery.h>
+
 #include <vtkDataSet.h>
+
 
 // ****************************************************************************
 //  Constructor:  avtTwoPassDatasetQuery::avtTwoPassDatasetQuery
@@ -11,6 +17,24 @@
 avtTwoPassDatasetQuery::avtTwoPassDatasetQuery()
     : avtDatasetQuery()
 {
+}
+
+
+// ****************************************************************************
+//  Method: avtTwoPassDatasetQuery destructor
+//
+//  Purpose:
+//      Defines the destructor.  Note: this should not be inlined in the header
+//      because it causes problems for certain compilers.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 5, 2004
+//
+// ****************************************************************************
+
+avtTwoPassDatasetQuery::~avtTwoPassDatasetQuery()
+{
+    ;
 }
 
 

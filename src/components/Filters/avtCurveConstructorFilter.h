@@ -4,7 +4,7 @@
 
 #ifndef AVT_CURVE_CONSTRUCTOR_FILTER_H
 #define AVT_CURVE_CONSTRUCTOR_FILTER_H
-#include <pipeline_exports.h>
+#include <filters_exports.h>
 
 #include <avtDatasetToDatasetFilter.h>
 
@@ -32,7 +32,7 @@
 //
 // ****************************************************************************
 
-class PIPELINE_API avtCurveConstructorFilter : public avtDatasetToDatasetFilter
+class AVTFILTERS_API avtCurveConstructorFilter : public avtDatasetToDatasetFilter
 {
   public:
                               avtCurveConstructorFilter();

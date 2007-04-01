@@ -4,7 +4,7 @@
 
 #ifndef AVT_WHOLE_IMAGE_COMPOSITER_H
 #define AVT_WHOLE_IMAGE_COMPOSITER_H
-#include <pipeline_exports.h>
+#include <filters_exports.h>
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
@@ -27,7 +27,7 @@
 //
 // ****************************************************************************
 
-class PIPELINE_API avtWholeImageCompositer : public avtImageCompositer
+class AVTFILTERS_API avtWholeImageCompositer : public avtImageCompositer
 {
    public:
                               avtWholeImageCompositer();

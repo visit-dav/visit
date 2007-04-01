@@ -30,6 +30,7 @@
 #define __vtkDataReader_h
 
 #include "vtkSource.h"
+#include <vtk_sl_io_exports.h>
 
 #define VTK_ASCII 1
 #define VTK_BINARY 2
@@ -42,7 +43,7 @@ class vtkFieldData;
 class vtkPointSet;
 class vtkRectilinearGrid;
 
-class VTK_IO_EXPORT vtkDataReader : public vtkSource
+class VTK_SL_IO_API vtkDataReader : public vtkSource
 {
 public:
   static vtkDataReader *New();

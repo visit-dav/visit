@@ -256,6 +256,9 @@ public:
 //   Brad Whitlock, Mon Jun 23 16:33:39 PST 2003
 //   I added ClearPickPointsAction, ClearRefLinesAction.
 //
+//   Brad Whitlock, Mon Dec 29 09:59:34 PDT 2003
+//   I added SetCenterOfRotationAction and ChooseCenterOfRotationAction.
+//
 // ****************************************************************************
 
 
@@ -267,12 +270,14 @@ ViewerActionManager::ViewerActionManager(ViewerWindow *win) : actionGroups()
         actions[i] = 0;
 
     // Add the actions that we want to be available in menus and toolbars.
+    AddAction(new ChooseCenterOfRotationAction(win), ViewerRPC::ChooseCenterOfRotationRPC);
     AddAction(new ResetViewAction(win), ViewerRPC::ResetViewRPC);    
     AddAction(new RecenterViewAction(win), ViewerRPC::RecenterViewRPC);
-    AddAction(new UndoViewAction(win), ViewerRPC::UndoViewRPC);
-    AddAction(new ToggleLockViewAction(win), ViewerRPC::ToggleLockViewModeRPC);
     AddAction(new SaveViewAction(win), ViewerRPC::SaveViewRPC);
+    AddAction(new SetCenterOfRotationAction(win), ViewerRPC::SetCenterOfRotationRPC);
     AddAction(new ToggleFullFrameAction(win), ViewerRPC::ToggleFullFrameRPC);
+    AddAction(new ToggleLockViewAction(win), ViewerRPC::ToggleLockViewModeRPC);
+    AddAction(new UndoViewAction(win), ViewerRPC::UndoViewRPC);
 
     AddAction(new AddWindowAction(win), ViewerRPC::AddWindowRPC);
     AddAction(new CloneWindowAction(win), ViewerRPC::CloneWindowRPC);

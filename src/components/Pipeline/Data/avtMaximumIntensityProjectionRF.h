@@ -27,6 +27,10 @@ class     avtVariablePixelizer;
 //    Hank Childs, Sat Feb  3 20:49:43 PST 2001
 //    Re-wrote to return pixels instead of values.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtMaximumIntensityProjectionRF : public avtRayFunction
@@ -34,7 +38,7 @@ class PIPELINE_API avtMaximumIntensityProjectionRF : public avtRayFunction
   public:
                         avtMaximumIntensityProjectionRF(avtLightingModel *,
                                                       avtVariablePixelizer *);
-    virtual            ~avtMaximumIntensityProjectionRF() {;};
+    virtual            ~avtMaximumIntensityProjectionRF();
 
     virtual void        GetRayValue(const avtRay *, const avtGradients *,
                                     unsigned char [3], float);

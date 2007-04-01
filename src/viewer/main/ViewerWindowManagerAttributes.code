@@ -118,6 +118,9 @@ Definition:
 //   Brad Whitlock, Mon Jun 23 16:39:49 PST 2003
 //   I added the Clear action group for 1.1.6.
 //
+//   Brad Whitlock, Mon Dec 29 15:00:03 PST 2003
+//   I added new actions.
+//
 // ****************************************************************************
 
 void
@@ -239,6 +242,14 @@ ViewerWindowManagerAttributes::ProcessOldVersions(DataNode *parentNode,
         // Remove ClearWindowRPC from the Window action group.
         RemoveActionFromNode(actionNode, "Window",
                              ViewerRPC::ClearWindowRPC);
+    }
+
+    //
+    // Add actions that are new in 1.3
+    //
+    if(VersionLessThan(configVersion, "1.3"))
+    {
+        AddAction(actionNode, "View", ViewerRPC::ChooseCenterOfRotationRPC);
     }
 }
 

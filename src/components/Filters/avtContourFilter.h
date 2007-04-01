@@ -5,7 +5,7 @@
 #ifndef AVT_CONTOUR_FILTER_H
 #define AVT_CONTOUR_FILTER_H
 
-#include <pipeline_exports.h>
+#include <filters_exports.h>
 
 #include <ContourOpAttributes.h>
 #include <avtDataTreeStreamer.h>
@@ -53,7 +53,7 @@ class vtkDataSet;
 //
 // ****************************************************************************
 
-class PIPELINE_API avtContourFilter : public avtDataTreeStreamer
+class AVTFILTERS_API avtContourFilter : public avtDataTreeStreamer
 {
   public:
                                avtContourFilter(const ContourOpAttributes &);

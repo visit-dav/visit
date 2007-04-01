@@ -44,29 +44,36 @@ avtView3D::avtView3D()
 //    Hank Childs, Wed Oct 15 13:05:33 PDT 2003
 //    Added eye angle.
 //
+//    Eric Brugger, Mon Feb  9 16:02:13 PST 2004
+//    Added centerOfRotationSet and centerOfRotation.
+//
 // ****************************************************************************
 
 avtView3D &
 avtView3D::operator=(const avtView3D &vi)
 {
-    normal[0]     = vi.normal[0];
-    normal[1]     = vi.normal[1];
-    normal[2]     = vi.normal[2];
-    focus[0]      = vi.focus[0];
-    focus[1]      = vi.focus[1];
-    focus[2]      = vi.focus[2];
-    viewUp[0]     = vi.viewUp[0];
-    viewUp[1]     = vi.viewUp[1];
-    viewUp[2]     = vi.viewUp[2];
-    viewAngle     = vi.viewAngle;
-    parallelScale = vi.parallelScale;
-    nearPlane     = vi.nearPlane;
-    farPlane      = vi.farPlane;
-    imagePan[0]   = vi.imagePan[0];
-    imagePan[1]   = vi.imagePan[1];
-    imageZoom     = vi.imageZoom;
-    perspective   = vi.perspective;
-    eyeAngle      = vi.eyeAngle;
+    normal[0]           = vi.normal[0];
+    normal[1]           = vi.normal[1];
+    normal[2]           = vi.normal[2];
+    focus[0]            = vi.focus[0];
+    focus[1]            = vi.focus[1];
+    focus[2]            = vi.focus[2];
+    viewUp[0]           = vi.viewUp[0];
+    viewUp[1]           = vi.viewUp[1];
+    viewUp[2]           = vi.viewUp[2];
+    viewAngle           = vi.viewAngle;
+    parallelScale       = vi.parallelScale;
+    nearPlane           = vi.nearPlane;
+    farPlane            = vi.farPlane;
+    imagePan[0]         = vi.imagePan[0];
+    imagePan[1]         = vi.imagePan[1];
+    imageZoom           = vi.imageZoom;
+    perspective         = vi.perspective;
+    eyeAngle            = vi.eyeAngle;
+    centerOfRotationSet = vi.centerOfRotationSet;
+    centerOfRotation[0] = vi.centerOfRotation[0];
+    centerOfRotation[1] = vi.centerOfRotation[1];
+    centerOfRotation[2] = vi.centerOfRotation[2];
 
     return *this;
 }
@@ -86,6 +93,9 @@ avtView3D::operator=(const avtView3D &vi)
 //
 //    Hank Childs, Wed Oct 15 13:05:33 PDT 2003
 //    Added eye angle.
+//
+//    Eric Brugger, Mon Feb  9 16:02:13 PST 2004
+//    Added centerOfRotationSet and centerOfRotation.
 //
 // ****************************************************************************
 
@@ -110,11 +120,19 @@ avtView3D::operator==(const avtView3D &vi)
         return false;
     }
 
+    if (centerOfRotation[0] != vi.centerOfRotation[0] ||
+        centerOfRotation[1] != vi.centerOfRotation[1] ||
+        centerOfRotation[2] != vi.centerOfRotation[2])
+    {
+        return false;
+    }
+
     if (viewAngle != vi.viewAngle || parallelScale != vi.parallelScale ||
         nearPlane != vi.nearPlane || farPlane != vi.farPlane ||
         imagePan[0] != vi.imagePan[0] || imagePan[1] != vi.imagePan[1] ||
         imageZoom != vi.imageZoom || perspective != vi.perspective ||
-        eyeAngle != vi.eyeAngle)
+        eyeAngle != vi.eyeAngle ||
+        centerOfRotationSet != vi.centerOfRotationSet)
     {
         return false;
     }
@@ -143,29 +161,36 @@ avtView3D::operator==(const avtView3D &vi)
 //    Hank Childs, Wed Oct 15 13:05:33 PDT 2003
 //    Added eye angle.
 //
+//    Eric Brugger, Mon Feb  9 16:02:13 PST 2004
+//    Added centerOfRotationSet and centerOfRotation.
+//
 // ****************************************************************************
 
 void
 avtView3D::SetToDefault()
 {
-    normal[0]     = 0.;
-    normal[1]     = 0.;
-    normal[2]     = 1.;
-    focus[0]      = 0.;
-    focus[1]      = 0.;
-    focus[2]      = 0.;
-    viewUp[0]     = 0.;
-    viewUp[1]     = 1.;
-    viewUp[2]     = 0.;
-    viewAngle     = 30.;
-    parallelScale = 0.5;
-    nearPlane     = -0.5;
-    farPlane      =  0.5;
-    imagePan[0]   = 0.;
-    imagePan[1]   = 0.;
-    imageZoom     = 1.;
-    eyeAngle      = 2.0;
-    perspective   = false;
+    normal[0]           = 0.;
+    normal[1]           = 0.;
+    normal[2]           = 1.;
+    focus[0]            = 0.;
+    focus[1]            = 0.;
+    focus[2]            = 0.;
+    viewUp[0]           = 0.;
+    viewUp[1]           = 1.;
+    viewUp[2]           = 0.;
+    viewAngle           = 30.;
+    parallelScale       = 0.5;
+    nearPlane           = -0.5;
+    farPlane            =  0.5;
+    imagePan[0]         = 0.;
+    imagePan[1]         = 0.;
+    imageZoom           = 1.;
+    eyeAngle            = 2.0;
+    perspective         = false;
+    centerOfRotationSet = false;
+    centerOfRotation[0] = 0.;
+    centerOfRotation[1] = 0.;
+    centerOfRotation[2] = 0.;
 }
 
 // ****************************************************************************
@@ -292,6 +317,9 @@ avtView3D::SetViewInfoFromView(avtViewInfo &viewInfo) const
 //    Hank Childs, Wed Oct 15 13:05:33 PDT 2003
 //    Added eye angle.
 //
+//    Eric Brugger, Mon Feb  9 16:02:13 PST 2004
+//    Added centerOfRotationSet and centerOfRotation.
+//
 // ****************************************************************************
 
 void
@@ -302,6 +330,7 @@ avtView3D::SetFromView3DAttributes(const View3DAttributes *view3DAtts)
         normal[i] = view3DAtts->GetViewNormal()[i];
         focus[i]  = view3DAtts->GetFocus()[i];
         viewUp[i] = view3DAtts->GetViewUp()[i];
+        centerOfRotation[i] = view3DAtts->GetCenterOfRotation()[i];
     }
 
     viewAngle = view3DAtts->GetViewAngle();
@@ -313,6 +342,7 @@ avtView3D::SetFromView3DAttributes(const View3DAttributes *view3DAtts)
     imageZoom = view3DAtts->GetImageZoom();
     perspective = view3DAtts->GetPerspective();
     eyeAngle = view3DAtts->GetEyeAngle();
+    centerOfRotationSet = view3DAtts->GetCenterOfRotationSet();
 }
 
 // ****************************************************************************
@@ -334,6 +364,9 @@ avtView3D::SetFromView3DAttributes(const View3DAttributes *view3DAtts)
 //    Hank Childs, Wed Oct 15 13:05:33 PDT 2003
 //    Added eye angle.
 //
+//    Eric Brugger, Mon Feb  9 16:02:13 PST 2004
+//    Added centerOfRotationSet and centerOfRotation.
+//
 // ****************************************************************************
 
 void
@@ -350,4 +383,6 @@ avtView3D::SetToView3DAttributes(View3DAttributes *view3DAtts) const
     view3DAtts->SetImageZoom(imageZoom);
     view3DAtts->SetPerspective(perspective);
     view3DAtts->SetEyeAngle(eyeAngle);
+    view3DAtts->SetCenterOfRotationSet(centerOfRotationSet);
+    view3DAtts->SetCenterOfRotation(centerOfRotation);
 }

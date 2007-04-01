@@ -4,6 +4,13 @@
 
 #include <avtSamplePointsToSamplePointsFilter.h>
 
+avtSamplePointsToSamplePointsFilter::avtSamplePointsToSamplePointsFilter()
+{
+}
+
+avtSamplePointsToSamplePointsFilter::~avtSamplePointsToSamplePointsFilter()
+{
+}
 
 // ****************************************************************************
 //  Method: avtSamplePointsToSamplePointsFilter::PreExecute

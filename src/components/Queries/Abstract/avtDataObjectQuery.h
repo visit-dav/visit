@@ -4,8 +4,8 @@
 
 #ifndef AVT_DATA_OBJECT_QUERY_H
 #define AVT_DATA_OBJECT_QUERY_H
-#include <query_exports.h>
 
+#include <query_exports.h>
 
 #include <avtDataObjectSink.h>
 
@@ -15,7 +15,6 @@ class avtDataSpecification;
 
 typedef void (*InitializeProgressCallback)(void *, int); 
 typedef void (*ProgressCallback)(void *, const char *, const char *,int,int);                      
-
 
 // ****************************************************************************
 //  Class: avtDataObjectQuery
@@ -36,6 +35,10 @@ typedef void (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Kathleen Bonnell, Fri Jul 11 16:33:16 PDT 2003 
 //    Added units, rename GetMessage as GetResultMessage.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 //    Kathleen Bonnell, Tue Feb 10 15:00:32 PST 2004 
 //    Added OriginalData method. 
 //
@@ -43,10 +46,9 @@ typedef void (*ProgressCallback)(void *, const char *, const char *,int,int);
 
 class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
 {
-
   public:
-                                  avtDataObjectQuery() {;};
-    virtual                      ~avtDataObjectQuery() {;};
+                                  avtDataObjectQuery();
+    virtual                      ~avtDataObjectQuery();
 
     virtual const char           *GetType(void) = 0;
     virtual const char           *GetDescription(void) { return NULL; };

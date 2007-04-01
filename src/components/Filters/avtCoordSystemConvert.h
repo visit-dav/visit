@@ -5,7 +5,7 @@
 #ifndef AVT_CoordConvert_FILTER_H
 #define AVT_CoordConvert_FILTER_H
 
-
+#include <filters_exports.h>
 #include <avtStreamer.h>
 
 
@@ -28,7 +28,7 @@ typedef enum
 //
 // ****************************************************************************
 
-class avtCoordSystemConvert : public avtStreamer
+class AVTFILTERS_API avtCoordSystemConvert : public avtStreamer
 {
   public:
                          avtCoordSystemConvert();

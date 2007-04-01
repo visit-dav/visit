@@ -5,7 +5,7 @@
 #ifndef AVT_RAY_TRACER_H
 #define AVT_RAY_TRACER_H
 
-#include <pipeline_exports.h>
+#include <filters_exports.h>
 
 #include <avtDatasetToImageFilter.h>
 #include <avtViewInfo.h>
@@ -37,13 +37,17 @@ class   avtRayFunction;
 //    Brad Whitlock, Wed Dec 5 11:13:18 PDT 2001
 //    Added gradient backgrounds.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers
+//    have problems with them.
+//
 // ****************************************************************************
 
-class PIPELINE_API avtRayTracer : public avtDatasetToImageFilter
+class AVTFILTERS_API avtRayTracer : public avtDatasetToImageFilter
 {
   public:
                           avtRayTracer();
-    virtual              ~avtRayTracer() {;};
+    virtual              ~avtRayTracer();
 
     virtual const char   *GetType(void) { return "avtRayTracer"; };
     virtual const char   *GetDescription(void) { return "Ray tracing"; };

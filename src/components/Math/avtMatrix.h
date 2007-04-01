@@ -21,6 +21,10 @@ class avtVector;
 //    Kathleen Bonnell, Tue Mar  4 09:54:46 PST 2003 
 //    Added methods to convert between frames. 
 //
+//    Eric Brugger, Tue Feb 10 08:28:05 PST 2004
+//    Added the optional argument lhs (left handed coordinate system) to
+//    MakeTrackball and CreateTrackball.
+//
 // ****************************************************************************
 
 class MATH_API avtMatrix
@@ -51,7 +55,7 @@ class MATH_API avtMatrix
     // utility
     void   MakeIdentity();
     void   MakeZero();
-    void   MakeTrackball(double,double, double,double);
+    void   MakeTrackball(double,double, double,double, bool lhs=false);
     void   MakeTranslate(double, double, double);
     void   MakeTranslate(const avtVector&);
     void   MakeRBT(const avtVector&, const avtVector&, const avtVector&);
@@ -71,7 +75,7 @@ class MATH_API avtMatrix
     // static utility
     static avtMatrix CreateIdentity();
     static avtMatrix CreateZero();
-    static avtMatrix CreateTrackball(double,double, double,double);
+    static avtMatrix CreateTrackball(double,double, double,double, bool lhs=false);
     static avtMatrix CreateTranslate(double, double, double);
     static avtMatrix CreateTranslate(const avtVector&);
     static avtMatrix CreateRBT(const avtVector&, const avtVector&, const avtVector&);

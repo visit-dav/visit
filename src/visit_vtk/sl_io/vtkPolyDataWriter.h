@@ -26,10 +26,11 @@
 #define __vtkPolyDataWriter_h
 
 #include "vtkDataWriter.h"
+#include <vtk_sl_io_exports.h>
 
 class vtkPolyData;
 
-class VTK_IO_EXPORT vtkPolyDataWriter : public vtkDataWriter
+class VTK_SL_IO_API vtkPolyDataWriter : public vtkDataWriter
 {
 public:
   static vtkPolyDataWriter *New();

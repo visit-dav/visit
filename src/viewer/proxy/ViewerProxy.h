@@ -317,6 +317,9 @@ class Xfer;
 //    Brad Whitlock, Wed Oct 29 10:31:58 PDT 2003
 //    Added new methods to deal with advanced annotations.
 //
+//    Brad Whitlock, Mon Dec 29 09:17:30 PDT 2003
+//    Added methods to set and update the center of rotation.
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -413,6 +416,9 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void ExportColorTable(const std::string &colorTableName);
     void InvertBackgroundColor();
 
+    void SetCenterOfRotation(double, double, double);
+    void ChooseCenterOfRotation();
+    void ChooseCenterOfRotation(double, double);
     void SetViewCurve();
     void SetView2D();
     void SetView3D();

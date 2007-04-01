@@ -4,7 +4,7 @@
 
 #ifndef VTK_DATASET_FROM_VOLUME_H
 #define VTK_DATASET_FROM_VOLUME_H
-
+#include <visit_vtk_light_exports.h>
 
 #include <vector>
 
@@ -35,7 +35,7 @@ class vtkPoints;
 //
 // ****************************************************************************
 
-class vtkDataSetFromVolume
+class VISIT_VTK_LIGHT_API vtkDataSetFromVolume
 {
   protected:
 struct PointEntry
@@ -45,7 +45,7 @@ struct PointEntry
 };
 
 
-class PointList
+class VISIT_VTK_LIGHT_API PointList
 {
   public:
                    PointList();
@@ -66,7 +66,7 @@ class PointList
 };
 
 
-class EdgeHashEntry
+class VISIT_VTK_LIGHT_API EdgeHashEntry
 {
   public:
                     EdgeHashEntry();
@@ -89,7 +89,7 @@ class EdgeHashEntry
 
 #define FREE_ENTRY_LIST_SIZE 16384
 #define POOL_SIZE 256
-class EdgeHashEntryMemoryManager
+class VISIT_VTK_LIGHT_API EdgeHashEntryMemoryManager
 {
   public:
                      EdgeHashEntryMemoryManager();
@@ -126,7 +126,7 @@ class EdgeHashEntryMemoryManager
 };
 
 
-class EdgeHashTable
+class VISIT_VTK_LIGHT_API EdgeHashTable
 {
   public:
                       EdgeHashTable(int, PointList &);

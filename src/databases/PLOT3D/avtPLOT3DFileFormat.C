@@ -88,7 +88,6 @@
 #define __vtkVisItPLOT3DReader_h
 
 #include <stdio.h>
-#include <visit_vtk_exports.h>
 #include "vtkStructuredGridSource.h"
 
 class vtkIntArray;
@@ -102,7 +101,7 @@ class vtkStructuredGrid;
 #define VTK_WHOLE_MULTI_GRID_NO_IBLANKING 2
 #define VTK_WHOLE_MULTI_GRID_WITH_IBLANKING 3
 
-class VISIT_VTK_API vtkVisItPLOT3DReader : public vtkStructuredGridSource 
+class vtkVisItPLOT3DReader : public vtkStructuredGridSource 
 {
 public:
   static vtkVisItPLOT3DReader *New();

@@ -19,12 +19,18 @@
 //  Programmer: Hank Childs
 //  Creation:   December 4, 2000
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtPixelizer
 {
   public:
-    virtual           ~avtPixelizer() {;};
+    virtual           ~avtPixelizer();
 
     virtual void       GetColor(double value, double intensity,
                                 unsigned char rgb[3]) = 0;

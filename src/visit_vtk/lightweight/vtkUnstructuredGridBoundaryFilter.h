@@ -1,9 +1,9 @@
 #ifndef VTK_UNSTRUCTURED_GRID_BOUNDARY_FILTER_H
 #define VTK_UNSTRUCTURED_GRID_BOUNDARY_FILTER_H
 #include <vtkUnstructuredGridToPolyDataFilter.h>
-#include <visit_vtk_exports.h>
+#include <visit_vtk_light_exports.h>
 
-class VISIT_VTK_API vtkUnstructuredGridBoundaryFilter 
+class VISIT_VTK_LIGHT_API vtkUnstructuredGridBoundaryFilter 
     : public vtkUnstructuredGridToPolyDataFilter
 {
   public:

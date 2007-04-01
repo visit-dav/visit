@@ -103,6 +103,9 @@ class VisWindowColleagueProxy;
 //    Jeremy Meredith, Fri Nov 14 11:27:19 PST 2003
 //    Allowed specular lighting.
 //
+//    Brad Whitlock, Wed Jan 7 14:42:28 PST 2004
+//    I added the SetCursorForMode method.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -199,6 +202,8 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     int                      SetScalableThreshold(int threshold);
     int                      GetScalableThreshold() const
                                  { return scalableThreshold; };
+
+    virtual void             SetCursorForMode(INTERACTION_MODE) { };
 
     virtual void            *CreateToolbar(const char *) { return 0; };
 

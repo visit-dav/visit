@@ -4,7 +4,7 @@
 
 #ifndef AVT_IMAGE_FILE_WRITER_H
 #define AVT_IMAGE_FILE_WRITER_H
-#include <pipeline_exports.h>
+#include <file_writer_exports.h>
 
 
 #include <avtOriginatingImageSink.h>
@@ -53,13 +53,17 @@ class vtkImageWriter;
 //    Kathleen Bonnell, Thu Nov  6 07:44:38 PST 2003
 //    Added compression arg to Write method.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers 
+//    have problems with them.
+//
 // ****************************************************************************
 
-class PIPELINE_API avtImageFileWriter : public avtOriginatingImageSink
+class AVTFILEWRITER_API avtImageFileWriter : public avtOriginatingImageSink
 {
   public:
                        avtImageFileWriter();
-    virtual           ~avtImageFileWriter() {;};
+    virtual           ~avtImageFileWriter();
 
     void               Write(ImageFileFormat, const char *filename,
                              int quality, bool progressive, int compression);

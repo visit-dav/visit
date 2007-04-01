@@ -21,13 +21,19 @@ class     ConstExpr;
 //  Programmer: Hank Childs
 //  Creation:   August 21, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtNMatsFilter : public avtSingleInputExpressionFilter
 {
   public:
-                              avtNMatsFilter() {;};
-    virtual                  ~avtNMatsFilter() {;};
+                              avtNMatsFilter();
+    virtual                  ~avtNMatsFilter();
 
     virtual const char       *GetType(void) { return "avtNMatsFilter"; };
     virtual const char       *GetDescription(void)

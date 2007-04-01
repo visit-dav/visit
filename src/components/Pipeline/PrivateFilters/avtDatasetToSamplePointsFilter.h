@@ -4,8 +4,8 @@
 
 #ifndef AVT_DATASET_TO_SAMPLE_POINTS_FILTER_H
 #define AVT_DATASET_TO_SAMPLE_POINTS_FILTER_H
-#include <pipeline_exports.h>
 
+#include <pipeline_exports.h>
 
 #include <avtDatasetToDataObjectFilter.h>
 #include <avtDataObjectToSamplePointsFilter.h>
@@ -26,6 +26,10 @@
 //    Hank Childs, Thu Nov 15 15:29:18 PST 2001
 //    Add support for multiple variables.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatasetToSamplePointsFilter
@@ -33,8 +37,8 @@ class PIPELINE_API avtDatasetToSamplePointsFilter
       virtual public avtDataObjectToSamplePointsFilter
 {
   public:
-                       avtDatasetToSamplePointsFilter() {;};
-    virtual           ~avtDatasetToSamplePointsFilter() {;};
+                       avtDatasetToSamplePointsFilter();
+    virtual           ~avtDatasetToSamplePointsFilter();
 
   protected:
     virtual void       PreExecute(void);

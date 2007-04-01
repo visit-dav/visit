@@ -21,6 +21,12 @@
 //  Programmer: Hank Childs
 //  Creation:   June 30, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtSamplePointsToDatasetFilter
@@ -28,8 +34,8 @@ class PIPELINE_API avtSamplePointsToDatasetFilter
       virtual public avtDataObjectToDatasetFilter
 {
   public:
-                       avtSamplePointsToDatasetFilter() {;};
-    virtual           ~avtSamplePointsToDatasetFilter() {;};
+                       avtSamplePointsToDatasetFilter();
+    virtual           ~avtSamplePointsToDatasetFilter();
 };
 
 

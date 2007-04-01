@@ -337,7 +337,8 @@ avtMatrix::CreateOrthographicProjection(double size,
 
 
 void
-avtMatrix::MakeTrackball(double p1x,double p1y,  double p2x, double p2y)
+avtMatrix::MakeTrackball(double p1x,double p1y,  double p2x, double p2y,
+                         bool lhs)
 {
 #define RADIUS       0.8        /* z value at x = y = 0.0  */
 #define COMPRESSION  3.5        /* multipliers for x and y */
@@ -355,7 +356,6 @@ avtMatrix::MakeTrackball(double p1x,double p1y,  double p2x, double p2y)
         MakeIdentity();
         return;
     }
-
 
     // Compute z-coordinates for projection of P1 and P2 onto
     // the trackball.
@@ -384,7 +384,11 @@ avtMatrix::MakeTrackball(double p1x,double p1y,  double p2x, double p2y)
     q[2] *= t;
     q[3] *= t;
 
-    //q[2]*=-1;   //  This is needed in a LH coordinate system
+    //  Handle LH coordinate systems.
+    if (lhs)
+    {
+        q[2]*=-1;
+    }
 
     // create the rotation matrix from the quaternion
     MakeIdentity();
@@ -403,10 +407,11 @@ avtMatrix::MakeTrackball(double p1x,double p1y,  double p2x, double p2y)
 }
 
 avtMatrix
-avtMatrix::CreateTrackball(double p1x,double p1y,  double p2x, double p2y)
+avtMatrix::CreateTrackball(double p1x,double p1y,  double p2x, double p2y,
+                           bool lhs)
 {
     avtMatrix M;
-    M.MakeTrackball(p1x,p1y, p2x,p2y);
+    M.MakeTrackball(p1x,p1y, p2x,p2y, lhs);
     return M;
 }
 

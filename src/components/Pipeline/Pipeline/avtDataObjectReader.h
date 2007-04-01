@@ -4,15 +4,16 @@
 
 #ifndef AVT_DATA_OBJECT_READER_H
 #define AVT_DATA_OBJECT_READER_H
+
 #include <pipeline_exports.h>
+
 #include <string>
-
-
 #include <ref_ptr.h>
 
 #include <avtDataSetReader.h>
 #include <avtImageReader.h>
 #include <avtNullDataReader.h>
+
 
 // ****************************************************************************
 //  Class: avtDataObjectReader
@@ -23,13 +24,19 @@
 //  Programmer: Hank Childs
 //  Creation:   December 28, 2000
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers
+//    have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataObjectReader
 {
   public:
                                  avtDataObjectReader();
-    virtual                     ~avtDataObjectReader() {;};
+    virtual                     ~avtDataObjectReader();
 
     void                         Read(int size, char *input);
 

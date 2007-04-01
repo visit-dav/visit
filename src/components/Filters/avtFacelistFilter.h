@@ -5,7 +5,7 @@
 #ifndef AVT_FACELIST_FILTER_H
 #define AVT_FACELIST_FILTER_H
 
-#include <pipeline_exports.h>
+#include <filters_exports.h>
 
 #include <avtStreamer.h>
 
@@ -54,7 +54,7 @@ class   avtMultiFacelist;
 //
 // ****************************************************************************
 
-class PIPELINE_API avtFacelistFilter : public avtStreamer
+class AVTFILTERS_API avtFacelistFilter : public avtStreamer
 {
   public:
                                          avtFacelistFilter();

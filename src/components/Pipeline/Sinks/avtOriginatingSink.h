@@ -31,13 +31,17 @@ typedef  bool (*GuideFunction)(void *, int);
 //    Hank Childs, Fri Sep 28 13:18:47 PDT 2001
 //    Added DynamicLoadBalanceCleanUp.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers 
+//    have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtOriginatingSink : virtual public avtDataObjectSink
 {
   public:
                               avtOriginatingSink();
-    virtual                  ~avtOriginatingSink() {;};
+    virtual                  ~avtOriginatingSink();
 
     void                      SetPipelineIndex(int);
 

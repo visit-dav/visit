@@ -25,6 +25,24 @@ const char *avtVariableCache::DATASET_NAME = "DATASET";
 
 
 // ****************************************************************************
+//  Method: avtVariableCache constructor
+//
+//  Purpose:
+//      Defines the constructor.  Note: this should not be inlined in the
+//      header because it causes problems for certain compilers.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 5, 2004
+//
+// ****************************************************************************
+
+avtVariableCache::avtVariableCache()
+{
+    ;
+}
+
+
+// ****************************************************************************
 //  Method: avtVariableCache destructor
 //
 //  Programmer: Hank Childs
@@ -48,6 +66,42 @@ avtVariableCache::~avtVariableCache()
     {
         delete *it;
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtCachableItem constructor
+//
+//  Purpose:
+//      Defines the constructor.  Note: this should not be inlined in the
+//      header because it causes problems for certain compilers.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 5, 2004
+//
+// ****************************************************************************
+
+avtCachableItem::avtCachableItem()
+{
+    ;
+}
+
+
+// ****************************************************************************
+//  Method: avtCachableItem destructor
+//
+//  Purpose:
+//      Defines the destructor.  Note: this should not be inlined in the header
+//      because it causes problems for certain compilers.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 5, 2004
+//
+// ****************************************************************************
+
+avtCachableItem::~avtCachableItem()
+{
+    ;
 }
 
 
@@ -974,6 +1028,24 @@ Indent(ostream &out, int n)
 avtCachedVoidRef::avtCachedVoidRef(void_ref_ptr vr)
 {
     voidRef = vr;
+}
+
+
+// ****************************************************************************
+//  Method: avtCachedVoidRef destructor
+//
+//  Purpose:
+//      Defines the destructor.  Note: this should not be inlined in the header
+//      because it causes problems for certain compilers.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 5, 2004
+//
+// ****************************************************************************
+
+avtCachedVoidRef::~avtCachedVoidRef()
+{
+    ;
 }
 
 

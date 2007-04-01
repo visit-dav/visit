@@ -21,6 +21,12 @@
 //  Programmer: Hank Childs
 //  Creation:   December 5, 2000
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtHexahedronExtractor : public avtExtractor
@@ -28,7 +34,7 @@ class PIPELINE_API avtHexahedronExtractor : public avtExtractor
   public:
                      avtHexahedronExtractor(int, int, int, avtVolume *,
                                             avtCellList *);
-    virtual         ~avtHexahedronExtractor() {;};
+    virtual         ~avtHexahedronExtractor();
 
     void             Extract(const avtHexahedron &);
 

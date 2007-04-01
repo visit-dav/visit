@@ -39,13 +39,17 @@ class     avtTerminatingSource;
 //    Hank Childs, Mon Jul 28 16:27:58 PDT 2003
 //    Added notion of a queryable source.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataObjectSource
 {
   public:
-                                    avtDataObjectSource() {;};
-    virtual                        ~avtDataObjectSource() {;};
+                                    avtDataObjectSource();
+    virtual                        ~avtDataObjectSource();
 
     virtual bool                    Update(avtPipelineSpecification_p) = 0;
 

@@ -38,6 +38,9 @@ class     vtkQtRenderWindowInteractor;
 //    Mark C. Miller, 07Jul03
 //    Renamed GetSize to GetWindowSize
 //
+//    Brad Whitlock, Wed Jan 7 14:43:19 PST 2004
+//    I added SetCursorForMode.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRenderingWithWindow : public VisWinRendering
@@ -62,6 +65,8 @@ class VISWINDOW_API VisWinRenderingWithWindow : public VisWinRendering
     virtual void                       SetShowCallback(void(*callback)(void *), void *);
 
     virtual void                      *CreateToolbar(const char *);
+    virtual void                       SetCursorForMode(INTERACTION_MODE);
+
   protected:
     vtkQtRenderWindow                 *renWin;
     vtkQtRenderWindowInteractor       *iren;
@@ -70,6 +75,8 @@ class VISWINDOW_API VisWinRenderingWithWindow : public VisWinRendering
     virtual vtkRenderWindowInteractor *GetRenderWindowInteractor(void);
 
     virtual void                       RealizeRenderWindow(void);
+
+    int                                cursorIndex;
 };
 
 

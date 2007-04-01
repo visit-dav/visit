@@ -28,6 +28,10 @@ class     avtVariablePixelizer;
 //    Hank Childs, Sat Feb  3 20:49:43 PST 2001
 //    Made ray function return a color instead of a value.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtAverageValueRF : public avtRayFunction
@@ -36,7 +40,7 @@ class PIPELINE_API avtAverageValueRF : public avtRayFunction
                         avtAverageValueRF(avtLightingModel *,
                                           avtVariablePixelizer *, bool,
                                           double = 0.);
-    virtual            ~avtAverageValueRF() {;};
+    virtual            ~avtAverageValueRF();
 
     virtual void        GetRayValue(const avtRay *, const avtGradients *,
                                     unsigned char rgb[3], float);

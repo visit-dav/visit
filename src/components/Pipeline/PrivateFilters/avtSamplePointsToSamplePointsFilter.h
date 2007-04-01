@@ -33,8 +33,8 @@ class PIPELINE_API avtSamplePointsToSamplePointsFilter
       virtual public avtDataObjectToSamplePointsFilter
 {
   public:
-                       avtSamplePointsToSamplePointsFilter() {;};
-    virtual           ~avtSamplePointsToSamplePointsFilter() {;};
+                       avtSamplePointsToSamplePointsFilter();
+    virtual           ~avtSamplePointsToSamplePointsFilter();
 
   protected:
     virtual void       PreExecute(void);

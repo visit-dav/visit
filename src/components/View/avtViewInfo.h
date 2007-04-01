@@ -4,7 +4,7 @@
 
 #ifndef AVT_VIEW_INFO_H
 #define AVT_VIEW_INFO_H
-#include <pipeline_exports.h>
+#include <view_exports.h>
 
 class vtkCamera;
 
@@ -38,7 +38,7 @@ class vtkCamera;
 //
 // ****************************************************************************
 
-struct PIPELINE_API avtViewInfo
+struct AVTVIEW_API avtViewInfo
 {
     double   camera[3];
     double   focus[3];

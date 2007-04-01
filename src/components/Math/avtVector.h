@@ -13,6 +13,10 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    October  9, 2001
 //
+//  Modifications:
+//    Eric Brugger, Mon Feb  9 16:32:31 PST 2004
+//    Added const to a couple of constructors.
+//
 // ****************************************************************************
 class MATH_API avtVector
 {
@@ -23,8 +27,8 @@ class MATH_API avtVector
     avtVector(const avtVector&);
     avtVector(double,double);
     avtVector(double,double,double);
-    avtVector(double*);
-    avtVector(float*);
+    avtVector(const double*);
+    avtVector(const float*);
 
     // assignment operator
     void       operator=(const avtVector&);
@@ -85,13 +89,13 @@ avtVector::avtVector(double x_,double y_,double z_)
 }
 
 inline 
-avtVector::avtVector(double *p)
+avtVector::avtVector(const double *p)
     : x(p[0]), y(p[1]), z(p[2])
 {
 }
 
 inline 
-avtVector::avtVector(float *p)
+avtVector::avtVector(const float *p)
     : x(p[0]), y(p[1]), z(p[2])
 {
 }

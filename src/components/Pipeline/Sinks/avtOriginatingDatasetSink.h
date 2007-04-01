@@ -25,14 +25,18 @@
 //    Hank Childs, Fri Sep 28 13:18:47 PDT 2001
 //    Added DynamicLoadBalanceCleanUp.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtOriginatingDatasetSink
     : virtual public avtDatasetSink, virtual public avtOriginatingSink
 {
   public:
-                      avtOriginatingDatasetSink()  {;};
-    virtual          ~avtOriginatingDatasetSink()  {;};
+                      avtOriginatingDatasetSink();
+    virtual          ~avtOriginatingDatasetSink();
 
   protected:
     virtual void      DynamicLoadBalanceCleanUp(void);

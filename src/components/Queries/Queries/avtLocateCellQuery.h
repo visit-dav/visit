@@ -44,13 +44,17 @@ class vtkDataSet;
 //    Kathleen Bonnell, Tue Nov  4 08:18:54 PST 2003 
 //    Added  SetPickAtts, GetPickAtts, and PickAttributes data member.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers
+//    have problems with them.
+//
 // ****************************************************************************
 
 class QUERY_API avtLocateCellQuery : public avtDatasetQuery
 {
   public:
                                     avtLocateCellQuery();
-    virtual                        ~avtLocateCellQuery() {;};
+    virtual                        ~avtLocateCellQuery();
 
     virtual const char             *GetType(void)
                                              { return "avtLocateCellQuery"; };

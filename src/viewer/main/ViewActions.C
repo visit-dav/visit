@@ -15,6 +15,7 @@
 
 #include <DataNode.h>
 #include <DebugStream.h>
+#include <PickAttributes.h>
 
 #include <qaction.h>
 #include <qapplication.h>
@@ -33,6 +34,7 @@
 #include <viewlockoff.xpm>
 #include <saveview.xpm>
 #include <blankcamera.xpm>
+#include <choosecenterofrotation.xpm>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -894,4 +896,317 @@ SaveViewAction::SetFromNode(DataNode *parentNode)
     // If we added some views, update the menus.
     if(addedOrRemovedViews)
         UpdateConstruction();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: SetCenterOfRotationAction::SetCenterOfRotationAction
+//
+// Purpose: 
+//   Constructor for the SetCenterOfRotationAction class.
+//
+// Arguments:
+//   win : The window to which the action belongs.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 7 10:03:40 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+SetCenterOfRotationAction::SetCenterOfRotationAction(ViewerWindow *win) : 
+    ViewerAction(win, "SetCenterOfRotationAction")
+{
+    DisableVisual();
+}
+
+// ****************************************************************************
+// Method: SetCenterOfRotationAction::~SetCenterOfRotationAction
+//
+// Purpose: 
+//   Destructor for the SetCenterOfRotationAction class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 7 10:04:08 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+SetCenterOfRotationAction::~SetCenterOfRotationAction()
+{
+}
+
+// ****************************************************************************
+// Method: SetCenterOfRotationAction::Execute
+//
+// Purpose: 
+//   Executes the SetCenterOfRotation RPC.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 7 10:04:38 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SetCenterOfRotationAction::Execute()
+{
+    const double *pt = args.GetQueryPoint1();
+    windowMgr->SetCenterOfRotation(window->GetWindowId(), pt[0], pt[1], pt[2]);
+}
+
+// ****************************************************************************
+// Method: SetCenterOfRotationAction::Enabled
+//
+// Purpose: 
+//   Returns when the action is enabled.
+//
+// Returns:    True when there are plots; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 7 10:05:04 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+SetCenterOfRotationAction::Enabled() const
+{
+    return window->GetAnimation()->GetPlotList()->GetNumPlots() > 0;    
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: ChooseCenterOfRotationAction::ChooseCenterOfRotationAction
+//
+// Purpose: 
+//   Constructor for the ChooseCenterOfRotationAction class.
+//
+// Arguments:
+//   win : The window to which the action belongs.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 7 10:05:39 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ChooseCenterOfRotationAction::ChooseCenterOfRotationAction(ViewerWindow *win) :
+    ViewerAction(win, "ChooseCenterOfRotationAction")
+{
+    SetAllText("Choose center");
+    SetToolTip("Choose center of rotation");
+    if (!win->GetNoWinMode())
+        SetIconSet(QIconSet(QPixmap(choosecenterofrotation_xpm)));
+}
+
+// ****************************************************************************
+// Method: ChooseCenterOfRotationAction::~ChooseCenterOfRotationAction
+//
+// Purpose: 
+//   Destructor for the ChooseCenterOfRotationAction class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 7 10:06:02 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ChooseCenterOfRotationAction::~ChooseCenterOfRotationAction()
+{
+}
+
+// ****************************************************************************
+// Method: ChooseCenterOfRotation::Setup
+//
+// Purpose: 
+//   Called when the action is activated by button clicking. We want to make
+//   sure that the bool flag is false so we can use pick to determine the
+//   coordinates for the new center of rotation.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 7 10:06:20 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ChooseCenterOfRotationAction::Setup()
+{
+    // Since this method is called when the action is activated by clicking
+    // on it in the popup menu or in the toolbar, make sure that we do
+    // interactive choose center.
+    args.SetBoolFlag(false);
+}
+
+// ****************************************************************************
+// Method: ChooseCenterOfRotationAction::Execute
+//
+// Purpose: 
+//   Executes the ChooseCenterOfRotation RPC. 
+//
+// Note:       If the bool flag is false then we don't have coordinates and
+//             we want to use pick to get them. If the bool flag is true then
+//             the RPC was issued with the screen position of where we want to
+//             pick for the new center of rotation.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 7 10:07:47 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ChooseCenterOfRotationAction::Execute()
+{
+    bool haveCoordinates = args.GetBoolFlag();
+
+    if(haveCoordinates)
+    {
+        double x = args.GetQueryPoint1()[0];
+        double y = args.GetQueryPoint1()[1];
+        windowMgr->ChooseCenterOfRotation(window->GetWindowId(), x, y);
+    }
+    else if(!ViewerWindow::GetNoWinMode())
+    {
+        // We don't have the points so we want to choose them interactively.
+        // In order to do this, we have to change the window into
+        // pick mode and set up a pick handler so instead of adding a pick
+        // point, which is the default pick behavior, we set the center
+        // of rotation.
+ 
+        //
+        // Store the old interaction mode and set the new interaction mode
+        // to zone pick.
+        //
+        oldMode = window->GetInteractionMode();
+        window->SetInteractionMode(ZONE_PICK);
+ 
+        //
+        // Register a pick function that will be called when you pick on
+        // the plots. Instead of picking, the function will set the center
+        // of rotation using the pick point.
+        //
+        window->SetPickFunction(FinishCB, (void *)this);
+    }
+    else
+    {
+        Error("The center of rotation cannot be chosen interactively when "
+              "VisIt is run in -nowin mode.");
+    }
+}
+
+// ****************************************************************************
+// Method: ChooseCenterOfRotationAction::Enabled
+//
+// Purpose: 
+//   Returns when the action is enabled.
+//
+// Returns:    True if there are realized plots; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 7 10:11:24 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ChooseCenterOfRotationAction::Enabled() const
+{
+    return window->GetAnimation()->GetPlotList()->GetNumVisiblePlots() > 0 &&
+           window->GetWindowMode() == WINMODE_3D;
+}
+
+// ****************************************************************************
+// Method: ChooseCenterOfRotationAction::FinishCB
+//
+// Purpose: 
+//   Called by pick once it has determined the pick point that we will use
+//   as the new center of rotation.
+//
+// Arguments:
+//   data    : A pointer to the action.
+//   success : Whether or not pick was able to return a pick point.
+//   p       : The pick attributes, which include the pick point, etc.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 7 10:15:39 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ChooseCenterOfRotationAction::FinishCB(void *data, bool success,
+    const PickAttributes *p)
+{
+    if(data)
+    {
+        ChooseCenterOfRotationAction *action = (ChooseCenterOfRotationAction *)data;
+        action->FinishExecute(success, p);
+    }
+}
+
+// ****************************************************************************
+// Method: ChooseCenterOfRotationAction::FinishExecute
+//
+// Purpose: 
+//   Finishes executing the ChooseCenterOfRotation RPC.
+//
+// Arguments:
+//   success : Whether VisIt should set the center of rotation.
+//   p       : A pointer to the pick attributes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 7 10:17:59 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ChooseCenterOfRotationAction::FinishExecute(bool success,
+    const PickAttributes *p)
+{
+     // Restore the old interaction mode.
+     window->SetInteractionMode(oldMode);
+
+     if(success)
+     {
+         // Tell the client about the new center of rotation.
+         char msg[500];
+         SNPRINTF(msg, 500, "The new center of rotation is: <%g, %g, %g>.",
+                  p->GetPickPoint()[0],
+                  p->GetPickPoint()[1],
+                  p->GetPickPoint()[2]);
+         Message(msg);
+
+         // Set the new center of rotation.
+         windowMgr->SetCenterOfRotation(window->GetWindowId(),
+                                        p->GetPickPoint()[0],
+                                        p->GetPickPoint()[1],
+                                        p->GetPickPoint()[2]);
+     }
+     else
+     {
+         Warning("VisIt could not set the center of rotation. "
+                 "You might not have clicked on a plot.");
+     }
+
+     //
+     // Now since we've updated the interaction mode, we have to update
+     // the actions so the toolbar will show the right interaction mode.
+     //
+     windowMgr->UpdateActions();
 }

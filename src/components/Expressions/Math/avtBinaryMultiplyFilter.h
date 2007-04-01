@@ -24,13 +24,17 @@ class     vtkDataArray;
 //    Hank Childs, Thu Aug 14 13:40:20 PDT 2003
 //    Tell the output that we have one component if we are doing a dot product.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtBinaryMultiplyFilter : public avtBinaryMathFilter
 {
   public:
-                              avtBinaryMultiplyFilter() {;};
-    virtual                  ~avtBinaryMultiplyFilter() {;};
+                              avtBinaryMultiplyFilter();
+    virtual                  ~avtBinaryMultiplyFilter();
 
     virtual const char       *GetType(void)
                                { return "avtBinaryMultiplyFilter"; };

@@ -129,6 +129,42 @@ void vtkVisItMatrixToHomogeneousTransform::TransformPointsNormalsVectors(vtkPoin
 // END VTK WORKAROUND
 
 // ****************************************************************************
+//  Method: avtTransform constructor
+//
+//  Purpose:
+//      Defines the constructor.  Note: this should not be inlined in the
+//      header because it causes problems for certain compilers.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 5, 2004
+//
+// ****************************************************************************
+
+avtTransform::avtTransform()
+{
+    ;
+}
+
+
+// ****************************************************************************
+//  Method: avtTransform destructor
+//
+//  Purpose:
+//      Defines the destructor.  Note: this should not be inlined in the header
+//      because it causes problems for certain compilers.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 5, 2004
+//
+// ****************************************************************************
+
+avtTransform::~avtTransform()
+{
+    ;
+}
+
+
+// ****************************************************************************
 //  Method: avtTransform::ExecuteData
 //
 //  Purpose:

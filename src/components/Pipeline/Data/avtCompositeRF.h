@@ -34,6 +34,10 @@ struct    RGBA;
 //    Hank Childs, Sun Dec  2 15:55:28 PST 2001
 //    Added support for opacity variables.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C files because certain compilers 
+//    have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtCompositeRF : public avtRayFunction
@@ -41,7 +45,7 @@ class PIPELINE_API avtCompositeRF : public avtRayFunction
   public:
                        avtCompositeRF(avtLightingModel *, avtOpacityMap *,
                                       avtOpacityMap *);
-    virtual           ~avtCompositeRF() {;};
+    virtual           ~avtCompositeRF();
 
     virtual void       GetRayValue(const avtRay *, const avtGradients *,
                                    unsigned char rgb[3], float);

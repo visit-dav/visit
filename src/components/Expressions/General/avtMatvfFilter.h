@@ -32,13 +32,17 @@ class     ConstExpr;
 //    database that it cannot communicate ghost zones until a better solution
 //    comes along.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtMatvfFilter : public avtSingleInputExpressionFilter
 {
   public:
-                              avtMatvfFilter() {;};
-    virtual                  ~avtMatvfFilter() {;};
+                              avtMatvfFilter();
+    virtual                  ~avtMatvfFilter();
 
     virtual const char       *GetType(void) { return "avtMatvfFilter"; };
     virtual const char       *GetDescription(void)

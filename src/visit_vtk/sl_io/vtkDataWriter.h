@@ -37,7 +37,7 @@ class vtkCellArray;
 class vtkDataArray;
 class vtkFieldData;
 
-class VTK_IO_EXPORT vtkDataWriter : public vtkWriter
+class VTK_SL_IO_API vtkDataWriter : public vtkWriter
 {
 public:
   vtkTypeRevisionMacro(vtkDataWriter,vtkWriter);

@@ -4,8 +4,8 @@
 
 #ifndef AVT_FILTER_H
 #define AVT_FILTER_H
-#include <pipeline_exports.h>
 
+#include <pipeline_exports.h>
 
 #include <vector>
 
@@ -42,6 +42,10 @@ class     avtMetaData;
 //    Hank Childs, Fri Mar 15 15:25:33 PST 2002 
 //    Add support for attributes.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers
+//    have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtFilter
@@ -49,7 +53,7 @@ class PIPELINE_API avtFilter
 {
   public:
                                         avtFilter();
-    virtual                            ~avtFilter() {;};
+    virtual                            ~avtFilter();
 
     virtual const char                 *GetType(void) = 0;
     virtual const char                 *GetDescription(void) { return NULL; };

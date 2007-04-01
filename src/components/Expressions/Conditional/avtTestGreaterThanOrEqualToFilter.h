@@ -20,14 +20,20 @@ class     vtkDataArray;
 //  Programmer: Hank Childs
 //  Creation:   August 21, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtTestGreaterThanOrEqualToFilter 
     : public avtComparisonFilter
 {
   public:
-                              avtTestGreaterThanOrEqualToFilter() {;};
-    virtual                  ~avtTestGreaterThanOrEqualToFilter() {;};
+                              avtTestGreaterThanOrEqualToFilter();
+    virtual                  ~avtTestGreaterThanOrEqualToFilter();
 
     virtual const char       *GetType(void)
                                { return "avtTestGreaterThanOrEqualToFilter"; };

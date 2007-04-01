@@ -246,6 +246,11 @@ public:
     // Needed to set the format
     virtual void SetStereoCapableWindow(int capable);
 
+    // Added by LLNL
+    // Description:
+    // Set the cursor for the GL part of the vis window.
+    virtual void setCursor(const QCursor &);
+
 protected:
     virtual void resizeEvent(QResizeEvent *);
     virtual void moveEvent(QMoveEvent *);

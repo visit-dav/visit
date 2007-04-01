@@ -153,9 +153,9 @@ avtCoordSystemConvert::PostExecute()
     avtDataAttributes &inAtts  = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
 
+/*
     double b[6];
-
-/*  THIS HAS BEEN MORE TROUBLE THAN ITS WORTH.  LEAVING THE CODE HERE IN
+    THIS HAS BEEN MORE TROUBLE THAN ITS WORTH.  LEAVING THE CODE HERE IN
     CASE THIS EVER BECOMES IMPORTANT TO ANYONE.  THE ISSUE IS THAT IT JUST
     DOESN'T COME CLOSE ENOUGH ON THE REAL EXTENTS.
     if (inAtts.GetTrueSpatialExtents()->HasExtents())
@@ -215,17 +215,18 @@ avtCoordSystemConvert::TransformExtents(double *extents)
     //
     vtkFloatArray *x = vtkFloatArray::New();
     x->SetNumberOfTuples(10);
-    for (int i = 0 ; i < 10 ; i++)
+    int i;
+    for (i = 0 ; i < 10 ; i++)
         x->SetTuple1(i, (extents[1]-extents[0]) * ((float)i)/10. + extents[0]);
  
     vtkFloatArray *y = vtkFloatArray::New();
     y->SetNumberOfTuples(10);
-    for (int i = 0 ; i < 10 ; i++)
+    for (i = 0 ; i < 10 ; i++)
         y->SetTuple1(i, (extents[3]-extents[2]) * ((float)i)/10. + extents[2]);
  
     vtkFloatArray *z = vtkFloatArray::New();
     z->SetNumberOfTuples(10);
-    for (int i = 0 ; i < 10 ; i++)
+    for (i = 0 ; i < 10 ; i++)
         z->SetTuple1(i, (extents[5]-extents[4]) * ((float)i)/10. + extents[4]);
  
     vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();

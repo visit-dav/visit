@@ -32,10 +32,11 @@
 #define __vtkStructuredGridReader_h
 
 #include "vtkDataReader.h"
+#include <vtk_sl_io_exports.h>
 
 class vtkStructuredGrid;
 
-class VTK_IO_EXPORT vtkStructuredGridReader : public vtkDataReader
+class VTK_SL_IO_API vtkStructuredGridReader : public vtkDataReader
 {
 public:
   static vtkStructuredGridReader *New();

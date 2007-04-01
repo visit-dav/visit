@@ -25,13 +25,17 @@ class     vtkDataArray;
 //    Hank Childs, Fri Nov 15 15:25:26 PST 2002
 //    Added support for vectors and arbitrary data types.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtArctanFilter : public avtUnaryMathFilter
 {
   public:
-                              avtArctanFilter() {;};
-    virtual                  ~avtArctanFilter() {;};
+                              avtArctanFilter();
+    virtual                  ~avtArctanFilter();
 
     virtual const char       *GetType(void)   { return "avtArctanFilter"; };
     virtual const char       *GetDescription(void) 

@@ -4,7 +4,7 @@
 
 #ifndef AVT_QUERYABLE_SOURCE_H
 #define AVT_QUERYABLE_SOURCE_H
-
+#include <pipeline_exports.h>
 
 #include <avtDataObjectSource.h>
 
@@ -29,13 +29,17 @@ class PickAttributes;
 //    Kathleen Bonnell, Mon Dec 22 14:48:57 PST 2003 
 //    Add virtual method 'GetDomainName'.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
-class avtQueryableSource : virtual public avtDataObjectSource
+class PIPELINE_API avtQueryableSource : virtual public avtDataObjectSource
 {
   public:
-                                  avtQueryableSource() {;};
-    virtual                      ~avtQueryableSource() {;};
+                                  avtQueryableSource();
+    virtual                      ~avtQueryableSource();
 
     virtual avtQueryableSource   *GetQueryableSource(void) { return this; };
     virtual void                  Query(PickAttributes *) = 0;

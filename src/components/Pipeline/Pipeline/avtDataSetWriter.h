@@ -4,8 +4,8 @@
 
 #ifndef AVT_DATASET_WRITER_H
 #define AVT_DATASET_WRITER_H
-#include <pipeline_exports.h>
 
+#include <pipeline_exports.h>
 
 #include <avtOriginatingDatasetSink.h>
 #include <avtDataObjectWriter.h>
@@ -41,14 +41,18 @@ class     avtDataTree;
 //    Hank Childs, Mon Oct  1 08:47:41 PDT 2001
 //    Re-worked inheritance hierarchy.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataSetWriter : virtual public avtOriginatingDatasetSink, 
                          virtual public avtDataObjectWriter
 {
   public:
-                    avtDataSetWriter() {;};
-    virtual        ~avtDataSetWriter() {;};
+                    avtDataSetWriter();
+    virtual        ~avtDataSetWriter();
 
     virtual bool    MustMergeParallelStreams(void) { return true; };
 

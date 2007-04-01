@@ -47,6 +47,10 @@ class   avtDataRepresentation;
 //    Pushed some examination routines into the new object avtDatasetExaminer.
 //    Removed comments related to that class.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataset : public avtDataObject
@@ -58,9 +62,10 @@ class PIPELINE_API avtDataset : public avtDataObject
 
   public:
                              avtDataset(avtDataObjectSource *);
-                             avtDataset(ref_ptr<avtDataset> ds, bool dontCopyData = false);
+                             avtDataset(ref_ptr<avtDataset> ds,
+                                        bool dontCopyData = false);
                              avtDataset(vtkDataSet *);
-    virtual                 ~avtDataset() {;};
+    virtual                 ~avtDataset();
 
     virtual const char      *GetType(void)  { return "avtDataset"; };
     virtual int              GetNumberOfCells(bool polysOnly = false) const;

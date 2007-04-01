@@ -32,8 +32,9 @@
 
 #include "vtkWriter.h"
 #include "vtkDataWriter.h" // Neds data because it calls methods on it
+#include <vtk_sl_io_exports.h>
 
-class VTK_IO_EXPORT vtkDataObjectWriter : public vtkWriter
+class VTK_SL_IO_API vtkDataObjectWriter : public vtkWriter
 {
 public:
   static vtkDataObjectWriter *New();

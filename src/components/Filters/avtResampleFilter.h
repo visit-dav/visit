@@ -5,7 +5,7 @@
 #ifndef AVT_RESAMPLE_FILTER_H
 #define AVT_RESAMPLE_FILTER_H
 
-#include <pipeline_exports.h>
+#include <filters_exports.h>
 
 #include <avtDatasetToDatasetFilter.h>
 
@@ -28,7 +28,7 @@
 //
 // ****************************************************************************
 
-class PIPELINE_API avtResampleFilter : public avtDatasetToDatasetFilter
+class AVTFILTERS_API avtResampleFilter : public avtDatasetToDatasetFilter
 {
   public:
                           avtResampleFilter(const AttributeGroup*);

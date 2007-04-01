@@ -26,14 +26,20 @@ class     vtkScalarData;
 //  Programmer: Hank Childs
 //  Creation:   November 18, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtPolarCoordinatesFilter 
     : public avtSingleInputExpressionFilter
 {
   public:
-                              avtPolarCoordinatesFilter() {;};
-    virtual                  ~avtPolarCoordinatesFilter() {;};
+                              avtPolarCoordinatesFilter();
+    virtual                  ~avtPolarCoordinatesFilter();
 
     virtual const char       *GetType(void)   
                                   { return "avtPolarCoordinatesFilter"; };

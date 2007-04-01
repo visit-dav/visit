@@ -5,7 +5,7 @@
 #ifndef AVT_TRANSFORM_H
 #define AVT_TRANSFORM_H
 
-#include <pipeline_exports.h>
+#include <filters_exports.h>
 
 #include <avtStreamer.h>
 
@@ -43,13 +43,17 @@ class     vtkRectilinearGrid;
 //    Hank Childs, Tue Sep 10 15:21:28 PDT 2002
 //    Perform all memory management at the domain (ExecuteData) level.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
-class PIPELINE_API avtTransform : public virtual avtStreamer
+class AVTFILTERS_API avtTransform : public virtual avtStreamer
 {
   public:
-                                avtTransform() {;};
-    virtual                    ~avtTransform() {;};
+                                avtTransform();
+    virtual                    ~avtTransform();
 
     virtual const char         *GetType(void) { return "avtTransform"; };
     virtual const char         *GetDescription(void)

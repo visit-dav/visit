@@ -34,15 +34,19 @@ class     vtkUserDefinedMapperBridge;
 //    a deleted object on redraws.
 //
 //    Kathleen Bonnell, Tue Aug 13 15:15:37 PDT 2002    
-//    Adde virtual methods in support of lighting. 
+//    Added virtual methods in support of lighting. 
 //    
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers
+//    have problems with them.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtUserDefinedMapper : public avtMapper
 {
   public:
                                avtUserDefinedMapper(avtCustomRenderer_p);
-    virtual                   ~avtUserDefinedMapper() {;};
+    virtual                   ~avtUserDefinedMapper();
 
     bool                       GetDataRange(float &, float &);    
     bool                       GetCurrentDataRange(float &, float &);    

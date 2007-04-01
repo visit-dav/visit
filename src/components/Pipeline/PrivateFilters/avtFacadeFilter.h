@@ -22,13 +22,19 @@
 //  Programmer: Hank Childs
 //  Creation:   April 16, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtFacadeFilter : virtual public avtFilter
 {
   public:
-                                   avtFacadeFilter() {;};
-    virtual                       ~avtFacadeFilter() {;};
+                                   avtFacadeFilter();
+    virtual                       ~avtFacadeFilter();
 
     virtual avtDataObject_p        GetInput(void);
     virtual avtDataObject_p        GetOutput(void);

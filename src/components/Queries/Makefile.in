@@ -59,6 +59,9 @@
 #   Hank Childs, Tue Feb  3 16:58:36 PST 2004
 #   Added variable summation, weighted variable summation.
 #
+#   Hank Childs, Fri Feb  6 09:27:08 PST 2004
+#   Added avtGeneralQuery.
+#
 #   Kathleen Bonnell, ue Feb 10 15:08:58 PST 2004 
 #   Renamed avtPlotMinMaxQuery to avtMinMaxQuery, added 
 #   avtOriginalDataMinMaxQuery, avtActualDataMinMaxQuery.
@@ -76,6 +79,7 @@ Abstract_src= \
  Abstract/avtCurveComparisonQuery.C \
  Abstract/avtDataObjectQuery.C \
  Abstract/avtDatasetQuery.C \
+ Abstract/avtGeneralQuery.C \
  Abstract/avtMultipleInputQuery.C \
  Abstract/avtTwoPassDatasetQuery.C
 

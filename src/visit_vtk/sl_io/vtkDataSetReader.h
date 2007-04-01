@@ -35,6 +35,7 @@
 #define __vtkDataSetReader_h
 
 #include "vtkDataReader.h"
+#include <vtk_sl_io_exports.h>
 
 class vtkDataSet;
 class vtkPolyData;
@@ -43,7 +44,7 @@ class vtkStructuredGrid;
 class vtkStructuredPoints;
 class vtkUnstructuredGrid;
 
-class VTK_IO_EXPORT vtkDataSetReader : public vtkDataReader
+class VTK_SL_IO_API vtkDataSetReader : public vtkDataReader
 {
 public:
   static vtkDataSetReader *New();

@@ -30,13 +30,17 @@
 //    Made read also accept a character string reference to prevent unneeded
 //    copying.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers
+//    have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataSetReader : public avtTerminatingDatasetSource
 {
   public:
                            avtDataSetReader();
-    virtual               ~avtDataSetReader() {;};
+    virtual               ~avtDataSetReader();
 
     virtual bool           ArtificialPipeline(void) { return true; };
     int                    Read(char *input, CharStrRef &);

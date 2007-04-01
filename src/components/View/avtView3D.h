@@ -4,7 +4,7 @@
 
 #ifndef AVT_VIEW_3D_H
 #define AVT_VIEW_3D_H
-#include <pipeline_exports.h>
+#include <view_exports.h>
 
 struct avtViewInfo;
 class View3DAttributes;
@@ -32,9 +32,12 @@ class View3DAttributes;
 //    Hank Childs, Wed Oct 15 13:05:33 PDT 2003
 //    Added eye angle.
 //
+//    Eric Brugger, Mon Feb  9 15:59:15 PST 2004
+//    Added centerOfRotationSet and centerOfRotation.
+//
 // ****************************************************************************
 
-struct PIPELINE_API avtView3D
+struct AVTVIEW_API avtView3D
 {
     double   normal[3];
     double   focus[3];
@@ -47,6 +50,8 @@ struct PIPELINE_API avtView3D
     double   imageZoom;
     double   eyeAngle;
     bool     perspective;
+    bool     centerOfRotationSet;
+    double   centerOfRotation[3];
 
   public:
                     avtView3D();

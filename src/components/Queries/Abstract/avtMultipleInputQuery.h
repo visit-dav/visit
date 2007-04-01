@@ -23,6 +23,12 @@
 //  Programmer: Hank Childs
 //  Creation:   October 3, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers
+//    have problems with them.
+//
 // ****************************************************************************
 
 class QUERY_API avtMultipleInputQuery : public virtual avtDataObjectQuery, 
@@ -30,7 +36,7 @@ class QUERY_API avtMultipleInputQuery : public virtual avtDataObjectQuery,
 {
   public:
                               avtMultipleInputQuery();
-    virtual                  ~avtMultipleInputQuery() {;};
+    virtual                  ~avtMultipleInputQuery();
 
     virtual void             PerformQuery(QueryAttributes *);
     virtual std::string      GetResultMessage(void) { return resMsg; };

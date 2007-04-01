@@ -4,7 +4,7 @@
 
 #ifndef AVT_WORLD_SPACE_TO_IMAGE_SPACE_TRANSFORM_H
 #define AVT_WORLD_SPACE_TO_IMAGE_SPACE_TRANSFORM_H
-#include <pipeline_exports.h>
+#include <filters_exports.h>
 
 
 #include <vector>
@@ -36,7 +36,7 @@ class   avtIntervalTree;
 //
 // ****************************************************************************
 
-class PIPELINE_API avtWorldSpaceToImageSpaceTransform : public avtTransform
+class AVTFILTERS_API avtWorldSpaceToImageSpaceTransform : public avtTransform
 {
   public:
                        avtWorldSpaceToImageSpaceTransform(const avtViewInfo &,

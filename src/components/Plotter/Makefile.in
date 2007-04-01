@@ -141,6 +141,9 @@
 #    Hank Childs, Tue Sep 23 21:47:17 PDT 2003
 #    Added TensorMapper.
 #
+#    Hank Childs, Fri Feb  6 10:53:43 PST 2004
+#    Added avtDrawable.
+#
 ##############################################################################
 
 ##
@@ -162,7 +165,7 @@ SRC=avtLegend.C avtVariableLegend.C avtGeometryDrawable.C avtActor.C \
     avtOpenGLSurfaceAndWireframeRenderer.C avtCustomRenderer.C \
     avtLineoutActor.C avtTransparencyActor.C avtLabelActor.C \
     avtDecorationsDrawable.C avtDecorationsMapper.C avtLabeledCurveMapper.C \
-    avtExternallyRenderedImagesActor.C avtTensorGlyphMapper.C
+    avtExternallyRenderedImagesActor.C avtTensorGlyphMapper.C avtDrawable.C 
 
 
 CPPFLAGS=-I../../include/visit @COMPONENT_CPPFLAGS@ @CPPFLAGS@ @MESA_INCLUDE@

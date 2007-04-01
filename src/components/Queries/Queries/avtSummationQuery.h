@@ -32,13 +32,17 @@ class vtkDataSet;
 //    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002
 //    Add unitsAppend. 
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers
+//    have problems with them.
+//
 // ****************************************************************************
 
 class QUERY_API avtSummationQuery : public avtDatasetQuery
 {
   public:
                                     avtSummationQuery();
-    virtual                        ~avtSummationQuery() {;};
+    virtual                        ~avtSummationQuery();
 
     virtual void                    SetVariableName(std::string &);
     void                            SetSumType(std::string &);

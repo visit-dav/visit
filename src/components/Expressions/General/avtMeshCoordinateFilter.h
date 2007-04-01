@@ -24,14 +24,18 @@
 //      Sean Ahern, Fri Mar  7 21:21:20 America/Los_Angeles 2003
 //      Made this return a vector of coordinates, rather than just one.
 //
+//      Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//      Moved inlined constructor and destructor definitions to .C files
+//      because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtMeshCoordinateFilter 
     : public avtSingleInputExpressionFilter
 {
   public:
-                              avtMeshCoordinateFilter() {;}
-    virtual                  ~avtMeshCoordinateFilter() {;}
+                              avtMeshCoordinateFilter();
+    virtual                  ~avtMeshCoordinateFilter();
 
     virtual const char       *GetType(void)  
                                     { return "avtMeshCoordinateFilter"; };

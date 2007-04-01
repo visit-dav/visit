@@ -166,6 +166,9 @@ typedef std::map<std::string, avtSILRestriction_p> SILRestrictionMap;
 //    Brad Whitlock, Wed Dec 31 14:09:37 PST 2003
 //    I added UpdateExpressionListUsingDB.
 //
+//    Brad Whitlock, Wed Jan 7 14:24:09 PST 2004
+//    I added GetNumVisiblePlots.
+//
 // ****************************************************************************
 
 
@@ -197,6 +200,7 @@ class VIEWER_API ViewerPlotList
 
     int  GetNumPlots() const;
     int  GetNumRealizedPlots() const;
+    int  GetNumVisiblePlots() const;
     int  AddPlot(int type, const std::string &var, bool replacePlots = false,
                  bool applyToAll = false, DataNode *attributesNode = 0);
     int  GetMaximumStates() const;

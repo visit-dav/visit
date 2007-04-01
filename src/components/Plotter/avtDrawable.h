@@ -56,13 +56,17 @@ class     avtTransparencyActor;
 //    Jeremy Meredith, Fri Nov 14 11:10:53 PST 2003
 //    Added a method to set the specular properties.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtDrawable
 {
   public:
-                               avtDrawable() {;};
-    virtual                   ~avtDrawable() {;};
+                               avtDrawable();
+    virtual                   ~avtDrawable();
 
     virtual bool               Interactive(void) = 0;
 

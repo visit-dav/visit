@@ -12,8 +12,10 @@
 
 class avtDataObjectWriter;
 
-const char * const AVT_NULL_IMAGE_MSG = "avtImage withheld; under scalable threshold";
-const char * const AVT_NULL_DATASET_MSG = "avtDataset withheld; over scalable threshold";
+const char * const AVT_NULL_IMAGE_MSG 
+                              = "avtImage withheld; under scalable threshold";
+const char * const AVT_NULL_DATASET_MSG 
+                              = "avtDataset withheld; over scalable threshold";
 
 // ****************************************************************************
 //  Class: avtNullData
@@ -27,6 +29,10 @@ const char * const AVT_NULL_DATASET_MSG = "avtDataset withheld; over scalable th
 //
 //  Modifications:
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 //    Mark C. Miller, Wed Feb  4 19:47:30 PST 2004
 //    Added Instance & DerivedCopy, needed by avtDataObject->Clone
 //
@@ -38,7 +44,7 @@ class PIPELINE_API avtNullData : public avtDataObject
                               avtNullData(avtDataObjectSource *src, const char *_typeStr = NULL)
                                  : avtDataObject(src)
                                  { typeStr = _typeStr ? _typeStr : "avtNullData"; };
-    virtual                  ~avtNullData() {;};
+    virtual                  ~avtNullData();
 
     virtual const char       *GetType(void)  { return typeStr.c_str(); };
     virtual int               GetNumberOfCells(bool polysOnly = false) const { return 0;};

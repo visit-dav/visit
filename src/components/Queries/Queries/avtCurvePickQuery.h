@@ -23,13 +23,17 @@ class vtkDataSet;
 //
 //  Modifications:
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers
+//    have problems with them.
+//
 // ****************************************************************************
 
 class QUERY_API avtCurvePickQuery : public avtDatasetQuery
 {
   public:
                                     avtCurvePickQuery();
-    virtual                        ~avtCurvePickQuery() {;};
+    virtual                        ~avtCurvePickQuery();
 
     virtual const char             *GetType(void)
                                              { return "avtCurvePickQuery"; };

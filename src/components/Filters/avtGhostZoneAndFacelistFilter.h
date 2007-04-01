@@ -5,7 +5,7 @@
 #ifndef AVT_GHOSTZONE_AND_FACELIST_FILTER_H
 #define AVT_GHOSTZONE_AND_FACELIST_FILTER_H
 
-#include <pipeline_exports.h>
+#include <filters_exports.h>
 
 #include <avtDatasetToDatasetFilter.h>
 
@@ -33,7 +33,7 @@ class   avtFacelistFilter;
 //
 // ****************************************************************************
 
-class PIPELINE_API avtGhostZoneAndFacelistFilter :
+class AVTFILTERS_API avtGhostZoneAndFacelistFilter :
                                                public avtDatasetToDatasetFilter
 {
   public:

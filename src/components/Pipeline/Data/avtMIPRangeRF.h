@@ -27,6 +27,10 @@ class     avtVariablePixelizer;
 //    Hank Childs, Sat Feb  3 21:19:23 PST 2001
 //    Modified to return a color instead of a value.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtMIPRangeRF : public avtRayFunction
@@ -34,7 +38,7 @@ class PIPELINE_API avtMIPRangeRF : public avtRayFunction
   public:
                         avtMIPRangeRF(avtLightingModel *, double, double,
                                       avtVariablePixelizer *);
-    virtual            ~avtMIPRangeRF() {;};
+    virtual            ~avtMIPRangeRF();
 
     virtual void        GetRayValue(const avtRay *, const avtGradients *,
                                     unsigned char [3], float);

@@ -32,13 +32,14 @@
 #define __vtkAppendPolyData_h
 
 #include "vtkPolyDataToPolyDataFilter.h"
+#include <vtk_sl_io_exports.h>
 
 class vtkCellArray;
 class vtkDataArray;
 class vtkPoints;
 class vtkPolyData;
 
-class VTK_GRAPHICS_EXPORT vtkAppendPolyData : public vtkPolyDataToPolyDataFilter
+class VTK_SL_IO_API vtkAppendPolyData : public vtkPolyDataToPolyDataFilter
 {
 public:
   static vtkAppendPolyData *New();

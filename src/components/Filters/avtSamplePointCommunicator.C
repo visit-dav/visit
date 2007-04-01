@@ -15,13 +15,12 @@
 #include <Utility.h>
 
 //
-// Much of this code depends on MPI, so just comment out the body if we are
-// not in parallel.
+// Much of this code depends on MPI, so just ifdef out the parallel code
+// if we are not in parallel.
 //
 #ifdef PARALLEL
-
 #include <mpi.h>
-
+#endif
 
 // ****************************************************************************
 //  Method: avtSamplePointCommunicator constructor
@@ -33,9 +32,31 @@
 
 avtSamplePointCommunicator::avtSamplePointCommunicator()
 {
+#ifdef PARALLEL
     MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
     MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
+#else
+    numProcs = 1; myRank = 0;
+#endif
     imagePartition = NULL;
+}
+
+
+// ****************************************************************************
+//  Method: avtSamplePointCommunicator destructor
+//
+//  Purpose:
+//      Defines the destructor.  Note: this should not be inlined in the header
+//      because it causes problems for certain compilers.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 5, 2004
+//
+// ****************************************************************************
+
+avtSamplePointCommunicator::~avtSamplePointCommunicator()
+{
+    ;
 }
 
 
@@ -89,6 +110,7 @@ avtSamplePointCommunicator::SetImagePartition(avtImagePartition *ip)
 void
 avtSamplePointCommunicator::Execute(void)
 {
+#ifdef PARALLEL
     int timingsIndex = visitTimer->StartTimer();
     int nProgressStages = 14;
     int currentStage    = 1;
@@ -226,6 +248,7 @@ avtSamplePointCommunicator::Execute(void)
     UpdateProgress(currentStage++, nProgressStages);
 
     visitTimer->StopTimer(timingsIndex, "Sample point communication");
+#endif
 }
 
 
@@ -348,6 +371,7 @@ avtSamplePointCommunicator::CommunicateMessages(char **sendmessages,
                                                 char **recvmessages,
                                                 int   *recvcount)
 {
+#ifdef PARALLEL
     //
     // Figure out how much each processor needs to send/receive.
     //
@@ -388,6 +412,9 @@ avtSamplePointCommunicator::CommunicateMessages(char **sendmessages,
     // We need to return this buffer so the calling function can delete it.
     //
     return recvConcatList;
+#else
+    return 0;
+#endif
 }
 
 
@@ -431,6 +458,7 @@ char *
 avtSamplePointCommunicator::MutateMessagesByAssignment(char **msgs, int *sizes,
                                                      char *&myMsg, int &mySize)
 {
+#ifdef PARALLEL
     int   i;
 
     //
@@ -523,12 +551,9 @@ avtSamplePointCommunicator::MutateMessagesByAssignment(char **msgs, int *sizes,
     delete [] tmpSizes;
 
     return rv;
-}
-
-
-//
-// We wrapped all of the code around an ifdef PARALLEL, so end that here.
-//
+#else
+    return 0;
 #endif
+}
 
 

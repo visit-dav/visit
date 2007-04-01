@@ -4,8 +4,8 @@
 
 #ifndef AVT_MULTIPLE_INPUT_TO_DATASET_FILTER_H
 #define AVT_MULTIPLE_INPUT_TO_DATASET_FILTER_H
-#include <pipeline_exports.h>
 
+#include <pipeline_exports.h>
 
 #include <avtMultipleInputToDataObjectFilter.h>
 #include <avtDataObjectToDatasetFilter.h>
@@ -20,6 +20,12 @@
 //  Programmer: Hank Childs
 //  Creation:   September 12, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtMultipleInputToDatasetFilter
@@ -27,8 +33,8 @@ class PIPELINE_API avtMultipleInputToDatasetFilter
       virtual public avtDataObjectToDatasetFilter
 {
   public:
-                       avtMultipleInputToDatasetFilter() {;};
-    virtual           ~avtMultipleInputToDatasetFilter() {;};
+                       avtMultipleInputToDatasetFilter();
+    virtual           ~avtMultipleInputToDatasetFilter();
 };
 
 

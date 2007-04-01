@@ -32,10 +32,11 @@
 #define __vtkUnstructuredGridReader_h
 
 #include "vtkDataReader.h"
+#include <vtk_sl_io_exports.h>
 
 class vtkUnstructuredGrid;
 
-class VTK_IO_EXPORT vtkUnstructuredGridReader : public vtkDataReader
+class VTK_SL_IO_API vtkUnstructuredGridReader : public vtkDataReader
 {
 public:
   static vtkUnstructuredGridReader *New();

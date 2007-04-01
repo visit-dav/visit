@@ -4,8 +4,8 @@
 
 #ifndef AVT_DATA_OBJECT_WRITER_H
 #define AVT_DATA_OBJECT_WRITER_H
-#include <pipeline_exports.h>
 
+#include <pipeline_exports.h>
 
 #include <ref_ptr.h>
 
@@ -42,13 +42,17 @@ class     avtDataObjectString;
 //    Made this be an inheritance layer rather than a container for different
 //    types of data objects.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers
+//    have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataObjectWriter : virtual public avtOriginatingSink
 {
   public:
                                avtDataObjectWriter();
-    virtual                   ~avtDataObjectWriter() {;};
+    virtual                   ~avtDataObjectWriter();
 
     void                       Write(avtDataObjectString &);
 

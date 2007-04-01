@@ -5,7 +5,7 @@
 #ifndef AVT_CONDENSE_DATASET_FILTER_H
 #define AVT_CONDENSE_DATASET_FILTER_H
 
-#include <pipeline_exports.h>
+#include <filters_exports.h>
 
 #include <avtStreamer.h>
 
@@ -42,7 +42,7 @@ class vtkDataSet;
 //
 // ****************************************************************************
 
-class PIPELINE_API avtCondenseDatasetFilter : public avtStreamer
+class AVTFILTERS_API avtCondenseDatasetFilter : public avtStreamer
 {
   public:
                          avtCondenseDatasetFilter();

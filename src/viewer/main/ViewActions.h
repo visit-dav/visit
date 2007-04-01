@@ -4,7 +4,10 @@
 #include <ViewerAction.h>
 #include <ViewerToggleAction.h>
 #include <ViewerMultipleAction.h>
+#include <VisWindowTypes.h>
 #include <vector>
+
+class PickAttributes;
 
 // ****************************************************************************
 // Class: TogglePerspectiveViewAction
@@ -224,4 +227,63 @@ private:
 
     ViewInfoVector views;
 };
+
+// ****************************************************************************
+// Class: SetCenterOfRotationAction
+//
+// Purpose:
+//   Handles setting the center of rotation.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 29 09:43:24 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class VIEWER_API SetCenterOfRotationAction : public ViewerAction
+{
+public:
+    SetCenterOfRotationAction(ViewerWindow *win);
+    virtual ~SetCenterOfRotationAction();
+
+    virtual void Execute();
+    virtual bool Enabled() const;
+};
+
+// ****************************************************************************
+// Class: ChooseCenterOfRotationAction
+//
+// Purpose:
+//   Chooses the center of rotation.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 29 09:49:43 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class VIEWER_API ChooseCenterOfRotationAction : public ViewerAction
+{
+public:
+    ChooseCenterOfRotationAction(ViewerWindow *win);
+    virtual ~ChooseCenterOfRotationAction();
+
+    virtual void Setup();
+    virtual void Execute();
+    virtual bool Enabled() const;
+    virtual bool MenuTopLevel() const { return true; }
+
+protected:
+    static void FinishCB(void *data, bool success, const PickAttributes *);
+    void FinishExecute(bool success, const PickAttributes *);
+
+    INTERACTION_MODE oldMode;
+};
+
 #endif

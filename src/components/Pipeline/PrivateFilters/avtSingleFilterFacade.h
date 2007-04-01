@@ -28,8 +28,8 @@
 class PIPELINE_API avtSingleFilterFacade : public avtFacadeFilter
 {
   public:
-                              avtSingleFilterFacade() {;};
-    virtual                  ~avtSingleFilterFacade() {;};
+                              avtSingleFilterFacade();
+    virtual                  ~avtSingleFilterFacade();
 
     virtual void              ReleaseData(void);
 

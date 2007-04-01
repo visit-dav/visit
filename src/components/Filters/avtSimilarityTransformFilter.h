@@ -4,7 +4,7 @@
 
 #ifndef AVT_SimilarityTransform_FILTER_H
 #define AVT_SimilarityTransform_FILTER_H
-#include <pipeline_exports.h>
+#include <filters_exports.h>
 
 #include <avtPluginStreamer.h>
 #include <avtTransform.h>
@@ -44,7 +44,7 @@ class vtkDataSet;
 //
 // ****************************************************************************
 
-class PIPELINE_API avtSimilarityTransformFilter : public avtTransform
+class AVTFILTERS_API avtSimilarityTransformFilter : public avtTransform
 {
   public:
                          avtSimilarityTransformFilter();

@@ -40,4 +40,12 @@
     <Field name="eyeAngle" label="eyeAngle" type="double">
       2.000000
     </Field>
+    <Field name="centerOfRotationSet" label="centerOfRotationSet" type="bool">
+      false
+    </Field>
+    <Field name="centerOfRotation" label="centerOfRotation" type="doubleArray" length="3">
+      0.000000
+      0.000000
+      0.000000
+    </Field>
   </Attribute>

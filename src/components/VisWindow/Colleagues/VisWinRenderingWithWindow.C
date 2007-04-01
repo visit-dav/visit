@@ -22,6 +22,8 @@ VisWinRenderingWithWindow::VisWinRenderingWithWindow(
                                                     VisWindowColleagueProxy &p)
     : VisWinRendering(p)
 {
+    cursorIndex = 0;
+
     renWin = vtkQtRenderWindow::New();
     InitializeRenderWindow(renWin);
  
@@ -418,4 +420,55 @@ VisWinRenderingWithWindow::CreateToolbar(const char *name)
 {
     return renWin->CreateToolbar(name);
 }
+
+// ****************************************************************************
+// Method: VisWinRenderingWithWindow::SetCursorForMode
+//
+// Purpose: 
+//   Sets the appropriate cursor for the interaction mode.
+//
+// Arguments:
+//   m : The interaction mode.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 7 14:49:10 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWinRenderingWithWindow::SetCursorForMode(INTERACTION_MODE m)
+{
+    int newCursorIndex;
+
+    //
+    // Determine the new cursor index. The arrow cursor is 0 and the pick
+    // cursor is 1.
+    //
+    if(m == ZONE_PICK || m == NODE_PICK)
+        newCursorIndex = 1;
+    else
+        newCursorIndex = 0;
+
+    //
+    // If the cursor is different, then use the new cursor.
+    //
+    if(newCursorIndex != cursorIndex)
+    {
+        cursorIndex = newCursorIndex;
+
+        switch(cursorIndex)
+        {
+        default:
+        case 0:
+            renWin->setCursor(ArrowCursor);
+            break;
+        case 1:
+            renWin->setCursor(CrossCursor);
+            break;
+        }
+    }
+}
+
 

@@ -58,13 +58,17 @@ class     avtDataObjectWriter;
 //    Mark C. Miller, Thu Jan 29 16:40:25 PST 2004
 //    Added hasOwnedAnyDomain
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataValidity
 {
   public:
                              avtDataValidity();
-    virtual                 ~avtDataValidity() {;};
+    virtual                 ~avtDataValidity();
     void                     Reset(void);
 
     void                     Copy(const avtDataValidity &);

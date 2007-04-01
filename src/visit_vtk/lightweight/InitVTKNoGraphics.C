@@ -17,7 +17,7 @@
 // A factory that will allow VisIt to override any vtkObject
 // with a sub-class of that object. 
 //
-class VISIT_VTK_API vtkVisItFactory : public vtkObjectFactory
+class VISIT_VTK_LIGHT_API vtkVisItFactory : public vtkObjectFactory
 {
   public:
     vtkVisItFactory();

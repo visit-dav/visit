@@ -27,10 +27,11 @@
 #define __vtkRectilinearGridWriter_h
 
 #include "vtkDataWriter.h"
+#include <vtk_sl_io_exports.h>
 
 class vtkRectilinearGrid;
 
-class VTK_IO_EXPORT vtkRectilinearGridWriter : public vtkDataWriter
+class VTK_SL_IO_API vtkRectilinearGridWriter : public vtkDataWriter
 {
 public:
   static vtkRectilinearGridWriter *New();

@@ -19,13 +19,19 @@
 //  Programmer: Mark C. Miller 
 //  Creation:   January 8, 2003 
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers
+//    have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtNullDataSource : virtual public avtDataObjectSource
 {
   public:
                                 avtNullDataSource();
-    virtual                    ~avtNullDataSource() {;};
+    virtual                    ~avtNullDataSource();
 
     avtDataObject_p             GetOutput(void);
     avtNullData_p               GetTypedOutput(void) { return nullData; };

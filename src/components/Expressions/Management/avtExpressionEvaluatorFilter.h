@@ -4,6 +4,7 @@
 
 #ifndef AVT_EXPRESSION_EVALUATOR_FILTER_H
 #define AVT_EXPRESSION_EVALUATOR_FILTER_H
+
 #include <expression_exports.h>
 
 #include <avtDatasetToDatasetFilter.h>
@@ -36,6 +37,10 @@
 //   Kathleen Bonnell, Mon Dec 22 14:39:30 PST 2003
 //   Added GetDomainName.
 //
+//   Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//   Moved inlined constructor and destructor definitions to .C files
+//   because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionEvaluatorFilter 
@@ -43,8 +48,8 @@ class EXPRESSION_API avtExpressionEvaluatorFilter
       virtual public avtQueryableSource
 {
 public:
-                             avtExpressionEvaluatorFilter() {}
-    virtual                 ~avtExpressionEvaluatorFilter() {}
+                             avtExpressionEvaluatorFilter();
+    virtual                 ~avtExpressionEvaluatorFilter();
     virtual const char*      GetType(void)
                                      { return "avtExpressionEvaluatorFilter";};
 

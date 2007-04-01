@@ -43,6 +43,9 @@ class VisWindowInteractorProxy;
 //    Removed arguments from all ButtonAction methods, in order to match
 //    vtk's new interactor api.
 //
+//    Eric Brugger, Tue Feb 10 09:08:06 PST 2004
+//    Removed the quaternion methods since they are in the matrix class.
+//
 // ****************************************************************************
 
 class VISWINDOW_API Navigate3D : public VisitInteractor
@@ -70,11 +73,6 @@ class VISWINDOW_API Navigate3D : public VisitInteractor
     void                RotateCamera(const int x, const int y);
     void                PanCamera(const int x, const int y);
     void                ZoomCamera(const int x, const int y);
-
-    void BuildQuaternion(double *, const double, const double, const double,
-        const double) const;
-    void MatrixFromQuaternion(double [3][3], const double *) const;
-    double ProjectToSphere(const double, const double) const;
 };
 
 #endif

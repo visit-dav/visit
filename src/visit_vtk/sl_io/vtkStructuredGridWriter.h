@@ -27,10 +27,11 @@
 #define __vtkStructuredGridWriter_h
 
 #include "vtkDataWriter.h"
+#include <vtk_sl_io_exports.h>
 
 class vtkStructuredGrid;
 
-class VTK_IO_EXPORT vtkStructuredGridWriter : public vtkDataWriter
+class VTK_SL_IO_API vtkStructuredGridWriter : public vtkDataWriter
 {
 public:
   static vtkStructuredGridWriter *New();

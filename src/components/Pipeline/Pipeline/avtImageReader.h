@@ -27,13 +27,17 @@
 //    Hank Childs, Thu Dec 28 17:27:01 PST 2000
 //    Pushed some functionality into avtDataObjectReader.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers
+//    have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtImageReader : public avtTerminatingImageSource
 {
   public:
                                 avtImageReader();
-    virtual                    ~avtImageReader() {;};
+    virtual                    ~avtImageReader();
 
     int                         Read(char *input);
 

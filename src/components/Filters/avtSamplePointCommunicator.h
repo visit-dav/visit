@@ -5,7 +5,7 @@
 #ifndef AVT_SAMPLE_POINT_COMMUNICATOR_H
 #define AVT_SAMPLE_POINT_COMMUNICATOR_H
 
-#include <pipeline_exports.h>
+#include <filters_exports.h>
 
 #include <avtSamplePointsToSamplePointsFilter.h>
 
@@ -37,13 +37,18 @@ class     avtVolume;
 //    Hank Childs, Tue Jan  1 13:04:10 PST 2002
 //    Account for non-uniform image partitions.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers
+//    have problems with them.
+//
 // ****************************************************************************
 
-class PIPELINE_API avtSamplePointCommunicator : public avtSamplePointsToSamplePointsFilter
+class AVTFILTERS_API avtSamplePointCommunicator 
+    : public avtSamplePointsToSamplePointsFilter
 {
   public:
                         avtSamplePointCommunicator();
-    virtual            ~avtSamplePointCommunicator() {;};
+    virtual            ~avtSamplePointCommunicator();
 
     const char         *GetType(void) { return "avtSamplePointCommunicator"; };
     const char         *GetDescription(void) {return "Communicating samples";};

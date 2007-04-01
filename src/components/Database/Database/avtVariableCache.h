@@ -42,12 +42,16 @@ class   vtkObject;
 //    Jeremy Meredith, Thu Oct 24 13:21:15 PDT 2002
 //    Added HasVoidRef to check if a void ref exists.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class DATABASE_API avtVariableCache
 {
   public:
-                           avtVariableCache() {;};
+                           avtVariableCache();
     virtual               ~avtVariableCache();
 
     static const char     *SCALARS_NAME;
@@ -155,8 +159,8 @@ class DATABASE_API avtVariableCache
 class DATABASE_API  avtCachableItem
 {
   public:
-                          avtCachableItem() {;};
-   virtual               ~avtCachableItem() {;};
+                          avtCachableItem();
+   virtual               ~avtCachableItem();
 };
 
 
@@ -177,7 +181,7 @@ class DATABASE_API  avtCachedVoidRef : public avtCachableItem
 {
   public:
                          avtCachedVoidRef(void_ref_ptr);
-    virtual             ~avtCachedVoidRef() {;};
+    virtual             ~avtCachedVoidRef();
 
     void_ref_ptr         GetVoidRef(void)  { return voidRef; };
 

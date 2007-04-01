@@ -65,6 +65,9 @@ class QPushButton;
 //   Eric Brugger, Thu Oct 16 12:21:13 PDT 2003
 //   I added full frame mode to the 2D view tab.
 //
+//   Eric Brugger, Tue Feb 10 10:29:21 PST 2004
+//   I added center of rotation controls to the advanced tab.
+//
 // ****************************************************************************
 
 class GUI_API QvisViewWindow : public QvisPostableWindowSimpleObserver
@@ -126,6 +129,8 @@ private slots:
     void eyeAngleSliderChanged(int val);
     void copyViewFromCameraChecked(bool);
     void makeViewKeyframe();
+    void centerChecked(bool);
+    void processCenterText();
 
     void lockedViewChecked(bool);
     void extentTypeChanged(int);
@@ -187,6 +192,8 @@ private:
     QCheckBox   *copyViewFromCameraToggle;
     QPushButton *makeViewKeyframeButton;
     QVBox       *pageAdvanced;
+    QCheckBox   *centerToggle;
+    QLineEdit   *centerLineEdit;
 };
 
 #endif

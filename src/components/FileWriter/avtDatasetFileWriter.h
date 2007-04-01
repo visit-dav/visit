@@ -5,7 +5,7 @@
 #ifndef AVT_DATASET_FILE_WRITER_H
 #define AVT_DATASET_FILE_WRITER_H
 
-#include <pipeline_exports.h>
+#include <file_writer_exports.h>
 
 #include <fstream.h>
 #include <string>
@@ -41,13 +41,17 @@ typedef enum
 //    Jeremy Meredith, Tue Dec 30 09:16:12 PST 2003
 //    Removed the obsolete Curve file format.  Renamed ULTRA to Curve.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers 
+//    have problems with them.
+//
 // ****************************************************************************
 
-class PIPELINE_API avtDatasetFileWriter : public avtOriginatingDatasetSink
+class AVTFILEWRITER_API avtDatasetFileWriter : public avtOriginatingDatasetSink
 {
   public:
                        avtDatasetFileWriter();
-    virtual           ~avtDatasetFileWriter() {;};
+    virtual           ~avtDatasetFileWriter();
 
     void               Write(DatasetFileFormat, const char *filename, bool);
 

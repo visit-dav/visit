@@ -4,8 +4,8 @@
 
 #ifndef AVT_PIPELINE_SPECIFICATION_H
 #define AVT_PIPELINE_SPECIFICATION_H
-#include <pipeline_exports.h>
 
+#include <pipeline_exports.h>
 
 #include <ref_ptr.h>
 
@@ -28,8 +28,13 @@ typedef ref_ptr<avtPipelineSpecification> avtPipelineSpecification_p;
 //  Creation:   May 28, 2001
 //
 //  Modifications:
+//
 //    Jeremy Meredith, Thu Jul 26 12:35:52 PDT 2001
 //    Added ShouldUseDynamicLoadBalancing.
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers
+//    have problems with them.
 //
 // ****************************************************************************
 
@@ -40,7 +45,7 @@ class PIPELINE_API avtPipelineSpecification
                         avtPipelineSpecification(avtPipelineSpecification_p);
                         avtPipelineSpecification(avtPipelineSpecification_p,
                                                  avtDataSpecification_p);
-    virtual            ~avtPipelineSpecification() {;};
+    virtual            ~avtPipelineSpecification();
 
     bool                ShouldUseDynamicLoadBalancing(void)
                                { return canDoDynamic; };

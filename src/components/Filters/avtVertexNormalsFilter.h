@@ -5,7 +5,7 @@
 #ifndef AVT_VERTEX_NORMALS_FILTER_H
 #define AVT_VERTEX_NORMALS_FILTER_H
 
-#include <pipeline_exports.h>
+#include <filters_exports.h>
 
 #include <avtStreamer.h>
 
@@ -26,13 +26,17 @@
 //    Jeremy Meredith, Tue Aug 12 10:55:35 PDT 2003
 //    Added ability to have cell normals.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
-class PIPELINE_API avtVertexNormalsFilter : public avtStreamer
+class AVTFILTERS_API avtVertexNormalsFilter : public avtStreamer
 {
   public:
-                         avtVertexNormalsFilter() { pointNormals=false;};
-    virtual             ~avtVertexNormalsFilter() {;};
+                         avtVertexNormalsFilter();
+    virtual             ~avtVertexNormalsFilter();
 
     virtual const char  *GetType(void) { return "avtVertexNormalsFilter"; };
     virtual const char  *GetDescription(void) 
