@@ -119,6 +119,10 @@ typedef struct
 //    Mark C. Miller, Wed Oct 29 16:56:14 PST 2003
 //    Added method UseDataObjectReader
 //
+//    Mark C. Miller, Sat Jan 17 12:40:16 PST 2004
+//    Removed 'numRestarts' data member. Made numRestarts argument to
+//    CreateEngine default to -1 (e.g. unknown)
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -133,7 +137,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     void CreateEngine(const char *hostname,
                       const std::vector<std::string> &arguments,
                       bool  skipChooser=false,
-                      int numRestarts=2);
+                      int numRestarts=-1);
     void CloseEngines();
     void CloseEngine(const char *hostName);
     void InterruptEngine(const char *hostName);
@@ -210,7 +214,6 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     int                        nEngines;
     EngineListEntry            **engines;
     std::vector<std::string>   restartArguments;
-    int                        numRestarts;
 
     // Global engine computation attributes
     static MaterialAttributes *materialClientAtts;

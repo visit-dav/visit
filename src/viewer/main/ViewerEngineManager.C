@@ -59,7 +59,7 @@ using std::string;
                    << " RPC before an engine was started" << endl \
                    << "**** on " << hostName << ". Starting an engine on " \
                    << hostName << ".\n****" << endl; \
-            CreateEngine(hostName_, restartArguments); \
+            CreateEngine(hostName_, restartArguments, numRestarts); \
             engineIndex = GetEngineIndex(hostName); \
         } \
         if(engineIndex >= 0) \
@@ -81,7 +81,7 @@ using std::string;
                    retry = true; \
                    RemoveFailedEngine(engineIndex); \
                    LaunchMessage(hostName); \
-                   CreateEngine(hostName_, restartArguments); \
+                   CreateEngine(hostName_, restartArguments, numRestarts); \
                    ++numAttempts; \
                 } \
                 else \
@@ -181,6 +181,11 @@ using std::string;
     return retval;
 
 //
+// to remember numRestarts across VEM destructors
+//
+static int numRestarts = -1;
+
+//
 // Global variables.  These should be removed.
 //
 extern ViewerSubject  *viewerSubject;
@@ -226,6 +231,10 @@ static void UpdatePlotAttsCallback(void*,const string&,int,AttributeSubject*);
 //    Brad Whitlock, Fri Dec 27 12:00:59 PDT 2002
 //    I added initialization for restartArguments.
 //
+//    Mark C. Miller, Sat Jan 17 12:40:16 PST 2004
+//    Changed numRestarts to file scope static and changed it numRestarts it
+//    gets initialized here
+//
 // ****************************************************************************
 
 ViewerEngineManager::ViewerEngineManager() : ViewerServerManager(),
@@ -234,7 +243,8 @@ ViewerEngineManager::ViewerEngineManager() : ViewerServerManager(),
     executing = false;
     nEngines = 0;
     engines  = 0;
-    numRestarts = 2;
+    if (numRestarts == -1)
+        numRestarts = 2;
     avtCallback::RegisterImageCallback(GetImageCallback, this);
     avtCallback::RegisterUpdatePlotAttributesCallback(UpdatePlotAttsCallback,
                                                       this);
@@ -431,6 +441,9 @@ ViewerEngineManager::GetEngineIndex(const char *hostName) const
 //    parsed from the SSH_CLIENT (or related) environment variables.  Added
 //    ability to specify an SSH port.
 //
+//    Mark C. Miller, Sat Jan 17 12:40:16 PST 2004
+//    Changed how numRestarts is set 
+//
 // ****************************************************************************
 
 void
@@ -443,7 +456,13 @@ ViewerEngineManager::CreateEngine(const char *hostName,
     // Make sure that we're not using the string "localhost".
     //
     hostName = RealHostName(hostName);
-    numRestarts = numRestarts_;
+    if (numRestarts_ == -1)
+    {
+        if (numRestarts == -1)
+            numRestarts = 2;
+    }
+    else
+       numRestarts = numRestarts_;
 
     //
     // Check if an engine already exists for the host.
@@ -886,7 +905,7 @@ ViewerEngineManager::GetEngine(const char *hostName_)
         LaunchMessage(hostName);
 
         // Try to launch an engine.
-        CreateEngine(hostName, restartArguments);
+        CreateEngine(hostName, restartArguments, numRestarts);
 
         // Lookup the engine to see if it launched.
         engineIndex = GetEngineIndex(hostName);
