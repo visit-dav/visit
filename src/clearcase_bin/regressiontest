@@ -115,6 +115,11 @@
 #    Made MPICH for Linux to the beginning of the path.  (Putting it at the
 #    beginning helps us avoid LAM.)
 #
+#    Jeremy Meredith, Fri Apr  8 10:49:19 PDT 2005
+#    Added -e to the echo commands.  Apparently this needs to be explicitly
+#    set on linux (i.e. -E is the default) instead of the old behavior we
+#    are used to from the suns.
+#
 # ----------------------------------------------------------------------------
 
 # list of users who want email every night with the log file
@@ -192,8 +197,8 @@ cleartool startview visit_VOBowner_test  1> /dev/null 2>&1
 cd /view/visit_VOBowner_test/data_vobs/VisIt 
 rm -f config.cache
 rm -f buildlog
-echo "LD_LIBRARY_PATH = $LD_LIBRARY_PATH" 1> buildlog 2>&1
-echo "Forcing LD_LIBRARY_PATH to /usr/local/lib" 1> buildlog 2>&1
+echo -e "LD_LIBRARY_PATH = $LD_LIBRARY_PATH" 1> buildlog 2>&1
+echo -e "Forcing LD_LIBRARY_PATH to /usr/local/lib" 1> buildlog 2>&1
 LD_LIBRARY_PATH=/usr/local/lib
 export LD_LIBRARY_PATH
 env CXXFLAGS="-g" ./configure --enable-parallel 1>> buildlog 2>&1
@@ -206,10 +211,10 @@ error=$?
 if test ! "$error" = "0"; then
     # email the users
     rm -f mailmsg
-    echo $msghdr_build  >> mailmsg
-    echo $msg_yourfault >> mailmsg
-    echo $msg_userlist  >> mailmsg
-    echo $msgftr_build  >> mailmsg
+    echo -e $msghdr_build  >> mailmsg
+    echo -e $msg_yourfault >> mailmsg
+    echo -e $msg_userlist  >> mailmsg
+    echo -e $msgftr_build  >> mailmsg
     cat buildlog        >> mailmsg
     for user in $users; do
         sendregressionmail $user mailmsg
@@ -217,9 +222,9 @@ if test ! "$error" = "0"; then
 
     # email the log recipients
     rm -f mailmsg
-    echo $msghdr_build  >> mailmsg
-    echo $msg_userlist  >> mailmsg
-    echo $msgftr_build  >> mailmsg
+    echo -e $msghdr_build  >> mailmsg
+    echo -e $msg_userlist  >> mailmsg
+    echo -e $msgftr_build  >> mailmsg
     cat buildlog        >> mailmsg
     for user in $logrecipients; do
         sendregressionmail $user mailmsg
@@ -239,14 +244,12 @@ cd ..
 curdate=`date +%Y-%m-%d-%p%I%M`
 
 # set mode to run in
-#modes="serial parallel scalable"
 modes="serial parallel scalable,parallel"
 if test "`date +%A`" = "Sunday"; then
     modes="serial,hdf5 parallel,hdf5 scalable,parallel,hdf5 dlb"
 fi
 
 # set list of tests/modes to skip
-#skipList="dummy_mode:tests/dummy_category/dummy_file.py"
 skipList="dlb:tests/databases/global_node_ids.py \
           dlb:tests/queries/pick.py \
 	  serial,purify:tests/databases/global_node_ids.py \
@@ -276,13 +279,13 @@ fi
 if test ! "$error" = "0"; then
     # email the users
     rm -f mailmsg
-    echo $msghdr_testfailed   >> mailmsg
-    echo $msg_yourfault       >> mailmsg
-    echo $msg_userlist        >> mailmsg
-    echo $msgftr_testsum      >> mailmsg
+    echo -e $msghdr_testfailed   >> mailmsg
+    echo -e $msg_yourfault       >> mailmsg
+    echo -e $msg_userlist        >> mailmsg
+    echo -e $msgftr_testsum      >> mailmsg
     for m in $modes; do
         modesdir=`echo $m | sed s/,/_/`
-        echo "Summary of results for $m" >> mailmsg
+        echo -e "Summary of results for $m" >> mailmsg
         cat /home/visit/public_html/current/$modesdir/summary >> mailmsg
     done
     for user in $users; do
@@ -295,29 +298,29 @@ fi
 if true; then
     rm -f mailmsg
     if test ! "$error" = "0"; then
-        echo $msghdr_testfailed >> mailmsg
-        echo $msg_userlist      >> mailmsg
-        echo $msgftr_testsum   >> mailmsg
+        echo -e $msghdr_testfailed >> mailmsg
+        echo -e $msg_userlist      >> mailmsg
+        echo -e $msgftr_testsum   >> mailmsg
         for m in $modes; do
             modesdir=`echo $m | sed s/,/_/`
-            echo "Summary of results for $m" >> mailmsg
-            cat /home/visit/public_html/current/$modesdir/summary >> mailmsg
-            echo $msgftr_testlog   >> mailmsg
+            echo -e "Summary of failed results for $m" >> mailmsg
+            cat /home/visit/public_html/current/$modesdir/summary | fgrep -v succeeded >> mailmsg
+            echo -e $msgftr_testlog   >> mailmsg
             cat /home/visit/public_html/current/$modesdir/log     >> mailmsg
         done
     else
         if test "$skipList" = ""; then
-            echo $msghdr_testpassed >> mailmsg
+            echo -e $msghdr_testpassed >> mailmsg
         else
-            echo $msghdr_partialpass >> mailmsg
+            echo -e $msghdr_partialpass >> mailmsg
             for s in $skipList; do
-                echo "   $s" >> mailmsg
+                echo -e "   $s" >> mailmsg
             done
         fi
-        echo $msgftr_testsum   >> mailmsg
+        echo -e $msgftr_testsum   >> mailmsg
         for m in $modes; do
             modesdir=`echo $m | sed s/,/_/`
-            echo "Summary of results for $m" >> mailmsg
+            echo -e "Summary of all results for $m" >> mailmsg
             cat /home/visit/public_html/current/$modesdir/summary >> mailmsg
         done
     fi
