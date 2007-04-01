@@ -145,6 +145,10 @@ class     AttributeSubject;
 //    Mark C. Miller, Wed Aug 11 23:42:18 PDT 2004
 //    Added GetCellCountMultiplierForSRThreshold
 //
+//    Mark C. Miller, Mon Aug 23 20:27:17 PDT 2004
+//    Made GetCellCountMultiplierForSRThreshold non-virtual
+//    Added SetCellCountMultiplierForSRThreshold
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
@@ -199,8 +203,7 @@ class PLOTTER_API avtPlot
     virtual const AttributeSubject 
                               *SetOpaqueMeshIsAppropriate(bool)
                                    { return NULL; };
-    virtual float              GetCellCountMultiplierForSRThreshold() const
-                                   { return 1.0; };
+    float                      GetCellCountMultiplierForSRThreshold() const;
 
   protected:
     bool                       needsRecalculation;
@@ -218,6 +221,7 @@ class PLOTTER_API avtPlot
     char                      *varname;
     char                      *varunits;
     vector<double>             dataExtents;
+    float                      cellCountMultiplierForSRThreshold;
 
     avtDataObjectWriter_p      Execute(avtDataObject_p,
                                        avtPipelineSpecification_p,
@@ -243,6 +247,9 @@ class PLOTTER_API avtPlot
                                EnhanceSpecification(avtPipelineSpecification_p);
     virtual avtDecorationsMapper         
                                *GetDecorationsMapper(void);
+
+    virtual void               SetCellCountMultiplierForSRThreshold(
+                                   const avtDataObject_p dob);
 };
 
 typedef ref_ptr<avtPlot> avtPlot_p;

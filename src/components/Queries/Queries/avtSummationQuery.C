@@ -6,6 +6,7 @@
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
+#include <vtkIdList.h>
 #include <vtkPointData.h>
 #include <vtkUnsignedCharArray.h>
 
@@ -249,6 +250,9 @@ avtSummationQuery::PostExecute(void)
 //    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002 
 //    Added dom argument.
 //
+//    Hank Childs, Tue Aug 24 08:22:24 PDT 2004
+//    Add support for ghost nodes.
+//
 // ****************************************************************************
 
 void
@@ -267,30 +271,53 @@ avtSummationQuery::Execute(vtkDataSet *ds, const int dom)
         EXCEPTION1(InvalidVariableException, variableName);
     }
 
-    vtkUnsignedCharArray *ghosts = NULL;
+    vtkUnsignedCharArray *ghost_zones = NULL;
     if (!pointData && !sumGhostValues)
     {
-        ghosts = (vtkUnsignedCharArray *)
+        ghost_zones = (vtkUnsignedCharArray *)
                                  ds->GetCellData()->GetArray("vtkGhostLevels");
+    }
+    vtkUnsignedCharArray *ghost_nodes = NULL;
+    if (!sumGhostValues)
+    {
+        ghost_nodes = (vtkUnsignedCharArray *)
+                                 ds->GetPointData()->GetArray("vtkGhostNodes");
     }
 
     int nValues = arr->GetNumberOfTuples();
+    vtkIdList *list = vtkIdList::New();
     for (int i = 0 ; i < nValues ; i++)
     {
         float val = arr->GetTuple1(i);
-        if (ghosts != NULL)
+        if (ghost_zones != NULL)
         {
-            unsigned char g = ghosts->GetValue(i);
+            unsigned char g = ghost_zones->GetValue(i);
             if (g != 0)
             {
                 val = 0.;
             }
+        }
+        if (ghost_nodes != NULL)
+        {
+            bool allGhost = true;
+            ds->GetCellPoints(i, list);
+            vtkIdType npts = list->GetNumberOfIds();
+            for (int j = 0 ; j < npts ; j++)
+            {
+                vtkIdType id = list->GetId(j);
+                unsigned char g = ghost_nodes->GetValue(id);
+                if (g == 0)
+                    allGhost = false;
+            }
+            if (allGhost)
+                val = 0.;
         }
         if (sumOnlyPositiveValues && val < 0.)
             continue;
 
         sum += val;
     }
+    list->Delete();
 }
 
 

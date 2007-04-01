@@ -11,12 +11,14 @@
 
 #include <vtkCell.h>
 #include <vtkDataSet.h>
+#include <vtkDataSetRemoveGhostCells.h>
 #include <vtkGeometryFilter.h>
 #include <vtkPolyData.h>
 
 #include <avtQueryableSource.h>
 
 #include <DebugStream.h>
+#include <ImproperUseException.h>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -90,20 +92,28 @@ avtEulerianQuery::~avtEulerianQuery()
 //    Instead of creating a data array, keep track of the Eulerian
 //    for this domain in domToEulerMap. 
 //
+//    Hank Childs, Tue Aug 24 08:47:57 PDT 2004
+//    Manually remove ghost cells, since the geometry filter only removes
+//    vtkGhostLevels, not vtkGhostNodes.
+//
 // ****************************************************************************
 
 void 
 avtEulerianQuery::Execute(vtkDataSet *in_ds, const int dom)
 {
     gFilter->SetInput(in_ds);
- 
-    vtkPolyData *pds = vtkPolyData::New();
- 
-    gFilter->SetOutput(pds);
- 
-    pds->Delete();
+    vtkDataSetRemoveGhostCells *ghost_remover =
+                                             vtkDataSetRemoveGhostCells::New();
+    ghost_remover->SetInput(gFilter->GetOutput());
+    vtkDataSet *out = ghost_remover->GetOutput();
+    if (out->GetDataObjectType() != VTK_POLY_DATA)
+    {
+        // The output of a geometry filter should always be poly-data.
+        EXCEPTION0(ImproperUseException);
+    }
+
+    vtkPolyData *pds = (vtkPolyData *) out;
     pds->Update();
-    pds->SetSource(NULL);
 
     // I believe this isn't good enough. I believe the facelist filter
     // simply passes points through, and only modifies the cell structure.
@@ -197,6 +207,7 @@ avtEulerianQuery::Execute(vtkDataSet *in_ds, const int dom)
     Eulerian = numUsedPoints - edges.size() + nCells;
 
     domToEulerMap.insert(DomainToEulerMap::value_type(dom, Eulerian));
+    ghost_remover->Delete();
 }
 
 

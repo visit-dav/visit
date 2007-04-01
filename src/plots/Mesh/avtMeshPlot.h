@@ -87,6 +87,9 @@ class     avtSmoothPolyDataFilter;
 //
 //    Mark C. Miller, Thu Aug 12 21:17:35 PDT 2004
 //    Added GetCellCountMultiplierForSRThreshold
+//
+//    Mark C. Miller, Mon Aug 23 20:24:31 PDT 2004
+//    Changed GetCellCountMultiplierForSRThreshold to Set...
 //    
 // ****************************************************************************
 
@@ -122,7 +125,6 @@ avtMeshPlot : public avtPlot
     virtual const AttributeSubject 
                    *SetOpaqueMeshIsAppropriate(bool);
 
-    float          GetCellCountMultiplierForSRThreshold() const;
 
   protected:
     avtSurfaceAndWireframeRenderer_p renderer;
@@ -145,6 +147,8 @@ avtMeshPlot : public avtPlot
     virtual void             CustomizeBehavior(void);
     virtual void             CustomizeMapper(avtDataObjectInformation &);
     virtual avtLegend_p      GetLegend(void) { return varLegendRefPtr; };
+    void                     SetCellCountMultiplierForSRThreshold(
+                                 const avtDataObject_p);
 
   private:
     bool                     ShouldRenderOpaque(void);

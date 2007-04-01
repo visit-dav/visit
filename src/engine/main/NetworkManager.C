@@ -1263,9 +1263,13 @@ NetworkManager::UpdatePlotAtts(int id, const AttributeGroup *atts)
 //    Kathleen Bonnell, Wed Jun  2 09:48:29 PDT 2004 
 //    Set MayRequireNodes. 
 //
+//    Mark C. Miller, Mon Aug 23 20:24:31 PDT 2004
+//    Added cellCountMultiplier arg and call to get and set it
+//
 // ****************************************************************************
 avtDataObjectWriter_p
-NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
+NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender,
+    float *cellCountMultiplier)
 {
 
     // Is the network complete?
@@ -1288,6 +1292,10 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
         avtDataObjectWriter_p writer = workingNet->GetWriter(output,
                                           workingNet->GetPipelineSpec(),
                                           &windowAttributes);
+
+        // get the SR multiplier
+        *cellCountMultiplier =
+            workingNet->GetPlot()->GetCellCountMultiplierForSRThreshold();
 
         if (respondWithNullData)
         {
@@ -1383,6 +1391,9 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
 //    Added code to get cell count multiplier for SR mode and adjust
 //    cell counts for SR threshold
 //
+//    Mark C. Miller, Mon Aug 23 20:24:31 PDT 2004
+//    Added arg to GetOutput call
+//
 // ****************************************************************************
 avtDataObjectWriter_p
 NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
@@ -1429,12 +1440,12 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
                 // get the network output as we would normally
                 workingNet = NULL;
                 UseNetwork(plotIds[i]);
-                float cellCountMultiplier =
-                    GetPlot()->GetCellCountMultiplierForSRThreshold();
+                float cellCountMultiplier;
 
                 DataNetwork *workingNetSaved = workingNet;
                 int t4 = visitTimer->StartTimer();
-                avtDataObjectWriter_p tmpWriter = GetOutput(false,true);
+                avtDataObjectWriter_p tmpWriter = GetOutput(false, true,
+                                                            &cellCountMultiplier);
                 avtDataObject_p dob = tmpWriter->GetInput();
 
                 // merge polygon info output across processors 

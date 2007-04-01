@@ -32,6 +32,9 @@ class     avtLookupTable;
 //    Mark C. Miller, Wed Aug 11 23:42:18 PDT 2004
 //    Added GetCellCountMultiplierForSRThreshold
 //
+//    Mark C. Miller, Mon Aug 23 20:24:31 PDT 2004
+//    Changed GetCellCountMultiplierForSRThreshold to Set...
+//
 // ****************************************************************************
 
 class avtTensorPlot : public avtPointDataPlot
@@ -46,9 +49,6 @@ class avtTensorPlot : public avtPointDataPlot
     static avtPlot             *Create();
 
     virtual void                SetAtts(const AttributeGroup*);
-
-    virtual float               GetCellCountMultiplierForSRThreshold() const
-                                    { return 96.0; };
 
   protected:
     TensorAttributes              atts;
@@ -72,6 +72,9 @@ class avtTensorPlot : public avtPointDataPlot
     virtual avtLegend_p         GetLegend(void) { return varLegendRefPtr; };
     void                        SetLegend(bool);
     void                        SetLegendRanges();
+
+    virtual void                SetCellCountMultiplierForSRThreshold(const avtDataObject_p)
+                                    { cellCountMultiplierForSRThreshold = 96.0; }; 
 };
 
 
