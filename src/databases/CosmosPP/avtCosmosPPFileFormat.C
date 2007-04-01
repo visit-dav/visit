@@ -7,12 +7,12 @@
 #include <ctype.h>
 #include <float.h>
 #include <math.h>
+#include <stdlib.h>
 
 #include <vtkCellData.h>
 #include <vtkCellType.h>
 #include <vtkFloatArray.h>
 #include <vtkIntArray.h>
-#include <vtkPointLocator.h>
 #include <vtkPoints.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
@@ -33,6 +33,14 @@ using std::vector;
 using std::string;
 
 static string GetDirName(const char *path);
+
+static int PointSorter(const void *arg1, const void *arg2);
+
+typedef struct
+{
+    float pt[3];
+    int   id;
+} PointWithId;
 
 
 // ****************************************************************************
@@ -246,6 +254,9 @@ avtCosmosPPFileFormat::~avtCosmosPPFileFormat()
 //    Hank Childs, Fri Aug 27 16:54:45 PDT 2004
 //    Rename ghost data array.
 //
+//    Hank Childs, Wed Sep 15 08:14:22 PDT 2004
+//    Finally gave up using VTK's point locator and wrote our own.
+//
 // ****************************************************************************
 
 void
@@ -324,7 +335,6 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
         arr->Delete();
     }
 
-    vtkPointLocator *pl = vtkPointLocator::New();
     vtkPoints *pts = vtkPoints::New();
     int npts = nodes_per_zone*nzones;
     float bounds[6];
@@ -371,47 +381,58 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
         bounds[5] = bounds[1];
     }
 
-    pl->InitPointInsertion(pts, bounds, npts);
-
+    PointWithId *pwid = new PointWithId[npts];
     current_tmp = current;
-    int n_unique_pts = 0;
-    vector<bool> usePoint(npts, false);
-    vector<int> ptIds(npts);
     for (i = 0 ; i < npts ; i++)
     {
-        float pt[3];
-        pt[0] = current_tmp[0];
-        pt[1] = current_tmp[1];
-        // HACK -- if we are in 2D and all the points are along the plane
-        // z=0, then we will crash.  So dummy up some good z-values.
-        pt[2] = (rank < 3 ? pt[0] : current_tmp[2]);
-        int ptIndex = pl->IsInsertedPoint(pt);
-        if (ptIndex >= 0)
+        pwid[i].pt[0] = current_tmp[0];
+        pwid[i].pt[1] = current_tmp[1];
+        pwid[i].pt[2] = (rank < 3 ? 0 : current_tmp[2]);
+        pwid[i].id = i;
+        current_tmp += rank;
+    }
+ 
+    qsort(pwid, npts, sizeof(PointWithId), PointSorter);
+
+    vector<int> ptIds(npts);
+    ptIds[0] = 0;
+    int nUniquePts = 1;
+    for (i = 1 ; i < npts ; i++)
+    {
+        if ((pwid[i].pt[0] == pwid[i-1].pt[0]) && 
+            (pwid[i].pt[1] == pwid[i-1].pt[1]) &&
+            (pwid[i].pt[2] == pwid[i-1].pt[2]))
         {
-            usePoint[i] = false;
-            ptIds[i] = ptIndex;
+            ptIds[pwid[i].id] = ptIds[pwid[i-1].id];
         }
         else
         {
-            pl->InsertNextPoint(pt);
-            ptIds[i] = n_unique_pts;
-            usePoint[i] = true;
-            n_unique_pts++;
+            ptIds[pwid[i].id] = ptIds[pwid[i-1].id]+1;
+            nUniquePts++;
         }
-        current_tmp += rank;
     }
-    if (rank < 3)
+
+    pts->SetNumberOfPoints(nUniquePts);
+    float *ptr = (float *) pts->GetVoidPointer(0);
+    for (i = 0 ; i < npts ; i++)
     {
-        // HACK -- to avoid VTK's numerical sensitivity, we had to dummy up
-        // some Z-values.  Undo this now.
-        int new_npts = pts->GetNumberOfPoints();
-        float *ptr = (float *) pts->GetVoidPointer(0);
-        for (i = 0 ; i < new_npts ; i++)
-            ptr[3*i+2] = 0.;
+        bool usePoint = false;
+        if (i == 0)
+            usePoint = true;
+        else if (ptIds[pwid[i].id] != ptIds[pwid[i-1].id])
+            usePoint = true;
+
+        if (usePoint)
+        {
+            *ptr++ = pwid[i].pt[0];
+            *ptr++ = pwid[i].pt[1];
+            *ptr++ = pwid[i].pt[2];
+        }
     }
+    
     dataset[ts][dom]->SetPoints(pts);
+    delete [] pwid;
     pts->Delete();
-    pl->Delete();
     dataset[ts][dom]->Allocate(nzones);
     for (i = 0 ; i < nzones ; i++)
     {
@@ -775,3 +796,45 @@ GetDirName(const char *path)
     return str;
 }
 
+
+// ****************************************************************************
+//  Function: PointSorter
+//
+//  Purpose:
+//      Sorts records of type PointWithId.  This is a routine that is then fed 
+//      into qsort.  Its only value added is to provide the >, <, ==.
+//
+//  Arguments:
+//      arg1    The first record.
+//      arg2    The second record.
+//
+//  Returns:    <0 if arg1<arg2, 0 if arg1==arg2, >0 if arg2>arg1.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 15, 2004
+//
+// ****************************************************************************
+
+int
+PointSorter(const void *arg1, const void *arg2)
+{
+    const PointWithId *r1 = (const PointWithId *) arg1;
+    const PointWithId *r2 = (const PointWithId *) arg2;
+
+    if (r1->pt[0] < r2->pt[0])
+        return -1;
+    else if (r2->pt[0] < r1->pt[0])
+        return 1;
+
+    if (r1->pt[1] < r2->pt[1])
+        return -1;
+    else if (r2->pt[1] < r1->pt[1])
+        return 1;
+
+    if (r1->pt[2] < r2->pt[2])
+        return -1;
+    else if (r2->pt[2] < r1->pt[2])
+        return 1;
+
+    return 0;
+}
