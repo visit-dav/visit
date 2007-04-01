@@ -8,7 +8,6 @@
 
 #include <avtVariableQuery.h>
 
-#include <string>
 #include <PickAttributes.h>
 #include <avtTypes.h>
 
@@ -71,7 +70,8 @@ class QUERY_API avtPickQuery : public avtVariableQuery
 
     void                            SetPickAtts(const PickAttributes *pa);
     const PickAttributes *          GetPickAtts(void);
-    void                            SetTransform(const avtMatrix *m);
+    virtual void                    SetTransform(const avtMatrix *m){}; 
+    virtual void                    SetInvTransform(const avtMatrix *m){};
     void                            SetNeedTransform(const bool b)
                                         { needTransform = b; };
 
@@ -79,16 +79,18 @@ class QUERY_API avtPickQuery : public avtVariableQuery
     int                             cellOrigin;
     int                             blockOrigin;
     avtGhostType                    ghostType;
-    const avtMatrix                *invTransform;
+    const avtMatrix                *transform;
     bool                            singleDomain;
     bool                            needTransform;
 
     virtual void                    VerifyInput();
-    virtual void                    Execute(vtkDataSet *, const int);
     virtual void                    PreExecute(void);
     virtual void                    PostExecute(void);
+    virtual void                    Preparation(void){};
     virtual avtDataObject_p         ApplyFilters(avtDataObject_p);   
     bool                            DeterminePickedNode(vtkDataSet *, int &);
+    void                            GetNodeCoords(vtkDataSet *, const int);
+    void                            GetZoneCoords(vtkDataSet *, const int);
     void                            SetRealIds(vtkDataSet *);
 };
 

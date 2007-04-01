@@ -114,6 +114,11 @@
 #    Sean Ahern, Tue Sep  3 10:36:00 PDT 2002
 #    Used "ct pwv" to see if we're in a view, rather than checking
 #    CLEARCASE_ROOT, which doesn't always seem to be set.
+#
+#    Mark C. Miller, Thu Jun  3 10:12:39 PDT 2004
+#    Made the add_vob_objects function able to recognize views that
+#    had been started via 'ct startview' as well as set via 'ct setview'
+#
 
 require 5.003;
 use Getopt::Long;
@@ -225,9 +230,10 @@ sub add_vob_objects ($@) {
    my ($i, $dir, $src, $version) = (0);
    local ($_);
 
-   chomp($view = `cleartool pwv`);
+   $setView = `cleartool pwv | grep Set`;
+   $workView = `cleartool pwv | grep Working`;
    return if ($CHILD_ERROR != 0);
-   return if ($view =~ /NONE/);
+   return if ($setView =~ /NONE/ && $workView =~ /NONE/ );
    print STDERR "Looking for ClearCase vob objects (this may take a while)..."
        unless $Quiet;
 

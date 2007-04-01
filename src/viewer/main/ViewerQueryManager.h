@@ -24,6 +24,7 @@ class QueryOverTimeAttributes;
 class ViewerOperatorFactory;
 class ViewerWindow;
 class ViewerPlot;
+class ViewerPlotList;
 class avtToolInterface;
 
 // ****************************************************************************
@@ -125,6 +126,10 @@ class avtToolInterface;
 //    Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004
 //    Added support for queries-over-time.
 //
+//    Kathleen Bonnell, Thu Jun  3 14:51:32 PDT 2004 
+//    Added VerifySingleInputQuery, VerifyMultipleInputQuery, 
+//    DoSpatialExtentsQuery.
+//
 // ****************************************************************************
     
 class VIEWER_API ViewerQueryManager 
@@ -138,6 +143,15 @@ class VIEWER_API ViewerQueryManager
                             const std::vector<std::string> &vars,
                             const bool doTimeQuery,
                             const int arg1, const int arg2);
+    bool            VerifySingleInputQuery(ViewerPlotList *, const int,
+                            const std::string &,
+                            const std::vector<std::string> &,
+                            QueryAttributes &); 
+
+    bool            VerifyMultipleInputQuery(ViewerPlotList *, const int, 
+                            const std::string &,
+                            const std::vector<std::string> &,
+                            QueryAttributes &); 
 
     void            LineQuery(const char *qName, const double *pt1, 
                       const double *pt2, const std::vector<std::string> &vars,
@@ -207,6 +221,8 @@ class VIEWER_API ViewerQueryManager
     void            SetFromNode(DataNode *);
 
     void            InitializeQueryList(void);
+
+    void            DoSpatialExtentsQuery(ViewerPlot *, bool);
 
   protected:
                     ViewerQueryManager();

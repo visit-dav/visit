@@ -6,14 +6,10 @@
 
 #include <float.h>
 
-#include <vtkCellData.h>
 #include <vtkDataSet.h>
-#include <vtkMath.h>
 #include <vtkIdList.h>
 #include <vtkMath.h>
-#include <vtkPointData.h>
 #include <vtkPoints.h>
-#include <vtkUnsignedCharArray.h>
 #include <vtkVisItUtility.h>
 
 #include <avtExpressionEvaluatorFilter.h>
@@ -22,9 +18,6 @@
 #include <avtVector.h>
 
 #include <PickVarInfo.h>
-#include <DebugStream.h>
-#include <BadCellException.h>
-#include <BadNodeException.h>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -55,7 +48,7 @@ using     std::string;
 avtPickQuery::avtPickQuery()
 {
     blockOrigin = cellOrigin = 0;
-    invTransform = NULL;
+    transform = NULL;
     needTransform = false;
     ghostType = AVT_NO_GHOSTS;
     singleDomain = false;
@@ -97,24 +90,6 @@ void
 avtPickQuery::SetPickAtts(const PickAttributes *pa)
 {
     pickAtts =  *pa;
-}
-
-
-// ****************************************************************************
-//  Method: avtPickQuery::SetTransform
-//
-//  Purpose:
-//      Sets the inverseTransform, used to return correct pick points. 
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   March 5, 2004 
-//
-// ****************************************************************************
-
-void
-avtPickQuery::SetTransform(const avtMatrix *m)
-{
-    invTransform =  m;
 }
 
 
@@ -262,339 +237,6 @@ avtPickQuery::PostExecute(void)
 
 
 // ****************************************************************************
-//  Method: avtPickQuery::Execute
-//
-//  Purpose:
-//      Processes a single domain.
-//
-//  Programmer: Kathleen Bonnell  
-//  Creation:   November 15, 2002
-//
-//  Modifications:
-//    Kathleen Bonnell, Fri Dec  6 16:25:20 PST 2002 
-//    If the zone number is from avtOriginalCellNumbers, (foundZone != -1)
-//    have the database perform the entire query ... retrieve nodes, query
-//    variable info.  Otherwise mat-selected plots return erroneous info.
-//
-//    Kathleen Bonnell, Fri Dec 27 14:09:40 PST 2002 
-//    Fill in new pickAtts member nodeCoords, if requested. 
-//    
-//    Kathleen Bonnell, Tue Apr  8 11:08:15 PDT 2003  
-//    Added call to CalculateRealCellID. 
-//    
-//    Kathleen Bonnell, Thu Apr 17 15:12:12 PDT 2003 
-//    Use spatial dimension of input instead of from viewer.
-//    pickAtts.CellPoint is now used to display the pick point, ensure it
-//    has the correct data;  use invTransform if necessary.
-//
-//    Hank Childs, Thu May  8 09:56:44 PDT 2003
-//    Make sure that the timestep is correct by getting a valid one from the
-//    data specification.
-//
-//    Kathleen Bonnell, Thu May  8 10:24:37 PDT 2003 
-//    For efficiency, use rectilinear-specific code to find the cellId
-//    when applicable. 
-//    
-//    Kathleen Bonnell, Wed Jun 18 17:55:49 PDT 2003 
-//    Restrict calculation of 'RealCellId' (Reason:  if VisIt calculates
-//    ghost zones, they are created AFTER the OriginalCellsArray, so the
-//    cell Id retrieved from the array is valid.  This is designated by
-//    avtGhostType AVT_CREATED_GHOSTS.  GhostZones determined by the file
-//    format are designated by AVT_HAS_GHOSTS).
-//
-//    Kathleen Bonnell, Thu Jun 19 16:50:41 PDT 2003  
-//    Test for null ds. 
-//    
-//    Kathleen Bonnell, Fri Jun 27 17:28:17 PDT 2003 
-//    Rework code to support node picking. 
-//    
-//    Hank Childs, Tue Jul 29 11:54:11 PDT 2003
-//    Use the queryable source rather than the terminating source.
-//
-//    Kathleen Bonnell, Thu Sep 18 07:38:32 PDT 2003 
-//    Added call to SetRealIds prior to call for queryableSource->Query,
-//    for data that has 'created' ghost zones. Modified the determination
-//    of 'needRealId to include unstructured data that has the corrrect
-//    dimensional array. (Added by mat-selected plots).
-//
-//    Kathleen Bonnell, Fri Oct 10 11:41:37 PDT 2003
-//    Added code to set the PickPoint (pickLetter's display position) 
-//    from the NodePoint when appropriate. 
-//
-//    Kathleen Bonnell, Tue Nov 18 14:14:05 PST 2003 
-//    Retrieve logical zone coordinates if specified by pick atts. 
-// 
-//    Kathleen Bonnell, Wed Nov 19 16:06:59 PST 2003
-//    Replaced calls to RGridFindCell and LocateFindCell to vtkVisItUtility::
-//    FindCell, which is more accurate. 
-//    
-//    Kathleen Bonnell, Wed Dec 17 15:06:34 PST 2003 
-//    Added logic to support multiple types of coordinates. 
-//
-//    Kathleen Bonnell, Tue Jan 13 09:30:27 PST 2004 
-//    Verify zone/node number is in range when doing a PickByNode or 
-//    PickByZone. 
-//
-//    Kathleen Bonnell, Wed Feb 18 10:08:24 PST 2004 
-//    Issued a warning via avtCallback when pick is unable to locate the
-//    zone contained by the pick point. 
-//
-//    Kathleen Bonnell, Mon Mar  8 08:10:09 PST 2004 
-//    Added another call to "RetrieveVarInfo" in case databse did not fill
-//    in all the information. 
-//
-//    Kathleen Bonnell, Tue May  4 14:26:42 PDT 2004
-//    Replaced avtCallback to a pickAtts error message. 
-//
-//    Kathleen Bonnell, Wed May  5 13:24:52 PDT 2004 
-//    Added error messages. 
-//
-// ****************************************************************************
-
-void
-avtPickQuery::Execute(vtkDataSet *ds, const int dom)
-{
-    if (dom != pickAtts.GetDomain() || pickAtts.GetFulfilled() || ds == NULL)
-    {
-        return;
-    }
-
-    int foundElement = pickAtts.GetElementNumber();
-    int type = ds->GetDataObjectType();
-    bool needRealId = (ghostType == AVT_HAS_GHOSTS || foundElement == -1) &&
-            (type == VTK_STRUCTURED_GRID || type == VTK_RECTILINEAR_GRID || 
-             ds->GetFieldData()->GetArray("vtkOriginalDimensions") != NULL );
-
-
-    if (foundElement == -1)
-    {
-        //
-        //  If a valid zone hasn't already been determined, locate it now.
-        //  
-        float *cellPoint  = pickAtts.GetCellPoint();
-        foundElement = vtkVisItUtility::FindCell(ds, cellPoint);
-
-        //
-        //  If a valid zone still hasn't been found, there's some kind of 
-        //  problem, it should have been found for this domain. 
-        //  
-        if (foundElement == -1)
-        {
-            pickAtts.SetDomain(-1);
-            pickAtts.SetElementNumber(-1);
-            debug5 << "PICK BIG PROBLEM!  "
-                   << "Could not find zone corresponding to pick point" << endl;
-            pickAtts.SetErrorMessage("Pick encountered an internal "
-                "error (could not find zone corresponding to pick point).\n"
-                "Please contact a VisIt developer"); 
-            pickAtts.SetError(true);
-            return;
-        }
-        
-        bool success = false;
-        if (pickAtts.GetPickType() == PickAttributes::Zone)
-        {
-            int type = ds->GetDataObjectType();
-            if ((pickAtts.GetShowZoneDomainLogicalCoords()  ||
-                 pickAtts.GetShowZoneBlockLogicalCoords())  &&
-                (type == VTK_STRUCTURED_GRID || 
-                 type == VTK_RECTILINEAR_GRID))
-            {
-                char buff[80];
-                int ijk[3];
-                stringVector zoneCoords;
-                if (pickAtts.GetShowZoneDomainLogicalCoords())
-                {
-                    zoneCoords.clear();
-                    vtkVisItUtility::GetLogicalIndices(ds, true, foundElement, 
-                        ijk, false);
-                    if (pickAtts.GetDimension() == 2)
-                    {
-                        sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
-                    }
-                    else 
-                    {
-                        sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
-                    }
-                    zoneCoords.push_back(buff);
-                    pickAtts.SetDzoneCoords(zoneCoords);
-                }
-                if (pickAtts.GetShowZoneBlockLogicalCoords())
-                {
-                    zoneCoords.clear();
-                    vtkVisItUtility::GetLogicalIndices(ds, true, foundElement, 
-                        ijk, true);
-                    if (pickAtts.GetDimension() == 2)
-                    {
-                        sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
-                    }
-                    else 
-                    {
-                        sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
-                    }
-                    zoneCoords.push_back(buff);
-                    pickAtts.SetBzoneCoords(zoneCoords);
-                }
-            }
-            success = RetrieveNodes(ds, foundElement);
-        }
-        else if (pickAtts.GetPickType() == PickAttributes::Node)
-        {
-            if (DeterminePickedNode(ds, foundElement))
-            {
-                success =  RetrieveZones(ds, foundElement);
-            }
-        }
-        if (success)
-        {
-            pickAtts.SetElementNumber(foundElement);
-            RetrieveVarInfo(ds);
-            pickAtts.SetFulfilled(true);
-        }
-        else
-        {
-            // the zone/node could not be found, no further processing required.
-            // SetDomain and ElementNumber to -1 to indicate failure. 
-            pickAtts.SetDomain(-1);
-            pickAtts.SetElementNumber(-1);
-            pickAtts.SetErrorMessage("Pick encountered an internal "
-                "error (could not find incident elements).\n"
-                "Please contact a VisIt developer"); 
-            pickAtts.SetError(true);
-            return; 
-        }
-    } 
-    else if (pickAtts.GetPickPoint()[0] == FLT_MAX)
-    { 
-        // Doing a PickByNode or PickByZone, verify the element number is in range.
-        int maxEls;
-        if (pickAtts.GetPickType() == PickAttributes::Node)
-        {
-            maxEls = ds->GetNumberOfPoints(); 
-            if (foundElement < 0 || foundElement >= maxEls)
-                EXCEPTION2(BadNodeException, foundElement, maxEls);
-        }
-        else if (pickAtts.GetPickType() == PickAttributes::Zone)
-        {
-            maxEls = ds->GetNumberOfCells();
-            if (foundElement < 0 || foundElement >= maxEls)
-                EXCEPTION2(BadCellException, foundElement+cellOrigin, 
-                           maxEls+cellOrigin);
-        }
-    } 
-    //
-    // If a material-var is requested it may need the real ids -- if
-    // ghost zones were not present when 
-    // a material-var is requested.
-    //
-    if (needRealId && ghostType == AVT_CREATED_GHOSTS) 
-        SetRealIds(ds);
-
-    //
-    //  Allow the database to add any missing information.
-    // 
-    src->Query(&pickAtts);
-    RetrieveVarInfo(ds); 
-
-    //
-    // Set the domain and zone of pickAtts in relation to the
-    // blockOrigin and cellOrigin of the problem.  
-    // 
-    if (singleDomain)
-    {
-        //
-        // Indicate that there was only one domain.
-        // We don't report the domain number for single-domain problems.
-        //
-        pickAtts.SetDomain(-1);
-    }
-    else
-    {
-        pickAtts.SetDomain(dom+blockOrigin);
-    }
-
-    //
-    // The queryable source may have added more info, so call this again. 
-    //
-    if (needRealId)
-    {
-        SetRealIds(ds);
-        //
-        // Put the real ids in the correct spot for output.
-        //
-        pickAtts.SetElementNumber(pickAtts.GetRealElementNumber());
-        pickAtts.SetIncidentElements(pickAtts.GetRealIncidentElements());
-    }
-
-    if (pickAtts.GetPickType() == PickAttributes::Zone)
-        pickAtts.SetElementNumber(pickAtts.GetElementNumber() + cellOrigin);
-
-    if (pickAtts.GetPickType() == PickAttributes::Zone)
-    {
-        //
-        // If the points of this dataset have been transformed, and we know 
-        // the inverse transform matrix, transform the pick point that will 
-        // be displayed in the pick info window.
-        //
-        if (invTransform != NULL)
-        {
-            avtVector v1(pickAtts.GetPickPoint());
-            v1 = (*invTransform) * v1;
-            // 
-            // PickPoint is used for placing the pick letter, so set
-            // this tranformed point in CellPoint instead.
-            // 
-            float ppt[3] = { v1.x, v1.y, v1.z };
-            pickAtts.SetCellPoint(ppt);
-        }
-        else 
-        {
-            // 
-            // CellPoint may have been 'fudged' towards the cell center by
-            // avtLocateCellQuery.  Make sure the point that will be displayed
-            // is not that 'fudged' point.
-            // 
-            pickAtts.SetCellPoint(pickAtts.GetPickPoint());
-        }
-    }
-    else
-    {
-        //
-        // CellPoint should now contain the actual node coordinates.
-        // This is the value displayed to the user in the PickAtts output.
-        // PickPoint determines where on the screen the pick letter will
-        // be placed.  This should be the actual node coordinates (CellPoint)
-        // if the plot was NOT transformed.
-        //
-        // If the plot was transformed && the inverseTransform is available,
-        // use the NodePoint as determined by avtLocateCellQuery.
-        //
-        // If the plot was transformed && inverseTransform is NOT available,
-        // there is no way to determine the location of the picked node in
-        // transformed space, so leave PickPoint set to the intersection point
-        // with the ray as determined by avtLocateCellQuery.
-        //
-        if (invTransform != NULL)
-        {
-            pickAtts.SetPickPoint(pickAtts.GetNodePoint());
-        }
-        else if (pickAtts.GetNeedTransformMessage())
-        {
-            //
-            // Points were transformed, but we don't need the message because
-            // we are displaying the node coords to the user in pick output.
-            //
-            pickAtts.SetNeedTransformMessage(false);
-        }
-        else 
-        {
-            pickAtts.SetPickPoint(pickAtts.GetCellPoint());
-        }
-    }
-}
-
-
-// ****************************************************************************
 //  Method: avtPickQuery::ApplyFilters
 //
 //  Purpose:
@@ -633,6 +275,9 @@ avtPickQuery::Execute(vtkDataSet *ds, const int dom)
 //    Kathleen Bonnell, Tue May  4 14:25:07 PDT 2004
 //    Set SILRestriction via member restriction, instead of SILUseSet. 
 //
+//    Kathleen Bonnell, Wed Jun  2 10:21:50 PDT 2004 
+//    Moved Node and Zone-specific code to Preparation method.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -645,39 +290,10 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
     cellOrigin = inAtts.GetCellOrigin();
     ghostType = inAtts.GetContainsGhostZones();
     pickAtts.SetDimension(inAtts.GetSpatialDimension());
-    if (pickAtts.GetPickPoint()[0] == FLT_MAX)
-    {
-        int dom = pickAtts.GetDomain() - blockOrigin;
-        pickAtts.SetDomain(dom < 0 ? 0 : dom);
-        if (pickAtts.GetPickType() == PickAttributes::Zone)
-        {
-            int  zone = pickAtts.GetElementNumber() - cellOrigin;
-            pickAtts.SetElementNumber(zone < 0 ? 0 : zone);
-        }
-    }
 
-    //
-    // Transform the point that will be used in locating the cell. 
-    //
-    float *cellPoint  = pickAtts.GetCellPoint();
-    if (invTransform != NULL)  
-    {
-        //
-        // Transform the intersection point back to original space.
-        //
-        avtVector v1(cellPoint);
-        v1 = (*invTransform) * v1;
-        cellPoint[0] = v1.x;
-        cellPoint[1] = v1.y;
-        cellPoint[2] = v1.z;
-        //
-        // Reset the cell point to the transformed point.
-        //
-        pickAtts.SetCellPoint(cellPoint);
-    }
+    Preparation();
 
-    if (needTransform &&
-        (invTransform == NULL)) 
+    if (needTransform && (transform == NULL)) 
     {
         pickAtts.SetNeedTransformMessage(true);
     }
@@ -699,22 +315,19 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
     {
         singleDomain = false;
     }
-    dlist.clear();
-    dlist.push_back(pickAtts.GetDomain());
-
-
-    stringVector vars = pickAtts.GetVariables();
 
     dspec = new avtDataSpecification(pickAtts.GetActiveVariable().c_str(),
-                                     pickAtts.GetTimeStep(),
-                                     querySILR);
+                                     pickAtts.GetTimeStep(), querySILR);
 
     int i;
     if (!singleDomain)
     {
+        intVector dlist;
+        dlist.push_back(pickAtts.GetDomain());
         dspec->GetRestriction()->RestrictDomains(dlist);
     }
 
+    stringVector vars = pickAtts.GetVariables();
     for (i = 0; i < vars.size(); i++)
     {
         if (strcmp(dspec->GetVariable(), vars[i].c_str()) != 0)
@@ -755,6 +368,9 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
 //    Kathleen Bonnell, Wed Dec 17 15:06:34 PST 2003 
 //    Added logic to support multiple types of coordinates. 
 //    
+//    Kathleen Bonnell, Mon May 10 08:52:53 PDT 2004 
+//    Moved coordinate-getting code to GetNodeCoords. 
+//    
 // ****************************************************************************
 
 bool
@@ -763,7 +379,9 @@ avtPickQuery::DeterminePickedNode(vtkDataSet *ds, int &foundEl)
    float *ppoint = pickAtts.GetPickPoint();
    vtkIdType minId = -1; 
    vtkPoints *points = vtkVisItUtility::GetPoints(ds);
-   stringVector nodeCoords;
+
+   if (ppoint[0] == FLT_MAX)
+      return true;
 
    //
    // VTK's FindPoint method is faster than the brute force method
@@ -803,63 +421,6 @@ avtPickQuery::DeterminePickedNode(vtkDataSet *ds, int &foundEl)
    // change the foundEl (a zone) to the min pt id (node)
    foundEl = minId;
 
-   float coord[3];
-   char buff[80];
-   int type = ds->GetDataObjectType();
-   if ((pickAtts.GetShowNodeDomainLogicalCoords() ||
-        pickAtts.GetShowNodeBlockLogicalCoords())  &&
-       (type == VTK_STRUCTURED_GRID || 
-        type == VTK_RECTILINEAR_GRID))
-   {
-       int ijk[3];
-       if (pickAtts.GetShowNodeDomainLogicalCoords())
-       {
-           nodeCoords.clear();
-           vtkVisItUtility::GetLogicalIndices(ds, false, minId, ijk, 
-              false);
-           if (pickAtts.GetDimension() == 2)
-           {
-               sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
-           }
-           else 
-           {
-               sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
-           }
-           nodeCoords.push_back(buff);
-           pickAtts.SetDnodeCoords(nodeCoords);
-       }
-       if (pickAtts.GetShowNodeBlockLogicalCoords())
-       {
-           nodeCoords.clear();
-           vtkVisItUtility::GetLogicalIndices(ds, false, minId, ijk, 
-               true);
-           if (pickAtts.GetDimension() == 2)
-           {
-               sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
-           }
-           else 
-           {
-               sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
-           }
-           nodeCoords.push_back(buff);
-           pickAtts.SetBnodeCoords(nodeCoords);
-       }
-   }
-   if (pickAtts.GetShowNodePhysicalCoords())
-   {
-       nodeCoords.clear();
-       points->GetPoint(minId, coord); 
-       if (pickAtts.GetDimension() == 2)
-       {
-           sprintf(buff, "<%g, %g>", coord[0], coord[1]);
-       }
-       else 
-       {
-           sprintf(buff, "<%g, %g, %g>", coord[0], coord[1], coord[2]);
-       }
-       nodeCoords.push_back(buff);
-       pickAtts.SetPnodeCoords(nodeCoords);
-   }
    return true;
 }
 
@@ -893,7 +454,8 @@ avtPickQuery::SetRealIds(vtkDataSet *ds)
     intVector incEls = pickAtts.GetIncidentElements();
 
     int i, j; 
-    bool forCell = pickAtts.GetPickType() == PickAttributes::Zone;
+    bool forCell = pickAtts.GetPickType() == PickAttributes::Zone || 
+                   pickAtts.GetPickType() == PickAttributes::DomainZone;
     char fString[20], tmp[20];
 
     stringVector elStrings;
@@ -951,3 +513,152 @@ avtPickQuery::VerifyInput()
     avtDataObjectQuery::VerifyInput();
 }
  
+// ****************************************************************************
+//  Method: avtPickQuery::GetNodeCoords
+//
+//  Purpose:
+//    Retrieves coordinates for a node. 
+//
+//  Arguments:
+//    ds        The dataset to retrieve information from.
+//    nodeId    The picked node .
+//
+//  Programmer: Kathleen Bonnell  
+//  Creation:   May 10, 2004 
+//
+//  Modifications:
+//    
+// ****************************************************************************
+
+void
+avtPickQuery::GetNodeCoords(vtkDataSet *ds, const int nodeId)
+{
+   char buff[80];
+   float coord[3];
+   int type = ds->GetDataObjectType();
+   vtkPoints *points = vtkVisItUtility::GetPoints(ds);
+   stringVector nodeCoords;
+
+   points->GetPoint(nodeId, coord); 
+
+
+   if ((pickAtts.GetShowNodeDomainLogicalCoords() ||
+        pickAtts.GetShowNodeBlockLogicalCoords())  &&
+       (type == VTK_STRUCTURED_GRID || 
+        type == VTK_RECTILINEAR_GRID))
+   {
+       int ijk[3];
+       if (pickAtts.GetShowNodeDomainLogicalCoords())
+       {
+           nodeCoords.clear();
+           vtkVisItUtility::GetLogicalIndices(ds, false, nodeId, ijk, 
+              false);
+           if (pickAtts.GetDimension() == 2)
+           {
+               sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+           }
+           else 
+           {
+               sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+           }
+           nodeCoords.push_back(buff);
+           pickAtts.SetDnodeCoords(nodeCoords);
+       }
+       if (pickAtts.GetShowNodeBlockLogicalCoords())
+       {
+           nodeCoords.clear();
+           vtkVisItUtility::GetLogicalIndices(ds, false, nodeId, ijk, 
+               true);
+           if (pickAtts.GetDimension() == 2)
+           {
+               sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+           }
+           else 
+           {
+               sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+           }
+           nodeCoords.push_back(buff);
+           pickAtts.SetBnodeCoords(nodeCoords);
+       }
+   }
+   if (pickAtts.GetShowNodePhysicalCoords())
+   {
+       nodeCoords.clear();
+       if (pickAtts.GetDimension() == 2)
+       {
+           sprintf(buff, "<%g, %g>", coord[0], coord[1]);
+       }
+       else 
+       {
+           sprintf(buff, "<%g, %g, %g>", coord[0], coord[1], coord[2]);
+       }
+       nodeCoords.push_back(buff);
+       pickAtts.SetPnodeCoords(nodeCoords);
+   }
+}
+
+
+// ****************************************************************************
+//  Method: avtPickQuery::GetZoneCoords
+//
+//  Purpose:
+//    Retrieves coordinates for a zone. 
+//
+//  Arguments:
+//    ds        The dataset to retrieve information from.
+//    zoneId    The picked zone .
+//
+//  Programmer: Kathleen Bonnell  
+//  Creation:   May 10, 2004 
+//
+//  Modifications:
+//    
+// ****************************************************************************
+
+void
+avtPickQuery::GetZoneCoords(vtkDataSet *ds, const int zoneId)
+{
+    int type = ds->GetDataObjectType();
+    if ((pickAtts.GetShowZoneDomainLogicalCoords()  ||
+         pickAtts.GetShowZoneBlockLogicalCoords())  &&
+         (type == VTK_STRUCTURED_GRID || 
+         type == VTK_RECTILINEAR_GRID))
+    {
+        char buff[80];
+        int ijk[3];
+        stringVector zoneCoords;
+        if (pickAtts.GetShowZoneDomainLogicalCoords())
+        {
+            zoneCoords.clear();
+            vtkVisItUtility::GetLogicalIndices(ds, true, zoneId, 
+                        ijk, false);
+            if (pickAtts.GetDimension() == 2)
+            {
+                sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+            }
+            else 
+            {
+                sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+            }
+            zoneCoords.push_back(buff);
+            pickAtts.SetDzoneCoords(zoneCoords);
+        }
+        if (pickAtts.GetShowZoneBlockLogicalCoords())
+        {
+            zoneCoords.clear();
+            vtkVisItUtility::GetLogicalIndices(ds, true, zoneId, 
+                        ijk, true);
+            if (pickAtts.GetDimension() == 2)
+            {
+                sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+            }
+            else 
+            {
+                sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+            }
+            zoneCoords.push_back(buff);
+            pickAtts.SetBzoneCoords(zoneCoords);
+        }
+    }
+}
+

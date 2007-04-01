@@ -6,10 +6,7 @@
 #define AVT_LOCATE_CELL_QUERY_H
 #include <query_exports.h>
 
-#include <avtDatasetQuery.h>
-#include <PickAttributes.h>
-
-#include <string>
+#include <avtLocateQuery.h>
 
 class vtkDataSet;
 
@@ -48,9 +45,13 @@ class vtkDataSet;
 //    Moved inlined destructor definition to .C file because certain compilers
 //    have problems with them.
 //
+//    Kathleen Bonnell, Tue May 18 13:12:09 PDT 2004
+//    Inherit from avtLocateQuery.  Moved Node specific code to 
+//    avtLocateNodeQuery. 
+//
 // ****************************************************************************
 
-class QUERY_API avtLocateCellQuery : public avtDatasetQuery
+class QUERY_API avtLocateCellQuery : public avtLocateQuery
 {
   public:
                                     avtLocateCellQuery();
@@ -61,25 +62,10 @@ class QUERY_API avtLocateCellQuery : public avtDatasetQuery
     virtual const char             *GetDescription(void)
                                              { return "Locating cell."; };
 
-    void                            SetPickAtts(const PickAttributes *);
-    const PickAttributes           *GetPickAtts(void);
-
   protected:
-    PickAttributes                  pickAtts;
-    int                             foundDomain;
-    int                             foundZone;
-    float                           minDist;
-
     virtual void                    Execute(vtkDataSet *, const int);
-    virtual void                    PreExecute(void);
-    virtual void                    PostExecute(void);
-    int                             LocatorFindCell(vtkDataSet *, 
-                                                    float &, float*);
     int                             RGridFindCell(vtkDataSet *, 
                                                     float &, float*);
-
-    void                            DeterminePickedNode(vtkDataSet *, 
-                                                    int, float*);
 };
 
 
