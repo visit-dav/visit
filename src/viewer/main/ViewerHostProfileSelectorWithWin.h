@@ -27,6 +27,9 @@ class HostProfileList;
 //  Creation:    February 5, 2003 
 //
 //  Modifications:
+//    Jeremy Meredith, Wed Oct 27 13:56:37 PDT 2004
+//    Added flag so we know when we are waiting on a user already so that
+//    we don't try to ask them multiple times about launching the same engine.
 //
 // ****************************************************************************
 class VIEWER_API ViewerHostProfileSelectorWithWin : public QDialog, 
@@ -44,6 +47,8 @@ class VIEWER_API ViewerHostProfileSelectorWithWin : public QDialog,
     void   newProfileSelected();
 
   private:
+    bool       waitingOnUser;
+
     QListBox  *profiles;
     QLabel    *numProcsLabel;
     QSpinBox  *numProcs;

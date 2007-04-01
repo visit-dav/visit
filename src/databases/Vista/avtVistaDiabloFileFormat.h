@@ -28,6 +28,11 @@ using std::vector;
 //  Programmer: Mark C. Miller 
 //  Creation:   July 17, 2004 
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Oct 27 16:02:46 PDT 2004
+//    Added GetFileNameForRead
+//
 // ****************************************************************************
 
 class avtVistaDiabloFileFormat : public avtVistaFileFormat
@@ -62,6 +67,8 @@ class avtVistaDiabloFileFormat : public avtVistaFileFormat
     } FieldInfo_t;
 
     vtkFloatArray       *ReadVar(int domain, const char *visitName);
+
+    void                 GetFileNameForRead(int dom, char *fileName, int size);
 
     int                  numPieces;
     Node               **pieceNodes;

@@ -207,27 +207,6 @@ avtVistaFileFormat::CreateFileFormatInterface(const char *const *list, int nList
 }
 
 // ****************************************************************************
-//  Method:  GetFileNameForRead 
-//
-//  Purpose:   Determines file name for a read based on domain number 
-//             variables 
-//
-//  Programmer:  Mark C. Miller 
-//  Creation:    April 28, 2004 
-//
-// ****************************************************************************
-void
-avtVistaFileFormat::GetFileNameForRead(int dom, char *fileName, int size)
-{
-    int filePart = chunkToFileMap[dom];
-    if (filePart == MASTER_FILE_INDEX)
-        strncpy(fileName, masterFileName.c_str(), size);
-    else
-        SNPRINTF(fileName, size, "%s.%d", masterFileName.c_str(),
-                    filePart);
-}
-
-// ****************************************************************************
 //  Method: avtVistaFileFormat constructor
 //
 //  Programmer: Mark C. Miller
