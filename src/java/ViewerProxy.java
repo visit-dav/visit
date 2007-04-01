@@ -125,6 +125,9 @@ import java.util.Vector;
 //   I hooked up the InteractorAttributes to xfer and added a silAtts
 //   member to get the sil attributes for simulations.
 //
+//   Brad Whitlock, Fri Apr 8 11:57:46 PDT 2005
+//   Overloaded AddOperator.
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -721,6 +724,15 @@ public class ViewerProxy implements SimpleObserver
 
     public boolean AddOperator(int oper)
     {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_ADDOPERATORRPC);
+        rpc.SetOperatorType(oper);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean AddOperator(String type)
+    {
+        int oper = operatorPlugins.IndexFromName(type);
         rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_ADDOPERATORRPC);
         rpc.SetOperatorType(oper);
         rpc.Notify();

@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2004
+#                            Copyright 2000 - 2005
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -78,6 +78,10 @@
 #
 #   Brad Whitlock, Tue Sep 28 09:04:01 PDT 2004
 #   Added InteractorAttributes so the library builds again.
+#
+#   Brad Whitlock, Fri Apr 8 13:12:25 PST 2005
+#   Added NIFGUI.java as an example of creating a GUI program that uses
+#   the Java client.
 #
 ##############################################################################
 
@@ -164,7 +168,7 @@ Version.java \
 ViewerProxy.java \
 Xfer.java
 
-MAIN_SRC = RunViewer.java TryLighting.java TryQuery.java
+MAIN_SRC = NIFGUI.java RunViewer.java TryLighting.java TryQuery.java
 MAIN_CLASS = $(MAIN_SRC:.java=.class)
 
 VERSIONWRITER = versionwriter
