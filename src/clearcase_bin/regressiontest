@@ -120,6 +120,9 @@
 #    set on linux (i.e. -E is the default) instead of the old behavior we
 #    are used to from the suns.
 #
+#    Jeremy Meredith, Mon Apr 11 09:15:13 PDT 2005
+#    Only show failed results.  Separated summary from log.
+#
 # ----------------------------------------------------------------------------
 
 # list of users who want email every night with the log file
@@ -285,8 +288,10 @@ if test ! "$error" = "0"; then
     echo -e $msgftr_testsum      >> mailmsg
     for m in $modes; do
         modesdir=`echo $m | sed s/,/_/`
-        echo -e "Summary of results for $m" >> mailmsg
-        cat /home/visit/public_html/current/$modesdir/summary >> mailmsg
+        echo -e "" >> mailmsg
+        echo -e "--------------------------------------" >> mailmsg
+        echo -e "Summary of failed results for $m" >> mailmsg
+        cat /home/visit/public_html/current/$modesdir/summary | fgrep -v succeeded >> mailmsg
     done
     for user in $users; do
         sendregressionmail $user mailmsg
@@ -303,9 +308,17 @@ if true; then
         echo -e $msgftr_testsum   >> mailmsg
         for m in $modes; do
             modesdir=`echo $m | sed s/,/_/`
+            echo -e "" >> mailmsg
+            echo -e "--------------------------------------" >> mailmsg
             echo -e "Summary of failed results for $m" >> mailmsg
             cat /home/visit/public_html/current/$modesdir/summary | fgrep -v succeeded >> mailmsg
-            echo -e $msgftr_testlog   >> mailmsg
+        done
+        echo -e $msgftr_testlog   >> mailmsg
+        for m in $modes; do
+            modesdir=`echo $m | sed s/,/_/`
+            echo -e "" >> mailmsg
+            echo -e "--------------------------------------" >> mailmsg
+            echo -e "Full log of failed results for $m" >> mailmsg
             cat /home/visit/public_html/current/$modesdir/log     >> mailmsg
         done
     else
