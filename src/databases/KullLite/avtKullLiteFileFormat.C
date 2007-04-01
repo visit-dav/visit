@@ -225,7 +225,7 @@ avtKullLiteFileFormat::~avtKullLiteFileFormat()
 void
 avtKullLiteFileFormat::ReadInFile(int fi)
 {
-    debug4 << "Reading in dataset from KullLite file " << my_filenames[fi]<< endl;
+    debug4 << "Reading in dataset from KullLite file " << my_filenames[fi].c_str()<< endl;
 
     m_pdbFile = PD_open((char *) my_filenames[fi].c_str(), "r");
     if (m_pdbFile == NULL)
@@ -611,7 +611,7 @@ avtKullLiteFileFormat::ReadInFile(int fi)
 vtkDataSet *
 avtKullLiteFileFormat::GetMesh(int dom, const char *mesh)
 {
-    debug5 << "Getting mesh from KullLite file: " << my_filenames[dom] << endl;
+    debug5 << "Getting mesh from KullLite file: " << my_filenames[dom].c_str() << endl;
 
     if (dom < 0 || dom >= my_filenames.size())
         EXCEPTION2(BadDomainException, dom, my_filenames.size());
@@ -1067,7 +1067,7 @@ void avtKullLiteFileFormat::ReadInMaterialNames()
 void avtKullLiteFileFormat::ReadInMaterialName(int fi)
 {
     debug4 << "Reading in material header from KullLite file "
-           << my_filenames[fi] << endl;    
+           << my_filenames[fi].c_str() << endl;    
 
     m_pdbFile = PD_open((char *) my_filenames[fi].c_str(), "r");
     if (m_pdbFile == NULL)

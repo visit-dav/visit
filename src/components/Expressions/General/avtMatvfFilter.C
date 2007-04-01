@@ -386,6 +386,10 @@ avtMatvfFilter::DeriveVariable(vtkDataSet *in_ds)
 //    Added support for integer material indices.
 //    Added support for integer ranges.
 //
+//    Hank Childs, Thu Jul 15 14:44:17 PDT 2004
+//    Make sure the base pointer type for the dynamic cast is in the 
+//    inheritance tree of what we are downcasting type. ('5201)
+//
 // ****************************************************************************
 void
 avtMatvfFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
@@ -419,7 +423,7 @@ avtMatvfFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
 
     // Pull off the second argument and see if it's a string or a list.
     ArgExpr *secondarg = (*arguments)[1];
-    ExprNode *secondTree = secondarg->GetExpr();
+    ExprGrammarNode *secondTree = secondarg->GetExpr();
     string type = secondTree->GetTypeName();
     if ((type != "Const") && (type != "List"))
     {

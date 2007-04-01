@@ -196,13 +196,14 @@ avtQueryOverTimeFilter::Execute(void)
     if (skippedTimes.size() != 0)
     {
         ostrstream osm;
-        osm << "\nQueryOverTime ( " << qatts.GetName()  << ") experienced\n"
+        osm << "\nQueryOverTime ( " << qatts.GetName().c_str()
+            << ") experienced\n"
             << "problems with the following timesteps and \n"
             << "skipped them while generating the curve:\n   ";
 
         for (int j = 0; j < skippedTimes.size(); j++)
             osm << skippedTimes[j] << " ";
-        osm << "\nLast message received: " << eM << endl;
+        osm << "\nLast message received: " << eM.c_str() << endl;
         string errorMessage = osm.str();                   
         debug5 << errorMessage.c_str() << endl;
         avtCallback::IssueWarning(errorMessage.c_str());

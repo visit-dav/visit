@@ -24,6 +24,11 @@
 //    Jeremy Meredith, Wed Jul  7 17:08:03 PDT 2004
 //    Allow for mdserver-specific code in a plugin's source files.
 //
+//    Brad Whitlock, Wed Jul 14 10:54:35 PDT 2004
+//    Changed the registry stuff so it gets the keys from the right place. I
+//    also fixed a bunch of bugs with the project files generated for
+//    mdserver and engine plugins.
+//
 // ****************************************************************************
 
 class ProjectFileGeneratorPlugin
@@ -113,6 +118,17 @@ protected:
 #if defined(_WIN32)
     bool ReadKey(const char *key, unsigned char **keyval) const
     {
+        bool retval = false;
+        *keyval = 0;
+
+        if((retval = ReadKeyFromRoot(HKEY_CLASSES_ROOT, key, keyval)) == false)
+            retval = ReadKeyFromRoot(HKEY_CURRENT_USER, key, keyval);
+
+        return retval;
+    }
+
+    bool ReadKeyFromRoot(HKEY which_root, const char *key, unsigned char **keyval) const
+    {
         bool  readSuccess = false;
         QString regkey;
         HKEY hkey;
@@ -120,7 +136,7 @@ protected:
         /* Try and read the key from the system registry. */
         regkey.sprintf("VISIT%s", VERSION);
         *keyval = new unsigned char[500];
-        if(RegOpenKeyEx(HKEY_CLASSES_ROOT, regkey.latin1(), 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS)
+        if(RegOpenKeyEx(which_root, regkey.latin1(), 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS)
         {
             DWORD keyType, strSize = 500;
             if(RegQueryValueEx(hkey, key, NULL, &keyType, *keyval, &strSize) == ERROR_SUCCESS)
@@ -129,6 +145,12 @@ protected:
             }
 
             RegCloseKey(hkey);
+        }
+
+        if(!readSuccess)
+        {
+            delete [] *keyval;
+            *keyval = 0;
         }
 
         return readSuccess;
@@ -143,7 +165,7 @@ protected:
         
         if(ReadKey("VISITDEVDIR", &VISITDEVDIR))
         {
-            retval = QString((char *)VISITDEVDIR) + QString("\\projects\\databases\\");
+            retval = QString((char *)VISITDEVDIR);
             delete [] VISITDEVDIR;
         }
         else
@@ -305,6 +327,8 @@ protected:
     void WriteProjectHelper(ostream &out, const QString &pluginType, char pluginComponent,
         const QString &exports, const QString &libs, const vector<QString> &srcFiles)
     {
+        char *suffix = (pluginComponent == 'E') ? "_ser" : "";
+
         out << "# Microsoft Developer Studio Project File - Name=\"" << name << pluginComponent << "\" - Package Owner=<4>" << endl;
         out << "# Microsoft Developer Studio Generated Build File, Format Version 6.00" << endl;
         out << "# ** DO NOT EDIT **" << endl;
@@ -363,10 +387,10 @@ protected:
         out << "# ADD BSC32 /nologo" << endl;
         out << "LINK32=link.exe" << endl;
         out << "# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386" << endl;
-        out << "# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib " << libs << " /nologo /dll /machine:I386 /out:\"Release/lib" << pluginComponent << name << ".dll\"" << endl;
+        out << "# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib " << libs << " /nologo /dll /machine:I386 /out:\"Release/lib" << pluginComponent << name << suffix <<".dll\"" << endl;
         out << "# Begin Special Build Tool" << endl;
         out << "SOURCE=\"$(InputPath)\"" << endl;
-        out << "PostBuild_Cmds=copy Release\\lib" << pluginComponent << name << ".dll ..\\..\\bin\\Release\\" << pluginType << "" << endl;
+        out << "PostBuild_Cmds=copy Release\\lib" << pluginComponent << name << suffix <<".dll ..\\..\\bin\\Release\\" << pluginType << "" << endl;
         out << "# End Special Build Tool" << endl;
         out << "" << endl;
         out << "!ELSEIF  \"$(CFG)\" == \"" << name << pluginComponent << " - Win32 Debug\"" << endl;
@@ -396,10 +420,10 @@ protected:
         out << "# ADD BSC32 /nologo" << endl;
         out << "LINK32=link.exe" << endl;
         out << "# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept" << endl;
-        out << "# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib " << libs << " /nologo /dll /debug /machine:I386 /out:\"Debug/lib" << pluginComponent << name << ".dll\" /pdbtype:sept" << endl;
+        out << "# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib " << libs << " /nologo /dll /debug /machine:I386 /out:\"Debug/lib" << pluginComponent << name << suffix << ".dll\" /pdbtype:sept" << endl;
         out << "# Begin Special Build Tool" << endl;
         out << "SOURCE=\"$(InputPath)\"" << endl;
-        out << "PostBuild_Cmds=copy Debug\\lib" << pluginComponent << name << ".dll ..\\..\\bin\\Debug\\" << pluginType << endl;
+        out << "PostBuild_Cmds=copy Debug\\lib" << pluginComponent << name << suffix << ".dll ..\\..\\bin\\Debug\\" << pluginType << endl;
         out << "# End Special Build Tool" << endl;
         out << "" << endl;
         out << "!ENDIF " << endl;
@@ -529,7 +553,7 @@ protected:
 
     void WritePlotProjects(bool (*openCB)(ofstream &, const QString &))
     {
-        QString projectDir(ProjectDir());
+        QString projectDir(ProjectDir() + QString("projects\\plots\\"));
         QString IProject(projectDir + name + "I.dsp");
         QString EProject(projectDir + name + "E.dsp");
         QString GProject(projectDir + name + "G.dsp");
@@ -537,6 +561,8 @@ protected:
         QString VProject(projectDir + name + "V.dsp");
         QString pluginTopProject(projectDir + name + ".dsp");
         QString workspace(projectDir + name + ".dsw");
+
+        cout << "Plot projects saved to " << projectDir << endl;
 
         // Write the I project
         ofstream out;
@@ -708,7 +734,7 @@ protected:
 
     void WriteOperatorProjects(bool (*openCB)(ofstream &, const QString &))
     {
-        QString projectDir(ProjectDir());
+        QString projectDir(ProjectDir() + QString("projects\\operators\\"));
         QString IProject(projectDir + name + "I.dsp");
         QString EProject(projectDir + name + "E.dsp");
         QString GProject(projectDir + name + "G.dsp");
@@ -716,6 +742,8 @@ protected:
         QString VProject(projectDir + name + "V.dsp");
         QString pluginTopProject(projectDir + name + ".dsp");
         QString workspace(projectDir + name + ".dsw");
+
+        cout << "Operator projects saved to " << projectDir << endl;
 
         // Write the I project
         ofstream out;
@@ -783,6 +811,14 @@ protected:
 
     void WriteDatabaseProject_EM_Helper(ostream &out, char pluginType, const vector<QString> &srcFiles)
     {
+        char *pluginDefs = "/D \"MDSERVER_PLUGIN_EXPORTS\" /D \"MDSERVER\"";
+        char *pluginSuffix = "";
+        if(pluginType == 'E')
+        {
+            pluginDefs = "/D \"ENGINE_PLUGIN_EXPORTS\"";
+            pluginSuffix = "_ser";
+        }
+
         out << "# Microsoft Developer Studio Project File - Name=\"" << name << pluginType << "\" - Package Owner=<4>\n";
         out << "# Microsoft Developer Studio Generated Build File, Format Version 6.00\n";
         out << "# ** DO NOT EDIT **\n";
@@ -824,11 +860,11 @@ protected:
         out << "# PROP Use_MFC 0\n";
         out << "# PROP Use_Debug_Libraries 0\n";
         out << "# PROP Output_Dir \"Release\"\n";
-        out << "# PROP Intermediate_Dir \"Release\"\n";
+        out << "# PROP Intermediate_Dir \"Release\\" << name << pluginType << "\"\n";
         out << "# PROP Ignore_Export_Lib 0\n";
         out << "# PROP Target_Dir \"\"\n";
         out << "# ADD BASE CPP /nologo /MT /W3 /GX /O2 /D \"WIN32\" /D \"NDEBUG\" /D \"_WINDOWS\" /D \"_MBCS\" /D \"_USRDLL\" /D \"" << name << pluginType << "_EXPORTS\" /YX /FD /c\n";
-        out << "# ADD CPP /nologo /G6 /MD /W3 /GX /O2 /I \"..\\..\\visit\\databases\\" << name << "\" /D \"NDEBUG\" /D \"WIN32\" /D \"_WINDOWS\" /D \"_MBCS\" /D \"_USRDLL\" /D \"GENERAL_PLUGIN_EXPORTS\" /D \"ENGINE_PLUGIN_EXPORTS\" /D \"USING_MSVC6\" /YX /FD /TP /c\n";
+        out << "# ADD CPP /nologo /G6 /MD /W3 /GX /O2 /I \"..\\..\\visit\\databases\\" << name << "\" /D \"NDEBUG\" /D \"WIN32\" /D \"_WINDOWS\" /D \"_MBCS\" /D \"_USRDLL\" /D \"GENERAL_PLUGIN_EXPORTS\" " << pluginDefs << " /D \"USING_MSVC6\" /YX /FD /TP /c\n";
         out << "# ADD BASE MTL /nologo /D \"NDEBUG\" /mktyplib203 /win32\n";
         out << "# ADD MTL /nologo /D \"NDEBUG\" /mktyplib203 /win32\n";
         out << "# ADD BASE RSC /l 0x409 /d \"NDEBUG\"\n";
@@ -838,10 +874,10 @@ protected:
         out << "# ADD BSC32 /nologo\n";
         out << "LINK32=link.exe\n";
         out << "# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386\n";
-        out << "# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib  state.lib misc.lib plugin.lib pipeline_ser.lib dbatts.lib database_ser.lib avtexceptions.lib vtkCommon.lib /nologo /dll /machine:I386 /out:\"Release/lib" << pluginType << name << "Database_ser.dll\"\n";
+        out << "# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib  state.lib misc.lib plugin.lib pipeline_ser.lib dbatts.lib database_ser.lib avtexceptions.lib vtkCommon.lib /nologo /dll /machine:I386 /out:\"Release/lib" << pluginType << name << "Database"<<pluginSuffix<<".dll\"\n";
         out << "# Begin Special Build Tool\n";
         out << "SOURCE=\"$(InputPath)\"\n";
-        out << "PostBuild_Cmds=copy Release\\lib" << pluginType << name << "Database_ser.dll ..\\..\\bin\\Release\\databases\n";
+        out << "PostBuild_Cmds=copy Release\\lib" << pluginType << name << "Database" << pluginSuffix << ".dll ..\\..\\bin\\Release\\databases\n";
         out << "# End Special Build Tool\n";
         out << "\n";
         out << "!ELSEIF  \"$(CFG)\" == \"" << name << pluginType << " - Win32 Debug\"\n";
@@ -854,11 +890,11 @@ protected:
         out << "# PROP Use_MFC 0\n";
         out << "# PROP Use_Debug_Libraries 1\n";
         out << "# PROP Output_Dir \"Debug\"\n";
-        out << "# PROP Intermediate_Dir \"Debug\"\n";
+        out << "# PROP Intermediate_Dir \"Debug\\" << name << pluginType << "\"\n";
         out << "# PROP Ignore_Export_Lib 0\n";
         out << "# PROP Target_Dir \"\"\n";
         out << "# ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D \"WIN32\" /D \"_DEBUG\" /D \"_WINDOWS\" /D \"_MBCS\" /D \"_USRDLL\" /D \"" << name << pluginType << "_EXPORTS\" /YX /FD /GZ /c\n";
-        out << "# ADD CPP /nologo /G6 /MDd /W3 /Gm /GX /ZI /Od /I \"..\\..\\visit\\databases\\" << name << "\" /D \"_DEBUG\" /D \"WIN32\" /D \"_WINDOWS\" /D \"_MBCS\" /D \"_USRDLL\" /D \"GENERAL_PLUGIN_EXPORTS\" /D \"ENGINE_PLUGIN_EXPORTS\" /D \"USING_MSVC6\" /YX /FD /GZ /TP /c\n";
+        out << "# ADD CPP /nologo /G6 /MDd /W3 /Gm /GX /ZI /Od /I \"..\\..\\visit\\databases\\" << name << "\" /D \"_DEBUG\" /D \"WIN32\" /D \"_WINDOWS\" /D \"_MBCS\" /D \"_USRDLL\" /D \"GENERAL_PLUGIN_EXPORTS\" "<< pluginDefs << " /D \"USING_MSVC6\" /YX /FD /GZ /TP /c\n";
         out << "# ADD BASE MTL /nologo /D \"_DEBUG\" /mktyplib203 /win32\n";
         out << "# ADD MTL /nologo /D \"_DEBUG\" /mktyplib203 /win32\n";
         out << "# ADD BASE RSC /l 0x409 /d \"_DEBUG\"\n";
@@ -868,10 +904,10 @@ protected:
         out << "# ADD BSC32 /nologo\n";
         out << "LINK32=link.exe\n";
         out << "# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept\n";
-        out << "# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib state.lib misc.lib plugin.lib pipeline_ser.lib dbatts.lib database_ser.lib avtexceptions.lib vtkCommon.lib /nologo /dll /debug /machine:I386 /out:\"Debug/lib" << pluginType << name << "Database_ser.dll\" /pdbtype:sept\n";
+        out << "# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib state.lib misc.lib plugin.lib pipeline_ser.lib dbatts.lib database_ser.lib avtexceptions.lib vtkCommon.lib /nologo /dll /debug /machine:I386 /out:\"Debug/lib" << pluginType << name << "Database"<<pluginSuffix<<".dll\" /pdbtype:sept\n";
         out << "# Begin Special Build Tool\n";
         out << "SOURCE=\"$(InputPath)\"\n";
-        out << "PostBuild_Cmds=copy Debug\\lib" << pluginType << name << "Database_ser.dll ..\\..\\bin\\Debug\\databases\n";
+        out << "PostBuild_Cmds=copy Debug\\lib" << pluginType << name << "Database" << pluginSuffix << ".dll ..\\..\\bin\\Debug\\databases\n";
         out << "# End Special Build Tool\n";
         out << "\n";
         out << "!ENDIF \n";
@@ -1055,12 +1091,14 @@ protected:
 
     void WriteDatabaseProjects(bool (*openCB)(ofstream &, const QString &))
     {
-        QString projectDir(ProjectDir());
+        QString projectDir(ProjectDir() + QString("projects\\databases\\"));
         QString IProject(projectDir + name + "I.dsp");
         QString EProject(projectDir + name + "E.dsp");
         QString MProject(projectDir + name + "M.dsp");
         QString pluginTopProject(projectDir + name + ".dsp");
         QString workspace(projectDir + name + ".dsw");
+
+        cout << "Database projects saved to " << projectDir << endl;
 
         // Write the I project
         ofstream out;

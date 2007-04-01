@@ -117,8 +117,8 @@ void avtImageFileFormat::ReadInImage(void)
     }
 
     // find the file extension
-    int start;
-    for(int i=0; i<fname.size(); i++)
+    int i, start;
+    for(i=0; i<fname.size(); i++)
         if(fname[i] == '.')
             start = i;
     string ext(fname, start+1, fname.size()-1);
@@ -184,7 +184,6 @@ void avtImageFileFormat::ReadInImage(void)
     
     // load in color info
     std::vector<float> red, green, blue, intensity, alpha;
-    int i,j;
     red.resize(xdim*ydim);
     green.resize(xdim*ydim);
     blue.resize(xdim*ydim);
@@ -193,7 +192,7 @@ void avtImageFileFormat::ReadInImage(void)
     // if the image has an alpha channel set, read it in
     if (image->GetNumberOfScalarComponents() == 4)
     {
-        for(j=0; j < ydim; j++)
+        for(int j=0; j < ydim; j++)
         {
             for(i=0; i < xdim; i++)
             {
@@ -207,7 +206,7 @@ void avtImageFileFormat::ReadInImage(void)
     // otherwise, set alpha in each pixel to be maximum
     else if (image->GetNumberOfScalarComponents() == 3)
     {
-        for(j=0; j < ydim; j++)
+        for(int j=0; j < ydim; j++)
         {
             for(i=0; i < xdim; i++)
             {
@@ -221,7 +220,7 @@ void avtImageFileFormat::ReadInImage(void)
     }
     else if (image->GetNumberOfScalarComponents() == 1)
     {
-        for(j=0; j < ydim; j++)
+        for(int j=0; j < ydim; j++)
         {
             for(i=0; i < xdim; i++)
             {
