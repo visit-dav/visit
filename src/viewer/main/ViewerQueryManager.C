@@ -3864,3 +3864,24 @@ ViewerQueryManager::FinishLineQuery()
     }
     viewerSubject->BlockSocketSignals(false);
 }
+
+
+// ****************************************************************************
+//  Method: ViewerQueryManager::ResetLineoutColor
+//
+//  Purpose:
+//    Resets colorIndex to the default state. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   August 5, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerQueryManager::ResetLineoutColor()
+{
+    colorIndex     = 0;
+}
+

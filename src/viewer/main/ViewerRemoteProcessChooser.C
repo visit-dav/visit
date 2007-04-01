@@ -1,6 +1,6 @@
 #include "ViewerRemoteProcessChooser.h"
 
-
+#include <HostProfile.h>
 #include <HostProfileList.h>
 #include <ViewerHostProfileSelectorNoWin.h>
 #include <ViewerHostProfileSelectorWithWin.h>
@@ -71,169 +71,23 @@ ViewerRemoteProcessChooser::~ViewerRemoteProcessChooser()
 //  Creation:    June 26, 2003
 //
 //  Modifications:
+//    Brad Whitlock, Thu Aug 5 09:25:20 PDT 2004
+//    I made it return the profile.
+//
 // ****************************************************************************
 
 bool
 ViewerRemoteProcessChooser::SelectProfile(HostProfileList *hostProfileList,
-                                          const string &hostName,
-                                          bool skipChooser)
+    const string &hostName, bool skipChooser, HostProfile &profile)
 {
     // sets profile
-    return selector->SelectProfile(hostProfileList, hostName, skipChooser);
-}
+    bool retval = selector->SelectProfile(hostProfileList, hostName, skipChooser);
 
-// ****************************************************************************
-//  Method:  ViewerRemoteProcessChooserNoWin::AddProfileArguments
-//
-//  Purpose:
-//    Adds the appropriate arguments to a remote proxy.
-//
-//  Arguments:
-//    proxy           : the remote process proxy
-//    addParallelArgs : true if this process is going to launch itself
-//                      in parallel, and false if the vcl has already
-//                      created a parallel job and we just need to
-//                      choose the parallel engine when needed
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    June 26, 2003
-//
-//  Modifications:
-// ****************************************************************************
+    // If a profile was selected, return it here.
+    if(retval)
+        profile = selector->GetHostProfile();
 
-void
-ViewerRemoteProcessChooser::AddProfileArguments(RemoteProxyBase *proxy,
-                                                bool addParallelArgs)
-{
-    int  i;
-
-    const HostProfile profile = selector->GetHostProfile();
-
-    //
-    // Set the user's login name.
-    //
-    proxy->SetRemoteUserName(profile.GetUserName());
-
-    //
-    // Add the parallel arguments.
-    //
-    if (profile.GetParallel())
-    {
-        char temp[10];
-        if (!addParallelArgs)
-        {
-            proxy->AddArgument("-par");
-        }
-
-        SNPRINTF(temp, 10, "%d", profile.GetNumProcessors());
-        if (addParallelArgs)
-        {
-            proxy->AddArgument("-np");
-            proxy->AddArgument(temp);
-        }
-        proxy->SetNumProcessors(profile.GetNumProcessors());
-
-        if (profile.GetNumNodesSet() &&
-            profile.GetNumNodes() > 0)
-        {
-            SNPRINTF(temp, 10, "%d", profile.GetNumNodes());
-            if (addParallelArgs)
-            {
-                proxy->AddArgument("-nn");
-                proxy->AddArgument(temp);
-            }
-            proxy->SetNumNodes(profile.GetNumNodes());
-        }
-
-        if (profile.GetPartitionSet() &&
-            profile.GetPartition().length() > 0)
-        {
-            if (addParallelArgs)
-            {
-                proxy->AddArgument("-p");
-                proxy->AddArgument(profile.GetPartition());
-            }
-        }
-
-        if (profile.GetBankSet() &&
-            profile.GetBank().length() > 0)
-        {
-            if (addParallelArgs)
-            {
-                proxy->AddArgument("-b");
-                proxy->AddArgument(profile.GetBank());
-            }
-        }
-
-        if (profile.GetTimeLimitSet() &&
-            profile.GetTimeLimit().length() > 0)
-        {
-            if (addParallelArgs)
-            {
-                proxy->AddArgument("-t");
-                proxy->AddArgument(profile.GetTimeLimit());
-            }
-        }
-
-        if (profile.GetLaunchMethodSet() &&
-            profile.GetLaunchMethod().length() > 0)
-        {
-            if (addParallelArgs)
-            {
-                proxy->AddArgument("-l");
-                proxy->AddArgument(profile.GetLaunchMethod());
-            }
-        }
-
-        if (profile.GetLaunchArgsSet() &&
-            profile.GetLaunchArgs().length() > 0)
-        {
-            if (addParallelArgs)
-            {
-                proxy->AddArgument("-la");
-                proxy->AddArgument(profile.GetLaunchArgs());
-            }
-        }
-
-#if 0 // disabling dynamic load balancing for now
-        if (profile.GetForceStatic())
-        {
-            if (addParallelArgs)
-            {
-                proxy->AddArgument("-forcestatic");
-            }
-            proxy->SetLoadBalancing(0);
-        }
-
-        if (profile.GetForceDynamic())
-        {
-            if (addParallelArgs)
-            {
-                proxy->AddArgument("-forcedynamic");
-            }
-            proxy->SetLoadBalancing(1);
-        }
-#else
-        // force all static until speed issues are resolved
-        if (addParallelArgs)
-        {
-            proxy->AddArgument("-forcestatic");
-        }
-        proxy->SetLoadBalancing(0);
-#endif
-    }
-
-    // Add the timeout argument
-    char temp[10];
-    SNPRINTF(temp, 10, "%d", profile.GetTimeout());
-    proxy->AddArgument("-timeout");
-    proxy->AddArgument(temp);
-
-    //
-    // Add any additional arguments specified in the profile
-    //
-    for (i = 0; i < profile.GetArguments().size(); ++i)
-        proxy->AddArgument(profile.GetArguments()[i]);
+    return retval;
 }
 
 
@@ -263,7 +117,6 @@ ViewerRemoteProcessChooser::ClearCache(const std::string &hostName)
     if (selector)
         selector->ClearCache(hostName);
 }
-
 
 // ****************************************************************************
 //  Method:  ViewerRemoteProcessChooser::AddRestartArgsToCachedProfile

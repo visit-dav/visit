@@ -315,6 +315,9 @@ struct avtDefaultPlotMetaData;
 //    Brad Whitlock, Mon Aug 2 15:35:52 PST 2004
 //    Added internal slot function EnableSocketSignals.
 //
+//    Kathleen Bonnell, Thu Aug  5 08:34:15 PDT 2004 
+//    Added ResetLineoutColor.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -468,6 +471,7 @@ private:
     void SetQueryOverTimeAttributes();
     void SetDefaultQueryOverTimeAttributes();
     void ResetQueryOverTimeAttributes();
+    void ResetLineoutColor();
 
 private slots:
     void HandleViewerRPC();

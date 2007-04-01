@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+class HostProfile;
 class HostProfileList;
 class RemoteProxyBase;
 class ViewerHostProfileSelector;
@@ -40,7 +41,12 @@ class ViewerHostProfileSelector;
 //    the arguments than what the ViewerEngineManager was doing for
 //    normal engine launches.
 //
+//    Brad Whitlock, Wed Aug 4 17:38:16 PST 2004
+//    I made the selected host profile get passed out of SelectProfile. I also
+//    moved AddProfileArguments into RemoteProxyBase.
+//
 // ****************************************************************************
+
 class VIEWER_API ViewerRemoteProcessChooser 
 {
   public:
@@ -48,8 +54,8 @@ class VIEWER_API ViewerRemoteProcessChooser
 
     static ViewerRemoteProcessChooser *Instance();
     static void SetNoWinMode(bool nw);
-    bool SelectProfile(HostProfileList*, const std::string&, bool skip);
-    void AddProfileArguments(RemoteProxyBase*, bool addParallelArgs);
+    bool SelectProfile(HostProfileList*, const std::string&, bool skip,
+                       HostProfile &profile);
     void AddRestartArgsToCachedProfile(const std::string&,
                                        const std::vector<std::string>&);
     void ClearCache(const std::string&);
