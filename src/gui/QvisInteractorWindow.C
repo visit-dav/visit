@@ -76,6 +76,9 @@ QvisInteractorWindow::~QvisInteractorWindow()
 //   Eric Brugger, Thu Nov 11 11:49:41 PST 2004
 //   I added the navigation mode toggle buttons.
 //   
+//   Eric Brugger, Thu Nov 18 13:02:43 PST 2004
+//   I added the fill viewport on zoom toggle button.
+//
 // ****************************************************************************
 
 void
@@ -87,10 +90,10 @@ QvisInteractorWindow::CreateWindowContents()
     topLayout->addWidget(zoomGroup);
 
     QVBoxLayout *zoomVBoxLayout = new QVBoxLayout(zoomGroup);
-    zoomVBoxLayout->setMargin(10);
-    zoomVBoxLayout->addSpacing(15);
+    zoomVBoxLayout->addSpacing(10);
 
-    QGridLayout *zoomGridLayout = new QGridLayout(zoomVBoxLayout, 2, 2);
+    QGridLayout *zoomGridLayout = new QGridLayout(zoomVBoxLayout, 3, 2);
+    zoomVBoxLayout->setSpacing(5);
     zoomGridLayout->setMargin(10);
 
     showGuidelines = new QCheckBox("Show Guidelines", zoomGroup, "showGuidelines");
@@ -103,13 +106,17 @@ QvisInteractorWindow::CreateWindowContents()
             this, SLOT(clampSquareChanged(bool)));
     zoomGridLayout->addWidget(clampSquare, 2,0);
 
+    fillViewportOnZoom = new QCheckBox("Fill viewport on zoom", zoomGroup, "fillViewportOnZoom");
+    connect(fillViewportOnZoom, SIGNAL(toggled(bool)),
+            this, SLOT(fillViewportOnZoomChanged(bool)));
+    zoomGridLayout->addWidget(fillViewportOnZoom, 3,0);
+
     QGroupBox *navigationGroup = new QGroupBox(central, "navigationGroup");
     navigationGroup->setTitle("Navigation mode:");
     topLayout->addWidget(navigationGroup);
 
     QVBoxLayout *navigationVBoxLayout = new QVBoxLayout(navigationGroup);
-    navigationVBoxLayout->setMargin(10);
-    navigationVBoxLayout->addSpacing(15);
+    navigationVBoxLayout->addSpacing(10);
 
     QGridLayout *navigationLayout = new QGridLayout(navigationVBoxLayout,
                                                     1, 2);
@@ -143,6 +150,9 @@ QvisInteractorWindow::CreateWindowContents()
 //   Eric Brugger, Thu Nov 11 11:49:41 PST 2004
 //   I added the navigation mode toggle buttons.
 //   
+//   Eric Brugger, Thu Nov 18 13:02:43 PST 2004
+//   I added the fill viewport on zoom toggle button.
+//
 // ****************************************************************************
 
 void
@@ -166,7 +176,10 @@ QvisInteractorWindow::UpdateWindow(bool doAll)
           case 1: //clampSquare
             clampSquare->setChecked(atts->GetClampSquare());
             break;
-          case 2: //navigationMode
+          case 2: //fillViewportOnZoom
+            fillViewportOnZoom->setChecked(atts->GetFillViewportOnZoom());
+            break;
+          case 3: //navigationMode
             if (atts->GetNavigationMode() == InteractorAttributes::Trackball)
                 navigationMode->setButton(0);
             else
@@ -190,6 +203,9 @@ QvisInteractorWindow::UpdateWindow(bool doAll)
 //   Eric Brugger, Thu Nov 11 11:49:41 PST 2004
 //   I added the navigation mode toggle buttons.
 //   
+//   Eric Brugger, Thu Nov 18 13:02:43 PST 2004
+//   I added the fill viewport on zoom toggle button.
+//
 // ****************************************************************************
 
 void
@@ -210,8 +226,14 @@ QvisInteractorWindow::GetCurrentValues(int which_widget)
         // Nothing for clampSquare
     }
 
+    // Do fillViewportOnZoom
+    if(which_widget == 2 || doAll)
+    {
+        // Nothing for fillViewportOnZoom
+    }
+
     // Do navigateMode
-    if(which_widget == 1 || doAll)
+    if(which_widget == 3 || doAll)
     {
         // Nothing for navigateMode
     }
@@ -325,6 +347,15 @@ void
 QvisInteractorWindow::clampSquareChanged(bool val)
 {
     atts->SetClampSquare(val);
+    SetUpdate(false);
+    Apply();
+}
+
+
+void
+QvisInteractorWindow::fillViewportOnZoomChanged(bool val)
+{
+    atts->SetFillViewportOnZoom(val);
     SetUpdate(false);
     Apply();
 }

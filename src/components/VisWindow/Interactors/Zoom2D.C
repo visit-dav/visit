@@ -838,43 +838,14 @@ Zoom2D::ZoomCamera(void)
 //  Programmer: Eric Brugger
 //  Creation:   April 12, 2002
 //
+//  Modifications:
+//    Eric Brugger, Mon Nov 22 08:23:50 PST 2004
+//    I moved the code for this routine into a method in the base class.
+//
 // ****************************************************************************
 
 void
 Zoom2D::ZoomCamera(const int x, const int y)
 {
-    vtkRenderWindowInteractor *rwi = Interactor;
-
-    if (OldY != y)
-    {
-        //
-        // Calculate the zoom factor.
-        //
-        double dyf = MotionFactor * (double)(y - OldY) /
-                         (double)(Center[1]);
-        double zoomFactor = pow((double)1.1, dyf);
-
-        //
-        // Calculate the new window.
-        //
-        VisWindow *vw = proxy;
-
-        avtView2D newView2D = vw->GetView2D();
-
-        double dX = ((1. / zoomFactor) - 1.) *
-                    ((newView2D.window[1] - newView2D.window[0]) / 2.);
-        double dY = ((1. / zoomFactor) - 1.) *
-                    ((newView2D.window[3] - newView2D.window[2]) / 2.);
-
-        newView2D.window[0] -= dX;
-        newView2D.window[1] += dX;
-        newView2D.window[2] -= dY;
-        newView2D.window[3] += dY;
-
-        vw->SetView2D(newView2D);
-
-        OldX = x;
-        OldY = y;
-        rwi->Render();
-    }
+    ZoomCamera2D(x, y);
 }

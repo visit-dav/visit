@@ -32,6 +32,9 @@ class QvisLineWidthWidget;
 //   Eric Brugger, Thu Nov 11 11:47:28 PST 2004
 //   I added the navigation mode toggle buttons.
 //   
+//   Eric Brugger, Thu Nov 18 13:01:35 PST 2004
+//   I added the fill viewport on zoom toggle button.
+//   
 // ****************************************************************************
 
 class QvisInteractorWindow : public QvisPostableWindowObserver
@@ -56,12 +59,12 @@ class QvisInteractorWindow : public QvisPostableWindowObserver
   private slots:
     void showGuidelinesChanged(bool val);
     void clampSquareChanged(bool val);
+    void fillViewportOnZoomChanged(bool val);
     void navigationModeChanged(int val);
   private:
     QCheckBox *showGuidelines;
     QCheckBox *clampSquare;
-    QLabel *showGuidelinesLabel;
-    QLabel *clampSquareLabel;
+    QCheckBox *fillViewportOnZoom;
     QButtonGroup *navigationMode;
 
     InteractorAttributes *atts;

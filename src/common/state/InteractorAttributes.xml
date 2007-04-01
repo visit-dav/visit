@@ -10,6 +10,9 @@
     <Field name="clampSquare" label="clampSquare" type="bool">
       false
     </Field>
+    <Field name="fillViewportOnZoom" label="fillViewportOnZoom" type="bool">
+      true
+    </Field>
     <Field name="navigationMode" label="navigationMode" type="enum" subtype="NavigationMode">
       Trackball
     </Field>

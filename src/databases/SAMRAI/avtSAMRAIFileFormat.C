@@ -191,6 +191,22 @@ avtSAMRAIFileFormat::avtSAMRAIFileFormat(const char *fname)
 }
 
 // ****************************************************************************
+//  Destructor:  avtSAMRAIFileFormat::FreeUpResources
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    November 18, 2004 
+//
+// ****************************************************************************
+void
+avtSAMRAIFileFormat::FreeUpResources()
+{
+    for (int i = 0 ; i < nFiles ; i++)
+    {
+        CloseFile(i);
+    }
+}
+
+// ****************************************************************************
 //  Destructor:  avtSAMRAIFileFormat::~avtSAMRAIFileFormat
 //
 //  Programmer:  Walter Herrera Jimenez
@@ -201,10 +217,15 @@ avtSAMRAIFileFormat::avtSAMRAIFileFormat(const char *fname)
 //    Mark C. Miller, Mon Aug 23 14:17:55 PDT 2004
 //    Added deletion of h5files data member
 //
+//    Mark C. Miller, Thu Nov 18 18:04:01 PST 2004
+//    Added call to FreeUpResources
+//
 // ****************************************************************************
 avtSAMRAIFileFormat::~avtSAMRAIFileFormat()
 {
     int i,v;
+
+    FreeUpResources();
 
     SAFE_DELETE(xlo);
     SAFE_DELETE(dx);
@@ -1882,9 +1903,7 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int patch,
         std::map<std::string, var_t>::const_iterator cur_var;
         cur_var = var_names_num_components.find(name);
         if (cur_var == var_names_num_components.end())
-        {
-            EXCEPTION1(InvalidVariableException, var);
-        }
+            return NULL;
     
         int num_components = (*cur_var).second.num_components;
         

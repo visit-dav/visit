@@ -65,6 +65,9 @@ typedef   void (*ViewCallback)(VisWindow *);
 //    Hank Childs, Tue Jul 20 10:54:45 PDT 2004
 //    Add methods to check on whether buttons are depressed.
 //
+//    Eric Brugger, Mon Nov 22 08:30:11 PST 2004
+//    I added ZoomCamera2D.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitInteractor : public vtkInteractorStyleTrackballCamera
@@ -128,6 +131,8 @@ class VISWINDOW_API VisitInteractor : public vtkInteractorStyleTrackballCamera
     void                        IssueViewCallback(void);
     void                        StartBoundingBox(void);
     void                        EndBoundingBox(void);
+
+    void                        ZoomCamera2D(const int, const int);
 
     inline void                 VectorSet(double *, const double, const double,
                                     const double) const;
