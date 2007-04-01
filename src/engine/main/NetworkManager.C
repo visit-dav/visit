@@ -1346,6 +1346,11 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
 //
 //    Mark C. Miller, Tue May 25 20:44:10 PDT 2004
 //    Added code to pass annotationObjectList in SetAnnotationAttributes
+//
+//    Mark C. Miller, Thu May 27 11:05:15 PDT 2004
+//    Removed window attributes arg from GetActor method
+//    Added code to push colors into all plots
+//    Made triangle count a debug5 statement (from debug1)
 // ****************************************************************************
 avtDataObjectWriter_p
 NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
@@ -1414,8 +1419,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
                  visitTimer->StopTimer(t4, "Merging data info in parallel");
 
                  int t5 = visitTimer->StartTimer();
-                 avtActor_p anActor = workingNetSaved->GetActor(dob,
-                                                            &windowAttributes);
+                 avtActor_p anActor = workingNetSaved->GetActor(dob);
                  visitTimer->StopTimer(t5, "Calling GetActor for DOB");
 
                  bool polysOnly = false;
@@ -1437,13 +1441,35 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
               visitTimer->StopTimer(t2, "Setting up window contents");
           }
 
+          //
+          // Update plot's bg/fg colors. Ignored by avtPlot objects if colors
+          // are unchanged
+          //
+          {
+              double bg[4] = {1.,0.,0.,0.};
+              double fg[4] = {0.,0.,1.,0.};
+
+              annotationAttributes.GetForegroundColor().GetRgba(fg);
+              annotationAttributes.GetDiscernibleBackgroundColor().GetRgba(bg);
+              for (int i = 0; i < plotIds.size(); i++)
+              {
+                  workingNet = NULL;
+                  UseNetwork(plotIds[i]);
+                  workingNet->GetPlot()->SetBackgroundColor(bg);
+                  workingNet->GetPlot()->SetForegroundColor(fg);
+                  workingNet = NULL;
+              }
+          }
+
+          //
+          // Add annotations if necessary 
+          //
           if (!do3DAnnotsOnly)
               SetAnnotationAttributes(annotationAttributes,
                                       annotationObjectList, false);
 
-          int numTriangles = viswin->GetNumTriangles();
-          debug1 << "Rendering " << numTriangles << " triangles. " 
-                 << "Balanced speedup = " << RenderBalance(numTriangles)
+          debug5 << "Rendering " << viswin->GetNumTriangles() << " triangles. " 
+                 << "Balanced speedup = " << RenderBalance(viswin->GetNumTriangles())
                  << "x" << endl;
 
           // render the image and capture it. Relies upon explicit render
@@ -1676,9 +1702,11 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
 //  Method:  NetworkManager::SetAnnotationAttributes
 //
 //  Purpose:
-//    Set the annotation attributes for the engine's viswin.  Note, only
+//    Set the annotation attributes for the engine's viswin.  Ordinarily, only
 //    those annotations that live in a 3D world are rendered on the engine.
-//    Furthermore, only processor 0 does annotation rendering work.
+//    However, when the engine is used to render an image for a save window
+//    in non-screen-capture mode, then the engine has to render all annotations.
+//    Regardless, only processor 0 does annotation rendering work.
 //
 //  Programmer:  Mark C. Miller 
 //  Creation:    15Jul03 

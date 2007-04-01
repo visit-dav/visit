@@ -46,6 +46,9 @@
 //    Kathleen Bonnell, Wed Mar 31 16:53:03 PST 2004
 //    Made some methods virtual, so this class can be inherited from. 
 //
+//    Mark C. Miller, Thu May 27 11:05:15 PDT 2004
+//    Removed window attributes arg from GetActor method
+//
 // ****************************************************************************
 class DataNetwork
 {
@@ -73,7 +76,7 @@ public:
     int GetID(void) { return id; };
     Netnode* GetTerminalNode(void) { return terminalNode; };
     virtual avtPlot_p GetPlot(void) { return plot; };
-    avtActor_p GetActor(avtDataObject_p dob, WindowAttributes *atts);
+    avtActor_p GetActor(avtDataObject_p dob);
     void SetNetDB(NetnodeDB *d) { netdb = d; };
     NetnodeDB* GetNetDB(void) { return netdb; };
     virtual int GetTime() {return time;};

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="AnnotationAttributes" purpose="This class contains the attributes controlling annotations." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+  <Attribute name="AnnotationAttributes" purpose="This class contains the attributes controlling annotations." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="AnnotationAttributes.code">
     <Enum name="Ticks">
       Off
       Bottom
@@ -267,4 +267,6 @@
     <Field name="legendInfoFlag" label="legendInfoFlag" type="bool">
       true
     </Field>
+    <Function name="GetDiscernibleBackgroundColor" user="true" member="true">
+    </Function>
   </Attribute>

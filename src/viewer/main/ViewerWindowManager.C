@@ -6595,6 +6595,9 @@ ViewerWindowManager::DisableAllTools(int windowIndex)
 //
 //    Eric Brugger, Nov  1 10:32:25 PST 2002
 //    Modified the code to account for changes to AnnotationAttributes.
+//
+//    Mark C. Miller, Wed May 26 12:49:52 PDT 2004
+//    Modified to use GetDiscernibleBackground color
 //   
 // ****************************************************************************
 
@@ -6603,21 +6606,9 @@ ViewerWindowManager::SetPlotColors(const AnnotationAttributes *atts)
 {
     double bg[4];
     double fg[4];
-    if (atts->GetBackgroundMode() == AnnotationAttributes::Solid)
-    {
-        atts->GetBackgroundColor().GetRgba(bg);
-    }
-    else
-    {
-        double gbg1[4], gbg2[4];
-        atts->GetGradientColor1().GetRgba(gbg1);
-        atts->GetGradientColor2().GetRgba(gbg2);
-        bg[0] = (gbg1[0] + gbg2[0]) * 0.5;
-        bg[1] = (gbg1[1] + gbg2[1]) * 0.5;
-        bg[2] = (gbg1[2] + gbg2[2]) * 0.5;
-    }
 
     atts->GetForegroundColor().GetRgba(fg);
+    atts->GetDiscernibleBackgroundColor().GetRgba(bg);
     windows[activeWindow]->SetPlotColors(bg, fg);  
 }
 
