@@ -24,6 +24,7 @@
 
 #include <ApplyOperatorRPC.h>
 #include <ClearCacheRPC.h>
+#include <CloneNetworkRPC.h>
 #include <DefineVirtualDatabaseRPC.h>
 #include <ExecuteRPC.h>
 #include <KeepAliveRPC.h>
@@ -713,6 +714,9 @@ RPCExecutor<SetWinAnnotAttsRPC>::Execute(SetWinAnnotAttsRPC *rpc)
 //    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
 //    Made the engine an object.
 //
+//    Kathleen Bonnell, Wed Mar 31 16:53:03 PST 2004 
+//    Set up callbacks for DataObjectQuery.
+//
 // ****************************************************************************
 template<>
 void
@@ -733,13 +737,21 @@ RPCExecutor<ExecuteRPC>::Execute(ExecuteRPC *rpc)
                                        (void*)rpc);
     avtCallback::RegisterWarningCallback(Engine::EngineWarningCallback, (void*)rpc);
 
+    avtDataObjectQuery::RegisterProgressCallback(
+                         Engine::EngineUpdateProgressCallback, (void*) rpc);
+    avtDataObjectQuery::RegisterInitializeProgressCallback(
+                         Engine::EngineInitializeProgressCallback,(void*) rpc);
+
+
+
     debug2 << "Executing ExecuteRPC with respondWithNullDataObject = " <<
        rpc->GetRespondWithNull() << endl;
     TRY
     {
         // Get the output of the network manager. This does the job of
         // executing the network.
-        avtDataObjectWriter_p writer = netmgr->GetOutput(rpc->GetRespondWithNull(),false);
+        avtDataObjectWriter_p writer = 
+            netmgr->GetOutput(rpc->GetRespondWithNull(),false);
 
         visitTimer->StopTimer(gettingData, "Executing network");
         writingData = visitTimer->StartTimer();
@@ -766,6 +778,10 @@ RPCExecutor<ExecuteRPC>::Execute(ExecuteRPC *rpc)
     LoadBalancer::RegisterProgressCallback(Engine::EngineUpdateProgressCallback,
                                            NULL);
     avtTerminatingSource::RegisterInitializeProgressCallback(
+                               Engine::EngineInitializeProgressCallback, NULL);
+    avtDataObjectQuery::RegisterProgressCallback(
+                               Engine::EngineUpdateProgressCallback, NULL);
+    avtDataObjectQuery::RegisterInitializeProgressCallback(
                                Engine::EngineInitializeProgressCallback, NULL);
 
     if (writingData >= 0)
@@ -1048,6 +1064,41 @@ RPCExecutor<RenderRPC>::Execute(RenderRPC *rpc)
     }
     CATCH2(VisItException, e)
     {
+        rpc->SendError(e.GetMessage(), e.GetExceptionType());
+    }
+    ENDTRY
+}
+
+// ****************************************************************************
+//  Method: RPCExecutor<CloneNetworkRPC>::Execute
+//
+//  Purpose:
+//      Execute a CloneNetworkRPC.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   March 18, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+template<>
+void
+RPCExecutor<CloneNetworkRPC>::Execute(CloneNetworkRPC *rpc)
+{
+    Engine         *engine = Engine::Instance();
+    NetworkManager *netmgr = engine->GetNetMgr();
+
+    debug2 << "Executing CloneNetworkRPC: " << rpc->GetID() << endl;
+    TRY
+    {
+        netmgr->CloneNetwork(rpc->GetID());
+        if (rpc->GetQueryOverTimeAtts() != NULL)
+            netmgr->AddQueryOverTimeFilter(rpc->GetQueryOverTimeAtts());
+        rpc->SendReply();
+    }
+    CATCH2(VisItException, e)
+    {
+        netmgr->CancelNetwork();
         rpc->SendError(e.GetMessage(), e.GetExceptionType());
     }
     ENDTRY

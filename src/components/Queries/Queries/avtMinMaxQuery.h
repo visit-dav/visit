@@ -26,12 +26,15 @@ class vtkDataSet;
 //    Kathleen Bonnell, Tue Feb  3 17:54:19 PST 2004
 //    Renamed from avtPlotMinMaxQuery. Made into parent class. 
 //
+//    Kathleen Bonnell, Wed Mar 31 16:07:50 PST 2004 
+//    Added args to constructor. 
+//
 // ****************************************************************************
 
 class QUERY_API avtMinMaxQuery : virtual public avtDatasetQuery
 {
   public:
-                            avtMinMaxQuery();
+                            avtMinMaxQuery(bool mn = true, bool mx = true);
     virtual                ~avtMinMaxQuery();
 
 
@@ -65,6 +68,9 @@ class QUERY_API avtMinMaxQuery : virtual public avtDatasetQuery
     string                  minMsg;
     string                  maxMsg;
     string                  elementName;
+
+    bool                    doMin;
+    bool                    doMax;
 
     avtQueryableSource     *src;
 

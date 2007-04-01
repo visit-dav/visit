@@ -105,6 +105,9 @@
 #    Jeremy Meredith, Mon Sep 15 10:00:33 PDT 2003
 #    Removed SetFinalVariableNameRPC.
 #
+#    Kathleen Bonnell, Wed Mar 31 11:46:28 PST 2004 
+#    Added CloneNetworkRPC. 
+#
 ###############################################################################
 
 ##
@@ -122,6 +125,7 @@ CPPFLAGS=-I. @CPPFLAGS@
 SRC= \
     ApplyOperatorRPC.C \
     ClearCacheRPC.C \
+    CloneNetworkRPC.C \
     DefineVirtualDatabaseRPC.C \
     ExecuteRPC.C \
     MakePlotRPC.C \

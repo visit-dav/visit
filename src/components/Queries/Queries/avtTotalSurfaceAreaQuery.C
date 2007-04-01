@@ -121,27 +121,61 @@ avtTotalSurfaceAreaQuery::VerifyInput()
 //    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002   
 //    Moved artificial pipeline creation from base class.
 //
+//    Kathleen Bonnell, Wed Mar 31 16:13:07 PST 2004 
+//    Added logic for time-varying case. 
+//
 // ****************************************************************************
 
 avtDataObject_p 
 avtTotalSurfaceAreaQuery::ApplyFilters(avtDataObject_p inData)
 {
-    avtPipelineSpecification_p pspec = 
-        inData->GetTerminatingSource()->GetGeneralPipelineSpecification();
-    //
-    // Create an artificial pipeline.
-    //
-    avtDataset_p ds;
-    CopyTo(ds, inData);
-    avtSourceFromAVTDataset termsrc(ds);
-    avtDataObject_p dob = termsrc.GetOutput();
+    if (!timeVarying)
+    {
+        //
+        // Create an artificial pipeline.
+        //
+        avtPipelineSpecification_p pspec  = 
+              inData->GetTerminatingSource()->GetGeneralPipelineSpecification();
+        avtDataset_p ds;
+        CopyTo(ds, inData);
+        avtSourceFromAVTDataset termsrc(ds);
+        avtDataObject_p dob = termsrc.GetOutput();
 
-    facelist->SetInput(dob);
-    area->SetInput(facelist->GetOutput());
-    avtDataObject_p objOut = area->GetOutput();
-    objOut->Update(pspec);
+        facelist->SetInput(dob);
+        area->SetInput(facelist->GetOutput());
+        avtDataObject_p objOut = area->GetOutput();
+        objOut->Update(pspec);
 
-    return objOut;
+        return objOut;
+    }
+    else
+    {
+        avtDataSpecification_p oldSpec = inData->GetTerminatingSource()->
+            GetGeneralPipelineSpecification()->GetDataSpecification();
+
+        avtDataSpecification_p newDS = new 
+            avtDataSpecification(oldSpec->GetVariable(), queryAtts.GetTimeStep(), 
+                                 oldSpec->GetRestriction());
+
+        avtPipelineSpecification_p pspec = 
+            new avtPipelineSpecification(newDS, queryAtts.GetPipeIndex());
+
+        newDS->GetRestriction()->TurnOnAll();
+        for (int i = 0; i < silUseSet.size(); i++)
+        {
+            if (silUseSet[i] == 0)
+                newDS->GetRestriction()->TurnOffSet(i);
+        }
+
+        avtDataObject_p dob;
+        CopyTo(dob, inData);
+        facelist->SetInput(dob);
+        area->SetInput(facelist->GetOutput());
+        avtDataObject_p objOut = area->GetOutput();
+        objOut->Update(pspec); 
+
+        return objOut;
+    }
 }
 
 

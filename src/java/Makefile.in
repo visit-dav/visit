@@ -73,6 +73,9 @@
 #   Brad Whitlock, Fri Jan 23 14:15:14 PST 2004
 #   I added database correlation state objects.
 #
+#   Kathleen Bonnell, Wed Mar 31 11:23:22 PST 2004 
+#   Added QueryOverTime state object.
+#
 ##############################################################################
 
 ##
@@ -130,6 +133,7 @@ Point.java \
 PrinterAttributes.java \
 QueryAttributes.java \
 QueryList.java \
+QueryOverTimeAttributes.java \
 RenderingAttributes.java \
 SaveWindowAttributes.java \
 SILAttributes.java \

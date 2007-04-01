@@ -20,6 +20,7 @@ class LineoutListItem;
 class PickAttributes;
 class QueryAttributes;
 class QueryList;
+class QueryOverTimeAttributes;
 class ViewerOperatorFactory;
 class ViewerWindow;
 class ViewerPlot;
@@ -121,6 +122,9 @@ class avtToolInterface;
 //    Brad Whitlock, Tue Jan 6 10:30:26 PDT 2004
 //    I added some new methods related to pick.
 //
+//    Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004
+//    Added support for queries-over-time.
+//
 // ****************************************************************************
     
 class VIEWER_API ViewerQueryManager 
@@ -132,6 +136,7 @@ class VIEWER_API ViewerQueryManager
 
     void            DatabaseQuery(ViewerWindow *owin, const std::string &qName,
                             const std::vector<std::string> &vars,
+                            const bool doTimeQuery,
                             const int arg1, const int arg2);
 
     void            LineQuery(const char *qName, const double *pt1, 
@@ -140,7 +145,8 @@ class VIEWER_API ViewerQueryManager
 
     void            PointQuery(const std::string &qName, const double *pt, 
                             const std::vector<std::string> &vars,
-                            const int arg1, const int arg2);
+                            const int arg1, const int arg2, 
+                            const bool doTimeQuery);
 
     void            Pick(PICK_POINT_INFO *pd, const int dom = -1,
                          const int el = -1);
@@ -165,6 +171,12 @@ class VIEWER_API ViewerQueryManager
     void            ResetPickLetter(void);
     void            ResetDesignator(void);
 
+    void            UpdateQueryOverTimeAtts();
+    void            SetQueryOverTimeAttsFromClient();
+    void            SetQueryOverTimeAttsFromDefault();
+    void            SetDefaultQueryOverTimeAttsFromClient();
+    void            SetClientQueryOverTimeAttsFromDefault();
+
 
     static QueryAttributes  *GetQueryClientAtts();
     static PickAttributes   *GetPickAtts();
@@ -172,6 +184,10 @@ class VIEWER_API ViewerQueryManager
     static PickAttributes   *GetPickDefaultAtts();
     static GlobalLineoutAttributes   *GetGlobalLineoutAtts();
     static GlobalLineoutAttributes   *GetGlobalLineoutClientAtts();
+
+    static QueryOverTimeAttributes   *GetQueryOverTimeAtts();
+    static QueryOverTimeAttributes   *GetQueryOverTimeClientAtts();
+    static QueryOverTimeAttributes   *GetQueryOverTimeDefaultAtts();
 
 
     void            Lineout(ViewerWindow *win, const double pt1[3], 
@@ -209,6 +225,10 @@ class VIEWER_API ViewerQueryManager
 
     bool            ComputePick(PICK_POINT_INFO *pd, const int dom = -1,
                                 const int el = -1);
+    void            PickThroughTime(PICK_POINT_INFO *pd, const int dom = -1,
+                                const int el = -1);
+
+    void            DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA);
 
     void            HandlePickCache();
     bool            initialPick;
@@ -234,7 +254,12 @@ class VIEWER_API ViewerQueryManager
     static GlobalLineoutAttributes          *globalLineoutAtts;
     static GlobalLineoutAttributes          *globalLineoutClientAtts;
 
+    static QueryOverTimeAttributes     *timeQueryAtts;
+    static QueryOverTimeAttributes     *timeQueryDefaultAtts;
+    static QueryOverTimeAttributes     *timeQueryClientAtts;
+
     static ViewerQueryManager *instance;
+
 };
 
 #endif

@@ -25,11 +25,15 @@ void                *avtDataObjectQuery::initializeProgressCallbackArgs=NULL;
 //  Programmer: Hank Childs
 //  Creation:   February 5, 2004
 //
+//  Modifications: 
+//    Kathleen Bonnell, Wed Mar 31 15:52:54 PST 2004
+//    Initialize new member timeVarying.
+//
 // ****************************************************************************
 
 avtDataObjectQuery::avtDataObjectQuery()
 {
-    ;
+    timeVarying = false;
 }
 
 
@@ -142,17 +146,21 @@ avtDataObjectQuery::UpdateProgress(int current, int total)
 //  Programmer:       Kathleen Bonnell 
 //  Creation:         September 27, 2002 
 //
+//  Modifications: 
+//    Kathleen Bonnell, Wed Mar 31 15:52:54 PST 2004
+//    Added nTimesteps argument.
+// 
 // ****************************************************************************
 
 void
-avtDataObjectQuery::Init()
+avtDataObjectQuery::Init(const int nTimesteps)
 {
     if (initializeProgressCallback != NULL) 
     {
         //
         // Each filter is a stage, plus a stage for the query. 
         //
-        int nstages = GetNFilters() + 1;
+        int nstages = (GetNFilters() + 1) * nTimesteps;
 
         initializeProgressCallback(initializeProgressCallbackArgs,nstages);
     }

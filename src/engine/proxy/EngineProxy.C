@@ -120,6 +120,9 @@ EngineProxy::~EngineProxy()
 //    Jeremy Meredith, Mon Sep 15 17:16:20 PDT 2003
 //    Removed SetFinalVariableNameRPC.
 //
+//    Kathleen Bonnell, Wed Mar 31 17:23:01 PST 2004 
+//    Added CloneNetworkRPC.
+//
 // ****************************************************************************
 void
 EngineProxy::SetupComponentRPCs()
@@ -142,6 +145,7 @@ EngineProxy::SetupComponentRPCs()
     xfer.Add(&defineVirtualDatabaseRPC);
     xfer.Add(&renderRPC);
     xfer.Add(&setWinAnnotAttsRPC);
+    xfer.Add(&cloneNetworkRPC);
 
     //
     // Add other state objects to the transfer object
@@ -1097,3 +1101,28 @@ EngineProxy::ReleaseData(const int id)
     }
 }
 
+// ****************************************************************************
+//  Method:  EngineProxy::CloneNetwork
+//
+//  Purpose:
+//    Set up the engine to have an existing network cloned.
+//
+//  Arguments:
+//    id         the id of the network to be cloned.
+//    origData   the type of input to use for the cloned network. 
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    March 18, 2004 
+//
+// ****************************************************************************
+
+void
+EngineProxy::CloneNetwork(const int id, const QueryOverTimeAttributes *qa)
+{
+    cloneNetworkRPC(id, qa);
+    if (cloneNetworkRPC.GetStatus() == VisItRPC::error)
+    {
+        RECONSTITUTE_EXCEPTION(cloneNetworkRPC.GetExceptionType(),
+                               cloneNetworkRPC.GetMessage());
+    }
+}

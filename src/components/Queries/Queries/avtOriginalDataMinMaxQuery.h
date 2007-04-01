@@ -21,13 +21,16 @@ class avtExpressionEvaluatorFilter;
 //  Creation:   February 10, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Wed Mar 31 16:07:50 PST 2004
+//    Added optional constructor args.
 //
 // ****************************************************************************
 
 class QUERY_API avtOriginalDataMinMaxQuery : public avtMinMaxQuery
 {
   public:
-                                  avtOriginalDataMinMaxQuery();
+                                  avtOriginalDataMinMaxQuery(
+                                      bool m = true, bool x = true);
     virtual                      ~avtOriginalDataMinMaxQuery();
 
     virtual bool                  OriginalData(void) { return true; };

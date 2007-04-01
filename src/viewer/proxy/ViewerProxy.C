@@ -43,6 +43,7 @@
 #include <StatusAttributes.h>
 #include <SILRestrictionAttributes.h>
 #include <SyncAttributes.h>
+#include <QueryOverTimeAttributes.h>
 #include <ViewCurveAttributes.h>
 #include <View2DAttributes.h>
 #include <View3DAttributes.h>
@@ -151,6 +152,9 @@
 //    Brad Whitlock, Fri Jan 23 09:21:20 PDT 2004
 //    I added correlationList.
 //
+//    Kathleen Bonnell, Wed Mar 24 10:56:30 PST 2004 
+//    I added queryOverTimeAtts.
+//
 // ****************************************************************************
 
 ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
@@ -188,6 +192,7 @@ ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
     materialAtts         = new MaterialAttributes;
     globalLineoutAtts    = new GlobalLineoutAttributes;
     annotationObjectList = new AnnotationObjectList;
+    queryOverTimeAtts    = new QueryOverTimeAttributes;
 
     // Make the proxy observe the SIL restriction attributes.
     silRestrictionAtts->Attach(this);
@@ -317,6 +322,9 @@ ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
 //    Brad Whitlock, Fri Jan 23 09:33:38 PDT 2004
 //    I added correlationList.
 //
+//    Katheen Bonnell, Wed Mar 24 10:56:30 PST 2004 
+//    I added queryOverTimeAtts.
+//
 // ****************************************************************************
 
 ViewerProxy::~ViewerProxy()
@@ -360,6 +368,7 @@ ViewerProxy::~ViewerProxy()
     delete materialAtts;
     delete globalLineoutAtts;
     delete annotationObjectList;
+    delete queryOverTimeAtts;
 
     //
     // Delete the plot attribute state objects.
@@ -721,6 +730,9 @@ ViewerProxy::AddArgument(const std::string &arg)
 //    Brad Whitlock, Fri Jan 23 09:34:31 PDT 2004
 //    Added correlationList.
 //
+//    Katheen Bonnell, Wed Mar 24 10:56:30 PST 2004 
+//    I added queryOverTimeAtts.
+//
 // ****************************************************************************
 
 void
@@ -793,6 +805,7 @@ ViewerProxy::Create()
     xfer->Add(materialAtts);
     xfer->Add(globalLineoutAtts);
     xfer->Add(annotationObjectList);
+    xfer->Add(queryOverTimeAtts);
 
     xfer->ListObjects();
 
@@ -4716,7 +4729,7 @@ ViewerProxy::SetWindowArea(int x, int y, int w, int h)
 
 void
 ViewerProxy::DatabaseQuery(const std::string &queryName,
-    const stringVector &vars, const int arg1, const int arg2)
+    const stringVector &vars, const bool bflag, const int arg1, const int arg2)
 {
     //
     // Set the rpc type.
@@ -4726,6 +4739,7 @@ ViewerProxy::DatabaseQuery(const std::string &queryName,
     viewerRPC->SetQueryVariables(vars);
     viewerRPC->SetIntArg1(arg1);
     viewerRPC->SetIntArg2(arg2);
+    viewerRPC->SetBoolFlag(bflag);
 
     //
     // Issue the RPC.
@@ -4754,11 +4768,14 @@ ViewerProxy::DatabaseQuery(const std::string &queryName,
 //   Kathleen Bonnell, Wed Nov 26 14:17:55 PST 2003
 //   Added optional int args.
 //   
+//   Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004 
+//   Added optional bool flag.
+//   
 // ****************************************************************************
 
 void
 ViewerProxy::PointQuery(const std::string &queryName, const double pt[3],
-    const stringVector &vars, const int arg1, const int arg2)
+    const stringVector &vars, const bool time, const int arg1, const int arg2) 
 {
     //
     // Set the rpc type.
@@ -4767,6 +4784,7 @@ ViewerProxy::PointQuery(const std::string &queryName, const double pt[3],
     viewerRPC->SetQueryName(queryName);
     viewerRPC->SetQueryPoint1(pt);
     viewerRPC->SetQueryVariables(vars);
+    viewerRPC->SetBoolFlag(time);
     viewerRPC->SetIntArg1(arg1);
     viewerRPC->SetIntArg2(arg2);
 
@@ -5035,6 +5053,89 @@ ViewerProxy::SetPickAttributes()
     // Set the rpc type.
     //
     viewerRPC->SetRPCType(ViewerRPC::SetPickAttributesRPC);
+
+    //
+    // Issue the RPC.
+    //
+    viewerRPC->Notify();
+}
+
+
+// ****************************************************************************
+// Method: ViewerProxy::ResetQueryOverTimeAttributes
+//
+// Purpose: 
+//   Reset the time query attributes to default values.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   March 24, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::ResetQueryOverTimeAttributes()
+{
+    //
+    // Set the rpc type.
+    //
+    viewerRPC->SetRPCType(ViewerRPC::ResetQueryOverTimeAttributesRPC);
+
+    //
+    // Issue the RPC.
+    //
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
+//  Method: ViewerProxy::SetDefaultQueryOverTimeAttributes
+//
+//  Purpose:
+//    Applies the default time query attributes.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   March 24, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerProxy::SetDefaultQueryOverTimeAttributes()
+{
+    //
+    // Set the rpc type.
+    //
+    viewerRPC->SetRPCType(ViewerRPC::SetDefaultQueryOverTimeAttributesRPC);
+
+    //
+    // Issue the RPC.
+    //
+    viewerRPC->Notify();
+}
+
+
+// ****************************************************************************
+//  Method: ViewerProxy::SetQueryOverTimeAttributes
+//
+//  Purpose:
+//    Applies the time query attributes.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   March 24, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerProxy::SetQueryOverTimeAttributes()
+{
+    //
+    // Set the rpc type.
+    //
+    viewerRPC->SetRPCType(ViewerRPC::SetQueryOverTimeAttributesRPC);
 
     //
     // Issue the RPC.

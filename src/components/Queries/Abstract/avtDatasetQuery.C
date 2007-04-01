@@ -104,8 +104,8 @@ avtDatasetQuery::PerformQuery(QueryAttributes *qA)
     //
     queryAtts.SetResultsMessage(resMsg);
     queryAtts.SetResultsValue(resValue);
-    UpdateProgress(1, 0);
 
+    UpdateProgress(1, 0);
     *qA = queryAtts;
 }
 
@@ -153,8 +153,11 @@ avtDatasetQuery::Execute(avtDataTree_p inDT)
         //
         in_ds->SetSource(NULL);
         Execute(in_ds, dom);
-        currentNode++;
-        UpdateProgress(currentNode, totalNodes);
+        if (!timeVarying)
+        {
+            currentNode++;
+            UpdateProgress(currentNode, totalNodes);
+        }
     }
     else
     {
@@ -218,14 +221,47 @@ avtDatasetQuery::PostExecute()
 //  Programmer: Kathleen Bonnell 
 //  Creation:   September 12, 2002 
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Mar 31 15:52:54 PST 2004
+//    Allow for time-varying case. 
+//
 // ****************************************************************************
 
 avtDataObject_p
 avtDatasetQuery::ApplyFilters(avtDataObject_p dob)
 {
-    avtDataObject_p rv;
-    CopyTo(rv, dob);
-    return rv;
+    if (!timeVarying)
+    {
+        avtDataObject_p rv;
+        CopyTo(rv, dob);
+        return rv;
+    }
+    else 
+    {
+        avtDataSpecification_p oldSpec = dob->GetTerminatingSource()->
+            GetGeneralPipelineSpecification()->GetDataSpecification();
+
+        avtDataSpecification_p newDS = new 
+            avtDataSpecification(oldSpec->GetVariable(), queryAtts.GetTimeStep(), 
+                                 oldSpec->GetRestriction());
+
+        if (!OriginalData()) 
+        {
+            newDS->GetRestriction()->TurnOnAll();
+            for (int i = 0; i < silUseSet.size(); i++)
+            {
+               if (silUseSet[i] == 0)
+                   newDS->GetRestriction()->TurnOffSet(i);
+           }
+        }
+        avtPipelineSpecification_p pspec = 
+            new avtPipelineSpecification(newDS, queryAtts.GetPipeIndex());
+
+        avtDataObject_p rv;
+        CopyTo(rv, dob);
+        rv->Update(pspec);
+        return rv;
+    }
 }
 
 // ****************************************************************************
@@ -268,3 +304,71 @@ avtDatasetQuery::GetResultValue(const int i)
 
     return resValue[i];
 }
+
+
+// ****************************************************************************
+//  Method: avtDatasetQuery::PerformQueryInTime
+//
+//  Purpose:
+//    Perform the requested query at the give timesteps. 
+//
+//  Arguments:
+//    qA         The attributes controlling this query.
+//    timeSteps  The timespeps for this query.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   March 24, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtDatasetQuery::PerformQueryInTime(QueryAttributes *qA, 
+                                    const intVector &timeSteps)
+{
+    queryAtts = *qA;
+   
+    Init(timeSteps.size());
+
+    UpdateProgress(0, 0);
+    doubleVector qRes;
+
+    int i;
+
+    //
+    //  For now, each processor process all times, because they have been 
+    //  domain-balanced already.  Need to work out an alternate system 
+    //  for balancing by time ...  perhaps when nDomains < nProcs.
+    //
+    avtDataObject_p origInput;
+    avtDataObject_p input = GetInput();
+    CopyTo(origInput, input);
+    for (i =  0; i < timeSteps.size(); i++)
+    {
+        queryAtts.SetTimeStep(timeSteps[i]);
+
+        avtDataObject_p dob = ApplyFilters(origInput);
+
+        //
+        // Reset the input so that we have access to the data tree. 
+        //
+        SetTypedInput(dob);
+
+        PreExecute();
+        avtDataTree_p tree = GetInputDataTree();
+        
+        Execute(tree);
+        UpdateProgress(i , timeSteps.size());
+        PostExecute();
+      
+        //
+        // Store the query results ... currently only one result.
+        //
+        qRes.push_back(resValue[0]);
+    }
+    queryAtts.SetResultsValue(qRes);
+    UpdateProgress(1, 0);
+    *qA = queryAtts;
+}
+

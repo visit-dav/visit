@@ -22,6 +22,7 @@ class EngineList;
 class GlobalAttributes;
 class GlobalLineoutAttributes;
 class HostProfileList;
+class InternalSILObserver;
 class KeyframeAttributes;
 class LightList;
 class MaterialAttributes;
@@ -31,13 +32,13 @@ class PlotList;
 class PluginManagerAttributes;
 class PrinterAttributes;
 class QueryAttributes;
+class QueryOverTimeAttributes;
 class QueryList;
 class RenderingAttributes;
 class RemoteProcess;
 class SaveWindowAttributes;
 class StatusAttributes;
 class SyncAttributes;
-class InternalSILObserver;
 class ViewCurveAttributes;
 class View2DAttributes;
 class View3DAttributes;
@@ -334,6 +335,9 @@ class Xfer;
 //    Jeremy Meredith, Fri Mar 26 10:22:36 PST 2004
 //    Added support for simulations.
 //
+//    Kathleen Bonnell, Wed Mar 31 10:56:30 PST 2004 
+//    Added queryOverTimeAtts, bool arg to DatabaseQuery, PointQuery.
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -513,6 +517,10 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void ResetPickAttributes();
     void ResetPickLetter();
 
+    void SetQueryOverTimeAttributes();
+    void SetDefaultQueryOverTimeAttributes();
+    void ResetQueryOverTimeAttributes();
+
     void WriteConfigFile();
     void ExportEntireState(const std::string &filename);
     void ImportEntireState(const std::string &filename, bool inVisItDir);
@@ -527,9 +535,10 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
 
     // Methods for querying
     void DatabaseQuery(const std::string &queryName, const stringVector &vars,
+                       const bool = false,
                        const int arg1 = 0, const int arg2 = 0);
     void PointQuery(const std::string &queryName, const double pt[3],
-                    const stringVector &vars,
+                    const stringVector &vars, const bool = false,
                     const int arg1 = -1, const int arg2 = -1);
     void LineQuery(const std::string &queryName, const double pt1[3],
                    const double pt2[3], const stringVector &vars,
@@ -604,6 +613,9 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
                                     {return globalLineoutAtts;};
     AnnotationObjectList       *GetAnnotationObjectList() const
                                     {return annotationObjectList; };
+
+    QueryOverTimeAttributes    *GetQueryOverTimeAttributes() const 
+                                    {return queryOverTimeAtts;};
   protected:
     virtual void Update(Subject *subj);
   private:
@@ -647,6 +659,7 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     QueryAttributes            *queryAtts;
     GlobalLineoutAttributes    *globalLineoutAtts;
     AnnotationObjectList       *annotationObjectList;
+    QueryOverTimeAttributes    *queryOverTimeAtts;
 
     AttributeSubject           **plotAtts;
     AttributeSubject           **operatorAtts;

@@ -870,6 +870,10 @@ avtDataAttributes::GetDataExtents(double *buff, const char *varname)
 //  Programmer:  Hank Childs
 //  Creation:    February 23, 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Mar 31 08:03:47 PST 2004
+//    Added a reason to the exception.
+//
 // ****************************************************************************
 
 avtExtents *
@@ -882,7 +886,9 @@ avtDataAttributes::GetTrueDataExtents(const char *varname)
         // We were asked to set the variable dimension of a non-existent
         // variable.
         //
-        EXCEPTION0(ImproperUseException);
+        string reason = "Attempting to retrieve data extents of non-existent ";
+        reason = reason +  " variable: " + varname + ".\n";
+        EXCEPTION1(ImproperUseException, reason);
     }
 
     return variables[index].trueData;
@@ -905,6 +911,10 @@ avtDataAttributes::GetTrueDataExtents(const char *varname)
 //  Programmer:  Hank Childs
 //  Creation:    February 23, 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Mar 31 08:03:47 PST 2004
+//    Added a reason to the exception.
+//
 // ****************************************************************************
 
 avtExtents *
@@ -917,7 +927,9 @@ avtDataAttributes::GetCumulativeTrueDataExtents(const char *varname)
         // We were asked to set the variable dimension of a non-existent
         // variable.
         //
-        EXCEPTION0(ImproperUseException);
+        string reason = "Attempting to retrieve data extents of non-existent ";
+        reason = reason +  " variable: " + varname + ".\n";
+        EXCEPTION1(ImproperUseException, reason);
     }
 
     return variables[index].cumulativeTrueData;
@@ -940,6 +952,10 @@ avtDataAttributes::GetCumulativeTrueDataExtents(const char *varname)
 //  Programmer:  Hank Childs
 //  Creation:    February 23, 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Mar 31 08:03:47 PST 2004
+//    Added a reason to the exception.
+//
 // ****************************************************************************
 
 avtExtents *
@@ -952,7 +968,9 @@ avtDataAttributes::GetEffectiveDataExtents(const char *varname)
         // We were asked to set the variable dimension of a non-existent
         // variable.
         //
-        EXCEPTION0(ImproperUseException);
+        string reason = "Attempting to retrieve data extents of non-existent ";
+        reason = reason +  " variable: " + varname + ".\n";
+        EXCEPTION1(ImproperUseException, reason);
     }
 
     return variables[index].effectiveData;
@@ -975,6 +993,10 @@ avtDataAttributes::GetEffectiveDataExtents(const char *varname)
 //  Programmer:  Hank Childs
 //  Creation:    February 23, 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Mar 31 08:03:47 PST 2004
+//    Added a reason to the exception.
+//
 // ****************************************************************************
 
 avtExtents *
@@ -987,7 +1009,9 @@ avtDataAttributes::GetCurrentDataExtents(const char *varname)
         // We were asked to set the variable dimension of a non-existent
         // variable.
         //
-        EXCEPTION0(ImproperUseException);
+        string reason = "Attempting to retrieve data extents of non-existent ";
+        reason = reason +  " variable: " + varname + ".\n";
+        EXCEPTION1(ImproperUseException, reason);
     }
 
     return variables[index].currentData;
@@ -1010,6 +1034,10 @@ avtDataAttributes::GetCurrentDataExtents(const char *varname)
 //  Programmer:  Hank Childs
 //  Creation:    February 23, 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Mar 31 08:03:47 PST 2004
+//    Added a reason to the exception.
+//
 // ****************************************************************************
 
 avtExtents *
@@ -1022,7 +1050,9 @@ avtDataAttributes::GetCumulativeCurrentDataExtents(const char *varname)
         // We were asked to set the variable dimension of a non-existent
         // variable.
         //
-        EXCEPTION0(ImproperUseException);
+        string reason = "Attempting to retrieve data extents of non-existent ";
+        reason = reason +  " variable: " + varname + ".\n";
+        EXCEPTION1(ImproperUseException, reason);
     }
 
     return variables[index].cumulativeCurrentData;
@@ -1134,6 +1164,9 @@ avtDataAttributes::SetSpatialDimension(int td)
 //    Kathleen Bonnell, Thu Mar 11 10:32:04 PST 2004 
 //    DataExtents now always have dimension of 1. 
 //
+//    Kathleen Bonnell, Wed Mar 31 08:03:47 PST 2004
+//    Added a reason to the exception.
+//
 // ****************************************************************************
 
 void
@@ -1146,7 +1179,9 @@ avtDataAttributes::SetVariableDimension(int vd, const char *varname)
         // We were asked to set the variable dimension of a non-existent
         // variable.
         //
-        EXCEPTION0(ImproperUseException);
+        string reason = "Attempting to set dimension of non-existent ";
+        reason = reason +  " variable: " + varname + ".\n";
+        EXCEPTION1(ImproperUseException, reason);
     }
 
     if (vd == variables[index].dimension)
@@ -1197,6 +1232,10 @@ avtDataAttributes::SetVariableDimension(int vd, const char *varname)
 //  Programmer: Hank Childs
 //  Creation:   February 23, 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Mar 31 08:03:47 PST 2004
+//    Added a reason to the exception.
+//
 // ****************************************************************************
 
 int
@@ -1209,7 +1248,9 @@ avtDataAttributes::GetVariableDimension(const char *varname) const
         // We were asked to set the variable dimension of a non-existent
         // variable.
         //
-        EXCEPTION0(ImproperUseException);
+        string reason = "Attempting to retrieve dimension of non-existent ";
+        reason = reason +  " variable: " + varname + ".\n";
+        EXCEPTION1(ImproperUseException, reason);
     }
 
     return variables[index].dimension;
@@ -1233,6 +1274,10 @@ avtDataAttributes::GetVariableDimension(const char *varname) const
 //    Hank Childs, Mon Feb 23 14:19:15 PST 2004
 //    Account for multiple variables.
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Mar 31 08:03:47 PST 2004
+//    Added a reason to the exception.
+//
 // ****************************************************************************
 
 void
@@ -1245,7 +1290,9 @@ avtDataAttributes::SetCentering(avtCentering cen, const char *varname)
         // We were asked to set the variable dimension of a non-existent
         // variable.
         //
-        EXCEPTION0(ImproperUseException);
+        string reason = "Attempting to set centering of non-existent";
+        reason = reason +  " variable: " + varname + ".\n";
+        EXCEPTION1(ImproperUseException, reason);
     }
 
     variables[index].centering = cen;
@@ -1261,6 +1308,10 @@ avtDataAttributes::SetCentering(avtCentering cen, const char *varname)
 //  Programmer: Hank Childs
 //  Creation:   February 23, 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Mar 31 08:03:47 PST 2004
+//    Added a reason to the exception.
+//
 // ****************************************************************************
 
 avtCentering
@@ -1273,7 +1324,9 @@ avtDataAttributes::GetCentering(const char *varname) const
         // We were asked to set the variable dimension of a non-existent
         // variable.
         //
-        EXCEPTION0(ImproperUseException);
+        string reason = "Attempting to retrieve centering of non-existent";
+        reason = reason +  " variable: " + varname + ".\n";
+        EXCEPTION1(ImproperUseException, reason);
     }
 
     return variables[index].centering;
@@ -1939,6 +1992,10 @@ avtDataAttributes::GetLabels(vector<string> &l)
 //    Hank Childs, Mon Feb 23 08:59:42 PST 2004
 //    Allow for multiple variables.
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Mar 31 08:03:47 PST 2004
+//    Added a reason to the exception.
+//
 // ****************************************************************************
 
 bool
@@ -1951,7 +2008,9 @@ avtDataAttributes::GetCurrentDataExtents(double *buff, const char *varname)
         // We were asked to set the variable dimension of a non-existent
         // variable.
         //
-        EXCEPTION0(ImproperUseException);
+        string reason = "Attempting to retrieve data extents of non-existent";
+        reason = reason +  " variable: " + varname + ".\n";
+        EXCEPTION1(ImproperUseException, reason);
     }
 
     if (variables[index].currentData->HasExtents())
@@ -2017,6 +2076,10 @@ avtDataAttributes::GetCurrentSpatialExtents(double *buff)
 //  Programmer: Hank Childs
 //  Creation:   February 23, 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Mar 31 08:03:47 PST 2004
+//    Added a reason to the exception.
+//
 // ****************************************************************************
 
 const std::string &
@@ -2024,7 +2087,9 @@ avtDataAttributes::GetVariableName(void) const
 {
     if (activeVariable < 0)
     {
-        EXCEPTION0(ImproperUseException);
+        string reason = "Attempting to retrieve non-existent";
+        reason = reason +  " active variable.\n";
+        EXCEPTION1(ImproperUseException, reason);
     }
 
     return variables[activeVariable].varname;

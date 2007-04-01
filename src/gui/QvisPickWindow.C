@@ -135,6 +135,9 @@ QvisPickWindow::~QvisPickWindow()
 //   Reorganized, added more buttons for user control of what type of
 //   output pick returns. 
 //
+//   Kathleen Bonnell, Thu Apr  1 18:42:52 PST 2004 
+//   Added TimeCurve checkbox. 
+//
 // ****************************************************************************
 
 void
@@ -155,7 +158,7 @@ QvisPickWindow::CreateWindowContents()
         tabWidget->addTab(pages[i]," "); 
     }
 
-    QGridLayout *gLayout = new QGridLayout(topLayout, 6, 4);
+    QGridLayout *gLayout = new QGridLayout(topLayout, 7, 4);
     varsLineEdit = new QLineEdit(central, "varsLineEdit");
     varsLineEdit->setText("default"); 
     connect(varsLineEdit, SIGNAL(returnPressed()),
@@ -234,6 +237,12 @@ QvisPickWindow::CreateWindowContents()
     connect(savePicksCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(savePicksToggled(bool)));
     gLayout->addMultiCellWidget(savePicksCheckBox, 5, 5, 0, 3);
+
+    timeCurveCheckBox = new QCheckBox("Create time curve with next pick.", central,
+                                     "timeCurveCheckBox");
+    connect(timeCurveCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(timeCurveToggled(bool)));
+    gLayout->addMultiCellWidget(timeCurveCheckBox, 6, 6, 0, 3);
 }
 
 // ****************************************************************************
@@ -272,7 +281,10 @@ QvisPickWindow::CreateWindowContents()
 //   Update logicalZone. 
 //
 //   Kathleen Bonnell, Wed Dec 17 15:19:46 PST 2003 
-//   Mor options, reordered old options. 
+//   More options, reordered old options. 
+//
+//   Kathleen Bonnell, Thu Apr  1 18:42:52 PST 2004 
+//   Added TimeCurve checkbox. 
 //
 // ****************************************************************************
 
@@ -292,7 +304,7 @@ QvisPickWindow::UpdateWindow(bool doAll)
     savePicksCheckBox->blockSignals(false);
 
     //
-    //  If pick letter changes, it indicates we need to updated the
+    //  If pick letter changes, it indicates we need to update the
     //  information in a tab-page.  If pick letter changes, we assume
     //  all other vital-to-be-displayed information has also changed.
     //
@@ -389,6 +401,15 @@ QvisPickWindow::UpdateWindow(bool doAll)
         zoneBlockLog->setChecked(pickAtts->GetShowZoneBlockLogicalCoords());
         zoneBlockLog->blockSignals(false);
     }
+
+    // doTimeCurve
+    if (pickAtts->IsSelected(37) || doAll)
+    {
+        timeCurveCheckBox->blockSignals(true);
+        timeCurveCheckBox->setChecked(pickAtts->GetDoTimeCurve());
+        timeCurveCheckBox->blockSignals(false);
+    }
+   
 }
 
 
@@ -955,6 +976,30 @@ void
 QvisPickWindow::zoneBlockLogToggled(bool val)
 {
     pickAtts->SetShowZoneBlockLogicalCoords(val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisPickWindow::timeCurveToggled
+//
+// Purpose: 
+//   This is a Qt slot function that sets the flag indicating whether
+//   or not the next pick should create a time curve.
+//
+// Arguments:
+//   val : The new timeCurve value.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   April 1, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPickWindow::timeCurveToggled(bool val)
+{
+    pickAtts->SetDoTimeCurve(val);
     Apply();
 }
 

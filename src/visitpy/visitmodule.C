@@ -60,6 +60,7 @@
 #include <RenderingAttributes.h>
 #include <StatusAttributes.h>
 #include <SyncAttributes.h>
+#include <QueryOverTimeAttributes.h>
 #include <ViewAttributes.h>
 #include <ViewCurveAttributes.h>
 #include <View2DAttributes.h>
@@ -82,6 +83,7 @@
 #include <PySaveWindowAttributes.h>
 #include <PySILRestriction.h>
 #include <PyText2DObject.h>
+#include <PyQueryOverTimeAttributes.h>
 #include <PyTimeSliderObject.h>
 #include <PyViewAttributes.h>
 #include <PyViewCurveAttributes.h>
@@ -3268,6 +3270,9 @@ visit_ClearAllWindows(PyObject *self, PyObject *args)
 //    Jeremy Meredith, Tue Mar 30 11:10:48 PST 2004
 //    Added support for simulations.
 //
+//    Brad Whitlock, Thu Apr 1 11:40:23 PDT 2004
+//    I fixed an argument passing bug.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -3282,8 +3287,7 @@ visit_ClearCache(PyObject *self, PyObject *args)
         if (!PyArg_ParseTuple(args, "s", &engineName))
             return NULL;
         simulationName = "";
-
-        return NULL;
+        PyErr_Clear();
     }
 
     MUTEX_LOCK();
@@ -7003,12 +7007,63 @@ visit_Queries(PyObject *self, PyObject *args)
             nQueries++;
     }
 
-    // Allocate a tuple the enough entries to hold the queries name list.
+    // Allocate a tuple with enough entries to hold the queries name list.
     PyObject *retval = PyTuple_New(nQueries);
 
     for(int j = 0, k = 0; j < queries.size(); ++j)
     {
         if (types[j] == QueryList::DatabaseQuery)
+        {
+            PyObject *dval = PyString_FromString(queries[j].c_str());
+            if(dval == NULL)
+                continue;
+            PyTuple_SET_ITEM(retval, k++, dval);
+        }
+    }
+
+    return retval;
+}
+
+
+// ****************************************************************************
+// Function: visit_QueriesOverTime
+//
+// Purpose:
+//   Returns a tuple containing the names of queries that can be used with
+//   the QueryOverTime command.
+//
+// Notes:      
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   March 23, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_QueriesOverTime(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    stringVector queries = viewer->GetQueryList()->GetNames();
+
+    // We only want to include Database time queries, so count them.
+    intVector types = viewer->GetQueryList()->GetTypes();
+    intVector time = viewer->GetQueryList()->GetTimeQuery();
+    int nQueries = 0; 
+    for(int i = 0; i < types.size(); ++i)
+    {
+        if (types[i] == QueryList::DatabaseQuery && time[i] == 1)
+            nQueries++;
+    }
+
+    // Allocate a tuple with enough entries to hold the queries name list.
+    PyObject *retval = PyTuple_New(nQueries);
+
+    for(int j = 0, k = 0; j < queries.size(); ++j)
+    {
+        if (types[j] == QueryList::DatabaseQuery && time[j] == 1)
         {
             PyObject *dval = PyString_FromString(queries[j].c_str());
             if(dval == NULL)
@@ -7623,7 +7678,78 @@ visit_Query(PyObject *self, PyObject *args)
     }
 
     MUTEX_LOCK();
-        viewer->DatabaseQuery(queryName, vars, arg1, arg2);
+        viewer->DatabaseQuery(queryName, vars, false, arg1, arg2);
+        if(logging)
+        {
+            fprintf(logFile, "Query(%s, (", queryName);
+            for(int i = 0; i < vars.size(); ++i)
+            {
+                fprintf(logFile, "\"%s\"", vars[i].c_str());
+                if(i < vars.size()-1)
+                    fprintf(logFile, ", ");
+            }
+            fprintf(logFile, "))\n");
+        }
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_QueryOverTime
+//
+// Purpose:
+//   Tells the viewer to do a time-query.
+//
+// Notes:      
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   March 23, 2004 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_QueryOverTime(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *queryName;
+    int arg1 = 0, arg2 = 0;
+    PyObject *tuple = NULL;
+    if (!PyArg_ParseTuple(args, "sii|O", &queryName, &arg1, &arg2, &tuple))
+    {
+        if (!PyArg_ParseTuple(args, "si|O", &queryName, &arg1, &tuple))
+        {
+            if (!PyArg_ParseTuple(args, "s|O", &queryName, &tuple))
+            {
+                return NULL;
+            }
+        }
+        PyErr_Clear();
+    }
+
+    // Check the tuple argument.
+    stringVector vars;
+    GetStringVectorFromPyObject(tuple, vars);
+    if (vars.size() == 1)
+    {
+        if (strcmp(vars[0].c_str(), "original") == 0)
+        {
+            arg1 = 0;
+            vars.clear();
+        }
+        else if (strcmp(vars[0].c_str(), "actual") == 0)
+        {
+            arg1 = 1;
+            vars.clear();
+        }
+    }
+
+    MUTEX_LOCK();
+        viewer->DatabaseQuery(queryName, vars, true, arg1, arg2);
         if(logging)
         {
             fprintf(logFile, "Query(%s, (", queryName);
@@ -7995,6 +8121,165 @@ visit_GetPickAttributes(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_ResetQueryOverTimeAttributes
+//
+// Purpose:
+//   Tells the viewer to reset the time query attributes to default. 
+//
+// Notes:      
+//
+// Programmer: Kathleen Bonnell
+// Creation:   March 30, 2004 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_ResetQueryOverTimeAttributes(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    MUTEX_LOCK();
+        viewer->ResetQueryOverTimeAttributes();
+
+        if(logging)
+            fprintf(logFile, "ResetQueryOverTimeAttributes()\n");
+    MUTEX_UNLOCK();
+
+    return IntReturnValue(Synchronize());;
+}
+
+// ****************************************************************************
+// Function: visit_SetQueryOverTimeAttributes
+//
+// Purpose:
+//   Tells the viewer to use the time query attributes we're sending.
+//
+// Notes:      
+//
+// Programmer: Kathleen Bonnell
+// Creation:   March 30, 2004 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetQueryOverTimeAttributes(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    PyObject *queryOverTime = NULL;
+    // Try and get the time query pointer.
+    if(!PyArg_ParseTuple(args,"O",&queryOverTime))
+    {
+        VisItErrorFunc("SetQueryOverTimeAttributes: Cannot parse object!");
+        return NULL;
+    }
+    if(!PyQueryOverTimeAttributes_Check(queryOverTime))
+    {
+        VisItErrorFunc("Argument is not a QueryOverTimeAttributes object");
+        return NULL;
+    }
+
+    MUTEX_LOCK();
+        QueryOverTimeAttributes *tqa = 
+            PyQueryOverTimeAttributes_FromPyObject(queryOverTime);
+
+        // Copy the object into the pick attributes.
+        *(viewer->GetQueryOverTimeAttributes()) = *tqa;
+        viewer->GetQueryOverTimeAttributes()->Notify();
+        viewer->SetQueryOverTimeAttributes();
+
+        if(logging)
+            fprintf(logFile, "SetQueryOverTimeAttributes()\n");
+    MUTEX_UNLOCK();
+
+    return IntReturnValue(Synchronize());;
+}
+
+
+// ****************************************************************************
+// Function: visit_SetDefaultQueryOverTimeAttributes
+//
+// Purpose:
+//   Tells the viewer to save the default time query attributes.
+//
+// Notes:      
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   March 30, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetDefaultQueryOverTimeAttributes(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    PyObject *queryOverTime = NULL;
+    // Try and get the queryOverTime pointer.
+    if(!PyArg_ParseTuple(args,"O",&queryOverTime))
+    {
+        VisItErrorFunc("SetDefaultQueryOverTimeAttributes: Cannot parse object!");
+        return NULL;
+    }
+    if(!PyQueryOverTimeAttributes_Check(queryOverTime))
+    {
+        VisItErrorFunc("Argument is not a QueryOverTimeAttributes object");
+        return NULL;
+    }
+
+    MUTEX_LOCK();
+        QueryOverTimeAttributes *tqa = 
+            PyQueryOverTimeAttributes_FromPyObject(queryOverTime);
+
+        // Copy the object into the time query attributes.
+        *(viewer->GetQueryOverTimeAttributes()) = *tqa;
+        viewer->GetQueryOverTimeAttributes()->Notify();
+        viewer->SetDefaultQueryOverTimeAttributes();
+
+        if(logging)
+            fprintf(logFile, "SetDefaultQueryOverTimeAttributes()\n");
+    MUTEX_UNLOCK();
+
+    return IntReturnValue(Synchronize());;
+}
+
+// ****************************************************************************
+// Function: visit_GetQueryOverTimeAttributes
+//
+// Purpose:
+//   Returns the current time query attributes.
+//
+// Notes:      
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   March 30, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetQueryOverTimeAttributes(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    PyObject *retval = PyQueryOverTimeAttributes_NewPyObject();
+    QueryOverTimeAttributes *tqa = PyQueryOverTimeAttributes_FromPyObject(retval);
+
+    // Copy the viewer proxy's pick atts into the return data structure.
+    *tqa = *(viewer->GetQueryOverTimeAttributes());
+
+    return retval;
+}
+
+
+// ****************************************************************************
 // Function: visit_DomainPick
 //
 // Purpose:
@@ -8006,6 +8291,8 @@ visit_GetPickAttributes(PyObject *self, PyObject *args)
 // Creation:   December 1, 2003
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Apr  1 20:12:56 PST 2004
+//   New bool arg required by PointQuery. 
 //
 // ****************************************************************************
 
@@ -8015,7 +8302,7 @@ visit_DomainPick(const char *type, int dom, int el, stringVector vars)
     double pt[3] = {0., 0., 0};
 
     MUTEX_LOCK();
-        viewer->PointQuery(type, pt, vars, dom, el);
+        viewer->PointQuery(type, pt, vars, false, dom, el);
         if(logging)
         {
             fprintf(logFile, "%s(%d, %d (", type, dom, el);
@@ -8705,6 +8992,11 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   GetActiveTimeSlider, GetTimeSliders, SetDatabaseCorrelationOptions,
 //   ToggleLockTime.
 //
+//   Kathleen Bonnell, Wed Mar 31 11:38:36 PST 2004 
+//   Added methods in support of queries over time: GetQueryOverTimeAttributes,
+//   QueryOverTime, SetQueryOverTimeAttributes, ResetQueryOverTimeAttributes,
+//   SetDefaultQueryOverTimeAttributes, QueriesOverTime.
+//
 // ****************************************************************************
 
 static void
@@ -8791,6 +9083,7 @@ AddDefaultMethods()
     AddMethod("GetQueryOutputString", visit_GetQueryOutputString);
     AddMethod("GetQueryOutputValue", visit_GetQueryOutputValue);
     AddMethod("GetRenderingAttributes", visit_GetRenderingAttributes);
+    AddMethod("GetQueryOverTimeAttributes", visit_GetQueryOverTimeAttributes);
     AddMethod("GetWindowInformation", visit_GetWindowInformation);
     AddMethod("HideActivePlots", visit_HideActivePlots);
     AddMethod("HideToolbars", visit_HideToolbars);
@@ -8809,6 +9102,7 @@ AddDefaultMethods()
     AddMethod("PrintWindow", visit_PrintWindow);
     AddMethod("PromoteOperator", visit_PromoteOperator);
     AddMethod("Query", visit_Query);
+    AddMethod("QueryOverTime", visit_QueryOverTime);
     AddMethod("RecenterView", visit_RecenterView);
     AddMethod("RedrawWindow", visit_RedrawWindow);
     AddMethod("RemoveAllOperators", visit_RemoveAllOperators);
@@ -8845,6 +9139,7 @@ AddDefaultMethods()
     AddMethod("SetPrinterAttributes", visit_SetPrinterAttributes);
     AddMethod("SetRenderingAttributes", visit_SetRenderingAttributes);
     AddMethod("SetSaveWindowAttributes", visit_SetSaveWindowAttributes);
+    AddMethod("SetQueryOverTimeAttributes", visit_SetQueryOverTimeAttributes);
     AddMethod("SetTimeSliderState", visit_SetTimeSliderState);
     AddMethod("SetViewExtentsType", visit_SetViewExtentsType);
     AddMethod("SetViewCurve", visit_SetViewCurve);
@@ -8874,7 +9169,9 @@ AddDefaultMethods()
     AddMethod("PickByNode", visit_PickByNode);
     AddMethod("ResetPickAttributes", visit_ResetPickAttributes);
     AddMethod("ResetPickLetter", visit_ResetPickLetter);
+    AddMethod("ResetQueryOverTimeAttributes", visit_ResetQueryOverTimeAttributes);
     AddMethod("SetDefaultPickAttributes", visit_SetDefaultPickAttributes);
+    AddMethod("SetDefaultQueryOverTimeAttributes", visit_SetDefaultQueryOverTimeAttributes);
     AddMethod("ShowAllWindows",  visit_ShowAllWindows);
 
     //
@@ -8908,6 +9205,7 @@ AddDefaultMethods()
     AddMethod("TurnDomainsOn",  visit_TurnDomainsOn);
     AddMethod("TurnMaterialsOff",  visit_TurnMaterialsOff);
     AddMethod("TurnMaterialsOn",  visit_TurnMaterialsOn);
+    AddMethod("QueriesOverTime",  visit_QueriesOverTime);
 
     // Temporary methods
     AddMethod("ColorTableNames", visit_ColorTableNames);

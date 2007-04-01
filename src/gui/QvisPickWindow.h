@@ -54,6 +54,9 @@ class PickAttributes;
 //   Kathleen Bonnell, Wed Dec 17 15:19:46 PST 2003 
 //   More widgets to support more user-settable PickAtts.
 //
+//   Kathleen Bonnell, Thu Apr  1 18:42:52 PST 2004 
+//   Added timeCurveCheckBox. 
+//
 // ****************************************************************************
 
 class GUI_API QvisPickWindow : public QvisPostableWindowObserver
@@ -90,6 +93,7 @@ private slots:
     void zoneBlockLogToggled(bool val);
     void autoShowToggled(bool);
     void savePicksToggled(bool);
+    void timeCurveToggled(bool);
 private:
     void UpdatePage(void);
     void ClearPages(void);
@@ -113,6 +117,7 @@ private:
 
     QCheckBox      *autoShowCheckBox;
     QCheckBox      *savePicksCheckBox;
+    QCheckBox      *timeCurveCheckBox;
 
     QLineEdit      *varsLineEdit;
     PickAttributes *pickAtts;

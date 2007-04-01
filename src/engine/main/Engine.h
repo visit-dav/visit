@@ -5,6 +5,7 @@
 class ApplyNamedFunctionRPC;
 class ApplyOperatorRPC;
 class ClearCacheRPC;
+class CloneNetworkRPC;
 class DefineVirtualDatabaseRPC;
 class ExecuteRPC;
 class KeepAliveRPC;
@@ -51,6 +52,9 @@ class Xfer;
 //
 //    Brad Whitlock, Fri Mar 12 11:08:21 PDT 2004
 //    Added KeepAliveRPC and SendKeepAliveReply.
+//
+//    Kathleen Bonnell, Wed Mar 31 16:53:03 PST 2004
+//    Added CloneNetworkRPC.
 //
 // ****************************************************************************
 
@@ -154,6 +158,7 @@ class Engine
     DefineVirtualDatabaseRPC *defineVirtualDatabaseRPC;
     RenderRPC                *renderRPC;
     SetWinAnnotAttsRPC       *setWinAnnotAttsRPC;
+    CloneNetworkRPC          *cloneNetworkRPC;
 };
 
 #endif

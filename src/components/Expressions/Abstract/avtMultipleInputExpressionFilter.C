@@ -75,13 +75,16 @@ avtMultipleInputExpressionFilter::AddInputVariableName(const char *var)
 //    Hank Childs, Wed Feb 25 14:44:19 PST 2004
 //    Updated to account for multiple variables in data attributes.
 //
+//    Kathleen Bonnell, Mon Mar 29 11:28:25 PST 2004 
+//    Make sure that varnames is not empty before attempting to index. 
+//
 // ****************************************************************************
 
 bool
 avtMultipleInputExpressionFilter::IsPointVariable(void)
 {
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
-    if (atts.ValidVariable(varnames[0]))
+    if (varnames.size() > 0 && atts.ValidVariable(varnames[0]))
     {
         return (atts.GetCentering(varnames[0]) != AVT_ZONECENT);
     }

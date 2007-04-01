@@ -12,6 +12,7 @@
 #include <ExecuteRPC.h>
 #include <ApplyOperatorRPC.h>
 #include <ClearCacheRPC.h>
+#include <CloneNetworkRPC.h>
 #include <DefineVirtualDatabaseRPC.h>
 #include <MakePlotRPC.h>
 #include <OpenDatabaseRPC.h>
@@ -169,6 +170,9 @@ class StatusAttributes;
 //    Mark C. Miller, Mon Mar 29 15:01:58 PST 2004
 //    Added new bool arg for controlling 3D annoations in Render method
 //
+//    Kathleen Bonnell, Wed Mar 31 17:23:01 PST 2004 
+//    Added CloneNetworkRPC. 
+//
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -233,6 +237,7 @@ public:
                                    QueryAttributes &);
 
     void                     ReleaseData(const int);
+    void                     CloneNetwork(const int, const QueryOverTimeAttributes *);
 
 protected:
     virtual void             SetupComponentRPCs();
@@ -260,6 +265,7 @@ private:
     RenderRPC                renderRPC;
     SetWinAnnotAttsRPC       setWinAnnotAttsRPC;
     ExpressionList           exprList;
+    CloneNetworkRPC          cloneNetworkRPC;
 
     // For indicating status.
     StatusAttributes        *statusAtts;

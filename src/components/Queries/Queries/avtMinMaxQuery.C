@@ -47,10 +47,12 @@ using std::string;
 //  Creation:     October 27, 2003
 //
 //  Modifications:
+//    Kathleen Bonnell, Wed Mar 31 16:13:07 PST 2004
+//    Added args, which control whether we do the Min or Max (or both).
 //
 // ****************************************************************************
 
-avtMinMaxQuery::avtMinMaxQuery()
+avtMinMaxQuery::avtMinMaxQuery(bool domin, bool domax)
 {
     dimension = 3;
     topoDim = 2;
@@ -58,6 +60,8 @@ avtMinMaxQuery::avtMinMaxQuery()
     cellOrigin = 0;
     invTransform = NULL;
     singleDomain = true;
+    doMin = domin;
+    doMax = domax;
 }
 
 // ****************************************************************************
@@ -117,6 +121,9 @@ avtMinMaxQuery::VerifyInput()
 //    Kathleen Bonnell, Mon Dec 22 14:48:57 PST 2003
 //    Test for ghost zones. Changed min/max val check to <= or >= so that
 //    serial and parallel versions will always return the same results.
+//
+//    Kathleen Bonnell, Wed Mar 31 16:13:07 PST 2004 
+//    Only check min/or max if they are set to be done. 
 //
 // ****************************************************************************
 
@@ -205,13 +212,13 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
         {
             ghost = (ghosts->GetValue(elNum) > 0);
         }
-        if (val <= minVal && !ghost)
+        if (doMin && val <= minVal && !ghost)
         {
              minElementNum = elNum;
              minVal = val;
              haveMin = true;
         } 
-        if (val >= maxVal && !ghost)
+        if (doMax && val >= maxVal && !ghost)
         {
             maxElementNum = elNum;
             maxVal = val;
@@ -288,6 +295,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
     if (haveMax)
         maxDomain = (dom < 0 ? 0 : dom);
 }
+
 
 
 // ****************************************************************************
@@ -687,6 +695,8 @@ avtMinMaxQuery::CreateMaxMessage()
 //  Creation:   October 28, 2003 
 //
 //  Modifications:
+//    Kathleen Bonnell, Wed Mar 31 16:13:07 PST 2004
+//    Modified so that either Min Or Max could be done separately.
 //
 // ****************************************************************************
 
@@ -694,12 +704,27 @@ void
 avtMinMaxQuery::CreateResultMessage()
 {
     string msg = "\n";
-    doubleVector vals;
-    msg += minMsg + "\n" + maxMsg + "\n\n";
-    vals.push_back(minVal);
-    vals.push_back(maxVal);
-
+    if (doMin)
+    {
+        if (doMax)
+        {
+            doubleVector vals;
+            msg += minMsg + "\n" + maxMsg + "\n\n";
+            vals.push_back(minVal);
+            vals.push_back(maxVal);
+            SetResultValues(vals);
+        }
+        else 
+        {
+            msg += minMsg + "\n\n";
+            SetResultValue(minVal);
+        }
+    }
+    else 
+    {
+        msg += maxMsg + "\n\n";
+        SetResultValue(maxVal);
+    }
     SetResultMessage(msg);
-    SetResultValues(vals);
 }
 

@@ -306,6 +306,9 @@ struct avtDefaultPlotMetaData;
 //    Jeremy Meredith, Tue Mar 23 14:36:37 PST 2004
 //    Added engineParallelArguments.
 //
+//    Kathleen Bonnell, Wed Mar 24 07:13:33 PST 2004 
+//    Added  QueryOverTimeAttributes methods.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -456,6 +459,9 @@ private:
     void SetDefaultPickAttributes();
     void ResetPickAttributes();
     void ResetPickLetter();
+    void SetQueryOverTimeAttributes();
+    void SetDefaultQueryOverTimeAttributes();
+    void ResetQueryOverTimeAttributes();
 
 private slots:
     void HandleViewerRPC();

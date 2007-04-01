@@ -52,6 +52,7 @@
 #include <SocketConnection.h>
 #include <StatusAttributes.h>
 #include <SyncAttributes.h>
+#include <QueryOverTimeAttributes.h>
 
 #include <ViewerActionManager.h>
 #include <ViewerConnectionProgressDialog.h>
@@ -458,6 +459,9 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
 //   Brad Whitlock, Fri Jan 23 09:47:24 PDT 2004
 //   I added the file server's database correlation list to xfer.
 //
+//   Kathleen Bonnell, Wed Mar 31 11:08:05 PST 2004 
+//   Added ViewerQueryManger's QueryOverTimeAtts to xfer.
+//
 // ****************************************************************************
 
 void
@@ -503,6 +507,7 @@ ViewerSubject::ConnectXfer()
     xfer.Add(ViewerEngineManager::GetMaterialClientAtts());
     xfer.Add(ViewerQueryManager::Instance()->GetGlobalLineoutClientAtts());
     xfer.Add(ViewerWindowManager::GetAnnotationObjectList());
+    xfer.Add(ViewerQueryManager::Instance()->GetQueryOverTimeClientAtts());
 
     //
     // Set up special opcodes and their handler.
@@ -634,7 +639,10 @@ ViewerSubject::ConnectObjectsAndHandlers()
 //    I added the default annotation object list to the config manager..
 //
 //    Kathleen Bonnell, Wed Dec 17 14:44:26 PST 2003 
-//    Added the default pick attributes to the config manager..
+//    Added the default pick attributes to the config manager.
+//
+//    Kathleen Bonnell, Wed Mar 31 11:08:05 PST 2004 
+//    Added ViewerQueryManger's QueryOverTimeAtts to config manager.
 //
 // ****************************************************************************
 
@@ -663,6 +671,7 @@ ViewerSubject::ConnectConfigManager()
     configMgr->Add(ViewerEngineManager::GetMaterialDefaultAtts());
     configMgr->Add(ViewerWindowManager::GetDefaultAnnotationObjectList());
     configMgr->Add(ViewerQueryManager::Instance()->GetPickDefaultAtts());
+    configMgr->Add(ViewerQueryManager::Instance()->GetQueryOverTimeDefaultAtts());
 }
 
 // ****************************************************************************
@@ -1077,6 +1086,9 @@ ViewerSubject::LoadOperatorPlugins()
 //   Kathleen Bonnell, Wed Dec 17 14:44:26 PST 2003
 //   Added PickAtts.
 //
+//   Kathleen Bonnell, Wed Mar 31 11:08:05 PST 2004 
+//   Added QueryOverTimeAtts.
+//
 // ****************************************************************************
 
 void
@@ -1121,6 +1133,8 @@ ViewerSubject::ProcessConfigFileSettings()
     // Copy the default pick atts to the client pick atts
     ViewerQueryManager::Instance()->SetClientPickAttsFromDefault();
 
+    // Copy the default time query atts to the client time query atts
+    ViewerQueryManager::Instance()->SetClientQueryOverTimeAttsFromDefault();
 
     // Send the queries to the client.
     ViewerQueryManager::Instance()->GetQueryTypes()->Notify();
@@ -5242,6 +5256,7 @@ ViewerSubject::DatabaseQuery()
     ViewerWindow *vw = ViewerWindowManager::Instance()->GetActiveWindow();
     ViewerQueryManager *qm = ViewerQueryManager::Instance();
     qm->DatabaseQuery(vw, viewerRPC.GetQueryName(), viewerRPC.GetQueryVariables(),
+                      viewerRPC.GetBoolFlag(), 
                       viewerRPC.GetIntArg1(), viewerRPC.GetIntArg2());
 
     // Clear the status
@@ -5265,6 +5280,9 @@ ViewerSubject::DatabaseQuery()
 //   Kathleen Bonnell, Wed Nov 26 14:33:23 PST 2003
 //   Use optional int args from RPC. 
 //
+//   Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004 
+//   Use optional bool flag from RPC. 
+//
 // ****************************************************************************
 
 void
@@ -5278,7 +5296,8 @@ ViewerSubject::PointQuery()
     ViewerQueryManager *qm = ViewerQueryManager::Instance();
     qm->PointQuery(viewerRPC.GetQueryName(), viewerRPC.GetQueryPoint1(),
                    viewerRPC.GetQueryVariables(),
-                   viewerRPC.GetIntArg1(), viewerRPC.GetIntArg2());
+                   viewerRPC.GetIntArg1(), viewerRPC.GetIntArg2(),
+                   viewerRPC.GetBoolFlag()); 
 
     // Clear the status
     ClearStatus();
@@ -5906,6 +5925,9 @@ ViewerSubject::SendKeepAlives()
 //    Brad Whitlock, Thu Feb 26 13:32:43 PST 2004
 //    Added ClearCacheForAllEngines.
 //
+//    Kathleen Bonnell, Wed Mar 31 11:08:05 PST 2004 
+//    Added methods related to QueryOverTimeAttributes.
+//
 // ****************************************************************************
 
 void
@@ -6169,6 +6191,15 @@ ViewerSubject::HandleViewerRPC()
     case ViewerRPC::SetDefaultPickAttributesRPC:
         SetDefaultPickAttributes();
         break;
+    case ViewerRPC::SetQueryOverTimeAttributesRPC:
+        SetQueryOverTimeAttributes();
+        break;
+    case ViewerRPC::SetDefaultQueryOverTimeAttributesRPC:
+        SetDefaultQueryOverTimeAttributes();
+        break;
+    case ViewerRPC::ResetQueryOverTimeAttributesRPC:
+        ResetQueryOverTimeAttributes();
+        break;
     case ViewerRPC::MaxRPC:
         break;
     default:
@@ -6420,4 +6451,59 @@ SplitValues(const string &buff, char delim)
         output.push_back(tmp);
 
     return output;
+}
+
+
+// ****************************************************************************
+//  Method: ViewerSubject::SetQueryOverTimeAttributes
+//
+//  Purpose:
+//    Execute the SetQueryOverTimeAttributes RPC.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   March 24, 2004 
+//
+// ****************************************************************************
+
+void
+ViewerSubject::SetQueryOverTimeAttributes()
+{
+    ViewerQueryManager::Instance()->SetQueryOverTimeAttsFromClient();
+}
+
+
+// ****************************************************************************
+//  Method: ViewerSubject::SetDefaultQueryOverTimeAttributes
+//
+//  Purpose:
+//    Execute the SetDefaultQueryOverTimeAttributes RPC.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   March 24, 2004 
+//
+// ****************************************************************************
+
+void
+ViewerSubject::SetDefaultQueryOverTimeAttributes()
+{
+    ViewerQueryManager::Instance()->SetDefaultQueryOverTimeAttsFromClient();
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::ResetQueryOverTimeAttributes
+//
+// Purpose: 
+//   Resets time query attributes to default values. 
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   March 24, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::ResetQueryOverTimeAttributes()
+{
+    ViewerQueryManager::Instance()->SetQueryOverTimeAttsFromDefault(); 
 }

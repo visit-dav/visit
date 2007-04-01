@@ -678,10 +678,13 @@ VisWinRendering::Realize(void)
 //    Mark C. Miller, Tue Feb  3 20:46:20 PST 2004
 //    Moved call to delete [] zb to after Update of SourceFromImage
 //
+//    Mark C. Miller, Wed Mar 31 17:47:20 PST 2004
+//    Added doViewportOnly arg and code to support getting only the viewport
+//
 // ****************************************************************************
 
 avtImage_p
-VisWinRendering::ScreenCapture(bool doCanvasZBufferToo)
+VisWinRendering::ScreenCapture(bool doViewportOnly, bool doCanvasZBufferToo)
 {
     float *zb = NULL;
     vtkRenderWindow *renWin = GetRenderWindow();
@@ -701,14 +704,34 @@ VisWinRendering::ScreenCapture(bool doCanvasZBufferToo)
     // Make sure that the window is up-to-date.
     //
     renWin->Render();
-    int w, h;
-    w = renWin->GetSize()[0];
-    h = renWin->GetSize()[1];
+
+    //
+    // Set region origin/size to be captured
+    //
+    int c0 = 0;
+    int r0 = 0;
+    int w = renWin->GetSize()[0];
+    int h = renWin->GetSize()[1];
+    if (doViewportOnly && (mediator.GetMode() == WINMODE_2D ||
+                           mediator.GetMode() == WINMODE_CURVE))
+    {
+        VisWindow *vw = mediator;
+        avtView2D v = vw->GetView2D();
+        double viewPort[4];
+        v.GetActualViewport(viewPort, w, h);
+        int neww = (int) ((viewPort[1] - viewPort[0]) * w + 0.5);
+        int newh = (int) ((viewPort[3] - viewPort[2]) * h + 0.5);
+
+        c0 = (int) (viewPort[0] * w + 0.5);
+        r0 = (int) (viewPort[2] * h + 0.5);
+        w = neww;
+        h = newh;
+    }
 
     if (doCanvasZBufferToo)
     {
         // get zbuffer data for the canvas
-        zb = renWin->GetZbufferData(0,0,w-1,h-1);
+        zb = renWin->GetZbufferData(c0,r0,c0+w-1,r0+h-1);
 
         // temporarily disable external render requests
         extRequestMode = mediator.DisableExternalRenderRequests();
@@ -719,7 +742,7 @@ VisWinRendering::ScreenCapture(bool doCanvasZBufferToo)
     // very easy to avoid copying the buffer.
     //
     int readFrontBuffer = 1;
-    unsigned char *pixels = renWin->GetPixelData(0,0,w-1,h-1,readFrontBuffer);
+    unsigned char *pixels = renWin->GetPixelData(c0,r0,c0+w-1,r0+h-1,readFrontBuffer);
 
     vtkImageData *image = avtImageRepresentation::NewImage(w, h);
     unsigned char *img_pix = (unsigned char *)image->GetScalarPointer(0, 0, 0); 

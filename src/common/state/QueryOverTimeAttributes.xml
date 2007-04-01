@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+  <Attribute name="QueryOverTimeAttributes" purpose="Attributes for queries over time." persistent="false" exportAPI="" exportInclude="" codefile="QueryOverTimeAttributes.code">
+    <Enum name="TimeType">
+      Cycle
+      DTime
+      Timestep
+    </Enum>
+    <Field name="timeType" label="timeType" type="enum" subtype="TimeType">
+      Cycle
+    </Field>
+    <Field name="startTimeFlag" label="startTimeFlag" type="bool">
+      false
+    </Field>
+    <Field name="startTime" label="startTime" type="double" enabler="startTimeFlag:true">
+      0.000000
+    </Field>
+    <Field name="endTimeFlag" label="endTimeFlag" type="bool">
+      false
+    </Field>
+    <Field name="endTime" label="endTime" type="double" enabler="endTimeFlag:true">
+      1.000000
+    </Field>
+    <Field name="stride" label="stride" type="int">
+      1
+    </Field>
+    <Field name="createWindow" label="createWindow" type="bool">
+      true
+    </Field>
+    <Field name="windowId" label="windowId" type="int" enabler="createWindow:false">
+      2
+    </Field>
+    <Field name="queryAtts" label="queryAtts" type="att" subtype="QueryAttributes" internal="true">
+    </Field>
+    <Field name="timeSteps" label="timeSteps" type="intVector" internal="true">
+    </Field>
+    <Field name="timeStates" label="timeStates" type="doubleVector" internal="true">
+    </Field>
+  </Attribute>

@@ -165,6 +165,9 @@ PickAttributes::PrintSelf(ostream &os)
     os << "RayPoint 2: <" << rayPoint2[0] << ", " 
                           << rayPoint2[1] << ", " 
                           << rayPoint2[2] << ">\n";
+
+    if (doTimeCurve)
+        os << "Set up to create a time-curve.\n";
 }
 
 Function: CreateOutputString

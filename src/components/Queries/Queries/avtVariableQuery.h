@@ -2,8 +2,8 @@
 //                            avtVariableQuery.h                             //
 // ************************************************************************* //
 
-#ifndef AVT_DOMAINZONE_QUERY_H
-#define AVT_DOMAINZONE_QUERY_H
+#ifndef AVT_VARIABLE_QUERY_H
+#define AVT_VARIABLE_QUERY_H
 #include <query_exports.h>
 
 #include <avtDatasetQuery.h>
@@ -12,6 +12,7 @@
 
 
 class vtkDataSet;
+class avtExpressionEvaluatorFilter;
 
 
 // ****************************************************************************
@@ -25,6 +26,9 @@ class vtkDataSet;
 //  Creation:   July 23, 2003
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Apr  1 19:06:07 PST 2004
+//    Added VerifyInput, RetriveVarInfo, RetrieveNodes, RetrieveZones, eef and
+//    src.
 //
 // ****************************************************************************
 
@@ -39,16 +43,25 @@ class QUERY_API avtVariableQuery : public avtDatasetQuery
     virtual const char       *GetDescription(void)
                                  { return "Retrieving var information on mesh."; };
 
+    virtual bool              OriginalData(void) { return true; };
+
   protected:
 
+    virtual void                    VerifyInput(void);
     virtual void                    Execute(vtkDataSet *, const int);
     virtual void                    PreExecute(void);
     virtual void                    PostExecute(void);
     virtual avtDataObject_p         ApplyFilters(avtDataObject_p);   
 
+    void                            RetrieveVarInfo(vtkDataSet *);   
+    bool                            RetrieveNodes(vtkDataSet *, int);   
+    bool                            RetrieveZones(vtkDataSet *, int);   
+
     PickAttributes                  pickAtts;
     int                             searchDomain;
     int                             searchElement;
+    avtExpressionEvaluatorFilter   *eef;
+    avtQueryableSource             *src;
 };
 
 

@@ -1458,6 +1458,9 @@ DeleteActivePlotsAction::~DeleteActivePlotsAction()
 //   I made the ClearPickPoints and ClearRefLines methods use the window
 //   instead of the window manager.
 //
+//   Kathlen Bonnell, Thu Apr  1 19:13:59 PST 2004 
+//   Added call to ResetTimeQueryDesignation. 
+//
 // ****************************************************************************
 
 void
@@ -1469,6 +1472,7 @@ DeleteActivePlotsAction::Execute()
         window->ClearPickPoints();
         window->ClearRefLines();
         windowMgr->ResetLineoutDesignation();
+        windowMgr->ResetTimeQueryDesignation();
         windowMgr->DisableAllTools();
     }
 }

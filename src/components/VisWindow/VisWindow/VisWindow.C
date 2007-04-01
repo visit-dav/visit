@@ -1598,12 +1598,16 @@ VisWindow::Realize(void)
 //  Programmer: Hank Childs
 //  Creation:   February 11, 2001
 //
+//  Modifications:
+//    Mark C. Miller, Wed Mar 31 18:00:23 PST 2004
+//    Added doViewportOnly arg
+//
 // ****************************************************************************
 
 avtImage_p
-VisWindow::ScreenCapture(bool doZBufferToo)
+VisWindow::ScreenCapture(bool doViewportOnly, bool doZBufferToo)
 {
-    return rendering->ScreenCapture(doZBufferToo);
+    return rendering->ScreenCapture(doViewportOnly, doZBufferToo);
 }
 
 

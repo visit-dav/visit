@@ -677,6 +677,36 @@ avtImageRepresentation::GetSize(int *_rowSize, int *_colSize)
 }
 
 // ****************************************************************************
+//  Method: GetSize
+//
+//  Purpose: Return the size of the image in rows and columns of pixels
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   31Mar04 
+//
+// ****************************************************************************
+
+void
+avtImageRepresentation::GetSize(int *_rowSize, int *_colSize) const
+{
+    if (asVTK == NULL)
+    {
+        if (asChar == NULL)
+        {
+            EXCEPTION0(NoInputException);
+        }
+
+        *_rowSize = 0;
+        *_colSize = 0;
+        return;
+    }
+
+    int *imageDims = asVTK->GetDimensions();
+    *_rowSize = imageDims[1]; // #rows is y-size
+    *_colSize = imageDims[0]; // #cols is x-size
+}
+
+// ****************************************************************************
 //  Method: GetNumberOfCells 
 //
 //  Purpose: Return the number of cells (pixels) in the image 

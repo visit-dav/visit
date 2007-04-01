@@ -86,6 +86,25 @@ avtImage::GetImage(void)
 }
 
 // ****************************************************************************
+//  Method: avtImage::GetSize
+//
+//  Purpose:
+//      Gets size of the image 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   31Mar04 
+//
+// ****************************************************************************
+
+void
+avtImage::GetSize(int *width, int *height) const
+{
+   // argument order is inverted due to fact that image rep uses 'rowsize' and
+   // 'colsize' instead of width and height
+   image.GetSize(height, width);
+}
+
+// ****************************************************************************
 //  Method: avtImage::GetNumberOfCells
 //
 //  Purpose:

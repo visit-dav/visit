@@ -194,6 +194,9 @@
 #    Hank Childs, Wed Feb 25 07:39:03 PST 2004
 #    Remove Qt dependence in VisWindow.
 #
+#    Kathleen Bonnell, Wed Mar 31 11:49:55 PST 2004 
+#    Added ClonedDataNetwork. 
+#
 ##############################################################################
 
 ##
@@ -244,6 +247,7 @@ PARLIBDEP=../../lib/libplugin.@SHLIB_LIBEXT@ ../../lib/libplotter.@SHLIB_LIBEXT@
 ##
 SRC= \
     DataNetwork.C \
+    ClonedDataNetwork.C \
     Engine.C \
     EngineExprNode.C \
     EngineExprNodeFactory.C \

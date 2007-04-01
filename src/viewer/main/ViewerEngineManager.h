@@ -19,6 +19,7 @@ class EngineProxy;
 class MaterialAttributes;
 class PickAttributes;
 class QueryAttributes;
+class QueryOverTimeAttributes;
 class ViewerPlot;
 class AnnotationAttributes;
 class WindowAttributes;
@@ -141,6 +142,9 @@ class WindowAttributes;
 //    Jeremy Meredith, Thu Mar 25 15:56:48 PST 2004
 //    Use a map of engines based on a key, and be aware of simulations.
 //
+//    Kathleen Bonnell, Wed Mar 31 16:40:15 PST 2004 
+//    Added CloneNetwork. 
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -219,6 +223,8 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     bool Query(const EngineKey &ek, const std::vector<int> &networkIds, 
                const QueryAttributes *atts, QueryAttributes &retAtts);
     bool ReleaseData(const EngineKey &ek, int id);
+    bool CloneNetwork(const EngineKey &ek, int id, 
+                      const QueryOverTimeAttributes *qatts);
 
   protected:
     ViewerEngineManager();
