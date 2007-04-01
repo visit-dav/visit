@@ -107,6 +107,10 @@ class SILAttributes;
 //    Brad Whitlock, Fri Feb 4 09:57:49 PDT 2005
 //    Overloaded CloseFile.
 //
+//    Jeremy Meredith, Tue Feb  8 08:56:55 PST 2005
+//    Added the ability to query for errors detected during plugin
+//    initialization.
+//
 // ****************************************************************************
 
 class ViewerFileServer : public ViewerServerManager
@@ -227,6 +231,8 @@ public:
 
     void                       CreateNode(DataNode *, bool detailed);
     void                       SetFromNode(DataNode *);
+    std::string                GetPluginErrors(const std::string &host);
+
 protected:
     ViewerFileServer();
     ViewerFileServer(const ViewerFileServer&);

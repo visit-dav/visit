@@ -111,6 +111,9 @@
 //    Brad Whitlock, Wed Jan 5 11:15:16 PDT 2005
 //    Added -lexpr everywhere -lparser is used so we can link again on MacOS X.
 //
+//    Jeremy Meredith, Mon Feb  7 13:31:03 PST 2005
+//    Added VisIt version to the general plugin info.
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin
@@ -199,6 +202,16 @@ class MakefileGeneratorPlugin
         if (atts)
             atts->Print(cout);
     }
+    void WriteVersionFile(ostream &out)
+    {
+        out << "#include <visit-config.h>" << endl;
+        out << "#if defined(__APPLE__)" << endl;
+        out << "extern \"C\" const char *"<<name<<"VisItPluginVersion = VERSION;" << endl;
+        out << "#else" << endl;
+        out << "extern \"C\" const char *VisItPluginVersion = VERSION;" << endl;
+        out << "#endif" << endl;
+        out << endl;
+    }
     void WriteMakefile(ostream &out)
     {
         const char *visithome = getenv("VISITARCHHOME");
@@ -275,7 +288,7 @@ class MakefileGeneratorPlugin
                 for (int i=0; i<wfiles.size(); i++)
                     out << " " << wfiles[i];
             out << endl;
-            out << "ISRC="<<name<<"PluginInfo.C" << endl;
+            out << "ISRC="<<name<<"PluginInfo.C "<<name<<"PluginVersion.C" << endl;
             out << "COMMONSRC=";
 #ifndef __APPLE__
             out << name<<"PluginInfo.C ";
@@ -375,7 +388,7 @@ class MakefileGeneratorPlugin
                 for (int i=0; i<wfiles.size(); i++)
                     out << " " << wfiles[i];
             out << endl;
-            out << "ISRC="<<name<<"PluginInfo.C" << endl;
+            out << "ISRC="<<name<<"PluginInfo.C "<<name<<"PluginVersion.C" << endl;
             out << "COMMONSRC=";
 #ifndef __APPLE__
             out << name<<"PluginInfo.C ";
@@ -447,7 +460,7 @@ class MakefileGeneratorPlugin
             out << endl;
 
             out << "WIDGETS=" << endl;
-            out << "ISRC="<<name<<"PluginInfo.C" << endl;
+            out << "ISRC="<<name<<"PluginInfo.C "<<name<<"PluginVersion.C" << endl;
             out << "COMMONSRC=";
 #ifndef __APPLE__
             out << name<<"PluginInfo.C ";

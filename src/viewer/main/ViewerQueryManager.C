@@ -934,6 +934,9 @@ ViewerQueryManager::GetQueryClientAtts()
 //    Eric Brugger, Thu Jan  6 08:58:28 PST 2005
 //    Corrected a misuse of the CATCH_RETURN macro.
 //
+//    Hank Childs, Fri Jan 28 11:55:12 PST 2005
+//    Make sure returns inside 'try' are wrapped.
+//
 // ****************************************************************************
 
 void         
@@ -1054,7 +1057,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
             if (doTimeQuery)
             {
                 DoTimeQuery(oWin, &qa);
-                return;
+                CATCH_RETURN(1);
             }
             if (ViewerEngineManager::Instance()->Query(engineKey, networkIds, 
                    &qa, qa))
@@ -3721,6 +3724,9 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi, const int dom,
 //    Eric Brugger, Thu Jan  6 08:58:28 PST 2005
 //    Corrected a misuse of the CATCH_RETURN2 macro.
 //  
+//    Hank Childs, Fri Jan 28 11:55:12 PST 2005
+//    Make sure returns inside 'try' are wrapped.
+//
 // ****************************************************************************
 
 bool         
@@ -3811,13 +3817,13 @@ ViewerQueryManager::VerifySingleInputQuery(ViewerPlotList *plist, const int plot
                 string msg = "Cannot perform a " + qName  + " query on variable  ";
                 msg += uniqueVars[badVarType] + ".\n";
                 Error(msg.c_str());
-                return false;
+                CATCH_RETURN2(1, false);
             }
         }
         qa.SetVariables(uniqueVars);
         qa.SetVarTypes(varTypes);
         qa.SetTimeStep(state);
-        return true;
+        CATCH_RETURN2(1, true);
     }
     CATCH2(VisItException, e)
     {
@@ -3864,6 +3870,9 @@ ViewerQueryManager::VerifySingleInputQuery(ViewerPlotList *plist, const int plot
 //    Eric Brugger, Thu Jan  6 08:58:28 PST 2005
 //    Corrected a misuse of the CATCH_RETURN2 macro.
 //  
+//    Hank Childs, Fri Jan 28 11:55:12 PST 2005
+//    Make sure returns inside 'try' are wrapped.
+//
 // ****************************************************************************
 
 
@@ -3895,7 +3904,7 @@ ViewerQueryManager::VerifyMultipleInputQuery(ViewerPlotList *plist,
             msg += " plots to be selected, realized, and drawn.";
             msg += "   Please select them and try again.\n";
             Error(msg.c_str());
-            return false;
+            CATCH_RETURN2(1, false);
         }
 
         //
@@ -3910,7 +3919,7 @@ ViewerQueryManager::VerifyMultipleInputQuery(ViewerPlotList *plist,
                 queryClientAtts->Notify();
                 Error("Multiple input queries require all their inputs "
                       "to be on the same host.\n");
-                return false;
+                CATCH_RETURN2(1, false);
             }
             engineKey = oplot->GetEngineKey();
         }
@@ -3919,7 +3928,7 @@ ViewerQueryManager::VerifyMultipleInputQuery(ViewerPlotList *plist,
         //  anything specific to mulitple-input queries: vars,
         //  state, etc.
         //
-        return true;
+        CATCH_RETURN2(1, true);
     }
     CATCH2(VisItException, e)
     {

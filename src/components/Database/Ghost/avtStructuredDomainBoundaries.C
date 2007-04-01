@@ -2875,3 +2875,34 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
 }
 
 
+// ****************************************************************************
+//  Method:  avtStructuredDomainBoundaries::GetExtents
+//
+//  Purpose:
+//    Get the extents of one domain.
+//
+//  Arguments:
+//    domain     the domain to get the extents of
+//    e          the extents
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    February 8, 2005 
+//
+// ****************************************************************************
+
+void
+avtStructuredDomainBoundaries::GetExtents(int domain, int e[6])
+{
+    if (domain >= wholeBoundary.size())
+        EXCEPTION1(VisItException,
+                   "avtStructuredDomainBoundaries: "
+                   "targetted domain more than number of domains");
+
+    e[0] = wholeBoundary[domain].oldnextents[0];
+    e[1] = wholeBoundary[domain].oldnextents[1];
+    e[2] = wholeBoundary[domain].oldnextents[2];
+    e[3] = wholeBoundary[domain].oldnextents[3];
+    e[4] = wholeBoundary[domain].oldnextents[4];
+    e[5] = wholeBoundary[domain].oldnextents[5];
+}
+

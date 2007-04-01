@@ -7710,6 +7710,10 @@ ViewerWindow::GetExternalRenderRequestInfo(
 //
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Modified to pass window id to engine manager
+//
+//    Hank Childs, Fri Jan 28 11:55:12 PST 2005
+//    Make sure returns inside 'try' are wrapped.
+//
 // ****************************************************************************
 bool
 ViewerWindow::ExternalRender(const ExternalRenderRequestInfo& thisRequest,
@@ -7755,7 +7759,7 @@ ViewerWindow::ExternalRender(const ExternalRenderRequestInfo& thisRequest,
 
         // finally, make sure we return a "blank" image
         dob = NULL;
-        return false;
+        CATCH_RETURN2(1, false);
     }
     ENDTRY
 

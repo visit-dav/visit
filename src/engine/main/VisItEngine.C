@@ -4,6 +4,7 @@
 #include <LostConnectionException.h>
 #include <LoadBalancer.h>
 #include <MPIXfer.h>
+#include <VisItException.h>
 
 #include <visitstream.h>
 
@@ -20,6 +21,8 @@
 //    Jeremy Meredith, Mon Nov  1 17:19:02 PST 2004
 //    Added parallel simulation support.
 //
+//    Hank Childs, Fri Jan 28 13:40:20 PST 2005
+//    Use exception macros.
 // ****************************************************************************
 
 void *get_engine()
@@ -61,23 +64,24 @@ int process_input(void *e)
 {
     Engine *engine = (Engine*)(e);
 
-    try {
+    TRY {
 #ifdef PARALLEL
         engine->PAR_ProcessInput();
 #else
         engine->ProcessInput();
 #endif
     }
-    catch (LostConnectionException)
+    CATCH (LostConnectionException)
     {
         // Lost connection to the viewer!
-        return 0;
+        CATCH_RETURN2(1, 0);
     }
-    catch (...)
+    CATCHALL (...)
     {
         // Unknown processing error!  Ignoring....
-        return 1;
+        CATCH_RETURN2(1, 1);
     }
+    ENDTRY
 
     return 1;
 }

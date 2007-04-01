@@ -5,6 +5,7 @@
 #include <string>
 #include <exception>
 #include <visitstream.h>
+#include <VisItException.h>
 
 // Forward declaration
 class AttributeGroup;
@@ -57,6 +58,9 @@ class DataNode;
 //
 //    Brad Whitlock, Thu Dec 9 15:04:41 PST 2004
 //    I added FieldType_variablename.
+//
+//    Hank Childs, Fri Jan 28 15:36:03 PST 2005
+//    Re-inherit exceptions from VisItException.
 //
 // ****************************************************************************
 
@@ -199,6 +203,6 @@ ostream& operator<<(ostream& os, const AttributeGroup&);
 typedef std::vector<AttributeGroup *> AttributeGroupVector;
 
 // An exception class
-class BadDeclareFormatString : public std::exception { };
+class BadDeclareFormatString : public VisItException { };
 
 #endif

@@ -73,7 +73,7 @@ class TestScanner : public Scanner
         }
 
         if (input[pos] < 'a' || input[pos] > 'z')
-            throw LexicalException(pos);
+            EXCEPTION1(LexicalException, pos);
 
         string var;
         while (input[pos] >= 'a' && input[pos] <= 'z')
@@ -150,6 +150,12 @@ class TestGrammar : public Grammar
 
 // ----------------------------------------------------------------------------
 // Parser
+//
+// Modifications:
+//
+//   Hank Childs, Fri Jan 28 15:43:04 PST 2005
+//   Use expression macros.
+//
 // ----------------------------------------------------------------------------
 class TestParser : public Parser
 {
@@ -209,7 +215,7 @@ class TestParser : public Parser
 
     ParseTreeNode *Parse(const string &input)
     {
-        try
+        TRY
         {
             Init();
             TestScanner scanner;
@@ -220,25 +226,26 @@ class TestParser : public Parser
                 ParseOneToken(token);
             }
         }
-        catch (UnhandledReductionException &e)
+        CATCH (UnhandledReductionException &e)
         {
             // This should only occur during debugging; print to cerr anyway
             cerr << e.Message() << endl;
             cerr << "Rule = " << *(e.GetRule()) << endl;
             cerr << e.GetPos().GetText(input) << endl;
-            return NULL;
+            CATCH_RETURN2(1, NULL);
         }
-        catch (ParseException &e)
+        CATCH (ParseException &e)
         {
             cerr << e.Message() << endl;
             cerr << e.GetPos().GetText(input) << endl;
-            return NULL;
+            CATCH_RETURN2(1, NULL);
         }
-        catch (...)
+        CATCHALL (...)
         {
             cerr << "Unknown exception!\n";
-            return NULL;
+            CATCH_RETURN2(1, NULL);
         }
+        ENDTRY
         return GetParseTree();
     }
 

@@ -2,6 +2,7 @@
 #define PARSEEXEPTION_H
 
 #include "Pos.h"
+#include <VisItException.h>
 #include <snprintf.h>
 class Rule;
 
@@ -25,8 +26,11 @@ class Rule;
 //    Added a SyntacticException with no specific token type name, for the
 //    times that information is not readily available.
 //
+//    Hank Childs, Fri Jan 28 14:57:14 PST 2005
+//    Inherit from VisItException.
+//
 // ****************************************************************************
-class ParseException
+class ParseException : public VisItException
 {
   public:
     ParseException(Pos p) : pos(p) { }

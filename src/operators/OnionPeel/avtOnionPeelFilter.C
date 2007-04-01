@@ -804,7 +804,7 @@ avtOnionPeelFilter::PreExecute()
         avtCallback::IssueWarning("The onion peel operator will not perform "
                    "as expected, because a global seed cell was specified,"
                    "but the mesh does not have global zone information.  "
-                   "Plese turn off use of Global Id for onion peel");
+                   "Please turn off use of Global Id for onion peel");
     }
 }
 

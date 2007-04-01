@@ -88,6 +88,9 @@ ExprParser::ExprParser(ExprNodeFactory *f) : Parser(), factory(f)
 //    Added the original text for an argument to ArgExpr because it is
 //    useful for implementing macros.
 //
+//    Hank Childs, Fri Jan 28 14:07:18 PST 2005
+//    Use exception macros.
+//
 // ****************************************************************************
 ParseTreeNode*
 ExprParser::ApplyRule(const Symbol           &sym,
@@ -392,7 +395,7 @@ ExprParser::ApplyRule(const Symbol           &sym,
             {
                 const   string & id = ((Identifier*)T[3])->GetVal();
                 if (id.length() != 1)
-                    throw SyntacticException(E[3]->GetPos(),
+                    EXCEPTION2(SyntacticException,E[3]->GetPos(),
                                              "needs to be 'i', 'c', or 't'");
                 char    c = id[0];
                 TimeExpr::Type t;
@@ -403,7 +406,7 @@ ExprParser::ApplyRule(const Symbol           &sym,
                 else if (c == 'i' || c == 'I')
                     t = TimeExpr::Index;
                 else
-                    throw SyntacticException(E[3]->GetPos(),
+                    EXCEPTION2(SyntacticException, E[3]->GetPos(),
                                              "needs to be 'i', 'c', or 't'");
                 node = new TimeExpr(p, (ListExpr*)(E[1]), t);
                 break;
@@ -457,6 +460,9 @@ ExprParser::ApplyRule(const Symbol           &sym,
 //    Hank Childs, Tue Dec 28 16:14:47 PST 2004
 //    Rename GetText and PrintText to GetErrorText and PrintErrorText.
 //
+//    Hank Childs, Fri Jan 28 14:07:18 PST 2005
+//    Use exception macros.
+//
 // ****************************************************************************
 ParseTreeNode*
 ExprParser::Parse(const std::string &s)
@@ -468,7 +474,7 @@ ExprParser::Parse(const std::string &s)
     for (int i=0; i<text.length(); i++)
         if (text[i] == '\t' || text[i] == '\n') text[i] = ' ';
 
-    try
+    TRY
     {
         Init();
         scanner.SetInput(text);
@@ -480,15 +486,15 @@ ExprParser::Parse(const std::string &s)
                 ParseOneToken(token);
         }
     }
-    catch (UnhandledReductionException &e)
+    CATCH (UnhandledReductionException &e)
     {
         // This should only occur during debugging; print to cerr anyway
         cerr << e.Message() << endl;
         cerr << "Rule = " << *(e.GetRule()) << endl;
         e.GetPos().PrintErrorText(cerr, text);
-        return NULL;
+        CATCH_RETURN2(1, NULL);
     }
-    catch (ParseException &e)
+    CATCH (ParseException &e)
     {
         char error[1024];
         SNPRINTF(error, 1024, "%s\n%s",
@@ -507,8 +513,9 @@ ExprParser::Parse(const std::string &s)
             EXCEPTION1(InvalidExpressionException, error);
         }
 
-        return NULL;
+        CATCH_RETURN2(1, NULL);
     }
+    ENDTRY
 
     return GetParseTree();
 }
