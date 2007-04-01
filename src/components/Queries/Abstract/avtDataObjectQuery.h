@@ -53,6 +53,9 @@ typedef void (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Kathleen Bonnell, Tue May  4 14:18:26 PDT 2004 
 //    Replaced SetSILUseSet with SetILRestriction. 
 //
+//    Kathleen Bonnell, Thu Jun 24 07:45:47 PDT 2004 
+//    Added intVector and string arguments to PerformQueryInTime. 
+//
 // ****************************************************************************
 
 class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
@@ -68,7 +71,8 @@ class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
     virtual void                  PerformQuery(QueryAttributes *) = 0;
     virtual void                  PerformQueryInTime(QueryAttributes *,
                                       const int, const int, const int,
-                                      const int, doubleVector &) {;};
+                                      const int, doubleVector &, intVector &,
+                                      std::string &) {;};
     virtual std::string           GetResultMessage(void) = 0;
 
     static void                   RegisterInitializeProgressCallback(

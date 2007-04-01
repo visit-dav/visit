@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Boundary" type="plot" label="Boundary" version="1.0" vartype="subset" iconFile="Boundary.xpm">
+  <Plugin name="Boundary" type="plot" label="Boundary" version="1.0" vartype="material" iconFile="Boundary.xpm">
     <Attribute name="BoundaryAttributes" purpose="This class contains the plot attributes for the boundary plot." persistent="true" codefile="BoundaryAttributes.code">
       <Enum name="Boundary_Type">
         Domain

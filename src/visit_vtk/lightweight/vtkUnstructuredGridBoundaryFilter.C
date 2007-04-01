@@ -738,6 +738,7 @@ BHashEntryMemoryManager2D *BHashEntry2D::MemoryManager = NULL;
 //
 
 static void AddPolygon(int, vtkIdType *, int, int, BHashEntryList2D &);
+static void AddPixel(vtkIdType *, int, int, BHashEntryList2D &);
 static void AddTetrahedron(vtkIdType *, int, int, BHashEntryList &);
 static void AddWedge(vtkIdType *, int, int, BHashEntryList &);
 static void AddPyramid(vtkIdType *, int, int, BHashEntryList &);
@@ -2657,6 +2658,10 @@ vtkUnstructuredGridBoundaryFilter::Execute()
 //  Programmer: Hank Childs
 //  Creation:   November 4, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Jun 24 14:15:52 PDT 2004
+//    Added pixel support.
+//
 // ****************************************************************************
 
 void LoopOverUnhashedCells(vtkUnstructuredGrid *input, vtkPolyData *output,
@@ -2766,7 +2771,6 @@ LoopOverAllCells(vtkUnstructuredGrid *input, BHashEntryList &list,
           case VTK_LINE:
           case VTK_POLY_LINE:
           case VTK_TRIANGLE_STRIP:
-          case VTK_PIXEL:
             numUnhashedCells++;
             break;
 
@@ -2774,6 +2778,10 @@ LoopOverAllCells(vtkUnstructuredGrid *input, BHashEntryList &list,
           case VTK_QUAD:
           case VTK_POLYGON:
             AddPolygon(npts, pts, cellId, cellVal, list2d);
+            break;
+
+          case VTK_PIXEL:
+            AddPixel(pts, cellId, cellVal, list2d);
             break;
 
           case VTK_TETRA:
@@ -2826,6 +2834,40 @@ AddPolygon(int npts, vtkIdType *pts, int cellId, int cellVal,
         nodes[1] = pts[(l+1)%npts];
         list.AddLine(nodes, cellId, cellVal);
     }
+}
+
+
+// ****************************************************************************
+//  Function: AddPixel
+//
+//  Purpose:
+//      Adds all of the lines from a pixel to our hash entry list.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   June 24, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+AddPixel(vtkIdType *pts, int cellId, int cellVal,
+           BHashEntryList2D &list)
+{
+    vtkIdType nodes[2];
+
+    nodes[0] = pts[0];
+    nodes[1] = pts[1];
+    list.AddLine(nodes, cellId, cellVal);
+    nodes[0] = pts[1];
+    nodes[1] = pts[3];
+    list.AddLine(nodes, cellId, cellVal);
+    nodes[0] = pts[2];
+    nodes[1] = pts[3];
+    list.AddLine(nodes, cellId, cellVal);
+    nodes[0] = pts[0];
+    nodes[1] = pts[2];
+    list.AddLine(nodes, cellId, cellVal);
 }
 
 

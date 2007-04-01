@@ -127,6 +127,12 @@ VariableMenuPopulator::ClearDatabaseName()
 //   I added code to include the catch-all mesh name in the list of meshes
 //   when the plugin has activiated this feature
 //
+//   Jeremy Meredith, Mon Jun 21 15:13:20 PDT 2004
+//   SUBSET variables now no-longer include MATERIAL variables.  The
+//   Filled Boundary and Boundary plots have been changed to MATERIAL, and
+//   the Subset plot is the only one that will do other kinds of subsets like
+//   domains -- at least in the GUI.
+//
 // ****************************************************************************
 
 bool
@@ -270,7 +276,6 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
             //
             if (roleCount[role] > 1)
                 varName += setName;
-            subsetVars[varName] = validVariable;
 
             //
             // Also add the varName to the material variable map so we can
@@ -279,6 +284,8 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
             //
             if (role == SIL_MATERIAL)
                 materialVars[varName] = validVariable;
+            else
+                subsetVars[varName] = validVariable;
         }
     }
 

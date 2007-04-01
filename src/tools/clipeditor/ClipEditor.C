@@ -13,6 +13,9 @@
 //    Jeremy Meredith, Thu Sep 18 11:29:12 PDT 2003
 //    Added Quad and Triangle shapes.
 //
+//    Jeremy Meredith, Thu Jun 24 10:38:05 PDT 2004
+//    Added Voxel and Pixel shapes.
+//
 // ----------------------------------------------------------------------------
 
 #include "ClipEditor.h"
@@ -22,6 +25,39 @@
 
 #include <stdlib.h>
 #include <fstream.h>
+
+inline int ConvertedCaseIndex(int i, bool qpconv, bool hvconv)
+{
+    // qpconv: true if converting quad to pixel
+    // hvconv: true if converting hex to voxel
+    int caseIndex;
+    if (qpconv)
+    {
+        int bits[8] = {i&0x01, i&0x02, i&0x04, i&0x08};
+        caseIndex = ((bits[2] ? 0x08:0) +
+                     (bits[3] ? 0x04:0) +
+                     (bits[1] ? 0x02:0) +
+                     (bits[0] ? 0x01:0));
+    }
+    else if (hvconv)
+    {
+        int bits[8] = {i&0x01, i&0x02, i&0x04, i&0x08,
+                       i&0x10, i&0x20, i&0x40, i&0x80};
+        caseIndex = ((bits[6] ? 0x80:0) +
+                     (bits[7] ? 0x40:0) +
+                     (bits[5] ? 0x20:0) +
+                     (bits[4] ? 0x10:0) +
+                     (bits[2] ? 0x08:0) +
+                     (bits[3] ? 0x04:0) +
+                     (bits[1] ? 0x02:0) +
+                     (bits[0] ? 0x01:0));
+    }
+    else
+    {
+        caseIndex = i;
+    }
+    return caseIndex;
+}
 
 inline const char *NodeToStr(char c)
 {
@@ -93,6 +129,42 @@ inline char StrToNode(const char *c)
     return 0;
 }
 
+inline char StrToNodeWithConversion(const char *c)
+{
+    // This is the same as StrToNode, but it also converts
+    // indexing from Quad to Pixel or Hex to Voxel
+    if (!strcmp(c,"P0")) return '0';
+    if (!strcmp(c,"P1")) return '1';
+    if (!strcmp(c,"P2")) return '3';
+    if (!strcmp(c,"P3")) return '2';
+    if (!strcmp(c,"P4")) return '4';
+    if (!strcmp(c,"P5")) return '5';
+    if (!strcmp(c,"P6")) return '7';
+    if (!strcmp(c,"P7")) return '6';
+
+    if (!strcmp(c,"EA")) return 'a';
+    if (!strcmp(c,"EB")) return 'b';
+    if (!strcmp(c,"EC")) return 'c';
+    if (!strcmp(c,"ED")) return 'd';
+    if (!strcmp(c,"EE")) return 'e';
+    if (!strcmp(c,"EF")) return 'f';
+    if (!strcmp(c,"EG")) return 'g';
+    if (!strcmp(c,"EH")) return 'h';
+    if (!strcmp(c,"EI")) return 'i';
+    if (!strcmp(c,"EJ")) return 'j';
+    if (!strcmp(c,"EK")) return 'k';
+    if (!strcmp(c,"EL")) return 'l';
+
+    if (!strcmp(c,"N0")) return 'p';
+    if (!strcmp(c,"N1")) return 'q';
+    if (!strcmp(c,"N2")) return 'r';
+    if (!strcmp(c,"N3")) return 's';
+    if (!strcmp(c,"N4")) return 't';
+
+    cerr << "Error: Bad node string '"<<c<<"'\n";
+    return 0;
+}
+
 ClipEditor::ClipEditor(const QString &st,
                      QWidget *parent, const QString &name) :
         QMainWindow(parent, name)
@@ -101,6 +173,11 @@ ClipEditor::ClipEditor(const QString &st,
     {
         ncases    = 256;
         shapetype = ST_HEX;
+    }
+    else if (st.left(3) == "vox")
+    {
+        ncases    = 256;
+        shapetype = ST_VOXEL;
     }
     else if (st.left(3) == "wed" || st.left(3) == "wdg")
     {
@@ -121,6 +198,11 @@ ClipEditor::ClipEditor(const QString &st,
     {
         ncases    = 16;
         shapetype = ST_QUAD;
+    }
+    else if (st.left(3) == "pix")
+    {
+        ncases    = 16;
+        shapetype = ST_PIXEL;
     }
     else if (st.left(3) == "tri")
     {
@@ -556,16 +638,43 @@ ClipEditor::LoadFromFile()
     switch (shapetype)
     {
       case ST_HEX:     lower="Hex"; upper="HEX"; break;
+      case ST_VOXEL:   lower="Vox"; upper="VOX"; break;
       case ST_WEDGE:   lower="Wdg"; upper="WDG"; break;
       case ST_PYRAMID: lower="Pyr"; upper="PYR"; break;
       case ST_TET:     lower="Tet"; upper="TET"; break;
       case ST_QUAD:    lower="Qua"; upper="QUA"; break;
+      case ST_PIXEL:   lower="Pix"; upper="PIX"; break;
       case ST_TRIANGLE:lower="Tri"; upper="TRI"; break;
       default: cerr << "Error\n"; break;
     }
     sprintf(fname, "ClipCases%s.C", lower);
 
     ifstream in(fname, ios::in);
+
+    bool qpconv = false;
+    bool hvconv = false;
+    if (!in && shapetype==ST_PIXEL)
+    {
+        cerr << "WARNING: Couldn't load from file "<<fname<<"!\n";
+        lower = "Qua";
+        upper = "QUA";
+        sprintf(fname, "ClipCases%s.C", lower);
+        qpconv = true;
+        cerr << "Attempting to load from file "<<fname<<".\n";
+        in.open(fname, ios::in);
+    }
+
+    if (!in && shapetype==ST_VOXEL)
+    {
+        cerr << "WARNING: Couldn't load from file "<<fname<<"!\n";
+        lower = "Hex";
+        upper = "HEX";
+        hvconv = true;
+        cerr << "Attempting to load from file "<<fname<<".\n";
+        sprintf(fname, "ClipCases%s.C", lower);
+        in.open(fname, ios::in);
+    }
+
     if (!in)
     {
         cerr << "WARNING: Couldn't load from file "<<fname<<"!\n";
@@ -590,6 +699,8 @@ ClipEditor::LoadFromFile()
     // Read the sizes
     for (int i=0; i<ncases; i++)
     {
+        int caseIndex = ConvertedCaseIndex(i, qpconv, hvconv);
+
         int sz;
         in >> buff;
         if (buff[0] == '/')
@@ -599,7 +710,7 @@ ClipEditor::LoadFromFile()
         }
         if (buff[strlen(buff)-1] == ',') buff[strlen(buff)-1] = '\0';
         sz = atoi(buff);
-        datasets[i]->shapes.resize(sz+1);
+        datasets[caseIndex]->shapes.resize(sz+1);
     }
 
     // Get to the offsets
@@ -619,7 +730,8 @@ ClipEditor::LoadFromFile()
 
     for (int i=0; i<ncases; i++)
     {
-        DataSet *d = datasets[i];
+        int caseIndex = ConvertedCaseIndex(i, qpconv, hvconv);
+        DataSet *d = datasets[caseIndex];
         //cerr << "Case "<<i<<": reading "<<(d->shapes.size()-1)<<" shapes\n";
 
         in >> buff;
@@ -638,6 +750,11 @@ ClipEditor::LoadFromFile()
             if (!strcmp(buff,"ST_HEX"))
             {
                 st=ST_HEX;
+                nv=8;
+            }
+            else if (!strcmp(buff,"ST_VOX"))
+            {
+                st=ST_VOXEL;
                 nv=8;
             }
             else if (!strcmp(buff,"ST_WDG"))
@@ -711,11 +828,15 @@ ClipEditor::LoadFromFile()
                 }
             }
 
-            for (int i=0; i<nv; i++)
+            for (int p=0; p<nv; p++)
             {
                 in >> buff;
                 if (buff[strlen(buff)-1] == ',') buff[strlen(buff)-1] = '\0';
-                pts[i] = StrToNode(buff);
+
+                if (hvconv || qpconv)
+                    pts[p] = StrToNodeWithConversion(buff);
+                else
+                    pts[p] = StrToNode(buff);
             }
 
             d->shapes[j] = Shape(st, &d->shapes[0], color, nv, pts, d);
@@ -740,10 +861,12 @@ ClipEditor::SaveToFile()
     switch (shapetype)
     {
       case ST_HEX:     lower="Hex"; upper="HEX"; break;
+      case ST_VOXEL:   lower="Vox"; upper="VOX"; break;
       case ST_WEDGE:   lower="Wdg"; upper="WDG"; break;
       case ST_PYRAMID: lower="Pyr"; upper="PYR"; break;
       case ST_TET:     lower="Tet"; upper="TET"; break;
       case ST_QUAD:    lower="Qua"; upper="QUA"; break;
+      case ST_PIXEL:   lower="Pix"; upper="PIX"; break;
       case ST_TRIANGLE:lower="Tri"; upper="TRI"; break;
       default: cerr << "Error\n"; break;
     }
@@ -908,10 +1031,12 @@ ClipEditor::SaveToFile()
                     switch (s->shapeType)
                     {
                       case ST_HEX:     out << "  ST_HEX, "; break;
+                      case ST_VOXEL:   out << "  ST_VOX, "; break;
                       case ST_WEDGE:   out << "  ST_WDG, "; break;
                       case ST_PYRAMID: out << "  ST_PYR, "; break;
                       case ST_TET:     out << "  ST_TET, "; break;
                       case ST_QUAD:    out << "  ST_QUA, "; break;
+                      case ST_PIXEL:   out << "  ST_PIX, "; break;
                       case ST_TRIANGLE:out << "  ST_TRI, "; break;
                       default: cerr << "Error\n";
                     }

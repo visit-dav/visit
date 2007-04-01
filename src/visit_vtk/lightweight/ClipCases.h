@@ -15,6 +15,9 @@
 //    Brad Whitlock, Tue Sep 23 09:59:23 PDT 2003
 //    Added API so it builds on Windows.
 //
+//    Jeremy Meredith, Wed Jun 23 15:39:58 PDT 2004
+//    Added voxel and pixel cases.  Not output shapes, though.
+//
 
 // Points of original cell (up to 8, for the hex)
 // Note: we assume P0 is zero in several places.
@@ -70,6 +73,11 @@ extern VISIT_VTK_LIGHT_API int numClipShapesHex[256];
 extern VISIT_VTK_LIGHT_API int startClipShapesHex[256];
 extern VISIT_VTK_LIGHT_API unsigned char clipShapesHex[];
 
+extern VISIT_VTK_LIGHT_API int numClipCasesVox;
+extern VISIT_VTK_LIGHT_API int numClipShapesVox[256];
+extern VISIT_VTK_LIGHT_API int startClipShapesVox[256];
+extern VISIT_VTK_LIGHT_API unsigned char clipShapesVox[];
+
 extern VISIT_VTK_LIGHT_API int numClipCasesWdg;
 extern VISIT_VTK_LIGHT_API int numClipShapesWdg[64];
 extern VISIT_VTK_LIGHT_API int startClipShapesWdg[64];
@@ -89,6 +97,11 @@ extern VISIT_VTK_LIGHT_API int numClipCasesQua;
 extern VISIT_VTK_LIGHT_API int numClipShapesQua[16];
 extern VISIT_VTK_LIGHT_API int startClipShapesQua[16];
 extern VISIT_VTK_LIGHT_API unsigned char clipShapesQua[];
+
+extern VISIT_VTK_LIGHT_API int numClipCasesPix;
+extern VISIT_VTK_LIGHT_API int numClipShapesPix[16];
+extern VISIT_VTK_LIGHT_API int startClipShapesPix[16];
+extern VISIT_VTK_LIGHT_API unsigned char clipShapesPix[];
 
 extern VISIT_VTK_LIGHT_API int numClipCasesTri;
 extern VISIT_VTK_LIGHT_API int numClipShapesTri[8];

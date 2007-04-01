@@ -13,6 +13,9 @@
 //    Jeremy Meredith, Thu Sep 18 11:29:12 PDT 2003
 //    Added Quad and Triangle shapes.
 //
+//    Jeremy Meredith, Thu Jun 24 10:38:05 PDT 2004
+//    Added Voxel and Pixel shapes.
+//
 // ----------------------------------------------------------------------------
 
 #include "Shape.h"
@@ -32,6 +35,7 @@ bool Shape::numbering = true;
 
 int triangleFaces[1][3] = {{0,1,2}};
 int quadFaces[1][4] = {{0,1,2,3}};
+int pixelFaces[1][4] = {{0,1,3,2}};
 
 void
 DrawFuzzyPoint(float x,float y,float z,float d)
@@ -87,6 +91,28 @@ Shape::Shape(ShapeType st, int sc, DataSet *ds)
 
         nquads = 6;
         quads = hexQuadFaces;
+        break;
+
+      case ST_VOXEL:
+        nverts = 8;
+
+        xc[0] = -1;        yc[0] = -1;        zc[0] = -1;
+        xc[1] =  1;        yc[1] = -1;        zc[1] = -1;
+        xc[2] = -1;        yc[2] = -1;        zc[2] =  1;
+        xc[3] =  1;        yc[3] = -1;        zc[3] =  1;
+        xc[4] = -1;        yc[4] =  1;        zc[4] = -1;
+        xc[5] =  1;        yc[5] =  1;        zc[5] = -1;
+        xc[6] = -1;        yc[6] =  1;        zc[6] =  1;
+        xc[7] =  1;        yc[7] =  1;        zc[7] =  1;
+
+        nedges = 12;
+        edges = voxVerticesFromEdges;
+
+        ntris = 0;
+        tris = NULL;
+
+        nquads = 6;
+        quads = voxQuadFaces;
         break;
 
       case ST_TET:
@@ -152,7 +178,7 @@ Shape::Shape(ShapeType st, int sc, DataSet *ds)
         xc[0] = -1;        yc[0] =  -1;        zc[0] =  0;
         xc[1] =  1;        yc[1] =  -1;        zc[1] =  0;
         xc[2] =  1;        yc[2] =   1;        zc[2] =  0;
-        xc[3] = -1;        yc[3] =   1;         zc[3] =  0;
+        xc[3] = -1;        yc[3] =   1;        zc[3] =  0;
 
         nedges = 4;
         edges = quadVerticesFromEdges;
@@ -162,6 +188,24 @@ Shape::Shape(ShapeType st, int sc, DataSet *ds)
 
         nquads = 1;
         quads = quadFaces;
+        break;
+
+      case ST_PIXEL:
+        nverts = 4;
+
+        xc[0] = -1;        yc[0] =  -1;        zc[0] =  0;
+        xc[1] =  1;        yc[1] =  -1;        zc[1] =  0;
+        xc[2] = -1;        yc[2] =   1;        zc[2] =  0;
+        xc[3] =  1;        yc[3] =   1;        zc[3] =  0;
+
+        nedges = 4;
+        edges = pixelVerticesFromEdges;
+
+        ntris = 0;
+        tris = NULL;
+
+        nquads = 1;
+        quads = pixelFaces;
         break;
 
       case ST_TRIANGLE:
@@ -210,6 +254,16 @@ Shape::Shape(ShapeType st, Shape *parent, int c, int n, const char *nodes, DataS
         quads  = hexQuadFaces;
         break;
 
+      case ST_VOXEL:
+        nverts = 8;
+        nedges = 12;
+        edges  = voxVerticesFromEdges;
+        ntris  = 0;
+        tris   = NULL;
+        nquads = 6;
+        quads  = voxQuadFaces;
+        break;
+
       case ST_TET:
         nverts = 4;
         nedges = 6;
@@ -248,6 +302,16 @@ Shape::Shape(ShapeType st, Shape *parent, int c, int n, const char *nodes, DataS
         tris   = NULL;
         nquads = 1;
         quads  = quadFaces;
+        break;
+
+      case ST_PIXEL:
+        nverts = 4;
+        nedges = 4;
+        edges  = pixelVerticesFromEdges;
+        ntris  = 0;
+        tris   = NULL;
+        nquads = 1;
+        quads  = pixelFaces;
         break;
 
       case ST_TRIANGLE:
@@ -658,6 +722,7 @@ Shape::Invert()
     switch (shapeType)
     {
       case ST_HEX:
+      case ST_VOXEL:
         swap(parentNodes[0],parentNodes[4]);
         swap(parentNodes[1],parentNodes[5]);
         swap(parentNodes[2],parentNodes[6]);
@@ -687,6 +752,10 @@ Shape::Invert()
         swap(parentNodes[1],parentNodes[2]);
         break;
 
+      case ST_PIXEL:
+        swap(parentNodes[1],parentNodes[2]);
+        break;
+
       case ST_POINT:
         break;
     }
@@ -711,6 +780,26 @@ Shape::CheckCopyOf(Shape *s)
             {
                 if (s->pointcase[p] !=
                     this->pointcase[hexTransforms[i].n[p]])
+                {
+                    okay = false;
+                }
+            }
+            if (okay)
+            {
+                return i;
+            }
+        }
+        break;
+
+      case ST_VOXEL:
+        ncases = 48;
+        for (i=0; i<ncases; i++)
+        {
+            bool okay = true;
+            for (int p=0; p<8; p++)
+            {
+                if (s->pointcase[p] !=
+                    this->pointcase[voxTransforms[i].n[p]])
                 {
                     okay = false;
                 }
@@ -802,6 +891,26 @@ Shape::CheckCopyOf(Shape *s)
         }
         break;
 
+      case ST_PIXEL:
+        ncases = 8;
+        for (i=0; i<ncases; i++)
+        {
+            bool okay = true;
+            for (int p=0; p<4; p++)
+            {
+                if (s->pointcase[p] !=
+                    this->pointcase[pixelTransforms[i].n[p]])
+                {
+                    okay = false;
+                }
+            }
+            if (okay)
+            {
+                return i;
+            }
+        }
+        break;
+
       case ST_TRIANGLE:
         ncases = 6;
         for (i=0; i<ncases; i++)
@@ -852,6 +961,10 @@ Shape::Shape(Shape *copy, int xformID, Shape *parent, DataSet *ds)
         MakeCopyOf(copy, hexTransforms[xformID]);
         break;
 
+      case ST_VOXEL:
+        MakeCopyOf(copy, voxTransforms[xformID]);
+        break;
+
       case ST_TET:
         MakeCopyOf(copy, tetTransforms[xformID]);
         break;
@@ -866,6 +979,10 @@ Shape::Shape(Shape *copy, int xformID, Shape *parent, DataSet *ds)
 
       case ST_QUAD:
         MakeCopyOf(copy, quadTransforms[xformID]);
+        break;
+
+      case ST_PIXEL:
+        MakeCopyOf(copy, pixelTransforms[xformID]);
         break;
 
       case ST_TRIANGLE:
@@ -883,6 +1000,27 @@ Shape::Shape(Shape *copy, int xformID, Shape *parent, DataSet *ds)
 
 void
 Shape::MakeCopyOf(Shape *s, HexTransform &xform)
+{
+    for (int i=0; i<nverts; i++)
+    {
+        char c1 = s->parentNodes[i];
+        char c2 = c1;
+        if (c1 >= '0' && c1 <= '9')
+        {
+            c2 = xform.n[c1 - '0'] + '0';
+        }
+        else if (c1 >= 'a' && c1 <= 'l')
+        {
+            c2 = xform.e[c1 - 'a'];
+        }
+        parentNodes[i] = c2;
+    }
+    if (xform.f)
+        Invert();
+}
+
+void
+Shape::MakeCopyOf(Shape *s, VoxTransform &xform)
 {
     for (int i=0; i<nverts; i++)
     {
@@ -967,6 +1105,27 @@ Shape::MakeCopyOf(Shape *s, TetTransform &xform)
 
 void
 Shape::MakeCopyOf(Shape *s, QuadTransform &xform)
+{
+    for (int i=0; i<nverts; i++)
+    {
+        char c1 = s->parentNodes[i];
+        char c2 = c1;
+        if (c1 >= '0' && c1 <= '9')
+        {
+            c2 = xform.n[c1 - '0'] + '0';
+        }
+        else if (c1 >= 'a' && c1 <= 'l')
+        {
+            c2 = xform.e[c1 - 'a'];
+        }
+        parentNodes[i] = c2;
+    }
+    if (xform.f)
+        Invert();
+}
+
+void
+Shape::MakeCopyOf(Shape *s, PixelTransform &xform)
 {
     for (int i=0; i<nverts; i++)
     {

@@ -97,6 +97,9 @@
 #   Chris Wojtan, Tue Jun 15 15:46:54 PDT 2004
 #   Added Image file format reader.
 #
+#   Hank Childs, Thu Jun 24 12:46:07 PDT 2004
+#   Remove Vista from the required format list to the HDF5 list.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -108,12 +111,12 @@ BOXLIB2D=Boxlib2D
 BOXLIB3D=Boxlib3D
 EXODUS=Exodus TimeVaryingExodus
 HDF4=Cosmos
-HDF5=Tetrad SAMRAI CosmosPP
+HDF5=Tetrad SAMRAI CosmosPP Vista
 MILI=Mili
 PDB=KullLite PDB
 SAF=SAF
 SAMPLES=Rect Hex
-REQUIRED=ANALYZE BOV Curve2D EnSight Image Lines PLOT2D PLOT3D Point3D STL Silo Spheral VTK WavefrontOBJ Vista
+REQUIRED=ANALYZE BOV Curve2D EnSight Image Lines PLOT2D PLOT3D Point3D STL Silo Spheral VTK WavefrontOBJ
 
 OPTIONAL=
 

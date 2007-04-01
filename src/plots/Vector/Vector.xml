@@ -46,7 +46,7 @@
         Default
       </Field>
       <Field name="vectorOrigin" label="Vector Origin" type="enum" subtype="OriginType">
-        Middle
+        Tail
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>

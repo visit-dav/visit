@@ -322,6 +322,10 @@ $0 = shift @ARGV;
 #    Hank Childs, Sun May  9 11:48:58 PDT 2004
 #    Add a line to the usage regarding "default_format".
 #
+#    Eric Brugger, Thu Jun 24 11:12:44 PDT 2004
+#    I modified the setting of the LD_LIBRARY_PATH so that /usr/local/lib
+#    is at the end of the path instead of at the beginning.
+#
 ###############################################################################
 
 
@@ -1066,7 +1070,7 @@ $ENV{LIBPATH}            = "$visitlibdir:$ENV{LIBPATH}";
 
 # Add /usr/local/lib to the shared library path.  This was added for the
 # c++ library on some sun systems, but it may have broader applicability.
-$ENV{LD_LIBRARY_PATH}    = "/usr/local/lib:$ENV{LD_LIBRARY_PATH}";
+$ENV{LD_LIBRARY_PATH}    = "$ENV{LD_LIBRARY_PATH}:/usr/local/lib";
 
 # Set up some environment flags that let VisIt run on Darwin.
 if($os eq "darwin")

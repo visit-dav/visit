@@ -682,6 +682,10 @@ void vtkVisItClipper::RectilinearGridExecute(void)
 //    Jeremy Meredith, Wed May  5 14:49:55 PDT 2004
 //    Changed it to a single cutoff for scalars to make the math more robust.
 //
+//    Jeremy Meredith, Thu Jun 24 09:39:31 PDT 2004
+//    Added support for unstructured voxels and pixels, letting us use this
+//    fast algorithm on thresholded/onionpeeled structured meshes.
+//
 // ****************************************************************************
 void vtkVisItClipper::UnstructuredGridExecute(void)
 {
@@ -734,8 +738,10 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
           case VTK_PYRAMID:
           case VTK_WEDGE:
           case VTK_HEXAHEDRON:
+          case VTK_VOXEL:
           case VTK_TRIANGLE:
           case VTK_QUAD:
+          case VTK_PIXEL:
             canClip = true;
             break;
 
@@ -800,6 +806,12 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
                 numOutput  = numClipShapesHex[lookup_case];
                 vertices_from_edges = hexVerticesFromEdges;
                 break;
+              case VTK_VOXEL:
+                startIndex = startClipShapesVox[lookup_case];
+                splitCase  = &clipShapesVox[startIndex];
+                numOutput  = numClipShapesVox[lookup_case];
+                vertices_from_edges = voxVerticesFromEdges;
+                break;
               case VTK_TRIANGLE:
                 startIndex = startClipShapesTri[lookup_case];
                 splitCase  = &clipShapesTri[startIndex];
@@ -811,6 +823,12 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
                 splitCase  = &clipShapesQua[startIndex];
                 numOutput  = numClipShapesQua[lookup_case];
                 vertices_from_edges = quadVerticesFromEdges;
+                break;
+              case VTK_PIXEL:
+                startIndex = startClipShapesPix[lookup_case];
+                splitCase  = &clipShapesPix[startIndex];
+                numOutput  = numClipShapesPix[lookup_case];
+                vertices_from_edges = pixelVerticesFromEdges;
                 break;
             }
 

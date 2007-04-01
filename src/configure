@@ -1269,6 +1269,11 @@ fi
 TOPDIR=`$pwd`
 
 
+emptycxxflags="no"
+if test -z $CXXFLAGS; then
+    emptycxxflags="yes"
+fi
+
 ### Init the tflops_override variable.
 tflops_override=no
 
@@ -2900,6 +2905,11 @@ echo "$as_me: error: Please specify one of \"all\" or \"base\" for --with-dbs." 
 esac
 
 
+defaultcxxflags="no"
+if test -z "$CXXFLAGS"; then
+    defaultcxxflags="yes"
+fi
+
 # Check for programs.
 # We shouldn't depend on too many!
 ac_ext=cc
@@ -4448,6 +4458,14 @@ if test "$ac_cv_search_strerror" != no; then
 
 fi
 
+
+if test $emptycxxflags = "yes"; then
+    if test $defaultcxxflags = "yes"; then
+        CXXFLAGS="-O2"
+    else
+        CXXFLAGS="-O2 $CXXFLAGS"
+    fi
+fi
 
 # Check to see if we're running clearmake.
 # If we are, set the build verbosity to 0 so that output won't mess up the rest
