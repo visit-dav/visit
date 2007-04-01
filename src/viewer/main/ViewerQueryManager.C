@@ -869,6 +869,10 @@ ViewerQueryManager::GetQueryClientAtts()
 //    Added a line to clear out status in case of an exception occuring
 //    during a query.
 //
+//    Kathleen Bonnell, Tue May 25 16:09:15 PDT 2004 
+//    Made arg1 be Element and arg2 Domain, to be consistent with Pick'
+//    default ordering (domain can be left out, so should be second arg). 
+//  
 // ****************************************************************************
 
 void         
@@ -1144,7 +1148,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
             qa.SetName(qName);
             qa.SetVariables(uniqueVars);
             qa.SetVarTypes(varTypes);
-            // Right now, use of Domain and DataType are mutually
+            // Right now, use of Element and DataType are mutually
             // exclusive, and we don't necessarily have to know thich one
             // the query will use, so go ahead and use arg1 to set both
             // atts.
@@ -1152,8 +1156,8 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
                 qa.SetDataType(QueryAttributes::ActualData);
             else      
                 qa.SetDataType(QueryAttributes::OriginalData); 
-            qa.SetDomain(arg1);
-            qa.SetElement(arg2);
+            qa.SetElement(arg1);
+            qa.SetDomain(arg2);
             qa.SetTimeStep(state);
             if (strcmp(qName.c_str(), "Variable by Zone") == 0)
                 qa.SetElementType(QueryAttributes::Zone);
@@ -2732,6 +2736,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Hank Childs, Tue Apr 13 12:45:33 PDT 2004
 //    Do a better job distinguishing between 2D and 3D area.
 //
+//    Kathleen Bonnell, Tue May 25 16:09:15 PDT 2004 
+//    Added Zone center.
+//
 // ****************************************************************************
 
 void
@@ -2790,6 +2797,8 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->SetWindowType("PickByZone", QueryList::DomainZone);
     queryTypes->AddTimeQuery("PickByNode", QueryList::PointQuery);
     queryTypes->SetWindowType("PickByNode", QueryList::DomainNode);
+    queryTypes->AddQuery("Zone Center", QueryList::DatabaseQuery);
+    queryTypes->SetWindowType("Zone Center", QueryList::DomainZone);
 
     queryTypes->SelectAll();
 }

@@ -41,6 +41,9 @@
 //   Moved inlined constructor and destructor definitions to .C files
 //   because certain compilers have problems with them.
 //
+//   Kathleen Bonnell, Tue May 25 16:16:25 PDT 2004 
+//   Added QueryZoneCenter.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionEvaluatorFilter 
@@ -60,6 +63,8 @@ public:
 
     virtual bool             FindElementForPoint(const char *, const int, 
                                  const int, const char *, float[3], int &);
+    virtual bool             QueryZoneCenter(const std::string&, const int, 
+                                 const int, const int, float[3]);
 
     virtual void             GetDomainName(const std::string &, const int,
                                  const int , std::string &);

@@ -12,6 +12,8 @@
 #include <EngineKey.h>
 #include <map>
 
+#include <ExternalRenderRequestInfo.h>
+
 // Forward declarations.
 class AttributeSubject;
 class EngineList;
@@ -22,6 +24,7 @@ class QueryAttributes;
 class QueryOverTimeAttributes;
 class ViewerPlot;
 class AnnotationAttributes;
+class AnnotationObjectList;
 class WindowAttributes;
 
 // ****************************************************************************
@@ -158,6 +161,10 @@ class WindowAttributes;
 //    Mark C. Miller, Wed Apr 21 12:42:13 PDT 2004
 //    I removed the UseNetwork method
 //
+//    Mark C. Miller, Tue May 25 20:44:10 PDT 2004
+//    Removed several args from ExternalRender method
+//    Added AnnotationObjectList arg to SetWinAnnotAtts
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -182,13 +189,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     bool InExecute() const;
     void SendKeepAlives();
 
-    bool ExternalRender(std::vector<const char*> pluginIDsList,
-                        std::vector<EngineKey> engineKeysList,
-                        intVector plotIdsList,
-                        std::vector<const AttributeSubject *> attsList,
-                        WindowAttributes winAtts,
-                        AnnotationAttributes annotAtts,
-                        std::string extStr,
+    bool ExternalRender(const ExternalRenderRequestInfo& reqInfo,
                         bool& shouldTurnOfScalableRendering,
                         bool doAllAnnotations,
                         std::vector<avtImage_p>& imgList);
@@ -233,6 +234,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
                    const bool flag, const int nid);
     bool SetWinAnnotAtts(const EngineKey &ek, const WindowAttributes *wa,
                          const AnnotationAttributes *aa,
+                         const AnnotationObjectList *ao,
                          const std::string extStr);
     bool ClearCache(const EngineKey &ek, const char *dbName = 0);
     bool Query(const EngineKey &ek, const std::vector<int> &networkIds, 

@@ -300,6 +300,10 @@ avtMapper::GetDrawable(void)
 //    Hank Childs, Thu Mar 18 16:02:27 PST 2004
 //    Do not create actors and mappers for empty datasets.
 //
+//    Hank Childs, Tue May 25 13:30:16 PDT 2004
+//    Allow display lists of 250,000 polygons or more again, since the display
+//    list generation was made much faster by breaking it into chunks.
+//
 // ****************************************************************************
 
 void
@@ -351,7 +355,7 @@ avtMapper::SetUpMappers(void)
         mappers[i] = CreateMapper();
         vtkDataSet *ds = InsertFilters(children[i], i);
         mappers[i]->SetInput(ds);
-        if (ds->GetNumberOfCells() > 250000 || immediateMode)
+        if (immediateMode)
         {
             mappers[i]->ImmediateModeRenderingOn();
         }

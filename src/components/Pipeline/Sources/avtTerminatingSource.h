@@ -56,6 +56,10 @@ typedef void                   (*InitializeProgressCallback)(void *, int);
 //
 //    Kathleen Bonnell, Mon Dec 22 14:48:57 PST 2003 
 //    Added virtual method GetDomainName. 
+//
+//    Kathleen Bonnell, Tue May 25 16:16:25 PDT 2004 
+//    Add virtual method 'QueryZoneCenter'.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtTerminatingSource : virtual public avtQueryableSource
@@ -97,6 +101,9 @@ class PIPELINE_API avtTerminatingSource : virtual public avtQueryableSource
                                        { return false;};
     virtual void                   GetDomainName(const std::string &, const int, 
                                        const int, std::string &) {;};
+    virtual bool                   QueryZoneCenter(const std::string &, const int, 
+                                       const int, const int, float[3])
+                                       { return false;};
 
   protected:
     avtMetaData                   *metadata;

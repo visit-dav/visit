@@ -76,6 +76,9 @@
 #   I changed the list of libraries that need to be linked so we can prebind
 #   the library on MacOS X.
 #
+#   Kathleen Bonnell, Tue May 25 16:16:25 PDT 2004 
+#   Added avtZoneCenterQuery. 
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -125,7 +128,8 @@ Queries_src= \
  Queries/avtTotalVolumeQuery.C \
  Queries/avtVariableQuery.C \
  Queries/avtVariableSummationQuery.C \
- Queries/avtWeightedVariableSummationQuery.C
+ Queries/avtWeightedVariableSummationQuery.C \
+ Queries/avtZoneCenterQuery.C
 
 
 CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@

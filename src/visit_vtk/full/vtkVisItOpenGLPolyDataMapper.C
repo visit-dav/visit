@@ -34,6 +34,9 @@
 #include "vtkTriangle.h"
 #include "vtkOpenGLRenderWindow.h"
 
+static const int dlSize = 8192;
+
+
 #ifndef VTK_IMPLEMENT_MESA_CXX
   #if defined(__APPLE__) && (defined(VTK_USE_CARBON) || defined(VTK_USE_COCOA))
     #include <OpenGL/gl.h>
@@ -51,9 +54,20 @@ vtkStandardNewMacro(vtkVisItOpenGLPolyDataMapper);
 #endif
 
 // Construct empty object.
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Tue May 25 10:25:46 PDT 2004
+//    Initialize new members for display lists.
+//
+// ****************************************************************************
 vtkVisItOpenGLPolyDataMapper::vtkVisItOpenGLPolyDataMapper()
 {
-  this->ListId = 0;
+  this->ListStart = 0;
+  this->doingDisplayLists = false;
+  this->primsInCurrentList = 0;
+  this->nLists = 0;
+  this->CurrentList = 0;
 }
 
 // Destructor (don't call ReleaseGraphicsResources() since it is virtual
@@ -69,11 +83,11 @@ vtkVisItOpenGLPolyDataMapper::~vtkVisItOpenGLPolyDataMapper()
 // the display list if any.
 void vtkVisItOpenGLPolyDataMapper::ReleaseGraphicsResources(vtkWindow *win)
 {
-  if (this->ListId && win)
+  if (this->ListStart && win)
     {
     win->MakeCurrent();
-    glDeleteLists(this->ListId,1);
-    this->ListId = 0;
+    glDeleteLists(this->ListStart,nLists);
+    this->ListStart = 0;
     }
   this->LastWindow = NULL; 
 }
@@ -81,6 +95,14 @@ void vtkVisItOpenGLPolyDataMapper::ReleaseGraphicsResources(vtkWindow *win)
 //
 // Receives from Actor -> maps data to primitives
 //
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Tue May 25 10:04:36 PDT 2004
+//    Break big display lists into groups of smaller display lists.
+//
+// ****************************************************************************
+ 
 void vtkVisItOpenGLPolyDataMapper::RenderPiece(vtkRenderer *ren, vtkActor *act)
 {
   vtkIdType numPts;
@@ -222,16 +244,37 @@ void vtkVisItOpenGLPolyDataMapper::RenderPiece(vtkRenderer *ren, vtkActor *act)
       this->LastWindow = ren->GetRenderWindow();
       
       // get a unique display list id
-      this->ListId = glGenLists(1);
-      glNewList(this->ListId,GL_COMPILE);
+      int nCells = input->GetNumberOfCells();
+      this->nLists = nCells / dlSize;
+      if ((nCells % dlSize) != 0)
+          this->nLists++;
+      this->nLists += 1; // For the "uber display list"
+      this->ListStart = glGenLists(this->nLists);
 
+      this->CurrentList = this->ListStart+1;
+      this->doingDisplayLists = true;
+      this->primsInCurrentList = 0;
       noAbort = this->Draw(ren,act);
+
+      // Now make an uber-display-list that calls all of the other display
+      // lists.
+      glNewList(this->ListStart,GL_COMPILE);
+
+      // Note that lastList will almost always be ListStart+nLists.
+      // However: not all the draw methods know how to break up DLs into
+      // smaller ones.  So there is a chance that CurrentList is smaller...
+      int lastList = this->CurrentList;
+
+      for (int i = this->ListStart+1 ; i <= lastList ; i++)
+        {
+        glCallList(i);
+        }
       glEndList();
       vtkTimerLog::MarkEndEvent("Building display list");
 
       // Time the actual drawing
       this->Timer->StartTimer();
-      glCallList(this->ListId);
+      glCallList(this->ListStart);
       this->Timer->StopTimer();      
       }
     else
@@ -252,7 +295,7 @@ void vtkVisItOpenGLPolyDataMapper::RenderPiece(vtkRenderer *ren, vtkActor *act)
       {
       // Time the actual drawing
       this->Timer->StartTimer();
-      glCallList(this->ListId);
+      glCallList(this->ListStart);
       this->Timer->StopTimer();      
       }
     }
@@ -265,6 +308,7 @@ void vtkVisItOpenGLPolyDataMapper::RenderPiece(vtkRenderer *ren, vtkActor *act)
     this->MapScalars(act->GetProperty()->GetOpacity());
     // Time the actual drawing
     this->Timer->StartTimer();
+    this->doingDisplayLists = false;
     this->Draw(ren,act);
     this->Timer->StopTimer();      
     }
@@ -362,10 +406,17 @@ static void vtkOpenGLBeginPolyTriangleOrQuad(GLenum aGlFunction,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Added new arguments for display lists.  DID NOT MAKE USE OF.
+//
 static void vtkOpenGLDraw01(vtkCellArray *aPrim, GLenum aGlFunction,
                             vtkIdType &, vtkPoints *p, vtkDataArray *, 
                             vtkUnsignedCharArray *, vtkDataArray *, 
-                            vtkOpenGLRenderer *ren, int &noAbort)
+                            vtkOpenGLRenderer *ren, int &noAbort,
+                            bool doingDisplayLists,int &primsInCurrentList,
+                            int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -409,10 +460,17 @@ static void vtkOpenGLDraw01(vtkCellArray *aPrim, GLenum aGlFunction,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Break display lists into smaller chunks.
+//
 static void vtkOpenGLDrawN013(vtkCellArray *aPrim, GLenum aGlFunction,
                               vtkIdType &, vtkPoints *p, vtkDataArray *n, 
                               vtkUnsignedCharArray *, vtkDataArray *, 
-                              vtkOpenGLRenderer *ren, int &noAbort)
+                              vtkOpenGLRenderer *ren, int &noAbort,
+                              bool doingDisplayLists, int &primsInCurrentList,
+                              int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -454,6 +512,19 @@ static void vtkOpenGLDrawN013(vtkCellArray *aPrim, GLenum aGlFunction,
         noAbort = 0;
         }
       }
+    if (doingDisplayLists)
+      {
+      primsInCurrentList++;
+      if (primsInCurrentList >= dlSize)
+        {
+        glEnd();
+        glEndList();
+        CurrentList++;
+        glNewList(CurrentList,GL_COMPILE);
+        glBegin(previousGlFunction);
+        primsInCurrentList = 0;
+        }
+      }
     }
   if ((previousGlFunction == GL_TRIANGLES)
       || (previousGlFunction == GL_QUADS)
@@ -463,11 +534,18 @@ static void vtkOpenGLDrawN013(vtkCellArray *aPrim, GLenum aGlFunction,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Break display lists into smaller chunks.
+//
 static void vtkOpenGLDrawCN013(vtkCellArray *aPrim, GLenum aGlFunction,
                                vtkIdType &cellNum, vtkPoints *p, 
                                vtkDataArray *n, vtkUnsignedCharArray *, 
                                vtkDataArray *, vtkOpenGLRenderer *ren, 
-                               int &noAbort)
+                               int &noAbort,
+                               bool doingDisplayLists, int &primsInCurrentList,
+                               int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -510,6 +588,19 @@ static void vtkOpenGLDrawCN013(vtkCellArray *aPrim, GLenum aGlFunction,
         noAbort = 0;
         }
       }
+    if (doingDisplayLists)
+      {
+      primsInCurrentList++;
+      if (primsInCurrentList >= dlSize)
+        {
+        glEnd();
+        glEndList();
+        CurrentList++;
+        glNewList(CurrentList,GL_COMPILE);
+        glBegin(previousGlFunction);
+        primsInCurrentList = 0;
+        }
+      }
     }
   if ((previousGlFunction == GL_TRIANGLES)
       || (previousGlFunction == GL_QUADS)
@@ -519,10 +610,17 @@ static void vtkOpenGLDrawCN013(vtkCellArray *aPrim, GLenum aGlFunction,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Added new arguments for display lists.  DID NOT MAKE USE OF.
+//
 static void vtkOpenGLDrawS01(vtkCellArray *aPrim, GLenum aGlFunction,
                              vtkIdType &, vtkPoints *p, vtkDataArray *, 
                              vtkUnsignedCharArray *c, vtkDataArray *, 
-                             vtkOpenGLRenderer *ren, int &noAbort)
+                             vtkOpenGLRenderer *ren, int &noAbort,
+                             bool doingDisplayLists,int &primsInCurrentList,
+                             int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -541,62 +639,6 @@ static void vtkOpenGLDrawS01(vtkCellArray *aPrim, GLenum aGlFunction,
       {
       glColor4ubv(c->GetPointer(4*pts[j]));
       glVertex3fv(p->GetPoint(pts[j]));
-      }
-
-    if ((previousGlFunction != GL_TRIANGLES) 
-        && (previousGlFunction != GL_QUADS)
-        && (previousGlFunction != GL_POINTS))
-      {
-      glEnd();
-      }
-    
-    // check for abort condition
-    if (count == 100)
-      {
-      count = 0;
-      if (ren->GetRenderWindow()->CheckAbortStatus())
-        {
-        noAbort = 0;
-        }
-      }
-    }
-  if ((previousGlFunction == GL_TRIANGLES)
-      || (previousGlFunction == GL_QUADS)
-      || (previousGlFunction == GL_POINTS))
-    {
-    glEnd();
-    }
-}
-
-static void vtkOpenGLDrawNS013(vtkCellArray *aPrim, GLenum aGlFunction,
-                               vtkIdType &, vtkPoints *p, vtkDataArray *n, 
-                               vtkUnsignedCharArray *c, vtkDataArray *, 
-                               vtkOpenGLRenderer *ren, int &noAbort)
-{
-  int j;
-  vtkIdType *pts = 0;
-  vtkIdType npts = 0;
-  int count = 0;
-  
-  GLenum previousGlFunction=GL_INVALID_VALUE;
-
-  const float *normal = n->GetTuple(0);
-  const float *vertices = p->GetPoint(0);
-  const unsigned char *colors = c->GetPointer(0);
-
-  int ncells = aPrim->GetNumberOfCells();
-  vtkIdType *ids = aPrim->GetData()->GetPointer(0);
-  for (int i = 0 ; i < ncells ; i++, count++)
-    {
-    int npts = *ids++;
-    vtkOpenGLBeginPolyTriangleOrQuad( aGlFunction, previousGlFunction, npts );
-    
-    for (j = 0; j < npts; j++) 
-      {
-      glColor4ubv(colors + 4*(*ids));
-      glNormal3fv(normal + 3*(*ids));
-      glVertex3fv(vertices + 3*(*ids));
-      ids++;
       }
 
     if ((previousGlFunction != GL_TRIANGLES) 
@@ -626,14 +668,96 @@ static void vtkOpenGLDrawNS013(vtkCellArray *aPrim, GLenum aGlFunction,
 
 // Modifications:
 //
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Break display lists into smaller chunks.
+//
+static void vtkOpenGLDrawNS013(vtkCellArray *aPrim, GLenum aGlFunction,
+                               vtkIdType &, vtkPoints *p, vtkDataArray *n, 
+                               vtkUnsignedCharArray *c, vtkDataArray *, 
+                               vtkOpenGLRenderer *ren, int &noAbort,
+                               bool doingDisplayLists, int &primsInCurrentList,
+                               int &CurrentList)
+{
+  int j;
+  vtkIdType *pts = 0;
+  vtkIdType npts = 0;
+  int count = 0;
+  
+  GLenum previousGlFunction=GL_INVALID_VALUE;
+
+  const float *normal = n->GetTuple(0);
+  const float *vertices = p->GetPoint(0);
+  const unsigned char *colors = c->GetPointer(0);
+
+  int ncells = aPrim->GetNumberOfCells();
+  vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+  for (int i = 0 ; i < ncells ; i++, count++)
+    {
+    int npts = *ids++;
+    vtkOpenGLBeginPolyTriangleOrQuad( aGlFunction, previousGlFunction, npts );
+    
+    for (j = 0; j < npts; j++) 
+      {
+      glColor4ubv(colors + 4*(*ids));
+      glNormal3fv(normal + 3*(*ids));
+      glVertex3fv(vertices + 3*(*ids));
+      ids++;
+      }
+
+    if ((previousGlFunction != GL_TRIANGLES) 
+        && (previousGlFunction != GL_QUADS)
+        && (previousGlFunction != GL_POINTS))
+      {
+      glEnd();
+      }
+    
+    // check for abort condition
+    if (count == 100)
+      {
+      count = 0;
+      if (ren->GetRenderWindow()->CheckAbortStatus())
+        {
+        noAbort = 0;
+        }
+      }
+    if (doingDisplayLists)
+      {
+      primsInCurrentList++;
+      if (primsInCurrentList >= dlSize)
+        {
+        glEnd();
+        glEndList();
+        CurrentList++;
+        glNewList(CurrentList,GL_COMPILE);
+        glBegin(previousGlFunction);
+        primsInCurrentList = 0;
+        }
+      }
+    }
+  if ((previousGlFunction == GL_TRIANGLES)
+      || (previousGlFunction == GL_QUADS)
+      || (previousGlFunction == GL_POINTS))
+    {
+    glEnd();
+    }
+}
+
+// Modifications:
+//
 //   Hank Childs, Thu May  6 07:36:12 PDT 2004
 //   Make sure color comes before vertex.
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Break display lists into smaller chunks.
+//
 
 static void vtkOpenGLDrawCNS013(vtkCellArray *aPrim, GLenum aGlFunction,
                                 vtkIdType &cellNum, vtkPoints *p, 
                                 vtkDataArray *n, vtkUnsignedCharArray *c, 
                                 vtkDataArray *, vtkOpenGLRenderer *ren, 
-                                int &noAbort)
+                                int &noAbort,
+                                bool doingDisplayLists,int &primsInCurrentList,
+                                int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -679,6 +803,19 @@ static void vtkOpenGLDrawCNS013(vtkCellArray *aPrim, GLenum aGlFunction,
         noAbort = 0;
         }
       }
+    if (doingDisplayLists)
+      {
+      primsInCurrentList++;
+      if (primsInCurrentList >= dlSize)
+        {
+        glEnd();
+        glEndList();
+        CurrentList++;
+        glNewList(CurrentList,GL_COMPILE);
+        glBegin(previousGlFunction);
+        primsInCurrentList = 0;
+        }
+      }
     }
   if ((previousGlFunction == GL_TRIANGLES)
       || (previousGlFunction == GL_QUADS)
@@ -688,10 +825,17 @@ static void vtkOpenGLDrawCNS013(vtkCellArray *aPrim, GLenum aGlFunction,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Added new arguments for display lists.  DID NOT MAKE USE OF.
+//
 static void vtkOpenGLDrawT01(vtkCellArray *aPrim, GLenum aGlFunction,
                              vtkIdType &, vtkPoints *p, vtkDataArray *, 
                              vtkUnsignedCharArray *, vtkDataArray *t, 
-                             vtkOpenGLRenderer *ren, int &noAbort)
+                             vtkOpenGLRenderer *ren, int &noAbort,
+                             bool doingDisplayLists,int &primsInCurrentList,
+                             int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -737,10 +881,17 @@ static void vtkOpenGLDrawT01(vtkCellArray *aPrim, GLenum aGlFunction,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Added new arguments for display lists.  DID NOT MAKE USE OF.
+//
 static void vtkOpenGLDrawNT013(vtkCellArray *aPrim, GLenum aGlFunction,
                                vtkIdType &, vtkPoints *p, vtkDataArray *n, 
                                vtkUnsignedCharArray *, vtkDataArray *t, 
-                               vtkOpenGLRenderer *ren, int &noAbort)
+                               vtkOpenGLRenderer *ren, int &noAbort,
+                               bool doingDisplayLists,int &primsInCurrentList,
+                               int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -786,11 +937,18 @@ static void vtkOpenGLDrawNT013(vtkCellArray *aPrim, GLenum aGlFunction,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Added new arguments for display lists.  DID NOT MAKE USE OF.
+//
 static void vtkOpenGLDrawCNT013(vtkCellArray *aPrim, GLenum aGlFunction,
                                 vtkIdType &cellNum, vtkPoints *p, 
                                 vtkDataArray *n, vtkUnsignedCharArray *, 
                                 vtkDataArray *t, vtkOpenGLRenderer *ren, 
-                                int &noAbort)
+                                int &noAbort,
+                                bool doingDisplayLists,int &primsInCurrentList,
+                                int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -837,10 +995,17 @@ static void vtkOpenGLDrawCNT013(vtkCellArray *aPrim, GLenum aGlFunction,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Added new arguments for display lists.  DID NOT MAKE USE OF.
+//
 static void vtkOpenGLDrawST01(vtkCellArray *aPrim, GLenum aGlFunction,
                               vtkIdType &, vtkPoints *p, vtkDataArray *, 
                               vtkUnsignedCharArray *c, vtkDataArray *t, 
-                              vtkOpenGLRenderer *ren, int &noAbort)
+                              vtkOpenGLRenderer *ren, int &noAbort,
+                              bool doingDisplayLists,int &primsInCurrentList,
+                              int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -886,10 +1051,17 @@ static void vtkOpenGLDrawST01(vtkCellArray *aPrim, GLenum aGlFunction,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Added new arguments for display lists.  DID NOT MAKE USE OF.
+//
 static void vtkOpenGLDrawNST013(vtkCellArray *aPrim, GLenum aGlFunction,
                                 vtkIdType &, vtkPoints *p, vtkDataArray *n, 
                                 vtkUnsignedCharArray *c, vtkDataArray *t, 
-                                vtkOpenGLRenderer *ren, int &noAbort)
+                                vtkOpenGLRenderer *ren, int &noAbort,
+                                bool doingDisplayLists,int &primsInCurrentList,
+                                int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -936,11 +1108,18 @@ static void vtkOpenGLDrawNST013(vtkCellArray *aPrim, GLenum aGlFunction,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Added new arguments for display lists.  DID NOT MAKE USE OF.
+//
 static void vtkOpenGLDrawCNST013(vtkCellArray *aPrim, GLenum aGlFunction,
                                  vtkIdType &cellNum, vtkPoints *p, 
                                  vtkDataArray *n, vtkUnsignedCharArray *c, 
                                  vtkDataArray *t, vtkOpenGLRenderer *ren,
-                                 int &noAbort)
+                                 int &noAbort,
+                                 bool doingDisplayLists,int &primsInCurrentList,
+                                 int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -988,10 +1167,17 @@ static void vtkOpenGLDrawCNST013(vtkCellArray *aPrim, GLenum aGlFunction,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Added new arguments for display lists.  DID NOT MAKE USE OF.
+//
 static void vtkOpenGLDrawCS01(vtkCellArray *aPrim, GLenum aGlFunction,
                               vtkIdType &cellNum, vtkPoints *p, vtkDataArray *, 
                               vtkUnsignedCharArray *c, vtkDataArray *, 
-                              vtkOpenGLRenderer *ren, int &noAbort)
+                              vtkOpenGLRenderer *ren, int &noAbort,
+                              bool doingDisplayLists,int &primsInCurrentList,
+                              int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -1037,11 +1223,18 @@ static void vtkOpenGLDrawCS01(vtkCellArray *aPrim, GLenum aGlFunction,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Break display lists into smaller chunks.
+//
 static void vtkOpenGLDrawNCS013(vtkCellArray *aPrim, GLenum aGlFunction,
                                 vtkIdType &cellNum, vtkPoints *p, 
                                 vtkDataArray *n, vtkUnsignedCharArray *c, 
                                 vtkDataArray *, vtkOpenGLRenderer *ren,
-                                int &noAbort)
+                                int &noAbort,
+                                bool doingDisplayLists,int &primsInCurrentList,
+                                int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -1087,6 +1280,19 @@ static void vtkOpenGLDrawNCS013(vtkCellArray *aPrim, GLenum aGlFunction,
         noAbort = 0;
         }
       }
+    if (doingDisplayLists)
+      {
+      primsInCurrentList++;
+      if (primsInCurrentList >= dlSize)
+        {
+        glEnd();
+        glEndList();
+        CurrentList++;
+        glNewList(CurrentList,GL_COMPILE);
+        glBegin(previousGlFunction);
+        primsInCurrentList = 0;
+        }
+      }
     }
   if ((previousGlFunction == GL_TRIANGLES)
       || (previousGlFunction == GL_QUADS)
@@ -1096,11 +1302,18 @@ static void vtkOpenGLDrawNCS013(vtkCellArray *aPrim, GLenum aGlFunction,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Break display lists into smaller chunks.
+//
 static void vtkOpenGLDrawCNCS013(vtkCellArray *aPrim, GLenum aGlFunction,
                                  vtkIdType &cellNum, vtkPoints *p, 
                                  vtkDataArray *n, vtkUnsignedCharArray *c, 
                                  vtkDataArray *, vtkOpenGLRenderer *ren,
-                                 int &noAbort)
+                                 int &noAbort,
+                                 bool doingDisplayLists,int &primsInCurrentList,
+                                 int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -1147,6 +1360,19 @@ static void vtkOpenGLDrawCNCS013(vtkCellArray *aPrim, GLenum aGlFunction,
         noAbort = 0;
         }
       }
+    if (doingDisplayLists)
+      {
+      primsInCurrentList++;
+      if (primsInCurrentList >= dlSize)
+        {
+        glEnd();
+        glEndList();
+        CurrentList++;
+        glNewList(CurrentList,GL_COMPILE);
+        glBegin(previousGlFunction);
+        primsInCurrentList = 0;
+        }
+      }
     }
   if ((previousGlFunction == GL_TRIANGLES)
       || (previousGlFunction == GL_QUADS)
@@ -1156,10 +1382,17 @@ static void vtkOpenGLDrawCNCS013(vtkCellArray *aPrim, GLenum aGlFunction,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Added new arguments for display lists.  DID NOT MAKE USE OF.
+//
 static void vtkOpenGLDrawCST01(vtkCellArray *aPrim, GLenum aGlFunction,
                                vtkIdType &cellNum, vtkPoints *p, vtkDataArray *, 
                                vtkUnsignedCharArray *c, vtkDataArray *t, 
-                               vtkOpenGLRenderer *ren, int &noAbort)
+                               vtkOpenGLRenderer *ren, int &noAbort,
+                               bool doingDisplayLists,int &primsInCurrentList,
+                               int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -1206,11 +1439,18 @@ static void vtkOpenGLDrawCST01(vtkCellArray *aPrim, GLenum aGlFunction,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Added new arguments for display lists.  DID NOT MAKE USE OF.
+//
 static void vtkOpenGLDrawNCST013(vtkCellArray *aPrim, GLenum aGlFunction,
                                  vtkIdType &cellNum, vtkPoints *p, 
                                  vtkDataArray *n, vtkUnsignedCharArray *c, 
                                  vtkDataArray *t, vtkOpenGLRenderer *ren,
-                                 int &noAbort)
+                                 int &noAbort,
+                                 bool doingDisplayLists,int &primsInCurrentList,
+                                 int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -1258,11 +1498,18 @@ static void vtkOpenGLDrawNCST013(vtkCellArray *aPrim, GLenum aGlFunction,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Added new arguments for display lists.  DID NOT MAKE USE OF.
+//
 static void vtkOpenGLDrawCNCST013(vtkCellArray *aPrim, GLenum aGlFunction,
                                   vtkIdType &cellNum, vtkPoints *p, 
                                   vtkDataArray *n, vtkUnsignedCharArray *c, 
                                   vtkDataArray *t, vtkOpenGLRenderer *ren, 
-                                  int &noAbort)
+                                  int &noAbort,
+                                  bool doingDisplayLists,int &primsInCurrentList,
+                                  int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -1312,10 +1559,17 @@ static void vtkOpenGLDrawCNCST013(vtkCellArray *aPrim, GLenum aGlFunction,
 }
 
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Break display lists into smaller chunks.
+//
 static void vtkOpenGLDraw3(vtkCellArray *aPrim, GLenum aGlFunction,
                            vtkIdType &, vtkPoints *p, vtkDataArray *, 
                            vtkUnsignedCharArray *, vtkDataArray *, 
-                           vtkOpenGLRenderer *ren, int &noAbort)
+                           vtkOpenGLRenderer *ren, int &noAbort,
+                           bool doingDisplayLists,int &primsInCurrentList,
+                           int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -1355,6 +1609,19 @@ static void vtkOpenGLDraw3(vtkCellArray *aPrim, GLenum aGlFunction,
         noAbort = 0;
         }
       }
+    if (doingDisplayLists)
+      {
+      primsInCurrentList++;
+      if (primsInCurrentList >= dlSize)
+        {
+        glEnd();
+        glEndList();
+        CurrentList++;
+        glNewList(CurrentList,GL_COMPILE);
+        glBegin(previousGlFunction);
+        primsInCurrentList = 0;
+        }
+      }
     }
   if ((previousGlFunction == GL_TRIANGLES)
       || (previousGlFunction == GL_QUADS)
@@ -1364,10 +1631,17 @@ static void vtkOpenGLDraw3(vtkCellArray *aPrim, GLenum aGlFunction,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Break display lists into smaller chunks.
+//
 static void vtkOpenGLDrawS3(vtkCellArray *aPrim, GLenum aGlFunction,
                             vtkIdType &, vtkPoints *p, vtkDataArray *, 
                             vtkUnsignedCharArray *c, vtkDataArray *, 
-                            vtkOpenGLRenderer *ren, int &noAbort)
+                            vtkOpenGLRenderer *ren, int &noAbort,
+                            bool doingDisplayLists,int &primsInCurrentList,
+                            int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -1410,6 +1684,19 @@ static void vtkOpenGLDrawS3(vtkCellArray *aPrim, GLenum aGlFunction,
         noAbort = 0;
         }
       }
+    if (doingDisplayLists)
+      {
+      primsInCurrentList++;
+      if (primsInCurrentList >= dlSize)
+        {
+        glEnd();
+        glEndList();
+        CurrentList++;
+        glNewList(CurrentList,GL_COMPILE);
+        glBegin(previousGlFunction);
+        primsInCurrentList = 0;
+        }
+      }
     }
   if ((previousGlFunction == GL_TRIANGLES)
       || (previousGlFunction == GL_QUADS)
@@ -1419,10 +1706,17 @@ static void vtkOpenGLDrawS3(vtkCellArray *aPrim, GLenum aGlFunction,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Added new arguments for display lists.  DID NOT MAKE USE OF.
+//
 static void vtkOpenGLDrawT3(vtkCellArray *aPrim, GLenum aGlFunction,
                             vtkIdType &, vtkPoints *p, vtkDataArray *, 
                             vtkUnsignedCharArray *, vtkDataArray *t, 
-                            vtkOpenGLRenderer *ren, int &noAbort)
+                            vtkOpenGLRenderer *ren, int &noAbort,
+                            bool doingDisplayLists,int &primsInCurrentList,
+                            int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -1471,10 +1765,17 @@ static void vtkOpenGLDrawT3(vtkCellArray *aPrim, GLenum aGlFunction,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Added new arguments for display lists.  DID NOT MAKE USE OF.
+//
 static void vtkOpenGLDrawST3(vtkCellArray *aPrim, GLenum aGlFunction,
                              vtkIdType &, vtkPoints *p, vtkDataArray *, 
                              vtkUnsignedCharArray *c, vtkDataArray *t, 
-                             vtkOpenGLRenderer *ren, int &noAbort)
+                             vtkOpenGLRenderer *ren, int &noAbort,
+                             bool doingDisplayLists,int &primsInCurrentList,
+                             int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -1524,10 +1825,17 @@ static void vtkOpenGLDrawST3(vtkCellArray *aPrim, GLenum aGlFunction,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Break display lists into smaller chunks.
+//
 static void vtkOpenGLDrawCS3(vtkCellArray *aPrim, GLenum aGlFunction,
                              vtkIdType &cellNum, vtkPoints *p, vtkDataArray *, 
                              vtkUnsignedCharArray *c, vtkDataArray *, 
-                             vtkOpenGLRenderer *ren, int &noAbort)
+                             vtkOpenGLRenderer *ren, int &noAbort,
+                             bool doingDisplayLists,int &primsInCurrentList,
+                             int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -1570,6 +1878,19 @@ static void vtkOpenGLDrawCS3(vtkCellArray *aPrim, GLenum aGlFunction,
         noAbort = 0;
         }
       }
+    if (doingDisplayLists)
+      {
+      primsInCurrentList++;
+      if (primsInCurrentList >= dlSize)
+        {
+        glEnd();
+        glEndList();
+        CurrentList++;
+        glNewList(CurrentList,GL_COMPILE);
+        glBegin(previousGlFunction);
+        primsInCurrentList = 0;
+        }
+      }
     }
   if ((previousGlFunction == GL_TRIANGLES)
       || (previousGlFunction == GL_QUADS)
@@ -1579,10 +1900,17 @@ static void vtkOpenGLDrawCS3(vtkCellArray *aPrim, GLenum aGlFunction,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Added new arguments for display lists.  DID NOT MAKE USE OF.
+//
 static void vtkOpenGLDrawCST3(vtkCellArray *aPrim, GLenum aGlFunction,
                               vtkIdType &cellNum, vtkPoints *p, vtkDataArray *, 
                               vtkUnsignedCharArray *c, vtkDataArray *t, 
-                              vtkOpenGLRenderer *ren, int &noAbort)
+                              vtkOpenGLRenderer *ren, int &noAbort,
+                              bool doingDisplayLists,int &primsInCurrentList,
+                              int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -1632,10 +1960,17 @@ static void vtkOpenGLDrawCST3(vtkCellArray *aPrim, GLenum aGlFunction,
     }
 }
   
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Added new arguments for display lists.  DID NOT MAKE USE OF.
+//
 static void vtkOpenGLDraw2(vtkCellArray *aPrim, GLenum aGlFunction,
                            vtkIdType &, vtkPoints *p, vtkDataArray *, 
                            vtkUnsignedCharArray *, vtkDataArray *, 
-                           vtkOpenGLRenderer *ren, int &noAbort)
+                           vtkOpenGLRenderer *ren, int &noAbort,
+                           bool doingDisplayLists,int &primsInCurrentList,
+                           int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -1701,10 +2036,17 @@ static void vtkOpenGLDraw2(vtkCellArray *aPrim, GLenum aGlFunction,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Added new arguments for display lists.  DID NOT MAKE USE OF.
+//
 static void vtkOpenGLDrawS2(vtkCellArray *aPrim, GLenum aGlFunction,
                             vtkIdType &, vtkPoints *p, vtkDataArray *, 
                             vtkUnsignedCharArray *c, vtkDataArray *, 
-                            vtkOpenGLRenderer *ren, int &noAbort)
+                            vtkOpenGLRenderer *ren, int &noAbort,
+                            bool doingDisplayLists,int &primsInCurrentList,
+                            int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -1771,10 +2113,17 @@ static void vtkOpenGLDrawS2(vtkCellArray *aPrim, GLenum aGlFunction,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Added new arguments for display lists.  DID NOT MAKE USE OF.
+//
 static void vtkOpenGLDrawT2(vtkCellArray *aPrim, GLenum aGlFunction,
                             vtkIdType &, vtkPoints *p, vtkDataArray *, 
                             vtkUnsignedCharArray *, vtkDataArray *t, 
-                            vtkOpenGLRenderer *ren, int &noAbort)
+                            vtkOpenGLRenderer *ren, int &noAbort,
+                            bool doingDisplayLists,int &primsInCurrentList,
+                            int &CurrentList)
 {
   int j;
   vtkIdType idx[3];
@@ -1841,10 +2190,17 @@ static void vtkOpenGLDrawT2(vtkCellArray *aPrim, GLenum aGlFunction,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Added new arguments for display lists.  DID NOT MAKE USE OF.
+//
 static void vtkOpenGLDrawST2(vtkCellArray *aPrim, GLenum aGlFunction,
                              vtkIdType &, vtkPoints *p, vtkDataArray *, 
                              vtkUnsignedCharArray *c, vtkDataArray *t, 
-                             vtkOpenGLRenderer *ren, int &noAbort)
+                             vtkOpenGLRenderer *ren, int &noAbort,
+                             bool doingDisplayLists,int &primsInCurrentList,
+                             int &CurrentList)
 {
   int j;
   vtkIdType idx[3];
@@ -1912,10 +2268,17 @@ static void vtkOpenGLDrawST2(vtkCellArray *aPrim, GLenum aGlFunction,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Added new arguments for display lists.  DID NOT MAKE USE OF.
+//
 static void vtkOpenGLDrawCS2(vtkCellArray *aPrim, GLenum aGlFunction,
                              vtkIdType &cellNum, vtkPoints *p, vtkDataArray *, 
                              vtkUnsignedCharArray *c, vtkDataArray *, 
-                             vtkOpenGLRenderer *ren, int &noAbort)
+                             vtkOpenGLRenderer *ren, int &noAbort,
+                             bool doingDisplayLists,int &primsInCurrentList,
+                             int &CurrentList)
 {
   int j;
   vtkIdType idx[3];
@@ -1982,10 +2345,17 @@ static void vtkOpenGLDrawCS2(vtkCellArray *aPrim, GLenum aGlFunction,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Added new arguments for display lists.  DID NOT MAKE USE OF.
+//
 static void vtkOpenGLDrawCST2(vtkCellArray *aPrim, GLenum aGlFunction,
                               vtkIdType &cellNum, vtkPoints *p, vtkDataArray *, 
                               vtkUnsignedCharArray *c, vtkDataArray *t, 
-                              vtkOpenGLRenderer *ren, int &noAbort)
+                              vtkOpenGLRenderer *ren, int &noAbort,
+                              bool doingDisplayLists,int &primsInCurrentList,
+                              int &CurrentList)
 {
   int j;
   vtkIdType idx[3];
@@ -2053,10 +2423,17 @@ static void vtkOpenGLDrawCST2(vtkCellArray *aPrim, GLenum aGlFunction,
     }
 } 
   
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Added new arguments for display lists.  DID NOT MAKE USE OF.
+//
 static void vtkOpenGLDrawW(vtkCellArray *aPrim, GLenum,
                            vtkIdType &, vtkPoints *p, vtkDataArray *, 
                            vtkUnsignedCharArray *, vtkDataArray *, 
-                           vtkOpenGLRenderer *ren, int &noAbort)
+                           vtkOpenGLRenderer *ren, int &noAbort,
+                           bool doingDisplayLists,int &primsInCurrentList,
+                           int &CurrentList)
 {
   int j;
   vtkIdType idx[3];
@@ -2116,10 +2493,17 @@ static void vtkOpenGLDrawW(vtkCellArray *aPrim, GLenum,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Added new arguments for display lists.  DID NOT MAKE USE OF.
+//
 static void vtkOpenGLDrawNW(vtkCellArray *aPrim, GLenum,
                             vtkIdType &, vtkPoints *p, vtkDataArray *n, 
                             vtkUnsignedCharArray *, vtkDataArray *, 
-                            vtkOpenGLRenderer *ren, int &noAbort)
+                            vtkOpenGLRenderer *ren, int &noAbort,
+                            bool doingDisplayLists,int &primsInCurrentList,
+                            int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -2159,10 +2543,17 @@ static void vtkOpenGLDrawNW(vtkCellArray *aPrim, GLenum,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Added new arguments for display lists.  DID NOT MAKE USE OF.
+//
 static void vtkOpenGLDrawSW(vtkCellArray *aPrim, GLenum,
                             vtkIdType &, vtkPoints *p, vtkDataArray *, 
                             vtkUnsignedCharArray *c, vtkDataArray *, 
-                            vtkOpenGLRenderer *ren, int &noAbort)
+                            vtkOpenGLRenderer *ren, int &noAbort,
+                            bool doingDisplayLists,int &primsInCurrentList,
+                            int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -2224,10 +2615,17 @@ static void vtkOpenGLDrawSW(vtkCellArray *aPrim, GLenum,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Added new arguments for display lists.  DID NOT MAKE USE OF.
+//
 static void vtkOpenGLDrawNSW(vtkCellArray *aPrim, GLenum,
                              vtkIdType &, vtkPoints *p, vtkDataArray *n, 
                              vtkUnsignedCharArray *c, vtkDataArray *, 
-                             vtkOpenGLRenderer *ren, int &noAbort)
+                             vtkOpenGLRenderer *ren, int &noAbort,
+                             bool doingDisplayLists,int &primsInCurrentList,
+                             int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -2269,10 +2667,17 @@ static void vtkOpenGLDrawNSW(vtkCellArray *aPrim, GLenum,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Added new arguments for display lists.  DID NOT MAKE USE OF.
+//
 static void vtkOpenGLDrawTW(vtkCellArray *aPrim, GLenum,
                             vtkIdType &, vtkPoints *p, vtkDataArray *, 
                             vtkUnsignedCharArray *, vtkDataArray *t, 
-                            vtkOpenGLRenderer *ren, int &noAbort)
+                            vtkOpenGLRenderer *ren, int &noAbort,
+                            bool doingDisplayLists,int &primsInCurrentList,
+                            int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -2334,10 +2739,17 @@ static void vtkOpenGLDrawTW(vtkCellArray *aPrim, GLenum,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Added new arguments for display lists.  DID NOT MAKE USE OF.
+//
 static void vtkOpenGLDrawNTW(vtkCellArray *aPrim, GLenum,
                              vtkIdType &, vtkPoints *p, vtkDataArray *n, 
                              vtkUnsignedCharArray *, vtkDataArray *t, 
-                             vtkOpenGLRenderer *ren, int &noAbort)
+                             vtkOpenGLRenderer *ren, int &noAbort,
+                             bool doingDisplayLists,int &primsInCurrentList,
+                             int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -2378,10 +2790,17 @@ static void vtkOpenGLDrawNTW(vtkCellArray *aPrim, GLenum,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Added new arguments for display lists.  DID NOT MAKE USE OF.
+//
 static void vtkOpenGLDrawSTW(vtkCellArray *aPrim, GLenum,
                              vtkIdType &, vtkPoints *p, vtkDataArray *, 
                              vtkUnsignedCharArray *c, vtkDataArray *t, 
-                             vtkOpenGLRenderer *ren, int &noAbort)
+                             vtkOpenGLRenderer *ren, int &noAbort,
+                             bool doingDisplayLists,int &primsInCurrentList,
+                             int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -2445,10 +2864,17 @@ static void vtkOpenGLDrawSTW(vtkCellArray *aPrim, GLenum,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue May 25 10:51:06 PDT 2004
+//   Added new arguments for display lists.  DID NOT MAKE USE OF.
+//
 static void vtkOpenGLDrawNSTW(vtkCellArray *aPrim, GLenum,
                               vtkIdType &, vtkPoints *p, vtkDataArray *n, 
                               vtkUnsignedCharArray *c, vtkDataArray *t, 
-                              vtkOpenGLRenderer *ren, int &noAbort)
+                              vtkOpenGLRenderer *ren, int &noAbort,
+                              bool doingDisplayLists,int &primsInCurrentList,
+                              int &CurrentList)
 {
   int j;
   vtkIdType *pts = 0;
@@ -2492,7 +2918,21 @@ static void vtkOpenGLDrawNSTW(vtkCellArray *aPrim, GLenum,
     }
 }
 
-// Draw method for OpenGL.
+// ****************************************************************************
+//  Method: vtkVisItOpenGLPolyDataMapper::Draw
+//
+//  Purpose:
+//     Draw method for OpenGL.
+//
+//  Modifications:
+//
+//     Hank Childs, Tue May 25 09:05:02 PDT 2004
+//     Use flat shading when possible as a Mesa optimization.  Also break
+//     one big display list into groups of smaller display lists, since that
+//     is a big performance win with graphics hardware.
+//
+// ****************************************************************************
+
 int vtkVisItOpenGLPolyDataMapper::Draw(vtkRenderer *aren, vtkActor *act)
 {
   vtkOpenGLRenderer *ren = (vtkOpenGLRenderer *)aren;
@@ -2514,6 +2954,17 @@ int vtkVisItOpenGLPolyDataMapper::Draw(vtkRenderer *aren, vtkActor *act)
   int resolve=0, zResolve=0;
   double zRes = 0.0;
   
+  // Do our glGet calls before we start the display list, since they cannot
+  // be issued from within a display list.
+  int  lastShadeModel = -1;
+  glGetIntegerv(GL_SHADE_MODEL, &lastShadeModel);
+
+  if (this->doingDisplayLists)
+    {
+    glNewList(this->CurrentList,GL_COMPILE);
+    this->primsInCurrentList = 0;
+    }
+
   // get the property 
   prop = act->GetProperty();
 
@@ -2644,7 +3095,7 @@ int vtkVisItOpenGLPolyDataMapper::Draw(vtkRenderer *aren, vtkActor *act)
   void (*draw0)(vtkCellArray *, GLenum, vtkIdType &, vtkPoints *, 
                 vtkDataArray *,
                 vtkUnsignedCharArray *, vtkDataArray *, vtkOpenGLRenderer *, 
-                int &);
+                int &, bool, int &, int &);
 
   int idx;
   if (n && !cellNormals)
@@ -2671,6 +3122,19 @@ int vtkVisItOpenGLPolyDataMapper::Draw(vtkRenderer *aren, vtkActor *act)
     {
     idx += 16;
     }
+
+  bool havePointNormals = n && !cellNormals;
+  bool havePointColors  = c && !cellScalars;
+  bool canDoFlat = !havePointNormals && !havePointColors;
+  bool switchedShadingModel = false;
+  if (canDoFlat)
+  {
+    if (lastShadeModel != GL_FLAT)
+    {
+      glShadeModel(GL_FLAT);
+      switchedShadingModel = true;
+    }
+  }
 
   switch (idx) 
     {
@@ -2701,7 +3165,7 @@ int vtkVisItOpenGLPolyDataMapper::Draw(vtkRenderer *aren, vtkActor *act)
   // how do we draw lines
   void (*draw1)(vtkCellArray *, GLenum, vtkIdType &, vtkPoints *, vtkDataArray *,
                 vtkUnsignedCharArray *, vtkDataArray *, vtkOpenGLRenderer *, 
-                int &);
+                int &, bool, int &, int &);
   switch (idx) 
     {
     case 0: draw1 = vtkOpenGLDraw01; break;
@@ -2731,10 +3195,10 @@ int vtkVisItOpenGLPolyDataMapper::Draw(vtkRenderer *aren, vtkActor *act)
   void (*draw2)(vtkCellArray *, GLenum, vtkIdType &, vtkPoints *, 
                 vtkDataArray *,
                 vtkUnsignedCharArray *, vtkDataArray *, vtkOpenGLRenderer *, 
-                int &);
+                int &, bool, int &, int &);
   void (*draw2W)(vtkCellArray *, GLenum, vtkIdType &, vtkPoints *,
                  vtkDataArray *, vtkUnsignedCharArray *, vtkDataArray *, 
-                 vtkOpenGLRenderer *, int &);
+                 vtkOpenGLRenderer *, int &, bool, int &, int &);
   switch (idx) 
     {
     case 0: draw2 = vtkOpenGLDraw2; break;
@@ -2787,7 +3251,7 @@ int vtkVisItOpenGLPolyDataMapper::Draw(vtkRenderer *aren, vtkActor *act)
   // how do we draw polys
   void (*draw3)(vtkCellArray *, GLenum, vtkIdType &, vtkPoints *, vtkDataArray *,
                 vtkUnsignedCharArray *, vtkDataArray *, 
-                vtkOpenGLRenderer *, int &);
+                vtkOpenGLRenderer *, int &, bool, int &, int &);
   switch (idx) 
     {
     case 0: draw3 = vtkOpenGLDraw3; break;
@@ -2843,7 +3307,8 @@ int vtkVisItOpenGLPolyDataMapper::Draw(vtkRenderer *aren, vtkActor *act)
   glDisable( GL_LIGHTING);
   
   // draw all the elements
-  draw0(aPrim, aGlFunction, cellNum, p, n, c, t, ren, noAbort);
+  draw0(aPrim, aGlFunction, cellNum, p, n, c, t, ren, noAbort,
+        this->doingDisplayLists, this->primsInCurrentList, this->CurrentList);
   
   // do lines
   if ( zResolve )
@@ -2854,7 +3319,8 @@ int vtkVisItOpenGLPolyDataMapper::Draw(vtkRenderer *aren, vtkActor *act)
   aGlFunction = glFunction[1];
   
   // draw all the elements
-  draw1(aPrim, aGlFunction, cellNum, p, n, c, t, ren, noAbort);
+  draw1(aPrim, aGlFunction, cellNum, p, n, c, t, ren, noAbort,
+        this->doingDisplayLists, this->primsInCurrentList, this->CurrentList);
   
   // turn the lighting on if we have normals.
   if (n)
@@ -2865,7 +3331,8 @@ int vtkVisItOpenGLPolyDataMapper::Draw(vtkRenderer *aren, vtkActor *act)
   // do polys
   aPrim = prims[2];
   aGlFunction = glFunction[3];
-  draw3(aPrim, aGlFunction, cellNum, p, n, c, t, ren, noAbort);
+  draw3(aPrim, aGlFunction, cellNum, p, n, c, t, ren, noAbort,
+        this->doingDisplayLists, this->primsInCurrentList, this->CurrentList);
 
   // do tstrips
   if ( zResolve )
@@ -2874,10 +3341,12 @@ int vtkVisItOpenGLPolyDataMapper::Draw(vtkRenderer *aren, vtkActor *act)
     }
   aPrim = prims[3];
   aGlFunction = glFunction[2];
-  draw2(aPrim, aGlFunction, cellNum, p, n, c, t, ren, noAbort);
+  draw2(aPrim, aGlFunction, cellNum, p, n, c, t, ren, noAbort,
+        this->doingDisplayLists, this->primsInCurrentList, this->CurrentList);
   if (rep == VTK_WIREFRAME)   
     {
-    draw2W(aPrim, aGlFunction, cellNum, p, n, c, t, ren, noAbort);
+    draw2W(aPrim, aGlFunction, cellNum, p, n, c, t, ren, noAbort,
+        this->doingDisplayLists, this->primsInCurrentList, this->CurrentList);
     }
 
   // enable lighting again if necessary
@@ -2885,6 +3354,11 @@ int vtkVisItOpenGLPolyDataMapper::Draw(vtkRenderer *aren, vtkActor *act)
   if (!n)
     {
     glEnable( GL_LIGHTING);
+    }
+
+  if (switchedShadingModel)
+    {
+    glShadeModel(lastShadeModel);
     }
 
   if (resolve)
@@ -2900,6 +3374,9 @@ int vtkVisItOpenGLPolyDataMapper::Draw(vtkRenderer *aren, vtkActor *act)
 #endif
       }
     }
+
+  if (this->doingDisplayLists)
+    glEndList();
 
   return noAbort;
 }

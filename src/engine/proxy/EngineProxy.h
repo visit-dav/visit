@@ -182,6 +182,9 @@ class StatusAttributes;
 //
 //    Mark C. Miller, Tue Apr 20 07:44:34 PDT 2004
 //    Added waitCB and cbData args to Render method
+//
+//    Mark C. Miller, Tue May 25 17:25:55 PDT 2004
+//    Added AnnotationObjectList arg to SetWinAnnotAtts
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -233,6 +236,7 @@ public:
 
     void                     SetWinAnnotAtts(const WindowAttributes*,
                                              const AnnotationAttributes*,
+                                             const AnnotationObjectList*,
                                              std::string);
     avtDataObjectReader_p    Render(bool, const intVector&, bool,
                                     void (*waitCB)(void *), void *cbData);

@@ -530,3 +530,30 @@ avtSourceFromDatabase::GetDomainName(const std::string &var, const int ts,
 {
     database->GetDomainName(var, ts, dom, domName);
 }
+
+
+// ****************************************************************************
+//  Method: avtSourceFromDatabase::QueryZoneCenter
+//
+//  Purpose:    A query to find the geometric center of a zone.
+//
+//  Arguments:
+//    var       The variable to use in searching the database.
+//    dom       The domain to use in searching the database.
+//    zone      The zone to use in searching the database.
+//    ts        The timestep to use in searching the database.
+//    coord     A place to store the zone center. 
+//
+//  Returns:    True if the query was successful, false otherwise.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   May 25, 2004 
+//
+// ****************************************************************************
+
+bool
+avtSourceFromDatabase::QueryZoneCenter(const std::string &var, const int dom,
+    const int zone, const int ts, float coord[3])
+{
+    return database->QueryZoneCenter(var, dom, zone, ts, coord);
+}

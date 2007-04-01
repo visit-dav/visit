@@ -5818,3 +5818,43 @@ avtGenericDatabase::GetDomainName(const std::string &varName, const int ts,
         }
     }
 }
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::QueryZoneCenter
+//
+//  Purpose:
+//    Gets the geometric center of a zone. 
+//
+//  Arguments:
+//    var       The variable to use in searching the database.
+//    dom       The domain to use in searching the database.
+//    zoneId    The zone number to use in searching the database.
+//    ts        The timestep to use in searching the database.
+//    coord     A place to store the zone center.
+//
+//  Returns:    True if query is a success, false otherwise.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   May 25, 2004 
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::QueryZoneCenter(const string &varName, const int dom, 
+                               const int zoneId, const int ts, float coord[3])
+{
+    string meshName = GetMetaData(ts)->MeshForVar(varName);
+    vtkDataSet *ds = GetMeshDataset(meshName.c_str(), ts, dom, "_all");
+    bool rv = false; 
+    if (ds)
+    {
+        vtkCell *cell = ds->GetCell(zoneId);
+        float parametricCenter[3];
+        float weights[28];
+        int subId = cell->GetParametricCenter(parametricCenter);
+        cell->EvaluateLocation(subId, parametricCenter, coord, weights);
+        rv = true;
+    }
+    return rv;
+}

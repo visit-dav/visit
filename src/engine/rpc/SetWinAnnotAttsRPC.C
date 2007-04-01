@@ -18,9 +18,12 @@
 //    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
 //    Added data member for extents type string
 //
+//    Mark C. Miller, Tue May 25 17:06:12 PDT 2004
+//    Added data member for AnnotationObjectList
+//
 // ****************************************************************************
 
-SetWinAnnotAttsRPC::SetWinAnnotAttsRPC() : BlockingRPC("aas")
+SetWinAnnotAttsRPC::SetWinAnnotAttsRPC() : BlockingRPC("aaas")
 {
 }
 
@@ -58,11 +61,15 @@ SetWinAnnotAttsRPC::~SetWinAnnotAttsRPC()
 //
 //    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
 //    Added argument for extents type string
+//
+//    Mark C. Miller, Tue May 25 17:06:12 PDT 2004
+//    Added argument for AnnotationObjectList
 // ****************************************************************************
 
 void
 SetWinAnnotAttsRPC::operator()(const WindowAttributes *winAtts,
                                const AnnotationAttributes *annotAtts,
+                               const AnnotationObjectList *aoList,
                                const string extStr)
 {
     if (winAtts)
@@ -70,6 +77,9 @@ SetWinAnnotAttsRPC::operator()(const WindowAttributes *winAtts,
 
     if (annotAtts)
        SetAnnotationAtts(annotAtts);
+
+    if (aoList)
+       SetAnnotationObjectList(aoList);
 
     if (extStr.size())
        SetExtentTypeString(extStr);
@@ -100,7 +110,8 @@ SetWinAnnotAttsRPC::SelectAll()
 {
     Select(0, (void*)&win);
     Select(1, (void*)&annot);
-    Select(2, (void*)&extstr);
+    Select(2, (void*)&aolist);
+    Select(3, (void*)&extstr);
 }
 
 
@@ -147,6 +158,27 @@ SetWinAnnotAttsRPC::SetAnnotationAtts(const AnnotationAttributes *atts)
 }
 
 // ****************************************************************************
+//  Method: SetWinAnnotAttsRPC::SetAnnotationObjectList
+//
+//  Purpose: 
+//    This sets the annotation object list.
+//
+//  Arguments:
+//    aolist      the annotation object list
+//
+//  Programmer: Mark C. Miller
+//  Creation:   May 25, 2004 
+//
+// ****************************************************************************
+
+void
+SetWinAnnotAttsRPC::SetAnnotationObjectList(const AnnotationObjectList *list)
+{
+    aolist = *list;
+    Select(2, (void*)&aolist);
+}
+
+// ****************************************************************************
 //  Method: SetWinAnnotAttsRPC::SetExtentTypeString
 //
 //  Purpose: 
@@ -164,7 +196,7 @@ void
 SetWinAnnotAttsRPC::SetExtentTypeString(const string extstr_)
 {
     extstr = extstr_;
-    Select(2, (void*)&extstr);
+    Select(3, (void*)&extstr);
 }
 
 // ****************************************************************************
@@ -182,6 +214,23 @@ const WindowAttributes&
 SetWinAnnotAttsRPC::GetWindowAtts() const
 {
     return win;
+}
+
+// ****************************************************************************
+//  Method: SetWinAnnotAttsRPC::GetAnnotationObjectList
+//
+//  Purpose: 
+//    This returns the annotation object list 
+//
+//  Programmer: Mark C. Miller
+//  Creation:   May 25, 2004 
+//
+// ****************************************************************************
+
+const AnnotationObjectList&
+SetWinAnnotAttsRPC::GetAnnotationObjectList() const
+{
+    return aolist;
 }
 
 // ****************************************************************************

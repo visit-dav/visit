@@ -164,6 +164,9 @@ typedef struct {
 //    Jeremy Meredith/Hank Childs, Tue Mar 23 12:26:55 PST 2004
 //    Add file format as a data member.
 //
+//    Kathleen Bonnell, Tue May 25 16:16:25 PDT 2004 
+//    Added virtual QueryZoneCenter, defined here so derived types don't
+//    have to. 
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -204,6 +207,9 @@ class DATABASE_API avtDatabase
     void                        Query(PickAttributes *);
     virtual bool                FindElementForPoint(const char *, const int, 
                                     const int, const char *, float[3], int &)
+                                    { return false; } ;
+    virtual bool                QueryZoneCenter(const std::string &, const int, 
+                                    const int, const int, float[3] )
                                     { return false; } ;
 
     virtual void                GetDomainName(const std::string &, const int ts,

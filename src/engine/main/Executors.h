@@ -632,6 +632,14 @@ RPCExecutor<StartPickRPC>::Execute(StartPickRPC *rpc)
 //    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
 //    Added code to pass extents type string to SetWindowAttributes
 //
+//    Mark C. Miller, Tue May 25 17:15:10 PDT 2004
+//    Relocated code to set color tables to NetworkManager::SetWindowAtts
+//    Added argument to SetAnnotationAttributes to accomodate an
+//    AnnotationObjectList
+//
+//    Mark C. Miller, Tue May 25 20:44:10 PDT 2004
+//    Added code to pass annotation object list along
+//
 // ****************************************************************************
 template<>
 void
@@ -645,10 +653,10 @@ RPCExecutor<SetWinAnnotAttsRPC>::Execute(SetWinAnnotAttsRPC *rpc)
            << rpc->GetWindowAtts().GetSize()[1] << endl;
     TRY 
     {
-        avtColorTables::Instance()->SetColorTables(rpc->GetWindowAtts().
-                                                             GetColorTables());
-        netmgr->SetWindowAttributes(rpc->GetWindowAtts(),rpc->GetExtentTypeString());
-        netmgr->SetAnnotationAttributes(rpc->GetAnnotationAtts());
+        netmgr->SetWindowAttributes(rpc->GetWindowAtts(),
+                                    rpc->GetExtentTypeString());
+        netmgr->SetAnnotationAttributes(rpc->GetAnnotationAtts(),
+                                        rpc->GetAnnotationObjectList());
         rpc->SendReply();
     }
     CATCH2(VisItException, e)
@@ -724,6 +732,9 @@ RPCExecutor<SetWinAnnotAttsRPC>::Execute(SetWinAnnotAttsRPC *rpc)
 //    Kathleen Bonnell, Wed Mar 31 16:53:03 PST 2004 
 //    Set up callbacks for DataObjectQuery.
 //
+//    Mark C. Miller, Mon May 24 18:36:13 PDT 2004
+//    Modified to support new WriteData interface
+//
 // ****************************************************************************
 template<>
 void
@@ -755,6 +766,9 @@ RPCExecutor<ExecuteRPC>::Execute(ExecuteRPC *rpc)
        rpc->GetRespondWithNull() << endl;
     TRY
     {
+        // save the current network id for later
+        int netId = netmgr->GetCurrentNetworkId();
+
         // Get the output of the network manager. This does the job of
         // executing the network.
         avtDataObjectWriter_p writer = 
@@ -763,8 +777,24 @@ RPCExecutor<ExecuteRPC>::Execute(ExecuteRPC *rpc)
         visitTimer->StopTimer(gettingData, "Executing network");
         writingData = visitTimer->StartTimer();
 
+        // set params influencing scalable rendering 
+        int scalableThreshold = netmgr->GetScalableThreshold();
+        int currentTotalGlobalCellCount = netmgr->GetTotalGlobalCellCounts();
+        int currentNetworkGlobalCellCount = 0;
+        bool scalableThresholdExceeded = false;
+
         // Send the data back to the viewer.
-        engine->WriteData(rpc, writer);
+        engine->WriteData(rpc, writer, rpc->GetRespondWithNull(),
+                    scalableThreshold, &scalableThresholdExceeded,
+                    currentTotalGlobalCellCount, &currentNetworkGlobalCellCount);
+
+        // re-set the network if we exceeded the scalable threshold
+        if (scalableThresholdExceeded && !rpc->GetRespondWithNull())
+            netmgr->UseNetwork(netId);
+
+        // only update cell count if we're not here asking for null data
+        if (!rpc->GetRespondWithNull())
+            netmgr->SetGlobalCellCount(netId, currentNetworkGlobalCellCount);
     }
     CATCH(ImproperUseException)
     {

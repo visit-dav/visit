@@ -6,6 +6,7 @@
 
 #include <VisItRPC.h>
 #include <AnnotationAttributes.h>
+#include <AnnotationObjectList.h>
 #include <WindowAttributes.h>
 
 using std::string;
@@ -24,6 +25,9 @@ using std::string;
 //    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
 //    Added data member and methods for extents type string
 //
+//    Mark C. Miller, Tue May 25 17:06:12 PDT 2004
+//    Added AnnotationObjectList member
+//
 // ****************************************************************************
 class ENGINE_RPC_API SetWinAnnotAttsRPC : public BlockingRPC
 {
@@ -34,6 +38,7 @@ public:
     // Invokation method
     void operator()(const WindowAttributes*,
                     const AnnotationAttributes*,
+                    const AnnotationObjectList*,
                     const string);
 
     // Property selection methods
@@ -42,16 +47,19 @@ public:
     // Property setting methods
     void SetWindowAtts(const WindowAttributes*);
     void SetAnnotationAtts(const AnnotationAttributes*);
+    void SetAnnotationObjectList(const AnnotationObjectList*);
     void SetExtentTypeString(const string);
 
     // Property getting methods
     const WindowAttributes &GetWindowAtts() const;
     const AnnotationAttributes &GetAnnotationAtts() const;
+    const AnnotationObjectList &GetAnnotationObjectList() const;
     const string &GetExtentTypeString() const;
 
 private:
     WindowAttributes win;
     AnnotationAttributes annot;
+    AnnotationObjectList aolist;
     string extstr;
 };
 

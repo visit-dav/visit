@@ -61,6 +61,11 @@ static void WriteByteStreamToSocket(NonBlockingRPC *, Connection *,
 // Initial connection timeout of 5 minutes (300 seconds)
 #define INITIAL_CONNECTION_TIMEOUT 60
 
+// convenient MPI message tags
+#define CELL_COUNT_TAG          0x0
+#define SEND_DATA_TAG           0x1
+#define DATAOBJ_SIZE_TAG        0x2
+#define DATAOBJ_DATA_TAG        0x3
 
 // ****************************************************************************
 //  Constructor:  Engine::Engine
@@ -903,11 +908,32 @@ WriteByteStreamToSocket(NonBlockingRPC *rpc, Connection *vtkConnection,
 //    Hank Childs, Fri Mar 19 21:20:12 PST 2004
 //    Use a helper routine (that's more efficient) to write to a socket.
 //
+//    Mark C. Miller, Mon May 24 18:36:13 PDT 2004
+//    Added arguments to support checking of scalable threshold is exceeded
+//    Modified communication algorithm to have each processor handshake with
+//    UI proc and check if ok before actually sending data. When scalable
+//    threshold is exceeded, UI proc tells everyone to stop sending data.
+//
 // ****************************************************************************
 void
-Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer)
+Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
+    bool respondWithNull, int scalableThreshold, bool* scalableThresholdExceeded,
+    int currentTotalGlobalCellCount, int* currentNetworkGlobalCellCount)
 {
+
 #ifdef PARALLEL
+
+    //
+    // When respond with null is true, this routine still has an obligation
+    // to recieve the dummied-up data tree from each processor, regardless of
+    // whether or not the scalable threshold has been exceeded. So, we capture
+    // that fact in the 'sendDataAnyway' bool. Likewise, when scalableThreshold
+    // is -1, it means also to send the data anyway. 
+    //
+    bool sendDataAnyway = respondWithNull || scalableThreshold==-1;
+    bool thresholdExceeded = false;
+    int  currentCellCount = 0;
+
     if (PAR_UIProcess())
     {
         int collectAndWriteData = visitTimer->StartTimer();
@@ -920,7 +946,9 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer)
                         rpc->GetMaxStageNum());
 
         avtDataObject_p ui_dob = writer->GetInput();
-       
+
+        currentCellCount = ui_dob->GetNumberOfCells();
+
         if (writer->MustMergeParallelStreams())
         {
             // we clone here to preserve this processor's orig network output
@@ -930,30 +958,69 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer)
             for (int i=1; i<PAR_Size(); i++)
             {
                 MPI_Status stat;
-                int size;
-                MPI_Recv(&size,1,MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG,
-                         MPI_COMM_WORLD, &stat);
-                debug5 << "receiving " << size << " bytes from MPI_SOURCE "
-                       << stat.MPI_SOURCE << endl;
-                char *str = new char[size];
-                MPI_Recv(str,size,MPI_CHAR, stat.MPI_SOURCE, MPI_ANY_TAG,
-                         MPI_COMM_WORLD, &stat);
+                int size, proc_i_localCellCount;
+
+                int shouldGetData = 1;
+                int mpiSource = MPI_ANY_SOURCE; 
+
+                // recv the "num cells I have" message from any proc
+                MPI_Recv(&proc_i_localCellCount, 1, MPI_INT, MPI_ANY_SOURCE,
+                    CELL_COUNT_TAG, MPI_COMM_WORLD, &stat);
+
+                mpiSource = stat.MPI_SOURCE;
+
+                debug5 << "recievied the \"num cells I have\" (=" << proc_i_localCellCount
+                       << ") message from processor " << mpiSource << endl;
+
+                // accumulate this processors cell count in the total for this network
+                currentCellCount += proc_i_localCellCount;
+
+                // test if we've exceeded the scalable threshold
+                if (currentTotalGlobalCellCount +
+                    currentCellCount > scalableThreshold)
+                {
+                    debug5 << "exceeded scalable threshold of " << scalableThreshold << endl;
+                    shouldGetData = sendDataAnyway;
+                    thresholdExceeded = true; 
+                }
+
+                // tell source processor whether or not to send data with
+                // the "should send data" message
+                MPI_Send(&shouldGetData, 1, MPI_INT, mpiSource, 
+                    SEND_DATA_TAG, MPI_COMM_WORLD);
+                debug5 << "told processor " << mpiSource << (shouldGetData==1?" to":" NOT to")
+                       << " send data" << endl;
+
+                if (shouldGetData)
+                {
+                    MPI_Recv(&size, 1, MPI_INT, mpiSource, 
+                             DATAOBJ_SIZE_TAG, MPI_COMM_WORLD, &stat);
+                    debug5 << "recieving size=" << size << endl;
+
+                    debug5 << "receiving " << size << " bytes from MPI_SOURCE "
+                           << mpiSource << endl;
+
+                    char *str = new char[size];
+                    MPI_Recv(str, size, MPI_CHAR, mpiSource, 
+                             DATAOBJ_DATA_TAG, MPI_COMM_WORLD, &stat);
+                    debug5 << "recieving data" << endl;
     
-                // The data object reader will delete the string.
-                avtDataObjectReader *avtreader = new avtDataObjectReader;
-                avtreader->Read(size, str);
-                avtDataObject_p proc_i_dob = avtreader->GetOutput();
+                    // The data object reader will delete the string.
+                    avtDataObjectReader *avtreader = new avtDataObjectReader;
+                    avtreader->Read(size, str);
+                    avtDataObject_p proc_i_dob = avtreader->GetOutput();
 
-                // We can't tell the reader to read (Update) unless we tell it
-                // what we want it to read.  Fortunately, we can just ask it
-                // for a general specification.
-                avtTerminatingSource *src = proc_i_dob->GetTerminatingSource();
-                avtPipelineSpecification_p spec
-                    = src->GetGeneralPipelineSpecification();
-                proc_i_dob->Update(spec);
+                    // We can't tell the reader to read (Update) unless we tell it
+                    // what we want it to read.  Fortunately, we can just ask it
+                    // for a general specification.
+                    avtTerminatingSource *src = proc_i_dob->GetTerminatingSource();
+                    avtPipelineSpecification_p spec
+                        = src->GetGeneralPipelineSpecification();
+                    proc_i_dob->Update(spec);
 
-                ui_dob->Merge(*proc_i_dob);
-                delete avtreader;
+                    ui_dob->Merge(*proc_i_dob);
+                    delete avtreader;
+                }
 
                 rpc->SendStatus(100. * float(i)/float(PAR_Size()),
                                 rpc->GetCurStageNum(),
@@ -962,11 +1029,6 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer)
             }
         }
         visitTimer->StopTimer(collectData, "Collecting data");
-
-        // Create a writer to write across the network.
-        avtDataObjectWriter_p networkwriter = ui_dob->InstantiateWriter();
-        networkwriter->SetDestinationFormat(destinationFormat);
-
 
         // indicate that cumulative extents in data object now as good as true extents
         ui_dob->GetInfo().GetAttributes().SetCanUseCumulativeAsTrueOrCurrent(true);
@@ -978,6 +1040,17 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer)
         if (!v.HasErrorOccurred())
         {
             int serializeData = visitTimer->StartTimer();
+
+            if (thresholdExceeded && !sendDataAnyway)
+            {
+                // dummy a null data object message to send to viewer
+                avtNullData_p nullData = new avtNullData(NULL,AVT_NULL_DATASET_MSG);
+                CopyTo(ui_dob, nullData);
+            }
+
+            // Create a writer to write across the network.
+            avtDataObjectWriter_p networkwriter = ui_dob->InstantiateWriter();
+            networkwriter->SetDestinationFormat(destinationFormat);
             networkwriter->SetInput(ui_dob);
     
             avtDataObjectString do_str;
@@ -991,6 +1064,7 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer)
             visitTimer->StopTimer(serializeData, "Serializing data for writer");
 
             WriteByteStreamToSocket(rpc, vtkConnection, do_str);
+
         }
         else
         {
@@ -1000,7 +1074,7 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer)
         char *descStr = "Collecting data and writing it to viewer";
         visitTimer->StopTimer(collectAndWriteData, descStr);
     }
-    else
+    else // non-UI processes
     {
         if (writer->MustMergeParallelStreams())
         {
@@ -1010,9 +1084,30 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer)
             writer->Write(do_str);
             do_str.GetWholeString(str, size);
 
-            MPI_Send(&size,1,MPI_INT, 0, PAR_Rank(), MPI_COMM_WORLD);
-            debug5 << "sending " << size << " bytes to proc 0" << endl;
-            MPI_Send(str,size,MPI_CHAR, 0, PAR_Rank(), MPI_COMM_WORLD);
+            int shouldSendData = 1;
+            MPI_Status stat;
+
+            // send the "num cells I have" message to proc 0
+            int numCells = writer->GetInput()->GetNumberOfCells();
+            debug5 << "sending \"num cells I have\" message (=" << numCells << ")" << endl;
+            MPI_Send(&numCells, 1, MPI_INT, 0, CELL_COUNT_TAG, MPI_COMM_WORLD);
+
+            // recv the "should send data" message from proc 0
+            MPI_Recv(&shouldSendData, 1, MPI_INT, 0, SEND_DATA_TAG, MPI_COMM_WORLD, &stat);
+
+            if (shouldSendData)
+            {
+               debug5 << "sending size=" << size << endl; 
+               MPI_Send(&size, 1, MPI_INT, 0, DATAOBJ_SIZE_TAG, MPI_COMM_WORLD);
+               debug5 << "sending " << size << " bytes to proc 0" << endl;
+               debug5 << "sending data" << endl; 
+               MPI_Send(str, size, MPI_CHAR, 0, DATAOBJ_DATA_TAG, MPI_COMM_WORLD);
+            }
+            else
+            {
+                debug5 << "not sending data to proc 0 because the scalable"
+                       << "threshold has been exceeded." << endl;
+            }
         }
         else
         {
@@ -1020,6 +1115,21 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer)
                    << "does not require parallel streams." << endl;
         }
     }
+
+    //
+    // all processors need to know the network's cell count and whether
+    // scalable threshold was exceeded
+    //
+    int tmp[2] = {currentCellCount, thresholdExceeded?1:0};
+    MPI_Bcast(tmp, 2, MPI_INT, 0, MPI_COMM_WORLD);
+    currentCellCount  = tmp[0];
+    thresholdExceeded = tmp[1]==1;
+
+    // return requested arguments
+    if (currentNetworkGlobalCellCount != 0)
+        *currentNetworkGlobalCellCount = currentCellCount;
+    if (scalableThresholdExceeded != 0)
+        *scalableThresholdExceeded = thresholdExceeded;
 
 #else // serial
     avtDataObject_p dob = writer->GetInput();
