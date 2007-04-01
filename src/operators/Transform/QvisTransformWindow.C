@@ -181,6 +181,21 @@ QvisTransformWindow::CreateWindowContents()
 
 }
 
+// ****************************************************************************
+//  Method:  QvisTransformWindow::UpdateWindow
+//
+//  Purpose:
+//    Updates the widgets in the window when the subject changes.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    September 24, 2001
+//
+//  Modifications:
+//    Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//    Replaced simple QString::sprintf's with a setNum because there seems
+//    to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
+// ****************************************************************************
 void
 QvisTransformWindow::UpdateWindow(bool doAll)
 {
@@ -233,7 +248,7 @@ QvisTransformWindow::UpdateWindow(bool doAll)
             rotateAxis->setText(temp);
             break;
           case 3: //rotateAmount
-            temp.sprintf("%g", atts->GetRotateAmount());
+            temp.setNum(atts->GetRotateAmount());
             rotateAmount->setText(temp);
             break;
           case 4: //rotateType
@@ -270,15 +285,15 @@ QvisTransformWindow::UpdateWindow(bool doAll)
             scaleOrigin->setText(temp);
             break;
           case 7: //scaleX
-            temp.sprintf("%g", atts->GetScaleX());
+            temp.setNum(atts->GetScaleX());
             scaleX->setText(temp);
             break;
           case 8: //scaleY
-            temp.sprintf("%g", atts->GetScaleY());
+            temp.setNum(atts->GetScaleY());
             scaleY->setText(temp);
             break;
           case 9: //scaleZ
-            temp.sprintf("%g", atts->GetScaleZ());
+            temp.setNum(atts->GetScaleZ());
             scaleZ->setText(temp);
             break;
           case 10: //doTranslate
@@ -303,15 +318,15 @@ QvisTransformWindow::UpdateWindow(bool doAll)
             doTranslate->setChecked(atts->GetDoTranslate());
             break;
           case 11: //translateX
-            temp.sprintf("%g", atts->GetTranslateX());
+            temp.setNum(atts->GetTranslateX());
             translateX->setText(temp);
             break;
           case 12: //translateY
-            temp.sprintf("%g", atts->GetTranslateY());
+            temp.setNum(atts->GetTranslateY());
             translateY->setText(temp);
             break;
           case 13: //translateZ
-            temp.sprintf("%g", atts->GetTranslateZ());
+            temp.setNum(atts->GetTranslateZ());
             translateZ->setText(temp);
             break;
         }

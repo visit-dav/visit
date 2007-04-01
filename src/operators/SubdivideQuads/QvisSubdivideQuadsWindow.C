@@ -126,7 +126,10 @@ QvisSubdivideQuadsWindow::CreateWindowContents()
 // Creation:   Tue Nov 2 06:28:41 PDT 2004
 //
 // Modifications:
-//   
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -155,7 +158,7 @@ QvisSubdivideQuadsWindow::UpdateWindow(bool doAll)
         switch(i)
         {
           case 0: //threshold
-            temp.sprintf("%g", atts->GetThreshold());
+            temp.setNum(atts->GetThreshold());
             threshold->setText(temp);
             break;
           case 1: //maxSubdivs

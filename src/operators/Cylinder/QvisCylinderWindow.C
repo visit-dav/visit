@@ -116,7 +116,10 @@ QvisCylinderWindow::CreateWindowContents()
 // Creation:   Tue Oct 21 13:17:13 PST 2003
 //
 // Modifications:
-//   
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -155,7 +158,7 @@ QvisCylinderWindow::UpdateWindow(bool doAll)
             point2->setText(temp);
             break;
           case 2: //radius
-            temp.sprintf("%g", atts->GetRadius());
+            temp.setNum(atts->GetRadius());
             radius->setText(temp);
             break;
         }

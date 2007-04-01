@@ -437,7 +437,10 @@ QvisMetricThresholdWindow::CreateWindowContents()
 // Creation:   Mon Jul 29 14:33:19 PST 2002
 //
 // Modifications:
-//   
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -464,66 +467,66 @@ QvisMetricThresholdWindow::UpdateWindow(bool doAll)
             Hexahedron->setChecked(atts->GetHexahedron());
             break;
           case 2: //hex_lower
-            temp.sprintf("%g", atts->GetHex_lower());
+            temp.setNum(atts->GetHex_lower());
             hex_lower->setText(temp);
             break;
           case 3: //hex_upper
-            temp.sprintf("%g", atts->GetHex_upper());
+            temp.setNum(atts->GetHex_upper());
             hex_upper->setText(temp);
             break;
           case 4: //Tetrahedron
             Tetrahedron->setChecked(atts->GetTetrahedron());
             break;
           case 5: //tet_lower
-            temp.sprintf("%g", atts->GetTet_lower());
+            temp.setNum(atts->GetTet_lower());
             tet_lower->setText(temp);
             break;
           case 6: //tet_upper
-            temp.sprintf("%g", atts->GetTet_upper());
+            temp.setNum(atts->GetTet_upper());
             tet_upper->setText(temp);
             break;
           case 7: //Wedge
             Wedge->setChecked(atts->GetWedge());
             break;
           case 8: //wed_lower
-            temp.sprintf("%g", atts->GetWed_lower());
+            temp.setNum(atts->GetWed_lower());
             wed_lower->setText(temp);
             break;
           case 9: //wed_upper
-            temp.sprintf("%g", atts->GetWed_upper());
+            temp.setNum(atts->GetWed_upper());
             wed_upper->setText(temp);
             break;
           case 10: //Pyramid
             Pyramid->setChecked(atts->GetPyramid());
             break;
           case 11: //pyr_lower
-            temp.sprintf("%g", atts->GetPyr_lower());
+            temp.setNum(atts->GetPyr_lower());
             pyr_lower->setText(temp);
             break;
           case 12: //pyr_upper
-            temp.sprintf("%g", atts->GetPyr_upper());
+            temp.setNum(atts->GetPyr_upper());
             pyr_upper->setText(temp);
             break;
           case 13: //Triangle
             Triangle->setChecked(atts->GetTriangle());
             break;
           case 14: //tri_lower
-            temp.sprintf("%g", atts->GetTri_lower());
+            temp.setNum(atts->GetTri_lower());
             tri_lower->setText(temp);
             break;
           case 15: //tri_upper
-            temp.sprintf("%g", atts->GetTri_upper());
+            temp.setNum(atts->GetTri_upper());
             tri_upper->setText(temp);
             break;
           case 16: //Quad
             Quad->setChecked(atts->GetQuad());
             break;
           case 17: //quad_lower
-            temp.sprintf("%g", atts->GetQuad_lower());
+            temp.setNum(atts->GetQuad_lower());
             quad_lower->setText(temp);
             break;
           case 18: //quad_upper
-            temp.sprintf("%g", atts->GetQuad_upper());
+            temp.setNum(atts->GetQuad_upper());
             quad_upper->setText(temp);
             break;
         }

@@ -133,7 +133,10 @@ QvisKerbelPlotWindow::CreateWindowContents()
 // Creation:   Fri Nov 15 10:46:12 PDT 2002
 //
 // Modifications:
-//   
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -160,7 +163,7 @@ QvisKerbelPlotWindow::UpdateWindow(bool doAll)
             Center->setText(temp);
             break;
           case 1: //Radius
-            temp.sprintf("%g", atts->GetRadius());
+            temp.setNum(atts->GetRadius());
             Radius->setText(temp);
             break;
           case 2: //opacity

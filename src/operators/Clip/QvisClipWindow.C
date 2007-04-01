@@ -318,6 +318,10 @@ QvisClipWindow::CreateWindowContents()
 //   Brad Whitlock, Fri Feb 15 11:53:47 PDT 2002
 //   Fixed format strings.
 //
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -376,7 +380,7 @@ QvisClipWindow::UpdateWindow(bool doAll)
                 temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
                 centerLineEdit->setText(temp);
                 r = clipAtts->GetRadius();
-                temp.sprintf("%g", r);
+                temp.setNum(r);
                 radiusLineEdit->setText(temp);
                 sphereInverse->setChecked(clipAtts->GetSphereInverse());
                 tabWidget->showPage(sphereBox);
@@ -432,7 +436,7 @@ QvisClipWindow::UpdateWindow(bool doAll)
             break;
         case 12: // radius
             r = clipAtts->GetRadius();
-            temp.sprintf("%g", r);
+            temp.setNum(r);
             radiusLineEdit->setText(temp);
             break;
         case 13: // sphereInverse

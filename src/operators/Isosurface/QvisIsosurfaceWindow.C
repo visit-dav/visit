@@ -177,6 +177,10 @@ QvisIsosurfaceWindow::CreateWindowContents()
 //   Disable min/max when contourMethod changes to "value", otherwise ensure
 //   it is enabled.
 //   
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -239,7 +243,7 @@ QvisIsosurfaceWindow::UpdateWindow(bool doAll)
             minToggle->blockSignals(false);
             break;
           case 5: //min
-            temp.sprintf("%g", atts->GetMin());
+            temp.setNum(atts->GetMin());
             minLineEdit->setText(temp);
             break;
           case 6: //maxFlag
@@ -249,7 +253,7 @@ QvisIsosurfaceWindow::UpdateWindow(bool doAll)
             maxToggle->blockSignals(false);
             break;
           case 7: //max
-            temp.sprintf("%g", atts->GetMax());
+            temp.setNum(atts->GetMax());
             maxLineEdit->setText(temp);
             break;
           case 8: //scaling

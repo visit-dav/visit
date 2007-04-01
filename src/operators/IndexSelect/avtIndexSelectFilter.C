@@ -24,6 +24,7 @@
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
+#include <snprintf.h>
 
 
 // ****************************************************************************
@@ -535,6 +536,11 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
 //    Added code to build a data selection
 //
+//    Kathleen Bonnell, Tue Nov 16 16:13:08 PST 2004 
+//    Gracefully handle domainIndex that is out-of-range, and issue warning. 
+//    Also, use domainIndex when determining chunk for trav.GetMaterials, when
+//    appropriate.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -542,12 +548,38 @@ avtIndexSelectFilter::PerformRestriction(avtPipelineSpecification_p spec)
 {
     avtPipelineSpecification_p rv = new avtPipelineSpecification(spec);
 
+    int chunk = 0;
     if (atts.GetWhichData() == IndexSelectAttributes::OneDomain)
     {
         vector<int> domains;
         int blockOrigin 
                       = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
-        domains.push_back(atts.GetDomainIndex()-blockOrigin);
+        rv->GetDataSpecification()->GetSIL().GetDomainList(domains);
+        int maxDomain = domains.size() - 1 + blockOrigin;
+        domains.clear();
+        if (atts.GetDomainIndex() < blockOrigin)
+        {
+            char warning[128];
+            SNPRINTF(warning, 128, "\nThe selected block number (%d) is too "
+                            "small for this data, using %d instead.", 
+                            atts.GetDomainIndex(), blockOrigin);
+            avtCallback::IssueWarning(warning);
+            chunk = 0;
+        }
+        else if (atts.GetDomainIndex() > maxDomain)
+        {
+            char warning[128];
+            SNPRINTF(warning, 128, "\nThe selected block number (%d) is too "
+                            "large for this data, using %d instead.", 
+                            atts.GetDomainIndex(), maxDomain);
+            avtCallback::IssueWarning(warning);
+            chunk = maxDomain -blockOrigin; 
+        }
+        else
+        {
+            chunk = atts.GetDomainIndex()-blockOrigin;
+        }
+        domains.push_back(chunk);
         rv->GetDataSpecification()->GetRestriction()->RestrictDomains(domains);
     }
     else if (atts.GetWhichData() == IndexSelectAttributes::OneGroup)
@@ -582,7 +614,6 @@ avtIndexSelectFilter::PerformRestriction(avtPipelineSpecification_p spec)
              }
         }
     }
-
     if (!GetInput()->GetInfo().GetValidity().GetZonesPreserved())
     {
         rv->GetDataSpecification()->SetNeedStructuredIndices(true);
@@ -594,11 +625,10 @@ avtIndexSelectFilter::PerformRestriction(avtPipelineSpecification_p spec)
     }
     else
     {
-        int n = 0;
         bool hasMats;
         avtSILRestriction_p silr =rv->GetDataSpecification()->GetRestriction();
         avtSILRestrictionTraverser trav(silr);
-        trav.GetMaterials(n, hasMats);
+        trav.GetMaterials(chunk, hasMats);
         if (hasMats)
         {
             rv->GetDataSpecification()->SetNeedStructuredIndices(true);

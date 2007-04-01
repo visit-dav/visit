@@ -131,6 +131,10 @@ QvisThresholdWindow::CreateWindowContents()
 //   Allow for "min" and "max" to be valid values in the lbound and ubound
 //   windows.
 //   
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -157,14 +161,14 @@ QvisThresholdWindow::UpdateWindow(bool doAll)
             if (atts->GetLbound() == -1e+37)
                 temp = "min";
             else
-                temp.sprintf("%g", atts->GetLbound());
+                temp.setNum(atts->GetLbound());
             lbound->setText(temp);
             break;
           case 2: //ubound
             if (atts->GetUbound() == +1e+37)
                 temp = "max";
             else
-                temp.sprintf("%g", atts->GetUbound());
+                temp.setNum(atts->GetUbound());
             ubound->setText(temp);
             break;
           case 3: //variable

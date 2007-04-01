@@ -69,7 +69,11 @@
 //    Allow for mdserver-specific code in a plugin's source files.
 //
 //    Kathleen Bonnell, Thu Nov 11 16:56:21 PST 2004 
-//    Added suuport for ucharVector.
+//    Added support for ucharVector.
+//
+//    Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//    Replaced simple QString::sprintf's with a setNum because there seems
+//    to be a bug causing numbers to be incremented by .00001.  See '5263.
 //
 // ****************************************************************************
 
@@ -328,7 +332,7 @@ class WindowGeneratorFloat : public virtual Float , public virtual WindowGenerat
     }
     virtual void            writeSourceUpdateWindow(ostream &c)
     {
-        c << "            temp.sprintf(\"%g\", atts->Get"<<Name<<"());" << endl;
+        c << "            temp.setNum(atts->Get"<<Name<<"());" << endl;
         c << "            "<<name<<"->setText(temp);" << endl;
     }
     virtual void            writeSourceCallback(QString &, QString &windowname, ostream &c)
@@ -489,7 +493,7 @@ class WindowGeneratorDouble : public virtual Double , public virtual WindowGener
     }
     virtual void            writeSourceUpdateWindow(ostream &c)
     {
-        c << "            temp.sprintf(\"%g\", atts->Get"<<Name<<"());" << endl;
+        c << "            temp.setNum(atts->Get"<<Name<<"());" << endl;
         c << "            "<<name<<"->setText(temp);" << endl;
     }
     virtual void            writeSourceCallback(QString &, QString &windowname, ostream &c)

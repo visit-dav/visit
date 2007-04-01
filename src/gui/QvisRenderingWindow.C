@@ -532,6 +532,10 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
 //   Eric Brugger, Fri Apr 18 11:52:33 PDT 2003
 //   I removed auto center view.
 //   
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -601,7 +605,7 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
                 if(d == DBL_MAX || d == -DBL_MAX)
                     tmp = "not set";
                 else
-                    tmp.sprintf("%g", windowInfo->GetExtents()[j]);
+                    tmp.setNum(windowInfo->GetExtents()[j]);
                 extents[j]->setText(tmp);
             }
             break;

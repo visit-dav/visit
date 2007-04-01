@@ -137,7 +137,10 @@ QvisContextWindow::CreateWindowContents()
 // Creation:   Fri Apr 12 14:40:17 PST 2002
 //
 // Modifications:
-//   
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -158,15 +161,15 @@ QvisContextWindow::UpdateWindow(bool doAll)
         switch(i)
         {
           case 0: //offset
-            temp.sprintf("%g", atts->GetOffset());
+            temp.setNum(atts->GetOffset());
             offset->setText(temp);
             break;
           case 1: //low
-            temp.sprintf("%g", atts->GetLow());
+            temp.setNum(atts->GetLow());
             low->setText(temp);
             break;
           case 2: //hi
-            temp.sprintf("%g", atts->GetHi());
+            temp.setNum(atts->GetHi());
             hi->setText(temp);
             break;
           case 3: //context
@@ -174,15 +177,15 @@ QvisContextWindow::UpdateWindow(bool doAll)
             context->setText(temp);
             break;
           case 4: //cutoff
-            temp.sprintf("%g", atts->GetCutoff());
+            temp.setNum(atts->GetCutoff());
             cutoff->setText(temp);
             break;
           case 5: //below
-            temp.sprintf("%g", atts->GetBelow());
+            temp.setNum(atts->GetBelow());
             below->setText(temp);
             break;
           case 6: //above
-            temp.sprintf("%g", atts->GetAbove());
+            temp.setNum(atts->GetAbove());
             above->setText(temp);
             break;
         }

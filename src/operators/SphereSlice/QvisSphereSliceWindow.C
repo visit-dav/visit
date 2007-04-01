@@ -107,7 +107,10 @@ QvisSphereSliceWindow::CreateWindowContents()
 // Creation:   Fri Apr 12 14:40:57 PST 2002
 //
 // Modifications:
-//   
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -134,7 +137,7 @@ QvisSphereSliceWindow::UpdateWindow(bool doAll)
             origin->setText(temp);
             break;
           case 1: //radius
-            temp.sprintf("%g", atts->GetRadius());
+            temp.setNum(atts->GetRadius());
             radius->setText(temp);
             break;
         }

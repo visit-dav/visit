@@ -133,6 +133,11 @@ QvisCurvePlotWindow::CreateWindowContents()
 // Modifications:
 //   Kathleen Bonnell, Tue Dec 23 13:27:22 PST 2003
 //   Added pointSize and showPoints. 
+//
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -184,7 +189,7 @@ QvisCurvePlotWindow::UpdateWindow(bool doAll)
             showPoints->blockSignals(false);
             break;
           case 6: //pointSize
-            tempText.sprintf("%g", atts->GetPointSize());
+            tempText.setNum(atts->GetPointSize());
             pointSize->setText(tempText);
             break;
         }

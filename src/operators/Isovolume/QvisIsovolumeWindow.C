@@ -120,6 +120,10 @@ QvisIsovolumeWindow::CreateWindowContents()
 //    Made it support "min" and "max" as legal values, respectively, for
 //    the lower and upper bound fields.
 //   
+//    Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//    Replaced simple QString::sprintf's with a setNum because there seems
+//    to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -143,14 +147,14 @@ QvisIsovolumeWindow::UpdateWindow(bool doAll)
             if (atts->GetLbound() == -1e+37)
                 temp = "min";
             else
-                temp.sprintf("%g", atts->GetLbound());
+                temp.setNum(atts->GetLbound());
             lbound->setText(temp);
             break;
           case 1: //ubound
             if (atts->GetUbound() == +1e+37)
                 temp = "max";
             else
-                temp.sprintf("%g", atts->GetUbound());
+                temp.setNum(atts->GetUbound());
             ubound->setText(temp);
             break;
           case 2: //variable

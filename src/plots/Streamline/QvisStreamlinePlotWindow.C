@@ -307,7 +307,10 @@ QvisStreamlinePlotWindow::CreateWindowContents()
 // Creation:   Mon Oct 21 14:19:00 PST 2002
 //
 // Modifications:
-//   
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -338,11 +341,11 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             sourceType->blockSignals(false);
             break;
         case 1: // stepLength
-            temp.sprintf("%g", streamAtts->GetStepLength());
+            temp.setNum(streamAtts->GetStepLength());
             stepLength->setText(temp);
             break;
         case 2: // maxTime
-            temp.sprintf("%g", streamAtts->GetMaxTime());
+            temp.setNum(streamAtts->GetMaxTime());
             maxTime->setText(temp);
             break;
         case 3: // pointSource
@@ -376,7 +379,7 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             planeUpAxis->setText(temp);
             break;
         case 9: // planeRadius
-            temp.sprintf("%g", streamAtts->GetPlaneRadius());
+            temp.setNum(streamAtts->GetPlaneRadius());
             planeRadius->setText(temp);
             break;
         case 10: // sphereOrigin
@@ -385,7 +388,7 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             sphereOrigin->setText(temp);
             break;
         case 11: // sphereRadius
-            temp.sprintf("%g", streamAtts->GetSphereRadius());
+            temp.setNum(streamAtts->GetSphereRadius());
             sphereRadius->setText(temp);
             break;
         case 12: // boxExtents
@@ -421,7 +424,7 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             showStart->blockSignals(false);
             break;
         case 16: // tubeRadius
-            temp.sprintf("%g", streamAtts->GetTubeRadius());
+            temp.setNum(streamAtts->GetTubeRadius());
             tubeRadius->setText(temp);
             break;
         case 17: // lineWidth

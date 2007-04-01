@@ -382,6 +382,10 @@ QvisSurfacePlotWindow::CreateWindowContents()
 //   Remove MinMaxEnabled as user setting minmax no longer dependent upon
 //   limits mode. 
 //
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -508,17 +512,17 @@ QvisSurfacePlotWindow::UpdateWindow(bool doAll)
             break;
 
         case 13: // skewFactor
-            temp.sprintf("%g", surfaceAtts->GetSkewFactor());
+            temp.setNum(surfaceAtts->GetSkewFactor());
             skewLineEdit->setText(temp);
             break;
 
         case 14: // min
-            temp.sprintf("%g", surfaceAtts->GetMin());
+            temp.setNum(surfaceAtts->GetMin());
             minLineEdit->setText(temp);
             break;
 
         case 15: // max
-            temp.sprintf("%g", surfaceAtts->GetMax());
+            temp.setNum(surfaceAtts->GetMax());
             maxLineEdit->setText(temp);
             break;
 

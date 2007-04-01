@@ -308,6 +308,10 @@ QvisMeshPlotWindow::CreateWindowContents()
 //   Kathleen Bonnell, Fri Nov 12 10:51:59 PST 2004 
 //   Replaced point-related widgets with  pointControl. 
 //
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -368,7 +372,7 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
             //errorToleranceLabel->setEnabled(meshAtts->GetOutlineOnlyFlag());
             break;
         case 5: // errorTolerance
-            temp.sprintf("%g", meshAtts->GetErrorTolerance());
+            temp.setNum(meshAtts->GetErrorTolerance());
             errorToleranceLineEdit->setText(temp);
             break;
         case 6: // opaqueMode
