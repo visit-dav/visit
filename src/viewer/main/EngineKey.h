@@ -22,7 +22,12 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    March 26, 2004
 //
+//  Modifications:
+//    Brad Whitlock, Wed Mar 31 10:16:38 PDT 2004
+//    Added != operator so it builds on the SGI.
+//
 // ****************************************************************************
+
 class VIEWER_API EngineKey
 {
   private:
@@ -85,6 +90,12 @@ class VIEWER_API EngineKey
     {
         return (realHostName == ek.realHostName &&
                 simName      == ek.simName);
+    }
+
+    bool operator!=(const EngineKey &ek) const
+    {
+        return (realHostName != ek.realHostName ||
+                simName      != ek.simName);
     }
 
     bool operator<(const EngineKey &ek) const

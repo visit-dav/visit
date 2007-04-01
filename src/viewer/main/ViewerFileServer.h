@@ -90,6 +90,9 @@ class DataNode;
 //    time state is required. I added CreateNode, SetFromNode,
 //    DetermineVarType, GetMetaDataForState, GetSILForState.
 //
+//    Brad Whitlock, Wed Mar 31 09:52:59 PDT 2004
+//    I added the ExpansionRequired method.
+//
 // ****************************************************************************
 
 class ViewerFileServer : public ViewerServerManager
@@ -204,6 +207,7 @@ protected:
     const avtSIL *GetSILHelper(const std::string &host, 
                                const std::string &db,
                                int timeState);
+    bool  ExpansionRequired(const std::string &) const;
 private:
     static ViewerFileServer *instance;
 
