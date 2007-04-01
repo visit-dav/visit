@@ -1071,6 +1071,11 @@ NetworkManager::GetCurrentNetworkId(void)
 //  Programmer: Hank Childs
 //  Creation:   September 9, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Dec  2 09:48:29 PST 2004
+//    Look out for overflow.
+//
 // ****************************************************************************
 int
 NetworkManager::GetTotalGlobalCellCounts(void) const
@@ -1078,6 +1083,10 @@ NetworkManager::GetTotalGlobalCellCounts(void) const
    int i, sum = 0;
    for (i = 0; i < globalCellCounts.size(); i++)
    {
+      // Make sure we don't have an overflow issue.
+      if (globalCellCounts[i] == INT_MAX)
+          return INT_MAX;
+
       if (globalCellCounts[i] >= 0)
           sum += globalCellCounts[i];
    }
@@ -1465,6 +1474,9 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender,
 //    Hank Childs, Wed Nov  3 14:12:29 PST 2004
 //    Fix typo and fix problem with shadows in parallel.
 //
+//    Hank Childs, Wed Nov 24 17:28:07 PST 2004
+//    Added imageBasedPlots.
+//
 // ****************************************************************************
 avtDataObjectWriter_p
 NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
@@ -1502,6 +1514,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
             int t2 = visitTimer->StartTimer();
             int t3 = visitTimer->StartTimer();
             viswin->ClearPlots();
+            imageBasedPlots.clear();
             visitTimer->StopTimer(t3, "Clearing plots out of vis window");
 
             for (i = 0; i < plotIds.size(); i++)
@@ -1527,14 +1540,25 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
                 visitTimer->StopTimer(t5, "Calling GetActor for DOB");
 
                 // record cell counts including and not including polys
-                cellCounts[i] =
+                if (cellCountMultiplier > INT_MAX/2.)
+                {
+                    cellCounts[i] = INT_MAX;
+                    cellCounts[i+plotIds.size()] = INT_MAX;
+                }
+                else
+                {
+                    cellCounts[i] =
                     (int) (anActor->GetDataObject()->GetNumberOfCells(false) *
                                                      cellCountMultiplier);
-                cellCounts[i+plotIds.size()] =
-                    anActor->GetDataObject()->GetNumberOfCells(true);
+                    cellCounts[i+plotIds.size()] =
+                             anActor->GetDataObject()->GetNumberOfCells(true);
+                }
 
                 int t6 = visitTimer->StartTimer();
                 viswin->AddPlot(anActor);
+                avtPlot_p plot = workingNetSaved->GetPlot();
+                if (plot->PlotIsImageBased())
+                    imageBasedPlots.push_back(plot);
                 visitTimer->StopTimer(t6, "Adding plot to the vis window");
                 visitTimer->StopTimer(t7, "Setting up one plot");
             }
@@ -1552,7 +1576,8 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
             MPI_Allreduce(cellCounts, reducedCounts, 2 * plotIds.size(),
                 MPI_INT, MPI_SUM, MPI_COMM_WORLD);
             for (i = 0; i < 2 * plotIds.size(); i++)
-                cellCounts[i] = reducedCounts[i];
+                if (cellCounts[i] != INT_MAX) // if accounts for overflow
+                    cellCounts[i] = reducedCounts[i];
             delete [] reducedCounts;
 #endif
 
@@ -1681,12 +1706,14 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
                 DumpImage(theImage, "before_ImageCompositer");
 
             avtWholeImageCompositer *imageCompositer;
+            bool haveImagePlots = imageBasedPlots.size();
             if (viswin->GetWindowMode() == WINMODE_3D)
             {
                 imageCompositer = new avtWholeImageCompositerWithZ();
                 imageCompositer->SetShouldOutputZBuffer(getZBuffer ||
                                                         two_pass_mode ||
-                                                        doShadows);
+                                                        doShadows || 
+                                                        haveImagePlots);
             }
             else
             {
@@ -1715,7 +1742,8 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
             imageCompositer->SetOutputImageSize(imageRows, imageCols);
             imageCompositer->AddImageInput(theImage, 0, 0);
             imageCompositer->SetAllProcessorsNeedResult(two_pass_mode || 
-                                                        doShadows);
+                                                        doShadows ||
+                                                        haveImagePlots);
 
             //
             // Do the parallel composite using a 1 stage pipeline
@@ -1863,6 +1891,19 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
             // If the engine is doing more than just 3D attributes,
             // post-process the composited image.
             //
+            if (imageBasedPlots.size() > 0)
+            {
+                avtImage_p compositedImage;
+                CopyTo(compositedImage, compositedImageAsDataObject);
+                for (int kk = 0 ; kk < imageBasedPlots.size() ; kk++)
+                {
+                    avtImage_p newImage = 
+                           imageBasedPlots[kk]->ImageExecute(compositedImage, 
+                                                             windowAttributes);
+                    compositedImage = newImage;
+                }
+                CopyTo(compositedImageAsDataObject, compositedImage);
+            }
 #ifdef PARALLEL
             if ((annotMode==2) && ((PAR_Rank() == 0) || getZBuffer))
 #else

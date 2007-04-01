@@ -535,6 +535,10 @@ avtPlot::Execute(avtDataObjectReader_p reader)
 //    Kathleen Bonnell, Wed Nov  3 16:51:24 PST 2004
 //    Save Spatial and Topological dimension for use by derived types. 
 //
+//    Hank Childs, Wed Dec  1 07:33:05 PST 2004
+//    If plot is image based, then we should not add the drawable to the vis
+//    window.  Instead add a null data actor.
+//
 // ****************************************************************************
 
 avtActor_p
@@ -549,11 +553,15 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
     // dataset and create a drawable.  If it is geometry, creating a drawable
     // means creating a mapper.
     //
-    if (((*reader != NULL) && reader->InputIsDataset()) ||
-        ((*dob != NULL) && !strcmp(dob->GetType(),"avtDataset")))
-    {   avtDataset_p geometry;
+    bool haveDatasetReader = (*reader != NULL) && reader->InputIsDataset();
+    bool haveDatasetObject = (*dob != NULL) && 
+                                 (strcmp(dob->GetType(),"avtDataset")==0);
+    bool haveDataset = haveDatasetReader || haveDatasetObject;
+    if (haveDataset && !PlotIsImageBased())
+    {   
+        avtDataset_p geometry;
 
-        debug2 << "avtPlot::Execute Recieving Polygon Data" << endl;
+        debug2 << "avtPlot::Execute Receiving Polygon Data" << endl;
 
         if (*dob != NULL)
         {
@@ -600,7 +608,7 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
              ((*dob != NULL) && !strcmp(dob->GetType(),"avtImage")))
     {   avtImage_p  image;
     
-        debug2 << "avtPlot::Execute Recieving Image Data" << endl;
+        debug2 << "avtPlot::Execute Receiving Image Data" << endl;
 
         if (*dob != NULL)
            CopyTo(image, dob);
@@ -614,10 +622,11 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
         mapper.SetInput(img);
         drawable = mapper.GetDrawable();
     }
-    else if (reader->InputIsNullData())
+    else if (!PlotIsImageBased() && ((*reader != NULL) && 
+             reader->InputIsNullData()))
     {
         // proceed as though we had geometry & create a geometry drawable.
-        debug2 << "avtPlot::Execute Recieving Null Data" << endl;
+        debug2 << "avtPlot::Execute Receiving Null Data" << endl;
         avtNullData_p nullData = reader->GetNullDataOutput();
 
         // create some bogus geometry data
@@ -649,6 +658,48 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
             decoMapper->Execute(ds);
             decorations = decoMapper->GetDrawable();
         }
+    }
+    else if (PlotIsImageBased())
+    {
+        debug2 << "avtPlot::Execute Plot is Image Based" << endl;
+        avtDataObject_p working_dob;
+        if (*dob != NULL)
+            working_dob = dob;
+        else if (*reader != NULL)
+            working_dob = reader->GetOutput();
+        else
+            EXCEPTION0(ImproperUseException);
+
+        // create some bogus geometry data
+        vtkPolyData *emptyPolyData = vtkPolyData::New();
+        avtSourceFromDataset emptySource((vtkDataSet**)&emptyPolyData,1);
+        avtDataObject_p geo = emptySource.GetOutput();
+
+        // although we're creating bogus geometry data here, we still need
+        // to pass valid dobInfo through the mapper
+        avtMapper *mapper = GetMapper();
+        avtDataObjectInformation& geoInfo = geo->GetInfo();
+        geoInfo.Copy(working_dob->GetInfo());
+        mapper->SetInput(geo);
+
+        // Before we get the drawable, we must do an update.
+        avtTerminatingSource *src = geo->GetTerminatingSource();
+        avtDataSpecification_p ds = src->GetFullDataSpecification();
+        mapper->SetPipelineIndex(0);
+        GuideFunction foo;
+        void *args;
+        // Turn off the load balancer.
+        if (*dob != NULL)
+        {
+           mapper->GetGuideFunction(foo,args);
+           mapper->SetGuideFunction(NULL,NULL);
+        }
+        mapper->Execute(ds);
+        if (*dob != NULL)
+           mapper->SetGuideFunction(foo,args);
+
+        drawable = mapper->GetDrawable();
+        info.Copy(working_dob->GetInfo());
     }
     else
     {
@@ -1148,12 +1199,20 @@ avtPlot::ReleaseData(void)
 //  Programmer: Mark C. Miller 
 //  Creation:   August 23, 2004 
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Nov 24 16:49:39 PST 2004
+//    If a plot is image based, set the cell count multiplier to be very high.
+//
 // ****************************************************************************
 
 void
 avtPlot::SetCellCountMultiplierForSRThreshold(const avtDataObject_p)
 {
-    cellCountMultiplierForSRThreshold = 1.0;
+    if (PlotIsImageBased())
+        cellCountMultiplierForSRThreshold = INT_MAX;
+    else
+        cellCountMultiplierForSRThreshold = 1.0;
 }
 
 // ****************************************************************************

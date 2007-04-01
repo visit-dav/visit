@@ -44,6 +44,9 @@
 #    Jeremy Meredith, Wed Sep  1 09:56:48 PDT 2004
 #    Added avtTiledImageCompositor.
 #
+#    Hank Childs, Mon Nov 22 08:38:45 PST 2004
+#    Added avtMassVoxelExtractor.
+#
 ##############################################################################
 
 ##
@@ -69,6 +72,7 @@ SRC=\
  avtGhostZoneFilter.C \
  avtImageCommunicator.C \
  avtImageCompositer.C \
+ avtMassVoxelExtractor.C \
  avtPointToGlyphFilter.C \
  avtRayCompositer.C \
  avtRayTracer.C \

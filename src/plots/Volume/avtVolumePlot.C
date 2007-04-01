@@ -10,6 +10,7 @@
 #include <avtCallback.h>
 #include <avtVolumeRenderer.h>
 #include <avtLookupTable.h>
+#include <avtResampleFilter.h>
 #include <avtShiftCenteringFilter.h>
 #include <avtUserDefinedMapper.h>
 #include <avtVolumeFilter.h>
@@ -17,10 +18,8 @@
 #include <VolumeAttributes.h>
 
 #include <DebugStream.h>
+#include <ImproperUseException.h>
 #include <LostConnectionException.h>
-
-
-static void OverrideWithSoftwareImageCallback(void *, avtDataObject_p &);
 
 
 // ****************************************************************************
@@ -52,15 +51,17 @@ static void OverrideWithSoftwareImageCallback(void *, avtDataObject_p &);
 //    Eric Brugger, Wed Jul 16 11:35:47 PDT 2003
 //    Modified to work with the new way legends are managed.
 //
+//    Hank Childs, Wed Nov 24 17:03:44 PST 2004
+//    Removed hacks involved with previous software volume rendering mode.
+//
 // ****************************************************************************
 
 avtVolumePlot::avtVolumePlot() : avtVolumeDataPlot()
 {
     volumeFilter = NULL;
+    resampleFilter = NULL;
     shiftCentering = NULL;
     renderer = avtVolumeRenderer::New();
-    renderer->RegisterOverrideRenderCallback(OverrideWithSoftwareImageCallback,
-                                             this);
 
     avtCustomRenderer_p cr;
     CopyTo(cr, renderer);
@@ -78,14 +79,6 @@ avtVolumePlot::avtVolumePlot() : avtVolumeDataPlot()
     // VariableLegend.
     //
     varLegendRefPtr = varLegend;
-
-    lastImage = NULL;
-
-    //
-    // Remove this HACK when the software rendering route from the viewer
-    // to the engine gets better.
-    //
-    id = "Volume_1.1";
 }
 
 // ****************************************************************************
@@ -108,26 +101,47 @@ avtVolumePlot::avtVolumePlot() : avtVolumeDataPlot()
 //    Hank Childs, Mon May 20 10:47:18 PDT 2002
 //    Don't delete the renderer, since it is now reference counted.
 //
+//    Hank Childs, Wed Nov 24 17:03:44 PST 2004
+//    Removed hacks involved with previous software volume rendering mode.
+//
 // ****************************************************************************
 
 avtVolumePlot::~avtVolumePlot()
 {
     delete mapper;
-    delete volumeFilter;
     delete shiftCentering;
     delete avtLUT;
 
-    //
-    // The renderer may still try to draw, so let it know that we are deleted.
-    //
-    renderer->RegisterOverrideRenderCallback(OverrideWithSoftwareImageCallback,
-                                             NULL);
+    if (volumeFilter != NULL)
+        delete volumeFilter;
+    if (resampleFilter != NULL)
+        delete resampleFilter;
     renderer = NULL;
 
     //
     // Do not delete the varLegend since it is being held by varLegendRefPtr.
     //
 }
+
+
+// ****************************************************************************
+//  Method: avtVolumePlot::PlotIsImageBased
+//
+//  Purpose:
+//      Determines if the plot is image based, meaning that it can't run as a
+//      standard SR plot.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 24, 2004
+//      
+// ****************************************************************************
+
+bool
+avtVolumePlot::PlotIsImageBased(void)
+{
+    return atts.GetDoSoftware();
+}
+
 
 // ****************************************************************************
 //  Method:  avtVolumePlot::Create
@@ -241,6 +255,37 @@ avtVolumePlot::SetLegendOpacities()
 
 
 // ****************************************************************************
+//  Method: avtVolumePlot::ImageExecute
+//
+//  Purpose:
+//      Takes an input image and adds a volume rendering to it.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 24, 2004
+//
+// ****************************************************************************
+
+avtImage_p
+avtVolumePlot::ImageExecute(avtImage_p input,
+                            const WindowAttributes &window_atts)
+{
+    avtImage_p rv = input;
+
+    if (volumeFilter != NULL)
+    {
+        volumeFilter->SetAttributes(atts);
+        rv = volumeFilter->RenderImage(input, window_atts);
+    }
+    else
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+
+    return rv;
+}
+
+
+// ****************************************************************************
 //  Method: avtVolumePlot::SetLegend
 //
 //  Purpose:
@@ -319,6 +364,9 @@ avtVolumePlot::GetMapper(void)
 //    Hank Childs, Fri Feb  8 19:35:50 PST 2002
 //    Add shift centering as an implied operator.
 //
+//    Hank Childs, Wed Nov 24 17:03:44 PST 2004
+//    No longer apply the volume filter as an operator.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -329,11 +377,6 @@ avtVolumePlot::ApplyOperators(avtDataObject_p input)
     //
     // Clean up any old filters.
     //
-    if (volumeFilter != NULL)
-    {
-        delete volumeFilter;
-        volumeFilter = NULL;
-    }
     if (shiftCentering != NULL)
     {
         delete shiftCentering;
@@ -350,10 +393,7 @@ avtVolumePlot::ApplyOperators(avtDataObject_p input)
         dob = shiftCentering->GetOutput();
     }
 
-    volumeFilter = new avtVolumeFilter();
-    volumeFilter->SetAttributes(atts);
-    volumeFilter->SetInput(dob);
-    return volumeFilter->GetOutput();
+    return dob;
 }
 
 // ****************************************************************************
@@ -374,12 +414,51 @@ avtVolumePlot::ApplyOperators(avtDataObject_p input)
 //
 //  Modifications:
 //
+//    Hank Childs, Wed Nov 24 17:03:44 PST 2004
+//    Apply the rendering transformation -- resampling in hardware, volume
+//    filter for ray tracing.
+//
 // ****************************************************************************
 
 avtDataObject_p
 avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
-    return input;
+    //
+    // Clean up any old filters.
+    //
+    if (volumeFilter != NULL)
+    {
+        delete volumeFilter;
+        volumeFilter = NULL;
+    }
+    if (resampleFilter != NULL)
+    {
+        delete resampleFilter;
+        resampleFilter = NULL;
+    }
+
+    avtDataObject_p dob = input;
+    if (atts.GetDoSoftware())
+    {
+        volumeFilter = new avtVolumeFilter();
+        volumeFilter->SetAttributes(atts);
+        volumeFilter->SetInput(input);
+        dob = volumeFilter->GetOutput();
+    }
+    else
+    {
+        ResampleAttributes resampleAtts;
+        resampleAtts.SetTargetVal(atts.GetResampleTarget());
+        resampleAtts.SetUseTargetVal(true);
+        resampleAtts.SetPrefersPowersOfTwo(
+                    atts.GetRendererType() == VolumeAttributes::Texture3D);
+        resampleFilter = new avtResampleFilter(&resampleAtts);
+
+        resampleFilter->SetInput(input);
+        dob = resampleFilter->GetOutput();
+    }
+
+    return dob;
 }
 
 
@@ -399,6 +478,9 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
 //    Kathleen Bonnell, Thu Sep 18 13:40:26 PDT 2003 
 //    Set anti-aliased render order to be the same as normal.
 //
+//    Hank Childs, Tue Nov 30 09:03:00 PST 2004
+//    Make sure legend always reflects artificial ranges.
+//
 // ****************************************************************************
 
 void
@@ -411,8 +493,16 @@ avtVolumePlot::CustomizeBehavior(void)
     // Add a legend.
     float min, max;
     mapper->GetRange(min, max);
-    varLegend->SetRange(min, max);
     varLegend->SetVarRange(min, max);
+    if (atts.GetUseColorVarMin())
+    {
+        min = atts.GetColorVarMin();
+    }
+    if (atts.GetUseColorVarMax())
+    {
+        max = atts.GetColorVarMax();
+    }
+    varLegend->SetRange(min, max);
     behavior->SetLegend(varLegendRefPtr);
 }
 
@@ -461,104 +551,6 @@ avtVolumePlot::EnhanceSpecification(avtPipelineSpecification_p spec)
     avtPipelineSpecification_p rv = new avtPipelineSpecification(spec, nds);
 
     return rv;
-}
-
-
-// ****************************************************************************
-//  Method: avtVolumePlot::OverrideWithSoftwareImage
-//
-//  Purpose:
-//      Determines if we should override the normal hardware rendering with
-//      a software rendering.
-//
-//  Arguments:
-//      dob     A place to store the image.
-//
-//  Programmer: Hank Childs
-//  Creation:   November 20, 2001
-//
-//  Modifications:
-//    Hank Childs, Sun Aug 10 19:39:52 PDT 2003
-//    Add support for software volume rendering crashing the engine (meaning
-//    make sure the engine doesn't crash as well.)
-//
-//    Brad Whitlock, Mon Aug 25 17:22:30 PST 2003
-//    Added missing ENDTRY.
-//
-// ****************************************************************************
-
-void
-avtVolumePlot::OverrideWithSoftwareImage(avtDataObject_p &dob)
-{
-    //
-    // Check to see if we can re-use the last image.  This comes up a lot with
-    // redraws, etc.
-    //
-    const WindowAttributes &curWin = avtCallback::GetCurrentWindowAtts();
-    if (lastWindowAtts == curWin && lastAtts == atts && *lastImage != NULL)
-    {
-        dob = lastImage;
-        return;
-    }
-
-    if (atts.GetDoSoftware())
-    {
-        TRY
-        {
-            avtCallback::UpdatePlotAttributes(id, index, &atts);
-            avtCallback::GetImage(index, dob);
-
-            lastWindowAtts = curWin;
-            lastAtts = atts;
-            lastImage = dob;
-        }
-        CATCH(LostConnectionException)
-        {
-            lastImage = NULL;
-        }
-        ENDTRY
-    }
-
-    atts.SetDoSoftware(false);
-}
-
-
-// ****************************************************************************
-//  Function: OverrideWithSoftwareImageCallback
-//
-//  Purpose:
-//      A normal C-function used for callbacks to override rendering with
-//      software images.
-//
-//  Arguments:
-//      vp      A void pointer.  This should be a ptr to a volume plot.
-//      dob     A place to store the image.
-//
-//  Programmer: Hank Childs
-//  Creation:   November 20, 2001
-//
-//  Modifications:
-//
-//    Hank Childs, Mon May 20 16:31:08 PDT 2002
-//    Made more of an effort not to access free'd memory.
-//
-// ****************************************************************************
-
-void
-OverrideWithSoftwareImageCallback(void *vp, avtDataObject_p &dob)
-{
-    if (vp != NULL)
-    {
-        avtVolumePlot *plot = (avtVolumePlot *) vp;
-        plot->OverrideWithSoftwareImage(dob);
-    }
-    else
-    {
-        debug3 << "Could not draw a volume plot correctly because it "
-               << "was deleted.  This happens when a volume is being "
-               << "updated on the engine and the viewer deletes the current "
-               << "one." << endl;
-    }
 }
 
 
@@ -614,16 +606,6 @@ avtVolumePlot::Equivalent(const AttributeGroup *a)
     if (atts.GetResampleTarget() != objAtts->GetResampleTarget())
         return false;
     return true;
-}
-
-
-// THESE METHODS ARE HACKS THAT WERE ADDED FOR DOING SOFTWARE RENDERING.
-// WHEN BETTER SOLUTIONS ARISE, THEY SHOULD BE REMOVED.
-
-void
-avtVolumePlot::SetId(const string &id_)
-{
-    id = id_;
 }
 
 

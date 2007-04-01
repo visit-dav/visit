@@ -159,6 +159,11 @@ class     AttributeSubject;
 //    Kathleen Bonnell, Wed Nov  3 16:51:24 PST 2004 
 //    Removed meshType, added topologicalDim and SpatialDim. 
 //
+//    Hank Childs, Wed Nov 24 16:39:52 PST 2004
+//    Added virtual functions PlotIsImageBased and ImageExecute.
+//    This is for plots such as the volume plot which cannot play well with
+//    volume rendering.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
@@ -178,6 +183,10 @@ class PLOTTER_API avtPlot
                                        avtPipelineSpecification_p,
                                        const WindowAttributes*);
 
+    virtual bool               PlotIsImageBased(void) { return false; };
+    virtual avtImage_p         ImageExecute(avtImage_p img,
+                                            const WindowAttributes &) 
+                                    { return img; };
 
     virtual bool               Equivalent(const AttributeGroup *)
                                             { return false; };

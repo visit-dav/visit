@@ -216,6 +216,13 @@ avtRayTracer::SetGradientBackgroundColors(const float bg1[3],
 //    Hank Childs, Fri Sep 13 12:04:04 PDT 2002
 //    Reverse arguments for CopyTo (we weren't sending in the input correctly).
 //
+//    Hank Childs, Fri Nov 19 13:47:20 PST 2004
+//    Added option to have sampling of rectilinear grids done efficiently
+//    by sample point extractor by not converting grid into image space.
+//
+//    Hank Childs, Thu Dec  2 09:26:28 PST 2004
+//    No longer tighten clipping planes ['5699].
+//
 // ****************************************************************************
 
 void
@@ -238,7 +245,6 @@ avtRayTracer::Execute(void)
         aspect = (double)screen[0] / (double)screen[1];
     }
     avtWorldSpaceToImageSpaceTransform trans(view, aspect);
-    trans.TightenClippingPlanes(true);
     trans.SetInput(GetInput());
 
     //
@@ -247,6 +253,15 @@ avtRayTracer::Execute(void)
     avtSamplePointExtractor extractor(screen[0], screen[1], samplesPerRay);
     extractor.RegisterRayFunction(rayfoo);
     extractor.SetInput(trans.GetOutput());
+
+    //
+    // For curvilinear and unstructured meshes, it makes sense to convert the
+    // cells to image space.  But for rectilinear meshes, it is not the
+    // most efficient strategy.  So set some flags here that allow the 
+    // extractor to do the extraction in world space.
+    //
+    trans.SetPassThruRectilinearGrids(true);
+    extractor.SetRectilinearGridsAreInWorldSpace(true, view, aspect);
 
     avtDataObject_p samples = extractor.GetOutput();
 

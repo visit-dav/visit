@@ -619,6 +619,9 @@ avtFilter::TryDataExtents(double *outexts, const char *varname)
 //    Hank Childs, Tue Jun 29 07:16:23 PDT 2004
 //    Only use valid extents.
 //
+//    Hank Childs, Fri Dec  3 14:25:56 PST 2004
+//    Add variable name to SearchDataForDataExtents.
+//
 // ****************************************************************************
 
 void
@@ -646,7 +649,7 @@ avtFilter::GetDataExtents(double *outexts, const char *varname)
 
     if (!hadThemAlready)
     {
-        SearchDataForDataExtents(outexts);
+        SearchDataForDataExtents(outexts, varname);
     }
 
     UnifyMinMax(outexts, 2, 2);
@@ -1040,10 +1043,15 @@ avtFilter::RegisterDynamicAttribute(avtDynamicAttribute *da)
 //  Programmer: Hank Childs
 //  Creation:   April 16, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Dec  3 14:28:02 PST 2004
+//    Added variable name.
+//
 // ****************************************************************************
 
 void
-avtFilter::SearchDataForDataExtents(double *)
+avtFilter::SearchDataForDataExtents(double *, const char *)
 {
     EXCEPTION0(ImproperUseException);
 }

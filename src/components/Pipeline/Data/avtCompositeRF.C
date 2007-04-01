@@ -110,6 +110,10 @@ avtCompositeRF::~avtCompositeRF()
 //    Hank Childs, Sun Dec  2 15:55:28 PST 2001
 //    Full support for multiple variables.
 //
+//    Hank Childs, Fri Dec  3 14:34:59 PST 2004
+//    Allow a fully opaque sample to terminate a ray.  Also make a correction
+//    so low opacity samples don't have a huge impact. ['1735]
+//
 // ****************************************************************************
 
 void
@@ -151,9 +155,10 @@ avtCompositeRF::GetRayValue(const avtRay *ray, const avtGradients *gradients,
             //
             if (opac.A > 0)
             {
-                double numberOfSamplesToReachFullOpacity = numSamples * 0.02;
+                double numberOfSamplesToReachFullOpacity = 1;
                 double samplesOpacity = opac.A / 
                                              numberOfSamplesToReachFullOpacity;
+                samplesOpacity = samplesOpacity*samplesOpacity;
 
                 //
                 // There is a leap of faith here that the gradients were not

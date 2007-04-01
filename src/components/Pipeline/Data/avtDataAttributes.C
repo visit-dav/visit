@@ -989,6 +989,9 @@ avtDataAttributes::GetDataExtents(double *buff, const char *varname)
 //    Kathleen Bonnell, Wed Mar 31 08:03:47 PST 2004
 //    Added a reason to the exception.
 //
+//    Hank Childs, Wed Dec  1 15:29:56 PST 2004
+//    Make sure varname is non-NULL, or we'll crash.
+//
 // ****************************************************************************
 
 avtExtents *
@@ -1001,8 +1004,10 @@ avtDataAttributes::GetTrueDataExtents(const char *varname)
         // We were asked to set the variable dimension of a non-existent
         // variable.
         //
+        const char *varname_to_print = (varname != NULL ? varname
+                                         : "<null>");
         string reason = "Attempting to retrieve data extents of non-existent ";
-        reason = reason +  " variable: " + varname + ".\n";
+        reason = reason +  " variable: " + varname_to_print + ".\n";
         EXCEPTION1(ImproperUseException, reason);
     }
 
@@ -1030,6 +1035,9 @@ avtDataAttributes::GetTrueDataExtents(const char *varname)
 //    Kathleen Bonnell, Wed Mar 31 08:03:47 PST 2004
 //    Added a reason to the exception.
 //
+//    Hank Childs, Wed Dec  1 15:29:56 PST 2004
+//    Make sure varname is non-NULL, or we'll crash.
+//
 // ****************************************************************************
 
 avtExtents *
@@ -1042,8 +1050,10 @@ avtDataAttributes::GetCumulativeTrueDataExtents(const char *varname)
         // We were asked to set the variable dimension of a non-existent
         // variable.
         //
+        const char *varname_to_print = (varname != NULL ? varname
+                                         : "<null>");
         string reason = "Attempting to retrieve data extents of non-existent ";
-        reason = reason +  " variable: " + varname + ".\n";
+        reason = reason +  " variable: " + varname_to_print + ".\n";
         EXCEPTION1(ImproperUseException, reason);
     }
 
@@ -1071,6 +1081,9 @@ avtDataAttributes::GetCumulativeTrueDataExtents(const char *varname)
 //    Kathleen Bonnell, Wed Mar 31 08:03:47 PST 2004
 //    Added a reason to the exception.
 //
+//    Hank Childs, Wed Dec  1 15:29:56 PST 2004
+//    Make sure varname is non-NULL, or we'll crash.
+//
 // ****************************************************************************
 
 avtExtents *
@@ -1083,8 +1096,10 @@ avtDataAttributes::GetEffectiveDataExtents(const char *varname)
         // We were asked to set the variable dimension of a non-existent
         // variable.
         //
+        const char *varname_to_print = (varname != NULL ? varname
+                                         : "<null>");
         string reason = "Attempting to retrieve data extents of non-existent ";
-        reason = reason +  " variable: " + varname + ".\n";
+        reason = reason +  " variable: " + varname_to_print + ".\n";
         EXCEPTION1(ImproperUseException, reason);
     }
 
@@ -1112,6 +1127,9 @@ avtDataAttributes::GetEffectiveDataExtents(const char *varname)
 //    Kathleen Bonnell, Wed Mar 31 08:03:47 PST 2004
 //    Added a reason to the exception.
 //
+//    Hank Childs, Wed Dec  1 15:29:56 PST 2004
+//    Make sure varname is non-NULL, or we'll crash.
+//
 // ****************************************************************************
 
 avtExtents *
@@ -1124,8 +1142,10 @@ avtDataAttributes::GetCurrentDataExtents(const char *varname)
         // We were asked to set the variable dimension of a non-existent
         // variable.
         //
+        const char *varname_to_print = (varname != NULL ? varname
+                                         : "<null>");
         string reason = "Attempting to retrieve data extents of non-existent ";
-        reason = reason +  " variable: " + varname + ".\n";
+        reason = reason +  " variable: " + varname_to_print + ".\n";
         EXCEPTION1(ImproperUseException, reason);
     }
 
@@ -1153,6 +1173,9 @@ avtDataAttributes::GetCurrentDataExtents(const char *varname)
 //    Kathleen Bonnell, Wed Mar 31 08:03:47 PST 2004
 //    Added a reason to the exception.
 //
+//    Hank Childs, Wed Dec  1 15:29:56 PST 2004
+//    Make sure varname is non-NULL, or we'll crash.
+//
 // ****************************************************************************
 
 avtExtents *
@@ -1165,8 +1188,10 @@ avtDataAttributes::GetCumulativeCurrentDataExtents(const char *varname)
         // We were asked to set the variable dimension of a non-existent
         // variable.
         //
+        const char *varname_to_print = (varname != NULL ? varname
+                                         : "<null>");
         string reason = "Attempting to retrieve data extents of non-existent ";
-        reason = reason +  " variable: " + varname + ".\n";
+        reason = reason +  " variable: " + varname_to_print + ".\n";
         EXCEPTION1(ImproperUseException, reason);
     }
 
@@ -1282,6 +1307,9 @@ avtDataAttributes::SetSpatialDimension(int td)
 //    Kathleen Bonnell, Wed Mar 31 08:03:47 PST 2004
 //    Added a reason to the exception.
 //
+//    Hank Childs, Wed Dec  1 15:29:56 PST 2004
+//    Make sure varname is non-NULL, or we'll crash.
+//
 // ****************************************************************************
 
 void
@@ -1294,8 +1322,10 @@ avtDataAttributes::SetVariableDimension(int vd, const char *varname)
         // We were asked to set the variable dimension of a non-existent
         // variable.
         //
+        const char *varname_to_print = (varname != NULL ? varname
+                                         : "<null>");
         string reason = "Attempting to set dimension of non-existent ";
-        reason = reason +  " variable: " + varname + ".\n";
+        reason = reason +  " variable: " + varname_to_print + ".\n";
         EXCEPTION1(ImproperUseException, reason);
     }
 
@@ -1351,6 +1381,9 @@ avtDataAttributes::SetVariableDimension(int vd, const char *varname)
 //    Kathleen Bonnell, Wed Mar 31 08:03:47 PST 2004
 //    Added a reason to the exception.
 //
+//    Hank Childs, Wed Dec  1 15:29:56 PST 2004
+//    Make sure varname is non-NULL, or we'll crash.
+//
 // ****************************************************************************
 
 int
@@ -1363,8 +1396,10 @@ avtDataAttributes::GetVariableDimension(const char *varname) const
         // We were asked to set the variable dimension of a non-existent
         // variable.
         //
+        const char *varname_to_print = (varname != NULL ? varname
+                                         : "<null>");
         string reason = "Attempting to retrieve dimension of non-existent ";
-        reason = reason +  " variable: " + varname + ".\n";
+        reason = reason +  " variable: " + varname_to_print + ".\n";
         EXCEPTION1(ImproperUseException, reason);
     }
 
@@ -3022,6 +3057,9 @@ avtDataAttributes::ReadTransform(char *input)
 //
 //  Modifications:
 //
+//    Hank Childs, Wed Dec  1 15:29:56 PST 2004
+//    Make sure varname is non-NULL, or we'll crash.
+//
 // ****************************************************************************
 
 void
@@ -3034,8 +3072,10 @@ avtDataAttributes::SetTreatAsASCII(const bool ascii, const char *varname)
         // We were asked to set the treatAsASCII value of a non-existent
         // variable.
         //
+        const char *varname_to_print = (varname != NULL ? varname
+                                         : "<null>");
         string reason = "Attempting to set TreatAsASCII of non-existent";
-        reason = reason +  " variable: " + varname + ".\n";
+        reason = reason +  " variable: " + varname_to_print + ".\n";
         EXCEPTION1(ImproperUseException, reason);
     }
 
@@ -3055,6 +3095,9 @@ avtDataAttributes::SetTreatAsASCII(const bool ascii, const char *varname)
 //
 //  Modifications:
 //
+//    Hank Childs, Wed Dec  1 15:29:56 PST 2004
+//    Make sure varname is non-NULL, or we'll crash.
+//
 // ****************************************************************************
 
 bool
@@ -3067,8 +3110,10 @@ avtDataAttributes::GetTreatAsASCII(const char *varname) const
         // We were asked to get the treatAsASCII of a non-existent
         // variable.
         //
+        const char *varname_to_print = (varname != NULL ? varname
+                                         : "<null>");
         string reason = "Attempting to retrieve TreatAsASCII of non-existent";
-        reason = reason +  " variable: " + varname + ".\n";
+        reason = reason +  " variable: " + varname_to_print + ".\n";
         EXCEPTION1(ImproperUseException, reason);
     }
 

@@ -46,6 +46,9 @@ class QSlider;
 //    I added a new callback for when the resample target slider
 //    is released.
 //
+//    Hank Childs, Mon Nov 22 09:27:26 PST 2004
+//    Make "Software" button become "Ray Trace" toggle.
+//
 // ****************************************************************************
 
 class QvisVolumePlotWindow : public QvisPostableWindowObserver
@@ -82,6 +85,7 @@ private slots:
     void attenuationChanged(int opacity);
     void legendToggled(bool val);
     void lightingToggled(bool val);
+    void softwareToggled(bool val);
     void colorMinToggled(bool val);
     void colorMinProcessText();
     void colorMaxToggled(bool val);
@@ -99,7 +103,6 @@ private slots:
     void resampleTargetSliderReleased();
     void samplesPerRayProcessText();
     void opacityVariableProcessText();
-    void software();
     void rendererTypeChanged(int val);
     void gradientTypeChanged(int val);
     void num3DSlicesProcessText();
@@ -136,6 +139,7 @@ private:
     QvisOpacitySlider        *attenuationSlider;
     QCheckBox                *legendToggle;
     QCheckBox                *lightingToggle;
+    QCheckBox                *softwareToggle;
     QCheckBox                *smoothDataToggle;
     QButtonGroup             *rendererButtonGroup;
     QButtonGroup             *gradientButtonGroup;

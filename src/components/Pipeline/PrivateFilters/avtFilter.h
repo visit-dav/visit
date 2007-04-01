@@ -46,6 +46,9 @@ class     avtMetaData;
 //    Moved inlined destructor definition to .C file because certain compilers
 //    have problems with them.
 //
+//    Hank Childs, Fri Dec  3 14:22:42 PST 2004
+//    Add variable name argument to SearchDataForDataExtents.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtFilter
@@ -106,7 +109,8 @@ class PIPELINE_API avtFilter
     void                                GetCurrentDataExtents(double *);
     bool                                TryCurrentSpatialExtents(double *);
     void                                GetCurrentSpatialExtents(double *);
-    virtual void                        SearchDataForDataExtents(double *);
+    virtual void                        SearchDataForDataExtents(double *,
+                                                                 const char *);
 
     void                                RegisterDynamicAttribute(
                                                         avtDynamicAttribute *);

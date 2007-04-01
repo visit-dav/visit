@@ -27,6 +27,9 @@
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Hank Childs, Fri Dec  3 14:28:02 PST 2004
+//    Added variable name argument to SearchDataForDataExtents.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatasetToDataObjectFilter
@@ -44,7 +47,7 @@ class PIPELINE_API avtDatasetToDataObjectFilter
     bool               hasCellVars;
 
     void               InputSetActiveVariable(const char *);
-    virtual void       SearchDataForDataExtents(double *);
+    virtual void       SearchDataForDataExtents(double *, const char *);
 };
 
 

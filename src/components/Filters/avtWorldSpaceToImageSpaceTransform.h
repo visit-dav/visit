@@ -34,6 +34,9 @@ class   avtIntervalTree;
 //    Hank Childs, Mon Nov 26 18:33:16 PST 2001
 //    Add support for aspect ratios.
 //
+//    Hank Childs, Fri Nov 19 13:38:21 PST 2004
+//    Define ExecuteData so we can pass rectilinear grids through if specified.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtWorldSpaceToImageSpaceTransform : public avtTransform
@@ -55,6 +58,8 @@ class AVTFILTERS_API avtWorldSpaceToImageSpaceTransform : public avtTransform
 
     void               TightenClippingPlanes(bool t)
                               { tightenClippingPlanes = t; };
+    void               SetPassThruRectilinearGrids(bool t)
+                              { passThruRectilinear = t; };
 
   protected:
     vtkMatrix4x4           *transform;
@@ -62,8 +67,10 @@ class AVTFILTERS_API avtWorldSpaceToImageSpaceTransform : public avtTransform
     double                  scale[3];
     double                  aspect;
     bool                    tightenClippingPlanes;
+    bool                    passThruRectilinear;
 
     virtual vtkMatrix4x4   *GetTransform(void);
+    virtual vtkDataSet     *ExecuteData(vtkDataSet *, int, std::string);
 
     static void             CalculatePerspectiveTransform(const avtViewInfo &,
                                                           vtkMatrix4x4 *);

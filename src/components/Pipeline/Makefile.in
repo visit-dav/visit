@@ -185,6 +185,9 @@
 #    Brad Whitlock, Mon Nov 1 15:31:13 PST 2004
 #    Fixed for MacOS X.
 #
+#    Hank Childs, Mon Nov 22 08:37:51 PST 2004
+#    Moved avtMassVoxelExtractor to Filters.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -225,7 +228,6 @@ Data_src= \
   Data/avtLightingModel.C \
   Data/avtLogicalSelection.C \
   Data/avtMIPRangeRF.C \
-  Data/avtMassVoxelExtractor.C \
   Data/avtMaterial.C \
   Data/avtMaximumIntensityProjectionRF.C \
   Data/avtMetaData.C \

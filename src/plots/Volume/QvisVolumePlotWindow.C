@@ -180,6 +180,9 @@ QvisVolumePlotWindow::~QvisVolumePlotWindow()
 //   I added a new callback for when the resample target slider
 //   is released.
 //
+//   Hank Childs, Mon Nov 22 09:28:33 PST 2004
+//   Replace "Software" button with "Ray Trace" toggle.
+//
 // ****************************************************************************
 
 void
@@ -476,12 +479,12 @@ QvisVolumePlotWindow::CreateWindowContents()
             this, SLOT(smoothDataToggled(bool)));
     toggleLayout->addWidget(smoothDataToggle);
 
-    // Create the button that does software rendering.
+    // Create the software toggle.
     QHBoxLayout *softwareButtonLayout = new QHBoxLayout(topLayout);
-    QPushButton *softwareButton = new QPushButton("Software", central,
-                                                "softwareButton");
-    connect(softwareButton, SIGNAL(clicked()), this, SLOT(software()));
-    softwareButtonLayout->addWidget(softwareButton);
+    softwareToggle = new QCheckBox("Ray Trace", central, "softwareToggle");
+    connect(softwareToggle, SIGNAL(toggled(bool)),
+            this, SLOT(softwareToggled(bool)));
+    softwareButtonLayout->addWidget(softwareToggle);
     softwareButtonLayout->addStretch(10);
 
     // Create the color selection widget.
@@ -532,6 +535,9 @@ QvisVolumePlotWindow::CreateWindowContents()
 //   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
 //   Replaced simple QString::sprintf's with a setNum because there seems
 //   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
+//   Hank Childs, Mon Nov 22 09:28:33 PST 2004
+//   Account for ray trace toggle.
 //
 // ****************************************************************************
 
@@ -603,6 +609,9 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             UpdateFreeform();
             break;
         case 9: // doSoftware
+            softwareToggle->blockSignals(true);
+            softwareToggle->setChecked(volumeAtts->GetDoSoftware());
+            softwareToggle->blockSignals(false);
             break;
         case 10: // useColorVarMin
             colorMinToggle->blockSignals(true);
@@ -1251,34 +1260,6 @@ QvisVolumePlotWindow::apply()
 }
 
 // ****************************************************************************
-// Method: QvisVolumePlotWindow::software
-//
-// Purpose:
-//   This is a Qt slot function that is called when the window's
-//   "software" button is clicked.
-//
-// Programmer: Hank Childs
-// Creation:   Tue Nov 20 09:41:39 PST 2001
-//
-// Modifications:
-//   Brad Whitlock, Thu Feb 14 09:53:33 PDT 2002
-//   Prevented updates.
-//
-//   Mark C. Miller, Tue Dec 17 14:32:30 PST 2002
-//   Added code to reset software rendering to false (VisIt00002765)
-// 
-// **************************************************************************** 
-
-void
-QvisVolumePlotWindow::software()
-{
-    volumeAtts->SetDoSoftware(true);
-    SetUpdate(false);
-    Apply(true);
-    volumeAtts->SetDoSoftware(false);
-}
-
-// ****************************************************************************
 // Method: QvisVolumePlotWindow::makeDefault
 //
 // Purpose: 
@@ -1650,6 +1631,27 @@ QvisVolumePlotWindow::lightingToggled(bool)
 {
     volumeAtts->SetLightingFlag(!volumeAtts->GetLightingFlag());
     SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVolumePlotWindow::softwareToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the toggle for the software
+//   is clicked.
+//
+// Programmer: Hank Childs
+// Creation:   November 22, 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVolumePlotWindow::softwareToggled(bool)
+{
+    volumeAtts->SetDoSoftware(!volumeAtts->GetDoSoftware());
     Apply();
 }
 

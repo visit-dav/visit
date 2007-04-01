@@ -5,14 +5,13 @@
 #ifndef AVT_VOLUME_FILTER_H
 #define AVT_VOLUME_FILTER_H
 
-#include <avtDatasetToDataObjectFilter.h>
+#include <avtDatasetToDatasetFilter.h>
 
-#include <avtImage.h>
 #include <VolumeAttributes.h>
 
+#include <avtImage.h>
 
-class     avtRayTracer;
-class     avtResampleFilter;
+class     WindowAttributes;
 
 
 // ****************************************************************************
@@ -25,9 +24,18 @@ class     avtResampleFilter;
 //  Programmer: Hank Childs
 //  Creation:   November 20, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Nov 24 16:21:39 PST 2004
+//    Changed inheritance hierarchy.  This filter now simply does software
+//    volume rendering and is used by the volume plot.  It is the interface
+//    from the volume plot to the ray tracer.  Also removed many support 
+//    methods that are no longer necessary since this filter doesn't switch
+//    between multiple modes.
+//
 // ****************************************************************************
 
-class avtVolumeFilter : public avtDatasetToDataObjectFilter
+class avtVolumeFilter : public avtDatasetToDatasetFilter
 {
   public:
                              avtVolumeFilter();
@@ -38,24 +46,16 @@ class avtVolumeFilter : public avtDatasetToDataObjectFilter
     virtual const char      *GetDescription(void)
                                   { return "Volume rendering"; };
 
-    virtual void             ReleaseData(void);
-
-    virtual avtDataObject_p  GetOutput(void);
+    avtImage_p               RenderImage(avtImage_p, const WindowAttributes &);
 
   protected:
     VolumeAttributes         atts;
-    avtDataset_p             dataset;
-    avtImage_p               image;
-    avtRayTracer            *software;
-    avtResampleFilter       *resampler;
     char                    *primaryVariable;
 
     virtual void             Execute(void);
     virtual avtPipelineSpecification_p
                              PerformRestriction(avtPipelineSpecification_p);
     virtual void             VerifyInput(void);
-    virtual int              AdditionalPipelineFilters(void);
-    bool                     DoSoftwareRender(void);
 };
 
 

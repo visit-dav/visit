@@ -8,6 +8,7 @@
 
 #include <vtkCamera.h>
 #include <vtkMatrix4x4.h>
+#include <vtkRectilinearGrid.h>
 
 #include <avtDataset.h>
 #include <avtExtents.h>
@@ -41,6 +42,9 @@ bool   HexIntersectsImageCube(const float [8][3]);
 //    Hank Childs, Mon Nov 26 18:33:16 PST 2001
 //    Made use of aspect ratio.
 //
+//    Hank Childs, Fri Nov 19 13:41:56 PST 2004
+//    Initialize passThruRectilinear.
+//
 // ****************************************************************************
 
 avtWorldSpaceToImageSpaceTransform::avtWorldSpaceToImageSpaceTransform(
@@ -52,6 +56,7 @@ avtWorldSpaceToImageSpaceTransform::avtWorldSpaceToImageSpaceTransform(
     aspect   = asp;
 
     tightenClippingPlanes = false;
+    passThruRectilinear = false;
 
     view = vi;
     transform = vtkMatrix4x4::New();
@@ -74,6 +79,9 @@ avtWorldSpaceToImageSpaceTransform::avtWorldSpaceToImageSpaceTransform(
 //    Hank Childs, Mon Nov 26 18:33:16 PST 2001
 //    Initialized aspect ratio.
 //
+//    Hank Childs, Fri Nov 19 13:41:56 PST 2004
+//    Initialize passThruRectilinear.
+//
 // ****************************************************************************
 
 avtWorldSpaceToImageSpaceTransform::avtWorldSpaceToImageSpaceTransform(
@@ -85,6 +93,7 @@ avtWorldSpaceToImageSpaceTransform::avtWorldSpaceToImageSpaceTransform(
     aspect   = 1.;
 
     tightenClippingPlanes = false;
+    passThruRectilinear = false;
 
     view = vi;
     transform = vtkMatrix4x4::New();
@@ -824,6 +833,31 @@ avtWorldSpaceToImageSpaceTransform::PreExecute(void)
     {
         CalculateTransform(view, transform, scale, aspect);
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtWorldSpaceToImageSpaceTransform::ExecuteData
+//
+//  Purpose:
+//     Pass rectilinear datasets through if specified.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 19, 2004
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtWorldSpaceToImageSpaceTransform::ExecuteData(vtkDataSet *in_ds, int domain,
+                                                std::string label)
+{
+    if (passThruRectilinear && 
+                            in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    {
+        return in_ds;
+    }
+
+    return avtTransform::ExecuteData(in_ds, domain, label);
 }
 
 
