@@ -155,6 +155,9 @@ class WindowAttributes;
 //    Added argument for extents type string to ExternalRender and 
 //    SetWinAnnotAtts
 //
+//    Mark C. Miller, Wed Apr 21 12:42:13 PDT 2004
+//    I removed the UseNetwork method
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -222,7 +225,6 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     bool MakePlot(const EngineKey &ek, const char *name,
                   const AttributeSubject *atts, const vector<double> &,
                   int *networkId);
-    bool UseNetwork(const EngineKey &ek, int id);
     bool UpdatePlotAttributes(const EngineKey &ek, const char *name,
                               int id, const AttributeSubject *atts);
     bool Pick(const EngineKey &ek, const int nid,

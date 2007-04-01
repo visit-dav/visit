@@ -105,7 +105,7 @@ ColorControlPointList.java \
 ColorTableAttributes.java \
 CouldNotConnectException.java \
 DatabaseCorrelation.java \
-DatabaseCorrelationList.java
+DatabaseCorrelationList.java \
 EngineList.java \
 Expression.java \
 ExpressionList.java \

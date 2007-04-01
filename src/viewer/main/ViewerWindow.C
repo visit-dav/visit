@@ -6894,7 +6894,7 @@ ViewerWindow::ExternalRender(const ExternalRenderRequestInfo& thisRequest,
 
         Error(message);
 
-        // finally, make sure we return a "blank" image 
+        // finally, make sure we return a "blank" image
         dob = NULL;
         return false;
     }
@@ -6949,6 +6949,11 @@ ViewerWindow::ExternalRender(const ExternalRenderRequestInfo& thisRequest,
 // Programmer: Mark C. Miller
 // Creation:   March 25, 2004 
 //
+// Modifications
+//
+//   Mark C. Miller, Wed Apr 21 12:42:13 PDT 2004
+//   I made it issue a warning message on failure
+//
 // ****************************************************************************
 void
 ViewerWindow::ExternalRenderManual(avtDataObject_p& dob, int w, int h)
@@ -6963,7 +6968,12 @@ ViewerWindow::ExternalRenderManual(avtDataObject_p& dob, int w, int h)
     thisRequest.winAtts.SetSize(size);
     thisRequest.winAtts.GetRenderAtts().SetScalableThreshold(0);
 
-    ExternalRender(thisRequest, dummyBool, true, dob);
+    bool success = ExternalRender(thisRequest, dummyBool, true, dob);
+
+    if (!success)
+    {
+        Warning("Unable to obtain rendered image from engine");
+    }
 }
 
 // ****************************************************************************
@@ -6973,6 +6983,12 @@ ViewerWindow::ExternalRenderManual(avtDataObject_p& dob, int w, int h)
 //
 // Programmer: Mark C. Miller
 // Creation:   March 25, 2004 
+//
+// Modifications
+//
+//   Mark C. Miller, Wed Apr 21 12:42:13 PDT 2004
+//   I made it issue a warning message on failure. I also made it clear
+//   plot list's actors and Update the frame.
 //
 // ****************************************************************************
 void
@@ -7005,7 +7021,10 @@ ViewerWindow::ExternalRenderAuto(avtDataObject_p& dob)
     // return nothing if the request failed
     if (!success)
     {
+        Warning("Unable to update view with new image from engine");
         GetPlotList()->SetErrorFlagAllPlots(true);
+        GetPlotList()->ClearActors();
+        GetPlotList()->UpdateFrame();
         dob = NULL;
         return;
     }

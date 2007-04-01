@@ -2,6 +2,8 @@
 #include <Observer.h>
 #include <MessageAttributes.h>
 
+#include <TimingsManager.h> // for DELTA_TOA_HERE
+
 #include <qapplication.h>
 #include <qlabel.h>
 #include <qmultilineedit.h>
@@ -103,6 +105,10 @@ QvisMessageWindow::~QvisMessageWindow()
 //   Brad Whitlock, Wed Sep 10 09:44:44 PDT 2003
 //   I made the cursor get reset for error and warning messages.
 //
+//   Mark C. Miller Wed Apr 21 12:42:13 PDT 2004
+//   I made it smarter about dealing with messages that occur close together in time.
+//   Now, it will catenate them.
+//
 // *************************************************************************************
 
 void
@@ -110,23 +116,55 @@ QvisMessageWindow::Update(Subject *)
 {
     MessageAttributes *ma = (MessageAttributes *)subject;
 
+    double secondsSinceLastMessage = DELTA_TOA_HERE;
+
+    QString msgText;
+    MessageAttributes::Severity severity = ma->GetSeverity();
+    if (secondsSinceLastMessage < 5.0)
+    {
+        MessageAttributes::Severity oldSeverity;
+        QString oldSeverityLabel = severityLabel->text();
+        if (oldSeverityLabel == "Error!")
+            oldSeverity = MessageAttributes::Error;
+        else if (oldSeverityLabel == "Warning")
+            oldSeverity = MessageAttributes::Warning;
+        else if (oldSeverityLabel == "Message")
+            oldSeverity = MessageAttributes::Message;
+        else
+            oldSeverity = MessageAttributes::Error;
+
+        // set severity to whichever is worse
+        if (oldSeverity < severity)
+            severity = oldSeverity;
+
+        // catenate new message onto old 
+        msgText = messageText->text();
+        msgText += "\n\nShortly thereafter, the following occured...\n\n";
+        QString newMsgText = QString(ma->GetText().c_str());
+        msgText += newMsgText;
+    }
+    else
+    {
+        msgText = QString(ma->GetText().c_str());
+    }
+
     // Set the severity label text.
-    if(ma->GetSeverity() == MessageAttributes::Error)
+    if(severity == MessageAttributes::Error)
     {
         show();
         qApp->beep();
         severityLabel->setText(QString("Error!"));
         RestoreCursor();
     }
-    else if(ma->GetSeverity() == MessageAttributes::Warning)
+    else if(severity == MessageAttributes::Warning)
     {
         show();
         severityLabel->setText(QString("Warning"));
         RestoreCursor();
     }
-    else if(ma->GetSeverity() == MessageAttributes::Message)
+    else if(severity == MessageAttributes::Message)
         severityLabel->setText(QString("Message"));
 
     // Set the message text.
-    messageText->setText(QString(ma->GetText().c_str()));
+    messageText->setText(msgText);
 }

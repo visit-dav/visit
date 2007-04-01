@@ -1231,6 +1231,9 @@ ViewerEngineManager::LaunchMessage(const EngineKey &ek)  const
 //   Added argument for extents type string.
 //   Passed extents type string in call to SetWinAnnotAtts
 //
+//   Mark C. Miller, Wed Apr 21 12:42:13 PDT 2004
+//   I added a pre-check overall all engines to make sure all exist
+//   I used engine proxy directly instead of calling other methods in VEM
 // ****************************************************************************
 
 bool
@@ -1251,22 +1254,22 @@ ViewerEngineManager::ExternalRender(vector<const char*> pluginIDsList,
     // container for per-engine vector of plot ids 
     map<EngineKey,vector<int> > perEnginePlotIds;
 
+    // make a pass over list of plots to make sure all associated engines exist
+    for (int i = 0; i < engineKeysList.size(); i++)
+    {
+        if (!EngineExists(engineKeysList[i]))
+            return false;
+    }
+
     TRY
     {
         // send per-plot RPCs
         for (int i = 0; i < plotIdsList.size(); i++)
         {
             ek = engineKeysList[i];
-            if (!UpdatePlotAttributes(ek, pluginIDsList[i],
-                                      plotIdsList[i],attsList[i]))
-            {
-                retval = false;
-                char msg[200];
-                SNPRINTF(msg,200,"Unsuccessful attempt to update plot "
-                         "attributes for plot ID %d, (%d of %d)",
-                         plotIdsList[i], i, plotIdsList.size());
-                EXCEPTION1(VisItException, msg); 
-            }
+            engines[ek]->UpdatePlotAttributes(pluginIDsList[i],
+                                              plotIdsList[i],
+                                              attsList[i]);
             perEnginePlotIds[ek].push_back(plotIdsList[i]);
         }
 
@@ -1278,21 +1281,13 @@ ViewerEngineManager::ExternalRender(vector<const char*> pluginIDsList,
         for (pos = perEnginePlotIds.begin(); pos != perEnginePlotIds.end();
                                                                          pos++)
         {
-            EngineKey ek = pos->first;
+            ek = pos->first;
 
-            if (!SetWinAnnotAtts(ek, &winAtts, &annotAtts, extStr))
-            {
-                retval = false;
-                char msg[200];
-                SNPRINTF(msg,200,"Unsuccessful attempt to update window "
-                         "attributes for engine %s", ek.HostName().c_str());
-                EXCEPTION1(VisItException, msg); 
-            }
+            engines[ek]->SetWinAnnotAtts(&winAtts, &annotAtts, extStr);
 
-            avtDataObjectReader_p rdr = GetDataObjectReader(sendZBuffer,
-                                                            ek,
-                                                            pos->second,
-                                                            doAllAnnotations);
+            avtDataObjectReader_p rdr =
+                engines[ek]->Render(sendZBuffer, pos->second, !doAllAnnotations,
+                                    ViewerSubject::ProcessEventsCB, (void *)viewerSubject);
 
             if (*rdr == NULL)
             {
@@ -1331,6 +1326,7 @@ ViewerEngineManager::ExternalRender(vector<const char*> pluginIDsList,
         // Remove the specified engine from the list of engines.
         RemoveFailedEngine(ek);
         UpdateEngineList();
+        retval = false;
     }
     CATCH(VisItException)
     {
@@ -1642,7 +1638,7 @@ ViewerEngineManager::UseDataObjectReader(ViewerPlot *const plot,
     TRY
     {
         // tell engine which network to re-use
-        UseNetwork(ek, plot->GetNetworkID());
+        engine->UseNetwork(plot->GetNetworkID());
 
         bool replyWithNullData = !turningOffScalableRendering; 
 
@@ -1916,29 +1912,6 @@ ViewerEngineManager::MakePlot(const EngineKey &ek, const char *name,
     ENGINE_PROXY_RPC_BEGIN("MakePlot");
     *networkId = engine->MakePlot(name, atts, extents);
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW;
-}
-
-// ****************************************************************************
-// Method: ViewerEngineManager::UseNetwork
-//
-// Purpose: 
-//   Engine UseNetwork RPC wrapped for safety.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Feb 22 14:50:06 PST 2002
-//
-// Modifications:
-//    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
-//    Use a map of engines based on a key, and be aware of simulations.
-//
-// ****************************************************************************
-
-bool
-ViewerEngineManager::UseNetwork(const EngineKey &ek, int id)
-{
-    ENGINE_PROXY_RPC_BEGIN("UseNetwork");
-    engine->UseNetwork(id);
-    ENGINE_PROXY_RPC_END;
 }
 
 // ****************************************************************************

@@ -17,6 +17,18 @@
 #include <vector>
 #include <misc_exports.h>
 
+// useful macro for declaring time info structs
+#if defined(_WIN32)
+#    define TIMEINFO _timeb
+#elif defined(__APPLE__)
+#    define TIMEINFO timeval
+#else
+#    define TIMEINFO timeb
+#endif
+
+// useful macro for computing time of arrival at a particular line of code
+#define DELTA_TOA_HERE TimingsManager::TimeSinceLastCall(__FILE__, __LINE__)
+
 // ****************************************************************************
 //  Class: TimingsManager
 //
@@ -42,6 +54,10 @@
 //    Brad Whitlock, Mon May 19 12:36:50 PDT 2003
 //    Added MacOS X code.
 //
+//    Mark C. Miller, Wed Apr 21 12:42:13 PDT 2004
+//    I added static methods, TimeSinceLastArrival, DiffTime
+//    I defined the TIMEINFO macro and restructured code to use it 
+//
 // ****************************************************************************
 
 class MISC_API TimingsManager
@@ -49,6 +65,8 @@ class MISC_API TimingsManager
   public:
                                TimingsManager();
     virtual                   ~TimingsManager() {;};
+
+    static double              TimeSinceLastCall(const char *file, int line);
 
     static TimingsManager     *Initialize(const char *);
     void                       SetFilename(const std::string &s);
@@ -58,6 +76,8 @@ class MISC_API TimingsManager
 
     int                        StartTimer(void);
     double                     StopTimer(int, const std::string &);
+
+    static double              DiffTime();
 
     void                       DumpTimings(void);
     void                       DumpTimings(ostream &);
@@ -72,6 +92,9 @@ class MISC_API TimingsManager
     std::vector<double>        times;
     std::vector<std::string>   summaries;
 
+    static double              DiffTime(const struct TIMEINFO &startTime,
+                                        const struct TIMEINFO &endTime);
+
     virtual void               PlatformStartTimer(void) = 0;
     virtual double             PlatformStopTimer(int) = 0;
 };
@@ -83,13 +106,7 @@ class MISC_API SystemTimingsManager : public TimingsManager
     virtual                   ~SystemTimingsManager() {;};
 
   protected:
-#if defined(_WIN32)
-    std::vector<_timeb>        values;
-#elif defined(__APPLE__)
-    std::vector<timeval>       values;
-#else
-    std::vector<timeb>         values;
-#endif
+    std::vector<TIMEINFO>      values;
     virtual void               PlatformStartTimer(void);
     virtual double             PlatformStopTimer(int);
 };

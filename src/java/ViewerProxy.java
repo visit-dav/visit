@@ -235,6 +235,7 @@ public class ViewerProxy implements SimpleObserver
 	    xfer.Add(materialAtts);
             xfer.Add(globalLineoutAtts);
             xfer.Add(annotationObjectList);
+            xfer.Add(queryOverTimeAtts);
 
             // hook up the message observer.
             messageObserver.Attach(messageAtts);
@@ -558,24 +559,24 @@ public class ViewerProxy implements SimpleObserver
         return synchronous ? Synchronize() : true;
     }
 
-    public boolean AnimationNextFrame()
+    public boolean TimeSliderNextState()
     {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_ANIMATIONNEXTFRAMERPC);
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_TIMESLIDERNEXTSTATERPC);
         rpc.Notify();
         return synchronous ? Synchronize() : true;
     }
 
-    public boolean AnimationPreviousFrame()
+    public boolean TimeSliderPreviousState()
     {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_ANIMATIONPREVIOUSFRAMERPC);
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_TIMESLIDERPREVIOUSSTATERPC);
         rpc.Notify();
         return synchronous ? Synchronize() : true;
     }
 
-    public boolean AnimationSetFrame(int frame)
+    public boolean SetTimeSliderState(int state)
     {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_ANIMATIONSETFRAMERPC);
-        rpc.SetFrameNumber(frame);
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETTIMESLIDERSTATERPC);
+        rpc.SetStateNumber(state);
         rpc.Notify();
         return synchronous ? Synchronize() : true;
     }
@@ -1615,6 +1616,7 @@ public class ViewerProxy implements SimpleObserver
     private AppearanceAttributes     appearanceAtts;
     private PluginManagerAttributes  pluginAtts;
     private GlobalAttributes         globalAtts;
+    private DatabaseCorrelationList  correlationList;
     private PlotList                 plotList;
     private HostProfileList          hostProfiles;
     private MessageAttributes        messageAtts;

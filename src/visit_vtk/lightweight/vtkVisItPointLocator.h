@@ -38,7 +38,7 @@
 
 #ifndef __vtkVisItPointLocator_h
 #define __vtkVisItPointLocator_h
-
+#include <visit_vtk_light_exports.h>
 #include "vtkLocator.h"
 
 class vtkCellArray;
@@ -46,7 +46,7 @@ class vtkIdList;
 class vtkNeighborPoints;
 class vtkPoints;
 
-class VTK_COMMON_EXPORT vtkVisItPointLocator : public vtkLocator
+class VISIT_VTK_LIGHT_API vtkVisItPointLocator : public vtkLocator
 {
 public:
   // Description:
