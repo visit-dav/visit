@@ -464,6 +464,10 @@ dnl
 dnl    Brad Whitlock, Thu Jan 29 10:48:59 PDT 2004
 dnl    I added more versions of Qt to the list of supported versions.
 dnl
+dnl    Mark C. Miller, Thu Feb 26 10:44:14 PDT 2004
+dnl    Modified to defualt to using PDB lite (in libsilo.a) but still
+dnl    accept --with-pdb option if PDB proper is desired
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1796,7 +1800,7 @@ AC_SUBST(EXODUS_LIBS)
 AC_SUBST(EXODUS_FLAGS)
 
 #
-# Look for PDB.
+# See of --with-pdb was specified. Use PDB lite otherwise.
 #
 AC_MSG_CHECKING(for PDB)
 PDB=""
@@ -1811,24 +1815,15 @@ if test "$pdb_specified" = "yes"; then
    if test "$withval" != "no"; then
       PDB_FLAGS="-I`echo $withval |cut -f1 -d,`"
       PDB_LIBS="-L`echo $withval |cut -f2 -d, -s` -lpdb -lscore -lpml"
-   fi
-else
-   if test "$PDB_INCDIR" != "" ; then
-      PDB_FLAGS="-I$PDB_INCDIR $PDB_FLAGS"
-   fi
-   if test "$PDB_LIBDIR" != "" ; then
-      PDB_LIBS="-L$PDB_LIBDIR -lpdb -lscore -lpml $PDB_LIBS"
-   fi
-fi
-if test "$PDB_LIBS" != "" ; then
-   if test "$PDB_FLAGS" != "" ; then
       PDB="$""(PDB)"
-      AC_MSG_RESULT(yes)
-   else
-      AC_MSG_RESULT(no)
+      AC_DEFINE(HAVE_PDB_PROPER)
+      AC_MSG_RESULT(using PDB proper)
    fi
 else
-   AC_MSG_RESULT(no)
+   PDB_FLAGS="$SILO_INCLUDE"
+   PDB_LIBS="$SILO_LIB"
+   PDB="$""(PDB)"
+   AC_MSG_RESULT(using PDB lite)
 fi
 AC_SUBST(PDB)
 AC_SUBST(PDB_FLAGS)

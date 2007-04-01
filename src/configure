@@ -7943,7 +7943,7 @@ fi
 
 
 #
-# Look for PDB.
+# See of --with-pdb was specified. Use PDB lite otherwise.
 #
 echo "$as_me:$LINENO: checking for PDB" >&5
 echo $ECHO_N "checking for PDB... $ECHO_C" >&6
@@ -7963,27 +7963,20 @@ if test "$pdb_specified" = "yes"; then
    if test "$withval" != "no"; then
       PDB_FLAGS="-I`echo $withval |cut -f1 -d,`"
       PDB_LIBS="-L`echo $withval |cut -f2 -d, -s` -lpdb -lscore -lpml"
-   fi
-else
-   if test "$PDB_INCDIR" != "" ; then
-      PDB_FLAGS="-I$PDB_INCDIR $PDB_FLAGS"
-   fi
-   if test "$PDB_LIBDIR" != "" ; then
-      PDB_LIBS="-L$PDB_LIBDIR -lpdb -lscore -lpml $PDB_LIBS"
-   fi
-fi
-if test "$PDB_LIBS" != "" ; then
-   if test "$PDB_FLAGS" != "" ; then
       PDB="$""(PDB)"
-      echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6
-   else
-      echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
+      cat >>confdefs.h <<\_ACEOF
+#define HAVE_PDB_PROPER 1
+_ACEOF
+
+      echo "$as_me:$LINENO: result: using PDB proper" >&5
+echo "${ECHO_T}using PDB proper" >&6
    fi
 else
-   echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
+   PDB_FLAGS="$SILO_INCLUDE"
+   PDB_LIBS="$SILO_LIB"
+   PDB="$""(PDB)"
+   echo "$as_me:$LINENO: result: using PDB lite" >&5
+echo "${ECHO_T}using PDB lite" >&6
 fi
 
 
