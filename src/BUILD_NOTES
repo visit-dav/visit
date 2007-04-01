@@ -16,7 +16,7 @@ shell prompt.
     Mesa     5.0      3-D Graphics Library   http://www.mesa3d.org/
     Python   2.1.2    Scripting Language     http://www.python.org
     Qt       3.3.2    GUI Toolkit            http://www.trolltech.com
-    Silo     4.4.1    File I/O library       http://www.llnl.gov/bdiv/meshtv
+    Silo     4.4.2    File I/O library       http://www.llnl.gov/bdiv/meshtv
     VTK      20031028 Visualization Toolkit  http://www.kitware.com
 
 
@@ -405,6 +405,21 @@ setenv LD_LIBRARY64_PATH $QTDIR/lib:$LD_LIBRARY64_PATH       # SGI
 # remove "/usr/X11R6/include" from QMAKE_INCDIR_X11
 # remove "/usr/X11R6/include" from QMAKE_INCDIR_OPENGL
 #
+# On linux systems using the gcc 2.96 compiler, the compiler has a bug that
+# causes most of the text fields that contain numeric values to have 1
+# added to the 6th digit.  For example, 1 is displayed as 1.00001. To
+# correct this problem you will need to replace the code in the function
+# doubleToString in the file src/tools/qlocale.cpp with
+#
+#     char str[80];
+#     sprintf(str, "%g", d);
+#     QString num_str(str);
+#
+#     return num_str;
+#
+# You will also need to add "#include <stdio.h>" at the beginning of the
+# file to get the prototype for sprintf.
+#
 # On linux systems if the OpenGL library is built with threading support,
 # qt won't by default compile the QGL widget.  To overcome this problem you
 # will need to add "-thread" to the configure line.  When qt creates the
@@ -541,8 +556,8 @@ CFLAGS=-O2 with CFLAGS="-64 -O2" in the configure command below.
 #
 # Build Silo
 #
-sh silo041018.sh
-cd silo041018
+sh silo050228.sh
+cd silo050228
 env CFLAGS=-O2 ./configure --without-readline --without-hdf5 --without-exodus
 make
 
@@ -550,12 +565,12 @@ make
 # Install it in the visit directory under the silo directory.
 #
 mkdir $VISITDIR/silo
-mkdir $VISITDIR/silo/4.4.1
-mkdir $VISITDIR/silo/4.4.1/$VISITARCH
-mkdir $VISITDIR/silo/4.4.1/$VISITARCH/{include,lib}
-cp silo/silo/silo.{h,inc}   $VISITDIR/silo/4.4.1/$VISITARCH/include
-cp silo/sdx/sdx.{h,inc}     $VISITDIR/silo/4.4.1/$VISITARCH/include
-cp lib/libsilo.a            $VISITDIR/silo/4.4.1/$VISITARCH/lib
+mkdir $VISITDIR/silo/4.4.2
+mkdir $VISITDIR/silo/4.4.2/$VISITARCH
+mkdir $VISITDIR/silo/4.4.2/$VISITARCH/{include,lib}
+cp silo/silo/silo.{h,inc}   $VISITDIR/silo/4.4.2/$VISITARCH/include
+cp silo/sdx/sdx.{h,inc}     $VISITDIR/silo/4.4.2/$VISITARCH/include
+cp lib/libsilo.a            $VISITDIR/silo/4.4.2/$VISITARCH/lib
 cd ..
 
 
@@ -786,9 +801,9 @@ env command for configure.
 #
 # Build and install it in the visit directory.
 #
-gunzip visit050110.tar.gz
-tar xf visit050110.tar
-cd visit050110/config-site
+gunzip visit050307.tar.gz
+tar xf visit050307.tar
+cd visit050307/config-site
 echo VISITHOME=$VISITDIR > `hostname`.conf
 sed "s/ARCH/$VISITARCH/" Template.conf >> `hostname`.conf
 cd ..
@@ -797,12 +812,12 @@ make
 clearcase_bin/visit-bin-dist
 # Use the appropriate install command based on the operating system on
 # which you built VisIt.
-clearcase_bin/visit-install 1.4.1 aix $VISITDIR
-clearcase_bin/visit-install 1.4.1 irix6 $VISITDIR
-clearcase_bin/visit-install 1.4.1 linux $VISITDIR
-clearcase_bin/visit-install 1.4.1 linux-ia64 $VISITDIR
-clearcase_bin/visit-install 1.4.1 osf1 $VISITDIR
-clearcase_bin/visit-install 1.4.1 sunos5 $VISITDIR
+clearcase_bin/visit-install 1.4.2 aix $VISITDIR
+clearcase_bin/visit-install 1.4.2 irix6 $VISITDIR
+clearcase_bin/visit-install 1.4.2 linux $VISITDIR
+clearcase_bin/visit-install 1.4.2 linux-ia64 $VISITDIR
+clearcase_bin/visit-install 1.4.2 osf1 $VISITDIR
+clearcase_bin/visit-install 1.4.2 sunos5 $VISITDIR
 
 When running the configure script you can enable or disable certain dependent
 packages.  All the configure options are listed at the beginning of the
