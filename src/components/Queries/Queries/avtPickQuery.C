@@ -23,6 +23,8 @@
 
 #include <PickVarInfo.h>
 #include <DebugStream.h>
+#include <BadCellException.h>
+#include <BadNodeException.h>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -267,6 +269,10 @@ avtPickQuery::PostExecute(void)
 //    Kathleen Bonnell, Wed Dec 17 15:06:34 PST 2003 
 //    Added logic to support multiple types of coordinates. 
 //
+//    Kathleen Bonnell, Tue Jan 13 09:30:27 PST 2004 
+//    Verify zone/node number is in range when doing a PickByNode or 
+//    PickByZone. 
+//
 // ****************************************************************************
 
 void
@@ -378,6 +384,24 @@ avtPickQuery::Execute(vtkDataSet *ds, const int dom)
             pickAtts.SetDomain(-1);
             pickAtts.SetElementNumber(-1);
             return; 
+        }
+    } 
+    else if (pickAtts.GetPickPoint()[0] == FLT_MAX)
+    { 
+        // Doing a PickByNode or PickByZone, verify the element number is in range.
+        int maxEls;
+        if (pickAtts.GetPickType() == PickAttributes::Node)
+        {
+            maxEls = ds->GetNumberOfPoints(); 
+            if (foundElement < 0 || foundElement >= maxEls)
+                EXCEPTION2(BadNodeException, foundElement, maxEls);
+        }
+        else if (pickAtts.GetPickType() == PickAttributes::Zone)
+        {
+            maxEls = ds->GetNumberOfCells();
+            if (foundElement < 0 || foundElement >= maxEls)
+                EXCEPTION2(BadCellException, foundElement+cellOrigin, 
+                           maxEls+cellOrigin);
         }
     } 
     //

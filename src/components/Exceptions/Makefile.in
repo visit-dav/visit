@@ -83,6 +83,9 @@
 #    Kathleen Bonnell, Tue May 20 16:02:52 PDT 2003  
 #    Added BadVectorException.
 #
+#    Kathleen Bonnell, Tue Jan 13 08:48:14 PST 2004 
+#    Added BadNodeException.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -107,6 +110,7 @@ Pipeline_src= \
   Pipeline/BadCellException.C \
   Pipeline/BadDomainException.C \
   Pipeline/BadIndexException.C \
+  Pipeline/BadNodeException.C \
   Pipeline/BadVectorException.C \
   Pipeline/ExpressionException.C \
   Pipeline/GhostCellException.C \
