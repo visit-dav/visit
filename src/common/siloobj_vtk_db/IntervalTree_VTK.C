@@ -2,7 +2,7 @@
 //                           IntervalTree_VTK.C                              //
 // ************************************************************************* //
 
-#include <iostream.h>
+#include <visitstream.h>
 
 #include <IntervalTree_VTK.h>
 #include <SiloObjLib.h>

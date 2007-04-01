@@ -6,7 +6,7 @@
 #include <qbuttongroup.h>
 #include <qcursor.h>
 #include <qradiobutton.h>
-#include <iostream.h>
+#include <visitstream.h>
 
 // ****************************************************************************
 //  Method: ViewerPopupMenu::ViewerPopupMenu

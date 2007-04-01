@@ -1,7 +1,7 @@
 #ifndef QUADRATIC_HASH_H
 #define QUADRATIC_HASH_H
 #include <mir_exports.h>
-#include <iostream.h>
+#include <visitstream.h>
 // ****************************************************************************
 //  Template Class: QuadraticHash
 //

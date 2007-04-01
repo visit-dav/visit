@@ -21,7 +21,7 @@
  *    Fixed a couple problems with the hex/vox cases.
  *
  *---------------------------------------------------------------------------*/
-#include <fstream.h>
+#include <visitstream.h>
 #include <stdio.h>
 
 ofstream outc("mat3d_tet.C",ios::out);

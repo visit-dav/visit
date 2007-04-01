@@ -9,7 +9,7 @@
 #include <MeshtvPrep.h>
 #include <CommandLine.h>
 
-#include <iostream.h>
+#include <visitstream.h>
 #include <new.h>
 #include <stdlib.h>
 

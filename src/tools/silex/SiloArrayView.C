@@ -1,7 +1,7 @@
 #include "SiloArrayView.h"
 #include <SiloFile.h>
 #include <qlistbox.h>
-#include <iostream.h>
+#include <visitstream.h>
 #include <qapplication.h>
 
 // ----------------------------------------------------------------------------

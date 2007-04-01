@@ -550,6 +550,9 @@ avtResampleFilter::ResampleInput(void)
 //    Jeremy Meredith, Thu Oct  2 12:52:42 PDT 2003
 //    Added ability to preferentially choose power-of-two sized dimensions.
 //
+//    Eric Brugger, Tue Jul 27 08:48:58 PDT 2004
+//    Add several casts to fix compile errors.
+//
 // ****************************************************************************
 
 void
@@ -592,9 +595,9 @@ avtResampleFilter::GetDimensions(int &width, int &height, int &depth,
         if (atts.GetPrefersPowersOfTwo())
         {
             int w[2], h[2], d[2];
-            w[1] = MAX(int(pow(2,1+int(log(width -1)/log(2)))),2);
-            h[1] = MAX(int(pow(2,1+int(log(height-1)/log(2)))),2);
-            d[1] = MAX(int(pow(2,1+int(log(depth -1)/log(2)))),2);
+            w[1] = MAX(int(pow(2.0,1+int(log(double(width -1))/log(2.0)))),2);
+            h[1] = MAX(int(pow(2.0,1+int(log(double(height-1))/log(2.0)))),2);
+            d[1] = MAX(int(pow(2.0,1+int(log(double(depth -1))/log(2.0)))),2);
             w[0] = w[1]/2;
             h[0] = h[1]/2;
             d[0] = d[1]/2;

@@ -5,7 +5,7 @@
 #include <vector>
 #include <string>
 #include <map>
-#include <iostream.h>
+#include <visitstream.h>
 
 #define MAXSYMBOLS 64
 struct SymbolSet;

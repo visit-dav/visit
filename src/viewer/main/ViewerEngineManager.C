@@ -5,6 +5,7 @@
 #include <ViewerEngineManager.h>
 
 #include <BadHostException.h>
+#include <DataNode.h>
 #include <EngineList.h>
 #include <EngineProxy.h>
 #include <HostProfileList.h>
@@ -2844,6 +2845,56 @@ ViewerEngineManager::CloneNetwork(const EngineKey &ek, int nid,
     ENGINE_PROXY_RPC_BEGIN("CloneNetwork");
     engine->CloneNetwork(nid, qatts);
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
+}
+
+// ****************************************************************************
+// Method: ViewerEngineManager::CreateNode
+//
+// Purpose: 
+//   Writes the host profiles used by the active compute engines to the
+//   DataNode for later use in session files.
+//
+// Arguments:
+//   parentNode : The parent node that will contain the data for this object.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Aug 3 15:16:25 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerEngineManager::CreateNode(DataNode *parentNode) const
+{
+    bool haveNonSimEngines = false;
+    EngineMap::const_iterator it;
+    for (it = engines.begin() ; it != engines.end(); ++it)
+        haveNonSimEngines |= (!it->first.IsSimulation());
+
+    if(haveNonSimEngines)
+    {
+        DataNode *vemNode = new DataNode("ViewerEngineManager");
+        parentNode->AddNode(vemNode);
+        DataNode *runningEnginesNode = new DataNode("RunningEngines");
+        vemNode->AddNode(runningEnginesNode);
+
+        for (it = engines.begin() ; it != engines.end(); ++it)
+        {
+            if(!it->first.IsSimulation())
+            {
+                const HostProfile *hptr = clientAtts->
+                   FindMatchingProfileForHost(it->first.HostName());
+                if(hptr != 0)
+                {
+                    HostProfile temp(*hptr);
+                    temp.SetNumProcessors(it->second->NumProcessors());
+                    temp.SetNumNodes(it->second->NumNodes());
+                    temp.CreateNode(runningEnginesNode, true, true);
+                }
+            }
+        }
+    }
 }
 
 

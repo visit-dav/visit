@@ -1,6 +1,5 @@
 #include <qxml.h>
-#include <iostream.h>
-#include <fstream.h>
+#include <visitstream.h>
 #include "Field.h"
 #include "Attribute.h"
 #include "Enum.h"

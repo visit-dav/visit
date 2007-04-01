@@ -9,7 +9,7 @@
 
 #include <vector>
 #include <string>
-#include <fstream.h>
+#include <visitstream.h>
 
 
 class     vtkUnstructuredGrid;

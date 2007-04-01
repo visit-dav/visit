@@ -1,4 +1,4 @@
-#include <iostream.h>
+#include <visitstream.h>
 #include <VisItException.h>
 #include <QvisGUIApplication.h>
 #include <Init.h>

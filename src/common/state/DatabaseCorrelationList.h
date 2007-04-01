@@ -4,7 +4,7 @@
 #include <string>
 #include <AttributeSubject.h>
 class DatabaseCorrelation;
-#include <iostream.h>
+#include <visitstream.h>
 
 // ****************************************************************************
 // Class: DatabaseCorrelationList

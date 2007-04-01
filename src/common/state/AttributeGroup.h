@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 #include <exception>
-#include <iostream.h>
+#include <visitstream.h>
 
 // Forward declaration
 class AttributeGroup;

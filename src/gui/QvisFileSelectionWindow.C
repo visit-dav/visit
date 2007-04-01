@@ -1603,6 +1603,13 @@ QvisFileSelectionWindow::ConnectSubjects(HostProfileList *hpl)
 //   I disabled the call to hasPendingEvents on MacOS X since it tended to
 //   hang the gui.
 //
+//   Brad Whitlock, Wed Aug 4 15:59:00 PST 2004
+//   This method is called any time the file server needs to interact with
+//   an mdserver such as when we're restoring sessions. Thus, the file
+//   selection window is not necessarily visible so I removed code that
+//   prevented VisIt from only handling events when the file selection window
+//   was visible.
+//
 // ****************************************************************************
 
 bool
@@ -1617,13 +1624,10 @@ QvisFileSelectionWindow::ProgressCallback(void *data, int stage)
     }
     else if(stage == 1)
     {
-        if(This->isVisible())
-        {
 #if QT_VERSION >= 300 && !defined(Q_WS_MACX)
-           if(qApp->hasPendingEvents())
+       if(qApp->hasPendingEvents())
 #endif
-               qApp->processOneEvent();
-        }
+           qApp->processOneEvent();
     }
     else
     {

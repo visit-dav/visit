@@ -10,7 +10,7 @@
 #include <vector>
 #include <string>
 #include <map>
-#include <fstream.h>
+#include <visitstream.h>
 #include <hdf5.h>
 
 using std::string;

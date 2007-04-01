@@ -119,6 +119,9 @@ avtOpenGLSplattingVolumeRenderer::~avtOpenGLSplattingVolumeRenderer()
 //    Hank Childs, Tue May 11 15:24:45 PDT 2004
 //    Turn off blending so transparent surfaces can work afterwards.
 //
+//    Eric Brugger, Tue Jul 27 11:46:25 PDT 2004
+//    Change a double constant to a float constant to fix a compile error.
+//
 // ****************************************************************************
 
 void
@@ -429,7 +432,7 @@ avtOpenGLSplattingVolumeRenderer::Render(vtkRectilinearGrid *grid,
 
                     // Amount of shading should be somewhat proportional
                     // to the magnitude of the gradient
-                    float gm = pow(gmn[index], 0.25);
+                    float gm = pow(gmn[index], 0.25f);
 
                     // Get the base lit brightness 
                     float grad[3] = {gi,gj,gk};

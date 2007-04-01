@@ -6,7 +6,7 @@
 #include <OperatorPluginInfo.h>
 #include <DebugStream.h>
 #include <InvalidPluginException.h>
-#include <iostream.h>
+#include <visitstream.h>
 #include <string>
 #include <vector>
 

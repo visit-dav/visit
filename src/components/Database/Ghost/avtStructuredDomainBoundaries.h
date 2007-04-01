@@ -3,7 +3,7 @@
 #include <database_exports.h>
 
 #include <avtDomainBoundaries.h>
-#include <iostream.h>
+#include <visitstream.h>
 
 // Forward declaration.
 class DATABASE_API avtStructuredDomainBoundaries;

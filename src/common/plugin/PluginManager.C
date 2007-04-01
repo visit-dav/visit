@@ -7,7 +7,7 @@
 #include <InvalidDirectoryException.h>
 #include <InvalidPluginException.h>
 #include <visit-config.h>
-#include <iostream.h>
+#include <visitstream.h>
 #include <stdlib.h>
 #include <string>
 #include <vector>

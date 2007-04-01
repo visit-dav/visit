@@ -2,7 +2,7 @@
 #include <Engine.h>
 #include <LoadBalancer.h>
 
-#include <iostream.h>
+#include <visitstream.h>
 
 void *get_engine()
 {

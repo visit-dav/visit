@@ -44,7 +44,7 @@
 
 #include "vtkQtRenderWindowInteractor.h"
 #include <ctype.h>
-#include <iostream.h>
+#include <visitstream.h>
 
 #include <qcursor.h>
 

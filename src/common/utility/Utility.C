@@ -4,7 +4,7 @@
 
 #include <Utility.h>
 
-#include <fstream.h>
+#include <visitstream.h>
 #include <stdio.h>
 #include <string.h>
 

@@ -499,6 +499,9 @@ dnl    Jeremy Meredith, Thu Jul  8 11:35:29 PDT 2004
 dnl    Remove xml2makefile before trying to build it to ensure it does get
 dnl    rebuilt even if your make program doesn't realize it is needed.
 dnl
+dnl    Eric Brugger, Mon Jul 26 15:44:24 PDT 2004
+dnl    Replaced fstream.h with fstream.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1248,16 +1251,16 @@ AC_TRY_COMPILE([#include <sys/time.h>
                
 dnl Check for setbuf in streambuf
 AC_MSG_CHECKING(for setbuf)
-AC_TRY_COMPILE([#include <fstream.h>],
-                [fstream out("/dev/null",ios::out); out.rdbuf()->setbuf((char*)0,0);],
+AC_TRY_COMPILE([#include <fstream>],
+                [fstream out("/dev/null",std::ios::out); out.rdbuf()->setbuf((char*)0,0);],
                 AC_MSG_RESULT(yes),
                 AC_MSG_RESULT(no)
                 AC_DEFINE(NO_SETBUF))
 
 dnl Check for ios::noreplace
 AC_MSG_CHECKING(for ios::noreplace)
-AC_TRY_COMPILE([#include <fstream.h>],
-               [ofstream f("dummy",ios::out|ios::noreplace);],
+AC_TRY_COMPILE([#include <fstream>],
+               [ofstream f("dummy",std::ios::out|std::ios::noreplace);],
                AC_MSG_RESULT(yes)
                AC_DEFINE(HAVE_IOS_NOREPLACE),
                AC_MSG_RESULT(no))

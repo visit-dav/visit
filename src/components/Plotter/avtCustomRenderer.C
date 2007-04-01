@@ -6,7 +6,7 @@
 
 // For NULL
 #include <stdio.h>
-#include <iostream.h>
+#include <visitstream.h>
 
 #include <vtkRenderer.h>
 

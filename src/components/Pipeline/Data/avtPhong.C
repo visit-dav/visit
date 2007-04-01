@@ -5,7 +5,7 @@
 #include <avtPhong.h>
 
 #include <math.h>
-#include <iostream.h>
+#include <visitstream.h>
 
 
 // ****************************************************************************

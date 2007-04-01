@@ -7,7 +7,7 @@
 
 #include <mini3D.h>
 
-#include <iostream.h>
+#include <visitstream.h>
 
 //
 // Constants and defines.

@@ -30,6 +30,10 @@
 # the University of  California,  and shall not  be  used for  advertising  or
 # product endorsement purposes.
 #
+# Modifications:
+#   Eric Brugger, Tue Jul 27 13:55:45 PDT 2004
+#   Added -I$(TOPDIR)/include/visit to pick up visitstream.h.
+#
 ##############################################################################
 
 ##
@@ -38,7 +42,7 @@
 @SET_MAKE@
 @VARIABLES@
 
-CPPFLAGS=@SILO_INCLUDE@ @CPPFLAGS@
+CPPFLAGS=@CPPFLAGS@ @SILO_INCLUDE@ -I$(TOPDIR)/include/visit
 
 LIBS=@SILO_LIB@ @LIBS@
 LIBDEP=

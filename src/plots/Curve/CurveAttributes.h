@@ -3,7 +3,7 @@
 #include <string>
 #include <AttributeSubject.h>
 #include <ColorAttribute.h>
-#include <iostream.h>
+#include <visitstream.h>
 
 // ****************************************************************************
 // Class: CurveAttributes

@@ -8,7 +8,7 @@
 #include "CodeFile.h"
 #include "Include.h"
 
-#include <fstream.h>
+#include <visitstream.h>
 
 // ****************************************************************************
 //  Class:  Attribute

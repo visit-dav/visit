@@ -2,7 +2,7 @@
 #include <AttributeSubject.h>
 #include <VisItRPC.h>
 #include <Connection.h>
-#include <iostream.h>
+#include <visitstream.h>
 #include <DebugStream.h>
 
 // ****************************************************************************

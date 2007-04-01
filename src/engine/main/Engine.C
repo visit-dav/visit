@@ -7,8 +7,7 @@
 #endif
 #include <new.h>
 
-#include <fstream.h>
-#include <iostream.h>
+#include <visitstream.h>
 #include <snprintf.h>
 
 #include <BufferConnection.h>

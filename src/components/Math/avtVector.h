@@ -1,7 +1,7 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 #include <math_exports.h>
-#include <iostream.h>
+#include <visitstream.h>
 
 // ****************************************************************************
 //  Class:  avtVector
@@ -68,7 +68,7 @@ class MATH_API avtVector
 };
 
 #include <math.h>
-#include <iostream.h>
+#include <visitstream.h>
 
 inline 
 avtVector::avtVector()

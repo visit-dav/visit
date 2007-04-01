@@ -4,7 +4,7 @@
 
 #include <avtDatabase.h>
 
-#include <fstream.h>
+#include <visitstream.h>
 #include <stdio.h>
 #include <vector>
 

@@ -7,7 +7,7 @@
 
 #include <database_exports.h>
 
-#include <iostream.h>
+#include <visitstream.h>
 #include <vector>
 
 #include <void_ref_ptr.h>

@@ -4644,7 +4644,7 @@ echo $ECHO_N "checking for setbuf... $ECHO_C" >&6
 cat >conftest.$ac_ext <<_ACEOF
 #line $LINENO "configure"
 #include "confdefs.h"
-#include <fstream.h>
+#include <fstream>
 #ifdef F77_DUMMY_MAIN
 #  ifdef __cplusplus
      extern "C"
@@ -4654,7 +4654,7 @@ cat >conftest.$ac_ext <<_ACEOF
 int
 main ()
 {
-fstream out("/dev/null",ios::out); out.rdbuf()->setbuf((char*)0,0);
+fstream out("/dev/null",std::ios::out); out.rdbuf()->setbuf((char*)0,0);
   ;
   return 0;
 }
@@ -4690,7 +4690,7 @@ echo $ECHO_N "checking for ios::noreplace... $ECHO_C" >&6
 cat >conftest.$ac_ext <<_ACEOF
 #line $LINENO "configure"
 #include "confdefs.h"
-#include <fstream.h>
+#include <fstream>
 #ifdef F77_DUMMY_MAIN
 #  ifdef __cplusplus
      extern "C"
@@ -4700,7 +4700,7 @@ cat >conftest.$ac_ext <<_ACEOF
 int
 main ()
 {
-ofstream f("dummy",ios::out|ios::noreplace);
+ofstream f("dummy",std::ios::out|std::ios::noreplace);
   ;
   return 0;
 }

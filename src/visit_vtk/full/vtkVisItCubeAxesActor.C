@@ -1830,6 +1830,9 @@ vtkVisItCubeAxesActor::AdjustTicksComputeRange(vtkVisItAxisActor *axes[4])
 //    Kathleen Bonnell, Tue Jul 20 14:29:10 PDT 2004 
 //    Ensure that '-0.0' is never used as a label. 
 //
+//    Eric Brugger, Mon Jul 26 16:09:26 PDT 2004
+//    Correct a bug with a misplaced closing parenthesis.
+//
 // ****************************************************************
 
 void
@@ -1899,7 +1902,7 @@ vtkVisItCubeAxesActor::BuildLabels(vtkVisItAxisActor *axes[4])
       {
       SNPRINTF(label,64, format, val);
       }
-    if (fabs(val < 0.01))
+    if (fabs(val) < 0.01)
       {
       // 
       // Ensure that -0.0 is never a label

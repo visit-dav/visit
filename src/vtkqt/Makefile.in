@@ -67,6 +67,9 @@
 #    Brad Whitlock, Wed Aug 13 14:19:57 PST 2003
 #    I removed QGL_LIB.
 #
+#    Eric Brugger, Mon Jul 26 15:38:44 PDT 2004
+#    I added -I../include/visit to pick up visitstream.h.
+#
 ##############################################################################
 
 ##
@@ -77,7 +80,7 @@
 MOC=@QT_MOC@
 
 CXXFLAGS=@CXXFLAGS@ @QT_CXXFLAGS@
-CPPFLAGS=@CPPFLAGS@ -I. @VTK_INCLUDES@
+CPPFLAGS=@CPPFLAGS@ -I. -I../include/visit @VTK_INCLUDES@
 
 NOT_DISTRIB=moc_vtkQtRenderWindowInteractor.C moc_vtkQtGLWidget.C
 

@@ -40,6 +40,9 @@
 #    Brad Whitlock, Tue Sep 30 13:53:31 PST 2003
 #    I removed -lXext since it's not needed.
 #
+#    Eric Brugger, Tue Jul 27 14:07:55 PDT 2004
+#    I added -I$(TOPDIR)/include/visit to pick up visitstream.h.
+#
 ##############################################################################
 
 
@@ -50,7 +53,8 @@
 LIBS=@QT_LIBS@ @SILO_LIB@ $(X_LIBS) @LIBS@
 LDFLAGS=@QT_LDFLAGS@ @LDFLAGS@ 
 LIBDEP=
-CXXFLAGS=-I. @CXXFLAGS@ @QT_CXXFLAGS@ @SILO_INCLUDE@
+CXXFLAGS=@CXXFLAGS@ @QT_CXXFLAGS@
+CPPFLAGS=@CPPFLAGS@ @SILO_INCLUDE@ -I$(TOPDIR)/include/visit -I.
 
 MOC=@QT_MOC@
 

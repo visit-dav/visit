@@ -5,7 +5,7 @@
 #ifndef RESAMPLE_H
 #define RESAMPLE_H
 
-#include <iostream.h>
+#include <visitstream.h>
 #include <silo.h>
 
 #include <Cell.h>

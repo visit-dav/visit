@@ -54,7 +54,7 @@
 #include <Utility.h>
 #include <Xfer.h>
 #include <RPCExecutor.h>
-#include <fstream.h>
+#include <visitstream.h>
 
 // Make the initial connection timeout be 2 minutes. If the mdserver cannnot
 // connect to the client in that time, exit.

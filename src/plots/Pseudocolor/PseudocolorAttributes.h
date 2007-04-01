@@ -2,7 +2,7 @@
 #define PSEUDOCOLORATTRIBUTES_H
 #include <string>
 #include <AttributeSubject.h>
-#include <iostream.h>
+#include <visitstream.h>
 
 // ****************************************************************************
 // Class: PseudocolorAttributes

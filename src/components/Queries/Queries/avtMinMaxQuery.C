@@ -4,7 +4,7 @@
 
 #include <avtMinMaxQuery.h>
 
-#include <iomanip.h>
+#include <iomanip>
 #include <snprintf.h>
 #include <string>
 #include <vector>

@@ -5,7 +5,7 @@
 #ifndef TIMINGS_MANAGER_H
 #define TIMINGS_MANAGER_H
 
-#include <iostream.h>
+#include <visitstream.h>
 #if defined(_WIN32)
 #include <sys/timeb.h>
 #else

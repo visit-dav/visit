@@ -2,6 +2,7 @@
 # This script makes a movie given a state XML file.
 #
 import os, string, sys, thread
+from xmllib import *
 
 ###############################################################################
 # Function: CommandInPath
@@ -239,6 +240,98 @@ def MovieClassSaveWindow():
     return classSaveWindowObj.SaveImage2()
 
 ###############################################################################
+# Class: EngineAttributesParser
+#
+# Purpose:    This class parses session files for HostProfiles in the
+#             "RunningEngines" node so we can extract information about the
+#             compute engines that were running when the session file was
+#             saved.
+#
+# Programmer: Brad Whitlock
+# Date:       Tue Aug 3 16:11:01 PST 2004
+#
+###############################################################################
+
+class EngineAttributesParser(XMLParser):
+    def __init__(self):
+        XMLParser.__init__(self)
+        self.elements = {"Object" : ("<Object>", "</Object>"), "Field" : ("<Field>", "</Field>")}
+        self.attributes = {"name" : "", "type" : None, "length" : 0}
+
+        self.readingEngineProperties = 0
+        self.readingHostProfile = 0
+        self.readingField = 0
+        self.engineProperties = {}
+        self.allEngineProperties = {}
+        self.dataName = None
+        self.dataAtts = None
+
+
+    def handle_starttag(self, tag, method, attributes):
+        if tag == "Object":
+            if "name" in attributes.keys():
+                self.dataName = attributes["name"]
+                if self.dataName == "RunningEngines":
+                    self.readingEngineProperties = 1
+                elif self.dataName == "HostProfile":
+                    if self.readingEngineProperties == 1:
+                        self.readingHostProfile = 1
+        else:
+            self.readingField = 1
+            self.dataAtts = attributes
+
+
+    def handle_endtag(self, tag, method):
+        if tag == "Object":
+            if self.dataName == "RunningEngines":
+                self.readingEngineProperties = 0
+                self.dataName = None
+            elif self.dataName == "HostProfile":
+                if self.readingEngineProperties == 1:
+                    self.readingHostProfile = 0
+                    self.dataName = None
+                    if "host" in self.engineProperties.keys():
+                        host = self.engineProperties["host"]
+                        self.allEngineProperties[host] = self.engineProperties
+                        #self.engineProperties = {}
+        elif tag == "Field":
+            self.readingField = 0
+
+
+    def handle_data(self, data):
+        def not_all_spaces(s):
+            space = ""
+            for i in range(len(s)):
+                space = space + " "
+            return s != space
+        if (self.readingEngineProperties == 1 or self.readingHostProfile)\
+            and self.readingField == 1 and len(data) > 0:
+            name = self.dataAtts["name"]
+            type = self.dataAtts["type"]
+            value = None
+            if type == "bool":
+                if data == "true":
+                    value = 1
+                else:
+                    value = 0
+            elif type == "string":
+                value = data
+            elif type == "stringVector":
+                fragments = string.split(data, "\"")
+                value = []
+                for s in fragments:
+                   if len(s) > 0:
+                       if not_all_spaces(s):
+                           value = value + [s]
+            elif type == "int":
+                value = int(data)
+            else:
+                print "Unknown type: ", type
+                return
+            self.engineProperties[name] = value
+
+
+###############################################################################
 # Class: MakeMovie
 #
 # Purpose:    This class makes movies.
@@ -252,6 +345,10 @@ def MovieClassSaveWindow():
 #
 #   Brad Whitlock, Fri Dec 5 12:23:19 PDT 2003
 #   Added support for automatically determining the movie file name.
+#
+#   Brad Whitlock, Wed Aug 4 10:46:48 PDT 2004
+#   Added support for reading compute engine information needed to restart
+#   parallel compute engines from the session file.
 #
 ###############################################################################
 
@@ -273,6 +370,9 @@ class MakeMovie:
     #
     #   Brad Whitlock, Thu Apr 22 09:18:20 PDT 2004
     #   Added frameStart and frameEnd.
+    #
+    #   Brad Whitlock, Tue Aug 3 16:58:47 PST 2004
+    #   Added engineCommandLineProperties.
     #
     ###########################################################################
 
@@ -307,6 +407,10 @@ class MakeMovie:
         self.tmpDir = os.curdir
         self.fps = 10
 
+        # Compute engine properties.
+        self.useSessionEngineInformation = 1
+        self.engineCommandLineProperties = {}
+
         # Set the slash used in filenames based on the platform.
         self.slash = "/"
         if(sys.platform == "win32"):
@@ -334,12 +438,16 @@ class MakeMovie:
     #   Brad Whitlock, Thu Apr 22 09:18:20 PDT 2004
     #   Added frameStart and frameEnd.
     #
+    #   Brad Whitlock, Tue Aug 3 17:13:25 PST 2004
+    #   Added parallel options.
+    #
     ###########################################################################
 
     def PrintUsage(self):
         print "Usage: visit -movie [-format fmt] [-geometry size] -sessionfile name"
         print "                    -sessionfile name | -scriptfile name "
         print "                    [-output moviename] [-framestep step]"
+        print "                    [PARALLEL OPTIONS]"
         print ""
         print "OPTIONS"
         print "    The following options are recognized by visit -movie"
@@ -398,6 +506,22 @@ class MakeMovie:
         print ""
         print "    -fps number        Sets the frames per second the movie should "
         print "                       play at."
+        print ""
+        print "    -ignoresessionengines Prevents compute engine information in the"
+        print "                          session file from being used to restart"
+        print "                          the compute engine(s) during movie generation."
+        print ""
+        print "Parallel arguments:"
+        print "    -np   <# procs>    The number of processors to use."
+        print "    -nn   <# nodes>    The number of nodes to allocate."
+        print "    -l    <method>     Launch in parallel using the given method."
+        print "                       Method is one of the following: mpirun, poe,"
+        print "                       psub, srun."
+        print "    -la   <args>       Additional arguments for the parallel launcher."
+        print "    -p    <part>       Partition to run in."
+        print "    -b    <bank>       Bank from which to draw resources."
+        print "    -t    <time>       Maximum job run time."
+        print "    -expedite          Makes batch system give priority scheduling."
         print ""
 
     ###########################################################################
@@ -479,15 +603,46 @@ class MakeMovie:
     #   Brad Whitlock, Thu Apr 22 09:18:20 PDT 2004
     #   Added frameStart and frameEnd.
     #
+    #   Brad Whitlock, Tue Aug 3 16:59:30 PST 2004
+    #   Added VisIt's parallel arguments so they can feed into calls to
+    #   open a compute engine if they are given.
+    #
     ###########################################################################
 
     def ProcessArguments(self):
+        #
+        # Scan the command line arguments for -engineargs. If we find it, split
+        # it and insert the items into the commandLine list.
+        #
+        splitEngineArgs = 0
+        commandLine = []
+        for arg in sys.argv:
+            if splitEngineArgs == 1:
+                splitEngineArgs = 0
+                eargs = string.split(arg, ";")
+                for earg in eargs:
+                    if len(earg) > 0:
+                        commandLine = commandLine + [earg]
+            elif arg == "-engineargs":
+                splitEngineArgs = 1
+            else:
+                commandLine = commandLine + [arg]
+
         i = 0
         outputSpecified = 0
-        while(i < len(sys.argv)):
-            if(sys.argv[i] == "-format"):
-                if((i+1) < len(sys.argv)):
-                    format = sys.argv[i+1]
+        processingLA = 0
+        while(i < len(commandLine)):
+            # If we're processing launch arguments for the parallel launcher
+            # then append the argument to the the list of launch args.
+            if processingLA == 1:
+                self.engineCommandLineProperties["launchArgs"] = \
+                self.engineCommandLineProperties["launchArgs"] + [commandLine[i]]
+                continue
+
+            # We're processing arguments as usual.
+            if(commandLine[i] == "-format"):
+                if((i+1) < len(commandLine)):
+                    format = commandLine[i+1]
                     if(format == "mpeg"):
                         if(sys.platform != "win32"):
                             self.movieFormat = self.MPEG_MOVIE
@@ -531,26 +686,26 @@ class MakeMovie:
                 else:
                     self.PrintUsage()
                     sys.exit(-1)
-            elif(sys.argv[i] == "-sessionfile"):
-                if((i+1) < len(sys.argv)):
-                    self.stateFile = sys.argv[i+1]
+            elif(commandLine[i] == "-sessionfile"):
+                if((i+1) < len(commandLine)):
+                    self.stateFile = commandLine[i+1]
                     self.usesStateFile = 1
                     i = i + 1
                 else:
                     self.PrintUsage()
                     sys.exit(-1)
-            elif(sys.argv[i] == "-scriptfile"):
-                if((i+1) < len(sys.argv)):
-                    self.scriptFile = sys.argv[i+1]
+            elif(commandLine[i] == "-scriptfile"):
+                if((i+1) < len(commandLine)):
+                    self.scriptFile = commandLine[i+1]
                     self.usesStateFile = 0
                     i = i + 1
                 else:
                     self.PrintUsage()
                     sys.exit(-1)
-            elif(sys.argv[i] == "-framestep"):
-                if((i+1) < len(sys.argv)):
+            elif(commandLine[i] == "-framestep"):
+                if((i+1) < len(commandLine)):
                     try:
-                        self.frameStep = int(sys.argv[i+1])
+                        self.frameStep = int(commandLine[i+1])
                         if(self.frameStep < 1):
                             self.frameStep = 1
                     except ValueError:
@@ -560,10 +715,10 @@ class MakeMovie:
                 else:
                     self.PrintUsage()
                     sys.exit(-1)
-            elif(sys.argv[i] == "-start"):
-                if((i+1) < len(sys.argv)):
+            elif(commandLine[i] == "-start"):
+                if((i+1) < len(commandLine)):
                     try:
-                        self.frameStart = int(sys.argv[i+1])
+                        self.frameStart = int(commandLine[i+1])
                         if(self.frameStart < 0):
                             self.frameStart = 0
                     except ValueError:
@@ -573,10 +728,10 @@ class MakeMovie:
                 else:
                     self.PrintUsage()
                     sys.exit(-1)
-            elif(sys.argv[i] == "-end"):
-                if((i+1) < len(sys.argv)):
+            elif(commandLine[i] == "-end"):
+                if((i+1) < len(commandLine)):
                     try:
-                        self.frameEnd = int(sys.argv[i+1])
+                        self.frameEnd = int(commandLine[i+1])
                         if(self.frameEnd < 0):
                             self.frameEnd = 0
                     except ValueError:
@@ -586,18 +741,18 @@ class MakeMovie:
                 else:
                     self.PrintUsage()
                     sys.exit(-1)
-            elif(sys.argv[i] == "-output"):
-                if((i+1) < len(sys.argv)):
-                    self.movieBase = sys.argv[i+1]
+            elif(commandLine[i] == "-output"):
+                if((i+1) < len(commandLine)):
+                    self.movieBase = commandLine[i+1]
                     outputSpecified = 1
                     i = i + 1
                 else:
                     self.PrintUsage()
                     sys.exit(-1)
-            elif(sys.argv[i] == "-fps"):
-                if((i+1) < len(sys.argv)):
+            elif(commandLine[i] == "-fps"):
+                if((i+1) < len(commandLine)):
                     try:
-                        self.fps = int(sys.argv[i+1])
+                        self.fps = int(commandLine[i+1])
                         if(self.fps < 1):
                             self.frameStep = 10
                     except ValueError:
@@ -606,9 +761,9 @@ class MakeMovie:
                     i = i + 1
                 else:
                     self.PrintUsage()
-            elif(sys.argv[i] == "-geometry"):
-                if((i+1) < len(sys.argv)):
-                    geometry = sys.argv[i+1]
+            elif(commandLine[i] == "-geometry"):
+                if((i+1) < len(commandLine)):
+                    geometry = commandLine[i+1]
                     xloc = geometry.find("x")
                     if(xloc != -1):
                         self.xres = int(geometry[:xloc])
@@ -617,6 +772,89 @@ class MakeMovie:
                 else:
                     self.PrintUsage()
                     sys.exit(-1)
+            elif(commandLine[i] == "-ignoresessionengines"):
+                self.useSessionEngineInformation = 0
+
+            #
+            # Parallel engine options.
+            #
+            elif(commandLine[i] == "-np"):
+                if((i+1) < len(commandLine)):
+                    try:
+                        np = int(commandLine[i+1])
+                        if(np < 1):
+                            print "A bad value was provided for number of processors."
+                            self.PrintUsage()
+                            sys.exit(-1)
+                        self.engineCommandLineProperties["numProcessors"] = np
+                    except ValueError:
+                        print "A bad value was provided for number of processors."
+                        self.PrintUsage()
+                        sys.exit(-1)
+                    i = i + 1
+                else:
+                    self.PrintUsage()
+                    sys.exit(-1)
+            elif(commandLine[i] == "-nn"):
+                if((i+1) < len(commandLine)):
+                    try:
+                        nn = int(commandLine[i+1])
+                        if(nn < 1):
+                            print "A bad value was provided for number of nodes."
+                            self.PrintUsage()
+                            sys.exit(-1)
+                        self.engineCommandLineProperties["numNodes"] = nn
+                        self.engineCommandLineProperties["numNodesSet"] = 1
+                    except ValueError:
+                        print "A bad value was provided for number of nodes."
+                        self.PrintUsage()
+                        sys.exit(-1)
+                    i = i + 1
+                else:
+                    self.PrintUsage()
+                    sys.exit(-1)
+            elif(commandLine[i] == "-b"):
+                if((i+1) < len(commandLine)):
+                    self.engineCommandLineProperties["bank"] = commandLine[i+1]
+                    self.engineCommandLineProperties["bankSet"] = 1
+                    i = i + 1
+                else:
+                    self.PrintUsage()
+                    sys.exit(-1)
+            elif(commandLine[i] == "-p"):
+                if((i+1) < len(commandLine)):
+                    self.engineCommandLineProperties["partition"] = commandLine[i+1]
+                    self.engineCommandLineProperties["partitionSet"] = 1
+                    i = i + 1
+                else:
+                    self.PrintUsage()
+                    sys.exit(-1)
+            elif(commandLine[i] == "-t"):
+                if((i+1) < len(commandLine)):
+                    self.engineCommandLineProperties["timeLimit"] = commandLine[i+1]
+                    self.engineCommandLineProperties["timeLimitSet"] = 1
+                    i = i + 1
+                else:
+                    self.PrintUsage()
+                    sys.exit(-1)
+            elif(commandLine[i] == "-l"):
+                if((i+1) < len(commandLine)):
+                    self.engineCommandLineProperties["launchMethod"] = commandLine[i+1]
+                    self.engineCommandLineProperties["launchMethodSet"] = 1
+                    i = i + 1
+                else:
+                    self.PrintUsage()
+                    sys.exit(-1)
+            elif(commandLine[i] == "-la"):
+                self.engineCommandLineProperties["launchArgs"] = []
+                self.engineCommandLineProperties["launchArgsSet"] = 1
+                processingLA = 1
+            elif(commandLine[i] == "-expedite"):
+                if "arguments" in self.engineCommandLineProperties.keys():
+                    self.engineCommandLineProperties["arguments"] = self.engineCommandLineProperties["arguments"] + ["-expedite"]
+                else:
+                    self.engineCommandLineProperties["arguments"] = ["-expedite"]
+
             # On to the next argument.
             i = i + 1
 
@@ -779,6 +1017,114 @@ class MakeMovie:
         return newname
 
     ###########################################################################
+    # Method: ReadEngineProperties
+    #
+    # Purpose:    This method reads the specified session file and extracts
+    #             host profile information about the engines that were running
+    #             when the session file was saved. That information is then
+    #             partially overridden by any parallel options that were passed
+    #             on the command line and then the entire dictionary of
+    #             properties for each host is returned.
+    #
+    # Programmer: Brad Whitlock
+    # Date:       Tue Aug 3 17:27:53 PST 2004
+    #
+    ###########################################################################
+
+    def ReadEngineProperties(self, sessionfile):   
+        try:
+            # Read the file.
+            f = open(sessionfile, "r")
+            lines = f.readlines()
+            f.close()
+
+            # Parse the file
+            p = EngineAttributesParser()
+            for line in lines:
+                p.feed(line)
+            p.close()
+
+            if len(self.engineCommandLineProperties.keys()) == 0:
+                # There were no hosts in the engine attributes so add the command
+                # line options for localhost.
+                p.allEngineProperties["localhost"] = self.engineCommandLineProperties
+            else:
+                # Override the EngineAttributesParser's engine attributes
+                # with options that were provided on the command line.
+                for host in p.allEngineProperties.keys():
+                    dest = p.allEngineProperties[host]
+                    for key in self.engineCommandLineProperties.keys():
+                        dest[key] = self.engineCommandLineProperties[key]
+            
+            return p.allEngineProperties
+        except:
+            return {}
+
+    ###########################################################################
+    # Method: CreateEngineArguments
+    #
+    # Purpose:    This method converts the compute engine properties in a 
+    #             dictionary into a tuple of command line arguments that can
+    #             be passed to OpenComputeEngine.
+    #
+    # Programmer: Brad Whitlock
+    # Date:       Tue Aug 3 17:27:45 PST 2004
+    #
+    ###########################################################################
+
+    def CreateEngineArguments(self, engineProperties):
+        arguments = []
+        if "numProcessors" in engineProperties.keys():
+            np = engineProperties["numProcessors"]
+            if np > 1:
+                arguments = arguments + ["-par", "-np", "%d" % np]
+
+                if "numNodesSet" in engineProperties.keys() and\
+                   "numNodes" in engineProperties.keys():
+                    nn = engineProperties["numNodes"]
+                    if engineProperties["numNodesSet"] == 1 and nn > 0:
+                        arguments = arguments + ["-nn", "%d" % nn]
+
+                if "partitionSet" in engineProperties.keys() and\
+                   "partition" in engineProperties.keys():
+                    if engineProperties["partitionSet"] == 1:
+                        arguments = arguments + ["-p", engineProperties["partition"]]
+    
+                if "bankSet" in engineProperties.keys() and\
+                   "bank" in engineProperties.keys():
+                    if engineProperties["bankSet"] == 1:
+                        arguments = arguments + ["-b", engineProperties["bank"]]
+
+                if "timeLimitSet" in engineProperties.keys() and\
+                   "timeLimit" in engineProperties.keys():
+                    if engineProperties["timeLimitSet"] == 1:
+                        arguments = arguments + ["-t", engineProperties["timeLimit"]]
+
+                if "launchMethodSet" in engineProperties.keys() and\
+                   "launchMethod" in engineProperties.keys():
+                    if engineProperties["launchMethodSet"] == 1:
+                        arguments = arguments + ["-l", engineProperties["launchMethod"]]
+
+                if "launchArgsSet" in engineProperties.keys() and\
+                   "launchArgs" in engineProperties.keys():
+                    if engineProperties["launchArgsSet"] == 1:
+                        args = engineProperties["launchArgs"]
+                        s = ""
+                        for arg in args:
+                            s = s + arg + " "
+                        arguments = arguments + ["-la", s]
+
+        arguments = arguments + ["-forcestatic"]
+
+        if "timeout" in engineProperties.keys():
+            arguments = arguments + ["-timeout", "%d" % engineProperties["timeout"]]
+
+        if "arguments" in engineProperties.keys():
+            arguments = arguments + engineProperties["arguments"]
+
+        return tuple(arguments)
+
+    ###########################################################################
     # Method: GenerateFrames
     #
     # Purpose:    This method tells VisIt to generate the frames for the movie.
@@ -803,6 +1149,10 @@ class MakeMovie:
     #   Brad Whitlock, Thu Apr 22 09:25:06 PDT 2004
     #   I added support for using a user-specified start, end frame.
     #
+    #   Brad Whitlock, Tue Aug 3 16:51:36 PST 2004
+    #   I added support for getting parallel options from a session file and
+    #   using those options to launch compute engines.
+    #
     ###########################################################################
 
     def GenerateFrames(self):
@@ -815,6 +1165,15 @@ class MakeMovie:
         ext = self.LookupImageExtension(self.outputFormat)
 
         if(self.usesStateFile):
+            # Try and read in the session file and determine which compute
+            # engines need to be launched.
+            if self.useSessionEngineInformation == 1:
+                properties = self.ReadEngineProperties(self.stateFile)
+                for host in properties.keys():
+                    args = self.CreateEngineArguments(properties[host])
+                    if len(args) > 0:
+                        OpenComputeEngine(host, args)
+
             # Make the viewer try and restore its session using the file that
             # was passed in.
             RestoreSession(self.stateFile, 0)
@@ -1116,7 +1475,6 @@ class MakeMovie:
             for f in tmpfiles:
                 os.remove("%s%s%s" % (self.tmpDir, self.slash, f))
             os.rmdir(self.tmpDir)
-
 
 ###############################################################################
 # Function: main

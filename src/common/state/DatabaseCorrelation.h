@@ -3,7 +3,7 @@
 #include <state_exports.h>
 #include <string>
 #include <AttributeSubject.h>
-#include <iostream.h>
+#include <visitstream.h>
 
 // ****************************************************************************
 // Class: DatabaseCorrelation

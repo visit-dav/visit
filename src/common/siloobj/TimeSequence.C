@@ -2,7 +2,7 @@
 //                             TimeSequence.C                                //
 // ************************************************************************* //
 
-#include <iostream.h> 
+#include <visitstream.h> 
 #include <silo.h>
 #include <stdlib.h>
 #include <string.h>

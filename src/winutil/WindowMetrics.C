@@ -1,5 +1,5 @@
 #include "WindowMetrics.h"
-#include <iostream.h>
+#include <visitstream.h>
 #include <qapplication.h>
 
 #if defined(Q_WS_WIN)

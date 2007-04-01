@@ -4,7 +4,7 @@
 
 #include <avtPoint3DFileFormat.h>
 
-#include <fstream.h>
+#include <visitstream.h>
 
 #include <vtkCellTypes.h>
 #include <vtkUnstructuredGrid.h>

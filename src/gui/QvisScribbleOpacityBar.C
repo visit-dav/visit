@@ -5,7 +5,7 @@
 #include <qpixmap.h>
 #include <qimage.h>
 
-#include <iostream.h>
+#include <visitstream.h>
 #include <math.h>
 #include <stdlib.h>
 

@@ -15,7 +15,7 @@ shell prompt.
     =======  =======  ===========            ====================
     Mesa     5.0      3-D Graphics Library   http://www.mesa3d.org/
     Python   2.1.2    Scripting Language     http://www.python.org
-    Qt       2.3.0    GUI Toolkit            http://www.trolltech.com
+    Qt       3.3.2    GUI Toolkit            http://www.trolltech.com
     Silo     4.4      File I/O library       http://www.llnl.gov/bdiv/meshtv
     VTK      20031028 Visualization Toolkit  http://www.kitware.com
 
@@ -43,18 +43,17 @@ operating systems.  It is suggested that you use the same compilers.
 
    Operating System          Compiler
    ================          ========
-   AIX 5.1                   g++ 3.1
-   IRIX64 6.5                MIPSpro 7.3.1.1m and MIPSpro 7.3.1.2m
+   AIX 5.1                   g++ 3.3.3
+   IRIX64 6.5                MIPSpro 7.3.1.2m and MIPSpro 7.4
    Linux 7.1 and 7.2         g++ 2.96 or g++ 3.2.3
    Solaris 7                 g++ 2.95.2 or g++ 3.2
-   Tru64 5.1                 g++ 3.0.4 or g++ 3.3.2
+   Tru64 5.1                 g++ 3.3.3
 
 The following compilers will *NOT* work with VisIt.  They will either not
 compile VisIt or will generate bad code.
 
    Operating System          Compiler
    ================          ========
-   IRIX64 6.5                MIPSpro 7.4
    Linux 7.1 and 7.2         g++ 3.3 -> 3.3.3
 
 It is essential that you build all the dependent packages and VisIt using
@@ -76,7 +75,21 @@ Lets go ahead and build VisIt.  Start off by creating a directory to hold
 VisIt and the installed versions of each of the dependent libraries.
 
 mkdir visit
-echo `pwd`/visit > visitpath
+setenv VISITDIR `pwd`/visit
+
+Typically a single directory will hold the binaries and libraries for
+multiple machine architectures.  Lets create an environment variable to
+hold the name of the architecture specific directory.  Some examples
+include:
+
+setenv VISITARCH aix_5_gcc_3.3.3
+setenv VISITARCH irix64_cc_7.3.1.2_64
+setenv VISITARCH irix64_cc_7.4_64
+setenv VISITARCH linux_chaos_gcc_3.3.3
+setenv VISITARCH linux_redhat_gcc_2.96
+setenv VISITARCH solaris_gcc_2.95.2
+setenv VISITARCH solaris_gcc_3.2
+setenv VISITARCH tru64_5_gcc_3.3.3
 
 Now build each of the dependent libraries followed by VisIt.
 
@@ -118,12 +131,14 @@ cd Mesa-5.0
 #
 # Install it in the visit directory under the mesa directory.
 #
-mkdir ../visit/mesa
-mkdir ../visit/mesa/{include,lib}
-mkdir ../visit/mesa/include/GL
-cp include/GL/*.h ../visit/mesa/include/GL
+mkdir $VISITDIR/mesa
+mkdir $VISITDIR/mesa/5.0
+mkdir $VISITDIR/mesa/5.0/$VISITARCH
+mkdir $VISITDIR/mesa/5.0/$VISITARCH/{include,lib}
+mkdir $VISITDIR/mesa/5.0/$VISITARCH/include/GL
+cp include/GL/*.h $VISITDIR/mesa/5.0/$VISITARCH/include/GL
 #
-# On AIX systems you will need to build shared libraries from the
+# On aix systems you will need to build shared libraries from the
 # archives.
 #
 # cd lib
@@ -136,7 +151,11 @@ cp include/GL/*.h ../visit/mesa/include/GL
 # cd ..
 #
 
-cp lib/*.so       ../visit/mesa/lib 
+#
+# If you built a 64 bit version of the library on irix, then the library
+# will be located in the lib64 directory.
+#
+cp lib/*.so       $VISITDIR/mesa/5.0/$VISITARCH/lib 
 cd ..
 
 VTK
@@ -154,8 +173,8 @@ gunzip cmake-1.8.1.tar.gz
 tar xf cmake-1.8.1.tar
 cd cmake-1.8.1
 #
-# We have experienced problems building CMake on AIX with g++/gcc.
-# so for AIX use the native compilers to build CMake: 
+# We have experienced problems building CMake on aix with g++/gcc.
+# so for aix use the native compilers to build CMake: 
 # env CXX=xlC CC=xlc CXXFLAGS="" CFLAGS="" ./bootstrap
 # otherwise:
 env CXXFLAGS=""  CFLAGS="" ./bootstrap
@@ -168,22 +187,36 @@ cd ..
 gunzip vtk_cvs_2003_10_28.tar.gz
 tar xf vtk_cvs_2003_10_28.tar
 cd VTK
+#
+# On irix systems we have experienced problems with CMake not using the
+# -LANG:std for all the tests, so you will need to add it manually.
+#
+# env CXXFLAGS="-LANG:std" ../cmake-1.8.1/bin/cmake .
+#
 ../cmake-1.8.1/bin/cmake .
 #
-# Edit CMakeCache.txt.  Turn BUILD_SHARED_LIBS, VTK_USE_HYBRID, and
-# VTK_USE_MANGLED_MESA on, Turn BUILD_TESTING off.
+# Edit CMakeCache.txt.  Turn BUILD_SHARED_LIBS, VTK_USE_HYBRID,
+# VTK_USE_MANGLED_MESA, and VTK_USE_ANSI_STDLIB on, Turn BUILD_TESTING off.
 #
 # If you want to change the compilers you should modify CMAKE_CXX_COMPILER
 # and CMAKE_C_COMPILER.  If you want to change the compiler flags you should
-# modify CMAKE_CXX_FLAGS and CMAKE_C_FLAGS.  You might want to specify "-O2"
+# modify CMAKE_C_FLAGS and CMAKE_CXX_FLAGS.  You might want to specify "-O2"
 # as a compiler flag to build an optimized version.  If you want to specify
 # the location of the OpenGL library you should modify OPENGL_gl_LIBRARY and
 # OPENGL_glu_LIBRARY (/usr/shlib/libGL.so and /usr/shlib/libGLU.so on tru64
 # systems.)
 #
-# On AIX, you may experience problems with X11 headers. Check the following
-# and modify as necessary: CMAKE_X_CFLAGS, X11_X11_INCLUDE_PATH, 
-# X11_Xlib_INCLUDE_PATH, X11_Xutil_INCLUDE_PATH
+# On irix systems you will need to specify "-LANG:std" for the compiler and
+# linker flags.  If you are building a 64 bit version you will also need
+# to add "-64" to the compiler and linker flags.  These include CMAKE_C_FLAGS,
+# CMAKE_CXX_FLAGS, CMAKE_EXE_LINKER_FLAGS, CMAKE_MODULE_LINKER_FLAGS, and
+# CMAKE_SHARED_LINKER_FLAGS,
+#
+# On aix systems you will need to specify "-mminimal-toc" for CMAKE_CXX_FLAGS.
+# You may also experience problems with X11 headers. The default X11 headers
+# files that cmake finds are not C++ compliant. Change "/usr/lpp/X11/include"
+# to "/usr/include" for CMAKE_X_CFLAGS, X11_X11_INCLUDE_PATH,
+# X11_Xlib_INCLUDE_PATH and X11_Xutil_INCLUDE_PATH.
 #
 ../cmake-1.8.1/bin/cmake .
 #
@@ -229,7 +262,7 @@ cd VTK
 #
 
 #
-# On tru64 systems using g++3.3.3, you may get messages indicating that
+# On tru64 systems using g++ 3.3.3, you may get messages indicating that
 # "-timplicit_local -no_implicit_include" are not supported compiler
 # options when building cmake.  Ignore them, the options appear to be
 # necessary for things to build properly.
@@ -239,23 +272,30 @@ make
 #
 # Install it in the visit directory under the vtk directory.
 #
-mkdir ../visit/vtk
-mkdir ../visit/vtk/{Common,Filtering,Graphics,Hybrid,IO,Imaging,Rendering,MangleMesaInclude,lib}
-cp vtkConfigure.h                 ../visit/vtk
-cp vtkToolkits.h                  ../visit/vtk
-cp vtk*Instantiator.h             ../visit/vtk
-cp Utilities/zlib/zlib.h          ../visit/vtk
-cp Utilities/zlib/zconf.h         ../visit/vtk
-cp Utilities/zlib/zlibDllConfig.h ../visit/vtk
-cp Common/*.h                     ../visit/vtk/Common
-cp Filtering/*.h                  ../visit/vtk/Filtering
-cp Graphics/*.h                   ../visit/vtk/Graphics
-cp Hybrid/*.h                     ../visit/vtk/Hybrid
-cp IO/*.h                         ../visit/vtk/IO
-cp Imaging/*.h                    ../visit/vtk/Imaging
-cp Rendering/*.h                  ../visit/vtk/Rendering
-cp MangleMesaInclude/*.h          ../visit/vtk/MangleMesaInclude
-cp bin/*.so                       ../visit/vtk/lib
+mkdir $VISITDIR/vtk
+mkdir $VISITDIR/vtk/2003.10.28
+mkdir $VISITDIR/vtk/2003.10.28/$VISITARCH
+mkdir $VISITDIR/vtk/2003.10.28/$VISITARCH/{Common,Filtering,Graphics,Hybrid,IO,Imaging,Rendering,MangleMesaInclude,lib}
+cp vtkConfigure.h                 $VISITDIR/vtk/2003.10.28/$VISITARCH
+cp vtkToolkits.h                  $VISITDIR/vtk/2003.10.28/$VISITARCH
+cp vtk*Instantiator.h             $VISITDIR/vtk/2003.10.28/$VISITARCH
+cp Utilities/zlib/zlib.h          $VISITDIR/vtk/2003.10.28/$VISITARCH
+cp Utilities/zlib/zconf.h         $VISITDIR/vtk/2003.10.28/$VISITARCH
+cp Utilities/zlib/zlibDllConfig.h $VISITDIR/vtk/2003.10.28/$VISITARCH
+cp Utilities/tiff/tiffio.h        $VISITDIR/vtk/2003.10.28/$VISITARCH
+cp Utilities/tiff/tiff.h          $VISITDIR/vtk/2003.10.28/$VISITARCH
+cp Utilities/tiff/tiffvers.h      $VISITDIR/vtk/2003.10.28/$VISITARCH
+cp Utilities/tiff/tconf.h         $VISITDIR/vtk/2003.10.28/$VISITARCH
+cp Utilities/tiff/tiffDllConfig.h $VISITDIR/vtk/2003.10.28/$VISITARCH
+cp Common/*.h                     $VISITDIR/vtk/2003.10.28/$VISITARCH/Common
+cp Filtering/*.h                  $VISITDIR/vtk/2003.10.28/$VISITARCH/Filtering
+cp Graphics/*.h                   $VISITDIR/vtk/2003.10.28/$VISITARCH/Graphics
+cp Hybrid/*.h                     $VISITDIR/vtk/2003.10.28/$VISITARCH/Hybrid
+cp IO/*.h                         $VISITDIR/vtk/2003.10.28/$VISITARCH/IO
+cp Imaging/*.h                    $VISITDIR/vtk/2003.10.28/$VISITARCH/Imaging
+cp Rendering/*.h                  $VISITDIR/vtk/2003.10.28/$VISITARCH/Rendering
+cp MangleMesaInclude/*.h          $VISITDIR/vtk/2003.10.28/$VISITARCH/MangleMesaInclude
+cp bin/*.so                       $VISITDIR/vtk/2003.10.28/$VISITARCH/lib
 cd ..
 
 #
@@ -305,19 +345,21 @@ make
 #
 # Install it in the visit directory under the qt directory.
 #
-mkdir ../visit/qt
-mkdir ../visit/qt/bin
-mkdir ../visit/qt/include
-mkdir ../visit/qt/lib
-cp bin/{designer,findtr,moc,qt20fix,qtrename140} ../visit/qt/bin
-cd include; cp *.h ../../visit/qt/include
-cd ../lib;find . -print | cpio -pvmud ../../visit/qt/lib
+mkdir $VISITDIR/qt
+mkdir $VISITDIR/qt/2.3.0
+mkdir $VISITDIR/qt/2.3.0/$VISITARCH
+mkdir $VISITDIR/qt/2.3.0/$VISITARCH/bin
+mkdir $VISITDIR/qt/2.3.0/$VISITARCH/include
+mkdir $VISITDIR/qt/2.3.0/$VISITARCH/lib
+cp bin/{designer,findtr,moc,qt20fix,qtrename140} $VISITDIR/qt/2.3.0/$VISITARCH/bin
+cd include; cp *.h $VISITDIR/qt/2.3.0/$VISITARCH/include
+cd ../lib;find . -print | cpio -pvmud $VISITDIR/qt/2.3.0/$VISITARCH/lib
 cd ../..
 #
-# On AIX systems you will need to add an additional link to the lib
+# On aix systems you will need to add an additional link to the lib
 # directory so that the loader can find the library.
 #
-# ln -s libqt.so.2.3.0 visit/qt/lib/libqt.so
+# ln -s libqt.so.2.3.0 $VISITDIR/qt/2.3.0/$VISITARCH/lib/libqt.so
 #
 
 #
@@ -348,6 +390,27 @@ setenv QTDIR `pwd`
 # remove "/usr/X11R6/include" from QMAKE_INCDIR_OPENGL
 #
 make
+
+#
+# Install it in the visit directory under the qt directory.
+#
+mkdir $VISITDIR/qt
+mkdir $VISITDIR/qt/3.0.2
+mkdir $VISITDIR/qt/3.0.2/$VISITARCH
+mkdir $VISITDIR/qt/3.0.2/$VISITARCH/bin
+mkdir $VISITDIR/qt/3.0.2/$VISITARCH/include
+mkdir $VISITDIR/qt/3.0.2/$VISITARCH/lib
+cp bin/{designer,findtr,moc,qt20fix,qtrename140} $VISITDIR/qt/3.0.2/$VISITARCH/bin
+cd include; cp *.h $VISITDIR/qt/3.0.2/$VISITARCH/include
+cp private/*.h $VISITDIR/qt/3.0.2/$VISITARCH/include/private
+cd ../lib;find . -print | cpio -pvmud $VISITDIR/qt/3.0.2/$VISITARCH/lib
+cd ../..
+#
+# On aix systems you will need to add an additional link to the lib
+# directory so that the loader can find the library.
+#
+# ln -s libqt.so.3.0.2  $VISITDIR/qt/3.0.2/$VISITARCH/lib/libqt.so
+#
 
 #
 # Build Qt 3.3.2
@@ -419,21 +482,23 @@ make
 #
 # Install it in the visit directory under the qt directory.
 #
-mkdir ../visit/qt
-mkdir ../visit/qt/bin
-mkdir ../visit/qt/include
-mkdir ../visit/qt/include/private
-mkdir ../visit/qt/lib
-cp bin/{designer,findtr,moc,qt20fix,qtrename140} ../visit/qt/bin
-cd include; cp *.h ../../visit/qt/include
-cp private/*.h ../../visit/qt/include/private
-cd ../lib;find . -print | cpio -pvmud ../../visit/qt/lib
+mkdir $VISITDIR/qt
+mkdir $VISITDIR/qt/3.3.2
+mkdir $VISITDIR/qt/3.3.2/$VISITARCH
+mkdir $VISITDIR/qt/3.3.2/$VISITARCH/bin
+mkdir $VISITDIR/qt/3.3.2/$VISITARCH/include
+mkdir $VISITDIR/qt/3.3.2/$VISITARCH/include/private
+mkdir $VISITDIR/qt/3.3.2/$VISITARCH/lib
+cp bin/{designer,findtr,moc,qt20fix,qtrename140} $VISITDIR/qt/$VISITARCH/3.3.2/bin
+cd include; cp *.h $VISITDIR/qt/$VISITARCH/3.3.2/include
+cp private/*.h $VISITDIR/qt/$VISITARCH/3.3.2/include/private
+cd ../lib;find . -print | cpio -pvmud $VISITDIR/qt/$VISITARCH/3.3.2/lib
 cd ../..
 #
-# On AIX systems you will need to add an additional link to the lib
+# On aix systems you will need to add an additional link to the lib
 # directory so that the loader can find the library.
 #
-# ln -s libqt.so.3.3.2 visit/qt/lib/libqt.so
+# ln -s libqt.so.3.3.2 $VISITDIR/qt/$VISITARCH/3.3.2/lib/libqt.so
 #
 
 Silo
@@ -442,11 +507,12 @@ Silo
 Silo is a self-describing, machine-independent scientific file format.
 Silo is one of the file formats supported by VisIt.  Follow the directions
 listed below to build Silo.  If you have any problems building or installing
-Silo, read the INSTALL_NOTES file in the SILO distribution for more
-information.
 
-Note: for Itanium (ia64) systems, the -fpic flag is needed.  You can replace
+On itanium (ia64) systems, the -fpic flag is needed.  You can replace
 CFLAGS=-O2 with CFLAGS="-fpic -O2" in the configure command below.
+
+On irix systems, if you want to build a 64 bit version you can replace
+CFLAGS=-O2 with CFLAGS="-64 -O2" in the configure command below.
 
 #
 # Build Silo
@@ -459,14 +525,16 @@ make
 #
 # Install it in the visit directory under the silo directory.
 #
-mkdir ../visit/silo
-mkdir ../visit/silo/include
-mkdir ../visit/silo/lib
-cp silo/silo/silo.h   ../visit/silo/include
-cp silo/silo/silo.inc ../visit/silo/include
-cp silo/sdx/sdx.h     ../visit/silo/include
-cp silo/sdx/sdx.inc   ../visit/silo/include
-cp lib/libsilo.a      ../visit/silo/lib
+mkdir $VISITDIR/silo
+mkdir $VISITDIR/silo/4.4
+mkdir $VISITDIR/silo/4.4/$VISITARCH
+mkdir $VISITDIR/silo/4.4/$VISITARCH/include
+mkdir $VISITDIR/silo/4.4/$VISITARCH/lib
+cp silo/silo/silo.h   $VISITDIR/silo/4.4/$VISITARCH/include
+cp silo/silo/silo.inc $VISITDIR/silo/4.4/$VISITARCH/include
+cp silo/sdx/sdx.h     $VISITDIR/silo/4.4/$VISITARCH/include
+cp silo/sdx/sdx.inc   $VISITDIR/silo/4.4/$VISITARCH/include
+cp lib/libsilo.a      $VISITDIR/silo/4.4/$VISITARCH/lib
 cd ..
 
 
@@ -481,14 +549,22 @@ directions listed below to build Python.  If you have any problems building
 or installing Python, read the README file in the Python distribution for more
 information.
 
-Note: for Itanium (ia64) systems, the -fpic flag is needed.  To add this flag
-to python's build, do the following:  (1) Follow the commands below until the
-configure step.  Execute configure as given.  (2) Look at the Makefile and find
-the value of the variable OPT.  (3) Re-execute configure with OPT specified
-through the env command, with -fpic added to OPT.  For example:
-    env OPT="-fpic -O2" ./configure --prefix=`cat ../visitpath`/python
+On itanium (ia64) systems, the -fpic flag is needed.  To add this flag to
+python's build, do the following:  (1) Follow the commands below until the
+configure step.  Execute configure as given.  (2) Look at the Makefile and
+find the value of the variable OPT.  (3) Re-execute configure with OPT
+specified through the env command, with -fpic added to OPT.  For example:
+
+env OPT="-fpic -O2" ./configure --prefix=$VISITDIR/python/$VISITARCH
+
 where the "-O2" was the value of OPT in the makefile.  (4) Continue with
 the commands below as given.
+
+On irix systems, if you want to build a 64 bit version will need to override
+the default compiler and linker options.  This is done in a similar fashion
+as described above but -64 is added to OPT and LDFLAGS.  For example:
+
+env OPT="-64 -O2" LDFLAGS="-64" ./configure --prefix=$VISITDIR/python/$VISITARCH 
 
 #
 # Build and install it in the visit directory under the python directory.
@@ -496,7 +572,7 @@ the commands below as given.
 gunzip Python-2.1.2.tar.gz
 tar xf Python-2.1.2.tar
 cd Python-2.1.2
-./configure --prefix=`cat ../visitpath`/python
+./configure --prefix=$VISITDIR/python/$VISITARCH
 make
 make install
 
@@ -510,12 +586,14 @@ ar -x ../libpython2.1.a
 # you are creating the shared library.
 g++ -Wl,-G -shared -o ../libpython2.1.so *.o                         # aix
 g++ -shared -o ../libpython2.1.so *.o                                # irix
+CC  -shared -o ../libpython2.1.so *.o                                # irix
+CC  -64 -shared -o ../libpython2.1.so *.o                            # irix 64
 g++ -shared -o ../libpython2.1.so *.o                                # linux
 g++ -Wl,-G -o ../libpython2.1.so *.o                                 # solaris
 g++ -Wl,-expect_unresolved -Wl,'*' -shared -o ../libpython2.1.so *.o # tru64
 cd ..
 rm -rf tmpdir
-cp libpython2.1.so ../visit/python/lib/python2.1/config/libpython2.1.so
+cp libpython2.1.so $VISITDIR/python/$VISITARCH/lib/python2.1/config/libpython2.1.so
 cd ..
 
 
@@ -537,19 +615,19 @@ env command for configure.
 gunzip visit040719.tar.gz
 tar xf visit040719.tar
 cd visit040719/config-site
-echo VISITHOME=`cat ../../visitpath` > `hostname`.conf
-cat Template.conf >> `hostname`.conf
+echo VISITHOME=$VISITDIR > `hostname`.conf
+sed "s/ARCH/$VISITARCH/" Template.conf >> `hostname`.conf
 cd ..
 env CXXFLAGS=-O2 ./configure
 make
 clearcase_bin/visit-bin-dist
 # Use the appropriate install command based on the operating system on
 # which you built VisIt.
-clearcase_bin/visit-install 1.3.3 aix `cat ../visitpath`
-clearcase_bin/visit-install 1.3.3 irix6 `cat ../visitpath`
-clearcase_bin/visit-install 1.3.3 linux `cat ../visitpath`
-clearcase_bin/visit-install 1.3.3 osf1 `cat ../visitpath`
-clearcase_bin/visit-install 1.3.3 sunos5 `cat ../visitpath`
+clearcase_bin/visit-install 1.3.3 aix $VISITDIR
+clearcase_bin/visit-install 1.3.3 irix6 $VISITDIR
+clearcase_bin/visit-install 1.3.3 linux $VISITDIR
+clearcase_bin/visit-install 1.3.3 osf1 $VISITDIR
+clearcase_bin/visit-install 1.3.3 sunos5 $VISITDIR
 
 When running the configure script you can enable or disable certain dependent
 packages.  All the configure options are listed at the beginning of the

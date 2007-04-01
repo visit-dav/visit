@@ -4,7 +4,7 @@
 
 #include <avtDatasetFileWriter.h>
 
-#include <fstream.h>
+#include <visitstream.h>
 
 #include <vtkAppendFilter.h>
 #include <vtkAppendPolyData.h>

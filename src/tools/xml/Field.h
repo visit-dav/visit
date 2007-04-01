@@ -2,7 +2,7 @@
 #define FIELD_H
 
 #include <qstring.h>
-#include <iostream.h>
+#include <visitstream.h>
 #include <stdio.h>
 #include "Enum.h"
 #include "XMLParserUtil.h"

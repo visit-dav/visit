@@ -7,7 +7,7 @@
 
 #include <file_writer_exports.h>
 
-#include <fstream.h>
+#include <visitstream.h>
 #include <string>
 #include <vector>
 

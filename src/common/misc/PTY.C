@@ -101,7 +101,7 @@ pty_fork(int &fdm, void (*sigchld_handler)(int), char *slave_name)
 //  Creation:    April 27, 2001
 //
 // ****************************************************************************
-#include <iostream.h>
+#include <visitstream.h>
 int
 ptym_open(char *pts_name)
 {

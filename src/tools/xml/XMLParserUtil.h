@@ -2,7 +2,7 @@
 #define XML_PARSER_UTIL_H
 
 #include <qstring.h>
-#include <iostream.h>
+#include <visitstream.h>
 #include <vector>
 using std::vector;
 

@@ -7,7 +7,7 @@
 
 #include <utility_exports.h>
 
-#include <iostream.h>
+#include <visitstream.h>
 
 // ****************************************************************************
 //  Class: void_ref_ptr

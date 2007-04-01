@@ -312,6 +312,9 @@ struct avtDefaultPlotMetaData;
 //    Eric Brugger, Mon Mar 29 14:22:55 PST 2004
 //    I added ToggleMaintainDataMode.
 //
+//    Brad Whitlock, Mon Aug 2 15:35:52 PST 2004
+//    Added internal slot function EnableSocketSignals.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -473,6 +476,7 @@ private slots:
     void ReadFromParentAndProcess(int);
     void DelayedProcessSettings();
     void SendKeepAlives();
+    void EnableSocketSignals();
 
     void ConnectWindow(ViewerWindow *win);
     void DisconnectWindow(ViewerWindow *win);
