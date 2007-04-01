@@ -36,6 +36,9 @@ typedef void (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Kathleen Bonnell, Fri Jul 11 16:33:16 PDT 2003 
 //    Added units, rename GetMessage as GetResultMessage.
 //
+//    Kathleen Bonnell, Tue Feb 10 15:00:32 PST 2004 
+//    Added OriginalData method. 
+//
 // ****************************************************************************
 
 class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
@@ -48,6 +51,7 @@ class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
     virtual const char           *GetType(void) = 0;
     virtual const char           *GetDescription(void) { return NULL; };
 
+    virtual bool                  OriginalData(void) { return false; };
     virtual void                  PerformQuery(QueryAttributes *) = 0;
     virtual std::string           GetResultMessage(void) = 0;
 

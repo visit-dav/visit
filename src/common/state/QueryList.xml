@@ -15,8 +15,8 @@
       DoublePoint
       DomainNode
       DomainZone
-      CurrentPlot
-      CurrentPlotVars
+      ActualData
+      ActualDataVars
     </Enum>
     <Field name="names" label="names" type="stringVector">
     </Field>
@@ -30,7 +30,7 @@
     </Field>
     <Field name="winType" label="winType" type="intVector" internal="true">
     </Field>
-    <Field name="currentPlot" label="currentPlot" type="intVector">
+    <Field name="actualData" label="actualData" type="intVector">
     </Field>
     <Function name="AddQuery" user="true" member="true">
     </Function>
@@ -40,7 +40,7 @@
     </Function>
     <Function name="AllowedVarsForQuery" user="true" member="true">
     </Function>
-    <Function name="CurrentPlotOnly" user="true" member="true">
+    <Function name="UseActualData" user="true" member="true">
     </Function>
     <Function name="SetWindowType" user="true" member="true">
     </Function>

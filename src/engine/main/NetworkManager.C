@@ -28,7 +28,8 @@
 #include <avtLocateCellQuery.h>
 #include <avtPickQuery.h>
 #include <avtCurvePickQuery.h>
-#include <avtPlotMinMaxQuery.h>
+#include <avtOriginalDataMinMaxQuery.h>
+#include <avtActualDataMinMaxQuery.h>
 #include <avtSourceFromAVTImage.h>
 #include <avtSourceFromImage.h>
 #include <avtSourceFromNullData.h>
@@ -1757,6 +1758,9 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
 //    Hank Childs, Tue Feb  3 17:07:25 PST 2004
 //    Added variable summation query.
 //
+//    Kathleen Bonnell, Tue Feb  3 17:43:12 PST 2004 
+//    Renamed PlotMinMax query to simply MinMaxQuery. 
+//
 // ****************************************************************************
 void
 NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
@@ -1801,7 +1805,7 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
 
     std::string queryName = qa->GetName();
     avtDataObjectQuery *query = NULL;
-    avtDataObject_p queryInput = queryInputs[0];
+    avtDataObject_p queryInput; 
 
     TRY
     {
@@ -1875,12 +1879,29 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
         {
             query = new avtVariableQuery();
         }
-        else if (strcmp(queryName.c_str(), "Plot MinMax") == 0) 
+        else if (strcmp(queryName.c_str(), "MinMax") == 0) 
         {
-            query = new avtPlotMinMaxQuery();
+            if (qa->GetDataType() == QueryAttributes::ActualData)
+            {
+                query = new avtActualDataMinMaxQuery();
+            }
+            else 
+            {
+                query = new avtOriginalDataMinMaxQuery();
+            }
         }
         if (query != NULL)
         {
+            //
+            // Use the plot's intermediate output as input to the query
+            // unless the query requires original data, then use the
+            // database output.
+            //
+            if (!query->OriginalData())
+                queryInput = queryInputs[0];
+            else 
+                queryInput = networkCache[ids[0]]->GetNetDB()->GetOutput();
+
             query->SetInput(queryInput);
             query->PerformQuery(qa);
             delete query;

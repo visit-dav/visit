@@ -35,7 +35,7 @@ QueryList::AddQuery(const std::string &name, QueryList::QueryType t,
     //  CurrentPlot or CurrentPlotVars.  Otherwise, it doesn't make sense, so 
     //  just set it to 0.
     //
-    currentPlot.push_back(0);
+    actualData.push_back(0);
 
     //
     //  Default window type for each query type.  If a query needs a different
@@ -146,14 +146,14 @@ QueryList::AllowedVarsForQuery(const std::string &name)
     return -1;
 }
 
-Function: CurrentPlotOnly
-Declaration: int CurrentPlotOnly(const std::string &name);
+Function: UseActualData
+Declaration: int UseActualData(const std::string &name);
 Definition:
 // ****************************************************************************
-//  Method:  CurrentPlotOnly
+//  Method:  UseActualData
 //
 //  Purpose:
-//      Returns whether or not this query applies only to the current plot. 
+//      Returns whether or not this query applies only to the actual data. 
 //
 //  Programmer:  Kathleen Bonnell 
 //  Creation:    November 25, 2003 
@@ -161,14 +161,14 @@ Definition:
 // ****************************************************************************
  
 int
-QueryList::CurrentPlotOnly(const std::string &name)
+QueryList::UseActualData(const std::string &name)
 {
     int i;
     for (i = 0; i < names.size(); i++)
     {
         if (name == names[i]) 
         {
-            return currentPlot[i];
+            return actualData[i];
         }
     }
     return -1;

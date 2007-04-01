@@ -147,14 +147,14 @@ QvisQueryWindow::CreateWindowContents()
     }
   
     // Add the plot optionos radio button group to the argument panel.
-    curPlotOpts = new QButtonGroup(0, "curPlotOpts");
-    QRadioButton *database = new QRadioButton("Database", argPanel, "database");
-    curPlotOpts->insert(database);
-    sLayout->addWidget(database, 5, 0);
-    QRadioButton *curPlot = new QRadioButton("Current Plot", argPanel, "currentlot");
-    curPlotOpts->insert(curPlot);
-    curPlotOpts->setButton(0);
-    sLayout->addWidget(curPlot, 5, 1);
+    dataOpts = new QButtonGroup(0, "dataOpts");
+    QRadioButton *origData = new QRadioButton("Original Data", argPanel, "origData");
+    dataOpts->insert(origData);
+    sLayout->addWidget(origData, 5, 0);
+    QRadioButton *actualData = new QRadioButton("Actual Data", argPanel, "actualData");
+    dataOpts->insert(actualData);
+    dataOpts->setButton(0);
+    sLayout->addWidget(actualData, 6, 0);
 
     // Add the query button to the argument panel.
     gLayout->addStretch(10);
@@ -417,7 +417,7 @@ QvisQueryWindow::UpdateArgumentPanel(int index)
     {
         bool showWidgets[4] = {false, false, false, false};
         bool showCoordLabel = false;
-        bool showPlotOptions = false;
+        bool showDataOptions = false;
         QueryList::WindowType winT = (QueryList::WindowType)winType[index];
         QueryList::CoordinateRepresentation r;
         r = (QueryList::CoordinateRepresentation)rep[index];
@@ -488,16 +488,16 @@ QvisQueryWindow::UpdateArgumentPanel(int index)
             showWidgets[1] = true;
             showWidgets[2] = true;
         }
-        else if (winT == QueryList::CurrentPlot)
+        else if (winT == QueryList::ActualData)
         {
-            showPlotOptions = true;
+            showDataOptions = true;
         }
-        else if (winT == QueryList::CurrentPlotVars)
+        else if (winT == QueryList::ActualDataVars)
         {
             labels[0]->setText("Variables");
             textFields[0]->setText("default");
             showWidgets[0] = true;
-            showPlotOptions = true;
+            showDataOptions = true;
         }
 
         // hide and show the right text widgets.
@@ -515,17 +515,15 @@ QvisQueryWindow::UpdateArgumentPanel(int index)
             }
         }
 
-        if (showPlotOptions)
+        if (showDataOptions)
         {
-            curPlotOpts->find(0)->show();
-            curPlotOpts->find(1)->show();
-            //curPlotOpts->show();
+            dataOpts->find(0)->show();
+            dataOpts->find(1)->show();
         }
         else
         {
-            curPlotOpts->find(0)->hide();
-            curPlotOpts->find(1)->hide();
-            //curPlotOpts->hide();
+            dataOpts->find(0)->hide();
+            dataOpts->find(1)->hide();
         }
 
         if(showCoordLabel)
@@ -765,21 +763,21 @@ QvisQueryWindow::Apply(bool ignore)
                     }
                 }
             }
-            else if ((winT == QueryList::CurrentPlot) ||
-                     (winT == QueryList::CurrentPlotVars))
+            else if ((winT == QueryList::ActualData) ||
+                     (winT == QueryList::ActualDataVars))
             {
                 if(!GetVars(0, vars))
                     noErrors = false;
-                int curPlot = curPlotOpts->id(curPlotOpts->selected());
+                int useActualData = dataOpts->id(dataOpts->selected());
                 if (noErrors)
                 {
                     if (t == QueryList::DatabaseQuery)
                     {
-                        viewer->DatabaseQuery(names[index], vars, curPlot);
+                        viewer->DatabaseQuery(names[index], vars, useActualData);
                     }
                     else 
                     {
-                        debug5 << "QueryWindow -- Attempted use CurrentPlotWindow "
+                        debug5 << "QueryWindow -- Attempted use ActualDataWindow "
                                << "with non DatabaseQuery." << endl;
                     }
                 }
