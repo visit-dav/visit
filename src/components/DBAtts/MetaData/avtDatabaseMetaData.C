@@ -7111,6 +7111,9 @@ avtDatabaseMetaData::GetAllMeshNames() const
 //    Brad Whitlock, Fri Apr 1 15:40:29 PST 2005
 //    Added labels.
 //
+//    Hank Childs, Sun Apr 24 10:58:09 PDT 2005
+//    Add better support for meshes that are renamed.
+//
 // ****************************************************************************
 
 static bool IsForbidden(std::string &origName, std::string &newName, 
@@ -7196,6 +7199,9 @@ avtDatabaseMetaData::ReplaceForbiddenCharacters(std::vector<char> &badChars,
             IssueWarning(msg);
             scalars[i]->name = replacementName;
         }
+        if (IsForbidden(scalars[i]->meshName, replacementName, badChars,
+                        replacementStr))
+            scalars[i]->meshName = replacementName;
     }
     for (i = 0 ; i < vectors.size() ; i++)
     {
@@ -7213,6 +7219,9 @@ avtDatabaseMetaData::ReplaceForbiddenCharacters(std::vector<char> &badChars,
             IssueWarning(msg);
             vectors[i]->name = replacementName;
         }
+        if (IsForbidden(vectors[i]->meshName, replacementName, badChars,
+                        replacementStr))
+            vectors[i]->meshName = replacementName;
     }
     for (i = 0 ; i < tensors.size() ; i++)
     {
@@ -7230,6 +7239,9 @@ avtDatabaseMetaData::ReplaceForbiddenCharacters(std::vector<char> &badChars,
             IssueWarning(msg);
             tensors[i]->name = replacementName;
         }
+        if (IsForbidden(tensors[i]->meshName, replacementName, badChars,
+                        replacementStr))
+            tensors[i]->meshName = replacementName;
     }
     for (i = 0 ; i < symm_tensors.size() ; i++)
     {
@@ -7247,6 +7259,9 @@ avtDatabaseMetaData::ReplaceForbiddenCharacters(std::vector<char> &badChars,
             IssueWarning(msg);
             symm_tensors[i]->name = replacementName;
         }
+        if (IsForbidden(symm_tensors[i]->meshName, replacementName, badChars,
+                        replacementStr))
+            symm_tensors[i]->meshName = replacementName;
     }
     for (i = 0 ; i < materials.size() ; i++)
     {
@@ -7264,6 +7279,9 @@ avtDatabaseMetaData::ReplaceForbiddenCharacters(std::vector<char> &badChars,
             IssueWarning(msg);
             materials[i]->name = replacementName;
         }
+        if (IsForbidden(materials[i]->meshName, replacementName, badChars,
+                        replacementStr))
+            materials[i]->meshName = replacementName;
     }
 /*
  * Do not do curves.  They have so many spaces, special chars, etc.
@@ -7297,6 +7315,9 @@ avtDatabaseMetaData::ReplaceForbiddenCharacters(std::vector<char> &badChars,
             IssueWarning(msg);
             labels[i]->name = replacementName;
         }
+        if (IsForbidden(labels[i]->meshName, replacementName, badChars,
+                        replacementStr))
+            labels[i]->meshName = replacementName;
     }
 }
 

@@ -9,6 +9,8 @@
 #include <BoxAttributes.h>
 
 class     vtkDataSet;
+class     vtkRectilinearGrid;
+class     vtkUnstructuredGrid;
 
 
 // ****************************************************************************
@@ -24,6 +26,9 @@ class     vtkDataSet;
 //
 //    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
 //    Added selection id and PerformRestriction implementation
+//
+//    Hank Childs, Sun Apr 24 11:11:46 PDT 2005
+//    Add special support for rectilinear grids. ['6155]
 //
 // ****************************************************************************
 
@@ -47,6 +52,8 @@ class avtBoxFilter : public avtPluginStreamer
     int             selID;
 
     virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
+    vtkRectilinearGrid   *RectilinearExecute(vtkRectilinearGrid *);
+    vtkUnstructuredGrid  *GeneralExecute(vtkDataSet *);
     virtual void          RefashionDataObjectInfo(void);
     virtual avtPipelineSpecification_p
                             PerformRestriction(avtPipelineSpecification_p);
