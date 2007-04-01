@@ -1,37 +1,37 @@
 // ************************************************************************* //
-//                            avtSimDBFileFormat.h                           //
+//                            avtSimV1FileFormat.h                           //
 // ************************************************************************* //
 
-#ifndef AVT_SimDB_FILE_FORMAT_H
-#define AVT_SimDB_FILE_FORMAT_H
+#ifndef AVT_SIMV1_FILE_FORMAT_H
+#define AVT_SIMV1_FILE_FORMAT_H
 
 #include <database_exports.h>
 
 #include <avtSTMDFileFormat.h>
+#include <VisItDataInterface_V1.h>
 
 #include <vector>
 
 
 // ****************************************************************************
-//  Class: avtSimDBFileFormat
+//  Class: avtSimV1FileFormat
 //
 //  Purpose:
-//      Reads in a Simulation file as a plugin to VisIt.
-//      Note: This is the Metadata Server -only portion of the plugin.
-//      Each simulation creates its own specific Engine plugin.
+//      Reads in a .sim1 file for VisIt in the MDServer.
+//      Reads in simulation data as input to VisIt in the Engine.
 //
 //  Programmer: Jeremy Meredith
-//  Creation:   August 11, 2004
+//  Creation:   March 10, 2005
 //
 // ****************************************************************************
 
-class avtSimDBFileFormat : public avtSTMDFileFormat
+class avtSimV1FileFormat : public avtSTMDFileFormat
 {
   public:
-                       avtSimDBFileFormat(const char *);
-    virtual           ~avtSimDBFileFormat() {;};
+                       avtSimV1FileFormat(const char *);
+    virtual           ~avtSimV1FileFormat() {;};
 
-    virtual const char    *GetType(void)   { return "SimDB"; };
+    virtual const char    *GetType(void)   { return "SimV1"; };
     virtual void           FreeUpResources(void); 
     virtual int            GetCycle() { return -1; }
 
@@ -42,6 +42,8 @@ class avtSimDBFileFormat : public avtSTMDFileFormat
   protected:
     std::string            host;
     int                    port;
+
+    VisIt_SimulationCallback cb;
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
 };

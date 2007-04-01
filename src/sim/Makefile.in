@@ -3,7 +3,7 @@
 
 SIMSER=sim
 SIMPAR=psim
-SIMSRC=sim.c VisIt.c
+SIMSRC=sim.c VisItV1.c simconnection.c
 SIMSEROBJ=$(SIMSRC:.c=.o)
 SIMPAROBJ=$(SIMSRC:.c=_par.o)
 
@@ -16,8 +16,7 @@ LDFLAGS=-L../lib -L/usr/X11R6/lib
 #LIBS=-ldl -lpthread
 PARLIBS=-L/usr/gapps/mpich/1.2.4/SunOS/serial/default/optim/lib -lmpich -lrt -lthread
 
-all: dirmakefiles  $(SIMSER) $(SIMPAR)
-	cd simplugin && $(MAKE)
+all: $(SIMSER) $(SIMPAR)
 
 parallel: all $(SIMPAR)
 
@@ -45,14 +44,8 @@ $(SIMSER).pure: $(SIMSEROBJ)
 	purify $(LD) $(LDFLAGS) $(SIMSEROBJ) $(LIBS) -o $@
 
 
-dirmakefiles: simplugin/Makefile
-
-simplugin/Makefile:
-	cd simplugin && env VISITPLUGININST=.. ../../bin/visit -xml2makefile -clobber -noprint SimDB.xml
-
-clean: dirmakefiles
+clean:
 	rm -f $(SIMSEROBJ) $(SIMSER) $(SIMSER).pure
 	rm -f $(SIMPAROBJ) $(SIMPAR)
-	cd simplugin && $(MAKE) clean
 
 .SUFFIXES: .C

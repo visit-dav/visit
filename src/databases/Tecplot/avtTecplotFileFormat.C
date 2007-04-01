@@ -880,6 +880,20 @@ avtTecplotFileFormat::avtTecplotFileFormat(const char *fname)
 
 
 // ****************************************************************************
+//  Method: avtTecplot destructor
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   March 17, 2005
+//
+// ****************************************************************************
+
+avtTecplotFileFormat::~avtTecplotFileFormat()
+{
+    FreeUpResources();
+}
+
+
+// ****************************************************************************
 //  Method: avtTecplotFileFormat::FreeUpResources
 //
 //  Purpose:

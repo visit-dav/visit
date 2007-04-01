@@ -16,10 +16,14 @@
 //    Jeremy Meredith, Mon Nov  1 17:27:54 PST 2004
 //    Made it work in parallel, at least with two processors.
 //
+//    Jeremy Meredith, Thu Mar 17 12:59:15 PST 2005
+//    Changed it to use float values.
+//
 // ****************************************************************************
 
 
-#include "VisIt.h"
+#include "VisItV1.h"
+#include "sim.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -57,22 +61,22 @@ int cycle = 0;
 int p_nx = 10;
 int p_ny = 10;
 int p_nz = 10;
-double *p_xcoords;
-double *p_ycoords;
-double *p_zcoords;
-double *p_zvalues;
-double *p_nvalues;
+float *p_xcoords;
+float *p_ycoords;
+float *p_zcoords;
+float *p_zvalues;
+float *p_nvalues;
 
 int numdomains = 1;
 
 void InitializeVariables()
 {
     int i;
-    p_xcoords = malloc(sizeof(double) * p_nx);
-    p_ycoords = malloc(sizeof(double) * p_ny);
-    p_zcoords = malloc(sizeof(double) * p_nz);
-    p_zvalues = malloc(sizeof(double) * (p_nx-1)*(p_ny-1)*(p_nz-1));
-    p_nvalues = malloc(sizeof(double) * p_nx*p_ny*p_nz);
+    p_xcoords = malloc(sizeof(float) * p_nx);
+    p_ycoords = malloc(sizeof(float) * p_ny);
+    p_zcoords = malloc(sizeof(float) * p_nz);
+    p_zvalues = malloc(sizeof(float) * (p_nx-1)*(p_ny-1)*(p_nz-1));
+    p_nvalues = malloc(sizeof(float) * p_nx*p_ny*p_nz);
     for (i=0; i<p_nx; i++)
     {
         int ii = (i + (p_nx-1)*par_rank);

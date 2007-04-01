@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-  <Plugin name="SimDB" type="database" noengine="yes" label="Simulation" version="1.0" enabled="true" dbtype="STMD" haswriter="false">
-    <Extensions>
-      sim
-    </Extensions>
-    <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
-    </Attribute>
-  </Plugin>
