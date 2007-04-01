@@ -602,14 +602,17 @@ avtSourceFromDatabase::GetDomainName(const std::string &var, const int ts,
 //    Kathleen Bonnell, Thu Dec 16 17:11:19 PST 2004
 //    Added another bool arg.
 //
+//    Kathleen Bonnell, Tue Jan 25 07:59:28 PST 2005 
+//    Added const char* arg to QueryCoords.
+//
 // ****************************************************************************
 
 bool
 avtSourceFromDatabase::QueryCoords(const std::string &var, const int dom,
     const int zone, const int ts, float coord[3], const bool forZone,
-    const bool useGlobalId)
+    const bool useGlobalId, const char *mn)
 {
-    return database->QueryCoords(var, dom, zone, ts, coord, forZone, useGlobalId);
+    return database->QueryCoords(var, dom, zone, ts, coord, forZone, useGlobalId, mn);
 }
 
 

@@ -62,6 +62,9 @@
       <Field name="originNodeDomain" label="originNodeDomain" type="int">
         0
       </Field>
+      <Field name="meshName" label="meshName" type="string">
+        default
+      </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>
       <Function name="CreateCompatible" user="false" member="true">

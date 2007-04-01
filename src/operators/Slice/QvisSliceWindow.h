@@ -6,6 +6,7 @@
 
 // Forward declarations.
 class QCheckBox;
+class QComboBox;
 class QLineEdit;
 class QLabel;
 class QButtonGroup;
@@ -48,6 +49,9 @@ class QHBoxLayout;
 //   Jeremy Meredith, Fri Jun 13 12:08:17 PDT 2003
 //   Added a domain number for slice-by-zone and -by-node.
 //
+//   Kathleen Bonnell, Tue Jan 25 07:59:28 PST 2005 
+//   Added a meshName comboBox to be associated with domain-node/zone. 
+//
 // ****************************************************************************
 
 class QvisSliceWindow : public QvisOperatorWindow
@@ -85,7 +89,11 @@ private slots:
     void originPercentSliderPressed();
     void originPercentSliderReleased();
     void originPercentSliderChanged(int pct);
+
+    void meshNameChanged();
 private:
+    void             UpdateMeshNames();
+
     QCheckBox        *interactiveToggle;
 
     QButtonGroup     *normalTypeGroup;
@@ -120,6 +128,11 @@ private:
     QCheckBox        *projectToggle;
     QLineEdit        *upAxisLineEdit;
     QLabel           *upAxisLabel;
+
+    QLabel           *meshLabel;
+    QComboBox        *meshName;
+
+    QString           defaultItem;
 
     SliceAttributes  *sliceAtts;
 };

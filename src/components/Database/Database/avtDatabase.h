@@ -202,6 +202,9 @@ typedef struct {
 //    Kathleen Bonnell, Thu Dec 16 17:10:43 PST 2004 
 //    Added another bool arg to QueryCoords.
 //
+//    Kathleen Bonnell, Tue Jan 25 07:59:28 PST 2005 
+//    Added const char* arg to QueryCoords. 
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -245,7 +248,7 @@ class DATABASE_API avtDatabase
                                     { return false; } ;
     virtual bool                QueryCoords(const std::string &, const int, 
                                     const int, const int, float[3], const bool,
-                                    const bool)
+                                    const bool, const char *mn = NULL)
                                     { return false; } ;
 
     virtual void                GetDomainName(const std::string &, const int ts,

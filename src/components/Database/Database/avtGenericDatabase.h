@@ -217,6 +217,9 @@ class     PickVarInfo;
 //    Kathleen Bonnell, Thu Dec 16 17:11:19 PST 2004
 //    Added another bool arg to QueryCoords. 
 //
+//    Kathleen Bonnell, Tue Jan 25 07:59:28 PST 2005 
+//    Added const char* arg to QueryCoords. 
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -424,7 +427,7 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                           stringVector &, stringVector &); 
     virtual bool               QueryCoords(const std::string &, const int,
                                            const int, const int, float[3],
-                                           const bool, const bool);
+                                           const bool, const bool, const char *mn = NULL);
     virtual void               QueryGlobalIds(const int, const std::string &,
                                         const int, const bool, const int, 
                                         const intVector &, int &, intVector &);

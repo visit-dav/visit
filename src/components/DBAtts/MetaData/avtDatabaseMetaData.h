@@ -387,6 +387,10 @@ public:
 //
 //    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
 //    Added formatCanDoDomainDecomposition and Set/Get methods
+//
+//    Kathleen Bonnell, Tue Jan 25 07:59:28 PST 2005 
+//    Added GetAllMeshNames. 
+//
 //----------------------------------------------------------------------------
 class DBATTS_API avtDatabaseMetaData : public AttributeSubject
 {
@@ -570,6 +574,8 @@ public:
     virtual AttributeGroup *CreateSubAttributeGroup(int);
 
     const stringVector GetAllVariableNames(const std::string &) const;
+    const stringVector GetAllMeshNames(void) const;
+
 private:
     bool VarIsCompound(const std::string &inVar) const;
     void ParseCompoundForVar(const std::string &inVar, std::string &outVar)
