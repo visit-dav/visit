@@ -58,6 +58,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // by loading only a range of the possible blocks.  Unused points
 // are filtered out internally.
 
+// Modifications:
+//
+//   Hank Childs, Sat Apr 17 07:29:22 PDT 2004
+//   Added support for reading times.
+//
 
 #ifndef __vtkExodusReader_h
 #define __vtkExodusReader_h
@@ -145,6 +150,10 @@ public:
   void SetCellDataArrayLoadFlag(int index, int flag);
   int GetCellDataArrayLoadFlag(int index);
   
+  float GetTime(int ts) {  return (this->Times != NULL && ts >= 0 &&
+                                   ts < this->NumberOfTimeSteps
+                           ? Times[ts]
+                           : 0.); };
 protected:
   vtkExodusReader();
   ~vtkExodusReader();
@@ -203,6 +212,7 @@ protected:
   int NumberOfNodes;
   int NumberOfElements;
   int NumberOfTimeSteps;
+  float *Times;
   vtkIntArray *NumberOfBlockElements;
   vtkIntArray *BlockIds;
   vtkIntArray *CellVarTruthTable;
