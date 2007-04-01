@@ -17,12 +17,40 @@
 // Creation:   Wed Feb 4 14:22:58 PST 2004
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Tue Apr  6 14:16:54 PDT 2004
+//    Keep track of the filenames in a way made for adding the minimal amount
+//    of text needed for ensuring they are unique.  Added UniqueFileName.
+//
 // ****************************************************************************
 
 class GUI_API NameSimplifier
 {
-public:
+  private:
+    // Class: UniqueFileName
+    //
+    // Purpose:
+    //    Structure to add a minimal amount of path/host information
+    //    to a filename to ensure it is unique w.r.t. other filenames
+    class UniqueFileName
+    {
+      public:
+        UniqueFileName(const QualifiedFilename &qfn);
+        string GetAsString() const;
+
+        static bool Unique(const UniqueFileName &a, const UniqueFileName &b);
+        static void Uniquify(UniqueFileName &a, UniqueFileName &b);
+      private:
+        string       host;        // host name
+        stringVector path;        // path components, split by separator
+        int          pathLen;     // length of the 'path' vector
+        string       file;        // raw file name without path
+        char         separator;   // separator character
+
+        bool         useHost;     // true if we need the host for uniqueness
+        int          pathCount;   // number of needed path segment prefixes
+    };
+
+  public:
     NameSimplifier();
     ~NameSimplifier();
 
@@ -31,7 +59,7 @@ public:
     void ClearNames();
     void GetSimplifiedNames(stringVector &n) const;
 private:
-    QualifiedFilenameVector names;
+    std::vector<UniqueFileName> names;
 };
 
 #endif

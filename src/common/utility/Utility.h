@@ -6,6 +6,7 @@
 #define UTILITY_H
 #include <utility_exports.h>
 #include <string>
+#include <vector>
 
 //
 // Type definitions
@@ -27,6 +28,9 @@ void UTILITY_API  WaitUntilFile(const char *);
 bool UTILITY_API  WildcardStringMatch(const char *p, const char *s);
 bool UTILITY_API  WildcardStringMatch(const std::string &p, const std::string &s);
 bool UTILITY_API  NumericStringCompare(const std::string &str1, const std::string &str2);
+
+std::vector<std::string> UTILITY_API SplitValues(const string &buff,
+                                                 char delim);
 
 inline char *C_strdup(char const * const);
 inline char *CXX_strdup(char const * const);

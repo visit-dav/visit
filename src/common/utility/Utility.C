@@ -11,6 +11,9 @@
 #include <string>
 using std::string;
 
+#include <vector>
+using std::vector;
+
 #if defined(_WIN32)
 #include <windows.h>
 #else
@@ -557,4 +560,44 @@ NumericStringCompare(const std::string &str1, const std::string &str2)
         return false;
     else
         return true;
+}
+
+
+// ****************************************************************************
+//  Function:  SplitValues
+//
+//  Purpose:
+//    Separate a string into a vector of strings using a single char delimiter.
+//
+//  Arguments:
+//    buff       the string to split
+//    delim      the single-character delimiter
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 23, 2004
+//
+// ****************************************************************************
+vector<string>
+SplitValues(const string &buff, char delim)
+{
+    vector<string> output;
+    
+    string tmp="";
+    for (int i=0; i<buff.length(); i++)
+    {
+        if (buff[i] == delim)
+        {
+            if (!tmp.empty())
+                output.push_back(tmp);
+            tmp = "";
+        }
+        else
+        {
+            tmp += buff[i];
+        }
+    }
+    if (!tmp.empty())
+        output.push_back(tmp);
+
+    return output;
 }
