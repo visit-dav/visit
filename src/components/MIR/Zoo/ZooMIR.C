@@ -7,13 +7,16 @@
 #include <avtMaterial.h>
 #include <avtMixedVariable.h>
 #include <vtkCell.h>
+#include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetFromVolume.h>
+#include <vtkIdTypeArray.h>
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkTriangulationTables.h>
 
@@ -237,6 +240,9 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
 //    Use number of original materials for the clean-zone-material instead
 //    of the number of used materials.
 //
+//    Hank Childs, Wed Jan 14 08:12:02 PST 2004
+//    Construct the output unstructured grid more efficiently.
+//
 // ****************************************************************************
 vtkDataSet *
 ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
@@ -282,18 +288,25 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
     int ntotalcells = zonesList.size();
     int ncells = 0;
     int *cellList = new int[ntotalcells];
+    int totalsize = 0;
     for (int c = 0; c < ntotalcells; c++)
     {
         int matno = zonesList[c].mat;
         if (matno >= 0)
         {
             if (matFlag[matno])
+            {
                 cellList[ncells++] = c;
+                totalsize += zonesList[c].nnodes;
+            }
         }
         else if (!mat)
         {
-             if (matFlag[nMaterials])
-                 cellList[ncells++] = c;
+            if (matFlag[nMaterials])
+            {
+                cellList[ncells++] = c;
+                totalsize += zonesList[c].nnodes;
+            }
         }
         else
         {
@@ -309,7 +322,10 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
                 mixIndex = mat->GetMixNext()[mixIndex] - 1;
             }
             if (match)
+            {
                 cellList[ncells++] = c;
+                totalsize += zonesList[c].nnodes;
+            }
         }
     }
 
@@ -349,12 +365,43 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
     // Now insert the connectivity array.
     //
     rv->Allocate(ncells);
+    vtkIdTypeArray *nlist = vtkIdTypeArray::New();
+    nlist->SetNumberOfValues(totalsize + ncells);
+    vtkIdType *nl = nlist->GetPointer(0);
+
+    vtkUnsignedCharArray *cellTypes = vtkUnsignedCharArray::New();
+    cellTypes->SetNumberOfValues(ncells);
+    unsigned char *ct = cellTypes->GetPointer(0);
+
+    vtkIntArray *cellLocations = vtkIntArray::New();
+    cellLocations->SetNumberOfValues(ncells);
+    int *cl = cellLocations->GetPointer(0);
+
+    int offset = 0;
     for (i=0; i<ncells; i++)
     {
         int c = cellList[i];
-        rv->InsertNextCell(zonesList[c].celltype, zonesList[c].nnodes,
-                           &indexList[zonesList[c].startindex]);
+
+        *ct++ = zonesList[c].celltype;
+
+        const int nnodes = zonesList[c].nnodes;
+        *nl++ = nnodes;
+        const int *indices = &indexList[zonesList[c].startindex];
+        for (j=0; j<nnodes; j++)
+            *nl++ = indices[j];
+        
+        *cl++ = offset;
+        offset += nnodes+1;
     }
+
+    vtkCellArray *cells = vtkCellArray::New();
+    cells->SetCells(ncells, nlist);
+    nlist->Delete();
+
+    rv->SetCells(cellTypes, cellLocations, cells);
+    cellTypes->Delete();
+    cellLocations->Delete();
+    cells->Delete();
 
     //
     // Copy over all node-centered data.

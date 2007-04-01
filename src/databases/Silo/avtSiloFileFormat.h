@@ -119,6 +119,15 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     std::vector<int>                          blocksForMesh;
     std::map<std::string,std::vector<int> >   blocksForMultivar;
 
+    std::vector<DBmultimesh *>                multimeshes;
+    std::vector<std::string>                  multimesh_name;
+    std::vector<DBmultivar *>                 multivars;
+    std::vector<std::string>                  multivar_name;
+    std::vector<DBmultimat *>                 multimats;
+    std::vector<std::string>                  multimat_name;
+    std::vector<DBmultimatspecies *>          multimatspecies;
+    std::vector<std::string>                  multimatspec_name;
+
     GroupInfo                                 groupInfo;
 
 
@@ -178,6 +187,15 @@ class avtSiloFileFormat : public avtSTMDFileFormat
                                              const char*);
     bool                  ShouldGoToDir(const char *);
     void                  ReadGlobalInformation(DBfile *);
+
+    DBmultimesh          *GetMultimesh(const char *path, const char *name);
+    DBmultimesh          *QueryMultimesh(const char *path, const char *name);
+    DBmultivar           *GetMultivar(const char *path, const char *name);
+    DBmultivar           *QueryMultivar(const char *path, const char *name);
+    DBmultimat           *GetMultimat(const char *path, const char *name);
+    DBmultimat           *QueryMultimat(const char *path, const char *name);
+    DBmultimatspecies    *GetMultimatspec(const char *path, const char *name);
+    DBmultimatspecies    *QueryMultimatspec(const char *path, const char *name);
 };
 
 
