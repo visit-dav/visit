@@ -1014,6 +1014,9 @@ PP_ZFileReader::AddRayMetaData(avtDatabaseMetaData *md)
 // Creation:   Wed Jul 16 16:11:08 PST 2003
 //
 // Modifications:
+//   Kathleen Bonnell, Tue Apr 27 13:29:46 PDT 2004
+//   For avtRealDims array, size should not be larger (but can be smaller)
+//   than the Dimensions of the vtkRectilinearGrid or vtkStructuredGrid.
 //   
 // ****************************************************************************
 
@@ -1051,9 +1054,9 @@ PP_ZFileReader::CreateGhostZones(const int *ireg, vtkDataSet *ds)
         realDims->SetName("avtRealDims");
         realDims->Allocate(6);
         realDims->SetValue(0, 0);
-        realDims->SetValue(1, kmax);
+        realDims->SetValue(1, kmax-1);
         realDims->SetValue(2, 0);
-        realDims->SetValue(3, lmax);
+        realDims->SetValue(3, lmax-1);
         realDims->SetValue(4, 0);
         realDims->SetValue(5, 0);
         ds->GetFieldData()->AddArray(realDims);

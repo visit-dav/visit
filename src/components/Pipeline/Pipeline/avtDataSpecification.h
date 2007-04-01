@@ -92,6 +92,9 @@ typedef ref_ptr<avtDataSpecification> avtDataSpecification_p;
 //    Hank Childs, Thu Sep 25 08:28:28 PDT 2003
 //    Allow the setting of a "db" variable.
 //
+//    Kathleen Bonnell, Thu Apr 22 15:15:57 PDT 2004 
+//    Added method 'VariablesAreTheSame'. 
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataSpecification
@@ -206,6 +209,9 @@ class PIPELINE_API avtDataSpecification
                                      { return useNewMIRAlgorithm;}
     void                         SetUseNewMIRAlgorithm(bool unma)
                                      { useNewMIRAlgorithm = unma; }
+
+
+    bool                         VariablesAreTheSame(const avtDataSpecification &);
 
   protected:
     int                          timestep;

@@ -9,6 +9,7 @@
 #include <qlayout.h>
 #include <qradiobutton.h>
 #include <qslider.h>
+#include <qspinbox.h>
 
 #include <RenderingAttributes.h>
 #include <ViewerProxy.h>
@@ -30,6 +31,9 @@
 // Creation:   Mon Sep 23 14:46:40 PST 2002
 //
 // Modifications:
+//
+//   Mark C. Miller, Tue Apr 27 14:41:35 PDT 2004
+//   Changed name of scalableThreshold to scalrenActivationMode
 //   
 // ****************************************************************************
 
@@ -42,7 +46,7 @@ QvisRenderingWindow::QvisRenderingWindow(const char *caption,
 
     objectRepresentation = 0;
     stereoType = 0;
-    scalableThreshold = 0;
+    scalrenActivationMode = 0;
 }
 
 // ****************************************************************************
@@ -56,13 +60,15 @@ QvisRenderingWindow::QvisRenderingWindow(const char *caption,
 //
 // Modifications:
 //   
+//   Mark C. Miller, Tue Apr 27 14:41:35 PDT 2004
+//   Changed name of scalableThreshold to scalrenActivationMode
 // ****************************************************************************
 
 QvisRenderingWindow::~QvisRenderingWindow()
 {
     delete objectRepresentation;
     delete stereoType;
-    delete scalableThreshold;
+    delete scalrenActivationMode;
 
     if(renderAtts)
         renderAtts->Detach(this);
@@ -90,6 +96,9 @@ QvisRenderingWindow::~QvisRenderingWindow()
 //   Jeremy Meredith, Fri Nov 14 17:47:19 PST 2003
 //   Added specular options.
 //
+//   Mark C. Miller, Tue Apr 27 14:41:35 PDT 2004
+//   Added scalable threshold spinbox
+//
 // ****************************************************************************
 
 void
@@ -104,7 +113,7 @@ QvisRenderingWindow::CreateWindowContents()
 
     QVBoxLayout *spacer = new QVBoxLayout(options);
     spacer->addSpacing(10);
-    QGridLayout *oLayout = new QGridLayout(spacer, 12, 4);
+    QGridLayout *oLayout = new QGridLayout(spacer, 13, 4);
     oLayout->setSpacing(5);
     oLayout->setMargin(10);
 
@@ -164,25 +173,35 @@ QvisRenderingWindow::CreateWindowContents()
     // Create the scalable rendering widgets.
     QLabel *scalrenLabel = new QLabel("Use scalable rendering", options,"scalrenLabel");
     oLayout->addMultiCellWidget(scalrenLabel, 7, 7, 0, 3);
-    scalableThreshold = new QButtonGroup(0, "scalableThreshold");
-    connect(scalableThreshold, SIGNAL(clicked(int)),
-            this, SLOT(scalableThresholdChanged(int)));
+    scalrenActivationMode = new QButtonGroup(0, "scalrenActivationMode");
+    connect(scalrenActivationMode, SIGNAL(clicked(int)),
+            this, SLOT(scalrenActivationModeChanged(int)));
     scalrenAuto = new QRadioButton("Auto", options, "auto");
-    scalableThreshold->insert(scalrenAuto);
+    scalrenActivationMode->insert(scalrenAuto);
     oLayout->addWidget(scalrenAuto, 8, 1);
     scalrenAlways = new QRadioButton("Always", options, "always");
-    scalableThreshold->insert(scalrenAlways);
+    scalrenActivationMode->insert(scalrenAlways);
     oLayout->addWidget(scalrenAlways, 8, 2);
     scalrenNever = new QRadioButton("Never", options, "never");
-    scalableThreshold->insert(scalrenNever);
+    scalrenActivationMode->insert(scalrenNever);
     oLayout->addWidget(scalrenNever, 8, 3);
 
-    // Create the scalable rendering options
+    // Create the polygon count spin box for scalable rendering threshold
+    scalrenGeometryLabel =  new QLabel("When polygon count exceeds", options, "scalrenGeometryLabel");
+    oLayout->addMultiCellWidget(scalrenGeometryLabel, 9, 9, 1, 2);
+    scalrenAutoThreshold = new QSpinBox(0, 10000, 500, options, "scalrenAutoThreshold");
+    scalrenAutoThreshold->setValue(RenderingAttributes::DEFAULT_SCALABLE_THRESHOLD);
+    scalrenAutoThresholdChanged(RenderingAttributes::DEFAULT_SCALABLE_THRESHOLD);
+    connect(scalrenAutoThreshold, SIGNAL(valueChanged(int)),
+            this, SLOT(scalrenAutoThresholdChanged(int)));
+    oLayout->addWidget(scalrenAutoThreshold, 9, 3);
+
+    // Create the specular lighting options
     specularToggle = new QCheckBox("Specular lighting", options,
                                    "specularToggle");
     connect(specularToggle, SIGNAL(toggled(bool)),
             this, SLOT(specularToggled(bool)));
-    oLayout->addMultiCellWidget(specularToggle, 9,9, 0,3);
+    oLayout->addMultiCellWidget(specularToggle, 10, 10, 0,3);
 
     specularStrengthSlider = new QvisOpacitySlider(0, 100, 10, 60, options,
                                              "specularStrengthSlider", NULL);
@@ -191,8 +210,8 @@ QvisRenderingWindow::CreateWindowContents()
             this, SLOT(specularStrengthChanged(int, const void*)));
     specularStrengthLabel = new QLabel(specularStrengthSlider, "Strength",
                                        options, "specularStrengthLabel");
-    oLayout->addWidget(specularStrengthLabel, 10,1);
-    oLayout->addMultiCellWidget(specularStrengthSlider, 10,10, 2,3);
+    oLayout->addWidget(specularStrengthLabel, 11,1);
+    oLayout->addMultiCellWidget(specularStrengthSlider, 11,11, 2,3);
 
     specularPowerSlider = new QvisOpacitySlider(0, 1000, 100, 100, options,
                                                 "specularPowerSlider", NULL);
@@ -201,8 +220,8 @@ QvisRenderingWindow::CreateWindowContents()
             this, SLOT(specularPowerChanged(int, const void*)));
     specularPowerLabel = new QLabel(specularPowerSlider, "Sharpness",
                                     options, "specularPowerLabel");
-    oLayout->addWidget(specularPowerLabel, 11,1);
-    oLayout->addMultiCellWidget(specularPowerSlider, 11,11, 2,3);
+    oLayout->addWidget(specularPowerLabel, 12,1);
+    oLayout->addMultiCellWidget(specularPowerSlider, 12,12, 2,3);
 
 
     //
@@ -285,7 +304,7 @@ QvisRenderingWindow::CreateWindowContents()
 // Creation:   Mon Sep 23 14:48:24 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -318,6 +337,9 @@ QvisRenderingWindow::UpdateWindow(bool doAll)
 //
 //   Jeremy Meredith, Fri Nov 14 17:44:35 PST 2003
 //   Added specular options.
+//
+//   Mark C. Miller, Tue Apr 27 14:41:35 PDT 2004
+//   Changed name of scalableThreshld to scalrenActivationMode
 //
 // ****************************************************************************
 
@@ -377,16 +399,16 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             break;
         case 6: //scalableRendering
             break;
-        case 7: //scalableThreshold
+        case 7: //scalrenActivationMode
             itmp = (int)renderAtts->GetScalableThreshold();
-            scalableThreshold->blockSignals(true);
+            scalrenActivationMode->blockSignals(true);
             if (itmp == 0)
-               scalableThreshold->setButton(1);
+               scalrenActivationMode->setButton(1);
             else if (itmp == INT_MAX)
-               scalableThreshold->setButton(2);
+               scalrenActivationMode->setButton(2);
             else
-               scalableThreshold->setButton(0);
-            scalableThreshold->blockSignals(false);
+               scalrenActivationMode->setButton(0);
+            scalrenActivationMode->blockSignals(false);
             break;
         case 8: //specularFlag
             specularToggle->blockSignals(true);
@@ -785,32 +807,123 @@ QvisRenderingWindow::renderNotifyToggled(bool val)
 }
 
 // ****************************************************************************
-// Method: QvisRenderingWindow::scalableThresholdChanged
+// Method: QvisRenderingWindow::scalrenActivationModeChanged
 //
 // Purpose: 
-//   This Qt slot function is called when the scalable threshold changes.
+//   This Qt slot function is called when the scalable activation mode changes.
 //
 // Arguments:
-//   val : The new scalable threshold flag.
+//   val : The new scalable activation mode flag.
 //         0 = Auto, 1 = Always, 2 = Never
 //
 // Programmer: Mark C. Miller 
 // Creation:   Wed Nov 20 17:09:59 PST 2002 
 //
 // Modifications:
+//
+//   Mark C. Miller, Tue Apr 27 14:41:35 PDT 2004
+//   Added scalrenAutoThreshold spinbox and geometry label
 //   
 // ****************************************************************************
 
 void
-QvisRenderingWindow::scalableThresholdChanged(int val)
+QvisRenderingWindow::scalrenActivationModeChanged(int val)
 {
     if (val == 0)
-       renderAtts->SetScalableThreshold(
-          RenderingAttributes::DEFAULT_SCALABLE_THRESHOLD);
+    {
+        scalrenAutoThreshold->setEnabled(1);
+        scalrenGeometryLabel->setEnabled(1);
+        scalrenAutoThresholdChanged(scalrenAutoThreshold->value());
+    }
     else if (val == 1)
-       renderAtts->SetScalableThreshold(0);
+    {
+        scalrenAutoThreshold->setEnabled(0);
+        scalrenGeometryLabel->setEnabled(0);
+        renderAtts->SetScalableThreshold(0);
+    }
     else
-       renderAtts->SetScalableThreshold(INT_MAX);
+    {
+        scalrenAutoThreshold->setEnabled(0);
+        scalrenGeometryLabel->setEnabled(0);
+        renderAtts->SetScalableThreshold(INT_MAX);
+    }
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::scalrenAutoThresholdChanged
+//
+// Purpose: 
+//   This Qt slot function is called when the scalable rendering automatic
+//   polygon count threshold changes.
+//
+// Arguments:
+//   val : The new polygon count threshold.
+//
+// Programmer: Mark C. Miller 
+// Creation:   Wed Apr 21 22:42:57 PDT 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisRenderingWindow::scalrenAutoThresholdChanged(int val)
+{
+    // determine the actual value from the given value and the current suffix
+    int actualVal;
+    if (scalrenAutoThreshold->suffix() == " GPolys")
+        actualVal = val * (int) 1e9;
+    else if (scalrenAutoThreshold->suffix() == " MPolys")
+        actualVal = val * (int) 1e6;
+    else if (scalrenAutoThreshold->suffix() == " KPolys")
+        actualVal = val * (int) 1e3;
+    else if (scalrenAutoThreshold->suffix() == "  Polys")
+        actualVal = val;
+    else
+        actualVal = val;
+
+    // deal with stepping backwards
+    int step = scalrenAutoThreshold->lineStep();
+    if ((val == 500) && (step == 500) && (scalrenAutoThreshold->suffix() == "  Polys"))
+        actualVal = 950;
+    else if ((val == 5) && (step == 5) && (scalrenAutoThreshold->suffix() == " KPolys"))
+        actualVal = 9500;
+    else if ((val == 50) && (step == 50) && (scalrenAutoThreshold->suffix() == " KPolys"))
+        actualVal = 95000;
+    else if ((val == 500) && (step == 500) && (scalrenAutoThreshold->suffix() == " KPolys"))
+        actualVal = 950000;
+    else if ((val == 5) && (step == 5) && (scalrenAutoThreshold->suffix() == " MPolys"))
+        actualVal = 9500000;
+    else if ((val == 50) && (step == 50) && (scalrenAutoThreshold->suffix() == " MPolys"))
+        actualVal = 95000000;
+    else if ((val == 0) && (step == 1) && (scalrenAutoThreshold->suffix() == " GPolys"))
+        actualVal = 950000000;
+
+    // compute the step size and suffix for the displayed value in the GUI
+    QString suffix;
+    if      (actualVal < 1e3) { step = 50;  suffix = "  Polys"; }
+    else if (actualVal < 1e4) { step = 500; suffix = "  Polys"; }
+    else if (actualVal < 1e5) { step = 5;   suffix = " KPolys"; }
+    else if (actualVal < 1e6) { step = 50;  suffix = " KPolys"; }
+    else if (actualVal < 1e7) { step = 500; suffix = " KPolys"; }
+    else if (actualVal < 1e8) { step = 5;   suffix = " MPolys"; }
+    else if (actualVal < 1e9) { step = 50;  suffix = " MPolys"; }
+    else                      { step = 1;   suffix = " GPolys"; }
+
+    // compute the divisor for the displayed value in the GUI
+    int div;
+    if      (suffix == " KPolys") div = (int) 1e3;
+    else if (suffix == " MPolys") div = (int) 1e6; 
+    else if (suffix == " GPolys") div = (int) 1e9;
+    else                          div = 1;
+
+    // set the new GUI value
+    scalrenAutoThreshold->setLineStep(step);
+    scalrenAutoThreshold->setSuffix(suffix);
+    scalrenAutoThreshold->setValue(actualVal / div);
+    renderAtts->SetScalableThreshold(actualVal);
+
     SetUpdate(false);
     Apply();
 }

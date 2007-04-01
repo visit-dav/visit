@@ -1456,6 +1456,9 @@ ViewerEngineManager::ExternalRender(vector<const char*> pluginIDsList,
 //    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
 //    Added code to pass extents type string to SetWinAnnotAtts
 //
+//    Mark C. Miller, Tue Apr 27 14:41:35 PDT 2004
+//    Added code to pass ViewerSubject callbacks in Execute calls
+//
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -1565,7 +1568,9 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
                // ask for the engine's output as null data 'cause the 
                // avtDataObject in the current reader is just the message that 
                //it exceeded threshold
-               retval = engine->Execute(true, 0, 0);
+               retval = engine->Execute(true,
+                                        ViewerSubject::ProcessEventsCB,
+                                        (void *)viewerSubject);
 
                // now, tell viewer to go into SR mode
                w->SendScalableRenderingModeChangeMessage(true);

@@ -2432,6 +2432,10 @@ VisWindow::Render(void)
 //    Added call to Render after call to FullFrameOn in 2d, to ensure that
 //    the changes shows up immediately on the screen.
 // 
+//    Kathleen Bonnell, Tue Apr 27 13:29:46 PDT 2004 
+//    Added call to Render after call to FullFrameOn in Curve mode, to ensure 
+//    that the changes show up immediately on the screen.
+// 
 // ****************************************************************************
 
 void
@@ -2488,6 +2492,7 @@ VisWindow::UpdateView()
 
         FullFrameOff();
         FullFrameOn(viewCurve.GetScaleFactor(size), 1);
+        Render();
     }
 }
 

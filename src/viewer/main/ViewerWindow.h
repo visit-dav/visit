@@ -299,6 +299,9 @@ struct ExternalRenderRequestInfo
 //    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
 //    Added data member for extents type string to render request info
 //
+//    Mark C. Miller, Tue Apr 27 14:41:35 PDT 2004
+//    Removed preparingToChangeScalableRenderingMode
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow
@@ -557,7 +560,6 @@ private:
     void           (*pickFunction)(void *, bool, const PickAttributes *);
     void           *pickFunctionData;
 
-    bool            preparingToChangeScalableRenderingMode;
     bool            isChangingScalableRenderingMode;
     bool            targetScalableRenderingMode;
 

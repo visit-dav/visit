@@ -174,6 +174,11 @@ avtExpressionEvaluatorFilter::AdditionalPipelineFilters(void)
 //    Hank Childs, Sat Dec 13 15:55:31 PST 2003
 //    Don't be so quick to declare something a recursive function.
 //
+//    Kathleen Bonnell, Tue Apr 27 11:34:23 PDT 2004 
+//    Added test to determine if new filters need to be created.  If not,
+//    don't set the pipelineSpec's DataObject to NULL, and don't create new
+//    filters.  (QueryOverTime will re-use these filters for each time step).
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -183,8 +188,16 @@ avtExpressionEvaluatorFilter::PerformRestriction(
     int   i;
 
     avtPipelineSpecification_p rv = spec;
-    lastUsedSpec = spec;
+
     avtDataSpecification_p ds = spec->GetDataSpecification();
+    bool createFilters = true;
+    if (*lastUsedSpec != NULL)
+    {
+        avtDataSpecification_p ds1 = lastUsedSpec->GetDataSpecification();
+        createFilters = pipelineState.GetFilters().size() == 0 ||
+                        !ds1->VariablesAreTheSame(ds);
+    }
+    lastUsedSpec = spec;
     avtDataSpecification_p newds;
 
     // We need to test if any of the primary or secondary variables are
@@ -217,7 +230,10 @@ avtExpressionEvaluatorFilter::PerformRestriction(
     // parsed expression into a list of filters.  These filters are hooked
     // together, then put on a list in pipelineState for use in Execute().
     debug5 << "EEF::PerformRestriction: Checking candidates" << endl;
-    pipelineState.SetDataObject(NULL);
+
+    if (createFilters)
+        pipelineState.SetDataObject(NULL);
+
     int num_recursive_checks = 0;
     while (!candidates.empty())
     {
@@ -278,12 +294,12 @@ avtExpressionEvaluatorFilter::PerformRestriction(
     }
 
     // Take the list of expressions and make the filters for them.
-    while (!expr_list.empty())
+    while (createFilters && !expr_list.empty())
     {
         std::vector<string>::iterator back = expr_list.end() - 1;
         string var = *back;
         expr_list.erase(back);
-        
+       
         // Get the expression tree again.  (We could save trees between the
         // first and second sections of the code.  It wouldn't save much
         // time, but would be cleaner.)
@@ -371,17 +387,17 @@ avtExpressionEvaluatorFilter::PerformRestriction(
 //  Programmer: Hank Childs
 //  Creation:   November 17, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Apr 22 14:42:38 PDT 2004
+//    Moved code to new pipelineState method.
+//  
 // ****************************************************************************
 
 void
 avtExpressionEvaluatorFilter::ReleaseData(void)
 {
     avtDatasetToDatasetFilter::ReleaseData();
-    vector<avtExpressionFilter *> &filters = pipelineState.GetFilters();
-    for (int i = 0 ; i < filters.size() ; i++)
-    {
-        filters[i]->ReleaseData();
-    }
+    pipelineState.ReleaseData();
 }
 
 // ****************************************************************************
@@ -630,3 +646,4 @@ avtExpressionEvaluatorFilter::GetDomainName(const std::string &var, const int ts
 {
     GetInput()->GetQueryableSource()->GetDomainName(var, ts, dom, domName);
 }
+

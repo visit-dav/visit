@@ -207,7 +207,7 @@ class NetworkManager
     void          DumpRenders(void) { dumpRenders = true; };
 
     void          CloneNetwork(const int id);
-    void          AddQueryOverTimeFilter(const QueryOverTimeAttributes *,
+    void          AddQueryOverTimeFilter(QueryOverTimeAttributes *,
                                          const int clonedFromId);
 
  private:

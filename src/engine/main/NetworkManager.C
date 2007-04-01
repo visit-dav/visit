@@ -2175,10 +2175,13 @@ NetworkManager::CloneNetwork(const int id)
 //    Added arge 'clonedFromId' so that 'Actual Data' queries get the correct
 //    input.
 //
+//    Kathleen Bonnell, Tue Apr 27 13:41:32 PDT 2004
+//    Pass the cloned network's pipeline index to query atts. 
+//
 // ****************************************************************************
 
 void
-NetworkManager::AddQueryOverTimeFilter(const QueryOverTimeAttributes *qA,
+NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
                                        const int clonedFromId)
 {
     if (workingNet == NULL)
@@ -2199,6 +2202,8 @@ NetworkManager::AddQueryOverTimeFilter(const QueryOverTimeAttributes *qA,
     {
         input = networkCache[clonedFromId]->GetPlot()->GetIntermediateDataObject();
     }
+    qA->GetQueryAtts().SetPipeIndex(networkCache[clonedFromId]->
+        GetPipelineSpec()->GetPipelineIndex());
 
     //    
     // Pass down the current SILRestriction (via UseSet) in case the query 

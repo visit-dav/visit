@@ -70,6 +70,9 @@
 #    Mark C. Miller, Tue Apr 13 08:16:51 PDT 2004
 #    Removed sil.py and samrai.py from parallel skip list
 #
+#    Mark C. Miller, Thu Apr 22 22:35:17 PDT 2004
+#    Made clearmake parallel since we're already running tests in parallel
+#
 # ----------------------------------------------------------------------------
 
 # list of users who want email every night with the log file
@@ -153,7 +156,7 @@ LD_LIBRARY_PATH=/usr/local/lib
 export LD_LIBRARY_PATH
 env CXXFLAGS="-g" ./configure --enable-parallel 1>> buildlog 2>&1
 rm -f plugins/*/*.so
-clearmake  1>> buildlog 2>&1
+clearmake -J 2 1>> buildlog 2>&1
 error=$?
 
 # email if the build failed
