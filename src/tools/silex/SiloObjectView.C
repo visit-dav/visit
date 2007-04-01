@@ -56,6 +56,9 @@ SiloObjectViewWindow::ShowItem(QListViewItem *i)
 //    Jeremy Meredith, Mon May 17 12:37:32 PDT 2004
 //    Added a couple calls to free memory and prevent really big leaks.
 //
+//    Mark C. Miller, Wed Apr 20 17:08:36 PDT 2005
+//    Added code to deal with hdf5 formatted strings in pdbname
+//
 // ****************************************************************************
 SiloObjectView::SiloObjectView(SiloFile *s, const QString &n, QWidget *p)
     : QListView(p, n), silo(s), name(n)
@@ -123,7 +126,13 @@ SiloObjectView::SiloObjectView(SiloFile *s, const QString &n, QWidget *p)
             break;
           default:
             typestr = "var";
-            sprintf(value, "%s", pdbname.latin1());
+            std::string valStr = pdbname.latin1();
+            if (pdbname.find("'<s>") == 0)
+            {
+                int len = pdbname.length();
+                valStr = std::string(pdbname.latin1(),4,len-5);
+            }
+            sprintf(value, "%s", valStr.c_str());
             break;
         }
 

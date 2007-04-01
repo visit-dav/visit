@@ -57,6 +57,7 @@
 #include <SyncAttributes.h>
 #include <QueryOverTimeAttributes.h>
 #include <Utility.h>
+#include <Xfer.h>
 
 #include <ViewerActionBase.h>
 #include <ViewerActionManager.h>

@@ -109,6 +109,9 @@ avtMatvfFilter::PreExecute(void)
 //    Kathleen Bonnell, Mon Jun 28 07:48:55 PDT 2004
 //    Send currentTimeState to GetMaterial. 
 //
+//    Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
+//    Fixed memory leak caused by cut-n-paste error
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -145,7 +148,6 @@ avtMatvfFilter::DeriveVariable(vtkDataSet *in_ds)
     // of cells in the input, depending on whether or not we did MIR.
     //
     vtkFloatArray *vf_for_orig_cells = vtkFloatArray::New();
-    vf_for_orig_cells = vtkFloatArray::New();
     int norigcells = mat->GetNZones();
     vf_for_orig_cells->SetNumberOfTuples(norigcells);
 

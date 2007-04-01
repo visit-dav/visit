@@ -605,6 +605,9 @@ avtVistaAle3dFileFormat::GetAuxiliaryData(const char *var, int domain,
 //    Fixed bug where code assumed that if a material exists, a clean Vista
 //    node would also exist for it.
 //
+//    Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
+//    Fixed some memory leaks
+//
 // ****************************************************************************
 avtMaterial *
 avtVistaAle3dFileFormat::GetMaterial(int domain, const char *var)
@@ -690,7 +693,9 @@ avtVistaAle3dFileFormat::GetMaterial(int domain, const char *var)
         size_t dSize = 0;
         int *indexSet = 0;
         GetFileNameForRead(domain, fileName, sizeof(fileName));
-        SNPRINTF(tempStr, sizeof(tempStr), "%s/Indexset", vTree->GetPathFromNode(top, matNodes[i])); 
+        char *idxPath = vTree->GetPathFromNode(top, matNodes[i]);
+        SNPRINTF(tempStr, sizeof(tempStr), "%s/Indexset", idxPath);
+        delete [] idxPath;
         ReadDataset(fileName, tempStr, 0, &dSize, (void**) &indexSet);
         if (dSize != matNodes[i]->len)
         {
@@ -711,7 +716,9 @@ avtVistaAle3dFileFormat::GetMaterial(int domain, const char *var)
             //
             dSize = 0;
             double *dvf = 0;
-            SNPRINTF(tempStr, sizeof(tempStr), "%s/Fields/vf", vTree->GetPathFromNode(top, matNodes[i])); 
+            char *vfPath = vTree->GetPathFromNode(top, matNodes[i]);
+            SNPRINTF(tempStr, sizeof(tempStr), "%s/Fields/vf", vfPath); 
+            delete [] vfPath;
             ReadDataset(fileName, tempStr, 0, &dSize, (void**) &dvf);
             if (dSize != matNodes[i]->len)
             {

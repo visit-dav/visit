@@ -1,5 +1,9 @@
 // Programmer: Jeremy Meredith
 // Date      : April  4, 2005
+//
+// Modifications:
+//   Modifications:
+//   Changed it to a rectilinear mesh.
 
 #include "sim.h"
 
@@ -29,6 +33,9 @@ VisIt_SimulationMetaData *VisItGetMetaData()
     md->meshes[0].blockPieceName = strdup("domain");
     md->meshes[0].numGroups = 0;
     md->meshes[0].units = NULL;
+    md->meshes[0].xLabel = NULL;
+    md->meshes[0].yLabel = NULL;
+    md->meshes[0].zLabel = NULL;
 
     md->numScalars = 2;
     md->scalars = malloc(sizeof(VisIt_ScalarMetaData) * md->numScalars);
@@ -65,15 +72,15 @@ VisIt_SimulationMetaData *VisItGetMetaData()
 VisIt_MeshData *VisItGetMesh(int domain,const char *name)
 {
     VisIt_MeshData *mesh = malloc(sizeof(VisIt_MeshData));
-    mesh->meshType = VISIT_MESHTYPE_CURVILINEAR;
-    mesh->cmesh = malloc(sizeof(VisIt_CurvilinearMesh));
+    mesh->meshType = VISIT_MESHTYPE_RECTILINEAR;
+    mesh->rmesh = malloc(sizeof(VisIt_RectilinearMesh));
     
-    mesh->cmesh->dims[0] = p_nx;
-    mesh->cmesh->dims[1] = p_ny;
-    mesh->cmesh->dims[2] = p_nz;
-    mesh->cmesh->xcoords = p_xcoords;
-    mesh->cmesh->ycoords = p_ycoords;
-    mesh->cmesh->zcoords = p_zcoords;
+    mesh->rmesh->dims[0] = p_nx;
+    mesh->rmesh->dims[1] = p_ny;
+    mesh->rmesh->dims[2] = p_nz;
+    mesh->rmesh->xcoords = p_xcoords;
+    mesh->rmesh->ycoords = p_ycoords;
+    mesh->rmesh->zcoords = p_zcoords;
 
     return mesh;
 }

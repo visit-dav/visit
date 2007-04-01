@@ -65,6 +65,10 @@ typedef struct VisIt_MeshMetaData
     int        *groupIds;
 
     const char *units;
+
+    const char *xLabel;
+    const char *yLabel;
+    const char *zLabel;
 } VisIt_MeshMetaData;
 
 typedef struct VisIt_ScalarMetaData
@@ -78,10 +82,10 @@ typedef struct VisIt_ScalarMetaData
 
 typedef struct VisIt_MaterialMetaData
 {
-    const char *name;
-    const char *meshName;
-    int         numMaterials;
-    const char *materialNames[];
+    const char  *name;
+    const char  *meshName;
+    int          numMaterials;
+    const char **materialNames;
 } VisIt_MaterialMetaData;
 
 typedef struct VisIt_CurveMetaData
@@ -90,6 +94,9 @@ typedef struct VisIt_CurveMetaData
 
     const char *xUnits;
     const char *yUnits;
+
+    const char *xLabel;
+    const char *yLabel;
 } VisIt_CurveMetaData;
 
 typedef struct VisIt_ExpressionMetaData
@@ -175,7 +182,18 @@ typedef struct VisIt_MixedScalarData
 
 typedef struct VisIt_MaterialData
 {
-    /* FILL IN */
+    int nMaterials;
+    int *materialNumbers;
+    const char **materialNames;
+
+    int  nzones;
+    int *matlist;
+
+    int  mixlen;
+    int *mix_mat;
+    int *mix_zone;
+    int *mix_next;
+    float *mix_vf;
 } VisIt_MaterialData;
 
 typedef struct VisIt_CurveData

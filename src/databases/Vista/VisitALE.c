@@ -408,7 +408,7 @@ static void VisitFindNodes(const Node *root, const char *slash_delimited_re,
    Node ***results, int *nmatches, RecurseMode rmode)
 {
    const char *p = slash_delimited_re;
-   int nlevels = 0;
+   int i, nlevels = 0;
    static char tmpstr[256];
    static regex_t compres[64];
    static NodeType nodetypes[64];
@@ -416,7 +416,7 @@ static void VisitFindNodes(const Node *root, const char *slash_delimited_re,
    /* compile each component's regular expression */
    while (*p != '\0')
    {
-      int i = 0;
+      i = 0;
       if (*p == '/') p++;
       nodetypes[nlevels] = AnyNode;
 
@@ -471,6 +471,9 @@ static void VisitFindNodes(const Node *root, const char *slash_delimited_re,
        VisitFindNodesBottomUp(root, nlevels, compres, nodetypes, 0,
           results, nmatches, &maxmatches);
 
+   /* free the compiled regular expressions */
+   for (i = 0; i < nlevels; i++)
+       regfree(&compres[i]);
 }
 
 const Node *VisitGetNodeFromPath(const Node *start, const char *path)

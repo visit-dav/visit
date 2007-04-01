@@ -274,6 +274,9 @@ avtVistaDiabloFileFormat::GetFileNameForRead(int dom, char *fileName, int size)
 //    Mark C. Miller, Tue Oct 26 10:28:36 PDT 2004
 //    Filtered out BCs from relations. Added node-centered fields
 //
+//    Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
+//    Fixed memory leaks
+//
 // ****************************************************************************
 
 void
@@ -415,8 +418,9 @@ avtVistaDiabloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             groupNames.clear();
             for (j = 0; j < numFieldNodes; j++)
             {
-                fieldNames.push_back(vTree->GetPathFromNode(elemView,
-                                                            fieldNodes[j]));
+                char *tmpFieldName = vTree->GetPathFromNode(elemView,fieldNodes[j]);
+                fieldNames.push_back(tmpFieldName);
+                delete [] tmpFieldName;
             }
             StringHelpers::GroupStringsAsPaths(fieldNames, fieldGroups, groupNames);
 
@@ -576,6 +580,9 @@ avtVistaDiabloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Mark C. Miller, Wed May 19 10:56:11 PDT 2004
 //    Added support for 2D meshes
 //
+//    Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
+//    Fixed memory leaks
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -624,6 +631,7 @@ avtVistaDiabloFileFormat::GetMesh(int domain, const char *meshname)
         char fieldName[32];
         sprintf(fieldName, "coord_np1%c", (char) ('x'+i));
         sprintf(tempStr, "%s/node_set/Fields/%s", piecePath, fieldName);
+        delete [] piecePath;
 
         size_t dSize = 0;
         ReadDataset(fileName, tempStr, 0, &dSize, (void**) &coords[i]);
@@ -649,6 +657,7 @@ avtVistaDiabloFileFormat::GetMesh(int domain, const char *meshname)
     {
         const char *piecePath = vTree->GetPathFromNode(top, pieceNodes[domain]);
         sprintf(tempStr, "%s/material1/Relations/node", piecePath);
+        delete [] piecePath;
 
         size_t dSize = 0;
         ReadDataset(fileName, tempStr, 0, &dSize, (void**) &elemToNode);
@@ -771,6 +780,9 @@ avtVistaDiabloFileFormat::GetVectorVar(int domain, const char *varname)
 //    Added support for node-centered fields. Used ReadDataset function that
 //    always returns float data
 //
+//    Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
+//    Fixed memory leaks
+//
 // ****************************************************************************
 
 vtkFloatArray *
@@ -845,6 +857,7 @@ avtVistaDiabloFileFormat::ReadVar(int domain, const char *visitName)
         {
             sprintf(tempStr, "%s/node_set/Fields/%s", piecePath, vistaNames[i].c_str());
         }
+        delete [] piecePath;
 
         compData[i] = 0;
         if (ReadDataset(fileName, tempStr, &dSize, &compData[i]))
