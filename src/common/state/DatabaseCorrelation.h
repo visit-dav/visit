@@ -127,6 +127,6 @@ private:
     intVector    condensedCycles;
 };
 
-ostream& operator << (ostream &os, const DatabaseCorrelation &);
+STATE_API ostream& operator << (ostream &os, const DatabaseCorrelation &);
 
 #endif

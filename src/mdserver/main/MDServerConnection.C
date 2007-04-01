@@ -692,6 +692,9 @@ MDServerConnection::GetCurrentSIL() const
 //   Brad Whitlock, Thu Mar 18 11:40:40 PDT 2004
 //   I fixed the code so it filters out .. properly.
 //
+//   Brad Whitlock, Wed Apr 14 17:22:53 PST 2004
+//   I fixed the .. filtering for Windows.
+//
 // ****************************************************************************
 
 std::string
@@ -746,11 +749,21 @@ MDServerConnection::FilteredPath(const std::string &path) const
             else
                 tmp += str[i];
         }
-        filteredPath = (tmpNames.size() > 0) ? "" : SLASH_STRING;
-        for(i = 0; i < tmpNames.size(); ++i)
+
+        // Reassemble the path fragments.
+        if(tmpNames.size() > 0)
         {
-            filteredPath += SLASH_STRING;
-            filteredPath += tmpNames[i];
+            filteredPath = "";
+            for(i = 0; i < tmpNames.size(); ++i)
+            { 
+#if defined(_WIN32)
+                if(i > 0)
+                    filteredPath += SLASH_STRING;
+#else
+                filteredPath += SLASH_STRING;
+#endif
+                filteredPath += tmpNames[i];
+            }
         }
     }
 
@@ -1655,6 +1668,10 @@ MDServerConnection::GetVirtualFileDefinition(const std::string &file)
 //    Brad Whitlock, Mon Mar 22 09:37:08 PDT 2004
 //    Added code to print virtual file definition to debug3.
 //
+//    Brad Whitlock, Fri Apr 16 12:41:09 PDT 2004
+//    Added code to switch current directories so we can always successfully
+//    read virtual databases on the Windows platform when we use the CLI.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -1692,6 +1709,10 @@ MDServerConnection::GetDatabase(string file, int timeState)
 
         if (virtualFile != virtualFiles.end())
         {
+#if defined(_WIN32)
+            // Save the old path in case we have to change it.
+            std::string oldPath(currentWorkingDirectory);
+#endif
             // Make an array of strings that contain the entire name of the
             // various timesteps so we can pass it to the database factory.
             const stringVector &fileNames = virtualFile->second.files;
@@ -1711,14 +1732,33 @@ MDServerConnection::GetDatabase(string file, int timeState)
 
             TRY
             {
+#if defined(_WIN32)
+                // Change to the virtual file's path if we're not already
+                // there so we can read the files.
+                if(currentWorkingDirectory != path)
+                {
+                    debug2 << "Have to change to the virtual file's path: "
+                           << path.c_str() << endl;
+                    ChangeDirectory(path);
+                }
+#endif
                 // Try and make a database out of the filenames.
                 currentDatabase = avtDatabaseFactory::FileList(names,
-                                                  fileNames.size(), timeState);
+                    fileNames.size(), timeState);
 
                 // Free the memory that we used.
                 for(i = 0; i < fileNames.size(); ++i)
                     delete [] names[i];
                 delete [] names;
+
+#if defined(_WIN32)
+                if(oldPath != currentWorkingDirectory)
+                {
+                    debug2 << "Changing back to the real current directory: "
+                           << oldPath.c_str() << endl;
+                    ChangeDirectory(oldPath);
+                }
+#endif
             }
             CATCH(VisItException)
             {
@@ -1729,6 +1769,14 @@ MDServerConnection::GetDatabase(string file, int timeState)
                     delete [] names[i];
                 delete [] names;
 
+#if defined(_WIN32)
+                if(oldPath != currentWorkingDirectory)
+                {
+                    debug2 << "Changing back to the real current directory: "
+                           << oldPath.c_str() << endl;
+                    ChangeDirectory(oldPath);
+                }
+#endif
                 RETHROW;
             }
             ENDTRY

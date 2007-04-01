@@ -176,7 +176,7 @@ avtRevolvedSurfaceArea::DeriveVariable(vtkDataSet *in_ds)
     int ncells = pd_1d_nogz->GetNumberOfCells();
     vtkIntArray *orig_cells = (vtkIntArray *)
                             pd_1d_nogz->GetCellData()->GetArray("_rsa_ncells");
-    for (int i = 0 ; i < ncells ; i++)
+    for (i = 0 ; i < ncells ; i++)
     {
         vtkCell *cell = pd_1d_nogz->GetCell(i);
         float area = (float) GetLineArea(cell);

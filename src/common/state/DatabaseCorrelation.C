@@ -1337,13 +1337,13 @@ DatabaseCorrelation::GetInverseCorrelatedTimeState(const std::string &db,
 ostream &
 operator << (ostream &os, const DatabaseCorrelation &correlation)
 {
-    os << "name = " << correlation.GetName() << endl;
+    os << "name = " << correlation.GetName().c_str() << endl;
     os << "numStates = " << correlation.GetNumStates() << endl;
-    os << "method = " << DatabaseCorrelation::CorrelationMethod_ToString(correlation.GetMethod()) << endl;
+    os << "method = " << DatabaseCorrelation::CorrelationMethod_ToString(correlation.GetMethod()).c_str() << endl;
     int i, j, index = 0;
     for(i = 0; i < correlation.GetDatabaseNames().size(); ++i)
     {
-        os << "database[" << i << "]=" << correlation.GetDatabaseNames()[i] << endl;
+        os << "database[" << i << "]=" << correlation.GetDatabaseNames()[i].c_str() << endl;
         os << "    numStates=" << correlation.GetDatabaseNStates()[i] << endl;
         os << "    times={";
         for(j = 0; j < correlation.GetDatabaseNStates()[i]; ++j)

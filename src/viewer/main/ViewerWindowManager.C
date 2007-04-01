@@ -5124,6 +5124,8 @@ ViewerWindowManager::SetActiveTimeSlider(const std::string &ts, int windowIndex)
 // Creation:   Mon Mar 29 11:21:29 PDT 2004
 //
 // Modifications:
+//   Eric Brugger, Fri Apr 16 18:43:42 PDT 2004
+//   I modified the logic concerning the creation of a new time slider.
 //   
 // ****************************************************************************
 
@@ -5169,15 +5171,27 @@ ViewerWindowManager::CreateDatabaseCorrelation(const std::string &name,
                 ViewerWindow *win = windows[i];
                 if(win)
                 {
-                    // Create the time slider and set its initial state.
-                    win->GetPlotList()->CreateTimeSlider(name,
-                        initialState);
+                    bool timeLocked = (windows[activeWindow]->GetTimeLock() &&
+                                       windows[i]->GetTimeLock());
+
+                    bool timeSliderExists =
+                        win->GetPlotList()->TimeSliderExists(name);
+
+                    //
+                    // If we didn't have a time slider, create one. Call
+                    // CreateTimeSlider in any case if we were locked in time
+                    // since reopening one time locked window should update
+                    // others, especially if we're changing the active time
+                    // slider later.
+                    if(!timeSliderExists || timeLocked)
+                    {
+                        win->GetPlotList()->CreateTimeSlider(name,
+                            initialState);
+                    }
 
                     // Make the new correlation be the active time slider
                     // in the active window or any window locked to it.
-                    if(i == activeWindow ||
-                       (windows[activeWindow]->GetTimeLock() &&
-                        windows[i]->GetTimeLock()))
+                    if(i == activeWindow || timeLocked)
                     {
                         win->GetPlotList()->SetActiveTimeSlider(name);
                     }

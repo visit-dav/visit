@@ -2150,16 +2150,22 @@ NetworkManager::CloneNetwork(const int id)
 //
 //  Arguments:
 //    qA         The atts that control the filter. 
+//    clonedFromId  The Id of the nework from which this time-query network
+//                  was cloned.
 //
 //  Programmer:  Kathleen Bonnell
 //  Creation:    March 19, 2004
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Apr 15 14:07:53 PDT 2004
+//    Added arge 'clonedFromId' so that 'Actual Data' queries get the correct
+//    input.
 //
 // ****************************************************************************
 
 void
-NetworkManager::AddQueryOverTimeFilter(const QueryOverTimeAttributes *qA)
+NetworkManager::AddQueryOverTimeFilter(const QueryOverTimeAttributes *qA,
+                                       const int clonedFromId)
 {
     if (workingNet == NULL)
     {
@@ -2177,7 +2183,7 @@ NetworkManager::AddQueryOverTimeFilter(const QueryOverTimeAttributes *qA)
     }
     else 
     {
-        input = workingNet->GetPlot()->GetIntermediateDataObject();
+        input = networkCache[clonedFromId]->GetPlot()->GetIntermediateDataObject();
     }
 
     //    

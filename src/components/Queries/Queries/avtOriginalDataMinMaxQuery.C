@@ -4,6 +4,7 @@
 
 #include <avtOriginalDataMinMaxQuery.h>
 
+#include <avtCondenseDatasetFilter.h>
 #include <avtExpressionEvaluatorFilter.h>
 #include <avtTerminatingSource.h>
 
@@ -22,12 +23,18 @@
 //    Kathleen Bonnell, Wed Mar 31 16:07:50 PST 2004
 //    Added optional args.
 //
+//    Kathleen Bonnell, Wed Apr 14 18:05:08 PDT 2004 
+//    Added condense filter. 
+//
 // ****************************************************************************
 
 avtOriginalDataMinMaxQuery::avtOriginalDataMinMaxQuery(bool min, bool max)
     : avtMinMaxQuery(min, max)
 {
     eef = new avtExpressionEvaluatorFilter;
+    condense = new avtCondenseDatasetFilter;
+    condense->KeepAVTandVTK(true);
+    condense->BypassHeuristic(true);
 }
 
 
@@ -41,6 +48,8 @@ avtOriginalDataMinMaxQuery::avtOriginalDataMinMaxQuery(bool min, bool max)
 //  Creation:     February 10, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Wed Apr 14 18:05:08 PDT 2004 
+//    Added condense filter. 
 //
 // ****************************************************************************
 
@@ -50,6 +59,11 @@ avtOriginalDataMinMaxQuery::~avtOriginalDataMinMaxQuery()
     {
         delete eef;
         eef = NULL;
+    }
+    if (condense != NULL)
+    {
+        delete condense;
+        condense = NULL;
     }
 }
 
@@ -70,6 +84,9 @@ avtOriginalDataMinMaxQuery::~avtOriginalDataMinMaxQuery()
 //
 //    Kathleen Bonnell, Wed Mar 31 16:07:50 PST 2004
 //    Added logic for time-varying case.
+//
+//    Kathleen Bonnell, Wed Apr 14 18:05:08 PDT 2004 
+//    Added condense filter. 
 //
 // ****************************************************************************
 
@@ -98,7 +115,8 @@ avtOriginalDataMinMaxQuery::ApplyFilters(avtDataObject_p inData)
     avtDataObject_p temp;
     CopyTo(temp, inData);
     eef->SetInput(temp);
-    avtDataObject_p retObj = eef->GetOutput();
+    condense->SetInput(eef->GetOutput());
+    avtDataObject_p retObj = condense->GetOutput();
     retObj->Update(pspec);
     return retObj;
 }

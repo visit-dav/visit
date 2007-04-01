@@ -881,6 +881,10 @@ ViewerPlot::IsInRange() const
 //    Changed interface to ReInitializePlotAtts. Made host and db name be
 //    stored as strings.
 //
+//    Eric Brugger, Fri Apr 16 13:58:25 PDT 2004
+//    I removed the coding which caused the routine to be exited early if
+//    the new host and database names matched the existing ones.
+//
 // ****************************************************************************
 
 void
@@ -889,14 +893,11 @@ ViewerPlot::SetHostDatabaseName(const std::string &host,
 {
     bool reInit = false;
     //
-    // If the host name is already set, check if the host and database
-    // names match and return if they do, otherwise deallocate the existing
-    // name and clear the actor list.
+    // If the host name is already set, clear the actor list and
+    // indicate that the plot needs reinitializing.
     //
     if (hostName != "")
     {
-        if (hostName == host && databaseName == database)
-            return;
         ClearActors();
         reInit = true;
     }
@@ -1120,6 +1121,13 @@ ViewerPlot::GetMetaData() const
 //    If you are changing the SIL, make a copy, because you might be changing
 //    a SIL that is referenced elsewhere.  ['4716]
 //
+//    Jeremy Meredith, Fri Apr 16 17:52:04 PDT 2004
+//    Removed firstTime.  It was probably supposed to be a class member, not
+//    a static variable, so I don't think it was ever doing what it was
+//    intended to do.  Furthermore, this method is no longer called by the
+//    constructor, so the first time anyone tried to change variables, it
+//    ignored their request to change important things like subset names.
+//
 // ****************************************************************************
 
 bool
@@ -1127,7 +1135,7 @@ ViewerPlot::SetVariableName(const std::string &name)
 {
     bool retval = false;
     bool notifyQuery = false;
-    static bool firstTime = true;
+
     //
     // If the variable name is already set, check if the names match and
     // return if they do, otherwise deallocate the existing name and clear
@@ -1217,7 +1225,7 @@ ViewerPlot::SetVariableName(const std::string &name)
     variableName = name;
 
 
-    if (!firstTime && curPlotAtts->VarChangeRequiresReset())
+    if (curPlotAtts->VarChangeRequiresReset())
     { 
         const avtDatabaseMetaData *md;
         if((md = GetMetaData()) != 0)
@@ -1242,7 +1250,6 @@ ViewerPlot::SetVariableName(const std::string &name)
             plotList[i]->SetVarName(variableName.c_str());
         }
     }
-    firstTime = false;
 
     if (notifyQuery && queryAtts != 0)
     {
@@ -3148,6 +3155,10 @@ ViewerPlot::SetPlotAttsFromClient()
 //   Brad Whitlock, Mon Apr 5 14:05:33 PST 2004
 //   Changed the code to use the new cache indexing.
 //
+//   Brad Whitlock, Fri Apr 16 14:07:48 PST 2004
+//   I fixed a bug that happened when trying to set the atts on the first
+//   frame of a keyframe animation.
+//
 // ****************************************************************************
 
 bool
@@ -3175,8 +3186,8 @@ ViewerPlot::SetPlotAtts(const AttributeSubject *atts)
         //
         int i0, i1;
         plotAtts->SetAtts(cacheIndex, curPlotAtts, i0, i1);
-        i1 = (i1 < cacheIndex) ? i1 : (cacheIndex-1);
- 
+        i1 = (i1 <= cacheIndex) ? i1 : cacheIndex;
+
         // Invalidate the cache if necessary for items i0..i1
         CheckCache(i0, i1, false);
     }

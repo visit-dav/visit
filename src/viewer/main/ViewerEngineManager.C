@@ -73,9 +73,9 @@ using std::pair;
             { \
                 debug1 << "****\n**** Trying to execute the " << rpcname \
                        << " RPC before an engine was started" << endl \
-                       << "**** on " << ek.HostName() \
+                       << "**** on " << ek.HostName().c_str() \
                        << ". Starting an engine on " \
-                       << ek.HostName() << ".\n****" << endl; \
+                       << ek.HostName().c_str() << ".\n****" << endl; \
                 CreateEngine(ek, restartArguments[ek], false, numRestarts); \
                 retry = false; \
             } \
@@ -91,7 +91,7 @@ using std::pair;
             { \
                 EngineProxy *engine = engines[ek]; \
                 debug3 << "Calling " << rpcname << " RPC on " \
-                       << ek.HostName() << "'s engine." << endl;
+                       << ek.HostName().c_str() << "'s engine." << endl;
 
 #define ENGINE_PROXY_RPC_END  \
                 retval = true; \
@@ -729,7 +729,12 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
         // Launch the engine.
         //
         typedef struct {string h; int p;} SimData;
-        SimData simData = {simHost, simPort};
+        SimData simData;
+        // The windows compiler can't accept non aggregate types in an
+        // initializer list so initialize them like this:
+        simData.h = simHost;
+        simData.p = simPort;
+
         newEngine->Create(ek.HostName(),  chd, clientHostName,
                           manualSSHPort, sshPort,
                           SimConnectThroughLauncher, (void *)&simData,
@@ -849,12 +854,12 @@ ViewerEngineManager::CloseEngines()
 
         if (key.IsSimulation())
         {
-            debug1 << "Disconnecting from simulation \""<<key.SimName()
-                   <<"\" on host " << key.HostName() << "." << endl;
+            debug1 << "Disconnecting from simulation \""<<key.SimName().c_str()
+                   <<"\" on host " << key.HostName().c_str() << "." << endl;
         }
         else
         {
-            debug1 << "Closing compute engine on host " << key.HostName()
+            debug1 << "Closing compute engine on host " << key.HostName().c_str()
                    << "." << endl;
         }
 
@@ -1039,7 +1044,7 @@ ViewerEngineManager::SendKeepAlives()
         for (EngineMap::iterator i = engines.begin() ; i != engines.end(); i++)
         {
             debug1 << "Sending keep alive signal to compute engine on host "
-                   << i->first.HostName() << "." << endl;
+                   << i->first.HostName().c_str() << "." << endl;
 
             TRY
             {
@@ -1269,7 +1274,7 @@ ViewerEngineManager::ExternalRender(vector<const char*> pluginIDsList,
         bool sendZBuffer = numEnginesToRender > 1 ? true : false;
 
         // send per-engine RPCs 
-        map<EngineKey,vector<int> >::iterator pos;
+        std::map<EngineKey, intVector>::iterator pos;
         for (pos = perEnginePlotIds.begin(); pos != perEnginePlotIds.end();
                                                                          pos++)
         {

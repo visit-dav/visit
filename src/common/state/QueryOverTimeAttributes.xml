@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="QueryOverTimeAttributes" purpose="Attributes for queries over time." persistent="false" exportAPI="" exportInclude="" codefile="QueryOverTimeAttributes.code">
+  <Attribute name="QueryOverTimeAttributes" purpose="Attributes for queries over time." persistent="false" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="QueryOverTimeAttributes.code">
     <Enum name="TimeType">
       Cycle
       DTime

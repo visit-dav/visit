@@ -8,10 +8,10 @@
 #include <vtkFieldData.h>
 #include <vtkGenericCell.h>
 #include <vtkIntArray.h>
-#include <vtkPointLocator.h>
 #include <vtkPointSet.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
+#include <vtkVisItPointLocator.h>
 
 
 // ****************************************************************************
@@ -382,12 +382,16 @@ vtkVisItUtility::ComputeStructuredCoordinates(vtkRectilinearGrid *rgrid,
 //    Pulled code from vtkPointSet::FindCell, so that could be modified and
 //    made more useful.
 //
+//    Kathleen Bonnell, Fri Apr 16 11:48:28 PDT 2004 
+//    Use VisIt version of the point locator so that disconnected points can
+//    be ignored.  In case there are physically adjacent but non-logically-
+//    connected cells, find 8 closest points instead of 1.
+//
 // ****************************************************************************
 
 int
 vtkVisItUtility::FindCell(vtkDataSet *ds, float x[3])
 {
-    int dot = ds->GetDataObjectType(); 
     if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
         int ijk[3];
@@ -412,9 +416,11 @@ vtkVisItUtility::FindCell(vtkDataSet *ds, float x[3])
         float pcoords[3], *weights = new float[8], diagLen, tol;
         float closestPoint[3], dist2;
         vtkIdList *cellIds, *ptIds;
-    
-        vtkPointLocator *locator = vtkPointLocator::New();
+   
+        vtkVisItPointLocator *locator = vtkVisItPointLocator::New();
         locator->SetDataSet(ds);
+        locator->SetIgnoreDisconnectedPoints(1);
+        locator->BuildLocator();
  
         diagLen = ds->GetLength();
         if (nCells != 0)
@@ -422,35 +428,44 @@ vtkVisItUtility::FindCell(vtkDataSet *ds, float x[3])
         else
             tol = 1e-6;
 
-        ptId = locator->FindClosestPoint(x);
-        if (ptId < 0)
+        //
+        // Finding ONLY the single closest point won't work for this use-case 
+        // if any adjacent cells share identical point coordinates with 
+        // different point Ids.  (E.g. physically adjacent cells which are not
+        // logically connected.) So find 8 closest-points and work from there.
+        // 
+        vtkIdList *closestPoints = vtkIdList::New();
+        locator->FindClosestNPoints(8, x, closestPoints);
+        if (closestPoints->GetNumberOfIds() == 0)
         {
             return -1;
         }
-
+       
         float minDist2 = FLT_MAX;
         cellIds = vtkIdList::New();
         cellIds->Allocate(8, 100);
         ptIds = vtkIdList::New();
         ptIds->Allocate(8, 100);
-        ds->GetPointCells(ptId, cellIds);
-        if (cellIds->GetNumberOfIds() > 0)
-        {
-            cellId = cellIds->GetId(0);
-            cell = ds->GetCell(cellId);
-            int evaluate = cell->EvaluatePosition
-                (x, closestPoint, subId, pcoords, dist2, weights);
 
-            if (evaluate == 1 && dist2 <= tol && dist2 < minDist2)
-            {
-                found = cellId;
-                minDist2 = dist2;
-            }
-        }
-        int MAXWALK = 50;
-        if (found == -1)
+        for (int z = 0; z < closestPoints->GetNumberOfIds() && found == -1; z++)
         {
+            ptId = closestPoints->GetId(z);
+            ds->GetPointCells(ptId, cellIds);
             if (cellIds->GetNumberOfIds() > 0)
+            {
+                cellId = cellIds->GetId(0);
+                cell = ds->GetCell(cellId);
+                int evaluate = cell->EvaluatePosition
+                    (x, closestPoint, subId, pcoords, dist2, weights);
+
+                if (evaluate == 1 && dist2 <= tol && dist2 < minDist2)
+                {
+                    found = cellId;
+                    minDist2 = dist2;
+                }
+            }
+            int MAXWALK = 50;
+            if (found == -1 && cellIds->GetNumberOfIds() > 0)
             {
                 for (walk = 0; walk < MAXWALK && minDist2 != 0. ; walk++)
                 {
@@ -483,6 +498,7 @@ vtkVisItUtility::FindCell(vtkDataSet *ds, float x[3])
         delete [] weights;
         ptIds->Delete();
         cellIds->Delete();
+        closestPoints->Delete();
         locator->Delete();
         return found;
     }

@@ -144,6 +144,9 @@ class VisWindow;
 //    Kathleen Bonnell, Wed Mar 31 17:23:01 PST 2004 
 //    Added CloneNetwork and AddQueryOverTimeFilter. 
 //
+//    Kathleen Bonnell, Thu Apr 15 14:07:53 PDT 2004 
+//    Add int arg to AddQueryOverTimeFilter. 
+//
 //    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
 //    Added argument for extents type string to SetWindowAttributes
 //    Added local variable to store past value for extents type string
@@ -204,7 +207,8 @@ class NetworkManager
     void          DumpRenders(void) { dumpRenders = true; };
 
     void          CloneNetwork(const int id);
-    void          AddQueryOverTimeFilter(const QueryOverTimeAttributes *);
+    void          AddQueryOverTimeFilter(const QueryOverTimeAttributes *,
+                                         const int clonedFromId);
 
  private:
 

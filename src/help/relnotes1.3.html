@@ -1,0 +1,164 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 1.3 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 1.3 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.3</font></b></p>
+<ul>
+<li><p>  Each database with multiple time states now gets its own time slider 
+that you can use to set the time independently for each database. This allows multiple, unrelated, time-varying databases to coexist in the same visualization window. When there are multiple time sliders, the "Active time slider" chooser appears above the animation slider in the SUI's main window. Select a different time slider if you want to change time states for that database.</p>
+<p>   If you want to lock the plots from multiple databases together in time,
+you can create a database correlation. A database correlation is a mapping that
+relates the time states from one or more databases. There are currently 4
+correlation methods: padded index, stretched index, time, cycle. Padded index
+correlations choose the database in the correlation with the most time
+states and repeat the last state from all shorter databases until they are
+all the same length. A stretched index correlation also chooses the database
+with the most time states but instead of repeating the last time state from
+the shorter databases, their time states are stretched until all databases
+in the correlation have the same length. That way, time states are repeated
+in the middle of the correlation instead of at the end. Time correlations 
+create a list of all times from all database time states and then create a
+mapping of time states to match the times that are shown. Cycle correlations
+work in the same way but use cycle instead of times.</p>
+<p>  If you want to create a database correlation, open the Database correlation
+list window in VisIt's Controls menu. Once you open the window, click the "New"
+button to create a new correlation in a new correlation window. Once the
+new correlation window appears, you can choose the name and correlation method
+for the new database correlation. You can also add databases to the database
+correlation. When you create a database correlation, VisIt creates a new time
+slider for the new correlation and makes it the active time slider. When you
+change the time slider for a database correlation to a new state, all plots
+that have databases that are part of the database correlation are affected
+and have their states updated according to the database correlation. You can
+switch between time sliders at any time if you do not want to set the time
+state using the database correlation's time slider. You can also delete or
+alter database correlations. </p>
+<p>   The Database correlation list window allows you to create or edit
+database correlations but it can also be used to set the conditions under which
+VisIt will automatically create database correlations. By default, VisIt will
+prompt you to before automatically creating a new database correlation if
+you add a plot from a database that has the same number of time states as
+a plot that is already in the vis window. You can make VisIt never/always/sometimes
+create new database correlations when adding plots. You can also set the 
+default correlation method and whether you want to be prompted before the new
+correlation is created. </p>
+<p>   When you lock windows in time, VisIt attempts to create a database
+correlation for databases in all of the locked windows. This ensures that when
+you change the time slider in one window, it has meaning to also change it in
+the locked windows.
+</p>
+</li>
+<li>Some of VisIt's queries now support a "Time Query" button. When you click the "Time query" button instead of the "Query" button, VisIt calculates the query for all time states in the database and creates Curve plots using the calculated values. This feature lets you see behaviors over time. Use the "Query over time" options window in the Main window's Controls menu to set some of the options for the time query feature.</li>
+<li>The File panel's Open button becomes Reopen after you open a database. If you then click on a database that you've previously opened , the Reopen button becomes the Activate button. When you activate a database, you make it the new active database from which new plots will be created.</li>
+<li>The Preferences window has been modified so you can set the properties of the Main window's File panel. You can now turn off the selected files list. You can also now prevent VisIt from ever changing the highlighted file in the selected files list if you turn off the "Automatically highlight file" check box. If you don't like when VisIt automatically highlights the active file or time state for the active database, be sure to turn off that check box in the Preferences window and save your settings.</li>
+<li>When the File panel's Selected files list is hidden, the "Active source" chooser appears above the plot list. The active source chooser lets you set the active source, which is the database from which all new plots will be created. All databases that you've previously opened are available in the active source chooser.</li>
+<li>VisIt will now prompt you to select a host profile each time a compute engine is launched.</li>
+<li>VisIt now recognizes the ".mkf" extension for Master Kull Files.</li>
+<li>The SAMRAI database reader plugin is now built on gps and mcr.</li>
+<li>The Exodus database reader plugin is now build on white and S.</li>
+<li>Parallel compute engine arguments supplied on the command line are now applied to all compute engine launches when the viewer is run in -nowin mode.</li>
+<li>The "Surface area" query has now been renamed to: "3D Surface area" and "2D area".</li>
+<li>All host profiles now set a batch timeout if they use the psub parallel launcher.</li>
+<li>VisIt's compute engine now loads database plugins on demand so it is substantially quicker to launch, especially in parallel.</li>
+<li>VisIt's compute engine depends on fewer libraries so it launches faster.</li>
+<li>VisIt's GUI issues an informational message that tells you how to enable plugins.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.3</font></b></p>
+<ul>
+<li>Pick on non-plotted expression variables causes the compute engine to hang in parallel when there are more processors than domains.</li>
+<li>Reopening a database fails when the variable being plotted does not exist at the time state at which the database is being reopened. </li>
+<li>Reopening a database at a time state that has more materials than the previous time state messes up existing FilledBoundary plots.</li>
+<li>VisIt's compute engine crashes when doing Subset plots with a material variable whose material list changes over time.</li>
+<li>Slicing point meshes does not work.</li>
+<li>MPEG compression is set too high and causes movies generated using VisIt to have excessive compression artifacts.</li>
+<li>VisIt relaunches the compute engine if you want to delete a plot.</li>
+<li>Large datasets are sometimes returned to the viewer from the engine during scalable rendering.</li>
+<li>The "Area between 2 curves" query crashes the viewer when the curves involved in the query are not from the same database.</li>
+<li>Having an empty species list for a material variable can cause the compute engine to crash suring some queries.</li>
+<li>The "Zone pick" query sometimes causes VisIt's viewer to crash.</li>
+<li>VisIt's viewer crashes if the compute engine cannot successfully generate an image in scalable rendering mode.</li>
+<li>Scalable rendering mode can cause multiple simultaneous compute engine launches.</li>
+<li>VisIt tries to launch compute engines even after you tell it to stop trying.</li>
+<li>Reopening a database can crash the compute engine in rare cases.</li>
+<li>Saving an offscreen image can sometimes cause the compute engine to crash.</li>
+<li>VisIt's viewer crashes when saving an offscreen image that does not contain any plots.</li>
+<li>VisIt's Boxlib reader plugin has problems with vectors followed by scalar components because the Boxlib library has memory errors.</li>
+<li>VisIt can't make a plot of Boxlib data on the gps machines.</li>
+<li>The Verdict library, which is used for various mesh quality metrics, causes VisIt to abort in certain cases where there are ghost zones.</li>
+<li>VisIt's viewer has some problems reading session files that create multiple vis windows that each have plots with different SIL restrictions.</li>
+<li>The "World Pick" query crashes VisIt when it is executed over time to create a curve plot.</li>
+<li>VisIt's viewer crashes when replacing databases.</li>
+<li>Pick performance is very slow in some situations.</li>
+<li>Pick over time crashes the compute engine when applied to a Pseudocolor plot.</li>
+<li>VisIt can't create Curve plots of queries over time when vis window #2 is closed.</li>
+<li>The MinMax query returns inconsistent results for some databases.</li>
+<li>Material names should not be forced to have numbers.</li>
+<li>VisIt is very slow to generate curves from queries over time.</li>
+<li>VisIt's compactness query is not accurate.</li>
+<li>Calling the "SetTimeSliderState" function in the command line interface causes it to crash in some cases.</li>
+<li>VisIt's "Revolved surface area" query stopped working.</li>
+<li>No curve plot is ever generated for time queries that work on FilledBoundary plots.</li>
+<li>Keyframing is broken now that there are multiple time sliders in the viewer.</li>
+<li>Right-clicking on the vis window's toolbar crashes the viewer on wicked.</li>
+<li>The compute engine can sometimes use the wrong database reader plugin to read a database.</li>
+<li>The variables menu contains the wrong variable list.</li>
+<li>The LEOS database reader plugin should provide more friendly variable names.</li>
+<li>The viewer kept trying to restart the compute engine even after the GUI told the viewer to quit.</li>
+<li>Cancelling the launch of a compute engine can result in the launch of a serial compute engine.</li>
+<li>PDB databases are opened as Silo databases if you've ever opened a Silo database.</li>
+<li>Reopening a virtual database through the command line interface does not add new time states even when they are present.</li>
+<li>Pick fails when using a compute engine that has been restarted.</li>
+<li>The Slice operator's "Project to 2D" setting is not saved/restored correctly.</li>
+<li>LD_LIBRARY_PATH should be set on the Suns.</li>
+<li>VisIt did not use the correct active source when working with multiple vis windows.</li>
+<li>The Vector plot displays NaNs in the legends in scalable rendering mode.</li>
+<li>Reopen does not work if a database has been opened by double-clicking or if it was given on the command line.</li>
+<li>Sending a ClearCache request to the compute engine does not free all of the memory that should be freed.</li>
+<li>VisIt does not allow an invalid variable to be used for a plot but it does not issue a warning message either.</li>
+<li>The error message issued when an invalid expression variable is used is not very informative.</li>
+<li>The view gets messed up when scalable rendering mode kicks in after other plots have already been drawn in the vis window.</li>
+<li>Plots from the curv3d database do not appear when you look at later time states from the wave database, which is a multiple time state database.</li>
+<li>Reopening a database in the CLI should not set the time state back to zero.</li>
+<li>Vector point variables from Silo files are not read correctly.</li>
+<li>Changing the number of sample points in the Volume plot window when Autoupdate is on can hang the viewer.</li>
+<li>Reopening a .visit file with more time states causes all new time states to be blank when plotted.</li>
+<li>Opening a database resets the number of keyframes.</li>
+<li>VisIt does not handle multiple time varying databases in the same window very well.</li>
+<li>VisIt's viewer crashes when you try to save an empty STL file.</li>
+<li>VisIt can't read old style Silo files.</li>
+<li>VisIt uses the wrong extents to color plots of point meshes.</li>
+<li>The range of the data values in the vector plot is only determined with the vectors that are showing.</li>
+<li>Wild card matching failed in the GUI's File Selection window.</li>
+<li>The CLI's OpenDatabase function resets the active time state to zero.</li>
+<li>VisIt does not behave well when "-np 64" is the only parallel command line argument.</li>
+<li>Setting operator attributes does not work consistently when plots are expanded.</li>
+<li>The xml2atts code generation program writes out code for all enumerated types that it has seen so you can't successfully generate code for more than one file at a time.</li>
+<li>VisIt gets confused and uses the wrong variable centering in some cases.</li>
+<li>VisIt can't plot the mesh for some VTK files.</li>
+<li>PDB databases trigger new material number warning messages.</li>
+<li>Database plugin code generation is not up to date.</li>
+<li>The viewer does not do the right thing when launching a compute engine.</li>
+<li>Some bad Silo files can cause VisIt to hang when creating a Pseudocolor plot of the bad data.</li>
+<li>Internal error messages are displayed for setting time sliders.</li>
+<li>The "World pick" query refuses to work on the Pseudocolor plot.</li>
+<li>VisIt keeps asking if you want to correlate the same files even if you say no.</li>
+<li>The GetdatabaseNStates function in the CLI returns 0 for a single time state database.</li>
+<li>The highlights in the selected files should not update when clicking the next frame button. There is now a check box to turn off this behavior but it is still the default.</li>
+<li>Failure to launch a compute engine can result in an infinite number of attempts to restart the compute engine.</li>
+<li>Some zonal expressions are identified as nodal.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href="relnotes1.2.8.html">VisIt 1.2.8 Release Notes</a>.</p>
+</body>
+</html>

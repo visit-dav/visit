@@ -1086,6 +1086,8 @@ RPCExecutor<RenderRPC>::Execute(RenderRPC *rpc)
 //  Creation:   March 18, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Apr 15 14:07:53 PDT 2004
+//    Send rpc->GetID() as arg to AddQueryOverTimeFilter.
 //
 // ****************************************************************************
 template<>
@@ -1100,7 +1102,8 @@ RPCExecutor<CloneNetworkRPC>::Execute(CloneNetworkRPC *rpc)
     {
         netmgr->CloneNetwork(rpc->GetID());
         if (rpc->GetQueryOverTimeAtts() != NULL)
-            netmgr->AddQueryOverTimeFilter(rpc->GetQueryOverTimeAtts());
+            netmgr->AddQueryOverTimeFilter(rpc->GetQueryOverTimeAtts(),
+                                           rpc->GetID());
         rpc->SendReply();
     }
     CATCH2(VisItException, e)

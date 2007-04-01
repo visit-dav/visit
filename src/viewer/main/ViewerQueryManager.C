@@ -3158,7 +3158,7 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
                     issueWarning = true;
                 }
             }
-            CATCH( ...)
+            CATCHALL( ...)
             {
                 debug5 << "ViewerQueryManager::DoTimeQuery could not perform "
                        << "centering consistency check." << endl;
@@ -3381,7 +3381,7 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi, const int dom,
                 }
             }
         }
-        CATCH( ... )
+        CATCHALL( ... )
         {
             debug5 << "ViewerQueryManager::PickThroughTime could not perform "
                    << " centering consistency check." << endl;

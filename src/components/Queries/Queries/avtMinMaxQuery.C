@@ -337,7 +337,7 @@ avtMinMaxQuery::PostExecute(void)
             minCoord[1] = v1.y;
             minCoord[2] = v1.z;
         }
-        if (!scalarCurve)
+        if (minElementNum == -1)
             src->FindElementForPoint(var.c_str(), ts, minDomain, 
                      elementName.c_str(), minCoord, minElementNum);
         CreateMinMessage();
@@ -352,7 +352,7 @@ avtMinMaxQuery::PostExecute(void)
             maxCoord[1] = v1.y;
             maxCoord[2] = v1.z;
         }
-        if (!scalarCurve)
+        if (maxElementNum == -1)
             src->FindElementForPoint(var.c_str(), ts, maxDomain, 
                      elementName.c_str(), maxCoord, maxElementNum);
         CreateMaxMessage();
