@@ -865,6 +865,10 @@ ViewerQueryManager::GetQueryClientAtts()
 //    Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004
 //    Added bool arg to support queries-over-time. 
 //
+//    Jeremy Meredith, Mon Apr  5 14:15:56 PDT 2004
+//    Added a line to clear out status in case of an exception occuring
+//    during a query.
+//
 // ****************************************************************************
 
 void         
@@ -1227,6 +1231,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
                          e.GetMessage().c_str());
 
             }
+            ClearStatus(engineKey.ID().c_str());
             if (!retry)
             {
                 queryClientAtts->Notify();

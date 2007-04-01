@@ -24,6 +24,7 @@
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
 #include <InvalidDimensionsException.h>
+#include <VisItException.h>
 
 #include <snprintf.h>
 #include <float.h>
@@ -152,6 +153,10 @@ avtCompactnessQuery::PreExecute(void)
 //    STL vectors.  Added code to collect the boundary points
 //    across all processors.
 //
+//    Jeremy Meredith, Mon Apr  5 14:17:25 PDT 2004
+//    Added a check to make sure we got at least *some* boundary data.
+//    We will wind up with invalid results if there are no boundaries.
+//
 // ****************************************************************************
 
 void
@@ -202,6 +207,12 @@ avtCompactnessQuery::MidExecute(void)
         }
     }
 #endif
+
+    if (xBound.size() == 0)
+        EXCEPTION1(VisItException, "There were no boundaries, but these "
+                   "are needed to compute some of the compactness queries.  "
+                   "You may be using this query in an unexpected way; please "
+                   "contact a VisIt developer.");
 }
 
 // ****************************************************************************
