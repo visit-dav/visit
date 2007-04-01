@@ -10,7 +10,7 @@
 #include <VisWinColleague.h>
 
 
-class vtkKatCubeAxesActor;
+class vtkVisItCubeAxesActor;
 class vtkPolyDataMapper;
 class vtkOutlineSource;
 
@@ -31,7 +31,7 @@ class vtkOutlineSource;
 //
 //    Kathleen Bonnell, Tue Oct 30 10:30:10 PST 2001 
 //    Moved AdjustValues, AdjustRange and related members to the
-//    more appropriate location of vtkKatCubeAxesActor
+//    more appropriate location of vtkVisItCubeAxesActor
 //
 //    Kathleen Bonnell, Wed May 28 15:52:32 PDT 2003   
 //    Added method 'ReAddToWindow'. 
@@ -75,7 +75,7 @@ class VISWINDOW_API VisWinAxes3D : public VisWinColleague
     void                      SetLabelScaling(bool, int, int, int);
 
   protected:
-    vtkKatCubeAxesActor      *axes;
+    vtkVisItCubeAxesActor      *axes;
     vtkOutlineSource         *axesBoxSource;
     vtkPolyDataMapper        *axesBoxMapper;
     vtkActor                 *axesBox;

@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkKatCubeAxesActor.cxx,v $
+  Module:    $RCSfile: vtkVisItCubeAxesActor.cxx,v $
   Language:  C++
   Date:      $Date: 2001/08/03 21:55:01 $
   Version:   $Revision: 1.22 $
@@ -15,14 +15,15 @@ All rights reserved.
      the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
      PURPOSE.  See the above copyright notice for more information.
 =========================================================================*/
-#include "vtkKatCubeAxesActor.h"
-#include "vtkKatAxisActor.h"
+#include "vtkVisItCubeAxesActor.h"
+#include "vtkVisItAxisActor.h"
 #include "vtkMath.h"
 #include "vtkObjectFactory.h"
 #include <vtkProperty.h>
 #include <vtkViewport.h>
 #include <DebugStream.h>
 #include <float.h>
+#include <snprintf.h>
 
 #include <vector>
 using std::vector;
@@ -41,8 +42,8 @@ float MaxOf(float, float, float, float);
 //
 // *************************************************************************
 
-vtkStandardNewMacro(vtkKatCubeAxesActor);
-vtkCxxSetObjectMacro(vtkKatCubeAxesActor, Camera,vtkCamera);
+vtkStandardNewMacro(vtkVisItCubeAxesActor);
+vtkCxxSetObjectMacro(vtkVisItCubeAxesActor, Camera,vtkCamera);
 
 
 // *************************************************************************
@@ -73,7 +74,7 @@ vtkCxxSetObjectMacro(vtkKatCubeAxesActor, Camera,vtkCamera);
 //
 // *************************************************************************
 
-vtkKatCubeAxesActor::vtkKatCubeAxesActor()
+vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
 {
   this->Bounds[0] = -1.0; this->Bounds[1] = 1.0;
   this->Bounds[2] = -1.0; this->Bounds[3] = 1.0;
@@ -85,7 +86,7 @@ vtkKatCubeAxesActor::vtkKatCubeAxesActor()
   int i;
   for (i = 0; i < 4; i++)
     {
-    this->XAxes[i] = vtkKatAxisActor::New();
+    this->XAxes[i] = vtkVisItAxisActor::New();
     this->XAxes[i]->SetTickVisibility(1);
     this->XAxes[i]->SetMinorTicksVisible(1);
     this->XAxes[i]->SetLabelVisibility(1);
@@ -93,7 +94,7 @@ vtkKatCubeAxesActor::vtkKatCubeAxesActor()
     this->XAxes[i]->SetAxisTypeToX();
     this->XAxes[i]->SetAxisPosition(i);
 
-    this->YAxes[i] = vtkKatAxisActor::New();
+    this->YAxes[i] = vtkVisItAxisActor::New();
     this->YAxes[i]->SetTickVisibility(1);
     this->YAxes[i]->SetMinorTicksVisible(1);
     this->YAxes[i]->SetLabelVisibility(1);
@@ -101,7 +102,7 @@ vtkKatCubeAxesActor::vtkKatCubeAxesActor()
     this->YAxes[i]->SetAxisTypeToY();
     this->YAxes[i]->SetAxisPosition(i);
 
-    this->ZAxes[i] = vtkKatAxisActor::New();
+    this->ZAxes[i] = vtkVisItAxisActor::New();
     this->ZAxes[i]->SetTickVisibility(1);
     this->ZAxes[i]->SetMinorTicksVisible(1);
     this->ZAxes[i]->SetLabelVisibility(1);
@@ -111,11 +112,11 @@ vtkKatCubeAxesActor::vtkKatCubeAxesActor()
     }
 
   this->XLabelFormat = new char[8]; 
-  sprintf(this->XLabelFormat,"%s","%-#6.3g");
+  SNPRINTF(this->XLabelFormat, 8, "%s","%-#6.3g");
   this->YLabelFormat = new char[8]; 
-  sprintf(this->YLabelFormat,"%s","%-#6.3g");
+  SNPRINTF(this->YLabelFormat,8, "%s","%-#6.3g");
   this->ZLabelFormat = new char[8]; 
-  sprintf(this->ZLabelFormat,"%s","%-#6.3g");
+  SNPRINTF(this->ZLabelFormat,8, "%s","%-#6.3g");
   this->CornerOffset = 0.05;
   this->Inertia = 1;
   this->RenderCount = 0;
@@ -141,13 +142,13 @@ vtkKatCubeAxesActor::vtkKatCubeAxesActor()
   this->DrawZGridlines = 0;
 
   this->XTitle = new char[7];
-  sprintf(this->XTitle,"%s","X-Axis");
+  SNPRINTF(this->XTitle,7, "%s","X-Axis");
   this->XUnits = NULL;
   this->YTitle = new char[7];
-  sprintf(this->YTitle,"%s","Y-Axis");
+  SNPRINTF(this->YTitle,7, "%s","Y-Axis");
   this->YUnits = NULL;
   this->ZTitle = new char[7];
-  sprintf(this->ZTitle,"%s","Z-Axis");
+  SNPRINTF(this->ZTitle,7, "%s","Z-Axis");
   this->ZUnits = NULL;
 
   this->lastXPow = 0;
@@ -204,7 +205,7 @@ vtkKatCubeAxesActor::vtkKatCubeAxesActor()
 //
 // ****************************************************************************
 
-void vtkKatCubeAxesActor::ShallowCopy(vtkKatCubeAxesActor *actor)
+void vtkVisItCubeAxesActor::ShallowCopy(vtkVisItCubeAxesActor *actor)
 {
   this->Superclass::ShallowCopy(actor);
   this->SetXLabelFormat(actor->GetXLabelFormat());
@@ -234,7 +235,7 @@ void vtkKatCubeAxesActor::ShallowCopy(vtkKatCubeAxesActor *actor)
 //
 // ****************************************************************************
 
-vtkKatCubeAxesActor::~vtkKatCubeAxesActor()
+vtkVisItCubeAxesActor::~vtkVisItCubeAxesActor()
 {
   this->SetCamera(NULL);
 
@@ -316,7 +317,7 @@ vtkKatCubeAxesActor::~vtkKatCubeAxesActor()
 //   Added initial build of each axis. 
 // *************************************************************************
 
-int vtkKatCubeAxesActor::RenderOpaqueGeometry(vtkViewport *viewport)
+int vtkVisItCubeAxesActor::RenderOpaqueGeometry(vtkViewport *viewport)
 {
   int i, renderedSomething=0;
   static bool initialRender = true; 
@@ -375,7 +376,7 @@ int vtkKatCubeAxesActor::RenderOpaqueGeometry(vtkViewport *viewport)
 
 // Do final adjustment of axes to control offset, etc.
 void 
-vtkKatCubeAxesActor::AdjustAxes(float bounds[6], float xCoords[4][6], 
+vtkVisItCubeAxesActor::AdjustAxes(float bounds[6], float xCoords[4][6], 
                                 float yCoords[4][6], float zCoords[4][6],
                                 float xRange[2], float yRange[2], 
                                 float zRange[2])
@@ -441,7 +442,7 @@ vtkKatCubeAxesActor::AdjustAxes(float bounds[6], float xCoords[4][6],
 // Release any graphics resources that are being consumed by this actor.
 // The parameter window could be used to determine which graphic
 // resources to release.
-void vtkKatCubeAxesActor::ReleaseGraphicsResources(vtkWindow *win)
+void vtkVisItCubeAxesActor::ReleaseGraphicsResources(vtkWindow *win)
 {
   for (int i = 0; i < 4; i++)
     {
@@ -458,7 +459,7 @@ void vtkKatCubeAxesActor::ReleaseGraphicsResources(vtkWindow *win)
 //   Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003 
 //   Removed support for Prop and Input. 
 // *************************************************************************
-void vtkKatCubeAxesActor::GetBounds(float bounds[6])
+void vtkVisItCubeAxesActor::GetBounds(float bounds[6])
 {
   for (int i=0; i< 6; i++)
     {
@@ -467,7 +468,7 @@ void vtkKatCubeAxesActor::GetBounds(float bounds[6])
 }
 
 // Compute the bounds
-void vtkKatCubeAxesActor::GetBounds(float& xmin, float& xmax, 
+void vtkVisItCubeAxesActor::GetBounds(float& xmin, float& xmax, 
                                    float& ymin, float& ymax,
                                    float& zmin, float& zmax)
 {
@@ -480,7 +481,7 @@ void vtkKatCubeAxesActor::GetBounds(float& xmin, float& xmax,
 }
 
 // Compute the bounds
-float *vtkKatCubeAxesActor::GetBounds()
+float *vtkVisItCubeAxesActor::GetBounds()
 {
   return this->Bounds;
 }
@@ -495,7 +496,7 @@ float *vtkKatCubeAxesActor::GetBounds()
 //
 // ******************************************************************
 
-void vtkKatCubeAxesActor::PrintSelf(ostream& os, vtkIndent indent)
+void vtkVisItCubeAxesActor::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
 
@@ -557,7 +558,7 @@ void vtkKatCubeAxesActor::PrintSelf(ostream& os, vtkIndent indent)
 }
 
 
-void vtkKatCubeAxesActor::TransformBounds(vtkViewport *viewport, 
+void vtkVisItCubeAxesActor::TransformBounds(vtkViewport *viewport, 
                                           const float bounds[6], 
                                           float pts[8][3])
 {
@@ -606,7 +607,7 @@ void vtkKatCubeAxesActor::TransformBounds(vtkViewport *viewport,
 // ***********************************************************************
 
 bool
-vtkKatCubeAxesActor::ComputeTickSize(float bounds[6])
+vtkVisItCubeAxesActor::ComputeTickSize(float bounds[6])
 {
   bool xRangeChanged = this->LastXRange[0] != bounds[0] ||
                        this->LastXRange[1] != bounds[1];
@@ -680,7 +681,7 @@ vtkKatCubeAxesActor::ComputeTickSize(float bounds[6])
 }
 
 // ****************************************************************************
-//  Method: vtkKatCubeAxesActor::AdjustValues
+//  Method: vtkVisItCubeAxesActor::AdjustValues
 //
 //  Purpose:
 //      If the range of values is too big or too small, put them in scientific
@@ -713,15 +714,17 @@ vtkKatCubeAxesActor::ComputeTickSize(float bounds[6])
 //
 //    Kathleen Bonnell, Tue Dec 16 11:23:31 PST 2003 
 //    Allow the LabelExponent to be user-settable (autLabelScaling is off).
-//    For title use '10e' instead of just 'e' to designatie that exponent 
+//    For title use '10e' instead of just 'e' to designate that exponent 
 //    has been used.
 //
+//    Kathleen Bonnell, Tue Jul 20 11:41:45 PDT 2004 
+//    For title use 'x10^' instead of '10e' to designate that exponent.
 // ****************************************************************************
 
 void
-vtkKatCubeAxesActor::AdjustValues(const float bnds[6])
+vtkVisItCubeAxesActor::AdjustValues(const float bnds[6])
 {
-    char xTitle[256];
+    char xTitle[64];
 
     int xPow, yPow, zPow;
 
@@ -751,9 +754,9 @@ vtkKatCubeAxesActor::AdjustValues(const float bnds[6])
       this->mustAdjustXValue = true;
 
       if (XUnits == NULL || XUnits[0] == '\0')
-        sprintf(xTitle, "X-Axis (10e%d)", xPow);
+        SNPRINTF(xTitle,64, "X-Axis (x10^%d)", xPow);
       else
-        sprintf(xTitle, "X-Axis (10e%d %s)", xPow, XUnits);
+        SNPRINTF(xTitle,264, "X-Axis (x10^%d %s)", xPow, XUnits);
       }
     else 
       { 
@@ -769,13 +772,13 @@ vtkKatCubeAxesActor::AdjustValues(const float bnds[6])
       this->mustAdjustXValue = false;
 
       if (XUnits == NULL || XUnits[0] == '\0')
-        sprintf(xTitle, "X-Axis");
+        SNPRINTF(xTitle,64, "X-Axis");
       else
-        sprintf(xTitle, "X-Axis (%s)", XUnits);
+        SNPRINTF(xTitle,64, "X-Axis (%s)", XUnits);
       }
 
 
-    char yTitle[256];
+    char yTitle[64];
     if (yPow != 0)
       { 
 
@@ -789,9 +792,9 @@ vtkKatCubeAxesActor::AdjustValues(const float bnds[6])
         }
       this->mustAdjustYValue = true;
       if (YUnits == NULL || YUnits[0] == '\0')
-        sprintf(yTitle, "Y-Axis (10e%d)", yPow);
+        SNPRINTF(yTitle,64, "Y-Axis (x10^%d)", yPow);
       else
-        sprintf(yTitle, "Y-Axis (10e%d %s)", yPow, YUnits);
+        SNPRINTF(yTitle,64, "Y-Axis (x10^%d %s)", yPow, YUnits);
       }
     else 
       { 
@@ -806,13 +809,13 @@ vtkKatCubeAxesActor::AdjustValues(const float bnds[6])
         }
       this->mustAdjustYValue = false;
       if (YUnits == NULL || YUnits[0] == '\0')
-        sprintf(yTitle, "Y-Axis");
+        SNPRINTF(yTitle,64, "Y-Axis");
       else
-        sprintf(yTitle, "Y-Axis (%s)", YUnits);
+        SNPRINTF(yTitle,64, "Y-Axis (%s)", YUnits);
       }
 
 
-    char zTitle[256];
+    char zTitle[64];
     if (zPow != 0)
       { 
       if (!this->mustAdjustZValue || this->lastZPow != zPow)
@@ -826,9 +829,9 @@ vtkKatCubeAxesActor::AdjustValues(const float bnds[6])
       this->mustAdjustZValue = true;
 
       if (ZUnits == NULL || ZUnits[0] == '\0')
-        sprintf(zTitle, "Z-Axis (10e%d)", zPow);
+        SNPRINTF(zTitle,64, "Z-Axis (x10^%d)", zPow);
       else
-        sprintf(zTitle, "Z-Axis (10e%d %s)", zPow, ZUnits);
+        SNPRINTF(zTitle,64, "Z-Axis (x10^%d %s)", zPow, ZUnits);
       }
     else 
       { 
@@ -844,9 +847,9 @@ vtkKatCubeAxesActor::AdjustValues(const float bnds[6])
       this->mustAdjustZValue = false;
 
       if (ZUnits == NULL || ZUnits[0] == '\0')
-        sprintf(zTitle, "Z-Axis");
+        SNPRINTF(zTitle,64, "Z-Axis");
       else
-        sprintf(zTitle, "Z-Axis (%s)", ZUnits);
+        SNPRINTF(zTitle,64, "Z-Axis (%s)", ZUnits);
       }
   
     this->lastXPow = xPow;
@@ -860,7 +863,7 @@ vtkKatCubeAxesActor::AdjustValues(const float bnds[6])
 
 
 // ****************************************************************************
-//  Method: vtkKatCubeAxesActor::AdjustRange
+//  Method: vtkVisItCubeAxesActor::AdjustRange
 //
 //  Purpose:
 //    If the range is small, adjust the precision of the values displayed.
@@ -885,7 +888,7 @@ vtkKatCubeAxesActor::AdjustValues(const float bnds[6])
 // ****************************************************************************
 
 void
-vtkKatCubeAxesActor::AdjustRange(const float bnds[6])
+vtkVisItCubeAxesActor::AdjustRange(const float bnds[6])
 {
     float xrange[2], yrange[2], zrange[2];
     xrange[0] = bnds[0];
@@ -915,7 +918,7 @@ vtkKatCubeAxesActor::AdjustRange(const float bnds[6])
     if (xAxisDigits != this->lastXAxisDigits)
     {
         char  format[16];
-        sprintf(format, "%%.%df", xAxisDigits);
+        SNPRINTF(format,16, "%%.%df", xAxisDigits);
         this->SetXLabelFormat(format);
         this->lastXAxisDigits = xAxisDigits;
     }
@@ -924,7 +927,7 @@ vtkKatCubeAxesActor::AdjustRange(const float bnds[6])
     if (yAxisDigits != this->lastYAxisDigits)
     {
         char  format[16];
-        sprintf(format, "%%.%df", yAxisDigits);
+        SNPRINTF(format,16, "%%.%df", yAxisDigits);
         this->SetYLabelFormat(format);
         this->lastYAxisDigits = yAxisDigits;
     }
@@ -933,7 +936,7 @@ vtkKatCubeAxesActor::AdjustRange(const float bnds[6])
     if (zAxisDigits != this->lastZAxisDigits)
     {
         char  format[16];
-        sprintf(format, "%%.%df", zAxisDigits);
+        SNPRINTF(format,16, "%%.%df", zAxisDigits);
         this->SetZLabelFormat(format);
         this->lastZAxisDigits = zAxisDigits;
     }
@@ -1105,7 +1108,7 @@ LabelExponent(float min, float max)
 //
 // *************************************************************************
 
-void vtkKatCubeAxesActor::BuildAxes(vtkViewport *viewport)
+void vtkVisItCubeAxesActor::BuildAxes(vtkViewport *viewport)
 {
   float bounds[6]; 
   float pts[8][3];
@@ -1277,7 +1280,7 @@ void vtkKatCubeAxesActor::BuildAxes(vtkViewport *viewport)
 
 
 // *************************************************************************
-//  Sends attributes to each vtkKatAxisActor.  Only sets those that are 
+//  Sends attributes to each vtkVisItAxisActor.  Only sets those that are 
 //  not dependent upon viewport changes, and thus do not need to be set 
 //  very often.
 //
@@ -1290,7 +1293,7 @@ void vtkKatCubeAxesActor::BuildAxes(vtkViewport *viewport)
 //    and the diffuse coeeficient to 0.
 // *************************************************************************
 
-void vtkKatCubeAxesActor::SetNonDependentAttributes()
+void vtkVisItCubeAxesActor::SetNonDependentAttributes()
 {
   vtkProperty *prop = this->GetProperty();
   prop->SetAmbient(1.0);
@@ -1359,7 +1362,7 @@ static int Conn[8][3] = {{1,2,4}, {0,3,5}, {3,0,6}, {2,1,7},
 //   Ensure that primary axes visibility flags are set properly, and
 //   that secondary axes visibility flags are turned off.
 // *************************************************************************
-void vtkKatCubeAxesActor::DetermineRenderAxes(vtkViewport *viewport)
+void vtkVisItCubeAxesActor::DetermineRenderAxes(vtkViewport *viewport)
 {
   float bounds[6], slope = 0.0, minSlope, num, den;
   float pts[8][3], d2, d2Min, min, max;
@@ -1670,7 +1673,7 @@ inline float fsign(float value, float sign)
 }
 
 // *******************************************************************
-// Method: vtkKatCubeAxesActor::AdjustTicksComputeRange
+// Method: vtkVisItCubeAxesActor::AdjustTicksComputeRange
 //
 // Purpose: Sets private members controlling the number and position
 //          of ticks.
@@ -1687,13 +1690,13 @@ inline float fsign(float value, float sign)
 //
 // Modifications:
 //   Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003
-//   Moved from vtkKatAxisActor. Added calls to set inividual axis'
+//   Moved from vtkVisItAxisActor. Added calls to set inividual axis'
 //   MajorStart, MinorStart, deltaMajor, deltaMinor. 
 //
 // *******************************************************************
 
 void 
-vtkKatCubeAxesActor::AdjustTicksComputeRange(vtkKatAxisActor *axes[4]) 
+vtkVisItCubeAxesActor::AdjustTicksComputeRange(vtkVisItAxisActor *axes[4]) 
 {
   double sortedRange[2], range;
   double fxt, fnt, frac;
@@ -1781,12 +1784,16 @@ vtkKatCubeAxesActor::AdjustTicksComputeRange(vtkKatAxisActor *axes[4])
 //  Modification:
 //    Kathleen Bonnell, Wed Aug  6 13:59:15 PDT 2003
 //    Each axis type now has it's own 'mustAdjustValue' and 'pow'.
+//
+//    Kathleen Bonnell, Tue Jul 20 14:29:10 PDT 2004 
+//    Ensure that '-0.0' is never used as a label. 
+//
 // ****************************************************************
 
 void
-vtkKatCubeAxesActor::BuildLabels(vtkKatAxisActor *axes[4])
+vtkVisItCubeAxesActor::BuildLabels(vtkVisItAxisActor *axes[4])
 {
-  char label[512];
+  char label[64];
   int i, labelCount = 0;
   float majorStart = axes[0]->GetMajorStart();
   const float deltaMajor = axes[0]->GetDeltaMajor();
@@ -1844,11 +1851,30 @@ vtkKatCubeAxesActor::BuildLabels(vtkKatAxisActor *axes[4])
       }
     if (mustAdjustValue) 
       {
-      sprintf(label, format, val*scaleFactor);
+      SNPRINTF(label,64, format, val*scaleFactor);
       }
     else
       {
-      sprintf(label, format, val);
+      SNPRINTF(label,64, format, val);
+      }
+    if (fabs(val < 0.01))
+      {
+      // 
+      // Ensure that -0.0 is never a label
+      // The maximum number of digits that we allow past the decimal is 5.
+      // 
+      if (strcmp(label, "-0") == 0) 
+        SNPRINTF(label, 64, "0");
+      else if (strcmp(label, "-0.0") == 0) 
+        SNPRINTF(label, 64, "0.0");
+      else if (strcmp(label, "-0.00") == 0) 
+        SNPRINTF(label, 64, "0.00");
+      else if (strcmp(label, "-0.000") == 0) 
+        SNPRINTF(label, 64, "0.000");
+      else if (strcmp(label, "-0.0000") == 0)
+        SNPRINTF(label, 64, "0.0000");
+      else if (strcmp(label, "-0.00000") == 0)
+        SNPRINTF(label, 64, "0.00000");
       }
     labels.push_back(label);
     val += deltaMajor;
@@ -1864,7 +1890,7 @@ vtkKatCubeAxesActor::BuildLabels(vtkKatAxisActor *axes[4])
 //
 // ****************************************************************************
 void
-vtkKatCubeAxesActor::SetLabelScaling(bool autoscale, int upowX, int upowY, 
+vtkVisItCubeAxesActor::SetLabelScaling(bool autoscale, int upowX, int upowY, 
                                      int upowZ)
 {
 

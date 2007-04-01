@@ -113,6 +113,9 @@ class     avtExtents;
 //    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
 //    Added containsOriginalNodes, invTransform and Set/Get methods. 
 //
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Added treatAsASCII to VarInfo struct, and Set/Get methods. 
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -178,6 +181,9 @@ class PIPELINE_API avtDataAttributes
 
     avtCentering             GetCentering(const char * = NULL) const;
     void                     SetCentering(avtCentering, const char * = NULL);
+
+    bool                     GetTreatAsASCII(const char * = NULL) const;
+    void                     SetTreatAsASCII(const bool, const char * = NULL);
 
     int                      GetCellOrigin(void) const
                                    { return cellOrigin; };
@@ -283,6 +289,7 @@ class PIPELINE_API avtDataAttributes
         std::string          varname;
         int                  dimension;
         avtCentering         centering;
+        bool                 treatAsASCII;
         avtExtents          *trueData;
         avtExtents          *cumulativeTrueData;
         avtExtents          *effectiveData;

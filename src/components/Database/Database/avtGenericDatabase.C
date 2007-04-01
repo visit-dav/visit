@@ -4566,6 +4566,9 @@ avtGenericDatabase::NumStagesForFetch(avtDataSpecification_p spec)
 //
 //    Mark C. Miller, 30Sep03 added timestep argument
 //    
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004
+//    Set PickVarInfo::treatAsASCII from ScalarMetaData::treatAsASCII.
+//
 // ****************************************************************************
 
 bool
@@ -4591,6 +4594,7 @@ avtGenericDatabase::QueryScalars(const std::string &varName, const int dom,
         vtkDataArray *scalars = GetScalarVariable(varName.c_str(), ts, dom, "_all");
         if (scalars) 
         {
+            varInfo.SetTreatAsASCII(smd->treatAsASCII);
             bool zoneCent, validCentering = true;
             if (smd->centering == AVT_NODECENT)
             {

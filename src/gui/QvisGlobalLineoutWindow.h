@@ -5,6 +5,8 @@
 
 class GlobalLineoutAttributes;
 class QCheckBox;
+class QLabel;
+class QLineEdit;
 
 // ****************************************************************************
 // Class: QvisGlobalLineoutWindow
@@ -18,6 +20,8 @@ class QCheckBox;
 // Creation:   Mon Jan 13 15:34:51 PST 2003
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Jul 22 15:57:23 PDT 2004
+//   Added createWindow checkbox and windowId line edit.
 //   
 // ****************************************************************************
 
@@ -40,8 +44,15 @@ class GUI_API QvisGlobalLineoutWindow : public QvisPostableWindowObserver
     void Apply(bool ignore = false);
   private slots:
     void DynamicChanged(bool val);
+    void createWindowChanged(bool val);
+    void windowIdProcessText();
   private:
     QCheckBox *Dynamic;
+
+    QCheckBox *createWindow;
+    QLabel    *createWindowLabel;
+    QLineEdit *windowId;
+    QLabel    *windowIdLabel;
 
     GlobalLineoutAttributes *atts;
 };

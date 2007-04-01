@@ -494,7 +494,7 @@ QvisAnnotationWindow::Create2DTab()
     lLayout->addWidget(yTitleFontHeightLineEdit2D, 9, 2);
 
     // Create the text fields for the 2D label scaling.
-    labelScalingLabel2D = new QLabel("Label scale (10e?)", axesGroup2D, "labelScalingLabel2D");
+    labelScalingLabel2D = new QLabel("Label scale (x10^?)", axesGroup2D, "labelScalingLabel2D");
     lLayout->addWidget(labelScalingLabel2D, 10, 0);
 
     xLabelScalingLineEdit2D = new QNarrowLineEdit(axesGroup2D,
@@ -639,7 +639,7 @@ QvisAnnotationWindow::Create3DTab()
     rLayout->addWidget(l, 2, 0);
 
     // Create the text fields for the 3D label scaling.
-    labelScalingLabel = new QLabel("Label scale (10e?)", axes3DGroup, 
+    labelScalingLabel = new QLabel("Label scale (x10^?)", axes3DGroup, 
                                    "labelScalingLabel");
     rLayout->addWidget(labelScalingLabel, 3, 0);
 

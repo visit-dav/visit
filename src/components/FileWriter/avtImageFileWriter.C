@@ -6,7 +6,7 @@
 
 #include <vtkBMPWriter.h>
 #include <vtkJPEGWriter.h>
-#include <vtkHankTIFFWriter.h>
+#include <vtkVisItTIFFWriter.h>
 #include <vtkPostScriptWriter.h>
 #include <vtkPPMWriter.h>
 #include <vtkRGBWriter.h>
@@ -89,7 +89,7 @@ avtImageFileWriter::~avtImageFileWriter()
 //    Added compression arg, used with TIFF writer. 
 //
 //    Hank Childs, Mon Jan  5 21:26:34 PST 2004
-//    Use vtkHankTIFFWriter, which does not exhibit strangeness like
+//    Use vtkVisItTIFFWriter, which does not exhibit strangeness like
 //    vtkTIFFWriter does on the SGIs using CC.
 //
 // ****************************************************************************
@@ -128,8 +128,8 @@ avtImageFileWriter::Write(ImageFileFormat format, const char *filename,
         break;
     case TIFF:
     default:
-        writer = vtkHankTIFFWriter::New();
-        ((vtkHankTIFFWriter*)writer)->SetCompression(compression);
+        writer = vtkVisItTIFFWriter::New();
+        ((vtkVisItTIFFWriter*)writer)->SetCompression(compression);
         break;
     }
 

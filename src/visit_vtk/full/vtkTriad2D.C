@@ -62,7 +62,7 @@ vtkTriad2D::vtkTriad2D()
   this->Origin[1]        = 0.10;
   this->AxisLength = 0.08;
 
-  this->XAxis = vtkHankAxisActor2D::New();
+  this->XAxis = vtkVisItAxisActor2D::New();
   this->XAxis->SetTitle("X");
   this->XAxis->SetTickVisibility(0);
   this->XAxis->SetLabelVisibility(0);
@@ -73,7 +73,7 @@ vtkTriad2D::vtkTriad2D()
   this->XAxis->GetPoint2Coordinate()
                    ->SetCoordinateSystemToNormalizedViewport(); 
 
-  this->YAxis = vtkHankAxisActor2D::New();
+  this->YAxis = vtkVisItAxisActor2D::New();
   this->YAxis->SetTitle("Y");
   this->YAxis->SetTickVisibility(0);
   this->YAxis->SetLabelVisibility(0);
@@ -84,7 +84,7 @@ vtkTriad2D::vtkTriad2D()
   this->YAxis->GetPoint2Coordinate()
                    ->SetCoordinateSystemToNormalizedViewport(); 
 
-  this->ZAxis = vtkHankAxisActor2D::New();
+  this->ZAxis = vtkVisItAxisActor2D::New();
   this->ZAxis->SetTitle("Z");
   this->ZAxis->SetTickVisibility(0);
   this->ZAxis->SetLabelVisibility(0);

@@ -148,6 +148,9 @@ CreateExtentsString(const double * extents, const int dim, const char *type);
 //    Moved initialization of queryTypes to its own method, so that it can
 //    be called after plugins are loaded (lineout dependent upon plugins). 
 //
+//    Kathleen Bonnell, Thu Jul 22 15:43:56 PDT 2004 
+//    Initialize globalLineoutAtts, initialize resWinId in lineoutCache.
+//
 // ****************************************************************************
 
 ViewerQueryManager::ViewerQueryManager()
@@ -173,8 +176,10 @@ ViewerQueryManager::ViewerQueryManager()
     handlingCache = false;
     pickAtts = new PickAttributes();
     timeQueryAtts = new QueryOverTimeAttributes();
+    globalLineoutAtts = new GlobalLineoutAttributes();
 
     lineoutCache.origWin = NULL;
+    lineoutCache.resWinId = -1;
 }
 
 
@@ -322,6 +327,11 @@ ViewerQueryManager::SetOperatorFactory(ViewerOperatorFactory *factory)
 //    Mark C. Miller, Mon Jul 12 19:46:32 PDT 2004
 //    Made call to GetLineoutWindow fail if the window doesn't already exist
 //
+//    Kathleen Bonnell, Thu Jul 22 15:38:39 PDT 2004
+//    Change call from GetLineoutWindow to GetWindow, as the needed window
+//    for Lineout should already exist at this point, and its ID is stored
+//    in lineoutCache.
+//
 // ****************************************************************************
 
 void
@@ -364,9 +374,8 @@ ViewerQueryManager::AddQuery(ViewerWindow *origWin, Line *lineAtts,
     //
     // Can we get a lineout window? 
     //
-    bool failIfNoneExists = true;
     ViewerWindow *resWin = ViewerWindowManager::Instance()->
-        GetLineoutWindow(failIfNoneExists);
+        GetWindow(lineoutCache.resWinId);
     if (resWin == NULL)
     {
         ResetLineoutCache();
@@ -1115,6 +1124,11 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
 //    Renamed to StartLineQuery.  Attempt to get LineoutWindow. Save info 
 //    necessary for Lineout to lineoutCache.
 // 
+//    Kathleen Bonnell, Thu Jul 22 15:43:56 PDT 2004 
+//    Added useThisId arg to GetLineoutWindow call, so that a user-specified
+//    window can be retrieved/created.  Save resWin's Id in lineoutCache
+//    for use during Finish routine.
+//
 // ****************************************************************************
 
 void         
@@ -1127,7 +1141,10 @@ ViewerQueryManager::StartLineQuery(const char *qName, const double *pt1,
         //
         // Can we get a lineout window? 
         //
-        ViewerWindow *resWin = ViewerWindowManager::Instance()->GetLineoutWindow();
+        int useThisId = (globalLineoutAtts->GetCreateWindow() ? -1 :
+                         globalLineoutAtts->GetWindowId()-1);
+        ViewerWindow *resWin = 
+            ViewerWindowManager::Instance()->GetLineoutWindow(useThisId);
         if (resWin == NULL)
         {
             ResetLineoutCache();
@@ -1165,6 +1182,7 @@ ViewerQueryManager::StartLineQuery(const char *qName, const double *pt1,
         lineoutCache.line = line;
         lineoutCache.fromDefault = true;
         lineoutCache.vars = uniqueVars;
+        lineoutCache.resWinId = resWin->GetWindowId();
     }
 }
 
@@ -1974,7 +1992,10 @@ ViewerQueryManager::StartLineout(ViewerWindow *win, bool fromDefault)
     //
     // Can we get a lineout window? 
     //
-    ViewerWindow *resWin = ViewerWindowManager::Instance()->GetLineoutWindow();
+    int useThisId = (globalLineoutAtts->GetCreateWindow() ? -1 :
+                     globalLineoutAtts->GetWindowId() -1);
+    ViewerWindow *resWin = 
+        ViewerWindowManager::Instance()->GetLineoutWindow(useThisId);
     if (resWin == NULL)
     {
         ResetLineoutCache();
@@ -1993,6 +2014,7 @@ ViewerQueryManager::StartLineout(ViewerWindow *win, bool fromDefault)
     if ((win->GetWindowMode() == WINMODE_2D) &&
         (pt1[2] != 0 || pt2[2] != 0))
     {
+        delete line;
         string msg = "Only 2D points allowed for 2D lineouts. ";
         msg += "Please set z-coord to 0.";
         Error(msg.c_str());
@@ -2003,6 +2025,8 @@ ViewerQueryManager::StartLineout(ViewerWindow *win, bool fromDefault)
     lineoutCache.origWin = win;
     lineoutCache.line = *line;
     lineoutCache.fromDefault = fromDefault;
+    lineoutCache.resWinId = resWin->GetWindowId();
+
     delete line;
 }
 
@@ -2414,6 +2438,11 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
 //   Mark C. Miller, Mon Jul 12 19:46:32 PDT 2004
 //   Added call to create (get) the lineout window
 //
+//   Kathleen Bonnell, Thu Jul 22 15:43:56 PDT 2004 
+//   Added useThisId arg to GetLineoutWindow call, so that a user-specified
+//   window can be retrieved/created. Save resWin's id in lineoutCache for
+//   use later by Finish routine.
+//
 // ****************************************************************************
 
 void
@@ -2422,7 +2451,11 @@ ViewerQueryManager::StartLineout(ViewerWindow *origWin, Line *lineAtts)
     //
     // Can we get a lineout window? 
     //
-    ViewerWindow *resWin = ViewerWindowManager::Instance()->GetLineoutWindow();
+    int useThisId = (globalLineoutAtts->GetCreateWindow() ? -1 :
+                     globalLineoutAtts->GetWindowId()-1);
+
+    ViewerWindow *resWin = 
+        ViewerWindowManager::Instance()->GetLineoutWindow(useThisId);
     if (resWin == NULL)
     {
         ResetLineoutCache();
@@ -2455,6 +2488,7 @@ ViewerQueryManager::StartLineout(ViewerWindow *origWin, Line *lineAtts)
     lineoutCache.origWin = origWin;
     lineoutCache.line = *lineAtts;
     lineoutCache.fromDefault = true;
+    lineoutCache.resWinId = resWin->GetWindowId();
 }
 
 
@@ -3034,6 +3068,9 @@ ViewerQueryManager::UpdateQueryOverTimeAtts()
 //    Kathleen Bonnell, Wed Apr 28 11:11:28 PDT 2004 
 //    Added retry capability if engine is dead. 
 //    
+//    Kathleen Bonnell, Tue Jul 20 10:47:26 PDT 2004
+//    Modified retrieval of TimeQueryWindow. 
+//    
 // ***********************************************************************
 
 void
@@ -3070,7 +3107,7 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
     string qvarName = qA->GetVariables()[0];
   
     //
-    // For certain queires, if we are querying the plot's current variable, 
+    // For certain queries, if we are querying the plot's current variable, 
     // check for centering consistency.
     //
     if (qName == "Variable by Zone" || qName == "Variable by Node") 
@@ -3164,15 +3201,10 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
     //
     ViewerWindow *resWin = NULL;
 
-    if (timeQueryAtts->GetCreateWindow())
-    {
-        resWin = ViewerWindowManager::Instance()->GetTimeQueryWindow();
-    }
-    else 
-    {
-        resWin = ViewerWindowManager::Instance()->GetWindow(
-                     timeQueryAtts->GetWindowId() -1);
-    }
+    int winId = (timeQueryAtts->GetCreateWindow() ? -1 : 
+                 timeQueryAtts->GetWindowId() -1);
+    resWin = ViewerWindowManager::Instance()->GetTimeQueryWindow(winId);
+
     if (resWin == NULL)
     {
         Error("Please choose a different window method for the time query");
@@ -3732,6 +3764,8 @@ ViewerQueryManager::DoSpatialExtentsQuery(ViewerPlot *oplot, bool actualData)
 //  Creation:   July 9, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Jul 22 15:38:39 PDT 2004
+//    Reset resWinId.
 //
 // ****************************************************************************
 
@@ -3740,6 +3774,7 @@ ViewerQueryManager::ResetLineoutCache()
 {
     lineoutCache.origWin = NULL;
     lineoutCache.fromDefault = true;
+    lineoutCache.resWinId = -1;
     if (!lineoutCache.vars.empty())
         lineoutCache.vars.clear(); 
 }
@@ -3767,7 +3802,6 @@ ViewerQueryManager::FinishLineout()
         ResetLineoutCache();  
     }
 }
-
 
 
 // ****************************************************************************

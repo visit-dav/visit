@@ -49,17 +49,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // You may set the location of the origin of the triad through SetOrigin and
 // may set the length of the unit vectors with SetAxisLength.
 // You may also set the properties of the axes by getting each access and
-// setting the properties through its (vtkHankAxisActor2D) methods.
+// setting the properties through its (vtkVisItAxisActor2D) methods.
 //
 // .SECTION See Also
-// vtkActor2D vtkHankAxisActor2D
+// vtkActor2D vtkVisItAxisActor2D
 
 #ifndef __vtkTriad2D_h
 #define __vtkTriad2D_h
 #include <visit_vtk_exports.h>
 
 #include "vtkActor2D.h"
-#include "vtkHankAxisActor2D.h"
+#include "vtkVisItAxisActor2D.h"
 #include "vtkCamera.h"
 
 
@@ -99,9 +99,9 @@ public:
 
   // Description:
   // Allow for axes to be changed directly - changing colors and such.  
-  vtkGetObjectMacro(XAxis, vtkHankAxisActor2D);
-  vtkGetObjectMacro(YAxis, vtkHankAxisActor2D);
-  vtkGetObjectMacro(ZAxis, vtkHankAxisActor2D);
+  vtkGetObjectMacro(XAxis, vtkVisItAxisActor2D);
+  vtkGetObjectMacro(YAxis, vtkVisItAxisActor2D);
+  vtkGetObjectMacro(ZAxis, vtkVisItAxisActor2D);
 
 protected:
   vtkTriad2D();
@@ -112,7 +112,7 @@ protected:
   float            Origin[2];
   float            AxisLength;
 
-  vtkHankAxisActor2D  *XAxis, *YAxis, *ZAxis;
+  vtkVisItAxisActor2D  *XAxis, *YAxis, *ZAxis;
 
   void              TranslateVectorToViewport(const float world_vector[4], 
                                               float vport[2]);

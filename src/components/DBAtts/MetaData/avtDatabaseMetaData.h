@@ -80,6 +80,7 @@ struct DBATTS_API avtScalarMetaData : public AttributeSubject
     float         maxDataExtents;
 
     bool          validVariable;
+    bool          treatAsASCII;
 
 public:
     avtScalarMetaData();

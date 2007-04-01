@@ -222,6 +222,10 @@
 #    Jeremy Meredith, Wed May  5 12:54:49 PDT 2004
 #    Renamed vtkVisItClipper3D to vtkVisItClipper because it supports 2D.
 #
+#    Kathleen Bonnell, Tue Jul 20 14:12:36 PDT 2004 
+#    Renamed vtkHankAxisActor2D to vtkVisItAxisActor2D, similar for 
+#    vtkHankTIFFWriter, vtkKatCubeAxesActor and vtkKatAxisActor.
+#
 ##############################################################################
 
 ##
@@ -240,10 +244,6 @@ SRC=InitVTK.C \
     vtkDashedXorGridMapper2D.C \
     vtkDataSetRemoveGhostCells.C \
     vtkDisjointCubesFacelistFilter.C \
-    vtkHankAxisActor2D.C \
-    vtkHankTIFFWriter.C \
-    vtkKatAxisActor.C \
-    vtkKatCubeAxesActor.C \
     vtkLineoutFilter.C \
     vtkLinesFromOriginalCells.C \
     vtkOBJWriter.C \
@@ -269,8 +269,11 @@ SRC=InitVTK.C \
     vtkVertexFilter.C \
     vtkVerticalScalarBarActor.C \
     vtkVerticalScalarBarWithOpacityActor.C \
+    vtkVisItAxisActor.C \
+    vtkVisItAxisActor2D.C \
     vtkVisItCellLocator.C \
     vtkVisItContourFilter.C \
+    vtkVisItCubeAxesActor.C \
     vtkVisItCutter.C \
     vtkVisItClipper.C \
     vtkVisItFeatureEdges.C \
@@ -280,6 +283,7 @@ SRC=InitVTK.C \
     vtkVisItSTLWriter.C \
     vtkVisItScalarTree.C \
     vtkVisItStreamLine.C \
+    vtkVisItTIFFWriter.C \
     vtkVolumeFromVolume.C
 
 

@@ -246,6 +246,9 @@ avtDataAttributes::DestructSelf(void)
 //    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
 //    Print containsOriginalNodes, invTransform.
 //
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Print VarInfo's treatAsASCII. 
+//
 // ****************************************************************************
 
 void
@@ -388,6 +391,8 @@ avtDataAttributes::Print(ostream &out)
             out << "Centering is unknown." << endl;
             break;
         }
+        if (variables[i].treatAsASCII)
+            out << "Treat as ASCII." << endl;
 
         if (variables[i].trueData != NULL)
         {
@@ -475,6 +480,9 @@ avtDataAttributes::Print(ostream &out)
 //    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
 //    Copy containsOriginalNodes, invTransform.
 //
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Copy varinfo's treatAsASCII.
+//
 // ****************************************************************************
 
 void
@@ -525,6 +533,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
         AddVariable(vname);
         SetVariableDimension(di.variables[i].dimension, vname);
         SetCentering(di.variables[i].centering, vname);
+        SetTreatAsASCII(di.variables[i].treatAsASCII, vname);
         *(variables[i].trueData)              = *(di.variables[i].trueData);
         *(variables[i].cumulativeTrueData)    = 
                                       *(di.variables[i].cumulativeTrueData);
@@ -610,6 +619,9 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
 //    Merge containsOriginalNodes, invTransform.
 //
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Test for equivalent treatAsASCII values.
+//
 // ****************************************************************************
 
 void
@@ -656,6 +668,10 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
         {
             EXCEPTION2(InvalidMergeException, variables[i].centering,
                        da.variables[i].centering);
+        }
+        if (variables[i].treatAsASCII != da.variables[i].treatAsASCII)
+        {
+            EXCEPTION0(InvalidMergeException);
         }
         if (variables[i].dimension != da.variables[i].dimension)
         {
@@ -1518,6 +1534,9 @@ avtDataAttributes::SetTime(double d)
 //    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
 //    Write containsOriginalNodes, invTransform.
 //
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Write treatAsASCII. 
+//
 // ****************************************************************************
 
 void
@@ -1526,7 +1545,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
 {
     int   i;
 
-    int numVals = 16 + 2*variables.size();
+    int numVals = 16 + 3*variables.size();
     int *vals = new int[numVals];
     vals[0] = topologicalDimension;
     vals[1] = spatialDimension;
@@ -1546,8 +1565,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
     vals[15] = variables.size();
     for (i = 0 ; i < variables.size() ; i++)
     {
-        vals[16+2*i]   = variables[i].dimension;
-        vals[16+2*i+1] = variables[i].centering;
+        vals[16+3*i]   = variables[i].dimension;
+        vals[16+3*i+1] = variables[i].centering;
+        vals[16+3*i+2] = (variables[i].treatAsASCII ? 1 : 0);
     }
     wrtr->WriteInt(str, vals, numVals);
     wrtr->WriteDouble(str, dtime);
@@ -1655,6 +1675,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
 //    Read containsOriginalNodes, invTransform.
 //
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Read treatAsASCII. 
+//
 // ****************************************************************************
 
 int
@@ -1731,6 +1754,7 @@ avtDataAttributes::Read(char *input)
 
     int *varDims = new int[numVars];
     avtCentering *centerings = new avtCentering[numVars];
+    bool *ascii = new bool[numVars];
     for (i = 0 ; i < numVars ; i++)
     {
         memcpy(&tmp, input, sizeof(int));
@@ -1739,6 +1763,9 @@ avtDataAttributes::Read(char *input)
         memcpy(&tmp, input, sizeof(int));
         input += sizeof(int); size += sizeof(int);
         centerings[i] = (avtCentering) tmp;
+        memcpy(&tmp, input, sizeof(int));
+        input += sizeof(int); size += sizeof(int);
+        ascii[i] = (tmp != 0 ? true : false);
     }
 
     memcpy(&dtmp, input, sizeof(double));
@@ -1768,6 +1795,7 @@ avtDataAttributes::Read(char *input)
         AddVariable(varname.c_str());
         SetCentering(centerings[i], varname.c_str());
         SetVariableDimension(varDims[i], varname.c_str());
+        SetTreatAsASCII(ascii[i], varname.c_str());
  
         s = variables[i].trueData->Read(input);
         input += s; size += s;
@@ -1782,6 +1810,7 @@ avtDataAttributes::Read(char *input)
     }
     delete [] varDims;
     delete [] centerings;
+    delete [] ascii;
 
     int filenameSize;
     memcpy(&filenameSize, input, sizeof(int));
@@ -2235,6 +2264,10 @@ avtDataAttributes::SetActiveVariable(const char *v)
 //  Programmer: Hank Childs
 //  Creation:   February 23, 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004
+//    Initialize treatAsASCII.
+//
 // ****************************************************************************
 
 void
@@ -2255,6 +2288,7 @@ avtDataAttributes::AddVariable(const std::string &s)
     new_var.varname = s;
     new_var.dimension = -1;
     new_var.centering = AVT_UNKNOWN_CENT;
+    new_var.treatAsASCII = false;
     new_var.trueData = NULL;
     new_var.cumulativeTrueData = NULL;
     new_var.effectiveData = NULL;
@@ -2749,3 +2783,69 @@ avtDataAttributes::ReadTransform(char *input)
     return size;
 }
 
+// ****************************************************************************
+//  Method: avtDataAttributes::SetTreatAsASCII
+//
+//  Purpose:
+//    Sets whether or not this var's data should be treated as ascii values. 
+//
+//  Arguments:
+//    ascii       The new treatAsASCII value,
+//
+//  Programmer:    Kathleen Bonnell 
+//  Creation:      July 21, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtDataAttributes::SetTreatAsASCII(const bool ascii, const char *varname)
+{
+    int index = VariableNameToIndex(varname);
+    if (index < 0)
+    {
+        //
+        // We were asked to set the treatAsASCII value of a non-existent
+        // variable.
+        //
+        string reason = "Attempting to set TreatAsASCII of non-existent";
+        reason = reason +  " variable: " + varname + ".\n";
+        EXCEPTION1(ImproperUseException, reason);
+    }
+
+    variables[index].treatAsASCII = ascii;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataAttributes::GetTreatAsASCII
+//
+//  Purpose:
+//    Gets the value specifying if the variable's data should be treated as 
+//    ascii values.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   July 21, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+avtDataAttributes::GetTreatAsASCII(const char *varname) const
+{
+    int index = VariableNameToIndex(varname);
+    if (index < 0)
+    {
+        //
+        // We were asked to get the treatAsASCII of a non-existent
+        // variable.
+        //
+        string reason = "Attempting to retrieve TreatAsASCII of non-existent";
+        reason = reason +  " variable: " + varname + ".\n";
+        EXCEPTION1(ImproperUseException, reason);
+    }
+
+    return variables[index].treatAsASCII;
+}

@@ -10,7 +10,7 @@
 #include <VisWinColleague.h>
 
 
-class vtkHankAxisActor2D;
+class vtkVisItAxisActor2D;
 
 
 // ****************************************************************************
@@ -68,7 +68,7 @@ class VISWINDOW_API VisWinFrame : public VisWinColleague
     void                         SetLineWidth(int);
 
   protected:
-    vtkHankAxisActor2D          *leftBorder, *rightBorder, *topBorder,
+    vtkVisItAxisActor2D          *leftBorder, *rightBorder, *topBorder,
                                 *bottomBorder;
 
     bool                         addedFrame;

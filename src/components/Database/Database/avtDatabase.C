@@ -253,6 +253,9 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Kathleen Bonnell, Fri May 28 18:26:09 PDT 2004 
 //    Pass on containsOriginalNodes.
 //
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Set avtDataAttributes::treatAsASCII from ScalarMetaData::treatAsASCII.
+//
 // ****************************************************************************
 
 void
@@ -329,7 +332,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
             atts.AddVariable(var_list[i]);
             atts.SetVariableDimension(1, var_list[i]);
             atts.SetCentering(smd->centering, var_list[i]);
-    
+            atts.SetTreatAsASCII(smd->treatAsASCII, var_list[i]); 
             //
             // Note that we are using the spatial extents as both the spatial 
             // extents and as the global spatial extents (the spatial extents 

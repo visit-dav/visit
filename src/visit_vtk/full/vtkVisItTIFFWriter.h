@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkHankTIFFWriter.h,v $
+  Module:    $RCSfile: vtkVisItTIFFWriter.h,v $
   Language:  C++
   Date:      $Date: 2003/10/08 13:46:13 $
   Version:   $Revision: 1.23 $
@@ -15,26 +15,26 @@
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-// .NAME vtkHankTIFFWriter - write out image data as a TIFF file
+// .NAME vtkVisItTIFFWriter - write out image data as a TIFF file
 // .SECTION Description
-// vtkHankTIFFWriter writes image data as a TIFF data file. Data can be written
+// vtkVisItTIFFWriter writes image data as a TIFF data file. Data can be written
 // uncompressed or compressed. Several forms of compression are supported
 // including packed bits, JPEG, deflation, and LZW. (Note: LZW compression
 // is currently under patent in the US and is disabled until the patent
 // expires. However, the mechanism for supporting this compression is available
 // for those with a valid license or to whom the patent does not apply.)
 
-#ifndef __vtkHankTIFFWriter_h
-#define __vtkHankTIFFWriter_h
+#ifndef __vtkVisItTIFFWriter_h
+#define __vtkVisItTIFFWriter_h
 
 #include "vtkImageWriter.h"
 #include <visit_vtk_exports.h>
 
-class VISIT_VTK_API vtkHankTIFFWriter : public vtkImageWriter
+class VISIT_VTK_API vtkVisItTIFFWriter : public vtkImageWriter
 {
 public:
-  static vtkHankTIFFWriter *New();
-  vtkTypeRevisionMacro(vtkHankTIFFWriter,vtkImageWriter);
+  static vtkVisItTIFFWriter *New();
+  vtkTypeRevisionMacro(vtkVisItTIFFWriter,vtkImageWriter);
   virtual void PrintSelf(ostream& os, vtkIndent indent);
 
 //BTX
@@ -59,8 +59,8 @@ public:
   void SetCompressionToLZW()           { this->SetCompression(LZW); }
 
 protected:
-  vtkHankTIFFWriter();
-  ~vtkHankTIFFWriter() {}
+  vtkVisItTIFFWriter();
+  ~vtkVisItTIFFWriter() {}
 
   virtual void WriteFile(ofstream *file, vtkImageData *data, int ext[6]);
   virtual void WriteFileHeader(ofstream *, vtkImageData *);
@@ -70,8 +70,8 @@ protected:
   int Compression;
 
 private:
-  vtkHankTIFFWriter(const vtkHankTIFFWriter&);  // Not implemented.
-  void operator=(const vtkHankTIFFWriter&);  // Not implemented.
+  vtkVisItTIFFWriter(const vtkVisItTIFFWriter&);  // Not implemented.
+  void operator=(const vtkVisItTIFFWriter&);  // Not implemented.
 };
 
 #endif

@@ -774,7 +774,7 @@ avtVistaFileFormat::FreeUpResources(void)
         vTree = 0;
     }
 
-#warning should we delete other stuff during FreeUpResources
+//#warning should we delete other stuff during FreeUpResources
 
     // we don't finalize HDF5 here because its not clear if/when we might
     // need to re-initialize it, again
