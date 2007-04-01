@@ -274,6 +274,10 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Changed 'spec' arg to ref_ptr. Added code to attempt to get spatial/data
 //    extents trees and set true extents from those if available
 //
+//    Mark C. Miller, Wed Oct 20 10:35:53 PDT 2004
+//    Moved code to get extents from auxiliary data to a subroutine. Also,
+//    placed it inside the checks for various variable types.
+//
 // ****************************************************************************
 
 void
@@ -335,28 +339,14 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
     //
     if (haveSetTrueSpatialExtents == false)
     {
-        VoidRefList list;
-
-        if (*spec != NULL)
+        double extents[6];
+        if (GetExtentsFromAuxiliaryData(spec, mesh.c_str(),
+                AUXILIARY_DATA_SPATIAL_EXTENTS, extents))
         {
-            avtDataSpecification_p tmp_spec = new avtDataSpecification(spec, -1);
-            GetAuxiliaryData(tmp_spec, list, AUXILIARY_DATA_SPATIAL_EXTENTS,
-                (void *) mesh.c_str());
-        }
-
-        if (list.nList == 1 && *(list.list[0]) != NULL)
-        {
-            avtIntervalTree *tree = (avtIntervalTree *) *(list.list[0]);
-            float extents[6];
-            tree->GetExtents(extents);
-            double dextents[6];
-            for (int i = 0; i < 6; i++)
-                dextents[i] = extents[i];
-            atts.GetTrueSpatialExtents()->Set(dextents);
-            haveSetTrueSpatialExtents = true;
+            atts.GetTrueSpatialExtents()->Set(extents);
         }
     }
-    
+        
     //
     // We want to add information to the data attributes for each of the 
     // variables.  Make a big list of the primary and secondary variables.
@@ -379,7 +369,6 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
     //
     for (i = 0 ; i < var_list.size() ; i++)
     {
-        bool haveSetTrueDataExtents = false;
         const avtScalarMetaData *smd = GetMetaData(ts)->GetScalar(var_list[i]);
         if (smd != NULL)
         {
@@ -402,7 +391,15 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
                 extents[1] = smd->maxDataExtents;
     
                 atts.GetTrueDataExtents(var_list[i])->Set(extents);
-                haveSetTrueDataExtents = true;
+            }
+            else
+            {
+                double extents[2];
+                if (GetExtentsFromAuxiliaryData(spec, var_list[i],
+                        AUXILIARY_DATA_DATA_EXTENTS, extents))
+                {
+                    atts.GetTrueDataExtents(var_list[i])->Set(extents);
+                }
             }
         }
     
@@ -427,37 +424,18 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
                 extents[0] = vmd->minDataExtents;
                 extents[1] = vmd->maxDataExtents;
                 atts.GetTrueDataExtents(var_list[i])->Set(extents);
-                haveSetTrueDataExtents = true;
+            }
+            else
+            {
+                double extents[2];
+                if (GetExtentsFromAuxiliaryData(spec, var_list[i],
+                        AUXILIARY_DATA_DATA_EXTENTS, extents))
+                {
+                    atts.GetTrueDataExtents(var_list[i])->Set(extents);
+                }
             }
         }
 
-        //
-        // If we haven't set data extents, try using a data tree
-        //
-        if (haveSetTrueDataExtents == false)
-        {
-            VoidRefList list;
-
-            if (*spec != NULL)
-            {
-                avtDataSpecification_p tmp_spec = new avtDataSpecification(spec, -1);
-                GetAuxiliaryData(tmp_spec, list, AUXILIARY_DATA_DATA_EXTENTS,
-                    (void *) var_list[i]);
-            }
-
-            if (list.nList == 1 && *(list.list[0]) != NULL)
-            {
-                avtIntervalTree *tree = (avtIntervalTree *) *(list.list[0]);
-                float extents[2];
-                tree->GetExtents(extents);
-                double dextents[2];
-                for (int j = 0; j < 2; j++)
-                    dextents[j] = extents[j];
-                atts.GetTrueDataExtents(var_list[i])->Set(dextents);
-                haveSetTrueDataExtents = true;
-            }
-        }
-    
         const avtTensorMetaData *tmd = GetMetaData(ts)->GetTensor(var_list[i]);
         if (tmd != NULL)
         {
@@ -1403,3 +1381,36 @@ avtDatabase::Query(PickAttributes *pa)
     pa->SetDatabaseName(fname);
 }
 
+// ****************************************************************************
+//  Method: avtDatabase::GetExtentsFromAuxiliaryData
+//
+//  Purpose: Obtain extents, if possible, from auxiliary data
+//
+//  Programmer: Mark C. Miller
+//  Creation:   October 20, 2004
+//
+// ****************************************************************************
+
+bool
+avtDatabase::GetExtentsFromAuxiliaryData(avtDataSpecification_p spec,
+    const char *var, const char *type, double *extents)
+{
+    if (*spec == NULL)
+        return false;
+
+    VoidRefList list;
+
+    avtDataSpecification_p tmp_spec = new avtDataSpecification(spec, -1);
+    GetAuxiliaryData(tmp_spec, list, type, (void *) var);
+
+    if (list.nList != 1 || *(list.list[0]) == NULL)
+        return false;
+
+    avtIntervalTree *tree = (avtIntervalTree *) *(list.list[0]);
+    float fextents[6];
+    tree->GetExtents(fextents);
+    for (int i = 0; i < 6; i++)
+        extents[i] = fextents[i];
+
+    return true;
+}

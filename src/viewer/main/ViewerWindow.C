@@ -7599,6 +7599,9 @@ ViewerWindow::ExternalRenderManual(avtDataObject_p& dob, int w, int h)
 //   I made it issue a warning message on failure. I also made it clear
 //   plot list's actors and Update the frame.
 //
+//   Mark C. Miller, Wed Oct 20 15:52:51 PDT 2004
+//   Added fault tolerance to external render request
+//
 // ****************************************************************************
 void
 ViewerWindow::ExternalRenderAuto(avtDataObject_p& dob)
@@ -7624,8 +7627,28 @@ ViewerWindow::ExternalRenderAuto(avtDataObject_p& dob)
 
     // ok, now make an explict external render request
     bool shouldTurnOffScalableRendering = false;
-    bool success = ExternalRender(thisRequest,
-                                  shouldTurnOffScalableRendering, false, dob);
+
+    //
+    // We have to handle fault-tolerance in external render requests
+    // here in the ViewerWindow instead of the engine because ViewerWindow's
+    // state gets modified upon each retry. Namely, the plot's actors and
+    // network ids have to get reset. We can't simply retry the same render
+    // request on the engine.
+    //
+    const int maxTries = 3;
+    int trys = 0;
+    bool success = false;
+    while (!success && trys < maxTries)
+    {
+        success = ExternalRender(thisRequest,
+                                 shouldTurnOffScalableRendering, false, dob);
+        if (!success)
+        {
+            GetPlotList()->ClearActors();
+            GetPlotList()->UpdateFrame();
+        }
+        trys++;
+    }
 
     // return nothing if the request failed
     if (!success)

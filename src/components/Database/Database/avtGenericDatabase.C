@@ -1866,6 +1866,10 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
 //    Mark C. Miller, Mon Oct 18 13:02:37 PDT 2004
 //    Added code to set variable name from 'args' for Data/Spatial extents
 //
+//    Mark C. Miller, Wed Oct 20 12:01:10 PDT 2004
+//    Added call to ActivateTimestep to deal with cases in which the *first*
+//    thing we attempt to read from the file is auxiliary data
+//
 // ****************************************************************************
 
 void
@@ -1888,6 +1892,14 @@ avtGenericDatabase::GetAuxiliaryData(avtDataSpecification_p spec,
         if (args != NULL)
             var = (char *) args;
     }
+
+    //
+    // It is concievable to arrive here with a file that has not yet
+    // been opened. So, we need to active this timestep which will
+    // be a no-op if the file has been opened and will open the file
+    // if it has not been opened.
+    //
+    ActivateTimestep(ts);
 
     vector<int> domains;
     sil.GetDomainList(domains);
