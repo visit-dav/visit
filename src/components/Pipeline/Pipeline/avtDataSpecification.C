@@ -74,6 +74,9 @@ using     std::vector;
 //    Remove useGhostZones, add maintainOriginalConnectivity and
 //    desiredGhostDataType.
 //
+//    Hank Childs, Thu Sep 23 09:23:01 PDT 2004
+//    Added needGlobalZones and needGlobalNodes.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts,
@@ -83,6 +86,8 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
     mayRequireNodes = false;
     needZones = false;
     needNodes = false;
+    needGlobalZones = false;
+    needGlobalNodes = false;
     needInternalSurfaces = false;
     mustDoMIR = false;
     needBoundarySurfaces = false;
@@ -171,6 +176,9 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
 //    Remove useGhostZones, add maintainOriginalConnectivity and
 //    desiredGhostDataType.
 //
+//    Hank Childs, Thu Sep 23 09:23:01 PDT 2004
+//    Added needGlobalZones and needGlobalNodes.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
@@ -179,6 +187,8 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
     mayRequireNodes = false;
     needZones = false;
     needNodes = false;
+    needGlobalZones = false;
+    needGlobalNodes = false;
     mustDoMIR = false;
     needInternalSurfaces = false;
     needBoundarySurfaces = false;
@@ -396,6 +406,9 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec)
 //    Remove useGhostZones, add maintainOriginalConnectivity and
 //    desiredGhostDataType.
 //
+//    Hank Childs, Thu Sep 23 09:23:01 PDT 2004
+//    Added needGlobalZones and needGlobalNodes.
+//
 // ****************************************************************************
 
 avtDataSpecification &
@@ -433,6 +446,8 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
     mustDoMIR                       = spec.mustDoMIR;
     needZones                       = spec.needZones;
     needNodes                       = spec.needNodes;
+    needGlobalZones                 = spec.needGlobalZones;
+    needGlobalNodes                 = spec.needGlobalNodes;
     needInternalSurfaces            = spec.needInternalSurfaces;
     needBoundarySurfaces            = spec.needBoundarySurfaces;
     needValidFaceConnectivity       = spec.needValidFaceConnectivity;
@@ -517,6 +532,9 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
 //    Remove useGhostZones, add maintainOriginalConnectivity and
 //    desiredGhostDataType.
 //
+//    Hank Childs, Thu Sep 23 09:23:01 PDT 2004
+//    Added needGlobalZones and needGlobalNodes.
+//
 // ****************************************************************************
 
 bool
@@ -550,6 +568,16 @@ avtDataSpecification::operator==(const avtDataSpecification &ds)
     }
 
     if (needNodes != ds.needNodes)
+    {
+        return false;
+    }
+
+    if (needGlobalZones != ds.needGlobalZones)
+    {
+        return false;
+    }
+
+    if (needGlobalNodes != ds.needGlobalNodes)
     {
         return false;
     }

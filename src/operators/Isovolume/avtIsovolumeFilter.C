@@ -309,7 +309,25 @@ avtPipelineSpecification_p
 avtIsovolumeFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
 {
     avtPipelineSpecification_p spec = new avtPipelineSpecification(in_spec);
-    spec->GetDataSpecification()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+
+    const char *varname = NULL;
+    if (atts.GetVariable() != "default")
+        varname = atts.GetVariable().c_str();
+    else
+        varname = in_spec->GetDataSpecification()->GetVariable();
+
+    //
+    // We will need the ghost zones so that we can interpolate along domain
+    // boundaries and get no cracks in our isosurface.
+    //
+    avtDataAttributes &in_atts = GetInput()->GetInfo().GetAttributes();
+    bool skipGhost = false;
+    if (in_atts.ValidVariable(varname) &&
+        in_atts.GetCentering(varname) == AVT_NODECENT)
+        skipGhost = true;
+    if (!skipGhost)
+        spec->GetDataSpecification()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+
     return spec;
 }
 

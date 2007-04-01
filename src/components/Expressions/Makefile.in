@@ -78,6 +78,9 @@
 #   Hank Childs, Sat Sep 18 08:51:41 PDT 2004
 #   Added neighbor evaluator filter.
 #
+#   Hank Childs, Thu Sep 23 09:14:00 PDT 2004
+#   Added avtDataIdFilter.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -113,6 +116,7 @@ Derivations_src=\
   Derivations/avtPrincipalTensorFilter.C 
 
 General_src= \
+  General/avtDataIdFilter.C \
   General/avtDegreeFilter.C \
   General/avtGradientFilter.C \
   General/avtMatvfFilter.C \

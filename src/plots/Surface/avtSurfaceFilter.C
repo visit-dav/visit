@@ -454,6 +454,9 @@ avtSurfaceFilter::VerifyInput(void)
 //    Hank Childs, Fri Mar 15 18:25:20 PST 2002
 //    Account for dataset examiner.
 //
+//    Hank Childs, Thu Sep 23 08:07:03 PDT 2004
+//    Instruct the database to create ghost zones if necessary.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -480,6 +483,19 @@ avtSurfaceFilter::PerformRestriction(avtPipelineSpecification_p spec)
     {
         spec->GetDataSpecification()->TurnNodeNumbersOn();
     }
+
+    //
+    // We will need the ghost zones so that we can interpolate along domain
+    // boundaries and get no cracks in our isosurface.
+    //
+    const char *varname = spec->GetDataSpecification()->GetVariable();
+    avtDataAttributes &in_atts = GetInput()->GetInfo().GetAttributes();
+    bool skipGhost = false;
+    if (in_atts.ValidVariable(varname) &&
+        in_atts.GetCentering(varname) == AVT_NODECENT)
+        skipGhost = true;
+    if (!skipGhost)
+        spec->GetDataSpecification()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
 
     return spec;
 }

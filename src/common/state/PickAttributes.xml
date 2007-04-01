@@ -148,6 +148,14 @@
     </Field>
     <Field name="groupPieceName" label="groupPieceName" type="string">
     </Field>
+    <Field name="ghosts" label="ghosts" type="intVector" internal="true">
+    </Field>
+    <Field name="includeGhosts" label="includeGhosts" type="bool" internal="true">
+      false
+    </Field>
+    <Field name="elementIsGhost" label="elementIsGhost" type="bool" internal="true">
+      false
+    </Field>
     <Function name="PrintSelf" user="true" member="true">
     </Function>
     <Function name="CreateOutputString" user="true" member="true">

@@ -69,6 +69,9 @@ class avtExpressionEvaluatorFilter;
 //    Kathleen Bonnell, Fri Sep  3 08:36:58 PDT 2004 
 //    Removed VerifyInput. 
 // 
+//    Kathleen Bonnell, Thu Sep 23 17:38:15 PDT 2004 
+//    Removed SetRealIds. 
+// 
 // ****************************************************************************
 
 class QUERY_API avtPickQuery : public avtDatasetQuery
@@ -113,7 +116,6 @@ class QUERY_API avtPickQuery : public avtDatasetQuery
     bool                            DeterminePickedNode(vtkDataSet *, int &);
     void                            GetNodeCoords(vtkDataSet *, const int);
     void                            GetZoneCoords(vtkDataSet *, const int);
-    void                            SetRealIds(vtkDataSet *);
 
     void                            RetrieveVarInfo(vtkDataSet *);   
     void                            RetrieveVarInfo(vtkDataSet *, const int, 

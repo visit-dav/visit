@@ -61,6 +61,7 @@
 #include <avtTestLessThanOrEqualToFilter.h>
 #include <avtTestNotEqualToFilter.h>
 #include <avtNeighborEvaluatorFilter.h>
+#include <avtDataIdFilter.h>
 
 #include <stdio.h>
 #include <ExpressionException.h>
@@ -289,6 +290,9 @@ EngineVectorExpr::CreateFilters(ExprPipelineState *state)
 //      Hank Childs, Sat Sep 18 08:54:51 PDT 2004
 //      Added neighbor evaluation expressions.
 //
+//      Hank Childs, Thu Sep 23 09:17:26 PDT 2004
+//      Added zone id, node id, and global variants.
+//
 // ****************************************************************************
 void
 EngineFunctionExpr::CreateFilters(ExprPipelineState *state)
@@ -438,6 +442,34 @@ EngineFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtRevolvedVolume;
     else if (functionName == "revolved_surface_area")
         f = new avtRevolvedSurfaceArea;
+    else if (functionName == "zoneid")
+    {
+        avtDataIdFilter *ff = new avtDataIdFilter;
+        ff->CreateZoneIds();
+        ff->CreateLocalNumbering();
+        f = ff;
+    }
+    else if (functionName == "global_zoneid")
+    {
+        avtDataIdFilter *ff = new avtDataIdFilter;
+        ff->CreateZoneIds();
+        ff->CreateGlobalNumbering();
+        f = ff;
+    }
+    else if (functionName == "nodeid")
+    {
+        avtDataIdFilter *ff = new avtDataIdFilter;
+        ff->CreateNodeIds();
+        ff->CreateLocalNumbering();
+        f = ff;
+    }
+    else if (functionName == "global_nodeid")
+    {
+        avtDataIdFilter *ff = new avtDataIdFilter;
+        ff->CreateNodeIds();
+        ff->CreateGlobalNumbering();
+        f = ff;
+    }
     else if (functionName == "biggest_neighbor")
     {
         avtNeighborEvaluatorFilter *ff = new avtNeighborEvaluatorFilter;
