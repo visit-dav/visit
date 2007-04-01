@@ -38,6 +38,10 @@ $0 = shift @ARGV;
 # Date      :  December  8, 2004
 #
 # Modifications:
+#    Jeremy Meredith, Mon Dec 13 13:38:05 PST 2004
+#    It was erroneously grepping for partial version name matches.
+#    E.g. it would think 1.4 had an internallauncher if it found
+#    one for version 1.4.1.  This caused old versions to fail to run.
 #
 ###############################################################################
 
@@ -213,7 +217,7 @@ else
     # If there was no internal laucher for that version, then either
     # that version wasn't installed, or it is an old version that
     # didn't have a version-specific launcher script.
-    if (! grep /$ver/, @exeversions)
+    if (! grep /^"$ver"$/, @exeversions)
     {
         if (! -d "$visitdir/$ver")
         {

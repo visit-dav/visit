@@ -570,6 +570,7 @@ private:
     void UpdateView2d(const double *limits);
     void UpdateView3d(const double *limits);
 
+    void ClearExternalRenderRequestInfo(ExternalRenderRequestInfo&) const;
     void ClearLastExternalRenderRequestInfo();
     void UpdateLastExternalRenderRequestInfo(
              const ExternalRenderRequestInfo& newRequest);

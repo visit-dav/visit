@@ -917,6 +917,9 @@ class MakeMovie:
     #   the default is to output files to a specified directory, which is not
     #   what we want when saving movie frames.
     #
+    #   Mark C. Miller, Mon Dec 13 16:35:42 PST 2004
+    #   Added try/catch protection for SaveWindow
+    #
     ###########################################################################
 
     def SaveImage(self, index, ext):
@@ -937,7 +940,12 @@ class MakeMovie:
         s.height = self.yres
         s.outputToCurrentDirectory = 1
         SetSaveWindowAttributes(s)
-        return SaveWindow()
+	retval = 1
+	try:
+	    retval = SaveWindow()
+	except:
+	    retval = 0
+        return retval 
 
     ###########################################################################
     # Method: SaveImage2
@@ -1160,6 +1168,9 @@ class MakeMovie:
     #   I added support for getting parallel options from a session file and
     #   using those options to launch compute engines.
     #
+    #   Mark C. Miller, Mon Dec 13 16:35:42 PST 2004
+    #   Added fault tolerance for engine failures in SR mode during SaveWindow
+    #
     ###########################################################################
 
     def GenerateFrames(self):
@@ -1217,7 +1228,17 @@ class MakeMovie:
 "state %d. You should investigate the files used for that state." % i
                     else:
                         drawThePlots = 0
-                self.SaveImage(self.numFrames, ext)
+                if(self.SaveImage(self.numFrames, ext) == 0):
+                    print "There was an error when trying to save the window "\
+"for time slider state %d. VisIt will now try to redraw the plots and re-save "\
+"the window." % i
+                    if(DrawPlots() == 0):
+                        print "VisIt could not draw plots for time slider "\
+"state %d. You should investigate the files used for that state." % i
+                    else:
+                        if(self.SaveImage(self.numFrames, ext) == 0):
+                            print "VisIt could not re-save the window for "\
+"time slider state %d. You should investigate the files used for that state." % i
                 self.numFrames = self.numFrames + 1
                 i = i + self.frameStep
         else:

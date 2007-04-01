@@ -6173,15 +6173,16 @@ ViewerSubject::LaunchProgressCB(void *d, int stage)
 //
 //   Mark C. Miller, Tue Jun 15 19:49:22 PDT 2004
 //   Added code to test if engine is also in render
+//
+//   Mark C. Miller, Mon Dec 13 15:59:26 PST 2004
+//   Subsumed meaning of InRender in InExecute
 //   
 // ****************************************************************************
 
 void
 ViewerSubject::SendKeepAlives()
 {
-    if(launchingComponent ||
-       ViewerEngineManager::Instance()->InExecute() ||
-       ViewerEngineManager::Instance()->InRender())
+    if(launchingComponent || ViewerEngineManager::Instance()->InExecute())
     {
         // We're launching a component so we don't want to send keep alive
         // signals right now but try again in 20 seconds.

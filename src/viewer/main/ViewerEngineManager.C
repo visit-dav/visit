@@ -276,13 +276,15 @@ static void UpdatePlotAttsCallback(void*,const string&,int,AttributeSubject*);
 //    Mark C. Miller, Tue Jun 15 19:49:22 PDT 2004
 //    Added initialization for rendering data member
 //
+//    Mark C. Miller, Mon Dec 13 17:25:55 PST 2004
+//    Removed rendering data member
+//
 // ****************************************************************************
 
 ViewerEngineManager::ViewerEngineManager() : ViewerServerManager(),
     SimpleObserver()
 {
     executing = false;
-    rendering = false;
     if (numRestarts == -1)
         numRestarts = 2;
     avtCallback::RegisterImageCallback(GetImageCallback, this);
@@ -1045,23 +1047,6 @@ ViewerEngineManager::InExecute() const
 }
 
 // ****************************************************************************
-// Method: ViewerEngineManager::InRender
-//
-// Purpose: 
-//   Returns whether or not any engine is in the external render stage.
-//
-// Programmer: Mark C. Miller 
-// Creation:   June 15, 2004 
-//   
-// ****************************************************************************
-
-bool
-ViewerEngineManager::InRender() const
-{
-    return rendering;
-}
-
-// ****************************************************************************
 // Method: ViewerEngineManager::SendKeepAlives
 //
 // Purpose: 
@@ -1319,6 +1304,9 @@ ViewerEngineManager::LaunchMessage(const EngineKey &ek)  const
 //
 //    Mark C. Miller, Tue Oct 19 20:18:22 PDT 2004
 //    Added code to pass along name of last color table to change
+//
+//    Mark C. Miller, Mon Dec 13 15:52:20 PST 2004
+//    Replaced Begin/EndEngineRender with Begin/EndEngineExecute
 //    
 // ****************************************************************************
 
@@ -1357,7 +1345,7 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
     {
 
 #ifndef VIEWER_MT
-        BeginEngineRender();
+        BeginEngineExecute();
 #endif
 
         // build list of per-engine plot ids
@@ -1447,11 +1435,15 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
             imgList.push_back(img);
         }
 
+#ifndef VIEWER_MT
+        EndEngineExecute();
+#endif
+
     }
     CATCH(LostConnectionException)
     {
 #ifndef VIEWER_MT
-        EndEngineRender();
+        EndEngineExecute();
 #endif
         // Remove the specified engine from the list of engines.
         RemoveFailedEngine(ek);
@@ -1461,7 +1453,7 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
     CATCH(VisItException)
     {
 #ifndef VIEWER_MT
-        EndEngineRender();
+        EndEngineExecute();
 #endif
         // Send a message to the client to clear the status for the
         // engine that had troubles.
@@ -1981,40 +1973,6 @@ ViewerEngineManager::EndEngineExecute()
 {
     executing = false;
     ViewerWindowManager::Instance()->EndEngineExecute();
-}
-
-// ****************************************************************************
-// Method: ViewerEngineManager::BeginEngineRender
-//
-// Purpose:
-//   Records fact that engine is in render stage 
-//
-// Programmer: Mark C. Miller 
-// Creation:   June 15, 2004 
-//
-// ****************************************************************************
-
-void
-ViewerEngineManager::BeginEngineRender()
-{
-    rendering = true;
-}
-
-// ****************************************************************************
-// Method: ViewerEngineManager::EndEngineRender
-//
-// Purpose: 
-//   Records fact that engine has completed render stage
-//
-// Programmer: Mark C. Miller 
-// Creation:   June 15, 2004 
-//   
-// ****************************************************************************
-
-void
-ViewerEngineManager::EndEngineRender()
-{
-    rendering = false;
 }
 
 // ****************************************************************************
