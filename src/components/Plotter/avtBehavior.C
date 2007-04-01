@@ -349,6 +349,10 @@ avtBehavior::SetShiftFactor(float sf)
 //    Hank Childs, Tue Sep  4 15:34:56 PDT 2001
 //    Reflect changes in avtDataAttributes.
 //  
+//    Kathleen Bonnell, Mon Feb  2 13:15:54 PST 2004 
+//    In 2D, allow plots with topological dimension of 0 to utilize their
+//    own  shift factor.  (So vector plots won't be obscured by mesh plots).
+//  
 // ****************************************************************************
 
 float
@@ -356,6 +360,11 @@ avtBehavior::GetShiftFactor(void)
 {
     double rv = 0.;
     if (info.GetAttributes().GetTopologicalDimension() == 1)
+    {
+        rv = shiftFactor;
+    }
+    else if (info.GetAttributes().GetTopologicalDimension() == 0 &&
+             info.GetAttributes().GetSpatialDimension() == 2)
     {
         rv = shiftFactor;
     }
