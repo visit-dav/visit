@@ -3437,6 +3437,9 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
 //    Removed avtMeshMetadata local variable.
 //    Changed logic for testing existence of global node ids to attempt to
 //    Get global node ids and if they exist, use them.
+//
+//    Mark C. Miller, Tue Aug 10 14:16:36 PDT 2004
+//    Added check for if ghosts had been read from file and return immediately
 //    
 // ****************************************************************************
 
@@ -3454,6 +3457,13 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
     avtDatabaseMetaData *md = GetMetaData(ts);
     avtVarType type = md->DetermineVarType(varname);
     std::string meshname = md->MeshForVar(varname);
+
+    //
+    // Return immediately if we've alread got ghost zones we've read from the
+    // database
+    //
+    if (md->GetContainsGhostZones(meshname) == AVT_HAS_GHOSTS)
+        return false;
 
     void_ref_ptr vr = cache.GetVoidRef("any_mesh",
                                    AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
@@ -3939,23 +3949,21 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
     }
     int  shouldStop = (haveGlobalNodeIds ? 0 : 1);
 
-    if (haveGlobalNodeIds)
-    {
-
 #ifdef PARALLEL
-        int  parallelShouldStop;
-        MPI_Allreduce(&shouldStop, &parallelShouldStop, 1, MPI_INT, MPI_MAX,
-                      MPI_COMM_WORLD);
-        shouldStop = parallelShouldStop;
+    int  parallelShouldStop;
+    MPI_Allreduce(&shouldStop, &parallelShouldStop, 1, MPI_INT, MPI_MAX,
+                  MPI_COMM_WORLD);
+    shouldStop = parallelShouldStop;
 #endif
 
-        if (shouldStop > 0)
-        {
-            debug1 << "Not applying ghost zones because not all the domains "
-                   << "have global node ids." << endl;
-            return false;
-        }
-
+    if (shouldStop > 0)
+    {
+        debug1 << "Not applying ghost zones because not all the domains "
+               << "have global node ids." << endl;
+        return false;
+    }
+    else
+    {
         int timerHandle = visitTimer->StartTimer();
 
         //

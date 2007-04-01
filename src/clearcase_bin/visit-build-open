@@ -56,6 +56,7 @@ gps=true
 riptide=true
 frost=true
 pengra=true
+thunder=true
 
 dist=undefined
 
@@ -75,6 +76,7 @@ do
          riptide=false
          frost=false
          pengra=false
+         thunder=false
          shift
          ;;
       -kickit)
@@ -131,6 +133,14 @@ do
          ;;
       +pengra)
          pengra=true
+         shift
+         ;;
+      -thunder)
+         thunder=false
+         shift
+         ;;
+      +thunder)
+         thunder=true
          shift
          ;;
       -d)
@@ -510,9 +520,59 @@ then
 fi
 
 #
+# Build on thunder.
+#
+rm -f thunder
+cat <<EOF > thunder
+#!/bin/sh
+if test ! -d /usr/tmp/$user ; then
+   mkdir /usr/tmp/$user
+fi
+if test ! -d /usr/tmp/$user/thunder ; then
+   mkdir /usr/tmp/$user/thunder
+fi
+rm -rf /usr/tmp/$user/thunder/visitbuild
+mkdir /usr/tmp/$user/thunder/visitbuild
+mv thunder_$dist.tar.gz /usr/tmp/$user/thunder/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/thunder/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
+make -j 3 >> ../buildlog 2>&1
+clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
+mv visit\$ver2.linux-ia64.tar.gz ..
+cd ..
+rm -f resultlog
+echo "        build of visit on thunder"      > resultlog 2>&1
+echo "       ---------------------------"     >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $thunder = true ]
+then
+   if [ $test = no ]
+   then
+      scp thunder thunder2:thunder_buildit
+      scp $dist.tar.gz thunder2:thunder_$dist.tar.gz
+      ssh thunder2 "chmod 750 thunder_buildit;./thunder_buildit" &
+   fi
+fi
+
+#
 # Clean up.
 #
 if [ $test = no ]
 then
-   rm -f kickit sunspot hyper gps riptide frost pengra
+   rm -f kickit sunspot hyper gps riptide frost pengra thunder
 fi

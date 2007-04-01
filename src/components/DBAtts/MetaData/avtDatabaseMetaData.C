@@ -5829,6 +5829,34 @@ avtDatabaseMetaData::SetContainsGhostZones(std::string name, avtGhostType val)
     }
 }
 
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::GetContainsGhostZones
+//
+//  Purpose:
+//      Gets whether a particular mesh has ghost zones.
+//
+//  Arguments:
+//      name     The name of a mesh.
+//      val      True if it has ghost zones, false otherwise.
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    August 10, 2004 
+//
+// ****************************************************************************
+
+avtGhostType
+avtDatabaseMetaData::GetContainsGhostZones(std::string name) const
+{
+    for (int i = 0 ; i < GetNumMeshes() ; i++)
+    {
+        if (meshes[i]->name == name)
+        {
+            return meshes[i]->containsGhostZones;
+        }
+    }
+    return AVT_MAYBE_GHOSTS;
+}
+
 
 // ****************************************************************************
 //  Method: avtDatabaseMetaData::SetContainsOriginalCells

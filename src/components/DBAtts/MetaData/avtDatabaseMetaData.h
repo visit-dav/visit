@@ -373,6 +373,10 @@ public:
 
 //----------------------------------------------------------------------------
 //  Class: avtDatabaseMetaData
+//
+//  Modifications:
+//    Mark C. Miller, Tue Aug 10 14:16:36 PDT 2004
+//    Added method GetContainsGhosts()
 //----------------------------------------------------------------------------
 class DBATTS_API avtDatabaseMetaData : public AttributeSubject
 {
@@ -522,6 +526,7 @@ public:
 
     void         SetBlocksForMesh(int index, int nBlocks);
     void         SetContainsGhostZones(std::string name, avtGhostType);
+    avtGhostType GetContainsGhostZones(std::string name) const;
     void         SetContainsOriginalCells(std::string name, bool);
     void         SetContainsOriginalNodes(std::string name, bool);
     void         SetContainsGlobalNodeIds(std::string name, bool);

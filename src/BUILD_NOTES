@@ -489,16 +489,16 @@ mkdir $VISITDIR/qt/3.3.2/$VISITARCH/bin
 mkdir $VISITDIR/qt/3.3.2/$VISITARCH/include
 mkdir $VISITDIR/qt/3.3.2/$VISITARCH/include/private
 mkdir $VISITDIR/qt/3.3.2/$VISITARCH/lib
-cp bin/{designer,findtr,moc,qt20fix,qtrename140} $VISITDIR/qt/$VISITARCH/3.3.2/bin
-cd include; cp *.h $VISITDIR/qt/$VISITARCH/3.3.2/include
-cp private/*.h $VISITDIR/qt/$VISITARCH/3.3.2/include/private
-cd ../lib;find . -print | cpio -pvmud $VISITDIR/qt/$VISITARCH/3.3.2/lib
+cp bin/{designer,findtr,moc,qt20fix,qtrename140} $VISITDIR/qt/3.3.2/$VISITARCH/bin
+cd include; cp *.h $VISITDIR/qt/3.3.2/$VISITARCH/include
+cp private/*.h $VISITDIR/qt/3.3.2/$VISITARCH/include/private
+cd ../lib;find . -print | cpio -pvmud $VISITDIR/qt/3.3.2/$VISITARCH/lib
 cd ../..
 #
 # On aix systems you will need to add an additional link to the lib
 # directory so that the loader can find the library.
 #
-# ln -s libqt.so.3.3.2 $VISITDIR/qt/$VISITARCH/3.3.2/lib/libqt.so
+# ln -s libqt.so.3.3.2 $VISITDIR/qt/3.3.2/$VISITARCH/lib/libqt.so
 #
 
 Silo

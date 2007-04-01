@@ -57,6 +57,8 @@ gps=true
 riptide=true
 frost=true
 pengra=true
+alc=true
+thunder=true
 
 ver=undefined
 verflag=-private
@@ -77,6 +79,8 @@ do
          riptide=false
          frost=false
          pengra=false
+         alc=false
+         thunder=false
          shift
          ;;
       -kickit)
@@ -133,6 +137,22 @@ do
          ;;
       +pengra)
          pengra=true
+         shift
+         ;;
+      -alc)
+         alc=false
+         shift
+         ;;
+      +alc)
+         alc=true
+         shift
+         ;;
+      -thunder)
+         thunder=false
+         shift
+         ;;
+      +thunder)
+         thunder=true
          shift
          ;;
       -v)
@@ -428,9 +448,89 @@ then
 fi
 
 #
+# Install on alc.
+#
+rm -f alc
+cat <<EOF > alc
+#!/bin/sh
+./visit-install -r -private -c open -g visit -gw -l $ver linux /usr/gapps/visit > installlog 2>&1
+rm -f resultlog
+echo "        install of visit on alc"             > resultlog 2>&1
+echo "       -------------------------"            >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+df -k /usr/gapps/visit                             >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver/linux-intel/bin        >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/linux-intel/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/linux-intel/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/linux-intel/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "The database plugins:"                       >> resultlog 2>&1
+ls /usr/gapps/visit/$ver/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $alc = true ]
+then
+   if [ $test = no ]
+   then
+      scp pengra0:/usr/tmp/brugger/pengra/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_chaos.tar.gz
+      scp visit$ver2.linux_chaos.tar.gz alc0:visit$ver2.linux.tar.gz
+      scp visit-install alc0:
+      scp alc alc0:alc_install
+      ssh alc0 "chmod 750 alc_install;./alc_install"
+      # Temporary until the gnu shared libraries are fixed on alc.  Copying
+      # the gcc 3.2.3 shared libraries to visit's shared library directory so
+      # that it gets them instead of the broken gnu 3.3.3 shared libraries.
+      scp pengra0:/usr/lib/libstdc++.so.5.0.3 .
+      scp pengra0:/lib/libgcc_s.so.1 .
+      chmod 664 libstdc++.so.5.0.3 libgcc_s.so.1
+      scp libstdc++.so.5.0.3 alc:/usr/gapps/visit/$ver/linux-intel/lib
+      scp libgcc_s.so.1 alc:/usr/gapps/visit/$ver/linux-intel/lib
+   fi
+fi
+
+#
+# Install on thunder.
+#
+rm -f thunder
+cat <<EOF > thunder
+#!/bin/sh
+./visit-install $verflag -c open -g visit -gw -l $ver linux-ia64 /usr/gapps/visit > installlog 2>&1
+rm -f resultlog
+echo "        install of visit on thunder"         > resultlog 2>&1
+echo "       -----------------------------"        >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+df -k /usr/gapps/visit                             >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver/linux-ia64/bin         >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/linux-ia64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/linux-ia64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/linux-ia64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "The database plugins:"                       >> resultlog 2>&1
+ls /usr/gapps/visit/$ver/linux-ia64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/linux-ia64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $thunder = true ]
+then
+   if [ $test = no ]
+   then
+      scp thunder2:/usr/tmp/brugger/thunder/visitbuild/visit$ver2.linux-ia64.tar.gz .
+      scp visit$ver2.linux-ia64.tar.gz alc0:
+      scp visit-install alc0:
+      scp thunder alc0:thunder_install
+      ssh alc0 "chmod 750 thunder_install;./thunder_install"
+   fi
+fi
+
+#
 # Clean up.
 #
 if [ $test = no ]
 then
-   rm -f kickit sunspot hyper gps riptide frost pengra
+   rm -f kickit sunspot hyper gps riptide frost pengra alc thunder
 fi
