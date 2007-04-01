@@ -36,6 +36,9 @@ class QvisHelpListViewItem;
 //   Brad Whitlock, Tue Sep 10 16:23:09 PST 2002
 //   Added an internal convenience method.
 //
+//   Brad Whitlock, Thu Feb 17 12:14:33 PDT 2005
+//   Added synchronizeContents.
+//
 // ****************************************************************************
 
 class GUI_API QvisHelpWindow : public QvisDelayedWindow
@@ -51,6 +54,7 @@ public:
 public slots:
     void displayCopyright();
     void displayReleaseNotes();
+    void displayReleaseNotesIfAvailable();
     virtual void show();
 private slots:
     void activeTabChanged(QWidget *);
@@ -63,7 +67,7 @@ private slots:
     void displayNoHelp();
     void displayTitle(const QString &title);
     void displayHome();
-    void displayPage(const QString &page, bool reload = false);
+    bool displayPage(const QString &page, bool reload = false);
     void increaseFontSize();
     void decreaseFontSize();
     void displayIndexTopic();
@@ -84,6 +88,8 @@ private:
     bool TopicFromDocHelper(QString &str, const QString &doc,
                             QvisHelpListViewItem *item);
     QString CompleteFileName(const QString &page) const;
+    void synchronizeContents(const QString &page);
+    void displayReleaseNotesHelper(bool);
 
     QTabWidget   *helpTabs;
     QListView    *helpContents;

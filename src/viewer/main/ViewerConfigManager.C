@@ -109,9 +109,12 @@ ViewerConfigManager::~ViewerConfigManager()
 //    Brad Whitlock, Tue Feb 24 10:26:48 PDT 2004
 //    I made it write the file in text mode.
 //
+//    Brad Whitlock, Thu Feb 17 15:07:41 PST 2005
+//    Added code to expand tilde and made it return a bool.
+//
 // ****************************************************************************
 
-void
+bool
 ViewerConfigManager::WriteConfigFile(const char *filename)
 {
     DataNode topLevel("topLevel");
@@ -140,8 +143,9 @@ ViewerConfigManager::WriteConfigFile(const char *filename)
     parent->CreateNode(viewerNode, writeDetail);
 
     // Try to open the output file.
-    if((fp = fopen(filename, "wt")) == 0)
-        return;
+    std::string expandedFile(ExpandUserPath(filename));
+    if((fp = fopen(expandedFile.c_str(), "wt")) == 0)
+        return false;
 
     // Write the output file to stdout for now.
     fprintf(fp, "<?xml version=\"1.0\"?>\n");
@@ -150,6 +154,8 @@ ViewerConfigManager::WriteConfigFile(const char *filename)
     // close the file
     fclose(fp);
     fp = 0;
+
+    return true;
 }
 
 // ****************************************************************************
@@ -187,6 +193,9 @@ ViewerConfigManager::WriteConfigFile(const char *filename)
 //    Brad Whitlock, Tue Feb 24 10:27:10 PDT 2004
 //    I made it read the file in text mode.
 //
+//    Brad Whitlock, Thu Feb 17 15:08:48 PST 2005
+//    Added tilde expansion code.
+//
 // ****************************************************************************
 
 DataNode *
@@ -195,7 +204,8 @@ ViewerConfigManager::ReadConfigFile(const char *filename)
     DataNode *node = 0;
 
     // Try and open the file for reading.
-    if((fp = fopen(filename, "rt")) == 0)
+    std::string expandedFile(ExpandUserPath(filename));
+    if((fp = fopen(expandedFile.c_str(), "rt")) == 0)
         return node;
 
     // Read the XML tag and ignore it.
@@ -400,20 +410,32 @@ ViewerConfigManager::Add(AttributeSubject *subject)
 // Creation:   Wed Jul 9 13:06:12 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Feb 17 16:08:58 PST 2005
+//   Added an error message if the session file could not be saved.
+//
 // ****************************************************************************
 
 void
 ViewerConfigManager::ExportEntireState(const std::string &filename)
 {
     writeDetail = true;
-    WriteConfigFile(filename.c_str());
+    bool wroteSession = WriteConfigFile(filename.c_str());
     writeDetail = false;
 
-    std::string str("VisIt exported the current session to: ");
-    str += filename;
-    str += ".";
-    Message(str.c_str());
+    if(wroteSession)
+    {
+        std::string str("VisIt exported the current session to: ");
+        str += filename;
+        str += ".";
+        Message(str.c_str());
+    }
+    else
+    {
+        std::string str("VisIt could not save your session to: ");
+        str += filename;
+        str += ".";
+        Error(str.c_str());
+    }
 }
 
 // ****************************************************************************

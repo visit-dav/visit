@@ -27,6 +27,8 @@ bool UTILITY_API  ReadAndProcessDirectory(const std::string &,
                                           ProcessDirectoryCallback *,
                                           void * = 0,
                                           bool = false);
+std::string UTILITY_API ExpandUserPath(const std::string &);
+
 void UTILITY_API  WaitUntilFile(const char *);
 bool UTILITY_API  WildcardStringMatch(const char *p, const char *s);
 bool UTILITY_API  WildcardStringMatch(const std::string &p, const std::string &s);

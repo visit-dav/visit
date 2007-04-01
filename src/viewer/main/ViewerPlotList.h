@@ -296,7 +296,7 @@ public:
     bool GetNKeyframesWasUserSet() const;
 
 
-    void CopyFrom(const ViewerPlotList *pl);
+    void CopyFrom(const ViewerPlotList *pl, bool copyPlots);
     void ClearPlots();
     void ClearActors();
     void TransmutePlots(bool turningOffScalableRendering);

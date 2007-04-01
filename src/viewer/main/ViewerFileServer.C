@@ -10,7 +10,6 @@
 #include <DatabaseCorrelation.h>
 #include <DatabaseCorrelationList.h>
 #include <DataNode.h>
-#include <Expression.h>
 #include <GetMetaDataException.h>
 #include <HostProfileList.h>
 #include <HostProfile.h>
@@ -2345,7 +2344,14 @@ ViewerFileServer::SetFromNode(DataNode *parentNode)
 // Creation:   Fri Mar 26 10:18:45 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Feb 18 10:00:35 PDT 2005
+//   Changed the code so it uses an expression list that is correct for the
+//   specified database instead of just assuming that ParsingExprList will
+//   contain the right expression list. Note that someday when we have support
+//   for expressions from multiple databases, and ParsingExprList contains
+//   the list of expressions from all open sources then it will be okay to
+//   use ParsingExprList again.
+//
 // ****************************************************************************
 
 avtVarType
@@ -2355,10 +2361,12 @@ ViewerFileServer::DetermineVarType(const std::string &host,
     avtVarType retval = AVT_UNKNOWN_TYPE;
 
     // Check if the variable is an expression.
-    Expression *exp = ParsingExprList::GetExpression(var);
+    ExpressionList expressionList;
+    GetAllExpressions(expressionList, host, db, state);
+    Expression *exp = expressionList[var.c_str()];
+
     if (exp != NULL)
     {
-        // Get the expression type.
         retval = ParsingExprList::GetAVTType(exp->GetType());
     }
     else
@@ -2396,26 +2404,112 @@ ViewerFileServer::DetermineVarType(const std::string &host,
     return retval;
 }
 
+// ****************************************************************************
+// Method: ViewerFileServer::GetUserExpressions
 //
-// ViewerFileServer::ServerInfo methods
+// Purpose: 
+//   Gets the expressions that were defined by the user.
 //
+// Arguments:
+//   newList : The return list for the user-defined expressions.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 18 09:44:49 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
 
-ViewerFileServer::ServerInfo::ServerInfo(MDServerProxy *p, const stringVector &args) : arguments(args)
+void
+ViewerFileServer::GetUserExpressions(ExpressionList &newList)
 {
-    proxy = p;
+    ExpressionList *exprList = ParsingExprList::Instance()->GetList();
+
+    //
+    // Create a new expression list that contains all of the expressions
+    // from the main expression list that are not expressions that come
+    // from databases.
+    //
+    for(int i = 0; i < exprList->GetNumExpressions(); ++i)
+    {
+        const Expression &expr = exprList->GetExpression(i);
+        if(!expr.GetFromDB())
+            newList.AddExpression(expr);
+    }
 }
 
-ViewerFileServer::ServerInfo::ServerInfo(const ServerInfo &b)
+// ****************************************************************************
+// Method: ViewerFileServer::GetDatabaseExpressions
+//
+// Purpose: 
+//   Gets the database expressions for the specified database.
+//
+// Arguments:
+//   newList : The return list for the database expressions.
+//   host    : The host where the database is located.
+//   db      : The database name.
+//   state   : The database time state.
+//
+// Returns:    The list of database expressions.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 18 09:45:27 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerFileServer::GetDatabaseExpressions(ExpressionList &newList,
+    const std::string &host, const std::string &db, int state)
 {
-    proxy = 0;
-    arguments = b.arguments;
+    // Store all of the specified database's expressions in the 
+    // new list.
+    if(host.size() > 0 && db.size() > 0)
+    {
+        const avtDatabaseMetaData *md = GetMetaDataForState(host, db, state);
+        if (md != 0)
+        {
+            // Add the expressions for the database.
+            for (int j = 0 ; j < md->GetNumberOfExpressions(); ++j)
+                newList.AddExpression(*(md->GetExpression(j)));
+        }
+    }
 }
 
-ViewerFileServer::ServerInfo::~ServerInfo()
-{
-    delete proxy;
-}
+// ****************************************************************************
+// Method: ViewerFileServer::GetAllExpressions
+//
+// Purpose: 
+//   Gets user-defined expressions and the expressions for the specified
+//   database.
+//
+// Arguments:
+//   newList : The return list for the database expressions.
+//   host    : The host where the database is located.
+//   db      : The database name.
+//   state   : The database time state.
+//
+// Returns:    A list of expressions.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 18 09:46:48 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
 
+void
+ViewerFileServer::GetAllExpressions(ExpressionList &newList,
+    const std::string &host, const std::string &db, int state)
+{
+    // Store all of the expressions that are not database expressions
+    // in the new list.
+    GetUserExpressions(newList);
+    GetDatabaseExpressions(newList, host, db, state);
+}
 
 // ****************************************************************************
 //  Method:  ViewerFileServer::SetSimulationMetaData
@@ -2525,4 +2619,24 @@ ViewerFileServer::GetPluginErrors(const std::string &host)
         return servers[host]->proxy->GetPluginErrors();
     }
     return "";
+}
+
+//
+// ViewerFileServer::ServerInfo methods
+//
+
+ViewerFileServer::ServerInfo::ServerInfo(MDServerProxy *p, const stringVector &args) : arguments(args)
+{
+    proxy = p;
+}
+
+ViewerFileServer::ServerInfo::ServerInfo(const ServerInfo &b)
+{
+    proxy = 0;
+    arguments = b.arguments;
+}
+
+ViewerFileServer::ServerInfo::~ServerInfo()
+{
+    delete proxy;
 }

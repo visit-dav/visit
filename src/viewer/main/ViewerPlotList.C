@@ -2774,10 +2774,15 @@ ViewerPlotList::MovePlotDatabaseKeyframe(int plotId, int oldFrame, int newFrame)
 //    Brad Whitlock, Fri Apr 2 10:57:29 PDT 2004
 //    I rewrote the method so it uses the new ViewerPlot copy constructor.
 //
+//    Brad Whitlock, Thu Feb 17 14:24:54 PST 2005
+//    I added the copyPlots argument since there are occasions when we want
+//    to copy the plot list's database, engine, key, time sliders, etc but
+//    don't necessarily want to copy its plots.
+//
 // ****************************************************************************
 
 void
-ViewerPlotList::CopyFrom(const ViewerPlotList *pl)
+ViewerPlotList::CopyFrom(const ViewerPlotList *pl, bool copyPlots)
 {
     //
     // Copy the database and the host database.
@@ -2816,51 +2821,54 @@ ViewerPlotList::CopyFrom(const ViewerPlotList *pl)
     //
     // Copy the plots from the input plot list (pl) to this plot list.
     //
-    int plotsAdded = 0;
-    for (int i = 0; i < pl->GetNumPlots(); ++i)
+    if(copyPlots)
     {
-         //
-         // Try and create a copy of the i'th plot.
-         //
-         ViewerPlot *src = pl->GetPlot(i);
-         ViewerPlot *dest = 0;
-         TRY
-         {
-             dest = new ViewerPlot(*src);
-         }
-         CATCH(VisItException)
-         {
-            if (dest)
-            {
-                delete dest;
-                dest = NULL;
-            }
-         }
-         ENDTRY
-
-         if(dest != 0)
-         {
+        int plotsAdded = 0;
+        for (int i = 0; i < pl->GetNumPlots(); ++i)
+        {
              //
-             // Add the new plot to the plot list.
+             // Try and create a copy of the i'th plot.
              //
-             SimpleAddPlot(dest, false);
-             ++plotsAdded;
-         }
-         else
-         {
-             Error("VisIt could not copy plots.");
-             return;
-         }
-    }
+             ViewerPlot *src = pl->GetPlot(i);
+             ViewerPlot *dest = 0;
+             TRY
+             {
+                 dest = new ViewerPlot(*src);
+             }
+             CATCH(VisItException)
+             {
+                 if (dest)
+                 {
+                     delete dest;
+                     dest = NULL;
+                 }
+             }
+             ENDTRY
 
-    //
-    // Update the client attributes.
-    //
-    if (plotsAdded > 0)
-    {
-        UpdatePlotList();
-        UpdatePlotAtts();
-        UpdateSILRestrictionAtts();
+             if(dest != 0)
+             {
+                 //
+                 // Add the new plot to the plot list.
+                 //
+                 SimpleAddPlot(dest, false);
+                 ++plotsAdded;
+             }
+             else
+             {
+                 Error("VisIt could not copy plots.");
+                 return;
+             }
+        }
+
+        //
+        // Update the client attributes.
+        //
+        if (plotsAdded > 0)
+        {
+            UpdatePlotList();
+            UpdatePlotAtts();
+            UpdateSILRestrictionAtts();
+        }
     }
 }
 
@@ -6368,6 +6376,9 @@ ViewerPlotList::UpdateSILRestrictionAtts()
 //   I added code to prevent the sil restriction from being sent to the
 //   client unless the plot list belongs to the active window.
 //
+//   Brad Whitlock, Fri Feb 18 10:41:43 PDT 2005
+//   I moved some of the logic into the file server.
+//
 // ****************************************************************************
 
 void
@@ -6379,21 +6390,6 @@ ViewerPlotList::UpdateExpressionList(bool considerPlots, bool update)
                << "because the plot list does not belong to the active window."
                << endl;
         return;
-    }
-
-    ExpressionList *exprList = ParsingExprList::Instance()->GetList();
-
-    //
-    // Create a new expression list that contains all of the expressions
-    // from the main expression list that are not expressions that come
-    // from databases.
-    //
-    ExpressionList newList;
-    for(int i = 0; i < exprList->GetNumExpressions(); ++i)
-    {
-        const Expression &expr = exprList->GetExpression(i);
-        if(!expr.GetFromDB())
-            newList.AddExpression(expr);
     }
 
     //
@@ -6438,24 +6434,19 @@ ViewerPlotList::UpdateExpressionList(bool considerPlots, bool update)
     }
 
     //
-    // Try and get the metadata for the database.
+    // Create a new expression list that contains all of the expressions
+    // from the main expression list that are not expressions that come
+    // from databases.
     //
-    if(host.size() > 0 && db.size() > 0)
-    {
-        const avtDatabaseMetaData *md;
-        if((md = fileServer->GetMetaDataForState(host, db, t)) != 0)
-        {
-            // Add the expressions for the database.
-            for (int j = 0 ; j < md->GetNumberOfExpressions(); ++j)
-                newList.AddExpression(*(md->GetExpression(j)));
-        }
-    }
+    ExpressionList newList;
+    fileServer->GetAllExpressions(newList, host, db, t);    
 
     //
     // If the new expression list is different from the expression list
     // that we already have, save the new expression list and send it to
     // the client.
     //
+    ExpressionList *exprList = ParsingExprList::Instance()->GetList();
     if(newList != *exprList)
     {
         *exprList = newList;
@@ -6488,6 +6479,9 @@ ViewerPlotList::UpdateExpressionList(bool considerPlots, bool update)
 //   I added code to prevent the sil restriction from being sent to the
 //   client unless the plot list belongs to the active window.
 //
+//   Brad Whitlock, Fri Feb 18 10:44:22 PDT 2005
+//   I moved most of the logic into the file server.
+//
 // ****************************************************************************
 
 void
@@ -6502,37 +6496,13 @@ ViewerPlotList::UpdateExpressionListUsingDB(const std::string &host,
         return;
     }
 
+    //
+    // Update the expression list with all of the user-defined expressions and
+    // expressions that come from the specified database.
+    //
     ExpressionList *exprList = ParsingExprList::Instance()->GetList();
-
-    //
-    // Create a new expression list that contains all of the expressions
-    // from the main expression list that are not expressions that come
-    // from databases.
-    //
-    ExpressionList newList;
-    for(int i = 0; i < exprList->GetNumExpressions(); ++i)
-    {
-        const Expression &expr = exprList->GetExpression(i);
-        if(!expr.GetFromDB())
-            newList.AddExpression(expr);
-    }
-
-    //
-    // Try and get the metadata for the database.
-    //
-    if(host.size() > 0 && db.size() > 0)
-    {
-        ViewerFileServer *fileServer = ViewerFileServer::Instance();
-        const avtDatabaseMetaData *md = fileServer->GetMetaDataForState(host, db, t);
-        if(md != 0)
-        {
-            // Add the expressions for the database.
-            for (int j = 0 ; j < md->GetNumberOfExpressions(); ++j)
-                newList.AddExpression(*(md->GetExpression(j)));
-        }
-    }
-
-    *exprList = newList;
+    exprList->ClearExpressions();
+    ViewerFileServer::Instance()->GetAllExpressions(*exprList, host, db, t);
 }
 
 // ****************************************************************************

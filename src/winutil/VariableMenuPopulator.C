@@ -139,6 +139,12 @@ VariableMenuPopulator::ClearDatabaseName()
 //   Jeremy Meredith, Tue Aug 24 16:18:19 PDT 2004
 //   Force an update if it is metadata from a simulation.
 //
+//   Brad Whitlock, Fri Feb 18 11:39:20 PDT 2005
+//   I made it use only the user-defined expressions and the expressions
+//   from the metadata so we don't accidentally get menus that contain
+//   database expressions from databases other than the one that we're
+//   using here.
+//
 // ****************************************************************************
 
 bool
@@ -149,13 +155,21 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     if(md == 0 || sil == 0 || exprList == 0)
         return false;
 
+    // The expression list can sometimes contain database expressions for
+    // a database that is not the database specified by dbName. To combat
+    // this problem, we only use the user-defined expressions from the
+    // passed in exprList and we supplement it with any database expressions
+    // that are contained in the metadata md.
+    ExpressionList newExpressionList;
+    GetRelevantExpressions(newExpressionList, md, *exprList);
+
     //
     // If the database name is the same and the expression list is the
     // same then return false, indicating that no updates are required.
     // If this is a simulation, then the variable list might change at
     // any time, so treat that as equivalent to MustRepopulateOnStateChange.
     //
-    bool expressionsSame = *exprList == cachedExpressionList;
+    bool expressionsSame = newExpressionList == cachedExpressionList;
     bool variableMetaData = md->GetMustRepopulateOnStateChange() ||
                             md->GetIsSimulation();
     if(dbName == cachedDBName && expressionsSame && !variableMetaData)
@@ -168,7 +182,7 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     //
     cachedDBName = dbName;
     if(!expressionsSame)
-        cachedExpressionList = *exprList;
+        cachedExpressionList = newExpressionList;
 
     // Clear out the variable lists and set their sorting method..
     meshVars.Clear();        meshVars.SetSorted(md->GetMustAlphabetizeVariables());
@@ -299,12 +313,12 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     }
 
     //
-    // Add the expressions from the expression list.
+    // Add the expressions from the cached expression list.
     //
-    int nexp = exprList->GetNumExpressions();
+    int nexp = cachedExpressionList.GetNumExpressions();
     for(i = 0; i < nexp; ++i)
     {
-        const Expression &expr = exprList->operator[](i);
+        const Expression &expr = cachedExpressionList[i];
         if(!expr.GetHidden())
             AddExpression(expr);
     }
@@ -369,6 +383,49 @@ VariableMenuPopulator::AddExpression(const Expression &expr)
             m->AddVariable(expr.GetName(), true);
         else
             m->AddVariable(expr.GetName() + " (expression)", true);
+    }
+}
+
+// ****************************************************************************
+// Method: VariableMenuPopulator::GetRelevantExpressions
+//
+// Purpose: 
+//   Gets the list of user-defined expressions and expressions that come
+//   from the metadata.
+//
+// Arguments:
+//   newExpressionList : The new expression list.
+//   md                : The metadata that we're searching for expressions.
+//   exprList          : The expression list to use for the user-defined
+//                       expressions.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 18 11:36:26 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VariableMenuPopulator::GetRelevantExpressions(ExpressionList &newExpressionList,
+    const avtDatabaseMetaData *md, const ExpressionList &exprList)
+{
+    int i;
+
+    // Get the user-defined expressions.
+    for(i = 0; i < exprList.GetNumExpressions(); ++i)
+    {
+        const Expression &e = exprList[i];
+        if(!e.GetHidden() && !e.GetFromDB())
+            newExpressionList.AddExpression(e);
+    }
+
+    // Get the expressions from the metadata.
+    for(i = 0; i < md->GetNumberOfExpressions(); ++i)
+    {
+        const Expression *e = md->GetExpression(i);
+        if(e != 0 && !e->GetHidden())
+            newExpressionList.AddExpression(*e);
     }
 }
 

@@ -10,7 +10,6 @@
 #include <vtkCellData.h>
 #include <vtkCellTypes.h>
 #include <vtkDisjointCubesFacelistFilter.h>
-#include <vtkGeometryFilter.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
@@ -188,6 +187,9 @@ avtFacelistFilter::SetForceFaceConsolidation(bool afc)
 //    Hank Childs, Fri Mar 28 08:21:05 PST 2003
 //    Add support for points.
 //
+//    Kathleen Bonnell, Fri Feb 18 15:08:32 PST 2005 
+//    Convert 'point' and 'line' Structured or Rectilinear grids to poly data. 
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -224,7 +226,15 @@ avtFacelistFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
       // Points and lines
       case 0:
       case 1:
-        out_ds = in_ds;
+        if (in_ds->GetDataObjectType() != VTK_STRUCTURED_GRID &&
+            in_ds->GetDataObjectType() != VTK_RECTILINEAR_GRID)
+        {
+            out_ds = in_ds; 
+        }
+        else
+        {
+            out_ds = ConvertToPolys(in_ds, tDim);
+        }
         break;
 
       // 2D meshes or surfaces
@@ -618,6 +628,80 @@ avtFacelistFilter::TakeFacesForDisjointElementMesh(vtkDataSet *in_ds, int dom)
     dcff->Delete();
     return output;
 }
+
+
+// ****************************************************************************
+//  Method: avtFacelistFilter::ConvertToPolys
+//
+//  Purpose:
+//      Converts the incoming dataset to polydata.
+//
+//  Arguments:
+//      in_ds      The input dataset.
+//
+//  Returns:       The output dataset.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   February 18, 2005
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtFacelistFilter::ConvertToPolys(vtkDataSet *in_ds, int tDim)
+{
+    int dstype = in_ds->GetDataObjectType();
+
+    if (dstype != VTK_STRUCTURED_GRID && dstype != VTK_RECTILINEAR_GRID)
+    {
+        return in_ds;
+    }
+
+    //
+    // Set up all of the things that won't change -- the points and the point
+    // and cell data.
+    //
+    vtkPoints *pts = vtkVisItUtility::GetPoints(in_ds);
+    vtkPolyData *out_ds = vtkPolyData::New();
+    out_ds->SetPoints(pts);
+    pts->Delete();
+    out_ds->GetPointData()->PassData(in_ds->GetPointData());
+    out_ds->GetCellData()->PassData(in_ds->GetCellData());
+    out_ds->GetFieldData()->PassData(in_ds->GetFieldData());
+
+    int nPts = pts->GetNumberOfPoints();
+    vtkCellArray *cells = vtkCellArray::New();
+    cells->Allocate(nPts*(tDim+1));
+    vtkIdType ids[2] = {0, 0}; 
+    int i;
+    if (tDim == 0)
+    {
+        for (i = 0; i < nPts; i++)
+        {
+            ids[0] = i;
+            cells->InsertNextCell(1, ids);
+        }
+        out_ds->SetVerts(cells);
+    }
+    else
+    {
+        for (i = 0; i < nPts-1; i++)
+        {
+            ids[0] = i;
+            ids[1] = i+1;
+            cells->InsertNextCell(2, ids);
+        }
+        out_ds->SetLines(cells);
+    }
+    cells->Delete();
+
+    ManageMemory(out_ds);
+    out_ds->Delete();
+
+    return out_ds;
+}
+
 
 
 // ****************************************************************************

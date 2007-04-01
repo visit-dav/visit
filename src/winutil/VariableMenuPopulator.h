@@ -47,6 +47,9 @@ class QObject;
 //   Brad Whitlock, Fri Dec 3 13:27:10 PST 2004
 //   I changed how slots are hooked up on the UpdateSingleVariableMenu method.
 //
+//   Brad Whitlock, Fri Feb 18 11:38:03 PDT 2005
+//   I added the GetRelevantExpressions helper method.
+//
 // ****************************************************************************
 
 class WINUTIL_API VariableMenuPopulator
@@ -98,6 +101,9 @@ private:
     void Split(const std::string &varName, stringVector &pieces) const;
     void AddVars(VariableList &to, VariableList &from);
     void AddExpression(const Expression &);
+    void GetRelevantExpressions(ExpressionList &newExpressionList,
+                                const avtDatabaseMetaData *md,
+                                const ExpressionList &exprList);
 
     // Keep track of the name of the database for which we have variables.
     std::string    cachedDBName;

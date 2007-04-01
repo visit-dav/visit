@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <visit-config.h>
 #include <DataNode.h>
+#include <DebugStream.h>
 #include <QvisHelpWindow.h>
 #include <QvisHelpListViewItem.h>
 #include <qaction.h>
@@ -286,6 +287,11 @@ QvisHelpWindow::CreateWindowContents()
 //   Brad Whitlock, Wed Sep 11 10:23:33 PDT 2002
 //   I added the copyright page.
 //
+//   Brad Whitlock, Fri Feb 18 13:44:43 PST 2005
+//   I changed the error message about visit.helpml not found into a message
+//   so it does not distract the user if running a help-less distribution
+//   for the first time.
+//
 // ****************************************************************************
 
 void
@@ -335,8 +341,10 @@ QvisHelpWindow::LoadHelp(const QString &fileName)
 
     if(noHelp)
     {
-        Error("VisIt cannot read the help index file! "
-              "No online help will be available.");
+        Message("VisIt cannot read the help index file! "
+                "No online help will be available.");
+        debug1 << "VisIt cannot read the help index file! "
+                  "No online help will be available.\n";
     }
 
     // Create a root node for the VisIt FAQ page.
@@ -808,7 +816,9 @@ QvisHelpWindow::CompleteFileName(const QString &page) const
 // Creation:   Fri Jul 12 13:02:14 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Feb 18 15:24:42 PST 2005
+//   Only display home page if we're not already showing something else.
+//
 // ****************************************************************************
 
 void
@@ -843,7 +853,8 @@ QvisHelpWindow::show()
         }
 
         // Make sure we display the home page first.
-        displayHome();
+        if(helpFile.isEmpty())
+            displayHome();
 
         // Set the enabled state of the remove bookmark button.
         removeBookmarkButton->setEnabled(bookmarks.count() > 0);
@@ -953,7 +964,7 @@ QvisHelpWindow::topicExpanded(QListViewItem *item)
     if(item2->document() != QString::null)
     {
         if(item2->document() != helpFile)
-            displayPage(item2->document());        
+            displayPage(item2->document());
     }
     else
         displayTitle(item2->text(0));
@@ -1057,17 +1068,22 @@ QvisHelpWindow::displayTitle(const QString &title)
 //   Brad Whitlock, Wed Sep 11 10:20:43 PDT 2002
 //   I made it display the copyright as a web page so it can be bookmarked.
 //
+//   Brad Whitlock, Thu Feb 17 12:11:49 PDT 2005
+//   Added code to synchronize the contents.
+//
 // ****************************************************************************
 
 void
 QvisHelpWindow::displayCopyright()
 {
     show();
-    displayPage("copyright.html");
+    QString page("copyright.html");
+    displayPage(page);
+    synchronizeContents(page);
 }
 
 // ****************************************************************************
-// Method: QvisHelpWindow::displayReleaseNotes
+// Method: QvisHelpWindow::displayReleaseNotesHelper
 //
 // Purpose: 
 //   This is a Qt slot function that display's VisIt's release notes for the
@@ -1077,16 +1093,61 @@ QvisHelpWindow::displayCopyright()
 // Creation:   Fri Jul 12 13:08:36 PST 2002
 //
 // Modifications:
+//   Brad Whitlock, Thu Feb 17 12:11:49 PDT 2005
+//   Added code to synchronize the contents. I also restructured the code
+//   so that the window gets created first if it has not been created so we
+//   can try to update the page without actually having to show the window
+//   unless the release notes are present.
 //   
 // ****************************************************************************
 
 void
-QvisHelpWindow::displayReleaseNotes()
+QvisHelpWindow::displayReleaseNotesHelper(bool showWin)
 {
-    show();
     QString relnotes;
     relnotes.sprintf("relnotes%s.html", VERSION);
-    displayPage(relnotes);
+
+    // Since we want to try and display the page before ever showing the
+    // window, we have to create the window first so we won't try to display
+    // the page into a bunch of uninitialized widgets. This is somewhat
+    // unconventional and we only do it so we can not show the window if
+    // the release notes are not found when we show release notes on startup.
+    if(!isCreated)
+    {
+        CreateEntireWindow();
+        isCreated = true;
+        UpdateWindow(true);
+    }
+
+    bool showWindow = showWin;
+    if(displayPage(relnotes))
+    {
+        synchronizeContents(relnotes);
+        showWindow = true;
+    }
+    else
+        Message("The release notes file cannot be opened.");
+
+    if(showWindow)
+        show();
+}
+
+//
+// Always tries to show release notes.
+//
+void
+QvisHelpWindow::displayReleaseNotes()
+{
+    displayReleaseNotesHelper(true);
+}
+
+//
+// Only shows release notes if they are available.
+//
+void
+QvisHelpWindow::displayReleaseNotesIfAvailable()
+{
+    displayReleaseNotesHelper(false);
 }
 
 // ****************************************************************************
@@ -1099,13 +1160,17 @@ QvisHelpWindow::displayReleaseNotes()
 // Creation:   Fri Jul 12 13:09:19 PST 2002
 //
 // Modifications:
+//   Brad Whitlock, Thu Feb 17 12:11:49 PDT 2005
+//   Added code to synchronize the contents.
 //   
 // ****************************************************************************
 
 void
 QvisHelpWindow::displayHome()
 {
-    displayPage("home.html");
+    QString page("home.html");
+    displayPage(page);
+    synchronizeContents(page);
 }
 
 // ****************************************************************************
@@ -1118,6 +1183,8 @@ QvisHelpWindow::displayHome()
 //   page   : The name of the page to display.
 //   reload : Whether or not to force the page to reload.
 //
+// Returns:   This method return true if the page is displayed; false otherwise.
+//
 // Programmer: Brad Whitlock
 // Creation:   Fri Jul 12 13:09:48 PST 2002
 //
@@ -1125,11 +1192,16 @@ QvisHelpWindow::displayHome()
 //   Brad Whitlock, Tue Sep 10 16:24:18 PST 2002
 //   I made it use a new helper method.
 //
+//   Brad Whitlock, Fri Feb 18 13:35:31 PST 2005
+//   I made it return a bool indicating whether or not it displayed the page.
+//
 // ****************************************************************************
 
-void
+bool
 QvisHelpWindow::displayPage(const QString &page, bool reload)
 {
+    bool retval = false;
+
     if(page != helpFile || reload)
     {
         QString file(CompleteFileName(page));
@@ -1137,9 +1209,58 @@ QvisHelpWindow::displayPage(const QString &page, bool reload)
         {
             helpBrowser->setSource(file);
             helpFile = page;
+            retval = true;
         }
         else
-           displayNoHelp();
+            displayNoHelp();
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: QvisHelpWindow::synchronizeContents
+//
+// Purpose: 
+//   Synchronizes the contents to the page being displayed.
+//
+// Arguments:
+//   page : The name of the page being displayed.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb 17 12:08:08 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisHelpWindow::synchronizeContents(const QString &page)
+{
+    // Update the contents so the right page is highlighted.
+    QListViewItemIterator it(helpContents);
+    for( ; it.current(); ++it)
+    {
+        QvisHelpListViewItem *item =
+            (QvisHelpListViewItem *)it.current();
+        if(item->document() == page)
+        {
+            // Open up all of the parents until we arrive at
+            // the top.
+            helpContents->blockSignals(true);
+            for(QListViewItem *p = it.current()->parent();
+                p != 0; p = p->parent())
+            {
+                p->setOpen(true);
+                if(p->childCount() > 0)
+                    p->setPixmap(0, openBookIcon);
+            }
+            helpContents->setCurrentItem(it.current());
+            helpContents->setSelected(it.current(), true);
+            helpContents->ensureItemVisible(it.current());
+            helpContents->blockSignals(false);
+            break;
+        }
     }
 }
 
@@ -1237,7 +1358,9 @@ QvisHelpWindow::decreaseFontSize()
 // Creation:   Fri Jul 12 13:11:49 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Feb 17 12:09:32 PDT 2005
+//   Added code to synchronize the help contents.
+//
 // ****************************************************************************
 
 void
@@ -1250,6 +1373,7 @@ QvisHelpWindow::displayIndexTopic()
         helpIndexText->setText(helpIndex->currentText());
         helpIndexText->blockSignals(false);
         displayPage(it.data());
+        synchronizeContents(it.data());
     }
 }
 
@@ -1268,7 +1392,9 @@ QvisHelpWindow::displayIndexTopic()
 // Creation:   Fri Jul 12 13:12:37 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Feb 17 12:10:06 PDT 2005
+//   Added code to synchronize contents.
+//
 // ****************************************************************************
 
 void
@@ -1304,7 +1430,10 @@ QvisHelpWindow::lookForIndexTopic(const QString &topic)
          // Try and display a help page for the topic.
          IndexMap::ConstIterator it = index.find(helpIndex->currentText());
          if(it != index.end())
+         {
              displayPage(it.data());
+             synchronizeContents(it.data());
+         }
     }
 }
 
@@ -1321,6 +1450,9 @@ QvisHelpWindow::lookForIndexTopic(const QString &topic)
 //   Brad Whitlock, Wed Sep 11 11:02:38 PDT 2002
 //   I fixed an error that caused bookmarks to fail sometimes.
 //
+//   Brad Whitlock, Thu Feb 17 12:10:42 PDT 2005
+//   Added code to synchronize the contents.
+//
 // ****************************************************************************
 
 void
@@ -1328,7 +1460,10 @@ QvisHelpWindow::displayBookmarkTopic()
 {
     IndexMap::ConstIterator it = bookmarks.find(helpBookMarks->currentText());
     if(it != bookmarks.end())
+    {
         displayPage(it.data());
+        synchronizeContents(it.data());
+    }
 }
 
 // ****************************************************************************

@@ -55,6 +55,9 @@ class   avtMultiFacelist;
 //    Hank Childs, Wed Aug 11 09:46:53 PDT 2004
 //    Added PerformRestriction.
 //
+//    Kathleen Bonnell, Fri Feb 18 11:13:16 PST 2005 
+//    Added ConvertToPolys. 
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtFacelistFilter : public avtStreamer
@@ -86,6 +89,7 @@ class AVTFILTERS_API avtFacelistFilter : public avtStreamer
     vtkDataSet                          *Take3DFaces(vtkDataSet *, int);
     vtkDataSet                          *TakeFacesForDisjointElementMesh(
                                                             vtkDataSet *, int);
+    vtkDataSet                          *ConvertToPolys(vtkDataSet *, int);
 
     virtual void                         InitializeFilter(void);
 

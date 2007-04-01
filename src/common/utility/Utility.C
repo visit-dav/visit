@@ -23,6 +23,7 @@ using std::vector;
 #include <sys/types.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <pwd.h>
 #endif
 
 // ****************************************************************************
@@ -1011,3 +1012,85 @@ ConfigStateIncrementRunCount(ConfigStateEnum &code)
 #endif
 }
 
+// ****************************************************************************
+// Function: ExpandUserPath
+//
+// Purpose: 
+//   Expands a path that contains ~ as its first character so it contains the
+//   absolute path to the specified user's home directory.
+//
+// Arguments:
+//   path : The path to expand.
+//
+// Returns:    If the first character is "~" then the path gets expanded,
+//             otherwise the path is returned unmodified.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb 17 14:57:57 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+ExpandUserPath(const std::string &path)
+{
+    std::string newPath(path);
+
+    if(path[0] == '~')
+    {
+        char username[256];
+        int  i;
+
+        // Find the user name portion of the path, ie ~user
+        for (i = 1; isalnum(path[i]); i++)
+        {
+            username[i - 1] = path[i];
+        }
+        username[i - 1] = '\0';
+
+#if defined(_WIN32)
+        if(i == 1)
+        {
+            // User just specified '~', get the current user name.
+            GetUserName(username, 256);
+        }
+
+        // Append the rest of the path to the home directory.
+        std::string restOfPath(path.substr(i, path.length() - i + 1));
+        std::string homeDir("C:\\Documents and Settings\\");
+        newPath = homeDir + std::string(username) + restOfPath;
+#else
+        // Check if the user specified '~' or '~name'.
+        struct passwd *users_passwd_entry = NULL;
+        if (i == 1)
+        {
+            // User just specified '~', get /etc/passwd entry
+            users_passwd_entry = getpwuid(getuid());
+        }
+        else
+        {
+            // User specified '~name', get /etc/passwd entry
+            users_passwd_entry = getpwnam(username);
+        }
+
+        // Now that we have a passwd entry, validate it.
+        if (users_passwd_entry == NULL)
+        {
+            // Did not specify a valid user name.  Do nothing. 
+            return newPath;
+        }
+        if (users_passwd_entry->pw_dir == NULL)
+        {
+            // Passwd entry is invalid.  Do nothing.
+            return newPath;
+        }
+
+        // Append the rest of the path to the home directory.
+        std::string restOfPath(path.substr(i, path.length() - i + 1));
+        newPath = std::string(users_passwd_entry->pw_dir) + restOfPath;
+#endif
+    }
+
+    return newPath;
+}

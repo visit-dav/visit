@@ -2,7 +2,6 @@
 #include <DataNode.h>
 #include <DebugStream.h>
 #include <Utility.h>
-#include <VisItException.h>
 #include <visit-config.h>
 
 // ****************************************************************************
@@ -60,6 +59,9 @@ ColorTableManager::~ColorTableManager()
 //   I fixed a bug where you could not save out color tables that were already
 //   external. I also changed how the message is returned.
 //
+//   Brad Whitlock, Thu Feb 17 15:57:41 PST 2005
+//   I changed how WriteConfigFile is used.
+//
 // ****************************************************************************
 
 bool
@@ -80,20 +82,14 @@ ColorTableManager::Export(const std::string &ctName,
         ctFileName = ctName;
     }
 
-    bool retval = false;
-    TRY
-    {
-        // Try and write out the color table.
-        WriteConfigFile(ctFileName.c_str());
-        retval = true;
+    bool retval;
+    if((retval = WriteConfigFile(ctFileName.c_str())) == true)
         message = ctFileName;
-    }
-    CATCH(VisItException)
+    else
     {
         message = std::string("VisIt could not export ") + ctName +
                   std::string(" to ") + ctFileName + ".";
     }
-    ENDTRY
 
     return retval;
 }
@@ -141,9 +137,12 @@ ColorTableManager::ImportColorTables(ColorTableAttributes *cta)
 //   Brad Whitlock, Thu Dec 18 11:18:06 PDT 2003
 //   I made it call CreateNode with the new completeSave flag set to false.
 //
+//   Brad Whitlock, Thu Feb 17 15:55:29 PST 2005
+//   I removed the exception and made the function return a bool.
+//
 // ****************************************************************************
 
-void
+bool
 ColorTableManager::WriteConfigFile(const char *filename)
 {
     DataNode topLevel("topLevel");
@@ -159,7 +158,7 @@ ColorTableManager::WriteConfigFile(const char *filename)
     // Try to open the output file.
     if((fp = fopen(filename, "wb")) == 0)
     {
-        EXCEPTION0(VisItException);
+        return false;
     }
 
     // Write the output file.
@@ -169,6 +168,8 @@ ColorTableManager::WriteConfigFile(const char *filename)
     // Close the file
     fclose(fp);
     fp = 0;
+
+    return true;
 }
 
 // ****************************************************************************

@@ -486,6 +486,9 @@ ViewerWindowManager::SetGeometry(const char *windowGeometry)
 //    Brad Whitlock, Tue Jan 27 17:26:46 PST 2004
 //    I changed the copy code a little bit.
 //
+//    Brad Whitlock, Thu Feb 17 14:23:24 PST 2005
+//    Added bool to ViewerPlotList::CopyFrom.
+//
 // ****************************************************************************
 
 void
@@ -516,7 +519,7 @@ ViewerWindowManager::AddWindow(bool copyAtts)
         dest->CopyAnnotationObjectList(src);
         dest->CopyLightList(src);
         dest->CopyViewAttributes(src);
-        dest->GetPlotList()->CopyFrom(src->GetPlotList());
+        dest->GetPlotList()->CopyFrom(src->GetPlotList(), true);
     }
     referenced[windowIndex] = true;
 
@@ -741,7 +744,9 @@ ViewerWindowManager::CopyViewToWindow(int from, int to)
 // Creation:   Tue Oct 15 16:39:42 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Feb 17 14:23:24 PST 2005
+//   Added bool to ViewerPlotList::CopyFrom.
+//
 // ****************************************************************************
 
 void
@@ -755,7 +760,7 @@ ViewerWindowManager::CopyPlotListToWindow(int from, int to)
     // If the Window pointers are valid then perform the operation.
     if(windows[from] != 0 && windows[to] != 0)
     {
-        windows[to]->GetPlotList()->CopyFrom(windows[from]->GetPlotList());
+        windows[to]->GetPlotList()->CopyFrom(windows[from]->GetPlotList(),true);
     }
 }
 
@@ -3527,19 +3532,32 @@ ViewerWindowManager::SetActiveWindow(const int windowId)
     // Copy the window attributes from the current window to the new
     // window if the new window has been referenced for the first time.
     //
-    if (clientAtts->GetCloneWindowOnFirstRef() && !referenced[windowId-1])
+    if (clientAtts->GetCloneWindowOnFirstRef())
     {
-        //
-        // Copy the global attributes, the annotation attributes, the light
-        // source attributes, the view attributes and the animation attributes.
-        //
         ViewerWindow *dest = windows[windowId-1];
         ViewerWindow *src = windows[activeWindow];
-        dest->CopyGeneralAttributes(src);
-        dest->CopyAnnotationAttributes(src);
-        dest->CopyLightList(src);
-        dest->CopyViewAttributes(src);
-        dest->GetPlotList()->CopyFrom(src->GetPlotList());
+
+        if(referenced[windowId-1])
+        {
+            // The window has been referenced before but it does not have
+            // a database. In this case, since we are probably going back to
+            // window 1 after doing stuff in window N, copy the plot list.
+            if(dest->GetPlotList()->GetHostDatabaseName() == "")
+                dest->GetPlotList()->CopyFrom(src->GetPlotList(), false);
+        }
+        else
+        {
+            //
+            // Copy the global attributes, the annotation attributes, the
+            // light source attributes, the view attributes and the animation
+            // attributes.
+            //
+            dest->CopyGeneralAttributes(src);
+            dest->CopyAnnotationAttributes(src);
+            dest->CopyLightList(src);
+            dest->CopyViewAttributes(src);
+            dest->GetPlotList()->CopyFrom(src->GetPlotList(), true);
+        }
     }
     referenced[windowId-1] = true;
 

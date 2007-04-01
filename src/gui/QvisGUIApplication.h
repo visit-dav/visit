@@ -275,7 +275,7 @@ private:
     void ProcessConfigSettings(DataNode *settings, bool systemConfig);
     void ProcessWindowConfigSettings(DataNode *settings);
     void SetOrientation(int orientation);
-    virtual void WriteConfigFile(const char *filename);
+    virtual bool WriteConfigFile(const char *filename);
 
     void ReadPluginWindowConfigs(DataNode *parentNode, const char *configVersion);
     void WritePluginWindowConfigs(DataNode *parentNode);
@@ -341,6 +341,7 @@ private slots:
     void showHelpWindow();
     void displayCopyright();
     void displayReleaseNotes();
+    void displayReleaseNotesIfAvailable();
     void showQueryWindow();
     void showRenderingWindow();
     void showCorrelationListWindow();

@@ -1612,6 +1612,9 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Passed windowId to SetWinAnnotAtts
 //
+//    Brad Whitlock, Fri Feb 18 09:43:25 PDT 2005
+//    I made it use the list of expressions according to the plot.
+//
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -1655,11 +1658,12 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
             }
 
             // Tell the engine to generate the plot
-                engine->ReadDataObject(md->GetFileFormat(), 
-                                       plot->GetDatabaseName(),
-                                       plot->GetVariableName(),
-                                       state, plot->GetSILRestriction(),
-                                       *GetMaterialClientAtts());
+            engine->ReadDataObject(md->GetFileFormat(), 
+                                   plot->GetDatabaseName(),
+                                   plot->GetVariableName(),
+                                   state, plot->GetSILRestriction(),
+                                   *GetMaterialClientAtts(),
+                                   plot->GetExpressions());
         }
 
         //

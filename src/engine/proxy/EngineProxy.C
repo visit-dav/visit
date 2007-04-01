@@ -9,7 +9,6 @@
 #include <RemoteProcess.h>
 #include <SocketConnection.h>
 #include <StatusAttributes.h>
-#include <ParsingExprList.h>
 #include <ExpressionList.h>
 #include <DebugStream.h>
 #include <TimingsManager.h>
@@ -319,18 +318,24 @@ EngineProxy::SendKeepAlive()
 //    Hank Childs, Tue Mar  9 14:37:46 PST 2004
 //    Add the file format type.
 //
+//    Brad Whitlock, Fri Feb 18 09:40:52 PDT 2005
+//    Added expressions argument so we don't have to rely on what's actually
+//    stored in ParsingExprList since that can be unreliable with respect
+//    to database expressions.
+//
 // ****************************************************************************
+
 void
 EngineProxy::ReadDataObject(const string &format, const string &file, 
                             const string &var, const int time,
                             avtSILRestriction_p silr,
-                            const MaterialAttributes &matopts)
+                            const MaterialAttributes &matopts,
+                            const ExpressionList &expressions)
 {
     // Make sure the engine knows about our current expression list.
-    ExpressionList *vel = ParsingExprList::Instance()->GetList();
-    if (exprList != *vel)
+    if (exprList != expressions)
     {
-        exprList.CopyAttributes(vel);
+        exprList = expressions;
         exprList.Notify();
     }
 

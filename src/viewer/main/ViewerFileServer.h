@@ -12,6 +12,7 @@ class avtSIL;
 class DatabaseCorrelation;
 class DatabaseCorrelationList;
 class DataNode;
+class ExpressionList;
 class SILAttributes;
 
 // ****************************************************************************
@@ -110,6 +111,9 @@ class SILAttributes;
 //    Jeremy Meredith, Tue Feb  8 08:56:55 PST 2005
 //    Added the ability to query for errors detected during plugin
 //    initialization.
+//
+//    Brad Whitlock, Fri Feb 18 10:06:02 PDT 2005
+//    Added some convenience methods for expressions.
 //
 // ****************************************************************************
 
@@ -228,6 +232,15 @@ public:
                                                 const std::string &db,
                                                 const std::string &var,
                                                 int state);
+    void                       GetUserExpressions(ExpressionList &newList);
+    void                       GetDatabaseExpressions(ExpressionList &newList,
+                                                      const std::string &host,
+                                                      const std::string &db,
+                                                      int state);
+    void                       GetAllExpressions(ExpressionList &newList,
+                                                 const std::string &host,
+                                                 const std::string &db,
+                                                 int state);
 
     void                       CreateNode(DataNode *, bool detailed);
     void                       SetFromNode(DataNode *);

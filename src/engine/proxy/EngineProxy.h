@@ -212,6 +212,11 @@ class StatusAttributes;
 //
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Added window id to various methods to support multi-window SR
+//
+//    Brad Whitlock, Fri Feb 18 09:35:11 PDT 2005
+//    I added ExpressionList to the call to ReadDataObject so we can pass
+//    in the right list of expressions.
+//
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -253,7 +258,8 @@ public:
                                             const std::string&,
                                             const std::string&, const int,
                                             avtSILRestriction_p,
-                                            const MaterialAttributes&);
+                                            const MaterialAttributes&,
+                                            const ExpressionList &);
     void                     ApplyOperator(const std::string&, 
                                            const AttributeSubject*);
     void                     ApplyNamedFunction(const std::string &name, int nargs);

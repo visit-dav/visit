@@ -1092,6 +1092,30 @@ ViewerPlot::GetMetaData() const
         databaseName, GetState());
 }
 
+// ****************************************************************************
+// Method: ViewerPlot::GetExpressions
+//
+// Purpose: 
+//   Gets the user-defined expressions plus the expressions from the plot's
+//   database at the current database time state.
+//
+// Returns:    An expression list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 18 10:11:49 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ExpressionList
+ViewerPlot::GetExpressions() const
+{
+    ExpressionList newList;
+    ViewerFileServer::Instance()->GetAllExpressions(newList, hostName,
+        databaseName, GetState());
+    return newList;
+}
 
 // ****************************************************************************
 //  Method: ViewerPlot::SetVariableName
