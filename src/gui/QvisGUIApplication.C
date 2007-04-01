@@ -4344,6 +4344,9 @@ QvisGUIApplication::AboutVisIt()
 //   I added code to set the active window to the splashscreen so the focus
 //   stays on the splashscreen when we run on MacOS X.
 //
+//   Brad Whitlock, Tue Mar 8 16:10:11 PST 2005
+//   I ifdef'd out the setActiveWindow code so it only happens on MacOS X.
+//
 // ****************************************************************************
 
 void
@@ -4351,7 +4354,9 @@ QvisGUIApplication::SplashScreenProgress(const char *msg, int prog)
 {
     if(splash)
     {
+#if defined(Q_WS_MACX)
         splash->setActiveWindow();
+#endif
         splash->Progress(msg, prog);
     }
 }

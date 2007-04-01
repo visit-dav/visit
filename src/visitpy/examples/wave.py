@@ -12,6 +12,9 @@
 #    Eric Brugger, Fri Aug 29 16:32:36 PDT 2003
 #    I modified the script to use the new interface for setting views.
 #
+#    Brad Whitlock, Wed Mar 9 09:38:48 PDT 2005
+#    Removed deprecated functions.
+#
 # ----------------------------------------------------------------------------
 
 import os
@@ -57,7 +60,7 @@ def wave():
         t = float(i) / float(GetDatabaseNStates() - 1)
         newview = (t * v2) + ((1. - t) * v)
         DisableRedraw()
-        AnimationSetFrame(i)
+        SetTimeSliderState(i)
         SetView3D(newview)
         RedrawWindow()
 

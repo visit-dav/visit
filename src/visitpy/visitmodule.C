@@ -112,6 +112,8 @@
     PyErr_SetString(VisItError, "VisIt's viewer is not running!"); \
     return NULL; }
 
+#define NO_ARGUMENTS() if(!PyArg_ParseTuple(args, "")) return NULL;
+
 //
 // Make the initvisit function callable from C.
 //
@@ -677,6 +679,7 @@ visit_AddArgument(PyObject *self, PyObject *args)
 STATIC PyObject *
 visit_Version(PyObject *self, PyObject *args)
 {
+    NO_ARGUMENTS();
     return PyString_FromString(VERSION);
 }
 
@@ -702,6 +705,8 @@ visit_Version(PyObject *self, PyObject *args)
 STATIC PyObject *
 visit_Launch(PyObject *self, PyObject *args)
 {
+    NO_ARGUMENTS();
+
     //
     // Check to see if the viewer is already launched.
     //
@@ -843,6 +848,7 @@ visit_SetDebugLevel(PyObject *self, PyObject *args)
 STATIC PyObject *
 visit_GetDebugLevel(PyObject *self, PyObject *args)
 {
+    NO_ARGUMENTS();
     return PyInt_FromLong(long(moduleDebugLevel));
 }
 
@@ -862,6 +868,8 @@ visit_GetDebugLevel(PyObject *self, PyObject *args)
 STATIC PyObject *
 visit_GetLastError(PyObject *self, PyObject *args)
 {
+    NO_ARGUMENTS();
+
     const char *str = "";
     if(messageObserver)
         str = messageObserver->GetLastError().c_str();
@@ -885,8 +893,10 @@ visit_GetLastError(PyObject *self, PyObject *args)
 // ****************************************************************************
 
 STATIC PyObject *
-visit_LocalNameSpace(PyObject *, PyObject *)
+visit_LocalNameSpace(PyObject *, PyObject *args)
 {
+    NO_ARGUMENTS();
+
     localNameSpace = true;
     Py_INCREF(Py_None);
     return Py_None;
@@ -908,6 +918,7 @@ visit_LocalNameSpace(PyObject *, PyObject *)
 STATIC PyObject *
 visit_GetLocalHostName(PyObject *self, PyObject *args)
 {
+    NO_ARGUMENTS();
     return PyString_FromString(viewer->GetLocalHostName().c_str());
 }
 
@@ -927,6 +938,7 @@ visit_GetLocalHostName(PyObject *self, PyObject *args)
 STATIC PyObject *
 visit_GetLocalUserName(PyObject *self, PyObject *args)
 {
+    NO_ARGUMENTS();
     return PyString_FromString(viewer->GetLocalUserName().c_str());
 }
 
@@ -948,6 +960,8 @@ visit_GetLocalUserName(PyObject *self, PyObject *args)
 STATIC PyObject *
 visit_Close(PyObject *self, PyObject *args)
 {
+    NO_ARGUMENTS();
+
     if(!noViewer)
     {
         CloseModule();
@@ -1033,6 +1047,7 @@ STATIC PyObject *
 visit_AddWindow(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->AddWindow();
@@ -1063,6 +1078,7 @@ STATIC PyObject *
 visit_ShowAllWindows(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->ShowAllWindows();
@@ -1095,6 +1111,7 @@ STATIC PyObject *
 visit_CloneWindow(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->CloneWindow();
@@ -1137,6 +1154,8 @@ visit_CloneWindow(PyObject *self, PyObject *args)
 STATIC PyObject *
 visit_GetDatabaseNStates(PyObject *self, PyObject *args)
 {
+    NO_ARGUMENTS();
+
     WindowInformation *wi = viewer->GetWindowInformation();
     DatabaseCorrelationList *correlations = viewer->GetDatabaseCorrelationList();
 
@@ -1168,6 +1187,7 @@ STATIC PyObject *
 visit_TimeSliderNextState(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->TimeSliderNextState();
@@ -1177,13 +1197,6 @@ visit_TimeSliderNextState(PyObject *self, PyObject *args)
 
     // Return the success value.
     return IntReturnValue(Synchronize());
-}
-
-STATIC PyObject *
-visit_AnimationNextFrame(PyObject *self, PyObject *args)
-{
-    DeprecatedMessage("AnimationNextFrame", "1.3", "TimeSliderNextState");
-    return visit_TimeSliderNextState(self, args);
 }
 
 // ****************************************************************************
@@ -1203,6 +1216,7 @@ STATIC PyObject *
 visit_TimeSliderPreviousState(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->TimeSliderPreviousState();
@@ -1212,13 +1226,6 @@ visit_TimeSliderPreviousState(PyObject *self, PyObject *args)
 
     // Return the success value.
     return IntReturnValue(Synchronize());
-}
-
-STATIC PyObject *
-visit_AnimationPreviousFrame(PyObject *self, PyObject *args)
-{
-    DeprecatedMessage("AnimationPreviousFrame", "1.3", "TimeSliderPreviousState");
-    return visit_TimeSliderPreviousState(self, args);
 }
 
 // ****************************************************************************
@@ -1294,13 +1301,6 @@ visit_SetTimeSliderState(PyObject *self, PyObject *args)
     return IntReturnValue(Synchronize());
 }
 
-STATIC PyObject *
-visit_AnimationSetFrame(PyObject *self, PyObject *args)
-{
-    DeprecatedMessage("AnimationSetFrame", "1.3", "SetTimeSliderState");
-    return visit_SetTimeSliderState(self, args);
-}
-
 // ****************************************************************************
 // Function: visit_SetActiveTimeSlider
 //
@@ -1356,6 +1356,7 @@ STATIC PyObject *
 visit_GetActiveTimeSlider(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     const WindowInformation *wi = viewer->GetWindowInformation();
     std::string activeTS("");
@@ -1381,6 +1382,7 @@ STATIC PyObject *
 visit_GetTimeSliders(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     const WindowInformation *wi = viewer->GetWindowInformation();
     const stringVector &timeSliders = wi->GetTimeSliders();
@@ -1420,6 +1422,7 @@ STATIC PyObject *
 visit_TimeSliderGetNStates(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     //
     // Get the number of states for the active time slider.
@@ -1439,13 +1442,6 @@ visit_TimeSliderGetNStates(PyObject *self, PyObject *args)
 
     // Return the success value.
     return PyLong_FromLong(long(nStates));
-}
-
-STATIC PyObject *
-visit_AnimationGetNFrames(PyObject *self, PyObject *args)
-{
-    DeprecatedMessage("AnimationGetNFrames", "1.3", "TimeSliderGetNStates");
-    return visit_TimeSliderGetNStates(self, args);
 }
 
 // ****************************************************************************
@@ -1577,6 +1573,7 @@ STATIC PyObject *
 visit_IconifyAllWindows(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->IconifyAllWindows();
@@ -1607,6 +1604,7 @@ STATIC PyObject *
 visit_DeIconifyAllWindows(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->DeIconifyAllWindows();
@@ -2427,6 +2425,7 @@ STATIC PyObject *
 visit_InvertBackgroundColor(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->InvertBackgroundColor();
@@ -2601,6 +2600,7 @@ STATIC PyObject *
 visit_DrawPlots(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->DrawPlots();
@@ -3096,6 +3096,7 @@ STATIC PyObject *
 visit_DeleteActivePlots(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->DeleteActivePlots();
@@ -3129,6 +3130,7 @@ STATIC PyObject *
 visit_DeleteAllPlots(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         //
@@ -3256,6 +3258,7 @@ STATIC PyObject *
 visit_ClearWindow(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->ClearWindow();
@@ -3285,6 +3288,7 @@ STATIC PyObject *
 visit_ClearAllWindows(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->ClearAllWindows();
@@ -3361,6 +3365,7 @@ STATIC PyObject *
 visit_ClearCacheForAllEngines(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->ClearCacheForAllEngines();
@@ -3391,6 +3396,7 @@ STATIC PyObject *
 visit_ClearPickPoints(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->ClearPickPoints();
@@ -3422,6 +3428,7 @@ STATIC PyObject *
 visit_ClearReferenceLines(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->ClearReferenceLines();
@@ -3455,6 +3462,7 @@ STATIC PyObject *
 visit_SaveWindow(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->SaveWindow();
@@ -3495,6 +3503,7 @@ STATIC PyObject *
 visit_DeleteWindow(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->DeleteWindow();
@@ -3525,6 +3534,7 @@ STATIC PyObject *
 visit_DisableRedraw(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->DisableRedraw();
@@ -3555,6 +3565,7 @@ STATIC PyObject *
 visit_RedrawWindow(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->RedrawWindow();
@@ -3584,6 +3595,7 @@ STATIC PyObject *
 visit_RecenterView(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->RecenterView();
@@ -3613,6 +3625,7 @@ STATIC PyObject *
 visit_ResetView(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->ResetView();
@@ -3799,6 +3812,7 @@ STATIC PyObject *
 visit_GetEngineList(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     // Allocate a tuple the with enough entries to hold the engine list.
     const stringVector &engines = viewer->GetEngineList()->GetEngines();
@@ -3835,6 +3849,7 @@ STATIC PyObject *
 visit_HideActivePlots(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->HideActivePlots();
@@ -4061,6 +4076,7 @@ STATIC PyObject *
 visit_GetAnnotationAttributes(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     PyObject *retval = PyAnnotationAttributes_NewPyObject();
     AnnotationAttributes *aa = PyAnnotationAttributes_FromPyObject(retval);
@@ -4138,7 +4154,8 @@ STATIC PyObject *
 visit_GetKeyframeAttributes(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
- 
+    NO_ARGUMENTS();
+
     PyObject *retval = PyKeyframeAttributes_NewPyObject();
     KeyframeAttributes *aa = PyKeyframeAttributes_FromPyObject(retval);
  
@@ -4263,6 +4280,8 @@ STATIC PyObject *
 visit_GetMaterialAttributes(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+
+    NO_ARGUMENTS();
 
     PyObject *retval = PyMaterialAttributes_NewPyObject();
     MaterialAttributes *aa = PyMaterialAttributes_FromPyObject(retval);
@@ -4392,6 +4411,7 @@ STATIC PyObject *
 visit_GetSaveWindowAttributes(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     PyObject *retval = PySaveWindowAttributes_NewPyObject();
     SaveWindowAttributes *aa = PySaveWindowAttributes_FromPyObject(retval);
@@ -4469,6 +4489,7 @@ STATIC PyObject *
 visit_GetViewCurve(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     PyObject *retval = PyViewCurveAttributes_NewPyObject();
     ViewCurveAttributes *va = PyViewCurveAttributes_FromPyObject(retval);
@@ -4576,6 +4597,7 @@ STATIC PyObject *
 visit_GetView2D(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     PyObject *retval = PyView2DAttributes_NewPyObject();
     View2DAttributes *va = PyView2DAttributes_FromPyObject(retval);
@@ -4691,6 +4713,7 @@ STATIC PyObject *
 visit_GetView3D(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     PyObject *retval = PyView3DAttributes_NewPyObject();
     View3DAttributes *va = PyView3DAttributes_FromPyObject(retval);
@@ -4720,6 +4743,7 @@ STATIC PyObject *
 visit_ClearViewKeyframes(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->ClearViewKeyframes();
@@ -4815,6 +4839,7 @@ STATIC PyObject *
 visit_SetViewKeyframe(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->SetViewKeyframe();
@@ -4898,6 +4923,7 @@ STATIC PyObject *
 visit_GetGlobalAttributes(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     PyObject *retval = PyGlobalAttributes_NewPyObject();
     GlobalAttributes *ga = PyGlobalAttributes_FromPyObject(retval);
@@ -4928,6 +4954,7 @@ STATIC PyObject *
 visit_GetWindowInformation(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     PyObject *retval = PyWindowInformation_NewPyObject();
     WindowInformation *wi = PyWindowInformation_FromPyObject(retval);
@@ -4958,6 +4985,7 @@ STATIC PyObject *
 visit_GetRenderingAttributes(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     PyObject *retval = PyRenderingAttributes_NewPyObject();
     RenderingAttributes *ra = PyRenderingAttributes_FromPyObject(retval);
@@ -5158,6 +5186,7 @@ STATIC PyObject *
 visit_ListPlots(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
     //
@@ -5244,6 +5273,7 @@ STATIC PyObject *
 visit_Expressions(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
     ExpressionList *list = viewer->GetExpressionList();
@@ -6108,6 +6138,8 @@ STATIC PyObject *
 visit_GetPickOutput(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
+
     std::string pickOut;
     PickAttributes *pa = viewer->GetPickAttributes();
     if (pa->GetFulfilled())
@@ -6144,6 +6176,8 @@ STATIC PyObject *
 visit_GetQueryOutputString(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
+
     std::string queryOut;
     QueryAttributes *qa = viewer->GetQueryAttributes();
     queryOut = qa->GetResultsMessage();
@@ -6171,6 +6205,8 @@ STATIC PyObject *
 visit_GetQueryOutputValue(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
+
     QueryAttributes *qa = viewer->GetQueryAttributes();
     doubleVector vals = qa->GetResultsValue();
     PyObject *retval;
@@ -6639,6 +6675,7 @@ STATIC PyObject *
 visit_ListMaterials(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     ListCategoryHelper(SIL_MATERIAL);
 
@@ -6663,6 +6700,7 @@ STATIC PyObject *
 visit_GetMaterials(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     return GetCategoryTupleHelper(SIL_MATERIAL);
 }
@@ -6684,6 +6722,7 @@ STATIC PyObject *
 visit_ListDomains(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     ListCategoryHelper(SIL_DOMAIN);
 
@@ -6708,6 +6747,7 @@ STATIC PyObject *
 visit_GetDomains(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     return GetCategoryTupleHelper(SIL_DOMAIN);
 }
@@ -6731,6 +6771,7 @@ STATIC PyObject *
 visit_ColorTableNames(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
 
@@ -6769,6 +6810,7 @@ STATIC PyObject *
 visit_NumColorTables(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     const stringVector &ctNames = viewer->GetColorTableAttributes()->GetNames();
     PyObject *retval = PyLong_FromLong(ctNames.size());
@@ -6891,6 +6933,7 @@ STATIC PyObject *
 visit_GetActiveDiscreteColorTable(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     const std::string &ct = viewer->GetColorTableAttributes()->GetActiveDiscrete();
     PyObject *retval = PyString_FromString(ct.c_str());
@@ -6917,6 +6960,7 @@ STATIC PyObject *
 visit_GetNumPlots(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     return PyInt_FromLong(long(viewer->GetPlotList()->GetNumPlots()));
 }
@@ -6939,6 +6983,8 @@ visit_GetNumPlots(PyObject *self, PyObject *args)
 STATIC PyObject *
 visit_PlotPlugins(PyObject *self, PyObject *args)
 {
+    NO_ARGUMENTS();
+
     PlotPluginManager *plugins = PlotPluginManager::Instance();
 
     // Allocate a tuple the with enough entries to hold the plugin name list.
@@ -6975,6 +7021,8 @@ visit_PlotPlugins(PyObject *self, PyObject *args)
 STATIC PyObject *
 visit_NumPlotPlugins(PyObject *self, PyObject *args)
 {
+    NO_ARGUMENTS();
+
     PlotPluginManager *plugins = PlotPluginManager::Instance();
 
     // Allocate a tuple the with enough entries to hold the plugin name list.
@@ -7004,6 +7052,8 @@ visit_NumPlotPlugins(PyObject *self, PyObject *args)
 STATIC PyObject *
 visit_OperatorPlugins(PyObject *self, PyObject *args)
 {
+    NO_ARGUMENTS();
+
     OperatorPluginManager *plugins = OperatorPluginManager::Instance();
 
     // Allocate a tuple the with enough entries to hold the plugin name list.
@@ -7042,6 +7092,7 @@ STATIC PyObject *
 visit_Queries(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     stringVector queries = viewer->GetQueryList()->GetNames();
 
@@ -7092,6 +7143,7 @@ STATIC PyObject *
 visit_QueriesOverTime(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     stringVector queries = viewer->GetQueryList()->GetNames();
 
@@ -7141,6 +7193,7 @@ visit_QueriesOverTime(PyObject *self, PyObject *args)
 STATIC PyObject *
 visit_NumOperatorPlugins(PyObject *self, PyObject *args)
 {
+    NO_ARGUMENTS();
     OperatorPluginManager *plugins = OperatorPluginManager::Instance();
 
     // Allocate a tuple the with enough entries to hold the plugin name list.
@@ -7170,6 +7223,7 @@ STATIC PyObject *
 visit_PrintWindow(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->PrintWindow();
@@ -7274,6 +7328,7 @@ STATIC PyObject *
 visit_GetAnimationTimeout(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
     return PyLong_FromLong(long(viewer->GetAnimationAttributes()->GetTimeout()));
 }
 
@@ -7333,6 +7388,7 @@ STATIC PyObject *
 visit_GetPipelineCachingMode(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
     return PyLong_FromLong(long(viewer->GetAnimationAttributes()->GetPipelineCachingMode()?1:0));
 }
 
@@ -7486,6 +7542,7 @@ STATIC PyObject *
 visit_ToggleMaintainViewMode(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->ToggleMaintainViewMode();
@@ -7513,6 +7570,7 @@ STATIC PyObject *
 visit_ToggleMaintainDataMode(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->ToggleMaintainDataMode();
@@ -7540,6 +7598,7 @@ STATIC PyObject *
 visit_ToggleLockTime(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->ToggleLockTime();
@@ -7569,6 +7628,7 @@ STATIC PyObject *
 visit_ToggleBoundingBoxMode(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->ToggleBoundingBoxMode();
@@ -7598,6 +7658,7 @@ STATIC PyObject *
 visit_ToggleLockViewMode(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->ToggleLockViewMode();
@@ -7627,6 +7688,7 @@ STATIC PyObject *
 visit_ToggleSpinMode(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->ToggleSpinMode();
@@ -7656,6 +7718,7 @@ STATIC PyObject *
 visit_ToggleCameraViewMode(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->ToggleCameraViewMode();
@@ -7684,6 +7747,7 @@ STATIC PyObject *
 visit_ToggleFullFrameMode(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->ToggleFullFrameMode();
@@ -7713,6 +7777,7 @@ STATIC PyObject *
 visit_UndoView(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->UndoView();
@@ -7742,6 +7807,7 @@ STATIC PyObject *
 visit_WriteConfigFile(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->WriteConfigFile();
@@ -8120,6 +8186,7 @@ STATIC PyObject *
 visit_ResetPickLetter(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->ResetPickLetter();
@@ -8150,6 +8217,7 @@ STATIC PyObject *
 visit_ResetLineoutColor(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->ResetLineoutColor();
@@ -8180,6 +8248,7 @@ STATIC PyObject *
 visit_ResetPickAttributes(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->ResetPickAttributes();
@@ -8307,6 +8376,7 @@ STATIC PyObject *
 visit_GetPickAttributes(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     PyObject *retval = PyPickAttributes_NewPyObject();
     PickAttributes *pa = PyPickAttributes_FromPyObject(retval);
@@ -8337,6 +8407,7 @@ STATIC PyObject *
 visit_ResetInteractorAttributes(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->ResetInteractorAttributes();
@@ -8465,6 +8536,7 @@ STATIC PyObject *
 visit_GetInteractorAttributes(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     PyObject *retval = PyInteractorAttributes_NewPyObject();
     InteractorAttributes *ia = PyInteractorAttributes_FromPyObject(retval);
@@ -8495,6 +8567,7 @@ STATIC PyObject *
 visit_ResetQueryOverTimeAttributes(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     MUTEX_LOCK();
         viewer->ResetQueryOverTimeAttributes();
@@ -8624,6 +8697,7 @@ STATIC PyObject *
 visit_GetQueryOverTimeAttributes(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     PyObject *retval = PyQueryOverTimeAttributes_NewPyObject();
     QueryOverTimeAttributes *tqa = PyQueryOverTimeAttributes_FromPyObject(retval);
@@ -8704,6 +8778,7 @@ STATIC PyObject *
 visit_GetGlobalLineoutAttributes(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
 
     PyObject *retval = PyGlobalLineoutAttributes_NewPyObject();
     GlobalLineoutAttributes *gla = PyGlobalLineoutAttributes_FromPyObject(retval);
@@ -9540,6 +9615,10 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Kathleen Bonnell, Thu Jan  6 11:06:29 PST 2005 
 //   Added GetViewCurve. 
 //
+//   Brad Whitlock, Tue Mar 8 16:43:51 PST 2005
+//   I removed some deprecated functions and added TimeSliderSetState, which
+//   is the same thing as SetTimeSliderState but might be easier to remember.
+//
 // ****************************************************************************
 
 static void
@@ -9713,6 +9792,7 @@ AddDefaultMethods()
     AddMethod("TimeSliderGetNStates",visit_TimeSliderGetNStates );
     AddMethod("TimeSliderNextState", visit_TimeSliderNextState);
     AddMethod("TimeSliderPreviousState", visit_TimeSliderPreviousState);
+    AddMethod("TimeSliderSetState", visit_SetTimeSliderState);
     AddMethod("ToggleBoundingBoxMode", visit_ToggleBoundingBoxMode);
     AddMethod("ToggleCameraViewMode", visit_ToggleCameraViewMode);
     AddMethod("ToggleFullFrameMode", visit_ToggleFullFrameMode);
@@ -9724,14 +9804,6 @@ AddDefaultMethods()
     AddMethod("UndoView",  visit_UndoView);
     AddMethod("WriteConfigFile",  visit_WriteConfigFile);
     AddMethod("ZonePick", visit_Pick);
-
-    //
-    // Deprecated ViewerProxy methods. Remove in 1.4.
-    //
-    AddMethod("AnimationNextFrame", visit_AnimationNextFrame);
-    AddMethod("AnimationPreviousFrame", visit_AnimationPreviousFrame);
-    AddMethod("AnimationSetFrame", visit_AnimationSetFrame);
-    AddMethod("AnimationGetNFrames", visit_AnimationGetNFrames);
 
     //
     // Extra methods that are not part of the ViewerProxy but allow the

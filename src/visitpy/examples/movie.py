@@ -16,6 +16,9 @@
 #    Eric Brugger, Fri Aug 29 16:29:36 PDT 2003
 #    I modified the script to use the new interface for setting views.
 #
+#    Brad Whitlock, Wed Mar 9 09:38:48 PDT 2005
+#    Removed deprecated functions.
+#
 # *****************************************************************************
 
 import os
@@ -158,7 +161,7 @@ for i in range(4):
 for i in range(0, nframes-1):
     # Only advance in time one in every "frames_per_timestep"
     if ((i % frames_per_timestep) == 0):
-        AnimationSetFrame(i/frames_per_timestep)
+        SetTimeSliderState(i/frames_per_timestep)
     
     t = float(i) / float(nframes - 1)
     v = EvalCubicSpline(t, x, vpts)
