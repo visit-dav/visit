@@ -272,7 +272,7 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3], float tol,
   float result;
   float bounds2[6];
   int i, leafStart, prod, loop;
-  vtkIdType bestCellId = -1, cId;
+  vtkIdType bestCellId = -1, cId, tempCellId;
   int idx;
   float tMax, dist[3];
   int npos[3];
@@ -360,10 +360,10 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3], float tol,
       if (this->Tree[idx])
         {
         this->ComputeOctantBounds(pos[0]-1, pos[1]-1, pos[2]-1);
-        for (tMax = VTK_LARGE_FLOAT, cellId=0; 
-        cellId < this->Tree[idx]->GetNumberOfIds(); cellId++) 
+        for (tMax = VTK_LARGE_FLOAT, tempCellId=0; 
+        tempCellId < this->Tree[idx]->GetNumberOfIds(); tempCellId++) 
           {
-          cId = this->Tree[idx]->GetId(cellId);
+          cId = this->Tree[idx]->GetId(tempCellId);
           if (this->CellHasBeenVisited[cId] != this->QueryNumber)
             {
             this->CellHasBeenVisited[cId] = this->QueryNumber;

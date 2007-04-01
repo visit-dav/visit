@@ -629,6 +629,9 @@ RPCExecutor<StartPickRPC>::Execute(StartPickRPC *rpc)
 //    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
 //    Made the engine an object.
 //
+//    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
+//    Added code to pass extents type string to SetWindowAttributes
+//
 // ****************************************************************************
 template<>
 void
@@ -644,7 +647,7 @@ RPCExecutor<SetWinAnnotAttsRPC>::Execute(SetWinAnnotAttsRPC *rpc)
     {
         avtColorTables::Instance()->SetColorTables(rpc->GetWindowAtts().
                                                              GetColorTables());
-        netmgr->SetWindowAttributes(rpc->GetWindowAtts());
+        netmgr->SetWindowAttributes(rpc->GetWindowAtts(),rpc->GetExtentTypeString());
         netmgr->SetAnnotationAttributes(rpc->GetAnnotationAtts());
         rpc->SendReply();
     }

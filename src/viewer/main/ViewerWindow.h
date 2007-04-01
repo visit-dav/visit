@@ -44,6 +44,7 @@ struct ExternalRenderRequestInfo
     std::vector<const AttributeSubject *> attsList;
     WindowAttributes                      winAtts;
     AnnotationAttributes                  annotAtts;
+    std::string                           extStr;
 };
 
 // ****************************************************************************
@@ -294,6 +295,9 @@ struct ExternalRenderRequestInfo
 //
 //    Eric Brugger, Mon Mar 29 15:33:13 PST 2004
 //    I added Set/GetMaintainDataMode.
+//
+//    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
+//    Added data member for extents type string to render request info
 //
 // ****************************************************************************
 

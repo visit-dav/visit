@@ -49,6 +49,8 @@
 
 #include <DebugStream.h>
 
+#include <Init.h>
+
 #include <algorithm>
 #include <set>
 using std::set;
@@ -1264,13 +1266,17 @@ ViewerPlotList::DeleteTimeSlider(const std::string &ts, bool update)
 // Creation:   Tue Feb 3 10:30:07 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr 13 23:08:29 PST 2004
+//   Added support for making sure that we don't keep asking the user to
+//   create a correlation if they have turned it down before.
+//
 // ****************************************************************************
 
 bool
 ViewerPlotList::AskForCorrelationPermission(const stringVector &dbs) const
 {
     const char *mName = "ViewerPlotList::AskForCorrelationPermission: ";
+    ViewerFileServer *fs = ViewerFileServer::Instance();
     bool permission;
 
     if(avtCallback::GetNowinMode())
@@ -1279,14 +1285,20 @@ ViewerPlotList::AskForCorrelationPermission(const stringVector &dbs) const
                << "We're running -nowin." << endl;
         permission = true;
     }
+    else if(fs->PreviouslyDeclinedCorrelationCreation(dbs))
+    {
+        permission = false;
+    }
     else
     {
         // Pop up a Qt dialog to ask the user whether or not to correlate
         // the specified databases.
         QString text("Would you like to create a database correlation "
                      "for the following databases?\n");
+        QString fileStr;
         for(int i = 0; i < dbs.size(); ++i)
-            text += (QString(dbs[i].c_str()) + QString("\n"));
+            fileStr += (QString(dbs[i].c_str()) + QString("\n"));
+        text += fileStr;
 
         debug3 << "Asking for permission to create correlation. Prompt="
                << text.latin1() << endl;
@@ -1295,6 +1307,19 @@ ViewerPlotList::AskForCorrelationPermission(const stringVector &dbs) const
         permission = (QMessageBox::information(0, "Correlate databases?",
             text, QMessageBox::Yes, QMessageBox::No, QMessageBox::NoButton) ==
             QMessageBox::Yes);
+
+        // The user declined to create the correlation so record that we
+        // should not try to correlate these databases in the future.
+        if(!permission)
+        {
+            QString msg("You chose not to create a database correlation. "
+                        "VisIt will not prompt you again to create a "
+                        "database correlation for:\n");
+            msg += fileStr;
+            fs->DeclineCorrelationCreation(dbs);
+            Warning(msg.latin1());
+        }
+
         viewerSubject->BlockSocketSignals(false);
     }
 
@@ -2717,6 +2742,10 @@ ViewerPlotList::SimpleAddPlot(ViewerPlot *plot, bool replacePlots)
 //   Brad Whitlock, Thu Apr 8 15:46:46 PST 2004
 //   I added support for keyframing back in.
 //
+//   Mark C. Miller, Wed Apr 14 10:44:42 PDT 2004
+//   I added code to support the catch-all mesh feature and compute a new
+//   variable name from the catch all mesh name
+//
 // ****************************************************************************
 
 ViewerPlot *
@@ -2737,6 +2766,16 @@ ViewerPlotList::NewPlot(int type, const EngineKey &ek,
     DatabaseCorrelation *correlation = cL->FindCorrelation(plotSource);
     if(correlation != 0)
         nStates = correlation->GetNumStates();
+
+    //
+    // If the variable name we've recieved is the name for the catch-all
+    // mesh and if database metadata indicates we should be using the
+    // catch-all mesh, replace variableName with the name of the mesh for
+    // the active variable(s)
+    //
+    std::string newVarName = var;
+    if (var == Init::CatchAllMeshName)
+        GetMeshVarNameForActivePlots(host, db, newVarName);
 
     //
     // Get the correlation for the active time slider so we can see if it
@@ -2767,13 +2806,13 @@ ViewerPlotList::NewPlot(int type, const EngineKey &ek,
     // Get the default SIL restriction.
     //
     avtSILRestriction_p silr(0);
-    silr = GetDefaultSILRestriction(host, db, var, plotState);
+    silr = GetDefaultSILRestriction(host, db, newVarName, plotState);
 
     if (*silr == 0)
     {
         char str[400];
         SNPRINTF(str, 400, "VisIt could not create a SIL restriction for %s. "
-                     "The plot of \"%s\" cannot be added.", db.c_str(), var.c_str());
+                     "The plot of \"%s\" cannot be added.", db.c_str(), newVarName.c_str());
         Error(str);
         return 0;
     }
@@ -2803,7 +2842,7 @@ ViewerPlotList::NewPlot(int type, const EngineKey &ek,
         //
         // Create the plot.
         //
-        plot = plotFactory->CreatePlot(type, ek, host, db, var,
+        plot = plotFactory->CreatePlot(type, ek, host, db, newVarName,
                                        silr, plotState, nStates,
                                        cacheIndex, cacheSize);
         plot->RegisterViewerPlotList(this);
@@ -6494,6 +6533,63 @@ ViewerPlotList::GetVarName()
     }
 
     return std::string("");
+}
+
+// ****************************************************************************
+//  Method: ViewerPlotList::GetMeshVarNameForActivePlots
+//
+//  Purpose:    Determine the mesh variable name for the currently active
+//              plots. If there are no currently active plots or the mesh for
+//              all the currently active plots is NOT the same, throw an
+//              exception
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   April 13, 2004
+//
+// ****************************************************************************
+
+void
+ViewerPlotList::GetMeshVarNameForActivePlots(const std::string &host,
+    const std::string &db, std::string &meshName) const
+{
+    ViewerFileServer *fs = ViewerFileServer::Instance();
+    const avtDatabaseMetaData *md = fs->GetMetaData(host, db);
+
+    if (!md->GetUseCatchAllMesh())
+    {
+        EXCEPTION1(InvalidVariableException,
+            "Finding the mesh for the active plot is not a supported feature "
+            "in the current database");
+    }
+
+    intVector activePlotIDs;
+    GetActivePlotIDs(activePlotIDs);
+
+    if (activePlotIDs.size() == 0)
+    {
+        EXCEPTION1(InvalidVariableException,
+            "The mesh for the active plot cannot be determined because there "
+            "is no currently active plot");
+    }
+
+    ViewerPlot *activePlot = GetPlot(activePlotIDs[0]);
+    std::string activeVarName = activePlot->GetVariableName();
+    std::string tmpMeshName = md->MeshForVar(activeVarName);
+    int i;
+    for (i = 1; i < activePlotIDs.size(); i++)
+    {
+        activePlot = GetPlot(activePlotIDs[i]);
+        activeVarName = activePlot->GetVariableName();
+        if (tmpMeshName != md->MeshForVar(activeVarName))
+        {
+            EXCEPTION1(InvalidVariableException,
+                "The mesh for the active plot cannot be determined because there "
+                "are multiple currently active plots which do not have the same "
+                "mesh");
+        }
+    }
+
+    meshName = tmpMeshName;
 }
 
 // ****************************************************************************

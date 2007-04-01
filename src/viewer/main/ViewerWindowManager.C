@@ -810,7 +810,7 @@ ViewerWindowManager::DeleteWindow()
 //    Moved the update code into UpdateAllAtts.
 //
 //    Kathleen Bonnell, Fri May 10 16:27:40 PDT 2002 
-//    Added call to ResetLineoutDesignator. 
+//    Added call to ResetLineoutDesignation. 
 //    
 //    Hank Childs, Wed Jul 10 21:46:55 PDT 2002
 //    Unlock a window before deleting it.
@@ -818,6 +818,9 @@ ViewerWindowManager::DeleteWindow()
 //    Kathleen Bonnell, Wed Jul 31 16:43:43 PDT 2002  
 //    Notify ViewerQueryManager that a window is being deleted. 
 //
+//    Kathleen Bonnell, Wed Apr 14 16:19:18 PDT 2004 
+//    Added call to ResetTimeQueryDesignation. 
+//    
 // ****************************************************************************
 
 void
@@ -872,6 +875,7 @@ ViewerWindowManager::DeleteWindow(ViewerWindow *win)
     //
     ViewerQueryManager::Instance()->Delete(win);
     ResetLineoutDesignation(windowIndex);
+    ResetTimeQueryDesignation(windowIndex);
     if (windows[windowIndex]->GetViewIsLocked())
     {
         ToggleLockViewMode(windowIndex);

@@ -1222,6 +1222,10 @@ ViewerEngineManager::LaunchMessage(const EngineKey &ek)  const
 //   Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
 //   Use a map of engines based on a key, and be aware of simulations.
 //
+//   Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
+//   Added argument for extents type string.
+//   Passed extents type string in call to SetWinAnnotAtts
+//
 // ****************************************************************************
 
 bool
@@ -1231,6 +1235,7 @@ ViewerEngineManager::ExternalRender(vector<const char*> pluginIDsList,
                                     vector<const AttributeSubject *> attsList,
                                     WindowAttributes winAtts,
                                     AnnotationAttributes annotAtts,
+                                    string extStr,
                                     bool& shouldTurnOffScalableRendering,
                                     bool doAllAnnotations,
                                     vector<avtImage_p>& imgList)
@@ -1270,7 +1275,7 @@ ViewerEngineManager::ExternalRender(vector<const char*> pluginIDsList,
         {
             EngineKey ek = pos->first;
 
-            if (!SetWinAnnotAtts(ek, &winAtts, &annotAtts))
+            if (!SetWinAnnotAtts(ek, &winAtts, &annotAtts, extStr))
             {
                 retval = false;
                 char msg[200];
@@ -1447,6 +1452,9 @@ ViewerEngineManager::ExternalRender(vector<const char*> pluginIDsList,
 //    Only defineVirtualDatabase and ReadDataObject if plot isn't using a 
 //    cloned network.
 //
+//    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
+//    Added code to pass extents type string to SetWinAnnotAtts
+//
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -1518,7 +1526,8 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
         {
            WindowAttributes winAtts = w->GetWindowAttributes();
            AnnotationAttributes annotAtts = *(w->GetAnnotationAttributes());
-           engine->SetWinAnnotAtts(&winAtts,&annotAtts);
+           string extStr = avtExtentType_ToString(w->GetViewExtentsType());
+           engine->SetWinAnnotAtts(&winAtts,&annotAtts,extStr);
         }
 
         //
@@ -2016,15 +2025,19 @@ ViewerEngineManager::StartPick(const EngineKey &ek,
 //    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
 //    Use a map of engines based on a key, and be aware of simulations.
 //
+//    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
+//    Added extents type string argument
+//
 // ****************************************************************************
 
 bool
 ViewerEngineManager::SetWinAnnotAtts(const EngineKey &ek,
                                      const WindowAttributes *wa,
-                                     const AnnotationAttributes *aa)
+                                     const AnnotationAttributes *aa,
+                                     const string extstr)
 {
     ENGINE_PROXY_RPC_BEGIN("SetWinAnnotAtts");
-    engine->SetWinAnnotAtts(wa,aa);
+    engine->SetWinAnnotAtts(wa,aa,extstr);
     ENGINE_PROXY_RPC_END;
 }
 
@@ -2378,6 +2391,9 @@ ViewerEngineManager::Update(Subject *TheChangedSubject)
 //    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
 //    Use a map of engines based on a key, and be aware of simulations.
 //
+//    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
+//    Added code to pass extents type string to SetWinAnnotAtts
+//
 // ****************************************************************************
 
 void
@@ -2391,9 +2407,10 @@ ViewerEngineManager::GetImage(int index, avtDataObject_p &dob)
     ViewerWindow *w = vwm->GetActiveWindow();
     WindowAttributes winAtts = w->GetWindowAttributes();
     AnnotationAttributes annotAtts = *(w->GetAnnotationAttributes());
+    string extStr = avtExtentType_ToString(w->GetViewExtentsType());
 
     // send to the engine
-    engine->SetWinAnnotAtts(&winAtts,&annotAtts);
+    engine->SetWinAnnotAtts(&winAtts,&annotAtts,extStr);
     
     engine->UseNetwork(index);
 #ifdef VIEWER_MT

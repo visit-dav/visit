@@ -1539,13 +1539,22 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
 //    Hank Childs, Sat Nov 15 14:59:47 PST 2003
 //    Make sure vis window gets specular options.
 //
+//    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
+//    Added argument for extents type string and code to set extents type
+//    on the VisWindow
+//
 // ****************************************************************************
 void
-NetworkManager::SetWindowAttributes(const WindowAttributes &atts)
+NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
+                                    const std::string& extstr)
 {
     // do nothing if nothing changed
-    if (windowAttributes == atts)
+    if ((windowAttributes == atts) && (extentTypeString == extstr))
        return;
+
+    avtExtentType extType = AVT_UNKNOWN_EXTENT_TYPE;
+    avtExtentType_FromString(extstr, extType);
+    viswin->SetViewExtentsType(extType);
 
     // only update size if its different
     int s0,s1;
@@ -1617,6 +1626,7 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts)
        viswin->SetImmediateModeRendering(!atts.GetRenderAtts().GetDisplayLists());
 
     windowAttributes = atts;
+    extentTypeString = extstr;
 }
 
 // ****************************************************************************

@@ -144,6 +144,10 @@ class VisWindow;
 //    Kathleen Bonnell, Wed Mar 31 17:23:01 PST 2004 
 //    Added CloneNetwork and AddQueryOverTimeFilter. 
 //
+//    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
+//    Added argument for extents type string to SetWindowAttributes
+//    Added local variable to store past value for extents type string
+//
 // ****************************************************************************
 class NetworkManager
 {
@@ -179,7 +183,8 @@ class NetworkManager
 
     void          UpdatePlotAtts(int, const AttributeGroup *);
 
-    void          SetWindowAttributes(const WindowAttributes&);
+    void          SetWindowAttributes(const WindowAttributes&,
+                                      const std::string&);
     void          SetAnnotationAttributes(const AnnotationAttributes&,
                                           bool do3DAnnotsOnly = true);
 
@@ -218,6 +223,7 @@ class NetworkManager
     LoadBalancer               *loadBalancer;
     WindowAttributes            windowAttributes;
     AnnotationAttributes        annotationAttributes;
+    std::string                 extentTypeString;
     VisWindow                  *viswin;
     std::vector<int>            plotsCurrentlyInWindow;
 

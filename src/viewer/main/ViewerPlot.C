@@ -47,6 +47,12 @@
 extern ViewerSubject *viewerSubject;   // FIX_ME This is a hack.
 
 //
+// Local macros.
+//
+#define min(x,y) ((x) < (y) ? (x) : (y))
+#define max(x,y) ((x) > (y) ? (x) : (y))
+
+//
 // This is a static member of ViewerPlot.
 //
 avtActor_p ViewerPlot::nullActor((avtActor *)0);

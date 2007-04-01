@@ -16,5 +16,7 @@ PyObject       *PyFilledBoundaryAttributes_WrapPyObject(const FilledBoundaryAttr
 void            PyFilledBoundaryAttributes_SetLogging(bool val);
 void            PyFilledBoundaryAttributes_SetDefaults(const FilledBoundaryAttributes *atts);
 
+PyObject       *PyFilledBoundaryAttributes_StringRepresentation(const FilledBoundaryAttributes *atts);
+
 #endif
 

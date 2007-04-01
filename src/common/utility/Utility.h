@@ -29,7 +29,7 @@ bool UTILITY_API  WildcardStringMatch(const char *p, const char *s);
 bool UTILITY_API  WildcardStringMatch(const std::string &p, const std::string &s);
 bool UTILITY_API  NumericStringCompare(const std::string &str1, const std::string &str2);
 
-std::vector<std::string> UTILITY_API SplitValues(const string &buff,
+std::vector<std::string> UTILITY_API SplitValues(const std::string &buff,
                                                  char delim);
 
 inline char *C_strdup(char const * const);

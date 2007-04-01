@@ -3079,10 +3079,13 @@ avtDefaultPlotMetaData::Print(ostream &out, int indent) const
 //    Jeremy Meredith, Tue Mar 30 09:53:19 PST 2004
 //    Added simulation information.
 //
+//    Mark C. Miller, Tue Mar 30 14:36:17 PST 2004
+//    Added bool for catch-all mesh
+//
 // ****************************************************************************
 
 avtDatabaseMetaData::avtDatabaseMetaData()
-    : AttributeSubject("ssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*bsi")
+    : AttributeSubject("ssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*bsib")
 {
     hasTemporalExtents          = false;
     minTemporalExtents          = 0.;
@@ -3093,6 +3096,7 @@ avtDatabaseMetaData::avtDatabaseMetaData()
     isSimulation                = false;
     simHost                     = "";
     simPort                     = 0;
+    useCatchAllMesh             = false;
 }
 
 
@@ -3140,10 +3144,13 @@ avtDatabaseMetaData::avtDatabaseMetaData()
 //    Jeremy Meredith, Tue Mar 30 09:53:19 PST 2004
 //    Added simulation information.
 //
+//    Mark C. Miller, Tue Mar 30 14:36:17 PST 2004
+//    Added bool for catch-all mesh
+//
 // ****************************************************************************
 
 avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
-    : AttributeSubject("ssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*bsi")
+    : AttributeSubject("ssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*bsib")
 {
     databaseName       = rhs.databaseName;
     fileFormat         = rhs.fileFormat;
@@ -3153,6 +3160,7 @@ avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
     numStates          = rhs.numStates;
     isVirtualDatabase  = rhs.isVirtualDatabase;
     mustRepopulateOnStateChange = rhs.mustRepopulateOnStateChange;
+    useCatchAllMesh    = rhs.useCatchAllMesh;
     timeStepPath       = rhs.timeStepPath;
     timeStepNames      = rhs.timeStepNames;
     cyclesAreAccurate  = rhs.cyclesAreAccurate;
@@ -3233,6 +3241,9 @@ avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
 //    Jeremy Meredith, Tue Mar 30 09:53:19 PST 2004
 //    Added simulation information.
 //
+//    Mark C. Miller, Tue Mar 30 14:36:17 PST 2004
+//    Added bool for catch-all mesh
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData &
@@ -3246,6 +3257,7 @@ avtDatabaseMetaData::operator=(const avtDatabaseMetaData &rhs)
     numStates          = rhs.numStates;
     isVirtualDatabase  = rhs.isVirtualDatabase;
     mustRepopulateOnStateChange = rhs.mustRepopulateOnStateChange;
+    useCatchAllMesh    = rhs.useCatchAllMesh;
     timeStepPath       = rhs.timeStepPath;
     timeStepNames      = rhs.timeStepNames;
     cyclesAreAccurate  = rhs.cyclesAreAccurate;
@@ -4563,6 +4575,9 @@ avtDatabaseMetaData::GetSpeciesOnMesh(std::string mesh) const
 //    Hank Childs, Fri Mar  5 11:21:06 PST 2004
 //    Print file format.
 //
+//    Mark C. Miller, Tue Mar 30 14:36:17 PST 2004
+//    Added useCatchAllMesh
+//
 // ****************************************************************************
 
 void
@@ -4580,6 +4595,9 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
     Indent(out, indent);
     out << "MetaData" << (mustRepopulateOnStateChange ? " IS " : " is NOT ") << 
         "repopulated on state changes" << endl;
+
+    Indent(out, indent);
+    out << "useCatchAllMesh: " << useCatchAllMesh << endl;
 
     Indent(out, indent);
     if (hasTemporalExtents)
@@ -4859,6 +4877,7 @@ avtDatabaseMetaData::SelectAll()
     Select(25, (void*)&isSimulation);
     Select(26, (void*)&simHost);
     Select(27, (void*)&simPort);
+    Select(28, (void*)&useCatchAllMesh);
 }
 
 // *******************************************************************

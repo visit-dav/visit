@@ -281,6 +281,11 @@ FilledBoundaryViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
 //    Brad Whitlock, Fri Mar 26 15:19:50 PST 2004
 //    I made it use passed in metadata.
 //
+//    Jeremy Meredith, Wed Apr 14 16:30:09 PDT 2004
+//    Removed all the extra coding for clean zones only.  It no longer goes
+//    in the MultiColor list -- it is its own field in the attributes, and
+//    it gets added to the plot/legend color mapping separately.
+//
 // ****************************************************************************
 
 void
@@ -375,7 +380,6 @@ FilledBoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
               {
                   sv.push_back(*pos);
               }
-              sv.push_back("mixed");
           }
           break;
 
@@ -387,7 +391,7 @@ FilledBoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     // 
     // Add a color for each boundary name.
     //
-    ColorAttribute *ca = new ColorAttribute[sv.size()];
+    ColorAttribute *ca = new ColorAttribute[sv.size() + 1];
     avtColorTables *ct = avtColorTables::Instance();
     if(ct->IsDiscrete(ct->GetDefaultDiscreteColorTable()))
     {
@@ -423,12 +427,7 @@ FilledBoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     int idx = 0;
     for(pos = sv.begin(); pos != sv.end(); ++pos, ++idx)
     {
-        bool ignoreOld=(idx < boundaryAtts->GetBoundaryNames().size() &&
-                        boundaryAtts->GetBoundaryNames()[idx] == "mixed" &&
-                        *pos != "mixed");
-
-        if (idx < boundaryAtts->GetMultiColor().GetNumColorAttributes() &&
-            ! ignoreOld)
+        if (idx < boundaryAtts->GetMultiColor().GetNumColorAttributes())
         {
             // The meshIndex is within the defaultAtts' color
             // vector size.
@@ -439,10 +438,7 @@ FilledBoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
             // The meshIndex is greater than the size of the
             // defaultAtts' color vector. Use colors from the
             // default discrete color table.
-            if (*pos == "mixed")
-                cal.AddColorAttribute(ColorAttribute(255,255,255,255));
-            else
-                cal.AddColorAttribute(ca[idx]);
+            cal.AddColorAttribute(ca[idx]);
         }
     }
 

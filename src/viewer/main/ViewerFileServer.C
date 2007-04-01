@@ -56,10 +56,13 @@ ViewerFileServer *ViewerFileServer::instance = NULL;
 //   Brad Whitlock, Fri Jan 17 12:32:22 PDT 2003
 //   I removed the code to start a local mdserver.
 //
+//   Brad Whitlock, Tue Apr 13 23:19:08 PST 2004
+//   I added declinedFiles and declinedFilesLength.
+//
 // ****************************************************************************
 
 ViewerFileServer::ViewerFileServer() : ViewerServerManager(), servers(),
-    fileMetaData(), fileSIL()
+    fileMetaData(), fileSIL(), declinedFiles(), declinedFilesLength()
 {
     databaseCorrelationList = new DatabaseCorrelationList;
 }
@@ -1841,6 +1844,79 @@ ViewerFileServer::CreateNewCorrelationName() const
     } while(databaseCorrelationList->FindCorrelation(newName) != 0);
 
     return std::string(newName);
+}
+
+// ****************************************************************************
+// Method: ViewerFileServer::PreviouslyDeclinedCorrelationCreation
+//
+// Purpose: 
+//   Returns whether the user previously declined to create a database 
+//   correlation for a specified set of files.
+//
+// Arguments:
+//   dbs : The list of files that are in the correlation.
+//
+// Returns:    True if the user did not want to create a correlation; false
+//             if they never declined correlation creation.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 13 23:27:53 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerFileServer::PreviouslyDeclinedCorrelationCreation(
+    const stringVector &dbs) const
+{
+    int index = 0;
+    for(int fileSet = 0; fileSet < declinedFilesLength.size();
+        ++fileSet)
+    {
+        if(declinedFilesLength[fileSet] == dbs.size())
+        {
+            bool same = true;
+            for(int i = 0; i < declinedFilesLength[fileSet] && same; ++i, ++index)
+                same &= (std::find(dbs.begin(), dbs.end(), declinedFiles[index])
+                         != dbs.end());
+
+            if(same)
+                return true;
+        }
+    }
+
+    return false;
+}
+
+// ****************************************************************************
+// Method: ViewerFileServer::DeclineCorrelationCreation
+//
+// Purpose: 
+//   Tell VisIt that it should not allow automatic correlations containing
+//   the files in the passed in list of files.
+//
+// Arguments:
+//   dbs : The list of files.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 13 23:29:32 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerFileServer::DeclineCorrelationCreation(const stringVector &dbs)
+{
+    if(dbs.size() > 0)
+    {
+        for(int i = 0; i < dbs.size(); ++i)
+            declinedFiles.push_back(dbs[i]);
+        declinedFilesLength.push_back(dbs.size());
+    }
 }
 
 // ****************************************************************************

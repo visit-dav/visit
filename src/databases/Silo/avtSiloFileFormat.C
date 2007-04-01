@@ -5499,6 +5499,9 @@ avtSiloFileFormat::GetExternalFacelist(int dom, const char *mesh)
 //    Hank Childs, Fri Feb 13 17:18:04 PST 2004
 //    Add the domain to the material constructor.
 //
+//    Hank Childs, Wed Apr 14 07:52:48 PDT 2004
+//    Attach the material number to the material name.
+//
 // ****************************************************************************
 
 avtMaterial *
@@ -5512,9 +5515,29 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname, int dom)
 
     char dom_string[128];
     sprintf(dom_string, "Domain %d", dom);
+
+    //
+    // If we have material names, create a new set of material names that have
+    // the material number encoded.
+    //
+    char **matnames = NULL;
+    char *buffer = NULL;
+    if (silomat->matnames != NULL)
+    {
+        int nmat = silomat->nmat;
+        matnames = new char*[nmat];
+        buffer = new char[nmat*128];
+        for (int i = 0 ; i < nmat ; i++)
+        {
+            matnames[i] = buffer + 128*i;
+            sprintf(matnames[i], "%d %s", silomat->matnos[i],
+                                          silomat->matnames[i]);
+        }
+    }
+
     avtMaterial *mat = new avtMaterial(silomat->nmat,
                                        silomat->matnos,
-                                       silomat->matnames,
+                                       matnames,
                                        silomat->ndims,
                                        silomat->dims,
                                        silomat->major_order,
@@ -5527,6 +5550,10 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname, int dom)
                                        dom_string);
 
     DBFreeMaterial(silomat);
+    if (matnames != NULL)
+        delete [] matnames;
+    if (buffer != NULL)
+        delete [] buffer;
 
     return mat;
 }

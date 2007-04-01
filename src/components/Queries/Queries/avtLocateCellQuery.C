@@ -278,6 +278,10 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
 //    Use pickAtts insteead of queryAtts.
 //    Specify the bounds for cellLocator to use when doing spatial decomp. 
 //    
+//    Kathleen Bonnell, Wed Apr 14 10:26:19 PDT 2004 
+//    Initialize variables to protect against possible incorrect values 
+//    being returned. 
+//
 // ****************************************************************************
 
 int
@@ -289,6 +293,7 @@ avtLocateCellQuery::LocatorFindCell(vtkDataSet *ds, float &dist, float *isect)
     }
     float *rayPt1 = pickAtts.GetRayPoint1();
     float *rayPt2 = pickAtts.GetRayPoint2();
+    dist = -1;
 
     vtkVisItCellLocator *cellLocator = vtkVisItCellLocator::New(); 
     cellLocator->SetIgnoreGhosts(true);
@@ -303,8 +308,8 @@ avtLocateCellQuery::LocatorFindCell(vtkDataSet *ds, float &dist, float *isect)
     cellLocator->SetUserBounds(pickAtts.GetPlotBounds());
     cellLocator->BuildLocator();
 
-    float pcoords[3], ptLine[3];
-    int subId, success;
+    float pcoords[3] = {0., 0., 0.}, ptLine[3] = {0., 0., 0.};
+    int subId = 0, success = 0;
 
     vtkIdType foundCell; 
     if (rayPt1[0] == rayPt2[0] &&
@@ -313,7 +318,7 @@ avtLocateCellQuery::LocatorFindCell(vtkDataSet *ds, float &dist, float *isect)
     {
         cellLocator->FindClosestPoint(rayPt1, ptLine, foundCell,
                                      subId, dist);
-        if (foundCell >= 0)
+        if (foundCell >= 0 && dist >= 0)
         {
             success = 1;
             isect[0] = rayPt1[0];

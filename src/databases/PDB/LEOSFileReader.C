@@ -23,6 +23,8 @@
 using std::string;
 using std::map;
 
+static const char meshesDirName[] = "meshes/";
+
 // valid chracters in a variable name
 static const int validChars[128] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  //  0 - 15
@@ -397,6 +399,10 @@ LEOSFileReader::BuildVarInfoMap()
 //    Mark C. Miller, Mon Mar  8 20:18:06 PST 2004
 //    Made it skip an "unknown" variable and return false if tryHardLevel < 1
 //
+//    Mark C. Miller, Wed Apr 14 10:51:23 PDT 2004
+//    I modified how mesh names were constructed to now prepend a directory 
+//    name.
+//
 // ****************************************************************************
 
 bool 
@@ -432,7 +438,8 @@ LEOSFileReader::AddVariableAndMesh(avtDatabaseMetaData *md, const char *matDirNa
     else
         meshBaseName = string(matName) + "_" + string(matForm);
     string mdVarName  = meshBaseName + '/' + string(varName);
-    string mdMeshName = mdVarName + "_mesh";
+    string mdMeshName;
+    mdMeshName = meshesDirName + mdVarName;
 
     // if we're really trying hard, just read the variable info from file
     // and put it into the eosVarInfoMap 
@@ -939,6 +946,12 @@ LEOSFileReader::ReadFileAndPopulateMetaData(avtDatabaseMetaData *md)
 // Programmer: Mark C. Miller 
 // Creation:   February 10, 2004 
 //
+// Modifications:
+//
+//   Mark C. Miller, Wed Apr 14 10:51:23 PDT 2004
+//   A added code to activate the catch-all mesh feature when there are more
+//   than 5 materials
+//
 // ****************************************************************************
 
 void
@@ -962,6 +975,14 @@ LEOSFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         tryHardLevel = atoi(s);
 
     //
+    // LEOS databases can have a very large number of meshes and
+    // variables. If the count of materials is large enough,
+    // we turn on the catch-all mesh feature
+    //
+    if (numTopDirs > 5)
+        md->SetUseCatchAllMesh(true);
+
+    //
     // if "master/contents" exists, its faster to use that.
     //
     if (tryHardLevel <= 1)
@@ -981,6 +1002,7 @@ LEOSFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // If we get here, we have to do it the hard way
     //
     ReadFileAndPopulateMetaData(md);
+
 }
 
 // ****************************************************************************
@@ -1002,6 +1024,11 @@ LEOSFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //   Brad Whitlock, Fri Mar 5 10:43:53 PDT 2004
 //   Fixed for the Windows compiler.
 //
+//   Mark C. Miller, Wed Apr 14 10:51:23 PDT 2004
+//   Since I now prepend mesh names with a directory name, I added code to
+//   remove directory prepended here. I also added code to fix a problem
+//   where it would attempt to read the Ny dimensioin of a 1D variable.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1014,11 +1041,10 @@ LEOSFileReader::GetMesh(int state, const char *var)
     char tmpStr[256];
     string::size_type n;
 
-    // string off the "_mesh" from end of the variable name and
-    // compute  the full variable name (e.g. "mat/eos-var") and the
-    // variable name
-    strcpy(tmpStr,var);
-    tmpStr[strlen(tmpStr)-5] = 0;
+    // strip of preceding "meshes/" from the beginning of the name
+    // name and compute  the full variable name
+    // (e.g. "mat/eos-var") and the variable name
+    strcpy(tmpStr, var + sizeof(meshesDirName)-1);
     string fullVarName = tmpStr;
     n = fullVarName.find('/');
     string varName(fullVarName,n+1,string::npos);
@@ -1077,18 +1103,23 @@ LEOSFileReader::GetMesh(int state, const char *var)
         }
         else if (i == 1)
         {
-            // set name of PDB symbol containing size to read 
-            sprintf(tmpStr, "/%s%s/%s", matDirName.c_str(), varName.c_str(),
-                                      varInfoFromFile.ySize.c_str());
-
-            // read the size
-            if (!pdb->GetInteger(tmpStr, &size))
+            if (varInfoFromFile.ndims == 2)
             {
-                EXCEPTION1(InvalidVariableException, var);
-            }
+                // set name of PDB symbol containing size to read 
+                sprintf(tmpStr, "/%s%s/%s", matDirName.c_str(), varName.c_str(),
+                                          varInfoFromFile.ySize.c_str());
 
-            sprintf(tmpStr, "/%s%s/%s", matDirName.c_str(), varName.c_str(),
-                                      varInfoFromFile.yName.c_str());
+                // read the size
+                if (!pdb->GetInteger(tmpStr, &size))
+                {
+                    EXCEPTION1(InvalidVariableException, var);
+                }
+
+                sprintf(tmpStr, "/%s%s/%s", matDirName.c_str(), varName.c_str(),
+                                          varInfoFromFile.yName.c_str());
+            }
+            else
+                size = 1;
         }
 
         // Default number of components for an array is 1.
@@ -1157,6 +1188,10 @@ LEOSFileReader::GetMesh(int state, const char *var)
 //   Brad Whitlock, Fri Mar 5 10:47:02 PDT 2004
 //   Fixed for the Windows compiler.
 //
+//   Mark C. Miller, Wed Apr 14 10:51:23 PDT 2004
+//   I fixed a problem where it would attempt to read the Ny dimension of
+//   a 1D variable
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1220,7 +1255,8 @@ LEOSFileReader::GetVar(int state, const char *var)
     sprintf(tmpStr, "/%s%s/%s", matDirName.c_str(), varName.c_str(),
                                       varInfoFromFile.ySize.c_str());
     // read the size
-    if (!pdb->GetInteger(tmpStr, &Ny))
+    Ny = 1;
+    if ((varInfoFromFile.ndims == 2) && !pdb->GetInteger(tmpStr, &Ny))
     {
         EXCEPTION1(InvalidVariableException, var);
     }

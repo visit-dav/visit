@@ -476,13 +476,19 @@ EngineProxy::UpdatePlotAttributes(const string &name, int id,
 //  Programmer:  Mark C. Miller 
 //  Creation:    15Jul03 
 //
+//  Modifications:
+//
+//    Mark C. Miller Wed Apr 14 16:41:32 PDT 2004
+//    Added argument for extents type string
+//
 // ****************************************************************************
 
 void
 EngineProxy::SetWinAnnotAtts(const WindowAttributes *winAtts,
-                             const AnnotationAttributes *annotAtts)
+                             const AnnotationAttributes *annotAtts,
+                             const string extStr)
 {
-    setWinAnnotAttsRPC(winAtts,annotAtts);
+    setWinAnnotAttsRPC(winAtts, annotAtts, extStr);
     if (setWinAnnotAttsRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(setWinAnnotAttsRPC.GetExceptionType(),

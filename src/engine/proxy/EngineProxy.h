@@ -177,6 +177,9 @@ class StatusAttributes;
 //    Kathleen Bonnell, Wed Mar 31 17:23:01 PST 2004 
 //    Added CloneNetworkRPC. 
 //
+//    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
+//    Added argument for extents type string to SetWinAnnotAtts
+//
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -227,7 +230,8 @@ public:
     void                     StartPick(const bool, const int);
 
     void                     SetWinAnnotAtts(const WindowAttributes*,
-                                             const AnnotationAttributes*);
+                                             const AnnotationAttributes*,
+                                             std::string);
     avtDataObjectReader_p    Render(bool, const intVector&, bool);
 
     avtDataObjectReader_p    Execute(bool, void (*waitCB)(void *), void *cbData);

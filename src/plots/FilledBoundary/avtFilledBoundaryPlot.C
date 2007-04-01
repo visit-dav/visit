@@ -544,17 +544,23 @@ avtFilledBoundaryPlot::CustomizeBehavior(void)
 //    I fixed it so the global plot opacity affects the plot when the plot
 //    is colored using a single color.
 //
+//    Jeremy Meredith, Wed Apr 14 16:31:29 PDT 2004
+//    Add the "mixed" color to the end of the list when we are using
+//    clean-zones only.  It was formerly included in the MultiColor list,
+//    but this is a much, well, "cleaner" implementation.
+//
 // ****************************************************************************
 
 void 
 avtFilledBoundaryPlot::SetColors()
 {
+    bool czo = atts.GetCleanZonesOnly();
     vector < string > allLabels = atts.GetBoundaryNames();
     vector < string > labels; 
     LevelColorMap levelColorMap;
 
     behavior->GetInfo().GetAttributes().GetLabels(labels);
-   
+
     if (labels.size() == 0)
     {
         levelsLegend->SetColorBarVisibility(0);
@@ -586,6 +592,16 @@ avtFilledBoundaryPlot::SetColors()
     else if (atts.GetColorType() == FilledBoundaryAttributes::ColorByMultipleColors)
     {
         ColorAttributeList cal(atts.GetMultiColor());
+
+        //
+        // If we are doing clean-zones-only, add the mixed color to the list
+        //
+        if (czo)
+        {
+            allLabels.push_back("mixed");
+            cal.AddColorAttribute(atts.GetMixedColor());
+        }
+
         int numColors = cal.GetNumColorAttributes();
 
         //
@@ -620,8 +636,25 @@ avtFilledBoundaryPlot::SetColors()
     else // ColorByColorTable
     {
         ColorAttributeList cal(atts.GetMultiColor());
-        int numColors = cal.GetNumColorAttributes();
-        unsigned char *colors = new unsigned char[numColors * 4];
+
+        //
+        // If we are doing clean-zones-only, add the mixed color to the list
+        //
+        if (czo)
+        {
+            allLabels.push_back("mixed");
+            cal.AddColorAttribute(atts.GetMixedColor());
+        }
+
+        //
+        // It is a litte more complicated to handle c.z.o. here relative
+        // to when using MultiColor, because we want to interpolate the
+        // color table using only the size of array *before* adding the
+        // mixed color.  We use two "numColors" variables to handle this.
+        //
+        int numColorsFull = cal.GetNumColorAttributes();
+        int numColors     = czo ? (numColorsFull - 1) : (numColorsFull);
+        unsigned char *colors = new unsigned char[numColorsFull * 4];
         unsigned char *cptr = colors;
         avtColorTables *ct = avtColorTables::Instance();
         int opacity = int(atts.GetOpacity()*255.);
@@ -642,7 +675,7 @@ avtFilledBoundaryPlot::SetColors()
         //
         //  Create a label-to-color-index mapping 
         //
-        for(int i = 0; i < numColors; ++i)
+        for(int i = 0; i < numColorsFull; ++i)
             levelColorMap.insert(LevelColorMap::value_type(allLabels[i], i));
 
         // 
@@ -684,7 +717,7 @@ avtFilledBoundaryPlot::SetColors()
             }
         }
 
-        avtLUT->SetLUTColorsWithOpacity(colors, numColors);
+        avtLUT->SetLUTColorsWithOpacity(colors, numColorsFull);
         levelsMapper->SetColors(cal);
         levelsLegend->SetLevels(labels);
 

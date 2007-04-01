@@ -73,6 +73,9 @@ using std::vector;
 //    Hank Childs, Wed Feb 18 09:36:38 PST 2004
 //    Added the "all materials" list to the Initialize call.
 //
+//    Hank Childs, Wed Apr 14 07:50:31 PDT 2004
+//    Do not force names to have material numbers encoded in them.
+//
 // ****************************************************************************
 
 avtMaterial::avtMaterial(int nMats, const int *mats, char **names,
@@ -95,7 +98,7 @@ avtMaterial::avtMaterial(int nMats, const int *mats, char **names,
         if (names == NULL)
             sprintf(name, "%d", mats[i]);
         else
-            sprintf(name, "%d %s", mats[i], names[i]);
+            sprintf(name, "%s", names[i]);
         matnames.push_back(name);
     }
     matnames.push_back("bad material");

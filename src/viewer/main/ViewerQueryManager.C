@@ -345,7 +345,7 @@ ViewerQueryManager::AddQuery(ViewerWindow *origWin, Line *lineAtts,
     string vname(lineAtts->GetVarName());
     if (vname == "default")
         vname = oplot->GetVariableName();
-    int varType = oplot->GetVarType(vname);
+    avtVarType varType = oplot->GetVarType(vname);
     if (varType != AVT_SCALAR_VAR &&
         varType != AVT_MATSPECIES) 
     {
@@ -3089,9 +3089,13 @@ ViewerQueryManager::UpdateQueryOverTimeAtts()
 //    new window will be updated correctly.
 //
 //    Kathleen Bonnell, Fri Apr  2 17:03:50 PST 2004
-//    Modify they way centering-consistency-checks are performed, so
+//    Modify the way centering-consistency-checks are performed, so
 //    that expressions will get evaluated correctly.  
 //    
+//    Kathleen Bonnell, Wed Apr 14 15:38:56 PDT 2004 
+//    Modify the way centering-consistency-checks are performed, so
+//    that Material vars will get evaluated correctly.  
+//
 // ***********************************************************************
 
 void
@@ -3128,30 +3132,56 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
     string qvarName = qA->GetVariables()[0];
   
     //
-    // If we are querying the plot's current variable, check for
-    // centering consistency.
+    // For certain queires, if we are querying the plot's current variable, 
+    // check for centering consistency.
     //
-    if (qvarName == vName)
+    if (qName == "Variable by Zone" || qName == "Variable by Node") 
     {
-        avtCentering centering = origPlot->GetVariableCentering();
-        if (centering == AVT_ZONECENT || centering == AVT_NODECENT)
+        bool issueWarning = false;
+        bool zoneQuery = (qName == "Variable by Zone");
+
+        avtVarType varType = origPlot->GetVarType();
+        if (varType == AVT_MATERIAL )
+        { 
+            if (!zoneQuery)
+                issueWarning = true;
+        }
+        else if (varType != AVT_MESH && varType != AVT_UNKNOWN_TYPE &&
+                 qvarName == vName)
         {
-            if (qName == "Variable by Zone" && centering != AVT_ZONECENT)
+            TRY
+            {
+                avtCentering centering = origPlot->GetVariableCentering();
+                if ((centering == AVT_ZONECENT  && !zoneQuery) ||
+                    (centering == AVT_NODECENT  && zoneQuery))
+                {
+                    issueWarning = true;
+                }
+            }
+            CATCH( ...)
+            {
+                debug5 << "ViewerQueryManager::DoTimeQuery could not perform "
+                       << "centering consistency check." << endl;
+            }
+            ENDTRY
+        }
+        if (issueWarning)
+        {        
+            if (zoneQuery)
             {
                 Warning("The centering of the query (zone) does not match "
                         "the centering of the plot's current variable "
                         "(node).  Please try again with the appropriately "
                         "centered query: 'Variable By Node'");
-                return;
             }
-            else if (qName == "Variable by Node" && centering != AVT_NODECENT)
+            else 
             {
                 Warning("The centering of the query (node) does not match "
                         "the centering of the plot's current variable "
                         "(zone).  Please try again with the appropriately "
                         "centered query: 'Variable By Zone'");
-                return;
             }
+            return;
         }
     }
 
@@ -3290,8 +3320,12 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
 //
 //  Modifications:
 //    Kathleen Bonnell, Fri Apr  2 17:03:50 PST 2004
-//    Modify they way centering-consistency-checks are performed, so
+//    Modify the way centering-consistency-checks are performed, so
 //    that expressions will get evaluated correctly.  
+//
+//    Kathleen Bonnell, Wed Apr 14 15:38:56 PDT 2004 
+//    Modify the way centering-consistency-checks are performed, so
+//    that Material vars will get evaluated correctly.  
 //
 // ****************************************************************************
 
@@ -3321,27 +3355,56 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi, const int dom,
     // centering consistency.
     //
     int type = pickAtts->GetPickType();
-    if (pvarName == vName)
+    avtVarType varType = origPlot->GetVarType();
+
+    bool issueWarning = false;
+    if (varType == AVT_MATERIAL) 
     {
-        avtCentering centering = origPlot->GetVariableCentering();
-        if (centering == AVT_ZONECENT || centering == AVT_NODECENT)
+        if (type != PickAttributes::Zone)
+            issueWarning = true;
+    }
+    else if (varType != AVT_MESH && varType != AVT_UNKNOWN_TYPE &&
+             pvarName == vName)
+    {
+        TRY
         {
-            if (type == PickAttributes::Zone && centering != AVT_ZONECENT)
+            avtCentering centering = origPlot->GetVariableCentering();
+            if (centering == AVT_ZONECENT || centering == AVT_NODECENT)
             {
-                Warning("The centering of the pick-through-time (zone) does "
-                        "not match the centering of the plot's current "
-                        "variable (node).  Please try again with the "
-                        "appropriately centered Pick");
-                return;
+                if (type == PickAttributes::Zone && centering != AVT_ZONECENT)
+                {
+                    issueWarning = true;
+                }
+                else if (type == PickAttributes::Node && centering != AVT_NODECENT)
+                {
+                    issueWarning = true;
+                }
             }
-            else if (type == PickAttributes::Node && centering != AVT_NODECENT)
-            {
-                Warning("The centering of the pick-through-time (node) does "
-                        "not match the centering of the plot's current "
-                        "variable (zone).  Please try again with the "
-                        "appropriately centered Pick");
-                return;
-            }
+        }
+        CATCH( ... )
+        {
+            debug5 << "ViewerQueryManager::PickThroughTime could not perform "
+                   << " centering consistency check." << endl;
+        }
+        ENDTRY
+    }
+    if (issueWarning)
+    {
+        if (type == PickAttributes::Zone) 
+        {
+            Warning("The centering of the pick-through-time (zone) does "
+                    "not match the centering of the plot's current "
+                    "variable (node).  Please try again with the "
+                    "appropriately centered Pick");
+            return;
+        }
+        else if (type == PickAttributes::Node)
+        {
+            Warning("The centering of the pick-through-time (node) does "
+                    "not match the centering of the plot's current "
+                    "variable (zone).  Please try again with the "
+                    "appropriately centered Pick");
+            return;
         }
     }
 
