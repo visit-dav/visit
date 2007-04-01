@@ -88,6 +88,10 @@
 #   Jeremy Meredith, Wed Jul  7 12:12:52 PDT 2004
 #   I changed _ser.o to simply be .o.
 #
+#   Kathleen Bonnell, Thu Jul 29 17:07:08 PDT 2004 
+#   Removed avtVariableQuery, added avtVariableByNodeQuery, 
+#   avtVariableByZoneQuery. 
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -147,7 +151,8 @@ Queries_src= \
  Queries/avtTotalRevolvedVolumeQuery.C \
  Queries/avtTotalSurfaceAreaQuery.C \
  Queries/avtTotalVolumeQuery.C \
- Queries/avtVariableQuery.C \
+ Queries/avtVariableByNodeQuery.C \
+ Queries/avtVariableByZoneQuery.C \
  Queries/avtVariableSummationQuery.C \
  Queries/avtWeightedVariableSummationQuery.C \
  Queries/avtZoneCenterQuery.C \

@@ -21,9 +21,12 @@
 //   Brad Whitlock, Mon Mar 24 14:15:34 PST 2003
 //   I added string and bool arguments.
 //
+//   Brad Whitlock, Thu Jul 29 12:16:45 PDT 2004
+//   I added a bool argument.
+//
 // ****************************************************************************
 
-GetFileListRPC::GetFileListRPC() : BlockingRPC("sb", &fileList)
+GetFileListRPC::GetFileListRPC() : BlockingRPC("sbb", &fileList)
 {
 }
 
@@ -69,16 +72,24 @@ GetFileListRPC::~GetFileListRPC()
 //   Brad Whitlock, Mon Mar 24 14:16:35 PST 2003
 //   I added arguments to pass to the mdserver.
 //
+//   Brad Whitlock, Thu Jul 29 12:17:47 PDT 2004
+//   I added the smartGrouping argument.
+//
 // ****************************************************************************
 
 const GetFileListRPC::FileList *
-GetFileListRPC::operator()(const std::string &f, bool grouping)
+GetFileListRPC::operator()(const std::string &f, bool grouping,
+    bool smartGrouping)
 {
-    debug3 << "Executing GetFileList(" << f.c_str() << ") RPC\n";
+    debug3 << "Executing GetFileList(" << f.c_str()
+           << (grouping?"true":"false") << ", "
+           << (smartGrouping?"true":"false") << ", "
+           << ") RPC\n";
 
     // Store the arguments.
     filter = f;
     automaticFileGrouping = grouping;
+    smartFileGrouping = smartGrouping;
 
     // Try to execute the RPC.
     Execute();
@@ -110,6 +121,9 @@ GetFileListRPC::operator()(const std::string &f, bool grouping)
 //   Brad Whitlock, Mon Mar 24 14:17:29 PST 2003
 //   I added a string and a boolean argument.
 //
+//   Brad Whitlock, Thu Jul 29 12:18:30 PDT 2004
+//   I added smartFileGrouping.
+//
 // ****************************************************************************
 
 void
@@ -117,6 +131,7 @@ GetFileListRPC::SelectAll()
 {
     Select(0, (void *)&filter);
     Select(1, (void *)&automaticFileGrouping);
+    Select(2, (void *)&smartFileGrouping);
 }
 
 // ****************************************************************************
@@ -155,6 +170,25 @@ bool
 GetFileListRPC::GetAutomaticFileGrouping() const
 {
     return automaticFileGrouping;
+}
+
+// ****************************************************************************
+// Method: GetFileListRPC::GetSmartFileGrouping
+//
+// Purpose: 
+//   Returns whether smart file grouping is enabled.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 29 12:19:18 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+GetFileListRPC::GetSmartFileGrouping() const
+{
+    return smartFileGrouping;
 }
 
 // ****************************************************************************

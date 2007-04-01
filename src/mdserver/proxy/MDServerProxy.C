@@ -233,16 +233,19 @@ MDServerProxy::GetDirectory()
 //   I removed the code to sort the files since that's now done as the files
 //   are read from the directory list.
 //
+//   Brad Whitlock, Thu Jul 29 12:27:06 PDT 2004
+//   I added the smartFileGrouping flag.
+//
 // ****************************************************************************
 
 const MDServerProxy::FileList *
 MDServerProxy::GetFileList(const std::string &filter,
-    bool automaticFileGrouping)
+    bool automaticFileGrouping, bool smartFileGrouping)
 {
     // Try and get the file list from the MD Server. This could throw an
     // exception, but we don't want to catch it here.
     const GetFileListRPC::FileList *fl =
-        getFileListRPC(filter, automaticFileGrouping);
+        getFileListRPC(filter, automaticFileGrouping, smartFileGrouping);
 
     // Clear out the file list.
     fileList.Clear();

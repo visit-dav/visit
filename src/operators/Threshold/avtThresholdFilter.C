@@ -121,6 +121,10 @@ avtThresholdFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Fri May  7 08:33:17 PDT 2004
 //    If the variable is not a scalar, then issue a warning.
 //
+//    Hank Childs, Thu Jul 29 09:43:58 PDT 2004
+//    Do not convert output to poly-data, since the base class will now
+//    take care of this (when appropriate).
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -201,36 +205,8 @@ avtThresholdFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         out_ds = NULL;
     }
 
-    //
-    // If we had poly data input, we want poly data output.  The VTK filter
-    // only returns unstructured grids, so convert that now.
-    //
-    bool shouldDelete = false;
-    if (in_ds->GetDataObjectType() == VTK_POLY_DATA && out_ds != NULL)
-    {
-        vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) out_ds;
-        vtkPolyData *out_pd = vtkPolyData::New();
-        out_pd->SetPoints(ugrid->GetPoints());
-        out_pd->GetPointData()->ShallowCopy(ugrid->GetPointData());
-        out_pd->GetCellData()->ShallowCopy(ugrid->GetCellData());
-        int ncells = ugrid->GetNumberOfCells();
-        out_pd->Allocate(ncells);
-        for (int i = 0 ; i < ncells ; i++)
-        {
-            int celltype = ugrid->GetCellType(i);
-            vtkIdType *pts;
-            int npts;
-            ugrid->GetCellPoints(i, npts, pts);
-            out_pd->InsertNextCell(celltype, npts, pts);
-        }
-        out_ds = out_pd;
-        shouldDelete = true;
-    }
-
     ManageMemory(out_ds);
     threshold->Delete();
-    if (shouldDelete)
-        out_ds->Delete();
 
     return out_ds;
 }

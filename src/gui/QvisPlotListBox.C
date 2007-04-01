@@ -295,14 +295,18 @@ QvisPlotListBox::activeOperatorIndex(int id) const
 //   I changed the method so having a different Active flag is not cause
 //   to regenerate the items. I also renamed the method.
 //
+//   Brad Whitlock, Wed Jul 28 17:39:36 PST 2004
+//   I made it check the file prefixes.
+//
 // ****************************************************************************
 
 bool
-QvisPlotListBox::NeedsToBeRegenerated(const PlotList *pl) const
+QvisPlotListBox::NeedsToBeRegenerated(const PlotList *pl,
+    const stringVector &prefixes) const
 {
     bool retval = true;
 
-    if(pl->GetNumPlots() == count())
+    if(pl->GetNumPlots() == count() && prefixes.size() == count())
     {
         for(int i = 0; i < pl->GetNumPlots(); ++i)
         {
@@ -310,6 +314,11 @@ QvisPlotListBox::NeedsToBeRegenerated(const PlotList *pl) const
             const Plot &newPlot = pl->operator[](i);
             const Plot &currentPlot = lbi->GetPlot();
 
+            // See if the prefixes are different.
+            if(prefixes[i] != std::string(lbi->GetPrefix().latin1()))
+                 return true;
+
+            // See if the plots are different
             bool nu = newPlot.GetStateType() != currentPlot.GetStateType() ||
                    newPlot.GetPlotType() != currentPlot.GetPlotType() ||
                    newPlot.GetHiddenFlag() != currentPlot.GetHiddenFlag() ||

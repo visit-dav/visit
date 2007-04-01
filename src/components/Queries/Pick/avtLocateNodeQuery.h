@@ -43,7 +43,8 @@ class QUERY_API avtLocateNodeQuery : public avtLocateQuery
     virtual void                    Execute(vtkDataSet *, const int);
     int                             RGridFindNode(vtkDataSet *, float&, float*);
     int                             DeterminePickedNode(vtkDataSet *, int, float*);
-    int                             FindClosestPoint(vtkDataSet *, float*, int &);
+    int                             FindClosestPoint(vtkDataSet *, const int,
+                                                  float*, int &);
     int                             FindClosestPointOnLine(vtkDataSet *, 
                                                            float &,
                                                            float [3]);

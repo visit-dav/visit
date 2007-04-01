@@ -270,7 +270,9 @@ MDServerApplication::Execute()
 // Creation:   Fri Apr 18 14:59:32 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Jul 29 12:23:34 PDT 2004
+//   Assumes extra smart file grouping.
+//
 // ****************************************************************************
 
 void
@@ -278,7 +280,7 @@ MDServerApplication::ExecuteDebug()
 {
     // Get the filtered file list.
     GetFileListRPC::FileList files;
-    clients[0]->GetFilteredFileList(files, "*");
+    clients[0]->GetFilteredFileList(files, "*", true);
     // Print the file list to the debug logs.
     debug1 << "FILELIST = " << files << endl;
 }

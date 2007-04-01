@@ -1,3 +1,5 @@
+#include <iostream.h>
+
 #include <qcombobox.h>
 #include <qlabel.h>
 #include <qlistview.h> 
@@ -19,6 +21,7 @@
 #include <KeyframeAttributes.h>
 #include <NameSimplifier.h>
 #include <WindowInformation.h>
+#include <Utility.h>
 #include <ViewerProxy.h>
 #include <GetMetaDataException.h>
 #include <avtDatabaseMetaData.h>
@@ -86,6 +89,8 @@ public:
             return std::string(str);
         }
 
+        void Print(ostream &os, const std::string &indent) const;
+
         char              separator;
         int               nodeType;
         std::string       nodeName;
@@ -110,6 +115,8 @@ public:
     void AddElementsToListView(QListView *item, int &fileIndex,
                                const QPixmap &folderPixmap,
                                const QPixmap &databasePixmap);
+
+    friend ostream &operator << (ostream &os, const FileTree &t);
 private:
     std::string separator_str()
     {
@@ -514,7 +521,10 @@ QvisFilePanel::UpdateFileList(bool doAll)
 // Creation:   Fri Jan 30 11:54:15 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Jul 28 17:22:59 PST 2004
+//   Added code to force file lists that have MT databases always have a root
+//   so they can be collapsed.
+//
 // ****************************************************************************
 
 void
@@ -526,9 +536,11 @@ QvisFilePanel::RepopulateFileList()
 
     // Go through all of the files and build a list of unique hosts.
     bool hostOtherThanLocalHost = false;
+    bool someFilesHaveMultipleTimeStates = false;
     QualifiedFilenameVector::const_iterator pos;
     for(pos = f.begin(); pos != f.end(); ++pos)
     {
+        // Populate the hostMap variable.
         if(pos->host.size() > 0)
         {
             // Add an entry for the host.
@@ -537,6 +549,22 @@ QvisFilePanel::RepopulateFileList()
             // See if the host is not localhost.
             if(pos->host != std::string("localhost"))
                 hostOtherThanLocalHost = true;
+        }
+
+        // See if the current file is MT
+        if(!someFilesHaveMultipleTimeStates)
+        {
+            if(pos->IsVirtual())
+            {
+                someFilesHaveMultipleTimeStates = true;
+            }
+            else if(fileServer->HaveOpenedFile(*pos))
+            {
+                const avtDatabaseMetaData *md =
+                    fileServer->GetMetaData(*pos);
+                if(md != 0 && md->GetNumStates() > 1)
+                    someFilesHaveMultipleTimeStates = true;
+            }
         }
     }
 
@@ -603,10 +631,13 @@ QvisFilePanel::RepopulateFileList()
         }
         files.Reduce();
 
+        // debug1 << "File Tree:\n" << files << endl << endl;
+
         // If there are top level directories in the file tree, then we
         // need to create a node for the host.
         if(files.TreeContainsDirectories() ||
-           hostOtherThanLocalHost)
+           hostOtherThanLocalHost ||
+           someFilesHaveMultipleTimeStates)
         {
             // Create the root for the host list.
             QualifiedFilename rootName(f[0].host, "(host)", "(host)");
@@ -3407,6 +3438,29 @@ FileTree::AddElementsToListView(QListView *listview, int &fileIndex,
                                 databasePixmap, filePanel);
 }
 
+// ****************************************************************************
+// Method: FileTree::operator <<
+//
+// Purpose: 
+//   Prints the FileTree to a stream.
+//
+// Arguments:
+//   os : The stream to which we want to print.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 29 10:08:20 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ostream &
+operator <<(ostream &os, const FileTree &t)
+{
+    t.root->Print(os, "");
+    return os;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 // ****************************************************************************
@@ -3501,6 +3555,11 @@ FileTree::FileTreeNode::Destroy()
 //   numeric string comparison routine. This fixes cases where files like
 //   foo10z0000.silo would come before foo2z0000.silo.
 //
+//   Brad Whitlock, Thu Jul 29 10:57:59 PDT 2004
+//   I changed the node insertion scheme so the node name is used
+//   (as it must be) with a numeric string comparison so we preserve
+//   compatibility with the file indices in the file server list.
+//
 // ****************************************************************************
 
 FileTree::FileTreeNode *
@@ -3539,7 +3598,8 @@ FileTree::FileTreeNode::Add(int nType, const std::string &name,
             int index = 0;
             for(int i = 0; i < numChildren; ++i, ++index)
             {
-                if(notInserted && (children[i]->fileName > newNode->fileName))
+                if(notInserted &&
+                   NumericStringCompare(newNode->nodeName, children[i]->nodeName))
                 {
                     newChildren[index++] = newNode;
                     newChildren[index] = children[i];
@@ -3769,6 +3829,10 @@ FileTree::FileTreeNode::HasChildrenOfType(int type)
 //   Brad Whitlock, Wed May 14 15:31:57 PST 2003
 //   I made virtual files be expanded by default.
 //
+//   Brad Whitlock, Thu Jul 29 10:00:51 PDT 2004
+//   I fixed a bug where if the first file in a directory lacked read access
+//   then the directory would be displayed as having no access.
+//
 // ****************************************************************************
 
 void
@@ -3806,9 +3870,19 @@ FileTree::FileTreeNode::AddElementsToListViewItem(QListViewItem *item,
         }
         else if(nodeType == PATH_NODE)
         {
+            //
+            // Paths must always have access. Paths that were created by a file
+            // without read permission would have been reduced so any paths
+            // that remain at this point must have access.
+            //
+            fileName.SetAccess(true);
+
             // Add a directory node.
             QString temp;
-            temp.sprintf("%c%s", separator, nodeName.c_str());
+            if(nodeName == fileName.path && nodeName[0] != separator)
+                temp.sprintf("%c%s", separator, nodeName.c_str());
+            else
+                temp = QString(nodeName.c_str());
             root = new QvisListViewFileItem(item, temp, fileName,
                            QvisListViewFileItem::DIRECTORY_NODE);
             root->setPixmap(0, folderPixmap);
@@ -3926,4 +4000,36 @@ FileTree::FileTreeNode::NumberedFilename(int fileIndex) const
         label.sprintf("%d: %s", fileIndex, nodeName.c_str());
 
     return label;
+}
+
+// ****************************************************************************
+// Method: FileTree::FileTreeNode::Print
+//
+// Purpose: 
+//   Prints the node to a stream.
+//
+// Arguments:
+//   os     : The stream to which we want to print.
+//   indent : The string to prepend to all of the output.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 29 10:08:58 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+FileTree::FileTreeNode::Print(ostream &os, const std::string &indent) const
+{
+    os << indent.c_str() << "[" << nodeName.c_str() << "] " << fileName.FullName() << endl;
+
+    // Add any children there might be.
+    if(numChildren > 0)
+    {
+        std::string newIndent(std::string("    ") + indent);
+
+        for(int i = 0; i < numChildren; ++i)
+            children[i]->Print(os, newIndent);
+    }
 }

@@ -28,7 +28,7 @@ using std::string;
 //   Constructor
 //
 // Programmer: xml2window
-// Creation:   Tue Oct 1 09:44:53 PDT 2002
+// Creation:   Tue Jul 27 09:36:53 PDT 2004
 //
 // Modifications:
 //   
@@ -52,7 +52,7 @@ QvisLineoutWindow::QvisLineoutWindow(const int type,
 //   Destructor
 //
 // Programmer: xml2window
-// Creation:   Tue Oct 1 09:44:53 PDT 2002
+// Creation:   Tue Jul 27 09:36:53 PDT 2004
 //
 // Modifications:
 //   
@@ -70,7 +70,7 @@ QvisLineoutWindow::~QvisLineoutWindow()
 //   Creates the widgets for the window.
 //
 // Programmer: xml2window
-// Creation:   Tue Oct 1 09:44:53 PDT 2002
+// Creation:   Tue Jul 27 09:36:53 PDT 2004
 //
 // Modifications:
 //   
@@ -79,7 +79,7 @@ QvisLineoutWindow::~QvisLineoutWindow()
 void
 QvisLineoutWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 6,2,  10, "mainLayout");
+    QGridLayout *mainLayout = new QGridLayout(topLayout, 7,2,  10, "mainLayout");
 
 
     mainLayout->addWidget(new QLabel("Point 1", central, "point1Label"),0,0);
@@ -94,22 +94,28 @@ QvisLineoutWindow::CreateWindowContents()
             this, SLOT(point2ProcessText()));
     mainLayout->addWidget(point2, 1,1);
 
-    mainLayout->addWidget(new QLabel("Number of Sample Points ", central, 
-                          "numberOfSamplePointsLabel"),2,0);
+    samplingOn = new QCheckBox("samplingOn", central, "samplingOn");
+    connect(samplingOn, SIGNAL(toggled(bool)),
+            this, SLOT(samplingOnChanged(bool)));
+    mainLayout->addWidget(samplingOn, 2,0);
+
+    numberOfSamplePointsLabel = new QLabel("Number of Sample Points ", 
+            central, "numberOfSamplePointsLabel");
+    mainLayout->addWidget(numberOfSamplePointsLabel,3,0);
     numberOfSamplePoints = new QLineEdit(central, "numberOfSamplePoints");
     connect(numberOfSamplePoints, SIGNAL(returnPressed()),
             this, SLOT(numberOfSamplePointsProcessText()));
-    mainLayout->addWidget(numberOfSamplePoints, 2,1);
+    mainLayout->addWidget(numberOfSamplePoints, 3,1);
 
     interactive = new QCheckBox("Interactive", central, "interactive");
     connect(interactive, SIGNAL(toggled(bool)),
             this, SLOT(interactiveChanged(bool)));
-    mainLayout->addWidget(interactive, 3,0);
+    mainLayout->addWidget(interactive, 4,0);
 
     reflineLabels = new QCheckBox("Refline Labels", central, "reflineLabels");
     connect(reflineLabels, SIGNAL(toggled(bool)),
             this, SLOT(reflineLabelsChanged(bool)));
-    mainLayout->addWidget(reflineLabels, 4,0);
+    mainLayout->addWidget(reflineLabels, 5,0);
 
 }
 
@@ -121,11 +127,9 @@ QvisLineoutWindow::CreateWindowContents()
 //   Updates the widgets in the window when the subject changes.
 //
 // Programmer: xml2window
-// Creation:   Tue Oct 1 09:44:53 PDT 2002
+// Creation:   Tue Jul 27 09:36:53 PDT 2004
 //
 // Modifications:
-//   Kathleen Bonnell, Mon Dec 23 08:23:26 PST 2002
-//   Allow 3D points.
 //   
 // ****************************************************************************
 
@@ -157,14 +161,27 @@ QvisLineoutWindow::UpdateWindow(bool doAll)
             temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
             point2->setText(temp);
             break;
-          case 2: //numberOfSamplePoints
+          case 2: //samplingOn
+            if (atts->GetSamplingOn() == true)
+            {
+                numberOfSamplePoints->setEnabled(true);
+                numberOfSamplePointsLabel->setEnabled(true);
+            }
+            else
+            {
+                numberOfSamplePoints->setEnabled(false);
+                numberOfSamplePointsLabel->setEnabled(false);
+            }
+            samplingOn->setChecked(atts->GetSamplingOn());
+            break;
+          case 3: //numberOfSamplePoints
             temp.sprintf("%d", atts->GetNumberOfSamplePoints());
             numberOfSamplePoints->setText(temp);
             break;
-          case 3: //interactive
+          case 4: //interactive
             interactive->setChecked(atts->GetInteractive());
             break;
-          case 4: //reflineLabels
+          case 5: //reflineLabels
             reflineLabels->setChecked(atts->GetReflineLabels());
             break;
         }
@@ -179,11 +196,9 @@ QvisLineoutWindow::UpdateWindow(bool doAll)
 //   Gets values from certain widgets and stores them in the subject.
 //
 // Programmer: xml2window
-// Creation:   Tue Oct 1 09:44:53 PDT 2002
+// Creation:   Tue Jul 27 09:36:53 PDT 2004
 //
 // Modifications:
-//   Kathleen Bonnell, Mon Dec 23 08:23:26 PST 2002
-//   Allow 3D points.
 //   
 // ****************************************************************************
 
@@ -239,8 +254,14 @@ QvisLineoutWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Do numberOfSamplePoints
+    // Do samplingOn
     if(which_widget == 2 || doAll)
+    {
+        // Nothing for samplingOn
+    }
+
+    // Do numberOfSamplePoints
+    if(which_widget == 3 || doAll)
     {
         temp = numberOfSamplePoints->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -261,13 +282,13 @@ QvisLineoutWindow::GetCurrentValues(int which_widget)
     }
 
     // Do interactive
-    if(which_widget == 3 || doAll)
+    if(which_widget == 4 || doAll)
     {
         // Nothing for interactive
     }
 
     // Do reflineLabels
-    if(which_widget == 4 || doAll)
+    if(which_widget == 5 || doAll)
     {
         // Nothing for reflineLabels
     }
@@ -297,9 +318,17 @@ QvisLineoutWindow::point2ProcessText()
 
 
 void
+QvisLineoutWindow::samplingOnChanged(bool val)
+{
+    atts->SetSamplingOn(val);
+    Apply();
+}
+
+
+void
 QvisLineoutWindow::numberOfSamplePointsProcessText()
 {
-    GetCurrentValues(2);
+    GetCurrentValues(3);
     Apply();
 }
 

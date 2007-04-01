@@ -29,6 +29,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <snprintf.h>
 
 #include <icons/removelastoperator.xpm>
 #include <icons/removealloperators.xpm>
@@ -635,6 +636,10 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
 //   Brad Whitlock, Thu Feb 26 11:17:22 PDT 2004
 //   I changed how the plot and operator menu's enabled state is set.
 //
+//   Brad Whitlock, Wed Jul 28 17:44:19 PST 2004
+//   I added code to make sure that the prefixes are taken into account when
+//   setting generating the items in the list box.
+//
 // ****************************************************************************
 
 void
@@ -642,24 +647,40 @@ QvisPlotManagerWidget::UpdatePlotList()
 {
     blockSignals(true);
 
-    if(plotListBox->NeedsToBeRegenerated(plotList))
+    //
+    // Create the vector of prefixes for the new plot list.
+    //
+    int i;
+    stringVector prefixes;
+    for(i = 0; i < plotList->GetNumPlots(); ++i)
+    {
+        // Create a constant reference to the current plot.
+        const Plot &current = plotList->operator[](i);
+
+        // Figure out the prefix that should be applied to the plot.
+        char prefix[200];
+        QualifiedFilename qualifiedFile(current.GetDatabaseName());
+        int index = fileServer->GetFileIndex(qualifiedFile);
+        if(index < 0)
+            SNPRINTF(prefix, 200, "%s:", qualifiedFile.filename.c_str());
+        else
+            SNPRINTF(prefix, 200, "%d:", index); 
+
+        prefixes.push_back(prefix);
+    }
+
+    if(plotListBox->NeedsToBeRegenerated(plotList, prefixes))
     {
         // Update the plot list.
         plotListBox->blockSignals(true);
         plotListBox->clear();
-        for(int i = 0; i < plotList->GetNumPlots(); ++i)
+        for(i = 0; i < plotList->GetNumPlots(); ++i)
         {
             // Create a constant reference to the current plot.
             const Plot &current = plotList->operator[](i);
 
             // Figure out the prefix that should be applied to the plot.
-            QString prefix;
-            QualifiedFilename qualifiedFile(current.GetDatabaseName());
-            int index = fileServer->GetFileIndex(qualifiedFile);
-            if(index < 0)
-                prefix.sprintf("%s:", qualifiedFile.filename.c_str());
-            else
-                prefix.sprintf("%d:", index);               
+            QString prefix(prefixes[i].c_str());
 
             // Create a new plot item in the list.
             QvisPlotListBoxItem *newPlot = new QvisPlotListBoxItem(prefix,
@@ -681,7 +702,7 @@ QvisPlotManagerWidget::UpdatePlotList()
     else if(plotListBox->NeedToUpdateSelection(plotList))
     {
         plotListBox->blockSignals(true);
-        for(int i = 0; i < plotList->GetNumPlots(); ++i)
+        for(i = 0; i < plotList->GetNumPlots(); ++i)
         {
             // Create a constant reference to the current plot.
             const Plot &current = plotList->operator[](i);

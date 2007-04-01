@@ -240,15 +240,50 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fname)
 //    Akira Haddox, Wed Jul 23 12:57:14 PDT 2003
 //    Moved allocation of cached information to FreeUpResources.
 //
+//    Hank Childs, Tue Jul 27 10:40:44 PDT 2004
+//    Sucked in code from FreeUpResources.
+//
 // ****************************************************************************
 
 avtMiliFileFormat::~avtMiliFileFormat()
 {
-    FreeUpResources();
+    //
+    // Close mili databases, and delete non-essential allocated memory.
+    // Keep the original sizes of vectors though.
+    //
+    int i, j;
+    for (i = 0; i < ndomains; ++i)
+        if (dbid[i] != -1)
+        {
+            mc_close(dbid[i]);
+            dbid[i] = -1;
+        }
+    for (i = 0; i < connectivity.size(); ++i)
+        for (j = 0; j < connectivity[i].size(); ++j)
+            if (connectivity[i][j] != NULL)
+            {
+                connectivity[i][j]->Delete();
+                connectivity[i][j] = NULL;
+            }
+    for (i = 0; i < materials.size(); ++i)
+        for (j = 0; j < materials[i].size(); ++j)
+            if (materials[i][j])
+            {
+                delete materials[i][j];
+                materials[i][j] = NULL;
+            }
+    connectivity.clear();
+    materials.clear();
 
-    delete []famroot;
+    //
+    // Reset flags to indicate the meshes needs to be read in again.
+    //
+    for (i = 0; i < ndomains; ++i)
+        readMesh[i] = false;
+
+    delete [] famroot;
     if (fampath)
-    delete []fampath;
+        delete [] fampath;
 }
 
 
@@ -362,9 +397,6 @@ read_results(Famid &dbid, int ts, int sr, int rank,
 //
 //    Hank Childs, Sat Jun 26 11:24:47 PDT 2004
 //    Check for bad files where number of timesteps is incorrectly reported.
-//
-//    Hank Childs, Tue Jul 20 15:53:30 PDT 2004
-//    Add support for more data types (float, double, char, int, etc).
 //
 // ****************************************************************************
 
@@ -770,7 +802,9 @@ avtMiliFileFormat::GetSizeInfoForGroup(const char *group_name, int &offset,
                                        int &g_size, int dom)
 {
     if (!readMesh[dom])
+    {
         ReadMesh(dom);
+    }
 
     int g_index = -1;
     for (int i = 0 ; i < element_group_name[dom].size() ; i++)
@@ -1313,6 +1347,9 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *name)
 //    Hank Childs, Tue Jul 20 15:53:30 PDT 2004
 //    Add support for more data types (float, double, char, int, etc).
 //
+//    Hank Childs, Tue Jul 27 12:42:12 PDT 2004
+//    Fix problem with reading in double nodal vectors.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1365,7 +1402,7 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *name)
         float *ptr = (float *) rv->GetVoidPointer(0);
         char *tmp = (char *) name;  // Bypass const
         read_results(dbid[dom], ts+1, sub_record_ids[dom][sr_valid], 1,
-                        &tmp, vsize, amt, ptr);
+                        &tmp, vsize, amt*vdim, ptr);
     }
     else
     {
@@ -2023,44 +2060,18 @@ avtMiliFileFormat::GetAuxiliaryData(const char *var, int ts, int dom,
 //  Programmer: Akira Haddox
 //  Creation:   July 23, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Jul 27 10:18:26 PDT 2004
+//    Moved the code to free up resources to the destructor.
+//
 // ****************************************************************************
 
 void
 avtMiliFileFormat::FreeUpResources()
 {
-    //
-    // Close mili databases, and delete non-essential allocated memory.
-    // Keep the original sizes of vectors though.
-    //
-    int i, j;
-    for (i = 0; i < ndomains; ++i)
-        if (dbid[i] != -1)
-        {
-            mc_close(dbid[i]);
-            dbid[i] = -1;
-        }
-    for (i = 0; i < connectivity.size(); ++i)
-        for (j = 0; j < connectivity[i].size(); ++j)
-            if (connectivity[i][j] != NULL)
-            {
-                connectivity[i][j]->Delete();
-                connectivity[i][j] = NULL;
-            }
-    for (i = 0; i < materials.size(); ++i)
-        for (j = 0; j < materials[i].size(); ++j)
-            if (materials[i][j])
-            {
-                delete materials[i][j];
-                materials[i][j] = NULL;
-            }
-
-    //
-    // Reset flags to indicate the meshes needs to be read in again.
-    //
-    for (i = 0; i < ndomains; ++i)
-    {
-        readMesh[i] = false;
-    }
+    // Do not free anything up, since we are a multi-timestep format and
+    // we need the information for the next timestep...
 }
 
 

@@ -27,6 +27,10 @@
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Hank Childs, Tue Jul 27 08:41:21 PDT 2004
+//    Convert unstructured data that could be stored as poly data to poly
+//    data.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataObjectToDatasetFilter
@@ -37,6 +41,8 @@ class PIPELINE_API avtDataObjectToDatasetFilter
     virtual           ~avtDataObjectToDatasetFilter();
 
     void               OutputSetActiveVariable(const char *);
+
+    virtual void       PostExecute(void);
 };
 
 

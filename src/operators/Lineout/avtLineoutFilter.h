@@ -11,6 +11,9 @@
 
 
 class vtkDataSet;
+class vtkIdList;
+class vtkPoints;
+class vtkPolyData;
 
 
 // ****************************************************************************
@@ -32,6 +35,9 @@ class vtkDataSet;
 //
 //    Kathleen Bonnell, Wed Jan 14 12:02:38 PST 2004 
 //    Added PostExecute. 
+//
+//    Kathleen Bonnell, Thu Jul 29 09:55:49 PDT 2004 
+//    Added Sampling, NoSampling, and CreatePolys methods.
 //
 // ****************************************************************************
 
@@ -60,6 +66,12 @@ class avtLineoutFilter : public avtPluginStreamer
     virtual void              RefashionDataObjectInfo(void);
     virtual avtPipelineSpecification_p
                               PerformRestriction(avtPipelineSpecification_p);
+
+  private:
+    vtkDataSet               *Sampling(vtkDataSet *, int);
+    vtkDataSet               *NoSampling(vtkDataSet *, int);
+    vtkPolyData              *CreatePolys(vtkDataSet *, float *, vtkPoints *, 
+                                          vtkIdList *);
 };
 
 #endif

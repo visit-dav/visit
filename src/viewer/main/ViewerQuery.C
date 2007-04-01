@@ -74,6 +74,9 @@ void CreateBasis(const avtVector &N, const avtVector &UP,
 //    Kathleen Bonnell, Thu Mar 11 08:19:10 PST 2004 
 //    Removed width & height.
 //
+//    Kathleen Bonnell, Thu Jul 29 09:49:00 PDT 2004 
+//    Set lineAtts SamplingOn from temp. 
+//
 // ***********************************************************************
 
 ViewerQuery::ViewerQuery(ViewerWindow *origWin, ViewerWindow *resWin, 
@@ -96,6 +99,7 @@ ViewerQuery::ViewerQuery(ViewerWindow *origWin, ViewerWindow *resWin,
                    CreateCompatible("Line");
     lineAtts->SetInteractive(temp->GetInteractive()); 
     lineAtts->SetReflineLabels(temp->GetReflineLabels()); 
+    lineAtts->SetSamplingOn(temp->GetSamplingOn()); 
     //
     // Ensure that lineAtts sent to VisWindow will have the correct value
     // for ReflineLabels. 
@@ -323,6 +327,8 @@ ViewerQuery::CreateLineout(const bool fromDefault)
     //
     resultsPlot->SetPlotAtts(lineAtts);
     int id = resultsPlot->GetNOperators() -1;
+
+
     resultsPlot->GetOperator(id)->SetOperatorAtts(lineAtts);
 
     plotList->RealizePlots();

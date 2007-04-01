@@ -83,6 +83,12 @@ inline int vtkNeighborCells::InsertNextPoint(int *x)
   return id/3;
 }
 
+int
+LineLineIsect(const float *, const float *, const float *, const float *, float *);
+
+int
+EdgeLineIsect(vtkCell *cell, const float *, const float *, float *);
+
 // Construct with automatic computation of divisions, averaging
 // 25 cells per bucket.
 //
@@ -128,6 +134,8 @@ vtkVisItCellLocator::vtkVisItCellLocator()
 
   this->triangle = vtkTriangle::New();
   this->quad = vtkQuad::New();
+
+  this->TestCoPlanar = false;
 }
 
 //
@@ -2325,6 +2333,10 @@ vtkVisItCellLocator::PolyLineIntersectWithLine(vtkPolyLine *cell, float p1[3], f
 //   Kathleen Bonnell, Fri Oct 10 10:46:48 PDT 2003 
 //   Remove eps for testing DotProduct.
 //
+//   Kathleen Bonnell, Tue Jul 27 11:06:24 PDT 2004 
+//   If the line is coplanar with the triangle, and we should test for
+//   intersection in this case, call EdgeLineIsect. 
+//
 // ****************************************************************************
 int
 vtkVisItCellLocator::TriangleIntersectWithLine(vtkTriangle *cell, float p1[3], 
@@ -2355,7 +2367,10 @@ vtkVisItCellLocator::TriangleIntersectWithLine(vtkTriangle *cell, float p1[3],
 
   if (tmp == 0.)
   {
-      return 0;
+      if (this->TestCoPlanar)
+          return EdgeLineIsect(cell, p1, p2, x);
+      else
+          return 0;
   }
 
   tmp = 1.0/tmp;
@@ -2417,6 +2432,15 @@ vtkVisItCellLocator::TriStripIntersectWithLine(vtkTriangleStrip *cell, float p1[
   return 0;
 }
 
+// ****************************************************************************
+//
+// Modifications:
+//   Kathleen Bonnell, Tue Jul 27 11:06:24 PDT 2004 
+//   If the line is coplanar with the polygon, and we should test for
+//   intersection in this case, call EdgeLineIsect. 
+//
+// ****************************************************************************
+
 int
 vtkVisItCellLocator::PolygonIntersectWithLine(vtkPolygon *cell, float p1[3], float p2[3], 
     float& t, float x[3], float pcoords[3], int& subId)
@@ -2437,14 +2461,18 @@ vtkVisItCellLocator::PolygonIntersectWithLine(vtkPolygon *cell, float p1[3], flo
   //
   pt1 = cell->Points->GetPoint(1);
   cell->ComputeNormal(cell->Points,n);
- 
+  float tmpt = -1; 
   // Intersect plane of the polygon with line
   //
-  if ( ! vtkPlane::IntersectWithLine(p1,p2,n,pt1,t,x) )
+  if ( ! vtkPlane::IntersectWithLine(p1,p2,n,pt1,tmpt,x) )
     {
-    return 0;
+      if (tmpt != VTK_LARGE_FLOAT || !this->TestCoPlanar)
+          return 0;
+
+       return EdgeLineIsect(cell, p1, p2, x);
     }
- 
+
+  t = tmpt; 
   // Evaluate position
   //
   weights = new float[npts];
@@ -2457,10 +2485,19 @@ vtkVisItCellLocator::PolygonIntersectWithLine(vtkPolygon *cell, float p1[3], flo
   return 0;
 }
 
+// ****************************************************************************
+//
+// Modifications:
+//   Kathleen Bonnell, Tue Jul 27 11:06:24 PDT 2004 
+//   If the line is coplanar with the pixel, and we should test for
+//   intersection in this case, call EdgeLineIsect. 
+//
+// ****************************************************************************
 int
 vtkVisItCellLocator::PixelIntersectWithLine(vtkPixel *cell, float p1[3], float p2[3], 
     float& t, float x[3], float pcoords[3], int& subId)
 {
+
   // rewriting pixel code only so that tol is not needed.
   float *pt1, *pt4, n[3];
   float closestPoint[3];
@@ -2489,11 +2526,16 @@ vtkVisItCellLocator::PixelIntersectWithLine(vtkPixel *cell, float p1[3], float p
   //
   // Intersect plane of pixel with line.
   //
-  if ( ! vtkPlane::IntersectWithLine(p1,p2,n,pt1,t,x) )
-    {
-    return 0;
+  float tmpt = -1;
+  if ( ! vtkPlane::IntersectWithLine(p1,p2,n,pt1,tmpt,x) )
+  {
+      if (tmpt != VTK_LARGE_FLOAT || !this->TestCoPlanar)
+          return 0;
+
+      return EdgeLineIsect(cell, p1, p2, x);
     }
 
+  t = tmpt;
   //
   // Does intersection point lie within pixel? 
   //
@@ -2502,6 +2544,7 @@ vtkVisItCellLocator::PixelIntersectWithLine(vtkPixel *cell, float p1[3], float p
     return 1;
     }
   return 0;
+
 }
 
 int
@@ -2514,7 +2557,7 @@ vtkVisItCellLocator::QuadIntersectWithLine(vtkQuad *cell, float p1[3], float p2[
   float d2 = vtkMath::Distance2BetweenPoints(cell->Points->GetPoint(1), 
                                              cell->Points->GetPoint(3));
   subId = 0;
-          
+
   // Figure out how to uniquely tessellate the quad. Watch out for 
   // equivalent triangulations (i.e., the triangulation is equivalent
   // no matter where the diagonal). In this case use the point ids as 
@@ -2883,4 +2926,331 @@ vtkVisItCellLocator::SetUserBounds(float b[6])
     userBoundsSet = true;
 }
 
- 
+
+// ****************************************************************************
+// Method:    LineLineIsect
+//
+// Description:
+//   Determines if two line segments intersect.
+//
+//   From Graphics Gems II, "Intersection of Line Segments" by Mukesh Prasad, 
+//   p. 7-9, code: p. 473-476, xlines.c.
+//
+// Returns:     1 if an intersection is found, 0 otherwise.
+//
+// Arguments:
+//   p1         The first endpoint of the first line segment. 
+//   p2         The second endpoint of the first line segment.
+//   p3         The first endpoint of the second line segment. 
+//   p4         The second endpoint of the second line segment.
+//   isect      A place to store the intersection point, if any. 
+//
+// Programmer:  Kathleen Bonnell
+// Creation:    July 27, 2004 
+//
+// ****************************************************************************
+
+int
+LineLineIsect(const float *p1, const float *p2, const float *p3, 
+              const float *p4, float *isect)
+{
+    float a1, a2, b1, b2, c1, c2, r1, r2, r3, r4;
+    float x1 = p1[0], x2 = p2[0], x3 = p3[0], x4 = p4[0]; 
+    float y1 = p1[1], y2 = p2[1], y3 = p3[1], y4 = p4[1]; 
+
+    a1 = y2 - y1; 
+    b1 = x1 - x2;
+    c1 = x2 * y1 - x1 * y2;
+
+    r3 = a1 * x3 + b1 *y3 + c1;
+    r4 = a1 * x4 + b1 *y4 + c1;
+           
+    if ((r3 < 0 && r4 < 0) || (r3 > 0 && r4 > 0))
+    {
+        return 0;
+    }
+
+    a2 = y4 - y3;
+    b2 = x3 - x4;
+    c2 = x4 * y3 - x3 * y4;
+
+    r1 = a2 * x1 + b2 * y1 + c2;
+    r2 = a2 * x2 + b2 * y2 + c2;
+            
+    if ((r1 < 0 && r2 < 0) || (r1 > 0 && r2 > 0))
+    {
+        return 0;
+    }
+
+    float denom = a1 * b2 - a2 * b1;
+    if (denom == 0)
+    { // COLLINEAR
+        return 0;
+    }
+
+    isect[0] = (b1 * c2 - b2 * c1) / denom;
+    isect[1] = (a2 * c1 - a1 * c2) / denom;
+    isect[2] = 0;
+
+    return 1;    
+}
+
+// ****************************************************************************
+// Method:    EdgeLineIsect
+//
+// Description:
+//   Determines if the finit line specified by endpoints p1 and p2 intersects
+//   any of the edges of the given cell.
+//
+// Returns:     1 if an intersection is found, 0 otherwise.A
+//
+// Arguments:
+//   cell       The cell to test for intersection.
+//   p1         The first endpoint of the finite line.
+//   p2         The second endpoint of the finite line.
+//
+// Programmer:  Kathleen Bonnell
+// Creation:    July 27, 2004 
+//
+// ****************************************************************************
+int
+EdgeLineIsect(vtkCell *cell, const float *p1, const float *p2, float *x)
+{
+    float *p3, *p4;
+    bool isectedEdge = false;
+    int numEdges = cell->GetNumberOfEdges();
+    int i;
+
+    for (i = 0; i < numEdges && !isectedEdge; i++)
+    {
+        p3 = cell->GetEdge(i)->Points->GetPoint(0);
+        p4 = cell->GetEdge(i)->Points->GetPoint(1);
+        isectedEdge = (bool) LineLineIsect(p1, p2, p3, p4, x);
+    }
+    return (isectedEdge ? 1 : 0); 
+}
+
+// ****************************************************************************
+// Method:    vtkVisItCellLocator::IntersectWithLine
+//
+// Description:
+// Return intersection points AND cellids of all cells intersected by
+// the finite line.
+//
+// Programmer:  Kathleen Bonnell
+// Creation:    July 27, 2004 
+//
+// ****************************************************************************
+int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3], 
+                                      vtkPoints *pts, vtkIdList *cells)
+{
+  this->TestCoPlanar = true;
+  vtkGenericCell *cell = vtkGenericCell::New();
+
+  float origin[3];
+  float direction1[3];
+  float direction2[3];
+  float direction3[3];
+  float hitPosition[3];
+  float hitCellBoundsPosition[3], cellBounds[6];
+  int hitCellBounds;
+  float result;
+  float bounds2[6];
+  int i, leafStart, prod, loop;
+  vtkIdType bestCellId = -1, cellId, cId;
+  int idx;
+  float tMax, dist[3];
+  int npos[3];
+  int pos[3];
+  int bestDir, cellIsGhost;
+  float stopDist, currDist;
+  float length, maxLength = 0.0;
+  float tempT, tempX[3], pc[3];
+  int tempId;
+  vtkUnsignedCharArray *ghosts = 
+    (vtkUnsignedCharArray *)this->DataSet->GetCellData()->GetArray("vtkGhostLevels");
+
+  int ncells = this->DataSet->GetNumberOfCells();
+  int ncellsTested = 0;
+  // convert the line into i,j,k coordinates
+  tMax = 0.0;
+  for (i=0; i < 3; i++) 
+    {
+    direction1[i] = a1[i] - a0[i];
+    length = this->Bounds[2*i+1] - this->Bounds[2*i];
+    if (length > maxLength)
+      {
+      maxLength = length;
+      }
+    origin[i] = (a0[i] - this->Bounds[2*i]) / length; 
+    direction2[i] = direction1[i] / length; 
+
+    bounds2[2*i]   = 0.0;
+    bounds2[2*i+1] = 1.0;
+    tMax += direction2[i]*direction2[i];
+    }
+  stopDist = tMax*this->NumberOfDivisions;
+
+  for (i = 0; i < 3; i++) 
+    {
+        direction3[i] = direction2[i]/tMax;
+    }
+
+  if (vtkBox::IntersectBox(bounds2, origin, direction2, hitPosition, result))
+    {
+    // start walking through the octants
+    prod = this->NumberOfDivisions*this->NumberOfDivisions;
+    leafStart = this->NumberOfOctants - this->NumberOfDivisions*prod;
+    bestCellId = -1;
+    
+    // Clear the array that indicates whether we have visited this cell.
+    // The array is only cleared when the query number rolls over.  This
+    // saves a number of calls to memset.
+    this->QueryNumber++;
+    if (this->QueryNumber == 0)
+      {
+      this->ClearCellHasBeenVisited();
+      this->QueryNumber++;    // can't use 0 as a marker
+      }
+    
+    // set up curr and stop dist
+    currDist = 0;
+    for (i = 0; i < 3; i++)
+      {
+      currDist += (hitPosition[i] - origin[i])*(hitPosition[i] - origin[i]);
+      }
+    currDist = sqrt(currDist)*this->NumberOfDivisions;
+    
+    // add one offset due to the problems around zero
+    for (loop = 0; loop <3; loop++)
+      {
+      hitPosition[loop] = hitPosition[loop]*this->NumberOfDivisions + 1.0;
+      pos[loop] = (int)hitPosition[loop];
+      // Adjust right boundary condition: if we intersect from the top, right,
+      // or back; then pos must be adjusted to a valid octant index 
+      if (pos[loop] > this->NumberOfDivisions)
+        {
+        pos[loop] = this->NumberOfDivisions;
+        }
+      }
+    
+    idx = leafStart + pos[0] - 1 + (pos[1] - 1)*this->NumberOfDivisions 
+      + (pos[2] - 1)*prod;
+    while ((bestCellId < 0) && (pos[0] > 0) && (pos[1] > 0) && (pos[2] > 0) &&
+      (pos[0] <= this->NumberOfDivisions) &&
+      (pos[1] <= this->NumberOfDivisions) &&
+      (pos[2] <= this->NumberOfDivisions) &&
+      (currDist < stopDist))
+      {
+      if (this->Tree[idx])
+        {
+        this->ComputeOctantBounds(pos[0]-1, pos[1]-1, pos[2]-1);
+        for (tMax = VTK_LARGE_FLOAT, cellId=0; 
+        cellId < this->Tree[idx]->GetNumberOfIds(); cellId++) 
+          {
+          cId = this->Tree[idx]->GetId(cellId);
+          if (this->CellHasBeenVisited[cId] != this->QueryNumber)
+            {
+            ncellsTested++;
+            this->CellHasBeenVisited[cId] = this->QueryNumber;
+            cellIsGhost = 0;
+            if (ghosts && this->IgnoreGhosts)
+              {
+              cellIsGhost = (int)ghosts->GetComponent(cId, 0); 
+              }
+            if (!cellIsGhost)
+              {
+              hitCellBounds = 0;
+            
+              // check whether we intersect the cell bounds
+              if (this->CacheCellBounds)
+                {
+                hitCellBounds = vtkBox::IntersectBox(this->CellBounds[cId],
+                                                 a0, direction1,
+                                                 hitCellBoundsPosition, result);
+                }
+              else 
+                {
+                this->DataSet->GetCellBounds(cId, cellBounds);
+                hitCellBounds = vtkBox::IntersectBox(cellBounds,
+                                                 a0, direction1,
+                                                 hitCellBoundsPosition, result);
+                }
+              if (hitCellBounds)
+                {
+                // now, do the expensive GetCell call and the expensive
+                // intersect with line call
+                this->DataSet->GetCell(cId, cell);
+                
+                if (CellIntersectWithLine(cell, a0, a1, tempT, tempX, pc, tempId))
+                  {
+                  cells->InsertNextId(cId);
+                  pts->InsertNextPoint(tempX);
+                  } // cell Isected line
+                } // if (hitCellBounds)
+              } // if !cellIsGhost
+            } // if (!this->CellHasBeenVisited[cId])
+          }
+        }
+      
+      // move to the next octant
+      tMax = VTK_LARGE_FLOAT;
+      bestDir = 0;
+      for (loop = 0; loop < 3; loop++)
+        {
+        if (direction3[loop] > 0)
+          {
+          npos[loop] = pos[loop] + 1;
+          dist[loop] = (1.0 - hitPosition[loop] + pos[loop])/direction3[loop];
+          if (dist[loop] == 0)
+            {
+            dist[loop] = 1.0/direction3[loop];
+            }
+          if (dist[loop] < 0)
+            {
+            dist[loop] = 0;
+            }
+          if (dist[loop] < tMax)
+            {
+            bestDir = loop;
+            tMax = dist[loop];
+            }
+          }
+        if (direction3[loop] < 0)
+          {
+          npos[loop] = pos[loop] - 1;
+          dist[loop] = (pos[loop] - hitPosition[loop])/direction3[loop];
+          if (dist[loop] == 0)
+            {
+            dist[loop] = -0.01/direction3[loop];
+            }
+          if (dist[loop] < 0)
+            {
+            dist[loop] = 0;
+            }
+          if (dist[loop] < tMax)
+            {
+            bestDir = loop;
+            tMax = dist[loop];
+            }
+          }
+        }
+      // update our position
+      for (loop = 0; loop < 3; loop++)
+        {
+        hitPosition[loop] += dist[bestDir]*direction3[loop];
+        }
+      currDist += dist[bestDir];
+      // now make the move, find the smallest distance
+      // only cross one boundry at a time
+      pos[bestDir] = npos[bestDir];
+      
+      idx = leafStart + pos[0] - 1 + (pos[1]-1)*this->NumberOfDivisions + 
+        (pos[2]-1)*prod;
+      }
+    }
+  cell->Delete();   
+  this->TestCoPlanar = false;
+  return cells->GetNumberOfIds() > 0; 
+}
+

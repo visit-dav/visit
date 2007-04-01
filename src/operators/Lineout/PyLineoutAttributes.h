@@ -16,5 +16,7 @@ PyObject       *PyLineoutAttributes_WrapPyObject(const LineoutAttributes *attr);
 void            PyLineoutAttributes_SetLogging(bool val);
 void            PyLineoutAttributes_SetDefaults(const LineoutAttributes *atts);
 
+PyObject       *PyLineoutAttributes_StringRepresentation(const LineoutAttributes *atts);
+
 #endif
 

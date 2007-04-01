@@ -245,13 +245,13 @@ private:
 //   I added the recentPathsRemoval window.
 //
 //   Brad Whitlock, Tue Dec 2 16:31:02 PST 2003
-//   Initialized currentVirtualDatabaseDefinitions.
+//   Initialized currentVirtualDatabaseDefinitions and invalidHosts.
 //
 // ****************************************************************************
 
 QvisFileSelectionWindow::QvisFileSelectionWindow(const char *winCaption) :
     QvisDelayedWindowSimpleObserver(winCaption), intermediateFileList(),
-    currentVirtualDatabaseDefinitions()
+    currentVirtualDatabaseDefinitions(), invalidHosts()
 {
     fs = 0;
     profiles = 0;
@@ -342,6 +342,9 @@ QvisFileSelectionWindow::~QvisFileSelectionWindow()
 //   Brad Whitlock, Fri Oct 10 15:08:00 PST 2003
 //   I added a pushbutton to activate the path removal window.
 //
+//   Brad Whitlock, Thu Jul 29 13:50:53 PST 2004
+//   I added support for smart file grouping.
+//
 // ****************************************************************************
 
 void
@@ -412,12 +415,20 @@ QvisFileSelectionWindow::CreateWindowContents()
             this, SLOT(currentDir(bool)));
     toggleLayout->addWidget(currentDirToggle);
 
-    // Create the automatic file grouping toggle.
-    automaticFileGroupingToggle = new QCheckBox("Automatic file grouping",
-        central, "automaticFileGroupingToggle");
-    connect(automaticFileGroupingToggle, SIGNAL(toggled(bool)),
-            this, SLOT(automaticFileGroupingChanged(bool)));
-    toggleLayout->addWidget(automaticFileGroupingToggle);
+    // Create the file grouping checkbox.
+    fileGroupingComboBox = new QComboBox("File grouping",
+        central, "fileGroupingComboBox");
+    fileGroupingComboBox->insertItem("Off", 0);
+    fileGroupingComboBox->insertItem("On", 1);
+    fileGroupingComboBox->insertItem("Smart", 2);
+    fileGroupingComboBox->setEditable(false);
+    connect(fileGroupingComboBox, SIGNAL(activated(int)),
+            this, SLOT(fileGroupingChanged(int)));
+    toggleLayout->addStretch(5);
+    toggleLayout->addWidget(new QLabel(fileGroupingComboBox,
+        "File grouping", central, "fileGroupingLabel"), 0, Qt::AlignRight);
+    toggleLayout->addWidget(fileGroupingComboBox, 0, Qt::AlignLeft);
+    toggleLayout->addStretch(5);
 
     // Create a window we can activate to remove recent paths.
     recentPathsRemovalWindow = new QvisRecentPathRemovalWindow(fileServer,
@@ -519,7 +530,9 @@ QvisFileSelectionWindow::CreateWindowContents()
 // Creation:   Thu Sep 12 12:31:33 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Jul 29 14:51:12 PST 2004
+//   I renamed a method to UpdateHostComboBox.
+//
 // ****************************************************************************
 
 void
@@ -534,7 +547,7 @@ QvisFileSelectionWindow::UpdateWindow(bool doAll)
         doAll = true;
     }
     if(SelectedSubject() == profiles || doAll)
-        UpdateWindowFromProfile(doAll);
+        UpdateHostComboBox();
 }
 
 // ****************************************************************************
@@ -577,6 +590,10 @@ QvisFileSelectionWindow::UpdateWindow(bool doAll)
 //   Brad Whitlock, Mon Oct 13 10:00:17 PDT 2003
 //   I made it update the path combo box when the recent path list changes.
 //
+//   Brad Whitlock, Thu Jul 29 13:58:09 PST 2004
+//   I added smart file grouping and I made it call UpdateHostComboBox so
+//   hosts are always added to the host combo box in the same way.
+//
 // ****************************************************************************
 
 void
@@ -587,18 +604,26 @@ QvisFileSelectionWindow::UpdateWindowFromFiles(bool doAll)
     currentDirToggle->setChecked(fileServer->GetUseCurrentDirectory());
     currentDirToggle->blockSignals(false);
 
-    // Set the automatic file grouping toggle.
-    automaticFileGroupingToggle->blockSignals(true);
-    automaticFileGroupingToggle->setChecked(fileServer->GetAutomaticFileGrouping());
-    automaticFileGroupingToggle->blockSignals(false);
+    // Set the file grouping combo box.
+    if(fileServer->IsSelected(7) || fileServer->IsSelected(9) || doAll)
+    {
+        int index = 0;
+        if(fileServer->GetAutomaticFileGrouping())
+        {
+            ++index;
+            if(fileServer->GetSmartFileGrouping())
+                ++index;
+        }
+        fileGroupingComboBox->blockSignals(true);
+        fileGroupingComboBox->setCurrentItem(index);
+        fileGroupingComboBox->blockSignals(false);
+    }
 
     // If the host flag is set, update the host combo box.
     if(fileServer->HostChanged() || doAll)
     {
         // Fill the combo box with the recently visited hosts.
-        UpdateComboBox(hostComboBox,
-                       fileServer->GetRecentHosts(),
-                       fileServer->GetHost().c_str());
+        UpdateHostComboBox();
     }
 
     // If the path flag is set, update the path combo box.
@@ -650,7 +675,7 @@ QvisFileSelectionWindow::UpdateWindowFromFiles(bool doAll)
 }
 
 // ****************************************************************************
-// Method: QvisFileSelectionWindow::UpdateWindowFromProfile
+// Method: QvisFileSelectionWindow::UpdateHostComboBox
 //
 // Purpose: 
 //   This method is called when the host profile list changes. The purpose is
@@ -665,40 +690,57 @@ QvisFileSelectionWindow::UpdateWindowFromFiles(bool doAll)
 //    Allowed the host name of the profile to contain mutliple real host
 //    names.  This function now splits the host name pattern before 
 //    adding them to the drop-down list box.
-//   
+//
+//    Brad Whitlock, Thu Jul 29 14:55:18 PST 2004
+//    I made it use the recent hosts list and the host profiles and the
+//    list of invalid files to populate the host combo box. Since all areas
+//    of code in this file now call this method to update the host combo
+//    box, there will be no more inconsistencies.
+//
 // ****************************************************************************
 
 void
-QvisFileSelectionWindow::UpdateWindowFromProfile(bool)
+QvisFileSelectionWindow::UpdateHostComboBox()
 {
-    hostComboBox->blockSignals(true);
+    // Get the starting list of hosts from the file server.
+    stringVector hosts(fileServer->GetRecentHosts());
+
+    //
+    // Add all of the hosts from the host profiles that are not already
+    // in the hosts list.
+    //
     for(int i = 0; i < profiles->GetNumHostProfiles(); ++i)
     {
         // Create a constant reference to the i'th profile.
         const HostProfile &p = profiles->operator[](i);
 
-        std::vector<std::string> hostNames = p.SplitHostPattern(p.GetHost());
+        stringVector hostNames(p.SplitHostPattern(p.GetHost()));
         for (int k = 0; k < hostNames.size(); ++k)
         {
-            // Look for the host name in the host combo box.
-            bool found = false;
-            for(int j = 0; j < hostComboBox->count(); ++j)
-            {
-                if(hostComboBox->text(j) == QString(hostNames[k].c_str()))
-                {
-                    found = true;
-                    break;
-                }
-            }
-
-            // If the host was not found, add it to the end of the list.
-            if(!found)
-            {
-                hostComboBox->insertItem(hostNames[k].c_str());
-            }
+            if(std::find(hosts.begin(), hosts.end(), hostNames[k]) == hosts.end())
+                hosts.push_back(hostNames[k]);
         }
     }
-    hostComboBox->blockSignals(false);
+
+    //
+    // Remove any hosts that are in the invalidHosts list.
+    //
+    if(invalidHosts.size() > 0)
+    {
+        for(int i = 0; i < invalidHosts.size(); ++i)
+        {
+            stringVector::iterator pos = std::find(hosts.begin(), hosts.end(),
+                invalidHosts[i]);
+            if(pos != hosts.end())
+                hosts.erase(pos);
+        }
+    }
+
+    //
+    // Sort the host list and update the combo box.
+    //
+    std::sort(hosts.begin(), hosts.end());
+    UpdateComboBox(hostComboBox, hosts, fileServer->GetHost().c_str());
 }
 
 // ****************************************************************************
@@ -1184,6 +1226,9 @@ QvisFileSelectionWindow::GetCurrentValues(bool allowPathChange)
 //    Brad Whitlock, Wed Sep 11 17:21:42 PST 2002
 //    I made it highlight the combo box when the input is bad.
 //
+//    Brad Whitlock, Thu Jul 29 15:02:10 PST 2004
+//    I changed how the routine handles bad hosts.
+//
 // ****************************************************************************
 
 bool
@@ -1212,6 +1257,12 @@ QvisFileSelectionWindow::ChangeHosts()
                 // Try to set the host name
                 fileServer->SetHost(host);
                 fileServer->Notify();
+
+                // If the host is in the invalidHosts list then remove it.
+                stringVector::iterator pos = std::find(invalidHosts.begin(),
+                    invalidHosts.end(), host);
+                if(pos != invalidHosts.end())
+                    invalidHosts.erase(pos);
             }
             CATCH(BadHostException)
             {
@@ -1219,10 +1270,12 @@ QvisFileSelectionWindow::ChangeHosts()
                 QString msgStr;
                 msgStr.sprintf("\"%s\" is not a valid host.", host.c_str());
                 Error(msgStr);
-            
+
                 // Remove the invalid host from the combo box and make the
                 // active host active in the combo box.
-                RemoveComboBoxItem(hostComboBox, host.c_str());
+                invalidHosts.push_back(host);
+                UpdateHostComboBox();
+                hostComboBox->setEditText(host.c_str());
                 HighlightComboBox(hostComboBox);
 
                 // We had an error.
@@ -1232,8 +1285,8 @@ QvisFileSelectionWindow::ChangeHosts()
             {
                 // Remove the invalid host from the combo box and make the
                 // active host active in the combo box.
-                RemoveComboBoxItem(hostComboBox, host.c_str());
-                ActivateComboBoxItem(hostComboBox, fileServer->GetHost().c_str());
+                invalidHosts.push_back(host);
+                UpdateHostComboBox();
 
                 // We had an error.
                 errFlag = true;
@@ -2481,7 +2534,7 @@ QvisFileSelectionWindow::currentDir(bool val)
 }
 
 // ****************************************************************************
-// Method: QvisFileSelectionWindow::automaticFileGroupingChanged
+// Method: QvisFileSelectionWindow::fileGroupingChanged
 //
 // Purpose: 
 //   This is a Qt slot function that sets the AutomaticFileGrouping flag in
@@ -2494,13 +2547,30 @@ QvisFileSelectionWindow::currentDir(bool val)
 // Creation:   Thu Mar 27 09:47:28 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Jul 29 14:02:06 PST 2004
+//   Added support for smart file grouping.
+//
 // ****************************************************************************
 
 void
-QvisFileSelectionWindow::automaticFileGroupingChanged(bool val)
+QvisFileSelectionWindow::fileGroupingChanged(int val)
 {
-    fileServer->SetAutomaticFileGrouping(val);
+    if(val == 0)
+    {
+        fileServer->SetAutomaticFileGrouping(false);
+        fileServer->SetSmartFileGrouping(false);
+    }
+    else if(val == 1)
+    {
+        fileServer->SetAutomaticFileGrouping(true);
+        fileServer->SetSmartFileGrouping(false);
+    }
+    else if(val == 2)
+    {
+        fileServer->SetAutomaticFileGrouping(true);
+        fileServer->SetSmartFileGrouping(true);
+    }
+
     fileServer->Notify();
 }
 

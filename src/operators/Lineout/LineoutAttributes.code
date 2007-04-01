@@ -47,6 +47,7 @@ LineoutAttributes::CreateCompatible(const std::string &tname) const
         line->SetInteractive(GetInteractive());
         line->SetReflineLabels(GetReflineLabels());
         line->SetDesignator(GetDesignator());
+        line->SetSamplingOn(GetSamplingOn());
         line->SetNumSamples(GetNumberOfSamplePoints());
         retval = line;
     }
@@ -79,7 +80,8 @@ LineoutAttributes::Print(ostream &out, bool selected_only) const
                    out << "point2=" << pt[0] << " " 
                                     << pt[1] << " "
                                     << pt[2] << endl;          break;
-          case  2: out << "numberOfSamplePoints=" 
+          case  2: out << "sampling on? " << GetSamplingOn();  break;
+          case  3: out << "numberOfSamplePoints=" 
                        << GetNumberOfSamplePoints();    break;
         }
         out << ",";

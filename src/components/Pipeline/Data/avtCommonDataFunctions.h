@@ -53,6 +53,9 @@ class     vtkDataArray;
 //    Removed CGetDataMagnitudeExtents (handled by CGetDataExtents).
 //    Added MajorEigenvalue. 
 //
+//    Hank Childs, Tue Jul 27 08:49:51 PDT 2004
+//    Add CConvertUnstructuredGridToPolyData.
+//
 // ****************************************************************************
 
 //
@@ -77,6 +80,8 @@ PIPELINE_API void CGetArray(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetVariableCentering(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetNumberOfNodes(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetNumberOfRealZones(avtDataRepresentation &, void *, bool &);
+PIPELINE_API void CConvertUnstructuredGridToPolyData(avtDataRepresentation &,
+                                                     void *, bool &);
 
 PIPELINE_API void GetDataRange(vtkDataSet *, double *, const char *);
 PIPELINE_API double MajorEigenvalue(float *);

@@ -136,6 +136,11 @@ public:
                                 float& t, float x[3], float pcoords[3],
                                 int &subId, vtkIdType &cellId);
 
+  // Description:
+  // Return intersection points AND cellids of all cells intersected by
+  // the finite line.
+  virtual int IntersectWithLine(float a0[3], float a1[3], 
+                                vtkPoints *pts, vtkIdList *cells);
 
 
   // Description:
@@ -337,6 +342,9 @@ private:
   float MinCellLength;
   bool userBoundsSet;
   float UserBounds[6]; // alternate bounding box root octant
+
+private:
+  bool TestCoPlanar;
 };
 
 #endif
