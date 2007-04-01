@@ -476,9 +476,13 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
 //    Do not make the database be a node for the network.  Also add the EEF
 //    as a node.
 //
+//    Jeremy Meredith, Tue Mar 23 14:40:20 PST 2004
+//    Added the file format as an argument.  Made use of it in GetDBFromCache.
+//
 // ****************************************************************************
 void
-NetworkManager::StartNetwork(const string &filename, const string &var,
+NetworkManager::StartNetwork(const string &filename, const string &format,
+                             const string &var,
                              int time,
                              const CompactSILRestrictionAttributes &atts,
                              const MaterialAttributes &matopts)
@@ -514,7 +518,7 @@ NetworkManager::StartNetwork(const string &filename, const string &var,
 
     // Start up the DataNetwork and add the database to it.
     workingNet = new DataNetwork;
-    NetnodeDB *netDB = GetDBFromCache(filename, time);
+    NetnodeDB *netDB = GetDBFromCache(filename, time, format.c_str());
     workingNet->SetNetDB(netDB);
     netDB->SetDBInfo(filename, leaf, time);
 
@@ -1945,12 +1949,14 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
 //    Set QueryAtts' PipeIndex so that original data queries can be
 //    load balanced. 
 //
+//    Kathleen Bonnell, Tue Mar 23 18:00:29 PST 2004 
+//    Delay setting of PipeIndex until the networkIds have been verified. 
+//
 // ****************************************************************************
 void
 NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
 {
     std::vector<avtDataObject_p> queryInputs;
-    qa->SetPipeIndex(networkCache[ids[0]]->GetPipelineSpec()->GetPipelineIndex());
     for (int i = 0 ; i < ids.size() ; i++)
     {
         int id = ids[i];
@@ -1988,6 +1994,7 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
         queryInputs.push_back(queryInput);
     }
 
+    qa->SetPipeIndex(networkCache[ids[0]]->GetPipelineSpec()->GetPipelineIndex());
     std::string queryName = qa->GetName();
     avtDataObjectQuery *query = NULL;
     avtDataObject_p queryInput; 

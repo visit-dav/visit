@@ -839,6 +839,11 @@ ViewerQueryManager::GetQueryClientAtts()
 //    Kathleen Bonnell, Fri Mar  5 15:48:44 PST 2004 
 //    Only DetermineVarTypes if necessary, and added more TRY-CATCH blocks. 
 // 
+//    Kathleen Bonnell, Tue Mar 23 15:31:32 PST 2004 
+//    Restructured try-catch block around actual query execution, to catch
+//    ImproperUseException which can occur if engine has been closed prior
+//    to initiation of query.  
+//
 // ****************************************************************************
 
 void         
@@ -1062,45 +1067,29 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
                 Error(message);
             }
         }
-        CATCH(NoEngineException)
-        {
-            // Queries access the cached network used by the queried plot.
-            // Simply relaunching the engine does not work, as no network
-            // is created. This situation requires re-execution of the 
-            // plot that is being queried.
-            int curFrame = oWin->GetAnimation()->GetFrameIndex();
-            for (int i = 0 ; i < plotIds.size() ; i++)
-            {
-                int plotId = plotIds[i];
-                ViewerPlot *oplot = olist->GetPlot(plotId);
-                oplot->ClearActors(curFrame, curFrame);
-            }
-            oWin->GetAnimation()->UpdateFrame(); 
-            retry = true;
-            numAttempts++; 
-        }
-        CATCH(LostConnectionException)
-        {
-            // Queries access the cached network used by the queried plot.
-            // Simply relaunching the engine does not work, as no network
-            // is created. This situation requires re-execution of the 
-            // plot that is being queried.
-            int curFrame = oWin->GetAnimation()->GetFrameIndex();
-            for (int i = 0 ; i < plotIds.size() ; i++)
-            {
-                int plotId = plotIds[i];
-                ViewerPlot *oplot = olist->GetPlot(plotId);
-                oplot->ClearActors(curFrame, curFrame);
-            }
-            oWin->GetAnimation()->UpdateFrame(); 
-            retry = true;
-            numAttempts++; 
-        }
         CATCH2(VisItException, e)
         {
             char message[2048];
-
-            if (e.GetExceptionType() == "InvalidDimensionsException")
+            if (e.GetExceptionType() == "LostConnectionException" ||
+                e.GetExceptionType() == "NoEngineException" ||
+                e.GetExceptionType() == "ImproperUseException" )
+            {
+                // Queries access the cached network used by the queried plot.
+                // Simply relaunching the engine does not work, as no network
+                // is created. This situation requires re-execution of the 
+                // plot that is being queried.
+                int curFrame = oWin->GetAnimation()->GetFrameIndex();
+                for (int i = 0 ; i < plotIds.size() ; i++)
+                {
+                    int plotId = plotIds[i];
+                    ViewerPlot *oplot = olist->GetPlot(plotId);
+                    oplot->ClearActors(curFrame, curFrame);
+                }
+                oWin->GetAnimation()->UpdateFrame(); 
+                retry = true;
+                numAttempts++; 
+            }
+            else if (e.GetExceptionType() == "InvalidDimensionsException")
             {
                 //
                 //  Create message for the gui that includes the query name
@@ -1130,9 +1119,12 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
                          e.GetMessage().c_str());
 
             }
-            queryClientAtts->Notify();
-            Error(message);
-            CATCH_RETURN(0);
+            if (!retry)
+            {
+                queryClientAtts->Notify();
+                Error(message);
+                CATCH_RETURN(0);
+            }
         }
         ENDTRY
     } while (retry && numAttempts < 2);
@@ -1496,6 +1488,11 @@ ViewerQueryManager::ClearPickPoints()
 //    Determine VarTypes, and only pass along to Pick the valid ones.
 //    Set invalidVars in PickAtts so that user will get a message. 
 //
+//    Kathleen Bonnell, Tue Mar 23 15:31:32 PST 2004 
+//    Restructured try-catch block around actual pick execution, to catch
+//    ImproperUseException which can occur if engine has been closed prior
+//    to initiation of pick.  
+//
 // ****************************************************************************
 
 bool
@@ -1694,44 +1691,39 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom, const int e
                    Message("Pick not valid for current plot" );
                 }
             }
-            CATCH(NoEngineException)
-            {
-                // Queries access the cached network used by the queried plot.
-                // Simply relaunching the engine does not work, as no network
-                // is created. This situation requires re-execution of the 
-                // plot that is being queried.
-                plot->ClearActors(t, t);
-                win->GetAnimation()->UpdateFrame(); 
-                retry = true;
-                numAttempts++; 
-            }
-            CATCH(LostConnectionException)
-            {
-                // Queries access the cached network used by the queried plot.
-                // Simply relaunching the engine does not work, as no network
-                // is created. This situation requires re-execution of the 
-                // plot that is being queried.
-                plot->ClearActors(t, t);
-                win->GetAnimation()->UpdateFrame(); 
-                retry = true;
-                numAttempts++; 
-            }
             CATCH2(VisItException, e)
             {
-                //
-                // Reset the vars to what the user actually typed.
-                //
-                pickAtts->SetVariables(userVars);
-                char message[2048];
-                //
-                // Add as much information to the message as we can,
-                // including exception type and exception message.
-                //
-                SNPRINTF(message, sizeof(message), "Pick:  (%s)\n%s", 
-                         e.GetExceptionType().c_str(),
-                         e.GetMessage().c_str());
+                if (e.GetExceptionType() == "NoEngineException" ||
+                    e.GetExceptionType() == "LostConnectionException" ||
+                    e.GetExceptionType() == "ImproperUseException")
+                {
+   
+                    // Queries access the cached network used by the queried 
+                    // plot.  Simply relaunching the engine does not work, 
+                    // as no network is created. This situation requires 
+                    // re-execution of the plot that is being queried.
+                    plot->ClearActors(t, t);
+                    win->GetAnimation()->UpdateFrame(); 
+                    retry = true;
+                    numAttempts++; 
+                }
+                else 
+                {
+                    //
+                    // Reset the vars to what the user actually typed.
+                    //
+                    pickAtts->SetVariables(userVars);
+                    char message[2048];
+                    //
+                    // Add as much information to the message as we can,
+                    // including exception type and exception message.
+                    //
+                    SNPRINTF(message, sizeof(message), "Pick:  (%s)\n%s", 
+                             e.GetExceptionType().c_str(),
+                             e.GetMessage().c_str());
 
-                Error(message);
+                    Error(message);
+                }
             }
             ENDTRY
         } while (retry && numAttempts < 2);

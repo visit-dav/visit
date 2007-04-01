@@ -299,6 +299,9 @@ struct avtDefaultPlotMetaData;
 //    Brad Whitlock, Fri Mar 12 12:08:59 PDT 2004
 //    I added SendKeepAlives.
 //
+//    Jeremy Meredith, Tue Mar 23 14:36:37 PST 2004
+//    Added engineParallelArguments.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -514,6 +517,9 @@ private:
 
     PluginManagerAttributes *pluginAtts;
 
+    // note: we may only want to use the engineParallelArguments for
+    // the first launch of an engine
+    std::vector<std::string> engineParallelArguments;
     std::vector<std::string> unknownArguments;
 };
 

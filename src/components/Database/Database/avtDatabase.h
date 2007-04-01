@@ -161,6 +161,9 @@ typedef struct {
 //    Added stateIndex argument to GetIOInformation.
 //    Implemented PopulateIOInformation here instead of in file
 //
+//    Jeremy Meredith/Hank Childs, Tue Mar 23 12:26:55 PST 2004
+//    Add file format as a data member.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -208,6 +211,12 @@ class DATABASE_API avtDatabase
 
     static void                 GetFileListFromTextFile(const char *,
                                                         char **&, int &);
+
+    void                        SetFileFormat(const std::string &ff)
+                                      { fileFormat = ff; };
+    const std::string          &GetFileFormat(void) const 
+                                      { return fileFormat; };
+
   protected:
     std::list<CachedMDEntry>               metadata;
     std::list<CachedSILEntry>              sil;
@@ -215,6 +224,7 @@ class DATABASE_API avtDatabase
     avtIOInformation                       ioInfo;
     bool                                   gotIOInfo;
     static bool                            onlyServeUpMetaData;
+    std::string                            fileFormat;
 
     static int                             mdCacheSize;
     static int                             silCacheSize;
