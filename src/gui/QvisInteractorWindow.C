@@ -79,6 +79,9 @@ QvisInteractorWindow::~QvisInteractorWindow()
 //   Eric Brugger, Thu Nov 18 13:02:43 PST 2004
 //   I added the fill viewport on zoom toggle button.
 //
+//   Eric Brugger, Mon Dec 27 11:50:27 PST 2004
+//   I added a dolly navigation mode.
+//
 // ****************************************************************************
 
 void
@@ -119,7 +122,7 @@ QvisInteractorWindow::CreateWindowContents()
     navigationVBoxLayout->addSpacing(10);
 
     QGridLayout *navigationLayout = new QGridLayout(navigationVBoxLayout,
-                                                    1, 2);
+                                                    1, 3);
     navigationLayout->setSpacing(5);
     navigationLayout->setMargin(10);
 
@@ -130,10 +133,14 @@ QvisInteractorWindow::CreateWindowContents()
                                                "Trackball");
     navigationMode->insert(trackball);
     navigationLayout->addWidget(trackball, 1, 1);
+    QRadioButton *dolly = new QRadioButton("Dolly", navigationGroup,
+                                           "Dolly");
+    navigationMode->insert(dolly);
+    navigationLayout->addWidget(dolly, 1, 2);
     QRadioButton *flythrough = new QRadioButton("Flythrough", navigationGroup,
-                                                "flythrough");
+                                                "Flythrough");
     navigationMode->insert(flythrough);
-    navigationLayout->addWidget(flythrough, 1, 2);
+    navigationLayout->addWidget(flythrough, 1, 3);
 }
 
 
@@ -152,6 +159,9 @@ QvisInteractorWindow::CreateWindowContents()
 //   
 //   Eric Brugger, Thu Nov 18 13:02:43 PST 2004
 //   I added the fill viewport on zoom toggle button.
+//
+//   Eric Brugger, Mon Dec 27 11:50:27 PST 2004
+//   I added a dolly navigation mode.
 //
 // ****************************************************************************
 
@@ -182,8 +192,10 @@ QvisInteractorWindow::UpdateWindow(bool doAll)
           case 3: //navigationMode
             if (atts->GetNavigationMode() == InteractorAttributes::Trackball)
                 navigationMode->setButton(0);
-            else
+            else if (atts->GetNavigationMode() == InteractorAttributes::Dolly)
                 navigationMode->setButton(1);
+            else
+                navigationMode->setButton(2);
             break;
         }
     }
@@ -366,6 +378,8 @@ QvisInteractorWindow::navigationModeChanged(int val)
 {
     if (val == 0)
         atts->SetNavigationMode(InteractorAttributes::Trackball);
+    else if (val == 1)
+        atts->SetNavigationMode(InteractorAttributes::Dolly);
     else
         atts->SetNavigationMode(InteractorAttributes::Flythrough);
     SetUpdate(false);

@@ -1,9 +1,9 @@
 // ************************************************************************* //
-//                               FlyThrough.h                                //
+//                                 Dolly3D.h                                 //
 // ************************************************************************* //
 
-#ifndef FLY_THROUGH_H
-#define FLY_THROUGH_H
+#ifndef DOLLY_3D_H
+#define DOLLY_3D_H
 #include <viswindow_exports.h>
 
 
@@ -14,25 +14,20 @@ class VisWindowInteractorProxy;
 
 
 // ****************************************************************************
-//  Class: FlyThrough
+//  Class: Dolly3D
 //
 //  Purpose:
-//      Defines what Visit's 3D Fly Through interactions should look like.
+//      Defines what Visit's 3D Dolly interactions should look like.
 //
 //  Programmer: Eric Brugger
-//  Creation:   October 28, 2004
-//
-//  Modifications:
-//    Eric Brugger, Tue Dec 28 16:47:22 PST 2004
-//    Moved RotateCamera, PanCamera and ZoomCamera to the VisitInterator
-//    class as RotateAboutCamera3D, PanCamera3D and DollyCameraAndFocus3D.
+//  Creation:   December 27, 2004
 //
 // ****************************************************************************
 
-class VISWINDOW_API FlyThrough: public VisitInteractor
+class VISWINDOW_API Dolly3D: public VisitInteractor
 {
   public:
-                        FlyThrough(VisWindowInteractorProxy &);
+                        Dolly3D(VisWindowInteractorProxy &);
  
     virtual void        OnTimer(void);
 
@@ -44,8 +39,6 @@ class VISWINDOW_API FlyThrough: public VisitInteractor
   protected:
     bool                ctrlOrShiftPushed;
     bool                shouldSpin;
-    float               spinOldX, spinOldY;
-    int                 spinNewX, spinNewY;
 
     void                EnableSpinMode(void);
     void                DisableSpinMode(void);

@@ -651,6 +651,8 @@ QvisSpectrumBar::alignControlPoints()
 // Notes:      Emits controlPointRemoved, activeControlPointChanged signals.
 //
 // Modifications:
+//   Kathleen Bonnell, Tue Dec 28 16:20:47 PST 2004
+//   Cast args for QColor constructor to int to prevent comiler warnings.
 //   
 // ****************************************************************************
 
@@ -671,9 +673,9 @@ QvisSpectrumBar::removeControlPoint()
         updateEntireWidget();
 
         // Emit information about the control point that was removed.
-        QColor temp(removedPoint.color[0] * 255.,
-                    removedPoint.color[1] * 255.,
-                    removedPoint.color[2] * 255.);
+        QColor temp((int)(removedPoint.color[0] * 255.),
+                    (int)(removedPoint.color[1] * 255.),
+                    (int)(removedPoint.color[2] * 255.));
         emit controlPointRemoved(index, temp, removedPoint.position);
 
         // Emit the index of the new active control point.

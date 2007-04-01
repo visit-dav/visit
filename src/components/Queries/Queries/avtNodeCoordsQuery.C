@@ -65,6 +65,9 @@ avtNodeCoordsQuery::~avtNodeCoordsQuery()
 //    Moved code that actually finds zone center to FindLocalCenter and
 //    FindGlobalCenter. 
 //
+//    Kathleen Bonnell, Tue Dec 28 14:52:22 PST 2004 
+//    Add 'global' to output string as necessary. 
+//
 // ****************************************************************************
 
 void
@@ -118,15 +121,19 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
         int dim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
         if (singleDomain)
         {
+            string global;
+            if (qA->GetUseGlobalId())
+                global = "global";
             if (dim == 2)
             {
-                SNPRINTF(msg, 120, "The coords of node %d are (%g, %g).", 
-                         qA->GetElement(), coord[0], coord[1]);
+                SNPRINTF(msg, 120, "The coords of %s node %d are (%g, %g).", 
+                         global.c_str(), qA->GetElement(), coord[0], coord[1]);
             }
             else 
             {
-                SNPRINTF(msg, 120, "The coords of node %d are (%g, %g, %g).", 
-                         qA->GetElement(), coord[0], coord[1], coord[2]);
+                SNPRINTF(msg, 120, "The coords of %s node %d are (%g, %g, %g).", 
+                         global.c_str(), qA->GetElement(), 
+                         coord[0], coord[1], coord[2]);
             }
         }
         else

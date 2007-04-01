@@ -22,7 +22,6 @@ ViewCallback   VisitInteractor::viewCallback     = NULL;
 //  Creation:   May 19, 2000
 //
 //  Modifications:
-//
 //    Hank Childs, Mon Mar 18 13:31:30 PST 2002
 //    Initialized data members about which buttons are pushed.
 //
@@ -47,7 +46,6 @@ VisitInteractor::VisitInteractor(VisWindowInteractorProxy &p) : proxy(p)
     MotionFactor = 10.0;
 }
 
-
 // ****************************************************************************
 //  Method: VisitInteractor destructor
 //
@@ -64,7 +62,6 @@ VisitInteractor::~VisitInteractor()
     //
     ReferenceCount = 0;
 }
-
 
 // ****************************************************************************
 //  Method: VisitInteractor::RegisterViewCallback
@@ -90,7 +87,6 @@ VisitInteractor::RegisterViewCallback(ViewCallback vc)
     viewCallback     = vc;
 }
 
-
 // ****************************************************************************
 //  Method: VisitInteractor::OnMouseMove
 //
@@ -108,7 +104,6 @@ VisitInteractor::RegisterViewCallback(ViewCallback vc)
 //  Creation:   July 17, 2001
 //
 //  Modifications:
-//
 //    Hank Childs, Mon Aug 20 21:46:18 PDT 2001
 //    Removed view callback args and started passing a direct pointer to the
 //    visualization window.
@@ -128,7 +123,6 @@ VisitInteractor::OnMouseMove()
     Interactor->GetEventPosition(lastX, lastY);
 }
 
-
 // ****************************************************************************
 //  Method: VisitInteractor::MotionBegin
 //
@@ -145,7 +139,6 @@ VisitInteractor::MotionBegin(void)
 {
     proxy.MotionBegin();
 }
-
 
 // ****************************************************************************
 //  Method: VisitInteractor::MotionEnd
@@ -168,7 +161,6 @@ VisitInteractor::MotionEnd(void)
 {
     proxy.MotionEnd();
 }
-
 
 // ****************************************************************************
 //  Method: VisitInteractor::IssueViewCallback
@@ -197,7 +189,6 @@ VisitInteractor::IssueViewCallback(void)
         }
     }
 }
-
 
 // ****************************************************************************
 //  Method: VisitInteractor::PrepTrackball
@@ -237,7 +228,6 @@ VisitInteractor::PrepTrackball()
     Center[1] = CurrentRenderer->GetCenter()[1];
 }
 
-
 // ****************************************************************************
 //  Method: VisitInteractor::OnLeftButtonDown
 //
@@ -255,7 +245,6 @@ VisitInteractor::PrepTrackball()
 //  Creation:   May 19, 2000
 //
 //  Modifications:
-//
 //    Hank Childs, Mon Mar 18 13:31:30 PST 2002
 //    Extended for new button press routines so that derived types can be
 //    better controlled.
@@ -281,7 +270,6 @@ VisitInteractor::OnLeftButtonDown()
     StartLeftButtonAction();
 }
 
-
 // ****************************************************************************
 //  Method: VisitInteractor::OnLeftButtonUp
 //
@@ -299,7 +287,6 @@ VisitInteractor::OnLeftButtonDown()
 //  Creation:   May 19, 2000
 //
 //  Modifications:
-//
 //    Hank Childs, Mon Mar 18 13:31:30 PST 2002
 //    Extended for new button press routines so that derived types can be
 //    better controlled.
@@ -327,7 +314,6 @@ VisitInteractor::OnLeftButtonUp()
     leftButtonDown = false;
 }
 
-
 // ****************************************************************************
 //  Method: VisitInteractor::OnMiddleButtonDown
 //
@@ -345,7 +331,6 @@ VisitInteractor::OnLeftButtonUp()
 //  Creation:   May 19, 2000
 //
 //  Modifications:
-//
 //    Hank Childs, Mon Mar 18 13:31:30 PST 2002
 //    Extended for new button press routines so that derived types can be
 //    better controlled.
@@ -371,7 +356,6 @@ VisitInteractor::OnMiddleButtonDown()
     StartMiddleButtonAction();
 }
 
-
 // ****************************************************************************
 //  Method: VisitInteractor::OnMiddleButtonUp
 //
@@ -389,7 +373,6 @@ VisitInteractor::OnMiddleButtonDown()
 //  Creation:   May 19, 2000
 //
 //  Modifications:
-//
 //    Hank Childs, Mon Mar 18 13:31:30 PST 2002
 //    Extended for new button press routines so that derived types can be
 //    better controlled.
@@ -416,7 +399,6 @@ VisitInteractor::OnMiddleButtonUp()
     }
     middleButtonDown = false;
 }
-
 
 // ****************************************************************************
 //  Method: VisitInteractor::OnRightButtonDown
@@ -459,7 +441,6 @@ VisitInteractor::OnRightButtonDown()
     rightButtonDown = true;
     StartRightButtonAction();
 }
-
 
 // ****************************************************************************
 //  Method: VisitInteractor::OnRightButtonUp
@@ -505,7 +486,6 @@ VisitInteractor::OnRightButtonUp()
     rightButtonDown = false;
 }
 
-
 // ****************************************************************************
 //  Method: VisitInteractor::OnChar
 //
@@ -532,7 +512,6 @@ void
 VisitInteractor::OnChar()
 {
 }
-
 
 // ****************************************************************************
 //  Method: VisitInteractor::NewButtonPress
@@ -586,7 +565,6 @@ VisitInteractor::NewButtonPress()
     rightButtonDown  = false;
 }
 
-
 // ****************************************************************************
 //  Method: VisitInteractor::StartLeftButtonAction
 //
@@ -614,7 +592,6 @@ VisitInteractor::StartLeftButtonAction()
 {
     ;
 }
-
 
 // ****************************************************************************
 //  Method: VisitInteractor::AbortLeftButtonAction
@@ -644,7 +621,6 @@ VisitInteractor::AbortLeftButtonAction()
     EndLeftButtonAction();
 }
 
-
 // ****************************************************************************
 //  Method: VisitInteractor::EndLeftButtonAction
 //
@@ -672,7 +648,6 @@ VisitInteractor::EndLeftButtonAction()
 {
     ;
 }
-
 
 // ****************************************************************************
 //  Method: VisitInteractor::StartMiddleButtonAction
@@ -702,7 +677,6 @@ VisitInteractor::StartMiddleButtonAction()
     ;
 }
 
-
 // ****************************************************************************
 //  Method: VisitInteractor::AbortMiddleButtonAction
 //
@@ -730,7 +704,6 @@ VisitInteractor::AbortMiddleButtonAction()
 {
     EndMiddleButtonAction();
 }
-
 
 // ****************************************************************************
 //  Method: VisitInteractor::EndMiddleButtonAction
@@ -760,7 +733,6 @@ VisitInteractor::EndMiddleButtonAction()
     ;
 }
 
-
 // ****************************************************************************
 //  Method: VisitInteractor::StartRightButtonAction
 //
@@ -778,7 +750,6 @@ VisitInteractor::EndMiddleButtonAction()
 //  Creation:   March 18, 2002
 //
 //  Modifications:
-//
 //    Brad Whitlock, Fri Nov 3 13:35:16 PST 2000
 //    I added code to tell the VisWindow to show its menu.
 //
@@ -793,7 +764,6 @@ VisitInteractor::StartRightButtonAction()
     VisWindow *vw = proxy;
     vw->ShowMenu();
 }
-
 
 // ****************************************************************************
 //  Method: VisitInteractor::AbortRightButtonAction
@@ -822,7 +792,6 @@ VisitInteractor::AbortRightButtonAction()
 {
     EndRightButtonAction();
 }
-
 
 // ****************************************************************************
 //  Method: VisitInteractor::EndRightButtonAction
@@ -853,7 +822,6 @@ VisitInteractor::EndRightButtonAction()
     vw->HideMenu();
 }
 
-
 // ****************************************************************************
 //  Method: VisitInteractor::StartBoundingBox
 //
@@ -877,7 +845,6 @@ VisitInteractor::StartBoundingBox(void)
         proxy.StartBoundingBox();
     }
 }
-
 
 // ****************************************************************************
 //  Method: VisitInteractor::EndBoundingBox
@@ -914,7 +881,6 @@ VisitInteractor::EndBoundingBox(void)
         proxy.EndBoundingBox();
     }
 }
-
 
 // ****************************************************************************
 //  Method: Navigate2D::ZoomCamera
@@ -1013,6 +979,624 @@ VisitInteractor::ZoomCamera2D(const int x, const int y)
     }
 }
 
+// ****************************************************************************
+//  Method: VisitInteractor::PanImage3D
+//
+//  Purpose:
+//    Handle panning the image in 3d.
+//
+//  Programmer: Eric Brugger
+//  Creation:   August 10, 2001
+//
+//  Modifications:
+//    Eric Brugger, Tue Apr  2 11:28:11 PST 2002
+//    I modified the routine to make the viewing changes using an avtView3D.
+//
+//    Eric Brugger, Wed Jun 11 08:55:07 PDT 2003
+//    I changed the pan behavior so that it pans the image and doesn't
+//    change the camera or focal point.
+//
+// ****************************************************************************
+
+void
+VisitInteractor::PanImage3D(const int x, const int y)
+{
+    vtkRenderWindowInteractor *rwi = Interactor;
+
+    if ((OldX != x) || (OldY != y))
+    {
+        //
+        // Determine the size of the window.
+        //
+        int       size[2];
+
+        rwi->GetSize(size);
+
+        //
+        // Get the current view information.
+        //
+        VisWindow *vw = proxy;
+        double    pan[2];
+
+        avtView3D newView3D = vw->GetView3D();
+
+        pan[0] = ((double)((x - OldX) / size[0])) / newView3D.imageZoom;
+        pan[1] = ((double)((y - OldY) / size[1])) / newView3D.imageZoom;
+
+        newView3D.imagePan[0] += pan[0];
+        newView3D.imagePan[1] += pan[1];
+
+        vw->SetView3D(newView3D);
+
+        OldX = x;
+        OldY = y;
+        rwi->Render();
+    }
+}
+
+// ****************************************************************************
+//  Method: VisitInteractor::PanCamera3D
+//
+//  Purpose:
+//    Handle panning the camera in 3d.
+//
+//  Programmer: Eric Brugger
+//  Creation:   October 28, 2004
+//
+// ****************************************************************************
+
+void
+VisitInteractor::PanCamera3D(const int x, const int y)
+{
+    vtkRenderWindowInteractor *rwi = Interactor;
+
+    if ((OldX != x) || (OldY != y))
+    {
+        //
+        // Determine the size of the window.
+        //
+        int       size[2];
+        int       width, height;
+
+        rwi->GetSize(size);
+        width = size[0];
+        height = size[1];
+
+        //
+        // Get the current view information.
+        //
+        VisWindow *vw = proxy;
+
+        const avtView3D &oldView3D = vw->GetView3D();
+
+        avtVector VPN(oldView3D.normal);
+        avtVector VUP(oldView3D.viewUp);
+        avtVector Focus(oldView3D.focus);
+
+        //
+        // Calculate the coordinate transformation from the world coordinate
+        // space to the screen coordinate space.
+        //
+        avtVector VUPCrossVPN;
+        avtMatrix mat, matTranspose;
+
+        VUPCrossVPN = VUP % VPN;
+
+        mat[0][0] = VUPCrossVPN.x;
+        mat[0][1] = VUPCrossVPN.y;
+        mat[0][2] = VUPCrossVPN.z;
+        mat[0][3] = 0.;
+        mat[1][0] = VUP.x;
+        mat[1][1] = VUP.y;
+        mat[1][2] = VUP.z;
+        mat[1][3] = 0.;
+        mat[2][0] = VPN.x;
+        mat[2][1] = VPN.y;
+        mat[2][2] = VPN.z;
+        mat[2][3] = 0.;
+        mat[3][0] = 0.;
+        mat[3][1] = 0.;
+        mat[3][2] = 0.;
+        mat[3][3] = 1.;
+
+        matTranspose = mat;
+        matTranspose.Transpose();
+
+        //
+        // Calculate the x and y pan distances in the view plane.
+        //
+        avtVector pan;
+
+        pan.x = ((double)((OldX - x) / height)) *
+                 2.0 * oldView3D.parallelScale;
+        pan.y = ((double)((OldY - y) / height)) *
+                 2.0 * oldView3D.parallelScale;
+        pan.z = 0.;
+
+        //
+        // Transform the screen space pan factors to world space pan factors.
+        //
+        avtVector pan2;
+
+        pan2 = matTranspose * pan;
+
+        //
+        // Set the new origin.
+        //
+        avtView3D newView3D = vw->GetView3D();
+
+        newView3D.focus[0] += pan2.x;
+        newView3D.focus[1] += pan2.y;
+        newView3D.focus[2] += pan2.z;
+
+        vw->SetView3D(newView3D);
+
+        OldX = x;
+        OldY = y;
+        rwi->Render();
+    }
+}
+
+// ****************************************************************************
+//  Method: VisitInteractor::ZoomImage3D
+//
+//  Purpose:
+//    Handle zooming the image in 3d.
+//
+//  Programmer: Eric Brugger
+//  Creation:   August 10, 2001
+//
+//  Modifications:
+//    Hank Childs, Tue Feb 26 10:22:43 PST 2002
+//    Do not let the near plane be set to something very close to the camera,
+//    because the viewing transformation gets out of whack and we lose too
+//    much in depth buffering.
+//
+//    Eric Brugger, Tue Apr  2 11:28:11 PST 2002
+//    I modified the routine to make the viewing changes using an avtView3D.
+//
+//    Eric Brugger, Wed Jun 11 08:55:07 PDT 2003
+//    I changed the zoom behavior so that it zooms the image and doesn't
+//    change the camera or focal point.
+//
+// ****************************************************************************
+
+void
+VisitInteractor::ZoomImage3D(const int x, const int y)
+{
+    vtkRenderWindowInteractor *rwi = Interactor;
+
+    if (OldY != y)
+    {
+        //
+        // Calculate the zoom factor.
+        //
+        double dyf = MotionFactor * (double)(y - OldY) /
+                         (double)(Center[1]);
+        double zoomFactor = pow((double)1.1, dyf);
+
+        //
+        // Calculate the new parallel scale.
+        //
+        VisWindow *vw = proxy;
+
+        avtView3D newView3D = vw->GetView3D();
+
+        newView3D.imageZoom = newView3D.imageZoom * zoomFactor;
+
+        vw->SetView3D(newView3D);
+
+        OldX = x;
+        OldY = y;
+        rwi->Render();
+    }
+}
+
+// ****************************************************************************
+//  Method: VisitInteractor::DollyCameraTowardFocus3D
+//
+//  Purpose:
+//    Handle dollying the camera toward the focus in 3d.
+//
+//  Programmer: Eric Brugger
+//  Creation:   December 27, 2004
+//
+// ****************************************************************************
+
+void
+VisitInteractor::DollyCameraTowardFocus3D(const int x, const int y)
+{
+    vtkRenderWindowInteractor *rwi = Interactor;
+
+    if (OldY != y)
+    {
+        //
+        // Calculate the zoom factor.
+        //
+        double dyf = MotionFactor * (double)(y - OldY) /
+                         (double)(Center[1]);
+        double zoomFactor = pow((double)1.1, dyf);
+
+        //
+        // Calculate the new parallel scale.
+        //
+        VisWindow *vw = proxy;
+
+        avtView3D newView3D = vw->GetView3D();
+
+        newView3D.parallelScale = newView3D.parallelScale / zoomFactor;
+
+        vw->SetView3D(newView3D);
+
+        OldX = x;
+        OldY = y;
+        rwi->Render();
+    }
+}
+
+// ****************************************************************************
+//  Method: VisitInteractor::DollyCameraAndFocus3D
+//
+//  Purpose:
+//    Handle dollying the camera and focus toward the focus in 3d.
+//
+//  Programmer: Eric Brugger
+//  Creation:   October 28, 2004
+//
+// ****************************************************************************
+
+void
+VisitInteractor::DollyCameraAndFocus3D(const int x, const int y)
+{
+    vtkRenderWindowInteractor *rwi = Interactor;
+
+    if (OldY != y)
+    {
+        //
+        // Calculate the zoom factor.
+        //
+        double dyf = -1.0 * MotionFactor * (double)(y - OldY) /
+                         (double)(Center[1]);
+
+        //
+        // Calculate the new parallel scale.
+        //
+        VisWindow *vw = proxy;
+
+        avtView3D newView3D = vw->GetView3D();
+
+        newView3D.focus[0] +=
+            newView3D.normal[0] * newView3D.parallelScale * dyf;
+        newView3D.focus[1] +=
+            newView3D.normal[1] * newView3D.parallelScale * dyf;
+        newView3D.focus[2] +=
+            newView3D.normal[2] * newView3D.parallelScale * dyf;
+
+        vw->SetView3D(newView3D);
+
+        OldX = x;
+        OldY = y;
+        rwi->Render();
+    }
+}
+
+// ****************************************************************************
+//  Method: VisitInteractor::RotateAboutFocus3D
+//
+//  Purpose:
+//    Handle rotating the camera about the focus in 3d.
+//
+//  Programmer: Eric Brugger
+//  Creation:   August 10, 2001
+//
+//  Modifications:
+//    Eric Brugger, Tue Apr  2 11:28:11 PST 2002
+//    I modified the routine to make the viewing changes using an avtView3D.
+//
+//    Hank Childs, Wed May 29 10:50:12 PDT 2002
+//    Initialized data members needed for determining which direction to spin.
+//
+//    Eric Brugger, Tue Feb 10 08:41:08 PST 2004
+//    I modified the routine to rotate about the center of rotation if one
+//    is specified.
+//
+//    Eric Brugger, Wed Dec 29 10:54:02 PST 2004
+//    I added useCenter, a flag that forces the routine to rotate about the
+//    center of rotation if set.
+// 
+// ****************************************************************************
+
+void
+VisitInteractor::RotateAboutFocus3D(const int x, const int y,
+    const bool useCenter)
+{
+    vtkRenderWindowInteractor *rwi = Interactor;
+
+    if ((OldX != x) || (OldY != y))
+    {
+        spinOldX = OldX;
+        spinOldY = OldY;
+        spinNewX = x;
+        spinNewY = y;
+
+        int       size[2];
+        int       width, height;
+        double    unitX, unitY;
+        double    unitPrevX, unitPrevY;
+
+        rwi->GetSize(size);
+        width = size[0];
+        height = size[1];
+
+        unitX = (2.0 * x) / width - 1.0;
+        unitY = 1.0 - (2.0 * y) / height;
+
+        unitPrevX = (2.0 * OldX) / width - 1.0;
+        unitPrevY = 1.0 - (2.0 * OldY) / height;
+
+        //
+        // Build the quaternion and convert it to a rotation matrix.
+        // The sign is flipped on the 3 component of the quaternion
+        // to get the rotations about the screen z axis in the correct
+        // direction.  The first component of the quaternion contains
+        // x rotation information, the second component contains y
+        // rotation information, and the third component contains z
+        // rotation information.  The fourth component controlls the
+        // magnitude of the rotation, the closer to 1 the smaller.
+        // The quaternion will be of unit length.
+        //
+        avtMatrix rot;
+
+        rot.MakeTrackball(unitPrevX, unitPrevY, unitX, unitY, true);
+        rot.Transpose();
+
+        //
+        // Get the current view information.
+        //
+        VisWindow *vw = proxy;
+
+        const avtView3D &oldView3D = vw->GetView3D();
+
+        avtVector VPN(oldView3D.normal);
+        avtVector VUP(oldView3D.viewUp);
+        avtVector Focus(oldView3D.focus);
+
+        //
+        // Calculate the coordinate transformation from the world coordinate
+        // space to the screen coordinate space (and its inverse).
+        //
+        avtVector VPNCrossVUP;
+        avtMatrix mata, mataInverse;
+
+        VPNCrossVUP = VPN % VUP;
+
+        mata[0][0] = VPNCrossVUP.x;
+        mata[0][1] = VPNCrossVUP.y;
+        mata[0][2] = VPNCrossVUP.z;
+        mata[0][3] = 0.;
+        mata[1][0] = VUP.x;
+        mata[1][1] = VUP.y;
+        mata[1][2] = VUP.z;
+        mata[1][3] = 0.;
+        mata[2][0] = VPN.x;
+        mata[2][1] = VPN.y;
+        mata[2][2] = VPN.z;
+        mata[2][3] = 0.;
+        mata[3][0] = 0.;
+        mata[3][1] = 0.;
+        mata[3][2] = 0.;
+        mata[3][3] = 1.;
+
+        mataInverse = mata;
+        mataInverse.Transpose();
+
+        //
+        // Calculate the translation to the center of rotation (and its
+        // inverse).
+        //
+        avtMatrix matb, matbInverse;
+
+        matb.MakeTranslate(-oldView3D.centerOfRotation[0],
+                           -oldView3D.centerOfRotation[1],
+                           -oldView3D.centerOfRotation[2]);
+        matbInverse.MakeTranslate(oldView3D.centerOfRotation[0],
+                                  oldView3D.centerOfRotation[1],
+                                  oldView3D.centerOfRotation[2]);
+
+        //
+        // Calculate the composite transformation.
+        //
+        avtMatrix mat;
+
+        mat = matbInverse * mataInverse * rot * mata * matb;
+
+        //
+        // Calculate the new view plane normal, view up vector and focus.
+        //
+        avtVector newVPN(mat ^ VPN);
+        avtVector newVUP(mat ^ VUP);
+        avtVector newFocus(mat * Focus);
+
+        //
+        // Orthogonalize the new view plane normal and view up vector.
+        //
+        newVPN.normalize();
+        VPNCrossVUP = newVPN % newVUP;
+        newVUP = VPNCrossVUP % newVPN;
+        newVUP.normalize();
+
+        //
+        // Set the new view.
+        //
+        avtView3D newView3D = vw->GetView3D();
+
+        newView3D.normal[0] = newVPN.x;
+        newView3D.normal[1] = newVPN.y;
+        newView3D.normal[2] = newVPN.z;
+        newView3D.viewUp[0] = newVUP.x;
+        newView3D.viewUp[1] = newVUP.y;
+        newView3D.viewUp[2] = newVUP.z;
+        if (oldView3D.centerOfRotationSet || useCenter)
+        {
+            newView3D.focus[0]  = newFocus.x;
+            newView3D.focus[1]  = newFocus.y;
+            newView3D.focus[2]  = newFocus.z;
+        }
+
+        vw->SetView3D(newView3D);
+
+        OldX = x;
+        OldY = y;
+        rwi->Render();
+    }
+}
+
+// ****************************************************************************
+//  Method: VisitInteractor::RotateAboutCamera3D
+//
+//  Purpose:
+//    Handle rotating the focus about the camera in 3d.
+//
+//  Programmer: Eric Brugger
+//  Creation:   October 28, 2004
+//
+// ****************************************************************************
+
+void
+VisitInteractor::RotateAboutCamera3D(const int x, const int y)
+{
+    vtkRenderWindowInteractor *rwi = Interactor;
+
+    if ((OldX != x) || (OldY != y))
+    {
+        spinOldX = OldX;
+        spinOldY = OldY;
+        spinNewX = x;
+        spinNewY = y;
+
+        int       size[2];
+        int       width, height;
+        double    unitX, unitY;
+        double    unitPrevX, unitPrevY;
+
+        rwi->GetSize(size);
+        width = size[0];
+        height = size[1];
+
+        unitX = 1.0 * ((2.0 * x) / width - 1.0);
+        unitY = 1.0 * (1.0 - (2.0 * y) / height);
+
+        unitPrevX = 1.0 * ((2.0 * OldX) / width - 1.0);
+        unitPrevY = 1.0 * (1.0 - (2.0 * OldY) / height);
+
+        //
+        // Build the quaternion and convert it to a rotation matrix.
+        // The sign is flipped on the 3 component of the quaternion
+        // to get the rotations about the screen z axis in the correct
+        // direction.  The first component of the quaternion contains
+        // x rotation information, the second component contains y
+        // rotation information, and the third component contains z
+        // rotation information.  The fourth component controlls the
+        // magnitude of the rotation, the closer to 1 the smaller.
+        // The quaternion will be of unit length.
+        //
+        avtMatrix rot;
+
+        rot.MakeTrackball(unitPrevX, unitPrevY, unitX, unitY, true);
+        rot.Transpose();
+
+        //
+        // Get the current view information.
+        //
+        VisWindow *vw = proxy;
+
+        const avtView3D &oldView3D = vw->GetView3D();
+
+        avtVector VPN(oldView3D.normal);
+        avtVector VUP(oldView3D.viewUp);
+        avtVector Focus(oldView3D.focus);
+
+        //
+        // Calculate the coordinate transformation from the world coordinate
+        // space to the screen coordinate space (and its inverse).
+        //
+        avtVector VPNCrossVUP;
+        avtMatrix mata, mataInverse;
+
+        VPNCrossVUP = VPN % VUP;
+
+        mata[0][0] = VPNCrossVUP.x;
+        mata[0][1] = VPNCrossVUP.y;
+        mata[0][2] = VPNCrossVUP.z;
+        mata[0][3] = 0.;
+        mata[1][0] = VUP.x;
+        mata[1][1] = VUP.y;
+        mata[1][2] = VUP.z;
+        mata[1][3] = 0.;
+        mata[2][0] = VPN.x;
+        mata[2][1] = VPN.y;
+        mata[2][2] = VPN.z;
+        mata[2][3] = 0.;
+        mata[3][0] = 0.;
+        mata[3][1] = 0.;
+        mata[3][2] = 0.;
+        mata[3][3] = 1.;
+
+        mataInverse = mata;
+        mataInverse.Transpose();
+
+        //
+        // Calculate the composite transformation.
+        //
+        avtMatrix mat;
+
+        mat = mataInverse * rot * mata;
+
+        //
+        // Calculate the new view plane normal, view up vector and focus.
+        //
+        avtVector camera;
+
+        double distance = oldView3D.parallelScale /
+                          tan(oldView3D.viewAngle * 3.1415926535 / 360.);
+        camera.x = oldView3D.focus[0] + oldView3D.normal[0] * distance;
+        camera.y = oldView3D.focus[1] + oldView3D.normal[1] * distance;
+        camera.z = oldView3D.focus[2] + oldView3D.normal[2] * distance;
+
+        avtVector newVPN(mat ^ VPN);
+        avtVector newVUP(mat ^ VUP);
+        avtVector newFocus(camera - newVPN * distance);
+
+        //
+        // Orthogonalize the new view plane normal and view up vector.
+        //
+        newVPN.normalize();
+        VPNCrossVUP = newVPN % newVUP;
+        newVUP = VPNCrossVUP % newVPN;
+        newVUP.normalize();
+
+        //
+        // Set the new view.
+        //
+        avtView3D newView3D = vw->GetView3D();
+
+        newView3D.normal[0] = newVPN.x;
+        newView3D.normal[1] = newVPN.y;
+        newView3D.normal[2] = newVPN.z;
+        newView3D.viewUp[0] = newVUP.x;
+        newView3D.viewUp[1] = newVUP.y;
+        newView3D.viewUp[2] = newVUP.z;
+        newView3D.focus[0]  = newFocus.x;
+        newView3D.focus[1]  = newFocus.y;
+        newView3D.focus[2]  = newFocus.z;
+
+        vw->SetView3D(newView3D);
+
+        OldX = x;
+        OldY = y;
+        rwi->Render();
+    }
+}
 
 // ****************************************************************************
 //  Method: VisitInteractor::SetInteractor
@@ -1037,5 +1621,3 @@ VisitInteractor::SetInteractor(vtkRenderWindowInteractor *rwi)
     //
     Interactor = rwi;
 }
-
-

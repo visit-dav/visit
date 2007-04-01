@@ -8,6 +8,7 @@
 #include <VisWindowTypes.h>
 #include <vtkRenderWindowInteractor.h>
 
+#include <Dolly3D.h>
 #include <FlyThrough.h>
 #include <Lineout2D.h>
 #include <Navigate2D.h>
@@ -34,7 +35,6 @@
 // Creation:   Mon Oct 1 11:53:27 PDT 2001
 //
 // Modifications:
-//
 //   Kathleen Bonnell, Wed May  8 10:34:52 PDT 2002  
 //   Added Lineout2D, ZoomCurve.
 //   
@@ -47,11 +47,15 @@
 //   Eric Brugger, Thu Oct 28 15:56:10 PDT 2004
 //   Added flyThrough.
 //
+//   Eric Brugger, Tue Dec 28 07:52:34 PST 2004
+//   Added dolly3D.
+//
 // ****************************************************************************
 
 VisitHotPointInteractor::VisitHotPointInteractor(VisWindowInteractorProxy &v) :
     VisitInteractor(v), currentHotPoint()
 {
+    dolly3D           = NULL;
     flyThrough        = NULL;
     lineout2D         = NULL;
     navigate2D        = NULL;
@@ -79,7 +83,6 @@ VisitHotPointInteractor::VisitHotPointInteractor(VisWindowInteractorProxy &v) :
 // Creation:   Mon Oct 1 11:54:17 PDT 2001
 //
 // Modifications:
-//  
 //   Kathleen Bonnell, Wed May  8 10:34:52 PDT 2002  
 //   Added lineout2D, zoomCurve.
 // 
@@ -89,10 +92,18 @@ VisitHotPointInteractor::VisitHotPointInteractor(VisWindowInteractorProxy &v) :
 //   Eric Brugger, Thu Oct 28 15:56:10 PDT 2004
 //   Added flyThrough.
 //
+//   Eric Brugger, Tue Dec 28 07:52:34 PST 2004
+//   Added dolly3D.
+//
 // ****************************************************************************
 
 VisitHotPointInteractor::~VisitHotPointInteractor()
 {
+    if(dolly3D != NULL)
+    {
+        dolly3D->Delete();
+        dolly3D = NULL;
+    }
     if(flyThrough != NULL)
     {
         flyThrough->Delete();
@@ -167,7 +178,6 @@ VisitHotPointInteractor::~VisitHotPointInteractor()
 // Creation:   Mon Oct 1 11:55:14 PDT 2001
 //
 // Modifications:
-//
 //   Hank Childs, Tue Jul 20 10:54:45 PDT 2004
 //   If the current interactor has buttons depressed, allow it to finish
 //   gracefully.
@@ -201,8 +211,6 @@ VisitHotPointInteractor::SetInteractor(VisitInteractor *newInteractor)
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 1 11:56:43 PDT 2001
 //
-// Modifications:
-//   
 // ****************************************************************************
 
 void
@@ -226,7 +234,6 @@ VisitHotPointInteractor::SetNullInteractor()
 // Creation:   Mon Oct 1 11:57:25 PDT 2001
 //
 // Modifications:
-//
 //   Kathleen Bonnell, Fri Dec 14 11:54:54 PST 2001
 //   Added LINEOUT.
 //   
@@ -318,6 +325,10 @@ VisitHotPointInteractor::Start2DMode(INTERACTION_MODE mode)
 //   Modified to use the FlyThrough interactor when the navigation mode
 //   is Flythrough and we are in navigate mode.
 //
+//   Eric Brugger, Tue Dec 28 07:52:34 PST 2004
+//   Modified to use the Dolly3D interactor when the navigation mode is
+//   Dolly and we are in navigate mode.
+//
 // ****************************************************************************
 
 void
@@ -343,6 +354,14 @@ VisitHotPointInteractor::Start3DMode(INTERACTION_MODE mode)
                 navigate3D = new Navigate3D(proxy);
             }
             newInteractor = navigate3D;
+        }
+        else if (atts->GetNavigationMode() == InteractorAttributes::Dolly)
+        {
+            if(dolly3D == NULL)
+            {
+                dolly3D = new Dolly3D(proxy);
+            }
+            newInteractor = dolly3D;
         }
         else
         {
@@ -384,7 +403,6 @@ VisitHotPointInteractor::Start3DMode(INTERACTION_MODE mode)
     if(newInteractor != currentInteractor)
         SetInteractor(newInteractor);
 }
-
 
 // ****************************************************************************
 // Method: VisitHotPointInteractor::StartCurveMode
@@ -466,7 +484,6 @@ VisitHotPointInteractor::StartCurveMode(INTERACTION_MODE mode)
         SetInteractor(newInteractor);
 }
 
-
 // ****************************************************************************
 // Method: VisitHotPointInteractor::Stop2DMode
 //
@@ -476,8 +493,6 @@ VisitHotPointInteractor::StartCurveMode(INTERACTION_MODE mode)
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 1 11:59:20 PDT 2001
 //
-// Modifications:
-//   
 // ****************************************************************************
 
 void
@@ -495,8 +510,6 @@ VisitHotPointInteractor::Stop2DMode()
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 1 11:59:43 PDT 2001
 //
-// Modifications:
-//   
 // ****************************************************************************
 
 void
@@ -504,7 +517,6 @@ VisitHotPointInteractor::Stop3DMode()
 {
     SetNullInteractor();
 }
-
 
 // ****************************************************************************
 // Method: VisitHotPointInteractor::StopCurveMode
@@ -515,8 +527,6 @@ VisitHotPointInteractor::Stop3DMode()
 // Programmer: Kathleen Bonnell 
 // Creation:   May 8, 2002 
 //
-// Modifications:
-//   
 // ****************************************************************************
 
 void
@@ -903,8 +913,6 @@ VisitHotPointInteractor::OnMouseMove()
 // Programmer: Brad Whitlock
 // Creation:   Tue Oct 2 13:18:22 PST 2001
 //
-// Modifications:
-//   
 // ****************************************************************************
 
 void
@@ -941,4 +949,3 @@ VisitHotPointInteractor::SetInteractor(vtkRenderWindowInteractor *rwi)
     //
     vtkInteractorStyle::SetInteractor(rwi);
 }
-

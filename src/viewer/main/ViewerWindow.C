@@ -3570,6 +3570,10 @@ ViewerWindow::RecenterView2d(const double *limits)
 //    I added coding to reset the focus in the case where the window had
 //    no plots and the bounding box was valid.
 //    
+//    Eric Brugger, Tue Dec 28 08:44:10 PST 2004
+//    I added code to set the center of rotation to handle the case where
+//    the navigation mode is dolly.
+//
 // ****************************************************************************
 
 void
@@ -3661,9 +3665,9 @@ ViewerWindow::RecenterView3d(const double *limits)
     // Reset the center of rotation.
     //
     view3D.centerOfRotationSet = false;
-    view3D.centerOfRotation[0] = 0.;
-    view3D.centerOfRotation[1] = 0.;
-    view3D.centerOfRotation[2] = 0.;
+    view3D.centerOfRotation[0] = view3D.focus[0];
+    view3D.centerOfRotation[1] = view3D.focus[1];
+    view3D.centerOfRotation[2] = view3D.focus[2];
 
     //
     // Update the view.
@@ -3919,6 +3923,11 @@ ViewerWindow::ResetView2d()
 //    I modified the routine to set the view differently depending on the
 //    navigation mode.
 //
+//    Eric Brugger, Tue Dec 28 08:44:10 PST 2004
+//    I modified the routine to treat the flythrough navigation mode
+//    differently from the trackball and dolly modes.  I added code to set
+//    the center of rotation to handle the case where the navigation mode
+//    is dolly.
 //
 // ****************************************************************************
 
@@ -3981,13 +3990,13 @@ ViewerWindow::ResetView3d()
     view3D.viewAngle = 30.;
     distance = width / tan (view3D.viewAngle * 3.1415926535 / 360.);
 
-    if (navigationMode == InteractorAttributes::Trackball)
+    if (navigationMode == InteractorAttributes::Flythrough)
     {
-        view3D.parallelScale = width;
+        view3D.parallelScale = width / 20.;
     }
     else
     {
-        view3D.parallelScale = width / 20.;
+        view3D.parallelScale = width;
     }
 
     //
@@ -3999,13 +4008,13 @@ ViewerWindow::ResetView3d()
 
     view3D.focus[0] = (boundingBox3d[1] + boundingBox3d[0]) / 2.;
     view3D.focus[1] = (boundingBox3d[3] + boundingBox3d[2]) / 2.;
-    if (navigationMode == InteractorAttributes::Trackball)
+    if (navigationMode == InteractorAttributes::Flythrough)
     {
-        view3D.focus[2] = (boundingBox3d[5] + boundingBox3d[4]) / 2.;
+        view3D.focus[2] += (1.0 - 1.0 / 20.) * distance;
     }
     else
     {
-        view3D.focus[2] += (1.0 - 1.0 / 20.) * distance;
+        view3D.focus[2] = (boundingBox3d[5] + boundingBox3d[4]) / 2.;
     }
 
     view3D.viewUp[0] = 0.;
@@ -4017,15 +4026,15 @@ ViewerWindow::ResetView3d()
     // set such that the object should not get clipped in the front or
     // back no matter the orientation when doing an orthographic projection.
     //
-    if (navigationMode == InteractorAttributes::Trackball)
-    {
-        view3D.nearPlane = - 2.0 * width;
-        view3D.farPlane  =   2.0 * width;
-    }
-    else
+    if (navigationMode == InteractorAttributes::Flythrough)
     {
         view3D.nearPlane = - (1.0 / 20.) * distance * 0.99;
         view3D.farPlane  = (1.0 - 1.0 / 20.) * distance + 2.0 * width;
+    }
+    else
+    {
+        view3D.nearPlane = - 2.0 * width;
+        view3D.farPlane  =   2.0 * width;
     }
 
     //
@@ -4039,9 +4048,9 @@ ViewerWindow::ResetView3d()
     // Reset the center of rotation.
     //
     view3D.centerOfRotationSet = false;
-    view3D.centerOfRotation[0] = 0.;
-    view3D.centerOfRotation[1] = 0.;
-    view3D.centerOfRotation[2] = 0.;
+    view3D.centerOfRotation[0] = view3D.focus[0];
+    view3D.centerOfRotation[1] = view3D.focus[1];
+    view3D.centerOfRotation[2] = view3D.focus[2];
 
     //
     // Update the view.
@@ -4067,6 +4076,10 @@ ViewerWindow::ResetView3d()
 //    determine the pan factor instead of the individual extents of the
 //    bounding box.  This handles degenerate extents in either one or two
 //    directions, whereas the previous method did not.
+//
+//    Eric Brugger, Tue Dec 28 08:44:10 PST 2004
+//    I added code to set the center of rotation to handle the case where
+//    the navigation mode is dolly.
 //
 // ****************************************************************************
 
@@ -4154,6 +4167,16 @@ ViewerWindow::AdjustView3d(const double *limits)
     view3D.farPlane  =   2.0 * width;
 
     //
+    // Set the center of rotation if the user hasn't specified it.
+    //
+    if (!view3D.centerOfRotationSet)
+    {
+        view3D.centerOfRotation[0] = (boundingBox3d[1] + boundingBox3d[0]) / 2.;
+        view3D.centerOfRotation[1] = (boundingBox3d[3] + boundingBox3d[2]) / 2.;
+        view3D.centerOfRotation[2] = (boundingBox3d[5] + boundingBox3d[4]) / 2.;
+    }
+
+    //
     // Update the view.
     //
     visWindow->SetView3D(view3D);
@@ -4175,6 +4198,12 @@ ViewerWindow::AdjustView3d(const double *limits)
 //    Eric Brugger, Thu Oct 28 14:41:35 PDT 2004
 //    I modified the routine to set the view differently depending on the
 //    navigation mode.
+//
+//    Eric Brugger, Tue Dec 28 08:44:10 PST 2004
+//    I modified the routine to treat the flythrough navigation mode
+//    differently from the trackball and dolly modes.  I added code to set
+//    the center of rotation to handle the case where the navigation mode
+//    is dolly.
 //
 // ****************************************************************************
 
@@ -4218,13 +4247,13 @@ ViewerWindow::SetInitialView3d()
                         (boundingBox3d[5] - boundingBox3d[4])));
     distance = width / tan (view3D.viewAngle * 3.1415926535 / 360.);
 
-    if (navigationMode == InteractorAttributes::Trackball)
+    if (navigationMode == InteractorAttributes::Flythrough)
     {
-        view3D.parallelScale = width;
+        view3D.parallelScale = width / 20.;
     }
     else
     {
-        view3D.parallelScale = width / 20.;
+        view3D.parallelScale = width;
     }
 
     //
@@ -4232,27 +4261,37 @@ ViewerWindow::SetInitialView3d()
     //
     view3D.focus[0] = (boundingBox3d[1] + boundingBox3d[0]) / 2.;
     view3D.focus[1] = (boundingBox3d[3] + boundingBox3d[2]) / 2.;
-    if (navigationMode == InteractorAttributes::Trackball)
+    if (navigationMode == InteractorAttributes::Flythrough)
     {
-        view3D.focus[2] = (boundingBox3d[5] + boundingBox3d[4]) / 2.;
+        view3D.focus[2] += (1.0 - 1.0 / 20.) * distance;
     }
     else
     {
-        view3D.focus[2] += (1.0 - 1.0 / 20.) * distance;
+        view3D.focus[2] = (boundingBox3d[5] + boundingBox3d[4]) / 2.;
     }
 
     //
     // Calculate the near and far clipping planes.
     //
-    if (navigationMode == InteractorAttributes::Trackball)
+    if (navigationMode == InteractorAttributes::Flythrough)
+    {
+        view3D.nearPlane = - (1.0 / 20.) * distance * 0.99;
+        view3D.farPlane  = (1.0 - 1.0 / 20.) * distance + 2.0 * width;
+    }
+    else
     {
         view3D.nearPlane = - 2.0 * width;
         view3D.farPlane  =   2.0 * width;
     }
-    else
+
+    //
+    // Set the center of rotation if the user hasn't specified it.
+    //
+    if (!view3D.centerOfRotationSet)
     {
-        view3D.nearPlane = - (1.0 / 20.) * distance * 0.99;
-        view3D.farPlane  = (1.0 - 1.0 / 20.) * distance + 2.0 * width;
+        view3D.centerOfRotation[0] = view3D.focus[0];
+        view3D.centerOfRotation[1] = view3D.focus[1];
+        view3D.centerOfRotation[2] = view3D.focus[2];
     }
 
     //

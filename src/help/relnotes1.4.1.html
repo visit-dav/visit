@@ -20,7 +20,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>Zooming in on 2D datasets now increases the size of the viewport, making ir more square, until the zoomed rectangle takes up most of the vis window. This allows you to see more of the dataset as you zoom using the middle mouse button.</li>
 <li>VisIt's Volume plot now has a 3rd rendering mode that lets you do raycasting volume-rendering. The new raycasting volume-renderer even accepts geometry from other plots allowing you to show both surfaces and volume-rendered data.</li>
 <li>VisIt's Expressions window now has a new <i>Insert variables</i> button that lets you choose to insert variables from a list of available variables and expressions.</li>
-<li>VisIt's Pick window now has a <i>Variables</i> button that lets you select secondary variables from a list of variables for the current plot.</li>
+<li>VisIt's Pick window now has a <i>Variables</i> button that lets you select secondary variables from a list of variables for the current plot.  There are also two new checkboxes that let you choose whether or not to display the reference pick letter in the picked plot, and whether or not the returned node/zone ids should be the global values as read from the file.</li>
 <li>Many of VisIt's plot and operator attributes windows that used a line edit control for entering a variable name have been improved so they use a variable menu. The variable menu allows you to select a variable from a list of variables for the active plot or the active source.</li>
 <li>VisIt's Streamline plot has been enhanced so it can integrate more smoothly and can create longer streamlines. The plot also can now color by vorticity magnitude in addition to coloring by speed and the plot can now be displayed using lines, tubes, or ribbons. Finally, the Streamline plot now works with VisIt's Point tool when you use the plot with a point streamline source.</li>
 <li>VisIt's 3D navigation mode now has a <i>Flythrough interaction mode</i> that lets you move the camera through the dataset for genuine fly-throughs.</li>
@@ -41,6 +41,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>VisIt can now be built with xlC on AIX platforms.</li>
 <li>You can now run many of VisIt's tools using their name on the command line instead of typing: <i>visit -command</i></li>
 <li>VisIt now provides version-specific VisIt scripts, which allow for better error checking and prevent the mixing of public and private versions.</li>
+<li>VisIt now allows for specifying a global node/zone id for the OnionPeel operator and the PickByZone, PickByNode, Zone Center and Node Coords queries. This option is accessed in the GUI by toggling the new checkbox in the Queries and OnionPeel windows..  In the CLI, the OnionPeel option is accessed via setting OnionPeelAttributes.  For Pick: PickByGlobalZone(gzoneno), PickByGlobalNode(gnodeno).  For Query:  Query("Global Zone Center", gzoneid) and Query("Global Node Coords", gnodeid).</li>
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.4.1</font></b></p>
 <ul>

@@ -225,6 +225,10 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
 //    Choose the gradient method based on settings from the user.  Changed
 //    the ghost method to avoid ghosts entirely.
 //
+//    Jeremy Meredith, Wed Dec 29 10:10:59 PST 2004
+//    I was missing some checks in the non-ghost centered diff gradient
+//    calculation to make sure we didn't walk off the edge of the mesh.
+//
 // ****************************************************************************
 void
 avtVolumeRenderer::Initialize(vtkDataSet *ds)
@@ -350,23 +354,23 @@ avtVolumeRenderer::Initialize(vtkDataSet *ds)
                         }
                         else
                         {
-                            if (i==0 || opac->GetTuple1(CalculateIndex(grid,i-1,j  ,k  )) < -1e+37)
+                            if (i==0 || (i<nx-1 && opac->GetTuple1( CalculateIndex(grid,i-1,j  ,k  )) < -1e+37))
                                 gx[index] = (opac->GetTuple1(CalculateIndex(grid,i+1,j  ,k  ))-opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k  )))/(xc->GetTuple1(i+1)-xc->GetTuple1(i));
-                            else if (i==nx-1 || opac->GetTuple1(CalculateIndex(grid,i+1,j  ,k  )) < -1e+37)
+                            else if (i==nx-1 || (i>0 && opac->GetTuple1(CalculateIndex(grid,i+1,j  ,k  )) < -1e+37))
                                 gx[index] = (opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k  ))-opac->GetTuple1(CalculateIndex(grid,i-1,j  ,k  )))/(xc->GetTuple1(i)-xc->GetTuple1(i-1));
                             else
                                 gx[index] = (opac->GetTuple1(CalculateIndex(grid,i+1,j  ,k  ))-opac->GetTuple1(CalculateIndex(grid,i-1,j  ,k  )))/(xc->GetTuple1(i+1)-xc->GetTuple1(i-1));
 
-                            if (j==0 || opac->GetTuple1(CalculateIndex(grid,i  ,j-1,k  )) < -1e+37)
+                            if (j==0 || (j<ny-1 && opac->GetTuple1(CalculateIndex(grid,i  ,j-1,k  )) < -1e+37))
                                 gy[index] = (opac->GetTuple1(CalculateIndex(grid,i  ,j+1,k  ))-opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k  )))/(yc->GetTuple1(j+1)-yc->GetTuple1(j ));
-                            else if (j==ny-1 || opac->GetTuple1(CalculateIndex(grid,i  ,j+1,k  )) < -1e+37)
+                            else if (j==ny-1 || (j>0 && opac->GetTuple1(CalculateIndex(grid,i  ,j+1,k  )) < -1e+37))
                                 gy[index] = (opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k  ))-opac->GetTuple1(CalculateIndex(grid,i  ,j-1,k  )))/(yc->GetTuple1(j)-yc->GetTuple1(j-1));
                             else
                                 gy[index] = (opac->GetTuple1(CalculateIndex(grid,i  ,j+1,k  ))-opac->GetTuple1(CalculateIndex(grid,i  ,j-1,k  )))/(yc->GetTuple1(j+1)-yc->GetTuple1(j-1));
 
-                            if (k==0 || opac->GetTuple1(CalculateIndex(grid,i  ,j ,k-1)) < -1e+37)
+                            if (k==0 || (k<nz-1 && opac->GetTuple1(CalculateIndex(grid,i  ,j ,k-1)) < -1e+37))
                                 gz[index] = (opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k+1))-opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k  )))/(zc->GetTuple1(k+1)-zc->GetTuple1(k));
-                            else if (k==nz-1 || opac->GetTuple1(CalculateIndex(grid,i  ,j ,k+1)) < -1e+37)
+                            else if (k==nz-1 || (k>0 && opac->GetTuple1(CalculateIndex(grid,i  ,j ,k+1)) < -1e+37))
                                 gz[index] = (opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k  ))-opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k-1)))/(zc->GetTuple1(k)-zc->GetTuple1(k-1));
                             else
                                 gz[index] = (opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k+1))-opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k-1)))/(zc->GetTuple1(k+1)-zc->GetTuple1(k-1));

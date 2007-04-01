@@ -68,6 +68,9 @@ class PickAttributes;
 //   Kathleen Bonnell, Wed Dec 15 08:20:11 PST 2004
 //   Add checkbox and slot for displayGlobalIds. 
 //
+//   Kathleen Bonnell, Tue Dec 28 16:23:43 PST 2004
+//   Add checkbox and slot for displayPickLetter. 
+//
 // ****************************************************************************
 
 class GUI_API QvisPickWindow : public QvisPostableWindowObserver
@@ -96,6 +99,7 @@ private slots:
     void variableProcessText();
     void displayIncElsToggled(bool val);
     void displayGlobalIdsToggled(bool val);
+    void displayPickLetterToggled(bool val);
     void nodeIdToggled(bool val);
     void nodeDomLogToggled(bool val);
     void nodeBlockLogToggled(bool val);
@@ -143,5 +147,6 @@ private:
 
     PickAttributes     *pickAtts;
     QCheckBox          *displayGlobalIds;
+    QCheckBox          *displayPickLetter;
 };
 #endif

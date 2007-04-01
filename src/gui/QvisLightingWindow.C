@@ -314,6 +314,8 @@ QvisLightingWindow::UpdateWindow(bool)
 // Creation:   Fri Oct 19 16:14:22 PST 2001
 //
 // Modifications:
+//   Kathleen Bonnell, Tue Dec 28 16:20:47 PST 2004
+//   Cast args for QColor constructor to int to prevent comiler warnings.
 //   
 // ****************************************************************************
 
@@ -339,9 +341,9 @@ QvisLightingWindow::UpdateLightWidget()
             const LightAttributes &light = lights->GetLight(i);
             if(light.GetEnabledFlag())
             {
-                QColor c2((light.GetColor().Red() * light.GetBrightness()),
-                          (light.GetColor().Green() * light.GetBrightness()),
-                          (light.GetColor().Blue() * light.GetBrightness()));
+                QColor c2((int)(light.GetColor().Red() * light.GetBrightness()),
+                          (int)(light.GetColor().Green() * light.GetBrightness()),
+                          (int)(light.GetColor().Blue() * light.GetBrightness()));
 
                 lightWidget->addLight(light.GetDirection(),
                                       c2, light.GetType());
@@ -360,9 +362,9 @@ QvisLightingWindow::UpdateLightWidget()
         lightWidget->setUpdatesEnabled(true);
 
         const LightAttributes &light = lights->GetLight(activeLight);
-        QColor c2((light.GetColor().Red() * light.GetBrightness()),
-                  (light.GetColor().Green() * light.GetBrightness()),
-                  (light.GetColor().Blue() * light.GetBrightness()));
+        QColor c2((int)(light.GetColor().Red() * light.GetBrightness()),
+                  (int)(light.GetColor().Green() * light.GetBrightness()),
+                  (int)(light.GetColor().Blue() * light.GetBrightness()));
 
         lightWidget->addLight(light.GetDirection(),
                               c2, light.GetType());
