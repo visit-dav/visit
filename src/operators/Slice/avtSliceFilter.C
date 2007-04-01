@@ -436,6 +436,10 @@ avtSliceFilter::PreExecute(void)
 //    Kathleen Bonnell, Wed Jun  2 09:11:01 PDT 2004 
 //    Added origTrans. 
 //
+//    Hank Childs, Tue Jul 20 14:21:06 PDT 2004
+//    Make sure that basis vectors are unit vectors -- crossing two
+//    non-orthogonal vectors does not yield a unit vector.
+//
 // ****************************************************************************
 
 void
@@ -492,9 +496,12 @@ avtSliceFilter::SetUpProjection(void)
     //
     float  third[3];
     vtkMath::Cross(upaxis, normal, third); // right-handed
+    vtkMath::Normalize(third);  // if normal is not "orthogonal" to "third".
 
     // Make sure the up axis is orthogonal to third and normal
     vtkMath::Cross(normal, third, upaxis); // right-handed
+    vtkMath::Normalize(upaxis); // probably not necessary since "normal" and
+                                // "third" are orthogonal
 
     //
     // Because it is easier to find the Frame-to-Cartesian-Frame conversion

@@ -52,6 +52,9 @@ using std::vector;
 //    Hank Childs, Mon Oct 20 10:07:00 PDT 2003
 //    Added GetTimes and times data member.
 //
+//    Hank Childs, Tue Jul 20 14:47:31 PDT 2004
+//    Added an array for the variable type.
+//
 // ****************************************************************************
 
 class avtMiliFileFormat : public avtMTMDFileFormat
@@ -107,6 +110,7 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     vector< std::string >                  vars;
     vector< avtCentering >                 centering;
     vector< vector< vector<bool> > >       vars_valid;
+    vector< vector< vector<int> > >        var_size;
     vector< avtVarType >                   vartype;
     vector< int >                          var_dimension;
     vector< int >                          var_mesh_associations;

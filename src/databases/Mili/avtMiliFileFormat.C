@@ -58,6 +58,9 @@ using std::ifstream;
 //    Akira Haddox, Mon Aug 18 14:33:15 PDT 2003
 //    Added partition file support.
 //
+//    Hank Childs, Tue Jul 20 15:53:30 PDT 2004
+//    Add support for more data types (float, double, char, int, etc).
+//
 // ****************************************************************************
 
 avtMiliFileFormat::avtMiliFileFormat(const char *fname)
@@ -126,8 +129,12 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fname)
     }
 
     vars_valid.resize(ndomains);
+    var_size.resize(ndomains);
     for (dom = 0; dom < ndomains; ++dom)
+    {
         vars_valid[dom].resize(vars.size());
+        var_size[dom].resize(vars.size());
+    }
 
     if (in.fail())
         EXCEPTION1(InvalidFilesException, fname);
@@ -246,6 +253,90 @@ avtMiliFileFormat::~avtMiliFileFormat()
 
 
 // ****************************************************************************
+//  Function: read_results
+//
+//  Purpose:
+//      A wrapper around mc_read_results that handles multiple types (floats,
+//      doubles, etc.).
+//
+//  Programmer: Hank Childs
+//  Creation:   July 20, 2004
+//
+// ****************************************************************************
+
+static void
+read_results(Famid &dbid, int ts, int sr, int rank,
+                      char **name, int vtype, int amount, float *buff)
+{
+    int  i;
+
+    void *buff_to_read_into = NULL;
+    switch (vtype)
+    {
+      case M_STRING:
+        buff_to_read_into = new char[amount];
+        break;
+      case M_FLOAT:
+      case M_FLOAT4:
+        buff_to_read_into = buff;
+        break;
+      case M_FLOAT8:
+        buff_to_read_into = new double[amount];
+        break;
+      case M_INT:
+      case M_INT4:
+        buff_to_read_into = new int[amount];
+        break;
+      case M_INT8:
+        buff_to_read_into = new long[amount];
+        break;
+    }
+
+    int rval = mc_read_results(dbid, ts, sr, rank, name, buff_to_read_into);
+    if (rval != OK)
+    {
+        EXCEPTION1(InvalidVariableException, name[0]);
+    }
+
+    char   *c_tmp = NULL;
+    double *d_tmp = NULL;
+    int    *i_tmp = NULL;
+    long   *l_tmp = NULL;
+    switch (vtype)
+    {
+       case M_STRING:
+         c_tmp = (char *) buff_to_read_into;
+         for (i = 0 ; i < amount ; i++)
+             buff[i] = (float)(c_tmp[i]);
+         delete [] c_tmp;
+         break;
+       case M_FLOAT:
+       case M_FLOAT4:
+         break;
+       case M_FLOAT8:
+         d_tmp = (double *) buff_to_read_into;
+         for (i = 0 ; i < amount ; i++)
+             buff[i] = (float)(d_tmp[i]);
+         delete [] d_tmp;
+         break;
+       case M_INT:
+       case M_INT4:
+         i_tmp = (int *) buff_to_read_into;
+         for (i = 0 ; i < amount ; i++)
+             buff[i] = (float)(i_tmp[i]);
+         delete [] i_tmp;
+         break;
+       case M_INT8:
+         l_tmp = (long *) buff_to_read_into;
+         for (i = 0 ; i < amount ; i++)
+             buff[i] = (float)(l_tmp[i]);
+         delete [] l_tmp;
+         break;
+    }
+}
+
+
+// ****************************************************************************
 //  Method:  avtMiliFileFormat::GetMesh
 //
 //  Purpose:
@@ -271,6 +362,9 @@ avtMiliFileFormat::~avtMiliFileFormat()
 //
 //    Hank Childs, Sat Jun 26 11:24:47 PDT 2004
 //    Check for bad files where number of timesteps is incorrectly reported.
+//
+//    Hank Childs, Tue Jul 20 15:53:30 PDT 2004
+//    Add support for more data types (float, double, char, int, etc).
 //
 // ****************************************************************************
 
@@ -322,11 +416,13 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
     int nodpos = GetVariableIndex(nodpos_str, mesh_id);
 
     int subrec = -1;
+    int vsize = M_FLOAT;
     for (int i = 0 ; i < vars_valid[dom][nodpos].size() ; i++)
     {
         if (vars_valid[dom][nodpos][i])
         {
             subrec = sub_record_ids[dom][i];
+            vsize = var_size[dom][nodpos][i];
             break;
         }
     }
@@ -335,12 +431,9 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
         EXCEPTION0(ImproperUseException);
     }
 
-    float *fpts = new float[dims*nnodes[dom][mesh_id]];
-    int rval = mc_read_results(dbid[dom], ts+1, subrec, 1, &nodpos_str, fpts);
-    if (rval != OK)
-    {
-        EXCEPTION1(InvalidFilesException, filename);
-    }
+    int amt = dims*nnodes[dom][mesh_id];
+    float *fpts = new float[amt];
+    read_results(dbid[dom], ts+1, subrec, 1, &nodpos_str, vsize, amt, fpts);
 
     vtkPoints *pts = vtkPoints::New();
     pts->SetNumberOfPoints(nnodes[dom][mesh_id]);
@@ -960,7 +1053,10 @@ avtMiliFileFormat::ValidateVariables(int dom)
             // list.
             //
             for (int vv = 0 ; vv < vars.size() ; vv++)
-                 vars_valid[dom][vv].push_back(false);
+            {
+                vars_valid[dom][vv].push_back(false);
+                var_size[dom][vv].push_back(M_FLOAT);
+            }
             int index = sub_records[dom].size() - 1;
            
             for (int k = 0 ; k < sr.qty_svars ; k++)
@@ -986,6 +1082,7 @@ avtMiliFileFormat::ValidateVariables(int dom)
                  }
 
                  vars_valid[dom][sameAsVar][index] = true;
+                 var_size[dom][sameAsVar][index] = sv.num_type;
             }
         }
     }
@@ -1077,6 +1174,9 @@ avtMiliFileFormat::ConstructMaterials(vector< vector<int *> > &mat_list,
 //    Akira Haddox, Thu Jul 24 13:36:38 PDT 2003
 //    Properly dealt with cell variable blocks.
 //
+//    Hank Childs, Tue Jul 20 15:53:30 PDT 2004
+//    Add support for more data types (float, double, char, int, etc).
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1115,16 +1215,14 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *name)
         {
             EXCEPTION1(InvalidVariableException, name);
         }
+        int vsize = var_size[dom][v_index][sr_valid];
 
-        rv->SetNumberOfTuples(nnodes[dom][mesh_id]);
+        int amt = nnodes[dom][mesh_id];
+        rv->SetNumberOfTuples(amt);
         float *p = (float *) rv->GetVoidPointer(0);
         char *tmp = (char *) name;  // Bypass const
-        int rval = mc_read_results(dbid[dom], ts+1, 
-                                   sub_record_ids[dom][sr_valid], 1, &tmp, p);
-        if (rval != OK)
-        {
-            EXCEPTION1(InvalidVariableException, name);
-        }
+        read_results(dbid[dom], ts+1, sub_record_ids[dom][sr_valid], 1,
+                        &tmp, vsize, amt, p);
     }
     else
     {
@@ -1137,6 +1235,7 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *name)
         {
             if (vars_valid[dom][v_index][i])
             {
+                int vsize = var_size[dom][v_index][i];
                 int start = 0;
                 int csize = 0;
                 GetSizeInfoForGroup(sub_records[dom][i].class_name, start,
@@ -1150,13 +1249,8 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *name)
                     // Adjust start
                     start += (sub_records[dom][i].mo_blocks[0] - 1);
                 
-                    int rval = mc_read_results(dbid[dom], ts+1,
-                                 sub_record_ids[dom][i],
-                                 1, &tmp, p + start);
-                    if (rval != OK)
-                    {
-                        EXCEPTION1(InvalidVariableException, name);
-                    }
+                    read_results(dbid[dom], ts+1, sub_record_ids[dom][i],
+                                 1, &tmp, vsize, csize, p + start);
                 }
                 else
                 {
@@ -1170,16 +1264,8 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *name)
 
                     float *arr = new float[pSize];
 
-                    int rval = mc_read_results(dbid[dom], ts + 1,
-                                    sub_record_ids[dom][i],
-                                    1, &tmp, arr);
-
-                    if (rval != OK)
-                    {
-                        delete [] arr;
-                        EXCEPTION1(InvalidVariableException, name);
-                    }
-                    
+                    read_results(dbid[dom], ts + 1, sub_record_ids[dom][i],
+                                 1, &tmp, vsize, pSize, arr);
 
                     float *ptr = arr;
                     // Fill up the blocks into the array.
@@ -1223,6 +1309,9 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *name)
 //
 //    Hank Childs, Mon Sep 22 07:36:48 PDT 2003
 //    Add support for reading in tensors.
+//
+//    Hank Childs, Tue Jul 20 15:53:30 PDT 2004
+//    Add support for more data types (float, double, char, int, etc).
 //
 // ****************************************************************************
 
@@ -1270,15 +1359,13 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *name)
             EXCEPTION1(InvalidVariableException, name);
         }
 
-        rv->SetNumberOfTuples(nnodes[dom][mesh_id]);
+        int vsize = var_size[dom][v_index][sr_valid];
+        int amt = nnodes[dom][mesh_id];
+        rv->SetNumberOfTuples(amt);
         float *ptr = (float *) rv->GetVoidPointer(0);
         char *tmp = (char *) name;  // Bypass const
-        int rval = mc_read_results(dbid[dom], ts+1,
-                                   sub_record_ids[dom][sr_valid], 1, &tmp,ptr);
-        if (rval != OK)
-        {
-            EXCEPTION1(InvalidVariableException, name);
-        }
+        read_results(dbid[dom], ts+1, sub_record_ids[dom][sr_valid], 1,
+                        &tmp, vsize, amt, ptr);
     }
     else
     {
@@ -1292,6 +1379,7 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *name)
         {
             if (vars_valid[dom][v_index][i])
             {
+                int vsize = var_size[dom][v_index][i];
                 int start = 0;
                 int csize = 0;
                 GetSizeInfoForGroup(sub_records[dom][i].class_name, start, 
@@ -1305,13 +1393,8 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *name)
                     // Adjust start
                     start += (sub_records[dom][i].mo_blocks[0] - 1);
                 
-                    int rval = mc_read_results(dbid[dom], ts+1,
-                                 sub_record_ids[dom][i],
-                                 1, &tmp, p + vdim * start);
-                    if (rval != OK)
-                    {
-                        EXCEPTION1(InvalidVariableException, name);
-                    }
+                    read_results(dbid[dom], ts+1, sub_record_ids[dom][i],
+                                 1, &tmp, vsize, csize*vdim, p + vdim * start);
                 }
                 else
                 {
@@ -1325,16 +1408,8 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *name)
 
                     float *arr = new float[pSize * vdim];
 
-                    int rval = mc_read_results(dbid[dom], ts + 1,
-                                    sub_record_ids[dom][i],
-                                    1, &tmp, arr);
-
-                    if (rval != OK)
-                    {
-                        delete [] arr;
-                        EXCEPTION1(InvalidVariableException, name);
-                    }
-                    
+                    read_results(dbid[dom], ts + 1, sub_record_ids[dom][i],
+                                    1, &tmp, vsize, pSize*vdim, arr);
 
                     float *ptr = arr;
                     // Fill up the blocks into the array.

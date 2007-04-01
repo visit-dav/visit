@@ -17,6 +17,7 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
+#include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
 
 #include <BadIndexException.h>
@@ -42,11 +43,17 @@ static string GetDirName(const char *path);
 //  Programmer:  Hank Childs
 //  Creation:    November 24, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Jul 19 16:57:59 PDT 2004
+//    Initialize haveIssuedWarning.
+//
 // ****************************************************************************
 
 avtCosmosPPFileFormat::avtCosmosPPFileFormat(const char *fname)
     : avtMTMDFileFormat(fname)
 {
+    haveIssuedWarning = false;
     dirname = GetDirName(fname);
 
     ifstream ifile(fname);
@@ -436,6 +443,22 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
     vtkUnsignedCharArray *ghosts = vtkUnsignedCharArray::New();
     ghosts->SetName("vtkGhostLevels");
     ghosts->SetNumberOfTuples(nzones);
+    if (numInternalZones > nzones)
+    {
+        if (!haveIssuedWarning)
+        {
+            char msg[1024];
+            sprintf(msg, "The file %s claims to have more internal zones (%d)"
+                         " than there are actual zones (%d).  This warning "
+                         "will only be issued one time per session, even if "
+                         "additional problems are found.", filename.c_str(),
+                          numInternalZones, nzones);
+            avtCallback::IssueWarning(msg);
+            haveIssuedWarning = true;
+        }
+        numInternalZones = nzones;
+    }
+
     for (i = 0 ; i < numInternalZones ; i++)
         ghosts->SetTuple1(i, 0);
     for (i = numInternalZones ; i < nzones ; i++)

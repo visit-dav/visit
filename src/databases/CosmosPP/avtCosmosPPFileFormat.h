@@ -23,6 +23,11 @@ class vtkUnstructuredGrid;
 //  Programmer:  Hank Childs
 //  Creation:    November 24, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Jul 19 16:57:59 PDT 2004
+//    Added haveIssuedWarning.
+//
 // ****************************************************************************
 
 class avtCosmosPPFileFormat : public avtMTMDFileFormat
@@ -53,6 +58,7 @@ class avtCosmosPPFileFormat : public avtMTMDFileFormat
     int                                 ntimesteps;
     int                                 nscalars;
     int                                 nvectors;
+    bool                                haveIssuedWarning;
 
     std::vector<std::string>            scalarVarNames;
     std::vector<std::string>            vectorVarNames;
