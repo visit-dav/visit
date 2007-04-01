@@ -75,6 +75,9 @@ GetMetaDataRPCExecutor::~GetMetaDataRPCExecutor()
 //   Handle errors through exceptions instead of error codes.   This allows
 //   real error messages to make it to the user.
 //
+//   Brad Whitlock, Wed Feb 9 11:36:17 PDT 2005
+//   I made it print the metadata to debug5 all the time.
+//
 // ****************************************************************************
 
 void
@@ -89,10 +92,11 @@ GetMetaDataRPCExecutor::Update(Subject *s)
     {
         // Either send a successful reply or send an error.
         parent->ReadMetaData(rpc->GetFile(), rpc->GetTimeState());
-#ifdef DEBUG
-        debug2 << "MetaData=" << endl;
-        parent->GetCurrentMetaData()->Print(debug2);
-#endif
+
+        debug5 << "MetaData=" << endl;
+        if(debug5_real)
+            parent->GetCurrentMetaData()->Print(debug5_real);
+
         rpc->SendReply(parent->GetCurrentMetaData());
     }
     CATCH2(DatabaseException, dbe)

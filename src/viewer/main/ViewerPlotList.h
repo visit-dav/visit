@@ -210,6 +210,9 @@ typedef std::map<std::string, int> StringIntMap;
 //    Added NotActivePlotList to isolate logic for checking if the plot
 //    list belongs to the active window. Changed AlterTimeSlider.
 //
+//    Brad Whitlock, Tue Feb 8 14:53:18 PST 2005
+//    Added return value for ValidateTimeSlider.
+//
 // ****************************************************************************
 
 
@@ -245,7 +248,7 @@ public:
     bool DeleteTimeSlider(const std::string &ts, bool update = true);
     void GetTimeSliderStates(const std::string &ts, int &state, int &nStates) const;
     bool TimeSliderExists(const std::string &ts) const;
-    void ValidateTimeSlider();
+    bool ValidateTimeSlider();
     int  ResizeTimeSliders(const stringVector &sliders, bool clearCache);
     void ForwardStep();
     void BackwardStep();

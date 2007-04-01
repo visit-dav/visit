@@ -579,7 +579,7 @@ ViewerPlotList::CreateTimeSlider(const std::string &newTimeSlider, int state)
 //
 // Arguments:
 //
-// Returns:    
+// Returns:    True if the time slider changed; false otherwise.
 //
 // Note:       
 //
@@ -587,14 +587,18 @@ ViewerPlotList::CreateTimeSlider(const std::string &newTimeSlider, int state)
 // Creation:   Mon Apr 19 08:59:42 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Feb 8 14:41:08 PST 2005
+//   I made it return whether or not the time slider changed as a result
+//   of calling this method.
+//
 // ****************************************************************************
 
-void
+bool
 ViewerPlotList::ValidateTimeSlider()
 {
     ViewerFileServer *fs = ViewerFileServer::Instance();
     DatabaseCorrelationList *cL = fs->GetDatabaseCorrelationList();
+    bool tsChanged = false;
 
     if(HasActiveTimeSlider())
     {
@@ -629,6 +633,7 @@ ViewerPlotList::ValidateTimeSlider()
                 debug1 << "There were no MT databases so there can't be "
                           "an active time slider." << endl;
                 activeTimeSlider = "";
+                tsChanged = true;
             }
             else
             {
@@ -644,6 +649,7 @@ ViewerPlotList::ValidateTimeSlider()
                                << " so use the active source for the new "
                                   "time slider." << endl;
                         activeTimeSlider = hostDatabaseName;
+                        tsChanged = true;
                     }
                 }
                 // else do nothing because even though the hostDB is ST
@@ -664,8 +670,11 @@ ViewerPlotList::ValidateTimeSlider()
                 activeTimeSlider = hostDatabaseName;
             else
                 CreateTimeSlider(hostDatabaseName, 0);
+            tsChanged = true;
         }
     }
+
+    return tsChanged;
 }
 
 // ****************************************************************************
@@ -3321,6 +3330,12 @@ ViewerPlotList::DeletePlot(ViewerPlot *whichOne, bool doUpdate)
 //    I added code to make sure that we don't set the time slider to the
 //    active source unless the active source is an MT database.
 //
+//    Brad Whitlock, Tue Feb 8 14:50:55 PST 2005
+//    I removed a block of code that used to set the time slider to the
+//    hostDatabaseName if the active time slider did not use the 
+//    hostDatabaseName in its correlation and replaced it with very similar
+//    logic by calling ValidateTimeSlider in all cases.
+//
 // ****************************************************************************
 
 void
@@ -3365,28 +3380,15 @@ ViewerPlotList::DeleteActivePlots()
     {
         // If there are no plots, make sure we stop animation.
         animationMode = StopMode;
+    }
 
-        //
-        // Make sure that we change the active time slider to be the 
-        // active source if the correlation for the active time slider
-        // does not contain the active source.
-        //
-        if(HasActiveTimeSlider())
-        {
-            DatabaseCorrelationList *cL = ViewerFileServer::Instance()->
-                GetDatabaseCorrelationList();
-            DatabaseCorrelation *tsCorrelation = cL->FindCorrelation(
-                activeTimeSlider);
-            if(tsCorrelation != 0 &&
-               !tsCorrelation->UsesDatabase(hostDatabaseName) &&
-               cL->FindCorrelation(hostDatabaseName) != 0)
-            {
-                SetActiveTimeSlider(hostDatabaseName);
-
-                ViewerWindowManager::Instance()->UpdateWindowInformation(
-                    WINDOWINFO_TIMESLIDERS, window->GetWindowId());
-            }
-        }
+    //
+    // Determine whether or not it is appropriate to have a time slider.
+    //
+    if(ValidateTimeSlider())
+    {
+        ViewerWindowManager::Instance()->UpdateWindowInformation(
+            WINDOWINFO_TIMESLIDERS, window->GetWindowId());
     }
 
     //

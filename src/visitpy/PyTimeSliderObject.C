@@ -45,6 +45,8 @@ TimeSliderObject_SetVisible(PyObject *self, PyObject *args)
 
     // Set the visible in the object.
     obj->data->SetVisible(ival != 0);
+/* CUSTOM */
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -69,6 +71,8 @@ TimeSliderObject_SetActive(PyObject *self, PyObject *args)
 
     // Set the active in the object.
     obj->data->SetActive(ival != 0);
+/* CUSTOM */
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -119,6 +123,8 @@ TimeSliderObject_SetPosition(PyObject *self, PyObject *args)
 
     // Mark the position in the object as modified.
     obj->data->SelectPosition();
+/* CUSTOM */
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -150,6 +156,7 @@ TimeSliderObject_SetWidth(PyObject *self, PyObject *args)
     float *pos2 = obj->data->GetPosition2();
     pos2[0] = fval;
     obj->data->SelectPosition2();
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -179,6 +186,7 @@ TimeSliderObject_SetHeight(PyObject *self, PyObject *args)
     float *pos2 = obj->data->GetPosition2();
     pos2[1] = fval;
     obj->data->SelectPosition2();
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -252,6 +260,7 @@ TimeSliderObject_SetTextColor(PyObject *self, PyObject *args)
     // Set the textColor in the object.
     ColorAttribute ca(c[0], c[1], c[2], c[3]);
     obj->data->SetTextColor(ca);
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -282,6 +291,8 @@ TimeSliderObject_SetUseForegroundForTextColor(PyObject *self, PyObject *args)
 
     // Set the useForegroundForTextColor in the object.
     obj->data->SetUseForegroundForTextColor(ival != 0);
+/* CUSTOM */
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -354,6 +365,7 @@ TimeSliderObject_SetStartColor(PyObject *self, PyObject *args)
     ColorAttribute ca(c[0], c[1], c[2], c[3]);
 /*CUSTOM*/
     obj->data->SetColor1(ca);
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -433,6 +445,7 @@ TimeSliderObject_SetEndColor(PyObject *self, PyObject *args)
     ColorAttribute ca(c[0], c[1], c[2], c[3]);
 /*CUSTOM*/
     obj->data->SetColor2(ca);
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -466,6 +479,7 @@ TimeSliderObject_SetText(PyObject *self, PyObject *args)
 /*CUSTOM*/
     stringVector s; s.push_back(str);
     obj->data->SetText(s);
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -496,6 +510,7 @@ TimeSliderObject_SetTimeDisplay(PyObject *self, PyObject *args)
 /*CUSTOM*/
         int val = (obj->data->GetIntAttribute1() & (~12)) | ((ival & 3) << 2);
         obj->data->SetIntAttribute1(val);
+        UpdateAnnotationHelper(obj->data);
     }
     else
     {
@@ -536,6 +551,7 @@ TimeSliderObject_SetPercentComplete(PyObject *self, PyObject *args)
 /*CUSTOM*/
         float percent = fval * 0.01f;
         obj->data->SetFloatAttribute1(percent);
+        UpdateAnnotationHelper(obj->data);
     }
     else
     {
@@ -571,6 +587,7 @@ TimeSliderObject_SetRounded(PyObject *self, PyObject *args)
 /*CUSTOM*/
     int v = (obj->data->GetIntAttribute1() & (~1)) | (ival?1:0);
     obj->data->SetIntAttribute1(v);
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -599,6 +616,7 @@ TimeSliderObject_SetShaded(PyObject *self, PyObject *args)
 /*CUSTOM*/
     int v = (obj->data->GetIntAttribute1() & (~2)) | ((ival?1:0) << 1);
     obj->data->SetIntAttribute1(v);
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -736,7 +754,6 @@ TimeSliderObject_setattr(PyObject *self, char *name, PyObject *args)
     PyTuple_SET_ITEM(tuple, 0, args);
     Py_INCREF(args);
     bool retval = false;
-    bool update = true;
 
     if(strcmp(name, "visible") == 0)
         retval = (TimeSliderObject_SetVisible(self, tuple) != NULL);
@@ -766,15 +783,6 @@ TimeSliderObject_setattr(PyObject *self, char *name, PyObject *args)
         retval = (TimeSliderObject_SetRounded(self, tuple) != NULL);
     else if(strcmp(name, "shaded") == 0)
         retval = (TimeSliderObject_SetShaded(self, tuple) != NULL);
-    else
-        update = false;
-
-/*CUSTOM*/
-    if(update)
-    {
-        TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
-        UpdateAnnotationHelper(obj->data);
-    }
 
     Py_DECREF(tuple);
     return retval ? 0 : -1;

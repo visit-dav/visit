@@ -46,6 +46,8 @@ Text2DObject_SetVisible(PyObject *self, PyObject *args)
 
     // Set the visible in the object.
     obj->data->SetVisible(ival != 0);
+/*CUSTOM*/
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -70,6 +72,8 @@ Text2DObject_SetActive(PyObject *self, PyObject *args)
 
     // Set the active in the object.
     obj->data->SetActive(ival != 0);
+/*CUSTOM*/
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -120,6 +124,8 @@ Text2DObject_SetPosition(PyObject *self, PyObject *args)
 
     // Mark the position in the object as modified.
     obj->data->SelectPosition();
+/*CUSTOM*/
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -151,6 +157,7 @@ Text2DObject_SetWidth(PyObject *self, PyObject *args)
     float *pos2 = obj->data->GetPosition2();
     pos2[0] = fval;
     obj->data->SelectPosition2();
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -224,6 +231,8 @@ Text2DObject_SetTextColor(PyObject *self, PyObject *args)
     // Set the textColor in the object.
     ColorAttribute ca(c[0], c[1], c[2], c[3]);
     obj->data->SetTextColor(ca);
+/*CUSTOM*/
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -254,6 +263,8 @@ Text2DObject_SetUseForegroundForTextColor(PyObject *self, PyObject *args)
 
     // Set the useForegroundForTextColor in the object.
     obj->data->SetUseForegroundForTextColor(ival != 0);
+/*CUSTOM*/
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -280,6 +291,7 @@ Text2DObject_SetText(PyObject *self, PyObject *args)
 /*CUSTOM*/
     stringVector s; s.push_back(str);
     obj->data->SetText(s);
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -306,8 +318,11 @@ Text2DObject_SetFontFamily(PyObject *self, PyObject *args)
 
     // Set the fontFamily in the object.
     if(ival >= 0 && ival < 3)
+    {
 /*CUSTOM*/
         obj->data->SetFontFamily(AnnotationObject::FontFamily(ival));
+        UpdateAnnotationHelper(obj->data);
+    }
     else
     {
         fprintf(stderr, "An invalid fontFamily value was given. "
@@ -340,6 +355,8 @@ Text2DObject_SetFontBold(PyObject *self, PyObject *args)
 
     // Set the fontBold in the object.
     obj->data->SetFontBold(ival != 0);
+/*CUSTOM*/
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -364,6 +381,8 @@ Text2DObject_SetFontItalic(PyObject *self, PyObject *args)
 
     // Set the fontItalic in the object.
     obj->data->SetFontItalic(ival != 0);
+/*CUSTOM*/
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -388,6 +407,8 @@ Text2DObject_SetFontShadow(PyObject *self, PyObject *args)
 
     // Set the fontShadow in the object.
     obj->data->SetFontShadow(ival != 0);
+/*CUSTOM*/
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -508,7 +529,6 @@ Text2DObject_setattr(PyObject *self, char *name, PyObject *args)
     PyTuple_SET_ITEM(tuple, 0, args);
     Py_INCREF(args);
     bool retval = false;
-    bool update = true;
 
     if(strcmp(name, "visible") == 0)
         retval = (Text2DObject_SetVisible(self, tuple) != NULL);
@@ -532,15 +552,6 @@ Text2DObject_setattr(PyObject *self, char *name, PyObject *args)
         retval = (Text2DObject_SetFontItalic(self, tuple) != NULL);
     else if(strcmp(name, "fontShadow") == 0)
         retval = (Text2DObject_SetFontShadow(self, tuple) != NULL);
-    else
-        update = false;
-
-/*CUSTOM*/
-    if(update)
-    {
-        Text2DObjectObject *obj = (Text2DObjectObject *)self;
-        UpdateAnnotationHelper(obj->data);
-    }
 
     Py_DECREF(tuple);
     return retval ? 0 : -1;
