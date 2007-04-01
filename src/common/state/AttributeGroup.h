@@ -55,6 +55,9 @@ class DataNode;
 //    Brad Whitlock, Wed Dec 17 11:51:40 PDT 2003
 //    I added a third argument to CreateNode.
 //
+//    Brad Whitlock, Thu Dec 9 15:04:41 PST 2004
+//    I added FieldType_variablename.
+//
 // ****************************************************************************
 
 class STATE_API AttributeGroup
@@ -82,6 +85,7 @@ public:
         FieldType_opacity,
         FieldType_linestyle,
         FieldType_linewidth,
+        FieldType_variablename,
         FieldType_att,
         FieldType_attVector,
         FieldType_enum        

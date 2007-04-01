@@ -17,6 +17,7 @@ class QvisScribbleOpacityBar;
 class QvisOpacitySlider;
 class QLineEdit;
 class QSlider;
+class QvisVariableButton;
 
 // ****************************************************************************
 // Class: QvisVolumePlotWindow
@@ -48,6 +49,9 @@ class QSlider;
 //
 //    Hank Childs, Mon Nov 22 09:27:26 PST 2004
 //    Make "Software" button become "Ray Trace" toggle.
+//
+//    Brad Whitlock, Thu Dec 9 17:32:14 PST 2004
+//    I changed the opacity variable so it uses QvisVariableButton.
 //
 // ****************************************************************************
 
@@ -90,6 +94,7 @@ private slots:
     void colorMinProcessText();
     void colorMaxToggled(bool val);
     void colorMaxProcessText();
+    void opacityVariableChanged(const QString &);
     void opacityMinToggled(bool val);
     void opacityMinProcessText();
     void opacityMaxToggled(bool val);
@@ -102,7 +107,6 @@ private slots:
     void resampleTargetSliderChanged(int val);
     void resampleTargetSliderReleased();
     void samplesPerRayProcessText();
-    void opacityVariableProcessText();
     void rendererTypeChanged(int val);
     void gradientTypeChanged(int val);
     void num3DSlicesProcessText();
@@ -121,6 +125,7 @@ private:
     QLineEdit                *colorMin;
     QCheckBox                *colorMaxToggle;
     QLineEdit                *colorMax;
+    QvisVariableButton       *opacityVariable;
     QCheckBox                *opacityMinToggle;
     QLineEdit                *opacityMin;
     QCheckBox                *opacityMaxToggle;
@@ -147,7 +152,6 @@ private:
     QSlider                  *resampleTargetSlider;
     QLineEdit                *num3DSlices;
     QLineEdit                *samplesPerRay;
-    QLineEdit                *opacityVariable;
 };
 
 #endif

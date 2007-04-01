@@ -44,6 +44,9 @@
 //    Jeremy Meredith, Thu Mar 27 12:54:18 PST 2003
 //    Removed some unused helper functions.
 //
+//    Brad Whitlock, Wed Dec 8 15:41:56 PST 2004
+//    Added VariableName type.
+//
 // ****************************************************************************
 
 
@@ -73,6 +76,7 @@ class Field
     vector<QString>   enableval;
 
     QString           initcode;
+    int               varTypes;
 
     int               index;
     CodeFile         *codeFile;
@@ -92,6 +96,7 @@ class Field
         isArray  = (type.right(5) == "Array");
         isVector = (type.right(6) == "Vector");
         ignoreEquality = false;
+        varTypes = 0;
     }
     virtual ~Field() { }
     virtual void ClearValues() { }
@@ -927,6 +932,74 @@ class LineWidth : public virtual Field
 
 
 //
+// ----------------------------------- VariableName ---------------------------
+//
+class VariableName : public virtual Field
+{
+  public:
+    QString val;
+  public:
+    VariableName(const QString &n, const QString &l) : Field("variablename",n,l)
+    {
+        varTypes = 2; // VAR_CATEGORY_SCALAR
+    };
+
+    virtual QString GetCPPName(bool, const QString &) 
+    {
+        return "std::string";
+    }
+    virtual void SetValue(const QString &s, int = 0)
+    {
+        val = s;
+        valueSet = true;
+    }
+
+    virtual void SetAttrib(const QString &a, const QString &v)
+    {
+        if(a == "vartypes")
+        {
+            if(v.length() != 9)
+            {
+                cout << "The vartypes attribute must be 9 characters long!" << endl;
+            }
+            else
+            {
+                const char *val = v.latin1();
+                int m = 1;
+                varTypes = 0;
+                for(int i = 0; i < v.length(); ++i)
+                {
+                    if(val[i] == '1')
+                        varTypes |= m;
+                    else if(val[i] != '0')
+                        cout << "Bad character in vartypes attribute!" << endl;
+                    m = m << 1;
+                }
+            }
+        }
+        else
+            cout << "unknown attribute " << a << " for type " << type << endl;
+    }
+
+    virtual void Print(ostream &out)
+    {
+        Field::Print(out);
+        if (valueSet)
+        {
+            out << "            value: " << val << endl;
+        }
+    }
+    virtual vector<QString> GetValueAsText()
+    {
+        vector<QString> retval;
+        if (valueSet)
+            retval.push_back(val);
+        return retval;
+    }
+};
+
+
+//
 // ------------------------------------ Att -----------------------------------
 //
 class Att : public virtual Field
@@ -1091,6 +1164,9 @@ class Enum : public virtual Field
 //    Brad Whitlock, Mon Dec 9 11:18:31 PDT 2002
 //    Added UCharVector.
 //
+//    Brad Whitlock, Wed Dec 8 15:41:27 PST 2004
+//    Added VariableName.
+//
 // ****************************************************************************
 
 class FieldFactory
@@ -1123,6 +1199,7 @@ class FieldFactory
         else if (type == "opacity")      f = new Opacity(name,label);
         else if (type == "linestyle")    f = new LineStyle(name,label);
         else if (type == "linewidth")    f = new LineWidth(name,label);
+        else if (type == "variablename") f = new VariableName(name,label);
         else if (type == "att")          f = new Att(subtype,name,label);
         else if (type == "attVector")    f = new AttVector(subtype,name,label);
         else if (type == "enum")         f = new Enum(subtype, name, label);

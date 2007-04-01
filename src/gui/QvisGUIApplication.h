@@ -226,6 +226,9 @@ class SplashScreen;
 //    Added methods to observe updating metadata coming from the viewer.
 //    This is used by simulations who send the metadata from the engine.
 //
+//    Brad Whitlock, Thu Dec 9 10:12:24 PDT 2004
+//    Added newExpression, AddPlot, AddOperator slots.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -280,6 +283,9 @@ private:
     static void UpdatePrinterAttributes(Subject *subj, void *data);
     static void SyncCallback(Subject *s, void *data);
     static void UpdateMetaDataAttributes(Subject *subj, void *data);
+
+public slots:
+    void newExpression();
 private slots:
     void HeavyInitialization();
     void ReadFromViewer(int);
@@ -303,6 +309,10 @@ private slots:
     void RestoreSession();
     void RestoreSessionFile(const QString &);
     void SaveSession();
+
+    // Plot, operator related slots.
+    void AddPlot(int, const QString &);
+    void AddOperator(int);
 
     // Slots to show windows.
     void showFileSelectionWindow();

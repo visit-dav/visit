@@ -11,6 +11,8 @@
 class AttributeSubject;
 class QvisNotepadArea;
 class QvisPostableWindowObserver;
+class QvisWizard;
+class QWidget;
 class avtPluginFilter;
 class ViewerPlot;
 
@@ -47,6 +49,9 @@ class ViewerPlot;
 //    Jeremy Meredith, Wed Nov  5 10:28:29 PST 2003
 //    Added ability to disable plugins by default.
 //
+//    Brad Whitlock, Tue Dec 14 09:44:04 PDT 2004
+//    Added support for operator wizards.
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralOperatorPluginInfo
@@ -72,6 +77,11 @@ class PLUGIN_API GUIOperatorPluginInfo : public virtual CommonOperatorPluginInfo
     virtual const char *GetMenuName() const = 0;
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, QvisNotepadArea *notepad) = 0;
+    virtual QvisWizard *CreatePluginWizard(AttributeSubject *attr,
+        QWidget *parent, const char *name =0)
+    {
+        return 0;
+    }
     virtual const char **XPMIconData() const { return 0; }
 };
 

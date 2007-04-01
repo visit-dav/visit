@@ -215,8 +215,8 @@ QvisMeshPlotWindow::CreateWindowContents()
     pointControl = new QvisPointControl(central, "pointControl");
     connect(pointControl, SIGNAL(pointSizeChanged(double)),
             this, SLOT(pointSizeChanged(double)));
-    connect(pointControl, SIGNAL(pointSizeVarChanged(QString &)),
-            this, SLOT(pointSizeVarChanged(QString &)));
+    connect(pointControl, SIGNAL(pointSizeVarChanged(const QString &)),
+            this, SLOT(pointSizeVarChanged(const QString &)));
     connect(pointControl, SIGNAL(pointSizeVarToggled(bool)),
             this, SLOT(pointSizeVarToggled(bool)));
     connect(pointControl, SIGNAL(pointTypeChanged(int)),
@@ -1047,7 +1047,7 @@ QvisMeshPlotWindow::pointSizeVarToggled(bool val)
 // ****************************************************************************
 
 void
-QvisMeshPlotWindow::pointSizeVarChanged(QString &var)
+QvisMeshPlotWindow::pointSizeVarChanged(const QString &var)
 {
     meshAtts->SetPointSizeVar(var.latin1()); 
     Apply();

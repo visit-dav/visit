@@ -23,6 +23,7 @@
 #include <PluginManagerAttributes.h>
 #include <QvisPlotListBoxItem.h>
 #include <QvisPlotListBox.h>
+#include <QvisVariableButton.h>
 #include <QvisVariablePopupMenu.h>
 #include <PlotPluginInfo.h>
 #include <WindowInformation.h>
@@ -878,6 +879,9 @@ QvisPlotManagerWidget::UpdateHideDeleteDrawButtonsEnabledState() const
 //   I enabled icons since the new version of Qt on MacOS X supports icons
 //   in the top menu.
 //
+//   Brad Whitlock, Tue Dec 14 10:59:40 PDT 2004
+//   I changed the name of a slot.
+//
 // ****************************************************************************
 
 void
@@ -891,7 +895,7 @@ QvisPlotManagerWidget::AddPlotType(const char *plotName, const int varTypes,
                                               plotName);
     entry.varTypes = varTypes;
     connect(entry.varMenu, SIGNAL(activated(int, const QString &)),
-            this, SLOT(addPlot(int, const QString &)));
+            this, SLOT(addPlotHelper(int, const QString &)));
     // Add the plot plugin information to the plugin list.
     plotPlugins.push_back(entry);
 
@@ -1112,6 +1116,13 @@ QvisPlotManagerWidget::PopulateVariableLists(VariableMenuPopulator &populator,
 //   Brad Whitlock, Tue Feb 24 16:06:46 PST 2004
 //   I improved the code to it does not update the variable menus each time.
 // 
+//   Brad Whitlock, Fri Dec 3 13:53:20 PST 2004
+//   Moved the code to clear the menu out of the variable menu populator
+//   into this method. I also changed how the slot function to add a plot
+//   gets hooked up by the variable menu populator. Finally, I added code
+//   to update variable buttons that use the active source for their
+//   variable list.
+//
 // ****************************************************************************
 
 void
@@ -1130,8 +1141,10 @@ QvisPlotManagerWidget::UpdatePlotVariableMenu()
         this->maxVarCount = 0;
         for(int i = 0; i < plotPlugins.size(); ++i)
         {
+            plotPlugins[i].varMenu->clear();
             int varCount = menuPopulator.UpdateSingleVariableMenu(
-                plotPlugins[i].varMenu, this, plotPlugins[i].varTypes, false);
+                plotPlugins[i].varMenu, plotPlugins[i].varTypes,
+                this, SLOT(addPlotHelper(int, const QString &)));
             this->maxVarCount = (varCount > this->maxVarCount) ? varCount : this->maxVarCount;
             bool hasEntries = (varCount > 0);
             // If the menu has a different enabled state, set it now.
@@ -1144,6 +1157,18 @@ QvisPlotManagerWidget::UpdatePlotVariableMenu()
         // state for the plot variable menu.
         //
         this->updatePlotVariableMenuEnabledState = true;
+
+        //
+        // Update the variable buttons that use the active source.
+        //
+        QvisVariableButton::UpdateActiveSourceButtons(&menuPopulator);
+
+        //
+        // If there are no plots then update the variable buttons that
+        // use the plot source with the active source.
+        //
+        if(plotList->GetNumPlots() < 1)
+            QvisVariableButton::UpdatePlotSourceButtons(&menuPopulator);
     }
 }
 
@@ -1311,6 +1336,12 @@ QvisPlotManagerWidget::UpdatePlotAndOperatorMenuEnabledState()
 //   I made it take the plot's varTypes into account when determining if the
 //   variable menu needs to be updated.
 //
+//   Brad Whitlock, Fri Dec 3 13:53:20 PST 2004
+//   Moved the code to clear the menu out of the variable menu populator
+//   into this method. I also changed how the slot function to change
+//   variables is hooked up to the menu. Finally, I added code to update
+//   the variable buttons that use the plot source.
+//
 // ****************************************************************************
 
 void
@@ -1339,8 +1370,9 @@ QvisPlotManagerWidget::UpdateVariableMenu()
             if(changeVarLists || flagsDiffer || varMenu->count() == 0)
             {
                 // Set the variable list based on the first active plot.
+                varMenu->clear();
                 int varCount = varMenuPopulator.UpdateSingleVariableMenu(varMenu,
-                    this, plotVarFlags, true);
+                    plotVarFlags, this, SLOT(changeVariable(int, const QString &)));
                 varMenuFlags = plotVarFlags;
 
                 //
@@ -1348,6 +1380,11 @@ QvisPlotManagerWidget::UpdateVariableMenu()
                 // enabled state for the variables menu.
                 //
                 this->updateVariableMenuEnabledState |= (varCount > 0);
+
+                //
+                // Update all variable buttons that use the plot source.
+                //
+                QvisVariableButton::UpdatePlotSourceButtons(&varMenuPopulator);
             }
 
             // Get out of the for loop.
@@ -1773,7 +1810,7 @@ QvisPlotManagerWidget::changeVariable(int, const QString &varName)
 }
 
 // ****************************************************************************
-// Method: QvisPlotManagerWidget::addPlot
+// Method: QvisPlotManagerWidget::addPlotHelper
 //
 // Purpose: 
 //   This is a Qt slot function that tells the viewer to add a new plot.
@@ -1786,35 +1823,16 @@ QvisPlotManagerWidget::changeVariable(int, const QString &varName)
 // Creation:   Mon Mar 26 09:40:50 PDT 2001
 //
 // Modifications:
-//   Brad Whitlock, Mon Mar 4 14:16:12 PST 2002
-//   Added auto update support.
-//
-//   Brad Whitlock, Mon Mar 4 16:48:51 PST 2002
-//   Added code to set the cursor to the wait cursor.
-//
-//   Brad Whitlock, Wed Mar 13 14:37:39 PST 2002
-//   Upgraded to Qt 3.0
-//
-//   Brad Whitlock, Thu May 2 15:21:52 PST 2002
-//   Changed how the cursor gets set.
-//
-//   Kathleen Bonnell, Wed Sep  4 16:14:12 PDT 2002  
-//   Removed call to ParseVariable. 
+//   Brad Whitlock, Tue Dec 14 08:54:23 PDT 2004
+//   Changed all of the code to an emitted signal. The code to handle
+//   the signal is in QvisGUIApplication.
 //
 // ****************************************************************************
 
 void
-QvisPlotManagerWidget::addPlot(int plotType, const QString &varName)
+QvisPlotManagerWidget::addPlotHelper(int plotType, const QString &varName)
 {
-    // Set the cursor.
-    SetWaitCursor();
-
-    // Tell the viewer to add a plot.
-    viewer->AddPlot(plotType, varName.latin1());
-
-    // If we're in auto update mode, tell the viewer to draw the plot.
-    if(AutoUpdate())
-        viewer->DrawPlots();
+    emit addPlot(plotType, varName);
 }
 
 // ****************************************************************************
@@ -1845,6 +1863,9 @@ QvisPlotManagerWidget::addPlot(int plotType, const QString &varName)
 //   Brad Whitlock, Mon Mar 17 13:04:19 PST 2003
 //   I changed how the index is used.
 //
+//   Brad Whitlock, Tue Dec 14 09:13:26 PDT 2004
+//   I removed the code to add an operator and made it emit a signal instead.
+//
 // ****************************************************************************
 
 void
@@ -1855,7 +1876,7 @@ QvisPlotManagerWidget::operatorAction(int index)
     else if(index == REMOVE_ALL_OPERATORS_ID)
         viewer->RemoveAllOperators();
     else
-        viewer->AddOperator(index);
+        emit addOperator(index);
 }
 
 // ****************************************************************************

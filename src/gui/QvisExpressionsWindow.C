@@ -18,6 +18,7 @@
 #include <qsplitter.h>
 
 #include <QNarrowLineEdit.h>
+#include <QvisVariableButton.h>
 
 #define STDMIN(A,B) (((A)<(B)) ? (A) : (B))
 #define STDMAX(A,B) (((A)<(B)) ? (B) : (A))
@@ -234,7 +235,11 @@ QvisExpressionsWindow::~QvisExpressionsWindow()
 //    categorized submenus, reword some other labels to make them more
 //    descriptive.
 //
+//    Brad Whitlock, Thu Dec 9 10:50:12 PDT 2004
+//    I added a variable button that lets us insert variables.
+//
 // ****************************************************************************
+
 void
 QvisExpressionsWindow::CreateWindowContents()
 {
@@ -312,7 +317,7 @@ QvisExpressionsWindow::CreateWindowContents()
     row++;
 
     notHidden = new QCheckBox("Show variable in plot menus", f2, "notHidden");
-    editLayout->addMultiCellWidget(notHidden, row,row, 0,1);
+    editLayout->addWidget(notHidden, row, 0);
 
     insertFunctionButton = new QPushButton("Insert Function...", f2);
     insertFunctionMenu = new QPopupMenu(f2, "insertFunctionMenu");
@@ -328,7 +333,17 @@ QvisExpressionsWindow::CreateWindowContents()
                 this, SLOT(insertFunction(int)));
     }
     insertFunctionButton->setPopup(insertFunctionMenu);
-    editLayout->addWidget(insertFunctionButton, row, 3);
+    editLayout->addWidget(insertFunctionButton, row, 2);
+
+    // Create a variable button so we can insert variables for the
+    // active source.
+    insertVariableButton = new QvisVariableButton(false, false, false, -1, f2,
+        "insertVariableButton");
+    insertVariableButton->setChangeTextOnVariableChange(false);
+    insertVariableButton->setText("Insert Variable...");
+    connect(insertVariableButton, SIGNAL(activated(const QString &)),
+            this, SLOT(insertVariable(const QString &)));
+    editLayout->addWidget(insertVariableButton, row, 3);
     row++;
 
     // connect signals
@@ -452,7 +467,11 @@ QvisExpressionsWindow::UpdateWindowSingleItem()
 //    Always access the expression list by index, just in case there
 //    are two expressions with the same name.
 //
+//    Brad Whitlock, Thu Dec 9 14:04:22 PST 2004
+//    Added a button to insert variable names.
+//
 // ****************************************************************************
+
 void
 QvisExpressionsWindow::UpdateWindowSensitivity()
 {
@@ -474,6 +493,7 @@ QvisExpressionsWindow::UpdateWindowSensitivity()
     typeList->setEnabled(enable);
     definitionEdit->setEnabled(enable);
     insertFunctionButton->setEnabled(enable);
+    insertVariableButton->setEnabled(enable);
 }
 
 // ****************************************************************************
@@ -801,7 +821,11 @@ QvisExpressionsWindow::displayAllVarsChanged()
 //    Make sure it's not just a single-char operator before adding the
 //    function call parentheses.
 //
+//    Brad Whitlock, Thu Dec 9 14:15:01 PST 2004
+//    Added code to set the focus to the definition edit.
+//
 // ****************************************************************************
+
 void
 QvisExpressionsWindow::insertFunction(int id)
 {
@@ -822,4 +846,69 @@ QvisExpressionsWindow::insertFunction(int id)
             col = 0;
         definitionEdit->setCursorPosition(line, col);
     }
+
+    definitionEdit->setFocus();
+}
+
+// ****************************************************************************
+// Method: QvisExpressionWindow::insertVariable
+//
+// Purpose: 
+//   This is a Qt slot function that inserts a variable name into the 
+//   current variable definition.
+//
+// Arguments:
+//   var : The variable.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Dec 9 10:52:37 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisExpressionsWindow::insertVariable(const QString &var)
+{
+    if (!definitionEdit->isEnabled())
+        return;
+
+    // If the variable name contains slashes then put the <> around the
+    // variable name.
+    QString newVar(var);
+    if(var.find("/") != -1)
+        newVar = QString("<") + var + QString(">");
+
+    definitionEdit->insert(newVar);
+    definitionEdit->setFocus();
+}
+
+// ****************************************************************************
+// Method: QvisExpressionsWindow::newExpression
+//
+// Purpose: 
+//   This is a Qt slot function that can be called on the window to add a
+//   new expression and set the focus of the window to the name line edit
+//   and select all of its text.
+//
+// Note:       This method is used by the "Create new expression ..." option
+//             in QvisVariableButtons.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Dec 9 10:18:13 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisExpressionsWindow::newExpression()
+{
+    // Add a new expression
+    addExpression();
+
+    // Make the name line edit be the active widget and select its text.
+    nameEdit->setFocus();
+    nameEdit->setCursorPosition(0);
+    nameEdit->selectAll();
 }

@@ -44,6 +44,9 @@ class QObject;
 //   PopulateVariableLists return a bool indicating whether or not updates
 //   are needed.
 //
+//   Brad Whitlock, Fri Dec 3 13:27:10 PST 2004
+//   I changed how slots are hooked up on the UpdateSingleVariableMenu method.
+//
 // ****************************************************************************
 
 class WINUTIL_API VariableMenuPopulator
@@ -58,9 +61,9 @@ public:
                                const ExpressionList *);
 
     int UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
-                                 QObject *receiver,
                                  int varTypes,
-                                 bool changeVar = false);
+                                 QObject *receiver = 0,
+                                 const char *slot = 0);
 
     bool ItemEnabled(int varType) const;
     void ClearDatabaseName();
@@ -90,8 +93,8 @@ private:
         int                     unsortedVariableIndex;
     };
 
-    void UpdateSingleMenu(QvisVariablePopupMenu *, QObject *,
-                          VariableList &vars, bool changeVar);
+    void UpdateSingleMenu(QvisVariablePopupMenu *, VariableList &vars,
+                          QObject *, const char *slot);
     void Split(const std::string &varName, stringVector &pieces) const;
     void AddVars(VariableList &to, VariableList &from);
     void AddExpression(const Expression &);

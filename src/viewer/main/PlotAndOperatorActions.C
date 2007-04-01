@@ -839,6 +839,10 @@ AddPlotAction::~AddPlotAction()
 //   populator indicates that it needed an update due to a different
 //   database name or a different expression list.
 //
+//   Brad Whitlock, Wed Dec 8 15:28:59 PST 2004
+//   I updated the code to use a new interface to
+//   VariableMenuPopulator::UpdateSingleVariableMenu.
+//
 // ****************************************************************************
 
 void
@@ -886,7 +890,8 @@ AddPlotAction::Update()
                 for(int i = 0; i < pluginEntries.size(); ++i)
                 {
                     menuPopulator.UpdateSingleVariableMenu(pluginEntries[i].varMenu,
-                        this, pluginEntries[i].varTypes);
+                        pluginEntries[i].varTypes, this, 
+                        SLOT(addPlot(int, const QString &)));
 
                     bool enabled = menuPopulator.ItemEnabled(pluginEntries[i].varTypes);
 

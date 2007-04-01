@@ -5,6 +5,12 @@
 #include <ExprNode.h>
 #include <ExprNodeFactory.h>
 #include <ExprParser.h>
+#include <string>
+#include <set>
+#include <ImproperUseException.h>
+#include <RecursiveExpressionException.h>
+using std::set;
+using std::string;
 
 ParsingExprList * ParsingExprList::instance = 0;
 
@@ -276,3 +282,59 @@ ParsingExprList::GetExpressionTree(Expression *expr)
     ParseTreeNode *t = Instance()->GetParser()->Parse(expr->GetDefinition());
     return (ExprNode*)t;
 }
+
+
+// ****************************************************************************
+//  Method:  ParsingExprList::GetRealVariable
+//
+//  Purpose:
+//    Determine the first true database variable for any given
+//    expression.  Throw an ImproperUseException if there were
+//    no real variables in an expression, throw a
+//    RecursiveExpressionException if the expression is recursive,
+//    and return the empty string if an unknown error occurred
+//    during parsing.
+//
+//  Arguments:
+//    var        the original variable name
+//
+//  Note:  refactored this from my original implementation in ViewerPlotList.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    December 14, 2004
+//
+// ****************************************************************************
+string
+ParsingExprList::GetRealVariable(const string &var)
+{
+    string realvar = var;
+    set<string> expandedVars;
+    expandedVars.insert(realvar);
+    Expression *expr = GetExpression(realvar);
+    while (expr)
+    {
+        ExprNode *tree = GetExpressionTree(expr);
+        if (!tree)
+        {
+            // We won't normally get here because error
+            // conditions will usually throw exceptions.
+            return "";
+        }
+        const set<string> &varLeaves = tree->GetVarLeaves();
+        if (varLeaves.empty())
+        {
+            EXCEPTION1(ImproperUseException,
+                       "After parsing, expression has no real variables.");
+        }
+        realvar = *varLeaves.begin();
+        if (expandedVars.count(realvar))
+        {
+            EXCEPTION1(RecursiveExpressionException, realvar);
+        }
+        expandedVars.insert(realvar);
+        expr = ParsingExprList::GetExpression(realvar);
+    }
+
+    return realvar;
+}
+

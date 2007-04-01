@@ -16,5 +16,7 @@ PyObject       *PyDisplaceAttributes_WrapPyObject(const DisplaceAttributes *attr
 void            PyDisplaceAttributes_SetLogging(bool val);
 void            PyDisplaceAttributes_SetDefaults(const DisplaceAttributes *atts);
 
+PyObject       *PyDisplaceAttributes_StringRepresentation(const DisplaceAttributes *atts);
+
 #endif
 

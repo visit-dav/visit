@@ -1084,7 +1084,7 @@ PseudocolorAttributes::GetFieldType(int index) const
         case 13:  return FieldType_colortable;
         case 14:  return FieldType_int;
         case 15:  return FieldType_bool;
-        case 16:  return FieldType_string;
+        case 16:  return FieldType_variablename;
         default:  return FieldType_unknown;
     }
 }
@@ -1125,7 +1125,7 @@ PseudocolorAttributes::GetFieldTypeName(int index) const
         case 13:  return "colortable";
         case 14:  return "int";
         case 15:  return "bool";
-        case 16:  return "string";
+        case 16:  return "variablename";
         default:  return "invalid index";
     }
 }

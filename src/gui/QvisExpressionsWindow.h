@@ -16,6 +16,7 @@ class QMultiLineEdit;
 class QLabel;
 class QListBox;
 class QComboBox;
+class QvisVariableButton;
 
 // ****************************************************************************
 // Class: QvisExpressionsWindow
@@ -33,6 +34,10 @@ class QComboBox;
 //    Reversed the sense of the "hidden" button.  Added a list-box-index to
 //    expresion-list-index map so we didn't have to index expressions by name.
 //
+//    Brad Whitlock, Thu Dec 9 10:15:25 PDT 2004
+//    Added a newExpression slot function and a variable button that lets
+//    us pick variables from the active source.
+//
 // ****************************************************************************
 
 class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
@@ -48,6 +53,7 @@ class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
     virtual void CreateWindowContents();
   public  slots:
     virtual void apply();
+    void    newExpression();
   protected:
     void    UpdateWindow(bool doAll);
     void    Apply(bool forceUpdate = false);
@@ -61,30 +67,32 @@ class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
     void    notHiddenChanged();
     void    displayAllVarsChanged();
     void    insertFunction(int);
+    void    insertVariable(const QString &);
 
     void    UpdateWindowSingleItem();
     void    UpdateWindowSensitivity();
 
   private:
     // Widgets and layouts.
-    QListBox *exprListBox;
+    QListBox           *exprListBox;
 
-    QLabel *nameEditLabel;
-    QLabel *definitionEditLabel;
-    QLabel *typeLabel;
+    QLabel             *nameEditLabel;
+    QLabel             *definitionEditLabel;
+    QLabel             *typeLabel;
 
-    QLineEdit *nameEdit;
-    QComboBox *typeList;
-    QCheckBox *notHidden;
-    QMultiLineEdit *definitionEdit;
+    QLineEdit          *nameEdit;
+    QComboBox          *typeList;
+    QCheckBox          *notHidden;
+    QMultiLineEdit     *definitionEdit;
 
-    QPushButton *newButton;
-    QPushButton *delButton;
+    QPushButton        *newButton;
+    QPushButton        *delButton;
 
-    QPushButton *insertFunctionButton;
-    QPopupMenu *insertFunctionMenu;
+    QPushButton        *insertFunctionButton;
+    QPopupMenu         *insertFunctionMenu;
+    QvisVariableButton *insertVariableButton;
 
-    QCheckBox *displayAllVars;
+    QCheckBox          *displayAllVars;
 
     // State information
     ExpressionList *exprList;

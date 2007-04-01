@@ -16,6 +16,8 @@
 #include <QvisColorButton.h>
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
+#include <QvisVariableButton.h>
+
 #include <stdio.h>
 #include <string>
 
@@ -28,7 +30,7 @@ using std::string;
 //   Constructor
 //
 // Programmer: xml2window
-// Creation:   Fri Apr 12 14:40:27 PST 2002
+// Creation:   Thu Dec 9 15:24:08 PST 2004
 //
 // Modifications:
 //   
@@ -52,7 +54,7 @@ QvisDisplaceWindow::QvisDisplaceWindow(const int type,
 //   Destructor
 //
 // Programmer: xml2window
-// Creation:   Fri Apr 12 14:40:27 PST 2002
+// Creation:   Thu Dec 9 15:24:08 PST 2004
 //
 // Modifications:
 //   
@@ -64,13 +66,13 @@ QvisDisplaceWindow::~QvisDisplaceWindow()
 
 
 // ****************************************************************************
-// Method: QvisDisplaceWindow::CreateWindow
+// Method: QvisDisplaceWindow::CreateWindowContents
 //
 // Purpose: 
 //   Creates the widgets for the window.
 //
 // Programmer: xml2window
-// Creation:   Fri Apr 12 14:40:27 PST 2002
+// Creation:   Thu Dec 9 15:24:08 PST 2004
 //
 // Modifications:
 //   
@@ -83,15 +85,18 @@ QvisDisplaceWindow::CreateWindowContents()
 
 
     mainLayout->addWidget(new QLabel("Displacement multiplier ", central, "factorLabel"),0,0);
+
     factor = new QLineEdit(central, "factor");
     connect(factor, SIGNAL(returnPressed()),
             this, SLOT(factorProcessText()));
     mainLayout->addWidget(factor, 0,1);
 
-    mainLayout->addWidget(new QLabel("variable", central, "variableLabel"),1,0);
-    variable = new QLineEdit(central, "variable");
-    connect(variable, SIGNAL(returnPressed()),
-            this, SLOT(variableProcessText()));
+    mainLayout->addWidget(new QLabel("Displacement variable", central, "variableLabel"),1,0);
+    variable = new QvisVariableButton(true, true, true,
+        QvisVariableButton::Vectors, central, "variable");
+    variable->setDefaultVariable("DISPL");
+    connect(variable, SIGNAL(activated(const QString&)),
+            this, SLOT(variableChanged(const QString&)));
     mainLayout->addWidget(variable, 1,1);
 
 }
@@ -104,13 +109,10 @@ QvisDisplaceWindow::CreateWindowContents()
 //   Updates the widgets in the window when the subject changes.
 //
 // Programmer: xml2window
-// Creation:   Fri Apr 12 14:40:27 PST 2002
+// Creation:   Thu Dec 9 15:24:08 PST 2004
 //
 // Modifications:
-//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
-//   Replaced simple QString::sprintf's with a setNum because there seems
-//   to be a bug causing numbers to be incremented by .00001.  See '5263.
-//
+//   
 // ****************************************************************************
 
 void
@@ -135,8 +137,7 @@ QvisDisplaceWindow::UpdateWindow(bool doAll)
             factor->setText(temp);
             break;
           case 1: //variable
-            temp = atts->GetVariable().c_str();
-            variable->setText(temp);
+            variable->setText(atts->GetVariable().c_str());
             break;
         }
     }
@@ -150,10 +151,12 @@ QvisDisplaceWindow::UpdateWindow(bool doAll)
 //   Gets values from certain widgets and stores them in the subject.
 //
 // Programmer: xml2window
-// Creation:   Fri Apr 12 14:40:27 PST 2002
+// Creation:   Thu Dec 9 15:24:08 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Dec 9 15:35:45 PST 2004
+//   Removed the code for the variable name since it's a different widget now.
+//
 // ****************************************************************************
 
 void
@@ -186,21 +189,7 @@ QvisDisplaceWindow::GetCurrentValues(int which_widget)
     // Do variable
     if(which_widget == 1 || doAll)
     {
-        temp = variable->displayText();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            atts->SetVariable(temp.latin1());
-        }
-
-        if(!okay)
-        {
-            msg.sprintf("The value of variable was invalid. "
-                "Resetting to the last good value of %s.",
-                atts->GetVariable().c_str());
-            Message(msg);
-            atts->SetVariable(atts->GetVariable());
-        }
+        // Nothing for variable
     }
 
 }
@@ -220,9 +209,10 @@ QvisDisplaceWindow::factorProcessText()
 
 
 void
-QvisDisplaceWindow::variableProcessText()
+QvisDisplaceWindow::variableChanged(const QString &varName)
 {
-    GetCurrentValues(1);
+    atts->SetVariable(varName.latin1());
+    SetUpdate(false);
     Apply();
 }
 

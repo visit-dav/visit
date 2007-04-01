@@ -792,7 +792,7 @@ IsosurfaceAttributes::GetFieldType(int index) const
         case 6:  return FieldType_bool;
         case 7:  return FieldType_double;
         case 8:  return FieldType_enum;
-        case 9:  return FieldType_string;
+        case 9:  return FieldType_variablename;
         default:  return FieldType_unknown;
     }
 }
@@ -826,7 +826,7 @@ IsosurfaceAttributes::GetFieldTypeName(int index) const
         case 6:  return "bool";
         case 7:  return "double";
         case 8:  return "enum";
-        case 9:  return "string";
+        case 9:  return "variablename";
         default:  return "invalid index";
     }
 }

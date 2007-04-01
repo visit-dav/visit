@@ -1102,7 +1102,7 @@ SubsetAttributes::GetFieldType(int index) const
         case 14:  return FieldType_double;
         case 15:  return FieldType_enum;
         case 16:  return FieldType_bool;
-        case 17:  return FieldType_string;
+        case 17:  return FieldType_variablename;
         default:  return FieldType_unknown;
     }
 }
@@ -1144,7 +1144,7 @@ SubsetAttributes::GetFieldTypeName(int index) const
         case 14:  return "double";
         case 15:  return "enum";
         case 16:  return "bool";
-        case 17:  return "string";
+        case 17:  return "variablename";
         default:  return "invalid index";
     }
 }

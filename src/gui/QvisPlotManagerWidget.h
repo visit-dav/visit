@@ -130,6 +130,10 @@ typedef std::vector<PluginEntry> PluginEntryVector;
 //   Jeremy Meredith, Wed Aug 25 11:12:53 PDT 2004
 //   Have it observe updating metadata directly.
 //
+//   Brad Whitlock, Tue Dec 14 09:11:08 PDT 2004
+//   Added addPlot, addOperator signals so the code to actually perform
+//   those actions can be moved out of this class.
+//
 // ****************************************************************************
 
 class GUI_API QvisPlotManagerWidget : public QWidget, public GUIBase,
@@ -160,6 +164,8 @@ signals:
     void activateSubsetWindow();
     void activatePlotWindow(int index);
     void activateOperatorWindow(int index);
+    void addPlot(int, const QString &);
+    void addOperator(int);
 protected:
     virtual void keyReleaseEvent(QKeyEvent *key);
 private:
@@ -182,7 +188,7 @@ private slots:
     void demoteOperator(int operatorIndex);
     void removeOperator(int operatorIndex);
 
-    void addPlot(int plotType, const QString &varName);
+    void addPlotHelper(int plotType, const QString &varName);
     void operatorAction(int);
     void applyOperatorToggled(bool val);
     void sourceChanged(int);

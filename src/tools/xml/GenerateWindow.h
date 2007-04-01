@@ -75,6 +75,9 @@
 //    Replaced simple QString::sprintf's with a setNum because there seems
 //    to be a bug causing numbers to be incremented by .00001.  See '5263.
 //
+//    Brad Whitlock, Wed Dec 8 15:56:14 PST 2004
+//    Added support for variable names.
+//
 // ****************************************************************************
 
 class WindowGeneratorField : public virtual Field
@@ -957,6 +960,81 @@ class WindowGeneratorLineWidth : public virtual LineWidth , public virtual Windo
 
 
 //
+// -------------------------------- VariableName --------------------------------
+//
+class WindowGeneratorVariableName : public virtual VariableName , public virtual WindowGeneratorField
+{
+  public:
+    WindowGeneratorVariableName(const QString &n, const QString &l)
+        : VariableName(n,l), WindowGeneratorField("variablename",n,l), Field("variablename",n,l) { }
+    virtual void            writeHeaderCallback(ostream &h)
+    {
+        h << "    void "<<name<<"Changed(const QString &varName);" << endl;
+    }
+    virtual void            writeHeaderData(ostream &h)
+    {
+        h << "    QvisVariableButton *"<<name<<";" << endl;
+    }
+    virtual void            writeSourceCreate(ostream &c)
+    {
+        writeSourceCreateLabel(c);
+
+        static const char *categoryNames[] = {
+            "QvisVariableButton::Meshes",
+            "QvisVariableButton::Scalars",
+            "QvisVariableButton::Materials",
+            "QvisVariableButton::Vectors",
+            "QvisVariableButton::Subsets",
+            "QvisVariableButton::Species",
+            "QvisVariableButton::Curves",
+            "QvisVariableButton::Tensors",
+            "QvisVariableButton::SymmetricTensors"
+        };
+
+        // Write the mask.
+        c << "    int " << name <<"Mask = ";
+        int m = 1, count = 0;
+        for(int i = 0; i < 9; ++i)
+        {
+            if(varTypes & m)
+            {
+                if(count > 0)
+                    c << " | ";
+                c << categoryNames[i];
+                ++count;
+            }
+            m = m << 1;
+        }
+        c << ";" << endl;
+        c << "    "<<name<<" = new QvisVariableButton(true, true, true, "<<name<<"Mask, central, \""<<name<<"\");" << endl;
+        if(valueSet)
+            c << "    " << name << "->setDefaultVariable(\"" << val << "\");" << endl;
+        c << "    connect("<<name<<", SIGNAL(activated(const QString&))," << endl
+          << "            this, SLOT("<<name<<"Changed(const QString&)));" << endl;
+        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
+    }
+    virtual void            writeSourceGetCurrent(ostream &c)
+    {
+        c << "        // Nothing for " << name << endl;
+    }
+    virtual void            writeSourceUpdateWindow(ostream &c)
+    {
+        c << "            "<<name<<"->setText(atts->Get"<<Name<<"().c_str());" << endl;
+    }
+    virtual void            writeSourceCallback(QString &, QString &windowname, ostream &c)
+    {
+        c << "void" << endl;
+        c << windowname<<"::"<<name<<"Changed(const QString &varName)" << endl;
+        c << "{" << endl;
+        c << "    atts->Set"<<Name<<"(varName.latin1());" << endl;
+        c << "    SetUpdate(false);" << endl;
+        c << "    Apply();" << endl;
+        c << "}" << endl;
+    }
+};
+
+
+//
 // ------------------------------------ Att -----------------------------------
 //
 class WindowGeneratorAtt : public virtual Att , public virtual WindowGeneratorField
@@ -1037,6 +1115,10 @@ class WindowGeneratorEnum : public virtual Enum , public virtual WindowGenerator
 
 
 // ----------------------------------------------------------------------------
+// Modifications:
+//    Brad Whitlock, Wed Dec 8 16:12:01 PST 2004
+//    Added support for variable names.
+//
 // ----------------------------------------------------------------------------
 class WindowFieldFactory
 {
@@ -1068,6 +1150,7 @@ class WindowFieldFactory
         else if (type == "opacity")      f = new WindowGeneratorOpacity(name,label);
         else if (type == "linestyle")    f = new WindowGeneratorLineStyle(name,label);
         else if (type == "linewidth")    f = new WindowGeneratorLineWidth(name,label);
+        else if (type == "variablename") f = new WindowGeneratorVariableName(name,label);
         else if (type == "att")          f = new WindowGeneratorAtt(subtype,name,label);
         else if (type == "attVector")    f = new WindowGeneratorAttVector(subtype,name,label);
         else if (type == "enum")         f = new WindowGeneratorEnum(subtype, name, label);
@@ -1214,6 +1297,9 @@ class WindowGeneratorAttribute
     //   Jeremy Meredith, Thu Oct 24 10:04:58 PDT 2002
     //   Updated to work better with standalone atts.
     //
+    //   Brad Whitlock, Wed Dec 8 16:12:32 PST 2004
+    //   Added support for variable buttons.
+    //
     // ************************************************************************
 
     void WriteHeader(ostream &h)
@@ -1239,6 +1325,7 @@ class WindowGeneratorAttribute
         h << "class QvisColorButton;" << endl;
         h << "class QvisLineStyleWidget;" << endl;
         h << "class QvisLineWidthWidget;" << endl;
+        h << "class QvisVariableButton;" << endl;
         h << endl;
         
         WriteClassComment(h, QString("Defines ") + windowname + QString(" class."));
@@ -1326,6 +1413,9 @@ class WindowGeneratorAttribute
     //   Jeremy Meredith, Thu Mar 27 12:53:56 PST 2003
     //   No longer assume the class scope is before the enum enabler values.
     //
+    //   Brad Whitlock, Wed Dec 8 16:13:25 PST 2004
+    //   Added support for variable names.
+    //
     // ************************************************************************
 
     void WriteSource(ostream &c)
@@ -1348,6 +1438,8 @@ class WindowGeneratorAttribute
         c << "#include <QvisColorButton.h>" << endl;
         c << "#include <QvisLineStyleWidget.h>" << endl;
         c << "#include <QvisLineWidthWidget.h>" << endl;
+        c << "#include <QvisVariableButton.h>" << endl;
+        c << endl;
         c << "#include <stdio.h>" << endl;
         c << "#include <string>" << endl;
         c << endl;

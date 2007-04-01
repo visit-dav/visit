@@ -5633,6 +5633,28 @@ ViewerSubject::LineQuery()
 //    Brad Whitlock, Wed Feb 5 10:57:03 PDT 2003
 //    I changed the call that stops the animations.
 //
+//    Mark C. Miller, Tue Dec 14 13:37:51 PST 2004
+//    Added scheduling of timer call to ProcessFromParent(). The rationale is
+//    lengthy. Ordinarily, QT handles calls to ProcessFromParent by socket
+//    notification. However, during long engine tasks such as an execute or
+//    SR render, the engine reads from the sockets to check for possibility
+//    of interrupt by calling this method. When that happens, apparently,
+//    socket notification for QT is lost. The reason this is NOT an issue
+//    during an engine execute but IS an issue during an engine SR render is
+//    that an engine execute is always preceded FIRST by some action in the
+//    GUI. That action results in a call to ProcessFromParent during which
+//    calls to this method, ReadFromParentAndCheckForInterruption, simply
+//    add to Xfer's buffer for processing. However, this is NOT the case in
+//    an SR render. We wind up here, reading the socket that QT would use to
+//    trigger a call to ProcessFromParent AND we are not already processing
+//    from the parent. Furthermroe, we don't have the luxury of being able
+//    to make an explicit call to ProcessFromParent here because that call
+//    may block. So, we need to schedule it for the future. Eventually,
+//    a call to ProcessFromParent will be triggered. However, if the engine
+//    is executing (VEM->InExecute() returns true), then ProcessFromParent
+//    will simply continue to re-schedule itself until the engine is no
+//    longer executing and the input can actually be processed.
+//
 // ****************************************************************************
 
 bool
@@ -5646,6 +5668,7 @@ ViewerSubject::ReadFromParentAndCheckForInterruption()
         if (xfer.GetInputConnection()->NeedsRead())
         {
             xfer.GetInputConnection()->Fill();
+            QTimer::singleShot(200, this, SLOT(ProcessFromParent()));
         }
 
         //
@@ -5685,6 +5708,10 @@ ViewerSubject::ReadFromParentAndCheckForInterruption()
 //    problem on Windows where the socket notifier did not keep notifying
 //    that the socket had input even though we did not read it.
 //
+//    Mark C. Miller, Tue Dec 14 14:09:45 PST 2004
+//    Re-ordered else clauses so that if(blockSocketSignals) comes before
+//    if(processingFromParent).
+//
 // ****************************************************************************
 
 void
@@ -5697,17 +5724,17 @@ ViewerSubject::ProcessFromParent()
                   "reschedule this method to run again later." << endl;
         QTimer::singleShot(200, this, SLOT(ProcessFromParent()));
     }
-    else if(processingFromParent)
-    {
-        debug1 << "The viewer tried to recursively enter "
-                  "ViewerSubject::ProcessFromParent!" << endl;
-    }
     else if(blockSocketSignals)
     {
         debug1 << "The viewer is set to ignore input from the client at this "
                   "time. Let's reschedule this method to run again later."
                << endl;
         QTimer::singleShot(200, this, SLOT(ProcessFromParent()));
+    }
+    else if(processingFromParent)
+    {
+        debug1 << "The viewer tried to recursively enter "
+                  "ViewerSubject::ProcessFromParent!" << endl;
     }
     else
     {

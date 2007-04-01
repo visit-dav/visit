@@ -2,13 +2,16 @@
 
 #include <XMLDocument.h>
 #include <Attribute.h>
+#include <qbuttongroup.h>
 #include <qcheckbox.h>
 #include <qcombobox.h>
+#include <qgroupbox.h>
 #include <qlabel.h>
 #include <qlayout.h>
 #include <qlineedit.h>
 #include <qlistbox.h>
 #include <qpushbutton.h>
+#include <qradiobutton.h>
 #include <qmultilineedit.h>
 
 #include <QNarrowLineEdit.h>
@@ -19,7 +22,13 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Fri Dec 10 10:29:49 PDT 2004
+//    I added code to create widgets that have to do with attributes for the
+//    variablename type.
+//
 // ****************************************************************************
+
 XMLEditFields::XMLEditFields(QWidget *p, const QString &n)
     : QFrame(p, n)
 {
@@ -91,15 +100,59 @@ XMLEditFields::XMLEditFields(QWidget *p, const QString &n)
     row++;
 
     internal = new QCheckBox("Internal use only", this);
-    topLayout->addMultiCellWidget(internal, row,row, 0,4);
+    topLayout->addMultiCellWidget(internal, row,row, 0,2);
+
+    // Add a group box that contains controls to set the variable
+    // types that will be accepted by a variablename object.
+    variableNameGroup = new QGroupBox(this, "variableNameGroup");
+    variableNameGroup->setTitle("Accepted variable types");
+    QVBoxLayout *innerVarNameLayout = new QVBoxLayout(variableNameGroup);
+    innerVarNameLayout->setMargin(10);
+    innerVarNameLayout->addSpacing(15);
+    QGridLayout *vnLayout = new QGridLayout(innerVarNameLayout, 3, 3);
+    vnLayout->setSpacing(5);
+    varNameButtons = new QButtonGroup(0, "varNameButtons");
+    connect(varNameButtons, SIGNAL(clicked(int)),
+            this, SLOT(variableTypeClicked(int)));
+    QCheckBox *cb = new QCheckBox("Meshes", variableNameGroup);
+    varNameButtons->insert(cb,0);
+    vnLayout->addWidget(cb, 0, 0);
+    cb = new QCheckBox("Scalars", variableNameGroup);
+    varNameButtons->insert(cb,1);
+    vnLayout->addWidget(cb, 1, 0);
+    cb = new QCheckBox("Materials", variableNameGroup);
+    varNameButtons->insert(cb,2);
+    vnLayout->addWidget(cb, 2, 0);
+
+    cb = new QCheckBox("Vectors", variableNameGroup);
+    varNameButtons->insert(cb,3);
+    vnLayout->addWidget(cb, 0, 1);
+    cb = new QCheckBox("Subsets", variableNameGroup);
+    varNameButtons->insert(cb,4);
+    vnLayout->addWidget(cb, 1, 1);
+    cb = new QCheckBox("Species", variableNameGroup);
+    varNameButtons->insert(cb,5);
+    vnLayout->addWidget(cb, 2, 1);
+
+    cb = new QCheckBox("Curves", variableNameGroup);
+    varNameButtons->insert(cb,6);
+    vnLayout->addWidget(cb, 0, 2);
+    cb = new QCheckBox("Tensors", variableNameGroup);
+    varNameButtons->insert(cb,7);
+    vnLayout->addWidget(cb, 1, 2);
+    cb = new QCheckBox("Symmetric Tensors", variableNameGroup);
+    varNameButtons->insert(cb,8);
+    vnLayout->addWidget(cb, 2, 2);
+
+    topLayout->addMultiCellWidget(variableNameGroup, row,row+2,3,4);
     row++;
 
     ignoreeq = new QCheckBox("Ignore equality", this);
-    topLayout->addMultiCellWidget(ignoreeq, row,row, 0,4);
+    topLayout->addMultiCellWidget(ignoreeq, row,row, 0,2);
     row++;
 
     init = new QCheckBox("Special initialization code", this);
-    topLayout->addMultiCellWidget(init, row,row, 0,4);
+    topLayout->addMultiCellWidget(init, row,row, 0,2);
     row++;
 
     topLayout->addMultiCellWidget(new QLabel("Initialization Values / Code", this), row,row, 0,4);
@@ -177,7 +230,12 @@ XMLEditFields::UpdateWindowContents()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Fri Dec 10 10:35:26 PDT 2004
+//    I added variableNameGroup.
+//
 // ****************************************************************************
+
 void
 XMLEditFields::UpdateWindowSensitivity()
 {
@@ -196,6 +254,7 @@ XMLEditFields::UpdateWindowSensitivity()
     enableval->setEnabled(active && enabler->currentText() != "(none)");
     internal->setEnabled(active);
     ignoreeq->setEnabled(active);
+    variableNameGroup->setEnabled(active && type->currentText() == "variablename");
     init->setEnabled(active);
     values->setEnabled(active);
 }
@@ -209,7 +268,12 @@ XMLEditFields::UpdateWindowSensitivity()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//     Brad Whitlock, Fri Dec 10 10:35:44 PDT 2004
+//     I added code to update a new button group.
+//
 // ****************************************************************************
+
 void
 XMLEditFields::UpdateWindowSingleItem()
 {
@@ -231,6 +295,15 @@ XMLEditFields::UpdateWindowSingleItem()
         ignoreeq->setChecked(false);
         init->setChecked(false);
         values->setText("");
+        for(int i = 0; i < varNameButtons->count(); ++i)
+        {
+            QButton *b = varNameButtons->find(i);
+            if(b != 0 && b->isA("QCheckBox"))
+            {
+                QCheckBox *cb = (QCheckBox *)b;
+                cb->setChecked(false);
+            }
+        }
     }
     else
     {
@@ -290,6 +363,22 @@ XMLEditFields::UpdateWindowSingleItem()
         }
         internal->setChecked(f->internal);
         ignoreeq->setChecked(f->ignoreEquality);
+
+        if(f->type == "variablename")
+        {
+            int mask = 1;
+            for(int i = 0; i < varNameButtons->count(); ++i)
+            {
+                QButton *b = varNameButtons->find(i);
+                if(b != 0 && b->isA("QCheckBox"))
+                {
+                    QCheckBox *cb = (QCheckBox *)b;
+                    cb->setChecked((f->varTypes & mask) != 0);
+                }
+                mask = mask << 1;
+            }
+        }
+
         if (f->initcode.isNull())
         {
             init->setChecked(false);
@@ -320,6 +409,9 @@ XMLEditFields::UpdateWindowSingleItem()
 //    Brad Whitlock, Mon Dec 9 13:33:54 PST 2002
 //    I added ucharVector.
 //
+//    Brad Whitlock, Fri Dec 10 10:01:30 PDT 2004
+//    I added variablename.
+//
 // ****************************************************************************
 void
 XMLEditFields::UpdateTypeList()
@@ -344,6 +436,7 @@ XMLEditFields::UpdateTypeList()
     type->insertItem("opacity");
     type->insertItem("linestyle");
     type->insertItem("linewidth");
+    type->insertItem("variablename");
     type->insertItem("att");
     type->insertItem("attVector");
     for (int i=0; i<EnumType::enums.size(); i++)
@@ -389,6 +482,10 @@ XMLEditFields::UpdateEnablerList()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Fri Dec 10 10:45:37 PDT 2004
+//    Added variablename type support.
+//
 // ****************************************************************************
 void
 XMLEditFields::BlockAllSignals(bool block)
@@ -403,6 +500,7 @@ XMLEditFields::BlockAllSignals(bool block)
     enableval->blockSignals(block);
     internal->blockSignals(block);
     ignoreeq->blockSignals(block);
+    varNameButtons->blockSignals(block);
     init->blockSignals(block);
     values->blockSignals(block);
 }
@@ -645,6 +743,45 @@ XMLEditFields::ignoreeqChanged()
     Field *f = a->fields[index];
 
     f->ignoreEquality = ignoreeq->isChecked();
+}
+
+// ****************************************************************************
+// Method: XMLEditFields::variableTypeClicked
+//
+// Purpose: 
+//   This slot function is called when one of the vartype checkboxes is
+//   clicked.
+//
+// Arguments:
+//   bIndex : The index of the button that was clicked.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec 10 10:51:49 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+XMLEditFields::variableTypeClicked(int bIndex)
+{
+    QButton *b = varNameButtons->find(bIndex);
+    if(b != 0 && b->isA("QCheckBox"))
+    {
+        Attribute *a = xmldoc->attribute;
+        int index = fieldlist->currentItem();
+        if (index == -1)
+            return;
+        Field *f = a->fields[index];
+        if(f->type == "variablename")
+        {
+            QCheckBox *cb = (QCheckBox *)b;
+
+            int mask = ~(1 << bIndex);
+            int bit = (cb->isChecked() ? 1 : 0) << bIndex;
+            f->varTypes = (f->varTypes & mask) | bit;
+        }
+    }
 }
 
 // ****************************************************************************

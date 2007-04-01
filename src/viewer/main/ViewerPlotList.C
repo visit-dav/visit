@@ -4079,6 +4079,10 @@ ViewerPlotList::CloseDatabase(const std::string &dbName)
 //   Brad Whitlock, Mon May 3 12:51:20 PDT 2004
 //   I made it use an engine key instead of a host.
 //
+//   Jeremy Meredith, Tue Dec 14 13:59:04 PST 2004
+//   I added a VisItException catch because various types of exceptions could
+//   be thrown from inside the expression parsing code.
+//
 // ****************************************************************************
 
 void
@@ -4166,6 +4170,10 @@ ViewerPlotList::ReplaceDatabase(const EngineKey &key,
                              plot->GetVariableName().c_str(),
                              database.c_str());
                 Error(str);
+            }
+            CATCH2(VisItException, e)
+            {
+                Error(e.Message().c_str());
             }
             ENDTRY
         }
@@ -4344,6 +4352,11 @@ ViewerPlotList::OverlayDatabase(const EngineKey &ek,
 //   Brad Whitlock, Fri Mar 26 13:46:00 PST 2004
 //   I added a mandatory state argument so the right SIL is returned.
 //
+//   Jeremy Meredith, Tue Dec 14 14:00:08 PST 2004
+//   I refactored all the logic to determine the "Real" (i.e. non-expression)
+//   variable into the ParsingExprList code because it was duplicated in other
+//   spots of the code, and this function had the best implementation of it.
+//
 // ****************************************************************************
 
 avtSILRestriction_p
@@ -4369,32 +4382,7 @@ ViewerPlotList::GetDefaultSILRestriction(const std::string &host,
 
     // Check if the variable is an expression.  If it is, walk down the
     // parse tree until we have a "real" variable to work with.
-    string realvar = var;
-    set<string> expandedVars;
-    expandedVars.insert(realvar);
-    Expression *expr = ParsingExprList::GetExpression(realvar);
-    while (expr)
-    {
-        ExprNode *tree = ParsingExprList::GetExpressionTree(expr);
-        if (!tree)
-        {
-            // There was a parse error
-            return silr;
-        }
-        const set<string> &varLeaves = tree->GetVarLeaves();
-        if (varLeaves.empty())
-        {
-            EXCEPTION1(ImproperUseException,
-                       "After parsing, expression has no real variables.");
-        }
-        realvar = *varLeaves.begin();
-        if (expandedVars.count(realvar))
-        {
-            EXCEPTION1(RecursiveExpressionException, realvar);
-        }
-        expandedVars.insert(realvar);
-        expr = ParsingExprList::GetExpression(realvar);
-    }
+    string realvar = ParsingExprList::GetRealVariable(var);
 
     // Figure out the top set for the SIL restriction. If there is more 
     // than one top set, we use the variable name to lookup the mesh name

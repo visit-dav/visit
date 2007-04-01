@@ -51,6 +51,9 @@ using std::vector;
 //    Check if a value's initializer is set before trying to
 //    write the initialization code.
 //
+//    Brad Whitlock, Wed Dec 8 15:52:36 PST 2004
+//    Added support for variable names.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1104,6 +1107,45 @@ class AttsGeneratorOpacity : public virtual Opacity , public virtual AttsGenerat
 
 
 //
+// -------------------------------- VariableName --------------------------------
+//
+class AttsGeneratorVariableName : public virtual VariableName,
+    public virtual AttsGeneratorField
+{
+  public:
+    AttsGeneratorVariableName(const QString &n, const QString &l)
+        : VariableName(n,l), AttsGeneratorField("variablename",n,l),
+          Field("variablename",n,l) { }
+
+    virtual QString GetCPPName(bool, const QString &) 
+    {
+        return "String";
+    }
+
+    virtual void WriteSourceSetDefault(ostream &c)
+    {
+        c << "    " << name << " = new String(\"" << val << "\");" << endl;
+    }
+
+    virtual void WriteSourceCopyCode(ostream &c)
+    {
+        c << "        " << name << " = new String(obj." << name << ");" << endl;
+    }
+
+    virtual void WriteSourceWriteAtts(ostream &c, const QString &indent)
+    {
+        c << indent << "    buf.WriteString(" << name << ");" << endl;
+    }
+
+    virtual bool WriteSourceReadAtts(ostream &c, const QString &indent)
+    {
+        c << indent << "Set" << Name << "(buf.ReadString());" << endl;
+        return true;
+    }
+};
+
+
+//
 // ------------------------------------ Att -----------------------------------
 //
 class AttsGeneratorAtt : public virtual Att , public virtual AttsGeneratorField
@@ -1326,7 +1368,12 @@ class AttsGeneratorEnum : public virtual Enum , public virtual AttsGeneratorFiel
 
 
 // ----------------------------------------------------------------------------
+// Modifications:
+//   Brad Whitlock, Wed Dec 8 15:52:11 PST 2004
+//   Added support for variable names.
+//
 // ----------------------------------------------------------------------------
+
 class AttsFieldFactory
 {
   public:
@@ -1357,6 +1404,7 @@ class AttsFieldFactory
         else if (type == "opacity")      f = new AttsGeneratorOpacity(name,label);
         else if (type == "linestyle")    f = new AttsGeneratorLineStyle(name,label);
         else if (type == "linewidth")    f = new AttsGeneratorLineWidth(name,label);
+        else if (type == "variablename") f = new AttsGeneratorVariableName(name,label);
         else if (type == "att")          f = new AttsGeneratorAtt(subtype,name,label);
         else if (type == "attVector")    f = new AttsGeneratorAttVector(subtype,name,label);
         else if (type == "enum")         f = new AttsGeneratorEnum(subtype, name, label);

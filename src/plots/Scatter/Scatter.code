@@ -1,0 +1,100 @@
+Function: ChangesRequireRecalculation
+Declaration: bool ChangesRequireRecalculation(const ScatterAttributes &) const;
+Definition:
+// ****************************************************************************
+// Modifications:
+//
+// ****************************************************************************
+bool
+ScatterAttributes::ChangesRequireRecalculation(const ScatterAttributes &obj) const
+{
+    bool var1Changed = false;
+    if(var1Role != None && var1Role != Color)
+    {
+        bool minMaxChanged =
+            var1MinFlag != obj.var1MinFlag ||
+            var1MaxFlag != obj.var1MaxFlag ||
+            var1Min != obj.var1Min ||
+            var1Max != obj.var1Max;
+
+        bool scalingChanged = 
+            var1Scaling != obj.var1Scaling ||
+            (var1Scaling == Skew && var1SkewFactor != obj.var1SkewFactor);
+
+        var1Changed = minMaxChanged || scalingChanged;
+    }
+
+    bool var2Changed = false;
+    if(var2Role != None)
+    {
+        if(var2Role != Color)
+        {
+            bool minMaxChanged =
+                var2MinFlag != obj.var2MinFlag ||
+                var2MaxFlag != obj.var2MaxFlag ||
+                var2Min != obj.var2Min ||
+                var2Max != obj.var2Max;
+
+            bool scalingChanged = 
+                var2Scaling != obj.var2Scaling ||
+                (var2Scaling == Skew && var2SkewFactor != obj.var2SkewFactor);
+
+            var2Changed = var2 != obj.var2 || minMaxChanged || scalingChanged;
+        }
+        else
+            var2Changed = var2 != obj.var2;
+    }
+
+    bool var3Changed = false;
+    if(var3Role != None)
+    {
+        if(var3Role != Color)
+        {
+            bool minMaxChanged =
+                var3MinFlag != obj.var3MinFlag ||
+                var3MaxFlag != obj.var3MaxFlag ||
+                var3Min != obj.var3Min ||
+                var3Max != obj.var3Max;
+
+            bool scalingChanged = 
+                var3Scaling != obj.var3Scaling ||
+                (var3Scaling == Skew && var3SkewFactor != obj.var3SkewFactor);
+
+            var3Changed = var3 != obj.var3 || minMaxChanged || scalingChanged;
+        }
+        else
+            var3Changed = var3 != obj.var3;
+    }
+
+    bool var4Changed = false;
+    if(var4Role != None)
+    {
+        if(var4Role != Color)
+        {
+            bool minMaxChanged =
+                var4MinFlag != obj.var4MinFlag ||
+                var4MaxFlag != obj.var4MaxFlag ||
+                var4Min != obj.var4Min ||
+                var4Max != obj.var4Max;
+
+            bool scalingChanged = 
+                var4Scaling != obj.var4Scaling ||
+                (var4Scaling == Skew && var4SkewFactor != obj.var4SkewFactor);
+
+            var4Changed = var4 != obj.var4 || minMaxChanged || scalingChanged;
+        }
+        else
+            var4Changed = var4 != obj.var4;
+    }
+
+    return var1Role != obj.var1Role ||
+           var2Role != obj.var2Role ||
+           var3Role != obj.var3Role ||
+           var4Role != obj.var4Role ||
+           scaleCube != obj.scaleCube ||
+           var1Changed ||
+           var2Changed ||
+           var3Changed ||
+           var4Changed;
+}
+

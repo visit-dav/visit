@@ -16,6 +16,7 @@ class QvisOpacitySlider;
 class QvisColorButton;
 class QvisLineStyleWidget;
 class QvisLineWidthWidget;
+class QvisVariableButton;
 
 // ****************************************************************************
 // Class: QvisThresholdWindow
@@ -29,7 +30,9 @@ class QvisLineWidthWidget;
 // Creation:   Fri Apr 12 14:41:06 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Dec 10 09:39:57 PDT 2004
+//   Added a variable button.
+//
 // ****************************************************************************
 
 class QvisThresholdWindow : public QvisOperatorWindow
@@ -50,12 +53,12 @@ class QvisThresholdWindow : public QvisOperatorWindow
     void amountChanged(int val);
     void lboundProcessText();
     void uboundProcessText();
-    void variableProcessText();
+    void variableChanged(const QString &);
   private:
-    QButtonGroup *amount;
-    QLineEdit *lbound;
-    QLineEdit *ubound;
-    QLineEdit *variable;
+    QButtonGroup        *amount;
+    QLineEdit           *lbound;
+    QLineEdit           *ubound;
+    QvisVariableButton  *variable;
 
     ThresholdAttributes *atts;
 };

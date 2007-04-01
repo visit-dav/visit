@@ -89,7 +89,9 @@
 #include <QvisSaveWindow.h>
 #include <QvisSubsetWindow.h>
 #include <QvisQueryOverTimeWindow.h>
+#include <QvisVariableButton.h>
 #include <QvisViewWindow.h>
+#include <QvisWizard.h>
 
 #include <SplashScreen.h>
 #include <WindowMetrics.h>
@@ -1735,6 +1737,11 @@ QvisGUIApplication::AddViewerSpaceArguments()
 //   Brad Whitlock, Wed May 5 15:58:47 PST 2004
 //   I moved a line from another method into this one.
 //
+//   Brad Whitlock, Tue Dec 14 09:07:18 PDT 2004
+//   Connected some new signals from the plot manager widget to this object
+//   so we can support plot and operator wizards without the plot manager
+//   widget having to deal with the plugin manager.
+//
 // ****************************************************************************
 
 void
@@ -1764,8 +1771,12 @@ QvisGUIApplication::CreateMainWindow()
     connect(mainWin, SIGNAL(activatePrintWindow()), this, SLOT(SetPrinterOptions()));
     connect(mainWin->GetPlotManager(), SIGNAL(activatePlotWindow(int)),
             this, SLOT(ActivatePlotWindow(int)));
+    connect(mainWin->GetPlotManager(), SIGNAL(addPlot(int, const QString &)),
+            this, SLOT(AddPlot(int, const QString &)));
     connect(mainWin->GetPlotManager(), SIGNAL(activateOperatorWindow(int)),
             this, SLOT(ActivateOperatorWindow(int)));
+    connect(mainWin->GetPlotManager(), SIGNAL(addOperator(int)),
+            this, SLOT(AddOperator(int)));
     connect(mainWin, SIGNAL(refreshFileList()), this, SLOT(RefreshFileList()));
     connect(mainWin, SIGNAL(reopenOnNextFrame()),
             this, SLOT(RefreshFileListAndNextFrame()));
@@ -1803,6 +1814,11 @@ QvisGUIApplication::CreateMainWindow()
 //   Kathleen Bonnell, Fri Aug 20 15:51:50 PDT 2004 
 //   Forced creation of ColorTableWindow, so that colortable names will be
 //   available to other windows as needed.
+//
+//   Brad Whitlock, Thu Dec 9 09:50:33 PDT 2004
+//   Added code to connect the application's method to show the expression 
+//   window to the variable button so all variable buttons can open the
+//   expression window.
 //
 // ****************************************************************************
 
@@ -1851,6 +1867,12 @@ QvisGUIApplication::SetupWindows()
      colorTableWin = (QvisColorTableWindow *)GetWindowPointer(WINDOW_COLORTABLE);
      connect(mainWin, SIGNAL(activateColorTableWindow()),
              colorTableWin, SLOT(show()));
+
+     //
+     // Connect the variable button to the method to create a new expression in
+     // the expression window.
+     //
+     QvisVariableButton::ConnectExpressionCreation(this, SLOT(newExpression()));
 
      //
      // Non crucial windows can be created later on demand. Instead of
@@ -4627,6 +4649,166 @@ QvisGUIApplication::HandleMetaDataUpdate()
         QvisFileInformationWindow *fileInfoWin = (QvisFileInformationWindow*)
             otherWindows[fileInfoWinName];
         fileInfoWin->Update(fileServer);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::AddPlot
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user tries to add a
+//   new plot.
+//
+// Arguments:
+//   plotType : The type of plot to be added.
+//   varName  : The name of the variable to be plotted.
+//
+// Note:       This code used to be in the plot manager widget but was
+//             relocated here and modified to support plot wizards.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 14 09:29:05 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::AddPlot(int plotType, const QString &varName)
+{
+    // Get a pointer to the GUI portion of the plot plugin information.
+    PlotPluginManager *plotPluginManager = PlotPluginManager::Instance();
+    GUIPlotPluginInfo *GUIInfo = plotPluginManager->GetGUIPluginInfo(
+        plotPluginManager->GetEnabledID(plotType));
+
+    // Try and create a wizard for the desired plot type.
+    QString wName; wName.sprintf("plot_wizard_%d", plotType);
+    QvisWizard *wiz = GUIInfo->CreatePluginWizard(
+        viewer->GetPlotAttributes(plotType), mainWin, wName.latin1());
+
+    if(wiz == 0)
+    {
+        // Set the cursor.
+        SetWaitCursor();
+
+        // Tell the viewer to add a plot.
+        viewer->AddPlot(plotType, varName.latin1());
+
+        // If we're in auto update mode, tell the viewer to draw the plot.
+        if(AutoUpdate())
+            viewer->DrawPlots();
+    }
+    else
+    {
+        // Execute the wizard.
+        if(wiz->exec() == QDialog::Accepted)
+        {
+            // Set the cursor.
+            SetWaitCursor();
+
+            // Set the default plot options. This is a little bit of a hack
+            // but my previous attempt to first create the plot and then
+            // set its attributes resulted in the default plot attributes
+            // coming back and clobbering the correct settings in the plot
+            // attributes window. That method could work if setting the
+            // plot options also caused them to be sent back to the client.
+            wiz->SendAttributes();
+            viewer->SetDefaultPlotOptions(plotType);
+
+            // Tell the viewer to add a plot.
+            viewer->AddPlot(plotType, varName.latin1());
+
+            // If we're in auto update mode, tell the viewer to draw the plot.
+            if(AutoUpdate())
+                viewer->DrawPlots();
+        }
+
+        wiz->deleteLater();
+    }
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::AddOperator
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user tries to add
+//   an operator.
+//
+// Arguments:
+//   operatorType : The type of operator to add.
+//
+// Note:       This code used to be in the plot manager widget but I moved
+//             it here so we can have operator wizards.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 14 09:30:36 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::AddOperator(int operatorType)
+{
+    // Get a pointer to the GUI portion of the operator plugin information.
+    OperatorPluginManager *operatorPluginManager = OperatorPluginManager::Instance();
+    GUIOperatorPluginInfo *GUIInfo = operatorPluginManager->GetGUIPluginInfo(
+        operatorPluginManager->GetEnabledID(operatorType));
+
+    // Try and create a wizard for the desired operator type.
+    QString wName; wName.sprintf("operator_wizard_%d", operatorType);
+    QvisWizard *wiz = GUIInfo->CreatePluginWizard(
+        viewer->GetOperatorAttributes(operatorType), mainWin, wName.latin1());
+
+    if(wiz == 0)
+    {
+        // The operator has no wizard so just add the operator.
+        viewer->AddOperator(operatorType);
+    }
+    else
+    {
+        // Execute the wizard.
+        if(wiz->exec() == QDialog::Accepted)
+        {
+            // Send the operator's options. Note that this is done before
+            // the operator is added because we may have drawn plots that
+            // will be re-executed right away.
+            wiz->SendAttributes();
+            viewer->SetOperatorOptions(operatorType);
+
+            // Tell the viewer to add an operator.
+            viewer->AddOperator(operatorType, false);
+        }
+
+        wiz->deleteLater();
+    }
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::newExpression
+//
+// Purpose: 
+//   This is a Qt slot function that is called from variable buttons to
+//   create a new expression.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Dec 9 09:58:59 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::newExpression()
+{
+    QvisExpressionsWindow *exprWin = (QvisExpressionsWindow *)
+        GetInitializedWindowPointer(WINDOW_EXPRESSIONS);
+    if(exprWin)
+    {
+        exprWin->show();
+        exprWin->setActiveWindow();
+        exprWin->raise();
+        exprWin->newExpression();
     }
 }
 

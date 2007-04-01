@@ -218,6 +218,9 @@ AttributeGroup::CopyAttributes(const AttributeGroup *atts)
 //    Jeremy Meredith, Fri Jan 31 09:48:03 PST 2003
 //    Made opacity a double.
 //
+//    Brad Whitlock, Thu Dec 9 15:07:10 PST 2004
+//    Added variablename type.
+//
 // ****************************************************************************
  
 void
@@ -296,6 +299,9 @@ AttributeGroup::InterpolateConst(const AttributeGroup *atts1,
           case FieldType_linewidth:
             ConstInterp<int>::InterpScalar(addrOut,addr1,addr2,f);
             break;
+          case FieldType_variablename:
+            ConstInterp<std::string>::InterpScalar(addrOut,addr1,addr2,f);
+            break;
           case FieldType_color:
           case FieldType_att:
             ((AttributeGroup*)addrOut)->
@@ -355,6 +361,9 @@ AttributeGroup::InterpolateConst(const AttributeGroup *atts1,
 //
 //    Jeremy Meredith, Fri Jan 31 09:47:40 PST 2003
 //    Made opacity a double, and made line width interpolate linearly.
+//
+//    Brad Whitlock, Thu Dec 9 15:07:46 PST 2004
+//    Added variablename type.
 //
 // ****************************************************************************
  
@@ -434,6 +443,9 @@ AttributeGroup::InterpolateLinear(const AttributeGroup *atts1,
           case FieldType_linewidth:
             LinInterp<int>::InterpScalar(addrOut,addr1,addr2,f);
             break;
+          case FieldType_variablename:
+            ConstInterp<std::string>::InterpScalar(addrOut,addr1,addr2,f);
+            break;
           case FieldType_color:
           case FieldType_att:
             ((AttributeGroup*)addrOut)->
@@ -484,6 +496,9 @@ AttributeGroup::InterpolateLinear(const AttributeGroup *atts1,
 //    Added missing break statements.  Added code to make sure
 //    we're the same type of object before attempting any 
 //    comparisons.
+//
+//    Brad Whitlock, Thu Dec 9 15:08:23 PST 2004
+//    Added variablename type.
 //
 // ****************************************************************************
 
@@ -582,6 +597,10 @@ AttributeGroup::EqualTo(const AttributeGroup *atts) const
             break;
           case FieldType_linewidth:
             if (!(EqualVal<int>::EqualScalar(addr1,addr2)))
+               return false;
+            break;
+          case FieldType_variablename:
+            if (!(EqualVal<std::string>::EqualScalar(addr1,addr2)))
                return false;
             break;
           case FieldType_color:

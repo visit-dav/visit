@@ -16,6 +16,8 @@
 #include <QvisColorButton.h>
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
+#include <QvisVariableButton.h>
+
 #include <stdio.h>
 #include <string>
 
@@ -73,7 +75,9 @@ QvisIsovolumeWindow::~QvisIsovolumeWindow()
 // Creation:   Fri Jan 30 14:50:02 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Dec 10 09:22:21 PDT 2004
+//   I changed it so it uses a variable button.
+//
 // ****************************************************************************
 
 void
@@ -98,11 +102,12 @@ QvisIsovolumeWindow::CreateWindowContents()
 
     variableLabel = new QLabel("variable", central, "variableLabel");
     mainLayout->addWidget(variableLabel,2,0);
-    variable = new QLineEdit(central, "variable");
-    connect(variable, SIGNAL(returnPressed()),
-            this, SLOT(variableProcessText()));
+    int varMask = QvisVariableButton::Scalars;
+    variable = new QvisVariableButton(true, true, true, varMask,
+        central, "Variable");
+    connect(variable, SIGNAL(activated(const QString &)),
+            this, SLOT(variableChanged(const QString &)));
     mainLayout->addWidget(variable, 2,1);
-
 }
 
 
@@ -179,7 +184,10 @@ QvisIsovolumeWindow::UpdateWindow(bool doAll)
 //    Jeremy Meredith, Wed May  5 14:55:08 PDT 2004
 //    Made it support "min" and "max" as legal values, respectively, for
 //    the lower and upper bound fields.
-//   
+//
+//    Brad Whitlock, Fri Dec 10 09:23:59 PDT 2004
+//    I removed the code to get the variable name.
+//
 // ****************************************************************************
 
 void
@@ -239,27 +247,6 @@ QvisIsovolumeWindow::GetCurrentValues(int which_widget)
             }
         }
     }
-
-    // Do variable
-    if(which_widget == 2 || doAll)
-    {
-        temp = variable->displayText();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            atts->SetVariable(temp.latin1());
-        }
-
-        if(!okay)
-        {
-            msg.sprintf("The value of variable was invalid. "
-                "Resetting to the last good value of %s.",
-                atts->GetVariable().c_str());
-            Message(msg);
-            atts->SetVariable(atts->GetVariable());
-        }
-    }
-
 }
 
 
@@ -285,9 +272,10 @@ QvisIsovolumeWindow::uboundProcessText()
 
 
 void
-QvisIsovolumeWindow::variableProcessText()
+QvisIsovolumeWindow::variableChanged(const QString &var)
 {
-    GetCurrentValues(2);
+    atts->SetVariable(var.latin1());
+    SetUpdate(false);
     Apply();
 }
 

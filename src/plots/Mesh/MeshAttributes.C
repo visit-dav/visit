@@ -1045,7 +1045,7 @@ MeshAttributes::GetFieldType(int index) const
         case 10:  return FieldType_bool;
         case 11:  return FieldType_enum;
         case 12:  return FieldType_bool;
-        case 13:  return FieldType_string;
+        case 13:  return FieldType_variablename;
         case 14:  return FieldType_enum;
         case 15:  return FieldType_bool;
         case 16:  return FieldType_bool;
@@ -1086,7 +1086,7 @@ MeshAttributes::GetFieldTypeName(int index) const
         case 10:  return "bool";
         case 11:  return "enum";
         case 12:  return "bool";
-        case 13:  return "string";
+        case 13:  return "variablename";
         case 14:  return "enum";
         case 15:  return "bool";
         case 16:  return "bool";

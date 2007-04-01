@@ -164,6 +164,9 @@ class     AttributeSubject;
 //    This is for plots such as the volume plot which cannot play well with
 //    volume rendering.
 //
+//    Brad Whitlock, Tue Dec 14 15:29:22 PST 2004
+//    I made SetVarName be virtual.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
@@ -197,7 +200,7 @@ class PLOTTER_API avtPlot
     void                       SetDataExtents(const std::vector<double> &);
     virtual void               GetDataExtents(std::vector<double> &);
 
-    void                       SetVarName(const char *name);
+    virtual void               SetVarName(const char *name);
     void                       SetVarUnits(const char *units);
     void                       SetMeshType(const avtMeshType);
 

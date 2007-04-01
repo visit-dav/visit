@@ -11,6 +11,7 @@
 #include <qtabwidget.h>
 #include <qstringlist.h>
 #include <qvbox.h>
+#include <QvisVariableButton.h>
 
 #include <QvisPickWindow.h>
 #include <PickAttributes.h>
@@ -132,6 +133,10 @@ QvisPickWindow::~QvisPickWindow()
 //   Kathleen Bonnell, Wed Jun  9 09:41:15 PDT 2004 
 //   Added conciseOutput, showMeshName and showTimestep checkboxes. 
 //
+//   Brad Whitlock, Fri Dec 10 09:50:04 PDT 2004
+//   Changed a label into a variable button so it is easier to add
+//   variables to the pick variables.
+//
 // ****************************************************************************
 
 void
@@ -153,13 +158,19 @@ QvisPickWindow::CreateWindowContents()
     }
 
     QGridLayout *gLayout = new QGridLayout(topLayout, 9, 4);
+    varsButton = new QvisVariableButton(true, false, true, -1,
+        central, "varsButton");
+    varsButton->setText("Variables");
+    varsButton->setChangeTextOnVariableChange(false);
+    connect(varsButton, SIGNAL(activated(const QString &)),
+            this, SLOT(addPickVariable(const QString &)));
+    gLayout->addWidget(varsButton, 0, 0);
+
     varsLineEdit = new QLineEdit(central, "varsLineEdit");
     varsLineEdit->setText("default"); 
     connect(varsLineEdit, SIGNAL(returnPressed()),
             this, SLOT(variableProcessText()));
     gLayout->addMultiCellWidget(varsLineEdit, 0, 0, 1, 3);
-    gLayout->addWidget(new QLabel(varsLineEdit, "variables", 
-                                  central, "varLabel"), 0, 0);
 
     conciseOutputCheckBox = new QCheckBox("Concise Output.", central,
                                      "conciseOutputCheckBox");
@@ -1114,3 +1125,33 @@ QvisPickWindow::showTimestepToggled(bool val)
     Apply();
 }
 
+// ****************************************************************************
+// Method: QvisPickWindow::addPickVariable
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user selects a new
+//   pick variable.
+//
+// Arguments:
+//   var : The pick variable to add.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec 10 09:57:14 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPickWindow::addPickVariable(const QString &var)
+{
+    // Add the new pick variable to the pick variable line edit.
+    QString pickVarString(varsLineEdit->displayText());
+    if(pickVarString.length() > 0)
+        pickVarString += " ";
+    pickVarString += var;
+    varsLineEdit->setText(pickVarString);
+
+    // Process the list of pick vars.
+    variableProcessText();
+}
