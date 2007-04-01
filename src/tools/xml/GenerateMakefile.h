@@ -114,6 +114,9 @@
 //    Jeremy Meredith, Mon Feb  7 13:31:03 PST 2005
 //    Added VisIt version to the general plugin info.
 //
+//    Mark C. Miller, Mon Feb 14 20:27:12 PST 2005
+//    Added output of SRC make macro for .depend to work in plugin dirs
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin
@@ -328,6 +331,10 @@ class MakefileGeneratorPlugin
 
             out << "" << endl;
             out << "" << endl;
+            out << "SRC=$(ISRC) $(COMMONSRC) $(GSRC) $(VSRC) $(ESRC) $(SSRC)" << endl;
+
+            out << "" << endl;
+            out << "" << endl;
             out << "JAVASRC="<<atts->name<<".java" << endl;
             out << "JAVAOBJ="<<visithome<<"/java/llnl/visit/operators/"<<atts->name<<".class" << endl;
             out << "JAVAPLUGINFLAGS=-d "<<visithome<<"/java -classpath " << visithome << "/java" << endl;  
@@ -429,6 +436,10 @@ class MakefileGeneratorPlugin
 
             out << "" << endl;
             out << "" << endl;
+            out << "SRC=$(ISRC) $(COMMONSRC) $(GSRC) $(SSRC) $(VSRC) $(ESRC)" << endl;
+
+            out << "" << endl;
+            out << "" << endl;
             out << "JAVASRC="<<atts->name<<".java" << endl;
             out << "JAVAOBJ="<<visithome<<"/java/llnl/visit/plots/"<<atts->name<<".class" << endl;
             out << "JAVAPLUGINFLAGS=-d "<<visithome<<"/java -classpath " << visithome << "/java" << endl;  
@@ -496,6 +507,10 @@ class MakefileGeneratorPlugin
                 for (int i=0; i<defaultefiles.size(); i++)
                     out << " " << defaultefiles[i];
             out << endl;
+
+            out << "" << endl;
+            out << "" << endl;
+            out << "SRC=$(ISRC) $(COMMONSRC) $(MSRC) $(ESRC)" << endl;
 
             out << "" << endl;
             out << "SHLIB_FORCED=";

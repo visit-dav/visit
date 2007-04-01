@@ -3352,6 +3352,9 @@ avtSiloFileFormat::GetPointVectorVar(DBfile *dbfile, const char *vname)
 //    Kathleen Bonnell, Tue Feb  8 17:00:46 PST 2005 
 //    Added domain to args for GetQuadMesh. 
 //
+//    Mark C. Miller, Mon Feb 14 20:28:47 PST 2005
+//    Added test for DB_QUAD_CURV/RECT for valid type
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -3386,8 +3389,8 @@ avtSiloFileFormat::GetMesh(int domain, const char *m)
     //
     // Sort out the bad cases.
     //
-    if (type != DB_UCDMESH && type != DB_QUADMESH && type != DB_POINTMESH
-        && type != DB_MULTIMESH)
+    if (type != DB_UCDMESH && type != DB_QUADMESH && type != DB_QUAD_CURV &&
+        type != DB_QUAD_RECT && type != DB_POINTMESH && type != DB_MULTIMESH)
     {
         EXCEPTION1(InvalidVariableException, mesh);
     }
