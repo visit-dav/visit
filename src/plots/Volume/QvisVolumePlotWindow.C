@@ -20,6 +20,7 @@
 #include <QvisGaussianOpacityBar.h>
 #include <QvisScribbleOpacityBar.h>
 #include <QvisVariableButton.h>
+#include <QNarrowLineEdit.h>
 
 #include <VolumeAttributes.h>
 #include <ColorControlPoint.h>
@@ -117,6 +118,9 @@ static const char * white_xpm[] = {
 //   Brad Whitlock, Thu Feb 14 13:50:54 PST 2002
 //   Initialized parentless widgets.
 //
+//   Kathleen Bonnell, Thu Mar  3 11:01:22 PST 2005 
+//   Initialized scalingButtons.
+//
 // ****************************************************************************
 
 QvisVolumePlotWindow::QvisVolumePlotWindow(const int type,
@@ -131,6 +135,7 @@ QvisVolumePlotWindow::QvisVolumePlotWindow(const int type,
 
     // Initialize parentless widgets.
     modeButtonGroup = 0;
+    scalingButtons = 0;
 }
 
 // ****************************************************************************
@@ -146,6 +151,9 @@ QvisVolumePlotWindow::QvisVolumePlotWindow(const int type,
 //   Brad Whitlock, Thu Feb 14 13:01:20 PST 2002
 //   Added deletion of parentless widgets.
 //
+//   Kathleen Bonnell, Thu Mar  3 11:01:22 PST 2005 
+//   Delete scalingButtons.
+//
 // ****************************************************************************
 
 QvisVolumePlotWindow::~QvisVolumePlotWindow()
@@ -154,6 +162,7 @@ QvisVolumePlotWindow::~QvisVolumePlotWindow()
 
     // Delete parentless widgets.
     delete modeButtonGroup;
+    delete scalingButtons;
 }
 
 // ****************************************************************************
@@ -192,6 +201,9 @@ QvisVolumePlotWindow::~QvisVolumePlotWindow()
 //   Brad Whitlock, Wed Dec 15 09:27:19 PDT 2004
 //   Removed "raytrace" button and added RayCasting to a new combobox that
 //   is used to set the rendering methods.
+//
+//   Kathleen Bonnell, Thu Mar  3 11:01:22 PST 2005 
+//   Added scalingButtons and skewLineEdit. 
 //
 // ****************************************************************************
 
@@ -284,7 +296,47 @@ QvisVolumePlotWindow::CreateWindowContents()
             this, SLOT(colorMaxProcessText()));
     colorMinMaxLayout->addWidget(colorMax);
 
-    // Add the group box that will contain the color-related widgets.
+    //
+    // Create the scale radio buttons
+    //
+    QHBoxLayout *scaleLayout = new QHBoxLayout(innerColorLayout);
+    scaleLayout->setSpacing(5);
+    scaleLayout->setMargin(5);
+    QLabel *scaleLabel = new QLabel("Scale", colorWidgetGroup, "scaleLabel");
+    scaleLabel->setAlignment(AlignHCenter | AlignVCenter);
+    scaleLayout->addWidget(scaleLabel);
+
+    // Create the scaling button group 
+    scalingButtons = new QButtonGroup(0, "scaleRadioGroup" );
+    connect(scalingButtons, SIGNAL(clicked(int)),
+            this, SLOT(scaleClicked(int)));
+    QRadioButton *rb = new QRadioButton("Linear", colorWidgetGroup);
+    rb->setChecked( TRUE );
+    scalingButtons->insert(rb, 0);
+    scaleLayout->addWidget(rb);
+    rb = new QRadioButton("Log10", colorWidgetGroup);
+    scalingButtons->insert(rb, 1);
+    scaleLayout->addWidget(rb);
+    rb = new QRadioButton("Skew", colorWidgetGroup);
+    scalingButtons->insert(rb, 2);
+    scaleLayout->addWidget(rb);
+
+    QHBoxLayout *skewLayout = new QHBoxLayout(innerColorLayout);
+    skewLayout->setSpacing(5);
+    skewLayout->setMargin(5);
+
+    // Create the skew factor line edit    
+    skewLineEdit = new QNarrowLineEdit(colorWidgetGroup, "skewLineEdit");
+    skewLineEdit->setMaximumWidth(maxWidth);
+    connect(skewLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processSkewText())); 
+    skewLabel = new QLabel(skewLineEdit, "Skew factor  ", 
+                           colorWidgetGroup, "skewFactor");
+    skewLabel->setAlignment(AlignLeft | AlignVCenter);
+    skewLayout->addWidget(skewLabel);
+    skewLayout->addWidget(skewLineEdit);
+ 
+    // Add the group box that will contain the opacity-related widgets.
     opacityWidgetGroup = new QGroupBox(central, "opacityWidgetGroup");
     opacityWidgetGroup->setTitle("Opacity");
     topLayout->addWidget(opacityWidgetGroup, 100);
@@ -304,7 +356,7 @@ QvisVolumePlotWindow::CreateWindowContents()
     modeButtonGroup = new QButtonGroup(0, "modeButtonGroup");
     connect(modeButtonGroup, SIGNAL(clicked(int)),
             this, SLOT(interactionModeChanged(int)));
-    QRadioButton *rb= new QRadioButton("Freeform", opacityWidgetGroup);
+    rb= new QRadioButton("Freeform", opacityWidgetGroup);
     modeButtonGroup->insert(rb, 0);
     opLayout->addWidget(rb, 5, 0);
     rb = new QRadioButton("Gaussian", opacityWidgetGroup);
@@ -541,6 +593,9 @@ QvisVolumePlotWindow::CreateWindowContents()
 //   I moved raytrace support into the rendering mode. I also made it be
 //   a combo box.
 //
+//   Kathleen Bonnell, Thu Mar  3 11:01:22 PST 2005 
+//   Added support for scaling and skew factor.
+//
 // ****************************************************************************
 
 void
@@ -698,6 +753,19 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             temp.sprintf("%d", volumeAtts->GetNum3DSlices());
             num3DSlices->setText(temp);
             break;
+        case 22:
+            scalingButtons->setButton(volumeAtts->GetScaling());
+            skewLineEdit->setEnabled(volumeAtts->GetScaling() ==
+                VolumeAttributes::Skew);
+            skewLabel->setEnabled(volumeAtts->GetScaling() ==
+                VolumeAttributes::Skew);
+            break;
+        case 23: // skewFactor
+            temp.setNum(volumeAtts->GetSkewFactor());
+            skewLineEdit->setText(temp);
+            break;
+
+
         }
     }
 
@@ -944,6 +1012,9 @@ QvisVolumePlotWindow::CopyGaussianOpacitiesToFreeForm()
 //   I removed the code to get the opacity variable since it's in a different
 //   kind of widget.
 //
+//   Kathleen Bonnell, Thu Mar  3 11:01:22 PST 2005 
+//   Added support for skew factor.
+//
 // ****************************************************************************
 
 void
@@ -1156,6 +1227,28 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
             Message(msg);
         }
     }
+        // Do the skew factor value
+    if(which_widget == 10 || doAll)
+    {
+        temp = skewLineEdit->displayText().stripWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            double val = temp.toDouble(&okay);
+            volumeAtts->SetSkewFactor(val);
+        }
+
+        if(!okay)
+        {
+            msg.sprintf("The skew factor was invalid. "
+                "Resetting to the last good value of %g.",
+                volumeAtts->GetSkewFactor());
+            Message(msg);
+            volumeAtts->SetSkewFactor(volumeAtts->GetSkewFactor());
+        }
+    }
+
+
 }
 
 // ****************************************************************************
@@ -2101,3 +2194,49 @@ QvisVolumePlotWindow::num3DSlicesProcessText()
     GetCurrentValues(9);
     Apply();
 }
+
+
+// ****************************************************************************
+//  Method:  QvisVolumePlotWindow::scaleClicked
+//
+//  Purpose:
+//    Update the scaling type. 
+//
+//  Arguments:
+//    scale      The new scaling type.
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    March 3, 2005 
+//
+// ****************************************************************************
+
+void
+QvisVolumePlotWindow::scaleClicked(int scale)
+{
+    // Only do it if it changed.
+    if(scale != volumeAtts->GetScaling())
+    {
+        volumeAtts->SetScaling(VolumeAttributes::Scaling(scale));
+        Apply();
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  QvisVolumePlotWindow::processSkewText
+//
+//  Purpose:
+//    Update the skew factor. 
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    March 3, 2005 
+//
+// ****************************************************************************
+
+void
+QvisVolumePlotWindow::processSkewText()
+{
+    GetCurrentValues(10);
+    Apply();
+}
+

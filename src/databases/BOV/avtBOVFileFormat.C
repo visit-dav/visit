@@ -43,6 +43,9 @@ static int FormatLine(char *line);
 //    Allow for the format not to be broken up into bricklets.  Also add
 //    support for byte data.
 //
+//    Hank Childs, Fri Mar  4 16:02:03 PST 2005
+//    Do not read in the entire TOC in this file any more.
+//
 // ****************************************************************************
 
 avtBOVFileFormat::avtBOVFileFormat(const char *fname)
@@ -103,45 +106,7 @@ avtBOVFileFormat::avtBOVFileFormat(const char *fname)
     nodalCentering = true;
     byteData = true;
 
-    ReadTOC();
-
-    if (file_pattern == NULL)
-    {
-        debug1 << "Did not parse file pattern (\"DATA_FILE\")." << endl;
-        EXCEPTION1(InvalidFilesException, fname);
-    }
-    if (full_size[0] <= 0 || full_size[1] <= 0 || full_size[2] <= 0)
-    {
-        debug1 << "Was not able to determine \"DATA_SIZE\"" << endl;
-        EXCEPTION1(InvalidFilesException, fname);
-    }
-    if (bricklet_size[0] <= 0 || bricklet_size[1] <= 0 || bricklet_size[2] <= 0)
-    {
-        bricklet_size[0] = full_size[0];
-        bricklet_size[1] = full_size[1];
-        bricklet_size[2] = full_size[2];
-    }
-    if (dimensions[0] <= 0. || dimensions[1] <= 0. || dimensions[2] <= 0.)
-    {
-        debug1 << "Invalid dimensions \"BRICK_SIZE\"" << endl;
-        EXCEPTION1(InvalidFilesException, fname);
-    }
-
-    if ((full_size[0] % bricklet_size[0]) != 0)
-    {
-        debug1 << "Full size must be a multiple of bricklet size" << endl;
-        EXCEPTION1(InvalidFilesException, fname);
-    }
-    if ((full_size[1] % bricklet_size[1]) != 0)
-    {
-        debug1 << "Full size must be a multiple of bricklet size" << endl;
-        EXCEPTION1(InvalidFilesException, fname);
-    }
-    if ((full_size[2] % bricklet_size[2]) != 0)
-    {
-        debug1 << "Full size must be a multiple of bricklet size" << endl;
-        EXCEPTION1(InvalidFilesException, fname);
-    }
+    haveReadTOC = false;
 }
 
 
@@ -180,6 +145,26 @@ avtBOVFileFormat::~avtBOVFileFormat()
         delete [] var_brick_max;
         var_brick_max = NULL;
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtBOVFileFormat::ActivateTimestep
+//
+//  Purpose:
+//      Activates the current timestep, prompting the header to be read.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 4, 2005
+//
+// ****************************************************************************
+
+void
+avtBOVFileFormat::ActivateTimestep(void)
+{
+    ReadTOC();
+    if (metadata != NULL)
+        metadata->SetCycle(timestep, cycle);
 }
 
 
@@ -640,11 +625,15 @@ avtBOVFileFormat::GetAuxiliaryData(const char *var, int domain,
 //    Have domain boundary information reflect the differing mesh sizes that
 //    come with different centerings.
 //
+//    Hank Childs, Fri Mar  4 16:02:03 PST 2005
+//    Make sure we read the table of contents first.
+//
 // ****************************************************************************
 
 void
 avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
+    ReadTOC();
     int nx = full_size[0] / bricklet_size[0];
     int ny = full_size[1] / bricklet_size[1];
     int nz = full_size[2] / bricklet_size[2];
@@ -696,6 +685,7 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         cache->CacheVoidRef("any_mesh",
                        AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, -1, -1, vr);
     }
+    md->SetCycle(timestep, cycle);
 }
 
 
@@ -717,11 +707,18 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Add support for byte data.  Also interpret palette min/max as variable
 //    min/max as well.
 //
+//    Hank Childs, Fri Mar  4 16:02:03 PST 2005
+//    Do not re-read the TOC for each call to this method.  Also added error
+//    checking previously in the constructor.
+//
 // ****************************************************************************
 
 void
 avtBOVFileFormat::ReadTOC(void)
 {
+    if (haveReadTOC)
+        return;
+    haveReadTOC = true;
     const char *fname = filenames[0];
 
     ifstream ifile(fname);
@@ -882,6 +879,44 @@ avtBOVFileFormat::ReadTOC(void)
             if (strstr(line, "zon") != NULL)
                 nodalCentering = false;
         }
+    }
+
+    if (file_pattern == NULL)
+    {
+        debug1 << "Did not parse file pattern (\"DATA_FILE\")." << endl;
+        EXCEPTION1(InvalidFilesException, fname);
+    }
+    if (full_size[0] <= 0 || full_size[1] <= 0 || full_size[2] <= 0)
+    {
+        debug1 << "Was not able to determine \"DATA_SIZE\"" << endl;
+        EXCEPTION1(InvalidFilesException, fname);
+    }
+    if (bricklet_size[0] <= 0 || bricklet_size[1] <= 0 || bricklet_size[2] <= 0)
+    {
+        bricklet_size[0] = full_size[0];
+        bricklet_size[1] = full_size[1];
+        bricklet_size[2] = full_size[2];
+    }
+    if (dimensions[0] <= 0. || dimensions[1] <= 0. || dimensions[2] <= 0.)
+    {
+        debug1 << "Invalid dimensions \"BRICK_SIZE\"" << endl;
+        EXCEPTION1(InvalidFilesException, fname);
+    }
+
+    if ((full_size[0] % bricklet_size[0]) != 0)
+    {
+        debug1 << "Full size must be a multiple of bricklet size" << endl;
+        EXCEPTION1(InvalidFilesException, fname);
+    }
+    if ((full_size[1] % bricklet_size[1]) != 0)
+    {
+        debug1 << "Full size must be a multiple of bricklet size" << endl;
+        EXCEPTION1(InvalidFilesException, fname);
+    }
+    if ((full_size[2] % bricklet_size[2]) != 0)
+    {
+        debug1 << "Full size must be a multiple of bricklet size" << endl;
+        EXCEPTION1(InvalidFilesException, fname);
     }
 }
 

@@ -148,7 +148,7 @@ class MISC_API VisItException
 
 #define TRY                 try {
 #define CATCH(T)            } catch(T)   { VisItException::LogCatch(#T, __FILE__,  __LINE__);
-#define CATCH2(T, A)        } catch(T A) { VisItException::LogCatch(#T, __FILE__,  __LINE__);
+#define CATCH2(T, A)        } catch(T &A) { VisItException::LogCatch(#T, __FILE__,  __LINE__);
 #define CATCHALL(T)         } catch(...) { VisItException::LogCatch(#T, __FILE__,  __LINE__);
 #define ENDTRY              }
 #define RETHROW             throw

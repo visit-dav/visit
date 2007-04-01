@@ -19,6 +19,7 @@
 #include <avtMesa3DTextureVolumeRenderer.h>
 
 #include <ImproperUseException.h>
+#include <InvalidLimitsException.h>
 
 #ifndef MAX
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
@@ -29,6 +30,7 @@
 
 // private prototype -- I can't believe VTK doesn't already provide this:
 static int CalculateIndex(vtkRectilinearGrid*, const int,const int,const int);
+static float ValueSkewed(const float, const float *, const float);
 
 
 // ****************************************************************************
@@ -229,6 +231,9 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
 //    I was missing some checks in the non-ghost centered diff gradient
 //    calculation to make sure we didn't walk off the edge of the mesh.
 //
+//    Kathleen Bonnell, Fri Mar  4 13:55:09 PST 2005 
+//    Account for Log scaling when determining vmin and vmax. 
+//
 // ****************************************************************************
 void
 avtVolumeRenderer::Initialize(vtkDataSet *ds)
@@ -247,8 +252,24 @@ avtVolumeRenderer::Initialize(vtkDataSet *ds)
     GetRange(data, vmin, vmax);
 
     // Override with the original extents if appropriate.
-    vmin = (varmin < vmin ? varmin : vmin);
-    vmax = (varmax > vmax ? varmax : vmax);
+    if (atts.GetScaling() != VolumeAttributes::Log10)
+    {
+        vmin = (varmin < vmin ? varmin : vmin);
+        vmax = (varmax > vmax ? varmax : vmax);
+    }
+    else //if (atts.GetScaling() == VolumeAttributes::Log10)
+    {
+        if (varmin > 0)
+        {
+            float logVarMin = log10(varmin);
+            vmin = (logVarMin < vmin ? logVarMin : vmin);
+        }
+        if (varmax > 0)
+        {
+            float logVarMax = log10(varmax);
+            vmax = (logVarMax < vmax ? logVarMax : vmax);
+        }
+    }
 
     // Override with artificial extents if appropriate.
     if (atts.GetUseColorVarMin())
@@ -554,6 +575,9 @@ avtVolumeRenderer::SetAtts(const AttributeGroup *a)
 //    Hank Childs, Mon Dec 23 08:36:18 PST 2002
 //    Do a better job of locating the variable.
 //
+//    Kathleen Bonnell, Fri Mar  4 13:55:09 PST 2005 
+//    Account for different scaling methods. 
+//
 // ****************************************************************************
 bool
 avtVolumeRenderer::GetScalars(vtkDataSet *ds, vtkDataArray *&data,
@@ -591,7 +615,74 @@ avtVolumeRenderer::GetScalars(vtkDataSet *ds, vtkDataArray *&data,
     // We are requiring that the return values are freed, so we better add to
     // the reference count.
     //
-    data->Register(NULL); 
+    if (atts.GetScaling() == VolumeAttributes::Linear)
+    {
+        data->Register(NULL); 
+    }
+    else if (atts.GetScaling() == VolumeAttributes::Log10)
+    {
+        vtkDataArray *logData = data->NewInstance();
+        logData->SetNumberOfTuples(data->GetNumberOfTuples());
+        logData->SetName(data->GetName());
+        float *range = data->GetRange();
+        if (atts.GetUseColorVarMin())
+        {
+            range[0] = atts.GetColorVarMin();
+        }
+        if (atts.GetUseColorVarMax())
+        {
+            range[1] = atts.GetColorVarMax();
+        }
+        if (range[0] <= 0. || range[1] <= 0.)
+        {
+            EXCEPTION1(InvalidLimitsException, true);
+        }
+        for (int i = 0 ; i < data->GetNumberOfTuples() ; i++)
+        {
+            float f = data->GetTuple1(i);
+            // min & max may have been set by user to be pos values
+            // but individual data values are not guaranteed to fall
+            // within that range, so check for non-positive data values
+            // or log won't work.   
+            if (f > 0)
+            {
+                f = log10(f);
+            }
+            else 
+            {
+                f = log10(range[0]);
+            }
+            logData->SetTuple1(i, f);
+        }
+        range = logData->GetRange();
+        data = logData;
+        data->Register(NULL);
+        range = data->GetRange();
+    }
+    else if (atts.GetScaling() == VolumeAttributes::Skew)
+    {
+        vtkDataArray *skewData = data->NewInstance();
+        skewData->SetNumberOfTuples(data->GetNumberOfTuples());
+        skewData->SetName(data->GetName());
+        float *range = data->GetRange();
+        float skewFactor = atts.GetSkewFactor();
+        if (atts.GetUseColorVarMin())
+        {
+            range[0] = atts.GetColorVarMin();
+        }
+        if (atts.GetUseColorVarMax())
+        {
+            range[1] = atts.GetColorVarMax();
+        }
+        for (int i = 0 ; i < data->GetNumberOfTuples() ; i++)
+        {
+            float f = data->GetTuple1(i);
+            f = ValueSkewed(f, range, skewFactor); 
+            skewData->SetTuple1(i, f);
+        }
+        data = skewData;
+        data->Register(NULL);
+    }
 
     if (strcmp(ov, "default") == 0)
     {
@@ -698,3 +789,38 @@ CalculateIndex(vtkRectilinearGrid *grid, const int i,const int j,const int k)
     return grid->ComputePointId(ijk);
 }
 
+
+// ****************************************************************************
+//  Function:  ValueSkewed 
+//
+//  Purpose:
+//    Skews a data value based on the range and skew factor. 
+//
+//  Returns:
+//    The skewed value.
+//
+//  Arguments:
+//    val     : The value to be skewed. 
+//    r       : The min/max of data values.
+//    factor  : The SkewFactor.
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    March 4, 2005
+//
+// ****************************************************************************
+
+static float
+ValueSkewed(const float val, const float *r, const float factor)
+{
+    if (factor <= 0 || factor == 1. || r[0] == r[1]) 
+        return val;
+
+    float range = r[1] - r[0]; 
+    float rangeInverse = 1. / range;
+    float logSkew = log(factor);
+    float k = range / (factor -1.);
+    float v2 = (val - r[0]) * rangeInverse;
+    float temp =   k * (exp(v2 * logSkew) -1.) + r[0];
+    return temp;
+
+}

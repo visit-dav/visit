@@ -4986,7 +4986,8 @@ QvisGUIApplication::updateVisItCompleted(const QString &program)
         debug1 << "User chose save session and start up again in the new VisIt."
                << endl; 
 
-        QString fileName(GetUserVisItDirectory() + "update_version");
+        QString visitDir(GetUserVisItDirectory().c_str());
+        QString fileName(visitDir + "update_version");
 #if defined(_WIN32)
         fileName += ".vses";
 #else

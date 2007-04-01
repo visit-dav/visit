@@ -17,6 +17,11 @@
 //  Programmer: Hank Childs
 //  Creation:   May 12, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Mar  4 16:02:03 PST 2005
+//    Added support for deferring reading in all of the TOC.
+//
 // ****************************************************************************
 
 class avtBOVFileFormat : public avtSTMDFileFormat
@@ -36,10 +41,13 @@ class avtBOVFileFormat : public avtSTMDFileFormat
     virtual void               PopulateDatabaseMetaData(avtDatabaseMetaData *);
 
     virtual int                GetCycle(void) { return cycle; };
+    virtual bool               ReturnsValidCycle(void) { return haveReadTOC; };
+    void                       ActivateTimestep(void);
 
   protected:
     void                       ReadTOC(void);
 
+    bool                       haveReadTOC;
     char                      *path;
     char                      *file_pattern;
     int                        cycle;

@@ -48,6 +48,7 @@
 #include <avtSquareRootFilter.h>
 #include <avtSquareFilter.h>
 #include <avtPolarCoordinatesFilter.h>
+#include <avtVariableSkewFilter.h>
 #include <avtVectorComposeFilter.h>
 #include <avtVectorDecomposeFilter.h>
 #include <avtVectorCrossProductFilter.h>
@@ -195,7 +196,6 @@ avtIndexExpr::CreateFilters(ExprPipelineState *state)
 {
     dynamic_cast<avtExprNode*>(expr)->CreateFilters(state);
 
-    //avtVectorDecomposeFilter *f = new avtVectorDecomposeFilter(ind);
     avtVectorDecomposeFilter *f = new avtVectorDecomposeFilter(ind);
 
     // Set the variable the function should process.
@@ -308,6 +308,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //      Hank Childs, Thu Jan 20 15:51:16 PST 2005
 //      Added side volume, resrad.
 //
+//      Kathleen Bonnell, Thu Mar  3 11:13:22 PST 2005 
+//      Added var_skew. 
+//
 // ****************************************************************************
 void
 avtFunctionExpr::CreateFilters(ExprPipelineState *state)
@@ -400,6 +403,8 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtMagnitudeFilter();
     else if (functionName == "relative_difference")
         f = new avtRelativeDifferenceFilter();
+    else if (functionName == "var_skew")
+        f = new avtVariableSkewFilter();
     else if (functionName == "if")
         f = new avtConditionalFilter();
     else if (functionName == "and")
