@@ -62,10 +62,15 @@ SiloDirTreeView::AddDir(SiloDir *d, QListViewItem *parent)
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 12, 2001
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Oct 12 20:52:16 PDT 2004
+//    Set the internal silo file to the new file.
+//
 // ****************************************************************************
 void
 SiloDirTreeView::Set(SiloFile *s)
 {
+    silo = s;
     clear();
     total_items = 0;
     QListViewItem *root = AddDir(silo->root, NULL);
@@ -76,7 +81,7 @@ SiloDirTreeView::Set(SiloFile *s)
 //  Method:  SiloDirTreeView::OpenRootDir
 //
 //  Purpose:
-//    Select the root directory of the dree.
+//    Select the root directory of the tree.
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 12, 2001

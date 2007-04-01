@@ -63,6 +63,12 @@ SiloView::~SiloView()
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 12, 2001
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Oct 12 20:53:28 PDT 2004
+//    Explicitly set the dirView directory.  Newer Qt versions don't seem to 
+//    do it automatically by setting the first child (root dir) as selcted
+//    inside SiloDirTreeView.
+//
 // ****************************************************************************
 void
 SiloView::Set(const QString &file)
@@ -71,6 +77,7 @@ SiloView::Set(const QString &file)
     silo = new SiloFile(file);
     dirTreeView->Set(silo);
     dirTreeView->OpenRootDir();
+    dirView->ChangeDir(dirTreeView->firstChild());
 }
 
 // ****************************************************************************
