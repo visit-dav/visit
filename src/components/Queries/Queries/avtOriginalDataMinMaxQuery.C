@@ -62,6 +62,8 @@ avtOriginalDataMinMaxQuery::~avtOriginalDataMinMaxQuery()
 //  Creation:   February 10, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Fri Feb 20 17:03:48 PST 2004
+//    Create new pipeline spec so that input can be load balanced.
 //
 // ****************************************************************************
 
@@ -70,9 +72,10 @@ avtOriginalDataMinMaxQuery::ApplyFilters(avtDataObject_p inData)
 {
     Preparation(inData);
 
+    avtDataSpecification_p dspec = inData->GetTerminatingSource()->
+        GetGeneralPipelineSpecification()->GetDataSpecification();
     avtPipelineSpecification_p pspec = 
-        inData->GetTerminatingSource()->GetGeneralPipelineSpecification();
-    avtDataSpecification_p dspec = pspec->GetDataSpecification();
+        new avtPipelineSpecification(dspec, queryAtts.GetPipeIndex()); 
 
     avtDataObject_p temp;
     CopyTo(temp, inData);

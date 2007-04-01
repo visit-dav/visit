@@ -471,6 +471,9 @@ avtPickActor::UpdateView()
 //    Kathleen Bonnell, Fri Jun 27 16:57:45 PDT 2003 
 //    Translate the glyphActor.
 //
+//    Kathleen Bonnell, Fri Feb 20 12:34:39 PST 2004 
+//    Handle 3D lineSource's Pt1 differently than 2D. 
+//
 // ****************************************************************************
 
 void 
@@ -482,9 +485,18 @@ avtPickActor::Translate(const float vec[3])
     newPos[2] *= vec[2];
 
     newPos = lineSource->GetPoint1();
-    newPos[0] *= vec[0];
-    newPos[1] *= vec[1]; 
-    newPos[2] *= vec[2];
+    if (mode3D)
+    {
+        newPos[0] *= vec[0];
+        newPos[1] *= vec[1]; 
+        newPos[2] *= vec[2];
+    }
+    else
+    {
+        newPos[0] = attach[0] * vec[0];
+        newPos[1] = attach[1] * vec[1]; 
+        newPos[2] = attach[2] * vec[2];
+    }
 
     newPos = lineSource->GetPoint2();
     newPos[0] *= vec[0];

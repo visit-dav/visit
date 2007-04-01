@@ -2593,6 +2593,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Rename 'Plot MinMax' to 'MinMax' , and set its window type to 
 //    "CurrentPlot".
 //
+//    Kathleen Bonnell, Fri Feb 20 08:48:50 PST 2004 
+//    Added NumNodes, NumZones. 
+//
 // ****************************************************************************
 
 void
@@ -2634,6 +2637,10 @@ ViewerQueryManager::InitializeQueryList()
 
     queryTypes->AddQuery("SpatialExtents", QueryList::DatabaseQuery);
     queryTypes->SetWindowType("SpatialExtents", QueryList::ActualData);
+    queryTypes->AddQuery("NumNodes", QueryList::DatabaseQuery);
+    queryTypes->SetWindowType("NumNodes", QueryList::ActualData);
+    queryTypes->AddQuery("NumZones", QueryList::DatabaseQuery);
+    queryTypes->SetWindowType("NumZones", QueryList::ActualData);
     queryTypes->AddQuery("PickByZone", QueryList::PointQuery);
     queryTypes->SetWindowType("PickByZone", QueryList::DomainZone);
     queryTypes->AddQuery("PickByNode", QueryList::PointQuery);

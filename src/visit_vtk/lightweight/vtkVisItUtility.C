@@ -4,13 +4,14 @@
 
 #include <vtkVisItUtility.h>
 
+#include <float.h>
 #include <vtkFieldData.h>
 #include <vtkGenericCell.h>
 #include <vtkIntArray.h>
+#include <vtkPointLocator.h>
 #include <vtkPointSet.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
-#include <vtkVisItCellLocator.h>
 
 
 // ****************************************************************************
@@ -376,39 +377,114 @@ vtkVisItUtility::ComputeStructuredCoordinates(vtkRectilinearGrid *rgrid,
 //  Programmer: Kathleen Bonnell 
 //  Creation:   November 13, 2003 
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Feb 18 10:03:21 PST 2004
+//    Pulled code from vtkPointSet::FindCell, so that could be modified and
+//    made more useful.
+//
 // ****************************************************************************
 
 int
-vtkVisItUtility::FindCell(vtkDataSet *ds, float pt[3])
+vtkVisItUtility::FindCell(vtkDataSet *ds, float x[3])
 {
+    int dot = ds->GetDataObjectType(); 
     if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
         int ijk[3];
         vtkRectilinearGrid *rgrid = (vtkRectilinearGrid*)ds;
-        if (ComputeStructuredCoordinates(rgrid, pt, ijk) == 0)
+        if (ComputeStructuredCoordinates(rgrid, x, ijk) == 0)
             return -1;
         return rgrid->ComputeCellId(ijk);
     }
     else
     {
-        if (ds->GetNumberOfCells() == 0)
+        // Pulled this from vtkPointSet::FindCell, because for
+        // some of our data, their default 'MAXWALK' is too small.
+        int nCells = ds->GetNumberOfCells();
+        if (nCells == 0)
         {
             return -1;
         }
 
-        vtkGenericCell *gcell = vtkGenericCell::New();
-        int found = -1, subId;
+        vtkIdType ptId, cellId;
+        vtkCell *cell;
+        int walk, found = -1, subId;
         float pcoords[3], *weights = new float[8], diagLen, tol;
-        int nCells = ds->GetNumberOfCells();
+        float closestPoint[3], dist2;
+        vtkIdList *cellIds, *ptIds;
+    
+        vtkPointLocator *locator = vtkPointLocator::New();
+        locator->SetDataSet(ds);
+ 
         diagLen = ds->GetLength();
         if (nCells != 0)
             tol = diagLen / (float) nCells;
         else
             tol = 1e-6;
 
-        found = ds->FindCell(pt, NULL, gcell, 0, tol, subId, pcoords, weights);
+        ptId = locator->FindClosestPoint(x);
+        if (ptId < 0)
+        {
+            return -1;
+        }
+
+        float minDist2 = FLT_MAX;
+        cellIds = vtkIdList::New();
+        cellIds->Allocate(8, 100);
+        ptIds = vtkIdList::New();
+        ptIds->Allocate(8, 100);
+        ds->GetPointCells(ptId, cellIds);
+        if (cellIds->GetNumberOfIds() > 0)
+        {
+            cellId = cellIds->GetId(0);
+            cell = ds->GetCell(cellId);
+            int evaluate = cell->EvaluatePosition
+                (x, closestPoint, subId, pcoords, dist2, weights);
+
+            if (evaluate == 1 && dist2 <= tol && dist2 < minDist2)
+            {
+                found = cellId;
+                minDist2 = dist2;
+            }
+        }
+        int MAXWALK = 50;
+        if (found == -1)
+        {
+            if (cellIds->GetNumberOfIds() > 0)
+            {
+                for (walk = 0; walk < MAXWALK && minDist2 != 0. ; walk++)
+                {
+                    cell->CellBoundary(subId, pcoords, ptIds);
+                    ds->GetCellNeighbors(cellId, ptIds, cellIds);
+                    if (cellIds->GetNumberOfIds() > 0)
+                    {
+                        cellId = cellIds->GetId(0);
+                        cell = ds->GetCell(cellId);
+                    }
+                    else 
+                    {
+                        break; // outside of data
+                    }
+                    if (cell)
+                    {
+                        int eval = cell->EvaluatePosition
+                            (x, closestPoint, subId, pcoords, dist2, weights); 
+                        if (eval == 1 && dist2 <= tol && dist2 < minDist2)
+                        {
+                            minDist2 = dist2;
+                            found = cellId; 
+                        }
+                    }
+
+                }
+            }
+        }
+
         delete [] weights;
-        gcell->Delete();
+        ptIds->Delete();
+        cellIds->Delete();
+        locator->Delete();
         return found;
     }
 }
+

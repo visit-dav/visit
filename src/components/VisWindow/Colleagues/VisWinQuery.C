@@ -170,8 +170,6 @@ VisWinQuery::SetForegroundColor(float fr, float fg, float fb)
 }
 
 
-
-
 // ****************************************************************************
 //  Method: VisWinQuery::UpdateView
 //
@@ -193,7 +191,10 @@ VisWinQuery::SetForegroundColor(float fr, float fg, float fb)
 //    Have mediator calculate needed scale factor for picks. Add Lineout. 
 //
 //    Kathleen Bonnell, Tue Oct  1 16:25:50 PDT 2002 
-//    Set scale or lineout actors, as they now have labels. 
+//    Set scale for lineout actors, as they now have labels. 
+//
+//    Kathleen Bonnell, Fri Feb 20 12:37:26 PST 2004 
+//    Shift and translate pickPoints (in 2D or Curve mode). 
 //
 // ****************************************************************************
 
@@ -203,10 +204,31 @@ VisWinQuery::UpdateView()
     if (!pickPoints.empty() && !hidden)
     {
         std::vector< avtPickActor_p >::iterator it;
+
+        float transVec[3];
+        float shiftVec[3];
+        CreateShiftVector(shiftVec, CalculateShiftDistance());
+        if (mediator.GetFullFrameMode())
+        {
+            double scale;
+            int type;
+            mediator.GetScaleFactorAndType(scale, type);
+            shiftVec[2] /= scale;
+            CreateTranslationVector(transVec);
+        }
+
         for (it = pickPoints.begin() ; it != pickPoints.end() ; it++)
         {
             const float *pos = (*it)->GetAttachmentPoint();
             (*it)->SetScale(mediator.ComputeVectorTextScaleFactor(pos));
+            if (mediator.GetMode() != WINMODE_3D)
+            {
+                (*it)->Shift(shiftVec);
+                if (mediator.GetFullFrameMode())
+                {
+                    (*it)->Translate(transVec);
+                }
+            }
             (*it)->UpdateView();
         }
     }
@@ -314,6 +336,10 @@ VisWinQuery::QueryIsValid(const PickAttributes *pa, const Line *lineAtts)
 //    Kathleen Bonnell, Tue Dec  2 17:43:08 PST 2003 
 //    Use the glyph for curve picks, too. 
 //    
+//    Kathleen Bonnell, Fri Feb 20 12:37:26 PST 2004 
+//    Modified code to more accurately calculate a shift vector and distance
+//    for 2d points. 
+//    
 // ****************************************************************************
 
 void 
@@ -322,19 +348,19 @@ VisWinQuery::Pick(const PickAttributes *pa)
     const float *pt = pa->GetPickPoint();
 
     avtPickActor_p pp = new avtPickActor;
+    float distance = CalculateShiftDistance();
     if (mediator.GetMode() == WINMODE_3D)
     {
         pp->SetMode3D(true);
+        pp->SetAttachmentPoint(pt[0], pt[1], pt[2]);
     }
     else
     {
         pp->SetMode3D(false);
+        pp->SetAttachmentPoint(pt[0], pt[1], distance);
     }
 
-    if (pa->GetPickType() != PickAttributes::Zone)
-    {
-        pp->UseGlyph(true);
-    }
+    pp->UseGlyph(pa->GetPickType() != PickAttributes::Zone);
     
     pp->SetDesignator(pa->GetPickLetter().c_str());
 
@@ -347,27 +373,10 @@ VisWinQuery::Pick(const PickAttributes *pa)
     // there are no z-buffer errors.  Note that canvas issues are hidden
     // by GetCanvas routine.
     //
-    float distance = 0.003;
-    float foc[3];
-    float pos[3];
-    mediator.GetCanvas()->GetActiveCamera()->GetPosition(pos);
-    mediator.GetCanvas()->GetActiveCamera()->GetFocalPoint(foc);
-    float projection[3];
-    projection[0] = distance*(pos[0] - foc[0]);
-    projection[1] = distance*(pos[1] - foc[1]);
-    projection[2] = distance*(pos[2] - foc[2]);
 
-    // avoid z-buffer issues in 2D
-    if ((mediator.GetMode() == WINMODE_2D) ||
-        (mediator.GetMode() == WINMODE_CURVE))
-    {
-        pp->SetAttachmentPoint(pt[0], pt[1], projection[2]);
-    }
-    else 
-    {
-        pp->SetAttachmentPoint(pt[0], pt[1], pt[2]);
-    }
-
+    float shiftVec[3];
+    CreateShiftVector(shiftVec, distance);
+  
     if (mediator.GetFullFrameMode())
     {
         double scale;
@@ -376,25 +385,16 @@ VisWinQuery::Pick(const PickAttributes *pa)
         mediator.GetScaleFactorAndType(scale, type);
         // Un-scale the projection so that pick letters don't go off the
         // screen.  
-        projection[0] /= scale;
-        projection[1] /= scale;
-        projection[2] /= scale;
-        pp->Shift(projection);
+        shiftVec[2] /= scale;
+        pp->Shift(shiftVec);
 
-        float vec[3] = { 1., 1., 1.};
-        if (type == 0) // x_axis
-        {
-            vec[0] = scale; 
-        }
-        else // y_axis 
-        {
-            vec[1] = scale; 
-        }
-        pp->Translate(vec);
+        float transVec[3];
+        CreateTranslationVector(scale, type, transVec);
+        pp->Translate(transVec);
     }
     else
     {
-        pp->Shift(projection);
+        pp->Shift(shiftVec);
     }
 
 
@@ -518,20 +518,9 @@ VisWinQuery::Lineout(const Line *lineAtts)
 
     if (mediator.GetFullFrameMode())
     {
-        double scale;
-        int type;
-
-        mediator.GetScaleFactorAndType(scale, type);
-        float vec[3] = { 1., 1., 1.};
-        if (type == 0) // x_axis
-        {
-            vec[0] = scale; 
-        }
-        else // y_axis 
-        {
-            vec[1] = scale; 
-        }
-        lo->Translate(vec);
+        float transVec[3];
+        CreateTranslationVector(transVec);
+        lo->Translate(transVec);
     }
 
     lo->Add(mediator.GetCanvas());
@@ -635,20 +624,9 @@ VisWinQuery::UpdateQuery(const Line *lineAtts)
             (*it)->SetShowLabels(lineAtts->GetReflineLabels());
             if (mediator.GetFullFrameMode())
             {
-                double scale;
-                int type;
-
-                mediator.GetScaleFactorAndType(scale, type);
-                float vec[3] = { 1., 1., 1.};
-                if (type == 0) // x_axis
-                {
-                    vec[0] = scale; 
-                }
-                else // y_axis 
-                {
-                    vec[1] = scale; 
-                }
-                (*it)->Translate(vec);
+                float transVec[3];
+                CreateTranslationVector(transVec);
+                (*it)->Translate(transVec);
             }
         }
     }
@@ -711,18 +689,19 @@ VisWinQuery::DeleteQuery(const Line *lineAtts)
 //  Programmer: Kathleen Bonnell
 //  Creation:   June 6, 2003 
 //
+//  Modifications:
+//    Kathleen Bonnell, Fri Feb 20 12:37:26 PST 2004
+//    Call new method 'CreateTranslationVector'.
+//
 // ****************************************************************************
  
 void
 VisWinQuery::FullFrameOn(const double scale, const int type)
 {
-    if (scale > 0.)
+    if (scale > 0. && (!pickPoints.empty() || !lineOuts.empty()))
     {
-        float vec[3] = { 1., 1., 1.};
-        if (type == 0) // x_axis
-            vec[0] = scale;
-        else           //  y_axis
-            vec[1] = scale;
+        float vec[3]; 
+        CreateTranslationVector(scale, type, vec);
         std::vector< avtPickActor_p >::iterator it;
         for (it = pickPoints.begin() ; it != pickPoints.end() ; it++)
         {
@@ -747,29 +726,33 @@ VisWinQuery::FullFrameOn(const double scale, const int type)
 //  Programmer: Kathleen Bonnell
 //  Creation:   June 6, 2003 
 //
+//  Modifications:
+//    Kathleen Bonnell, Fri Feb 20 12:37:26 PST 2004
+//    Use new methods 'CalculateShiftDistance' & 'CreateShiftVector'.
+//
 // ****************************************************************************
 
 void
 VisWinQuery::FullFrameOff()
 {
-    float distance = 0.003;
-    float foc[3], pos[3], projection[3];
-
-    mediator.GetCanvas()->GetActiveCamera()->GetPosition(pos);
-    mediator.GetCanvas()->GetActiveCamera()->GetFocalPoint(foc);
-
-    projection[0] = distance*(pos[0] - foc[0]);
-    projection[1] = distance*(pos[1] - foc[1]);
-    projection[2] = distance*(pos[2] - foc[2]);
-    std::vector< avtPickActor_p >::iterator it;
-    for (it = pickPoints.begin() ; it != pickPoints.end() ; it++)
+    if (!pickPoints.empty())
     {
-        (*it)->ResetPosition(projection);
+        float distance = CalculateShiftDistance();
+        float shiftVec[3];
+        CreateShiftVector(shiftVec, distance);
+        std::vector< avtPickActor_p >::iterator it;
+        for (it = pickPoints.begin() ; it != pickPoints.end() ; it++)
+        {
+            (*it)->ResetPosition(shiftVec);
+        }
     }
-    std::vector< avtLineoutActor_p >::iterator it2;
-    for (it2 = lineOuts.begin() ; it2 != lineOuts.end() ; it2++)
+    if (!lineOuts.empty())
     {
-        (*it2)->ResetPosition();
+        std::vector< avtLineoutActor_p >::iterator it2;
+        for (it2 = lineOuts.begin() ; it2 != lineOuts.end() ; it2++)
+        {
+            (*it2)->ResetPosition();
+        }
     }
 }
 
@@ -799,3 +782,156 @@ VisWinQuery::ReAddToWindow()
         (*it2)->Add(mediator.GetCanvas());
     }
 }
+
+
+// ****************************************************************************
+//  Method: VisWinQuery::CreateTranslationVector
+//
+//  Purpose:
+//    Creates a vector to be used in translating a query. 
+//
+//  Arguments: 
+//    vec       A place to store the translation vector. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   February 20, 2004 
+//
+// ****************************************************************************
+
+void
+VisWinQuery::CreateTranslationVector(float vec[3])
+{
+    double scale;
+    int type;
+    mediator.GetScaleFactorAndType(scale, type);
+    CreateTranslationVector(scale, type, vec);
+}
+
+
+// ****************************************************************************
+//  Method: VisWinQuery::CreateTranslationVector
+//
+//  Purpose:
+//    Creates a vector to be used in translating a query. 
+//
+//  Arguments:
+//     s        The scale factor.
+//     t        The scale type.
+//     vec      A place to store the translation vector.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   February 20, 2004 
+//
+// ****************************************************************************
+
+void
+VisWinQuery::CreateTranslationVector(const double s, const int t, float vec[3])
+{
+    if (t == 0) // x_axis
+    {
+        vec[0] = s; 
+        vec[1] = 1;
+        vec[2] = 1; 
+    }
+    else // y_axis 
+    {
+        vec[0] = 1;
+        vec[1] = s; 
+        vec[2] = 1;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: VisWinQuery::CreateShiftVector
+//
+//  Purpose:
+//    Creates a vector to be used in shifting a query. 
+//
+//  Arguments:
+//     vec      A place to store the translation vector.
+//     dist     The distance along the vector to shift.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   February 20, 2004 
+//
+// ****************************************************************************
+
+void
+VisWinQuery::CreateShiftVector(float vec[3], const float distance)
+{
+    if (mediator.GetMode() == WINMODE_3D)
+    {
+        float pos[3], foc[3];
+        mediator.GetCanvas()->GetActiveCamera()->GetPosition(pos);
+        mediator.GetCanvas()->GetActiveCamera()->GetFocalPoint(foc);
+        vec[0] = distance*(pos[0] - foc[0]);
+        vec[1] = distance*(pos[1] - foc[1]);
+        vec[2] = distance*(pos[2] - foc[2]);
+    }
+    else 
+    {
+        vec[0] = 0;
+        vec[1] = 0;
+        vec[2] = distance;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: VisWinQuery::CalculateShiftDistance
+//
+//  Purpose:
+//    Calculates how far along the shift vector a query should be shifted.
+//
+//  Returns:
+//    The shift distance. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   February 20, 2004 
+//
+// ****************************************************************************
+
+float
+VisWinQuery::CalculateShiftDistance()
+{
+    float distance = 0.003;
+
+    if (mediator.GetMode() == WINMODE_3D)
+    {
+        return distance;
+    }
+
+    vtkRenderer *ren = mediator.GetCanvas();
+    int *size = ren->GetSize();
+    double wp1[4] = {0., 0., 0., 0.};
+    double wp2[4] = {0., 0., 0., 0.};
+    double x = 0., y = 0., z = 0.;
+    ren->SetDisplayPoint(x, y, z);
+    ren->DisplayToWorld();
+    ren->GetWorldPoint(wp1);
+    if (wp1[3])
+    {
+        wp1[0] /= wp1[3];
+        wp1[1] /= wp1[3];
+    }
+    x = (double) size[0];
+    y = (double) size[1];
+    z = 0.;
+    ren->SetDisplayPoint(x, y, z);
+    ren->DisplayToWorld();
+    ren->GetWorldPoint(wp2);
+    if (wp2[3])
+    {
+        wp2[0] /= wp2[3];
+        wp2[1] /= wp2[3];
+    }
+    double xDiff = fabs(wp2[0] - wp1[0]);
+    double yDiff = fabs(wp2[1] - wp1[1]);
+    double minDiff  = (xDiff < yDiff ? xDiff : yDiff); 
+    if (minDiff *distance < distance)
+        distance *= minDiff ;
+
+    return distance;
+}
+

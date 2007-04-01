@@ -62,10 +62,13 @@
 #   Hank Childs, Fri Feb  6 09:27:08 PST 2004
 #   Added avtGeneralQuery.
 #
-#   Kathleen Bonnell, ue Feb 10 15:08:58 PST 2004 
+#   Kathleen Bonnell, Tue Feb 10 15:08:58 PST 2004 
 #   Renamed avtPlotMinMaxQuery to avtMinMaxQuery, added 
 #   avtOriginalDataMinMaxQuery, avtActualDataMinMaxQuery.
 #
+#   Kathleen Bonnell, Wed Feb 18 08:31:26 PST 2004
+#   Added avt*NumNodesQuery, avt*NumZonesQuery, 
+#   
 ##############################################################################
 
 @SET_MAKE@
@@ -85,6 +88,8 @@ Abstract_src= \
 
 Queries_src= \
  Queries/avtActualDataMinMaxQuery.C  \
+ Queries/avtActualDataNumNodesQuery.C  \
+ Queries/avtActualDataNumZonesQuery.C  \
  Queries/avtAreaBetweenCurvesQuery.C  \
  Queries/avtCompactnessQuery.C  \
  Queries/avtCurvePickQuery.C  \
@@ -95,7 +100,11 @@ Queries_src= \
  Queries/avtL2NormQuery.C  \
  Queries/avtL2NormBetweenCurvesQuery.C  \
  Queries/avtMinMaxQuery.C  \
+ Queries/avtNumNodesQuery.C  \
+ Queries/avtNumZonesQuery.C  \
  Queries/avtOriginalDataMinMaxQuery.C  \
+ Queries/avtOriginalDataNumNodesQuery.C  \
+ Queries/avtOriginalDataNumZonesQuery.C  \
  Queries/avtPickQuery.C  \
  Queries/avtSummationQuery.C  \
  Queries/avtTimeQuery.C  \

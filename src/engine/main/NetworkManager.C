@@ -29,7 +29,11 @@
 #include <avtPickQuery.h>
 #include <avtCurvePickQuery.h>
 #include <avtOriginalDataMinMaxQuery.h>
+#include <avtOriginalDataNumNodesQuery.h>
+#include <avtOriginalDataNumZonesQuery.h>
 #include <avtActualDataMinMaxQuery.h>
+#include <avtActualDataNumNodesQuery.h>
+#include <avtActualDataNumZonesQuery.h>
 #include <avtSourceFromAVTImage.h>
 #include <avtSourceFromImage.h>
 #include <avtSourceFromNullData.h>
@@ -1761,11 +1765,19 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
 //    Kathleen Bonnell, Tue Feb  3 17:43:12 PST 2004 
 //    Renamed PlotMinMax query to simply MinMaxQuery. 
 //
+//    Kathleen Bonnell, Fri Feb 20 08:48:50 PST 2004 
+//    Added NumNodes and NumZones. 
+//
+//    Kathleen Bonnell, Fri Feb 20 16:56:32 PST 2004 
+//    Set QueryAtts' PipeIndex so that original data queries can be
+//    load balanced. 
+//
 // ****************************************************************************
 void
 NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
 {
     std::vector<avtDataObject_p> queryInputs;
+    qa->SetPipeIndex(networkCache[ids[0]]->GetPipelineSpec()->GetPipelineIndex());
     for (int i = 0 ; i < ids.size() ; i++)
     {
         int id = ids[i];
@@ -1888,6 +1900,28 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
             else 
             {
                 query = new avtOriginalDataMinMaxQuery();
+            }
+        }
+        else if (strcmp(queryName.c_str(), "NumZones") == 0) 
+        {
+            if (qa->GetDataType() == QueryAttributes::ActualData)
+            {
+                query = new avtActualDataNumZonesQuery();
+            }
+            else 
+            {
+                query = new avtOriginalDataNumZonesQuery();
+            }
+        }
+        else if (strcmp(queryName.c_str(), "NumNodes") == 0) 
+        {
+            if (qa->GetDataType() == QueryAttributes::ActualData)
+            {
+                query = new avtActualDataNumNodesQuery();
+            }
+            else 
+            {
+                query = new avtOriginalDataNumNodesQuery();
             }
         }
         if (query != NULL)
