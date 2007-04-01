@@ -8,6 +8,9 @@
 #include <VisitALE.c>
 
 #include <stdarg.h>
+#include <stdio.h>
+
+#include <snprintf.h>
 
 // the include for VisItALE.c also winds up including regex.h and we can't
 // include ligben.h also. So, we define these externs directly
@@ -43,7 +46,7 @@ using std::string;
 using std::map;
 
 const int avtVistaFileFormat::MASTER_FILE_INDEX = 0;
-
+static char tempStr[1024];
 
 #define MATCH(A,B)        strncmp(A,B,sizeof(#B))==0
 
@@ -160,6 +163,27 @@ FinalizeHDF5(void)
 }
 
 // ****************************************************************************
+//  Method:  GetFileNameForRead 
+//
+//  Purpose:   Determines file name for a read based on domain number 
+//             variables 
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    April 28, 2004 
+//
+// ****************************************************************************
+void
+avtVistaFileFormat::GetFileNameForRead(int dom, char *fileName, int size)
+{
+    int filePart = domToFileMap[dom];
+    if (filePart == MASTER_FILE_INDEX)
+        strncpy(fileName, masterFileName.c_str(), size);
+    else
+        SNPRINTF(fileName, size, "%s.%d", masterFileName.c_str(),
+                    filePart);
+}
+
+// ****************************************************************************
 //  Method: avtVistaFileFormat constructor
 //
 //  Programmer: Mark C. Miller
@@ -201,6 +225,9 @@ avtVistaFileFormat::avtVistaFileFormat(const char *filename)
         isSilo = false;
     }
 
+    materialNumbersArray = 0;
+    materialNamesArray = 0;
+
     // if its Vista-HDF5, do HDF5 library initialization on consturction of
     // first instance 
     if (!isSilo && (avtVistaFileFormat::objcnt == 0))
@@ -224,6 +251,12 @@ avtVistaFileFormat::~avtVistaFileFormat()
 
     if (domToFileMap)
         delete [] domToFileMap;
+
+    if (materialNumbersArray)
+        delete [] materialNumbersArray;
+
+    if (materialNamesArray)
+        delete [] materialNamesArray;
 
     // handle HDF5 library termination on descrution of last instance
     avtVistaFileFormat::objcnt--;
@@ -628,9 +661,8 @@ avtVistaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         // rebuild the list of pieceNodes using only the group we've chosen
         delete [] pieceNodes;
         numPieces = 0;
-        char reStr[256];
-        sprintf(reStr,"/./%s[0-9]{1,}", groupNames[0].c_str());
-        VisitFindNodes(top, reStr, &pieceNodes, &numPieces);
+        sprintf(tempStr,"/./%s[0-9]{1,}", groupNames[0].c_str());
+        VisitFindNodes(top, tempStr, &pieceNodes, &numPieces);
         if (numPieces != pieceGroups[0].size())
         {
             cerr << "WARNING!!! Unable to find domains" << endl;
@@ -774,11 +806,282 @@ avtVistaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     //
     int numMatNodes;
     Node **matNodes;
-    VisitFindNodes(top, "/.*/[a-zA-Z]{1,}[-_.:;=#+@ ]{0,1}[0-9]{1,}/elem"
-                        "/[a-zA-Z]{1,}[-_.:;=#+@ ]{0,1}[0-9]{1,}/%RIndexset", &matNodes, &numMatNodes);
+    VisitFindNodes(top, "/.*/domain[0-9]{1,}/elem"
+                        "/[0-9]{1,}[-_.:;=#+@ ]{0,1}[0-9]{1,}", &matNodes, &numMatNodes);
 
+    //
+    // Go through and find unique material names
+    //
+    groupNames.clear();
+    vector<string> matNames;
+    vector<vector<string> > matGroups;
+    for (i = 0; i < numMatNodes; i++)
+        matNames.push_back(matNodes[i]->text);
+    StringHelpers::GroupStrings(matNames, matGroups, groupNames, 3, "");
+
+    //
+    // Process the group names to extract either names or numbers
+    // and populate this object's knowledge of materials
+    //
+    for (i = 0; i < groupNames.size(); i++)
+    {
+        char matName[256]; 
+        int matNum1, matNum2;
+        const char *groupName = groupNames[i].c_str();
+
+        if ((sscanf(groupName, "%d_%d", &matNum1, &matNum2) == 2) ||
+            (sscanf(groupName, "%d_%d_mix", &matNum1, &matNum2) == 2))
+        {
+            sprintf(tempStr, "%d", matNum1);
+            materialNames.push_back(tempStr);
+            materialNumbers.push_back(matNum2);
+        }
+        else if ((sscanf(groupName, "%s_%d", matName, &matNum2) == 2) ||
+                 (sscanf(groupName, "%s_%d_mix", matName, &matNum2) == 2))
+        {
+            materialNames.push_back(matName);
+            materialNumbers.push_back(matNum2);
+        }
+        else
+        {
+            sprintf(tempStr, "%d", i);
+            materialNames.push_back(tempStr);
+            materialNumbers.push_back(i);
+        }
+    }
+    numMaterials = materialNames.size();
+
+    //
+    // Populate the equivalent 'Array' forms of material names/numbers
+    //
+    materialNumbersArray = new int[numMaterials];
+    materialNamesArray = new const char*[numMaterials];
+    for (i = 0; i < numMaterials; i++)
+    {
+        materialNumbersArray[i] = materialNumbers[i];
+        materialNamesArray[i] = materialNames[i].c_str();
+    }
+
+    //
+    // Add the material object to the metadata
+    //
+    avtMaterialMetaData *mmd = new avtMaterialMetaData("materials", mesh->name,
+        materialNames.size(), materialNames);
+    md->Add(mmd);
 }
 
+// ****************************************************************************
+//  Method: avtVistaFileFormat::GetAuxiliaryData
+//
+//  Purpose:
+//      Gets the auxiliary data from a Vista file.
+//
+//  Arguments:
+//      var        The variable of interest.
+//      domain     The domain of interest.
+//      type       The type of auxiliary data.
+//      <unnamed>  The arguments for that -- not used for any Vista types.
+//
+//  Returns:    The auxiliary data.  Throws an exception if this is not a
+//              supported data type.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   April 27, 2004
+//
+// ****************************************************************************
+
+void *
+avtVistaFileFormat::GetAuxiliaryData(const char *var, int domain,
+                              const char *type, void *, DestructorFunction &df)
+{
+    void *rv = NULL;
+    if (strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
+    {
+        rv = (void *) GetMaterial(domain, var);
+        df = avtMaterial::Destruct;
+    }
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtVistaFileFormat::GetMaterial
+//
+//  Purpose:
+//      Gets the specified material.
+//
+//  Arguments:
+//      domain      The index of the domain.  If there are NDomains, this
+//                  value is guaranteed to be between 0 and NDomains-1,
+//                  regardless of block origin.
+//      var         The name of the material object of interest.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   April 27, 2004 
+//
+// ****************************************************************************
+avtMaterial *
+avtVistaFileFormat::GetMaterial(int domain, const char *var)
+{
+    int i;
+    const Node *top = vTree->GetTop();
+
+    //
+    // Locate all the Vista material views underneath this domain view
+    //
+    int numMatNodes;
+    Node **matNodes;
+    SNPRINTF(tempStr, sizeof(tempStr),
+             "/.*/domain%d{1,}/elem/[0-9]{1,}[-_.:;=#+@ ]{0,1}[0-9]{1,}", domain);
+    VisitFindNodes(top, tempStr, &matNodes, &numMatNodes);
+
+    //
+    // Loop and populate matMap with lists of clean and mixed zones
+    //
+    vector<MatZoneMap> matMap;
+    for (i = 0; i < numMatNodes; i++)
+    {
+        MatZoneMap mapEntry;
+
+        //
+        // Skip mixed entries as we deal with those in the attempt to get 
+        // mix information below 
+        //
+        if (StringHelpers::FindRE(matNodes[i]->text,"_mix$") >= 0)
+            continue;
+
+        //
+        // Get this material's number
+        //
+        string matName;
+        char *p = matNodes[i]->text;
+        while (!isdigit(*p))
+            matName += *p++;
+        int matNum = *p - '0';
+        while (isdigit(*(++p)))
+        {
+            matNum *= 10;
+            matNum += (*p - '0');
+        }
+        if (matName == "")
+        {
+            SNPRINTF(tempStr, sizeof(tempStr), "%d", matNum);
+            matName = tempStr;
+        }
+
+        mapEntry.matno = matNum;
+        mapEntry.name = matName;
+
+        //
+        // read the clean index set
+        //
+        char fileName[1024];
+        hsize_t dSize = 0;
+        int *cleanIndexSet= 0;
+        GetFileNameForRead(domain, fileName, sizeof(fileName));
+        SNPRINTF(tempStr, sizeof(tempStr), "%s/Indexset", vTree->GetPathFromNode(matNodes[i])); 
+        ReadDataset(fileName, tempStr, 0, &dSize, (void**) &cleanIndexSet);
+        if (dSize != matNodes[i]->len)
+        {
+            EXCEPTION2(UnexpectedValueException, matNodes[i]->len, dSize);
+        }
+
+        mapEntry.numClean = matNodes[i]->len;
+        mapEntry.cleanZones = cleanIndexSet;
+
+        //
+        // Look for the mixed Vista node
+        //
+        SNPRINTF(tempStr, sizeof(tempStr), "%s_mix", vTree->GetPathFromNode(matNodes[i])); 
+        const Node *mixedNode = vTree->GetNodeFromPath(top, tempStr);
+        if (mixedNode)
+        {
+
+            //
+            // read the mixed index set
+            //
+            dSize = 0;
+            int *mixedIndexSet= 0;
+            SNPRINTF(tempStr, sizeof(tempStr), "%s/Indexset", vTree->GetPathFromNode(mixedNode)); 
+            ReadDataset(fileName, tempStr, 0, &dSize, (void**) &mixedIndexSet);
+            if (dSize != mixedNode->len)
+            {
+                EXCEPTION2(UnexpectedValueException, mixedNode->len, dSize);
+            }
+
+            //
+            // read the volume fractions
+            //
+            dSize = 0;
+            double *dvf = 0;
+            SNPRINTF(tempStr, sizeof(tempStr), "%s/Fields/vf", vTree->GetPathFromNode(mixedNode)); 
+            ReadDataset(fileName, tempStr, 0, &dSize, (void**) &dvf);
+            if (dSize != mixedNode->len)
+            {
+                EXCEPTION2(UnexpectedValueException, mixedNode->len, dSize);
+            }
+
+            // convert double to float
+            float *vf = new float[mixedNode->len];
+            int j;
+            for (j = 0; j < mixedNode->len; j++)
+                vf[j] = dvf[j];
+            delete [] dvf;
+
+            mapEntry.numMixed = mixedNode->len;
+            mapEntry.mixedZones = mixedIndexSet;
+            mapEntry.volFracs = vf;
+        }
+        else
+        {
+            mapEntry.numMixed = 0;
+            mapEntry.mixedZones = 0; 
+            mapEntry.volFracs = 0;
+        }
+
+        matMap.push_back(mapEntry);
+    }
+
+    //
+    // Find 'elem' Vista nodes beneath this domain's Vista node
+    //
+    int numElemViews = 0;
+    Node **elemViews = 0;
+    VisitFindNodes(pieceNodes[domain], "/%Velem", &elemViews, &numElemViews);
+    if ((numElemViews == 0) || (numElemViews > 1))
+    {
+        EXCEPTION2(UnexpectedValueException, 1, numElemViews);
+    }
+
+    //
+    // Construct the object we can here for, avtMaterial
+    //
+    int numElems = elemViews[0]->len;
+    int dims[1] = {numElems};
+    int major_order = 0;
+    SNPRINTF(tempStr, sizeof(tempStr), "%d", domain);
+    avtMaterial *mat = new avtMaterial(numMaterials, materialNumbersArray,
+                              materialNamesArray, matMap, 1, dims, major_order,
+                              tempStr);
+
+    //
+    // clean up 
+    //
+    delete [] matNodes;
+    delete [] elemViews;
+    for (i = 0; i < matMap.size(); i++)
+    {
+        if (matMap[i].cleanZones != 0)
+            delete [] matMap[i].cleanZones;
+        if (matMap[i].mixedZones != 0)
+            delete [] matMap[i].mixedZones;
+        if (matMap[i].volFracs != 0)
+            delete [] matMap[i].volFracs;
+    }
+
+    return mat;
+}
 
 // ****************************************************************************
 //  Method: avtVistaFileFormat::GetMesh
@@ -827,15 +1130,14 @@ avtVistaFileFormat::GetMesh(int domain, const char *meshname)
     int numElems = elemViews[0]->len;
     int numNodes = nodeViews[0]->len;
 
+    delete [] elemViews;
+    delete [] nodeViews;
+
     //
     // Figure out which file to read from
     //
     char fileName[1024];
-    int filePart = domToFileMap[domain];
-    if (filePart == MASTER_FILE_INDEX)
-        strncpy(fileName, masterFileName.c_str(), sizeof(fileName));
-    else
-        sprintf(fileName, "%s.%d", masterFileName.c_str(), filePart);
+    GetFileNameForRead(domain, fileName, sizeof(fileName));
 
     //
     // Read coordinate arrays
@@ -843,12 +1145,11 @@ avtVistaFileFormat::GetMesh(int domain, const char *meshname)
     double *coords[3] = {0, 0, 0};
     for (i = 0; i < 3; i++)
     {
-        char tmpName[256];
-        sprintf(tmpName, "/%s/%s/node/Fields/%c", top->child[0]->text,
+        sprintf(tempStr, "/%s/%s/node/Fields/%c", top->child[0]->text,
             pieceNodes[domain]->text, (char) ('x'+i));
 
         hsize_t dSize = 0;
-        ReadDataset(fileName, tmpName, 0, &dSize, (void**) &coords[i]);
+        ReadDataset(fileName, tempStr, 0, &dSize, (void**) &coords[i]);
 
         if (dSize != numNodes)
         {
@@ -861,12 +1162,11 @@ avtVistaFileFormat::GetMesh(int domain, const char *meshname)
     //
     int *elemToNode = 0;
     {
-        char tmpName[256];
-        sprintf(tmpName, "/%s/%s/elem/Relations/elemToNode", top->child[0]->text,
+        sprintf(tempStr, "/%s/%s/elem/Relations/elemToNode", top->child[0]->text,
             pieceNodes[domain]->text);
 
         hsize_t dSize = 0;
-        ReadDataset(fileName, tmpName, 0, &dSize, (void**) &elemToNode);
+        ReadDataset(fileName, tempStr, 0, &dSize, (void**) &elemToNode);
 
         if (dSize != 8*numElems)
         {
@@ -1000,15 +1300,14 @@ avtVistaFileFormat::ReadVar(int domain, const char *visitName)
     int numElems = elemViews[0]->len;
     int numNodes = nodeViews[0]->len;
 
+    delete [] elemViews;
+    delete [] nodeViews;
+
     //
     // Figure out which file to read from
     //
     char fileName[1024];
-    int filePart = domToFileMap[domain];
-    if (filePart == MASTER_FILE_INDEX)
-        strncpy(fileName, masterFileName.c_str(), sizeof(fileName));
-    else
-        sprintf(fileName, "%s.%d", masterFileName.c_str(), filePart);
+    GetFileNameForRead(domain, fileName, sizeof(fileName));
 
     //
     // Read all the component's data
@@ -1018,14 +1317,13 @@ avtVistaFileFormat::ReadVar(int domain, const char *visitName)
     for (i = 0; i < numComponents; i++)
     {
         hsize_t dSize;
-        char tmpName[256];
 
         // try to read from 'elem' fields
-        sprintf(tmpName, "/%s/%s/elem/Fields/%s", top->child[0]->text,
+        sprintf(tempStr, "/%s/%s/elem/Fields/%s", top->child[0]->text,
             pieceNodes[domain]->text, vistaNames[i].c_str());
 
         compData[i] = 0;
-        if (ReadDataset(fileName, tmpName, 0, &dSize, (void**) &compData[i]))
+        if (ReadDataset(fileName, tempStr, 0, &dSize, (void**) &compData[i]))
         {
             if (dSize != numElems)
             {
@@ -1036,11 +1334,11 @@ avtVistaFileFormat::ReadVar(int domain, const char *visitName)
         }
 
         // try to read from 'node' fields
-        sprintf(tmpName, "/%s/%s/node/Fields/%s", top->child[0]->text,
+        sprintf(tempStr, "/%s/%s/node/Fields/%s", top->child[0]->text,
             pieceNodes[domain]->text, vistaNames[i].c_str());
 
         compData[i] = 0;
-        if (ReadDataset(fileName, tmpName, 0, &dSize, (void**) &compData[i]))
+        if (ReadDataset(fileName, tempStr, 0, &dSize, (void**) &compData[i]))
         {
             if (dSize != numNodes)
             {

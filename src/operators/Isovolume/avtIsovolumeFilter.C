@@ -105,6 +105,86 @@ avtIsovolumeFilter::Equivalent(const AttributeGroup *a)
 
 
 // ****************************************************************************
+//  Method:  avtIsovolumeFilter::ExecuteSingleClip
+//
+//  Purpose:
+//    Clip against either a low or high scalar.  Convert cell to point
+//    data as necessary.
+//
+//  Arguments:
+//    in_ds      the data set to clip
+//    val        the value to clip against
+//    flip       false if val is a max, true if val is a min
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    May  6, 2004
+//
+// ****************************************************************************
+vtkDataSet *
+avtIsovolumeFilter::ExecuteSingleClip(vtkDataSet *in_ds, float val, bool flip)
+{
+    vtkVisItClipper *clipper = vtkVisItClipper::New();
+    clipper->SetInsideOut(flip);
+
+    //
+    // Get the scalar array we'll use for clipping; it must be nodal
+    //
+    vtkCellDataToPointData *cd2pd = NULL;
+    if (in_ds->GetPointData()->GetScalars())
+    {
+        vtkDataArray *s = in_ds->GetPointData()->GetScalars();
+        clipper->SetClipScalars((float*)(s->GetVoidPointer(0)), val);
+    }
+    else if (in_ds->GetCellData()->GetScalars())
+    {
+        //
+        // Okay, our active variable was cell-centered.  Recenter it....
+        //
+        vtkDataSet *temp_ds = (vtkDataSet *) in_ds->NewInstance();
+        temp_ds->CopyStructure(in_ds);
+        temp_ds->GetCellData()->SetScalars(in_ds->GetCellData()->GetScalars());
+
+        cd2pd = vtkCellDataToPointData::New();
+        cd2pd->SetInput(temp_ds);
+        cd2pd->Update();
+
+        vtkDataSet *temporary = cd2pd->GetOutput();
+
+        // Now tell the clipper about it....
+        vtkDataArray *s = temporary->GetPointData()->GetScalars();
+        clipper->SetClipScalars((float*)(s->GetVoidPointer(0)), val);
+
+        // Wait until after the clipping is done to delete 'cd2pd' (which
+        // will take 'temporary' with it)
+        temp_ds->Delete();
+    }
+    else
+    {
+        debug1 << "Could not find any data for isovolume operation\n";
+        EXCEPTION1(VisItException, "No variable was present for the Isovolume");
+    }
+
+    //
+    // Do the clipping!
+    //
+    vtkDataSet *out_ds;
+    clipper->SetInput(in_ds);
+    out_ds = clipper->GetOutput();
+    out_ds->Update();
+    ManageMemory(out_ds);
+    clipper->Delete();
+
+    //
+    // Free the temporary filter used to convert to point data
+    //
+    if (cd2pd)
+        cd2pd->Delete();
+
+    return out_ds;
+}
+
+
+// ****************************************************************************
 //  Method: avtIsovolumeFilter::ExecuteData
 //
 //  Purpose:
@@ -130,86 +210,28 @@ avtIsovolumeFilter::Equivalent(const AttributeGroup *a)
 //    cutoff so the math is more robust, and that required making a "min"
 //    pass as well as a "max" pass, so that had to change in this function.
 //
+//    Jeremy Meredith, Thu May  6 11:38:21 PDT 2004
+//    I neglected to create a new scalar array in the event that we do both
+//    a min and max pass, so I split most of this routine into a new function
+//    and called the new one (ExecuteSingleClip) twice.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtIsovolumeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 {
-    vtkVisItClipper *minClipper = vtkVisItClipper::New();
-    vtkVisItClipper *maxClipper = vtkVisItClipper::New();
-    minClipper->SetInsideOut(true);
-    maxClipper->SetInsideOut(false);
-
-    //
-    // Get the scalar array we'll use for clipping; it must be nodal
-    //
-    vtkCellDataToPointData *cd2pd = NULL;
-    if (in_ds->GetPointData()->GetScalars())
-    {
-        vtkDataArray *s = in_ds->GetPointData()->GetScalars();
-        minClipper->SetClipScalars((float*)(s->GetVoidPointer(0)),
-                                   atts.GetLbound());
-        maxClipper->SetClipScalars((float*)(s->GetVoidPointer(0)),
-                                   atts.GetUbound());
-    }
-    else if (in_ds->GetCellData()->GetScalars())
-    {
-        //
-        // Okay, our active variable was cell-centered.  Recenter it....
-        //
-        vtkDataSet *temp_ds = (vtkDataSet *) in_ds->NewInstance();
-        temp_ds->CopyStructure(in_ds);
-        temp_ds->GetCellData()->SetScalars(in_ds->GetCellData()->GetScalars());
-
-        cd2pd = vtkCellDataToPointData::New();
-        cd2pd->SetInput(temp_ds);
-        cd2pd->Update();
-
-        vtkDataSet *temporary = cd2pd->GetOutput();
-
-        // Now tell the clipper about it....
-        vtkDataArray *s = temporary->GetPointData()->GetScalars();
-        minClipper->SetClipScalars((float*)(s->GetVoidPointer(0)),
-                                   atts.GetLbound());
-        maxClipper->SetClipScalars((float*)(s->GetVoidPointer(0)),
-                                   atts.GetUbound());
-
-        // Wait until after the clipping is done to delete 'cd2pd' (which
-        // will take 'temporary' with it)
-        temp_ds->Delete();
-    }
-    else
-    {
-        debug1 << "Could not find any data for isovolume operation\n";
-        EXCEPTION1(VisItException, "No variable was present for the Isovolume");
-    }
+    vtkDataSet *out_ds = in_ds;
 
     //
     // Do the clipping!
     //
-    vtkDataSet *out_ds;
-    if (atts.GetLbound() > -1e37 && atts.GetUbound() < 1e37)
+    if (atts.GetLbound() > -1e37)
     {
-        minClipper->SetInput(in_ds);
-        maxClipper->SetInput(minClipper->GetOutput());
-        out_ds = maxClipper->GetOutput();
-        out_ds->Update();
+        out_ds = ExecuteSingleClip(out_ds, atts.GetLbound(), true);
     }
-    else if (atts.GetLbound() > -1e37)
+    if (atts.GetUbound() < 1e37)
     {
-        minClipper->SetInput(in_ds);
-        out_ds = minClipper->GetOutput();
-        out_ds->Update();
-    }
-    else if (atts.GetUbound() < 1e37)
-    {
-        maxClipper->SetInput(in_ds);
-        out_ds = maxClipper->GetOutput();
-        out_ds->Update();
-    }
-    else
-    {
-        out_ds = in_ds;
+        out_ds = ExecuteSingleClip(out_ds, atts.GetUbound(), false);
     }
 
     //
@@ -247,16 +269,8 @@ avtIsovolumeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     }
 
     ManageMemory(out_ds);
-    minClipper->Delete();
-    maxClipper->Delete();
     if (shouldDelete)
         out_ds->Delete();
-
-    //
-    // Free the temporary filter used to convert to point data
-    //
-    if (cd2pd)
-        cd2pd->Delete();
 
     return out_ds;
 }

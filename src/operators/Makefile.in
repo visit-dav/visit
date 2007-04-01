@@ -148,6 +148,9 @@
 #    Jeremy Meredith, Fri Jan 30 17:43:11 PST 2004
 #    Added Isovolume.
 #
+#    Hank Childs, Thu May  6 09:59:30 PDT 2004
+#    Make the displace operator be required.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -155,12 +158,12 @@
 all: message
 	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done
 
-OPTIONAL=Context ConnCompReduce Decimate Displace ExternalSurface \
+OPTIONAL=Context ConnCompReduce Decimate ExternalSurface \
          MetricThreshold RemoveCells Revolve SiloDump SurfCompPrep Tube
 
-REQUIRED=Box Clip Cone Cylinder IndexSelect InverseGhostZone Isosurface \
-         Isovolume Lineout OnionPeel Reflect Slice SphereSlice ThreeSlice \
-         Threshold Transform
+REQUIRED=Box Clip Cone Cylinder Displace IndexSelect InverseGhostZone \
+         Isosurface Isovolume Lineout OnionPeel Reflect Slice SphereSlice \
+         ThreeSlice Threshold Transform
 
 SUBDIRS=$(REQUIRED) @OPERATOR_OPTIONAL_DIRS@
 ALLSUBDIRS=$(REQUIRED) $(OPTIONAL)

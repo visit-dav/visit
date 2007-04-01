@@ -12,7 +12,6 @@
 
 class vtkDataSet;
 
-
 // ****************************************************************************
 //  Class: avtIsovolumeFilter
 //
@@ -26,6 +25,10 @@ class vtkDataSet;
 //    Jeremy Meredith, Mon Feb 16 19:12:11 PST 2004
 //    Added RefashionDataObjectInfo.  This was needed for correct support
 //    on various mesh types.
+//
+//    Jeremy Meredith, Thu May  6 11:37:47 PDT 2004
+//    Split some code from ExecuteData into a new function to avoid
+//    code duplication.
 //
 // ****************************************************************************
 
@@ -49,6 +52,9 @@ class avtIsovolumeFilter : public avtPluginStreamer
 
     virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
     virtual void          RefashionDataObjectInfo(void);
+
+  private:
+    virtual vtkDataSet   *ExecuteSingleClip(vtkDataSet *, float, bool);
 };
 
 

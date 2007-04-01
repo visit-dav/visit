@@ -6,11 +6,11 @@
             <Field name="cloneWindowOnFirstRef" type="bool">true</Field>
         </Object>
         <Object name="PluginManagerAttributes" childObjects="0">
-            <Field name="name" type="stringVector">Streamline InverseGhostZone </Field>
-            <Field name="type" type="stringVector">plot operator </Field>
-            <Field name="version" type="stringVector">1.0 1.0 </Field>
-            <Field name="id" type="stringVector">Streamline_1.0 InverseGhostZone_1.0 </Field>
-            <Field name="enabled" type="intVector">0 0 </Field>
+            <Field name="name" type="stringVector">Streamline Displace InverseGhostZone </Field>
+            <Field name="type" type="stringVector">plot operator operator </Field>
+            <Field name="version" type="stringVector">1.0 1.0 1.0 </Field>
+            <Field name="id" type="stringVector">Streamline_1.0 Displace_1.0 InverseGhostZone_1.0 </Field>
+            <Field name="enabled" type="intVector">0 0 0 </Field>
         </Object>
         <Object name="HostProfileList" childObjects="31">
             <Object name="HostProfile" childObjects="0">

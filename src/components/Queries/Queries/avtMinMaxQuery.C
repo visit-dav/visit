@@ -125,6 +125,10 @@ avtMinMaxQuery::VerifyInput()
 //    Kathleen Bonnell, Wed Mar 31 16:13:07 PST 2004 
 //    Only check min/or max if they are set to be done. 
 //
+//    Kathleen Bonnell, Thu May  6 17:36:43 PDT 2004 
+//    If working with OriginalData, or zones have been preserved, use the
+//    zone number found here, rather than querying the database for it.
+//
 // ****************************************************************************
 
 void 
@@ -181,6 +185,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
     float *x;
     bool haveMin = false;
     bool haveMax = false;
+    bool zonesPreserved = GetInput()->GetInfo().GetValidity().GetZonesPreserved();
     for (int elNum = 0; elNum < data->GetNumberOfTuples(); elNum++)
     {
         switch(varType)
@@ -235,7 +240,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
             // Indicate that the db needs to supply the correct
             // node number.
             //
-            if (!scalarCurve)
+            if (!scalarCurve && !OriginalData())
                 minElementNum = -1;
         } 
         else
@@ -255,7 +260,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
                 // Indicate that the db needs to supply the correct
                 // cell number.
                 //
-                if (!scalarCurve)
+                if (!scalarCurve && !OriginalData() && !zonesPreserved) 
                     minElementNum = -1;
             }
         } 
@@ -265,7 +270,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
         if (nodeCentered)
         {
             GetNodeCoord(ds, maxElementNum, maxCoord);
-            if (!scalarCurve)
+            if (!scalarCurve && !OriginalData())
                 maxElementNum = -1;
         } 
         else
@@ -285,7 +290,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
                 // Indicate that the db needs to supply the correct
                 // cell number.
                 //
-                if (!scalarCurve)
+                if (!scalarCurve && !OriginalData() && !zonesPreserved)
                     maxElementNum = -1;
             }
         } 
@@ -338,8 +343,10 @@ avtMinMaxQuery::PostExecute(void)
             minCoord[2] = v1.z;
         }
         if (minElementNum == -1)
+        {
             src->FindElementForPoint(var.c_str(), ts, minDomain, 
                      elementName.c_str(), minCoord, minElementNum);
+        }
         CreateMinMessage();
     }
     if (hasMax)
@@ -454,12 +461,12 @@ avtMinMaxQuery::PreExecute()
     maxElementNum = -1;
     minDomain = -1;
     maxDomain = -1;
-    minCoord[0] = 0; // x
-    minCoord[1] = 0; // y
-    minCoord[2] = 0; // z
-    maxCoord[0] = 0; // x
-    maxCoord[1] = 0; // y
-    maxCoord[2] = 0; // z
+    minCoord[0] = 0.; // x
+    minCoord[1] = 0.; // y
+    minCoord[2] = 0.; // z
+    maxCoord[0] = 0.; // x
+    maxCoord[1] = 0.; // y
+    maxCoord[2] = 0.; // z
     minMsg = "No Information Found";
     maxMsg = "No Information Found";
     elementName = "";

@@ -317,6 +317,9 @@ avtDatasetQuery::GetResultValue(const int i)
 //    Kathleen Bonnell, Fri Apr  2 08:51:17 PST 2004
 //    Changed args. 
 //
+//    Kathleen Bonnell, Thu May  6 13:43:01 PDT 2004 
+//    Ensure that last time step doesn't get repreated. 
+//
 // ****************************************************************************
 
 void
@@ -325,8 +328,7 @@ avtDatasetQuery::PerformQueryInTime(QueryAttributes *qA, const int startT ,
                                     const int timeType, doubleVector &times)
 {
     queryAtts = *qA;
-  
-    int nFrames = (int) ceil((endT -startT)/stride) + 1; 
+    int nFrames = (int) ceil((((float)endT -startT))/(float)stride) + 1; 
 
     //
     // Ensure that the specified endTime is included,
@@ -351,9 +353,9 @@ avtDatasetQuery::PerformQueryInTime(QueryAttributes *qA, const int startT ,
     avtDataObject_p origInput;
     avtDataObject_p input = GetInput();
     CopyTo(origInput, input);
-    for (i =  startT; i <= actualEnd; i+=stride)
+    for (i =  startT; i < actualEnd; i+=stride)
     {
-        if (i <= endT)
+        if (i < endT)
             queryAtts.SetTimeStep(i);
         else 
             queryAtts.SetTimeStep(endT);

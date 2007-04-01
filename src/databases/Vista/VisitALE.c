@@ -6,8 +6,6 @@
 #include <regex.h>
 
 
-#define NIL 0
-
 typedef int NodeType;
 
 static const NodeType ParentNode   = 0x01;
@@ -32,9 +30,9 @@ struct Node
    char datatype ;
    char *otherView ;
 
-   Node(NodeType mytype, Node *p = NIL) :
-      parent(p), next(NIL), child(NIL), numChild(0), type(mytype),
-      text(NIL), len(0), size(0), min(0.0), max(0.0), otherView(NIL) { }
+   Node(NodeType mytype, Node *p = 0) :
+      parent(p), next(0), child(0), numChild(0), type(mytype),
+      text(0), len(0), size(0), min(0.0), max(0.0), otherView(0) { }
 } ;
 
 static void AddChildNode(Node *nd)
@@ -167,7 +165,7 @@ static void ExtractAttr(Node *nd)
 {
    int i ;
 
-   if (nd == NIL)
+   if (nd == 0)
       return ;
 
    if (nd->type != ParentNode) {
@@ -220,7 +218,7 @@ static void VisitDumpTreeRecurse(Node *nd)
       Node *sibling ;
       printf ("( %s ", nd->text) ;
 
-      for (sibling = nd->next ; sibling != NIL; sibling = sibling->next)
+      for (sibling = nd->next ; sibling != 0; sibling = sibling->next)
          printf("%s ", sibling->text) ;
    }
 
@@ -249,7 +247,7 @@ void VisitFreeVistaInfo(Node *nd)
       tmp = nd ;
       nd = nd->next ;
       delete tmp ;
-   } while (nd != NIL) ;
+   } while (nd != 0) ;
 }
 
 static void VisitFindNodesRecurse(const Node *root, const int nlevels,
@@ -395,9 +393,10 @@ static void VisitFindNodes(const Node *root, const char *slash_delimited_re,
       results, nmatches, &maxmatches);
 }
 
-Node *VisitGetNode(Node *root, const char *path)
+const Node *VisitGetNodeFromPath(const Node *start, const char *path)
 {
 
+   const Node *root = start;
    do {
       int i ;
       bool found = false ;
@@ -414,7 +413,7 @@ Node *VisitGetNode(Node *root, const char *path)
          }
       }
       if (found == false) {
-         root = NIL ;
+         root = 0 ;
          break ;
       }
    } while (*path != '\0') ;
@@ -422,13 +421,55 @@ Node *VisitGetNode(Node *root, const char *path)
    return root ;
 }
 
+char *VisitGetPathFromNode(const Node *node)
+{
+   const Node *tmp;
+
+   // make a pass, walking up the tree, and
+   // compute size of returned string
+   tmp = node;
+   int len = 0;
+   while ((tmp != 0) && (tmp->type != ParentNode))
+   {
+      if (tmp->text != 0)
+          len += (strlen(tmp->text)+1); // +1 for '/'
+
+      tmp = tmp->parent;
+   }
+
+   if (len == 0)
+       return 0;
+
+   char *retval = new char[len+1];
+   retval[len] = '\0';
+
+   // make a second pass and populate the returned string
+   tmp = node;
+   while ((tmp != 0) && (tmp->type != ParentNode))
+   {
+      if (tmp->text != 0)
+      {
+          int complen = strlen(tmp->text);
+          len -= (complen+1);
+          retval[len] = '/';
+          while (complen)
+              retval[len+complen] = tmp->text[--complen];
+      }
+
+      tmp = tmp->parent;
+   }
+
+   return retval;
+
+}
+
 void VisitParse(char *buf)
 {
    Node *nd ;
    VisitParseInternal(buf, &nd) ;
    // ExtractAttr(nd) ;
-   // VisitGetNode(nd, "/mst1/domain0/node") ;
-   // VisitGetNode(nd, "/mst1/domain0/nd") ;
+   // VisitGetNodeFromPath(nd, "/mst1/domain0/node") ;
+   // VisitGetNodeFromPath(nd, "/mst1/domain0/nd") ;
    // VisitDumpTree(nd) ;
    // fflush(stdout) ;
    // exit(0) ;

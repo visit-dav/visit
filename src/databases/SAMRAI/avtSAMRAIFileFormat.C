@@ -47,6 +47,8 @@
 #include <Utility.h>
 #include <DataNode.h>
 
+#include <snprintf.h>
+
 using std::vector;
 using std::string;
 
@@ -996,6 +998,9 @@ avtSAMRAIFileFormat::ReadMatSpecFractions(int patch, string mat_name,
 //    Mark C. Miller, Wed Jan  7 11:35:37 PST 2004
 //    Added stuff to compute compression achieved
 //
+//    Mark C. Miller, Thu May  6 22:07:32 PDT 2004
+//    Used new material constructors
+//
 // ****************************************************************************
 
 avtMaterial *
@@ -1123,11 +1128,16 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
     }
     else
     {
+       // for some reason, the initialization to zero in the 'new' call
+       // doesn't take effect...
+       float **vfracs = new (float*)[num_mats](0);
+       for (i = 0; i < num_mats; i++)
+           vfracs[i] = 0;
+
        // read the volume fractions for each material
-       float **vfracs = new float*[matList.size()==1?2:matList.size()];
        for (i = 0; i < matList.size(); i++)
        {
-           vfracs[i] = ReadMatSpecFractions(patch, mat_names[matList[i]]);
+           vfracs[matList[i]] = ReadMatSpecFractions(patch, mat_names[matList[i]]);
            bytesInFile += (ncells * sizeof(float));
        }
 
@@ -1141,32 +1151,24 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
            }
 
            // infer the void's volume fractions
-           vfracs[1] = new float[ncells];
+           vfracs[num_mats-1] = new float[ncells];
            for (i = 0; i < ncells; i++)
-               vfracs[1][i] = 1.0 - vfracs[0][i];
-
-           // tack on the material number for the inferred void material
-           matList.push_back(num_mats-1);
+               vfracs[num_mats-1][i] = 1.0 - vfracs[matList[0]][i];
        }
 
-       int *matfield;
-       int mixlen;
-       int *mix_mat;
-       int *mix_next;
-       int *mix_zone;
-       float *mix_vf;
+       //
+       // Construct the object we came here for
+       //
+       char domName[256];
+       SNPRINTF(domName, sizeof(domName),"%d", patch);
+       mat = new avtMaterial(num_mats, matnos, matnames, dim, dims, 0,
+                             vfracs, domName);
 
-       ConvertVolumeFractionFields(matList, vfracs, ncells, matfield, mixlen,
-           mix_mat, mix_next, mix_zone, mix_vf);
-
-       mat = new avtMaterial(num_mats, matnos, matnames, dim, dims, 0, matfield,
-                             mixlen, mix_mat, mix_next, mix_zone, mix_vf);
-
-       for (i = 0; i < matList.size(); i++)
+       for (i = 0; i < num_mats; i++)
            SAFE_DELETE(vfracs[i]);
        SAFE_DELETE(vfracs);
 
-       bytesInMem = (ncells * sizeof(int) + mixlen * (3*sizeof(int)+sizeof(float)));
+       bytesInMem = (ncells * sizeof(int) + mat->GetMixlen() * (3*sizeof(int)+sizeof(float)));
 
    }
 

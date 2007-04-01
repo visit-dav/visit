@@ -79,6 +79,9 @@ avtActualDataMinMaxQuery::~avtActualDataMinMaxQuery()
 //    Kathleen Bonnell, Tue May  4 14:25:07 PDT 2004
 //    Set SILRestriction via member restriction, instead of SILUseSet. 
 //
+//    Kathleen Bonnell, Thu May  6 17:36:43 PDT 2004 
+//    Request OriginalCellsArray if zones have not been preserved. 
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -86,7 +89,8 @@ avtActualDataMinMaxQuery::ApplyFilters(avtDataObject_p inData)
 {
     Preparation(inData);
 
-    if (!timeVarying)
+    bool zonesPreserved  = GetInput()->GetInfo().GetValidity().GetZonesPreserved();
+    if (!timeVarying && zonesPreserved)
     {
         avtPipelineSpecification_p pspec = 
             inData->GetTerminatingSource()->GetGeneralPipelineSpecification();
@@ -108,6 +112,9 @@ avtActualDataMinMaxQuery::ApplyFilters(avtDataObject_p inData)
         avtDataSpecification_p newDS = new 
             avtDataSpecification(oldSpec->GetVariable(), queryAtts.GetTimeStep(), 
                                  querySILR);
+
+        if (!zonesPreserved)
+            newDS->TurnZoneNumbersOn();
 
         avtPipelineSpecification_p pspec = 
             new avtPipelineSpecification(newDS, queryAtts.GetPipeIndex());

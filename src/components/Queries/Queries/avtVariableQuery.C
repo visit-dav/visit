@@ -380,6 +380,8 @@ avtVariableQuery::ApplyFilters(avtDataObject_p inData)
 //  Creation:   March 31, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu May  6 17:46:59 PDT 2004
+//    Allow species and scalar vars to be looked at again if previously set.
 //    
 // ****************************************************************************
 
@@ -410,8 +412,11 @@ avtVariableQuery::RetrieveVarInfo(vtkDataSet* ds)
         PickVarInfo::Centering centering;
         if (pickAtts.GetFulfilled())
         {
-            if (pickAtts.GetPickVarInfo(varNum).HasInfo())
+            if (pickAtts.GetPickVarInfo(varNum).HasInfo() &&
+                pickAtts.GetPickVarInfo(varNum).GetVariableType() != "species" &&
+                pickAtts.GetPickVarInfo(varNum).GetVariableType() != "scalar") 
                 continue;
+
             vName = pickAtts.GetPickVarInfo(varNum).GetVariableName();
         }
         else
@@ -493,12 +498,15 @@ avtVariableQuery::RetrieveVarInfo(vtkDataSet* ds)
                 pickAtts.GetPickVarInfo(varNum).SetNames(names);
                 pickAtts.GetPickVarInfo(varNum).SetValues(vals);
                 pickAtts.GetPickVarInfo(varNum).SetCentering(centering);
-                if (nComponents == 1)
-                    pickAtts.GetPickVarInfo(varNum).SetVariableType("scalar");
-                else if (nComponents == 3)
-                    pickAtts.GetPickVarInfo(varNum).SetVariableType("vector");
-                else if (nComponents == 9)
-                    pickAtts.GetPickVarInfo(varNum).SetVariableType("tensor");
+                if (pickAtts.GetPickVarInfo(varNum).GetVariableType() != "species")
+                { 
+                    if (nComponents == 1)
+                        pickAtts.GetPickVarInfo(varNum).SetVariableType("scalar");
+                    else if (nComponents == 3)
+                        pickAtts.GetPickVarInfo(varNum).SetVariableType("vector");
+                    else if (nComponents == 9)
+                        pickAtts.GetPickVarInfo(varNum).SetVariableType("tensor");
+                } 
                 delete [] temp; 
             }
         }

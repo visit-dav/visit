@@ -8,10 +8,13 @@
 #include <vtkCellDataToPointData.h>
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkStructuredGrid.h>
 #include <vtkWarpVector.h>
 
 #include <avtCallback.h>
 
+#include <DebugStream.h>
 #include <ImproperUseException.h>
 
 
@@ -124,6 +127,9 @@ avtDisplaceFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Wed Sep 11 08:34:03 PDT 2002
 //    Fixed memory leak.
 //
+//    Hank Childs, Thu May  6 10:04:26 PDT 2004
+//    Operate on rectilinear grids as well.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -169,16 +175,65 @@ avtDisplaceFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         in_ds = new_in_ds;
     }
 
-    vtkWarpVector *warp = vtkWarpVector::New();
-    warp->SetInput((vtkPointSet *)in_ds);
-    warp->SetScaleFactor(atts.GetFactor());
+    vtkDataSet *rv = NULL;
+    if (in_ds->GetDataObjectType() == VTK_POLY_DATA 
+        || in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID 
+        || in_ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+    {
+        vtkWarpVector *warp = vtkWarpVector::New();
+        warp->SetInput((vtkPointSet *)in_ds);
+        warp->SetScaleFactor(atts.GetFactor());
+        rv = warp->GetOutput();
+        rv->Update();
 
-    //
-    // Make this a dataset we can return even after we have freed memory.
-    //
-    vtkDataSet *rv = warp->GetOutput();
-    rv->Update();
-    ManageMemory(rv);
+        //
+        // Make this a dataset we can return even after we have freed memory.
+        //
+        ManageMemory(rv);
+
+        warp->Delete();
+    }
+    else if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    {
+        vtkRectilinearGrid *rg = (vtkRectilinearGrid *) in_ds;
+        vtkStructuredGrid *sg  = vtkStructuredGrid::New();
+        int dims[3];
+        rg->GetDimensions(dims);
+        sg->SetDimensions(dims);
+        sg->GetCellData()->ShallowCopy(rg->GetCellData());
+        sg->GetPointData()->ShallowCopy(rg->GetPointData());
+        vtkPoints *pts = vtkPoints::New();
+        int npts = dims[0]*dims[1]*dims[2];
+        pts->SetNumberOfPoints(npts);
+        float factor = atts.GetFactor();
+        for (int i = 0 ; i < npts ; i++)
+        {
+            int xi = i % dims[0];
+            int yi = (i / dims[0]) % dims[1];
+            int zi = i / (dims[0]*dims[1]);
+            float x = rg->GetXCoordinates()->GetTuple1(xi);
+            float y = rg->GetYCoordinates()->GetTuple1(yi);
+            float z = rg->GetZCoordinates()->GetTuple1(zi);
+            float *vec = vecs->GetTuple3(i);
+            x += factor*vec[0];
+            y += factor*vec[1];
+            z += factor*vec[2];
+            pts->SetPoint(i, x, y, z);
+        }
+        sg->SetPoints(pts);
+        pts->Delete();
+ 
+        rv = sg;
+        ManageMemory(rv);
+        sg->Delete();
+    }
+    else
+    {
+        debug1 << "Unable to determine dataset type for displace operator" 
+               << endl;
+        EXCEPTION0(ImproperUseException);
+    }
+
 
     //
     // Clean up memory.
@@ -187,7 +242,6 @@ avtDisplaceFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     {
         cd2pd->Delete();
     }
-    warp->Delete();
 
     return rv;
 }

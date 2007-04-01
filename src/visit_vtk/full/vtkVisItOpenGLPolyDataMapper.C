@@ -624,6 +624,11 @@ static void vtkOpenGLDrawNS013(vtkCellArray *aPrim, GLenum aGlFunction,
     }
 }
 
+// Modifications:
+//
+//   Hank Childs, Thu May  6 07:36:12 PDT 2004
+//   Make sure color comes before vertex.
+
 static void vtkOpenGLDrawCNS013(vtkCellArray *aPrim, GLenum aGlFunction,
                                 vtkIdType &cellNum, vtkPoints *p, 
                                 vtkDataArray *n, vtkUnsignedCharArray *c, 
@@ -653,8 +658,8 @@ static void vtkOpenGLDrawCNS013(vtkCellArray *aPrim, GLenum aGlFunction,
     
     for (j = 0; j < npts; j++) 
       {
-      glVertex3fv(vertices + 3*(*ids));
       glColor4ubv(colors + 4*(*ids));
+      glVertex3fv(vertices + 3*(*ids));
       ids++;
       }
 
