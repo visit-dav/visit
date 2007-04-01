@@ -6410,6 +6410,11 @@ ViewerWindow::GetScalableThreshold() const
 //
 // Programmer: Mark C. Miller
 // Creation:   Tue May 11 08:40:36 PDT 2004 
+//
+// Modifications:
+//
+//   Mark C. Miller, Mon Jan 24 19:25:44 PST 2005
+//   Moved call to set visWindows SR activation mode to after switch stmt
 //   
 // ****************************************************************************
 
@@ -6421,8 +6426,6 @@ ViewerWindow::SetScalableActivationMode(int activationMode)
     // only change the activation mode if it truly is different from current
     if (activationMode != oldActivationMode)
     {
-        visWindow->SetScalableActivationMode(activationMode);
-
         switch (activationMode)
         {
             case RenderingAttributes::Always:
@@ -6440,6 +6443,8 @@ ViewerWindow::SetScalableActivationMode(int activationMode)
                 break;
             }
         }
+
+        visWindow->SetScalableActivationMode(activationMode);
     }
 
     return oldActivationMode;
@@ -6471,6 +6476,11 @@ ViewerWindow::GetScalableActivationMode() const
 // Programmer: Mark C. Miller
 // Creation:   May 11, 2004 
 //
+// Modifications:
+//
+//   Mark C. Miller, Mon Jan 24 19:25:44 PST 2005
+//   Moved call to set visWindows SR threshold to after if stmt
+//   
 // ****************************************************************************
 
 int
@@ -6481,14 +6491,14 @@ ViewerWindow::SetScalableAutoThreshold(int autoThreshold)
     if (autoThreshold != oldAutoThreshold)
     {
 
-       visWindow->SetScalableAutoThreshold(autoThreshold);
-
        if (GetScalableActivationMode() == RenderingAttributes::Auto)
        {
            bool newMode;
            if (ShouldSendScalableRenderingModeChangeMessage(&newMode))
                SendScalableRenderingModeChangeMessage(newMode);
        }
+
+       visWindow->SetScalableAutoThreshold(autoThreshold);
     }
 
     return oldAutoThreshold;
