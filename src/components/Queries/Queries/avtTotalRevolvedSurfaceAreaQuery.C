@@ -6,6 +6,7 @@
 
 #include <avtRevolvedSurfaceArea.h>
 #include <avtSourceFromAVTDataset.h>
+#include <NonQueryableInputException.h>
 
 
 using     std::string;
@@ -100,6 +101,9 @@ avtTotalRevolvedSurfaceAreaQuery::ApplyFilters(avtDataObject_p inData)
 //  Creation:   July 27, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Fri Sep  3 09:03:24 PDT 2004
+//    Added test for topological dimension, as that is no longer performed by
+//    base class.  
 //
 // ****************************************************************************
 
@@ -110,7 +114,13 @@ avtTotalRevolvedSurfaceAreaQuery::VerifyInput(void)
     // We want to do this in addition to what the base class does, so call the
     // base class' version of this method as well.
     //
-    avtSummationQuery::VerifyInput();
+    avtDataObjectQuery::VerifyInput();
+
+    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
+    {
+        EXCEPTION1(NonQueryableInputException,
+            "Requires plot with topological dimension > 0.");
+    }
 
     SetUnits(GetInput()->GetInfo().GetAttributes().GetXUnits());
 }

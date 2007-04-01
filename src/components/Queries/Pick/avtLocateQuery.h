@@ -23,6 +23,8 @@ class vtkRectilinearGrid;
 //  Creation:   May 18, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Fri Sep  3 10:10:28 PDT 2004
+//    Added VerifyInput.
 //
 // ****************************************************************************
 
@@ -43,6 +45,7 @@ class QUERY_API avtLocateQuery : public avtDatasetQuery
 
     virtual void                    PreExecute(void);
     virtual void                    PostExecute(void);
+    virtual void                    VerifyInput(void);
     bool                            RGridIsect(vtkRectilinearGrid *, 
                                                float &dist, 
                                                float isect[3], 

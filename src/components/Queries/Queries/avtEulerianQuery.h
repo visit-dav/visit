@@ -33,6 +33,9 @@ class vtkGeometryFilter;
 //    Brad Whitlock, Fri Nov 22 11:00:01 PDT 2002
 //    Introduced a typedef to make the Windows compiler happier. Added API.
 //
+//    Kathleen Bonnell, Fri Sep  3 10:10:28 PDT 2004 
+//    Added VerifyInput. 
+//
 // ****************************************************************************
 
 class QUERY_API avtEulerianQuery : public avtDatasetQuery
@@ -84,6 +87,7 @@ class QUERY_API avtEulerianQuery : public avtDatasetQuery
     DomainToEulerMap                domToEulerMap;
 
     virtual void                    Execute(vtkDataSet *, const int);
+    virtual void                    VerifyInput(void);
     virtual void                    PreExecute(void);
     virtual void                    PostExecute(void);
 };

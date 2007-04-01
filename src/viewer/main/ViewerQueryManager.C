@@ -901,6 +901,9 @@ ViewerQueryManager::GetQueryClientAtts()
 //    added calls to DoSpatialExtentsQuery, VerifySingleInputQuery,
 //    and VerifyMultipleInputQuery.
 //   
+//    Kathleen Bonnell, Fri Sep  3 09:59:25 PDT 2004 
+//    Modified handling of 'NonQueryableInputException'. 
+//
 // ****************************************************************************
 
 void         
@@ -1057,7 +1060,8 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
                 retry = true;
                 numAttempts++; 
             }
-            else if (e.GetExceptionType() == "InvalidDimensionsException")
+            else if ((e.GetExceptionType() == "InvalidDimensionsException") ||
+                     (e.GetExceptionType() == "NonQueryableInputException"))
             {
                 //
                 //  Create message for the gui that includes the query name
@@ -1065,15 +1069,6 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
                 //
                 SNPRINTF(message, sizeof(message), "%s:  %s", qName.c_str(),
                          e.GetMessage().c_str());
-            }
-            else if (e.GetExceptionType() == "NonQueryableInputException")
-            {
-                //
-                //  Create message.
-                //
-                SNPRINTF(message, sizeof(message), "%s%s",
-                         "The currently active plot is non-queryable.\n",
-                         "Please select a different plot and try again.");
             }
             else
             {

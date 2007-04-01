@@ -24,7 +24,7 @@
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
 #include <InvalidDimensionsException.h>
-#include <VisItException.h>
+#include <NonQueryableInputException.h>
 
 #include <snprintf.h>
 #include <float.h>
@@ -85,6 +85,31 @@ avtCompactnessQuery::avtCompactnessQuery() : avtTwoPassDatasetQuery()
 avtCompactnessQuery::~avtCompactnessQuery()
 {
     ;
+}
+
+
+// ****************************************************************************
+//  Method: avtCompactnessQuery::VerifyInput
+//
+//  Purpose:
+//    Rejects non-queryable input && input that has topological dimension == 0
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   September 3, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtCompactnessQuery::VerifyInput()
+{
+    avtDataObjectQuery::VerifyInput();
+    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
+    {
+        EXCEPTION1(NonQueryableInputException,
+            "Requires plot with topological dimension > 0.");
+    }
 }
 
 

@@ -84,6 +84,12 @@
 #    Kathleen Bonnell, Mon Aug 16 11:41:34 PDT 2004 
 #    I added PyInteractorAttributes.
 #
+#    Eric Brugger, Fri Sep  3 16:56:35 PDT 2004
+#    I removed -L/usr/local/lib from the LDFLAGS.  The cli doesn't need
+#    anything from that directory, but it can cause problems sometimes.
+#    In particular, on gps the wrong libstdc++ gets loaded and the cli
+#    crashes on startup.
+#
 ##############################################################################
 
 ##
@@ -148,7 +154,7 @@ CLI=$(tmpbin)/cli
 ##
 ## Override the certain variables with values from configure.
 ##
-LDFLAGS=-L../lib -L/usr/local/lib @PY_LDFLAGS@ @LDFLAGS@
+LDFLAGS=-L../lib @PY_LDFLAGS@ @LDFLAGS@
 LIBS=@LIBS@ -lviewerproxy -lviewerrpc -lcomm -lmisc -lstate -lutility \
      -lplugin -ldbatts -lavtexceptions -lparser @PY_LIB@
 CXXFLAGS=@CXXFLAGS@ @PY_CXXFLAGS@ -I. -I../include/visit
