@@ -1445,6 +1445,11 @@ QvisGUIApplication::AddViewerArguments(int argc, char **argv)
 //   Brad Whitlock, Mon Feb 4 16:50:41 PST 2002
 //   Removed coding for small screen.
 //
+//   Eric Brugger, Fri Feb 13 14:05:48 PST 2004
+//   I modified the routine to allow the width of the area to be at most
+//   the height in the case of a vertical gui and the width to be at most
+//   twice the height in the case of a horizontal gui.
+//
 // ****************************************************************************
 
 void
@@ -1459,6 +1464,7 @@ QvisGUIApplication::CalculateViewerArea(int orientation, int &x, int &y,
         y = screenY;
         width = screenW - mw - borders[2] - borders[3];
         height = screenH;
+        width = width < height ? width : height;
     }
     else
     {
@@ -1468,6 +1474,7 @@ QvisGUIApplication::CalculateViewerArea(int orientation, int &x, int &y,
         y = mh + borders[0] + borders[1];
         width = screenW;
         height = screenH - mh - borders[0] - borders[1];
+        width = width < height * 2 ? width : height * 2;
     }
 }
 

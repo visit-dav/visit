@@ -2845,6 +2845,10 @@ ViewerWindowManager::UpdateColorTable(const char *ctName)
 //    Since CreateVisWindow got split into two routines, we had to call the
 //    second one as well.
 //
+//    Eric Brugger, Fri Feb 13 14:14:41 PST 2004
+//    Modified the routine to use both the width and height for the window
+//    size, instead of using with width for both.
+//
 // ****************************************************************************
 
 void
@@ -2889,7 +2893,7 @@ ViewerWindowManager::SetWindowLayout(const int windowLayout)
     for (iWindow = 0; iWindow < maxWindows; iWindow++)
     {
         int       x, y;
-        int       size;
+        int       width, height;
 
         //
         // If the window exists, position it properly.
@@ -2899,10 +2903,11 @@ ViewerWindowManager::SetWindowLayout(const int windowLayout)
             if (nWindowsProcessed < layout)
             {
                 windows[iWindow]->DeIconify();
-                x    = windowLimits[layoutIndex][nWindowsProcessed].x;
-                y    = windowLimits[layoutIndex][nWindowsProcessed].y;
-                size = windowLimits[layoutIndex][nWindowsProcessed].width;
-                windows[iWindow]->SetSize(size, size);
+                x      = windowLimits[layoutIndex][nWindowsProcessed].x;
+                y      = windowLimits[layoutIndex][nWindowsProcessed].y;
+                width  = windowLimits[layoutIndex][nWindowsProcessed].width;
+                height = windowLimits[layoutIndex][nWindowsProcessed].height;
+                windows[iWindow]->SetSize(width, height);
                 windows[iWindow]->SetLocation(x, y);
             }
             else
@@ -2917,11 +2922,12 @@ ViewerWindowManager::SetWindowLayout(const int windowLayout)
         //
         else if (nWindowsShort > 0)
         {
-            x    = windowLimits[layoutIndex][iWindow].x;
-            y    = windowLimits[layoutIndex][iWindow].y;
-            size = windowLimits[layoutIndex][iWindow].width;
+            x      = windowLimits[layoutIndex][iWindow].x;
+            y      = windowLimits[layoutIndex][iWindow].y;
+            width  = windowLimits[layoutIndex][iWindow].width;
+            height = windowLimits[layoutIndex][iWindow].height;
 
-            CreateVisWindow(iWindow, size, size, x, y);
+            CreateVisWindow(iWindow, width, height, x, y);
             SetWindowAttributes(iWindow, false);
 
             nWindowsProcessed++;
@@ -4880,14 +4886,19 @@ ViewerWindowManager::UpdateWindowInformation(int windowIndex, bool reportTimes)
 //    Jeremy Meredith, Fri Jul 20 11:22:25 PDT 2001
 //    Added a shift to the x,y positions of windows.
 //
+//    Eric Brugger, Fri Feb 13 14:14:41 PST 2004
+//    Modified the layout code to create rectangular windows that completely
+//    fill the available space rather than creating square windows that fill
+//    the space as best as possible.  In the case of 1 x 2 and 2 x 4 layouts
+//    the height is restricted to the width.
+//
 // ****************************************************************************
 
 void
 ViewerWindowManager::InitWindowLimits()
 {
     //
-    // Create the window layouts.  The drawing areas for each window must
-    // be square so the width and height are set to the minimum of the two.
+    // Create the window layouts.
     //
     int       i, j;
     int       borderWidth, borderHeight;
@@ -4907,9 +4918,8 @@ ViewerWindowManager::InitWindowLimits()
     tempHeight = screenHeight - borderHeight;
     windowLimits[0][0].x      = x;
     windowLimits[0][0].y      = y;
-    windowLimits[0][0].width  = (tempWidth < tempHeight) ?
-                                 tempWidth : tempHeight;
-    windowLimits[0][0].height = windowLimits[0][0].width;
+    windowLimits[0][0].width  = tempWidth;
+    windowLimits[0][0].height = tempHeight;
 
     //
     // The layout for a 2x2 grid.
@@ -4925,9 +4935,8 @@ ViewerWindowManager::InitWindowLimits()
         {
             windowLimits[1][cnt].x      = x;
             windowLimits[1][cnt].y      = y;
-            windowLimits[1][cnt].width  = (tempWidth < tempHeight) ?
-                                           tempWidth : tempHeight;
-            windowLimits[1][cnt].height = windowLimits[1][cnt].width;
+            windowLimits[1][cnt].width  = tempWidth;
+            windowLimits[1][cnt].height = tempHeight;
             x = x + windowLimits[1][cnt].width + borderWidth;
             cnt ++;
         }
@@ -4948,9 +4957,8 @@ ViewerWindowManager::InitWindowLimits()
         {
             windowLimits[2][cnt].x      = x;
             windowLimits[2][cnt].y      = y;
-            windowLimits[2][cnt].width  = (tempWidth < tempHeight) ?
-                                           tempWidth : tempHeight;
-            windowLimits[2][cnt].height = windowLimits[2][cnt].width;
+            windowLimits[2][cnt].width  = tempWidth;
+            windowLimits[2][cnt].height = tempHeight;
             x = x + windowLimits[2][cnt].width + borderWidth;
             cnt ++;
         }
@@ -4971,9 +4979,8 @@ ViewerWindowManager::InitWindowLimits()
         {
             windowLimits[3][cnt].x      = x;
             windowLimits[3][cnt].y      = y;
-            windowLimits[3][cnt].width  = (tempWidth < tempHeight) ?
-                                           tempWidth : tempHeight;
-            windowLimits[3][cnt].height = windowLimits[3][cnt].width;
+            windowLimits[3][cnt].width  = tempWidth;
+            windowLimits[3][cnt].height = tempHeight;
             x = x + windowLimits[3][cnt].width + borderWidth;
             cnt ++;
         }
@@ -4988,13 +4995,13 @@ ViewerWindowManager::InitWindowLimits()
     y          = screenY + borderTop  - shiftY;
     tempWidth  = (screenWidth/2) - borderWidth;
     tempHeight =  screenHeight   - borderHeight;
+    tempHeight = tempHeight < tempWidth ? tempHeight : tempWidth;
     for (i = 0; i < 2; i++)
     {
         windowLimits[4][cnt].x      = x;
         windowLimits[4][cnt].y      = y;
-        windowLimits[4][cnt].width  = (tempWidth < tempHeight) ?
-                                       tempWidth : tempHeight;
-        windowLimits[4][cnt].height = windowLimits[4][cnt].width;
+        windowLimits[4][cnt].width  = tempWidth;
+        windowLimits[4][cnt].height = tempHeight;
         x = x + windowLimits[4][cnt].width + borderWidth;
         cnt ++;
     }
@@ -5006,6 +5013,7 @@ ViewerWindowManager::InitWindowLimits()
     y          = screenY + borderTop - shiftY;
     tempWidth  = (screenWidth/4)  - borderWidth;
     tempHeight = (screenHeight/2) - borderHeight;
+    tempHeight = tempHeight < tempWidth ? tempHeight : tempWidth;
     for (i = 0; i < 2; i++)
     {
         x = screenX + borderLeft - shiftX;
@@ -5013,9 +5021,8 @@ ViewerWindowManager::InitWindowLimits()
         {
             windowLimits[5][cnt].x      = x;
             windowLimits[5][cnt].y      = y;
-            windowLimits[5][cnt].width  = (tempWidth < tempHeight) ?
-                                           tempWidth : tempHeight;
-            windowLimits[5][cnt].height = windowLimits[5][cnt].width;
+            windowLimits[5][cnt].width  = tempWidth;
+            windowLimits[5][cnt].height = tempHeight;
             x = x + windowLimits[5][cnt].width + borderWidth;
             cnt ++;
         }
@@ -5033,6 +5040,11 @@ ViewerWindowManager::InitWindowLimits()
 //
 //  Programmer: Eric Brugger
 //  Creation:   April 11, 2003
+//
+//  Modifications:
+//    Eric Brugger, Fri Feb 13 14:14:41 PST 2004
+//    Modified the routine to use both the width and height for the window
+//    size, instead of using with width for both.
 //
 // ****************************************************************************
 
@@ -5061,25 +5073,27 @@ ViewerWindowManager::SimpleAddWindow()
     // Determine the position and size of the new window.
     //
     int       x, y;
-    int       size;
+    int       width, height;
 
     if (windowIndex < layout)
     {
-        x    = windowLimits[layoutIndex][windowIndex].x;
-        y    = windowLimits[layoutIndex][windowIndex].y;
-        size = windowLimits[layoutIndex][windowIndex].width;
+        x      = windowLimits[layoutIndex][windowIndex].x;
+        y      = windowLimits[layoutIndex][windowIndex].y;
+        width  = windowLimits[layoutIndex][windowIndex].width;
+        height = windowLimits[layoutIndex][windowIndex].height;
     }
     else
     {
-        x    = windowLimits[0][0].x + (nWindows - layout + 1) * 32;
-        y    = windowLimits[0][0].y + (nWindows - layout + 1) * 32;
-        size = windowLimits[layoutIndex][0].width;
+        x      = windowLimits[0][0].x + (nWindows - layout + 1) * 32;
+        y      = windowLimits[0][0].y + (nWindows - layout + 1) * 32;
+        width  = windowLimits[layoutIndex][0].width;
+        height = windowLimits[layoutIndex][0].height;
     }
 
     //
     // Create the new window along with its animation.
     //
-    CreateVisWindow(windowIndex, size, size, x, y);
+    CreateVisWindow(windowIndex, width, height, x, y);
 
     return windowIndex;
 }
