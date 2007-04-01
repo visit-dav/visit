@@ -1705,6 +1705,9 @@ vtkUnstructuredGridFacelistFilter::PrintSelf(ostream& os, vtkIndent indent)
 //    Jeremy Meredith, Thu Jun 12 09:10:14 PDT 2003
 //    Changed the estimate of how big a connectivity array to allocate.
 //
+//    Brad Whitlock, Fri Oct 1 17:11:47 PST 2004
+//    Passed the field data through.
+//
 // ****************************************************************************
 
 void
@@ -1725,6 +1728,9 @@ vtkUnstructuredGridFacelistFilter::Execute()
     vtkPointData *pd = input->GetPointData();
     vtkPointData *outputPD = output->GetPointData();
     outputPD->PassData(pd);
+
+    // Pass the field data through
+    output->GetFieldData()->ShallowCopy(GetInput()->GetFieldData());
 
     int ntotalpts = input->GetNumberOfPoints();
     HashEntryList list(ntotalpts);

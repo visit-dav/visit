@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+  <Plugin name="Label" type="plot" label="Label" version="1.0" enabled="true" vartype="mesh,scalar,vector" iconFile="Label.xpm">
+    <Files components="V">
+      avtLabelFilter.C
+      avtLabelRenderer.C
+      avtMesaLabelRenderer.C
+      avtOpenGLLabelRenderer.C
+    </Files>
+    <Files components="E">
+      avtLabelFilter.C
+      avtLabelRenderer.C
+      avtMesaLabelRenderer.C
+      avtOpenGLLabelRenderer.C
+    </Files>
+    <Attribute name="LabelAttributes" purpose="This class contains the fields that we need to set the attributes for the Label plot." persistent="true" exportAPI="" exportInclude="" codefile="LabelAttributes.code">
+      <Enum name="LabelIndexDisplay">
+        Natural
+        LogicalIndex
+        Index
+      </Enum>
+      <Enum name="LabelHorizontalAlignment">
+        HCenter
+        Left
+        Right
+      </Enum>
+      <Enum name="LabelVerticalAlignment">
+        VCenter
+        Top
+        Bottom
+      </Enum>
+      <Enum name="LabelDrawFacing">
+        Front
+        Back
+        FrontAndBack
+      </Enum>
+      <Field name="legendFlag" label="Legend" type="bool">
+        true
+      </Field>
+      <Field name="showNodes" label="Show nodes" type="bool">
+        false
+      </Field>
+      <Field name="showCells" label="Show cells" type="bool">
+        true
+      </Field>
+      <Field name="restrictNumberOfLabels" label="Restrict number of labels" type="bool">
+        true
+      </Field>
+      <Field name="drawLabelsFacing" label="Draw labels facing" type="enum" subtype="LabelDrawFacing">
+        Front
+      </Field>
+      <Field name="showSingleNode" label="Show single node" type="bool">
+        false
+      </Field>
+      <Field name="showSingleCell" label="Show single cell" type="bool">
+        false
+      </Field>
+      <Field name="useForegroundTextColor" label="Use foreground text color" type="bool">
+        true
+      </Field>
+      <Field name="labelDisplayFormat" label="Label display" type="enum" subtype="LabelIndexDisplay">
+        Natural
+      </Field>
+      <Field name="numberOfLabels" label="numberOfLabels" type="int">
+        200
+      </Field>
+      <Field name="textColor" label="Text color" type="color" enabler="useForegroundTextColor:true">
+        255
+        0
+        0
+        0
+      </Field>
+      <Field name="textHeight" label="textHeight" type="float">
+        0.020000
+      </Field>
+      <Field name="textLabel" label="textLabel" type="string">
+        *
+      </Field>
+      <Field name="horizontalJustification" label="Horizontal justification" type="enum" subtype="LabelHorizontalAlignment">
+        HCenter
+      </Field>
+      <Field name="verticalJustification" label="Vertical Justification" type="enum" subtype="LabelVerticalAlignment">
+        VCenter
+      </Field>
+      <Field name="singleNodeIndex" label="Single node index" type="int">
+        0
+      </Field>
+      <Field name="singleCellIndex" label="Single cell index" type="int">
+        0
+      </Field>
+      <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+    </Attribute>
+  </Plugin>

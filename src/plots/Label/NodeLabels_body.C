@@ -1,0 +1,216 @@
+//
+// Make sure that CREATE_LABEL defaults to SNPRINTF if we have not
+// defined it.
+//
+#ifndef CREATE_LABEL
+#define CREATE_LABEL SNPRINTF
+#endif
+
+    vtkPoints    *p = input->GetPoints();
+    vtkDataArray *data = input->GetPointData()->GetArray(varname);
+    vtkIdType     npts = p ? p->GetNumberOfPoints() : 0;
+    vtkIdType     skipIncrement = 1;
+
+    //
+    // If the data array is empty then try and get the node numbers so we can
+    // label the node numbers using the original node numbers.
+    //
+    vtkUnsignedIntArray *originalNodes = 0;
+    if(data == 0)
+    {
+        vtkDataArray *tmpNodes = input->GetPointData()->GetArray("LabelFilterOriginalNodeNumbers");
+        if(tmpNodes == 0)
+        {
+            debug3 << "avtLabelRenderer could not find LabelFilterOriginalNodeNumbers" << endl;
+        }
+        else if(!tmpNodes->IsA("vtkUnsignedIntArray"))
+        {
+            debug3 << "avtLabelRenderer found LabelFilterOriginalNodeNumbers but it "
+                      "was not a vtkUnsignedIntArray. It was a " << tmpNodes->GetClassName() << endl;
+        }
+        else
+        {
+            originalNodes = (vtkUnsignedIntArray *)tmpNodes;
+        }
+    }
+
+    if(data != 0)
+    {
+        int numElements = data->GetNumberOfTuples();
+
+        if(numElements != npts)
+        {
+            debug3 << "The number of scalars is: " << numElements
+                   << ", while the #points is: " << npts << endl;
+        }
+
+        if(data->GetNumberOfComponents() == 1)
+        {
+debug3 << "Labelling nodes with scalar data" << endl;
+            for(vtkIdType id = 0; id < npts; ++id)
+            {
+                //
+                // Figure out where the point vert[] projects to on the screen.
+                //
+                // const float *vert = p->GetPoint(id);
+                BEGIN_LABEL
+                    float scalarVal = data->GetTuple1(id);
+                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%g", scalarVal);
+                END_LABEL
+            }
+        }
+        else if(data->GetNumberOfComponents() == 2)
+        {
+debug3 << "Labelling nodes with 2d vector data" << endl;
+            for(vtkIdType id = 0; id < npts; ++id)
+            {
+                // const float *vert = p->GetPoint(id);
+                BEGIN_LABEL 
+                    float *vectorVal = data->GetTuple2(id);
+                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, "<%g, %g>", vectorVal[0], vectorVal[1]);
+                END_LABEL
+            }
+        }
+        else if(data->GetNumberOfComponents() == 3)
+        {
+debug3 << "Labelling nodes with 3d vector data" << endl;
+            for(vtkIdType id = 0; id < npts; ++id)
+            {
+                // const float *vert = p->GetPoint(id);
+                BEGIN_LABEL
+                    float *vectorVal = data->GetTuple3(id);
+                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, "<%g, %g, %g>", vectorVal[0], vectorVal[1], vectorVal[2]);
+                END_LABEL
+            }
+        }
+        else
+        {
+            debug3 << "The input vector has " << data->GetNumberOfComponents()
+                 << " components. We don't like that!" << endl;
+        }
+    }
+    else if(originalNodes != 0)
+    {
+debug3 << "Labelling nodes with original node indices: "
+       << "nOriginalNodes:" << originalNodes->GetNumberOfTuples()
+       << ", npts=" << npts
+       << endl;
+
+        //
+        // Figure out the first real index in x,y,z. This only matters if we
+        // have ghost zones and structured indices.
+        //
+        vtkDataArray *rDims = input->GetFieldData()->
+            GetArray("avtRealDims");
+        unsigned int xbase = 0, ybase = 0, zbase = 0;
+        if(rDims != 0 &&
+           rDims->IsA("vtkIntArray") &&
+           rDims->GetNumberOfTuples() == 6)
+        {
+            const unsigned int *iptr = (const unsigned int *)rDims->GetVoidPointer(0);
+            xbase = iptr[0];
+            ybase = iptr[2];
+            zbase = iptr[4];
+        }
+
+        vtkDataArray *sDims = input->GetFieldData()->
+            GetArray("avtOriginalStructuredDimensions");
+        if((atts.GetLabelDisplayFormat() == LabelAttributes::Natural ||
+            atts.GetLabelDisplayFormat() == LabelAttributes::LogicalIndex) &&
+           sDims != 0 &&
+           sDims->IsA("vtkUnsignedIntArray") &&
+           sDims->GetNumberOfTuples() == 3)
+        {
+            //
+            // Add the node labels as structured indices.
+            //
+            const unsigned int *iptr = (const unsigned int *)sDims->GetVoidPointer(0);
+            unsigned int xdims = iptr[0];
+            unsigned int ydims = iptr[1];
+            unsigned int zdims = iptr[2];
+
+            if(zdims == 1)
+            {
+                // 2D
+                for(vtkIdType id = 0; id < npts; id += skipIncrement)
+                {
+                    // const float *vert = p->GetPoint(id);
+                    BEGIN_LABEL
+                        unsigned int realNodeId = originalNodes->GetValue(id);
+                        if(realNodeId == -1)
+                        {
+                            CREATE_LABEL(labelString, MAX_LABEL_SIZE, " ");
+                        }
+                        else
+                        {
+                            unsigned int y = (realNodeId / xdims) - ybase;
+                            unsigned int x = (realNodeId % xdims) - xbase;
+                            CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%d,%d", x,y);
+                        }
+                    END_LABEL
+                }
+            }
+            else
+            {
+                // 3D
+                unsigned int xydims = xdims * ydims;
+                for(vtkIdType id = 0; id < npts; id += skipIncrement)
+                {
+                    // const float *vert = p->GetPoint(id);
+                    BEGIN_LABEL
+                        unsigned int realNodeId = originalNodes->GetValue(id);
+                        if(realNodeId == -1)
+                        {
+                            CREATE_LABEL(labelString, MAX_LABEL_SIZE, " ");
+                        }
+                        else
+                        {
+                            unsigned int z = (realNodeId / xydims) - zbase;
+                            unsigned int offset = realNodeId % xydims;
+                            unsigned int y = (offset / xdims) - ybase;
+                            unsigned int x = (offset % xdims) - xbase;
+                            CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%d,%d,%d", x,y,z);
+                        }
+                    END_LABEL
+                }
+            }
+        }
+        else
+        {
+            //
+            // Add the node labels as regular indices. This is the default for
+            // unstructured meshes or structured meshes where we can't find the
+            // information about how many nodes there are in each dimension.
+            //
+            for(vtkIdType id = 0; id < npts; id += skipIncrement)
+            {
+                // const float *vert = p->GetPoint(id);
+                BEGIN_LABEL
+                    unsigned int realNodeId = originalNodes->GetValue(id);
+                    if(realNodeId == -1)
+                    {
+                        CREATE_LABEL(labelString, MAX_LABEL_SIZE, " ");
+                    }
+                    else
+                    {
+                        CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%d", realNodeId);
+                    }
+                END_LABEL
+            }
+        }
+    }
+    else
+    {
+        //
+        // Add the node indices as a function of the number of points. Note that
+        // we don't do any sort of lookup into the originalNodes array since it
+        // was not available.
+        //
+        for(vtkIdType id = 0; id < npts; id += skipIncrement)
+        {
+            // const float *vert = p->GetPoint(id);
+            BEGIN_LABEL
+                CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%d", id);
+            END_LABEL
+        }
+    }

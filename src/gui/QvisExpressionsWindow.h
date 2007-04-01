@@ -29,7 +29,10 @@ class QComboBox;
 // Creation:   October 10, 2004
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Mon Oct 25 11:32:14 PDT 2004
+//    Reversed the sense of the "hidden" button.  Added a list-box-index to
+//    expresion-list-index map so we didn't have to index expressions by name.
+//
 // ****************************************************************************
 
 class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
@@ -55,7 +58,7 @@ class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
     void    nameTextChanged(const QString&);
     void    definitionTextChanged();
     void    typeChanged(int);
-    void    hiddenChanged();
+    void    notHiddenChanged();
     void    displayAllVarsChanged();
     void    insertFunction(int);
 
@@ -72,7 +75,7 @@ class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
 
     QLineEdit *nameEdit;
     QComboBox *typeList;
-    QCheckBox *hidden;
+    QCheckBox *notHidden;
     QMultiLineEdit *definitionEdit;
 
     QPushButton *newButton;
@@ -85,6 +88,7 @@ class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
 
     // State information
     ExpressionList *exprList;
+    std::map<int,int> indexMap;
 };
 
 #endif

@@ -17,92 +17,159 @@
 #include <qpushbutton.h>
 #include <qsplitter.h>
 
+#include <QNarrowLineEdit.h>
+
 #define STDMIN(A,B) (((A)<(B)) ? (A) : (B))
 #define STDMAX(A,B) (((A)<(B)) ? (B) : (A))
 
-const char *known_functions[] = {
-        "abs",
-        "acos",
-        "and",
-        "area",
-        "asin",
-        "aspect",
-        "aspect_gamma",
-        "atan",
-        "condition",
-        "coord",
-        "coords",
-        "cos",
-        "cross",
-        "deg2rad",
-        "degree",
-        "det",
-        "determinant",
-        "diagonal",
-        "dimension",
-        "dot",
-        "effective_tensor",
-        "eigenvalue",
-        "eigenvector",
-        "eq",
-        "equal",
-        "equals",
-        "ge",
-        "gradient",
-        "gt",
-        "gte",
-        "if",
-        "inverse",
-        "jacobian",
-        "largest_angle",
-        "le",
-        "ln",
-        "log",
-        "log10",
-        "lt",
-        "lte",
-        "magnitude",
-        "matvf",
-        "ne",
-        "neighbor",
-        "neq",
-        "nmats",
-        "node_degree",
-        "not",
-        "notequal",
-        "notequals",
-        "oddy",
-        "or",
-        "polar",
-        "principal_deviatoric_tensor",
-        "principal_tensor",
-        "procid",
-        "rad2deg",
-        "rand",
-        "random",
-        "recenter",
-        "relative_size",
-        "revolved_surface_area",
-        "revolved_volume",
-        "scaled_jacobian",
-        "shape",
-        "shape_and_size",
-        "shear",
-        "sin",
-        "skew",
-        "smallest_angle",
-        "specmf",
-        "sq",
-        "sqr",
-        "sqrt",
-        "stretch",
-        "tan",
-        "taper",
-        "tensor_maximum_shear",
-        "trace",
-        "volume",
-        "warpage",
-        NULL
+// ****************************************************************************
+//  Expression Lists
+//
+//  Purpose:
+//    Categorized expression lists data.  These structures are self-contained
+//    and require the terminating nulls to be parsed correctly.  Keep in mind
+//    that 
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    October 23, 2004
+//
+// ****************************************************************************
+struct ExprNameList
+{
+    const char *name;
+    const char **list;
+};
+
+const char *expr_meshquality[] = {
+    "aspect",
+    "aspect_gamma",
+    "condition",
+    "degree",
+    "diagonal",
+    "dimension",
+    "jacobian",
+    "largest_angle",
+    "neighbor",
+    "node_degree",
+    "oddy",
+    "relative_size",
+    "scaled_jacobian",
+    "shape",
+    "shape_and_size",
+    "shear",
+    "skew",
+    "smallest_angle",
+    "stretch",
+    "taper",
+    "warpage",
+    NULL
+};
+
+const char *expr_math[] = {
+    "abs",
+    "ln",
+    "log10",
+    "sqr",
+    "sqrt",
+    "+",
+    "-",
+    "*",
+    "/",
+    "^",
+    NULL
+};
+
+const char *expr_comparison[] = {
+    "eq",
+    "ge",
+    "gt",
+    "le",
+    "lt",
+    "ne",
+    NULL
+};
+
+const char *expr_conditional[] = {
+    "if",
+    NULL
+};
+
+const char *expr_logical[] = {
+    "and",
+    "not",
+    "or",
+    NULL
+};
+
+const char *expr_trig[] = {
+    "acos",
+    "asin",
+    "atan",
+    "cos",
+    "deg2rad",
+    "rad2deg",
+    "sin",
+    "tan",
+    NULL
+};
+
+const char *expr_vector[] = {
+    "cross",
+    "dot",
+    "magnitude",
+    NULL
+};
+
+const char *expr_tensor[] = {
+    "determinant",
+    "effective_tensor",
+    "eigenvalue",
+    "eigenvector",
+    "inverse",
+    "principal_deviatoric_tensor",
+    "principal_tensor",
+    "tensor_maximum_shear",
+    "trace",
+    NULL
+};
+
+const char *expr_materials[] = {
+    "matvf",
+    "nmats",
+    "specmf",
+    NULL
+};
+
+const char *expr_mesh[] = {
+    "area",
+    "coord",
+    "polar",
+    "revolved_surface_area",
+    "revolved_volume",
+    "volume",
+    NULL
+};
+
+const char *expr_misc[] = {
+    "gradient",
+    "recenter",
+    NULL
+};
+
+ExprNameList exprlist[] =
+{
+    {"Math",          expr_math},
+    {"Vector",        expr_vector},
+    {"Tensor",        expr_tensor},
+    {"Material",      expr_materials},
+    {"Mesh",          expr_mesh},
+    {"Mesh Quality",  expr_meshquality},
+    {"Miscellaneous", expr_misc},
+    {"Trigonometry",  expr_trig},
+    {"Comparison",    expr_comparison},
+    {"Conditional",   expr_conditional},
+    {"Logical",       expr_logical},
+    {NULL,NULL}
 };
 
 // ****************************************************************************
@@ -159,12 +226,19 @@ QvisExpressionsWindow::~QvisExpressionsWindow()
 //       We should pick one of the two methods eventually.
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Sat Oct 23 11:50:35 PDT 2004
+//    Changed the layout a bit: use group boxes with titles for the two
+//    panes, change to use splitters, change the resize proportions,
+//    move the "hidden" toggle to the bottom and change its sense,
+//    move "insert function" to the right side and group expressions into
+//    categorized submenus, reword some other labels to make them more
+//    descriptive.
+//
 // ****************************************************************************
 void
 QvisExpressionsWindow::CreateWindowContents()
 {
-//#define USE_SPLITTER
+#define USE_SPLITTER
 #ifndef USE_SPLITTER
     QHBoxLayout *mainLayout = new QHBoxLayout(topLayout, -1, "mainLayout");
 #else
@@ -175,41 +249,45 @@ QvisExpressionsWindow::CreateWindowContents()
 
 #ifndef USE_SPLITTER
     QGridLayout *listLayout = new QGridLayout(mainLayout, 3,2, 5, "listLayout");
-    mainLayout->setStretchFactor(listLayout, 30);
+    mainLayout->setStretchFactor(listLayout, 50);
 #define f1 central
 #else
-    QFrame *f1 = new QFrame(mainSplitter);
-    QGridLayout *listLayout = new QGridLayout(f1, 3,2, 0, 5, "listLayout");
+    QGroupBox *f1 = new QGroupBox("Expression List",mainSplitter);
+    QGridLayout *listLayout = new QGridLayout(f1, 4,2, 7, 5, "listLayout");
 #endif
 
+    listLayout->addRowSpacing(0, 10);
+
     exprListBox = new QListBox(f1);
-    listLayout->addMultiCellWidget(exprListBox, 0,0, 0,1);
+    listLayout->addMultiCellWidget(exprListBox, 1,1, 0,1);
 
     newButton = new QPushButton("New", f1, "newButton");
-    listLayout->addWidget(newButton, 1,0);
+    listLayout->addWidget(newButton, 2,0);
 
-    delButton = new QPushButton("Del", f1, "delButton");
-    listLayout->addWidget(delButton, 1,1);
+    delButton = new QPushButton("Delete", f1, "delButton");
+    listLayout->addWidget(delButton, 2,1);
 
-    displayAllVars = new QCheckBox("Display all", f1, "displayAllVars");
-    listLayout->addMultiCellWidget(displayAllVars, 2,2, 0,1);
+    displayAllVars = new QCheckBox("Display expressions from database", f1, "displayAllVars");
+    listLayout->addMultiCellWidget(displayAllVars, 3,3, 0,1);
 
 #ifndef USE_SPLITTER
     mainLayout->addSpacing(10);
     QGridLayout *editLayout = new QGridLayout(mainLayout, 6,2, 5, "editLayout");
-    mainLayout->setStretchFactor(editLayout, 70);
+    mainLayout->setStretchFactor(editLayout, 50);
 #define f2 central
 #else
-    QFrame *f2 = new QFrame(mainSplitter);
-    QGridLayout *editLayout = new QGridLayout(f2, 7,2, 0, 5, "editLayout");
+    QGroupBox *f2 = new QGroupBox("Definition", mainSplitter);
+    QGridLayout *editLayout = new QGridLayout(f2, 6,4, 7, 5, "editLayout");
 #endif
-    editLayout->addColSpacing(1,20);
     int row = 0;
 
+    editLayout->addRowSpacing(row, 10);
+    row++;
+
     nameEditLabel = new QLabel("Name", f2, "nameEditLabel");
-    nameEdit = new QLineEdit(f2, "nameEdit");
-    editLayout->addWidget(nameEditLabel, row, 0);
-    editLayout->addWidget(nameEdit, row, 1);
+    nameEdit = new QNarrowLineEdit(f2, "nameEdit");
+    editLayout->addMultiCellWidget(nameEditLabel, row,row, 0,0);
+    editLayout->addMultiCellWidget(nameEdit, row,row, 1,3);
     row++;
 
     typeLabel = new QLabel("Type", f2, "typeLabel");
@@ -218,12 +296,8 @@ QvisExpressionsWindow::CreateWindowContents()
     numtypes = 5;  // HACK!!!  Variable types after 5 currently fail.  FIXME!!!
     for (int i=1; i < numtypes ; i++)
         typeList->insertItem(Expression::GetTypeString((Expression::ExprType)i));
-    editLayout->addWidget(typeLabel, row, 0);
-    editLayout->addWidget(typeList, row, 1);
-    row++;
-
-    hidden = new QCheckBox("Hidden", f2, "hidden");
-    editLayout->addMultiCellWidget(hidden, row,row, 0,1);
+    editLayout->addMultiCellWidget(typeLabel, row,row, 0,0);
+    editLayout->addMultiCellWidget(typeList, row,row, 1,3);
     row++;
 
     definitionEditLabel = new QLabel("Definition", f2, "definitionEditLabel");
@@ -233,18 +307,28 @@ QvisExpressionsWindow::CreateWindowContents()
     definitionEdit = new QMultiLineEdit(f2, "definitionEdit");
     definitionEdit->setWordWrap(QMultiLineEdit::WidgetWidth);
     definitionEdit->setWrapPolicy(QMultiLineEdit::AtWhiteSpace);
-    editLayout->addMultiCellWidget(definitionEdit, row,row, 0,1);
+    editLayout->addMultiCellWidget(definitionEdit, row,row, 0,3);
     row++;
 
-    editLayout->addRowSpacing(row, 20);
-    row++;
+    notHidden = new QCheckBox("Show variable in plot menus", f2, "notHidden");
+    editLayout->addMultiCellWidget(notHidden, row,row, 0,1);
 
-    insertFunctionButton = new QPushButton("Insert Function", f2);
+    insertFunctionButton = new QPushButton("Insert Function...", f2);
     insertFunctionMenu = new QPopupMenu(f2, "insertFunctionMenu");
-    for (int i=0; known_functions[i]; i++)
-        insertFunctionMenu->insertItem(known_functions[i]);
+    for (int i=0; exprlist[i].name; i++)
+    {
+        QPopupMenu *tmpMenu = new QPopupMenu(f2, exprlist[i].name);
+        for (int j=0; exprlist[i].list[j]; j++)
+        {
+            tmpMenu->insertItem(exprlist[i].list[j]);
+        }
+        insertFunctionMenu->insertItem(exprlist[i].name, tmpMenu);
+        connect(tmpMenu, SIGNAL(activated(int)),
+                this, SLOT(insertFunction(int)));
+    }
     insertFunctionButton->setPopup(insertFunctionMenu);
-    editLayout->addWidget(insertFunctionButton, row, 0);
+    editLayout->addWidget(insertFunctionButton, row, 3);
+    row++;
 
     // connect signals
 
@@ -260,12 +344,10 @@ QvisExpressionsWindow::CreateWindowContents()
             this, SLOT(delExpression()));
     connect(typeList, SIGNAL(activated(int)),
             this, SLOT(typeChanged(int)));
-    connect(hidden, SIGNAL(clicked()),
-            this, SLOT(hiddenChanged()));
+    connect(notHidden, SIGNAL(clicked()),
+            this, SLOT(notHiddenChanged()));
     connect(displayAllVars, SIGNAL(clicked()),
             this, SLOT(displayAllVarsChanged()));
-    connect(insertFunctionMenu, SIGNAL(activated(int)),
-            this, SLOT(insertFunction(int)));
 }
 
 // ****************************************************************************
@@ -284,6 +366,10 @@ QvisExpressionsWindow::CreateWindowContents()
 // Creation:   October 10, 2004
 //
 // Modifications:
+//    Jeremy Meredith, Mon Oct 25 12:52:45 PDT 2004
+//    Always access the expression list by index, just in case there
+//    are two expressions with the same name.  Keep in mind we need
+//    a map from the list-position index to expressionlist index.
 //
 // ****************************************************************************
 void
@@ -292,12 +378,15 @@ QvisExpressionsWindow::UpdateWindow(bool)
     BlockAllSignals(true);
 
     exprListBox->clear();
+    indexMap.clear();
+    int pos = 0;
     for (int i=0; i<exprList->GetNumExpressions(); i++)
     {
         if (displayAllVars->isChecked() ||
             !exprList->GetExpression(i).GetFromDB())
         {
             exprListBox->insertItem(exprList->GetExpression(i).GetName());
+            indexMap[pos++] = i;
         }
     }
     BlockAllSignals(false);
@@ -314,6 +403,12 @@ QvisExpressionsWindow::UpdateWindow(bool)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 10, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Oct 25 11:34:35 PDT 2004
+//    Reversed the sense of the "hidden" button.
+//    Always access the expression list by index, just in case there
+//    are two expressions with the same name.
+//
 // ****************************************************************************
 void
 QvisExpressionsWindow::UpdateWindowSingleItem()
@@ -321,28 +416,20 @@ QvisExpressionsWindow::UpdateWindowSingleItem()
     BlockAllSignals(true);
     int index = exprListBox->currentItem();
 
-    if (index == -1)
+    if (index <  0)
     {
         nameEdit->setText("");
-        hidden->setChecked(false);
+        notHidden->setChecked(true);
         definitionEdit->setText("");
     }
     else
     {
-        Expression *e = (*exprList)[exprListBox->currentText()];
-        if (!e)
-        {
-            nameEdit->setText("");
-            hidden->setChecked(false);
-            definitionEdit->setText("");
-        }
-        else
-        {
-            nameEdit->setText(e->GetName());
-            hidden->setChecked(e->GetHidden());
-            typeList->setCurrentText(Expression::GetTypeString(e->GetType()));
-            definitionEdit->setText(e->GetDefinition());
-        }
+        Expression &e = (*exprList)[indexMap[index]];
+
+        nameEdit->setText(e.GetName());
+        notHidden->setChecked(! e.GetHidden());
+        typeList->setCurrentText(Expression::GetTypeString(e.GetType()));
+        definitionEdit->setText(e.GetDefinition());
     }
     
     UpdateWindowSensitivity();
@@ -358,24 +445,31 @@ QvisExpressionsWindow::UpdateWindowSingleItem()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 10, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Oct 25 11:34:35 PDT 2004
+//    Reversed the sense of the "hidden" button.
+//    Always access the expression list by index, just in case there
+//    are two expressions with the same name.
+//
 // ****************************************************************************
 void
 QvisExpressionsWindow::UpdateWindowSensitivity()
 {
     bool enable = true;
-    if (exprListBox->currentItem() == -1)
+    int index = exprListBox->currentItem();
+
+    if (index <  0)
     {
         enable = false;
     }
-    else if ((*exprList)[exprListBox->currentText().latin1()] &&
-             (*exprList)[exprListBox->currentText().latin1()]->GetFromDB())
+    else if ((*exprList)[indexMap[index]].GetFromDB())
     {
         enable = false;
     }
 
     nameEdit->setEnabled(enable);
     delButton->setEnabled(enable);
-    hidden->setEnabled(enable);
+    notHidden->setEnabled(enable);
     typeList->setEnabled(enable);
     definitionEdit->setEnabled(enable);
     insertFunctionButton->setEnabled(enable);
@@ -466,6 +560,9 @@ QvisExpressionsWindow::apply()
 // Creation:   October 10, 2004
 //
 // Modifications:
+//    Jeremy Meredith, Mon Oct 25 12:39:53 PDT 2004
+//    Always access the expression list by index, just in case there
+//    are two expressions with the same name.
 //   
 // ****************************************************************************
 void
@@ -515,18 +612,10 @@ QvisExpressionsWindow::delExpression()
 {
     int index = exprListBox->currentItem();
 
-    if (index == -1)
+    if (index <  0)
         return;
 
-    for (int i=0; i<exprList->GetNumExpressions(); i++)
-    {
-        if (exprList->GetExpression(i).GetName() == 
-            exprListBox->currentText().latin1())
-        {
-            exprList->RemoveExpression(i);
-            break;
-        }
-    }
+    exprList->RemoveExpression(index);
 
     exprList->Notify();
 }
@@ -541,19 +630,23 @@ QvisExpressionsWindow::delExpression()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 10, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Oct 25 12:40:01 PDT 2004
+//    Always access the expression list by index, just in case there
+//    are two expressions with the same name.
+//
 // ****************************************************************************
 void
 QvisExpressionsWindow::definitionTextChanged()
 {
     int index = exprListBox->currentItem();
-    if (index == -1)
+
+    if (index <  0)
         return;
 
-    Expression *e = (*exprList)[exprListBox->currentText()];
-    if (!e)
-        return;
+    Expression &e = (*exprList)[indexMap[index]];
 
-    e->SetDefinition(definitionEdit->text());
+    e.SetDefinition(definitionEdit->text());
 }
 
 // ****************************************************************************
@@ -568,20 +661,24 @@ QvisExpressionsWindow::definitionTextChanged()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 10, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Oct 25 12:40:31 PDT 2004
+//    Always access the expression list by index, just in case there
+//    are two expressions with the same name.
+//
 // ****************************************************************************
 void
 QvisExpressionsWindow::nameTextChanged(const QString &text)
 {
     int index = exprListBox->currentItem();
-    if (index == -1)
+
+    if (index <  0)
         return;
 
-    Expression *e = (*exprList)[exprListBox->currentText()];
-    if (!e)
-        return;
+    Expression &e = (*exprList)[indexMap[index]];
 
     QString newname = text.stripWhiteSpace();
-    e->SetName(newname);
+    e.SetName(newname);
     BlockAllSignals(true);
     exprListBox->changeItem(newname, index);
     BlockAllSignals(false);
@@ -599,46 +696,55 @@ QvisExpressionsWindow::nameTextChanged(const QString &text)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 10, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Oct 25 12:40:37 PDT 2004
+//    Always access the expression list by index, just in case there
+//    are two expressions with the same name.
+//
 // ****************************************************************************
 void
 QvisExpressionsWindow::typeChanged(int value)
 {
     int index = exprListBox->currentItem();
-    if (index == -1)
+
+    if (index <  0)
         return;
 
-    Expression *e = (*exprList)[exprListBox->currentText()];
-    if (!e)
-        return;
+    Expression &e = (*exprList)[indexMap[index]];
 
     // Add one because we skipped index 0 (unknown) when creating the
     // list box originally
-    e->SetType(Expression::ExprType(value+1));
+    e.SetType(Expression::ExprType(value+1));
 }
 
 // ****************************************************************************
-//  Method:  QvisExpressionsWindow::hiddenChanged
+//  Method:  QvisExpressionsWindow::notHiddenChanged
 //
 //  Purpose:
-//    Slot function for the hidden toggle.
-//    Sets the "hidden" flag of an expression.
+//    Slot function for the notHidden toggle.
+//    Sets the "notHidden" flag of an expression.
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 10, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Oct 25 11:34:35 PDT 2004
+//    Reversed the sense of the "hidden" button.
+//    Always access the expression list by index, just in case there
+//    are two expressions with the same name.
+//
 // ****************************************************************************
 void
-QvisExpressionsWindow::hiddenChanged()
+QvisExpressionsWindow::notHiddenChanged()
 {
     int index = exprListBox->currentItem();
-    if (index == -1)
+
+    if (index <  0)
         return;
 
-    Expression *e = (*exprList)[exprListBox->currentText()];
-    if (!e)
-        return;
+    Expression &e = (*exprList)[indexMap[index]];
 
-    e->SetHidden(hidden->isChecked());
+    e.SetHidden(!notHidden->isChecked());
 }
 
 // ****************************************************************************
@@ -651,11 +757,29 @@ QvisExpressionsWindow::hiddenChanged()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 10, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Oct 25 13:33:35 PDT 2004
+//    Made it reselect an expression that was already selected, like Apply.
+//
 // ****************************************************************************
 void
 QvisExpressionsWindow::displayAllVarsChanged()
 {
+    // This updates the window, which rebuilds the expression list.
+    // If we have an expression selected, reselect it afterwards.
+    int reselect = (exprListBox->currentItem() != -1);
+    QString item = exprListBox->currentText();
+
     UpdateWindow(true);
+
+    if (reselect)
+    {
+        for (int i=0; i<exprListBox->count(); i++)
+        {
+            if (exprListBox->text(i) == item)
+                exprListBox->setSelected(i, true);
+        }
+    }
 }
 
 // ****************************************************************************
@@ -671,6 +795,11 @@ QvisExpressionsWindow::displayAllVarsChanged()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 10, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Oct 25 11:33:43 PDT 2004
+//    Make sure it's not just a single-char operator before adding the
+//    function call parentheses.
+//
 // ****************************************************************************
 void
 QvisExpressionsWindow::insertFunction(int id)
@@ -680,12 +809,16 @@ QvisExpressionsWindow::insertFunction(int id)
 
     QString orig = definitionEdit->text();
     definitionEdit->insert(insertFunctionMenu->text(id));
-    definitionEdit->insert("()");
 
-    int col,line;
-    definitionEdit->getCursorPosition(&line, &col);
-    col--;
-    if (col < 0)
-        col = 0;
-    definitionEdit->setCursorPosition(line, col);
+    if (insertFunctionMenu->text(id).length() >= 2)
+    {
+        definitionEdit->insert("()");
+
+        int col,line;
+        definitionEdit->getCursorPosition(&line, &col);
+        col--;
+        if (col < 0)
+            col = 0;
+        definitionEdit->setCursorPosition(line, col);
+    }
 }
