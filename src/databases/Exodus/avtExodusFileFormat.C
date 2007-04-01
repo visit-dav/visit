@@ -212,6 +212,9 @@ avtExodusFileFormat::FreeUpResources(void)
 //    Hank Childs, Thu Jul 22 10:43:36 PDT 2004
 //    Tell the reader to generate block ids.
 //
+//    Mark C. Miller, Mon Aug  9 19:12:24 PDT 2004
+//    Tell the reader to generate global zone ids
+//
 // ****************************************************************************
 
 vtkExodusReader *
@@ -225,6 +228,7 @@ avtExodusFileFormat::GetReader(void)
     reader = vtkExodusReader::New();
     reader->SetFileName(filenames[0]);
     reader->SetGenerateNodeGlobalIdArray(1);
+    reader->SetGenerateElementGlobalIdArray(1);
     reader->SetGenerateBlockIdCellArray(1);
 
     //
@@ -355,6 +359,9 @@ avtExodusFileFormat::GetNTimesteps(void)
 //    Hank Childs, Thu Jul 22 14:41:51 PDT 2004
 //    Use the real filenames when creating the SIL.
 //
+//    Mark C. Miller, Mon Aug  9 19:12:24 PDT 2004
+//    Removed setting of avtMeshMetadata->containsGlobalNodeIds
+//
 // ****************************************************************************
 
 void
@@ -389,7 +396,6 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         mesh->blockNames = (*globalFileLists)[fileList];
     }
     mesh->blockPieceName = "File";
-    mesh->containsGlobalNodeIds = true;
     md->Add(mesh);
 
     //
@@ -480,10 +486,49 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Hank Childs, Tue Apr  8 10:58:18 PDT 2003
 //    Make sure the file is read in before proceeding.
 //
+//    Mark C. Miller, Thu Aug  5 14:17:36 PDT 2004
+//    Moved whole of implementation to ReadMesh
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtExodusFileFormat::GetMesh(int ts, const char *mesh)
+{
+    bool okToRemoveAndCacheGlobalIds = true;
+    return ReadMesh(ts, mesh, okToRemoveAndCacheGlobalIds);
+}
+
+// ****************************************************************************
+//  Method: avtExodusFileFormat::ReadMesh
+//
+//  Purpose:
+//      Returns the mesh for a specific timestep and, optionally, can remove
+//      and cache global node and zone ids in AVT's VoidRefCache
+//
+//  Arguments:
+//      ts      The timestep of interest.
+//      mesh    The name of the mesh of interest.
+//      ok...   Boolean indicating if remove and caching of global id
+//              information is permitted.
+//
+//  Returns:    The mesh.  Note that the "material" can be set beforehand and
+//              that will alter how the mesh is read in.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 9, 2001
+//
+//  Modifications:
+//
+//    Mark C. Miller,
+//    Renamed from GetMesh
+//    Added bool argument for okToRemoveAndCacheGlobalIds
+//    Added code to remove and cache global node and zone ids
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtExodusFileFormat::ReadMesh(int ts, const char *mesh,
+    bool okToRemoveAndCacheGlobalIds)
 {
     if (!readInFile)
     {
@@ -519,6 +564,33 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
 
     if (ds != NULL)
     {
+        if (okToRemoveAndCacheGlobalIds)
+        {
+            //
+            // We've decided that global node and zone ids are AVT_AUXILIARY
+            // data and have a life of their own apart from any mesh they are
+            // associated with. So, if the VTK dataset we've obtained has
+            // them, here, we remove them and cache them in AVT separately.
+            //
+            vtkDataArray *gnodeIds = ds->GetPointData()->GetArray("avtGlobalNodeId");
+            if (gnodeIds != NULL)
+            {
+                ds->GetPointData()->RemoveArray("avtGlobalNodeId");
+
+                void_ref_ptr vr = void_ref_ptr(gnodeIds, avtVariableCache::DestructVTKObject);
+                cache->CacheVoidRef(mesh, AUXILIARY_DATA_GLOBAL_NODE_IDS, fts, dom, vr);
+            }
+
+            vtkDataArray *gzoneIds = ds->GetCellData()->GetArray("ElementGlobalId");
+            if (gzoneIds != NULL)
+            {
+                ds->GetCellData()->RemoveArray("ElementGlobalId");
+
+                void_ref_ptr vr = void_ref_ptr(gzoneIds, avtVariableCache::DestructVTKObject);
+                cache->CacheVoidRef(mesh, AUXILIARY_DATA_GLOBAL_ZONE_IDS, fts, dom, vr);
+            }
+        }
+
         rv = (vtkDataSet *) ds->NewInstance();
         rv->ShallowCopy(ds);
 
@@ -688,6 +760,15 @@ avtExodusFileFormat::GetVectorVar(int ts, const char *var)
 //  Programmer: Hank Childs
 //  Creation:   July 22, 2004
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Aug  9 19:12:24 PDT 2004
+//    Added code to read global node/zone ids. Unfortunately, I saw no easy
+//    way to do it *without* reading the whole mesh first. In typical usage,
+//    that will have already been done and the global node/zone ids cached and
+//    so we'll rarely, if ever, wind up in here making an explicit request
+//    for them.
+//
 // ****************************************************************************
 
 void *
@@ -697,40 +778,121 @@ avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts,
 {
     int   i;
 
-    if (strcmp(type, AUXILIARY_DATA_MATERIAL) != 0)
-        return NULL;
-
-    if (strstr(var, "ElementBlock") != var)
-        EXCEPTION1(InvalidVariableException, var);
-
-    vtkDataSet *ds = ForceRead("_none");
-    if (ds == NULL)
-        return NULL;
-    vtkDataArray *arr = ds->GetCellData()->GetArray("BlockId");
-    if (arr == NULL)
-        return NULL;
-    
-    int nzones = ds->GetNumberOfCells();
-
-    vector<int> sortedBlockIds = blockId;
-    sort(sortedBlockIds.begin(), sortedBlockIds.end());
-    std::vector<std::string> mats(numBlocks);
-    for (i = 0 ; i < numBlocks ; i++)
+    if (strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
     {
-        char num[1024];
-        sprintf(num, "%d", sortedBlockIds[i]);
-        mats[i] = num;
+        if (strstr(var, "ElementBlock") != var)
+            EXCEPTION1(InvalidVariableException, var);
+
+        vtkDataSet *ds = ForceRead("_none");
+        if (ds == NULL)
+            return NULL;
+        vtkDataArray *arr = ds->GetCellData()->GetArray("BlockId");
+        if (arr == NULL)
+            return NULL;
+
+        int nzones = ds->GetNumberOfCells();
+
+        vector<int> sortedBlockIds = blockId;
+        sort(sortedBlockIds.begin(), sortedBlockIds.end());
+        std::vector<std::string> mats(numBlocks);
+        for (i = 0 ; i < numBlocks ; i++)
+        {
+            char num[1024];
+            sprintf(num, "%d", sortedBlockIds[i]);
+            mats[i] = num;
+        }
+
+        int *mat_0 = new int[nzones];
+        int *ptr = (int *) arr->GetVoidPointer(0);
+        for (i = 0 ; i < nzones ; i++)
+            mat_0[i] = ptr[i]-1;
+        avtMaterial *mat = new avtMaterial(numBlocks, mats, nzones, mat_0,
+                                           0, NULL, NULL, NULL, NULL);
+        delete [] mat_0;
+        df = avtMaterial::Destruct;
+        return (void*) mat;
+    }
+    else if (strcmp(type, AUXILIARY_DATA_GLOBAL_NODE_IDS) == 0)
+    {
+        // Unfortunately, without making broad changes to vtkExodusReader
+        // the only way to obtain global node ids is by first asking
+        // the reader for the mesh and then taking them from that if
+        // they are present. Fortunately, in most situations, the
+        // mesh will have already been read and the global node ids
+        // cached and we'll never wind up here having to read global
+        // node ids for the first time without having already read
+        // the mesh
+        bool okToRemoveAndCacheGlobalIds = false;
+        vtkDataSet *ds = ReadMesh(ts, "Mesh", okToRemoveAndCacheGlobalIds);
+
+        //
+        // If we happend to find that there exists also global zone Ids,
+        // we'll remove them from from the vtkDataSet object and stick
+        // them in the AVT cache now.
+        //
+        vtkDataArray *gzoneIds = ds->GetCellData()->GetArray("ElementGlobalId");
+        if (gzoneIds != NULL)
+        {
+            ds->GetCellData()->RemoveArray("ElementGlobalId");
+
+            void_ref_ptr vr = void_ref_ptr(gzoneIds, avtVariableCache::DestructVTKObject);
+            cache->CacheVoidRef("Mesh", AUXILIARY_DATA_GLOBAL_ZONE_IDS, ts, 0, vr);
+        }
+
+        //
+        // Remove the global node ids from the vtkDataSet object but DO NOT
+        // cache them as avtGenericDatabase will do that for us upon return
+        // from this call
+        //
+        vtkDataArray *gnodeIds = ds->GetPointData()->GetArray("avtGlobalNodeId");
+        if (gnodeIds != NULL)
+            ds->GetPointData()->RemoveArray("avtGlobalNodeId");
+
+        //
+        // Return what we came here for
+        //
+        df = avtVariableCache::DestructVTKObject;
+        return (void*) gnodeIds;
+    }
+    else if (strcmp(type, AUXILIARY_DATA_GLOBAL_ZONE_IDS) == 0)
+    {
+        //
+        // See long note, above, for AUXILIARY_DATA_GLOBAL_NODE_IDS query
+        //
+        bool okToRemoveAndCacheGlobalIds = false;
+        vtkDataSet *ds = ReadMesh(ts, "Mesh", okToRemoveAndCacheGlobalIds);
+
+        //
+        // If we happend to find that there exists also global node Ids,
+        // we'll remove them from from the vtkDataSet object and stick
+        // them in the AVT cache now.
+        //
+        vtkDataArray *gnodeIds = ds->GetPointData()->GetArray("avtGlobalNodeId");
+        if (gnodeIds != NULL)
+        {
+            ds->GetPointData()->RemoveArray("avtGlobalNodeId");
+
+            void_ref_ptr vr = void_ref_ptr(gnodeIds, avtVariableCache::DestructVTKObject);
+            cache->CacheVoidRef("Mesh", AUXILIARY_DATA_GLOBAL_NODE_IDS, ts, 0, vr);
+        }
+
+        //
+        // Remove the global zone ids from the vtkDataSet object but DO NOT
+        // cache them as avtGenericDatabase will do that for us upon return
+        // from this call
+        //
+        vtkDataArray *gzoneIds = ds->GetCellData()->GetArray("ElementGlobalId");
+        if (gzoneIds != NULL)
+            ds->GetCellData()->RemoveArray("ElementGlobalId");
+
+        //
+        // Return what we came here for
+        //
+        df = avtVariableCache::DestructVTKObject;
+        return (void*) gzoneIds;
     }
 
-    int *mat_0 = new int[nzones];
-    int *ptr = (int *) arr->GetVoidPointer(0);
-    for (i = 0 ; i < nzones ; i++)
-        mat_0[i] = ptr[i]-1;
-    avtMaterial *mat = new avtMaterial(numBlocks, mats, nzones, mat_0,
-                                       0, NULL, NULL, NULL, NULL);
-    delete [] mat_0;
-    df = avtMaterial::Destruct;
-    return (void*) mat;
+    return NULL;
 }
 
 

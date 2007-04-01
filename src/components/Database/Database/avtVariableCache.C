@@ -25,6 +25,24 @@ const char *avtVariableCache::DATASET_NAME = "DATASET";
 
 
 // ****************************************************************************
+//  Method: avtVariableCache::DestructVTKObject 
+//
+//  Purpose:
+//      Defines a destructor function meeting the requirements of
+//      DestructorFunction for VTK objects.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   August 4, 2004 
+//
+// ****************************************************************************
+
+void
+avtVariableCache::DestructVTKObject(void *vtkObj)
+{
+    ((vtkObject*)vtkObj)->Delete();
+}
+
+// ****************************************************************************
 //  Method: avtVariableCache constructor
 //
 //  Purpose:

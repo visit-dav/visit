@@ -52,6 +52,9 @@ CellIndex(int x, int y, int z, int nX, int nY, int nZ)
 //    Hank Childs, Sun Feb  1 22:02:51 PST 2004
 //    Do a better job of estimating the number of cells in the 2D case.
 //
+//    Hank Childs, Mon Aug  9 07:24:52 PDT 2004
+//    Do a better job of handling degenerate meshes with dimensions 1xJxK.
+//
 // ****************************************************************************
 
 void vtkStructuredGridFacelistFilter::Execute()
@@ -69,10 +72,14 @@ void vtkStructuredGridFacelistFilter::Execute()
   int   nY = dims[1];
   int   nZ = dims[2];
   int   numOutCells;
-  if (nZ > 1)
-     numOutCells = 2*(nX-1)*(nY-1) + 2*(nX-1)*(nZ-1) + 2*(nY-1)*(nZ-1);
-  else
+  if (nX == 1)
+     numOutCells = (nY-1)*(nZ-1);
+  else if (nY == 1)
+     numOutCells = (nX-1)*(nZ-1);
+  else if (nZ == 1)
      numOutCells = (nX-1)*(nY-1);
+  else
+     numOutCells = 2*(nX-1)*(nY-1) + 2*(nX-1)*(nZ-1) + 2*(nY-1)*(nZ-1);
   
   //
   // Copy over the points and the point data.

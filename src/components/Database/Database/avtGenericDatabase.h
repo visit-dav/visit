@@ -187,6 +187,9 @@ class     PickVarInfo;
 //    Kathleen Bonnell, Thu Jun 10 18:15:11 PDT 2004 
 //    Rename QueryZoneCenter to QueryCoords, added bool arg.
 //
+//    Mark C. Miller, Mon Aug  9 19:12:24 PDT 2004
+//    Added methods to get global node and zone ids
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -254,6 +257,8 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                                  const char *);
     vtkDataArray              *GetSpeciesVariable(const char *, int, int,
                                                   const char *, int);
+    vtkDataArray              *GetGlobalNodeIds(int, const char *, int);
+    vtkDataArray              *GetGlobalZoneIds(int, const char *, int);
     void                       AddSecondaryVariables(vtkDataSet *, int, int,
                                                      const char *,
                                               const std::vector<CharStrRef> &);

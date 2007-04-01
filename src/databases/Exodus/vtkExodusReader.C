@@ -680,6 +680,9 @@ void vtkExodusReader::ReadGeometry(int exoid)
 //   Hank Childs, Thu Jul 29 15:30:40 PDT 2004
 //   Fix bug with setting up the cell list.
 //
+//   Mark C. Miller, Mon Aug  9 19:12:24 PDT 2004
+//   Added code to read global element ids. If exodus winds up generating
+//   "default" ones for us, we toss 'em.
 //----------------------------------------------------------------------------
 void vtkExodusReader::ReadCells(int exoid)
 {
@@ -878,6 +881,29 @@ void vtkExodusReader::ReadCells(int exoid)
   // From now on we only need the OutIn map.
   delete [] pointMapInOutArray;
   pointMapInOutArray = NULL;
+
+  // add global element ids if requested
+  if (this->GenerateElementGlobalIdArray)
+    {
+    int *ids = new int[this->NumberOfElements];
+    int exgenm = ex_get_elem_num_map(exoid, ids);
+
+    // only do something with this data if it isn't
+    // the default numbering 
+    if (exgenm == 0)
+      {
+      vtkIntArray *arr = vtkIntArray::New();
+      arr->SetName("ElementGlobalId");
+      arr->SetArray(ids, this->NumberOfElements, 0);
+      arr->SetNumberOfComponents(1);
+      output->GetCellData()->AddArray(arr);
+      arr->Delete();
+      }
+    else
+      {
+      delete [] ids;
+      }
+    }
 }
 
 
@@ -893,6 +919,11 @@ void vtkExodusReader::ReadCells(int exoid)
 //
 //   Hank Childs, Sat Jul 10 12:19:28 PDT 2004
 //   Remove virtual function calls for performance.
+//
+//   Mark C. Miller, Mon Aug  9 19:12:24 PDT 2004
+//   Added check to only build the avtGlobalNodeId array if in fact we've
+//   read real data from the file as apposed to having ExodusII generate
+//   some default data for us.
 //
 //----------------------------------------------------------------------------
 void vtkExodusReader::ReadPoints(int exoid)
@@ -948,28 +979,34 @@ void vtkExodusReader::ReadPoints(int exoid)
   if (this->GenerateNodeGlobalIdArray != 0)
     {
     int *ids = new int[this->NumberOfNodes];
-    ex_get_node_num_map(exoid, ids);
+    int exgnnm = ex_get_node_num_map(exoid, ids);
 
-    vtkIntArray *arr = vtkIntArray::New();
-    arr->SetName("avtGlobalNodeId");
-    outPtCount = this->PointMapOutIn->GetNumberOfIds();
-    arr->SetNumberOfTuples(outPtCount);
-
-    for (outId = 0 ; outId < outPtCount ; outId++)
+    // only do something with this data if it isn't
+    // the default numbering 
+    if (exgnnm == 0)
       {
-      inId = this->PointMapOutIn->GetId(outId);
+      vtkIntArray *arr = vtkIntArray::New();
+      arr->SetName("avtGlobalNodeId");
+      outPtCount = this->PointMapOutIn->GetNumberOfIds();
+      arr->SetNumberOfTuples(outPtCount);
 
-      if (inId < 0 || inId >= this->NumberOfNodes)
+      for (outId = 0 ; outId < outPtCount ; outId++)
         {
-        vtkErrorMacro("Point id out of range");
-        inId = 0;
+        inId = this->PointMapOutIn->GetId(outId);
+
+        if (inId < 0 || inId >= this->NumberOfNodes)
+          {
+          vtkErrorMacro("Point id out of range");
+          inId = 0;
+          }
+
+        arr->SetValue(outId, ids[inId]);
         }
 
-      arr->SetValue(outId, ids[inId]);
+      GetOutput()->GetPointData()->AddArray(arr);
+      arr->Delete();
       }
 
-    GetOutput()->GetPointData()->AddArray(arr);
-    arr->Delete();
     delete [] ids;
     }
   
@@ -1448,6 +1485,14 @@ vtkDataArray *vtkExodusReader::ReadCellDataVector(int exoid, int startIdx,
 }
 
 //----------------------------------------------------------------------------
+//
+// Modifications:
+//   Mark C. Miller, Mon Aug  9 19:12:24 PDT 2004
+//   Removed code that generated global node ids based on block offsets
+//   Replaced with code in ::ReadCells, that attempts to read actual data for
+//   these from the file.
+//
+//----------------------------------------------------------------------------
 void vtkExodusReader::GenerateExtraArrays()
 {
   vtkIntArray *array;
@@ -1512,34 +1557,6 @@ void vtkExodusReader::GenerateExtraArrays()
         }
       }
     array->SetName("ElementId");
-    output->GetCellData()->AddArray(array);
-    array->Delete();
-    array = NULL;
-    }
-
-  // Element Global Id
-  if (this->GenerateElementGlobalIdArray)
-    {
-    // Determine the offset (the number of elements skipped).
-    offset = 0;
-    for (i = 0; i < this->StartBlock; ++i)
-      {
-      offset += this->NumberOfBlockElements->GetValue(i);
-      }
-    // Create the array/
-    array = vtkIntArray::New();
-    array->SetNumberOfValues(numCells);
-    count = 0;
-    for (i = this->StartBlock; i <= this->EndBlock; ++i)
-      {
-      numBlockElem = this->NumberOfBlockElements->GetValue(i);
-      for (j = 0; j < numBlockElem; ++j)
-        {
-        array->SetValue(count++,offset+j+1);
-        }
-      offset += numBlockElem;
-      }
-    array->SetName("ElementGlobalId");
     output->GetCellData()->AddArray(array);
     array->Delete();
     array = NULL;

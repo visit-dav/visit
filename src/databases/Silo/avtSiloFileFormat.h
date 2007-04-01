@@ -85,6 +85,10 @@ typedef struct
 //    Added GetFile() method
 //    Added optional bools to skip global information during OpenFile
 //
+//    Mark C. Miller, Mon Aug  9 19:12:24 PDT 2004
+//    Added methods to get global node and zone ids
+//    Added method to allocate and determine meshame for a ucd mesh
+//
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -181,12 +185,15 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     avtFacelist          *CalcExternalFacelist(DBfile *, char *);
     avtMaterial          *CalcMaterial(DBfile *, char *, int dom);
     avtSpecies           *CalcSpecies(DBfile *, char *);
+    vtkDataArray         *GetGlobalNodeIds(int, const char *);
+    vtkDataArray         *GetGlobalZoneIds(int, const char *);
 
     void                  GetQuadGhostZones(DBquadmesh *, vtkDataSet *);
     void                  VerifyQuadmesh(DBquadmesh *, const char *);
     void                  DetermineFileAndDirectory(char *, DBfile *&,char *&);
     void                  DetermineFilenameAndDirectory(char *,char *,char *&);
     void                  GetRelativeVarName(const char *,const char *,char *);
+    char                 *AllocAndDetermineMeshnameForUcdmesh(int, const char *);
 
     std::string           DetermineMultiMeshForSubVariable(DBfile*,const char*,
                                                       char**,int, const char*);
