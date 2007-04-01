@@ -2398,7 +2398,9 @@ QvisGUIApplication::RestoreSession()
 // Creation:   Mon Nov 10 15:07:37 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Feb 26 13:30:49 PST 2004
+//   Added code to tell the viewer to clear the caches on all engines.
+//
 // ****************************************************************************
 
 void
@@ -2437,6 +2439,15 @@ QvisGUIApplication::RestoreSessionFile(const QString &s)
                     DataNode *plotDatabases = guiNode->GetNode("plotDatabases");
                     if(plotDatabases)
                     {
+                        //
+                        // If we're going to be opening up files, have the
+                        // viewer tell all engines to clear their caches.
+                        //
+                        viewer->ClearCacheForAllEngines();
+
+                        //
+                        // Open each of the files that we'll need.
+                        //
                         const stringVector &db = plotDatabases->AsStringVector();
                         for(int i = 0; i < db.size(); ++i)
                         {

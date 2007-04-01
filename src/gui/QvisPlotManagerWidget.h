@@ -117,6 +117,9 @@ typedef std::vector<PluginEntry> PluginEntryVector;
 //   Brad Whitlock, Fri Aug 15 15:06:56 PST 2003
 //   Added the menu bar pointer in the constructor.
 //
+//   Brad Whitlock, Wed Feb 25 11:16:23 PDT 2004
+//   Added members to help speed up menu creation and update.
+//
 // ****************************************************************************
 
 class GUI_API QvisPlotManagerWidget : public QWidget, public GUIBase,
@@ -148,10 +151,11 @@ protected:
 private:
     void CreateMenus(QMenuBar *);
     void UpdatePlotList();
-    void PopulateVariableLists(const QualifiedFilename &filename);
+    bool PopulateVariableLists(VariableMenuPopulator &,
+                               const QualifiedFilename &filename);
     void UpdatePlotVariableMenu();
     void UpdateVariableMenu();
-    void UpdatePlotAndOperatorMenuEnabledState() const;
+    void UpdatePlotAndOperatorMenuEnabledState();
     void UpdateHideDeleteDrawButtonsEnabledState() const;
 private slots:
     void setActivePlots();
@@ -189,7 +193,12 @@ private:
     QPopupMenu              *operatorMenu;
     int                      operatorMenuId;
 
-    VariableMenuPopulator    menuPopulator;
+    bool                     updatePlotVariableMenuEnabledState;
+    bool                     updateOperatorMenuEnabledState;
+    bool                     updateVariableMenuEnabledState;
+    int                      maxVarCount;
+
+    VariableMenuPopulator    menuPopulator, varMenuPopulator;
 
     // Structures to keep track of the registered plugin types.
     PluginEntryVector        plotPlugins;

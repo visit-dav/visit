@@ -3,7 +3,7 @@
 #include <OnionPeelAttributes.h>
 #include <ViewerProxy.h>
 #include <avtSIL.h>
-#include <avtSILNamespace.h>
+#include <SILRestrictionAttributes.h>
 
 #include <qcombobox.h>
 #include <qlabel.h>
@@ -32,6 +32,8 @@ using std::vector;
 // Creation:   Thu Aug 8 14:29:46 PST 2002
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Feb 26 13:19:40 PST 2004
+//   Added observation of SILRestrictionAttributes, data member silUseSet.
 //   
 // ****************************************************************************
 
@@ -40,13 +42,15 @@ QvisOnionPeelWindow::QvisOnionPeelWindow(const int type,
                          const char *caption,
                          const char *shortName,
                          QvisNotepadArea *notepad)
-    : QvisOperatorWindow(type,subj, caption, shortName, notepad)
+    : QvisOperatorWindow(type,subj, caption, shortName, notepad) ,silUseSet()
 {
     atts = subj;
     defaultItem = "Whole";
     silTopSet = -1;
     silNumSets = -1;
     silNumCollections = -1;
+    silAtts = viewer->GetSILRestrictionAttributes();
+    silAtts->Attach(this);
 }
 
 
@@ -163,6 +167,8 @@ QvisOnionPeelWindow::CreateWindowContents()
 // Creation:   Thu Aug 8 14:29:46 PST 2002
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Feb 26 13:19:40 PST 2004
+//   Only update the ComboBoxes if the SILRestrictionAttributes have changed.
 //   
 // ****************************************************************************
 
@@ -173,7 +179,11 @@ QvisOnionPeelWindow::UpdateWindow(bool doAll)
     int i, j;
     std::vector<int> ivec;
 
-    UpdateComboBoxes();
+    if (selectedSubject == silAtts)
+    {
+        UpdateComboBoxes();
+        return;
+    }
 
     // Loop through all the attributes and do something for
     // each of them that changed. This function is only responsible
@@ -219,37 +229,65 @@ QvisOnionPeelWindow::UpdateWindow(bool doAll)
     } // end for
 }
 
+// ****************************************************************************
+// Method: QvisOnionPeelWindow::UpdateComboBoxes
+//
+// Purpose: 
+//   Determnes which combo box needs to be updated. 
+//
+// Programmer: Kathleen Bonnell 
+//
+// Modifications:
+//   Kathleen Bonnell, Thu Feb 26 13:19:40 PST 2004
+//   Only update the box whose information has changed. 
+//   
+// ****************************************************************************
+
 void
 QvisOnionPeelWindow::UpdateComboBoxes()
 {
-    avtSILRestriction_p restriction = viewer->GetPlotSILRestriction();
-    //
-    //  If there is a new SIL restriction, update the combo boxes.
-    //
-    if ((restriction->GetNumSets() != silNumSets) ||
-        (restriction->GetNumCollections() != silNumCollections) ||
-        (restriction->GetTopSet() != silTopSet))
+
+    QString cn = categoryName->currentText();
+
+    if (silAtts->GetTopSet() != silTopSet ||
+        silAtts->GetSilAtts().GetNCollections() != silNumCollections)
     {
-        silTopSet = restriction->GetTopSet();
-        silNumSets = restriction->GetNumSets();
-        silNumCollections = restriction->GetNumCollections();
-
+        silTopSet = silAtts->GetTopSet();
+        silNumCollections = silAtts->GetSilAtts().GetNCollections();
         FillCategoryBox();
-        FillSubsetBox();
+    }
 
+    if (cn != categoryName->currentText() || silUseSet != silAtts->GetUseSet())
+    {
+        silUseSet = silAtts->GetUseSet();
+        FillSubsetBox();
     }
 }
 
 
+// ****************************************************************************
+// Method: QvisOnionPeelWindow::FillCategoryBox
+//
+// Purpose: 
+//   Reads the current SILRestriction and updates the category list. 
+//
+// Programmer: Kathleen Bonnell 
+//
+// Modifications:
+//   Kathleen Bonnell, Thu Feb 26 13:19:40 PST 2004
+//   Only update the box whose information has changed. 
+//   
+// ****************************************************************************
+
 void
 QvisOnionPeelWindow::FillCategoryBox()
 {
-    avtSILRestriction_p restriction = viewer->GetPlotSILRestriction();
     categoryName->blockSignals(true);
     categoryName->clear();
 
     if (silTopSet > -1)
     {
+        avtSILRestriction_p restriction = viewer->GetPlotSILRestriction();
         avtSILSet_p current = restriction->GetSILSet(silTopSet);
         const std::vector<int> &mapsOut = current->GetMapsOut();
         for (int j = 0; j < mapsOut.size(); ++j)
@@ -263,6 +301,7 @@ QvisOnionPeelWindow::FillCategoryBox()
                 categoryName->insertItem(collectionName);    
             }
         }
+
         if (categoryName->count() != 0)
         {
             //
@@ -293,6 +332,21 @@ QvisOnionPeelWindow::FillCategoryBox()
     categoryName->blockSignals(false);
 }
 
+
+// ****************************************************************************
+// Method: QvisOnionPeelWindow::FillSubsetBox
+//
+// Purpose: 
+//   Reads the current SILRestriction and updates the subset list. 
+//
+// Programmer: Kathleen Bonnell 
+//
+// Modifications:
+//   Kathleen Bonnell, Thu Feb 26 13:19:40 PST 2004
+//   Check the silUseSet for names to include. 
+//   
+// ****************************************************************************
+
 void
 QvisOnionPeelWindow::FillSubsetBox()
 {
@@ -304,6 +358,7 @@ QvisOnionPeelWindow::FillSubsetBox()
     if (cn != defaultItem)
     {
         avtSILRestriction_p restriction = viewer->GetPlotSILRestriction();
+
         //
         // Fill  with sets under the currently selected category.
         //
@@ -314,8 +369,11 @@ QvisOnionPeelWindow::FillSubsetBox()
             std::vector<int> sets = collection->GetSubsetList();
             for (int i = 0; i < sets.size(); ++i)
             {
-                avtSILSet_p set = restriction->GetSILSet(sets[i]);
-                subsetName->insertItem(QString(set->GetName().c_str()));
+                if (silUseSet[sets[i]] != 0)
+                {
+                    avtSILSet_p set = restriction->GetSILSet(sets[i]);
+                    subsetName->insertItem(QString(set->GetName().c_str()));
+                } 
             } 
             //
             // Set the current item for the subset 

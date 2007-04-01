@@ -20,6 +20,7 @@
 #include <InvalidSetException.h>
 #include <LogicalIndexException.h>
 #include <DebugStream.h>
+#include <CompactSILRestrictionAttributes.h>
 
 #include <avtCallback.h>
 #include <avtParallel.h>
@@ -398,6 +399,9 @@ avtOnionPeelFilter::RefashionDataObjectInfo(void)
 //    Kathleen Bonnell, Thu Aug 15 18:30:44 PDT 2002 
 //    Reflect changes that allow user to specify groups and logical indices. 
 //
+//    Kathleen Bonnell, Thu Feb 26 12:50:38 PST 2004 
+//    Added code to test that the currently chosen set is turned on. 
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -416,9 +420,15 @@ avtOnionPeelFilter::PerformRestriction(avtPipelineSpecification_p spec)
     string subset = atts.GetSubsetName();
     int setID;
     avtSILRestriction_p silr = spec->GetDataSpecification()->GetRestriction();
+    CompactSILRestrictionAttributes *silAtts = silr->MakeCompactAttributes();
+    const unsignedCharVector &useSet =  silAtts->GetUseSet();
+    setID = silr->GetSetIndex(subset);
+    if (useSet[setID] == 0) 
+    {
+        EXCEPTION1(InvalidSetException, subset.c_str());
+    }
     TRY
     {
-        setID = silr->GetSetIndex(subset);
         silr = rv->GetDataSpecification()->GetRestriction();
         silr->TurnOffAll();
         silr->TurnOnSet(setID);
@@ -475,7 +485,6 @@ avtOnionPeelFilter::VerifyInput()
     std::string subset = atts.GetSubsetName();
     avtSILRestriction_p silr = GetTerminatingSource()->
         GetFullDataSpecification()->GetRestriction();
-
 
     int setID, collectionID;
     TRY

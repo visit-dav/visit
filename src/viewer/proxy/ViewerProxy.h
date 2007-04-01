@@ -320,6 +320,9 @@ class Xfer;
 //    Brad Whitlock, Mon Dec 29 09:17:30 PDT 2003
 //    Added methods to set and update the center of rotation.
 //
+//    Brad Whitlock, Thu Feb 26 13:37:02 PST 2004
+//    Added ClearCacheForAllEngines.
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -366,6 +369,7 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void ReplaceDatabase(const std::string &database, int timeState = 0);
     void OverlayDatabase(const std::string &database);
     void ClearCache(const std::string &hostName);
+    void ClearCacheForAllEngines();
 
     void OpenComputeEngine(const std::string &hostName, const stringVector &argv);
     void CloseComputeEngine(const std::string &hostName);

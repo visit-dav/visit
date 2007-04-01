@@ -1,6 +1,7 @@
 #ifndef VARIABLE_MENU_POPULATOR_H
 #define VARIABLE_MENU_POPULATOR_H
 #include <winutil_exports.h>
+#include <ExpressionList.h>
 #include <string>
 #include <map>
 #include <vectortypes.h>
@@ -8,7 +9,6 @@
 class avtDatabaseMetaData;
 class avtSIL;
 class Expression;
-class ExpressionList;
 class QvisVariablePopupMenu;
 class QObject;
 
@@ -38,6 +38,12 @@ class QObject;
 //   Brad Whitlock, Fri Oct 24 15:41:54 PST 2003
 //   Added an internal method that helps add expressions to the right list.
 //
+//   Brad Whitlock, Tue Feb 24 15:51:18 PST 2004
+//   Added cachedDBName and cachedExpressionList so the class can skip
+//   unnecessary work in PopulateVariableLists. I also made
+//   PopulateVariableLists return a bool indicating whether or not updates
+//   are needed.
+//
 // ****************************************************************************
 
 class WINUTIL_API VariableMenuPopulator
@@ -47,7 +53,8 @@ public:
     VariableMenuPopulator();
     virtual ~VariableMenuPopulator();
 
-    void PopulateVariableLists(const avtDatabaseMetaData *,
+    bool PopulateVariableLists(const std::string &,
+                               const avtDatabaseMetaData *,
                                const avtSIL *,
                                const ExpressionList *);
 
@@ -57,6 +64,7 @@ public:
                                  bool changeVar = false);
 
     bool ItemEnabled(int varType) const;
+    void ClearDatabaseName();
 
 private:
     void UpdateSingleMenu(QvisVariablePopupMenu *, QObject *,
@@ -65,9 +73,13 @@ private:
     void AddVars(StringBoolMap &to, const StringBoolMap &from);
     void AddExpression(const Expression &);
 
+    // Keep track of the name of the database for which we have variables.
+    std::string    cachedDBName;
+    // Keep track of the expression list too.
+    ExpressionList cachedExpressionList;
     // Create some lists to keep track of the variable names.
-    StringBoolMap meshVars, scalarVars, materialVars, vectorVars, subsetVars,
-                  speciesVars, curveVars, tensorVars, symmTensorVars;
+    StringBoolMap  meshVars, scalarVars, materialVars, vectorVars, subsetVars,
+                   speciesVars, curveVars, tensorVars, symmTensorVars;
 };
 
 #endif

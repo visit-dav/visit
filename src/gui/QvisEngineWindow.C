@@ -79,6 +79,9 @@ QvisEngineWindow::~QvisEngineWindow()
 //    Brad Whitlock, Wed Nov 27 13:59:01 PST 2002
 //    I added widgets to show engine information.
 //
+//    Brad Whitlock, Wed Feb 25 09:25:01 PDT 2004
+//    I added a button to clear the cache.
+//
 // ****************************************************************************
 
 void
@@ -138,17 +141,24 @@ QvisEngineWindow::CreateWindowContents()
     stageProgressBar->setTotalSteps(100);
     topLayout->addWidget(stageProgressBar);
 
-    QHBoxLayout *buttonLayout1 = new QHBoxLayout(topLayout);
+    QGridLayout *buttonLayout1 = new QGridLayout(topLayout, 2, 3);
+    buttonLayout1->setSpacing(10);
     interruptEngineButton = new QPushButton("Interrupt engine", central, "interruptEngineButton");
     connect(interruptEngineButton, SIGNAL(clicked()), this, SLOT(interruptEngine()));
     interruptEngineButton->setEnabled(false);
-    buttonLayout1->addWidget(interruptEngineButton);
-    buttonLayout1->addStretch(5);
+    buttonLayout1->addWidget(interruptEngineButton, 0, 0);
+    buttonLayout1->setColStretch(1, 10);
 
     closeEngineButton = new QPushButton("Close engine", central, "closeEngineButton");
     connect(closeEngineButton, SIGNAL(clicked()), this, SLOT(closeEngine()));
     closeEngineButton->setEnabled(false);
-    buttonLayout1->addWidget(closeEngineButton);
+    buttonLayout1->addWidget(closeEngineButton, 0, 2);
+
+    clearCacheButton = new QPushButton("Clear cache", central, "clearCacheButton");
+    connect(clearCacheButton, SIGNAL(clicked()), this, SLOT(clearCache()));
+    clearCacheButton->setEnabled(false);
+    buttonLayout1->addWidget(clearCacheButton, 1, 0);
+
     topLayout->addSpacing(10);
 }
 
@@ -220,6 +230,9 @@ QvisEngineWindow::SubjectRemoved(Subject *TheRemovedSubject)
 //   Brad Whitlock, Wed Nov 27 14:00:24 PST 2002
 //   I added widgets to show engine information.
 //
+//   Brad Whitlock, Wed Feb 25 09:31:17 PDT 2004
+//   I added code to set the enabled state for the clearCache button.
+//
 // ****************************************************************************
 
 void
@@ -274,6 +287,7 @@ QvisEngineWindow::UpdateWindow(bool doAll)
         // Set the enabled state of the various widgets.
         interruptEngineButton->setEnabled(s.size() > 0);
         closeEngineButton->setEnabled(s.size() > 0);
+        clearCacheButton->setEnabled(s.size() > 0);
         engineCombo->setEnabled(s.size() > 0);
     }
 
@@ -592,6 +606,30 @@ void
 QvisEngineWindow::interruptEngine()
 {
     viewer->InterruptComputeEngine(engineCombo->currentText().latin1());
+}
+
+// ****************************************************************************
+// Method: QvisEngineWindow::clearCache
+//
+// Purpose: 
+//   This is a Qt slot function that is called to tell the current engine
+//   to clear its cache.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb 26 14:16:39 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisEngineWindow::clearCache()
+{
+    std::string host(engineCombo->currentText().latin1());
+    if(viewer->GetLocalHostName() == host)
+        viewer->ClearCache("localhost");
+    else
+        viewer->ClearCache(host);
 }
 
 // ****************************************************************************

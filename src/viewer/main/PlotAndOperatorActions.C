@@ -817,6 +817,11 @@ AddPlotAction::~AddPlotAction()
 //   I separated the database into host and database and queried it from the
 //   plot list in such a way that it is more likely to be valid.
 //
+//   Brad Whitlock, Tue Feb 24 16:37:30 PST 2004
+//   I changed the code so the menu is only updated then the variable menu
+//   populator indicates that it needed an update due to a different
+//   database name or a different expression list.
+//
 // ****************************************************************************
 
 void
@@ -824,8 +829,9 @@ AddPlotAction::Update()
 {
     if(pluginEntries.size() > 0)
     {
-        const std::string &newHost = window->GetAnimation()->GetPlotList()->GetHostName();
-        const std::string &newDB = window->GetAnimation()->GetPlotList()->GetDatabaseName();
+        ViewerPlotList *plotList = window->GetAnimation()->GetPlotList();
+        const std::string &newHost = plotList->GetHostName();
+        const std::string &newDB = plotList->GetDatabaseName();
 
         //
         // If the new host and database are valid and they differ from the old values
@@ -853,26 +859,28 @@ AddPlotAction::Update()
             // Repopulate the menu variable list using information from the
             // new file.
             //
-            menuPopulator.PopulateVariableLists(md, sil, exprList);
-
-            //
-            // Update the variable menus for the actions.
-            //
-            bool menuEnabled = false;
-            for(int i = 0; i < pluginEntries.size(); ++i)
+            if(menuPopulator.PopulateVariableLists(plotList->GetHostDatabaseName(),
+                                                   md, sil, exprList))
             {
-                menuPopulator.UpdateSingleVariableMenu(pluginEntries[i].varMenu,
-                    this, pluginEntries[i].varTypes);
+                //
+                // Update the variable menus for the actions.
+                //
+                bool menuEnabled = false;
+                for(int i = 0; i < pluginEntries.size(); ++i)
+                {
+                    menuPopulator.UpdateSingleVariableMenu(pluginEntries[i].varMenu,
+                        this, pluginEntries[i].varTypes);
 
-                bool enabled = menuPopulator.ItemEnabled(pluginEntries[i].varTypes);
+                    bool enabled = menuPopulator.ItemEnabled(pluginEntries[i].varTypes);
 
-                // Set the new menu's enabled state based on the variable type.
-                actionMenu->setItemEnabled(i, enabled);
-                menu->setItemEnabled(i, enabled);
-                menuEnabled |= enabled;
+                    // Set the new menu's enabled state based on the variable type.
+                    actionMenu->setItemEnabled(i, enabled);
+                    menu->setItemEnabled(i, enabled);
+                    menuEnabled |= enabled;
+                }
+
+                menu->setEnabled(menuEnabled);
             }
-
-            menu->setEnabled(menuEnabled);
         }
     }
 

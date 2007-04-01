@@ -26,4 +26,23 @@ InvalidSetException::InvalidSetException(const char *catName, const char *setNam
     msg = str;
 }
 
+// ****************************************************************************
+//  Method: InvalidSetException constructor
+//
+//  Arguments:
+//    setName    The set name.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   February 26, 2004 
+//
+// ****************************************************************************
+
+InvalidSetException::InvalidSetException(const char *setName)
+{
+    char str[1024];
+    sprintf(str, "The set %s has been turned OFF and cannot be used.", setName);
+
+    msg = str;
+}
+
 

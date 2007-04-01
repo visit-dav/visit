@@ -102,6 +102,9 @@ import java.util.Vector;
 //   Brad Whitlock, Thu Jan 8 14:19:43 PST 2004
 //   I fixed a typo that prevented it from building.
 //
+//   Brad Whitlock, Thu Feb 26 13:38:26 PST 2004
+//   I added ClearCacheForAllEngines.
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -470,6 +473,13 @@ public class ViewerProxy implements SimpleObserver
     {
         rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_CLEARCACHERPC);
         rpc.SetProgramHost(hostName);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean ClearCacheForAllEngines()
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_CLEARCACHEFORALLENGINESRPC);
         rpc.Notify();
         return synchronous ? Synchronize() : true;
     }

@@ -33,6 +33,9 @@ class StatusAttributes;
 //    Brad Whitlock, Wed Nov 27 13:47:30 PST 2002
 //    I added widgets to show more engine information.
 //
+//    Brad Whitlock, Wed Feb 25 09:22:29 PDT 2004
+//    I added a "Clear cache" button.
+//
 // ****************************************************************************
 
 class GUI_API QvisEngineWindow : public QvisPostableWindowObserver
@@ -62,6 +65,7 @@ private slots:
     void closeEngine();
     void interruptEngine();
     void selectEngine(int index);
+    void clearCache();
 private:
     EngineList       *engines;
     StatusAttributes *statusAtts;
@@ -80,6 +84,7 @@ private:
     QProgressBar     *stageProgressBar;
     QPushButton      *interruptEngineButton;
     QPushButton      *closeEngineButton;
+    QPushButton      *clearCacheButton;
 };
 
 #endif

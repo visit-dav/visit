@@ -1454,6 +1454,33 @@ ViewerProxy::ClearCache(const std::string &hostName)
 }
 
 // ****************************************************************************
+// Method: ViewerProxy::ClearCacheForAllEngines
+//
+// Purpose: 
+//   Tells the viewer to clear the cache on all compute engines.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb 26 13:37:38 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::ClearCacheForAllEngines()
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    viewerRPC->SetRPCType(ViewerRPC::ClearCacheForAllEnginesRPC);
+
+    //
+    // Issue the RPC.
+    //
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
 //  Method: ViewerProxy::OpenComputeEngine
 //
 //  Purpose:
