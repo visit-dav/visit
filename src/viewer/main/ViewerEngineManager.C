@@ -3046,3 +3046,28 @@ ViewerEngineManager::GetSimulationSILAtts(const EngineKey &ek)
         EXCEPTION0(NoEngineException);
 }
 
+
+// ****************************************************************************
+//  Method:  ViewerEngineManager::UpdateExpressionsFromPlot
+//
+//  Purpose:
+//    Tells the engine to update its epxressions. 
+//
+//  Arguments:
+//    plot       The plot that has the expressions that should be updated. 
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    March 1, 2005 
+//
+// ****************************************************************************
+
+void
+ViewerEngineManager::UpdateExpressionsFromPlot(const ViewerPlot *plot) 
+{
+    EngineKey ek(plot->GetEngineKey());
+    if (EngineExists(ek))
+        engines[ek].proxy->UpdateExpressions(plot->GetExpressions());
+    else
+        EXCEPTION0(NoEngineException);
+}
+

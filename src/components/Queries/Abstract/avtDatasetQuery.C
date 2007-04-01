@@ -74,6 +74,10 @@ avtDatasetQuery::~avtDatasetQuery()
 //    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002 
 //    Set queryAtts results value. 
 //    
+//    Kathleen Bonnell, Tue Mar  1 11:20:15 PST 2005
+//    Test for empty data tree after ApplyFilters, and submit an error
+//    message. 
+//    
 // ****************************************************************************
 
 void
@@ -93,19 +97,48 @@ avtDatasetQuery::PerformQuery(QueryAttributes *qA)
     // Reset the input so that we have access to the data tree. 
     //
     SetTypedInput(dob);
-
-    PreExecute();
     avtDataTree_p tree = GetInputDataTree();
-    totalNodes = tree->GetNumberOfLeaves();
-    Execute(tree);
+    bool validInputTree = false;
+    // No need to process an empty tree.
+    if (!tree->IsEmpty())
+    {
+        totalNodes = tree->GetNumberOfLeaves();
+        PreExecute();
+        Execute(tree);
+        PostExecute();
 
-    PostExecute();
-
-    //
-    // Retrieve the query results and set the message in the atts. 
-    //
-    queryAtts.SetResultsMessage(resMsg);
-    queryAtts.SetResultsValue(resValue);
+        validInputTree = true;
+        //
+        // Retrieve the query results and set the message in the atts. 
+        //
+        queryAtts.SetResultsMessage(resMsg);
+        queryAtts.SetResultsValue(resValue);
+    }
+    else
+    {
+        // An empty tree at this point is the sign that something bad has
+        // happened during the 'update' cycle called by ApplyFilters. 
+        // Set the flag to false -- use OR, becuase for QueryOverTime,
+        // We only want to send the InternalError message if all time steps
+        // encountered empty trees.
+        validInputTree != false;
+        debug4 << "Query encountered EMPTY InputDataTree after ApplyFilters!!" 
+               << endl;
+    }
+    if (validInputTree)
+    {
+        //
+        // Retrieve the query results and set the message in the atts. 
+        //
+        queryAtts.SetResultsMessage(resMsg);
+        queryAtts.SetResultsValue(resValue);
+    }
+    else
+    {
+        queryAtts.SetResultsMessage("Query(" + queryAtts.GetName() + ")"
+                " encountered an internal error and could not execute "
+                " successfully. Please contact a VisIt developer.");
+    }
 
     UpdateProgress(1, 0);
     *qA = queryAtts;

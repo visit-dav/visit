@@ -217,6 +217,9 @@ class StatusAttributes;
 //    I added ExpressionList to the call to ReadDataObject so we can pass
 //    in the right list of expressions.
 //
+//    Kathleen Bonnell, Tue Mar  1 11:20:15 PST 2005 
+//    Added UpdateExpressions. 
+//
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -301,6 +304,7 @@ public:
 
     void                     ReleaseData(const int);
     void                     CloneNetwork(const int, const QueryOverTimeAttributes *);
+    void                     UpdateExpressions(const ExpressionList &);
 
 protected:
     virtual void             SetupComponentRPCs();
