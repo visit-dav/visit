@@ -162,6 +162,9 @@ typedef struct {
 //    Added SetLineoutsFollowTime, SetLineoutsTimeSlider. Made 
 //    SetDynamicLinenout private, and GetColor public. 
 //
+//    Kathleen Bonnell, Wed Mar 23 15:09:16 PST 2005 
+//    Added ClearRefLines.
+//
 // ****************************************************************************
     
 class VIEWER_API ViewerQueryManager 
@@ -259,6 +262,8 @@ class VIEWER_API ViewerQueryManager
 
     void            FinishLineQuery();
     ColorAttribute  GetColor();
+
+    void            ClearRefLines(ViewerWindow *);
 
   protected:
                     ViewerQueryManager();

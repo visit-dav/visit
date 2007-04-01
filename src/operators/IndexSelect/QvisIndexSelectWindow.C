@@ -16,7 +16,7 @@
 using std::string;
 
 
-#define MAX_VAL 1000
+#define MAX_VAL 100000000
 
 // ****************************************************************************
 // Method: QvisIndexSelectWindow::QvisIndexSelectWindow
