@@ -44,7 +44,7 @@ operating systems.  It is suggested that you use the same compilers.
    Operating System          Compiler
    ================          ========
    AIX 5.1                   g++ 3.1
-   Darwin 6.5                g++ 3.1
+   MacOS X 10.3 (Darwin)     g++ 3.3
    IRIX64 6.5                MIPSpro 7.3.1.1m and MIPSpro 7.3.1.2m
    Redhat Linux 7.1 and 7.2  g++ 2.96
    Solaris 7                 g++ 2.95.2
@@ -131,9 +131,9 @@ cp include/GL/*.h ../visit/mesa/include/GL
 # rm *.o
 # cd ..
 #
+
 cp lib/*.so       ../visit/mesa/lib 
 cd ..
-
 
 VTK
 ====

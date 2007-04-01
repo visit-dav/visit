@@ -94,6 +94,9 @@
 //    I added support for database plugins with only a mdserver or engine
 //    component.  This was critical for simulation support.
 //
+//    Brad Whitlock, Mon Apr 26 14:08:41 PST 2004
+//    I added a couple of symbols for MacOS X.
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin
@@ -212,6 +215,7 @@ class MakefileGeneratorPlugin
         out << "include "<<visithome<<"/include/make-variables" << endl;
         out << "TOPDIR=" << visithome << endl;
         out << "" << endl;
+        out << endl;
         out << "##" << endl;
         out << "## Libraries and includes..." << endl;
         out << "##" << endl;
@@ -231,9 +235,10 @@ class MakefileGeneratorPlugin
             out << " " << cxxflags[i];
         out << endl;
         out << "CPPFLAGS=$(CPPFLAGSORIG) $(VTK_INCLUDE) $(MESA_INCLUDE) -I. -I"<<visithome<<"/include -I"<<visithome<<"/include/visit" << endl;
-        out << "LDFLAGS=$(LDFLAGSORIG) $(PY_LDFLAGS)";
+        out << "LDFLAGS=$(LDFLAGSORIG) $(PY_LDFLAGS) ";
         for (int i=0; i<ldflags.size(); i++)
             out << " " << ldflags[i];
+        out << " -L../../plugins/" << type << "s";
         out << endl;
         out << "" << endl;
         out << "##" << endl;
@@ -241,6 +246,9 @@ class MakefileGeneratorPlugin
         out << "##" << endl;
         if (type=="operator")
         {
+            out << "PLUGINDIR=operators" << endl;
+            out << "PLUGINNAME=" << name << "Operator"<< endl;
+            out << endl;
             out << "WIDGETS=Qvis"<<name<<"Window.h";
             if (customwfiles)
                 for (int i=0; i<wfiles.size(); i++)
@@ -297,11 +305,37 @@ class MakefileGeneratorPlugin
             out << endl;
             out << "" << endl;
             out << "ILIBS=" << endl;
-            out << "GLIBS=-lgui -lstate -lviewerproxy $(QT_LDFLAGS) $(QT_LIBS) $(X_LIBS)" << endl;
-            out << "SLIBS=-lstate -lmisc $(PY_LIB)" << endl;
-            out << "VLIBS=-lpipeline_ser -ldbatts_ser -lavtexceptions_ser -lstate -lmisc -lvisit_vtk $(VTK_LIBS)" << endl;
-            out << "ESERLIBS=-lpipeline_ser -ldbatts_ser -lavtexceptions_ser -lstate -lmisc -lvisit_vtk $(VTK_LIBS)" << endl;
-            out << "EPARLIBS=-lpipeline_par -ldbatts_par -lavtexceptions_par -lstate -lmisc -lvisit_vtk $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
+            out << "GLIBS=-lgui -lmdserverproxy -lviewerproxy -lproxybase "
+                   "-lmdserverrpc -lviewerrpc -lwinutil -ldbatts -lavtexceptions "
+                   "-lstate -lcomm -lmisc -lplugin -lparser -lutility "
+                   "-lI$(PLUGINNAME) $(QT_LDFLAGS) $(QT_LIBS) $(X_LIBS)" << endl;
+            out << "SLIBS=-lstate -lmisc -lcomm -lutility $(PY_LIB) -lI$(PLUGINNAME)" << endl;
+            out << "VLIBS=-lpipeline_ser -lplotter -lavtfilters_ser "
+                   "-lavtmath_ser -lavtview -ldbatts -lavtexceptions -lstate "
+                   "-lmisc -lcomm -lparser -lutility -lvisit_vtk "
+                   "-llightweight_visit_vtk ";
+            //
+            // HACK HACK HACK -- This should be a flag in the XML file instead
+            //                   of using the name of the operator. The flag
+            //                   should be called something like: UsesViewerLib.
+            //
+            //                   When the operator uses classes out of the viewer
+            //                   library, we have to link all of the viewer
+            //                   dependencies and most operators don't do need to.
+            //
+            bool usesViewerLib = (name == "OnionPeel");
+            if (usesViewerLib)
+            {
+               out << "-lviewer -lviewerrpc -lproxybase -lvclproxy -lvclrpc "
+                      "-lmdserverproxy -lmdserverrpc -lengineproxy -lenginerpc "
+                      "-lplugin -lavtwriter -lviswindow -lqtviswindow -lvtkqt "
+                      "-lwinutil $(QT_LIBS) ";
+            }
+
+            // Add the rest of the viewer operator libs
+            out << "-lI$(PLUGINNAME) $(VTK_LIBS)" << endl;
+            out << "ESERLIBS=-lpipeline_ser -lplotter -lavtfilters_ser -lavtmath_ser -lavtview -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lI$(PLUGINNAME) $(VTK_LIBS)" << endl;
+            out << "EPARLIBS=-lpipeline_par -lplotter -lavtfilters_par -lavtmath_par -lavtview -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lI$(PLUGINNAME) $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
             out << "" << endl;
             out << "IDSO="<<visitplugininstall<<"/operators/libI"<<name<<"Operator" << PLUGIN_EXTENSION << endl;
             out << "GDSO="<<visitplugininstall<<"/operators/libG"<<name<<"Operator" << PLUGIN_EXTENSION << endl;
@@ -312,6 +346,9 @@ class MakefileGeneratorPlugin
         }
         else if (type=="plot")
         {
+            out << "PLUGINDIR=plots" << endl;
+            out << "PLUGINNAME=" << name << "Plot"<< endl;
+            out << endl;
             out << "WIDGETS=Qvis"<<name<<"PlotWindow.h";
             if (customwfiles)
                 for (int i=0; i<wfiles.size(); i++)
@@ -369,11 +406,11 @@ class MakefileGeneratorPlugin
             out << endl;
             out << "" << endl;
             out << "ILIBS=" << endl;
-            out << "GLIBS=-lgui -lstate -lviewerproxy $(QT_LDFLAGS) $(QT_LIBS) $(X_LIBS)" << endl;
-            out << "SLIBS=-lstate -lmisc $(PY_LIB)" << endl;
-            out << "VLIBS=-lpipeline_ser -lplotter_ser -ldbatts_ser -lavtexceptions_ser -lstate -lmisc -lvisit_vtk $(VTK_LIBS)" << endl;
-            out << "ESERLIBS=-lpipeline_ser -lplotter_ser -ldbatts_ser -lavtexceptions_ser -lstate -lmisc -lvisit_vtk $(VTK_LIBS)" << endl;
-            out << "EPARLIBS=-lpipeline_par -lplotter_ser -ldbatts_par -lavtexceptions_par -lstate -lmisc -lvisit_vtk $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
+            out << "GLIBS=-lgui -lmdserverproxy -lviewerproxy -lproxybase -lmdserverrpc -lviewerrpc -lwinutil -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lplugin -lparser -lutility -lI$(PLUGINNAME) $(QT_LDFLAGS) $(QT_LIBS) $(X_LIBS)" << endl;
+            out << "SLIBS=-lstate -lmisc -lcomm -lutility $(PY_LIB) -lI$(PLUGINNAME)" << endl;
+            out << "VLIBS=-lpipeline_ser -lplotter -lavtfilters_ser -lavtmath_ser -lavtview -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lI$(PLUGINNAME) $(VTK_LIBS)" << endl;
+            out << "ESERLIBS=-lpipeline_ser -lplotter -lavtfilters_ser -lavtmath_ser -lavtview -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lI$(PLUGINNAME) $(VTK_LIBS)" << endl;
+            out << "EPARLIBS=-lpipeline_par -lplotter -lavtfilters_par -lavtmath_par -lavtview -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lI$(PLUGINNAME) $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
             out << "" << endl;
             out << "IDSO="<<visitplugininstall<<"/plots/libI"<<name<<"Plot" << PLUGIN_EXTENSION << endl;
             out << "GDSO="<<visitplugininstall<<"/plots/libG"<<name<<"Plot" << PLUGIN_EXTENSION << endl;
@@ -384,6 +421,10 @@ class MakefileGeneratorPlugin
         }
         else if (type=="database")
         {
+            out << "PLUGINDIR=databases" << endl;
+            out << "PLUGINNAME=" << name << "Database"<< endl;
+            out << endl;
+
             out << "WIDGETS=" << endl;
             out << "ISRC="<<name<<"PluginInfo.C" << endl;
             out << "COMMONSRC=";
@@ -424,9 +465,9 @@ class MakefileGeneratorPlugin
             out << endl;
             out << "" << endl;
             out << "ILIBS=" << endl;
-            out << "MLIBS=-lavtexceptions_ser -lvisit_vtk $(VTK_LIBS)" << endl;
-            out << "ESERLIBS=-lavtexceptions_ser -lvisit_vtk $(VTK_LIBS)" << endl;
-            out << "EPARLIBS=-lavtexceptions_par -lvisit_vtk $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
+            out << "MLIBS=-lpipeline_ser -ldatabase_ser -lmir -lavtmath_ser -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lparser -lplugin -lutility -lvisit_vtk -llightweight_visit_vtk  -L../../plugins/databases -lI$(PLUGINNAME) $(VTK_LIBS)" << endl;
+            out << "ESERLIBS=-lpipeline_ser -ldatabase_ser -lmir -lavtmath_ser -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lparser -lplugin -lutility -lvisit_vtk -llightweight_visit_vtk  -L../../plugins/databases -lI$(PLUGINNAME) $(VTK_LIBS)" << endl;
+            out << "EPARLIBS=-lpipeline_par -ldatabase_par -lmir -lavtmath_par -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lparser -lplugin -lutility -lvisit_vtk -llightweight_visit_vtk  -L../../plugins/databases -lI$(PLUGINNAME) $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
             out << "" << endl;
             out << "IDSO="<<visitplugininstall<<"/databases/libI"<<name<<"Database" << PLUGIN_EXTENSION << endl;
             out << "MDSO="<<visitplugininstall<<"/databases/libM"<<name<<"Database" << PLUGIN_EXTENSION << endl;

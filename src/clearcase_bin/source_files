@@ -53,6 +53,9 @@
 #   Eric Brugger, Thu Nov 20 08:30:07 PST 2003
 #   Only add the help directory if -withhelp specified.
 #
+#   Brad Whitlock, Fri Apr 23 12:25:56 PDT 2004
+#   Added winutil to the top level.
+#
 
 withhelp=no
 
@@ -89,6 +92,7 @@ PATH="$PATH:./clearcase_bin"
     ./clearcase_bin/mkman --quiet --recursive --simple ./plots
     ./clearcase_bin/mkman --quiet --recursive --simple ./operators
     ./clearcase_bin/mkman --quiet --recursive --simple ./databases
+    ./clearcase_bin/mkman --quiet --recursive --simple ./winutil
     ./clearcase_bin/mkman --quiet --recursive --simple ./viewer
     ./clearcase_bin/mkman --quiet --recursive --simple ./gui
     ./clearcase_bin/mkman --quiet --recursive --simple ./mdserver

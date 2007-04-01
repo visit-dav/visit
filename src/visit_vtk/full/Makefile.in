@@ -1,4 +1,4 @@
-#                            Copyright 1991 - 2003
+#                            Copyright 1991 - 2004
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -213,6 +213,9 @@
 #    Hank Childs, Sun Feb  1 13:21:44 PST 2004
 #    Removed vtkDataSetFromVolume.
 #
+#    Brad Whitlock, Fri Apr 23 14:23:32 PST 2004
+#    Added additional libraries to enable prebinding on MacOS X.
+#
 ##############################################################################
 
 ##
@@ -276,7 +279,7 @@ CPPFLAGS=@VISIT_VTK_CPPFLAGS@ @CPPFLAGS@ @ANNOTATION_FLAGS@ -I. @MESA_INCLUDE@
 
 OBJ=$(SRC:.C=.o)
 LIB=libvisit_vtk
-LIBS=@VTK_LIBS@ $(X_LIBS) -lmisc
+LIBS=-lmisc -lavtexceptions -llightweight_visit_vtk @VTK_LIBS@ $(X_LIBS)
 
 
 ##

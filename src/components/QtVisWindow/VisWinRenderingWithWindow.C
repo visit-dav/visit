@@ -7,7 +7,10 @@
 #include <vtkQtRenderWindow.h>
 #include <vtkQtRenderWindowInteractor.h>
 
+#ifdef Q_WS_X11
+// We only need WindowMetrics here if we're on X11.
 #include <WindowMetrics.h>
+#endif
 
 #if QT_VERSION >= 300
 #include <qcursor.h>

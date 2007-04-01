@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2003
+#                            Copyright 2000 - 2004
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -66,13 +66,17 @@
 #   Brad Whitlock, Fri May 2 14:04:49 PST 2003
 #   I added proxybase.
 #
+#   Brad Whitlock, Thu Apr 22 11:49:37 PDT 2004
+#   I moved winutil into the top level and I moved Exceptions from components
+#   to here.
+#
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 @DIRTARGETS@
 
-SUBDIRS=misc utility comm state plugin proxybase winutil parser
+SUBDIRS=misc Exceptions utility comm state plugin proxybase parser
 
 message:
 	@echo

@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2002
+#                            Copyright 2000 - 2004
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -170,6 +170,9 @@
 #    Added .C files for several classes that needed to have their virtual
 #    destructors not be inlined due to compiler oddities.
 #
+#    Brad Whitlock, Thu Apr 22 15:15:37 PST 2004
+#    Added more libraries to the link line.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -305,8 +308,8 @@ CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@
 SEROBJ=$(SRC:.C=_ser.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libpipeline
-SERLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lutility -lvisit_vtk @VTK_LIBS@ $(X_LIBS) @LIBS@
-PARLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lutility -lvisit_vtk @VTK_LIBS@ $(X_LIBS) @LIBS@ @SHLIB_MPI_LIBS@
+SERLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lutility -lparser -lavtmath_ser @VTK_LIBS@ $(X_LIBS) @LIBS@
+PARLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lutility -lparser -lavtmath_par @VTK_LIBS@ $(X_LIBS) @LIBS@ @SHLIB_MPI_LIBS@
 
 ##
 ## Standard targets...

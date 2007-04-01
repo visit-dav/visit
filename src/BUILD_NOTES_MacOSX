@@ -1,0 +1,586 @@
+                      Building VisIt on MacOS X 10.3
+                     ================================
+
+   This document describes how to build VisIt on MacOS X. Building on MacOS X,
+while similar enough to other versions of UNIX but there are enough differences
+to warrant these special instructions. Most of the differences arise from how
+MacOS X provides support for advanced linking options such as prebinding, which
+helps applications launch faster. We build VisIt and all of its support
+libraries with prebinding enabled because it substantially improves VisIt's
+startup time on MacOS X. Unfortunately, prebinding introduces a lot of
+complexity with respect to building VisIt's support libraries because they each
+have varying degrees of support for MacOS X. In fact, only Qt has built-in
+support for prebinding. To enable prebinding for all of the other support
+libraries, follow the instructions in this document for building each library
+before finally building VisIt.
+
+VisIt relies on several external libraries which must be built and installed
+prior to building VisIt.  This document provides detailed step by step
+instructions for building VisIt and each of the dependent libraries.  The
+instructions have been designed so that you can cut and paste most of the
+commands needed to build the libraries and VisIt from this file into your
+shell prompt.
+
+
+    Library  Version  Description            For More information
+    =======  =======  ===========            ====================
+    Mesa     5.0.2    3-D Graphics Library   http://www.mesa3d.org/
+    Python   2.3.3    Scripting Language     http://www.python.org
+    Qt       3.3.1    GUI Toolkit            http://www.trolltech.com
+    Silo     4.4      File I/O library       http://www.llnl.gov/bdiv/meshtv
+    VTK      20031028 Visualization Toolkit  http://www.kitware.com
+
+    Optional Version  Description            For More information
+    ======== =======  ===========            ====================
+    HDF5     1.6.0    I/O library            http://hdf.ncsa.uiuc.edu/HDF5/
+    Mili     1.06     I/O library            (none)
+
+The public version of VisIt has been built with the above listed versions
+of the libraries, so it is known to work properly with those versions.  For
+all the packages except VTK and Qt, you can probably use newer versions of the
+packages and VisIt should work properly.  For Mesa, you must build a mangled
+version of Mesa.  The distribution provided has already been set up to build
+a mangled version so no additional work is required if you use it.  For VTK,
+you must use the October 28, 2003 distribution provided. The version of Qt used to
+build VisIt on MacOS X must be greater than or equal to 3.0.
+
+It is essential that you build all the dependent packages and VisIt using
+the same c++ compiler or you will encounter linking problems because different
+compilers or different versions of the same compiler may use different name
+mangling schemes. For MacOS X, we recommend using g++ 3.3.
+
+
+==============================================================================
+Crucial linker flags for prebinding a library or application
+==============================================================================
+
+-prebind             The -prebind flag should be used for applications and
+                     libraries that you want to be prebound. Put the -prebind
+		     flag in your LDFLAGS or wherever you provide arguments
+		     to the linker. Prebinding allows your application to
+		     start faster because all symbols are already resolved
+		     and resolution is not required when the application is
+		     launched. Furthermore, since prebinding requires that
+		     all libraries used in the application have distinct, non-
+		     overlapping memory ranges, the linker can compute
+		     appropriate relocation offsets at link time.
+
+-twolevel_namespace  A two level namespace is what's commonly used on most
+                     platforms but MacOS X initially came with just a flat
+		     namespace, which prevented duplicate symbols in the
+		     same application. A two level namespace allows duplicates
+		     and is more forgiving, though possibly error prone if
+		     there are multiple symbols with the same name. Two-level
+		     symbol resolution also takes a little longer.
+
+-install_name        The -install_name flag inserts the name of the library
+                     into the actual dylib file. Normally if you do not
+		     provide this flag, the path where you built the library is
+		     inserted into the dylib file and applications that link
+		     with the dylib look for it in the path stored in the dylib,
+		     which easily leads to the library not being found. In order
+		     to make sure that the system can find the dylib file used
+		     by your application, make sure you build dylib files so
+		     their installed name is relative to the executable.
+		   
+		     For VisIt, which has a bin directory and a separate lib
+		     directory for libraries, we set the installation name like
+		     this:
+		     
+		     -install_name,@executable_path/../lib/libfoo.dylib.
+		     
+		     The above example makes sure that applications in bin that
+		     linked with libfoo.dylib look for it in ../lib instead of
+		     a hardcoded path.
+		 
+-seg1addr            The -seg1addr flag tells the linker where the first segment
+                     of your library should start in memory. Prebinding is not
+		     enabled unless all of your libraries and your application
+		     that uses them have memory ranges that do not overlap at
+		     all. Computing the segment address for a complex project
+		     like VisIt can be tricky and Makefile tricks are required
+		     if you want the offset to be computed on the fly,
+		     determined by the sizes of your libraries as they are built.
+		     To specify the starting segment address, do this:
+		     
+		     -Wl,-seg1addr,0x20000000
+
+                     Look at VisIt's linkedit.py and configure.in scripts to
+		     see how to compute the segment offset on the fly using
+		     autoconf and Makefiles.
+
+==============================================================================
+Segment offset
+==============================================================================
+
+The initial segment offset for VisIt's support libraries begins at 0x...
+, right after Qt's ending address. The memory addresses used in this document
+reflect the sizes of the libraries as they were built at the time of VisIt 1.3.
+We chose segment offsets that pack the libraries into a fairly contiguous
+block of memory so no libraries interfere with each other.
+
+==============================================================================
+otool
+==============================================================================
+
+MacOS X has a utility called otool that allows you to examine the contents of
+a dynamic library or an executable. Otool is very handy for determining whether
+a dynamic library was actually built with prebinding. Here are the most useful
+options for otool:
+
+# Print the Mach header. If the library is prebound, it will have the word
+# PREBOUND in the output. If the output does not contain PREBOUND then you
+# need to make changes to your library and relink until it is prebound because
+# unless an application and *all* of its dependent libraries are prebound,
+# it cannot use prebinding.
+otool -hv libfoo.dylib
+
+# Print all of the library dependencies
+otool -hvL libfoo.dylib
+
+==============================================================================
+Building Qt as a set of prebound dynamic libraries
+==============================================================================
+
+Qt actually builds as a prebound dynamic library but we need to make sure
+that it sets an install_name that is relative to our VisIt executables.
+
+# Build Qt 3.3.1 for MacOS X
+gunzip qt-mac-free-3.3.1.tar.gz
+tar xvf qt-mac-free-3.3.1.tar
+cd qt-mac-free-3.3.1
+setenv QTDIR `pwd`
+./configure
+make
+
+# Qt built but we need to change it a little.
+cd src
+vi Makefile
+Add -install_name @executable_path/../lib/libqt.dylib to LFLAGS and save
+rm ../lib/libqt*
+make
+
+# Install Qt
+mkdir ../visit/qt
+mkdir ../visit/qt/bin
+mkdir ../visit/qt/include
+mkdir ../visit/qt/include/private
+mkdir ../visit/qt/lib
+cp bin/{designer,findtr,moc,qt20fix,qtrename140} ../visit/qt/bin
+cd include; cp *.h ../../visit/qt/include
+cp private/*.h ../../visit/qt/include/private
+cd ../lib
+cp libqt-mt.3.3.1.dylib ../../visit/qt/lib/libqt.dylib
+cd ../..
+
+==============================================================================
+Building Mesa as a set of prebound dynamic libraries
+==============================================================================		    
+
+Mesa is a 3-D graphics library with an API which is very similar to that of
+OpenGL.  It is used for performing off-screen rendering.
+
+#
+# Build Mesa
+#
+tar zxvf Mesa-5.0.2.tar.gz
+cd Mesa-5.0.2
+
+#
+# Special instructions for building Mesa on MacOS X
+#
+# The darwin target for building Mesa assumes that you want to build Mesa
+# with support for X11. This is not what we want to do for the version of
+# Mesa that we'll use for VisIt since we only want offscreen rendering.
+#
+# 1. Open Make-config and remove all X include files and libraries from
+#    the darwin target. Also add -DUSE_MGL_NAMESPACE to the CFLAGS and
+#    CCFLAGS so a mangled version of Mesa will be built. Next, change
+#    GL_LIB so it will build a library called libMesaGL.dylib instead of
+#    libGL.dylib. Finally, edit GLU_LIB_DEPS so it uses -lMesaGL instead
+#    of -lGL.
+# 2. Open bin/mklib.darwin and look for an if/then/else block that sets
+#    different flags for each of the libraries being linked. Change
+#    libGL.dylib to libMesaGL.dylib since in the previous instructions,
+#    we renamed the Mesa library.
+#
+#    For libMesaGL.dylib, add:
+#       EXTRA_FLAGS="${EXTRA_FLAGS} -prebind -Wl,-seg1addr,0x2098a000"
+#
+#    For libOSMesa.dylib, add:
+#       EXTRA_FLAGS="${EXTRA_FLAGS} -prebind -Wl,-seg1addr,0x20bd7000"
+#
+#    The additions above will cause the two modified libraries to be built
+#    as prebound dynamic libraries, which will help reduce VisIt's start
+#    time.
+# 3. Open src/Makefile.X11 and remove all of the source code files from
+#    the DRIVER_SOURCES variable so it is defined as:
+#    DRIVER_SOURCES = 
+#
+# ** Note - After you start building Mesa with these changes, it will fail
+#           after successfully building libMesaGL.dylib and libOSMesa.dylib.
+#           This is okay since those are the only libraries we want.
+#           Continue on to building VTK.
+#
+
+#
+# Build Mesa by typing in the Mesa-5.0.2 directory.
+#
+make darwin
+
+#
+# Install Mesa
+#
+mkdir ../visit/mesa
+mkdir ../visit/mesa/{include,lib}
+mkdir ../visit/mesa/include/GL
+cp include/GL/*.h ../visit/mesa/include/GL
+cp lib/*.dylib ../visit/mesa/lib
+cd ..
+
+==============================================================================
+Building CMake in order to build VTK
+==============================================================================
+
+CMake is a cross-platform make system used to build VTK. Before building VTK,
+we must build CMake
+
+gunzip cmake-1.8.1.tar.gz
+tar xf cmake-1.8.1.tar
+cd cmake-1.8.1
+env CXXFLAGS="" ./bootstrap
+make
+cd ..
+
+==============================================================================
+Building VTK as a set of prebound dynamic libraries
+==============================================================================
+
+VTK is an object oriented library for visualizing 3D data.  VisIt uses it
+for all its visualization functionality. Follow the directions listed below
+to build VTK.  If you have any problems building or installing VTK, read the
+VTK/README.html file included in the VTK distribution for more information.
+
+gunzip vtk_cvs_2003_10_28.tar.gz
+tar xf vtk_cvs_2003_10_28.tar
+cd VTK
+../cmake-1.8.1/bin/cmake .
+#
+# Edit CMakeCache.txt.  Turn BUILD_SHARED_LIBS, VTK_USE_HYBRID, and
+# VTK_USE_MANGLED_MESA on, Turn BUILD_TESTING off.
+#
+# Look for the following CMake keys and set these values:
+#
+# CMAKE_BUILD_TYPE:STRING = Release
+# CMAKE_CXXFLAGS_RELEASE = '-O2'
+# CMAKE_EXE_LINKER_FLAGS_RELEASE:STRING='-prebind'
+# CMAKE_MODULE_LINKER_FLAGS_RELEASE:STRING='-prebind'
+# CMAKE_SHARED_LINKER_FLAGS_RELASE:STRING='-prebind'
+# CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+# VTK_USE_MANGLED_MESA:BOOL=OFF
+#
+# Look for -flat_namespace and replace it with -twolevel_namespace
+#
+../cmake-1.8.1/bin/cmake .
+make
+
+VTK does not provide targets for building prebound shared libraries. Rather than
+change VTK's build process permanently, which I did not see how to do since I am
+a CMake novice, I chose to edit the Makefiles generated by CMake after VTK was
+built. I needed the size for all of the VTK libraries anyway in order to
+calculate good offsets for them. The offset for the first VTK library is after
+the last Mesa library so eventually we will have built all of VisIt's support
+libraries so that they could be layed out in memory at their starting addresses
+and never touch.
+
+Library                 Segment Offset (hex)
+=============================================
+libvtkzlib.dylib        20be6000
+libvtkjpeg.dylib        20bf5000
+libvtkpng.dylib         20c18000
+libvtktiff.dylib        20c3b000
+libvtkexpat.dylib       20c86000
+libvtkfreetype.dylib    20ca8000
+libvtkftgl.dylib        20cfc000
+libvtkDICOMParser.dylib 20d17000
+libvtkCommon.dylib      20dec000
+libvtkFiltering.dylib   21111000
+libvtkGraphics.dylib    2125b000
+libvtkIO.dylib          2186a000
+libvtkImaging.dylib     21b96000
+libvtkRendering.dylib   21f6f000
+libvtkHybrid.dylib      21601000 (offset out of order but that's okay)
+
+Since we added -prebind to the flags that are used when trying to link a shared
+library, we can open each Makefile for the projects listed above and add the
+above offsets after the -prebind flag. Before adding offsets though, you should
+remove all of the shared libraries in the VTK/bin directory so make will cause
+a relink of the libraries as we build them one by one.
+
+Example:
+   1. cd Utilities/zlib
+   2. vi Makefile
+   3. Search for -prebind
+   4. After -prebind, add:
+      -Wl,-seg1addr,0x20be6000,-install_name,@executable_path/../lib/libvtkzlib.dylib,-compatibility_version,4.2,-current_version,4.2
+      
+      Be sure to use the right library name in for the -install_name linker flag since that
+      name is put into the library so the runtime linker can find the library relative
+      to the executable's path. This helps make applications double-clickable.
+      
+   5. Save and exit vi
+   6. make
+   
+Note: Be sure that you use a different offset for each library or prebinding will
+      fail. The offsets for each VTK library are in the above table. Those offsets
+      were computed by first building VTK and calculating the size of each library
+      and then calculating an offset that arranges them safely one after another
+      in a linear block of memory. There are small gaps between the libraries due
+      to the algorithm that was used to lay them out in memory and because of
+      segment alignment, which is currently 0x1000.
+      
+#
+# Install VTK in the visit directory under the vtk directory.
+#
+mkdir ../visit/vtk
+mkdir ../visit/vtk/{Common,Filtering,Graphics,Hybrid,IO,Imaging,Rendering,MangleMesaInclude,lib}
+cp vtkConfigure.h                 ../visit/vtk
+cp vtkToolkits.h                  ../visit/vtk
+cp vtk*Instantiator.h             ../visit/vtk
+cp Utilities/zlib/zlib.h          ../visit/vtk
+cp Utilities/zlib/zconf.h         ../visit/vtk
+cp Utilities/zlib/zlibDllConfig.h ../visit/vtk
+cp Utilities/tiff/*.h             ../visit/vtk
+cp Common/*.h                     ../visit/vtk/Common
+cp Filtering/*.h                  ../visit/vtk/Filtering
+cp Graphics/*.h                   ../visit/vtk/Graphics
+cp Hybrid/*.h                     ../visit/vtk/Hybrid
+cp IO/*.h                         ../visit/vtk/IO
+cp Imaging/*.h                    ../visit/vtk/Imaging
+cp Rendering/*.h                  ../visit/vtk/Rendering
+cp MangleMesaInclude/*.h          ../visit/vtk/MangleMesaInclude
+cp bin/*.so                       ../visit/vtk/lib
+cd ..
+
+The next offset after libvtkRendering.dylib, which has an offset of 0x21f6f000 and
+a library size of 3,260,676 (0x31c104) bytes is:
+
+# Next offset
+offset = 0x21f6f000 + int(float(0x31c104) * 1.05)
+# Align the offset tp 0x1000 byte boundaries
+offset = offset + (0x1000 - offset % 0x1000)
+# Next offset
+offset = 0x222b3000
+
+===============================================================================
+Building Python as a prebound dynamic library
+===============================================================================
+
+Python is a powerful, free scripting language that is used to drive VisIt's
+viewer when running VisIt without a GUI. Python is cross platform and runs on
+many UNIXes as well as MS Windows and other platforms. VisIt can be configured
+to run without Python if scripting features are not desired.  Follow the
+directions listed below to build Python.  If you have any problems building
+or installing Python, read the README file in the Python distribution for more
+information.
+
+I could not get Python 2.1.2 to build all of the way on Panther (MacOS X 10.3) so I
+downloaded the newer Python 2.3.3.
+
+tar zxvf Python-2.3.3.tgz
+cd Python-2.3.3
+env OPT="-O3 -Wall -Wstrict-prototypes -fno-common -fPIC" ./configure --prefix=`cat ../visitpath`/python
+make
+make install
+
+# Now that Python is built, we need to create a shared library version.
+mkdir tmplib
+cd tmplib
+ar -x ../libpython2.3.a
+echo "char **environ=0;" > environhack.c
+gcc -o environhack.o -c environhack.c
+gcc -dynamiclib -prebind -Wl,-seg1addr,0x222b3000,-install_name,@executable_path/../lib/libpython2.3.dylib,-compatibility_version,2.3.3,-current_version,2.3.3 -twolevel_namespace -o libpython2.3.dylib *.o -framework Carbon
+cp libpython2.3.dylib ../visit/python/lib/python2.3/config/libpython2.3.dylib
+cd ..
+
+The next offset after libpython.dylib, which has an offset of 0x222b3000 and a library
+size of 3,311,968 (0x328960) bytes is:
+
+# Next offset
+offset = 0x222b3000 + int(float(0x328960) * 1.05)
+# Align the offset to 0x1000 byte boundaries
+offset = offset + (0x1000 - offset % 0x1000)
+# Next offset
+offset = 0x22605000
+
+===============================================================================
+Building Silo as a prebound dynamic library
+===============================================================================
+
+Silo is a self-describing, machine-independent scientific file format.
+Silo is one of the file formats supported by VisIt.  Follow the directions
+listed below to build Silo.  If you have any problems building or installing
+Silo, read the INSTALL_NOTES file in the SILO distribution for more
+information.
+
+# Build silo source into an archive library
+sh silo020325.sh
+cd silo020325
+env CFLAGS="-O2 -fno-common -fPIC" ./configure --disable-sdx --without-readline --without-hdf5 --without-exodus
+make
+
+# Turn the archive library into a prebound dynamic library
+
+cd lib
+mkdir tmplib
+cd tmplib
+ar -x ../libsilo.a
+gcc -dynamiclib -prebind -twolevel_namespace -Wl,-seg1addr,0x22605000,-install_name,@executable_path/../lib/libsilo.dylib,-compatibility_version,4.3.2,-current_version,4.3.2 -o ../libsilo.dylib *.o
+cd ..
+
+# Install Silo
+mkdir ../visit/silo
+mkdir ../visit/silo/include
+mkdir ../visit/silo/lib
+cp silo/silo/silo.h   ../visit/silo/include
+cp silo/silo/silo.inc ../visit/silo/include
+cp silo/sdx/sdx.h     ../visit/silo/include
+cp silo/sdx/sdx.inc   ../visit/silo/include
+cp lib/libsilo.dylib  ../visit/silo/lib
+cd ..
+
+The next offset after libpython.dylib, which has an offset of 0x22605000 and a library
+size of 453,352 (0x6eae8) bytes is:
+
+# Next offset
+offset = 0x22605000 + int(float(0x6eae8) * 1.05)
+# Align the offset to 0x1000 byte boundaries
+offset = offset + (0x1000 - offset % 0x1000)
+# Next offset
+offset = 0x2267a000
+
+===============================================================================
+Building Mili as a prebound dynamic library
+===============================================================================
+
+Mili is a database file format library for finite element codes. VisIt
+has a database reader for this popular LLNL engineering database file
+format. Mili file format support is optional and is not required for
+VisIt to run.
+
+gunzip mili.tar.gz
+tar xvf mili.tar
+cd Mili/src
+
+I could not figure out Mili's strange build system, especially since
+it does not support MacOS X so I built my own Mili library using a
+Makefile that I wrote. Save the following lines to a Makefile in
+the Mili's src directory
+
+CC=gcc
+CFLAGS = -I. -O2 -fno-common -fPIC
+MILI_LDFLAGS=-Wl,-seg1addr,0x2267d000 -L. -lgahl
+GAHL_LDFLAGS=-Wl,-seg1addr,0x2267a000
+LDFLAGS=-dynamiclib -prebind -twolevel_namespace -Wl,-install_name,@executable_path/../lib/$@
+.SUFFIXES : .o .c
+MILI_SRC=mili.c direc.c param.c io.c util.c dep.c svar.c srec.c mesh_u.c wrap_c.c io_mem.c eprtf.c sarray.c
+MILI_OBJ=${MILI_SRC:.c=.o}
+GAHL_SRC=gahl.c
+GAHL_OBJ=$(GAHL_SRC:.c=.o)
+MILI_LIB=libmili.dylib
+GAHL_LIB=libgahl.dylib
+all: $(MILI_LIB)
+$(MILI_LIB): $(GAHL_LIB) $(MILI_OBJ)
+	$(CC) -o $@ $(LDFLAGS) $(MILI_LDFLAGS) $(MILI_OBJ)
+$(GAHL_LIB): $(GAHL_OBJ)
+	$(CC) -o $@ $(LDFLAGS) $(GAHL_LDFLAGS) $(GAHL_OBJ)
+clean: 
+	rm -f *.a *.o $(MILI_LIB) $(GAHL_LIB)
+
+Now that you're in Mili's source directory and you have a Makefile, 
+type: make
+
+# Install Mili
+mkdir ../../visit/mili
+cp *.dylib ../../visit/mili
+cp mili.h ../../visit/mili
+cp mili_enum.h ../../visit/mili
+cd ../..
+
+The next offset after libmili.dylib, which has an offset of 0x2267d000 and
+a library size of 109,556 (0x1abf4) bytes is:
+
+# Next offset
+offset = 0x2267d000 + int(float(0x1abf4) * 1.05)
+# Align the offset to 0x1000 byte boundaries
+offset = offset + (0x1000 - offset % 0x1000)
+# Next offset
+offset = 0x2269a000
+
+===============================================================================
+Building HDF5 as a prebound dynamic library
+===============================================================================
+
+tar zxvf hdf5-1.6.0.tar.gz
+env CFLAGS="-O2 -fPIC" ./configure
+make
+
+# The HDF5 libraries get built, even as dylib shared libraries. That's
+# not quite good enough though since we want to set the beginning 
+# address of the library and make it be prebound. We'll build our own
+# version of the library using the prebuilt sources. Note that the
+# segment offset used for HDF5 does not exactly correspond to the offset
+# computed after making Mili. I had to add 60000 to the offset because
+# libtool said that Silo and HDF5 were overlapping.
+cd src
+gcc -dynamiclib -prebind -twolevel_namespace, -Wl,-seg1addr,0x226a9000,-install_name,@executable_path/../lib/libhdf5.dylib,-compatibility_version,1.6,-current_version,1.6 -o libhdf5.dylib *.lo -lz
+
+# Install HDF5
+mkdir ../../visit/hdf5
+mkdir ../../visit/hdf5/include
+mkdir ../../visit/hdf5/lib
+cp libhdf5.dylib ../../visit/hdf5/lib
+cp *.h ../../visit/hdf5/include
+cd ../..
+
+The next offset after libhdf5.dylib, which has an offset of 0x226a9000 and
+a library size of 1,055,884 (0x101c8c) bytes is:
+
+# Next offset
+offset = 0x226a9000 + int(float(0x101c8c) * 1.05)
+# Align the offset to 0x1000 byte boundaries
+offset = offset + (0x1000 - offset % 0x1000)
+# Next offset
+offset = 0x227b8000
+
+===============================================================================
+Building VisIt with prebinding
+===============================================================================
+
+Since we may want to add other libraries to our list of prebound
+dynamic libraries, for database reader plugins, etc, we should 
+reserve a memory range after the Silo library. Suppose all other
+libraries that we want can fit in 50Mb. The starting address for
+the VisIt libraries would then be: 0x2267a000 + 50Mb
+
+# Next offset
+offset = 0x2267a000 + 0x2faf080
+# Align the offset to 0x1000 byte boundaries
+offset = offset + (0x1000 - offset % 0x1000)
+# Next offset
+offset = 0x2562a000
+
+# Configure VisIt
+env CXXFLAGS="-O2" ./configure
+
+# Change the Silo optimization level.
+The Silo database reader plugin fails to build on MacOS X with GCC3.3 because
+it runs out of memory with the default -O2 optimization flag.
+
+cd databases/Silo
+vi Makefile
+# Change -O2 to -O1
+cd ../..
+
+# Build VisIt
+make

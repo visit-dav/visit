@@ -477,6 +477,10 @@ dnl
 dnl    Brad Whitlock, Tue Mar 30 09:05:27 PDT 2004
 dnl    Added PDB_EXEC to fix test suite.
 dnl
+dnl    Brad Whitlock, Wed Apr 21 17:42:20 PST 2004
+dnl    Added Makefile magic for MacOS X to make automatic segment offset
+dnl    calculations possible for prebinding.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -682,19 +686,27 @@ AC_SUBST(MESA_INCLUDE)
 AC_SUBST(MESA_LIBS)
 
 #
-# The check for OGL can be disabled with `--disable-ogl'.
+# The check for OpenGL can be disabled with `--disable-ogl'.
 #
 AC_ARG_ENABLE(ogl,
    [  --disable-ogl           do not check for the SGI ogl library],
    UseOGL="$enable_ogl", UseOGL=yes)
 
 #
-# Try to find the OGL libraries
+# Try to find the OpenGL libraries
 #
 GL_LIBS=""
 if test "$UseOGL" = "yes"; then
     AC_CHECK_LIB(GL, main,   GL_LIBS="-lGL")
 fi
+# If we're on Darwin, OpenGL is a framework.
+if test "$SHORT_UNAME" = "darwin"; then
+    # We're on MacOS X and it always has an OpenGL framework.
+    AC_MSG_CHECKING(for OpenGL)
+    GL_LIBS="-framework OpenGL"
+    AC_MSG_RESULT(found $GL_LIBS)
+fi
+AC_SUBST(GL_LIBS)
 
 #
 # Check for 3D texturing support in OpenGL
@@ -720,7 +732,7 @@ if test -n "$VTK"; then
     VTK_DIR=$VTK
     VTK_INCROOT="$""(TOPDIR)/include/vtk"
     VTK_INCLUDES="-I$VTK_INCROOT -I$VTK_INCROOT/Common -I$VTK_INCROOT/Filtering -I$VTK_INCROOT/Graphics -I$VTK_INCROOT/Hybrid -I$VTK_INCROOT/IO -I$VTK_INCROOT/Imaging -I$VTK_INCROOT/Rendering"
-    VTK_LIBS="-lvtkCommon -lvtkDICOMParser -lvtkFiltering -lvtkGraphics -lvtkHybrid -lvtkIO -lvtkImaging -lvtkRendering -lvtkzlib -lvtkexpat -lvtkjpeg -lvtkpng -lvtktiff -lvtkftgl -lvtkfreetype $GL_LIBS $MESA_LIBS"
+    VTK_LIBS="-lvtkCommon -lvtkDICOMParser -lvtkFiltering -lvtkGraphics -lvtkHybrid -lvtkIO -lvtkImaging -lvtkRendering -lvtkzlib -lvtkexpat -lvtkjpeg -lvtkpng -lvtktiff -lvtkftgl -lvtkfreetype $MESA_LIBS $GL_LIBS "
     VTK_LIGHTWEIGHT_LIBS="-lvtkCommon -lvtkFiltering -lvtkzlib"
 
     # If we're on Darwin, we took VisIt's vtkCamera and built it into the VTK library so
@@ -932,6 +944,16 @@ if test "$UseGUI" = "yes"; then
         VISWINDOW="VisWindow"
         VIEWERLIB="$""(VDSO)"
         VIEWEROBJ="$""(VOBJ)"
+        # The private source can go into the executable on all UNIX versions
+        # except for MacOS X.
+        if test "$SHORT_UNAME" = "darwin"; then
+            VIEWERLIB_SRC="$""(PUBLIC_SRC) $""(PRIVATE_SRC) $""(SRCMOC)"
+            VIEWEREXE_SRC="$""(MAINSRC)"
+        else
+            VIEWERLIB_SRC="$""(PUBLIC_SRC)"
+            VIEWEREXE_SRC="$""(MAINSRC) $""(PRIVATE_SRC) $""(SRCMOC)"
+        fi
+
         if test -z "$VTK"; then
             AC_MSG_ERROR([viewer is here, but no VTK library was specified. 
 The viewer cannot be built without VTK.  Make sure the VTK environment variable
@@ -941,6 +963,8 @@ is set and rerun 'configure'.])
         AC_MSG_RESULT(not found)
         VIEWER=""
         VISWINDOW=""
+        VIEWERLIB_SRC=""
+        VIEWEREXE_SRC=""
     fi
 
     dnl
@@ -952,6 +976,11 @@ is set and rerun 'configure'.])
         GUI="gui"
         GUILIB="$""(GDSO)"
         GUIOBJ="$""(GOBJ)"
+        if test "$SHORT_UNAME" = "darwin"; then
+            GUIFRAMEWORKS="-framework Carbon"
+        else
+            GUIFRAMEWORKS=""
+        fi
         if test -z "$METADATA_SERVER"; then
             AC_MSG_ERROR([gui is here, but the metadata server is not.
 The gui will not run without the metadata server. Check to see that the
@@ -961,6 +990,7 @@ mdserver directory exists and rerun 'configure'.])
         AC_MSG_RESULT(not found)
         GUI=""
         GUIOBJ=""
+        GUIFRAMEWORKS=""
     fi
 
     ENGINEPROXYDIR="proxy"
@@ -973,10 +1003,13 @@ fi
 AC_SUBST(GUI)
 AC_SUBST(GUILIB)
 AC_SUBST(GUIOBJ)
+AC_SUBST(GUIFRAMEWORKS)
 AC_SUBST(VIEWER)
 AC_SUBST(VISWINDOW)
 AC_SUBST(VIEWERLIB)
 AC_SUBST(VIEWEROBJ)
+AC_SUBST(VIEWERLIB_SRC)
+AC_SUBST(VIEWEREXE_SRC)
 AC_SUBST(ENGINEPROXYDIR)
 
 #
@@ -1354,17 +1387,22 @@ AC_ARG_WITH(hdf5,
            hdf5_specified="yes",
            hdf5_specified="no"
            )
+if test "$SHORT_UNAME" = "darwin"; then
+    H5_LIBEXT="dylib"
+else
+    H5_LIBEXT="a"
+fi
 if test "$hdf5_specified" = "yes"; then
    if test "$withval" != "no"; then
       HDF5_INCLUDE="-I`echo $withval |cut -f1 -d,`"
-      HDF5_LIB="`echo $withval |cut -f2 -d, -s`/libhdf5.a"
+      HDF5_LIB="`echo $withval |cut -f2 -d, -s`/libhdf5.$H5_LIBEXT"
    fi
 else
    if test "$DEFAULT_HDF5_INCLUDE" != "" ; then
       HDF5_INCLUDE="-I$DEFAULT_HDF5_INCLUDE $HDF5_INCLUDE"
    fi
    if test "$DEFAULT_HDF5_LIB" != "" ; then
-      HDF5_LIB="$DEFAULT_HDF5_LIB/libhdf5.a $HDF5_LIB"
+      HDF5_LIB="$DEFAULT_HDF5_LIB/libhdf5.$H5_LIBEXT $HDF5_LIB"
    fi
 fi
 if test "$HDF5_LIB" != "" ; then
@@ -1879,7 +1917,7 @@ fi
 AC_SUBST(MILI)
 AC_SUBST(MILI_FLAGS)
 AC_SUBST(MILI_LIBS)
-
+AC_SUBST(MILI_DIR)
 
 #
 # Look for HDF4.
@@ -2037,19 +2075,6 @@ VISIT_VTK_CPPFLAGS="$VISIT_VTK_CPPFLAGS $VTK_INCLUDES -I$""(TOPDIR)/include/visi
 AC_SUBST(VISIT_VTK_CPPFLAGS)
 
 #
-# Only enable VTKQT if we're building the viewer. 
-#
-if test -n "$VIEWER"; then
-   VTKQT_CPPFLAGS="-I$""(TOPDIR)/vtkqt"
-   VTKQT="vtkqt"
-else
-   VTKQT_CPPFLAGS=""
-   VTKQT=""
-fi
-AC_SUBST(VTKQT_CPPFLAGS)
-AC_SUBST(VTKQT)
-
-#
 # Check to see if we can compile with Gui support. If we can't then
 # make sure no windowing system stuff gets in.
 #
@@ -2126,6 +2151,29 @@ else
     QT_MOC=""
     AC_SUBST(QT_MOC)
 fi
+
+#
+# Only enable VTKQT if we're building the viewer. 
+#
+if test -n "$VIEWER"; then
+   VTKQT_CPPFLAGS="-I$""(TOPDIR)/vtkqt"
+   VTKQT="vtkqt"
+   #
+   # TEMP HACK FOR BUILDING ON MacOS X.
+   #
+   if test "$UNAME" = "Darwin"; then
+      VTKQT_LIBS="-lvtkqt $QT_LIBS"
+   else
+      VTKQT_LIBS=""
+   fi
+else
+   VTKQT_CPPFLAGS=""
+   VTKQT=""
+   VTKQT_LIBS=""
+fi
+AC_SUBST(VTKQT_CPPFLAGS)
+AC_SUBST(VTKQT)
+AC_SUBST(VTKQT_LIBS)
 
 #
 # Do we need to tell the compiler about the location of the X 
@@ -2246,11 +2294,7 @@ if test "$enable_scripting" = "yes"; then
             PY_CLI_LIB="$PY_CLI_LIB -lutil"
             ;;
         darwin)
-            PY_INCLUDEDIR="$PYDIR/Python.framework/Headers"
             PY_CXXFLAGS="-Wno-long-double -I$PY_INCLUDEDIR"
-            PY_LDFLAGS="-F$PYDIR"
-            PY_LIB="-framework Python"
-            PY_CLI_LIB=""
             ;;
     esac
 else
@@ -2310,7 +2354,6 @@ fi
 #
 # Figure out how to create shared libraries
 #
-CREATE_SILO_LINK=""
 case $SHORT_UNAME in
   irix)
     # Both g++ and CC use this
@@ -2362,20 +2405,49 @@ case $SHORT_UNAME in
   darwin)
     # Expecting g++
     if test -z "$SHLIB_CREATEPROG"; then
-        SHLIB_CREATEPROG="$""(CXX) -dynamiclib -flat_namespace -undefined suppress -o"
+        SHLIB_CREATEPROG="$""(CXX) -dynamiclib -o"
     fi
     if test -z "$SHLIB_SOEXT"; then SHLIB_SOEXT="dylib"; fi
     if test -z "$SHLIB_LIBEXT"; then SHLIB_LIBEXT="dylib"; fi
     # Set the post processing step to something really useless because we
     # don't need a postprocessing step since we're going to build directly
     # in the lib directory.
-    SHLIB_POSTPROCESS="@echo Built library!"
-    SHLIB_POSTPROCESS_SER="@echo Built library!"
-    SHLIB_POSTPROCESS_PAR="@echo Built library!"
+    SHLIB_POSTPROCESS="$""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(LIBSHARED)"
+    SHLIB_POSTPROCESS_SER="$""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(LIBSHAREDSER)"
+    SHLIB_POSTPROCESS_PAR="$""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(LIBSHAREDPAR)"
+
+    SHLIB_POSTPROCESS_ILIBS="$""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(IDSO) ; sleep 1"
+    SHLIB_POSTPROCESS_GLIBS="$""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(GDSO) ; sleep 1"
+    SHLIB_POSTPROCESS_SLIBS="$""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(SDSO) ; sleep 1"
+    SHLIB_POSTPROCESS_VLIBS="$""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(VDSO) ; sleep 1"
+    SHLIB_POSTPROCESS_MLIBS="$""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(MDSO) ; sleep 1"
+    SHLIB_POSTPROCESS_ESERLIBS="$""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(ESERDSO) ; sleep 1"
+    SHLIB_POSTPROCESS_EPARLIBS="$""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(EPARDSO) ; sleep 1"
+
     # Set SHLIB_TMPDIR so that libraries are created directly in the lib directory.
     SHLIB_TMPDIR="$""(TOPDIR)/lib/"
-    SHLIB_LIBS="$""(LIBS)"
-    CREATE_SILO_LINK="create_silo_link"
+    # Set SHLIB_LIBS so the right libraries are added to the link line but also ensure
+    # that the shared library is created with a unique starting address so we can
+    # prebind.
+    SHLIB_LIBS="$""(LIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../lib/$""(LIB).dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+    SHLIB_SERLIBS="$""(SERLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../lib/$""(LIB)_ser.dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+    SHLIB_PARLIBS="$""(PARLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../lib/$""(LIB)_par.dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+
+    #
+    # Targets for creating prebound plugins.
+    #
+    SHLIB_ILIBS="$""(ILIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libI$""(PLUGINNAME).dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+    SHLIB_GLIBS="$""(GLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libG$""(PLUGINNAME).dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+    SHLIB_SLIBS="$""(SLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libS$""(PLUGINNAME).dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+    SHLIB_VLIBS="$""(VLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libV$""(PLUGINNAME).dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+    SHLIB_MLIBS="$""(MLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libM$""(PLUGINNAME).dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+    SHLIB_ESERLIBS="$""(ESERLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libE$""(PLUGINNAME)_ser.dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+    SHLIB_EPARLIBS="$""(EPARLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libE$""(PLUGINNAME)_par.dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+
+    PREBIND_LIBS="$""(PREBIND_LIBS)"
+    # Create the address.txt file with the initial offset for the VisIt libraries.
+    rm -f address.txt linkedit.log
+    echo "0x2562a000" > address.txt
     ;;
 esac
 # Set up the defaults
@@ -2390,11 +2462,19 @@ if test -z "$SHLIB_MLIBS"          ; then SHLIB_MLIBS=""; fi
 if test -z "$SHLIB_ESERLIBS"       ; then SHLIB_ESERLIBS=""; fi
 if test -z "$SHLIB_EPARLIBS"       ; then SHLIB_EPARLIBS=""; fi
 if test -z "$SHLIB_SLIBS"          ; then SHLIB_SLIBS=""; fi
+if test -z "$SHLIB_POSTPROCESS_ILIBS"    ; then SHLIB_POSTPROCESS_ILIBS="sleep 1"; fi
+if test -z "$SHLIB_POSTPROCESS_GLIBS"    ; then SHLIB_POSTPROCESS_GLIBS="sleep 1"; fi
+if test -z "$SHLIB_POSTPROCESS_VLIBS"    ; then SHLIB_POSTPROCESS_VLIBS="sleep 1"; fi
+if test -z "$SHLIB_POSTPROCESS_MLIBS"    ; then SHLIB_POSTPROCESS_MLIBS="sleep 1"; fi
+if test -z "$SHLIB_POSTPROCESS_ESERLIBS" ; then SHLIB_POSTPROCESS_ESERLIBS="sleep 1"; fi
+if test -z "$SHLIB_POSTPROCESS_EPARLIBS" ; then SHLIB_POSTPROCESS_EPARLIBS="sleep 1"; fi
+if test -z "$SHLIB_POSTPROCESS_SLIBS"    ; then SHLIB_POSTPROCESS_SLIBS="sleep 1"; fi
 if test -z "$SHLIB_SOEXT"          ; then SHLIB_SOEXT="so"; fi
 if test -z "$SHLIB_LIBEXT"         ; then SHLIB_LIBEXT="so"; fi
 if test -z "$SHLIB_POSTPROCESS"    ; then SHLIB_POSTPROCESS="mv $""(LIBSHAREDTEMP) $""@"; fi
 if test -z "$SHLIB_POSTPROCESS_SER"; then SHLIB_POSTPROCESS_SER="mv $""(LIBSHAREDTEMPSER) $""@"; fi
 if test -z "$SHLIB_POSTPROCESS_PAR"; then SHLIB_POSTPROCESS_PAR="mv $""(LIBSHAREDTEMPPAR) $""@"; fi
+if test -z "$PREBIND_LIBS"         ; then PREBIND_LIBS=""; fi
 
 AC_SUBST(SHLIB_CREATEPROG)
 AC_SUBST(SHLIB_LIBS)
@@ -2408,16 +2488,42 @@ AC_SUBST(SHLIB_MLIBS)
 AC_SUBST(SHLIB_ESERLIBS)
 AC_SUBST(SHLIB_EPARLIBS)
 AC_SUBST(SHLIB_SLIBS)
+AC_SUBST(SHLIB_POSTPROCESS_ILIBS)
+AC_SUBST(SHLIB_POSTPROCESS_GLIBS)
+AC_SUBST(SHLIB_POSTPROCESS_VLIBS)
+AC_SUBST(SHLIB_POSTPROCESS_MLIBS)
+AC_SUBST(SHLIB_POSTPROCESS_ESERLIBS)
+AC_SUBST(SHLIB_POSTPROCESS_EPARLIBS)
+AC_SUBST(SHLIB_POSTPROCESS_SLIBS)
 AC_SUBST(SHLIB_SOEXT)
 AC_SUBST(SHLIB_LIBEXT)
 AC_SUBST(SHLIB_POSTPROCESS)
 AC_SUBST(SHLIB_POSTPROCESS_SER)
 AC_SUBST(SHLIB_POSTPROCESS_PAR)
 AC_SUBST(SHLIB_TMPDIR)
-AC_SUBST(CREATE_SILO_LINK)
+AC_SUBST(PREBIND_LIBS)
 
 AC_DEFINE_UNQUOTED(PLUGIN_EXTENSION, ".${SHLIB_SOEXT}" )
 
+#
+# This helps the Makefile in the lib directory make the right links
+# to Silo, Mili, and HDF5. It is only needed on MacOS X because on
+# other platforms, these libraries are statically linked into the
+# database plugins and on MacOS X they are dynamically linked.
+#
+CREATE_SILO_LINK=""
+CREATE_MILI_LINK=""
+CREATE_HDF5_LINK=""
+case $SHORT_UNAME in
+  darwin)
+    CREATE_SILO_LINK="create_silo_link"
+    CREATE_MILI_LINK="create_mili_link"
+    CREATE_HDF5_LINK="create_hdf5_link"
+  ;;
+esac
+AC_SUBST(CREATE_SILO_LINK)
+AC_SUBST(CREATE_MILI_LINK)
+AC_SUBST(CREATE_HDF5_LINK)
 
 #
 # Check for library functions that can work around, or that we have
@@ -2563,6 +2669,8 @@ else
     HELP_FILES=""
 fi
 
+WINUTIL_FILES="winutil/Makefile"
+
 if test -n "$VIEWER"; then
     VIEWER_FILES="viewer/Makefile
                   viewer/rpc/Makefile
@@ -2589,6 +2697,7 @@ else
 fi
 
 COMMON_FILES="common/Makefile
+              common/Exceptions/Makefile
               common/comm/Makefile
               common/misc/Makefile
               common/parser/Makefile
@@ -2597,8 +2706,8 @@ COMMON_FILES="common/Makefile
               common/siloobj/Makefile
               common/siloobj_vtk_db/Makefile
               common/state/Makefile
-              common/utility/Makefile
-              common/winutil/Makefile"
+              common/utility/Makefile"
+
 TOOLS_FILES="tools/Makefile
              tools/annotations/Makefile
              tools/avtprep/Makefile
@@ -2622,7 +2731,6 @@ VISIT_VTK_FILES="visit_vtk/Makefile
 COMPONENT_FILES="components/Makefile
                  components/DBAtts/Makefile
                  components/Database/Makefile
-                 components/Exceptions/Makefile
                  components/Expressions/Makefile
                  components/FileWriter/Makefile
                  components/Filters/Makefile
@@ -2661,6 +2769,7 @@ LAUNCHER_FILES="launcher/Makefile
 AC_OUTPUT($STANDARD_FILES
           $GUI_FILES
           $HELP_FILES
+          $WINUTIL_FILES
           $VIEWER_FILES
           $ENGINE_FILES
           $MDSERVER_FILES

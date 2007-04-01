@@ -1,4 +1,4 @@
-#                            Copyright 1991 - 2001
+#                            Copyright 1991 - 2004
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -31,9 +31,11 @@
 # product endorsement purposes.
 #
 #  Modifications:
-#
 #    Hank Childs, Thu Jan 22 14:28:06 PST 2004
 #    Created.
+#
+#    Brad Whitlock, Thu Apr 22 16:58:36 PST 2004
+#    Added more files to LIBS so we can prebind on MacOS X.
 #
 ##############################################################################
 
@@ -53,7 +55,7 @@ CPPFLAGS=-I../../include/visit @COMPONENT_CPPFLAGS@ @CPPFLAGS@
 
 OBJ=$(SRC:.C=.o)
 LIB=libavtwriter
-LIBS=-ldbatts -lpipeline_ser -lavtexceptions -lvisit_vtk -lmisc -lstate -lutility @VTK_LIBS@ $(X_LIBS)
+LIBS=-ldbatts -lpipeline_ser -lavtmath_ser -lavtexceptions -lvisit_vtk -llightweight_visit_vtk -lmisc -lstate -lcomm -lparser -lutility $(VTK_LIBS) $(X_LIBS)
 
 ##
 ## Standard targets...

@@ -471,12 +471,15 @@ VisWinAxes::NoPlots(void)
 //    added code to set the axis orientation angle to handle degenerate
 //    viewports.
 //
+//    Kathleen Bonnell, Thu Apr 29 16:54:44 PDT 2004
+//    Initialize min_x, etc, to avoid UMR's. 
+//
 // ****************************************************************************
 
 void
 VisWinAxes::UpdateView(void)
 {
-    float  min_x, max_x, min_y, max_y;
+    float  min_x = 0., max_x = 0., min_y = 0., max_y = 0.;
     GetRange(min_x, max_x, min_y, max_y);
 
     //

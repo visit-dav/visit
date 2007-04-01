@@ -1,5 +1,5 @@
 #
-#                            Copyright 2000 - 2002
+#                            Copyright 2000 - 2004
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -42,6 +42,9 @@
 #    Jeremy Meredith, Thu Jul 10 16:20:25 PDT 2003
 #    Remove SRCMOC on a make clean.
 #
+#    Brad Whitlock, Thu Apr 22 15:07:26 PST 2004
+#    I moved winutil from common to the top level.
+#
 ##############################################################################
 
 ##
@@ -50,7 +53,7 @@
 @SET_MAKE@
 @VARIABLES@
 
-CXXFLAGS=-I. -I../../include/visit -I../../include @QT_CXXFLAGS@ @CXXFLAGS@
+CXXFLAGS=-I. -I../include/visit -I../include @QT_CXXFLAGS@ @CXXFLAGS@
 CPPFLAGS=-I. @CPPFLAGS@
 MOC=@QT_MOC@
 
@@ -65,6 +68,7 @@ OBJMOC=${SRCMOC:.C=.o}
 OBJ=$(SRC:.C=.o) ${OBJMOC}
 
 LIB=libwinutil
+LIBS=-lqt -ldbatts -lstate -lcomm -lmisc -lavtexceptions -lutility -lparser
 NOT_DISTRIB=
 
 ##

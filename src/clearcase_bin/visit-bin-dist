@@ -169,6 +169,10 @@
 #    Eric Brugger, Tue Mar 16 13:30:42 PST 2004
 #    Modified the script to also distribute libqtviswindow.so.
 #
+#    Brad Whitlock, Wed Apr 28 19:55:27 PST 2004
+#    I changed it so we copy the Qt/Mac header files since we're now using
+#    Qt/Mac free edition.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -586,6 +590,9 @@ cp $VisItDir/bin/surfcomp      $bindir
 if("$os" == "darwin") then
     set graphicalApps="gui viewer silex xmledit"
     set menuNames = ("VisIt" "VisIt Viewer" "Silex" "XmlEdit")
+    set creatorCodes = ("VISI" "VISV" "SILX" "XEDT")
+    # change these when there are more icons
+    set iconFiles = ("VisItIcon" "VisItIcon" "VisItIcon" "VisItIcon")
     @ i = 1
     set pwd = `pwd`
     foreach app ($graphicalApps)
@@ -593,14 +600,16 @@ if("$os" == "darwin") then
         mkdir $bindir/$app.app
         mkdir $bindir/$app.app/Contents
         mkdir $bindir/$app.app/Contents/MacOS
+        mkdir $bindir/$app.app/Contents/Resources
         cd $bindir/$app.app/Contents
         ln -s ../../../lib  lib
         cd MacOS
         ln -s ../../../$app  $app
         ln -s ../../../../../../bin/visit visit
         cd $pwd
-        sed "s/PROGRAMNAME/$menuNames[$i]/g" $VisItDir/include/Info.plist | sed "s/VERSION/$Version/g" > $bindir/$app.app/Contents/Info.plist
-        echo "APPL????" > $bindir/$app.app/Contents/PkgInfo
+        cp $VisItDir/common/icons/$iconFiles[$i].icns $bindir/$app.app/Contents/Resources
+        sed "s/PROGRAMNAME/$menuNames[$i]/g" $VisItDir/include/Info.plist | sed "s/VERSION/$Version/g" | sed "s/CREATORCODE/$creatorCodes[$i]/g" | sed "s/ICONFILE/$iconFiles[$i]/g" > $bindir/$app.app/Contents/Info.plist
+        echo "APPL$creatorCodes[$i]" > $bindir/$app.app/Contents/PkgInfo
         @ i++
     end
 endif
@@ -620,9 +629,11 @@ cp $VisItDir/lib/libqtviswindow.$SHLIB_SOEXT $libdir
 cp $VisItDir/lib/$QtLibName $libdir/$QtLibName
 set majorVersion = `echo $QtLibName | awk '{printf substr($1, 10, 1)}'`
 set minorVersion = `echo $QtLibName | awk '{printf substr($1, 12, 1)}'`
-ln -s $QtLibName $libdir/libqt.$SHLIB_SOEXT.$majorVersion.$minorVersion
-ln -s $QtLibName $libdir/libqt.$SHLIB_SOEXT.$majorVersion
-ln -s $QtLibName $libdir/libqt.$SHLIB_SOEXT
+if ("$os" != "darwin") then
+    ln -s $QtLibName $libdir/libqt.$SHLIB_SOEXT.$majorVersion.$minorVersion
+    ln -s $QtLibName $libdir/libqt.$SHLIB_SOEXT.$majorVersion
+    ln -s $QtLibName $libdir/libqt.$SHLIB_SOEXT
+endif
 
 #
 # Copy the Mesa libraries to the distribution.
@@ -673,18 +684,13 @@ cp $VisItDir/lib/$VTKTiLibName $libdir/$VTKTiLibName
 cp $VisItDir/lib/$VTKZlLibName $libdir/$VTKZlLibName
 
 #
-# If we're on MacOS X, also create a Frameworks directory that contains Qt.
+# If we're on MacOS X, copy some libraries that are statically linked on
+# other platforms but not on MacOS X
 #
 if("$os" == "darwin") then
-    set pwd = `pwd`
-    mkdir $frameworkdir
-    cd $frameworkdir
-    ln -s ../lib/libqt.$SHLIB_SOEXT libqt.3.$SHLIB_SOEXT
-    cd $pwd
-
-    # Copy the Python framework. The link in lib/python points to the directory
-    # that contains the Python framework.
-    cp -R $VisItDir/lib/python/Python.framework $frameworkdir
+    cp $VisItDir/lib/libmili.$SHLIB_SOEXT $libdir
+    cp $VisItDir/lib/libgahl.$SHLIB_SOEXT $libdir
+    cp $VisItDir/lib/libhdf5.$SHLIB_SOEXT $libdir
 endif
 
 #
@@ -745,12 +751,10 @@ cp $VisItDir/include/python/*.h                 $incdir/python
 # Copy the QT headers to the include directory if we are using the
 # Free edition.  Copy the license there as well.
 #
-if ("$os" != "darwin") then
-    cp $VisItDir/include/qt/[a-pr-zA-Z]*.h          $incdir/qt
-    cp $VisItDir/include/qt/q[a-l]*.h               $incdir/qt
-    cp $VisItDir/include/qt/q[m-zA-Z]*.h            $incdir/qt
-    cp $VisItDir/clearcase_bin/QTLICENSE.*          $incdir/qt
-endif
+cp $VisItDir/include/qt/[a-pr-zA-Z]*.h          $incdir/qt
+cp $VisItDir/include/qt/q[a-l]*.h               $incdir/qt
+cp $VisItDir/include/qt/q[m-zA-Z]*.h            $incdir/qt
+cp $VisItDir/clearcase_bin/QTLICENSE.*          $incdir/qt
 
 #
 # Copy the help files to the distribution.

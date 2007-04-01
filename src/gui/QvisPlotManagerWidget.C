@@ -840,6 +840,10 @@ QvisPlotManagerWidget::UpdateHideDeleteDrawButtonsEnabledState() const
 //   I disabled icon support on MacOS X since applications don't get
 //   to put icons in the top menu.
 //
+//   Brad Whitlock, Mon Apr 26 16:39:47 PST 2004
+//   I enabled icons since the new version of Qt on MacOS X supports icons
+//   in the top menu.
+//
 // ****************************************************************************
 
 void
@@ -861,7 +865,6 @@ QvisPlotManagerWidget::AddPlotType(const char *plotName, const int varTypes,
     int id;
     QString menuName(plotName);
     menuName += QString(" . . .");
-#if !defined(__APPLE__)
     if(iconData)
     {
         // Add the plot type to the plot menu.
@@ -875,7 +878,6 @@ QvisPlotManagerWidget::AddPlotType(const char *plotName, const int varTypes,
         plotAttsMenu->insertItem(icon, menuName, plotAttsMenu->count());
     }
     else
-#endif
     {
         // Add the plot type to the plot menu.
         id = plotMenu->insertItem(plotName, entry.varMenu, plotMenu->count());

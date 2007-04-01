@@ -1,4 +1,4 @@
-#                            Copyright 2001-2001
+#                            Copyright 2001-2004
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -32,9 +32,11 @@
 #
 #
 # Modifications:
-#
 #    Hank Childs, Thu Jan 22 13:29:23 PST 2004
 #    Moved all files from the former Pipeline/PublicFilters to this directory.
+#
+#    Brad Whitlock, Fri Apr 23 15:53:11 PST 2004
+#    Added more libraries so we can prebind on MacOS X.
 #
 ##############################################################################
 
@@ -65,6 +67,9 @@ CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@
 SEROBJ=$(SRC:.C=_ser.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libavtfilters
+COMMONLIBS=-ldbatts -lstate -lcomm -lmisc -lavtexceptions -lparser -lutility -lavtview -lvisit_vtk -llightweight_visit_vtk
+SERLIBS=$(COMMONLIBS) -lpipeline_ser -lavtmath_ser $(VTK_LIBS)
+PARLIBS=$(COMMONLIBS) -lpipeline_par -lavtmath_par $(VTK_LIBS)
 
 ##
 ## Standard targets...

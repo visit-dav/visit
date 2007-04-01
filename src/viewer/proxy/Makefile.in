@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2003
+#                            Copyright 2000 - 2004
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -59,7 +59,10 @@
 #    Unified include directories.
 #
 #    Brad Whitlock, Wed Aug 13 16:00:16 PST 2003
-#    I removed -lrpc, which is a liberary that we've not built for a long time.
+#    I removed -lrpc, which is a library that we've not built for a long time.
+#
+#    Brad Whitlock, Fri Apr 23 10:32:27 PDT 2004
+#    I added more libraries to enable prebinding on MacOS X.
 #
 ##############################################################################
 
@@ -78,7 +81,7 @@ SRC=ViewerProxy.C
 HDR=ViewerProxy.h
 OBJ=$(SRC:.C=.o)
 LIB=libviewerproxy
-LIBS=-ldbatts -lavtexceptions -lviewerrpc -lcomm -lmisc -lstate -lplugin
+LIBS=-ldbatts -lavtexceptions -lviewerrpc -lcomm -lmisc -lstate -lplugin -lparser -lutility
 
 
 ##

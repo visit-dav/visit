@@ -197,6 +197,12 @@
 #    Kathleen Bonnell, Wed Mar 31 11:49:55 PST 2004 
 #    Added ClonedDataNetwork. 
 #
+#    Brad Whitlock, Mon Apr 26 08:52:38 PDT 2004
+#    Added support for prebinding on MacOS X.
+#
+#    Kathleen Bonnell, Thu Apr 29 16:54:44 PDT 2004 
+#    Added engineparstate_par to PARLIBS. 
+#
 ##############################################################################
 
 ##
@@ -212,18 +218,20 @@ LIB=libengine
 CPPFLAGS= -I@tmpinc@ @ENGINE_CPPFLAGS@ @CPPFLAGS@ \
          -I. -I../../include/visit
 
-SERLIBS=-L../../lib -lplugin -lviswindow -lavtmath_ser -lplotter \
-        -ldatabase_ser -lmir -lquery_ser -lexpressions_ser -lavtfilters_ser \
-        -lpipeline_ser -lavtview -lavtwriter -lvisit_vtk -llightweight_visit_vtk \
+COMMONLIBS=-L../../lib -lplugin -lviswindow -lplotter -lmir -lavtview \
+        -lavtwriter -lvisit_vtk -llightweight_visit_vtk \
 	-lenginerpc -lutility -lmisc -lcomm -lstate \
-	-lengineparstate_ser -ldbatts -lavtexceptions -lparser @VTK_LIBS@ $(X_LIBS) \
+	-lengineparstate_ser -ldbatts -lavtexceptions -lparser
+
+SERLIBS=$(COMMONLIBS) -lavtmath_ser -ldatabase_ser -lquery_ser \
+        -lexpressions_ser -lavtfilters_ser -lpipeline_ser  \
+        @VTKQT_LIBS@ $(VTK_LIBS) $(X_LIBS) \
 	@LIBS@ @PTHREAD_LIB@
 
-PARLIBS=-L../../lib -lplugin -lviswindow -lavtmath_ser -lplotter \
-        -ldatabase_par -lmir -lquery_par -lexpressions_par -lavtfilters_par \
-        -lpipeline_par -lavtview -lavtwriter -lvisit_vtk -llightweight_visit_vtk \
-	-lenginerpc -lutility  -lmisc -lcomm -lstate \
-	-lengineparstate_par -ldbatts -lavtexceptions -lparser @VTK_LIBS@ $(X_LIBS) \
+PARLIBS=$(COMMONLIBS) -lavtmath_par -ldatabase_par -lquery_par \
+        -lexpressions_par -lavtfilters_par -lpipeline_par \
+        -lengineparstate_par \
+        @VTKQT_LIBS@ $(VTK_LIBS) $(X_LIBS) \
 	@LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
 
 SERLIBDEP=../../lib/libplugin.@SHLIB_LIBEXT@ ../../lib/libplotter.@SHLIB_LIBEXT@ \

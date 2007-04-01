@@ -466,11 +466,11 @@ struct idsort
 };
 
 #ifdef _WIN32_WCE
-static int __cdecl vtkidsortcompare(const void *arg1, const void *arg2)
+static int __cdecl private_vtkidsortcompare(const void *arg1, const void *arg2)
 #else
 extern "C" 
 {  
-  int vtkidsortcompare(const void *arg1, const void *arg2)
+  int private_vtkidsortcompare(const void *arg1, const void *arg2)
 #endif
 {
   idsort *v1 = (idsort *)arg1;
@@ -643,14 +643,14 @@ void vtkVisItPointLocator::FindDistributedPoints(int N, const float x[3],
             minCurrentCount = GetMin(currentCount);         
             if (currentCount[oct] == N)
               {
-              qsort(res[oct], currentCount[oct], sizeof(idsort),vtkidsortcompare);
+              qsort(res[oct], currentCount[oct], sizeof(idsort),private_vtkidsortcompare);
               }
             }
           else if (dist2 < maxDistance[oct])
             {
             res[oct][N-1].dist = dist2;
             res[oct][N-1].id = ptId;
-            qsort(res[oct], N, sizeof(idsort), vtkidsortcompare);
+            qsort(res[oct], N, sizeof(idsort), private_vtkidsortcompare);
             maxDistance[oct] = res[oct][N-1].dist;
             }
           }
@@ -663,7 +663,7 @@ void vtkVisItPointLocator::FindDistributedPoints(int N, const float x[3],
   // do a sort
   for (i = 0; i < 8; i++)
     {
-    qsort(res[i], currentCount[i], sizeof(idsort), vtkidsortcompare);
+    qsort(res[i], currentCount[i], sizeof(idsort), private_vtkidsortcompare);
     }
   
   // Now do the refinement
@@ -689,7 +689,7 @@ void vtkVisItPointLocator::FindDistributedPoints(int N, const float x[3],
           {
           res[oct][N-1].dist = dist2;
           res[oct][N-1].id = ptId;
-          qsort(res[oct], N, sizeof(idsort), vtkidsortcompare);
+          qsort(res[oct], N, sizeof(idsort), private_vtkidsortcompare);
           maxDistance[oct] = res[oct][N-1].dist;
           }
         }
@@ -788,14 +788,14 @@ void vtkVisItPointLocator::FindClosestNPoints(int N, const float x[3],
             currentCount++;
             if (currentCount == N)
               {
-              qsort(res, currentCount, sizeof(idsort), vtkidsortcompare);
+              qsort(res, currentCount, sizeof(idsort), private_vtkidsortcompare);
               }
             }
           else if (dist2 < maxDistance)
             {
             res[N-1].dist = dist2;
             res[N-1].id = ptId;
-            qsort(res, N, sizeof(idsort), vtkidsortcompare);
+            qsort(res, N, sizeof(idsort), private_vtkidsortcompare);
             maxDistance = res[N-1].dist;
             }
           }
@@ -806,7 +806,7 @@ void vtkVisItPointLocator::FindClosestNPoints(int N, const float x[3],
     }
 
   // do a sort
-  qsort(res, currentCount, sizeof(idsort), vtkidsortcompare);
+  qsort(res, currentCount, sizeof(idsort), private_vtkidsortcompare);
 
   // Now do the refinement
   this->GetOverlappingBuckets (&buckets, x, ijk, sqrt(maxDistance),level-1);
@@ -828,7 +828,7 @@ void vtkVisItPointLocator::FindClosestNPoints(int N, const float x[3],
           {
           res[N-1].dist = dist2;
           res[N-1].id = ptId;
-          qsort(res, N, sizeof(idsort), vtkidsortcompare);
+          qsort(res, N, sizeof(idsort), private_vtkidsortcompare);
           maxDistance = res[N-1].dist;
           }
         }

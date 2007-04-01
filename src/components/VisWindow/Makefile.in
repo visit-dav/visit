@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2003
+#                            Copyright 2000 - 2004
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -164,7 +164,7 @@ CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@ @ANNOTATION_FLAGS@
 
 OBJ=$(SRC:.C=.o)
 LIB=libviswindow
-LIBS=-lavtmath_ser -lpipeline_ser -lplotter -lavtexceptions -lmisc -lstate -lvisit_vtk -lvtkqt @VTK_LIBS@ $(X_LIBS)
+LIBS=-ldbatts -lpipeline_ser -lavtfilters_ser -lavtmath_ser -lavtexceptions -lavtview -lmisc -lstate -lcomm -lparser -lutility -lplotter -lvisit_vtk -llightweight_visit_vtk @VTKQT_LIBS@ $(VTK_LIBS) $(X_LIBS)
 
 ##
 ## Standard targets...

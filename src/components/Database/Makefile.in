@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2003
+#                            Copyright 2000 - 2004
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -106,6 +106,9 @@
 #    Akira Haddox, Wed Aug 20 11:22:47 PDT 2003
 #    Added avtUnstructuredDomainBoundaries, avtUnstructuredPointBoundaries.
 #
+#    Brad Whitlock, Thu Apr 22 16:44:07 PST 2004
+#    Added more libraries to make prebinding possible on the Mac.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -149,8 +152,9 @@ CPPFLAGS=-I../../include @COMPONENT_CPPFLAGS@ @CPPFLAGS@
 SEROBJ=$(SRC:.C=_ser.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libdatabase
-SERLIBS=-ldbatts -lpipeline_ser -lavtexceptions -lstate -lutility -lmisc @VTK_LIBS@
-PARLIBS=-ldbatts -lpipeline_par -lavtexceptions -lstate -lutility -lmisc @VTK_LIBS@ @SHLIB_MPI_LIBS@
+COMMONLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lplugin -lparser -lutility -lmir -lvisit_vtk -llightweight_visit_vtk
+SERLIBS=$(COMMONLIBS) -lpipeline_ser -lavtmath_ser $(VTK_LIBS)
+PARLIBS=$(COMMONLIBS) -lpipeline_par -lavtmath_par $(VTK_LIBS) @SHLIB_MPI_LIBS@
 
 ##
 ## Standard targets...

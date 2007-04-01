@@ -21,6 +21,9 @@
 #include "vtkImageData.h"
 #include "vtkPointData.h"
 #include "vtkErrorCode.h"
+#if defined(__APPLE__)
+#include <tiff.h>
+#endif
 #include <tiffio.h>
 
 vtkCxxRevisionMacro(vtkHankTIFFWriter, "$Revision: 1.30 $");
