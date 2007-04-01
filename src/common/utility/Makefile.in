@@ -1,5 +1,5 @@
 #
-#                            Copyright 2000 - 2000
+#                            Copyright 2000 - 2005
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -59,6 +59,9 @@
 #    Hank Childs, Tue Sep 24 09:44:49 PDT 2002
 #    Remove ref_ptr.C, add void_ref_ptr.C
 #
+#    Brad Whitlock, Wed Feb 16 11:23:34 PDT 2005
+#    Added top level VisIt include.
+#
 ##############################################################################
 
 ##
@@ -67,7 +70,7 @@
 @SET_MAKE@
 @VARIABLES@
 
-CPPFLAGS=-I. @CPPFLAGS@ @VTK_INCLUDES@ @SILO_INCLUDE@
+CPPFLAGS=-I. -I../../include @CPPFLAGS@ @VTK_INCLUDES@ @SILO_INCLUDE@
 LIBS=
 
 ##

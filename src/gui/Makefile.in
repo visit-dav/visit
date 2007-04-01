@@ -293,6 +293,9 @@
 #    Brad Whitlock, Fri Dec 3 14:20:39 PST 2004
 #    Added QvisVariableButton, QvisWizard.
 #
+#    Brad Whitlock, Wed Feb 9 17:34:19 PST 2005
+#    Added QvisVisItUpdate.
+#
 ##############################################################################
 
 ##
@@ -390,6 +393,7 @@ HDRMOC = \
     QvisVariableButtonHelper.h \
     QvisVCRControl.h \
     QvisViewWindow.h \
+    QvisVisItUpdate.h \
     QvisWindowBase.h \
     QvisWizard.h \
     SplashScreen.h

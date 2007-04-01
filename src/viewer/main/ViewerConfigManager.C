@@ -6,6 +6,7 @@
 #include <ViewerSubject.h>
 #include <ViewerMessaging.h>
 #include <DebugStream.h>
+#include <Utility.h>
 
 // ****************************************************************************
 //  Method: ViewerConfigManager::ViewerConfigManager

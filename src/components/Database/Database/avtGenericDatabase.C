@@ -61,6 +61,11 @@ using     std::string;
 using     std::vector;
 
 
+// Function prototypes for static functions.
+static const char   *GetOriginalVariableName(const avtDatabaseMetaData *,
+                                             const char *);
+
+
 // ****************************************************************************
 //  Method: avtGenericDatabase constructor
 //
@@ -140,12 +145,94 @@ avtGenericDatabase::GetFilename(int ts)
 //    Brad Whitlock, Wed May 14 09:15:18 PDT 2003
 //    I added the optional timeState argument.
 //
+//    Hank Childs, Tue Feb 15 07:21:10 PST 2005
+//    Replace forbidden characters of expression language.
+//
 // ****************************************************************************
 
 void
 avtGenericDatabase::SetDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 {
     Interface->SetDatabaseMetaData(md, timeState);
+
+    std::vector<char>        forbiddenChars;
+    std::vector<std::string> replacementStrs;
+
+    forbiddenChars.push_back(' ');
+    replacementStrs.push_back("_");
+
+    forbiddenChars.push_back('\n');
+    replacementStrs.push_back("_nl_");
+
+    forbiddenChars.push_back('\t');
+    replacementStrs.push_back("_tab_");
+
+    forbiddenChars.push_back('.');
+    replacementStrs.push_back("_dot_");
+
+    forbiddenChars.push_back('!');
+    replacementStrs.push_back("_");
+    forbiddenChars.push_back('@');
+    replacementStrs.push_back("_at_");
+    forbiddenChars.push_back('#');
+    replacementStrs.push_back("_number_");
+    forbiddenChars.push_back('$');
+    replacementStrs.push_back("_dollar_");
+    forbiddenChars.push_back('%');
+    replacementStrs.push_back("_percent_");
+    forbiddenChars.push_back('^');
+    replacementStrs.push_back("_carat_");
+    forbiddenChars.push_back('&');
+    replacementStrs.push_back("_ampersand_");
+    forbiddenChars.push_back('*');
+    replacementStrs.push_back("_star_");
+
+    forbiddenChars.push_back('-');
+    replacementStrs.push_back("_hyphen_");
+    forbiddenChars.push_back('+');
+    replacementStrs.push_back("_plus_");
+    forbiddenChars.push_back('=');
+    replacementStrs.push_back("_equal_");
+    forbiddenChars.push_back('|');
+    replacementStrs.push_back("_pipe_");
+    forbiddenChars.push_back('~');
+    replacementStrs.push_back("_tilde_");
+    forbiddenChars.push_back(':');
+    replacementStrs.push_back("_colon_");
+    forbiddenChars.push_back(';');
+    replacementStrs.push_back("_semicolon_");
+    forbiddenChars.push_back('\"');
+    replacementStrs.push_back("_quote_");
+    forbiddenChars.push_back('\'');
+    replacementStrs.push_back("_quote_");
+    forbiddenChars.push_back('.');
+    replacementStrs.push_back("_dot_");
+    forbiddenChars.push_back(',');
+    replacementStrs.push_back("_comma_");
+    forbiddenChars.push_back('?');
+    replacementStrs.push_back("_question_");
+
+    forbiddenChars.push_back('[');
+    replacementStrs.push_back("_");
+    forbiddenChars.push_back(']');
+    replacementStrs.push_back("_");
+
+    forbiddenChars.push_back('{');
+    replacementStrs.push_back("_");
+    forbiddenChars.push_back('}');
+    replacementStrs.push_back("_");
+
+    forbiddenChars.push_back('<');
+    replacementStrs.push_back("_");
+    forbiddenChars.push_back('>');
+    replacementStrs.push_back("_");
+
+    forbiddenChars.push_back('(');
+    replacementStrs.push_back("_");
+    forbiddenChars.push_back(')');
+    replacementStrs.push_back("_");
+
+    md->ReplaceForbiddenCharacters(forbiddenChars, replacementStrs);
 }
 
 
@@ -1450,12 +1537,16 @@ avtGenericDatabase::GetSpeciesVariable(const char *specname, int ts,
 //    Hank Childs, Fri Mar 14 20:56:40 PST 2003
 //    Turned off caching in some instances.
 //
+//    Hank Childs, Tue Feb 15 07:21:10 PST 2005
+//    Make translations when we have hidden characters.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
                                       const char *material)
 {
+
     //
     // We have to be leery about doing any caching when the variables are
     // defined on sub-meshes.  This is because if we add new secondary
@@ -1469,25 +1560,39 @@ avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
                          avtVariableCache::SCALARS_NAME, ts, domain, material);
     }
 
+    //
+    // Translate the variable name into something the interface understands.
+    // Note: use the "real_varname" when talking to the Interface, but use
+    // the standard "varname" for caching and all other places.
+    //
+    const avtScalarMetaData *smd = GetMetaData(ts)->GetScalar(varname);
+    if (smd == NULL)
+        EXCEPTION1(InvalidVariableException, varname);
+    const char *real_varname = varname;
+    if (smd->originalName != smd->name && smd->originalName != "")
+    {
+        real_varname = smd->originalName.c_str();
+    }
+
     if (var == NULL)
     {
         //
         // We haven't read in this domain before, so fetch it from the files.
         //
-        var = Interface->GetVar(ts, domain, varname);
+        var = Interface->GetVar(ts, domain, real_varname);
 
         if (var != NULL)
         {
-            if (Interface->CanCacheVariable(varname))
+            if (Interface->CanCacheVariable(real_varname))
             {
-                cache.CacheVTKObject(varname, avtVariableCache::SCALARS_NAME, ts,
-                                     domain, material, var);
+                cache.CacheVTKObject(varname, avtVariableCache::SCALARS_NAME,
+                                     ts, domain, material, var);
 
                 //
                 // We need to decrement the reference count of the variable 
                 // returned from FetchVar, but we could not do it previously 
-                // because it would knock the count down to 0 and delete it.  Since 
-                // we have cached it, we can do it now.
+                // because it would knock the count down to 0 and delete it.
+                // Since we have cached it, we can do it now.
                 //
                 var->Delete();
             }
@@ -1527,6 +1632,9 @@ avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
 //    Hank Childs, Fri Mar 14 20:56:40 PST 2003
 //    Turned off caching in some instances.
 //
+//    Hank Childs, Tue Feb 15 07:21:10 PST 2005
+//    Make translations when we have hidden characters.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1546,25 +1654,39 @@ avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
                          avtVariableCache::VECTORS_NAME, ts, domain, material);
     }
 
+    //
+    // Translate the variable name into something the interface understands.
+    // Note: use the "real_varname" when talking to the Interface, but use
+    // the standard "varname" for caching and all other places.
+    //
+    const avtVectorMetaData *vmd = GetMetaData(ts)->GetVector(varname);
+    if (vmd == NULL)
+        EXCEPTION1(InvalidVariableException, varname);
+    const char *real_varname = varname;
+    if (vmd->originalName != vmd->name && vmd->originalName != "")
+    {
+        real_varname = vmd->originalName.c_str();
+    }
+
     if (var == NULL)
     {
         //
         // We haven't read in this domain before, so fetch it from the files.
         //
-        var = Interface->GetVectorVar(ts, domain, varname);
+        var = Interface->GetVectorVar(ts, domain, real_varname);
 
         if (var != NULL)
         {
-            if (Interface->CanCacheVariable(varname))
+            if (Interface->CanCacheVariable(real_varname))
             {
-                cache.CacheVTKObject(varname, avtVariableCache::VECTORS_NAME, ts, 
-                                     domain, material, var);
+                cache.CacheVTKObject(varname, avtVariableCache::VECTORS_NAME,
+                                     ts, domain, material, var);
 
                 //
                 // We need to decrement the reference count of the variable 
                 // returned from FetchVar, but we could not do it previously 
-                // because it would knock the count down to 0 and delete it.  Since
-                // we have cached it, we can do it now.
+                // because it would knock the count down to 0 and delete it.
+                // Since we have cached it, we can do it now.
                 //
                 var->Delete();
             }
@@ -1593,6 +1715,11 @@ avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
 //  Programmer: Hank Childs
 //  Creation:   September 22, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Feb 15 07:21:10 PST 2005
+//    Make translations when we have hidden characters.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1612,26 +1739,40 @@ avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
                          avtVariableCache::TENSORS_NAME, ts, domain, material);
     }
 
+    //
+    // Translate the variable name into something the interface understands.
+    // Note: use the "real_varname" when talking to the Interface, but use
+    // the standard "varname" for caching and all other places.
+    //
+    const avtTensorMetaData *tmd = GetMetaData(ts)->GetTensor(varname);
+    if (tmd == NULL)
+        EXCEPTION1(InvalidVariableException, varname);
+    const char *real_varname = varname;
+    if (tmd->originalName != tmd->name && tmd->originalName != "")
+    {
+        real_varname = tmd->originalName.c_str();
+    }
+
     if (var == NULL)
     {
         //
         // We haven't read in this domain before, so fetch it from the files.
         // Note: we use the vector var interface to get tensors.
         //
-        var = Interface->GetVectorVar(ts, domain, varname);
+        var = Interface->GetVectorVar(ts, domain, real_varname);
 
         if (var != NULL)
         {
-            if (Interface->CanCacheVariable(varname))
+            if (Interface->CanCacheVariable(real_varname))
             {
-                cache.CacheVTKObject(varname, avtVariableCache::TENSORS_NAME, ts, 
-                                     domain, material, var);
+                cache.CacheVTKObject(varname, avtVariableCache::TENSORS_NAME,
+                                     ts, domain, material, var);
 
                 //
                 // We need to decrement the reference count of the variable 
                 // returned from FetchVar, but we could not do it previously 
-                // because it would knock the count down to 0 and delete it.  Since
-                // we have cached it, we can do it now.
+                // because it would knock the count down to 0 and delete it.
+                // Since we have cached it, we can do it now.
                 //
                 var->Delete();
             }
@@ -1660,6 +1801,11 @@ avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
 //  Programmer: Hank Childs
 //  Creation:   September 22, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Feb 15 07:21:10 PST 2005
+//    Make translations when we have hidden characters.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1680,26 +1826,41 @@ avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
                               material);
     }
 
+    //
+    // Translate the variable name into something the interface understands.
+    // Note: use the "real_varname" when talking to the Interface, but use
+    // the standard "varname" for caching and all other places.
+    //
+    const avtSymmetricTensorMetaData *smd = 
+                                       GetMetaData(ts)->GetSymmTensor(varname);
+    if (smd == NULL)
+        EXCEPTION1(InvalidVariableException, varname);
+    const char *real_varname = varname;
+    if (smd->originalName != smd->name && smd->originalName != "")
+    {
+        real_varname = smd->originalName.c_str();
+    }
+
     if (var == NULL)
     {
         //
         // We haven't read in this domain before, so fetch it from the files.
         // Note: we use the vector var interface to get tensors.
         //
-        var = Interface->GetVectorVar(ts, domain, varname);
+        var = Interface->GetVectorVar(ts, domain, real_varname);
 
         if (var != NULL)
         {
-            if (Interface->CanCacheVariable(varname))
+            if (Interface->CanCacheVariable(real_varname))
             {
-                cache.CacheVTKObject(varname, avtVariableCache::TENSORS_NAME, ts, 
-                                     domain, material, var);
+                cache.CacheVTKObject(varname, avtVariableCache::TENSORS_NAME,
+                                     ts, domain, material, var);
 
                 //
                 // We need to decrement the reference count of the variable 
                 // returned from FetchVar, but we could not do it previously 
-                // because it would knock the count down to 0 and delete it.  Since
-                // we have cached it, we can do it now.
+                // because it would knock the count down to 0 and delete it.
+                // Since we have cached it, we can do it now.
                 //
                 var->Delete();
             }
@@ -1778,6 +1939,9 @@ avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
 //    Hank Childs, Fri Aug 27 16:16:52 PDT 2004
 //    Rename ghost data arrays.
 //
+//    Hank Childs, Tue Feb 15 07:21:10 PST 2005
+//    Make translations when we have hidden characters.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1797,12 +1961,33 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
                          avtVariableCache::DATASET_NAME, ts, domain, material);
     }
 
+    //
+    // Translate the variable name into something the interface understands.
+    // Note: use the "real_varname" when talking to the Interface, but use
+    // the standard "varname" for caching and all other places.
+    //
+    const avtMeshMetaData *mmd = GetMetaData(ts)->GetMesh(meshname);
+    const avtCurveMetaData *cmd = GetMetaData(ts)->GetCurve(meshname);
+    if (cmd == NULL && mmd == NULL)
+        EXCEPTION1(InvalidVariableException, meshname);
+    const char *real_meshname = meshname;
+    if (mmd != NULL && 
+        mmd->originalName != mmd->name && mmd->originalName != "")
+    {
+        real_meshname = mmd->originalName.c_str();
+    }
+    if (cmd != NULL && 
+        cmd->originalName != cmd->name && cmd->originalName != "")
+    {
+        real_meshname = cmd->originalName.c_str();
+    }
+
     if (mesh == NULL)
     {
         //
         // We haven't read in this domain before, so fetch it from the files.
         //
-        mesh = Interface->GetMesh(ts, domain, meshname);
+        mesh = Interface->GetMesh(ts, domain, real_meshname);
 
         if (mesh == NULL)
         {
@@ -1819,16 +2004,16 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
 
         AssociateBounds(mesh);
 
-        if (Interface->CanCacheVariable(meshname))
+        if (Interface->CanCacheVariable(real_meshname))
         {
             cache.CacheVTKObject(meshname, avtVariableCache::DATASET_NAME, ts,
                                  domain, material, mesh);
 
             //
             // We need to decrement the reference count of the variable returned
-            // from FetchMesh, but we could not do it previously because it would
-            // knock the count down to 0 and delete it.  Since we have cached it,
-            // we can do it now.
+            // from FetchMesh, but we could not do it previously because it
+            // would knock the count down to 0 and delete it.  Since we have
+            // cached it, we can do it now.
             //
             mesh->Delete();
         }
@@ -1900,6 +2085,9 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
 //    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
 //    Changed 'vector<int>' to 'intVector'.
 //
+//    Hank Childs, Tue Feb 15 07:21:10 PST 2005
+//    Make translations when we have hidden characters.
+//
 // ****************************************************************************
 
 void
@@ -1930,6 +2118,8 @@ avtGenericDatabase::GetAuxiliaryData(avtDataSpecification_p spec,
     // if it has not been opened.
     //
     ActivateTimestep(ts);
+
+    const char *real_var = GetOriginalVariableName(GetMetaData(ts), var);
 
     intVector domains;
     sil.GetDomainList(domains);
@@ -1966,8 +2156,8 @@ avtGenericDatabase::GetAuxiliaryData(avtDataSpecification_p spec,
             // We did not have it, so calculate it and then store it.
             //
             DestructorFunction df;
-            void *d = Interface->GetAuxiliaryData(var,ts,domains[i],type,args,
-                                                  df);
+            void *d = Interface->GetAuxiliaryData(real_var, ts, domains[i],
+                                                  type, args, df);
 
             if (d != NULL)
             {
@@ -3271,6 +3461,9 @@ avtGenericDatabase::ActivateTimestep(int stateIndex)
 //    Changed 'vector<int>' to 'intVector', 'vector<bool>' to 'boolVector',
 //    and 'vector<string>' to 'stringVector'.
 //
+//    Hank Childs, Tue Feb 15 07:21:10 PST 2005
+//    Make translations when we have hidden characters.
+//
 // ****************************************************************************
 
 void
@@ -3322,13 +3515,23 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
     // the materials.  In that case, we have to tell the file format interface
     // of all of the variables we will be interested in.
     //
-    Interface->RegisterVariableList(var, vars2nd);
+    const char *real_var = GetOriginalVariableName(md, var);
+    vector<CharStrRef> real_vars2nd;
+    int i;
+    for (i = 0 ; i < vars2nd.size() ; i++)
+    {
+        const char *str = GetOriginalVariableName(md, *(vars2nd[i]));
+        char *v2 = new char[strlen(str)+1];
+        strcpy(v2, str);
+        CharStrRef ref = v2;
+        real_vars2nd.push_back(ref);
+    }
+    Interface->RegisterVariableList(real_var, vars2nd);
 
     //
     // Some file formats are interested in knowing about data selections
     //
     vector<avtDataSelection_p> selList = spec->GetAllDataSelections();
-    int i;
     for (i = 0; i < selList.size(); i++)
         selectionsApplied.push_back(false);
     Interface->RegisterDataSelections(selList, &selectionsApplied);
@@ -7824,4 +8027,81 @@ avtGenericDatabase::LocalIdForGlobal(const int dom, const string &var,
     }
     return retVal; 
 }
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetOriginalVariableName
+//
+//  Purpose:
+//      Gets the original variable name from the variable name being used
+//      outside the database (this translation is necessary for expressions).
+//      It is not known whether this is a scalar, vector, etc.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 15, 2005
+//
+// ****************************************************************************
+
+static const char *
+GetOriginalVariableName(const avtDatabaseMetaData *md, const char *varname)
+{
+    const avtScalarMetaData *smd = md->GetScalar(varname);
+    if (smd != NULL)
+    {
+        if (smd->originalName != smd->name && smd->originalName != "")
+            return smd->originalName.c_str();
+        return varname;
+    }
+
+    const avtVectorMetaData *vmd = md->GetVector(varname);
+    if (vmd != NULL)
+    {
+        if (vmd->originalName != vmd->name && vmd->originalName != "")
+            return vmd->originalName.c_str();
+        return varname;
+    }
+
+    const avtTensorMetaData *tmd = md->GetTensor(varname);
+    if (tmd != NULL)
+    {
+        if (tmd->originalName != tmd->name && tmd->originalName != "")
+            return tmd->originalName.c_str();
+        return varname;
+    }
+
+    const avtSymmetricTensorMetaData *stmd = md->GetSymmTensor(varname);
+    if (stmd != NULL)
+    {
+        if (stmd->originalName != stmd->name && stmd->originalName != "")
+            return stmd->originalName.c_str();
+        return varname;
+    }
+
+    const avtMaterialMetaData *matmd = md->GetMaterial(varname);
+    if (matmd != NULL)
+    {
+        if (matmd->originalName != matmd->name && matmd->originalName != "")
+            return matmd->originalName.c_str();
+        return varname;
+    }
+
+    const avtMeshMetaData *meshmd = md->GetMesh(varname);
+    if (meshmd != NULL)
+    {
+        if (meshmd->originalName != meshmd->name && meshmd->originalName != "")
+            return meshmd->originalName.c_str();
+        return varname;
+    }
+
+    const avtCurveMetaData *cmd = md->GetCurve(varname);
+    if (cmd != NULL)
+    {
+        if (cmd->originalName != cmd->name && cmd->originalName != "")
+            return cmd->originalName.c_str();
+        return varname;
+    }
+
+    return varname;
+}
+
 

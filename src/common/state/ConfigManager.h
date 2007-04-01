@@ -32,6 +32,10 @@
 //   Brad Whitlock, Fri Oct 3 16:11:27 PST 2003
 //   Added internal methods to handle string vectors better.
 //
+//   Brad Whitlock, Wed Feb 16 09:13:21 PDT 2005
+//   Removed GetUserVisItDirectory, GetDefaultConfigFile, GetSystemConfigFile
+//   methods and made them part of the utility library (Utility.h).
+//
 // ****************************************************************************
 
 class STATE_API ConfigManager
@@ -42,11 +46,6 @@ public:
 
     virtual void WriteConfigFile(const char *filename) = 0;
     virtual DataNode *ReadConfigFile(const char *filename) = 0;
-
-    std::string GetUserVisItDirectory() const;
-
-    char *GetDefaultConfigFile(const char *filename = 0, const char *home = 0);
-    char *GetSystemConfigFile(const char *filename = 0);
 protected:
     // Functions to write out the tree.
     void WriteObject(DataNode *node, int indentLevel = 0);

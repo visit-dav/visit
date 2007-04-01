@@ -1380,6 +1380,10 @@ ViewerWindowManager::ChooseCenterOfRotation(int windowIndex,
 //    I added code to figure out the basename for the filenames when an
 //    output directory is specified.
 //
+//    Hank Childs, Wed Feb 16 07:16:56 PST 2005
+//    If we can't save the file, the returned filename is NULL.  Handle this
+//    gracefully.
+//
 // ****************************************************************************
 
 void
@@ -1612,20 +1616,23 @@ ViewerWindowManager::SaveWindow(int windowIndex)
     {
         TRY
         {
-            // Tell the writer to save the window on the viewer.
-            fileWriter->Write(filename, dob,saveWindowClientAtts->GetQuality(),
-                              saveWindowClientAtts->GetProgressive(),
-                              saveWindowClientAtts->GetCompression(),
-                              saveWindowClientAtts->GetBinary());
-
-            if (*dob2 != NULL)
+            if (filename != NULL)
             {
                 // Tell the writer to save the window on the viewer.
-                fileWriter->Write(filename2, 
-                                  dob2,saveWindowClientAtts->GetQuality(),
+                fileWriter->Write(filename, dob,saveWindowClientAtts->GetQuality(),
                                   saveWindowClientAtts->GetProgressive(),
                                   saveWindowClientAtts->GetCompression(),
                                   saveWindowClientAtts->GetBinary());
+
+                if (*dob2 != NULL)
+                {
+                    // Tell the writer to save the window on the viewer.
+                    fileWriter->Write(filename2, 
+                                      dob2,saveWindowClientAtts->GetQuality(),
+                                      saveWindowClientAtts->GetProgressive(),
+                                      saveWindowClientAtts->GetCompression(),
+                                      saveWindowClientAtts->GetBinary());
+                }
             }
         }
         CATCH2(VisItException, ve)
@@ -1660,18 +1667,28 @@ ViewerWindowManager::SaveWindow(int windowIndex)
     }
 
     // Send a message to indicate that we're done saving the image.
-    if (savedWindow)
+    if (savedWindow && filename != NULL)
     {
         SNPRINTF(message, 1000, "Saved %s", filename);
         Status(message);
         Message(message);
     }
+    else
+    {
+        SNPRINTF(message, 1000, "Could not save window");
+        Status(message);
+        Message(message);
+    }
 
-    saveWindowClientAtts->SetLastRealFilename(filename);
-    saveWindowClientAtts->Notify();
+    if (filename != NULL)
+    {
+        saveWindowClientAtts->SetLastRealFilename(filename);
+        saveWindowClientAtts->Notify();
+    }
 
     // Delete the filename memory.
-    delete [] filename;
+    if (filename != NULL)
+        delete [] filename;
     if (filename2 != NULL)
         delete [] filename2;
 }
@@ -6698,6 +6715,11 @@ ViewerWindowManager::InitWindowLimits()
 //    Modified the routine to use both the width and height for the window
 //    size, instead of using with width for both.
 //
+//    Hank Childs, Mon Feb 14 13:37:59 PST 2005
+//    Get around a bug with window manager.  If you offset new windows
+//    by 32 pixels, the old window is blanked out.  But if you use 33 pixels,
+//    the old window is okay (see '5913).  So we are changing the offset.
+//
 // ****************************************************************************
 
 int
@@ -6736,8 +6758,9 @@ ViewerWindowManager::SimpleAddWindow()
     }
     else
     {
-        x      = windowLimits[0][0].x + (nWindows - layout + 1) * 32;
-        y      = windowLimits[0][0].y + (nWindows - layout + 1) * 32;
+        int offset = 33; // Don't change this number without seeing '5913.
+        x      = windowLimits[0][0].x + (nWindows - layout + 1) * offset;
+        y      = windowLimits[0][0].y + (nWindows - layout + 1) * offset;
         width  = windowLimits[layoutIndex][0].width;
         height = windowLimits[layoutIndex][0].height;
     }

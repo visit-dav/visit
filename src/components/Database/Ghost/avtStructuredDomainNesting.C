@@ -287,6 +287,9 @@ avtStructuredDomainNesting::GetSelectedDescendents(
 //    Hank Childs, Fri Aug 27 16:16:52 PDT 2004
 //    Renamed ghost data array.  Also properly mark each zone's ghost type.
 //
+//    Mark C. Miller, Wed Feb 16 14:44:17 PST 2005
+//    Added check to skip over patches with no mesh
+//
 // ****************************************************************************
 bool
 avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
@@ -299,6 +302,9 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
     {
 
         unsigned char *ghostData = 0;
+
+        if (meshes[i] == NULL)
+            continue;
 
         vtkUnsignedCharArray *ghostArray = vtkUnsignedCharArray::SafeDownCast(
             meshes[i]->GetCellData()->GetArray("avtGhostZones"));
@@ -492,6 +498,9 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
 //    Hank Childs, Tue Jan 18 11:25:15 PST 2005
 //    Fix typo that came up when dims[1] != dims[2].
 //
+//    Mark C. Miller, Wed Feb 16 14:32:55 PST 2005
+//    Account for possibility that some meshes may not exist
+//
 // ****************************************************************************
 
 bool
@@ -501,6 +510,10 @@ avtStructuredDomainNesting::ConfirmMesh(vector<int> &domains,
     for (int i = 0 ; i < domains.size() ; i++)
     {
         int dims[3] = { -1, -1, -1 };
+
+        if (meshes[i] == NULL)
+            continue;
+
         int do_type = meshes[i]->GetDataObjectType();
         if (do_type == VTK_STRUCTURED_GRID)
         {

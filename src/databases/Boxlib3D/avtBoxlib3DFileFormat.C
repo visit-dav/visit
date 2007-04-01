@@ -81,6 +81,9 @@ static int    VSSearch(const vector<string> &, const string &);
 //    Hank Childs, Thu Nov  6 09:25:17 PST 2003
 //    Modified to work for one timestep only.
 //
+//    Hank Childs, Sun Feb 13 13:53:14 PST 2005
+//    Do not require to be in a "plt" directory.
+//
 // ****************************************************************************
 
 avtBoxlib3DFileFormat::avtBoxlib3DFileFormat(const char *fname)
@@ -89,7 +92,7 @@ avtBoxlib3DFileFormat::avtBoxlib3DFileFormat(const char *fname)
     // The root path is the boxlib name.  This needs to change.
     rootPath = GetDirName(fname);
 
-    bool foundOne = false;
+    cycle = 0;
     const char *cur = rootPath.c_str();
     const char *last = NULL;
     while (cur != NULL)
@@ -101,15 +104,11 @@ avtBoxlib3DFileFormat::avtBoxlib3DFileFormat(const char *fname)
             cur = cur+1;
         }
     }
-    if (last == NULL)
+    if (last != NULL)
     {
-        EXCEPTION1(InvalidFilesException, fname);
+        cycle = atoi(last + strlen("plt"));
     }
 
-    cycle = atoi(last + strlen("plt"));
-    char tmp[32];
-    sprintf(tmp, "plt%04d", cycle);
-    //timestepPath = tmp;
     static const char *t ="";
     timestepPath = t;
 
@@ -1162,6 +1161,9 @@ avtBoxlib3DFileFormat::GetVisMF(int index)
 //    Brad Whitlock, Thu Aug 5 15:52:53 PST 2004
 //    Prevent VisIt from alphabetizing the variable lists.
 //
+//    Hank Childs, Mon Feb 14 11:08:13 PST 2005
+//    Make materials be 1-indexed.
+//
 // ****************************************************************************
 
 void
@@ -1235,7 +1237,7 @@ avtBoxlib3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         char str[32];
         for (int m = 0; m < nMaterials; ++m)
         {
-            sprintf(str, "mat%d", m);
+            sprintf(str, "mat%d", m+1);
             mnames[m] = str;
         }
         AddMaterialToMetaData(md, matname, mesh_name, nMaterials, mnames);
@@ -1499,6 +1501,9 @@ avtBoxlib3DFileFormat::GetAuxiliaryData(const char *var, int dom,
 //    Hank Childs, Wed Feb 18 10:19:34 PST 2004
 //    Construct material in a more numerically reliable way.
 //
+//    Hank Childs, Mon Feb 14 11:08:13 PST 2005
+//    Make materials be 1-indexed.
+//
 // ****************************************************************************
     
 void *
@@ -1522,7 +1527,7 @@ avtBoxlib3DFileFormat::GetMaterial(const char *var, int patch,
     char str[32];
     for (i = 0; i < nMaterials; ++i)
     {
-        sprintf(str, "mat%d", i);
+        sprintf(str, "mat%d", i+1);
         mnames[i] = str;
     }
     
