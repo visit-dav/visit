@@ -333,7 +333,7 @@ avtRayTracer::Execute(void)
     int sampLimitPerProc = 25000000; // 25M
     numSamps /= PAR_Size();
     int numTiles = numSamps/sampLimitPerProc;
-    int numDivisions = (int) sqrt(numTiles);
+    int numDivisions = (int) sqrt((double) numTiles);
     if (numDivisions < 1)
         numDivisions = 1;
     int IStep = screen[0] / numDivisions;

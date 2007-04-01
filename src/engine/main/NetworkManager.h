@@ -204,6 +204,9 @@ typedef struct _EngineVisWinInfo
 //    Modified to use a map of EngineVisWindowInfo objects keyed on the
 //    window ID
 //
+//    Mark C. Miller, Wed Jan  5 10:14:21 PST 2005
+//    Added NewVisWindow method
+//
 // ****************************************************************************
 class NetworkManager
 {
@@ -275,6 +278,8 @@ class NetworkManager
                                          const int clonedFromId);
 
  private:
+
+    void          NewVisWindow(int winID);
 
     std::vector<DataNetwork*>   networkCache;
     std::vector<int>            globalCellCounts;

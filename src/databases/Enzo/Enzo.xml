@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+  <Plugin name="Enzo" label="Enzo" type="database" dbtype="STMD" version="1.0">
+    <Extensions> hierarchy boundary </Extensions>
+    <CXXFLAGS> $(HDF4_FLAGS) </CXXFLAGS>
+    <LIBS>     $(HDF4_LIBS)     </LIBS>
+  </Plugin>
