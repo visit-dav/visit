@@ -1,0 +1,90 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 1.4.1 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 1.4.1 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.4.1</font></b></p>
+<ul>
+<li>VisIt now has a Scatter plot, which allows you to visualize multivariate data as a point mesh. The new plot allows you to use up to 4 input variables. Up to three of the input variables can be used for coordinates and one of the input variables can be used for colors. Each of the dimensions can be scaled independently or they can all be mapped into a unit cube. The Scatter plot provides a plot wizard to help you initialize the many input variables to the plot so it is easier to create and use the plot.</li>
+<li>VisIt can now read files written in the ASCII form of the TecPlot file format.</li>
+<li>Zooming in on 2D datasets now increases the size of the viewport, making ir more square, until the zoomed rectangle takes up most of the vis window. This allows you to see more of the dataset as you zoom using the middle mouse button.</li>
+<li>VisIt's Volume plot now has a 3rd rendering mode that lets you do raycasting volume-rendering. The new raycasting volume-renderer even accepts geometry from other plots allowing you to show both surfaces and volume-rendered data.</li>
+<li>VisIt's Expressions window now has a new <i>Insert variables</i> button that lets you choose to insert variables from a list of available variables and expressions.</li>
+<li>VisIt's Pick window now has a <i>Variables</i> button that lets you select secondary variables from a list of variables for the current plot.</li>
+<li>Many of VisIt's plot and operator attributes windows that used a line edit control for entering a variable name have been improved so they use a variable menu. The variable menu allows you to select a variable from a list of variables for the active plot or the active source.</li>
+<li>VisIt's 3D navigation mode now has a <i>Dolly interaction mode</i> that lets you move the camera through the dataset for genuine fly-throughs.</li>
+<li>Point mesh rendering has been improved so that it is much faster.</li>
+<li>VisIt can now read mixed variables from Flash files.</li>
+<li>VisIt now supports data from the CMAT file format.</li>
+<li>Changing the point size on a Mesh plot no longer causes a recalculation.</li>
+<li>Replacing a file now works harder to preserve the old SIL selection, if possible.</li>
+<li>The Replace button in VisIt's Main window is sometimes grayed out when it should remain active.</li>
+<li>Opening Silo files is somewhat faster.</li>
+<li>VisIt's <i>Save options</i> window works better when clicking the <i>Save</i> button.</li>
+<li>VisIt now has the ability to pick on point meshes that have had glyphs applied.</li>
+<li>VisIt has a new SubdivideQuads operator that helps VisIt render quadrilateral cells while minimizing rendering artifacts introduced by interpolating data in color space.</li>
+<li>VisIt's Revolve operator is now built by default.</li>
+<li>Planes in the Clip operator attributes window are now grayed out if they are turned off.</li>
+<li>VisIt's <i>visit -movie</i> script can now save PNG image files.</li>
+<li>The Volume plot's opacities are now scaled so as to highlight high opacities and reduce the contribution of lower opacities.</li>
+<li>VisIt can now be built with xlC on AIX platforms.</li>
+<li>You can now run many of VisIt's tools using their name on the command line instead of typing: <i>visit -command</i></li>
+<li>VisIt now provides version-specific VisIt scripts, which allow for better error checking and prevent the mixing of public and private versions.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.4.1</font></b></p>
+<ul>
+<li>Contour plot fails with a new type of Silo file.</li>
+<li>Node pick returns the wrong node with a slide mesh.</li>
+<li>VisIt's metadata server crashes in combination with a Lustre file system bug.</li>
+<li>VisIt sometimes crashes during transitions to scalable rendering mode.</li>
+<li>VisIt's compute engine crashes when generating a Surface plot of rect2d.silo</li>
+<li>Pick returns totally wrong values for multi-block MRI dataset with percent slice.</li>
+<li>VisIt's compute engine crashes when the IsoVolume operator is applied after the Slice operator.</li>
+<li>VisIt's viewer crashes when given a bad expression.</li>
+<li>VisIt's viewer crashes during re-open when there are bad expressions.</li>
+<li>VisIt's metadata server crashes when reading certain Flash files.</li>
+<li>VisIt's <i>visit -movie</i> movie generation script does not gracefully handle situations where VisIt cannot render an image in scalable rendering mode.</li>
+<li>A recursive expression can cause VisIt's viewer to hang.</li>
+<li>VisIt does not exit correctly when the <i>Engine chooser window</i> is open.</li>
+<li>VisIt has a picking problem with the 2D Boundary plot.</li>
+<li>The UV debug host profile should be interactive (poe) -- not psub.</li>
+<li>The Subset window does not represent the current plot in rare cases.</li>
+<li>Views based on actual data extents are not copied to new windows on first reference.</li>
+<li>Mesh line offsets malfunction with the near clipping plane.</li>
+<li>The Truecolor plot leaks resources.</li>
+<li>The SAMRAI database reader plugin should return NULL for invalid variables in the spatial/data extents queries.</li>
+<li>The IndexSelect operator using <i>block</i> can crash the compute engine or yield no data even when it should.</li>
+<li>The facelist filter causes the compute engine to crash on degenerate hex cells.</li>
+<li>The Volume plot can cause an exception on the viewer.</li>
+<li>Picks on sliced Vector plots are not correct.</li>
+<li>The avtOriginalNodes array is interpolated when sliced by the Slice operator.</li>
+<li>Specular lighting affects unlit plots.</li>
+<li>The Label plot option to draw both front and back facing cells in 3D does not work.</li>
+<li>Code to release data for the Label plot's Normals filter is disabled.</li>
+<li>No lighting for plot of Ensight data containing line elements.</li>
+<li>Volume plot gets confused in software mode.</li>
+<li>If you exit during a scalable render, the viewer does not exit.</li>
+<li>Some plot and operator windows add unwanted floating point precision.</li>
+<li>Cannot tighten clipping ranges when volume rendering with surfaces.</li>
+<li>The Volume plot's legend can get confused.</li>
+<li>Reference lines were not being drawn with labels.</li>
+<li>There are rendering artifacts when using pan or zoom with images that have shadows.</li>
+<li>Window resizing is not recognized by the software volume renderer.</li>
+<li>The Slice operator's percent field incremented by 0.0001 unexpectedly.</li>
+<li>VisIt's xml2window code generation program does not handle ucharVector.</li>
+<li>Some databases do not display as ASCII characters in the Label plot even though they should.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href="relnotes1.4.html">VisIt 1.4 Release Notes</a>.</p>
+</body>
+</html>

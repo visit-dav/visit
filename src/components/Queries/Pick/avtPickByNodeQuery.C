@@ -72,6 +72,10 @@ avtPickByNodeQuery::~avtPickByNodeQuery()
 //    Kathleen Bonnell, Wed Dec 15 17:24:27 PST 2004 
 //    Added logic to handle case when chosen node is to be considered global.
 //
+//    Kathleen Bonnell, Mon Dec 20 08:33:16 PST 2004 
+//    Added early return when DB should determine local id from global, and 
+//    pickAtts not fulfilled when returned from the query.
+//
 // ****************************************************************************
 
 void
@@ -105,6 +109,8 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
             nodeid = vtkVisItUtility::GetLocalElementForGlobal(ds, nodeid, false);
             if (nodeid == -1)
                 return;
+            pickAtts.SetGlobalElement(pickAtts.GetElementNumber());
+            pickAtts.SetElementNumber(nodeid);
             DBsuppliedNodeId = false;
         }
         GetNodeCoords(ds, nodeid);    
@@ -137,6 +143,8 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
 
     if (pickAtts.GetElementIsGlobal() && DBsuppliedNodeId)
     {
+        if (!pickAtts.GetFulfilled())
+            return;
         nodeid = GetCurrentNodeForOriginal(ds, pickAtts.GetElementNumber());
     }
 

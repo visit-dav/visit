@@ -270,6 +270,9 @@ avtPickQuery::PostExecute(void)
 //    Kathleen Bonnell, Wed Dec 15 09:19:39 PST 2004 
 //    Turn on GlobalZone/Node numbers when appropriate. 
 //
+//    Kathleen Bonnell, Mon Dec 20 14:09:21 PST 2004 
+//    Turn on OriginalZone/Node numbers when turning on Global versions.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -347,10 +350,12 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
             dspec->TurnZoneNumbersOn();
             dspec->TurnNodeNumbersOn();
         }
-        if (pickAtts.GetDisplayGlobalIds()) 
+        if (pickAtts.GetDisplayGlobalIds() || pickAtts.GetElementIsGlobal()) 
         {
             dspec->TurnGlobalZoneNumbersOn();
             dspec->TurnGlobalNodeNumbersOn();
+            dspec->TurnZoneNumbersOn();
+            dspec->TurnNodeNumbersOn();
         }
     }
 
