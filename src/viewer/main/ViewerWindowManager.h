@@ -476,7 +476,7 @@ class VIEWER_API ViewerWindowManager : public QObject
     ViewerWindowManager();
     avtImage_p CreateSingleImage(int windowIndex, int width, int height,
                                  bool screenCapture, bool leftEye);
-    avtImage_p CreateTiledImage(int width, int height);
+    avtImage_p CreateTiledImage(int width, int height, bool leftEye);
     avtDataset_p GetDataset(int windowIndex);
     void GetDatabasesForWindows(const intVector &,stringVector &) const;
     bool AskForCorrelationPermission(const char *, const char *,
