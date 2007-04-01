@@ -2060,6 +2060,10 @@ ViewerPlot::GetReader(const int frame) const
 //    Hank Childs, Sun Nov 16 13:32:12 PST 2003
 //    Tell UI processes when the SIL has changed out from underneath it.
 //
+//    Mark C. Miller, Thu Mar 18 21:12:45 PST 2004
+//    Added code to check newsilr for NULL and throw exception instead of
+//    possibly hitting a SEGV
+//
 // ****************************************************************************
 
 // only place in ViewerPlot where ViewerWindowManager is needed
@@ -2093,6 +2097,9 @@ ViewerPlot::CreateActor(const int frame, bool createNew,
                 viewerPlotList->GetDefaultSILRestriction(GetHostName(),
                                                          GetDatabaseName(),
                                                          GetVariableName());
+            if (*newsilr == NULL)
+                EXCEPTION0(ImproperUseException);
+
             newsilr->SetFromCompatibleRestriction(GetSILRestriction());
             SetSILRestriction(newsilr);
 

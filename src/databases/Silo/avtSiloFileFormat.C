@@ -333,14 +333,22 @@ avtSiloFileFormat::ReadGlobalInformation(DBfile *dbfile)
 //  Creation:   March 11, 2002
 //
 //  Modifications:
+//    Mark C. Miller, Thu Mar 18 10:40:50 PST 2004
 //    Added check for null metadata pointer and early return
+//
+//    Mark C. Miller, Thu Mar 18 11:00:38 PST 2004
+//    Added optional md arg. Prefers setting metadata data member over
+//    using md arg, when metadata data member is non-NULL
 //
 // ****************************************************************************
 
 void
-avtSiloFileFormat::GetTimeVaryingInformation(DBfile *dbfile)
+avtSiloFileFormat::GetTimeVaryingInformation(DBfile *dbfile,
+    avtDatabaseMetaData *md)
 {
-    if (metadata == 0)
+    avtDatabaseMetaData *tmpMd = (metadata == 0) ? md : metadata;
+
+    if (tmpMd == 0)
         return;
 
     //
@@ -350,13 +358,13 @@ avtSiloFileFormat::GetTimeVaryingInformation(DBfile *dbfile)
     {
         int cycle;
         DBReadVar(dbfile, "cycle", &cycle);
-        metadata->SetCycle(timestep, cycle);
+        tmpMd->SetCycle(timestep, cycle);
     }
     if (DBInqVarExists(dbfile, "dtime"))
     {
         double dtime;
         DBReadVar(dbfile, "dtime", &dtime);
-        metadata->SetTime(timestep, dtime);
+        tmpMd->SetTime(timestep, dtime);
     }
 }
 
@@ -558,6 +566,9 @@ avtSiloFileFormat::FreeUpResources(void)
 //    Split some of the methods out of ReadDir so it could be
 //    parallelized.
 //
+//    Mark C. Miller, Thu Mar 18 11:00:38 PST 2004
+//    Added call to set cycle/time
+//
 // ****************************************************************************
 
 void
@@ -588,6 +599,11 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     ReadDir(dbfile, "/", md);
     BroadcastGlobalInfo(md);
     DoRootDirectoryWork(md);
+
+    //
+    // Set time/cycle information
+    //
+    GetTimeVaryingInformation(dbfile, md);
 
     // To be nice to other functions, tell Silo to turn back on reading all
     // of the data.

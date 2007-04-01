@@ -230,12 +230,20 @@ void vtkVerticalScalarBarActor::SetVarRange(float *r)
 {
   this->varRange[0] = r[0];
   this->varRange[1] = r[1];
+  if (this->LookupTable != NULL)
+  {
+      this->LookupTable->SetTableRange(r[0], r[1]);
+  }
 }
 
 void vtkVerticalScalarBarActor::SetVarRange(float min, float max)
 {
   this->varRange[0] = min;
   this->varRange[1] = max;
+  if (this->LookupTable != NULL)
+  {
+      this->LookupTable->SetTableRange(min, max);
+  }
 }
 
 void vtkVerticalScalarBarActor::SetRange(float *r)

@@ -841,6 +841,9 @@ QvisPlotManagerWidget::EnablePluginMenus()
 //   Brad Whitlock, Tue Feb 24 16:25:25 PST 2004
 //   I added the populator argument and I made the method return bool.
 //
+//   Mark C. Miller, Thu Mar 18 20:36:59 PST 2004
+//   Added code to get metadata directly from server if it is not invariant
+//
 // ****************************************************************************
 
 bool
@@ -849,6 +852,15 @@ QvisPlotManagerWidget::PopulateVariableLists(VariableMenuPopulator &populator,
 {
     // Get a pointer to the specified file's metadata object.
     const avtDatabaseMetaData *md = fileServer->GetMetaData(filename);
+
+    // get MetaData directly from server if its not invariant
+    if (md && md->GetMustRepopulateOnStateChange())
+    {
+        md = fileServer->GetMetaDataFromMDServer(
+                             fileServer->GetOpenFile(),
+                             fileServer->GetOpenFileTimeState());
+    }
+
     const avtSIL *sil = fileServer->GetSIL(filename);
     
     return populator.PopulateVariableLists(filename.FullName(),
