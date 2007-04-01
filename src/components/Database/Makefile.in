@@ -109,6 +109,9 @@
 #    Brad Whitlock, Thu Apr 22 16:44:07 PST 2004
 #    Added more libraries to make prebinding possible on the Mac.
 #
+#    Jeremy Meredith, Wed Jul  7 12:12:52 PDT 2004
+#    I changed _ser.o to simply be .o.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -149,7 +152,7 @@ Ghost_src= \
 
 CPPFLAGS=-I../../include @COMPONENT_CPPFLAGS@ @CPPFLAGS@
 
-SEROBJ=$(SRC:.C=_ser.o)
+SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libdatabase
 COMMONLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lplugin -lparser -lutility -lmir -lvisit_vtk -llightweight_visit_vtk

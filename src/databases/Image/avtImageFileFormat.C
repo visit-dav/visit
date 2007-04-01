@@ -12,11 +12,13 @@
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
 
+#ifndef MDSERVER
 #include <vtkPNMReader.h>
 #include <vtkPNGReader.h>
 #include <vtkJPEGReader.h>
 #include <vtkTIFFReader.h>
 #include <vtkBMPReader.h>
+#endif
 
 #include <avtDatabaseMetaData.h>
 
@@ -89,13 +91,26 @@ avtImageFileFormat::~avtImageFileFormat()
 //
 //  Modifications:
 //
-//     Chris Wojtan Jun 21, 15:38 PDT 2004
-//     Moved most of the loading code into this function in order to speed up the constructor
+//    Chris Wojtan Jun 21, 15:38 PDT 2004
+//    Moved most of the loading code into this function in order to speed up
+//    the constructor
+//
+//    Jeremy Meredith, Wed Jul  7 13:49:18 PDT 2004
+//    The MDServer doesn't need to read the images; it is making assumptions
+//    about what is in the file already for speed purposes, and this lets us
+//    get away with not using the extra VTK libraries.  Also commented out
+//    the #include files at the top of the file.  Also, there was no case
+//    for monochrome images, so I added one, and I threw an exception on an
+//    unexpected number of channels.  And, made intensity be the numerical
+//    average of the RGB channels instead of the sum.
 //
 // *****************************************************************************
 
 void avtImageFileFormat::ReadInImage(void)
 {
+#ifdef MDSERVER
+    return;
+#else
     if(image != NULL)
     {
         image->Delete();
@@ -176,7 +191,7 @@ void avtImageFileFormat::ReadInImage(void)
     alpha.resize(xdim*ydim);
 
     // if the image has an alpha channel set, read it in
-    if(image->GetNumberOfScalarComponents() == 4)
+    if (image->GetNumberOfScalarComponents() == 4)
     {
         for(j=0; j < ydim; j++)
         {
@@ -190,7 +205,7 @@ void avtImageFileFormat::ReadInImage(void)
         }
     }
     // otherwise, set alpha in each pixel to be maximum
-    else
+    else if (image->GetNumberOfScalarComponents() == 3)
     {
         for(j=0; j < ydim; j++)
         {
@@ -204,11 +219,29 @@ void avtImageFileFormat::ReadInImage(void)
         for(i=0; i<xdim*ydim; i++)
             alpha[i] = 255.0;
     }
+    else if (image->GetNumberOfScalarComponents() == 1)
+    {
+        for(j=0; j < ydim; j++)
+        {
+            for(i=0; i < xdim; i++)
+            {
+                red[j*xdim + i] = green[j*xdim + i] = blue[j*xdim + i] =
+                    image->GetScalarComponentAsFloat(i,j,0,0);
+            }
+        }
+        for(i=0; i<xdim*ydim; i++)
+            alpha[i] = 255.0;
+    }
+    else
+    {
+        EXCEPTION1(VisItException, "The image had an unexpected number of "
+                   "components.");
+    }
 
     // calculate intensity
     intensity.resize(xdim*ydim);
     for(i=0; i < xdim*ydim; i++)
-        intensity[i] = red[i] + green[i] + blue[i];
+        intensity[i] = (red[i] + green[i] + blue[i]) / 3.;
 
     // add these variables to the list
     cellvars.push_back(red);
@@ -218,6 +251,7 @@ void avtImageFileFormat::ReadInImage(void)
     cellvars.push_back(intensity);
 
     readInImage = true;
+#endif
 }
 
 

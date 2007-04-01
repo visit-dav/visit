@@ -35,6 +35,9 @@
 #    Jeremy Meredith, Wed Jan 16 09:54:48 PST 2002
 #    Make this library build serial and parallel versions concurrently.
 #
+#    Jeremy Meredith, Wed Jul  7 12:12:52 PDT 2004
+#    I changed _ser.o to simply be .o.
+#
 ##############################################################################
 
 ##
@@ -52,7 +55,7 @@ SRC=avtMatrix.C avtVector.C avtQuaternion.C avtTrackball.C
 
 CPPFLAGS=@COMPONENT_CPPFLAGS@ @SILO_INCLUDE@ @CPPFLAGS@
 
-SEROBJ=$(SRC:.C=_ser.o)
+SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libavtmath
 

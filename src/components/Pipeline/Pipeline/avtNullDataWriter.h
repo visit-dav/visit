@@ -29,19 +29,27 @@ class     avtDataObjectString;
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Mark C. Miller, Wed Jul  7 11:42:09 PDT 2004
+//    Added argument to constructor and associated data member
+//
 // ****************************************************************************
 
 class PIPELINE_API avtNullDataWriter : public avtOriginatingNullDataSink,
                        public avtDataObjectWriter
 {
   public:
-                       avtNullDataWriter();
+                       avtNullDataWriter(bool _mustMerge = false);
     virtual           ~avtNullDataWriter();
 
-    //virtual bool       MustMergeParallelStreams(void) { return true; };
+    bool               MustMergeParallelStreams(void)
+                           { return mustMerge; };
 
   protected:
     void               DataObjectWrite(avtDataObjectString &);
+
+  private:
+    bool               mustMerge;
+
 };
 
 

@@ -1,0 +1,58 @@
+Function: Initialize
+Declaration: void Initialize(const float, const std::string &);
+Definition:
+// ****************************************************************************
+//  Method: MinMaxInfo::Initialize
+//
+//  Purpose:
+//    Initialize the members.  
+//
+//  Programmer:   Kathleen Bonnell 
+//  Creation:     July 1, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+MinMaxInfo::Initialize(const float val, const std::string &t)
+{
+    elementNum = -1;
+    domain = -1;
+    value = val;
+    coord[0] = 0.;
+    coord[1] = 0.;
+    coord[2] = 0.;
+    type = t;
+    matName = "NO_MAT";
+}
+
+Function: TransformCoord
+Declaration: void TransformCoord(const avtMatrix *trans);
+Definition:
+// ****************************************************************************
+//  Method: MinMaxInfo::TransformCoord
+//
+//  Purpose:
+//    Transform the coord using the given matrix. 
+//
+//  Programmer:   Kathleen Bonnell 
+//  Creation:     July 1, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+MinMaxInfo::TransformCoord(const avtMatrix *trans)
+{
+    if (trans != NULL)
+    {
+        avtVector v1(coord[0], coord[1], coord[2]);
+        v1 = (*trans) * v1;
+        coord[0] = v1.x;
+        coord[1] = v1.y;
+        coord[2] = v1.z;
+    }
+}
+

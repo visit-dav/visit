@@ -64,24 +64,19 @@ avtDatasetExaminer::GetNumberOfZones(avtDataset_p &ds)
 //    Hank Childs, Fri Mar 15 17:18:00 PST 2002
 //    Moved from class avtDataset.
 //
+//    Hank Childs, Wed Jul  7 08:10:46 PDT 2004
+//    Get the variable list using meta-data information, rather than by 
+//    searching the dataset.
+//
 // ****************************************************************************
  
 void
 avtDatasetExaminer::GetVariableList(avtDataset_p &ds, VarList &vl)
 {
-    avtDataTree_p dataTree = ds->dataTree;
-
-    bool success = false;
-    if (*dataTree != NULL)
-    {
-        dataTree->Traverse(CGetVariableList, &vl, success);    }
- 
-    if (!success)
-    {
-        debug1 << "HIGHLY UNUSUAL: the data tree was not able to determine "
-               << "its variable list." << endl;
-        vl.nvars = 0;
-    }
+    avtDataAttributes &atts = ds->GetInfo().GetAttributes();
+    vl.nvars = atts.GetNumberOfVariables();
+    for (int i = 0 ; i < vl.nvars ; i++)
+        vl.varnames.push_back(atts.GetVariableName(i));
 }
 
 

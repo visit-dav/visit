@@ -6,11 +6,8 @@
 
 #include <avtDatasetExaminer.h>
 #include <snprintf.h>
-
-#ifdef PARALLEL
-#include <mpi.h>
 #include <avtParallel.h>
-#endif
+
 
 // ****************************************************************************
 //  Method: avtNumZonesQuery constructor
@@ -64,6 +61,9 @@ avtNumZonesQuery::~avtNumZonesQuery()
 //    Mark C. Miller, Wed Jun  9 21:50:12 PDT 2004
 //    Eliminated use of MPI_ANY_TAG and modified to use GetUniqueMessageTags
 //
+//    Kathleen Bonnell, Tue Jul  6 14:32:06 PDT 2004 
+//    Removed MPI calls, use SumIntArrayAcrossAllProcessors from avtParallel. 
+//
 // ****************************************************************************
 
 void
@@ -97,57 +97,24 @@ avtNumZonesQuery::PerformQuery(QueryAttributes *qA)
         }
     }
 
-#ifdef PARALLEL
-    int myRank, numProcs;
-    MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
-    MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
-    int mpiUsedDomsTag = GetUniqueMessageTag();
-    int mpiTzTag = GetUniqueMessageTag();
-
-    if (myRank == 0)
-    {
-        MPI_Status stat, stat2;
-
-        for (int i = 1; i < numProcs; i++)
-        {
-            MPI_Recv(&usedDomains, 1, MPI_INT, MPI_ANY_SOURCE,
-                     mpiUsedDomsTag, MPI_COMM_WORLD, &stat);
-            if (usedDomains)
-            {
-                int tz[2];
-                MPI_Recv(tz, 2, MPI_INT, stat.MPI_SOURCE, mpiTzTag,
-                         MPI_COMM_WORLD, &stat2);
-                totalZones[0] += tz[0];
-                totalZones[1] += tz[1];
-            }
-        }
-    }
-    else
-    {
-        MPI_Send(&usedDomains, 1, MPI_INT, 0, mpiUsedDomsTag, MPI_COMM_WORLD);
-        if (usedDomains)
-        {
-            MPI_Send(totalZones, 2, MPI_INT, 0, mpiTzTag, MPI_COMM_WORLD);
-        }    
-        return;    
-    }
-#endif
+    int tz[2] = {0, 0};
+    SumIntArrayAcrossAllProcessors(totalZones, tz, 2);
 
     if (OriginalData())
-        SNPRINTF(msg, 200, "The original number of zones is %d.", totalZones[0]);
+        SNPRINTF(msg, 200, "The original number of zones is %d.", tz[0]);
     else 
-        SNPRINTF(msg, 200, "The actual number of zones is %d.", totalZones[0]);
+        SNPRINTF(msg, 200, "The actual number of zones is %d.", tz[0]);
     
     if (gt != AVT_HAS_GHOSTS)
     {
-        qA->SetResultsValue((double)totalZones[0]);
+        qA->SetResultsValue((double)tz[0]);
         qA->SetResultsMessage(msg);
     }
     else
     {
         char msg2[200];
-        SNPRINTF(msg2, 200, "%s\nThe number of ghost zones is %d.", msg, totalZones[1]);
-        double results[2] = {(double) totalZones[0], (double) totalZones[1]};
+        SNPRINTF(msg2, 200, "%s\nThe number of ghost zones is %d.", msg, tz[1]);
+        double results[2] = {(double) tz[0], (double) tz[1]};
         qA->SetResultsValues(results, 2);
         qA->SetResultsMessage(msg2);
     }

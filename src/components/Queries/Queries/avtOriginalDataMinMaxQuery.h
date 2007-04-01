@@ -8,7 +8,6 @@
 
 #include <avtMinMaxQuery.h>
 
-class avtCondenseDatasetFilter;
 class avtExpressionEvaluatorFilter;
 
 
@@ -28,6 +27,9 @@ class avtExpressionEvaluatorFilter;
 //    Kathleen Bonnell, Wed Apr 14 18:05:08 PDT 2004 
 //    Added condense filter. 
 //
+//    Kathleen Bonnell, Tue Jun 29 08:14:35 PDT 2004 
+//    Removed condense filter. 
+//
 // ****************************************************************************
 
 class QUERY_API avtOriginalDataMinMaxQuery : public avtMinMaxQuery
@@ -45,7 +47,6 @@ class QUERY_API avtOriginalDataMinMaxQuery : public avtMinMaxQuery
 
   private:
     avtExpressionEvaluatorFilter *eef;
-    avtCondenseDatasetFilter     *condense;
 };
 
 #endif

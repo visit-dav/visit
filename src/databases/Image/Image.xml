@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Image" type="database" label="Image" version="1.0" enabled="true" dbtype="STSD" haswriter="false">
+  <Plugin name="Image" type="database" label="Image" version="1.0" enabled="true" mdspecificcode="true" dbtype="STSD" haswriter="false">
     <Extensions>
       pnm
       ppm

@@ -3,15 +3,13 @@
 // ************************************************************************* //
 
 #include <avtZoneCenterQuery.h>
+
+#include <avtParallel.h>
 #include <avtTerminatingSource.h>
 #include <avtSILRestrictionTraverser.h>
 #include <vector>
 #include <snprintf.h>
-#include <avtParallel.h>
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
 
 using std::vector;
 using std::string;
@@ -64,6 +62,9 @@ avtZoneCenterQuery::~avtZoneCenterQuery()
 //    Kathleen Bonnell, Fri Jun 11 14:35:50 PDT 2004 
 //    Renamed QueryZoneCenter to QueryCoords, added bool arg. 
 //
+//    Kathleen Bonnell, Tue Jul  6 15:25:02 PDT 2004 
+//    Removed MPI calls, use GetFloatArrayToRootProc. 
+//
 // ****************************************************************************
 
 void
@@ -100,7 +101,7 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
 
     avtSILRestrictionTraverser trav(querySILR);
     trav.GetDomainList(dlist);
-    int success = 0;
+    bool success = false;
 
     //
     //  See if any processor is working with this domain.
@@ -121,50 +122,20 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
         {
             if (dlist[i] == domain)
             {
-                success = (int)src->QueryCoords(var, domain, zone, ts, coord, true);
+                success = src->QueryCoords(var, domain, zone, ts, coord, true);
             }
         }
     }
     else if (PAR_Rank() == 0)
     {
-        success = (int)src->QueryCoords(var, domain, zone, ts, coord, true);
+        success = src->QueryCoords(var, domain, zone, ts, coord, true);
     }
-    
-
-#ifdef PARALLEL
-    int myRank, numProcs;
-    MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
-    MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
-    int mpiGoodTag = GetUniqueMessageTag();
-    int mpiCoordTag = GetUniqueMessageTag();
-
-    if (myRank == 0)
-    {
-        MPI_Status stat, stat2;
-        int good; 
-        for (int i = 1; i < numProcs; i++)
-        {
-            MPI_Recv(&good, 1, MPI_INT, MPI_ANY_SOURCE,
-                     mpiGoodTag, MPI_COMM_WORLD, &stat);
-            if (good)
-            {
-                MPI_Recv(coord, 3, MPI_FLOAT, stat.MPI_SOURCE, mpiCoordTag,
-                         MPI_COMM_WORLD, &stat2);
-                success = good;
-            }
-        }
-    }
-    else
-    {
-        MPI_Send(&success, 1, MPI_INT, 0, mpiGoodTag, MPI_COMM_WORLD);
-        if (success)
-        {
-            MPI_Send(coord, 3, MPI_FLOAT, 0, mpiCoordTag, MPI_COMM_WORLD);
-        }    
-        return;    
-    }
-#endif
  
+    GetFloatArrayToRootProc(coord, 3, success);   
+
+    if (PAR_Rank() != 0)
+        return;
+
     char msg[120];
 
     if (success)

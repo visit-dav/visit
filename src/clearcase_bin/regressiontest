@@ -76,6 +76,9 @@
 #    Kathleen Bonnell, Wed May 19 16:31:04 PDT 2004
 #    Added queryMultiWindow.py to skipList for parallel and scalable,parallel. 
 #
+#    Hank Childs, Wed Jul  7 08:32:25 PDT 2004
+#    Remove volume.py from the skipList.
+#
 # ----------------------------------------------------------------------------
 
 # list of users who want email every night with the log file
@@ -203,9 +206,7 @@ curdate=`date +%Y-%m-%d-%p%I%M`
 modes="serial parallel scalable,parallel"
 
 # set list of tests/modes to skip
-skipList="parallel:tests/rendering/volume.py \
-          scalable,parallel:tests/hybrid/lineout.py \
-          scalable,parallel:tests/rendering/volume.py \
+skipList="scalable,parallel:tests/hybrid/lineout.py \
           parallel:tests/queries/queryMultiWindow.py \
           scalable,parallel:tests/queries/queryMultiWindow.py"
 

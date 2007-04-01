@@ -34,6 +34,10 @@
 #  Programmer: Akira Haddox
 #  Date:       July 1, 2003
 #
+#  Modifications:
+#    Jeremy Meredith, Wed Jul  7 12:12:52 PDT 2004
+#    I changed _ser.o to simply be .o.
+#
 ##############################################################################
 
 ##
@@ -54,7 +58,7 @@ LIBDEP=
 ## Files...
 ##
 SRC=MakeMili.C
-SEROBJ=$(SRC:.C=_ser.o)
+SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 
 

@@ -20,6 +20,7 @@
 #include <avtCallback.h>
 #include <avtColorTables.h>
 #include <avtDataObjectQuery.h>
+#include <avtNullData.h>
 
 
 #include <ApplyOperatorRPC.h>
@@ -742,6 +743,10 @@ RPCExecutor<SetWinAnnotAttsRPC>::Execute(SetWinAnnotAttsRPC *rpc)
 //    Mark C. Miller, Mon May 24 18:36:13 PDT 2004
 //    Modified to support new WriteData interface
 //
+//    Mark C. Miller, Wed Jul  7 11:42:09 PDT 2004
+//    Wrapped call to GetOutput in TRY/CATCH block to catch possible
+//    abort exception and do the right thing
+//
 // ****************************************************************************
 template<>
 void
@@ -774,12 +779,26 @@ RPCExecutor<ExecuteRPC>::Execute(ExecuteRPC *rpc)
     TRY
     {
         // save the current network id for later
+        bool shouldSendAbort = false;
         int netId = netmgr->GetCurrentNetworkId();
+        avtNullData abortDob(NULL);
 
         // Get the output of the network manager. This does the job of
         // executing the network.
-        avtDataObjectWriter_p writer = 
-            netmgr->GetOutput(rpc->GetRespondWithNull(),false);
+        avtDataObjectWriter_p writer;
+        TRY
+        {
+            writer = netmgr->GetOutput(rpc->GetRespondWithNull(),false);
+        }
+        CATCH(AbortException)
+        {
+            shouldSendAbort = true;
+
+            // make a dummy dataobject writer for the call to WriteData
+            abortDob.SetWriterShouldMergeParallelStreams();
+            writer = abortDob.InstantiateWriter();
+        }
+        ENDTRY
 
         visitTimer->StopTimer(gettingData, "Executing network");
         writingData = visitTimer->StartTimer();
@@ -802,14 +821,14 @@ RPCExecutor<ExecuteRPC>::Execute(ExecuteRPC *rpc)
         // only update cell count if we're not here asking for null data
         if (!rpc->GetRespondWithNull())
             netmgr->SetGlobalCellCount(netId, currentNetworkGlobalCellCount);
+
+        // send an abort message if we decided we needed to
+        if (shouldSendAbort)
+            rpc->SendAbort();
     }
     CATCH(ImproperUseException)
     {
         engine->SetNoFatalExceptions(false);
-    }
-    CATCH(AbortException)
-    {
-        rpc->SendAbort();
     }
     CATCH2(VisItException, e)
     {
@@ -1081,6 +1100,10 @@ RPCExecutor<DefineVirtualDatabaseRPC>::Execute(DefineVirtualDatabaseRPC *rpc)
 //    Mark C. Miller, Tue Apr 20 07:44:34 PDT 2004
 //    Added code to set the warning call back
 //
+//    Mark C. Miller, Wed Jul  7 11:42:09 PDT 2004
+//    Added code to re-register various callbacks like other RPC's in this
+//    file
+//
 // ****************************************************************************
 template<>
 void
@@ -1114,6 +1137,14 @@ RPCExecutor<RenderRPC>::Execute(RenderRPC *rpc)
         rpc->SendError(e.GetMessage(), e.GetExceptionType());
     }
     ENDTRY
+
+    avtDataObjectSource::RegisterProgressCallback(
+                               Engine::EngineUpdateProgressCallback, NULL);
+    LoadBalancer::RegisterProgressCallback(
+                               Engine::EngineUpdateProgressCallback, NULL);
+    avtTerminatingSource::RegisterInitializeProgressCallback(
+                               Engine::EngineInitializeProgressCallback, NULL);
+    avtCallback::RegisterWarningCallback(Engine::EngineWarningCallback, NULL);
 }
 
 // ****************************************************************************

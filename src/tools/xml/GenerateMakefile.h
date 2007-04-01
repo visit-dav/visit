@@ -97,6 +97,9 @@
 //    Brad Whitlock, Mon Apr 26 14:08:41 PST 2004
 //    I added a couple of symbols for MacOS X.
 //
+//    Jeremy Meredith, Wed Jul  7 17:08:03 PDT 2004
+//    Allow for mdserver-specific code in a plugin's source files.
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin
@@ -110,6 +113,7 @@ class MakefileGeneratorPlugin
     QString dbtype;
     bool    haswriter;
     bool    enabledByDefault;
+    bool    has_MDS_specific_code;
 
     vector<QString> cxxflags;
     vector<QString> ldflags;
@@ -140,6 +144,7 @@ class MakefileGeneratorPlugin
         : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), haswriter(hw), atts(NULL)
     {
         enabledByDefault = true;
+        has_MDS_specific_code = false;
         customgfiles = false;
         customsfiles = false;
         customvfiles = false;
@@ -434,6 +439,11 @@ class MakefileGeneratorPlugin
             out << name<<"CommonPluginInfo.C";
             out << endl;
             out << "MSRC="<<name<<"MDServerPluginInfo.C";
+            if (has_MDS_specific_code)
+            {
+                out << endl;
+                out << "MSPECIFICSRC=";
+            }
             if (haswriter)
             {
                 out << " avt" << name << "Writer.C";
@@ -485,8 +495,8 @@ class MakefileGeneratorPlugin
         out << "GOBJ=$(COMMONSRC:.C=.o) $(GSRC:.C=.o)" << endl;
         out << "SOBJ=$(COMMONSRC:.C=.o) $(SSRC:.C=.o)" << endl;
         out << "VOBJ=$(COMMONSRC:.C=.o) $(VSRC:.C=.o)" << endl;
-        out << "MOBJ=$(COMMONSRC:.C=.o) $(MSRC:.C=.o)" << endl;
-        out << "ESEROBJ=$(COMMONSRC:.C=.o) $(ESRC:.C=_ser.o)" << endl;
+        out << "MOBJ=$(COMMONSRC:.C=.o) $(MSRC:.C=.o) $(MSPECIFICSRC:.C=_mds.o)" << endl;
+        out << "ESEROBJ=$(COMMONSRC:.C=.o) $(ESRC:.C=.o)" << endl;
         out << "EPAROBJ=$(COMMONSRC:.C=.o) $(ESRC:.C=_par.o)" << endl;
         out << "" << endl;
         out << "MOCSRC = $(WIDGETS:.h=_moc.C)" << endl;

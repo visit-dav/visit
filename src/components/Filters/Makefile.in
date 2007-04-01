@@ -38,6 +38,9 @@
 #    Brad Whitlock, Fri Apr 23 15:53:11 PST 2004
 #    Added more libraries so we can prebind on MacOS X.
 #
+#    Jeremy Meredith, Wed Jul  7 12:12:52 PDT 2004
+#    I changed _ser.o to simply be .o.
+#
 ##############################################################################
 
 ##
@@ -64,7 +67,7 @@ avtWholeImageCompositer.C avtWorldSpaceToImageSpaceTransform.C
 
 CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@
 
-SEROBJ=$(SRC:.C=_ser.o)
+SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libavtfilters
 COMMONLIBS=-ldbatts -lstate -lcomm -lmisc -lavtexceptions -lparser -lutility -lavtview -lvisit_vtk -llightweight_visit_vtk

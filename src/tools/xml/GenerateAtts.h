@@ -106,6 +106,9 @@ using std::vector;
 //    Brad Whitlock, Wed Dec 17 11:55:11 PDT 2003
 //    I changed the generated code so CreateNode has three args.
 //
+//    Jeremy Meredith, Wed Jul  7 17:08:03 PDT 2004
+//    Allow for mdserver-specific code in a plugin's source files.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -2440,6 +2443,7 @@ class AttsGeneratorPlugin
     QString vartype;
     QString dbtype;
     bool    enabledByDefault;
+    bool    has_MDS_specific_code;
 
     vector<QString> cxxflags;
     vector<QString> ldflags;
@@ -2464,6 +2468,7 @@ class AttsGeneratorPlugin
         : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), atts(NULL)
     {
         enabledByDefault = true;
+        has_MDS_specific_code = false;
     }
     void Print(ostream &out)
     {

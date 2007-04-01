@@ -13,6 +13,7 @@
 #include <avtFacelist.h>
 #include <avtIntervalTree.h>
 #include <avtTerminatingSource.h>
+#include <avtMixedVariable.h>
 #include <avtTypes.h>
 
 #include <ImproperUseException.h>
@@ -316,4 +317,43 @@ avtMetaData::GetPipelineSpecification(int domain)
     return ps;
 }
 
+
+// ****************************************************************************
+//  Method: avtMetaData::GetMixedVar
+//
+//  Purpose:
+//      Gets an avtMixedVariable object.
+//
+//  Returns:  The mixed variable for the dataset, if one exists.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   July 1, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtMixedVariable *
+avtMetaData::GetMixedVar(int domain, int timestep)
+{
+    VoidRefList list;
+    avtPipelineSpecification_p spec = GetPipelineSpecification(domain);
+    //
+    // If a timestep has been specified, set it in DataSpecification.
+    //
+    if (timestep != -1)
+        spec->GetDataSpecification()->SetTimestep(timestep);
+
+    source->GetVariableAuxiliaryData(AUXILIARY_DATA_MIXED_VARIABLE, NULL, spec,list);
+    if (list.nList == 0)
+    {
+        return NULL;
+    }
+    if (list.nList != 1)
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+
+    return (avtMixedVariable *) *(list.list[0]);
+}
 

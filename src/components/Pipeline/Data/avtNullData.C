@@ -54,10 +54,15 @@ avtNullData::Instance(void)
 //  Programmer: Mark C. Miller
 //  Creation:   March 12, 2003 
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Jul  7 11:42:09 PDT 2004
+//    Added bool argument to call to construct the writer
+//
 // ****************************************************************************
 
 avtDataObjectWriter *
-avtNullData::InstantiateWriter(void)
+avtNullData::InstantiateWriter()
 {
-   return new avtNullDataWriter;
+   return new avtNullDataWriter(writerShouldMergeParallelStreams);
 }

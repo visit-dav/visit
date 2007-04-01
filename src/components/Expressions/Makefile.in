@@ -72,6 +72,9 @@
 #   Jeremy Meredith, Tue Jun  8 13:26:51 PDT 2004
 #   Added specmf.
 #
+#   Jeremy Meredith, Wed Jul  7 12:12:52 PDT 2004
+#   I changed _ser.o to simply be .o.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -185,7 +188,7 @@ MeshQuality_src= \
 
 CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@
 
-SEROBJ=$(SRC:.C=_ser.o)
+SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libexpressions
 COMMONLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lparser -lutility -lvisit_vtk -llightweight_visit_vtk

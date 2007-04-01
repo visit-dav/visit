@@ -14,16 +14,11 @@
 
 #include <avtExpressionEvaluatorFilter.h>
 #include <avtMatrix.h>
+#include <avtParallel.h>
 #include <avtTerminatingSource.h>
 #include <avtVector.h>
 
 #include <PickVarInfo.h>
-
-#ifdef PARALLEL
-#include <mpi.h>
-#include <avtParallel.h>
-#include <BufferConnection.h>
-#endif
 
 using     std::string;
 
@@ -160,85 +155,39 @@ avtPickQuery::PreExecute(void)
 //    Mark C. Miller, Wed Jun  9 21:50:12 PDT 2004
 //    Eliminated use of MPI_ANY_TAG and modified to use GetUniqueMessageTags
 //
+//    Kathleen Bonnell, Thu Jul  1 16:41:57 PDT 2004 
+//    Removed mpi calls, use GetAttToRootProc instead. 
+//
 // ****************************************************************************
 
 void
 avtPickQuery::PostExecute(void)
 {
-#ifdef PARALLEL
-    int myRank, numProcs;
-    int hasFulfilledPick;
-    int size, i;
-    BufferConnection b;
-    unsigned char *buf;
- 
-    MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
-    MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
-    int mpiHasFullfilledPickTag = GetUniqueMessageTag();
-    int mpiSizeTag              = GetUniqueMessageTag();
-    int mpiDataTag              = GetUniqueMessageTag();
-    if (myRank == 0)
+    int hasFulfilledPick = (int) pickAtts.GetFulfilled();
+    GetAttToRootProc(pickAtts, hasFulfilledPick);
+
+    if (PAR_Rank() == 0)
     {
-        for (i = 1; i < numProcs; i++)
+        //
+        // Remove any "mesh" PickVarInfo's, as they are unnecessary
+        //
+        for (int i = pickAtts.GetNumPickVarInfos()-1; i >= 0; i--)
         {
-            MPI_Status stat, stat2;
-            MPI_Recv(&hasFulfilledPick, 1, MPI_INT, MPI_ANY_SOURCE,
-                     mpiHasFullfilledPickTag, MPI_COMM_WORLD, &stat);
-            if (hasFulfilledPick)
+            if (pickAtts.GetPickVarInfo(i).GetVariableType() == "mesh")
             {
-                MPI_Recv(&size, 1, MPI_INT, stat.MPI_SOURCE, mpiSizeTag,
-                         MPI_COMM_WORLD, &stat2);
-                buf = new unsigned char[size];
-                MPI_Recv(buf, size, MPI_UNSIGNED_CHAR, stat.MPI_SOURCE, mpiDataTag,
-                         MPI_COMM_WORLD, &stat2);
-                b.Append(buf, size);
-                pickAtts.Read(b);
-                delete [] buf;
+                pickAtts.RemovePickVarInfo(i);
             }
         }
-    }
-    else
-    {
-        hasFulfilledPick = (int) pickAtts.GetFulfilled();
-        MPI_Send(&hasFulfilledPick, 1, MPI_INT, 0, mpiHasFullfilledPickTag, MPI_COMM_WORLD);
-        if (hasFulfilledPick)
+
+        //
+        //  If we haven't been able to get the necessary info, and
+        //  no previous error was set, then
+        //
+        if (!pickAtts.GetFulfilled() && !pickAtts.GetError())
         {
-            pickAtts.SelectAll();
-            pickAtts.Write(b);
-            size = pickAtts.CalculateMessageSize(b);
-            buf = new unsigned char[size];
-            for (int i = 0; i < size; ++i)
-                b.Read(buf+i);
- 
-            MPI_Send(&size, 1, MPI_INT, 0, mpiSizeTag, MPI_COMM_WORLD);
-            MPI_Send(buf, size, MPI_UNSIGNED_CHAR, 0, mpiDataTag, MPI_COMM_WORLD);
-            delete [] buf;
+            pickAtts.SetError(true);
+            pickAtts.SetErrorMessage("Chosen pick did not intersect surface.");
         }
-        return;
-    }
-
-#endif
-
-    //
-    // Remove any "mesh" PickVarInfo's, as they are unnecessary
-    //
-    for (int i = pickAtts.GetNumPickVarInfos()-1; i >= 0; i--)
-    {
-        if (strcmp(pickAtts.GetPickVarInfo(i).GetVariableType().c_str(),
-                   "mesh") == 0)
-        {
-            pickAtts.RemovePickVarInfo(i);
-        }
-    }
-
-    //
-    //  If we haven't been able to get the necessary info, and
-    //  no previous error was set, then
-    //
-    if (!pickAtts.GetFulfilled() && !pickAtts.GetError())
-    {
-        pickAtts.SetError(true);
-        pickAtts.SetErrorMessage("Chosen pick did not intersect surface.");
     }
 }
 
@@ -337,7 +286,7 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
     stringVector vars = pickAtts.GetVariables();
     for (i = 0; i < vars.size(); i++)
     {
-        if (strcmp(dspec->GetVariable(), vars[i].c_str()) != 0)
+        if (dspec->GetVariable() != vars[i]) 
         {
             if (!dspec->HasSecondaryVariable(vars[i].c_str()))
                 dspec->AddSecondaryVariable(vars[i].c_str());

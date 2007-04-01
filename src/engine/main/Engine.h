@@ -63,6 +63,9 @@ class Xfer;
 //    Hank Childs, Tue Jun  1 14:02:44 PDT 2004
 //    Added Finalize method.
 //
+//    Mark C. Miller, Wed Jul  7 11:42:09 PDT 2004
+//    Added NewHandler
+//
 // ****************************************************************************
 
 class Engine
@@ -114,6 +117,7 @@ class Engine
     void            ResetTimeout(int timeout);
 
     static void     AlarmHandler(int signal);
+    static void     NewHandler(void);
 
   protected:
     // The singleton object

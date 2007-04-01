@@ -2418,7 +2418,11 @@ echo "${ECHO_T}found" >&6
     VTK_INCROOT="$""(TOPDIR)/include/vtk"
     VTK_INCLUDES="-I$VTK_INCROOT -I$VTK_INCROOT/Common -I$VTK_INCROOT/Filtering -I$VTK_INCROOT/Graphics -I$VTK_INCROOT/Hybrid -I$VTK_INCROOT/IO -I$VTK_INCROOT/Imaging -I$VTK_INCROOT/Rendering"
     VTK_LIBS="-lvtkCommon -lvtkDICOMParser -lvtkFiltering -lvtkGraphics -lvtkHybrid -lvtkIO -lvtkImaging -lvtkRendering -lvtkzlib -lvtkexpat -lvtkjpeg -lvtkpng -lvtktiff -lvtkftgl -lvtkfreetype $MESA_LIBS $GL_LIBS "
-    VTK_LIGHTWEIGHT_LIBS="-lvtkCommon -lvtkFiltering -lvtkzlib"
+    if test "$SHORT_UNAME" = "darwin"; then
+        VTK_LIGHTWEIGHT_LIBS=$VTK_LIBS
+    else
+        VTK_LIGHTWEIGHT_LIBS="-lvtkCommon -lvtkFiltering -lvtkzlib"
+    fi
 
     # If we're on Darwin, we took VisIt's vtkCamera and built it into the VTK library so
     # we don't want to put it into the visit_vtk library or else we'll get duplicate

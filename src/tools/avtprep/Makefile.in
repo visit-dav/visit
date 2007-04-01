@@ -37,6 +37,9 @@
 #    Jeremy Meredith, Fri Jul 12 14:30:22 PDT 2002
 #    Unified include directories.
 #
+#    Jeremy Meredith, Wed Jul  7 12:12:24 PDT 2004
+#    I changed _ser.o to simply be .o.
+#
 ##############################################################################
 
 ##
@@ -57,7 +60,7 @@ LIBDEP=
 ## Files...
 ##
 SRC=avtprep.C
-SEROBJ=$(SRC:.C=_ser.o)
+SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 
 

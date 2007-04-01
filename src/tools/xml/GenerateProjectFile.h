@@ -21,6 +21,8 @@
 //  Creation:    Mon Dec 15 14:14:13 PST 2003
 //
 //  Modifications:
+//    Jeremy Meredith, Wed Jul  7 17:08:03 PDT 2004
+//    Allow for mdserver-specific code in a plugin's source files.
 //
 // ****************************************************************************
 
@@ -35,6 +37,7 @@ class ProjectFileGeneratorPlugin
     QString dbtype;
     bool    haswriter;
     bool    enabledByDefault;
+    bool    has_MDS_specific_code;
 
     vector<QString> cxxflags;
     vector<QString> ldflags;
