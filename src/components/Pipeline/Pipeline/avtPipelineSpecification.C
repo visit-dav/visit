@@ -24,6 +24,9 @@
 //    Don't share a reference to the data specification, because we may modify
 //    it.
 //
+//    Hank Childs, Sun Mar 13 09:49:16 PST 2005
+//    Initialize haveStructuredMeshOptimizations.
+//
 // ****************************************************************************
 
 avtPipelineSpecification::avtPipelineSpecification(avtDataSpecification_p d,
@@ -34,6 +37,8 @@ avtPipelineSpecification::avtPipelineSpecification(avtDataSpecification_p d,
     canDoDynamic     = true;
     useLoadBalancing = true;
     nFilters         = 0;
+    haveCurvilinearMeshOptimizations = false;
+    haveRectilinearMeshOptimizations = false;
 }
 
 
@@ -113,6 +118,9 @@ avtPipelineSpecification::~avtPipelineSpecification()
 //    Don't share a reference to the data specification, because we may modify
 //    it.
 //
+//    Hank Childs, Sun Mar 13 09:49:16 PST 2005
+//    Add haveStructuredMeshOptimizations.
+//
 // ****************************************************************************
 
 avtPipelineSpecification &
@@ -123,6 +131,8 @@ avtPipelineSpecification::operator=(avtPipelineSpecification &ps)
     canDoDynamic     = ps.canDoDynamic;
     useLoadBalancing = ps.useLoadBalancing;
     nFilters         = ps.nFilters;
+    haveCurvilinearMeshOptimizations = ps.haveCurvilinearMeshOptimizations;
+    haveRectilinearMeshOptimizations = ps.haveRectilinearMeshOptimizations;
 
     return *this;
 }

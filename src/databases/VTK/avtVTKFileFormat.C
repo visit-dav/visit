@@ -206,16 +206,27 @@ avtVTKFileFormat::GetMesh(const char *mesh)
 //    Hank Childs, Thu Aug 15 09:07:38 PDT 2002
 //    Add support for multiple variables.
 //
+//    Hank Childs, Sat Mar 19 11:57:19 PST 2005
+//    Turn variables with name "internal_var_" back into "avt".
+//
 // ****************************************************************************
 
 vtkDataArray *
-avtVTKFileFormat::GetVar(const char *var)
+avtVTKFileFormat::GetVar(const char *real_name)
 {
     debug5 << "Getting var from VTK file " << filename << endl;
 
     if (!readInDataset)
     {
         ReadInDataset();
+    }
+
+    const char *var = real_name;
+    char buffer[1024];
+    if (strncmp(var, "internal_var_", strlen("internal_var_")) == 0)
+    {
+        sprintf(buffer, "avt%s", var + strlen("internal_var_")); 
+        var = buffer;
     }
 
     vtkDataArray *rv = NULL;
@@ -365,6 +376,10 @@ avtVTKFileFormat::FreeUpResources(void)
 //    Hank Childs, Thu Aug 26 08:32:09 PDT 2004
 //    Only declare the mesh as 2D if Z=0 for all points.
 //
+//    Hank Childs, Sat Mar 19 11:57:19 PST 2005
+//    Do not return variables with name "avt", since we may want to look
+//    at these variables and the generic DB will throw them away.
+//
 // ****************************************************************************
 
 void
@@ -461,10 +476,16 @@ avtVTKFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         int ncomp = arr->GetNumberOfComponents();
         const char *name = arr->GetName();
         char buffer[1024];
+        char buffer2[1024];
         if (name == NULL || strcmp(name, "") == 0)
         {
             sprintf(buffer, "%s%d", VARNAME, nvars);
             name = buffer;
+        }
+        if (strncmp(name, "avt", strlen("avt")) == 0)
+        {
+            sprintf(buffer2, "internal_var_%s", name+strlen("avt"));
+            name = buffer2;
         }
         if (ncomp == 1)
         {
@@ -486,10 +507,16 @@ avtVTKFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         int ncomp = arr->GetNumberOfComponents();
         const char *name = arr->GetName();
         char buffer[1024];
+        char buffer2[1024];
         if (name == NULL || strcmp(name, "") == 0)
         {
             sprintf(buffer, "%s%d", VARNAME, nvars);
             name = buffer;
+        }
+        if (strncmp(name, "avt", strlen("avt")) == 0)
+        {
+            sprintf(buffer2, "internal_var_%s", name+strlen("avt"));
+            name = buffer2;
         }
         if (ncomp == 1)
         {

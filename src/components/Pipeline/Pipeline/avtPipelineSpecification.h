@@ -36,6 +36,9 @@ typedef ref_ptr<avtPipelineSpecification> avtPipelineSpecification_p;
 //    Moved inlined destructor definition to .C file because certain compilers
 //    have problems with them.
 //
+//    Hank Childs, Sun Mar 13 09:49:16 PST 2005
+//    Added haveStructuredMeshOptimizations.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtPipelineSpecification
@@ -58,6 +61,15 @@ class PIPELINE_API avtPipelineSpecification
                                { return useLoadBalancing; };
     void                UseLoadBalancing(bool);
 
+    void                SetHaveRectilinearMeshOptimizations(bool b)
+                               { haveRectilinearMeshOptimizations = b; };
+    bool                GetHaveRectilinearMeshOptimizations(void)
+                               { return haveRectilinearMeshOptimizations; };
+    void                SetHaveCurvilinearMeshOptimizations(bool b)
+                               { haveCurvilinearMeshOptimizations = b; };
+    bool                GetHaveCurvilinearMeshOptimizations(void)
+                               { return haveCurvilinearMeshOptimizations; };
+                  
     avtDataSpecification_p    GetDataSpecification(void)
                                { return data; };
     int                       GetPipelineIndex(void) 
@@ -73,6 +85,8 @@ class PIPELINE_API avtPipelineSpecification
     int                       pipelineIndex;
     bool                      canDoDynamic;
     bool                      useLoadBalancing;
+    bool                      haveCurvilinearMeshOptimizations;
+    bool                      haveRectilinearMeshOptimizations;
     int                       nFilters;
 };
 
