@@ -75,6 +75,10 @@
 #    which changed on a recent update.  The current sed command is more
 #    forgiving of extra whitespace.
 #
+#    Eric Brugger, Thu Sep 30 10:09:21 PDT 2004
+#    I made a chgrp command for installing on the mac conditional on the
+#    user specifying a group on the command line.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -294,7 +298,9 @@ if("$os" == "darwin") then
             echo "$dir/bin/visit"       >> $dir/bin/$appscript.command
         endif
         echo "exit 0"               >> $dir/bin/$appscript.command
-        chgrp $group_ownership $dir/bin/$appscript.command
+        if ($group_ownership != none) then
+            chgrp $group_ownership $dir/bin/$appscript.command
+        endif
         chmod $dir_permission  $dir/bin/$appscript.command
         @ i++
     end

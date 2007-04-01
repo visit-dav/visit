@@ -447,7 +447,7 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
         {
             if (list.size()!=1 && list[0]!=0)
             {
-                EXCEPTION1(VisitException,
+                EXCEPTION1(VisItException,
                     "invalid use of DBPLUGIN_DYNAMIC scheme"); 
             }
             mylist.push_back(0); // every processor gets only, whole block
