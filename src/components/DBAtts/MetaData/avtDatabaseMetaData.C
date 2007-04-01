@@ -3716,6 +3716,9 @@ avtDatabaseMetaData::operator=(const avtDatabaseMetaData &rhs)
 //    Hank Childs, Sat Sep 20 08:32:38 PDT 2003
 //    Delete tensors.
 //
+//    Kathleen Bonnell, Tue Jan 11 16:06:33 PST 2005 
+//    Delete simInfo.
+//
 // ****************************************************************************
 
 avtDatabaseMetaData::~avtDatabaseMetaData()
@@ -3780,6 +3783,7 @@ avtDatabaseMetaData::~avtDatabaseMetaData()
     {
         delete (*silit);
     }
+    delete simInfo;
 }
 
 

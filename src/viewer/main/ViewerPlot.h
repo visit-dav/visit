@@ -200,6 +200,9 @@ class avtToolInterface;
 //    Kathleen Bonnell, Fri Oct 29 13:57:38 PDT 2004
 //    Added GetBlockOrigin.
 //
+//    Kathleen Bonnell, Tue Jan 11 16:16:48 PST 2005 
+//    Added isLabel. 
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPlot
@@ -345,6 +348,7 @@ class VIEWER_API ViewerPlot
     avtVarType     GetVarType(const std::string &var) const;
     void           SetOpaqueMeshIsAppropriate(bool);
     bool           IsMesh();
+    bool           IsLabel();
     avtMeshType    GetMeshType() const;
 
     //
@@ -405,6 +409,7 @@ class VIEWER_API ViewerPlot
     bool                    expandedFlag;
     bool                    errorFlag;
     bool                    isMesh;
+    bool                    isLabel;
 
     AttributeSubjectMap    *plotAtts;
     AttributeSubject       *curPlotAtts;
