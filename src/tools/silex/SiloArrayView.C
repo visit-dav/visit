@@ -23,8 +23,12 @@
 //    Rewrote character array code to fix garbage/missing character output
 //    and prevent it splitting at 1024 bytes.
 //
+//    Jeremy Meredith, Wed Oct 13 20:32:56 PDT 2004
+//    Split on spaces, semicolons, or by length depending on a heuristic
+//
 // ****************************************************************************
-SiloArrayViewWindow::SiloArrayViewWindow(SiloFile *s, const QString &n, QWidget *p)
+SiloArrayViewWindow::SiloArrayViewWindow(SiloFile *s, const QString &n,
+                                         QWidget *p)
     : QMainWindow(p, n), silo(s), name(n)
 {
     setCaption(QString("Array: ")+name);
@@ -44,6 +48,7 @@ SiloArrayViewWindow::SiloArrayViewWindow(SiloFile *s, const QString &n, QWidget 
 
     if (type != DB_CHAR)
     {
+        // Just a bunch of numbers: one per line
         for (int i=0; i<len; i++)
         {
             char str[256];
@@ -79,33 +84,94 @@ SiloArrayViewWindow::SiloArrayViewWindow(SiloFile *s, const QString &n, QWidget 
     }
     else
     {
-        // Copy the character array into a temporary buffer,
-        // splitting at semicolons, and putting the result in a list box
-        char *str = new char[len+1];
-        char *p = str;
-        for (int i=0; i<len; i++)
+        // Guess how to split the string based on a heuristic:
+        //  - If the length is short, just stick it in
+        //  - If there are an appropriate number of semicolons or spaces, 
+        //                                      split on them
+        //  - Otherwise, split by a constant length
+        int numSemi = 0;
+        int numSpace = 0;
+        int numIdeal = (len/100) + 1;
+        int numMax   = (len/400) + 1;
+        for (int j=0; j<len; j++)
         {
-            *p = ((char*)var)[i];
-            if (*p == ';')
+            if (((char*)var)[j] == ' ')
+                numSpace++;
+            if (((char*)var)[j] == ';')
+                numSemi++;
+        }
+
+        if (numSpace < numMax && numSemi < numMax)
+        {
+            // Copy the character array into a temporary buffer,
+            // splitting by length
+            char *str = new char[len+1];
+            char *p = str;
+            int tmplen = 0;
+            for (int i=0; i<len; i++)
             {
-                if (p != str)
+                *p = ((char*)var)[i];
+                if (tmplen == 400)
                 {
+                    p++;
                     *p = '\0';
                     lb->insertItem(str);
+                    p = str;
+                    tmplen = 0;
                 }
-                p = str;
+                else
+                {
+                    p++;
+                    tmplen++;
+                }
             }
-            else
+            if (p != str)
             {
-                p++;
+                *p = '\0';
+                lb->insertItem(str);
             }
+            delete[] str;
         }
-        if (p != str)
+        else
         {
-            *p = '\0';
-            lb->insertItem(str);
+            // Copy the character array into a temporary buffer,
+            // splitting at the separator, and putting the result in a list box
+            char splitChar;
+            if (numSpace==0)
+                splitChar = ';';
+            else if (numSemi==0)
+                splitChar = ' ';
+            else if (abs(numSpace-numIdeal) > abs(numSemi-numIdeal))
+                splitChar = ';';
+            else
+                splitChar = ' ';
+            
+            char *str = new char[len+1];
+            char *p = str;
+            for (int i=0; i<len; i++)
+            {
+                *p = ((char*)var)[i];
+                if (*p == splitChar)
+                {
+                    if (p != str)
+                    {
+                        *p = '\0';
+                        lb->insertItem(str);
+                    }
+                    p = str;
+                }
+                else
+                {
+                    p++;
+                }
+            }
+            if (p != str)
+            {
+                *p = '\0';
+                lb->insertItem(str);
+            }
+            delete[] str;
         }
-        delete[] str;
     }
 
     free(var);
