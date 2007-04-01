@@ -3257,8 +3257,12 @@ DrawNSTW(vtkCellArray *aPrim, GLenum, int &, vtkPoints *p, vtkDataArray *n,
 //   Make sure we are dealing with the correct context or we may accidentally
 //   delete the display lists for the wrong window.
 //
-//    Hank Childs, Mon May  5 18:17:23 PDT 2003
-//    Do not assume that we have a valid VTK renderer.
+//   Hank Childs, Mon May  5 18:17:23 PDT 2003
+//   Do not assume that we have a valid VTK renderer.
+//
+//   Hank Childs, Tue Jun  1 09:35:46 PDT 2004
+//   Make sure that a display list has been created before it is called.
+//   Also re-organize code to be more intuitive for display lists.
 //
 // ****************************************************************************
 
@@ -3280,17 +3284,24 @@ avtOpenGLSurfaceAndWireframeRenderer::SetupGraphicsLibrary()
 
     VTKRen->GetRenderWindow()->MakeCurrent();
 
-    //
-    //  See if display list needs to be regenerated. 
-    //
-    if (setupModified[inputNum] || (propMTime[inputNum] < prop->GetMTime()))
+    if (immediateModeRendering) 
     {
-        if (setupListId[inputNum])
+        SetupGraphicsLibrary2();
+    }
+    else
+    {
+        //
+        // If the plot has changed or we haven't created a display list, then
+        // do that now.
+        //
+        if (setupModified[inputNum] || (propMTime[inputNum] < prop->GetMTime())
+            || (setupListId[inputNum] == 0))
         {
-            glDeleteLists(setupListId[inputNum], 1);
-        }
-        if (!immediateModeRendering) 
-        {
+            if (setupListId[inputNum] == 0)
+            {
+                glDeleteLists(setupListId[inputNum], 1);
+            }
+
             // 
             // Get a unique display list id  
             // 
@@ -3298,35 +3309,13 @@ avtOpenGLSurfaceAndWireframeRenderer::SetupGraphicsLibrary()
             glNewList(setupListId[inputNum], GL_COMPILE);
             SetupGraphicsLibrary2();
             glEndList();
-#ifdef DEBUG_GL_LIST_IDS
-            if (!glIsList(setupListId[inputNum]))
-               cerr << "calling invalid setup list" << endl;
-#endif
-            glCallList(setupListId[inputNum]);
         }
-    }
-    else
-    {
-        // 
-        // If nothing changed but we are using display lists, set up.
-        // 
-        if (!immediateModeRendering)
-        {
-#ifdef DEBUG_GL_LIST_IDS
-            if (!glIsList(setupListId[inputNum]))
-               cerr << "calling invalid setup list" << endl;
-#endif
-            glCallList(setupListId[inputNum]);
-        }
-    }
 
-    // 
-    // If we are in immediate mode rendering we always
-    // want to set up the graphics lib here.
-    // 
-    if (immediateModeRendering) 
-    {
-        SetupGraphicsLibrary2();
+#ifdef DEBUG_GL_LIST_IDS
+        if (!glIsList(setupListId[inputNum]))
+           cerr << "calling invalid setup list" << endl;
+#endif
+        glCallList(setupListId[inputNum]);
     }
 }
 
@@ -3489,8 +3478,12 @@ avtOpenGLSurfaceAndWireframeRenderer::SetupGraphicsLibrary2()
 //   Make sure we are dealing with the correct context or we may accidentally
 //   delete the display lists for the wrong window.
 //
-//    Hank Childs, Mon May  5 18:17:23 PDT 2003
-//    Do not assume that we have a valid VTK renderer.
+//   Hank Childs, Mon May  5 18:17:23 PDT 2003
+//   Do not assume that we have a valid VTK renderer.
+//
+//   Hank Childs, Tue Jun  1 09:35:46 PDT 2004
+//   Make sure that a display list has been created before it is called.
+//   Also re-organize code to be more intuitive for display lists.
 //
 // ****************************************************************************
 
@@ -3512,59 +3505,42 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface()
 
     VTKRen->GetRenderWindow()->MakeCurrent();
 
-    //
-    //  See if display list needs to be regenerated. 
-    //
-    if (  lutColorsChanged ||
-        ((propMTime[inputNum] < prop->GetMTime()) &&
-        ((lastRep[inputNum]   != prop->GetRepresentation()) ||
-         (lastInterp[inputNum] != prop->GetInterpolation()) )))
-           surfaceModified[inputNum] = true;
-
-    if (surfaceModified[inputNum])
+    if (immediateModeRendering)
     {
-        if (surfaceListId[inputNum])
+        DrawSurface2();
+    }
+    else
+    {
+        //
+        // See if display list needs to be regenerated. 
+        //
+        if (  lutColorsChanged ||
+            ((propMTime[inputNum] < prop->GetMTime()) &&
+            ((lastRep[inputNum]   != prop->GetRepresentation()) ||
+             (lastInterp[inputNum] != prop->GetInterpolation()) )))
+               surfaceModified[inputNum] = true;
+
+        if (surfaceModified[inputNum] || (surfaceListId[inputNum] == 0))
         {
-            glDeleteLists(surfaceListId[inputNum], 1);
-        }
-        if (!immediateModeRendering)
-        {
+            if (surfaceListId[inputNum] == 0)
+            {
+                glDeleteLists(surfaceListId[inputNum], 1);
+            }
+
             // 
-            // Get a unique display list id  
+            // Get a unique display list id and create the display list.
             // 
             surfaceListId[inputNum] = glGenLists(1);
             glNewList(surfaceListId[inputNum], GL_COMPILE);
             DrawSurface2();
             glEndList();
-#ifdef DEBUG_GL_LIST_IDS
-            if (!glIsList(surfaceListId[inputNum]))
-               cerr << "calling invalid surface list" << endl;
-#endif
-            glCallList(surfaceListId[inputNum]);
         }
-    }
-    else 
-    {
-        // 
-        // If nothing changed but we are using display lists, draw it.
-        // 
-        if (!immediateModeRendering)
-        {
-#ifdef DEBUG_GL_LIST_IDS
-            if (!glIsList(surfaceListId[inputNum]))
-               cerr << "calling invalid surface list" << endl;
-#endif
-            glCallList(surfaceListId[inputNum]);
-        }
-    }
 
-    // 
-    // If we are in immediate mode rendering we always
-    // want to draw the primitives here.
-    // 
-    if (immediateModeRendering)
-    {
-        DrawSurface2();
+#ifdef DEBUG_GL_LIST_IDS
+        if (!glIsList(surfaceListId[inputNum]))
+           cerr << "calling invalid surface list" << endl;
+#endif
+        glCallList(surfaceListId[inputNum]);
     }
 }
 
@@ -3933,8 +3909,12 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface2()
 //   Make sure we are dealing with the correct context or we may accidentally
 //   delete the display lists for the wrong window.
 //
-//    Hank Childs, Mon May  5 18:17:23 PDT 2003
-//    Do not assume that we have a valid VTK renderer.
+//   Hank Childs, Mon May  5 18:17:23 PDT 2003
+//   Do not assume that we have a valid VTK renderer.
+//
+//   Hank Childs, Tue Jun  1 09:35:46 PDT 2004
+//   Make sure that a display list has been created before it is called.
+//   Also re-organize code to be more intuitive for display lists.
 //
 // ****************************************************************************
 
@@ -3955,28 +3935,34 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges()
 
     VTKRen->GetRenderWindow()->MakeCurrent();
 
-    //
-    //  See if display list needs to be regenerated. 
-    //
-    if (propMTime[inputNum] < prop->GetMTime())
+    if (immediateModeRendering) 
     {
-        bool colorChanged = ((lastEdgeColor[inputNum].r != prop->GetEdgeColor()[0]) ||
-                             (lastEdgeColor[inputNum].g != prop->GetEdgeColor()[1]) ||
-                             (lastEdgeColor[inputNum].b != prop->GetEdgeColor()[2]) );
-        if ( colorChanged || 
-            (lastRep[inputNum] != prop->GetRepresentation()) ||
-            (lastInterp[inputNum] != prop->GetInterpolation()))
-           edgesModified[inputNum] = true;
+        DrawEdges2();
     }
-    
-    if (edgesModified[inputNum]) 
+    else
     {
-        if (edgesListId[inputNum])
+        //
+        // See if display list needs to be regenerated. 
+        //
+        if (propMTime[inputNum] < prop->GetMTime())
         {
-            glDeleteLists(edgesListId[inputNum], 1);
+            bool colorChanged = 
+                 ((lastEdgeColor[inputNum].r != prop->GetEdgeColor()[0]) ||
+                  (lastEdgeColor[inputNum].g != prop->GetEdgeColor()[1]) ||
+                  (lastEdgeColor[inputNum].b != prop->GetEdgeColor()[2]) );
+            if ( colorChanged || 
+                (lastRep[inputNum] != prop->GetRepresentation()) ||
+                (lastInterp[inputNum] != prop->GetInterpolation()))
+               edgesModified[inputNum] = true;
         }
-        if (!immediateModeRendering)
+    
+        if (edgesModified[inputNum] || (edgesListId[inputNum] == 0))
         {
+            if (edgesListId[inputNum] == 0)
+            {
+                glDeleteLists(edgesListId[inputNum], 1);
+            }
+
             // 
             // Get a unique display list id  
             // 
@@ -3984,33 +3970,13 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges()
             glNewList(edgesListId[inputNum], GL_COMPILE);
             DrawEdges2();
             glEndList();
-#ifdef DEBUG_GL_LIST_IDS
-            if (!glIsList(edgesListId[inputNum]))
-               cerr << "calling invalid edges list" << endl;
-#endif
-            glCallList(edgesListId[inputNum]);
         }
-    }
-    else 
-    {
-        // 
-        // If nothing changed but we are using display lists, draw it.
-        // 
-        if (!immediateModeRendering)
-        {
-#ifdef DEBUG_GL_LIST_IDS
-            if (!glIsList(edgesListId[inputNum]))
-               cerr << "calling invalid edges list" << endl;
-#endif
-            glCallList(edgesListId[inputNum]);
-        }
-    }
 
-    // if we are in immediate mode rendering we always
-    // want to draw the primitives here
-    if (immediateModeRendering) 
-    {
-        DrawEdges2();
+#ifdef DEBUG_GL_LIST_IDS
+        if (!glIsList(edgesListId[inputNum]))
+           cerr << "calling invalid edges list" << endl;
+#endif
+        glCallList(edgesListId[inputNum]);
     }
 }
 

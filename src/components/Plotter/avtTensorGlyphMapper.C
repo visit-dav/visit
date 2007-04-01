@@ -226,6 +226,9 @@ avtTensorGlyphMapper::SetUpFilters(int nDoms)
 //    Hank Childs, Wed May  5 14:19:54 PDT 2004
 //    Added poly data normals.
 //
+//    Jeremy Meredith, Tue Jun  1 11:24:29 PDT 2004
+//    Only do the normals if in 3-space.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -250,9 +253,16 @@ avtTensorGlyphMapper::InsertFilters(vtkDataSet *ds, int dom)
     }
 
     tensorFilter[dom]->SetInput(ds);
-    normalsFilter[dom]->SetInput(tensorFilter[dom]->GetOutput());
 
-    return normalsFilter[dom]->GetOutput();
+    if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 3)
+    {
+        normalsFilter[dom]->SetInput(tensorFilter[dom]->GetOutput());
+        return normalsFilter[dom]->GetOutput();
+    }
+    else
+    {
+        return tensorFilter[dom]->GetOutput();
+    }
 }
 
 

@@ -79,6 +79,9 @@ static void ErrorCallback(void *, const char *);
 //    Hank Childs, Fri Aug  8 08:13:21 PDT 2003
 //    Register an error function.
 //
+//    Hank Childs, Tue Jun  1 13:54:48 PDT 2004
+//    Call Init::Finalize.
+//
 // ****************************************************************************
 
 int
@@ -132,6 +135,8 @@ main(int argc, char *argv[])
         retval = -1;
     }
     ENDTRY
+
+    Init::Finalize();
 
     return retval;
 }
