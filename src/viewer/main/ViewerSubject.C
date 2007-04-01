@@ -5449,6 +5449,10 @@ ViewerSubject::PointQuery()
 //   Kathleen Bonnell, Wed Jul 23 16:10:41 PDT 2003
 //   Added IntArg1 to qm->LineQuery.
 //   
+//   Kathleen Bonnell, Fri Jul  9 16:24:56 PDT 2004 
+//   Changed Call from "LineQuery" to "StartLineQuery", added call to
+//   MessageRendererThread. 
+//   
 // ****************************************************************************
 
 void
@@ -5459,12 +5463,10 @@ ViewerSubject::LineQuery()
     msg.sprintf("Performing %s query...", viewerRPC.GetQueryName().c_str());
     Status(msg.latin1());
 
-    ViewerQueryManager::Instance()->LineQuery( viewerRPC.GetQueryName().c_str(),
+    ViewerQueryManager::Instance()->StartLineQuery( viewerRPC.GetQueryName().c_str(),
               viewerRPC.GetQueryPoint1(), viewerRPC.GetQueryPoint2(),
               viewerRPC.GetQueryVariables(), viewerRPC.GetIntArg1());
-
-    // Clear the status
-    ClearStatus();
+    MessageRendererThread("finishLineQuery;");
 }
 
 // ****************************************************************************
@@ -5712,6 +5714,9 @@ ViewerSubject::BlockSocketSignals(bool b)
 //    Brad Whitlock, Tue Jan 27 17:01:50 PST 2004
 //    Added support for multiple time sliders.
 //
+//    Kathleen Bonnell, Fri Jul  9 13:40:42 PDT 2004 
+//    Added handlers for finishLineout, and finishLineQuery.
+//
 // ****************************************************************************
 
 void
@@ -5827,6 +5832,15 @@ ViewerSubject::ProcessRendererMessage()
             // Tell the window to change scalable rendering modes, if necessary 
             if (window->GetScalableRendering() != newMode)
                 window->ChangeScalableRenderingMode(newMode);
+        }
+        else if (strncmp(msg, "finishLineout", 13) == 0)
+        {
+            ViewerQueryManager::Instance()->FinishLineout(); 
+        }
+        else if (strncmp(msg, "finishLineQuery", 15) == 0)
+        {
+            ViewerQueryManager::Instance()->FinishLineQuery(); 
+            ClearStatus();
         }
     }
 }

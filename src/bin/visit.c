@@ -268,11 +268,47 @@ main(int argc, char *argv[])
  *            should be freed by the caller.
  *
  * Modifications:
+ *   Brad Whitlock, Mon Jul 12 16:34:18 PST 2004
+ *   I made it use ReadKeyFromRoot so we can check for VisIt information
+ *   in a couple places. This is to avoid the situation where VisIt won't
+ *   run when installed without Administrator access.
  *
  *****************************************************************************/
 
 int
 ReadKey(const char *key, char **keyval)
+{
+    int retval = 0;
+
+    if((retval = ReadKeyFromRoot(HKEY_LOCAL_MACHINE, key, keyval)) == 0)
+        retval = ReadKeyFromRoot(HKEY_CURRENT_USER, key, keyval);
+    
+    return retval;     
+}
+
+/******************************************************************************
+ *
+ * Purpose: Reads a string value from the Windows registry entry for the
+ *          current version of VisIt.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Mon Aug 26 13:08:21 PST 2002
+ *
+ * Input Arguments:
+ *   which_root : The root key to open.
+ *   key        : The key that we're looking for.
+ *
+ * Output Arguments:
+ *   keyval : A string containing the value for the key. This memory is
+ *            allocated regardless of whether or not the key is found and it
+ *            should be freed by the caller.
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+int
+ReadKeyFromRoot(HKEY which_root, const char *key, char **keyval)
 {
     int  readSuccess = 0;
     char regkey[100];
@@ -281,7 +317,7 @@ ReadKey(const char *key, char **keyval)
     /* Try and read the key from the system registry. */
     sprintf(regkey, "VISIT%s", VERSION);
     *keyval = (char *)malloc(500);
-    if(RegOpenKeyEx(HKEY_CLASSES_ROOT, regkey, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS)
+    if(RegOpenKeyEx(which_root, regkey, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS)
     {
         DWORD keyType, strSize = 500;
         if(RegQueryValueEx(hkey, key, NULL, &keyType, *keyval, &strSize) == ERROR_SUCCESS)

@@ -749,12 +749,15 @@ EngineProxy::DefineVirtualDatabase(const std::string &fileFormat,
 //    Mark C. Miller, Tue Apr 20 07:44:34 PDT 2004
 //    Added new waitCB and cbData args as well as a call to the waitCB in the
 //    inner loop to support warning messages comming from engine
+//
+//    Mark C. Miller, Mon Jul 12 19:46:32 PDT 2004
+//    Removed waitCB and cbData arguments
 //   
 // ****************************************************************************
 
 avtDataObjectReader_p
 EngineProxy::Render(bool sendZBuffer, const intVector& networkIDs,
-    bool do3DAnnotsOnly, void (*waitCB)(void *), void *cbData)
+    bool do3DAnnotsOnly)
 {
 
     // Send a status message indicating that we're starting a scalable render 
@@ -781,10 +784,6 @@ EngineProxy::Render(bool sendZBuffer, const intVector& networkIDs,
             debug4 << "Warning: " << renderRPC.GetMessage().c_str() << endl;
             Warning(renderRPC.GetMessage().c_str());
         }
-
-        // If we passed a callback function, execute it.
-        if(waitCB)
-            waitCB(cbData);
     }
 
     // Check for abort

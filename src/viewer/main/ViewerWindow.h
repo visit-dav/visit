@@ -310,6 +310,9 @@ class ViewerToolbar;
 //    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
 //    Added UpdateVisualCueInfo
 //
+//    Kathleen Bonnell, Fri Jul  9 16:22:50 PDT 2004 
+//    Added Lineout.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow
@@ -517,6 +520,8 @@ public:
     float GetSpecularCoeff() const;
     float GetSpecularPower() const;
     const ColorAttribute &GetSpecularColor() const;
+
+    void Lineout(const bool);
 
 private:
     void RecenterViewCurve(const double *limits);

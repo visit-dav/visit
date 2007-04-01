@@ -7103,13 +7103,21 @@ ViewerWindowManager::SetDefaultAnnotationObjectListFromClient()
 //   Brad Whitlock, Mon Jan 26 22:50:15 PST 2004
 //   Made it use the plot list directly.
 //
+//   Mark C. Miller, Mon Jul 12 19:46:32 PDT 2004
+//   Added optional bool to immediately return NULL if the window doesn't
+//   already exist
+//
 // ****************************************************************************
 
 ViewerWindow *
-ViewerWindowManager::GetLineoutWindow() 
+ViewerWindowManager::GetLineoutWindow(bool failIfNoneExists) 
 {
     if (lineoutWindow == -1)
     {
+        // If requested, instead of creating the needed window, just fail
+        if (failIfNoneExists)
+            return NULL;
+
         //
         //  Search for an open, empty window.  If none exists,
         //  create one.

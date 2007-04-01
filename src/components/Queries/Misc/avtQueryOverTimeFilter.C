@@ -5,7 +5,6 @@
 #include <float.h>
 #include <snprintf.h>
 #include <string.h>
-#include <strstream.h>
 
 #include <avtQueryOverTimeFilter.h>
 #include <avtQueryFactory.h>

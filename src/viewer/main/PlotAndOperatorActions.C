@@ -153,6 +153,11 @@ AddOperatorAction::Setup()
 //    Kathleen Bonnell, Thu Sep 11 11:35:08 PDT 2003
 //    Added 'from Default' to 'AddOperator'. 
 //    
+//    Kathleen Bonnell, Fri Jul  9 13:40:42 PDT 2004
+//    Make ViewerWindow handle Lineouts (instead of ViewerQueryManager).
+//    This is to ensure that new lineout windows that get created are 
+//    properly initialized in SR mode. 
+//    
 // ****************************************************************************
 
 void
@@ -168,7 +173,7 @@ AddOperatorAction::Execute(int)
     std::string name(opMgr->GetPluginName(opMgr->GetEnabledID(type)));
     if (name == "Lineout")
     {
-        ViewerQueryManager::Instance()->Lineout(window, fromDefault);
+        window->Lineout(fromDefault);
     }
     else
     {

@@ -191,6 +191,9 @@ class StatusAttributes;
 //
 //    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
 //    Added VisualCueList argument to SetWinAnnotAtts
+//
+//    Mark C. Miller, Mon Jul 12 19:46:32 PDT 2004
+//    Removed waitCB and cbData arguments from Render method
 // 
 // ****************************************************************************
 
@@ -247,8 +250,7 @@ public:
                                              std::string,
                                              const VisualCueList*); 
 
-    avtDataObjectReader_p    Render(bool, const intVector&, bool,
-                                    void (*waitCB)(void *), void *cbData);
+    avtDataObjectReader_p    Render(bool, const intVector&, bool);
 
     avtDataObjectReader_p    Execute(bool, void (*waitCB)(void *), void *cbData);
 

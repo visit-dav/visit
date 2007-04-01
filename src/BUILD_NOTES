@@ -110,6 +110,10 @@ cd Mesa-5.0
 #  make solaris-x86-gcc      for PCs with Solaris using GCC
 #  make sunos5-sl            for Suns with SunOS 5.x, make shared libs
 #  make sunos5-gcc-sl        for Suns with SunOS 5.x, GCC, make shared libs
+#
+# To change the compiler modify CC and CXX in the file Make-config under
+# the appropriate target from the above list.
+#
 
 #
 # Install it in the visit directory under the mesa directory.
@@ -177,14 +181,14 @@ cd VTK
 # (/usr/shlib/libGL.so on tru64 systems.)
 #
 # On AIX, you may experience problems with X11 headers. Check the following
-# and modify as necessary: CMAKE_X_FLAGS, X11_X11_INCLUDE_PATH, 
+# and modify as necessary: CMAKE_X_CFLAGS, X11_X11_INCLUDE_PATH, 
 # X11_Xlib_INCLUDE_PATH, X11_Xutil_INCLUDE_PATH
 #
 ../cmake-1.8.1/bin/cmake .
 #
 # Edit CMakeCache.txt, setting MANGLED_MESA_INCLUDE_DIR, MANGLED_MESA_LIBRARY,
-# MANGLED_OSMESA_INCLUDE_DIR, MANGLED_OSMESA_LIBRARY, to point to the appropriate 
-# files and directories in the mesa directory.
+# MANGLED_OSMESA_INCLUDE_DIR, MANGLED_OSMESA_LIBRARY, to point to the
+# appropriate files and directories in the mesa directory.
 # For example:
 #
 # MANGLED_MESA_INCLUDE_DIR:PATH=/home/visit/mesa/include
@@ -339,6 +343,36 @@ setenv QTDIR `pwd`
 make
 
 #
+# Build Qt 3.3.2
+#
+gunzip qt-x11-free-3.3.2.tar.gz
+tar xf qt-x11-free-3.3.2.tar
+cd qt-x11-free-3.3.2
+setenv QTDIR `pwd`
+set path=($QTDIR/bin $path)
+setenv LD_LIBRARY_PATH $QTDIR/lib:$LD_LIBRARY_PATH
+setenv LD_LIBRARYN32_PATH $QTDIR/lib:$LD_LIBRARYN32_PATH     # SGI
+setenv LD_LIBRARY64_PATH $QTDIR/lib:$LD_LIBRARY64_PATH       # SGI
+# Use the appropriate configure command based on the operating system on
+# which you are building Qt.
+./configure -platform aix-g++ -shared -no-largefile -qt-libpng
+./configure -platform irix-cc-64 -shared -qt-libpng
+./configure -platform linux-g++ -shared -qt-libpng
+./configure -platform solaris-g++ -shared -qt-libpng
+./configure -platform tru64-g++ -shared -qt-libpng
+#
+# On tru64 systems you will need to make the following changes to
+# the file mkspecs/tru64-g++/qmake.conf:
+# set QMAKE_LIBDIR_OPENGL to "/usr/shlib"
+#
+# On aix systems you will need to make the following changes to
+# the file mkspecs/aix-g++/qmake.conf:
+# remove "/usr/X11R6/include" from QMAKE_INCDIR_X11
+# remove "/usr/X11R6/include" from QMAKE_INCDIR_OPENGL
+#
+make
+
+#
 # Install it in the visit directory under the qt directory.
 #
 mkdir ../visit/qt
@@ -355,7 +389,7 @@ cd ../..
 # On AIX systems you will need to add an additional link to the lib
 # directory so that the loader can find the library.
 #
-# ln -s libqt.so.2.3.0 visit/qt/lib/libqt.so
+# ln -s libqt.so.3.3.2 visit/qt/lib/libqt.so
 #
 
 Silo
@@ -456,9 +490,9 @@ env command for configure.
 #
 # Build and install it in the visit directory.
 #
-gunzip visit040628.tar.gz
-tar xf visit040628.tar
-cd visit040628/config-site
+gunzip visit040719.tar.gz
+tar xf visit040719.tar
+cd visit040719/config-site
 echo VISITHOME=`cat ../../visitpath` > `hostname`.conf
 cat Template.conf >> `hostname`.conf
 cd ..
@@ -467,11 +501,11 @@ make
 clearcase_bin/visit-bin-dist
 # Use the appropriate install command based on the operating system on
 # which you built VisIt.
-clearcase_bin/visit-install 1.3.2 aix `cat ../visitpath`
-clearcase_bin/visit-install 1.3.2 irix6 `cat ../visitpath`
-clearcase_bin/visit-install 1.3.2 linux `cat ../visitpath`
-clearcase_bin/visit-install 1.3.2 osf1 `cat ../visitpath`
-clearcase_bin/visit-install 1.3.2 sunos5 `cat ../visitpath`
+clearcase_bin/visit-install 1.3.3 aix `cat ../visitpath`
+clearcase_bin/visit-install 1.3.3 irix6 `cat ../visitpath`
+clearcase_bin/visit-install 1.3.3 linux `cat ../visitpath`
+clearcase_bin/visit-install 1.3.3 osf1 `cat ../visitpath`
+clearcase_bin/visit-install 1.3.3 sunos5 `cat ../visitpath`
 
 When running the configure script you can enable or disable certain dependent
 packages.  All the configure options are listed at the beginning of the

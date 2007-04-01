@@ -5,6 +5,7 @@
 #include <strings.h>
 #include <unistd.h>      // for alarm()
 #endif
+#include <new.h>
 
 #include <fstream.h>
 #include <iostream.h>
@@ -133,6 +134,9 @@ Engine *Engine::Instance()
 //    Mark C. Miller, Wed Jul  7 11:42:09 PDT 2004
 //    Added code to override the new handler for the engine
 //
+//    Mark C. Miller, Mon Jul 12 19:46:32 PDT 2004
+//    Wrapped call to set_new_handler with WIN32 conditional compilation
+//
 // ****************************************************************************
 void
 Engine::Initialize(int *argc, char **argv[])
@@ -157,7 +161,9 @@ Engine::Initialize(int *argc, char **argv[])
     //
     // Set a different new handler for the engine
     //
+#if !defined(_WIN32)
     set_new_handler(Engine::NewHandler);
+#endif
 
     debug1 << "ENGINE started\n";
 }
