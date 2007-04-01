@@ -44,6 +44,9 @@ class     ExprPipelineState;
 //    Add support for recentering a variable.  It is at this level so all
 //    derived types can use the same routine.
 // 
+//    Kathleen Bonnell, Mon Jun 28 07:48:55 PDT 2004 
+//    Add currentTimeState, ExamineSpecification.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionFilter : public avtStreamer
@@ -65,6 +68,7 @@ class EXPRESSION_API avtExpressionFilter : public avtStreamer
     char                    *outputVariableName;
     std::string              currentDomainsLabel;
     int                      currentDomainsIndex;
+    int                      currentTimeState;
 
     virtual bool             IsPointVariable();
 
@@ -74,6 +78,7 @@ class EXPRESSION_API avtExpressionFilter : public avtStreamer
     virtual void             RefashionDataObjectInfo(void);
     virtual avtPipelineSpecification_p
                              PerformRestriction(avtPipelineSpecification_p);
+    virtual void             ExamineSpecification(avtPipelineSpecification_p);
 
     virtual int              GetVariableDimension() { return 1; };
     virtual vtkDataArray    *DeriveVariable(vtkDataSet *) = 0;
@@ -83,5 +88,3 @@ class EXPRESSION_API avtExpressionFilter : public avtStreamer
 
 
 #endif
-
-

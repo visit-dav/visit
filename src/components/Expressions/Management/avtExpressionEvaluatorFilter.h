@@ -47,6 +47,9 @@
 //   Kathleen Bonnell, Thu Jun 10 18:29:08 PDT 2004
 //   Rename QueryZoneCenter to QueryCoords, added bool arg.
 //
+//   Kathleen Bonnell, Mon Jun 28 08:01:45 PDT 2004 
+//   Added currentTimeState, ExamineSpecification. 
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionEvaluatorFilter 
@@ -79,10 +82,14 @@ protected:
     virtual avtPipelineSpecification_p
                              PerformRestriction(avtPipelineSpecification_p);
     virtual int              AdditionalPipelineFilters(void);
+    virtual void             ExamineSpecification(avtPipelineSpecification_p);
 
 protected:
     ExprPipelineState            pipelineState;
     avtPipelineSpecification_p   lastUsedSpec;
+
+private:
+    int                          currentTimeState;
 };
 
 

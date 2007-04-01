@@ -46,7 +46,7 @@ using std::find;
 
 avtExpressionEvaluatorFilter::avtExpressionEvaluatorFilter()
 {
-    ;
+    currentTimeState = 0;
 }
 
 
@@ -78,6 +78,9 @@ avtExpressionEvaluatorFilter::~avtExpressionEvaluatorFilter()
 //  Creation:     Wed Jan 22 10:38:51 PST 2003
 //
 //  Modifications:
+//    Kathleen Bonnell, Mon Jun 28 08:01:45 PDT 2004
+//    Use the timestep retrieved during ExamineSpecification to set the
+//    timestep for the filters.
 //
 // ****************************************************************************
 
@@ -104,7 +107,12 @@ avtExpressionEvaluatorFilter::Execute(void)
         avtExpressionFilter *bottom = filters.back();
 
         top->SetInput(data);
-        bottom->Update(GetGeneralPipelineSpecification());
+        //
+        // Make sure that the DataSpec being used has the timestep needed.
+        //
+        avtPipelineSpecification_p pspec = GetGeneralPipelineSpecification();
+        pspec->GetDataSpecification()->SetTimestep(currentTimeState);
+        bottom->Update(pspec);
         GetOutput()->Copy(*(bottom->GetOutput()));
     } else {
         GetOutput()->Copy(*dObj);
@@ -673,5 +681,25 @@ avtExpressionEvaluatorFilter::QueryCoords(const std::string &var,
 {
     return GetInput()->GetQueryableSource()->
         QueryCoords(var, dom, id, ts, c, forZone);
+}
+
+
+// ****************************************************************************
+//  Method: avtExpressionEvaluatorFilter::ExamineSpecification
+//
+//  Purpose:
+//    Retrieve the current timestep and save for filters.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   June 25, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtExpressionEvaluatorFilter::ExamineSpecification(avtPipelineSpecification_p pspec)
+{
+    currentTimeState = pspec->GetDataSpecification()->GetTimestep();
 }
 

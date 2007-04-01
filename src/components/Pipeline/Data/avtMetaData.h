@@ -49,6 +49,9 @@ class     avtTerminatingSource;
 //    Jeremy Meredith, Wed Jun  9 09:12:09 PDT 2004
 //    Added GetSpecies.
 //
+//    Kathleen Bonnell, Mon Jun 28 08:05:38 PDT 2004 
+//    Added optional int arg (for time) to GetMaterial, GetSpecies. 
+//
 // ****************************************************************************
 
 class PIPELINE_API avtMetaData
@@ -61,8 +64,8 @@ class PIPELINE_API avtMetaData
     avtIntervalTree             *GetSpatialExtents(void);
 
     avtFacelist                 *GetExternalFacelist(int);
-    avtMaterial                 *GetMaterial(int);
-    avtSpecies                  *GetSpecies(int);
+    avtMaterial                 *GetMaterial(int, int = -1);
+    avtSpecies                  *GetSpecies(int, int = -1);
 
   protected:
     avtTerminatingSource        *source;

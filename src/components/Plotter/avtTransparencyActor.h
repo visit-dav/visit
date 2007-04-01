@@ -53,6 +53,9 @@ class     vtkRenderer;
 //    Kathleen Bonnell, Wed Dec  3 16:42:38 PST 2003 
 //    Added TransparenciesExist method.
 //
+//    Chris Wojtan, Fri Jun 25 15:15 PDT 2004
+//    Added is2Dimensional bool and functions to get and set its value
+//
 // ****************************************************************************
 
 class PLOTTER_API avtTransparencyActor
@@ -86,6 +89,9 @@ class PLOTTER_API avtTransparencyActor
     void                             RemoveFromRenderer(vtkRenderer *);
     void                             ScaleByVector(const float vec[3]);
 
+    bool                             GetIs2Dimensional(){return is2Dimensional;};
+    void                             SetIs2Dimensional(bool val){is2Dimensional = val;};
+
   protected:
     std::vector<std::vector <vtkDataSet *> >         datasets;
     std::vector<std::vector <vtkDataSetMapper *> >   mappers;
@@ -106,6 +112,7 @@ class PLOTTER_API avtTransparencyActor
     vtkDepthSortPolyData                            *perfectSort;
     bool                                             usePerfectSort;
     vtkMatrix4x4                                    *lastCamera;
+    bool                                             is2Dimensional;
 
     void                                             SetUpActor(void);
     void                                             PrepareDataset(int, int);

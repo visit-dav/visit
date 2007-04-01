@@ -106,6 +106,9 @@ avtMatvfFilter::PreExecute(void)
 //    Issue a warning if we can't match up an argument with a material.  Also
 //    fixed indexing bug.
 //
+//    Kathleen Bonnell, Mon Jun 28 07:48:55 PDT 2004
+//    Send currentTimeState to GetMaterial. 
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -120,7 +123,12 @@ avtMatvfFilter::DeriveVariable(vtkDataSet *in_ds)
     // set to be the id of the current domain right before DeriveVariable is
     // called.  We need that index to make sure we are getting the right mat.
     //
-    avtMaterial *mat = GetMetaData()->GetMaterial(currentDomainsIndex);
+    // The 'currentTimeState' is a data member of the base class that is
+    // set to be the current timestep during ExamineSpecification. 
+    // We need that timestep to make sure we are getting the right mat.
+    //
+    avtMaterial *mat = GetMetaData()->GetMaterial(currentDomainsIndex,
+                                                  currentTimeState);
     if (mat == NULL)
     {
         debug1 << "Could not find a material object." << endl;
