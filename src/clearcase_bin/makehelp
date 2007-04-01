@@ -15,6 +15,9 @@
 #  I added code to add fmbatch to the path if we're on sunspot/sunburn and
 #  rebuild the mif2help conversion program. I also added the new Help chapter.
 #
+#  Brad Whitlock, Fri Jun 18 10:21:12 PDT 2004
+#  I added a new chapter to the manual and some that were missing.
+#
 ###############################################################################
 
 # Keep this until we get our sysadmins to add fmbatch to the path.
@@ -32,7 +35,7 @@ if("$haveFrame" != "") then
 endif
 
 # Init some variables
-set inputFiles = "Intro WorkingWithFiles Plots Operators SavingPrinting Quantitative MakingItPretty Animation InteractiveTools RemoteVisualization Preferences Help"
+set inputFiles = "Intro WorkingWithFiles Plots Operators SavingPrinting VisualizationWindows Subsetting Quantitative MakingItPretty Animation InteractiveTools MultipleDatabaseAndWindows RemoteVisualization Preferences Help"
 set inputPath = "/data_vobs/VisIt/docs/UserManual"
 set outputPath = "/tmp/frameconvert"
 set helpPath = "/data_vobs/VisIt/help"
