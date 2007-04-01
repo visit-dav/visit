@@ -27,6 +27,8 @@
 #include <hdf.h>
 #include <mfhdf.h>
 
+#include <hdf5.h>
+
 using std::string;
 
 void avtEnzoFileFormat::Grid::PrintRecursive(vector<Grid> &grids, int level)
@@ -347,6 +349,10 @@ avtEnzoFileFormat::ReadParameterFile()
 //  Programmer:  Jeremy Meredith
 //  Creation:    January  6, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Feb 11 18:15:49 PST 2005
+//    Added HDF5 support.
+//
 // ****************************************************************************
 void
 avtEnzoFileFormat::DetermineVariablesFromGridFile()
@@ -378,41 +384,89 @@ avtEnzoFileFormat::DetermineVariablesFromGridFile()
     sprintf(gridFileName, "%s.grid%04d", fname_base.c_str(), smallest_grid);
 
     int32 file_handle = SDstart(gridFileName, DFACC_READ);
-    if (file_handle < 0)
+    if (file_handle >= 0)
     {
-        EXCEPTION1(InvalidFilesException, gridFileName);
-    }
+        fileType = ENZO_FT_HDF4;
 
-    int32 n_datasets;
-    int32 n_file_attrs;
-    SDfileinfo(file_handle, &n_datasets, &n_file_attrs);
+        int32 n_datasets;
+        int32 n_file_attrs;
+        SDfileinfo(file_handle, &n_datasets, &n_file_attrs);
 
-    for (int var = 0 ; var < n_datasets ; var++)
-    {
-        int32 ndims;
-        int32 dims[3];
-        int32 data_type;
-        char  name[65];
-        int32 nattrs;
-        int32 var_handle = SDselect(file_handle, var);
-        SDgetinfo(var_handle, name, &ndims, dims, &data_type, &nattrs);
-        SDendaccess(var_handle);
-        if (ndims > 1)
+        for (int var = 0 ; var < n_datasets ; var++)
         {
-            // it's a normal mesh variable
-            varNames.push_back(name);
-        }
-        else if (strlen(name) > 8 && strncmp(name,"particle",8)==0)
-        {
-            // it's a particle variable; skip over coordinate arrays
-            if (strncmp(name,"particle_position_",18) != 0)
+            int32 ndims;
+            int32 dims[3];
+            int32 data_type;
+            char  name[65];
+            int32 nattrs;
+            int32 var_handle = SDselect(file_handle, var);
+            SDgetinfo(var_handle, name, &ndims, dims, &data_type, &nattrs);
+            SDendaccess(var_handle);
+            if (ndims > 1)
             {
-                particleVarNames.push_back(name);
+                // it's a normal mesh variable
+                varNames.push_back(name);
+            }
+            else if (strlen(name) > 8 && strncmp(name,"particle",8)==0)
+            {
+                // it's a particle variable; skip over coordinate arrays
+                if (strncmp(name,"particle_position_",18) != 0)
+                {
+                    particleVarNames.push_back(name);
+                }
             }
         }
-    }
 
-    SDend(file_handle); 
+        SDend(file_handle); 
+    }
+    else
+    {
+        hid_t fileId = H5Fopen(gridFileName, H5F_ACC_RDONLY, H5P_DEFAULT);
+        if (fileId < 0)
+        {
+            EXCEPTION1(InvalidFilesException, gridFileName);
+        }
+
+        fileType = ENZO_FT_HDF5;
+
+        // NOTE: H5Gget_num_objs fails using a file id in HDF51.6.0, but
+        //       works correctly (as the documentation says it should) in
+        //       1.6.3.  Since we're going for portability, just open the
+        //       darn root group and use that instead.
+        hid_t rootId = H5Gopen(fileId, "/");
+
+        hsize_t n_objs;
+        H5Gget_num_objs(rootId, &n_objs);
+
+        for (int var = 0 ; var < n_objs ; var++)
+        {
+            if (H5Gget_objtype_by_idx(rootId, var) == H5G_DATASET)
+            {
+                char  name[65];
+                H5Gget_objname_by_idx(rootId, var, name, 64);
+
+                // NOTE: to do the same diligence as HDF4 here, we should
+                // really H5Dopen, H5Dget_space, H5Sget_simple_extent_ndims
+                // and make sure it is a 3D (or 2D?) object before assuming
+                // it is a mesh variable.  For now, assume away!
+                if (strlen(name) > 8 && strncmp(name,"particle",8)==0)
+                {
+                    // it's a particle variable; skip over coordinate arrays
+                    if (strncmp(name,"particle_position_",18) != 0)
+                    {
+                        particleVarNames.push_back(name);
+                    }
+                }
+                else
+                {
+                    varNames.push_back(name);
+                }
+            }
+        }
+
+        H5Gclose(rootId);
+        H5Fclose(fileId);
+    }
 }
 
 // ****************************************************************************
@@ -421,11 +475,16 @@ avtEnzoFileFormat::DetermineVariablesFromGridFile()
 //  Programmer: Jeremy Meredith
 //  Creation:   January  3, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Feb 11 18:15:49 PST 2005
+//    Added HDF5 support.
+//
 // ****************************************************************************
 
 avtEnzoFileFormat::avtEnzoFileFormat(const char *filename)
     : avtSTMDFileFormat(&filename, 1)
 {
+    fileType = ENZO_FT_UNKNOWN;
     numGrids = 0;
     numLevels = 0;
     curTime = 0;
@@ -663,10 +722,12 @@ avtEnzoFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //  Creation:   January  6, 2005
 //
 //  Modifications:
-//
 //    Hank Childs, Thu Jan 13 15:31:08 PST 2005
 //    Remove hack where domain boundary nesting structure is removed from
 //    cache to accomodate incorrect applications in generic database.
+//
+//    Jeremy Meredith, Fri Feb 11 18:15:49 PST 2005
+//    Added HDF5 support.
 //
 // ****************************************************************************
 
@@ -703,10 +764,8 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
 
         return rGrid;
     }
-    else
+    else if (fileType == ENZO_FT_HDF4)
     {
-        // HACK HACK HACK
-        // There is a bug in VisIt versions before 1.4.2 that will apply 
         // particle mesh
         char gridFileName[1000];
         sprintf(gridFileName, "%s.grid%04d", fname_base.c_str(), domain+1);
@@ -808,6 +867,91 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
 
         return ugrid;
     }
+    else if (fileType == ENZO_FT_HDF5)
+    {
+        // particle mesh
+        char gridFileName[1000];
+        sprintf(gridFileName, "%s.grid%04d", fname_base.c_str(), domain+1);
+
+        hid_t fileId = H5Fopen(gridFileName, H5F_ACC_RDONLY, H5P_DEFAULT);
+        if (fileId < 0)
+        {
+            EXCEPTION1(InvalidFilesException, gridFileName);
+        }
+
+        // temporarily disable error reporting
+        H5E_auto_t old_errorfunc;
+        void *old_clientdata;
+        H5Eget_auto(&old_errorfunc, &old_clientdata);
+        H5Eset_auto(NULL, NULL);
+
+        // find the coordinate variables (if they exist)
+        hid_t var_id_x = H5Dopen(fileId, "particle_position_x");
+        hid_t var_id_y = H5Dopen(fileId, "particle_position_y");
+        hid_t var_id_z = H5Dopen(fileId, "particle_position_z");
+
+        // turn back on error reporting
+        H5Eset_auto(old_errorfunc, old_clientdata);
+
+        // check if the variables exist
+        if (var_id_x < 0 || var_id_y < 0 || var_id_z < 0)
+        {
+            // This grid didn't have any particles.  No problem -- particles
+            // won't exist in every grid.  Just close the file and return
+            // NULL.
+            H5Fclose(fileId);
+            return NULL;
+        }
+
+        // Get the number of particles
+        hid_t spaceId = H5Dget_space(var_id_x);
+
+        hsize_t dims[3];
+        H5Sget_simple_extent_dims(spaceId, dims, NULL);
+
+        // It's one-dimensional
+        int npart = dims[0];
+
+        vtkPoints *points  = vtkPoints::New();
+        points->SetNumberOfPoints(npart);
+        float *pts = (float *) points->GetVoidPointer(0);
+        int i;
+
+        double *ddata = new double[npart];
+        H5Dread(var_id_x, H5T_NATIVE_DOUBLE,H5S_ALL,H5S_ALL,H5P_DEFAULT, ddata);
+        for (i=0; i<npart; i++)
+            pts[i*3+0] = float(ddata[i]);
+
+        H5Dread(var_id_y, H5T_NATIVE_DOUBLE,H5S_ALL,H5S_ALL,H5P_DEFAULT, ddata);
+        for (i=0; i<npart; i++)
+            pts[i*3+1] = float(ddata[i]);
+
+        H5Dread(var_id_z, H5T_NATIVE_DOUBLE,H5S_ALL,H5S_ALL,H5P_DEFAULT, ddata);
+        for (i=0; i<npart; i++)
+            pts[i*3+2] = float(ddata[i]);
+
+        H5Dclose(var_id_x);
+        H5Dclose(var_id_y);
+        H5Dclose(var_id_z);
+
+        vtkUnstructuredGrid  *ugrid = vtkUnstructuredGrid::New(); 
+        ugrid->SetPoints(points);
+        ugrid->Allocate(npart);
+        vtkIdType onevertex;
+        for(i = 0; i < npart; ++i)
+        {
+            onevertex = i;
+            ugrid->InsertNextCell(VTK_VERTEX, 1, &onevertex);
+        }
+
+        points->Delete();
+
+        // For now, always close the file
+        H5Fclose(fileId);
+        return ugrid;
+    }
+
+    return NULL;
 }
 
 
@@ -943,8 +1087,12 @@ avtEnzoFileFormat::BuildDomainNesting()
 //                 regardless of block origin.
 //      varname    The name of the variable requested.
 //
-//  Programmer: meredith -- generated by xml2avt
-//  Creation:   Fri Dec 3 17:19:52 PST 2004
+//  Programmer: Jeremy Meredith
+//  Creation:   January 6, 2005
+//
+//  Modifications:
+//    Jeremy Meredith, Fri Feb 11 18:15:49 PST 2005
+//    Added HDF5 support.
 //
 // ****************************************************************************
 
@@ -953,92 +1101,198 @@ avtEnzoFileFormat::GetVar(int domain, const char *varname)
 {
     ReadAllMetaData();
 
-    // HDF4 STUFF
-
-    char gridFileName[1000];
-    sprintf(gridFileName, "%s.grid%04d", fname_base.c_str(), domain+1);
-
-    int32 file_handle = SDstart(gridFileName, DFACC_READ);
-    if (file_handle < 0)
+    if (fileType == ENZO_FT_HDF4)
     {
-        EXCEPTION1(InvalidFilesException, gridFileName);
+        // HDF4 STUFF
+        char gridFileName[1000];
+        sprintf(gridFileName, "%s.grid%04d", fname_base.c_str(), domain+1);
+
+        int32 file_handle = SDstart(gridFileName, DFACC_READ);
+        if (file_handle < 0)
+        {
+            EXCEPTION1(InvalidFilesException, gridFileName);
+        }
+
+        int32 var_index = SDnametoindex(file_handle, varname);
+        if (var_index < 0)
+        {
+            EXCEPTION1(InvalidFilesException, gridFileName);
+        }
+
+        int32 var_handle = SDselect(file_handle, var_index);
+        if (var_handle < 0)
+        {
+            EXCEPTION1(InvalidFilesException, gridFileName);
+        }
+
+        int32 ndims;
+        int32 dims[3];
+        int32 data_type;
+        char  name[65];
+        int32 nattrs;
+        SDgetinfo(var_handle, name, &ndims, dims, &data_type, &nattrs);
+        if (ndims == 1)
+        {
+            // force the other dimensions to length 1 for particle meshes
+            dims[1]=1;
+            dims[2]=1;
+        }
+
+        int ntuples = dims[0]*dims[1]*dims[2];
+
+        vtkFloatArray * fa = vtkFloatArray::New();
+        fa->SetNumberOfTuples(ntuples);
+        float *data = fa->GetPointer(0);
+
+        int32 start[3] = {0,0,0};
+
+        double *f64_data;
+        int32  *i32_data;
+        uint32 *ui32_data;
+        int i;
+        switch (data_type)
+        {
+          case DFNT_FLOAT32:
+            SDreaddata(var_handle, start, NULL, dims, data);
+            break;
+          case DFNT_FLOAT64:
+            f64_data = new float64[ntuples];
+            SDreaddata(var_handle, start, NULL, dims, f64_data);
+            for (i = 0 ; i < ntuples ; i++)
+                data[i] = f64_data[i];
+            delete[] f64_data;
+            break;
+          case DFNT_INT32:
+            i32_data = new int32[ntuples];
+            SDreaddata(var_handle, start, NULL, dims, i32_data);
+            for (i = 0 ; i < ntuples ; i++)
+                data[i] = i32_data[i];
+            delete[] i32_data;
+            break;
+          case DFNT_UINT32:
+            ui32_data = new uint32[ntuples];
+            SDreaddata(var_handle, start, NULL, dims, ui32_data);
+            for (i = 0 ; i < ntuples ; i++)
+                data[i] = ui32_data[i];
+            delete[] ui32_data;
+            break;
+          default:
+            // ERROR: UKNOWN TYPE
+            break;
+        }
+
+        // Done with the variable; don't leak it
+        SDendaccess(var_handle);
+
+        // For now, always close the file
+        SDend(file_handle);
+
+        return fa;
     }
-
-    int32 var_index = SDnametoindex(file_handle, varname);
-    if (var_index < 0)
+    else
     {
-        EXCEPTION1(InvalidFilesException, gridFileName);
-    }
+        // HDF5 STUFF
+        char gridFileName[1000];
+        sprintf(gridFileName, "%s.grid%04d", fname_base.c_str(), domain+1);
 
-    int32 var_handle = SDselect(file_handle, var_index);
-    if (var_handle < 0)
-    {
-        EXCEPTION1(InvalidFilesException, gridFileName);
-    }
+        hid_t fileId = H5Fopen(gridFileName, H5F_ACC_RDONLY, H5P_DEFAULT);
+        if (fileId < 0)
+        {
+            EXCEPTION1(InvalidFilesException, gridFileName);
+        }
 
-    int32 ndims;
-    int32 dims[3];
-    int32 data_type;
-    char  name[65];
-    int32 nattrs;
-    SDgetinfo(var_handle, name, &ndims, dims, &data_type, &nattrs);
-    if (ndims == 1)
-    {
-        // force the other dimensions to length 1 for particle meshes
-        dims[1]=1;
-        dims[2]=1;
-    }
+        // temporarily disable error reporting
+        H5E_auto_t old_errorfunc;
+        void *old_clientdata;
+        H5Eget_auto(&old_errorfunc, &old_clientdata);
+        H5Eset_auto(NULL, NULL);
 
-    int ntuples = dims[0]*dims[1]*dims[2];
+        // find the variable (if it exists)
+        hid_t varId = H5Dopen(fileId, varname);
 
-    vtkFloatArray * fa = vtkFloatArray::New();
-    fa->SetNumberOfTuples(ntuples);
-    float *data = fa->GetPointer(0);
+        // turn back on error reporting
+        H5Eset_auto(old_errorfunc, old_clientdata);
 
-    int32 start[3] = {0,0,0};
+        // check if the variable exists
+        if (varId < 0)
+        {
+            EXCEPTION1(InvalidFilesException, gridFileName);
+        }
 
-    double *f64_data;
-    int32  *i32_data;
-    uint32 *ui32_data;
-    int i;
-    switch (data_type)
-    {
-      case DFNT_FLOAT32:
-        SDreaddata(var_handle, start, NULL, dims, data);
-        break;
-      case DFNT_FLOAT64:
-        f64_data = new float64[ntuples];
-        SDreaddata(var_handle, start, NULL, dims, f64_data);
+        hid_t spaceId = H5Dget_space(varId);
+
+        hsize_t dims[3];
+        H5Sget_simple_extent_dims(spaceId, dims, NULL);
+
+        hsize_t ndims = H5Sget_simple_extent_ndims(spaceId);
+
+        int ntuples;
+        if (ndims == 1)
+            ntuples = dims[0];
+        else if (ndims == 3)
+            ntuples = dims[0]*dims[1]*dims[2];
+        else
+            EXCEPTION1(InvalidVariableException, varname);
+
+        vtkFloatArray * fa = vtkFloatArray::New();
+        fa->SetNumberOfTuples(ntuples);
+        float *data = fa->GetPointer(0);
+
+        double *d_data;
+        int  *i_data;
+        unsigned int *ui_data;
+        int i;
+
         for (i = 0 ; i < ntuples ; i++)
-            data[i] = f64_data[i];
-        delete[] f64_data;
-        break;
-      case DFNT_INT32:
-        i32_data = new int32[ntuples];
-        SDreaddata(var_handle, start, NULL, dims, i32_data);
-        for (i = 0 ; i < ntuples ; i++)
-            data[i] = i32_data[i];
-        delete[] i32_data;
-        break;
-      case DFNT_UINT32:
-        ui32_data = new uint32[ntuples];
-        SDreaddata(var_handle, start, NULL, dims, ui32_data);
-        for (i = 0 ; i < ntuples ; i++)
-            data[i] = ui32_data[i];
-        delete[] ui32_data;
-        break;
-      default:
-        // ERROR: UKNOWN TYPE
-        break;
+            data[i] = 1;
+
+        hid_t raw_data_type = H5Dget_type(varId);
+        hid_t data_type = H5Tget_native_type(raw_data_type, H5T_DIR_ASCEND);
+        if (H5Tequal(data_type, H5T_NATIVE_FLOAT)>0)
+        {
+            H5Dread(varId, data_type,H5S_ALL,H5S_ALL,H5P_DEFAULT, data);
+        }
+        else if (H5Tequal(data_type, H5T_NATIVE_DOUBLE)>0)
+        {
+            d_data = new double[ntuples];
+            H5Dread(varId, data_type,H5S_ALL,H5S_ALL,H5P_DEFAULT, d_data);
+            for (i = 0 ; i < ntuples ; i++)
+                data[i] = d_data[i];
+            delete[] d_data;
+        }
+        else if (H5Tequal(data_type, H5T_NATIVE_INT))
+        {
+            i_data = new int[ntuples];
+            H5Dread(varId, data_type,H5S_ALL,H5S_ALL,H5P_DEFAULT, i_data);
+            for (i = 0 ; i < ntuples ; i++)
+                data[i] = i_data[i];
+            delete[] i_data;
+        }
+        else if (H5Tequal(data_type, H5T_NATIVE_UINT))
+        {
+            ui_data = new unsigned int[ntuples];
+            H5Dread(varId, data_type,H5S_ALL,H5S_ALL,H5P_DEFAULT, ui_data);
+            for (i = 0 ; i < ntuples ; i++)
+                data[i] = ui_data[i];
+            delete[] ui_data;
+        }
+        else
+        {
+            // ERROR: UKNOWN TYPE
+        }
+
+        // Done with the type
+        H5Tclose(data_type);
+        H5Tclose(raw_data_type);
+
+        // Done with the variable; don't leak it
+        H5Dclose(varId);
+
+        // For now, always close the file
+        H5Fclose(fileId);
+
+        return fa;
     }
-
-    // Done with the variable; don't leak it
-    SDendaccess(var_handle);
-
-    // For now, always close the file
-    SDend(file_handle);
-
-    return fa;
 }
 
 

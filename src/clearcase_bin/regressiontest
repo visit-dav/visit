@@ -227,6 +227,9 @@ curdate=`date +%Y-%m-%d-%p%I%M`
 # set mode to run in
 #modes="serial parallel scalable"
 modes="serial parallel scalable,parallel"
+if test "`date +%A`" = "Sunday"; then
+    modes="serial,hdf5 parallel,hdf5 scalable,parallel,hdf5"
+fi
 
 # set list of tests/modes to skip
 #skipList="dummy_mode:tests/dummy_category/dummy_file.py"
