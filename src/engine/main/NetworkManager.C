@@ -261,6 +261,9 @@ NetworkManager::ClearNetworksWithDatabase(const std::string &db)
 //    Hank Childs, Mon Jan  5 16:49:28 PST 2004
 //    Do not assume that all of the cached databases are non-NULL.
 //
+//    Hank Childs, Mon Mar  1 08:48:26 PST 2004
+//    Send the time to the database factory as well.
+//
 // ****************************************************************************
 
 NetnodeDB *
@@ -314,9 +317,9 @@ NetworkManager::GetDBFromCache(const string &filename, int time)
         NetnodeDB *netDB = NULL;
         const char *filename_c = filename.c_str();
         if (filename.substr(filename.length() - 6) == ".visit")
-            db = avtDatabaseFactory::VisitFile(filename_c);
+            db = avtDatabaseFactory::VisitFile(filename_c, time);
         else
-            db = avtDatabaseFactory::FileList(&filename_c, 1);
+            db = avtDatabaseFactory::FileList(&filename_c, 1, time);
 
         // If we want to open the file at a later timestep, get the
         // SIL so that it contains the right data.
@@ -551,6 +554,9 @@ NetworkManager::StartNetwork(const string &filename, const string &var,
 //   Hank Childs, Mon Jan  5 16:49:28 PST 2004
 //   Account for databases in the cached lists that have been cleared.
 //
+//   Hank Childs, Mon Mar  1 08:48:26 PST 2004
+//   Send the time to the database factory as well.
+//
 // ****************************************************************************
 void
 NetworkManager::DefineDB(const string &dbName, const string &dbPath,
@@ -643,7 +649,8 @@ NetworkManager::DefineDB(const string &dbName, const string &dbPath,
             names = new const char *[filesWithPath.size()];
             for(int i = 0; i < filesWithPath.size(); ++i)
                 names[i] = filesWithPath[i].c_str();
-            db = avtDatabaseFactory::FileList(names, filesWithPath.size());
+            db = avtDatabaseFactory::FileList(names, filesWithPath.size(),
+                                              time);
             delete [] names;
             names = 0;
 
@@ -653,9 +660,9 @@ NetworkManager::DefineDB(const string &dbName, const string &dbPath,
                    << "definition for " << dbName.c_str() << endl;
         }
         else if (dbName.substr(dbName.length() - 6) == ".visit")
-            db = avtDatabaseFactory::VisitFile(dbName_c);
+            db = avtDatabaseFactory::VisitFile(dbName_c, time);
         else
-            db = avtDatabaseFactory::FileList(&dbName_c, 1);
+            db = avtDatabaseFactory::FileList(&dbName_c, 1, time);
 
         // If we want to open the file at a later timestep, get the
         // metadata and the SIL so that it contains the right data.

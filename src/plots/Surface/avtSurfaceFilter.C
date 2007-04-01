@@ -23,7 +23,9 @@
 #include <vtkUniqueFeatureEdges.h>
 #include <vtkUnstructuredGrid.h>
 
+#include <avtDataAttributes.h>
 #include <avtDatasetExaminer.h>
+#include <avtExtents.h>
 
 #include <InvalidDimensionsException.h>
 #include <InvalidLimitsException.h>
@@ -43,6 +45,9 @@
 //
 //    Kathleen Bonnell, Tue Oct  2 17:34:53 PDT 2001
 //    Intialize new members.
+//
+//    Mark C. Miller Sun Feb 29 18:08:26 PST 2004
+//    Initialize zValMin and zValMax
 //
 // ****************************************************************************
 
@@ -68,6 +73,8 @@ avtSurfaceFilter::avtSurfaceFilter(const AttributeGroup *a)
     max = -1;
     Ms = 1.;
     Bs = 0.;
+    zValMin = 0;
+    zValMax = 0;
 }
 
 
@@ -204,6 +211,9 @@ avtSurfaceFilter::Equivalent(const AttributeGroup *a)
 //    Kathleen Bonnell, Fri Oct 10 10:48:24 PDT 2003
 //    Preserve original-cell information if present in input dataset. 
 //
+//    Mark C. Miller, Sun Feb 29 18:08:26 PST 2004
+//    Added code to compute zValMin and zValMax
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -258,6 +268,7 @@ avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     int numScalars = inScalars->GetNumberOfTuples();
     outScalars->SetNumberOfTuples(numScalars);
 
+    zValMin = zValMax = inScalars->GetTuple1(0);
     for (int i = 0; i < numScalars; i++)
     {
         // calculate  and store zVals
@@ -282,6 +293,12 @@ avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
              zVal = SkewTheValue(zVal); 
         }
         zVal = Ms * zVal + Bs;
+
+        if (zVal > zValMax)
+            zValMax = zVal;
+        else if (zVal < zValMin)
+            zValMin = zVal;
+
         outScalars->SetValue(i, zVal);
     }
 
@@ -516,15 +533,30 @@ avtSurfaceFilter::PreExecute(void)
 //
 //  Modifications:
 //
+//    Mark C. Miller, Sun Feb 29 17:52:19 PST 2004
+//    Added code to update output spatial extents from knowledge of input
+//    spatial extents and output zValMin and zValMax
+//
 // ****************************************************************************
 
 void
 avtSurfaceFilter::PostExecute(void)
 {
+    avtDataAttributes& outAtts = GetOutput()->GetInfo().GetAttributes();
+            
     // Create a transform that will drop the z-coordinate created by
     // this filter.
     double tform[16] = {1.,0.,0.,0.,0.,1.,0.,0.,0.,0.,0.,0.,0.,0.,0.,1.};
-    GetOutput()->GetInfo().GetAttributes().SetTransform(tform);
+    outAtts.SetTransform(tform);
+
+    // get the input's spatial extents
+    double se[6];
+    GetInput()->GetInfo().GetAttributes().GetSpatialExtents(se);
+
+    // over-write z-spatial extents with our known data extents
+    se[4] = zValMin;
+    se[5] = zValMax;
+    outAtts.GetTrueSpatialExtents()->Set(se);
 }
 
 

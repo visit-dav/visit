@@ -511,6 +511,58 @@ avtDataAttributes::GetSpatialExtents(double *buff)
     return false;
 }
 
+// ****************************************************************************
+//  Method: avtDataAttributes::GetAnySpatialExtents
+//
+//  Purpose:
+//      Gets any spatial extents for the data object if any exists starting
+//      with most useful to least useful
+//
+//  Arguments:
+//      buff     A buffer to copy the extents into.
+//
+//  Returns:     true if it found some good extents, false otherwise.
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    February 29, 2004
+//
+// ****************************************************************************
+
+bool
+avtDataAttributes::GetAnySpatialExtents(double *buff)
+{
+    if (trueSpatial->HasExtents())
+    {
+        trueSpatial->CopyTo(buff);
+        return true;
+    }
+
+    if (cumulativeTrueSpatial->HasExtents())
+    {
+        cumulativeTrueSpatial->CopyTo(buff);
+        return true;
+    }
+
+    if (currentSpatial->HasExtents())
+    {
+        currentSpatial->CopyTo(buff);
+        return true;
+    }
+
+    if (cumulativeCurrentSpatial->HasExtents())
+    {
+        cumulativeCurrentSpatial->CopyTo(buff);
+        return true;
+    }
+
+    if (effectiveSpatial->HasExtents())
+    {
+        effectiveSpatial->CopyTo(buff);
+        return true;
+    }
+
+    return false;
+}
 
 // ****************************************************************************
 //  Method: avtDataAttributes::GetDataExtents
@@ -1021,11 +1073,11 @@ avtDataAttributes::Read(char *input)
 
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
-    canUseTransform = (tmp != 0 ? true : false);
+    SetCanUseTransform(tmp != 0 ? true : false);
 
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
-    canUseCummulativeAsTrueOrCurrent = (tmp != 0 ? true : false);
+    SetCanUseCummulativeAsTrueOrCurrent(tmp != 0 ? true : false);
 
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);

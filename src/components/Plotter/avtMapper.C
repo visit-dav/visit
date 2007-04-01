@@ -679,6 +679,9 @@ avtMapper::GetRange(float &rmin, float &rmax)
 //    Hank Childs, Fri Mar 15 18:11:12 PST 2002
 //    Account for dataset examiner.
 //
+//    Mark C. Miller, Sun Feb 29 18:35:00 PST 2004
+//    Added calls to GetAnySpatialExtents before arbitrarily setting to [0,1]
+//
 // ****************************************************************************
 
 void
@@ -727,10 +730,13 @@ avtMapper::PrepareExtents(void)
     {
         if (!(avtDatasetExaminer::GetSpatialExtents(input, bounds)))
         {
-            for (int i = 0 ; i < 3 ; i++)
+            if (!atts.GetAnySpatialExtents(bounds))
             {
-                bounds[2*i] = 0.;
-                bounds[2*i+1] = 1.;
+                for (int i = 0 ; i < 3 ; i++)
+                {
+                    bounds[2*i] = 0.;
+                    bounds[2*i+1] = 1.;
+                }
             }
         }
     }

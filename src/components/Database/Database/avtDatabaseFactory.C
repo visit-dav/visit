@@ -71,10 +71,14 @@ void CheckPermissions(const char *);
 //    Hank Childs, Thu Feb 19 08:00:35 PST 2004
 //    Allow for exact filenames in addition to default extensions.
 //
+//    Hank Childs, Mon Mar  1 08:56:52 PST 2004
+//    Allow for the time to be specified.
+//
 // ****************************************************************************
 
 avtDatabase *
-avtDatabaseFactory::FileList(const char * const * filelist, int filelistN)
+avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
+                             int timestep)
 {
     int   i, j;
 
@@ -184,7 +188,7 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN)
                 // ask for it in a bit anyway.
                 //
                 if (rv != NULL)
-                    rv->GetMetaData(0);
+                    rv->GetMetaData(timestep);
             }
             CATCH2(InvalidDBTypeException, e)
             {
@@ -214,7 +218,7 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN)
             // make the same call here to be consistent.
             //
             if (rv != NULL)
-                rv->GetMetaData(0);
+                rv->GetMetaData(timestep);
         }
         else
         {
@@ -262,10 +266,13 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN)
 //    timestep files if they are relative. The engine was crashing on Windows
 //    because it did not know where to get the timestep files.
 //
+//    Hank Childs, Mon Mar  1 08:56:52 PST 2004
+//    Allow for the time to be specified.
+//
 // ****************************************************************************
 
 avtDatabase *
-avtDatabaseFactory::VisitFile(const char *visitFile)
+avtDatabaseFactory::VisitFile(const char *visitFile, int timestep)
 {
     //
     // Make sure we can read the file before we proceed.
@@ -319,7 +326,7 @@ avtDatabaseFactory::VisitFile(const char *visitFile)
     //
     // Create a database using the list of files.
     //
-    avtDatabase *rv = FileList(reallist, listcount);
+    avtDatabase *rv = FileList(reallist, listcount, timestep);
 
     //
     // Clean up memory
