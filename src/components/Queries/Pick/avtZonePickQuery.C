@@ -82,12 +82,17 @@ avtZonePickQuery::SetInvTransform(const avtMatrix *m)
 //    When material selection has been applied, ensure that RetrieveVarInfo
 //    will be using the correct zone id for this dataset.
 //
+//    Kathleen Bonnell, Thu Aug 26 09:50:31 PDT 2004 
+//    Handle case when pickatts.domain has not yet been set. (e.g. when
+//    picking 2d contour or boundary plots.)
+//
 // ****************************************************************************
 
 void
 avtZonePickQuery::Execute(vtkDataSet *ds, const int dom)
 {
-    if (dom != pickAtts.GetDomain() || pickAtts.GetFulfilled() || ds == NULL)
+    if (ds == NULL || pickAtts.GetFulfilled() ||
+        (pickAtts.GetDomain() != -1 && dom != pickAtts.GetDomain()))
     {
         return;
     }
@@ -106,20 +111,24 @@ avtZonePickQuery::Execute(vtkDataSet *ds, const int dom)
         float *cellPoint  = pickAtts.GetCellPoint();
         pickedZone = vtkVisItUtility::FindCell(ds, cellPoint);
 
-        //
-        //  If a valid zone still hasn't been found, there's some kind of 
-        //  problem, it should have been found for this domain. 
-        //  
         if (pickedZone == -1)
         {
-            pickAtts.SetDomain(-1);
-            pickAtts.SetElementNumber(-1);
-            debug5 << "PICK BIG PROBLEM!  "
-                   << "Could not find zone corresponding to pick point" << endl;
-            pickAtts.SetErrorMessage("Pick encountered an internal "
-                "error (could not find zone corresponding to pick point).\n"
-                "Please contact a VisIt developer"); 
-            pickAtts.SetError(true);
+            if (pickAtts.GetDomain() != -1)
+            {
+                //
+                //  If a valid zone still hasn't been found, and we were
+                //  expecting one for this domain, there's some kind of 
+                //  problem. 
+                //  
+                pickAtts.SetDomain(-1);
+                pickAtts.SetElementNumber(-1);
+                debug5 << "PICK BIG PROBLEM!  Could not find zone"
+                       << "corresponding to pick point" << endl;
+                pickAtts.SetErrorMessage("Pick encountered an internal error"
+                    " (could not find zone corresponding to pick point).\n"
+                    "Please contact a VisIt developer"); 
+                pickAtts.SetError(true);
+            }
             return;
         }
         pickAtts.SetElementNumber(pickedZone);
@@ -159,6 +168,12 @@ avtZonePickQuery::Execute(vtkDataSet *ds, const int dom)
     if (needRealId && ghostType == AVT_CREATED_GHOSTS) 
         SetRealIds(ds);
 
+    //
+    //  The database needs a valid domain
+    // 
+    if (pickAtts.GetDomain() == -1)
+        pickAtts.SetDomain(dom);
+    
     //
     //  Allow the database to add any missing information.
     // 

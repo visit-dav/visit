@@ -5,17 +5,11 @@
 #include <AttributeSubject.h>
 
 class IndexSelectAttributes;
+class QButtonGroup;
+class QGroupBox;
 class QLabel;
-class QCheckBox;
 class QLineEdit;
 class QSpinBox;
-class QVBox;
-class QButtonGroup;
-class QvisColorTableButton;
-class QvisOpacitySlider;
-class QvisColorButton;
-class QvisLineStyleWidget;
-class QvisLineWidthWidget;
 
 // ****************************************************************************
 // Class: QvisIndexSelectWindow
@@ -29,6 +23,9 @@ class QvisLineWidthWidget;
 // Creation:   Thu Jun 6 17:02:08 PST 2002
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Aug 26 16:55:59 PDT 2004
+//   Changed Min/Max/Incr from LineEdit to SpinBox for usability, added
+//   labels and group boxes for each dim.
 //   
 // ****************************************************************************
 
@@ -48,17 +45,39 @@ class QvisIndexSelectWindow : public QvisOperatorWindow
     virtual void GetCurrentValues(int which_widget);
   private slots:
     void dimChanged(int val);
-    void oneDProcessText();
-    void twoDProcessText();
-    void threeDProcessText();
+    void oneDMinChanged(int min);
+    void oneDMaxChanged(int max);
+    void oneDIncrChanged(int incr);
+    void twoDMinChanged(int min);
+    void twoDMaxChanged(int max);
+    void twoDIncrChanged(int incr);
+    void threeDMinChanged(int min);
+    void threeDMaxChanged(int max);
+    void threeDIncrChanged(int incr);
     void whichDataChanged(int val);
     void domainIndexProcessText();
     void groupIndexProcessText();
   private:
     QButtonGroup *dim;
-    QLineEdit *oneD;
-    QLineEdit *twoD;
-    QLineEdit *threeD;
+
+    QGroupBox    *oneDWidgetGroup;
+    QLabel       *oneDLabel;
+    QSpinBox     *oneDMin;
+    QSpinBox     *oneDMax;
+    QSpinBox     *oneDIncr;
+
+    QGroupBox    *twoDWidgetGroup;
+    QLabel       *twoDLabel;
+    QSpinBox     *twoDMin;
+    QSpinBox     *twoDMax;
+    QSpinBox     *twoDIncr;
+
+    QGroupBox    *threeDWidgetGroup;
+    QLabel       *threeDLabel;
+    QSpinBox     *threeDMin;
+    QSpinBox     *threeDMax;
+    QSpinBox     *threeDIncr;
+
     QButtonGroup *whichData;
     QLineEdit *domainIndex;
     QLineEdit *groupIndex;

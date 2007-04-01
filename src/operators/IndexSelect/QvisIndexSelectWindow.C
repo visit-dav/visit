@@ -3,7 +3,6 @@
 #include <IndexSelectAttributes.h>
 #include <ViewerProxy.h>
 
-#include <qcheckbox.h>
 #include <qlabel.h>
 #include <qlayout.h>
 #include <qlineedit.h>
@@ -11,17 +10,13 @@
 #include <qvbox.h>
 #include <qbuttongroup.h>
 #include <qradiobutton.h>
-#include <QvisColorTableButton.h>
-#include <QvisOpacitySlider.h>
-#include <QvisColorButton.h>
-#include <QvisLineStyleWidget.h>
-#include <QvisLineWidthWidget.h>
 #include <stdio.h>
 #include <string>
 
 using std::string;
 
-bool   ParseDimensions(const char *, int *);
+
+#define MAX_VAL 1000
 
 // ****************************************************************************
 // Method: QvisIndexSelectWindow::QvisIndexSelectWindow
@@ -83,15 +78,19 @@ QvisIndexSelectWindow::~QvisIndexSelectWindow()
 //   Hank Childs, Fri Jul 12 15:47:43 PDT 2002
 //   Fix typo (AI->All).
 //
+//   Kathleen Bonnell, Thu Aug 26 16:55:59 PDT 2004
+//   Changed Min/Max/Incr from LineEdit to SpinBox for usability, added
+//   labels and group boxes for each dim.
+//
 // ****************************************************************************
 
 void
 QvisIndexSelectWindow::CreateWindowContents()
 {
-    QGridLayout *wholeLayout = new QGridLayout(topLayout, 2, 1, 10,
+    QGridLayout *wholeLayout = new QGridLayout(topLayout, 5, 4, 10,
                                               "wholeLayout");
     QGridLayout *mainLayout = new QGridLayout(4,2,  10, "mainLayout");
-    wholeLayout->addLayout(mainLayout, 0, 0);
+    wholeLayout->addMultiCellLayout(mainLayout, 0, 0, 0, 3);
 
 
     mainLayout->addWidget(new QLabel("Dimension", central, "dimLabel"),0,0);
@@ -107,25 +106,126 @@ QvisIndexSelectWindow::CreateWindowContents()
     dimLayout->addWidget(dimDimensionThreeD);
     connect(dim, SIGNAL(clicked(int)),
             this, SLOT(dimChanged(int)));
-    mainLayout->addWidget(dim, 0,1);
+    mainLayout->addMultiCellWidget(dim, 0,0,1,2);
 
-    mainLayout->addWidget(new QLabel("Min, max, incr", central, "oneDLabel"),1,0);
-    oneD = new QLineEdit(central, "oneD");
-    connect(oneD, SIGNAL(returnPressed()),
-            this, SLOT(oneDProcessText()));
-    mainLayout->addWidget(oneD, 1,1);
 
-    mainLayout->addWidget(new QLabel("Min, max, incr", central, "twoDLabel"),2,0);
-    twoD = new QLineEdit(central, "twoD");
-    connect(twoD, SIGNAL(returnPressed()),
-            this, SLOT(twoDProcessText()));
-    mainLayout->addWidget(twoD, 2,1);
+    QGridLayout *labelLayout = new QGridLayout(1, 3, 10, "labelLayout");
+    wholeLayout->addMultiCellLayout(labelLayout, 1, 1, 0,3 );
 
-    mainLayout->addWidget(new QLabel("Min, max, incr", central, "threeDLabel"),3,0);
-    threeD = new QLineEdit(central, "xMin");
-    connect(threeD, SIGNAL(returnPressed()),
-            this, SLOT(threeDProcessText()));
-    mainLayout->addWidget(threeD, 3,1);
+    QLabel *minLabel = new QLabel("Min", central, "minLabel");
+    minLabel->setAlignment(AlignCenter);
+    labelLayout->addWidget(minLabel, 0, 0); 
+    QLabel *maxLabel = new QLabel("Max", central, "maxLabel");
+    maxLabel->setAlignment(AlignCenter);
+    labelLayout->addWidget(maxLabel, 0, 1); 
+    QLabel *incrLabel = new QLabel("Incr", central, "incrLabel");
+    incrLabel->setAlignment(AlignCenter);
+    labelLayout->addWidget(incrLabel, 0, 2); 
+
+
+    // 
+    // Create the oneD spinBoxes
+    // 
+    oneDWidgetGroup = new QGroupBox(central, "oneDWidgetGroup"); 
+    oneDWidgetGroup->setFrameShape(QFrame::NoFrame);
+    QGridLayout *oneDLayout = new QGridLayout(oneDWidgetGroup, 1, 6);
+    oneDLabel = new QLabel(central, "I", oneDWidgetGroup);
+    oneDLabel->setAlignment(AlignCenter);
+    oneDLayout->addWidget(oneDLabel, 0, 0);
+
+    // Set Up Min
+    oneDMin = new QSpinBox(0, MAX_VAL, 1, oneDWidgetGroup, "oneDMin");
+    connect(oneDMin, SIGNAL(valueChanged(int)),
+             this, SLOT(oneDMinChanged(int)));
+    oneDLayout->addWidget(oneDMin, 0, 1);
+    oneDLayout->addItem(new QSpacerItem(5, 5), 0, 2);
+
+    // Set Up Max
+    oneDMax = new QSpinBox(-1, MAX_VAL, 1, oneDWidgetGroup, "oneDMax");
+    oneDMax->setSpecialValueText("max");
+    oneDMax->setValue(-1);
+    connect(oneDMax, SIGNAL(valueChanged(int)),
+             this, SLOT(oneDMaxChanged(int)));
+    oneDLayout->addWidget(oneDMax, 0, 3);
+    oneDLayout->addItem(new QSpacerItem(5, 5), 0, 4);
+
+    // Set Up Incr
+    oneDIncr = new QSpinBox(1, MAX_VAL, 1, oneDWidgetGroup, "oneDIncr");
+    connect(oneDIncr, SIGNAL(valueChanged(int)),
+             this, SLOT(oneDIncrChanged(int)));
+    oneDLayout->addWidget(oneDIncr, 0, 5);
+
+    wholeLayout->addMultiCellWidget(oneDWidgetGroup, 2,2, 0,3);
+
+    // 
+    // Create the twoD spinBoxes
+    // 
+    twoDWidgetGroup = new QGroupBox(central, "twoDWidgetGroup"); 
+    twoDWidgetGroup->setFrameShape(QFrame::NoFrame);
+    QGridLayout *twoDLayout = new QGridLayout(twoDWidgetGroup, 1, 6);
+    twoDLabel = new QLabel(central, "J", twoDWidgetGroup);
+    twoDLabel->setAlignment(AlignCenter);
+    twoDLayout->addWidget(twoDLabel, 0, 0);
+
+    // Set Up Min
+    twoDMin = new QSpinBox(0, MAX_VAL, 1, twoDWidgetGroup, "twoDMin");
+    connect(twoDMin, SIGNAL(valueChanged(int)),
+             this, SLOT(twoDMinChanged(int)));
+    twoDLayout->addWidget(twoDMin, 0, 1);
+    twoDLayout->addItem(new QSpacerItem(5, 5), 0, 2);
+
+    // Set Up Max
+    twoDMax = new QSpinBox(-1, MAX_VAL, 1, twoDWidgetGroup, "twoDMax");
+    twoDMax->setSpecialValueText("max");
+    twoDMax->setValue(-1);
+    connect(twoDMax, SIGNAL(valueChanged(int)),
+             this, SLOT(twoDMaxChanged(int)));
+    twoDLayout->addWidget(twoDMax, 0, 3);
+    twoDLayout->addItem(new QSpacerItem(5, 5), 0, 4);
+
+    // Set Up Incr
+    twoDIncr = new QSpinBox(1, MAX_VAL, 1, twoDWidgetGroup, "twoDIncr");
+    connect(twoDIncr, SIGNAL(valueChanged(int)),
+             this, SLOT(twoDIncrChanged(int)));
+    twoDLayout->addWidget(twoDIncr, 0, 5);
+
+    wholeLayout->addMultiCellWidget(twoDWidgetGroup, 3,3, 0,3);
+
+    // 
+    // Create the threeD spinBoxes
+    // 
+    threeDWidgetGroup = new QGroupBox(central, "threeDWidgetGroup"); 
+    threeDWidgetGroup->setFrameShape(QFrame::NoFrame);
+
+    QGridLayout *threeDLayout = new QGridLayout(threeDWidgetGroup, 1, 6);
+    threeDLabel = new QLabel(central, "K", threeDWidgetGroup);
+    threeDLabel->setAlignment(AlignCenter);
+    threeDLayout->addWidget(threeDLabel, 0, 0);
+
+    // Set Up Min
+    threeDMin = new QSpinBox(0, MAX_VAL, 1, threeDWidgetGroup, "threeDMin");
+    connect(threeDMin, SIGNAL(valueChanged(int)),
+             this, SLOT(threeDMinChanged(int)));
+    threeDLayout->addWidget(threeDMin, 0, 1);
+    threeDLayout->addItem(new QSpacerItem(5, 5), 0, 2);
+
+    // Set Up Max
+    threeDMax = new QSpinBox(-1, MAX_VAL, 1, threeDWidgetGroup, "threeDMax");
+    threeDMax->setSpecialValueText("max");
+    threeDMax->setValue(-1);
+    connect(threeDMax, SIGNAL(valueChanged(int)),
+             this, SLOT(threeDMaxChanged(int)));
+    threeDLayout->addWidget(threeDMax, 0, 3);
+    threeDLayout->addItem(new QSpacerItem(5, 5), 0, 4);
+
+    // Set Up Incr
+    threeDIncr = new QSpinBox(1, MAX_VAL, 1, threeDWidgetGroup, "threeDIncr");
+    connect(threeDIncr, SIGNAL(valueChanged(int)),
+             this, SLOT(threeDIncrChanged(int)));
+    threeDLayout->addWidget(threeDIncr, 0, 5);
+
+    wholeLayout->addMultiCellWidget(threeDWidgetGroup, 4,4, 0,3);
+
 
     whichData = new QButtonGroup(central, "whichData");
     whichData->setFrameStyle(QFrame::NoFrame);
@@ -153,7 +253,7 @@ QvisIndexSelectWindow::CreateWindowContents()
             this, SLOT(groupIndexProcessText()));
     whichDataLayout->addWidget(groupIndex);
 
-    wholeLayout->addWidget(whichData, 1,0);
+    wholeLayout->addMultiCellWidget(whichData, 5,5,0,3);
 }
 
 
@@ -167,6 +267,8 @@ QvisIndexSelectWindow::CreateWindowContents()
 // Creation:   Thu Jun 6 17:02:08 PST 2002
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Aug 26 16:55:59 PDT 2004
+//   Changed Min/Max/Incr from LineEdit to SpinBox.
 //   
 // ****************************************************************************
 
@@ -185,66 +287,64 @@ QvisIndexSelectWindow::UpdateWindow(bool doAll)
             }
         }
 
-        char tmp[1024];
         switch(i)
         {
           case 0: //dim
             if (atts->GetDim() == IndexSelectAttributes::TwoD ||
                 atts->GetDim() == IndexSelectAttributes::ThreeD)
-                twoD->setEnabled(true);
+                twoDWidgetGroup->setEnabled(true);
             else
-                twoD->setEnabled(false);
+                twoDWidgetGroup->setEnabled(false);
             if (atts->GetDim() == IndexSelectAttributes::ThreeD)
-                threeD->setEnabled(true);
+                threeDWidgetGroup->setEnabled(true);
             else
-                threeD->setEnabled(false);
+                threeDWidgetGroup->setEnabled(false);
             dim->setButton(atts->GetDim());
             break;
           case 1: //xMin
+            oneDMin->blockSignals(true);
+            oneDMin->setValue(atts->GetXMin());
+            oneDMin->blockSignals(false);
+            break;
           case 2: //xMax
+            oneDMax->blockSignals(true);
+            oneDMax->setValue(atts->GetXMax());
+            oneDMax->blockSignals(false);
+            break;
           case 3: //xIncr
-            if (atts->GetXMax() < 0)
-            {
-                sprintf(tmp, "%d:max:%d", atts->GetXMin(), atts->GetXIncr());
-            }
-            else
-            {
-                sprintf(tmp, "%d:%d:%d", atts->GetXMin(), atts->GetXMax(),
-                                         atts->GetXIncr());
-            }
-            temp = tmp;
-            oneD->setText(temp);
+            oneDIncr->blockSignals(true);
+            oneDIncr->setValue(atts->GetXIncr());
+            oneDIncr->blockSignals(false);
             break;
           case 4: //yMin
-          case 5: //yMax
-          case 6: //yIncr
-            if (atts->GetYMax() < 0)
-            {
-                sprintf(tmp, "%d:max:%d", atts->GetYMin(), atts->GetYIncr());
-            }
-            else
-            {
-                sprintf(tmp, "%d:%d:%d", atts->GetYMin(), atts->GetYMax(),
-                                         atts->GetYIncr());
-            }
-            temp = tmp;
-            twoD->setText(temp);
+            twoDMin->blockSignals(true);
+            twoDMin->setValue(atts->GetYMin());
+            twoDMin->blockSignals(false);
             break;
-
+          case 5: //yMax
+            twoDMax->blockSignals(true);
+            twoDMax->setValue(atts->GetYMax());
+            twoDMax->blockSignals(false);
+            break;
+          case 6: //yIncr
+            twoDIncr->blockSignals(true);
+            twoDIncr->setValue(atts->GetYIncr());
+            twoDIncr->blockSignals(false);
+            break;
           case 7: //zMin
+            threeDMin->blockSignals(true);
+            threeDMin->setValue(atts->GetZMin());
+            threeDMin->blockSignals(false);
+            break;
           case 8: //zMax
+            threeDMax->blockSignals(true);
+            threeDMax->setValue(atts->GetZMax());
+            threeDMax->blockSignals(false);
+            break;
           case 9: //zIncr
-            if (atts->GetZMax() < 0)
-            {
-                sprintf(tmp, "%d:max:%d", atts->GetZMin(), atts->GetZIncr());
-            }
-            else
-            {
-                sprintf(tmp, "%d:%d:%d", atts->GetZMin(), atts->GetZMax(),
-                                         atts->GetZIncr());
-            }
-            temp = tmp;
-            threeD->setText(temp);
+            threeDIncr->blockSignals(true);
+            threeDIncr->setValue(atts->GetZIncr());
+            threeDIncr->blockSignals(false);
             break;
           case 10: //whichData
             whichData->setButton(atts->GetWhichData());
@@ -291,6 +391,10 @@ QvisIndexSelectWindow::UpdateWindow(bool doAll)
 //   Hank Childs, Wed Jun 19 10:00:03 PDT 2002
 //   If a tuple does not parse, make sure not to use those values.
 //
+//   Kathleen Bonnell, Thu Aug 26 16:55:59 PDT 2004 
+//   Removed code associated with Min/Max/Incr, they are no longer line edits,
+//   but spin boxes.
+//
 // ****************************************************************************
 
 void
@@ -305,71 +409,6 @@ QvisIndexSelectWindow::GetCurrentValues(int which_widget)
         // Nothing for dim
     }
 
-    // Do oneD
-    if(which_widget == 1 || doAll)
-    {
-        temp = oneD->displayText().simplifyWhiteSpace();
-        const char *tmp = temp;
-        int vals[3];
-        if (!ParseDimensions(tmp, vals))
-        {
-            msg.sprintf("The format for the first \"min, max, "
-                "incr\" tuple is invalid.");
-            Message(msg);
-            // reset a value so the text for the window will be regenerated.
-            atts->SetXMin(atts->GetXMin());
-        }
-        else
-        {
-            atts->SetXMin(vals[0]);
-            atts->SetXMax(vals[1]);
-            atts->SetXIncr(vals[2]);
-        }
-    }
-
-    // Do twoD
-    if(which_widget == 2 || doAll)
-    {
-        temp = twoD->displayText().simplifyWhiteSpace();
-        const char *tmp = temp;
-        int vals[3];
-        if (!ParseDimensions(tmp, vals))
-        {
-            msg.sprintf("The format for the second \"min, max, "
-                "incr\" tuple is invalid.");
-            Message(msg);
-            // reset a value so the text for the window will be regenerated.
-            atts->SetYMin(atts->GetYMin());
-        }
-        else
-        {
-            atts->SetYMin(vals[0]);
-            atts->SetYMax(vals[1]);
-            atts->SetYIncr(vals[2]);
-        }
-    }
-
-    // Do threeD
-    if(which_widget == 3 || doAll)
-    {
-        temp = threeD->displayText().simplifyWhiteSpace();
-        const char *tmp = temp;
-        int vals[3];
-        if (!ParseDimensions(tmp, vals))
-        {
-            msg.sprintf("The format for the third \"min, max, "
-                "incr\" tuple is invalid.");
-            Message(msg);
-            // reset a value so the text for the window will be regenerated.
-            atts->SetZMin(atts->GetZMin());
-        }
-        else
-        {
-            atts->SetZMin(vals[0]);
-            atts->SetZMax(vals[1]);
-            atts->SetZIncr(vals[2]);
-        }
-    }
 
     // Do whichData
     if(which_widget == 4 || doAll)
@@ -420,57 +459,6 @@ QvisIndexSelectWindow::GetCurrentValues(int which_widget)
     }
 }
 
-bool ParseDimensions(const char *tmp, int *vals)
-{
-    if (strstr(tmp, "max") != NULL)
-    {
-        if (strstr(tmp, ":") != NULL)
-        {
-            if (sscanf(tmp, "%d : max : %d", &(vals[0]), &(vals[2])) != 2)
-            {
-                return false;
-            }
-        }
-        else
-        {
-            if (sscanf(tmp, "%d max %d", &(vals[0]), &(vals[2])) != 2)
-            {
-                return false;
-            }
-        }
-        vals[1] = -1;
-    }
-    else
-    {
-        if (strstr(tmp, ":") != NULL)
-        {
-            if (sscanf(tmp, "%d : %d : %d", &(vals[0]), &(vals[1]), &(vals[2]))
-                  != 3)
-            {
-                return false;
-            }
-        }
-        else
-        {
-            if (sscanf(tmp, "%d %d %d", &(vals[0]), &(vals[1]), &(vals[2]))!=3)
-            {
-                return false;
-            }
-        }
-    }
-
-    if (vals[1] >= 0 && vals[1] < vals[0])
-    {
-        return false;
-    }
-    if (vals[2] <= 0)
-    {
-        return false;
-    }
-
-    return true;
-}    
-
 //
 // Qt Slot functions
 //
@@ -488,28 +476,94 @@ QvisIndexSelectWindow::dimChanged(int val)
 
 
 void
-QvisIndexSelectWindow::oneDProcessText()
+QvisIndexSelectWindow::oneDMinChanged(int min)
 {
-    GetCurrentValues(1);
-    Apply();
+    if (min != atts->GetXMin())
+    {
+        atts->SetXMin(min);
+        Apply();
+    }
 }
-
 
 void
-QvisIndexSelectWindow::twoDProcessText()
+QvisIndexSelectWindow::oneDMaxChanged(int max)
 {
-    GetCurrentValues(2);
-    Apply();
+    if (max != atts->GetXMax())
+    {
+        atts->SetXMax(max);
+        Apply();
+    }
 }
-
 
 void
-QvisIndexSelectWindow::threeDProcessText()
+QvisIndexSelectWindow::oneDIncrChanged(int incr)
 {
-    GetCurrentValues(3);
-    Apply();
+    if (incr != atts->GetXIncr())
+    {
+        atts->SetXIncr(incr);
+        Apply();
+    }
 }
 
+void
+QvisIndexSelectWindow::twoDMinChanged(int min)
+{
+    if (min != atts->GetYMin())
+    {
+        atts->SetYMin(min);
+        Apply();
+    }
+}
+
+void
+QvisIndexSelectWindow::twoDMaxChanged(int max)
+{
+    if (max != atts->GetYMax())
+    {
+        atts->SetYMax(max);
+        Apply();
+    }
+}
+
+void
+QvisIndexSelectWindow::twoDIncrChanged(int incr)
+{
+    if (incr != atts->GetYIncr())
+    {
+        atts->SetYIncr(incr);
+        Apply();
+    }
+}
+
+void
+QvisIndexSelectWindow::threeDMinChanged(int min)
+{
+    if (min != atts->GetZMin())
+    {
+        atts->SetZMin(min);
+        Apply();
+    }
+}
+
+void
+QvisIndexSelectWindow::threeDMaxChanged(int max)
+{
+    if (max != atts->GetZMax())
+    {
+        atts->SetZMax(max);
+        Apply();
+    }
+}
+
+void
+QvisIndexSelectWindow::threeDIncrChanged(int incr)
+{
+    if (incr != atts->GetZIncr())
+    {
+        atts->SetZIncr(incr);
+        Apply();
+    }
+}
 
 void
 QvisIndexSelectWindow::whichDataChanged(int val)
