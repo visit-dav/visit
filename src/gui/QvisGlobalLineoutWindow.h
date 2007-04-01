@@ -6,6 +6,8 @@
 
 class GlobalLineoutAttributes;
 class QCheckBox;
+class QComboBox;
+class QGroupBox;
 class QLabel;
 class QLineEdit;
 
@@ -22,6 +24,9 @@ class QLineEdit;
 // Creation:   Fri Nov 19 10:46:23 PDT 2004
 //
 // Modifications:
+//   Kathleen Bonnell, Fri Feb  4 07:10:27 PST 2005
+//   Added widgets for new atts (colorOption, curveOption).  Modified
+//   'dynamic' widget. 
 //   
 // ****************************************************************************
 
@@ -39,18 +44,19 @@ class GUI_API QvisGlobalLineoutWindow : public QvisPostableWindowObserver
   public slots:
     virtual void apply();
   protected:
-    void UpdateWindow(bool doAll);
-    void GetCurrentValues(int which_widget);
+    void UpdateWindow(bool);
+    void GetCurrentValues(int);
     void Apply(bool ignore = false);
   private slots:
-    void DynamicChanged(bool val);
-    void createWindowChanged(bool val);
+    void dynamicChanged(bool);
+    void createWindowChanged(bool);
     void windowIdProcessText();
-    void samplingOnChanged(bool val);
+    void samplingOnChanged(bool);
     void numSamplesProcessText();
-    void createReflineLabelsChanged(bool val);
+    void createReflineLabelsChanged(bool);
+    void curveOptionsChanged(int);
+    void colorOptionsChanged(int);
   private:
-    QCheckBox *Dynamic;
     QCheckBox *createWindow;
     QLineEdit *windowId;
     QCheckBox *samplingOn;
@@ -59,6 +65,17 @@ class GUI_API QvisGlobalLineoutWindow : public QvisPostableWindowObserver
     QLabel *createWindowLabel;
     QLabel *windowIdLabel;
     QLabel *numSamplesLabel;
+
+#if QT_VERSION >= 0x030200
+    QGroupBox *dynamic;
+#else
+    QCheckBox *dynamic;
+    QGroupBox *dynamicGroup;
+#endif
+    QComboBox    *curveOptions;
+    QLabel       *curveLabel;
+    QComboBox    *colorOptions;
+    QLabel       *colorLabel;
 
     GlobalLineoutAttributes *atts;
 };

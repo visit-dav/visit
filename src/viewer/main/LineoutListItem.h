@@ -39,6 +39,9 @@ class avtToolInterface;
 //    Kathleen Bonnell, Thu Mar 11 08:19:10 PST 2004 
 //    Removed unused GetMaxQueryWidth, GetMaxQueryHeight. 
 //
+//    Kathleen Bonnell, Thu Feb  3 16:27:10 PST 2005 
+//    Added SetLineoutsFollowTime, SetTimeSlider. 
+//
 // ****************************************************************************
 
 class VIEWER_API LineoutListItem : public SimpleObserver
@@ -73,6 +76,8 @@ class VIEWER_API LineoutListItem : public SimpleObserver
     bool InitializeTool(avtToolInterface &);
     void DisableTool(void);
     void ViewDimChanged(void);
+    void SetLineoutsFollowTime(bool);
+    void SetTimeSlider(bool);
 
 
   private:

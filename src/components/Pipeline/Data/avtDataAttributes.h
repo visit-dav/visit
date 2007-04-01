@@ -141,6 +141,9 @@ class     avtExtents;
 //    Kathleen Bonnell, Thu Jan 27 09:14:35 PST 2005 
 //    Added numStates and Set/Get methods. 
 //
+//    Kathleen Bonnell, Thu Feb  3 09:27:22 PST 2005 
+//    Added mirOccurred and Set/Get methods. 
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -316,6 +319,11 @@ class PIPELINE_API avtDataAttributes
     void                     SetNumStates(int n)
                                    { numStates = n; };
 
+    bool                     MIROccurred(void) const
+                                   { return mirOccurred; };
+    void                     SetMIROccurred(bool mo)
+                                   { mirOccurred = mo; };
+
   protected:
     int                      spatialDimension;
     int                      topologicalDimension;
@@ -337,6 +345,7 @@ class PIPELINE_API avtDataAttributes
     bool                     canUseTransform;
     bool                     canUseCumulativeAsTrueOrCurrent;
     int                      numStates;
+    bool                     mirOccurred;
 
     avtExtents              *trueSpatial;
     avtExtents              *cumulativeTrueSpatial;

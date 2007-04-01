@@ -116,6 +116,106 @@ ViewerQuery::ViewerQuery(ViewerWindow *origWin, ViewerWindow *resWin,
 }
 
 
+// ***********************************************************************
+//  Method: ViewerQuery copy constructor
+//
+//  Arguments:
+//    obj       A ViewerQuery to copy. 
+//    ts        The time state for this new query. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   June 10, 2002 
+//
+//  Modifications:
+//
+// ***********************************************************************
+
+ViewerQuery::ViewerQuery(const ViewerQuery *obj, int ts) : SimpleObserver()
+{
+    resPlotQueryInfo = 0;
+    planeAtts = 0;
+
+    lineAtts = new Line();
+    originatingWindow = obj->originatingWindow;
+    resultsWindow = obj->resultsWindow;
+    lineAtts->CopyAttributes(obj->lineAtts);
+
+    ViewerQueryManager *vqm = ViewerQueryManager::Instance();
+    if (vqm->GetGlobalLineoutAtts()->GetColorOption() ==
+        GlobalLineoutAttributes::CreateColor)
+    {
+        lineAtts->SetColor(vqm->GetColor());
+    }
+
+    originatingPlot = obj->originatingPlot;
+    std::string vName;
+    if (lineAtts->GetVarName() == "default")
+        vName = originatingPlot->GetVariableName();
+    else 
+        vName = lineAtts->GetVarName();
+
+    bool replacePlots = ViewerWindowManager::Instance()->
+                        GetClientAtts()->GetReplacePlots();
+
+    ViewerPlotList *plotList = resultsWindow->GetPlotList();
+
+    int plotType = PlotPluginManager::Instance()->GetEnabledIndex("Curve_1.0");
+
+    int pid = plotList->AddPlot(plotType, vName, replacePlots, false);
+    resultsPlot = plotList->GetPlot(pid);
+    resultsPlot->SetSILRestriction(originatingPlot->GetSILRestriction());
+
+    //
+    // Copy operators from the originating plot to the results (curve) plot.
+    //
+    for (int j = 0; j < originatingPlot->GetNOperators(); ++j)
+    {
+        ViewerOperator *op = originatingPlot->GetOperator(j);
+        //
+        // Keep a copy of the slice-plane atts, so that the line endpoints
+        // may be updated accordingly whent the slice-plane changes.
+        //
+        if (strcmp(op->GetName(), "Slice") == 0)
+        {
+            planeAtts = (PlaneAttributes *)op->GetOperatorAtts()->
+                        CreateCompatible("PlaneAttributes");
+        }
+        resultsPlot->AddOperator(op->GetType());
+        ViewerOperator *newOp = resultsPlot->GetOperator(j);
+        newOp->SetOperatorAtts(op->GetOperatorAtts());
+    }
+ 
+    //
+    // Add the lineout operator.
+    //
+    int operatorType = OperatorPluginManager::Instance()->GetEnabledIndex("Lineout_1.0");
+    resultsPlot->AddOperator(operatorType, false);
+
+    //
+    //  The client atts were already copied created,
+    //  so now update them with the lineAtts.
+    //
+    resultsPlot->SetPlotAtts(lineAtts);
+
+    int id = resultsPlot->GetNOperators() -1;
+    resultsPlot->GetOperator(id)->SetOperatorAtts(lineAtts);
+    resultsPlot->GetOperator(id)->SetOperatorAtts(
+        ViewerQueryManager::Instance()->GetGlobalLineoutAtts());
+
+    resultsPlot->SetFollowsTime(true);
+    resultsPlot->SetCacheIndex(ts);
+    resultsPlot->SetFollowsTime(false);
+    plotList->RealizePlots();
+
+    //
+    // Connect to the resultsPlot
+    //
+    StartObservingPlot();
+    
+    handlingTool = false;
+}
+
+
 // ****************************************************************************
 //  Method: ViewerQuery destructor
 //
@@ -1058,3 +1158,51 @@ CreateBasis(const avtVector &N, const avtVector &UP,
    }
    v = (w % u).normalized();
 }
+
+
+// ****************************************************************************
+//  Method: ViewerQuery::MatchTimeState
+//
+//  Purpose:  Determine if the passed timestate matches the resultsPlot's.
+// 
+//  Arguments:
+//    ts        The timestate in question.
+//
+//  Returns:
+//    false if resultPlot is NULL or if  ts != resultsPlot's cache index, 
+//    true otherwise
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   February 3, 2005 
+//
+// ****************************************************************************
+
+bool
+ViewerQuery::MatchTimeState(int ts) const
+{
+    if (!resultsPlot)
+        return false;
+    return (resultsPlot->GetCacheIndex() == ts);
+}
+
+
+// ****************************************************************************
+//  Method: ViewerQuery::SetFollowsTime
+//
+//  Purpose:  Sets the follows time flag for the results plot. 
+// 
+//  Arguments:
+//    bool    The new value. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   February 3, 2005 
+//
+// ****************************************************************************
+
+void
+ViewerQuery::SetFollowsTime(bool val)
+{
+    if (resultsPlot)
+        resultsPlot->SetFollowsTime(val);
+}
+

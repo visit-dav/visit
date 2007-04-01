@@ -206,6 +206,10 @@ typedef std::map<std::string, int> StringIntMap;
 //    Brad Whitlock, Tue Jul 27 10:34:43 PDT 2004
 //    Added ResizeTimeSliders.
 //
+//    Brad Whitlock, Wed Feb 2 16:06:09 PST 2005
+//    Added NotActivePlotList to isolate logic for checking if the plot
+//    list belongs to the active window. Changed AlterTimeSlider.
+//
 // ****************************************************************************
 
 
@@ -237,7 +241,7 @@ public:
                                   stringVector &timeSliders,
                                   intVector &timeSliderCurrentStates);
     void CreateTimeSlider(const std::string &ts, int state);
-    void AlterTimeSlider(const std::string &ts);
+    bool AlterTimeSlider(const std::string &ts, bool = true);
     bool DeleteTimeSlider(const std::string &ts, bool update = true);
     void GetTimeSliderStates(const std::string &ts, int &state, int &nStates) const;
     bool TimeSliderExists(const std::string &ts) const;
@@ -326,6 +330,7 @@ public:
 
     bool UpdateColorTable(const char *ctName);
 
+    bool NotActivePlotList() const;
     void UpdatePlotAtts(bool=true) const;
     void GetPlotAtts(std::vector<const char*> &pluginIDsList,
                      std::vector<EngineKey> &engineKeysList,

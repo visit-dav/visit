@@ -104,6 +104,9 @@ class SILAttributes;
 //    Jeremy Meredith, Wed Aug 25 11:47:37 PDT 2004
 //    Added methods to poke new metadata (and sil) for a simulation.
 //
+//    Brad Whitlock, Fri Feb 4 09:57:49 PDT 2005
+//    Overloaded CloseFile.
+//
 // ****************************************************************************
 
 class ViewerFileServer : public ViewerServerManager
@@ -201,6 +204,8 @@ public:
 
     void                       ClearFile(const std::string &fullName);
     void                       CloseFile(const std::string &host);
+    void                       CloseFile(const std::string &host,
+                                         const std::string &database);
 
     DatabaseCorrelationList   *GetDatabaseCorrelationList();
     DatabaseCorrelation       *CreateDatabaseCorrelation(const std::string &,

@@ -1244,6 +1244,12 @@ QvisFileSelectionWindow::GetCurrentValues(bool allowPathChange)
 //    made the window raise itself so it comes to the front after being
 //    partially covered by the viewer window on MacOS X.
 //
+//    Brad Whitlock, Wed Feb 2 13:44:29 PST 2005
+//    I removed a line of code that added the host to the list of invalid
+//    hosts when we can't connect to it since most of the time the host to
+//    which we could not connect is in the host profiles and removing it
+//    confuses people.
+//
 // ****************************************************************************
 
 bool
@@ -1298,11 +1304,6 @@ QvisFileSelectionWindow::ChangeHosts()
             }
             CATCH(CouldNotConnectException)
             {
-                // Remove the invalid host from the combo box and make the
-                // active host active in the combo box.
-                invalidHosts.push_back(host);
-                UpdateHostComboBox();
-
                 // We had an error.
                 errFlag = true;
             }

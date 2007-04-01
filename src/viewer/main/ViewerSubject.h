@@ -332,6 +332,9 @@ struct avtDefaultPlotMetaData;
 //    for new metadata and SIL atts) from an engine.  This was needed for
 //    simulations.
 //
+//    Brad Whitlock, Thu Feb 3 11:09:27 PDT 2005
+//    Added int return value for OpenDatabaseHelper.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -393,7 +396,7 @@ private:
     void CustomizeAppearance();
     void InitializeWorkArea();
     void ProcessSpecialOpcodes(int opcode);
-    void OpenDatabaseHelper(const std::string &db, int timeState,
+    int  OpenDatabaseHelper(const std::string &db, int timeState,
                             bool loadDefaultPlots, bool udpateWindowInfo);
 
     DataNode *CreateAttributesDataNode(const avtDefaultPlotMetaData *) const;

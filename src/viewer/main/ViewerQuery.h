@@ -52,6 +52,9 @@ class avtToolInterface;
 //    Kathleen Bonnell, Thu Mar 11 08:19:10 PST 2004 
 //    Removed width/height GetWidth/GetHeight, no longer used. 
 //
+//    Kathleen Bonnell, Thu Feb  3 16:03:32 PST 2005 
+//    Added new copy constructor, MatchTimeState, SetFollowsTime. 
+//
 // ****************************************************************************
 
 
@@ -60,6 +63,7 @@ class VIEWER_API ViewerQuery : public SimpleObserver
   public:
                      ViewerQuery(ViewerWindow *, ViewerWindow *, Line *,
                                  const bool fromDefault = true);
+                     ViewerQuery(const ViewerQuery *obj, int ts); 
                     ~ViewerQuery();
 
     bool             MatchResultsPlot(ViewerPlot *vp) const; 
@@ -67,10 +71,12 @@ class VIEWER_API ViewerQuery : public SimpleObserver
 
     bool             MatchResultsWindow(ViewerWindow *vw) const; 
     bool             MatchOriginatingWindow(ViewerWindow *vw) const; 
+    bool             MatchTimeState(int ts) const;
 
     void             DeleteOriginatingWindow();
     void             DeleteOriginatingPlot();
     void             DeleteVisualCue();
+    void             SetFollowsTime(bool);
 
     virtual void     Update(Subject *) ;
 

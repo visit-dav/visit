@@ -5287,6 +5287,42 @@ ViewerWindowManager::SetActiveTimeSlider(const std::string &ts, int windowIndex)
 }
 
 // ****************************************************************************
+// Method: ViewerWindowManager::AlterTimeSlider
+//
+// Purpose: 
+//   Forces the named time slider to be within the bounds of its database
+//   correlation.
+//
+// Arguments:
+//   ts : The name of the time slider that we're updating.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb 3 14:30:15 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::AlterTimeSlider(const std::string &ts)
+{
+    for(int i = 0; i < maxWindows; ++i)
+    {
+        if(windows[i] != 0)
+        {
+            // Alter the time slider. This means that we're forcing it to be
+            // within the bounds of its database correlation. We prevent the
+            // window from updating immediately.
+            if(windows[i]->GetPlotList()->AlterTimeSlider(ts, false))
+            {
+                // Send a message to update the window later.
+                windows[i]->SendUpdateMessage();
+            }
+        }
+    }
+}
+
+// ****************************************************************************
 // Method: ViewerWindowManager::CreateDatabaseCorrelation
 //
 // Purpose: 
@@ -5625,6 +5661,9 @@ ViewerWindowManager::GetDatabasesForWindows(const intVector &windowIds,
 //    I had to get the metadata before closing the database to determine
 //    which engine the file lives on.
 //
+//    Brad Whitlock, Fri Feb 4 08:17:31 PDT 2005
+//    Added code to tell the mdserver to close its database.
+//
 // ****************************************************************************
 
 void
@@ -5655,9 +5694,17 @@ ViewerWindowManager::CloseDatabase(const std::string &dbName)
     {
         //
         // Tell the file server to clear out any metadata related to
-        // the database that we're closing.
+        // the database that we're closing. This also deletes the database
+        // correlation.
         //
         fs->ClearFile(expandedDB);
+
+        //
+        // Tell the mdserver to close its database so the next time we ask
+        // for it, it will give back the right information if the database
+        // was a virtual database.
+        //
+        fs->CloseFile(host, db);
 
         //
         // If the plot list's open database is the database that we're

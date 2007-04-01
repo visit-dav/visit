@@ -187,6 +187,9 @@ MDServerConnection::VirtualFileInformationMap MDServerConnection::virtualFiles;
 //    Brad Whitlock, Fri Mar 12 10:19:24 PDT 2004
 //    I added KeepAliveRPC.
 //
+//    Brad Whitlock, Fri Feb 4 15:07:42 PST 2005
+//    I added filterList and extraSmartFileGrouping.
+//
 // ****************************************************************************
 
 MDServerConnection::MDServerConnection(int *argc, char **argv[])
@@ -209,6 +212,10 @@ MDServerConnection::MDServerConnection(int *argc, char **argv[])
 
     // Set an internal flag to zero.
     readFileListReturnValue = 0;
+
+    // Make the default filter be "*"
+    filterList.push_back("*");
+    extraSmartFileGrouping = true;
 
     // Create a new ParentProcess and use it to connect to another
     // program.
@@ -1334,7 +1341,6 @@ MDServerConnection::GetCurrentFileList()
 //
 // Arguments:
 //   fileName   : The filename we're checking against the filters.
-//   filterList : The list of filters we're checking for.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Oct 4 15:19:12 PST 2000
@@ -1343,11 +1349,13 @@ MDServerConnection::GetCurrentFileList()
 //   Jeremy Meredith, Fri Mar 19 14:46:24 PST 2004
 //   I made it use WildcardStringMatch from Utility.h.
 //
+//   Brad Whitlock, Fri Feb 4 15:08:59 PST 2005
+//   I removed the filterList argument.
+//
 // ****************************************************************************
 
 bool
-MDServerConnection::FileMatchesFilterList(const std::string &fileName,
-    const stringVector &filterList) const
+MDServerConnection::FileMatchesFilterList(const std::string &fileName) const
 {
     // Try the filename against all the filters in the list until
     // it matches or we've tested all the filters.
@@ -1459,6 +1467,54 @@ MDServerConnection::FileHasVisItExtension(const std::string &file) const
 }
 
 // ****************************************************************************
+// Method: MDServerConnection::SetFileGroupingOptions
+//
+// Purpose: 
+//   Sets the file filter and file grouping options that should be used
+//   when filtering the file list.
+//
+// Arguments:
+//   filter                 : A space separated list of filters.
+//   extraSmartFileGrouping : Whether extra smart file grouping should be used.
+// Returns:    
+//
+// Note:       This used to be in GetFilteredFileList but I moved it here so
+//             implicit definition of virtual databases would at least use the
+//             last filters that we defined instead of "*".
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 4 15:09:34 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+MDServerConnection::SetFileGroupingOptions(const std::string &filter,
+    bool extraSmartGrouping)
+{
+    //
+    // Parse the filter string into a list of filter strings.
+    //
+
+    // Parse the filter string and store the result in filterList.
+    char *temp  = new char[filter.size() + 1];
+    char *ptr, *temp2 = temp;
+    memcpy((void *)temp, (void *)filter.c_str(), filter.size() + 1);
+    filterList.clear();
+    while((ptr = strtok(temp2, " ")) != NULL)
+    {
+        filterList.push_back(std::string(ptr));
+        temp2 = NULL;
+    }
+    delete[] temp;
+    if(filterList.size() == 0)
+        filterList.push_back("*");
+
+    extraSmartFileGrouping = extraSmartGrouping;
+}
+
+// ****************************************************************************
 // Method: MDServerConnection::GetFilteredFileList
 //
 // Purpose: 
@@ -1495,35 +1551,19 @@ MDServerConnection::FileHasVisItExtension(const std::string &file) const
 //   I fixed a bug that caused multiple virtual databases to get the
 //   definitions confused if they had similar names.
 //
+//   Brad Whitlock, Fri Feb 4 15:12:40 PST 2005
+//   I made the filter list and extraSmartFileGrouping flag be set elsewhere.
+//
 // ****************************************************************************
 
 void
-MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files,
-    const std::string &filter, bool extraSmartGrouping)
+MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
 {
     //
     // If we have not yet read a file list, read it now.
     //
     if(!validFileList)
         ReadFileList();
-
-    //
-    // Parse the filter string into a list of filter strings.
-    //
-
-    // Parse the filter string and store the result in filterList.
-    char *temp  = new char[filter.size() + 1];
-    char *ptr, *temp2 = temp;
-    memcpy((void *)temp, (void *)filter.c_str(), filter.size() + 1);
-    stringVector filterList;
-    while((ptr = strtok(temp2, " ")) != NULL)
-    {
-        filterList.push_back(std::string(ptr));
-        temp2 = NULL;
-    }
-    delete[] temp;
-    if(filterList.size() == 0)
-        filterList.push_back("*");
 
     //
     // Compare each name in the current file list against the list of
@@ -1541,7 +1581,7 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files,
             //
             // See if the file matches any of the filters.
             //
-            if(FileMatchesFilterList(names[i], filterList))
+            if(FileMatchesFilterList(names[i]))
             {
                 //
                 // See if the filename matches a pattern for related files.
@@ -1565,7 +1605,7 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files,
                     // to group the X files and leave the X.1, X.2, X.3
                     // files unrelated.
                     //
-                    if(extraSmartGrouping &&
+                    if(extraSmartFileGrouping &&
                        pattern.size() >= 2 &&
                        pattern.substr(pattern.size() - 2) == ".*")
                     {
@@ -1706,6 +1746,11 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files,
 //   Brad Whitlock, Thu Jul 29 12:12:59 PDT 2004
 //   Now assumes extra smart file grouping when called from the cli.
 //
+//   Brad Whitlock, Fri Feb 4 15:14:15 PST 2005
+//   Changed the call to GetFilteredFileList so it uses the last filter
+//   and file grouping settings that were in place the last time we read
+//   the directory.
+//
 // ****************************************************************************
 
 const MDServerConnection::VirtualFileInformationMap::iterator
@@ -1739,7 +1784,7 @@ MDServerConnection::GetVirtualFileDefinition(const std::string &file)
 
             // Get the filtered file list. This creates virtual files.
             GetFileListRPC::FileList f;
-            GetFilteredFileList(f, "*", true);
+            GetFilteredFileList(f);
 
             // Change the path back to the old path.
             ChangeDirectory(oldPath);
@@ -1961,21 +2006,33 @@ MDServerConnection::GetDatabase(string file, int timeState)
 //   it is a virtual file so the next time we ask for it, we'll read the
 //   directory and get the right list of time states.
 //
+//   Brad Whitlock, Fri Feb 4 08:34:50 PDT 2005
+//   I added a db argument so this rpc can be used to remove a virtual file
+//   definition without necessarily having to close the database.
+//
 // ****************************************************************************
 
 void
-MDServerConnection::CloseDatabase()
+MDServerConnection::CloseDatabase(const std::string &db)
 {
-    VirtualFileInformationMap::iterator virtualFile = virtualFiles.find(currentDatabaseName);
+    std::string dbToClose(db);
+    bool closeCurrentDB = (dbToClose == currentDatabaseName);
+    if(dbToClose == "")
+    {
+        dbToClose = currentDatabaseName;
+        closeCurrentDB = true;
+    }
+
+    VirtualFileInformationMap::iterator virtualFile = virtualFiles.find(dbToClose);
 
     if(virtualFile != virtualFiles.end())
     {
-        debug1 << "Removing " << currentDatabaseName.c_str()
+        debug1 << "Removing " << dbToClose.c_str()
                << " from the virtual file map." << endl;
         virtualFiles.erase(virtualFile);
     }
 
-    if (currentDatabase != NULL)
+    if (closeCurrentDB && currentDatabase != NULL)
     {
         debug1 << "Closing database: " << currentDatabaseName.c_str() << endl;
         delete currentDatabase;

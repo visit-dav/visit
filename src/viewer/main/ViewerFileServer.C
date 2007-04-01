@@ -1049,6 +1049,9 @@ ViewerFileServer::StartServer(const std::string &host)
 //    I modified the routine to add the profile arguments before the unknown
 //    arguments so that they can override the profile arguments.
 //
+//    Brad Whitlock, Wed Feb 2 14:25:31 PST 2005
+//    Improved the error message for "Could not connect" exception.
+//
 // ****************************************************************************
 
 void
@@ -1140,9 +1143,12 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
     {
         char message[200];
         SNPRINTF(message, 200,
-                "The metadata server on host %s could not be launched. "
-                "You may want to make sure your PATH environment variable "
-                "includes the program \"visit\".", host.c_str());
+                "The metadata server on host %s could not be launched or it "
+                "could not connect back to your local computer. "
+                "You might try using \"Parse from SSH_CLIENT\" in your host "
+                "profile for host %s. You may also want to make sure your "
+                "PATH environment variable includes the program \"visit\".",
+                host.c_str(), host.c_str());
         Error(message);
 
         delete newServer;
@@ -1516,6 +1522,8 @@ ViewerFileServer::TerminateConnectionRequest(const stringVector &args, int failC
 void
 ViewerFileServer::ClearFile(const std::string &fullName)
 {
+    debug4 << "ViewerFileServer::Clearfile" << endl;
+
     // Clear the metadata.
     for(FileMetaDataMap::iterator mpos = fileMetaData.begin();
         mpos != fileMetaData.end();)
@@ -1528,6 +1536,7 @@ ViewerFileServer::ClearFile(const std::string &fullName)
         // If the name is a file that we're deleting then remove the metadata.
         if(hdb == fullName)
         {
+            debug4 << "\tDeleted metadata for " << hdb.c_str() << endl;
             delete mpos->second;
             fileMetaData.erase(mpos++);
         }
@@ -1546,6 +1555,7 @@ ViewerFileServer::ClearFile(const std::string &fullName)
         // If the name is a file that we're deleting then remove the SIL.
         if(hdb == fullName)
         {
+            debug4 << "\tDeleted SIL for " << hdb.c_str() << endl;
             delete spos->second;
             fileSIL.erase(spos++);
         }
@@ -1555,7 +1565,10 @@ ViewerFileServer::ClearFile(const std::string &fullName)
 
     // Remove the correlation
     if(databaseCorrelationList->RemoveCorrelation(fullName))
+    {
+        debug4 << "\tDeleted database correlation for " << fullName.c_str() << endl;
         databaseCorrelationList->Notify();
+    }
 }
 
 // ****************************************************************************
@@ -1567,6 +1580,8 @@ ViewerFileServer::ClearFile(const std::string &fullName)
 //
 // Arguments:
 //   host : The host on which the mdserver is running.
+//   db   : The database to close. If it's not provided then the mdserver
+//          closes its current database.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Jul 30 14:32:14 PST 2002
@@ -1584,6 +1599,24 @@ ViewerFileServer::CloseFile(const std::string &host)
         TRY
         {
             pos->second->proxy->CloseDatabase();
+        }
+        CATCH(LostConnectionException)
+        {
+            CloseServer(host, false);
+        }
+        ENDTRY
+    }
+}
+
+void
+ViewerFileServer::CloseFile(const std::string &host, const std::string &db)
+{
+    ServerMap::iterator pos;
+    if((pos = servers.find(host)) != servers.end()) 
+    {
+        TRY
+        {
+            pos->second->proxy->CloseDatabase(db);
         }
         CATCH(LostConnectionException)
         {

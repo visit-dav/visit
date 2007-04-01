@@ -57,6 +57,8 @@ CloseDatabaseRPCExecutor::~CloseDatabaseRPCExecutor()
 // Creation:   Tue Jul 30 11:07:28 PDT 2002
 //
 // Modifications:
+//   Brad Whitlock, Fri Feb 4 08:31:18 PDT 2005
+//   I added a database argument.
 //
 // ****************************************************************************
 
@@ -64,6 +66,6 @@ void
 CloseDatabaseRPCExecutor::Update(Subject *s)
 {
     CloseDatabaseRPC *rpc = (CloseDatabaseRPC *)s;
-    parent->CloseDatabase();
+    parent->CloseDatabase(rpc->GetDatabase());
     rpc->SendReply();
 }

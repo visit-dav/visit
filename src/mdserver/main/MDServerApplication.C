@@ -273,6 +273,9 @@ MDServerApplication::Execute()
 //   Brad Whitlock, Thu Jul 29 12:23:34 PDT 2004
 //   Assumes extra smart file grouping.
 //
+//   Brad Whitlock, Fri Feb 4 15:22:11 PST 2005
+//   Changed how file grouping options are passed.
+//
 // ****************************************************************************
 
 void
@@ -280,7 +283,8 @@ MDServerApplication::ExecuteDebug()
 {
     // Get the filtered file list.
     GetFileListRPC::FileList files;
-    clients[0]->GetFilteredFileList(files, "*", true);
+    clients[0]->SetFileGroupingOptions("*", true);
+    clients[0]->GetFilteredFileList(files);
     // Print the file list to the debug logs.
     debug1 << "FILELIST = " << files << endl;
 }

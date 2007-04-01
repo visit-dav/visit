@@ -4,9 +4,10 @@
 #include <ViewerProxy.h>
 
 #include <qcheckbox.h>
+#include <qcombobox.h>
+#include <qgroupbox.h>
 #include <qlabel.h>
 #include <qlayout.h>
-#include <qgroupbox.h>
 #include <QNarrowLineEdit.h>
 #include <stdio.h>
 
@@ -67,13 +68,15 @@ QvisGlobalLineoutWindow::~QvisGlobalLineoutWindow()
 //   Brad Whitlock, Wed Dec 15 11:07:46 PDT 2004
 //   I ifdef'd some code so it builds with Qt versions older than 3.2.
 //
+//   Kathleen Bonnell, Thu Feb  3 15:51:06 PST 2005 
+//   Added curveOptions and colorOptions for Dynamic mode. 
+//
 // ****************************************************************************
 
 void
 QvisGlobalLineoutWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 3,2,  10, "mainLayout");
-
+    QGridLayout *mainLayout = new QGridLayout(topLayout, 4,2,  10, "mainLayout");
 
     //
     // CreateWindow
@@ -95,12 +98,59 @@ QvisGlobalLineoutWindow::CreateWindowContents()
     mainLayout->addWidget(windowId, 1,1);
 
     //
-    // Dynamic
+    // Dynamic 
     //
-    Dynamic = new QCheckBox("Dynamic", central, "Dynamic");
-    connect(Dynamic, SIGNAL(toggled(bool)),
-            this, SLOT(DynamicChanged(bool)));
-    mainLayout->addWidget(Dynamic, 2,0);
+    QGroupBox *dbox;
+#if QT_VERSION >= 0x030200
+    dynamic = new QGroupBox("Dynamic", central, "dynamic");
+    dynamic->setCheckable(true);
+    dbox = dynamic;
+    connect(dynamic, SIGNAL(toggled(bool)),
+            this, SLOT(dynamicChanged(bool)));
+    topLayout->addWidget(dynamic);
+#else
+    dynamic = new QCheckBox("Dynamic", central, "dynamic");
+    connect(dynamic, SIGNAL(toggled(bool)),
+            this, SLOT(dynamicChanged(bool)));
+    mainLayout->addMultiCellWidget(dynamic,2,2,0,1);
+
+    dynamicGroup = new QGroupBox("Dynamic options", central, "dynamic");
+    topLayout->addWidget(dynamicGroup);
+    dbox = dynamicGroup;
+#endif
+
+    QVBoxLayout *dlayout = new QVBoxLayout(dbox);
+    dlayout->setMargin(10);
+    dlayout->addSpacing(15);
+
+    QGridLayout *dgrid = new QGridLayout(dlayout, 4, 2);
+
+    //
+    // curve options
+    //
+    curveOptions = new QComboBox(dbox, "curveOptions");
+    curveOptions->insertItem("updates curve", 0);
+    curveOptions->insertItem("creates new curve", 1);
+    connect(curveOptions, SIGNAL(activated(int)),
+            this, SLOT(curveOptionsChanged(int)));
+    curveLabel = new QLabel(curveOptions, "Time change ", dbox, "curveLabel");
+
+    dgrid->addWidget(curveLabel, 1, 0);
+    dgrid->addWidget(curveOptions, 1, 1);
+    dgrid->addRowSpacing(2, 10);
+
+    //
+    // color options
+    //
+    colorOptions = new QComboBox(dbox, "colorOptions");
+    colorOptions->insertItem("repeats color", 0);
+    colorOptions->insertItem("creates new color", 1);
+    connect(colorOptions, SIGNAL(activated(int)),
+            this, SLOT(colorOptionsChanged(int)));
+    colorLabel = new QLabel(colorOptions, "New curve ", dbox, "colorLabel");
+
+    dgrid->addWidget(colorLabel, 3, 0);
+    dgrid->addWidget(colorOptions, 3, 1);
 
     //
     // Want the next items grouped.
@@ -118,9 +168,7 @@ QvisGlobalLineoutWindow::CreateWindowContents()
     msg->setText("These items can be overridden\nby Lineout Operator");
     msg->setAlignment(Qt::AlignCenter);
     qgrid->addMultiCellWidget(msg, 0,0,0,1);
-#if QT_VERSION >= 0x030200
-    qgrid->setRowSpacing(1,10);
-#endif
+    qgrid->addRowSpacing(1,10);
 
     //
     // SamplingOn
@@ -164,7 +212,9 @@ QvisGlobalLineoutWindow::CreateWindowContents()
 // Creation:   Fri Nov 19 10:46:23 PDT 2004
 //
 // Modifications:
-//   
+//   Kathleen Bonnell, Thu Feb  3 15:51:06 PST 2005 
+//   Added curveOptions and colorOptions for Dynamic mode. 
+//
 // ****************************************************************************
 
 void
@@ -184,7 +234,13 @@ QvisGlobalLineoutWindow::UpdateWindow(bool doAll)
         switch(i)
         {
           case 0: //Dynamic
-            Dynamic->setChecked(atts->GetDynamic());
+            dynamic->setChecked(atts->GetDynamic());
+            curveOptions->setEnabled(atts->GetDynamic()) ;
+            curveLabel->setEnabled(atts->GetDynamic()) ;
+            colorOptions->setEnabled(atts->GetDynamic() && 
+                atts->GetCurveOption() == GlobalLineoutAttributes::CreateCurve);
+            colorLabel->setEnabled(atts->GetDynamic() && 
+                atts->GetCurveOption() == GlobalLineoutAttributes::CreateCurve);
             break;
           case 1: //createWindow
             if (atts->GetCreateWindow() == false)
@@ -222,6 +278,18 @@ QvisGlobalLineoutWindow::UpdateWindow(bool doAll)
             break;
           case 5: //createReflineLabels
             createReflineLabels->setChecked(atts->GetCreateReflineLabels());
+            break;
+          case 6: //curveOption
+            curveOptions->setCurrentItem(atts->GetCurveOption());
+            curveOptions->setEnabled(atts->GetDynamic()) ;
+            curveLabel->setEnabled(atts->GetDynamic()) ;
+            colorOptions->setEnabled(atts->GetDynamic() && 
+                atts->GetCurveOption() == GlobalLineoutAttributes::CreateCurve);
+            colorLabel->setEnabled(atts->GetDynamic() && 
+                atts->GetCurveOption() == GlobalLineoutAttributes::CreateCurve);
+            break;
+          case 7: //colorOption
+            colorOptions->setCurrentItem(atts->GetColorOption());
             break;
         }
     }
@@ -370,7 +438,7 @@ QvisGlobalLineoutWindow::apply()
 
 
 void
-QvisGlobalLineoutWindow::DynamicChanged(bool val)
+QvisGlobalLineoutWindow::dynamicChanged(bool val)
 {
     atts->SetDynamic(val);
     Apply();
@@ -416,4 +484,19 @@ QvisGlobalLineoutWindow::createReflineLabelsChanged(bool val)
     Apply();
 }
 
+
+void
+QvisGlobalLineoutWindow::curveOptionsChanged(int mode)
+{
+    atts->SetCurveOption(GlobalLineoutAttributes::CurveOptions(mode));
+    Apply();
+}
+
+
+void
+QvisGlobalLineoutWindow::colorOptionsChanged(int mode)
+{
+    atts->SetColorOption(GlobalLineoutAttributes::ColorOptions(mode));
+    Apply();
+}
 

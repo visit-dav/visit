@@ -6,14 +6,16 @@
 #include <LineoutListItem.h>
 
 #include <avtToolInterface.h>
+#include <GlobalLineoutAttributes.h>
 #include <Line.h>
 #include <PlaneAttributes.h>
+#include <PlotQueryInfo.h>
 #include <ViewerOperator.h>
 #include <ViewerPlot.h>
 #include <ViewerPlotList.h>
+#include <ViewerQueryManager.h>
 #include <ViewerWindow.h>
 #include <ViewerWindowManager.h>
-#include <PlotQueryInfo.h>
 
 
 // ****************************************************************************
@@ -611,6 +613,9 @@ LineoutListItem::DisableTool()
 //    Brad Whitlock, Mon May 3 13:49:17 PST 2004
 //    I made it use an engine key in ReplaceDatabase.
 //
+//    Kathleen Bonnell, Thu Feb  3 16:27:10 PST 2005 
+//    Added case for CacheIndex change. 
+//
 // ****************************************************************************
 
 void
@@ -634,6 +639,32 @@ LineoutListItem::Update(Subject *TheChangedSubject)
                  for (i = 0; i < nOps; i++)
                  {
                      vpl->SetPlotOperatorAtts(origPlot->GetOperator(i)->GetType());
+                 }
+                 break;
+             case PlotQueryInfo::CacheIndex:
+                 if (ViewerQueryManager::Instance()->GetGlobalLineoutAtts()->
+                     GetCurveOption() == GlobalLineoutAttributes::CreateCurve)
+                 {
+                     int newf = origPlotQueryInfo->GetNewFrameIndex();
+                     int oldf = origPlotQueryInfo->GetOldFrameIndex();
+                     vector<ViewerQuery_p> addme;
+                     for (i = 0; i < nQueries; i++)
+                     {
+                         if (queries[i]->MatchTimeState(oldf))
+                         {
+                             ViewerQuery_p nq = new ViewerQuery(*queries[i], newf);
+                             addme.push_back(nq);
+                         }
+                     }
+                     for (i = 0; i < addme.size(); i++)
+                     {
+                         AddQuery(addme[i]);
+                     }
+                 }
+                 else
+                 {
+                     int newf = origPlotQueryInfo->GetNewFrameIndex();
+                     vpl->SetTimeSliderState(newf);
                  }
                  break;
              case PlotQueryInfo::AddOp:          // fall through
@@ -679,3 +710,63 @@ LineoutListItem::ViewDimChanged()
         }
     }
 }
+
+
+// ****************************************************************************
+//  Method: LineoutListItem::SetLineoutsFollowTime
+//
+//  Purpose:
+//    Tells the queries whether or not their results plot should follow time.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   February 3, 2005 
+//
+// ****************************************************************************
+
+void
+LineoutListItem::SetLineoutsFollowTime(bool newMode)
+{
+    for (int i = 0; i < nQueries; i++)
+        queries[i]->SetFollowsTime(newMode);
+}
+
+
+// ****************************************************************************
+//  Method: LineoutListItem::SetTimeSlider
+//
+//  Purpose:
+//    Creates or removes time slider for the plot list in the results window. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   February 3, 2005 
+//
+// ****************************************************************************
+
+void
+LineoutListItem::SetTimeSlider(bool removeSlider)
+{
+    ViewerPlotList *resList = resWin->GetPlotList();
+    if (removeSlider)
+    {
+        if (resList->HasActiveTimeSlider())
+            resList->DeleteTimeSlider(resList->GetActiveTimeSlider());
+    }
+    else
+    {
+        ViewerPlotList *origList = origWin->GetPlotList();
+        if (origList->HasActiveTimeSlider())
+        {
+            const std::string &ats = origList->GetActiveTimeSlider();
+            int state, nStates;
+            origList->GetTimeSliderStates(ats, state, nStates);
+            resList->CreateTimeSlider(ats, state);
+            resList->SetActiveTimeSlider(ats);
+            ViewerWindowManager::Instance()->UpdateWindowInformation(
+                WINDOWINFO_TIMESLIDERS, resWin->GetWindowId());
+        }
+    }
+}
+
+
+
+

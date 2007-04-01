@@ -304,6 +304,9 @@ typedef struct {
 //    Kathleen Bonnell, Wed Aug 18 09:28:51 PDT 2004 
 //    Added interactorAtts and related methods.
 //
+//    Brad Whitlock, Thu Feb 3 14:34:45 PST 2005
+//    Added AlterTimeSlider.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public QObject
@@ -362,6 +365,7 @@ class VIEWER_API ViewerWindowManager : public QObject
     void Play(int windowIndex = -1);
     void ReversePlay(int windowIndex = -1);
     void SetActiveTimeSlider(const std::string &ts, int windowIndex = -1);
+    void AlterTimeSlider(const std::string &ts);
 
     void SetKeyframeAttsFromClient();
     void UpdateKeyframeAttributes();

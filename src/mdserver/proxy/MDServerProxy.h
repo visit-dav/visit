@@ -160,6 +160,7 @@ public:
     const SILAttributes       *GetSIL(const std::string &, int=0);
     std::string                ExpandPath(const std::string &);
     void                       CloseDatabase();
+    void                       CloseDatabase(const std::string &);
     void                       LoadPlugins();
 
     char                       GetSeparator() const;

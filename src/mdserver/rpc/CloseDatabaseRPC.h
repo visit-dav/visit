@@ -15,7 +15,9 @@
 // Creation:   Tue Jul 30 10:38:56 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Feb 4 08:24:38 PDT 2005
+//   Added a database argument.
+//
 // ****************************************************************************
 
 class MDSERVER_RPC_API CloseDatabaseRPC : public BlockingRPC
@@ -25,9 +27,14 @@ public:
     virtual ~CloseDatabaseRPC();
 
     // Invocation method
-    void operator()();
+    void operator()(const std::string &db);
 
     virtual void SelectAll();
+
+    void SetDatabase(const std::string &db);
+    const std::string &GetDatabase() { return database; };
+private:
+    std::string database;
 };
 
 #endif

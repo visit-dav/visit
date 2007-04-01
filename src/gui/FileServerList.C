@@ -1267,6 +1267,12 @@ FileServerList::CloseFile()
 //   Brad Whitlock, Thu May 15 12:53:31 PDT 2003
 //   I changed the order of the arguments.
 //
+//   Brad Whitlock, Fri Feb 4 15:31:15 PST 2005
+//   Added code to overwrite the local virtual file definition with the 
+//   definition from the metadata. This takes care of making the virtual
+//   file definition have the right number of states without having to
+//   reread the file list.
+//
 // ****************************************************************************
 
 void
@@ -1337,6 +1343,20 @@ FileServerList::OpenAndGetMetaData(const QualifiedFilename &filename,
                 // Add the new SIL object to the map. Use the fully
                 // qualified name as a key.
                 SILData[filename.FullName()] = newSIL;
+
+                // Assume the metadata is more complete than the virtual file
+                // definition, which is only updated when we change the selected
+                // files. Copy the time step names over the virtual file
+                // definition.
+                if(newMetaData->GetIsVirtualDatabase())
+                {
+                    const stringVector &states = newMetaData->GetTimeStepNames();
+                    virtualFiles[filename.FullName()] = states;
+                    debug4 << "Overwriting virtual file definition for "
+                           << filename.FullName().c_str() << " with:" << endl;
+                    for(int i = 0; i < states.size(); ++i)
+                        debug4 << "\t" << states[i].c_str() << endl;
+                }
 
                 // We made it to here then really set the open file.
                 openFile = filename;
@@ -1805,6 +1825,11 @@ FileServerList::DefineVirtualFiles()
     {
         QualifiedFilename name(activeHost, servers[activeHost]->path, pos->first);
         virtualFiles[name.FullName()] = pos->second;
+#if 0
+        debug4 << "Virtual file: " << name.FullName() << endl;
+        for(int i = 0; i < pos->second.size(); ++i)
+            debug4 << "\t" << pos->second[i] << endl;
+#endif
     }
 }
 

@@ -501,6 +501,8 @@ ViewerPlot::GetState() const
 // Creation:   Thu Apr 8 15:29:12 PST 2004
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Feb  3 16:02:01 PST 2005
+//   Update queryAtts so that lineouts can update when time changes.
 //   
 // ****************************************************************************
 
@@ -511,6 +513,13 @@ ViewerPlot::SetCacheIndex(int newCacheIndex)
        newCacheIndex >= 0 &&
        newCacheIndex < cacheSize)
     {
+        if (queryAtts != 0 && newCacheIndex != cacheIndex)
+        {
+            queryAtts->SetChangeType(PlotQueryInfo::CacheIndex);
+            queryAtts->SetOldFrameIndex(cacheIndex);
+            queryAtts->SetNewFrameIndex(newCacheIndex);
+            queryAtts->Notify();
+        }
         cacheIndex = newCacheIndex;
     }
 }
