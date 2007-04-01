@@ -12,11 +12,6 @@
 
 #include <snprintf.h>
 
-// the include for VisItALE.c also winds up including regex.h and we can't
-// include ligben.h also. So, we define these externs directly
-extern "C" char *basename(char *);
-extern "C" char *dirname(char *);
-
 #include <string>
 #include <map>
 
@@ -48,7 +43,7 @@ using std::map;
 const int avtVistaFileFormat::MASTER_FILE_INDEX = 0;
 static char tempStr[1024];
 
-#define MATCH(A,B)        strncmp(A,B,sizeof(#B))==0
+#define MATCH(A,B)        strncmp(A,B,sizeof(B))==0
 
 // ****************************************************************************
 //  Function:  VisitNameToVistaName 
@@ -59,27 +54,35 @@ static char tempStr[1024];
 //  Programmer:  Mark C. Miller 
 //  Creation:    March 15, 2004 
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed May 19 10:56:11 PDT 2004
+//    Added support for 2D meshes
+//
 // ****************************************************************************
 static void
-VisitNameToVistaName(const char *visitName, vector<string> &vistaNames)
+VisitNameToVistaName(const char *visitName, vector<string> &vistaNames, int dims)
 {
     if (MATCH(visitName, "coords"))
     {
         vistaNames.push_back("x");
         vistaNames.push_back("y");
-        vistaNames.push_back("z");
+        if (dims == 3)
+            vistaNames.push_back("z");
     }
     else if (MATCH(visitName, "coords0"))
     {
         vistaNames.push_back("x0");
         vistaNames.push_back("y0");
-        vistaNames.push_back("z0");
+        if (dims == 3)
+            vistaNames.push_back("z0");
     }
     else if (MATCH(visitName, "velocity"))
     {
         vistaNames.push_back("xd");
         vistaNames.push_back("yd");
-        vistaNames.push_back("zd");
+        if (dims == 3)
+            vistaNames.push_back("zd");
     }
     else if (MATCH(visitName, "stress"))
     {
@@ -189,6 +192,11 @@ avtVistaFileFormat::GetFileNameForRead(int dom, char *fileName, int size)
 //  Programmer: Mark C. Miller
 //  Creation:   Tue Feb 17 19:19:07 PST 2004
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed May 19 10:56:11 PDT 2004
+//    Replaced use of basename/dirname with StringHelper functions
+//
 // ****************************************************************************
 
 avtVistaFileFormat::avtVistaFileFormat(const char *filename)
@@ -199,10 +207,10 @@ avtVistaFileFormat::avtVistaFileFormat(const char *filename)
     vTree = 0;
     domToFileMap = 0;
 
-    char *fname = CXX_strdup(filename);
-    masterFileName = basename(fname);
-    masterDirName = dirname(fname);
-    delete [] fname;
+    spatialDim = 0;
+
+    masterFileName = StringHelpers::Basename(filename);
+    masterDirName = StringHelpers::Dirname(filename);
 
     fileHandles = new void*[MAX_FILES];
     for (i = 0 ; i < MAX_FILES ; i++)
@@ -614,6 +622,11 @@ avtVistaFileFormat::FreeUpResources(void)
 //  Programmer: Mark C. Miller
 //  Creation:   Tue Feb 17 19:19:07 PST 2004
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed May 19 10:56:11 PDT 2004
+//    Added support for 2D meshes
+//
 // ****************************************************************************
 
 void
@@ -708,14 +721,26 @@ avtVistaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
 
     //
+    // See of domain0 block has a nodes field of name 'z' to
+    // decide if we've got a 2D or 3D mesh
+    //
+    spatialDim = 2;
+    sprintf(tempStr, "/%s/%s/node/Fields/z", top->child[0]->text,
+        pieceNodes[0]->text);
+    char fileName[1024];
+    GetFileNameForRead(0, fileName, sizeof(fileName));
+    if (ReadDataset(fileName, tempStr, 0, 0, 0))
+        spatialDim = 3;
+
+    //
     // Add the GLOBAL mesh object
     //
     avtMeshMetaData *mesh = new avtMeshMetaData;
     mesh->name = CXX_strdup(top->child[0]->text);
     mesh->meshType = AVT_UNSTRUCTURED_MESH;
-    mesh->topologicalDimension = 3;
-    mesh->spatialDimension = 3;
-    cerr << "WARNING!!! Assuming topological and spatial dimension is 3" << endl;
+    mesh->topologicalDimension = spatialDim;
+    mesh->spatialDimension = spatialDim;
+    cerr << "WARNING!!! Assuming both topological and spatial dimension is " << spatialDim << endl;
     mesh->numBlocks = numPieces;
     mesh->blockTitle = blockTitle;
     mesh->blockPieceName = blockPieceName;
@@ -752,25 +777,29 @@ avtVistaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         //
         if (centering == AVT_NODECENT)
         {
-            if (HasAllComponents(fieldMap, numPieces, "x", "y", "z", 0))
+            const char  *zstr = spatialDim == 3 ?  "z" : 0;
+            const char *zdstr = spatialDim == 3 ? "zd" : 0;
+            const char *z0str = spatialDim == 3 ? "z0" : 0;
+
+            if (HasAllComponents(fieldMap, numPieces, "x", "y", zstr, 0))
             {
                 // set counts to zero these entries won't get processed in loop below 
-                fieldMap["x"].val = fieldMap["y"].val = fieldMap["z"].val = 0;
-                AddVectorVarToMetaData(md, "coords", mesh->name, centering, 3);
+                fieldMap["x"].val = fieldMap["y"].val = 0; if (zstr) fieldMap["z"].val = 0;
+                AddVectorVarToMetaData(md, "coords", mesh->name, centering, spatialDim);
             }
 
-            if (HasAllComponents(fieldMap, numPieces, "xd", "yd", "zd", 0))
+            if (HasAllComponents(fieldMap, numPieces, "xd", "yd", zdstr, 0))
             {
                 // set counts to zero these entries won't get processed in loop below 
-                fieldMap["xd"].val = fieldMap["yd"].val = fieldMap["zd"].val = 0;
-                AddVectorVarToMetaData(md, "velocity", mesh->name, centering, 3);
+                fieldMap["xd"].val = fieldMap["yd"].val = 0; if (zdstr) fieldMap["zd"].val = 0;
+                AddVectorVarToMetaData(md, "velocity", mesh->name, centering, spatialDim);
             }
 
-            if (HasAllComponents(fieldMap, numPieces, "x0", "y0", "z0", 0))
+            if (HasAllComponents(fieldMap, numPieces, "x0", "y0", z0str, 0))
             {
                 // set counts to zero these entries won't get processed in loop below 
-                fieldMap["x0"].val = fieldMap["y0"].val = fieldMap["z0"].val = 0;
-                AddVectorVarToMetaData(md, "coords0", mesh->name, centering, 3);
+                fieldMap["x0"].val = fieldMap["y0"].val = 0; if (z0str) fieldMap["z0"].val = 0;
+                AddVectorVarToMetaData(md, "coords0", mesh->name, centering, spatialDim);
             }
         }
         else
@@ -1101,6 +1130,11 @@ avtVistaFileFormat::GetMaterial(int domain, const char *var)
 //  Programmer: Mark C. Miller
 //  Creation:   Tue Feb 17 19:19:07 PST 2004
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed May 19 10:56:11 PDT 2004
+//    Added support for 2D meshes
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1143,7 +1177,7 @@ avtVistaFileFormat::GetMesh(int domain, const char *meshname)
     // Read coordinate arrays
     //
     double *coords[3] = {0, 0, 0};
-    for (i = 0; i < 3; i++)
+    for (i = 0; i < spatialDim; i++)
     {
         sprintf(tempStr, "/%s/%s/node/Fields/%c", top->child[0]->text,
             pieceNodes[domain]->text, (char) ('x'+i));
@@ -1156,10 +1190,18 @@ avtVistaFileFormat::GetMesh(int domain, const char *meshname)
             EXCEPTION2(UnexpectedValueException, numNodes, dSize);
         }
     }
+    for (i = spatialDim; i < 3; i++)
+    {
+        int j;
+        coords[i] = new double[numNodes];
+        for (j = 0; j < numNodes; j++)
+            coords[i][j] = 0.0;
+    }
 
     //
     // Read elem to node relation (connectivity)
     //
+    int numNodesPerElem = 0;
     int *elemToNode = 0;
     {
         sprintf(tempStr, "/%s/%s/elem/Relations/elemToNode", top->child[0]->text,
@@ -1168,9 +1210,11 @@ avtVistaFileFormat::GetMesh(int domain, const char *meshname)
         hsize_t dSize = 0;
         ReadDataset(fileName, tempStr, 0, &dSize, (void**) &elemToNode);
 
-        if (dSize != 8*numElems)
+        numNodesPerElem = dSize / numElems;
+
+        if ((numNodesPerElem != 4) && (numNodesPerElem != 8))
         {
-            EXCEPTION2(UnexpectedValueException, 8*numElems, dSize);
+            EXCEPTION2(UnexpectedValueException, numNodesPerElem, "4 or 8");
         }
     }
 
@@ -1200,9 +1244,14 @@ avtVistaFileFormat::GetMesh(int domain, const char *meshname)
     //
     vtkUnstructuredGrid    *ugrid   = vtkUnstructuredGrid::New();
     ugrid->SetPoints(points);
-    ugrid->Allocate(numElems * 8);
+    ugrid->Allocate(numElems * numNodesPerElem);
     for (i = 0; i < numElems; i++)
-        ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, &elemToNode[i*8]);
+    {
+        int vtkCellType = VTK_HEXAHEDRON;
+        if (numNodesPerElem == 4)
+           vtkCellType = VTK_QUAD;
+        ugrid->InsertNextCell(vtkCellType, numNodesPerElem, &elemToNode[i*numNodesPerElem]);
+    }
     points->Delete();
     return ugrid;
 }
@@ -1267,6 +1316,11 @@ avtVistaFileFormat::GetVectorVar(int domain, const char *varname)
 //  Programmer: Mark C. Miller
 //  Creation:   March 15, 2004 
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed May 19 10:56:11 PDT 2004
+//    Added support for 2D meshes
+//
 // ****************************************************************************
 
 vtkFloatArray *
@@ -1276,7 +1330,7 @@ avtVistaFileFormat::ReadVar(int domain, const char *visitName)
     const Node *top = vTree->GetTop();
 
     vector<string> vistaNames;
-    VisitNameToVistaName(visitName, vistaNames);
+    VisitNameToVistaName(visitName, vistaNames, spatialDim);
     int numComponents = vistaNames.size();
 
     //
@@ -1354,14 +1408,41 @@ avtVistaFileFormat::ReadVar(int domain, const char *visitName)
         }
     }
 
+    //
+    // Regardless of what kind of variable we have in Vista,
+    // VTK supports only scalar (1 component), vector (3 component)
+    // of tensor (9 compoenent) variables. So, do the mapping here.
+    //
+    avtVarType varType = GuessVarTypeFromNumDimsAndComps(spatialDim, numComponents);
+    if (varType == AVT_UNKNOWN_TYPE)
+    {
+        EXCEPTION1(InvalidVariableException, visitName);
+    }
+
+    int numAllocComponents = 0;
+    switch (varType)
+    {
+        case AVT_SCALAR_VAR: numAllocComponents = 1; break;
+        case AVT_VECTOR_VAR: numAllocComponents = 3; break;
+        case AVT_SYMMETRIC_TENSOR_VAR:
+        case AVT_TENSOR_VAR: numAllocComponents = 9; break;
+        default: break;
+    }
+    if (numAllocComponents == 0)
+    {
+        EXCEPTION2(UnexpectedValueException, numAllocComponents, ">0");
+    }
+
     vtkFloatArray *var_data = vtkFloatArray::New();
-    var_data->SetNumberOfComponents(numComponents);
+    var_data->SetNumberOfComponents(numAllocComponents);
     var_data->SetNumberOfTuples(numVals);
     float *fbuf = (float*) var_data->GetVoidPointer(0);
     for (i = 0; i < numVals; i++)
     {
         for (j = 0; j < numComponents; j++)
             *fbuf++ = compData[j][i];
+        for (j = numComponents; j < numAllocComponents; j++)
+            *fbuf++ = 0.0;
     }
 
     // clean-up

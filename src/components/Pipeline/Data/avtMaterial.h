@@ -7,6 +7,8 @@
 
 #include <pipeline_exports.h>
 
+#include <iostream.h>
+
 #include <string>
 #include <vector>
 
@@ -157,8 +159,15 @@ class PIPELINE_API avtMaterial
 
     std::vector<int>           GetMapUsedMatToMat() { return mapUsedMatToMat; }
     std::vector<int>           GetMapMatToUsedMat() { return mapMatToUsedMat; }
-    
 
+    static void                      Print(ostream &out, int numZones,
+                                         const int *matlist,
+                                         int mixlen,
+                                         const int *mix_mat,
+                                         const int *mix_zone,
+                                         const float *mix_vf,
+                                         const int *mix_next);
+    
   protected:
     int                        nMaterials;
     std::vector<std::string>   materials;

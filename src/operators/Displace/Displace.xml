@@ -1,7 +1,11 @@
 <?xml version="1.0"?>
-  <Plugin name="Displace" label="Displace" type="operator" version="1.0">
-    <Attribute name="DisplaceAttributes" purpose="This class contains attributes for the displace operator.">
-      <Field name="factor" label="Displacement multiplier " type="double">1.</Field>
-      <Field name="variable" type="string">"DISPL"</Field>
+  <Plugin name="Displace" type="operator" label="Displace" version="1.0" enabled="true" iconFile="Displace.xpm">
+    <Attribute name="DisplaceAttributes" purpose="This class contains attributes for the displace operator." persistent="true">
+      <Field name="factor" label="Displacement multiplier " type="double">
+        1.000000
+      </Field>
+      <Field name="variable" label="variable" type="string">
+        DISPL
+      </Field>
     </Attribute>
   </Plugin>
