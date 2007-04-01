@@ -144,6 +144,10 @@
 #   Jeremy Meredith, Thu Mar 10 12:37:54 PST 2005
 #   Renamed SimDB to SimV1 to make versioning explicit.
 #
+#   Brad Whitlock, Tue Mar 29 09:40:08 PDT 2005
+#   Added Shapefile reader for ESRI shape files, which are popular in
+#   GIS visualization.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -161,7 +165,7 @@ PDB=KullLite PDB
 SAF=SAF
 SAMPLES=Rect Hex
 REQUIRED=ANALYZE BOV CMAT Curve2D Dune EnSight Image Lines OVERFLOW \
- PLOT2D PLOT3D Point3D SAR STL Silo SimV1 Spheral TFT Tecplot Vista \
+ PLOT2D PLOT3D Point3D SAR STL Shapefile Silo SimV1 Spheral TFT Tecplot Vista \
  VTK WavefrontOBJ
 VISUS=ViSUS
 
