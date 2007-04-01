@@ -261,6 +261,9 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Added units for scalar, vector, tensor, symmetric tensor, and curve
 //    vars. I also added labels for meshes.
 //
+//    Hank Childs, Fri Aug 20 15:42:34 PDT 2004
+//    Correct cut-and-paste bug for checking units for symmetric tensors.
+//
 // ****************************************************************************
 
 void
@@ -398,8 +401,8 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
                                    GetMetaData(ts)->GetSymmTensor(var_list[i]);
         if (stmd != NULL)
         {
-            if (tmd->hasUnits)
-                atts.AddVariable(var_list[i], tmd->units);
+            if (stmd->hasUnits)
+                atts.AddVariable(var_list[i], stmd->units);
             else
                 atts.AddVariable(var_list[i]);
             atts.SetVariableDimension(9, var_list[i]);

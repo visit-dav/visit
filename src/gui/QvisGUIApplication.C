@@ -1779,6 +1779,10 @@ QvisGUIApplication::CreateMainWindow()
 //   Kathleen Bonnell, Wed Aug 18 09:44:09 PDT 2004 
 //   Added InteractorWindow. 
 //
+//   Kathleen Bonnell, Fri Aug 20 15:51:50 PDT 2004 
+//   Forced creation of ColorTableWindow, so that colortable names will be
+//   available to other windows as needed.
+//
 // ****************************************************************************
 
 void
@@ -1823,6 +1827,10 @@ QvisGUIApplication::SetupWindows()
      connect(preferencesWin, SIGNAL(allowFileSelectionChange(bool)),
              mainWin, SLOT(SetAllowFileSelectionChange(bool)));
 
+     colorTableWin = (QvisColorTableWindow *)GetWindowPointer(WINDOW_COLORTABLE);
+     connect(mainWin, SIGNAL(activateColorTableWindow()),
+             colorTableWin, SLOT(show()));
+
      //
      // Non crucial windows can be created later on demand. Instead of
      // creating all of the windows, create slot functions to
@@ -1842,8 +1850,6 @@ QvisGUIApplication::SetupWindows()
              this, SLOT(showAnimationWindow()));
      connect(mainWin, SIGNAL(activateAnnotationWindow()),
              this, SLOT(showAnnotationWindow()));
-     connect(mainWin, SIGNAL(activateColorTableWindow()),
-             this, SLOT(showColorTableWindow()));
      connect(mainWin, SIGNAL(activateExpressionsWindow()),
              this, SLOT(showExpressionsWindow()));
      connect(mainWin, SIGNAL(activateSubsetWindow()),
@@ -4387,7 +4393,6 @@ void QvisGUIApplication::showSaveWindow()            { GetInitializedWindowPoint
 void QvisGUIApplication::showEngineWindow()          { GetInitializedWindowPointer(WINDOW_ENGINE)->show(); }
 void QvisGUIApplication::showAnimationWindow()       { GetInitializedWindowPointer(WINDOW_ANIMATION)->show(); }
 void QvisGUIApplication::showAnnotationWindow()      { GetInitializedWindowPointer(WINDOW_ANNOTATION)->show(); }
-void QvisGUIApplication::showColorTableWindow()      { GetInitializedWindowPointer(WINDOW_COLORTABLE)->show(); }
 void QvisGUIApplication::showExpressionsWindow()     { GetInitializedWindowPointer(WINDOW_EXPRESSIONS)->show(); }
 void QvisGUIApplication::showSubsetWindow()          { GetInitializedWindowPointer(WINDOW_SUBSET)->show(); }
 void QvisGUIApplication::showViewWindow()            { GetInitializedWindowPointer(WINDOW_VIEW)->show(); }
