@@ -53,6 +53,11 @@ class vtkIdList;
 //    Added a bool return for Intialize method.  Changed SetSeedCell method 
 //    from a Macro to a regular method. Added logicalIndex and its associated
 //    Set/Get methods, added useLogicalIndex.
+//
+//    Kathleen Bonnell, Tue Jan 18 19:37:46 PST 2005 
+//    Added  bool 'ReconstructOriginalCells' and Set/Get methods.  Added
+//    FindCellsCorrespondingToOriginal.
+// 
 //*****************************************************************************
 
 
@@ -82,6 +87,13 @@ public:
   vtkSetClampMacro(RequestedLayer,int, 0, VTK_LARGE_INTEGER);
   vtkGetMacro(RequestedLayer,int);
 
+  // Description:
+  // Turn on/off scaling of source geometry.
+  vtkSetMacro(ReconstructOriginalCells,int);
+  vtkBooleanMacro(ReconstructOriginalCells,int);
+  vtkGetMacro(ReconstructOriginalCells,int);
+
+ 
 
   // Description:
   // Specify which type of adjacency to use when determining neighbor cells.
@@ -108,8 +120,10 @@ protected:
   void Grow();
   void GenerateOutputGrid();
 
-  void FindCellNeighborsByNodeAdjacency (vtkIdList *, vtkIdList*);
-  void FindCellNeighborsByFaceAdjacency (vtkIdList *, vtkIdList*);
+  void FindCellNeighborsByNodeAdjacency(vtkIdList *, vtkIdList*);
+  void FindCellNeighborsByFaceAdjacency(vtkIdList *, vtkIdList*);
+  void FindCellsCorrespondingToOriginal(int, vtkIdList*);
+  void FindCellsCorrespondingToOriginal(vtkIdList *, vtkIdList*);
 
 // Protected Data Members
 
@@ -121,6 +135,7 @@ protected:
   int RequestedLayer;
   int AdjacencyType;
   int SeedCellId;
+  int ReconstructOriginalCells;
 
   int logicalIndex[3];
   bool useLogicalIndex;

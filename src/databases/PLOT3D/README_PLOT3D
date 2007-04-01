@@ -1,0 +1,102 @@
+
+The PLOT3D reader is not fully fleshed out.
+It was recently enhanced greatly by Abel Gezahegne to support all files
+described in the PLOT3D documentation described at:
+http://www.nas.nasa.gov/FAST/RND-93-010.walatka-clucas/htmldocs/chp_21.formats.html
+I also tarred up the contents of that page and added it to this directory
+(located in plot3d_html.tar).
+
+We should support structured, unstructured, multi-grid, single-grid,
+iblanked, non-iblanked, ascii, binary, compressed ascii (ex: 200x1.63), and
+all combinations.  That said, test data was sparse, so the reader may not work
+for some of these variants.
+
+Other test datasets, claiming to be PLOT3D variants, were discovered that
+were not compliant with the "Chapter 21" documentation.  These datasets
+all appeared to be tied to EnSight.  Also, they all appeared to have extra
+integers at the beginning of their grid files (beyond what could be explained
+by having a multigrid file).
+
+In addition, PLOT3D is not a self-describing format.  The way to get around
+this is to have the user tell us what variant it is.  This can be done
+through a database window.  Since that is not currently available, it can
+also be done through a text file.  The text file specifies which variants
+the current PLOT3D file is.
+
+The text file must have the extension ".vp3d".
+
+Below is an example of the text file:
+% cat NHLP_2D.v3pd
+# Files:
+#
+# Note: the Grid file and Solution file fields do not have to be specified.
+# If they do not appear, VisIt will assume that the .vp3d should be replaced
+# with ".x" for the grid file and ".q" for the solution file.
+#
+GRID NHLP_2D.g
+# SOLUTION NHLP_2D.q
+
+# Single/Multi Grid.  Single grid will be assumed if no value is specified.
+#
+# Options:
+MULTI_GRID
+# SINGLE_GRID
+
+# Data encoding, ASCII or Binary  Binary will be assumed if no value is
+# specified.
+#
+# Options:
+#BINARY
+ASCII
+
+# Endianness.  This only applies to BINARY files.  Native endian will
+# be assumed if no value is specified.
+#
+# Options:
+#LITTLE_ENDIAN
+#BIG_ENDIAN
+#NATIVE_ENDIAN
+
+
+# Structured grid vs unstructured grids.  Structured grids will be assumed
+# unless stated otherwise.
+#
+# Options:
+STRUCTURED
+#UNSTRUCTURED
+
+
+# Iblanking.  No iblanking is assumed unless stated otherwise
+#
+# Options:
+# NO_IBLANKING
+# IBLANKING
+
+
+# 2D vs 3D.  3D will be assumed unless stated otherwise.
+#
+# Options:
+2D
+# 3D
+
+# Precision.  Single precision is assumed unless stated otherwise
+#
+# Options:
+SINGLE_PRECISION
+# DOUBLE_PRECISION
+
+
+# Compression.  This only applies to ASCII files.  Some codes compress
+# repeated values as 4*1.5 as opposed to 1.5 1.5 1.5 1.5.  It is assumed
+# the data is not compressed unless stated otherwise.
+#
+# Options:
+# COMPRESSED_ASCII
+# UNCOMPRESSED_ASCII
+
+# C vs Fortran Binary.  Fortran Binary is not supported.  This option is for
+# future support.  C-Binary is assumed.
+#
+# Options:
+# C_BINARY
+# FORTRAN_BINARY

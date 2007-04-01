@@ -1580,6 +1580,9 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender,
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 200
 //    Modified to use viswinMap
 //
+//    Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
+//    Added call to UpdateVisualCues
+//
 // ****************************************************************************
 avtDataObjectWriter_p
 NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
@@ -1783,6 +1786,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
             //
             // Add annotations if necessary 
             //
+            UpdateVisualCues(windowID);
             SetAnnotationAttributes(annotationAttributes,
                                     annotationObjectList, visualCueList,
                                     frameAndState, windowID, annotMode);
@@ -2245,6 +2249,63 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
 }
 
 // ****************************************************************************
+//  Method:  NetworkManager::UpdateVisualCues
+//
+//  Purpose:
+//    Update the visual cues in the VisWindow. This has to be deferred until
+//    after plots have been added to the window as the behavior of visual
+//    cues is influenced by the presence of plots. Again, only processor 0
+//    does any of this work.
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    Tuesday, Janurary 18, 2005 
+//
+// ****************************************************************************
+
+void
+NetworkManager::UpdateVisualCues(int windowID)
+{
+    if (viswinMap.find(windowID) == viswinMap.end())
+    {
+        char tmpStr[256];
+        SNPRINTF(tmpStr, sizeof(tmpStr), "Attempt to render on invalid window id=%d", windowID);
+        EXCEPTION1(ImproperUseException, tmpStr);
+    }
+
+    EngineVisWinInfo &viswinInfo = viswinMap[windowID];
+    VisWindow *viswin = viswinInfo.viswin;
+    bool &visualCuesNeedUpdate = viswinInfo.visualCuesNeedUpdate;
+    VisualCueList &visualCueList = viswinInfo.visualCueList;
+
+    if (visualCuesNeedUpdate == false)
+        return;
+
+#ifdef PARALLEL
+    if (PAR_Rank() == 0)
+#endif
+    {
+        viswin->ClearPickPoints();
+        viswin->ClearRefLines();
+        for (int i = 0; i < visualCueList.GetNumVisualCueInfos(); i++)
+        {
+            const VisualCueInfo& cue = visualCueList.GetVisualCueInfo(i);
+            switch (cue.GetCueType())
+            {
+                case VisualCueInfo::PickPoint:
+                    viswin->QueryIsValid(&cue, NULL);
+                    break;
+                case VisualCueInfo::RefLine:
+                    viswin->QueryIsValid(NULL, &cue);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+    visualCuesNeedUpdate = false;
+}
+
+// ****************************************************************************
 //  Method:  NetworkManager::SetAnnotationAttributes
 //
 //  Purpose:
@@ -2281,6 +2342,9 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
 //    Fixed loop termination variable for setting frameAndState at end
 //    of routine.
 //
+//    Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
+//    Moved code to modify visual cues to UpdateVisualCues
+//
 // ****************************************************************************
 void
 NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
@@ -2295,6 +2359,7 @@ NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
     VisWindow *viswin = viswinInfo.viswin;
     AnnotationAttributes &annotationAttributes = viswinInfo.annotationAttributes;
     AnnotationObjectList &annotationObjectList = viswinInfo.annotationObjectList;
+    bool &visualCuesNeedUpdate = viswinInfo.visualCuesNeedUpdate;
     VisualCueList &visualCueList = viswinInfo.visualCueList;
     int *const &frameAndState = viswinInfo.frameAndState;
 
@@ -2348,34 +2413,16 @@ NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
 
       viswin->SetAnnotationAtts(&newAtts);
 
-      //
-      // Set up all the visual cues (which are 3D annotations)
-      //
-      if ((visCues != visualCueList) && (annotMode != 0))
-      {
-          viswin->ClearPickPoints();
-          viswin->ClearRefLines();
-          for (i = 0; i < visCues.GetNumVisualCueInfos(); i++)
-          {
-              const VisualCueInfo& cue = visCues.GetVisualCueInfo(i);
-              switch (cue.GetCueType())
-              {
-                  case VisualCueInfo::PickPoint:
-                      viswin->QueryIsValid(&cue, NULL);
-                      break;
-                  case VisualCueInfo::RefLine:
-                      viswin->QueryIsValid(NULL, &cue);
-                      break;
-                  default:
-                      break;
-              }
-          }
-      }
+       // defer processing of visual cues until rendering time 
+       if (visCues != visualCueList)
+       {
+           visualCuesNeedUpdate = true;
+           visualCueList = visCues;
+       }
    }
 
    annotationAttributes = atts;
    annotationObjectList = aolist;
-   visualCueList = visCues;
    for (i = 0; i < 7; i++)
        frameAndState[i] = fns[i];
 
@@ -3136,6 +3183,11 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
 //  Programmer:  Mark C. Miller 
 //  Creation:    January 5, 2005 
 //
+//  Modifications:
+//
+//    Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
+//    Added initialization of visualCuesNeedUpdate
+//
 // ****************************************************************************
 
 void
@@ -3144,6 +3196,7 @@ NetworkManager::NewVisWindow(int winID)
     debug1 << "Creating new VisWindow for window id =" << winID << endl;
 
     viswinMap[winID].viswin = new VisWindow();
+    viswinMap[winID].visualCuesNeedUpdate = false;
 
     AnnotationAttributes &annotAtts = viswinMap[winID].annotationAttributes;
 

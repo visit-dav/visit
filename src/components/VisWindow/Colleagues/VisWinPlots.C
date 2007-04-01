@@ -216,6 +216,10 @@ VisWinPlots::~VisWinPlots()
 //    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
 //    Elminated SetExternallyRenderedImagesActor
 //
+//    Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
+//    Moved getting of anti-aliasing and call to ReAddColleaguesToRenderWindow
+//    into OrderPlots along with
+//
 // ****************************************************************************
 
 void
@@ -255,17 +259,7 @@ VisWinPlots::AddPlot(avtActor_p &p)
     }
 
     plots.push_back(p);
-    bool aa = mediator.GetAntialiasing();
-    OrderPlots(aa);
-
-    //
-    //  If we are in anti-aliasing mode, Allow other colleagues to place
-    //  themselves last in the renderer, to reduce artefacts. 
-    //
-    if (aa)
-    {
-        mediator.ReAddColleaguesToRenderWindow();
-    }
+    OrderPlots();
 
     float newbounds[6];
     GetBounds(newbounds);
@@ -1259,11 +1253,17 @@ VisWinPlots::UnsetBounds(void)
 //    Kathleen Bonnell, Wed Dec  3 16:42:38 PST 2003 
 //    Added call to ReAddToolsToRenderWindow. 
 //
+//    Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
+//    Added code to get 'aa' and calls to ReAddColleaguesToRenderWindow
+//    Note that old call to ReAddToolsToRenderWindow happens as part of
+//    ReAddColleaguesToRenderWindow
+//
 // ****************************************************************************
 
 void
-VisWinPlots::OrderPlots(bool aa)
+VisWinPlots::OrderPlots()
 {
+    bool aa = mediator.GetAntialiasing();
     std::vector< avtActor_p >::iterator it;
     std::vector< avtActor_p > orderPlots;
     std::vector< avtActor_p >::iterator oit;
@@ -1296,17 +1296,30 @@ VisWinPlots::OrderPlots(bool aa)
         if  ((*oit)->GetRenderOrder(aa) != ABSOLUTELY_LAST)
             (*oit)->Add(mediator.GetCanvas(), mediator.GetForeground());
     }
+
     //
     // The tools don't show up if added after the transparency actor
     // (when all other colleagues are re-added, so re-add them here.
     //
-    mediator.ReAddToolsToRenderWindow();
+    bool addedColleaguesBeforeTransparencyActor = TransparenciesExist();
+    if (addedColleaguesBeforeTransparencyActor)
+        mediator.ReAddColleaguesToRenderWindow();
     transparencyActor->AddToRenderer(mediator.GetCanvas());
     extRenderedImagesActor->AddToRenderer(mediator.GetCanvas());
     for (oit = orderPlots.begin(); oit != orderPlots.end(); oit++)
     {
         if  ((*oit)->GetRenderOrder(aa) == ABSOLUTELY_LAST)
             (*oit)->Add(mediator.GetCanvas(), mediator.GetForeground());
+    }
+
+    //
+    //  If we are in anti-aliasing mode and we do not have any transparency,
+    //  Allow other colleagues to place themselves last in the renderer, to
+    //  reduce artefacts. 
+    //
+    if (!addedColleaguesBeforeTransparencyActor && aa)
+    {
+        mediator.ReAddColleaguesToRenderWindow();
     }
 }
 

@@ -2302,6 +2302,9 @@ static int indentLevel = 0;
 //   Brad Whitlock, Thu Oct 30 14:21:57 PST 2003
 //   I made uchar print as ints.
 //
+//   Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
+//   Added checks for null pointers before inserting (<<)
+//
 // ****************************************************************************
 
 ostream &
@@ -2355,25 +2358,46 @@ operator << (ostream& os, const AttributeGroup& atts)
 
         // primitive types
         case msgTypeChar:
-            os << *((char *)pos->address);
+            {   char *cptr = (char *)(pos->address);
+                if (cptr)
+                    os << *cptr;
+            }
             break;
         case msgTypeUnsignedChar:
-            os << int(*((unsigned char *)pos->address));
+            {   unsigned char *ucptr = (unsigned char *)(pos->address);
+                if (ucptr)
+                    os << *ucptr;
+            }
             break;
         case msgTypeInt:
-            os << *((int *)pos->address);
+            {   int *iptr = (int *)(pos->address);
+                if (iptr)
+                    os << *iptr;
+            }
             break;
         case msgTypeLong:
-            os << *((long *)pos->address);
+            {   long *lptr = (long *)(pos->address);
+                if (lptr)
+                    os << *lptr;
+            }
             break;
         case msgTypeFloat:
-            os << *((float *)pos->address);
+            {   float *fptr = (float *)(pos->address);
+                if (fptr)
+                    os << *fptr;
+            }
             break;
         case msgTypeDouble:
-            os << *((double *)pos->address);
+            {   double *dptr = (double *)(pos->address);
+                if (dptr)
+                    os << *dptr;
+            }
             break;
         case msgTypeString:
-            os << ((std::string *)pos->address)->c_str();
+            {   std::string *sptr = (std::string *)(pos->address);
+                if (sptr)
+                    os << *sptr;
+            }
             break;
         case msgTypeAttributeGroup:
             // Note: recursive call to << operator
@@ -2382,45 +2406,45 @@ operator << (ostream& os, const AttributeGroup& atts)
                 os << " <Attr> is selected" << endl;
             else
                 os << " <Attr> is NOT selected" << endl;
-            os << *((AttributeGroup *)pos->address);
+            os << *((AttributeGroup *)(pos->address));
             break;
         case msgTypeBool:
-            os << (*((bool *)pos->address) ? "true" : "false");
+            os << (*((bool *)(pos->address)) ? "true" : "false");
             break;
 
         // lists of primitive types 
         case msgTypeListChar:
-            {   char *cptr = (char *) pos->address;
+            {   char *cptr = (char *) (pos->address);
                 for(i = 0; i < pos->length; ++i)
                     os << ", '" << cptr[i] << "'";
             }
             break;
         case msgTypeListUnsignedChar:
-            {   unsigned char *ucptr = (unsigned char *) pos->address;
+            {   unsigned char *ucptr = (unsigned char *) (pos->address);
                 for(i = 0; i < pos->length; ++i)
                     os << ", " << int(ucptr[i]); 
             }
             break;
         case msgTypeListInt:
-            {   int *iptr = (int *) pos->address;
+            {   int *iptr = (int *) (pos->address);
                 for(i = 0; i < pos->length; ++i)
                     os << ", " << iptr[i]; 
             }
             break;
         case msgTypeListLong:
-            {   long *lptr = (long *) pos->address;
+            {   long *lptr = (long *) (pos->address);
                 for(i = 0; i < pos->length; ++i)
                     os << ", " << lptr[i]; 
             }
             break;
         case msgTypeListFloat:
-            {   float *fptr = (float *) pos->address;
+            {   float *fptr = (float *) (pos->address);
                 for(i = 0; i < pos->length; ++i)
                     os << ", " << fptr[i]; 
             }
             break;
         case msgTypeListDouble:
-            {   double *dptr = (double *) pos->address;
+            {   double *dptr = (double *) (pos->address);
                 for(i = 0; i < pos->length; ++i)
                     os << ", " << dptr[i]; 
             }
@@ -2452,56 +2476,56 @@ operator << (ostream& os, const AttributeGroup& atts)
 
         // vectors of primitive types 
         case msgTypeVectorBool:
-            {   boolVector *vb = (boolVector *)pos->address;
+            {   boolVector *vb = (boolVector *)(pos->address);
                 boolVector::iterator bpos;
                 for(bpos = vb->begin(); bpos != vb->end(); ++bpos)
                     os << ", '" << (*bpos==1?"true":"false") << "'";
             }
             break;
         case msgTypeVectorChar:
-            {   charVector *vc = (charVector *)pos->address;
+            {   charVector *vc = (charVector *)(pos->address);
                 charVector::iterator cpos;
                 for(cpos = vc->begin(); cpos != vc->end(); ++cpos)
                     os << ", '" << *cpos << "'";
             }
             break;
         case msgTypeVectorUnsignedChar:
-            {   unsignedCharVector *vc = (unsignedCharVector *)pos->address;
+            {   unsignedCharVector *vc = (unsignedCharVector *)(pos->address);
                 unsignedCharVector::iterator cpos;
                 for(cpos = vc->begin(); cpos != vc->end(); ++cpos)
                     os << ", " << int(*cpos); 
             }
             break;
         case msgTypeVectorInt:
-            {   intVector *vi = (intVector *)pos->address;
+            {   intVector *vi = (intVector *)(pos->address);
                 intVector::iterator ipos;
                 for(ipos = vi->begin(); ipos != vi->end(); ++ipos)
                     os << ", " << *ipos; 
             }
             break;
         case msgTypeVectorLong:
-            {   longVector *vl = (longVector *)pos->address;
+            {   longVector *vl = (longVector *)(pos->address);
                 longVector::iterator lpos;
                 for(lpos = vl->begin(); lpos != vl->end(); ++lpos)
                     os << ", " << *lpos; 
             }
             break;
         case msgTypeVectorFloat:
-            {   floatVector *vf = (floatVector *)pos->address;
+            {   floatVector *vf = (floatVector *)(pos->address);
                 floatVector::iterator fpos;
                 for(fpos = vf->begin(); fpos != vf->end(); ++fpos)
                     os << ", " << *fpos; 
             }
             break;
         case msgTypeVectorDouble:
-            {   doubleVector *vd = (doubleVector *)pos->address;
+            {   doubleVector *vd = (doubleVector *)(pos->address);
                 doubleVector::iterator dpos;
                 for(dpos = vd->begin(); dpos != vd->end(); ++dpos)
                     os << ", " << *dpos; 
             }
             break;
         case msgTypeVectorString:
-            {   stringVector *vs = (stringVector *)pos->address;
+            {   stringVector *vs = (stringVector *)(pos->address);
                 stringVector::iterator spos;
                 for(spos = vs->begin(); spos != vs->end(); ++spos)
                     os << ", " << spos->c_str(); 
@@ -2514,7 +2538,7 @@ operator << (ostream& os, const AttributeGroup& atts)
                 os << " <Attr> is selected" << endl;
             else
                 os << " <Attr> is NOT selected" << endl;
-            {   AttributeGroupVector *va = (AttributeGroupVector *)pos->address;
+            {   AttributeGroupVector *va = (AttributeGroupVector *)(pos->address);
                 AttributeGroupVector::iterator apos;
                 for(apos = va->begin(); apos != va->end(); ++apos)
                     os << *apos; 

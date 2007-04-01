@@ -29,6 +29,7 @@ typedef struct _EngineVisWinInfo
     WindowAttributes            windowAttributes;
     AnnotationAttributes        annotationAttributes;
     AnnotationObjectList        annotationObjectList;
+    bool                        visualCuesNeedUpdate;
     VisualCueList               visualCueList;
     std::string                 extentTypeString;
     std::string                 changedCtName;
@@ -207,6 +208,11 @@ typedef struct _EngineVisWinInfo
 //    Mark C. Miller, Wed Jan  5 10:14:21 PST 2005
 //    Added NewVisWindow method
 //
+//    Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
+//    Added bool to indicate if visual cues have changed and a new method
+//    to UpdateVisualCues. This enables processing of visual cues to be
+//    deferred until rendering time after plots have been added to the viswin
+//
 // ****************************************************************************
 class NetworkManager
 {
@@ -279,7 +285,8 @@ class NetworkManager
 
  private:
 
-    void          NewVisWindow(int winID);
+    void                        UpdateVisualCues(int winID);
+    void                        NewVisWindow(int winID);
 
     std::vector<DataNetwork*>   networkCache;
     std::vector<int>            globalCellCounts;

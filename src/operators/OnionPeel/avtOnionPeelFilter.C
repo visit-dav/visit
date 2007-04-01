@@ -192,6 +192,10 @@ avtOnionPeelFilter::Equivalent(const AttributeGroup *a)
 //    early-termination and returning NULL ds if this domain does not
 //    contain the global zone. 
 //
+//    Kathleen Bonnell, Tue Jan 18 19:37:46 PST 2005 
+//    Add support for data whose zones were not preserved (e.g. MIR), set
+//    a flag in the vtk filter.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -201,6 +205,11 @@ avtOnionPeelFilter::ExecuteData(vtkDataSet *in_ds, int DOM, std::string)
     {
         return NULL;
     }
+    bool reconstructOriginalCells = false;
+    if (!GetInput()->GetInfo().GetValidity().GetZonesPreserved())
+    {
+        reconstructOriginalCells = true;
+    } 
    
     encounteredBadSeed = false;
     encounteredGhostSeed = false;
@@ -314,6 +323,7 @@ avtOnionPeelFilter::ExecuteData(vtkDataSet *in_ds, int DOM, std::string)
     opf->SetInput(ds);
     opf->SetRequestedLayer(atts.GetRequestedLayer());
     opf->SetAdjacencyType(atts.GetAdjacencyType());
+    opf->SetReconstructOriginalCells(reconstructOriginalCells);
 
     vtkUnstructuredGrid *out_ug = vtkUnstructuredGrid::New();
     opf->SetOutput(out_ug);
@@ -437,6 +447,9 @@ avtOnionPeelFilter::RefashionDataObjectInfo(void)
 //    Turn on GlobalZoneNumbers when appropriate, and don't perform restriction
 //    if using global zone for seed cell. 
 //
+//    Kathleen Bonnell, Tue Jan 18 19:37:46 PST 2005
+//    Ensure ZoneNumbers are requested whenever zones not preserved. 
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -444,7 +457,8 @@ avtOnionPeelFilter::PerformRestriction(avtPipelineSpecification_p spec)
 {
     if (atts.GetSubsetName() == "Whole") 
     {
-        if (spec->GetDataSpecification()->MayRequireZones())
+        if (!GetInput()->GetInfo().GetValidity().GetZonesPreserved() || 
+            spec->GetDataSpecification()->MayRequireZones())
         {
             spec->GetDataSpecification()->TurnZoneNumbersOn();
         }
@@ -458,6 +472,10 @@ avtOnionPeelFilter::PerformRestriction(avtPipelineSpecification_p spec)
     if (atts.GetUseGlobalId()) 
     {
         spec->GetDataSpecification()->TurnGlobalZoneNumbersOn();
+        if (!GetInput()->GetInfo().GetValidity().GetZonesPreserved()) 
+        {
+            spec->GetDataSpecification()->TurnZoneNumbersOn();
+        }
         //
         // Cannot determine a-priori where the global zone number
         // exists, so don't perform a restriction. 
@@ -490,7 +508,8 @@ avtOnionPeelFilter::PerformRestriction(avtPipelineSpecification_p spec)
     }
     ENDTRY
     
-    if (rv->GetDataSpecification()->MayRequireZones())
+    if (!GetInput()->GetInfo().GetValidity().GetZonesPreserved() ||
+        rv->GetDataSpecification()->MayRequireZones())
     {
         rv->GetDataSpecification()->TurnZoneNumbersOn();
     }
@@ -609,6 +628,9 @@ avtOnionPeelFilter::VerifyInput()
 //    Only retrieve the extents if there is a valid active variable
 //    stored in avtDataAttributes. 
 // 
+//    Kathleen Bonnell, Tue Jan 18 19:37:46 PST 2005 
+//    Added another type of exception call. 
+//
 // ****************************************************************************
 
 void
@@ -626,13 +648,21 @@ avtOnionPeelFilter::PostExecute()
         if (encounteredBadSeed)
         {
             encounteredBadSeed = false;
-            if (atts.GetLogical())
+            if (!GetInput()->GetInfo().GetValidity().GetZonesPreserved())
             {
-                EXCEPTION1(BadCellException, atts.GetIndex());
+                if (atts.GetLogical())
+                {
+                    EXCEPTION1(BadCellException, atts.GetIndex());
+                }
+                else 
+                {
+                    EXCEPTION2(BadCellException, badSeedCell, maximumCells);
+                }
             }
             else 
             {
-                EXCEPTION2(BadCellException, badSeedCell, maximumCells);
+                string reason("It is not available in current data.");
+                EXCEPTION2(BadCellException, badSeedCell, reason);
             }
         }
         if (encounteredGhostSeed)
@@ -701,6 +731,9 @@ avtOnionPeelFilter::PostExecute()
 //    Added warning for attempted use of global zone when that information
 //    is not present in the DB. 
 //
+//    Kathleen Bonnell, Tue Jan 18 19:37:46 PST 2005 
+//    Removed warning for non-connected input. 
+//
 // ****************************************************************************
 
 void 
@@ -708,16 +741,6 @@ avtOnionPeelFilter::PreExecute()
 {
     successfullyExecuted = false;
 
-    if (!GetInput()->GetInfo().GetValidity().GetZonesPreserved())
-    {
-        avtCallback::IssueWarning("The onion peel operator will not perform "
-                   "as expected, because the connectivity of the underlying "
-                   "mesh was modified before the onion peel operator got a "
-                   "chance to execute.  The VisIt team plans to make the onion"
-                   " peel operator work in these conditions in the future.  If"
-                   " you need this capability in the short term, please "
-                   "contact a VisIt developer.");
-    }
     if (atts.GetUseGlobalId() &&  
         !GetInput()->GetInfo().GetAttributes().GetContainsGlobalZoneIds())
     {

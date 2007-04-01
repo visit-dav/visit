@@ -297,6 +297,14 @@ class VisitInteractor;
 //    Kathleen Bonnell, Tue Nov  9 10:44:44 PST 2004 
 //    Added another GlyphPick method.
 //
+//    Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
+//    Removed ReAddColleaguesToRenderWindow. The only method that used it
+//    no longer requires it. It is handled down in plots->OrderPlots
+//    Also removed DrawRefLines as nothing was referencing that.
+//
+//    Mark C. Miller, Tue Jan 18 14:00:07 PST 2005
+//    Put ReAddColleaguesToRenderWindow back
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -432,7 +440,6 @@ public:
     void                 UpdateView();
     void                 ClearPickPoints();
     void                 ClearRefLines();
-    void                 DrawRefLines(float pt1[3], float pt2[3]);
 
     void                 QueryIsValid(const VisualCueInfo *, const VisualCueInfo *);
     void                 UpdateQuery(const VisualCueInfo *);

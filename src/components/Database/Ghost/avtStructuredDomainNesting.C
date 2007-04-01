@@ -487,6 +487,11 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
 //  Programmer: Hank Childs
 //  Creation:   January 1, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Jan 18 11:25:15 PST 2005
+//    Fix typo that came up when dims[1] != dims[2].
+//
 // ****************************************************************************
 
 bool
@@ -521,7 +526,7 @@ avtStructuredDomainNesting::ConfirmMesh(vector<int> &domains,
             return false;
         if ((extents[4]-extents[1]+2) != dims[1])
             return false;
-        if (dims[2] > 1 && (extents[5]-extents[2]+2) != dims[1])
+        if (dims[2] > 1 && (extents[5]-extents[2]+2) != dims[2])
             return false;
     }
 
