@@ -19,15 +19,17 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>VisIt now has a Label plot, which allows you to label plots with mesh nodes, cells, or scalar and vector fields. Scalar fields which correspond to characters are displayed as characters. The new plot has preliminary support for 3D but most of the 3D support is yet to come.</li>
 <li>You can now pick on Vector plots and display the pick points at the origins of the vectors.</li>
 <li>VisIt no longer uses the z-buffer to composite 2D images in parallel scalable rendering unless it is absolutely necessary, which results in a modest speed increase.</li>
+<li>VisIt now supports transparancy in scalable rendering mode.</li>
+<li>VisIt now supports multiple engines running in scalable rendering mode.</li>
 <li>VisIt's variable recentering code has been rewritten to boost its performance.</li>
 <li>VisIt no longer creates ghost data values when contouring nodal variables, which speeds up the Contour plot and Isosurface operator.</li>
 <li>VisIt's Ultra database reader plugin has been improved so that it can handle extra whitespace as well as Fortran-style scientific notation. The enhanced reader can also now read Ultra curve files that do not have comments in their first line.</li>
 <li>Variable names returned by VisIt's BoxLib database reader plug-ins should contain underscores instead of commas.</li>
 <li>VisIt's Pixie3D database reader plug-in now treats the database variables as nodal variables to eliminate periodic boundary conditions in the Surface plot.</li>
-<li>VisIt now has zoneid, nodeid, global_zoneid, and global_nodeid expressions to aid plot 
-plug-in developers.</li>
+<li>VisIt now has zoneid, nodeid, global_zoneid, and global_nodeid expressions to aid plot plug-in developers.</li>
 <li>VisIt now has a biggest neighbor expression.</li>
 <li>VisIt can read global node ids out of Silo files if they are present in the Silo files.</li>
+<li>VisIt can read spatial and data extents from Silo multi-block objects and will use this information to reduce I/O for certain operations such as slice.</li>
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.4</font></b></p>
 <ul>
@@ -48,7 +50,6 @@ plug-in developers.</li>
 <li>Lineouts show up in windows other than the window in which they originated when using scalable rendering mode.</li>
 <li>VisIt attempts to launch multiple compute engines for a single scalable rendering request when there are multiple vis windows and VisIt ultimately hangs.</li>
 <li>The output of the PickByNode query is bad when all incident cells are ghost cells.</li>
-<li>The Vista database reader uses non-portable regex functions.</li>
 <li>Curve queries fail with ALE3D datasets.</li>
 <li>The 3rd dimension controls for the IndexSelect operator do not behave as expected.</li>
 <li>Pick does not work on Vector plots.</li>
@@ -56,8 +57,6 @@ plug-in developers.</li>
 <li>Sometimes VisIt does not honor variable changes when multiple scalable renders happen as a result of menus overlapping the vis window.</li>
 <li>The Expression window sometimes causes the GUI to crash.</li>
 <li>Datasets with really small or really large extents are drawn all black when lighting is enabled.</li>
-<li>Scalable rendering with transparency results in images that have the transparent geometry 
-drawn incorrectly.</li>
 <li>The Surface plot sometimes has discontinuities when it was not requesting ghost zones. The Surface plot now requests ghost zones.</li>
 <li>VisIt calculates the wrong view with flat plots.</li>
 <li>Columns won't stay sized in the Expression window.</li>
