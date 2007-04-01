@@ -3,7 +3,7 @@
     <Files components="E">
       avtResamplePluginFilter.C
     </Files>
-    <Attribute name="ResamplePluginAttributes" purpose="Atts for Resample operator" persistent="false" exportAPI="" exportInclude="">
+    <Attribute name="ResamplePluginAttributes" purpose="Atts for Resample operator" persistent="true" exportAPI="" exportInclude="">
       <Enum name="TieResolver">
         random
         largest

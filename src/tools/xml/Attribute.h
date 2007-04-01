@@ -46,6 +46,9 @@
 //    Brad Whitlock, Fri Dec 10 13:51:07 PST 2004
 //    Added code to write out the vartypes attribute.
 //
+//    Jeremy Meredith, Tue Apr 26 12:05:29 PDT 2005
+//    Default persistent to true.
+//
 // ****************************************************************************
 
 class Attribute
@@ -75,7 +78,7 @@ class Attribute
             codeFile = new CodeFile(f);
         if (codeFile)
             codeFile->Parse();
-        persistent = false;
+        persistent = true;
     }
     bool HasFunction(const QString &f)
     {

@@ -6550,6 +6550,11 @@ ViewerSubject::SendKeepAlives()
 //    Jeremy Meredith, Mon Apr  4 17:33:55 PDT 2005
 //    Added SendSimulationCommand.
 //
+//    Brad Whitlock, Mon Apr 25 18:03:42 PST 2005
+//    I made the actionHandled flag be set to true in the case of a CloseRPC
+//    so we don't attempt to update any of the actions, which can result in
+//    unwanted mdserver launches to update the plot and operator toolbars.
+//
 // ****************************************************************************
 
 void
@@ -6571,6 +6576,7 @@ ViewerSubject::HandleViewerRPC()
     switch(viewerRPC.GetRPCType())
     {
     case ViewerRPC::CloseRPC:
+        actionHandled = true;
         Close();
         break;
     case ViewerRPC::OpenDatabaseRPC:

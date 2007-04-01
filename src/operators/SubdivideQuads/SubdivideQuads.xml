@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
   <Plugin name="SubdivideQuads" type="operator" label="SubdivideQuads" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false">
-    <Attribute name="SubdivideQuadsAttributes" purpose="Attributes for SubdivideQuads operator" persistent="false" exportAPI="" exportInclude="">
+    <Attribute name="SubdivideQuadsAttributes" purpose="Attributes for SubdivideQuads operator" persistent="true" exportAPI="" exportInclude="">
       <Field name="threshold" label="Biggest change allowed in a zone?" type="double">
         0.500002
       </Field>
