@@ -305,6 +305,9 @@ class VisitInteractor;
 //    Mark C. Miller, Tue Jan 18 14:00:07 PST 2005
 //    Put ReAddColleaguesToRenderWindow back
 //
+//    Mark C. Miller, Thu Mar  3 17:38:36 PST 2005
+//    Changed name of GetNumTriangles to GetNumPrimitives
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -478,7 +481,7 @@ public:
     bool                 IsDirect(void);
     void                 SetSurfaceRepresentation(int rep);
     int                  GetSurfaceRepresentation() const;
-    int                  GetNumTriangles() const;
+    int                  GetNumPrimitives() const;
     void                 SetNotifyForEachRender(bool val);
     bool                 GetNotifyForEachRender() const;
     int                  GetScalableActivationMode() const;

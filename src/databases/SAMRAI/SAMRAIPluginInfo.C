@@ -4,6 +4,13 @@
 
 #include <SAMRAIPluginInfo.h>
 
+#include <visit-config.h>
+#if defined(__APPLE__)
+extern "C" const char *SAMRAIVisItPluginVersion = VERSION;
+#else
+extern "C" const char *VisItPluginVersion = VERSION;
+#endif
+
 #if defined(__APPLE__)
 #define GetGeneralInfo SAMRAI_GetGeneralInfo
 #endif

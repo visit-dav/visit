@@ -247,7 +247,11 @@ avtTimeSliderColleague::ShouldBeAddedToRenderer() const
 //
 //    Kathleen Bonnell, Thu Jan 13 08:39:30 PST 2005 
 //    Send TimeFormat string to SetText method. 
-//   
+//
+//    Brad Whitlock, Thu Feb 24 16:27:27 PST 2005
+//    Changed code so time format is 2nd entry in the text vector to avoid
+//    name conflicts with windows.h.
+//
 // ****************************************************************************
 
 void
@@ -314,14 +318,13 @@ avtTimeSliderColleague::SetOptions(const AnnotationObject &annot)
     //
     // Set the labels if the text vector is different
     //
-    if((currentOptions.GetText() != annot.GetText()) ||
-       (currentOptions.GetTimeFormat() != annot.GetTimeFormat()))
+    if(currentOptions.GetText() != annot.GetText())
     {
         const stringVector &text = annot.GetText();
-        if(text.size() > 0)
-            SetText(text[0].c_str(), annot.GetTimeFormat().c_str());
+        if(text.size() > 1)
+            SetText(text[0].c_str(), text[1].c_str());
         else
-            SetText("", annot.GetTimeFormat().c_str());
+            SetText("", "%g");
     }
 
     //
@@ -423,7 +426,11 @@ avtTimeSliderColleague::SetOptions(const AnnotationObject &annot)
 //   
 //    Kathleen Bonnell, Thu Jan 13 08:39:30 PST 2005 
 //    Get the TimeFormat string.
-//   
+//
+//    Brad Whitlock, Thu Feb 24 16:28:48 PST 2005
+//    I made the time format string be encoded in the options as the 2nd
+//    entry in the text vector.
+//
 // ****************************************************************************
 
 void
@@ -461,6 +468,7 @@ avtTimeSliderColleague::GetOptions(AnnotationObject &annot)
     
     stringVector text;
     text.push_back(textFormatString);
+    text.push_back(timeFormatString);
     annot.SetText(text);
 
     // Store the rounded and shaded settings in int attribute 1.
@@ -471,8 +479,6 @@ avtTimeSliderColleague::GetOptions(AnnotationObject &annot)
 
     // Store the parametricTime from the time slider into float attribute 1.
     annot.SetFloatAttribute1(timeSlider->GetParametricTime());
-
-    annot.SetTimeFormat(timeFormatString);
 }
 
 // ****************************************************************************

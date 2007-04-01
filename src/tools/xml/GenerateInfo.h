@@ -85,6 +85,10 @@
 //    Moved the test for having a database writer into the high-level info.
 //    Moved the ability to retrieve the writer itself into only the engine.
 //
+//    Brad Whitlock, Thu Mar 3 09:02:20 PDT 2005
+//    Moved the VisIt version used to build the plugin to here instead of
+//    GenerateMakefile.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -417,6 +421,16 @@ class InfoGeneratorPlugin
             h << "#endif" << endl;
         }
     }
+    void AddVersion(ostream &c)
+    {
+        c << "#include <visit-config.h>" << endl;
+        c << "#if defined(__APPLE__)" << endl;
+        c << "extern \"C\" const char *"<<name<<"VisItPluginVersion = VERSION;" << endl;
+        c << "#else" << endl;
+        c << "extern \"C\" const char *VisItPluginVersion = VERSION;" << endl;
+        c << "#endif" << endl;
+        c << endl;
+    }
     void AddMacOSXMacro(ostream &c, const char *infoType)
     {
         c << "#if defined(__APPLE__)" << endl;
@@ -433,6 +447,7 @@ class InfoGeneratorPlugin
         if (type!="database")
             c << "#include <"<<atts->name<<".h>" << endl;
         c << endl;
+        AddVersion(c);
         AddMacOSXMacro(c, "General");
         c << "// ****************************************************************************" << endl;
         c << "//  Function:  GetGeneralInfo" << endl;

@@ -1571,30 +1571,35 @@ VisWinRendering::SetSpecularProperties(bool flag, float coeff, float power,
 }
 
 // ****************************************************************************
-// Method: VisWinRendering::GetNumTriangles
+// Method: VisWinRendering::GetNumPrimitives
 //
 // Purpose: 
-//   Counts the number of triangles drawn by the actors in the canvas renderer.
+//   Counts the number of graphics primitives drawn by the actors in the canvas
+//   renderer.
 //
-// Returns:    A triangle count.
+// Returns:    A graphics primitive count.
 //
-// Note:       vtkPolyData can be rendered in several different ways that
-//             affect the rendered triangle count. We are not using the
-//             polydata's mapper because it does not provide such information.
-//             We instead have to count cells in the polydata. I could do a
-//             better job at determining the triangle count by checking for
-//             the number of sides on each cell but that would probably be
-//             too slow so I'm just using the cell count.
+// Note:       Polygons in a vtkDataSet, if any, can be rendered in several
+//             different ways that affect the actual number of primitives
+//             sent to the GPU. We are not using vtkPolyDataMapper because
+//             it does not provide such information. We instead have to count
+//             cells. I could do a better job at determining a count of the 
+//             number of primitives by checking for number of sides on each cell
+//             but that would probably be too slow so I'm just using the cell
+//             count.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 23 14:28:57 PST 2002
 //
 // Modifications:
+//
+//   Mark C. Miller, Thu Mar  3 17:38:36 PST 2005
+//   Modified to count all types of primitives, not just polygons
 //   
 // ****************************************************************************
 
 int
-VisWinRendering::GetNumTriangles() const
+VisWinRendering::GetNumPrimitives() const
 {
     int sum = 0;
 
@@ -1614,15 +1619,7 @@ VisWinRendering::GetNumTriangles() const
                 vtkDataSet *data = m->GetInput();
                 if(data != NULL)
                 {
-                    // Try and downcast to a polydata object.
-                    vtkPolyData *pd = vtkPolyData::SafeDownCast(data);
-                    if(pd != NULL)
-                    {
-                        // This underestimates the number of triangles
-                        // if the polydata contains quads.
-                        sum += pd->GetNumberOfPolys();
-                        sum += pd->GetNumberOfStrips();
-                    }
+                    sum += data->GetNumberOfCells();
                 }
             }
         }

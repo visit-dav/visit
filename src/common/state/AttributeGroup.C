@@ -2308,6 +2308,9 @@ static int indentLevel = 0;
 //   Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
 //   Added checks for null pointers before inserting (<<)
 //
+//   Brad Whitlock, Thu Feb 24 16:05:29 PST 2005
+//   Fixed for win32.
+//
 // ****************************************************************************
 
 ostream &
@@ -2399,7 +2402,7 @@ operator << (ostream& os, const AttributeGroup& atts)
         case msgTypeString:
             {   std::string *sptr = (std::string *)(pos->address);
                 if (sptr)
-                    os << *sptr;
+                    os << sptr->c_str();
             }
             break;
         case msgTypeAttributeGroup:

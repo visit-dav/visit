@@ -5,8 +5,11 @@
 #include <RemoveCellsPluginInfo.h>
 #include <RemoveCellsAttributes.h>
 
+#include <visit-config.h>
 #if defined(__APPLE__)
-#define GetGeneralInfo Makefile_GetGeneralInfo
+extern "C" const char *RemoveCellsVisItPluginVersion = VERSION;
+#else
+extern "C" const char *VisItPluginVersion = VERSION;
 #endif
 
 #if defined(__APPLE__)

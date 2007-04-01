@@ -5,6 +5,13 @@
 #include <MetricThresholdPluginInfo.h>
 #include <MetricThresholdAttributes.h>
 
+#include <visit-config.h>
+#if defined(__APPLE__)
+extern "C" const char *MetricThresholdVisItPluginVersion = VERSION;
+#else
+extern "C" const char *VisItPluginVersion = VERSION;
+#endif
+
 #if defined(__APPLE__)
 #define GetGeneralInfo MetricThreshold_GetGeneralInfo
 #endif

@@ -2,8 +2,8 @@
 #define QVIS_VISIT_UPDATE_H
 #include <GUIBase.h>
 #include <qobject.h>
-#include <qftp.h>
 #include <qstringlist.h>
+#include <QvisFtp.h>
 
 class QProcess;
 class QUrlInfo;
@@ -21,7 +21,9 @@ class QUrlInfo;
 // Creation:   Wed Feb 9 17:34:59 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 2 11:08:25 PDT 2005
+//   I made it use QvisFtp instead of qftp.
+//
 // ****************************************************************************
 
 class QvisVisItUpdate : public QObject, GUIBase
@@ -59,7 +61,7 @@ private:
     void    installVisIt();
     void    cleanUp();
 
-    QFtp        *ftp;
+    QvisFtp     *ftp;
     QProcess    *installProcess;
     int          stage;
     int          architecture;

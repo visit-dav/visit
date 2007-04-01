@@ -6,6 +6,7 @@
 // This file makes sure that the entry point to each plugin is exported
 // in the DLL. It must be exported to be visible to GetProcAddress.
 //
+extern "C" __declspec(dllexport) const char *VisItPluginVersion;
 #ifdef GENERAL_PLUGIN_EXPORTS
 extern "C" __declspec(dllexport) GeneralPlotPluginInfo* GetGeneralInfo();
 #endif

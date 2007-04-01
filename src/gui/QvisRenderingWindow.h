@@ -45,6 +45,9 @@ class QvisOpacitySlider;
 //   Hank Childs, Sun Oct 24 07:34:09 PDT 2004
 //   Add shadows.
 //
+//   Mark C. Miller, Fri Mar  4 13:05:02 PST 2005
+//   Changed approxNumTriangles to approxNumPrimitives
+//
 // ****************************************************************************
 
 class GUI_API QvisRenderingWindow : public QvisPostableWindowSimpleObserver
@@ -116,7 +119,7 @@ private:
     QLabel       *fpsMinLabel;
     QLabel       *fpsAvgLabel;
     QLabel       *fpsMaxLabel;
-    QLabel       *approxNumTriangles;
+    QLabel       *approxNumPrimitives;
     QLabel       *extents[6];
 };
 

@@ -5,7 +5,7 @@
 #include <avtTFTFileFormat.h>
 
 #include <string>
-#include <strings.h> // for strlen
+#include <string.h> // for strlen
 
 #include <vtkCellArray.h>
 #include <vtkPolyData.h>

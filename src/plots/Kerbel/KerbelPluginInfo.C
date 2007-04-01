@@ -5,8 +5,11 @@
 #include <KerbelPluginInfo.h>
 #include <KerbelAttributes.h>
 
+#include <visit-config.h>
 #if defined(__APPLE__)
-#define GetGeneralInfo Makefile.in_GetGeneralInfo
+extern "C" const char *KerbelVisItPluginVersion = VERSION;
+#else
+extern "C" const char *VisItPluginVersion = VERSION;
 #endif
 
 #if defined(__APPLE__)

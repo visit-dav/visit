@@ -36,6 +36,7 @@ typedef struct _EngineVisWinInfo
     int                         frameAndState[7];
     VisWindow                  *viswin;
     std::vector<int>            plotsCurrentlyInWindow;
+    bool                        markedForDeletion;
 } EngineVisWinInfo;
 
 // ****************************************************************************

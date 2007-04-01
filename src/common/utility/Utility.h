@@ -37,9 +37,12 @@ bool UTILITY_API  NumericStringCompare(const std::string &str1, const std::strin
 std::vector<std::string> UTILITY_API SplitValues(const std::string &buff,
                                                  char delim);
 
+std::string UTILITY_API GetVisItInstallationDirectory();
+std::string UTILITY_API GetVisItInstallationDirectory(const char *version);
+
 std::string UTILITY_API GetUserVisItDirectory();
-char *      UTILITY_API GetDefaultConfigFile(const char *filename = 0, const char *home = 0);
-char *      UTILITY_API GetSystemConfigFile(const char *filename = 0);
+UTILITY_API char *      GetDefaultConfigFile(const char *filename = 0, const char *home = 0);
+UTILITY_API char *      GetSystemConfigFile(const char *filename = 0);
 
 
 int         UTILITY_API ConfigStateGetRunCount(ConfigStateEnum &code);

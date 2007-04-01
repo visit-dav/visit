@@ -6492,7 +6492,7 @@ ViewerWindowManager::UpdateWindowInformation(int flags, int windowIndex)
 // Method: ViewerWindowManager::UpdateWindowRenderingInformation
 //
 // Purpose: 
-//   Sends information about rendering such as render time and triangle count
+//   Sends information about rendering such as render time and primitve count
 //   to the client.
 //
 // Arguments:
@@ -6502,6 +6502,9 @@ ViewerWindowManager::UpdateWindowInformation(int flags, int windowIndex)
 // Creation:   Fri Jan 23 16:00:25 PST 2004
 //
 // Modifications:
+//
+//   Mark C. Miller, Thu Mar  3 17:38:36 PST 2005
+//   Changed GetNumTriangles to GetNumPrimitives
 //   
 // ****************************************************************************
 
@@ -6520,7 +6523,7 @@ ViewerWindowManager::UpdateWindowRenderingInformation(int windowIndex)
         windowInfo->SetLastRenderMax(times[2]);
 
         // Set the approximate number of triangles.
-        windowInfo->SetNumTriangles(win->GetNumTriangles());
+        windowInfo->SetNumPrimitives(win->GetNumPrimitives());
 
         // Set the bounding box.
         double extents[6] = {0., 0., 0., 0., 0., 0.};

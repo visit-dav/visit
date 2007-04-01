@@ -4,6 +4,7 @@
 
 #include <avtOriginalDataNumNodesQuery.h>
 #include <avtTerminatingSource.h>
+#include <ParsingExprList.h>
 
 
 // ****************************************************************************
@@ -45,6 +46,8 @@ avtOriginalDataNumNodesQuery::~avtOriginalDataNumNodesQuery()
 //  Creation:   February 10, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Mon Mar  7 18:09:14 PST 2005
+//    Ensure that the correct DB variable is used.
 //
 // ****************************************************************************
 
@@ -53,6 +56,11 @@ avtOriginalDataNumNodesQuery::ApplyFilters(avtDataObject_p inData)
 {
     avtDataSpecification_p dspec = inData->GetTerminatingSource()->
         GetGeneralPipelineSpecification()->GetDataSpecification();
+
+    string dbVar = ParsingExprList::GetRealVariable(
+                       queryAtts.GetVariables()[0]);
+    dspec->SetDBVariable(dbVar.c_str());
+
     avtPipelineSpecification_p pspec = 
         new avtPipelineSpecification(dspec, queryAtts.GetPipeIndex()); 
 

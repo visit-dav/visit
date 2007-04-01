@@ -6180,22 +6180,25 @@ ViewerWindow::GetSpecularColor() const
 }
 
 // ****************************************************************************
-// Method: ViewerWindow::GetNumTriangles
+// Method: ViewerWindow::GetNumPrimitives
 //
 // Purpose: 
-//   Gets the number of triangles rendered by the window.
+//   Gets the number of graphics primitives rendered by the window.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 23 14:42:16 PST 2002
 //
 // Modifications:
+//
+//   Mark C. Miller, Thu Mar  3 17:38:36 PST 2005
+//   Changed name from GetNumTriangles to GetNumPrimitives
 //   
 // ****************************************************************************
 
 int
-ViewerWindow::GetNumTriangles() const
+ViewerWindow::GetNumPrimitives() const
 {
-    return visWindow->GetNumTriangles();
+    return visWindow->GetNumPrimitives();
 }
 
 // ****************************************************************************

@@ -75,7 +75,9 @@ QvisElevateWindow::~QvisElevateWindow()
 // Creation:   Tue Feb 1 11:37:30 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Mar 3 13:30:11 PST 2005
+//   Changed the layout a little.
+//
 // ****************************************************************************
 
 void
@@ -87,7 +89,7 @@ QvisElevateWindow::CreateWindowContents()
     useXYLimits = new QCheckBox("Elevation height relative to XY limits?", central, "useXYLimits");
     connect(useXYLimits, SIGNAL(toggled(bool)),
             this, SLOT(useXYLimitsChanged(bool)));
-    mainLayout->addWidget(useXYLimits, 0,0);
+    mainLayout->addMultiCellWidget(useXYLimits, 0,0, 0,1);
 
     limitsModeLabel = new QLabel("LimitsMode", central, "limitsModeLabel");
     mainLayout->addWidget(limitsModeLabel,1,0);
@@ -168,14 +170,15 @@ QvisElevateWindow::CreateWindowContents()
 // Creation:   Tue Feb 1 11:37:30 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Mar 3 13:32:37 PST 2005
+//   I removed unused variables.
+//
 // ****************************************************************************
 
 void
 QvisElevateWindow::UpdateWindow(bool doAll)
 {
     QString temp;
-    double r;
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -187,13 +190,6 @@ QvisElevateWindow::UpdateWindow(bool doAll)
             }
         }
 
-        const double         *dptr;
-        const float          *fptr;
-        const int            *iptr;
-        const char           *cptr;
-        const unsigned char  *uptr;
-        const string         *sptr;
-        QColor                tempcolor;
         switch(i)
         {
           case 0: //useXYLimits

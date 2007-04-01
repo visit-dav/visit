@@ -195,7 +195,10 @@ QvisTimeSliderInterface::~QvisTimeSliderInterface()
 //   
 //   Kathleen Bonnell, Thu Jan 13 08:39:30 PST 2005
 //   Added timeFormatLineEdit.
-//   
+//
+//   Brad Whitlock, Thu Feb 24 16:35:05 PST 2005
+//   Changed internal implementation for time format.
+//
 // ****************************************************************************
 
 void
@@ -268,12 +271,16 @@ QvisTimeSliderInterface::UpdateControls()
 
     // Set the label text.
     const stringVector &annotText = annot->GetText();
-    if(annotText.size() > 0)
+    if(annotText.size() > 1)
+    {
         labelLineEdit->setText(annotText[0].c_str());
+        timeFormatLineEdit->setText(annotText[1].c_str());
+    }
     else
+    {
         labelLineEdit->setText("");
-
-    timeFormatLineEdit->setText(annot->GetTimeFormat().c_str());
+        timeFormatLineEdit->setText("");
+    }
 
     // Set the time display combo box.
     timeDisplayComboBox->blockSignals(true);
@@ -312,7 +319,10 @@ QvisTimeSliderInterface::UpdateControls()
 // Modifications:
 //   Kathleen Bonnell, Thu Jan 13 08:39:30 PST 2005
 //   Added timeFormatLineEdit.
-//   
+//
+//   Brad Whitlock, Thu Feb 24 16:37:01 PST 2005
+//   I changed how time format gets put into the object.
+//
 // ****************************************************************************
 
 void
@@ -329,16 +339,19 @@ QvisTimeSliderInterface::GetCurrentValues(int which_widget)
     if(which_widget == 1 || doAll)
     {
         stringVector sv(annot->GetText());
-        if(sv.size() > 0)
+        if(sv.size() > 1)
+        {
             sv[0] = labelLineEdit->text().latin1();
+            sv[1] = timeFormatLineEdit->text().latin1();
+        }
         else
+        {
+            sv.clear();
             sv.push_back(labelLineEdit->text().latin1());
+            sv.push_back(timeFormatLineEdit->text().latin1());
+        }
 
         annot->SetText(sv);
-    }
-    if(which_widget == 2 || doAll)
-    {
-        annot->SetTimeFormat(timeFormatLineEdit->text().latin1());
     }
 }
 
@@ -459,13 +472,15 @@ QvisTimeSliderInterface::labelChanged()
 // Creation:   January 12, 2004 
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Feb 24 16:37:32 PST 2005
+//   I made it use the same value as for setting the label.
+//
 // ****************************************************************************
 
 void
 QvisTimeSliderInterface::timeFormatChanged()
 {
-    GetCurrentValues(2);
+    GetCurrentValues(1);
     Apply();
 }
 

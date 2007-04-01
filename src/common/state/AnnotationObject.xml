@@ -62,7 +62,4 @@
     <Field name="intAttribute1" label="Integer attribute 1" type="int">
       0
     </Field>
-    <Field name="timeFormat" label="timeFormat" type="string">
-      %g
-    </Field>
   </Attribute>

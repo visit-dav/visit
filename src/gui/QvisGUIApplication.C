@@ -1806,6 +1806,9 @@ QvisGUIApplication::AddViewerSpaceArguments()
 //   Brad Whitlock, Wed Feb 9 17:54:44 PST 2005
 //   Connected a new updateVisIt slot.
 //
+//   Brad Whitlock, Wed Mar 2 17:19:40 PST 2005
+//   Disable VisIt update with older Qt versions.
+//
 // ****************************************************************************
 
 void
@@ -1846,7 +1849,11 @@ QvisGUIApplication::CreateMainWindow()
             this, SLOT(RefreshFileListAndNextFrame()));
     connect(mainWin, SIGNAL(restoreSession()), this, SLOT(RestoreSession()));
     connect(mainWin, SIGNAL(saveSession()), this, SLOT(SaveSession()));
+#if QT_VERSION < 0x030100
+    mainWin->updateNotAllowed();
+#else
     connect(mainWin, SIGNAL(updateVisIt()), this, SLOT(updateVisIt()));
+#endif
     mainWin->ConnectMessageAttr(&message);
     mainWin->ConnectGUIMessageAttributes();
     mainWin->ConnectGlobalAttributes(viewer->GetGlobalAttributes());
@@ -4971,7 +4978,9 @@ QvisGUIApplication::updateVisIt()
 // Creation:   Tue Feb 15 11:43:06 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 2 11:49:41 PDT 2005
+//   Fixed the code so it compiles on Windows.
+//
 // ****************************************************************************
 
 void

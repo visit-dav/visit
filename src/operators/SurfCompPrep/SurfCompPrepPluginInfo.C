@@ -5,6 +5,13 @@
 #include <SurfCompPrepPluginInfo.h>
 #include <SurfCompPrepAttributes.h>
 
+#include <visit-config.h>
+#if defined(__APPLE__)
+extern "C" const char *SurfCompPrepVisItPluginVersion = VERSION;
+#else
+extern "C" const char *VisItPluginVersion = VERSION;
+#endif
+
 #if defined(__APPLE__)
 #define GetGeneralInfo SurfCompPrep_GetGeneralInfo
 #endif

@@ -690,6 +690,8 @@ avtExpressionEvaluatorFilter::Query(PickAttributes *pa)
 //  Creation:   November 13, 2003 
 //
 //  Modifications:
+//    Kathleen Bonnell, Mon Mar  7 10:19:17 PST 2005
+//    Ensure a database variable is being used.
 //
 // ****************************************************************************
 
@@ -697,8 +699,9 @@ bool
 avtExpressionEvaluatorFilter::FindElementForPoint(const char *var, const int ts,
     const int dom, const char *elType, float pt[3], int &elNum)
 {
+    string dbVar = ParsingExprList::GetRealVariable(var);
     return GetInput()->GetQueryableSource()->
-        FindElementForPoint(var, ts, dom, elType, pt, elNum);
+        FindElementForPoint(dbVar.c_str(), ts, dom, elType, pt, elNum);
 }
 
 
@@ -712,6 +715,8 @@ avtExpressionEvaluatorFilter::FindElementForPoint(const char *var, const int ts,
 //  Creation:   December 22, 2003 
 //
 //  Modifications:
+//    Kathleen Bonnell, Mon Mar  7 10:19:17 PST 2005
+//    Ensure a database variable is being used.
 //
 // ****************************************************************************
 
@@ -719,7 +724,8 @@ void
 avtExpressionEvaluatorFilter::GetDomainName(const std::string &var, const int ts,
     const int dom, std::string &domName)
 {
-    GetInput()->GetQueryableSource()->GetDomainName(var, ts, dom, domName);
+    string dbVar = ParsingExprList::GetRealVariable(var);
+    GetInput()->GetQueryableSource()->GetDomainName(dbVar, ts, dom, domName);
 }
 
 
@@ -742,6 +748,9 @@ avtExpressionEvaluatorFilter::GetDomainName(const std::string &var, const int ts
 //   Kathleen Bonnell, Tue Jan 25 07:59:28 PST 2005 
 //   Added const char* arg. 
 //
+//    Kathleen Bonnell, Mon Mar  7 10:19:17 PST 2005
+//    Ensure a database variable is being used.
+//
 // ****************************************************************************
 
 bool
@@ -749,8 +758,9 @@ avtExpressionEvaluatorFilter::QueryCoords(const std::string &var,
     const int dom, const int id, const int ts, float c[3], const bool forZone,
     const bool useGlobalId, const char* mn)
 {
+    string dbVar = ParsingExprList::GetRealVariable(var);
     return GetInput()->GetQueryableSource()->
-        QueryCoords(var, dom, id, ts, c, forZone, useGlobalId, mn);
+        QueryCoords(dbVar, dom, id, ts, c, forZone, useGlobalId, mn);
 }
 
 
