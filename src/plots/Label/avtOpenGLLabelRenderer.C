@@ -857,7 +857,9 @@ avtOpenGLLabelRenderer::DrawDynamicallySelectedLabels2D(bool drawNodeLabels,
 // Creation:   Mon Oct 25 09:21:16 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Nov 29 16:29:35 PST 2004
+//   Changed visible point lookup a little.
+//
 // ****************************************************************************
 
 void
@@ -925,8 +927,10 @@ avtOpenGLLabelRenderer::DrawLabels3D()
             double dot = camvec * qvNormal;
             if(atts.GetDrawLabelsFacing() == LabelAttributes::Front)
                 visiblePoint[j] = (dot >= 0.);
-            else
+            else if(atts.GetDrawLabelsFacing() == LabelAttributes::Back)
                 visiblePoint[j] = (dot < 0.);
+            else
+                visiblePoint[j] = true;
         }
         else
             visiblePoint[j] = false;

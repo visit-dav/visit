@@ -4,6 +4,7 @@
 
 #include <avtPixieFileFormat.h>
 
+#include <algorithm>
 #include <string>
 
 #include <vtkCellType.h>
@@ -79,6 +80,9 @@ avtPixieFileFormat::~avtPixieFileFormat()
 // Creation:   Fri Aug 13 18:30:26 PST 2004
 //
 // Modifications:
+//    Eric Brugger, Mon Nov 29 15:52:39 PST 2004
+//    Modified the reader to handle gaps in the cycle numbering (e.g. allowing
+//    0, 10, 20, 30 instead of requiring 0, 1, 2, 3).
 //   
 // ****************************************************************************
 
@@ -87,7 +91,7 @@ avtPixieFileFormat::GetCycles(std::vector<int> &cycles)
 {
     int nts = (nTimeStates < 1) ? 1 : nTimeStates;
     for(int i = 0; i < nts; ++i)
-        cycles.push_back(i);
+        cycles.push_back(this->cycles[i]);
 }
 
 // ****************************************************************************
@@ -103,6 +107,9 @@ avtPixieFileFormat::GetCycles(std::vector<int> &cycles)
 // Creation:   Fri Aug 13 18:30:05 PST 2004
 //
 // Modifications:
+//    Eric Brugger, Mon Nov 29 15:52:39 PST 2004
+//    Modified the reader to handle gaps in the cycle numbering (e.g. allowing
+//    0, 10, 20, 30 instead of requiring 0, 1, 2, 3).
 //   
 // ****************************************************************************
 
@@ -111,7 +118,7 @@ avtPixieFileFormat::GetTimes(std::vector<double> &times)
 {
     int nts = (nTimeStates < 1) ? 1 : nTimeStates;
     for(int i = 0; i < nts; ++i)
-        times.push_back(double(i));
+        times.push_back(double(cycles[i]));
 }
 
 // ****************************************************************************
@@ -163,6 +170,10 @@ avtPixieFileFormat::FreeUpResources(void)
 // Modifications:
 //   Brad Whitlock, Wed Sep 15 17:45:41 PST 2004
 //   Added better support for determining whether arrays have coordinates.
+//
+//   Eric Brugger, Mon Nov 29 15:52:39 PST 2004
+//   Modified the reader to handle gaps in the cycle numbering (e.g. allowing
+//   0, 10, 20, 30 instead of requiring 0, 1, 2, 3).
 //
 // ****************************************************************************
     
@@ -228,6 +239,9 @@ avtPixieFileFormat::Initialize()
                      int(it->second.dims[0]));
             meshes[std::string(tmp)] = it->second;
         }
+
+        // Sort the cycles.
+        sort(cycles.begin(), cycles.end());
 
 #ifdef MDSERVER
         // We're on the mdserver so close the file now that we've determined
@@ -1022,6 +1036,10 @@ avtPixieFileFormat::GetVar(int timestate, const char *varname)
 //   Eric Brugger, Tue Oct 26 08:36:53 PDT 2004
 //   I modified the routine to read a hyperslab of the array.
 //   
+//   Eric Brugger, Mon Nov 29 15:52:39 PST 2004
+//   Modified the reader to handle gaps in the cycle numbering (e.g. allowing
+//   0, 10, 20, 30 instead of requiring 0, 1, 2, 3).
+//   
 // ****************************************************************************
 
 bool
@@ -1035,7 +1053,7 @@ avtPixieFileFormat::ReadVariableFromFile(int timestate, const std::string &varna
     if(nTimeStates > 0 && it.timeVarying)
     {
         char tsPrefix[40];
-        SNPRINTF(tsPrefix, 40, "%s%d/", timeStatePrefix.c_str(), timestate);
+        SNPRINTF(tsPrefix, 40, "%s%d/", timeStatePrefix.c_str(), cycles[timestate]);
         fileVar = std::string(tsPrefix) + fileVar;
     }
 
@@ -1276,6 +1294,10 @@ avtPixieFileFormat::ReadCoordinateFields(int timestate, const VarInfo &info,
 //   I added code to get the "coords" attribute on data groups that should
 //   have a curvilinear mesh.
 //
+//   Eric Brugger, Mon Nov 29 15:52:39 PST 2004
+//   Modified the reader to handle gaps in the cycle numbering (e.g. allowing
+//   0, 10, 20, 30 instead of requiring 0, 1, 2, 3).
+//   
 // ****************************************************************************
 
 herr_t
@@ -1442,6 +1464,13 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
         {
             debug4 << "Added time state" << endl;
             ++info->This->nTimeStates;
+
+            int cycle;
+            if (varName[9] == '_')
+               cycle = atoi(varName.substr(10).c_str());
+            else
+               cycle = atoi(varName.substr(9).c_str());
+            info->This->cycles.push_back(cycle);
         }
 
         // Indicate that we have the mesh coordinates.

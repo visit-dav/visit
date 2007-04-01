@@ -51,6 +51,11 @@
 #   Added new files due to the refactoring.  Added a new, simple
 #   test grammar.
 #
+#   Jeremy Meredith, Mon Nov 29 19:40:06 PST 2004
+#   Removed the logic for the preconfigured grammar with code-generated
+#   state table initialization from here.  You can go to the expression
+#   grammar to find that example.
+#
 ##############################################################################
 
 ##
@@ -65,7 +70,6 @@ CPPFLAGS=-I. @CPPFLAGS@
 ##
 ## Files...
 ##
-CONFIGPROG=testconfig
 TESTPROG1=testparser
 TESTSRC1=testparser.C
 COMMONSRC = \
@@ -79,13 +83,9 @@ COMMONSRC = \
     Symbol.C \
     Token.C \
     TokenParseTreeNode.C
-CONFIGSRC = TestConfig.C
-INITSRC=TestInit.C
-INITOBJ=${INITSRC:.C=.o}
 LIBSRC =
 SRC=${LIBSRC} ${COMMONSRC}
 OBJ=$(SRC:.C=.o)
-CONFIGOBJ=$(CONFIGSRC:.C=.o)
 COMMONOBJ=${COMMONSRC:.C=.o}
 TESTOBJ1=$(TESTSRC1:.C=.o)
 LIB=libparser
@@ -103,17 +103,6 @@ clean:
 ##
 ## Intermediate targets...
 ##
-.NO_CONFIG_REC:  $(INITSRC)
-.NO_WINK_IN:     $(INITSRC)
-$(INITSRC):
-	./$(CONFIGPROG) $(INITSRC)
-
-init: $(CONFIGPROG)
-	./$(CONFIGPROG) $(INITSRC)
-
-$(CONFIGPROG): $(COMMONOBJ) $(CONFIGOBJ)
-	$(CXX) -o $@ $(LDFLAGS) $(COMMONOBJ) $(CONFIGOBJ) $(LIBS)
-
 ##
 ## Test targets...
 ##

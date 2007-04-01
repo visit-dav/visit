@@ -37,6 +37,10 @@
 //    case and modified a number of methods to pass around the hyperslab
 //    information.
 //
+//    Eric Brugger, Mon Nov 29 15:50:18 PST 2004
+//    Modified the reader to handle gaps in the cycle numbering (e.g. allowing
+//    0, 10, 20, 30 instead of requiring 0, 1, 2, 3).
+//
 // ****************************************************************************
 
 class avtPixieFileFormat : public avtMTSDFileFormat
@@ -115,6 +119,7 @@ protected:
     int                    nTimeStates;
     bool                   haveMeshCoords;
     std::string            timeStatePrefix;
+    std::vector<int>       cycles;
 
     static herr_t GetVariableList(hid_t, const char *, void *);
 };
