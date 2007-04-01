@@ -857,21 +857,21 @@ Optional Packages:
   --with-operators=all,base What operator plugins to build (overrides --enable-buildall)
   --with-dbs=all,base     What database plugins to build (overrides --enable-buildall)
   --without-pty           Disable PTY use
-  --with-zlib=INC,LIB     Use the GNU zlib compression
-  --with-hdf5=INC,LIB     Location of HDF5 header and library
-  --with-vbt=INC,LIB      Location of VBT/DSL headers and libraries
-  --with-saf=INC,LIB      Location of SAF headers and libraries
+  --with-zlib=INC-DIR,LIB-DIR     Use the GNU zlib compression
+  --with-hdf5=INC-DIR,LIB-DIR     Location of HDF5 header and library
+  --with-vbt=INC-DIR,LIB-DIR      Location of VBT/DSL headers and libraries
+  --with-saf=INC-DIR,LIB-DIR      Location of SAF headers and libraries
   --with-silo_include=<INC-DIR>     User-specified SILO include directory
   --with-silo_library=<LIB-DIR>     User-specified SILO library directory
   --with-exodus=<DIR>           enable Exodus driver
   --with-exodus-include=<DIR>   specify Exodus include path
   --with-exodus-lib=<DIR>       specify Exodus lib path
-  --with-pdb=INC,LIB      Location of PDB header and library
+  --with-pdb=INC-DIR,LIB-DIR      Location of PDB header and library
   --with-mili=DIR      Location of Mili header and library
-  --with-hdf4=FLAGS,LIBS      Location of HDF4 header and library
-  --with-boxlib2d=INCLUDE,LIBS      Location of Boxlib2D header and library
-  --with-boxlib3d=INCLUDE,LIBS      Location of Boxlib3D header and library
-  --with-visus=INCLUDE,LIBS      Location of ViSUS header and library
+  --with-hdf4=INC-DIR,LIB-DIR      Location of HDF4 header and library
+  --with-boxlib2d=INC-DIR,LIB-DIR      Location of Boxlib2D header and library
+  --with-boxlib3d=INC-DIR,LIB-DIR      Location of Boxlib3D header and library
+  --with-visus=INC-DIR,LIB-DIR      Location of ViSUS header and library
   --with-x                use the X Window System
 
 Some influential environment variables:
@@ -8262,8 +8262,8 @@ else
 fi;
 if test "$hdf4_specified" = "yes"; then
    if test "$withval" != "no"; then
-      HDF4_FLAGS="`echo $withval |cut -f1 -d,`"
-      HDF4_LIBS="`echo $withval |cut -f2 -d, -s`"
+      HDF4_FLAGS="-I`echo $withval |cut -f1 -d,`"
+      HDF4_LIBS="-L`echo $withval |cut -f2 -d, -s`"
    fi
 else
    if test "$DEFAULT_HDF4_FLAGS" != "" ; then
@@ -8310,8 +8310,8 @@ else
 fi;
 if test "$boxlib2d_specified" = "yes"; then
    if test "$withval" != "no"; then
-      BOXLIB2D_INCLUDE="`echo $withval |cut -f1 -d,`"
-      BOXLIB2D_LIBS="`echo $withval |cut -f2 -d, -s`"
+      BOXLIB2D_INCLUDE="-I`echo $withval |cut -f1 -d,`"
+      BOXLIB2D_LIBS="-L`echo $withval |cut -f2 -d, -s`"
    fi
 else
    if test "$DEFAULT_BOXLIB2D_INCLUDE" != "" ; then
@@ -8358,8 +8358,8 @@ else
 fi;
 if test "$boxlib3d_specified" = "yes"; then
    if test "$withval" != "no"; then
-      BOXLIB3D_INCLUDE="`echo $withval |cut -f1 -d,`"
-      BOXLIB3D_LIBS="`echo $withval |cut -f2 -d, -s`"
+      BOXLIB3D_INCLUDE="-I`echo $withval |cut -f1 -d,`"
+      BOXLIB3D_LIBS="-L`echo $withval |cut -f2 -d, -s`"
    fi
 else
    if test "$DEFAULT_BOXLIB3D_INCLUDE" != "" ; then

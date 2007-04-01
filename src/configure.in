@@ -515,6 +515,10 @@ dnl    Eric Brugger, Thu Sep 30 10:51:22 PDT 2004
 dnl    I corrected a bug that was causing the check for using siloh5 to fail
 dnl    if hdf5 was built with z lib support.
 dnl
+dnl    Mark C. Miller, Tue Oct  5 12:41:41 PDT 2004
+dnl    Fixed issues '--with-<lib>=' argument where '-I' and '-L' would be
+dnl    missing from final make variable names that were created
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1372,7 +1376,7 @@ saved_CFLAGS="$CFLAGS"
 saved_LDFLAGS="$LDFLAGS"
 saved_LIBS="$LIBS"
 
-AC_ARG_WITH(zlib,[  --with-zlib=INC,LIB     Use the GNU zlib compression],
+AC_ARG_WITH(zlib,[  --with-zlib=INC-DIR,LIB-DIR     Use the GNU zlib compression],
             ,withval=yes)
 case $withval in
     yes)
@@ -1454,7 +1458,7 @@ HDF5=""
 HDF5_INCLUDE=""
 HDF5_LIB=""
 AC_ARG_WITH(hdf5,
-	    [  --with-hdf5=INC,LIB     Location of HDF5 header and library],
+	    [  --with-hdf5=INC-DIR,LIB-DIR     Location of HDF5 header and library],
            hdf5_specified="yes",
            hdf5_specified="no"
            )
@@ -1512,7 +1516,7 @@ saved_LDFLAGS="$LDFLAGS"
 saved_LIBS="$LIBS"
 
 AC_ARG_WITH(vbt,
-	    [  --with-vbt=INC,LIB      Location of VBT/DSL headers and libraries],
+	    [  --with-vbt=INC-DIR,LIB-DIR      Location of VBT/DSL headers and libraries],
 	    ,withval=yes)
 case $withval in
     yes)
@@ -1654,7 +1658,7 @@ saved_LIBS="$LIBS"
 
 SAF=""
 AC_ARG_WITH(saf,
-	    [  --with-saf=INC,LIB      Location of SAF headers and libraries],
+	    [  --with-saf=INC-DIR,LIB-DIR      Location of SAF headers and libraries],
 	    ,withval=yes)
 case $withval in
     yes)
@@ -2006,7 +2010,7 @@ PDB_FLAGS=""
 PDB_LIBS=""
 PDB_EXEC=""
 AC_ARG_WITH(pdb,
-	    [  --with-pdb=INC,LIB      Location of PDB header and library],
+	    [  --with-pdb=INC-DIR,LIB-DIR      Location of PDB header and library],
            pdb_specified="yes",
            pdb_specified="no"
            )
@@ -2078,14 +2082,14 @@ HDF4=""
 HDF4_FLAGS=""
 HDF4_LIBS=""
 AC_ARG_WITH(hdf4,
-	    [  --with-hdf4=FLAGS,LIBS      Location of HDF4 header and library],
+	    [  --with-hdf4=INC-DIR,LIB-DIR      Location of HDF4 header and library],
            hdf4_specified="yes",
            hdf4_specified="no"
            )
 if test "$hdf4_specified" = "yes"; then
    if test "$withval" != "no"; then
-      HDF4_FLAGS="`echo $withval |cut -f1 -d,`"
-      HDF4_LIBS="`echo $withval |cut -f2 -d, -s`"
+      HDF4_FLAGS="-I`echo $withval |cut -f1 -d,`"
+      HDF4_LIBS="-L`echo $withval |cut -f2 -d, -s`"
    fi
 else
    if test "$DEFAULT_HDF4_FLAGS" != "" ; then
@@ -2118,14 +2122,14 @@ BOXLIB2D=""
 BOXLIB2D_INCLUDE=""
 BOXLIB2D_LIBS=""
 AC_ARG_WITH(boxlib2d,
-	    [  --with-boxlib2d=INCLUDE,LIBS      Location of Boxlib2D header and library],
+	    [  --with-boxlib2d=INC-DIR,LIB-DIR      Location of Boxlib2D header and library],
            boxlib2d_specified="yes",
            boxlib2d_specified="no"
            )
 if test "$boxlib2d_specified" = "yes"; then
    if test "$withval" != "no"; then
-      BOXLIB2D_INCLUDE="`echo $withval |cut -f1 -d,`"
-      BOXLIB2D_LIBS="`echo $withval |cut -f2 -d, -s`"
+      BOXLIB2D_INCLUDE="-I`echo $withval |cut -f1 -d,`"
+      BOXLIB2D_LIBS="-L`echo $withval |cut -f2 -d, -s`"
    fi
 else
    if test "$DEFAULT_BOXLIB2D_INCLUDE" != "" ; then
@@ -2158,14 +2162,14 @@ BOXLIB3D=""
 BOXLIB3D_INCLUDE=""
 BOXLIB3D_LIBS=""
 AC_ARG_WITH(boxlib3d,
-	    [  --with-boxlib3d=INCLUDE,LIBS      Location of Boxlib3D header and library],
+	    [  --with-boxlib3d=INC-DIR,LIB-DIR      Location of Boxlib3D header and library],
            boxlib3d_specified="yes",
            boxlib3d_specified="no"
            )
 if test "$boxlib3d_specified" = "yes"; then
    if test "$withval" != "no"; then
-      BOXLIB3D_INCLUDE="`echo $withval |cut -f1 -d,`"
-      BOXLIB3D_LIBS="`echo $withval |cut -f2 -d, -s`"
+      BOXLIB3D_INCLUDE="-I`echo $withval |cut -f1 -d,`"
+      BOXLIB3D_LIBS="-L`echo $withval |cut -f2 -d, -s`"
    fi
 else
    if test "$DEFAULT_BOXLIB3D_INCLUDE" != "" ; then
@@ -2197,7 +2201,7 @@ VISUS=""
 VISUS_INCLUDE=""
 VISUS_LIB=""
 AC_ARG_WITH(visus,
-            [  --with-visus=INCLUDE,LIBS      Location of ViSUS header and library],
+            [  --with-visus=INC-DIR,LIB-DIR      Location of ViSUS header and library],
            visus_specified="yes",
            visus_specified="no"
            )
