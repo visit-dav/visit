@@ -44,10 +44,13 @@ inline void   Indent(ostream &, int);
 //    Kathleen Bonnell, Fri May 28 18:16:48 PDT 2004 
 //    Initialized containsOriginalNodes. 
 //
+//    Hank Childs, Sun Jun 27 11:50:34 PDT 2004
+//    Initialized containsGlobalNodeIds.
+//
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData()
-    : AttributeSubject("sssiiiiiibFFs*ii*ssbsssibbb")
+    : AttributeSubject("sssiiiiiibFFs*ii*ssbsssibbbb")
 {
     blockTitle = "domains";
     blockPieceName = "domain";
@@ -65,6 +68,7 @@ avtMeshMetaData::avtMeshMetaData()
     containsGhostZones = AVT_MAYBE_GHOSTS;
     containsOriginalCells = false;
     containsOriginalNodes = false;
+    containsGlobalNodeIds = false;
     validVariable = true;
 }
 
@@ -109,11 +113,14 @@ avtMeshMetaData::avtMeshMetaData()
 //    Kathleen Bonnell, Fri May 28 18:16:48 PDT 2004 
 //    Initialized containsOriginalNodes. 
 //
+//    Hank Childs, Sun Jun 27 11:50:34 PDT 2004
+//    Initialized containsGlobalNodeIds.
+//
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData(const float *extents, std::string s, int nb,
                                  int bo, int co,int sd, int td, avtMeshType mt)
-    : AttributeSubject("sssiiiiiibFFs*ii*ssbsssibbb")
+    : AttributeSubject("sssiiiiiibFFs*ii*ssbsssibbbb")
 {
     name                 = s;
     numBlocks            = nb;
@@ -132,6 +139,7 @@ avtMeshMetaData::avtMeshMetaData(const float *extents, std::string s, int nb,
     containsGhostZones   = AVT_MAYBE_GHOSTS;
     containsOriginalCells   = false; 
     containsOriginalNodes   = false; 
+    containsGlobalNodeIds   = false; 
     validVariable        = true;
 }
 
@@ -176,11 +184,14 @@ avtMeshMetaData::avtMeshMetaData(const float *extents, std::string s, int nb,
 //    Kathleen Bonnell, Fri May 28 18:16:48 PDT 2004 
 //    Initialized containsOriginalNodes. 
 //
+//    Hank Childs, Sun Jun 27 11:50:34 PDT 2004
+//    Initialized containsGlobalNodeIds.
+//
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int sd,
                                  int td, avtMeshType mt)
-    : AttributeSubject("sssiiiiiibFFs*ii*ssbsssibbb")
+    : AttributeSubject("sssiiiiiibFFs*ii*ssbsssibbbb")
 {
     name                 = s;
     numBlocks            = nb;
@@ -200,6 +211,7 @@ avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int sd,
     containsGhostZones   = AVT_MAYBE_GHOSTS;
     containsOriginalCells = false;
     containsOriginalNodes = false;
+    containsGlobalNodeIds = false;
     validVariable        = true;
 }
 
@@ -245,10 +257,13 @@ avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int sd,
 //    Kathleen Bonnell, Fri May 28 18:16:48 PDT 2004 
 //    Copied over containsOriginalNodes. 
 //
+//    Hank Childs, Sun Jun 27 11:50:34 PDT 2004
+//    Initialized containsGlobalNodeIds.
+//
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData(const avtMeshMetaData &rhs)
-    : AttributeSubject("sssiiiiiibFFs*ii*ssbsssibbb")
+    : AttributeSubject("sssiiiiiibFFs*ii*ssbsssibbbb")
 {
     name                     = rhs.name;
     numBlocks                = rhs.numBlocks;
@@ -274,6 +289,7 @@ avtMeshMetaData::avtMeshMetaData(const avtMeshMetaData &rhs)
     containsGhostZones       = rhs.containsGhostZones;
     containsOriginalCells    = rhs.containsOriginalCells;
     containsOriginalNodes    = rhs.containsOriginalNodes;
+    containsGlobalNodeIds    = rhs.containsGlobalNodeIds;
     xUnits                   = rhs.xUnits;
     yUnits                   = rhs.yUnits;
     zUnits                   = rhs.zUnits;
@@ -336,6 +352,9 @@ avtMeshMetaData::~avtMeshMetaData()
 //    Kathleen Bonnell, Fri May 28 18:16:48 PDT 2004 
 //    Copied containsOriginalNodes. 
 //
+//    Hank Childs, Sun Jun 27 11:50:34 PDT 2004
+//    Copied containsGlobalNodeIds.
+//
 // ****************************************************************************
 
 const avtMeshMetaData &
@@ -365,6 +384,7 @@ avtMeshMetaData::operator=(const avtMeshMetaData &rhs)
     containsGhostZones       = rhs.containsGhostZones;
     containsOriginalCells    = rhs.containsOriginalCells;
     containsOriginalNodes    = rhs.containsOriginalNodes;
+    containsGlobalNodeIds    = rhs.containsGlobalNodeIds;
     xUnits                   = rhs.xUnits;
     yUnits                   = rhs.yUnits;
     zUnits                   = rhs.zUnits;
@@ -409,6 +429,9 @@ avtMeshMetaData::operator=(const avtMeshMetaData &rhs)
 //    Kathleen Bonnell, Fri May 28 18:16:48 PDT 2004 
 //    Add containsOriginalNodes. 
 //
+//    Hank Childs, Sun Jun 27 11:50:34 PDT 2004
+//    Add containsGlobalNodeIds.
+//
 // ****************************************************************************
 
 void
@@ -438,6 +461,7 @@ avtMeshMetaData::SelectAll()
     Select(21, (void*)&containsGhostZones);
     Select(22, (void*)&containsOriginalCells);
     Select(23, (void*)&containsOriginalNodes);
+    Select(23, (void*)&containsGlobalNodeIds);
     Select(24, (void*)&validVariable);
 }
 

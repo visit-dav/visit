@@ -39,6 +39,7 @@ struct DBATTS_API avtMeshMetaData : public AttributeSubject
     avtGhostType  containsGhostZones;
     bool          containsOriginalCells;
     bool          containsOriginalNodes;
+    bool          containsGlobalNodeIds;
 
     bool          hasSpatialExtents;
     float         minSpatialExtents[3];
