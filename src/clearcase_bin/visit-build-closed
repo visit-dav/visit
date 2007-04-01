@@ -135,16 +135,16 @@ fi
 rm -f hitit
 cat <<EOF > hitit
 #!/bin/sh
-if test ! -e /var/tmp/$user ; then
-   mkdir /var/tmp/$user
+if test ! -e /gscratch/$user ; then
+   mkdir /gscratch/$user
 fi
-if test ! -e /var/tmp/$user/hitit ; then
-   mkdir /var/tmp/$user/hitit
+if test ! -e /gscratch/$user/hitit ; then
+   mkdir /gscratch/$user/hitit
 fi
-rm -rf /var/tmp/$user/hitit/visitbuild
-mkdir /var/tmp/$user/hitit/visitbuild
-mv hitit_$dist.tar.gz /var/tmp/$user/hitit/visitbuild/$dist.tar.gz
-cd /var/tmp/$user/hitit/visitbuild
+rm -rf /gscratch/$user/hitit/visitbuild
+mkdir /gscratch/$user/hitit/visitbuild
+mv hitit_$dist.tar.gz /gscratch/$user/hitit/visitbuild/$dist.tar.gz
+cd /gscratch/$user/hitit/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`

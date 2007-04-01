@@ -187,6 +187,9 @@ QvisText2DInterface::GetMenuText(const AnnotationObject &annot) const
 // Creation:   Wed Nov 5 11:48:15 PDT 2003
 //
 // Modifications:
+//   Eric Brugger, Fri Sep 17 13:54:07 PDT 2004
+//   Modify the float to percent conversion for the width and height to
+//   avoid numeric issues where the percent value would be one too small.
 //   
 // ****************************************************************************
 
@@ -196,13 +199,15 @@ QvisText2DInterface::UpdateControls()
     // Set the start position.
     positionEdit->setPosition(annot->GetPosition()[0], annot->GetPosition()[1]);
 
-    // Set the spinbox values for the width and height 
-    int w(int(annot->GetPosition2()[0] * 100.f));
+    // Set the spinbox values for the width and height.  The 0.5 is added
+    // to avoid numeric issues converting back and forth between float and
+    // integer.
+    int w(int(annot->GetPosition2()[0] * 100.f + 0.5f));
     widthSpinBox->blockSignals(true);
     widthSpinBox->setValue(w);
     widthSpinBox->blockSignals(false);
 #if 0
-    int h(int(annot->GetPosition2()[1] * 100.f));
+    int h(int(annot->GetPosition2()[1] * 100.f + 0.5f));
     heightSpinBox->blockSignals(true);
     heightSpinBox->setValue(h);
     heightSpinBox->blockSignals(false);

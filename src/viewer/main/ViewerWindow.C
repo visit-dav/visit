@@ -4003,6 +4003,13 @@ ViewerWindow::ResetView3d()
 //  Programmer: Eric Brugger
 //  Creation:   May 9, 2003
 //
+//  Modifications:
+//    Eric Brugger, Fri Sep 17 12:28:17 PDT 2004
+//    I modified the routine to use the diagonal of the bounding box to
+//    determine the pan factor instead of the individual extents of the
+//    bounding box.  This handles degenerate extents in either one or two
+//    directions, whereas the previous method did not.
+//
 // ****************************************************************************
 
 void
@@ -4042,13 +4049,13 @@ ViewerWindow::AdjustView3d(const double *limits)
     // Determine the pan factor.
     //
     double panFactor[3];
- 
+
     panFactor[0] = - (((boundingBox3d[1] + boundingBox3d[0]) / 2.) -
-                   view3D.focus[0]) / (boundingBox3d[1] - boundingBox3d[0]);
+                   view3D.focus[0]) / width;
     panFactor[1] = - (((boundingBox3d[3] + boundingBox3d[2]) / 2.) -
-                   view3D.focus[1]) / (boundingBox3d[3] - boundingBox3d[2]);
+                   view3D.focus[1]) / width;
     panFactor[2] = - (((boundingBox3d[5] + boundingBox3d[4]) / 2.) -
-                   view3D.focus[2]) / (boundingBox3d[5] - boundingBox3d[4]);
+                   view3D.focus[2]) / width;
 
     //
     // Set the new window.
@@ -4063,16 +4070,6 @@ ViewerWindow::AdjustView3d(const double *limits)
     //
     // Calculate the new focal point.
     //
-    view3D.focus[0] = (boundingBox3d[1] + boundingBox3d[0]) / 2. +
-                      panFactor[0] * (boundingBox3d[1] - boundingBox3d[0]);
-    view3D.focus[1] = (boundingBox3d[3] + boundingBox3d[2]) / 2. +
-                      panFactor[1] * (boundingBox3d[3] - boundingBox3d[2]);
-    view3D.focus[2] = (boundingBox3d[5] + boundingBox3d[4]) / 2. +
-                      panFactor[2] * (boundingBox3d[5] - boundingBox3d[4]);
-
-    //
-    // Calculate the new parallel scale.
-    //
     width = 0.5 * sqrt(((boundingBox3d[1] - boundingBox3d[0]) *
                         (boundingBox3d[1] - boundingBox3d[0])) +
                        ((boundingBox3d[3] - boundingBox3d[2]) *
@@ -4080,6 +4077,16 @@ ViewerWindow::AdjustView3d(const double *limits)
                        ((boundingBox3d[5] - boundingBox3d[4]) *
                         (boundingBox3d[5] - boundingBox3d[4])));
 
+    view3D.focus[0] = (boundingBox3d[1] + boundingBox3d[0]) / 2. +
+                      panFactor[0] * width;
+    view3D.focus[1] = (boundingBox3d[3] + boundingBox3d[2]) / 2. +
+                      panFactor[1] * width;
+    view3D.focus[2] = (boundingBox3d[5] + boundingBox3d[4]) / 2. +
+                      panFactor[2] * width;
+
+    //
+    // Calculate the new parallel scale.
+    //
     view3D.parallelScale = width / zoomFactor;
 
     //
