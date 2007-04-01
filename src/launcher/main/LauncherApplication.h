@@ -3,6 +3,7 @@
 #include <ParentProcess.h>
 #include <Xfer.h>
 #include <QuitRPC.h>
+#include <KeepAliveRPC.h>
 #include <LaunchRPC.h>
 #include <RPCExecutor.h>
 #include <map>
@@ -20,7 +21,9 @@
 // Creation:   Fri May 2 16:55:28 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Mar 12 10:35:29 PDT 2004
+//   I added KeepAliveRPC.
+//
 // ****************************************************************************
 
 class LauncherApplication
@@ -47,17 +50,19 @@ private:
     static LauncherApplication *instance;
     static std::map<int, bool>  childDied;
 
-    ParentProcess           parent;
-    Xfer                    xfer;
+    ParentProcess               parent;
+    Xfer                        xfer;
 
-    QuitRPC                 quitRPC;
-    LaunchRPC               launchRPC;
+    QuitRPC                     quitRPC;
+    KeepAliveRPC                keepAliveRPC;
+    LaunchRPC                   launchRPC;
 
-    RPCExecutor<QuitRPC>   *quitExecutor;
-    RPCExecutor<LaunchRPC> *launchExecutor;
+    RPCExecutor<QuitRPC>       *quitExecutor;
+    RPCExecutor<KeepAliveRPC>  *keepAliveExecutor;
+    RPCExecutor<LaunchRPC>     *launchExecutor;
 
-    bool                    keepGoing;
-    int                     timeout;
+    bool                        keepGoing;
+    int                         timeout;
 };
 
 #endif

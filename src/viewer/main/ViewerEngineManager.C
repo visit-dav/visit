@@ -863,6 +863,52 @@ ViewerEngineManager::InExecute() const
 }
 
 // ****************************************************************************
+// Method: ViewerEngineManager::SendKeepAlives
+//
+// Purpose: 
+//   Sends a keep alive signal to all of the engines.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 12 11:46:01 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerEngineManager::SendKeepAlives()
+{
+    if(!executing)
+    {
+        bool updateList = false;
+        for (int i = 0; i < nEngines;)
+        {
+            debug1 << "Sending keep alive signal to compute engine on host "
+                   << engines[i]->hostName << "." << endl;
+
+            TRY
+            {
+                engines[i]->engine->SendKeepAlive();
+                ++i;
+            }
+            CATCHALL(...)
+            {
+                debug1 << "Caught an exception while sending a keep alive "
+                          "signal to the engine."
+                       << endl;
+                RemoveFailedEngine(i);
+                updateList = true;
+            }
+            ENDTRY
+        }
+
+        // If we had to remove an engine, update the list on the client.
+        if(updateList)
+            UpdateEngineList();
+    }
+}
+
+// ****************************************************************************
 // Method:  ViewerEngineManager::GetEngine
 //
 // Purpose:

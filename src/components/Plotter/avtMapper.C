@@ -572,6 +572,9 @@ avtMapper::CreateMapper(void)
 //    Hank Childs, Tue Sep 23 23:08:19 PDT 200
 //    Support tensor magnitudes as the eigenvalues extents.
 //
+//    Kathleen Bonnell, Thu Mar 11 10:07:35 PST 2004 
+//    Tensor, vectors and scalars all handled by GetDataExtents. 
+//
 // ****************************************************************************
 
 bool
@@ -585,7 +588,9 @@ avtMapper::GetRange(float &rmin, float &rmax)
 
     bool gotExtents = false;
     avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
-    if (data.GetVariableDimension() == 1)
+    if ((data.GetVariableDimension() == 1) ||
+        (data.GetVariableDimension() <= 3) ||
+        (data.GetVariableDimension() == 9))
     {
         double extents[2];
         gotExtents = data.GetDataExtents(extents);
@@ -603,44 +608,6 @@ avtMapper::GetRange(float &rmin, float &rmax)
 
             rmin = (float) de[0];
             rmax = (float) de[1];
-        }
-    }
-    else if (data.GetVariableDimension() <= 3)
-    {
-        double de[2];
-        avtDataset_p input = GetTypedInput();
-        gotExtents = avtDatasetExaminer::GetDataMagnitudeExtents(input, de);
-
-        rmin = (float) de[0];
-        rmax = (float) de[1];
-    }
-    else if (data.GetVariableDimension() == 9)
-    {
-        //
-        // Determine the extents over *all* of the mappers.
-        //
-        rmin = +FLT_MAX;
-        rmax = -FLT_MAX;
-        for (int i = 0 ; i < nMappers ; i++)
-        {
-            if (mappers[i] != NULL)
-            {
-                vtkDataSet *ds = mappers[i]->GetInput();
-                if (ds != NULL)
-                {
-                    ds->Update();
-                    float tmpRange[2];
-                    ds->GetScalarRange(tmpRange);
-                    if (tmpRange[0] < rmin)
-                    {
-                        rmin = tmpRange[0];
-                    }
-                    if (tmpRange[1] > rmax)
-                    {
-                        rmax = tmpRange[1];
-                    }
-                }
-            }
         }
     }
     else
@@ -685,6 +652,9 @@ avtMapper::GetRange(float &rmin, float &rmax)
 //    Mark C. Miller, Sun Feb 29 18:35:00 PST 2004
 //    Added calls to GetAnySpatialExtents before arbitrarily setting to [0,1]
 //
+//    Kathleen Bonnell, Thu Mar 11 10:07:35 PST 2004 
+//    DataExtents now always have only 2 components.
+//
 // ****************************************************************************
 
 void
@@ -695,21 +665,17 @@ avtMapper::PrepareExtents(void)
     avtDataAttributes &atts = input->GetInfo().GetAttributes();    
 
     int nvars = atts.GetNumberOfVariables();
+    double exts[2];
     for (int var = 0 ; var < nvars ; var++)
     {
         const char *vname = atts.GetVariableName(var).c_str();
-        int  varDim = atts.GetVariableDimension(vname);
-        double *exts = new double[2*varDim];
         bool gotDataExtents = atts.GetDataExtents(exts, vname);
         if (!gotDataExtents)
         {
             if (!(avtDatasetExaminer::GetDataExtents(input, exts, vname)))
             {
-                for (int i = 0 ; i < varDim ; i++)
-                {
-                    exts[2*i] = 0.;
-                    exts[2*i+1] = 1.;
-                }
+                exts[0] = 0.;
+                exts[1] = 1.;
             }
         }
         atts.GetTrueDataExtents(vname)->Set(exts);
@@ -719,16 +685,11 @@ avtMapper::PrepareExtents(void)
         {
             if (!(avtDatasetExaminer::GetDataExtents(input, exts, vname)))
             {
-                for (int i = 0 ; i < varDim ; i++)
-                {
-                    exts[2*i] = 0.;
-                    exts[2*i+1] = 1.;
-                }
+                exts[0] = 0.;
+                exts[1] = 1.;
             }
         }
         atts.GetCurrentDataExtents(vname)->Set(exts);
-
-        delete [] exts;
     }
 
     double bounds[6];

@@ -471,6 +471,9 @@ dnl
 dnl    Hank Childs, Thu Mar  4 08:32:01 PST 2004
 dnl    Added new Qt VisWindow library.
 dnl
+dnl    Brad Whitlock, Mon Mar 15 09:39:17 PDT 2004
+dnl    Fixed the pthreads test when PTHREAD_LIB is defined in the config-site.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -2201,15 +2204,13 @@ if test -z "$PTHREAD_LIB"; then
        AC_MSG_RESULT(not found)
    fi
 else
+   # In this case, PTHREAD_LIB was found in the config-site file so
+   # we don't need to define it.
    AC_MSG_RESULT(found)
-   dnl
-   dnl What the heck does this "if" test do?  If PTHREAD_CXXFLAGS is the
-   dnl null string, set it to the null string.  ???   Someone fill in a
-   dnl descriptive comment here.
-   dnl
-   if test -z "$PTHREAD_CXXFLAGS"; then
-      PTHREAD_CXXFLAGS=""
-   fi
+   PTHREAD_CXXFLAGS=""
+   # Make sure that we define the HAVE_THREADS macro because if it does
+   # not get defined then we'll never get the connection progress window
+   AC_DEFINE(HAVE_THREADS)
 fi
 AC_SUBST(PTHREAD_LIB)
 AC_SUBST(PTHREAD_CXXFLAGS)

@@ -167,6 +167,9 @@ avtContourFilter::~avtContourFilter()
 //    Hank Childs, Mon Mar  1 07:56:53 PST 2004
 //    Give a better hint about what variable we are working on.
 //
+//    Kathleen Bonnell, Thu Mar 11 11:10:07 PST 2004 
+//    DataExtents now always have only 2 components. 
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -187,7 +190,7 @@ avtContourFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
         // must do static load balancing if we don't know what those extents
         // are.
         //
-        double extents[6]; // 6 is just in case.
+        double extents[2]; 
         const char *varname = NULL;
         if (atts.GetVariable() != "default")
             varname = atts.GetVariable().c_str();
@@ -302,6 +305,9 @@ avtContourFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
 //    Fix a bug from last night.  If the variable was not 'default' the test
 //    was incorrect.
 //
+//    Kathleen Bonnell, Thu Mar 11 11:10:07 PST 2004 
+//    DataExtents now always have only 2 components. 
+//
 // ****************************************************************************
 
 void
@@ -323,7 +329,7 @@ avtContourFilter::PreExecute(void)
 
     if (stillNeedExtents)
     {
-        double extents[6]; // just in case
+        double extents[2]; 
         const char *varname = NULL;
         if (atts.GetVariable() != "default")
         {

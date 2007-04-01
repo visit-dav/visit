@@ -153,6 +153,9 @@ class avtToolInterface;
 //    and out of scalable rendering. Also, added optional bools to CreateActor
 //    for switching into scalable rendering.
 //
+//    Kathleen Bonnell, Thu Mar 11 08:19:10 PST 2004 
+//    Removed GetDataExtents, no longer used. 
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPlot
@@ -222,7 +225,6 @@ class VIEWER_API ViewerPlot
     double *GetSpatialExtents(const int frame, 
                               avtExtentType = AVT_UNKNOWN_EXTENT_TYPE) const;
     void SetSpatialExtentsType(avtExtentType);
-    double *GetDataExtents(const int frame) const;
 
     bool ExecuteEngineRPC(const int frame);
 

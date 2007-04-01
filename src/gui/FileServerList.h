@@ -127,6 +127,9 @@ class MessageAttributes;
 //   Hank Childs, Sat Jan 24 11:32:01 PST 2004
 //   Added LoadPlugins.
 //
+//   Brad Whitlock, Fri Mar 12 14:21:37 PST 2004
+//   Added SendKeepAlives.
+//
 // ****************************************************************************
 
 class GUI_API FileServerList : public AttributeSubject
@@ -158,7 +161,8 @@ public:
     void SetAppliedFileList(const QualifiedFilenameVector &newFiles);
     void SetUseCurrentDirectory(bool val);
     void SetAutomaticFileGrouping(bool val);
-    void LoadPlugins(void);
+    void LoadPlugins();
+    void SendKeepAlives();
 
     void OpenFile(const QualifiedFilename &filename, int timeState);
     void ReplaceFile(const QualifiedFilename &filename);
@@ -247,6 +251,7 @@ private:
     // Information about the open md servers.
     ServerMap   servers;
     std::string activeHost;
+    bool        connectingServer;
 
     // The file list for the current host.
     MDServerProxy::FileList fileList;

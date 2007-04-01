@@ -464,63 +464,6 @@ LineoutListItem::DeleteOriginatingWindow()
 
 
 // ****************************************************************************
-//  Method: LineoutListItem::GetMaxQueryWidth
-//
-//  Purpose:
-//    Calculates the maximum width needed to accomodate all queries in the list. 
-//
-//   Returns:
-//     The maximum query width.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   March 4, 2003
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-double
-LineoutListItem::GetMaxQueryWidth()
-{
-    double width = -DBL_MAX, w;
-    for (int i = 0; i < nQueries; ++i)
-    {
-        w = queries[i]->GetWidth();
-        width  = (width  > w ? width : w);
-    }
-    return width;
-}
-
-
-// ****************************************************************************
-//  Method: LineoutListItem::GetMaxQueryHeight
-//
-//  Purpose:
-//    Calculates the maximum height needed to accomodate all queries in the list. 
-//
-//   Returns:
-//     The maximum query height.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   March 4, 2003
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-double
-LineoutListItem::GetMaxQueryHeight()
-{
-    double height = -DBL_MAX, h;
-    for (int i = 0; i < nQueries; ++i)
-    {
-        h = queries[i]->GetHeight();
-        height = (height > h ? height : h);
-    }
-    return height;
-}
-
-// ****************************************************************************
 //  Method: LineoutListItem::HandleTool
 //
 //  Purpose:

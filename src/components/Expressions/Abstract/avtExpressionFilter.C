@@ -15,6 +15,7 @@
 #include <vtkUnsignedCharArray.h>
 
 #include <avtExtents.h>
+#include <avtCommonDataFunctions.h>
 
 #include <EngineExprNode.h>
 
@@ -108,13 +109,16 @@ avtExpressionFilter::SetOutputVariableName(const char *name)
 //    Hank Childs, Wed Dec 10 08:59:31 PST 2003
 //    Fix wrap-around lines.
 //
+//    Kathleen Bonnell, Thu Mar 11 11:24:40 PST 2004
+//    DataExents now always have only 2 components. 
+//
 // ****************************************************************************
  
 void
 avtExpressionFilter::PreExecute(void)
 {
     avtStreamer::PreExecute();
-    double exts[6] = {FLT_MAX, -FLT_MAX, FLT_MAX, -FLT_MAX, FLT_MAX, -FLT_MAX};
+    double exts[2] = {FLT_MAX, -FLT_MAX};
     GetOutput()->GetInfo().GetAttributes().GetCumulativeTrueDataExtents()
                                                                    ->Set(exts);
 }
@@ -203,6 +207,10 @@ avtExpressionFilter::PostExecute(void)
 //    Hank Childs, Wed Feb 25 14:48:31 PST 2004
 //    Make sure that the extents get associated with the correct variable.
 //
+//    Kathleen Bonnell, Thu Mar 11 11:24:40 PST 2004 
+//    DataExtents now always only 2 components.  Allow for Tensor var's range
+//    to be computed. 
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -278,7 +286,7 @@ avtExpressionFilter::ExecuteData(vtkDataSet *in_ds, int index,
     // Make our best attempt at maintaining our extents.
     //
     int nvars   = dat->GetNumberOfComponents();
-    if (nvars <= 3)
+    if (nvars <= 3 || nvars == 9)
     {
         double exts[6];
         unsigned char *ghosts = NULL;
@@ -292,11 +300,8 @@ avtExpressionFilter::ExecuteData(vtkDataSet *in_ds, int index,
             }
         }
         int ntuples = dat->GetNumberOfTuples();
-        for (i = 0 ; i < nvars ; i++)
-        {
-            exts[2*i+0] = +FLT_MAX;
-            exts[2*i+1] = -FLT_MAX;
-        }
+        exts[0] = +FLT_MAX;
+        exts[1] = -FLT_MAX;
         for (i = 0 ; i < ntuples ; i++)
         {
             if (ghosts != NULL && ghosts[i] > 0) 
@@ -304,17 +309,34 @@ avtExpressionFilter::ExecuteData(vtkDataSet *in_ds, int index,
                 continue;
             }
             float *val = dat->GetTuple(i);
-            for (j = 0 ; j < nvars ; j++)
+            float value; 
+            if (nvars == 1)
             {
-                if (val[j] < exts[2*j+0])
-                {
-                    exts[2*j+0] = val[j];
-                }
-                if (val[j] > exts[2*j+1])
-                {
-                    exts[2*j+1] = val[j];
-                }
+                value = *val;
             }
+            else if (nvars == 3)
+            {
+                value = val[0]*val[0] + val[1] * val[1] + val[2] *val[2];
+            }
+            else if (nvars == 9)
+            {
+                // This function is found in avtCommonDataFunctions.
+                value = MajorEigenvalue(val);    
+            }
+
+            if (value < exts[0])
+            {
+                exts[0] = value;
+            }
+            if (value > exts[1])
+            {
+                exts[1] = value;
+            }
+        }
+        if (nvars == 3)
+        {
+            exts[0] = sqrt(exts[0]);
+            exts[1] = sqrt(exts[1]);
         }
         GetOutput()->GetInfo().GetAttributes().
                  GetCumulativeTrueDataExtents(outputVariableName)->Merge(exts);

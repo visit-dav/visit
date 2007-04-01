@@ -150,6 +150,9 @@ avtTerminatingDatasetSource::FetchData(avtDataSpecification_p spec)
 //    Hank Childs, Tue Feb 24 14:38:47 PST 2004
 //    Account for multiple variables.
 //
+//    Kathleen Bonnell, Thu Mar 11 10:07:35 PST 2004 
+//    DataExtents now always have only 2 components. 
+//
 // ****************************************************************************
 
 void
@@ -184,6 +187,7 @@ avtTerminatingDatasetSource::MergeExtents(vtkDataSet *ds)
     atts.GetCumulativeTrueSpatialExtents()->Merge(dbounds);
 
     int nvars = atts.GetNumberOfVariables();
+    double dextents[2];
     for (int i = 0 ; i < nvars ; i++)
     {
         const char *vname = atts.GetVariableName(i).c_str();
@@ -196,18 +200,8 @@ avtTerminatingDatasetSource::MergeExtents(vtkDataSet *ds)
             continue;
         }
 
-        int dim = atts.GetVariableDimension(vname);
-        if (dim == 2)
-        {
-            // VTK will treat 2D vectors as 3D, so overallocate a little.
-            dim = 3;
-        }
-        double *dextents = new double[2*dim];
         GetDataRange(ds, dextents, vname);
-
         atts.GetCumulativeTrueDataExtents(vname)->Merge(dextents);
-    
-        delete [] dextents;
     }
 }
 

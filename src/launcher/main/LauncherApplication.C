@@ -50,6 +50,30 @@ RPCExecutor<QuitRPC>::Execute(QuitRPC *quit)
 }
 
 // ****************************************************************************
+// Method: RPCExecutor<KeepAliveRPC>::Execute
+//
+// Purpose: 
+//   Executes a KeepAliveRPC.
+//
+// Arguments:
+//   keepAlive : A pointer to the KeepAliveRPC object.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 12 10:36:46 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+template<>
+void
+RPCExecutor<KeepAliveRPC>::Execute(KeepAliveRPC *keepAlive)
+{
+    debug3 << "Executing KeepAliveRPC" << endl;
+    keepAlive->SendReply();
+}
+
+// ****************************************************************************
 // Method: RPCExecutor<LaunchRPC>::Execute
 //
 // Purpose: 
@@ -104,13 +128,16 @@ LauncherApplication::Instance()
 // Creation:   Fri May 2 17:27:46 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Mar 12 10:37:49 PDT 2004
+//   Added new members to handle the KeepAliveRPC.
+//
 // ****************************************************************************
 
 LauncherApplication::LauncherApplication() : parent(), xfer(), quitRPC(),
-    launchRPC()
+    keepAliveRPC(), launchRPC()
 {
     quitExecutor = 0;
+    keepAliveExecutor = 0;
     launchExecutor = 0;
     timeout = 60;
     keepGoing = true;
@@ -131,13 +158,16 @@ LauncherApplication::LauncherApplication() : parent(), xfer(), quitRPC(),
 // Creation:   Fri May 2 17:28:17 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Mar 12 10:38:13 PDT 2004
+//   Added keepAliveExecutor.
+//
 // ****************************************************************************
 
 LauncherApplication::~LauncherApplication()
 {
     instance = 0;
     delete quitExecutor;
+    delete keepAliveExecutor;
     delete launchExecutor;
 }
 
@@ -219,6 +249,9 @@ LauncherApplication::ProcessArguments(int *argcp, char **argvp[])
 //   Brad Whitlock, Tue Jul 29 11:19:26 PDT 2003
 //   I changed the interface to ParentProcess::Connect.
 //
+//   Brad Whitlock, Fri Mar 12 10:39:26 PDT 2004
+//   I added the KeepAlive RPC.
+//
 // ****************************************************************************
 
 void
@@ -251,11 +284,13 @@ LauncherApplication::Connect(int *argc, char **argv[])
 
     // Hook up the RPC's to the xfer object.
     xfer.Add(&quitRPC);
+    xfer.Add(&keepAliveRPC);
     xfer.Add(&launchRPC);
 
     // Hook up the RPC executors to the RPC's.
-    quitExecutor   = new RPCExecutor<QuitRPC>(&quitRPC); 
-    launchExecutor = new RPCExecutor<LaunchRPC>(&launchRPC);
+    quitExecutor      = new RPCExecutor<QuitRPC>(&quitRPC); 
+    keepAliveExecutor = new RPCExecutor<KeepAliveRPC>(&keepAliveRPC); 
+    launchExecutor    = new RPCExecutor<LaunchRPC>(&launchRPC);
 }
 
 // ****************************************************************************

@@ -73,13 +73,15 @@ void CreateBasis(const avtVector &N, const avtVector &UP,
 //    Kathleen Bonnell, Thu Sep 11 12:04:26 PDT 2003 
 //    Added optional 'fromDefault' flag. 
 //    
+//    Kathleen Bonnell, Thu Mar 11 08:19:10 PST 2004 
+//    Removed width & height.
+//
 // ***********************************************************************
 
 ViewerQuery::ViewerQuery(ViewerWindow *origWin, ViewerWindow *resWin, 
                          Line *lA, const bool fromDefault) : SimpleObserver()
 {
     resPlotQueryInfo = 0;
-    width = height = 0.;
     planeAtts = 0;
 
     lineAtts = new Line();
@@ -238,6 +240,9 @@ ViewerQuery::StopObservingPlot()
 //    Set SILRestriction for the resultsPlot from the SILRestriction of
 //    the originatingPlot. 
 //
+//    Kathleen Bonnell, Thu Mar 11 08:19:10 PST 2004
+//    Removed calculation of width and height. 
+//
 // ****************************************************************************
 
 void
@@ -313,36 +318,6 @@ ViewerQuery::CreateLineout(const bool fromDefault)
     //
 
     int ts = originatingWindow->GetAnimation()->GetFrameIndex();
-    int spatDim = originatingPlot->GetSpatialDimension(ts);
-    double *bounds = originatingPlot->GetSpatialExtents(ts);
-    double *range = originatingPlot->GetDataExtents(ts);
-
-
-    //
-    // Width and height are used for determining how to scale the y-axis on a 
-    // curve plot.  Presumably, consecutive lineouts will be from the same 
-    // originating plot, so the max width of the curve plot is ~= the longest 
-    // line that could be drawn through the plot: the diagonal from the 
-    // minBounds to maxBounds (ignoring zoomed plots).
-    // The maximum height of the Curve will be the Scalar range of the variable 
-    // being plotted.
-    // 
-    width = 0., height = 0.;
-    for (int i = 0; i < spatDim; i++)
-    {
-        width += ((bounds[2*i+1] - bounds[2*i]) *
-                  (bounds[2*i+1] - bounds[2*i]));
-    }
-    width = sqrt(width);
-    //
-    //  Lineout restricted to scalar-variables, so data dim should be 2!
-    //
-    height = range[1] - range[0];
-
-    //
-    //  Allocated during GetSpatialExtents/GetDataExtents
-    delete [] bounds;
-    delete [] range;
  
     //
     //  The client atts were already copied created,
@@ -623,47 +598,6 @@ ViewerQuery::DeleteVisualCue()
     {
         originatingWindow->DeleteQuery(lineAtts); 
     }
-}
-
-// ****************************************************************************
-//  Method: ViewerQuery::GetWidth
-//
-//  Purpose:  
-//    Retreives the width of this query.
-//
-//  Returns:  
-//    The width. 
-// 
-//  Programmer: Kathleen Bonnell 
-//  Creation:   July 11, 2002 
-//
-// ****************************************************************************
-
-double
-ViewerQuery::GetWidth() const
-{
-    return width;
-}
-
-
-// ****************************************************************************
-//  Method: ViewerQuery::GetHeight
-//
-//  Purpose:  
-//    Retreives the height of this query.
-//
-//  Returns:  
-//    The height. 
-// 
-//  Programmer: Kathleen Bonnell 
-//  Creation:   July 11, 2002 
-//
-// ****************************************************************************
-
-double
-ViewerQuery::GetHeight() const
-{
-    return height;
 }
 
 

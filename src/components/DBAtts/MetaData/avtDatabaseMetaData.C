@@ -932,7 +932,7 @@ avtScalarMetaData::Print(ostream &out, int indent) const
 // ****************************************************************************
 
 avtVectorMetaData::avtVectorMetaData()
-    : AttributeSubject("ssiibf*f*b")
+    : AttributeSubject("ssiibffb")
 {
     varDim = 0;
     validVariable = true;
@@ -960,7 +960,7 @@ avtVectorMetaData::avtVectorMetaData()
 
 avtVectorMetaData::avtVectorMetaData(std::string n, std::string mn, 
                                      avtCentering c, int vd)
-    : AttributeSubject("ssiibf*f*b")
+    : AttributeSubject("ssiibffb")
 {
     name           = n;
     meshName       = mn;
@@ -994,7 +994,7 @@ avtVectorMetaData::avtVectorMetaData(std::string n, std::string mn,
 avtVectorMetaData::avtVectorMetaData(std::string n, std::string mn,
                                      avtCentering c, int vd,
                                      const float *extents)
-    : AttributeSubject("ssiibf*f*b")
+    : AttributeSubject("ssiibffb")
 {
     name           = n;
     meshName       = mn;
@@ -1025,7 +1025,7 @@ avtVectorMetaData::avtVectorMetaData(std::string n, std::string mn,
 // ****************************************************************************
 
 avtVectorMetaData::avtVectorMetaData(const avtVectorMetaData &rhs)
-    : AttributeSubject("ssiibf*f*b")
+    : AttributeSubject("ssiibffb")
 {
     name           = rhs.name;
     meshName       = rhs.meshName;
@@ -1132,6 +1132,9 @@ avtVectorMetaData::SelectAll()
 //    Hank Childs, Tue May  1 12:53:10 PDT 2001
 //    Check for NULL extents.
 //
+//    Kathleen Bonnell, Thu Mar 11 10:59:14 PST 2004 
+//    DataExtents now only has 2 components. 
+//
 // ****************************************************************************
 
 void
@@ -1144,14 +1147,8 @@ avtVectorMetaData::SetExtents(const float *extents)
     else
     {
         hasDataExtents = true;
-        minDataExtents.reserve(varDim);
-        maxDataExtents.reserve(varDim);
-
-        for (int i = 0 ; i < varDim ; i++)
-        {
-            minDataExtents[i] = extents[2*i];
-            maxDataExtents[i] = extents[2*i+1];
-        }
+        minDataExtents = extents[0];
+        maxDataExtents = extents[1];
     }
 }
 
@@ -1210,11 +1207,7 @@ avtVectorMetaData::Print(ostream &out, int indent) const
     {
         Indent(out, indent);
         out << "Extents are: ( ";
-        for (int j = 0 ; j < varDim ; j++)
-        {
-            out << "(" << minDataExtents[j] << ", " << maxDataExtents[j]
-                << "), ";
-        }
+        out << minDataExtents << ", " << maxDataExtents;
         out << ")" << endl;
     }
     else

@@ -24,6 +24,8 @@ class GetMetaDataRPC;
 class GetMetaDataRPCExecutor;
 class GetSILRPC;
 class GetSILRPCExecutor;
+class KeepAliveRPC;
+class KeepAliveRPCExecutor;
 class LoadPluginsRPC;
 class LoadPluginsRPCExecutor;
 class CreateGroupListRPC;
@@ -86,6 +88,9 @@ class Xfer;
 //
 //    Hank Childs, Thu Jan 22 21:02:56 PST 2004
 //    Added LoadPluginsRPC.
+//
+//    Brad Whitlock, Fri Mar 12 10:17:58 PDT 2004
+//    I added KeepAliveRPC.
 //
 // ****************************************************************************
 
@@ -163,6 +168,7 @@ private:
 
     // RPCs
     QuitRPC                    *quitRPC;
+    KeepAliveRPC               *keepAliveRPC;
     GetDirectoryRPC            *getDirectoryRPC;
     ChangeDirectoryRPC         *changeDirectoryRPC;
     GetFileListRPC             *getFileListRPC;
@@ -176,6 +182,7 @@ private:
 
     // RPC Executors.
     QuitRPCExecutor            *quitExecutor;
+    KeepAliveRPCExecutor       *keepAliveExecutor;
     GetDirectoryRPCExecutor    *getDirectoryExecutor;
     ChangeDirectoryRPCExecutor *changeDirectoryExecutor;
     GetFileListRPCExecutor     *getFileListExecutor;

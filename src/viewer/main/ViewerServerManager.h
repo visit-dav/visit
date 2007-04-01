@@ -29,6 +29,9 @@ class ViewerConnectionProgressDialog;
 //    Jeremy Meredith, Thu Oct  9 13:41:32 PDT 2003
 //    Added client host name determination options.  Added ssh port options.
 //
+//    Brad Whitlock, Fri Mar 12 11:55:32 PDT 2004
+//    I added SendKeepAlivesToLaunchers.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerServerManager
@@ -39,6 +42,7 @@ public:
     virtual ~ViewerServerManager();
 
     static void CloseLaunchers();
+    static void SendKeepAlivesToLaunchers();
 
     static void SetDebugLevel(int level);
     static void SetArguments(const stringVector &arg);

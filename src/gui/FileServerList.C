@@ -11,9 +11,11 @@
 #include <avtDatabaseMetaData.h>
 #include <avtSIL.h>
 #include <DataNode.h>
+
 #include <stdio.h>
 #include <snprintf.h>
 #include <visit-config.h>
+#include <DebugStream.h>
 
 // Some static constants.
 static const int FILE_NOACTION = 0;
@@ -73,6 +75,7 @@ FileServerList::FileServerList() : AttributeSubject("bbbbbibbb"), servers(),
 #endif
     automaticFileGroupingFlag = true;
     recentPathsFlag = false;
+    connectingServer = false;
 
     // Initialize some callback functions.
     connectCallback = 0;
@@ -691,6 +694,9 @@ FileServerList::SetHost(const std::string &host)
 //   parsed from the SSH_CLIENT (or related) environment variables.  Added
 //   ability to specify an SSH port.
 //
+//   Brad Whitlock, Fri Mar 12 14:26:41 PST 2004
+//   Added connectingServer member.
+//
 // ****************************************************************************
 
 void
@@ -702,12 +708,14 @@ FileServerList::StartServer(const std::string &host)
     // Create a new MD server on the remote machine.
     TRY
     {
+        connectingServer = true;
         info->server = new MDServerProxy();
         info->server->SetProgressCallback(progressCallback,
             progressCallbackData);
         info->server->Create(host,
                              HostProfile::MachineName, "", false, 0,
                              connectCallback, connectCallbackData);
+        connectingServer = false;
 
         // Get the current directory from the server
         info->path = info->server->GetDirectory();
@@ -722,6 +730,7 @@ FileServerList::StartServer(const std::string &host)
     }
     CATCHALL(...) // Clean-up handler
     {
+        connectingServer = false;
         delete info->server;
         delete info;
         // re-throw the exception
@@ -813,10 +822,12 @@ FileServerList::SetPath(const std::string &path)
 // Programmer: Hank Childs
 // Creation:   January 24, 2004
 //
+// Modifications:
+//
 // ****************************************************************************
 
 void
-FileServerList::LoadPlugins(void)
+FileServerList::LoadPlugins()
 {
     // If the activeHost is in the server map, set its path.
     ServerMap::iterator pos;
@@ -825,6 +836,49 @@ FileServerList::LoadPlugins(void)
         // Now that we have what we need, tell the mdserver to load its
         // plugins.
         pos->second->server->LoadPlugins();
+    }
+}
+
+// ****************************************************************************
+// Method: FileServerList::SendKeepAlives
+//
+// Purpose: 
+//   This method sends keep alive signals to all of the mdservers.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 12 14:24:53 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+FileServerList::SendKeepAlives()
+{
+    if(!connectingServer)
+    {
+        ServerMap::iterator pos;
+        for(pos = servers.begin(); pos != servers.end();)
+        {
+            TRY
+            {
+                debug2 << "Sending keep alive signal to mdserver on "
+                       << pos->first.c_str() << endl;
+                pos->second->server->SendKeepAlive();
+                ++pos;
+            }
+            CATCHALL(...)
+            {
+                debug2 << "Could not send keep alive signal to mdserver on "
+                       << pos->first.c_str() << " so that mdserver will be closed."
+                       << endl;
+                delete pos->second->server;
+                delete pos->second;
+                pos->second = 0;
+                servers.erase(pos++);
+            }
+            ENDTRY
+        }
     }
 }
 

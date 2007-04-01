@@ -7,6 +7,7 @@
 
 #include <avtSTSDFileFormat.h>
 
+class vtkStructuredPoints;
 
 // ****************************************************************************
 //  Class: avtVTKFileFormat
@@ -21,6 +22,9 @@
 //    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
 //    vtkScalars and vtkVectors have been deprecated in VTK 4.0, 
 //    use vtkDataArray instead.
+//
+//    Kathleen Bonnell, Thu Mar 11 12:53:12 PST 2004 
+//    Added ConvertStructuredPointsToRGrid. 
 //
 // ****************************************************************************
 
@@ -48,6 +52,7 @@ class avtVTKFileFormat : public avtSTSDFileFormat
     static const char    *VARNAME;
 
     void                  ReadInDataset(void);
+    vtkDataSet           *ConvertStructuredPointsToRGrid(vtkStructuredPoints *);
 };
 
 

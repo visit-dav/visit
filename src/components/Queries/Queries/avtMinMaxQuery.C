@@ -18,6 +18,7 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkVisItUtility.h>
 
+#include <avtCommonDataFunctions.h>
 #include <avtMatrix.h>
 #include <avtParallel.h>
 #include <avtQueryableSource.h>
@@ -35,7 +36,6 @@
 using std::vector;
 using std::string;
 
-float ComputeMajorEigenvalue(float *);
 
 // ****************************************************************************
 //  Method: avtMinMaxQuery::avtMinMaxQuery
@@ -191,7 +191,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
             case QueryAttributes::Tensor :
             case QueryAttributes::Symmetric_Tensor :
                 x = data->GetTuple9(elNum);
-                val = ComputeMajorEigenvalue(x);
+                val = MajorEigenvalue(x);
                 break; 
             case QueryAttributes::Curve :
                 val = data->GetComponent(elNum, 1);
@@ -701,37 +701,5 @@ avtMinMaxQuery::CreateResultMessage()
 
     SetResultMessage(msg);
     SetResultValues(vals);
-}
-
-
-float
-ComputeMajorEigenvalue(float *vals)
-{
-    float *input[3];
-    float row1[3];
-    float row2[3];
-    float row3[3];
-    input[0] = row1;
-    input[1] = row2;
-    input[2] = row3;
-    input[0][0] = vals[0];
-    input[0][1] = vals[1];
-    input[0][2] = vals[2];
-    input[1][0] = vals[3];
-    input[1][1] = vals[4];
-    input[1][2] = vals[5];
-    input[2][0] = vals[6];
-    input[2][1] = vals[7];
-    input[2][2] = vals[8];
-    float *eigenvecs[3];
-    float outrow1[3];
-    float outrow2[3];
-    float outrow3[3];
-    eigenvecs[0] = outrow1;
-    eigenvecs[1] = outrow2;
-    eigenvecs[2] = outrow3;
-    float eigenvals[3];
-    vtkMath::Jacobi(input, eigenvals, eigenvecs);
-    return eigenvals[0];
 }
 

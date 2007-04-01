@@ -1124,6 +1124,9 @@ avtDataAttributes::SetSpatialDimension(int td)
 //    Hank Childs, Mon Feb 23 14:19:15 PST 2004
 //    Account for multiple variables.
 //
+//    Kathleen Bonnell, Thu Mar 11 10:32:04 PST 2004 
+//    DataExtents now always have dimension of 1. 
+//
 // ****************************************************************************
 
 void
@@ -1150,33 +1153,31 @@ avtDataAttributes::SetVariableDimension(int vd, const char *varname)
     {
         delete variables[index].trueData;
     }
-    variables[index].trueData = new avtExtents(variables[index].dimension);
+    variables[index].trueData = new avtExtents(1);
 
     if (variables[index].cumulativeTrueData != NULL)
     {
         delete variables[index].cumulativeTrueData;
     }
-    variables[index].cumulativeTrueData = 
-                                    new avtExtents(variables[index].dimension);
+    variables[index].cumulativeTrueData = new avtExtents(1);
 
     if (variables[index].effectiveData != NULL)
     {
         delete variables[index].effectiveData;
     }
-    variables[index].effectiveData =new avtExtents(variables[index].dimension);
+    variables[index].effectiveData =new avtExtents(1);
 
     if (variables[index].currentData != NULL)
     {
         delete variables[index].currentData;
     }
-    variables[index].currentData = new avtExtents(variables[index].dimension);
+    variables[index].currentData = new avtExtents(1);
 
     if (variables[index].cumulativeCurrentData != NULL)
     {
         delete variables[index].cumulativeCurrentData;
     }
-    variables[index].cumulativeCurrentData =
-                                    new avtExtents(variables[index].dimension);
+    variables[index].cumulativeCurrentData = new avtExtents(1);
 }
 
 

@@ -78,16 +78,21 @@ FixMatName(char *matName, int maxLen)
     // variable name, so if we see them, change them to '[' and ']'
     int i = 0;
     int lastNonSpace = 0;
+    int firstNonSpace = (matName[0] == ' ') ? -1 : 0;
     while ((matName[i] != 0) && (i < maxLen))
     {
+        if ((firstNonSpace == -1) && (matName[i] != ' '))
+            firstNonSpace = i;
         if (matName[i] < 0)
             return false;
         if (matName[i] == '(')
             matName[i] = '[';
         if (matName[i] == ')')
             matName[i] = ']';
+        if (matName[i] == '/')
+            matName[i] = '|';
         if (validChars[matName[i]] == 0)
-            matName[i] = '?';
+            matName[i] = 'X';
         if (matName[i] != ' ')
             lastNonSpace = i;
         i++;
@@ -95,6 +100,14 @@ FixMatName(char *matName, int maxLen)
 
     if (i == maxLen)
         return false;
+
+    if (firstNonSpace > 0)
+    {
+        int j;
+        for (j = 0; j < lastNonSpace; j++)
+            matName[j] = matName[j+firstNonSpace];
+        lastNonSpace -= firstNonSpace;
+    }
 
     // strip trailing space chars by pinching at last non space char
     if (lastNonSpace < i - 1)
@@ -417,7 +430,7 @@ LEOSFileReader::AddVariableAndMesh(avtDatabaseMetaData *md, const char *matDirNa
     if (matForm == 0)
         meshBaseName = string(matName);
     else
-        meshBaseName = string(matName) + " {" + string(matForm) + "}";
+        meshBaseName = string(matName) + "_" + string(matForm);
     string mdVarName  = meshBaseName + '/' + string(varName);
     string mdMeshName = mdVarName + "_mesh";
 

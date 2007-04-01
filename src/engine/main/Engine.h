@@ -7,6 +7,7 @@ class ApplyOperatorRPC;
 class ClearCacheRPC;
 class DefineVirtualDatabaseRPC;
 class ExecuteRPC;
+class KeepAliveRPC;
 class MakePlotRPC;
 class OpenDatabaseRPC;
 class PickRPC;
@@ -48,6 +49,9 @@ class Xfer;
 //    Made some changes so that the engine can be used from within an
 //    external event loop.
 //
+//    Brad Whitlock, Fri Mar 12 11:08:21 PDT 2004
+//    Added KeepAliveRPC and SendKeepAliveReply.
+//
 // ****************************************************************************
 
 class Engine
@@ -74,6 +78,7 @@ class Engine
 
     // Method to write data back to the viewer
     void            WriteData(NonBlockingRPC *, avtDataObjectWriter_p &);
+    void            SendKeepAliveReply();
 
     // Tell the engine whether or not fatal exceptions have occurred
     void            SetNoFatalExceptions(bool nf) {noFatalExceptions = nf;}
@@ -131,6 +136,7 @@ class Engine
 
     // The RPCs
     QuitRPC                  *quitRPC;
+    KeepAliveRPC             *keepAliveRPC;
     ReadRPC                  *readRPC;
     ApplyOperatorRPC         *applyOperatorRPC;
     ApplyNamedFunctionRPC    *applyNamedFunctionRPC;

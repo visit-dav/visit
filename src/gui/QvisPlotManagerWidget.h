@@ -197,6 +197,7 @@ private:
     bool                     updateOperatorMenuEnabledState;
     bool                     updateVariableMenuEnabledState;
     int                      maxVarCount;
+    int                      varMenuFlags;
 
     VariableMenuPopulator    menuPopulator, varMenuPopulator;
 

@@ -34,6 +34,9 @@ class     vtkDataArray;
 //    Hank Childs, Tue Feb 24 17:33:45 PST 2004
 //    Account for multiple variables.
 //
+//    Kathleen Bonnell, Thu Mar 11 10:14:20 PST 2004 
+//    Removed GetDataMagnitudeExtents, now handled correctly by GetDataExtents. 
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatasetExaminer
@@ -46,8 +49,6 @@ class PIPELINE_API avtDatasetExaminer
     static bool               GetSpatialExtents(avtDataset_p &, double *);
     static bool               GetDataExtents(avtDataset_p &, double *,
                                              const char * = NULL);
-    static bool               GetDataMagnitudeExtents(avtDataset_p &, double*,
-                                                      const char * = NULL);
     static void               FindMinimum(avtDataset_p &, double *, double &);
     static void               FindMaximum(avtDataset_p &, double *, double &);
     static bool               FindZone(avtDataset_p &, int, int, double *);

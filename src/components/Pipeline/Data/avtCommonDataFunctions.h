@@ -49,6 +49,10 @@ class     vtkDataArray;
 //    Hank Childs, Mon Mar  1 07:49:35 PST 2004
 //    Modified data extent methods to handle multiple variables.
 //
+//    Kathleen Bonnell, Thu Mar 11 12:47:55 PST 2004 
+//    Removed CGetDataMagnitudeExtents (handled by CGetDataExtents).
+//    Added MajorEigenvalue. 
+//
 // ****************************************************************************
 
 //
@@ -57,7 +61,6 @@ class     vtkDataArray;
 
 PIPELINE_API void CGetSpatialExtents(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetDataExtents(avtDataRepresentation &, void *, bool &);
-PIPELINE_API void CGetDataMagnitudeExtents(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CUpdateData(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CAddInputToAppendFilter(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetNumberOfZones(avtDataRepresentation &, void *, bool &);
@@ -76,7 +79,7 @@ PIPELINE_API void CGetNumberOfNodes(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetNumberOfRealZones(avtDataRepresentation &, void *, bool &);
 
 PIPELINE_API void GetDataRange(vtkDataSet *, double *, const char *);
-PIPELINE_API void GetDataMagnitudeRange(vtkDataSet *, double *, const char *);
+PIPELINE_API double MajorEigenvalue(float *);
 
 
 typedef struct

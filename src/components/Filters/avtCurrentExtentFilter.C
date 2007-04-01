@@ -47,6 +47,9 @@ avtCurrentExtentFilter::Execute(void)
 //    Hank Childs, Tue Feb 24 14:23:03 PST 2004
 //    Account for multiple variables.
 //
+//    Kathleen Bonnell, Thu Mar 11 11:16:17 PST 2004 
+//    DataExtents now always have only 2 components. 
+//
 // ****************************************************************************
 
 void
@@ -57,22 +60,16 @@ avtCurrentExtentFilter::RefashionDataObjectInfo(void)
     avtDataset_p ds = GetTypedInput();
 
     int nVars = atts.GetNumberOfVariables();
+    double de[2];
     for (int i = 0 ; i < nVars ; i++)
     {
         const char *vname = atts.GetVariableName(i).c_str();
-        int dataDim = atts.GetVariableDimension(vname);
-        if (dataDim == 2)
-            dataDim = 3;
     
-        double *de = new double[dataDim*2];
         bool foundDE = avtDatasetExaminer::GetDataExtents(ds, de, vname);
-    
         if (foundDE)
         {
             outAtts.GetCumulativeCurrentDataExtents(vname)->Merge(de);
         }
-    
-        delete [] de;
     }
 
     double se[6];

@@ -10,6 +10,9 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkStructuredPoints.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkFloatArray.h>
 
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
@@ -78,6 +81,9 @@ avtVTKFileFormat::~avtVTKFileFormat()
 //    Use VisIt's version of the reader, so that all variables can be read
 //    into the dataset in one pass.
 //
+//    Kathleen Bonnell, Thu Mar 11 12:53:12 PST 2004 
+//    Convert StructuredPoints datasets into RectilinearGrids. 
+//
 // ****************************************************************************
 
 void
@@ -114,6 +120,14 @@ avtVTKFileFormat::ReadInDataset(void)
     dataset->SetSource(NULL);
     reader->Delete();
 
+    if (dataset->GetDataObjectType() == VTK_STRUCTURED_POINTS)
+    {
+        //
+        // The old dataset passed in will be deleted, a new one will be 
+        // returned.
+        //
+        dataset = ConvertStructuredPointsToRGrid((vtkStructuredPoints*)dataset);
+    }
     readInDataset = true;
 }
 
@@ -532,4 +546,67 @@ GetListOfUniqueCellTypes(vtkUnstructuredGrid *ug, vtkUnsignedCharArray *uca)
         }
 }
 
+// ****************************************************************************
+//  Function: ConvertStructuredPointsToRGrid
+//
+//  Purpose:
+//     Constructs a vtkRectilinearGrid from the passed vtkStructuredPoints. 
+//
+//  Notes:  The passed in dataset will be deleted.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   March 9, 2004
+//
+// ****************************************************************************
 
+vtkDataSet *
+avtVTKFileFormat::ConvertStructuredPointsToRGrid(vtkStructuredPoints *inSP)
+{
+    int coordDims[3]; 
+    float spacing[3];
+    float origin[3];
+    inSP->GetDimensions(coordDims);
+    inSP->GetSpacing(spacing);
+    inSP->GetOrigin(origin);
+
+    vtkFloatArray *x = vtkFloatArray::New();
+    x->SetNumberOfComponents(1);
+    x->SetNumberOfTuples(coordDims[0]);
+    vtkFloatArray *y = vtkFloatArray::New();
+    y->SetNumberOfComponents(1);
+    y->SetNumberOfTuples(coordDims[1]);
+    vtkFloatArray *z = vtkFloatArray::New();
+    z->SetNumberOfComponents(1);
+    z->SetNumberOfTuples(coordDims[2]);
+
+    vtkRectilinearGrid *outRG = vtkRectilinearGrid::New();
+    outRG->SetDimensions(coordDims);
+    outRG->SetXCoordinates(x);
+    outRG->SetYCoordinates(y);
+    outRG->SetZCoordinates(z);
+    x->Delete();
+    y->Delete();
+    z->Delete();
+
+    int i;
+    float *ptr = x->GetPointer(0);
+    for (i = 0; i < coordDims[0]; i++, ptr++)
+        *ptr = origin[0] + i * spacing[0]; 
+
+    ptr = y->GetPointer(0);
+    for (i = 0; i < coordDims[1]; i++, ptr++)
+        *ptr = origin[1] + i * spacing[1]; 
+
+    ptr = z->GetPointer(0);
+    for (i = 0; i < coordDims[2]; i++, ptr++)
+        *ptr = origin[2] + i * spacing[2]; 
+  
+    for (i = 0; i < inSP->GetPointData()->GetNumberOfArrays(); i++)
+        outRG->GetPointData()->AddArray(inSP->GetPointData()->GetArray(i));
+
+    for (i = 0; i < inSP->GetCellData()->GetNumberOfArrays(); i++)
+        outRG->GetCellData()->AddArray(inSP->GetCellData()->GetArray(i));
+   
+    inSP->Delete(); 
+    return outRG; 
+}

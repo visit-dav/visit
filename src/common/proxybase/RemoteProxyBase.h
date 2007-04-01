@@ -2,6 +2,7 @@
 #define REMOTE_PROXY_BASE_H
 #include <proxybase_exports.h>
 #include <Xfer.h>
+#include <KeepAliveRPC.h>
 #include <QuitRPC.h>
 #include <ConnectCallback.h>
 #include <HostProfile.h>
@@ -31,6 +32,10 @@ class RemoteProcess;
 //    parsed from the SSH_CLIENT (or related) environment variables.  Added
 //    ability to specify an SSH port.
 //
+//    Brad Whitlock, Thu Mar 11 12:44:23 PDT 2004
+//    I added KeepAliveRPC so we don't lose connections to remote components
+//    whose connections have been idle for a long time.
+//
 // ****************************************************************************
 
 class PROXYBASE_API RemoteProxyBase
@@ -51,6 +56,7 @@ public:
                 ConnectCallback *connectCallback = 0,
                 void *data = 0, bool createAsThoughLocal = false);
     void Close();
+    virtual void SendKeepAlive();
 
     virtual bool Parallel() const;
     virtual std::string GetComponentName() const = 0;
@@ -68,6 +74,7 @@ protected:
     RemoteProcess       *component;
     Xfer                 xfer;
     QuitRPC              quitRPC;
+    KeepAliveRPC         keepAliveRPC;
 
     std::string          remoteUserName;
     int                  nWrite;

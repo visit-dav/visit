@@ -216,6 +216,10 @@ avtDataTreeStreamer::Execute(avtDataTree_p inDT)
 //  Programmer: Hank Childs
 //  Creation:   November 6, 2001
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Mar 11 10:14:20 PST 2004
+//    DataExtents now always have a size of 1 (num components = 2).
+//
 // ****************************************************************************
 
 void
@@ -243,8 +247,6 @@ avtDataTreeStreamer::UpdateExtents(avtDataTree_p tree)
             trueSpatialExtents->Merge(bounds);
             avtExtents *exts = outAtts.GetCumulativeTrueSpatialExtents();
             *exts = *trueSpatialExtents;
-            double b[6];
-            exts->CopyTo(b);
         }
         outAtts.GetTrueSpatialExtents()->Clear();
     }
@@ -255,15 +257,14 @@ avtDataTreeStreamer::UpdateExtents(avtDataTree_p tree)
         if (trueDataExtents == NULL)
         {
             avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
-            avtExtents        *exts = atts.GetCumulativeTrueDataExtents();
-            trueDataExtents = new avtExtents(*exts);
+            trueDataExtents = new avtExtents(1);
         }
-        double range[50];  // who has more than 25 vars?
+        double range[2];  // who has more than 25 vars?
         bool gotBounds = false;
-        tree->Traverse(CGetSpatialExtents, (void *) range, gotBounds);
+        tree->Traverse(CGetDataExtents, (void *) range, gotBounds);
         if (gotBounds)
         {
-            trueSpatialExtents->Merge(range);
+            trueDataExtents->Merge(range);
             avtExtents *exts = outAtts.GetCumulativeTrueDataExtents();
             *exts = *trueDataExtents;
         }

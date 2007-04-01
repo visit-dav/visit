@@ -218,7 +218,7 @@ avtDataValidity::Merge(const avtDataValidity &di)
                                di.normalsAreInappropriate;
     disjointElements = disjointElements && di.disjointElements;
     queryable = queryable && di.queryable;
-    hasEverOwnedAnyDomain = hasEverOwnedAnyDomain || hasEverOwnedAnyDomain;
+    hasEverOwnedAnyDomain = hasEverOwnedAnyDomain || di.hasEverOwnedAnyDomain;
 
     // If not all cells were subdivided in either dataset, or if all were
     // in one but not both, then not all of our cells were subdivided
