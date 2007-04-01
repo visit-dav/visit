@@ -1,19 +1,19 @@
 <?xml version="1.0"?>
-<Object name="VisIt" childObjects="1">
-    <Field name="Version" type="string">1.0.7</Field>
-    <Object name="VIEWER" childObjects="2">
-        <Object name="GlobalAttributes" childObjects="0">
+<Object name="VisIt">
+    <Field name="Version" type="string">1.4.2</Field>
+    <Object name="VIEWER">
+        <Object name="GlobalAttributes">
             <Field name="cloneWindowOnFirstRef" type="bool">true</Field>
         </Object>
-        <Object name="PluginManagerAttributes" childObjects="0">
+        <Object name="PluginManagerAttributes">
             <Field name="name" type="stringVector">Streamline InverseGhostZone </Field>
             <Field name="type" type="stringVector">plot operator </Field>
             <Field name="version" type="stringVector">1.0 1.0 </Field>
             <Field name="id" type="stringVector">Streamline_1.0 InverseGhostZone_1.0 </Field>
             <Field name="enabled" type="intVector">0 0 </Field>
         </Object>
-        <Object name="HostProfileList" childObjects="27">
-            <Object name="HostProfile" childObjects="0">
+        <Object name="HostProfileList">
+            <Object name="HostProfile">
                 <Field name="profileName" type="string">serial</Field>
                 <Field name="host" type="string">alc.llnl.gov</Field>
                 <Field name="hostAliases" type="string">alc#.llnl.gov alc##.llnl.gov alc###.llnl.gov alc# alc## alc###</Field>
@@ -35,7 +35,7 @@
                 <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
                 <Field name="parallel" type="bool">false</Field>
             </Object>
-            <Object name="HostProfile" childObjects="0">
+            <Object name="HostProfile">
                 <Field name="profileName" type="string">parallel interactive pdebug</Field>
                 <Field name="host" type="string">alc.llnl.gov</Field>
                 <Field name="hostAliases" type="string">alc#.llnl.gov alc##.llnl.gov alc###.llnl.gov alc# alc## alc###</Field>
@@ -57,7 +57,7 @@
                 <Field name="arguments" type="stringVector">-dir /usr/gapps/visit</Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
-            <Object name="HostProfile" childObjects="0">
+            <Object name="HostProfile">
                 <Field name="profileName" type="string">parallel batch pbatch</Field>
                 <Field name="host" type="string">alc.llnl.gov</Field>
                 <Field name="hostAliases" type="string">alc#.llnl.gov alc##.llnl.gov alc###.llnl.gov alc# alc## alc###</Field>
@@ -79,7 +79,7 @@
                 <Field name="arguments" type="stringVector">-dir /usr/gapps/visit</Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
-            <Object name="HostProfile" childObjects="0">
+            <Object name="HostProfile">
                 <Field name="profileName" type="string">serial</Field>
                 <Field name="host" type="string">davinci.nersc.gov</Field>
                 <Field name="hostAliases" type="string">davinci</Field>
@@ -101,7 +101,7 @@
                 <Field name="arguments" type="stringVector"></Field>
                 <Field name="parallel" type="bool">false</Field>
             </Object>
-            <Object name="HostProfile" childObjects="0">
+            <Object name="HostProfile">
                 <Field name="profileName" type="string">parallel</Field>
                 <Field name="host" type="string">davinci.nersc.gov</Field>
                 <Field name="hostAliases" type="string">davinci</Field>
@@ -123,7 +123,7 @@
                 <Field name="arguments" type="stringVector"></Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
-            <Object name="HostProfile" childObjects="0">
+            <Object name="HostProfile">
                 <Field name="profileName" type="string">serial</Field>
                 <Field name="host" type="string">frost.llnl.gov</Field>
                 <Field name="hostAliases" type="string">frost.pacific.llnl.gov frost###.pacific.llnl.gov</Field>
@@ -145,7 +145,7 @@
                 <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
                 <Field name="parallel" type="bool">false</Field>
             </Object>
-            <Object name="HostProfile" childObjects="0">
+            <Object name="HostProfile">
                 <Field name="profileName" type="string">parallel pdebug</Field>
                 <Field name="host" type="string">frost.llnl.gov</Field>
                 <Field name="hostAliases" type="string">frost.pacific.llnl.gov frost###.pacific.llnl.gov</Field>
@@ -167,7 +167,7 @@
                 <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
-            <Object name="HostProfile" childObjects="0">
+            <Object name="HostProfile">
                 <Field name="profileName" type="string">parallel pbatch</Field>
                 <Field name="host" type="string">frost.llnl.gov</Field>
                 <Field name="hostAliases" type="string">frost.pacific.llnl.gov frost###.pacific.llnl.gov</Field>
@@ -189,7 +189,7 @@
                 <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
-            <Object name="HostProfile" childObjects="0">
+            <Object name="HostProfile">
                 <Field name="profileName" type="string">serial</Field>
                 <Field name="host" type="string">gps15.llnl.gov gps16.llnl.gov</Field>
                 <Field name="hostAliases" type="string">gps##.llnl.gov</Field>
@@ -211,7 +211,7 @@
                 <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
                 <Field name="parallel" type="bool">false</Field>
             </Object>
-            <Object name="HostProfile" childObjects="0">
+            <Object name="HostProfile">
                 <Field name="profileName" type="string">parallel</Field>
                 <Field name="host" type="string">gps15.llnl.gov gps16.llnl.gov</Field>
                 <Field name="hostAliases" type="string">gps##.llnl.gov</Field>
@@ -233,7 +233,7 @@
                 <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
-            <Object name="HostProfile" childObjects="0">
+            <Object name="HostProfile">
                 <Field name="profileName" type="string">serial</Field>
                 <Field name="host" type="string">ilx.llnl.gov</Field>
                 <Field name="hostAliases" type="string">ilx#.llnl.gov ilx##.llnl.gov ilx# ilx##</Field>
@@ -255,7 +255,7 @@
                 <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
                 <Field name="parallel" type="bool">false</Field>
             </Object>
-            <Object name="HostProfile" childObjects="0">
+            <Object name="HostProfile">
                 <Field name="profileName" type="string">serial</Field>
                 <Field name="host" type="string">mcr.llnl.gov</Field>
                 <Field name="hostAliases" type="string">mcr#.llnl.gov mcr##.llnl.gov mcr###.llnl.gov mcr####.llnl.gov mcr# mcr## mcr### mcr####</Field>
@@ -277,7 +277,7 @@
                 <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
                 <Field name="parallel" type="bool">false</Field>
             </Object>
-            <Object name="HostProfile" childObjects="0">
+            <Object name="HostProfile">
                 <Field name="profileName" type="string">parallel interactive pdebug</Field>
                 <Field name="host" type="string">mcr.llnl.gov</Field>
                 <Field name="hostAliases" type="string">mcr#.llnl.gov mcr##.llnl.gov mcr###.llnl.gov mcr####.llnl.gov mcr# mcr## mcr### mcr####</Field>
@@ -299,7 +299,7 @@
                 <Field name="arguments" type="stringVector">-dir /usr/gapps/visit</Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
-            <Object name="HostProfile" childObjects="0">
+            <Object name="HostProfile">
                 <Field name="profileName" type="string">parallel batch pbatch</Field>
                 <Field name="host" type="string">mcr.llnl.gov</Field>
                 <Field name="hostAliases" type="string">mcr#.llnl.gov mcr##.llnl.gov mcr###.llnl.gov mcr####.llnl.gov mcr# mcr## mcr### mcr####</Field>
@@ -321,7 +321,7 @@
                 <Field name="arguments" type="stringVector">-dir /usr/gapps/visit</Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
-            <Object name="HostProfile" childObjects="0">
+            <Object name="HostProfile">
                 <Field name="profileName" type="string">serial</Field>
                 <Field name="host" type="string">snow.llnl.gov</Field>
                 <Field name="hostAliases" type="string">snow.llnl.gov snow##.llnl.gov</Field>
@@ -343,7 +343,7 @@
                 <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
                 <Field name="parallel" type="bool">false</Field>
             </Object>
-            <Object name="HostProfile" childObjects="0">
+            <Object name="HostProfile">
                 <Field name="profileName" type="string">parallel pbatch</Field>
                 <Field name="host" type="string">snow.llnl.gov</Field>
                 <Field name="hostAliases" type="string">snow.llnl.gov snow##.llnl.gov</Field>
@@ -365,7 +365,7 @@
                 <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
-            <Object name="HostProfile" childObjects="0">
+            <Object name="HostProfile">
                 <Field name="profileName" type="string">serial</Field>
                 <Field name="host" type="string">pengra.llnl.gov</Field>
                 <Field name="hostAliases" type="string">pengra#.llnl.gov pengra##.llnl.gov pengra###.llnl.gov pengra# pengra## pengra###</Field>
@@ -387,7 +387,7 @@
                 <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
                 <Field name="parallel" type="bool">false</Field>
             </Object>
-            <Object name="HostProfile" childObjects="0">
+            <Object name="HostProfile">
                 <Field name="profileName" type="string">parallel interactive pdebug</Field>
                 <Field name="host" type="string">pengra.llnl.gov</Field>
                 <Field name="hostAliases" type="string">pengra#.llnl.gov pengra##.llnl.gov pengra###.llnl.gov pengra# pengra## pengra###</Field>
@@ -409,7 +409,7 @@
                 <Field name="arguments" type="stringVector">-dir /usr/gapps/visit</Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
-            <Object name="HostProfile" childObjects="0">
+            <Object name="HostProfile">
                 <Field name="profileName" type="string">parallel batch pbatch</Field>
                 <Field name="host" type="string">pengra.llnl.gov</Field>
                 <Field name="hostAliases" type="string">pengra#.llnl.gov pengra##.llnl.gov pengra###.llnl.gov pengra# pengra## pengra###</Field>
@@ -431,7 +431,7 @@
                 <Field name="arguments" type="stringVector">-dir /usr/gapps/visit</Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
-            <Object name="HostProfile" childObjects="0">
+            <Object name="HostProfile">
                 <Field name="profileName" type="string">serial</Field>
                 <Field name="host" type="string">pvc.llnl.gov</Field>
                 <Field name="hostAliases" type="string">pvc#.llnl.gov pvc##.llnl.gov pvc###.llnl.gov pvc# pvc## pvc###</Field>
@@ -453,7 +453,7 @@
                 <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
                 <Field name="parallel" type="bool">false</Field>
             </Object>
-            <Object name="HostProfile" childObjects="0">
+            <Object name="HostProfile">
                 <Field name="profileName" type="string">parallel pbatch</Field>
                 <Field name="host" type="string">pvc.llnl.gov</Field>
                 <Field name="hostAliases" type="string">pvc#.llnl.gov pvc##.llnl.gov pvc###.llnl.gov pvc# pvc## pvc###</Field>
@@ -473,91 +473,6 @@
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">false</Field>
                 <Field name="arguments" type="stringVector">-dir /usr/gapps/visit</Field>
-                <Field name="parallel" type="bool">true</Field>
-            </Object>
-            <Object name="HostProfile" childObjects="0">
-                <Field name="profileName" type="string">serial</Field>
-                <Field name="host" type="string">uv.asci.llnl.gov</Field>
-                <Field name="hostAliases" type="string">uv#.asci.llnl.gov uv##.asci.llnl.gov uv###.asci.llnl.gov uv# uv## uv###</Field>
-                <Field name="timeout" type="int">480</Field>
-                <Field name="numProcessors" type="int">1</Field>
-                <Field name="numNodesSet" type="bool">false</Field>
-                <Field name="numNodes" type="int">0</Field>
-                <Field name="partitionSet" type="bool">false</Field>
-                <Field name="partition" type="string"></Field>
-                <Field name="bankSet" type="bool">false</Field>
-                <Field name="bank" type="string"></Field>
-                <Field name="timeLimitSet" type="bool">false</Field>
-                <Field name="timeLimit" type="string"></Field>
-                <Field name="launchMethodSet" type="bool">false</Field>
-                <Field name="launchMethod" type="string"></Field>
-                <Field name="forceStatic" type="bool">true</Field>
-                <Field name="forceDynamic" type="bool">false</Field>
-                <Field name="active" type="bool">true</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
-                <Field name="parallel" type="bool">false</Field>
-            </Object>
-            <Object name="HostProfile" childObjects="0">
-                <Field name="profileName" type="string">parallel pbatch</Field>
-                <Field name="host" type="string">uv.asci.llnl.gov</Field>
-                <Field name="hostAliases" type="string">>uv#.asci.llnl.gov uv##.asci.llnl.gov uv###.asci.llnl.gov uv# uv## uv###</Field>
-                <Field name="timeout" type="int">480</Field>
-                <Field name="numProcessors" type="int">16</Field>
-                <Field name="numNodesSet" type="bool">true</Field>
-                <Field name="numNodes" type="int">2</Field>
-                <Field name="partitionSet" type="bool">true</Field>
-                <Field name="partition" type="string">uv,pbatch</Field>
-                <Field name="bankSet" type="bool">true</Field>
-                <Field name="bank" type="string">bdivp</Field>
-                <Field name="timeLimitSet" type="bool">true</Field>
-                <Field name="timeLimit" type="string">30m</Field>
-                <Field name="launchMethodSet" type="bool">true</Field>
-                <Field name="launchMethod" type="string">psub</Field>
-                <Field name="forceStatic" type="bool">true</Field>
-                <Field name="forceDynamic" type="bool">false</Field>
-                <Field name="active" type="bool">false</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
-                <Field name="parallel" type="bool">true</Field>
-            </Object>
-            <Object name="HostProfile" childObjects="0">
-                <Field name="profileName" type="string">parallel pdebug</Field>
-                <Field name="host" type="string">uv.asci.llnl.gov</Field>
-                <Field name="hostAliases" type="string">>uv#.asci.llnl.gov uv##.asci.llnl.gov uv###.asci.llnl.gov uv# uv## uv###</Field>
-                <Field name="timeout" type="int">480</Field>
-                <Field name="numProcessors" type="int">16</Field>
-                <Field name="numNodesSet" type="bool">true</Field>
-                <Field name="numNodes" type="int">2</Field>
-                <Field name="partitionSet" type="bool">true</Field>
-                <Field name="partition" type="string">uv,pdebug</Field>
-                <Field name="bankSet" type="bool">true</Field>
-                <Field name="bank" type="string">bdivp</Field>
-                <Field name="timeLimitSet" type="bool">true</Field>
-                <Field name="timeLimit" type="string">30m</Field>
-                <Field name="launchMethodSet" type="bool">true</Field>
-                <Field name="launchMethod" type="string">psub</Field>
-                <Field name="forceStatic" type="bool">true</Field>
-                <Field name="forceDynamic" type="bool">false</Field>
-                <Field name="active" type="bool">false</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
-                <Field name="parallel" type="bool">true</Field>
-            </Object>
-            <Object name="HostProfile" childObjects="0">
-                <Field name="profileName" type="string">parallel interactive pdebug</Field>
-                <Field name="host" type="string">uv.asci.llnl.gov</Field>
-                <Field name="hostAliases" type="string">>uv#.asci.llnl.gov uv##.asci.llnl.gov uv###.asci.llnl.gov uv# uv## uv###</Field>
-                <Field name="numProcessors" type="int">8</Field>
-                <Field name="numNodesSet" type="bool">true</Field>
-                <Field name="numNodes" type="int">1</Field>
-                <Field name="partitionSet" type="bool">true</Field>
-                <Field name="partition" type="string">0</Field>
-                <Field name="bankSet" type="bool">false</Field>
-                <Field name="timeLimitSet" type="bool">false</Field>
-                <Field name="launchMethodSet" type="bool">true</Field>
-                <Field name="launchMethod" type="string">poe</Field>
-                <Field name="forceStatic" type="bool">true</Field>
-                <Field name="forceDynamic" type="bool">false</Field>
-                <Field name="active" type="bool">false</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
             <Object name="HostProfile">
@@ -580,7 +495,7 @@
                 <Field name="parallel" type="bool">true</Field>
                 <Field name="hostAliases" type="string">thunder#.llnl.gov thunder##.llnl.gov thunder###.llnl.gov thunder####.llnl.gov thunder# thunder## thunder### thunder####</Field>
             </Object>
-            <Object name="HostProfile" childObjects="0">
+            <Object name="HostProfile">
                 <Field name="profileName" type="string">parallel batch pbatch</Field>
                 <Field name="host" type="string">thunder.llnl.gov</Field>
                 <Field name="hostAliases" type="string">thunder#.llnl.gov thunder##.llnl.gov thunder###.llnl.gov thunder####.llnl.gov thunder# thunder## thunder### thunder####</Field>

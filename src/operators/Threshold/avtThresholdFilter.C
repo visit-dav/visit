@@ -152,7 +152,7 @@ static void UpdateNeighborCells(int pt, const int *pt_dims,
 
 
 // ****************************************************************************
-//  Method: avtThresholdFilter::ExecuteData
+//  Method: avtThresholdFilter::ProcessOneChunk
 //
 //  Purpose:
 //      Sends the specified input and output through the Threshold filter.
@@ -197,6 +197,9 @@ static void UpdateNeighborCells(int pt, const int *pt_dims,
 //    Hank Childs, Sun Mar 27 11:36:49 PST 2005
 //    Renamed to ProcessOneChunk.  Modified to assume structured chunking.
 //
+//    Hank Childs, Sun Apr  3 13:06:01 PDT 2005
+//    Fix bug with structured chunking.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -210,7 +213,7 @@ avtThresholdFilter::ProcessOneChunk(vtkDataSet *in_ds, int domain,
         // ones we identified that we wanted.  So just return them.
         //
         in_ds->Register(NULL);
-        return NULL;
+        return in_ds;
     }
 
     vtkThreshold *threshold = vtkThreshold::New();

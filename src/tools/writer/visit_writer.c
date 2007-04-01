@@ -209,6 +209,11 @@ static void write_int(int val)
  *  Programmer: Hank Childs
  *  Creation:   September 3, 2004
  * 
+ *  Modifications:
+ *  
+ *    Hank Childs, Fri Apr 22 09:14:44 PDT 2005
+ *    Make precision changes suggested by Jeff McAninch
+ *
  * ************************************************************************* */
 
 static void write_float(float val)
@@ -221,7 +226,7 @@ static void write_float(float val)
     else
     {
         char str[128];
-        sprintf(str, "%f ", val);
+        sprintf(str, "%20.12e ", val);
         fprintf(fp, str);
         if (((numInColumn++) % 9) == 8)
         {

@@ -14,8 +14,10 @@
 #include <vtkUnstructuredGrid.h>
 
 #include <avtSweepPlanePartitionStrategy.h>
+#include <avtMultiResolutionPartitionStrategy.h>
 
 #include <ImproperUseException.h>
+#include <TimingsManager.h>
 
 
 using std::vector;
@@ -69,6 +71,16 @@ avtStructuredMeshChunker::ChunkStructuredMesh(vtkDataSet *sgrid,
 //  Programmer: Hank Childs
 //  Creation:   September 18, 2004
 //
+//  Modifications:
+//
+//    Jeremy Meredith, Tue Apr 19 12:10:35 PDT 2005
+//    xlC was choking on multiple uses of the same variable name that g++
+//    accepted.  I disambiguated them for it.
+//
+//    Hank Childs, Sun Apr  3 13:20:48 PDT 2005
+//    Allow for full grids to be copies of the input.  Note: change was made
+//    before above changes, but merged after.
+//
 // ****************************************************************************
 
 void
@@ -100,9 +112,20 @@ avtStructuredMeshChunker::ChunkRectilinearMesh(vtkRectilinearGrid *rgrid,
     vtkDataArray *origX = rgrid->GetXCoordinates();
     vtkDataArray *origY = rgrid->GetYCoordinates();
     vtkDataArray *origZ = rgrid->GetZCoordinates();
-    for (int grid = 0 ; grid < nGrids ; grid++)
+    for (int gridI = 0 ; gridI < nGrids ; gridI++)
     {
-        MeshDescription &desc = outDescr[grid];
+        MeshDescription &desc = outDescr[gridI];
+
+        // See if we can take the grid whole-sale.
+        if (desc.start_index[0] == 0 && desc.start_index[1] == 0 &&
+            desc.start_index[2] == 0 && desc.index_size[0] == dims[0] &&
+            desc.index_size[1] == dims[1] && desc.index_size[2] == dims[2])
+        {
+            rgrid->Register(NULL);
+            outGrids.push_back(rgrid);
+            continue;
+        }
+
         vtkRectilinearGrid *grid = vtkRectilinearGrid::New();
         grid->SetDimensions(desc.index_size);
 
@@ -233,6 +256,16 @@ avtStructuredMeshChunker::ChunkRectilinearMesh(vtkRectilinearGrid *rgrid,
 //  Programmer: Hank Childs
 //  Creation:   September 18, 2004
 //
+//  Modifications:
+//
+//    Jeremy Meredith, Tue Apr 19 12:10:35 PDT 2005
+//    xlC was choking on multiple uses of the same variable name that g++
+//    accepted.  I disambiguated them for it.
+//
+//    Hank Childs, Sun Apr  3 13:20:48 PDT 2005
+//    Allow for full grids to be copies of the input.  Note: change was made
+//    before above changes, but merged after.
+//
 // ****************************************************************************
 
 void
@@ -261,9 +294,20 @@ avtStructuredMeshChunker::ChunkCurvilinearMesh(vtkStructuredGrid *sgrid,
     vtkCellData *origCD = sgrid->GetCellData();
     float *orig_pts = (float *) sgrid->GetPoints()->GetVoidPointer(0);
     int nGrids = outDescr.size();
-    for (int grid = 0 ; grid < nGrids ; grid++)
+    for (int gridI = 0 ; gridI < nGrids ; gridI++)
     {
-        MeshDescription &desc = outDescr[grid];
+        MeshDescription &desc = outDescr[gridI];
+
+        // See if we can take the grid whole-sale.
+        if (desc.start_index[0] == 0 && desc.start_index[1] == 0 &&
+            desc.start_index[2] == 0 && desc.index_size[0] == dims[0] &&
+            desc.index_size[1] == dims[1] && desc.index_size[2] == dims[2])
+        {
+            sgrid->Register(NULL);
+            outGrids.push_back(sgrid);
+            continue;
+        }
+
         vtkStructuredGrid *grid = vtkStructuredGrid::New();
         grid->SetDimensions(desc.index_size);
 
@@ -699,7 +743,7 @@ avtStructuredMeshChunker::SplitIntoSubgrids(const int *dims, vtkDataSet *in_ds,
     //
     // Tell the partition strategy how small the boxes can be.
     //
-    avtSweepPlanePartitionStrategy p;
+    avtMultiResolutionPartitionStrategy p;
     if (haveOptimizations)
         p.SetMinimumSize(256);
     else
@@ -709,7 +753,11 @@ avtStructuredMeshChunker::SplitIntoSubgrids(const int *dims, vtkDataSet *in_ds,
     // Make the "partition".
     //
     vector<int> boxes;
+    int t0 = visitTimer->StartTimer();
     p.ConstructPartition(cell_dims, d_plus, boxes);
+    char str[1024];
+    sprintf(str, "Constructing %d grid.", boxes.size());
+    visitTimer->StopTimer(t0, str);
 
     //
     // Put them into our internal structure.
@@ -737,10 +785,10 @@ avtStructuredMeshChunker::SplitIntoSubgrids(const int *dims, vtkDataSet *in_ds,
         for (int kk = box[4] ; kk <= box[5] ; kk++)
         {
             int kkBase = kk*cell_dims[1]*cell_dims[0];
-            for (int jj = box[2] ; jj < box[3] ; jj++)
+            for (int jj = box[2] ; jj <= box[3] ; jj++)
             {
                 int jjBase = jj*cell_dims[0];
-                for (int ii = box[0] ; ii < box[1] ; ii++)
+                for (int ii = box[0] ; ii <= box[1] ; ii++)
                 {
                     int iiBase = ii;
                     int idx = kkBase + jjBase + iiBase;
@@ -759,7 +807,11 @@ avtStructuredMeshChunker::SplitIntoSubgrids(const int *dims, vtkDataSet *in_ds,
     //
     // Create an unstructured grid of what is left.
     //
+    int t1 = visitTimer->StartTimer();
     CreateUnstructuredGrid(in_ds, d_plus, data, ugrid, dims);
+    char str2[1024];
+    sprintf(str2, "Creating a ugrid of size %d", ugrid->GetNumberOfCells());
+    visitTimer->StopTimer(t1, str2);
 
     return d_plus;
 }
@@ -836,11 +888,11 @@ avtStructuredMeshChunker::GetUnstructuredCellList(
     // information for later.
     //
     vector<int> ghost_zones_with_repeats;
-    for (i = 0 ; i < cell_dims[0] ; i++)
+    for (k = 0 ; k < cell_dims[2] ; k++)
     {
         for (j = 0 ; j < cell_dims[1] ; j++)
         {
-            for (k = 0 ; k < cell_dims[2] ; k++)
+            for (i = 0 ; i < cell_dims[0] ; i++)
             {
                 int idx = k*cell_dims[0]*cell_dims[1] + j*cell_dims[0] + i;
                 if (d_plus[idx] == RETAIN || d_plus[idx] == TO_BE_PROCESSED)
