@@ -803,6 +803,11 @@ void write_unstructured_mesh(const char *filename, int ub, int npts,
 //  Programmer: Hank Childs
 //  Creation:   September 2, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Apr  6 16:22:57 PDT 2005
+//    Fix problem with 2D structured meshes and assessing cell count.
+//
 // ***************************************************************************/
 
 void write_rectilinear_mesh(const char *filename, int ub, int *dims,
@@ -813,7 +818,10 @@ void write_rectilinear_mesh(const char *filename, int ub, int *dims,
     int   i, j;
     char  str[128];
     int npts = dims[0]*dims[1]*dims[2];
-    int ncells = (dims[0]-1)*(dims[1]-1)*(dims[2]-1);
+    int ncX = (dims[0] - 1 < 1 ? 1 : dims[0] - 1);
+    int ncY = (dims[1] - 1 < 1 ? 1 : dims[1] - 1);
+    int ncZ = (dims[2] - 1 < 1 ? 1 : dims[2] - 1);
+    int ncells = ncX*ncY*ncZ;
 
     useBinary = ub;
     open_file(filename);
@@ -933,6 +941,11 @@ void write_regular_mesh(const char *filename, int ub, int *dims,
 //  Programmer: Hank Childs
 //  Creation:   September 2, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Apr  6 16:22:57 PDT 2005
+//    Fix problem with 2D structured meshes and assessing cell count.
+//
 // ***************************************************************************/
 
 void write_curvilinear_mesh(const char *filename, int ub, int *dims,float *pts,
@@ -942,7 +955,10 @@ void write_curvilinear_mesh(const char *filename, int ub, int *dims,float *pts,
     int   i, j;
     char  str[128];
     int npts = dims[0]*dims[1]*dims[2];
-    int ncells = (dims[0]-1)*(dims[1]-1)*(dims[2]-1);
+    int ncX = (dims[0] - 1 < 1 ? 1 : dims[0] - 1);
+    int ncY = (dims[1] - 1 < 1 ? 1 : dims[1] - 1);
+    int ncZ = (dims[2] - 1 < 1 ? 1 : dims[2] - 1);
+    int ncells = ncX*ncY*ncZ;
 
     useBinary = ub;
     open_file(filename);
