@@ -170,7 +170,7 @@ NetworkManager::ClearAllNetworks(void)
 
     for (i = 0 ; i < globalCellCounts.size() ; i++)
     {
-        globalCellCounts[i] = 0;
+        globalCellCounts[i] = -1;
     }
 }
 
@@ -212,7 +212,7 @@ NetworkManager::ClearNetworksWithDatabase(const std::string &db)
                 {
                     delete networkCache[i];
                     networkCache[i] = NULL;
-                    globalCellCounts[i] = 0;
+                    globalCellCounts[i] = -1;
                 }
             }
         }
@@ -1009,7 +1009,10 @@ NetworkManager::GetTotalGlobalCellCounts(void) const
 {
    int i, sum = 0;
    for (i = 0; i < globalCellCounts.size(); i++)
-      sum += globalCellCounts[i];
+   {
+      if (globalCellCounts[i] >= 0)
+          sum += globalCellCounts[i];
+   }
    return sum;
 }
 
@@ -1227,12 +1230,15 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
 
            if ((PAR_Size() > 1) && (GetTotalGlobalCellCounts() > scalableThreshold))
            {
-              avtNullData_p nullData = new avtNullData(NULL,AVT_NULL_DATASET_MSG);
-              avtDataObject_p dummyDob;
-              CopyTo(dummyDob, nullData);
-              writer = dummyDob->InstantiateWriter();
-              writer->SetInput(dummyDob);
-              clearNetwork = false;
+               debug5 << "Cell count has exceeded SR threshold. Sending the "
+                         "AVT_NULL_DATASET_MSG data object message" << endl;
+
+               avtNullData_p nullData = new avtNullData(NULL,AVT_NULL_DATASET_MSG);
+               avtDataObject_p dummyDob;
+               CopyTo(dummyDob, nullData);
+               writer = dummyDob->InstantiateWriter();
+               writer->SetInput(dummyDob);
+               clearNetwork = false;
            }
 #endif
 
@@ -1285,6 +1291,8 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer)
        // the misfortune of oscillating switching of modes around the threshold)
        if (GetTotalGlobalCellCounts() < 0.5 * scalableThreshold)
        {
+           debug5 << "Cell count has fallen below SR threshold. Sending the "
+                     "AVT_NULL_IMAGE_MSG data object to viewer" << endl;
 
           avtNullData_p nullData = new avtNullData(NULL,AVT_NULL_IMAGE_MSG);
           avtDataObject_p dummyDob;
