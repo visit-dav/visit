@@ -20,6 +20,8 @@
 //  Creation:   May 18, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Jun 17 12:58:47 PDT 2004
+//    Added FindClosestPoint.
 //
 // ****************************************************************************
 
@@ -38,6 +40,7 @@ class QUERY_API avtLocateNodeQuery : public avtLocateQuery
     virtual void                    Execute(vtkDataSet *, const int);
     int                             RGridFindNode(vtkDataSet *, float&, float*);
     int                             DeterminePickedNode(vtkDataSet *, int, float*);
+    int                             FindClosestPoint(vtkDataSet *, float*, int &);
 };
 
 

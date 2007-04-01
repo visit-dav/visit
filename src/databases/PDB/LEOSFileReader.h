@@ -23,6 +23,9 @@ using std::map;
 // Programmer: Mark C. Miller
 // Creation:   February 10, 2004 
 //
+// Modifications:
+//   Mark C. Miller, Thu Jun 17 23:07:34 PDT 2004
+//   Added matNameMap data member, GetCurve
 // ****************************************************************************
 
 class LEOSFileReader : public PDBReader
@@ -83,8 +86,14 @@ protected:
                       const char *contents);
     void          ReadFileAndPopulateMetaData(avtDatabaseMetaData *md);
 
+    vtkDataSet   *GetCurve(const string matDirName, const string varName,
+                      const eosVarInfo_t& varInfo);
+
     // maps an LEOS mesh or variable name to its cooresponding PDB directory
     map<string, string> matDirMap;
+
+    // maps LEOS material name to the named used in the plugin
+    map<string, string> matNameMap;
 
     // stores meta-data knowledge of each equation-of-state (eos) variable
     map<string, eosVarInfo_t> eosVarInfoMap;
