@@ -752,6 +752,9 @@ class MakeMovie:
     #   Brad Whitlock, Tue Aug 12 09:37:37 PDT 2003
     #   Passed the desired version to mpeg_encode.
     #
+    #   Hank Childs, Sat Mar 27 11:51:10 PST 2004
+    #   Don't do such aggressive compression.
+    #
     ###########################################################################
 
     def EncodeMPEGMovie(self):
@@ -775,9 +778,9 @@ class MakeMovie:
             f.write("RANGE               10\n")
             f.write("PSEARCH_ALG         TWOLEVEL\n")
             f.write("BSEARCH_ALG         SIMPLE\n")
-            f.write("IQSCALE             5\n")
-            f.write("PQSCALE             8\n")
-            f.write("BQSCALE             18\n")
+            f.write("IQSCALE             2\n")
+            f.write("PQSCALE             2\n")
+            f.write("BQSCALE             2\n")
             f.write("REFERENCE_FRAME     DECODED\n")
             f.write("FORCE_ENCODE_LAST_FRAME\n")
             f.write("YUV_SIZE            %dx%d\n" % (self.xres, self.yres))

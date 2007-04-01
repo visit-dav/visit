@@ -5313,6 +5313,9 @@ avtGenericDatabase::AssociateBounds(vtkDataSet *ds)
 //    Hank Childs, Tue Dec 16 09:49:13 PST 2003
 //    Improve clarity of warning message.
 //
+//    Hank Childs, Sat Mar 27 11:51:10 PST 2004
+//    Do not let scaling go into an infinite loop.
+//
 // ****************************************************************************
 
 void
@@ -5337,7 +5340,8 @@ avtGenericDatabase::ScaleMesh(vtkDataSet *ds)
     {
         scaleFactor = 1.;
         double temp = bounds[1] - bounds[0];
-        while (temp > 1e6)
+        int iterations = 0;
+        while (temp > 1e6 && (iterations++ < 100))
         {
             temp /= 10.;
             scaleFactor *= 10.;
@@ -5348,7 +5352,8 @@ avtGenericDatabase::ScaleMesh(vtkDataSet *ds)
     {
         scaleFactor = 1.;
         double temp = bounds[1] - bounds[0];
-        while (temp < 1e-3)
+        int iterations = 0;
+        while (temp < 1e-3 && (iterations++ < 100))
         {
             temp *= 10.;
             scaleFactor /= 10.;
@@ -5359,7 +5364,8 @@ avtGenericDatabase::ScaleMesh(vtkDataSet *ds)
     {
         scaleFactor = 1.;
         double temp = bounds[3] - bounds[2];
-        while (temp > 1e6)
+        int iterations = 0;
+        while (temp > 1e6 && (iterations++ < 100))
         {
             temp /= 10.;
             scaleFactor *= 10.;
@@ -5370,7 +5376,8 @@ avtGenericDatabase::ScaleMesh(vtkDataSet *ds)
     {
         scaleFactor = 1.;
         double temp = bounds[3] - bounds[2];
-        while (temp < 1e-3)
+        int iterations = 0;
+        while (temp < 1e-3 && (iterations++ < 100))
         {
             temp *= 10.;
             scaleFactor /= 10.;
@@ -5381,7 +5388,8 @@ avtGenericDatabase::ScaleMesh(vtkDataSet *ds)
     {
         scaleFactor = 1.;
         double temp = bounds[5] - bounds[4];
-        while (temp > 1e6)
+        int iterations = 0;
+        while (temp > 1e6 && (iterations++ < 100))
         {
             temp /= 10.;
             scaleFactor *= 10.;
@@ -5392,7 +5400,8 @@ avtGenericDatabase::ScaleMesh(vtkDataSet *ds)
     {
         scaleFactor = 1.;
         double temp = bounds[5] - bounds[4];
-        while (temp < 1e-3)
+        int iterations = 0;
+        while (temp < 1e-3 && (iterations++ < 100))
         {
             temp *= 10.;
             scaleFactor /= 10.;
