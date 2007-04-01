@@ -18,13 +18,18 @@
 //  Programmer: Kathleen Bonnell
 //  Creation:   December 29, 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Jan 27 09:14:35 PST 2005
+//    Changed inital values of time-loop vars to -1, so they could be set
+//    individually by user.
+//
 // ****************************************************************************
 
 avtTimeLoopFilter::avtTimeLoopFilter()
 {
-    startTime = 0;
-    endTime = 0;
-    stride = 1; 
+    startTime = -1;
+    endTime = -1;
+    stride = -1; 
     nFrames = 0;
     actualEnd = 0;
 }
@@ -66,6 +71,8 @@ avtTimeLoopFilter::~avtTimeLoopFilter()
 //  Creation:   December 29, 2004
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Jan 27 09:14:35 PST 2005
+//    Added call to FinalizeTimeLoop.
 //
 // ****************************************************************************
 
@@ -76,6 +83,8 @@ avtTimeLoopFilter::Update(avtPipelineSpecification_p spec)
     bool modified = false;
     avtDataSpecification_p orig_DS = spec->GetDataSpecification();
     avtSILRestriction_p orig_SILR = orig_DS->GetRestriction();
+
+    FinalizeTimeLoop();
 
     for (i = startTime; i < actualEnd; i+= stride)
     {
@@ -133,7 +142,7 @@ avtTimeLoopFilter::Update(avtPipelineSpecification_p spec)
 
 
 // ****************************************************************************
-//  Method: avtTimeLoopFilter::SetTimeLoop
+//  Method: avtTimeLoopFilter::FinalizeTimeLoop
 //
 //  Purpose:  Sets the begin and end frames for the time loop.  Peforms error
 //            checking on the values.
@@ -141,22 +150,39 @@ avtTimeLoopFilter::Update(avtPipelineSpecification_p spec)
 //  Programmer: Kathleen Bonnell
 //  Creation:   December 29, 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Jan 27 08:02:03 PST 2005
+//    Renamed from SetTimeLoop.  Removed args.  Check for set values and
+//    use defaults as necessary.
+//
 // ****************************************************************************
 
 void
-avtTimeLoopFilter::SetTimeLoop(int start, int finish, int s)
+avtTimeLoopFilter::FinalizeTimeLoop()
 {
-    if (start >= finish)
+    int numStates = GetInput()->GetInfo().GetAttributes().GetNumStates(); 
+    if (startTime < 0)
+    {
+        startTime = 0;
+    }
+    if (endTime < 0)
+    {
+        endTime = numStates - 1;
+    }
+    if (stride < 0)
+    {
+        stride = 1;
+    }
+    if (startTime >= endTime)
     {
         std::string msg("Start time must be smaller than end time for " );
         msg += GetType();
         msg += ".\n";
         EXCEPTION1(ImproperUseException, msg);
     }
-    startTime = start;
-    endTime = finish;
-    stride = s;
+
     nFrames = (int) ceil((((float)endTime -startTime))/(float)stride) + 1; 
+
     if (nFrames <= 1)
     {
         std::string msg(GetType());
@@ -164,22 +190,13 @@ avtTimeLoopFilter::SetTimeLoop(int start, int finish, int s)
                "and end times and try again.";
         EXCEPTION1(ImproperUseException, msg);
     }
-    if (startTime < 0)
-    {
-        std::string msg(GetType());
-        msg += ":  Clamping start time to 0.";
-        avtCallback::IssueWarning(msg.c_str());
-    }
-#if 0
-    // need a way to retrieve num available timesteps.
-    if (endT < 0)
+
+    if (endTime >= numStates)
     {
         std::string msg(GetType());
         msg += ":  Clamping end time to number of available timesteps.";
-        avtCallback::IssueWarning(msg);
+        avtCallback::IssueWarning(msg.c_str());
     }
-#endif
-
 
     //
     // Ensure that the specified endTime is included,

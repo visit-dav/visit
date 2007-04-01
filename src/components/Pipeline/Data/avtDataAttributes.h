@@ -138,6 +138,9 @@ class     avtExtents;
 //    Hank Childs, Thu Jan 20 09:40:25 PST 2005
 //    Added TransformSpatialExtents.
 //
+//    Kathleen Bonnell, Thu Jan 27 09:14:35 PST 2005 
+//    Added numStates and Set/Get methods. 
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -308,6 +311,11 @@ class PIPELINE_API avtDataAttributes
     void                     TransformSpatialExtents(avtDataAttributes &,
                                 void (*)(const double *,double*,void*),void *);
 
+    int                      GetNumStates(void) const
+                                   { return numStates; };
+    void                     SetNumStates(int n)
+                                   { numStates = n; };
+
   protected:
     int                      spatialDimension;
     int                      topologicalDimension;
@@ -328,6 +336,7 @@ class PIPELINE_API avtDataAttributes
     avtMatrix               *transform;
     bool                     canUseTransform;
     bool                     canUseCumulativeAsTrueOrCurrent;
+    int                      numStates;
 
     avtExtents              *trueSpatial;
     avtExtents              *cumulativeTrueSpatial;

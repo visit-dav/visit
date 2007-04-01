@@ -75,6 +75,9 @@ using     std::sort;
 //    Hank Childs, Sat Jan  1 11:23:50 PST 2005
 //    Initialize meshname.
 //
+//    Kathleen Bonnell, Thu Jan 27 09:14:35 PST 2005 
+//    Initialize numStates.
+//
 // ****************************************************************************
 
 avtDataAttributes::avtDataAttributes()
@@ -121,6 +124,8 @@ avtDataAttributes::avtDataAttributes()
     canUseTransform = true;
 
     windowMode = WINMODE_NONE;
+
+    numStates = 1;
 }
 
 
@@ -272,6 +277,9 @@ avtDataAttributes::DestructSelf(void)
 //
 //    Hank Childs, Sat Jan  1 11:23:50 PST 2005
 //    Added meshname.
+//
+//    Kathleen Bonnell, Thu Jan 27 09:14:35 PST 2005 
+//    Added numStates.
 //
 // ****************************************************************************
 
@@ -461,6 +469,8 @@ avtDataAttributes::Print(ostream &out)
         out << (selectionsApplied[i] ? "T " : "F ");
     out << endl;
 
+    out << "Num states: " << numStates << endl;
+
 }
 
 
@@ -538,6 +548,9 @@ avtDataAttributes::Print(ostream &out)
 //    Hank Childs, Sat Jan  1 11:23:50 PST 2005
 //    Added meshname.
 //
+//    Kathleen Bonnell, Thu Jan 27 09:14:35 PST 2005 
+//    Added numStates.
+//
 // ****************************************************************************
 
 void
@@ -614,6 +627,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     canUseTransform = di.canUseTransform;
     windowMode = di.windowMode;
     selectionsApplied = di.selectionsApplied;
+    numStates = di.numStates;
 }
 
 
@@ -690,6 +704,9 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //
 //    Kathleen Bonnell, Thu Dec  9 16:12:33 PST 2004 
 //    Added containsGlobalNodeIds, containsGlobalZoneIds.
+//
+//    Kathleen Bonnell, Thu Jan 27 09:14:35 PST 2005 
+//    Added numStates.
 //
 // ****************************************************************************
 
@@ -783,6 +800,10 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
     if (windowMode != da.windowMode)
     {
         EXCEPTION2(InvalidMergeException, windowMode, da.windowMode);
+    }
+    if (numStates != da.numStates)
+    {
+        EXCEPTION2(InvalidMergeException, numStates, da.numStates);
     }
 
     if (selectionsApplied.size() != da.selectionsApplied.size())
@@ -1695,6 +1716,9 @@ avtDataAttributes::SetTime(double d)
 //    Hank Childs, Sat Jan  1 11:23:50 PST 2005
 //    Added meshname.
 //
+//    Kathleen Bonnell, Thu Jan 27 09:14:35 PST 2005 
+//    Added numStates.
+//
 // ****************************************************************************
 
 void
@@ -1703,7 +1727,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
 {
     int   i;
 
-    int numVals = 19 + 3*variables.size();
+    int numVals = 20 + 3*variables.size();
     int *vals = new int[numVals];
     vals[0] = topologicalDimension;
     vals[1] = spatialDimension;
@@ -1722,13 +1746,14 @@ avtDataAttributes::Write(avtDataObjectString &str,
     vals[14] = (canUseTransform ? 1 : 0);
     vals[15] = (canUseCumulativeAsTrueOrCurrent ? 1 : 0);
     vals[16] = windowMode;
-    vals[17] = activeVariable;
-    vals[18] = variables.size();
+    vals[17] = numStates;
+    vals[18] = activeVariable;
+    vals[19] = variables.size();
     for (i = 0 ; i < variables.size() ; i++)
     {
-        vals[19+3*i]   = variables[i].dimension;
-        vals[19+3*i+1] = variables[i].centering;
-        vals[19+3*i+2] = (variables[i].treatAsASCII ? 1 : 0);
+        vals[20+3*i]   = variables[i].dimension;
+        vals[20+3*i+1] = variables[i].centering;
+        vals[20+3*i+2] = (variables[i].treatAsASCII ? 1 : 0);
     }
     wrtr->WriteInt(str, vals, numVals);
     wrtr->WriteDouble(str, dtime);
@@ -1874,6 +1899,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //    Hank Childs, Sat Jan  1 11:23:50 PST 2005
 //    Added meshname.
 //
+//    Kathleen Bonnell, Thu Jan 27 09:14:35 PST 2005 
+//    Added numStates.
+//
 // ****************************************************************************
 
 int
@@ -1951,6 +1979,10 @@ avtDataAttributes::Read(char *input)
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
     windowMode = (WINDOW_MODE) tmp;
+
+    memcpy(&tmp, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    numStates = tmp;
 
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);

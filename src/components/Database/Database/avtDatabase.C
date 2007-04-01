@@ -288,6 +288,9 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Hank Childs, Sat Jan  1 11:33:13 PST 2005
 //    Initialize the mesh name.
 //
+//    Kathleen Bonnell, Thu Jan 27 09:14:35 PST 2005 
+//    Share the number of states with DataAttributes.
+//
 // ****************************************************************************
 
 void
@@ -307,6 +310,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
     string mesh = GetMetaData(ts)->MeshForVar(var);
     const avtMeshMetaData *mmd = GetMetaData(ts)->GetMesh(mesh);
     bool haveSetTrueSpatialExtents = false;
+    atts.SetNumStates(GetMetaData(ts)->GetNumStates());
     if (mmd != NULL)
     {
         atts.SetCellOrigin(mmd->cellOrigin);
