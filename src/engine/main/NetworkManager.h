@@ -116,6 +116,11 @@ class VisWindow;
 //    Jeremy Meredith, Thu Nov  6 13:12:15 PST 2003
 //    Added a method to cancel the current network.
 //
+//    Hank Childs, Mon Jan  5 15:54:26 PST 2004
+//    Add unique network ids for all networks.  Also add method
+//    ClearNetworksWithDatabase.  Also remove networkMRU since it is unused.
+//    Populating networkMRU could also lead to problems with dangling pointers.
+//
 // ****************************************************************************
 class NetworkManager
 {
@@ -123,7 +128,9 @@ class NetworkManager
  public:
                   NetworkManager(void);
                  ~NetworkManager(void);
+
     void          ClearAllNetworks(void);
+    void          ClearNetworksWithDatabase(const std::string &);
 
     NetnodeDB*    GetDBFromCache(const string &filename, int time);
     void          StartNetwork(const std::string&, const std::string &,
@@ -173,6 +180,7 @@ class NetworkManager
     DataNetwork                *workingNet;
     std::vector<std::string>    nameStack;
 
+    int                         uniqueNetworkId;
     bool                        requireOriginalCells;
     LoadBalancer               *loadBalancer;
     WindowAttributes            windowAttributes;
