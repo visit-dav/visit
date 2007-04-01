@@ -51,6 +51,9 @@ class     vtkVisItPolyDataNormals;
 //    Hank Childs, Tue May  4 16:47:29 PDT 2004
 //    Allow for normals-generation.
 //
+//    Kathleen Bonnell, Mon Aug  9 13:54:42 PDT 2004 
+//    Added flag 'colorByScalar', 'scalarName', and method ColorByScalarOn. 
+//
 // ****************************************************************************
 
 class PLOTTER_API  avtVectorGlyphMapper : public avtMapper
@@ -62,6 +65,7 @@ class PLOTTER_API  avtVectorGlyphMapper : public avtMapper
     void                       SetLineWidth(_LineWidth lw);
     void                       SetLineStyle(_LineStyle ls);
     void                       ColorByMagOn(void);
+    void                       ColorByScalarOn(const std::string &);
     void                       ColorByMagOff(const unsigned char [3]);
     void                       SetScale(float);
     void                       SetLookupTable(vtkLookupTable *lut);
@@ -72,6 +76,8 @@ class PLOTTER_API  avtVectorGlyphMapper : public avtMapper
     _LineWidth                 lineWidth;
     _LineStyle                 lineStyle;
     bool                       colorByMag;
+    bool                       colorByScalar;
+    std::string                scalarName;
     unsigned char              glyphColor[3];
     float                      scale;
 

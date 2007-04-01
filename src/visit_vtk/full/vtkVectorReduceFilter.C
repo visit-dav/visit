@@ -91,6 +91,9 @@ void vtkVectorReduceFilter::SetNumberOfElements(int n)
 //    Kathleen Bonnell, Mon Nov 17 13:58:38 PST 2003 
 //    Preserve the name of the Vectors array. 
 //
+//    Kathleen Bonnell, Thu Aug 12 19:19:28 PDT 2004 
+//    Copy other Point and Cell data. 
+//
 // ****************************************************************************
 
 void vtkVectorReduceFilter::Execute(void)
@@ -100,6 +103,8 @@ void vtkVectorReduceFilter::Execute(void)
 
   vtkCellData *inCd = input->GetCellData();
   vtkPointData *inPd = input->GetPointData();
+  vtkPointData *outPd = output->GetPointData();
+  vtkCellData *outCd = output->GetCellData();
 
   vtkDataArray *inCvecs = inCd->GetVectors();
   vtkDataArray *inPvecs = inPd->GetVectors();
@@ -140,8 +145,10 @@ void vtkVectorReduceFilter::Execute(void)
   outVecs->SetNumberOfComponents(3);
 
   float nextToTake = 0.;
+  int count = 0;
   if (inPvecs != NULL)
     {
+    outPd->CopyAllocate(inPd, npts);
     outVecs->SetName(inPvecs->GetName());
     for (int i = 0 ; i < npts ; i++)
       {
@@ -156,13 +163,17 @@ void vtkVectorReduceFilter::Execute(void)
         float v[3];
         inPvecs->GetTuple(i, v);
         outVecs->InsertNextTuple(v);
+        outPd->CopyData(inPd, i, count++);
         }
       }
+      outPd->Squeeze();
     }
 
   nextToTake = 0.;
+  count = 0;
   if (inCvecs != NULL)
     {
+    outCd->CopyAllocate(inCd, ncells);
     outVecs->SetName(inCvecs->GetName());
     for (int i = 0 ; i < ncells ; i++)
       {
@@ -178,8 +189,10 @@ void vtkVectorReduceFilter::Execute(void)
         float v[3];
         inCvecs->GetTuple(i, v);
         outVecs->InsertNextTuple(v);
+        outCd->CopyData(inCd, i, count++);
         }
       }
+      outCd->Squeeze();
     }
 
   int nOutPts = outpts->GetNumberOfPoints();

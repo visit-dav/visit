@@ -117,6 +117,35 @@ avtVectorPlot::Create()
 
 
 // ****************************************************************************
+//  Method:  avtVectorPlot::GetCellCountMultiplierForSRThreshold
+//
+//  Purpose: Returns number of polygons each point in the plot's output will be
+//  glyphed into.
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    August 11, 2004 
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Aug 12 14:15:55 PDT 2004
+//    Changed some code to get it to compile.
+//
+// ****************************************************************************
+float
+avtVectorPlot::GetCellCountMultiplierForSRThreshold() const
+{
+    float retval = 6.0;
+    if (*behavior)
+    {
+        int dim = behavior->GetInfo().GetAttributes().GetSpatialDimension();
+        if (dim == 2)
+            retval = 2.0;
+        else
+            retval = 6.0;
+    }
+    return retval;
+}
+
+// ****************************************************************************
 //  Method: avtVectorPlot::GetMapper
 //
 //  Purpose:
@@ -152,9 +181,12 @@ avtVectorPlot::GetMapper(void)
 //  Creation:   March 21, 2000
 //
 //  Modifications:
-//
 //    Hank Childs, Tue Jul 17 07:42:08 PDT 2001
 //    Added a filter for ghost zones.
+//
+//    Kathleen Bonnell, Mon Aug  9 14:27:08 PDT 2004 
+//    Added code to create a name for the magnitude scalar variable.
+//    Tell the vectorFilter to create that scalar var.
 //
 // ****************************************************************************
 
@@ -162,7 +194,9 @@ avtDataObject_p
 avtVectorPlot::ApplyOperators(avtDataObject_p input)
 {
     ghostFilter->SetInput(input);
+    ComputeMagVarName(varname);
     vectorFilter->SetInput(ghostFilter->GetOutput());
+    vectorFilter->SetMagVarName(magVarName); 
     return vectorFilter->GetOutput();
 }
 
@@ -248,11 +282,16 @@ avtVectorPlot::CustomizeBehavior(void)
 //    Brad Whitlock, Wed Dec 4 15:55:40 PST 2002
 //    I added code to set the legend ranges.
 //
+//    Kathleen Bonnell, Thu Aug 12 19:28:34 PDT 2004 
+//    I added call to ComputeMagVarName and SetMapperColors.
+//
 // ****************************************************************************
 
 void
 avtVectorPlot::CustomizeMapper(avtDataObjectInformation &doi)
 {
+    ComputeMagVarName(varname);
+    SetMapperColors();
     int dim = doi.GetAttributes().GetSpatialDimension();
     if (dim == 2)
     {
@@ -307,6 +346,12 @@ avtVectorPlot::CustomizeMapper(avtDataObjectInformation &doi)
 //    Jeremy Meredith, Fri Nov 21 11:30:35 PST 2003
 //    Added origin offset.
 //
+//    Kathleen Bonnell, Thu Aug 12 12:05:01 PDT 2004
+//    Set lut single color when ColorByMag is off. 
+//
+//    Kathleen Bonnell, Mon Aug  9 14:33:26 PDT 2004 
+//    Moved some code into SetMapperColors and added call to this new method. 
+//
 // ****************************************************************************
 
 void
@@ -348,15 +393,7 @@ avtVectorPlot::SetAtts(const AttributeGroup *a)
 
     glyphMapper->SetScale(atts.GetScale());
 
-    if (atts.GetColorByMag())
-    {
-        glyphMapper->ColorByMagOn();
-    }
-    else
-    {
-        const unsigned char *col = atts.GetVectorColor().GetColor();
-        glyphMapper->ColorByMagOff(col);
-    }
+    SetMapperColors();
 
     glyphMapper->SetLineWidth(Int2LineWidth(atts.GetLineWidth()));
     glyphMapper->SetLineStyle(Int2LineStyle(atts.GetLineStyle()));
@@ -524,3 +561,46 @@ avtVectorPlot::ReleaseData(void)
 }
 
 
+// ****************************************************************************
+//  Method: avtVectorPlot::ComputeMagVarName
+//
+//  Purpose:
+//    Appends '_AVT_mag' to the name of the vector variable -- to creat a name
+//    for the scalar magnitude variable.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 9, 2004 
+//
+// ****************************************************************************
+
+void
+avtVectorPlot::ComputeMagVarName(const string &vn)
+{
+    magVarName = vn + string("_AVT_mag");
+}
+
+// ****************************************************************************
+//  Method: avtVectorPlot::SetMapperColors
+//
+//  Purpose:
+//    Tells the glyphMapper how to color the data. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 12, 2004 
+//
+// ****************************************************************************
+
+void
+avtVectorPlot::SetMapperColors()
+{
+    if (atts.GetColorByMag())
+    {
+        glyphMapper->ColorByScalarOn(magVarName);
+    }
+    else
+    {
+        const unsigned char *col = atts.GetVectorColor().GetColor();
+        avtLUT->SetLUTColors(col, 1);
+        glyphMapper->ColorByMagOff(col);
+    }
+}

@@ -84,6 +84,9 @@ class     avtSmoothPolyDataFilter;
 //    
 //    Kathleen Bonnell, Thu Sep  4 11:15:30 PDT 2003 
 //    Removed argument from 'SetRenderOpaque', added 'ShouldRenderOpaque'.
+//
+//    Mark C. Miller, Thu Aug 12 21:17:35 PDT 2004
+//    Added GetCellCountMultiplierForSRThreshold
 //    
 // ****************************************************************************
 
@@ -118,6 +121,8 @@ avtMeshPlot : public avtPlot
     virtual int     TargetTopologicalDimension(void);
     virtual const AttributeSubject 
                    *SetOpaqueMeshIsAppropriate(bool);
+
+    float          GetCellCountMultiplierForSRThreshold() const;
 
   protected:
     avtSurfaceAndWireframeRenderer_p renderer;

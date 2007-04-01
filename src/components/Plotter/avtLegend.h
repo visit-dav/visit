@@ -41,6 +41,9 @@ class  vtkRenderer;
 //    Brad Whitlock, Tue Jul 20 16:40:37 PST 2004
 //    Added SetVarUnits.
 //
+//    Kathleen Bonnell, Thu Aug 12 13:07:29 PDT 2004 
+//    Added SetGlobalVisibility.
+//
 // ****************************************************************************
 
 class PLOTTER_API  avtLegend
@@ -67,6 +70,7 @@ class PLOTTER_API  avtLegend
     void                          SetVarName(const char *);
     void                          SetVarUnits(const char *);
     void                          SetMessage(const char *);
+    void                          SetGlobalVisibility(bool);
 
     void                          Update();
 
@@ -74,6 +78,7 @@ class PLOTTER_API  avtLegend
     float                         position[2];
     float                         size[2];
     bool                          legendOn;
+    bool                          globalVisibility;
     bool                          currentlyDrawn;
     vtkVerticalScalarBarActor    *legend;
     vtkRenderer                  *renderer;

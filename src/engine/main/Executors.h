@@ -751,6 +751,9 @@ RPCExecutor<SetWinAnnotAttsRPC>::Execute(SetWinAnnotAttsRPC *rpc)
 //    Wrapped call to GetOutput in TRY/CATCH block to catch possible
 //    abort exception and do the right thing
 //
+//    Mark C. Miller, Wed Aug 11 23:42:18 PDT 2004
+//    Added code to pass cellCountMultiplier to WriteData
+//
 // ****************************************************************************
 template<>
 void
@@ -784,6 +787,7 @@ RPCExecutor<ExecuteRPC>::Execute(ExecuteRPC *rpc)
     {
         // save the current network id for later
         bool shouldSendAbort = false;
+        float cellCountMultiplier = netmgr->GetPlot()->GetCellCountMultiplierForSRThreshold();
         int netId = netmgr->GetCurrentNetworkId();
         avtNullData abortDob(NULL);
 
@@ -816,7 +820,8 @@ RPCExecutor<ExecuteRPC>::Execute(ExecuteRPC *rpc)
         // Send the data back to the viewer.
         engine->WriteData(rpc, writer, rpc->GetRespondWithNull(),
                     scalableThreshold, &scalableThresholdExceeded,
-                    currentTotalGlobalCellCount, &currentNetworkGlobalCellCount);
+                    currentTotalGlobalCellCount, cellCountMultiplier,
+                    &currentNetworkGlobalCellCount);
 
         // re-set the network if we exceeded the scalable threshold
         if (scalableThresholdExceeded && !rpc->GetRespondWithNull())

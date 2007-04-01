@@ -45,6 +45,9 @@
 //    Hank Childs, Wed May  5 14:19:54 PDT 2004
 //    Added poly data normals.
 //
+//    Kathleen Bonnell, Mon Aug  9 13:54:42 PDT 2004 
+//    Initialize colorByScalar.
+//
 // ****************************************************************************
 
 avtVectorGlyphMapper::avtVectorGlyphMapper(vtkPolyData *g)
@@ -55,6 +58,7 @@ avtVectorGlyphMapper::avtVectorGlyphMapper(vtkPolyData *g)
     lineWidth         = LW_0;
     lineStyle         = SOLID; 
     colorByMag        = true;
+    colorByScalar     = false;
     scale             = 0.2;
     glyphFilter       = 0;
     normalsFilter     = NULL;
@@ -134,6 +138,9 @@ avtVectorGlyphMapper::~avtVectorGlyphMapper()
 //    Hank Childs, Wed May  5 14:19:54 PDT 2004
 //    Added poly data normals.
 //
+//    Kathleen Bonnell, Mon Aug  9 13:54:42 PDT 2004 
+//    Test for flag colorByScalar. 
+//
 // ****************************************************************************
 
 void
@@ -158,6 +165,10 @@ avtVectorGlyphMapper::CustomizeMappers(void)
     if (colorByMag)
     {
         ColorByMagOn();
+    }
+    else if (colorByScalar)
+    {
+        ColorByScalarOn(scalarName);
     }
     else
     {
@@ -417,12 +428,17 @@ avtVectorGlyphMapper::SetScale(float s)
 //  Programmer: Hank Childs
 //  Creation:   March 23, 2001
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Aug  9 13:54:42 PDT 2004
+//    Set colorByScalar to false.
+//
 // ****************************************************************************
 
 void
 avtVectorGlyphMapper::ColorByMagOn(void)
 {
     colorByMag = true;
+    colorByScalar = false;
 
     if (glyphFilter != NULL)
     {
@@ -431,6 +447,38 @@ avtVectorGlyphMapper::ColorByMagOn(void)
             if (glyphFilter[i] != NULL)
             {
                 glyphFilter[i]->SetColorModeToColorByVector();
+            }
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtVectorGlyphMapper::ColorByScalarOn
+//
+//  Purpose:
+//      Tells the glyph mapper to color by the named scalar variable.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 6, 2004 
+//
+// ****************************************************************************
+
+void
+avtVectorGlyphMapper::ColorByScalarOn(const string &sn)
+{
+    colorByMag = false;
+    colorByScalar = true;
+    scalarName = sn;
+
+    if (glyphFilter != NULL)
+    {
+        for (int i = 0 ; i < nGlyphFilters ; i++)
+        {
+            if (glyphFilter[i] != NULL)
+            {
+                glyphFilter[i]->SetColorModeToColorByScalar();
+                glyphFilter[i]->SelectInputScalars(scalarName.c_str());
             }
         }
     }
@@ -449,6 +497,10 @@ avtVectorGlyphMapper::ColorByMagOn(void)
 //  Programmer:   Hank Childs
 //  Creation:     March 23, 2001
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Aug  9 13:54:42 PDT 2004
+//    Set colorByScalar to false.
+//
 // ****************************************************************************
 
 void
@@ -458,6 +510,7 @@ avtVectorGlyphMapper::ColorByMagOff(const unsigned char col[3])
     glyphColor[1] = col[1];
     glyphColor[2] = col[2];
     colorByMag = false;
+    colorByScalar = false;
   
     if (actors != NULL)
     {

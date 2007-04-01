@@ -55,6 +55,9 @@ class  vtkRenderer;
 //    Kathleen Bonnell, Tue Jun  1 17:40:33 PDT 2004 
 //    Added bool args to RequriesReExecuteForQuery. 
 //
+//    Jeremy Meredith, Thu Aug 12 14:13:24 PDT 2004
+//    Added a const method for GetInfo.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtBehavior
@@ -67,7 +70,8 @@ class PLOTTER_API avtBehavior
     void                       Remove(vtkRenderer *);
  
     void                       SetInfo(const avtDataObjectInformation &);
-    avtDataObjectInformation  &GetInfo(void) { return info; };
+    avtDataObjectInformation       &GetInfo(void) { return info; };
+    const avtDataObjectInformation &GetInfo(void) const { return info; };
 
     void                       GetOriginalBounds(float [6]);
     void                       GetActualBounds(float [6]);

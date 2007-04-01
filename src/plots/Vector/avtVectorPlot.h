@@ -44,6 +44,12 @@ class     avtLookupTable;
 //    Brad Whitlock, Mon Dec 2 11:57:57 PDT 2002
 //    I added a legend.
 //
+//    Mark C. Miller, Wed Aug 11 23:42:18 PDT 2004
+//    Added GetCellCountMultiplierForSRThreshold()
+//
+//    Kathleen Bonnell, Mon Aug  9 14:33:26 PDT 2004 
+//    Added magVarName, ComputeMagVarName, and SetMapperColors.
+//
 // ****************************************************************************
 
 class avtVectorPlot : public avtPointDataPlot
@@ -59,6 +65,8 @@ class avtVectorPlot : public avtPointDataPlot
 
     virtual void                SetAtts(const AttributeGroup*);
     virtual bool                SetColorTable(const char *ctName);
+
+    virtual float               GetCellCountMultiplierForSRThreshold() const;
 
   protected:
     VectorAttributes            atts;
@@ -82,6 +90,9 @@ class avtVectorPlot : public avtPointDataPlot
     virtual avtLegend_p         GetLegend(void) { return varLegendRefPtr; };
     void                        SetLegend(bool);
     void                        SetLegendRanges();
+    void                        ComputeMagVarName(const std::string &);
+    void                        SetMapperColors(void);
+    std::string                 magVarName;
 };
 
 

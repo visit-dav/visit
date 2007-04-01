@@ -9,6 +9,13 @@
 #include <vtkVectorReduceFilter.h>
 #include <vtkVertexFilter.h>
 
+#include <Expression.h>
+#include <ExpressionList.h>
+#include <ParsingExprList.h>
+
+#include <string.h>
+using std::string;
+
 
 // ****************************************************************************
 //  Method: avtVectorFilter constructor
@@ -197,7 +204,7 @@ avtVectorFilter::Equivalent(bool us, int red)
 // ****************************************************************************
 
 vtkDataSet *
-avtVectorFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
+avtVectorFilter::ExecuteData(vtkDataSet *inDS, int, string)
 {
     vtkPolyData *outPD = vtkPolyData::New();
 
@@ -271,3 +278,63 @@ avtVectorFilter::ReleaseData(void)
 }
 
 
+// ****************************************************************************
+//  Method: avtVectorFilter::SetMagVarName
+//
+//  Purpose:
+//    Sets the name that should be used when creating the magnitude data
+//    array. 
+//
+//  Arguments:
+//    mname     The name of the magnitude array.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 9, 2004 
+//
+// ****************************************************************************
+
+void
+avtVectorFilter::SetMagVarName(const string &mname)
+{
+    magVarName = mname;
+}
+
+
+// ****************************************************************************
+//  Method: avtVectorFilter::PerformRestriction
+//
+//  Purpose:  Create an expression for the magnitude of the requested
+//            vector variable, so that the vectors are colored correctly.
+// 
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 9, 2004 
+//
+// ****************************************************************************
+
+avtPipelineSpecification_p
+avtVectorFilter::PerformRestriction(avtPipelineSpecification_p pspec)
+{
+    avtPipelineSpecification_p rv = pspec;
+    avtDataSpecification_p ds = pspec->GetDataSpecification();
+    //
+    // Create the expression definition
+    //
+    string edef = string("magnitude(") + ds->GetVariable() + string(")");
+
+    ExpressionList *elist = ParsingExprList::Instance()->GetList();
+    Expression *e = new Expression();
+        
+    e->SetName(magVarName.c_str());
+    e->SetDefinition(edef.c_str());
+    e->SetType(Expression::ScalarMeshVar);
+    elist->AddExpression(*e);
+    delete e;
+
+    // Create a new dpspec so that we can add the secondary var.
+    avtDataSpecification_p nds = new avtDataSpecification(ds->GetVariable(),
+                ds->GetTimestep(), ds->GetRestriction());
+    nds->AddSecondaryVariable(magVarName.c_str());
+    rv = new avtPipelineSpecification(pspec, nds);
+
+    return rv;
+}

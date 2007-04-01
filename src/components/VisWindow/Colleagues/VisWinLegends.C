@@ -173,6 +173,9 @@ VisWinLegends::SetForegroundColor(float fr, float fg, float fb)
 //    Modified the routine to set the database information to NULL if
 //    mainDBInfoVisible is false.
 //
+//    Kathleen Bonnell, Thu Aug 12 13:07:29 PDT 2004 
+//    Added call to set legend's global visibility state. 
+//
 // ****************************************************************************
 
 void
@@ -188,6 +191,7 @@ VisWinLegends::PositionLegends(vector<avtActor_p> &lst)
         avtDataAttributes &atts = b->GetInfo().GetAttributes();
         if (*legend != NULL)
         {
+            legend->SetGlobalVisibility(legendVisible);
             if(legendVisible && legend->GetLegendOn())
             {
                 if (homogeneous || !mainDBInfoVisible)

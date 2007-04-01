@@ -66,6 +66,9 @@ class Xfer;
 //    Mark C. Miller, Wed Jul  7 11:42:09 PDT 2004
 //    Added NewHandler
 //
+//    Mark C. Miller, Wed Aug 11 23:42:18 PDT 2004
+//    Added argument for cellCountMultiplier to WriteData
+//
 // ****************************************************************************
 
 class Engine
@@ -96,6 +99,7 @@ class Engine
                         bool respondWithNull=false, int scalableThresold=-1,
                         bool *scalableThresholdExceeded=0,
                         int currentTotalGlobalCellCount=0,
+                        float cellCountMultiplier=1.0,
                         int* currentNetworkGlobalCellCount=0);
     void            SendKeepAliveReply();
 
