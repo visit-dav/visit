@@ -13,18 +13,25 @@
 
 <p>Welcome to VisIt's release notes page. This page describes the important
 enhancements and bug-fixes that were added to this release.</p>
-
+<p><b><font size="4">Features added in version 1.2.7</font></b></p>
+<ul>
+  <li>The iso volume operator has been added to VisIt.</li>
+  <li>The performance of the material interface reconstruction, contour and slice operators has been improved by about 5 - 10 percent.</li>
+  <li>The reading of unstructured meshes from Silo files has been improved by about 10 percent.</li>
+</ul>
 <p><b><font size="4">Bugs fixed in version 1.2.7</font></b></p>
 <ul>
-  <li>VisIt issues a warning when the size of history variables is not the expected value.</li>
-  <li>VisIt uses invalid extents when using material selection.</li>
+  <li>The values for eff_stress from Mili files are incorrect.</li>
+  <li>VisIt should not issue a warning message when the number of entries in a zonal variable equals the number of entries in the mesh excluding ghost zones.</li>
+  <li>VisIt uses invalid variable extents when material selecting a variable where the number of entries in a zonal variable equals the number of entries in the mesh excluding ghost zones.</li>
   <li>VisIt does not handle quad cells that are stored in the file as hexes.</li>
-  <li>Extreme slowness when opening the first file.</li>
-  <li>The metadata server should load plugins on startup.</li>
-  <li>Report domain when internal error with variable size.</li>
-  <li>PickByNode and PickByNode queries need range checking so VisIt does not crash.</li>
-  <li>Magnitude of contour plot with log scaling acted funny for an expression.</li>
-  <li>When the VisIt is run in parallel, the vis window has a different view when it contains curves than it would had VisIt been run serially.</li>
+  <li>VisIt is slow opening a Mili file.</li>
+  <li>VisIt should report the domain number when reporting an error in a data file.</li>
+  <li>2D vectors should be drawn on top of the mesh to improve the visibility of the vectors.</li>
+  <li>VisIt crashes when PickByNode and PickByNode queries are given out of range index values.</li>
+  <li>The contour levels are incorrect when using log scaling on expression variables.</li>
+  <li>VisIt sets the window limits incorrectly for curve plots when run in parallel.</li>
+  <li>Creating a boundary plot of an index selected variable doesn't work.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.2.6.html">VisIt 1.2.6 Release Notes</a>.</p>
