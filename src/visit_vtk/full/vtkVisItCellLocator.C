@@ -264,6 +264,10 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3], float tol,
 //    more accurate picking.  Call to static method GetParametricDistance
 //    can be replaced by cell->GetParamatricDistance when we upgrade to the 
 //    vtk version (> May 7, 2003) that supports this. 
+//
+//    Hank Childs, Fri Aug 27 15:15:20 PDT 2004
+//    Rename ghost data array.
+//
 
 int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3], float tol,
                                       float& t, float x[3], float pcoords[3],
@@ -290,7 +294,7 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3], float tol,
   float deltaT, pDistance, minPDistance = 1.0e38;
   float length, maxLength = 0.0;
   vtkUnsignedCharArray *ghosts = 
-    (vtkUnsignedCharArray *)this->DataSet->GetCellData()->GetArray("vtkGhostLevels");
+    (vtkUnsignedCharArray *)this->DataSet->GetCellData()->GetArray("avtGhostZones");
   
   // convert the line into i,j,k coordinates
   tMax = 0.0;
@@ -511,6 +515,9 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3], float tol,
 //   Ensure that the 't' argument gets the correct value upon successful
 //   intersection.
 //
+//    Hank Childs, Fri Aug 27 15:15:20 PDT 2004
+//    Rename ghost data array.
+//
 int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3], 
                                       float& t, float x[3], float pcoords[3],
                                       int &subId, vtkIdType &cellId)
@@ -538,7 +545,7 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3],
   float tempT, tempX[3], pc[3];
   int tempId;
   vtkUnsignedCharArray *ghosts = 
-    (vtkUnsignedCharArray *)this->DataSet->GetCellData()->GetArray("vtkGhostLevels");
+    (vtkUnsignedCharArray *)this->DataSet->GetCellData()->GetArray("avtGhostZones");
 
   // convert the line into i,j,k coordinates
   tMax = 0.0;
@@ -738,6 +745,14 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3],
   return (bestCellId >= 0);
 }
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 27 15:15:20 PDT 2004
+//    Rename ghost data array.
+//
+// ****************************************************************************
+
 // Return closest point (if any) AND the cell on which this closest point lies
 void vtkVisItCellLocator::FindClosestPoint(float x[3], float closestPoint[3], 
                                       vtkGenericCell *cell, vtkIdType &cellId,
@@ -758,7 +773,7 @@ void vtkVisItCellLocator::FindClosestPoint(float x[3], float closestPoint[3],
   int nWeights = 6, nPoints, cellIsGhost;
   vtkIdList *cellIds;
   vtkUnsignedCharArray *ghosts =
-    (vtkUnsignedCharArray *)this->DataSet->GetCellData()->GetArray("vtkGhostLevels");
+    (vtkUnsignedCharArray *)this->DataSet->GetCellData()->GetArray("avtGhostZones");
   
   leafStart = this->NumberOfOctants
     - this->NumberOfDivisions*this->NumberOfDivisions*this->NumberOfDivisions;
@@ -1018,6 +1033,13 @@ void vtkVisItCellLocator::FindClosestPoint(float x[3], float closestPoint[3],
 }
 
 int vtkVisItCellLocator::FindClosestPointWithinRadius(float x[3], float radius,
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 27 15:15:20 PDT 2004
+//    Rename ghost data array.
+//
+// ****************************************************************************
                                                  float closestPoint[3],
                                                  vtkGenericCell *cell,
                                                  vtkIdType &cellId, int &subId,
@@ -1039,7 +1061,7 @@ int vtkVisItCellLocator::FindClosestPointWithinRadius(float x[3], float radius,
   vtkIdList *cellIds; 
   int cellIsGhost;
   vtkUnsignedCharArray *ghosts =
-    (vtkUnsignedCharArray *)this->DataSet->GetCellData()->GetArray("vtkGhostLevels");
+    (vtkUnsignedCharArray *)this->DataSet->GetCellData()->GetArray("avtGhostZones");
   
   float refinedRadius, radius2, refinedRadius2, distance2ToBucket;
   float distance2ToCellBounds, cellBounds[6], currentRadius;
@@ -3040,6 +3062,11 @@ EdgeLineIsect(vtkCell *cell, const float *p1, const float *p2, float *x)
 // Programmer:  Kathleen Bonnell
 // Creation:    July 27, 2004 
 //
+// Modifications:
+//
+//    Hank Childs, Fri Aug 27 15:15:20 PDT 2004
+//    Rename ghost data array.
+//
 // ****************************************************************************
 int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3], 
                                       vtkPoints *pts, vtkIdList *cells)
@@ -3068,7 +3095,7 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3],
   float tempT, tempX[3], pc[3];
   int tempId;
   vtkUnsignedCharArray *ghosts = 
-    (vtkUnsignedCharArray *)this->DataSet->GetCellData()->GetArray("vtkGhostLevels");
+    (vtkUnsignedCharArray *)this->DataSet->GetCellData()->GetArray("avtGhostZones");
 
   int ncells = this->DataSet->GetNumberOfCells();
   int ncellsTested = 0;

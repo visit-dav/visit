@@ -8,7 +8,7 @@
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
-#include <vtkFeatureEdges.h>
+#include <vtkVisItFeatureEdges.h>
 #include <vtkIdList.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -86,6 +86,12 @@ avtFeatureEdgesFilter::~avtFeatureEdgesFilter()
 //    Improved for the single cell case -- VTK feature edges was handling
 //    poorly.
 //
+//    Hank Childs, Tue Aug 31 08:40:44 PDT 2004
+//    The VTK feature edges filter removes edges that have "vtkGhostLevels".
+//    But we now use "avtGhostZones" to indicate this.  So we need to remove
+//    the ghost zones ourselves to do what used to be done from within the
+//    feature edges filter.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -161,11 +167,8 @@ avtFeatureEdgesFilter::ExecuteData(vtkDataSet *inDS, int, string)
         //
         // Set up and apply the filter
         //
-        vtkFeatureEdges *featureEdgesFilter = vtkFeatureEdges::New();
+        vtkVisItFeatureEdges *featureEdgesFilter = vtkVisItFeatureEdges::New();
         featureEdgesFilter->SetInput((vtkPolyData*)inDS);
-        vtkPolyData *newDS = vtkPolyData::New();
-        featureEdgesFilter->SetOutput(newDS);
-
         featureEdgesFilter->BoundaryEdgesOn();
         if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 3)
         {
@@ -180,14 +183,14 @@ avtFeatureEdgesFilter::ExecuteData(vtkDataSet *inDS, int, string)
         featureEdgesFilter->ManifoldEdgesOff();
         featureEdgesFilter->ColoringOff();
 
-        newDS->Update();
+        vtkDataSet *output = featureEdgesFilter->GetOutput();
+        output->Update();
 
-        if (newDS->GetNumberOfCells() > 0)
+        if (output->GetNumberOfCells() > 0)
         {
-            outDS = newDS;
+            outDS = output;
         }
         ManageMemory(outDS);
-        newDS->Delete();
         featureEdgesFilter->Delete();
     }
 

@@ -350,6 +350,9 @@ avtSiloDumpFilter::PreExecute()
 //    vtkScalars and vtkVectors have been deprecated in VTK 4.0, 
 //    use vtkDataArray instead.
 //
+//    Hank Childs, Fri Aug 27 15:25:22 PDT 2004
+//    Rename ghost data array.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -378,7 +381,7 @@ avtSiloDumpFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
     {
         in_cs = in_ds->GetCellData()->GetScalars();
         in_cv = in_ds->GetCellData()->GetVectors();
-        vtkDataArray *tmp_gl = in_ds->GetCellData()->GetArray("vtkGhostLevels");
+        vtkDataArray *tmp_gl = in_ds->GetCellData()->GetArray("avtGhostZones");
         in_gl = tmp_gl ? ((vtkUnsignedCharArray*)tmp_gl)->GetPointer(0) : NULL;
     }
 

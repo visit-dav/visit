@@ -235,6 +235,9 @@ avtIndexSelectFilter::Equivalent(const AttributeGroup *a)
 //    Jeremy Meredith, Fri Jan 30 17:45:47 PST 2004
 //    Added code to preserve dataset type if the input was polydata.
 //
+//    Hank Childs, Fri Aug 27 15:25:22 PDT 2004
+//    Rename ghost data array.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -256,7 +259,7 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         // between blocks.
         //
         vtkDataSetRemoveGhostCells *removeGhostCells = NULL;
-        if (in_ds->GetCellData()->GetArray("vtkGhostLevels"))
+        if (in_ds->GetCellData()->GetArray("avtGhostZones"))
         {
             removeGhostCells  = vtkDataSetRemoveGhostCells::New();
             removeGhostCells->SetInput(ds);

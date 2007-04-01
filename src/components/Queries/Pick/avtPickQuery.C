@@ -1043,6 +1043,9 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
 //    I made it use the cell origin for the domain logical indices and I
 //    changed sprintf to SNPRINTF.
 //
+//    Hank Childs, Fri Aug 27 16:54:45 PDT 2004
+//    Rename ghost data array.
+//
 // ****************************************************************************
 
 bool
@@ -1068,7 +1071,7 @@ avtPickQuery::RetrieveZones(vtkDataSet *ds, int foundNode)
     else
     {
         ghostArray  = (vtkUnsignedCharArray *)ds->GetCellData()->
-            GetArray("vtkGhostLevels");
+            GetArray("avtGhostZones");
         if (ghostArray)
             ghosts = ghostArray->GetPointer(0);
 

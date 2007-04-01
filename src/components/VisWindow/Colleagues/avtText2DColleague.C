@@ -201,7 +201,10 @@ avtText2DColleague::ShouldBeAddedToRenderer() const
 // Creation:   Thu Nov 6 15:54:02 PST 2003
 //
 // Modifications:
-//   
+//    Brad Whitlock, Tue Aug 31 11:56:56 PDT 2004
+//    I added code to set the object's visibility so objects that are not
+//    visible remain invisible when restoring a session file.
+//
 // ****************************************************************************
 
 void
@@ -298,6 +301,18 @@ avtText2DColleague::SetOptions(const AnnotationObject &annot)
         pos->SetValue(p1[0], p1[1], 0.);
         textActor->SetWidth(p2[0]);
         textActor->SetHeight(p2[0]);
+    }
+
+    //
+    // Set the object's visibility.
+    //
+    if(currentOptions.GetVisible() != annot.GetVisible())
+    {
+        SetVisible(annot.GetVisible());
+        if(annot.GetVisible())
+            AddToRenderer();
+        else
+            RemoveFromRenderer();
     }
 }
 

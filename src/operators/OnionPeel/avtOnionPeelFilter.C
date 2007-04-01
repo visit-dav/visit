@@ -183,6 +183,9 @@ avtOnionPeelFilter::Equivalent(const AttributeGroup *a)
 //    Kathleen Bonnell, Fri Dec 19 09:07:33 PST 2003 
 //    Verify logical indices for groups are valid for this domain. 
 //
+//    Hank Childs, Fri Aug 27 15:25:22 PDT 2004
+//    Rename ghost data array.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -243,7 +246,7 @@ avtOnionPeelFilter::ExecuteData(vtkDataSet *in_ds, int DOM, std::string)
     }
     vtkDataSet *ds = in_ds;
     vtkDataSetRemoveGhostCells *removeGhostCells = NULL;
-    if (in_ds->GetCellData()->GetArray("vtkGhostLevels"))
+    if (in_ds->GetCellData()->GetArray("avtGhostZones"))
     {
         removeGhostCells = vtkDataSetRemoveGhostCells::New();
         removeGhostCells->SetInput(ds);

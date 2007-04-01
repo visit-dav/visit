@@ -227,6 +227,10 @@ SetActiveTimeSliderAction::SetActiveTimeSliderAction(ViewerWindow *win) :
 //   Added code to expand the time slider name in case it contains relative
 //   paths, etc.
 //
+//   Brad Whitlock, Mon Aug 30 14:13:55 PST 2004
+//   I added code to prevent the keyframing time slider from incorrectly being
+//   expanded as a database name.
+//
 // ****************************************************************************
 
 void
@@ -239,15 +243,22 @@ SetActiveTimeSliderAction::Execute()
     ViewerFileServer *fs = ViewerFileServer::Instance();
     DatabaseCorrelationList *cL = fs->GetDatabaseCorrelationList();
     std::string tsName(args.GetDatabase());
+
     if(cL->FindCorrelation(tsName) == 0)
     {
-        std::string host, db;
-        fs->ExpandDatabaseName(tsName, host, db);
-        debug3 << "The new time slider had to be expanded before we could "
-                  "use it. It was called: "
-               << args.GetDatabase().c_str() << ". Now it is called: "
-               << tsName.c_str() << endl;
-    }
+        // If we're in keyframe mode, only expand the database name if the
+        // name of the time slider is not the same as the keyframing time
+        // slider.
+        if(window->GetPlotList()->GetKeyframeMode() ? (tsName != KF_TIME_SLIDER) : true)
+        {
+            std::string host, db;
+            fs->ExpandDatabaseName(tsName, host, db);
+            debug3 << "The new time slider had to be expanded before we could "
+                      "use it. It was called: "
+                   << args.GetDatabase().c_str() << ". Now it is called: "
+                   << tsName.c_str() << endl;
+        }
+    } 
 
     windowMgr->SetActiveTimeSlider(tsName, windowId);
 }

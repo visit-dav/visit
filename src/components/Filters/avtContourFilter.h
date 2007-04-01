@@ -51,6 +51,10 @@ class vtkDataSet;
 //    hold string representation of computed isoValues.  Added method
 //    CreateLabels.
 //
+//    Hank Childs, Mon Aug 30 09:03:38 PDT 2004
+//    Do a better job of providing progress.  Added two data members, nnodes
+//    and current_node to help with bookkeeping.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtContourFilter : public avtDataTreeStreamer
@@ -79,6 +83,9 @@ class AVTFILTERS_API avtContourFilter : public avtDataTreeStreamer
     int                        nLevels;
     std::vector<double>        isoValues;
     std::vector<std::string>   isoLabels;
+
+    int                        nnodes;
+    int                        current_node;
 
     virtual avtPipelineSpecification_p
                                PerformRestriction(avtPipelineSpecification_p);

@@ -529,6 +529,9 @@ avtReflectFilter::Reflect(vtkDataSet *ds, int dim)
 //    Hank Childs, Wed Aug 11 14:43:44 PDT 2004
 //    Create ghost nodes for nodes on a reflection plane.
 //
+//    Hank Childs, Fri Aug 27 15:25:22 PDT 2004
+//    Rename ghost data arrays.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -576,7 +579,7 @@ avtReflectFilter::ReflectRectilinear(vtkRectilinearGrid *ds, int dim)
     HasNeighbor(dim, doX, doY, doZ);
 
     vtkUnsignedCharArray *gn = vtkUnsignedCharArray::New();
-    gn->SetName("vtkGhostNodes");
+    gn->SetName("avtGhostNodes");
     gn->SetNumberOfTuples(nPts);
     unsigned char *gnp = gn->GetPointer(0);
 
@@ -717,6 +720,9 @@ avtReflectFilter::ReflectDataArray(vtkDataArray *coords, double val)
 //    Hank Childs, Wed Aug 11 14:43:44 PDT 2004
 //    Create ghost nodes for nodes on a reflection plane.
 //
+//    Hank Childs, Fri Aug 27 15:25:22 PDT 2004
+//    Rename ghost data arrays.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -736,7 +742,7 @@ avtReflectFilter::ReflectPointSet(vtkPointSet *ds, int dim)
     HasNeighbor(dim, doX, doY, doZ);
 
     vtkUnsignedCharArray *gn = vtkUnsignedCharArray::New();
-    gn->SetName("vtkGhostNodes");
+    gn->SetName("avtGhostNodes");
     gn->SetNumberOfTuples(nPts);
     unsigned char *gnp = gn->GetPointer(0);
 

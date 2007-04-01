@@ -15,6 +15,7 @@
 
 #include <avtDatabaseMetaData.h>
 #include <avtDatabase.h>
+#include <avtGhostData.h>
 #include <Expression.h>
 
 #include <InvalidVariableException.h>
@@ -491,6 +492,9 @@ avtOVERFLOWFileFormat::FreeUpResources(void)
 //    Brad Whitlock, Wed Aug 11 17:56:42 PST 2004
 //    Made it build on Windows.
 //
+//    Hank Childs, Tue Aug 31 12:46:29 PDT 2004
+//    Remove variable "gn" which was accidentally left over from testing.
+//
 // ****************************************************************************
 
 void
@@ -530,7 +534,6 @@ avtOVERFLOWFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         SNPRINTF(name, 1024, "Q%d", i+1);
         AddScalarVarToMetaData(md, name, "mesh", AVT_NODECENT);
     }
-    AddScalarVarToMetaData(md, "gn", "mesh", AVT_NODECENT);
 
     //
     // The "global" variables work well as expressions with no type
@@ -571,6 +574,11 @@ avtOVERFLOWFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //  Programmer: Jeremy Meredith
 //  Creation:   July 21, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 27 17:16:05 PDT 2004
+//    Rename ghost data arrays.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -605,7 +613,7 @@ avtOVERFLOWFileFormat::GetMesh(int domain, const char *meshname)
     float *pts = (float *) points->GetVoidPointer(0);
 
     vtkUnsignedCharArray *gn = vtkUnsignedCharArray::New();
-    gn->SetName("vtkGhostNodes");
+    gn->SetName("avtGhostNodes");
     gn->SetNumberOfTuples(npts);
     sgrid->GetPointData()->AddArray(gn);
     gn->Delete();
@@ -676,7 +684,11 @@ avtOVERFLOWFileFormat::GetMesh(int domain, const char *meshname)
         // new "2" ghost node value, as these should be treated slightly
         // differently from our other usage of ghost nodes.
 
-        *gn_raw++ = (ib[i] < 0) ? 2 : 0;
+        *gn_raw = 0;
+        if (ib[i] < 0)
+           avtGhostData::AddGhostNodeType(*gn_raw, 
+                                          NODE_NOT_APPLICABLE_TO_PROBLEM);
+        gn_raw++;
     }
 
 

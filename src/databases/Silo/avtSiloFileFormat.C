@@ -22,6 +22,7 @@
 #include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
 #include <avtFacelist.h>
+#include <avtGhostData.h>
 #include <avtIOInformation.h>
 #include <avtMaterial.h>
 #include <avtSpecies.h>
@@ -3911,6 +3912,9 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
 //    Make sure the cell locations for quads that are stored as hexahedrons
 //    is correct.
 //
+//    Hank Childs, Fri Aug 27 17:18:37 PDT 2004
+//    Rename ghost zone arrays.
+//
 // ****************************************************************************
 
 void
@@ -4061,8 +4065,8 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
     cells->Delete();
 
     //
-    //  Tell the ugrid which of its zones are real (vtkGhostLevel = 0),
-    //  which are ghost (vtkGhostLevel = 1), but only create the ghost
+    //  Tell the ugrid which of its zones are real (avtGhostZone = 0),
+    //  which are ghost (avtGhostZone = 1), but only create the ghost
     //  zones array if ghost zones are actually present.
     //
     const int first = zl->min_index;  // where the real zones start
@@ -4096,7 +4100,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
         //  recognize these as ghost levels.
         //
         vtkUnsignedCharArray *ghostZones = vtkUnsignedCharArray::New();
-        ghostZones->SetName("vtkGhostLevels");
+        ghostZones->SetName("avtGhostZones");
         ghostZones->SetNumberOfTuples(numCells);
         unsigned char *tmp = ghostZones->GetPointer(0);
         for (i = 0; i < first; i++)
@@ -4104,7 +4108,10 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
             //
             //  ghostZones at the begining of the zone list
             //
-            *tmp++ = 1;
+            unsigned char val = 0;
+            avtGhostData::AddGhostZoneType(val, 
+                                          DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+            *tmp++ = val;
         }
         for (i = first; i <= last; i++)
         {
@@ -4118,7 +4125,10 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
             //
             //  ghostZones at the end of the zone list
             //
-            *tmp++ = 1;
+            unsigned char val = 0;
+            avtGhostData::AddGhostZoneType(val, 
+                                          DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+            *tmp++ = val;
         }
         ugrid->GetCellData()->AddArray(ghostZones);
         ghostZones->Delete();
@@ -4694,6 +4704,9 @@ avtSiloFileFormat::CreateCurvilinearMesh(DBquadmesh *qm)
 //    Allocate does not set some internal values needed for later calls to
 //    GetNumberOfTuples and the like. 
 //    
+//    Hank Childs, Fri Aug 27 17:22:19 PDT 2004
+//    Rename ghost data array.
+//
 // ****************************************************************************
 
 void 
@@ -4767,11 +4780,14 @@ avtSiloFileFormat::GetQuadGhostZones(DBquadmesh *qm, vtkDataSet *ds)
         //  are ghost cells ... convert:  if all points associated with
         //  cell are 'real' then so is the cell.
         //
-        unsigned char realVal = 0, ghostVal = 1;
+        unsigned char realVal = 0;
+        unsigned char ghostVal = 0;
+        avtGhostData::AddGhostZoneType(ghostVal, 
+                                       DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
         int ncells = ds->GetNumberOfCells();
         vtkIdList *ptIds = vtkIdList::New();
         vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
-        ghostCells->SetName("vtkGhostLevels");
+        ghostCells->SetName("avtGhostZones");
         ghostCells->Allocate(ncells);
  
         for (int i = 0; i < ncells; i++)

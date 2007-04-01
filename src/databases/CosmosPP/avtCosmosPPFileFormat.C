@@ -19,6 +19,7 @@
 
 #include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
+#include <avtGhostData.h>
 
 #include <BadIndexException.h>
 #include <DebugStream.h>
@@ -242,6 +243,9 @@ avtCosmosPPFileFormat::~avtCosmosPPFileFormat()
 //    points along a plane.  So we are going to code around it and dummy up
 //    z-values as x-values.
 //
+//    Hank Childs, Fri Aug 27 16:54:45 PDT 2004
+//    Rename ghost data array.
+//
 // ****************************************************************************
 
 void
@@ -441,7 +445,7 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
     H5Aread(attr1, H5T_NATIVE_INT, &numInternalZones);
 
     vtkUnsignedCharArray *ghosts = vtkUnsignedCharArray::New();
-    ghosts->SetName("vtkGhostLevels");
+    ghosts->SetName("avtGhostZones");
     ghosts->SetNumberOfTuples(nzones);
     if (numInternalZones > nzones)
     {
@@ -461,8 +465,11 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
 
     for (i = 0 ; i < numInternalZones ; i++)
         ghosts->SetTuple1(i, 0);
+    unsigned char ghostVal = 0;
+    avtGhostData::AddGhostZoneType(ghostVal, 
+                                   DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
     for (i = numInternalZones ; i < nzones ; i++)
-        ghosts->SetTuple1(i, 1);
+        ghosts->SetTuple1(i, ghostVal);
     dataset[ts][dom]->GetCellData()->AddArray(ghosts);
     ghosts->Delete();
 
@@ -489,6 +496,11 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
 //  Programmer:  Hank Childs
 //  Creation:    November 24, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 27 16:54:45 PDT 2004
+//    Rename ghost data array.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -511,7 +523,7 @@ avtCosmosPPFileFormat::GetMesh(int ts, int dom, const char *mesh)
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
     ugrid->CopyStructure(dataset[ts][dom]);
     ugrid->GetCellData()->AddArray(
-                  dataset[ts][dom]->GetCellData()->GetArray("vtkGhostLevels"));
+                  dataset[ts][dom]->GetCellData()->GetArray("avtGhostZones"));
     return ugrid;
 }
 

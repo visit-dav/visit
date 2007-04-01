@@ -591,6 +591,10 @@ vtkVisItAxisActor::SetLabelPositions(vtkViewport *viewport, bool force)
 //    Added bool argument that allow the build to be forced, even if
 //    the title won't be visible. 
 //   
+//    Kathleen Bonnell, Tue Aug 31 16:17:43 PDT 2004 
+//    Added TitleTime test so that the title can be rebuilt when its
+//    text has changed.
+//
 // **********************************************************************
 
 void
@@ -610,7 +614,8 @@ vtkVisItAxisActor::BuildTitle(bool force)
 
   if (!force && this->LabelBuildTime.GetMTime() < this->BuildTime.GetMTime() &&
       this->BoundsTime.GetMTime() < this->BuildTime.GetMTime() &&
-      this->AxisPosition == this->LastAxisPosition)
+      this->AxisPosition == this->LastAxisPosition &&
+      this->TitleTextTime.GetMTime() < this->BuildTime.GetMTime())
    {
    return;
    }
@@ -1541,4 +1546,41 @@ vtkVisItAxisActor::SetTitleScale(const float s)
   this->TitleActor->SetScale(s);
 }
 
+// *********************************************************************
+// Method:  vtkVisItAxisActor::SetTitle
+//
+// Purpose: Sets the text for the title.  
+//
+// Notes:   Not using vtkSetStringMacro so that the modification time of 
+//          the text can be kept (so the title will be updated as
+//          appropriate when the text changes.)
+//
+// Arguments:
+//   t          The text to use. 
+//
+// Programmer:  Kathleen Bonnell
+// Creation:    August 31, 2004 
+//
+// *********************************************************************
 
+void
+vtkVisItAxisActor::SetTitle(const char *t)
+{
+  if (this->Title == NULL && t == NULL)
+    return;
+  if (this->Title && (!strcmp(this->Title, t)))
+    return;
+  if (this->Title)
+    delete [] this->Title;
+  if (t)
+    {
+    this->Title = new char[strlen(t)+1];
+    strcpy(this->Title, t);
+    }
+  else 
+    {
+    this->Title = NULL;
+    }
+  this->TitleTextTime.Modified();
+  this->Modified();
+}

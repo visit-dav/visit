@@ -253,6 +253,9 @@ avtSummationQuery::PostExecute(void)
 //    Hank Childs, Tue Aug 24 08:22:24 PDT 2004
 //    Add support for ghost nodes.
 //
+//    Hank Childs, Fri Aug 27 16:02:58 PDT 2004
+//    Rename ghost data array.
+//
 // ****************************************************************************
 
 void
@@ -275,13 +278,13 @@ avtSummationQuery::Execute(vtkDataSet *ds, const int dom)
     if (!pointData && !sumGhostValues)
     {
         ghost_zones = (vtkUnsignedCharArray *)
-                                 ds->GetCellData()->GetArray("vtkGhostLevels");
+                                  ds->GetCellData()->GetArray("avtGhostZones");
     }
     vtkUnsignedCharArray *ghost_nodes = NULL;
     if (!sumGhostValues)
     {
         ghost_nodes = (vtkUnsignedCharArray *)
-                                 ds->GetPointData()->GetArray("vtkGhostNodes");
+                                 ds->GetPointData()->GetArray("avtGhostNodes");
     }
 
     int nValues = arr->GetNumberOfTuples();

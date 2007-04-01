@@ -86,6 +86,9 @@ avtRevolvedSurfaceArea::PreExecute(void)
 //    The variable created must have the same number of tuples as the input
 //    dataset.
 //
+//    Hank Childs, Mon Aug 30 17:09:57 PDT 2004
+//    Remove call to SetGhostLevel for vtkDataSetRemoveGhostCells filter.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -147,7 +150,6 @@ avtRevolvedSurfaceArea::DeriveVariable(vtkDataSet *in_ds)
     // Remove ghost zones.
     //
     vtkDataSetRemoveGhostCells *gzFilter = vtkDataSetRemoveGhostCells::New();
-    gzFilter->SetGhostLevel(1);
     gzFilter->SetInput(allLines);
     vtkDataSet *ds_1d_nogz = gzFilter->GetOutput();
     ds_1d_nogz->Update();

@@ -358,6 +358,9 @@ avtSurfaceFilter::SkewTheValue(const double val)
 //    Changed the Z-axis's units so they match the variable's units if
 //    the variable has any units.
 //
+//    Hank Childs, Mon Aug 30 08:04:05 PDT 2004
+//    Set the label for the surface plot as well.
+//
 // ****************************************************************************
 
 void
@@ -380,6 +383,20 @@ avtSurfaceFilter::RefashionDataObjectInfo(void)
         double tform[16] = {1.,0.,0.,0.,0.,1.,0.,0.,0.,0.,0.,0.,0.,0.,0.,1.};
         da.SetInvTransform(tform);
     }
+ 
+    //
+    // Set the variable name as the label of the z-axis.
+    //
+    TRY
+    {
+        avtDataAttributes &in_da = GetInput()->GetInfo().GetAttributes();
+        da.SetZLabel(in_da.GetVariableName());
+    }
+    CATCH(ImproperUseException)
+    {
+        ; // nothing
+    }
+    ENDTRY
 
     //
     // Set the Z-axis's units to match the variable units.

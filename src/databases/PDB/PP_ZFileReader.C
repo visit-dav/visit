@@ -17,6 +17,7 @@
 #include <vtkUnstructuredGrid.h>
 
 #include <avtDatabaseMetaData.h>
+#include <avtGhostData.h>
 #include <avtMaterial.h>
 #include <avtMixedVariable.h>
 
@@ -1044,6 +1045,10 @@ PP_ZFileReader::AddRayMetaData(avtDatabaseMetaData *md)
 //   For avtRealDims array, size should not be larger (but can be smaller)
 //   than the Dimensions of the vtkRectilinearGrid or vtkStructuredGrid.
 //   
+//   Hank Childs, Fri Aug 27 17:18:37 PDT 2004
+//   Rename ghost data array.  Also set appropriate ghost type using new
+//   convention.
+//
 // ****************************************************************************
 
 void
@@ -1051,11 +1056,12 @@ PP_ZFileReader::CreateGhostZones(const int *ireg, vtkDataSet *ds)
 {
     if(ireg)
     {
-        unsigned char realVal = 0, ghostVal = 1;
+        unsigned char realVal = 0, ghost = 0;
+        avtGhostData::AddGhostZoneType(ghost, ZONE_NOT_APPLICABLE_TO_PROBLEM);
         int nCells = ds->GetNumberOfCells();
         vtkIdList *ptIds = vtkIdList::New();
         vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
-        ghostCells->SetName("vtkGhostLevels");
+        ghostCells->SetName("avtGhostZones");
         ghostCells->Allocate(nCells);
 
         for(int i = 0; i < nCells; ++i)
@@ -1067,7 +1073,9 @@ PP_ZFileReader::CreateGhostZones(const int *ireg, vtkDataSet *ds)
             int nodeIndex = (cellRow + 1) * kmax + cellCol + 1;
 
             if(ireg[nodeIndex] <= 0)
-                ghostCells->InsertNextValue(ghostVal);
+            {
+                ghostCells->InsertNextValue(ghost);
+            }
             else
                 ghostCells->InsertNextValue(realVal);
         }

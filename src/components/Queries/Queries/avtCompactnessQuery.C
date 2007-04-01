@@ -350,6 +350,9 @@ avtCompactnessQuery::PostExecute(void)
 //    Jeremy Meredith, Fri Apr  2 17:14:11 PST 2004
 //    Added a relevant points filter.
 //
+//    Hank Childs, Mon Aug 30 17:15:30 PDT 2004
+//    Remove call to SetGhostLevel.
+//
 // ****************************************************************************
 
 void
@@ -362,7 +365,6 @@ avtCompactnessQuery::Execute1(vtkDataSet *ds, const int dom)
     // Remove ghost zones from the polygon dataset
     //
     vtkDataSetRemoveGhostCells *gzFilter2 = vtkDataSetRemoveGhostCells::New();
-    gzFilter2->SetGhostLevel(1);
 
     gzFilter2->SetInput(ds);
     vtkDataSet *ds_2d_nogz = gzFilter2->GetOutput();
@@ -431,7 +433,6 @@ avtCompactnessQuery::Execute1(vtkDataSet *ds, const int dom)
     boundaryFilter->ColoringOff();
 
     vtkDataSetRemoveGhostCells *gzFilter1 = vtkDataSetRemoveGhostCells::New();
-    gzFilter1->SetGhostLevel(1);
 
     geomFilter->SetInput(ds);
     boundaryFilter->SetInput(geomFilter->GetOutput());
@@ -516,6 +517,9 @@ avtCompactnessQuery::Execute1(vtkDataSet *ds, const int dom)
 //        the "Boundary", since we are assuming a rotation around y=0
 //        already.
 //
+//    Hank Childs, Mon Aug 30 17:15:30 PDT 2004
+//    Remove call to SetGhostLevel.
+//
 // ****************************************************************************
 
 void
@@ -527,7 +531,6 @@ avtCompactnessQuery::Execute2(vtkDataSet *ds, const int dom)
     // Remove ghost zones from the polygon dataset
     //
     vtkDataSetRemoveGhostCells *gzFilter2 = vtkDataSetRemoveGhostCells::New();
-    gzFilter2->SetGhostLevel(1);
 
     gzFilter2->SetInput(ds);
     vtkDataSet *ds_2d_nogz = gzFilter2->GetOutput();

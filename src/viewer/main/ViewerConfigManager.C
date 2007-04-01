@@ -437,6 +437,9 @@ ViewerConfigManager::ExportEntireState(const std::string &filename)
 //   Added a warning message if the session file is for an older version of
 //   VisIt.
 //
+//   Brad Whitlock, Mon Aug 30 08:50:18 PDT 2004
+//   Changed the wording of a message.
+//
 // ****************************************************************************
 
 void
@@ -471,7 +474,7 @@ ViewerConfigManager::ImportEntireState(const std::string &filename,
                         " Note that the session file was saved using VisIt ";
                     differentVersionMessage += versionNode->AsString();
                     differentVersionMessage +=
-                        " and it may not be 100%% compatible with VisIt ";
+                        " and it may not be 100% compatible with VisIt ";
                     differentVersionMessage += VERSION;
                     differentVersionMessage += ".";
                 }
@@ -484,7 +487,7 @@ ViewerConfigManager::ImportEntireState(const std::string &filename,
                 // Let the parent read its settings.
                 parent->SetFromNode(viewerNode);
 
-                std::string str("VisIt imported an old session from: ");
+                std::string str("VisIt imported a session from: ");
                 str += filename;
                 str += ".";
                 str += differentVersionMessage;

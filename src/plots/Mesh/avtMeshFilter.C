@@ -145,6 +145,9 @@ avtMeshFilter::~avtMeshFilter()
 //    Add support for unglyphed point meshes (i.e. topological dimension
 //    is still 0 after going through the glyph filter).
 //
+//    Hank Childs, Fri Aug 27 15:24:09 PDT 2004
+//    Renamed ghost data array.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -158,12 +161,11 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
 
     avtDataValidity &v = GetInput()->GetInfo().GetValidity();
     if (!v.GetUsingAllData() && 
-        inDS->GetCellData()->GetArray("vtkGhostLevels"))
+        inDS->GetCellData()->GetArray("avtGhostZones"))
     {
         vtkDataSetRemoveGhostCells *ghostFilter = 
              vtkDataSetRemoveGhostCells::New();
         ghostFilter->SetInput(inDS);
-        ghostFilter->SetGhostLevel(1);
         ghostFilter->Update();
         revisedInput = ghostFilter->GetOutput();
         revisedInput->Register(NULL);

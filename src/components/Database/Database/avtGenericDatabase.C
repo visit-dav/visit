@@ -1726,6 +1726,9 @@ avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
 //    point and cell data arrays. That information is now obtained through
 //    the GetAuxiliaryData interface.
 //
+//    Hank Childs, Fri Aug 27 16:16:52 PDT 2004
+//    Rename ghost data arrays.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1796,16 +1799,16 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
     // There are some mesh variables that we want to copy over -- namely
     // those with ghost information or global numbering information.
     //
-    if (mesh->GetCellData()->GetArray("vtkGhostLevels"))
+    if (mesh->GetCellData()->GetArray("avtGhostZones"))
     {
         rv->GetCellData()->AddArray(
-            mesh->GetCellData()->GetArray("vtkGhostLevels"));
+            mesh->GetCellData()->GetArray("avtGhostZones"));
         GetMetaData(ts)->SetContainsGhostZones(meshname, AVT_HAS_GHOSTS);
     }
-    if (mesh->GetPointData()->GetArray("vtkGhostNodes"))
+    if (mesh->GetPointData()->GetArray("avtGhostNodes"))
     {
         rv->GetPointData()->AddArray(
-            mesh->GetPointData()->GetArray("vtkGhostNodes"));
+            mesh->GetPointData()->GetArray("avtGhostNodes"));
         GetMetaData(ts)->SetContainsGhostZones(meshname, AVT_HAS_GHOSTS);
     }
     rv->GetFieldData()->ShallowCopy(mesh->GetFieldData());
@@ -4804,6 +4807,11 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
 //  Programmer: Hank Childs
 //  Creation:   August 13, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 27 16:16:52 PDT 2004
+//    Rename ghost data arrays.
+//
 // ****************************************************************************
 
 bool
@@ -4989,7 +4997,7 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
         int *ptr = int_gni->GetPointer(0);
         int nvals = int_gni->GetNumberOfTuples();
         vtkUnsignedCharArray *ghost_nodes = vtkUnsignedCharArray::New();
-        ghost_nodes->SetName("vtkGhostNodes");
+        ghost_nodes->SetName("avtGhostNodes");
         ghost_nodes->SetNumberOfTuples(nvals);
         for (j = 0 ; j < nvals ; j++)
         {
@@ -6475,6 +6483,9 @@ avtGenericDatabase::QueryMesh(const std::string &varName, const int ts,
 //    Only search for the node if it hasn't already been discovered, 
 //    use the generic ds->GetPoint() method.
 //    
+//    Hank Childs, Fri Aug 27 16:16:52 PDT 2004
+//    Rename ghost data arrays.
+//
 // ****************************************************************************
 
 bool
@@ -6564,7 +6575,7 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
             if (nCells > 0)
             {
                 vtkUnsignedCharArray *ghostArray = (vtkUnsignedCharArray*)
-                    ds->GetCellData()-> GetArray("vtkGhostLevels");   
+                    ds->GetCellData()-> GetArray("avtGhostZones");   
                 unsigned char *ghosts = NULL;
                 if (ghostArray)
                     ghosts = ghostArray->GetPointer(0);
@@ -7181,6 +7192,9 @@ avtGenericDatabase::GetDomainName(const std::string &varName, const int ts,
 //    Kathleen Bonnell, Thu Jun 10 18:15:11 PDT 2004 
 //    Renamed from QueryZoneCenter to QueryCoords, added bool arg. 
 //
+//    Hank Childs, Fri Aug 27 16:16:52 PDT 2004
+//    Rename ghost data arrays.
+//
 // ****************************************************************************
 
 bool
@@ -7198,7 +7212,7 @@ avtGenericDatabase::QueryCoords(const string &varName, const int dom,
             if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID ||
                 ds->GetDataObjectType() == VTK_STRUCTURED_GRID) 
             {
-                if (ds->GetCellData()->GetArray("vtkGhostLevels") != NULL) 
+                if (ds->GetCellData()->GetArray("avtGhostZones") != NULL) 
                 {
                     int dims[3], ijk[3] = {0, 0, 0};
                     vtkVisItUtility::GetDimensions(ds, dims);
@@ -7229,7 +7243,7 @@ avtGenericDatabase::QueryCoords(const string &varName, const int dom,
             if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID ||
                 ds->GetDataObjectType() == VTK_STRUCTURED_GRID) 
             {
-                if (ds->GetCellData()->GetArray("vtkGhostLevels") != NULL) 
+                if (ds->GetCellData()->GetArray("avtGhostZones") != NULL) 
                 {
                     int dims[3], ijk[3] = {0, 0, 0};
                     vtkVisItUtility::GetDimensions(ds, dims);

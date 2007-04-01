@@ -272,6 +272,9 @@ avtSamplePointExtractor::SetUpExtractors(void)
 //    Hank Childs, Sun Dec 14 11:07:56 PST 2003
 //    Make use of massVoxelExtractor.
 //
+//    Hank Childs, Fri Aug 27 16:47:45 PDT 2004
+//    Rename ghost data arrays.
+//
 // ****************************************************************************
 
 void
@@ -315,7 +318,7 @@ avtSamplePointExtractor::ExecuteTree(avtDataTree_p dt)
     int numCells = ds->GetNumberOfCells();
     int lastMilestone = 0;
     vtkUnsignedCharArray *ghosts = (vtkUnsignedCharArray *)
-                                 ds->GetCellData()->GetArray("vtkGhostLevels");
+                                  ds->GetCellData()->GetArray("avtGhostZones");
     for (int j = 0 ; j < numCells ; j++)
     {
         if (ghosts != NULL && ghosts->GetValue(j) > 0)

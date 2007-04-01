@@ -16,6 +16,7 @@
 #include <vtkStructuredGrid.h>
 
 #include <avtDatabaseMetaData.h>
+#include <avtGhostData.h>
 
 #include <BadDomainException.h>
 #include <BadIndexException.h>
@@ -932,6 +933,9 @@ avtCosmosFileFormat::ReadInTimes()
 //    Moved mesh generation into seperate member functions.
 //    Added ghostZone support.
 //
+//    Hank Childs, Fri Aug 27 16:54:45 PDT 2004
+//    Rename ghost data array.
+//
 // ****************************************************************************
 
 void
@@ -1006,6 +1010,9 @@ avtCosmosFileFormat::ReadMesh(int domain)
         unsigned char *p = ghostLevels->GetPointer(0);
 
         int x,y,z;
+        unsigned char ghostVal = 0;
+        avtGhostData::AddGhostZoneType(ghostVal, 
+                                       DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
         for (z = 0; z < cDims[2]; ++z)
         {
             for (y = 0; y < cDims[1]; ++y)
@@ -1014,17 +1021,17 @@ avtCosmosFileFormat::ReadMesh(int domain)
                 {
                     // Start X
                     if (ghostSet[domain][0] && x == 0)
-                        *p = 1;
+                        *p = ghostVal;
                     else if (ghostSet[domain][1] && x == cDims[0] - 1)
-                        *p = 1;
+                        *p = ghostVal;
                     else if (ghostSet[domain][2] && y == 0)
-                        *p = 1;
+                        *p = ghostVal;
                     else if (ghostSet[domain][3] && y == cDims[1] - 1)
-                        *p = 1;
+                        *p = ghostVal;
                     else if (ghostSet[domain][4] && z == 0)
-                        *p = 1;
+                        *p = ghostVal;
                     else if (ghostSet[domain][5] && z == cDims[2] - 1)
-                        *p = 1;
+                        *p = ghostVal;
                     else
                         *p = 0;
                     ++p;
@@ -1032,7 +1039,7 @@ avtCosmosFileFormat::ReadMesh(int domain)
             }
         }
 
-        ghostLevels->SetName("vtkGhostLevels");
+        ghostLevels->SetName("avtGhostZones");
         rv->GetCellData()->AddArray(ghostLevels);
         
         int first[3];

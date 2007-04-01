@@ -9558,6 +9558,9 @@ avtExprFilterNoNamespaceConflict::PostExecute(void)
 //    Kathleen Bonnell, Thu Mar 11 08:19:10 PST 2004
 //    Change to DataExtents -- they now always have two components.
 //
+//    Hank Childs, Fri Aug 27 15:15:20 PDT 2004
+//    Rename ghost data array.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -9611,7 +9614,7 @@ avtExprFilterNoNamespaceConflict::ExecuteData(vtkDataSet *in_ds, int, std::strin
     if (!IsPointVariable())
     {
         vtkUnsignedCharArray *g = (vtkUnsignedCharArray *)
-                                 rv->GetCellData()->GetArray("vtkGhostLevels");
+                                 rv->GetCellData()->GetArray("avtGhostZones");
         if (g != NULL)
         {
             ghosts = g->GetPointer(0);

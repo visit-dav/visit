@@ -90,6 +90,14 @@ inline int FindIndex(const float &pt, const int &last_hit, const int &n,
     return -1;
 }
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 27 16:00:57 PDT 2004
+//    Rename ghost data array.
+//
+// ****************************************************************************
+
 void
 avtMassVoxelExtractor::Extract(vtkRectilinearGrid *rgrid)
 {
@@ -110,7 +118,7 @@ avtMassVoxelExtractor::Extract(vtkRectilinearGrid *rgrid)
     int last_z_hit = 0;
 
     vtkUnsignedCharArray *ghosts = (vtkUnsignedCharArray *)rgrid->GetCellData()
-                                                  ->GetArray("vtkGhostLevels");
+                                                   ->GetArray("avtGhostZones");
     std::vector<float *> cell_arrays;
     for (i = 0 ; i < rgrid->GetCellData()->GetNumberOfArrays() ; i++)
     {
