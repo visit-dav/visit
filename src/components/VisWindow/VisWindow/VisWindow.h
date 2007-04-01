@@ -242,13 +242,16 @@ class VisitInteractor;
 //    Brad Whitlock, Tue Jan 6 10:34:23 PDT 2004
 //    I added a new Pick method that uses viewport coordinates.
 //
+//    Hank Childs, Thu Mar  4 08:41:07 PST 2004
+//    Made it easier to inherit from this class with your own renderer.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
 {
     friend               class VisWindowProtectionProxy;
 public:
-                         VisWindow(bool = false);
+                         VisWindow();
     virtual             ~VisWindow();
 
     void                 AddPlot(avtActor_p &);
@@ -468,6 +471,8 @@ protected:
     VisCallback                       *performLineoutCallback;
     LINE_OUT_INFO                     *loInfo;
 
+                         VisWindow(bool);
+    void                 Initialize(VisWinRendering *);
     void                 ChangeMode(WINDOW_MODE);
     void                 Start2DMode();
     void                 Start3DMode();

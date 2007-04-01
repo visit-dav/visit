@@ -9,6 +9,9 @@
 
 #include <WindowMetrics.h>
 
+#if QT_VERSION >= 300
+#include <qcursor.h>
+#endif
 
 // ****************************************************************************
 //  Method: VisWinRenderingWithWindow constructor
@@ -466,7 +469,9 @@ VisWinRenderingWithWindow::CreateToolbar(const char *name)
 // Creation:   Wed Jan 7 14:49:10 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Mar 4 13:40:12 PST 2004
+//   I fixed the code so it works with Qt 3.x as well as the 2.3.x series.
+//
 // ****************************************************************************
 
 void
@@ -490,6 +495,18 @@ VisWinRenderingWithWindow::SetCursorForMode(INTERACTION_MODE m)
     {
         cursorIndex = newCursorIndex;
 
+#if QT_VERSION >= 300
+        switch(cursorIndex)
+        {
+        default:
+        case 0:
+            renWin->setCursor(QCursor::ArrowCursor);
+            break;
+        case 1:
+            renWin->setCursor(QCursor::CrossCursor);
+            break;
+        }
+#else
         switch(cursorIndex)
         {
         default:
@@ -500,6 +517,7 @@ VisWinRenderingWithWindow::SetCursorForMode(INTERACTION_MODE m)
             renWin->setCursor(CrossCursor);
             break;
         }
+#endif
     }
 }
 

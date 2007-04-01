@@ -191,6 +191,9 @@
 #    Eric Brugger, Thu Jan 29 13:38:33 PST 2004
 #    Fix a bug in the dependencies so that it builds properly in parallel.
 #
+#    Hank Childs, Wed Feb 25 07:39:03 PST 2004
+#    Remove Qt dependence in VisWindow.
+#
 ##############################################################################
 
 ##
@@ -209,14 +212,14 @@ CPPFLAGS= -I@tmpinc@ @ENGINE_CPPFLAGS@ @CPPFLAGS@ \
 SERLIBS=-L../../lib -lplugin -lviswindow -lavtmath_ser -lplotter \
         -ldatabase_ser -lmir -lquery_ser -lexpressions_ser -lavtfilters_ser \
         -lpipeline_ser -lavtview -lavtwriter -lvisit_vtk -llightweight_visit_vtk \
-	-lvtkqt -lwinutil @QT_LIBS@ -lenginerpc -lutility -lmisc -lcomm -lstate \
+	-lenginerpc -lutility -lmisc -lcomm -lstate \
 	-lengineparstate_ser -ldbatts -lavtexceptions -lparser @VTK_LIBS@ $(X_LIBS) \
 	@LIBS@ @PTHREAD_LIB@
 
 PARLIBS=-L../../lib -lplugin -lviswindow -lavtmath_ser -lplotter \
         -ldatabase_par -lmir -lquery_par -lexpressions_par -lavtfilters_par \
         -lpipeline_par -lavtview -lavtwriter -lvisit_vtk -llightweight_visit_vtk \
-	-lvtkqt @QT_LIBS@ -lwinutil -lenginerpc -lutility  -lmisc -lcomm -lstate \
+	-lenginerpc -lutility  -lmisc -lcomm -lstate \
 	-lengineparstate_par -ldbatts -lavtexceptions -lparser @VTK_LIBS@ $(X_LIBS) \
 	@LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
 

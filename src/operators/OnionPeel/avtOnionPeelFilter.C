@@ -24,6 +24,7 @@
 
 #include <avtCallback.h>
 #include <avtParallel.h>
+#include <avtExtents.h>
 
 using std::string;
 using std::vector;
@@ -552,6 +553,9 @@ avtOnionPeelFilter::VerifyInput()
 //    Grab the return value of UnifyMaximumValue so that this code
 //    will work correctly in parallel.
 //
+//    Kathleen Bonnell, Thu Mar  4 14:37:41 PST 2004 
+//    Added hack to get around data extents problem in parallel. 
+// 
 // ****************************************************************************
 
 void
@@ -593,6 +597,28 @@ avtOnionPeelFilter::PostExecute()
             }
         }
     }
+
+    // THIS IS A HACK THAT CAN BE REMOVED WHEN THE EXTENTS SETTING/GETTING
+    // HAS BEEN MODIFIED SO THAT TRUE DATA EXTENTS WILL ALWAYS BE AVAILABLE
+    // DESPITE SIL RESTRICTIONS AND THE ORDER IN WHICH OPERATIONS ARE PERFORMED.
+    //
+    // This filter restricts domains, and if number of domains < number of
+    // processors, then the TRUE data extents may be lost after this filter 
+    // (from processors no longer working on data).
+    // A way to ensure that the TRUE data extents are still available after
+    // execution of this filter, is to retrieve them now (using 
+    // avtFilter::GetDataExtents() which will return the accumulated 
+    // data range from all processors if this information is available).
+    // Then, clear out the TRUE extents, and set Cummulative True extents.
+    //
+#ifdef PARALLEL
+    avtDataAttributes &dataAtts = GetOutput()->GetInfo().GetAttributes();
+    double *ext = new double[2*dataAtts.GetVariableDimension()];
+    GetDataExtents(ext);
+    dataAtts.GetTrueDataExtents()->Clear();
+    dataAtts.GetCumulativeTrueDataExtents()->Set(ext);
+    delete [] ext;
+#endif
 
 }
 

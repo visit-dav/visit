@@ -10,9 +10,8 @@
 #include <vtkPolyData.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
-
-#include <vtkQtRenderWindow.h>
-#include <vtkQtRenderWindowInteractor.h>
+#include <vtkRenderWindowInteractor.h>
+#include <vtkInteractorStyle.h>
 
 #include <RenderingAttributes.h>
 

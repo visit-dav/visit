@@ -95,6 +95,9 @@
 #    Brad Whitlock, Wed Nov 5 14:06:07 PST 2003
 #    Added several annotation colleagues.
 #
+#    Hank Childs, Thu Mar  4 09:04:45 PST 2004
+#    Removed Qt references.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -116,7 +119,6 @@ Colleagues_src= \
   Colleagues/VisWinPlots.C \
   Colleagues/VisWinQuery.C \
   Colleagues/VisWinRendering.C \
-  Colleagues/VisWinRenderingWithWindow.C \
   Colleagues/VisWinRenderingWithoutWindow.C \
   Colleagues/VisWinTools.C \
   Colleagues/VisWinTriad.C \
@@ -158,12 +160,11 @@ VisWindow_src= \
   VisWindow/VisWindow.C \
   VisWindow/VisWindowTypes.C
 
-CXXFLAGS=@CXXFLAGS@ @QT_CXXFLAGS@
-CPPFLAGS=@COMPONENT_CPPFLAGS@ @VTKQT_CPPFLAGS@ @CPPFLAGS@ @ANNOTATION_FLAGS@
+CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@ @ANNOTATION_FLAGS@
 
 OBJ=$(SRC:.C=.o)
 LIB=libviswindow
-LIBS=-lavtmath_ser -lpipeline_ser -lplotter -lavtexceptions -lmisc -lstate -lvisit_vtk -lvtkqt @VTK_LIBS@ @QT_LDFLAGS@ @QT_LIBS@ $(X_LIBS)
+LIBS=-lavtmath_ser -lpipeline_ser -lplotter -lavtexceptions -lmisc -lstate -lvisit_vtk -lvtkqt @VTK_LIBS@ $(X_LIBS)
 
 ##
 ## Standard targets...
