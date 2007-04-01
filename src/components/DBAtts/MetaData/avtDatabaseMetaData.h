@@ -376,6 +376,7 @@ class DBATTS_API avtDatabaseMetaData : public AttributeSubject
     int          numStates;
     bool         isVirtualDatabase;
     bool         mustRepopulateOnStateChange;
+    bool         mustAlphabetizeVariables;
 
     bool         isSimulation;
     std::string  simHost;
@@ -421,6 +422,11 @@ public:
                      { mustRepopulateOnStateChange = mode; };
     bool         GetMustRepopulateOnStateChange(void) const
                      { return mustRepopulateOnStateChange; };
+
+    void         SetMustAlphabetizeVariables(bool mode)
+                     { mustAlphabetizeVariables = mode; };
+    bool         GetMustAlphabetizeVariables() const
+                     { return mustAlphabetizeVariables; };
 
     bool         GetUseCatchAllMesh(void) const
                      { return useCatchAllMesh; };

@@ -96,6 +96,9 @@ class ViewerProxy;
 //   Brad Whitlock, Tue Apr 6 14:06:25 PST 2004
 //   I added allowFileSelectionChange.
 //
+//   Brad Whitlock, Fri Aug 6 12:19:22 PDT 2004
+//   I added updateHeaderForLongName.
+//
 // ****************************************************************************
 
 class GUI_API QvisFilePanel : public QWidget, public SimpleObserver, public GUIBase
@@ -197,6 +200,7 @@ private slots:
     void replaceFile();
     void overlayFile();
     void updateHeaderWidth();
+    void updateHeaderWidthForLongName();
     void internalUpdateFileList();
 private:
     bool                     showSelectedFiles;

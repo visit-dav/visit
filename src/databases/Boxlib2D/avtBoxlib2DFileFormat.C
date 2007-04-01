@@ -1025,6 +1025,9 @@ avtBoxlib2DFileFormat::GetVisMF(int index)
 //    Hank Childs, Wed Feb 18 10:46:42 PST 2004
 //    Display all scalar variables, whether or not they are used elsewhere.
 //
+//    Brad Whitlock, Thu Aug 5 15:52:53 PST 2004
+//    Prevent VisIt from alphabetizing the variable lists.
+//
 // ****************************************************************************
 
 void
@@ -1037,6 +1040,9 @@ avtBoxlib2DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     int level;
     for (level = 0 ; level < nLevels ; level++)
         totalPatches += patchesPerLevel[level];
+
+    // Prevent VisIt from sorting the variables.
+    md->SetMustAlphabetizeVariables(false);
 
     char mesh_name[32] = "Mesh";
     avtMeshMetaData *mesh = new avtMeshMetaData;

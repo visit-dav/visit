@@ -5,12 +5,14 @@
 #include <vector>
 
 // Forward declarations.
-class QButtonGroup;
+class QComboBox;
 class QFrame;
 class QGridLayout;
+class QLabel;
 class QListView;
 class QListViewItem;
 class QPushButton;
+class QPopupMenu;
 class QScrollView;
 class QSplitter;
 class QvisSubsetListView;
@@ -23,9 +25,14 @@ struct SubsetPanel
     QFrame             *frame;
     QGridLayout        *layout;
     QvisSubsetListView *lv;
-    QPushButton        *turnOn;
-    QPushButton        *turnOff;
-    QPushButton        *turnReverse;
+    QLabel             *allSetsLabel;
+    QPushButton        *allSetsButton;
+    QPushButton        *allSetsActionButton;
+    QPopupMenu         *allSetsPopupMenu;
+    QLabel             *selectedSetsLabel;
+    QPushButton        *selectedSetsButton;
+    QPushButton        *selectedSetsActionButton;
+    QPopupMenu         *selectedSetsPopupMenu;
 };
 
 typedef std::vector<SubsetPanel> SubsetPanelVector;
@@ -57,6 +64,9 @@ typedef std::vector<SubsetPanel> SubsetPanelVector;
 //   Brad Whitlock, Wed Apr 23 14:14:33 PST 2003
 //   I changed the interface of ItemClicked.
 //
+//   Brad Whitlock, Fri Aug 6 13:56:01 PST 2004
+//   Made changes that allow multiple sets to be selected.
+//
 // ****************************************************************************
 
 class GUI_API QvisSubsetWindow : public QvisPostableWindowObserver
@@ -76,11 +86,15 @@ protected:
     void Apply(bool ignore = false);
     int  AddListView(bool visible = true);
     int  GetNextListViewIndex(QListView *lv);
+    int  GetListViewIndex(const QObject *) const;
     void ItemClicked(QvisSubsetListViewItem *item, int nextIndex);
     void ClearListViewsToTheRight(int index);
     void UpdateColumnWidths();
     void UpdateCheckMarks(int lvIndex);
-    void TurnOnOff(int, bool);
+    void TurnOnOff(int, bool, bool);
+    void TurnReverse(int, bool);
+    void SetButtonEnabledState(int lvIndex, bool val);
+    void ChangeSetSelection(int lvIndex, bool checkSelection);
 protected slots:
     virtual void post();
     virtual void unpost();
@@ -88,14 +102,14 @@ private slots:
     void apply();
     void listviewClicked(QListViewItem *item);
     void listviewChecked(QvisSubsetListViewItem *item);
+    void listviewSelectionChanged();
     void specialResize();
-    void turnOff(int);
-    void turnOn(int);
-    void TurnReverse(int);
+    void allSetsClicked();
+    void selectedSetsClicked();
+    void setAllSetsButtonAction(int);
+    void setSelectedSetsButtonAction(int);
 private:
-    QButtonGroup        *turnOnGroup;
-    QButtonGroup        *turnOffGroup;
-    QButtonGroup        *turnReverseGroup;
+    int                  activePane;
     QScrollView         *scrollView;
     SubsetPanelVector    listViews;
     QSplitter           *lvSplitter;

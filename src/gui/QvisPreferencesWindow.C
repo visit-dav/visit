@@ -94,6 +94,9 @@ QvisPreferencesWindow::~QvisPreferencesWindow()
 //   I added a toggle button for highlighting the selected files. I also
 //   turned the group box from "Time formatting" to "File panel properties".
 //
+//   Brad Whitlock, Fri Aug 6 09:21:57 PDT 2004
+//   I added toggles for makeDefaultConfirm and automaticallyApplyOperator.
+//
 // ****************************************************************************
 
 void
@@ -112,6 +115,20 @@ QvisPreferencesWindow::CreateWindowContents()
     connect(postWindowsWhenShownToggle, SIGNAL(toggled(bool)),
             this, SLOT(postWindowsWhenShownToggled(bool)));
     topLayout->addWidget(postWindowsWhenShownToggle);
+
+    makeDefaultConfirmToggle =
+        new QCheckBox("Prompt before setting default attributes",
+                      central, "makeDefaultConfirmToggle");
+    connect(makeDefaultConfirmToggle, SIGNAL(toggled(bool)),
+            this, SLOT(makeDefaultConfirmToggled(bool)));
+    topLayout->addWidget(makeDefaultConfirmToggle);
+
+    automaticallyApplyOperatorToggle =
+        new QCheckBox("Prompt before applying new operator",
+                      central, "automaticallyApplyOperatorToggle");
+    connect(automaticallyApplyOperatorToggle, SIGNAL(toggled(bool)),
+            this, SLOT(automaticallyApplyOperatorToggled(bool)));
+    topLayout->addWidget(automaticallyApplyOperatorToggle);
 
     //
     // Create group box for time controls.
@@ -198,11 +215,25 @@ QvisPreferencesWindow::CreateWindowContents()
 //   Brad Whitlock, Fri Apr 9 14:22:34 PST 2004
 //   I added a toggle for automatically highlighting the open file.
 //
+//   Brad Whitlock, Fri Aug 6 09:21:57 PDT 2004
+//   I added toggles for makeDefaultConfirm and automaticallyApplyOperator.
+//
 // ****************************************************************************
 
 void
 QvisPreferencesWindow::UpdateWindow(bool doAll)
 {
+    if (doAll || atts->IsSelected(9))
+    {
+        //
+        // Prompt before making default attributes.
+        //
+        makeDefaultConfirmToggle->blockSignals(true);
+        makeDefaultConfirmToggle->setChecked(
+            atts->GetMakeDefaultConfirm());
+        makeDefaultConfirmToggle->blockSignals(false);
+    }
+
     if (doAll || atts->IsSelected(10))
     {
         //
@@ -212,6 +243,17 @@ QvisPreferencesWindow::UpdateWindow(bool doAll)
         cloneWindowOnFirstRefToggle->setChecked(
             atts->GetCloneWindowOnFirstRef());
         cloneWindowOnFirstRefToggle->blockSignals(false);
+    }
+
+    if (doAll || atts->IsSelected(13))
+    {
+        //
+        // Automatically add operator.
+        //
+        automaticallyApplyOperatorToggle->blockSignals(true);
+        automaticallyApplyOperatorToggle->setChecked(
+            !atts->GetAutomaticallyAddOperator());
+        automaticallyApplyOperatorToggle->blockSignals(false);
     }
 
     if(doAll)
@@ -394,6 +436,56 @@ void
 QvisPreferencesWindow::postWindowsWhenShownToggled(bool val)
 {
     postWhenShown = val;
+}
+
+// ****************************************************************************
+// Method: QvisPreferencesWindow::makeDefaultConfirmToggled
+//
+// Purpose: 
+//   This is a Qt slot function that gets the flag that tells the GUI whether
+//   it should prompt users before "make defaults".
+//
+// Arguments:
+//   val : The new value.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 6 09:28:57 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPreferencesWindow::makeDefaultConfirmToggled(bool val)
+{
+    atts->SetMakeDefaultConfirm(val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisPreferencesWindow::automaticallyApplyOperatorToggled
+//
+// Purpose: 
+//   This is a Qt slot function that gets the flag that tells the GUI whether
+//   it should prompt users before automatically adding an operator when
+//   the user sets the operator attributes when none were applied.
+//
+// Arguments:
+//   val : The new value.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 6 09:28:57 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPreferencesWindow::automaticallyApplyOperatorToggled(bool val)
+{
+    atts->SetAutomaticallyAddOperator(!val);
+    SetUpdate(false);
+    Apply();
 }
 
 // ****************************************************************************

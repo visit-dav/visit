@@ -31,6 +31,10 @@ class QSpinBox;
 //   Brad Whitlock, Fri Apr 9 14:12:16 PST 2004
 //   I added a toggle for highlighting the selected files.
 //
+//   Brad Whitlock, Fri Aug 6 09:20:21 PDT 2004
+//   I added toggles that let you set the prompting behavior for "make default"
+//   and "automatically apply operator".
+//
 // ****************************************************************************
 
 class GUI_API QvisPreferencesWindow : public QvisPostableWindowObserver
@@ -59,6 +63,8 @@ protected:
 private slots:
     void cloneWindowOnFirstRefToggled(bool val);
     void postWindowsWhenShownToggled(bool val);
+    void makeDefaultConfirmToggled(bool val);
+    void automaticallyApplyOperatorToggled(bool val);
     void handleTimeStateDisplayModeChange(int val);
     void timeStateNDigitsChanged(int val);
     void selectedFilesToggled(bool);
@@ -66,6 +72,8 @@ private slots:
 private:
     QCheckBox        *cloneWindowOnFirstRefToggle;
     QCheckBox        *postWindowsWhenShownToggle;
+    QCheckBox        *makeDefaultConfirmToggle;
+    QCheckBox        *automaticallyApplyOperatorToggle;
     QCheckBox        *selectedFilesToggle;
     QCheckBox        *allowFileSelectionChangeToggle;
     QButtonGroup     *timeStateDisplayMode;

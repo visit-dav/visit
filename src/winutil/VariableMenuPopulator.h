@@ -48,7 +48,6 @@ class QObject;
 
 class WINUTIL_API VariableMenuPopulator
 {
-    typedef std::map<std::string, bool> StringBoolMap;
 public:
     VariableMenuPopulator();
     virtual ~VariableMenuPopulator();
@@ -67,10 +66,34 @@ public:
     void ClearDatabaseName();
 
 private:
+    typedef std::map<std::string, bool> StringBoolMap;
+
+    class VariableList
+    {
+    public:
+        VariableList();
+        virtual ~VariableList();
+        void SetSorted(bool val) { sorted = val; }
+        bool GetSorted() const { return sorted; }
+        void AddVariable(const std::string &var, bool validVar);
+        void Clear();
+        int  Size() const;
+        bool Contains(const std::string &var) const;
+        void InitTraversal();
+        bool GetNextVariable(std::string &var, bool &validVar);
+    private:
+        bool                    sorted;
+        StringBoolMap           sortedVariables;
+        StringBoolMap::iterator sortedVariablesIterator;
+        stringVector            unsortedVariableNames;
+        boolVector              unsortedVariableValid;
+        int                     unsortedVariableIndex;
+    };
+
     void UpdateSingleMenu(QvisVariablePopupMenu *, QObject *,
-                          const StringBoolMap &vars, bool changeVar);
+                          VariableList &vars, bool changeVar);
     void Split(const std::string &varName, stringVector &pieces) const;
-    void AddVars(StringBoolMap &to, const StringBoolMap &from);
+    void AddVars(VariableList &to, VariableList &from);
     void AddExpression(const Expression &);
 
     // Keep track of the name of the database for which we have variables.
@@ -78,7 +101,7 @@ private:
     // Keep track of the expression list too.
     ExpressionList cachedExpressionList;
     // Create some lists to keep track of the variable names.
-    StringBoolMap  meshVars, scalarVars, materialVars, vectorVars, subsetVars,
+    VariableList   meshVars, scalarVars, materialVars, vectorVars, subsetVars,
                    speciesVars, curveVars, tensorVars, symmTensorVars;
 };
 

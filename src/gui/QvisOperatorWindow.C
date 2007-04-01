@@ -136,6 +136,10 @@ QvisOperatorWindow::GetCurrentValues(int)
 //   but let the operator know to initalize from client via a flag passed
 //   to AddOperator.  This allows the 'Reset' operation to work as expected.
 //
+//   Brad Whitlock, Thu Aug 5 16:59:38 PST 2004
+//   I added a 3rd option to the dialog so you can answer Yes once but have
+//   it always add the operator if it does not exist in the future.
+//
 // ****************************************************************************
 
 void
@@ -171,22 +175,44 @@ QvisOperatorWindow::SetOperatorOptions()
         // the operator should be added to the plots.
         if(!found)
         {
-            OperatorPluginManager *opMgr = OperatorPluginManager::Instance();
+            int button = 0;
 
-            // Create a prompt for the user.
-            std::string opName(opMgr->GetPluginName(
-                               opMgr->GetEnabledID(operatorType)));
-            QString msg;
-            msg.sprintf("No %s operator was found for the selected plots.\n"
-                        "Do you want to apply the %s operator?\n\n",
-                        opName.c_str(), opName.c_str());
-
-            // Ask the user if he really wants to close the engine.
-            if(QMessageBox::warning(this, "VisIt",
-                                    msg.latin1(),
-                                    "Yes", "No", 0,
-                                    0, 1 ) == 0)
+            // Only ask the user if we are not automatically adding the
+            // operator.
+            if(!viewer->GetGlobalAttributes()->GetAutomaticallyAddOperator())
             {
+                OperatorPluginManager *opMgr = OperatorPluginManager::Instance();
+
+                // Create a prompt for the user.
+                std::string opName(opMgr->GetPluginName(
+                                   opMgr->GetEnabledID(operatorType)));
+                QString msg;
+                msg.sprintf("No %s operator was found for the selected plots.\n"
+                            "Do you want to apply the %s operator?\n\n",
+                            opName.c_str(), opName.c_str());
+
+                // Ask the user if he really wants to close the engine.
+                button = QMessageBox::warning(this, "VisIt",
+                    msg.latin1(), "Yes", "No", "Yes, Do not prompt again",
+                    0, 1 );
+            }
+
+            if(button == 0)
+            {
+                // Set the client attributes, and set the 'fromDefault' flag
+                // to false in the call to AddOperator, so that the operator 
+                // knows to initialize the atts from client rather than the 
+                // ususal default atts. 
+                viewer->SetOperatorOptions(operatorType);
+                viewer->AddOperator(operatorType, false);
+            }
+            else if (button == 2)
+            {
+                // Make it so no confirmation is needed.
+                GlobalAttributes *globalAtts = viewer->GetGlobalAttributes();
+                globalAtts->SetAutomaticallyAddOperator(true);
+                globalAtts->Notify();
+
                 // Set the client attributes, and set the 'fromDefault' flag
                 // to false in the call to AddOperator, so that the operator 
                 // knows to initialize the atts from client rather than the 

@@ -51,6 +51,9 @@
 //   Brad Whitlock, Wed May 14 15:38:40 PST 2003
 //   I added support for virtual databases being expanded by default.
 //
+//   Brad Whitlock, Thu Aug 5 17:36:02 PST 2004
+//   I added methods to look for long node names.
+//
 // ****************************************************************************
 
 class FileTree
@@ -72,6 +75,7 @@ public:
         FileTreeNode *Find(const std::string &path);
         int Size() const;
         bool HasChildrenOfType(int type);
+        bool HasNodeNameExceeding(int len) const;
         void AddElementsToListViewItem(QListViewItem *item, int &fileIndex,
                                        bool addRoot,
                                        const QPixmap &folderPixmap,
@@ -108,6 +112,7 @@ public:
     void Reduce();
     int  Size() const;
     bool TreeContainsDirectories() const;
+    bool HasNodeNameExceeding(int len) const;
 
     void AddElementsToListViewItem(QListViewItem *item, int &fileIndex,
                                    const QPixmap &folderPixmap,
@@ -525,6 +530,10 @@ QvisFilePanel::UpdateFileList(bool doAll)
 //   Added code to force file lists that have MT databases always have a root
 //   so they can be collapsed.
 //
+//   Brad Whitlock, Thu Aug 5 17:36:33 PST 2004
+//   I added code to detect when node names are long and set the horizontal
+//   scrollbar mode of the listview appropriately.
+//
 // ****************************************************************************
 
 void
@@ -574,6 +583,9 @@ QvisFilePanel::RepopulateFileList()
     // Reset the node numbers that will be used to create the nodes.
     QvisListViewFileItem::resetNodeNumber();
 
+    // Assume that we want automatic scrollbars instead of always having them.
+    QScrollView::ScrollBarMode hScrollMode = QScrollView::Auto;
+
     // If there are multiple hosts or just one and it is not localhost,
     // add nodes in the file tree for the host. This makes sure that it
     // is always clear which host a file came from.
@@ -614,6 +626,11 @@ QvisFilePanel::RepopulateFileList()
             }
             files.Reduce();
 
+            // If there are any nodes with long names then we should have
+            // scrollbars in the selected files list.
+            if(files.HasNodeNameExceeding(30))
+                hScrollMode = QScrollView::AlwaysOn;
+
             // Add all the elements in the files list to the host list
             // view item.
             files.AddElementsToListViewItem(newFile, fileIndex,
@@ -632,6 +649,11 @@ QvisFilePanel::RepopulateFileList()
         files.Reduce();
 
         // debug1 << "File Tree:\n" << files << endl << endl;
+
+        // If there are any nodes with long names then we should have
+        // scrollbars in the selected files list.
+        if(files.HasNodeNameExceeding(30))
+            hScrollMode = QScrollView::AlwaysOn;
 
         // If there are top level directories in the file tree, then we
         // need to create a node for the host.
@@ -662,6 +684,13 @@ QvisFilePanel::RepopulateFileList()
         }
     }
 
+    //
+    // Set the list view's scrollbar mode.
+    //
+    bool hScrollModeChanged = (hScrollMode != fileListView->hScrollBarMode());
+    if(hScrollModeChanged)
+        fileListView->setHScrollBarMode(hScrollMode);
+
     // Expand any databases that we know about. This just means that we add
     // the extra information that databases have, we don't expand the tree
     // until we enter UpdateFileSelection.
@@ -671,7 +700,14 @@ QvisFilePanel::RepopulateFileList()
     UpdateFileSelection();
 
     // Set the width of the zeroeth column.
-    QTimer::singleShot(100, this, SLOT(updateHeaderWidth()));
+    if(hScrollMode == QScrollView::AlwaysOn)
+        QTimer::singleShot(100, this, SLOT(updateHeaderWidthForLongName()));
+    else
+        QTimer::singleShot(100, this, SLOT(updateHeaderWidth()));
+
+    // If the scroll mode changed, force the list view to update.
+    if(hScrollModeChanged)
+        QTimer::singleShot(110, fileListView, SLOT(triggerUpdate()));
 }
 
 // ****************************************************************************
@@ -3099,6 +3135,44 @@ QvisFilePanel::updateHeaderWidth()
 }
 
 // ****************************************************************************
+// Method: QvisFilePanel::updateHeaderWidthForLongName
+//
+// Purpose: 
+//   This is a Qt slot function that updates the width of the first column
+//   so it is as wide as the longest node name in the file tree. This allows
+//   the horizontal scrollbar to be active.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 6 12:17:46 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFilePanel::updateHeaderWidthForLongName()
+{
+    if(fileListView->childCount() < 1)
+        updateHeaderWidth();
+    else
+    {
+        int maxWidth = 0;
+        QListViewItemIterator it(fileListView);
+        for ( ; it.current(); ++it )
+        {
+            int w = it.current()->width(fontMetrics(), fileListView, 0);
+            if(w > maxWidth)
+                maxWidth = w;
+        }
+
+        if(maxWidth < fileListView->visibleWidth())
+            maxWidth = fileListView->visibleWidth();
+
+        fileListView->setColumnWidth(0, maxWidth);
+    }
+}
+
+// ****************************************************************************
 // Method: QvisFilePanel::changeActiveTimeSlider
 //
 // Purpose: 
@@ -3436,6 +3510,26 @@ FileTree::AddElementsToListView(QListView *listview, int &fileIndex,
 {
     root->AddElementsToListView(listview, fileIndex, folderPixmap,
                                 databasePixmap, filePanel);
+}
+
+// ****************************************************************************
+// Method: FileTree::HasNodeNameExceeding
+//
+// Purpose: 
+//   Returns whether the nodes in the tree have a node name that exceeds the
+//   specified length.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 5 17:34:58 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+FileTree::HasNodeNameExceeding(int len) const
+{
+    return (root != 0) ? root->HasNodeNameExceeding(len) : false;
 }
 
 // ****************************************************************************
@@ -3796,6 +3890,39 @@ FileTree::FileTreeNode::HasChildrenOfType(int type)
     }
 
     return retval;
+}
+
+// ****************************************************************************
+// Method: FileTree::FileTreeNode::HasNodeNameExceeding
+//
+// Purpose: 
+//   Returns whether any of the nodes in the tree have a node name that is 
+//   longer than the specified length.
+//
+// Arguments:
+//   len : The specified node name length.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 5 17:32:29 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+FileTree::FileTreeNode::HasNodeNameExceeding(int len) const
+{
+    if(nodeName.size() > len)
+        return true;
+
+    // Check the children.
+    for(int i = 0; i < numChildren; ++i)
+    {
+        if(children[i]->HasNodeNameExceeding(len))
+            return true;
+    }
+ 
+    return false;
 }
 
 // ****************************************************************************
