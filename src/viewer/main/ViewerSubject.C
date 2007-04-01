@@ -5885,21 +5885,15 @@ ViewerSubject::EnableSocketSignals()
 //    Kathleen Bonnell, Thu Aug  5 17:30:06 PDT 2004 
 //    Added handlers for 'Sync'. (at Brad's suggestion).
 //
+//    Mark C. Miller, Thu Nov 11 16:31:43 PST 2004
+//    Moved code to test if VEM is InRender to inside the block that 
+//    processes the SR mode change message
+//
 // ****************************************************************************
 
 void
 ViewerSubject::ProcessRendererMessage()
 {
-    //
-    // If the engine manager is rendering, return early but tell the
-    // event loop to try to process the message again later.
-    //
-    if(ViewerEngineManager::Instance()->InRender())
-    {
-        QTimer::singleShot(400, this, SLOT(ProcessRendererMessage()));
-        return;
-    }
-
     char msg[512];
 
 #ifdef VIEWER_MT
@@ -5915,6 +5909,7 @@ ViewerSubject::ProcessRendererMessage()
     msg[n] = '\0';
     messageBuffer->AddString(msg);
 #endif
+
 
     //
     // Add the string to the message buffer and then process messages
@@ -6001,6 +5996,13 @@ ViewerSubject::ProcessRendererMessage()
         }
         else if (strncmp(msg, "setScalableRenderingMode", 24) == 0)
         {
+            if (ViewerEngineManager::Instance()->InRender())
+            {
+                messageBuffer->AddString(msg);
+                QTimer::singleShot(400, this, SLOT(ProcessRendererMessage()));
+                return;
+            }
+
             ViewerWindow *window = 0;
             int iMode = 0;
             int offset = 27;  // = strlen("setScalableRenderingMode 0x");
