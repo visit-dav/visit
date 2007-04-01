@@ -9,9 +9,9 @@
 #include <avtDataTreeStreamer.h>
 #include <MeshAttributes.h>
 
+class vtkExtractEdges;
 class vtkGeometryFilter;
 class vtkLinesFromOriginalCells;
-class vtkUniqueFeatureEdges;
 class vtkDataSet;
 
 
@@ -32,6 +32,9 @@ class vtkDataSet;
 //    Kathleen Bonnell, Tue Mar 26 15:23:11 PST 2002 
 //    Added PerformRestriction method.
 //
+//    Kathleen Bonnell, Thu Feb  5 10:34:16 PST 2004 
+//    Added vtkExtractEdges, removed vtkUniqueFeatureEdges.
+//
 // ****************************************************************************
 
 class avtMeshFilter : public avtDataTreeStreamer
@@ -50,7 +53,7 @@ class avtMeshFilter : public avtDataTreeStreamer
     MeshAttributes             atts;
 
     vtkGeometryFilter         *geometryFilter;
-    vtkUniqueFeatureEdges     *featureEdges;
+    vtkExtractEdges           *extractEdges;
     vtkLinesFromOriginalCells *lineFilter;
 
     virtual avtDataTree_p      ExecuteDataTree(vtkDataSet *, int, string);

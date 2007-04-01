@@ -12,7 +12,6 @@
 #include <vtkGeometryFilter.h>
 #include <vtkLinesFromOriginalCells.h>
 #include <vtkPolyData.h>
-#include <vtkUniqueFeatureEdges.h>
 
 #include <ImproperUseException.h>
 #include <DebugStream.h>
@@ -26,6 +25,11 @@
 //  Programmer: Kathleen Bonnell 
 //  Creation:   June 8, 2001
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Feb  5 10:42:16 PST 2004 
+//    Removed featureEdges, hasn't been used in a long time.  
+//    Added extractEges. 
+//
 // ****************************************************************************
 
 avtMeshFilter::avtMeshFilter(const MeshAttributes &a)
@@ -33,11 +37,7 @@ avtMeshFilter::avtMeshFilter(const MeshAttributes &a)
     atts = a;
     lineFilter     = vtkLinesFromOriginalCells::New();
     geometryFilter = vtkGeometryFilter::New();
-    featureEdges   = vtkUniqueFeatureEdges::New();
-    featureEdges->FeatureEdgesOff();
-    featureEdges->ManifoldEdgesOn();
-    featureEdges->NonManifoldEdgesOff();
-    featureEdges->BoundaryEdgesOff();
+    extractEdges = vtkExtractEdges::New();
 }
 
 
@@ -46,6 +46,11 @@ avtMeshFilter::avtMeshFilter(const MeshAttributes &a)
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   June 8, 2001
+//
+//  Modifications:
+//    Kathleen Bonnell, Thu Feb  5 10:42:16 PST 2004 
+//    Removed featureEdges, hasn't been used in a long time.  
+//    Added extractEges. 
 //
 // ****************************************************************************
 
@@ -61,10 +66,10 @@ avtMeshFilter::~avtMeshFilter()
         geometryFilter->Delete();
         geometryFilter = NULL;
     }
-    if (featureEdges != NULL)
+    if (extractEdges != NULL)
     {
-        featureEdges->Delete();
-        featureEdges = NULL;
+        extractEdges->Delete();
+        extractEdges = NULL;
     }
 }
 
@@ -132,6 +137,10 @@ avtMeshFilter::~avtMeshFilter()
 //    Make sure that the topological dimension of the mesh is really as
 //    advertised by seeing if it really has triangle data.
 //
+//    Kathleen Bonnell, Thu Feb  5 10:42:16 PST 2004 
+//    Use extractEdges, if user wants to see internal zones and input
+//    is not already polydata. 
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -141,6 +150,7 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
     vtkPolyData *opaquePolys = vtkPolyData::New();
 
     vtkDataSet *revisedInput = NULL; 
+    vtkDataSet *revisedInput2 = NULL; 
 
     avtDataValidity &v = GetInput()->GetInfo().GetValidity();
     if (!v.GetUsingAllData() && 
@@ -179,31 +189,45 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
         geometryFilter->Update();
     }
 
-    if (revisedInput->GetDataObjectType() == VTK_POLY_DATA)
+    if (atts.GetShowInternal() && 
+        revisedInput->GetDataObjectType() != VTK_POLY_DATA)
+    {
+        revisedInput2 = vtkPolyData::New();
+        extractEdges->SetInput(revisedInput);
+        extractEdges->SetOutput((vtkPolyData*)revisedInput2);
+        extractEdges->Update();
+    }
+    else
+    {
+        revisedInput2 = inDS;
+        revisedInput2->Register(NULL);
+    }
+
+
+    if (revisedInput2->GetDataObjectType() == VTK_POLY_DATA) 
     {
         avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
         int topoDim = datts.GetTopologicalDimension();
-
         //
         // Make extra sure that we really have surfaces.
         //
-        vtkPolyData *pd = (vtkPolyData *) revisedInput;
+        vtkPolyData *pd = (vtkPolyData *) revisedInput2;
         if (pd->GetPolys()->GetNumberOfCells() == 0 &&
             pd->GetStrips()->GetNumberOfCells() == 0)
         {
             topoDim = 1;
         }
- 
+
         if (topoDim == 2)
         {
-            lineFilter->SetInput((vtkPolyData*)revisedInput);
+            lineFilter->SetInput((vtkPolyData*)revisedInput2);
             lineFilter->SetOutput(outDS);
             lineFilter->Update();
         }
         else
         {
             outDS->Delete();
-            outDS = (vtkPolyData*)revisedInput;
+            outDS = (vtkPolyData*)revisedInput2;
             outDS->Register(NULL); // We will remove this later.
             debug5 << "MeshFilter not making a line mesh go through the line "
                    << "filter." << endl;
@@ -255,6 +279,7 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
     outDS->Delete();
     opaquePolys->Delete();
     revisedInput->Delete();
+    revisedInput2->Delete();
     return rv;
 }
 
@@ -337,6 +362,10 @@ avtMeshFilter::PerformRestriction(avtPipelineSpecification_p spec)
 //    Akira Haddox, Wed May 28 14:56:01 PDT 2003
 //    LineFilter no longer has a Locator, call removed.
 //
+//    Kathleen Bonnell, Thu Feb  5 10:42:16 PST 2004 
+//    Removed featureEdges, hasn't been used in a long time.  
+//    Added extractEges. 
+//
 // ****************************************************************************
 
 void
@@ -348,8 +377,8 @@ avtMeshFilter::ReleaseData(void)
     lineFilter->SetOutput(NULL);
     geometryFilter->SetInput(NULL);
     geometryFilter->SetOutput(NULL);
-    featureEdges->SetInput(NULL);
-    featureEdges->SetOutput(NULL);
+    extractEdges->SetInput(NULL);
+    extractEdges->SetOutput(NULL);
 }
 
 

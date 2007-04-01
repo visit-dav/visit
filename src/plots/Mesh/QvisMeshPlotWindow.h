@@ -44,6 +44,9 @@ class MeshAttributes;
 //   Changed opaqueToggle check box to opaqueMode button group.
 //   Renamed signal opaqueToggled to opaqueModeChanged.
 //
+//   Kathleen Bonnell, Thu Feb  5 11:51:39 PST 2004 
+//   Added showInternalToggle, signal showInternalToggled.
+//
 // ****************************************************************************
 
 class QvisMeshPlotWindow : public QvisPostableWindowObserver
@@ -68,6 +71,7 @@ private slots:
     void lineStyleChanged(int newStyle);
     void lineWidthChanged(int newWidth);
     void legendToggled(bool val);
+    void showInternalToggled(bool val);
     void meshColorChanged(const QColor &color);
     void outlineOnlyToggled(bool on);
     void opaqueModeChanged(int val);
@@ -94,6 +98,7 @@ private:
     QLineEdit              *errorToleranceLineEdit;
     QButtonGroup           *opaqueMode;
     QCheckBox              *legendToggle;
+    QCheckBox              *showInternalToggle;
     QLabel                 *pointSizeLabel;
     QLineEdit              *pointSizeLineEdit;
     QCheckBox              *pointSizeVarToggle;

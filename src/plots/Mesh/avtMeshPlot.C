@@ -257,13 +257,18 @@ avtMeshPlot::Create()
 //    Kathleen Bonnell, Thu Sep  4 11:15:30 PDT 2003
 //    SetRenderOpaque no longer requires an argument. 
 //
+//    Kathleen Bonnell, Thu Feb  5 13:15:08 PST 2004 
+//    Added spatialDim in call to atts.ChangesRequireRecalculation.
+//
 // ****************************************************************************
 
 void
 avtMeshPlot::SetAtts(const AttributeGroup *a)
 {
     needsRecalculation =
-        atts.ChangesRequireRecalculation(*(const MeshAttributes*)a);
+        atts.ChangesRequireRecalculation(*(const MeshAttributes*)a,
+        behavior->GetInfo().GetAttributes().GetSpatialDimension());
+
     atts = *(const MeshAttributes*)a;
 
     if (atts.GetOutlineOnlyFlag())
@@ -689,13 +694,16 @@ avtMeshPlot::ApplyOperators(avtDataObject_p input)
 //    Hank Childs, Thu Aug 21 23:07:47 PDT 2003
 //    Added support for different types of glyphs.
 //
+//    Kathleen Bonnell, Thu Feb  5 11:06:01 PST 2004 
+//    Don't use facelist filter if user wants to see internal zones. 
+//
 // ****************************************************************************
 
 avtDataObject_p
 avtMeshPlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
     avtDataObject_p dob = input;
-
+    
     if (dob->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
     {
         glyphPoints->SetPointSize(atts.GetPointSize());
@@ -714,6 +722,12 @@ avtMeshPlot::ApplyRenderingTransformation(avtDataObject_p input)
     }
     else// if (dob->GetInfo().GetAttributes().GetTopologicalDimension() > 0)
     {
+        // Turn off facelist filter is user wants to see internal zones in 3d.
+        if (atts.GetShowInternal() && 
+            dob->GetInfo().GetAttributes().GetSpatialDimension()== 3)
+            ghostAndFaceFilter->SetUseFaceFilter(false);
+        else 
+            ghostAndFaceFilter->SetUseFaceFilter(true);
         ghostAndFaceFilter->SetCreate3DCellNumbers(true);
         ghostAndFaceFilter->SetInput(dob);
         dob = ghostAndFaceFilter->GetOutput();
@@ -937,12 +951,17 @@ avtMeshPlot::SetForegroundColor(const double *fg)
 //  Programmer:  Jeremy Meredith
 //  Creation:    November  7, 2001
 //
+//  Modification:
+//    Kathleen Bonnell, Thu Feb  5 13:15:08 PST 2004 
+//    Added spatialDim in call to atts.ChangesRequireRecalculation.
+//
 // ****************************************************************************
 
 bool
 avtMeshPlot::Equivalent(const AttributeGroup *a)
 {
-    return !(atts.ChangesRequireRecalculation(*(const MeshAttributes*)a));
+    return !(atts.ChangesRequireRecalculation(*(const MeshAttributes*)a,
+             behavior->GetInfo().GetAttributes().GetSpatialDimension()));
 }
 
 
@@ -1023,6 +1042,10 @@ avtMeshPlot::SetOpaqueMeshIsAppropriate(bool val)
 //  Programmer: Kathleen Bonnell 
 //  Creation:   September 4, 2003 
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Feb  5 11:07:05 PST 2004
+//    If Auto mode, only show opaque if ShowInternal is OFF.
+//
 // ****************************************************************************
 
 bool
@@ -1034,7 +1057,8 @@ avtMeshPlot::ShouldRenderOpaque(void)
     {
         case MeshAttributes::Auto: 
             // Only on if appropriate
-            shouldBeOn = atts.GetOpaqueMeshIsAppropriate();
+            shouldBeOn = atts.GetOpaqueMeshIsAppropriate() && 
+                         !atts.GetShowInternal();
             break;
         case MeshAttributes::On: 
             // Always on 

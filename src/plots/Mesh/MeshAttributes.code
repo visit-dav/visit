@@ -1,5 +1,5 @@
 Function: ChangesRequireRecalculation
-Declaration: bool ChangesRequireRecalculation(const MeshAttributes &obj);
+Declaration: bool ChangesRequireRecalculation(const MeshAttributes &, const int);
 Definition:
 // ****************************************************************************
 //  Modifications: 
@@ -16,10 +16,14 @@ Definition:
 //    Hank Childs, Thu Aug 21 23:05:45 PDT 2003
 //    Added point type.
 //
+//    Kathleen Bonnell, Thu Feb  5 13:07:06 PST 2004 
+//    Added spatDim argument, added showInternal. 
+//
 // ****************************************************************************
 
 bool
-MeshAttributes::ChangesRequireRecalculation(const MeshAttributes &obj)
+MeshAttributes::ChangesRequireRecalculation(const MeshAttributes &obj,
+                                            const int spatDim)
 {
     return ((outlineOnlyFlag != obj.outlineOnlyFlag) ||
             (errorTolerance != obj.errorTolerance) ||
@@ -27,5 +31,6 @@ MeshAttributes::ChangesRequireRecalculation(const MeshAttributes &obj)
             (pointSizeVar != obj.pointSizeVar) ||
             (pointSizeVarEnabled != obj.pointSizeVarEnabled) ||
             (pointType != obj.pointType) ||
-            (smoothingLevel != obj.smoothingLevel));
+            (smoothingLevel != obj.smoothingLevel) ||
+            (showInternal != obj.showInternal && spatDim == 3));
 }
