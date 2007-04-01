@@ -7675,7 +7675,18 @@ ViewerPlotList::GetNumberOfCells(bool polysOnly) const
     int sum = 0;
     for (i = 0; i < nPlots; i++)
     {
-        sum += plots[i].plot->GetActor()->GetDataObject()->GetNumberOfCells(polysOnly);
+        if (plots[i].realized)
+        {
+            avtActor_p actor = plots[i].plot->GetActor();
+
+            if (*actor != NULL)
+            {
+                avtDataObject_p dob = actor->GetDataObject();
+
+                if (*dob != NULL)
+                   sum += dob->GetNumberOfCells(polysOnly);
+            }
+        }
     }
     return sum;
 }
