@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+  <Attribute name="avtSimulationCommandSpecification" purpose="Contains the specification for one command" persistent="false" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h">
+    <Enum name="CommandArgumentType">
+      CmdArgInt
+      CmdArgFloat
+      CmdArgString
+    </Enum>
+    <Field name="name" label="name" type="string">
+    </Field>
+    <Field name="argumentType" label="argumentType" type="enum" subtype="CommandArgumentType">
+    </Field>
+  </Attribute>

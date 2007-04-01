@@ -6482,6 +6482,9 @@ ViewerPlotList::UpdateExpressionList(bool considerPlots, bool update)
 //   Brad Whitlock, Fri Feb 18 10:44:22 PDT 2005
 //   I moved most of the logic into the file server.
 //
+//   Brad Whitlock, Tue Apr 5 14:12:32 PST 2005
+//   Fixed bad coding that caused user-defined expressions to get lost.
+//
 // ****************************************************************************
 
 void
@@ -6500,9 +6503,10 @@ ViewerPlotList::UpdateExpressionListUsingDB(const std::string &host,
     // Update the expression list with all of the user-defined expressions and
     // expressions that come from the specified database.
     //
+    ExpressionList newList;
+    ViewerFileServer::Instance()->GetAllExpressions(newList, host, db, t);
     ExpressionList *exprList = ParsingExprList::Instance()->GetList();
-    exprList->ClearExpressions();
-    ViewerFileServer::Instance()->GetAllExpressions(*exprList, host, db, t);
+    *exprList = newList;
 }
 
 // ****************************************************************************

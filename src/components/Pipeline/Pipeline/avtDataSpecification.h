@@ -8,6 +8,7 @@
 
 
 #include <vector>
+#include <map>
 
 #include <array_ref_ptr.h>
 #include <ref_ptr.h>
@@ -114,6 +115,10 @@ typedef ref_ptr<avtDataSpecification> avtDataSpecification_p;
 //
 //    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
 //    Added support for data selections
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added methods to set/get admissibleDataTypes
+//    Added methods to set/get needNativePrecision 
 //
 // ****************************************************************************
 
@@ -257,13 +262,24 @@ class PIPELINE_API avtDataSpecification
     void                         SetUseNewMIRAlgorithm(bool unma)
                                      { useNewMIRAlgorithm = unma; }
 
-
     bool                         VariablesAreTheSame(const avtDataSpecification &);
 
     int                          AddDataSelection(avtDataSelection *sel);
     void                         RemoveAllDataSelections();
     const avtDataSelection_p     GetDataSelection(int id) const;
     const std::vector<avtDataSelection_p> GetAllDataSelections() const;
+
+
+    bool                         NeedNativePrecision(void) const
+                                     { return needNativePrecision; }
+    void                         SetNeedNativePrecision(bool nnp)
+                                     { needNativePrecision = nnp; }
+
+    void                         UpdateAdmissibleDataTypes(
+                                     std::vector<int> admissibleTypes);
+    bool                         IsAdmissibleDataType(int dataType) const;
+    std::vector<int>             GetAdmissibleDataTypes() const;
+    void                         InitAdmissibleDataTypes();
 
   protected:
     int                          timestep;
@@ -295,7 +311,9 @@ class PIPELINE_API avtDataSpecification
     bool                         needCleanZonesOnly;
     bool                         useNewMIRAlgorithm;
     bool                         maintainOriginalConnectivity;
+    bool                         needNativePrecision;
     avtGhostDataType             desiredGhostDataType;
+    std::map<int,bool>           admissibleDataTypes;
 
     //
     // If we are processing in parallel, this information may have been lost.

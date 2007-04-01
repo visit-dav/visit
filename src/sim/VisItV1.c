@@ -32,7 +32,7 @@
 //       5) removing the .sim file when the program exits
 //
 //  Programmer:  Jeremy Meredith
-//  Creation:    August 25, 2004
+//  Creation:    April  4, 2005
 //
 // ***************************************************************************/
 
@@ -81,6 +81,8 @@ int   (*v_connectviewer)(void*,int,char**) = NULL;
 void  (*v_time_step_changed)(void*) = NULL;
 void  (*v_disconnect)() = NULL;
 void  (*v_set_slave_process_callback)(void(*)()) = NULL;
+void  (*v_set_command_callback)(void*,void(*)(const char*,int,float,const char*))
+                                                                        = NULL;
 
 void *v_engine = NULL;
 char  v_host[256] = "";
@@ -88,6 +90,8 @@ char  v_port[256] = "";
 char  v_key[256] = "";
 
 char simulationFileName[1024];
+
+char securityKey[17];
 
 char localhost[256];
 int listenPort = -1;
@@ -101,6 +105,28 @@ int engineinputdescriptor = -1;
 
 void *dl_handle;
 
+static void CreateRandomSecurityKey()
+{
+    int len = 8;
+    int i;
+    securityKey[0] = '\0';
+#if defined(_WIN32)
+    srand((unsigned)time(0));
+#else
+    srand48((long)(time(0)));
+#endif
+    for (i=0; i<len; i++)
+    {
+        char str[3];
+#if defined(_WIN32)
+        double d = (double)(rand()) / (double)(RAND_MAX);
+        sprintf(str, "%02x", (int)(d * 255.));
+#else
+        sprintf(str, "%02x", (int)(lrand48() % 256));
+#endif
+        strcat(securityKey, str);
+    }
+}
 
 int  VisItGetEngineSocket(void)
 {
@@ -331,11 +357,15 @@ static void RemoveSimFile(void)
     unlink(simulationFileName);
 }
 
-void VisItInitializeSocketAndDumpSimFile(char *name)
+void VisItInitializeSocketAndDumpSimFile(char *name,
+                                         char *comment,
+                                         char *path,
+                                         char *inputfile)
 {
     FILE *file;
 
     EnsureSimulationDirectoryExists();
+    CreateRandomSecurityKey();
     
     snprintf(simulationFileName, 255, "%s/.visit/simulations/%012d.%s.sim1",
              GetHomeDirectory(), (int)time(NULL), name);
@@ -353,6 +383,13 @@ void VisItInitializeSocketAndDumpSimFile(char *name)
 
     fprintf(file, "host %s\n", localhost);
     fprintf(file, "port %d\n", listenPort);
+    fprintf(file, "key %s\n", securityKey);
+    if (path)
+        fprintf(file, "path %s\n", path);
+    if (inputfile)
+        fprintf(file, "inputfile %s\n", inputfile);
+    if (comment)
+        fprintf(file, "comment %s\n", comment);
 
     fclose(file);
 }
@@ -413,8 +450,11 @@ static int LoadVisItLibrary(void)
     v_disconnect = (void (*)())dlsym(dl_handle, "disconnect");
     if (!v_disconnect) { fprintf(stderr, "couldn't find symbol: %s\n", dlerror()); dl_handle = NULL; return FALSE; }
 
-    v_set_slave_process_callback = (void (*)())dlsym(dl_handle, "set_slave_process_callback");
+    v_set_slave_process_callback = (void (*)(void (*)()))dlsym(dl_handle, "set_slave_process_callback");
     if (!v_set_slave_process_callback) { fprintf(stderr, "couldn't find symbol: %s\n", dlerror()); dl_handle = NULL; return FALSE; }
+
+    v_set_command_callback = (void (*)(void*,void (*)(const char*,int,float,const char*)))dlsym(dl_handle, "set_command_callback");
+    if (!v_set_command_callback) { fprintf(stderr, "couldn't find symbol: %s\n", dlerror()); dl_handle = NULL; return FALSE; }
 #endif
 
     return TRUE;
@@ -456,6 +496,12 @@ int VisItAttemptToCompleteConnection(void)
 void VisItSetSlaveProcessCallback(void (*spic)())
 {
     v_set_slave_process_callback(spic);
+}
+
+
+void VisItSetCommandCallback(void (*scc)(const char*,int,float,const char*))
+{
+    v_set_command_callback(v_engine,scc);
 }
 
 int VisItProcessEngineCommand(void)

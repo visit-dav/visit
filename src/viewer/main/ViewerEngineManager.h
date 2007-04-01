@@ -207,6 +207,9 @@ class avtDatabaseMetaData;
 //    Mark C. Miller, Tue Mar  8 18:06:19 PST 2005
 //    Added GetProcInfo
 //
+//    Jeremy Meredith, Mon Mar 21 10:28:46 PST 2005
+//    Added SendSimulationCommand.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -231,6 +234,9 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     bool ConnectSim(const EngineKey &ek,
                     const std::vector<std::string> &arguments,
                     const std::string &simHost, int simPort);
+    void SendSimulationCommand(const EngineKey &ek,
+                               const std::string &command,
+                               const std::string &argument);
 
     int                  GetWriteSocket(const EngineKey &ek);
     void                 ReadDataAndProcess(const EngineKey &ek);

@@ -237,6 +237,9 @@ class SplashScreen;
 //    Brad Whitlock, Wed Feb 9 17:51:44 PST 2005
 //    Added an object that knows how to update VisIt.
 //
+//    Jeremy Meredith, Mon Apr  4 16:07:59 PDT 2005
+//    Added a simulations window.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -347,6 +350,7 @@ private slots:
     void showCorrelationListWindow();
     void showQueryOverTimeWindow();
     void showInteractorWindow();
+    void showSimulationWindow();
 
     void updateVisIt();
     void updateVisItCompleted(const QString &);

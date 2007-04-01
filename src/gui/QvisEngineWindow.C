@@ -244,6 +244,9 @@ QvisEngineWindow::SubjectRemoved(Subject *TheRemovedSubject)
 //   Jeremy Meredith, Tue Mar 30 09:33:25 PST 2004
 //   I added support for simulations.
 //
+//   Jeremy Meredith, Mon Apr  4 16:02:22 PDT 2005
+//   I made better names for simulations.
+//
 // ****************************************************************************
 
 void
@@ -264,11 +267,15 @@ QvisEngineWindow::UpdateWindow(bool doAll)
             if (!sim[i].empty())
             {
                 int lastSlashPos = QString(sim[i].c_str()).findRev('/');
-                int lastDotPos =  QString(sim[i].c_str()).findRev('.');
-                temp = QString().sprintf("%s (%s)", 
-                                         sim[i].substr(lastSlashPos+1,
-                                           lastDotPos-lastSlashPos-1).c_str(),
-                                         host[i].c_str());
+                QString newsim = sim[i].substr(lastSlashPos+1);
+                int lastDotPos =  newsim.findRev('.');
+                int firstDotPos =  newsim.find('.');
+
+                QString name = newsim.mid(firstDotPos+1,
+                                          lastDotPos-firstDotPos-1);
+
+                temp = QString().sprintf("%s on %s", 
+                                    name.latin1(), host[i].c_str());
             }
             engineCombo->insertItem(temp);
 
@@ -279,7 +286,7 @@ QvisEngineWindow::UpdateWindow(bool doAll)
         if(current == -1)
         {
             // Update the activeEngine string.
-            if(host.size() > 0)
+            if(engineCombo->count() > 0)
             {
                 current = 0;
                 engineCombo->setCurrentItem(0);

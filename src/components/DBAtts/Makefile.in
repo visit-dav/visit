@@ -71,6 +71,9 @@
 #    Brad Whitlock, Tue Jan 4 17:31:58 PST 2005
 #    I added -lexpr so it links on MacOS X.
 #
+#    Jeremy Meredith, Fri Mar 18 16:23:13 PST 2005
+#    Added avtSimulationCommandSpecification.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -82,6 +85,7 @@ SRC=$(MetaData_src) $(SIL_src)
 MetaData_src= \
   MetaData/avtDatabaseMetaData.C \
   MetaData/avtSimulationInformation.C \
+  MetaData/avtSimulationCommandSpecification.C \
   MetaData/avtTypes.C
 SIL_src= \
   SIL/avtSIL.C \

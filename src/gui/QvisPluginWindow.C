@@ -73,6 +73,8 @@ QvisPluginWindow::~QvisPluginWindow()
 //  Creation:   August 31, 2001
 //
 //  Modifications:
+//    Jeremy Meredith, Tue Mar 22 14:02:59 PST 2005
+//    Remove the databases tab.
 //
 // ****************************************************************************
 
@@ -126,6 +128,9 @@ QvisPluginWindow::CreateWindowContents()
     pageDatabases->setMargin(10);
     tabs->addTab(pageDatabases, "Databases");
 
+    new QLabel("Database plugins are not yet accessible from the GUI",
+               pageDatabases);
+    /*
     listDatabases = new QListView(pageDatabases, "listDatabases");
     listDatabases->addColumn("  ");
     listDatabases->addColumn("Name");
@@ -133,6 +138,7 @@ QvisPluginWindow::CreateWindowContents()
     listDatabases->setAllColumnsShowFocus(true);
     listDatabases->setColumnAlignment(0, Qt::AlignHCenter);
     listDatabases->setColumnAlignment(2, Qt::AlignHCenter);
+    */
 
     // Show the appropriate page based on the activeTab setting.
     tabs->blockSignals(true);

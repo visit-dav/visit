@@ -59,21 +59,24 @@ handlers).
         "extern int *p_ns;" or through "dlopen(NULL, ...) ....".
 
     b2) --export-dynamic also solves this.  Same symptoms, etc.  Maybe
-        it's the same flag?
+        it's the same flag?  Note that it has to be a LINKER flag; gcc
+        won't complain about it, but it won't use it either.
 
 -------------------------------------------
 
 TODO:
 
-1) security
-2) if the simulation is running, stop requests to the engine:
+1) if the simulation is running, stop requests to the engine:
    either (a) have Engine return error conditions
    or     (b) have EngineProxy return error conditions
    or     (c) have the simulation pause
-3) simulation controls window and interfaces (pause, start, auto-update)
-4) get parallel working
-5) QvisGUIApplication::HandleMetaDataUpdate is a bit too manual right 
+2) QvisGUIApplication::HandleMetaDataUpdate is a bit too manual right 
    now -- e.g. it manually calls Update on the file information window
    and the plot manager widget.  We might be able to have these happen
    automatically by having the right things observe the right attributes.
-6) test updating SILs
+3) test updating SILs
+4) check security settings
+5) allow more info during initial negotiation (e.g. already got a connection)
+6) allow auto-update (e.g. auto-reopen)
+7) better simulation control command architecture
+   - e.g. still have unused common/state/SimulationCommand.*

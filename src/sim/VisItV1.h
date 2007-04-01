@@ -15,7 +15,7 @@
 //       5) removing the .sim file when the program exits
 //
 //  Programmer:  Jeremy Meredith
-//  Creation:    August 25, 2004
+//  Creation:    April  4, 2005
 //
 // ***************************************************************************/
 #ifdef __cplusplus
@@ -23,7 +23,10 @@ extern "C" {
 #endif
 
 int  VisItAttemptToCompleteConnection(void);
-void VisItInitializeSocketAndDumpSimFile(char *name);
+void VisItInitializeSocketAndDumpSimFile(char *name,
+                                         char *comment,
+                                         char *path,
+                                         char *inputfile);
 int  VisItGetListenSocket(void);
 int  VisItGetEngineSocket(void);
 int  VisItProcessEngineCommand(void);
@@ -32,6 +35,7 @@ void VisItDisconnect(void);
 void VisItTimeStepChanged(void);
 void VisItSetupEnvironment(void);
 void VisItSetSlaveProcessCallback(void(*)());
+void VisItSetCommandCallback(void(*)(const char*,int,float,const char*));
 
 #ifdef __cplusplus
 }

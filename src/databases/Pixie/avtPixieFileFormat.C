@@ -3,7 +3,9 @@
 // ************************************************************************* //
 
 // define this to make sure the plugin always serves up float data to VisIt
-#define FORCE_FLOATS
+// this was necessary prior to avtGenericDatabase having generic conversion
+// capability
+//#define FORCE_FLOATS
 
 #include <avtPixieFileFormat.h>
 
@@ -599,24 +601,31 @@ avtPixieFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         std::string::size_type s = 0;
         while (s != std::string::npos)
         {
-            std::string::size_type nexts = rawExpressionString.find_first_of(" ; ", s);
+            std::string::size_type nexts = rawExpressionString.find_first_of(";", s);
             std::string exprStr;
             if (nexts != std::string::npos)
             {
                 exprStr = std::string(rawExpressionString,s,nexts);
-                nexts += 3;
+                nexts += 1;
             }
             else
             {
                 exprStr = std::string(rawExpressionString,s,std::string::npos);
             }
 
-            std::string::size_type t = exprStr.find_first_of(':');
+            // remove offending chars from exprStr (spaces)
+            std::string newExprStr;
+            for (int i = 0; i < exprStr.size(); i++)
+            {
+                if (exprStr[i] != ' ')
+                    newExprStr += exprStr[i];
+            }
 
+            std::string::size_type t = newExprStr.find_first_of(':');
 
             Expression vec;
-            vec.SetName(std::string(exprStr,0,t));
-            vec.SetDefinition(std::string(exprStr,t+1,std::string::npos));
+            vec.SetName(std::string(newExprStr,0,t));
+            vec.SetDefinition(std::string(newExprStr,t+1,std::string::npos));
             vec.SetType(Expression::VectorMeshVar);
             md->AddExpression(&vec);
 

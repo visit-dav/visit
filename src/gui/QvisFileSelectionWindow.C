@@ -767,7 +767,9 @@ QvisFileSelectionWindow::UpdateHostComboBox()
 // Creation:   Mon Feb 25 15:48:01 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr 5 16:43:05 PST 2005
+//   Added code to make the combo box's list box taller.
+//
 // ****************************************************************************
 
 void
@@ -778,7 +780,8 @@ QvisFileSelectionWindow::UpdateComboBox(QComboBox *cb, const stringVector &s,
     cb->clear();
 
     // Populate the combo box.
-    for(int i = 0; i < s.size(); ++i)
+    int i;
+    for(i = 0; i < s.size(); ++i)
         cb->insertItem(s[i].c_str());
 
     // Set the current item.
@@ -791,6 +794,15 @@ QvisFileSelectionWindow::UpdateComboBox(QComboBox *cb, const stringVector &s,
     }
     cb->setCurrentItem(index);
     cb->setEditText(activeItem);
+
+    // Get the combo box's list box and set its minimum height so we don't
+    // have to scroll so much.
+    int h = 0;
+    for(i = 0; i < s.size(); ++i)
+        h += lb->itemRect(lb->item(i)).height();
+    int maxH = qApp->desktop()->height() / 2;
+    h = (h > maxH) ? maxH : h;
+    lb->setMinimumHeight(h);
 
     cb->blockSignals(false);
 }

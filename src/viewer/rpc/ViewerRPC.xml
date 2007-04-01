@@ -149,6 +149,7 @@
       SetDefaultInteractorAttributesRPC
       ResetInteractorAttributesRPC
       GetProcInfoRPC
+      SendSimulationCommandRPC
       MaxRPC
     </Enum>
     <Field name="RPCType" label="RPCType" type="enum" subtype="ViewerRPCType">
@@ -230,6 +231,10 @@
     </Field>
     <Field name="intArg3" label="intArg3" type="int">
       0
+    </Field>
+    <Field name="stringArg1" label="stringArg1" type="string">
+    </Field>
+    <Field name="stringArg2" label="stringArg2" type="string">
     </Field>
     <Function name="SetWindowArea" user="true" member="true">
     </Function>

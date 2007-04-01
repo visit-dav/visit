@@ -1,5 +1,9 @@
 @SET_MAKE@
 @VARIABLES@
+@MPI_CC@
+@MPI_CXX@
+
+
 
 SIMSER=sim
 SIMPAR=psim
@@ -7,38 +11,30 @@ SIMSRC=sim.c VisItV1.c simconnection.c
 SIMSEROBJ=$(SIMSRC:.c=.o)
 SIMPAROBJ=$(SIMSRC:.c=_par.o)
 
-CC=/usr/local/gnu/gcc-3.2/bin/gcc
-LD=/usr/local/gnu/gcc-3.2/bin/gcc
+CPPFLAGS=@CPPFLAGS@ -I. -I../include/visit
 
-CFLAGS=-g -I. -I../include/visit -Wimplicit-function-declaration -I/usr/gapps/mpich/1.2.4/SunOS/serial/default/optim/include
-LDFLAGS=-L../lib -L/usr/X11R6/lib
+SERLIBS=
+PARLIBS=@MPI_LIBS@
+
+#CFLAGS=-g -I. -I../include/visit -Wimplicit-function-declaration
+#LDFLAGS=-L../lib -L/usr/X11R6/lib
+#PARLIBS=-lmpich
+
 #LIBS=-ldl -lsocket -lnsl
 #LIBS=-ldl -lpthread
-PARLIBS=-L/usr/gapps/mpich/1.2.4/SunOS/serial/default/optim/lib -lmpich -lrt -lthread
+
+# override for suns:
+#PARLIBS=-L/usr/gapps/mpich/1.2.4/SunOS/serial/default/optim/lib -lmpich -lrt -lthread
+#CFLAGS=-g -I. -I../include/visit -Wimplicit-function-declaration -I/usr/gapps/mpich/1.2.4/SunOS/serial/default/optim/include
 
 all: $(SIMSER) $(SIMPAR)
 
-parallel: all $(SIMPAR)
-
-.SUFFIXES: _ser.o _par.o .C .c .o .so _ser.so _par.so
-
-.c.o:
-	$(CC) $(CFLAGS) -c $< -o $@
-
-.C.o:
-	$(CXX) $(CFLAGS) -c $< -o $@
-
-.c_par.o:
-	$(CC) $(CFLAGS) -DPARALLEL -c $<  -o $@
-
-.C_par.o:
-	$(CXX) $(CFLAGS) -DPARALLEL -c $<  -o $@
 
 $(SIMSER): $(SIMSEROBJ)
-	$(LD) --export-dynamic $(LDFLAGS) $(SIMSEROBJ) $(LIBS) -o $@
+	$(CC) -Wl,--export-dynamic $(LDFLAGS) $(SIMSEROBJ) $(LIBS) $(SERLIBS) -o $@
 
 $(SIMPAR): $(SIMPAROBJ)
-	$(LD) --export-dynamic $(LDFLAGS) $(SIMPAROBJ) $(LIBS) $(PARLIBS) -o $@
+	$(CC) -Wl,--export-dynamic $(LDFLAGS) $(SIMPAROBJ) $(LIBS) $(PARLIBS) -o $@
 
 $(SIMSER).pure: $(SIMSEROBJ)
 	purify $(LD) $(LDFLAGS) $(SIMSEROBJ) $(LIBS) -o $@
@@ -48,4 +44,5 @@ clean:
 	rm -f $(SIMSEROBJ) $(SIMSER) $(SIMSER).pure
 	rm -f $(SIMPAROBJ) $(SIMPAR)
 
-.SUFFIXES: .C
+@TARGETS@
+@PARLIBTARGETS@

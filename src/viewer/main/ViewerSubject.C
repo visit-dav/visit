@@ -2723,6 +2723,34 @@ ViewerSubject::RedrawWindow()
 }
 
 // ****************************************************************************
+//  Method:  ViewerSubject::SendSimulationCommand
+//
+//  Purpose:
+//    Sends a control command to a simulation.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 21, 2005
+//
+// ****************************************************************************
+void
+ViewerSubject::SendSimulationCommand()
+{
+    //
+    // Get the rpc arguments.
+    //
+    const std::string &hostName = viewerRPC.GetProgramHost();
+    const std::string &simName  = viewerRPC.GetProgramSim();
+    const std::string &command  = viewerRPC.GetStringArg1();
+    const std::string &argument = viewerRPC.GetStringArg2();
+
+    //
+    // Perform the RPC.
+    //
+    ViewerEngineManager::Instance()->
+        SendSimulationCommand(EngineKey(hostName, simName), command, argument);
+}
+
+// ****************************************************************************
 // Function: getToken
 //
 // Purpose: 
@@ -6473,8 +6501,11 @@ ViewerSubject::SendKeepAlives()
 //    Kathleen Bonnell, Wed Aug 18 09:25:33 PDT 2004 
 //    Added methods related to InteractorAttributes.
 //
-//   Mark C. Miller, Tue Mar  8 18:06:19 PST 2005
-//   Added GetProcessAttributes 
+//    Mark C. Miller, Tue Mar  8 18:06:19 PST 2005
+//    Added GetProcessAttributes 
+//
+//    Jeremy Meredith, Mon Apr  4 17:33:55 PDT 2005
+//    Added SendSimulationCommand.
 //
 // ****************************************************************************
 
@@ -6762,6 +6793,9 @@ ViewerSubject::HandleViewerRPC()
         break;
     case ViewerRPC::GetProcInfoRPC:
         GetProcessAttributes();
+        break;
+    case ViewerRPC::SendSimulationCommandRPC:
+        SendSimulationCommand();
         break;
     case ViewerRPC::MaxRPC:
         break;
@@ -7233,6 +7267,10 @@ ViewerSubject::ReadFromSimulationAndProcess(int socket)
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 25, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Apr  4 17:34:17 PDT 2005
+//    Made sure we notify clients about the right metadata.
+//
 // ****************************************************************************
 void
 ViewerSubject::HandleMetaDataUpdated(const string &host,
@@ -7244,6 +7282,9 @@ ViewerSubject::HandleMetaDataUpdated(const string &host,
 
     *metaData = *md;
     fs->SetSimulationMetaData(host, file, *metaData);
+    // The file server will modify the metadata slightly; make sure
+    // we picked up the new one.
+    *metaData = *fs->GetMetaData(host, file);
     metaData->SelectAll();
     metaData->Notify();
 }

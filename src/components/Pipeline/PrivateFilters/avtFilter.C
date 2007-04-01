@@ -10,13 +10,18 @@
 #include <avtParallel.h>
 #include <avtTerminatingSource.h>
 
+#include <vtkSystemIncludes.h> // for VTK_FLOAT
+
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 #include <NoInputException.h>
 #include <TimingsManager.h>
 
+#include <string>
+#include <vector>
 
 using std::string;
+using std::vector;
 
 
 // ****************************************************************************
@@ -284,11 +289,23 @@ avtFilter::PerformRestrictionAndDoBookkeeping(avtPipelineSpecification_p spec)
 //  Programmer:  Hank Childs
 //  Creation:    May 31, 2001
 //
+//  Modifications:
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added code to set admissible types to float
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
 avtFilter::PerformRestriction(avtPipelineSpecification_p spec)
 {
+    //
+    // By default, all filters admit only VTK_FLOAT data
+    //
+    vector<int> dataTypes;
+    dataTypes.push_back(VTK_FLOAT);
+    spec->GetDataSpecification()->UpdateAdmissibleDataTypes(dataTypes);
+
     return spec;
 }
 

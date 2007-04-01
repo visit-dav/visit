@@ -1,3 +1,6 @@
+// Programmer: Jeremy Meredith
+// Date      : April  4, 2005
+
 #include "sim.h"
 
 #include <VisItDataInterface_V1.h>
@@ -39,6 +42,22 @@ VisIt_SimulationMetaData *VisItGetMetaData()
     md->scalars[1].meshName = strdup("mesh");
     md->scalars[1].centering = VISIT_VARCENTERING_ZONE;
     md->scalars[1].treatAsASCII = 0;
+
+    md->numMaterials   = 0;
+    md->numCurves      = 0;
+    md->numExpressions = 0;
+
+    md->numCommands = 3;
+    md->commands = malloc(sizeof(VisIt_SimulationControlCommand) * md->numCommands);
+
+    md->commands[0].name = strdup("halt");
+    md->commands[0].argType = VISIT_CMDARG_NONE;
+
+    md->commands[1].name = strdup("step");
+    md->commands[1].argType = VISIT_CMDARG_NONE;
+
+    md->commands[2].name = strdup("run");
+    md->commands[2].argType = VISIT_CMDARG_NONE;
 
     return md;
 }
@@ -90,7 +109,8 @@ VisIt_SimulationCallback visitCallbacks =
 {
     &VisItGetMetaData,
     &VisItGetMesh,
-    &VisItGetMaterial,
+    NULL, /* material */
     &VisItGetScalar,
-    NULL
+    NULL, /* curve */
+    NULL  /* mixed scalar */
 };

@@ -27,6 +27,9 @@
 //    Hank Childs, Sun Mar  6 08:42:50 PST 2005
 //    Removed ForceStatic call.  That is now the default.
 //
+//    Jeremy Meredith, Fri Mar 18 08:36:54 PST 2005
+//    Added simulation command control.
+//
 // ****************************************************************************
 
 void *get_engine()
@@ -97,7 +100,7 @@ void time_step_changed(void *e)
 
 void disconnect()
 {
-    Engine::Disconnect();
+    Engine::DisconnectSimulation();
 }
 
 void set_slave_process_callback(void(*spic)())
@@ -105,6 +108,12 @@ void set_slave_process_callback(void(*spic)())
 #ifdef PARALLEL
     MPIXfer::SetSlaveProcessInstructionCallback(spic);
 #endif
+}
+
+void set_command_callback(void *e,void(*sc)(const char*,int,float,const char*))
+{
+    Engine *engine = (Engine*)(e);
+    engine->SetSimulationCommandCallback(sc);
 }
 
 //  Needed for some reason on some platforms.

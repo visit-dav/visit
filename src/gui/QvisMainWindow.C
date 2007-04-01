@@ -212,6 +212,9 @@
 //    Brad Whitlock, Wed Feb 9 17:49:22 PST 2005
 //    Added a menu option to update VisIt.
 //
+//    Jeremy Meredith, Mon Apr  4 16:35:02 PDT 2005
+//    Added the simulations window to the menu.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -292,6 +295,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     filePopup->insertItem( tr("Refresh file list"), this, SIGNAL(refreshFileList()), CTRL+Key_R);
     filePopup->insertItem( tr("File &information . . ."), this, SIGNAL(activateFileInformationWindow()), CTRL+Key_I);
     filePopup->insertItem( tr("Compute &engines . . ."), this, SIGNAL(activateEngineWindow()), CTRL+Key_E);
+    filePopup->insertItem( tr("Simulations . . ."), this, SIGNAL(activateSimulationWindow()), CTRL+SHIFT+Key_S);
     filePopup->insertSeparator();
     filePopup->insertItem(saveIcon, tr("&Save window"), this, SIGNAL(saveWindow()), CTRL+Key_S );
     filePopup->insertItem( tr("Set Save &options . . ."), this, SIGNAL(activateSaveWindow()), CTRL+Key_O);

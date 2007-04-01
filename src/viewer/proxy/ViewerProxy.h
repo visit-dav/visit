@@ -360,6 +360,9 @@ class Xfer;
 //    Mark C. Miller, Tue Mar  8 17:59:40 PST 2005
 //    Added QueryProcessAttributes and GetProcessAttributes
 //
+//    Jeremy Meredith, Mon Mar 21 08:50:53 PST 2005
+//    Added SendSimulationCommand methods.
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -583,6 +586,15 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void QueryProcessAttributes(const std::string componentName,
                                 const std::string engineHostName,
                                 const std::string engineDbName);
+
+    void SendSimulationCommand(const std::string &hostName,
+                               const std::string &simName,
+                               const std::string &command);
+
+    void SendSimulationCommand(const std::string &hostName,
+                               const std::string &simName,
+                               const std::string &command,
+                               const std::string &argument);
 
     // Methods for returning pointers to state obects.
     AnimationAttributes        *GetAnimationAttributes() const 

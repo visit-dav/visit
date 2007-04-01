@@ -234,6 +234,10 @@ class     PickVarInfo;
 //    Brad Whitlock, Sat Apr 2 00:31:24 PDT 2005
 //    Added methods to get Label datasets.
 //
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added methods to set/get admissible data types
+//    Added methods to set/get need native precision
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -281,29 +285,43 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                           const std::vector<CharStrRef> &,
                                           avtSourceFromDatabase *);
     vtkDataSet                *GetScalarVarDataset(const char *, int, int,
-                                                   const char *);
+                                                   const char *,
+                                                   const bool, const vector<int>&);
     vtkDataSet                *GetMeshDataset(const char *, int, int,
-                                              const char *);
+                                              const char *, const bool,
+                                              const vector<int>&);
     vtkDataSet                *GetVectorVarDataset(const char *, int, int,
-                                                   const char *);
+                                                   const char *,
+                                                   const bool, const vector<int>&);
     vtkDataSet                *GetSymmetricTensorVarDataset(const char *, int,
-                                                            int, const char *);
+                                                            int, const char *,
+                                                            const bool,
+                                                            const vector<int>&);
     vtkDataSet                *GetTensorVarDataset(const char *, int, int,
-                                                   const char *);
+                                                   const char *,
+                                                   const bool, const vector<int>&);
     vtkDataSet                *GetMaterialDataset(const char *, int, int,
-                                                  const char *);
+                                                  const char *, const bool,
+                                                  const vector<int>&);
     vtkDataSet                *GetSpeciesDataset(const char *, int, int,
-                                                 const char *);
+                                                 const char *, const bool,
+                                                 const vector<int>&);
     vtkDataSet                *GetLabelVarDataset(const char *, int, int,
-                                                  const char *);
+                                                  const char *, const bool,
+                                                  const vector<int>&);
     vtkDataArray              *GetScalarVariable(const char *, int, int,
-                                                 const char *);
+                                                 const char *,
+                                                 const bool, const vector<int>&);
     vtkDataArray              *GetVectorVariable(const char *, int, int,
-                                                 const char *);
+                                                 const char *,
+                                                 const bool, const vector<int>&);
     vtkDataArray              *GetSymmetricTensorVariable(const char *,int,int,
-                                                          const char *);
+                                                          const char *,
+                                                          const bool,
+                                                          const vector<int>&);
     vtkDataArray              *GetTensorVariable(const char *, int, int,
-                                                 const char *);
+                                                 const char *,
+                                                 const bool, const vector<int>&);
     vtkDataArray              *GetSpeciesVariable(const char *, int, int,
                                                   const char *, int);
     vtkDataArray              *GetLabelVariable(const char *, int, int,
@@ -312,8 +330,10 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     vtkDataArray              *GetGlobalZoneIds(int, const char *, int);
     void                       AddSecondaryVariables(vtkDataSet *, int, int,
                                                      const char *,
-                                              const std::vector<CharStrRef> &);
-    vtkDataSet                *GetMesh(const char *, int, int, const char *);
+                                              const std::vector<CharStrRef> &,
+                                              const bool, const vector<int>&);
+    vtkDataSet                *GetMesh(const char *, int, int, const char *,
+                                       const bool, const vector<int>&);
 
     void                       AddOriginalCellsArray(vtkDataSet *, const int);
     void                       AddOriginalNodesArray(vtkDataSet *, const int);

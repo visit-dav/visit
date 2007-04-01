@@ -21,6 +21,7 @@
 #include <QueryRPC.h>
 #include <ReleaseDataRPC.h>
 #include <SetWinAnnotAttsRPC.h>
+#include <SimulationCommandRPC.h>
 #include <SILAttributes.h>
 #include <StartPickRPC.h>
 #include <StartQueryRPC.h>
@@ -228,6 +229,9 @@ class StatusAttributes;
 //    Mark C. Miller, Tue Mar  8 17:59:40 PST 2005
 //    Added GetProcInfo
 //
+//    Jeremy Meredith, Mon Mar 21 08:50:09 PST 2005
+//    Added ExecuteSimulationControlCommand methods.
+//
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -273,7 +277,8 @@ public:
                                             const ExpressionList &);
     void                     ApplyOperator(const std::string&, 
                                            const AttributeSubject*);
-    void                     ApplyNamedFunction(const std::string &name, int nargs);
+    void                     ApplyNamedFunction(const std::string &name,
+                                                int nargs);
     int                      MakePlot(const std::string&, 
                                       const AttributeSubject*,
                                       const std::vector<double>&,
@@ -300,7 +305,7 @@ public:
     avtDataObjectReader_p    Render(bool, const intVector&, int, int,
                                  void (*waitCB)(void *), void *cbData);
 
-    avtDataObjectReader_p    Execute(bool, void (*waitCB)(void *), void *cbData);
+    avtDataObjectReader_p    Execute(bool, void (*waitCB)(void*),void *cbData);
 
     void                     ClearCache();
     void                     ClearCache(const std::string &);
@@ -312,10 +317,17 @@ public:
                                    QueryAttributes &);
 
     void                     ReleaseData(const int);
-    void                     CloneNetwork(const int, const QueryOverTimeAttributes *);
+    void                     CloneNetwork(const int,
+                                          const QueryOverTimeAttributes *);
     void                     UpdateExpressions(const ExpressionList &);
 
     void                     GetProcInfo(ProcessAttributes &);
+
+    void                     ExecuteSimulationControlCommand(
+                                                      const std::string &cmd);
+    void                     ExecuteSimulationControlCommand(
+                                                      const std::string &cmd,
+                                                      const std::string &arg);
 
 protected:
     virtual void             SetupComponentRPCs();
@@ -346,6 +358,7 @@ private:
     ExpressionList           exprList;
     CloneNetworkRPC          cloneNetworkRPC;
     ProcInfoRPC              procInfoRPC;
+    SimulationCommandRPC     simulationCommandRPC;
 
     // For indicating status.
     StatusAttributes        *statusAtts;
