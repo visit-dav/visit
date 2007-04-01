@@ -123,11 +123,19 @@ avtTruecolorPlot::ApplyOperators(avtDataObject_p input)
 //  Programmer: Chris Wojtan
 //  Creation:   Monday, June 15 2004
 //
+//  Modifications:
+//
+//     Chris Wojtan Mon Jun 21 15:47 2004
+//     Set the TruecolorFilter's variable name before sending the data through the filter
+//
 // ****************************************************************************
 
 avtDataObject_p
 avtTruecolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
+    // the variable name should be correctly set by this time
+    TruecolorFilter->SetVarName(varname);
+
     TruecolorFilter->SetInput(input);
     return TruecolorFilter->GetOutput();
 }

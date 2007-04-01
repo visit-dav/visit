@@ -5,7 +5,7 @@
 #ifndef AVT_Truecolor_PLOT_H
 #define AVT_Truecolor_PLOT_H
 
-
+ 
 #include <avtLegend.h>
 #include <avtPlot.h>
 #include <avtVariableMapper.h>

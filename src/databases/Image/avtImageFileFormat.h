@@ -59,7 +59,7 @@ class avtImageFileFormat : public avtSTSDFileFormat
   protected:
     // DATA MEMBERS
     std::string                          fname;
-    std::vector<std::vector<float> >     cellvars;
+    std::vector<std::vector<float> >     cellvars; 
     std::vector<std::string>             cellvarnames;
     std::vector<std::vector<float> >     pointvars;
     std::vector<std::string>             pointvarnames;
