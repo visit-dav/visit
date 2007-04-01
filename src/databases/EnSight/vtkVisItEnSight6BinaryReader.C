@@ -1,21 +1,18 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkEnSight6BinaryReader.cxx,v $
-  Language:  C++
-  Date:      $Date: 2003/10/24 17:16:18 $
-  Version:   $Revision: 1.32 $
+  Module:    $RCSfile: vtkVisItEnSight6BinaryReader.cxx,v $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#include "vtkEnSight6BinaryReader.h"
+#include "vtkVisItEnSight6BinaryReader.h"
 
 #include "vtkByteSwap.h"
 #include "vtkCellData.h"
@@ -35,12 +32,11 @@
 #include <ctype.h>
 #include <string>
 
-using std::string;
-vtkCxxRevisionMacro(vtkEnSight6BinaryReader, "$Revision: 1.32 $");
-vtkStandardNewMacro(vtkEnSight6BinaryReader);
+vtkCxxRevisionMacro(vtkVisItEnSight6BinaryReader, "$Revision: 1.40 $");
+vtkStandardNewMacro(vtkVisItEnSight6BinaryReader);
 
 //----------------------------------------------------------------------------
-vtkEnSight6BinaryReader::vtkEnSight6BinaryReader()
+vtkVisItEnSight6BinaryReader::vtkVisItEnSight6BinaryReader()
 {
   this->NumberOfUnstructuredPoints = 0;
   this->UnstructuredPoints = vtkPoints::New();
@@ -52,7 +48,7 @@ vtkEnSight6BinaryReader::vtkEnSight6BinaryReader()
 }
 
 //----------------------------------------------------------------------------
-vtkEnSight6BinaryReader::~vtkEnSight6BinaryReader()
+vtkVisItEnSight6BinaryReader::~vtkVisItEnSight6BinaryReader()
 {
   if (this->UnstructuredNodeIds)
     {
@@ -61,19 +57,17 @@ vtkEnSight6BinaryReader::~vtkEnSight6BinaryReader()
     }
   this->UnstructuredPoints->Delete();
   this->UnstructuredPoints = NULL;
-
+  
   if (this->IFile)
     {
     this->IFile->close();
     delete this->IFile;
     this->IFile = NULL;
     }
-  
 }
 
-
 //----------------------------------------------------------------------------
-int vtkEnSight6BinaryReader::OpenFile(const char* filename)
+int vtkVisItEnSight6BinaryReader::OpenFile(const char* filename)
 {
   if (!filename)
     {
@@ -119,7 +113,7 @@ int vtkEnSight6BinaryReader::OpenFile(const char* filename)
 
 
 //----------------------------------------------------------------------------
-int vtkEnSight6BinaryReader::ReadGeometryFile(char* fileName, int timeStep)
+int vtkVisItEnSight6BinaryReader::ReadGeometryFile(char* fileName, int timeStep)
 {
   char line[80], subLine[80];
   int partId;
@@ -136,7 +130,7 @@ int vtkEnSight6BinaryReader::ReadGeometryFile(char* fileName, int timeStep)
     vtkErrorMacro("A GeometryFileName must be specified in the case file.");
     return 0;
     }
-  string sfilename;
+  std::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
@@ -160,7 +154,7 @@ int vtkEnSight6BinaryReader::ReadGeometryFile(char* fileName, int timeStep)
       strcmp(subLine, "binary") != 0)
     {
     vtkErrorMacro("This is not an EnSight6 binary file. Try "
-                  << "vtkEnSight6Reader.");
+                  << "vtkVisItEnSight6Reader.");
     return 0;
     }
   
@@ -168,7 +162,10 @@ int vtkEnSight6BinaryReader::ReadGeometryFile(char* fileName, int timeStep)
     {
     for (i = 0; i < timeStep - 1; i++)
       {
-      this->SkipTimeStep();
+      if (!this->SkipTimeStep())
+        {
+        return 0;
+        }
       }
     while (strncmp(line, "BEGIN TIME STEP", 15) != 0 && lineRead)
       {
@@ -211,8 +208,16 @@ int vtkEnSight6BinaryReader::ReadGeometryFile(char* fileName, int timeStep)
   
   this->ReadLine(line); // "coordinates"
   this->ReadIntNumber(&this->NumberOfUnstructuredPoints); // number of points
+  if (this->NumberOfUnstructuredPoints < 0 ||
+      this->NumberOfUnstructuredPoints*(int)sizeof(int) > this->FileSize ||
+      this->NumberOfUnstructuredPoints > this->FileSize)
+    {
+    vtkErrorMacro("Invalid number of unstructured points; check that ByteOrder is set correctly.");
+    return 0;
+    }
   
-  this->UnstructuredPoints->SetNumberOfPoints(this->NumberOfUnstructuredPoints);
+  this->UnstructuredPoints->SetNumberOfPoints(
+                               this->NumberOfUnstructuredPoints);
   
   if (pointIdsListed)
     {
@@ -266,17 +271,22 @@ int vtkEnSight6BinaryReader::ReadGeometryFile(char* fileName, int timeStep)
     free(name);
     }
   
+  // Close file from any previous image
   if (this->IFile)
     {
     this->IFile->close();
     delete this->IFile;
     this->IFile = NULL;
     }
+  if (lineRead < 0)
+    {
+    return 0;
+    }
   return 1;
 }
 
 //----------------------------------------------------------------------------
-void vtkEnSight6BinaryReader::SkipTimeStep()
+int vtkVisItEnSight6BinaryReader::SkipTimeStep()
 {
   char line[80], subLine[80];
   int lineRead;
@@ -318,6 +328,13 @@ void vtkEnSight6BinaryReader::SkipTimeStep()
   
   this->ReadLine(line); // "coordinates"
   this->ReadIntNumber(&this->NumberOfUnstructuredPoints); // number of points
+  if (this->NumberOfUnstructuredPoints < 0 ||
+      this->NumberOfUnstructuredPoints*(int)sizeof(int) > this->FileSize ||
+      this->NumberOfUnstructuredPoints > this->FileSize)
+    {
+    vtkErrorMacro("Invalid number of unstructured points; check that ByteOrder is set correctly.");
+    return 0;
+    }
   
   if (pointIdsListed)
     { // skip point ids.
@@ -342,17 +359,23 @@ void vtkEnSight6BinaryReader::SkipTimeStep()
       lineRead = this->SkipUnstructuredGrid(line);
       }
     }
+  if (lineRead < 0)
+    {
+    return 0;
+    }
+  
+  return 1;
 }
 
 //----------------------------------------------------------------------------
-int vtkEnSight6BinaryReader::SkipStructuredGrid(char line[256])
+int vtkVisItEnSight6BinaryReader::SkipStructuredGrid(char line[256])
 {
   char subLine[80];
   int lineRead = 1;
   int iblanked = 0;
   int dimensions[3];
   int numPts;
-  
+
   if (sscanf(line, " %*s %s", subLine) == 1)
     {
     if (strcmp(subLine, "iblanked") == 0)
@@ -366,6 +389,18 @@ int vtkEnSight6BinaryReader::SkipStructuredGrid(char line[256])
   this->ReadIntNumber(dimensions+1);
   this->ReadIntNumber(dimensions+2);
   numPts = dimensions[0] * dimensions[1] * dimensions[2];
+  if (dimensions[0] < 0 || dimensions[0]*(int)sizeof(int) > this->FileSize ||
+      dimensions[0] > this->FileSize ||
+      dimensions[1] < 0 || dimensions[1]*(int)sizeof(int) > this->FileSize ||
+      dimensions[1] > this->FileSize ||
+      dimensions[2] < 0 || dimensions[2]*(int)sizeof(int) > this->FileSize ||
+      dimensions[2] > this->FileSize ||
+      numPts < 0 || numPts*(int)sizeof(int) > this->FileSize ||
+      numPts > this->FileSize)
+    {
+    vtkErrorMacro("Invalid dimensions read; check that ByteOrder is set correctly.");
+    return -1;
+    }
   
   // Skip coordinates.
   this->IFile->seekg((sizeof(float)*3*numPts), ios::cur);
@@ -381,7 +416,7 @@ int vtkEnSight6BinaryReader::SkipStructuredGrid(char line[256])
 }
 
 //----------------------------------------------------------------------------
-int vtkEnSight6BinaryReader::SkipUnstructuredGrid(char line[256])
+int vtkVisItEnSight6BinaryReader::SkipUnstructuredGrid(char line[256])
 {
   int lineRead = 1;
   int numElements;
@@ -394,6 +429,12 @@ int vtkEnSight6BinaryReader::SkipUnstructuredGrid(char line[256])
       vtkDebugMacro("point");
       
       this->ReadIntNumber(&numElements);
+      if (numElements < 0 || numElements*(int)sizeof(int) > this->FileSize ||
+          numElements > this->FileSize)
+        {
+        vtkErrorMacro("Invalid number of point cells; check that ByteOrder is set correctly.");
+        return -1;
+        }
       if (this->ElementIdsListed)
         { // skip element ids.
         this->IFile->seekg((sizeof(int)*numElements), ios::cur);
@@ -401,12 +442,18 @@ int vtkEnSight6BinaryReader::SkipUnstructuredGrid(char line[256])
       
       // nodeIdList
       this->IFile->seekg((sizeof(int)*numElements), ios::cur);
-            }
+      }
     else if (strncmp(line, "bar2", 4) == 0)
       {
       vtkDebugMacro("bar2");
       
       this->ReadIntNumber(&numElements);
+      if (numElements < 0 || numElements*(int)sizeof(int) > this->FileSize ||
+          numElements > this->FileSize)
+        {
+        vtkErrorMacro("Invalid number of bar2 cells; check that ByteOrder is set correctly.");
+        return -1;
+        }
       if (this->ElementIdsListed)
         { // skip element ids.
         this->IFile->seekg((sizeof(int)*numElements), ios::cur);
@@ -421,11 +468,17 @@ int vtkEnSight6BinaryReader::SkipUnstructuredGrid(char line[256])
       vtkWarningMacro("Only vertex nodes of this element will be read.");
       
       this->ReadIntNumber(&numElements);
+      if (numElements < 0 || numElements*(int)sizeof(int) > this->FileSize ||
+          numElements > this->FileSize)
+        {
+        vtkErrorMacro("Invalid number of bar3 cells; check that ByteOrder is set correctly.");
+        return -1;
+        }
       if (this->ElementIdsListed)
         {
         this->IFile->seekg((sizeof(int)*numElements), ios::cur);
         }
-
+      
       // Skip node ids.      
       this->IFile->seekg((sizeof(int)*3*numElements), ios::cur);
       }
@@ -435,22 +488,28 @@ int vtkEnSight6BinaryReader::SkipUnstructuredGrid(char line[256])
       if (strncmp(line, "tria3", 5) == 0)
         {
         vtkDebugMacro("tria3");
-        cellType = vtkEnSightReader::TRIA3;
+        cellType = vtkVisItEnSightReader::TRIA3;
         }
       else
         {
         vtkDebugMacro("tria6");
         vtkWarningMacro("Only vertex nodes of this element will be read.");
-        cellType = vtkEnSightReader::TRIA6;
+        cellType = vtkVisItEnSightReader::TRIA6;
         }
       
       this->ReadIntNumber(&numElements);
+      if (numElements < 0 || numElements*(int)sizeof(int) > this->FileSize ||
+          numElements > this->FileSize)
+        {
+        vtkErrorMacro("Invalid number of triangle cells; check that ByteOrder is set correctly.");
+        return -1;
+        }
       if (this->ElementIdsListed)
         {
         this->IFile->seekg((sizeof(int)*numElements), ios::cur);
         }
       
-      if (cellType == vtkEnSightReader::TRIA3)
+      if (cellType == vtkVisItEnSightReader::TRIA3)
         {
         this->IFile->seekg((sizeof(int)*3*numElements), ios::cur);
         }
@@ -466,21 +525,27 @@ int vtkEnSight6BinaryReader::SkipUnstructuredGrid(char line[256])
         {
         vtkDebugMacro("quad8");
         vtkWarningMacro("Only vertex nodes of this element will be read.");
-        cellType = vtkEnSightReader::QUAD8;
+        cellType = vtkVisItEnSightReader::QUAD8;
         }
       else
         {
         vtkDebugMacro("quad4");
-        cellType = vtkEnSightReader::QUAD4;
+        cellType = vtkVisItEnSightReader::QUAD4;
         }
       
       this->ReadIntNumber(&numElements);
+      if (numElements < 0 || numElements*(int)sizeof(int) > this->FileSize ||
+          numElements > this->FileSize)
+        {
+        vtkErrorMacro("Invalid number of quad cells; check that ByteOrder is set correctly.");
+        return -1;
+        }
       if (this->ElementIdsListed)
         {
         this->IFile->seekg((sizeof(int)*numElements), ios::cur);
         }
       
-      if (cellType == vtkEnSightReader::QUAD4)
+      if (cellType == vtkVisItEnSightReader::QUAD4)
         {
         this->IFile->seekg((sizeof(int)*4*numElements), ios::cur);
         }
@@ -496,21 +561,27 @@ int vtkEnSight6BinaryReader::SkipUnstructuredGrid(char line[256])
         {
         vtkDebugMacro("tetra10");
         vtkWarningMacro("Only vertex nodes of this element will be read.");
-        cellType = vtkEnSightReader::TETRA10;
+        cellType = vtkVisItEnSightReader::TETRA10;
         }
       else
         {
         vtkDebugMacro("tetra4");
-        cellType = vtkEnSightReader::TETRA4;
+        cellType = vtkVisItEnSightReader::TETRA4;
         }
       
       this->ReadIntNumber(&numElements);
+      if (numElements < 0 || numElements*(int)sizeof(int) > this->FileSize ||
+          numElements > this->FileSize)
+        {
+        vtkErrorMacro("Invalid number of tetrahedral cells; check that ByteOrder is set correctly.");
+        return -1;
+        }
       if (this->ElementIdsListed)
         {
         this->IFile->seekg((sizeof(int)*numElements), ios::cur);
         }
       
-      if (cellType == vtkEnSightReader::TETRA4)
+      if (cellType == vtkVisItEnSightReader::TETRA4)
         {
         this->IFile->seekg((sizeof(int)*4*numElements), ios::cur);
         }
@@ -526,21 +597,27 @@ int vtkEnSight6BinaryReader::SkipUnstructuredGrid(char line[256])
         {
         vtkDebugMacro("pyramid13");
         vtkWarningMacro("Only vertex nodes of this element will be read.");
-        cellType = vtkEnSightReader::PYRAMID13;
+        cellType = vtkVisItEnSightReader::PYRAMID13;
         }
       else
         {
         vtkDebugMacro("pyramid5");
-        cellType = vtkEnSightReader::PYRAMID5;
+        cellType = vtkVisItEnSightReader::PYRAMID5;
         }
 
       this->ReadIntNumber(&numElements);
+      if (numElements < 0 || numElements*(int)sizeof(int) > this->FileSize ||
+          numElements > this->FileSize)
+        {
+        vtkErrorMacro("Invalid number of pyramid cells; check that ByteOrder is set correctly.");
+        return -1;
+        }
       if (this->ElementIdsListed)
         {
         this->IFile->seekg((sizeof(int)*numElements), ios::cur);
         }
       
-      if (cellType == vtkEnSightReader::PYRAMID5)
+      if (cellType == vtkVisItEnSightReader::PYRAMID5)
         {
         this->IFile->seekg((sizeof(int)*5*numElements), ios::cur);
         }
@@ -556,21 +633,27 @@ int vtkEnSight6BinaryReader::SkipUnstructuredGrid(char line[256])
         {
         vtkDebugMacro("hexa20");
         vtkWarningMacro("Only vertex nodes of this element will be read.");
-        cellType = vtkEnSightReader::HEXA20;
+        cellType = vtkVisItEnSightReader::HEXA20;
         }
       else
         {
         vtkDebugMacro("hexa8");
-        cellType = vtkEnSightReader::HEXA8;
+        cellType = vtkVisItEnSightReader::HEXA8;
         }
       
       this->ReadIntNumber(&numElements);
+      if (numElements < 0 || numElements*(int)sizeof(int) > this->FileSize ||
+          numElements > this->FileSize)
+        {
+        vtkErrorMacro("Invalid number of hexahedral cells; check that ByteOrder is set correctly.");
+        return -1;
+        }
       if (this->ElementIdsListed)
         {
         this->IFile->seekg((sizeof(int)*numElements), ios::cur);
         }
       
-      if (cellType == vtkEnSightReader::HEXA8)
+      if (cellType == vtkVisItEnSightReader::HEXA8)
         {
         this->IFile->seekg((sizeof(int)*8*numElements), ios::cur);
         }
@@ -586,21 +669,27 @@ int vtkEnSight6BinaryReader::SkipUnstructuredGrid(char line[256])
         {
         vtkDebugMacro("penta15");
         vtkWarningMacro("Only vertex nodes of this element will be read.");
-        cellType = vtkEnSightReader::PENTA15;
+        cellType = vtkVisItEnSightReader::PENTA15;
         }
       else
         {
         vtkDebugMacro("penta6");
-        cellType = vtkEnSightReader::PENTA6;
+        cellType = vtkVisItEnSightReader::PENTA6;
         }
       
       this->ReadIntNumber(&numElements);
+      if (numElements < 0 || numElements*(int)sizeof(int) > this->FileSize ||
+          numElements > this->FileSize)
+        {
+        vtkErrorMacro("Invalid number of pentagonal cells; check that ByteOrder is set correctly.");
+        return -1;
+        }
       if (this->ElementIdsListed)
         {
         this->IFile->seekg((sizeof(int)*numElements), ios::cur);
         }
       
-      if (cellType == vtkEnSightReader::PENTA6)
+      if (cellType == vtkVisItEnSightReader::PENTA6)
         {
         this->IFile->seekg((sizeof(int)*6*numElements), ios::cur);
         }
@@ -620,7 +709,7 @@ int vtkEnSight6BinaryReader::SkipUnstructuredGrid(char line[256])
 }
 
 //----------------------------------------------------------------------------
-int vtkEnSight6BinaryReader::ReadMeasuredGeometryFile(char* fileName,
+int vtkVisItEnSight6BinaryReader::ReadMeasuredGeometryFile(char* fileName,
                                                       int timeStep)
 {
   char line[80], subLine[80];
@@ -637,9 +726,11 @@ int vtkEnSight6BinaryReader::ReadMeasuredGeometryFile(char* fileName,
   if (!fileName)
     {
     vtkErrorMacro("A MeasuredFileName must be specified in the case file.");
+    points->Delete();
+    pd->Delete();
     return 0;
     }
-  string sfilename;
+  std::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
@@ -651,10 +742,12 @@ int vtkEnSight6BinaryReader::ReadMeasuredGeometryFile(char* fileName,
     {
     sfilename = fileName;
     }
-
+  
   if (this->OpenFile(sfilename.c_str()) == 0)
     {
     vtkErrorMacro("Unable to open file: " << sfilename.c_str());
+    points->Delete();
+    pd->Delete();
     return 0;
     }
 
@@ -663,6 +756,8 @@ int vtkEnSight6BinaryReader::ReadMeasuredGeometryFile(char* fileName,
     {
     vtkErrorMacro("Cannot change type of output");
     this->OutputsAreValid = 0;
+    points->Delete();
+    pd->Delete();
     return 0;
     }
   
@@ -671,7 +766,9 @@ int vtkEnSight6BinaryReader::ReadMeasuredGeometryFile(char* fileName,
   if (strcmp(subLine, "Binary") != 0)
     {
     vtkErrorMacro("This is not a binary data set. Try "
-                  << "vtkEnSightGoldReader.");
+                  << "vtkVisItEnSightGoldReader.");
+    points->Delete();
+    pd->Delete();
     return 0;
     }
   
@@ -691,6 +788,15 @@ int vtkEnSight6BinaryReader::ReadMeasuredGeometryFile(char* fileName,
       this->ReadLine(line); // "particle coordinates"
       
       this->ReadIntNumber(&this->NumberOfMeasuredPoints);
+      if (this->NumberOfMeasuredPoints < 0 ||
+          this->NumberOfMeasuredPoints*(int)sizeof(int) > this->FileSize ||
+          this->NumberOfMeasuredPoints > this->FileSize)
+        {
+        vtkErrorMacro("Invalid number of measured points; check that ByteOrder is set correctly.");
+        points->Delete();
+        pd->Delete();
+        return 0;
+        }
       
       pointIds = new int[this->NumberOfMeasuredPoints];
       xCoords = new float [this->NumberOfMeasuredPoints];
@@ -721,6 +827,15 @@ int vtkEnSight6BinaryReader::ReadMeasuredGeometryFile(char* fileName,
   this->ReadLine(line); // "particle coordinates"
   
   this->ReadIntNumber(&this->NumberOfMeasuredPoints);
+  if (this->NumberOfMeasuredPoints < 0 ||
+      this->NumberOfMeasuredPoints*(int)sizeof(int) > this->FileSize ||
+      this->NumberOfMeasuredPoints > this->FileSize)
+    {
+    vtkErrorMacro("Invalid number of measured points; check that ByteOrder is set correctly.");
+    points->Delete();
+    pd->Delete();
+    return 0;
+    }
   
   this->MeasuredNodeIds->Allocate(this->NumberOfMeasuredPoints);
 
@@ -762,22 +877,19 @@ int vtkEnSight6BinaryReader::ReadMeasuredGeometryFile(char* fileName,
   return 1;
 }
 
-
-
-
-
-
 //----------------------------------------------------------------------------
-int vtkEnSight6BinaryReader::ReadScalarsPerNode(char* fileName,
+int vtkVisItEnSight6BinaryReader::ReadScalarsPerNode(char* fileName,
                                                 char* description,
                                                 int timeStep, int measured,
                                                 int numberOfComponents,
                                                 int component)
 {
+vtkDebugMacro(<< "vtkVisItEnSight6BinaryReader::ReadScalarsPerNode for description: " << description << " and component: " << component << " of " << numberOfComponents);
   char line[80];
   int partId, numPts, numParts, i;
-  vtkFloatArray *scalars;
-  long pos;;
+  vtkFloatArray *scalars = NULL;
+  float* scalarsRead;
+  long pos;
   vtkDataSet *output;
   int lineRead;
   
@@ -788,7 +900,7 @@ int vtkEnSight6BinaryReader::ReadScalarsPerNode(char* fileName,
     vtkErrorMacro("NULL ScalarPerNode variable file name");
     return 0;
     }
-  string sfilename;
+  std::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
@@ -893,7 +1005,9 @@ int vtkEnSight6BinaryReader::ReadScalarsPerNode(char* fileName,
     if (component == 0)
       {
       scalars = vtkFloatArray::New();
+      scalars->SetNumberOfTuples(numPts);
       scalars->SetNumberOfComponents(numberOfComponents);
+      scalars->Allocate(numPts * numberOfComponents);
       }
     else
       {
@@ -901,8 +1015,12 @@ int vtkEnSight6BinaryReader::ReadScalarsPerNode(char* fileName,
       scalars = (vtkFloatArray*)(this->GetOutput(partId)->GetPointData()->
                                  GetArray(description));
       }
-    scalars->SetNumberOfTuples(numPts);
-    this->ReadFloatArray(scalars->GetPointer(0), numPts);
+    scalarsRead = new float[numPts];
+    this->ReadFloatArray(scalarsRead, numPts);
+    for (i = 0; i < numPts; i++)
+      {
+      scalars->InsertComponent(i, component, scalarsRead[i]);
+      }
     
     if (!measured)
       {
@@ -917,11 +1035,13 @@ int vtkEnSight6BinaryReader::ReadScalarsPerNode(char* fileName,
           output->GetPointData()->AddArray(scalars);
           if (!output->GetPointData()->GetScalars())
             {
+vtkDebugMacro(<<"Adding point data scalars " << description);
             output->GetPointData()->SetScalars(scalars);
             }
           }
         else
           {
+vtkDebugMacro(<<"Adding point data scalars " << description);
           output->GetPointData()->AddArray(scalars);
           }
         }
@@ -933,11 +1053,11 @@ int vtkEnSight6BinaryReader::ReadScalarsPerNode(char* fileName,
       output->GetPointData()->AddArray(scalars);
       if (!output->GetPointData()->GetScalars())
         {
+vtkDebugMacro(<<"Adding point data scalars " << description);
         output->GetPointData()->SetScalars(scalars);
         }
       }
-    // I do not know what component indicates, 
-    // but scalars were only allocated if this arg was 0.
+    delete [] scalarsRead;
     if (component == 0)
       {
       scalars->Delete();
@@ -951,41 +1071,50 @@ int vtkEnSight6BinaryReader::ReadScalarsPerNode(char* fileName,
     sscanf(line, " part %d", &partId);
     partId--;
     output = this->GetOutput(partId);
+    if (output == NULL)
+      {
+      vtkErrorMacro("Could not get output for part " << partId);
+      vtkErrorMacro("Got part from line: " << line);
+      return 0;
+      }
+    
     this->ReadLine(line); // block
     numPts = output->GetNumberOfPoints();
-    // Avoid crashing.
-    if (numPts > this->FileSize)
-      {
-      vtkErrorMacro("Extent too large.");
-      numPts = 0;
-      }
+    scalarsRead = new float[numPts];
     if (component == 0)
       {
       scalars = vtkFloatArray::New();
+      scalars->SetNumberOfTuples(numPts);
       scalars->SetNumberOfComponents(numberOfComponents);
+      scalars->Allocate(numPts * numberOfComponents);
       }
     else
       {
       scalars = (vtkFloatArray*)(output->GetPointData()->
                                  GetArray(description));
       }
-    scalars->SetNumberOfTuples(numPts);
-    this->ReadFloatArray(scalars->GetPointer(0), numPts);
+    this->ReadFloatArray(scalarsRead, numPts);
+    for (i = 0; i < numPts; i++)
+      {
+      scalars->InsertComponent(i, component, scalarsRead[i]);        
+      }
     if (component == 0)
       {
       scalars->SetName(description);
       output->GetPointData()->AddArray(scalars);
       if (!output->GetPointData()->GetScalars())
         {
+vtkDebugMacro(<<"Adding point data scalars " << description);
         output->GetPointData()->SetScalars(scalars);
         }
       scalars->Delete();
-      scalars = NULL;
       }
     else
       {
+vtkDebugMacro(<<"Adding point data scalars " << description);
       output->GetPointData()->AddArray(scalars);
       }
+    delete [] scalarsRead;
     lineRead = this->ReadLine(line);
     }
   
@@ -999,7 +1128,7 @@ int vtkEnSight6BinaryReader::ReadScalarsPerNode(char* fileName,
 }
 
 //----------------------------------------------------------------------------
-int vtkEnSight6BinaryReader::ReadVectorsPerNode(char* fileName,
+int vtkVisItEnSight6BinaryReader::ReadVectorsPerNode(char* fileName,
                                                 char* description,
                                                 int timeStep, int measured)
 {
@@ -1008,7 +1137,7 @@ int vtkEnSight6BinaryReader::ReadVectorsPerNode(char* fileName,
   vtkFloatArray *vectors;
   float vector[3];
   float *vectorsRead;
-  long pos;;
+  long pos;
   vtkDataSet *output;
   int lineRead;
   
@@ -1019,7 +1148,7 @@ int vtkEnSight6BinaryReader::ReadVectorsPerNode(char* fileName,
     vtkErrorMacro("NULL VectorPerNode variable file name");
     return 0;
     }
-  string sfilename;
+  std::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
@@ -1030,7 +1159,7 @@ int vtkEnSight6BinaryReader::ReadVectorsPerNode(char* fileName,
     {
     sfilename = fileName;
     }
-
+  
   if (this->OpenFile(sfilename.c_str()) == 0)
     {
     vtkErrorMacro("Unable to open file: " << sfilename.c_str());
@@ -1190,11 +1319,12 @@ int vtkEnSight6BinaryReader::ReadVectorsPerNode(char* fileName,
     delete this->IFile;
     this->IFile = NULL;
     }
+
   return 1;
 }
 
 //----------------------------------------------------------------------------
-int vtkEnSight6BinaryReader::ReadTensorsPerNode(char* fileName,
+int vtkVisItEnSight6BinaryReader::ReadTensorsPerNode(char* fileName,
                                                 char* description,
                                                 int timeStep)
 {
@@ -1203,7 +1333,7 @@ int vtkEnSight6BinaryReader::ReadTensorsPerNode(char* fileName,
   vtkFloatArray *tensors;
   float tensor[6];
   float* tensorsRead;
-  long pos;;
+  long pos;
   vtkDataSet *output;
   int lineRead;
   
@@ -1214,7 +1344,7 @@ int vtkEnSight6BinaryReader::ReadTensorsPerNode(char* fileName,
     vtkErrorMacro("NULL TensorSymmPerNode variable file name");
     return 0;
     }
-  string sfilename;
+  std::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
@@ -1356,7 +1486,7 @@ int vtkEnSight6BinaryReader::ReadTensorsPerNode(char* fileName,
 }
 
 //----------------------------------------------------------------------------
-int vtkEnSight6BinaryReader::ReadScalarsPerElement(char* fileName,
+int vtkVisItEnSight6BinaryReader::ReadScalarsPerElement(char* fileName,
                                                    char* description,
                                                    int timeStep,
                                                    int numberOfComponents,
@@ -1377,7 +1507,7 @@ int vtkEnSight6BinaryReader::ReadScalarsPerElement(char* fileName,
     vtkErrorMacro("NULL ScalarPerElement variable file name");
     return 0;
     }
-  string sfilename;
+  std::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
@@ -1390,8 +1520,8 @@ int vtkEnSight6BinaryReader::ReadScalarsPerElement(char* fileName,
     sfilename = fileName;
     }
   
-  if (this->OpenFile(sfilename.c_str()) == 0)
-    {
+  if (this->OpenFile(sfilename.c_str()) == 0) 
+   {
     vtkErrorMacro("Unable to open file: " << sfilename.c_str());
     return 0;
     }
@@ -1426,12 +1556,9 @@ int vtkEnSight6BinaryReader::ReadScalarsPerElement(char* fileName,
             if (elementType < 0)
               {
               vtkErrorMacro("invalid element type");
-              if (this->IFile)
-                {
-                this->IFile->close();
-                delete this->IFile;
-                this->IFile = NULL;
-                }
+              this->IFile->close();
+              delete this->IFile;
+              this->IFile = NULL;
               return 0;
               }
             idx = this->UnstructuredPartIds->IsId(partId);
@@ -1494,12 +1621,9 @@ int vtkEnSight6BinaryReader::ReadScalarsPerElement(char* fileName,
         if (elementType < 0)
           {
           vtkErrorMacro("invalid element type");
-          if (this->IFile)
-            {
-            this->IFile->close();
-            delete this->IFile;
-            this->IFile = NULL;
-            }
+          this->IFile->close();
+          delete this->IFile;
+          this->IFile = NULL;
           return 0;
           }
         idx = this->UnstructuredPartIds->IsId(partId);
@@ -1553,7 +1677,7 @@ int vtkEnSight6BinaryReader::ReadScalarsPerElement(char* fileName,
 }
 
 //----------------------------------------------------------------------------
-int vtkEnSight6BinaryReader::ReadVectorsPerElement(char* fileName,
+int vtkVisItEnSight6BinaryReader::ReadVectorsPerElement(char* fileName,
                                                    char* description,
                                                    int timeStep)
 {
@@ -1573,7 +1697,7 @@ int vtkEnSight6BinaryReader::ReadVectorsPerElement(char* fileName,
     vtkErrorMacro("NULL VectorPerElement variable file name");
     return 0;
     }
-  string sfilename;
+  std::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
@@ -1733,7 +1857,7 @@ int vtkEnSight6BinaryReader::ReadVectorsPerElement(char* fileName,
 }
 
 //----------------------------------------------------------------------------
-int vtkEnSight6BinaryReader::ReadTensorsPerElement(char* fileName,
+int vtkVisItEnSight6BinaryReader::ReadTensorsPerElement(char* fileName,
                                                    char* description,
                                                    int timeStep)
 {
@@ -1753,7 +1877,7 @@ int vtkEnSight6BinaryReader::ReadTensorsPerElement(char* fileName,
     vtkErrorMacro("NULL TensorPerElement variable file name");
     return 0;
     }
-  string sfilename;
+  std::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
@@ -1802,12 +1926,9 @@ int vtkEnSight6BinaryReader::ReadTensorsPerElement(char* fileName,
             if (elementType < 0)
               {
               vtkErrorMacro("invalid element type");
-              if (this->IFile)
-                {
-                this->IFile->close();
-                delete this->IFile;
-                this->IFile = NULL;
-                }
+              this->IFile->close();
+              delete this->IFile;
+              this->IFile = NULL;
               return 0;
               }
             idx = this->UnstructuredPartIds->IsId(partId);
@@ -1863,12 +1984,9 @@ int vtkEnSight6BinaryReader::ReadTensorsPerElement(char* fileName,
         if (elementType < 0)
           {
           vtkErrorMacro("invalid element type");
-          if (this->IFile)
-            {
-            this->IFile->close();
-            delete this->IFile;
-            this->IFile = NULL;
-            }
+          this->IFile->close();
+          delete this->IFile;
+          this->IFile = NULL;
           return 0;
           }
         idx = this->UnstructuredPartIds->IsId(partId);
@@ -1925,7 +2043,7 @@ int vtkEnSight6BinaryReader::ReadTensorsPerElement(char* fileName,
 }
 
 //----------------------------------------------------------------------------
-int vtkEnSight6BinaryReader::CreateUnstructuredGridOutput(int partId,
+int vtkVisItEnSight6BinaryReader::CreateUnstructuredGridOutput(int partId,
                                                           char line[80],
                                                           const char* name)
 {
@@ -1961,7 +2079,7 @@ int vtkEnSight6BinaryReader::CreateUnstructuredGridOutput(int partId,
   vtkCharArray* nmArray =  vtkCharArray::New();
   nmArray->SetName("Name");
   size_t len = strlen(name);
-  nmArray->SetNumberOfTuples(len+1);
+  nmArray->SetNumberOfTuples(static_cast<vtkIdType>(len)+1);
   char* copy = nmArray->GetPointer(0);
   memcpy(copy, name, len);
   copy[len] = '\0';
@@ -1983,14 +2101,19 @@ int vtkEnSight6BinaryReader::CreateUnstructuredGridOutput(int partId,
       {
       vtkDebugMacro("point");
       
-      nodeIds = new vtkIdType[1];
       this->ReadIntNumber(&numElements);
+      if (numElements < 0 ||
+          numElements*(int)sizeof(int) > this->FileSize ||
+          numElements > this->FileSize)
+        {
+        vtkErrorMacro("Invalid number of point cells; check that ByteOrder is set correctly.");
+        return 0;
+        }
+      nodeIds = new vtkIdType[1];
       if (this->ElementIdsListed)
         {
-        // There is probably a better way to advance the file pointer.
-        int *tempArray = new int[numElements];
-        this->ReadIntArray(tempArray, numElements);
-        delete [] tempArray;
+        // skip element ids
+        this->IFile->seekg((sizeof(int)*numElements), ios::cur);
         }
       
       nodeIdList = new int[numElements];
@@ -2004,7 +2127,7 @@ int vtkEnSight6BinaryReader::CreateUnstructuredGridOutput(int partId,
           nodeIds[0] = this->UnstructuredNodeIds->GetValue(nodeIds[0]);
           }
         cellId = output->InsertNextCell(VTK_VERTEX, 1, nodeIds);
-        this->GetCellIds(idx, vtkEnSightReader::POINT)->InsertNextId(cellId);
+        this->GetCellIds(idx, vtkVisItEnSightReader::POINT)->InsertNextId(cellId);
         }
       delete [] nodeIds;
       delete [] nodeIdList;
@@ -2013,14 +2136,19 @@ int vtkEnSight6BinaryReader::CreateUnstructuredGridOutput(int partId,
       {
       vtkDebugMacro("bar2");
       
-      nodeIds = new vtkIdType[2];
       this->ReadIntNumber(&numElements);
+      if (numElements < 0 ||
+          numElements*(int)sizeof(int) > this->FileSize ||
+          numElements > this->FileSize)
+        {
+        vtkErrorMacro("Invalid number of bar2 cells; check that ByteOrder is set correctly.");
+        return 0;
+        }
+      nodeIds = new vtkIdType[2];
       if (this->ElementIdsListed)
         {
-        // There is probably a better way to advance the file pointer.
-        int *tempArray = new int[numElements];
-        this->ReadIntArray(tempArray, numElements);
-        delete [] tempArray;
+        // skip element ids
+        this->IFile->seekg((sizeof(int)*numElements), ios::cur);
         }
       
       nodeIdList = new int[numElements * 2];
@@ -2041,7 +2169,7 @@ int vtkEnSight6BinaryReader::CreateUnstructuredGridOutput(int partId,
             }
           }
         cellId = output->InsertNextCell(VTK_LINE, 2, nodeIds);
-        this->GetCellIds(idx, vtkEnSightReader::BAR2)->InsertNextId(cellId);
+        this->GetCellIds(idx, vtkVisItEnSightReader::BAR2)->InsertNextId(cellId);
         }
       delete [] nodeIds;
       delete [] nodeIdList;
@@ -2051,14 +2179,18 @@ int vtkEnSight6BinaryReader::CreateUnstructuredGridOutput(int partId,
       vtkDebugMacro("bar3");
       vtkWarningMacro("Only vertex nodes of this element will be read.");
       
-      nodeIds = new vtkIdType[2];
       this->ReadIntNumber(&numElements);
+      if (numElements < 0 || numElements*(int)sizeof(int) > this->FileSize ||
+          numElements > this->FileSize)
+        {
+        vtkErrorMacro("Invalid number of bar3 cells; check that ByteOrder is set correctly.");
+        return 0;
+        }
+      nodeIds = new vtkIdType[2];
       if (this->ElementIdsListed)
         {
-        // There is probably a better way to advance the file pointer.
-        int *tempArray = new int[numElements];
-        this->ReadIntArray(tempArray, numElements);
-        delete [] tempArray;
+        // skip element ids
+        this->IFile->seekg((sizeof(int)*numElements), ios::cur);
         }
       
       nodeIdList = new int[numElements * 3];
@@ -2079,7 +2211,7 @@ int vtkEnSight6BinaryReader::CreateUnstructuredGridOutput(int partId,
             }
           }
         cellId = output->InsertNextCell(VTK_LINE, 2, nodeIds);
-        this->GetCellIds(idx, vtkEnSightReader::BAR3)->InsertNextId(cellId);
+        this->GetCellIds(idx, vtkVisItEnSightReader::BAR3)->InsertNextId(cellId);
         }
       delete [] nodeIds;
       delete [] nodeIdList;
@@ -2090,26 +2222,30 @@ int vtkEnSight6BinaryReader::CreateUnstructuredGridOutput(int partId,
       if (strncmp(line, "tria3", 5) == 0)
         {
         vtkDebugMacro("tria3");
-        cellType = vtkEnSightReader::TRIA3;
+        cellType = vtkVisItEnSightReader::TRIA3;
         }
       else
         {
         vtkDebugMacro("tria6");
         vtkWarningMacro("Only vertex nodes of this element will be read.");
-        cellType = vtkEnSightReader::TRIA6;
+        cellType = vtkVisItEnSightReader::TRIA6;
         }
       
-      nodeIds = new vtkIdType[3];
       this->ReadIntNumber(&numElements);
+      if (numElements < 0 || numElements*(int)sizeof(int) > this->FileSize ||
+          numElements > this->FileSize)
+        {
+        vtkErrorMacro("Invalid number of triangle cells; check that ByteOrder is set correctly.");
+        return 0;
+        }
+      nodeIds = new vtkIdType[3];
       if (this->ElementIdsListed)
         {
-        // There is probably a better way to advance the file pointer.
-        int *tempArray = new int[numElements];
-        this->ReadIntArray(tempArray, numElements);
-        delete [] tempArray;
+        // skip element ids
+        this->IFile->seekg((sizeof(int)*numElements), ios::cur);
         }
       
-      if (cellType == vtkEnSightReader::TRIA3)
+      if (cellType == vtkVisItEnSightReader::TRIA3)
         {
         nodeIdList = new int[numElements * 3];
         this->ReadIntArray(nodeIdList, numElements*3);
@@ -2122,7 +2258,7 @@ int vtkEnSight6BinaryReader::CreateUnstructuredGridOutput(int partId,
       
       for (i = 0; i < numElements; i++)
         {
-        if (cellType == vtkEnSightReader::TRIA3)
+        if (cellType == vtkVisItEnSightReader::TRIA3)
           {
           for (j = 0; j < 3; j++)
             {
@@ -2156,25 +2292,29 @@ int vtkEnSight6BinaryReader::CreateUnstructuredGridOutput(int partId,
         {
         vtkDebugMacro("quad8");
         vtkWarningMacro("Only vertex nodes of this element will be read.");
-        cellType = vtkEnSightReader::QUAD8;
+        cellType = vtkVisItEnSightReader::QUAD8;
         }
       else
         {
         vtkDebugMacro("quad4");
-        cellType = vtkEnSightReader::QUAD4;
+        cellType = vtkVisItEnSightReader::QUAD4;
         }
       
-      nodeIds = new vtkIdType[4];
       this->ReadIntNumber(&numElements);
+      if (numElements < 0 || numElements*(int)sizeof(int) > this->FileSize ||
+          numElements > this->FileSize)
+        {
+        vtkErrorMacro("Invalid number of quad cells; check that ByteOrder is set correctly.");
+        return 0;
+        }
+      nodeIds = new vtkIdType[4];
       if (this->ElementIdsListed)
         {
-        // There is probably a better way to advance the file pointer.
-        int *tempArray = new int[numElements];
-        this->ReadIntArray(tempArray, numElements);
-        delete [] tempArray;
+        // skip element ids
+        this->IFile->seekg((sizeof(int)*numElements), ios::cur);
         }
       
-      if (cellType == vtkEnSightReader::QUAD4)
+      if (cellType == vtkVisItEnSightReader::QUAD4)
         {
         nodeIdList = new int[numElements * 4];
         this->ReadIntArray(nodeIdList, numElements*4);
@@ -2187,7 +2327,7 @@ int vtkEnSight6BinaryReader::CreateUnstructuredGridOutput(int partId,
       
       for (i = 0; i < numElements; i++)
         {
-        if (cellType == vtkEnSightReader::QUAD4)
+        if (cellType == vtkVisItEnSightReader::QUAD4)
           {
           for (j = 0; j < 4; j++)
             {
@@ -2221,25 +2361,29 @@ int vtkEnSight6BinaryReader::CreateUnstructuredGridOutput(int partId,
         {
         vtkDebugMacro("tetra10");
         vtkWarningMacro("Only vertex nodes of this element will be read.");
-        cellType = vtkEnSightReader::TETRA10;
+        cellType = vtkVisItEnSightReader::TETRA10;
         }
       else
         {
         vtkDebugMacro("tetra4");
-        cellType = vtkEnSightReader::TETRA4;
+        cellType = vtkVisItEnSightReader::TETRA4;
         }
       
-      nodeIds = new vtkIdType[4];
       this->ReadIntNumber(&numElements);
+      if (numElements < 0 || numElements*(int)sizeof(int) > this->FileSize ||
+          numElements > this->FileSize)
+        {
+        vtkErrorMacro("Invalid number of tetrahedral cells; check that ByteOrder is set correctly.");
+        return 0;
+        }
+      nodeIds = new vtkIdType[4];
       if (this->ElementIdsListed)
         {
-        // There is probably a better way to advance the file pointer.
-        int *tempArray = new int[numElements];
-        this->ReadIntArray(tempArray, numElements);
-        delete [] tempArray;
+        // skip element ids
+        this->IFile->seekg((sizeof(int)*numElements), ios::cur);
         }
       
-      if (cellType == vtkEnSightReader::TETRA4)
+      if (cellType == vtkVisItEnSightReader::TETRA4)
         {
         nodeIdList = new int[numElements * 4];
         this->ReadIntArray(nodeIdList, numElements*4);
@@ -2252,7 +2396,7 @@ int vtkEnSight6BinaryReader::CreateUnstructuredGridOutput(int partId,
       
       for (i = 0; i < numElements; i++)
         {
-        if (cellType == vtkEnSightReader::TETRA4)
+        if (cellType == vtkVisItEnSightReader::TETRA4)
           {
           for (j = 0; j < 4; j++)
             {
@@ -2286,25 +2430,29 @@ int vtkEnSight6BinaryReader::CreateUnstructuredGridOutput(int partId,
         {
         vtkDebugMacro("pyramid13");
         vtkWarningMacro("Only vertex nodes of this element will be read.");
-        cellType = vtkEnSightReader::PYRAMID13;
+        cellType = vtkVisItEnSightReader::PYRAMID13;
         }
       else
         {
         vtkDebugMacro("pyramid5");
-        cellType = vtkEnSightReader::PYRAMID5;
+        cellType = vtkVisItEnSightReader::PYRAMID5;
         }
 
-      nodeIds = new vtkIdType[5];
       this->ReadIntNumber(&numElements);
+      if (numElements < 0 || numElements*(int)sizeof(int) > this->FileSize ||
+          numElements > this->FileSize)
+        {
+        vtkErrorMacro("Invalid number of pyramid cells; check that ByteOrder is set correctly.");
+        return 0;
+        }
+      nodeIds = new vtkIdType[5];
       if (this->ElementIdsListed)
         {
-        // There is probably a better way to advance the file pointer.
-        int *tempArray = new int[numElements];
-        this->ReadIntArray(tempArray, numElements);
-        delete [] tempArray;
+        // skip element ids
+        this->IFile->seekg((sizeof(int)*numElements), ios::cur);
         }
       
-      if (cellType == vtkEnSightReader::PYRAMID5)
+      if (cellType == vtkVisItEnSightReader::PYRAMID5)
         {
         nodeIdList = new int[numElements * 5];
         this->ReadIntArray(nodeIdList, numElements*5);
@@ -2317,7 +2465,7 @@ int vtkEnSight6BinaryReader::CreateUnstructuredGridOutput(int partId,
       
       for (i = 0; i < numElements; i++)
         {
-        if (cellType == vtkEnSightReader::PYRAMID5)
+        if (cellType == vtkVisItEnSightReader::PYRAMID5)
           {
           for (j = 0; j < 5; j++)
             {
@@ -2351,25 +2499,29 @@ int vtkEnSight6BinaryReader::CreateUnstructuredGridOutput(int partId,
         {
         vtkDebugMacro("hexa20");
         vtkWarningMacro("Only vertex nodes of this element will be read.");
-        cellType = vtkEnSightReader::HEXA20;
+        cellType = vtkVisItEnSightReader::HEXA20;
         }
       else
         {
         vtkDebugMacro("hexa8");
-        cellType = vtkEnSightReader::HEXA8;
+        cellType = vtkVisItEnSightReader::HEXA8;
         }
       
-      nodeIds = new vtkIdType[8];
       this->ReadIntNumber(&numElements);
+      if (numElements < 0 || numElements*(int)sizeof(int) > this->FileSize ||
+          numElements > this->FileSize)
+        {
+        vtkErrorMacro("Invalid number of hexahedral cells; check that ByteOrder is set correctly.");
+        return 0;
+        }
+      nodeIds = new vtkIdType[8];
       if (this->ElementIdsListed)
         {
-        // There is probably a better way to advance the file pointer.
-        int *tempArray = new int[numElements];
-        this->ReadIntArray(tempArray, numElements);
-        delete [] tempArray;
+        // skip element ids
+        this->IFile->seekg((sizeof(int)*numElements), ios::cur);
         }
       
-      if (cellType == vtkEnSightReader::HEXA8)
+      if (cellType == vtkVisItEnSightReader::HEXA8)
         {
         nodeIdList = new int[numElements * 8];
         this->ReadIntArray(nodeIdList, numElements*8);
@@ -2382,7 +2534,7 @@ int vtkEnSight6BinaryReader::CreateUnstructuredGridOutput(int partId,
       
       for (i = 0; i < numElements; i++)
         {
-        if (cellType == vtkEnSightReader::HEXA8)
+        if (cellType == vtkVisItEnSightReader::HEXA8)
           {
           for (j = 0; j < 8; j++)
             {
@@ -2416,25 +2568,29 @@ int vtkEnSight6BinaryReader::CreateUnstructuredGridOutput(int partId,
         {
         vtkDebugMacro("penta15");
         vtkWarningMacro("Only vertex nodes of this element will be read.");
-        cellType = vtkEnSightReader::PENTA15;
+        cellType = vtkVisItEnSightReader::PENTA15;
         }
       else
         {
         vtkDebugMacro("penta6");
-        cellType = vtkEnSightReader::PENTA6;
+        cellType = vtkVisItEnSightReader::PENTA6;
         }
       
-      nodeIds = new vtkIdType[6];
       this->ReadIntNumber(&numElements);
+      if (numElements < 0 || numElements*(int)sizeof(int) > this->FileSize ||
+          numElements > this->FileSize)
+        {
+        vtkErrorMacro("Invalid number of pentagonal cells; check that ByteOrder is set correctly.");
+        return 0;
+        }
+      nodeIds = new vtkIdType[6];
       if (this->ElementIdsListed)
         {
-        // There is probably a better way to advance the file pointer.
-        int *tempArray = new int[numElements];
-        this->ReadIntArray(tempArray, numElements);
-        delete [] tempArray;
+        // skip element ids
+        this->IFile->seekg((sizeof(int)*numElements), ios::cur);
         }
       
-      if (cellType == vtkEnSightReader::PENTA6)
+      if (cellType == vtkVisItEnSightReader::PENTA6)
         {
         nodeIdList = new int[numElements * 6];
         this->ReadIntArray(nodeIdList, numElements*6);
@@ -2447,7 +2603,7 @@ int vtkEnSight6BinaryReader::CreateUnstructuredGridOutput(int partId,
       
       for (i = 0; i < numElements; i++)
         {
-        if (cellType == vtkEnSightReader::PENTA6)
+        if (cellType == vtkVisItEnSightReader::PENTA6)
           {
           for (j = 0; j < 6; j++)
             {
@@ -2483,7 +2639,7 @@ int vtkEnSight6BinaryReader::CreateUnstructuredGridOutput(int partId,
 }
 
 //----------------------------------------------------------------------------
-int vtkEnSight6BinaryReader::CreateStructuredGridOutput(int partId,
+int vtkVisItEnSight6BinaryReader::CreateStructuredGridOutput(int partId,
                                                         char line[80],
                                                         const char* name)
 {
@@ -2510,6 +2666,7 @@ int vtkEnSight6BinaryReader::CreateStructuredGridOutput(int partId,
     {
     vtkErrorMacro("Cannot change type of output");
     this->OutputsAreValid = 0;
+    points->Delete();
     return 0;
     }
 
@@ -2519,7 +2676,7 @@ int vtkEnSight6BinaryReader::CreateStructuredGridOutput(int partId,
   vtkCharArray* nmArray =  vtkCharArray::New();
   nmArray->SetName("Name");
   size_t len = strlen(name);
-  nmArray->SetNumberOfTuples(len+1);
+  nmArray->SetNumberOfTuples(static_cast<vtkIdType>(len)+1);
   char* copy = nmArray->GetPointer(0);
   memcpy(copy, name, len);
   copy[len] = '\0';
@@ -2537,10 +2694,23 @@ int vtkEnSight6BinaryReader::CreateStructuredGridOutput(int partId,
   this->ReadIntNumber(dimensions);
   this->ReadIntNumber(dimensions+1);
   this->ReadIntNumber(dimensions+2);
+  numPts = dimensions[0] * dimensions[1] * dimensions[2];
+  if (dimensions[0] < 0 || dimensions[0]*(int)sizeof(int) > this->FileSize ||
+      dimensions[0] > this->FileSize ||
+      dimensions[1] < 0 || dimensions[1]*(int)sizeof(int) > this->FileSize ||
+      dimensions[1] > this->FileSize ||
+      dimensions[2] < 0 || dimensions[2]*(int)sizeof(int) > this->FileSize ||
+      dimensions[2] > this->FileSize ||
+      numPts < 0 || numPts*(int)sizeof(int) > this->FileSize ||
+      numPts > this->FileSize)
+    {
+    vtkErrorMacro("Invalid dimensions; check that ByteOrder is set correctly.");
+    points->Delete();
+    return -1;
+    }
   output->SetDimensions(dimensions);
   output->SetWholeExtent(
     0, dimensions[0]-1, 0, dimensions[1]-1, 0, dimensions[2]-1);
-  numPts = dimensions[0] * dimensions[1] * dimensions[2];
   points->Allocate(numPts);
   
   coordsRead = new float[numPts*3];
@@ -2557,7 +2727,6 @@ int vtkEnSight6BinaryReader::CreateStructuredGridOutput(int partId,
   output->SetPoints(points);  
   if (iblanked)
     {
-    output->BlankingOn();
     iblanks = new int[numPts];
     this->ReadIntArray(iblanks, numPts);
     for (i = 0; i < numPts; i++)
@@ -2578,7 +2747,7 @@ int vtkEnSight6BinaryReader::CreateStructuredGridOutput(int partId,
 
 // Internal function to read in a line up to 80 characters.
 // Returns zero if there was an error.
-int vtkEnSight6BinaryReader::ReadLine(char result[80])
+int vtkVisItEnSight6BinaryReader::ReadLine(char result[80])
 {
   if ( ! this->IFile->read(result, sizeof(char)*80))
     {
@@ -2596,72 +2765,101 @@ int vtkEnSight6BinaryReader::ReadLine(char result[80])
 // is smaller than the file.  Although this computation
 // assumes only one int array is in the file,
 // it should still work fine.
-int vtkEnSight6BinaryReader::ReadIntNumber(int *result)
+int vtkVisItEnSight6BinaryReader::ReadIntNumber(int *result)
 {
   if ( ! this->IFile->read((char*)result, sizeof(int)))
     {
+    vtkErrorMacro("Read failed");
     return 0;
     }
   if (this->ByteOrder == FILE_LITTLE_ENDIAN)
     {
     vtkByteSwap::Swap4LE(result);
+    vtkDebugMacro(<<"ByteOrder == FILE_LITTLE_ENDIAN"); 
+    }
+  else if (this->ByteOrder == FILE_BIG_ENDIAN)
+    {
+    vtkByteSwap::Swap4BE(result);
+    vtkDebugMacro(<<"ByteOrder == FILE_BIG_ENDIAN");
     }
   else
     {
-    vtkByteSwap::Swap4BE(result);
+    // Experimental byte swap.
+    int tmpLE = *result;
+    int tmpBE = *result;
+    vtkByteSwap::Swap4LE(&tmpLE);
+    vtkByteSwap::Swap4BE(&tmpBE);
+
+    // Use negative value as an indication of bad number.
+    // Compare unmultiplied number to file size in case multiplying by
+    // sizeof(int) creates a number big enough that it does not fit in an int,
+    // and so becomes negative.
+    if ((tmpLE*(int)(sizeof(int))) > this->FileSize || tmpLE > this->FileSize)
+      {
+      tmpLE = -1;
+      }
+    if ((tmpBE*(int)(sizeof(int))) > this->FileSize || tmpBE > this->FileSize)
+      {
+      tmpBE = -1;
+      }
+vtkDebugMacro(<< "tmpLE: " << tmpLE );
+vtkDebugMacro(<< "tmpBE: " << tmpBE );
+    // Just a sanity check. (0, 0 occurs often).
+    // This condition would only occur for some really large files.
+    if (tmpLE > 0 && tmpBE > 0)
+      {
+      vtkWarningMacro("Byte order is ambiguous.");
+      }
+
+    // If they are both valid, use the larger one.
+    if (tmpLE > 0)
+      {
+      if (tmpBE > tmpLE)
+        {
+vtkDebugMacro(<< "Byteorder being set to BE w/i ReadIntNumber");
+        this->ByteOrder = FILE_BIG_ENDIAN;
+        *result = tmpBE;
+        }
+      else
+        {
+vtkDebugMacro(<< "Byteorder being set to LE w/i ReadIntNumber");
+        this->ByteOrder = FILE_LITTLE_ENDIAN;
+        *result = tmpLE;
+        }
+      return 1;
+      }
+    if (tmpBE > 0)
+      {
+vtkDebugMacro(<< "Byteorder being set to BE w/i ReadIntNumber");
+      this->ByteOrder = FILE_BIG_ENDIAN;
+      *result = tmpBE;
+      return 1;
+      }
+
+    if (tmpLE < 0 && tmpBE < 0)
+      { // both byte swaps are bad.
+      vtkErrorMacro("Could not find a suitable byte order.");
+      *result = 0;
+      return 0;
+      }
     }
   
-  // Experimental byte swap.
-  int tmp = *result;
-  vtkByteSwap::SwapVoidRange(&tmp, 1, sizeof(int));
-  // Use negative value as an indication of bad number.
-  if ((tmp*(int)(sizeof(int))) > this->FileSize)
-    {
-    tmp = -1;
-    }
-  if ((*result*(int)(sizeof(int))) > this->FileSize)
-    {
-    *result = -1;
-    }
-  // Just a sanity check. (0, 0 occurs often).
-  // This condition would only occur for some really large files.
-  if (*result > 0 && tmp > 0)
-    {
-    vtkWarningMacro("Byte order is ambiguous.");
-    }
-
-  // If they are both valid, use the larger one.
-  if (tmp > 0 && tmp > *result)
-    { // Byte order must be wrong
-    if (this->ByteOrder == FILE_LITTLE_ENDIAN)
-      {
-      this->ByteOrder = FILE_BIG_ENDIAN;
-      }
-    else
-      {
-      this->ByteOrder = FILE_LITTLE_ENDIAN;
-      }
-    *result = tmp;
-    return 1;
-    }
-
-  if (*result < 0)
-    { // both byte swaps are bad.
-    vtkErrorMacro("Could not find a suitable byte order.");
-    *result = 0;
-    return 0;
-    }
-
   return 1;
 }
 
 // Internal function to read an integer array.
 // Returns zero if there was an error.
-int vtkEnSight6BinaryReader::ReadIntArray(int *result,
+int vtkVisItEnSight6BinaryReader::ReadIntArray(int *result,
                                           int numInts)
 {
+  if (numInts <= 0)
+    {
+    return 1;
+    }
+  
   if ( ! this->IFile->read((char*)result, sizeof(int)*numInts))
     {
+    vtkErrorMacro("Read failed.");
     return 0;
     }
   if (this->ByteOrder == FILE_LITTLE_ENDIAN)
@@ -2678,11 +2876,17 @@ int vtkEnSight6BinaryReader::ReadIntArray(int *result,
 
 // Internal function to read a float array.
 // Returns zero if there was an error.
-int vtkEnSight6BinaryReader::ReadFloatArray(float *result,
+int vtkVisItEnSight6BinaryReader::ReadFloatArray(float *result,
                                             int numFloats)
 {
+  if (numFloats <= 0)
+    {
+    return 1;
+    }
+
   if ( ! this->IFile->read((char*)result, sizeof(float)*numFloats))
     {
+    vtkErrorMacro("Read failed.");
     return 0;
     }
 
@@ -2699,7 +2903,7 @@ int vtkEnSight6BinaryReader::ReadFloatArray(float *result,
 }
 
 //----------------------------------------------------------------------------
-void vtkEnSight6BinaryReader::PrintSelf(ostream& os, vtkIndent indent)
+void vtkVisItEnSight6BinaryReader::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
 }

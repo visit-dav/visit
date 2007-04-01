@@ -1,10 +1,10 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkEnSight6Reader.h,v $
+  Module:    $RCSfile: vtkVisItEnSightGoldReader.h,v $
   Language:  C++
   Date:      $Date: 2003/06/02 20:43:58 $
-  Version:   $Revision: 1.15 $
+  Version:   $Revision: 1.16 $
 
   Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
   All rights reserved.
@@ -15,9 +15,9 @@
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-// .NAME vtkEnSight6Reader - class to read EnSight6 files
+// .NAME vtkVisItEnSightGoldReader - class to read EnSight Gold files
 // .SECTION Description
-// vtkEnSight6Reader is a class to read EnSight6 files into vtk.
+// vtkVisItEnSightGoldReader is a class to read EnSight Gold files into vtk.
 // Because the different parts of the EnSight data can be of various data
 // types, this reader produces multiple outputs, one per part in the input
 // file.
@@ -35,25 +35,24 @@
 // This reader can only handle static EnSight datasets (both static geometry
 // and variables).
 
-#ifndef __vtkEnSight6Reader_h
-#define __vtkEnSight6Reader_h
+#ifndef __vtkVisItEnSightGoldReader_h
+#define __vtkVisItEnSightGoldReader_h
 
-#include "vtkEnSightReader.h"
-#include <vtk_sl_io_exports.h>
+#include <database_exports.h>
 
-class vtkIdTypeArray;
-class vtkPoints;
+#include "vtkVisItEnSightReader.h"
 
-class VTK_SL_IO_API vtkEnSight6Reader : public vtkEnSightReader
+class DATABASE_API VTK_IO_EXPORT vtkVisItEnSightGoldReader : 
+                                 public vtkVisItEnSightReader
 {
 public:
-  static vtkEnSight6Reader *New();
-  vtkTypeRevisionMacro(vtkEnSight6Reader, vtkEnSightReader);
+  static vtkVisItEnSightGoldReader *New();
+  vtkTypeRevisionMacro(vtkVisItEnSightGoldReader, vtkVisItEnSightReader);
   virtual void PrintSelf(ostream& os, vtkIndent indent);
   
 protected:
-  vtkEnSight6Reader();
-  ~vtkEnSight6Reader();
+  vtkVisItEnSightGoldReader() {};
+  ~vtkVisItEnSightGoldReader() {};
   
   // Description:
   // Read the geometry file.  If an error occurred, 0 is returned; otherwise 1.
@@ -67,7 +66,7 @@ protected:
   // Description:
   // Read scalars per node for this dataset.  If an error occurred, 0 is
   // returned; otherwise 1.  If there will be more than one component in
-  // the scalars array, we assume that 0 is the first component added to the array.
+  // the data array, it is assumed that 0 is the first component added.
   virtual int ReadScalarsPerNode(char* fileName, char* description,
                                  int timeStep, int measured = 0,
                                  int numberOfComponents = 1,
@@ -87,8 +86,8 @@ protected:
 
   // Description:
   // Read scalars per element for this dataset.  If an error occurred, 0 is
-  // returned; otherwise 1.  If there will be more than one component in the
-  // scalars array, we assume that 0 is the first component added to the array.
+  // returned; otherwise 1.  If there will be more than one componenet in the
+  // data array, it is assumed that 0 is the first component added.
   virtual int ReadScalarsPerElement(char* fileName, char* description,
                                     int timeStep, int numberOfComponents = 1,
                                     int component = 0);
@@ -107,25 +106,46 @@ protected:
 
   // Description:
   // Read an unstructured part (partId) from the geometry file and create a
-  // vtkUnstructuredGrid output.  Return 0 if EOF reached.
+  // vtkUnstructuredGrid output.  Return 0 if EOF reached. Return -1 if
+  // an error occurred.
   virtual int CreateUnstructuredGridOutput(int partId, 
-                                           char line[256], 
+                                           char line[256],
                                            const char* name);
   
   // Description:
   // Read a structured part from the geometry file and create a
-  // vtkStructuredGridOutput.  Return 0 if EOF reached.
+  // vtkStructuredGrid output.  Return 0 if EOF reached.
   virtual int CreateStructuredGridOutput(int partId, 
                                          char line[256],
                                          const char* name);
   
-  // global list of points for the unstructured parts of the model
-  int NumberOfUnstructuredPoints;
-  vtkPoints* UnstructuredPoints;
-  vtkIdTypeArray* UnstructuredNodeIds; // matching of node ids to point ids
+  // Description:
+  // Read a structured part from the geometry file and create a
+  // vtkRectilinearGrid output.  Return 0 if EOF reached.
+  int CreateRectilinearGridOutput(int partId, char line[256], const char* name);
+  
+  // Description:
+  // Read a structured part from the geometry file and create a
+  // vtkImageData output.  Return 0 if EOF reached.
+  int CreateImageDataOutput(int partId, char line[256], const char* name);
+  
+  // Description:
+  // Set/Get the Model file name.
+  vtkSetStringMacro(GeometryFileName);
+  vtkGetStringMacro(GeometryFileName);
+
+  // Description:
+  // Set/Get the Measured file name.
+  vtkSetStringMacro(MeasuredFileName);
+  vtkGetStringMacro(MeasuredFileName);
+
+  // Description:
+  // Set/Get the Match file name.
+  vtkSetStringMacro(MatchFileName);
+  vtkGetStringMacro(MatchFileName);
 private:
-  vtkEnSight6Reader(const vtkEnSight6Reader&);  // Not implemented.
-  void operator=(const vtkEnSight6Reader&);  // Not implemented.
+  vtkVisItEnSightGoldReader(const vtkVisItEnSightGoldReader&);  // Not implemented.
+  void operator=(const vtkVisItEnSightGoldReader&);  // Not implemented.
 };
 
 #endif

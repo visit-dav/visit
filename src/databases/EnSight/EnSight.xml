@@ -1,8 +1,17 @@
 <?xml version="1.0"?>
-  <Plugin name="EnSight" type="database" label="EnSight" version="1.0" dbtype="MTSD">
-    <Extensions>
-      case
-    </Extensions>
+  <Plugin name="EnSight" type="database" label="EnSight" version="1.0" enabled="true" dbtype="MTSD" haswriter="false">
+    <CXXFLAGS> $(ENSIGHT_FLAGS) </CXXFLAGS>
+    <LDFLAGS> $(ENSIGHT_LIBS) </LDFLAGS>
+    <Extensions> case </Extensions>
+    <Files components="M,E">
+      avtEnSightFileFormat.C
+      vtkVisItGenericEnSightReader.C
+      vtkVisItEnSightReader.C
+      vtkVisItEnSight6Reader.C
+      vtkVisItEnSight6BinaryReader.C
+      vtkVisItEnSightGoldReader.C
+      vtkVisItEnSightGoldBinaryReader.C
+    </Files>
     <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

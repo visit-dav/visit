@@ -1,41 +1,39 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkGenericEnSightReader.h,v $
-  Language:  C++
-  Date:      $Date: 2003/05/07 18:10:24 $
-  Version:   $Revision: 1.22 $
+  Module:    $RCSfile: vtkVisItGenericEnSightReader.h,v $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-// .NAME vtkGenericEnSightReader - class to read any type of EnSight files
+// .NAME vtkVisItGenericEnSightReader - class to read any type of EnSight files
 // .SECTION Description
-// The class vtkGenericEnSightReader allows the user to read an EnSight data
+// The class vtkVisItGenericEnSightReader allows the user to read an EnSight data
 // set without a priori knowledge of what type of EnSight data set it is.
 
-#ifndef __vtkGenericEnSightReader_h
-#define __vtkGenericEnSightReader_h
+#ifndef __vtkVisItGenericEnSightReader_h
+#define __vtkVisItGenericEnSightReader_h
 
+#include <database_exports.h>
 #include "vtkDataSetSource.h"
-#include <vtk_sl_io_exports.h>
 
 class vtkCallbackCommand;
 class vtkDataArrayCollection;
 class vtkDataArraySelection;
 class vtkIdListCollection;
 
-class VTK_SL_IO_API vtkGenericEnSightReader : public vtkDataSetSource
+class DATABASE_API VTK_IO_EXPORT vtkVisItGenericEnSightReader : 
+                                 public vtkDataSetSource
 {
 public:
-  static vtkGenericEnSightReader *New();
-  vtkTypeRevisionMacro(vtkGenericEnSightReader, vtkDataSetSource);
+  static vtkVisItGenericEnSightReader *New();
+  vtkTypeRevisionMacro(vtkVisItGenericEnSightReader, vtkDataSetSource);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
@@ -173,26 +171,14 @@ public:
   enum 
   {
     FILE_BIG_ENDIAN=0,
-    FILE_LITTLE_ENDIAN=1
+    FILE_LITTLE_ENDIAN=1,
+    FILE_UNKNOWN_ENDIAN=2
   };
 //ETX
 
-#ifndef VTK_REMOVE_LEGACY_CODE
-  // Description:
-  // For legacy compatibility.  Do not use.
-  // Instead, use the GetPointArrayStatus and similar methods.
-  void AddVariableName(char* variableName, int attributeType);
-  void AddPointVariableName(char* variableName);
-  void AddCellVariableName(char* variableName);
-  void RemoveAllVariableNames();
-  void RemoveAllPointVariableNames();
-  void RemoveAllCellVariableNames();
-  int IsRequestedVariable(const char* variableName, int attributeType);
-#endif
-  
 protected:
-  vtkGenericEnSightReader();
-  ~vtkGenericEnSightReader();
+  vtkVisItGenericEnSightReader();
+  ~vtkVisItGenericEnSightReader();
 
   void Execute();
   
@@ -255,7 +241,7 @@ protected:
   
   istream* IS;
   FILE *IFile;
-  vtkGenericEnSightReader *Reader;
+  vtkVisItGenericEnSightReader *Reader;
   
   char* CaseFileName;
   char* GeometryFileName;
@@ -318,8 +304,8 @@ protected:
   int SelectionModifiedDoNotCallModified;
   
 private:
-  vtkGenericEnSightReader(const vtkGenericEnSightReader&);  // Not implemented.
-  void operator=(const vtkGenericEnSightReader&);  // Not implemented.
+  vtkVisItGenericEnSightReader(const vtkVisItGenericEnSightReader&);  // Not implemented.
+  void operator=(const vtkVisItGenericEnSightReader&);  // Not implemented.
 };
 
 #endif

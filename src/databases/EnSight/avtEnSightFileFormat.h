@@ -11,7 +11,7 @@
 #include <string>
 
 
-class     vtkGenericEnSightReader;
+class     vtkVisItGenericEnSightReader;
 
 
 // ****************************************************************************
@@ -45,7 +45,7 @@ class avtEnSightFileFormat : public avtMTSDFileFormat
                                                const std::vector<CharStrRef>&);
 
   protected:
-    vtkGenericEnSightReader *reader;
+    vtkVisItGenericEnSightReader *reader;
     bool                  doneUpdate;
 
     void                  PrepReader(int);

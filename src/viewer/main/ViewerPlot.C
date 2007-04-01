@@ -2078,7 +2078,7 @@ ViewerPlot::CreateActor(const int frame, bool createNew,
     }
     CATCH2(VisItException, e)
     {
-        char message[500];
+        char message[2048];
         if (e.GetExceptionType() == "InvalidLimitsException" ||
             e.GetExceptionType() == "InvalidDimensionsException")
         {
@@ -2086,7 +2086,7 @@ ViewerPlot::CreateActor(const int frame, bool createNew,
             //  Create message for the gui that includes the plot name
             //  and message.
             //
-            SNPRINTF(message, 500, "%s:  %s", 
+            SNPRINTF(message, sizeof(message), "%s:  %s", 
                      viewerPluginInfo->GetName(),
                      e.GetMessage().c_str());
         }
@@ -2097,7 +2097,7 @@ ViewerPlot::CreateActor(const int frame, bool createNew,
             // including plot name, exception type and exception 
             // message.
             // 
-            SNPRINTF(message, 500, "%s:  (%s)\n%s", 
+            SNPRINTF(message, sizeof(message), "%s:  (%s)\n%s", 
                      viewerPluginInfo->GetName(),
                      e.GetExceptionType().c_str(),
                      e.GetMessage().c_str());
@@ -2157,8 +2157,8 @@ ViewerPlot::CreateActor(const int frame, bool createNew,
     {
         // Create a message to send to the GUI,
         // Stating plot name and message. 
-        char message[500];
-        SNPRINTF(message, 500, "%s:  %s", 
+        char message[2048];
+        SNPRINTF(message, sizeof(message), "%s:  %s", 
                  viewerPluginInfo->GetName(),
                  e.GetMessage().c_str());
         Error(message);
@@ -2174,8 +2174,8 @@ ViewerPlot::CreateActor(const int frame, bool createNew,
         // Create a message to send to the GUI, with as
         // much info as we can, including plot name,
         // exception type and exception message. 
-        char message[500];
-        SNPRINTF(message, 500, "%s (%s):  %s", 
+        char message[2048];
+        SNPRINTF(message, sizeof(message), "%s (%s):  %s", 
                  viewerPluginInfo->GetName(),
                  e.GetExceptionType().c_str(),
                  e.GetMessage().c_str());
@@ -3554,8 +3554,8 @@ ViewerPlot::CheckCache(const int f0, const int f1, const bool force)
             {
                 // Create a message to send to the GUI,
                 // Stating plot name and message.
-                char message[500];
-                SNPRINTF(message, 500, "%s:  %s",
+                char message[2048];
+                SNPRINTF(message, sizeof(message), "%s:  %s",
                          viewerPluginInfo->GetName(),
                          e.GetMessage().c_str());
                 Error(message);

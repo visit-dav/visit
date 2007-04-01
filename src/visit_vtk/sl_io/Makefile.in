@@ -35,6 +35,9 @@
 #    Hank Childs, Thu Jan 22 17:15:33 PST 2004
 #    Created.
 #
+#    Kathleen Bonnell, Thu Feb 12 16:42:39 PST 2004 
+#    Removed EnSight readers (moved to EnSight database plugin). 
+#
 ##############################################################################
 
 ##
@@ -55,12 +58,6 @@ SRC=\
     vtkDataSetReader.C \
     vtkDataSetWriter.C \
     vtkDataWriter.C \
-    vtkEnSight6BinaryReader.C \
-    vtkEnSight6Reader.C \
-    vtkEnSightGoldBinaryReader.C \
-    vtkEnSightGoldReader.C \
-    vtkEnSightReader.C \
-    vtkGenericEnSightReader.C \
     vtkOBJReader.C \
     vtkPolyDataReader.C \
     vtkPolyDataWriter.C \

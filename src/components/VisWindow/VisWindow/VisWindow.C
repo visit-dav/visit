@@ -2069,6 +2069,10 @@ VisWindow::ResetView(void)
 //    Modified to match changes in avtView2D made to handle full frame
 //    mode properly.
 //
+//    Kathleen Bonnell, Thu Feb 12 16:15:03 PST 2004 
+//    Added call to Render after call to FullFrameOff, to ensure that
+//    the changes shows up immediately on the screen.
+//
 // ****************************************************************************
 
 void
@@ -2101,6 +2105,7 @@ VisWindow::SetView2D(const avtView2D &v)
     if (fullFrameChanged && !view2D.fullFrame)
     {
         FullFrameOff();
+        Render();
     }
 }
 
@@ -2387,6 +2392,10 @@ VisWindow::Render(void)
 //    Modified to match changes in avtView2D and avtViewCurve made to handle
 //    full frame mode properly.
 //
+//    Kathleen Bonnell, Thu Feb 12 16:15:03 PST 2004 
+//    Added call to Render after call to FullFrameOn in 2d, to ensure that
+//    the changes shows up immediately on the screen.
+// 
 // ****************************************************************************
 
 void
@@ -2413,6 +2422,7 @@ VisWindow::UpdateView()
         {
             FullFrameOff();
             FullFrameOn(view2D.GetScaleFactor(size), 1);
+            Render();
         }
     }
     else if (mode == WINMODE_3D)

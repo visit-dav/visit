@@ -63,8 +63,8 @@ protected:
     void          ThrowInvalidVariableException(bool ignorable,
                       const char *varClass, const char *assumedVal, 
                       const char *actualVal, const char *fullVarName);
-    void          ValidateVariableInfoAssumptions(eosVarInfo_t &fileInfo,
-                      eosVarInfo_t &mapInfo, const char *fullVarName);
+    void          ValidateVariableInfoAssumptions(eosVarInfo_t &mapInfo,
+                      eosVarInfo_t &fileInfo, const char *fullVarName);
 
     bool          ReadMaterialInfo(const char *matDirName, string &matName,
                       string &matForm);
@@ -89,7 +89,7 @@ protected:
     // used to control how much PDB work we do during PopulateDatabaseMetaData 
     int           tryHardLevel;
 
-
+    // returned results from a PD_ls at the top level 
     char        **topDirs;
     int           numTopDirs;
 

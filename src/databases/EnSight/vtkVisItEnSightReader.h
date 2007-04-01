@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkEnSightReader.h,v $
+  Module:    $RCSfile: vtkVisItEnSightReader.h,v $
   Language:  C++
   Date:      $Date: 2003/06/02 20:43:58 $
   Version:   $Revision: 1.22 $
@@ -15,22 +15,24 @@
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-// .NAME vtkEnSightReader - superclass for EnSight file readers
+// .NAME vtkVisItEnSightReader - superclass for EnSight file readers
 
-#ifndef __vtkEnSightReader_h
-#define __vtkEnSightReader_h
+#ifndef __vtkVisItEnSightReader_h
+#define __vtkVisItEnSightReader_h
 
-#include "vtkGenericEnSightReader.h"
-#include <vtk_sl_io_exports.h>
+#include <database_exports.h>
+
+#include "vtkVisItGenericEnSightReader.h"
 
 class vtkDataSetCollection;
 class vtkIdList;
-class vtkEnSightReaderCellIdsType;
+class vtkVisItEnSightReaderCellIdsType;
 
-class VTK_SL_IO_API vtkEnSightReader : public vtkGenericEnSightReader
+class DATABASE_API VTK_IO_EXPORT vtkVisItEnSightReader : 
+                                 public vtkVisItGenericEnSightReader
 {
 public:
-  vtkTypeRevisionMacro(vtkEnSightReader, vtkGenericEnSightReader);
+  vtkTypeRevisionMacro(vtkVisItEnSightReader, vtkVisItGenericEnSightReader);
   void PrintSelf(ostream& os, vtkIndent indent);
   
   void Update();
@@ -90,8 +92,8 @@ public:
   vtkGetMacro(OutputsAreValid, int);
   
 protected:
-  vtkEnSightReader();
-  ~vtkEnSightReader();
+  vtkVisItEnSightReader();
+  ~vtkVisItEnSightReader();
   
   void Execute();
 
@@ -211,7 +213,7 @@ protected:
   char* MatchFileName; // may not actually be necessary to read this file
 
   // pointer to lists of vtkIdLists (cell ids per element type per part)
-  vtkEnSightReaderCellIdsType* CellIds;
+  vtkVisItEnSightReaderCellIdsType* CellIds;
   
   // part ids of unstructured outputs
   vtkIdList* UnstructuredPartIds;
@@ -278,8 +280,8 @@ protected:
   int CheckOutputConsistency();
   
 private:
-  vtkEnSightReader(const vtkEnSightReader&);  // Not implemented.
-  void operator=(const vtkEnSightReader&);  // Not implemented.
+  vtkVisItEnSightReader(const vtkVisItEnSightReader&);  // Not implemented.
+  void operator=(const vtkVisItEnSightReader&);  // Not implemented.
 };
 
 #endif

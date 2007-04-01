@@ -1,23 +1,20 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkEnSightGoldBinaryReader.h,v $
-  Language:  C++
-  Date:      $Date: 2003/10/26 01:11:48 $
-  Version:   $Revision: 1.14 $
+  Module:    $RCSfile: vtkVisItEnSightGoldBinaryReader.h,v $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-// .NAME vtkEnSightGoldBinaryReader - class to read binary EnSight Gold files
+// .NAME vtkVisItEnSightGoldBinaryReader - class to read binary EnSight Gold files
 // .SECTION Description
-// vtkEnSightGoldBinaryReader is a class to read EnSight Gold files into vtk.
+// vtkVisItEnSightGoldBinaryReader is a class to read EnSight Gold files into vtk.
 // Because the different parts of the EnSight data can be of various data
 // types, this reader produces multiple outputs, one per part in the input
 // file.
@@ -35,22 +32,24 @@
 // This reader can only handle static EnSight datasets (both static geometry
 // and variables).
 
-#ifndef __vtkEnSightGoldBinaryReader_h
-#define __vtkEnSightGoldBinaryReader_h
+#ifndef __vtkVisItEnSightGoldBinaryReader_h
+#define __vtkVisItEnSightGoldBinaryReader_h
 
-#include "vtkEnSightReader.h"
-#include <vtk_sl_io_exports.h>
+#include <database_exports.h>
 
-class VTK_SL_IO_API vtkEnSightGoldBinaryReader : public vtkEnSightReader
+#include "vtkVisItEnSightReader.h"
+
+class DATABASE_API VTK_IO_EXPORT vtkVisItEnSightGoldBinaryReader : 
+                                 public vtkVisItEnSightReader
 {
 public:
-  static vtkEnSightGoldBinaryReader *New();
-  vtkTypeRevisionMacro(vtkEnSightGoldBinaryReader, vtkEnSightReader);
+  static vtkVisItEnSightGoldBinaryReader *New();
+  vtkTypeRevisionMacro(vtkVisItEnSightGoldBinaryReader, vtkVisItEnSightReader);
   virtual void PrintSelf(ostream& os, vtkIndent indent);
  
 protected:
-  vtkEnSightGoldBinaryReader();
-  ~vtkEnSightGoldBinaryReader();
+  vtkVisItEnSightGoldBinaryReader();
+  ~vtkVisItEnSightGoldBinaryReader();
   
   // Returns 1 if successful.  Sets file size as a side action.
   int OpenFile(const char* filename);
@@ -153,7 +152,7 @@ protected:
 
   // Description:
   // Read to the next time step in the geometry file.
-  void SkipTimeStep();
+  int SkipTimeStep();
   int SkipStructuredGrid(char line[256]);
   int SkipUnstructuredGrid(char line[256]);
   int SkipRectilinearGrid(char line[256]);
@@ -167,8 +166,8 @@ protected:
   int FileSize;
 
 private:
-  vtkEnSightGoldBinaryReader(const vtkEnSightGoldBinaryReader&);  // Not implemented.
-  void operator=(const vtkEnSightGoldBinaryReader&);  // Not implemented.
+  vtkVisItEnSightGoldBinaryReader(const vtkVisItEnSightGoldBinaryReader&);  // Not implemented.
+  void operator=(const vtkVisItEnSightGoldBinaryReader&);  // Not implemented.
 };
 
 #endif

@@ -6,7 +6,7 @@
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
-#include <vtkDataSetReader.h>
+#include <vtkVisItDataSetReader.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
@@ -73,6 +73,11 @@ avtVTKFileFormat::~avtVTKFileFormat()
 //  Programmer: Hank Childs
 //  Creation:   February 23, 2001
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Feb 12 15:52:01 PST 2004
+//    Use VisIt's version of the reader, so that all variables can be read
+//    into the dataset in one pass.
+//
 // ****************************************************************************
 
 void
@@ -93,7 +98,10 @@ avtVTKFileFormat::ReadInDataset(void)
     //
     // Create a file reader and set our dataset to be its output.
     //
-    vtkDataSetReader *reader = vtkDataSetReader::New();
+    vtkVisItDataSetReader *reader = vtkVisItDataSetReader::New();
+    reader->ReadAllScalarsOn();
+    reader->ReadAllVectorsOn();
+    reader->ReadAllTensorsOn();
     reader->SetFileName(filename);
     dataset = reader->GetOutput();
     dataset->Register(NULL);
@@ -429,6 +437,7 @@ avtVTKFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     AddMeshToMetaData(md, MESHNAME, type, bounds, 1, 0, spat, topo);
 
     int nvars = 0;
+
     for (i = 0 ; i < dataset->GetPointData()->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *arr = dataset->GetPointData()->GetArray(i);
