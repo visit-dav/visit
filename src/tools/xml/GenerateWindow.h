@@ -62,6 +62,9 @@
 //    Jeremy Meredith, Wed Nov  5 13:28:03 PST 2003
 //    Added ability to disable plugins by default.
 //
+//    Jeremy Meredith, Tue Jun 15 10:39:32 PDT 2004
+//    Added missing blockSignals wrapper in opacity's UpdateWindow.
+//
 // ****************************************************************************
 
 class WindowGeneratorField : public virtual Field
@@ -825,7 +828,9 @@ class WindowGeneratorOpacity : public virtual Opacity , public virtual WindowGen
     }
     virtual void            writeSourceUpdateWindow(ostream &c)
     {
+        c << "            "<<name<<"->blockSignals(true);" << endl;
         c << "            "<<name<<"->setValue(int(atts->Get"<<Name<<"()*255.));" << endl;
+        c << "            "<<name<<"->blockSignals(false);" << endl;
     }
     virtual void            writeSourceCallback(QString &, QString &windowname, ostream &c)
     {

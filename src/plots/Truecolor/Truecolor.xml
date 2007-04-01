@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+  <Plugin name="Truecolor" type="plot" label="Truecolor" version="1.0" enabled="true" vartype="vector">
+    <Attribute name="TruecolorAttributes" purpose="Truecolor plot" persistent="false" exportAPI="" exportInclude="" codefile="TruecolorAttributes.code">
+      <Field name="opacity" label="opacity" type="opacity">
+        1.000000
+      </Field>
+      <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+    </Attribute>
+  </Plugin>

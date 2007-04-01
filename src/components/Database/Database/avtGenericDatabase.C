@@ -1930,6 +1930,10 @@ avtGenericDatabase::AddOriginalCellsArray(vtkDataSet *ds, const int domain)
 //  Programmer: Hank Childs
 //  Creation:   June 18, 2003
 //
+//  Kathleen bonnell, Wed Jun 16 13:54:28 PDT 2004
+//  Changed orgiNodes array to vtkIntArray from vtkUnsignedIntArray, to
+//  accommodate -1 (used by MIR when creating nodes).
+//
 // ****************************************************************************
 
 void
@@ -1942,14 +1946,14 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
     }
 
     int timerHandle = visitTimer->StartTimer();
-    vtkUnsignedIntArray *origNodes = vtkUnsignedIntArray::New();
+    vtkIntArray *origNodes = vtkIntArray::New();
     origNodes->SetName("avtOriginalNodeNumbers");
     bool encodeDomains = (domain >= 0 ? true : false);
     int nComps = (encodeDomains ? 2 : 1);
     origNodes->SetNumberOfComponents(nComps);
     int nnodes = ds->GetNumberOfPoints();
     origNodes->SetNumberOfTuples(nnodes);
-    unsigned int *ptr = origNodes->GetPointer(0);
+    int *ptr = origNodes->GetPointer(0);
     for (int i = 0; i < nnodes; i++)
     {
         if (encodeDomains)
