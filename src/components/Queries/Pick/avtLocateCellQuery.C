@@ -114,6 +114,9 @@ avtLocateCellQuery::~avtLocateCellQuery()
 //    Kathleen Bonnell, Wed Jul  7 14:48:44 PDT 2004 
 //    Added call to FindClosestCell for line data. 
 //
+//    Kathleen Bonnell, Tue Oct  5 14:02:31 PDT 2004 
+//    Terminate early if the ray doesn't intersect the dataset. 
+//
 // ****************************************************************************
 
 void
@@ -123,6 +126,13 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
     {
         return;
     }
+
+    if (!RayIntersectsDataSet(ds))
+    {
+        return;
+    }
+
+
     int dim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension(); 
     int topodim = GetInput()->GetInfo().GetAttributes().GetTopologicalDimension(); 
 
@@ -310,5 +320,3 @@ avtLocateCellQuery::FindClosestCell(vtkDataSet *ds, float &minDist, float isect[
 
     return foundCell;
 }
-
-

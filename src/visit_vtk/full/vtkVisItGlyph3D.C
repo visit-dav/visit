@@ -92,13 +92,13 @@ vtkVisItGlyph3D::~vtkVisItGlyph3D()
 void vtkVisItGlyph3D::Execute()
 {
   vtkPointData *pd;
-  vtkDataArray *inScalars;
-  vtkDataArray *inScalars_forColoring;
-  vtkDataArray *inScalars_forScaling;
+  vtkDataArray *inScalars = NULL;
+  vtkDataArray *inScalars_forColoring = NULL;
+  vtkDataArray *inScalars_forScaling = NULL;
 
-  vtkDataArray *inVectors;
-  vtkDataArray *inVectors_forColoring;
-  vtkDataArray *inVectors_forScaling;
+  vtkDataArray *inVectors = NULL;
+  vtkDataArray *inVectors_forColoring = NULL;
+  vtkDataArray *inVectors_forScaling = NULL;
   int requestedGhostLevel;
   unsigned char* inGhostLevels=0;
   vtkDataArray *inNormals, *sourceNormals = NULL;

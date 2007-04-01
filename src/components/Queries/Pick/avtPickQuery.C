@@ -263,6 +263,9 @@ avtPickQuery::PostExecute(void)
 //    Kathleen Bonnell, Thu Aug 26 09:50:31 PDT 2004 
 //    Don't restrict domains if pickAtts.domain has not yet been set. 
 //
+//    Kathleen Bonnell, Wed Oct  6 09:58:49 PDT 2004 
+//    Don't perform certain tasks unless this process will be doing real work. 
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -303,30 +306,45 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
 
     dspec = new avtDataSpecification(pickAtts.GetActiveVariable().c_str(),
                                      pickAtts.GetTimeStep(), querySILR);
+    //  
+    //  If maxDom == -1, then all procs will be doing real work.  Otherwise,
+    //  only the proc with pickAtt.domain == maxDom will do real work.
+    //  
+    int maxDom = UnifyMaximumValue(pickAtts.GetDomain());
 
-    int i;
-    if (!singleDomain && pickAtts.GetDomain() != -1)
+    if (!singleDomain && maxDom != -1)
     {
         intVector dlist;
-        dlist.push_back(pickAtts.GetDomain());
+        if (maxDom == pickAtts.GetDomain())
+        {
+            dlist.push_back(pickAtts.GetDomain());
+        }
         dspec->GetRestriction()->RestrictDomains(dlist);
     }
 
-    stringVector vars = pickAtts.GetVariables();
-    for (i = 0; i < vars.size(); i++)
+    // 
+    // Only set vars and turn on zone/node numbers if this process
+    // will be doing real work.
+    // 
+    if (maxDom == -1 || maxDom == pickAtts.GetDomain())
     {
-        if (dspec->GetVariable() != vars[i]) 
+        stringVector vars = pickAtts.GetVariables();
+        for (int i = 0; i < vars.size(); i++)
         {
-            if (!dspec->HasSecondaryVariable(vars[i].c_str()))
-                dspec->AddSecondaryVariable(vars[i].c_str());
+            if (dspec->GetVariable() != vars[i]) 
+            {
+                if (!dspec->HasSecondaryVariable(vars[i].c_str()))
+                    dspec->AddSecondaryVariable(vars[i].c_str());
+            }
+        }
+
+        if (pickAtts.GetMatSelected())
+        {
+            dspec->TurnZoneNumbersOn();
+            dspec->TurnNodeNumbersOn();
         }
     }
 
-    if (pickAtts.GetMatSelected())
-    {
-        dspec->TurnZoneNumbersOn();
-        dspec->TurnNodeNumbersOn();
-    }
     avtPipelineSpecification_p pspec = new avtPipelineSpecification(dspec, 0);
 
     avtDataObject_p temp;

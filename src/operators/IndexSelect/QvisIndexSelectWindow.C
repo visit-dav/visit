@@ -395,6 +395,10 @@ QvisIndexSelectWindow::UpdateWindow(bool doAll)
 //   Removed code associated with Min/Max/Incr, they are no longer line edits,
 //   but spin boxes.
 //
+//   Kathleen Bonnell, Thu Oct  7 10:29:36 PDT 2004 
+//   Added back in code associated with Min/Max/Incr, so that they get updated
+//   correctly on Apply.
+//
 // ****************************************************************************
 
 void
@@ -408,16 +412,60 @@ QvisIndexSelectWindow::GetCurrentValues(int which_widget)
     {
         // Nothing for dim
     }
-
+    if(which_widget == 1 || doAll)
+    {
+        if (atts->GetXMin() != oneDMin->value())
+            atts->SetXMin(oneDMin->value());
+    }
+    if(which_widget == 2 || doAll)
+    {
+        if (atts->GetXMax() != oneDMax->value())
+            atts->SetXMax(oneDMax->value());
+    }
+    if(which_widget == 3 || doAll)
+    {
+        if (atts->GetXIncr() != oneDIncr->value())
+            atts->SetXIncr(oneDIncr->value());
+    }
+    if(which_widget == 4 || doAll)
+    {
+        if (atts->GetYMin() != twoDMin->value())
+            atts->SetYMin(twoDMin->value());
+    }
+    if(which_widget == 5 || doAll)
+    {
+        if (atts->GetYMax() != twoDMax->value())
+            atts->SetYMax(twoDMax->value());
+    }
+    if(which_widget == 6 || doAll)
+    {
+        if (atts->GetYIncr() != twoDIncr->value())
+            atts->SetYIncr(twoDIncr->value());
+    }
+    if(which_widget == 7 || doAll)
+    {
+        if (atts->GetZMin() != threeDMin->value())
+            atts->SetZMin(threeDMin->value());
+    }
+    if(which_widget == 8 || doAll)
+    {
+        if (atts->GetZMax() != threeDMax->value())
+            atts->SetZMax(threeDMax->value());
+    }
+    if(which_widget == 9 || doAll)
+    {
+        if (atts->GetZIncr() != threeDIncr->value())
+            atts->SetZIncr(threeDIncr->value());
+    }
 
     // Do whichData
-    if(which_widget == 4 || doAll)
+    if(which_widget == 10 || doAll)
     {
         // Nothing for whichData
     }
 
     // Do domainIndex
-    if(which_widget == 5 || doAll)
+    if(which_widget == 11 || doAll)
     {
         temp = domainIndex->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -438,7 +486,7 @@ QvisIndexSelectWindow::GetCurrentValues(int which_widget)
     }
 
     // Do groupIndex
-    if(which_widget == 6 || doAll)
+    if(which_widget == 12 || doAll)
     {
         temp = groupIndex->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -476,93 +524,66 @@ QvisIndexSelectWindow::dimChanged(int val)
 
 
 void
-QvisIndexSelectWindow::oneDMinChanged(int min)
+QvisIndexSelectWindow::oneDMinChanged(int)
 {
-    if (min != atts->GetXMin())
-    {
-        atts->SetXMin(min);
-        Apply();
-    }
+    GetCurrentValues(1);
+    Apply();
 }
 
 void
-QvisIndexSelectWindow::oneDMaxChanged(int max)
+QvisIndexSelectWindow::oneDMaxChanged(int)
 {
-    if (max != atts->GetXMax())
-    {
-        atts->SetXMax(max);
-        Apply();
-    }
+    GetCurrentValues(2);
+    Apply();
 }
 
 void
-QvisIndexSelectWindow::oneDIncrChanged(int incr)
+QvisIndexSelectWindow::oneDIncrChanged(int)
 {
-    if (incr != atts->GetXIncr())
-    {
-        atts->SetXIncr(incr);
-        Apply();
-    }
+    GetCurrentValues(3);
+    Apply();
 }
 
 void
-QvisIndexSelectWindow::twoDMinChanged(int min)
+QvisIndexSelectWindow::twoDMinChanged(int)
 {
-    if (min != atts->GetYMin())
-    {
-        atts->SetYMin(min);
-        Apply();
-    }
+    GetCurrentValues(4);
+    Apply();
 }
 
 void
-QvisIndexSelectWindow::twoDMaxChanged(int max)
+QvisIndexSelectWindow::twoDMaxChanged(int)
 {
-    if (max != atts->GetYMax())
-    {
-        atts->SetYMax(max);
-        Apply();
-    }
+    GetCurrentValues(5);
+    Apply();
 }
 
 void
-QvisIndexSelectWindow::twoDIncrChanged(int incr)
+QvisIndexSelectWindow::twoDIncrChanged(int)
 {
-    if (incr != atts->GetYIncr())
-    {
-        atts->SetYIncr(incr);
-        Apply();
-    }
+    GetCurrentValues(6);
+    Apply();
 }
 
 void
-QvisIndexSelectWindow::threeDMinChanged(int min)
+QvisIndexSelectWindow::threeDMinChanged(int)
 {
-    if (min != atts->GetZMin())
-    {
-        atts->SetZMin(min);
-        Apply();
-    }
+    GetCurrentValues(7);
+    Apply();
 }
 
 void
-QvisIndexSelectWindow::threeDMaxChanged(int max)
+QvisIndexSelectWindow::threeDMaxChanged(int )
 {
-    if (max != atts->GetZMax())
-    {
-        atts->SetZMax(max);
-        Apply();
-    }
+    GetCurrentValues(8);
+    Apply();
 }
 
 void
-QvisIndexSelectWindow::threeDIncrChanged(int incr)
+QvisIndexSelectWindow::threeDIncrChanged(int)
 {
-    if (incr != atts->GetZIncr())
-    {
-        atts->SetZIncr(incr);
-        Apply();
-    }
+    GetCurrentValues(9);
+    Apply();
 }
 
 void
@@ -579,7 +600,7 @@ QvisIndexSelectWindow::whichDataChanged(int val)
 void
 QvisIndexSelectWindow::domainIndexProcessText()
 {
-    GetCurrentValues(5);
+    GetCurrentValues(11);
     Apply();
 }
 
@@ -587,7 +608,7 @@ QvisIndexSelectWindow::domainIndexProcessText()
 void
 QvisIndexSelectWindow::groupIndexProcessText()
 {
-    GetCurrentValues(6);
+    GetCurrentValues(12);
     Apply();
 }
 
