@@ -57,7 +57,7 @@ using std::vector;
 
 MDServerProxy::MDServerProxy() : RemoteProxyBase("-mdserver"),
     getDirectoryRPC(), changeDirectoryRPC(), getFileListRPC(), connectRPC(),
-    createGroupListRPC(), expandPathRPC(), closeDatabaseRPC()
+    createGroupListRPC(), expandPathRPC(), closeDatabaseRPC(), loadPluginsRPC()
 {
     separator = SLASH_CHAR;
 }
@@ -109,6 +109,9 @@ MDServerProxy::GetComponentName() const
 //
 // Modifications:
 //   
+//   Hank Childs, Thu Jan 22 21:02:56 PST 2004
+//   Added loadPluginsRPC.
+//
 // ****************************************************************************
 
 void
@@ -126,6 +129,7 @@ MDServerProxy::SetupComponentRPCs()
     xfer.Add(&createGroupListRPC);
     xfer.Add(&expandPathRPC);
     xfer.Add(&closeDatabaseRPC);
+    xfer.Add(&loadPluginsRPC);
 
     // Determine the separator to use in filenames.
     DetermineSeparator();
@@ -380,6 +384,23 @@ MDServerProxy::Connect(const stringVector &args)
 {
     // Tell the mdserver to connect to another program.
     connectRPC(args);
+}
+
+// ****************************************************************************
+// Method: MDServerProxy::LoadPlugins
+//
+// Purpose: 
+//   Tells the mdserver that now is a good time to load its plugins.
+//
+// Programmer: Hank Childs
+// Creation:   January 22, 2004
+//
+// ****************************************************************************
+
+void
+MDServerProxy::LoadPlugins(void)
+{
+    loadPluginsRPC();
 }
 
 // ****************************************************************************

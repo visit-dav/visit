@@ -1,4 +1,4 @@
-#                            Copyright 1991 - 2003
+#                            Copyright 2000 - 2004
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -30,276 +30,25 @@
 # the University of  California,  and shall not  be  used for  advertising  or
 # product endorsement purposes.
 #
-#  Modifications:
+# Modifications:
 #
-#    Hank Childs, Thu Oct 19 15:05:22 PDT 2000
-#    Add vtkHankAxisActor2D, vtkTriad2D, vtkRubberBandMapper2D.
-#
-#    Kathleen Bonnell, Tue Nov  7 15:02:13 PST 2000 
-#    Add vtkPolyDataRelevantPointsFilter, 
-#    vtkUnstructuredGridRelevantPointsFilter
-#
-#    Kathleen Bonnell, Fri Dec  8 15:02:31 PST 2000 
-#    Add vtkVerticalScalarBarActor. 
-#
-#    Brad Whitlock, Tue Feb 13 16:53:14 PST 2001
-#    I added vtkPPMWriter and vtkRGBWriter.
-#
-#    Kathleen Bonnell, Mon Mar 12 09:45:33 PST 2001
-#    I added vtkSurfaceFilter.
-#
-#    Hank Childs, Wed Mar 21 10:55:20 PST 2001
-#    Added vtkVectorGlyph and vtkVectorReduceFilter.
-#
-#    Hank Childs, Wed Apr 11 13:30:41 PDT 2001
-#    Added vtkRectilinearGridFacelistFilter.
-#
-#    Brad Whitlock, Thu Apr 19 15:02:35 PST 2001
-#    Added vtkVerticalScalarBarWithOpacityActor.
-#
-#    Hank Childs, Tue Apr 24 14:17:15 PDT 2001
-#    Added vtkDebugStream, InitVTK.
-#
-#    Jeremy Meredith, Thu May 10 13:48:26 PDT 2001
-#    Added build of static library.
-#
-#    Kathleen Bonnell, Wed Jun 13 12:27:52 PDT 2001 
-#    Added vtkDataSetRemoveGhostCells. 
-#
-#    Kathleen Bonnell, Fri Jun 15 14:42:07 PDT 2001 
-#    Added vtkLinesFromOriginalCells and vtkUniqueFeatureEdges. 
-#
-#    Kathleen Bonnell, Thu May 24 14:46:39 PDT 2001 
-#    Added vtkKatCubeAxesActor2D. 
-#
-#    Jeremy Meredith, Fri Jul 27 13:50:37 PDT 2001
-#    Made it remove libvisit_vtk on a make clean.
-#
-#    Hank Childs, Thu Aug  9 09:17:22 PDT 2001
-#    Add flags for annotation.
-#
-#    Brad Whitlock, Wed Aug 29 14:55:32 PST 2001
-#    Added vtkBackgroundActor.
-#
-#    Hank Childs, Thu Aug 30 17:35:25 PDT 2001
-#    Added vtkVertexFilter.
-#
-#    Jeremy Meredith, Tue Sep  4 10:31:40 PDT 2001
-#    Changed library building: the LIB targets has no extension, and
-#    either LIBSINGLETARGETS or LIBMULTITARGETS must be included
-#    in addition to TARGETS depending on whether the library is build
-#    from object files in one directory or multiple subdirectories.
-#
-#    Kathleen Bonnell, Wed Sep  5 14:55:59 PDT 2001 
-#    Added vtkKatCubeAxesActor, vtkKatAxisActor.
-#    Removed vtkKatCubeAxesActor2D.
-#
-#    Hank Childs, Fri Oct 19 08:01:24 PDT 2001
-#    Add vtkStructuredGridFacelistFilter.
-#
-#    Eric Brugger, Mon Feb 11 13:14:34 PST 2002
-#    Add vtkUnstructuredGridFacelistFilter.
-#
-#    Hank Childs, Mon Apr 22 16:01:33 PDT 2002
-#    Add Mesa includes.
-#
-#    Hank Childs, Mon May  6 13:25:03 PDT 2002
-#    Add vtkVisItPLOT3DReader.
-#
-#    Kathleen Bonnell, Thu Apr 25 17:26:00 PDT 2002  
-#    Add vtkLineoutFilter.
-#
-#    Hank Childs, Mon May 27 14:06:09 PDT 2002
-#    Added vtkOBJWriter.
-#
-#    Hank Childs, Wed Jun  5 17:11:01 PDT 2002
-#    Added vtkExtractRectilinearGrid.  This was taken from a newer version of
-#    VTK and should be removed when we get up-to-date.
-#
-#    Brad Whitlock, Fri Jul 5 10:07:35 PDT 2002
-#    I renamed the vtkExtractRectilinearGrid filter to avoid a conflict
-#    on MS Windows where we use a newer VTK library.
-#
-#    Hank Childs, Sun Jul 14 10:55:56 PDT 2002
-#    Added vtkAxisDepthSort.
-#
-#    Jeremy Meredith, Wed Jul 31 17:48:57 PDT 2002
-#    Added vtkVisItSTLWriter.
-#
-#    Hank Childs, Wed Jul 31 17:51:13 PDT 2002
-#    Added vtkVisItXMesaTextMapper.
-#
-#    Hank Childs, Mon Aug  5 20:12:11 PDT 2002
-#    Added vtkVisItCutter.
-#
-#    Hank Childs, Wed Oct  2 10:32:08 PDT 2002
-#    Added vtkVisItUtility.
-#
-#    Jeremy Meredith, Thu Oct 31 15:08:17 PST 2002
-#    Added vtkConnectedTubeFilter.
-#
-#    Brad Whitlock, Wed Nov 6 13:23:07 PST 2002
-#    Added vtkVisItStreamLine.
-#
-#    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002  
-#    Added vtkVisItCellLocator.
-#
-#    Kathleen Bonnell, Thu Jan  2 09:06:57 PST 2003 
-#    Removed vtkVisItXMesaTextMapper,  vtkExtractRectilinearGrid.  
-#
-#    Kathleen Bonnell, Thu Apr 10 18:27:54 PDT 2003  
-#    Add vtkVisItTriangle. 
-#
-#    Kathleen Bonnell, Wed May  7 15:11:56 PDT 2003   
-#    Add vtkVisItQuad. 
-#
-#    Hank Childs, Mon Jun  9 10:52:30 PDT 2003
-#    Added vtkSurfaceFromVolume, vtkSlicer.
-#
-#    Eric Brugger, Tue Jun 10 15:39:17 PDT 2003
-#    Add vtkCamera.
-#
-#    Jeremy Meredith, Thu Jun 12 09:00:25 PDT 2003
-#    Added vtkUnstructuredGridBoundaryFilter.
-#
-#    Hank Childs, Mon Jun 23 09:46:51 PDT 2003
-#    Added vtkVisItContourFilter.C
-#
-#    Akira Haddox, Thu Jul  3 13:42:53 PDT 2003
-#    Added vtkDashedXorGridMapper2D.
-#
-#    Akira Haddox, Fri Jul 25 10:30:45 PDT 2003
-#    Added vtkVisItScalarTree.
-# 
-#    Jeremy Meredith, Mon Aug 11 17:19:28 PDT 2003
-#    Added SolidSplitCases for clipping, split vtkTriangulationTables into
-#    a .h/.C file, refactored part of vtkSurfaceFromVolume into
-#    vtkDataSetFromVolume, made a new vtkVolumeFromVolume, and made use of
-#    it in vtkVisItClipper3D.  Removed HDR because it was unused.
-#
-#    Jeremy Meredith, Wed Aug 13 18:14:36 PDT 2003
-#    Added new poly data normals filter.
-#
-#    Jeremy Meredith, Thu Sep 18 11:10:46 PDT 2003
-#    Added Triangle and Quadrilateral clipping cases.
-#
-#    Hank Childs, Tue Sep 23 21:20:15 PDT 2003
-#    Add vtkTensorReduceFilter.
-#
-#    Hank Childs, Thu Oct  2 08:51:16 PDT 2003
-#    Added vtkDisjointCubesFacelistFilter.
-#
-#    Brad Whitlock, Fri Aug 22 17:30:41 PST 2003
-#    I made vtkCamera be added by configure so we have the option of not
-#    building it on MacOS X since VTK already has a vtkCamera. I built
-#    our vtkCamera into VTK instead.
-#
-#    Kathleen Bonnell, Wed Nov 12 16:56:08 PST 2003 
-#    Remove vtkVisItQuad and vtkVisItTriangle, no longer needed. 
-#
-#    Brad Whitlock, Tue Oct 28 17:00:24 PST 2003
-#    I added vtkTimeSliderActor.
-#
-#    Hank Childs, Mon Jan  5 21:19:56 PST 2004
-#    Added vtkHankTIFFWriter.
+#   Hank Childs, Thu Jan 22 17:36:11 PST 2004
+#   Created.
 #
 ##############################################################################
 
-##
-## Programs and options...
-##
 @SET_MAKE@
 @VARIABLES@
+@DIRTARGETS@
 
-##
-## Files...
-##
-SRC=InitVTK.C \
-    ClipCasesHex.C \
-    ClipCasesPyr.C \
-    ClipCasesQua.C \
-    ClipCasesTet.C \
-    ClipCasesTri.C \
-    ClipCasesWdg.C \
-    vtkAxisDepthSort.C \
-    vtkBackgroundActor.C @VTK_CAMERA_SRC@\
-    vtkConnectedTubeFilter.C \
-    vtkDashedXorGridMapper2D.C \
-    vtkDataSetFromVolume.C \
-    vtkDataSetRemoveGhostCells.C \
-    vtkDebugStream.C \
-    vtkDisjointCubesFacelistFilter.C \
-    vtkHankAxisActor2D.C \
-    vtkHankTIFFWriter.C \
-    vtkKatAxisActor.C \
-    vtkKatCubeAxesActor.C \
-    vtkLineoutFilter.C \
-    vtkLinesFromOriginalCells.C \
-    vtkOBJWriter.C \
-    vtkOnionPeelFilter.C \
-    vtkPPMWriter.C \
-    vtkPolyDataRelevantPointsFilter.C \
-    vtkRGBWriter.C \
-    vtkRectilinearGridFacelistFilter.C \
-    vtkRubberBandMapper2D.C \
-    vtkSkewLookupTable.C \
-    vtkSlicer.C \
-    vtkStructuredGridFacelistFilter.C \
-    vtkSurfaceFilter.C \
-    vtkSurfaceFromVolume.C \
-    vtkTensorReduceFilter.C \
-    vtkTimeSliderActor.C \
-    vtkTriad2D.C \
-    vtkTriangulationTables.C \
-    vtkUniqueFeatureEdges.C \
-    vtkUnstructuredGridBoundaryFilter.C \
-    vtkUnstructuredGridFacelistFilter.C \
-    vtkUnstructuredGridRelevantPointsFilter.C \
-    vtkVectorGlyph.C \
-    vtkVectorReduceFilter.C \
-    vtkVertexFilter.C \
-    vtkVerticalScalarBarActor.C \
-    vtkVerticalScalarBarWithOpacityActor.C \
-    vtkVisItCellLocator.C \
-    vtkVisItContourFilter.C \
-    vtkVisItCutter.C \
-    vtkVisItClipper3D.C \
-    vtkVisItFeatureEdges.C \
-    vtkVisItPLOT3DReader.C \
-    vtkVisItPolyDataNormals.C \
-    vtkVisItSTLWriter.C \
-    vtkVisItScalarTree.C \
-    vtkVisItStreamLine.C \
-    vtkVisItUtility.C \
-    vtkVolumeFromVolume.C
+SUBDIRS=lightweight full sl_io
 
-
-CPPFLAGS=@VISIT_VTK_CPPFLAGS@ @CPPFLAGS@ @ANNOTATION_FLAGS@ -I. @MESA_INCLUDE@
-
-OBJ=$(SRC:.C=.o)
-LIB=libvisit_vtk
-LIBS=@VTK_LIBS@ $(X_LIBS) -lmisc
-
-
-##
-## Standard targets...
-##
-all: message $(LIBSHARED)
-
-clean:
-	$(RM) $(OBJ) $(LIBSHARED)
-
-##
-## Other targets...
-##
 message:
 	@echo
 	@echo "****************************************************************************"
-	@echo "*** Building visit_vtk Library ($(LIB))"
 	@echo "****************************************************************************"
-
-##
-## Automatic dependency stuff
-##
-@TARGETS@
-@LIBTARGETS@
+	@echo "***"
+	@echo "*** Building visit_vtk"
+	@echo "***"
+	@echo "****************************************************************************"
+	@echo "****************************************************************************"

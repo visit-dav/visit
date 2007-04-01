@@ -495,6 +495,9 @@ avtDatabase::GetMostRecentTimestep(void) const
 //    Hank Childs, Tue Nov 25 07:38:18 PST 2003
 //    Add mesh quality expressions.
 //
+//    Hank Childs, Thu Jan 22 10:05:41 PST 2004
+//    Do not populate the I/O information if we are only getting meta-data.
+//
 // ****************************************************************************
 
 void
@@ -522,8 +525,11 @@ avtDatabase::GetNewMetaData(int timeState)
 
     AddMeshQualityExpressions(md);
 
-    PopulateIOInformation(ioInfo);
-    gotIOInfo = true;
+    if (! OnlyServeUpMetaData())
+    {
+        PopulateIOInformation(ioInfo);
+        gotIOInfo = true;
+    }
 
     // put the metadata at the front of the MRU cache
     CachedMDEntry tmp = {md, timeState};

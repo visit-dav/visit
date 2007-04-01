@@ -645,54 +645,6 @@ CAddInputToAppendFilter(avtDataRepresentation & data, void *arg, bool &)
 
 
 // ****************************************************************************
-//  Method: CSetMapperInput
-//
-//  Purpose:
-//    Sets the input to vtkMappers.   
-//
-//  Arguments:
-//    data      The data to use as input to the mappers.
-//    arg       Mappers and other necessary info.
-//    <unused> 
-//
-//  Notes:
-//      This method is designed to be used as the function parameter of
-//      avtDataTree::Iterate.
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   April 18, 2001
-//
-// ****************************************************************************
-
-void
-CSetMapperInput(avtDataRepresentation & data, void *arg, bool &)
-{
-    if (!data.Valid())
-    {
-        EXCEPTION0(NoInputException);
-    }
-
-    struct map
-    {
-        int index;
-        int nleaves;
-        int nmodes;
-        vtkDataSetMapper **mappers;
-    } *pmap;
-
-    pmap = (struct map *) arg;
-
-    vtkDataSet *ds = data.GetDataVTK();
-    for (int i = 0; i < pmap->nmodes; i++)
-    {
-        pmap->mappers[pmap->index + pmap->nleaves *i]->SetInput(ds);
-    }
-    pmap->index++;
-}
-
-
-
-// ****************************************************************************
 //  Method: CGetChunkByDomain
 //
 //  Purpose:

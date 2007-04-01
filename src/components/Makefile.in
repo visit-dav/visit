@@ -65,6 +65,9 @@
 #   Jeremy Meredith, Wed Aug 20 10:20:34 PDT 2003
 #   Added MIR library.
 #
+#   Hank Childs, Thu Jan 22 13:42:41 PST 2004
+#   Added Filters, FileWriter, and View libraries.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -72,7 +75,7 @@
 @DIRTARGETS@
 
 SUBDIRS=Exceptions DBAtts Math Pipeline MIR \
-        Expressions Queries Database Plotter \
+        Expressions Queries Database Plotter Filters FileWriter View \
         @VISWINDOW@
 
 message:

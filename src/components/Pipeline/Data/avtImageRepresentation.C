@@ -4,7 +4,6 @@
 
 #include <vtkCharArray.h>
 #include <vtkFloatArray.h>
-#include <vtkImageClip.h>
 #include <vtkImageData.h>
 #include <vtkPointData.h>
 #include <vtkStructuredPoints.h>
@@ -554,26 +553,26 @@ CreateStringFromInput(vtkImageData *img, float *zbuffer, unsigned char *&str,
 //  Programmer: Hank Childs
 //  Creation:   February 13, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Jan 22 15:57:19 PST 2004
+//    Remove image clip because it has a dependence on vtkImaging library.
+//
 // ****************************************************************************
 
 void
 CreateStringFromVTKInput(vtkImageData *img, unsigned char *&str, int &len)
 {
     //
-    // Technique for writing image to a string stolen from
-    // vtkMultiProcessController.
+    // Keep Update from propagating.
     //
-    vtkImageData *tmp  = vtkImageData::New();
+    vtkImageData *tmp = vtkImageData::New();
     tmp->ShallowCopy(img);
-
-    vtkImageClip *clip = vtkImageClip::New();
-    clip->SetInput(tmp);
-    clip->SetOutputWholeExtent(img->GetExtent());
 
     vtkStructuredPointsWriter *writer = vtkStructuredPointsWriter::New();
     writer->SetFileTypeToBinary();
     writer->WriteToOutputStringOn();
-    writer->SetInput(clip->GetOutput());
+    writer->SetInput(tmp);
     writer->SetFileTypeToBinary();
     writer->Write();
 
@@ -581,7 +580,6 @@ CreateStringFromVTKInput(vtkImageData *img, unsigned char *&str, int &len)
     str = (unsigned char *) writer->RegisterAndGetOutputString();
 
     writer->Delete();
-    clip->Delete();
     tmp->Delete();
 }
 

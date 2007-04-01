@@ -458,6 +458,9 @@ dnl
 dnl    Eric Brugger, Thu Nov 20 08:54:13 PST 2003
 dnl    Modify the script to handle the absence of the help directory.
 dnl
+dnl    Hank Childs, Sat Jan 24 11:39:13 PST 2004
+dnl    Re-organized many libraries to enable mdserver to link against less.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -702,6 +705,7 @@ if test -n "$VTK"; then
     VTK_INCROOT="$""(TOPDIR)/include/vtk"
     VTK_INCLUDES="-I$VTK_INCROOT -I$VTK_INCROOT/Common -I$VTK_INCROOT/Filtering -I$VTK_INCROOT/Graphics -I$VTK_INCROOT/Hybrid -I$VTK_INCROOT/IO -I$VTK_INCROOT/Imaging -I$VTK_INCROOT/Rendering"
     VTK_LIBS="-lvtkCommon -lvtkDICOMParser -lvtkFiltering -lvtkGraphics -lvtkHybrid -lvtkIO -lvtkImaging -lvtkRendering -lvtkzlib -lvtkexpat -lvtkjpeg -lvtkpng -lvtktiff -lvtkftgl -lvtkfreetype $GL_LIBS $MESA_LIBS"
+    VTK_LIGHTWEIGHT_LIBS="-lvtkCommon -lvtkFiltering -lvtkzlib"
 
     # If we're on Darwin, we took VisIt's vtkCamera and built it into the VTK library so
     # we don't want to put it into the visit_vtk library or else we'll get duplicate
@@ -716,11 +720,13 @@ else
     VTK_DIR=""
     VTK_INCLUDES=""
     VTK_LIBS=""
+    VTK_LIGHTWEIGHT_LIBS=""
     VTK_CAMERA_SRC=""
 fi
 AC_SUBST(VTK_DIR)
 AC_SUBST(VTK_INCLUDES)
 AC_SUBST(VTK_LIBS)
+AC_SUBST(VTK_LIGHTWEIGHT_LIBS)
 AC_SUBST(VTK_CAMERA_SRC)
 
 #
@@ -1886,7 +1892,7 @@ else
       HDF4_FLAGS="-I$DEFAULT_HDF4_FLAGS $HDF4_FLAGS"
    fi
    if test "$DEFAULT_HDF4_LIBS" != "" ; then
-      HDF4_LIBS="-L$DEFAULT_HDF4_LIBS -lmfhdf -ldf $HDF4_LIBS"
+      HDF4_LIBS="-L$DEFAULT_HDF4_LIBS -lmfhdf -ldf -ljpeg -lz $HDF4_LIBS"
    fi
 fi
 if test "$HDF4_LIBS" != "" ; then
@@ -2599,18 +2605,24 @@ TOOLS_FILES="tools/Makefile
              tools/windowmaker/Makefile 
              tools/xml/Makefile
              tools/xmledit/Makefile"
-VISIT_VTK_FILES="visit_vtk/Makefile"
+VISIT_VTK_FILES="visit_vtk/Makefile
+                 visit_vtk/lightweight/Makefile
+                 visit_vtk/full/Makefile
+                 visit_vtk/sl_io/Makefile"
 COMPONENT_FILES="components/Makefile
                  components/DBAtts/Makefile
                  components/Database/Makefile
                  components/Exceptions/Makefile
                  components/Expressions/Makefile
+                 components/FileWriter/Makefile
+                 components/Filters/Makefile
                  components/Math/Makefile
                  components/MIR/Makefile
                  components/Pipeline/Makefile
                  components/Plotter/Makefile
                  components/Preprocessor/Makefile
                  components/Queries/Makefile
+                 components/View/Makefile
                  components/VisWindow/Makefile"
 PLOT_FILES="plots/Makefile"
 OPERATOR_FILES="operators/Makefile"

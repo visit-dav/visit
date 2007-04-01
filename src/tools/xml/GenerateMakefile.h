@@ -87,6 +87,9 @@
 //    Added ability to disable plugins by default.
 //    Added avt files for databases.
 //
+//    Hank Childs, Fri Jan 23 08:54:53 PST 2004
+//    Do not link AVT code into Viewer Operators.
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin
@@ -159,7 +162,6 @@ class MakefileGeneratorPlugin
         else if (type == "operator")
         {
             QString filter = QString("avt") + name + "Filter.C";
-            defaultvfiles.push_back(filter);
             defaultefiles.push_back(filter);
         }
     }

@@ -162,14 +162,18 @@
 #    Hank Childs, Sun Dec 14 11:05:37 PST 2003
 #    Added avtMassVoxelExtractor.
 #
+#    Hank Childs, Thu Jan 22 13:27:30 PST 2004
+#    Removed PublicFilters, which went one level up as "Filters".
+#    Also removed FileWriters and View objects.
+#
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 
-SUBDIRS=Data Pipeline PrivateFilters PublicFilters Sinks Sources
+SUBDIRS=Data Pipeline PrivateFilters Sinks Sources
 SRC=$(Data_src) $(MeshQuality_src) $(Pipeline_src) $(PrivateFilters_src) \
-    $(PublicFilters_src) $(Sinks_src) $(Sources_src)
+    $(Sinks_src) $(Sources_src)
 
 Data_src= \
   Data/avtAverageValueRF.C \
@@ -219,10 +223,6 @@ Data_src= \
   Data/avtSpecies.C \
   Data/avtTetrahedronExtractor.C \
   Data/avtVariablePixelizer.C \
-  Data/avtView2D.C \
-  Data/avtView3D.C \
-  Data/avtViewCurve.C \
-  Data/avtViewInfo.C \
   Data/avtVolume.C \
   Data/avtWedgeExtractor.C
 
@@ -241,6 +241,7 @@ Pipeline_src= \
   Pipeline/avtPipelineSpecification.C
 
 PrivateFilters_src= \
+  PrivateFilters/avtCompactTreeFilter.C \
   PrivateFilters/avtDataObjectToDatasetFilter.C \
   PrivateFilters/avtDataTreeStreamer.C \
   PrivateFilters/avtDatasetToDataObjectFilter.C \
@@ -254,42 +255,10 @@ PrivateFilters_src= \
   PrivateFilters/avtSingleFilterFacade.C \
   PrivateFilters/avtStreamer.C 
 
-PublicFilters_src= \
-  PublicFilters/avtCompactTreeFilter.C \
-  PublicFilters/avtCondenseDatasetFilter.C \
-  PublicFilters/avtContourFilter.C \
-  PublicFilters/avtCoordSystemConvert.C \
-  PublicFilters/avtCurrentExtentFilter.C \
-  PublicFilters/avtCurveConstructorFilter.C \
-  PublicFilters/avtFacelistFilter.C \
-  PublicFilters/avtFeatureEdgesFilter.C \
-  PublicFilters/avtGhostZoneAndFacelistFilter.C \
-  PublicFilters/avtGhostZoneFilter.C \
-  PublicFilters/avtImageCommunicator.C \
-  PublicFilters/avtImageCompositer.C \
-  PublicFilters/avtPointToGlyphFilter.C \
-  PublicFilters/avtRayCompositer.C \
-  PublicFilters/avtRayTracer.C \
-  PublicFilters/avtResampleFilter.C \
-  PublicFilters/avtSamplePointCommunicator.C \
-  PublicFilters/avtSamplePointExtractor.C \
-  PublicFilters/avtSamplePointToSurfaceFilter.C \
-  PublicFilters/avtShiftCenteringFilter.C \
-  PublicFilters/avtSimilarityTransformFilter.C \
-  PublicFilters/avtSmoothPolyDataFilter.C \
-  PublicFilters/avtSummationFilter.C \
-  PublicFilters/avtTransform.C \
-  PublicFilters/avtVertexNormalsFilter.C \
-  PublicFilters/avtWholeImageCompositer.C \
-  PublicFilters/avtWorldSpaceToImageSpaceTransform.C
-
 Sinks_src= \
   Sinks/avtDataObjectSink.C \
   Sinks/avtDatabaseWriter.C \
   Sinks/avtDatasetSink.C \
-  Sinks/avtDatasetFileWriter.C \
-  Sinks/avtFileWriter.C \
-  Sinks/avtImageFileWriter.C \
   Sinks/avtImageSink.C \
   Sinks/avtMultipleInputSink.C \
   Sinks/avtNullDataSink.C \

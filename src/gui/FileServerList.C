@@ -803,6 +803,32 @@ FileServerList::SetPath(const std::string &path)
 }
 
 // ****************************************************************************
+// Method: FileServerList::LoadPlugins
+//
+// Purpose: 
+//     Tell the mdserver for the current host to load its plugins.  It will
+//     do this automatically when you open a file; the only reason to make
+//     this call is for efficiency.
+//
+// Programmer: Hank Childs
+// Creation:   January 24, 2004
+//
+// ****************************************************************************
+
+void
+FileServerList::LoadPlugins(void)
+{
+    // If the activeHost is in the server map, set its path.
+    ServerMap::iterator pos;
+    if((pos = servers.find(activeHost)) != servers.end())
+    {
+        // Now that we have what we need, tell the mdserver to load its
+        // plugins.
+        pos->second->server->LoadPlugins();
+    }
+}
+
+// ****************************************************************************
 // Method: FileServerList::SetFilter
 //
 // Purpose: 
