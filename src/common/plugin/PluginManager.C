@@ -511,6 +511,10 @@ PluginManager::GetPluginList(vector<pair<string,string> > &libs)
 //    with matches the current version of VisIt.  Added code to store
 //    the appropriate list of errors.
 //
+//    Jeremy Meredith, Thu Mar  3 11:46:05 PST 2005
+//    Track the missing vs old plugin version separately, because solving
+//    them correctly requires a different action in each case.
+//
 // ****************************************************************************
 
 void
@@ -522,6 +526,7 @@ PluginManager::ReadPluginInfo()
 
     // Keep track of plugin version errors
     vector<string> pluginsWithWrongVersion;
+    vector<string> pluginsWithNoVersion;
 
     // Read the plugin info for each plugin in the libs list.
     string ext(PLUGIN_EXTENSION);
@@ -563,7 +568,12 @@ PluginManager::ReadPluginInfo()
         const char **VisItPluginVersion =
                               (const char**)PluginSymbol("VisItPluginVersion");
         bool success;
-        if (!VisItPluginVersion || strcmp(*VisItPluginVersion, VERSION) != 0)
+        if (!VisItPluginVersion)
+        {
+            pluginsWithNoVersion.push_back(pluginFile);
+            success = false; 
+        }
+        else if (strcmp(*VisItPluginVersion, VERSION) != 0)
         {
             pluginsWithWrongVersion.push_back(pluginFile);
             success = false; 
@@ -589,7 +599,7 @@ PluginManager::ReadPluginInfo()
     {
         pluginInitErrors += "The following plugins were built with an old "
             "version of VisIt.  Please either rebuild the plugins associated "
-            "with these files (after running xml2makefile) or delete them:\n";
+            "with these files or delete them:\n";
         for (int i=0; i<pluginsWithWrongVersion.size(); i++)
         {
             string pluginFile(pluginsWithWrongVersion[i]);
@@ -605,6 +615,32 @@ PluginManager::ReadPluginInfo()
             pluginInitErrors += string("   the ")+pluginPrefix+
                                 " plugin in the directory "+dirname+"\n";
         }
+        pluginInitErrors += "\n";
+    }
+
+    if (pluginsWithNoVersion.size() != 0)
+    {
+        pluginInitErrors += "The following plugins are missing version "
+            "information;  this means that their source code was generated "
+            "with an old version of VisIt.  Please either regenerate the "
+            "plugin info files by running xml2info and rebuild them, or else "
+            "simply delete them:\n";
+        for (int i=0; i<pluginsWithNoVersion.size(); i++)
+        {
+            string pluginFile(pluginsWithNoVersion[i]);
+            string ext(PLUGIN_EXTENSION);
+            int slashPos = pluginFile.rfind("/");
+            string dirname = pluginFile.substr(0, slashPos);
+            int suffixLen = (pluginFile.find("_ser") != -1 ||
+                             pluginFile.find("_par") != -1) ? 4 : 0;
+            int len = pluginFile.size() - slashPos - suffixLen - 5 -
+                managerName.size() - ext.size();
+            string pluginPrefix(pluginFile.substr(slashPos + 5, len));
+
+            pluginInitErrors += string("   the ")+pluginPrefix+
+                                " plugin in the directory "+dirname+"\n";
+        }
+        pluginInitErrors += "\n";
     }
 
 }

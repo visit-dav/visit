@@ -78,6 +78,10 @@ avtDatasetQuery::~avtDatasetQuery()
 //    Test for empty data tree after ApplyFilters, and submit an error
 //    message. 
 //    
+//    Kathleen Bonnell, Thu Mar  3 16:38:16 PST 2005 
+//    Ensure all procs Execute, even if they have empty trees (a valid state
+//    when in parallel and more processors than domains.) 
+//
 // ****************************************************************************
 
 void
@@ -98,33 +102,27 @@ avtDatasetQuery::PerformQuery(QueryAttributes *qA)
     //
     SetTypedInput(dob);
     avtDataTree_p tree = GetInputDataTree();
-    bool validInputTree = false;
-    // No need to process an empty tree.
+    int validInputTree = 0;
+    
     if (!tree->IsEmpty())
     {
-        totalNodes = tree->GetNumberOfLeaves();
-        PreExecute();
-        Execute(tree);
-        PostExecute();
-
-        validInputTree = true;
-        //
-        // Retrieve the query results and set the message in the atts. 
-        //
-        queryAtts.SetResultsMessage(resMsg);
-        queryAtts.SetResultsValue(resValue);
+        validInputTree = 1;
     }
-    else
+    else 
     {
-        // An empty tree at this point is the sign that something bad has
-        // happened during the 'update' cycle called by ApplyFilters. 
-        // Set the flag to false -- use OR, becuase for QueryOverTime,
-        // We only want to send the InternalError message if all time steps
-        // encountered empty trees.
-        validInputTree != false;
-        debug4 << "Query encountered EMPTY InputDataTree after ApplyFilters!!" 
-               << endl;
+        validInputTree |= 0;
+        debug4 << "Query encountered EMPTY InputDataTree after ApplyFilters.  "
+               << "This may be a valid state if running parallel and there "
+               << "are more processors than domains." << endl;
     }
+
+    totalNodes = tree->GetNumberOfLeaves();
+    PreExecute();
+    Execute(tree);
+    PostExecute();
+
+    validInputTree = UnifyMaximumValue(validInputTree);
+
     if (validInputTree)
     {
         //

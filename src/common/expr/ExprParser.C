@@ -486,7 +486,7 @@ ExprParser::Parse(const std::string &s)
                 ParseOneToken(token);
         }
     }
-    CATCH (UnhandledReductionException &e)
+    CATCH2(UnhandledReductionException, e)
     {
         // This should only occur during debugging; print to cerr anyway
         cerr << e.Message() << endl;
@@ -494,7 +494,7 @@ ExprParser::Parse(const std::string &s)
         e.GetPos().PrintErrorText(cerr, text);
         CATCH_RETURN2(1, NULL);
     }
-    CATCH (ParseException &e)
+    CATCH2(ParseException, e)
     {
         char error[1024];
         SNPRINTF(error, 1024, "%s\n%s",
