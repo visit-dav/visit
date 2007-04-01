@@ -941,6 +941,10 @@ ViewerQueryManager::GetQueryClientAtts()
 //    If we have plots that were generated dynamically, regenerate them before
 //    performing our query.
 //
+//    Kathleen Bonnell, Tue Mar 15 17:39:33 PST 2005 
+//    Only set 'DataType' from arg1 if the named query is an 'actual/original'
+//    type of query, otherwise set DataType to 'Actual'.
+//
 // ****************************************************************************
 
 void         
@@ -1030,18 +1034,28 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
         return;
     }
 
-
     QueryAttributes qa;
 
     qa.SetName(qName);
     qa.SetUseGlobalId(elementIsGlobal);
+
     // Right now, use of Element and DataType are mutually
     // exclusive, and we don't necessarily have to know thich one
     // the query will use, so go ahead and use arg1 to set both atts.
-    if (arg1) 
-        qa.SetDataType(QueryAttributes::ActualData);
+    
+    if (queryTypes->GetWindowType(qName) == QueryList::ActualData || 
+        queryTypes->GetWindowType(qName) == QueryList::ActualDataVars)
+    {
+        if (arg1) 
+            qa.SetDataType(QueryAttributes::ActualData);
+        else      
+            qa.SetDataType(QueryAttributes::OriginalData); 
+    }
     else      
-        qa.SetDataType(QueryAttributes::OriginalData); 
+    {
+        qa.SetDataType(QueryAttributes::ActualData); 
+    }
+
     qa.SetElement(arg1);
     qa.SetDomain(arg2);
     if (qName == "Variable by Zone") 
@@ -1067,7 +1081,6 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
         if (!VerifyMultipleInputQuery(olist, numInputs, qName, vars, qa))
             return;
     }
-
 
     //
     //  Single input queries need only one engineKey, multiple input

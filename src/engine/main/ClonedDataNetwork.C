@@ -10,6 +10,10 @@
 //  Programmer:  Kathleen Bonnell 
 //  Creation:    March 18, 2004 
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Mar 15 17:41:26 PST 2005
+//    Initialize clone.
+//
 // ****************************************************************************
 ClonedDataNetwork::ClonedDataNetwork(DataNetwork *base) : DataNetwork()
 {
@@ -19,6 +23,7 @@ ClonedDataNetwork::ClonedDataNetwork(DataNetwork *base) : DataNetwork()
     SetPipelineSpec(base->GetPipelineSpec());
     SetDataSpec(base->GetDataSpec());
     nodeList = base->GetNodeList();
+    clone = true;
 }
 
 // ****************************************************************************
