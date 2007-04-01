@@ -18,9 +18,18 @@
       ActualData
       ActualDataVars
     </Enum>
+    <Enum name="Groups">
+      CurveRelated
+      MeshRelated
+      PickRelated
+      TimeRelated
+      VariableRelated
+    </Enum>
     <Field name="names" label="names" type="stringVector">
     </Field>
     <Field name="types" label="types" type="intVector">
+    </Field>
+    <Field name="groups" label="groups" type="intVector">
     </Field>
     <Field name="coordRep" label="coordRep" type="intVector">
     </Field>
@@ -29,8 +38,6 @@
     <Field name="allowedVarTypes" label="allowedVarTypes" type="intVector">
     </Field>
     <Field name="winType" label="winType" type="intVector" internal="true">
-    </Field>
-    <Field name="actualData" label="actualData" type="intVector">
     </Field>
     <Field name="timeQuery" label="timeQuery" type="intVector">
     </Field>
@@ -41,12 +48,6 @@
     <Function name="NumberOfInputsForQuery" user="true" member="true">
     </Function>
     <Function name="AllowedVarsForQuery" user="true" member="true">
-    </Function>
-    <Function name="UseActualData" user="true" member="true">
-    </Function>
-    <Function name="SetWindowType" user="true" member="true">
-    </Function>
-    <Function name="AddTimeQuery" user="true" member="true">
     </Function>
     <Function name="TimeQueryAvailable" user="true" member="true">
     </Function>

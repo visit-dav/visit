@@ -1,5 +1,5 @@
 Function: AddQuery
-Declaration: void AddQuery(const std::string &name, QueryType t, CoordinateRepresentation rep = WorldSpace, int number_input = 1, int allowedVars = 0);
+Declaration: void AddQuery(const std::string &name, QueryType t, Groups g, CoordinateRepresentation r, WindowType w, int num_input, int allowedVars, bool timeQ); 
 Definition:
 // ****************************************************************************
 //  Method:  AddQuery
@@ -18,42 +18,22 @@ Definition:
 //    Kathleen Bonnell,  Tue Nov 18 08:20:36 PST 2003 
 //    Set default window type based on query type. 
 //
+//    Kathleen Bonnell,  Sat Sep  4 11:41:18 PDT 2004 
+//    Made all parameters required, added Groups. 
+//
 // ****************************************************************************
  
 void
-QueryList::AddQuery(const std::string &name, QueryList::QueryType t,
-    QueryList::CoordinateRepresentation rep, int number_input, int allowedVars)
+QueryList::AddQuery(const std::string &name, QueryType t, Groups g, CoordinateRepresentation r, WindowType w, int num_input, int allowedVars, bool timeQ)
 {
     names.push_back(name);
     types.push_back((int)t);
-    coordRep.push_back((int)rep);
-    numInputs.push_back(number_input);
+    groups.push_back((int)g);
+    coordRep.push_back((int)r);
+    numInputs.push_back(num_input);
     allowedVarTypes.push_back(allowedVars);
-    timeQuery.push_back(0);
-
-    //
-    //  This will be set by user selecting a button, if WindowType is 
-    //  CurrentPlot or CurrentPlotVars.  Otherwise, it doesn't make sense, so 
-    //  just set it to 0.
-    //
-    actualData.push_back(0);
-
-    //
-    //  Default window type for each query type.  If a query needs a different
-    //  window, it can be set via SetWindowType.
-    //
-    if (t == QueryList::DatabaseQuery)
-    {
-        winType.push_back((int)QueryList::Basic);
-    }
-    else if (t == QueryList::PointQuery)
-    {
-        winType.push_back((int)QueryList::SinglePoint);
-    }
-    else if (t == QueryList::LineQuery)
-    {
-        winType.push_back((int)QueryList::DoublePoint);
-    }
+    timeQuery.push_back((int)timeQ);
+    winType.push_back((int)w);
 }
 
 Function: QueryExists
@@ -71,8 +51,8 @@ Definition:
 // ****************************************************************************
  
 bool
-QueryList::QueryExists(const std::string &name, QueryList::QueryType t,
-    QueryList::CoordinateRepresentation rep)
+QueryList::QueryExists(const std::string &name, QueryType t,
+    CoordinateRepresentation rep)
 {
     int i;
     bool match = false;
@@ -144,86 +124,6 @@ QueryList::AllowedVarsForQuery(const std::string &name)
         }
     }
     return -1;
-}
-
-Function: UseActualData
-Declaration: int UseActualData(const std::string &name);
-Definition:
-// ****************************************************************************
-//  Method:  UseActualData
-//
-//  Purpose:
-//      Returns whether or not this query applies only to the actual data. 
-//
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    November 25, 2003 
-//
-// ****************************************************************************
- 
-int
-QueryList::UseActualData(const std::string &name)
-{
-    int i;
-    for (i = 0; i < names.size(); i++)
-    {
-        if (name == names[i]) 
-        {
-            return actualData[i];
-        }
-    }
-    return -1;
-}
-
-Function: SetWindowType
-Declaration: void SetWindowType(const std::string &name, WindowType winT);
-Definition:
-// ****************************************************************************
-//  Method:  SetWindowType
-//
-//  Purpose:
-//      Sets the window type to use for the particular query. 
-//
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    November 18, 2003 
-//
-// ****************************************************************************
- 
-void
-QueryList::SetWindowType(const std::string &name, WindowType winT)
-{
-    int i;
-    for (i = 0; i < names.size(); i++)
-    {
-        if (name == names[i]) 
-        {
-            winType[i] = (int)winT;
-        }
-    }
-}
-
-Function: AddTimeQuery
-Declaration: void AddTimeQuery(const std::string &name, QueryType t, CoordinateRepresentation rep = WorldSpace, int number_input = 1, int allowedVars = 0);
-Definition:
-// ****************************************************************************
-//  Method:  AddTimeQuery
-//
-//  Purpose:
-//    Adds a time query to the query list.
-//
-//  Programmer:  Kathleen Bonnell
-//  Creation:    March 22, 2004
-//
-//  Modifications:
-//
-// ****************************************************************************
- 
-void
-QueryList::AddTimeQuery(const std::string &name, QueryList::QueryType t,
-    QueryList::CoordinateRepresentation rep, int number_input, int allowedVars)
-{
-    AddQuery(name, t, rep, number_input, allowedVars);
-
-    timeQuery[timeQuery.size()-1] = 1;
 }
 
 Function: TimeQueryAvailable

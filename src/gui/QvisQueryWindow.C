@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <QvisQueryWindow.h>
 #include <qbuttongroup.h>
+#include <qcombobox.h>
 #include <qcheckbox.h>
 #include <qgroupbox.h>
 #include <qlabel.h>
@@ -110,6 +111,9 @@ QvisQueryWindow::~QvisQueryWindow()
 //   Kathleen Bonnell, Tue Aug 24 15:31:56 PDT 2004 
 //   Made the default for dataOpts be 'original data'. 
 //
+//   Kathleen Bonnell, Sat Sep  4 11:49:58 PDT 2004 
+//   Added displayMode.
+//
 // ****************************************************************************
 
 void
@@ -117,6 +121,23 @@ QvisQueryWindow::CreateWindowContents()
 {
     QHBoxLayout *hLayout = new QHBoxLayout(topLayout);
     QVBoxLayout *vLayout = new QVBoxLayout(hLayout);
+
+    // Create the display mode
+    displayMode = new QComboBox(central, "displayMode");
+    displayMode->insertItem("All", 0);
+    displayMode->insertItem("Curve-related", 1);
+    displayMode->insertItem("Mesh-related",  2);
+    displayMode->insertItem("Pick-related",  3);
+    displayMode->insertItem("Time-related",  4);
+    displayMode->insertItem("Variable-related",  5);
+    displayMode->insertItem("All queries-over-time", 6);
+    connect(displayMode, SIGNAL(activated(int)),
+            this, SLOT(displayModeChanged(int)));
+    
+    vLayout->addWidget(new QLabel(displayMode, "Display ", central, "displayLabel"));
+    vLayout->addWidget(displayMode);
+
+
     // Create the query list.
     queryList = new QListBox(central, "queryList");
     queryList->setSelectionMode(QListBox::Single);
@@ -275,13 +296,16 @@ QvisQueryWindow::CreateEntireWindow()
 //   Kathleen Bonnell, Thu Apr  1 18:46:55 PST 2004 
 //   Call update for timeQueryButton.
 //   
+//   Kathleen Bonnell, Sat Sep  4 11:49:58 PDT 2004 
+//   Removed unncessary argument from UpdateQueryList.
+//
 // ****************************************************************************
 
 void
 QvisQueryWindow::UpdateWindow(bool doAll)
 {
     if(SelectedSubject() == queries || doAll)
-        UpdateQueryList(doAll);
+        UpdateQueryList();
 
     if(SelectedSubject() == queryAtts || 
        SelectedSubject() == pickAtts || doAll)
@@ -346,32 +370,64 @@ QvisQueryWindow::UpdateTimeQueryButton()
 // Creation:   Mon Sep 9 16:55:15 PST 2002
 //
 // Modifications:
-//   
+//   Kathleen Bonnell, Sat Sep  4 11:49:58 PDT 2004 
+//   Removed unncessary argument.  Restructured to display the queries list
+//   according to the displayMode specified by user.  All individual lists
+//   are now sorted.
+//
 // ****************************************************************************
 
 void
-QvisQueryWindow::UpdateQueryList(bool)
+QvisQueryWindow::UpdateQueryList()
 {
     const stringVector &names = queries->GetNames();
+    const intVector &times = queries->GetTimeQuery();
+    const intVector &groups = queries->GetGroups();
 
     // Add the arguments to the query list.
     queryList->blockSignals(true);
-    int selectedIndex = queryList->currentItem();
+    QString queryName = queryList->currentText();
+    int selectedIndex = -1;
+    int selectedFunction = displayMode->currentItem() -1;
     queryList->clear();
-    for(int i = 0; i < names.size(); ++i)
-        queryList->insertItem(QString(names[i].c_str()));
+    int i;
+    for(i = 0; i < names.size(); ++i)
+    {
+        if (displayMode->currentText() == "All")
+        {
+            queryList->insertItem(QString(names[i].c_str()));
+        }
+        else if (displayMode->currentText() == "All queries-over-time" &&
+                 times[i])
+        {
+            queryList->insertItem(QString(names[i].c_str()));
+        }
+        else if (groups[i] == selectedFunction)
+        {
+            queryList->insertItem(QString(names[i].c_str()));
+        }
+    }
+
+    queryList->sort();
 
     // Now that query names are in the list, set the selection.
     bool listEnabled = false;
-    if(names.size() > 0)
+    if(queryList->count() > 0)
     {
         listEnabled = true;
-        if(selectedIndex == -1 || selectedIndex >= names.size())
-            selectedIndex = 0;
+        selectedIndex = 0;
+        for (i = 0; i < queryList->count(); i++)
+        {
+            if (queryList->text(i) == queryName) 
+            {
+                selectedIndex = i;
+                break;
+            }
+        }
 
         queryList->setCurrentItem(selectedIndex);
         queryList->setSelected(selectedIndex, true);
-        UpdateArgumentPanel(selectedIndex);
+        UpdateArgumentPanel(queryList->currentText());
     }
 
     queryList->setEnabled(listEnabled);
@@ -463,19 +519,33 @@ QvisQueryWindow::UpdateResults(bool)
 //   Kathleen Bonnell, Tue Aug 24 15:31:56 PDT 2004 
 //   Made the default for dataOpts be 'original data'. 
 //
+//   Kathleen Bonnell, Sat Sep  4 11:49:58 PDT 2004 
+//   Changed argument from index to qname -- because queryList box may
+//   have fewer items than all queries. 
+// 
 // ****************************************************************************
 
 void
-QvisQueryWindow::UpdateArgumentPanel(int index)
+QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
 {
     const intVector &rep = queries->GetCoordRep();
     const intVector &winType = queries->GetWinType();
     const intVector &timeQuery = queries->GetTimeQuery();
+    const stringVector &names = queries->GetNames();
 
+    int index = -1;
+    for (int i = 0; i < names.size(); i++)
+    {
+        if (qname == names[i])
+        {
+            index = i;
+            break;
+        }
+    }
     // reset a few defaults
     dataOpts->setButton(0);
     
-    if(index < winType.size())
+    if(index >= 0 && index < winType.size())
     {
         bool showWidgets[4] = {false, false, false, false};
         bool showCoordLabel = false;
@@ -1082,6 +1152,9 @@ QvisQueryWindow::timeApply()
 // Creation:   Mon Sep 9 17:57:37 PST 2002
 //
 // Modifications:
+//   Kathleen Bonnell, Sat Sep  4 11:49:58 PDT 2004 
+//   Changed argument to UpdateArgumentPaenl from index to qname -- 
+//   because queryList box may have fewer items than all queries. 
 //   
 // ****************************************************************************
 
@@ -1090,7 +1163,7 @@ QvisQueryWindow::selectQuery()
 {
     int index = queryList->currentItem();
     if(index >= 0)
-        UpdateArgumentPanel(index);
+        UpdateArgumentPanel(queryList->currentText());
 }
 
 // ****************************************************************************
@@ -1130,4 +1203,23 @@ void
 QvisQueryWindow::clearResultText()
 {
     resultText->setText("");
+}
+
+// ****************************************************************************
+// Method: QvisQueryWindow::displayModeChanged
+//
+// Purpose: 
+//   Updates the query list when display mode changes. 
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   September 4, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisQueryWindow::displayModeChanged(int)
+{
+    UpdateQueryList(); 
 }
