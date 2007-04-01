@@ -6,6 +6,7 @@
 
 #include <SaveWindowAttributes.h>
 
+#include <avtCallback.h>
 #include <ImproperUseException.h>
 
 // ****************************************************************************
@@ -188,6 +189,9 @@ avtFileWriter::IsImageFormat(void)
 //    Kathleen Bonnell, Wed Nov 12 16:59:24 PST 2003 
 //    Added argument 'compression'.
 //
+//    Hank Childs, Tue Apr  6 16:48:58 PDT 2004
+//    Do not assume the input is valid.
+//
 // ****************************************************************************
 
 void
@@ -196,13 +200,30 @@ avtFileWriter::Write(const char *filename, avtDataObject_p dob, int quality,
 {
     if (IsImageFormat())
     {
-        imgWriter->SetInput(dob);
-        imgWriter->Write(imgFormat, filename, quality, progressive, compression);
+        if (*dob == NULL)
+        {
+            avtCallback::IssueWarning("The file writer was not able to save "
+                  "out a NULL image.");
+        }
+        else
+        {
+            imgWriter->SetInput(dob);
+            imgWriter->Write(imgFormat, filename, quality, progressive,
+                              compression);
+        }
     }
     else
     {
-        dsWriter->SetInput(dob);
-        dsWriter->Write(dsFormat, filename, binary);
+        if (*dob == NULL)
+        {
+            avtCallback::IssueWarning("The file writer was not able to save "
+                  "out a NULL surface.");
+        }
+        else
+        {
+            dsWriter->SetInput(dob);
+            dsWriter->Write(dsFormat, filename, binary);
+        }
     }
 }
 

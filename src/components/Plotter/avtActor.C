@@ -93,13 +93,18 @@ avtActor::SetBehavior(avtBehavior_p b)
 //  Programmer: Hank Childs
 //  Creation:   December 28, 2000
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Apr  7 08:03:14 PDT 2004
+//    Check to make sure the drawable input is not NULL as well.
+//
 // ****************************************************************************
 
 void
 avtActor::SetDrawable(avtDrawable_p d)
 {
     drawable = d;
-    if (renderer != NULL)
+    if ((renderer != NULL) && (*drawable != NULL))
     {
         drawable->Add(renderer);
     }

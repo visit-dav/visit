@@ -567,6 +567,9 @@ QvisMainWindow::~QvisMainWindow()
 //   Eric Brugger, Fri Apr 18 09:10:03 PDT 2003 
 //   I added maintain view limits.
 //
+//   Eric Brugger, Mon Mar 29 13:07:58 PST 2004
+//   I added maintain data limits.
+//
 // ****************************************************************************
 
 void
@@ -595,6 +598,12 @@ QvisMainWindow::CreateGlobalArea(QLayout *tl)
     connect(maintainViewCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(maintainViewToggled(bool)));
     globalLayout->addWidget(maintainViewCheckBox, 1, 3);
+
+    maintainDataCheckBox = new QCheckBox("data", central,
+        "maintainDataCheckBox");
+    connect(maintainDataCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(maintainDataToggled(bool)));
+    globalLayout->addWidget(maintainDataCheckBox, 1, 4);
 
     replacePlotsCheckBox = new QCheckBox("Replace plots", central,
         "replacePlotsCheckBox");
@@ -834,6 +843,9 @@ QvisMainWindow::Update(Subject *TheChangedSubject)
 //   I updated the code due to changes in GlobalAttributes. I also added code
 //   to set the contents of the source list.
 //
+//   Eric Brugger, Mon Mar 29 13:07:58 PST 2004
+//   I added maintain data limits.
+//
 //   Brad Whitlock, Mon Apr 5 16:19:18 PST 2004
 //   Renamed a method.
 //
@@ -906,6 +918,11 @@ QvisMainWindow::UpdateGlobalArea(bool doAll)
             maintainViewCheckBox->blockSignals(true);
             maintainViewCheckBox->setChecked(globalAtts->GetMaintainView());
             maintainViewCheckBox->blockSignals(false);
+            break;
+        case 12: // maintainData
+            maintainDataCheckBox->blockSignals(true);
+            maintainDataCheckBox->setChecked(globalAtts->GetMaintainData());
+            maintainDataCheckBox->blockSignals(false);
             break;
         }
     } // end for
@@ -1796,6 +1813,29 @@ void
 QvisMainWindow::maintainViewToggled(bool)
 {
     viewer->ToggleMaintainViewMode();
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::maintainDataToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the maintain data limits
+//   checkbox is toggled.
+//
+// Arguments:
+//   val : The new toggle value.
+//
+// Programmer: Eric Brugger
+// Creation:   Mon Mar 29 13:07:58 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::maintainDataToggled(bool)
+{
+    viewer->ToggleMaintainDataMode();
 }
 
 // ****************************************************************************

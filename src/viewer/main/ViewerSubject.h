@@ -309,6 +309,9 @@ struct avtDefaultPlotMetaData;
 //    Kathleen Bonnell, Wed Mar 24 07:13:33 PST 2004 
 //    Added  QueryOverTimeAttributes methods.
 //
+//    Eric Brugger, Mon Mar 29 14:22:55 PST 2004
+//    I added ToggleMaintainDataMode.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -475,6 +478,7 @@ private slots:
     void DisconnectWindow(ViewerWindow *win);
 
     void ToggleMaintainViewMode(int windowIndex = -1);
+    void ToggleMaintainDataMode(int windowIndex = -1);
     void ToggleCameraViewMode(int windowIndex = -1);
     void ToggleLockTime(int windowIndex = -1);
     void ToggleLockTools(int windowIndex = -1);

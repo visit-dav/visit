@@ -129,6 +129,9 @@ class VisWindow;
 //    Keep track of what plots are in the vis window in SR mode, so we don't
 //    have to clear out the vis window with every render.
 //
+//    Eric Brugger, Fri Mar 19 15:21:24 PST 2004
+//    Modified the MakePlot rpc to pass the data extents to the engine.
+//
 //    Hank Childs, Mon Mar 22 11:10:43 PST 2004
 //    Allow for the database's file format type to be specified explicitly.
 //
@@ -163,7 +166,8 @@ class NetworkManager
     void          AddFilter(const std::string&,
                             const AttributeGroup* = NULL,
                             const unsigned int ninputs = 1);
-    void          MakePlot(const std::string&, const AttributeGroup* = NULL);
+    void          MakePlot(const std::string&, const AttributeGroup*,
+                           const std::vector<double> &);
     int           EndNetwork(void);
     void          CancelNetwork();
 

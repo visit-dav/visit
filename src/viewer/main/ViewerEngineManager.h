@@ -135,12 +135,15 @@ class WindowAttributes;
 //    Jeremy Meredith, Mon Mar 22 09:20:58 PST 2004
 //    Made CreateEngine return a success flag.
 //
+//    Jeremy Meredith, Thu Mar 25 15:56:48 PST 2004
+//    Use a map of engines based on a key, and be aware of simulations.
+//
 //    Mark C. Miller, Mon Mar 29 14:52:08 PST 2004
 //    Added new bool args to control annotations in SR mode on engine
 //    GetDataObject reader used in external rendering and ExternalRender
 //
-//    Jeremy Meredith, Thu Mar 25 15:56:48 PST 2004
-//    Use a map of engines based on a key, and be aware of simulations.
+//    Eric Brugger, Tue Mar 30 13:25:30 PST 2004
+//    Added the plot data extents to MakePlot.
 //
 //    Kathleen Bonnell, Wed Mar 31 16:40:15 PST 2004 
 //    Added CloneNetwork. 
@@ -212,7 +215,8 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     bool ApplyOperator(const EngineKey &ek, const char *name,
                        const AttributeSubject *atts);
     bool MakePlot(const EngineKey &ek, const char *name,
-                  const AttributeSubject *atts, int *networkId);
+                  const AttributeSubject *atts, const vector<double> &,
+                  int *networkId);
     bool UseNetwork(const EngineKey &ek, int id);
     bool UpdatePlotAttributes(const EngineKey &ek, const char *name,
                               int id, const AttributeSubject *atts);

@@ -381,6 +381,9 @@ RPCExecutor<PreparePlotRPC>::Execute(PreparePlotRPC *rpc)
 //    Added a call to cancel the current network in case of an error.
 //    That way future calls do not fail due to a failed pre-existing network.
 //
+//    Eric Brugger, Fri Mar 19 15:19:13 PST 2004
+//    Modified the rpc to pass the data extents to the engine.
+//
 // ****************************************************************************
 template<>
 void
@@ -392,7 +395,8 @@ RPCExecutor<MakePlotRPC>::Execute(MakePlotRPC *rpc)
     debug2 << "Executing MakePlotRPC: " << rpc->GetID().c_str() << endl;
     TRY 
     {
-        netmgr->MakePlot(rpc->GetID().c_str(), rpc->GetAtts());
+        netmgr->MakePlot(rpc->GetID().c_str(), rpc->GetAtts(),
+                         rpc->GetDataExtents());
         MakePlotRPC::NetworkID id(netmgr->EndNetwork());
         rpc->SendReply(&id);
     }

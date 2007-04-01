@@ -4076,6 +4076,27 @@ ViewerProxy::ToggleMaintainViewMode()
 
 
 // ****************************************************************************
+// Method: ViewerProxy::ToggleMaintainDataMode
+//
+// Purpose: 
+//   Tells the viewer to toggle the maintain data mode.
+//
+// Programmer: Eric Brugger
+// Creation:   March 29, 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::ToggleMaintainDataMode()
+{
+    viewerRPC->SetRPCType(ViewerRPC::ToggleMaintainDataModeRPC);
+    viewerRPC->Notify();
+}
+
+
+// ****************************************************************************
 // Method: ViewerProxy::ToggleFullFrameMode
 //
 // Purpose: 

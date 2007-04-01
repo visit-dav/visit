@@ -173,6 +173,9 @@ static void RotateAroundY(const avtView3D&, double, avtView3D&);
 //    Brad Whitlock, Mon Jan 26 22:59:12 PST 2004
 //    I removed the animation and replaced it with the plot list.
 //
+//    Eric Brugger, Mon Mar 29 15:34:50 PST 2004
+//    I added maintainData.
+//
 // ****************************************************************************
 
 ViewerWindow::ViewerWindow(int windowIndex)
@@ -198,6 +201,7 @@ ViewerWindow::ViewerWindow(int windowIndex)
     // Set some default values.
     cameraView = false;
     maintainView = false;
+    maintainData = false;
     viewIsLocked = false;
     windowMode = WINMODE_NONE;
     boundingBoxValidCurve = false;
@@ -1457,6 +1461,7 @@ ViewerWindow::SetMaintainViewMode(const bool mode)
     maintainView = mode;
 }
 
+
 // ****************************************************************************
 //  Method: ViewerWindow::GetMaintainViewMode
 //
@@ -1474,6 +1479,59 @@ bool
 ViewerWindow::GetMaintainViewMode() const
 {
     return maintainView;
+}
+
+
+// ****************************************************************************
+//  Method: ViewerWindow::SetMaintainDataMode
+//
+//  Purpose: 
+//    Set the window's maintain data mode.
+//
+//  Arguments:
+//    mode      The maintain data mode.
+//
+//  Programmer: Eric Brugger
+//  Creation:   March 29, 2004
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetMaintainDataMode(const bool mode)
+{
+    //
+    // If maintain data is toggled to false regenerate the actors.
+    //
+    if (maintainData == true && mode == false)
+    {
+        maintainData = mode;
+        plotList->ClearActors();
+        plotList->UpdateFrame();
+    }
+    else
+    {
+        maintainData = mode;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: ViewerWindow::GetMaintainDataMode
+//
+//  Purpose: 
+//    Return the window's maintain data mode.
+//
+//  Returns:    The maintain data mode.
+//
+//  Programmer: Eric Brugger
+//  Creation:   March 29, 2004
+//
+// ****************************************************************************
+
+bool
+ViewerWindow::GetMaintainDataMode() const
+{
+    return maintainData;
 }
 
 
@@ -1916,6 +1974,9 @@ ViewerWindow::InvertBackgroundColor()
 //   Jeremy Meredith, Fri Nov 14 11:32:03 PST 2003
 //   Added specular properties.
 //
+//   Eric Brugger, Mon Mar 29 15:34:50 PST 2004
+//   I added maintainData.
+//
 // ****************************************************************************
 
 void
@@ -1942,6 +2003,7 @@ ViewerWindow::CopyGeneralAttributes(const ViewerWindow *source)
     SetSpinMode(source->GetSpinMode());
     SetCameraViewMode(source->GetCameraViewMode());
     SetMaintainViewMode(source->GetMaintainViewMode());
+    SetMaintainDataMode(source->GetMaintainDataMode());
     SetViewIsLocked(source->GetViewIsLocked());
     SetTimeLock(source->GetTimeLock());
     SetToolLock(source->GetToolLock());
@@ -5937,6 +5999,9 @@ ViewerWindow::SetPopupEnabled(bool val)
 //   Brad Whitlock, Fri Dec 19 15:26:10 PST 2003
 //   I added code to save the bounding box navigation mode.
 //
+//   Eric Brugger, Mon Mar 29 15:34:50 PST 2004
+//   I added maintainData.
+//
 // ****************************************************************************
 
 void
@@ -5965,6 +6030,7 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
         windowNode->AddNode(new DataNode("boundingBoxMode", GetBoundingBoxMode()));
         windowNode->AddNode(new DataNode("cameraView", cameraView));
         windowNode->AddNode(new DataNode("maintainView", maintainView));
+        windowNode->AddNode(new DataNode("maintainData", maintainData));
         windowNode->AddNode(new DataNode("viewExtentsType", avtExtentType_ToString(plotExtentsType)));
         windowNode->AddNode(new DataNode("viewIsLocked", viewIsLocked));
         windowNode->AddNode(new DataNode("timeLocked", timeLocked));
@@ -6109,6 +6175,9 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
 //
 //   Brad Whitlock, Mon Feb 2 15:26:00 PST 2004
 //   Added code to translate old config files that had ViewerAnimation.
+//
+//   Eric Brugger, Mon Mar 29 15:34:50 PST 2004
+//   I added maintainData.
 //
 // ****************************************************************************
 
@@ -6260,6 +6329,8 @@ ViewerWindow::SetFromNode(DataNode *parentNode)
         SetCameraViewMode(node->AsBool());
     if((node = windowNode->GetNode("maintainView")) != 0)
         SetMaintainViewMode(node->AsBool());
+    if((node = windowNode->GetNode("maintainData")) != 0)
+        SetMaintainDataMode(node->AsBool());
     if((node = windowNode->GetNode("viewExtentsType")) != 0)
     {
         // Allow enums to be int or string in the config file

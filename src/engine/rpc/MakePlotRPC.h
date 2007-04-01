@@ -4,6 +4,7 @@
 
 #include <VisItRPC.h>
 #include <string>
+#include <vector>
 
 class MakePlotRPC;
 
@@ -52,6 +53,9 @@ class ENGINE_RPC_API PreparePlotRPC : public BlockingRPC
 //    Brad Whitlock, Mon Mar 25 09:56:24 PDT 2002
 //    Removed SetSocket.
 //
+//    Jeremy Meredith, Fri Mar 19 14:56:55 PST 2004
+//    Modified the rpc to pass data extents.
+//
 // ****************************************************************************
 
 class ENGINE_RPC_API MakePlotRPC : public BlockingRPC
@@ -71,20 +75,24 @@ class ENGINE_RPC_API MakePlotRPC : public BlockingRPC
     MakePlotRPC();
     virtual ~MakePlotRPC();
 
-    int operator()(const std::string&, const AttributeSubject*);
+    int operator()(const std::string&, const AttributeSubject*,
+                   const std::vector<double> &);
 
     virtual void SelectAll();
 
     std::string GetID();
     AttributeSubject *GetAtts();
+    const std::vector<double> &GetDataExtents() const;
     PreparePlotRPC &GetPreparePlotRPC();
 
     void SetAtts(AttributeSubject*);
+    void SetDataExtents(const std::vector<double> &);
 
     virtual void SetXfer(Xfer *x);
 
   private:
     AttributeSubject *atts;
+    vector<double> dataExtents;
     PreparePlotRPC preparePlotRPC;
     NetworkID networkID;
 };

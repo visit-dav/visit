@@ -1355,6 +1355,9 @@ ViewerWindowManager::ChooseCenterOfRotation(int windowIndex,
 //    Changed 'Saving...' status message to indicate that its rendering.
 //    Added new status message for saving the image to disk
 //
+//    Hank Childs, Tue Apr  6 18:05:39 PDT 2004
+//    Do not save out empty data objects.
+//
 // ****************************************************************************
 
 void
@@ -1531,45 +1534,71 @@ ViewerWindowManager::SaveWindow(int windowIndex)
 
     // Save the window.
     bool savedWindow = true;
-#if 0
-    if(saveWindowClientAtts->GetHostName() == "localhost")
+    if (*dob != NULL)
     {
-#endif
-        TRY
+#if 0
+        if(saveWindowClientAtts->GetHostName() == "localhost")
         {
-            // Tell the writer to save the window on the viewer.
-            fileWriter->Write(filename, dob,saveWindowClientAtts->GetQuality(),
-                              saveWindowClientAtts->GetProgressive(),
-                              saveWindowClientAtts->GetCompression(),
-                              saveWindowClientAtts->GetBinary());
-
-            if (*dob2 != NULL)
+#endif
+            TRY
             {
                 // Tell the writer to save the window on the viewer.
-                fileWriter->Write(filename2, 
-                                  dob2,saveWindowClientAtts->GetQuality(),
+                fileWriter->Write(filename, dob,saveWindowClientAtts->GetQuality(),
                                   saveWindowClientAtts->GetProgressive(),
                                   saveWindowClientAtts->GetCompression(),
                                   saveWindowClientAtts->GetBinary());
+    
+                if (*dob2 != NULL)
+                {
+                    // Tell the writer to save the window on the viewer.
+                    fileWriter->Write(filename2, 
+                                      dob2,saveWindowClientAtts->GetQuality(),
+                                      saveWindowClientAtts->GetProgressive(),
+                                      saveWindowClientAtts->GetCompression(),
+                                      saveWindowClientAtts->GetBinary());
+                }
             }
-        }
-        CATCH2(VisItException, ve)
-        {
-            Warning(ve.Message().c_str());
-            savedWindow = false;
-        }
-        ENDTRY
+            CATCH2(VisItException, ve)
+            {
+                Warning(ve.Message().c_str());
+                savedWindow = false;
+            }
+            ENDTRY
 #if 0
+        }
+        else
+        {
+            // Make the Engine manager send the image back to the appropriate
+            // engine so the image can be written to disk there.
+            ViewerEngineManager::Instance()->WriteDataObject(
+                saveWindowClientAtts->GetHostName(), filename, dob,
+                saveWindowClientAtts->GetFormat());
+        }
+#endif
     }
     else
     {
-        // Make the Engine manager send the image back to the appropriate
-        // engine so the image can be written to disk there.
-        ViewerEngineManager::Instance()->WriteDataObject(
-            saveWindowClientAtts->GetHostName(), filename, dob,
-            saveWindowClientAtts->GetFormat());
+        if (saveWindowClientAtts->CurrentFormatIsImageFormat())
+        {
+            Warning("No image was saved.  This is "
+                  "frequently because you have asked to save an empty window."
+                  "  If this is not the case, please contact a VisIt "
+                  "developer.");
+        }
+        else
+        {
+            Warning("No surface was saved.  This is "
+                  "frequently because you have asked to save an empty window."
+                  "  This also happens if you are in Scalable Rendering mode."
+                  "  If this is not the case, please contact a VisIt "
+                  "developer.\n\n\n"
+                  "If you are in scalable rendering mode and want to save a "
+                  "polygonal file, go to Options->Rendering to disable this "
+                  "mode.  This may cause VisIt to slow down substantially.");
+        }
+        ClearStatus();
+        savedWindow = false;
     }
-#endif
 
     // Send a message to indicate that we're done saving the image.
     if (savedWindow)
@@ -2986,6 +3015,37 @@ ViewerWindowManager::ToggleMaintainViewMode(int windowIndex)
 }
 
 // ****************************************************************************
+//  Method: ViewerWindowManager::ToggleMaintainDataMode
+//
+//  Purpose:
+//    This method toggles the maintain data mode for the specified window.
+//
+//  Arguments:
+//    windowIndex  This is a zero-origin integer that specifies the index
+//                 of the window we want to change. If the value is -1, use
+//                 the active window.
+//
+//  Programmer: Eric Brugger
+//  Creation:   March 29, 2004
+//
+// ****************************************************************************
+
+void
+ViewerWindowManager::ToggleMaintainDataMode(int windowIndex)
+{
+    if(windowIndex < -1 || windowIndex >= maxWindows)
+        return;
+
+    int index = (windowIndex == -1) ? activeWindow : windowIndex;
+    if(windows[index] != 0)
+    {
+        bool maintainData = windows[index]->GetMaintainDataMode();
+        windows[index]->SetMaintainDataMode(!maintainData);
+        UpdateGlobalAtts();
+    }
+}
+
+// ****************************************************************************
 // Method: ViewerWindowManager::UndoView
 //
 // Purpose:
@@ -3392,6 +3452,9 @@ ViewerWindowManager::GetActiveWindow() const
 //    I changed the list of attributes contained by GlobalAttributes and
 //    made changes here to set the right things.
 //
+//    Eric Brugger, Mon Mar 29 15:21:11 PST 2004
+//    I added maintain data mode.
+//
 // ****************************************************************************
 
 void
@@ -3436,9 +3499,10 @@ ViewerWindowManager::UpdateGlobalAtts() const
     clientAtts->SetWindowLayout(layout);
 
     //
-    // Update the maintain view mode.
+    // Update the maintain view and data modes.
     //
     clientAtts->SetMaintainView(windows[activeWindow]->GetMaintainViewMode());
+    clientAtts->SetMaintainData(windows[activeWindow]->GetMaintainDataMode());
 
     clientAtts->Notify();
 }
@@ -7337,6 +7401,9 @@ ViewerWindowManager::EnableExternalRenderRequestsAllWindows(
 //   Eric Brugger, Fri Dec  5 13:42:39 PST 2003
 //   Added writing of maintainView, cameraView and viewExtentsType.
 //
+//   Eric Brugger, Mon Mar 29 15:21:11 PST 2004
+//   Added writing of maintainData.
+//
 //    Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004 
 //    Added timeQueryWindow. 
 //
@@ -7367,6 +7434,8 @@ ViewerWindowManager::CreateNode(DataNode *parentNode, bool detailed)
     //
     mgrNode->AddNode(new DataNode("maintainView",
        windows[activeWindow]->GetMaintainViewMode()));
+    mgrNode->AddNode(new DataNode("maintainData",
+       windows[activeWindow]->GetMaintainDataMode()));
     mgrNode->AddNode(new DataNode("cameraView",
        windows[activeWindow]->GetCameraViewMode()));
     mgrNode->AddNode(new DataNode("viewExtentsType",
@@ -7420,6 +7489,9 @@ ViewerWindowManager::CreateNode(DataNode *parentNode, bool detailed)
 //   Modified the routine to set the referenced flag for the active window
 //   to true.
 //
+//   Eric Brugger, Mon Mar 29 15:21:11 PST 2004
+//   Added loading of maintainData.
+//
 //    Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004 
 //    Added timeQueryWindow. 
 //
@@ -7445,6 +7517,8 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode)
         windows[activeWindow]->SetCameraViewMode(node->AsBool());
     if((node = searchNode->GetNode("maintainView")) != 0)
         windows[activeWindow]->SetMaintainViewMode(node->AsBool());
+    if((node = searchNode->GetNode("maintainData")) != 0)
+        windows[activeWindow]->SetMaintainDataMode(node->AsBool());
     if((node = searchNode->GetNode("viewExtentsType")) != 0)
     {
         // Allow enums to be int or string in the config file

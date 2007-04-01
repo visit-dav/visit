@@ -197,6 +197,48 @@ avtContourPlot::SetAtts(const AttributeGroup *a)
 }
 
 // ****************************************************************************
+//  Method: avtContourPlot::GetDataExtents
+//
+//  Purpose:
+//      Gets the data extents used by the plot.
+//
+//  Arguments:
+//      extents The extents used by the plot.
+//
+//  Programmer: Eric Brugger
+//  Creation:   March 25, 2004 
+//
+// ****************************************************************************
+
+void
+avtContourPlot::GetDataExtents(vector<double> &extents)
+{
+    double min, max;
+
+    if (dataExtents.size() == 2)
+    {
+        min = dataExtents[0];
+        max = dataExtents[1];
+    }
+    else
+    {
+        levelsMapper->GetOriginalDataRange(min, max);
+
+        if (atts.GetMinFlag())
+        {
+            min = atts.GetMin();
+        }
+        if (atts.GetMaxFlag())
+        {
+            max = atts.GetMax();
+        }
+    }
+
+    extents.push_back(min);
+    extents.push_back(max);
+}
+
+// ****************************************************************************
 // Method: avtContourPlot::SetColorTable
 //
 // Purpose: 
@@ -491,6 +533,9 @@ avtContourPlot::GetMapper(void)
 //    Moved feature edges filter to ApplyRenderingTransformation, so that
 //    output of this method would be a queryable object. 
 //
+//    Eric Brugger, Thu Mar 25 16:42:45 PST 2004
+//    I added code to use the data extents from the base class if set.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -506,10 +551,20 @@ avtContourPlot::ApplyOperators(avtDataObject_p input)
     catts.SetContourPercent(atts.GetContourPercent());
     catts.SetContourMethod(ContourOpAttributes::ContourMethod(
         atts.GetContourMethod()));
-    catts.SetMinFlag(atts.GetMinFlag());
-    catts.SetMaxFlag(atts.GetMaxFlag());
-    catts.SetMin(atts.GetMin());
-    catts.SetMax(atts.GetMax());
+    if (dataExtents.size() == 2)
+    {
+        catts.SetMinFlag(true);
+        catts.SetMaxFlag(true);
+        catts.SetMin(dataExtents[0]);
+        catts.SetMax(dataExtents[1]);
+    }
+    else
+    {
+        catts.SetMinFlag(atts.GetMinFlag());
+        catts.SetMaxFlag(atts.GetMaxFlag());
+        catts.SetMin(atts.GetMin());
+        catts.SetMax(atts.GetMax());
+    }
     catts.SetScaling(ContourOpAttributes::ContourScaling(atts.GetScaling()));
 
     if (contourFilter != NULL)

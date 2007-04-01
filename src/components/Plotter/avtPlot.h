@@ -20,6 +20,8 @@
 #include <avtTheater.h>
 #include <avtBehavior.h>
 
+#include <vector>
+
 class     avtDatasetToDatasetFilter;
 class     avtSmoothPolyDataFilter;
 class     avtVertexNormalsFilter;
@@ -128,9 +130,12 @@ class     AttributeSubject;
 //    Kathleen Bonnell, Wed Aug 27 15:45:45 PDT 2003
 //    Added SetOpaqueMeshIsAppropriate. 
 //
+//    Eric Brugger, Fri Mar 19 15:46:52 PST 2004
+//    Added Set/GetDataExtents.
+//
 //    Mark C. Miller, Wed Mar 24 19:23:21 PST 2004
 //    Added AttributesDependOnDatabaseMetaData
-//    
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
@@ -156,6 +161,9 @@ class PLOTTER_API avtPlot
     virtual void               ReleaseData(void);
 
     virtual void               SetAtts(const AttributeGroup*) = 0;
+
+    void                       SetDataExtents(const std::vector<double> &);
+    virtual void               GetDataExtents(std::vector<double> &);
 
     void                       SetVarName(const char *name);
 
@@ -196,6 +204,7 @@ class PLOTTER_API avtPlot
     avtSmoothPolyDataFilter   *smooth;
     avtSILRestriction_p        silr;
     char                      *varname;
+    vector<double>             dataExtents;
 
     avtDataObjectWriter_p      Execute(avtDataObject_p,
                                        avtPipelineSpecification_p,

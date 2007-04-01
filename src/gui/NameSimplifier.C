@@ -104,6 +104,10 @@ NameSimplifier::ClearNames()
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  6, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Apr  7 12:12:48 PDT 2004
+//    Account for the fact that not all input names had full paths.
+//
 // ****************************************************************************
 
 NameSimplifier::UniqueFileName::UniqueFileName(const QualifiedFilename &qfn)
@@ -114,6 +118,7 @@ NameSimplifier::UniqueFileName::UniqueFileName(const QualifiedFilename &qfn)
     host = qfn.host;
     file = qfn.filename;
     separator = qfn.separator;
+    leadingSlash = (qfn.path.size() > 0 && qfn.path[0] == separator);
     path = SplitValues(qfn.path, separator);
     pathLen = path.size();
 }
@@ -131,6 +136,10 @@ NameSimplifier::UniqueFileName::UniqueFileName(const QualifiedFilename &qfn)
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  6, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Apr  7 12:12:48 PDT 2004
+//    Account for the fact that not all input names had full paths.
+//
 // ****************************************************************************
 
 string
@@ -139,7 +148,7 @@ NameSimplifier::UniqueFileName::GetAsString() const
     string out;
     if (useHost)
         out += host + ":";
-    if (pathCount == pathLen)
+    if (leadingSlash && pathCount == pathLen)
         out += separator;
     for (int i=0; i<pathCount; i++)
         out += path[pathLen-pathCount + i] + separator;

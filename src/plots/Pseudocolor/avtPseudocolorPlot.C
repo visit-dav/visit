@@ -404,6 +404,32 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
 
 
 // ****************************************************************************
+//  Method: avtPseudocolorPlot::GetDataExtents
+//
+//  Purpose:
+//      Gets the data extents used by the plot.
+//
+//  Arguments:
+//      extents The extents used by the plot.
+//
+//  Programmer: Eric Brugger
+//  Creation:   March 25, 2004
+//
+// ****************************************************************************
+
+void
+avtPseudocolorPlot::GetDataExtents(vector<double> &extents)
+{
+    float min, max;
+
+    varLegend->GetRange(min, max);
+
+    extents.push_back(min);
+    extents.push_back(max);
+}
+
+
+// ****************************************************************************
 // Method: avtPseudocolorPlot::SetColorTable
 //
 // Purpose: 
@@ -573,6 +599,9 @@ avtPseudocolorPlot::SetLighting(bool lightingOn)
 //    Kathleen Bonnell, Wed May 29 13:40:22 PDT 2002  
 //    Always allow user to specify Min/Max. 
 // 
+//    Eric Brugger, Thu Mar 25 17:12:04 PST 2004
+//    I added code to use the data extents from the base class if set.
+//
 // ****************************************************************************
 
 void
@@ -583,11 +612,16 @@ avtPseudocolorPlot::SetLimitsMode(int limitsMode)
     //  Retrieve the actual range of the data
     //
     varMapper->GetVarRange(min, max);
-        
+
     float userMin = atts.GetMinFlag() ? atts.GetMin() : min;
     float userMax = atts.GetMaxFlag() ? atts.GetMax() : max;
       
-    if (atts.GetMinFlag() && atts.GetMaxFlag())
+    if (dataExtents.size() == 2)
+    {
+        varMapper->SetMin(dataExtents[0]);
+        varMapper->SetMax(dataExtents[1]);
+    }
+    else if (atts.GetMinFlag() && atts.GetMaxFlag())
     {
         if (userMin >= userMax)
         {

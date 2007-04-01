@@ -29,6 +29,7 @@
 
 #include <vectortypes.h>
 #include <string>
+#include <vector>
 
 class StatusAttributes;
 
@@ -167,6 +168,9 @@ class StatusAttributes;
 //    Brad Whitlock, Fri Mar 12 10:43:41 PDT 2004
 //    I added an override of the base class's SendKeepAlive method.
 //
+//    Eric Brugger, Fri Mar 19 15:11:41 PST 2004
+//    I modified the MakePlot rpc to pass the data limits to the engine.
+//
 //    Mark C. Miller, Mon Mar 29 15:01:58 PST 2004
 //    Added new bool arg for controlling 3D annoations in Render method
 //
@@ -212,7 +216,8 @@ public:
                                            const AttributeSubject*);
     void                     ApplyNamedFunction(const std::string &name, int nargs);
     int                      MakePlot(const std::string&, 
-                                      const AttributeSubject*);
+                                      const AttributeSubject*,
+                                      const std::vector<double>&);
 
     void                     UseNetwork(int);
     void                     UpdatePlotAttributes(const std::string &, int,

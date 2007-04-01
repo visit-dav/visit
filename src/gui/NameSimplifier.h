@@ -21,6 +21,9 @@
 //    Keep track of the filenames in a way made for adding the minimal amount
 //    of text needed for ensuring they are unique.  Added UniqueFileName.
 //
+//    Jeremy Meredith, Wed Apr  7 12:12:48 PDT 2004
+//    Account for the fact that not all input names had full paths.
+//
 // ****************************************************************************
 
 class GUI_API NameSimplifier
@@ -44,6 +47,7 @@ class GUI_API NameSimplifier
         stringVector path;        // path components, split by separator
         int          pathLen;     // length of the 'path' vector
         string       file;        // raw file name without path
+        bool         leadingSlash;// true if it was a full path originally
         char         separator;   // separator character
 
         bool         useHost;     // true if we need the host for uniqueness

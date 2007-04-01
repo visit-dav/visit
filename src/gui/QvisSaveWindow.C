@@ -96,6 +96,10 @@ QvisSaveWindow::~QvisSaveWindow()
 //   Elminated code that disabled parts of GUI controlling off-screen
 //   toggle and image size
 //
+//   Hank Childs, Wed Apr  7 07:50:57 PDT 2004
+//   Re-disable tiled windows and host information, since that is not working
+//   yet.
+//
 // ****************************************************************************
 
 void
@@ -241,6 +245,13 @@ QvisSaveWindow::CreateWindowContents()
     toggleLayout2->addWidget(stereoCheckBox);
     toggleLayout2->addStretch(10);
 
+#if 1
+    // Get rid of this code when saving images is fully implemented in the
+    // viewer.
+    hostLabel->setEnabled(false);
+    hostLineEdit->setEnabled(false);
+    saveTiledCheckBox->setEnabled(false);
+#endif
 }
 
 // ****************************************************************************

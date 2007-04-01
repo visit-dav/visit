@@ -785,6 +785,10 @@ avtContourFilter::CreatePercentValues(double mn, double mx)
 //    Kathleen Bonnell, Tue Jan 20 17:38:37 PST 2004 
 //    Fix problem with delta when lo > hi.
 //
+//    Eric Brugger, Mon Apr  5 15:35:27 PDT 2004
+//    Change the way the levels are set when the user specifies the number
+//    of levels and the minimum and maximum.
+//
 // ****************************************************************************
 
 void
@@ -823,19 +827,15 @@ avtContourFilter::CreateNIsoValues(double min, double max)
 
     //
     // If we have to generate the isolevels, then we want them to be offset
-    // at the extrema.  This offset is arbitrary and mimicks what MeshTV did.
+    // at the extrema.  This offset is arbitrary and mimicks what MeshTV did,
+    // except in the case where the minimum and maximum are specified.  In
+    // MeshTV, the offsets weren't applied if the minimum or maximum were
+    // specified, whereas here we always apply the offsets.
     //
     extremaOffset = (hi - lo) / (nLevels + 1.);
 
-    if (!atts.GetMinFlag())
-    {
-        lo += extremaOffset;
-    }
-
-    if (!atts.GetMaxFlag())
-    {
-        hi -= extremaOffset;
-    }
+    lo += extremaOffset;
+    hi -= extremaOffset;
 
     if (nLevels <= 1)
     {

@@ -171,6 +171,9 @@ class avtToolInterface;
 //    Added simulation support by using an engine key to map this plot
 //    to the engine used to create it.
 //
+//    Eric Brugger, Tue Mar 30 15:08:09 PST 2004
+//    Added data extents.
+//
 //    Kathleen Bonnell, Wed Mar 31 16:46:13 PST 2004 
 //    Added clonedNetworkId, which when not -1 indicates that this plot 
 //    should use a cloned network instead of creating a new one. 
@@ -284,7 +287,6 @@ class VIEWER_API ViewerPlot
     int  GetNetworkID() const;
     void SetNetworkID(int id);
 
-
     bool StartPick();
     void StopPick();
 
@@ -304,8 +306,9 @@ class VIEWER_API ViewerPlot
     void SetCloneId(int id) { clonedNetworkId = id; } ;
     int  GetCloneId(void) { return clonedNetworkId; } ;
 
-
     const avtDatabaseMetaData *GetMetaData() const;
+
+    void UpdateDataExtents();
                                  
   protected:
     bool MoveOperator(const int operatorIndex, bool promote);
@@ -325,6 +328,7 @@ class VIEWER_API ViewerPlot
     std::string             hostName;
     std::string             databaseName;
     std::string             variableName;
+    std::vector<double>     dataExtents;
     int                     state;
     bool                    followsTime;
 
@@ -356,6 +360,7 @@ class VIEWER_API ViewerPlot
 
     static avtActor_p             nullActor;
     static avtDataObjectReader_p  nullReader;
+    static vector<double>         nullDataExtents;
 
     int                    clonedNetworkId;
 };

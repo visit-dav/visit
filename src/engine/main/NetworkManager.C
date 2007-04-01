@@ -804,11 +804,14 @@ NetworkManager::AddFilter(const string &filtertype,
 //    Made sure the total number of filters was the same when matching
 //    networks (since when a plot is applied, no more filter can be).
 //
+//    Eric Brugger, Fri Mar 19 15:25:20 PST 2004
+//    Modified the rpc to set the data extents in the engine.
+//
 // ****************************************************************************
 void
-NetworkManager::MakePlot(const string &id, const AttributeGroup *atts)
+NetworkManager::MakePlot(const string &id, const AttributeGroup *atts,
+                         const vector<double> &dataExtents)
 {
-    //cerr << "NetworkManager::MakePlot()" << endl;
     if (workingNet == NULL)
     {
         debug1 << "Adding a plot to a non-existent network." << endl;
@@ -831,6 +834,8 @@ NetworkManager::MakePlot(const string &id, const AttributeGroup *atts)
 
     avtPlot *p = PlotPluginManager::Instance()->
                                 GetEnginePluginInfo(id)->AllocAvtPlot();
+
+    p->SetDataExtents(dataExtents);
     workingNet->SetPlot(p);
     workingNet->GetPlot()->SetAtts(atts);
     workingNet->SetPlottype(id);
