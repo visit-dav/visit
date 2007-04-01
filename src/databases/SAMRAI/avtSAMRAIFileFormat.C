@@ -1033,7 +1033,19 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
     // if we get to here, we must have some material
     if (matList.size() == 0)
     {
-        EXCEPTION1(InvalidVariableException, matObjName);
+        // if we didn't find any materials on this patch AND we
+        // are NOT inferring a void material, it must be an error
+        if (inferVoidMaterial == false)
+        {
+            EXCEPTION1(InvalidVariableException, matObjName);
+        }
+        else
+        {
+            // this is the case where we have a clean, inferred void
+            // material
+            oneMat = true;
+            matList.push_back(num_mats-1);
+        }
     }
 
     // if we encountered the 'one mat' case, above, make sure we only got
@@ -1112,6 +1124,7 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
            }
 
            // infer the void's volume fractions
+           vfracs[1] = new float[ncells];
            for (i = 0; i < ncells; i++)
                vfracs[1][i] = 1.0 - vfracs[0][i];
 

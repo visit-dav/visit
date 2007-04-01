@@ -47,6 +47,9 @@ class     avtVariableCache;
 //
 //    Mark C. Miller, 30Sep03, Added support for time varying sil/metadata 
 //
+//    Mark C. Miller, Mon Feb  9 16:10:16 PST 2004
+//    Added method, ActivateTimestep
+//
 // ****************************************************************************
 
 class DATABASE_API avtFileFormat
@@ -80,6 +83,8 @@ class DATABASE_API avtFileFormat
 
     virtual void          RegisterVariableList(const char *,
                                           const std::vector<CharStrRef> &) {;};
+
+    virtual void          ActivateTimestep(void) {;};
 
   protected:
     avtVariableCache     *cache;

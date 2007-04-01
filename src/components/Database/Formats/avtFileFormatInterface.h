@@ -79,6 +79,9 @@ class    avtVariableCache;
 //    Mark C. Miller, Wed Dec 10 10:31:52 PST 2003
 //    I added method CanCacheVariable()
 //
+//    Mark C. Miller, Mon Feb  9 16:00:10 PST 2004
+//    Added method, ActivateTimestep
+//
 // ****************************************************************************
 
 class DATABASE_API avtFileFormatInterface
@@ -113,6 +116,7 @@ class DATABASE_API avtFileFormatInterface
     void                    SetCache(avtVariableCache *);
     void                    TurnMaterialSelectionOff(void);
     void                    TurnMaterialSelectionOn(const char *);
+    void                    ActivateTimestep(void);
 
   protected:
     virtual int             GetNumberOfFileFormats(void) = 0;

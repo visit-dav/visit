@@ -355,8 +355,7 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     //
     // Apply ghosting when domains nest within other domains (AMR meshes)
     //
-    bool didNestingGhosts =
-        ApplyGhostForDomainNesting(datasetCollection, domains, allDomains, spec);
+    ApplyGhostForDomainNesting(datasetCollection, domains, allDomains, spec);
 
     //
     // Communicates ghost zones if they are not present and we have domain
@@ -2849,6 +2848,9 @@ avtGenericDatabase::HasInvariantSIL(void) const
 //
 //    Kathleen Bonnell, Wed Mar 26 13:03:54 PST 2003 
 //    Initialize ContainsOriginalCells in the MetaData. 
+//
+//    Mark C. Miller, Mon Feb  9 15:41:57 PST 2004
+//    Added call to new interface method, ActivateTimestep
 //    
 // ****************************************************************************
 
@@ -2897,6 +2899,12 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
     // of all of the variables we will be interested in.
     //
     Interface->RegisterVariableList(var, vars2nd);
+
+    //
+    // Some file formats may need to engage in global communication when
+    // changing time-steps. Provide that opportunity here 
+    //
+    Interface->ActivateTimestep();
 
     //
     // Iterate through each of the domains and do material selection as we go.
