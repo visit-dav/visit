@@ -15,7 +15,7 @@
         Node
       </Enum>
       <Field name="originType" label="originType" type="enum" subtype="OriginType">
-        Point
+        Intercept
       </Field>
       <Field name="originPoint" label="originPoint" type="doubleArray" length="3" enabler="originType:Point">
         0.000000
