@@ -116,7 +116,8 @@ class DBATTS_API avtSILRestriction : public avtSIL
     void                      TurnBoolSet(int, bool);
     SetState                  EnsureRestrictionCorrectness(int setId);
 
-    void                      GetLeafSets(int, std::vector<int> &);
+    void                      GetLeafSets(int, std::vector<int> &) const;
+    void                      GetSubsets(int, std::vector<int> &) const;
 
   private:
     void                      RestrictDomains(const std::vector<int> &,

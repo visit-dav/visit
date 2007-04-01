@@ -4819,6 +4819,10 @@ ViewerPlotList::CreateNode(DataNode *parentNode)
 //   I added code to update the expression list so plots of expressions can
 //   be successfully created.
 //
+//   Hank Childs, Wed Mar 24 08:10:16 PST 2004
+//   Have SIL restriction use Compact SIL Atts in constructor, especially 
+//   because topSet is now a string and not an int.
+//
 // ****************************************************************************
 
 bool
@@ -4983,25 +4987,10 @@ ViewerPlotList::SetFromNode(DataNode *parentNode)
                         // number of sets, then initialize the plot's real SIL restriction
                         // from the compact SIL restriction.
                         avtSILRestriction_p silr = plot->GetSILRestriction();
-                        const unsignedCharVector &usedSets = csilr.GetUseSet();
-                        int nSets = silr->GetNumSets();
-                        if(nSets == usedSets.size())
-                        {                     
-                            silr->SuspendCorrectnessChecking();
-                            silr->TurnOffAll();
-                            silr->SetTopSet(csilr.GetTopSet());
-                            for(int i = 0; i < nSets; ++i)
-                            {
-                                if(usedSets[i] == 2 /* AllUsed */)
-                                    silr->TurnOnSet(i);
-                            }
-                            silr->EnableCorrectnessChecking();
-                        }
-                        else
-                        {
-                            debug1 << "Could not use the stored SIL restriction because "
-                                   << "it was not the right size." << endl;
-                        }
+                        avtSIL *sil = *silr;
+                        avtSILRestriction_p newsilr = 
+                                             new avtSILRestriction(sil, csilr);
+                        plot->SetSILRestriction(newsilr);
                     }
 
                     createdPlot = true;

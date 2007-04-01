@@ -9,7 +9,7 @@
 
 #include <avtSTMDFileFormat.h>
 
-#include <vector>
+#include <string>
 
 #include <silo.h>
 #include <hdf5.h>
@@ -33,6 +33,8 @@ class IMVal {
 };
 
 class vtkFloatArray;
+
+using std::string;
 
 // ****************************************************************************
 //  Class: avtVistaFileFormat

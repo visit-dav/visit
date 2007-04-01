@@ -204,23 +204,87 @@ avtSILRestriction::avtSILRestriction(const SILRestrictionAttributes &silatts)
 //    Hank Childs, Thu Nov 14 10:30:56 PST 2002
 //    Remove access to 'sets' data member to enable SIL matrices.
 //
+//    Hank Childs, Tue Mar 23 07:28:08 PST 2004
+//    The compact SIL atts now only has atts for the top set that we are using.
+//
 // ****************************************************************************
 
 avtSILRestriction::avtSILRestriction(avtSIL *sil,
                                 const CompactSILRestrictionAttributes &silatts)
     : avtSIL(sil)
 {
-    const SetState states[3] = {NoneUsed, SomeUsed, AllUsed};
+    int   i;
 
-    topSet = silatts.GetTopSet();
     const vector<unsigned char> &useIt = silatts.GetUseSet();
     int ns = GetNumSets();
+
     useSet.reserve(ns);
     for (int i = 0 ; i < ns ; i++)
     {
-        int index = (int) useIt[i];
-        useSet.push_back(states[index]);
+        useSet.push_back(NoneUsed);
     }
+
+    topSet = -1;
+    const std::string &topSetName = silatts.GetTopSet();
+    if (topSetName != "")
+    {
+        for (i = 0 ; i < wholesList.size() ; i++)
+        {
+            if (GetSILSet(wholesList[i])->GetName() == topSetName)
+            {
+                topSet = wholesList[i];
+                break;
+            }
+        }
+    }
+    else
+    {
+        debug1 << "Warning.  Encountered a top set that has no name.  This "
+               << "is only expected to happen with legacy session files from "
+               << "before version 1.3." << endl;
+        for (i = 0 ; i < wholesList.size() ; i++)
+        {
+            vector<int> leaves;
+            GetSubsets(wholesList[i], leaves);
+            if (leaves.size() == useIt.size())
+            {
+                topSet = wholesList[i];
+            }
+        }
+        if (topSet == -1)
+            topSet = 0;
+    }
+
+    if (topSet == -1)
+    {
+        debug1 << "Was not able to match up " << topSetName << " with any of "
+               << "the existing top sets." << endl;
+        EXCEPTION0(ImproperUseException);
+    }
+
+    vector<int> leaves;
+    GetSubsets(topSet, leaves);
+
+    if (leaves.size() == useIt.size())
+    {
+        const SetState states[3] = {NoneUsed, SomeUsed, AllUsed};
+        for (i = 0 ; i < leaves.size() ; i++)
+        {
+            int index = (int) useIt[i];
+            useSet[leaves[i]] = states[index];
+        }
+    }
+    else
+    {
+        debug1 << "The SIL from the compact SIL attributes is of a different "
+               << "size than the one on this component" << endl;
+        debug1 << "Turning on all sets (what else to do?)" << endl;
+        for (i = 0 ; i < leaves.size() ; i++)
+        {
+            useSet[leaves[i]] = AllUsed;
+        }
+    }
+
     suspendCorrectnessChecking = false;
 }
 
@@ -1072,6 +1136,13 @@ avtSILRestriction::MakeAttributes(void) const
 //  Programmer:  Hank Childs
 //  Creation:    December 14, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Mar 23 07:23:41 PST 2004
+//    Only send state for sets that fall under our top set.  Also report
+//    top set by name, not index, since meshes may come and go from timestep
+//    to timestep.
+//
 // ****************************************************************************
 
 CompactSILRestrictionAttributes *
@@ -1079,15 +1150,16 @@ avtSILRestriction::MakeCompactAttributes(void) const
 {
     CompactSILRestrictionAttributes *rv = new CompactSILRestrictionAttributes;
 
+    rv->SetTopSet(GetSILSet(topSet)->GetName());
+    vector<int> leaves;
+    GetSubsets(topSet, leaves);
     vector<unsigned char> iUseSet;
-    for (int i = 0 ; i < useSet.size() ; i++)
+    for (int i = 0 ; i < leaves.size() ; i++)
     {
-        char  val = (char) STATE_INDEX(useSet[i]);
+        char  val = (char) STATE_INDEX(useSet[leaves[i]]);
         iUseSet.push_back(val);
     }
     rv->SetUseSet(iUseSet);
-
-    rv->SetTopSet(topSet);
 
     return rv;
 }
@@ -1123,7 +1195,9 @@ avtSILRestriction::Print(ostream &out) const
 
     std::vector< std::string > perSetInfo, dummyInfo;
     for (int i = 0 ; i < useSet.size() ; i++)
+    {
         perSetInfo.push_back(stateNames[STATE_INDEX(useSet[i])]);
+    }
 
     avtSIL::Print(out, perSetInfo, dummyInfo, dummyInfo);
     out << "Top Set = " << topSet << endl;
@@ -1148,6 +1222,7 @@ avtSILRestriction::Print(ostream &out) const
 //    Hank Childs, Thu Nov 14 15:55:49 PST 2001
 //    Added an indirection through a map to correct a bug.
 //
+//    Hank Childs, Mon Nov 19 18:18:12 PST 2001
 //    Fix inefficiency.
 //
 //    Hank Childs, Thu Nov 14 10:30:56 PST 2002
@@ -1156,7 +1231,7 @@ avtSILRestriction::Print(ostream &out) const
 // ****************************************************************************
 
 void
-avtSILRestriction::GetLeafSets(int ind, vector<int> &leaves)
+avtSILRestriction::GetLeafSets(int ind, vector<int> &leaves) const
 {
     int timingsHandle = visitTimer->StartTimer();
 
@@ -1258,6 +1333,122 @@ avtSILRestriction::GetLeafSets(int ind, vector<int> &leaves)
     }
 
     visitTimer->StopTimer(timingsHandle, "Getting the leaf nodes.");
+}
+
+
+// ****************************************************************************
+//  Method: avtSILRestriction::GetSubsets
+//
+//  Purpose:
+//      Gets all of the subsets under a root node.
+//
+//  Arguments:
+//      ind       The index of a set.  This can be any set.
+//      subsets   A list of the subsets underneath that set.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 23, 2004
+//
+// ****************************************************************************
+
+void
+avtSILRestriction::GetSubsets(int ind, vector<int> &outsets) const
+{
+    int timingsHandle = visitTimer->StartTimer();
+
+    int   i, j;
+
+    //
+    // Improbable, but make sure we have valid input.
+    //
+    int nSets = GetNumSets();
+    if (ind < 0 || ind >= nSets)
+    {
+        EXCEPTION2(BadIndexException, ind, nSets);
+    }
+
+    //
+    // This may take some memory, but start off by setting every set as "off"
+    //
+    vector<bool> isOn(nSets);
+    for (i = 0 ; i < nSets ; i++)
+    {
+        isOn[i] = false;
+    }
+
+    //
+    // The root node is a subset of itself.
+    //
+    isOn[ind] = true;
+
+    //
+    // We will need to walk over all of the maps coming out of "ind".  Start
+    // by taking all of the maps coming directly out and then follow them all
+    // down.
+    //
+    avtSILSet_p set = GetSILSet(ind);
+    const vector<int> &initialMaps = set->GetMapsOut();
+    vector<int> maps;
+    for (i = 0 ; i < initialMaps.size() ; i++)
+    {
+        maps.push_back(initialMaps[i]);
+    }
+
+    //
+    // Go over each node that comes out of the initial map.  Mark them as
+    // "seen".  Then take their maps out and start walking down the tree.  
+    // Each map of interest is added to the "maps" list.  Its a bit funny to 
+    // iterate over the list we are adding to, but it works (fingerscrossed ;).
+    //
+    vector<bool> alreadyProcessedMap;
+    int numCollections = GetNumCollections();
+    alreadyProcessedMap.resize(numCollections);
+    for (i = 0 ; i < numCollections ; i++)
+    {
+        alreadyProcessedMap[i] = false;
+    }
+
+    int numMapsProcessed = 0;
+    while (numMapsProcessed < maps.size())
+    {
+        int cur = maps[numMapsProcessed];
+        numMapsProcessed++;
+        if (alreadyProcessedMap[cur])
+        {
+            continue;
+        }
+        avtSILCollection_p coll = GetSILCollection(cur);
+            
+        const avtSILNamespace *nms = coll->GetSubsets();
+
+        //
+        // Add all of the maps of each of the subsets.
+        //
+        const vector<int> subsets = nms->GetAllElements();
+        for (i = 0 ; i < subsets.size() ; i++)
+        {
+            isOn[subsets[i]] = true;
+            avtSILSet_p set = GetSILSet(subsets[i]);
+            const vector<int> &subsetMap = set->GetMapsOut();
+            for (j = 0 ; j < subsetMap.size() ; j++)
+            {
+                maps.push_back(subsetMap[j]);
+            }
+        }
+
+        alreadyProcessedMap[cur] = true;
+    }
+
+    //
+    // We have promised just the subsets, so while we make our return list,
+    // sort out the interior nodes.
+    //
+    outsets.clear();
+    for (i = 0 ; i < nSets ; i++)
+        if (isOn[i])
+            outsets.push_back(i);
+
+    visitTimer->StopTimer(timingsHandle, "Getting the subsets of a set.");
 }
 
 
