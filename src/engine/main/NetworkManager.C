@@ -1463,6 +1463,9 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender,
 //    shadowing to even figure out what the view should be.  Separated out
 //    the light-view image size from the normal camera one.
 //
+//    Hank Childs, Wed Nov  3 14:12:29 PST 2004
+//    Fix typo and fix problem with shadows in parallel.
+//
 // ****************************************************************************
 avtDataObjectWriter_p
 NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
@@ -1712,7 +1715,8 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
             theImage->GetSize(&imageCols, &imageRows);
             imageCompositer->SetOutputImageSize(imageRows, imageCols);
             imageCompositer->AddImageInput(theImage, 0, 0);
-            imageCompositer->SetAllProcessorsNeedResult(two_pass_mode);
+            imageCompositer->SetAllProcessorsNeedResult(two_pass_mode || 
+                                                        doShadows);
 
             //
             // Do the parallel composite using a 1 stage pipeline
@@ -1810,7 +1814,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
                     // Create a light source view
                     //
                     int light_width = (width > 2048) ? 4096 : width*2;
-                    int light_height = (height > 2048) ? 2096 : height*2;
+                    int light_height = (height > 2048) ? 4096 : height*2;
                     avtView3D light_view;
                     light_view = avtSoftwareShader::FindLightView(
                                  compositedImage, cur_view, light_dir, 

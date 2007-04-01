@@ -82,6 +82,9 @@
 //    Kathleen Bonnell, Tue Nov  2 10:18:16 PST 2004 
 //    Initialize meshType. 
 //
+//    Kathleen Bonnell, Wed Nov  3 16:51:24 PST 2004 
+//    Removed meshType, added topologicalDim and spatialDim.
+//
 // ****************************************************************************
 
 avtPlot::avtPlot()
@@ -101,7 +104,8 @@ avtPlot::avtPlot()
     index                  = -1;
     intermediateDataObject = NULL;
     cellCountMultiplierForSRThreshold = 0.0; // an invalid value
-    meshType = AVT_UNKNOWN_MESH;
+    topologicalDim = -1;
+    spatialDim = -1;
 }
 
 
@@ -528,6 +532,9 @@ avtPlot::Execute(avtDataObjectReader_p reader)
 //    Eric Brugger, Wed Aug 20 09:52:57 PDT 2003
 //    Set the window mode based on the spatial dimension.
 //
+//    Kathleen Bonnell, Wed Nov  3 16:51:24 PST 2004
+//    Save Spatial and Topological dimension for use by derived types. 
+//
 // ****************************************************************************
 
 avtActor_p
@@ -557,6 +564,8 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
         else
             geometry = reader->GetDatasetOutput();
 
+        topologicalDim = geometry->GetInfo().GetAttributes().GetTopologicalDimension();
+        spatialDim = geometry->GetInfo().GetAttributes().GetSpatialDimension();
         avtMapper *mapper = GetMapper();
         avtDataObject_p geo;
         CopyTo(geo, geometry);
@@ -1169,27 +1178,3 @@ avtPlot::GetCellCountMultiplierForSRThreshold() const
 
     return cellCountMultiplierForSRThreshold;
 }
-
-
-// ****************************************************************************
-//  Method: avtPlot::SetMeshType
-//
-//  Purpose:
-//    Sets the mesh type for the plot.
-//
-//  Arguments:
-//    mt         The mesh type of the plot.
-//
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    November 2, 2004 
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtPlot::SetMeshType(const avtMeshType mt)
-{
-    meshType = mt;
-}
-
