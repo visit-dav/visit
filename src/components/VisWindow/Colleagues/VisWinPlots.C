@@ -210,6 +210,9 @@ VisWinPlots::~VisWinPlots()
 //    Jeremy Meredith, Fri Nov 14 17:56:24 PST 2003
 //    Added specular properties.
 //
+//    Hank Childs, Mon May 10 08:42:32 PDT 2004
+//    Get the immediate morde rendering info from a different source.
+//
 // ****************************************************************************
 
 void
@@ -306,7 +309,8 @@ VisWinPlots::AddPlot(avtActor_p &p)
     //
     // Ensure that the new plot has the right immediate mode rendering flag.
     //
-    p->SetImmediateModeRendering(mediator.GetImmediateModeRendering());
+    VisWindow *vw = mediator;
+    p->SetImmediateModeRendering(vw->GetImmediateModeRendering());
 
     mediator.UpdatePlotList(plots);
 

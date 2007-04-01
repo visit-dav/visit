@@ -4502,48 +4502,89 @@ VisWindow::GetStereoType() const
 }
 
 // ****************************************************************************
-// Method: VisWindow::SetImmediateModeRendering
+// Method: VisWindow::GetImmediateModeRendering
 //
 // Purpose: 
-//   Tells the window whether or not it should use immediate mode rendering.
+//   Declares whether or not we should do immediate mode rendering.
+//
+// Programmer: Hank Childs
+// Creation:   May 9, 2004
+//
+// ****************************************************************************
+
+bool
+VisWindow::GetImmediateModeRendering(void)
+{
+    int mode = GetDisplayListMode();
+    if (mode == 0)
+        return true;
+    if (mode == 1)
+        return false;
+
+    return IsDirect();
+}
+
+
+// ****************************************************************************
+// Method: VisWindow::SetDisplayListMode
+//
+// Purpose: 
+//   Tells the window what mode to use for display lists.
 //
 // Arguments:
-//   mode : The new rendering mode. True = use immediate mode.
+//   mode : The new display list mode
 //
-// Programmer: Brad Whitlock
-// Creation:   Mon Sep 23 14:10:07 PST 2002
+// Programmer: Hank Childs
+// Creation:   May 9, 2004
 //
-// Modifications:
-//   
 // ****************************************************************************
 
 void
-VisWindow::SetImmediateModeRendering(bool mode)
+VisWindow::SetDisplayListMode(int mode)
 {
+    rendering->SetDisplayListMode(mode);
+    bool immediateMode = GetImmediateModeRendering();
+
     std::vector< VisWinColleague * >::iterator it;
     for (it = colleagues.begin() ; it != colleagues.end() ; it++)
     {
-        (*it)->SetImmediateModeRendering(mode);
+        (*it)->SetImmediateModeRendering(immediateMode);
     }
 }
 
 // ****************************************************************************
-// Method: VisWindow::GetImmediateModeRendering
+// Method: VisWindow::GetDisplayListMode
 //
 // Purpose: 
-//   Returns whether or not the window uses immediate mode rendering.
+//   Returns the display list mode for the window.
 //
-// Programmer: Brad Whitlock
-// Creation:   Mon Sep 23 14:10:58 PST 2002
+// Programmer: Hank Childs
+// Creation:   May 10, 2004
 //
-// Modifications:
-//   
+// ****************************************************************************
+
+int
+VisWindow::GetDisplayListMode(void) const
+{
+    return rendering->GetDisplayListMode();
+}
+
+// ****************************************************************************
+// Method: VisWindow::IsDirect
+//
+// Purpose: 
+//     Returns whether or not the window is rendering directly to a GPU or
+//     whether it is going through an X-Server.
+//
+// Programmer: Hank Childs
+// Creation:   May 9, 2004
+//
 // ****************************************************************************
 
 bool
-VisWindow::GetImmediateModeRendering() const
+VisWindow::IsDirect(void)
 {
-    return rendering->GetImmediateModeRendering();
+    return rendering->IsDirect();
 }
 
 // ****************************************************************************

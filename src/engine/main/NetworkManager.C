@@ -1561,6 +1561,10 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
 //    Added argument for extents type string and code to set extents type
 //    on the VisWindow
 //
+//    Hank Childs, Sun May  9 16:16:59 PDT 2004
+//    Do not turn on display lists on the engine, since they will just eat up
+//    extra memory.
+//
 // ****************************************************************************
 void
 NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
@@ -1640,8 +1644,7 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
        viswin->SetAntialiasing(atts.GetRenderAtts().GetAntialiasing());
     if (viswin->GetSurfaceRepresentation() != atts.GetRenderAtts().GetGeometryRepresentation())
        viswin->SetSurfaceRepresentation(atts.GetRenderAtts().GetGeometryRepresentation());
-    if (viswin->GetImmediateModeRendering() != !atts.GetRenderAtts().GetDisplayLists())
-       viswin->SetImmediateModeRendering(!atts.GetRenderAtts().GetDisplayLists());
+    viswin->SetDisplayListMode(0);  // never
 
     windowAttributes = atts;
     extentTypeString = extstr;

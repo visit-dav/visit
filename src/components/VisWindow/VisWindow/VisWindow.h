@@ -251,6 +251,9 @@ class VisitInteractor;
 //    Mark C. Miller, Wed Mar 31 18:00:23 PST 2004
 //    Added doViewportOnly arg to ScreenCapture method
 //
+//    Hank Childs, Sun May  9 16:21:36 PDT 2004
+//    Added IsDirect. Replaced immediate mode rendering with display list mode.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -405,8 +408,10 @@ public:
     void                 SetStereoRendering(bool enabled, int type);
     bool                 GetStereo() const;
     int                  GetStereoType() const;
-    void                 SetImmediateModeRendering(bool mode);
-    bool                 GetImmediateModeRendering() const;
+    void                 SetDisplayListMode(int mode);
+    int                  GetDisplayListMode(void) const;
+    bool                 GetImmediateModeRendering(void);
+    bool                 IsDirect(void);
     void                 SetSurfaceRepresentation(int rep);
     int                  GetSurfaceRepresentation() const;
     int                  GetNumTriangles() const;

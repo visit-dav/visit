@@ -2247,6 +2247,9 @@ ViewerWindowManager::SetViewExtentsType(avtExtentType viewType,
 //   Brad Whitlock, Tue Feb 3 16:03:47 PST 2004
 //   I made it use window information.
 //
+//   Hank Childs, Mon May 10 08:10:40 PDT 2004
+//   Replace references to immediate mode rendering with display list mode.
+//
 // ****************************************************************************
 
 void
@@ -2266,9 +2269,9 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
             windows[index]->SetSurfaceRepresentation((int)
             renderAtts->GetGeometryRepresentation());
 
-        if (windows[index]->GetImmediateModeRendering() != 
-            !renderAtts->GetDisplayLists())
-            windows[index]->SetImmediateModeRendering(!renderAtts->GetDisplayLists());
+        if (windows[index]->GetDisplayListMode() != 
+            renderAtts->GetDisplayListMode())
+            windows[index]->SetDisplayListMode(renderAtts->GetDisplayListMode());
 
         if ((windows[index]->GetStereo() != renderAtts->GetStereoRendering()) ||
             (windows[index]->GetStereoType() != (int) renderAtts->GetStereoType()))
@@ -3769,6 +3772,9 @@ ViewerWindowManager::UpdateLightListAtts()
 //   Jeremy Meredith, Fri Nov 14 17:44:22 PST 2003
 //   Added updates for specular.
 //
+//   Hank Childs, Mon May 10 08:10:40 PDT 2004
+//   Replace references to immediate mode rendering with display list mode.
+//
 // ****************************************************************************
 
 void
@@ -3786,7 +3792,8 @@ ViewerWindowManager::UpdateRenderingAtts(int windowIndex)
         renderAtts->SetAntialiasing(win->GetAntialiasing());
         renderAtts->SetGeometryRepresentation(
             (RenderingAttributes::GeometryRepresentation)win->GetSurfaceRepresentation());
-        renderAtts->SetDisplayLists(!win->GetImmediateModeRendering());
+        renderAtts->SetDisplayListMode((RenderingAttributes::DisplayListMode)
+                                                    win->GetDisplayListMode());
         renderAtts->SetStereoRendering(win->GetStereo());
         renderAtts->SetStereoType((RenderingAttributes::StereoTypes)
             win->GetStereoType());
@@ -6372,6 +6379,9 @@ ViewerWindowManager::CreateVisWindow(const int windowIndex,
 //    Jeremy Meredith, Fri Nov 14 17:57:31 PST 2003
 //    Added specular properties.
 //
+//    Hank Childs, Mon May 10 08:10:40 PDT 2004
+//    Replace references to immediate mode rendering with display list mode.
+//
 // ****************************************************************************
 
 void
@@ -6398,7 +6408,7 @@ ViewerWindowManager::SetWindowAttributes(int windowIndex, bool copyAtts)
     w->SetAntialiasing(renderAtts->GetAntialiasing());
     int rep = (int)renderAtts->GetGeometryRepresentation();
     w->SetSurfaceRepresentation(rep);
-    w->SetImmediateModeRendering(!renderAtts->GetDisplayLists());
+    w->SetDisplayListMode(renderAtts->GetDisplayListMode());
     w->SetStereoRendering(renderAtts->GetStereoRendering(),
         (int)renderAtts->GetStereoType());
     w->SetNotifyForEachRender(renderAtts->GetNotifyForEachRender());

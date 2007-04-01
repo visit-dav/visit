@@ -868,6 +868,33 @@ vtkQtRenderWindow::TriggerRender()
 }
 
 // ****************************************************************************
+// Method: vtkQtRenderWindow::IsDirect
+//
+// Purpose:
+//     Indicates whether or not this window is rendering directly to the GPU
+//     or whether it is going through graphics hardware.
+//
+// Programmer: Hank Childs
+// Creation:   May 9, 2004
+//
+// **************************************************************************** 
+
+int
+vtkQtRenderWindow::IsDirect(void)
+{
+#ifdef Q_GLX
+    return glXIsDirect((Display *) GetGenericDisplayId(), 
+                       (GLXContext) GetGenericContext());
+#else
+    // We don't have X -- so this is probably Windows.  In which case it is
+    // almost certainly being run on someone's local laptop.  
+    // So declare this to be direct.
+    return true;
+#endif
+}
+
+
+// ****************************************************************************
 // Method: vtkQtRenderWindow::TellGLSize
 //
 // Purpose: 

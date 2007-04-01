@@ -86,6 +86,14 @@ class vtkQtGLWidget;
 
 class VTKQT_API vtkQtRenderWindow : public vtkRenderWindow, public QMainWindow
 {
+// ****************************************************************************
+// Modifications:
+//
+//  Hank Childs, Sun May  9 15:38:40 PDT 2004
+//  Added IsDirect method.
+//
+// ****************************************************************************
+
 public:
     void PrintSelf(ostream& os, vtkIndent indent);
 
@@ -246,6 +254,12 @@ public:
     // Description:
     // Needed to set the format
     virtual void SetStereoCapableWindow(int capable);
+
+    // Added by LLNL
+    // Description:
+    // Determines whether or not we are rendering to the GPU.  If we are not,
+    // it is advisable that we use display lists.
+    virtual int IsDirect(void);
 
     // Added by LLNL
     // Description:

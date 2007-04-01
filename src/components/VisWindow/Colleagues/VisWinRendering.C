@@ -81,6 +81,9 @@ bool VisWinRendering::stereoEnabled = false;
 //    Jeremy Meredith, Fri Nov 14 11:29:05 PST 2003
 //    Added specular properties.
 //
+//    Hank Childs, Mon May 10 08:27:32 PDT 2004
+//    Initialize displayListMode.
+//
 // ****************************************************************************
 
 VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) 
@@ -95,7 +98,7 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p)
     minRenderTime                  = 1.e6;
     stereo                         = false;
     stereoType                     = 2;
-    immediateMode                  = false;
+    displayListMode                = 2;  // Auto
     surfaceRepresentation          = 0;
     specularFlag                   = false;
     specularCoeff                  = .6;
@@ -835,6 +838,24 @@ VisWinRendering::SetSize(int w, int h)
 }
 
 // ****************************************************************************
+// Method: VisWinRendering::IsDirect
+//
+// Purpose: 
+//   Determines if the vis window is direct connection to the GPU or if it
+//   goes through the X-server.
+//
+// Programmer: Hank Childs
+// Creation:   May 9, 2004
+//
+// ****************************************************************************
+
+bool
+VisWinRendering::IsDirect(void)
+{
+    return (GetRenderWindow()->IsDirect() ? true : false);
+}
+
+// ****************************************************************************
 // Method: VisWinRendering::GetSize
 //
 // Purpose: 
@@ -1257,26 +1278,23 @@ VisWinRendering::SetStereoRendering(bool enabled, int type)
 }
 
 // ****************************************************************************
-// Method: VisWinRendering::SetImmediateModeRendering
+// Method: VisWinRendering::SetDisplayListMode
 //
 // Purpose: 
-//   Sets the immediate rendering mode for all of the actors in the canvas
-//   renderer.
+//    Sets the display list mode.
 //
 // Arguments:
-//   mode : The new immediate rendering mode.
+//   mode : The new display list mode.
 //
-// Programmer: Brad Whitlock
-// Creation:   Mon Sep 23 14:26:10 PST 2002
+// Programmer: Hank Childs
+// Creation:   May 10, 2004
 //
-// Modifications:
-//   
 // ****************************************************************************
 
 void
-VisWinRendering::SetImmediateModeRendering(bool mode)
+VisWinRendering::SetDisplayListMode(int mode)
 {
-    immediateMode = mode;
+    displayListMode = mode;
 }
 
 // ****************************************************************************

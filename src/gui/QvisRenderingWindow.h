@@ -39,6 +39,9 @@ class QvisOpacitySlider;
 //   Mark C. Miller, Tue Apr 27 14:41:35 PDT 2004
 //   Added stuff to deal with adjusting scalable threshold with a spinbox 
 //
+//   Hank Childs, Sun May  9 15:54:29 PDT 2004
+//   Add support for multiple display list modes.
+//
 // ****************************************************************************
 
 class GUI_API QvisRenderingWindow : public QvisPostableWindowSimpleObserver
@@ -64,7 +67,7 @@ protected:
 private slots:
     void antialiasingToggled(bool);
     void objectRepresentationChanged(int);
-    void displayListToggled(bool);
+    void displayListModeChanged(int);
     void stereoToggled(bool);
     void stereoTypeChanged(int);
     void renderNotifyToggled(bool);
@@ -80,7 +83,7 @@ private:
     // Controls
     QCheckBox    *antialiasingToggle;
     QButtonGroup *objectRepresentation;
-    QCheckBox    *dislayListToggle;
+    QButtonGroup *dlMode;
     QCheckBox    *stereoToggle;
     QButtonGroup *stereoType;
     QRadioButton *redblue;

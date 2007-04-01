@@ -112,6 +112,9 @@ class VisWindowColleagueProxy;
 //    Mark C. Miller, Wed Mar 31 17:47:20 PST 2004
 //    Added doViewportOnly bool argument to ScreenCapture method
 //
+//    Hank Childs, Sun May  9 16:25:27 PDT 2004
+//    Added IsDirect.  Also add support for display list mode.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -160,6 +163,7 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
 
     bool                     GetRealized() {return realized;};
 
+    bool                     IsDirect(void);
     vtkRenderer             *GetFirstRenderer(void);
 
     virtual void             SetResizeEvent(void(*callback)(void *), void *) = 0;
@@ -178,9 +182,9 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
                                  { return stereo; };
     int                      GetStereoType() const
                                  { return stereoType; };
-    void                     SetImmediateModeRendering(bool mode);
-    bool                     GetImmediateModeRendering() const
-                                 { return immediateMode; };
+    void                     SetDisplayListMode(int mode);
+    int                      GetDisplayListMode() const
+                                 { return displayListMode; };
     virtual void             SetSurfaceRepresentation(int rep);
     int                      GetSurfaceRepresentation() const
                                  { return surfaceRepresentation; };
@@ -223,7 +227,7 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     bool                          antialiasing;
     bool                          stereo;
     int                           stereoType;
-    bool                          immediateMode;
+    int                           displayListMode;
     int                           surfaceRepresentation;
     bool                          specularFlag;
     float                         specularCoeff;
@@ -248,7 +252,6 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     int                           scalableThreshold;
 
     void                          InitializeRenderWindow(vtkRenderWindow *);
-    void                          UpdateImmediateMode(bool mode);
     void                          ResetCounters();
 
     virtual vtkRenderWindow      *GetRenderWindow(void) = 0;

@@ -670,25 +670,6 @@ VisWindowProtectionProxy::ProxiedGetSurfaceRepresentation()
 }
 
 // ****************************************************************************
-// Method: VisWindowProtectionProxy::ProxiedGetImmediateModeRendering
-//
-// Purpose: 
-//   Returns the immediate rendering mode.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Sep 23 16:32:43 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-bool
-VisWindowProtectionProxy::ProxiedGetImmediateModeRendering()
-{
-    return viswin->GetImmediateModeRendering();
-}
-
-// ****************************************************************************
 // Method: VisWindowProtectionProxy::ProxiedDisableExternalRenderRequests
 //
 // Purpose: 
