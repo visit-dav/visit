@@ -122,7 +122,8 @@
 //
 //    Brad Whitlock, Thu Mar 3 09:00:24 PDT 2005
 //    I removed WriteVersionFile since the version is now included in the
-//    common plugin info.
+//    common plugin info. I also added the Slice operator to the OnionPeel
+//    hack code for MacOS X.
 //
 // ****************************************************************************
 
@@ -361,7 +362,7 @@ class MakefileGeneratorPlugin
             //                   library, we have to link all of the viewer
             //                   dependencies and most operators don't do need to.
             //
-            bool usesViewerLib = (name == "OnionPeel");
+            bool usesViewerLib = (name == "OnionPeel" || name == "Slice");
             if (usesViewerLib)
             {
                out << "-lviewer -lviewerrpc -lproxybase -lvclproxy -lvclrpc "

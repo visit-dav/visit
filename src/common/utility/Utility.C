@@ -865,7 +865,7 @@ WriteKeyToRoot(HKEY which_root, const char *ver, const char *key,
 
     /* Try and read the key from the system registry. */
     sprintf(regkey, "VISIT%s", ver);
-    if(RegOpenKeyEx(which_root, regkey, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS)
+    if(RegOpenKeyEx(which_root, regkey, 0, KEY_SET_VALUE, &hkey) == ERROR_SUCCESS)
     {
         DWORD strSize = strlen(keyval);
         if(RegSetValueEx(hkey, key, NULL, REG_SZ,
@@ -971,6 +971,9 @@ ConfigStateGetRunCount(ConfigStateEnum &code)
 //   Brad Whitlock, Wed Mar 2 11:58:53 PDT 2005
 //   Changed interface to WriteKey.
 //
+//   Brad Whitlock, Mon Mar 7 11:31:35 PDT 2005
+//   Changed the Win32 logic.
+//
 // ****************************************************************************
 
 void
@@ -979,11 +982,15 @@ ConfigStateIncrementRunCount(ConfigStateEnum &code)
 #if defined(_WIN32)
     bool firstTime = false;
     ConfigStateEnum code2;
-    int nStartups = firstTime ? 1 : ConfigStateGetRunCount(code2);
+    int nStartups = ConfigStateGetRunCount(code2);
     if(code2 == CONFIGSTATE_IOERROR)
     {
         firstTime = true;
         nStartups = 0;
+    }
+    else if(code2 == CONFIGSTATE_SUCCESS)
+    {
+        firstTime == (nStartups == 0);
     }
 
     char keyval[100];
@@ -1121,7 +1128,9 @@ ExpandUserPath(const std::string &path)
 // Creation:   Wed Mar 2 12:08:57 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Mar 7 14:23:59 PST 2005
+//   I fixed a bug that made it return the wrong part of the string.
+//
 // ****************************************************************************
 
 std::string
@@ -1154,7 +1163,7 @@ GetVisItInstallationDirectory(const char *version)
         std::string home(idir);
         int lastSlash = home.rfind("/");
         if(lastSlash != -1)
-            installDir = home.substr(lastSlash);
+            installDir = home.substr(0, lastSlash);
         else
             installDir = idir;
     }

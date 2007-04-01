@@ -467,7 +467,7 @@ QvisVisItUpdate::startUpdate()
             SLOT(ftp_commandStarted()) );
         connect( ftp, SIGNAL(CommandFinished()),
             SLOT(ftp_commandFinished()) );
-        connect( ftp, SIGNAL(Done()),
+        connect( ftp, SIGNAL(Done(bool)),
             SLOT(ftp_done(bool)) );
         connect( ftp, SIGNAL(StateChanged(int)),
             SLOT(ftp_stateChanged(int)) );
@@ -893,7 +893,10 @@ QvisVisItUpdate::ftp_stateChanged(int state)
 // Creation:   Tue Feb 15 12:43:43 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Mar 7 14:48:50 PST 2005
+//   I fixed some bad logic that prevented it from determining the correct
+//   new version.
+//
 // ****************************************************************************
 
 void
@@ -954,6 +957,8 @@ QvisVisItUpdate::ftp_listInfo(const QUrlInfo &item)
                         latestVersion = version;
                         break;
                     }
+                    else if(fv != vv)
+                        break;
                 }
                 else
                     break;

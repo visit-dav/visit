@@ -1399,6 +1399,12 @@ PluginManager::PluginOpen(const string &pluginFile)
 //   Brad Whitlock, Tue Sep 14 13:27:35 PST 2004
 //   I made the debug output go to debug5.
 //
+//   Brad Whitlock, Mon Mar 7 12:23:06 PDT 2005
+//   I made the plugin version be handled a little differently on the Mac
+//   because the names that were given to the plugin versions for the Mac
+//   in all of the plugins don't have underscores in them and I don't want
+//   to change them in all of the plugins. Someday we should though.
+//
 // ****************************************************************************
 
 void *
@@ -1418,7 +1424,8 @@ PluginManager::PluginSymbol(const string &symbol, bool noError)
     // function name. Here, we use the name of the plugin file to determine the
     // name of the plugin so we can create the symbol that we're really after.
     //
-    if(symbol.substr(0,3) == "Get" || symbol == "VisItPluginVersion")
+    bool pluginVersion = (symbol == "VisItPluginVersion");
+    if(pluginVersion || symbol.substr(0,3) == "Get")
     {
         string ext(PLUGIN_EXTENSION);
         int slashPos = openPlugin.rfind("/");
@@ -1428,7 +1435,10 @@ PluginManager::PluginSymbol(const string &symbol, bool noError)
                   managerName.size() - ext.size();
         string pluginPrefix(openPlugin.substr(slashPos + 5, len));
         debug4 << "PluginSymbol: prefix: " << pluginPrefix << endl;
-        symbolName = string(pluginPrefix + "_" + symbol);
+        if(pluginVersion)
+            symbolName = string(pluginPrefix + symbol);
+        else
+            symbolName = string(pluginPrefix + "_" + symbol);
         debug4 << "PluginSymbol: sym: " << symbolName << endl;
     }
     

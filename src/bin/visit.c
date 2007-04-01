@@ -49,6 +49,7 @@ static const char usage[] =
  */
 char *AddEnvironment(int);
 void AddPath(char *, const char *);
+int ReadKey(const char *key, char **keyval);
 
 /******************************************************************************
  *
@@ -85,15 +86,20 @@ void AddPath(char *, const char *);
  *   Brad Whitlock, Tue Nov 11 17:20:05 PST 2003
  *   I added code to launch Silex and XMLedit.
  *
+ *   Brad Whitlock, Tue Mar 8 10:28:21 PDT 2005
+ *   I added support for adding any additional arguments in the registry's
+ *   VISITARGS key to the component's command line.
+ *
  *****************************************************************************/
 
 int
 main(int argc, char *argv[])
 {
     int   nComponentArgs = 0;
-    char *componentArgs[100], *command, *printCommand, *visitpath, *cptr, *cptr2;
+    char *componentArgs[100], *command = 0, *printCommand = 0, *visitpath = 0,
+         *visitargs = 0, *cptr = 0, *cptr2 = 0;
     int i, size = 0, retval = 0, printRunInfo = 1, skipping = 0;
-    int addMovieArguments = 0, useShortFileName = 0;
+    int addMovieArguments = 0, addVISITARGS = 1, useShortFileName = 0;
 
     /*
      * Default values.
@@ -119,26 +125,32 @@ main(int argc, char *argv[])
         else if(ARG("-gui"))
         {
             strcpy(component, "gui");
+            addVISITARGS = 1;
         }
         else if(ARG("-cli"))
         {
             strcpy(component, "cli");
+            addVISITARGS = 1;
         }
         else if(ARG("-viewer"))
         {
             strcpy(component, "viewer");
+            addVISITARGS = 0;
         }
         else if(ARG("-mdserver"))
         {
             strcpy(component, "mdserver");
+            addVISITARGS = 0;
         }
         else if(ARG("-engine"))
         {
             strcpy(component, "engine");
+            addVISITARGS = 0;
         }
         else if(ARG("-vcl"))
         {
             strcpy(component, "vcl");
+            addVISITARGS = 0;
         }
         else if(ARG("-movie"))
         {
@@ -156,10 +168,12 @@ main(int argc, char *argv[])
         else if(ARG("-xmledit"))
         {
             strcpy(component, "xmledit");
+            addVISITARGS = 0;
         }
         else if(ARG("-silex"))
         {
             strcpy(component, "silex");
+            addVISITARGS = 0;
         }
         else if(ARG("-v"))
         {
@@ -178,6 +192,18 @@ main(int argc, char *argv[])
     visitpath = AddEnvironment(useShortFileName);
 
     /*
+     * Get additional VisIt arguments.
+     */
+    if(addVISITARGS)
+    {
+        if(ReadKey("VISITARGS", &visitargs) == 0)
+        {
+            addVISITARGS = 0;
+            visitargs = 0;
+        }
+    }
+
+    /*
      * Figure out the length of the command string.
      */
     size = strlen(visitpath) + strlen(component) + 4;
@@ -189,12 +215,16 @@ main(int argc, char *argv[])
         size += 1 + strlen(visitpath) + 1 + strlen("makemovie.py") + 2;
         size += strlen("-nowin") + 1;
     }
+    if(addVISITARGS)
+        size += (strlen(visitargs) + 1);
 
     /*
      * Create the command to execute and the string that we print.
      */
     command = (char *)malloc(size);
+    memset(command, 0, size);
     printCommand = (char *)malloc(size);
+    memset(printCommand, 0, size);
     if(useShortFileName)
     {
         sprintf(command, "%s\\%s", visitpath, component);
@@ -220,6 +250,13 @@ main(int argc, char *argv[])
             sprintf(cptr2, " %s", componentArgs[i]);
             cptr2 += (strlen(componentArgs[i]) + 1);
         }
+    }
+    if(addVISITARGS)
+    {
+        sprintf(cptr, " %s", visitargs);
+        cptr += (strlen(visitargs) + 1);
+        sprintf(cptr2, " %s", visitargs);
+        cptr2 += (strlen(visitargs) + 1);
     }
     if(addMovieArguments)
     {
@@ -247,6 +284,8 @@ main(int argc, char *argv[])
     for(i = 0; i < nComponentArgs; ++i)
         free(componentArgs[i]);
     free(visitpath);
+    if(visitargs != 0)
+        free(visitargs);
 
     return retval;
 }
