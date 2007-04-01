@@ -39,6 +39,15 @@ Boxlib2DCommonPluginInfo::GetDefaultExtensions()
     return defaultExtensions;
 }
 
+std::vector<std::string>
+Boxlib2DCommonPluginInfo::GetFilenames()
+{
+    std::vector<std::string> filenames;
+    filenames.push_back("Header");
+
+    return filenames;
+}
+
 // ****************************************************************************
 //  Method: Boxlib2DCommonPluginInfo::GetWriter
 //

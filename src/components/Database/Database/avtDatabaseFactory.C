@@ -8,6 +8,8 @@
 #include <vector>
 #include <string>
 
+#include <visit-config.h>
+
 #include <avtDatabase.h>
 #include <avtDatabaseFactory.h>
 #include <avtGenericDatabase.h>
@@ -66,11 +68,16 @@ void CheckPermissions(const char *);
 //    Allow for multiple formats to support the same extension.  Blew away
 //    outdated comments.
 //
+//    Hank Childs, Thu Feb 19 08:00:35 PST 2004
+//    Allow for exact filenames in addition to default extensions.
+//
 // ****************************************************************************
 
 avtDatabase *
 avtDatabaseFactory::FileList(const char * const * filelist, int filelistN)
 {
+    int   i, j;
+
     if (filelistN <= 0)
     {
         EXCEPTION1(InvalidFilesException, filelistN);
@@ -98,7 +105,23 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN)
     //
     CheckPermissions(filelist[fileIndex]);
 
-    string file = filelist[fileIndex];
+    //
+    // Parse out the path and get just the filename.
+    //
+    string file_and_path = filelist[fileIndex];
+    const char *fap = file_and_path.c_str();
+    int len = strlen(fap);
+    int lastSlash = -1;
+    for (i = len-1 ; i >= 0 ; i--)
+    {
+        if (fap[i] == SLASH_CHAR)
+        {
+            lastSlash = i;
+            break;
+        }
+    }
+    int start = lastSlash+1;
+    string file(fap + start);
 
     string defaultDatabaseType("Silo");
 
@@ -106,14 +129,18 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN)
     // Try each database type looking for a match to the given extensions
     //
     DatabasePluginManager *dbmgr = DatabasePluginManager::Instance();
-    for (int i=0; i<dbmgr->GetNEnabledPlugins() && rv == NULL; i++)
+    for (i=0; i<dbmgr->GetNEnabledPlugins() && rv == NULL; i++)
     {
         string id = dbmgr->GetEnabledID(i);
         CommonDatabasePluginInfo *info = dbmgr->GetCommonPluginInfo(id);
+        bool foundMatch = false;
 
+        //
+        // Check to see if there is an extension that matches.
+        //
         vector<string> extensions = info->GetDefaultExtensions();
         int nextensions = extensions.size();
-        for (int j=0; j<nextensions && rv == NULL; j++)
+        for (j=0; j<nextensions; j++)
         {
             string ext = extensions[j];
             if (ext[0] != '.')
@@ -123,17 +150,47 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN)
             if (file.length() >= ext.length() &&
                 file.substr(file.length() - ext.length()) == ext)
             {
-                TRY
-                {
-                    rv = info->SetupDatabase(filelist+fileIndex,
-                                             filelistN-fileIndex, nBlocks);
-                }
-                CATCH2(InvalidDBTypeException, e)
-                {
-                    rv = NULL;
-                }
-                ENDTRY
+                foundMatch = true;
             }
+        }
+
+        //
+        // Check to see if there is an exact name that matches.
+        //
+        vector<string> filenames = info->GetFilenames();
+        int nfiles = filenames.size();
+        for (j=0; j<nfiles; j++)
+        {
+            if (filenames[j] == file)
+            {
+                foundMatch = true;
+            }
+        }
+
+        if (foundMatch)
+        {
+            TRY
+            {
+                rv = info->SetupDatabase(filelist+fileIndex,
+                                         filelistN-fileIndex, nBlocks);
+
+                //
+                // By policy, the plugin doesn't do much work to set up the
+                // database.  So there is a chance that a format did not
+                // throw an exception, but is the wrong type.  To make
+                // sure we have the correct plugin, force it to read
+                // in its metadata.  This does not cause extra work,
+                // because the metadata is cached and we are going to
+                // ask for it in a bit anyway.
+                //
+                if (rv != NULL)
+                    rv->GetMetaData(0);
+            }
+            CATCH2(InvalidDBTypeException, e)
+            {
+                rv = NULL;
+            }
+            ENDTRY
         }
     }
 
@@ -150,6 +207,14 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN)
                                          dbmgr->GetCommonPluginInfo(defaultid);
             rv = info->SetupDatabase(filelist+fileIndex, filelistN-fileIndex,
                                      nBlocks);
+
+            //
+            // If we match an extension or an exact filename, we call get the
+            // database metadata to make sure we have the right plugin.  We 
+            // make the same call here to be consistent.
+            //
+            if (rv != NULL)
+                rv->GetMetaData(0);
         }
         else
         {

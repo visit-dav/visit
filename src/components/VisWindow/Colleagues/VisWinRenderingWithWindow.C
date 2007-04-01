@@ -120,19 +120,25 @@ VisWinRenderingWithWindow::GetWindowSize(int &w, int &h)
 //    Brad Whitlock, Thu Sep 4 10:43:02 PDT 2003
 //    I made the window hide itself on MacOS X.
 //
+//    Eric Brugger, Thu Feb 19 11:14:17 PST 2004
+//    I made the routine a noop if the window hasn't been realized.
+//
 // ****************************************************************************
 
 void
 VisWinRenderingWithWindow::Iconify(void)
 {
-#if defined(Q_WS_WIN) || defined(Q_WS_MACX)
-    renWin->hide();
-#else
-    if (! renWin->isMinimized())
+    if (realized)
     {
-        renWin->showMinimized();
-    }
+#if defined(Q_WS_WIN) || defined(Q_WS_MACX)
+        renWin->hide();
+#else
+        if (! renWin->isMinimized())
+        {
+            renWin->showMinimized();
+        }
 #endif
+    }
 }
 
 
@@ -146,16 +152,21 @@ VisWinRenderingWithWindow::Iconify(void)
 //  Creation:   Tue Apr 16 12:45:50 PDT 2002
 //
 //  Modifications:
-//
 //    Hank Childs, Fri Apr 19 09:21:46 PDT 2002
 //    Moved from base class.
+//
+//    Eric Brugger, Thu Feb 19 11:14:17 PST 2004
+//    I made the routine a noop if the window hasn't been realized.
 //
 // ****************************************************************************
 
 void
 VisWinRenderingWithWindow::Show()
 {
-    renWin->show();
+    if (realized)
+    {
+        renWin->show();
+    }
 }
 
 // ****************************************************************************
@@ -168,12 +179,17 @@ VisWinRenderingWithWindow::Show()
 //  Creation:   Mon May 20 13:34:07 PDT 2002
 //
 //  Modifications:
+//    Eric Brugger, Thu Feb 19 11:14:17 PST 2004
+//    I made the routine a noop if the window hasn't been realized.
 //
 // ****************************************************************************
 void
 VisWinRenderingWithWindow::Raise()
 {
-    renWin->raise();
+    if (realized)
+    {
+        renWin->raise();
+    }
 }
 
 // ****************************************************************************
@@ -186,12 +202,17 @@ VisWinRenderingWithWindow::Raise()
 //  Creation:   Mon May 20 13:34:07 PDT 2002
 //
 //  Modifications:
+//    Eric Brugger, Thu Feb 19 11:14:17 PST 2004
+//    I made the routine a noop if the window hasn't been realized.
 //
 // ****************************************************************************
 void
 VisWinRenderingWithWindow::Lower()
 {
-    renWin->lower();
+    if (realized)
+    {
+        renWin->lower();
+    }
 }
 
 // ****************************************************************************
@@ -204,16 +225,21 @@ VisWinRenderingWithWindow::Lower()
 //  Creation:   Tue Apr 16 12:46:06 PDT 2002
 //
 //  Modifications:
-//
 //    Hank Childs, Fri Apr 19 09:21:46 PDT 2002
 //    Moved from base class.
+//
+//    Eric Brugger, Thu Feb 19 11:14:17 PST 2004
+//    I made the routine a noop if the window hasn't been realized.
 //
 // ****************************************************************************
 
 void
 VisWinRenderingWithWindow::Hide()
 {
-    renWin->hide();
+    if (realized)
+    {
+        renWin->hide();
+    }
 }
 
 
@@ -233,16 +259,22 @@ VisWinRenderingWithWindow::Hide()
 //    Brad Whitlock, Thu Sep 4 10:43:38 PDT 2003
 //    I made the window show itself on MacOS X.
 //
+//    Eric Brugger, Thu Feb 19 11:14:17 PST 2004
+//    I made the routine a noop if the window hasn't been realized.
+//
 // ****************************************************************************
 
 void
 VisWinRenderingWithWindow::DeIconify(void)
 {
+    if (realized)
+    {
 #if defined(Q_WS_WIN) || defined(Q_WS_MACX)
-    renWin->show();
+        renWin->show();
 #else
-    renWin->showNormal();
+        renWin->showNormal();
 #endif
+    }
 }
 
 // ****************************************************************************

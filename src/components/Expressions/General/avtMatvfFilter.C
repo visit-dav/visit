@@ -14,6 +14,7 @@
 #include <Token.h>
 #include <EngineExprNode.h>
 
+#include <avtCallback.h>
 #include <avtMaterial.h>
 #include <avtMetaData.h>
 
@@ -59,6 +60,25 @@ avtMatvfFilter::~avtMatvfFilter()
 
 
 // ****************************************************************************
+//  Method: avtMatvfFilter::PreExecute
+//
+//  Purpose:
+//      Reset the "issuedWarning" flag.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 18, 2004
+//
+// ****************************************************************************
+
+void
+avtMatvfFilter::PreExecute(void)
+{
+    issuedWarning = false;
+    avtSingleInputExpressionFilter::PreExecute();
+}
+
+
+// ****************************************************************************
 //  Method: avtMatvfFilter::DeriveVariable
 //
 //  Purpose:
@@ -81,6 +101,10 @@ avtMatvfFilter::~avtMatvfFilter()
 //
 //    Jeremy Meredith, Mon Sep 29 12:13:04 PDT 2003
 //    Added support for integer material indices.
+//
+//    Hank Childs, Wed Feb 18 09:26:33 PST 2004
+//    Issue a warning if we can't match up an argument with a material.  Also
+//    fixed indexing bug.
 //
 // ****************************************************************************
 
@@ -119,21 +143,22 @@ avtMatvfFilter::DeriveVariable(vtkDataSet *in_ds)
 
     //
     // Try to match up the materials in the avtMaterial object with the
-    // materials requested by the users.  Some of the materials requested
-    // by the user may not be there.  This is probably okay -- there are
-    // tricks played by the avtMaterial object where it throws out
-    // materials that are not used in that domain.  
+    // materials requested by the users.
     //
     int nmats = mat->GetNMaterials();
     std::vector<bool>  useMat(nmats, false);
-
+    std::vector<bool>  matchedMatName(matNames.size(), false);
+    std::vector<bool>  matchedMatIndex(matIndices.size(), false);
     for (i = 0 ; i < nmats ; i++)
     {
         std::string currentMat = mat->GetMaterials()[i];
         for (j = 0 ; j < matNames.size() ; j++)
         {
             if (currentMat == matNames[j])
+            {
                 useMat[i] = true;
+                matchedMatName[j] = true;
+            }
         }
         for (j = 0 ; j < matIndices.size() ; j++)
         {
@@ -146,6 +171,94 @@ avtMatvfFilter::DeriveVariable(vtkDataSet *in_ds)
                  currentMat.substr(0,matname.length() + 1) == (matname + " ")))
             {
                 useMat[i] = true;
+                matchedMatIndex[j] = true;
+            }
+        }
+    }
+
+    //
+    // Make sure that we found every material requested.  If not, issue
+    // a warning.
+    //
+    for (i = 0 ; i < matNames.size() ; i++)
+    {
+        if (!matchedMatName[i])
+        {
+            const std::vector<std::string> &all_mats = 
+                                                mat->GetCompleteMaterialList();
+            bool matched = false;
+            for (j = 0 ; j < all_mats.size() ; j++)
+            {
+                if (matNames[i] == all_mats[j])
+                {
+                    matched = true;
+                    break;
+                }
+            }
+            if (!matched)
+            {
+                if (!issuedWarning)
+                {
+                    char warningString[100000];
+                    sprintf(warningString, "Could not match up \"%s\" with "
+                              "any materials when doing the matvf expression."
+                              "\nList of valid materials is: ", 
+                              matNames[i].c_str());
+                    char *tmp = warningString + strlen(warningString);
+                    for (j = 0 ; j < all_mats.size() ; j++)
+                    {
+                        if (j < (all_mats.size()-1))
+                            sprintf(tmp, "\"%s\", ", all_mats[j].c_str());
+                        else
+                            sprintf(tmp, "\"%s\".", all_mats[j].c_str());
+                        tmp += strlen(tmp);
+                    }
+                    avtCallback::IssueWarning(warningString);
+                    issuedWarning = true;
+                }
+            }
+        }
+    }
+    for (i = 0 ; i < matIndices.size() ; i++)
+    {
+        char tmp[256];
+        sprintf(tmp, "%d", matIndices[i]);
+
+        std::string matname(tmp);
+        if (!matchedMatIndex[i])
+        {
+            const std::vector<std::string> &all_mats = 
+                                                mat->GetCompleteMaterialList();
+            bool matched = false;
+            for (j = 0 ; j < all_mats.size() ; j++)
+            {
+                if (matname == all_mats[j])
+                {
+                    matched = true;
+                    break;
+                }
+            }
+            if (!matched)
+            {
+                if (!issuedWarning)
+                {
+                    char warningString[100000];
+                    sprintf(warningString, "Could not match up \"%s\" with "
+                              "any materials when doing the matvf expression."
+                              "\nList of valid materials is: ", 
+                              matname.c_str());
+                    char *tmp = warningString + strlen(warningString);
+                    for (j = 0 ; j < all_mats.size() ; j++)
+                    {
+                        if (j < (all_mats.size()-1))
+                            sprintf(tmp, "\"%s\", ", all_mats[j].c_str());
+                        else
+                            sprintf(tmp, "\"%s\".", all_mats[j].c_str());
+                        tmp += strlen(tmp);
+                    }
+                    avtCallback::IssueWarning(warningString);
+                    issuedWarning = true;
+                }
             }
         }
     }
@@ -168,11 +281,23 @@ avtMatvfFilter::DeriveVariable(vtkDataSet *in_ds)
         else
         {
             vf = 0.;
-            int start = -matlist[i]-1;
-            for (j = start ; j < mix_next[start] ; j++)
+            int current = -matlist[i]-1;
+
+            // iterations < 1000 just to prevent infinite loops if someone
+            // set this structure up wrong.
+            int iterations = 0;
+            bool stillMoreMats = true;
+            while (stillMoreMats && (iterations < 1000))
             {
-                if (useMat[mixmat[j]])
-                    vf += mixvf[j];
+                if (useMat[mixmat[current]])
+                {
+                    vf += mixvf[current];
+                }
+                if (mix_next[current] == 0)
+                    stillMoreMats = false;
+                else
+                    current = mix_next[current]-1;
+                iterations++;
             }
         }
         vf_for_orig_cells->SetTuple1(i, vf);

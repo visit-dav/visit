@@ -36,6 +36,9 @@ class     ConstExpr;
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Hank Childs, Wed Feb 18 09:15:23 PST 2004
+//    Issue a warning if we encounter a bad material name.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtMatvfFilter : public avtSingleInputExpressionFilter
@@ -50,11 +53,14 @@ class EXPRESSION_API avtMatvfFilter : public avtSingleInputExpressionFilter
     virtual void              ProcessArguments(ArgsExpr*, ExprPipelineState *);
 
   protected:
+    bool                      issuedWarning;
+
     virtual avtPipelineSpecification_p
                               PerformRestriction(avtPipelineSpecification_p);
 
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual bool              IsPointVariable(void)  { return false; };
+    virtual void              PreExecute(void);
 
     void                      AddMaterial(ConstExpr *);
     std::vector<std::string>  matNames;
