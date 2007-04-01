@@ -1610,6 +1610,23 @@ VisWindow::ScreenCapture(bool doViewportOnly, bool doZBufferToo)
     return rendering->ScreenCapture(doViewportOnly, doZBufferToo);
 }
 
+// ****************************************************************************
+//  Method: VisWindow::PostProcessScreenCapture
+//
+//  Purpose:
+//      Does any necessary post-processing on a screen captured image. See
+//      comments in VisWinRendering.C for more details 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   July 26, 2004 
+//
+// ****************************************************************************
+
+avtImage_p
+VisWindow::PostProcessScreenCapture(avtImage_p capturedImage, bool doViewportOnly)
+{
+    return rendering->PostProcessScreenCapture(capturedImage, doViewportOnly);
+}
 
 // ****************************************************************************
 //  Method: VisWindow::GetAllDatasets

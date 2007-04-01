@@ -313,6 +313,9 @@ class ViewerToolbar;
 //    Kathleen Bonnell, Fri Jul  9 16:22:50 PDT 2004 
 //    Added Lineout.
 //
+//    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
+//    Added method to get frame and state info
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow
@@ -431,6 +434,7 @@ public:
     void CreateAnnotationObjectsFromList(const AnnotationObjectList &al);
     void UpdateAnnotationObjectList(AnnotationObjectList &al) const;
     void SetFrameAndState(int, int, int, int, int, int, int);
+    void GetFrameAndState(int&, int&, int&, int&, int&, int&, int&);
 
     void SetLightList(const LightList *);
     const LightList *GetLightList() const;

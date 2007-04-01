@@ -169,6 +169,10 @@ class VisWindow;
 //    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
 //    Added visualCueList data member and arg to SetAnnotationAttributes
 //
+//    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
+//    Added frameAndState data member and associated arg to
+//    SetAnnotationAttributes
+//
 // ****************************************************************************
 class NetworkManager
 {
@@ -211,6 +215,7 @@ class NetworkManager
     void          SetAnnotationAttributes(const AnnotationAttributes&,
                                           const AnnotationObjectList&,
                                           const VisualCueList&, 
+                                          const int *fns,
                                           bool do3DAnnotsOnly = true);
 
     void          SetLoadBalancer(LoadBalancer *lb) {loadBalancer = lb;};
@@ -253,6 +258,7 @@ class NetworkManager
     AnnotationObjectList        annotationObjectList;
     VisualCueList               visualCueList;
     std::string                 extentTypeString;
+    int                         frameAndState[7];
     VisWindow                  *viswin;
     std::vector<int>            plotsCurrentlyInWindow;
 

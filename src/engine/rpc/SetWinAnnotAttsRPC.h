@@ -36,6 +36,9 @@ using std::vector;
 //    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
 //    Added visual cue list data member
 //
+//    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
+//    Added frame and state data member and methods
+//
 // ****************************************************************************
 class ENGINE_RPC_API SetWinAnnotAttsRPC : public BlockingRPC
 {
@@ -48,7 +51,8 @@ public:
                     const AnnotationAttributes*,
                     const AnnotationObjectList*,
                     const string,
-                    const VisualCueList*);
+                    const VisualCueList*,
+                    const int*);
 
     // Property selection methods
     virtual void SelectAll();
@@ -59,6 +63,7 @@ public:
     void SetAnnotationObjectList(const AnnotationObjectList*);
     void SetExtentTypeString(const string);
     void SetVisualCueList(const VisualCueList*);
+    void SetFrameAndState(const int*);
 
     // Property getting methods
     const WindowAttributes &GetWindowAtts() const;
@@ -66,6 +71,7 @@ public:
     const AnnotationObjectList &GetAnnotationObjectList() const;
     const string &GetExtentTypeString() const;
     const VisualCueList &GetVisualCueList() const;
+    const int* GetFrameAndState() const;
 
 private:
     WindowAttributes win;
@@ -73,6 +79,7 @@ private:
     AnnotationObjectList aolist;
     string extstr;
     VisualCueList cuelist;
+    int fands[7];
 };
 
 #endif

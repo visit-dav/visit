@@ -245,13 +245,13 @@ private:
 //   I added the recentPathsRemoval window.
 //
 //   Brad Whitlock, Tue Dec 2 16:31:02 PST 2003
-//   Initialized currentVirtualDatabaseDefinition.
+//   Initialized currentVirtualDatabaseDefinitions.
 //
 // ****************************************************************************
 
 QvisFileSelectionWindow::QvisFileSelectionWindow(const char *winCaption) :
     QvisDelayedWindowSimpleObserver(winCaption), intermediateFileList(),
-    currentVirtualDatabaseDefinition()
+    currentVirtualDatabaseDefinitions()
 {
     fs = 0;
     profiles = 0;
@@ -1571,6 +1571,40 @@ QvisFileSelectionWindow::ProgressCallback(void *data, int stage)
     return true;
 }
 
+// ****************************************************************************
+// Method: QvisFileSelectionWindow::GetVirtualDatabaseDefinitions
+//
+// Purpose: 
+//   Populates a map with virtual database definitions.
+//
+// Arguments:
+//   defs : The map into which we'll store the virtual database definitions.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 27 11:52:16 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFileSelectionWindow::GetVirtualDatabaseDefinitions(
+    StringStringVectorMap &defs)
+{
+    const QualifiedFilenameVector &files = fileServer->GetAppliedFileList();
+
+    // Add the definitions for all virtual files to the map.
+    defs.clear();
+    for(int i = 0; i < files.size(); ++i)
+    {
+        if(files[i].IsVirtual())
+        {
+            defs[files[i].FullName()] = 
+                fileServer->GetVirtualFileDefinition(files[i].FullName());
+        }
+    }
+}
+
 //
 // Qt Slot functions
 //
@@ -1637,6 +1671,10 @@ QvisFileSelectionWindow::setEnabled(bool val)
 //   I added code to make sure that the virtual database definition is
 //   different before deciding to reopen it on the viewer.
 //
+//   Brad Whitlock, Mon Jul 26 15:51:00 PST 2004
+//   I improved the code so it will now tell the viewer to check all different
+//   virtual databases for new states.
+//
 // ****************************************************************************
 
 void
@@ -1656,39 +1694,59 @@ QvisFileSelectionWindow::okClicked()
     fileServer->SetAppliedFileList(intermediateFileList);
     fileServer->Notify();
 
+    // Get the virtual file definitions now that we've selected files.
+    StringStringVectorMap newDefinitions;
+    GetVirtualDatabaseDefinitions(newDefinitions);
+
+    //
+    // Check all of the virtual databases that VisIt has opened for new
+    // time states so they are up to date with what the user is doing
+    // outside of VisIt because they *are* dumping files, etc.
     // See if the open file is in the intermediate file list and if it is
-    // in there and it is a virtual file, reopen it on the viewer.
+    // in there and it is a virtual file, check for new states on the viewer.
+    //
     for(int i = 0; i < intermediateFileList.size(); ++i)
     {
-        if(intermediateFileList[i].IsVirtual() &&
-           fileServer->GetOpenFile() == intermediateFileList[i])
+        if(intermediateFileList[i].IsVirtual())
         {
-            //
-            // Get the virtual file definition and compare it to the
-            // definition that we obtained when we brought up the window.
-            //
-            stringVector dbDef =
-                fileServer->GetVirtualFileDefinition(intermediateFileList[i]);
-            if(dbDef == currentVirtualDatabaseDefinition)
-            {
-                debug1 << "QvisFileSelectionWindow::okClicked: The virtual "
-                       << "database definition for "
-                       << intermediateFileList[i].FullName().c_str()
-                       << " did not change. No reopen is required."
-                       << endl;
-            }
-            else
-            {
-                debug1 << "QvisFileSelectionWindow::okClicked: The virtual "
-                       << "database definition for "
-                       << intermediateFileList[i].FullName().c_str()
-                       << " changed! Reopen is required."
-                       << endl;
+            std::string fileName(intermediateFileList[i].FullName());
+            StringStringVectorMap::const_iterator oldDef = 
+                currentVirtualDatabaseDefinitions.find(fileName);
+            StringStringVectorMap::const_iterator newDef =
+                newDefinitions.find(fileName);
 
-                viewer->ReOpenDatabase(
-                    intermediateFileList[i].FullName().c_str(), false);
+            if(oldDef != currentVirtualDatabaseDefinitions.end() &&
+               newDef != newDefinitions.end())
+            {
+                //
+                // Get the virtual file definition and compare it to the
+                // definition that we obtained when we brought up the window.
+                //
+                if(oldDef->second == newDef->second)
+                {
+                    debug1 << "QvisFileSelectionWindow::okClicked: The virtual "
+                           << "database definition for "
+                           << fileName.c_str()
+                           << " did not change. No reopen is required."
+                           << endl;
+                }
+                else
+                {
+                    debug1 << "QvisFileSelectionWindow::okClicked: The virtual "
+                           << "database definition for "
+                           << fileName.c_str()
+                           << " changed! Checking for new states is required on "
+                           << "the viewer to update the length of the animations."
+                           << endl;
+
+                    //
+                    // Tell the viewer to check the virtual database for new
+                    // time states so the information about the file remains
+                    // up to date.
+                    //
+                    viewer->CheckForNewStates(fileName);
+                }
             }
-            break;
         }
     }
 }
@@ -2296,7 +2354,7 @@ QvisFileSelectionWindow::groupFiles()
 // Modifications:
 //   Brad Whitlock, Thu May 9 17:08:17 PST 2002
 //   Made it use the base class's fileServer pointer.
-//   
+//
 // ****************************************************************************
 
 void
@@ -2327,24 +2385,31 @@ QvisFileSelectionWindow::refreshFiles()
 //   Brad Whitlock, Thu Sep 12 13:07:26 PST 2002
 //   Changed the base class.
 //
+//   Brad Whitlock, Tue Jul 27 11:43:14 PDT 2004
+//   Added a call to GetVirtualDatabaseDefinitions and code to update the
+//   selected files list.
+//
 // ****************************************************************************
 
 void
 QvisFileSelectionWindow::show()
 {
     //
-    // Get the virtual file definition for the currently open file. We have to
-    // do this so we can compare the virtual file definition before we do
-    // anything with the definition after we've done something in order to
-    // prevent reopening the virtual database any more often than we need to
-    // reopen it. Files that are not virtual return an empty definition.
+    // Get the virtual file definitions for all of the virtual databases in the
+    // applied file list. We have to do this so we can compare the virtual
+    // file definition before we do anything with the definition after we've
+    // done something in order to prevent reopening the virtual database any
+    // more often than we need to reopen it. Files that are not virtual
+    // return an empty definition.
     //
-    currentVirtualDatabaseDefinition =
-        fileServer->GetVirtualFileDefinition(fileServer->GetOpenFile());
+    GetVirtualDatabaseDefinitions(currentVirtualDatabaseDefinitions);
 
     // Show the window.
     QvisDelayedWindowSimpleObserver::show();
+
+    // Refresh the files so the virtual databases will be right.
     refreshFiles();
+    UpdateSelectedFileList();
 }
 
 // ****************************************************************************

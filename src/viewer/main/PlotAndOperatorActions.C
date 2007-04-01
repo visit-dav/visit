@@ -49,7 +49,9 @@
 // Creation:   Mon Mar 17 09:12:08 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jul 27 18:11:58 PST 2004
+//   Added code to prevent pixmaps from being created when in -nowin mode.
+//
 // ****************************************************************************
 
 AddOperatorAction::AddOperatorAction(ViewerWindow *win) :
@@ -77,19 +79,24 @@ AddOperatorAction::AddOperatorAction(ViewerWindow *win) :
                 char tip[200];
                 SNPRINTF(tip, 200, "Add %s operator", info->GetName());
 
-                // Create a pixmap for the operator or get its pixmap from
-                // the pixmap cache.
-                QString key;
-                key.sprintf("operator_icon_%s", info->GetName());
-                QPixmap pix;
-                if(!QPixmapCache::find(key, pix))
+                if(!window->GetNoWinMode())
                 {
-                    pix = QPixmap(info->XPMIconData());
-                    QPixmapCache::insert(key, pix);
-                }
+                    // Create a pixmap for the operator or get its pixmap from
+                    // the pixmap cache.
+                    QString key;
+                    key.sprintf("operator_icon_%s", info->GetName());
+                    QPixmap pix;
+                    if(!QPixmapCache::find(key, pix))
+                    {
+                        pix = QPixmap(info->XPMIconData());
+                        QPixmapCache::insert(key, pix);
+                    }
 
-                // Add a choice for operator so that it has an icon.
-                AddChoice(info->GetName(), tip, pix);
+                    // Add a choice for operator so that it has an icon.
+                    AddChoice(info->GetName(), tip, pix);
+                }
+                else
+                    AddChoice(info->GetName());
 
                 // Record that this plugin has an icon.
                 graphicalPlugins.push_back(i);
@@ -725,6 +732,9 @@ SetOperatorOptionsAction::Execute()
 //   Brad Whitlock, Mon Sep 29 17:39:17 PST 2003
 //   Initialized host.
 //
+//   Brad Whitlock, Tue Jul 27 18:09:16 PST 2004
+//   Changed so pixmaps are not created when we're in -nowin mode.
+//
 // ****************************************************************************
 
 AddPlotAction::AddPlotAction(ViewerWindow *win) : ViewerMultipleAction(win,
@@ -755,21 +765,26 @@ AddPlotAction::AddPlotAction(ViewerWindow *win) : ViewerMultipleAction(win,
 
                 // Create a pixmap for the plot or get its pixmap from
                 // the pixmap cache.
-                QString key;
-                key.sprintf("plot_icon_%s", info->GetName());
-                QPixmap pix;
-                if(!QPixmapCache::find(key, pix))
+                if(!window->GetNoWinMode())
                 {
-                    pix = QPixmap(info->XPMIconData());
-                    QPixmapCache::insert(key, pix);
+                    QString key;
+                    key.sprintf("plot_icon_%s", info->GetName());
+                    QPixmap pix;
+                    if(!QPixmapCache::find(key, pix))
+                    {
+                        pix = QPixmap(info->XPMIconData());
+                        QPixmapCache::insert(key, pix);
+                    }
+
+                    // Find the maximum pixmap width and height
+                    maxPixmapWidth = QMAX(maxPixmapWidth, pix.width());
+                    maxPixmapHeight = QMAX(maxPixmapHeight, pix.height());
+
+                    // Add a choice for plot so that it has an icon.
+                    AddChoice(info->GetName(), tip, pix);
                 }
-
-                // Find the maximum pixmap width and height
-                maxPixmapWidth = QMAX(maxPixmapWidth, pix.width());
-                maxPixmapHeight = QMAX(maxPixmapHeight, pix.height());
-
-                // Add a choice for plot so that it has an icon.
-                AddChoice(info->GetName(), tip, pix);
+                else
+                    AddChoice(info->GetName());
 
                 // Record the plugin entry.
                 PluginEntry p;
@@ -1060,6 +1075,10 @@ AddPlotAction::ConstructToolbar(QToolBar *toolbar)
     // If we don't have any plugin entries, return.
     if(pluginEntries.size() < 1)
         return;
+
+    // If we're in nowin mode, return.
+    if(window->GetNoWinMode())
+       return;
 
     //
     // Connect the toolbar to a slot function that lets this object know when

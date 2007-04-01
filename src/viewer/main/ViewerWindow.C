@@ -2164,6 +2164,27 @@ ViewerWindow::SetFrameAndState(int nFrames,
 }
 
 // ****************************************************************************
+// Method: ViewerWindow::GetFrameAndState
+//
+// Purpose: 
+//   Returns frame and state info. 
+//
+// Programmer: Mark C. Miller 
+// Creation:   Tuesday, July 27, 2004 
+//
+// ****************************************************************************
+
+void
+ViewerWindow::GetFrameAndState(int& nFrames,
+    int& startFrame, int& curFrame, int& endFrame,
+    int& startState, int& curState, int& endState)
+{
+    visWindow->GetFrameAndState(nFrames, startFrame, curFrame, endFrame,
+                                startState, curState, endState);
+}
+
+
+// ****************************************************************************
 // Method: ViewerWindow::SendRedrawMessage
 //
 // Purpose: 
@@ -5005,6 +5026,9 @@ ViewerWindow::GetWindowAttributes() const
 //
 //    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
 //    Added code to deal with visual cues (pick points and ref lines)
+//
+//    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
+//    Added code to deal with frame and state info
 // ****************************************************************************
 
 bool
@@ -5017,12 +5041,16 @@ ViewerWindow::SendWindowEnvironmentToEngine(const EngineKey &ek)
     string extStr(avtExtentType_ToString(GetViewExtentsType())); 
     VisualCueList visCues;
     UpdateVisualCueList(visCues);
+    int fns[7];
+    visWindow->GetFrameAndState(fns[0], fns[1], fns[2], fns[3],
+                                        fns[4], fns[5], fns[6]);
     return ViewerEngineManager::Instance()->SetWinAnnotAtts(ek,
                                                             &winAtts,
                                                             &annotAtts,
                                                             &annotObjs,
                                                             extStr,
-                                                            &visCues);
+                                                            &visCues,
+                                                             fns);
 }
 
 // ****************************************************************************
@@ -7047,6 +7075,10 @@ ViewerWindow::UpdateLastExternalRenderRequestInfo(
 //    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
 //    Added code to deal with visual cues (pick points and ref lines) and
 //    annotation object list
+//
+//    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
+//    Filtered out View3DAttributes center of rotation stuff so that it does
+//    not effect the outcome.
 // ****************************************************************************
 
 bool
@@ -7062,6 +7094,9 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
     tmpWinAtts.GetRenderAtts().SetScalableAutoThreshold(lastScalableAutoThreshold);
     tmpWinAtts.GetRenderAtts().SetScalableActivationMode(
         (RenderingAttributes::TriStateMode) lastScalableActivationMode);
+    View3DAttributes lastView3D = lastRequest.winAtts.GetView3D();
+    tmpWinAtts.GetView3D().SetCenterOfRotationSet(lastView3D.GetCenterOfRotationSet());
+    tmpWinAtts.GetView3D().SetCenterOfRotation(lastView3D.GetCenterOfRotation());
     if (tmpWinAtts != lastRequest.winAtts)
         return false;
 
@@ -7146,6 +7181,9 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
 //
 //    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
 //    Added code to deal with visual cues (pick points and ref lines)
+//
+//    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
+//    Added code to deal with frame and state
 // ****************************************************************************
 
 void
@@ -7168,6 +7206,11 @@ ViewerWindow::GetExternalRenderRequestInfo(
     VisualCueList cuelist;
     UpdateVisualCueList(cuelist);
     theRequest.visCues = cuelist;
+    int fns[7];
+    visWindow->GetFrameAndState(fns[0], fns[1], fns[2], fns[3],
+                                        fns[4], fns[5], fns[6]);
+    for (int i = 0; i < 7; i++)
+        theRequest.frameAndState[i] = fns[i];
 }
 
 // ****************************************************************************

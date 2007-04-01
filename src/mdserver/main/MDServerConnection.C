@@ -1695,6 +1695,11 @@ MDServerConnection::GetVirtualFileDefinition(const std::string &file)
 //    Added code to switch current directories so we can always successfully
 //    read virtual databases on the Windows platform when we use the CLI.
 //
+//    Brad Whitlock, Tue Jul 27 16:54:02 PST 2004
+//    Added code to prevent crashes when we ask for a time state that is 
+//    greater than the end of the size of a virtual database. This can happen
+//    if we're trying to reopen a virtual database after files have disappeared.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -1765,6 +1770,21 @@ MDServerConnection::GetDatabase(string file, int timeState)
                     ChangeDirectory(path);
                 }
 #endif
+                //
+                // If we're asking for a time state that is larger than the
+                // number of time states in the virtual database, such as
+                // when we reopen a virtual database after files have
+                // disappeared, we should clamp the desired time state.
+                //
+                if(timeState >= fileNames.size())
+                {
+                    debug2 << "The desired time state is larger than the "
+                              "number of time states in the virtual database "
+                              "so the time state is being clamped to "
+                           << fileNames.size() - 1 << endl;
+                    timeState = fileNames.size() - 1;
+                }
+
                 // Try and make a database out of the filenames.
                 currentDatabase = avtDatabaseFactory::FileList(names,
                     fileNames.size(), timeState);

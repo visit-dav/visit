@@ -651,6 +651,105 @@ ViewerPlotList::ValidateTimeSlider()
 }
 
 // ****************************************************************************
+// Method: ViewerPlotList::ResizeTimeSliders
+//
+// Purpose: 
+//   Resizes the time sliders and the actor caches for all plots
+//
+// Arguments:
+//   sliders    : The sliders that need to be checked against their database
+//                correlations for the proper length.
+//   clearCache : If we end up having to resize the actor caches as a result
+//                of checking their length against their database's number
+//                of states, this flag indicates whether the actors should
+//                be cleared out.
+//
+// Returns:    A bit field. bit 0 is true when the time slider's time state
+//             had to be clipped. bit 1 is true if any plot's actors were
+//             cleared.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 27 10:23:03 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+ViewerPlotList::ResizeTimeSliders(const stringVector &sliders, bool clearCache)
+{
+    const char *mName = "ViewerPlotList::ResizeTimeSliders: ";
+
+    //
+    // Make sure that the time sliders' time state values are no longer than
+    // the correlations will allow.
+    //
+    bool tsSizeChanged = false;
+    DatabaseCorrelationList *cL = ViewerFileServer::Instance()->
+        GetDatabaseCorrelationList();
+    for(int slider = 0; slider < sliders.size(); ++slider)
+    {
+        const std::string &tsName = sliders[slider];
+        DatabaseCorrelation *correlation = cL->FindCorrelation(tsName);
+        if(correlation != 0 && TimeSliderExists(tsName))
+        {
+            int state = 0, nStates = 1;
+            GetTimeSliderStates(tsName, state, nStates);
+            if(state >= correlation->GetNumStates())
+            {
+                timeSliders[tsName] = correlation->GetNumStates() - 1;
+                tsSizeChanged |= (tsName == activeTimeSlider);
+                debug4 << mName << "Shortened time slider " << tsName.c_str()
+                       << " to " << timeSliders[tsName] << " states." << endl;
+            }
+        }
+    }
+
+    // Resize all of the plots.
+    bool actorsCleared = false;
+    for(int i = 0; i < nPlots; ++i)
+    {
+        // Determine if the plot's source has anything to do with the
+        // time sliders that are changing.
+        bool relatedSource = false;
+        for(int slider = 0; slider < sliders.size(); ++slider)
+        {
+             const std::string &tsName = sliders[slider];
+             DatabaseCorrelation *correlation = cL->FindCorrelation(tsName);
+             if(correlation != 0)
+             {
+                 std::string plotSource(plots[i].plot->GetSource());
+                 relatedSource |= 
+                     correlation->UsesDatabase(plotSource);
+             }
+        }
+
+        if(relatedSource)
+        {
+            actorsCleared |= clearCache;
+            debug4 << mName << "Plot " << i
+                   << "'s source is related to the time sliders that "
+                   << "changed. clearCache = "
+                   << (clearCache?"true":"false") << endl;
+            plots[i].plot->UpdateCacheSize(GetKeyframeMode(), clearCache);
+        }
+        else
+        {
+            debug4 << mName << "Plot " << i
+                   << "'s source was not related to the time sliders that "
+                   << "changed." << endl;
+        }
+    }
+
+    int flag0 = tsSizeChanged ? 1 : 0;
+    int flag1 = actorsCleared ? 1 : 0;
+    int retval = flag0 | (flag1 << 1);
+    return retval;
+}
+
+// ****************************************************************************
 // Method: ViewerPlotList::GetTimeSliderStates
 //
 // Purpose: 
@@ -6174,6 +6273,11 @@ ViewerPlotList::UpdateSILRestrictionAtts()
 // Purpose: 
 //   Sends an updated expression list to the client.
 //
+// Arguments:
+//   considerPlots : Whether to consider the active plots when choosing the
+//                   name of the database to use.
+//   update        : Whether to notify the client.
+//
 // Programmer: Brad Whitlock
 // Creation:   Fri Oct 24 16:47:12 PST 2003
 //
@@ -6184,7 +6288,7 @@ ViewerPlotList::UpdateSILRestrictionAtts()
 // ****************************************************************************
 
 void
-ViewerPlotList::UpdateExpressionList(bool considerPlots)
+ViewerPlotList::UpdateExpressionList(bool considerPlots, bool update)
 {
     ExpressionList *exprList = ParsingExprList::Instance()->GetList();
 
@@ -6264,7 +6368,8 @@ ViewerPlotList::UpdateExpressionList(bool considerPlots)
     if(newList != *exprList)
     {
         *exprList = newList;
-        exprList->Notify();
+        if(update)
+            exprList->Notify();
     }
 }
 

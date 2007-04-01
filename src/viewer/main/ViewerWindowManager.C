@@ -5681,6 +5681,251 @@ ViewerWindowManager::ReplaceDatabase(const EngineKey &key,
 }
 
 // ****************************************************************************
+// Method: ViewerWindowManager::CheckForNewStates
+//
+// Purpose: 
+//   Updates the correlations involving the specified database, updates any
+//   time sliders, and finally resizes any actor caches if we added states.
+//
+// Arguments:
+//   hostDatabase : The name of the database to check for new states.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 27 10:19:17 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::CheckForNewStates(const std::string &hostDatabase)
+{
+    const char *mName = "ViewerWindowManager::CheckForNewStates: ";
+
+    std::string hDB(hostDatabase);
+    std::string host, db;
+    ViewerFileServer *fs = ViewerFileServer::Instance();
+    fs->ExpandDatabaseName(hDB, host, db);
+
+    //
+    // Determine if VisIt has even opened the specified database.
+    //
+    stringVector sources(fs->GetOpenDatabases());
+    bool usingDatabase = false;
+    int i;
+    for(i = 0; i < sources.size() && !usingDatabase; ++i)
+    {
+        debug4 << "source[" << i << "] = " << sources[i].c_str() << endl;
+        usingDatabase |= (sources[i] == hDB);
+    }
+
+    //
+    // If VisIt is using the database then we must determine if the number of
+    // time states has changed. If the number of time states has changed then
+    // we need to update the database correlations and plot cache sizes.
+    //
+    if(usingDatabase)
+    {
+        const avtDatabaseMetaData *md = fs->GetMetaData(host, db);
+        if(md != 0 && md->GetIsVirtualDatabase())
+        {
+            // Get the list of time states.
+            int originalNStates = md->GetNumStates();
+            stringVector originalTSNames(md->GetTimeStepNames());
+            bool isSim = md->GetIsSimulation();
+
+            debug4 << mName << hDB.c_str() << " is a virtual database with "
+                   << originalNStates << " time states." << endl;
+
+            debug4 << mName << "Current time steps for " << hDB.c_str()
+                   << ": " << endl;
+            for(i = 0; i < originalTSNames.size(); ++i)
+                debug4 << originalTSNames[i] << ", " << endl;
+            debug4 << endl;
+
+            //
+            // Look through all of the windows and figure out the last time
+            // state from the database that we're essentially reopening.
+            //
+            int timeState = 0;
+            for(i = 0; i < maxWindows; ++i)
+            {
+                if(windows[i] != 0)
+                {
+                    ViewerPlotList *pl = windows[i]->GetPlotList();
+                    for(int p = 0; p < pl->GetNumPlots(); ++p)
+                    {
+                        ViewerPlot *plot = pl->GetPlot(p);
+                        if(plot->GetSource() == hDB)
+                        {
+                            timeState = (timeState < plot->GetState()) ?
+                                plot->GetState() : timeState;
+                        }
+                    }
+                }
+            }
+
+            // Clear all knowledge of the file from the cache
+            fs->CloseFile(hDB);
+            fs->ClearFile(hDB);
+
+            // Get the file's metadata again.
+            debug4 << mName << "Reopening " << hDB.c_str()
+                   << " at state " << timeState << endl;
+            md = fs->GetMetaDataForState(host, db, timeState);
+            if(md != 0 && md->GetIsVirtualDatabase())
+            {
+                int newNStates = md->GetNumStates();
+                stringVector newTSNames(md->GetTimeStepNames());
+
+                debug4 << mName << "New time steps for " << hDB << ": " << endl;
+                for(i = 0; i < newTSNames.size(); ++i)
+                    debug4 << newTSNames[i] << ", " << endl;
+                debug4 << endl;
+
+                //
+                // Alter any database correlations that use the database that
+                // changed.
+                //
+                DatabaseCorrelationList *cL = fs->GetDatabaseCorrelationList();
+                stringVector alteredCorrelations;
+                for(i = 0; i < cL->GetNumDatabaseCorrelations(); ++i)
+                {
+                    DatabaseCorrelation &correlation = cL->operator[](i);
+                    if(correlation.UsesDatabase(hDB))
+                    {
+                        if(originalNStates != newNStates ||
+                           correlation.GetMethod() == DatabaseCorrelation::TimeCorrelation ||
+                           correlation.GetMethod() == DatabaseCorrelation::CycleCorrelation)
+                        {
+                            debug4 << mName << "Updated correlation for "
+                                   << correlation.GetName().c_str() << endl;
+                            alteredCorrelations.push_back(correlation.GetName());
+                            fs->UpdateDatabaseCorrelation(correlation.GetName());
+                        }
+                    }
+                }
+
+                //
+                // The previous call to FileServerList::ClearFile deleted the
+                // trivial database correlation. Recreate it.
+                //
+                stringVector dbs; dbs.push_back(hDB);
+                DatabaseCorrelation *newCorr = fs->CreateDatabaseCorrelation(hDB, dbs, 0);
+                if(newCorr != 0)
+                {
+                    debug4 << "New correlation for " << hDB.c_str() << *newCorr << endl;
+                    cL->AddDatabaseCorrelation(*newCorr);
+                    delete newCorr;
+                }
+                if(originalNStates != newNStates)
+                {
+                    debug4 << mName << "Updated correlation for "
+                           << hDB.c_str() << endl;
+                    alteredCorrelations.push_back(hDB);
+                }
+                // Send new database correlation list to the client.
+                cL->Notify();
+
+                //
+                // If the virtual database has 1 time state per file then it
+                // might be possible to expand or contract the time sliders
+                // and cache sizes.
+                //
+                bool clearCache = true;
+                bool oneTSPerFile = (originalTSNames.size() == originalNStates &&
+                   newTSNames.size() == newNStates);
+                if(oneTSPerFile)
+                {
+                    int n = (originalTSNames.size() < newTSNames.size()) ? 
+                    originalTSNames.size() : newTSNames.size();
+                    bool same = true;
+                    for(i = 0; i < n && same; ++i)
+                        same &= (originalTSNames[i] == newTSNames[i]);
+                    clearCache = !same;
+                    debug4 << mName << "Need to clear actor cache: "
+                           << (clearCache ? "true":"false") << endl;
+                }
+
+                //
+                // Clear the cache for the database on the compute engine.
+                //
+                bool ntsChanged = (newNStates != originalNStates);
+                if(ntsChanged)
+                {
+                    EngineKey key(host, "");
+                    if (isSim)
+                        key = EngineKey(host, db);
+                    debug4 << mName << "Clearing out cached database ";
+                    if(isSim)
+                        debug4 << " in simulation on " << host.c_str() << endl;
+                    else
+                    {
+                        debug4 << db.c_str() << " in compute engine on "
+                               << host.c_str() << endl;
+                    }
+                    ViewerEngineManager::Instance()->ClearCache(key, db.c_str());
+                }
+
+                //
+                // Loop over the windows and make sure that their time sliders are
+                // within the limits for the new version of the database. Also be
+                // sure to adjust their cache sizes if needed.
+                //
+                bool expressionListUpdated = false;
+                for(i = 0; i < maxWindows; ++i)
+                {
+                    if(windows[i] != 0)
+                    { 
+                        ViewerPlotList *pl = windows[i]->GetPlotList();
+                        int flag = pl->ResizeTimeSliders(alteredCorrelations, clearCache);
+                        bool tsSizeChanged = (flag & 1) > 0;
+                        bool actorsCleared = (flag & 2) > 0;
+
+                        // Update the time slider states for the active window
+                        if((tsSizeChanged || ntsChanged) && i == activeWindow)
+                            UpdateWindowInformation(WINDOWINFO_TIMESLIDERS);
+
+                        // If we had to clear the cache then we need to update the window too.
+                        if(actorsCleared)
+                        {
+                            // Update the expression list based on the plots. We have
+                            // to update the expression list or risk not being able to
+                            // update plots that have
+                            expressionListUpdated = true;
+                            pl->UpdateExpressionList(true, false);
+
+                            // Update the frame.
+                            debug4 << mName << "Updating window "
+                                   << windows[i]->GetWindowId() << endl;
+                            pl->UpdateFrame(false);
+                        }
+                    }
+                }
+
+                // If we updated an expression then we need to update the expression
+                // list to set it back to what it was.
+                if(expressionListUpdated)
+                    windows[activeWindow]->GetPlotList()->UpdateExpressionList(true);
+            }
+            else
+            {
+                debug4 << mName << "Could not get the metadata for " << hDB.c_str()
+                       << "or we got it and it was not a virtual database." << endl;
+            }
+        }
+        else
+        {
+            debug4 << mName << hDB.c_str() << " is not a virtual database." << endl;
+        }
+    }
+    else
+    {
+        debug4 << mName << hDB.c_str() << " is not an open source." << endl;
+    }
+}
+
+// ****************************************************************************
 // Method: ViewerWindowManager::ResetNetworkIds
 //
 // Purpose: 

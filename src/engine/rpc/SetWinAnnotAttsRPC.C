@@ -24,9 +24,12 @@
 //    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
 //    Added data member for VisualCueList 
 //
+//    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
+//    Added stuff to support frame and state info
+//
 // ****************************************************************************
 
-SetWinAnnotAttsRPC::SetWinAnnotAttsRPC() : BlockingRPC("aaasa")
+SetWinAnnotAttsRPC::SetWinAnnotAttsRPC() : BlockingRPC("aaasaI")
 {
 }
 
@@ -70,6 +73,10 @@ SetWinAnnotAttsRPC::~SetWinAnnotAttsRPC()
 //
 //    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
 //    Added arg for VisualCueList
+//
+//    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
+//    Added stuff to support frame and state info
+//
 // ****************************************************************************
 
 void
@@ -77,7 +84,8 @@ SetWinAnnotAttsRPC::operator()(const WindowAttributes *winAtts,
                                const AnnotationAttributes *annotAtts,
                                const AnnotationObjectList *aoList,
                                const string extStr,
-                               const VisualCueList *cueList) 
+                               const VisualCueList *cueList,
+                               const int *frameAndState) 
 {
     if (winAtts)
        SetWindowAtts(winAtts);
@@ -94,7 +102,11 @@ SetWinAnnotAttsRPC::operator()(const WindowAttributes *winAtts,
     if (cueList)
        SetVisualCueList(cueList);
 
-    if (winAtts || annotAtts || aoList || extStr.size() || cueList)
+    if (frameAndState)
+       SetFrameAndState(frameAndState);
+
+    if (winAtts || annotAtts || aoList || extStr.size() || cueList ||
+        frameAndState)
        Execute();
 }
 
@@ -116,6 +128,9 @@ SetWinAnnotAttsRPC::operator()(const WindowAttributes *winAtts,
 //
 //    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
 //    Added visual cue list data member
+//
+//    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
+//    Added stuff to support frame and state info
 // ****************************************************************************
 
 void
@@ -126,6 +141,7 @@ SetWinAnnotAttsRPC::SelectAll()
     Select(2, (void*)&aolist);
     Select(3, (void*)&extstr);
     Select(4, (void*)&cuelist);
+    Select(5, (void*)fands, sizeof(fands)/sizeof(fands[0]));
 }
 
 
@@ -229,6 +245,22 @@ SetWinAnnotAttsRPC::SetVisualCueList(const VisualCueList* cueList)
 }
 
 // ****************************************************************************
+//  Method: SetWinAnnotAttsRPC::SetFrameAndState
+//
+//  Programmer: Mark C. Miller
+//  Creation:   July 26, 2004 
+//
+// ****************************************************************************
+
+void
+SetWinAnnotAttsRPC::SetFrameAndState(const int *frameAndState)
+{
+    for (int i = 0; i < sizeof(fands)/sizeof(fands[0]); i++)
+        fands[i] = frameAndState[i];
+    Select(5, (void*)fands, sizeof(fands)/sizeof(fands[0]));
+}
+
+// ****************************************************************************
 //  Method: SetWinAnnotAttsRPC::GetWindowAtts
 //
 //  Purpose: 
@@ -308,4 +340,18 @@ const VisualCueList&
 SetWinAnnotAttsRPC::GetVisualCueList() const
 {
     return cuelist;
+}
+
+// ****************************************************************************
+//  Method: SetWinAnnotAttsRPC::GetFrameAndState
+//
+//  Programmer: Mark C. Miller
+//  Creation:   July 26, 2004 
+//
+// ****************************************************************************
+
+const int*
+SetWinAnnotAttsRPC::GetFrameAndState() const
+{
+    return fands;
 }

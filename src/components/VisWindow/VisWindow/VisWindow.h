@@ -261,6 +261,9 @@ class VisitInteractor;
 //    Added GetVisualCues and changes interface to QueryIsValid, UpdateQuery,
 //    DeleteQuery to use VisualCueInfo
 //
+//    Mark C. Miller, Mon Jul 26 15:08:39 PDT 2004
+//    Added PostProcessScreenCapture
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -280,6 +283,8 @@ public:
     void                 Realize(void);
     avtImage_p           ScreenCapture(bool doViewportOnly = false,
                                        bool doZBufferToo = false);
+    avtImage_p           PostProcessScreenCapture(avtImage_p capturedImage,
+                                       bool doViewportOnly);
     avtDataset_p         GetAllDatasets(void);
 
     void                 SetSize(int, int);

@@ -297,6 +297,9 @@ typedef struct {
 //    Kathleen Bonnell, Thu Jul 22 09:23:25 PDT 200 
 //    Added optional int arg to GetLineoutWindow, removed bool arg.
 //
+//    Brad Whitlock, Tue Jul 27 10:22:15 PDT 2004
+//    Added CheckForNewStates.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public QObject
@@ -432,6 +435,7 @@ class VIEWER_API ViewerWindowManager : public QObject
                          int timeState,
                          bool setTimeState,
                          bool onlyReplaceSame);
+    void CheckForNewStates(const std::string &hostDatabase);
     void CreateDatabaseCorrelation(const std::string &name,
                                    const stringVector &dbs,
                                    int method, int initialState,

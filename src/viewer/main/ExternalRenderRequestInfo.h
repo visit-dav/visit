@@ -32,6 +32,9 @@ using std::string;
 //
 //    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
 //    Added member for visual cue list
+//
+//    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
+//    Added member for frame and state info
 // ****************************************************************************
 
 
@@ -46,6 +49,7 @@ typedef struct _ExternalRenderRequestInfo
     AnnotationObjectList                  annotObjs;
     string                                extStr;
     VisualCueList                         visCues;
+    int                                   frameAndState[7];
 } ExternalRenderRequestInfo;
 
 #endif

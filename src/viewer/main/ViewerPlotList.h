@@ -202,6 +202,9 @@ typedef std::map<std::string, int> StringIntMap;
 //    Mark C. Miller, Tue Jun  8 14:43:36 PDT 2004
 //    Added GetWindowId
 //
+//    Brad Whitlock, Tue Jul 27 10:34:43 PDT 2004
+//    Added ResizeTimeSliders.
+//
 // ****************************************************************************
 
 
@@ -238,6 +241,7 @@ public:
     void GetTimeSliderStates(const std::string &ts, int &state, int &nStates) const;
     bool TimeSliderExists(const std::string &ts) const;
     void ValidateTimeSlider();
+    int  ResizeTimeSliders(const stringVector &sliders, bool clearCache);
     void ForwardStep();
     void BackwardStep();
     void SetTimeSliderState(int state);
@@ -329,7 +333,7 @@ public:
     void UpdatePlotList() const;
     void UpdateSILRestrictionAtts();
     void InterruptUpdatePlotList();
-    void UpdateExpressionList(bool considerPlots);
+    void UpdateExpressionList(bool considerPlots, bool update = true);
     void UpdateExpressionListUsingDB(const std::string &host,
                                      const std::string &db, int ts) const;
 

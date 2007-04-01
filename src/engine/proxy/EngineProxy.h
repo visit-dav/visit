@@ -194,6 +194,9 @@ class StatusAttributes;
 //
 //    Mark C. Miller, Mon Jul 12 19:46:32 PDT 2004
 //    Removed waitCB and cbData arguments from Render method
+//
+//    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
+//    Added argument for frame and state to SetWinAnnotAtts
 // 
 // ****************************************************************************
 
@@ -248,7 +251,8 @@ public:
                                              const AnnotationAttributes*,
                                              const AnnotationObjectList*,
                                              std::string,
-                                             const VisualCueList*); 
+                                             const VisualCueList*,
+                                             const int *frameAndState); 
 
     avtDataObjectReader_p    Render(bool, const intVector&, bool);
 

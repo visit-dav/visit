@@ -12,6 +12,7 @@
 #include <MessageAttributes.h>
 #include <StatusSubject.h>
 #include <QualifiedFilename.h>
+#include <maptypes.h>
 
 // Long list of forward declarations.
 class DataNode;
@@ -207,6 +208,9 @@ class SplashScreen;
 //    I added more support for not creating windows, etc before they are 
 //    really needed. This should help launch time.
 //
+//    Brad Whitlock, Tue Jul 27 12:02:40 PDT 2004
+//    Added GetVirtualDatabaseDefinitions.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -251,6 +255,8 @@ private:
     void WritePluginWindowConfigs(DataNode *parentNode);
     void Synchronize(int tag);
     void HandleSynchronize(int val);
+
+    void GetVirtualDatabaseDefinitions(StringStringVectorMap &defs);
 
     // Internal callbacks
     static void StartMDServer(const std::string &hostName,

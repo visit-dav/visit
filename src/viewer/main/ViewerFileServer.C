@@ -1736,6 +1736,39 @@ ViewerFileServer::CreateDatabaseCorrelation(const std::string &name,
 }
 
 // ****************************************************************************
+// Method: ViewerFileServer::UpdateDatabaseCorrelation
+//
+// Purpose: 
+//   Updates a the named database correlation by recreating it using its
+//   input databases and storing the result over the old database correlation.
+//
+// Arguments:
+//   cName : The name of the database correlation to update.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 27 10:36:35 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerFileServer::UpdateDatabaseCorrelation(const std::string &cName)
+{
+    DatabaseCorrelation *c = databaseCorrelationList->FindCorrelation(cName);
+    if(c != 0)
+    {
+        DatabaseCorrelation *replacementCorrelation = CreateDatabaseCorrelation(
+            c->GetName(), c->GetDatabaseNames(), (int)c->GetMethod());
+        if(replacementCorrelation != 0)
+        {
+            // Copy over the old database correlation.
+            *c = *replacementCorrelation;
+        }
+    }
+}
+
+// ****************************************************************************
 // Method: ViewerFileServer::GetMostSuitableCorrelation
 //
 // Purpose: 

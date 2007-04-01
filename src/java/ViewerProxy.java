@@ -115,6 +115,9 @@ import java.util.Vector;
 //   Kathleen Bonnell, Wed Mar 31 07:35:25 PST 2004 
 //   Added support for QueryOverTimeAttributes.
 //
+//   Brad Whitlock, Mon Jul 26 15:57:32 PST 2004
+//   Added CheckForNewStates.
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -470,6 +473,14 @@ public class ViewerProxy implements SimpleObserver
         rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_REOPENDATABASERPC);
         rpc.SetDatabase(database);
         rpc.SetWindowLayout(1);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean CheckForNewStates(String database)
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_CHECKFORNEWSTATESRPC);
+        rpc.SetDatabase(database);
         rpc.Notify();
         return synchronous ? Synchronize() : true;
     }

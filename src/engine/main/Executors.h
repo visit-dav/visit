@@ -647,6 +647,9 @@ RPCExecutor<StartPickRPC>::Execute(StartPickRPC *rpc)
 //    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
 //    Added code to pass visual cue list along
 //
+//    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
+//    Added code to pass frame and state info along
+//
 // ****************************************************************************
 template<>
 void
@@ -664,7 +667,8 @@ RPCExecutor<SetWinAnnotAttsRPC>::Execute(SetWinAnnotAttsRPC *rpc)
                                     rpc->GetExtentTypeString());
         netmgr->SetAnnotationAttributes(rpc->GetAnnotationAtts(),
                                         rpc->GetAnnotationObjectList(),
-                                        rpc->GetVisualCueList());
+                                        rpc->GetVisualCueList(),
+                                        rpc->GetFrameAndState());
         rpc->SendReply();
     }
     CATCH2(VisItException, e)
