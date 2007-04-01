@@ -17,7 +17,7 @@
 #include <PickAttributes.h>
 #include <PickVarInfo.h>
 
-#include <EngineExprNode.h>
+#include <avtExprNode.h>
 #include <Expression.h>
 #include <ParsingExprList.h>
 
@@ -187,6 +187,9 @@ avtExpressionEvaluatorFilter::AdditionalPipelineFilters(void)
 //    don't set the pipelineSpec's DataObject to NULL, and don't create new
 //    filters.  (QueryOverTime will re-use these filters for each time step).
 //
+//    Jeremy Meredith, Wed Nov 24 12:25:10 PST 2004
+//    Renamed EngineExprNode to avtExprNode because of a refactoring.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -287,7 +290,7 @@ avtExpressionEvaluatorFilter::PerformRestriction(
             // variables of the expression and put them on the candidate
             // list.
             expr_list.push_back(var);
-            EngineExprNode *tree = dynamic_cast<EngineExprNode*>
+            avtExprNode *tree = dynamic_cast<avtExprNode*>
                                     (ParsingExprList::GetExpressionTree(var));
             set<string> roots = tree->GetVarLeaves();
             while (!roots.empty())
@@ -311,7 +314,7 @@ avtExpressionEvaluatorFilter::PerformRestriction(
         // Get the expression tree again.  (We could save trees between the
         // first and second sections of the code.  It wouldn't save much
         // time, but would be cleaner.)
-        EngineExprNode *tree = dynamic_cast<EngineExprNode*>
+        avtExprNode *tree = dynamic_cast<avtExprNode*>
                                      (ParsingExprList::GetExpressionTree(var));
 
         // Create the filters that the tree uses.  Put them into the

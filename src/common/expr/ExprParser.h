@@ -1,9 +1,9 @@
 #ifndef EXPRPARSER_H
 #define EXPRPARSER_H
-#include <parser_exports.h>
+#include <expr_exports.h>
 
-#include <ParserBase.h>
-#include <Scanner.h>
+#include <Parser.h>
+#include <ExprScanner.h>
 #include <string>
 #include <ExprNode.h>
 #include <ExprNodeFactory.h>
@@ -28,13 +28,17 @@
 //    Jeremy Meredith, Fri Aug 15 09:25:04 PDT 2003
 //    Renamed EMT_VIEWER to EMT_COMPONENT and added EMT_EXCEPTION.
 //
+//    Jeremy Meredith, Wed Nov 24 11:55:13 PST 2004
+//    Refactored.  There's a new base class for the ExprParser and the
+//    return types became more general.
+//
 // ****************************************************************************
 
-class PARSER_API ExprParser : public ParserBase
+class EXPR_API ExprParser : public Parser
 {
   public:
     ExprParser(ExprNodeFactory *f);
-    ExprNode *Parse(const std::string &);
+    ParseTreeNode *Parse(const std::string &);
 
     enum ErrorMessageTarget
     {
@@ -49,11 +53,12 @@ class PARSER_API ExprParser : public ParserBase
     }
 
   protected:
-    ExprGrammarNode *ApplyRule(const Symbol&, const Rule*,
-                               std::vector<ExprGrammarNode*>&, Pos);
+    ParseTreeNode *ApplyRule(const Symbol&, const Rule*,
+                           std::vector<ParseTreeNode*>&,
+                           std::vector<Token*>&, Pos);
 
   private:
-    Scanner scanner;
+    ExprScanner scanner;
     ExprNodeFactory *factory;
     static ErrorMessageTarget errorMessageTarget;
 };

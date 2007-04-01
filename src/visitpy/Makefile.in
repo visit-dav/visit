@@ -93,6 +93,9 @@
 #    Jeremy Meredith, Fri Oct 29 16:48:40 PDT 2004
 #    Added support for lighting.
 #
+#    Jeremy Meredith, Tue Nov 23 14:53:07 PST 2004
+#    Refactored the expression parser into two separate libraries.
+#
 ##############################################################################
 
 ##
@@ -161,7 +164,7 @@ CLI=$(tmpbin)/cli
 ##
 LDFLAGS=-L../lib @PY_LDFLAGS@ @LDFLAGS@
 LIBS=@LIBS@ -lviewerproxy -lviewerrpc -lcomm -lmisc -lstate -lutility \
-     -lplugin -ldbatts -lavtexceptions -lparser @PY_LIB@
+     -lplugin -ldbatts -lavtexceptions -lexpr -lparser @PY_LIB@
 CXXFLAGS=@CXXFLAGS@ @PY_CXXFLAGS@ -I. -I../include/visit
 
 

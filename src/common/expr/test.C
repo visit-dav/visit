@@ -1,7 +1,6 @@
 #include "Scanner.h"
 #include "ExprParser.h"
 #include "ParseException.h"
-#include "ParserInterface.h"
 
 // ****************************************************************************
 //  Function:  main
@@ -15,14 +14,16 @@
 //    (Another simultaneous change made the default be the viewer error
 //    reporting mechanism.)
 //
+//    Jeremy Meredith, Wed Nov 24 12:13:20 PST 2004
+//    Refactored the parser into generic and VisIt Expression specific pieces.
+//
 // ****************************************************************************
 int
 main(int argc, char *argv[])
 {
     if (argc<2) {cerr<<"needs an argument\n"; exit(-1);}
 
-    ParserInterface *parser =
-        ParserInterface::MakeParser(new ExprNodeFactory());
+    Parser *parser = new ExprParser(new ExprNodeFactory());
     ExprParser::SetErrorMessageTarget(ExprParser::EMT_CONSOLE);
 
     for (int i=1; i<argc; i++)
@@ -31,7 +32,7 @@ main(int argc, char *argv[])
         cout << "PARSING '"<<argv[i]<<"'"<<endl;
         cout << "----\n\n";
 
-        ExprNode *node = parser->Parse(argv[i]);
+        ExprNode *node = (ExprNode*)parser->Parse(argv[i]);
         if (node)
             node->Print(cout);
         else

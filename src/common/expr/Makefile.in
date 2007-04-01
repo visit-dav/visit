@@ -1,3 +1,4 @@
+#
 #                            Copyright 2000 - 2004
 #                 The Regents of the University of California.
 #                             All rights reserved.
@@ -31,63 +32,90 @@
 # product endorsement purposes.
 #
 # Modifications:
-#
-#   Hank Childs, Fri Aug 11 17:27:34 PDT 2000
-#   Added siloobj_vtk_db directory.
-#
-#   Jeremy Meredith, Fri Nov 17 16:24:12 PST 2000
-#   Removed exception directory.
-#
-#   Jeremy Meredith, Tue Dec 12 15:45:05 PST 2000
-#   Added mir directory.
-#
-#   Jeremy Meredith, Thu May 10 13:56:43 PDT 2001
-#   Moved mir directory out of here.  Added the plugin directory.
-#   Rearranged the directories to linearize the dependences.
-#
-#   Kathleen Bonnell, Mon Oct 29 13:17:39 PST 2001 
-#   Removed siloboj and siloobj_vtk_db subdirs. 
-#
-#   Brad Whitlock, Mon Feb 4 15:34:51 PST 2002
-#   Added winutil directory.
-#
-#   Brad Whitlock, Tue Mar 26 15:17:49 PST 2002
-#   I removed the rpc directory since I put all its contents into state.
-#
-#   Hank Childs, Wed May 22 14:07:50 PDT 2002
-#   Correct RSUBDIRS.
-#
-#   Sean Ahern, Mon Jun 10 16:32:01 PDT 2002
-#   Gutted while moving things to a common location.
-#
-#   Sean Ahern, Tue Jan 21 12:40:11 PST 2003
-#   Added the parser directory.
-#
-#   Brad Whitlock, Fri May 2 14:04:49 PST 2003
-#   I added proxybase.
-#
-#   Brad Whitlock, Thu Apr 22 11:49:37 PDT 2004
-#   I moved winutil into the top level and I moved Exceptions from components
-#   to here.
-#
-#   Jeremy Meredith, Thu Nov 11 15:47:44 PST 2004
-#   Refactored the parser into a base directory and a VisIt expression
-#   language-specific directory.
+#    Jeremy Meredith, Wed Nov 24 12:31:20 PST 2004
+#    Created.  Took mostly from the old parser library.
 #
 ##############################################################################
 
+##
+## Programs and options...
+##
 @SET_MAKE@
 @VARIABLES@
-@DIRTARGETS@
 
-SUBDIRS=misc Exceptions utility comm state plugin proxybase parser expr
+CXXFLAGS=-I. -I../../include/visit -I../../include @CXXFLAGS@
+CPPFLAGS=-I. @CPPFLAGS@
 
+##
+## Files...
+##
+CONFIGPROG=exprconfig
+TESTPROG1=parse
+TESTSRC1=test.C
+COMMONSRC = \
+    ExprGrammar.C \
+    ExprParseTreeNode.C \
+    ExprNode.C \
+    ExprParser.C \
+    ExprScanner.C \
+    InvalidExpressionException.C \
+    ParsingExprList.C \
+    RecursiveExpressionException.C
+CONFIGSRC = ExprConfig.C
+INITSRC=ExprInit.C
+INITOBJ=${INITSRC:.C=.o}
+LIBSRC = \
+    ExprInit.C
+SRC=${LIBSRC} ${COMMONSRC}
+OBJ=$(SRC:.C=.o)
+CONFIGOBJ=$(CONFIGSRC:.C=.o)
+COMMONOBJ=${COMMONSRC:.C=.o}
+CONFIGOBJ=${CONFIGSRC:.C=.o}
+TESTOBJ1=$(TESTSRC1:.C=.o)
+LIB=libexpr
+NOT_DISTRIB=
+LIBS=-L../../lib -lmisc -lstate -lcomm -lutility @LIBS@
+
+##
+## Standard targets...
+##
+all: message $(LIBSHARED)
+
+clean:
+	$(RM) $(OBJ) $(LIBSHARED)
+
+##
+## Intermediate targets...
+##
+.NO_CONFIG_REC:  $(INITSRC)
+.NO_WINK_IN:     $(INITSRC)
+$(INITSRC):
+	./$(CONFIGPROG) $(INITSRC)
+
+init: $(CONFIGPROG)
+	env LD_LIBRARY_PATH=../../lib:${LD_LIBRARY_PATH} ./$(CONFIGPROG) $(INITSRC)
+
+$(CONFIGPROG): $(COMMONOBJ) $(CONFIGOBJ)
+	$(CXX) -o $@ $(LDFLAGS) $(COMMONOBJ) $(CONFIGOBJ) -lparser $(LIBS)
+
+##
+## Test targets...
+##
+$(TESTPROG1) test: $(INITOBJ) $(TESTOBJ1) $(LIBSHARED)
+	$(CXX) -o $(TESTPROG1) $(LDFLAGS) -lexpr -lparser $(TESTOBJ1) $(LIBS)
+
+
+##
+## Other targets
+##
 message:
 	@echo
 	@echo "****************************************************************************"
+	@echo "*** Building VisIt Expression Library ($(LIB))"
 	@echo "****************************************************************************"
-	@echo "***"
-	@echo "*** Building VisIt's Common Libraries"
-	@echo "***"
-	@echo "****************************************************************************"
-	@echo "****************************************************************************"
+
+##
+## Automatic dependency stuff
+##
+@TARGETS@
+@LIBTARGETS@

@@ -1,4 +1,4 @@
-#include <ParserBase.h>
+#include <Parser.h>
 #include <Token.h>
 #include <SymbolSet.h>
 #include <Sequence.h>
@@ -15,20 +15,20 @@ using std::vector;
 //#define DEBUG
 
 // ****************************************************************************
-//  Constructor:  ParserBase::ParserBase
+//  Constructor:  Parser::Parser
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  5, 2002
 //
 // ****************************************************************************
-ParserBase::ParserBase(): ParserInterface()
+Parser::Parser()
 {
     G = NULL;
     Init();
 }
 
 // ****************************************************************************
-//  Method:  ParserBase::Init
+//  Method:  Parser::Init
 //
 //  Purpose:
 //    Reinitialized the parse state, to get ready to parse a new string.
@@ -38,7 +38,7 @@ ParserBase::ParserBase(): ParserInterface()
 //
 // ****************************************************************************
 void
-ParserBase::Init()
+Parser::Init()
 {
     elems.clear();
     states.clear();
@@ -47,7 +47,7 @@ ParserBase::Init()
 }
 
 // ****************************************************************************
-//  Method:  ParserBase::Shift
+//  Method:  Parser::Shift
 //
 //  Purpose:
 //    Shift a token onto the stack, going to a new state.
@@ -57,10 +57,10 @@ ParserBase::Init()
 //
 // ****************************************************************************
 void
-ParserBase::Shift(Token *t, int s)
+Parser::Shift(Token *t, int s)
 {
 #ifdef MOREDEBUG
-    cerr << "Shifting token "; t->Print(cerr); cerr << endl;
+    cerr << "Shifting token "; t->PrintNode(cerr); cerr << endl;
 #endif
     elems.push_back(ParseElem(t));
     states.push_back(s);
@@ -69,7 +69,7 @@ ParserBase::Shift(Token *t, int s)
 }
 
 // ****************************************************************************
-//  Method:  ParserBase::Reduce
+//  Method:  Parser::Reduce
 //
 //  Purpose:
 //    Reduces what is on the stack using the given rule.
@@ -77,9 +77,13 @@ ParserBase::Shift(Token *t, int s)
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  5, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Nov 24 09:02:32 PST 2004
+//    Added list of tokens.  Also, significant refactoring.
+//
 // ****************************************************************************
 void
-ParserBase::Reduce(int r)
+Parser::Reduce(int r)
 {
 #ifdef MOREDEBUG
     cerr << "Reducing using rule " << *(G->GetRule(r)) << endl;
@@ -89,16 +93,21 @@ ParserBase::Reduce(int r)
     const Symbol &sym = *lhs;
 
     int len = rule->GetRHS().Length();
-    vector<ExprGrammarNode*> E;
+    vector<ParseTreeNode*> E;
+    vector<Token*> T;
     int i;
     for (i=0; i<len; i++)
-        E.push_back(elems[elems.size() - len + i].node);
+    {
+        int index = elems.size() - len + i;
+        E.push_back(elems[index].node);
+        T.push_back(elems[index].token);
+    }
 
     Pos p;
     if (len)
         p = Pos(E[0]->GetPos(), E[len-1]->GetPos());
 
-    ExprGrammarNode *node = ApplyRule(sym, rule, E, p);
+    ParseTreeNode *node = ApplyRule(sym, rule, E, T, p);
 
     if (!node)
     {
@@ -133,7 +142,7 @@ ParserBase::Reduce(int r)
 }
 
 // ****************************************************************************
-//  Method:  ParserBase::PrintState
+//  Method:  Parser::PrintState
 //
 //  Purpose:
 //    Prints the current state of the parser.
@@ -143,7 +152,7 @@ ParserBase::Reduce(int r)
 //
 // ****************************************************************************
 void
-ParserBase::PrintState(ostream &o)
+Parser::PrintState(ostream &o)
 {
 #ifdef DEBUG
     //o << "state= "; for (int i=0; i<states.size(); i++) o << states[i] << " "; o << endl;
@@ -152,7 +161,7 @@ ParserBase::PrintState(ostream &o)
 }
 
 // ****************************************************************************
-//  Method:  ParserBase::ParseOneToken
+//  Method:  Parser::ParseOneToken
 //
 //  Purpose:
 //    Parses a single token, setting the accept flag when finished.
@@ -164,12 +173,20 @@ ParserBase::PrintState(ostream &o)
 //    Jeremy Meredith, Mon Jul 28 16:57:00 PDT 2003
 //    Added extra info to the error message.
 //
+//    Jeremy Meredith, Wed Nov 24 12:43:27 PST 2004
+//    Added list of allowed tokens to the error message.  Did not yet
+//    enable it by default because it may be exposing the guts too much.
+//
 // ****************************************************************************
 void
-ParserBase::ParseOneToken(Token *t)
+Parser::ParseOneToken(Token *t)
 {
     const Symbol *tokensym = Symbol::Get(t->GetType());
 #ifdef MOREDEBUG
+    if (!tokensym)
+    {
+        cerr << "Unknown token: type="<<t->GetType()<<endl;
+    }
     cerr << "\nParse("<<*tokensym<<")\n";
 #endif
     State &state = G->GetState(states.back());
@@ -185,10 +202,25 @@ ParserBase::ParseOneToken(Token *t)
     }
     else
     {
-        if (t->GetType() == TT_EOF)
+        if (t->GetType() == EOF_TOKEN_ID)
             throw UnexpectedEndException(t->GetPos());
         else
-            throw SyntacticException(t->GetPos(),
-                                     GetTokenTypeString(t->GetType()));
+        {
+#ifdef DEBUG
+            std::string allowed = "Expected one of: ";
+            std::map<const Symbol*, int>::iterator it;
+            for (it = state.reduce.begin(); it != state.reduce.end(); it++)
+            {
+                allowed += it->first->GetDisplayString() + " ";
+            }
+            for (it = state.shift.begin(); it != state.shift.end(); it++)
+            {
+                allowed += it->first->GetDisplayString() + " ";
+            }
+            throw SyntacticException(t->GetPos(), allowed);
+#else
+            throw SyntacticException(t->GetPos());
+#endif
+        }
     }
 }

@@ -54,8 +54,7 @@
 #include <CompactSILRestrictionAttributes.h>
 #include <VisWindow.h>
 #include <ParsingExprList.h>
-#include <EngineExprNode.h>
-#include <ParserInterface.h>
+#include <avtExprNode.h>
 #include <PlotPluginManager.h>
 #include <PlotPluginInfo.h>
 #ifdef PARALLEL

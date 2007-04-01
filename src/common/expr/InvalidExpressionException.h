@@ -4,7 +4,7 @@
 
 #ifndef INVALID_EXPRESSION_EXCEPTION_H
 #define INVALID_EXPRESSION_EXCEPTION_H
-#include <parser_exports.h>
+#include <expr_exports.h>
 
 #include <VisItException.h>
 
@@ -19,10 +19,12 @@
 //  Creation:   August 15, 2003
 //
 //  Modifications:
+//    Jeremy Meredith, Wed Nov 24 12:26:21 PST 2004
+//    Refactored expression specific stuff into a new library.
 //
 // **************************************************************************** 
 
-class PARSER_API InvalidExpressionException : public VisItException
+class EXPR_API InvalidExpressionException : public VisItException
 {
   public:
                           InvalidExpressionException(std::string);

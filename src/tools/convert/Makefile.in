@@ -40,6 +40,9 @@
 #   Brad Whitlock, Tue Nov 2 08:49:59 PDT 2004
 #   I fixed the parallel target.
 #
+#   Jeremy Meredith, Tue Nov 23 14:53:07 PST 2004
+#   Refactored the expression parser into two separate libraries.
+#
 ##############################################################################
 
 ##
@@ -52,8 +55,8 @@
 
 CPPFLAGS=-I. -I../../include -I../../include/visit
 
-SERLIBS=-L../../lib -ldatabase_ser -lpipeline_ser -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_ser -lavtexceptions -lmir -lplugin @VTK_LIBS@ $(X_LIBS) @LIBS@ @PTHREAD_LIB@
-PARLIBS=-L../../lib -ldatabase_par -lpipeline_par -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_par -lavtexceptions -lmir -lplugin @VTK_LIBS@ $(X_LIBS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
+SERLIBS=-L../../lib -ldatabase_ser -lpipeline_ser -lexpressions_ser -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_ser -lavtexceptions -lmir -lplugin @VTK_LIBS@ $(X_LIBS) @LIBS@ @PTHREAD_LIB@
+PARLIBS=-L../../lib -ldatabase_par -lpipeline_par -lexpressions_par -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_par -lavtexceptions -lmir -lplugin @VTK_LIBS@ $(X_LIBS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
 LIBDEP=
 
 ##

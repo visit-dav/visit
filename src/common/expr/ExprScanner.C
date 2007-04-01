@@ -5,9 +5,11 @@
 using std::string;
 using std::deque;
 
-#include "Scanner.h"
-#include "Token.h"
+#include "ExprScanner.h"
+#include "ExprToken.h"
 #include "ParseException.h"
+
+using     std::string;
 
 // ----------------------------------------------------------------------------
 //  Scanner modifications:
@@ -15,6 +17,10 @@ using std::deque;
 //    Allow dots in tokens that started with were clearly scanned as
 //    identifiers already.  For example, "alpha.1" will scan as a single
 //    identifier now, without the need for the "<>" notation.
+//
+//    Jeremy Meredith, Wed Nov 24 12:01:44 PST 2004
+//    Major refactoring caused this class to be renamed to ExprScanner
+//    and Token to ExprToken.
 //
 // ----------------------------------------------------------------------------
 
@@ -52,7 +58,7 @@ static const bool StateAcceptance[13] = {
 };
 
 // ****************************************************************************
-//  Method:  Scanner::GetCharType
+//  Method:  ExprScanner::GetCharType
 //
 //  Purpose:
 //    Returns the category of character just scanned.  This reduction
@@ -68,7 +74,7 @@ static const bool StateAcceptance[13] = {
 //
 // ****************************************************************************
 int
-Scanner::GetCharType(const char c)
+ExprScanner::GetCharType(const char c)
 {
     ScanState s = scanstate.back();
     int type = Err;
@@ -107,7 +113,7 @@ Scanner::GetCharType(const char c)
 }
 
 // ****************************************************************************
-//  Method:  Scanner::GetAcceptToken
+//  Method:  ExprScanner::GetAcceptToken
 //
 //  Purpose:
 //    Creates a token based on the state and the string.
@@ -122,7 +128,7 @@ Scanner::GetCharType(const char c)
 //
 // ****************************************************************************
 Token *
-Scanner::GetAcceptToken(const Pos &pos, const std::string &parsed, int state)
+ExprScanner::GetAcceptToken(const Pos &pos, const std::string &parsed, int state)
 {
     switch (state)
     {
@@ -152,7 +158,7 @@ Scanner::GetAcceptToken(const Pos &pos, const std::string &parsed, int state)
 }
 
 // ****************************************************************************
-//  Method:  Scanner::SetInput
+//  Method:  ExprScanner::SetInput
 //
 //  Purpose:
 //    Sets a new input and resets the scan state.
@@ -162,7 +168,7 @@ Scanner::GetAcceptToken(const Pos &pos, const std::string &parsed, int state)
 //
 // ****************************************************************************
 void
-Scanner::SetInput(const std::string &s)
+ExprScanner::SetInput(const std::string &s)
 {
     // Set the input text
     text = s;
@@ -179,7 +185,7 @@ Scanner::SetInput(const std::string &s)
 }
 
 // ****************************************************************************
-//  Method:  Scanner::UpdateScanState
+//  Method:  ExprScanner::UpdateScanState
 //
 //  Purpose:
 //    This is specialized for our grammar since identifiers inside <>
@@ -190,7 +196,7 @@ Scanner::SetInput(const std::string &s)
 //
 // ****************************************************************************
 void
-Scanner::UpdateScanState(const std::string &parsed)
+ExprScanner::UpdateScanState(const std::string &parsed)
 {
     switch (scanstate.back())
     {
@@ -220,7 +226,7 @@ Scanner::UpdateScanState(const std::string &parsed)
 }
 
 // ****************************************************************************
-//  Method:  Scanner::ScanOneToken
+//  Method:  ExprScanner::ScanOneToken
 //
 //  Purpose:
 //    Scans the string when it left off and returns the next token.
@@ -230,7 +236,7 @@ Scanner::UpdateScanState(const std::string &parsed)
 //
 // ****************************************************************************
 Token*
-Scanner::ScanOneToken()
+ExprScanner::ScanOneToken()
 {
     string workstring = "";
 

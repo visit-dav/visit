@@ -16,10 +16,10 @@ using std::vector;
 
 ExprParser::ErrorMessageTarget ExprParser::errorMessageTarget = EMT_EXCEPTION;
 
-class DummyNode : public ExprGrammarNode
+class DummyNode : public ExprParseTreeNode
 {
   public:
-    DummyNode(const Pos &p) : ExprGrammarNode(p) { }
+    DummyNode(const Pos &p) : ExprParseTreeNode(p) { }
     virtual void PrintNode(ostream &o) { o << "DummyNode\n"; }
 };
 
@@ -30,7 +30,7 @@ class DummyNode : public ExprGrammarNode
 //  Creation:    April  5, 2002
 //
 // ****************************************************************************
-ExprParser::ExprParser(ExprNodeFactory *f) : ParserBase(), factory(f)
+ExprParser::ExprParser(ExprNodeFactory *f) : Parser(), factory(f)
 {
     Grammar *G = new ExprGrammar;
     if (!G->Initialize())
@@ -54,11 +54,14 @@ ExprParser::ExprParser(ExprNodeFactory *f) : ParserBase(), factory(f)
 //  Arguments:
 //    sym        the LHS of the rule
 //    rule       the rule to apply
-//    E          an array of ExprGrammarNodes as long as the length of the rule's RHS
+//    E          an array of ExprParseTreeNodes as long as the length
+//               of the rule's RHS
+//    T          an array of Tokens as long as the length of the rule's RHS
+//               note that many of these may be NULL
 //    p          the position encompassing the sequence in the expression
 //
 //  Note:
-//    All ExprGrammarNodes must be downcasted here.  One must be careful that they
+//    All ExprParseTreeNodes must be downcasted here.  One must be careful that they
 //    create the right types of nodes for what they are expecting in later
 //    reductions.
 //
@@ -66,81 +69,87 @@ ExprParser::ExprParser(ExprNodeFactory *f) : ParserBase(), factory(f)
 //  Creation:    April  5, 2002
 //
 //  Modifications:
-//      Sean Ahern, Wed Oct 16 14:11:22 PDT 2002
-//      Changed to use an ExprNodeFactory.
+//    Sean Ahern, Wed Oct 16 14:11:22 PDT 2002
+//    Changed to use an ExprNodeFactory.
 //
 //    Jeremy Meredith, Mon Jul 28 16:03:49 PDT 2003
 //    Added more info to the error message in the TimeSpec.
 //
+//    Jeremy Meredith, Tue Nov 23 14:51:51 PST 2004
+//    Refactored.  Removed the dynamic cast.
+//
+//    Jeremy Meredith, Wed Nov 24 15:36:34 PST 2004
+//    Removed Expr => List and added Arg => Expr.  Lists are not
+//    derived from ExprNode in the chain, and this seems more correct
+//    since no filter can yet support expressions anyway.  We can
+//    change it back later if we ever support it.
+//
 // ****************************************************************************
-ExprGrammarNode*
-ExprParser::ApplyRule(const Symbol &sym, const Rule *rule,
-                      vector<ExprGrammarNode*> &E, Pos p)
+ParseTreeNode*
+ExprParser::ApplyRule(const Symbol           &sym,
+                      const Rule             *rule,
+                      vector<ParseTreeNode*> &E,
+                      vector<Token*>         &T,
+                      Pos                     p)
 {
-    ExprGrammarNode *node = NULL;
+    ParseTreeNode *node = NULL;
     if (sym == Expr)
     {
         switch (rule->GetID())
         {
         case 0:
-            node = factory->CreateBinaryExpr(p, (
-                                          static_cast<Character *>(E[1]))->GetVal(),
-                                          static_cast<ExprNode *>(E[0]),
-                                          static_cast<ExprNode *>(E[2]));
+            node = factory->CreateBinaryExpr(p,
+                           ((Character*)T[1])->GetVal(),
+                           (ExprNode*)(E[0]),
+                           (ExprNode*)(E[2]));
 
             break;
 
         case 1:
-            node = factory->CreateBinaryExpr(p, (
-                                          static_cast<Character *>(E[1]))->GetVal(),
-                                          static_cast<ExprNode *>(E[0]),
-                                          static_cast<ExprNode *>(E[2]));
+            node = factory->CreateBinaryExpr(p,
+                                          ((Character*)T[1])->GetVal(),
+                                          (ExprNode*)(E[0]),
+                                          (ExprNode*)(E[2]));
 
             break;
         case 2:
-            node = factory->CreateBinaryExpr(p, (
-                                          static_cast<Character *>(E[1]))->GetVal(),
-                                          static_cast<ExprNode*>(E[0]),
-                                          static_cast<ExprNode*>(E[2]));
+            node = factory->CreateBinaryExpr(p,
+                                          ((Character*)T[1])->GetVal(),
+                                          (ExprNode*)(E[0]),
+                                          (ExprNode*)(E[2]));
 
             break;
         case 3:
-            node = factory->CreateBinaryExpr(p, (
-                                             static_cast<Character *>(E[1]))->GetVal(),
-                                             static_cast<ExprNode*>(E[0]),
-                                             static_cast<ExprNode*>(E[2]));
+            node = factory->CreateBinaryExpr(p,
+                                             ((Character*)T[1])->GetVal(),
+                                             (ExprNode*)(E[0]),
+                                             (ExprNode*)(E[2]));
             break;
         case 4:
-            node = factory->CreateBinaryExpr(p, (
-                                             static_cast<Character *>(E[1]))->GetVal(),
-                                             static_cast<ExprNode*>(E[0]),
-                                             static_cast<ExprNode*>(E[2]));
+            node = factory->CreateBinaryExpr(p,
+                                             ((Character*)T[1])->GetVal(),
+                                             (ExprNode*)(E[0]),
+                                             (ExprNode*)(E[2]));
 
             break;
         case 5:
-            node = factory->CreateBinaryExpr(p, (
-                                             static_cast<Character *>(E[1]))->GetVal(),
-                                             static_cast<ExprNode*>(E[0]),
-                                             static_cast<ExprNode*>(E[2]));
+            node = factory->CreateBinaryExpr(p,
+                                             ((Character*)T[1])->GetVal(),
+                                             (ExprNode*)(E[0]),
+                                             (ExprNode*)(E[2]));
 
             break;
         case 6:
             // We know that the only token that can come from this
             // expansion is an int, so do the cast.
-            {
-            Token *t = static_cast<Token *>(E[2]);
-            IntegerConst *ic = dynamic_cast<IntegerConst*>(t);
-            int value = ic->GetValue();
             node = factory->CreateIndexExpr(p,
-                                            static_cast<ExprNode *>(E[0]),
-                                            value);
-            }
-
+                                            (ExprNode*)(E[0]),
+                                            ((IntegerConst*)T[2])->GetValue());
             break;
         case 7:
-            node = factory->CreateUnaryExpr(p, (
-                                            static_cast<Character *>(E[0]))->GetVal(),
-                                            static_cast<ExprNode*>(E[1]));
+            node = factory->CreateUnaryExpr(p,
+                                            ((Character*)T[0])->GetVal(),
+                                            (ExprNode*)(E[1]));
 
             break;
         case 8:
@@ -161,25 +170,31 @@ ExprParser::ApplyRule(const Symbol &sym, const Rule *rule,
         case 13:
             node = E[0];
             break;
+        /* The next rule (for Expr => List) is commented out
+           because we cannot implement it right now.  If we
+           uncomment this expansion, we should remove Arg => List
+           because we could simply Arg => Expr => List.  This
+           will probably fail with a RR conflict anyway....
         case 14:
             node = E[0];
             break;
+            */
         }
     } else if (sym == Constant)
     {
         switch (rule->GetID())
         {
         case 0:
-            node = factory->CreateConstExpr(p, static_cast<Token *>(E[0]));
+            node = factory->CreateConstExpr(p, (ExprToken *)T[0]);
             break;
         case 1:
-            node = factory->CreateConstExpr(p, static_cast<Token *>(E[0]));
+            node = factory->CreateConstExpr(p, (ExprToken *)T[0]);
             break;
         case 2:
-            node = factory->CreateConstExpr(p, static_cast<Token *>(E[0]));
+            node = factory->CreateConstExpr(p, (ExprToken *)T[0]);
             break;
         case 3:
-            node = factory->CreateConstExpr(p, static_cast<Token *>(E[0]));
+            node = factory->CreateConstExpr(p, (ExprToken *)T[0]);
             break;
         }
     } else if (sym == Vector)
@@ -188,14 +203,14 @@ ExprParser::ApplyRule(const Symbol &sym, const Rule *rule,
         {
         case 0:
             node = factory->CreateVectorExpr(p,
-                                             static_cast<ExprNode*>(E[1]),
-                                             static_cast<ExprNode*>(E[3]));
+                                             (ExprNode*)(E[1]),
+                                             (ExprNode*)(E[3]));
             break;
         case 1:
             node = factory->CreateVectorExpr(p,
-                                             static_cast<ExprNode*>(E[1]),
-                                             static_cast<ExprNode*>(E[3]),
-                                             static_cast<ExprNode*>(E[5]));
+                                             (ExprNode*)(E[1]),
+                                             (ExprNode*)(E[3]),
+                                             (ExprNode*)(E[5]));
             break;
         }
     } else if (sym == List)
@@ -211,10 +226,10 @@ ExprParser::ApplyRule(const Symbol &sym, const Rule *rule,
         switch (rule->GetID())
         {
         case 0:
-            ((ListExpr *) (node = E[0]))->AddListElem(static_cast<ListElemExpr *>(E[2]));
+            ((ListExpr *) (node = E[0]))->AddListElem((ListElemExpr*)(E[2]));
             break;
         case 1:
-            node = new ListExpr(p, static_cast<ListElemExpr *>(E[0]));
+            node = new ListExpr(p, (ListElemExpr*)(E[0]));
             break;
         }
     } else if (sym == ListElem)
@@ -222,16 +237,16 @@ ExprParser::ApplyRule(const Symbol &sym, const Rule *rule,
         switch (rule->GetID())
         {
         case 0:
-            node = new ListElemExpr(p, static_cast<ExprNode*>(E[0]));
+            node = new ListElemExpr(p, (ExprNode*)(E[0]));
             break;
         case 1:
-            node = new ListElemExpr(p, static_cast<ExprNode*>(E[0]),
-                                    static_cast<ExprNode*>(E[2]));
+            node = new ListElemExpr(p, (ExprNode*)(E[0]),
+                                    (ExprNode*)(E[2]));
             break;
         case 2:
-            node = new ListElemExpr(p, static_cast<ExprNode*>(E[0]),
-                                    static_cast<ExprNode*>(E[2]),
-                                    static_cast<ExprNode*>(E[4]));
+            node = new ListElemExpr(p, (ExprNode*)(E[0]),
+                                    (ExprNode*)(E[2]),
+                                    (ExprNode*)(E[4]));
             break;
         }
     } else if (sym == Function)
@@ -239,12 +254,12 @@ ExprParser::ApplyRule(const Symbol &sym, const Rule *rule,
         switch (rule->GetID())
         {
         case 0:
-            node = factory->CreateFunctionExpr(p, static_cast<Identifier *>(E[0]));
+            node = factory->CreateFunctionExpr(p, ((Identifier*)T[0]));
             break;
         case 1:
             node = factory->CreateFunctionExpr(p,
-                                            static_cast<Identifier *>(E[0]),
-                                            static_cast<ArgsExpr *>(E[2]));
+                                            ((Identifier*)T[0]),
+                                            (ArgsExpr*)(E[2]));
             break;
         }
     } else if (sym == Args)
@@ -252,10 +267,10 @@ ExprParser::ApplyRule(const Symbol &sym, const Rule *rule,
         switch (rule->GetID())
         {
         case 0:
-            ((ArgsExpr *) (node = E[0]))->AddArg(static_cast<ArgExpr *>(E[2]));
+            ((ArgsExpr *) (node = E[0]))->AddArg((ArgExpr*)(E[2]));
             break;
         case 1:
-            node = new ArgsExpr(p, static_cast<ArgExpr *>(E[0]));
+            node = new ArgsExpr(p, (ArgExpr*)(E[0]));
             break;
         }
     } else if (sym == Arg)
@@ -263,11 +278,13 @@ ExprParser::ApplyRule(const Symbol &sym, const Rule *rule,
         switch (rule->GetID())
         {
         case 0:
-            node = new ArgExpr(p, static_cast<ExprNode*>(E[0]));
+            node = new ArgExpr(p, (ExprParseTreeNode*)E[0]);
             break;
         case 1:
-            node = new ArgExpr(p, static_cast<Identifier *>(E[0]),
-                               static_cast<ExprNode*>(E[2]));
+            node = new ArgExpr(p, ((Identifier*)T[0]),(ExprParseTreeNode*)E[2]);
+            break;
+        case 2:
+            node = new ArgExpr(p, (ExprParseTreeNode*)E[0]);
             break;
         }
     } else if (sym == PathSpec)
@@ -277,17 +294,17 @@ ExprParser::ApplyRule(const Symbol &sym, const Rule *rule,
         case 0:
             node = E[0];
             ((PathExpr *) node)->Append("/");
-            ((PathExpr *) node)->Append((static_cast<Identifier *>(E[2]))->GetVal());
+            ((PathExpr *) node)->Append(((Identifier*)T[2])->GetVal());
 
             delete  E[1];
             break;
         case 1:
             node = new PathExpr(p, "/");
-            ((PathExpr *) node)->Append((static_cast<Identifier *>(E[1]))->GetVal());
+            ((PathExpr *) node)->Append(((Identifier*)T[1])->GetVal());
             delete  E[0];
             break;
         case 2:
-            node = new PathExpr(p, (static_cast<Identifier *>(E[0]))->GetVal());
+          node = new PathExpr(p, ((Identifier*)T[0])->GetVal());
             break;
         }
     } else if (sym == MultiSlash)
@@ -307,17 +324,17 @@ ExprParser::ApplyRule(const Symbol &sym, const Rule *rule,
         {
         case 0:
             node = factory->CreateVarExpr(p, NULL, new PathExpr(p,
-                                          (static_cast<Identifier *>(E[0]))->GetVal()),
+                                          ((Identifier*)T[0])->GetVal()),
                                           true);
             break;
         case 1:
             node = factory->CreateVarExpr(p, NULL,
-                                          static_cast<PathExpr *>(E[1]),
+                                          (PathExpr*)(E[1]),
                                           false);
             break;
         case 2:
-            node = factory->CreateVarExpr(p, static_cast<DBExpr *>(E[1]),
-                                          static_cast<PathExpr *>(E[3]),
+            node = factory->CreateVarExpr(p, (DBExpr*)(E[1]),
+                                          (PathExpr*)(E[3]),
                                           false);
             break;
         }
@@ -334,24 +351,24 @@ ExprParser::ApplyRule(const Symbol &sym, const Rule *rule,
         switch (rule->GetID())
         {
         case 0:
-            node = new DBExpr(p, static_cast<PathExpr *>(E[0]), NULL, NULL);
+            node = new DBExpr(p, (PathExpr*)(E[0]), NULL, NULL);
             break;
         case 1:
-            node = new DBExpr(p, static_cast<PathExpr *>(E[0]),
-                              static_cast<MachExpr *>(E[1]), NULL);
+            node = new DBExpr(p, (PathExpr*)(E[0]),
+                              (MachExpr*)(E[1]), NULL);
             break;
         case 2:
-            node = new DBExpr(p, NULL, NULL, static_cast<TimeExpr *>(E[0]));
+            node = new DBExpr(p, NULL, NULL, (TimeExpr*)(E[0]));
             break;
         case 3:
-            node = new DBExpr(p, static_cast<PathExpr *>(E[0]), NULL,
-                              static_cast<TimeExpr *>(E[1]));
+            node = new DBExpr(p, (PathExpr*)(E[0]), NULL,
+                              (TimeExpr*)(E[1]));
             break;
         case 4:
             node =
-                new DBExpr(p, static_cast<PathExpr *>(E[0]),
-                           static_cast<MachExpr *>(E[1]),
-                           static_cast<TimeExpr *>(E[2]));
+                new DBExpr(p, (PathExpr*)(E[0]),
+                           (MachExpr*)(E[1]),
+                           (TimeExpr*)(E[2]));
             break;
         }
     } else if (sym == MachSpec)
@@ -359,7 +376,7 @@ ExprParser::ApplyRule(const Symbol &sym, const Rule *rule,
         switch (rule->GetID())
         {
         case 0:
-            node = new MachExpr(p, static_cast<Identifier *>(E[1]));
+            node = new MachExpr(p, ((Identifier*)T[1]));
             break;
         }
     } else if (sym == TimeSpec)
@@ -368,7 +385,7 @@ ExprParser::ApplyRule(const Symbol &sym, const Rule *rule,
         {
         case 0:
             {
-                const   string & id = static_cast<Identifier *>(E[3])->GetVal();
+                const   string & id = ((Identifier*)T[3])->GetVal();
                 if (id.length() != 1)
                     throw SyntacticException(E[3]->GetPos(),
                                              "needs to be 'i', 'c', or 't'");
@@ -383,14 +400,14 @@ ExprParser::ApplyRule(const Symbol &sym, const Rule *rule,
                 else
                     throw SyntacticException(E[3]->GetPos(),
                                              "needs to be 'i', 'c', or 't'");
-                node = new TimeExpr(p, static_cast<ListExpr *>(E[1]), t);
+                node = new TimeExpr(p, (ListExpr*)(E[1]), t);
                 break;
             }
         case 1:
-            node = new TimeExpr(p, static_cast<ListExpr *>(E[1]));
+            node = new TimeExpr(p, (ListExpr*)(E[1]));
             break;
         case 2:
-            node = new TimeExpr(p, static_cast<ListExpr *>(E[2]),
+            node = new TimeExpr(p, (ListExpr*)(E[2]),
                                 TimeExpr::Index);
             break;
         }
@@ -424,8 +441,12 @@ ExprParser::ApplyRule(const Symbol &sym, const Rule *rule,
 //    Jeremy Meredith, Fri Aug 15 12:49:01 PDT 2003
 //    Added the EMT_EXCEPTION type, and renamed EMT_VIEWER to EMT_COMPONENT.
 //
+//    Jeremy Meredith, Wed Nov 24 11:51:59 PST 2004
+//    Refactored.  There's a new base class for the ExprParser and the
+//    return types became more general.
+//
 // ****************************************************************************
-ExprNode*
+ParseTreeNode*
 ExprParser::Parse(const std::string &s)
 {
     string text(s);
@@ -476,6 +497,6 @@ ExprParser::Parse(const std::string &s)
         return NULL;
     }
 
-    return static_cast<ExprNode*>(GetParseTree());
+    return GetParseTree();
 }
 

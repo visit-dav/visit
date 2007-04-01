@@ -287,6 +287,9 @@
 #    Kathleen Bonnell, Fri Nov 12 09:54:25 PST 2004 
 #    Added QvisPointControl.
 #
+#    Jeremy Meredith, Tue Nov 23 14:53:07 PST 2004
+#    Refactored the expression parser into two separate libraries.
+#
 ##############################################################################
 
 ##
@@ -298,7 +301,7 @@ LIB=libgui
 
 LIBS=-lplugin @QT_LIBS@ -L../lib -lviewerproxy -lviewerrpc \
      -lmdserverproxy -lmdserverrpc -ldbatts -lproxybase \
-     -lmisc -lstate -lcomm -lavtexceptions -lutility -lparser \
+     -lmisc -lstate -lcomm -lavtexceptions -lutility -lexpr -lparser \
      -lwinutil $(X_LIBS) @LIBS@ @PTHREAD_LIB@ @GUIFRAMEWORKS@
 
 LDFLAGS=@LDFLAGS@ @QT_LDFLAGS@

@@ -93,8 +93,7 @@ dnl
 dnl    Hank Childs, Sat Mar 10 18:20:57 PST 2001
 dnl    Added an option for timings.
 dnl
-dnl    Eric Brugger, Thu Mar 15 17:13:09 PST 2001
-dnl    Modify the script to not generate viewer/cli/Makefile since the cli
+dnl    Eric Brugger, Thu Mar 15 17:13:09 PST 2001dnl    Modify the script to not generate viewer/cli/Makefile since the cli
 dnl    directory has been removed.
 dnl
 dnl    Jim Reus, Fri Mar 23 06:42:10 PST 2001
@@ -524,6 +523,9 @@ dnl    missing from final make variable names that were created
 dnl
 dnl    Jeremy Meredith, Mon Aug 30 16:55:36 PDT 2004
 dnl    Added parallel directory to visit_vtk.
+dnl
+dnl    Jeremy Meredith, Wed Nov 24 11:40:55 PST 2004
+dnl    Refactored the expression parser into two separate libraries.
 dnl
 dnl --------------------------------------------------------------------------
 
@@ -2919,6 +2921,7 @@ COMMON_FILES="common/Makefile
               common/comm/Makefile
               common/misc/Makefile
               common/parser/Makefile
+              common/expr/Makefile
               common/plugin/Makefile
               common/proxybase/Makefile
               common/siloobj/Makefile

@@ -1,5 +1,5 @@
 // ************************************************************************* //
-//                              EngineExprNode.C                             //
+//                                avtExprNode.C                              //
 // ************************************************************************* //
 
 #include <avtUnaryMinusFilter.h>
@@ -65,16 +65,16 @@
 
 #include <stdio.h>
 #include <ExpressionException.h>
-#include <Token.h>
+#include <ExprToken.h>
 #include <ExprPipelineState.h>
-#include <EngineExprNode.h>
+#include <avtExprNode.h>
 #include <DebugStream.h>
 #include <snprintf.h>
 
 using std::string;
 
 void
-EngineConstExpr::CreateFilters(ExprPipelineState *state)
+avtConstExpr::CreateFilters(ExprPipelineState *state)
 {
     // First, check if this is a constant that we can handle.  Only numbers
     // are supported right now.
@@ -89,7 +89,7 @@ EngineConstExpr::CreateFilters(ExprPipelineState *state)
         break;
     default:
         string error =
-            string("EngineConstExpr::CreateFilters: "
+            string("avtConstExpr::CreateFilters: "
                    "Unsupported constant type: ") +
                    GetTokenTypeString(token->GetType());
 
@@ -110,9 +110,9 @@ EngineConstExpr::CreateFilters(ExprPipelineState *state)
 }
 
 void
-EngineUnaryExpr::CreateFilters(ExprPipelineState *state)
+avtUnaryExpr::CreateFilters(ExprPipelineState *state)
 {
-    dynamic_cast<EngineExprNode*>(expr)->CreateFilters(state);
+    dynamic_cast<avtExprNode*>(expr)->CreateFilters(state);
 
     avtSingleInputExpressionFilter *f = NULL;
     if (op == '-')
@@ -120,7 +120,7 @@ EngineUnaryExpr::CreateFilters(ExprPipelineState *state)
     else
     {
         string error =
-            string("EngineUnaryExpr::CreateFilters: "
+            string("avtUnaryExpr::CreateFilters: "
                    "Unknown unary operator:\"") + op + string("\".");
         EXCEPTION1(ExpressionException, error);
     }
@@ -141,10 +141,10 @@ EngineUnaryExpr::CreateFilters(ExprPipelineState *state)
 }
 
 void
-EngineBinaryExpr::CreateFilters(ExprPipelineState *state)
+avtBinaryExpr::CreateFilters(ExprPipelineState *state)
 {
-    dynamic_cast<EngineExprNode*>(left)->CreateFilters(state);
-    dynamic_cast<EngineExprNode*>(right)->CreateFilters(state);
+    dynamic_cast<avtExprNode*>(left)->CreateFilters(state);
+    dynamic_cast<avtExprNode*>(right)->CreateFilters(state);
 
     avtMultipleInputExpressionFilter *f = NULL;
     if (op == '+')
@@ -160,7 +160,7 @@ EngineBinaryExpr::CreateFilters(ExprPipelineState *state)
     else
     {
         string error =
-            string("EngineBinaryExpr::CreateFilters: "
+            string("avtBinaryExpr::CreateFilters: "
                    "Unknown binary operator:\"") + op + string("\".");
         EXCEPTION1(ExpressionException, error);
     }
@@ -183,9 +183,9 @@ EngineBinaryExpr::CreateFilters(ExprPipelineState *state)
 }
 
 void
-EngineIndexExpr::CreateFilters(ExprPipelineState *state)
+avtIndexExpr::CreateFilters(ExprPipelineState *state)
 {
-    dynamic_cast<EngineExprNode*>(expr)->CreateFilters(state);
+    dynamic_cast<avtExprNode*>(expr)->CreateFilters(state);
 
     //avtVectorDecomposeFilter *f = new avtVectorDecomposeFilter(ind);
     avtVectorDecomposeFilter *f = new avtVectorDecomposeFilter(ind);
@@ -208,7 +208,7 @@ EngineIndexExpr::CreateFilters(ExprPipelineState *state)
 }
 
 // ****************************************************************************
-//  Method:  EngineVectorExpr::CreateFilters
+//  Method:  avtVectorExpr::CreateFilters
 //
 //  Purpose:
 //    Creates the avt filters necessary to evaluate a vector.
@@ -224,12 +224,12 @@ EngineIndexExpr::CreateFilters(ExprPipelineState *state)
 //
 // ****************************************************************************
 void
-EngineVectorExpr::CreateFilters(ExprPipelineState *state)
+avtVectorExpr::CreateFilters(ExprPipelineState *state)
 {
-    dynamic_cast<EngineExprNode*>(x)->CreateFilters(state);
-    dynamic_cast<EngineExprNode*>(y)->CreateFilters(state);
+    dynamic_cast<avtExprNode*>(x)->CreateFilters(state);
+    dynamic_cast<avtExprNode*>(y)->CreateFilters(state);
     if (z)
-        dynamic_cast<EngineExprNode*>(z)->CreateFilters(state);
+        dynamic_cast<avtExprNode*>(z)->CreateFilters(state);
 
     avtVectorComposeFilter *f = new avtVectorComposeFilter();
 
@@ -260,7 +260,7 @@ EngineVectorExpr::CreateFilters(ExprPipelineState *state)
 }
 
 // ****************************************************************************
-// Method: EngineFunctionExpr::CreateFilters
+// Method: avtFunctionExpr::CreateFilters
 //
 // Purpose:
 //     Creates the avt filters that are necessary to complete the given
@@ -295,7 +295,7 @@ EngineVectorExpr::CreateFilters(ExprPipelineState *state)
 //
 // ****************************************************************************
 void
-EngineFunctionExpr::CreateFilters(ExprPipelineState *state)
+avtFunctionExpr::CreateFilters(ExprPipelineState *state)
 {
     // Figure out which filter to add and add it.
     string functionName = name->GetVal();
@@ -491,7 +491,7 @@ EngineFunctionExpr::CreateFilters(ExprPipelineState *state)
     else
     {
         string error =
-            string("EngineFunctionExpr::CreateFilters: "
+            string("avtFunctionExpr::CreateFilters: "
                    "Unknown function:\"") + functionName +
                    string("\".");
         EXCEPTION1(ExpressionException, error);
@@ -539,7 +539,7 @@ EngineFunctionExpr::CreateFilters(ExprPipelineState *state)
 }
 
 void
-EngineVarExpr::CreateFilters(ExprPipelineState *state)
+avtVarExpr::CreateFilters(ExprPipelineState *state)
 {
     state->PushName(var->GetFullpath());
 }

@@ -11,8 +11,8 @@
 #include <vtkFloatArray.h>
 #include <vtkUnsignedIntArray.h>
 
-#include <Token.h>
-#include <EngineExprNode.h>
+#include <avtExprNode.h>
+#include <ExprToken.h>
 
 #include <avtCallback.h>
 #include <avtMaterial.h>
@@ -390,6 +390,11 @@ avtMatvfFilter::DeriveVariable(vtkDataSet *in_ds)
 //    Make sure the base pointer type for the dynamic cast is in the 
 //    inheritance tree of what we are downcasting type. ('5201)
 //
+//    Jeremy Meredith, Wed Nov 24 12:26:21 PST 2004
+//    Renamed EngineExprNode to avtExprNode due to a refactoring.
+//    Also renamed Token to ExprToken for the same reason.
+//    Changed the base type for an Arg's expression.
+//
 // ****************************************************************************
 void
 avtMatvfFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
@@ -403,7 +408,7 @@ avtMatvfFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     }
     // Tell the first argument to create its filters.
     ArgExpr *firstarg = (*arguments)[0];
-    EngineExprNode *firstTree = dynamic_cast<EngineExprNode*>(firstarg->GetExpr());
+    avtExprNode *firstTree = dynamic_cast<avtExprNode*>(firstarg->GetExpr());
     firstTree->CreateFilters(state);
 
     // Check if there's a second argument.
@@ -423,7 +428,7 @@ avtMatvfFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
 
     // Pull off the second argument and see if it's a string or a list.
     ArgExpr *secondarg = (*arguments)[1];
-    ExprGrammarNode *secondTree = secondarg->GetExpr();
+    ExprParseTreeNode *secondTree = secondarg->GetExpr();
     string type = secondTree->GetTypeName();
     if ((type != "Const") && (type != "List"))
     {
@@ -458,10 +463,10 @@ avtMatvfFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
                                "Range must contain integers.");
                 }
 
-                Token *begTok  = dynamic_cast<ConstExpr*>(begExpr)->GetToken();
-                Token *endTok  = dynamic_cast<ConstExpr*>(endExpr)->GetToken();
-                Token *skipTok = !skipExpr ? NULL :
-                                dynamic_cast<ConstExpr*>(skipExpr)->GetToken();
+                ExprToken *begTok  = dynamic_cast<ConstExpr*>(begExpr)->GetToken();
+                ExprToken *endTok  = dynamic_cast<ConstExpr*>(endExpr)->GetToken();
+                ExprToken *skipTok = !skipExpr ? NULL :
+                                     dynamic_cast<ConstExpr*>(skipExpr)->GetToken();
 
                 if (begTok->GetType() != TT_IntegerConst ||
                     endTok->GetType() != TT_IntegerConst ||

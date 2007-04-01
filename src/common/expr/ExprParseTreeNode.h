@@ -1,21 +1,23 @@
 // ************************************************************************* //
-//                             ExprGrammarNode.h                             //
+//                            ExprParseTreeNode.h                            //
 // ************************************************************************* //
 
-#ifndef EXPRGRAMMARNODE_H
-#define EXPRGRAMMARNODE_H
+#ifndef EXPRPARSETREENODE_H
+#define EXPRPARSETREENODE_H
 
-#include <parser_exports.h>
+#include <expr_exports.h>
 
 #include <vector>
 #include <Pos.h>
 #include <set>
 
+#include <ParseTreeNode.h>
+
 class Identifier;
 class Token;
 
 // ****************************************************************************
-//  Class:  ExprGrammarNode
+//  Class:  ExprParseTreeNode
 //
 //  Purpose:
 //    Base class for all grammar nodes in VisIt expression trees.
@@ -28,21 +30,18 @@ class Token;
 //    Hank Childs, Thu Aug 14 08:21:14 PDT 2003
 //    Un-inlined Print method, since it contained statics.
 //
+//    Jeremy Meredith, Thu Nov 11 12:35:11 PST 2004
+//    Refactored the non-expression related things to another class.
+//
 // ****************************************************************************
-class PARSER_API ExprGrammarNode
+class EXPR_API ExprParseTreeNode : public ParseTreeNode
 {
   public:
-    ExprGrammarNode(const Pos &p) : pos(p) { }
-    virtual ~ExprGrammarNode() { }
-    const Pos &GetPos() const {return pos;}
-    Pos       &GetPos()       {return pos;}
-    virtual const std::string GetTypeName() {return "ExprGrammarNode";}
+    ExprParseTreeNode(const Pos &p) : ParseTreeNode(p) { }
+    virtual ~ExprParseTreeNode() { }
+    virtual const std::string GetTypeName() {return "ExprParseTreeNode";}
     virtual std::set<std::string> GetVarLeaves() 
                                             {return std::set<std::string>();}
-    virtual void Print(ostream &o, std::string s="");
-    virtual void PrintNode(ostream &o) = 0;
-  protected:
-    Pos pos;
 };
 
 #endif

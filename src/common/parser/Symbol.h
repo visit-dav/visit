@@ -21,6 +21,10 @@ class  Rule;
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  4, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Nov 24 12:04:23 PST 2004
+//    Added a new constructor due to some major refactoring.
+//
 // ****************************************************************************
 class PARSER_API Symbol
 {
@@ -29,6 +33,7 @@ class PARSER_API Symbol
 
   public:
                    Symbol(int tt);
+                   Symbol(int tt, const std::string &s);
                    Symbol(const std::string &s);
     static Symbol *Get(int tt);
     static Symbol *Get(const std::string &s);

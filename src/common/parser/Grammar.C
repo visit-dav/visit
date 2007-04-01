@@ -1,5 +1,6 @@
 #include "Grammar.h"
 #include "Colors.h"
+#include "Token.h"
 #include <stdio.h>
 #include <set>
 
@@ -8,7 +9,7 @@ using     std::set;
 using     std::string;
 using     std::vector;
 
-Symbol Grammar::eof(TT_EOF);
+Symbol Grammar::eof(EOF_TOKEN_ID); // TT_EOF==256 for all grammars
 Symbol Grammar::start("START");
 
 // ****************************************************************************
