@@ -547,6 +547,9 @@ QvisQueryWindow::UpdateResults(bool)
 //   Enabled state of labels[0] and textFields[0] may change if useGlobal is
 //   toggled, so reset the state to true here. 
 //
+//   Kathleen Bonnell, Mon May  9 13:27:49 PDT 2005 
+//   Removed 'Samples' from 'DoublePoint' (lineout) query.
+//
 // ****************************************************************************
 
 void
@@ -597,14 +600,11 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
             textFields[0]->setText("0 0 0");
             labels[1]->setText("End point");
             textFields[1]->setText("1 0 0");
-            labels[2]->setText("Samples");
-            textFields[2]->setText("50");
-            labels[3]->setText("Variables");
-            textFields[3]->setText("default");
+            labels[2]->setText("Variables");
+            textFields[2]->setText("default");
             showWidgets[0] = true;
             showWidgets[1] = true;
             showWidgets[2] = true;
-            showWidgets[3] = true;
         }
         else if (winT == QueryList::DomainZone)
         {
@@ -952,24 +952,14 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
                     noErrors = false;
                 if(!GetPoint(1, "end point", p1))
                     noErrors = false;
-
-                int sample = 50;
-                bool goodSample = GetNumber(2, &sample);
-                if(goodSample)
-                    goodSample = (sample > 1);
-                if(!goodSample)
-                {
-                    Error("The number of samples is not valid. "
-                          "It is a single integer value greater than 1.");
-                }
-                if(!GetVars(3, vars))
+                if(!GetVars(2, vars))
                     noErrors = false;
 
-                if(noErrors && goodSample)
+                if(noErrors)
                 {
                     if (t == QueryList::LineQuery)
                     {
-                        viewer->LineQuery(names[index], p0, p1, vars, sample);
+                        viewer->LineQuery(names[index], p0, p1, vars, 50);
                     }
                     else 
                     {
