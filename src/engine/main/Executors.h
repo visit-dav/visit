@@ -110,6 +110,9 @@ RPCExecutor<QuitRPC>::Execute(QuitRPC *rpc)
 //    Added a call to cancel the current network in case of an error.
 //    That way future calls do not fail due to a failed pre-existing network.
 //
+//    Hank Childs, Tue Mar  9 14:27:31 PST 2004
+//    Load the database plugin before reading.
+//
 // ****************************************************************************
 template<>
 void
@@ -121,6 +124,7 @@ RPCExecutor<ReadRPC>::Execute(ReadRPC *rpc)
     debug2 << "Executing ReadRPC" << endl;
     TRY
     {
+        DatabasePluginManager::Instance()->PluginAvailable(rpc->GetFormat());
         netmgr->StartNetwork(rpc->GetFile(), rpc->GetVar(), rpc->GetTime(),
                              rpc->GetCSRAttributes(),
                              rpc->GetMaterialAttributes());

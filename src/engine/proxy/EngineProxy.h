@@ -192,6 +192,7 @@ public:
                                                    const stringVector &,
                                                    int = 0);
     void                     ReadDataObject(const std::string&,
+                                            const std::string&,
                                             const std::string&, const int,
                                             avtSILRestriction_p,
                                             const MaterialAttributes&);

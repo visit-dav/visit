@@ -235,6 +235,7 @@ EngineProxy::GetComponentName() const
 //      Start a new network and open a variable/time from a database
 //
 //  Arguments:
+//      format    the file format type.
 //      file      the file to read from
 //      var       the variable to read
 //      time      the time step to read
@@ -264,10 +265,14 @@ EngineProxy::GetComponentName() const
 //    from the main one in the viewer, copy it, and send it to the engine
 //    before asking for the data object.
 //
+//    Hank Childs, Tue Mar  9 14:37:46 PST 2004
+//    Add the file format type.
+//
 // ****************************************************************************
 void
-EngineProxy::ReadDataObject(const string &file, const string &var,
-                            const int time, avtSILRestriction_p silr,
+EngineProxy::ReadDataObject(const string &format, const string &file, 
+                            const string &var, const int time,
+                            avtSILRestriction_p silr,
                             const MaterialAttributes &matopts)
 {
     // Make sure the engine knows about our current expression list.
@@ -279,7 +284,7 @@ EngineProxy::ReadDataObject(const string &file, const string &var,
     }
 
     CompactSILRestrictionAttributes *atts = silr->MakeCompactAttributes();
-    readRPC(file, var, time, *atts, matopts);
+    readRPC(format, file, var, time, *atts, matopts);
     if (readRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(readRPC.GetExceptionType(),

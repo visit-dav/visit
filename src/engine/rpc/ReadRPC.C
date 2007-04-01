@@ -19,9 +19,12 @@ using std::string;
 //    Jeremy Meredith, Thu Oct 24 16:03:39 PDT 2002
 //    Added material options.
 //
+//    Hank Childs, Tue Mar  9 14:27:31 PST 2004
+//    Added file format type.
+//
 // ****************************************************************************
 
-ReadRPC::ReadRPC() : BlockingRPC("ssiaa")
+ReadRPC::ReadRPC() : BlockingRPC("ssiaas")
 {
 }
 
@@ -67,19 +70,24 @@ ReadRPC::~ReadRPC()
 //    Jeremy Meredith, Thu Oct 24 11:21:04 PDT 2002
 //    Added material interface reconstruction attributes.
 //
+//    Hank Childs, Tue Mar  9 14:27:31 PST 2004
+//    Added file format type.
+//
 // ****************************************************************************
 
 void
-ReadRPC::operator()(const string &f, const string &v, int t,
+ReadRPC::operator()(const string &ft, const string &f, const string &v, int t,
                     const CompactSILRestrictionAttributes &s,
                     const MaterialAttributes &m)
 {
     debug3 << "Executing read RPC" 
+           << "\n\t file format='" << ft.c_str() << "'"
            << "\n\t file='" << f.c_str() << "'"
            << "\n\t var ='" << v.c_str() << "'"
            << "\n\t time='" << t << "'"
            << endl;
 
+    SetFormat(ft);
     SetFile(f);
     SetVar(v);
     SetTime(t);
@@ -104,6 +112,9 @@ ReadRPC::operator()(const string &f, const string &v, int t,
 //    Jeremy Meredith, Thu Oct 24 16:03:39 PDT 2002
 //    Added material options.
 //
+//    Hank Childs, Tue Mar  9 14:27:31 PST 2004
+//    Added file format type.
+//
 // ****************************************************************************
 
 void
@@ -114,6 +125,7 @@ ReadRPC::SelectAll()
     Select(2, (void*)&time);
     Select(3, (void*)&silr_atts);
     Select(4, (void*)&materialAtts);
+    Select(5, (void*)&format);
 }
 
 
@@ -136,6 +148,27 @@ ReadRPC::SetFile(const string &f)
 {
     file = f;
     Select(0, (void*)&file);
+}
+
+// ****************************************************************************
+//  Method: ReadRPC::SetFormat
+//
+//  Purpose: 
+//    This sets the file format type.
+//
+//  Arguments:
+//    f         the file format
+//
+//  Programmer: Hank Childs
+//  Creation:   March 9, 2004
+//
+// ****************************************************************************
+
+void
+ReadRPC::SetFormat(const string &f)
+{
+    format = f;
+    Select(5, (void*)&format);
 }
 
 // ****************************************************************************
@@ -237,6 +270,25 @@ string
 ReadRPC::GetFile() const
 {
     return file;
+}
+
+// ****************************************************************************
+//  Method: ReadRPC::GetFile
+//
+//  Purpose: 
+//    This returns the file format type.
+//
+//  Arguments:
+//
+//  Programmer: Hank Childs
+//  Creation:   March 9, 2004
+//
+// ****************************************************************************
+
+string
+ReadRPC::GetFormat() const
+{
+    return format;
 }
 
 // ****************************************************************************
