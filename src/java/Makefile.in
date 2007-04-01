@@ -76,6 +76,9 @@
 #   Kathleen Bonnell, Wed Mar 31 11:23:22 PST 2004 
 #   Added QueryOverTime state object.
 #
+#   Brad Whitlock, Tue Sep 28 09:04:01 PDT 2004
+#   Added InteractorAttributes so the library builds again.
+#
 ##############################################################################
 
 ##
@@ -117,6 +120,7 @@ HostProfile.java \
 HostProfileList.java \
 IncompatibleSecurityTokenException.java \
 IncompatibleVersionException.java \
+InteractorAttributes.java \
 KeyframeAttributes.java \
 LightAttributes.java \
 LightList.java \

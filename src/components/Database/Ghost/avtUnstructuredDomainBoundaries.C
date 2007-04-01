@@ -46,6 +46,29 @@ namespace
 
 #endif
 
+//
+// Use the preprocessor to help ensure that the right template ExchangeData
+// function is instantiated.
+//
+#if defined(_WIN32) && defined(USING_MSVC6)
+static float         hack_float;
+static char          hack_char;
+static unsigned char hack_unsigned_char;
+static int           hack_int;
+static unsigned int  hack_unsigned_int;
+#define ExchangeData_float(A,B,C)         ExchangeData(A,B,C,hack_float);
+#define ExchangeData_char(A,B,C)          ExchangeData(A,B,C,hack_char);
+#define ExchangeData_unsigned_char(A,B,C) ExchangeData(A,B,C,hack_unsigned_char);
+#define ExchangeData_int(A,B,C)           ExchangeData(A,B,C,hack_int);
+#define ExchangeData_unsigned_int(A,B,C)  ExchangeData(A,B,C,hack_unsigned_int);
+#else
+#define ExchangeData_float         ExchangeData<float>
+#define ExchangeData_char          ExchangeData<char>
+#define ExchangeData_unsigned_char ExchangeData<unsigned char>
+#define ExchangeData_int           ExchangeData<int>
+#define ExchangeData_unsigned_int  ExchangeData<unsigned int>
+#endif
+
 
 // ****************************************************************************
 //  Constructor:  avtUnstructuredDomainBoundaries::
@@ -270,7 +293,7 @@ avtUnstructuredDomainBoundaries::GetGivenIndex(int from, int to)
 
 template <class T>
 void
-avtUnstructuredDomainBoundaries::CopyPointer(T *src, T *dest, int components,
+CopyPointer(T *src, T *dest, int components,
                                                               int count)
 {
     int i;
@@ -511,6 +534,13 @@ avtUnstructuredDomainBoundaries::ExchangeMesh(vector<int>       domainNum,
 //  Programmer:  Akira Haddoxs
 //  Creation:    August 11, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Thu Sep 16 12:55:50 PDT 2004
+//    I replaced specialized ExchangeData function calls with macros that
+//    will allow the compiler to instantiate a function somewhat differently
+//    depending on the platform to work around a problem with templates
+//    using the MSVC6.0 compiler on Windows.
+//
 // ****************************************************************************
 
 vector<vtkDataArray*>
@@ -525,7 +555,7 @@ avtUnstructuredDomainBoundaries::ExchangeScalar(vector<int>         domainNum,
     // so we'll choose to call one. 
     if (!scalars.size())
     {
-        return ExchangeData<float> (domainNum, isPointData, scalars);
+        return ExchangeData_float(domainNum, isPointData, scalars);
     }
     // This one's a little more complicated because there are different
     // types of scalars we might encounter. If more cases arise,
@@ -533,15 +563,15 @@ avtUnstructuredDomainBoundaries::ExchangeScalar(vector<int>         domainNum,
     switch (scalars[0]->GetDataType())
     {
         case VTK_INT:
-            return ExchangeData<int> (domainNum, isPointData, scalars);
+            return ExchangeData_int(domainNum, isPointData, scalars);
         case VTK_CHAR:
-            return ExchangeData<char> (domainNum, isPointData, scalars);
+            return ExchangeData_char(domainNum, isPointData, scalars);
         case VTK_FLOAT:
-            return ExchangeData<float> (domainNum, isPointData, scalars);
+            return ExchangeData_float(domainNum, isPointData, scalars);
         case VTK_UNSIGNED_CHAR:
-            return ExchangeData<unsigned char>(domainNum, isPointData, scalars);
+            return ExchangeData_unsigned_char(domainNum, isPointData, scalars);
         case VTK_UNSIGNED_INT:
-            return ExchangeData<unsigned int> (domainNum, isPointData, scalars);
+            return ExchangeData_unsigned_int(domainNum, isPointData, scalars);
         default:
             string exc_mesg = "avtUnstructuredDomainBoundaries does not know "
                               "how to exchange scalars from array type "
@@ -568,6 +598,13 @@ avtUnstructuredDomainBoundaries::ExchangeScalar(vector<int>         domainNum,
 //  Programmer:  Akira Haddox
 //  Creation:    August 11, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Thu Sep 16 12:55:50 PDT 2004
+//    I replaced specialized ExchangeData function calls with macros that
+//    will allow the compiler to instantiate a function somewhat differently
+//    depending on the platform to work around a problem with templates
+//    using the MSVC6.0 compiler on Windows.
+//
 // ****************************************************************************
 
 vector<vtkDataArray*>
@@ -575,7 +612,7 @@ avtUnstructuredDomainBoundaries::ExchangeFloatVector(vector<int>      domainNum,
                                               bool                  isPointData,
                                               vector<vtkDataArray*> vectors)
 {
-    return ExchangeData<float> (domainNum, isPointData, vectors);
+    return ExchangeData_float(domainNum, isPointData, vectors);
 }
 
 
@@ -597,6 +634,13 @@ avtUnstructuredDomainBoundaries::ExchangeFloatVector(vector<int>      domainNum,
 //  Programmer:  Akira Haddox
 //  Creation:    August 11, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Thu Sep 16 12:55:50 PDT 2004
+//    I replaced specialized ExchangeData function calls with macros that
+//    will allow the compiler to instantiate a function somewhat differently
+//    depending on the platform to work around a problem with templates
+//    using the MSVC6.0 compiler on Windows.
+//
 // ****************************************************************************
 
 vector<vtkDataArray*>
@@ -604,7 +648,7 @@ avtUnstructuredDomainBoundaries::ExchangeIntVector(vector<int>        domainNum,
                                                  bool               isPointData,
                                                  vector<vtkDataArray*> vectors)
 {
-    return ExchangeData<int> (domainNum, isPointData, vectors);
+    return ExchangeData_int(domainNum, isPointData, vectors);
 }
 
 
@@ -621,6 +665,13 @@ avtUnstructuredDomainBoundaries::ExchangeIntVector(vector<int>        domainNum,
 //
 //  Programmer:  Akira Haddox
 //  Creation:    August 11, 2003
+//
+//  Modifications:
+//    Brad Whitlock, Thu Sep 16 12:55:50 PDT 2004
+//    I replaced specialized ExchangeData function calls with macros that
+//    will allow the compiler to instantiate a function somewhat differently
+//    depending on the platform to work around a problem with templates
+//    using the MSVC6.0 compiler on Windows.
 //
 // ****************************************************************************
 
@@ -668,7 +719,7 @@ avtUnstructuredDomainBoundaries::ExchangeMaterial(vector<int>    domainNum,
     }
 
     vector<vtkDataArray *> result;
-    result = ExchangeData<int> (domainNum, false, materialArrays);
+    result = ExchangeData_int(domainNum, false, materialArrays);
 
     vector<avtMaterial*> out(mats.size(), NULL);
 
@@ -784,7 +835,6 @@ avtUnstructuredDomainBoundaries::ConfirmMesh(vector<int>       domainNum,
     return true;
 }
 
-
 // ****************************************************************************
 //  Method:  avtUnstructuredDomainBoundaries::ExchangeData
 //
@@ -803,26 +853,112 @@ avtUnstructuredDomainBoundaries::ConfirmMesh(vector<int>       domainNum,
 //  Programmer:  Akira Haddoxs
 //  Creation:    August 15, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Thu Sep 16 12:58:27 PDT 2004
+//    I added conditionally compiled code to work around an apparent template
+//    instantiation bug that in the MSVC6.0 compiler that prevented VisIt
+//    from building on Windows. I added an argument to contribute to the 
+//    method signature and the contents of CommunicateDataInformation,
+//    which had to be inlined to get it to compile on Windows.
+//
 // ****************************************************************************
 
 template <class T>
 vector<vtkDataArray*>
 avtUnstructuredDomainBoundaries::ExchangeData(vector<int>         &domainNum,
                                               bool                isPointData,
-                                              vector<vtkDataArray*> &data)
+                                              vector<vtkDataArray*> &data
+#if defined(_WIN32) && defined(USING_MSVC6)
+                                              , T signature
+#endif
+                                             )
 {
     // Gather the needed information
     vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
     T ***gainedData;
     int **nGainedTuples;
-    CommunicateDataInformation<T> (domain2proc, domainNum, data, isPointData,
-                                                gainedData, nGainedTuples);
 
-    vector<vtkDataArray*> out(data.size(), NULL);
+#if defined(_WIN32) && defined(USING_MSVC6)
+//
+// This code is an "inline" copy of the CommunicateDataInformation method
+// without the various parallel ifdefs. The MSVC 6.0 compiler refused to
+// instantiate CommunicateDataInformation so I inlined it.
+//
+    // Get the processor rank
+    int rank = 0;
     int nComponents = 0;
     if (data.size())
         nComponents = data[0]->GetNumberOfComponents();
 
+    gainedData = new T**[nTotalDomains];
+    nGainedTuples = new int*[nTotalDomains];
+
+    int sendDom;
+    for (sendDom = 0; sendDom < nTotalDomains; ++sendDom)
+    {
+        gainedData[sendDom] = new T*[nTotalDomains];
+        nGainedTuples[sendDom] = new int[nTotalDomains];
+
+        int recvDom;
+        for (recvDom = 0; recvDom < nTotalDomains; ++recvDom)
+        {
+            gainedData[sendDom][recvDom] = NULL;
+            nGainedTuples[sendDom][recvDom] = 0;
+
+            // Cases where no computation is required.
+            if (sendDom == recvDom)
+                continue;
+            if (domain2proc[sendDom] == -1 || domain2proc[recvDom] == -1)
+                continue;
+
+            // If this process owns both of the domains, it's an internal
+            // calculation: no communication needed
+            if (domain2proc[sendDom] == rank && domain2proc[recvDom] == rank)
+            {
+                int i;
+                for (i = 0; i < domainNum.size(); ++i)
+                    if (domainNum[i] == sendDom)
+                        break;
+
+                int index = GetGivenIndex(sendDom, recvDom);
+
+                // If no domain boundary, then there's no work to do.
+                if (index < 0)
+                    continue;
+
+                vector<int> &mapRef = isPointData ? givenPoints[index] 
+                                                  : givenCells[index];
+                
+                int nTuples = mapRef.size();
+                nGainedTuples[sendDom][recvDom] = nTuples;
+
+                gainedData[sendDom][recvDom] = new T[nTuples * nComponents];
+                
+                T * origPtr = (T*)(data[i]->GetVoidPointer(0));
+                T * dataPtr = gainedData[sendDom][recvDom];
+
+                for (i = 0; i < nTuples; ++i)
+                {
+                    T *ptr = origPtr + mapRef[i] * nComponents;
+                    int j;
+                    for (j = 0; j < nComponents; ++j)
+                    {
+                        *(dataPtr++) = *(ptr++);
+                    }
+                }
+            } 
+        }
+    }
+
+    nComponents = 0;
+#else
+    CommunicateDataInformation<T> (domain2proc, domainNum, data, isPointData,
+                                   gainedData, nGainedTuples);
+    int nComponents = 0;
+#endif
+    vector<vtkDataArray*> out(data.size(), NULL);
+    if (data.size())
+        nComponents = data[0]->GetNumberOfComponents();
 
     int i;
     for (i = 0; i < domainNum.size(); ++i)
@@ -1286,7 +1422,6 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
 #endif
 }
 
-
 // ****************************************************************************
 //  Method:  avtUnstructuredDomainBoundaries::CommunicateDataInformation
 //
@@ -1314,8 +1449,13 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
 //  Programmer:  Akira Haddox
 //  Creation:    August 14, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Thu Sep 16 13:03:48 PST 2004
+//    I wrapped this method with an ifdef so it is not built using MSVC6.0
+//    on Windows.
+//
 // ****************************************************************************
-
+#if !defined(_WIN32) || (defined(_WIN32) && !defined(USING_MSVC6))
 template <class T>
 void
 avtUnstructuredDomainBoundaries::CommunicateDataInformation(
@@ -1481,7 +1621,7 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
     MPI_Barrier(MPI_COMM_WORLD);
 #endif
 }
-
+#endif
 
 // ****************************************************************************
 //  Method: avtUnstructuredDomainBoundaries::CreateGhostNodes

@@ -3,7 +3,11 @@
 #include <ctype.h>
 #include <string.h>
 #include <sys/types.h>
+#if defined(_WIN32)
+#include <win32-regex.h>
+#else
 #include <regex.h>
+#endif
 
 #include <VisitALE.h>
 

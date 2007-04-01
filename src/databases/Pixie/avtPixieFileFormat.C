@@ -1023,7 +1023,7 @@ avtPixieFileFormat::ReadVariableFromFile(int timestate, const std::string &varna
     else
     {
         debug4 << "avtPixieFileFormat::ReadVariableFromFile: The variable "
-               << varname << " was in a native format that we're not "
+               << varname.c_str() << " was in a native format that we're not "
                "supporting." << endl;
     }
 
@@ -1367,7 +1367,7 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
                info->This->variables.find(varName) == info->This->variables.end())
             {
                 info->This->variables[varName] = varInfo;
-                debug4 << "Adding variable \"" << varName
+                debug4 << "Adding variable \"" << varName.c_str()
                        << "\" for file variable: \""
                        << varInfo.fileVarName.c_str() << "\"" << endl;
             } 

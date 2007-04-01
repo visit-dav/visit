@@ -145,6 +145,10 @@ avtUnstructuredPointBoundaries::CheckGenerated(int d1, int d2)
 //  Programmer:  Akira Haddox
 //  Creation:    August 11, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Thu Sep 16 10:55:38 PDT 2004
+//    I added separate Windows coding to make it work with the MSVC6 compiler.
+//
 // ****************************************************************************
 
 void
@@ -206,9 +210,18 @@ avtUnstructuredPointBoundaries::Generate(vector<int> domainNum,
             }
 
             vector<int> givenCells, givenPoints;
+#if defined(_WIN32) && defined(USING_MSVC6)
+            for(std::set<int>::const_iterator cell_it = cells.begin();
+                cell_it != cells.end(); ++cell_it)
+                givenCells.push_back(*cell_it);
+
+            for(std::set<int>::const_iterator point_it = points.begin();
+                point_it != points.end(); ++point_it)
+                givenPoints.push_back(*point_it);
+#else
             givenCells.assign(cells.begin(), cells.end());
             givenPoints.assign(points.begin(), points.end());
-
+#endif
             // sendDom gives to recvDom with point filter on.
             SetGivenCellsAndPoints(sendDom, recvDom, givenCells, 
                                                      givenPoints, true);

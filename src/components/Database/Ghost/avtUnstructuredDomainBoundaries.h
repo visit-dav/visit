@@ -40,6 +40,10 @@ class avtMaterial;
 //    Hank Childs, Mon Aug 16 08:47:27 PDT 2004
 //    Added CreateGhostNodes.
 //
+//    Brad Whitlock, Thu Sep 16 12:52:56 PDT 2004
+//    I added some workarounds so it builds using the MSVC6.0 compiler on
+//    Windows. The code should be unaffected on other systems.
+//
 // ****************************************************************************
 
 class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
@@ -89,10 +93,6 @@ class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
                                         vector<vtkDataSet*> meshes);
     
   protected:
-    template <class T>
-    void                              CopyPointer(T *src, T *dest,
-                                                  int components, int count);
-
     int                               GetGivenIndex(int from, int to);
 
     int                             nTotalDomains;
@@ -106,13 +106,16 @@ class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
     map<std::pair<int, int>, int>   startingCell;
     map<std::pair<int, int>, int>   startingPoint;
 
-    
+
     template <class T>
     vector<vtkDataArray*>        ExchangeData(vector<int> &domainNum,
                                               bool isPointData,
-                                              vector<vtkDataArray*> &data);
-    
-    
+                                              vector<vtkDataArray*> &data
+#if defined(_WIN32) && defined(USING_MSVC6)
+    // Extra argument to help the compiler instantiate the right function.
+                                              , T signature
+#endif
+                                             );
     // Communication methods
     vector<int>     CreateDomainToProcessorMap(const vector<int> &domainNum);
 
@@ -127,6 +130,7 @@ class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
                                                int **&nGainedCells,
                                                int ***&nPointsPerCell);
 
+#if !defined(USING_MSVC6)
     template <class T>
     void            CommunicateDataInformation(const vector<int> &domain2proc,
                                                const vector<int> &domainNum,
@@ -134,6 +138,7 @@ class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
                                                bool isPointData,
                                                T ***&gainedData,
                                                int **&nGainedTuples);
+#endif
 };
 
 #endif

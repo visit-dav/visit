@@ -4,7 +4,7 @@
 
 #ifndef AVT_GHOST_DATA_H
 #define AVT_GHOST_DATA_H
-
+#include <pipeline_exports.h>
 
 typedef enum
 {

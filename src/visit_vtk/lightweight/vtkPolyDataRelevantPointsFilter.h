@@ -54,7 +54,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef __vtkPolyDataRelevantPointsFilter_h
 #define __vtkPolyDataRelevantPointsFilter_h
-#include <visit_vtk_exports.h>
+#include <visit_vtk_light_exports.h>
 
 #include "vtkPolyDataToPolyDataFilter.h"
 
@@ -65,7 +65,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //   Moved unimplmented copy constructor and operator= to private section. 
 // ***************************************************************************
 
-class VISIT_VTK_API vtkPolyDataRelevantPointsFilter : 
+class VISIT_VTK_LIGHT_API vtkPolyDataRelevantPointsFilter : 
 public vtkPolyDataToPolyDataFilter
 {
 public:

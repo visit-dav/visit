@@ -16,6 +16,8 @@
 #pragma warning(disable:4275)
 // Turn off warning about identifier truncation
 #pragma warning(disable:4786)
+// Turn off warning about forcing value to bool 'true' or 'false'
+#pragma warning(disable:4800)
 #endif
 #else
 #define PIPELINE_API
