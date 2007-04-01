@@ -21,6 +21,8 @@
 //  Creation:   Thu Mar 24 12:18:02 PDT 2005
 //
 //  Modifications:
+//    Brad Whitlock, Fri Apr 1 23:41:51 PST 2005
+//    Added GetNumRepeats.
 //
 // ****************************************************************************
 
@@ -72,6 +74,7 @@ protected:
     int                    CountMemberPoints(esriShapeType_t) const;
     int                    CountShapes(esriShapeType_t) const;
     int                    CountCellsForShape(esriShapeType_t) const;
+    int                    GetNumRepeats(void *shape, esriShapeType_t shapeType) const;
 
     bool                   initialized;
     esriShapeVector        shapes;

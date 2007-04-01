@@ -989,12 +989,13 @@ class WindowGeneratorVariableName : public virtual VariableName , public virtual
             "QvisVariableButton::Curves",
             "QvisVariableButton::Tensors",
             "QvisVariableButton::SymmetricTensors"
+            "QvisVariableButton::Labels"
         };
 
         // Write the mask.
         c << "    int " << name <<"Mask = ";
         int m = 1, count = 0;
-        for(int i = 0; i < 9; ++i)
+        for(int i = 0; i < 10; ++i)
         {
             if(varTypes & m)
             {

@@ -132,6 +132,9 @@ print_array_names(vtkDataSet *inDS)
 //    the cell list, which may or may not be a valid assumption. It looks
 //    okay for slices, which is when we do the center averaging anyway.
 //
+//    Brad Whitlock, Mon Apr 4 10:53:28 PDT 2005
+//    Fixed a crash that happened for cells with more than 100 points.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -269,7 +272,7 @@ avtLabelFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         //
         // Allocate enough memory for a cell-centered vector
         //
-        vtkDataArray *cellCenters = vtkFloatArray::New();
+        vtkFloatArray *cellCenters = vtkFloatArray::New();
         cellCenters->SetName("LabelFilterCellCenters");
         cellCenters->SetNumberOfComponents(3);
         cellCenters->SetNumberOfTuples(inDS->GetNumberOfCells());
@@ -277,18 +280,31 @@ avtLabelFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         //
         // Figure out the center of each cell.
         //
-        float weights[100];
-        float pcoords[3];
+        int    nWeights = 100;
+        float *weights = new float[nWeights];
         for(vtkIdType cellid = 0; cellid < inDS->GetNumberOfCells(); ++cellid)
         {
-            vtkCell *cell = inDS->GetCell(cellid);
-
-            int subId = 0;
             float center[] = {0.f, 0.f, 0.f};
-            cell->GetParametricCenter(pcoords);
-            cell->EvaluateLocation(subId, pcoords, center, weights);
+
+            vtkCell *cell = inDS->GetCell(cellid);
+            if(cell != 0)
+            {
+                int subId = 0;
+                float pcoords[3];
+                cell->GetParametricCenter(pcoords);
+
+                // Make sure that the weights array is big enough.
+                if(cell->GetNumberOfPoints() > nWeights)
+                {
+                    delete [] weights;
+                    nWeights = int(cell->GetNumberOfPoints() * 1.25);
+                    weights = new float[nWeights];
+                }
+                cell->EvaluateLocation(subId, pcoords, center, weights);
+            }
             cellCenters->SetTuple(cellid, center);
         }
+        delete [] weights;
 
         //
         // Add the new array to the VTK dataset.

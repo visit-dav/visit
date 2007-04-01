@@ -669,6 +669,9 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds)
 //    Kathleen Bonnell, Wed Dec 15 09:19:39 PST 2004 
 //    Use GlobalZone/Node numbers when present. 
 //
+//    Brad Whitlock, Mon Apr 4 16:47:06 PST 2005
+//    Added support for label data.
+//
 // ****************************************************************************
 
 void
@@ -744,9 +747,17 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
                 foundData = false;
             }
         }
+
+        bool labelData = false;
         if (foundData)
         {
             nComponents = varArray->GetNumberOfComponents(); 
+
+            // Determine if the data is a label. All label variables have
+            // this marker in their field data.
+            labelData = (nComponents > 1) && 
+                        (ds->GetFieldData()->GetArray("avtLabelVariableSize") != 0);
+
             temp = new double[nComponents];
             intVector globalIncEl = pickAtts.GetGlobalIncidentElements();
             if (zoneCent != zonePick)
@@ -769,10 +780,11 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
                     for (int i = 0; i < nComponents; i++)
                     {
                         vals.push_back(temp[i]);
-                        if (nComponents > 1) // assume its a vector, get its mag.
+                        // assume its a vector, get its mag.
+                        if (nComponents > 1 && !labelData)
                             mag += (temp[i] * temp[i]);
                     }     
-                    if (nComponents > 1)
+                    if (nComponents > 1 && !labelData)
                     {
                         mag = sqrt(mag);
                         vals.push_back(mag); 
@@ -793,10 +805,10 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
                 for (int i = 0; i < nComponents; i++)
                 {
                     vals.push_back(temp[i]);
-                    if (nComponents > 1)
+                    if (nComponents > 1 && !labelData)
                         mag +=  (temp[i] * temp[i]);
                 }
-                if (nComponents > 1) 
+                if (nComponents > 1 && !labelData) 
                 {
                     mag = sqrt(mag);
                     vals.push_back(mag);
@@ -814,7 +826,9 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
                 pickAtts.GetPickVarInfo(varNum).SetTreatAsASCII(treatAsASCII);
                 if (pickAtts.GetPickVarInfo(varNum).GetVariableType() != "species")
                 { 
-                    if (nComponents == 1)
+                    if (labelData)
+                        pickAtts.GetPickVarInfo(varNum).SetVariableType("label");
+                    else if (nComponents == 1)
                         pickAtts.GetPickVarInfo(varNum).SetVariableType("scalar");
                     else if (nComponents == 3)
                         pickAtts.GetPickVarInfo(varNum).SetVariableType("vector");
@@ -835,7 +849,9 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
                 varInfo.SetNames(names);
                 varInfo.SetValues(vals);
                 delete [] temp; 
-                if (nComponents == 1)
+                if (labelData)
+                    varInfo.SetVariableType("label");
+                else if (nComponents == 1)
                     varInfo.SetVariableType("scalar");
                 else if (nComponents == 3)
                     varInfo.SetVariableType("vector");

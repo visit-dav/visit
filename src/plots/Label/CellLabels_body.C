@@ -50,7 +50,44 @@
                  << ", while the #cells is: " << nCells << endl;
         }
 
-        if(data->GetNumberOfComponents() == 1)
+        if(input->GetFieldData()->GetArray("avtLabelVariableSize") != 0)
+        {
+debug3 << "Labelling cells with label data" << endl;
+            int labelLength = data->GetNumberOfComponents();
+            if(data->IsA("vtkUnsignedCharArray"))
+            {
+                unsigned char *label = (unsigned char *)data->GetVoidPointer(0);
+                for(vtkIdType id = 0; id < nCells; id += skipIncrement)
+                {
+                    BEGIN_LABEL
+                        CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%s", label);
+                    END_LABEL
+
+                    label += labelLength;
+                }
+            }
+            else
+            { // VisIt turned the label into floats!
+debug3 << "*** WARNING - VisIt turned the Label data into floats. That is not efficient!" << endl;
+                const float *fptr = (const float *)data->GetVoidPointer(0);
+                char *tempstr = new char[labelLength];
+                memset(tempstr, 0, labelLength);
+                for(vtkIdType id = 0; id < nCells; id += skipIncrement)
+                {
+                    // Store the float-ified label in a real string.
+                    for(int k = 0; k < labelLength - 1; ++k)
+                        tempstr[k] = (char)*fptr++;
+                    ++fptr;
+
+                    // Use the label.
+                    BEGIN_LABEL
+                        CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%s", tempstr);
+                    END_LABEL
+                }
+                delete [] tempstr;
+            }
+        }
+        else if(data->GetNumberOfComponents() == 1)
         {
 debug3 << "Labelling cells with scalar data" << endl;
 

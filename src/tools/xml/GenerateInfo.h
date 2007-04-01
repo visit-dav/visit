@@ -89,6 +89,9 @@
 //    Moved the VisIt version used to build the plugin to here instead of
 //    GenerateMakefile.
 //
+//    Brad Whitlock, Fri Apr 1 15:53:12 PST 2005
+//    Added support for label variables.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -847,6 +850,8 @@ class InfoGeneratorPlugin
                     c << "VAR_CATEGORY_TENSOR";
                 else if (types[i] == "symmetrictensor")
                     c << "VAR_CATEGORY_SYMMETRIC_TENSOR";
+                else if (types[i] == "label")
+                    c << "VAR_CATEGORY_LABEL";
             }
             c << ";" << endl;
 
@@ -1154,6 +1159,8 @@ class InfoGeneratorPlugin
                     c << "VAR_CATEGORY_TENSOR";
                 else if (types[i] == "symmetrictensor")
                     c << "VAR_CATEGORY_SYMMETRIC_TENSOR";
+                else if (types[i] == "label")
+                    c << "VAR_CATEGORY_LABEL";
             }
             c << ";" << endl;
             c << "}" << endl;

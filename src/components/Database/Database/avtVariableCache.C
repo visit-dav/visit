@@ -1,5 +1,5 @@
 // ************************************************************************* //
-//                              avtVariableCache.C                            //
+//                              avtVariableCache.C                           //
 // ************************************************************************* //
 
 #include <vtkDataSet.h>
@@ -21,6 +21,7 @@ const char *avtVariableCache::VECTORS_NAME = "VECTORS";
 const char *avtVariableCache::TENSORS_NAME = "TENSORS";
 const char *avtVariableCache::SYMMETRIC_TENSORS_NAME 
                                            = "SYMMETRIC_TENSORS";
+const char *avtVariableCache::LABELS_NAME = "LABELS";
 const char *avtVariableCache::DATASET_NAME = "DATASET";
 
 

@@ -71,6 +71,9 @@ vtkStandardNewMacro(vtkPolyDataRelevantPointsFilter);
 //    Hank Childs, Wed Oct 16 14:16:56 PDT 2002
 //    Fix silly bug that let too many points through.
 //
+//    Brad Whitlock, Mon Apr 4 11:34:03 PDT 2005
+//    Added support for cells that have more than 1024 points.
+//
 // ****************************************************************************
 
 void vtkPolyDataRelevantPointsFilter::Execute()
@@ -184,14 +187,20 @@ void vtkPolyDataRelevantPointsFilter::Execute()
   // Now work through cells, changing associated point id to coincide
   // with the new ones as specified in the pointmap.
   //
-  vtkIdType pts[1024]; // If we ever see a cell with more than 1024 pts, this
-                       // may (will) lead to a problem.
+  int nIdStoreSize = 1024;
+  vtkIdType *pts = new vtkIdType[nIdStoreSize];
   vtkIdType *oldPts = NULL;
   int nids = 0;
   input->BuildCells();
   for (i = 0; i < numCells; i++) 
     {
     input->GetCellPoints(i, nids, oldPts);
+    if(nids > nIdStoreSize)
+      {
+      delete [] pts;
+      nIdStoreSize = int(nids * 1.25);
+      pts = new vtkIdType[nIdStoreSize];
+      }
     int cellType = input->GetCellType(i);
     for (j = 0; j < nids; j++)
       {
@@ -199,6 +208,7 @@ void vtkPolyDataRelevantPointsFilter::Execute()
       }
     output->InsertNextCell(cellType, nids, pts);
     }
+  delete [] pts;
   delete [] oldToNew;
   delete [] newToOld;
 }

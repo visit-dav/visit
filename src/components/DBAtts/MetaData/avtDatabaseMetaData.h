@@ -406,6 +406,29 @@ public:
 };
 
 //----------------------------------------------------------------------------
+//  Class: avtLabelMetaData
+//
+//  Modifications:
+//
+//----------------------------------------------------------------------------
+struct DBATTS_API avtLabelMetaData : public AttributeSubject
+{
+    std::string   name;
+    std::string   originalName;
+    std::string   meshName;
+    avtCentering  centering;
+    bool          validVariable;
+public:
+    avtLabelMetaData();
+    avtLabelMetaData(const std::string &, const std::string &, avtCentering);
+    avtLabelMetaData(const avtLabelMetaData&);
+    virtual ~avtLabelMetaData();
+    const avtLabelMetaData &operator=(const avtLabelMetaData&);
+    virtual void SelectAll();
+    void Print(ostream &, int = 0) const;
+};
+
+//----------------------------------------------------------------------------
 //  Class: avtDefaultPlotMetaData
 //----------------------------------------------------------------------------
 struct DBATTS_API avtDefaultPlotMetaData : public AttributeSubject
@@ -448,7 +471,11 @@ public:
 //    Hank Childs, Mon Feb 14 14:11:29 PST 2005
 //    Added support for forbidden characters.
 //
+//    Brad Whitlock, Fri Apr 1 15:04:48 PST 2005
+//    Added support for avtLabelMetaData.
+//
 //----------------------------------------------------------------------------
+
 class DBATTS_API avtDatabaseMetaData : public AttributeSubject
 {
     bool         hasTemporalExtents;
@@ -483,6 +510,7 @@ class DBATTS_API avtDatabaseMetaData : public AttributeSubject
     std::vector<avtMaterialMetaData *>          materials;
     std::vector<avtSpeciesMetaData *>           species;
     std::vector<avtCurveMetaData *>             curves;
+    std::vector<avtLabelMetaData *>             labels;
     std::vector<avtDefaultPlotMetaData *>       defaultPlots;
     std::vector<avtSILMetaData *>               sils;
 
@@ -567,6 +595,7 @@ public:
     void         Add(avtSpeciesMetaData *);
     void         Add(avtCurveMetaData *);
     void         Add(avtSILMetaData *);
+    void         Add(avtLabelMetaData *);
     void         Add(avtDefaultPlotMetaData *);
 
     int GetNumMeshes()        const { return meshes.size();       };
@@ -578,6 +607,7 @@ public:
     int GetNumSpecies()       const { return species.size();      };
     int GetNumCurves()        const { return curves.size();       };
     int GetNumSILs()          const { return sils.size();         };
+    int GetNumLabels()        const { return labels.size();       };
     int GetNumDefaultPlots()  const { return defaultPlots.size(); };
 
     const avtMeshMetaData        *GetMesh(int) const;
@@ -598,6 +628,8 @@ public:
     const avtCurveMetaData       *GetCurve(const std::string&) const;
     const avtSILMetaData         *GetSIL(int) const;
     const avtSILMetaData         *GetSIL(const std::string&) const;
+    const avtLabelMetaData       *GetLabel(int) const;
+    const avtLabelMetaData       *GetLabel(const std::string&) const;
     const avtDefaultPlotMetaData *GetDefaultPlot(int) const;
 
     void         SetBlocksForMesh(int index, int nBlocks);

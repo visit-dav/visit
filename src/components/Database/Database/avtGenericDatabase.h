@@ -231,6 +231,9 @@ class     PickVarInfo;
 //    Hank Childs, Fri Mar 11 11:21:57 PST 2005
 //    Fix memory leak with non-cachable variables.
 //
+//    Brad Whitlock, Sat Apr 2 00:31:24 PDT 2005
+//    Added methods to get Label datasets.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -291,6 +294,8 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                                   const char *);
     vtkDataSet                *GetSpeciesDataset(const char *, int, int,
                                                  const char *);
+    vtkDataSet                *GetLabelVarDataset(const char *, int, int,
+                                                  const char *);
     vtkDataArray              *GetScalarVariable(const char *, int, int,
                                                  const char *);
     vtkDataArray              *GetVectorVariable(const char *, int, int,
@@ -301,6 +306,8 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                                  const char *);
     vtkDataArray              *GetSpeciesVariable(const char *, int, int,
                                                   const char *, int);
+    vtkDataArray              *GetLabelVariable(const char *, int, int,
+                                                const char *);
     vtkDataArray              *GetGlobalNodeIds(int, const char *, int);
     vtkDataArray              *GetGlobalZoneIds(int, const char *, int);
     void                       AddSecondaryVariables(vtkDataSet *, int, int,
@@ -408,6 +415,10 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                             PickVarInfo &, const bool);
     virtual bool               QuerySymmetricTensors(const std::string &,
                                             const int, const int, const int,
+                                            const intVector &, 
+                                            PickVarInfo &, const bool);
+    virtual bool               QueryLabels(const std::string &, const int, 
+                                            const int , const int ,
                                             const intVector &, 
                                             PickVarInfo &, const bool);
     virtual bool               QueryMaterial(const std::string &, const int, 

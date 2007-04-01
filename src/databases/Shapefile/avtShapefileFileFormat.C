@@ -8,17 +8,20 @@
 
 #include <vtkFloatArray.h>
 #include <vtkPolyData.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <avtDatabaseMetaData.h>
 
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
-
+#include <Expression.h>
+#include <ExpressionList.h>
 #include <DebugStream.h>
 
 using     std::string;
 
+#define POLYGONS_AS_LINES
 
 // ****************************************************************************
 //  Method: avtShapefileFileFormat constructor
@@ -502,6 +505,10 @@ avtShapefileFileFormat::CountCellsForShape(esriShapeType_t shapeType) const
 //  Programmer: Brad Whitlock
 //  Creation:   Thu Mar 24 12:18:02 PDT 2005
 //
+//  Modifications:
+//    Brad Whitlock, Wed Mar 30 15:43:26 PST 2005
+//    Added code to serve up x,y,z expressions.
+//
 // ****************************************************************************
 
 void
@@ -512,6 +519,12 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     //
     std::string  meshname;
     stringVector meshes;
+    intVector    is3D;
+#ifdef POLYGONS_AS_LINES
+    int polygonTopDim = 1;
+#else
+    int polygonTopDim = 2;
+#endif
     int npts = 0;
     if((npts = CountMemberPoints(esriPoint)) > 0)
     {
@@ -519,6 +532,7 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         debug4 << npts << " points for esriPoint." << endl;
         AddMeshToMetaData(md, meshname, AVT_POINT_MESH, NULL, 1, 0, 2, 0);
         meshes.push_back(meshname);
+        is3D.push_back(0);
     }
 
     if((npts = CountMemberPoints(esriPolyLine)) > 0)
@@ -527,14 +541,16 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         debug4 << npts << " points for esriPolyLine." << endl;
         AddMeshToMetaData(md, meshname, AVT_UNSTRUCTURED_MESH, NULL, 1, 0, 2, 1);
         meshes.push_back(meshname);
+        is3D.push_back(0);
     }
 
     if((npts = CountMemberPoints(esriPolygon)) > 0)
     {
         meshname = "polygon";
         debug4 << npts << " points for esriPolygon." << endl;
-        AddMeshToMetaData(md, meshname, AVT_UNSTRUCTURED_MESH, NULL, 1, 0, 2, 1);
+        AddMeshToMetaData(md, meshname, AVT_UNSTRUCTURED_MESH, NULL, 1, 0, 2, polygonTopDim);
         meshes.push_back(meshname);
+        is3D.push_back(0);
     }
 
     if((npts = CountMemberPoints(esriMultiPoint)) > 0)
@@ -543,18 +559,20 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         debug4 << npts << " points for esriMultiPoint." << endl;
         AddMeshToMetaData(md, meshname, AVT_POINT_MESH, NULL, 1, 0, 2, 0);
         meshes.push_back(meshname);
+        is3D.push_back(0);
     }
 
     //
     // 2D with data
     //
-    if((npts = CountMemberPoints(esriPointZ)) > 0)
+    if((npts = CountMemberPoints(esriPointM)) > 0)
     {
         meshname = "pointM";
         debug4 << npts << " points for esriPointM." << endl;
         AddMeshToMetaData(md, meshname, AVT_POINT_MESH, NULL, 1, 0, 2, 0);
         AddScalarVarToMetaData(md, "pointM_measure", meshname, AVT_NODECENT);
         meshes.push_back(meshname);
+        is3D.push_back(0);
     }
 
     if((npts = CountMemberPoints(esriPolyLineM)) > 0)
@@ -564,15 +582,17 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         AddMeshToMetaData(md, meshname, AVT_UNSTRUCTURED_MESH, NULL, 1, 0, 2, 1);
         AddScalarVarToMetaData(md, "polylineM_measure", meshname, AVT_NODECENT);
         meshes.push_back(meshname);
+        is3D.push_back(0);
     }
 
     if((npts = CountMemberPoints(esriPolygonM)) > 0)
     {
         meshname = "polygonM";
         debug4 << npts << " points for esriPolygonM." << endl;
-        AddMeshToMetaData(md, meshname, AVT_UNSTRUCTURED_MESH, NULL, 1, 0, 2, 1);
+        AddMeshToMetaData(md, meshname, AVT_UNSTRUCTURED_MESH, NULL, 1, 0, 2, polygonTopDim);
         AddScalarVarToMetaData(md, "polygonM_measure", meshname, AVT_NODECENT);
         meshes.push_back(meshname);
+        is3D.push_back(0);
     }
 
     if((npts = CountMemberPoints(esriMultiPointM)) > 0)
@@ -582,6 +602,7 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         AddMeshToMetaData(md, meshname, AVT_POINT_MESH, NULL, 1, 0, 2, 0);
         AddScalarVarToMetaData(md, "multipointM_measure", meshname, AVT_NODECENT);
         meshes.push_back(meshname);
+        is3D.push_back(0);
     }
 
     //
@@ -594,6 +615,7 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         AddMeshToMetaData(md, meshname, AVT_POINT_MESH, NULL, 1, 0, 3, 0);
         AddScalarVarToMetaData(md, "pointZ_measure", meshname, AVT_NODECENT);
         meshes.push_back(meshname);
+        is3D.push_back(1);
     }
 
     if((npts = CountMemberPoints(esriPolyLineZ)) > 0)
@@ -603,15 +625,17 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         AddMeshToMetaData(md, meshname, AVT_UNSTRUCTURED_MESH, NULL, 1, 0, 3, 1);
         AddScalarVarToMetaData(md, "polylineZ_measure", meshname, AVT_NODECENT);
         meshes.push_back(meshname);
+        is3D.push_back(1);
     }
 
     if((npts = CountMemberPoints(esriPolygonZ)) > 0)
     {
         meshname = "polygonZ";
         debug4 << npts << " points for esriPolygonZ." << endl;
-        AddMeshToMetaData(md, meshname, AVT_UNSTRUCTURED_MESH, NULL, 1, 0, 3, 1);
+        AddMeshToMetaData(md, meshname, AVT_UNSTRUCTURED_MESH, NULL, 1, 0, 3, polygonTopDim);
         AddScalarVarToMetaData(md, "polygonZ_measure", meshname, AVT_NODECENT);
         meshes.push_back(meshname);
+        is3D.push_back(1);
     }
 
     if((npts = CountMemberPoints(esriMultiPointZ)) > 0)
@@ -621,15 +645,17 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         AddMeshToMetaData(md, meshname, AVT_POINT_MESH, NULL, 1, 0, 3, 0);
         AddScalarVarToMetaData(md, "multipointZ_measure", meshname, AVT_NODECENT);
         meshes.push_back(meshname);
+        is3D.push_back(1);
     }
 
     if((npts = CountMemberPoints(esriMultiPatch)) > 0)
     {
         meshname = "multipatch";
         debug4 << npts << " points for esriMultiPatch." << endl;
-        AddMeshToMetaData(md, meshname, AVT_UNSTRUCTURED_MESH, NULL, 1, 0, 3, 1);
+        AddMeshToMetaData(md, meshname, AVT_UNSTRUCTURED_MESH, NULL, 1, 0, 3, polygonTopDim);
         AddScalarVarToMetaData(md, "multipatch_measure", meshname, AVT_NODECENT);
         meshes.push_back(meshname);
+        is3D.push_back(1);
     }
 
     numShapeTypes = meshes.size();
@@ -652,21 +678,36 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     varName = meshes[i] + "/";
                 varName += fieldDescriptor->fieldName;
 
-                avtScalarMetaData *smd = new avtScalarMetaData;
-                smd->name = varName;
-                smd->originalName = varName;
-                smd->meshName = meshes[m];
-                smd->centering = AVT_ZONECENT;
-                smd->hasDataExtents = false;
-                smd->minDataExtents = 0.f;
-                smd->maxDataExtents = 0.f;
-                smd->validVariable = 
-                    fieldDescriptor->fieldType == dbfFieldFloatingPointNumber ||
-                    fieldDescriptor->fieldType == dbfFieldFixedPointNumber ||
-                    fieldDescriptor->fieldType == dbfFieldShortInt ||
-                    fieldDescriptor->fieldType == dbfFieldInt ||
-                    fieldDescriptor->fieldType == dbfFieldDouble;
-                md->Add(smd);
+                if(fieldDescriptor->fieldType == dbfFieldChar ||
+                   fieldDescriptor->fieldType == dbfFieldDate)
+                {
+                    avtLabelMetaData *lmd = new avtLabelMetaData;
+                    lmd->name = varName;
+                    lmd->originalName = varName;
+                    lmd->meshName = meshes[m];
+                    lmd->centering = AVT_ZONECENT;
+                    lmd->validVariable = true;
+                    md->Add(lmd);
+                }
+                else
+                {
+                    avtScalarMetaData *smd = new avtScalarMetaData;
+                    smd->name = varName;
+                    smd->originalName = varName;
+                    smd->meshName = meshes[m];
+                    smd->centering = AVT_ZONECENT;
+                    smd->hasDataExtents = false;
+                    smd->minDataExtents = 0.f;
+                    smd->maxDataExtents = 0.f;
+                    smd->validVariable = 
+                        fieldDescriptor->fieldType == dbfFieldFloatingPointNumber ||
+                        fieldDescriptor->fieldType == dbfFieldFixedPointNumber ||
+                        fieldDescriptor->fieldType == dbfFieldShortInt ||
+                        fieldDescriptor->fieldType == dbfFieldInt ||
+                        fieldDescriptor->fieldType == dbfFieldDouble;
+         
+                    md->Add(smd);
+                }
 
                 ++fieldDescriptor;
             }
@@ -677,6 +718,50 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         FreeUpResources();
         initialized = true;
 #endif
+    }
+
+    // Add expressions to get the x,y,z coordinates of the mesh, which can
+    // be useful for coloring elevations.
+    if(meshes.size() == 1)
+    {
+        Expression expr;
+        expr.SetName("x");
+        expr.SetDefinition(std::string("coord(") + meshes[0] + ")[0]");
+        expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&expr);
+
+        expr.SetName("y");
+        expr.SetDefinition(std::string("coord(") + meshes[0] + ")[1]");
+        md->AddExpression(&expr);
+
+        if(is3D[0] == 1)
+        {
+            expr.SetName("z");
+            expr.SetDefinition(std::string("coord(") + meshes[0] + ")[2]");
+            md->AddExpression(&expr);
+        }
+    }
+    else
+    {
+        for(int m = 0; m < meshes.size(); ++m)
+        {
+            Expression expr;
+            expr.SetName(meshes[m] + "_x");
+            expr.SetDefinition(std::string("coord(") + meshes[m] + ")[0]");
+            expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&expr);
+
+            expr.SetName(meshes[m] + "_y");
+            expr.SetDefinition(std::string("coord(") + meshes[m] + ")[1]");
+            md->AddExpression(&expr);
+
+            if(is3D[m] == 1)
+            {
+                expr.SetName(meshes[m] + "_z");
+                expr.SetDefinition(std::string("coord(") + meshes[m] + ")[2]");
+                md->AddExpression(&expr);
+            }
+        }
     }
 }
 
@@ -702,6 +787,9 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 vtkDataSet *
 avtShapefileFileFormat::GetMesh(const char *meshname)
 {
+#ifdef MDSERVER
+    return 0;
+#else
     //
     // Determine the shape type from the mesh name.
     //
@@ -935,6 +1023,7 @@ avtShapefileFileFormat::GetMesh(const char *meshname)
                         int firstPoint = pointIndex;
                         int index = 0;
                         CHECK_VERTS_SIZE(nverts);
+#ifdef POLYGONS_AS_LINES
                         for(j = start; j < end; ++j, ++index)
                         {
                             if(j < end - 1)
@@ -951,6 +1040,19 @@ avtShapefileFileFormat::GetMesh(const char *meshname)
                         }
 
                         pd->InsertNextCell(VTK_POLY_LINE, nverts, verts);
+#else
+                        for(j = start; j < end-1; ++j, ++index)
+                        {
+                            // Stash the point
+                            pts[0] = pg->points[j].x;
+                            pts[1] = pg->points[j].y;
+                            pts[2] = 0.f;
+                            pts += 3;
+                            verts[index] = pointIndex++;
+                        }
+
+                        pd->InsertNextCell(VTK_POLYGON, nverts-1, verts);
+#endif
                     }
 
                     } // end new scope
@@ -967,6 +1069,7 @@ avtShapefileFileFormat::GetMesh(const char *meshname)
                         int firstPoint = pointIndex;
                         int index = 0;
                         CHECK_VERTS_SIZE(nverts);
+#ifdef POLYGONS_AS_LINES
                         for(j = start; j < end; ++j, ++index)
                         {
                             if(j < end - 1)
@@ -983,6 +1086,19 @@ avtShapefileFileFormat::GetMesh(const char *meshname)
                         }
 
                         pd->InsertNextCell(VTK_POLY_LINE, nverts, verts);
+#else
+                        for(j = start; j < end-1; ++j, ++index)
+                        {
+                            // Stash the point
+                            pts[0] = pg->points[j].x;
+                            pts[1] = pg->points[j].y;
+                            pts[2] = 0.f;
+                            pts += 3;
+                            verts[index] = pointIndex++;
+                        }
+
+                        pd->InsertNextCell(VTK_POLYGON, nverts-1, verts);
+#endif
                     }
                     } // end new scope
                     break;
@@ -998,6 +1114,7 @@ avtShapefileFileFormat::GetMesh(const char *meshname)
                         int firstPoint = pointIndex;
                         int index = 0;
                         CHECK_VERTS_SIZE(nverts);
+#ifdef POLYGONS_AS_LINES
                         for(j = start; j < end; ++j, ++index)
                         {
                             if(j < end - 1)
@@ -1014,8 +1131,20 @@ avtShapefileFileFormat::GetMesh(const char *meshname)
                         }
 
                         pd->InsertNextCell(VTK_POLY_LINE, nverts, verts);
-                    }
+#else
+                        for(j = start; j < end-1; ++j, ++index)
+                        {
+                            // Stash the point
+                            pts[0] = pg->points[j].x;
+                            pts[1] = pg->points[j].y;
+                            pts[2] = pg->z[j];
+                            pts += 3;
+                            verts[index] = pointIndex++;
+                        }
 
+                        pd->InsertNextCell(VTK_POLYGON, nverts-1, verts);
+#endif
+                    }
                     } // end new scope
                     break;
 
@@ -1079,8 +1208,74 @@ avtShapefileFileFormat::GetMesh(const char *meshname)
     }
 
     return ds;
+#endif
 }
 
+// ****************************************************************************
+// Method: avtShapefileFileFormat::GetNumRepeats
+//
+// Purpose: 
+//   Determines the number of times a data value should be repeated in the
+//   data array.
+//
+// Arguments:
+//   shape     : A pointer to a shape.
+//   shapeType : The type of the shape.
+//
+// Returns:    The number of times data should be repeated for the shape.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 1 23:38:01 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+avtShapefileFileFormat::GetNumRepeats(void *shape, esriShapeType_t shapeType) const
+{
+    int nr = 1;
+
+    switch(shapeType)
+    {
+    case esriPolyLine:
+        nr = ((esriPolyLine_t *)shape)->numParts;
+        break;
+    case esriPolygon:
+        nr = ((esriPolygon_t *)shape)->numParts;
+        break;
+    case esriMultiPoint:
+        nr = ((esriMultiPoint_t *)shape)->numPoints;
+        break;
+    case esriPolyLineZ:
+        nr = ((esriPolyLineZ_t *)shape)->numParts;
+        break;
+    case esriPolygonZ:
+        nr = ((esriPolygonZ_t *)shape)->numParts;
+        break;
+    case esriMultiPointZ:
+        nr = ((esriMultiPointZ_t *)shape)->numPoints;
+        break;
+    case esriPolyLineM:
+        nr = ((esriPolyLineM_t *)shape)->numParts;
+        break;
+    case esriPolygonM:
+        nr = ((esriPolygonM_t *)shape)->numParts;
+        break;
+    case esriMultiPointM:
+        nr = ((esriMultiPointM_t *)shape)->numPoints;
+        break;
+    case esriMultiPatch:
+        nr = ((esriMultiPatch_t *)shape)->numParts;
+        break;
+    default:
+        break;
+    }
+
+    return nr;
+}
 
 // ****************************************************************************
 //  Method: avtShapefileFileFormat::GetVar
@@ -1098,13 +1293,17 @@ avtShapefileFileFormat::GetMesh(const char *meshname)
 //
 //  Modifications:
 //    Brad Whitlock, Tue Mar 29 16:07:59 PST 2005
-//    Use pointer arithmetic for sticking the metrics into the array.
+//    Use pointer arithmetic for sticking the metrics into the array. I added
+//    support for reading label variables.
 //
 // ****************************************************************************
 
 vtkDataArray *
 avtShapefileFileFormat::GetVar(const char *varname)
 {
+#ifdef MDSERVER
+    return 0;
+#else
     static const char *mName = "avtShapefileFileFormat::GetVar: ";
 
     //
@@ -1182,7 +1381,7 @@ avtShapefileFileFormat::GetVar(const char *varname)
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    vtkFloatArray *rv = vtkFloatArray::New();
+    vtkDataArray *ds = 0;
     if(field != 0)
     {
         dbfReadError_t rcError;
@@ -1197,71 +1396,80 @@ avtShapefileFileFormat::GetVar(const char *varname)
         {
             // We're going to have nCells rather than nShapes because some of
             // the shapes had multiple parts.
-            rv->SetNumberOfTuples(nCells);
-
-            float *fdest = (float *)rv->GetVoidPointer(0);
-            dbfSetForceFloat(1);
-            float *fsrc = (float *)dbfFileReadField(dbfFile, field->fieldName,
-                &rcError);
-            if(rcError != dbfReadErrorSuccess)
+            if(field->fieldType == dbfFieldChar ||
+               field->fieldType == dbfFieldDate)
             {
-                rv->Delete();
-                rv = 0;
+                // char data
+                vtkUnsignedCharArray *rv = vtkUnsignedCharArray::New();
+                rv->SetNumberOfComponents(field->fieldLength + 1);
+                rv->SetNumberOfTuples(nCells);
+                unsigned char *ucdest = (unsigned char *)rv->GetVoidPointer(0);
+                unsigned char *ucsrc = (unsigned char *)dbfFileReadField(dbfFile, field->fieldName,
+                    &rcError);
+                if(rcError != dbfReadErrorSuccess)
+                {
+                    rv->Delete();
+                    rv = 0;
+                }
+                else
+                {
+                    unsigned char *ucptr = ucsrc;
+                    for(int i = 0; i < shapes.size(); ++i)
+                    {
+                        int nr = 1;
+                        if(shapes[i].shapeType == shapeType)
+                            nr = GetNumRepeats(shapes[i].shape, shapeType);
+
+                        // Repeat the string field value for all cells in the shape.
+                        for(int j = 0; j < nr; ++j)
+                        {
+                            memcpy((void *)ucdest, (const void *)ucptr, field->fieldLength);
+                            ucdest += field->fieldLength + 1;
+                        }
+
+                        // Move to the next shape's field data value.
+                        ucptr += field->fieldLength + 1;
+                    }
+
+                    dbfFree((void *)ucsrc);
+                }
+                ds = rv;
             }
             else
             {
-                float *fptr = fsrc;
-                for(int i = 0; i < shapes.size(); ++i)
+                // Float data.
+                vtkFloatArray *rv = vtkFloatArray::New();
+                rv->SetNumberOfTuples(nCells);
+
+                float *fdest = (float *)rv->GetVoidPointer(0);
+                dbfSetForceFloat(1);
+                float *fsrc = (float *)dbfFileReadField(dbfFile, field->fieldName,
+                    &rcError);
+                if(rcError != dbfReadErrorSuccess)
                 {
-                    int nr = 1;
-                    if(shapes[i].shapeType == shapeType)
+                    rv->Delete();
+                    rv = 0;
+                }
+                else
+                {
+                    float *fptr = fsrc;
+                    for(int i = 0; i < shapes.size(); ++i)
                     {
-                        switch(shapeType)
-                        {
-                        case esriPolyLine:
-                            nr = ((esriPolyLine_t *)shapes[i].shape)->numParts;
-                            break;
-                        case esriPolygon:
-                            nr = ((esriPolygon_t *)shapes[i].shape)->numParts;
-                            break;
-                        case esriMultiPoint:
-                            nr = ((esriMultiPoint_t *)shapes[i].shape)->numPoints;
-                            break;
-                        case esriPolyLineZ:
-                            nr = ((esriPolyLineZ_t *)shapes[i].shape)->numParts;
-                            break;
-                        case esriPolygonZ:
-                            nr = ((esriPolygonZ_t *)shapes[i].shape)->numParts;
-                            break;
-                        case esriMultiPointZ:
-                            nr = ((esriMultiPointZ_t *)shapes[i].shape)->numPoints;
-                            break;
-                        case esriPolyLineM:
-                            nr = ((esriPolyLineM_t *)shapes[i].shape)->numParts;
-                            break;
-                        case esriPolygonM:
-                            nr = ((esriPolygonM_t *)shapes[i].shape)->numParts;
-                            break;
-                        case esriMultiPointM:
-                            nr = ((esriMultiPointM_t *)shapes[i].shape)->numPoints;
-                            break;
-                        case esriMultiPatch:
-                            nr = ((esriMultiPatch_t *)shapes[i].shape)->numParts;
-                            break;
-                        default:
-                            break;
-                        }
+                        int nr = 1;
+                        if(shapes[i].shapeType == shapeType)
+                            nr = GetNumRepeats(shapes[i].shape, shapeType);
+
+                        // Repeat the field value for all cells in the shape.
+                        for(int j = 0; j < nr; ++j)
+                            *fdest++ = *fptr;
+
+                        // Move to the next shape's field data value.
+                        ++fptr;
                     }
 
-                    // Repeat the field value for all cells in the shape.
-                    for(int j = 0; j < nr; ++j)
-                        *fdest++ = *fptr;
-
-                    // Move to the next shape's field data value.
-                    ++fptr;
+                    dbfFree((void *)fsrc);
                 }
-
-                dbfFree((void *)fsrc);
+                ds = rv;
             }
         }
         else
@@ -1271,14 +1479,35 @@ avtShapefileFileFormat::GetVar(const char *varname)
             * shape type. It would not be hard to make it right but shape files
             * never have more than 1 type of shape at this point.
             */
-            rv->SetNumberOfTuples(nShapes);
-            dbfSetForceFloat(1);
-            dbfFileReadField2(dbfFile, field->fieldName, rv->GetVoidPointer(0),
-                &rcError);
-            if(rcError != dbfReadErrorSuccess)
+            if(field->fieldType == dbfFieldChar ||
+               field->fieldType == dbfFieldDate)
             {
-                rv->Delete();
-                rv = 0;
+                vtkUnsignedCharArray *rv = vtkUnsignedCharArray::New();
+                rv->SetNumberOfComponents(field->fieldLength + 1);
+                rv->SetNumberOfTuples(nShapes);
+
+                dbfFileReadField2(dbfFile, field->fieldName, rv->GetVoidPointer(0),
+                    &rcError);
+                if(rcError != dbfReadErrorSuccess)
+                {
+                    rv->Delete();
+                    rv = 0;
+                }
+                ds = rv;
+            }
+            else
+            {
+                vtkFloatArray *rv = vtkFloatArray::New();
+                rv->SetNumberOfTuples(nShapes);
+                dbfSetForceFloat(1);
+                dbfFileReadField2(dbfFile, field->fieldName, rv->GetVoidPointer(0),
+                    &rcError);
+                if(rcError != dbfReadErrorSuccess)
+                {
+                    rv->Delete();
+                    rv = 0;
+                }
+                ds = rv;
             }
         }
     }
@@ -1286,6 +1515,7 @@ avtShapefileFileFormat::GetVar(const char *varname)
     {
         // The number of entries in the variable.
         int ntuples = CountMemberPoints(shapeType);
+        vtkFloatArray *rv = vtkFloatArray::New();
         rv->SetNumberOfTuples(ntuples);
         float *data = (float *)rv->GetVoidPointer(0);
 
@@ -1357,9 +1587,12 @@ avtShapefileFileFormat::GetVar(const char *varname)
                 }
             }
         }
+
+        ds = rv;
     }
 
-    return rv;
+    return ds;
+#endif
 }
 
 

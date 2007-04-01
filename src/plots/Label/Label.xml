@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Label" type="plot" label="Label" version="1.0" enabled="true" vartype="mesh,scalar,vector" iconFile="Label.xpm">
+  <Plugin name="Label" type="plot" label="Label" version="1.0" enabled="true" vartype="mesh,scalar,vector,label" iconFile="Label.xpm">
     <Files components="V">
       avtLabelFilter.C
       avtLabelRenderer.C

@@ -208,6 +208,9 @@ typedef struct {
 //    Hank Childs, Sun Feb 27 11:20:39 PST 2005
 //    Added argument to CanDoDynamicLoadBalancing.
 //
+//    Brad Whitlock, Mon Apr 4 11:46:10 PDT 2005
+//    Added QueryLabels.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -320,6 +323,11 @@ class DATABASE_API avtDatabase
                                                   {return false; };
     virtual bool                QuerySymmetricTensors(const std::string &,
                                              const int, const int, const int,
+                                             const intVector &,
+                                             PickVarInfo &, const bool) 
+                                                  {return false; };
+    virtual bool                QueryLabels(const std::string &, const int, 
+                                             const int, const int,
                                              const intVector &,
                                              PickVarInfo &, const bool) 
                                                   {return false; };

@@ -7,7 +7,7 @@
       <Field name="ubound" label="Upper bound" type="double">
         1e37
       </Field>
-      <Field name="variable" label="variable" type="variablename" vartypes="010000000">
+      <Field name="variable" label="variable" type="variablename" vartypes="0100000000">
         default
       </Field>
     </Attribute>

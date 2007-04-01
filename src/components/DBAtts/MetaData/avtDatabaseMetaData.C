@@ -3444,6 +3444,175 @@ avtSILMetaData::Validate()
    }
 }
 
+// ****************************************************************************
+// Method: avtLabelMetaData::avtLabelMetaData
+//
+// Purpose: 
+//   Constructor for the avtLabelMetaData class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 1 14:44:37 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+avtLabelMetaData::avtLabelMetaData() : AttributeSubject("sssib")
+{
+    name           = "";
+    originalName   = "";
+    meshName       = "";
+    centering      = AVT_UNKNOWN_CENT;
+    validVariable  = true;
+}
+
+avtLabelMetaData::avtLabelMetaData(const std::string &n, const std::string &mn,
+   avtCentering c) : AttributeSubject("sssib")
+{
+    name           = n;
+    originalName   = name;
+    meshName       = mn;
+    centering      = c;
+    validVariable  = true;
+}
+
+avtLabelMetaData::avtLabelMetaData(const avtLabelMetaData &obj) : AttributeSubject("sssib")
+{
+    name           = obj.name;
+    originalName   = obj.originalName;
+    meshName       = obj.meshName;
+    centering      = obj.centering;
+    validVariable  = obj.validVariable;
+}
+
+// ****************************************************************************
+// Method: avtLabelMetaData::~avtLabelMetaData
+//
+// Purpose: 
+//   Destructor for the avtLabelMetaData class.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 1 14:45:08 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+avtLabelMetaData::~avtLabelMetaData()
+{
+}
+
+// ****************************************************************************
+// Method: avtLabelMetaData::operator=
+//
+// Purpose: 
+//   Assigment operator
+//
+// Arguments:
+//   rhs : The object to copy.
+//
+// Returns:    A copy of the current object.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 1 14:45:43 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const avtLabelMetaData &
+avtLabelMetaData::operator=(const avtLabelMetaData &rhs)
+{
+    name           = rhs.name;
+    originalName   = rhs.originalName;
+    meshName       = rhs.meshName;
+    centering      = rhs.centering;
+    validVariable  = rhs.validVariable;
+
+    return *this;
+}
+
+// ****************************************************************************
+// Method: avtLabelMetaData::SelectAll
+//
+// Purpose: 
+//   Selects the addresses of the label fields.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 1 14:46:38 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLabelMetaData::SelectAll()
+{
+    Select(0, (void *)&name);
+    Select(1, (void *)&originalName);
+    Select(2, (void *)&meshName);
+    Select(3, (void *)&centering);
+    Select(4, (void *)&validVariable);
+}
+
+// ****************************************************************************
+// Method: avtLabelMetaData::Print
+//
+// Purpose: 
+//   Prints the label metadata to a stream.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 1 14:47:07 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLabelMetaData::Print(ostream &out, int indent) const
+{
+    Indent(out, indent);
+    out << "Name = " << name.c_str() << endl;
+    if (name != originalName)
+    {
+        Indent(out, indent);
+        out << "Original Name = " << originalName.c_str() << endl;
+    }
+
+    Indent(out, indent);
+    out << "Mesh is = " << meshName.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Centering = ";
+    switch (centering)
+    {
+      case AVT_NODECENT:
+        out << "node centered.";
+        break;
+
+      case AVT_ZONECENT:
+        out << "zone centered.";
+        break;
+
+      case AVT_UNKNOWN_CENT:
+      default:
+        out << "unknowing centering.";
+        break;
+    }
+    out << endl;
+
+    if (!validVariable)
+    {
+        Indent(out, indent);
+        out << "THIS IS NOT A VALID VARIABLE." << endl;
+    }
+}
 
 // ****************************************************************************
 //  Method: avtDefaultPlotMetaData default constructor
@@ -3665,10 +3834,13 @@ avtDefaultPlotMetaData::Print(ostream &out, int indent) const
 //    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
 //    Added formatCanDoDomainDecomposition
 //
+//    Brad Whitlock, Fri Apr 1 15:36:10 PST 2005
+//    Changed format string to add labels.
+//
 // ****************************************************************************
 
 avtDatabaseMetaData::avtDatabaseMetaData()
-    : AttributeSubject("sssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*babbb")
+    : AttributeSubject("sssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*a*babbb")
 {
     hasTemporalExtents             = false;
     minTemporalExtents             = 0.;
@@ -3740,10 +3912,13 @@ avtDatabaseMetaData::avtDatabaseMetaData()
 //    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
 //    Added formatCanDoDomainDecomposition
 //
+//    Brad Whitlock, Fri Apr 1 15:34:18 PST 2005
+//    Added labels.
+//
 // ****************************************************************************
 
 avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
-    : AttributeSubject("sssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*babbb")
+    : AttributeSubject("sssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*a*babbb")
 {
     databaseName       = rhs.databaseName;
     fileFormat         = rhs.fileFormat;
@@ -3787,6 +3962,8 @@ avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
         curves.push_back(new avtCurveMetaData(*rhs.curves[i]));
     for (i=0; i<rhs.sils.size(); i++)
         sils.push_back(new avtSILMetaData(*rhs.sils[i]));
+    for (i=0; i<rhs.labels.size(); i++)
+        labels.push_back(new avtLabelMetaData(*rhs.labels[i]));
     for (i=0; i<rhs.defaultPlots.size(); i++)
         defaultPlots.push_back(new avtDefaultPlotMetaData(*rhs.defaultPlots[i]));
 }
@@ -3847,6 +4024,9 @@ avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
 //
 //    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
 //    Added formatCanDoDomainDecomposition
+//
+//    Brad Whitlock, Fri Apr 1 15:33:57 PST 2005
+//    Added labels.
 //
 // ****************************************************************************
 
@@ -3924,6 +4104,8 @@ avtDatabaseMetaData::operator=(const avtDatabaseMetaData &rhs)
         species.push_back(new avtSpeciesMetaData(*rhs.species[i]));
     for (i=0; i<rhs.curves.size(); i++)
         curves.push_back(new avtCurveMetaData(*rhs.curves[i]));
+    for (i=0; i<rhs.labels.size(); i++)
+        labels.push_back(new avtLabelMetaData(*rhs.labels[i]));
     for (i=0; i<rhs.sils.size(); i++)
         sils.push_back(new avtSILMetaData(*rhs.sils[i]));
     for (i=0; i<rhs.defaultPlots.size(); i++)
@@ -3953,6 +4135,9 @@ avtDatabaseMetaData::operator=(const avtDatabaseMetaData &rhs)
 //
 //    Kathleen Bonnell, Tue Jan 11 16:06:33 PST 2005 
 //    Delete simInfo.
+//
+//    Brad Whitlock, Fri Apr 1 15:33:13 PST 2005
+//    Added labels.
 //
 // ****************************************************************************
 
@@ -4004,6 +4189,12 @@ avtDatabaseMetaData::~avtDatabaseMetaData()
     for (cit = curves.begin() ; cit != curves.end() ; cit++)
     {
         delete (*cit);
+    }
+
+    std::vector<avtLabelMetaData *>::iterator lit;
+    for (lit = labels.begin() ; lit != labels.end() ; lit++)
+    {
+        delete (*lit);
     }
 
     std::vector<avtDefaultPlotMetaData *>::iterator defpltit;
@@ -4574,6 +4765,23 @@ avtDatabaseMetaData::Add(avtSILMetaData *smd)
 //  Method: avtDatabaseMetaData::Add
 //
 //  Arguments:
+//      smd    A Label meta data object.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Fri Apr 1 15:26:41 PST 2005
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::Add(avtLabelMetaData *lmd)
+{
+    labels.push_back(lmd);
+}
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::Add
+//
+//  Arguments:
 //      pmd    A default plot meta data object.
 //
 //  Programmer: Walter Herrera
@@ -4737,6 +4945,9 @@ avtDatabaseMetaData::GetNDomains(std::string var) const
 //    Hank Childs, Sat Sep 20 08:32:38 PDT 2003
 //    Add support for tensors.
 //
+//    Brad Whitlock, Fri Apr 1 15:27:41 PST 2005
+//    Added support for labels.
+//
 // ****************************************************************************
 
 avtVarType
@@ -4837,6 +5048,15 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in) const
         }
     }
 
+    int nlabels = labels.size();
+    for (i = 0 ; i < nlabels ; i++)
+    {
+        if (labels[i]->name == var)
+        {
+            return AVT_LABEL_VAR;
+        }
+    }
+
     EXCEPTION1(InvalidVariableException, var);
 }
 
@@ -4879,6 +5099,9 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in) const
 //    other spots in VisIt, but this one was out of date.  I
 //    refactored the best one into ParsingExprList::GetRealVariable
 //    and made this one point to it.
+//
+//    Brad Whitlock, Fri Apr 1 15:28:35 PST 2005
+//    Added support for labels.
 //
 // ****************************************************************************
 
@@ -5008,6 +5231,15 @@ avtDatabaseMetaData::MeshForVar(std::string var) const
         }
     }
 
+    // Look through the labels.
+    int nlabels = labels.size();
+    for (i = 0 ; i < nlabels ; i++)
+    {
+        if (labels[i]->name == var)
+        {
+            return labels[i]->meshName;
+        }
+    }
 
     EXCEPTION1(InvalidVariableException, var);
 }
@@ -5259,6 +5491,9 @@ avtDatabaseMetaData::GetSpeciesOnMesh(std::string mesh) const
 //    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
 //    Added formatCanDoDomainDecomposition
 //
+//    Brad Whitlock, Fri Apr 1 15:28:58 PST 2005
+//    Added labels.
+//
 // ****************************************************************************
 
 void
@@ -5425,6 +5660,18 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
         out << endl;
     }
 
+    if(labels.begin() != labels.end())
+    {
+        Indent(out, indent);
+        out << "Labels: " << endl;
+    }
+    std::vector< avtLabelMetaData * >::const_iterator lit;
+    for (lit = labels.begin() ; lit != labels.end() ; lit++)
+    {
+        (*lit)->Print(out, indent+1);
+        out << endl;
+    }
+
     if(defaultPlots.begin() != defaultPlots.end())
     {
         Indent(out, indent);
@@ -5541,6 +5788,9 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
 //   Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
 //   Added formatCanDoDomainDecomposition
 //
+//   Brad Whitlock, Fri Apr 1 15:31:22 PST 2005
+//   Added labels.
+//
 // *******************************************************************
 
 void
@@ -5574,12 +5824,13 @@ avtDatabaseMetaData::SelectAll()
     Select(23, (void*)&exprList);
     Select(24, (void*)&mustRepopulateOnStateChange);
     Select(25, (void*)&sils);
+    Select(26, (void*)&labels);
 
-    Select(26, (void*)&isSimulation);
-    Select(27, (void*)simInfo);
-    Select(28, (void*)&useCatchAllMesh);
-    Select(29, (void*)&mustAlphabetizeVariables);
-    Select(30, (void*)&formatCanDoDomainDecomposition);
+    Select(27, (void*)&isSimulation);
+    Select(28, (void*)simInfo);
+    Select(29, (void*)&useCatchAllMesh);
+    Select(30, (void*)&mustAlphabetizeVariables);
+    Select(31, (void*)&formatCanDoDomainDecomposition);
 }
 
 // *******************************************************************
@@ -5621,6 +5872,9 @@ avtDatabaseMetaData::SelectAll()
 //   Brad Whitlock, Fri Jul 23 12:40:24 PDT 2004
 //   updated indexing for databaseComment.
 //
+//   Brad Whitlock, Fri Apr 1 15:31:03 PST 2005
+//   Added label.
+//
 // *******************************************************************
 
 AttributeGroup *
@@ -5648,6 +5902,8 @@ avtDatabaseMetaData::CreateSubAttributeGroup(int n)
         return new avtDefaultPlotMetaData;
       case 25:
         return new avtSILMetaData;
+      case 26:
+        return new avtLabelMetaData;
       default:
         return NULL;
     }
@@ -6066,6 +6322,53 @@ avtDatabaseMetaData::GetSIL(const std::string &n) const
     for (int i=0; i<sils.size(); i++)
         if (sils[i]->meshName == n)
             return sils[i];
+    return NULL;
+}
+
+// *******************************************************************
+// Method: avtDatabaseMetaData::GetLabel
+//
+// Purpose: 
+//     This returns the metadata for the nth label in the file.
+//
+// Arguments:
+//     n  :  the index into the array
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 1 15:37:40 PST 2005
+//
+// Modifications:
+//   
+// *******************************************************************
+
+const avtLabelMetaData *
+avtDatabaseMetaData::GetLabel(int n) const
+{
+    return labels[n];
+}
+
+// *******************************************************************
+// Method: avtDatabaseMetaData::GetLabel
+//
+// Purpose: 
+//     This returns the metadata for the label in the file whose name is n.
+//
+// Arguments:
+//     n  :  the name of the label object
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 1 15:37:59 PST 2005
+//
+// Modifications:
+//   
+// *******************************************************************
+
+const avtLabelMetaData *
+avtDatabaseMetaData::GetLabel(const std::string &n) const
+{
+    for (int i=0; i<labels.size(); i++)
+        if (labels[i]->name == n)
+            return labels[i];
     return NULL;
 }
 
@@ -6715,6 +7018,8 @@ Indent(ostream &out, int indent)
 //  Creation:   August 24, 2004
 //
 //  Modifications:
+//    Brad Whitlock, Fri Apr 1 22:53:25 PST 2005
+//    Added labels.
 //
 // ****************************************************************************
 
@@ -6753,6 +7058,11 @@ avtDatabaseMetaData::GetAllVariableNames(const std::string &activeVar) const
     {
         if (GetSpecies(i)->meshName == meshName)
             vars.push_back(GetSpecies(i)->name);
+    }
+    for (i = 0; i < GetNumLabels(); i++) 
+    {
+        if (GetLabel(i)->meshName == meshName)
+            vars.push_back(GetLabel(i)->name);
     }
     return vars;
 }
@@ -6796,6 +7106,10 @@ avtDatabaseMetaData::GetAllMeshNames() const
 //
 //  Programmer: Hank Childs
 //  Creation:   February 14, 2005
+//
+//  Modifications:
+//    Brad Whitlock, Fri Apr 1 15:40:29 PST 2005
+//    Added labels.
 //
 // ****************************************************************************
 
@@ -6967,6 +7281,23 @@ avtDatabaseMetaData::ReplaceForbiddenCharacters(std::vector<char> &badChars,
         }
     }
  */
+    for (i = 0 ; i < labels.size() ; i++)
+    {
+        if (labels[i]->originalName == "")
+            labels[i]->originalName = labels[i]->name;
+        if (IsForbidden(labels[i]->originalName, replacementName, badChars, 
+                        replacementStr))
+        {
+            char msg[1024];
+            SNPRINTF(msg, 1024, "The database contains an object named \"%s\""
+                             ", which contains characters not supported by "
+                             "VisIt.  VisIt is renaming it to \"%s\"",
+                             labels[i]->originalName.c_str(), 
+                             replacementName.c_str());
+            IssueWarning(msg);
+            labels[i]->name = replacementName;
+        }
+    }
 }
 
 

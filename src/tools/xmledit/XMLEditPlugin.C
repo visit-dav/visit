@@ -103,6 +103,7 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
     varTypeCurve           = new QCheckBox("Curve", this);
     varTypeTensor          = new QCheckBox("Tensor", this);
     varTypeSymmetricTensor = new QCheckBox("Symmetric Tensor", this);
+    varTypeLabel           = new QCheckBox("Label", this);
 
     QHBoxLayout *varTypeLayout1 = new QHBoxLayout();
     varTypeLayout1->addWidget(varTypeMesh);
@@ -118,6 +119,10 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
     varTypeLayout2->addWidget(varTypeTensor);
     varTypeLayout2->addWidget(varTypeSymmetricTensor);
     topLayout->addLayout(varTypeLayout2, row, 1);
+    row++;
+    QHBoxLayout *varTypeLayout3 = new QHBoxLayout();
+    varTypeLayout2->addWidget(varTypeLabel);
+    topLayout->addLayout(varTypeLayout3, row, 1);
     row++;
 
     dbType = new QComboBox(this);
@@ -173,6 +178,8 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
             this, SLOT(varTypesChanged()));
     connect(varTypeSymmetricTensor, SIGNAL(clicked()),
             this, SLOT(varTypesChanged()));
+    connect(varTypeLabel, SIGNAL(clicked()),
+            this, SLOT(varTypesChanged()));
     connect(hasIcon, SIGNAL(toggled(bool)),
             this, SLOT(hasIconChanged(bool)));
     connect(iconFile, SIGNAL(textChanged(const QString &)),
@@ -202,6 +209,9 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
 //    Jeremy Meredith, Wed Nov  5 13:49:49 PST 2003
 //    Added support for plugins en/disabled by default.
 //
+//    Brad Whitlock, Fri Apr 1 16:07:24 PST 2005
+//    Added support for label vars.
+//
 // ****************************************************************************
 
 void
@@ -224,6 +234,7 @@ XMLEditPlugin::UpdateWindowContents()
         varTypeCurve->setChecked(false);
         varTypeTensor->setChecked(false);
         varTypeSymmetricTensor->setChecked(false);
+        varTypeLabel->setChecked(false);
         enabledByDefault->setChecked(xmldoc->plugin->enabledByDefault);
 
         dbType->setCurrentItem(0);
@@ -254,6 +265,8 @@ XMLEditPlugin::UpdateWindowContents()
                     varTypeTensor->setChecked(true);
                 else if (types[i] == "symmetrictensor")
                     varTypeSymmetricTensor->setChecked(true);
+                else if (types[i] == "label")
+                    varTypeLabel->setChecked(true);
             }
         }
         else if (xmldoc->plugin->type == "operator")
@@ -305,6 +318,7 @@ XMLEditPlugin::UpdateWindowContents()
         varTypeCurve->setChecked(false);
         varTypeTensor->setChecked(false);
         varTypeSymmetricTensor->setChecked(false);
+        varTypeLabel->setChecked(false);
         hasIcon->setChecked(false);
         iconFile->setText("");
         hasWriter->setChecked(false);
@@ -338,6 +352,9 @@ XMLEditPlugin::UpdateWindowContents()
 //    Jeremy Meredith, Wed Nov  5 13:49:49 PST 2003
 //    Added support for plugins en/disabled by default.
 //
+//    Brad Whitlock, Fri Apr 1 16:08:18 PST 2005
+//    Added label vars.
+//
 // ****************************************************************************
 
 void
@@ -361,6 +378,7 @@ XMLEditPlugin::UpdateWindowSensitivity()
     varTypeCurve->setEnabled(plot);
     varTypeTensor->setEnabled(plot);
     varTypeSymmetricTensor->setEnabled(plot);
+    varTypeLabel->setEnabled(plot);
     dbType->setEnabled(db);
     extensions->setEnabled(db);
     hasIcon->setEnabled(op || plot);
@@ -393,6 +411,9 @@ XMLEditPlugin::UpdateWindowSensitivity()
 //    Jeremy Meredith, Wed Nov  5 13:49:49 PST 2003
 //    Added support for plugins en/disabled by default.
 //
+//    Brad Whitlock, Fri Apr 1 16:08:37 PST 2005
+//    Added label.
+//
 // ****************************************************************************
 
 void
@@ -411,6 +432,7 @@ XMLEditPlugin::BlockAllSignals(bool block)
     varTypeCurve->blockSignals(block);
     varTypeTensor->blockSignals(block);
     varTypeSymmetricTensor->blockSignals(block);
+    varTypeLabel->blockSignals(block);
     dbType->blockSignals(block);
     extensions->blockSignals(block);
     hasIcon->blockSignals(block);
@@ -668,6 +690,9 @@ XMLEditPlugin::extensionsTextChanged(const QString &text)
 //    Hank Childs, Fri Aug  1 11:21:18 PDT 2003
 //    Add support for curves.
 //
+//    Brad Whitlock, Fri Apr 1 16:09:04 PST 2005
+//    Added label.
+//
 // ****************************************************************************
 void
 XMLEditPlugin::varTypesChanged()
@@ -695,6 +720,8 @@ XMLEditPlugin::varTypesChanged()
         p->vartype += "tensor,";
     if (varTypeSymmetricTensor->isChecked())
         p->vartype += "symmetrictensor,";
+    if (varTypeLabel->isChecked())
+        p->vartype += "label,";
     if (!p->vartype.isEmpty())
         p->vartype = p->vartype.left(p->vartype.length()-1);
 }
