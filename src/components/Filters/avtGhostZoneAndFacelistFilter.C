@@ -324,3 +324,38 @@ avtGhostZoneAndFacelistFilter::ChangedInput(void)
 }
 
 
+// ****************************************************************************
+//  Method: avtGhostZoneAndFacelistFilter::PerformRestriction
+//
+//  Purpose:
+//      Tell the database that we will need ghost nodes.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 11, 2004
+//
+// ****************************************************************************
+
+avtPipelineSpecification_p
+avtGhostZoneAndFacelistFilter::PerformRestriction(
+                                            avtPipelineSpecification_p in_spec)
+{
+    avtPipelineSpecification_p spec = in_spec;
+
+    //
+    // Only declare that we want ghost nodes if someone downstream hasn't said
+    // that they want ghost zones.  Also only declare this if we are actually
+    // taking external faces.
+    //
+    if (useFaceFilter && 
+          GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 3)
+    {
+        spec = new avtPipelineSpecification(in_spec);
+        if (spec->GetDataSpecification()->GetDesiredGhostDataType() !=
+                                                               GHOST_ZONE_DATA)
+            spec->GetDataSpecification()->SetDesiredGhostDataType(
+                                                              GHOST_NODE_DATA);
+    }
+
+    return spec;
+}
+

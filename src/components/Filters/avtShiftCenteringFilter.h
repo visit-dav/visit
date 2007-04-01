@@ -40,6 +40,9 @@ class vtkPointDataToCellData;
 //    Moved inlined destructor definition to .C file because certain compilers
 //    have problems with them.
 //
+//    Hank Childs, Wed Aug 11 09:47:46 PDT 2004
+//    Added PerformRestriction.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtShiftCenteringFilter : public avtStreamer
@@ -57,6 +60,8 @@ class AVTFILTERS_API avtShiftCenteringFilter : public avtStreamer
 
     virtual vtkDataSet     *ExecuteData(vtkDataSet *, int, std::string);
     virtual void            RefashionDataObjectInfo(void);
+    virtual avtPipelineSpecification_p
+                            PerformRestriction(avtPipelineSpecification_p);
 };
 
 

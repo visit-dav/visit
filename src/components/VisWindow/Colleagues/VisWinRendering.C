@@ -465,6 +465,11 @@ VisWinRendering::StopCurveMode(void)
 //  Programmer: Hank Childs
 //  Creation:   July 6, 2000
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Aug 11 08:08:18 PDT 2004
+//    Add timings code.
+//
 // ****************************************************************************
 
 void
@@ -472,7 +477,10 @@ VisWinRendering::EnableUpdates(void)
 {
     if (needsUpdate)
     {
+        int t1 = visitTimer->StartTimer();
         Render();
+        visitTimer->StopTimer(t1, "Time for first render after adding plots to"
+                                  " this window.");
         needsUpdate = false;
     }
 }

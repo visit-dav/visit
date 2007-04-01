@@ -70,6 +70,10 @@ using     std::vector;
 //    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
 //    Initialize mayRequireNodes. 
 //
+//    Hank Childs, Tue Aug 10 14:51:34 PDT 2004
+//    Remove useGhostZones, add maintainOriginalConnectivity and
+//    desiredGhostDataType.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts,
@@ -79,7 +83,6 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
     mayRequireNodes = false;
     needZones = false;
     needNodes = false;
-    useGhostZones = true;
     needInternalSurfaces = false;
     mustDoMIR = false;
     needBoundarySurfaces = false;
@@ -90,6 +93,8 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
     needSmoothMaterialInterfaces = false;
     needCleanZonesOnly = false;
     useNewMIRAlgorithm = false;
+    desiredGhostDataType = NO_GHOST_DATA;
+    maintainOriginalConnectivity = false;
 
     timestep  = ts;
 
@@ -162,6 +167,10 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
 //    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
 //    Initialize mayRequireNodes. 
 //
+//    Hank Childs, Tue Aug 10 14:51:34 PDT 2004
+//    Remove useGhostZones, add maintainOriginalConnectivity and
+//    desiredGhostDataType.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
@@ -171,7 +180,6 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
     needZones = false;
     needNodes = false;
     mustDoMIR = false;
-    useGhostZones = true;
     needInternalSurfaces = false;
     needBoundarySurfaces = false;
     needValidFaceConnectivity = false;
@@ -181,6 +189,8 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
     needSmoothMaterialInterfaces = false;
     needCleanZonesOnly = false;
     useNewMIRAlgorithm = false;
+    desiredGhostDataType = NO_GHOST_DATA;
+    maintainOriginalConnectivity = false;
 
     timestep  = ts;
 
@@ -382,6 +392,10 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec)
 //    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
 //    Added mayRequireNodes. 
 //
+//    Hank Childs, Tue Aug 10 14:51:34 PDT 2004
+//    Remove useGhostZones, add maintainOriginalConnectivity and
+//    desiredGhostDataType.
+//
 // ****************************************************************************
 
 avtDataSpecification &
@@ -417,7 +431,6 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
     mayRequireZones                 = spec.mayRequireZones;
     mayRequireNodes                 = spec.mayRequireNodes;
     mustDoMIR                       = spec.mustDoMIR;
-    useGhostZones                   = spec.useGhostZones;
     needZones                       = spec.needZones;
     needNodes                       = spec.needNodes;
     needInternalSurfaces            = spec.needInternalSurfaces;
@@ -429,6 +442,8 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
     needSmoothMaterialInterfaces    = spec.needSmoothMaterialInterfaces;
     needCleanZonesOnly              = spec.needCleanZonesOnly;
     useNewMIRAlgorithm              = spec.useNewMIRAlgorithm;
+    desiredGhostDataType            = spec.desiredGhostDataType;
+    maintainOriginalConnectivity    = spec.maintainOriginalConnectivity;
 
     secondaryVariables = spec.secondaryVariables;
 
@@ -498,6 +513,10 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
 //    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
 //    Added mayRequireNodes. 
 //
+//    Hank Childs, Tue Aug 10 14:51:34 PDT 2004
+//    Remove useGhostZones, add maintainOriginalConnectivity and
+//    desiredGhostDataType.
+//
 // ****************************************************************************
 
 bool
@@ -560,7 +579,12 @@ avtDataSpecification::operator==(const avtDataSpecification &ds)
         return false;
     }
 
-    if (useGhostZones != ds.useGhostZones)
+    if (desiredGhostDataType != ds.desiredGhostDataType)
+    {
+        return false;
+    }
+
+    if (maintainOriginalConnectivity != ds.maintainOriginalConnectivity)
     {
         return false;
     }
@@ -786,28 +810,6 @@ avtDataSpecification::RemoveSecondaryVariable(const char *var)
     }
 
     secondaryVariables = newList;
-}
-
-
-// ****************************************************************************
-//  Method: avtDataSpecification::NoGhostZones
-//
-//  Purpose:
-//      This tells the reader that ghost zones are not necessary and that if
-//      they weren't present, that would not be a problem.  In reality, the
-//      ghost zones are still delivered by most readers, but the vtkGhostLevels
-//      array will not be sent down, meaning that processing time drops
-//      slightly.
-//
-//  Programmer: Hank Childs
-//  Creation:   November 28, 2001
-//
-// ****************************************************************************
-
-void
-avtDataSpecification::NoGhostZones(void)
-{
-    useGhostZones = false;
 }
 
 

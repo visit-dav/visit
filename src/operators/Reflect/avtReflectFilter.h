@@ -61,6 +61,7 @@ class avtReflectFilter : public virtual avtDataTreeStreamer,
     vtkDataSet           *ReflectRectilinear(vtkRectilinearGrid *, int);
     vtkDataSet           *ReflectPointSet(vtkPointSet *, int);
     vtkDataArray         *ReflectDataArray(vtkDataArray *, double);
+    void                  HasNeighbor(int, bool &, bool &, bool &);
 };
 
 

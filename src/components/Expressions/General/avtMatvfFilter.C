@@ -563,12 +563,17 @@ avtMatvfFilter::AddMaterial(ConstExpr *c)
 //  Programmer: Hank Childs
 //  Creation:   October 24, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Aug 11 08:03:38 PDT 2004
+//    Account for changes in the data specification.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
 avtMatvfFilter::PerformRestriction(avtPipelineSpecification_p spec)
 {
-    spec->GetDataSpecification()->NoGhostZones();
+    spec->GetDataSpecification()->SetMaintainOriginalConnectivity(true);
     return spec;
 }
 

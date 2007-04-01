@@ -294,3 +294,23 @@ avtIsovolumeFilter::RefashionDataObjectInfo(void)
 }
 
 
+// ****************************************************************************
+//  Method: avtIsovolumeFilter::PerformRestriction
+//
+//  Purpose:
+//      Tell the database that we will need ghost zones.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 11, 2004
+//
+// ****************************************************************************
+
+avtPipelineSpecification_p
+avtIsovolumeFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
+{
+    avtPipelineSpecification_p spec = new avtPipelineSpecification(in_spec);
+    spec->GetDataSpecification()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+    return spec;
+}
+
+

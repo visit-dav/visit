@@ -457,6 +457,13 @@ avtHistogramFilter::RefashionDataObjectInfo(void)
 //  Programmer: Hank Childs
 //  Creation:   October 18, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Aug 11 09:01:27 PDT 2004
+//    Allow the input to have ghost zones, so that we can play better with 
+//    other filters.  The histogram filter will now remove ghost zones before
+//    executing.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -464,7 +471,6 @@ avtHistogramFilter::PerformRestriction(avtPipelineSpecification_p spec)
 {
     avtPipelineSpecification_p newspec = new avtPipelineSpecification(spec);
 
-    newspec->GetDataSpecification()->NoGhostZones();
     newspec->NoDynamicLoadBalancing();
 
     return newspec;

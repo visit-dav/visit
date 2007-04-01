@@ -455,6 +455,9 @@ avtSliceFilter::PreExecute(void)
 //    Make sure that basis vectors are unit vectors -- crossing two
 //    non-orthogonal vectors does not yield a unit vector.
 //
+//    Hank Childs, Fri Aug 13 09:07:31 PDT 2004
+//    Only use 4-tuples with VTK's multiply point method to prevent UMRs.
+//
 // ****************************************************************************
 
 void
@@ -498,7 +501,7 @@ avtSliceFilter::SetUpProjection(void)
         }
     }
 
-    float origin[3] = {ox,oy,oz};
+    float origin[4] = {ox,oy,oz,1};
     float normal[3] = {nx,ny,nz};
     float upaxis[3] = {ux,uy,uz};
 
@@ -577,14 +580,15 @@ avtSliceFilter::SetUpProjection(void)
     //
     // Finish setting up the inverse transform.
     //
-    float zdim[3];
+    float zdim[4];
+    float zdim2[4];
     ftcf->MultiplyPoint(origin, zdim); 
     zdim[0] = 0;
     zdim[1] = 0;
-    cftf->MultiplyPoint(zdim, zdim);
-    invTrans->SetElement(0, 3, zdim[0]);
-    invTrans->SetElement(1, 3, zdim[1]);
-    invTrans->SetElement(2, 3, zdim[2]);
+    cftf->MultiplyPoint(zdim, zdim2);
+    invTrans->SetElement(0, 3, zdim2[0]);
+    invTrans->SetElement(1, 3, zdim2[1]);
+    invTrans->SetElement(2, 3, zdim2[2]);
 
     ftcf->Delete();
     cftf->Delete();

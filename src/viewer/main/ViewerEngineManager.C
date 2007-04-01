@@ -33,6 +33,7 @@
 #include <ViewerRemoteProcessChooser.h>
 #include <ViewerWindowManager.h>
 #include <MaterialAttributes.h>
+#include <TimingsManager.h>
 
 #include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
@@ -1574,11 +1575,16 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
 //    Brad Whitlock, Wed Aug 4 17:25:26 PST 2004
 //    Changed EngineMap.
 //
+//    Hank Childs, Wed Aug 11 08:08:18 PDT 2004
+//    Add timings code.
+//
 // ****************************************************************************
 
 avtDataObjectReader_p
 ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
 {
+    int t1 = visitTimer->StartTimer();
+
     // The return value.
     avtDataObjectReader_p retval(NULL);
 
@@ -1727,6 +1733,8 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
     }
     ENDTRY
 
+    visitTimer->StopTimer(t1,
+                          "Time for engine to execute and return data object");
     return retval;
 }
 

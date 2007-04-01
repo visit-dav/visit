@@ -30,6 +30,9 @@ class vtkDataSet;
 //    Split some code from ExecuteData into a new function to avoid
 //    code duplication.
 //
+//    Hank Childs, Wed Aug 11 09:23:17 PDT 2004
+//    Added PerformRestriction.
+//
 // ****************************************************************************
 
 class avtIsovolumeFilter : public avtPluginStreamer
@@ -52,6 +55,9 @@ class avtIsovolumeFilter : public avtPluginStreamer
 
     virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
     virtual void          RefashionDataObjectInfo(void);
+
+    virtual avtPipelineSpecification_p
+                          PerformRestriction(avtPipelineSpecification_p);
 
   private:
     virtual vtkDataSet   *ExecuteSingleClip(vtkDataSet *, float, bool);

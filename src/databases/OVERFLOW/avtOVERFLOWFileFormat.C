@@ -56,43 +56,71 @@ avtOVERFLOWFileFormat::avtOVERFLOWFileFormat(const char *filename)
 //  Programmer:  Jeremy Meredith
 //  Creation:    July 21, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Aug 11 13:56:47 PDT 2004
+//    Allow naming convention to have a single grid file for all cycles.
+//
 // ****************************************************************************
 void
 avtOVERFLOWFileFormat::InitializeFile()
 {
+    // This is a hack to create a grid and solution file
+    // name, no matter which one was given.  We just force
+    // the first character of the filename to an x or a q
+    // and see if that gives us good files.
+
+    //
+    // Find the last slash -- indicates the first character of the filename
+    //
+    int lastslash;
+    for (lastslash=origfilename.size()-2; lastslash>0; lastslash--)
+    {
+        if (origfilename[lastslash]=='/')
+            break;
+    }
+
+    //
+    // Now change the first character after it to an x/q
+    //
     string gridfilename(origfilename);
     string solfilename(origfilename);
 
-    // This is a pretty ugly hack to create a grid and solution file
-    // name, no matter which one was given.
-    int i;
-    for (i=gridfilename.size()-2; i>0; i--)
-    {
-        if (gridfilename[i]=='/')
-            break;
-    }
-    gridfilename[i+1] = 'x';
-
-    for (i=solfilename.size()-2; i>0; i--)
-    {
-        if (solfilename[i]=='/')
-            break;
-    }
-    solfilename[i+1] = 'q';
+    gridfilename[lastslash+1] = 'x';
+    solfilename[lastslash+1] = 'q';
 
     //
     // Try to open the files
     //
     gridin.open(gridfilename.c_str());
-    solin.open(solfilename.c_str());
 
     if (!gridin)
     {
-        gridin.close();
-        solin.close();
-        EXCEPTION1(InvalidFilesException, gridfilename.c_str());
+        // Okay, that didn't work.  But it might simply be the case that
+        // there was only one grid file for all cycles; remove the cycle
+        // number from the grid file name and try again.  This is assumed
+        // to be all digits in the file name itself.
+        string gridfilename_withnumbers = gridfilename;
+        gridfilename = "";
+        for (int i=0; i<gridfilename_withnumbers.length(); i++)
+        {
+            if (i <= lastslash ||
+                gridfilename_withnumbers[i] < '0' ||
+                gridfilename_withnumbers[i] > '9')
+            {
+                gridfilename += gridfilename_withnumbers[i];
+            }
+        }
+
+        gridin.open(gridfilename.c_str());
+
+        if (!gridin)
+        {
+            gridin.close();
+            EXCEPTION1(InvalidFilesException, gridfilename.c_str());
+        }
     }
 
+    solin.open(solfilename.c_str());
     if (!solin)
     {
         gridin.close();

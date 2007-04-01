@@ -10,6 +10,7 @@
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkUnsignedCharArray.h>
 
 #include <avtDataTree.h>
 #include <avtDatasetExaminer.h>
@@ -21,6 +22,56 @@
 using   std::string;
 
 static void ReflectVectorData(vtkDataSet *in_ds, int dim);
+
+
+// ****************************************************************************
+//  Function: Equal
+//
+//  Purpose:
+//      Compares a float and a double and determines if they are equal.
+//
+//  Note:   Tried to do this with integer arithmetic but ran into compiler bugs
+//          with gcc2.95 (worked with print statements, not without, with -O2).
+//
+//  Programmer: Hank Childs
+//  Creation:   August 11, 2004
+//
+// ****************************************************************************
+
+static inline bool
+Equal(float t1, double t2)
+{
+    float v1 = t1;
+    float v2 = (float) t2;
+
+    // If they are exactly even, then no need to do more.
+    if (v1 == v2)
+        return true;
+
+    // Rule out the 0's.
+    if (v1 == 0.)
+        return (fabs(v2) < 1e-10 ? true : false);
+    if (v2 == 0.)
+        return (fabs(v1) < 1e-10 ? true : false);
+ 
+    // Make sure they are signed correctly.
+    if (v1 < 0. && v2 > 0.)
+        return false;
+    if (v1 > 0. && v2 < 0.)
+        return false;
+
+    v1 = fabs(v1);
+    v2 = fabs(v2);
+
+    float greater = (v1 > v2 ? v1 : v2);
+    float diff = fabs(v1-v2);
+   
+    // Save ourselves a divide -- below is the same as diff/greater < 1e-6.
+    if (diff < (1e-6)*greater)
+        return true;
+
+    return false;
+}
 
 
 // ****************************************************************************
@@ -230,6 +281,9 @@ avtReflectFilter::PreExecute(void)
 //    Hank Childs, Thu Feb 26 16:19:33 PST 2004
 //    Fix typo where data extents are being reset.
 //
+//    Hank Childs, Wed Aug 11 15:09:07 PDT 2004
+//    Tell the output that it has ghost zones.
+//
 // ****************************************************************************
 
 void
@@ -239,6 +293,10 @@ avtReflectFilter::PostExecute(void)
     outAtts.GetTrueSpatialExtents()->Clear();
     outAtts.GetEffectiveSpatialExtents()->Clear();
     outAtts.GetCurrentSpatialExtents()->Clear();
+
+    if (GetInput()->GetInfo().GetAttributes().GetContainsGhostZones()
+           != AVT_HAS_GHOSTS)
+        outAtts.SetContainsGhostZones(AVT_CREATED_GHOSTS);
 
     double bounds[6];
     avtDataset_p ds = GetTypedOutput();
@@ -468,6 +526,9 @@ avtReflectFilter::Reflect(vtkDataSet *ds, int dim)
 //    Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002   
 //    Use NewInstance instead of MakeObject in order to match vtk's new api. 
 //    
+//    Hank Childs, Wed Aug 11 14:43:44 PDT 2004
+//    Create ghost nodes for nodes on a reflection plane.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -475,6 +536,9 @@ avtReflectFilter::ReflectRectilinear(vtkRectilinearGrid *ds, int dim)
 {
     vtkRectilinearGrid *out = (vtkRectilinearGrid *) ds->NewInstance();
     out->ShallowCopy(ds);
+    int nPts = out->GetNumberOfPoints();
+    int dims[3];
+    out->GetDimensions(dims);
 
     //
     // Reflect across X if appropriate.
@@ -505,6 +569,84 @@ avtReflectFilter::ReflectRectilinear(vtkRectilinearGrid *ds, int dim)
         out->SetZCoordinates(tmp);
         tmp->Delete();
     }
+
+    // Figure out which octents are present, meaning that nodes that are on
+    // the reflection plane are now interior.
+    bool doX, doY, doZ;
+    HasNeighbor(dim, doX, doY, doZ);
+
+    vtkUnsignedCharArray *gn = vtkUnsignedCharArray::New();
+    gn->SetName("vtkGhostNodes");
+    gn->SetNumberOfTuples(nPts);
+    unsigned char *gnp = gn->GetPointer(0);
+
+    //
+    // Start off by turning everything to 0.
+    //
+    for (int i = 0 ; i < nPts ; i++)
+        gnp[i] = 0;
+
+    //
+    // If the min-face is on the axis of reflection, then turn all the nodes
+    // on that face to ghost nodes.
+    //
+    if (doX && Equal(out->GetXCoordinates()->GetTuple1(0), xReflect))
+    {
+        for (int k = 0 ; k < dims[2] ; k++)
+            for (int j = 0 ; j < dims[1] ; j++)
+            {
+                int idx = 0 + j*dims[0] + k*dims[0]*dims[1];
+                avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
+            }
+    }
+    if (doX && Equal(out->GetXCoordinates()->GetTuple1(dims[0]-1), xReflect))
+    {
+        for (int k = 0 ; k < dims[2] ; k++)
+            for (int j = 0 ; j < dims[1] ; j++)
+            {
+                int idx = dims[0]-1 + j*dims[0] + k*dims[0]*dims[1];
+                avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
+            }
+    }
+    if (doY && Equal(out->GetYCoordinates()->GetTuple1(0), yReflect))
+    {
+        for (int k = 0 ; k < dims[2] ; k++)
+            for (int i = 0 ; i < dims[0] ; i++)
+            {
+                int idx = i + 0*dims[0] + k*dims[0]*dims[1];
+                avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
+            }
+    }
+    if (doY && Equal(out->GetYCoordinates()->GetTuple1(dims[1]-1), yReflect))
+    {
+        for (int k = 0 ; k < dims[2] ; k++)
+            for (int i = 0 ; i < dims[0] ; i++)
+            {
+                int idx = i + (dims[1]-1)*dims[0] + k*dims[0]*dims[1];
+                avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
+            }
+    }
+    if (doZ && Equal(out->GetZCoordinates()->GetTuple1(0), zReflect))
+    {
+        for (int j = 0 ; j < dims[1] ; j++)
+            for (int i = 0 ; i < dims[0] ; i++)
+            {
+                int idx = i + j*dims[0] + 0*dims[0]*dims[1];
+                avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
+            }
+    }
+    if (doZ && Equal(out->GetZCoordinates()->GetTuple1(dims[2]-1), zReflect))
+    {
+        for (int j = 0 ; j < dims[1] ; j++)
+            for (int i = 0 ; i < dims[0] ; i++)
+            {
+                int idx = i + j*dims[0] + (dims[2]-1)*dims[0]*dims[1];
+                avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
+            }
+    }
+
+    out->GetPointData()->AddArray(gn);
+    gn->Delete();
 
     return out;
 }
@@ -572,6 +714,9 @@ avtReflectFilter::ReflectDataArray(vtkDataArray *coords, double val)
 //    Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002   
 //    Use NewInstance instead of MakeObject in order to match vtk's new api. 
 //    
+//    Hank Childs, Wed Aug 11 14:43:44 PDT 2004
+//    Create ghost nodes for nodes on a reflection plane.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -584,6 +729,17 @@ avtReflectFilter::ReflectPointSet(vtkPointSet *ds, int dim)
     vtkPoints *outPts = vtkPoints::New();
     int nPts = inPts->GetNumberOfPoints();
     outPts->SetNumberOfPoints(nPts);
+
+    // Figure out which octents are present, meaning that nodes that are on
+    // the reflection plane are now interior.
+    bool doX, doY, doZ;
+    HasNeighbor(dim, doX, doY, doZ);
+
+    vtkUnsignedCharArray *gn = vtkUnsignedCharArray::New();
+    gn->SetName("vtkGhostNodes");
+    gn->SetNumberOfTuples(nPts);
+    unsigned char *gnp = gn->GetPointer(0);
+
     for (int i = 0 ; i < nPts ; i++)
     {
         float pt[3];
@@ -601,10 +757,20 @@ avtReflectFilter::ReflectPointSet(vtkPointSet *ds, int dim)
             pt[2] = 2*zReflect - pt[2];
         }
         outPts->SetPoint(i, pt);
+
+        gnp[i] = 0;
+        if (doX && Equal(pt[0],xReflect))
+            avtGhostData::AddGhostNodeType(gnp[i], DUPLICATED_NODE);
+        if (doY && Equal(pt[1],yReflect))
+            avtGhostData::AddGhostNodeType(gnp[i], DUPLICATED_NODE);
+        if (doZ && Equal(pt[2],zReflect))
+            avtGhostData::AddGhostNodeType(gnp[i], DUPLICATED_NODE);
     }
 
     out->SetPoints(outPts);
     outPts->Delete();
+    out->GetPointData()->AddArray(gn);
+    gn->Delete();
 
     return out;
 }
@@ -741,6 +907,35 @@ ReflectVectorData(vtkDataSet *ds, int dim)
             cd->AddArray(new_cell_vectors[i]);
         new_cell_vectors[i]->Delete();
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtReflectFilter::HasNeighbor
+//
+//  Purpose:
+//      Determines if this reflected domain has a neighbor across each of the
+//      three reflection planes.  If it does, then it will be internal to the
+//      problem.  If not, it will still be external.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 11, 2004
+//
+// ****************************************************************************
+
+void
+avtReflectFilter::HasNeighbor(int octent, bool &doX, bool &doY, bool &doZ)
+{
+    const int *shouldreflect = atts.GetReflections();
+
+    int xNeighbor = ((octent & 1) ? octent-1 : octent+1);
+    doX = (shouldreflect[xNeighbor] != 0 ? true : false);
+
+    int yNeighbor = ((octent & 2) ? octent-2 : octent+2);
+    doY = (shouldreflect[yNeighbor] != 0 ? true : false);
+
+    int zNeighbor = ((octent & 4) ? octent-4 : octent+4);
+    doZ = (shouldreflect[zNeighbor] != 0 ? true : false);
 }
 
 
