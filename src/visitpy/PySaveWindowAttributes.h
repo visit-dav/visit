@@ -16,5 +16,7 @@ PyObject       *PySaveWindowAttributes_WrapPyObject(const SaveWindowAttributes *
 void            PySaveWindowAttributes_SetLogging(bool val);
 void            PySaveWindowAttributes_SetDefaults(const SaveWindowAttributes *atts);
 
+PyObject       *PySaveWindowAttributes_StringRepresentation(const SaveWindowAttributes *atts);
+
 #endif
 

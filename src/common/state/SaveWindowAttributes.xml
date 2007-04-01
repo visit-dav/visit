@@ -20,8 +20,11 @@
       Jpeg
       Deflate
     </Enum>
-    <Field name="hostName" label="hostName" type="string">
-      localhost
+    <Field name="outputToCurrentDirectory" label="Output to current directory" type="bool">
+      true
+    </Field>
+    <Field name="outputDirectory" label="outputDirectory" type="string">
+      .
     </Field>
     <Field name="fileName" label="fileName" type="string">
       visit

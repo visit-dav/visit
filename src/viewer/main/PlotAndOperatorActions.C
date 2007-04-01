@@ -76,9 +76,6 @@ AddOperatorAction::AddOperatorAction(ViewerWindow *win) :
             if(!window->GetNoWinMode() && info->XPMIconData() != 0 &&
                std::string(info->GetName()) != Lineout)
             {
-                char tip[200];
-                SNPRINTF(tip, 200, "Add %s operator", info->GetName());
-
                 if(!window->GetNoWinMode())
                 {
                     // Create a pixmap for the operator or get its pixmap from
@@ -93,6 +90,8 @@ AddOperatorAction::AddOperatorAction(ViewerWindow *win) :
                     }
 
                     // Add a choice for operator so that it has an icon.
+                    char tip[200];
+                    SNPRINTF(tip, 200, "Add %s operator", info->GetName());
                     AddChoice(info->GetName(), tip, pix);
                 }
                 else
@@ -760,9 +759,6 @@ AddPlotAction::AddPlotAction(ViewerWindow *win) : ViewerMultipleAction(win,
             if(!window->GetNoWinMode() && info->XPMIconData() != 0 &&
                std::string(info->GetName()) != "Curve")
             {
-                char tip[200];
-                SNPRINTF(tip, 200, "Add %s plot", info->GetName());
-
                 // Create a pixmap for the plot or get its pixmap from
                 // the pixmap cache.
                 if(!window->GetNoWinMode())
@@ -781,6 +777,8 @@ AddPlotAction::AddPlotAction(ViewerWindow *win) : ViewerMultipleAction(win,
                     maxPixmapHeight = QMAX(maxPixmapHeight, pix.height());
 
                     // Add a choice for plot so that it has an icon.
+                    char tip[200];
+                    SNPRINTF(tip, 200, "Add %s plot", info->GetName());
                     AddChoice(info->GetName(), tip, pix);
                 }
                 else
@@ -1078,7 +1076,7 @@ AddPlotAction::ConstructToolbar(QToolBar *toolbar)
 
     // If we're in nowin mode, return.
     if(window->GetNoWinMode())
-       return;
+        return;
 
     //
     // Connect the toolbar to a slot function that lets this object know when
@@ -1201,21 +1199,26 @@ AddPlotAction::addPlot(int index, const QString &var)
 // Creation:   Thu Mar 20 12:52:51 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Aug 2 09:55:30 PDT 2004
+//   Prevent action in -nowin mode.
+//
 // ****************************************************************************
 
 void
 AddPlotAction::orientationChanged(Qt::Orientation o)
 {
-    if(o == Horizontal)
+    if(!window->GetNoWinMode())
     {
-        menu->setMaximumWidth(1024);
-        menu->setMaximumHeight(maxPixmapHeight);
-    }
-    else
-    {
-        menu->setMaximumWidth(maxPixmapWidth);
-        menu->setMaximumHeight(1024);
+        if(o == Horizontal)
+        {
+            menu->setMaximumWidth(1024);
+            menu->setMaximumHeight(maxPixmapHeight);
+        }
+        else
+        {
+            menu->setMaximumWidth(maxPixmapWidth);
+            menu->setMaximumHeight(1024);
+        }
     }
 }
 
@@ -1235,28 +1238,33 @@ AddPlotAction::orientationChanged(Qt::Orientation o)
 // Creation:   Tue Mar 16 15:26:21 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Aug 2 09:57:20 PDT 2004
+//   Prevented any action in -nowin mode.
+//
 // ****************************************************************************
 
 void
 AddPlotAction::changeMenuIconSize(bool large)
 {
-    if(large)
+    if(!window->GetNoWinMode())
     {
-        for(int i = 0; i < pluginEntries.size(); ++i)
+        if(large)
         {
-            QPixmap pix(children[i]->iconSet().pixmap(QIconSet::Large,
-                        QIconSet::Normal));
-            menu->changeItem(i, pix);
+            for(int i = 0; i < pluginEntries.size(); ++i)
+            {
+                QPixmap pix(children[i]->iconSet().pixmap(QIconSet::Large,
+                            QIconSet::Normal));
+                menu->changeItem(i, pix);
+            }
         }
-    }
-    else
-    {
-        for(int i = 0; i < pluginEntries.size(); ++i)
+        else
         {
-            QPixmap pix(children[i]->iconSet().pixmap(QIconSet::Small,
-                        QIconSet::Normal));
-            menu->changeItem(i, pix);
+            for(int i = 0; i < pluginEntries.size(); ++i)
+            {
+                QPixmap pix(children[i]->iconSet().pixmap(QIconSet::Small,
+                            QIconSet::Normal));
+                menu->changeItem(i, pix);
+            }
         }
     }
 }

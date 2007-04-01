@@ -66,6 +66,10 @@ typedef ref_ptr<avtSILRestriction> avtSILRestriction_p;
 //    Hank Childs, Wed Dec  4 17:23:12 PST 2002
 //    Pulled out many traversal routines for the 'Traverser class.
 //
+//    Brad Whitlock, Fri Jul 30 14:54:53 PST 2004
+//    Added ReverseSet to reverse the selection of a set and all of its
+//    subsets.
+//
 // ****************************************************************************
 
 class DBATTS_API avtSILRestriction : public avtSIL
@@ -85,6 +89,7 @@ class DBATTS_API avtSILRestriction : public avtSIL
     int                       GetTopSet() const { return topSet; };
     void                      TurnOnSet(int);
     void                      TurnOffSet(int);
+    void                      ReverseSet(int);
 
     void                      TurnOnAll(void);
     void                      TurnOffAll(void);

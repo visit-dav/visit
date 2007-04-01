@@ -844,6 +844,11 @@ QvisSubsetWindow::turnOn(int index)
 //   Hank Childs, Mon Dec  2 13:41:37 PST 2002
 //   Use a reference-counted SIL restriction instead of a reference to one.
 //
+//   Brad Whitlock, Fri Jul 30 14:51:29 PST 2004
+//   I made it use a new SIL restriction method to reverse the sets under
+//   the set that we're reversing so we don't mess it up if there are sets
+//   that are partially on.
+//
 // ****************************************************************************
 
 void
@@ -858,12 +863,7 @@ QvisSubsetWindow::TurnReverse(int index)
     {
         QvisSubsetListViewItem *item = (QvisSubsetListViewItem *)it.current();
         if(item->parent() == NULL)
-        {
-            if(trav.UsesSetData(item->id()))
-                restriction->TurnOffSet(item->id());
-            else
-                restriction->TurnOnSet(item->id());
-        }
+            restriction->ReverseSet(item->id());
     }
 
     restriction->EnableCorrectnessChecking();

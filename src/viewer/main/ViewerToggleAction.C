@@ -1,3 +1,4 @@
+#include <ViewerWindow.h>
 #include <ViewerToggleAction.h>
 #include <qaction.h>
 
@@ -17,13 +18,18 @@
 // Creation:   Wed Feb 5 17:16:35 PST 2003
 //
 // Modifications:
+//   Brad Whitlock, Mon Aug 2 10:10:26 PDT 2004
+//   I turned the pixmaps into pointers to get rid a runtime warning about
+//   creating pixmaps in -nowin mode.
 //   
 // ****************************************************************************
 
 ViewerToggleAction::ViewerToggleAction(ViewerWindow *win, const char *name) : 
-    ViewerAction(win, name), regularIcon(), toggledIcon()
+    ViewerAction(win, name)
 {
     toggled = false;
+    regularIcon = 0;
+    toggledIcon = 0;
     SetToggleAction(true);
 }
 
@@ -43,11 +49,15 @@ ViewerToggleAction::ViewerToggleAction(ViewerWindow *win, const char *name) :
 // Creation:   Wed Feb 5 17:16:35 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Aug 2 10:12:11 PDT 2004
+//   Added code to delete pixmaps.
+//
 // ****************************************************************************
 
 ViewerToggleAction::~ViewerToggleAction()
 {
+    delete toggledIcon;
+    delete regularIcon;
 }
 
 // ****************************************************************************
@@ -66,15 +76,20 @@ ViewerToggleAction::~ViewerToggleAction()
 // Creation:   Wed Feb 5 17:16:35 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Aug 2 10:12:25 PDT 2004
+//   Added code to copy icons.
+//
 // ****************************************************************************
 
 void
 ViewerToggleAction::SetIcons(const QPixmap &p1, const QPixmap &p2)
 {
-    toggledIcon = p1;
-    regularIcon = p2;
-    SetIconSet(QIconSet(regularIcon));
+    if(!window->GetNoWinMode())
+    {
+        toggledIcon = new QPixmap(p1);
+        regularIcon = new QPixmap(p2);
+        SetIconSet(QIconSet(*regularIcon));
+    }
 }
 
 // ****************************************************************************
@@ -132,12 +147,13 @@ ViewerToggleAction::Update()
         if(toggled != actionShouldBeToggled)
         {
             // Set the appropriate icon into the action.
-            if (!action->iconSet().pixmap().isNull())
+            if (!window->GetNoWinMode() &&
+                !action->iconSet().pixmap().isNull())
             {
                 if(actionShouldBeToggled)
-                    SetIconSet(QIconSet(toggledIcon));
+                    SetIconSet(QIconSet(*toggledIcon));
                 else
-                    SetIconSet(QIconSet(regularIcon));
+                    SetIconSet(QIconSet(*regularIcon));
             }
             action->blockSignals(true);
             action->setOn(actionShouldBeToggled);

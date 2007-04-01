@@ -252,7 +252,9 @@ public:
 // Creation:   Tue Mar 16 09:52:26 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Aug 2 10:17:06 PDT 2004
+//   Fixed to account for changes in ViewerToggleAction.
+//
 // ****************************************************************************
 
 class SetToolbarIconSizeAction : public ViewerToggleAction
@@ -293,12 +295,13 @@ public:
             if(toggled != actionShouldBeToggled)
             {
                 // Set the appropriate icon into the action.
-                if (!action->iconSet().pixmap().isNull())
+                if (!window->GetNoWinMode() &&
+                    !action->iconSet().pixmap().isNull())
                 {
                     if(actionShouldBeToggled)
-                        SetIconSet(QIconSet(toggledIcon));
+                        SetIconSet(QIconSet(*toggledIcon));
                     else
-                        SetIconSet(QIconSet(regularIcon));
+                        SetIconSet(QIconSet(*regularIcon));
                 }
                 action->blockSignals(true);
                 action->setOn(actionShouldBeToggled);

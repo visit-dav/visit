@@ -473,7 +473,9 @@ QvisSubsetListViewItem::paintCell(QPainter *p, const QColorGroup &cg,
 // Creation:   Thu Jul 5 09:44:08 PDT 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Jul 30 12:04:50 PDT 2004
+//   I fixed the size of the focus rectangle for when there is a turndown.
+//
 // ****************************************************************************
 
 void
@@ -493,7 +495,11 @@ QvisSubsetListViewItem::paintFocus(QPainter *p, const QColorGroup &cg,
     
     if(checkable && intersect)
     {
-        QRect rect( r.x() + BoxSize + 5, r.y(), r.width() - BoxSize - 5, r.height() );
+        int turnDownSizeD2 = (childCount() > 0) ? ((BoxSize + 4)/2) : 0;
+        QRect rect( r.x() + BoxSize + 5 + turnDownSizeD2,
+                    r.y(),
+                    r.width() - BoxSize - 5 - turnDownSizeD2,
+                    r.height() );
         QListViewItem::paintFocus(p, cg, rect);
     }
     else

@@ -1,12 +1,14 @@
 #include <stdio.h> // for sscanf
 
+#include <qcheckbox.h>
+#include <qcombobox.h>
+#include <qfiledialog.h>
 #include <qgroupbox.h>
+#include <qhbox.h>
 #include <qlabel.h>
 #include <qlayout.h>
 #include <qlineedit.h>
-#include <qcheckbox.h>
-#include <qcombobox.h>
-#include <qlabel.h>
+#include <qpushbutton.h>
 #include <qslider.h>
 
 #include <QvisSaveWindow.h>
@@ -100,6 +102,10 @@ QvisSaveWindow::~QvisSaveWindow()
 //   Re-disable tiled windows and host information, since that is not working
 //   yet.
 //
+//   Brad Whitlock, Fri Jul 30 15:25:59 PST 2004
+//   I replaced the host line edit with an output directory line edit. I also
+//   added a save button.
+//
 // ****************************************************************************
 
 void
@@ -110,22 +116,43 @@ QvisSaveWindow::CreateWindowContents()
     infoBox->setTitle("File information");
     topLayout->addWidget(infoBox);
 
-    QGridLayout *infoLayout = new QGridLayout(infoBox, 7, 2);
+    QGridLayout *infoLayout = new QGridLayout(infoBox, 9, 2);
     infoLayout->setMargin(10);
     infoLayout->setSpacing(5);
     infoLayout->addRowSpacing(0, 10);
     
-    hostLineEdit = new QLineEdit(infoBox, "hostLineEdit");
-    connect(hostLineEdit, SIGNAL(returnPressed()), this, SLOT(processHostText()));
-    QLabel *hostLabel = new QLabel(hostLineEdit, "Host", infoBox, "hostLabel");
-    infoLayout->addWidget(hostLabel, 1, 0);
-    infoLayout->addWidget(hostLineEdit, 1, 1);
+    outputToCurrentDirectoryCheckBox = new QCheckBox("Output files to current directory",
+        infoBox, "outputToCurrentDirectoryCheckBox");
+    connect(outputToCurrentDirectoryCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(outputToCurrentDirectoryToggled(bool)));
+    infoLayout->addMultiCellWidget(outputToCurrentDirectoryCheckBox, 1, 1, 0, 1);
+
+    QHBox *outputDirectoryParent = new QHBox(infoBox, "outputDirectoryParent");
+    outputDirectoryLabel = new QLabel("Output directory",
+        infoBox, "outputDirectoryLabel");
+    outputDirectoryLineEdit = new QLineEdit(outputDirectoryParent,
+        "outputDirectoryLineEdit");
+    connect(outputDirectoryLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processOutputDirectoryText()));
+    outputDirectorySelectButton = new QPushButton("...", outputDirectoryParent,
+        "outputSelectButton");
+    outputDirectorySelectButton->setMaximumWidth(
+         fontMetrics().boundingRect("...").width() + 6);
+    outputDirectorySelectButton->setSizePolicy(QSizePolicy(QSizePolicy::Fixed,
+         QSizePolicy::Minimum));
+    connect(outputDirectorySelectButton, SIGNAL(clicked()),
+            this, SLOT(selectOutputDirectory()));
+    outputDirectoryParent->setSpacing(0);
+    outputDirectoryParent->setStretchFactor(outputDirectoryLineEdit, 100);
+    outputDirectoryLabel->setBuddy(outputDirectoryParent);
+    infoLayout->addMultiCellWidget(outputDirectoryLabel, 2, 2, 0, 1);
+    infoLayout->addMultiCellWidget(outputDirectoryParent, 3, 3, 0, 1);
     
     filenameLineEdit = new QLineEdit(infoBox, "filenameLineEdit");
     connect(filenameLineEdit, SIGNAL(returnPressed()), this, SLOT(processFilenameText()));
     QLabel *filenameLabel = new QLabel(filenameLineEdit, "Filename", infoBox, "filenameLabel");
-    infoLayout->addWidget(filenameLabel, 2, 0);
-    infoLayout->addWidget(filenameLineEdit, 2, 1);
+    infoLayout->addWidget(filenameLabel, 4, 0);
+    infoLayout->addWidget(filenameLineEdit, 4, 1);
 
     fileFormatComboBox = new QComboBox(false, infoBox, "fileFormatComboBox");
     fileFormatComboBox->insertItem("bmp");
@@ -144,8 +171,8 @@ QvisSaveWindow::CreateWindowContents()
            this, SLOT(fileFormatChanged(int)));
     QLabel *formatLabel = new QLabel(fileFormatComboBox, "File type",
                                      infoBox, "formatLabel");
-    infoLayout->addWidget(formatLabel, 3, 0);
-    infoLayout->addWidget(fileFormatComboBox, 3, 1);
+    infoLayout->addWidget(formatLabel, 5, 0);
+    infoLayout->addWidget(fileFormatComboBox, 5, 1);
 
     // The quality slider.
     qualitySlider = new QSlider(Qt::Horizontal, infoBox, "qualitySlider");
@@ -153,18 +180,21 @@ QvisSaveWindow::CreateWindowContents()
     qualitySlider->setMaxValue(100);
     connect(qualitySlider, SIGNAL(valueChanged(int)),
             this, SLOT(qualityChanged(int)));
-    infoLayout->addWidget(qualitySlider, 4, 1);
+    infoLayout->addWidget(qualitySlider, 6, 1);
     qualityLabel = new QLabel(qualitySlider, "Quality",
                               infoBox, "qualityLabel");
-    infoLayout->addWidget(qualityLabel, 4, 0);
+    infoLayout->addWidget(qualityLabel, 6, 0);
 
     // The progressive toggle.
     progressiveCheckBox = new QCheckBox("Progressive", infoBox, "progressiveCheckBox");
     connect(progressiveCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(progressiveToggled(bool)));
-    infoLayout->addWidget(progressiveCheckBox, 5, 1, Qt::AlignRight);
+    infoLayout->addWidget(progressiveCheckBox, 7, 1, Qt::AlignRight);
 
-    compressionTypeComboBox = new QComboBox(false, infoBox, "compressionTypeComboBox");
+    QHBox *compressionParent = new QHBox(infoBox, "compressionParent");
+    compressionTypeLabel = new QLabel("Compression type",
+                                     compressionParent, "compressionLabel");
+    compressionTypeComboBox = new QComboBox(false, compressionParent, "compressionTypeComboBox");
     compressionTypeComboBox->insertItem("None");
     compressionTypeComboBox->insertItem("PackBits");
     compressionTypeComboBox->insertItem("JPEG");
@@ -172,10 +202,8 @@ QvisSaveWindow::CreateWindowContents()
     //compressionTypeComboBox->insertItem("LZW");
     connect(compressionTypeComboBox, SIGNAL(activated(int)),
            this, SLOT(compressionTypeChanged(int)));
-    compressionTypeLabel = new QLabel(compressionTypeComboBox, "Compression type",
-                                     infoBox, "compressionLabel");
-    infoLayout->addWidget(compressionTypeLabel, 6, 0);
-    infoLayout->addWidget(compressionTypeComboBox, 6, 1);
+    compressionTypeLabel->setBuddy(compressionTypeComboBox);
+    infoLayout->addMultiCellWidget(compressionParent, 8,8, 0,1);
 
     // Create a group box for the image resolution.
     resolutionBox = new QGroupBox(central, "resolutionBox");
@@ -209,47 +237,46 @@ QvisSaveWindow::CreateWindowContents()
     resolutionLayout->addWidget(heightLabel, 2, 2);
     resolutionLayout->addWidget(heightLineEdit, 2, 3);
 
-    QHBoxLayout *toggleLayout = new QHBoxLayout(topLayout);
+    // The family toggle.
+    QGridLayout *toggleLayout = new QGridLayout(topLayout, 2, 3);
     toggleLayout->setSpacing(5);
-    toggleLayout->addStretch(10);
     familyCheckBox = new QCheckBox("Family", central, "familyCheckBox");
     connect(familyCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(familyToggled(bool)));
-    toggleLayout->addWidget(familyCheckBox);
+    toggleLayout->addWidget(familyCheckBox, 0, 0);
 
+    // The screen capture toggle.
     screenCaptureCheckBox = new QCheckBox("Screen capture", central, "screenCaptureCheckBox");
     connect(screenCaptureCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(screenCaptureToggled(bool)));
-    toggleLayout->addWidget(screenCaptureCheckBox);
+    toggleLayout->addWidget(screenCaptureCheckBox, 0, 1);
 
+    // The tiled toggle.
     saveTiledCheckBox = new QCheckBox("Save tiled", central, "saveTiledCheckBox");
     connect(saveTiledCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(saveTiledToggled(bool)));
-    toggleLayout->addWidget(saveTiledCheckBox);
-    toggleLayout->addStretch(10);
+    toggleLayout->addWidget(saveTiledCheckBox, 0, 2);
 
     // The binary toggle.
-    QHBoxLayout *toggleLayout2 = new QHBoxLayout(topLayout);
-    toggleLayout2->setSpacing(5);
-    toggleLayout2->addStretch(10);
     binaryCheckBox = new QCheckBox("Binary", central, "binaryCheckBox");
     connect(binaryCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(binaryToggled(bool)));
-    toggleLayout2->addWidget(binaryCheckBox);
-    toggleLayout2->addStretch(10);
+    toggleLayout->addWidget(binaryCheckBox, 1, 0);
 
     // The stereo toggle.
     stereoCheckBox = new QCheckBox("Stereo", central, "stereoCheckBox");
     connect(stereoCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(stereoToggled(bool)));
-    toggleLayout2->addWidget(stereoCheckBox);
-    toggleLayout2->addStretch(10);
+    toggleLayout->addWidget(stereoCheckBox, 1, 1);
 
-    // Get rid of this code when saving images is fully implemented in the
-    // viewer.
-    hostLabel->setEnabled(false);
-    hostLineEdit->setEnabled(false);
-    saveTiledCheckBox->setEnabled(true);
+    // The save button.
+    QHBoxLayout *saveButtonLayout = new QHBoxLayout(topLayout);
+    saveButtonLayout->setSpacing(5);
+    QPushButton *saveButton = new QPushButton("Save", central, "saveButton");
+    connect(saveButton, SIGNAL(clicked()),
+            this, SLOT(saveWindow()));
+    saveButtonLayout->addWidget(saveButton);
+    saveButtonLayout->addStretch(50);
 }
 
 // ****************************************************************************
@@ -293,6 +320,9 @@ QvisSaveWindow::CreateWindowContents()
 //   I added code to disable the height line edit when we're saving a tiled
 //   image.
 //
+//   Brad Whitlock, Fri Jul 30 15:29:52 PST 2004
+//   Added support for an output directory.
+//
 // ****************************************************************************
 
 void
@@ -313,18 +343,24 @@ QvisSaveWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-        case 0: // host name
-            hostLineEdit->setText(saveWindowAtts->GetHostName().c_str());
+        case 0: // use current directory
+            outputToCurrentDirectoryCheckBox->blockSignals(true);
+            outputToCurrentDirectoryCheckBox->setChecked(
+                saveWindowAtts->GetOutputToCurrentDirectory());
+            outputToCurrentDirectoryCheckBox->blockSignals(false);
             break;
-        case 1: // file name
+        case 1: // output directory
+            outputDirectoryLineEdit->setText(saveWindowAtts->GetOutputDirectory().c_str());
+            break;
+        case 2: // file name
             filenameLineEdit->setText(saveWindowAtts->GetFileName().c_str());
             break;
-        case 2: // family
+        case 3: // family
             familyCheckBox->blockSignals(true);
             familyCheckBox->setChecked(saveWindowAtts->GetFamily());
             familyCheckBox->blockSignals(false);
             break;
-        case 3: // format
+        case 4: // format
             fileFormatComboBox->blockSignals(true);
             fileFormatComboBox->setCurrentItem(saveWindowAtts->GetFormat());
             fileFormatComboBox->blockSignals(false);
@@ -361,20 +397,20 @@ QvisSaveWindow::UpdateWindow(bool doAll)
                 screenCaptureCheckBox->setEnabled(false);
             }
             break;
-        case 4: // maintain aspect
+        case 5: // maintain aspect
             maintainAspectCheckBox->blockSignals(true);
             maintainAspectCheckBox->setChecked(saveWindowAtts->GetMaintainAspect());
             maintainAspectCheckBox->blockSignals(false);
             break;
-        case 5: // width
+        case 6: // width
             temp.sprintf("%d", saveWindowAtts->GetWidth());
             widthLineEdit->setText(temp);
             break;
-        case 6: // height
+        case 7: // height
             temp.sprintf("%d", saveWindowAtts->GetHeight());
             heightLineEdit->setText(temp);
             break;
-        case 7: // screen capture
+        case 8: // screen capture
             screenCaptureCheckBox->blockSignals(true);
             screenCaptureCheckBox->setChecked(saveWindowAtts->GetScreenCapture());
             screenCaptureCheckBox->blockSignals(false);
@@ -382,32 +418,32 @@ QvisSaveWindow::UpdateWindow(bool doAll)
             // Set the enabled state of the resolution widgets.
             resolutionBox->setEnabled(!saveWindowAtts->GetScreenCapture());
             break;
-        case 8: // save tiled
+        case 9: // save tiled
             saveTiledCheckBox->blockSignals(true);
             saveTiledCheckBox->setChecked(saveWindowAtts->GetSaveTiled());
             saveTiledCheckBox->blockSignals(false);
             break;
-        case 9: // quality
+        case 10: // quality
             qualitySlider->blockSignals(true);
             qualitySlider->setValue(saveWindowAtts->GetQuality());
             qualitySlider->blockSignals(false);
             break;
-        case 10: // progressive
+        case 11: // progressive
             progressiveCheckBox->blockSignals(true);
             progressiveCheckBox->setChecked(saveWindowAtts->GetProgressive());
             progressiveCheckBox->blockSignals(false);
             break;
-        case 11: // binary
+        case 12: // binary
             binaryCheckBox->blockSignals(true);
             binaryCheckBox->setChecked(saveWindowAtts->GetBinary());
             binaryCheckBox->blockSignals(false);
             break;
-        case 13: // stereo
+        case 14: // stereo
             stereoCheckBox->blockSignals(true);
             stereoCheckBox->setChecked(saveWindowAtts->GetStereo());
             stereoCheckBox->blockSignals(false);
             break;
-        case 14: // tiffCompression
+        case 15: // tiffCompression
             compressionTypeComboBox->blockSignals(true);
             compressionTypeComboBox->setCurrentItem(saveWindowAtts->GetCompression());
             compressionTypeComboBox->blockSignals(false);
@@ -422,6 +458,16 @@ QvisSaveWindow::UpdateWindow(bool doAll)
     {
         maintainAspectCheckBox->setEnabled(shouldBeEnabled);
         heightLineEdit->setEnabled(shouldBeEnabled);
+    }
+
+    // Make sure that the output directory text field is not enabled if we are
+    // outputting to the current directory.
+    bool outputDirEnabled = !saveWindowAtts->GetOutputToCurrentDirectory();
+    if(outputDirEnabled != outputDirectoryLabel->isEnabled())
+    {
+        outputDirectoryLabel->setEnabled(outputDirEnabled);
+        outputDirectoryLineEdit->setEnabled(outputDirEnabled);
+        outputDirectorySelectButton->setEnabled(outputDirEnabled);
     }
 }
 
@@ -445,6 +491,9 @@ QvisSaveWindow::UpdateWindow(bool doAll)
 //   Brad Whitlock, Fri Jul 16 15:46:40 PST 2004
 //   Removed some code and added new code to enforce the 1:1 aspect if needed.
 //
+//   Brad Whitlock, Fri Jul 30 15:50:30 PST 2004
+//   I changed the host text field to output directory.
+//
 // ****************************************************************************
 
 void
@@ -456,19 +505,19 @@ QvisSaveWindow::GetCurrentValues(int which_widget)
     // Do the host name
     if(which_widget == 0 || doAll)
     {
-        temp = hostLineEdit->displayText().simplifyWhiteSpace();
+        temp = outputDirectoryLineEdit->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
         if(okay)
         {
-            saveWindowAtts->SetHostName(temp.latin1());
+            saveWindowAtts->SetOutputDirectory(temp.latin1());
         }
         else
         {
-            msg.sprintf("The hostname was invalid. "
+            msg.sprintf("The output directory was invalid. "
                 "Resetting to the last good value \"%s\".",
-                 saveWindowAtts->GetHostName().c_str());
+                 saveWindowAtts->GetOutputDirectory().c_str());
             Message(msg);
-            saveWindowAtts->SetHostName(saveWindowAtts->GetHostName());
+            saveWindowAtts->SetOutputDirectory(saveWindowAtts->GetOutputDirectory());
         }
     }
 
@@ -621,20 +670,47 @@ QvisSaveWindow::apply()
 }
 
 // ****************************************************************************
-// Method: QvisSaveWindow::processHostText
+// Method: QvisSaveWindow::outputToCurrentDirectoryToggled
 //
 // Purpose: 
-//   This is a Qt slot function that sets the host where we'll save the image.
+//   This is a Qt slot function that is called when the
+//  "Output to current directory" toggle is clicked.
+//
+// Arguments:
+//   val : Whether we should save to the current directory.
 //
 // Programmer: Brad Whitlock
-// Creation:   Fri Feb 9 16:57:34 PST 2001
+// Creation:   Fri Jul 30 15:54:51 PST 2004
 //
 // Modifications:
 //   
 // ****************************************************************************
 
 void
-QvisSaveWindow::processHostText()
+QvisSaveWindow::outputToCurrentDirectoryToggled(bool val)
+{
+    saveWindowAtts->SetOutputToCurrentDirectory(val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisSaveWindow::processOutputDirectoryText
+//
+// Purpose: 
+//   This is a Qt slot function that sets the output directory where we'll
+//   save the image.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 9 16:57:34 PST 2001
+//
+// Modifications:
+//   Brad Whitlock, Fri Jul 30 15:53:08 PST 2004
+//   Changed from processing host to output directory.
+//
+// ****************************************************************************
+
+void
+QvisSaveWindow::processOutputDirectoryText()
 {
     GetCurrentValues(0);
     Apply();
@@ -970,4 +1046,61 @@ QvisSaveWindow::saveTiledToggled(bool val)
 {
     saveWindowAtts->SetSaveTiled(val);
     Apply();
+}
+
+// ****************************************************************************
+// Method: QvisSaveWindow::saveWindow
+//
+// Purpose: 
+//   This is Qt slot function that is called when the Save button is clicked.
+//
+// Note:       Hides the window and saves the active vis window.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jul 30 15:51:57 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSaveWindow::saveWindow()
+{
+    Apply();
+    if(isVisible() && !posted())
+        hide();
+    viewer->SaveWindow();
+}
+
+// ****************************************************************************
+// Method: QvisSaveWindow::selectOutputDirectory
+//
+// Purpose: 
+//   This is Qt slot function that selects a new output file directory.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jul 30 16:56:24 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSaveWindow::selectOutputDirectory()
+{
+    //
+    // Try and get a directory using a file dialog.
+    //
+    QString initialDir(saveWindowAtts->GetOutputDirectory().c_str());
+    QString dirName = QFileDialog::getExistingDirectory(initialDir, this,
+        "getDirectoryDialog", "Select output directory");
+
+    //
+    // If a directory was chosen, use it as the output directory.
+    //
+    if(!dirName.isEmpty())
+    {
+        outputDirectoryLineEdit->setText(dirName);
+        Apply();
+    }
 }
