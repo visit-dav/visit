@@ -27,8 +27,7 @@ int ftime(struct timeb *);
 #endif
 
 
-bool              haveInitialized = false;
-TimingsManager   *visitTimer = TimingsManager::Initialize("default");
+TimingsManager   *visitTimer = NULL;
 
 
 // ****************************************************************************
@@ -114,6 +113,8 @@ TimingsManager::TimingsManager()
     numTimings        = 0;
     numCurrentTimings = 0;
     enabled           = false;
+    withholdOutput    = false;
+    outputAllTimings  = false;
 }
 
 
@@ -140,13 +141,18 @@ TimingsManager::TimingsManager()
 //    Hank Childs, Tue Mar 22 16:13:20 PST 2005
 //    Fix memory leak.
 //
+//    Hank Childs, Mon Mar 28 09:42:06 PST 2005
+//    Do not initialize the visit timer with a static constructor, because
+//    we don't know the name of the process yet.
+//
 // ****************************************************************************
 
 TimingsManager *
 TimingsManager::Initialize(const char *fname)
 {
-    if (haveInitialized)
+    if (visitTimer != NULL)
         return visitTimer;
+
 #ifdef PARALLEL
     visitTimer = new MPITimingsManager;
 #else
@@ -154,7 +160,6 @@ TimingsManager::Initialize(const char *fname)
 #endif
 
     visitTimer->SetFilename(fname);
-    haveInitialized = true;
 
     return visitTimer;
 }
@@ -214,6 +219,46 @@ void
 TimingsManager::Disable(void)
 {
     enabled = false;
+}
+
+
+// ****************************************************************************
+//  Method: TimingsManager::WithholdOutput
+//
+//  Purpose:
+//      Tells the timings manager not to output the timings until 
+//      OutputAllTimings is called.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 27, 2005
+//
+// ****************************************************************************
+
+void
+TimingsManager::WithholdOutput(bool v)
+{
+    withholdOutput = v;
+}
+
+
+// ****************************************************************************
+//  Method: TimingsManager::OutputAllTimings
+//
+//  Purpose:
+//      Tells the timings manager to truly output all the timings, even if
+//      we are withholding them.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 27, 2005
+//
+// ****************************************************************************
+
+void
+TimingsManager::OutputAllTimings(void)
+{
+    outputAllTimings = true;
+    DumpTimings();
+    outputAllTimings = false;
 }
 
 
@@ -325,6 +370,9 @@ TimingsManager::StopTimer(int index, const std::string &summary)
 //    Eric Brugger, Mon Nov  5 14:17:24 PST 2001
 //    I added the ability to enable and disable timings.
 //
+//    Hank Childs, Sun Mar 27 13:38:03 PST 2005
+//    Do not output if we are withholding timings.
+//
 // ****************************************************************************
 
 void
@@ -337,6 +385,8 @@ TimingsManager::DumpTimings(void)
     {
         return;
     }
+    if (withholdOutput && !outputAllTimings)
+        return;
 
     ofstream ofile;
 
@@ -383,6 +433,9 @@ TimingsManager::DumpTimings(void)
 //    Eric Brugger, Mon Nov  5 14:17:24 PST 2001
 //    I added the ability to enable and disable timings.
 //
+//    Hank Childs, Sun Mar 27 13:38:03 PST 2005
+//    Do not output if we are withholding timings.
+//
 // ****************************************************************************
 
 void
@@ -395,6 +448,8 @@ TimingsManager::DumpTimings(ostream &out)
     {
         return;
     }
+    if (withholdOutput && !outputAllTimings)
+        return;
 
     int numT = times.size();
     for (int i = 0 ; i < numT ; i++)

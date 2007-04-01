@@ -27,13 +27,17 @@
 //  Programmer: Hank Childs
 //  Creation:   March 19, 2005
 //     
+//  Modifications:
+//
+//    Hank Childs, Sun Mar 27 11:36:49 PST 2005
+//    Don't initialize data members that have now been pushed into the base
+//    class.
+//
 // ****************************************************************************
 
 avtThresholdFilter::avtThresholdFilter()
 {
-    downstreamRectilinearMeshOptimizations = false;
-    downstreamCurvilinearMeshOptimizations = false;
-    downstreamGhostType = NO_GHOST_DATA;
+    ;
 }
 
 
@@ -190,14 +194,170 @@ static void UpdateNeighborCells(int pt, const int *pt_dims,
 //    Hank Childs, Sat Mar 19 10:34:08 PST 2005
 //    Use a structured mesh chunker if appropriate.
 //
+//    Hank Childs, Sun Mar 27 11:36:49 PST 2005
+//    Renamed to ProcessOneChunk.  Modified to assume structured chunking.
+//
 // ****************************************************************************
 
-avtDataTree_p
-avtThresholdFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain,
-                                    std::string label)
+vtkDataSet *
+avtThresholdFilter::ProcessOneChunk(vtkDataSet *in_ds, int domain,
+                                    std::string label, bool fromChunker)
 {
-    avtDataTree_p rv = NULL;
+    if (fromChunker)
+    {
+        //
+        // If in_ds is from the chunker, then the zones in in_ds are all
+        // ones we identified that we wanted.  So just return them.
+        //
+        in_ds->Register(NULL);
+        return NULL;
+    }
 
+    vtkThreshold *threshold = vtkThreshold::New();
+
+    //
+    // Set up the threshold filter from the attributes.
+    //
+    threshold->SetInput(in_ds);
+    threshold->SetAttributeModeToDefault();
+    if (atts.GetAmount() == ThresholdAttributes::Some)
+    {
+        threshold->AllScalarsOff();
+    }
+    else if (atts.GetAmount() == ThresholdAttributes::All)
+    {
+        threshold->AllScalarsOn();
+    }
+    else
+    {
+        debug1 << "No good option for threshold attributes for what amount"
+               << " to restrict by." << endl;
+        threshold->AllScalarsOff();
+    }
+    threshold->ThresholdBetween(atts.GetLbound(), atts.GetUbound());
+
+    bool usePointData = false;
+    if (switchVariables)
+    {
+        usePointData = activeVariableIsPointData;
+    }
+    else
+    {
+        vtkDataArray *s = in_ds->GetPointData()->GetScalars();
+        usePointData = (s != NULL ? true : false);
+    }
+    if (usePointData)
+    {
+        threshold->SetAttributeModeToUsePointData();
+    }
+    else
+    {
+        threshold->SetAttributeModeToUseCellData();
+    }
+    
+    vtkDataSet *out_ds = threshold->GetOutput();
+    out_ds->Update();
+
+    if (out_ds->GetNumberOfCells() <= 0)
+    {
+        out_ds = NULL;
+    }
+    else
+    {
+        out_ds->Register(NULL);  // Caller will free.
+    }
+
+    threshold->Delete();
+
+    return out_ds;
+}
+
+
+// ****************************************************************************
+//  Method: avtThresholdFilter::GetAssignments
+//
+//  Purpose:
+//      Gets the assignments for each zone.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 27, 2005
+//
+// ****************************************************************************
+
+void
+avtThresholdFilter::GetAssignments(vtkDataSet *in_ds, const int *dims,
+                     std::vector<avtStructuredMeshChunker::ZoneDesignation> &d)
+{
+    bool isPoint = false;
+    vtkDataArray *arr = GetThresholdVariable(in_ds, isPoint);
+
+    //
+    // Determine which zones we want to retain and which we want to
+    // discard.
+    //
+    int ncells = in_ds->GetNumberOfCells();
+    int npts = in_ds->GetNumberOfPoints();
+    float *p = (float *) arr->GetVoidPointer(0);
+    if (isPoint)
+    {
+        int  i;
+        float lbound = atts.GetLbound();
+        float ubound = atts.GetUbound();
+
+        if (atts.GetAmount() == ThresholdAttributes::Some)
+        {
+            for (i = 0 ; i < ncells ; i++)
+                d[i] = avtStructuredMeshChunker::DISCARD;
+            for (i = 0 ; i < npts ; i++)
+            {
+                bool pointInThreshold = (p[i] >= lbound && p[i] <= ubound);
+                if (pointInThreshold)
+                    UpdateNeighborCells(i, dims, 
+                                        avtStructuredMeshChunker::RETAIN, d);
+            }
+        }
+        else
+        {
+            for (i = 0 ; i < ncells ; i++)
+                d[i] = avtStructuredMeshChunker::RETAIN;
+            for (i = 0 ; i < npts ; i++)
+            {
+                bool pointOutsideThreshold = (p[i]<lbound || p[i]>ubound);
+                if (pointOutsideThreshold)
+                    UpdateNeighborCells(i, dims, 
+                                        avtStructuredMeshChunker::DISCARD, d);
+            }
+        }
+    }
+    else
+    {
+        float lbound = atts.GetLbound();
+        float ubound = atts.GetUbound();
+        for (int i = 0 ; i < ncells ; i++)
+        {
+            d[i] = (p[i] >= lbound && p[i] <= ubound 
+                    ? avtStructuredMeshChunker::RETAIN 
+                    : avtStructuredMeshChunker::DISCARD);
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtThresholdFilter::GetThresholdVariable
+//
+//  Purpose:
+//      Gets the variable that we should threshold by and performs some sanity
+//      checks.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 27, 2005
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtThresholdFilter::GetThresholdVariable(vtkDataSet *in_ds, bool &isPoint)
+{
     //
     // Confirm that we got a variable that we can threshold by.
     //
@@ -207,7 +367,7 @@ avtThresholdFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain,
         thres_var = pipelineVariable;
     else
         thres_var = v1;
-    bool isPoint = true;
+    isPoint = true;
     vtkDataArray *arr = in_ds->GetPointData()->GetArray(thres_var.c_str());
     if (arr == NULL)
     {
@@ -229,160 +389,7 @@ avtThresholdFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain,
         EXCEPTION1(VisItException, str);
     }
 
-    //
-    // Now determine if we can do structured mesh chunking.
-    //
-    int ds_type = in_ds->GetDataObjectType();
-    bool haveStructured = (ds_type == VTK_RECTILINEAR_GRID || 
-                           ds_type == VTK_STRUCTURED_GRID);
-    //bool canChunk = haveStructured;
-    bool canChunk = false;
-
-    if (canChunk)
-    {
-        int dims[3];
-        bool downstreamOptimizations;
-        if (ds_type == VTK_RECTILINEAR_GRID)
-        {
-            vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) in_ds;
-            rgrid->GetDimensions(dims);
-            downstreamOptimizations = downstreamRectilinearMeshOptimizations;
-        }
-        else
-        {
-            vtkStructuredGrid *sgrid = (vtkStructuredGrid *) in_ds;
-            sgrid->GetDimensions(dims);
-            downstreamOptimizations = downstreamCurvilinearMeshOptimizations;
-        }
-
-        //
-        // Determine which zones we want to retain and which we want to
-        // discard.
-        //
-        int ncells = in_ds->GetNumberOfCells();
-        int npts = in_ds->GetNumberOfPoints();
-        vector<avtStructuredMeshChunker::ZoneDesignation> designation(ncells);
-        float *p = (float *) arr->GetVoidPointer(0);
-        if (isPoint)
-        {
-            int  i;
-            float lbound = atts.GetLbound();
-            float ubound = atts.GetUbound();
-
-            if (atts.GetAmount() == ThresholdAttributes::Some)
-            {
-                for (i = 0 ; i < ncells ; i++)
-                    designation[i] = avtStructuredMeshChunker::DISCARD;
-                for (i = 0 ; i < npts ; i++)
-                {
-                    bool pointInThreshold = (p[i] >= lbound && p[i] <= ubound);
-                    if (pointInThreshold)
-                        UpdateNeighborCells(i, dims, 
-                                avtStructuredMeshChunker::RETAIN, designation);
-                }
-            }
-            else
-            {
-                for (i = 0 ; i < ncells ; i++)
-                    designation[i] = avtStructuredMeshChunker::RETAIN;
-                for (i = 0 ; i < npts ; i++)
-                {
-                    bool pointOutsideThreshold = (p[i]<lbound || p[i]>ubound);
-                    if (pointOutsideThreshold)
-                        UpdateNeighborCells(i, dims, 
-                               avtStructuredMeshChunker::DISCARD, designation);
-                }
-            }
-        }
-        else
-        {
-            float lbound = atts.GetLbound();
-            float ubound = atts.GetUbound();
-            for (int i = 0 ; i < ncells ; i++)
-            {
-                designation[i] = (p[i] >= lbound && p[i] <= ubound 
-                                  ? avtStructuredMeshChunker::RETAIN 
-                                  : avtStructuredMeshChunker::DISCARD);
-            }
-        }
-
-        //
-        // Have the structured mesh chunker create the sub-meshes.
-        //
-        vtkUnstructuredGrid *ugrid = NULL;
-        vector<vtkDataSet *> grids;
-        avtStructuredMeshChunker::ChunkStructuredMesh(in_ds, designation, 
-                   grids, ugrid, downstreamGhostType, downstreamOptimizations);
-    
-        // 
-        // Create a data tree that has all of the structured meshes, as well
-        // as the single unstructured mesh.
-        //
-        vtkDataSet **out_ds = new vtkDataSet*[grids.size()+1];
-        for (int i = 0 ; i < grids.size() ; i++)
-            out_ds[i] = grids[i];
-        out_ds[grids.size()] = ugrid;
-        rv = new avtDataTree(grids.size()+1, out_ds,
-                                           domain, label);
-        delete [] out_ds;
-    }
-    else
-    {
-        vtkThreshold *threshold = vtkThreshold::New();
-    
-        //
-        // Set up the threshold filter from the attributes.
-        //
-        threshold->SetInput(in_ds);
-        threshold->SetAttributeModeToDefault();
-        if (atts.GetAmount() == ThresholdAttributes::Some)
-        {
-            threshold->AllScalarsOff();
-        }
-        else if (atts.GetAmount() == ThresholdAttributes::All)
-        {
-            threshold->AllScalarsOn();
-        }
-        else
-        {
-            debug1 << "No good option for threshold attributes for what amount"
-                   << " to restrict by." << endl;
-            threshold->AllScalarsOff();
-        }
-        threshold->ThresholdBetween(atts.GetLbound(), atts.GetUbound());
-    
-        bool usePointData = false;
-        if (switchVariables)
-        {
-            usePointData = activeVariableIsPointData;
-        }
-        else
-        {
-            vtkDataArray *s = in_ds->GetPointData()->GetScalars();
-            usePointData = (s != NULL ? true : false);
-        }
-        if (usePointData)
-        {
-            threshold->SetAttributeModeToUsePointData();
-        }
-        else
-        {
-            threshold->SetAttributeModeToUseCellData();
-        }
-        
-        vtkDataSet *out_ds = threshold->GetOutput();
-        out_ds->Update();
-
-        if (out_ds->GetNumberOfCells() <= 0)
-        {
-            out_ds = NULL;
-        }
-
-        rv = new avtDataTree(1, &out_ds, domain, label);
-        threshold->Delete();
-    }
-
-    return rv;
+    return arr;
 }
 
 
@@ -422,12 +429,15 @@ avtThresholdFilter::RefashionDataObjectInfo(void)
 //    Hank Childs, Sat Mar 19 10:29:37 PST 2005
 //    Initialize chunkedStructuredMesh.
 //
+//    Hank Childs, Sun Mar 27 11:49:20 PST 2005
+//    Moved chunkedStructuredMesh to base class.
+//
 // ****************************************************************************
 
 void
 avtThresholdFilter::PreExecute(void)
 {
-    avtPluginDataTreeStreamer::PreExecute();
+    avtPluginStructuredChunkStreamer::PreExecute();
 
     if (atts.GetVariable() == "default" &&
         GetInput()->GetInfo().GetAttributes().GetVariableName() == "<unknown>")
@@ -440,34 +450,8 @@ avtThresholdFilter::PreExecute(void)
         //
         EXCEPTION1(NoDefaultVariableException, "Threshold");
     }
-
-    chunkedStructuredMeshes = false;
 }
 
-
-// ****************************************************************************
-//  Method: avtThresholdFilter::PostExecute
-//
-//  Purpose:
-//      If we chunked a structured mesh, indicate that we may now have ghost
-//      data.
-//
-//  Programmer: Hank Childs
-//  Creation:   March 19, 2005
-//
-// ****************************************************************************
-
-void
-avtThresholdFilter::PostExecute(void)
-{
-    avtPluginDataTreeStreamer::PostExecute();
-
-    if (chunkedStructuredMeshes && downstreamGhostType != NO_GHOST_DATA)
-    {
-        GetOutput()->GetInfo().GetAttributes().
-                                     SetContainsGhostZones(AVT_CREATED_GHOSTS);
-    }
-}
 
 // ****************************************************************************
 //  Method: avtThresholdFilter::PerformRestriction
@@ -486,19 +470,15 @@ avtThresholdFilter::PostExecute(void)
 //    Hank Childs, Sat Mar 19 10:34:08 PST 2005
 //    Initialize data members for structured mesh chunking.
 //
+//    Hank Childs, Sun Mar 27 11:49:20 PST 2005
+//    Moved data members for structured mesh chunking to base class.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
 avtThresholdFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
 {
-    downstreamRectilinearMeshOptimizations = 
-                                in_spec->GetHaveRectilinearMeshOptimizations();
-    downstreamCurvilinearMeshOptimizations =
-                                in_spec->GetHaveCurvilinearMeshOptimizations();
-    downstreamGhostType = 
-                    in_spec->GetDataSpecification()->GetDesiredGhostDataType();
-
-    string thres_var = atts.GetVariable();;
+    string thres_var = atts.GetVariable();
     if (thres_var == "default")
         thres_var = in_spec->GetDataSpecification()->GetVariable();
 

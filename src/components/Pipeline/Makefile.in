@@ -299,6 +299,10 @@ PrivateFilters_src= \
   PrivateFilters/avtSamplePointsToSamplePointsFilter.C \
   PrivateFilters/avtSingleFilterFacade.C \
   PrivateFilters/avtStreamer.C \
+  PrivateFilters/avtStructuredChunkStreamer.C \
+  PrivateFilters/avtStructuredMeshChunker.C \
+  PrivateFilters/avtStructuredMeshPartitionStrategy.C \
+  PrivateFilters/avtSweepPlanePartitionStrategy.C \
   PrivateFilters/avtTimeLoopFilter.C
 
 Sinks_src= \

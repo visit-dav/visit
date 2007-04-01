@@ -60,6 +60,9 @@ $0 = shift @ARGV;
 #    Hank Childs, Sun Mar  6 08:56:30 PST 2005
 #    Added -allowdynamic to fullhelp listing.
 #
+#    Hank Childs, Mon Mar 28 10:00:15 PST 2005
+#    Added more timings options to -fullhelp.
+#
 ###############################################################################
 
 
@@ -225,6 +228,13 @@ $fullusage = "$usage
                              <level> must be between 1 and 5.
 	-pid                 Append process ids to the names of log files.
         -timing              Save timing data to files.
+        -withhold-timing-output
+                             Withhold timing output during execution. Prevents
+                             output of timing information from affecting
+                             performance.
+        -timing-processor-stride N
+                             Have only every Nth processor output timing info.
+                             Prevents overwhelming parallel file systems.
         -env                 Print env. variables VisIt will use when run.
 	-dump                Dump intermediate results from AVT filters.
         -gdb                 Run under gdb.

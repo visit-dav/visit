@@ -56,6 +56,9 @@
 #    Hank Childs, Sun Mar 13 10:11:07 PST 2005
 #    Added avtStructuredMeshChunker.
 #
+#    Hank Childs, Sun Mar 27 11:22:06 PST 2005
+#    Moved avtStructuredMeshChunker to Pipeline/PrivateFilters.
+#
 ##############################################################################
 
 ##
@@ -92,11 +95,8 @@ SRC=\
  avtShiftCenteringFilter.C \
  avtSimilarityTransformFilter.C \
  avtSmoothPolyDataFilter.C \
- avtStructuredMeshChunker.C \
- avtStructuredMeshPartitionStrategy.C \
  avtSummationFilter.C \
  avtSurfaceFilter.C \
- avtSweepPlanePartitionStrategy.C \
  avtTiledImageCompositor.C \
  avtTransform.C \
  avtVertexNormalsFilter.C \

@@ -361,6 +361,9 @@ avtGenericDatabase::SetDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 //    Hank Childs, Sat Mar  5 19:26:05 PST 2005
 //    Do not do collective communication if we are in DLB mode.
 //
+//    Hank Childs, Mon Mar 28 15:14:39 PST 2005
+//    Add some more timing information.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -441,7 +444,8 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
         //  way to handle this.
         //
         hadError = true;
-        debug1 << "Catching the exception at the generic database level." << endl;
+        debug1 << "Catching the exception at the generic database level." 
+               << endl;
         avtDataValidity &v = src->GetOutput()->GetInfo().GetValidity();
         v.ErrorOccurred();
         string tmp = e.Message(); // Otherwise there is a const problem.
@@ -452,6 +456,7 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     avtDataValidity &validity = src->GetOutput()->GetInfo().GetValidity();
     bool canDoCollectiveCommunication = !validity.GetIsThisDynamic();
 #ifdef PARALLEL
+    int t1 = visitTimer->StartTimer();
     if (canDoCollectiveCommunication)
     {
         //
@@ -465,6 +470,7 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
         shouldDoMatSelect = bool(rtmp[0]);
         hadError = bool(rtmp[1]);
     }
+    visitTimer->StopTimer(t1, "Waiting for all processors to catch up");
 #endif
 
     if (hadError)
