@@ -16,7 +16,7 @@ typedef enum
     DOUBLE_VECTOR_NODE, STRING_VECTOR_NODE, BOOL_VECTOR_NODE
 } NodeTypeEnum;
 
-// *******************************************************************
+// ****************************************************************************
 // Class: DataNode
 //
 // Purpose:
@@ -36,7 +36,10 @@ typedef enum
 //   I added methods to set the DataNode's data so it can be
 //   transformed to a new type.
 //
-// *******************************************************************
+//   Brad Whitlock, Mon Feb 2 15:36:49 PST 2004
+//   Added an optional argument to RemoveNode.
+//
+// ****************************************************************************
 
 class STATE_API DataNode
 {
@@ -129,7 +132,7 @@ public:
     // Node operations
     DataNode *GetNode(const std::string &key, DataNode *parentNode = 0);
     void AddNode(DataNode *node);
-    void RemoveNode(const std::string &key);
+    void RemoveNode(const std::string &key, bool deleteNode = true);
 
     // Functions to return private members.
     const std::string &GetKey() const;

@@ -76,6 +76,9 @@ Definition:
 //   Brad Whitlock, Wed Dec 17 12:07:27 PDT 2003
 //   I added a completeSave argument.
 //
+//   Brad Whitlock, Fri Jan 23 16:21:10 PST 2004
+//   I changed the attribute numbering.
+//
 // ****************************************************************************
 
 bool
@@ -90,46 +93,46 @@ WindowInformation::CreateNode(DataNode *parentNode, bool completeSave, bool forc
     // Create a node for WindowInformation.
     DataNode *node = new DataNode("WindowInformation");
 
-    if(completeSave || !FieldsEqual(1, &defaultObject))
+    if(completeSave || !FieldsEqual(6, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("boundingBoxNavigate", boundingBoxNavigate));
     }
 
-    if(completeSave || !FieldsEqual(3, &defaultObject))
+    if(completeSave || !FieldsEqual(8, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("fullFrame", fullFrame));
+    }
+
+    if(completeSave || !FieldsEqual(9, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("perspective", perspective));
     }
 
-    if(completeSave || !FieldsEqual(4, &defaultObject))
+    if(completeSave || !FieldsEqual(10, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("lockView", lockView));
     }
 
-    if(completeSave || !FieldsEqual(5, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("viewExtentsType", viewExtentsType));
-    }
-
-    if(completeSave || !FieldsEqual(12, &defaultObject))
+    if(completeSave || !FieldsEqual(11, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("lockTools", lockTools));
     }
 
-    if(completeSave || !FieldsEqual(13, &defaultObject))
+    if(completeSave || !FieldsEqual(12, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("lockTime", lockTime));
     }
 
-    if(completeSave || !FieldsEqual(15, &defaultObject))
+    if(completeSave || !FieldsEqual(13, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("fullFrame", fullFrame));
+        node->AddNode(new DataNode("viewExtentsType", viewExtentsType));
     }
 
     // Add the node to the parent node.

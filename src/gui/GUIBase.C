@@ -1,11 +1,14 @@
 #include <DebugStream.h>
+#include <DatabaseCorrelation.h>
+#include <DatabaseCorrelationList.h>
 #include <GUIBase.h>
 #include <MessageAttributes.h>
 #include <StatusSubject.h>
 #include <ViewerProxy.h>
 #include <FileServerList.h>
 #include <GetMetaDataException.h>
-#include <GlobalAttributes.h>
+#include <WindowInformation.h>
+
 #include <SimpleObserver.h>
 
 #include <qapplication.h>
@@ -378,8 +381,9 @@ GUIBase::SetOpenDataFile(const QualifiedFilename &qf, int timeState,
     SimpleObserver *sob, bool reOpen)
 {
     bool retval = true;
+#ifdef BEFORE_NEW_FILE_SELECTION
     GlobalAttributes *globalAtts = viewer->GetGlobalAttributes();
-
+#endif
     //
     // Clears any information about the specified file and causes it to be
     // read again from the mdserver.
@@ -417,11 +421,13 @@ GUIBase::SetOpenDataFile(const QualifiedFilename &qf, int timeState,
             fileServer->Notify();
             ClearStatus();
 
+#ifdef BEFORE_NEW_FILE_SELECTION
             // Set some important values in the globalAtts and tell the viewer.
             globalAtts->SetCurrentFile(qf.FullName());
             if(sob)
                 sob->SetUpdate(false);
             globalAtts->Notify();
+#endif
         }
         CATCH2(GetMetaDataException, gmde)
         {
@@ -441,3 +447,202 @@ GUIBase::SetOpenDataFile(const QualifiedFilename &qf, int timeState,
 
     return retval;
 }
+
+// ****************************************************************************
+// Method: GUIBase::GetStateForSource
+//
+// Purpose: 
+//   Returns the state for the specified source taking into account the
+//   active time slider and the correlations that exist.
+//
+// Arguments:
+//   source : The name of the source whose state we want.
+//
+// Returns:    The current state for the specified source.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jan 27 21:16:59 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+GUIBase::GetStateForSource(const QualifiedFilename &source) const
+{
+    int retval = 0;
+
+    WindowInformation *windowInfo = viewer->GetWindowInformation();
+    int activeTS = windowInfo->GetActiveTimeSlider();
+
+    if(activeTS >= 0)
+    {
+        // Try and find a correlation for the active time slider so we
+        // can get the number of states in the correlation.
+        const stringVector &tsNames = windowInfo->GetTimeSliders();
+        const std::string &activeTSName = tsNames[activeTS];
+        DatabaseCorrelationList *cL = viewer->GetDatabaseCorrelationList();
+        DatabaseCorrelation *correlation = cL->FindCorrelation(activeTSName);
+ 
+        //
+        // We found a correlation for the active time slider.
+        //
+        if(correlation != 0)
+        {
+            //
+            // See if the correlation for the active time slider involves
+            // the source that we're interested in. If so, return the
+            // correlated time state using the active time slider's state.
+            //
+            std::string sourceStr(source.FullName());
+            const intVector &currentStates = windowInfo->GetTimeSliderCurrentStates();
+            int activeTSState = currentStates[activeTS];
+            int cts = correlation->GetCorrelatedTimeState(sourceStr, activeTSState);
+            if(cts >= 0)
+            {
+                retval = cts;
+            }
+            else if((correlation = cL->FindCorrelation(sourceStr)) != 0)
+            {
+                //
+                // The correlation did not involve the desired source but
+                // we were able to find the simple correlation for the
+                // desired source. Return its correlated time state using
+                // the correlation that we just found and the active time
+                // state for that correlation.
+                //
+                for(int i = 0; i < windowInfo->GetTimeSliders().size(); ++i)
+                {
+                    if(tsNames[i] == sourceStr)
+                    {
+                        cts = correlation->GetCorrelatedTimeState(sourceStr,
+                                            currentStates[i]);
+                        if(cts >= 0)
+                            retval = cts;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: GUIBase::GetTimeSliderStateForDatabaseState
+//
+// Purpose: 
+//   Returns the first state in the current time slider where the database
+//   has a specific database index.
+//
+// Arguments:
+//   source  : The source that we're interested in.
+//   dbState : The database state that we're looking for.
+//
+// Returns:    The inverted correlation time state that we want.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Feb 3 18:52:44 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+GUIBase::GetTimeSliderStateForDatabaseState(const QualifiedFilename &source,
+    int dbState) const
+{
+    int retval = dbState;
+
+    WindowInformation *windowInfo = viewer->GetWindowInformation();
+    int activeTS = windowInfo->GetActiveTimeSlider();
+
+    if(activeTS >= 0)
+    {
+        // Try and find a correlation for the active time slider so we
+        // can get the number of states in the correlation.
+        const stringVector &tsNames = windowInfo->GetTimeSliders();
+        const std::string &activeTSName = tsNames[activeTS];
+        DatabaseCorrelationList *cL = viewer->GetDatabaseCorrelationList();
+        DatabaseCorrelation *correlation = cL->FindCorrelation(activeTSName);
+ 
+        //
+        // We found a correlation for the active time slider.
+        //
+        if(correlation != 0)
+        {
+            //
+            // See if the correlation for the active time slider involves
+            // the source that we're interested in. If so, return the
+            // inverse correlated time state, which is the correlation time
+            // state where the specified database has the given dbState.
+            //
+            std::string sourceStr(source.FullName());
+            const intVector &currentStates = windowInfo->GetTimeSliderCurrentStates();
+            int cts = correlation->GetInverseCorrelatedTimeState(sourceStr, dbState);
+            if(cts >= 0)
+                retval = cts;
+        }
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: GUIBase::OpenActiveSourceInFileServer
+//
+// Purpose: 
+//   This method is called when the file in the file server does not match
+//   the active source. When that happens, we make the file server use the
+//   active source so existing code that relies on the file server for the
+//   open file still works.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 30 11:36:42 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+GUIBase::OpenActiveSourceInFileServer()
+{
+    WindowInformation *windowInfo = viewer->GetWindowInformation();
+    const std::string &activeSource = windowInfo->GetActiveSource();
+    QualifiedFilename qf(activeSource);
+
+    if (activeSource == "notset" || activeSource == "")
+    {
+        debug3 << "OpenFileInFileServer: no active source. Closing file in "
+                  "file server list. " << endl;
+        fileServer->CloseFile();
+        fileServer->Notify();
+    }
+    else if(fileServer->GetOpenFile() != qf)
+    {
+        TRY
+        {
+            // Get the state for the current source taking into account
+            // the active time slider and the correlations that exist.
+            int state = GetStateForSource(qf);
+            debug3 << "OpenFileInFileServer: File server list's open file "
+                   << "does not match the active source. Opening "
+                   << activeSource.c_str() << ", state=" << state
+                   << " in the file server list." << endl;
+
+            fileServer->OpenFile(qf, state);
+            fileServer->Notify();
+        }
+        CATCH(GetMetaDataException)
+        {
+            ; // Usually, the filename was bad.
+        }
+        ENDTRY
+    }
+}
+

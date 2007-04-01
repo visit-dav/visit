@@ -1327,7 +1327,7 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
 //
 // ****************************************************************************
 avtDataObjectWriter_p
-NetworkManager::Render(intVector plotIds, bool getZBuffer)
+NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
 {
     DataNetwork *origWorkingNet = workingNet;
 
@@ -1408,6 +1408,9 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer)
           }
 
           AdjustWindowAttributes();
+
+          if (!do3DAnnotsOnly)
+              SetAnnotationAttributes(annotationAttributes, false);
 
           int numTriangles = viswin->GetNumTriangles();
           debug1 << "Rendering " << numTriangles << " triangles. " 
@@ -1690,23 +1693,34 @@ NetworkManager::AdjustWindowAttributes()
 //  Programmer:  Mark C. Miller 
 //  Creation:    15Jul03 
 //
+//  Modifications:
+//    Mark C. Miller, Mon Mar 29 14:36:46 PST 2004
+//    Added bool arg for 3D annotations only
+//
 // ****************************************************************************
 void
-NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts)
+NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
+    bool do3DAnnotsOnly)
 {
 #ifdef PARALLEL
-   if (PAR_Rank())
+   if (PAR_Rank() == 0)
 #endif
    {
       // copy the attributes and disable all non-3D attributes 
       AnnotationAttributes newAtts = atts;
-      newAtts.SetUserInfoFlag(false);
-      newAtts.SetDatabaseInfoFlag(false);
-      newAtts.SetLegendInfoFlag(false);
-      newAtts.SetTriadFlag(false);
-      newAtts.SetAxesFlag2D(false);
+
+      if (do3DAnnotsOnly)
+      {
+          newAtts.SetUserInfoFlag(false);
+          newAtts.SetDatabaseInfoFlag(false);
+          newAtts.SetLegendInfoFlag(false);
+          newAtts.SetTriadFlag(false);
+          newAtts.SetAxesFlag2D(false);
+      }
+
       viswin->SetAnnotationAtts(&newAtts);
    }
+
    annotationAttributes = atts;
 }
 

@@ -1,6 +1,7 @@
 #ifndef GUI_BASE_H
 #define GUI_BASE_H
 #include <gui_exports.h>
+#include <string>
 
 // Forward declarations
 class QString;
@@ -48,6 +49,10 @@ class SimpleObserver;
 //   Renamed OpenDataFile to SetOpenDataFile and removed its addDefaultPlots
 //   argument.
 //
+//   Brad Whitlock, Fri Jan 30 11:40:54 PDT 2004
+//   I added methods to get the state for the active source and to open
+//   the active source in the file server.
+//
 // ****************************************************************************
 
 class GUI_API GUIBase
@@ -78,6 +83,10 @@ protected:
                          SimpleObserver *sob = 0,
                          bool reOpen = false);
 
+    void OpenActiveSourceInFileServer();
+    int  GetStateForSource(const QualifiedFilename &source) const;
+    int  GetTimeSliderStateForDatabaseState(const QualifiedFilename &source,
+                                            int dbState) const;
 protected:
     static StatusSubject     *statusSubject;
     static bool              writeToConsole;

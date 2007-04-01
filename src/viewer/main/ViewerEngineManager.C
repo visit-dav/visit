@@ -1064,6 +1064,9 @@ ViewerEngineManager::LaunchMessage(const char *hostName) const
 //   its status inside the exception handler.  It is possible the engine died
 //   or was closed when it gets to that piece of code.
 //
+//   Mark C. Miller, Mon Mar 29 14:52:08 PST 2004
+//   Added bool to control annotations on engine
+//
 // ****************************************************************************
 
 bool
@@ -1074,6 +1077,7 @@ ViewerEngineManager::ExternalRender(std::vector<const char*> pluginIDsList,
                                     WindowAttributes winAtts,
                                     AnnotationAttributes annotAtts,
                                     bool& shouldTurnOffScalableRendering,
+                                    bool doAllAnnotations,
                                     std::vector<avtImage_p>& imgList)
 {
     bool retval = true;
@@ -1119,7 +1123,10 @@ ViewerEngineManager::ExternalRender(std::vector<const char*> pluginIDsList,
                 EXCEPTION1(VisItException, msg); 
             }
 
-            avtDataObjectReader_p rdr = GetDataObjectReader(sendZBuffer, pos->first.c_str(), pos->second);
+            avtDataObjectReader_p rdr = GetDataObjectReader(sendZBuffer,
+                                                            pos->first.c_str(),
+                                                            pos->second,
+                                                            doAllAnnotations);
 
             if (*rdr == NULL)
             {
@@ -1188,7 +1195,6 @@ ViewerEngineManager::ExternalRender(std::vector<const char*> pluginIDsList,
 //
 //  Arguments:
 //      plot    The plot for which to create the data set.
-//      frame   The frame for which to create the data set.
 //
 //  Returns:    A pointer to the avt data object reader.
 //
@@ -1274,11 +1280,14 @@ ViewerEngineManager::ExternalRender(std::vector<const char*> pluginIDsList,
 //    Hank Childs, Fri Mar  5 15:59:20 PST 2004
 //    Add file format type when defining a virtual database.
 //
+//    Brad Whitlock, Sat Jan 31 22:28:40 PST 2004
+//    I removed the frame argument because plots now know where they
+//    are in time so we don't need to pass it.
+//
 // ****************************************************************************
 
 avtDataObjectReader_p
-ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot,
-                                         const int frame)
+ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
 {
     // The return value.
     avtDataObjectReader_p retval(NULL);
@@ -1286,7 +1295,7 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot,
     //
     // Read the variable
     //
-    const char *hostName = RealHostName(plot->GetHostName());
+    const char *hostName = RealHostName(plot->GetHostName().c_str());
     EngineProxy *engine = GetEngine(hostName);
     int engineIndex = GetEngineIndex(hostName);
 
@@ -1295,7 +1304,7 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot,
 
     TRY
     {
-        int state = plot->GetDatabaseState(frame);
+        int state = plot->GetState();
 
         // Is the plot's database a virtual database? If it is, then we
         // need define the virtual database on the engine.
@@ -1330,7 +1339,7 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot,
         // Do the plot.
         //
         if (success)
-            success = plot->ExecuteEngineRPC(frame);
+            success = plot->ExecuteEngineRPC();
 
         // MCM_FIX_ME
         ViewerWindowManager *vwm = ViewerWindowManager::Instance();
@@ -1431,7 +1440,7 @@ ViewerEngineManager::UseDataObjectReader(ViewerPlot *const plot,
     // The return value.
     avtDataObjectReader_p retval(NULL);
 
-    const char *hostName = RealHostName(plot->GetHostName());
+    const char *hostName = RealHostName(plot->GetHostName().c_str());
     EngineProxy *engine = GetEngine(hostName);
     int engineIndex = GetEngineIndex(hostName);
 
@@ -1503,12 +1512,17 @@ ViewerEngineManager::UseDataObjectReader(ViewerPlot *const plot,
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   08Apr03 
+//
+//  Modifications:
+//    Mark C. Miller, Mon Mar 29 14:52:08 PST 2004
+//    Added bool to control annotations on engine
 // ****************************************************************************
 
 avtDataObjectReader_p
 ViewerEngineManager::GetDataObjectReader(bool sendZBuffer,
                                          const char *hostName_,
-                                         intVector ids)
+                                         intVector ids,
+                                         bool doAllAnnotations)
 {
     // The return value.
     avtDataObjectReader_p retval(NULL);
@@ -1521,7 +1535,7 @@ ViewerEngineManager::GetDataObjectReader(bool sendZBuffer,
 
     TRY
     {
-        retval = engine->Render(sendZBuffer, ids);
+        retval = engine->Render(sendZBuffer, ids, !doAllAnnotations);
     }
     CATCH(LostConnectionException)
     {

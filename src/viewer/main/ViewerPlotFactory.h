@@ -46,6 +46,10 @@ class ViewerPlotPluginInfo;
 //    Brad Whitlock, Fri Apr 4 10:27:40 PDT 2003
 //    I added nStates to the argument list.
 //
+//    Brad Whitlock, Fri Mar 26 08:34:02 PDT 2004
+//    I made it use strings in the constructor and I replaced frame0, frame1
+//    with the plotState argument.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPlotFactory
@@ -56,10 +60,11 @@ class VIEWER_API ViewerPlotFactory
 
     int GetNPlotTypes() const;
 
-    ViewerPlot *CreatePlot(const int type, const char *hostName,
-                           const char *databaseName, const char *var,
+    ViewerPlot *CreatePlot(const int type, const std::string &hostName,
+                           const std::string &databaseName,
+                           const std::string &var,
                            avtSILRestriction_p silr,
-                           const int time0, const int time1,
+                           const int plotState,
                            const int nStates) const;
 
     AttributeSubject *GetDefaultAtts(const int type) const;

@@ -21,7 +21,9 @@ class PlotQueryInfo;
 class ViewerPlotList;
 class ViewerPlotPluginInfo;
 class ViewerOperator;
+class avtDatabaseMetaData;
 class avtToolInterface;
+
 
 // ****************************************************************************
 //  Class: ViewerPlot
@@ -153,6 +155,13 @@ class avtToolInterface;
 //    and out of scalable rendering. Also, added optional bools to CreateActor
 //    for switching into scalable rendering.
 //
+//    Brad Whitlock, Thu Jan 29 15:54:23 PST 2004
+//    I added GetState and SetState methods to get/set the state that the
+//    plot shows in the vis window. I also added methods to set whether or
+//    not the plot follows time for its time slider. If a plot does not follow
+//    a time slider then it never changes when time changes. I changed the
+//    constructor prototype.
+//
 //    Kathleen Bonnell, Thu Mar 11 08:19:10 PST 2004 
 //    Removed GetDataExtents, no longer used. 
 //
@@ -162,28 +171,39 @@ class VIEWER_API ViewerPlot
 {
   public:
     ViewerPlot(const int type_,
-               ViewerPlotPluginInfo *viewerPluginInfo_, const char *hostName_,
-               const char *databaseName_, const char *variableName_,
-               avtSILRestriction_p silr, const int frame0_, const int frame1_,
+               ViewerPlotPluginInfo *viewerPluginInfo_,
+               const std::string &hostName_,
+               const std::string &databaseName_,
+               const std::string &variableName_,
+               avtSILRestriction_p silr, const int plotState,
                const int nStates);
     virtual ~ViewerPlot();
 
+    int GetState() const;
+    void SetState(int state);
+    bool FollowsTime() const;
+    void SetFollowsTime(bool);
+
     void SetFrameRange(const int f0, const int f1);
-    bool IsInFrameRange(const int frame) const;
+    bool IsInFrameRange() const;
     int GetBeginFrame() const;
     int GetEndFrame() const;
     const int *GetKeyframeIndices(int &) const;
     void DeleteKeyframe(const int frame);
     void MoveKeyframe(int oldFrame, int newFrame);
 
-    void SetHostDatabaseName(const char *host, const char *database);
-    const char *GetHostName() const;
-    const char *GetDatabaseName() const;
+    void SetHostDatabaseName(const std::string &host,
+                             const std::string &database);
+    const std::string &GetHostName() const;
+    const std::string &GetDatabaseName() const;
+    std::string GetSource() const;
+
     const char *GetPlotName() const;
     const char *GetPluginID() const;
+    int GetType() const;
 
-    bool SetVariableName(const char *name);
-    const char *GetVariableName() const;
+    bool SetVariableName(const std::string &name);
+    const std::string &GetVariableName() const;
 
     void SetDatabaseAtts(const AttributeSubjectMap *atts);
     const AttributeSubjectMap *GetDatabaseAtts() const;
@@ -206,38 +226,35 @@ class VIEWER_API ViewerPlot
 
     int GetNOperators() const;
     ViewerOperator *GetOperator(const int i) const;
+    void SetActiveOperatorIndex(int index);
+    int  GetActiveOperatorIndex() const;
+    void SetExpanded(bool val);
+    bool GetExpanded() const;
 
-    void SetActor(const int frame, const avtActor_p actor);
-    void SetReader(const int frame, avtDataObjectReader_p reader);
+    avtActor_p &GetActor() const;
+    avtDataObjectReader_p &GetReader() const;
+    bool NoActorExists() const;
 
-    avtActor_p &GetActor(const int frame) const;
-    avtDataObjectReader_p &GetReader(const int frame) const;
-    bool NoActorExists(const int frame) const;
-
-    void CreateActor(const int frame, bool createNew = true,
-                                      bool turningOffScalableRendering = true);
+    void CreateActor(bool createNew = true,
+                     bool turningOffScalableRendering = true);
     void ClearActors();
+    void ClearCurrentActor();
     void ClearActors(const int f0, const int f1);
 
-    void TransmuteActor(int frame, bool turningOffScalableRendering);
+    void TransmuteActor(bool turningOffScalableRendering);
 
-    int GetSpatialDimension(const int frame) const;
-    double *GetSpatialExtents(const int frame, 
-                              avtExtentType = AVT_UNKNOWN_EXTENT_TYPE) const;
+    int GetSpatialDimension() const;
+    double *GetSpatialExtents(avtExtentType = AVT_UNKNOWN_EXTENT_TYPE) const;
     void SetSpatialExtentsType(avtExtentType);
 
-    bool ExecuteEngineRPC(const int frame);
-
-    int GetType() const;
+    bool ExecuteEngineRPC();
 
     bool GetErrorFlag() const;
     void SetErrorFlag(bool val);
 
-    void SetClientAttsFromPlot(int frame);
+    void SetClientAttsFromPlot();
     void SetPlotAttsFromClient();
-    void SetPlotAttsFromClient(int frame);
     bool SetPlotAtts(const AttributeSubject *atts);
-    bool SetPlotAtts(int frame, const AttributeSubject *atts);
     bool SetPlotAtts(const AttributeSubjectMap *atts);
     const AttributeSubjectMap *GetPlotAtts() const;
     const AttributeSubject *GetCurrentPlotAtts() const;
@@ -247,22 +264,18 @@ class VIEWER_API ViewerPlot
     bool SetForegroundColor(const double *);
 
     bool HandleTool(const avtToolInterface &ti);
-    bool HandleTool(int frame, const avtToolInterface &ti);
     bool InitializeTool(avtToolInterface &ti);
 
     int  GetNetworkID() const;
     void SetNetworkID(int id);
 
-    void SetActiveOperatorIndex(int index);
-    int  GetActiveOperatorIndex() const;
-    void SetExpanded(bool val);
-    bool GetExpanded() const;
 
-    bool StartPick(const int);
-    void StopPick(void);
+    bool StartPick();
+    void StopPick();
 
     PlotQueryInfo* GetPlotQueryInfo();
-    avtVarType     GetVarType();
+    avtVarType     GetVarType() const;
+    avtVarType     GetVarType(const std::string &var) const;
 
     void CreateNode(DataNode *);
     void SetFromNode(DataNode *);
@@ -274,6 +287,8 @@ class VIEWER_API ViewerPlot
 
   protected:
     bool MoveOperator(const int operatorIndex, bool promote);
+    void SetActor(const avtActor_p actor);
+    const avtDatabaseMetaData *GetMetaData() const;
 
     int                     frame0, frame1;
 
@@ -285,9 +300,12 @@ class VIEWER_API ViewerPlot
     ViewerPlotPluginInfo   *viewerPluginInfo;
 
     int                     networkID;
-    char                   *hostName;
-    char                   *databaseName;
-    char                   *variableName;
+    std::string             hostName;
+    std::string             databaseName;
+    std::string             variableName;
+    int                     state;
+    bool                    followsTime;
+
     AttributeSubjectMap    *databaseAtts;
     DatabaseAttributes     *curDatabaseAtts;
     avtSILRestriction_p     silr;

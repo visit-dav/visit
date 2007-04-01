@@ -1,5 +1,4 @@
 #include <PlotAndOperatorActions.h>
-#include <ViewerAnimation.h>
 #include <ParsingExprList.h>
 #include <ViewerFileServer.h>
 #include <ViewerPlot.h>
@@ -177,7 +176,7 @@ AddOperatorAction::Execute(int)
         // Add the operator to the window's plot list.
         //
         bool applyToAll = windowMgr->GetClientAtts()->GetApplyOperator();
-        window->GetAnimation()->GetPlotList()->AddOperator(type, applyToAll, fromDefault);
+        window->GetPlotList()->AddOperator(type, applyToAll, fromDefault);
     }
 }
 
@@ -205,7 +204,7 @@ bool
 AddOperatorAction::Enabled() const
 {
     return ViewerMultipleAction::Enabled() &&
-           (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+           (window->GetPlotList()->GetNumPlots() > 0);
 }
 
 // ****************************************************************************
@@ -323,7 +322,7 @@ void
 PromoteOperatorAction::Execute()
 {
     bool applyToAll = windowMgr->GetClientAtts()->GetApplyOperator();
-    window->GetAnimation()->GetPlotList()->PromoteOperator(
+    window->GetPlotList()->PromoteOperator(
         args.GetOperatorType(), applyToAll);
 }
 
@@ -387,7 +386,7 @@ void
 DemoteOperatorAction::Execute()
 {
     bool applyToAll = windowMgr->GetClientAtts()->GetApplyOperator();
-    window->GetAnimation()->GetPlotList()->DemoteOperator(
+    window->GetPlotList()->DemoteOperator(
         args.GetOperatorType(), applyToAll);
 }
 
@@ -451,7 +450,7 @@ void
 RemoveOperatorAction::Execute()
 {
     bool applyToAll = windowMgr->GetClientAtts()->GetApplyOperator();
-    window->GetAnimation()->GetPlotList()->RemoveOperator(
+    window->GetPlotList()->RemoveOperator(
         args.GetOperatorType(), applyToAll);
 }
 
@@ -517,7 +516,7 @@ void
 RemoveLastOperatorAction::Execute()
 {
     bool applyToAll = windowMgr->GetClientAtts()->GetApplyOperator();
-    window->GetAnimation()->GetPlotList()->RemoveLastOperator(applyToAll);
+    window->GetPlotList()->RemoveLastOperator(applyToAll);
 }
 
 // ****************************************************************************
@@ -540,7 +539,7 @@ RemoveLastOperatorAction::Execute()
 bool
 RemoveLastOperatorAction::Enabled() const
 {
-    return window->GetAnimation()->GetPlotList()->GetNumPlots() > 0;
+    return window->GetPlotList()->GetNumPlots() > 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -605,7 +604,7 @@ void
 RemoveAllOperatorsAction::Execute()
 {
     bool applyToAll = windowMgr->GetClientAtts()->GetApplyOperator();
-    window->GetAnimation()->GetPlotList()->RemoveAllOperators(applyToAll);
+    window->GetPlotList()->RemoveAllOperators(applyToAll);
 }
 
 // ****************************************************************************
@@ -631,7 +630,7 @@ RemoveAllOperatorsAction::Execute()
 bool
 RemoveAllOperatorsAction::Enabled() const
 {
-    return window->GetAnimation()->GetPlotList()->GetNumPlots() > 0;
+    return window->GetPlotList()->GetNumPlots() > 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -698,7 +697,7 @@ SetOperatorOptionsAction::Execute()
     //
     int  oper = args.GetOperatorType();
     bool apply = windowMgr->GetClientAtts()->GetApplyOperator();
-    window->GetAnimation()->GetPlotList()->SetPlotOperatorAtts(oper, apply);
+    window->GetPlotList()->SetPlotOperatorAtts(oper, apply);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -829,7 +828,7 @@ AddPlotAction::Update()
 {
     if(pluginEntries.size() > 0)
     {
-        ViewerPlotList *plotList = window->GetAnimation()->GetPlotList();
+        ViewerPlotList *plotList = window->GetPlotList();
         const std::string &newHost = plotList->GetHostName();
         const std::string &newDB = plotList->GetDatabaseName();
 
@@ -909,7 +908,7 @@ AddPlotAction::Execute(int)
     //
     // Try and create the plot.
     //
-    window->GetAnimation()->GetPlotList()->AddPlot(args.GetPlotType(),
+    window->GetPlotList()->AddPlot(args.GetPlotType(),
         args.GetVariable().c_str(), replacePlots, applyOperator);
 }
 
@@ -934,7 +933,7 @@ AddPlotAction::Execute(int)
 bool
 AddPlotAction::Enabled() const
 {
-    bool dbIsOpen = (window->GetAnimation()->GetPlotList()->GetHostDatabaseName().length() > 0);
+    bool dbIsOpen = (window->GetPlotList()->GetHostDatabaseName().length() > 0);
     return ViewerMultipleAction::Enabled() && dbIsOpen;
 }
 
@@ -1297,7 +1296,7 @@ DrawPlotsAction::~DrawPlotsAction()
 void
 DrawPlotsAction::Execute()
 {
-    window->GetAnimation()->GetPlotList()->RealizePlots();
+    window->GetPlotList()->RealizePlots();
 }
 
 // ****************************************************************************
@@ -1316,7 +1315,7 @@ DrawPlotsAction::Execute()
 bool
 DrawPlotsAction::Enabled() const
 {
-    return (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+    return (window->GetPlotList()->GetNumPlots() > 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1379,7 +1378,7 @@ HideActivePlotsAction::~HideActivePlotsAction()
 void
 HideActivePlotsAction::Execute()
 {
-    window->GetAnimation()->GetPlotList()->HideActivePlots();
+    window->GetPlotList()->HideActivePlots();
 }
 
 // ****************************************************************************
@@ -1398,7 +1397,7 @@ HideActivePlotsAction::Execute()
 bool
 HideActivePlotsAction::Enabled() const
 {
-    return (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+    return (window->GetPlotList()->GetNumPlots() > 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1464,8 +1463,8 @@ DeleteActivePlotsAction::~DeleteActivePlotsAction()
 void
 DeleteActivePlotsAction::Execute()
 {
-    window->GetAnimation()->GetPlotList()->DeleteActivePlots();
-    if(window->GetAnimation()->GetPlotList()->GetNumPlots() == 0)
+    window->GetPlotList()->DeleteActivePlots();
+    if(window->GetPlotList()->GetNumPlots() == 0)
     {
         window->ClearPickPoints();
         window->ClearRefLines();
@@ -1490,7 +1489,7 @@ DeleteActivePlotsAction::Execute()
 bool
 DeleteActivePlotsAction::Enabled() const
 {
-    return (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+    return (window->GetPlotList()->GetNumPlots() > 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1565,7 +1564,7 @@ SetActivePlotsAction::Execute()
     const intVector &activeOperators = args.GetActiveOperatorIds();
     const intVector &expandedPlots   = args.GetExpandedPlotIds();
     bool moreThanPlotsValid          = args.GetBoolFlag();
-    window->GetAnimation()->GetPlotList()->SetActivePlots(activePlots,
+    window->GetPlotList()->SetActivePlots(activePlots,
         activeOperators, expandedPlots, moreThanPlotsValid);
 }
 
@@ -1632,7 +1631,7 @@ ChangeActivePlotsVarAction::Execute()
     // Set the plot variable for the selected plots.
     //
     const char *var = args.GetVariable().c_str();
-    window->GetAnimation()->GetPlotList()->SetPlotVar(var);
+    window->GetPlotList()->SetPlotVar(var);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1699,7 +1698,7 @@ SetPlotSILRestrictionAction::Execute()
     // selected plots.
     //
     bool apply = windowMgr->GetClientAtts()->GetApplyOperator();
-    window->GetAnimation()->GetPlotList()->SetPlotSILRestriction(apply);
+    window->GetPlotList()->SetPlotSILRestriction(apply);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1761,7 +1760,7 @@ SetPlotOptionsAction::~SetPlotOptionsAction()
 void
 SetPlotOptionsAction::Execute()
 {
-    window->GetAnimation()->GetPlotList()->SetPlotAtts(args.GetPlotType());
+    window->GetPlotList()->SetPlotAtts(args.GetPlotType());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1829,7 +1828,7 @@ SetPlotFrameRangeAction::Execute()
     int plotId = args.GetIntArg1();
     int frame0 = args.GetIntArg2();
     int frame1 = args.GetIntArg3();
-    ViewerPlotList *plotList = window->GetAnimation()->GetPlotList();
+    ViewerPlotList *plotList = window->GetPlotList();
     plotList->SetPlotFrameRange(plotId, frame0, frame1);
 }
 
@@ -1897,7 +1896,7 @@ DeletePlotKeyframeAction::Execute()
     //
     int plotId = args.GetIntArg1();
     int frame = args.GetIntArg2();
-    window->GetAnimation()->GetPlotList()->DeletePlotKeyframe(plotId, frame);
+    window->GetPlotList()->DeletePlotKeyframe(plotId, frame);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1965,7 +1964,7 @@ MovePlotKeyframeAction::Execute()
     int plotId = args.GetIntArg1();
     int oldFrame = args.GetIntArg2();
     int newFrame = args.GetIntArg3();
-    ViewerPlotList *plotList = window->GetAnimation()->GetPlotList();
+    ViewerPlotList *plotList = window->GetPlotList();
     plotList->MovePlotKeyframe(plotId, oldFrame, newFrame);
 }
 
@@ -2034,7 +2033,7 @@ SetPlotDatabaseStateAction::Execute()
     int plotId = args.GetIntArg1();
     int frame = args.GetIntArg2();
     int state = args.GetIntArg3();
-    ViewerPlotList *plotList = window->GetAnimation()->GetPlotList();
+    ViewerPlotList *plotList = window->GetPlotList();
     plotList->SetPlotDatabaseState(plotId, frame, state);
 }
 
@@ -2102,7 +2101,7 @@ DeletePlotDatabaseKeyframeAction::Execute()
     //
     int plotId = args.GetIntArg1();
     int frame = args.GetIntArg2();
-    ViewerPlotList *plotList = window->GetAnimation()->GetPlotList();
+    ViewerPlotList *plotList = window->GetPlotList();
     plotList->DeletePlotDatabaseKeyframe(plotId, frame);
 }
 
@@ -2177,6 +2176,6 @@ MovePlotDatabaseKeyframeAction::Execute()
     int plotId = args.GetIntArg1();
     int oldFrame = args.GetIntArg2();
     int newFrame = args.GetIntArg3();
-    ViewerPlotList *plotList = window->GetAnimation()->GetPlotList();
+    ViewerPlotList *plotList = window->GetPlotList();
     plotList->MovePlotDatabaseKeyframe(plotId, oldFrame, newFrame);
 }

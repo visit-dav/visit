@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2003
+#                            Copyright 2000 - 2004
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -227,6 +227,13 @@
 #    Hank Childs, Thu Mar  4 08:08:19 PST 2004
 #    Add a new library for a Qt vis window.
 #
+#    Brad Whitlock, Tue Feb 3 15:50:56 PST 2004
+#    I removed ViewerAnimation.C
+#
+#    Brad Whitlock, Thu Mar 25 17:12:04 PST 2004
+#    I took some classes out of the viewer library and put them into the
+#    viewer proper because they should not be available to plugins.
+#
 ##############################################################################
 
 ##
@@ -264,6 +271,12 @@ CPPFLAGS=@CPPFLAGS@ $(VTK_INCLUDE) -I../../vtkqt \
 ##
 
 SRC= \
+    ViewerMessaging.C \
+    ViewerOperator.C \
+    ViewerPlot.C \
+    ViewerSubject.C
+
+MAINSRC=\
     ActionGroupDescription.C \
     AnimationActions.C \
     LineoutListItem.C \
@@ -273,7 +286,6 @@ SRC= \
     ViewerAction.C \
     ViewerActionBase.C \
     ViewerActionManager.C \
-    ViewerAnimation.C \
     ViewerConfigManager.C \
     ViewerConnectionProgressDialog.C \
     ViewerEngineManager.C \
@@ -282,12 +294,9 @@ SRC= \
     ViewerHostProfileSelectorNoWin.C \
     ViewerHostProfileSelectorWithWin.C \
     ViewerMessageBuffer.C \
-    ViewerMessaging.C \
     ViewerMultipleAction.C \
-    ViewerOperator.C \
     ViewerOperatorFactory.C \
     ViewerPasswordWindow.C \
-    ViewerPlot.C \
     ViewerPlotFactory.C \
     ViewerPlotList.C \
     ViewerPopupMenu.C \
@@ -296,15 +305,13 @@ SRC= \
     ViewerRemoteProcessChooser.C \
     ViewerRPCObserver.C \
     ViewerServerManager.C \
-    ViewerSubject.C \
     ViewerToggleAction.C \
     ViewerToolbar.C \
     ViewerWindow.C \
     ViewerWindowManager.C \
     ViewerWindowManagerAttributes.C \
-    WindowActions.C
-
-MAINSRC=viewer.C
+    WindowActions.C \
+    viewer.C
 
 HDRMOC = \
     PlotAndOperatorActions.h \

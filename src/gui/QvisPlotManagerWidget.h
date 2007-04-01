@@ -16,6 +16,9 @@ class  ExpressionList;
 class  FileServerList;
 class  GlobalAttributes;
 class  PluginManagerAttributes;
+class  WindowInformation;
+
+class  QComboBox;
 class  QGridLayout;
 class  QLabel;
 class  QListBoxItem;
@@ -117,6 +120,9 @@ typedef std::vector<PluginEntry> PluginEntryVector;
 //   Brad Whitlock, Fri Aug 15 15:06:56 PST 2003
 //   Added the menu bar pointer in the constructor.
 //
+//   Brad Whitlock, Thu Jan 29 19:52:34 PST 2004
+//   Added the active source combo box.
+//
 //   Brad Whitlock, Wed Feb 25 11:16:23 PDT 2004
 //   Added members to help speed up menu creation and update.
 //
@@ -137,11 +143,14 @@ public:
     void ConnectGlobalAttributes(GlobalAttributes *);
     void ConnectExpressionList(ExpressionList *);
     void ConnectPluginManagerAttributes(PluginManagerAttributes *);
+    void ConnectWindowInformation(WindowInformation *);
 
     void AddPlotType(const char *plotName, const int varTypes,
                      const char **iconData = 0);
     void AddOperatorType(const char *operatorName, const char **iconData = 0);
     void EnablePluginMenus();
+
+    void SetSourceVisible(bool);
 signals:
     void activateSubsetWindow();
     void activatePlotWindow(int index);
@@ -155,6 +164,7 @@ private:
                                const QualifiedFilename &filename);
     void UpdatePlotVariableMenu();
     void UpdateVariableMenu();
+    void UpdateSourceList(bool updateActiveSourceOnly);
     void UpdatePlotAndOperatorMenuEnabledState();
     void UpdateHideDeleteDrawButtonsEnabledState() const;
 private slots:
@@ -170,9 +180,14 @@ private slots:
     void addPlot(int plotType, const QString &varName);
     void operatorAction(int);
     void applyOperatorToggled(bool val);
+    void sourceChanged(int);
 private:
+    bool                     sourceVisible;
+
     // Plot manager widgets
     QGridLayout             *topLayout;
+    QLabel                  *sourceLabel;
+    QComboBox               *sourceComboBox;
     QLabel                  *activePlots;
     QvisPlotListBox         *plotListBox;
     QPushButton             *hideButton;
@@ -210,6 +225,7 @@ private:
     GlobalAttributes        *globalAtts;
     ExpressionList          *exprList;
     PluginManagerAttributes *pluginAtts;
+    WindowInformation       *windowInfo;
 };
 
 #endif

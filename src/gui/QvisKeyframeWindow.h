@@ -8,7 +8,7 @@
 #include <map>
 
 class KeyframeAttributes;
-class GlobalAttributes;
+class WindowInformation;
 class QLabel;
 class QCheckBox;
 class QLineEdit;
@@ -43,6 +43,10 @@ class PlotList;
 //    Jeremy Meredith, Tue Feb  4 17:47:43 PST 2003
 //    Added the view keyframing item.
 //
+//    Brad Whitlock, Fri Jan 23 17:35:00 PST 2004
+//    I made it observe WindowInformation since that's where the view
+//    keyframes are now.
+//
 // ****************************************************************************
 
 class GUI_API QvisKeyframeWindow : public QvisPostableWindowSimpleObserver
@@ -57,9 +61,9 @@ class GUI_API QvisKeyframeWindow : public QvisPostableWindowSimpleObserver
     virtual void CreateWindowContents();
     virtual void ConnectAttributes(AttributeSubject *subj, const char *name=NULL);
     virtual void ConnectPlotAttributes(AttributeSubject *subj, int index);
-    virtual void ConnectGlobalAttributes(GlobalAttributes *subj);
+    virtual void ConnectWindowInformation(WindowInformation *subj);
     virtual void ConnectPlotList(PlotList *subj);
-    virtual void UpdateGlobalAttributes();
+    virtual void UpdateWindowInformation();
     virtual void UpdatePlotList();
     void SubjectRemoved(Subject*);
 
@@ -79,6 +83,7 @@ class GUI_API QvisKeyframeWindow : public QvisPostableWindowSimpleObserver
                                        KFListViewItem* =NULL);
     KFListViewItem *AddPlotToWindow(AttributeSubject*, const char*,
                                     KFListViewItem*);
+    int GetCurrentFrame() const;
 
   private slots:
     void nFramesProcessText();
@@ -94,7 +99,7 @@ class GUI_API QvisKeyframeWindow : public QvisPostableWindowSimpleObserver
     KFListView   *lv;
     KFTimeSlider *ts;
 
-    GlobalAttributes *globalAtts;
+    WindowInformation *windowInfo;
     PlotList *plotList;
     std::map<int, KFListViewItem*> plotMap;
     std::map<int, AttributeSubject*> plotAtts;

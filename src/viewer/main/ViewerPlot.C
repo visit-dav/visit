@@ -18,6 +18,7 @@
 
 #include <AttributeSubject.h>
 #include <AttributeSubjectMap.h>
+#include <CompactSILRestrictionAttributes.h>
 #include <DatabaseAttributes.h>
 #include <OperatorPluginManager.h>
 #include <PickAttributes.h>
@@ -110,13 +111,15 @@ avtDataObjectReader_p ViewerPlot::nullReader((avtDataObjectReader *)0);
 //    Hank Childs, Wed Sep 17 10:20:23 PDT 2003
 //    Added pointer to ViewerPlotList.
 //
+//    Brad Whitlock, Fri Mar 26 08:10:16 PDT 2004
+//    Changed to use more strings. I also passed in the initial plot state.
+//
 // ****************************************************************************
 
 ViewerPlot::ViewerPlot(const int type_,
-    ViewerPlotPluginInfo *viewerPluginInfo_, const char *hostName_,
-    const char *databaseName_, const char *variableName_,
-    avtSILRestriction_p silr_, const int frame0_, const int frame1_,
-    const int nStates)
+    ViewerPlotPluginInfo *viewerPluginInfo_, const std::string &hostName_,
+    const std::string &databaseName_, const std::string &variableName_,
+    avtSILRestriction_p silr_, const int plotState, const int nStates)
 {
     //
     // Initialize some values.
@@ -124,9 +127,11 @@ ViewerPlot::ViewerPlot(const int type_,
     type                = type_;
     viewerPluginInfo    = viewerPluginInfo_;
     isMesh = (strcmp(viewerPluginInfo->GetName(), "Mesh") == 0); 
-    hostName            = 0;
-    databaseName        = 0;
-    variableName        = 0;
+    hostName            = "";
+    databaseName        = "";
+    variableName        = "";
+    state               = (plotState < 0) ? 0 : plotState;
+    followsTime         = true;
     databaseAtts        = new AttributeSubjectMap;
     curDatabaseAtts     = new DatabaseAttributes;
     silr                = 0;
@@ -138,12 +143,17 @@ ViewerPlot::ViewerPlot(const int type_,
     activeOperatorIndex = -1;
     plotAtts            = new AttributeSubjectMap;
     curPlotAtts         = viewerPluginInfo->AllocAttributes();
-    plotList            = new avtPlot_p[1];
-    plotList[0]         = 0;
-    actorList           = new avtActor_p[1];
-    actorList[0]        = 0;
-    readerList          = new avtDataObjectReader_p[1];
-    readerList[0]       = 0;
+
+    plotList            = new avtPlot_p[nStates];
+    actorList           = new avtActor_p[nStates];
+    readerList          = new avtDataObjectReader_p[nStates];
+    for(int i = 0; i < nStates; ++i)
+    {
+        plotList[i]         = 0;
+        actorList[i]        = 0;
+        readerList[i]       = 0;
+    }
+
     expandedFlag        = false;
     errorFlag           = false;
     networkID           = -1;
@@ -154,20 +164,25 @@ ViewerPlot::ViewerPlot(const int type_,
     fgColor[0] = fgColor[1] = fgColor[2] = 0.0; 
 
     //
+    // Set the host, db, var so we know what gets plotted.
+    //
+    SetHostDatabaseName(hostName_, databaseName_);
+    SetVariableName(variableName_);
+
+    //
     // Use the constructor's arguments to initialize the object further.
     //
-    viewerPluginInfo->InitializePlotAtts(curPlotAtts, hostName_, databaseName_,
-                                         variableName_);
+    viewerPluginInfo->InitializePlotAtts(curPlotAtts, GetMetaData(),
+                                         variableName.c_str());
     plotAtts->SetAtts(0, curPlotAtts);
 
     curDatabaseAtts->SetState(0);
     databaseAtts->SetAtts(0, curDatabaseAtts);
     curDatabaseAtts->SetState(nStates - 1);
-    databaseAtts->SetAtts(frame1_ - frame0_, curDatabaseAtts);
+    int frame0 = 0, frame1 = nStates - 1;
+    databaseAtts->SetAtts(frame1 - frame0, curDatabaseAtts);
 
-    SetFrameRange(frame0_, frame1_);
-    SetHostDatabaseName(hostName_, databaseName_);
-    SetVariableName(variableName_);
+    SetFrameRange(frame0, frame1);
     SetSILRestriction(silr_);
     spatialExtentsType = AVT_ORIGINAL_EXTENTS;
 }
@@ -194,19 +209,15 @@ ViewerPlot::ViewerPlot(const int type_,
 //    Eric Brugger, Mon Nov 18 09:16:38 PST 2002
 //    I added keyframing support.
 //
+//    Brad Whitlock, Fri Mar 26 08:13:23 PDT 2004
+//    Deleted code to delete host, db arrays since they are now strings.
+//
 // ****************************************************************************
 
 ViewerPlot::~ViewerPlot()
 {
     if (networkID != -1)
-        ViewerEngineManager::Instance()->ReleaseData(hostName, networkID);
-
-    //
-    // Delete the variable name.
-    //
-    delete [] hostName;
-    delete [] databaseName;
-    delete [] variableName;
+        ViewerEngineManager::Instance()->ReleaseData(hostName.c_str(), networkID);
 
     //
     // Delete the operators.
@@ -241,6 +252,33 @@ ViewerPlot::~ViewerPlot()
     delete [] readerList;
     if (queryAtts != 0)
         delete queryAtts;
+}
+
+int
+ViewerPlot::GetState() const
+{
+    return state;
+}
+
+void
+ViewerPlot::SetState(int newState)
+{
+    if(FollowsTime() && newState >= frame0 && newState <= frame1)
+    {
+        state = newState;
+    }
+}
+
+bool
+ViewerPlot::FollowsTime() const
+{
+    return followsTime;
+}
+
+void
+ViewerPlot::SetFollowsTime(bool val)
+{
+    followsTime = val;
 }
 
 // ****************************************************************************
@@ -352,12 +390,18 @@ ViewerPlot::SetFrameRange(const int f0, const int f1)
 //    Eric Brugger, Tue Nov 26 10:59:42 PST 2002
 //    I added keyframing support.
 //
+//    Brad Whitlock, Sat Jan 31 22:46:11 PST 2004
+//    I removed the frame argument.
+//
 // ****************************************************************************
 
 bool
-ViewerPlot::IsInFrameRange(const int frame) const
+ViewerPlot::IsInFrameRange() const
 {
-    return ((frame >= frame0) && (frame <= frame1)) ? true : false;
+
+// REWRITE_FOR_KEYFRAMING
+
+    return ((state >= frame0) && (state <= frame1)) ? true : false;
 }
 
 // ****************************************************************************
@@ -442,7 +486,8 @@ ViewerPlot::DeleteKeyframe(const int frame)
     //
     if ((frame < frame0) || (frame > frame1))
     {
-        debug1 << "The frame is out of range." << endl;
+        debug1 << "DeleteKeyframe: The frame is out of range. frame=" << frame
+               << ", frames=[" << frame0 << "," << frame1 << "]" << endl;
         return;
     }
 
@@ -485,7 +530,9 @@ ViewerPlot::MoveKeyframe(int oldFrame, int newFrame)
     if ((oldFrame < frame0) || (oldFrame > frame1) ||
         (newFrame < frame0) || (newFrame > frame1))
     {
-        debug1 << "The frame is out of range." << endl;
+        debug1 << "MoveKeyframe: The frame is out of range. "
+               << "newFrame=" << newFrame
+               << ", frames=[" << frame0 << "," << frame1 << "]" << endl;
         return;
     }
 
@@ -531,11 +578,16 @@ ViewerPlot::MoveKeyframe(int oldFrame, int newFrame)
 //    
 //    Kathleen Bonnell, Tue Mar  4 15:34:36 PST 2003  
 //    Update queryAtts. 
-//    
+//
+//    Brad Whitlock, Fri Mar 26 08:03:51 PDT 2004
+//    Changed interface to ReInitializePlotAtts. Made host and db name be
+//    stored as strings.
+//
 // ****************************************************************************
 
 void
-ViewerPlot::SetHostDatabaseName(const char *host, const char *database)
+ViewerPlot::SetHostDatabaseName(const std::string &host, 
+    const std::string &database)
 {
     bool reInit = false;
     //
@@ -543,14 +595,10 @@ ViewerPlot::SetHostDatabaseName(const char *host, const char *database)
     // names match and return if they do, otherwise deallocate the existing
     // name and clear the actor list.
     //
-    if (hostName != 0)
+    if (hostName != "")
     {
-        if (strcmp(hostName, host) == 0 && strcmp(databaseName, database) == 0)
-        {
+        if (hostName == host && databaseName == database)
             return;
-        }
-        delete [] hostName;
-        delete [] databaseName;
         ClearActors();
         reInit = true;
     }
@@ -558,14 +606,12 @@ ViewerPlot::SetHostDatabaseName(const char *host, const char *database)
     //
     // Set the host and database names.
     //
-    hostName = new char[strlen(host)+1];
-    strcpy(hostName, host); 
-    databaseName = new char[strlen(database)+1];
-    strcpy(databaseName, database);
+    hostName = host;
+    databaseName = database;
     if (reInit)
     {
-        viewerPluginInfo->ReInitializePlotAtts(curPlotAtts, hostName,
-                                               databaseName, variableName);
+        viewerPluginInfo->ReInitializePlotAtts(curPlotAtts, GetMetaData(),
+            variableName.c_str());
 
         delete plotAtts;
         plotAtts = new AttributeSubjectMap;
@@ -589,9 +635,13 @@ ViewerPlot::SetHostDatabaseName(const char *host, const char *database)
 //  Programmer: Eric Brugger
 //  Creation:   September 25, 2000
 //
+// Modifications:
+//    Brad Whitlock, Fri Mar 26 08:03:13 PDT 2004
+//    Changed to string.
+//
 // ****************************************************************************
 
-const char *
+const std::string &
 ViewerPlot::GetHostName() const
 {
     return hostName;
@@ -608,12 +658,37 @@ ViewerPlot::GetHostName() const
 //  Programmer: Eric Brugger
 //  Creation:   August 31, 2000
 //
+//  Modifications:
+//    Brad Whitlock, Fri Mar 26 08:03:13 PDT 2004
+//    Changed to string.
+//
 // ****************************************************************************
 
-const char *
+const std::string &
 ViewerPlot::GetDatabaseName() const
 {
     return databaseName;
+}
+
+// ****************************************************************************
+// Method: ViewerPlot::GetSource
+//
+// Purpose: 
+//   Returns the plot's source.
+//
+// Returns:    The plot's source, which is the host + database name.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 29 23:53:37 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+ViewerPlot::GetSource() const
+{
+    return ViewerFileServer::ComposeDatabaseName(hostName, databaseName);
 }
 
 // ****************************************************************************
@@ -651,6 +726,30 @@ ViewerPlot::GetPluginID() const
 {
     return viewerPluginInfo->GetID();
 }
+
+// ****************************************************************************
+// Method: ViewerPlot::GetMetaData
+//
+// Purpose: 
+//   Returns the metadata for the plot at its current time state.
+//
+// Returns:    A pointer to the metadata for the plot at its current time
+//             state.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 26 10:35:01 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const avtDatabaseMetaData *
+ViewerPlot::GetMetaData() const
+{
+    return ViewerFileServer::Instance()->GetMetaDataForState(hostName,
+        databaseName, state);
+}
+
 
 // ****************************************************************************
 //  Method: ViewerPlot::SetVariableName
@@ -698,10 +797,13 @@ ViewerPlot::GetPluginID() const
 //    Added code to print the error message received from an
 //    InvalidVariableException.
 //
+//    Brad Whitlock, Fri Mar 26 08:14:28 PDT 2004
+//    I made it use ViewerPlot::GetMetaData and strings.
+//
 // ****************************************************************************
 
 bool
-ViewerPlot::SetVariableName(const char *name)
+ViewerPlot::SetVariableName(const std::string &name)
 {
     bool retval = false;
     bool notifyQuery = false;
@@ -711,12 +813,10 @@ ViewerPlot::SetVariableName(const char *name)
     // return if they do, otherwise deallocate the existing name and clear
     // the actor list.
     //
-    if (variableName != 0)
+    if (variableName != "")
     {
-        if (strcmp(variableName, name) == 0)
-        {
+        if (variableName == name)
             return retval;
-        }
 
         ClearActors();
         notifyQuery = true;
@@ -728,9 +828,7 @@ ViewerPlot::SetVariableName(const char *name)
         {
             TRY
             {
-                ViewerFileServer *s = ViewerFileServer::Instance();
-                avtDatabaseMetaData *md = (avtDatabaseMetaData *)s->GetMetaData(
-                    std::string(hostName), std::string(databaseName));
+                avtDatabaseMetaData *md = (avtDatabaseMetaData *)GetMetaData();
                 if(md != 0)
                 {
                     //
@@ -792,19 +890,22 @@ ViewerPlot::SetVariableName(const char *name)
     }
 
     // Save the new variable name.
-    delete [] variableName;
-    variableName = new char [strlen(name)+1];
-    strcpy (variableName, name);
+    variableName = name;
+
 
     if (!firstTime && curPlotAtts->VarChangeRequiresReset())
     { 
-        viewerPluginInfo->ResetPlotAtts(curPlotAtts, hostName, databaseName,
-                                        variableName);
-        viewerPluginInfo->SetClientAtts(curPlotAtts);
+        const avtDatabaseMetaData *md;
+        if((md = GetMetaData()) != 0)
+        {
+            viewerPluginInfo->ResetPlotAtts(curPlotAtts, md,
+                variableName.c_str());
+            viewerPluginInfo->SetClientAtts(curPlotAtts);
 
-        delete plotAtts;
-        plotAtts = new AttributeSubjectMap;
-        plotAtts->SetAtts(0, curPlotAtts);
+            delete plotAtts;
+            plotAtts = new AttributeSubjectMap;
+            plotAtts->SetAtts(0, curPlotAtts);
+        }
     }
 
     //
@@ -815,7 +916,7 @@ ViewerPlot::SetVariableName(const char *name)
     {
         if (*plotList[i] != 0)
         {
-            plotList[i]->SetVarName(variableName);
+            plotList[i]->SetVarName(variableName.c_str());
         }
     }
     firstTime = false;
@@ -840,9 +941,13 @@ ViewerPlot::SetVariableName(const char *name)
 //  Programmer: Eric Brugger
 //  Creation:   September 6, 2000
 //
+//  Modifications:
+//    Brad Whitlock, Fri Mar 26 08:20:59 PDT 2004
+//    Made it use string.
+//
 // ****************************************************************************
 
-const char *
+const std::string &
 ViewerPlot::GetVariableName() const
 {
     return variableName;
@@ -910,7 +1015,8 @@ ViewerPlot::SetDatabaseState(const int frame, const int state)
     //
     if ((frame < frame0) || (frame > frame1))
     {
-        debug1 << "The frame is out of range." << endl;
+        debug1 << "SetDatabaseState: The frame is out of range. frame=" << frame
+               << ", frames=[" << frame0 << "," << frame1 << "]" << endl;
         return;
     }
 
@@ -953,7 +1059,8 @@ ViewerPlot::GetDatabaseState(const int frame) const
     //
     if ((frame < frame0) || (frame > frame1))
     {
-        debug1 << "The frame is out of range." << endl;
+        debug1 << "GetDatabaseState: The frame is out of range. frame=" << frame
+               << ", frames=[" << frame0 << "," << frame1 << "]" << endl;
         return 0;
     }
 
@@ -1005,7 +1112,8 @@ ViewerPlot::DeleteDatabaseKeyframe(const int frame)
     //
     if ((frame < frame0) || (frame > frame1))
     {
-        debug1 << "The frame is out of range." << endl;
+        debug1 << "DeleteDatabaseKeyframe: The frame is out of range. frame=" << frame
+               << ", frames=[" << frame0 << "," << frame1 << "]" << endl;
         return;
     }
 
@@ -1050,7 +1158,8 @@ ViewerPlot::MoveDatabaseKeyframe(int oldFrame, int newFrame)
     if ((oldFrame < frame0) || (oldFrame > frame1) ||
         (newFrame < frame0) || (newFrame > frame1))
     {
-        debug1 << "The frame is out of range." << endl;
+        debug1 << "MoveDatabaseKeyframe: The new frame is out of range. frame=" << newFrame
+               << ", frames=[" << frame0 << "," << frame1 << "]" << endl;
         return;
     }
 
@@ -1804,7 +1913,6 @@ ViewerPlot::GetOperator(const int i) const
 //    Set the actor for the plot at the specified frame.
 //
 //  Arguments:
-//    frame     The frame to set the actor for.
 //    actor     The actor to save for the plot.
 //
 //  Programmer: Eric Brugger
@@ -1817,58 +1925,15 @@ ViewerPlot::GetOperator(const int i) const
 //    Eric Brugger, Tue Nov 26 10:59:42 PST 2002
 //    I added keyframing support.
 //
-// ****************************************************************************
-
-void
-ViewerPlot::SetActor(const int frame, const avtActor_p actor)
-{
-    //
-    // Check that the frame is within range.
-    //
-    if ((frame < frame0) || (frame > frame1))
-    {
-        debug1 << "The frame is out of range." << endl;
-        return;
-    }
-
-    actorList[frame-frame0] = actor;
-}
-
-// ****************************************************************************
-//  Method: ViewerPlot::SetReader
-//
-//  Purpose:
-//    Set the reader for the specified frame.
-//
-//  Arguments:
-//    frame     The frame to set the reader for.
-//    reader    The reader that the plot originated from.
-//
-//  Programmer: Hank Childs
-//  Creation:   October 17, 2000
-//
-//  Modifications:
-//    Hank Childs, Mon Aug 20 14:49:44 PDT 2001
-//    Made use of debug stream.
-//
-//    Eric Brugger, Tue Nov 26 10:59:42 PST 2002
-//    I added keyframing support.
+//    Brad Whitlock, Sat Jan 31 23:26:10 PST 2004
+//    I removed the frame.
 //
 // ****************************************************************************
 
 void
-ViewerPlot::SetReader(const int frame, avtDataObjectReader_p reader)
+ViewerPlot::SetActor(const avtActor_p actor)
 {
-    //
-    // Check that the frame is within range.
-    //
-    if ((frame < frame0) || (frame > frame1))
-    {
-        debug1 << "The frame is out of range." << endl;
-        return;
-    }
-
-    readerList[frame-frame0] = reader;
+    actorList[state] = actor;
 }
 
 // ****************************************************************************
@@ -1895,21 +1960,15 @@ ViewerPlot::SetReader(const int frame, avtDataObjectReader_p reader)
 //    Eric Brugger, Tue Nov 26 10:59:42 PST 2002
 //    I added keyframing support.
 //
+//    Brad Whitlock, Sat Jan 31 22:06:30 PST 2004
+//    Removed frame argument.
+//
 // ****************************************************************************
 
 avtActor_p &
-ViewerPlot::GetActor(const int frame) const
+ViewerPlot::GetActor() const
 {
-    //
-    // Check that the frame is within range.
-    //
-    if ((frame < frame0) || (frame > frame1))
-    {
-        debug1 << "The frame is out of range." << endl;
-        return nullActor;
-    }
-
-    return actorList[frame-frame0];
+    return actorList[state-frame0];
 }
 
 // ****************************************************************************
@@ -1919,9 +1978,6 @@ ViewerPlot::GetActor(const int frame) const
 //    This is a convenience method that returns whether or not the specified
 //    frame has an actor.
 //
-//  Arguments:
-//    frame     The frame that we're checking.
-//
 //  Returns:    True if there is no actor, False if there is an actor.
 //
 //  Programmer: Brad Whitlock
@@ -1930,25 +1986,25 @@ ViewerPlot::GetActor(const int frame) const
 //  Modifications:
 //    Eric Brugger, Tue Nov 26 10:59:42 PST 2002
 //    I added keyframing support.
-//   
+// 
+//    Brad Whitlock, Thu Jan 29 19:06:13 PST 2004
+//    I removed the frame argument.
+//
 // ****************************************************************************
 
 bool
-ViewerPlot::NoActorExists(const int frame) const
+ViewerPlot::NoActorExists() const
 {
-    return (*GetActor(frame) == 0);
+    return (*GetActor() == 0);
 }
 
 // ****************************************************************************
 //  Method: ViewerPlot::GetReader
 //
 //  Purpose:
-//    Return the reader for the plot at the specified frame.
+//    Return the reader for the plot at the current plot state.
 //
-//  Arguments:
-//    frame     The frame to return the reader for.
-//
-//  Returns:    The reader for the plot at the specified frame.
+//  Returns:    The reader for the plot at the current plot state.
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   June  5, 2001
@@ -1959,22 +2015,16 @@ ViewerPlot::NoActorExists(const int frame) const
 //
 //    Eric Brugger, Tue Nov 26 10:59:42 PST 2002
 //    I added keyframing support.
-//   
+//
+//    Brad Whitlock, Thu Jan 29 19:10:17 PST 2004
+//    I removed the frame argument.
+//
 // ****************************************************************************
 
 avtDataObjectReader_p &
-ViewerPlot::GetReader(const int frame) const
+ViewerPlot::GetReader() const
 {
-    //
-    // Check that the frame is within range.
-    //
-    if ((frame < frame0) || (frame > frame1))
-    {
-        debug1 << "The frame is out of range." << endl;
-        return nullReader;
-    }
-
-    return readerList[frame-frame0];
+    return readerList[state];
 }
 
 // ****************************************************************************
@@ -1984,7 +2034,6 @@ ViewerPlot::GetReader(const int frame) const
 //    Create the actor for the plot for the specified frame.
 //
 //  Arguments:
-//    frame     The frame to create the plot for.
 //
 //  Programmer: Eric Brugger
 //  Creation:   March 9, 2001
@@ -2065,6 +2114,10 @@ ViewerPlot::GetReader(const int frame) const
 //    Hank Childs, Sun Nov 16 13:32:12 PST 2003
 //    Tell UI processes when the SIL has changed out from underneath it.
 //
+//    Brad Whitlock, Sat Jan 31 22:23:26 PST 2004
+//    I removed the frame argument. I also changed the code so it is more
+//    responsible about when it tells other routines the plot state.
+//
 //    Mark C. Miller, Thu Mar 18 21:12:45 PST 2004
 //    Added code to check newsilr for NULL and throw exception instead of
 //    possibly hitting a SEGV
@@ -2078,8 +2131,7 @@ ViewerPlot::GetReader(const int frame) const
 #include <ViewerWindowManager.h>
 
 void
-ViewerPlot::CreateActor(const int frame, bool createNew,
-                                         bool turningOffScalableRendering)
+ViewerPlot::CreateActor(bool createNew, bool turningOffScalableRendering)
 {
     avtDataObjectReader_p reader;
 
@@ -2091,9 +2143,12 @@ ViewerPlot::CreateActor(const int frame, bool createNew,
     // Get a data reader.
     TRY
     {
+        //
+        // Determine if the file has time varying metadata.
+        //
         ViewerFileServer *server = ViewerFileServer::Instance();
         invariantMetaData = server->MetaDataIsInvariant(GetHostName(),
-                                                        GetDatabaseName());
+            GetDatabaseName(), GetState());
 
         // The following code is necessary to support time-varying SILs
         if (!invariantMetaData)
@@ -2106,7 +2161,8 @@ ViewerPlot::CreateActor(const int frame, bool createNew,
             avtSILRestriction_p newsilr =
                 viewerPlotList->GetDefaultSILRestriction(GetHostName(),
                                                          GetDatabaseName(),
-                                                         GetVariableName());
+                                                         GetVariableName(),
+                                                         GetState());
             if (*newsilr == NULL)
                 EXCEPTION0(ImproperUseException);
 
@@ -2126,7 +2182,7 @@ ViewerPlot::CreateActor(const int frame, bool createNew,
         else
         {
             reader = ViewerEngineManager::Instance()->
-                         GetDataObjectReader(this,frame);
+                         GetDataObjectReader(this);
         }
     }
     CATCH(AbortException)
@@ -2135,7 +2191,7 @@ ViewerPlot::CreateActor(const int frame, bool createNew,
         this->errorFlag = true;
 
         // Use the null actor.
-        this->SetActor(frame, nullActor);
+        this->SetActor(nullActor);
         
         // Rethrow the exception.
         RETHROW;
@@ -2173,7 +2229,7 @@ ViewerPlot::CreateActor(const int frame, bool createNew,
         this->errorFlag = true;
 
         // Use the null actor.
-        this->SetActor(frame, nullActor);
+        this->SetActor(nullActor);
         CATCH_RETURN(1);
     }
     ENDTRY
@@ -2188,20 +2244,24 @@ ViewerPlot::CreateActor(const int frame, bool createNew,
         SNPRINTF(message, 500, "The %s plot of \"%s\" for the file \"%s\" could "
                  "not be generated by the compute engine on host \"%s\".",
                  viewerPluginInfo->GetName(),
-                 variableName, databaseName, hostName);
+                 variableName.c_str(), databaseName.c_str(), hostName.c_str());
         Error(message);
 
         // Indicate that this plot has an error.
         this->errorFlag = true;
 
         // Use the null actor.
-        this->SetActor(frame, nullActor);
+        this->SetActor(nullActor);
         return;
     }
-    SetReader(frame, reader);
 
-    plotList[frame-frame0] = viewerPluginInfo->AllocAvtPlot();
-    plotAtts->GetAtts(frame - frame0, curPlotAtts);
+    // Save the reader.
+    readerList[state] = reader;
+
+// REWRITE_FOR_KEYFRAMING
+    // Get the keyframed attributes for the current state.
+    plotList[state] = viewerPluginInfo->AllocAvtPlot();
+    plotAtts->GetAtts(state, curPlotAtts);
 
     if (!invariantMetaData)
     {
@@ -2210,30 +2270,30 @@ ViewerPlot::CreateActor(const int frame, bool createNew,
 
         if (!viewerPlotList->GetKeyframeMode())
         {
-            if (plotList[frame-frame0]->AttributesDependOnDatabaseMetaData())
+            if (plotList[state]->AttributesDependOnDatabaseMetaData())
             {
-                viewerPluginInfo->ReInitializePlotAtts(curPlotAtts, hostName,
-                    databaseName, variableName);
+                viewerPluginInfo->ReInitializePlotAtts(curPlotAtts,
+                    GetMetaData(), variableName.c_str());
                 viewerPluginInfo->SetClientAtts(curPlotAtts);
 
                 // ok, now set the plotAtts map, being careful not to introduce
                 // new keyframes in the process. So, we use the 'Le' method
-                plotAtts->SetAttsLe(frame - frame0, curPlotAtts);
+                plotAtts->SetAttsLe(state, curPlotAtts);
             }
         }
     }
 
-    plotList[frame-frame0]->SetAtts(curPlotAtts);
-    plotList[frame-frame0]->SetVarName(variableName);
-    plotList[frame-frame0]->SetBackgroundColor(bgColor);
-    plotList[frame-frame0]->SetForegroundColor(fgColor);
-    plotList[frame-frame0]->SetIndex(networkID);
-    plotList[frame-frame0]->SetCurrentSILRestriction(silr);
+    plotList[state]->SetAtts(curPlotAtts);
+    plotList[state]->SetVarName(variableName.c_str());
+    plotList[state]->SetBackgroundColor(bgColor);
+    plotList[state]->SetForegroundColor(fgColor);
+    plotList[state]->SetIndex(networkID);
+    plotList[state]->SetCurrentSILRestriction(silr);
 
     TRY
     {
-        avtActor_p actor = plotList[frame-frame0]->Execute(reader);
-        this->SetActor(frame, actor);
+        avtActor_p actor = plotList[state]->Execute(reader);
+        this->SetActor(actor);
 
         // Indicate that this plot has no error.
         this->errorFlag = false;
@@ -2252,7 +2312,7 @@ ViewerPlot::CreateActor(const int frame, bool createNew,
         this->errorFlag = true;
 
         // Use the null actor.
-        this->SetActor(frame, nullActor);
+        this->SetActor(nullActor);
     }
     CATCH2(VisItException, e)
     {
@@ -2271,7 +2331,7 @@ ViewerPlot::CreateActor(const int frame, bool createNew,
         this->errorFlag = true;
 
         // Use the null actor.
-        this->SetActor(frame, nullActor);
+        this->SetActor(nullActor);
     }
     ENDTRY
 
@@ -2310,10 +2370,32 @@ ViewerPlot::ClearActors()
 
     for (i = 0; i < (frame1 - frame0 + 1); i++)
     {
+debug4 << GetPlotName() << ": Clearing actor at state " << i << endl;
         plotList[i]   = (avtPlot *)0;
         actorList[i]  = (avtActor *)0;
         readerList[i] = (avtDataObjectReader *)0;
     }
+}
+
+// ****************************************************************************
+// Method: ViewerPlot::ClearCurrentActor
+//
+// Purpose: 
+//   Clears the current actor, plot, and reader.
+//
+// Programmer: Brad Whitlock
+// Creation:   Sat Jan 31 23:20:57 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlot::ClearCurrentActor()
+{
+    plotList[state]   = (avtPlot *)0;
+    actorList[state]  = (avtActor *)0;
+    readerList[state] = (avtDataObjectReader *)0;
 }
 
 // ****************************************************************************
@@ -2387,12 +2469,16 @@ ViewerPlot::ClearActors(const int f0, const int f1)
 //  Programmer: Mark C. Miller
 //  Creation:   October 29, 2003 
 //
+//  Modifications:
+//    Brad Whitlock, Sat Jan 31 22:22:26 PST 2004
+//    I removed the frame argument.
+//
 // ****************************************************************************
 
 void
-ViewerPlot::TransmuteActor(int frame, bool turningOffScalableRendering)
+ViewerPlot::TransmuteActor(bool turningOffScalableRendering)
 {
-    CreateActor(frame, false, turningOffScalableRendering);
+    CreateActor(false, turningOffScalableRendering);
 } 
 
 // ****************************************************************************
@@ -2416,19 +2502,22 @@ ViewerPlot::TransmuteActor(int frame, bool turningOffScalableRendering)
 //
 //    Eric Brugger, Tue Nov 26 10:59:42 PST 2002
 //    I added keyframing support.
-//   
+//
+//    Brad Whitlock, Sat Jan 31 23:32:18 PST 2004
+//    I removed the frame argument.
+//
 // ****************************************************************************
 
 int
-ViewerPlot::GetSpatialDimension(const int frame) const
+ViewerPlot::GetSpatialDimension() const
 {
     int retval = 0;
 
     if(readerList != NULL)
     {
-        if(*(readerList[frame-frame0]) != NULL)
+        if(*(readerList[state]) != NULL)
         {
-            avtDataAttributes &atts = readerList[frame-frame0]->
+            avtDataAttributes &atts = readerList[state]->
                 GetInfo().GetAttributes();
             retval = atts.GetSpatialDimension();
         }
@@ -2477,11 +2566,14 @@ ViewerPlot::GetSpatialDimension(const int frame) const
 //
 //    Eric Brugger, Tue Nov 26 10:59:42 PST 2002
 //    I added keyframing support.
-//   
+//
+//    Brad Whitlock, Sat Jan 31 23:33:10 PST 2004
+//    I removed the frame argument.
+//
 // ****************************************************************************
 
 double *
-ViewerPlot::GetSpatialExtents(const int frame, avtExtentType extsType) const
+ViewerPlot::GetSpatialExtents(avtExtentType extsType) const
 {
     //
     // If extsType is sent in as AVT_UNKNOWN_EXTENT_TYPE, then that is a signal
@@ -2491,11 +2583,11 @@ ViewerPlot::GetSpatialExtents(const int frame, avtExtentType extsType) const
                                   ? spatialExtentsType : extsType);
    
     // Return early if the reader does not exist.
-    if(*(readerList[frame-frame0]) == 0)
+    if(*(readerList[state]) == 0)
         return 0;
 
     // Populate some local variables.
-    avtDataAttributes &atts = readerList[frame-frame0]->
+    avtDataAttributes &atts = readerList[state]->
         GetInfo().GetAttributes();
     int dim = atts.GetSpatialDimension();
     int extentSize = ((dim * 2) < 6) ? 6 : (dim * 2);
@@ -2516,7 +2608,7 @@ ViewerPlot::GetSpatialExtents(const int frame, avtExtentType extsType) const
         }
     }
 
-    if (! readerList[frame-frame0]->InputIsDataset())
+    if (! readerList[state]->InputIsDataset())
     {
         //
         // This means that the input is an image, but the extents didn't get
@@ -2534,7 +2626,7 @@ ViewerPlot::GetSpatialExtents(const int frame, avtExtentType extsType) const
         return buffer;
     }
 
-    avtDataset_p ds = readerList[frame-frame0]->GetDatasetOutput();
+    avtDataset_p ds = readerList[state]->GetDatasetOutput();
 
     //
     // The dataset will have the mesh limits.
@@ -2601,21 +2693,24 @@ ViewerPlot::SetSpatialExtentsType(avtExtentType extsType)
 //    Eric Brugger, Mon Nov 18 09:16:38 PST 2002
 //    I added keyframing support.
 //
+//    Brad Whitlock, Fri Mar 26 14:33:36 PST 2004
+//    Made it use strings.
+//
 // ****************************************************************************
 
 bool
-ViewerPlot::ExecuteEngineRPC(const int frame)
+ViewerPlot::ExecuteEngineRPC()
 {
     //
     //  Release data on previous network.
     //
     if (networkID != -1)
-        ViewerEngineManager::Instance()->ReleaseData(hostName, networkID);
+        ViewerEngineManager::Instance()->ReleaseData(hostName.c_str(), networkID);
 
     ViewerEngineManager *engineMgr = ViewerEngineManager::Instance();
-    plotAtts->GetAtts(frame - frame0, curPlotAtts);
-    bool successful = engineMgr->MakePlot(hostName, viewerPluginInfo->GetID(),
-                                          curPlotAtts, &networkID);
+    plotAtts->GetAtts(state, curPlotAtts);
+    bool successful = engineMgr->MakePlot(hostName.c_str(),
+        viewerPluginInfo->GetID(), curPlotAtts, &networkID);
     if(!successful)
     {
         networkID = -1;
@@ -2657,21 +2752,18 @@ ViewerPlot::GetType() const
 //    Eric Brugger, Mon Nov 18 09:16:38 PST 2002
 //    I added keyframing support.
 //
+//    Brad Whitlock, Sun Feb 1 00:34:15 PDT 2004
+//    I removed the frame argument.
+//
 // ****************************************************************************
 
 void
-ViewerPlot::SetClientAttsFromPlot(int frame)
+ViewerPlot::SetClientAttsFromPlot()
 {
-    //
-    // If the frame is out of range do nothing.
-    //
-    if (frame < frame0 || frame > frame1)
-        return;
-
     //
     // Set the client attributes.
     //
-    plotAtts->GetAtts(frame - frame0, curPlotAtts);
+    plotAtts->GetAtts(state, curPlotAtts);
     viewerPluginInfo->SetClientAtts(curPlotAtts);
 }
 
@@ -2692,53 +2784,6 @@ ViewerPlot::SetPlotAttsFromClient()
 {
     viewerPluginInfo->GetClientAtts(curPlotAtts);
     SetPlotAtts(curPlotAtts);
-}
-
-// ****************************************************************************
-//  Method: ViewerPlot::SetPlotAttsFromClient
-//
-//  Purpose:
-//    Set the plot attributes for the specified frame based on the client
-//    attributes.
-//
-//  Arguments:
-//    frame : The frame for which to set the attributes.
-//
-//  Programmer: Eric Brugger
-//  Creation:   March 9, 2001
-//
-//  Modifications:
-//    Eric Brugger, Thu Sep  6 14:16:43 PDT 2001
-//    I modified the routine to not clear the actors and instead set the plot
-//    attributes for any existing plots.
-//
-//    Eric Brugger, Fri Sep  7 12:48:45 PDT 2001
-//    I added logic to delete the plot and actor if the plot needs
-//    recalculation.
-//
-//    Kathleen Bonnell, Thu Mar 28 08:21:21 PST 2002 
-//    Handle exceptions. 
-//    
-//    Kathleen Bonnell, Wed Jun 19 18:05:04 PDT 2002  
-//    Update queryAtts. 
-//
-//    Eric Brugger, Mon Nov 18 09:16:38 PST 2002
-//    I added keyframing support.
-//
-// ****************************************************************************
-
-void
-ViewerPlot::SetPlotAttsFromClient(int frame)
-{
-    //
-    // If the frame is out of range do nothing.
-    //
-    if (frame < frame0 || frame > frame1)
-        return;
- 
-    viewerPluginInfo->GetClientAtts(curPlotAtts);
-    cerr << "Calling SetPlotAtts for frame " << frame << endl;
-    SetPlotAtts(frame, curPlotAtts);
 }
 
 // ****************************************************************************
@@ -2771,72 +2816,30 @@ ViewerPlot::SetPlotAtts(const AttributeSubject *atts)
         }
     }
 
-    //
-    // Set the plot attributes for the entire plot.
-    //
-    plotAtts->SetAtts(curPlotAtts);
- 
-    CheckCache(0, frame1 - frame0, false);
-
-    return true;
-}
-
-// ****************************************************************************
-// Method: ViewerPlot::SetPlotAtts
-//
-// Purpose: 
-//   Tries to set the attributes for the specified frame. This only happens
-//   if they are compatible types.
-//
-// Arguments:
-//   frame : The frame for which to set the attributes.
-//   atts  : The new attributes.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Mar 8 09:46:30 PDT 2002
-//
-// Modifications:
-//    Kathleen Bonnell, Wed Jun 19 18:05:04 PDT 2002  
-//    Update queryAtts. 
-//   
-//    Eric Brugger, Mon Nov 18 09:16:38 PST 2002
-//    I added keyframing support.
-//
-// ****************************************************************************
-
-bool
-ViewerPlot::SetPlotAtts(int frame, const AttributeSubject *atts)
-{
-    //
-    // If the frame is out of range do nothing.
-    //
-    if (frame < frame0 || frame > frame1)
-        return false;
- 
-    //
-    // Copy the attributes to the curPlotAtts unless this routine is
-    // called internally with curPlotAtts.
-    //
-    if (atts != curPlotAtts)
+    if(viewerPlotList->GetKeyframeMode())
     {
-        if (!curPlotAtts->CopyAttributes(atts))
-        { 
-            return false;
-        }
-    }
+        //
+        // Set the plot attributes for the current plot state.  SetAtts
+        // returns the range of plots that were invalidated.  The
+        // maximum value is clamped to frame1 since SetAtts may return
+        // INT_MAX to indicate the end of the plot.
+        //
+        int       f0, f1;
 
-    //
-    // Set the plot attributes for the specified frame.  SetAtts
-    // returns the range of plots that were invalidated.  The
-    // maximum value is clamped to frame1 since SetAtts may return
-    // INT_MAX to indicate the end of the plot.
-    //
-    int       f0, f1;
-
-    plotAtts->SetAtts(frame - frame0, curPlotAtts, f0, f1);
-    f1 = f1 < (frame1 - frame0) ? f1 : (frame1 - frame0);
+        plotAtts->SetAtts(state, curPlotAtts, f0, f1);
+        f1 = f1 < (state) ? f1 : (state);
  
-    CheckCache(f0, f1, false);
+        CheckCache(f0, f1, false);
+    }
+    else
+    {
+        //
+        // Set the plot attributes for the entire plot.
+        //
+        plotAtts->SetAtts(curPlotAtts);
+ 
+        CheckCache(0, frame1 - frame0, false);
+    }
 
     return true;
 }
@@ -3076,56 +3079,6 @@ ViewerPlot::HandleTool(const avtToolInterface &ti)
 }
 
 // ****************************************************************************
-// Method: ViewerPlot::HandleTool
-//
-// Purpose: 
-//   Sets the attributes for the specified frame from the tool.
-//
-// Arguments:
-//   frame : The frame for which to set the attributes.
-//   ti : A reference to the tool interface.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Oct 9 15:46:07 PST 2001
-//
-// Modifications:
-//   Brad Whitlock, Mon Feb 11 14:02:08 PST 2002
-//   Made it return a boolean value.
-//
-//   Brad Whitlock, Tue Oct 8 08:34:52 PDT 2002
-//   I made it set the plot attributes.
-//
-//   Eric Brugger, Tue Nov 26 10:59:42 PST 2002
-//   I added keyframing support.
-//
-//   Brad Whitlock, Thu Apr 17 09:13:13 PDT 2003
-//   I changed the code so it uses the active operator. I also changed it so
-//   it will not attempt to give tool attributes to operators if they've
-//   already been given to the plot.
-//
-// ****************************************************************************
-
-bool
-ViewerPlot::HandleTool(int frame, const avtToolInterface &ti)
-{
-    //
-    // Set the plot attributes from the tool attributes.
-    //
-    bool val = SetPlotAtts(frame, ti.GetAttributes());
-
-    //
-    // Set the operator attributes from the tool attributes.
-    //
-    for(int i = 0; i < nOperators && !val; ++i)
-    {
-        if(!expandedFlag || (i == activeOperatorIndex))
-            val |= operators[i]->SetOperatorAtts(ti.GetAttributes());
-    }
-
-    return val;
-}
-
-// ****************************************************************************
 // Method: ViewerPlot::InitializeTool
 //
 // Purpose: 
@@ -3330,9 +3283,6 @@ ViewerPlot::GetExpanded() const
 //    Tells the engine to start pick mode.  If points were transformed,
 //    re-execute the pipeline by re-creating the actors.
 //
-//  Arguments:
-//    frame      The frame to use.
-//
 //  Returns:     True if the pipeline needed to be re-exeucted false otherwise.
 //
 //  Programmer:  Kathleen Bonnell 
@@ -3350,11 +3300,14 @@ ViewerPlot::GetExpanded() const
 //   
 //    Kathleen Bonnell, Wed Mar 26 14:37:23 PST 2003  
 //    GetTransformedPoints renamed RequiresReExecuteForQuery. 
-//   
+//
+//    Brad Whitlock, Sat Jan 31 22:45:06 PST 2004
+//    I removed the frame argument and made it use strings.
+//
 // ****************************************************************************
 
 bool
-ViewerPlot::StartPick(const int frame)
+ViewerPlot::StartPick()
 {
     bool needsUpdate = false;
 
@@ -3364,15 +3317,16 @@ ViewerPlot::StartPick(const int frame)
     //  want to do this only if there are different engines for different
     //  plots.  But how to know from ViewerPlotList??
     //
-    if (ViewerEngineManager::Instance()->StartPick(hostName, true, networkID))
+    if (ViewerEngineManager::Instance()->StartPick(hostName.c_str(), true,
+        networkID))
     {
-        if (IsInFrameRange(frame) && *plotList[frame-frame0] != NULL)
+        if (IsInFrameRange() && *plotList[state] != NULL)
         {
-            needsUpdate |= (*plotList[frame-frame0])->RequiresReExecuteForQuery();
+            needsUpdate |= (*plotList[state])->RequiresReExecuteForQuery();
         }
         if (needsUpdate)
         {
-            ClearActors(frame, frame);
+            ClearCurrentActor();
         }
     }
     else
@@ -3396,6 +3350,9 @@ ViewerPlot::StartPick(const int frame)
 //    Brad Whitlock, Fri Feb 22 16:26:43 PST 2002
 //    Made the engine RPC go through the engine manager.
 //
+//    Brad Whitlock, Fri Mar 26 14:35:45 PST 2004
+//    Changed to use strings.
+//
 // ****************************************************************************
 
 void
@@ -3407,7 +3364,8 @@ ViewerPlot::StopPick()
     //  want to do this only if there are different engines for different
     //  plots.  But how to know from ViewerPlotList??
     //
-    if(!ViewerEngineManager::Instance()->StartPick(hostName, false, networkID))
+    if(!ViewerEngineManager::Instance()->StartPick(hostName.c_str(), false,
+       networkID))
     {
         debug1 << "An error occurred when stopping the pick." << endl;
     }
@@ -3463,53 +3421,22 @@ ViewerPlot::GetPlotQueryInfo()
 //    Added code to handle a possible InvalidVariableException that can be
 //    thrown out of md->DetermineVarType.
 //
+//    Brad Whitlock, Fri Mar 26 08:09:26 PDT 2004
+//    Made it use ViewerFileServer::DetermineVarType.
+//
 // ****************************************************************************
 
 avtVarType 
-ViewerPlot::GetVarType()
+ViewerPlot::GetVarType() const
 {
-    avtVarType retval = AVT_UNKNOWN_TYPE;
+    return GetVarType(variableName);
+}
 
-    // Check if the variable is an expression.
-    Expression *exp = ParsingExprList::GetExpression(variableName);
-    if (exp != NULL)
-    {
-        // Get the expression type.
-        retval = ParsingExprList::GetAVTType(exp->GetType());
-    }
-    else
-    {
-        ViewerFileServer *s = ViewerFileServer::Instance();
-        avtDatabaseMetaData *md =
-            (avtDatabaseMetaData *) s->GetMetaData(std::string(hostName),
-                                                   std::string(databaseName));
-        if (md != 0)
-        {
-            // 
-            // Get the type for the variable.
-            //
-            TRY
-            {
-                retval = md->DetermineVarType(std::string(variableName));
-            }
-            CATCH(VisItException)
-            {
-                std::string message("VisIt was unable to determine the variable type for ");
-                message += hostName; 
-                message += ":";
-                message += databaseName;
-                message += "'s ";
-                message += variableName;
-                message += " variable.";
-                Error(message.c_str());
-                debug1 << "ViewerPlot::GetVarType: Caught an exception!" << endl;
-                retval = AVT_UNKNOWN_TYPE;
-            }
-            ENDTRY
-        }
-    }
-
-    return retval;
+avtVarType 
+ViewerPlot::GetVarType(const std::string &var) const
+{
+    return ViewerFileServer::Instance()->DetermineVarType(hostName,
+        databaseName, var, state);
 }
 
 // ****************************************************************************
@@ -3606,6 +3533,12 @@ ViewerPlot::CheckCache(const int f0, const int f1, const bool force)
 //   unwanted settings from the system configs. This makes the session file
 //   reproduce the same thing each time without having to run -noconfig.
 //
+//   Brad Whitlock, Thu Mar 18 09:35:46 PDT 2004
+//   I moved some of the settings from ViewerPlotList to here. I also changed
+//   the code to not save out beginFrame and endFrame unless we're in
+//   keyframing mode because they end up making the session files harder to
+//   modify by hand if you use them with larger databases.
+//
 // ****************************************************************************
 
 void
@@ -3620,11 +3553,19 @@ ViewerPlot::CreateNode(DataNode *parentNode)
     //
     // Add information specific to the plot.
     //
+    plotNode->AddNode(new DataNode("plotState", GetState()));
     plotNode->AddNode(new DataNode("spatialExtentsType",
         avtExtentType_ToString(spatialExtentsType)));
     plotNode->AddNode(new DataNode("bgColor", bgColor, 3));
     plotNode->AddNode(new DataNode("fgColor", fgColor, 3));
     plotNode->AddNode(new DataNode("expandedFlag", expandedFlag));
+
+    // Only save beginning and end frames if the plot is keyframed.
+    if(viewerPlotList->GetKeyframeMode())
+    {
+        plotNode->AddNode(new DataNode("beginFrame", GetBeginFrame()));
+        plotNode->AddNode(new DataNode("endFrame", GetEndFrame()));
+    }
 
     //
     // Store the current plot attributes.
@@ -3671,6 +3612,13 @@ ViewerPlot::CreateNode(DataNode *parentNode)
         plotNode->AddNode(databaseKFNode);
     else
         delete databaseKFNode;
+
+    //
+    // Store the SIL restriction.
+    //
+    CompactSILRestrictionAttributes *csilr = silr->MakeCompactAttributes();
+    csilr->CreateNode(plotNode, false, true);
+    delete csilr;
 }
 
 // ****************************************************************************
@@ -3686,7 +3634,10 @@ ViewerPlot::CreateNode(DataNode *parentNode)
 // Creation:   Wed Jul 16 13:10:51 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Mar 18 09:02:46 PDT 2004
+//   Moved the code to set the frame range, plot state, and SIL restriction
+//   here from ViewerPlotList.
+//
 // ****************************************************************************
 
 void
@@ -3700,6 +3651,41 @@ ViewerPlot::SetFromNode(DataNode *parentNode)
     DataNode *plotNode = parentNode->GetNode("ViewerPlot");
     if(plotNode == 0)
         return;
+
+    //
+    // Get and set the start and end frames.
+    //
+    bool haveFrameNumbers = true;
+    int beginFrame = 0, endFrame = 0;
+    if((node = plotNode->GetNode("endFrame")) != 0)
+        endFrame = (node->AsInt() < 0) ? 0 : node->AsInt();
+    else
+        haveFrameNumbers = false;
+    if((node = plotNode->GetNode("beginFrame")) != 0)
+    {
+        int f = node->AsInt();
+        beginFrame = (f < 0 || f > endFrame) ? 0 : f;
+    }
+    else
+        haveFrameNumbers = false;
+    if(haveFrameNumbers)
+        SetFrameRange(beginFrame, endFrame);
+
+    //
+    // Set the plot's state and make sure it is within the
+    // range of the plot databases's correlation.
+    //
+    int plotState = 0, tsNStates = 1;
+    viewerPlotList->GetTimeSliderStates(GetSource(), plotState, tsNStates);
+    if((node = plotNode->GetNode("plotState")) != 0)
+    {
+        plotState = node->AsInt();
+        if(plotState < 0)
+            plotState = 0;
+        if(plotState >= tsNStates)
+            plotState = tsNStates - 1;
+        SetState(plotState);
+    }
 
     // Read in some plot attributes.
     if((node = plotNode->GetNode("spatialExtentsType")) != 0)
@@ -3773,6 +3759,31 @@ ViewerPlot::SetFromNode(DataNode *parentNode)
                 activeOperatorIndex = node->AsInt();
         }
     }
+
+    //
+    // Read the SIL restriction
+    //
+    if((node = plotNode->GetNode("CompactSILRestrictionAttributes")) != 0)
+    {
+        CompactSILRestrictionAttributes csilr;
+        csilr.SetFromNode(plotNode);
+
+        //
+        // Try to initialize the plot's SIL restriction using the compact
+        // SIL restriction.
+        //
+        TRY
+        {
+            avtSILRestriction_p newsilr = new avtSILRestriction(*silr, csilr);
+            SetSILRestriction(newsilr);
+        }
+        CATCH(VisItException)
+        {
+            debug1 << "Could not use the SIL restriction from the "
+                      "session file." << endl;
+        }
+        ENDTRY
+    }
 }
 
 
@@ -3813,7 +3824,7 @@ ViewerPlot::SetOpaqueMeshIsAppropriate(bool val)
     if (atts != NULL)
     {
         SetPlotAtts(atts);
-        SetClientAttsFromPlot(frame);
+        SetClientAttsFromPlot();
     }
 }
 

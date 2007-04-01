@@ -701,6 +701,118 @@ View3DAttributes_print(PyObject *v, FILE *fp, int flags)
     return 0;
 }
 
+#include <snprintf.h>
+PyObject *
+View3DAttributes_str(PyObject *v)
+{
+    View3DAttributesObject *obj = (View3DAttributesObject *)v;
+    View3DAttributes *atts = obj->data;
+
+    std::string str("");
+    char tmpStr[1000];
+
+
+    {   const double *viewNormal = atts->GetViewNormal();
+        SNPRINTF(tmpStr, 1000,"viewNormal = ("); str += tmpStr;
+        for(int i = 0; i < 3; ++i)
+        {
+            SNPRINTF(tmpStr, 1000,"%g", viewNormal[i]); str += tmpStr;
+            if(i < 2)
+            {
+                SNPRINTF(tmpStr, 1000,", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000,"), ");
+        str += tmpStr;
+    }
+    {   const double *focus = atts->GetFocus();
+        SNPRINTF(tmpStr, 1000,"focus = (");
+        str += tmpStr;
+        for(int i = 0; i < 3; ++i)
+        {
+            SNPRINTF(tmpStr, 1000,"%g", focus[i]);
+            str += tmpStr;
+            if(i < 2)
+            {
+                SNPRINTF(tmpStr, 1000,", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000,"), ");
+        str += tmpStr;
+    }
+    {   const double *viewUp = atts->GetViewUp();
+        SNPRINTF(tmpStr, 1000,"viewUp = (");
+        str += tmpStr;
+        for(int i = 0; i < 3; ++i)
+        {
+            SNPRINTF(tmpStr, 1000,"%g", viewUp[i]);
+            str += tmpStr;
+            if(i < 2)
+            {
+                SNPRINTF(tmpStr, 1000,", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000,"), ");
+        str += tmpStr;
+    }
+    SNPRINTF(tmpStr, 1000,"viewAngle = %g, ", atts->GetViewAngle()); str += tmpStr;
+    SNPRINTF(tmpStr, 1000,"parallelScale = %g, ", atts->GetParallelScale()); str += tmpStr;
+    SNPRINTF(tmpStr, 1000,"nearPlane = %g, ", atts->GetNearPlane()); str += tmpStr;
+    SNPRINTF(tmpStr, 1000,"farPlane = %g, ", atts->GetFarPlane()); str += tmpStr;
+    {   const double *imagePan = atts->GetImagePan();
+        SNPRINTF(tmpStr, 1000,"imagePan = ("); str += tmpStr;
+        for(int i = 0; i < 2; ++i)
+        {
+            SNPRINTF(tmpStr, 1000,"%g", imagePan[i]); str += tmpStr;
+            if(i < 1)
+            {
+                SNPRINTF(tmpStr, 1000,", "); str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000,"), "); str += tmpStr;
+    }
+    SNPRINTF(tmpStr, 1000,"imageZoom = %g, ", atts->GetImageZoom()); str += tmpStr;
+    if(atts->GetPerspective())
+        SNPRINTF(tmpStr, 1000,"perspective = 1, ");
+    else
+        SNPRINTF(tmpStr, 1000,"perspective = 0, ");
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000,"eyeAngle = %g,", atts->GetEyeAngle()), str += tmpStr;
+
+    if(atts->GetCenterOfRotationSet())
+    {
+        SNPRINTF(tmpStr, 1000,"centerOfRotationSet = 1,");
+        str += tmpStr;
+    }
+    else
+    {
+        SNPRINTF(tmpStr, 1000,"centerOfRotationSet = 0,");
+        str += tmpStr;
+    }
+
+    {   const double *centerOfRotation = atts->GetCenterOfRotation();
+        SNPRINTF(tmpStr, 1000,"centerOfRotation = (");
+        str += tmpStr;
+        for(int i = 0; i < 3; ++i)
+        {
+            SNPRINTF(tmpStr, 1000,"%g", centerOfRotation[i]);
+            str += tmpStr;
+            if(i < 2)
+            {
+                SNPRINTF(tmpStr, 1000,", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000,")");
+        str += tmpStr;
+    }
+
+    return PyString_FromString(str.c_str());
+}
+
 static PyObject *
 View3DAttributes_add(PyObject *v, PyObject *w)
 {
@@ -904,7 +1016,7 @@ static PyTypeObject View3DAttributesType =
     //
     0,                                   // tp_hash
     0,                                   // tp_call
-    0,                                   // tp_str
+    (reprfunc)View3DAttributes_str,      // tp_str
     0,                                   // tp_getattro
     0,                                   // tp_setattro
     0,                                   // tp_as_buffer

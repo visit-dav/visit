@@ -25,6 +25,9 @@ class QSpinBox;
 //   Brad Whitlock, Mon Oct 13 16:52:39 PST 2003
 //   Added a toggle for timeState display mode.
 //
+//   Brad Whitlock, Fri Jan 30 14:23:26 PST 2004
+//   I added a toggle for showing the selected files list.
+//
 // ****************************************************************************
 
 class GUI_API QvisPreferencesWindow : public QvisPostableWindowObserver
@@ -39,8 +42,10 @@ public:
     virtual void CreateWindowContents();
 
     void SetTimeStateFormat(const TimeFormat &fmt);
+    void SetShowSelectedFiles(bool val);
 signals:
     void changeTimeFormat(const TimeFormat &);
+    void showSelectedFiles(bool);
 public slots:
     virtual void apply();
 protected:
@@ -51,15 +56,17 @@ private slots:
     void postWindowsWhenShownToggled(bool val);
     void handleTimeStateDisplayModeChange(int val);
     void timeStateNDigitsChanged(int val);
+    void selectedFilesToggled(bool);
 private:
     QCheckBox        *cloneWindowOnFirstRefToggle;
     QCheckBox        *postWindowsWhenShownToggle;
+    QCheckBox        *selectedFilesToggle;
     QButtonGroup     *timeStateDisplayMode;
     QSpinBox         *timeStateNDigits;
-
     GlobalAttributes *atts;
 
     TimeFormat        tsFormat;
+    bool              showSelFiles;
 };
 
 #endif

@@ -14,9 +14,9 @@
 // Forward declarations.
 class AttributeSubject;
 class DataNode;
+class DatabaseCorrelation;
 class PlotList;
 class SILRestrictionAttributes;
-class ViewerAnimation;
 class ViewerOperator;
 class ViewerPlot;
 class ViewerPlotList;
@@ -25,6 +25,7 @@ class avtToolInterface;
 class PickAttributes;
 
 typedef std::map<std::string, avtSILRestriction_p> SILRestrictionMap;
+typedef std::map<std::string, int> StringIntMap;
 
 // ****************************************************************************
 //  Class: ViewerPlotList
@@ -169,6 +170,9 @@ typedef std::map<std::string, avtSILRestriction_p> SILRestrictionMap;
 //    Brad Whitlock, Wed Jan 7 14:24:09 PST 2004
 //    I added GetNumVisiblePlots.
 //
+//    Brad Whitlock, Fri Jan 23 16:34:52 PST 2004
+//    I added support for multiple time sliders.
+//
 // ****************************************************************************
 
 
@@ -183,27 +187,52 @@ struct ViewerPlotListElement
     
 class VIEWER_API ViewerPlotList
 {
-  public:
-    ViewerPlotList(ViewerAnimation *const viewerAnimation);
+public:
+    typedef enum {PlayMode, StopMode, ReversePlayMode} AnimationMode;
+    typedef enum {Looping, PlayOnce, Swing}            PlaybackMode;
+
+    ViewerPlotList(ViewerWindow *const viewerWindow);
     ~ViewerPlotList();
 
     static PlotList *GetClientAtts();
     static SILRestrictionAttributes *GetClientSILRestrictionAtts();
 
+    void SetActiveTimeSlider(const std::string &ts);
+    const std::string &GetActiveTimeSlider() const;
+    bool HasActiveTimeSlider() const;
+    void GetTimeSliderInformation(int &activeTimeSlider,
+                                  stringVector &timeSliders,
+                                  intVector &timeSliderCurrentStates);
+    void CreateTimeSlider(const std::string &ts, int state);
+    void AlterTimeSlider(const std::string &ts);
+    bool DeleteTimeSlider(const std::string &ts, bool update = true);
+    void GetTimeSliderStates(const std::string &ts, int &state, int &nStates) const;
+    void ForwardStep();
+    void BackwardStep();
+    void SetTimeSliderState(int state);
+    void UpdateFrame(bool updatePlotStates = true);
+    void SetAnimationMode(AnimationMode);
+    AnimationMode GetAnimationMode() const;
+    void SetPlaybackMode(PlaybackMode);
+    PlaybackMode GetPlaybackMode() const;
+
+    void ActivateSource(const std::string &database);
     void SetHostDatabaseName(const std::string &database);
     void SetDatabaseName(const std::string &database);
+    int  CloseDatabase(const std::string &database);
     const std::string &GetHostDatabaseName() const;
     const std::string &GetDatabaseName() const;
     const std::string &GetHostName() const;
     bool GetPlotHostDatabase(std::string &h, std::string &d) const;
-    bool FileInUse(const char *host, const char *database) const;
+    bool FileInUse(const std::string &host,
+                   const std::string &database) const;
 
     int  GetNumPlots() const;
     int  GetNumRealizedPlots() const;
     int  GetNumVisiblePlots() const;
     int  AddPlot(int type, const std::string &var, bool replacePlots = false,
                  bool applyToAll = false, DataNode *attributesNode = 0);
-    int  GetMaximumStates() const;
+
     void SetPlotFrameRange(int plotId, int frame0, int frame1);
     void DeletePlotKeyframe(int plotId, int frame);
     void MovePlotKeyframe(int plotId, int oldFrame, int newFrame);
@@ -212,7 +241,7 @@ class VIEWER_API ViewerPlotList
     void MovePlotDatabaseKeyframe(int plotId, int oldFrame, int newFrame);
     void CopyFrom(const ViewerPlotList *pl);
     void ClearPlots();
-    void TransmutePlots(int frame, bool turningOffScalableRendering);
+    void TransmutePlots(bool turningOffScalableRendering);
     void DeleteActivePlots();
 
     int  FindCompatiblePlot(ViewerPlot *);
@@ -221,7 +250,7 @@ class VIEWER_API ViewerPlotList
     void HideActivePlots();
     void RealizePlots();
     void SetErrorFlagAllPlots(bool errorFlag);
-    void SetPlotVar(const char *variable);
+    void SetPlotVar(const std::string &variable);
     void SetPlotAtts(const int plotType);
     void SetPlotOperatorAtts(const int operatorType, bool applyToAll = false);
     void ReplaceDatabase(const std::string &host, const std::string &database,
@@ -243,18 +272,12 @@ class VIEWER_API ViewerPlotList
     void RemoveLastOperator(bool applyToAll = false);
     void RemoveAllOperators(bool applyToAll = false);
 
-    bool ArePlotsUpToDate(const int frame) const;
-    bool UpdatePlots(const int frame, bool animating = false);
-
-    void UpdateWindow(ViewerWindow *const window, const int frame,
-                      const int nFrames,
-                      bool immediateUpdate);
     bool UpdateColorTable(const char *ctName);
 
     void UpdatePlotAtts(bool=true) const;
     void GetCurrentPlotAtts(std::vector<const char*>& pluginIDsList,
                             std::vector<std::string>& hostsList,
-                            std::vector<int>& plotIdsList,
+                            intVector& plotIdsList,
                             std::vector<const AttributeSubject*>& attsList) const; 
     void UpdatePlotList() const;
     void UpdateSILRestrictionAtts();
@@ -263,7 +286,7 @@ class VIEWER_API ViewerPlotList
     void UpdateExpressionListUsingDB(const std::string &host,
                                      const std::string &db, int ts) const;
 
-    void GetPlotLimits(int frame, int nDimensions, double *limits) const;
+    void GetPlotLimits(int nDimensions, double *limits) const;
     void SetSpatialExtentsType(avtExtentType);
 
     bool SetBackgroundColor(const double *);
@@ -272,33 +295,47 @@ class VIEWER_API ViewerPlotList
     void HandleTool(const avtToolInterface &ti, bool applyToAll = false);
     bool InitializeTool(avtToolInterface &ti);
 
-    void ClearPipelines(const int f0, const int f1);
+    void SetPipelineCaching(bool);
+    bool GetPipelineCaching() const;
+    void ClearPipelines();
 
-    void StartPick(const int);
+    void StartPick();
     void StopPick(void);
-    const char *GetVarName();
+    std::string GetVarName();
 
     ViewerPlot *GetPlot(const int id) const;
-    void GetActivePlotIDs(std::vector<int> &) const;
+    void GetActivePlotIDs(intVector &) const;
 
     void SetKeyframeMode(const bool mode);
     bool GetKeyframeMode() const;
+    void SetNKeyframes(int nFrames);
+    int GetNKeyframes() const;
 
-    static void SplitHostDatabase(const std::string &database,
-                                  std::string &host, std::string &db);
     static void ClearDefaultSILRestrictions(const std::string &host,
                                             const std::string &database);
     avtSILRestriction_p GetDefaultSILRestriction(const std::string &host,
                                                  const std::string &database,
-                                                 const std::string &var);
+                                                 const std::string &var,
+                                                 int state);
 
     void CreateNode(DataNode *);
     bool SetFromNode(DataNode *);
   protected:
+    bool        AskForCorrelationPermission(const stringVector &dbs) const;
+    bool        AllowAutomaticCorrelation(const stringVector &dbs) const;
+    DatabaseCorrelation *GetMostSuitableCorrelation(const std::string &, bool);
     ViewerPlot *NewPlot(int type, const std::string &host,
                         const std::string &db, const std::string &var,
                         bool applyOperators);
     int         SimpleAddPlot(ViewerPlot *plot, bool replacePlots);
+    void        SetNextState(int nextState, int boundary);
+    bool        UpdatePlotStates();
+    bool        UpdateSinglePlotState(ViewerPlot *plot);
+
+    bool        ArePlotsUpToDate() const;
+    bool        UpdatePlots(bool animating = false);
+    void        UpdateWindow(bool immediateUpdate);
+
     static std::string SILRestrictionKey(const std::string &, const std::string &, int);
 
   private:
@@ -306,24 +343,32 @@ class VIEWER_API ViewerPlotList
     static SILRestrictionAttributes *clientSILRestrictionAtts;
     static SILRestrictionMap         SILRestrictions;
     static int                       lastPlotId;
-    ViewerAnimation                 *animation;
+    ViewerWindow                    *window;
 
-    std::string hostDatabaseName;
-    std::string hostName;
-    std::string databaseName;
+    std::string            hostDatabaseName;
+    std::string            hostName;
+    std::string            databaseName;
+
+    std::string            activeTimeSlider;
+    StringIntMap           timeSliders;
+    AnimationMode          animationMode;
+    PlaybackMode           playbackMode;
+
+    bool                   keyframeMode;
+    int                    nKeyframes;
+
+    bool                   pipelineCaching;
 
     ViewerPlotListElement *plots;
-    int       nPlots;
-    int       nPlotsAlloc;
-    bool      interrupted;
+    int                    nPlots;
+    int                    nPlotsAlloc;
+    bool                   interrupted;
 
-    double    bgColor[3];
-    double    fgColor[3];
-    avtExtentType spatialExtentsType;
+    double                 bgColor[3];
+    double                 fgColor[3];
+    avtExtentType          spatialExtentsType;
 
-    bool      keyframeMode;
-
-    void      CanMeshPlotBeOpaque();
+    void                   CanMeshPlotBeOpaque();
 };
 
 #endif

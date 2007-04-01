@@ -7,7 +7,7 @@
 class QIconSet;
 
 // ****************************************************************************
-// Class: AnimationReverseStepAction
+// Class: TimeSliderReverseStepAction
 //
 // Purpose:
 //   Handles the reverse step through an animation action.
@@ -21,11 +21,11 @@ class QIconSet;
 //   
 // ****************************************************************************
 
-class VIEWER_API AnimationReverseStepAction : public ViewerAction
+class VIEWER_API TimeSliderReverseStepAction : public ViewerAction
 {
 public:
-    AnimationReverseStepAction(ViewerWindow *win);
-    virtual ~AnimationReverseStepAction() { }
+    TimeSliderReverseStepAction(ViewerWindow *win);
+    virtual ~TimeSliderReverseStepAction() { }
 
     virtual void Execute();
     virtual bool Enabled() const;
@@ -110,7 +110,7 @@ public:
 };
 
 // ****************************************************************************
-// Class: AnimationForwardStepAction
+// Class: TimeSliderForwardStepAction
 //
 // Purpose:
 //   Handles the forward step action for an animation.
@@ -124,11 +124,11 @@ public:
 //   
 // ****************************************************************************
 
-class AnimationForwardStepAction : public ViewerAction
+class TimeSliderForwardStepAction : public ViewerAction
 {
 public:
-    AnimationForwardStepAction(ViewerWindow *win);
-    virtual ~AnimationForwardStepAction() { }
+    TimeSliderForwardStepAction(ViewerWindow *win);
+    virtual ~TimeSliderForwardStepAction() { }
 
     virtual void Execute();
     virtual bool Enabled() const;
@@ -159,10 +159,10 @@ public:
 };
 
 // ****************************************************************************
-// Class: AnimationSetFrameAction
+// Class: SetTimeSliderStateAction
 //
 // Purpose:
-//   Handles the set frame action for an animation.
+//   Handles the set state action for the active time slider.
 //
 // Notes:      
 //
@@ -173,11 +173,35 @@ public:
 //   
 // ****************************************************************************
 
-class AnimationSetFrameAction : public ViewerAction
+class SetTimeSliderStateAction : public ViewerAction
 {
 public:
-    AnimationSetFrameAction(ViewerWindow *win);
-    virtual ~AnimationSetFrameAction() { }
+    SetTimeSliderStateAction(ViewerWindow *win);
+    virtual ~SetTimeSliderStateAction() { }
+
+    virtual void Execute();
+};
+
+// ****************************************************************************
+// Class: SetActiveTimeSliderAction
+//
+// Purpose:
+//   Handles setting the active time slider.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Sun Jan 25 02:15:16 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class SetActiveTimeSliderAction : public ViewerAction
+{
+public:
+    SetActiveTimeSliderAction(ViewerWindow *win);
+    virtual ~SetActiveTimeSliderAction() { };
 
     virtual void Execute();
 };

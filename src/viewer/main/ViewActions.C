@@ -1,6 +1,5 @@
 #include <ViewActions.h>
 #include <ViewAttributes.h>
-#include <ViewerAnimation.h>
 #include <ViewerMessaging.h>
 #include <ViewerPlotList.h>
 #include <ViewerPopupMenu.h>
@@ -57,7 +56,7 @@ TogglePerspectiveViewAction::Enabled() const
 {
     // This action should only be enabled if the window to which the action belongs
     // has plots in it.
-    return (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+    return (window->GetPlotList()->GetNumPlots() > 0);
 }
 
 bool
@@ -86,7 +85,7 @@ ResetViewAction::Enabled() const
 {
     // This action should only be enabled if the window to which the action belongs
     // has plots in it.
-    return (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+    return (window->GetPlotList()->GetNumPlots() > 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -110,7 +109,7 @@ RecenterViewAction::Enabled() const
 {
     // This action should only be enabled if the window to which the action belongs
     // has plots in it.
-    return (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+    return (window->GetPlotList()->GetNumPlots() > 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -134,7 +133,7 @@ UndoViewAction::Enabled() const
 {
     // This action should only be enabled if the window to which the action belongs
     // has plots in it.
-    return (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+    return (window->GetPlotList()->GetNumPlots() > 0);
 }
 
 
@@ -159,7 +158,7 @@ ToggleLockViewAction::Enabled() const
 {
     // This action should only be enabled if the window to which the action belongs
     // has plots in it.
-    return (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+    return (window->GetPlotList()->GetNumPlots() > 0);
 }
 
 bool
@@ -188,7 +187,7 @@ ToggleFullFrameAction::Enabled() const
 {
     // This action should only be enabled if the window to which the action 
     // belongs has plots in it, and is 2D.
-    return (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0) &&
+    return (window->GetPlotList()->GetNumPlots() > 0) &&
            (window->GetWindowMode() == WINMODE_2D);
 }
 
@@ -610,7 +609,7 @@ bool
 SaveViewAction::Enabled() const
 {
     return ViewerMultipleAction::Enabled() &&
-           window->GetAnimation()->GetPlotList()->GetNumPlots() > 0;
+           window->GetPlotList()->GetNumPlots() > 0;
 }
 
 // ****************************************************************************
@@ -971,13 +970,15 @@ SetCenterOfRotationAction::Execute()
 // Creation:   Wed Jan 7 10:05:04 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Feb 23 11:52:44 PDT 2004
+//   Got rid of the animation.
+//
 // ****************************************************************************
 
 bool
 SetCenterOfRotationAction::Enabled() const
 {
-    return window->GetAnimation()->GetPlotList()->GetNumPlots() > 0;    
+    return window->GetPlotList()->GetNumPlots() > 0;    
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1118,13 +1119,15 @@ ChooseCenterOfRotationAction::Execute()
 // Creation:   Wed Jan 7 10:11:24 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Feb 23 11:53:02 PDT 2004
+//   Got rid of the animation.
+//
 // ****************************************************************************
 
 bool
 ChooseCenterOfRotationAction::Enabled() const
 {
-    return window->GetAnimation()->GetPlotList()->GetNumVisiblePlots() > 0 &&
+    return window->GetPlotList()->GetNumVisiblePlots() > 0 &&
            window->GetWindowMode() == WINMODE_3D;
 }
 

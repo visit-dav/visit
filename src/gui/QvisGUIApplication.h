@@ -8,6 +8,7 @@
 #include <ViewerProxy.h>
 #include <ConfigManager.h>
 #include <GUIBase.h>
+#include <QvisWindowBase.h>
 #include <MessageAttributes.h>
 #include <StatusSubject.h>
 #include <QualifiedFilename.h>
@@ -23,6 +24,7 @@ class QvisAnnotationWindow;
 class QvisAppearanceWindow;
 class QvisApplication;
 class QvisColorTableWindow;
+class QvisDatabaseCorrelationListWindow;
 class QvisExpressionsWindow;
 class QvisCommandLineWindow;
 class QvisEngineWindow;
@@ -47,9 +49,6 @@ class QvisSubsetWindow;
 class QvisViewWindow;
 class QvisWindowBase;
 class SplashScreen;
-
-// Create a type for a vector of postable windows.
-typedef std::vector<QvisWindowBase *> WindowBaseVector;
 
 // ****************************************************************************
 // Class: QvisGUIApplication
@@ -212,6 +211,9 @@ typedef std::vector<QvisWindowBase *> WindowBaseVector;
 //    Brad Whitlock, Mon Nov 10 14:51:46 PST 2003
 //    I added sessionFile.
 //
+//    Brad Whitlock, Fri Jan 30 17:47:03 PST 2004
+//    I added a database correlation list window.
+//
 //    Brad Whitlock, Fri Mar 12 13:39:25 PST 2004
 //    I added keepAliveTimer and a new slot function.
 //
@@ -308,6 +310,7 @@ private:
     // Windows.
     QvisMainWindow               *mainWin;
     QvisColorTableWindow         *colorTableWin;
+    QvisDatabaseCorrelationListWindow *correlationListWin;
     QvisExpressionsWindow        *exprWin;
     QvisCommandLineWindow        *cliWin;
     QvisFileSelectionWindow      *fileWin;

@@ -719,18 +719,23 @@ EngineProxy::DefineVirtualDatabase(const std::string &fileFormat,
 //
 // Programmer: Mark C. Miller 
 // Creation:   07Apr03 
+//
+// Modifications:
+//    Mark C. Miller, Mon Mar 29 15:01:58 PST 2004
+//    Added new bool arg for controlling 3D annoations
 //   
 // ****************************************************************************
 
 avtDataObjectReader_p
-EngineProxy::Render(bool sendZBuffer, const intVector& networkIDs)
+EngineProxy::Render(bool sendZBuffer, const intVector& networkIDs,
+    bool do3DAnnotsOnly)
 {
 
     // Send a status message indicating that we're starting a scalable render 
     Status("Scalable Rendering.");
 
     // Do it!
-    renderRPC(networkIDs, sendZBuffer);
+    renderRPC(networkIDs, sendZBuffer, do3DAnnotsOnly);
 
     // Get the reply and update the progress bar
     while (renderRPC.GetStatus() == VisItRPC::incomplete ||

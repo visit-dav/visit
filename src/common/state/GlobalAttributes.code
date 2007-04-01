@@ -1,4 +1,4 @@
-Function:  CreateNode
+Function: CreateNode
 Declaration: virtual bool CreateNode(DataNode *node, bool, bool);
 Definition:
 // ****************************************************************************
@@ -45,6 +45,9 @@ Definition:
 //   Brad Whitlock, Wed Dec 17 12:09:40 PDT 2003
 //   I added a completeSave flag.
 //
+//   Brad Whitlock, Fri Jan 23 16:16:02 PST 2004
+//   I changed the numbering due to a change in attribute ordering.
+//
 // ****************************************************************************
 
 bool
@@ -59,44 +62,44 @@ GlobalAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
     // Create a node for GlobalAttributes.
     DataNode *node = new DataNode("GlobalAttributes");
 
-    if(completeSave || completeSave || !FieldsEqual(3, &defaultObject))
+    if(completeSave || !FieldsEqual(4, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("autoUpdateFlag", autoUpdateFlag));
     }
 
-    if(completeSave || completeSave || !FieldsEqual(4, &defaultObject))
+    if(completeSave || !FieldsEqual(5, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("replacePlots", replacePlots));
     }
 
-    if(completeSave || !FieldsEqual(5, &defaultObject))
+    if(completeSave || !FieldsEqual(6, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("applyOperator", applyOperator));
     }
 
-    if(completeSave || !FieldsEqual(13, &defaultObject))
+    if(completeSave || !FieldsEqual(8, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("windowLayout", windowLayout));
     }
 
-    if(completeSave || !FieldsEqual(14, &defaultObject))
+    if(completeSave || !FieldsEqual(9, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("makeDefaultConfirm", makeDefaultConfirm));
     }
 
-    if(completeSave || !FieldsEqual(16, &defaultObject))
+    if(completeSave || !FieldsEqual(10, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("cloneWindowOnFirstRef",
                                     cloneWindowOnFirstRef));
     }
 
-    if(completeSave || !FieldsEqual(17, &defaultObject))
+    if(completeSave || !FieldsEqual(11, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("maintainView", maintainView));
@@ -111,9 +114,7 @@ GlobalAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
     return (addToParent || forceAdd);
 }
 
-
-
-Function:  SetFromNode
+Function: SetFromNode
 Declaration: virtual void SetFromNode(DataNode *node);
 Definition:
 // ****************************************************************************
@@ -180,3 +181,4 @@ GlobalAttributes::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("maintainView")) != 0)
         SetMaintainView(node->AsBool());
 }
+

@@ -2248,10 +2248,33 @@ AddMixedMaterials(MaterialEncoder &mats, const int *ireg, const int *iregmm,
              for(int i = 1; i < kmax; ++i, ++zoneId)
              {
                  if(nummm_row[i] == 0)
+{
+if(ireg_row[i] < 1 || ireg_row[i] > 4)
+    cerr << "zone(" << j << ", " << i << ") nummm = " << nummm_row[i] << ", mat=" << ireg_row[i] << endl;;
                      mats.AddClean(zoneId, ireg_row[i]);
+}
                  else
                  {
                      int minIndex = ilamm_row[2 * i] - 1;
+
+const int *iregmm_mat = iregmm + minIndex;
+const double *volfmm_mat = volfmm + minIndex;
+int k;
+bool outOfBounds = false;
+for(k = 0; k < nummm_row[i]; ++k)
+    outOfBounds |= (iregmm_mat[k] < 1 || iregmm_mat[k] > 4);
+
+if(outOfBounds)
+{
+cerr << "zone(" << j << ", " << i << ") nummm = " << nummm_row[i];
+cerr << ", mats=(";
+for(k = 0; k < nummm_row[i]; ++k)
+    cerr << iregmm_mat[k] << endl;
+cerr << "), volf=(";
+for(k = 0; k < nummm_row[i]; ++k)
+    cerr << volfmm_mat[k] << endl;
+cerr << ")" << endl;
+}
                      mats.AddMixed(zoneId,
                                    iregmm + minIndex,
                                    volfmm + minIndex,

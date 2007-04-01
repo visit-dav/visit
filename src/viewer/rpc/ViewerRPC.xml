@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="ViewerRPC" purpose="This class contains the attributes for controlling the viewer." persistent="true" exportAPI="VIEWER_RPC_API" exportInclude="viewerrpc_exports.h" codefile="ViewerRPC.code">
+  <Attribute name="ViewerRPC" purpose="This class contains the attributes for controlling the viewer." persistent="false" exportAPI="VIEWER_RPC_API" exportInclude="viewerrpc_exports.h" codefile="ViewerRPC.code">
     <Enum name="ViewerRPCType">
       CloseRPC
       AddWindowRPC
@@ -9,6 +9,12 @@
       ClearWindowRPC
       ClearAllWindowsRPC
       OpenDatabaseRPC
+      CloseDatabaseRPC
+      ActivateDatabaseRPC
+      CheckForNewStatesRPC
+      CreateDatabaseCorrelationRPC
+      AlterDatabaseCorrelationRPC
+      DeleteDatabaseCorrelationRPC
       ReOpenDatabaseRPC
       ReplaceDatabaseRPC
       OverlayDatabaseRPC
@@ -18,9 +24,10 @@
       AnimationPlayRPC
       AnimationReversePlayRPC
       AnimationStopRPC
-      AnimationNextFrameRPC
-      AnimationPreviousFrameRPC
-      AnimationSetFrameRPC
+      TimeSliderNextStateRPC
+      TimeSliderPreviousStateRPC
+      SetTimeSliderStateRPC
+      SetActiveTimeSliderRPC
       AddPlotRPC
       SetPlotFrameRangeRPC
       DeletePlotKeyframeRPC
@@ -158,7 +165,7 @@
     <Field name="nFrames" label="nFrames" type="int">
       0
     </Field>
-    <Field name="frameNumber" label="frameNumber" type="int">
+    <Field name="stateNumber" label="stateNumber" type="int">
       0
     </Field>
     <Field name="frameRange" label="frameRange" type="intArray" length="2">

@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+  <Attribute name="DatabaseCorrelation" purpose="This class encapsulates a database correlation, which is a mapping of one or more databases to a set of indices that go from 0 to N." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="DatabaseCorrelation.code">
+    <Enum name="CorrelationMethod">
+      IndexForIndexCorrelation
+      StretchedIndexCorrelation
+      TimeCorrelation
+      CycleCorrelation
+      UserDefinedCorrelation
+    </Enum>
+    <Field name="name" label="Name" type="string">
+    </Field>
+    <Field name="numStates" label="Number of states" type="int">
+      1
+    </Field>
+    <Field name="method" label="Correlation method" type="enum" subtype="CorrelationMethod">
+      IndexForIndexCorrelation
+    </Field>
+    <Field name="databaseNames" label="Database names" type="stringVector">
+    </Field>
+    <Field name="databaseNStates" label="Number of states in database" type="intVector">
+    </Field>
+    <Field name="databaseTimes" label="Contains database times for all databases" type="doubleVector">
+    </Field>
+    <Field name="databaseCycles" label="Contains cycles for all databases" type="intVector">
+    </Field>
+    <Field name="indices" label="Correlation indices each database has an equal number of indices with all from the first  followed by all from the second and so on." type="intVector">
+    </Field>
+    <Field name="condensedTimes" label="Complete list of times that can be accessed by state (for time correlations)" type="doubleVector">
+    </Field>
+    <Field name="condensedCycles" label="Complete list of cycles that can be accessed by state (for cycle correlations)" type="intVector">
+    </Field>
+    <Function name="GetCorrelatedTimeStates" user="true" member="true">
+    </Function>
+    <Function name="SetNumStates" user="false" member="true">
+    </Function>
+    <Function name="AddDatabase" user="true" member="true">
+    </Function>
+    <Function name="UsesDatabase" user="true" member="true">
+    </Function>
+    <Function name="GetNumDatabases" user="true" member="true">
+    </Function>
+    <Function name="GetCorrelatedTimeState" user="true" member="true">
+    </Function>
+    <Function name="GetInverseCorrelatedTimeState" user="true" member="true">
+    </Function>
+    <Function name="OutputOperator" user="true" member="false">
+    </Function>
+    <Function name="GetCondensedCycleForState" user="true" member="true">
+    </Function>
+    <Function name="GetCondensedTimeForState" user="true" member="true">
+    </Function>    
+    <Include file="source" quoted="false">
+      algorithm
+    </Include>
+    <Include file="source" quoted="false">
+      map
+    </Include>
+    <Include file="header" quoted="false">
+      iostream.h
+    </Include>
+  </Attribute>

@@ -204,8 +204,6 @@ class VIEWER_API ViewerQueryManager
                                    ViewerWindow *, ViewerWindow *);
 
     void            UpdateDesignator(void);
-    avtVarType      DetermineVarType(const char *hName, const char *dbName, 
-                                     const char *varName);
     int             VerifyQueryVariables(const std::string &qName, 
                                          const std::vector<int> &varTypes);
 

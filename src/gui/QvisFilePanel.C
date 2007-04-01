@@ -1,3 +1,4 @@
+#include <qcombobox.h>
 #include <qlabel.h>
 #include <qlistview.h> 
 #include <qlayout.h>
@@ -10,8 +11,13 @@
 #include <QvisVCRControl.h>
 #include <QvisListViewFileItem.h>
 
+#include <DatabaseCorrelation.h>
+#include <DatabaseCorrelationList.h>
+#include <DebugStream.h>
 #include <FileServerList.h>
 #include <GlobalAttributes.h>
+#include <NameSimplifier.h>
+#include <WindowInformation.h>
 #include <ViewerProxy.h>
 #include <GetMetaDataException.h>
 #include <avtDatabaseMetaData.h>
@@ -154,12 +160,17 @@ const int FileTree::FileTreeNode::DATABASE_NODE = 3;
 //   Brad Whitlock, Tue Dec 30 14:32:32 PST 2003
 //   I made it use QvisAnimationSlider.
 //
+//   Brad Whitlock, Tue Jan 27 18:14:38 PST 2004
+//   I renamed some slots and added the active time slider.
+//
 // ****************************************************************************
 
 QvisFilePanel::QvisFilePanel(QWidget *parent, const char *name) :
    QWidget(parent, name), SimpleObserver(), GUIBase(), displayInfo(),
    timeStateFormat()
 {
+    showSelectedFiles = true;
+
     // Create the top layout that will contain the widgets.
     QVBoxLayout *topLayout = new QVBoxLayout(this);
     topLayout->setSpacing(5);
@@ -198,6 +209,18 @@ QvisFilePanel::QvisFilePanel(QWidget *parent, const char *name) :
     connect(overlayButton, SIGNAL(clicked()), this, SLOT(overlayFile()));
     buttonLayout->addWidget(overlayButton);
 
+    // Create the active time slider.
+    QHBoxLayout *tsLayout = new QHBoxLayout(topLayout);
+    activeTimeSlider = new QComboBox(this, "activeTimeSlider");
+    connect(activeTimeSlider, SIGNAL(activated(int)),
+            this, SLOT(changeActiveTimeSlider(int)));
+    activeTimeSliderLabel = new QLabel(activeTimeSlider,
+        "Active time slider", this, "activeTimeSliderLabel");
+    tsLayout->addWidget(activeTimeSliderLabel);
+    activeTimeSliderLabel->hide();
+    tsLayout->addWidget(activeTimeSlider, 10);
+    activeTimeSlider->hide();
+
     // Create the animation position slider bar
     QHBoxLayout *animationLayout = new QHBoxLayout(topLayout);
     topLayout->setStretchFactor(animationLayout, 10);
@@ -222,11 +245,11 @@ QvisFilePanel::QvisFilePanel(QWidget *parent, const char *name) :
     // Create the VCR controls.
     vcrControls = new QvisVCRControl(this, "vcr" );
     vcrControls->setEnabled(false);
-    connect(vcrControls, SIGNAL(prevFrame()), this, SLOT(prevFrame()));
+    connect(vcrControls, SIGNAL(prevFrame()), this, SLOT(backwardStep()));
     connect(vcrControls, SIGNAL(reversePlay()), this, SLOT(reversePlay()));
     connect(vcrControls, SIGNAL(stop()), this, SLOT(stop()));
     connect(vcrControls, SIGNAL(play()), this, SLOT(play()));
-    connect(vcrControls, SIGNAL(nextFrame()), this, SLOT(nextFrame()));
+    connect(vcrControls, SIGNAL(nextFrame()), this, SLOT(forwardStep()));
     topLayout->addWidget(vcrControls, 10);
 
     // Create the computer pixmap.
@@ -237,7 +260,7 @@ QvisFilePanel::QvisFilePanel(QWidget *parent, const char *name) :
     folderPixmap = new QPixmap(folder_xpm);
 
     // Initialize the attached subjects
-    globalAtts = NULL;
+    windowInfo = NULL;
 }
 
 // ****************************************************************************
@@ -253,6 +276,9 @@ QvisFilePanel::QvisFilePanel(QWidget *parent, const char *name) :
 //   Brad Whitlock, Fri Feb 1 14:28:06 PST 2002
 //   Added code to delete the widget's pixmaps.
 //
+//   Brad Whitlock, Sun Jan 25 01:10:56 PDT 2004
+//   I made it use windowInfo instead of globalAtts.
+//
 // ****************************************************************************
 
 QvisFilePanel::~QvisFilePanel()
@@ -260,8 +286,8 @@ QvisFilePanel::~QvisFilePanel()
     if(fileServer)
         fileServer->Detach(this);
 
-    if(globalAtts)
-        globalAtts->Detach(this);
+    if(windowInfo)
+        windowInfo->Detach(this);
 
     // Delete the pixmaps.
     delete computerPixmap;
@@ -290,6 +316,9 @@ QvisFilePanel::~QvisFilePanel()
 //   Brad Whitlock, Mon Dec 29 10:13:15 PDT 2003
 //   I added code to help determine how labels are displayed if a database is
 //   virtual.
+//
+//   Brad Whitlock, Sun Jan 25 01:28:55 PDT 2004
+//   I added support for multiple time sliders.
 //
 // ****************************************************************************
 
@@ -352,8 +381,14 @@ QvisFilePanel::SetTimeStateFormat(const TimeFormat &m)
         // Delete the temporary array.
         delete [] items;
 
-        // Update the time text field.
-        UpdateTimeFieldText(globalAtts->GetCurrentState());
+        //
+        // Update the time text field using the current time slider.
+        //
+        int activeTS = windowInfo->GetActiveTimeSlider();
+        int currentState = 0;
+        if(activeTS >= 0)
+            currentState = windowInfo->GetTimeSliderCurrentStates()[activeTS];
+        UpdateTimeFieldText(currentState);
     }
 }
 
@@ -389,18 +424,20 @@ QvisFilePanel::GetTimeStateFormat() const
 // Creation:   Thu Aug 31 10:37:19 PDT 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Sun Jan 25 01:28:23 PDT 2004
+//   I made it use windowInfo instead of globalAtts.
+//
 // ****************************************************************************
 
 void
 QvisFilePanel::Update(Subject *TheChangedSubject)
 {
-    if(fileServer == 0 || globalAtts == 0)
+    if(fileServer == 0 || windowInfo == 0)
         return;
 
     if(TheChangedSubject == fileServer)
         UpdateFileList(false);
-    else if(TheChangedSubject == globalAtts)
+    else if(TheChangedSubject == windowInfo)
         UpdateAnimationControls(false);
 }
 
@@ -420,176 +457,178 @@ QvisFilePanel::Update(Subject *TheChangedSubject)
 // Creation:   Thu Aug 31 10:38:11 PDT 2000
 //
 // Modifications:
-//   Brad Whitlock, Thu Mar 22 11:25:03 PDT 2001
-//   I rewrote the code that generates the widgets to put into the file list.
-//
-//   Brad Whitlock, Thu Feb 28 13:26:18 PST 2002
-//   I added code to manage the expanded files.
-//
-//   Brad Whitlock, Mon Aug 19 13:38:02 PST 2002
-//   I moved the code that updates the width of the list view into a slot
-//   function that is called with a timer.
-//
-//   Brad Whitlock, Mon Mar 31 15:09:51 PST 2003
-//   I added database pixmaps for virtual files.
-//
-//   Brad Whitlock, Fri Jun 20 14:08:30 PST 2003
-//   I fixed a bug that caused the GUI to hang when there were files from
-//   more than one host.
-//
-//   Brad Whitlock, Mon Sep 15 14:48:45 PST 2003
-//   I removed some code that was no longer needed.
+//   Brad Whitlock, Sun Jan 25 01:29:46 PDT 2004
+//   I moved the guts into RepopulateFileList.
 //
 // ****************************************************************************
 
 void
 QvisFilePanel::UpdateFileList(bool doAll)
 {
-    if(fileServer == 0 || globalAtts == 0)
+    if(fileServer == 0 || windowInfo == 0)
         return;
 
     // If the appliedFileList has changed, update the appliedFile list.
     if(fileServer->AppliedFileListChanged() || doAll)
     {
-        const QualifiedFilenameVector &f = fileServer->GetAppliedFileList();
-        // Holds pointers to the list item for each host.
-        std::map<std::string, QListViewItem *> hostMap;
-
-        // Go through all of the files and build a list of unique hosts.
-        bool hostOtherThanLocalHost = false;
-        QualifiedFilenameVector::const_iterator pos;
-        for(pos = f.begin(); pos != f.end(); ++pos)
+        if(showSelectedFiles)
+            RepopulateFileList();
+    }
+    else if(fileServer->FileChanged())
+    {
+        if(showSelectedFiles)
         {
-            if(pos->host.size() > 0)
-            {
-                // Add an entry for the host.
-                hostMap[pos->host] = 0;
+            // Expand any databases that we know about. This just means that we add
+            // the extra information that databases have, we don't expand the tree
+            // until we enter UpdateFileSelection.
+            ExpandDatabases();
 
-                // See if the host is not localhost.
-                if(pos->host != std::string("localhost"))
-                    hostOtherThanLocalHost = true;
-            }
+            // Highlight the selected file.
+            UpdateFileSelection();
         }
 
-        // Clear out the fileListView widget.
-        fileListView->clear();
+        // Set the enabled state for the animation controls.
+        UpdateAnimationControlsEnabledState();
+    }
+}
 
-        // Reset the node numbers that will be used to create the nodes.
-        QvisListViewFileItem::resetNodeNumber();
+// ****************************************************************************
+// Method: QvisFilePanel::RepopulateFileList
+//
+// Purpose: 
+//   Clears out the selected files and refills the list with the new list
+//   of selected files.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 30 11:54:15 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
 
-        // If there are multiple hosts or just one and it is not localhost,
-        // add nodes in the file tree for the host. This makes sure that it
-        // is always clear which host a file came from.
-        if(hostMap.size() > 1)
+void
+QvisFilePanel::RepopulateFileList()
+{
+    const QualifiedFilenameVector &f = fileServer->GetAppliedFileList();
+    // Holds pointers to the list item for each host.
+    std::map<std::string, QListViewItem *> hostMap;
+
+    // Go through all of the files and build a list of unique hosts.
+    bool hostOtherThanLocalHost = false;
+    QualifiedFilenameVector::const_iterator pos;
+    for(pos = f.begin(); pos != f.end(); ++pos)
+    {
+        if(pos->host.size() > 0)
         {
-            std::map<std::string, QListViewItem *>::iterator hpos;
+            // Add an entry for the host.
+            hostMap[pos->host] = 0;
 
-            // Create the root for the host list.
-            QualifiedFilename rootName("Hosts", "(root)", "(root)");
-            QListViewItem *root = new QvisListViewFileItem(fileListView, 
-                QString("Hosts"),
-                rootName,
-                QvisListViewFileItem::ROOT_NODE);
-
-            // Always expand the root node.
-            AddExpandedFile(rootName);
-
-            // Create all of the host listview items.
-            int fileIndex = 1;
-            for(hpos = hostMap.begin(); hpos != hostMap.end(); ++hpos)
-            {
-                char separator = fileServer->GetSeparator(hpos->first);
-                QualifiedFilename hostOnly(hpos->first, "(host)", "(host)");
-                hostOnly.separator = separator;
-                QListViewItem *newFile = new QvisListViewFileItem(root, 
-                    QString(hpos->first.c_str()), hostOnly,
-                    QvisListViewFileItem::HOST_NODE);
-                newFile->setPixmap (0, *computerPixmap);
-                // Add the widget to the host map.
-                hpos->second = newFile;
-
-                // Add the files to the file tree and reduce it.
-                FileTree files(this);
-                for(pos = f.begin(); pos != f.end(); ++pos)
-                {
-                    if(pos->host == hpos->first)
-                        files.Add(*pos, separator);
-                }
-                files.Reduce();
-
-                // Add all the elements in the files list to the host list
-                // view item.
-                files.AddElementsToListViewItem(newFile, fileIndex,
-                                                *folderPixmap, *databasePixmap);
-            }
+            // See if the host is not localhost.
+            if(pos->host != std::string("localhost"))
+                hostOtherThanLocalHost = true;
         }
-        else
+    }
+
+    // Clear out the fileListView widget.
+    fileListView->clear();
+
+    // Reset the node numbers that will be used to create the nodes.
+    QvisListViewFileItem::resetNodeNumber();
+
+    // If there are multiple hosts or just one and it is not localhost,
+    // add nodes in the file tree for the host. This makes sure that it
+    // is always clear which host a file came from.
+    if(hostMap.size() > 1)
+    {
+        std::map<std::string, QListViewItem *>::iterator hpos;
+
+        // Create the root for the host list.
+        QualifiedFilename rootName("Hosts", "(root)", "(root)");
+        QListViewItem *root = new QvisListViewFileItem(fileListView, 
+            QString("Hosts"),
+            rootName,
+            QvisListViewFileItem::ROOT_NODE);
+
+        // Always expand the root node.
+        AddExpandedFile(rootName);
+
+        // Create all of the host listview items.
+        int fileIndex = 1;
+        for(hpos = hostMap.begin(); hpos != hostMap.end(); ++hpos)
         {
+            char separator = fileServer->GetSeparator(hpos->first);
+            QualifiedFilename hostOnly(hpos->first, "(host)", "(host)");
+            hostOnly.separator = separator;
+            QListViewItem *newFile = new QvisListViewFileItem(root, 
+                QString(hpos->first.c_str()), hostOnly,
+                QvisListViewFileItem::HOST_NODE);
+            newFile->setPixmap (0, *computerPixmap);
+            // Add the widget to the host map.
+            hpos->second = newFile;
+
             // Add the files to the file tree and reduce it.
             FileTree files(this);
             for(pos = f.begin(); pos != f.end(); ++pos)
             {
-                char separator = fileServer->GetSeparator(pos->host);
-                files.Add(*pos, separator);
+                if(pos->host == hpos->first)
+                    files.Add(*pos, separator);
             }
             files.Reduce();
 
-            // If there are top level directories in the file tree, then we
-            // need to create a node for the host.
-            if(files.TreeContainsDirectories() ||
-               hostOtherThanLocalHost)
-            {
-                // Create the root for the host list.
-                QualifiedFilename rootName(f[0].host, "(host)", "(host)");
-                QListViewItem *root = new QvisListViewFileItem(fileListView, 
-                    QString(f[0].host.c_str()), rootName,
-                    QvisListViewFileItem::ROOT_NODE);
-                root->setPixmap (0, *computerPixmap);
-
-                // Make sure that the host is expanded.
-                AddExpandedFile(rootName);
-
-                int fileIndex = 1;
-                files.AddElementsToListViewItem(root, fileIndex, *folderPixmap,
-                                                *databasePixmap);
-            }
-            else
-            {
-                // Traverse the file tree and make widgets for the items in it.
-                int fileIndex = 1;
-                files.AddElementsToListView(fileListView, fileIndex, *folderPixmap,
-                                            *databasePixmap);
-            }
+            // Add all the elements in the files list to the host list
+            // view item.
+            files.AddElementsToListViewItem(newFile, fileIndex,
+                                            *folderPixmap, *databasePixmap);
         }
-
-        // Expand any databases that we know about. This just means that we add
-        // the extra information that databases have, we don't expand the tree
-        // until we enter UpdateFileSelection.
-        ExpandDatabases();
-
-        // Highlight the selected file.
-        UpdateFileSelection();
-
-        // Set the width of the zeroeth column.
-        QTimer::singleShot(100, this, SLOT(updateHeaderWidth()));
     }
-    else if(fileServer->FileChanged())
+    else
     {
-        // Expand any databases that we know about. This just means that we add
-        // the extra information that databases have, we don't expand the tree
-        // until we enter UpdateFileSelection.
-        ExpandDatabases();
+        // Add the files to the file tree and reduce it.
+        FileTree files(this);
+        for(pos = f.begin(); pos != f.end(); ++pos)
+        {
+            char separator = fileServer->GetSeparator(pos->host);
+            files.Add(*pos, separator);
+        }
+        files.Reduce();
 
-        // Highlight the selected file.
-        UpdateFileSelection();
+        // If there are top level directories in the file tree, then we
+        // need to create a node for the host.
+        if(files.TreeContainsDirectories() ||
+           hostOtherThanLocalHost)
+        {
+            // Create the root for the host list.
+            QualifiedFilename rootName(f[0].host, "(host)", "(host)");
+            QListViewItem *root = new QvisListViewFileItem(fileListView, 
+                QString(f[0].host.c_str()), rootName,
+                QvisListViewFileItem::ROOT_NODE);
+            root->setPixmap (0, *computerPixmap);
 
-        // Set the animation controls.
-        const avtDatabaseMetaData *md = fileServer->GetMetaData();
-        bool enabled = md ? (md->GetNumStates() > 1) : false;
-        vcrControls->setEnabled(enabled);
-        animationPosition->setEnabled(enabled);
-        timeField->setEnabled(enabled);
+            // Make sure that the host is expanded.
+            AddExpandedFile(rootName);
+
+            int fileIndex = 1;
+            files.AddElementsToListViewItem(root, fileIndex, *folderPixmap,
+                                            *databasePixmap);
+        }
+        else
+        {
+            // Traverse the file tree and make widgets for the items in it.
+            int fileIndex = 1;
+            files.AddElementsToListView(fileListView, fileIndex, *folderPixmap,
+                                        *databasePixmap);
+        }
     }
+
+    // Expand any databases that we know about. This just means that we add
+    // the extra information that databases have, we don't expand the tree
+    // until we enter UpdateFileSelection.
+    ExpandDatabases();
+
+    // Highlight the selected file.
+    UpdateFileSelection();
+    // Set the width of the zeroeth column.
+    QTimer::singleShot(100, this, SLOT(updateHeaderWidth()));
 }
 
 // ****************************************************************************
@@ -638,79 +677,172 @@ QvisFilePanel::UpdateFileList(bool doAll)
 //   Brad Whitlock, Tue Dec 30 14:31:03 PST 2003
 //   I made it use the animation slider instead of sliderDown.
 //
+//   Brad Whitlock, Sat Jan 24 22:53:05 PST 2004
+//   I made it use the new time and file scheme. I also added code to set
+//   the values in the new activeTimeSlider combobox.
+//
 // ****************************************************************************
 
 void
 QvisFilePanel::UpdateAnimationControls(bool doAll)
 {
-    if(fileServer == 0 || globalAtts == 0 ||
+    if(fileServer == 0 || windowInfo == 0 ||
        (animationPosition != 0 && animationPosition->sliderIsDown()))
         return;
 
-    // currentFile changed.  Update the file server.
-    if(globalAtts->IsSelected(6) || doAll)
-    {
-        QualifiedFilename qf(globalAtts->GetCurrentFile());
+    //
+    // Try and find a correlation for the active time slider.
+    //
+    int activeTS = windowInfo->GetActiveTimeSlider();
 
-        if (globalAtts->GetCurrentFile() == "notset")
-        {
-            fileServer->CloseFile();
-            fileServer->Notify();
-        }
-        else if(fileServer->GetOpenFile() == qf)
-        {
-            TRY
-            {
-                fileServer->OpenFile(qf, globalAtts->GetCurrentState());
-                fileServer->Notify();
-            }
-            CATCH(GetMetaDataException)
-            {
-                ; // Usually, the filename was bad.
-            }
-            ENDTRY
-        }
+    // activeSource changed.  Update the file server.
+    if(windowInfo->IsSelected(0) || doAll)
+    {
+        OpenActiveSourceInFileServer();
     }
 
-    // currentState changed.
-    if(globalAtts->IsSelected(7) || globalAtts->IsSelected(8) || doAll)
+    //
+    // If the active source, time slider, or time slider states change then
+    // we need to update the file selection. Note - without this code, the
+    // file selection never updates from what the user clicked.
+    //
+    if((windowInfo->IsSelected(0) || /*activeSource*/
+        windowInfo->IsSelected(1) || /*activeTimeSlider*/
+        windowInfo->IsSelected(3) || /*timeSliderCurrentStates*/
+        doAll) &&
+        showSelectedFiles)
     {
-        // Update the selected file since we have a new current state.
+        ExpandDatabases();
+        // Highlight the selected file.
         UpdateFileSelection();
     }
 
-    // currentFrame or nFrames changed. Update the slider.
-    if(globalAtts->IsSelected(9) || globalAtts->IsSelected(10) || doAll)
+    // timeSliders changed. That's the list of time slider names.
+    if(windowInfo->IsSelected(2) /*timeSliders*/ || doAll)
     {
-        int nFrames = globalAtts->GetNFrames() - 1;
-        if(nFrames < 0)
-            nFrames = 0;
+        //
+        // Set the values in the active time slider selector and set its
+        // visibility. If we don't have an active time slider then we must
+        // have no time sliders and thus should not show the time slider
+        // selector.
+        //
+        if(activeTS >= 0)
+        {
+            int i;
+            activeTimeSlider->blockSignals(true);
+            activeTimeSlider->clear();
+            const stringVector &tsNames = windowInfo->GetTimeSliders();
+
+            //
+            // Use a name simplifier to shorten the time slider names.
+            //
+            NameSimplifier simplifier;
+            for(i = 0; i < tsNames.size(); ++i)
+                simplifier.AddName(tsNames[i]);
+            stringVector shortNames;
+            simplifier.GetSimplifiedNames(shortNames);
+            for(i = 0; i < shortNames.size(); ++i)
+                activeTimeSlider->insertItem(shortNames[i].c_str());
+            activeTimeSlider->setCurrentItem(activeTS);
+            activeTimeSlider->blockSignals(false);
+
+
+            bool enableSlider = windowInfo->GetTimeSliders().size() > 1;
+            activeTimeSlider->setEnabled(enableSlider);
+            activeTimeSliderLabel->setEnabled(enableSlider);
+
+            if(enableSlider && !activeTimeSlider->isVisible())
+            {
+                activeTimeSlider->show();
+                activeTimeSliderLabel->show();
+                updateGeometry();
+            }
+            else if(!enableSlider && activeTimeSlider->isVisible())
+            {
+                activeTimeSlider->hide();
+                activeTimeSliderLabel->hide();
+                updateGeometry();
+            }
+        }
+        else if(activeTimeSlider->isVisible())
+        {
+            activeTimeSlider->setEnabled(false);
+            activeTimeSliderLabel->setEnabled(false);
+            activeTimeSlider->hide();
+            activeTimeSliderLabel->hide();
+            updateGeometry();
+        }
+    }
+
+    // Update the animation controls.
+    if(windowInfo->IsSelected(1) /*activeTimeSlider*/ ||
+       windowInfo->IsSelected(3) /*timeSliderCurrentStates*/ || doAll)
+    {
+        DatabaseCorrelationList *cL = viewer->GetDatabaseCorrelationList();
+        DatabaseCorrelation *activeTSCorrelation = 0;
+        if(activeTS >= 0)
+        {
+            // Try and find a correlation for the active time slider so we
+            // can get the number of states in the correlation.
+            const std::string &activeTSName = windowInfo->GetTimeSliders()[activeTS];
+            activeTSCorrelation = cL->FindCorrelation(activeTSName);
+        }
+
+        int currentState = 0;
+        int nTotalStates = 1;
+        if(activeTSCorrelation)
+        {
+            currentState = windowInfo->GetTimeSliderCurrentStates()[activeTS];
+            nTotalStates = activeTSCorrelation->GetNumStates();
+        }
+        // else set nTotalStates from #frames in animation if in keyframing mode??
+
         animationPosition->blockSignals(true);
-        animationPosition->setRange(0, nFrames);
+        animationPosition->setRange(0, nTotalStates - 1);
         animationPosition->setPageStep(1);
-        animationPosition->setValue(globalAtts->GetCurrentFrame());
+        animationPosition->setValue(currentState);
         animationPosition->blockSignals(false);
+
+        // Set the time field to the cycle number.
+        UpdateTimeFieldText(currentState);
+
+        // Set the enabled state of the animation widgets.
+        UpdateAnimationControlsEnabledState();
     }
 
     // If the VCR controls are selected (animationMode), set the mode.
-    if(globalAtts->IsSelected(11) || doAll)
+    if(windowInfo->IsSelected(4) || doAll)
     {
         vcrControls->blockSignals(true);
-        vcrControls->SetActiveButton(globalAtts->GetAnimationMode());
+        vcrControls->SetActiveButton(windowInfo->GetAnimationMode());
         vcrControls->blockSignals(false);
     }
+}
 
-    // Set the time field to the cycle number.
-    UpdateTimeFieldText(globalAtts->GetCurrentState());
+// ****************************************************************************
+// Method: QvisFilePanel::UpdateAnimationControlsEnabledState
+//
+// Purpose: 
+//   Set the enabled state for the animation controls.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 30 12:01:29 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
 
-    // Set the enabled state of the animation widgets based on the 
-    // number of frames.
-    vcrControls->setEnabled(globalAtts->GetNFrames() > 1);
-    animationPosition->setEnabled(globalAtts->GetNFrames() > 1);
-
-    // Set the enabled state of the time field based on the number
-    // of states in the database.
-    timeField->setEnabled(globalAtts->GetNStates() > 1);    
+void
+QvisFilePanel::UpdateAnimationControlsEnabledState()
+{
+    //
+    // Set the enabled state for the animation controls. They should be
+    // available whenever we have an active time slider.
+    //
+    bool enabled = (windowInfo->GetActiveTimeSlider() >= 0);
+    vcrControls->setEnabled(enabled);
+    animationPosition->setEnabled(enabled);
+    timeField->setEnabled(enabled);
 }
 
 // ****************************************************************************
@@ -729,39 +861,114 @@ QvisFilePanel::UpdateAnimationControls(bool doAll)
 //   Brad Whitlock, Mon Oct 13 16:01:58 PST 2003
 //   Added support for showing time in the text field.
 //
+//   Brad Whitlock, Sat Jan 24 20:43:30 PST 2004
+//   Updated for the new time and file scheme.
+//
 // ****************************************************************************
 
 void
 QvisFilePanel::UpdateTimeFieldText(int timeState)
 {
-    if(fileServer == 0 || globalAtts == 0)
+    if(fileServer == 0 || windowInfo == 0)
         return;
 
-    // Set the time field to the cycle number.
-    const avtDatabaseMetaData *md = fileServer->GetMetaData();
-    if((md != 0) && (md->GetNumStates() > 1))
-    {
-        QString timeString;
+    QString timeString;
 
-        if(timeStateFormat.GetDisplayMode() == TimeFormat::Cycles ||
-           timeStateFormat.GetDisplayMode() == TimeFormat::CyclesAndTimes)
+    // Set the time field to the cycle number.
+    int activeTS = windowInfo->GetActiveTimeSlider();
+    if(activeTS >= 0)
+    {
+        const std::string &tsName = windowInfo->GetTimeSliders()[activeTS];
+
+        //
+        // Look for a database correlation with that name.
+        //
+        DatabaseCorrelationList *dbCorrelations = viewer->GetDatabaseCorrelationList();
+        DatabaseCorrelation *correlation = dbCorrelations->FindCorrelation(tsName);
+        if(correlation)
         {
-            if(timeState < md->GetCycles().size())
-                timeString = FormattedCycleString(md->GetCycles()[timeState]);
-        }
-        else if(timeStateFormat.GetDisplayMode() == TimeFormat::Times)
-        {
-            if(timeState < md->GetTimes().size())
+            //
+            // Figure out how to display
+            //
+            if(correlation->GetNumDatabases() == 1)
             {
-                timeString = FormattedTimeString(md->GetTimes()[timeState],
-                                                 md->IsTimeAccurate(timeState));
+//
+// Multi DB correlations that are correlated in time could also show time but I'm not
+// quite sure how to get it out of the correlation. Only time though - not cycle.
+//
+                if(timeStateFormat.GetDisplayMode() == TimeFormat::Cycles ||
+                   timeStateFormat.GetDisplayMode() == TimeFormat::CyclesAndTimes)
+                {
+                    const intVector &cycles = correlation->GetDatabaseCycles();
+                    if(timeState < cycles.size())
+                        timeString = FormattedCycleString(cycles[timeState]);
+                }
+                else if(timeStateFormat.GetDisplayMode() == TimeFormat::Times)
+                {
+                    const doubleVector &times = correlation->GetDatabaseTimes();
+#if 0
+//
+// There's nothing in the correlation that says whether we can believe the times.
+//
+                    const unsignedCharVector &timesAccurate =
+                        correlation->GetDatabaseTimesAccurate();
+                    if(timeState < times.size())
+                    {
+                        timeString = FormattedTimeString(times[timeState],
+                            timesAccurate[timeState] == 1);
+                    }
+                    else
+                        timeString = "?";
+#else
+                    if(timeState < times.size())
+                    {
+                        timeString = FormattedTimeString(times[timeState], true);
+                    }
+                    else
+                        timeString = "?";
+#endif
+                }
+
+                timeField->setText(timeString);
             }
             else
-                timeString = "?";
+            {
+                // The correlation has multiple databases so how we display time will vary
+                // depending on the correlation method.
+                bool timeNeedsToBeSet = true;
+                if(timeState < correlation->GetNumStates())
+                {
+                    if(correlation->GetMethod() == DatabaseCorrelation::TimeCorrelation)
+                    {
+                        timeNeedsToBeSet = false;
+                        timeString = FormattedTimeString(
+                            correlation->GetCondensedTimeForState(timeState), true);
+                        timeField->setText(timeString);
+                    }
+                    else if(correlation->GetMethod() == DatabaseCorrelation::CycleCorrelation)
+                    {
+                        timeNeedsToBeSet = false;
+                        timeString = FormattedCycleString(
+                            correlation->GetCondensedCycleForState(timeState));
+                        timeField->setText(timeString);
+                    }
+                }
+
+                // If we did not set the time yet, do it with the index.
+                if(timeNeedsToBeSet)
+                {
+                    timeString.sprintf("%d", timeState);
+                    timeField->setText(timeString);
+                }
+            }
         }
-
-
-        timeField->setText(timeString);
+        else
+        {
+            // There was no correlation but we know the time state that we want to
+            // display so let's show that in the time line edit.
+            timeString.sprintf("%d", timeState);
+            timeField->setText(timeString);
+        }
     }
     else
         timeField->setText("");
@@ -1239,6 +1446,9 @@ QvisFilePanel::DisplayVirtualDBInformation(const QualifiedFilename &file) const
 //   I made it try and use the metadata for the open file instead of the
 //   globalAtts which are not reliable.
 //
+//   Brad Whitlock, Sat Jan 24 21:38:48 PST 2004
+//   I modified it to use the active time slider and database correlation.
+//
 // ****************************************************************************
 
 void
@@ -1264,6 +1474,36 @@ QvisFilePanel::UpdateFileSelection()
     QListViewItemIterator it(fileListView);
     QvisListViewFileItem *selectedItem = 0;
 
+    //
+    // Try and find a correlation for the active time slider if there is
+    // and active time slider.
+    //
+    QualifiedFilename activeSource(windowInfo->GetActiveSource());
+    DatabaseCorrelation *correlation = 0;
+    int dbStateForActiveSource = 0;
+    // Get the index of the active time slider.
+    int activeTS = windowInfo->GetActiveTimeSlider();
+    if(activeTS >= 0)
+    {
+        // Get the name of the active time slider.
+        const std::string &activeTSName = windowInfo->GetTimeSliders()[activeTS];
+
+        // Get the correlation for the active time slider
+        DatabaseCorrelationList *correlations = viewer->GetDatabaseCorrelationList();
+        correlation = correlations->FindCorrelation(activeTSName);
+
+        if(correlation)
+        {
+            // Get the state for the active time slider.
+            int activeTSState = windowInfo->GetTimeSliderCurrentStates()[activeTS];
+            dbStateForActiveSource = correlation->GetCorrelatedTimeState(
+                windowInfo->GetActiveSource(), activeTSState);
+        }
+    }
+
+    //
+    // Iterate through the file items and look for the right item to highlight.
+    //
     for(; it.current(); ++it)
     {
         QvisListViewFileItem *item = (QvisListViewFileItem *)it.current();
@@ -1277,30 +1517,31 @@ QvisFilePanel::UpdateFileSelection()
             continue;
         }
 
-        if(item->file == fileServer->GetOpenFile())
+        if(item->file == activeSource)
         {
             QvisListViewFileItem *parentItem = (QvisListViewFileItem *)item->parent();
 
-            // The file is open, so try and use its metadata to get the number
-            // of time states.
-            const avtDatabaseMetaData *md = fileServer->GetMetaData(item->file);
-            int nStates = md ? md->GetNumStates() : globalAtts->GetNStates();
-
-            if(nStates > 1)
+            //
+            // If the correlation involves the active source then we
+            // can highlight using the correlation. If the correlation
+            // does not use the active source then dbStateForActiveSource
+            // will be set to -1.
+            //
+            if(dbStateForActiveSource > -1)
             {
                 // Check if the current item is for the current time state.
-                bool currentTimeState = item->timeState == globalAtts->GetCurrentState();
-
-                // If we have information for this file and it turns out that the file
-                // is not expanded, then check to see if the item is the root of the
-                // database.
+                bool currentTimeState = item->timeState == dbStateForActiveSource;
+                
+                // If we have information for this file and it turns out that
+                // the file is not expanded, then check to see if the item is
+                // the root of the database.
                 if(HaveFileInformation(item->file) && !FileIsExpanded(item->file))
                 {
                     //
-                    // The cycles are not expanded. If the time state that we're
-                    // looking at is not -1 then it is a time step in the database
-                    // but since the file is not expanded, we want to instead highlight
-                    // the parent.
+                    // The time states are not expanded. If the time state 
+                    // that we're looking at is not -1 then it is a time
+                    // step in the database but since the file is not
+                    // expanded, we want to instead highlight the parent.
                     //
                     if(item->timeState != -1)
                     {
@@ -1310,8 +1551,9 @@ QvisFilePanel::UpdateFileSelection()
                 }
 
                 //
-                // If we have no selected item so far and the item's timestate is the
-                // current time state, then we want to select it.
+                // If we have no selected item so far and the item's
+                // timestate is the current time state, then we want
+                // to select it.
                 //
                 if(currentTimeState)
                     selectedItem = item;
@@ -1333,7 +1575,7 @@ QvisFilePanel::UpdateFileSelection()
                     fi->setOpen(true);
                 }
                 parentItem = (QvisListViewFileItem *)parentItem->parent();
-            } 
+            }
         }
         else if(HaveFileInformation(item->file) &&
                 FileIsExpanded(item->file) && item->timeState == -1)
@@ -1359,7 +1601,7 @@ QvisFilePanel::UpdateFileSelection()
 // Method: QvisFilePanel::SubjectRemoved
 //
 // Purpose: 
-//   Removes the globalAtts or fileserver subjects that this widget
+//   Removes the windowInfo or fileserver subjects that this widget
 //   observes.
 //
 // Arguments:
@@ -1372,17 +1614,20 @@ QvisFilePanel::UpdateFileSelection()
 //   Brad Whitlock, Thu May 9 16:40:58 PST 2002
 //   Removed file server.
 //
+//   Brad Whitlock, Sat Jan 24 23:44:56 PST 2004
+//   I made it observe windowInfo instead of globalAtts.
+//
 // ****************************************************************************
 
 void
 QvisFilePanel::SubjectRemoved(Subject *TheRemovedSubject)
 {
-    if(TheRemovedSubject == globalAtts)
-        globalAtts = 0;
+    if(TheRemovedSubject == windowInfo)
+        windowInfo = 0;
 }
 
 //
-// Methods to attach to the globalAtts and fileserver objects.
+// Methods to attach to the windowInfo and fileserver objects.
 //
 
 void
@@ -1395,10 +1640,10 @@ QvisFilePanel::ConnectFileServer(FileServerList *fs)
 }
 
 void
-QvisFilePanel::ConnectGlobalAttributes(GlobalAttributes *ga)
+QvisFilePanel::ConnectWindowInformation(WindowInformation *wi)
 {
-    globalAtts = ga;
-    globalAtts->Attach(this);
+    windowInfo = wi;
+    windowInfo->Attach(this);
 
     // Update the animation area.
     UpdateAnimationControls(true);
@@ -1738,7 +1983,7 @@ QvisFilePanel::SetFileShowsCorrectData(const QualifiedFilename &filename,
 }
 
 // ****************************************************************************
-// Method: QvisFilePanel::AnimationSetFrame
+// Method: QvisFilePanel::SetTimeSliderState
 //
 // Purpose: 
 //   Sets the animation frame.
@@ -1754,29 +1999,100 @@ QvisFilePanel::SetFileShowsCorrectData(const QualifiedFilename &filename,
 // Creation:   Fri Oct 24 14:36:50 PST 2003
 //
 // Modifications:
+//   Brad Whitlock, Sun Jan 25 01:39:50 PDT 2004
+//   I made it compare the state against the active time slider's current state.
+//
+// ****************************************************************************
+
+void
+QvisFilePanel::SetTimeSliderState(int state)
+{
+    // Figure out the time state for the current time slider.
+    int activeTS = windowInfo->GetActiveTimeSlider();
+    if(activeTS >= 0)
+    {
+         int currentState = windowInfo->GetTimeSliderCurrentStates()[activeTS];
+
+         //
+         // Set the state for the viewer's active time slider.
+         //
+         if(state != currentState)
+         {
+             viewer->SetTimeSliderState(state);
+         }
+         else
+         {  
+             QString msg;
+             msg.sprintf("The active time slider is already at state %d.", state);
+             Message(msg);
+         }
+    }
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::SetShowSelectedFiles
+//
+// Purpose: 
+//   This method sets the visibility for the selected files list and the
+//   open, replace, overlay buttons.
+//
+// Arguments:
+//   val : Whether the selected files should be showing.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 30 14:56:14 PST 2004
+//
+// Modifications:
 //   
 // ****************************************************************************
 
 void
-QvisFilePanel::AnimationSetFrame(int index, bool indexIsTimeState)
+QvisFilePanel::SetShowSelectedFiles(bool val)
 {
-    // If the indexIsTimeState flag is true then the index that's being
-    // passed in corresponds to a database time state and not an
-    // animation frame. This flag is currently ignored but we may need to
-    // use it someday to make keyframing work 100%.
-    int frame = index;
+    if(val != showSelectedFiles)
+    {
+        showSelectedFiles = val;
 
-    // Tell the viewer to set the animation frame.
-    if(frame != globalAtts->GetCurrentFrame())
-    {
-        viewer->AnimationSetFrame(frame);
+        if(!showSelectedFiles)
+        {
+            if(fileListView->isVisible())
+            {
+                fileListView->hide();
+                openButton->hide();
+                replaceButton->hide();
+                overlayButton->hide();
+                updateGeometry();
+            }
+        }
+        else if(!fileListView->isVisible())
+        {
+            fileListView->show();
+            openButton->show();
+            replaceButton->show();
+            overlayButton->show();
+            updateGeometry();
+            UpdateFileList(true);
+        }
     }
-    else
-    {
-        QString msg;
-        msg.sprintf("Frame %d is already the current frame.", frame);
-        Message(msg);
-    }
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::GetShowSelectedFiles
+//
+// Purpose: 
+//   Returns whether or not the selected files are showing.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 30 14:57:19 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+QvisFilePanel::GetShowSelectedFiles() const
+{
+    return showSelectedFiles;
 }
 
 //
@@ -1807,24 +2123,26 @@ QvisFilePanel::internalUpdateFileList()
 }
 
 // ****************************************************************************
-// Method: QvisFilePanel::prevFrame
+// Method: QvisFilePanel::backwardStep
 //
 // Purpose: 
 //   This is a Qt slot function that tells the viewer to switch to
-//   the previous frame in an animation.
+//   the previous time state for the active time slider.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Sep 1 10:28:22 PDT 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jan 27 18:13:18 PST 2004
+//   I renamed the method.
+//
 // ****************************************************************************
 
 void
-QvisFilePanel::prevFrame()
+QvisFilePanel::backwardStep()
 {
     // Tell the viewer to go to the previous frame.
-    viewer->AnimationPreviousFrame();
+    viewer->TimeSliderPreviousState();
 }
 
 // ****************************************************************************
@@ -1891,7 +2209,7 @@ QvisFilePanel::play()
 }
 
 // ****************************************************************************
-// Method: QvisFilePanel::nextFrame
+// Method: QvisFilePanel::forwardStep
 //
 // Purpose: 
 //   This is a Qt slot function that tells the viewer to switch to
@@ -1905,11 +2223,16 @@ QvisFilePanel::play()
 //   I made it emit the new reopenOnNextFrame signal if we're on the last
 //   frame of the animation.
 //
+//   Brad Whitlock, Tue Jan 27 18:09:28 PST 2004
+//    I renamed it to forwardStep and changed the coding to support multiple
+//    time sliders.
+//
 // ****************************************************************************
 
 void
-QvisFilePanel::nextFrame()
+QvisFilePanel::forwardStep()
 {
+#ifdef BEFORE_NEW_FILE_SELECTION
     //
     // If we're not playing an animation and we're at the last frame in the
     // animation, then try and reopen the current file to see if there are
@@ -1925,6 +2248,9 @@ QvisFilePanel::nextFrame()
         // Tell the viewer to go to the next frame.
         viewer->AnimationNextFrame();
     }
+#else
+    viewer->TimeSliderNextState();
+#endif
 }
 
 // ****************************************************************************
@@ -2000,7 +2326,11 @@ QvisFilePanel::fileCollapsed(QListViewItem *item)
 //   Eric Brugger, Mon Dec 16 13:05:01 PST 2002
 //   I seperated the concepts of state and frame, since they are no longer
 //   equivalent with keyframe support.
-//   
+//
+//   Brad Whitlock, Tue Jan 27 18:18:59 PST 2004
+//   I made the check for multiple states use the metadata instead of the
+//   globalAtts.
+//
 // ****************************************************************************
 
 void
@@ -2016,7 +2346,7 @@ QvisFilePanel::fileExpanded(QListViewItem *item)
     // If the file is a database then we want to update the file selection so
     // the current cycle will be selected.
     if(fileItem->file == fileServer->GetOpenFile() &&
-       globalAtts->GetNStates() > 1)
+       fileServer->GetMetaData()->GetNumStates() > 1)
     {
         UpdateFileSelection();
     }
@@ -2057,6 +2387,10 @@ QvisFilePanel::fileExpanded(QListViewItem *item)
 //   Brad Whitlock, Fri Sep 5 17:10:43 PST 2003
 //   I made it so replace can be used to set the active time state.
 //
+//   Brad Whitlock, Tue Feb 3 18:23:21 PST 2004
+//   I made the open button turn into the activate button if we highlighted
+//   a file that we've opened before that is not the currently open file.
+//
 // ****************************************************************************
 
 void
@@ -2078,7 +2412,12 @@ QvisFilePanel::highlightFile(QListViewItem *item)
     // If we've opened the file before, make the open button say "ReOpen".
     bool fileOpenedBefore = fileServer->HaveOpenedFile(fileItem->file);
     if(fileOpenedBefore)
-        openButton->setText("ReOpen");
+    {
+        if(fileServer->GetOpenFile() != fileItem->file)
+            openButton->setText("Activate");
+        else
+            openButton->setText("ReOpen");
+    }
     else
         openButton->setText("Open");
     openButton->setEnabled(true);
@@ -2086,14 +2425,6 @@ QvisFilePanel::highlightFile(QListViewItem *item)
     // If the highlighted file is not the active file, then
     // enable the open, replace, overlay buttons.
     bool enable = (fileServer->GetOpenFile() != fileItem->file);
-
-    // If we've opened the file before, highlighting it should make it
-    // the open file.
-    if(fileOpenedBefore && fileItem->timeState == -1)
-    {
-        OpenFile(fileItem->file, 0, false);
-    }
-
     replaceButton->setEnabled(enable || (fileItem->timeState >= 0));
     overlayButton->setEnabled(enable);
 }
@@ -2118,6 +2449,10 @@ QvisFilePanel::highlightFile(QListViewItem *item)
 //   Brad Whitlock, Thu May 15 12:44:42 PDT 2003
 //   I added support for opening a file at a later time state.
 //
+//   Brad Whitlock, Tue Jan 27 20:27:02 PST 2004
+//   I changed how we calculate the current time state for a database that
+//   we're reopening so it takes into account the active time slider.
+//
 // ****************************************************************************
 
 void
@@ -2135,7 +2470,11 @@ QvisFilePanel::openFile()
         // We're reopening so we should reopen to the current time state.
         if(reOpen)
         {
-            timeState = globalAtts->GetCurrentState();
+            //
+            // Get the current state for the specified database taking into
+            // account the active time slider.
+            //
+            timeState = GetStateForSource(fileItem->file);
 
             //
             // If we're reopening and we're trying to use a later time state
@@ -2196,7 +2535,11 @@ QvisFilePanel::openFile()
 //   I made it so that we can open a file directly at a later time state.
 //
 //   Brad Whitlock, Fri Oct 24 14:33:12 PST 2003
-//   I made it use the new AnimationSetFrame method.
+//   I made it use the new SetTimeSliderState method.
+//
+//   Brad Whitlock, Tue Feb 3 18:47:50 PST 2004
+//   I changed it so it tries to set the time slider to the right state for
+//   the database with the time state that we want to open.
 //
 // ****************************************************************************
 
@@ -2207,22 +2550,30 @@ QvisFilePanel::openFileDblClick(QListViewItem *item)
 
     if((fileItem != 0) && fileItem->isFile() && (!fileItem->file.Empty()))
     {
+        int state = (fileItem->timeState == -1) ? 0 : fileItem->timeState;
+
         if(fileItem->timeState != -1 &&
            fileItem->file == fileServer->GetOpenFile())
         {
             // It must be a database timestep if the time state is not -1 and
             // the file item has the same filename as the open file.
-            AnimationSetFrame(fileItem->timeState, true);
+
+            //
+            // Get the inverse correlated time state, which is the time state
+            // for the active time slider's correlation where the given
+            // database has the database time state that we want opened.
+            //
+            std::string src(fileItem->file.FullName());
+            state = GetTimeSliderStateForDatabaseState(src, state);
+
+            SetTimeSliderState(state);
         }
         else
         {
             AddExpandedFile(fileItem->file);
 
-            // Pick the right timestate to open.
-            int timeState = (fileItem->timeState == -1) ? 0 : fileItem->timeState;
-
             // Try and open the file.
-            OpenFile(fileItem->file, timeState, false);
+            OpenFile(fileItem->file, state, false);
         }
     }
 }
@@ -2249,7 +2600,7 @@ QvisFilePanel::openFileDblClick(QListViewItem *item)
 //   of using time state 0.
 //
 //   Brad Whitlock, Fri Oct 24 14:33:40 PST 2003
-//   I made it use the new AnimationSetFrame method.
+//   I made it use the new SetTimeSliderState method.
 //
 //   Brad Whitlock, Mon Nov 3 11:33:05 PDT 2003
 //   I made it always use the ReplaceFile method and I changed the
@@ -2323,12 +2674,19 @@ QvisFilePanel::overlayFile()
 //   Brad Whitlock, Tue Dec 30 14:32:02 PST 2003
 //   I removed sliderDown.
 //
+//   Brad Whitlock, Tue Jan 27 20:31:25 PST 2004
+//   I added support for multiple time sliders.
+//
 // ****************************************************************************
 
 void
 QvisFilePanel::sliderStart()
 {
-    sliderVal = globalAtts->GetCurrentFrame();
+    int activeTS = windowInfo->GetActiveTimeSlider();
+    if(activeTS >= 0)
+        sliderVal = windowInfo->GetTimeSliderCurrentStates()[activeTS];
+    else 
+        sliderVal = 0;
 }
 
 // ****************************************************************************
@@ -2376,7 +2734,7 @@ QvisFilePanel::sliderMove(int val)
 //   equivalent with keyframe support.
 // 
 //   Brad Whitlock, Fri Oct 24 14:31:33 PST 2003
-//   I made it use the new AnimationSetFrame method and I removed old code to
+//   I made it use the new SetTimeSliderState method and I removed old code to
 //   set the current frame in the global atts. The viewer now sends back the
 //   current frame but it didn't used to a long time ago.
 //
@@ -2386,7 +2744,7 @@ void
 QvisFilePanel::sliderEnd()
 {
     // Set the new frame.
-    AnimationSetFrame(sliderVal, false);
+    SetTimeSliderState(sliderVal);
 }
 
 // ****************************************************************************
@@ -2411,7 +2769,7 @@ QvisFilePanel::sliderEnd()
 //   equivalent with keyframe support.
 //
 //   Brad Whitlock, Fri Oct 24 14:31:33 PST 2003
-//   I made it use the new AnimationSetFrame method and I removed old code to
+//   I made it use the new SetTimeSliderState method and I removed old code to
 //   set the current frame in the global atts. The viewer now sends back the
 //   current frame but it didn't used to a long time ago.
 //
@@ -2427,7 +2785,7 @@ QvisFilePanel::sliderChange(int val)
         return;
 
     // Set the new frame.
-    AnimationSetFrame(val, false);
+    SetTimeSliderState(val);
 }
 
 // ****************************************************************************
@@ -2533,6 +2891,33 @@ void
 QvisFilePanel::updateHeaderWidth()
 {
     fileListView->setColumnWidth(0, fileListView->visibleWidth());
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::changeActiveTimeSlider
+//
+// Purpose: 
+//   Tell the viewer to switch to the new active time slider.
+//
+// Arguments:
+//   tsName : The name of the new active time slider.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jan 27 21:30:12 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFilePanel::changeActiveTimeSlider(int tsIndex)
+{
+    if(windowInfo->GetTimeSliders().size() > 1)
+    {
+        const stringVector &tsNames = windowInfo->GetTimeSliders();
+        if(tsIndex >= 0 && tsIndex < tsNames.size())
+            viewer->SetActiveTimeSlider(tsNames[tsIndex]);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

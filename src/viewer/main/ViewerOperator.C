@@ -98,7 +98,7 @@ bool
 ViewerOperator::ExecuteEngineRPC() const
 {
     ViewerEngineManager *engineMgr = ViewerEngineManager::Instance();
-    return engineMgr->ApplyOperator(plot->GetHostName(),
+    return engineMgr->ApplyOperator(plot->GetHostName().c_str(),
                                     viewerPluginInfo->GetID(),
                                     operatorAtts);
 }

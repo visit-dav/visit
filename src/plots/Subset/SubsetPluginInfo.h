@@ -33,11 +33,12 @@ class SubsetAttributes;
 //    Kathleen Bonnell, Thu Dec  5 16:53:22 PST 2002    
 //    Added virtual method ReIntializePlotAtts to ViewerPluginInfo.
 //
+//    Brad Whitlock, Fri Mar 26 15:23:17 PST 2004
+//    I changed the viewer plugin info interface.
+//
 // ****************************************************************************
 
 class SubsetGeneralPluginInfo: public virtual GeneralPlotPluginInfo
-
-
 {
   public:
     virtual char *GetName() const;
@@ -73,15 +74,15 @@ class SubsetViewerPluginInfo: public virtual ViewerPlotPluginInfo, public virtua
     virtual avtPlot *AllocAvtPlot();
 
     virtual void InitializePlotAtts(AttributeSubject *atts,
-        const char *hostName, const char *databaseName,
+        const avtDatabaseMetaData *md,
         const char *variableName);
 
     virtual void ReInitializePlotAtts(AttributeSubject *atts,
-        const char *hostName, const char *databaseName,
+        const avtDatabaseMetaData *md,
         const char *variableName);
 
     virtual void ResetPlotAtts(AttributeSubject *atts,
-        const char *hostName, const char *databaseName,
+        const avtDatabaseMetaData *md,
         const char *variableName);
 
     virtual const char **XPMIconData() const;
@@ -93,7 +94,7 @@ class SubsetViewerPluginInfo: public virtual ViewerPlotPluginInfo, public virtua
     static SubsetAttributes *clientAtts;
 
     void   PrivateSetPlotAtts(AttributeSubject *atts,
-        const char *hostName, const char *databaseName,
+        const avtDatabaseMetaData *md,
         const char *variableName);
 };
 

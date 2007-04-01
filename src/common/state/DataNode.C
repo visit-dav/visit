@@ -1004,11 +1004,13 @@ DataNode::AddNode(DataNode *node)
 // Creation:   Thu Sep 28 12:14:24 PDT 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Feb 2 15:38:05 PST 2004
+//   I added an optional argument to delete the node.
+//
 // ****************************************************************************
 
 void
-DataNode::RemoveNode(const std::string &key)
+DataNode::RemoveNode(const std::string &key, bool deleteNode)
 {
     if(NodeType != INTERNAL_NODE)
         return;
@@ -1020,7 +1022,8 @@ DataNode::RemoveNode(const std::string &key)
         DataNode *node = (DataNode *)Data;
         if(node->Key == key)
         {
-            delete node;
+            if(deleteNode)
+                delete node;
             Data = 0;
             Length = 0;
         }
@@ -1034,6 +1037,8 @@ DataNode::RemoveNode(const std::string &key)
         {
             if(!start && nodeArray[i]->Key == key)
             {
+                if(deleteNode)
+                    delete nodeArray[i];
                 start = true;
             }
 

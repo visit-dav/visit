@@ -355,6 +355,9 @@ public:
 //   Brad Whitlock, Mon Dec 29 09:59:34 PDT 2003
 //   I added SetCenterOfRotationAction and ChooseCenterOfRotationAction.
 //
+//   Brad Whitlock, Sun Jan 25 02:19:07 PDT 2004
+//   I added a new animation action and renamed some others.
+//
 // ****************************************************************************
 
 
@@ -396,12 +399,13 @@ ViewerActionManager::ViewerActionManager(ViewerWindow *win) : actionGroups()
     AddAction(new ToggleBoundingBoxModeAction(win), ViewerRPC::ToggleBoundingBoxModeRPC);
 
     AddAction(new AnimationStopAction(win), ViewerRPC::AnimationStopRPC);
-    AddAction(new AnimationForwardStepAction(win), ViewerRPC::AnimationNextFrameRPC);
-    AddAction(new AnimationReverseStepAction(win), ViewerRPC::AnimationPreviousFrameRPC);
+    AddAction(new TimeSliderForwardStepAction(win), ViewerRPC::TimeSliderNextStateRPC);
+    AddAction(new TimeSliderReverseStepAction(win), ViewerRPC::TimeSliderPreviousStateRPC);
     AddAction(new AnimationPlayAction(win), ViewerRPC::AnimationPlayRPC);
     AddAction(new AnimationReversePlayAction(win), ViewerRPC::AnimationReversePlayRPC);
     AddAction(new AnimationSetNFramesAction(win), ViewerRPC::AnimationSetNFramesRPC);
-    AddAction(new AnimationSetFrameAction(win), ViewerRPC::AnimationSetFrameRPC);
+    AddAction(new SetTimeSliderStateAction(win), ViewerRPC::SetTimeSliderStateRPC);
+    AddAction(new SetActiveTimeSliderAction(win), ViewerRPC::SetActiveTimeSliderRPC);
 
     AddAction(new AddOperatorAction(win), ViewerRPC::AddOperatorRPC);
     AddAction(new PromoteOperatorAction(win), ViewerRPC::PromoteOperatorRPC);

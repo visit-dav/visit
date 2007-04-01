@@ -9,62 +9,64 @@
 static const char *ViewerRPCType_strings[] = {
 "CloseRPC", "AddWindowRPC", "DeleteWindowRPC", 
 "SetWindowLayoutRPC", "SetActiveWindowRPC", "ClearWindowRPC", 
-"ClearAllWindowsRPC", "OpenDatabaseRPC", "ReOpenDatabaseRPC", 
+"ClearAllWindowsRPC", "OpenDatabaseRPC", "CloseDatabaseRPC", 
+"ActivateDatabaseRPC", "CheckForNewStatesRPC", "CreateDatabaseCorrelationRPC", 
+"AlterDatabaseCorrelationRPC", "DeleteDatabaseCorrelationRPC", "ReOpenDatabaseRPC", 
 "ReplaceDatabaseRPC", "OverlayDatabaseRPC", "OpenComputeEngineRPC", 
 "CloseComputeEngineRPC", "AnimationSetNFramesRPC", "AnimationPlayRPC", 
-"AnimationReversePlayRPC", "AnimationStopRPC", "AnimationNextFrameRPC", 
-"AnimationPreviousFrameRPC", "AnimationSetFrameRPC", "AddPlotRPC", 
-"SetPlotFrameRangeRPC", "DeletePlotKeyframeRPC", "MovePlotKeyframeRPC", 
-"DeleteActivePlotsRPC", "HideActivePlotsRPC", "DrawPlotsRPC", 
-"DisableRedrawRPC", "RedrawRPC", "SetActivePlotsRPC", 
-"ChangeActivePlotsVarRPC", "AddOperatorRPC", "PromoteOperatorRPC", 
-"DemoteOperatorRPC", "RemoveOperatorRPC", "RemoveLastOperatorRPC", 
-"RemoveAllOperatorsRPC", "SaveWindowRPC", "SetDefaultPlotOptionsRPC", 
-"SetPlotOptionsRPC", "SetDefaultOperatorOptionsRPC", "SetOperatorOptionsRPC", 
-"WriteConfigFileRPC", "ConnectToMetaDataServerRPC", "IconifyAllWindowsRPC", 
-"DeIconifyAllWindowsRPC", "ShowAllWindowsRPC", "HideAllWindowsRPC", 
-"UpdateColorTableRPC", "SetAnnotationAttributesRPC", "SetDefaultAnnotationAttributesRPC", 
-"ResetAnnotationAttributesRPC", "SetKeyframeAttributesRPC", "SetPlotSILRestrictionRPC", 
-"SetViewCurveRPC", "SetView2DRPC", "SetView3DRPC", 
-"ResetPlotOptionsRPC", "ResetOperatorOptionsRPC", "SetAppearanceRPC", 
-"ProcessExpressionsRPC", "SetLightListRPC", "SetDefaultLightListRPC", 
-"ResetLightListRPC", "SetAnimationAttributesRPC", "SetWindowAreaRPC", 
-"PrintWindowRPC", "ResetViewRPC", "RecenterViewRPC", 
-"ToggleMaintainViewModeRPC", "ToggleBoundingBoxModeRPC", "ToggleCameraViewModeRPC", 
-"TogglePerspectiveViewRPC", "ToggleSpinModeRPC", "ToggleLockTimeRPC", 
-"ToggleLockToolsRPC", "ToggleLockViewModeRPC", "ToggleFullFrameRPC", 
-"UndoViewRPC", "InvertBackgroundRPC", "ClearPickPointsRPC", 
-"SetWindowModeRPC", "EnableToolRPC", "CopyViewToWindowRPC", 
-"CopyLightingToWindowRPC", "CopyAnnotationsToWindowRPC", "CopyPlotsToWindowRPC", 
-"ClearCacheRPC", "ClearCacheForAllEnginesRPC", "SetViewExtentsTypeRPC", 
-"ClearRefLinesRPC", "SetRenderingAttributesRPC", "DatabaseQueryRPC", 
-"PointQueryRPC", "LineQueryRPC", "CloneWindowRPC", 
-"SetMaterialAttributesRPC", "SetDefaultMaterialAttributesRPC", "ResetMaterialAttributesRPC", 
-"SetPlotDatabaseStateRPC", "DeletePlotDatabaseKeyframeRPC", "MovePlotDatabaseKeyframeRPC", 
-"ClearViewKeyframesRPC", "DeleteViewKeyframeRPC", "MoveViewKeyframeRPC", 
-"SetViewKeyframeRPC", "OpenMDServerRPC", "EnableToolbarRPC", 
-"HideToolbarsRPC", "HideToolbarsForAllWindowsRPC", "ShowToolbarsRPC", 
-"ShowToolbarsForAllWindowsRPC", "SetToolbarIconSizeRPC", "SaveViewRPC", 
-"SetGlobalLineoutAttributesRPC", "SetPickAttributesRPC", "ExportColorTableRPC", 
-"ExportEntireStateRPC", "ImportEntireStateRPC", "ResetPickAttributesRPC", 
-"AddAnnotationObjectRPC", "HideActiveAnnotationObjectsRPC", "DeleteActiveAnnotationObjectsRPC", 
-"RaiseActiveAnnotationObjectsRPC", "LowerActiveAnnotationObjectsRPC", "SetAnnotationObjectOptionsRPC", 
-"SetDefaultAnnotationObjectListRPC", "ResetAnnotationObjectListRPC", "ResetPickLetterRPC", 
-"SetDefaultPickAttributesRPC", "ChooseCenterOfRotationRPC", "SetCenterOfRotationRPC", 
-"MaxRPC"};
+"AnimationReversePlayRPC", "AnimationStopRPC", "TimeSliderNextStateRPC", 
+"TimeSliderPreviousStateRPC", "SetTimeSliderStateRPC", "SetActiveTimeSliderRPC", 
+"AddPlotRPC", "SetPlotFrameRangeRPC", "DeletePlotKeyframeRPC", 
+"MovePlotKeyframeRPC", "DeleteActivePlotsRPC", "HideActivePlotsRPC", 
+"DrawPlotsRPC", "DisableRedrawRPC", "RedrawRPC", 
+"SetActivePlotsRPC", "ChangeActivePlotsVarRPC", "AddOperatorRPC", 
+"PromoteOperatorRPC", "DemoteOperatorRPC", "RemoveOperatorRPC", 
+"RemoveLastOperatorRPC", "RemoveAllOperatorsRPC", "SaveWindowRPC", 
+"SetDefaultPlotOptionsRPC", "SetPlotOptionsRPC", "SetDefaultOperatorOptionsRPC", 
+"SetOperatorOptionsRPC", "WriteConfigFileRPC", "ConnectToMetaDataServerRPC", 
+"IconifyAllWindowsRPC", "DeIconifyAllWindowsRPC", "ShowAllWindowsRPC", 
+"HideAllWindowsRPC", "UpdateColorTableRPC", "SetAnnotationAttributesRPC", 
+"SetDefaultAnnotationAttributesRPC", "ResetAnnotationAttributesRPC", "SetKeyframeAttributesRPC", 
+"SetPlotSILRestrictionRPC", "SetViewCurveRPC", "SetView2DRPC", 
+"SetView3DRPC", "ResetPlotOptionsRPC", "ResetOperatorOptionsRPC", 
+"SetAppearanceRPC", "ProcessExpressionsRPC", "SetLightListRPC", 
+"SetDefaultLightListRPC", "ResetLightListRPC", "SetAnimationAttributesRPC", 
+"SetWindowAreaRPC", "PrintWindowRPC", "ResetViewRPC", 
+"RecenterViewRPC", "ToggleMaintainViewModeRPC", "ToggleBoundingBoxModeRPC", 
+"ToggleCameraViewModeRPC", "TogglePerspectiveViewRPC", "ToggleSpinModeRPC", 
+"ToggleLockTimeRPC", "ToggleLockToolsRPC", "ToggleLockViewModeRPC", 
+"ToggleFullFrameRPC", "UndoViewRPC", "InvertBackgroundRPC", 
+"ClearPickPointsRPC", "SetWindowModeRPC", "EnableToolRPC", 
+"CopyViewToWindowRPC", "CopyLightingToWindowRPC", "CopyAnnotationsToWindowRPC", 
+"CopyPlotsToWindowRPC", "ClearCacheRPC", "ClearCacheForAllEnginesRPC", 
+"SetViewExtentsTypeRPC", "ClearRefLinesRPC", "SetRenderingAttributesRPC", 
+"DatabaseQueryRPC", "PointQueryRPC", "LineQueryRPC", 
+"CloneWindowRPC", "SetMaterialAttributesRPC", "SetDefaultMaterialAttributesRPC", 
+"ResetMaterialAttributesRPC", "SetPlotDatabaseStateRPC", "DeletePlotDatabaseKeyframeRPC", 
+"MovePlotDatabaseKeyframeRPC", "ClearViewKeyframesRPC", "DeleteViewKeyframeRPC", 
+"MoveViewKeyframeRPC", "SetViewKeyframeRPC", "OpenMDServerRPC", 
+"EnableToolbarRPC", "HideToolbarsRPC", "HideToolbarsForAllWindowsRPC", 
+"ShowToolbarsRPC", "ShowToolbarsForAllWindowsRPC", "SetToolbarIconSizeRPC", 
+"SaveViewRPC", "SetGlobalLineoutAttributesRPC", "SetPickAttributesRPC", 
+"ExportColorTableRPC", "ExportEntireStateRPC", "ImportEntireStateRPC", 
+"ResetPickAttributesRPC", "AddAnnotationObjectRPC", "HideActiveAnnotationObjectsRPC", 
+"DeleteActiveAnnotationObjectsRPC", "RaiseActiveAnnotationObjectsRPC", "LowerActiveAnnotationObjectsRPC", 
+"SetAnnotationObjectOptionsRPC", "SetDefaultAnnotationObjectListRPC", "ResetAnnotationObjectListRPC", 
+"ResetPickLetterRPC", "SetDefaultPickAttributesRPC", "ChooseCenterOfRotationRPC", 
+"SetCenterOfRotationRPC", "MaxRPC"};
 
 std::string
 ViewerRPC::ViewerRPCType_ToString(ViewerRPC::ViewerRPCType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 133) index = 0;
+    if(index < 0 || index >= 140) index = 0;
     return ViewerRPCType_strings[index];
 }
 
 std::string
 ViewerRPC::ViewerRPCType_ToString(int t)
 {
-    int index = (t < 0 || t >= 133) ? 0 : t;
+    int index = (t < 0 || t >= 140) ? 0 : t;
     return ViewerRPCType_strings[index];
 }
 
@@ -72,7 +74,7 @@ bool
 ViewerRPC::ViewerRPCType_FromString(const std::string &s, ViewerRPC::ViewerRPCType &val)
 {
     val = ViewerRPC::CloseRPC;
-    for(int i = 0; i < 133; ++i)
+    for(int i = 0; i < 140; ++i)
     {
         if(s == ViewerRPCType_strings[i])
         {
@@ -92,7 +94,7 @@ ViewerRPC::ViewerRPCType_FromString(const std::string &s, ViewerRPC::ViewerRPCTy
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Mon Mar 15 14:47:53 PST 2004
+// Creation:   Tue Mar 16 16:46:58 PST 2004
 //
 // Modifications:
 //   
@@ -105,7 +107,7 @@ ViewerRPC::ViewerRPC() : AttributeSubject("iiiissss*iiIiiisi*i*i*ssDDs*ibiii")
     windowId = 0;
     windowMode = 0;
     nFrames = 0;
-    frameNumber = 0;
+    stateNumber = 0;
     frameRange[0] = 0;
     frameRange[1] = 0;
     frame = 0;
@@ -133,7 +135,7 @@ ViewerRPC::ViewerRPC() : AttributeSubject("iiiissss*iiIiiisi*i*i*ssDDs*ibiii")
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Mon Mar 15 14:47:53 PST 2004
+// Creation:   Tue Mar 16 16:46:58 PST 2004
 //
 // Modifications:
 //   
@@ -150,7 +152,7 @@ ViewerRPC::ViewerRPC(const ViewerRPC &obj) : AttributeSubject("iiiissss*iiIiiisi
     programHost = obj.programHost;
     programOptions = obj.programOptions;
     nFrames = obj.nFrames;
-    frameNumber = obj.frameNumber;
+    stateNumber = obj.stateNumber;
     frameRange[0] = obj.frameRange[0];
     frameRange[1] = obj.frameRange[1];
 
@@ -190,7 +192,7 @@ ViewerRPC::ViewerRPC(const ViewerRPC &obj) : AttributeSubject("iiiissss*iiIiiisi
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Mon Mar 15 14:47:53 PST 2004
+// Creation:   Tue Mar 16 16:46:58 PST 2004
 //
 // Modifications:
 //   
@@ -210,7 +212,7 @@ ViewerRPC::~ViewerRPC()
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Mon Mar 15 14:47:53 PST 2004
+// Creation:   Tue Mar 16 16:46:58 PST 2004
 //
 // Modifications:
 //   
@@ -228,7 +230,7 @@ ViewerRPC::operator = (const ViewerRPC &obj)
     programHost = obj.programHost;
     programOptions = obj.programOptions;
     nFrames = obj.nFrames;
-    frameNumber = obj.frameNumber;
+    stateNumber = obj.stateNumber;
     frameRange[0] = obj.frameRange[0];
     frameRange[1] = obj.frameRange[1];
 
@@ -268,7 +270,7 @@ ViewerRPC::operator = (const ViewerRPC &obj)
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Mon Mar 15 14:47:53 PST 2004
+// Creation:   Tue Mar 16 16:46:58 PST 2004
 //
 // Modifications:
 //   
@@ -304,7 +306,7 @@ ViewerRPC::operator == (const ViewerRPC &obj) const
             (programHost == obj.programHost) &&
             (programOptions == obj.programOptions) &&
             (nFrames == obj.nFrames) &&
-            (frameNumber == obj.frameNumber) &&
+            (stateNumber == obj.stateNumber) &&
             frameRange_equal &&
             (frame == obj.frame) &&
             (plotType == obj.plotType) &&
@@ -334,7 +336,7 @@ ViewerRPC::operator == (const ViewerRPC &obj) const
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Mon Mar 15 14:47:53 PST 2004
+// Creation:   Tue Mar 16 16:46:58 PST 2004
 //
 // Modifications:
 //   
@@ -355,7 +357,7 @@ ViewerRPC::operator != (const ViewerRPC &obj) const
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Mon Mar 15 14:47:53 PST 2004
+// Creation:   Tue Mar 16 16:46:58 PST 2004
 //
 // Modifications:
 //   
@@ -376,7 +378,7 @@ ViewerRPC::TypeName() const
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Mon Mar 15 14:47:53 PST 2004
+// Creation:   Tue Mar 16 16:46:58 PST 2004
 //
 // Modifications:
 //   
@@ -404,7 +406,7 @@ ViewerRPC::CopyAttributes(const AttributeGroup *atts)
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Mon Mar 15 14:47:53 PST 2004
+// Creation:   Tue Mar 16 16:46:58 PST 2004
 //
 // Modifications:
 //   
@@ -430,7 +432,7 @@ ViewerRPC::CreateCompatible(const std::string &tname) const
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Mon Mar 15 14:47:53 PST 2004
+// Creation:   Tue Mar 16 16:46:58 PST 2004
 //
 // Modifications:
 //   
@@ -457,7 +459,7 @@ ViewerRPC::NewInstance(bool copy) const
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Mon Mar 15 14:47:53 PST 2004
+// Creation:   Tue Mar 16 16:46:58 PST 2004
 //
 // Modifications:
 //   
@@ -475,7 +477,7 @@ ViewerRPC::SelectAll()
     Select(6, (void *)&programHost);
     Select(7, (void *)&programOptions);
     Select(8, (void *)&nFrames);
-    Select(9, (void *)&frameNumber);
+    Select(9, (void *)&stateNumber);
     Select(10, (void *)frameRange, 2);
     Select(11, (void *)&frame);
     Select(12, (void *)&plotType);
@@ -494,313 +496,6 @@ ViewerRPC::SelectAll()
     Select(25, (void *)&intArg1);
     Select(26, (void *)&intArg2);
     Select(27, (void *)&intArg3);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// Persistence methods
-///////////////////////////////////////////////////////////////////////////////
-
-// ****************************************************************************
-// Method: ViewerRPC::CreateNode
-//
-// Purpose: 
-//   This method creates a DataNode representation of the object so it can be saved to a config file.
-//
-// Note:       Autogenerated by xml2atts.
-//
-// Programmer: xml2atts
-// Creation:   Mon Mar 15 14:47:53 PST 2004
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-bool
-ViewerRPC::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
-{
-    if(parentNode == 0)
-        return false;
-
-    ViewerRPC defaultObject;
-    bool addToParent = false;
-    // Create a node for ViewerRPC.
-    DataNode *node = new DataNode("ViewerRPC");
-
-    if(completeSave || !FieldsEqual(0, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("RPCType", ViewerRPCType_ToString(RPCType)));
-    }
-
-    if(completeSave || !FieldsEqual(1, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("windowLayout", windowLayout));
-    }
-
-    if(completeSave || !FieldsEqual(2, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("windowId", windowId));
-    }
-
-    if(completeSave || !FieldsEqual(3, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("windowMode", windowMode));
-    }
-
-    if(completeSave || !FieldsEqual(4, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("windowArea", windowArea));
-    }
-
-    if(completeSave || !FieldsEqual(5, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("database", database));
-    }
-
-    if(completeSave || !FieldsEqual(6, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("programHost", programHost));
-    }
-
-    if(completeSave || !FieldsEqual(7, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("programOptions", programOptions));
-    }
-
-    if(completeSave || !FieldsEqual(8, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("nFrames", nFrames));
-    }
-
-    if(completeSave || !FieldsEqual(9, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("frameNumber", frameNumber));
-    }
-
-    if(completeSave || !FieldsEqual(10, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("frameRange", frameRange, 2));
-    }
-
-    if(completeSave || !FieldsEqual(11, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("frame", frame));
-    }
-
-    if(completeSave || !FieldsEqual(12, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("plotType", plotType));
-    }
-
-    if(completeSave || !FieldsEqual(13, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("operatorType", operatorType));
-    }
-
-    if(completeSave || !FieldsEqual(14, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("variable", variable));
-    }
-
-    if(completeSave || !FieldsEqual(15, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("activePlotIds", activePlotIds));
-    }
-
-    if(completeSave || !FieldsEqual(16, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("activeOperatorIds", activeOperatorIds));
-    }
-
-    if(completeSave || !FieldsEqual(17, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("expandedPlotIds", expandedPlotIds));
-    }
-
-    if(completeSave || !FieldsEqual(18, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("colorTableName", colorTableName));
-    }
-
-    if(completeSave || !FieldsEqual(19, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("queryName", queryName));
-    }
-
-    if(completeSave || !FieldsEqual(20, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("queryPoint1", queryPoint1, 3));
-    }
-
-    if(completeSave || !FieldsEqual(21, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("queryPoint2", queryPoint2, 3));
-    }
-
-    if(completeSave || !FieldsEqual(22, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("queryVariables", queryVariables));
-    }
-
-    if(completeSave || !FieldsEqual(23, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("toolId", toolId));
-    }
-
-    if(completeSave || !FieldsEqual(24, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("boolFlag", boolFlag));
-    }
-
-    if(completeSave || !FieldsEqual(25, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("intArg1", intArg1));
-    }
-
-    if(completeSave || !FieldsEqual(26, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("intArg2", intArg2));
-    }
-
-    if(completeSave || !FieldsEqual(27, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("intArg3", intArg3));
-    }
-
-
-    // Add the node to the parent node.
-    if(addToParent || forceAdd)
-        parentNode->AddNode(node);
-    else
-        delete node;
-
-    return (addToParent || forceAdd);
-}
-
-// ****************************************************************************
-// Method: ViewerRPC::SetFromNode
-//
-// Purpose: 
-//   This method sets attributes in this object from values in a DataNode representation of the object.
-//
-// Note:       Autogenerated by xml2atts.
-//
-// Programmer: xml2atts
-// Creation:   Mon Mar 15 14:47:53 PST 2004
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerRPC::SetFromNode(DataNode *parentNode)
-{
-    int i;
-    if(parentNode == 0)
-        return;
-
-    DataNode *searchNode = parentNode->GetNode("ViewerRPC");
-    if(searchNode == 0)
-        return;
-
-    DataNode *node;
-    if((node = searchNode->GetNode("RPCType")) != 0)
-    {
-        // Allow enums to be int or string in the config file
-        if(node->GetNodeType() == INT_NODE)
-        {
-            int ival = node->AsInt();
-            if(ival >= 0 && ival < 133)
-                SetRPCType(ViewerRPCType(ival));
-        }
-        else if(node->GetNodeType() == STRING_NODE)
-        {
-            ViewerRPCType value;
-            if(ViewerRPCType_FromString(node->AsString(), value))
-                SetRPCType(value);
-        }
-    }
-    if((node = searchNode->GetNode("windowLayout")) != 0)
-        SetWindowLayout(node->AsInt());
-    if((node = searchNode->GetNode("windowId")) != 0)
-        SetWindowId(node->AsInt());
-    if((node = searchNode->GetNode("windowMode")) != 0)
-        SetWindowMode(node->AsInt());
-    if((node = searchNode->GetNode("windowArea")) != 0)
-        SetWindowArea(node->AsString());
-    if((node = searchNode->GetNode("database")) != 0)
-        SetDatabase(node->AsString());
-    if((node = searchNode->GetNode("programHost")) != 0)
-        SetProgramHost(node->AsString());
-    if((node = searchNode->GetNode("programOptions")) != 0)
-        SetProgramOptions(node->AsStringVector());
-    if((node = searchNode->GetNode("nFrames")) != 0)
-        SetNFrames(node->AsInt());
-    if((node = searchNode->GetNode("frameNumber")) != 0)
-        SetFrameNumber(node->AsInt());
-    if((node = searchNode->GetNode("frameRange")) != 0)
-        SetFrameRange(node->AsIntArray());
-    if((node = searchNode->GetNode("frame")) != 0)
-        SetFrame(node->AsInt());
-    if((node = searchNode->GetNode("plotType")) != 0)
-        SetPlotType(node->AsInt());
-    if((node = searchNode->GetNode("operatorType")) != 0)
-        SetOperatorType(node->AsInt());
-    if((node = searchNode->GetNode("variable")) != 0)
-        SetVariable(node->AsString());
-    if((node = searchNode->GetNode("activePlotIds")) != 0)
-        SetActivePlotIds(node->AsIntVector());
-    if((node = searchNode->GetNode("activeOperatorIds")) != 0)
-        SetActiveOperatorIds(node->AsIntVector());
-    if((node = searchNode->GetNode("expandedPlotIds")) != 0)
-        SetExpandedPlotIds(node->AsIntVector());
-    if((node = searchNode->GetNode("colorTableName")) != 0)
-        SetColorTableName(node->AsString());
-    if((node = searchNode->GetNode("queryName")) != 0)
-        SetQueryName(node->AsString());
-    if((node = searchNode->GetNode("queryPoint1")) != 0)
-        SetQueryPoint1(node->AsDoubleArray());
-    if((node = searchNode->GetNode("queryPoint2")) != 0)
-        SetQueryPoint2(node->AsDoubleArray());
-    if((node = searchNode->GetNode("queryVariables")) != 0)
-        SetQueryVariables(node->AsStringVector());
-    if((node = searchNode->GetNode("toolId")) != 0)
-        SetToolId(node->AsInt());
-    if((node = searchNode->GetNode("boolFlag")) != 0)
-        SetBoolFlag(node->AsBool());
-    if((node = searchNode->GetNode("intArg1")) != 0)
-        SetIntArg1(node->AsInt());
-    if((node = searchNode->GetNode("intArg2")) != 0)
-        SetIntArg2(node->AsInt());
-    if((node = searchNode->GetNode("intArg3")) != 0)
-        SetIntArg3(node->AsInt());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -871,10 +566,10 @@ ViewerRPC::SetNFrames(int nFrames_)
 }
 
 void
-ViewerRPC::SetFrameNumber(int frameNumber_)
+ViewerRPC::SetStateNumber(int stateNumber_)
 {
-    frameNumber = frameNumber_;
-    Select(9, (void *)&frameNumber);
+    stateNumber = stateNumber_;
+    Select(9, (void *)&stateNumber);
 }
 
 void
@@ -1091,9 +786,9 @@ ViewerRPC::GetNFrames() const
 }
 
 int
-ViewerRPC::GetFrameNumber() const
+ViewerRPC::GetStateNumber() const
 {
-    return frameNumber;
+    return stateNumber;
 }
 
 const int *
@@ -1365,7 +1060,7 @@ ViewerRPC::SelectQueryVariables()
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Mon Mar 15 14:47:53 PST 2004
+// Creation:   Tue Mar 16 16:46:58 PST 2004
 //
 // Modifications:
 //   
@@ -1385,7 +1080,7 @@ ViewerRPC::GetFieldName(int index) const
         case 6:  return "programHost";
         case 7:  return "programOptions";
         case 8:  return "nFrames";
-        case 9:  return "frameNumber";
+        case 9:  return "stateNumber";
         case 10:  return "frameRange";
         case 11:  return "frame";
         case 12:  return "plotType";
@@ -1417,7 +1112,7 @@ ViewerRPC::GetFieldName(int index) const
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Mon Mar 15 14:47:53 PST 2004
+// Creation:   Tue Mar 16 16:46:58 PST 2004
 //
 // Modifications:
 //   
@@ -1469,7 +1164,7 @@ ViewerRPC::GetFieldType(int index) const
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Mon Mar 15 14:47:53 PST 2004
+// Creation:   Tue Mar 16 16:46:58 PST 2004
 //
 // Modifications:
 //   
@@ -1521,7 +1216,7 @@ ViewerRPC::GetFieldTypeName(int index) const
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Mon Mar 15 14:47:53 PST 2004
+// Creation:   Tue Mar 16 16:46:58 PST 2004
 //
 // Modifications:
 //   
@@ -1583,7 +1278,7 @@ ViewerRPC::FieldsEqual(int index_, const AttributeGroup *rhs) const
         break;
     case 9:
         {  // new scope
-        retval = (frameNumber == obj.frameNumber);
+        retval = (stateNumber == obj.stateNumber);
         }
         break;
     case 10:

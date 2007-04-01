@@ -1,5 +1,4 @@
 #include <AnimationActions.h>
-#include <ViewerAnimation.h>
 #include <ViewerPlotList.h>
 #include <ViewerWindow.h>
 #include <ViewerWindowManager.h>
@@ -19,7 +18,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-AnimationReverseStepAction::AnimationReverseStepAction(ViewerWindow *win) :
+TimeSliderReverseStepAction::TimeSliderReverseStepAction(ViewerWindow *win) :
     ViewerAction(win, "ReverseStep")
 {
     SetAllText("Reverse step");
@@ -29,16 +28,16 @@ AnimationReverseStepAction::AnimationReverseStepAction(ViewerWindow *win) :
 }
 
 void
-AnimationReverseStepAction::Execute()
+TimeSliderReverseStepAction::Execute()
 {
      windowMgr->PrevFrame(windowId);
 }
 
 bool
-AnimationReverseStepAction::Enabled() const
+TimeSliderReverseStepAction::Enabled() const
 {
-    return (window->GetAnimation()->GetNFrames() > 1) &&
-           (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+    return window->GetPlotList()->HasActiveTimeSlider() &&
+           window->GetPlotList()->GetNumPlots() > 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -61,14 +60,15 @@ AnimationReversePlayAction::Execute()
 bool
 AnimationReversePlayAction::Enabled() const
 {
-    return (window->GetAnimation()->GetNFrames() > 1) &&
-           (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+    return window->GetPlotList()->HasActiveTimeSlider() &&
+           window->GetPlotList()->GetNumPlots() > 0;
 }
 
 bool
 AnimationReversePlayAction::Toggled() const
 {
-    return (window->GetAnimation()->GetMode() == ViewerAnimation::ReversePlayMode);
+    return (window->GetPlotList()->GetAnimationMode() ==
+            ViewerPlotList::ReversePlayMode);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -91,14 +91,15 @@ AnimationStopAction::Execute()
 bool 
 AnimationStopAction::Enabled() const
 {
-    return (window->GetAnimation()->GetNFrames() > 1) &&
-           (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+    return window->GetPlotList()->HasActiveTimeSlider() &&
+           window->GetPlotList()->GetNumPlots() > 0;
 }
 
 bool
 AnimationStopAction::Toggled() const
 {
-    return (window->GetAnimation()->GetMode() == ViewerAnimation::StopMode);
+    return (window->GetPlotList()->GetAnimationMode() ==
+            ViewerPlotList::StopMode);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -121,19 +122,20 @@ AnimationPlayAction::Execute()
 bool
 AnimationPlayAction::Enabled() const
 {
-    return (window->GetAnimation()->GetNFrames() > 1) &&
-           (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+    return window->GetPlotList()->HasActiveTimeSlider() &&
+           window->GetPlotList()->GetNumPlots() > 0;
 }
 
 bool
 AnimationPlayAction::Toggled() const
 {
-    return (window->GetAnimation()->GetMode() == ViewerAnimation::PlayMode);
+    return (window->GetPlotList()->GetAnimationMode() ==
+            ViewerPlotList::PlayMode);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-AnimationForwardStepAction::AnimationForwardStepAction(ViewerWindow *win) :
+TimeSliderForwardStepAction::TimeSliderForwardStepAction(ViewerWindow *win) :
     ViewerAction(win, "ForwardStep")
 {
     SetAllText("Forward step");
@@ -143,16 +145,16 @@ AnimationForwardStepAction::AnimationForwardStepAction(ViewerWindow *win) :
 }
 
 void
-AnimationForwardStepAction::Execute()
+TimeSliderForwardStepAction::Execute()
 {
      windowMgr->NextFrame(windowId);
 }
 
 bool
-AnimationForwardStepAction::Enabled() const
+TimeSliderForwardStepAction::Enabled() const
 {
-    return (window->GetAnimation()->GetNFrames() > 1) &&
-           (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+    return window->GetPlotList()->HasActiveTimeSlider() &&
+           window->GetPlotList()->GetNumPlots() > 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -163,23 +165,52 @@ AnimationSetNFramesAction::AnimationSetNFramesAction(ViewerWindow *win) :
     DisableVisual();
 }
 
+// ****************************************************************************
+// Method: AnimationSetNFramesAction::Execute
+//
+// Purpose: 
+//   Executes the set n frames action, which is around for keyframing.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Feb 3 16:19:53 PST 2004
+//
+// Modifications:
+//   Brad Whitlock, Tue Feb 3 16:20:22 PST 2004
+//   I made it update the keyframe attributes instead of the window info.
+//
+// ****************************************************************************
+
 void
 AnimationSetNFramesAction::Execute()
 {
-    window->GetAnimation()->SetNFrames(args.GetNFrames());
-    windowMgr->UpdateGlobalAtts();
+    window->GetPlotList()->SetNKeyframes(args.GetNFrames());
+    windowMgr->UpdateKeyframeAttributes();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-AnimationSetFrameAction::AnimationSetFrameAction(ViewerWindow *win) :
-    ViewerAction(win, "AnimationSetFrameAction")
+SetTimeSliderStateAction::SetTimeSliderStateAction(ViewerWindow *win) :
+    ViewerAction(win, "SetTimeSliderStateAction")
 {
     DisableVisual();
 }
 
 void
-AnimationSetFrameAction::Execute()
+SetTimeSliderStateAction::Execute()
 {
-    windowMgr->SetFrameIndex(args.GetFrameNumber(), windowId);
+    windowMgr->SetFrameIndex(args.GetStateNumber(), windowId);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+SetActiveTimeSliderAction::SetActiveTimeSliderAction(ViewerWindow *win) :
+    ViewerAction(win, "SetActiveTimeSliderAction")
+{
+    DisableVisual();
+}
+
+void
+SetActiveTimeSliderAction::Execute()
+{
+    windowMgr->SetActiveTimeSlider(args.GetDatabase(), windowId);
 }

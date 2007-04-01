@@ -136,12 +136,15 @@ ViewerPlotFactory::GetNPlotTypes() const
 //    Brad Whitlock, Fri Apr 4 10:28:30 PDT 2003
 //    I added the nStates argument.
 //
+//    Brad Whitlock, Fri Mar 26 13:53:59 PST 2004
+//    I replaced time0, time1 with plotState.
+//
 // ****************************************************************************
 
 ViewerPlot *
-ViewerPlotFactory::CreatePlot(const int type, const char *hostName,
-    const char *databaseName, const char *varName, avtSILRestriction_p silr,
-    const int time0, const int time1, const int nStates) const
+ViewerPlotFactory::CreatePlot(const int type, const std::string &hostName,
+    const std::string &databaseName, const std::string &varName,
+    avtSILRestriction_p silr, const int plotState, const int nStates) const
 {
     //
     // Check that the type is within range and that the type has been
@@ -157,7 +160,7 @@ ViewerPlotFactory::CreatePlot(const int type, const char *hostName,
     //
     return new ViewerPlot(type,
         viewerPluginInfo[type], hostName, databaseName, varName, silr,
-        time0, time1, nStates);
+        plotState, nStates);
 }
 
 // ****************************************************************************

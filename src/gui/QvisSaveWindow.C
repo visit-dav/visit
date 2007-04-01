@@ -92,6 +92,10 @@ QvisSaveWindow::~QvisSaveWindow()
 //   Kathleen Bonnell, Thu Nov 13 12:15:25 PST 2003 
 //   Added compression type combo box.
 //
+//   Mark C. Miller, Mon Mar 29 16:21:14 PST 2004
+//   Elminated code that disabled parts of GUI controlling off-screen
+//   toggle and image size
+//
 // ****************************************************************************
 
 void
@@ -237,13 +241,6 @@ QvisSaveWindow::CreateWindowContents()
     toggleLayout2->addWidget(stereoCheckBox);
     toggleLayout2->addStretch(10);
 
-#if 1
-    // Get rid of this code when saving images is fully implemented in the viewer.
-    hostLabel->setEnabled(false);
-    hostLineEdit->setEnabled(false);
-    screenCaptureCheckBox->setEnabled(false);
-    saveTiledCheckBox->setEnabled(false);
-#endif
 }
 
 // ****************************************************************************

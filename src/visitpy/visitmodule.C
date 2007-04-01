@@ -45,6 +45,8 @@
 #include <AnnotationObject.h>
 #include <AnnotationObjectList.h>
 #include <ColorTableAttributes.h>
+#include <DatabaseCorrelationList.h>
+#include <DatabaseCorrelation.h>
 #include <EngineList.h>
 #include <GlobalAttributes.h>
 #include <KeyframeAttributes.h>
@@ -70,6 +72,7 @@
 // Extension include files.
 //
 #include <PyAnnotationAttributes.h>
+#include <PyGlobalAttributes.h>
 #include <PyHostProfile.h>
 #include <PyKeyframeAttributes.h>
 #include <PyMaterialAttributes.h>
@@ -138,9 +141,6 @@ static void DelayedLoadPlugins();
 static void PlotPluginAddInterface();
 static void OperatorPluginAddInterface();
 static void InitializeExtensions();
-
-
-void ParseTupleForVars(PyObject *tuple, stringVector &vars);
 
 //
 // Type definitions
@@ -422,6 +422,191 @@ IntReturnValue(int errorFlag)
 
     if(errorFlag >= 0)
         retval = PyLong_FromLong(long(errorFlag == 0));
+
+    return retval;
+}
+
+// ****************************************************************************
+// Function: DeprecatedMessage
+//
+// Purpose: 
+//   Prints a message for a deprecated function.
+//
+// Arguments:
+//   deprecatedFunction : The function that was deprecated.
+//   var                : The version in which the function was deprecated.
+//   newFunction        : The new function that should be called.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 2 08:58:03 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+DeprecatedMessage(const char *deprecatedFunction, const char *ver,
+    const char *newFunction)
+{
+    fprintf(stderr, 
+            "***\n"
+            "*** %s was deprecated in version %s.\n"
+            "*** Calling %s will still work for now but you should\n"
+            "*** update your code so it uses the %s function.\n"
+            "***\n",
+            deprecatedFunction, ver, deprecatedFunction, newFunction);
+}
+
+// ****************************************************************************
+// Method: GetStringVectorFromPyObject
+//
+// Purpose: 
+//   Populates a string vector from values in a PyObject.
+//
+// Arguments:
+//   obj : The PyObject that we're checking for strings.
+//   vec : The string vector that we're populating.
+//
+// Returns:    True if successful; false otherwise.
+//
+// Note:       Adapted from ParseTupleForVars but it can parse more than
+//             tuples.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 2 09:51:39 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+GetStringVectorFromPyObject(PyObject *obj, stringVector &vec)
+{
+    bool retval = true;
+
+    if(obj == 0)
+    {
+        retval = false;
+    }
+    else if(PyTuple_Check(obj))
+    {
+        // Extract arguments from the tuple.
+        for(int i = 0; i < PyTuple_Size(obj); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(obj, i);
+            if(PyString_Check(item))
+                vec.push_back(PyString_AS_STRING(item));
+            else
+            {
+                VisItErrorFunc("The tuple must contain all strings.");
+                retval = false;
+                break;
+            }
+        }
+    }
+    else if(PyList_Check(obj))
+    {
+        // Extract arguments from the list.
+        for(int i = 0; i < PyList_Size(obj); ++i)
+        {
+            PyObject *item = PyList_GET_ITEM(obj, i);
+            if(PyString_Check(item))
+                vec.push_back(PyString_AS_STRING(item));
+            else
+            {
+                VisItErrorFunc("The list must contain all strings.");
+                retval = false;
+                break;
+            }
+        }
+    }
+    else if(PyString_Check(obj))
+    {
+        vec.push_back(PyString_AS_STRING(obj));
+    }
+    else
+    {
+        retval = false;
+        VisItErrorFunc("The object could not be converted to a "
+                       "vector of strings.");
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: GetDoubleArrayFromPyObject
+//
+// Purpose: 
+//   Fills a double array with values from a tuple or list.
+//
+// Arguments:
+//   obj    : The PyObject from which we're getting the values.
+//   array  : The destination array.
+//   maxLen : The length of the destination array.
+//
+// Returns:    True if successful; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 2 10:14:33 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+GetDoubleArrayFromPyObject(PyObject *obj, double *array, int maxLen)
+{
+    bool retval = true;
+
+    if(obj == 0)
+    {
+        retval = false;
+    }
+    else if(PyTuple_Check(obj))
+    {
+        int size = PyTuple_Size(obj);
+        for(int i = 0; i < size && i < maxLen; ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(obj, i);
+            if(PyFloat_Check(item))
+                array[i] = PyFloat_AS_DOUBLE(item);
+            else if(PyInt_Check(item))
+                array[i] = double(PyInt_AS_LONG(item));
+            else if(PyLong_Check(item))
+                array[i] = double(PyLong_AsDouble(item));
+        }
+    }
+    else if(PyList_Check(obj))
+    {
+        int size = PyList_Size(obj);
+        for(int i = 0; i < size && i < maxLen; ++i)
+        {
+            PyObject *item = PyList_GET_ITEM(obj, i);
+            if(PyFloat_Check(item))
+                array[i] = PyFloat_AS_DOUBLE(item);
+            else if(PyInt_Check(item))
+                array[i] = double(PyInt_AS_LONG(item));
+            else if(PyLong_Check(item))
+                array[i] = double(PyLong_AsDouble(item));
+        }
+    }
+    else if(PyFloat_Check(obj))
+    {
+        array[0] = PyFloat_AS_DOUBLE(obj);
+    }
+    else if(PyInt_Check(obj))
+    {
+        array[0] = double(PyInt_AS_LONG(obj));
+    }
+    else if(PyLong_Check(obj))
+    {
+        array[0] = double(PyLong_AsDouble(obj));
+    }
+    else
+    {
+        retval = false;
+    }
 
     return retval;
 }
@@ -934,25 +1119,86 @@ visit_CloneWindow(PyObject *self, PyObject *args)
 //   Brad Whitlock, Mon Dec 30 13:10:14 PST 2002
 //   I made more of the animation methods synchronized.
 //
+//   Brad Whitlock, Tue Mar 2 08:49:45 PDT 2004
+//   I rewrote the method to use the active source and its database
+//   correlation to get the number of states for the database.
+//
 // ****************************************************************************
 
 STATIC PyObject *
 visit_GetDatabaseNStates(PyObject *self, PyObject *args)
 {
-    GlobalAttributes *ga = viewer->GetGlobalAttributes();
-    PyObject *retval = PyLong_FromLong((long)ga->GetNStates());
+    WindowInformation *wi = viewer->GetWindowInformation();
+    DatabaseCorrelationList *correlations = viewer->GetDatabaseCorrelationList();
+
+    // Get the number of states for the active source.
+    const std::string &source = wi->GetActiveSource();
+    DatabaseCorrelation *c = correlations->FindCorrelation(source);
+    int nStates = 0;
+    if(c != 0)
+        nStates = c->GetNumStates();
+
+    PyObject *retval = PyLong_FromLong(long(nStates));
     return retval;
+}
+
+// ****************************************************************************
+// Function: visit_TimeSliderNextState
+//
+// Purpose: 
+//   Tells the viewer to advance the active time slider to the next state.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 2 08:51:02 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_TimeSliderNextState(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    MUTEX_LOCK();
+        viewer->TimeSliderNextState();
+        if(logging)
+            fprintf(logFile, "TimeSliderNextState()\n");
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
 }
 
 STATIC PyObject *
 visit_AnimationNextFrame(PyObject *self, PyObject *args)
 {
+    DeprecatedMessage("AnimationNextFrame", "1.3", "TimeSliderNextState");
+    return visit_TimeSliderNextState(self, args);
+}
+
+// ****************************************************************************
+// Function: visit_TimeSliderPreviousState
+//
+// Purpose: 
+//   Tells the viewer to set the active time slider to the previous state.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 2 08:51:02 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_TimeSliderPreviousState(PyObject *self, PyObject *args)
+{
     ENSURE_VIEWER_EXISTS();
 
     MUTEX_LOCK();
-        viewer->AnimationNextFrame();
+        viewer->TimeSliderPreviousState();
         if(logging)
-            fprintf(logFile, "AnimationNextFrame()\n");
+            fprintf(logFile, "TimeSliderPreviousState()\n");
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -962,12 +1208,55 @@ visit_AnimationNextFrame(PyObject *self, PyObject *args)
 STATIC PyObject *
 visit_AnimationPreviousFrame(PyObject *self, PyObject *args)
 {
+    DeprecatedMessage("AnimationPreviousFrame", "1.3", "TimeSliderPreviousState");
+    return visit_TimeSliderPreviousState(self, args);
+}
+
+// ****************************************************************************
+// Function: visit_SetTimeSliderState
+//
+// Purpose: 
+//   Tells the viewer to set the time state for the active time slider.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 2 09:01:59 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetTimeSliderState(PyObject *self, PyObject *args)
+{
     ENSURE_VIEWER_EXISTS();
 
+    //
+    // Get the number of states for the active time slider.
+    //
+    WindowInformation *wi = viewer->GetWindowInformation();
+    DatabaseCorrelationList *correlations = viewer->GetDatabaseCorrelationList();
+    const std::string &ts = wi->GetTimeSliders()[wi->GetActiveTimeSlider()];
+    DatabaseCorrelation *c = correlations->FindCorrelation(ts);
+    int nStates = 0;
+    if(c != 0)
+        nStates = c->GetNumStates();
+
+    int state;
+    if(!PyArg_ParseTuple(args, "i", &state))
+        return NULL;
+    if(state < 0 || state >= nStates)
+    {
+        fprintf(stderr, "The active time slider, %s, has states in this range:"
+            " [0,%d]. You cannot use %d for the new time slider state because "
+            "that value is not in the range for the time slider\n", 
+            ts.c_str(), nStates-1, state);
+        return NULL;
+    }
+
     MUTEX_LOCK();
-        viewer->AnimationPreviousFrame();
+        viewer->SetTimeSliderState(state);
         if(logging)
-            fprintf(logFile, "AnimationPreviousFrame()\n");
+            fprintf(logFile, "SetTimeSliderState(%d)\n", state);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -977,18 +1266,52 @@ visit_AnimationPreviousFrame(PyObject *self, PyObject *args)
 STATIC PyObject *
 visit_AnimationSetFrame(PyObject *self, PyObject *args)
 {
+    DeprecatedMessage("AnimationSetFrame", "1.3", "SetTimeSliderState");
+    return visit_SetTimeSliderState(self, args);
+}
+
+// ****************************************************************************
+// Function: visit_SetActiveTimeSlider
+//
+// Purpose: 
+//   Sets the active time slider in the viewer.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 2 09:13:29 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetActiveTimeSlider(PyObject *self, PyObject *args)
+{
     ENSURE_VIEWER_EXISTS();
 
-    int frame;
-    if(!PyArg_ParseTuple(args, "i", &frame))
-        return NULL;
-    if(frame < 0 || frame >= viewer->GetGlobalAttributes()->GetNFrames())
+    //
+    // Get the name of the time slider that we want to use.
+    //
+    char *tsName = NULL;
+    if(!PyArg_ParseTuple(args, "s", &tsName))
         return NULL;
 
+    //
+    // Make sure that the time slider has a correlation. If not, it is not
+    // a valid time slider.
+    //
+    DatabaseCorrelationList *correlations = viewer->GetDatabaseCorrelationList();
+    DatabaseCorrelation *c = correlations->FindCorrelation(tsName);
+    if(c == 0)
+    {
+        fprintf(stderr, "You cannot set the active time slider to \"%s\" "
+            "because there is no such time slider.\n", tsName);
+        return NULL;
+    }
+
     MUTEX_LOCK();
-        viewer->AnimationSetFrame(frame);
+        viewer->SetActiveTimeSlider(tsName);
         if(logging)
-            fprintf(logFile, "AnimationSetFrame(%d)\n", frame);
+            fprintf(logFile, "SetActiveTimeSlider(\"%s\")\n", tsName);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -996,27 +1319,104 @@ visit_AnimationSetFrame(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
-// Function: visit_AnimationGetNFrames
+// Method: visit_GetActiveTimeSlider
 //
 // Purpose: 
-//   Returns the number of frames in the animation.
+//   Returns the active time slider.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 19 11:05:01 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetActiveTimeSlider(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    const WindowInformation *wi = viewer->GetWindowInformation();
+    std::string activeTS("");
+    if(wi->GetActiveTimeSlider() >= 0)
+         activeTS = wi->GetTimeSliders()[wi->GetActiveTimeSlider()];
+    return PyString_FromString(activeTS.c_str());
+}
+
+// ****************************************************************************
+// Method: visit_GetTimeSliders
+//
+// Purpose: 
+//   Returns a dictionary containing the time sliders with their states.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 19 11:15:13 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetTimeSliders(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    const WindowInformation *wi = viewer->GetWindowInformation();
+    const stringVector &timeSliders = wi->GetTimeSliders();
+    const intVector &timeSliderStates = wi->GetTimeSliderCurrentStates();
+
+    // Create a dictionary object and put the time sliders in it.
+    PyObject *dict = PyDict_New();
+    for(int i = 0; i < timeSliders.size(); ++i)
+    {
+        PyObject *tsName = PyString_FromString(timeSliders[i].c_str());
+        PyObject *tsValue = PyInt_FromLong(timeSliderStates[i]);
+        PyDict_SetItem(dict, tsName, tsValue);
+    }
+
+    return dict;
+}
+
+// ****************************************************************************
+// Function: visit_TimeSliderGetNStates
+//
+// Purpose: 
+//   Returns the number of states for the active time slider.
 //
 // Notes:
 //
 // Programmer: Brad Whitlock
-// Creation:   Mon Jul 28 16:41:44 PST 2003
+// Creation:   Tue Mar 2 09:16:26 PDT 2004
 //
 // Modifications:
 //
 // ****************************************************************************
 
 STATIC PyObject *
-visit_AnimationGetNFrames(PyObject *self, PyObject *args)
+visit_TimeSliderGetNStates(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
+    //
+    // Get the number of states for the active time slider.
+    //
+    WindowInformation *wi = viewer->GetWindowInformation();
+    DatabaseCorrelationList *correlations = viewer->GetDatabaseCorrelationList();
+    const std::string &ts = wi->GetTimeSliders()[wi->GetActiveTimeSlider()];
+    DatabaseCorrelation *c = correlations->FindCorrelation(ts);
+    int nStates = 0;
+    if(c != 0)
+        nStates = c->GetNumStates();
+
     // Return the success value.
-    return PyLong_FromLong(long(viewer->GetGlobalAttributes()->GetNFrames()));
+    return PyLong_FromLong(long(nStates));
+}
+
+STATIC PyObject *
+visit_AnimationGetNFrames(PyObject *self, PyObject *args)
+{
+    DeprecatedMessage("AnimationGetNFrames", "1.3", "TimeSliderGetNStates");
+    return visit_TimeSliderGetNStates(self, args);
 }
 
 // ****************************************************************************
@@ -1209,6 +1609,9 @@ visit_DeIconifyAllWindows(PyObject *self, PyObject *args)
 //   Added support for optional second argument indicating the time index
 //   to open the database at.
 //
+//   Brad Whitlock, Tue Mar 2 10:19:42 PDT 2004
+//   I removed the code to set the animation time state to 0.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -1230,22 +1633,14 @@ visit_OpenDatabase(PyObject *self, PyObject *args)
     MUTEX_LOCK();
         viewer->OpenDatabase(fileName, timeIndex);
         if(logging)
-            fprintf(logFile, "OpenDatabase(\"%s\")\n", fileName);
+        {
+            fprintf(logFile, "OpenDatabase(\"%s\", %d)\n", fileName,
+                    timeIndex);
+        }
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
-
-    // See if it was a success.
-    if(errorFlag == 0)
-    {
-        // Go to the first time step.
-        MUTEX_LOCK();
-            viewer->AnimationSetFrame(timeIndex);
-        MUTEX_UNLOCK();
-        errorFlag = Synchronize();
-    }
 
     // Return the success value.
-    return IntReturnValue(errorFlag);
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -1260,6 +1655,8 @@ visit_OpenDatabase(PyObject *self, PyObject *args)
 // Creation:   Tue Jul 30 14:37:57 PST 2002
 //
 // Modifications:
+//   Brad Whitlock, Tue Mar 2 10:20:17 PDT 2004
+//   I removed the code to set the animation time state to 0.
 //
 // ****************************************************************************
 
@@ -1278,21 +1675,427 @@ visit_ReOpenDatabase(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "ReOpenDatabase(\"%s\")\n", fileName);
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
-
-    // See if it was a success.
-    if(errorFlag == 0)
-    {
-        // Go to the first time step.
-        MUTEX_LOCK();
-            viewer->AnimationSetFrame(0);
-        MUTEX_UNLOCK();
-        errorFlag = Synchronize();
-    }
 
     // Return the success value.
-    return IntReturnValue(errorFlag);
+    return IntReturnValue(Synchronize());
 }
+
+// ****************************************************************************
+// Function: visit_OverlayDatabase
+//
+// Purpose:
+//   Tells the viewer to overlay a database.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 7 18:05:58 PST 2002
+//
+// Modifications:
+//   Brad Whitlock, Fri Jul 26 12:11:16 PDT 2002
+//   I made it return a success value.
+//
+//   Brad Whitlock, Tue Mar 2 10:30:38 PDT 2004
+//   I removed the code to set the time state.
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_OverlayDatabase(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *fileName;
+    if (!PyArg_ParseTuple(args, "s", &fileName))
+       return NULL;
+
+    // Overlay the database.
+    MUTEX_LOCK();
+        viewer->OverlayDatabase(fileName);
+        if(logging)
+            fprintf(logFile, "OverlayDatabase(\"%s\")\n", fileName);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_ReplaceDatabase
+//
+// Purpose:
+//   Tells the viewer to replace a database.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 7 18:07:42 PST 2002
+//
+// Modifications:
+//   Brad Whitlock, Fri Jul 26 12:11:27 PDT 2002
+//   I made it return a success value.
+//
+//   Brad Whitlock, Wed Oct 15 16:38:39 PST 2003
+//   I made it accept an optional timestate argument.
+//
+//   Brad Whitlock, Tue Mar 2 10:31:19 PDT 2004
+//   I removed the code to set the animation time state.
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_ReplaceDatabase(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *fileName;
+    int timeState = 0;
+    if (!PyArg_ParseTuple(args, "si", &fileName, &timeState))
+    {
+       if (!PyArg_ParseTuple(args, "s", &fileName))
+           return NULL;
+       else
+           PyErr_Clear();
+    }
+
+    // Replace the database.
+    MUTEX_LOCK();
+        viewer->ReplaceDatabase(fileName, timeState);
+        if(logging)
+        {
+            fprintf(logFile, "ReplaceDatabase(\"%s\", %d)\n",
+                    fileName, timeState);
+        }
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_ActivateDatabase
+//
+// Purpose: 
+//   Tells the viewer to make the specified database be the active source.
+//   This is not quite as much work as opening the database so the database
+//   must already be open.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 2 10:21:24 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_ActivateDatabase(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *fileName;
+    if (!PyArg_ParseTuple(args, "s", &fileName))
+       return NULL;
+
+    // Activate the database.
+    MUTEX_LOCK();
+        viewer->ActivateDatabase(fileName);
+        if(logging)
+            fprintf(logFile, "ActivateDatabase(\"%s\")\n", fileName);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_CheckForNewStates
+//
+// Purpose: 
+//   Tells the viewer to look for new time states for the specified database.
+//   This function is meant to be a cheaper version of Reopen that does not
+//   mess with the plots or metadata but just adds new time states to the 
+//   database.     
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 2 10:22:34 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_CheckForNewStates(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *fileName;
+    if (!PyArg_ParseTuple(args, "s", &fileName))
+       return NULL;
+
+    // Check the database for new states.
+    MUTEX_LOCK();
+        viewer->CheckForNewStates(fileName);
+        if(logging)
+            fprintf(logFile, "CheckForNewStates(\"%s\")\n", fileName);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_CloseDatabase
+//
+// Purpose: 
+//   Tells the viewer to close the specified database.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 18 14:02:38 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_CloseDatabase(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *fileName;
+    if (!PyArg_ParseTuple(args, "s", &fileName))
+       return NULL;
+
+    // Close the database.
+    MUTEX_LOCK();
+        viewer->CloseDatabase(fileName);
+        if(logging)
+            fprintf(logFile, "CloseDatabase(\"%s\")\n", fileName);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_CreateDatabaseCorrelation
+//
+// Purpose: 
+//   Creates a new database correlation that involves the specified databases
+//   and uses the specified correlation method.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 2 09:47:25 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_CreateDatabaseCorrelation(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    int method;
+    char *name = 0;
+    PyObject *dbTuple = 0;
+    if (!PyArg_ParseTuple(args, "sOi", &name, &dbTuple, &method))
+        return NULL;
+
+    if(method < 0 || method > 3)
+    {
+        fprintf(stderr,
+        "The correlation method must be one of the following integer values:\n"
+        "   0 - IndexForIndexCorrelation\n"
+        "   1 - StretchedIndexCorrelation\n"
+        "   2 - TimeCorrelation\n"
+        "   3 - CycleCorrelation\n");
+        return NULL;
+    }
+
+    //
+    // Get the string vector containing the dbs from the PyObject.
+    //
+    stringVector dbs;
+    if(!GetStringVectorFromPyObject(dbTuple, dbs))
+        return NULL;
+
+    // Create the database correlation
+    MUTEX_LOCK();
+        viewer->CreateDatabaseCorrelation(name, dbs, method);
+        if(logging)
+        {
+            fprintf(logFile, "CreateDatabaseCorrelation(\"%s\",(", name);
+            for(int i = 0; i < dbs.size(); ++i)
+            {
+                fprintf(logFile, "%s", dbs[i].c_str());
+                if(i < dbs.size() - 1)
+                    fprintf(logFile, ", ");
+            }
+            fprintf(logFile, "), %d)\n", method);
+        }
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_AlterDatabaseCorrelation
+//
+// Purpose: 
+//   Changes the definition for the named database correlation.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 2 09:46:32 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_AlterDatabaseCorrelation(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    int method;
+    char *name = 0;
+    PyObject *dbTuple = 0;
+    if (!PyArg_ParseTuple(args, "sOi", &name, &dbTuple, &method))
+        return NULL;
+
+    if(method < 0 || method > 3)
+    {
+        fprintf(stderr,
+        "The correlation method must be one of the following integer values:\n"
+        "   0 - IndexForIndexCorrelation\n"
+        "   1 - StretchedIndexCorrelation\n"
+        "   2 - TimeCorrelation\n"
+        "   3 - CycleCorrelation\n");
+        return NULL;
+    }
+
+    //
+    // Get the string vector containing the dbs from the PyObject.
+    //
+    stringVector dbs;
+    if(!GetStringVectorFromPyObject(dbTuple, dbs))
+        return NULL;
+
+    // Alter the database correlation
+    MUTEX_LOCK();
+        viewer->AlterDatabaseCorrelation(name, dbs, method);
+        if(logging)
+        {
+            fprintf(logFile, "AlterDatabaseCorrelation(\"%s\",(", name);
+            for(int i = 0; i < dbs.size(); ++i)
+            {
+                fprintf(logFile, "%s", dbs[i].c_str());
+                if(i < dbs.size() - 1)
+                    fprintf(logFile, ", ");
+            }
+            fprintf(logFile, "), %d)\n", method);
+        }
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Method: visit_DeleteDatabaseCorrelation
+//
+// Purpose: 
+//   Deletes the named database correlation.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 2 09:45:53 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_DeleteDatabaseCorrelation(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *name = 0;
+    if (!PyArg_ParseTuple(args, "s", &name))
+        return NULL;
+
+    // Delete the database correlation
+    MUTEX_LOCK();
+        viewer->DeleteDatabaseCorrelation(name);
+        if(logging)
+            fprintf(logFile, "DeleteDatabaseCorrelation(\"%s\")\n", name);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Method: visit_SetDatabaseCorrelationOptions
+//
+// Purpose: 
+//   Set the default correlation options.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 19 17:42:14 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetDatabaseCorrelationOptions(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    int defaultCorrelationMethod;  // 0 = PaddedIndex
+    int whenToCorrelate = 2;       // only if same length
+    if (!PyArg_ParseTuple(args, "ii", &defaultCorrelationMethod,
+        &whenToCorrelate))
+        return NULL;
+
+    if(defaultCorrelationMethod < 0 || defaultCorrelationMethod > 3 ||
+       whenToCorrelate < 0 || whenToCorrelate > 2)
+    {
+        fprintf(stderr,
+        "The correlation method must be one of the following integer values:\n"
+        "   0 - IndexForIndexCorrelation\n"
+        "   1 - StretchedIndexCorrelation\n"
+        "   2 - TimeCorrelation\n"
+        "   3 - CycleCorrelation\n"
+        "\n"
+        "VisIt must be told when you want to automatically correlate:\n"
+        "   0 - CorrelateAlways\n"
+        "   1 - CorrelateNever\n"
+        "   2 - CorrelateOnlyIfSameLength\n"); 
+        return NULL;
+    }
+
+    // Set the default correlation options.
+    MUTEX_LOCK();
+        // Let VisIt automatically correlate since we're likely running
+        // -nowin and we can't prompt the user.
+        DatabaseCorrelationList *cL = viewer->GetDatabaseCorrelationList();
+        cL->SetNeedPermission(false);
+        cL->SetDefaultCorrelationMethod(defaultCorrelationMethod);
+        cL->SetWhenToCorrelate((DatabaseCorrelationList::WhenToCorrelate)
+            whenToCorrelate);
+        cL->Notify();
+        if(logging)
+        {
+            fprintf(logFile, "SetDatabaseCorrelationOptions(%d, %d)\n",
+                    defaultCorrelationMethod, whenToCorrelate);
+        }
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
 
 // ****************************************************************************
 // Function: ExpressionDefinitionHelper
@@ -1470,6 +2273,9 @@ visit_DeleteExpression(PyObject *self, PyObject *args)
 //   I renamed the function to OpenComponentHelper and I made it 
 //   also responsible for telling the viewer to open mdservers.
 //
+//   Brad Whitlock, Tue Mar 2 09:55:05 PDT 2004
+//   I made it use GetStringVectorFromPyObject.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -1501,18 +2307,10 @@ OpenComponentHelper(PyObject *self, PyObject *args, bool openEngine)
             else
             {
                 // Make sure it's a tuple.
-                if(!PyTuple_Check(tuple))
+                if(!GetStringVectorFromPyObject(tuple, argv))
                 {
                     VisItErrorFunc(OCEError);
                     return NULL;
-                }
-
-                // Extract arguments from the tuple.
-                for(int i = 0; i < PyTuple_Size(tuple); ++i)
-                {
-                    PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                    if(PyString_Check(item))
-                        argv.push_back(PyString_AS_STRING(item));
                 }
             }
         }
@@ -1575,112 +2373,6 @@ STATIC PyObject *
 visit_OpenMDServer(PyObject *self, PyObject *args)
 {
     return OpenComponentHelper(self, args, false);
-}
-
-// ****************************************************************************
-// Function: visit_OverlayDatabase
-//
-// Purpose:
-//   Tells the viewer to overlay a database.
-//
-// Notes:      
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Mar 7 18:05:58 PST 2002
-//
-// Modifications:
-//   Brad Whitlock, Fri Jul 26 12:11:16 PDT 2002
-//   I made it return a success value.
-//
-// ****************************************************************************
-
-STATIC PyObject *
-visit_OverlayDatabase(PyObject *self, PyObject *args)
-{
-    ENSURE_VIEWER_EXISTS();
-
-    char *fileName;
-    if (!PyArg_ParseTuple(args, "s", &fileName))
-       return NULL;
-
-    // Overlay the database.
-    MUTEX_LOCK();
-        viewer->OverlayDatabase(fileName);
-        if(logging)
-            fprintf(logFile, "OverlayDatabase(\"%s\")\n", fileName);
-    MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
-
-    // Go to the first time step.
-    if(errorFlag == 0)
-    {
-        MUTEX_LOCK();
-            viewer->AnimationSetFrame(0);
-        MUTEX_UNLOCK();
-        errorFlag = Synchronize();
-    }
-
-    // Return the success value.
-    return IntReturnValue(errorFlag);
-}
-
-// ****************************************************************************
-// Function: visit_ReplaceDatabase
-//
-// Purpose:
-//   Tells the viewer to replace a database.
-//
-// Notes:      
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Mar 7 18:07:42 PST 2002
-//
-// Modifications:
-//   Brad Whitlock, Fri Jul 26 12:11:27 PDT 2002
-//   I made it return a success value.
-//
-//   Brad Whitlock, Wed Oct 15 16:38:39 PST 2003
-//   I made it accept an optional timestate argument.
-//
-// ****************************************************************************
-
-STATIC PyObject *
-visit_ReplaceDatabase(PyObject *self, PyObject *args)
-{
-    ENSURE_VIEWER_EXISTS();
-
-    char *fileName;
-    int timeState = 0;
-    if (!PyArg_ParseTuple(args, "si", &fileName, &timeState))
-    {
-       if (!PyArg_ParseTuple(args, "s", &fileName))
-           return NULL;
-       else
-           PyErr_Clear();
-    }
-
-    // Replace the database.
-    MUTEX_LOCK();
-        viewer->ReplaceDatabase(fileName, timeState);
-        if(logging)
-        {
-            fprintf(logFile, "ReplaceDatabase(\"%s\", %d)\n",
-                    fileName, timeState);
-        }
-    MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
-
-    // Go to the desired time step.
-    if(errorFlag == 0)
-    {
-        MUTEX_LOCK();
-            viewer->AnimationSetFrame(timeState);
-        MUTEX_UNLOCK();
-        errorFlag = Synchronize();
-    }
-
-    // Return the success value.
-    return IntReturnValue(errorFlag);
 }
 
 // ****************************************************************************
@@ -4107,6 +4799,34 @@ visit_SetViewExtentsType(PyObject *self, PyObject *args)
 
     // Return the success value.
     return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_GetGlobalAttributes
+//
+// Purpose: 
+//   Returns a GlobalAttributes object with the current state of the active
+//   window.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 19 08:54:23 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetGlobalAttributes(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    PyObject *retval = PyGlobalAttributes_NewPyObject();
+    GlobalAttributes *ga = PyGlobalAttributes_FromPyObject(retval);
+
+    // Copy the viewer proxy's window information into the return data structure.
+    *ga = *(viewer->GetGlobalAttributes());
+
+    return retval;
 }
 
 // ****************************************************************************
@@ -6577,6 +7297,33 @@ visit_ToggleMaintainViewMode(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_ToggleLockTime
+//
+// Purpose: 
+//   Tells the viewer to toggle time locking for the active vis window.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 23 16:04:03 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_ToggleLockTime(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    MUTEX_LOCK();
+        viewer->ToggleLockTime();
+        if(logging)
+            fprintf(logFile, "ToggleLockTime()\n");
+    MUTEX_UNLOCK();
+
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
 // Function: visit_ToggleBoundingBoxMode
 //
 // Purpose:
@@ -6799,6 +7546,9 @@ visit_WriteConfigFile(PyObject *self, PyObject *args)
 //   Kathleen Bonnell, Wed Dec  3 13:11:34 PST 2003 
 //   Allow "original" and "actual" to substitute in the vars arg for arg1.
 //
+//   Brad Whitlock, Tue Mar 2 10:12:44 PDT 2004
+//   Made it use GetStringVectorFromPyObject.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -6823,7 +7573,7 @@ visit_Query(PyObject *self, PyObject *args)
 
     // Check the tuple argument.
     stringVector vars;
-    ParseTupleForVars(tuple, vars);
+    GetStringVectorFromPyObject(tuple, vars);
     if (vars.size() == 1)
     {
         if (strcmp(vars[0].c_str(), "original") == 0)
@@ -6882,6 +7632,9 @@ visit_Query(PyObject *self, PyObject *args)
 //   Kathleen Bonnell, Tue Dec  2 07:34:48 PST 2003  
 //   Use new helper method ParseTupleForVars.
 //
+//   Brad Whitlock, Tue Mar 2 10:11:57 PDT 2004
+//   I made it use GetDoubleArrayFromPyObject and GetStringVectorFromPyObject.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -6907,21 +7660,7 @@ visit_Pick(PyObject *self, PyObject *args)
     if (wp)
     {
         // Extract the world-coordinate point from the first object.
-        if(PyTuple_Check(pt_tuple))
-        {
-            int size = PyTuple_Size(pt_tuple);
-            for(int i = 0; i < size && i < 3; ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(pt_tuple, i);
-                if(PyFloat_Check(item))
-                    pt[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    pt[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    pt[i] = double(PyLong_AsDouble(item));
-            }
-        }
-        else
+        if(!GetDoubleArrayFromPyObject(pt_tuple, pt, 3))
         {
             VisItErrorFunc("The first argument to WorldPick must be a point "
                            "specified as a tuple of coordinates.");
@@ -6931,7 +7670,7 @@ visit_Pick(PyObject *self, PyObject *args)
 
     // Check the tuple argument.
     stringVector vars;
-    ParseTupleForVars(tuple, vars);
+    GetStringVectorFromPyObject(tuple, vars);
 
     MUTEX_LOCK();
         if (!wp)
@@ -6974,6 +7713,9 @@ visit_Pick(PyObject *self, PyObject *args)
 //   Kathleen Bonnell, Tue Dec  2 07:34:48 PST 2003  
 //   Use new helper method ParseTupleForVars.
 //
+//   Brad Whitlock, Tue Mar 2 10:10:45 PDT 2004
+//   I made it use GetDoubleArrayFromPyObject and GetStringVectorFromPyObject.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -6998,21 +7740,7 @@ visit_NodePick(PyObject *self, PyObject *args)
     double pt[3] = {0.,0.,0.};
     if (wp)
     {
-        if(PyTuple_Check(pt_tuple))
-        {
-            int size = PyTuple_Size(pt_tuple);
-            for(int i = 0; i < size && i < 3; ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(pt_tuple, i);
-                if(PyFloat_Check(item))
-                    pt[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    pt[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    pt[i] = double(PyLong_AsDouble(item));
-            }
-        }
-        else
+        if(!GetDoubleArrayFromPyObject(pt_tuple, pt, 3))
         {
             VisItErrorFunc("The first argument to WorldNodePick must be a "
                            "point specified as a tuple of coordinates.");
@@ -7022,7 +7750,7 @@ visit_NodePick(PyObject *self, PyObject *args)
 
     // Check the tuple argument.
     stringVector vars;
-    ParseTupleForVars(tuple, vars);
+    GetStringVectorFromPyObject(tuple, vars);
 
     MUTEX_LOCK();
         if (!wp)
@@ -7232,44 +7960,6 @@ visit_GetPickAttributes(PyObject *self, PyObject *args)
     return retval;
 }
 
-
-// ****************************************************************************
-// Function: ParseTupleForVars
-//
-// Purpose:
-//   Parses the python tuple for strings (variable names).
-//
-// Notes:      
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   November 26, 2003 
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void 
-ParseTupleForVars(PyObject *tuple, stringVector &vars)
-{
-    if (tuple != NULL)
-    {
-        if(PyTuple_Check(tuple))
-        {
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyString_Check(item))
-                    vars.push_back(PyString_AS_STRING(item));
-            }
-        }
-        else if(PyString_Check(tuple))
-        {
-            vars.push_back(PyString_AS_STRING(tuple));
-        }
-    }
-}
-
-
 // ****************************************************************************
 // Function: visit_DomainPick
 //
@@ -7322,6 +8012,8 @@ visit_DomainPick(const char *type, int dom, int el, stringVector vars)
 // Creation:   December 1, 2003
 //
 // Modifications:
+//   Brad Whitlock, Tue Mar 2 09:59:30 PDT 2004
+//   I made it use GetStringVectorFromPyObject. which is slightly more general.
 //
 // ****************************************************************************
 
@@ -7344,7 +8036,7 @@ visit_PickByZone(PyObject *self, PyObject *args)
 
     // Check the tuple argument.
     stringVector vars;
-    ParseTupleForVars(tuple, vars);
+    GetStringVectorFromPyObject(tuple, vars);
 
     // Return the success value.
     return visit_DomainPick(type, dom, zone, vars);
@@ -7363,6 +8055,8 @@ visit_PickByZone(PyObject *self, PyObject *args)
 // Creation:   December 1, 2003
 //
 // Modifications:
+//   Brad Whitlock, Tue Mar 2 09:59:30 PDT 2004
+//   I made it use GetStringVectorFromPyObject. which is slightly more general.
 //
 // ****************************************************************************
 STATIC PyObject *
@@ -7384,7 +8078,7 @@ visit_PickByNode(PyObject *self, PyObject *args)
 
     // Check the tuple argument.
     stringVector vars;
-    ParseTupleForVars(tuple, vars);
+    GetStringVectorFromPyObject(tuple, vars);
 
     // Return the success value.
     return visit_DomainPick(type, dom, node, vars);
@@ -7414,6 +8108,9 @@ visit_PickByNode(PyObject *self, PyObject *args)
 //
 //    Kathleen Bonnell, Fri Mar  5 16:07:06 PST 2004 
 //    Set ApplyOperator (to all plots ) to false. 
+//
+//    Brad Whitlock, Tue Mar 2 10:08:54 PDT 2004
+//    I made it use GetDoubleArrayFromPyObject and GetStringVectorFromPyObject.
 //
 // ****************************************************************************
 
@@ -7445,21 +8142,7 @@ visit_Lineout(PyObject *self, PyObject *args)
 
     // Extract the starting point from the first object.
     double p0[3] = {0.,0.,0.};
-    if(PyTuple_Check(p0tuple))
-    {
-        int size = PyTuple_Size(p0tuple);
-        for(int i = 0; i < size && i < 3; ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(p0tuple, i);
-            if(PyFloat_Check(item))
-                p0[i] = PyFloat_AS_DOUBLE(item);
-            else if(PyInt_Check(item))
-                p0[i] = double(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                p0[i] = double(PyLong_AsDouble(item));
-        }
-    }
-    else
+    if(!GetDoubleArrayFromPyObject(p0tuple, p0, 3))
     {
         VisItErrorFunc("The first argument to Lineout must be a point "
                        "specified as a tuple of coordinates.");
@@ -7468,21 +8151,7 @@ visit_Lineout(PyObject *self, PyObject *args)
  
     // Extract the starting point from the second object.
     double p1[3] = {0.,0.,0.};
-    if(PyTuple_Check(p1tuple))
-    {
-        int size = PyTuple_Size(p1tuple);
-        for(int i = 0; i < size && i < 3; ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(p1tuple, i);
-            if(PyFloat_Check(item))
-                p1[i] = PyFloat_AS_DOUBLE(item);
-            else if(PyInt_Check(item))
-                p1[i] = double(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                p1[i] = double(PyLong_AsDouble(item));
-        }
-    }
-    else
+    if(!GetDoubleArrayFromPyObject(p1tuple, p1, 3))
     {
         VisItErrorFunc("The second argument to Lineout must be a point "
                        "specified as a tuple of coordinates.");
@@ -7491,7 +8160,7 @@ visit_Lineout(PyObject *self, PyObject *args)
 
     // Check the tuple argument.
     stringVector vars;
-    ParseTupleForVars(tuple, vars);
+    GetStringVectorFromPyObject(tuple, vars);
 
     MUTEX_LOCK();
         // Lineout should not be applied to more than one plot at a time. 
@@ -7994,6 +8663,14 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Brad Whitlock, Thu Feb 26 13:40:40 PST 2004
 //   Added ClearCacheForAllEngines.
 //
+//   Brad Whitlock, Tue Mar 2 09:21:19 PDT 2004
+//   Added methods to set the time slider state. I also deprected most of
+//   the old Animation functions. Added ActivateDatabase,
+//   AlterDatabaseCorrelation, DeleteDatabaseCorrelation,
+//   CheckForNewStates, CloseDatabase, GetGlobalAttributes,
+//   GetActiveTimeSlider, GetTimeSliders, SetDatabaseCorrelationOptions,
+//   ToggleLockTime.
+//
 // ****************************************************************************
 
 static void
@@ -8018,15 +8695,14 @@ AddDefaultMethods()
     //
     // Viewer proxy methods.
     //
+    AddMethod("ActivateDatabase", visit_ActivateDatabase);
     AddMethod("AddOperator", visit_AddOperator);
     AddMethod("AddPlot", visit_AddPlot);
     AddMethod("AddWindow",  visit_AddWindow);
-    AddMethod("AnimationNextFrame", visit_AnimationNextFrame);
-    AddMethod("AnimationPreviousFrame", visit_AnimationPreviousFrame);
-    AddMethod("AnimationSetFrame", visit_AnimationSetFrame);
-    AddMethod("AnimationGetNFrames", visit_AnimationGetNFrames);
+    AddMethod("AlterDatabaseCorrelation", visit_AlterDatabaseCorrelation);
     AddMethod("AnimationSetNFrames", visit_AnimationSetNFrames);
     AddMethod("ChangeActivePlotsVar", visit_ChangeActivePlotsVar);
+    AddMethod("CheckForNewStates", visit_CheckForNewStates);
     AddMethod("ChooseCenterOfRotation",  visit_ChooseCenterOfRotation);
     AddMethod("ClearAllWindows", visit_ClearAllWindows);
     AddMethod("ClearCache", visit_ClearCache);
@@ -8037,16 +8713,19 @@ AddDefaultMethods()
     AddMethod("ClearWindow", visit_ClearWindow);
     AddMethod("CloneWindow",  visit_CloneWindow);
     AddMethod("CloseComputeEngine", visit_CloseComputeEngine);
+    AddMethod("CloseDatabase", visit_CloseDatabase);
     AddMethod("CopyAnnotationsToWindow", visit_CopyAnnotationsToWindow);
     AddMethod("CopyLightingToWindow", visit_CopyLightingToWindow);
     AddMethod("CopyPlotsToWindow", visit_CopyPlotsToWindow);
     AddMethod("CopyViewToWindow", visit_CopyViewToWindow);
     AddMethod("CreateAnnotationObject", visit_CreateAnnotationObject);
+    AddMethod("CreateDatabaseCorrelation", visit_CreateDatabaseCorrelation);
     AddMethod("DefineMeshExpression", visit_DefineMeshExpression);
     AddMethod("DefineMaterialExpression", visit_DefineMaterialExpression);
     AddMethod("DefineScalarExpression", visit_DefineScalarExpression);
     AddMethod("DefineSpeciesExpression", visit_DefineSpeciesExpression);
     AddMethod("DefineVectorExpression", visit_DefineVectorExpression);
+    AddMethod("DeleteDatabaseCorrelation", visit_DeleteDatabaseCorrelation);
     AddMethod("DeleteExpression", visit_DeleteExpression);
     AddMethod("DeIconifyAllWindows", visit_DeIconifyAllWindows);
     AddMethod("DeleteActivePlots", visit_DeleteActivePlots);
@@ -8069,6 +8748,7 @@ AddDefaultMethods()
     AddMethod("GetAnnotationAttributes", visit_GetAnnotationAttributes);
     AddMethod("GetDatabaseNStates", visit_GetDatabaseNStates);
     AddMethod("GetEngineList", visit_GetEngineList);
+    AddMethod("GetGlobalAttributes", visit_GetGlobalAttributes);
     AddMethod("GetKeyframeAttributes", visit_GetKeyframeAttributes);
     AddMethod("GetMaterialAttributes", visit_GetMaterialAttributes);
     AddMethod("GetPickAttributes", visit_GetPickAttributes);
@@ -8109,6 +8789,7 @@ AddDefaultMethods()
     AddMethod("SaveSession", visit_SaveSession);
     AddMethod("SaveWindow", visit_SaveWindow);
     AddMethod("SetActivePlots", visit_SetActivePlots);
+    AddMethod("SetActiveTimeSlider", visit_SetActiveTimeSlider);
     AddMethod("SetActiveWindow", visit_SetActiveWindow);
     AddMethod("SetAnimationTimeout", visit_SetAnimationTimeout);
     AddMethod("SetAnnotationAttributes", visit_SetAnnotationAttributes);
@@ -8130,6 +8811,7 @@ AddDefaultMethods()
     AddMethod("SetPrinterAttributes", visit_SetPrinterAttributes);
     AddMethod("SetRenderingAttributes", visit_SetRenderingAttributes);
     AddMethod("SetSaveWindowAttributes", visit_SetSaveWindowAttributes);
+    AddMethod("SetTimeSliderState", visit_SetTimeSliderState);
     AddMethod("SetViewExtentsType", visit_SetViewExtentsType);
     AddMethod("SetViewCurve", visit_SetViewCurve);
     AddMethod("SetView2D", visit_SetView2D);
@@ -8139,9 +8821,13 @@ AddDefaultMethods()
     AddMethod("SetWindowLayout",  visit_SetWindowLayout);
     AddMethod("SetWindowMode",  visit_SetWindowMode);
     AddMethod("ShowToolbars", visit_ShowToolbars);
+    AddMethod("TimeSliderGetNStates",visit_TimeSliderGetNStates );
+    AddMethod("TimeSliderNextState", visit_TimeSliderNextState);
+    AddMethod("TimeSliderPreviousState", visit_TimeSliderPreviousState);
     AddMethod("ToggleBoundingBoxMode", visit_ToggleBoundingBoxMode);
     AddMethod("ToggleCameraViewMode", visit_ToggleCameraViewMode);
     AddMethod("ToggleFullFrameMode", visit_ToggleFullFrameMode);
+    AddMethod("ToggleLockTime", visit_ToggleLockTime);
     AddMethod("ToggleLockViewMode", visit_ToggleLockViewMode);
     AddMethod("ToggleMaintainViewMode", visit_ToggleMaintainViewMode);
     AddMethod("ToggleSpinMode", visit_ToggleSpinMode);
@@ -8158,25 +8844,36 @@ AddDefaultMethods()
     AddMethod("ShowAllWindows",  visit_ShowAllWindows);
 
     //
+    // Deprecated ViewerProxy methods. Remove in 1.4.
+    //
+    AddMethod("AnimationNextFrame", visit_AnimationNextFrame);
+    AddMethod("AnimationPreviousFrame", visit_AnimationPreviousFrame);
+    AddMethod("AnimationSetFrame", visit_AnimationSetFrame);
+    AddMethod("AnimationGetNFrames", visit_AnimationGetNFrames);
+
+    //
     // Extra methods that are not part of the ViewerProxy but allow the
     // script writer to do interesting things.
     //
     AddMethod("Source", visit_Source);
     AddMethod("ListPlots", visit_ListPlots);
     AddMethod("Expressions", visit_Expressions);
-    AddMethod("PlotPlugins", visit_PlotPlugins);
-    AddMethod("NumPlotPlugins", visit_NumPlotPlugins);
-    AddMethod("OperatorPlugins", visit_OperatorPlugins);
-    AddMethod("NumOperatorPlugins", visit_NumOperatorPlugins);
+    AddMethod("GetActiveTimeSlider", visit_GetActiveTimeSlider);
     AddMethod("GetDomains", visit_GetDomains);
     AddMethod("GetMaterials", visit_GetMaterials);
+    AddMethod("GetTimeSliders", visit_GetTimeSliders);
     AddMethod("ListDomains", visit_ListDomains);
     AddMethod("ListMaterials", visit_ListMaterials);
+    AddMethod("NumOperatorPlugins", visit_NumOperatorPlugins);
+    AddMethod("NumPlotPlugins", visit_NumPlotPlugins);
+    AddMethod("OperatorPlugins", visit_OperatorPlugins);
+    AddMethod("PlotPlugins", visit_PlotPlugins);
+    AddMethod("Queries",  visit_Queries);
+    AddMethod("SetDatabaseCorrelationOptions", visit_SetDatabaseCorrelationOptions);
     AddMethod("TurnDomainsOff",  visit_TurnDomainsOff);
     AddMethod("TurnDomainsOn",  visit_TurnDomainsOn);
     AddMethod("TurnMaterialsOff",  visit_TurnMaterialsOff);
     AddMethod("TurnMaterialsOn",  visit_TurnMaterialsOn);
-    AddMethod("Queries",  visit_Queries);
 
     // Temporary methods
     AddMethod("ColorTableNames", visit_ColorTableNames);
@@ -8210,6 +8907,9 @@ AddDefaultMethods()
 //   Eric Brugger, Wed Aug 20 14:20:25 PDT 2003
 //   Added ViewCurveAttributes, View2DAttributes and View3DAttributes.
 //
+//   Brad Whitlock, Fri Mar 19 08:50:53 PDT 2004
+//   Added GlobalAttributes.
+//
 // ****************************************************************************
 
 static void
@@ -8219,6 +8919,7 @@ AddExtensions()
     PyMethodDef *methods;
 
     ADD_EXTENSION(PyAnnotationAttributes_GetMethodTable);
+    ADD_EXTENSION(PyGlobalAttributes_GetMethodTable);
     ADD_EXTENSION(PyHostProfile_GetMethodTable);
     ADD_EXTENSION(PyMaterialAttributes_GetMethodTable);
     ADD_EXTENSION(PyPrinterAttributes_GetMethodTable);
@@ -8257,12 +8958,16 @@ AddExtensions()
 //   Removed ViewAttributes and added ViewCurveAttributes, View2DAttributes
 //   and View3DAttributes.
 //
+//   Brad Whitlock, Fri Mar 19 08:51:39 PDT 2004
+//   Added GlobalAttributes.
+//
 // ****************************************************************************
 
 static void
 InitializeExtensions()
 {
     PyAnnotationAttributes_StartUp(viewer->GetAnnotationAttributes(), logFile);
+    PyGlobalAttributes_StartUp(viewer->GetGlobalAttributes(), logFile);
     PyHostProfile_StartUp(0, logFile);
     PyMaterialAttributes_StartUp(viewer->GetMaterialAttributes(), logFile);
     PyPrinterAttributes_StartUp(viewer->GetPrinterAttributes(), logFile);
@@ -8290,13 +8995,17 @@ InitializeExtensions()
 //   Eric Brugger, Wed Aug 20 14:20:25 PDT 2003
 //   Removed ViewAttributes and added ViewCurveAttributes, View2DAttributes
 //   and View3DAttributes.
-//   
+//
+//   Brad Whitlock, Fri Mar 19 08:52:05 PDT 2004
+//   Added GlobalAttributes.
+//
 // ****************************************************************************
 
 static void
 CloseExtensions()
 {
     PyAnnotationAttributes_CloseDown();
+    PyGlobalAttributes_CloseDown();
     PyMaterialAttributes_CloseDown();
     PyPrinterAttributes_CloseDown();
     PySaveWindowAttributes_CloseDown();
@@ -8328,6 +9037,9 @@ CloseExtensions()
 //   Brad Whitlock, Thu Nov 7 09:50:03 PDT 2002
 //   I added some modules that should have been called but were not.
 //
+//   Brad Whitlock, Fri Mar 19 08:52:27 PDT 2004
+//   Added GlobalAttributes.
+//
 // ****************************************************************************
 
 static void
@@ -8342,6 +9054,7 @@ SetLogging(bool val)
     // Set the logging flag in the extensions.
     //
     PyAnnotationAttributes_SetLogging(val);
+    PyGlobalAttributes_SetLogging(val);
     PyMaterialAttributes_SetLogging(val);
     PyPrinterAttributes_SetLogging(val);
     PyRenderingAttributes_SetLogging(val);

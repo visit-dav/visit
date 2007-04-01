@@ -1,5 +1,4 @@
 #include <WindowActions.h>
-#include <ViewerAnimation.h>
 #include <ViewerPlotList.h>
 #include <ViewerWindow.h>
 #include <ViewerWindowManager.h>
@@ -274,7 +273,7 @@ ClearWindowAction::Enabled() const
 {
     // This action should only be enabled if the window to which the action belongs
     // has plots in it.
-    return (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+    return (window->GetPlotList()->GetNumPlots() > 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -383,7 +382,7 @@ ClearPickPointsAction::Enabled() const
 {
     // This action should only be enabled if the window to which the action belongs
     // has plots in it.
-    return (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+    return (window->GetPlotList()->GetNumPlots() > 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -449,7 +448,7 @@ ClearReferenceLinesAction::Enabled() const
 {
     // This action should only be enabled if the window to which the action belongs
     // has plots in it.
-    return (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+    return (window->GetPlotList()->GetNumPlots() > 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -608,7 +607,7 @@ ToggleSpinModeAction::Enabled() const
 {
     // This action should only be enabled if the window to which the action belongs
     // has plots in it.
-    return (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+    return (window->GetPlotList()->GetNumPlots() > 0);
 }
 
 // ****************************************************************************
@@ -698,7 +697,7 @@ ToggleBoundingBoxModeAction::Enabled() const
 {
     // This action should only be enabled if the window to which the action belongs
     // has plots in it.
-    return (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+    return (window->GetPlotList()->GetNumPlots() > 0);
 }
 
 // ****************************************************************************
@@ -1024,7 +1023,7 @@ bool
 SetWindowModeAction::Enabled() const
 {
     return ViewerMultipleAction::Enabled() &&
-           (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+           (window->GetPlotList()->GetNumPlots() > 0);
 }
 
 // ****************************************************************************
@@ -1223,7 +1222,7 @@ bool
 EnableToolAction::Enabled() const
 {
     return ViewerMultipleAction::Enabled() &&
-           (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+           (window->GetPlotList()->GetNumPlots() > 0);
 }
 
 // ****************************************************************************

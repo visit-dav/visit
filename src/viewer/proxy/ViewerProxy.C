@@ -21,6 +21,7 @@
 #include <AnnotationObjectList.h>
 #include <AppearanceAttributes.h>
 #include <ColorTableAttributes.h>
+#include <DatabaseCorrelationList.h>
 #include <ExpressionList.h>
 #include <EngineList.h>
 #include <GlobalAttributes.h>
@@ -147,6 +148,9 @@
 //    Brad Whitlock, Wed Oct 29 10:57:21 PDT 2003
 //    I added annotationObjectList.
 //
+//    Brad Whitlock, Fri Jan 23 09:21:20 PDT 2004
+//    I added correlationList.
+//
 // ****************************************************************************
 
 ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
@@ -157,6 +161,7 @@ ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
     syncAtts             = new SyncAttributes;
     hostProfiles         = new HostProfileList;
     globalAtts           = new GlobalAttributes;
+    correlationList      = new DatabaseCorrelationList;
     plotList             = new PlotList;
     messageAtts          = new MessageAttributes;
     saveWindowAtts       = new SaveWindowAttributes;
@@ -309,6 +314,9 @@ ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
 //    Brad Whitlock, Wed Oct 29 10:57:21 PDT 2003
 //    I added annotationObjectList.
 //
+//    Brad Whitlock, Fri Jan 23 09:33:38 PDT 2004
+//    I added correlationList.
+//
 // ****************************************************************************
 
 ViewerProxy::~ViewerProxy()
@@ -324,6 +332,7 @@ ViewerProxy::~ViewerProxy()
     //
     delete hostProfiles;
     delete globalAtts;
+    delete correlationList;
     delete plotList;
     delete messageAtts;
     delete saveWindowAtts;
@@ -709,6 +718,9 @@ ViewerProxy::AddArgument(const std::string &arg)
 //    Brad Whitlock, Wed Oct 29 10:58:39 PDT 2003
 //    Added annotationOptionsList.
 //
+//    Brad Whitlock, Fri Jan 23 09:34:31 PDT 2004
+//    Added correlationList.
+//
 // ****************************************************************************
 
 void
@@ -755,6 +767,7 @@ ViewerProxy::Create()
     xfer->Add(appearanceAtts);
     xfer->Add(pluginManagerAttributes);
     xfer->Add(globalAtts);
+    xfer->Add(correlationList);
     xfer->Add(plotList);
     xfer->Add(hostProfiles);
     xfer->Add(messageAtts);
@@ -1327,6 +1340,100 @@ ViewerProxy::OpenDatabase(const std::string &database, int timeState,
 }
 
 // ****************************************************************************
+// Method: ViewerProxy::CloseDatabase
+//
+// Purpose: 
+//   Closes the specified database.
+//
+// Arguments:
+//   database : The database that we're closing.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 27 11:59:32 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::CloseDatabase(const std::string &database)
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    viewerRPC->SetRPCType(ViewerRPC::CloseDatabaseRPC);
+    viewerRPC->SetDatabase(database);
+
+    //
+    // Issue the RPC.
+    //
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerProxy::ActivateDatabase
+//
+// Purpose: 
+//   Activates the specified database, which makes it the active source
+//   but does not mess with time or anything like that.
+//
+// Arguments:
+//   database : The new active source.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 29 22:13:52 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::ActivateDatabase(const std::string &database)
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    viewerRPC->SetRPCType(ViewerRPC::ActivateDatabaseRPC);
+    viewerRPC->SetDatabase(database);
+
+    //
+    // Issue the RPC.
+    //
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerProxy::CheckForNewStates
+//
+// Purpose: 
+//   Checks the specified database for new states.
+//
+// Arguments:
+//   database : The database we're checking for new states.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 29 22:13:52 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::CheckForNewStates(const std::string &database)
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    viewerRPC->SetRPCType(ViewerRPC::CheckForNewStatesRPC);
+    viewerRPC->SetDatabase(database);
+
+    //
+    // Issue the RPC.
+    //
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
 //  Method: ViewerProxy::ReOpenDatabase
 //
 //  Purpose:
@@ -1477,6 +1584,93 @@ ViewerProxy::ClearCacheForAllEngines()
     //
     // Issue the RPC.
     //
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerProxy::CreateDatabaseCorrelation
+//
+// Purpose: 
+//   Creates a database correlation for the databases using the given
+//   correlation method.
+//
+// Arguments:
+//   name    : The name of the correlation.
+//   dbs     : The databases in the correlation.
+//   method  : The correlation method.
+//   nStates : The number of states in the correlation (or -1 if you don't care).
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 30 21:19:28 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void 
+ViewerProxy::CreateDatabaseCorrelation(const std::string &name,
+    const stringVector &dbs, int method, int nStates)
+{
+    viewerRPC->SetRPCType(ViewerRPC::CreateDatabaseCorrelationRPC);
+    viewerRPC->SetDatabase(name);
+    viewerRPC->SetProgramOptions(dbs);
+    viewerRPC->SetIntArg1(method);
+    viewerRPC->SetIntArg2(nStates);
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerProxy::AlterDatabaseCorrelation
+//
+// Purpose: 
+//   Alters an existing database correlation.
+//
+// Arguments:
+//   name    : The name of the correlation.
+//   dbs     : The databases in the correlation.
+//   method  : The correlation method.
+//   nStates : The number of states in the correlation (or -1 if you don't care).
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 30 21:19:28 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::AlterDatabaseCorrelation(const std::string &name,
+    const stringVector &dbs, int method, int nStates)
+{
+    viewerRPC->SetRPCType(ViewerRPC::AlterDatabaseCorrelationRPC);
+    viewerRPC->SetDatabase(name);
+    viewerRPC->SetProgramOptions(dbs);
+    viewerRPC->SetIntArg1(method);
+    viewerRPC->SetIntArg2(nStates);
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerProxy::DeleteDatabaseCorrelation
+//
+// Purpose: 
+//   Deletes the named database correlation.
+//
+// Arguments:
+//   name : The name of the correlation to delete.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 30 21:24:19 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::DeleteDatabaseCorrelation(const std::string &name)
+{
+    viewerRPC->SetRPCType(ViewerRPC::DeleteDatabaseCorrelationRPC);
+    viewerRPC->SetDatabase(name);
     viewerRPC->Notify();
 }
 
@@ -1714,22 +1908,23 @@ ViewerProxy::AnimationStop()
 }
 
 // ****************************************************************************
-//  Method: ViewerProxy::AnimationNextFrame
+//  Method: ViewerProxy::TimeSliderNextState
 //
 //  Purpose:
-//    Advance the active animation to the next frame.
+//    Advance the active time slider to the next state.
 //
-//  Programmer: Eric Brugger
-//  Creation:   August 15, 2000
+//  Programmer: Brad Whitlock
+//  Creation:   Sun Jan 25 01:54:32 PDT 2004
 //
 // ****************************************************************************
+
 void
-ViewerProxy::AnimationNextFrame()
+ViewerProxy::TimeSliderNextState()
 {
     //
     // Set the rpc type and arguments.
     //
-    viewerRPC->SetRPCType(ViewerRPC::AnimationNextFrameRPC);
+    viewerRPC->SetRPCType(ViewerRPC::TimeSliderNextStateRPC);
 
     //
     // Issue the RPC.
@@ -1738,22 +1933,22 @@ ViewerProxy::AnimationNextFrame()
 }
 
 // ****************************************************************************
-//  Method: ViewerProxy::AnimationPreviousFrame
+//  Method: ViewerProxy::TimeSliderPreviousState
 //
 //  Purpose:
-//    Advance the active animation to the previous frame.
+//    Advance the active time slider to the previous state.
 //
-//  Programmer: Eric Brugger
-//  Creation:   August 15, 2000
+//  Programmer: Brad Whitlock
+//  Creation:   Sun Jan 25 01:55:13 PDT 2004
 //
 // ****************************************************************************
 void
-ViewerProxy::AnimationPreviousFrame()
+ViewerProxy::TimeSliderPreviousState()
 {
     //
     // Set the rpc type and arguments.
     //
-    viewerRPC->SetRPCType(ViewerRPC::AnimationPreviousFrameRPC);
+    viewerRPC->SetRPCType(ViewerRPC::TimeSliderPreviousStateRPC);
 
     //
     // Issue the RPC.
@@ -1762,26 +1957,55 @@ ViewerProxy::AnimationPreviousFrame()
 }
 
 // ****************************************************************************
-//  Method: ViewerProxy::AnimationSetFrame
+//  Method: ViewerProxy::SetTimeSliderState
 //
 //  Purpose:
-//    Set the frame for the active animation.
+//    Set the state for the active time slider.
 //
 //  Arguments:
-//    frame     The frame number.
+//    state     The state number.
 //
-//  Programmer: Eric Brugger
-//  Creation:   August 15, 2000
+//  Programmer: Brad Whitlock
+//  Creation:   Sun Jan 25 01:56:13 PDT 2004
 //
 // ****************************************************************************
+
 void
-ViewerProxy::AnimationSetFrame(int frame)
+ViewerProxy::SetTimeSliderState(int state)
 {
     //
     // Set the rpc type and arguments.
     //
-    viewerRPC->SetRPCType(ViewerRPC::AnimationSetFrameRPC);
-    viewerRPC->SetFrameNumber(frame);
+    viewerRPC->SetRPCType(ViewerRPC::SetTimeSliderStateRPC);
+    viewerRPC->SetStateNumber(state);
+
+    //
+    // Issue the RPC.
+    //
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerProxy::SetActiveTimeSlider
+//
+// Purpose: 
+//   Tells the viewer to set the active time slider.
+//
+// Arguments:
+//   ts : The index of the active time slider that we want to use.
+//
+// Programmer: Brad Whitlock
+// Creation:   Sun Jan 25 01:57:56 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::SetActiveTimeSlider(const std::string &ts)
+{
+    viewerRPC->SetRPCType(ViewerRPC::SetActiveTimeSliderRPC);
+    viewerRPC->SetDatabase(ts);
 
     //
     // Issue the RPC.

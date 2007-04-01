@@ -13,9 +13,14 @@
 //  Programmer: Mark C. Miller
 //  Creation:   07Apr03
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Mar 29 14:11:42 PST 2004
+//    Added bool for 3D annotations
+//
 // ****************************************************************************
 
-RenderRPC::RenderRPC() : NonBlockingRPC("i*b")
+RenderRPC::RenderRPC() : NonBlockingRPC("i*bb")
 {
 }
 
@@ -48,13 +53,20 @@ RenderRPC::~RenderRPC()
 //  Programmer: Mark C. Miller
 //  Creation:   07Apr03
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Mar 29 14:11:42 PST 2004
+//    Added bool for 3D annotations
+//
 // ****************************************************************************
 
 void
-RenderRPC::operator()(const intVector& ids_, bool sendZBuffer_)
+RenderRPC::operator()(const intVector& ids_, bool sendZBuffer_,
+    bool do3DAnnotsOnly_)
 {
     SetIDs(ids_);
     SetSendZBuffer(sendZBuffer_);
+    SetDo3DAnnotsOnly(do3DAnnotsOnly_);
 
     Execute();
 }
@@ -77,11 +89,12 @@ RenderRPC::SelectAll()
 {
     Select(0, (void*)&ids);
     Select(1, (void*)&sendZBuffer);
+    Select(2, (void*)&do3DAnnotsOnly);
 }
 
 
 // ****************************************************************************
-//  Method: RenderRPC::SetIDs
+//  Method: RenderRPC::SetXXX methods
 //
 //  Purpose: 
 //    This sets the id parameter.
@@ -91,6 +104,9 @@ RenderRPC::SelectAll()
 //
 //  Programmer: Mark C. Miller
 //  Creation:   07Apr03
+//
+//  Modifications:
+//    Mark C. Miller, added method for 3D annotations
 //
 // ****************************************************************************
 
@@ -108,10 +124,17 @@ RenderRPC::SetSendZBuffer(bool sendZBuffer_)
     Select(1, (void*)&sendZBuffer);
 }
 
+void
+RenderRPC::SetDo3DAnnotsOnly(bool do3DAnnotsOnly_)
+{
+    do3DAnnotsOnly = do3DAnnotsOnly_;
+    Select(2, (void*)&do3DAnnotsOnly);
+}
+
 
 
 // ****************************************************************************
-//  Method: RenderRPC::GetIDs
+//  Method: RenderRPC::GetXXX methods
 //
 //  Purpose: 
 //    This returns network id.
@@ -120,6 +143,9 @@ RenderRPC::SetSendZBuffer(bool sendZBuffer_)
 //
 //  Programmer: Mark C. Miller
 //  Creation:   07Apr03
+//
+//  Modifications:
+//    Mark C. Miller, added method for 3D annotations
 //
 // ****************************************************************************
 
@@ -133,5 +159,11 @@ bool
 RenderRPC::GetSendZBuffer() const
 {
     return sendZBuffer;
+}
+
+bool
+RenderRPC::GetDo3DAnnotsOnly() const
+{
+    return do3DAnnotsOnly;
 }
 

@@ -31,7 +31,7 @@ class avtToolInterface;
 
 class VisWindow;
 class ViewerActionManager;
-class ViewerAnimation;
+class ViewerPlotList;
 class ViewerPopupMenu;
 class ViewerToolbar;
 
@@ -49,7 +49,7 @@ struct ExternalRenderRequestInfo
 //  Class: ViewerWindow
 //
 //  Purpose:
-//    This class contains a VisWindow, an animation and extra things
+//    This class contains a VisWindow, an plot list and extra things
 //    like the popup menu and the toolbar.
 //
 //  Programmer: Brad Whitlock
@@ -278,7 +278,14 @@ struct ExternalRenderRequestInfo
 //
 //    Brad Whitlock, Tue Dec 30 10:47:42 PDT 2003
 //    I added SetCenterOfRotation, ChooseCenterOfRotation and methods to
-//    support more generall=ized picking.
+//    support more generalized picking.
+//
+//    Brad Whitlock, Sun Jan 25 23:47:06 PST 2004
+//    Added support for multiple time sliders.
+//
+//    Mark C. Miller, Mon Mar 29 12:09:42 PST 2004
+//    Refactored ExternalRenderCallback into methods support automatic
+//    and manual external rendering
 //
 // ****************************************************************************
 
@@ -291,8 +298,8 @@ public:
 
     ViewerPopupMenu     *GetPopupMenu() const;
     ViewerToolbar       *GetToolbar() const;
-    ViewerAnimation     *GetAnimation() const;
     ViewerActionManager *GetActionManager() const;
+    ViewerPlotList      *GetPlotList() const;
     int  GetWindowId() const;
 
     void CreateNode(DataNode *parentNode, bool detailed);
@@ -348,10 +355,10 @@ public:
     void InvertBackgroundColor();
     void CopyGeneralAttributes(const ViewerWindow *);
     WindowAttributes GetWindowAttributes() const;
+    bool SendWindowEnvironmentToEngine(const std::string &host);
 
     void AddPlot(avtActor_p &);
     void ClearPlots();
-    void CopyAnimation(const ViewerWindow *, bool copyplots=true);
     void EnableUpdates();
     void DisableUpdates();
 
@@ -454,6 +461,7 @@ public:
     bool IsChangingScalableRenderingMode(bool toMode = false) const;
     bool DisableExternalRenderRequests();
     bool EnableExternalRenderRequests();
+    void ExternalRenderManual(avtDataObject_p& dob, int w, int h);
 
     // Rendering options.
     void SetAntialiasing(bool enabled);
@@ -491,11 +499,17 @@ private:
     void UpdateView2d(const double *limits);
     void UpdateView3d(const double *limits);
 
-    void ClearLastExternalRenderRequest();
-    void UpdateLastExternalRenderRequest(
+    void ClearLastExternalRenderRequestInfo();
+    void UpdateLastExternalRenderRequestInfo(
              const ExternalRenderRequestInfo& newRequest);
+    void GetExternalRenderRequestInfo(
+             ExternalRenderRequestInfo& theRequest) const;
     bool CanSkipExternalRender(
              const ExternalRenderRequestInfo& thisRequest) const;
+    bool ExternalRender(const ExternalRenderRequestInfo& thisRequest,
+             bool& shouldTurnOffScalableRendering, bool doAllAnnotations,
+             avtDataObject_p& dob);
+    void ExternalRenderAuto(avtDataObject_p& dob);
 
     static void ShowCallback(void *);
     static void HideCallback(void *);
@@ -514,7 +528,7 @@ private:
     VisWindow           *visWindow;
     ViewerPopupMenu     *popupMenu;
     ViewerToolbar       *toolbar;
-    ViewerAnimation     *animation;
+    ViewerPlotList      *plotList;
     ViewerActionManager *actionMgr;
 
     ViewCurveAttributes *curViewCurve;

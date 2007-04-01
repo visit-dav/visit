@@ -3,10 +3,11 @@
 #include <gui_exports.h>
 #include <qmainwindow.h>
 #include <GUIBase.h>
+#include <vector>
 
 class DataNode;
 
-// *******************************************************************
+// ****************************************************************************
 // Class: QvisWindowBase
 //
 // Purpose:
@@ -29,7 +30,7 @@ class DataNode;
 //   Brad Whitlock, Wed Sep 10 09:28:22 PDT 2003
 //   I added FitToScreen.
 //
-// *******************************************************************
+// ****************************************************************************
 
 class GUI_API QvisWindowBase : public QMainWindow, public GUIBase
 {
@@ -52,5 +53,8 @@ protected:
 
     bool saveWindowDefaults;
 };
+
+// Create a type for a vector of postable windows.
+typedef std::vector<QvisWindowBase *> WindowBaseVector;
 
 #endif

@@ -152,6 +152,9 @@ Definition:
 //   Brad Whitlock, Mon Dec 29 15:00:03 PST 2003
 //   I added new actions.
 //
+//   Brad Whitlock, Sun Jan 25 19:48:23 PST 2004
+//   I renamed some actions.
+//
 // ****************************************************************************
 
 void
@@ -210,11 +213,11 @@ ViewerWindowManagerAttributes::ProcessOldVersions(DataNode *parentNode,
 
         // Create an action group that contains the animation options.
         ActionGroupDescription animationGroup("Animation");
-        animationGroup.AddAction(ViewerRPC::AnimationPreviousFrameRPC);
+        animationGroup.AddAction(ViewerRPC::TimeSliderPreviousStateRPC);
         animationGroup.AddAction(ViewerRPC::AnimationReversePlayRPC);
         animationGroup.AddAction(ViewerRPC::AnimationStopRPC);
         animationGroup.AddAction(ViewerRPC::AnimationPlayRPC);
-        animationGroup.AddAction(ViewerRPC::AnimationNextFrameRPC);
+        animationGroup.AddAction(ViewerRPC::TimeSliderNextStateRPC);
         AddActionGroup(actionNode, animationGroup);
     }
 
@@ -281,6 +284,19 @@ ViewerWindowManagerAttributes::ProcessOldVersions(DataNode *parentNode,
     if(VersionLessThan(configVersion, "1.3"))
     {
         AddAction(actionNode, "View", ViewerRPC::ChooseCenterOfRotationRPC);
+
+        // Remove all of the animation actions and then re-add them with
+        // the new names in the right order.
+        RemoveActionFromNode(actionNode, "Animation", "AnimationPreviousFrameRPC");
+        RemoveActionFromNode(actionNode, "Animation", "AnimationNextFrameRPC");
+        RemoveActionFromNode(actionNode, "Animation", "AnimationStopRPC");
+        RemoveActionFromNode(actionNode, "Animation", "AnimationReversePlayRPC");
+        RemoveActionFromNode(actionNode, "Animation", "AnimationPlayRPC");
+        AddAction(actionNode, "Animation", ViewerRPC::TimeSliderPreviousStateRPC);
+        AddAction(actionNode, "Animation", ViewerRPC::AnimationReversePlayRPC);
+        AddAction(actionNode, "Animation", ViewerRPC::AnimationStopRPC);
+        AddAction(actionNode, "Animation", ViewerRPC::AnimationPlayRPC);
+        AddAction(actionNode, "Animation", ViewerRPC::TimeSliderNextStateRPC);
     }
 }
 
@@ -311,10 +327,41 @@ void
 ViewerWindowManagerAttributes::RemoveActionFromNode(DataNode *node,
     const char *actionGroupName, ViewerRPC::ViewerRPCType action)
 {
+    std::string actionName(ViewerRPC::ViewerRPCType_ToString(action));
+    RemoveActionFromNode(node, actionGroupName, actionName.c_str());
+}
+
+Function: RemoveActionFromNode2
+Declaration: void RemoveActionFromNode(DataNode *, const char *, const char *);
+Definition:
+
+// ****************************************************************************
+// Method: ViewerWindowManagerAttributes::RemoveActionFromNode
+//
+// Purpose: 
+//   Removes an action from an action group in a DataNode.
+//
+// Arguments:
+//   node            : The node that contains the action groups.
+//   actionGroupName : The name of the action group from which we're removing
+//                     the action.
+//   action          : The action to be removed.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 24 11:33:38 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManagerAttributes::RemoveActionFromNode(DataNode *node,
+    const char *actionGroupName, const char *aName)
+{
     // See if the ClearWindow action is in the Window action group.
     // If it is, remove it.
     std::string AGName(actionGroupName);
-    std::string actionName(ViewerRPC::ViewerRPCType_ToString(action));
+    std::string actionName(aName);
 
     DataNode **actionNodes = node->GetChildren();
     for(int i = 0; i < node->GetNumChildren(); ++i)
