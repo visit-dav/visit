@@ -49,12 +49,23 @@ avtDataObjectInformation::Copy(const avtDataObjectInformation &di)
 //  Programmer: Hank Childs
 //  Creation:   March 24, 2001
 //
+//  Modifications:
+//
+//    Mark C. Miller, Thu Jan 29 17:31:20 PST 2004
+//    Added passage of bools from data validity regarding whether any domain
+//    was owned to the merge of the attributes
+//
 // ****************************************************************************
 
 void
 avtDataObjectInformation::Merge(const avtDataObjectInformation &di)
 {
-    atts.Merge(di.atts);
+    // see if either operand has ever been left unset due to processor 
+    // not having read any domain 
+    bool ignoreThis =    validity.GetHasEverOwnedAnyDomain() ? false : true;
+    bool ignoreThat = di.validity.GetHasEverOwnedAnyDomain() ? false : true;
+
+    atts.Merge(di.atts, ignoreThis, ignoreThat);
     validity.Merge(di.validity);
 }
 
@@ -205,6 +216,10 @@ avtDataObjectInformation::SwapAndMerge(const avtDataObjectWriter_p dobw,
 //     message size as merges are performed. For example, the list of material
 //     labels may get longer and longer.
 //
+//     Mark C. Miller, Wed Jan 21 13:36:01 PST 2004
+//     Moved call to CanUseCummulativeAsTrueOrCurrent to outside the 
+//     #ifdef PARALLE block
+//
 // ****************************************************************************
 
 void
@@ -271,10 +286,11 @@ avtDataObjectInformation::ParallelMerge(const avtDataObjectWriter_p dobw)
       groupSize >>= 1;
    }
 
+#endif
+
    // indicate that it is ok to use cummulative true extents as true extents;
    GetAttributes().SetCanUseCummulativeAsTrueOrCurrent(true);
 
-#endif
 }
 
 // ****************************************************************************

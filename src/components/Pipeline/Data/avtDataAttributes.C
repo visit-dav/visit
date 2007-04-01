@@ -337,19 +337,42 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //
 //    Eric Brugger, Wed Aug 20 09:28:48 PDT 2003
 //    Merge windowMode.
+//
+//    Mark C. Miller, Thu Jan 29 19:40:25 PST 2004
+//    Added bools to ignore this or that. We might need to ignore this or that
+//    if in parallel, we can't guarentee that one of the two operands to the
+//    Merge operator has valid data members for ALL of them. Right now, the
+//    only attribute that is 'ignored' is variable dimension. If we discover
+//    that other circumstances arise other attribute data members can't be
+//    guraenteed to be valid, we can add more logic here. Added the
+//    support macro, CHECK_OR_IGNOR()
 // 
 // ****************************************************************************
 
+#define CHECK_OR_IGNORE(THIS,THAT)                                         \
+    if (THIS != THAT)                                                      \
+    {                                                                      \
+        if      ( ignoreThis &&  ignoreThat)                               \
+            ;                                                              \
+        else if ( ignoreThis && !ignoreThat)                               \
+            THIS = THAT;                                                   \
+        else if (!ignoreThis &&  ignoreThat)                               \
+            ;                                                              \
+        else if (!ignoreThis && !ignoreThat)                               \
+        {                                                                  \
+            EXCEPTION2(InvalidMergeException, THIS, THAT);                 \
+        }                                                                  \
+    }
+
 void
-avtDataAttributes::Merge(const avtDataAttributes &da)
+avtDataAttributes::Merge(const avtDataAttributes &da,
+   bool ignoreThis, bool ignoreThat)
 {
     //
     // Make sure that it will make sense to merge the data.
     //
-    if (centering != da.centering)
-    {
-        EXCEPTION2(InvalidMergeException, centering, da.centering);
-    }
+    CHECK_OR_IGNORE(centering, da.centering);
+
     if (cellOrigin != da.cellOrigin)
     {
         EXCEPTION2(InvalidMergeException, cellOrigin, da.cellOrigin);
@@ -358,11 +381,9 @@ avtDataAttributes::Merge(const avtDataAttributes &da)
     {
         EXCEPTION2(InvalidMergeException, blockOrigin, da.blockOrigin);
     }
-    if (variableDimension != da.variableDimension)
-    {
-        EXCEPTION2(InvalidMergeException, variableDimension,
-                   da.variableDimension);
-    }
+
+    CHECK_OR_IGNORE(variableDimension, da.variableDimension);
+
     if (spatialDimension != da.spatialDimension)
     {
         EXCEPTION2(InvalidMergeException, spatialDimension,
@@ -407,18 +428,41 @@ avtDataAttributes::Merge(const avtDataAttributes &da)
         SetContainsOriginalCells(da.GetContainsOriginalCells());
     }
 
-    trueSpatial->Merge(*(da.trueSpatial));
-    cumulativeTrueSpatial->Merge(*(da.cumulativeTrueSpatial));
-    effectiveSpatial->Merge(*(da.effectiveSpatial));
-    currentSpatial->Merge(*(da.currentSpatial));
-    cumulativeCurrentSpatial->Merge(*(da.cumulativeCurrentSpatial));
+    if (ignoreThis && ignoreThat)
+        ; // no-op because we care about neither
+    else if (ignoreThis && !ignoreThat)
+    {
+        trueSpatial              = da.trueSpatial;
+        cumulativeTrueSpatial    = da.cumulativeTrueSpatial;
+        effectiveSpatial         = da.effectiveSpatial;
+        currentSpatial           = da.currentSpatial;
+        cumulativeCurrentSpatial = da.cumulativeCurrentSpatial;
 
-    trueData->Merge(*(da.trueData));
-    cumulativeTrueData->Merge(*(da.cumulativeTrueData));
-    effectiveData->Merge(*(da.effectiveData));
-    currentData->Merge(*(da.currentData));
-    cumulativeCurrentData->Merge(*(da.cumulativeCurrentData));
-    canUseCummulativeAsTrueOrCurrent &= da.canUseCummulativeAsTrueOrCurrent;
+        trueData                 = da.trueData;
+        cumulativeTrueData       = da.cumulativeTrueData;
+        effectiveData            = da.effectiveData;
+        currentData              = da.currentData;
+        cumulativeCurrentData    = da.cumulativeCurrentData;
+
+        canUseCummulativeAsTrueOrCurrent = da.canUseCummulativeAsTrueOrCurrent;
+    }
+    else if (!ignoreThis && ignoreThat)
+        ; // no-op because we care only about this
+    else if (!ignoreThis && !ignoreThat)
+    {
+        trueSpatial->Merge(*(da.trueSpatial));
+        cumulativeTrueSpatial->Merge(*(da.cumulativeTrueSpatial));
+        effectiveSpatial->Merge(*(da.effectiveSpatial));
+        currentSpatial->Merge(*(da.currentSpatial));
+        cumulativeCurrentSpatial->Merge(*(da.cumulativeCurrentSpatial));
+
+        trueData->Merge(*(da.trueData));
+        cumulativeTrueData->Merge(*(da.cumulativeTrueData));
+        effectiveData->Merge(*(da.effectiveData));
+        currentData->Merge(*(da.currentData));
+        cumulativeCurrentData->Merge(*(da.cumulativeCurrentData));
+        canUseCummulativeAsTrueOrCurrent &= da.canUseCummulativeAsTrueOrCurrent;
+    }
 
     MergeLabels(da.labels);
     MergeTransform(da.transform);

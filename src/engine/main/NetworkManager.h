@@ -170,6 +170,8 @@ class NetworkManager
     void          Query(const std::vector<int> &, QueryAttributes*);
 
  private:
+    void          AdjustWindowAttributes(void);
+
     std::vector<DataNetwork*>   networkCache;
     std::vector<int>            globalCellCounts;
     std::deque<DataNetwork*>    networkMRU;

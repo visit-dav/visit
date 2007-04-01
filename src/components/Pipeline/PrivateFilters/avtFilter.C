@@ -584,6 +584,9 @@ avtFilter::TryDataExtents(double *outexts, const char *varname)
 //    Use the prescribed extents if the variable is named and that name is
 //    the name of the default variable.
 //
+//    Mark C. Miller, Sat Jan 31 13:31:08 PST 2004
+//    Added optional size of 18 for UnifyMinMax (max # comps = 9 for tensor)
+//
 // ****************************************************************************
 
 void
@@ -607,7 +610,7 @@ avtFilter::GetDataExtents(double *outexts, const char *varname)
         SearchDataForDataExtents(outexts);
     }
 
-    UnifyMinMax(outexts, atts.GetVariableDimension()*2);
+    UnifyMinMax(outexts, atts.GetVariableDimension()*2, 18);
 
     if (varname == NULL)
     {
@@ -680,6 +683,8 @@ avtFilter::TrySpatialExtents(double *outexts)
 //    Setting the extents with the output is a mistake -- the filter may even
 //    modify those extents.  They should be set with the input.
 //
+//    Mark C. Miller, Sat Jan 31 13:31:08 PST 2004
+//    Added altsize argument of 6 to UnifyMinMax call
 // ****************************************************************************
 
 void
@@ -696,7 +701,7 @@ avtFilter::GetSpatialExtents(double *newexts)
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
     atts.GetCumulativeTrueSpatialExtents()->CopyTo(newexts);
 
-    UnifyMinMax(newexts, atts.GetSpatialDimension()*2);
+    UnifyMinMax(newexts, atts.GetSpatialDimension()*2, 6);
 
     //
     // We now have determined the true spatial extents, so we may as well set
@@ -758,6 +763,8 @@ avtFilter::TryCurrentDataExtents(double *outexts)
 //    Setting the extents with the output is a mistake -- the filter may even
 //    modify those extents.  They should be set with the input.
 //
+//    Mark C. Miller, Sat Jan 31 13:31:08 PST 2004
+//    Added optional size of 18 for UnifyMinMax (max # comps = 9 for tensor)
 // ****************************************************************************
 
 void
@@ -774,7 +781,7 @@ avtFilter::GetCurrentDataExtents(double *newexts)
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
     atts.GetCumulativeCurrentDataExtents()->CopyTo(newexts);
 
-    UnifyMinMax(newexts, atts.GetVariableDimension()*2);
+    UnifyMinMax(newexts, atts.GetVariableDimension()*2, 18);
 
     //
     // We now have determined the current data extents, so we may as well set
@@ -832,6 +839,11 @@ avtFilter::TryCurrentSpatialExtents(double *outexts)
 //  Programmer: Kathleen Bonnell
 //  Creation:   October 2, 2001
 //
+//  Modificaitons:
+//
+//    Mark C. Miller, Sat Jan 31 13:31:08 PST 2004
+//    Added altsize argument of 6 to UnifyMinMax call
+//
 // ****************************************************************************
 
 void
@@ -848,7 +860,7 @@ avtFilter::GetCurrentSpatialExtents(double *outexts)
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
     atts.GetCumulativeCurrentSpatialExtents()->CopyTo(outexts);
 
-    UnifyMinMax(outexts, atts.GetSpatialDimension()*2);
+    UnifyMinMax(outexts, atts.GetSpatialDimension()*2, 6);
 
     //
     // We now have determined the true spatial extents, so we may as well set

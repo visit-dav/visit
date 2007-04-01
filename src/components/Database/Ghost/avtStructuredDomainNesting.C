@@ -8,7 +8,6 @@
 #include <vtkStructuredGrid.h>
 
 #define MAX_GHOST_LAYERS 2
-#define NESTING_GHOST_MASK 0x01
 
 // ****************************************************************************
 //  Destructor:  avtStructuredDomainNesting::Destruct
@@ -37,9 +36,9 @@ avtStructuredDomainNesting::Destruct(void *p)
 //     dimension and the pre-existing vtkGhostLevels data
 //
 //     To perform the detection, basically we try all reasonable combinations
-//     of ghost layers and probe the ghostData array around the extreme high
-//     and low ijk corners of the patch to see if we get something thats
-//     consistent. The loop looks daunting but it completes very quickly.
+//     of ghost numbers of layers and probe the ghostData array around the
+//     extreme high and low ijk corners of the patch to see if we get something
+//     thats consistent. The loop looks daunting but it completes very quickly.
 //
 //  Programmer:  Mark C. Miller 
 //  Creation:    January 8, 2004
@@ -79,9 +78,17 @@ DetectBoundaryGhostLayers(int numDims, unsigned char *ghostData, int numCells,
                 int Mj = Nj + 2 * gj;
                 int Mi = Ni + 2 * gi;
 
-                // can ignore this case immediately if it doesn't equate the
-                // the number of cells we know the ghost data has
-                if (Mk * Mj * Mi != numCells)
+                // can ignore this case immediately if the number of
+                // cells it presumes doesn't equate to the number of
+                // cells we know we have 
+                int ncells = 0;
+                switch (numDims)
+                {
+                    case 3: ncells = Mk * Mj * Mi; break;
+                    case 2: ncells =      Mj * Mi; break;
+                    case 1: ncells =           Mi; break;
+                }
+                if (ncells != numCells)
                     continue;
 
                 // probe ghost data array round 2 extreme corners
@@ -91,7 +98,9 @@ DetectBoundaryGhostLayers(int numDims, unsigned char *ghostData, int numCells,
                 {
                     int i0, j0, k0;
 
-                    // set which corner to look at
+                    // set which corner to examine ghost values around 
+                    // -1 --> Lower, Left, Front
+                    // +1 --> Upper, Right, Back
                     if (mult == -1)
                     {
                         // the extreme lowest corner 
@@ -124,8 +133,20 @@ DetectBoundaryGhostLayers(int numDims, unsigned char *ghostData, int numCells,
                                 int a = i0 + i * mult;
                                 int b = j0 + j * mult;
                                 int c = k0 + k * mult;
-                                int idx = c*Mi*Mj + b*Mi + a;
+                                int idx;
 
+                                // compute offset into ghost array assuming
+                                // a zone really exists at the logical index [a,b,c]
+                                switch (numDims)
+                                {
+                                    case 3: idx = c*Mi*Mj + b*Mi + a; break;
+                                    case 2: idx =           b*Mi + a; break;
+                                    case 1: idx =                  a; break;
+                                }
+
+                                // if the computed index is either out of
+                                // range or the ghost value indicates it
+                                // is NOT really a ghost, its invalid
                                 if ((idx < 0) || (idx >= numCells) ||
                                     (ghostData[idx] == 0))
                                 {
@@ -182,6 +203,14 @@ DetectBoundaryGhostLayers(int numDims, unsigned char *ghostData, int numCells,
 //    be easily modified to set the right bit. I also replaced cerr statements
 //    with bonified exceptions.
 //
+//    Mark C. Miller, Thu Jan 29 10:49:35 PST 2004
+//    I added code to set ghost values whether a child is present or not. If
+//    a child is NOT present, ghost values are set to 0 indicating that
+//    the parent should not be ghosted. I also removed tests for index out
+//    of range from inner loops. Finally, I changed to the code to use straight
+//    assignment rather than bit operators for to avoid possible generation of
+//    non-0/1 values.
+//
 // ****************************************************************************
 bool
 avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
@@ -200,10 +229,11 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
 
         int parentDom = domainList[i];
         int numCells = meshes[i]->GetNumberOfCells();
-        bool parentHasBoundaryGhosts = (ghostArray != 0);
+        bool parentAlreadyHasGhosts = (ghostArray != 0);
 
+        // assume there are no boundary ghost layers
         int ghostLayers[3] = {0, 0, 0};
-        if (parentHasBoundaryGhosts)
+        if (parentAlreadyHasGhosts)
         {
             ghostData = (unsigned char *) ghostArray->GetVoidPointer(0);
 
@@ -216,12 +246,16 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
             //
             DetectBoundaryGhostLayers(numDimensions, ghostData, numCells,
                 domainNesting[parentDom].logicalExtents, ghostLayers);
+
         }
         else
         {
             ghostArray = vtkUnsignedCharArray::New();
             ghostArray->SetNumberOfTuples(numCells);
             ghostData = (unsigned char *) ghostArray->GetVoidPointer(0);
+            ghostArray->SetName("vtkGhostLevels");
+            meshes[i]->GetCellData()->AddArray(ghostArray);
+            ghostArray->Delete();
             memset(ghostData, 0x0, numCells);
         }
 
@@ -242,7 +276,16 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
                 }
             }
 
+            //
+            // whether the child is on or not, we need to go through and set the ghosts of
+            // the parent accordingly. If the child is on, we need to set the ghost array
+            // in the parent to 1 where appropriate. Otherwise, we need to set it to 0
+            // We use the exclusive or operator below to achieve this
+            //
+            unsigned char ghostVal = 0x0;
             if (thisChildIsOn)
+                ghostVal = 0x1;
+
             {
                 int ratio[3];
                 int childDom   = domainNesting[parentDom].childDomains[j];
@@ -295,14 +338,7 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
                                 int b = jj - J0 + ghostLayers[1];
                                 int c = kk - K0 + ghostLayers[2];
                                 int idx = c*Ni*Nj + b*Ni + a;
-                                if ((idx >= numCells) || (idx < 0))
-                                {
-                                    EXCEPTION2(BadIndexException,idx,numCells);
-                                }
-                                else
-                                {
-                                    ghostData[idx] |= NESTING_GHOST_MASK;
-                                }
+                                ghostData[idx] = ghostVal;
                             }
                 }
                 else if (numDimensions == 2)
@@ -313,14 +349,7 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
                             int a = ii - I0 + ghostLayers[0];
                             int b = jj - J0 + ghostLayers[1];
                             int idx = b*Ni + a;
-                            if ((idx >= numCells) || (idx < 0))
-                            {
-                                EXCEPTION2(BadIndexException,idx,numCells);
-                            }
-                            else
-                            {
-                                ghostData[idx] |= NESTING_GHOST_MASK; 
-                            }
+                            ghostData[idx] = ghostVal; 
                         }
                 }
                 else
@@ -328,25 +357,10 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
                     for (int ii = i0; ii < i1; ii++)
                     {
                         int a = ii - I0 + ghostLayers[0];
-                        if ((a >= numCells) ||
-                            (a < 0))
-                        {
-                            EXCEPTION2(BadIndexException,a,numCells);
-                        }
-                        else
-                        {
-                            ghostData[a] |= NESTING_GHOST_MASK;
-                        }
+                        ghostData[a] = ghostVal;
                     }
                 }
             }
-        }
-
-        if (!parentHasBoundaryGhosts)
-        {
-            ghostArray->SetName("vtkGhostLevels");
-            meshes[i]->GetCellData()->AddArray(ghostArray);
-            ghostArray->Delete();
         }
     }
 

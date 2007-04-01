@@ -39,6 +39,9 @@ class avtSpecies;
 //    Kathleen Bonnell, Fri Dec 19 10:20:57 PST 2003 
 //    Moved 'expected_version_number' to source file so that code will build 
 //    on IRIX.
+//
+//    Mark C. Miller, Thu Jan 29 11:21:41 PST 2004
+//    Added var_max_ghost data member
 // 
 // ****************************************************************************
 
@@ -142,6 +145,7 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     int                          *var_cell_centered;
     int                          *var_num_components;
     int                          *var_num_ghosts;
+    int                           var_max_ghosts[3];
     string                       *var_names;
     map<string, var_t>            var_names_num_components;
 
