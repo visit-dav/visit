@@ -8,6 +8,8 @@
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
+#include <vtkPointSet.h>
+#include <vtkRectilinearGrid.h>
 #include <vtkUnsignedCharArray.h>
 
 #include <avtCallback.h>
@@ -113,12 +115,65 @@ avtDatasetVerifier::VerifyDatasets(int nlist, vtkDataSet **list,
 //    Changed args being sent to CorrectVarMismatch, so that the method can
 //    handle more var types. 
 //
+//    Kathleen Bonnell, Tue Feb  1 10:36:59 PST 2005 
+//    Convert non-float Points to float.  Convert unsigned char data to float. 
+//
 // ****************************************************************************
 
 void
 avtDatasetVerifier::VerifyDataset(vtkDataSet *ds, int dom)
 {
     int  i, j;
+    if (ds->IsA("vtkRectilinearGrid"))
+    {
+        vtkDataArray *coords = ((vtkRectilinearGrid*)ds)->GetXCoordinates();
+        if (coords->GetDataType() != VTK_FLOAT)
+        {
+            vtkFloatArray *c = vtkFloatArray::New();
+            c->SetNumberOfComponents(coords->GetNumberOfComponents());
+            c->SetNumberOfTuples(coords->GetNumberOfTuples());
+            for (i = 0; i < coords->GetNumberOfTuples(); i++)
+               c->SetTuple(i, coords->GetTuple(i));
+            ((vtkRectilinearGrid*)ds)->SetXCoordinates(c);
+            c->Delete();
+        }
+        coords = ((vtkRectilinearGrid*)ds)->GetYCoordinates();
+        if (coords->GetDataType() != VTK_FLOAT)
+        {
+            vtkFloatArray *c = vtkFloatArray::New();
+            c->SetNumberOfComponents(coords->GetNumberOfComponents());
+            c->SetNumberOfTuples(coords->GetNumberOfTuples());
+            for (i = 0; i < coords->GetNumberOfTuples(); i++)
+               c->SetTuple(i, coords->GetTuple(i));
+            ((vtkRectilinearGrid*)ds)->SetYCoordinates(c);
+            c->Delete();
+        }
+        coords = ((vtkRectilinearGrid*)ds)->GetZCoordinates();
+        if (coords->GetDataType() != VTK_FLOAT)
+        {
+            vtkFloatArray *c = vtkFloatArray::New();
+            c->SetNumberOfComponents(coords->GetNumberOfComponents());
+            c->SetNumberOfTuples(coords->GetNumberOfTuples());
+            for (i = 0; i < coords->GetNumberOfTuples(); i++)
+               c->SetTuple(i, coords->GetTuple(i));
+            ((vtkRectilinearGrid*)ds)->SetZCoordinates(c);
+            c->Delete();
+        }
+    }
+    else if (ds->IsA("vtkPointSet"))
+    {
+        vtkPoints *pts = ((vtkPointSet*)ds)->GetPoints();
+        if (pts != NULL && pts->GetDataType() != VTK_FLOAT)
+        {
+            vtkPoints *p = vtkPoints::New();
+            p->SetDataTypeToFloat();
+            p->SetNumberOfPoints(pts->GetNumberOfPoints());
+            for (i = 0; i < pts->GetNumberOfPoints(); i++)
+               p->SetPoint(i, pts->GetPoint(i));
+            ((vtkPointSet*)ds)->SetPoints(p);
+            p->Delete();
+        }
+    }
 
     int nPts   = ds->GetNumberOfPoints();
     int nCells = ds->GetNumberOfCells();
@@ -132,6 +187,20 @@ avtDatasetVerifier::VerifyDataset(vtkDataSet *ds, int dom)
         {
             CorrectVarMismatch(pt_var, ds->GetPointData(), nPts); 
             IssueVarMismatchWarning(nscalars, nPts, true, dom);
+        }
+        if (pt_var->GetDataType() == VTK_UNSIGNED_CHAR &&
+            strncmp(pt_var->GetName(), "avt", 3) != 0)
+        {
+            vtkFloatArray *c = vtkFloatArray::New();
+            c->SetNumberOfComponents(pt_var->GetNumberOfComponents());
+            c->SetNumberOfTuples(pt_var->GetNumberOfTuples());
+            c->SetName(pt_var->GetName());
+            for (i = 0; i < pt_var->GetNumberOfTuples(); i++)
+               c->SetTuple(i, pt_var->GetTuple(i));
+      
+            // as long as names match, AddArray will replace. 
+            ds->GetPointData()->AddArray(c);
+            c->Delete();
         }
     }
 
@@ -166,6 +235,20 @@ avtDatasetVerifier::VerifyDataset(vtkDataSet *ds, int dom)
             }
             if (issueWarning)
                 IssueVarMismatchWarning(nscalars, nCells, false, dom);
+        }
+        if (cell_var->GetDataType() == VTK_UNSIGNED_CHAR &&
+            strncmp(cell_var->GetName(), "avt", 3) != 0)
+        {
+            vtkFloatArray *c = vtkFloatArray::New();
+            c->SetNumberOfComponents(cell_var->GetNumberOfComponents());
+            c->SetNumberOfTuples(cell_var->GetNumberOfTuples());
+            c->SetName(cell_var->GetName());
+            for (i = 0; i < cell_var->GetNumberOfTuples(); i++)
+               c->SetTuple(i, cell_var->GetTuple(i));
+      
+            // as long as names match, AddArray will replace. 
+            ds->GetCellData()->AddArray(c);
+            c->Delete();
         }
     }
 }
