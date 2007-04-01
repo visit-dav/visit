@@ -38,6 +38,9 @@
 //   Eric Brugger, Thu Oct 23 15:12:04 PDT 2003
 //   Added navigateCurve.
 //
+//   Hank Childs, Wed Jul 21 08:16:10 PDT 2004
+//   Initialize currentInteractor.
+//
 // ****************************************************************************
 
 VisitHotPointInteractor::VisitHotPointInteractor(VisWindowInteractorProxy &v) :
@@ -53,6 +56,7 @@ VisitHotPointInteractor::VisitHotPointInteractor(VisWindowInteractorProxy &v) :
     zoom3D            = NULL;
     zoomCurve         = NULL;
     nullInteractor    = new NullInteractor(proxy);
+    currentInteractor = NULL;
     SetInteractor(nullInteractor);
 
     hotPointMode = false;

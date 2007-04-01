@@ -63,15 +63,42 @@ StringHelpers::GroupStrings(vector<string> stringList,
    // now, call qsort for this array of string pointers
    qsort(stringPtrs, nStrings, sizeof(char *), CompareRelevantStrings);
 
+   // adjust numLeadingVals if its too big 
+   int len = strlen(stringPtrs[0]);
+   if (numLeadingVals < 0)
+   {
+       if (-numLeadingVals > len)
+           numLeadingVals  = -len;
+   }
+   else
+   {
+       if (numLeadingVals > len)
+           numLeadingVals  = len;
+   }
+
+
+   // initialize the 'lastVal' for the loop below
+   string lastVal;
+   if (numLeadingVals < 0)
+   {
+       for (i = len+numLeadingVals; i < len; i++)
+           lastVal += stringPtrs[0][i];
+   }
+   else
+   {
+       if (numLeadingVals == 0)
+           lastVal = stringPtrs[0];
+       else
+       {
+           for (i = 0; i < numLeadingVals; i++)
+               lastVal += stringPtrs[0][i];
+       }
+   }
+
    // now, scan the sorted list of strings for value transitions
    // in first N (default 3) chars. Each such transition indicates the end of
    // one group and the beginning of the next. The 'first 3' criterion
    // is arbitrary but seems to work well.
-   if (numLeadingVals > stringList[0].size()-1)
-       numLeadingVals  = stringList[0].size()-1;
-   string lastVal;
-   for (i = 0; i < numLeadingVals; i++)
-       lastVal += stringPtrs[0][i];
    groupNames.push_back(RelevantString(stringPtrs[0]));
    vector<string> curGroup;
    curGroup.push_back(stringPtrs[0]);
@@ -79,13 +106,81 @@ StringHelpers::GroupStrings(vector<string> stringList,
    {
        string thisVal;
        int j;
-       for (j = 0; j < numLeadingVals; j++)
-           thisVal += stringPtrs[i][j];
+
+       if (numLeadingVals < 0)
+       {
+           int len = stringList[i].size()-1;
+           for (j = len+numLeadingVals; j < len; j++)
+               lastVal += stringPtrs[i][j];
+       }
+       else
+       {
+           if (numLeadingVals == 0)
+               thisVal = stringPtrs[i];
+           else
+           {
+               for (j = 0; j < numLeadingVals; j++)
+                   thisVal += stringPtrs[i][j];
+           }
+       }
 
        if (thisVal != lastVal)
        {
            lastVal = thisVal;
            groupNames.push_back(RelevantString(stringPtrs[i]));
+           stringGroups.push_back(curGroup);
+           curGroup.clear();
+           curGroup.push_back(stringPtrs[i]);
+       }
+       else
+       {
+           curGroup.push_back(stringPtrs[i]);
+       }
+   }
+   stringGroups.push_back(curGroup);
+
+   delete [] stringPtrs;
+}
+
+void
+StringHelpers::GroupStringsAsPaths(vector<string> stringList,
+                            vector<vector<string> > &stringGroups,
+                            vector<string> &groupNames)
+{
+
+   int i;
+   int nStrings = stringList.size();
+
+   if (nStrings == 0)
+       return;
+
+   // prime the input to the compare functions
+   IGNORE_CHARS = "`~!@#$%^&*()|\\\"'?";
+
+   // first, we need to sort the strings. Well, we don't really sort the
+   // strings. Instead we sort an array of pointers to the strings. We
+   // build that array here.
+   const char **stringPtrs = new const char*[nStrings];
+   for (i = 0; i < nStrings; i++)
+       stringPtrs[i] = stringList[i].c_str();
+
+   // now, call qsort for this array of string pointers
+   qsort(stringPtrs, nStrings, sizeof(char *), CompareRelevantStrings);
+
+   // now, scan the sorted list of strings for value transitions
+   // in the Dirname of each member
+   string lastVal = Dirname(stringPtrs[0]);
+   groupNames.push_back(lastVal);
+   vector<string> curGroup;
+   curGroup.push_back(stringPtrs[0]);
+   for (i = 1; i < nStrings; i++)
+   {
+       string thisVal = Dirname(stringPtrs[i]);
+
+       if (thisVal != lastVal)
+       {
+           lastVal = thisVal;
+           groupNames.push_back(RelevantString(thisVal));
            stringGroups.push_back(curGroup);
            curGroup.clear();
            curGroup.push_back(stringPtrs[i]);

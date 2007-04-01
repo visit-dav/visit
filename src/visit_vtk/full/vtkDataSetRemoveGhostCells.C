@@ -148,6 +148,18 @@ void vtkDataSetRemoveGhostCells::UnstructuredGridExecute()
 //    Hank Childs, Sun Jun 27 09:49:22 PDT 2004
 //    Account for ghost nodes as well as ghost zones.
 //
+//    Jeremy Meredith, Wed Jul 21 17:37:09 PDT 2004
+//    I added a new value for ghost nodes that has new meaning.  Specifically
+//    *all* nodes had to be nonzero in a cell for that cell to be removed.
+//    With my changes, if *any* node for a cell is "2", then that cell is
+//    removed.  This is consistent with the concept of IBLANKing for nodal
+//    data, because when a nodal value is meant to be hidden, you must remove
+//    any cells that contain that node.  There are other uses for ghost
+//    nodes, in particular for removing the polygons between domains.  See
+//    http://www.nas.nasa.gov/FAST/RND-93-010.walatka-clucas/htmldocs/chp5.file_io.html
+//    for a discussion of this -- the relevant pieces have been pasted into
+//    avtOVERFLOWFileFormat::GetMesh.
+//
 // ***************************************************************************
 
 void vtkDataSetRemoveGhostCells::PolyDataExecute()
@@ -203,13 +215,16 @@ void vtkDataSetRemoveGhostCells::PolyDataExecute()
 
     if (!usingGhostZones)
       {
-      bool haveOneGoodNode = false;
+      bool haveOneLevel0Node = false;
+      bool haveOneLevel2Node = false;
       for (int j = 0 ; j < npts ; j++)
         {
         if (node_ptr[pts[j]] == 0)
-            haveOneGoodNode = true;
+            haveOneLevel0Node = true;
+        if (node_ptr[pts[j]] == 2)
+            haveOneLevel2Node = true;
         }
-      if (!haveOneGoodNode)
+      if (!haveOneLevel0Node || haveOneLevel2Node)
         continue;
       }
 

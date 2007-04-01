@@ -43,6 +43,9 @@ typedef   void  (*UpdatePlotAttributesCallback)(void *, const std::string &,
 //    Jeremy Meredith, Thu Oct  2 09:49:48 PDT 2003
 //    Added support for lights.
 //
+//    Mark C. Miller, Wed Jul 21 09:51:18 PDT 2004
+//    Changed return value of IssueWarning to bool
+//
 // ****************************************************************************
 
 class PIPELINE_API avtCallback
@@ -50,7 +53,7 @@ class PIPELINE_API avtCallback
   public:
     static void                  RegisterWarningCallback(WarningCallback,
                                                          void *);
-    static void                  IssueWarning(const char *);
+    static bool                  IssueWarning(const char *);
 
     static void                  RegisterImageCallback(ImageCallback, void *);
     static void                  GetImage(int, avtDataObject_p &);

@@ -66,19 +66,27 @@ avtCallback::RegisterWarningCallback(WarningCallback wc, void *args)
 //  Programmer: Hank Childs
 //  Creation:   October 18, 2001
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Jul 21 09:51:18 PDT 2004
+//    Made it return true if it was able to issue the warning and false
+//    otherwise
+//
 // ****************************************************************************
 
-void
+bool
 avtCallback::IssueWarning(const char *msg)
 {
     if (warningCallback != NULL)
     {
         warningCallback(warningCallbackArgs, msg);
+        return true;
     }
     else
     {
         debug1 << "Would like to have issued warning \"" << msg 
                << "\", but no callback was registered." << endl;
+        return false;
     }
 }
 

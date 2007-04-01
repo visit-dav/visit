@@ -5,35 +5,13 @@
 #include <sys/types.h>
 #include <regex.h>
 
-
-typedef int NodeType;
+#include <VisitALE.h>
 
 static const NodeType ParentNode   = 0x01;
 static const NodeType ViewNode     = 0x02;
 static const NodeType FieldNode    = 0x04;
 static const NodeType RelationNode = 0x08;
 static const NodeType AnyNode      = 0xFF;
-
-struct Node
-{
-   Node *parent ;
-   Node *next ;
-   Node **child ;
-   int numChild ;
-
-   NodeType type ;
-   char *text ;
-   int len ;
-   int size ;
-   double min ;
-   double max ;
-   char datatype ;
-   char *otherView ;
-
-   Node(NodeType mytype, Node *p = 0) :
-      parent(p), next(0), child(0), numChild(0), type(mytype),
-      text(0), len(0), size(0), min(0.0), max(0.0), otherView(0) { }
-} ;
 
 static void AddChildNode(Node *nd)
 {
@@ -250,7 +228,7 @@ void VisitFreeVistaInfo(Node *nd)
    } while (nd != 0) ;
 }
 
-static void VisitFindNodesRecurse(const Node *root, const int nlevels,
+static void VisitFindNodesTopDown(const Node *root, const int nlevels,
     const regex_t *compres, const NodeType *nodetypes, int level,
     Node ***results, int *nmatches, int *maxmatches)
 {
@@ -286,7 +264,7 @@ static void VisitFindNodesRecurse(const Node *root, const int nlevels,
          }
          else
          {
-            VisitFindNodesRecurse(root->child[i], nlevels, compres, nodetypes,
+            VisitFindNodesTopDown(root->child[i], nlevels, compres, nodetypes,
                level+1, results, nmatches, maxmatches);
          }
       }
@@ -327,8 +305,103 @@ static void VisitFindNodesRecurse(const Node *root, const int nlevels,
    }
 }
 
+// walk up the tree from given node and confirm all path components match
+static bool BottomUpMatch(const Node *bottom, int nlevels,
+    const regex_t *compres, const NodeType *nodetypes)
+{
+   int level = nlevels - 1;
+   bool match = true;
+
+   while ((level >= 0) && match)
+   {
+      if ( !(((bottom->type & nodetypes[level]) != 0x0) &&
+            (regexec(&compres[level], bottom->text, 0, NULL, 0) == 0)) )
+         match = false;
+
+      // move up the tree and path to match
+      level--;
+      bottom = bottom->parent;
+
+      if ((bottom == 0) && (level >= 0))
+          match = false;
+   }  
+
+   return match;
+}
+
+static void VisitFindNodesBottomUp(const Node *root, const int nlevels,
+    const regex_t *compres, const NodeType *nodetypes, int level,
+    Node ***results, int *nmatches, int *maxmatches)
+{
+   int i,j;
+
+   if (root == 0)
+      return;
+
+   // make a pass over children that do NOT have next pointers
+   for (i=0; i<root->numChild; ++i)
+   {
+      if ((root->child[i]->next == 0) &&
+          BottomUpMatch(root->child[i], nlevels, compres, nodetypes))
+      {
+         /* if necessary, make room for more results */
+         if (*nmatches == *maxmatches)
+         {
+            *maxmatches = (*maxmatches)*2 + 1;
+            Node **newresults = new Node*[*maxmatches];
+            for (j = 0; j < *nmatches; j++)
+               newresults[j] = (*results)[j];
+            if (*results != 0)
+               delete [] *results;
+            *results = newresults;
+         }
+
+         /* put in the new result */
+         (*results)[*nmatches] = root->child[i];
+         (*nmatches)++;
+      }
+
+      // we have to inspect the children too
+      VisitFindNodesBottomUp(root->child[i], nlevels, compres, nodetypes,
+         level+1, results, nmatches, maxmatches);
+   }
+
+   /* make a pass over children that do have next pointers */
+   for (i=0; i<root->numChild; ++i)
+   {
+      if (root->child[i]->next != 0)
+      {
+         Node *nd = root->child[i];
+
+         while (nd != 0)
+         {
+            if (BottomUpMatch(nd, nlevels, compres, nodetypes))
+            {
+               /* if necessary, make room for more results */
+               if (*nmatches == *maxmatches)
+               {
+                  *maxmatches = (*maxmatches)*2 + 1;
+                  Node **newresults = new Node*[*maxmatches];
+                  for (j = 0; j < *nmatches; j++)
+                     newresults[j] = (*results)[j];
+                  if (*results != 0)
+                     delete [] *results;
+                  *results = newresults;
+               }
+
+               /* put in the new result */
+               (*results)[*nmatches] = nd;
+               (*nmatches)++;
+            }
+
+            nd = nd->next;
+         }
+      }
+   }
+}
+
 static void VisitFindNodes(const Node *root, const char *slash_delimited_re,
-   Node ***results, int *nmatches)
+   Node ***results, int *nmatches, RecurseMode rmode)
 {
    const char *p = slash_delimited_re;
    int nlevels = 0;
@@ -386,11 +459,14 @@ static void VisitFindNodes(const Node *root, const char *slash_delimited_re,
    }
 
    /* make the call into the recursion routine */
-   int maxmatches = 0;
-   *nmatches = 0;
-   *results = 0;
-   VisitFindNodesRecurse(root, nlevels, compres, nodetypes, 0,
-      results, nmatches, &maxmatches);
+   int maxmatches = *nmatches;
+   if (rmode == TopDown)
+       VisitFindNodesTopDown(root, nlevels, compres, nodetypes, 0,
+          results, nmatches, &maxmatches);
+   else
+       VisitFindNodesBottomUp(root, nlevels, compres, nodetypes, 0,
+          results, nmatches, &maxmatches);
+
 }
 
 const Node *VisitGetNodeFromPath(const Node *start, const char *path)
@@ -424,7 +500,7 @@ const Node *VisitGetNodeFromPath(const Node *start, const char *path)
    return root ;
 }
 
-char *VisitGetPathFromNode(const Node *node)
+char *VisitGetPathFromNode(const Node *root, const Node *node)
 {
    const Node *tmp;
 
@@ -432,7 +508,7 @@ char *VisitGetPathFromNode(const Node *node)
    // compute size of returned string
    tmp = node;
    int len = 0;
-   while ((tmp != 0) && (tmp->type != ParentNode))
+   while ((tmp != 0) && (tmp != root))
    {
       if (tmp->text != 0)
           len += (strlen(tmp->text)+1); // +1 for '/'
@@ -448,7 +524,7 @@ char *VisitGetPathFromNode(const Node *node)
 
    // make a second pass and populate the returned string
    tmp = node;
-   while ((tmp != 0) && (tmp->type != ParentNode))
+   while ((tmp != 0) && (tmp != root))
    {
       if (tmp->text != 0)
       {
@@ -465,35 +541,3 @@ char *VisitGetPathFromNode(const Node *node)
    return retval;
 
 }
-
-void VisitParse(char *buf)
-{
-   Node *nd ;
-   VisitParseInternal(buf, &nd) ;
-   // ExtractAttr(nd) ;
-   // VisitGetNodeFromPath(nd, "/mst1/domain0/node") ;
-   // VisitGetNodeFromPath(nd, "/mst1/domain0/nd") ;
-   // VisitDumpTree(nd) ;
-   // fflush(stdout) ;
-   // exit(0) ;
-}
-
-#if TESTDUMP
-#include "/usr/local/apps/ale3d/packages.new/silo/v4.3.2/include/silo.h"
-
-int main(int argc, char *argv[])
-{
-   DBfile *file =  DBOpen(argv[1], DB_UNKNOWN, DB_READ) ;
-
-   char *visit = (char *) DBGetVar(file, (char *)"VisIt") ;
-
-   DBClose(file) ;
-
-   Node *nd ;
-   VisitParseInternal(visit, &nd) ;
-   VisitDumpTree(nd) ;
-   
-   return 0 ;
-}
-
-#endif

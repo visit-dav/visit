@@ -100,6 +100,14 @@
 #   Hank Childs, Thu Jun 24 12:46:07 PDT 2004
 #   Remove Vista from the required format list to the HDF5 list.
 #
+#   Mark C. Miller, Wed Jul 21 11:19:15 PDT 2004
+#   Added Vista back to required format list since it no longer
+#   requires HDF5 in order to build. It can now be built with Silo AND HDF5
+#   or with Silo only
+#
+#   Jeremy Meredith, Wed Jul 21 17:44:55 PDT 2004
+#   Added OVERFLOW.  It depends on no other libraries.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -111,12 +119,13 @@ BOXLIB2D=Boxlib2D
 BOXLIB3D=Boxlib3D
 EXODUS=Exodus TimeVaryingExodus
 HDF4=Cosmos
-HDF5=Tetrad SAMRAI CosmosPP Vista
+HDF5=Tetrad SAMRAI CosmosPP
 MILI=Mili
 PDB=KullLite PDB
 SAF=SAF
 SAMPLES=Rect Hex
-REQUIRED=ANALYZE BOV Curve2D EnSight Image Lines PLOT2D PLOT3D Point3D STL Silo Spheral VTK WavefrontOBJ
+REQUIRED=ANALYZE BOV Curve2D EnSight Image Lines OVERFLOW \
+ PLOT2D PLOT3D Point3D STL Silo Spheral Vista VTK WavefrontOBJ
 
 OPTIONAL=
 

@@ -5,26 +5,13 @@
 #ifndef AVT_Vista_FILE_FORMAT_H
 #define AVT_Vista_FILE_FORMAT_H
 
-#include <database_exports.h>
-
-#include <avtMaterial.h>
-#include <avtSTMDFileFormat.h>
-
 #include <string>
-#include <vector>
 
-#include <silo.h>
-#include <hdf5.h>
+#include <VisitALE.h>
+#include <avtSTMDFileFormat.h>
+#include <avtFileFormatInterface.h>
 
-// imported definitions from Jeff Keasler's code
-struct Node;
-void  VisitParseInternal(char *, Node **);
-void  ExtractAttr(Node *);
-void  VisitFreeVistaInfo(Node *);
-void  VisitDumpTree(Node *);
-const Node *VisitGetNodeFromPath(const Node *, const char *);
-char *VisitGetPathFromNode(const Node *);
-void  VisitFindNodes(const Node *, const char *, Node ***, int *);
+using std::string;
 
 // used in STL maps where we need to control initialization of
 // value upon first reference into the map
@@ -35,133 +22,121 @@ class IMVal {
     IMVal() : val(ival) {};
 };
 
-class vtkFloatArray;
-
-using std::string;
-using std::vector;
-
 // ****************************************************************************
 //  Class: avtVistaFileFormat
 //
 //  Purpose:
-//      Reads in Vista files as a plugin to VisIt. 
+//      Base class for all Vista file formats. Includes functionality that is
+//      NOT specific to any particular Vista file format
 //
 //      Note that a Vista file can be written by either Silo or HDF5 natively.
 //      We support both here. Where there is a choice in API data-types, we
 //      favor use of HDF5's data-types.
 //
 //  Programmer: Mark C. Miller 
-//  Creation:   February 17, 2004 
+//  Creation:   July 14, 2004 
 //
 //  Modifications:
 //
-//    Mark C. Miller, Thu Apr 29 12:14:37 PDT 2004
-//    Added data members to remember material names/numbers
-//    Added GetMaterial method
-//    Added GetAuxiliaryData method
-//    Added GetFileNameForRead method
-//
-//    Eric Brugger, Wed May 12 13:42:01 PDT 2004
-//    Prefixed some uses of "vector" with "std::".
-//
-//    Mark C. Miller, Wed May 19 10:56:11 PDT 2004
-//    Added spatialDim data member
+//    Mark C. Miller, Wed Jul 21 11:19:15 PDT 2004
+//    Totally re-organized to support multiple different Vista file formats
+//    Moved most of Vista/Ale3d specific stuff to its respectife file format
+//    file.
 //
 // ****************************************************************************
 
 class avtVistaFileFormat : public avtSTMDFileFormat
 {
+    typedef enum
+    {
+        FTYPE_ALE3D,
+        FTYPE_DIABLO,
+        FTYPE_UNKNOWN
+    } VistaFormatType;
+
+    typedef enum
+    {
+        DTYPE_CHAR,
+        DTYPE_INT,
+        DTYPE_FLOAT,
+        DTYPE_DOUBLE,
+        DTYPE_UNKNOWN
+    } VistaDataType;
 
   public:
+    static avtFileFormatInterface *
+                               CreateFileFormatInterface(
+                                   const char * const *, int);
+
                                avtVistaFileFormat(const char *);
     virtual                   ~avtVistaFileFormat();
 
     virtual const char        *GetType(void)   { return "Vista"; };
+
+    VistaFormatType            GetFormatType(void) const
+                                   { return formatType; };
+    const char *               GetWriterName(void) const
+                                   { return writerName; };
+
     virtual void               FreeUpResources(void); 
 
-    virtual void              *GetAuxiliaryData(const char *var, int,
-                                                const char *type, void *args,
-                                                DestructorFunction &);
+    // satisfy avtSTMDFileFormat interface
+    virtual vtkDataSet        *GetMesh(int, const char *) { return 0; };
+    virtual vtkDataArray      *GetVar(int, const char *) { return 0; };
+    virtual void               PopulateDatabaseMetaData(avtDatabaseMetaData *) {};
 
-    virtual vtkDataSet        *GetMesh(int, const char *);
-    virtual vtkDataArray      *GetVar(int, const char *);
-    virtual vtkDataArray      *GetVectorVar(int, const char *);
+  protected:
+                               avtVistaFileFormat(const char *,
+                                                  avtVistaFileFormat *morphFrom);
+    bool                 ReadDataset(const char *fileName, const char *dsPath,
+                             VistaDataType *dataType, size_t *size, void **buf);
+    void                 GetFileNameForRead(int domain, char *fileName, int size);
 
-    virtual void               PopulateDatabaseMetaData(avtDatabaseMetaData *);
 
-  private:
-
-    class VistaTreeParser
+    class VistaTree
     {
 
       public:
-
-                         VistaTreeParser(const char *buf, size_t size)
-                         {
-                             theVistaString = new char[size];
-                             memcpy(theVistaString, buf, size);
-                             VisitParseInternal(theVistaString, &top);
-                             ExtractAttr(top);
-                         };
-
-                        ~VistaTreeParser()
-                         {
-                             VisitFreeVistaInfo(top);
-                             delete [] theVistaString;
-                         };
-
-          const void     DumpTree() { VisitDumpTree(top); };
-          const Node    *GetNodeFromPath(const Node *root, const char *path)
-                             { return VisitGetNodeFromPath(root, path); };
-          char          *GetPathFromNode(const Node *root) const
-                             { return VisitGetPathFromNode(root); };
-          const void     FindNodes(const Node *root, const char *path_re,
-                             Node ***results, int *nmatches) const
-                             { VisitFindNodes(root, path_re, results, nmatches); };
-          const Node    *GetTop() { return top; };
+                         VistaTree(const char *buf, size_t size);
+                        ~VistaTree();
+          const void     DumpTree() const;
+          const Node    *GetNodeFromPath(const Node *root, const char *path) const;
+          char          *GetPathFromNode(const Node *root, const Node *node) const;
+          void           FindNodes(const Node *root, const char *re, Node ***results,
+                                   int *nmatches, RecurseMode rmode) const;
+          const Node    *GetTop() const;
 
       private:
           Node          *top;
           char          *theVistaString;
-
     };
+
+    VistaTree     *vTree;
+
+  private:
 
     // low-level I/O methods
     void                *OpenFile(const char *fileName);
     void                *OpenFile(int fid);
     void                 CloseFile(int fid);
-    bool                 ReadDataset(const char *fileName, const char *dsPath,
-                             hid_t *dataType, hsize_t *size, void **buf);
-    vtkFloatArray       *ReadVar(int domain, const char *visitName);
 
-    avtMaterial         *GetMaterial(int, const char *);
-
-    void                 GetFileNameForRead(int domain, char *fileName, int size);
+    char                *writerName;
+    VistaFormatType      formatType;
 
     static const int     MASTER_FILE_INDEX;
     string               masterFileName;
     string               masterDirName;
 
-    int                 *domToFileMap;
+    int                  numChunks;
+    int                 *chunkToFileMap;
 
-    int                  numPieces;
-    Node               **pieceNodes;
-
-    int                  spatialDim;
-
-    int                  numMaterials;
-    std::vector<int>     materialNumbers;
-    std::vector<string>  materialNames;
-    int                 *materialNumbersArray;
-    const char         **materialNamesArray;
-
-    VistaTreeParser     *vTree;
-
+    // we use void * here so we can use either HDF5 or Silo
     void                **fileHandles;
 
     static int           objcnt;
     bool                 isSilo;
 
+    bool                 wasMorphed;
 
 };
 

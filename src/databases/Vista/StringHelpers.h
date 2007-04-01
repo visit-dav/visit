@@ -23,6 +23,9 @@ namespace StringHelpers
                      vector<string> &groupNames,
                      int numLeadingVals = 3,
                      string nonRelevantChars = NON_RELEVANT_CHARS);
+   void GroupStringsAsPaths(vector<string> stringList,
+                     vector<vector<string> > &stringGroups,
+                     vector<string> &groupNames);
    int FindRE(const char *stringToSearch, const char *re);
 
    const char * Basename(const char *path);
