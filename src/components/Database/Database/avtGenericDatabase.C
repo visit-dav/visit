@@ -5843,17 +5843,18 @@ avtGenericDatabase::GetDomainName(const std::string &varName, const int ts,
 
 
 // ****************************************************************************
-//  Method: avtGenericDatabase::QueryZoneCenter
+//  Method: avtGenericDatabase::QueryCoords
 //
 //  Purpose:
-//    Gets the geometric center of a zone. 
+//    Gets the geometric center of a zone, or node coords. 
 //
 //  Arguments:
 //    var       The variable to use in searching the database.
 //    dom       The domain to use in searching the database.
-//    zoneId    The zone number to use in searching the database.
+//    id        The zone or node number to use in searching the database.
 //    ts        The timestep to use in searching the database.
 //    coord     A place to store the zone center.
+//    forZone   Whether to find coords for a zone or a node.
 //
 //  Returns:    True if query is a success, false otherwise.
 //
@@ -5864,45 +5865,82 @@ avtGenericDatabase::GetDomainName(const std::string &varName, const int ts,
 //    Kathleen Bonnell, Thu May 27 17:46:25 PDT 2004
 //    Take ghost zones into account.
 //
+//    Kathleen Bonnell, Thu Jun 10 18:15:11 PDT 2004 
+//    Renamed from QueryZoneCenter to QueryCoords, added bool arg. 
+//
 // ****************************************************************************
 
 bool
-avtGenericDatabase::QueryZoneCenter(const string &varName, const int dom, 
-                               const int zoneId, const int ts, float coord[3])
+avtGenericDatabase::QueryCoords(const string &varName, const int dom, 
+       const int id, const int ts, float coord[3], const bool forZone)
 {
     string meshName = GetMetaData(ts)->MeshForVar(varName);
     vtkDataSet *ds = GetMeshDataset(meshName.c_str(), ts, dom, "_all");
     bool rv = false; 
     if (ds)
     {
-        int zone = zoneId;
-        if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID ||
-            ds->GetDataObjectType() == VTK_STRUCTURED_GRID) 
+        if (forZone)
         {
-            if (ds->GetCellData()->GetArray("vtkGhostLevels") != NULL) 
+            int zone = id;
+            if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID ||
+                ds->GetDataObjectType() == VTK_STRUCTURED_GRID) 
             {
-                int dims[3], ijk[3] = {0, 0, 0};
-                vtkVisItUtility::GetDimensions(ds, dims);
-                vtkVisItUtility::GetLogicalIndices(ds, true, zoneId, ijk, false, false);
-                vtkIntArray *realDims = 
-                    (vtkIntArray*)ds->GetFieldData()->GetArray("avtRealDims");
-                if (realDims != NULL)
+                if (ds->GetCellData()->GetArray("vtkGhostLevels") != NULL) 
                 {
-                    ijk[0] += realDims->GetValue(0);
-                    ijk[1] += realDims->GetValue(2);
-                    ijk[2] += realDims->GetValue(4);
+                    int dims[3], ijk[3] = {0, 0, 0};
+                    vtkVisItUtility::GetDimensions(ds, dims);
+                    vtkVisItUtility::GetLogicalIndices(ds, true, id, ijk, false, false);
+                    vtkIntArray *realDims = 
+                        (vtkIntArray*)ds->GetFieldData()->GetArray("avtRealDims");
+                    if (realDims != NULL)
+                    {
+                        ijk[0] += realDims->GetValue(0);
+                        ijk[1] += realDims->GetValue(2);
+                        ijk[2] += realDims->GetValue(4);
+                    }
+                    zone = ijk[0] + 
+                           ijk[1] * (dims[0]-1) +
+                           ijk[2] * (dims[0]-1) * (dims[1]-1);
                 }
-                zone = ijk[0] + 
-                       ijk[1] * (dims[0]-1) +
-                       ijk[2] * (dims[0]-1) * (dims[1]-1);
             }
+            vtkCell *cell = ds->GetCell(zone);
+            float parametricCenter[3];
+            float weights[28];
+            int subId = cell->GetParametricCenter(parametricCenter);
+            cell->EvaluateLocation(subId, parametricCenter, coord, weights);
+            rv = true;
         }
-        vtkCell *cell = ds->GetCell(zone);
-        float parametricCenter[3];
-        float weights[28];
-        int subId = cell->GetParametricCenter(parametricCenter);
-        cell->EvaluateLocation(subId, parametricCenter, coord, weights);
-        rv = true;
+        else 
+        {
+            int node = id;
+            if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID ||
+                ds->GetDataObjectType() == VTK_STRUCTURED_GRID) 
+            {
+                if (ds->GetCellData()->GetArray("vtkGhostLevels") != NULL) 
+                {
+                    int dims[3], ijk[3] = {0, 0, 0};
+                    vtkVisItUtility::GetDimensions(ds, dims);
+                    vtkVisItUtility::GetLogicalIndices(ds, false, id, ijk, 
+                                                       false, false);
+                    vtkIntArray *realDims = 
+                        (vtkIntArray*)ds->GetFieldData()->GetArray("avtRealDims");
+                    if (realDims != NULL)
+                    {
+                        ijk[0] += realDims->GetValue(0);
+                        ijk[1] += realDims->GetValue(2);
+                        ijk[2] += realDims->GetValue(4);
+                    }
+                    node = ijk[0] + 
+                           ijk[1] * (dims[0]) +
+                           ijk[2] * (dims[0]) * (dims[1]);
+                }
+            }
+            float *pt = vtkVisItUtility::GetPoints(ds)->GetPoint(node);
+            coord[0] = pt[0] ;
+            coord[1] = pt[1] ;
+            coord[2] = pt[2] ;
+            rv = true;
+        }
     }
     return rv;
 }

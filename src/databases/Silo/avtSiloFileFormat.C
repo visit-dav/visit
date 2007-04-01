@@ -751,6 +751,11 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Hank Childs, Wed Jan 14 11:19:24 PST 2004
 //    Use caching mechanism for DBGetMultiThing.
 //
+//    Jeremy Meredith, Fri Jun 11 14:36:59 PDT 2004
+//    Fixed two problems with _meshtv_searchpath.  First, it assumed there was
+//    at most one entry per semicolon, but you can have one less separator
+//    than num entries.  Second, it was walking off the end of the string.
+//
 // ****************************************************************************
 
 void
@@ -1766,14 +1771,14 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         delete [] dir_names;
 
         //
-        // Determine the number of directories in the string.
+        // Determine the maximum number of directories in the string.
         //
-        ndir = 0;
+        int max_ndir = 1;
         for (i = 0; searchpath_str[i] != '\0'; i++)
         {
             if (searchpath_str[i] == ';')
             {
-                ndir++;
+                max_ndir++;
             }
         }
 
@@ -1782,7 +1787,8 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         //
         dir_names = new char*[ndir];
         ndir = 0;
-        for (i = 0; searchpath_str[i] != '\0'; i++)
+        int searchpath_strlen = strlen(searchpath_str);
+        for (i = 0; i < searchpath_strlen; i++)
         {
             char *dirname = &searchpath_str[i];
 

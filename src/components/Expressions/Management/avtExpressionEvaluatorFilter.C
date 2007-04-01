@@ -653,7 +653,7 @@ avtExpressionEvaluatorFilter::GetDomainName(const std::string &var, const int ts
 
 
 // ****************************************************************************
-//  Method: avtExpressionEvaluatorFilter::QueryZoneCenter
+//  Method: avtExpressionEvaluatorFilter::QueryCoords
 //
 //  Purpose:
 //      Passes this request on to the queryable source. 
@@ -662,14 +662,16 @@ avtExpressionEvaluatorFilter::GetDomainName(const std::string &var, const int ts
 //  Creation:   May 25, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Jun 10 18:29:08 PDT 2004
+//    Renamed from QueryZoneCenter to QueryCoords, added bool arg.
 //
 // ****************************************************************************
 
 bool
-avtExpressionEvaluatorFilter::QueryZoneCenter(const std::string &var, 
-    const int dom, const int zone, const int ts, float c[3])
+avtExpressionEvaluatorFilter::QueryCoords(const std::string &var, 
+    const int dom, const int id, const int ts, float c[3], const bool forZone)
 {
     return GetInput()->GetQueryableSource()->
-        QueryZoneCenter(var, dom, zone, ts, c);
+        QueryCoords(var, dom, id, ts, c, forZone);
 }
 

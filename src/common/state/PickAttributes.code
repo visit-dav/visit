@@ -795,8 +795,8 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
     else
     {
         SNPRINTF(buff, 512, "  %s", meshInfo.c_str());
+        os += buff;
     }
-    os += buff;
     if (pickType == CurveNode)
     {
         SNPRINTF(buff, 512, " at <%f, %f>\n", nodePoint[0], nodePoint[1]);

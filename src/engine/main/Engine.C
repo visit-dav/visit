@@ -42,6 +42,7 @@ using std::string;
 
 #ifdef PARALLEL
 #include <parallel.h>
+#include <avtParallel.h>
 #else
 #include <Xfer.h>
 #endif
@@ -60,6 +61,11 @@ static void WriteByteStreamToSocket(NonBlockingRPC *, Connection *,
 
 // Initial connection timeout of 5 minutes (300 seconds)
 #define INITIAL_CONNECTION_TIMEOUT 60
+
+// message tag for interrupt messages used in static abort callback function
+#ifdef PARALLEL
+const int INTERRUPT_MESSAGE_TAG = GetUniqueMessageTag();
+#endif
 
 // ****************************************************************************
 //  Constructor:  Engine::Engine
@@ -940,7 +946,7 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
     int mpiCellCountTag   = GetUniqueMessageTag();
     int mpiSendDataTag    = GetUniqueMessageTag();
     int mpiDataObjSizeTag = GetUniqueMessageTag();
-    int mpiDataObjDataTag = GetUniquemessageTag();
+    int mpiDataObjDataTag = GetUniqueMessageTag();
 
     //
     // When respond with null is true, this routine still has an obligation
@@ -1240,29 +1246,40 @@ Engine::SendKeepAliveReply()
 //    Mark C. Miller, Thu Jun 10 10:05:09 PDT 2004
 //    Modified to use a unique message tag for the interrupt message
 //
+//    Mark C. Miller, Fri Jun 11 09:39:11 PDT 2004
+//    Made xfer local variable conditionally defined as MPIXfer or Xfer
+//
+//    Mark C. Miller, Fri Jun 11 13:21:42 PDT 2004
+//    Made it use a static, file-scope const int as the message tag
+//
 // ****************************************************************************
 
 bool
 Engine::EngineAbortCallbackParallel(void *data, bool informSlaves)
 {
+
+#ifdef PARALLEL
+    MPIXfer *xfer = (MPIXfer*)data;
+#else
     Xfer *xfer = (Xfer*)data;
+#endif
+
     if (!xfer)
         EXCEPTION1(VisItException,
                    "EngineAbortCallback called with no Xfer set.");
 
 #ifdef PARALLEL
-    int mpiInterruptTag = GetUniqueMessageTag();
 
     // non-ui processes must do something entirely different
     if (!PAR_UIProcess())
     {
         int flag;
         MPI_Status status;
-        MPI_Iprobe(0, mpiInterruptTag, MPI_COMM_WORLD, &flag, &status);
+        MPI_Iprobe(0, INTERRUPT_MESSAGE_TAG, MPI_COMM_WORLD, &flag, &status);
         if (flag)
         {
             char buf[1];
-            MPI_Recv(buf, 1, MPI_CHAR, 0, mpiInterruptTag, MPI_COMM_WORLD, &status);
+            MPI_Recv(buf, 1, MPI_CHAR, 0, INTERRUPT_MESSAGE_TAG, MPI_COMM_WORLD, &status);
             return true;
         }
         return false;
@@ -1279,10 +1296,10 @@ Engine::EngineAbortCallbackParallel(void *data, bool informSlaves)
 
     bool abort = xfer->ReadPendingMessages();
 
-#ifdef PARALLEL
+#ifdef PARALLEL 
     // If needed, tell the non-ui processes to abort as well
     if (abort && informSlaves)
-        xfer->SendInterruption(mpiInterruptTag);
+        xfer->SendInterruption(INTERRUPT_MESSAGE_TAG);
 #endif
     return abort;
 }

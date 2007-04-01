@@ -212,6 +212,9 @@ VisWinQuery::SetForegroundColor(float fr, float fg, float fb)
 //    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
 //    Modified to use PickEntry and LineEntry vectors
 //
+//    Kathleen Bonnell, Fri Jun 11 14:49:39 PDT 2004 
+//    Add back in the line that computes and sets the Scale for a pick.
+//
 // ****************************************************************************
 
 void
@@ -236,6 +239,7 @@ VisWinQuery::UpdateView()
         for (it = pickPoints.begin() ; it != pickPoints.end() ; it++)
         {
             const float *pos = it->pickActor->GetLetterPosition();
+            it->pickActor->SetScale(mediator.ComputeVectorTextScaleFactor(pos));
             if (mediator.GetMode() != WINMODE_3D)
             {
                 it->pickActor->Shift(shiftVec);

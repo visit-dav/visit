@@ -82,6 +82,9 @@
 #   Kathleen Bonnell, Wed Jun  2 08:09:10 PDT 2004 
 #   Added Pick subdir, moved PickQueries into this dir.  Added new picks.
 #
+#   Kathleen Bonnell, Thu Jun 10 17:57:41 PDT 2004 
+#   Added avtNodeCoordsQuery. 
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -129,6 +132,7 @@ Queries_src= \
  Queries/avtL2NormQuery.C  \
  Queries/avtL2NormBetweenCurvesQuery.C  \
  Queries/avtMinMaxQuery.C  \
+ Queries/avtNodeCoordsQuery.C \
  Queries/avtNumNodesQuery.C  \
  Queries/avtNumZonesQuery.C  \
  Queries/avtOriginalDataMinMaxQuery.C  \
