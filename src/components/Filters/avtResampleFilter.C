@@ -343,6 +343,9 @@ avtResampleFilter::BypassResample(void)
 //    Added support for using bounds from attributes.  Also set up arbitrator
 //    if necessary.
 //
+//    Hank Childs, Sun Mar 13 10:07:07 PST 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 void
@@ -581,6 +584,7 @@ avtResampleFilter::ResampleInput(void)
         SetOutputDataTree(dummy);
     }
 
+    rg->Delete();
     for (i = 0 ; i < effectiveVars ; i++)
     {
         vars[i]->Delete();

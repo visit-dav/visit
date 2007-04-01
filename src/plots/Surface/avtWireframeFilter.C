@@ -135,6 +135,9 @@ avtWireframeFilter::Equivalent(const AttributeGroup *a)
 //     Hank Childs, Thu Jul 29 17:24:40 PDT 2004
 //     Reverse order of inputs to appender to get around VTK funniness.
 //
+//     Hank Childs, Wed Mar  9 15:53:09 PST 2005
+//     Fix memory leak.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -163,6 +166,7 @@ avtWireframeFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
  
     vtkPolyData *outPolys = vtkPolyData::New();
     appendFilter->SetOutput(outPolys);
+    outPolys->Delete();
     appendFilter->Update();
 
     return outPolys;
@@ -184,6 +188,9 @@ avtWireframeFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 //    Do not set outputs of filters to NULL, since this will prevent them
 //    from re-executing correctly in DLB-mode.
 //
+//    Hank Childs, Fri Mar 11 07:37:05 PST 2005
+//    Fix non-problem size leak introduced with last fix.
+//
 // ****************************************************************************
 
 void
@@ -192,17 +199,25 @@ avtWireframeFilter::ReleaseData(void)
     avtStreamer::ReleaseData();
 
     geoFilter->SetInput(NULL);
-    geoFilter->SetOutput(vtkPolyData::New());
     geoFilter->SetLocator(NULL);
+    vtkPolyData *p = vtkPolyData::New();
+    geoFilter->SetOutput(p);
+    p->Delete();
+
     int nInputs = appendFilter->GetNumberOfInputs();
     for (int i = nInputs-1 ; i >= 0 ; i--)
     {
         appendFilter->SetInputByNumber(i, NULL);
     }
+    p = vtkPolyData::New();
     appendFilter->SetOutput(vtkPolyData::New());
+    p->Delete();
+
     edgesFilter->SetInput(NULL);
-    edgesFilter->SetOutput(vtkPolyData::New());
     edgesFilter->SetLocator(NULL);
+    p = vtkPolyData::New();
+    edgesFilter->SetOutput(vtkPolyData::New());
+    p->Delete();
 }
 
 

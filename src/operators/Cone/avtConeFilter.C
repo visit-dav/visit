@@ -946,6 +946,9 @@ avtConeFilter::RefashionDataObjectInfo(void)
 //    Do not set outputs of filters to NULL, since this will prevent them
 //    from re-executing correctly in DLB-mode.
 //
+//    Hank Childs, Fri Mar 11 07:37:05 PST 2005
+//    Fix non-problem size leak introduced with last fix.
+//
 // ****************************************************************************
 
 void
@@ -954,17 +957,35 @@ avtConeFilter::ReleaseData(void)
     avtPluginStreamer::ReleaseData();
 
     cutter->SetInput(NULL);
-    cutter->SetOutput(vtkPolyData::New());
+    vtkPolyData *p = vtkPolyData::New();
+    cutter->SetOutput(p);
+    p->Delete();
+
     polar->SetInput(NULL);
-    polar->SetOutput(vtkPolyData::New());
+    p = vtkPolyData::New();
+    polar->SetOutput(p);
+    p->Delete();
+
     transform->SetInput(NULL);
-    transform->SetOutput(vtkPolyData::New());
+    p = vtkPolyData::New();
+    transform->SetOutput(p);
+    p->Delete();
+
     clipOffSides->SetInput(NULL);
-    clipOffSides->SetOutput(vtkPolyData::New());
+    p = vtkPolyData::New();
+    clipOffSides->SetOutput(p);
+    p->Delete();
+
     clipBottom->SetInput(NULL);
-    clipBottom->SetOutput(vtkPolyData::New());
+    p = vtkPolyData::New();
+    clipBottom->SetOutput(p);
+    p->Delete();
+
     clipByLength->SetInput(NULL);
-    clipByLength->SetOutput(vtkPolyData::New());
+    p = vtkPolyData::New();
+    clipByLength->SetOutput(p);
+    p->Delete();
+
 }
 
 

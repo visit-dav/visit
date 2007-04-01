@@ -36,6 +36,9 @@ class  vtkVertexFilter;
 //    Kathleen Bonnell, Tue Oct 12 16:18:37 PDT 2004 
 //    Added keepNodeZone.
 //
+//    Hank Childs, Fri Mar 11 15:00:05 PST 2005
+//    Instantiate VTK filters on the fly.
+//
 // ****************************************************************************
 
 class avtVectorFilter : public avtStreamer
@@ -47,8 +50,6 @@ class avtVectorFilter : public avtStreamer
     virtual const char       *GetType(void)   { return "avtVectorFilter"; };
     virtual const char       *GetDescription(void)
                                   { return "Creating vectors"; };
-
-    virtual void              ReleaseData(void);
 
     bool                      Equivalent(bool, int);
 
@@ -62,9 +63,6 @@ class avtVectorFilter : public avtStreamer
     int                       nVectors;
     std::string               magVarName;
     bool                      keepNodeZone;
-
-    vtkVertexFilter          *vertex;
-    vtkVectorReduceFilter    *reduce;
 
     virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
     virtual void              RefashionDataObjectInfo(void);

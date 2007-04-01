@@ -58,6 +58,9 @@ class   avtMultiFacelist;
 //    Kathleen Bonnell, Fri Feb 18 11:13:16 PST 2005 
 //    Added ConvertToPolys. 
 //
+//    Hank Childs, Fri Mar 11 08:07:26 PST 2005
+//    Remove data member filters.  Also remove ReleaseData.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtFacelistFilter : public avtStreamer
@@ -70,15 +73,11 @@ class AVTFILTERS_API avtFacelistFilter : public avtStreamer
                                                { return "avtFacelistFilter"; };
     virtual const char                  *GetDescription(void)
                                      { return "Calculating external faces"; };
-    virtual void                         ReleaseData(void);
 
     void                                 SetCreate3DCellNumbers(bool);
     void                                 SetForceFaceConsolidation(bool);
 
   protected:
-    vtkRectilinearGridFacelistFilter    *rf;
-    vtkStructuredGridFacelistFilter     *sf;
-    vtkUnstructuredGridFacelistFilter   *uf;
     bool                                 useFacelists;
     bool                                 create3DCellNumbers;
     int                                  forceFaceConsolidation;

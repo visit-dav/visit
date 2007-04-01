@@ -33,14 +33,14 @@
 //    Kathleen Bonnell, Tue Nov  2 10:37:14 PST 2004 
 //    Added keepNodeZone. 
 //
+//    Hank Childs, Thu Mar 10 09:13:03 PST 2005
+//    Removed data member filters.
+//
 // ****************************************************************************
 
 avtMeshFilter::avtMeshFilter(const MeshAttributes &a)
 {
     atts = a;
-    lineFilter     = vtkLinesFromOriginalCells::New();
-    geometryFilter = vtkGeometryFilter::New();
-    extractEdges = vtkExtractEdges::New();
     keepNodeZone = false; 
 }
 
@@ -56,25 +56,14 @@ avtMeshFilter::avtMeshFilter(const MeshAttributes &a)
 //    Removed featureEdges, hasn't been used in a long time.  
 //    Added extractEges. 
 //
+//    Hank Childs, Thu Mar 10 09:13:03 PST 2005
+//    Removed data member filters.
+//
 // ****************************************************************************
 
 avtMeshFilter::~avtMeshFilter()
 {
-    if (lineFilter != NULL)
-    {
-        lineFilter->Delete();
-        lineFilter = NULL;
-    }
-    if (geometryFilter != NULL)
-    {
-        geometryFilter->Delete();
-        geometryFilter = NULL;
-    }
-    if (extractEdges != NULL)
-    {
-        extractEdges->Delete();
-        extractEdges = NULL;
-    }
+    ;
 }
 
 
@@ -155,10 +144,6 @@ avtMeshFilter::~avtMeshFilter()
 //    Kathleen Bonnell, Tue Nov  2 10:37:14 PST 2004 
 //    No need to process this data if topological dimension is 0 (point mesh). 
 //
-//    Kathleen Bonnell, Mon Mar  7 17:38:36 PST 2005
-//    Hack to accept non-poly-data input -- until time allows for fixing
-//    vtkLinesFromOriginalCells to work with non-poly-data. 
-//
 // ****************************************************************************
 
 avtDataTree_p
@@ -170,8 +155,13 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
     if (topoDim == 0) 
         return new avtDataTree(inDS, dom, lab);
 
-    vtkPolyData *outDS = vtkPolyData::New();
-    vtkPolyData *opaquePolys = vtkPolyData::New();
+    vtkLinesFromOriginalCells *lineFilter = vtkLinesFromOriginalCells::New();
+    vtkGeometryFilter *geometryFilter = vtkGeometryFilter::New();
+    vtkExtractEdges *extractEdges = vtkExtractEdges::New();
+    vtkDataSetRemoveGhostCells *ghostFilter =vtkDataSetRemoveGhostCells::New();
+
+    vtkPolyData *opaquePolys = NULL;
+    vtkPolyData *outDS = NULL;
 
     vtkDataSet *revisedInput = NULL; 
     vtkDataSet *revisedInput2 = NULL; 
@@ -181,19 +171,12 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
     if (!v.GetUsingAllData() && 
         inDS->GetCellData()->GetArray("avtGhostZones"))
     {
-        vtkDataSetRemoveGhostCells *ghostFilter = 
-             vtkDataSetRemoveGhostCells::New();
         ghostFilter->SetInput(inDS);
         ghostFilter->Update();
         revisedInput = ghostFilter->GetOutput();
-        revisedInput->Register(NULL);
-        ghostFilter->Delete();
     }
     else
-    {
         revisedInput = inDS;
-        revisedInput->Register(NULL);
-    }
 
     if (atts.GetOutlineOnlyFlag())
     {
@@ -209,24 +192,21 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
         // Create a dataset that can be rendered as a solid surface, using
         // z buffer to shift so surface doesn't override lines of mesh.
         geometryFilter->SetInput(revisedInput);
-        geometryFilter->SetOutput(opaquePolys);
         geometryFilter->Update();
+        opaquePolys = geometryFilter->GetOutput();
     }
 
     if (atts.GetShowInternal() && 
         revisedInput->GetDataObjectType() != VTK_POLY_DATA)
     {
-        revisedInput2 = vtkPolyData::New();
         extractEdges->SetInput(revisedInput);
-        extractEdges->SetOutput((vtkPolyData*)revisedInput2);
         extractEdges->Update();
+        revisedInput2 = extractEdges->GetOutput();
     }
     else
     {
-        revisedInput2 = revisedInput;
-        revisedInput2->Register(NULL);
+        revisedInput2 = inDS;
     }
-
 
     //
     //  HACK, the correct way is to have a different filter
@@ -236,11 +216,12 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
     //
     if (revisedInput2->GetDataObjectType() != VTK_POLY_DATA)
     {
-        revisedInput3 = vtkPolyData::New();
         vtkGeometryFilter *geo = vtkGeometryFilter::New();
         geo->SetInput(revisedInput2);
-        geo->SetOutput((vtkPolyData*)revisedInput3);
         geo->Update();
+        revisedInput3 = geo->GetOutput();
+        revisedInput3->Register(NULL);
+        revisedInput3->SetSource(NULL);
         geo->Delete();
     }
     else
@@ -248,7 +229,6 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
         revisedInput3 = revisedInput2;
         revisedInput3->Register(NULL);
     }
-
 
     if (revisedInput3->GetDataObjectType() == VTK_POLY_DATA) 
     {
@@ -266,24 +246,22 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
         if (topoDim == 2)
         {
             lineFilter->SetInput((vtkPolyData*)revisedInput3);
-            lineFilter->SetOutput(outDS);
             lineFilter->Update();
+            outDS = lineFilter->GetOutput();
         }
         else
         {
-            outDS->Delete();
             outDS = (vtkPolyData*)revisedInput3;
-            outDS->Register(NULL); // We will remove this later.
             debug5 << "MeshFilter not making a line mesh go through the line "
                    << "filter." << endl;
         }
     }
-    else
+
+    if (outDS == NULL)
     {
         EXCEPTION1(ImproperUseException,
                    "avtMeshFilter expects PolyData but didn't get it -- "
                    "was the facelist filter not applied by the avtMeshPlot?");
-                   
     }
 
     //
@@ -304,28 +282,29 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
         //  Tack on the opaque poly's to the outDS (which is only lines
         //  at this point. 
         //
-        if (opaquePolys->GetNumberOfCells() != 0)
+        if (opaquePolys != NULL && opaquePolys->GetNumberOfCells() != 0)
         {
             vtkAppendPolyData *append = vtkAppendPolyData::New();
-            vtkPolyData *outPoly = vtkPolyData::New();
             append->AddInput(outDS);
             append->AddInput(opaquePolys);
-            append->SetOutput(outPoly);
             append->Update();
+            vtkPolyData *outPoly = append->GetOutput();
             rv = new avtDataTree(outPoly, dom, lab);
+            outPoly->SetSource(NULL);
             append->Delete();
-            outPoly->Delete();
         }
         else  
         {
             rv = new avtDataTree(outDS, dom, lab);
         }
     }
-    outDS->Delete();
-    opaquePolys->Delete();
-    revisedInput->Delete();
-    revisedInput2->Delete();
+
     revisedInput3->Delete();
+    lineFilter->Delete();
+    geometryFilter->Delete();
+    extractEdges->Delete();
+    ghostFilter->Delete();
+
     return rv;
 }
 
@@ -431,44 +410,6 @@ avtMeshFilter::PerformRestriction(avtPipelineSpecification_p spec)
     }
 
     return rv;
-}
-
-
-// ****************************************************************************
-//  Method: avtMeshFilter::ReleaseData
-//
-//  Purpose:
-//      Release the problem sized data associated with this filter.
-//
-//  Programmer: Hank Childs
-//  Creation:   September 10, 2002
-//
-//  Modifications:
-//
-//    Akira Haddox, Wed May 28 14:56:01 PDT 2003
-//    LineFilter no longer has a Locator, call removed.
-//
-//    Kathleen Bonnell, Thu Feb  5 10:42:16 PST 2004 
-//    Removed featureEdges, hasn't been used in a long time.  
-//    Added extractEges. 
-//
-//    Hank Childs, Fri Mar  4 08:12:25 PST 2005
-//    Do not set outputs of filters to NULL, since this will prevent them
-//    from re-executing correctly in DLB-mode.
-//
-// ****************************************************************************
-
-void
-avtMeshFilter::ReleaseData(void)
-{
-    avtDataTreeStreamer::ReleaseData();
-
-    lineFilter->SetInput(NULL);
-    lineFilter->SetOutput(vtkPolyData::New());
-    geometryFilter->SetInput(NULL);
-    geometryFilter->SetOutput(vtkPolyData::New());
-    extractEdges->SetInput(NULL);
-    extractEdges->SetOutput(vtkPolyData::New());
 }
 
 

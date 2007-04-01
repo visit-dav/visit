@@ -967,13 +967,17 @@ avtDataSpecification::GetSecondaryVariablesWithoutDuplicates(void)
 //    Brad Whitlock, Mon Nov 1 16:07:37 PST 2004
 //    I added a return statement since the return type is int.
 //
+//    Hank Childs, Fri Mar 11 10:54:13 PST 2005
+//    Return the index of the selection, since that is what most callers count
+//    on.
+//
 // ****************************************************************************
 
 int
 avtDataSpecification::AddDataSelection(avtDataSelection *sel)
 {
     selList.push_back(sel);
-    return selList.size();
+    return selList.size()-1;
 }
 
 // ****************************************************************************

@@ -298,6 +298,9 @@ avtImageFileFormat::ProcessDataSelections(int *xmin, int *xmax,
 //    Also, removed all code to allocate large, float vectors and populate them
 //    to the GetVar call which is when they are actually needed.
 //
+//    Hank Childs, Fri Mar 11 10:05:51 PST 2005
+//    Fix memory leak.
+//
 // *****************************************************************************
 
 void avtImageFileFormat::ReadInImage(void)
@@ -309,6 +312,12 @@ void avtImageFileFormat::ReadInImage(void)
     // if we've already read the entire image, then do nothing
     if (haveReadWholeImage)
         return;
+
+    if (image != NULL)
+    {
+        image->Delete();
+        image = NULL;
+    }
 
     // process any data selections we can handle, here
     int xmin, xmax, ymin, ymax;

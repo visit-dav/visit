@@ -35,6 +35,9 @@ using     std::vector;
 //    Hank Childs, Mon Sep 30 15:06:42 PDT 2002
 //    Initialize materials to NULL.
 //
+//    Hank Childs, Sun Mar 13 10:43:10 PST 2005
+//    Initialize species to NULL.
+//
 // ****************************************************************************
  
 avtDatasetCollection::avtDatasetCollection(int nd)
@@ -47,15 +50,20 @@ avtDatasetCollection::avtDatasetCollection(int nd)
     vtkds    = new vtkDataSet**[nDomains];
     avtds    = new avtDataTree_p[nDomains];
     materials = new avtMaterial*[nDomains];
+    species = new avtSpecies*[nDomains];
  
     for (int i = 0 ; i < nDomains ; i++)
     {
         vtkds[i] = NULL;
         avtds[i] = NULL;
         materials[i] = NULL;
+        species[i] = NULL;
     }
  
     mixvars   = new vector<void_ref_ptr>[nDomains];
+
+    materialsShouldBeFreed = false;
+    speciesShouldBeFreed = false;
 }
 
 
@@ -75,6 +83,9 @@ avtDatasetCollection::avtDatasetCollection(int nd)
 //
 //    Hank Childs, Thu Jul  4 13:24:11 PDT 2002
 //    Add support for multiple mixed variables.
+//
+//    Hank Childs, Sun Mar 13 10:43:53 PST 2005
+//    Free up materials and species if we own them.
 //
 // ****************************************************************************
  
@@ -96,6 +107,11 @@ avtDatasetCollection::~avtDatasetCollection()
             vtkds[i] = NULL;
         }
         avtds[i] = NULL;
+
+        if (materialsShouldBeFreed && materials[i] != NULL)
+            delete materials[i];
+        if (speciesShouldBeFreed && species[i] != NULL)
+            delete species[i];
     }
     delete [] vtkds;
     vtkds = NULL;
@@ -103,6 +119,8 @@ avtDatasetCollection::~avtDatasetCollection()
     avtds = NULL;
     delete [] materials;
     materials = NULL;
+    delete [] species;
+    species = NULL;
     delete [] mixvars;
     mixvars = NULL;
 }

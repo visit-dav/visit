@@ -60,13 +60,13 @@ using     std::vector;
 //    Hank Childs, Wed Oct 15 19:17:11 PDT 2003
 //    Added forceFaceConsolidation.
 //
+//    Hank Childs, Fri Mar 11 08:07:26 PST 2005
+//    Removed data member filters.
+//
 // ****************************************************************************
 
 avtFacelistFilter::avtFacelistFilter()
 {
-    rf = vtkRectilinearGridFacelistFilter::New();
-    sf = vtkStructuredGridFacelistFilter::New();
-    uf = vtkUnstructuredGridFacelistFilter::New();
     useFacelists = true;
     create3DCellNumbers = false;
     forceFaceConsolidation = false;
@@ -91,25 +91,13 @@ avtFacelistFilter::avtFacelistFilter()
 //    I modified the class to use vtkUnstructuredGridFacelistFilter instead
 //    of vtkGeometryFilter for unstructured grids.
 //
+//    Hank Childs, Fri Mar 11 08:07:26 PST 2005
+//    Removed data member filters.
+//
 // ****************************************************************************
 
 avtFacelistFilter::~avtFacelistFilter()
 {
-    if (rf != NULL)
-    {
-        rf->Delete();
-        rf = NULL;
-    }
-    if (sf != NULL)
-    {
-        sf->Delete();
-        sf = NULL;
-    }
-    if (uf != NULL)
-    {
-        uf->Delete();
-        uf = NULL;
-    }
 }
 
 // ****************************************************************************
@@ -144,12 +132,17 @@ avtFacelistFilter::SetCreate3DCellNumbers(bool create)
 //  Programmer:  Hank Childs
 //  Creation:    October 15, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Mar 11 08:07:26 PST 2005
+//    Do not call method for rectilinear facelist filter, since it is now
+//    instantiated on the fly.
+//
 // ****************************************************************************
 void
 avtFacelistFilter::SetForceFaceConsolidation(bool afc)
 {
     forceFaceConsolidation = afc;
-    rf->SetForceFaceConsolidation(afc ? 1 : 0);
 }
 
 
@@ -338,33 +331,35 @@ avtFacelistFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 //    Hank Childs, Wed May  5 16:18:44 PDT 2004
 //    Do not prevent normal calculation for rectilinear grids.
 //
+//    Hank Childs, Fri Mar 11 08:11:03 PST 2005
+//    Instantiate VTK filters on the fly.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain)
 {
-    vtkPolyData *pd     = vtkPolyData::New();
     vtkDataSet  *out_ds = NULL;
-    bool         mustDeReference = false;
+    vtkPolyData *pd = vtkPolyData::New();
     bool         hasCellData = (in_ds->GetCellData()->GetNumberOfArrays() > 0 
                                 ? true : false);
 
+    vtkRectilinearGridFacelistFilter *rf = vtkRectilinearGridFacelistFilter::New();
+    rf->SetForceFaceConsolidation(forceFaceConsolidation ? 1 : 0);
+    vtkStructuredGridFacelistFilter *sf = vtkStructuredGridFacelistFilter::New();
+    vtkUnstructuredGridFacelistFilter *uf = vtkUnstructuredGridFacelistFilter::New();
     switch (in_ds->GetDataObjectType())
     {
       case VTK_RECTILINEAR_GRID:
         rf->SetInput((vtkRectilinearGrid *) in_ds);
-        rf->SetOutput(pd);
         rf->Update();
-        out_ds = pd;
-        mustDeReference = true;
+        out_ds = rf->GetOutput();
         break;
 
       case VTK_STRUCTURED_GRID:
         sf->SetInput((vtkStructuredGrid *) in_ds);
-        sf->SetOutput(pd);
         sf->Update();
-        out_ds = pd;
-        mustDeReference = true;
+        out_ds = sf->GetOutput();
         break;
 
       case VTK_UNSTRUCTURED_GRID:
@@ -399,7 +394,6 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain)
                 {
                     fl->CalcFacelist((vtkUnstructuredGrid *) in_ds, pd);
                     out_ds = pd;
-                    mustDeReference = true;
                 }
                 CATCH (BadIndexException)
                 {
@@ -416,10 +410,8 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain)
                 debug5 << "Ugrid forced to calculate facelist for domain "
                        << domain << endl;
                 uf->SetInput((vtkUnstructuredGrid *) in_ds);
-                uf->SetOutput(pd);
                 uf->Update();
-                out_ds = pd;
-                mustDeReference = true;
+                out_ds = uf->GetOutput();
             }
         }
         break;
@@ -430,18 +422,17 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain)
         debug1 << "Unknown meshtype encountered in facelist filter, passing "
                << "input through as output." << endl;
         out_ds = in_ds;
-        mustDeReference = false;
         break;
     }
 
     ManageMemory(out_ds);
-    if (mustDeReference)
-    {
-        out_ds->Delete();
-    }
     debug4 << "Facelist filter reduction for domain " << domain 
            << ": input has " << in_ds->GetNumberOfCells() << " cells, out has " 
            << out_ds->GetNumberOfCells() << endl;
+    pd->Delete();
+    rf->Delete();
+    sf->Delete();
+    uf->Delete();
     return out_ds;
 }
 
@@ -472,6 +463,9 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain)
 //    Hank Childs, Wed Oct 15 21:09:26 PDT 2003
 //    Use the rectilinear grid facelist filter since it can do face
 //    consolidation.
+//
+//    Hank Childs, Fri Mar 11 08:11:03 PST 2005
+//    Instantiate VTK filters on the fly.
 //
 // ****************************************************************************
 
@@ -505,11 +499,14 @@ avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds)
     //
     if (dstype == VTK_RECTILINEAR_GRID)
     {
+        vtkRectilinearGridFacelistFilter *rf = vtkRectilinearGridFacelistFilter::New();
+        rf->SetForceFaceConsolidation(forceFaceConsolidation ? 1 : 0);
         rf->SetInput((vtkRectilinearGrid *) in_ds);
         rf->SetOutput(out_ds);
         out_ds->Update();
         rf->SetOutput(NULL);
         out_ds->SetSource(NULL);
+        rf->Delete();
     }
     else if (dstype == VTK_STRUCTURED_GRID)
     {
@@ -787,37 +784,6 @@ avtFacelistFilter::RefashionDataObjectInfo(void)
         output->GetInfo().GetValidity().InvalidateZones();
         output->GetInfo().GetAttributes().SetTopologicalDimension(2);
     }
-}
-
-
-// ****************************************************************************
-//  Method: avtFacelistFilter::ReleaseData
-//
-//  Purpose:
-//      Releases any problem sized data being stored in the filter.
-//
-//  Programmer: Hank Childs
-//  Creation:   September 10, 2002
-//
-//  Modifications:
-//
-//    Hank Childs, Fri Mar  4 08:12:25 PST 2005
-//    Do not set outputs of filters to NULL, since this will prevent them
-//    from re-executing correctly in DLB-mode.
-//
-// ****************************************************************************
-
-void
-avtFacelistFilter::ReleaseData(void)
-{
-    avtStreamer::ReleaseData();
-
-    rf->SetInput(NULL);
-    rf->SetOutput(vtkPolyData::New());
-    sf->SetInput(NULL);
-    sf->SetOutput(vtkPolyData::New());
-    uf->SetInput(NULL);
-    uf->SetOutput(vtkPolyData::New());
 }
 
 

@@ -460,6 +460,9 @@ avtLineoutFilter::CreatePolys(vtkDataSet *ds, float *pt1, float *pt2,
 //    Use different CreatePolys method if we must use Original Cell Numbers.
 //    Tell the locator to ignore ghost zones.
 //
+//    Hank Childs, Fri Mar 11 17:04:37 PST 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -510,6 +513,8 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
     locator->Delete();
 
     ManageMemory(rv);
+    if (rv != NULL)
+        rv->Delete();
     return rv;
 }
 

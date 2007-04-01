@@ -11,12 +11,9 @@
 
 
 class vtkDataSet;
-class vtkClipVolume;
-class vtkClipPolyData;
 class vtkImplicitBoolean;
 class vtkImplicitFunction;
 class vtkUnstructuredGrid;
-class vtkVisItClipper;
 
 
 // ****************************************************************************
@@ -47,6 +44,9 @@ class vtkVisItClipper;
 //    Made my fast clipper support 2D, and removed the old generic
 //    VTK data set clipper.
 //
+//    Hank Childs, Thu Mar 10 14:33:32 PST 2005
+//    Removed data members for filters that are now instantiated on the fly.
+//
 // ****************************************************************************
 
 class avtClipFilter : public avtPluginStreamer
@@ -60,20 +60,15 @@ class avtClipFilter : public avtPluginStreamer
     virtual const char      *GetType(void)  { return "avtClipFilter"; };
     virtual const char      *GetDescription(void)
                                  { return "Clipping"; };
-    virtual void             ReleaseData(void);
 
     virtual void             SetAtts(const AttributeGroup*);
     virtual bool             Equivalent(const AttributeGroup*);
 
   protected:
     ClipAttributes           atts;
-    vtkClipPolyData         *clipPoly;
-    vtkVisItClipper         *fastClipper;
 
     virtual vtkDataSet      *ExecuteData(vtkDataSet *, int, std::string);
     virtual void             RefashionDataObjectInfo(void);
-    virtual avtPipelineSpecification_p
-                             PerformRestriction(avtPipelineSpecification_p);
 
   private:
     bool                     SetUpClipFunctions(vtkImplicitBoolean *, bool&);

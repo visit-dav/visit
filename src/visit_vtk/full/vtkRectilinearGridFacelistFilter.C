@@ -160,6 +160,9 @@ SpecializedIndexer::SpecializedIndexer(int x, int y, int z)
 //  Hank Childs, Wed Nov 10 11:30:03 PST 2004
 //  Correct problem where we are over-allocating number of points for 2D case.
 //
+//  Hank Childs, Sun Mar 13 11:09:16 PST 2005
+//  Fix memory leak.
+//
 // ****************************************************************************
 
 void vtkRectilinearGridFacelistFilter::Execute()
@@ -185,6 +188,7 @@ void vtkRectilinearGridFacelistFilter::Execute()
      if (inCellData->GetArray("avtGhostZones") == NULL)
      {
         ConsolidateFacesWithoutGhostZones();
+        output->Delete();
         return;
      }
   }  

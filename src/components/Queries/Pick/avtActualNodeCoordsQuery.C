@@ -8,8 +8,6 @@
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
-#include <vtkVisItUtility.h>
-
 
 
 // ****************************************************************************
@@ -52,6 +50,9 @@ avtActualNodeCoordsQuery::~avtActualNodeCoordsQuery()
 //  Modifications:
 //    Kathleen Bonnell, Wed Jun 16 13:54:28 PDT 2004
 //    avtOriginalNode numbers is now of type vtkIntArray.
+//
+//    Hank Childs, Thu Mar 10 10:32:40 PST 2005
+//    Fix memory leak.
 //
 // ****************************************************************************
 
@@ -109,7 +110,7 @@ avtActualNodeCoordsQuery::Execute(vtkDataSet *ds, const int dom)
 
     if (actualId >= 0 && actualId < ds->GetNumberOfPoints())
     {
-        vtkVisItUtility::GetPoints(ds)->GetPoint(actualId, actualCoords);
+        ds->GetPoint(actualId, actualCoords);
     }
     else
     {

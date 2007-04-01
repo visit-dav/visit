@@ -1466,12 +1466,18 @@ BLine::OutputCell(int node0, vtkPolyData *pd, vtkCellData *in_cd,
 //  Programmer: Hank Childs
 //  Creation:   October 21, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Mar 10 17:21:17 PST 2005
+//    Fix UMR.
+//
 // ****************************************************************************
 
 BHashEntry::BHashEntry()
 {
     point_index = -1;
     last_good_entry = 0;
+    face_type = 0;
     extension = NULL;
 }
 

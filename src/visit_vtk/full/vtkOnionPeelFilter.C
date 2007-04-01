@@ -572,6 +572,9 @@ vtkOnionPeelFilter::Execute()
 //   Kathleen Bonnell, Tue Jun 24 14:19:49 PDT 2003 
 //   Allow for poly-data input, retrieve points via vtkVisItUtility::GetPoints. 
 //  
+//   Hank Childs, Thu Mar 10 09:48:47 PST 2005
+//   Fix memory leak.
+//
 //=======================================================================
 void 
 vtkOnionPeelFilter::GenerateOutputGrid()
@@ -599,7 +602,9 @@ vtkOnionPeelFilter::GenerateOutputGrid()
     output->Allocate(totalCells);
 
     // grab points from input so they can be passed along directly to ouput
-    output->SetPoints(vtkVisItUtility::GetPoints(input));
+    vtkPoints *pts = vtkVisItUtility::GetPoints(input);
+    output->SetPoints(pts);
+    pts->Delete();
  
     outPD->PassData(inPD);
     outCD->CopyAllocate(inCD);

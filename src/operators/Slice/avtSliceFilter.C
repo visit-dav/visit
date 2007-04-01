@@ -1022,6 +1022,9 @@ avtSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 //    Hank Childs, Thu Mar  3 17:41:30 PST 2005
 //    If we make the output's NULL, we will have problems with DLB.
 //
+//    Hank Childs, Fri Mar 11 07:37:05 PST 2005
+//    Fix non-problem size leak introduced with last fix.
+//
 // ****************************************************************************
 
 void
@@ -1030,9 +1033,15 @@ avtSliceFilter::ReleaseData(void)
     avtPluginStreamer::ReleaseData();
 
     slicer->SetInput(NULL);
-    slicer->SetOutput(vtkPolyData::New());
+    vtkPolyData *p = vtkPolyData::New();
+    slicer->SetOutput(p);
+    p->Delete();
+
     transform->SetInput(NULL);
-    transform->SetOutput(vtkPolyData::New());
+    p = vtkPolyData::New();
+    transform->SetOutput(p);
+    p->Delete();
+
     if (celllist != NULL)
     {
         delete [] celllist;

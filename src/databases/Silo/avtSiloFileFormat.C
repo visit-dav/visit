@@ -3847,6 +3847,10 @@ avtSiloFileFormat::GetPointVar(DBfile *dbfile, const char *vname)
 //    Added code to set arbMeshZoneRangesToSkip and issue warning for meshes
 //    that have arbitrary polyhedra embedded in an ordinary DBzonelist
 //
+//    Hank Childs, Wed Mar  9 07:53:16 PST 2005
+//    Do not send a C-array into a C++-construct.  It will eventually call 
+//    "delete" when it should call "free".
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -3925,13 +3929,10 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
         // Create a vtkInt array whose contents are the actual gnodeno data
         //
         vtkIntArray *arr = vtkIntArray::New();
-        arr->SetArray(um->gnodeno, nnodes, 0);
         arr->SetNumberOfComponents(1);
-
-        //
-        // Since vtkIntArray now owns the data, we remove it from um
-        //
-        um->gnodeno = NULL;
+        arr->SetNumberOfTuples(nnodes);
+        int *ptr = arr->GetPointer(0);
+        memcpy(ptr, um->gnodeno, nnodes*sizeof(int));
 
         //
         // Cache this VTK object but in the VoidRefCache, not the VTK cache
@@ -3978,13 +3979,10 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
             // Create a vtkInt array whose contents are the actual gzoneno data
             //
             vtkIntArray *arr = vtkIntArray::New();
-            arr->SetArray(um->zones->gzoneno, um->zones->nzones, 0);
             arr->SetNumberOfComponents(1);
-
-            //
-            // Since vtkIntArray now owns the data, we remove it from um
-            //
-            um->zones->gzoneno = NULL;
+            arr->SetNumberOfTuples(um->zones->nzones);
+            int *ptr = arr->GetPointer(0);
+            memcpy(ptr, um->zones->gzoneno, um->zones->nzones*sizeof(int));
 
             //
             // Cache this VTK object but in the VoidRefCache, not the VTK cache

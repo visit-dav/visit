@@ -8,6 +8,8 @@
 
 #include <visit-config.h>
 
+#include <vtkImageData.h>
+
 #include <avtCommonDataFunctions.h>
 #include <avtDataset.h>
 #include <avtDatasetExaminer.h>
@@ -228,6 +230,9 @@ avtRayTracer::SetGradientBackgroundColors(const float bg1[3],
 //    Hank Childs, Thu Dec  9 17:15:44 PST 2004
 //    Cast rays in tiles for big images ['1948].
 //
+//    Hank Childs, Sun Mar 13 11:16:20 PST 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 void
@@ -342,8 +347,10 @@ avtRayTracer::Execute(void)
     if (PAR_Rank() == 0)
     {
         whole_image = new avtImage(this);
-        whole_image->GetImage() = avtImageRepresentation::NewImage(screen[0], 
-                                                                   screen[1]);
+        vtkImageData *img = avtImageRepresentation::NewImage(screen[0], 
+                                                             screen[1]);
+        whole_image->GetImage() = img;
+        img->Delete();
     }
     for (int i = 0 ; i < numDivisions ; i++)
         for (int j = 0 ; j < numDivisions ; j++)

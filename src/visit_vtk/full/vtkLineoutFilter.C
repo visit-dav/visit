@@ -72,6 +72,9 @@ vtkLineoutFilter::~vtkLineoutFilter()
 //   Hank Childs, Fri Aug 27 15:15:20 PDT 2004
 //   Rename ghost data array.
 //
+//   Hank Childs, Sun Mar 13 09:19:30 PST 2005
+//   Fix memory leak.
+//
 //======================================================================
 void
 vtkLineoutFilter::Execute()
@@ -111,6 +114,7 @@ vtkLineoutFilter::Execute()
 
   if (validPoints == NULL || validPoints->GetNumberOfTuples() == 0)
     {
+        probeOut->Delete();
         vtkDebugMacro(<<"Probe did not find any valid points");
         return;
     }
@@ -133,6 +137,7 @@ vtkLineoutFilter::Execute()
   vtkDataArray *scalars = this->Probe->GetOutput()->GetPointData()->GetScalars();
   if (scalars == NULL)
   {
+      probeOut->Delete();
       vtkErrorMacro(<<"Probe did not return point data scalars");
       return;
   }

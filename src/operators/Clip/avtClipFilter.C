@@ -50,12 +50,14 @@
 //    Made my fast clipper support 2D, and removed the old generic
 //    VTK data set clipper.
 //
+//    Hank Childs, Thu Mar 10 14:33:32 PST 2005
+//    Remove filters.  They are now instantiated on the fly.
+//
 // ****************************************************************************
 
 avtClipFilter::avtClipFilter()
 {
-    clipPoly = vtkClipPolyData::New();
-    fastClipper = vtkVisItClipper::New();
+    ;
 }
 
 
@@ -77,20 +79,13 @@ avtClipFilter::avtClipFilter()
 //    Made my fast clipper support 2D, and removed the old generic
 //    VTK data set clipper.
 //
+//    Hank Childs, Thu Mar 10 14:33:32 PST 2005
+//    Remove filters.  They are now instantiated on the fly.
+//
 // ****************************************************************************
 
 avtClipFilter::~avtClipFilter()
 {
-    if (clipPoly != NULL)
-    {
-        clipPoly->Delete();
-        clipPoly = NULL;
-    }
-    if (fastClipper != NULL)
-    {
-        fastClipper->Delete();
-        fastClipper = NULL;
-    }
 }
 
 // ****************************************************************************
@@ -202,11 +197,16 @@ avtClipFilter::Equivalent(const AttributeGroup *a)
 //    Made my fast clipper support 2D, and removed the old generic
 //    VTK data set clipper.
 //
+//    Hank Childs, Thu Mar 10 14:33:32 PST 2005
+//    Instantiate filters on the fly.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtClipFilter::ExecuteData(vtkDataSet *inDS, int dom, std::string)
 {
+    vtkClipPolyData *clipPoly = vtkClipPolyData::New();
+    vtkVisItClipper *fastClipper = vtkVisItClipper::New();
     vtkImplicitBoolean *ifuncs = vtkImplicitBoolean::New();
  
     bool inverse = false; 
@@ -265,6 +265,8 @@ avtClipFilter::ExecuteData(vtkDataSet *inDS, int dom, std::string)
         outDS->Delete();
     }
 
+    clipPoly->Delete();
+    fastClipper->Delete();
     return outDS;
 }
 
@@ -387,50 +389,3 @@ avtClipFilter::RefashionDataObjectInfo(void)
 }
 
 
-// ****************************************************************************
-//  Method: avtClipFilter::PerformRestriction
-//
-//  Purpose:
-//      This is defined so that we can examine the pipeline specification and
-//      infer information about what is needed downstream.
-//
-//  Programmer: Jeremy Meredith
-//  Creation:   August  8, 2003
-//
-// ****************************************************************************
-
-avtPipelineSpecification_p
-avtClipFilter::PerformRestriction(avtPipelineSpecification_p spec)
-{
-    return spec;
-}
-
-
-// ****************************************************************************
-//  Method: avtClipFilter::ReleaseData
-//
-//  Purpose:
-//      Free up all problem size memory associated with this filter.
-//
-//  Programmer: Jeremy Meredith
-//  Creation:   August  8, 2003
-//
-//  Modifications:
-//    Jeremy Meredith, Wed May  5 13:05:35 PDT 2004
-//    Made my fast clipper support 2D, and removed the old generic
-//    VTK data set clipper.
-//
-//    Hank Childs, Fri Mar  4 08:12:25 PST 2005
-//    Do not set outputs of filters to NULL, since this will prevent them
-//    from re-executing correctly in DLB-mode.
-//
-// ****************************************************************************
-
-void
-avtClipFilter::ReleaseData(void)
-{
-    avtPluginStreamer::ReleaseData();
-
-    clipPoly->SetInput(NULL);
-    clipPoly->SetOutput(vtkPolyData::New());
-}

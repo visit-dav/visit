@@ -81,6 +81,9 @@ avtPickByNodeQuery::~avtPickByNodeQuery()
 //    Added test for presence of avtGlobalNodeNumbers array, create error
 //    message when not available but should be.
 //
+//    Hank Childs, Thu Mar 10 10:36:51 PST 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 void
@@ -208,7 +211,7 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
     // transformed space, so  ????????
     //
     float coord[3];
-    vtkVisItUtility::GetPoints(ds)->GetPoint(nodeid, coord);
+    ds->GetPoint(nodeid, coord);
     pickAtts.SetCellPoint(coord);
     if (transform != NULL)
     {
