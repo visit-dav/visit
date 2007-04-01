@@ -750,3 +750,84 @@ ViewerServerManager::OpenWithLauncher(
     }
 }
 
+// ****************************************************************************
+//  Method: ViewerServerManager::SimConnectThroughLauncher 
+//
+//  Purpose:
+//    Connect to a simulation using the launcher.  This is similar to 
+//    OpenWithLauncher, but it connects to a running simulation instead
+//    of starting a new engine process.
+//
+//  Arguments:
+//   remoteHost : The name of the computer where we want the component to run.
+//   args       : The command line to run on the remote machine.
+//   data       : Optional callback data.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 30, 2004
+//
+// ****************************************************************************
+void
+ViewerServerManager::SimConnectThroughLauncher(const std::string &remoteHost, 
+                                               const stringVector &args,
+                                               void *data)
+{
+    bool retry = false;
+    int  numAttempts = 0;
+    bool launched = false;
+
+    do
+    {
+        TRY
+        {
+            // We use the data argument to pass in a pointer to the connection
+            // progress window.
+            typedef struct {string h; int p;} SimData;
+            SimData *simData = (SimData*)data;
+
+            // Search the args list and see if we've supplied the path to
+            // the visit executeable.
+            std::string visitPath;
+            for(int i = 0; i < args.size(); ++i)
+            {
+                if(args[i] == "-dir" && (i+1) < args.size())
+                {
+                    visitPath = args[i+1];
+                    ++i;
+                }
+            }
+
+            // Try to start a launcher on remoteHost.
+            StartLauncher(remoteHost, visitPath, NULL);
+
+            // Try to make the launcher launch the process.
+            launchers[remoteHost]->ConnectSimulation(args, simData->h, simData->p);
+
+            // Indicate success.
+            launched = true;
+            retry = false;
+        }
+        CATCH(LostConnectionException)
+        {
+            // We lost the connection to the launcher program so we need
+            // to delete its proxy and remove it from the launchers map
+            // so the next time we go through this loop, we relaunch it.
+            delete launchers[remoteHost];
+            launchers[remoteHost] = 0;
+            LauncherMap::iterator pos = launchers.find(remoteHost);
+            launchers.erase(pos);
+
+            retry = true;
+            ++numAttempts;
+        }
+        // All other VisItExceptions are thrown out of this routine so they
+        // can be handled by the managers.
+        ENDTRY
+    } while(retry && numAttempts < 2);
+
+    if(!launched)
+    {
+        EXCEPTION0(CouldNotConnectException);
+    }
+}
+

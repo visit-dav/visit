@@ -9,12 +9,25 @@ SIMOBJ=$(SIMSRC:.c=.o)
 CC=gcc
 CXX=g++
 LD=gcc
-CFLAGS=-g -I../include/visit
+CFLAGS=-g -I../include/visit -Wimplicit-function-declaration
 LDFLAGS=-L../lib
-LIBS=-ldl
-LIBLIBS=-lengine_ser -lplugin -lviswindow -lavtmath_ser -lplotter -ldatabase_ser -lmir -lquery_ser -lexpressions_ser -lpipeline_ser -lvisit_vtk -lvtkqt -lwinutil -lqt -lenginerpc -lutility -lmisc -lcomm -lstate -lengineparstate_ser -ldbatts -lavtexceptions -lparser -lvtkCommon -lvtkDICOMParser -lvtkFiltering -lvtkGraphics -lvtkHybrid -lvtkIO -lvtkImaging -lvtkRendering -lvtkzlib -lvtkexpat -lvtkjpeg -lvtkpng -lvtktiff -lvtkftgl -lvtkfreetype -lGL -lOSMesa -lMesaGL -lX11 -lm -lresolv -lsocket -lnsl -ldl -lthread -lstdc++
+LIBS=-ldl -lsocket -lnsl
+LIBLIBS=-lengine_ser -lplugin -lviswindow -lavtmath_ser -lplotter \
+        -ldatabase_ser -lmir -lquery_ser -lexpressions_ser -lavtfilters_ser \
+        -lpipeline_ser -lavtview -lavtwriter -lvisit_vtk \
+        -llightweight_visit_vtk \
+	-lenginerpc -lutility -lmisc -lcomm -lstate \
+	-lengineparstate_ser -ldbatts -lavtexceptions -lparser -lvtkCommon \
+        -lvtkDICOMParser -lvtkFiltering -lvtkGraphics -lvtkHybrid -lvtkIO \
+        -lvtkImaging -lvtkRendering -lvtkzlib -lvtkexpat -lvtkjpeg -lvtkpng \
+        -lvtktiff -lvtkftgl -lvtkfreetype -lGL -lOSMesa -lMesaGL -lX11 \
+	-lm -lresolv -lsocket -lnsl -ldl  -lthread
 
 all:  $(SIM) $(EWRAP)
+	cd mainplugin && visit -xml2makefile -noengineplugin -clobber -noprint SimDB.xml
+	cd simplugin && env VISITPLUGININST=.. visit -xml2makefile -onlyengineplugin -clobber -noprint SimDB.xml
+	cd mainplugin && $(MAKE)
+	cd simplugin && $(MAKE)
 
 .c.o:
 	$(CC) $(CFLAGS) -c $<

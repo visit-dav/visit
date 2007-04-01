@@ -8,9 +8,11 @@
 #include <LostConnectionException.h>
 #include <RPCExecutor.h>
 #include <map>
+#include <snprintf.h>
 
 #if defined(_WIN32)
 #include <process.h>
+#include <winsock2.h>
 #include <windows.h>
 #else
 #include <unistd.h> // alarm
@@ -18,6 +20,10 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
 #endif
 
 //
@@ -97,6 +103,34 @@ RPCExecutor<LaunchRPC>::Execute(LaunchRPC *launch)
 }
 
 // ****************************************************************************
+// Method: RPCExecutor<ConnectSimRPC>::Execute
+//
+// Purpose: 
+//   Uses the arguments passed from the client to tell a simulation to connect
+//   back to the client.
+//
+// Programmer: Jeremy Meredith
+// Creation:   March 23, 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+template<>
+void
+RPCExecutor<ConnectSimRPC>::Execute(ConnectSimRPC *connect)
+{
+    debug2 << "Executing ConnectSimRPC"
+           << "  Host=" << connect->GetSimHost()
+           << "  Port=" << connect->GetSimPort() << endl;
+    LauncherApplication::Instance()->ConnectSimulation(
+                                                  connect->GetLaunchArgs(),
+                                                  connect->GetSimHost(),
+                                                  connect->GetSimPort());
+    connect->SendReply();
+}
+
+// ****************************************************************************
 // Method: LauncherApplication::Instance
 //
 // Purpose: 
@@ -131,6 +165,9 @@ LauncherApplication::Instance()
 //   Brad Whitlock, Fri Mar 12 10:37:49 PDT 2004
 //   Added new members to handle the KeepAliveRPC.
 //
+//   Jeremy Meredith, Tue Mar 30 17:27:59 PST 2004
+//   Added connectSimExecutor.
+//
 // ****************************************************************************
 
 LauncherApplication::LauncherApplication() : parent(), xfer(), quitRPC(),
@@ -139,6 +176,7 @@ LauncherApplication::LauncherApplication() : parent(), xfer(), quitRPC(),
     quitExecutor = 0;
     keepAliveExecutor = 0;
     launchExecutor = 0;
+    connectSimExecutor = 0;
     timeout = 60;
     keepGoing = true;
 
@@ -161,6 +199,9 @@ LauncherApplication::LauncherApplication() : parent(), xfer(), quitRPC(),
 //   Brad Whitlock, Fri Mar 12 10:38:13 PDT 2004
 //   Added keepAliveExecutor.
 //
+//   Jeremy Meredith, Tue Mar 30 17:27:59 PST 2004
+//   Added connectSimExecutor.
+//
 // ****************************************************************************
 
 LauncherApplication::~LauncherApplication()
@@ -169,6 +210,7 @@ LauncherApplication::~LauncherApplication()
     delete quitExecutor;
     delete keepAliveExecutor;
     delete launchExecutor;
+    delete connectSimExecutor;
 }
 
 // ****************************************************************************
@@ -252,6 +294,9 @@ LauncherApplication::ProcessArguments(int *argcp, char **argvp[])
 //   Brad Whitlock, Fri Mar 12 10:39:26 PDT 2004
 //   I added the KeepAlive RPC.
 //
+//   Jeremy Meredith, Tue Mar 30 17:27:59 PST 2004
+//   Added connectSimExecutor.
+//
 // ****************************************************************************
 
 void
@@ -286,11 +331,13 @@ LauncherApplication::Connect(int *argc, char **argv[])
     xfer.Add(&quitRPC);
     xfer.Add(&keepAliveRPC);
     xfer.Add(&launchRPC);
+    xfer.Add(&connectSimRPC);
 
     // Hook up the RPC executors to the RPC's.
     quitExecutor      = new RPCExecutor<QuitRPC>(&quitRPC); 
     keepAliveExecutor = new RPCExecutor<KeepAliveRPC>(&keepAliveRPC); 
     launchExecutor    = new RPCExecutor<LaunchRPC>(&launchRPC);
+    connectSimExecutor= new RPCExecutor<ConnectSimRPC>(&connectSimRPC);
 }
 
 // ****************************************************************************
@@ -562,6 +609,103 @@ LauncherApplication::LaunchProcess(const stringVector &launchArgs)
     for(i = 0; i < launchArgs.size(); ++i)
         delete [] args[i];
     delete [] args;
+}
+
+// ****************************************************************************
+//  Method:  LauncherApplication::ConnectSimulation
+//
+//  Purpose:
+//    Connect to a running simulation
+//
+//  Arguments:
+//    launchArgs   the arguments to be passed to the engine
+//    simHost      the hostname of the machine where the simulation is running
+//    simPort      the port number where the simulation is listening
+//
+//  Note:  Much of this code was taken from ParentProcess.  Both should
+//         have their socket stuff abstracted into a common location.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 23, 2004
+//
+// ****************************************************************************
+void
+LauncherApplication::ConnectSimulation(const stringVector &launchArgs,
+                                       const std::string &simHost, int simPort)
+{
+    int                s;
+    struct hostent     *hp;
+    struct sockaddr_in server;
+
+    //
+    // Get the simulation host information
+    //
+    void *hostInfo = (void *)gethostbyname(simHost.c_str());
+
+    //
+    // Set up the structures for opening the sockets.
+    //
+    hp = (struct hostent *)hostInfo;
+    if (hp == NULL)
+    {
+        return;// error
+    }
+
+    memset(&server, 0, sizeof(server));
+    memcpy(&(server.sin_addr), hp->h_addr, hp->h_length);
+    server.sin_family = hp->h_addrtype;
+    server.sin_port = htons(simPort);
+    
+    // 
+    // Create a socket.
+    // 
+    s = socket(AF_INET, SOCK_STREAM, 0);
+    if (s < 0)
+    {
+        return;// error
+    }
+
+    // Disable the Nagle algorithm 
+    int opt = 1;
+#if defined(_WIN32)
+    setsockopt(s, IPPROTO_TCP, TCP_NODELAY, (const char FAR *)&opt, sizeof(int));
+#else
+    setsockopt(s, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(int));
+#endif
+
+    if (connect(s, (struct sockaddr *)&server, sizeof(server)) < 0)
+    {
+#if defined(_WIN32)
+        closesocket(s);
+#else
+        close(s);
+#endif
+        return;// error
+    }
+
+    // Create the data!
+    char tmp[2000] = "";
+    for (int i=0; i<launchArgs.size(); i++)
+    {
+        strcat(tmp, launchArgs[i].c_str());
+        strcat(tmp, "\n");
+    }
+    strcat(tmp, "\n");
+
+    // Send it!
+    size_t          nleft, nwritten;
+    const char      *ptr;
+
+    ptr = (const char*)tmp;
+    nleft = strlen(tmp);
+    while (nleft > 0)
+    {
+        if((nwritten = send(s, (const char *)ptr, nleft, 0)) <= 0)
+            return;//error (nwritten);
+
+        nleft -= nwritten;
+        ptr   += nwritten;
+    }
 }
 
 // ****************************************************************************

@@ -33,6 +33,8 @@
 #
 #
 # Modifications:
+#    Jeremy Meredith, Fri Jan 23 16:12:09 PST 2004
+#    Added ConnectSimRPC.
 #
 ##############################################################################
 
@@ -48,8 +50,8 @@ CPPFLAGS=-I. @CPPFLAGS@
 ##
 ## Files...
 ##
-SRC=LaunchRPC.C
-HDR=LaunchRPC.h
+SRC=LaunchRPC.C ConnectSimRPC.C
+HDR=LaunchRPC.h ConnectSimRPC.h
 
 OBJ=$(SRC:.C=.o)
 LIB=libvclrpc

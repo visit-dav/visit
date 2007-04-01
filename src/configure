@@ -7950,6 +7950,7 @@ echo $ECHO_N "checking for PDB... $ECHO_C" >&6
 PDB=""
 PDB_FLAGS=""
 PDB_LIBS=""
+PDB_EXEC=""
 
 # Check whether --with-pdb or --without-pdb was given.
 if test "${with_pdb+set}" = set; then
@@ -7964,6 +7965,7 @@ if test "$pdb_specified" = "yes"; then
       PDB_FLAGS="-I`echo $withval |cut -f1 -d,`"
       PDB_LIBS="-L`echo $withval |cut -f2 -d, -s` -lpdb -lscore -lpml"
       PDB="$""(PDB)"
+      PDB_EXEC="$""(PDBEXEC)"
       cat >>confdefs.h <<\_ACEOF
 #define HAVE_PDB_PROPER 1
 _ACEOF
@@ -7975,9 +7977,11 @@ else
    PDB_FLAGS="$SILO_INCLUDE"
    PDB_LIBS="$SILO_LIB"
    PDB="$""(PDB)"
+   PDB_EXEC="$""(PDBEXEC)"
    echo "$as_me:$LINENO: result: using PDB lite" >&5
 echo "${ECHO_T}using PDB lite" >&6
 fi
+
 
 
 
@@ -16349,6 +16353,7 @@ s,@EXODUS_FLAGS@,$EXODUS_FLAGS,;t t
 s,@PDB@,$PDB,;t t
 s,@PDB_FLAGS@,$PDB_FLAGS,;t t
 s,@PDB_LIBS@,$PDB_LIBS,;t t
+s,@PDB_EXEC@,$PDB_EXEC,;t t
 s,@MILI@,$MILI,;t t
 s,@MILI_FLAGS@,$MILI_FLAGS,;t t
 s,@MILI_LIBS@,$MILI_LIBS,;t t

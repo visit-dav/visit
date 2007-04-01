@@ -92,13 +92,16 @@ ViewerOperator::~ViewerOperator()
 //    Brad Whitlock, Fri Feb 22 17:28:32 PST 2002
 //    Rewrote the method so it goes through the engine manager.
 //
+//    Jeremy Meredith, Tue Mar 30 10:38:13 PST 2004
+//    Made engines be accessed using a key instead of a hostname.
+//
 // ****************************************************************************
 
 bool
 ViewerOperator::ExecuteEngineRPC() const
 {
     ViewerEngineManager *engineMgr = ViewerEngineManager::Instance();
-    return engineMgr->ApplyOperator(plot->GetHostName().c_str(),
+    return engineMgr->ApplyOperator(plot->GetEngineKey(),
                                     viewerPluginInfo->GetID(),
                                     operatorAtts);
 }

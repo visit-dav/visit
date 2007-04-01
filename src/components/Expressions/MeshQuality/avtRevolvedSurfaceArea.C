@@ -8,10 +8,12 @@
 #include <math.h>
 
 #include <vtkCell.h>
+#include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetRemoveGhostCells.h>
 #include <vtkFloatArray.h>
 #include <vtkGeometryFilter.h>
+#include <vtkIntArray.h>
 #include <vtkPoints.h>
 #include <vtkPolyData.h>
 #include <vtkVisItFeatureEdges.h>
@@ -80,34 +82,72 @@ avtRevolvedSurfaceArea::PreExecute(void)
 //    Added code to get the boundary edges before calculating the
 //    revolved surface area.
 //
+//    Hank Childs, Tue Mar 30 11:00:35 PST 2004
+//    The variable created must have the same number of tuples as the input
+//    dataset.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtRevolvedSurfaceArea::DeriveVariable(vtkDataSet *in_ds)
 {
+    int   i;
+
     //
-    // Create the boundary edges and remove ghost zone edges
+    // Create a copy of the input with each zone's id number.  This will be 
+    // used to match up the line segments with the zones they came from later.
+    //
+    vtkDataSet *tmp_ds = in_ds->NewInstance();
+    tmp_ds->ShallowCopy(in_ds);
+    int n_orig_cells = tmp_ds->GetNumberOfCells();
+    vtkIntArray *iarray = vtkIntArray::New();
+    iarray->SetName("_rsa_ncells");
+    iarray->SetNumberOfTuples(n_orig_cells);
+    for (i = 0 ; i < n_orig_cells ; i++)
+        iarray->SetValue(i, i);
+    tmp_ds->GetCellData()->AddArray(iarray);
+    iarray->Delete();
+
+    //
+    // Create the boundary edges.
     //
     vtkGeometryFilter *geomFilter = vtkGeometryFilter::New();
-
     vtkVisItFeatureEdges *boundaryFilter = vtkVisItFeatureEdges::New();
-    boundaryFilter->BoundaryEdgesOn();
-    boundaryFilter->FeatureEdgesOff();
-    boundaryFilter->NonManifoldEdgesOff();
-    boundaryFilter->ManifoldEdgesOff();
-    boundaryFilter->ColoringOff();
+    vtkPolyData *allLines = NULL;
 
+    avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
+    if (atts.GetTopologicalDimension() == 2)
+    {
+        geomFilter->SetInput(tmp_ds);
+        boundaryFilter->BoundaryEdgesOn();
+        boundaryFilter->FeatureEdgesOff();
+        boundaryFilter->NonManifoldEdgesOff();
+        boundaryFilter->ManifoldEdgesOff();
+        boundaryFilter->ColoringOff();
+    
+        boundaryFilter->SetInput(geomFilter->GetOutput());
+        boundaryFilter->GetOutput()->SetUpdateGhostLevel(2);
+        boundaryFilter->GetOutput()->Update();
+
+        allLines = boundaryFilter->GetOutput();
+        allLines->SetSource(NULL);
+    }
+    else if (tmp_ds->GetDataObjectType() == VTK_POLY_DATA)
+    {
+        allLines = (vtkPolyData *) tmp_ds;
+    }
+    else
+    {
+        geomFilter->SetInput(tmp_ds);
+        allLines = geomFilter->GetOutput();
+        allLines->SetSource(NULL);
+    }
+
+    //
+    // Remove ghost zones.
+    //
     vtkDataSetRemoveGhostCells *gzFilter = vtkDataSetRemoveGhostCells::New();
     gzFilter->SetGhostLevel(1);
-
-    geomFilter->SetInput(in_ds);
-    boundaryFilter->SetInput(geomFilter->GetOutput());
-    boundaryFilter->GetOutput()->SetUpdateGhostLevel(2);
-    boundaryFilter->GetOutput()->Update();
-
-    vtkPolyData *allLines = boundaryFilter->GetOutput();
-    allLines->SetSource(NULL);
-
     gzFilter->SetInput(allLines);
     vtkDataSet *ds_1d_nogz = gzFilter->GetOutput();
     ds_1d_nogz->Update();
@@ -120,17 +160,36 @@ avtRevolvedSurfaceArea::DeriveVariable(vtkDataSet *in_ds)
     }
     vtkPolyData *pd_1d_nogz = (vtkPolyData*)ds_1d_nogz;
 
+    //
+    // Only some of the zones are actually external to the domain and
+    // contribute to the resolved surface area.  These zones are exactly
+    // the zones in pd_1d_nogz.  But we need to create an output that is
+    // sized for the input mesh.  So construct an array with all 0's (the
+    // zones that aren't on the exterior contribute 0 surface area) and then
+    // add in the contributions from the zones on the exterior.
+    //
     vtkFloatArray *arr = vtkFloatArray::New();
-    int ncells = pd_1d_nogz->GetNumberOfCells();
-    arr->SetNumberOfTuples(ncells);
+    arr->SetNumberOfTuples(n_orig_cells);
+    for (i = 0 ; i < n_orig_cells ; i++)
+        arr->SetValue(i, 0.);
 
+    int ncells = pd_1d_nogz->GetNumberOfCells();
+    vtkIntArray *orig_cells = (vtkIntArray *)
+                            pd_1d_nogz->GetCellData()->GetArray("_rsa_ncells");
     for (int i = 0 ; i < ncells ; i++)
     {
         vtkCell *cell = pd_1d_nogz->GetCell(i);
         float area = (float) GetLineArea(cell);
-        arr->SetTuple1(i, area);
+        int orig_cell = orig_cells->GetValue(i);
+        float orig_area = arr->GetTuple1(orig_cell);
+        float new_area = area + orig_area;
+        arr->SetTuple1(orig_cell, new_area);
     }
 
+    //
+    // Clean up.
+    //
+    tmp_ds->Delete();
     geomFilter->Delete();
     gzFilter->Delete();
     boundaryFilter->Delete();

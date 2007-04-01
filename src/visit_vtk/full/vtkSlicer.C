@@ -271,6 +271,14 @@ void vtkSlicer::RectilinearGridExecute(void)
     sfv.ConstructPolyData(inPD, inCD, output, pt_dims, X, Y, Z);
 }
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Tue Mar 30 07:07:42 PST 2004
+//    Add support for slicing vertices.
+//
+// ****************************************************************************
+
 void vtkSlicer::UnstructuredGridExecute(void)
 {
     // The routine here is a bit trickier than for the Rectilinear or
@@ -300,15 +308,14 @@ void vtkSlicer::UnstructuredGridExecute(void)
     vtkSurfaceFromVolume sfv(ptSizeGuess);
 
     vtkUnstructuredGrid *stuff_I_cant_slice = vtkUnstructuredGrid::New();
-    stuff_I_cant_slice->SetPoints(ug->GetPoints());
-    stuff_I_cant_slice->GetPointData()->ShallowCopy(ug->GetPointData());
-    stuff_I_cant_slice->Allocate(nCells);
+    vtkPolyData *vertices_on_slice = vtkPolyData::New();
 
-    float D = Origin[0]*Normal[0] + Origin[1]*Normal[1] + Origin[2]*Normal[2];
+    double D = Origin[0]*Normal[0] + Origin[1]*Normal[1] + Origin[2]*Normal[2];
     float *pts_ptr = (float *) inPts->GetVoidPointer(0);
 
     int nToProcess = (CellList != NULL ? CellListSize : nCells);
     int numIcantSlice = 0;
+    int numVertices = 0;
     for (i = 0 ; i < nToProcess ; i++)
     {
         int        cellId = (CellList != NULL ? CellList[i] : i);
@@ -320,6 +327,7 @@ void vtkSlicer::UnstructuredGridExecute(void)
         int *vertices_from_edges = NULL;
         int tt_step = 0;
         bool canSlice = false;
+        bool isVertex = false;
         switch (cellType)
         {
           case VTK_TETRA:
@@ -348,6 +356,10 @@ void vtkSlicer::UnstructuredGridExecute(void)
             vertices_from_edges = (int *) hexVerticesFromEdges;
             tt_step = 16;
             canSlice = true;
+            break;
+ 
+          case VTK_VERTEX:
+            isVertex = true;
             break;
 
           default:
@@ -381,9 +393,9 @@ void vtkSlicer::UnstructuredGridExecute(void)
                     int pt2 = vertices_from_edges[2*triangulation_case[j]+1];
                     if (pt2 < pt1)
                     {
-                       int tmp = pt2;
-                       pt2 = pt1;
-                       pt1 = tmp;
+                        int tmp = pt2;
+                        pt2 = pt1;
+                        pt1 = tmp;
                     }
                     float dir = dist[pt2] - dist[pt1];
                     float amt = 0. - dist[pt1];
@@ -396,11 +408,42 @@ void vtkSlicer::UnstructuredGridExecute(void)
                 triangulation_case += 3;
             }
         }
+        else if (isVertex)
+        {
+            //
+            // Determine if the vertex is even on the plane.
+            //
+            float *pt = pts_ptr + 3*pts[0];
+            double dist_from_plane = Normal[0]*pt[0] + Normal[1]*pt[1]
+                                   + Normal[2]*pt[2] - D;
+            if (fabs(dist_from_plane) < 1e-12)
+            {
+                if (numVertices == 0)
+                {
+                    vertices_on_slice->SetPoints(ug->GetPoints());
+                    vertices_on_slice->GetPointData()->ShallowCopy(
+                                                           ug->GetPointData());
+                    vertices_on_slice->Allocate(nCells);
+                    vertices_on_slice->GetCellData()->
+                                       CopyAllocate(ug->GetCellData(), nCells);
+                }
+                vertices_on_slice->InsertNextCell(VTK_VERTEX, 1, pts);
+                vertices_on_slice->GetCellData()->
+                              CopyData(ug->GetCellData(), cellId, numVertices);
+                numVertices++;
+            }
+        }
         else
         {
             if (numIcantSlice == 0)
+            {
+                stuff_I_cant_slice->SetPoints(ug->GetPoints());
+                stuff_I_cant_slice->GetPointData()->ShallowCopy(
+                                                           ug->GetPointData());
+                stuff_I_cant_slice->Allocate(nCells);
                 stuff_I_cant_slice->GetCellData()->
                                        CopyAllocate(ug->GetCellData(), nCells);
+            }
 
             stuff_I_cant_slice->InsertNextCell(cellType, npts, pts);
             stuff_I_cant_slice->GetCellData()->
@@ -409,23 +452,32 @@ void vtkSlicer::UnstructuredGridExecute(void)
         }
     }
 
-    if (numIcantSlice > 0)
+    if ((numIcantSlice > 0) || (numVertices > 0))
     {
-        vtkPolyData *not_from_zoo  = vtkPolyData::New();
-        SliceDataset(stuff_I_cant_slice, not_from_zoo);
-        
+        vtkAppendPolyData *appender = vtkAppendPolyData::New();
+
+        if (numIcantSlice > 0)
+        {
+            vtkPolyData *not_from_zoo  = vtkPolyData::New();
+            SliceDataset(stuff_I_cant_slice, not_from_zoo);
+            appender->AddInput(not_from_zoo);
+            not_from_zoo->Delete();
+        }
+
+        if (numVertices > 0)
+        {
+            appender->AddInput(vertices_on_slice);
+        }
+
         vtkPolyData *just_from_zoo = vtkPolyData::New();
         sfv.ConstructPolyData(inPD, inCD, just_from_zoo, pts_ptr);
-
-        vtkAppendPolyData *appender = vtkAppendPolyData::New();
-        appender->AddInput(not_from_zoo);
         appender->AddInput(just_from_zoo);
+        just_from_zoo->Delete();
+
         appender->GetOutput()->Update();
 
         output->ShallowCopy(appender->GetOutput());
         appender->Delete();
-        not_from_zoo->Delete();
-        just_from_zoo->Delete();
     }
     else
     {
@@ -433,6 +485,7 @@ void vtkSlicer::UnstructuredGridExecute(void)
     }
 
     stuff_I_cant_slice->Delete();
+    vertices_on_slice->Delete();
 }
 
 

@@ -1640,7 +1640,7 @@ ViewerPlotList::SetHostDatabaseName(const std::string &hostDB)
         // to hostDB in case a name without a host was passed.
         //
         hostDatabaseName = ViewerFileServer::ComposeDatabaseName(hostName,
-            databaseName);
+                                                                 databaseName);
     }
     else
     {
@@ -1969,6 +1969,9 @@ ViewerPlotList::GetNumVisiblePlots() const
 //    Since it is possible for GetDefaultSILRestriction to throw an exception
 //    I added a try/catch around it.
 //
+//    Jeremy Meredith, Tue Mar 30 10:39:20 PST 2004
+//    Added an engine key to map plots to the engine used to create them.
+//
 // ****************************************************************************
 
 int
@@ -1988,8 +1991,8 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
     bool hadError = false;
     TRY
     {
-        newPlot = NewPlot(type, hostName, databaseName, var,
-                          applyOperators);
+        newPlot = NewPlot(type, engineKey, hostName, databaseName,
+                          var, applyOperators);
         if (newPlot == 0)
         {
             Error("VisIt could not create the desired plot.");
@@ -2377,6 +2380,9 @@ ViewerPlotList::MovePlotDatabaseKeyframe(int plotId, int oldFrame, int newFrame)
 //    Added code to copy the time sliders to the new plot list. I also made
 //    sure that the plot's state is set properly after it gets created.
 //
+//    Jeremy Meredith, Tue Mar 30 10:39:20 PST 2004
+//    Added an engine key to map plots to the engine used to create them.
+//
 // ****************************************************************************
 
 void
@@ -2393,6 +2399,11 @@ ViewerPlotList::CopyFrom(const ViewerPlotList *pl)
     // Copy the database and the host database.
     //
     SetHostDatabaseName(pl->GetHostDatabaseName());
+
+    //
+    // Copy the engine key
+    //
+    SetEngineKey(pl->GetEngineKey());
 
     //
     // Copy the animation playback mode.
@@ -2432,9 +2443,13 @@ ViewerPlotList::CopyFrom(const ViewerPlotList *pl)
              f1 = src->GetEndFrame() + 1;
              s0 = src->GetDatabaseState(f0);
              s1 = src->GetDatabaseState(f1);
-             dest = plotFactory->CreatePlot(src->GetType(), src->GetHostName(),
-                 src->GetDatabaseName(), src->GetVariableName(),
-                 src->GetSILRestriction(), src->GetState(), s1 - s0);
+             dest = plotFactory->CreatePlot(src->GetType(),
+                                            src->GetEngineKey(),
+                                            src->GetHostName(),
+                                            src->GetDatabaseName(),
+                                            src->GetVariableName(),
+                                            src->GetSILRestriction(),
+                                            src->GetState(), s1 - s0);
              dest->SetDatabaseState(f0, s0);
              dest->SetDatabaseState(f1, s1);
              dest->RegisterViewerPlotList(this);
@@ -2442,9 +2457,13 @@ ViewerPlotList::CopyFrom(const ViewerPlotList *pl)
              int f0, f1;
              f0 = src->GetBeginFrame();
              f1 = src->GetEndFrame();
-             dest = plotFactory->CreatePlot(src->GetType(), src->GetHostName(),
-                 src->GetDatabaseName(), src->GetVariableName(),
-                 src->GetSILRestriction(), src->GetState(), f1 - f0 + 1);
+             dest = plotFactory->CreatePlot(src->GetType(),
+                                            src->GetEngineKey(),
+                                            src->GetHostName(),
+                                            src->GetDatabaseName(),
+                                            src->GetVariableName(),
+                                            src->GetSILRestriction(),
+                                            src->GetState(), f1 - f0 + 1);
              dest->RegisterViewerPlotList(this);
 #endif
          }
@@ -2653,11 +2672,15 @@ ViewerPlotList::SimpleAddPlot(ViewerPlot *plot, bool replacePlots)
 //   Brad Whitlock, Sun Jan 25 22:10:58 PST 2004
 //   I added support for database correlations.
 //
+//    Jeremy Meredith, Tue Mar 30 10:39:20 PST 2004
+//    Added an engine key to map plots to the engine used to create them.
+//
 // ****************************************************************************
 
 ViewerPlot *
-ViewerPlotList::NewPlot(int type, const std::string &host, const std::string &db,
-    const std::string &var, bool applyOperators)
+ViewerPlotList::NewPlot(int type, const EngineKey &ek,
+                        const std::string &host, const std::string &db,
+                        const std::string &var, bool applyOperators)
 {
     //
     // Get the correlation for the plotDB and use that for the number of states.
@@ -2718,7 +2741,7 @@ ViewerPlotList::NewPlot(int type, const std::string &host, const std::string &db
     ViewerPlot *plot = 0;
     TRY
     {
-        plot = plotFactory->CreatePlot(type, host, db, var,
+        plot = plotFactory->CreatePlot(type, ek, host, db, var,
                                        silr, plotState, nStates);
         plot->RegisterViewerPlotList(this);
     }
@@ -3423,13 +3446,16 @@ ViewerPlotList::SetPlotOperatorAtts(const int operatorType, bool applyToAll)
 // Creation:   Mon Mar 22 15:52:08 PST 2004
 //
 // Modifications:
+//    Jeremy Meredith, Tue Mar 30 16:18:00 PST 2004
+//    Added code to set the engine key upon changing sources.
 //   
 // ****************************************************************************
 
 void
-ViewerPlotList::ActivateSource(const std::string &source)
+ViewerPlotList::ActivateSource(const std::string &source, const EngineKey &ek)
 {
     SetHostDatabaseName(source);
+    SetEngineKey(ek);
 
     //
     // Find a correlation for the active time slider. Also get the metadata
@@ -3780,10 +3806,15 @@ ViewerPlotList::ReplaceDatabase(const std::string &host, const std::string &data
 //   Since it is possible for NewPlot to throw an exception, I added
 //   try/catch around it.
 //
+//   Jeremy Meredith, Tue Mar 30 10:39:20 PST 2004
+//   Added an engine key to map plots to the engine used to create them.
+//
 // ****************************************************************************
 
 void
-ViewerPlotList::OverlayDatabase(const std::string &host, const std::string &database)
+ViewerPlotList::OverlayDatabase(const EngineKey &ek,
+                                const std::string &host,
+                                const std::string &database)
 {
     //
     // Loop over the initial list of plots and add new plots based on them
@@ -3800,7 +3831,7 @@ ViewerPlotList::OverlayDatabase(const std::string &host, const std::string &data
         TRY
         {
             newPlot = NewPlot(plots[i].plot->GetType(),
-                              host, database,
+                              ek, host, database,
                               plots[i].plot->GetVariableName(),
                               false);
         }
@@ -5010,6 +5041,9 @@ PthreadAttrInit(pthread_attr_t *attr)
 //    the first one called for a plot, so it can fail if the engine didn't
 //    launch.
 //
+//    Jeremy Meredith, Tue Mar 30 10:39:20 PST 2004
+//    Added an engine key to map plots to the engine used to create them.
+//
 // ****************************************************************************
 
 void *
@@ -5021,7 +5055,7 @@ CreatePlot(void *info)
     {
         // Couldn't this method call be made once per engine???
         bool success = plotInfo->window->SendWindowEnvironmentToEngine(
-            plotInfo->plot->GetHostName());
+                                               plotInfo->plot->GetEngineKey());
 
         if(success)
             plotInfo->plot->CreateActor();
@@ -5643,12 +5677,15 @@ ViewerPlotList::UpdatePlotAtts(bool updateThoseNotRepresented) const
 //    Brad Whitlock, Sat Jan 31 22:35:47 PST 2004
 //    I made frame no longer necessary.
 //
+//    Jeremy Meredith, Thu Mar 25 15:34:23 PST 2004
+//    I added a list of engine keys.
+//
 // ****************************************************************************
 
 void
 ViewerPlotList::GetCurrentPlotAtts(
    std::vector<const char*>&             pluginIDsList,
-   std::vector<std::string>&             hostsList,
+   std::vector<EngineKey>&               engineKeysList,
    std::vector<int>&                     plotIdsList,
    std::vector<const AttributeSubject*>& attsList) const
 {
@@ -5660,7 +5697,7 @@ ViewerPlotList::GetCurrentPlotAtts(
             ViewerPlot *plot = plots[i].plot;
 
             pluginIDsList.push_back(plot->GetPluginID());
-            hostsList.push_back(std::string(plot->GetHostName()));
+            engineKeysList.push_back(plot->GetEngineKey());
             plotIdsList.push_back(plot->GetNetworkID());
             attsList.push_back(plot->GetCurrentPlotAtts());
         }
@@ -5706,6 +5743,9 @@ ViewerPlotList::GetCurrentPlotAtts(
 //    Brad Whitlock, Sat Jan 31 22:36:30 PST 2004
 //    I made most calls to ViewerPlot not require a frame.
 //
+//    Jeremy Meredith, Tue Mar 30 12:28:52 PST 2004
+//    Added suport for simulations.
+//
 // ****************************************************************************
 
 void
@@ -5739,6 +5779,7 @@ ViewerPlotList::UpdatePlotList() const
         plot.SetExpandedFlag(plots[i].plot->GetExpanded());
         plot.SetBeginFrame(plots[i].plot->GetBeginFrame());
         plot.SetEndFrame(plots[i].plot->GetEndFrame());
+        plot.SetIsFromSimulation(plots[i].plot->GetEngineKey().IsSimulation());
  
         // Set the keyframe indices.
         int nIndices;
@@ -6512,6 +6553,12 @@ ViewerPlotList::GetNKeyframes() const
 //   moved saving certain attributes to ViewerPlot::CreateNode. I removed
 //   hostDatabaseName from the session file.
 //
+//   Jeremy Meredith, Tue Mar 30 10:39:20 PST 2004
+//   Added an engine key to map plots to the engine used to create them.
+//   Since plots from simulations cannot be created, they should not be
+//   saved with session files.  Added extra logic to avoid saving a simulation
+//   as the current active source as well.
+//
 // ****************************************************************************
 
 void
@@ -6523,17 +6570,9 @@ ViewerPlotList::CreateNode(DataNode *parentNode)
     DataNode *plotlistNode = new DataNode("ViewerPlotList");
     parentNode->AddNode(plotlistNode);
 
-    //
-    // Add information specific to the animation.
-    //
-    plotlistNode->AddNode(new DataNode("hostName", hostName));
-    plotlistNode->AddNode(new DataNode("databaseName", databaseName));
-    plotlistNode->AddNode(new DataNode("nPlots", nPlots));
-    plotlistNode->AddNode(new DataNode("keyframeMode", keyframeMode));
-    plotlistNode->AddNode(new DataNode("nKeyframes", nKeyframes));
-    plotlistNode->AddNode(new DataNode("pipelineCaching", pipelineCaching));
-    plotlistNode->AddNode(new DataNode("playbackMode",
-        PlaybackMode_ToString(playbackMode)));
+    std::string sourceToSave = "";
+    if (!engineKey.IsSimulation())
+        sourceToSave = databaseName;
 
     //
     // Save the time sliders.
@@ -6555,10 +6594,17 @@ ViewerPlotList::CreateNode(DataNode *parentNode)
     //
     // Let all of the plots save themselves to the config file.
     //
+    int numRealPlots = 0;
     for(int i = 0; i < nPlots; ++i)
     {
+        if (plots[i].plot->GetEngineKey().IsSimulation())
+            continue;
+
+        if (engineKey.IsSimulation())
+            sourceToSave = plots[i].plot->GetDatabaseName();
+
         char tmp[20];
-        SNPRINTF(tmp, 20, "plot%02d", i);
+        SNPRINTF(tmp, 20, "plot%02d", numRealPlots);
         DataNode *plotNode = new DataNode(tmp);
         plotlistNode->AddNode(plotNode);
 
@@ -6581,7 +6627,23 @@ ViewerPlotList::CreateNode(DataNode *parentNode)
 
         // Let the plot add its attributes to the node.
         plots[i].plot->CreateNode(plotNode);
+
+        // Increment the plot counter
+        numRealPlots++;
     }
+
+    //
+    // Add information specific to the animation.
+    //
+    plotlistNode->AddNode(new DataNode("hostName", hostName));
+    if (sourceToSave != "")
+        plotlistNode->AddNode(new DataNode("databaseName", sourceToSave));
+    plotlistNode->AddNode(new DataNode("nPlots", numRealPlots));
+    plotlistNode->AddNode(new DataNode("keyframeMode", keyframeMode));
+    plotlistNode->AddNode(new DataNode("nKeyframes", nKeyframes));
+    plotlistNode->AddNode(new DataNode("pipelineCaching", pipelineCaching));
+    plotlistNode->AddNode(new DataNode("playbackMode",
+        PlaybackMode_ToString(playbackMode)));
 }
 
 // ****************************************************************************
@@ -6617,6 +6679,9 @@ ViewerPlotList::CreateNode(DataNode *parentNode)
 //   Since it is possible for NewPlot to throw an exception, I added
 //   try/catch around it.
 //
+//    Jeremy Meredith, Tue Mar 30 17:18:38 PST 2004
+//    Added support for simulations.
+//
 // ****************************************************************************
 
 bool
@@ -6647,6 +6712,7 @@ ViewerPlotList::SetFromNode(DataNode *parentNode)
     }
     else
         hostDatabaseName = "";
+    engineKey = EngineKey(hostName, "");
 
     int expectedPlots = 0;
     if((node = plotlistNode->GetNode("nPlots")) != 0)
@@ -6879,14 +6945,16 @@ ViewerPlotList::SetFromNode(DataNode *parentNode)
                 }
 
                 //
-                // Try and create the plot.
+                // Try and create the plot.  (It won't be a simulation, so it
+                // is safe to create an Engine Key with an empty sim name.)
                 //
                 ViewerPlot *plot = 0;
                 if(!failure)
                 {
                     TRY
                     {
-                        plot = NewPlot(type, plotHost, plotDB, plotVar, false);
+                        plot = NewPlot(type,engineKey,plotHost,
+                                       plotDB,plotVar,false);
                     }
                     CATCHALL(...)
                     {
@@ -7010,4 +7078,43 @@ ViewerPlotList::CanMeshPlotBeOpaque()
     }
     for (i = 0; i < nPlots; ++i)
         plots[i].plot->SetOpaqueMeshIsAppropriate(canBeOpaque);
+}
+
+
+// ****************************************************************************
+//  Method:  ViewerPlotList::SetEngineKey
+//
+//  Purpose:
+//    Tell the plot list the current engine key.
+//
+//  Arguments:
+//    s          true if it is a simulation
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 25, 2004
+//
+// ****************************************************************************
+void
+ViewerPlotList::SetEngineKey(const EngineKey &ek)
+{
+    engineKey = ek;
+}
+
+// ****************************************************************************
+//  Method:  ViewerPlotList::GetEngineKey
+//
+//  Purpose:
+//    return the key for the current engine
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 25, 2004
+//
+// ****************************************************************************
+const EngineKey &
+ViewerPlotList::GetEngineKey() const
+{
+    return engineKey;
 }

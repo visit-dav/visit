@@ -58,10 +58,10 @@ MergeZFPixelBuffers(void *ibuf, void *iobuf, int *count, void *datatype)
             inout_zfpixels[i].g = in_zfpixels[i].g;
             inout_zfpixels[i].b = in_zfpixels[i].b;
         }
-        else if (in_zfpixels[i].z == inout_zfpixels[i].z &&
-                 inout_zfpixels[i].r == local_bg_r &&
-                 inout_zfpixels[i].g == local_bg_g &&
-                 inout_zfpixels[i].b == local_bg_b)
+        else if ((in_zfpixels[i].z == inout_zfpixels[i].z) &&
+                 (inout_zfpixels[i].r == local_bg_r) &&
+                 (inout_zfpixels[i].g == local_bg_g) &&
+                 (inout_zfpixels[i].b == local_bg_b))
         {
             inout_zfpixels[i].r = in_zfpixels[i].r;
             inout_zfpixels[i].g = in_zfpixels[i].g;
@@ -147,6 +147,10 @@ void avtWholeImageCompositer::FinalizeMPIStuff(void) {;}
 //  Programmer: Mark C. Miller 
 //  Creation:   February 12, 2003
 //
+//  Modifications:
+//    Mark C. Miller, Tue Mar 30 10:58:01 PST 2004
+//    Added code to initialize background color
+//
 // ****************************************************************************
 
 avtWholeImageCompositer::avtWholeImageCompositer()
@@ -156,6 +160,10 @@ avtWholeImageCompositer::avtWholeImageCompositer()
       InitializeMPIStuff();
    avtWholeImageCompositer::objectCount++;
    chunkSize = 1000000;
+
+   bg_r = 255;
+   bg_g = 255;
+   bg_b = 255;
 }
 
 

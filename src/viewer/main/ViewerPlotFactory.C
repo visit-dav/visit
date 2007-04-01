@@ -139,12 +139,18 @@ ViewerPlotFactory::GetNPlotTypes() const
 //    Brad Whitlock, Fri Mar 26 13:53:59 PST 2004
 //    I replaced time0, time1 with plotState.
 //
+//    Jeremy Meredith, Tue Mar 30 10:39:20 PST 2004
+//    Added an engine key to map a plot to the engine used to create it.
+//
 // ****************************************************************************
 
 ViewerPlot *
-ViewerPlotFactory::CreatePlot(const int type, const std::string &hostName,
-    const std::string &databaseName, const std::string &varName,
-    avtSILRestriction_p silr, const int plotState, const int nStates) const
+ViewerPlotFactory::CreatePlot(const int type, const EngineKey &ek,
+                              const std::string &hostName,
+                              const std::string &databaseName,
+                              const std::string &varName,
+                              avtSILRestriction_p silr,
+                              const int plotState, const int nStates) const
 {
     //
     // Check that the type is within range and that the type has been
@@ -159,7 +165,7 @@ ViewerPlotFactory::CreatePlot(const int type, const std::string &hostName,
     // Create the plot.
     //
     return new ViewerPlot(type,
-        viewerPluginInfo[type], hostName, databaseName, varName, silr,
+        viewerPluginInfo[type], ek, hostName, databaseName, varName, silr,
         plotState, nStates);
 }
 

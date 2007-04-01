@@ -10,6 +10,11 @@
 #include <EngineList.h>
 #include <StatusAttributes.h>
 #include <ViewerProxy.h>
+#include <string>
+#include <string>
+
+using std::string;
+using std::vector;
 
 // ****************************************************************************
 // Method: QvisEngineWindow::QvisEngineWindow
@@ -82,6 +87,9 @@ QvisEngineWindow::~QvisEngineWindow()
 //    Brad Whitlock, Wed Feb 25 09:25:01 PDT 2004
 //    I added a button to clear the cache.
 //
+//    Jeremy Meredith, Tue Mar 30 09:32:57 PST 2004
+//    I made the engine area label a class member so it could mutate.
+//
 // ****************************************************************************
 
 void
@@ -95,7 +103,7 @@ QvisEngineWindow::CreateWindowContents()
     engineCombo = new QComboBox(central, "engineCombo");
     connect(engineCombo, SIGNAL(activated(int)), this, SLOT(selectEngine(int)));
     grid1->addWidget(engineCombo, 0, 1);
-    QLabel *engineLabel = new QLabel(engineCombo, "Engine:", central, "engineLabel");
+    engineLabel = new QLabel(engineCombo, "Engine:", central, "engineLabel");
     grid1->addWidget(engineLabel, 0, 0);
 
     // Create the widgets needed to show the engine information.
@@ -233,6 +241,9 @@ QvisEngineWindow::SubjectRemoved(Subject *TheRemovedSubject)
 //   Brad Whitlock, Wed Feb 25 09:31:17 PDT 2004
 //   I added code to set the enabled state for the clearCache button.
 //
+//   Jeremy Meredith, Tue Mar 30 09:33:25 PST 2004
+//   I added support for simulations.
+//
 // ****************************************************************************
 
 void
@@ -240,15 +251,25 @@ QvisEngineWindow::UpdateWindow(bool doAll)
 {
     if(caller == engines || doAll)
     {
-        const stringVector &s = engines->GetEngines();
+        const stringVector &host = engines->GetEngines();
+        const stringVector &sim  = engines->GetSimulationName();
 
         // Add the engines to the widget.
         engineCombo->blockSignals(true);
         engineCombo->clear();
         int current = -1;
-        for(int i = 0; i < s.size(); ++i)
+        for(int i = 0; i < host.size(); ++i)
         {
-            QString temp(s[i].c_str());
+            QString temp(host[i].c_str());
+            if (!sim[i].empty())
+            {
+                int lastSlashPos = QString(sim[i].c_str()).findRev('/');
+                int lastDotPos =  QString(sim[i].c_str()).findRev('.');
+                temp = QString().sprintf("%s (%s)", 
+                                         sim[i].substr(lastSlashPos+1,
+                                           lastDotPos-lastSlashPos-1).c_str(),
+                                         host[i].c_str());
+            }
             engineCombo->insertItem(temp);
 
             if(temp == activeEngine)
@@ -258,11 +279,15 @@ QvisEngineWindow::UpdateWindow(bool doAll)
         if(current == -1)
         {
             // Update the activeEngine string.
-            if(s.size() > 0)
+            if(host.size() > 0)
             {
                 current = 0;
                 engineCombo->setCurrentItem(0);
-                activeEngine = engineCombo->text(0);
+                if (sim[0]=="")
+                    activeEngine = QString().sprintf("%s",host[0].c_str());
+                else
+                    activeEngine = QString().sprintf("%s:%s",host[0].c_str(),
+                                                     sim[0].c_str());
 
                 // Add an entry if needed.
                 AddStatusEntry(activeEngine);
@@ -285,10 +310,10 @@ QvisEngineWindow::UpdateWindow(bool doAll)
         UpdateInformation(current);
 
         // Set the enabled state of the various widgets.
-        interruptEngineButton->setEnabled(s.size() > 0);
-        closeEngineButton->setEnabled(s.size() > 0);
-        clearCacheButton->setEnabled(s.size() > 0);
-        engineCombo->setEnabled(s.size() > 0);
+        interruptEngineButton->setEnabled(host.size() > 0);
+        closeEngineButton->setEnabled(host.size() > 0);
+        clearCacheButton->setEnabled(host.size() > 0);
+        engineCombo->setEnabled(host.size() > 0);
     }
 
     if(caller == statusAtts || doAll)
@@ -322,7 +347,9 @@ QvisEngineWindow::UpdateWindow(bool doAll)
 // Creation:   Wed Nov 27 14:46:52 PST 2002
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Tue Mar 30 09:34:03 PST 2004
+//    I added support for simulations.
+//
 // ****************************************************************************
 
 void
@@ -333,6 +360,7 @@ QvisEngineWindow::UpdateInformation(int index)
     // Set the values of the engine information widgets.
     if(index == -1 || s.size() < 1)
     {
+        engineLabel->setText("Engine:");
         engineNP->setText("");
         engineNN->setText("");
         engineLB->setText("");
@@ -340,6 +368,11 @@ QvisEngineWindow::UpdateInformation(int index)
     }
     else
     {
+        if (engines->GetSimulationName()[index] != "")
+            engineLabel->setText("Simulation:");
+        else
+            engineLabel->setText("Engine:");
+
         QString tmp;
         tmp.sprintf("%d", engines->GetNumProcessors()[index]);
         engineNP->setText(tmp);
@@ -566,16 +599,33 @@ QvisEngineWindow::UpdateStatusEntry(const QString &key)
 // Creation:   Wed May 2 16:37:35 PST 2001
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Tue Mar 30 09:34:33 PST 2004
+//    I added support for simulations.
+//
 // ****************************************************************************
 
 void
 QvisEngineWindow::closeEngine()
 {
+    int index = engineCombo->currentItem();
+    if (index < 0)
+        return;
+
+    string host = engines->GetEngines()[index];
+    string sim  = engines->GetSimulationName()[index];
+
     // Create a prompt for the user.
     QString msg;
-    msg.sprintf("Really close the compute engine on host \"%s\"?\n\n",
-                engineCombo->currentText().latin1());
+    if (sim == "")
+    {
+        msg.sprintf("Really close the compute engine on host \"%s\"?\n\n",
+                    host.c_str());
+    }
+    else
+    {
+        msg.sprintf("Really disconnect from the simulation \"%s\" on "
+                    "host \"%s\"?\n\n", sim.c_str(), host.c_str());
+    }
 
     // Ask the user if he really wants to close the engine.
     if(QMessageBox::warning( this, "VisIt",
@@ -584,7 +634,7 @@ QvisEngineWindow::closeEngine()
                              0, 1 ) == 0)
     {
         // The user actually chose to close the engine.
-        viewer->CloseComputeEngine(engineCombo->currentText().latin1());
+        viewer->CloseComputeEngine(host, sim);
     }
 }
 
@@ -599,13 +649,21 @@ QvisEngineWindow::closeEngine()
 // Creation:   Wed May 2 16:38:41 PST 2001
 //
 // Modifications:
+//    Jeremy Meredith, Tue Mar 30 09:34:33 PST 2004
+//    I added support for simulations.
 //   
 // ****************************************************************************
 
 void
 QvisEngineWindow::interruptEngine()
 {
-    viewer->InterruptComputeEngine(engineCombo->currentText().latin1());
+    int index = engineCombo->currentItem();
+    if (index < 0)
+        return;
+    string host = engines->GetEngines()[index];
+    string sim  = engines->GetSimulationName()[index];
+
+    viewer->InterruptComputeEngine(host, sim);
 }
 
 // ****************************************************************************
@@ -619,17 +677,24 @@ QvisEngineWindow::interruptEngine()
 // Creation:   Thu Feb 26 14:16:39 PST 2004
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Tue Mar 30 09:34:33 PST 2004
+//    I added support for simulations.
+//
 // ****************************************************************************
 
 void
 QvisEngineWindow::clearCache()
 {
-    std::string host(engineCombo->currentText().latin1());
+    int index = engineCombo->currentItem();
+    if (index < 0)
+        return;
+    string host = engines->GetEngines()[index];
+    string sim  = engines->GetSimulationName()[index];
+
     if(viewer->GetLocalHostName() == host)
-        viewer->ClearCache("localhost");
+        viewer->ClearCache("localhost", sim);
     else
-        viewer->ClearCache(host);
+        viewer->ClearCache(host, sim);
 }
 
 // ****************************************************************************
@@ -649,12 +714,21 @@ QvisEngineWindow::clearCache()
 //   Brad Whitlock, Wed Nov 27 14:47:32 PST 2002
 //   I added code to update the engine.
 //
+//   Jeremy Meredith, Tue Mar 30 09:34:33 PST 2004
+//   I added support for simulations.
+//
 // ****************************************************************************
 
 void
 QvisEngineWindow::selectEngine(int index)
 {
-    activeEngine = engineCombo->text(index);
+    if (engines->GetSimulationName()[index]=="")
+        activeEngine = QString().sprintf("%s",
+                                         engines->GetEngines()[index].c_str());
+    else
+        activeEngine = QString().sprintf("%s:%s",
+                                  engines->GetEngines()[index].c_str(),
+                                  engines->GetSimulationName()[index].c_str());
 
     // Update the rest of the widgets using the information for the
     // active engine.

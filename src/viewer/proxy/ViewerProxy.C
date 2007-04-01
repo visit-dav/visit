@@ -1542,17 +1542,22 @@ ViewerProxy::OverlayDatabase(const std::string &database)
 // Creation:   Tue Jul 30 14:16:15 PST 2002
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Tue Mar 30 11:07:45 PST 2004
+//    Added a simulation name to the interfaces, as some engines now
+//    can be simulations, meaning there might be more than one engine
+//    per host.
+//
 // ****************************************************************************
 
 void
-ViewerProxy::ClearCache(const std::string &hostName)
+ViewerProxy::ClearCache(const std::string &hostName,const std::string &simName)
 {
     //
     // Set the rpc type and arguments.
     //
     viewerRPC->SetRPCType(ViewerRPC::ClearCacheRPC);
     viewerRPC->SetProgramHost(hostName);
+    viewerRPC->SetProgramSim(simName);
 
     //
     // Issue the RPC.
@@ -1726,16 +1731,22 @@ ViewerProxy::OpenComputeEngine(const std::string &hostName, const stringVector &
 // Creation:   Mon Apr 30 12:23:41 PDT 2001
 //
 // Modifications:
+//    Jeremy Meredith, Tue Mar 30 11:07:45 PST 2004
+//    Added a simulation name to the interfaces, as some engines now
+//    can be simulations, meaning there might be more than one engine
+//    per host.
 //   
 // ****************************************************************************
 void
-ViewerProxy::CloseComputeEngine(const std::string &hostName)
+ViewerProxy::CloseComputeEngine(const std::string &hostName,
+                                const std::string &simName)
 {
     //
     // Set the rpc type and arguments.
     //
     viewerRPC->SetRPCType(ViewerRPC::CloseComputeEngineRPC);
     viewerRPC->SetProgramHost(hostName);
+    viewerRPC->SetProgramSim(simName);
 
     //
     // Issue the RPC.
@@ -1759,9 +1770,15 @@ ViewerProxy::CloseComputeEngine(const std::string &hostName)
 //    Jeremy Meredith, Tue Jul  3 15:10:28 PDT 2001
 //    Changed the interruption mechanism.
 //   
+//    Jeremy Meredith, Tue Mar 30 11:07:45 PST 2004
+//    Added a simulation name to the interfaces, as some engines now
+//    can be simulations, meaning there might be more than one engine
+//    per host.
+//
 // ****************************************************************************
 void
-ViewerProxy::InterruptComputeEngine(const std::string &hostName)
+ViewerProxy::InterruptComputeEngine(const std::string &hostName,
+                                    const std::string &simName)
 {
     xfer->SendInterruption();
 }

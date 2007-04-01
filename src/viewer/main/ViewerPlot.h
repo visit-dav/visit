@@ -9,6 +9,8 @@
 #include <avtActor.h>
 #include <avtTypes.h>
 #include <avtPlot.h>
+#include <EngineKey.h>
+#include <string>
 
 // Forward declarations
 class AttributeSubject;
@@ -165,6 +167,10 @@ class avtToolInterface;
 //    Kathleen Bonnell, Thu Mar 11 08:19:10 PST 2004 
 //    Removed GetDataExtents, no longer used. 
 //
+//    Jeremy Meredith, Thu Mar 25 16:33:55 PST 2004
+//    Added simulation support by using an engine key to map this plot
+//    to the engine used to create it.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPlot
@@ -172,6 +178,7 @@ class VIEWER_API ViewerPlot
   public:
     ViewerPlot(const int type_,
                ViewerPlotPluginInfo *viewerPluginInfo_,
+               const EngineKey &ek_,
                const std::string &hostName_,
                const std::string &databaseName_,
                const std::string &variableName_,
@@ -198,8 +205,11 @@ class VIEWER_API ViewerPlot
     const std::string &GetDatabaseName() const;
     std::string GetSource() const;
 
+    const EngineKey &GetEngineKey() const;
+
     const char *GetPlotName() const;
     const char *GetPluginID() const;
+
     int GetType() const;
 
     bool SetVariableName(const std::string &name);
@@ -300,6 +310,7 @@ class VIEWER_API ViewerPlot
     ViewerPlotPluginInfo   *viewerPluginInfo;
 
     int                     networkID;
+    EngineKey               engineKey;
     std::string             hostName;
     std::string             databaseName;
     std::string             variableName;

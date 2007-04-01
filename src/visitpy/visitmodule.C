@@ -2595,6 +2595,9 @@ visit_DrawPlots(PyObject *self, PyObject *args)
 //   Brad Whitlock, Fri Jul 26 12:20:12 PDT 2002
 //   I made it return a success value.
 //
+//   Jeremy Meredith, Tue Mar 30 11:09:06 PST 2004
+//   I added support for simulations.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -2603,32 +2606,63 @@ visit_CloseComputeEngine(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
 
     bool useFirstEngine = false;
+    bool useFirstSimulation = false;
     const char *engineName = 0;
-    if(!PyArg_ParseTuple(args, "s", &engineName))
+    const char *simulationName = 0;
+    if(!PyArg_ParseTuple(args, "ss", &engineName, &simulationName))
     {
-        if(!PyArg_ParseTuple(args, ""))
-            return NULL;
+        if (!PyArg_ParseTuple(args, "s", &engineName))
+        {
+            if(!PyArg_ParseTuple(args, ""))
+                return NULL;
 
-        PyErr_Clear();
-        // Indicate that we want to close the first engine in the list.
-        useFirstEngine = true;
+            PyErr_Clear();
+            // Indicate that we want to close the first engine in the list.
+            useFirstEngine = true;
+        }
+        else
+        {
+            PyErr_Clear();
+            // Indicate that we want to close the first simulation on that host
+            useFirstSimulation = true;
+        }
     }
 
     MUTEX_LOCK();
          if(useFirstEngine)
          {
              const stringVector &engines = viewer->GetEngineList()->GetEngines();
+             const stringVector &sims = viewer->GetEngineList()->GetSimulationName();
              if(engines.size() > 0)
+             {
                  engineName = engines[0].c_str();
+                 simulationName = sims[0].c_str();
+             }
+         }
+         else if (useFirstSimulation)
+         {
+             const stringVector &engines = viewer->GetEngineList()->GetEngines();
+             const stringVector &sims = viewer->GetEngineList()->GetSimulationName();
+             for (int i=0; i<engines.size(); i++)
+             {
+                 if (engines[i] == engineName)
+                 {
+                     simulationName = sims[i].c_str();
+                     break;
+                 }
+             }
          }
 
-         if(engineName != 0)
+         if (engineName != 0 && simulationName != 0)
          {
-             viewer->CloseComputeEngine(engineName);
+             viewer->CloseComputeEngine(engineName, simulationName);
 
             // Write the command to the file.
             if(logging)
-                fprintf(logFile, "CloseComputeEngine(\"%s\")\n", engineName);
+            {
+                fprintf(logFile, "CloseComputeEngine(\"%s\",\"%s\")\n",
+                        engineName, simulationName);
+            }
          }
     MUTEX_UNLOCK();
 
@@ -3241,7 +3275,9 @@ visit_ClearAllWindows(PyObject *self, PyObject *args)
 // Creation:   Tue Jul 30 13:55:52 PST 2002
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Tue Mar 30 11:10:48 PST 2004
+//    Added support for simulations.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -3250,13 +3286,21 @@ visit_ClearCache(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
 
     char *engineName = 0;
-    if(!PyArg_ParseTuple(args, "s", engineName))
+    char *simulationName = 0;
+    if(!PyArg_ParseTuple(args, "ss", &engineName, &simulationName))
+    {
+        if (!PyArg_ParseTuple(args, "s", &engineName))
+            return NULL;
+        simulationName = "";
+
         return NULL;
+    }
 
     MUTEX_LOCK();
-        viewer->ClearCache(engineName);
+        viewer->ClearCache(engineName, simulationName);
         if(logging)
-            fprintf(logFile, "ClearCache(\"%s\")\n", engineName);
+            fprintf(logFile, "ClearCache(\"%s\",\"%s\")\n",
+                    engineName, simulationName);
     MUTEX_UNLOCK();
 
     // Return the success value.

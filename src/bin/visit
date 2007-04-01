@@ -309,6 +309,10 @@ $0 = shift @ARGV;
 #    Jeremy Meredith, Fri Mar 26 09:21:08 PST 2004
 #    Changed colons in engineargs to semicolons.
 #
+#    Jeremy Meredith, Tue Mar 30 09:42:51 PST 2004
+#    I added support for a manual plugin installation destination.  Simply
+#    set the VISITPLUGININST environment variable before running xml2makefile.
+#
 ###############################################################################
 
 
@@ -1050,19 +1054,23 @@ elsif (!grep /$visitprivateplugins/, $ENV{VISITPLUGINDIR})
 $ENV{VISITPLUGININSTPUB}="$visitplugins";
 $ENV{VISITPLUGININSTPRI}="$visitprivateplugins";
 
-$shouldinstallprivate = $publicversion;
-foreach (@plugincategories)
+# Only set up the default installation path if needed
+if (!defined($ENV{VISITPLUGININST}))
 {
-    $shouldinstallprivate=1  if (! -w "$visitplugins/$_");
-}
+    $shouldinstallprivate = $publicversion;
+    foreach (@plugincategories)
+    {
+	$shouldinstallprivate=1  if (! -w "$visitplugins/$_");
+    }
 
-if ($shouldinstallprivate)
-{
-    $ENV{VISITPLUGININST}="$visitprivateplugins";
-}
-else
-{
-    $ENV{VISITPLUGININST}="$visitplugins";
+    if ($shouldinstallprivate)
+    {
+	$ENV{VISITPLUGININST}="$visitprivateplugins";
+    }
+    else
+    {
+	$ENV{VISITPLUGININST}="$visitplugins";
+    }
 }
 
 # Set required environment variables

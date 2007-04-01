@@ -1,6 +1,8 @@
 1.  Make sure any calls to dlsym/dlopen etc. go through portable code
     currently found in common/plugin.
+
 2.  Right now, the environment still has to be set up manually.
+
 3.  This includes things like the LD_LIBRARY_PATH.  Solutions:
   a)  There is some code in sim.C for setting up the LD_LIBRARY_PATH
       then re-exec'ing itself so the loader gets the new path.  It
@@ -13,7 +15,9 @@
       RTLD_GLOBAL flag or'ed in.
   d)  We could, of course, simply provide a script for users to run
       before ARES to set up their environment.
+
 4.  This all needs to be tested for portability.
+
 5.  Related to 3a, there is a RTLD_GLOBAL flag set in sim.C when loading
 the engine wrapper library.  This is necessary on sunos (maybe elsewhere)
 so that all the libraries the engine wrapper library was linked against
@@ -22,4 +26,10 @@ loaded.  After Silo could not find -lsocket, however, I simply fixed it
 using RTLD_GLOBAL without seeing what else failed.  Maybe when we get
 rid of all the database plugins in the simengine and Silo goes away, this
 won't bite us anymore?  (It probably will, but I don't know for sure.)
+
+6.  Control-C handler is overridden by engine.  This is bad.  We also need
+to think about what else the engine is overriding (e.g. other signal
+handlers).
+
+7.  Think about security of who's allowed to talk to whom.
 

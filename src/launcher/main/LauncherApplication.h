@@ -5,6 +5,7 @@
 #include <QuitRPC.h>
 #include <KeepAliveRPC.h>
 #include <LaunchRPC.h>
+#include <ConnectSimRPC.h>
 #include <RPCExecutor.h>
 #include <map>
 
@@ -24,6 +25,9 @@
 //   Brad Whitlock, Fri Mar 12 10:35:29 PDT 2004
 //   I added KeepAliveRPC.
 //
+//   Jeremy Meredith, Tue Mar 30 10:06:33 PST 2004
+//   I added support for connecting to running simulations.
+//
 // ****************************************************************************
 
 class LauncherApplication
@@ -33,6 +37,8 @@ public:
     virtual ~LauncherApplication();
     void Execute(int *argc, char **argv[]);
     void LaunchProcess(const stringVector &launchArgs);
+    void ConnectSimulation(const stringVector &launchArgs,
+                           const std::string &simHost, int simPort);
 
 protected:
     LauncherApplication();
@@ -56,10 +62,12 @@ private:
     QuitRPC                     quitRPC;
     KeepAliveRPC                keepAliveRPC;
     LaunchRPC                   launchRPC;
+    ConnectSimRPC               connectSimRPC;
 
     RPCExecutor<QuitRPC>       *quitExecutor;
     RPCExecutor<KeepAliveRPC>  *keepAliveExecutor;
     RPCExecutor<LaunchRPC>     *launchExecutor;
+    RPCExecutor<ConnectSimRPC> *connectSimExecutor;
 
     bool                        keepGoing;
     int                         timeout;

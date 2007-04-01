@@ -4,7 +4,7 @@
 
 #include <iostream.h>
 
-void *load_engine()
+void *get_engine()
 {
     cerr << "In enginewrapper.C::load_engine\n";
     LoadBalancer::ForceStatic();

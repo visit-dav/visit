@@ -331,6 +331,9 @@ class Xfer;
 //    Brad Whitlock, Thu Feb 26 13:37:02 PST 2004
 //    Added ClearCacheForAllEngines.
 //
+//    Jeremy Meredith, Fri Mar 26 10:22:36 PST 2004
+//    Added support for simulations.
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -379,7 +382,7 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void ReOpenDatabase(const std::string &database, bool forceClose = true);
     void ReplaceDatabase(const std::string &database, int timeState = 0);
     void OverlayDatabase(const std::string &database);
-    void ClearCache(const std::string &hostName);
+    void ClearCache(const std::string &hostName, const std::string &simName);
     void ClearCacheForAllEngines();
 
     void CreateDatabaseCorrelation(const std::string &name,
@@ -391,8 +394,8 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void DeleteDatabaseCorrelation(const std::string &name);
 
     void OpenComputeEngine(const std::string &hostName, const stringVector &argv);
-    void CloseComputeEngine(const std::string &hostName);
-    void InterruptComputeEngine(const std::string &hostName);
+    void CloseComputeEngine(const std::string &hostName, const std::string &simName);
+    void InterruptComputeEngine(const std::string &hostName, const std::string &simName);
 
     void AnimationSetNFrames(int nFrames);
     void AnimationPlay();

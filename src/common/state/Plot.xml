@@ -20,6 +20,7 @@
     <Field name="endFrame" type="int">999</Field>
     <Field name="keyframes" type="intVector"></Field>
     <Field name="databaseKeyframes" type="intVector"></Field>
+    <Field name="isFromSimulation" type="bool">false</Field>
     <Function name="AddOperator"        user="true" member="true"></Function>
     <Function name="ClearAllOperators"  user="true" member="true"></Function>
     <Function name="GetNumOperators"    user="true" member="true"></Function>

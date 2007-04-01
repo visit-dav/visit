@@ -160,6 +160,8 @@
     </Field>
     <Field name="programHost" label="programHost" type="string">
     </Field>
+    <Field name="programSim" label="programSim" type="string">
+    </Field>
     <Field name="programOptions" label="programOptions" type="stringVector">
     </Field>
     <Field name="nFrames" label="nFrames" type="int">

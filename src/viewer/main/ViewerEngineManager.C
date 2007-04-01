@@ -36,11 +36,14 @@
 #include <avtDatabaseMetaData.h>
 
 #include <algorithm>
+#include <utility>
 #include <stdio.h>
 #include <snprintf.h>
 
 using std::vector;
 using std::string;
+using std::map;
+using std::pair;
 
 //
 // Define some boiler plate macros that wrap blocking RPCs.
@@ -56,30 +59,37 @@ using std::string;
 //    it could otherwise get into an infinite loop.
 //
 #define ENGINE_PROXY_RPC_BEGIN(rpcname)  \
-    const char *hostName = RealHostName(hostName_); \
+    cerr << "About to execute rpc="<<rpcname<<endl; \
     bool retval = false; \
     bool retry = false; \
     int  numAttempts = 0; \
     do \
     { \
-        int engineIndex = GetEngineIndex(hostName); \
-        if(engineIndex < 0) \
+        if (!EngineExists(ek)) \
         { \
-            debug1 << "****\n**** Trying to execute the " << rpcname \
-                   << " RPC before an engine was started" << endl \
-                   << "**** on " << hostName << ". Starting an engine on " \
-                   << hostName << ".\n****" << endl; \
-            CreateEngine(hostName_, restartArguments, false, numRestarts); \
-            engineIndex = GetEngineIndex(hostName); \
-            retry = false; \
+            if (ek.SimName() == "") \
+            { \
+                debug1 << "****\n**** Trying to execute the " << rpcname \
+                       << " RPC before an engine was started" << endl \
+                       << "**** on " << ek.HostName() \
+                       << ". Starting an engine on " \
+                       << ek.HostName() << ".\n****" << endl; \
+                CreateEngine(ek, restartArguments, false, numRestarts); \
+                retry = false; \
+            } \
+            else \
+            { \
+                LaunchMessage(ek); \
+                retry = false; \
+            } \
         } \
-        if(engineIndex >= 0) \
+        if (EngineExists(ek)) \
         { \
             TRY \
             { \
-                EngineProxy *engine = engines[engineIndex]->engine; \
+                EngineProxy *engine = engines[ek]; \
                 debug3 << "Calling " << rpcname << " RPC on " \
-                       << hostName << "'s engine." << endl;
+                       << ek.HostName() << "'s engine." << endl;
 
 #define ENGINE_PROXY_RPC_END  \
                 retval = true; \
@@ -87,12 +97,18 @@ using std::string;
             } \
             CATCH(LostConnectionException) \
             { \
-                if (numAttempts < numRestarts) \
+                if (ek.SimName() != "") \
+                { \
+                    LaunchMessage(ek); \
+                    RemoveFailedEngine(ek); \
+                    retry = false; \
+                } \
+                else if (numAttempts < numRestarts) \
                 { \
                    retry = true; \
-                   RemoveFailedEngine(engineIndex); \
-                   LaunchMessage(hostName); \
-                   CreateEngine(hostName_, restartArguments,false,numRestarts); \
+                   RemoveFailedEngine(ek); \
+                   LaunchMessage(ek); \
+                   CreateEngine(ek, restartArguments,false,numRestarts); \
                    ++numAttempts; \
                 } \
                 else \
@@ -122,7 +138,7 @@ using std::string;
             { \
                 retry = false; \
                 retval = false; \
-                RemoveFailedEngine(engineIndex); \
+                RemoveFailedEngine(ek); \
             } \
             CATCH(VisItException) \
             { \
@@ -146,7 +162,7 @@ using std::string;
             { \
                 retry = false; \
                 retval = false; \
-                RemoveFailedEngine(engineIndex); \
+                RemoveFailedEngine(ek); \
                 RETHROW; \
             } \
             CATCH(VisItException) \
@@ -157,7 +173,7 @@ using std::string;
             } \
             ENDTRY \
         } \
-        else /*engineIndex < 0 */ \
+        else \
         { \
             retry = false; \
             retval = false; \
@@ -177,7 +193,7 @@ using std::string;
             { \
                 retry = false; \
                 retval = false; \
-                RemoveFailedEngine(engineIndex); \
+                RemoveFailedEngine(ek); \
             } \
             CATCH(VisItException) \
             { \
@@ -246,14 +262,15 @@ static void UpdatePlotAttsCallback(void*,const string&,int,AttributeSubject*);
 //    Changed numRestarts to file scope static and changed it numRestarts it
 //    gets initialized here
 //
+//    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//    Use a map of engines based on a key, and be aware of simulations.
+//
 // ****************************************************************************
 
 ViewerEngineManager::ViewerEngineManager() : ViewerServerManager(),
     SimpleObserver(), restartArguments()
 {
     executing = false;
-    nEngines = 0;
-    engines  = 0;
     if (numRestarts == -1)
         numRestarts = 2;
     avtCallback::RegisterImageCallback(GetImageCallback, this);
@@ -309,43 +326,29 @@ ViewerEngineManager *ViewerEngineManager::Instance()
 }
 
 // ****************************************************************************
-// Method: ViewerEngineManager::GetEngineIndex
+// Method: ViewerEngineManager::EngineExists
 //
 // Purpose: 
-//   Returns the index of the engine running on host `hostName`. If no engine
-//   is running on that host, the function returns -1.
+//   Returns true if the engine exists.
 //
 // Arguments:
-//   hostName : The host to lookup.
+//   ek:       the key to find the engine
 //
-// Returns:    The index of the engine, or -1 if no engine exists.
+// Returns:    true if the engine exists
 //
 // Note:       
 //
-// Programmer: Brad Whitlock
-// Creation:   Tue Apr 24 14:16:52 PST 2001
+// Programmer: Jeremy Meredith
+// Creation:   March 26, 2004
 //
 // Modifications:
-//   Brad Whitlock, Mon Feb 25 12:02:30 PDT 2002
-//   Made it return -1 instead of nEngines.
 //
 // ****************************************************************************
 
-int
-ViewerEngineManager::GetEngineIndex(const char *hostName) const
+bool
+ViewerEngineManager::EngineExists(const EngineKey &ek) const
 {
-    int retval = -1;
-
-    for (int i = 0; i < nEngines; ++i)
-    {
-        if(strcmp(engines[i]->hostName, hostName) == 0)
-        {
-            retval = i;
-            break;
-        }
-    }
-
-    return retval;
+    return engines.count(ek) > 0;
 }
 
 // ****************************************************************************
@@ -355,7 +358,10 @@ ViewerEngineManager::GetEngineIndex(const char *hostName) const
 //      Create an engine for the specified host.
 //
 //  Arguments:
-//      hostName  The name of the host for which to create the engine.
+//      engineKey      contains the host name for the engine
+//      args           the arguments to pass to the engine
+//      skipChooser    do we not want to ask the user which profile to use
+//      numRestarts    the number of restart attempts to use when engines fail
 //
 //  Programmer: Eric Brugger
 //  Creation:   September 23, 2000
@@ -459,18 +465,18 @@ ViewerEngineManager::GetEngineIndex(const char *hostName) const
 //    Added a boolean "success" return value to this method.  Cancelling
 //    or failing to start an engine results in a return value of false.
 //
+//    Jeremy Meredith, Tue Mar 30 10:24:45 PST 2004
+//    It now uses an EngineKey to specify the host, and it uses
+//    a map of Engines instead of an array.
+//
 // ****************************************************************************
 
 bool
-ViewerEngineManager::CreateEngine(const char *hostName,
+ViewerEngineManager::CreateEngine(const EngineKey &ek,
                                   const stringVector &args,
                                   bool skipChooser,
                                   int numRestarts_)
 {
-    //
-    // Make sure that we're not using the string "localhost".
-    //
-    hostName = RealHostName(hostName);
     if (numRestarts_ == -1)
     {
         if (numRestarts == -1)
@@ -482,175 +488,318 @@ ViewerEngineManager::CreateEngine(const char *hostName,
     //
     // Check if an engine already exists for the host.
     //
-    int engineIndex = GetEngineIndex(hostName);
+    if (EngineExists(ek))
+        return true;
 
     //
     // If an engine for the host doesn't already exist, create one.
     //
-    int success = true;
-    if(engineIndex < 0)
-    {
-        success = false;
-        ViewerRemoteProcessChooser *chooser =
+    bool success = false;
+    ViewerRemoteProcessChooser *chooser =
                                         ViewerRemoteProcessChooser::Instance();
 
-        if (! chooser->SelectProfile(clientAtts,hostName,skipChooser))
-        {
-            return false;
-        }
-
-        EngineProxy *newEngine = new EngineProxy;
-
-        chooser->AddProfileArguments(newEngine, !ShouldShareBatchJob(hostName));
-
-        //
-        // Add some arguments to the engine proxy before we try to
-        // launch the engine.
-        //
-        AddArguments(newEngine, args);
-
-        //
-        // Set up the connection progress window.
-        //
-        ViewerConnectionProgressDialog *dialog =
-            SetupConnectionProgressWindow(newEngine, hostName);
-
-        //
-        // Copy the arguments into the restart arguments that are
-        // used to restart failed engines.
-        //
-        restartArguments = args;
-
-        //
-        // Send a status message.
-        //
-        char msg[250];
-        SNPRINTF(msg, 250, "Launching engine on %s", hostName);
-        Status(msg);
-
-        //
-        // Add the new engine proxy to the engine list.
-        //
-        TRY
-        {
-            EngineListEntry **newEngines=0;
-
-            // Get the client machine name options
-            HostProfile::ClientHostDetermination chd;
-            std::string clientHostName;
-            GetClientMachineNameOptions(hostName, chd, clientHostName);
-
-            // Get the ssh port options
-            bool manualSSHPort;
-            int  sshPort;
-            GetSSHPortOptions(hostName, manualSSHPort, sshPort);
-
-            //
-            // Launch the engine.
-            //
-            if (!ShouldShareBatchJob(hostName) && HostIsLocalHost(hostName))
-                newEngine->Create("localhost", chd, clientHostName,
-                                  manualSSHPort, sshPort);
-            else
-            {
-                // Use VisIt's launcher to start the remote engine.
-                newEngine->Create(hostName,  chd, clientHostName,
-                                  manualSSHPort, sshPort,
-                                  OpenWithLauncher, (void *)dialog,
-                                  true);
-            }
-
-            // Add the new engine to the engine list.
-            newEngines = new EngineListEntry*[nEngines+1];
-            for (int i = 0; i < nEngines; i++)
-            {
-                newEngines[i] = engines[i];
-            }
-            newEngines[nEngines] = new EngineListEntry;
-            newEngines[nEngines]->hostName = new char[strlen(hostName)+1];
-            strcpy(newEngines[nEngines]->hostName, hostName);
-            newEngines[nEngines]->engine = newEngine;
-            delete [] engines;
-            engines = newEngines;
-            ++nEngines;
-
-            // Make the engine manager observe the proxy's status atts.
-            newEngine->GetStatusAttributes()->Attach(this);
-
-            // Now that the new engine is in the list, tell the GUI.
-            UpdateEngineList();
-
-            // Success!
-            success = true;
-        }
-        CATCH2(BadHostException, e)
-        {
-            // Delete the new engine since it could not launch anyway.
-            delete newEngine;
-            ViewerRemoteProcessChooser::Instance()->ClearCache(hostName);
-
-            // Tell the user that the engine could not be launched.
-            SNPRINTF(msg, 250, "VisIt could not launch a compute engine on host "
-                    "\"%s\" because that host does not exist.",
-                    e.GetHostName().c_str());
-            Error(msg);
-        }
-        CATCH(IncompatibleVersionException)
-        {
-            // Delete the new engine since talking to it could be bad since
-            // it is a different version.
-            delete newEngine;
-            ViewerRemoteProcessChooser::Instance()->ClearCache(hostName);
-
-            // Tell the user that the engine is a different version.
-            SNPRINTF(msg, 250, "VisIt cannot use the compute engine on "
-                     "host \"%s\" because the engine has an incompatible "
-                     " version number.", hostName);
-            Error(msg);
-        }
-        CATCH(IncompatibleSecurityTokenException)
-        {
-            // Delete the new engine since talking to it could be bad since
-            // it did not provide the right credentials.
-            delete newEngine;
-            ViewerRemoteProcessChooser::Instance()->ClearCache(hostName);
-
-            // Tell the user that the engine is a different version.
-            SNPRINTF(msg, 250, "VisIt cannot use the compute engine on host \"%s\""
-                     "because the compute engine did not provide the proper "
-                     "credentials.", hostName);
-            Error(msg);
-        }
-        CATCH(CouldNotConnectException)
-        {
-            // Delete the new engine since it was not launched
-            delete newEngine;
-            ViewerRemoteProcessChooser::Instance()->ClearCache(hostName);
-
-            // Tell the user that the engine was not launched
-            SNPRINTF(msg, 250, "VisIt could not launch the compute engine on "
-                    "host \"%s\".", hostName);
-            Error(msg);
-        }
-        CATCH(CancelledConnectException)
-        {
-            // Delete the new engine since it was not launched
-            delete newEngine;
-            ViewerRemoteProcessChooser::Instance()->ClearCache(hostName);
-
-            // Tell the user that the engine was not launched
-            SNPRINTF(msg, 250, "The launch of the compute engine on "
-                    "host \"%s\" has been cancelled.", hostName);
-            Error(msg);
-        }
-        ENDTRY
-
-        // Clear the status message.
-        ClearStatus();
-
-        // Delete the connection dialog
-        delete dialog;
+    if (! chooser->SelectProfile(clientAtts,ek.HostName(),skipChooser))
+    {
+        return false;
     }
+
+    EngineProxy *newEngine = new EngineProxy;
+
+    chooser->AddProfileArguments(newEngine,
+                                          !ShouldShareBatchJob(ek.HostName()));
+
+    //
+    // Add some arguments to the engine proxy before we try to
+    // launch the engine.
+    //
+    AddArguments(newEngine, args);
+
+    //
+    // Set up the connection progress window.
+    //
+    ViewerConnectionProgressDialog *dialog =
+                       SetupConnectionProgressWindow(newEngine, ek.HostName());
+
+    //
+    // Copy the arguments into the restart arguments that are
+    // used to restart failed engines.
+    //
+    restartArguments = args;
+
+    //
+    // Send a status message.
+    //
+    char msg[250];
+    SNPRINTF(msg, 250, "Launching engine on %s", ek.HostName().c_str());
+    Status(msg);
+
+    //
+    // Add the new engine proxy to the engine list.
+    //
+    TRY
+    {
+        // Get the client machine name options
+        HostProfile::ClientHostDetermination chd;
+        string clientHostName;
+        GetClientMachineNameOptions(ek.HostName(), chd, clientHostName);
+
+        // Get the ssh port options
+        bool manualSSHPort;
+        int  sshPort;
+        GetSSHPortOptions(ek.HostName(), manualSSHPort, sshPort);
+
+        //
+        // Launch the engine.
+        //
+        if (!ShouldShareBatchJob(ek.HostName()) && HostIsLocalHost(ek.HostName()))
+            newEngine->Create("localhost", chd, clientHostName,
+                              manualSSHPort, sshPort);
+        else
+        {
+            // Use VisIt's launcher to start the remote engine.
+            newEngine->Create(ek.HostName(),  chd, clientHostName,
+                              manualSSHPort, sshPort,
+                              OpenWithLauncher, (void *)dialog,
+                              true);
+        }
+
+        // Add the new engine to the engine list.
+        engines[ek] = newEngine;
+
+        // Make the engine manager observe the proxy's status atts.
+        newEngine->GetStatusAttributes()->Attach(this);
+
+        // Now that the new engine is in the list, tell the GUI.
+        UpdateEngineList();
+
+        // Success!
+        success = true;
+    }
+    CATCH2(BadHostException, e)
+    {
+        // Delete the new engine since it could not launch anyway.
+        delete newEngine;
+        ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
+
+        // Tell the user that the engine could not be launched.
+        SNPRINTF(msg, 250, "VisIt could not launch a compute engine on host "
+                "\"%s\" because that host does not exist.",
+                e.GetHostName().c_str());
+        Error(msg);
+    }
+    CATCH(IncompatibleVersionException)
+    {
+        // Delete the new engine since talking to it could be bad since
+        // it is a different version.
+        delete newEngine;
+        ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
+
+        // Tell the user that the engine is a different version.
+        SNPRINTF(msg, 250, "VisIt cannot use the compute engine on "
+                 "host \"%s\" because the engine has an incompatible "
+                 " version number.", ek.HostName().c_str());
+        Error(msg);
+    }
+    CATCH(IncompatibleSecurityTokenException)
+    {
+        // Delete the new engine since talking to it could be bad since
+        // it did not provide the right credentials.
+        delete newEngine;
+        ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
+
+        // Tell the user that the engine is a different version.
+        SNPRINTF(msg, 250, "VisIt cannot use the compute engine on host \"%s\""
+                 "because the compute engine did not provide the proper "
+                 "credentials.", ek.HostName().c_str());
+        Error(msg);
+    }
+    CATCH(CouldNotConnectException)
+    {
+        // Delete the new engine since it was not launched
+        delete newEngine;
+        ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
+
+        // Tell the user that the engine was not launched
+        SNPRINTF(msg, 250, "VisIt could not launch the compute engine on "
+                "host \"%s\".", ek.HostName().c_str());
+        Error(msg);
+    }
+    CATCH(CancelledConnectException)
+    {
+        // Delete the new engine since it was not launched
+        delete newEngine;
+        ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
+
+        // Tell the user that the engine was not launched
+        SNPRINTF(msg, 250, "The launch of the compute engine on "
+                "host \"%s\" has been cancelled.", ek.HostName().c_str());
+        Error(msg);
+    }
+    ENDTRY
+
+    // Clear the status message.
+    ClearStatus();
+
+    // Delete the connection dialog
+    delete dialog;
+
+    return success;
+}
+
+// ****************************************************************************
+//  Method:  ViewerEngineManager::ConnectSim
+//
+//  Purpose:
+//    Connect to a running simulation code.
+//
+//  Arguments:
+//      engineKey      contains the host and sim-file name for the simulation
+//      args           the arguments to pass to the engine
+//      simHost        the host name where the simulation is listening
+//      numRestarts    the port number where the simulation is listening
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 26, 2004
+//
+// ****************************************************************************
+bool
+ViewerEngineManager::ConnectSim(const EngineKey &ek,
+                                const stringVector &args,
+                                const string &simHost,
+                                int simPort)
+{
+    //
+    // Check if an engine already exists for the host.
+    //
+    if (EngineExists(ek))
+        return true;
+
+    bool success = false;
+
+    //
+    // If an engine for the host doesn't already exist, create one.
+    //
+    EngineProxy *newEngine = new EngineProxy;
+
+    //
+    // Add some arguments to the engine proxy before we try to
+    // launch the engine.
+    //
+    AddArguments(newEngine, args);
+
+    //
+    // Copy the arguments into the restart arguments that are
+    // used to restart failed engines.
+    //
+    restartArguments = args;
+
+    //
+    // Send a status message.
+    //
+    char msg[250];
+    SNPRINTF(msg, 250, "Connecting to simulation at %s:%d", simHost.c_str(), simPort);
+    Status(msg);
+
+    //
+    // Add the new engine proxy to the engine list.
+    //
+    TRY
+    {
+        // Get the client machine name options
+        HostProfile::ClientHostDetermination chd;
+        string clientHostName;
+        GetClientMachineNameOptions(ek.HostName(), chd, clientHostName);
+
+        // Get the ssh port options
+        bool manualSSHPort;
+        int  sshPort;
+        GetSSHPortOptions(ek.HostName(), manualSSHPort, sshPort);
+
+        //
+        // Launch the engine.
+        //
+        typedef struct {string h; int p;} SimData;
+        SimData simData = {simHost, simPort};
+        newEngine->Create(ek.HostName(),  chd, clientHostName,
+                          manualSSHPort, sshPort,
+                          SimConnectThroughLauncher, (void *)&simData,
+                          true);
+
+        engines[ek] = newEngine;
+
+        // Make the engine manager observe the proxy's status atts.
+        newEngine->GetStatusAttributes()->Attach(this);
+
+        // Now that the new engine is in the list, tell the GUI.
+        UpdateEngineList();
+
+        // Success!
+        success = true;
+    }
+    CATCH2(BadHostException, e)
+    {
+        // Delete the new engine since it could not launch anyway.
+        delete newEngine;
+        ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
+
+        // Tell the user that the engine could not be launched.
+        SNPRINTF(msg, 250, "VisIt could not launch a compute engine on host "
+                 "\"%s\" because that host does not exist.",
+                 e.GetHostName().c_str());
+        Error(msg);
+    }
+    CATCH(IncompatibleVersionException)
+    {
+        // Delete the new engine since talking to it could be bad since
+        // it is a different version.
+        delete newEngine;
+        ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
+
+        // Tell the user that the engine is a different version.
+        SNPRINTF(msg, 250, "VisIt cannot use the compute engine on "
+                 "host \"%s\" because the engine has an incompatible "
+                 " version number.", ek.HostName().c_str());
+        Error(msg);
+    }
+    CATCH(IncompatibleSecurityTokenException)
+    {
+        // Delete the new engine since talking to it could be bad since
+        // it did not provide the right credentials.
+        delete newEngine;
+        ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
+
+        // Tell the user that the engine is a different version.
+        SNPRINTF(msg, 250, "VisIt cannot use the compute engine on host \"%s\""
+                 "because the compute engine did not provide the proper "
+                 "credentials.", ek.HostName().c_str());
+        Error(msg);
+    }
+    CATCH(CouldNotConnectException)
+    {
+        // Delete the new engine since it was not launched
+        delete newEngine;
+        ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
+
+        // Tell the user that the engine was not launched
+        SNPRINTF(msg, 250, "VisIt could not launch the compute engine on "
+                 "host \"%s\".", ek.HostName().c_str());
+        Error(msg);
+    }
+    CATCH(CancelledConnectException)
+    {
+        // Delete the new engine since it was not launched
+        delete newEngine;
+        ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
+
+        // Tell the user that the engine was not launched
+        SNPRINTF(msg, 250, "The launch of the compute engine on "
+                 "host \"%s\" has been cancelled.", ek.HostName().c_str());
+        Error(msg);
+    }
+    ENDTRY
+
+    // Clear the status message.
+    ClearStatus();
 
     return success;
 }
@@ -671,6 +820,9 @@ ViewerEngineManager::CreateEngine(const char *hostName,
 //    Brad Whitlock, Fri Dec 27 14:42:36 PST 2002
 //    I added debugging information.
 //
+//    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//    Changed to use a map and be aware of simulations.
+//
 // ****************************************************************************
 
 void
@@ -680,33 +832,34 @@ ViewerEngineManager::CloseEngines()
     // If we have any engines close them all and free any storage
     // associatied with them.
     //
-    if (nEngines > 0)
+    for (EngineMap::iterator i = engines.begin() ; i != engines.end() ; i++)
     {
-        int       i;
+        const EngineKey &key = i->first;
+        EngineProxy *engine  = i->second;
 
-        for (i = 0; i < nEngines; i++)
+        if (key.IsSimulation())
         {
-            debug1 << "Closing compute engine on host "
-                   << engines[i]->hostName << "." << endl;
-
-            delete [] engines[i]->hostName;
-            engines[i]->engine->GetStatusAttributes()->Detach(this);
-            TRY
-            {
-                engines[i]->engine->Close();
-            }
-            CATCHALL(...)
-            {
-                debug1 << "Caught an exception while closing the engine."
-                       << endl;
-            }
-            ENDTRY
-
-            delete engines[i]->engine;
-            delete engines[i];
+            debug1 << "Disconnecting from simulation \""<<key.SimName()
+                   <<"\" on host " << key.HostName() << "." << endl;
+        }
+        else
+        {
+            debug1 << "Closing compute engine on host " << key.HostName()
+                   << "." << endl;
         }
 
-        delete [] engines;
+        engine->GetStatusAttributes()->Detach(this);
+        TRY
+        {
+            engine->Close();
+        }
+        CATCHALL(...)
+        {
+            debug1 << "Caught an exception while closing the engine." << endl;
+        }
+        ENDTRY
+
+        delete i->second;
     }
 }
 
@@ -741,36 +894,35 @@ ViewerEngineManager::CloseEngines()
 //   Jeremy Meredith, Thu Jun 26 10:48:20 PDT 2003
 //   Renamed ViewerEngineChooser to ViewerRemoteProcessChooser.
 //
+//   Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//   Use a map of engines based on a key, and be aware of simulations.
+//
 // ****************************************************************************
 
 void
-ViewerEngineManager::CloseEngine(const char *hostName)
+ViewerEngineManager::CloseEngine(const EngineKey &ek)
 {
-    // Make sure that we're not using the string "localhost".
-    const char *realHostName = RealHostName(hostName);
-
     // Since we're closing the engine intentionally, let us change
     // the options the next time we launch an engine
-    ViewerRemoteProcessChooser::Instance()->ClearCache(realHostName);
+    ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
 
     char message[200];
-    int  index = GetEngineIndex(realHostName);
 
     // We found an engine.
-    if(index >= 0)
+    if (EngineExists(ek))
     {
-        RemoveEngine(index, true);
+        RemoveEngine(ek, true);
         UpdateEngineList();
 
         SNPRINTF(message, 200, "Closed the compute engine on host %s.",
-                realHostName);
+                 ek.HostName().c_str());
         Message(message);
     }
     else
     {
         SNPRINTF(message, 200, "Cannot close the compute engine on "
                  "host %s because there is no compute engine running on "
-                 "that host.", realHostName);
+                 "that host.", ek.HostName().c_str());
         Error(message);
     }
 }
@@ -803,67 +955,32 @@ ViewerEngineManager::CloseEngine(const char *hostName)
 //   Changed code to account for the fact that GetEngineIndex will now
 //   return -1 if an engine is not in the list.
 //
+//   Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//   Use a map of engines based on a key, and be aware of simulations.
+//
 // ****************************************************************************
 
 void
-ViewerEngineManager::InterruptEngine(const char *hostName)
+ViewerEngineManager::InterruptEngine(const EngineKey &ek)
 {
     char message[200];
-    int  index = GetEngineIndex(RealHostName(hostName));
 
     // We found an engine.
-    if(index >= 0)
+    if (EngineExists(ek))
     {
-        EngineProxy *engine = engines[index]->engine;
+        EngineProxy *engine = engines[ek];
         engine->Interrupt();
 
         SNPRINTF(message, 200, "Interrupting the compute engine on host %s.",
-                 RealHostName(hostName));
+                 ek.HostName().c_str());
         Message(message);
     }
     else
     {
         SNPRINTF(message, 200, "Cannot interrupt the compute engine on host %s "
                  "because there is no compute engine running on that host.",
-                 RealHostName(hostName));
+                 ek.HostName().c_str());
         Error(message);
-    }
-}
-
-// ****************************************************************************
-// Method: ViewerEngineManager::InterruptEngine
-//
-// Purpose: 
-//   Interrupts the engine at the specified index.
-//
-// Arguments:
-//   index : The index of the engine.
-//
-// Programmer: Jeremy Meredith
-// Creation:   July  3, 2001
-//
-// ****************************************************************************
-
-void
-ViewerEngineManager::InterruptEngine(int index)
-{
-    char message[200];
-
-    // We found an engine.
-    if(index < nEngines)
-    {
-        EngineProxy *engine = engines[index]->engine;
-        engine->Interrupt();
-
-        SNPRINTF(message, 200, "Interrupting the compute engine on host %s.", 
-                 engines[index]->hostName);
-        Message(message);
-    }
-    else
-    {
-        EXCEPTION1(VisItException, "Internal error occured in "
-                   "ViewerEngineManager::InterruptEngine -- "
-                   "invalid engine index.");
     }
 }
 
@@ -896,7 +1013,9 @@ ViewerEngineManager::InExecute() const
 // Creation:   Fri Mar 12 11:46:01 PDT 2004
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//    Use a map of engines based on a key, and be aware of simulations.
+//
 // ****************************************************************************
 
 void
@@ -905,25 +1024,32 @@ ViewerEngineManager::SendKeepAlives()
     if(!executing)
     {
         bool updateList = false;
-        for (int i = 0; i < nEngines;)
+        vector<EngineKey> failedEngines;
+
+        for (EngineMap::iterator i = engines.begin() ; i != engines.end(); i++)
         {
             debug1 << "Sending keep alive signal to compute engine on host "
-                   << engines[i]->hostName << "." << endl;
+                   << i->first.HostName() << "." << endl;
 
             TRY
             {
-                engines[i]->engine->SendKeepAlive();
-                ++i;
+                i->second->SendKeepAlive();
             }
             CATCHALL(...)
             {
                 debug1 << "Caught an exception while sending a keep alive "
                           "signal to the engine."
                        << endl;
-                RemoveFailedEngine(i);
+                failedEngines.push_back(i->first);
                 updateList = true;
             }
             ENDTRY
+        }
+
+        while (failedEngines.size() > 0)
+        {
+            RemoveFailedEngine(failedEngines.front());
+            failedEngines.pop_back();
         }
 
         // If we had to remove an engine, update the list on the client.
@@ -957,42 +1083,42 @@ ViewerEngineManager::SendKeepAlives()
 //   Inserted "false" before numRestarts so that it wouldn't take numRestarts
 //   as the value for skipChooser.
 //
+//   Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//   Use a map of engines based on a key, and be aware of simulations.
+//
 // ****************************************************************************
 
 EngineProxy *
-ViewerEngineManager::GetEngine(const char *hostName_)
+ViewerEngineManager::GetEngine(const EngineKey &ek)
 {
-    //
-    // Find the engine in the list of engines.
-    //
-    const char *hostName = RealHostName(hostName_);
-    int engineIndex = GetEngineIndex(hostName);
-
     //
     // If the engine doesn't exist, try and launch one. If it cannot be done,
     // it is an error so return without doing the rest of the plot.
     //
-    if(engineIndex < 0)
+    if (!EngineExists(ek))
     {
         // Send a message to the client indicating that we're launching a
         // new engine.
-        LaunchMessage(hostName);
+        LaunchMessage(ek);
+
+        if (ek.SimName() != "")
+        {
+            // Can't relaunch a simulation
+            return NULL;
+        }
 
         // Try to launch an engine.
-        CreateEngine(hostName, restartArguments, false, numRestarts);
-
-        // Lookup the engine to see if it launched.
-        engineIndex = GetEngineIndex(hostName);
+        CreateEngine(ek, restartArguments, false, numRestarts);
 
         // If no engine was launched, return.
-        if(engineIndex < 0)
+        if (!EngineExists(ek))
             return NULL;
     }
 
     //
     // Return the engine
     //
-    return engines[engineIndex]->engine;
+    return engines[ek];
 }
 
 // ****************************************************************************
@@ -1009,16 +1135,29 @@ ViewerEngineManager::GetEngine(const char *hostName_)
 // Creation:   Mon Feb 25 09:31:14 PDT 2002
 //
 // Modifications:
-//   
+//   Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//   Made it be aware of simulations and issue an warning that we were not
+//   connected instead of informing the user that we were about to restart
+//   an engine for that host.
+//
 // ****************************************************************************
 
 void
-ViewerEngineManager::LaunchMessage(const char *hostName) const
+ViewerEngineManager::LaunchMessage(const EngineKey &ek)  const
 {
     char message[200];
-    SNPRINTF(message, 200, "VisIt could not find a compute engine to use "
-            "for the plot on host %s. VisIt will try to launch a compute "
-            "engine on that host.", hostName);
+    if (ek.SimName() != "")
+    {
+        SNPRINTF(message, 200, "VisIt is not connected to the simulation '%s' "
+                 "on host %s", ek.SimName().c_str(), ek.HostName().c_str());
+    }
+    else
+    {
+        SNPRINTF(message, 200, "VisIt could not find a compute engine to use "
+                 "for the plot on host %s. VisIt will try to launch a compute "
+                 "engine on that host.", ek.HostName().c_str());
+    }
+        
     Warning(message);
 }
 
@@ -1067,64 +1206,68 @@ ViewerEngineManager::LaunchMessage(const char *hostName) const
 //   Mark C. Miller, Mon Mar 29 14:52:08 PST 2004
 //   Added bool to control annotations on engine
 //
+//   Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//   Use a map of engines based on a key, and be aware of simulations.
+//
 // ****************************************************************************
 
 bool
-ViewerEngineManager::ExternalRender(std::vector<const char*> pluginIDsList,
-                                    stringVector hostsList,
+ViewerEngineManager::ExternalRender(vector<const char*> pluginIDsList,
+                                    vector<EngineKey> engineKeysList,
                                     intVector plotIdsList,
-                                    std::vector<const AttributeSubject *> attsList,
+                                    vector<const AttributeSubject *> attsList,
                                     WindowAttributes winAtts,
                                     AnnotationAttributes annotAtts,
                                     bool& shouldTurnOffScalableRendering,
                                     bool doAllAnnotations,
-                                    std::vector<avtImage_p>& imgList)
+                                    vector<avtImage_p>& imgList)
 {
     bool retval = true;
-    int engineIndex;
+    EngineKey ek;
 
     // container for per-engine vector of plot ids 
-    std::map<std::string,std::vector<int> > perEnginePlotIds;
+    map<EngineKey,vector<int> > perEnginePlotIds;
 
     TRY
     {
         // send per-plot RPCs
         for (int i = 0; i < plotIdsList.size(); i++)
         {
-            engineIndex = GetEngineIndex(RealHostName(hostsList[i].c_str()));
-            if (!UpdatePlotAttributes(hostsList[i].c_str(),pluginIDsList[i],
+            ek = engineKeysList[i];
+            if (!UpdatePlotAttributes(ek, pluginIDsList[i],
                                       plotIdsList[i],attsList[i]))
             {
                 retval = false;
                 char msg[200];
-                SNPRINTF(msg,200,"Unsuccessful attempt to update plot attributes "
-                    "for plot ID %d, (%d of %d)",
-                    plotIdsList[i], i, plotIdsList.size());
+                SNPRINTF(msg,200,"Unsuccessful attempt to update plot "
+                         "attributes for plot ID %d, (%d of %d)",
+                         plotIdsList[i], i, plotIdsList.size());
                 EXCEPTION1(VisItException, msg); 
             }
-            perEnginePlotIds[hostsList[i]].push_back(plotIdsList[i]);
+            perEnginePlotIds[ek].push_back(plotIdsList[i]);
         }
 
         int numEnginesToRender = perEnginePlotIds.size();
         bool sendZBuffer = numEnginesToRender > 1 ? true : false;
 
         // send per-engine RPCs 
-        std::map<std::string,std::vector<int> >::iterator pos;
-        for (pos = perEnginePlotIds.begin(); pos != perEnginePlotIds.end(); pos++)
+        map<EngineKey,vector<int> >::iterator pos;
+        for (pos = perEnginePlotIds.begin(); pos != perEnginePlotIds.end();
+                                                                         pos++)
         {
-            engineIndex = GetEngineIndex(RealHostName(pos->first.c_str()));
+            EngineKey ek = pos->first;
 
-            if (!SetWinAnnotAtts(pos->first.c_str(), &winAtts, &annotAtts))
+            if (!SetWinAnnotAtts(ek, &winAtts, &annotAtts))
             {
                 retval = false;
                 char msg[200];
-                SNPRINTF(msg,200,"Unsuccessful attempt to update window attributes "
-                    "for engine %s", pos->first.c_str());
+                SNPRINTF(msg,200,"Unsuccessful attempt to update window "
+                         "attributes for engine %s", ek.HostName().c_str());
                 EXCEPTION1(VisItException, msg); 
             }
 
             avtDataObjectReader_p rdr = GetDataObjectReader(sendZBuffer,
-                                                            pos->first.c_str(),
+                                                            ek,
                                                             pos->second,
                                                             doAllAnnotations);
 
@@ -1133,7 +1276,7 @@ ViewerEngineManager::ExternalRender(std::vector<const char*> pluginIDsList,
                 retval = false;
                 char msg[200];
                 SNPRINTF(msg,200,"obtained null data reader for rendered image "
-                    "for engine %s", pos->first.c_str());
+                         "for engine %s", ek.HostName().c_str());
                 EXCEPTION1(VisItException, msg); 
             }
 
@@ -1163,7 +1306,7 @@ ViewerEngineManager::ExternalRender(std::vector<const char*> pluginIDsList,
         EndEngineExecute();
 #endif
         // Remove the specified engine from the list of engines.
-        RemoveFailedEngine(engineIndex);
+        RemoveFailedEngine(ek);
         UpdateEngineList();
     }
     CATCH(VisItException)
@@ -1173,8 +1316,8 @@ ViewerEngineManager::ExternalRender(std::vector<const char*> pluginIDsList,
 #endif
         // Send a message to the client to clear the status for the
         // engine that had troubles.
-        if (engineIndex >= 0)
-            ClearStatus(engines[engineIndex]->hostName);
+        if (EngineExists(ek))
+            ClearStatus(ek.ID().c_str());
 
         //
         //  Let calling method handle this exception. 
@@ -1284,6 +1427,9 @@ ViewerEngineManager::ExternalRender(std::vector<const char*> pluginIDsList,
 //    I removed the frame argument because plots now know where they
 //    are in time so we don't need to pass it.
 //
+//    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//    Use a map of engines based on a key, and be aware of simulations.
+//
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -1295,12 +1441,11 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
     //
     // Read the variable
     //
-    const char *hostName = RealHostName(plot->GetHostName().c_str());
-    EngineProxy *engine = GetEngine(hostName);
-    int engineIndex = GetEngineIndex(hostName);
-
-    if (engine == NULL || engineIndex < 0)
+    EngineKey ek(plot->GetEngineKey());
+    if (!EngineExists(ek))
         return retval;
+
+    EngineProxy *engine = engines[ek];
 
     TRY
     {
@@ -1397,7 +1542,7 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
         EndEngineExecute();
 #endif
         // Remove the specified engine from the list of engines.
-        RemoveFailedEngine(engineIndex);
+        RemoveFailedEngine(ek);
         UpdateEngineList();
     }
     CATCH(VisItException)
@@ -1407,7 +1552,7 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
 #endif
         // Send a message to the client to clear the status for the
         // engine that had troubles.
-        ClearStatus(engines[engineIndex]->hostName);
+        ClearStatus(ek.ID().c_str());
 
         //
         //  Let calling method handle this exception. 
@@ -1431,6 +1576,11 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   Wed Oct 29 16:56:14 PST 2003 
+//
+//  Modifications:
+//    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//    Use a map of engines based on a key, and be aware of simulations.
+//
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -1440,17 +1590,16 @@ ViewerEngineManager::UseDataObjectReader(ViewerPlot *const plot,
     // The return value.
     avtDataObjectReader_p retval(NULL);
 
-    const char *hostName = RealHostName(plot->GetHostName().c_str());
-    EngineProxy *engine = GetEngine(hostName);
-    int engineIndex = GetEngineIndex(hostName);
-
-    if (engine == NULL || engineIndex < 0)
+    EngineKey ek(plot->GetEngineKey());
+    if (!EngineExists(ek))
         return retval;
+
+    EngineProxy *engine = engines[ek];
 
     TRY
     {
         // tell engine which network to re-use
-        UseNetwork(hostName, plot->GetNetworkID());
+        UseNetwork(ek, plot->GetNetworkID());
 
         bool replyWithNullData = !turningOffScalableRendering; 
 
@@ -1476,7 +1625,7 @@ ViewerEngineManager::UseDataObjectReader(ViewerPlot *const plot,
         EndEngineExecute();
 #endif
         // Remove the specified engine from the list of engines.
-        RemoveFailedEngine(engineIndex);
+        RemoveFailedEngine(ek);
         UpdateEngineList();
     }
     CATCH(VisItException)
@@ -1486,7 +1635,7 @@ ViewerEngineManager::UseDataObjectReader(ViewerPlot *const plot,
 #endif
         // Send a message to the client to clear the status for the
         // engine that had troubles.
-        ClearStatus(engines[engineIndex]->hostName);
+        ClearStatus(ek.ID().c_str());
 
         //
         //  Let calling method handle this exception. 
@@ -1516,38 +1665,39 @@ ViewerEngineManager::UseDataObjectReader(ViewerPlot *const plot,
 //  Modifications:
 //    Mark C. Miller, Mon Mar 29 14:52:08 PST 2004
 //    Added bool to control annotations on engine
+//
+//    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//    Use a map of engines based on a key, and be aware of simulations.
+//
 // ****************************************************************************
 
 avtDataObjectReader_p
 ViewerEngineManager::GetDataObjectReader(bool sendZBuffer,
-                                         const char *hostName_,
+                                         const EngineKey &ek,
                                          intVector ids,
                                          bool doAllAnnotations)
 {
     // The return value.
     avtDataObjectReader_p retval(NULL);
 
-    const char *hostName = RealHostName(hostName_);
-    EngineProxy *engine = GetEngine(hostName);
-    int engineIndex = GetEngineIndex(hostName);
-    if (engine == NULL || engineIndex < 0)
+    if (!EngineExists(ek))
         return retval;
 
     TRY
     {
-        retval = engine->Render(sendZBuffer, ids, !doAllAnnotations);
+        retval = engines[ek]->Render(sendZBuffer, ids, !doAllAnnotations);
     }
     CATCH(LostConnectionException)
     {
         // Remove the specified engine from the list of engines.
-        RemoveFailedEngine(engineIndex);
+        RemoveFailedEngine(ek);
         UpdateEngineList();
     }
     CATCH(VisItException)
     {
         // Send a message to the client to clear the status for the
         // engine that had troubles.
-        ClearStatus(engines[engineIndex]->hostName);
+        ClearStatus(ek.ID().c_str());
 
         //
         //  Let calling method handle this exception. 
@@ -1615,14 +1765,16 @@ ViewerEngineManager::EndEngineExecute()
 // Creation:   Tue Dec 10 15:27:40 PST 2002
 //
 // Modifications:
+//    Hank Childs, Fri Mar  5 11:13:32 PST 2004
+//    Added a format.
 //
-//   Hank Childs, Fri Mar  5 11:13:32 PST 2004
-//   Added a format.
+//    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//    Use a map of engines based on a key, and be aware of simulations.
 //
 // ****************************************************************************
 
 bool
-ViewerEngineManager::OpenDatabase(const char *hostName_, const char *format,
+ViewerEngineManager::OpenDatabase(const EngineKey &ek, const char *format,
                                   const char *filename, int time)
 {
     ENGINE_PROXY_RPC_BEGIN("OpenDatabase");
@@ -1640,14 +1792,16 @@ ViewerEngineManager::OpenDatabase(const char *hostName_, const char *format,
 // Creation:   Tue Mar 25 14:15:21 PST 2003
 //
 // Modifications:
+//    Hank Childs, Fri Mar  5 16:02:03 PST 2004
+//    Pass along the format as well.
 //
-//   Hank Childs, Fri Mar  5 16:02:03 PST 2004
-//   Pass along the format as well.
+//    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//    Use a map of engines based on a key, and be aware of simulations.
 //
 // ****************************************************************************
 
 bool
-ViewerEngineManager::DefineVirtualDatabase(const char *hostName_,
+ViewerEngineManager::DefineVirtualDatabase(const EngineKey &ek,
                       const char *format, const char *dbName, const char *path,
                       const stringVector &files, int time)
 {
@@ -1669,10 +1823,14 @@ ViewerEngineManager::DefineVirtualDatabase(const char *hostName_,
 //    Jeremy Meredith, Thu Nov 21 11:11:11 PST 2002
 //    Changed catch block to rethrow.
 //
+//    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//    Use a map of engines based on a key, and be aware of simulations.
+//
 // ****************************************************************************
 
 bool
-ViewerEngineManager::ApplyOperator(const char *hostName_, const char *name,
+ViewerEngineManager::ApplyOperator(const EngineKey &ek,
+                                   const char *name,
     const AttributeSubject *atts)
 {
     ENGINE_PROXY_RPC_BEGIN("ApplyOperator");
@@ -1693,11 +1851,14 @@ ViewerEngineManager::ApplyOperator(const char *hostName_, const char *name,
 //    Jeremy Meredith, Thu Nov 21 11:11:31 PST 2002
 //    Changed catch block to rethrow.
 //
+//    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//    Use a map of engines based on a key, and be aware of simulations.
+//
 // ****************************************************************************
 
 bool
-ViewerEngineManager::MakePlot(const char *hostName_, const char *name,
-    const AttributeSubject *atts, int *networkId)
+ViewerEngineManager::MakePlot(const EngineKey &ek, const char *name, 
+                              const AttributeSubject *atts, int *networkId)
 {
     ENGINE_PROXY_RPC_BEGIN("MakePlot");
     *networkId = engine->MakePlot(name, atts);
@@ -1714,11 +1875,13 @@ ViewerEngineManager::MakePlot(const char *hostName_, const char *name,
 // Creation:   Fri Feb 22 14:50:06 PST 2002
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//    Use a map of engines based on a key, and be aware of simulations.
+//
 // ****************************************************************************
 
 bool
-ViewerEngineManager::UseNetwork(const char *hostName_, int id)
+ViewerEngineManager::UseNetwork(const EngineKey &ek, int id)
 {
     ENGINE_PROXY_RPC_BEGIN("UseNetwork");
     engine->UseNetwork(id);
@@ -1735,12 +1898,15 @@ ViewerEngineManager::UseNetwork(const char *hostName_, int id)
 // Creation:   Fri Feb 22 14:50:06 PST 2002
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//    Use a map of engines based on a key, and be aware of simulations.
+//
 // ****************************************************************************
 
 bool
-ViewerEngineManager::UpdatePlotAttributes(const char *hostName_,
-    const char *name, int id, const AttributeSubject *atts)
+ViewerEngineManager::UpdatePlotAttributes(const EngineKey &ek,
+                                          const char *name, int id,
+                                          const AttributeSubject *atts)
 {
     ENGINE_PROXY_RPC_BEGIN("UpdatePlotAttributes");
     engine->UpdatePlotAttributes(name, id, atts);
@@ -1757,19 +1923,23 @@ ViewerEngineManager::UpdatePlotAttributes(const char *hostName_,
 // Creation:   Fri Feb 22 14:50:06 PST 2002
 //
 // Modifications:
-//   Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002 
-//   Use different RPC_END macro, so that exceptions are rethrown, and failed
-//   engines aren't restarted.
+//    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002 
+//    Use different RPC_END macro, so that exceptions are rethrown, and failed
+//    engines aren't restarted.
 //   
-//   Kathleen Bonnell, Wed Feb 26 10:56:19 PST 2003 
-//   Change catch block to second version of rethrow, which will rethrow
-//   the LostConnectionException, and possibly throw a NoEngineException.  
+//    Kathleen Bonnell, Wed Feb 26 10:56:19 PST 2003 
+//    Change catch block to second version of rethrow, which will rethrow
+//    the LostConnectionException, and possibly throw a NoEngineException.  
+//
+//    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//    Use a map of engines based on a key, and be aware of simulations.
 //
 // ****************************************************************************
 
 bool
-ViewerEngineManager::Pick(const char *hostName_,
-    const int nid, const PickAttributes *atts, PickAttributes &retAtts)
+ViewerEngineManager::Pick(const EngineKey &ek,
+                          const int nid, const PickAttributes *atts,
+                          PickAttributes &retAtts)
 {
     ENGINE_PROXY_RPC_BEGIN("Pick");
     engine->Pick(nid, atts, retAtts);
@@ -1786,12 +1956,14 @@ ViewerEngineManager::Pick(const char *hostName_,
 // Creation:   Fri Feb 22 14:50:06 PST 2002
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//    Use a map of engines based on a key, and be aware of simulations.
+//
 // ****************************************************************************
 
 bool
-ViewerEngineManager::StartPick(const char *hostName_, const bool flag,
-    const int nid)
+ViewerEngineManager::StartPick(const EngineKey &ek,
+                               const bool flag, const int nid)
 {
     ENGINE_PROXY_RPC_BEGIN("StartPick");
     engine->StartPick(flag, nid);
@@ -1808,12 +1980,15 @@ ViewerEngineManager::StartPick(const char *hostName_, const bool flag,
 // Creation:   Fri Feb 22 14:50:06 PST 2002
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//    Use a map of engines based on a key, and be aware of simulations.
+//
 // ****************************************************************************
 
 bool
-ViewerEngineManager::SetWinAnnotAtts(const char *hostName_,
-    const WindowAttributes *wa, const AnnotationAttributes *aa)
+ViewerEngineManager::SetWinAnnotAtts(const EngineKey &ek,
+                                     const WindowAttributes *wa,
+                                     const AnnotationAttributes *aa)
 {
     ENGINE_PROXY_RPC_BEGIN("SetWinAnnotAtts");
     engine->SetWinAnnotAtts(wa,aa);
@@ -1833,11 +2008,14 @@ ViewerEngineManager::SetWinAnnotAtts(const char *hostName_,
 // Creation:   Tue Jul 30 13:39:41 PST 2002
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//    Use a map of engines based on a key, and be aware of simulations.
+//
 // ****************************************************************************
 
 bool
-ViewerEngineManager::ClearCache(const char *hostName_, const char *dbName)
+ViewerEngineManager::ClearCache(const EngineKey &ek,
+                                const char *dbName)
 {
     ENGINE_PROXY_RPC_BEGIN("ClearCache");
     if (dbName == 0)
@@ -1857,14 +2035,19 @@ ViewerEngineManager::ClearCache(const char *hostName_, const char *dbName)
 // Creation:   Thu Feb 26 13:03:46 PST 2004
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//    Use a map of engines based on a key, and be aware of simulations.
+//
 // ****************************************************************************
 
 void
 ViewerEngineManager::ClearCacheForAllEngines()
 {
-    for(int i = 0; i < nEngines; ++i)
-        ClearCache(engines[i]->hostName);
+    for (EngineMap::iterator i = engines.begin() ; i != engines.end() ; i++)
+    {
+        const EngineKey &key = i->first;
+        ClearCache(key);
+    }
 }
 
 // ****************************************************************************
@@ -1914,28 +2097,21 @@ ViewerEngineManager::GetEngineList()
 //   Brad Whitlock, Mon Feb 25 12:43:37 PDT 2002
 //   Modified it to account for a slight change in engine indices.
 //
+//   Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//   Use a map of engines based on a key, and be aware of simulations.
+//
 // ****************************************************************************
 void
-ViewerEngineManager::RemoveEngine(int engineIndex, bool close)
+ViewerEngineManager::RemoveEngine(const EngineKey &ek, bool close)
 {
-    if (engineIndex >= 0 && engineIndex < nEngines)
+    if (EngineExists(ek))
     {
         // Delete the entry in the engine list for the specified index.    
-        delete [] engines[engineIndex]->hostName;
-        engines[engineIndex]->engine->GetStatusAttributes()->Detach(this);
+        engines[ek]->GetStatusAttributes()->Detach(this);
         if (close)
-            engines[engineIndex]->engine->Close();
-        delete engines[engineIndex]->engine;
-        delete engines[engineIndex];
-
-        // Get rid of the hole in the engine list.
-        for (int i = engineIndex; i < nEngines - 1; ++i)
-        {
-            engines[i] = engines[i+1];
-        }
-
-        // Decrement the number of engines.
-        --nEngines;
+            engines[ek]->Close();
+        delete engines[ek];
+        engines.erase(ek);
     }
 }
 
@@ -1953,24 +2129,35 @@ ViewerEngineManager::RemoveEngine(int engineIndex, bool close)
 // Creation:   Fri Feb 22 14:52:35 PST 2002
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//    Use a map of engines based on a key, and be aware of simulations.
+//
 // ****************************************************************************
 
 void
-ViewerEngineManager::RemoveFailedEngine(int engineIndex)
+ViewerEngineManager::RemoveFailedEngine(const EngineKey &ek)
 {
     // Tell the GUI about the error.
     char message[200];
-    SNPRINTF(message, 200, "The compute engine running on %s has exited "
-             "abnormally.", engines[engineIndex]->hostName);
+    if (ek.SimName() != "")
+    {
+        SNPRINTF(message, 200, "VisIt has been disconnected from the "
+                 "simulation '%s' on host %s",
+                 ek.SimName().c_str(), ek.HostName().c_str());
+    }
+    else
+    {
+        SNPRINTF(message, 200, "The compute engine running on %s has exited "
+                 "abnormally.", ek.HostName().c_str());
+    }
     Error(message);
 
     // Send a message to the client to clear the status for the
     // engine that had troubles.
-    ClearStatus(engines[engineIndex]->hostName);
+    ClearStatus(ek.ID().c_str());
 
     // Remove the specified engine from the list of engines.
-    RemoveEngine(engineIndex, false);
+    RemoveEngine(ek, false);
 }
 
 // ****************************************************************************
@@ -1990,38 +2177,48 @@ ViewerEngineManager::RemoveFailedEngine(int engineIndex)
 //   Brad Whitlock, Wed Nov 27 13:27:48 PST 2002
 //   I added code to send back other engine information to the client.
 //
+//   Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//   Use a map of engines based on a key, and be aware of simulations.
+//
 // ****************************************************************************
 
 void
 ViewerEngineManager::UpdateEngineList()
 {
-    stringVector names;
+    vector<EngineKey> ids;
+    stringVector hostNames, simulationNames;
     intVector    numProcs, numNodes, loadBalancing;
     
     // Go through the list of engines and add each engine to the engine list
     // that gets returned to the viewer's client.
     int i;
-    for(i = 0; i < nEngines; ++i)
-        names.push_back(std::string(engines[i]->hostName));
+    for (EngineMap::iterator it = engines.begin() ; it != engines.end(); it++)
+    {
+        ids.push_back(it->first);
+    }
 
     // Sort the strings.
-    if(names.size() > 1)
-        std::sort(names.begin(), names.end());
+    if (ids.size() > 1)
+        std::sort(ids.begin(), ids.end());
 
     // Add the other information about the engine.
-    for(i = 0; i < nEngines; ++i) 
+    for(i = 0; i < ids.size(); ++i) 
     {
-        EngineProxy *engine = GetEngine(names[i].c_str());
-        if(engine)
+        EngineKey ek = ids[i];
+        if (EngineExists(ek))
         {
-             numProcs.push_back(engine->NumProcessors());
-             numNodes.push_back(engine->NumNodes());
-             loadBalancing.push_back(engine->LoadBalancing());
+            EngineProxy *engine = engines[ek];
+            numProcs.push_back(engine->NumProcessors());
+            numNodes.push_back(engine->NumNodes());
+            loadBalancing.push_back(engine->LoadBalancing());
+            hostNames.push_back(ek.HostName());
+            simulationNames.push_back(ek.SimName());
         }
     }
 
     // Send the engine list to the viewer's client.
-    clientEngineAtts->SetEngines(names);
+    clientEngineAtts->SetEngines(hostNames);
+    clientEngineAtts->SetSimulationName(simulationNames);
     clientEngineAtts->SetNumProcessors(numProcs);
     clientEngineAtts->SetNumNodes(numNodes);
     clientEngineAtts->SetLoadBalancing(loadBalancing);
@@ -2055,6 +2252,9 @@ ViewerEngineManager::UpdateEngineList()
 //    Brad Whitlock, Tue Mar 26 09:52:29 PDT 2002
 //    Modified the communication code.
 //
+//    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//    Use a map of engines based on a key, and be aware of simulations.
+//
 // ****************************************************************************
 
 void
@@ -2062,13 +2262,13 @@ ViewerEngineManager::Update(Subject *TheChangedSubject)
 {
     StatusAttributes *statusAtts = (StatusAttributes *)TheChangedSubject;
 
-    // Figure out the engineIndex based on the pointer.
-    int engineIndex = nEngines;
-    for (int i = 0; i < nEngines; ++i)
+    // Find the key to the engine
+    EngineKey ek;
+    for (EngineMap::iterator i = engines.begin() ; i != engines.end() ; i++)
     {
-        if (engines[i]->engine->GetStatusAttributes() == statusAtts)
+        if (i->second->GetStatusAttributes() == statusAtts)
         {
-            engineIndex = i;
+            ek = i->first;
             break;
         }
     }
@@ -2077,38 +2277,37 @@ ViewerEngineManager::Update(Subject *TheChangedSubject)
     if (statusAtts->GetClearStatus())
     {
         // Send a message to clear the status bar.
-        if (engineIndex < nEngines)
-            ClearStatus(engines[engineIndex]->hostName);
+        if (EngineExists(ek))
+            ClearStatus(ek.ID().c_str());
         else
             ClearStatus();
     }
     else if (statusAtts->GetMessageType() == 1)
     {
         // The message field was selected.
-        if (engineIndex < nEngines)
-            Status(engines[engineIndex]->hostName,
-                   statusAtts->GetMessage().c_str());
+        if (EngineExists(ek))
+            Status(ek.ID().c_str(), statusAtts->GetMessage().c_str());
         else
             Status(statusAtts->GetMessage().c_str());
     }
     else if (statusAtts->GetMessageType() == 3)
     {
         // The message field was selected.
-        if (engineIndex < nEngines)
+        if (EngineExists(ek))
         {
-            std::string tmp1("The compute engine running on host ");
-            std::string tmp2(engines[engineIndex]->hostName);
-            std::string tmp3(" issued the following warning: ");
-            std::string tmp;
+            string tmp1("The compute engine running on host ");
+            string tmp2(ek.HostName());
+            string tmp3(" issued the following warning: ");
+            string tmp;
             tmp = tmp1 + tmp2 + tmp3 + statusAtts->GetMessage();
             Warning(tmp.c_str());
         }
         else
             Warning(statusAtts->GetMessage().c_str());
     }
-    else if (engineIndex < nEngines)
+    else if (EngineExists(ek))
     {
-        Status(engines[engineIndex]->hostName, statusAtts->GetPercent(),
+        Status(ek.ID().c_str(), statusAtts->GetPercent(),
                statusAtts->GetCurrentStage(),
                statusAtts->GetCurrentStageName().c_str(),
                statusAtts->GetMaxStage());
@@ -2116,7 +2315,7 @@ ViewerEngineManager::Update(Subject *TheChangedSubject)
 
     if (viewerSubject->ReadFromParentAndCheckForInterruption())
     {
-        InterruptEngine(engineIndex);
+        InterruptEngine(ek);
     }
 }
 
@@ -2143,13 +2342,16 @@ ViewerEngineManager::Update(Subject *TheChangedSubject)
 //    Mark C. Miller, 16Jul03
 //    Modified SetWindowAtts call to SetWinAnnotAtts
 //
+//    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//    Use a map of engines based on a key, and be aware of simulations.
+//
 // ****************************************************************************
 
 void
 ViewerEngineManager::GetImage(int index, avtDataObject_p &dob)
 {
     // WHOA!  ASSUMING ENGINE 0
-    EngineProxy *engine = engines[0]->engine;
+    EngineProxy *engine = (engines.begin())->second;
 
     // WHOA!  ASSUMING ACTIVE WINDOW
     ViewerWindowManager *vwm = ViewerWindowManager::Instance();
@@ -2162,9 +2364,9 @@ ViewerEngineManager::GetImage(int index, avtDataObject_p &dob)
     
     engine->UseNetwork(index);
 #ifdef VIEWER_MT
-    avtDataObjectReader_p rdr = engines[0]->engine->Execute(false, 0, 0);
+    avtDataObjectReader_p rdr = engine->Execute(false, 0,0);
 #else
-    avtDataObjectReader_p rdr = engines[0]->engine->Execute(false,
+    avtDataObjectReader_p rdr = engine->Execute(false,
         ViewerSubject::ProcessEventsCB, (void *)viewerSubject);
 #endif
 
@@ -2194,6 +2396,10 @@ ViewerEngineManager::GetImage(int index, avtDataObject_p &dob)
 //  Programmer: Hank Childs
 //  Creation:   November 28, 2001
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//    Use a map of engines based on a key, and be aware of simulations.
+//
 // ****************************************************************************
 
 void
@@ -2201,7 +2407,7 @@ ViewerEngineManager::UpdatePlotAttributes(const string &str, int index,
                                           AttributeSubject *atts)
 {
     // WHOA!  ASSUMING ENGINE 0
-    EngineProxy *engine = engines[0]->engine;
+    EngineProxy *engine = (engines.begin())->second;
 
     engine->UpdatePlotAttributes(str, index, atts);
 }
@@ -2272,10 +2478,14 @@ UpdatePlotAttsCallback(void *vem, const string &str, int index,
 //   Hank Childs, Thu Oct  2 16:18:11 PDT 2003
 //   Allow for multiple network ids.
 //
+//   Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//   Use a map of engines based on a key, and be aware of simulations.
+//
 // ****************************************************************************
  
 bool
-ViewerEngineManager::Query(const char *hostName_, const std::vector<int> &nid,
+ViewerEngineManager::Query(const EngineKey &ek,
+                           const vector<int> &nid,
                            const QueryAttributes *atts,
                            QueryAttributes &retAtts)
 {
@@ -2294,18 +2504,22 @@ ViewerEngineManager::Query(const char *hostName_, const std::vector<int> &nid,
 // Programmer: Kathleen Bonnell 
 // Creation:   September 18, 2002 
 //
+// Modifications:
 //    Jeremy Meredith, Mon Mar 22 17:59:09 PST 2004
 //    First, I made it not bother attempting this if there was no engine
 //    for this host.  Second, I made it not attempt to restart an engine
 //    if it had died.
 //
+//    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//    Use a map of engines based on a key, and be aware of simulations.
+//
 // ****************************************************************************
 
 bool
-ViewerEngineManager::ReleaseData(const char *hostName_, int id)
+ViewerEngineManager::ReleaseData(const EngineKey &ek, int id)
 {
     // If the engine has gone away, we have no need to call this method!
-    if (GetEngineIndex(RealHostName(hostName_)) < 0)
+    if (!EngineExists(ek))
         return true;
 
     ENGINE_PROXY_RPC_BEGIN("ReleaseData");

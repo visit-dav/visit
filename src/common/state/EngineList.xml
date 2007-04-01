@@ -4,4 +4,5 @@
     <Field name="numProcessors" type="intVector"></Field>
     <Field name="numNodes" type="intVector"></Field>
     <Field name="loadBalancing" type="intVector"></Field>
+    <Field name="simulationName" type="stringVector"></Field>
   </Attribute>

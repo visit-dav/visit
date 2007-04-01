@@ -12,6 +12,8 @@ bool print   = true;
 bool clobber = false;
 bool installpublic  = false;
 bool installprivate = false;
+bool noengineplugin   = false;
+bool onlyengineplugin = false;
 
 #ifdef TEST_ONLY
 #endif
@@ -173,6 +175,10 @@ void ProcessFile(QString file);
 //    Jeremy Meredith, Fri Mar 19 15:17:31 PST 2004
 //    Added code to clear enums in between input files.
 //
+//    Jeremy Meredith, Tue Mar 30 10:16:00 PST 2004
+//    I added support for database plugins with only a mdserver or engine
+//    component.  This was critical for simulation support.
+//
 // ****************************************************************************
 
 int main(int argc, char *argv[])
@@ -212,6 +218,22 @@ int main(int argc, char *argv[])
         else if (strcmp(argv[i], "-private") == 0)
         {
             installprivate = true;
+            argc--;
+            for (int j=i; j<argc; j++)
+                argv[j] = argv[j+1];
+            i--;
+        }
+        else if (strcmp(argv[i], "-noengineplugin") == 0)
+        {
+            noengineplugin = true;
+            argc--;
+            for (int j=i; j<argc; j++)
+                argv[j] = argv[j+1];
+            i--;
+        }
+        else if (strcmp(argv[i], "-onlyengineplugin") == 0)
+        {
+            onlyengineplugin = true;
             argc--;
             for (int j=i; j<argc; j++)
                 argv[j] = argv[j+1];

@@ -914,6 +914,10 @@ avtSliceFilter::ReleaseData(void)
 //    Hank Childs, Wed Oct 15 21:50:27 PDT 2003
 //    Re-arrange the labels when we are slicing orthogonally.
 //
+//    Hank Childs, Tue Mar 30 07:34:17 PST 2004
+//    Do not decrease the topological dimension of points (slicing points still
+//    yields points).
+//
 // ****************************************************************************
 
 void
@@ -923,7 +927,9 @@ avtSliceFilter::RefashionDataObjectInfo(void)
     avtDataAttributes &outAtts     = GetOutput()->GetInfo().GetAttributes();
     avtDataValidity   &outValidity = GetOutput()->GetInfo().GetValidity();
    
-    outAtts.SetTopologicalDimension(inAtts.GetTopologicalDimension()-1);
+    if (inAtts.GetTopologicalDimension() >= 1)
+        outAtts.SetTopologicalDimension(inAtts.GetTopologicalDimension()-1);
+
     outValidity.InvalidateZones();
     outValidity.SetNormalsAreInappropriate(true);
     if (atts.GetProject2d())

@@ -65,13 +65,16 @@ LauncherProxy::GetComponentName() const
 // Creation:   Fri May 2 16:40:45 PST 2003
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Tue Mar 30 10:07:06 PST 2004
+//    I added connectSimRPC.
+//
 // ****************************************************************************
 
 void
 LauncherProxy::SetupComponentRPCs()
 {
     xfer.Add(&launchRPC);
+    xfer.Add(&connectSimRPC);
 }
 
 // ****************************************************************************
@@ -97,3 +100,25 @@ LauncherProxy::LaunchProcess(const stringVector &programArgs)
     launchRPC(programArgs);
 }
 
+// ****************************************************************************
+//  Method:  LauncherProxy::ConnectSimulation
+//
+//  Purpose:
+//    Connect to a running simulation
+//
+//  Arguments:
+//    programArgs : The program arguments.
+//    simHost     : The host where the simulation is running
+//    simPort     : The port where the simulation is listening
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 23, 2004
+//
+// ****************************************************************************
+
+void
+LauncherProxy::ConnectSimulation(const stringVector &programArgs,
+                                 const std::string &simHost, int simPort)
+{
+    connectSimRPC(programArgs, simHost, simPort);
+}

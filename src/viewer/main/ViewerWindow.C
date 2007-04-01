@@ -4855,15 +4855,17 @@ ViewerWindow::GetWindowAttributes() const
 // Creation:   Sun Jan 25 23:49:44 PST 2004
 //
 // Modifications:
+//    Jeremy Meredith, Tue Mar 30 11:04:28 PST 2004
+//    Added an engine key used to index (and restart) engines.
 //   
 // ****************************************************************************
 
 bool
-ViewerWindow::SendWindowEnvironmentToEngine(const std::string &host)
+ViewerWindow::SendWindowEnvironmentToEngine(const EngineKey &ek)
 {
     WindowAttributes winAtts(GetWindowAttributes());
     AnnotationAttributes annotAtts(*GetAnnotationAttributes());
-    return ViewerEngineManager::Instance()->SetWinAnnotAtts(host.c_str(),
+    return ViewerEngineManager::Instance()->SetWinAnnotAtts(ek,
                                                             &winAtts,
                                                             &annotAtts);
 }
@@ -6534,13 +6536,17 @@ ViewerWindow::SendScalableRenderingModeChangeMessage(bool newMode)
 // Programmer: Mark C. Miller 
 // Creation:   Mon Nov  3 15:48:33 PST 2003
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Mar 30 11:04:04 PST 2004
+//    Added an engine key used to index (and restart) engines.
+//
 // ****************************************************************************
 
 void
 ViewerWindow::ClearLastExternalRenderRequestInfo()
 {
     lastExternalRenderRequest.pluginIDsList.clear();
-    lastExternalRenderRequest.hostsList.clear();
+    lastExternalRenderRequest.engineKeysList.clear();
     lastExternalRenderRequest.plotIdsList.clear();
     lastExternalRenderRequest.attsList.clear();
 }
@@ -6558,6 +6564,9 @@ ViewerWindow::ClearLastExternalRenderRequestInfo()
 //
 //   Mark C. Miller, Mon Nov 24 22:02:25 PST 2003
 //   Modifed it to make copies of plot attributes
+//
+//   Jeremy Meredith, Tue Mar 30 11:04:04 PST 2004
+//   Added an engine key used to index (and restart) engines.
 //
 // ****************************************************************************
 
@@ -6584,7 +6593,7 @@ ViewerWindow::UpdateLastExternalRenderRequestInfo(
 
     // copy everything else over
     lastExternalRenderRequest.pluginIDsList = newRequest.pluginIDsList;
-    lastExternalRenderRequest.hostsList     = newRequest.hostsList;
+    lastExternalRenderRequest.engineKeysList= newRequest.engineKeysList;
     lastExternalRenderRequest.plotIdsList   = newRequest.plotIdsList;
     lastExternalRenderRequest.winAtts       = newRequest.winAtts;
     lastExternalRenderRequest.annotAtts     = newRequest.annotAtts;
@@ -6607,6 +6616,9 @@ ViewerWindow::UpdateLastExternalRenderRequestInfo(
 //   Mark C. Miller, Mon Mar 29 19:13:38 PST 2004
 //   Made check for annotations consider only the subset of all annotations 
 //   that should require a re-render on the engine
+//
+//   Jeremy Meredith, Tue Mar 30 11:04:04 PST 2004
+//   Added an engine key used to index (and restart) engines.
 //
 // ****************************************************************************
 
@@ -6652,8 +6664,8 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
             if (thisRequest.pluginIDsList[i] != lastRequest.pluginIDsList[indexOfPlotInLastList])
                 return false;
 
-            // compare host names
-            if (thisRequest.hostsList[i] != lastRequest.hostsList[indexOfPlotInLastList])
+            // compare engine keys
+            if (thisRequest.engineKeysList[i] != lastRequest.engineKeysList[indexOfPlotInLastList])
                 return false;
 
             // compare plot attributes
@@ -6675,6 +6687,10 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
 // Programmer: Mark C. Miller
 // Creation:   March 25, 2004 
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Mar 30 11:04:04 PST 2004
+//    Added an engine key used to index (and restart) engines.
+//
 // ****************************************************************************
 void
 ViewerWindow::GetExternalRenderRequestInfo(
@@ -6682,7 +6698,7 @@ ViewerWindow::GetExternalRenderRequestInfo(
 {
     // get information about the plots, their hosts, ids, and attributes
     GetPlotList()->GetCurrentPlotAtts(theRequest.pluginIDsList,
-                                      theRequest.hostsList,
+                                      theRequest.engineKeysList,
                                       theRequest.plotIdsList,
                                       theRequest.attsList);
 
@@ -6701,6 +6717,10 @@ ViewerWindow::GetExternalRenderRequestInfo(
 //
 // Programmer: Mark C. Miller
 // Creation:   March 25, 2004 
+//
+//  Modifications:
+//    Jeremy Meredith, Tue Mar 30 11:04:04 PST 2004
+//    Added an engine key used to index (and restart) engines.
 //
 // ****************************************************************************
 bool
@@ -6724,7 +6744,7 @@ ViewerWindow::ExternalRender(const ExternalRenderRequestInfo& thisRequest,
     {
         // let the engine manager do the render
         success = eMgr->ExternalRender(thisRequest.pluginIDsList,
-                                       thisRequest.hostsList,
+                                       thisRequest.engineKeysList,
                                        thisRequest.plotIdsList,
                                        thisRequest.attsList,
                                        thisRequest.winAtts,
@@ -6772,6 +6792,10 @@ ViewerWindow::ExternalRender(const ExternalRenderRequestInfo& thisRequest,
     // composite images from different engines as necessary
     if (imgList.size() > 1)
     {
+        //
+        // NOTE: YOU NEED TO MAKE SURE ALL ENGINES HAVE USED
+        // SAME BACKGROUND COLOR IN ORDER FOR THIS TO WORK
+        //
         avtWholeImageCompositer imageCompositer;
         int numRows = thisRequest.winAtts.GetSize()[1];
         int numCols = thisRequest.winAtts.GetSize()[0];

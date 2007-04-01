@@ -234,6 +234,9 @@
 #    I took some classes out of the viewer library and put them into the
 #    viewer proper because they should not be available to plugins.
 #
+#    Jeremy Meredith, Tue Mar 30 10:16:44 PST 2004
+#    Added EngineKey.
+#
 ##############################################################################
 
 ##
@@ -279,6 +282,7 @@ SRC= \
 MAINSRC=\
     ActionGroupDescription.C \
     AnimationActions.C \
+    EngineKey.C \
     LineoutListItem.C \
     NoEngineException.C \
     PlotAndOperatorActions.C \

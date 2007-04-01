@@ -1325,6 +1325,9 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
 //    This allows us to not have to remove the plots and re-add them for each
 //    render.
 //
+//    Mark C. Miller, Tue Mar 30 10:58:01 PST 2004
+//    Added code to set image compositor's background color
+//
 // ****************************************************************************
 avtDataObjectWriter_p
 NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
@@ -1407,6 +1410,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
               visitTimer->StopTimer(t2, "Setting up window contents");
           }
 
+
           AdjustWindowAttributes();
 
           if (!do3DAnnotsOnly)
@@ -1446,13 +1450,29 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
           }
 #endif
 
-          // do the parallel composite using a 1 stage pipeline
+          avtWholeImageCompositer imageCompositer;
+
+          //
+          // Set the compositer's background color
+          //
+          const float *fbg = viswin->GetBackgroundColor();
+          unsigned char bg_r = (unsigned char) (fbg[0] * 255.0);
+          unsigned char bg_g = (unsigned char) (fbg[1] * 255.0);
+          unsigned char bg_b = (unsigned char) (fbg[2] * 255.0);
+          imageCompositer.SetBackground(bg_r, bg_g, bg_b);
+
+          //
+          // Set up the input image size and add it to compositer's input
+          //
           int imageRows, imageCols;
           viswin->GetSize(imageCols, imageRows);
-          avtWholeImageCompositer imageCompositer;
           imageCompositer.SetOutputImageSize(imageRows, imageCols);
           imageCompositer.AddImageInput(theImage, 0, 0);
           imageCompositer.SetShouldOutputZBuffer(getZBuffer);
+
+          //
+          // Do the parallel composite using a 1 stage pipeline
+          //
           imageCompositer.Execute();
           avtDataObject_p compositedImageAsDataObject = imageCompositer.GetOutput();
           writer = compositedImageAsDataObject->InstantiateWriter();
@@ -1570,7 +1590,7 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts)
                                   atts.GetRenderAtts().GetSpecularColor());
 
     //
-    // Set the background.
+    // Set the background/foreground colors
     //
     viswin->SetBackgroundColor(atts.GetBackground()[0]/255.0,
                                atts.GetBackground()[1]/255.0,
@@ -1579,6 +1599,9 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts)
                                atts.GetForeground()[1]/255.0,
                                atts.GetForeground()[2]/255.0);
 
+    //
+    // Set the bacbround mode and gradient colors if necessary
+    //
     int bgMode = atts.GetBackgroundMode();
     if (bgMode == 0)
        viswin->SetBackgroundMode(0);
