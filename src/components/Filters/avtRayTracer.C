@@ -233,6 +233,10 @@ avtRayTracer::SetGradientBackgroundColors(const float bg1[3],
 //    Hank Childs, Sun Mar 13 11:16:20 PST 2005
 //    Fix memory leak.
 //
+//    Hank Childs, Tue Mar 29 16:19:19 PST 2005
+//    If the image is large, force divisions of 512x512, even if we should
+//    theoretically have enough memory to cover it.
+//
 // ****************************************************************************
 
 void
@@ -341,6 +345,13 @@ avtRayTracer::Execute(void)
     int numDivisions = (int) sqrt((double) numTiles);
     if (numDivisions < 1)
         numDivisions = 1;
+    int altNumDiv = (int)(screen[0] / 700.) + 1;
+    if (altNumDiv > numDivisions)
+        numDivisions = altNumDiv;
+    altNumDiv = (int)(screen[1] / 700.) + 1;
+    if (altNumDiv > numDivisions)
+        numDivisions = altNumDiv;
+
     int IStep = screen[0] / numDivisions;
     int JStep = screen[1] / numDivisions;
     avtImage_p whole_image;
