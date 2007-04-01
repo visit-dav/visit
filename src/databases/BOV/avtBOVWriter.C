@@ -227,6 +227,11 @@ ResampleGrid(vtkRectilinearGrid *rgrid, float *ptr, float *samples,
 //  Programmer: Hank Childs
 //  Creation:   September 11, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Oct 21 18:10:29 PDT 2004
+//    Fix problem with writing out one block while resampling.
+//
 // ****************************************************************************
 
 void
@@ -402,11 +407,21 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
                     char str[1024];
                     int brick = k*brickletsPerY*brickletsPerX 
                               + j*brickletsPerX + i;
-                    sprintf(str, "%s_%0.4d.bof.gz", stem.c_str(), brick);
-                    void *gz_handle = gzopen(str, "w");
-                    gzwrite(gz_handle, samples, 
-                            vals_per_bricklet*sizeof(float));
-                    gzclose(gz_handle);
+                    if (nBricklets > 1)
+                    {
+                        sprintf(str, "%s_%0.4d.bof.gz", stem.c_str(), brick);
+                        void *gz_handle = gzopen(str, "w");
+                        gzwrite(gz_handle, samples, 
+                                vals_per_bricklet*sizeof(float));
+                        gzclose(gz_handle);
+                    }
+                    else
+                    {
+                        FILE *file_handle = fopen(stem.c_str(), "w");
+                        fwrite(samples, sizeof(float), vals_per_bricklet, 
+                               file_handle);
+                        fclose(file_handle);
+                    }
                 }
             }
         }

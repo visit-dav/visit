@@ -66,6 +66,9 @@ using     std::sort;
 //    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
 //    Initialize containsOriginalNodes, invTransform, canUseInvTransform.
 //
+//    Kathleen Bonnell, Tue Oct 12 16:11:15 PDT 2004 
+//    Initialize keepNodeZoneArrays.
+//
 // ****************************************************************************
 
 avtDataAttributes::avtDataAttributes()
@@ -95,8 +98,9 @@ avtDataAttributes::avtDataAttributes()
 
     filename               = "<unknown>";
     containsGhostZones     = AVT_MAYBE_GHOSTS;
-    containsOriginalCells     = false;
-    containsOriginalNodes     = false;
+    containsOriginalCells  = false;
+    containsOriginalNodes  = false;
+    keepNodeZoneArrays     = false;
 
     SetTopologicalDimension(3);
     SetSpatialDimension(3);
@@ -501,6 +505,10 @@ avtDataAttributes::Print(ostream &out)
 //
 //    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
 //    Added selectionsApplied
+//
+//    Kathleen Bonnell, Tue Oct 12 16:11:15 PDT 2004 
+//    Added keepNodeZoneArrays. 
+//
 // ****************************************************************************
 
 void
@@ -567,6 +575,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     SetContainsGhostZones(di.GetContainsGhostZones());
     SetContainsOriginalCells(di.GetContainsOriginalCells());
     SetContainsOriginalNodes(di.GetContainsOriginalNodes());
+    SetKeepNodeZoneArrays(di.GetKeepNodeZoneArrays());
     CopyInvTransform(di.invTransform);
     canUseInvTransform = di.canUseInvTransform;
     CopyTransform(di.transform);
@@ -643,6 +652,9 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //
 //    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
 //    Added selectionsApplied
+//
+//    Kathleen Bonnell, Tue Oct 12 16:11:15 PDT 2004 
+//    Added keepNodeZoneArrays. 
 //
 // ****************************************************************************
 
@@ -778,6 +790,10 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
     if (!GetContainsOriginalNodes()) 
     {
         SetContainsOriginalNodes(da.GetContainsOriginalNodes());
+    }
+    if (!GetKeepNodeZoneArrays()) 
+    {
+        SetKeepNodeZoneArrays(da.GetKeepNodeZoneArrays());
     }
 
 
@@ -1582,6 +1598,9 @@ avtDataAttributes::SetTime(double d)
 //    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
 //    Added selectionsApplied
 //
+//    Kathleen Bonnell, Tue Oct 12 16:11:15 PDT 2004 
+//    Added keepNodeZoneArrays. 
+//
 // ****************************************************************************
 
 void
@@ -1590,7 +1609,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
 {
     int   i;
 
-    int numVals = 16 + 3*variables.size();
+    int numVals = 17 + 3*variables.size();
     int *vals = new int[numVals];
     vals[0] = topologicalDimension;
     vals[1] = spatialDimension;
@@ -1602,17 +1621,18 @@ avtDataAttributes::Write(avtDataObjectString &str,
     vals[7] = (int) containsGhostZones;
     vals[8] = (containsOriginalCells ? 1 : 0);
     vals[9] = (containsOriginalNodes ? 1 : 0);
-    vals[10] = (canUseInvTransform ? 1 : 0);
-    vals[11] = (canUseTransform ? 1 : 0);
-    vals[12] = (canUseCumulativeAsTrueOrCurrent ? 1 : 0);
-    vals[13] = windowMode;
-    vals[14] = activeVariable;
-    vals[15] = variables.size();
+    vals[10] = (keepNodeZoneArrays ? 1 : 0);
+    vals[11] = (canUseInvTransform ? 1 : 0);
+    vals[12] = (canUseTransform ? 1 : 0);
+    vals[13] = (canUseCumulativeAsTrueOrCurrent ? 1 : 0);
+    vals[14] = windowMode;
+    vals[15] = activeVariable;
+    vals[16] = variables.size();
     for (i = 0 ; i < variables.size() ; i++)
     {
-        vals[16+3*i]   = variables[i].dimension;
-        vals[16+3*i+1] = variables[i].centering;
-        vals[16+3*i+2] = (variables[i].treatAsASCII ? 1 : 0);
+        vals[17+3*i]   = variables[i].dimension;
+        vals[17+3*i+1] = variables[i].centering;
+        vals[17+3*i+2] = (variables[i].treatAsASCII ? 1 : 0);
     }
     wrtr->WriteInt(str, vals, numVals);
     wrtr->WriteDouble(str, dtime);
@@ -1745,6 +1765,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
 //    Added selectionsApplied
 //
+//    Kathleen Bonnell, Tue Oct 12 16:11:15 PDT 2004 
+//    Added keepNodeZoneArrays. 
+//
 // ****************************************************************************
 
 int
@@ -1794,6 +1817,10 @@ avtDataAttributes::Read(char *input)
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
     SetContainsOriginalNodes(tmp != 0 ? true : false);
+
+    memcpy(&tmp, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    SetKeepNodeZoneArrays(tmp != 0 ? true : false);
 
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);

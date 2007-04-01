@@ -49,6 +49,9 @@
 //    Mark C. Miller, Thu May 27 11:05:15 PDT 2004
 //    Removed window attributes arg from GetActor method
 //
+//    Kathleen Bonnell, Thu Oct 21 15:55:46 PDT 2004 
+//    Added ActorIsNull method. 
+//
 // ****************************************************************************
 class DataNetwork
 {
@@ -77,6 +80,7 @@ public:
     Netnode* GetTerminalNode(void) { return terminalNode; };
     virtual avtPlot_p GetPlot(void) { return plot; };
     avtActor_p GetActor(avtDataObject_p dob);
+    bool ActorIsNull(void) { return (*plotActor == NULL); };
     void SetNetDB(NetnodeDB *d) { netdb = d; };
     NetnodeDB* GetNetDB(void) { return netdb; };
     virtual int GetTime() {return time;};

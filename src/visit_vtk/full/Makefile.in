@@ -233,6 +233,9 @@
 #    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004 
 #    Added vtkVisItGlyph3D. 
 #
+#    Hank Childs, Fri Oct 22 07:09:35 PDT 2004
+#    Added vtkVisItCellDataToPointData.
+#
 ##############################################################################
 
 ##
@@ -276,6 +279,7 @@ SRC=InitVTK.C \
     vtkVerticalScalarBarWithOpacityActor.C \
     vtkVisItAxisActor.C \
     vtkVisItAxisActor2D.C \
+    vtkVisItCellDataToPointData.C \
     vtkVisItCellLocator.C \
     vtkVisItContourFilter.C \
     vtkVisItCubeAxesActor.C \

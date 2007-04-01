@@ -3,6 +3,9 @@
 // ************************************************************************* //
 
 #include <avtIsovolumeFilter.h>
+
+#include <float.h>
+
 #include <vtkVisItClipper.h>
 #include <vtkDataSet.h>
 #include <vtkDataArray.h>
@@ -11,8 +14,13 @@
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellDataToPointData.h>
+
+#include <avtIntervalTree.h>
+#include <avtMetaData.h>
+
 #include <DebugStream.h>
 #include <VisItException.h>
+
 
 // ****************************************************************************
 //  Method: avtIsovolumeFilter constructor
@@ -215,24 +223,72 @@ avtIsovolumeFilter::ExecuteSingleClip(vtkDataSet *in_ds, float val, bool flip)
 //    a min and max pass, so I split most of this routine into a new function
 //    and called the new one (ExecuteSingleClip) twice.
 //
+//    Hank Childs, Wed Oct 20 16:16:15 PDT 2004
+//    Basic optimizations -- only do min pass and max pass when the data
+//    requires it.  Also pass the dataset through if it is wholly contained
+//    within the range and return a NULL dataset if it is outside the range.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtIsovolumeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 {
-    vtkDataSet *out_ds = in_ds;
+    //
+    // Start off by calculating the range of the dataset.
+    //
+    float *vals = NULL;
+    int nvals = 0;
+    if (in_ds->GetPointData()->GetScalars() != NULL)
+    {
+        vals = (float *) in_ds->GetPointData()->GetScalars()->GetVoidPointer(0);
+        nvals = in_ds->GetNumberOfPoints();
+    }
+    else if (in_ds->GetCellData()->GetScalars() != NULL)
+    {
+        vals = (float *) in_ds->GetCellData()->GetScalars()->GetVoidPointer(0);
+        nvals = in_ds->GetNumberOfCells();
+    }
+
+    if (vals == NULL)
+        return in_ds;
+
+    float min = +FLT_MAX;
+    float max = -FLT_MAX;
+    for (int i = 0 ; i < nvals ; i++)
+    {
+        min = (min < vals[i] ? min : vals[i]);
+        max = (max > vals[i] ? max : vals[i]);
+    }
+
+    //
+    // Check to see if our range is below the min or above the max.  If so,
+    // we will have an empty intersection.
+    //
+    if (max < atts.GetLbound() || min > atts.GetUbound())
+    {
+        return NULL;
+    }
+
+    //
+    // Determine if we need to do the min clip or max clip.  Because of the
+    // above logic, we can assume that the dataset's max is bigger than
+    // the isovolume's lbound and the min is less than the ubound.
+    //
+    bool doMinClip = false;
+    if ((atts.GetLbound() > -1e37) && (min < atts.GetLbound()))
+        doMinClip = true;
+    bool doMaxClip = false;
+    if ((atts.GetUbound() < 1e37) && (max > atts.GetUbound()))
+        doMaxClip = true;
 
     //
     // Do the clipping!
     //
-    if (atts.GetLbound() > -1e37)
-    {
+    vtkDataSet *out_ds = in_ds;
+    if (doMinClip)
         out_ds = ExecuteSingleClip(out_ds, atts.GetLbound(), true);
-    }
-    if (atts.GetUbound() < 1e37)
-    {
+    if (doMaxClip)
         out_ds = ExecuteSingleClip(out_ds, atts.GetUbound(), false);
-    }
 
     //
     // Make sure there's something there
@@ -303,6 +359,11 @@ avtIsovolumeFilter::RefashionDataObjectInfo(void)
 //  Programmer: Hank Childs
 //  Creation:   August 11, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Oct 20 17:04:52 PDT 2004
+//    Use interval trees to only read in the domains we need.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -327,6 +388,20 @@ avtIsovolumeFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
         skipGhost = true;
     if (!skipGhost)
         spec->GetDataSpecification()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+
+    string iso_var = atts.GetVariable();;
+    if (iso_var == "default")
+        iso_var = in_spec->GetDataSpecification()->GetVariable();
+
+    avtIntervalTree *it = GetMetaData()->GetDataExtents(iso_var.c_str());
+    if (it != NULL)
+    {
+        float min = atts.GetLbound();
+        float max = atts.GetUbound();
+        vector<int> dl;
+        it->GetDomainsListFromRange(&min, &max, dl);
+        spec->GetDataSpecification()->GetRestriction()->RestrictDomains(dl);
+    }
 
     return spec;
 }

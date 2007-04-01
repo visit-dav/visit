@@ -4,6 +4,7 @@
 
 #include <InitVTK.h>
 #include <InitVTKNoGraphics.h>
+#include <vtkVisItCellDataToPointData.h>
 #include <vtkVisItOpenGLPolyDataMapper.h>
 #include <vtkVisItMesaPolyDataMapper.h>
 
@@ -37,6 +38,7 @@ class vtkVisItGraphicsFactory : public vtkObjectFactory
 //
 VTK_CREATE_CREATE_FUNCTION(vtkVisItOpenGLPolyDataMapper);
 VTK_CREATE_CREATE_FUNCTION(vtkVisItMesaPolyDataMapper);
+VTK_CREATE_CREATE_FUNCTION(vtkVisItCellDataToPointData);
 
 
 const char*
@@ -48,6 +50,11 @@ vtkVisItGraphicsFactory::GetVTKSourceVersion()
 //
 //  Create the overrides so that VTK will use VisIt's class instead.
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Oct 22 07:13:35 PDT 2004
+//    Added vtkVisItCellDataToPointData.
+//
 vtkVisItGraphicsFactory::vtkVisItGraphicsFactory()
 {
   this->RegisterOverride("vtkOpenGLPolyDataMapper", "vtkVisItOpenGLPolyDataMapper",
@@ -58,6 +65,10 @@ vtkVisItGraphicsFactory::vtkVisItGraphicsFactory()
                          "vtkVisItMesaPolyDataMapper override vtkMesaPolyDataMapper",
                          1,
                          vtkObjectFactoryCreatevtkVisItMesaPolyDataMapper);
+  this->RegisterOverride("vtkCellDataToPointData", "vtkVisItCellDataToPointData",
+                         "vtkVisItCellDataToPointData override vtkCellDataToPointData",
+                         1,
+                         vtkObjectFactoryCreatevtkVisItCellDataToPointData);
 }
 
 // ****************************************************************************

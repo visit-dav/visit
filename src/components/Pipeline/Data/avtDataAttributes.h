@@ -122,6 +122,9 @@ class     avtExtents;
 //    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
 //    Added support for data selections that are applied by plugins
 //
+//    Kathleen Bonnell, Tue Oct 12 16:11:15 PDT 2004 
+//    Added keepNodeZoneArrays and Set/Get methods. 
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -212,6 +215,10 @@ class PIPELINE_API avtDataAttributes
                                    { return containsOriginalNodes; };
     void                     SetContainsOriginalNodes(bool c)
                                    { containsOriginalNodes= c; };
+    bool                     GetKeepNodeZoneArrays(void) const
+                                   { return keepNodeZoneArrays; };
+    void                     SetKeepNodeZoneArrays(bool k)
+                                   { keepNodeZoneArrays= k; };
 
     bool                     GetDataExtents(double *, const char * = NULL);
     bool                     GetCurrentDataExtents(double *,
@@ -286,6 +293,7 @@ class PIPELINE_API avtDataAttributes
     avtGhostType             containsGhostZones;
     bool                     containsOriginalCells;
     bool                     containsOriginalNodes;
+    bool                     keepNodeZoneArrays;
     avtMatrix               *invTransform;
     bool                     canUseInvTransform;
     avtMatrix               *transform;

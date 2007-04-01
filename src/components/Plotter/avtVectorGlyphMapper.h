@@ -10,9 +10,9 @@
 #include <avtMapper.h>
 #include <LineAttributes.h>
 
-class     vtkGlyph3D;
 class     vtkLookupTable;
 class     vtkPolyData;
+class     vtkVisItGlyph3D;
 class     vtkVisItPolyDataNormals;
 
 
@@ -54,6 +54,9 @@ class     vtkVisItPolyDataNormals;
 //    Kathleen Bonnell, Mon Aug  9 13:54:42 PDT 2004 
 //    Added flag 'colorByScalar', 'scalarName', and method ColorByScalarOn. 
 //
+//    Kathleen Bonnell, Tue Oct 12 16:18:37 PDT 2004
+//    Use VisIt's version of vtkGlyph3d. 
+//
 // ****************************************************************************
 
 class PLOTTER_API  avtVectorGlyphMapper : public avtMapper
@@ -81,7 +84,7 @@ class PLOTTER_API  avtVectorGlyphMapper : public avtMapper
     unsigned char              glyphColor[3];
     float                      scale;
 
-    vtkGlyph3D               **glyphFilter;
+    vtkVisItGlyph3D           **glyphFilter;
     vtkVisItPolyDataNormals  **normalsFilter;
     int                        nGlyphFilters;
 

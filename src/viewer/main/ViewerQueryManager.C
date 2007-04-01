@@ -1536,6 +1536,12 @@ ViewerQueryManager::ClearPickPoints()
 //    Kathleen Bonnell, Wed Aug 25 18:13:21 PDT 2004 
 //    Ensure that MeshMetaData is not null before attempting to dereference. 
 //
+//    Kathleen Bonnell, Tue Oct 12 16:31:46 PDT 2004 
+//    Added support for picking on Vector plots -- calls a new ViewerWindow
+//    method 'GlyphPick' to get the intersected domain & zone/node.  The 
+//    intersection test is performed on data from the Renderer, where the
+//    glyphs live.
+//
 // ****************************************************************************
 
 bool
@@ -1663,6 +1669,56 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
             else 
                 pickAtts->SetPickType(PickAttributes::CurveNode);
    
+        }
+
+        if (strcmp(plot->GetPlotName(), "Vector") == 0 && 
+            win->GetScalableRendering() && (dom ==-1 || el == -1))
+        {
+            pickAtts->SetRequiresGlyphPick(true);
+        }
+        else if (strcmp(plot->GetPlotName(), "Vector") == 0 && 
+             !win->GetScalableRendering())
+        {
+            int d = -1, e = -1;
+            bool forCell = false;
+            if (dom == -1 || el == -1) 
+            {
+                //
+                // We only want to find an intersection  with the currently
+                // active plot, so make it the only pickable actor in the 
+                // renderer. Perform the intersection test, then make it
+                // unpickable again.
+                //
+                plot->GetActor()->MakePickable();
+                win->GlyphPick(pd.rayPt1, pd.rayPt2, d, e, forCell);
+                plot->GetActor()->MakeUnPickable();
+                // 
+                // Due to the nature of the glyphs, the pick type MUST match
+                // the variable centering.
+                // 
+                if (forCell)
+                    pickAtts->SetPickType(PickAttributes::DomainZone);
+                else 
+                    pickAtts->SetPickType(PickAttributes::DomainNode);
+            }
+            else // PickByNode or PickByZone
+            {
+                d = dom;
+                e = el;
+            }
+            if (d != -1 && e != -1)
+            {
+                pickAtts->SetDomain(d);
+                pickAtts->SetElementNumber(e);
+                float dummyPt[3] = { FLT_MAX, 0., 0.};
+                pickAtts->SetPickPoint(dummyPt);
+                pickAtts->SetCellPoint(dummyPt);
+            }
+            else
+            {
+                Warning("Vector pick could not find a valid intersection.");
+                return false;
+            }
         }
 
         float *rp1 = pd.rayPt1;
@@ -1833,6 +1889,10 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
 //   Kathleen Bonnell, Wed Jun  2 10:00:35 PDT 2004 
 //   Only add a pick letter if a valid position could be determined. 
 //   
+//   Kathleen Bonnell, Tue Oct 12 16:01:49 PDT 2004 
+//   Save and restore the current pick type (certain types of pick may
+//   change it during execution). 
+//   
 // ****************************************************************************
 
 void
@@ -1843,6 +1903,7 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
         PickThroughTime(ppi, dom, el);
         return;
     }
+    PickAttributes::PickType oldPickType = pickAtts->GetPickType();
     if(ComputePick(ppi, dom, el))
     {
         //
@@ -1888,6 +1949,12 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
         //
         UpdateDesignator();
     }
+
+    //
+    // In case it was changed in the process. (Mostly likely by picking
+    // on a VectorPlot or a PointMesh.
+    //
+    pickAtts->SetPickType(oldPickType);
 
     //
     //  Perform any picks that have been cached.

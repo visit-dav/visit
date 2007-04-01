@@ -33,6 +33,10 @@
 //    actors, so that this visibility value can be restored to individual
 //    actors in the VisbilityOn method. 
 //
+//    Kathleen Bonnell, Tue Oct 12 16:18:37 PDT 2004 
+//    Set all actor's Pickable flag to OFF by default.  Can be turned on/off
+//    as need by MakePickable and MakeUnPickable. 
+//
 // ****************************************************************************
 
 avtGeometryDrawable::avtGeometryDrawable(int nA, vtkActor **a)
@@ -48,6 +52,7 @@ avtGeometryDrawable::avtGeometryDrawable(int nA, vtkActor **a)
         {
             actors[i]->Register(NULL);
             actorsVisibility[i] = actors[i]->GetVisibility();
+            actors[i]->PickableOff();
         }
     }
 
@@ -528,4 +533,53 @@ avtGeometryDrawable::SetImmediateModeRendering(bool val)
     if(mapper->GetImmediateModeRendering() != val)
         mapper->SetImmediateModeRendering(val);
 }
+
+
+// ****************************************************************************
+//  Method: avtGeometryDrawable::MakePickable
+//
+//  Purpose:
+//    Turns on the pickability of the vtkActors. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   September 27, 2004 
+//
+// ****************************************************************************
+
+void
+avtGeometryDrawable::MakePickable()
+{
+    for (int i = 0 ; i < nActors ; i++)
+    {
+        if (actors[i] != NULL)
+        {
+            actors[i]->PickableOn();
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtGeometryDrawable::MakeUnPickable
+//
+//  Purpose:
+//    Turns off the pickability of the vtkActors. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   September 27, 2004 
+//
+// ****************************************************************************
+
+void
+avtGeometryDrawable::MakeUnPickable()
+{
+    for (int i = 0 ; i < nActors ; i++)
+    {
+        if (actors[i] != NULL)
+        {
+            actors[i]->PickableOff();
+        }
+    }
+}
+
 

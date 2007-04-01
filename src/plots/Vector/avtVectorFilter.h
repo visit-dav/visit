@@ -33,6 +33,9 @@ class  vtkVertexFilter;
 //    Kathleen Bonnell, Mon Aug  9 14:27:08 PDT 2004 
 //    Added magVarName, SetMagVarName and PerformRestriction.
 //
+//    Kathleen Bonnell, Tue Oct 12 16:18:37 PDT 2004 
+//    Added keepNodeZone.
+//
 // ****************************************************************************
 
 class avtVectorFilter : public avtStreamer
@@ -58,6 +61,7 @@ class avtVectorFilter : public avtStreamer
     int                       stride;
     int                       nVectors;
     std::string               magVarName;
+    bool                      keepNodeZone;
 
     vtkVertexFilter          *vertex;
     vtkVectorReduceFilter    *reduce;

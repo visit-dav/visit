@@ -4,19 +4,29 @@
 
 #include <VisWindow.h>
 
+#include <float.h> // for FLOAT_MAX
+
+#include <vtkActor.h>
+#include <vtkActorCollection.h>
+#include <vtkBox.h>
 #include <vtkCamera.h>
+#include <vtkCellData.h>
 #include <vtkCellPicker.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkRenderer.h>
-#include <vtkRenderWindow.h>
+#include <vtkMapper.h>
 #include <vtkMath.h>
 #include <vtkMatrix4x4.h>
+#include <vtkPointData.h>
+#include <vtkRenderer.h>
+#include <vtkRenderWindow.h>
+#include <vtkVisItCellLocator.h>
 
 #include <AnnotationObjectList.h>
 #include <ColorAttribute.h>
 #include <LineAttributes.h>
 
+#include <avtCallback.h>
 #include <avtPlot.h>
 #include <avtLightList.h>
 #include <VisitInteractor.h>
@@ -5425,4 +5435,148 @@ void
 VisWindow::ResumeTranslucentGeometry()
 {
     plots->ResumeTranslucentGeometry();
+}
+
+
+// ****************************************************************************
+// Method: VisWindow::GlyphPick
+//
+// Purpose: 
+//   Finds the domain and cell/node number intersected by a ray.
+//
+// Arguments:
+//   rp1       The origin of the ray.
+//   rp2       The endpoint of the ray.
+//   dom       A place to store the intersected domain number. 
+//   elNum     A place to store the intersected cell/node number. 
+//   forCell   A flag returned that specifies whether Pick shoulde be
+//             a cell pick or node pick. 
+//   doRender  A flag specifying if a Render request should be made.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   October 11, 2004 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+VisWindow::GlyphPick(const float *rp1, const float *rp2, int &dom, 
+                     int &elNum, bool &forCell, const bool doRender)
+{
+    //
+    // First things first, we must make sure that the datasets have been
+    // truly rendered.
+    //
+    if (doRender)
+        GetCanvas()->GetRenderWindow()->Render();
+
+    int i, cell = -1;
+    float *bnds = NULL;
+    float dir[3];
+    for (i = 0; i < 3; i++)
+        dir[i] = rp2[i] - rp1[i];
+    float dummy1[3], dummy2;
+    vtkActorCollection *actors = GetCanvas()->GetActors();
+    vtkActor *actor = NULL;
+    vtkDataSet *ds = NULL;
+    vtkDataSet *good_ds = NULL;
+    float minDist = FLT_MAX;
+    float dist;
+
+    for (actors->InitTraversal(); (actor = actors->GetNextActor());) 
+    {
+        if (actor->GetPickable() && actor->GetVisibility())
+        {
+            ds = actor->GetMapper()->GetInput();
+            if (ds == NULL)
+            {
+                debug5 << "GlyphPick strangeness, dataset from mapper"
+                       << " is NULL!" << endl;
+                continue;
+            }
+            bnds = ds->GetBounds();
+            if (vtkBox::IntersectBox(bnds, const_cast<float*>(rp1), 
+                                     dir, dummy1, dummy2))
+            {
+                if (ds->GetNumberOfPoints() == 0)
+                    continue;
+                vtkVisItCellLocator *cellLocator = vtkVisItCellLocator::New();
+                cellLocator->SetIgnoreGhosts(true);
+                cellLocator->SetIgnoreLines(true);
+                cellLocator->SetDataSet(ds);
+                cellLocator->BuildLocator();
+                float pcoords[3] = {0., 0., 0.}, ptLine[3] = {0., 0., 0.};
+                float isect[3] = {0., 0., 0.};
+                int subId = 0, success = 0;
+                vtkIdType foundCell; 
+                if (rp1[0] == rp2[0] &&
+                    rp1[1] == rp2[1] &&
+                    rp1[2] == rp2[2])
+                { /* WORLD COORD LOCATE */
+                    cellLocator->FindClosestPoint(const_cast<float*>(rp1), 
+                                            ptLine, foundCell, subId, dist);
+                    if (foundCell >= 0 && dist >= 0)
+                    {
+                        success = 1;
+                    }
+                }
+                else 
+                { /* RAY-INTERSECT LOCATE */
+                    success = cellLocator->IntersectWithLine(
+                                  const_cast<float*>(rp1), 
+                                  const_cast<float*>(rp2), 
+                                  dist, isect, pcoords, subId, foundCell);
+                }
+                cellLocator->Delete();
+
+                if (success && dist < minDist)
+                {
+                    cell = foundCell;
+                    good_ds = ds;
+                    minDist = dist;
+                }
+            }
+        }
+    }
+ 
+    if ( cell < 0 )
+    {
+       debug5 << "GlyphPick:  no valid cell was intersected!" << endl; 
+    }
+    else
+    {
+        vtkDataSet *ds = good_ds;
+        if (ds == NULL)
+        {
+            debug5 << "GlyphPick:  locator returned a NULL dataset. " << endl;
+        }
+        else 
+        {
+            vtkDataArray *oc = 
+                ds->GetCellData()->GetArray("avtOriginalCellNumbers");
+            if (oc != NULL)
+            {
+                elNum = (int) oc->GetComponent(cell, 1);
+                dom   = (int) oc->GetComponent(cell, 0);
+                forCell = true;
+            }
+            else
+            {
+                oc = ds->GetCellData()->GetArray("avtOriginalNodeNumbers");
+                if (oc != NULL)
+                {
+                    elNum = (int) oc->GetComponent(cell, 1);
+                    dom   = (int) oc->GetComponent(cell, 0);
+                    forCell = false;
+                }
+                else
+                {
+                    debug5 << "GlyphPick: Data does not have "
+                           << "avtOriginalCellsArray or avtOriginaNodesArray."
+                           << endl;
+                }
+            }
+        }
+    }
 }

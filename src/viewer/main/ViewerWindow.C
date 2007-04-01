@@ -7796,3 +7796,23 @@ ViewerWindow::CopyInteractorAtts(const ViewerWindow *source)
     SetInteractorAtts(source->GetInteractorAtts());
 }
 
+// ****************************************************************************
+// Method: ViewerWindow::GlyphPick
+//
+// Purpose: 
+//   Tells the VisWindow to perform a glyph-type pick operation. 
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   September 27, 2004 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerWindow::GlyphPick(const float pt1[3], const float pt2[3], 
+                        int &dom, int &elNum, bool &forCell)
+{
+    visWindow->GlyphPick(pt1, pt2, dom, elNum, forCell, GetNoWinMode()); 
+}
+

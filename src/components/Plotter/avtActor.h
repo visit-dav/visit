@@ -85,6 +85,9 @@ class     avtTransparencyActor;
 //    error-prone (and easier and more efficient) to turn off the entire
 //    avtTransparencyActor at once.
 //
+//    Kathleen Bonnell, Mon Sep 27 10:19:11 PDT 2004 
+//    Added MakePickable and MakeUnPickable. 
+//
 // ****************************************************************************
 
 class PLOTTER_API avtActor
@@ -133,6 +136,9 @@ class PLOTTER_API avtActor
 
     void                          OpaqueVisibilityOn();
     void                          OpaqueVisibilityOff();
+
+    void                          MakePickable(void);
+    void                          MakeUnPickable(void);
 
   protected:
     avtBehavior_p                 behavior;

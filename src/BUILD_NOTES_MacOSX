@@ -22,16 +22,16 @@ commands needed to build the libraries and VisIt from this file into your
 shell prompt.
 
 
-    Library  Version  Description            For More information
+    Library  Version  Description            For More Information
     =======  =======  ===========            ====================
     Mesa     5.0.2    3-D Graphics Library   http://www.mesa3d.org/
     Python   2.3.3    Scripting Language     http://www.python.org
     Qt       3.3.1    GUI Toolkit            http://www.trolltech.com
-    Silo     4.4      File I/O library       http://www.llnl.gov/bdiv/meshtv
+    Silo     4.4.1    File I/O library       http://www.llnl.gov/bdiv/meshtv
     VTK      20031028 Visualization Toolkit  http://www.kitware.com
     HDF5     1.6.0    I/O library            http://hdf.ncsa.uiuc.edu/HDF5/
     
-    Optional Version  Description            For More information
+    Optional Version  Description            For More Information
     ======== =======  ===========            ====================
     Mili     1.06     I/O library            (none)
 
@@ -41,8 +41,13 @@ all the packages except VTK and Qt, you can probably use newer versions of the
 packages and VisIt should work properly.  For Mesa, you must build a mangled
 version of Mesa.  The distribution provided has already been set up to build
 a mangled version so no additional work is required if you use it.  For VTK,
-you must use the October 28, 2003 distribution provided. The version of Qt used to
-build VisIt on MacOS X must be greater than or equal to 3.0.
+you must use the October 28, 2003 distribution provided. The version of Qt
+used to build VisIt on MacOS X must be greater than or equal to 3.0.
+
+Most of the third party libraries necessary to build VisIt are available for
+download from ftp://ftp.llnl.gov/pub/visit/3rd_party.  It is suggested that
+you start there and then go to the "For More Information" web sites for
+any remaining libraries.
 
 It is essential that you build all the dependent packages and VisIt using
 the same c++ compiler or you will encounter linking problems because different
@@ -496,8 +501,8 @@ offsets will not be affected since the HDF5 version of the Silo library
 should be larger.
 
 # Build silo source into an archive library
-sh silo020325.sh
-cd silo020325
+sh silo041018.sh
+cd silo041018
 # Set the values of some helper variables (tcsh)
 set HDF5INCLUDE=$VISITDIR/hdf5/include
 set HDF5LIB=$VISITDIR/hdf5/lib
@@ -510,7 +515,7 @@ cd lib
 mkdir tmplib
 cd tmplib
 ar -x ../libsilo.a
-gcc -dynamiclib -prebind -twolevel_namespace -Wl,-seg1addr,0x22714000,-install_name,@executable_path/../lib/libsilo.dylib,-compatibility_version,4.3.2,-current_version,4.3.2 -o ../libsilo.dylib *.o -L$HDF5LIB -lhdf5
+gcc -dynamiclib -prebind -twolevel_namespace -Wl,-seg1addr,0x22714000,-install_name,@executable_path/../lib/libsilo.dylib,-compatibility_version,4.4.1,-current_version,4.4.1 -o ../libsilo.dylib *.o -L$HDF5LIB -lhdf5
 cd ..
 
 # Install Silo

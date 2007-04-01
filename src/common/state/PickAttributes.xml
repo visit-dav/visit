@@ -156,6 +156,9 @@
     <Field name="elementIsGhost" label="elementIsGhost" type="bool" internal="true">
       false
     </Field>
+    <Field name="requiresGlyphPick" label="requiresGlyphPick" type="bool" internal="true">
+      false
+    </Field>
     <Function name="PrintSelf" user="true" member="true">
     </Function>
     <Function name="CreateOutputString" user="true" member="true">
