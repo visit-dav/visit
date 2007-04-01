@@ -126,6 +126,11 @@ print_array_names(vtkDataSet *inDS)
 //  Creation:   Wed Jan 7 14:58:26 PST 2004
 //
 //  Modifications:
+//    Brad Whitlock, Thu Oct 28 16:07:46 PST 2004
+//    Added a faster algorithm for averaging the cell centers, when needed.
+//    The new algorithm assumes that related cells will be contiguous in
+//    the cell list, which may or may not be a valid assumption. It looks
+//    okay for slices, which is when we do the center averaging anyway.
 //
 // ****************************************************************************
 
@@ -329,6 +334,7 @@ avtLabelFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
                    << "means that we should try and hide that there could "
                    << "be multiple cells that correspond to the same "
                    << "original cell." << endl;
+#ifdef WORST_NSQUARED_CODE_IN_THE_WORLD
             vtkIdType dupIds[100];
             int i, n = outDS->GetNumberOfCells();
             bool *cellHandled = new bool[n];
@@ -376,6 +382,43 @@ avtLabelFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
             }
 
             delete [] cellHandled;
+#else 
+            //
+            // Assume that related cells are contiguous in the cell list.
+            //
+            int n = outDS->GetNumberOfCells();
+            for(int i = 0; i < n; )
+            {
+                unsigned int cellId = cellNumbers[i];
+                int j = i + 1;
+                for(; j < n; ++j)
+                {
+                    if(cellNumbers[j] != cellId)
+                        break;
+                }
+                int repeatCount = j - i;
+                if(repeatCount > 1)
+                {
+                    float avgCoord[] = {0,0,0};
+                    int k;
+                    for(k = i; k < j; ++k)
+                    {
+                        const float *pt = cellCenters->GetTuple3(k);
+                        avgCoord[0] += pt[0];
+                        avgCoord[1] += pt[1];
+                        avgCoord[2] += pt[2];
+                    }
+                    float scale = 1.f / float(repeatCount);
+                    avgCoord[0] *= scale;
+                    avgCoord[1] *= scale;
+                    avgCoord[2] *= scale;
+                    for(k = i; k < j; ++k)
+                        cellCenters->SetTuple(k, avgCoord);
+                }
+
+                i = j;
+            }
+#endif
         }
     }
     visitTimer->StopTimer(stageTimer, "Averaging cell coordinates");

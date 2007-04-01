@@ -733,7 +733,13 @@ in the file ccse-mpi.H.
 #
 # You will need to modify GNUmakefile to set the compiler.  Typically, this
 # will involve replacing "KCC" with the name of your c++ compiler in the
-# line "COMP      = KCC".
+# line "COMP      = KCC".  If the compiler doesn't match one of the ones
+# in the file ../mk/Make.defs, you will need to create an entry for it
+# in that file.  The only value of COMP that it understands and is relevant
+# for VisIt is g++.  If the g++ compiler is referenced by anything other
+# than g++, the easiest thing is to change all occurances of g++ with the
+# other name in the file ../mk/Make.defs.  For example if the compiler is
+# g++-3.2.3, then change all occurances of g++ to g++-3.2.3.
 #
 
 #

@@ -14,7 +14,6 @@ class vtkFloatArray;
 class vtkMatrix4x4;
 class vtkPoints;
 class vtkPolyData;
-class vtkRenderer;
 
 #define MAX_LABEL_SIZE 36
 
@@ -28,6 +27,8 @@ class vtkRenderer;
 //  Creation:   Mon Jan 12 09:22:24 PDT 2004
 //
 //  Modifications:
+//    Brad Whitlock, Mon Oct 25 15:57:39 PST 2004
+//    Changed a couple things so it works with scalable rendering.
 //
 // ****************************************************************************
 
@@ -57,8 +58,10 @@ protected:
     };
 
     virtual void RenderLabels() = 0;
+
     void CreateCachedCellLabels();
     void CreateCachedNodeLabels();
+    void ClearLabelCaches();
 
     void ResetLabelBins();
     void PopulateBinsWithCellLabels3D();
@@ -78,7 +81,6 @@ protected:
     LabelAttributes        atts;
 
     vtkPolyData           *input;
-    vtkRenderer           *renderer;
     char                  *varname;
     bool                   treatAsASCII;
     bool                   renderLabels3D;
