@@ -3,8 +3,8 @@
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkCamera.h,v $
   Language:  C++
-  Date:      $Date: 2002/11/21 16:16:39 $
-  Version:   $Revision: 1.87 $
+  Date:      $Date: 2003/05/12 18:50:26 $
+  Version:   $Revision: 1.90 $
 
   Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
   All rights reserved.
@@ -35,7 +35,7 @@ class vtkMatrix4x4;
 class vtkPerspectiveTransform;
 class vtkRenderer;
 class vtkTransform;
-class vtkLinearTransform;
+class vtkHomogeneousTransform;
 
 class VTK_RENDERING_EXPORT vtkCamera : public vtkObject
 {
@@ -60,7 +60,9 @@ class VTK_RENDERING_EXPORT vtkCamera : public vtkObject
   vtkGetVector3Macro(Position,double);
   void GetPosition(float a[3]) {
     double tmp[3]; this->GetPosition(tmp); 
-    a[0] = tmp[0]; a[1] = tmp[1]; a[2] = tmp[2]; };     
+    a[0] = static_cast<float>(tmp[0]); 
+    a[1] = static_cast<float>(tmp[1]); 
+    a[2] = static_cast<float>(tmp[2]); };     
 
   // Description:
   // Set/Get the focal of the camera in world coordinates.
@@ -73,7 +75,9 @@ class VTK_RENDERING_EXPORT vtkCamera : public vtkObject
   vtkGetVector3Macro(FocalPoint,double);
   void GetFocalPoint(float a[3]) {
     double tmp[3]; this->GetFocalPoint(tmp); 
-    a[0] = tmp[0]; a[1] = tmp[1]; a[2] = tmp[2]; }; 
+    a[0] = static_cast<float>(tmp[0]); 
+    a[1] = static_cast<float>(tmp[1]); 
+    a[2] = static_cast<float>(tmp[2]); }; 
   
   // Description:
   // Set/Get the view up direction for the camera.  The default
@@ -86,7 +90,9 @@ class VTK_RENDERING_EXPORT vtkCamera : public vtkObject
   vtkGetVector3Macro(ViewUp,double);
   void GetViewUp(float a[3]) {
     double tmp[3]; this->GetViewUp(tmp); 
-    a[0] = tmp[0]; a[1] = tmp[1]; a[2] = tmp[2]; }; 
+    a[0] = static_cast<float>(tmp[0]); 
+    a[1] = static_cast<float>(tmp[1]); 
+    a[2] = static_cast<float>(tmp[2]); }; 
 
   // Description:
   // Recompute the ViewUp vector to force it to be perpendicular to
@@ -107,7 +113,9 @@ class VTK_RENDERING_EXPORT vtkCamera : public vtkObject
   vtkGetVector3Macro(DirectionOfProjection,double);
   void GetDirectionOfProjection(float a[3]) {
     double tmp[3]; this->GetDirectionOfProjection(tmp); 
-    a[0] = tmp[0]; a[1] = tmp[1]; a[2] = tmp[2]; }; 
+    a[0] = static_cast<float>(tmp[0]); 
+    a[1] = static_cast<float>(tmp[1]); 
+    a[2] = static_cast<float>(tmp[2]); }; 
 
   // Description:
   // Move the position of the camera along the direction of projection. Moving
@@ -206,7 +214,8 @@ class VTK_RENDERING_EXPORT vtkCamera : public vtkObject
   vtkGetVector2Macro(ClippingRange,double);
   void GetClippingRange(float a[2]) {
     double tmp[2]; this->GetClippingRange(tmp); 
-    a[0] = tmp[0]; a[1] = tmp[1]; }; 
+    a[0] = static_cast<float>(tmp[0]); 
+    a[1] = static_cast<float>(tmp[1]); }; 
 
   // Description:
   // Set the distance between clipping planes.  This method adjusts the 
@@ -249,7 +258,9 @@ class VTK_RENDERING_EXPORT vtkCamera : public vtkObject
   vtkGetVector3Macro(ViewPlaneNormal,double);
   void GetViewPlaneNormal(float a[3]) {
     double tmp[3]; this->GetViewPlaneNormal(tmp); 
-    a[0] = tmp[0]; a[1] = tmp[1]; a[2] = tmp[2]; }; 
+    a[0] = static_cast<float>(tmp[0]); 
+    a[1] = static_cast<float>(tmp[1]); 
+    a[2] = static_cast<float>(tmp[2]); }; 
 
 
   // Description:
@@ -277,7 +288,7 @@ class VTK_RENDERING_EXPORT vtkCamera : public vtkObject
 
   // Description:
   // Return the matrix of the view transform.
-  vtkMatrix4x4 *GetViewTransformMatrix();
+  virtual vtkMatrix4x4 *GetViewTransformMatrix();
   
   // Description:
   // Return the perspective transform matrix, which converts from camera
@@ -285,7 +296,7 @@ class VTK_RENDERING_EXPORT vtkCamera : public vtkObject
   // width/height for the viewport, and the nearz and farz are the
   // Z-buffer values that map to the near and far clipping planes.
   // The viewport coordinates are in the range ([-1,+1],[-1,+1],[nearz,farz]).
-  vtkMatrix4x4 *GetPerspectiveTransformMatrix(double aspect,
+  virtual vtkMatrix4x4 *GetPerspectiveTransformMatrix(double aspect,
                                               double nearz, 
                                               double farz);
 
@@ -296,7 +307,7 @@ class VTK_RENDERING_EXPORT vtkCamera : public vtkObject
   // width/height for the viewport, and the nearz and farz are the
   // Z-buffer values that map to the near and far clipping planes.
   // The viewport coordinates are in the range ([-1,+1],[-1,+1],[nearz,farz]).
-  vtkMatrix4x4 *GetCompositePerspectiveTransformMatrix(double aspect, 
+  virtual vtkMatrix4x4 *GetCompositePerspectiveTransformMatrix(double aspect, 
                                                        double nearz, 
                                                        double farz);
 
@@ -304,8 +315,8 @@ class VTK_RENDERING_EXPORT vtkCamera : public vtkObject
   // In addition to the instance variables such as position and orientation,
   // you can add an additional transformation for your own use.  This 
   // transformation is concatenated to the camera's PerspectiveTransform
-  void SetUserTransform(vtkLinearTransform *transform);
-  vtkGetObjectMacro(UserTransform,vtkLinearTransform);
+  void SetUserTransform(vtkHomogeneousTransform *transform);
+  vtkGetObjectMacro(UserTransform,vtkHomogeneousTransform);
 
   // Description:
   // This method causes the camera to set up whatever is required for
@@ -328,7 +339,7 @@ class VTK_RENDERING_EXPORT vtkCamera : public vtkObject
   // plane equations of the form (Ax+By+Cz+D=0), the first four
   // values are (A,B,C,D) which repeats for each of the planes.
   // The aspect of the viewport is needed to correctly compute the planes
-  void GetFrustumPlanes(float aspect, float planes[24]);
+  virtual void GetFrustumPlanes(float aspect, float planes[24]);
 
   // Description:
   // Get the orientation of the camera.
@@ -360,7 +371,7 @@ class VTK_RENDERING_EXPORT vtkCamera : public vtkObject
   // Update the viewport
   virtual void UpdateViewport(vtkRenderer *vtkNotUsed(ren)) {}
   
-  vtkTransform *GetViewTransformObject() {return this->ViewTransform;};
+  virtual vtkTransform *GetViewTransformObject() {return this->ViewTransform;};
   
 protected:
   vtkCamera();
@@ -393,7 +404,7 @@ protected:
   double ViewPlaneNormal[3];
   double ViewShear[3];
   int    UseHorizontalViewAngle;
-  vtkLinearTransform *UserTransform;
+  vtkHomogeneousTransform *UserTransform;
 
   vtkTransform *ViewTransform;
   vtkPerspectiveTransform *PerspectiveTransform;

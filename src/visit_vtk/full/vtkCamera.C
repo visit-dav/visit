@@ -3,8 +3,8 @@
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkCamera.cxx,v $
   Language:  C++
-  Date:      $Date: 2002/11/19 13:59:39 $
-  Version:   $Revision: 1.104 $
+  Date:      $Date: 2003/05/12 18:50:26 $
+  Version:   $Revision: 1.105 $
 
   Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
   All rights reserved.
@@ -25,7 +25,7 @@
 
 #include <math.h>
 
-vtkCxxRevisionMacro(vtkCamera, "$Revision: 1.104 $");
+vtkCxxRevisionMacro(vtkCamera, "$Revision: 1.105 $");
 
 //----------------------------------------------------------------------------
 // Needed when we don't use the vtkStandardNewMacro.
@@ -145,7 +145,7 @@ void vtkCamera::SetPosition(double x, double y, double z)
   this->Modified();
 }
 
-void vtkCamera::SetUserTransform(vtkLinearTransform *transform)
+void vtkCamera::SetUserTransform(vtkHomogeneousTransform *transform)
 {
   if (transform == this->UserTransform) 
     { 

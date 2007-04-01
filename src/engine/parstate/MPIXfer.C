@@ -1,5 +1,6 @@
 #ifdef PARALLEL
 #include <MPIXfer.h>
+#include <avtParallel.h>
 #include <parallel.h>
 #include <BufferConnection.h>
 #include <AttributeSubject.h>

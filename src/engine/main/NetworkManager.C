@@ -56,6 +56,7 @@
 #include <PlotPluginInfo.h>
 #ifdef PARALLEL
 #include <mpi.h>
+#include <avtParallel.h>
 #include <parallel.h>
 #endif
 #include <TimingsManager.h>
