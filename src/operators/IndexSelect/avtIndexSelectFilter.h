@@ -29,6 +29,9 @@ class vtkExtractRectilinearGrid;
 //    Hank Childs, Sat Jun 29 16:22:48 PDT 2002
 //    Added support for groups.
 //
+//    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//    Added data selection id
+//
 // ****************************************************************************
 
 class avtIndexSelectFilter : public avtPluginStreamer
@@ -51,6 +54,7 @@ class avtIndexSelectFilter : public avtPluginStreamer
     IndexSelectAttributes       atts;
     bool                        haveIssuedWarning;
     bool                        successfullyExecuted;
+    int                         selID;
 
     vtkExtractGrid                  *curvilinearFilter;
     vtkExtractRectilinearGrid       *rectilinearFilter;

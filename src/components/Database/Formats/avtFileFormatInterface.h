@@ -11,6 +11,7 @@
 
 #include <void_ref_ptr.h>
 #include <array_ref_ptr.h>
+#include <avtDataSelection.h>
 
 class    vtkDataSet;
 class    vtkDataArray;
@@ -157,6 +158,9 @@ class    avtVariableCache;
 //    Mark C. Miller, Tue Mar 16 14:09:43 PST 2004
 //    Added time step argument to PopulateIOInformation. Made it pure virtual
 //
+//    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//    Added method, RegisterDataSelections
+//
 // ****************************************************************************
 
 class DATABASE_API avtFileFormatInterface
@@ -192,6 +196,10 @@ class DATABASE_API avtFileFormatInterface
     void                    SetCache(avtVariableCache *);
     void                    TurnMaterialSelectionOff(void);
     void                    TurnMaterialSelectionOn(const char *);
+
+    void                    RegisterDataSelections(
+                                const std::vector<avtDataSelection_p>& selList,
+                                std::vector<bool> *wasApplied);
 
   protected:
     virtual int             GetNumberOfFileFormats(void) = 0;

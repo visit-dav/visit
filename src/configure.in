@@ -508,6 +508,9 @@ dnl
 dnl    Jeremy Meredith, Tue Aug 24 21:26:15 PDT 2004
 dnl    Added engine wrapper library and simulation prototype.
 dnl
+dnl    Mark C. Miller, Tue Sep 28 19:32:50 PDT 2004
+dnl    Added ViSUS
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -2182,6 +2185,44 @@ AC_SUBST(BOXLIB3D)
 AC_SUBST(BOXLIB3D_INCLUDE)
 AC_SUBST(BOXLIB3D_LIBS)
 
+#
+# Look for ViSUS 
+#
+AC_MSG_CHECKING(for ViSUS)
+VISUS=""
+VISUS_INCLUDE=""
+VISUS_LIB=""
+AC_ARG_WITH(visus,
+            [  --with-visus=INCLUDE,LIBS      Location of ViSUS header and library],
+           visus_specified="yes",
+           visus_specified="no"
+           )
+if test "$visus_specified" = "yes"; then
+   if test "$withval" != "no"; then
+      VISUS_INCLUDE="-I`echo $withval |cut -f1 -d,`"
+      VISUS_LIB="-L`echo $withval |cut -f2 -d, -s` -lvisusidx -lvisus -lstreaming"
+   fi
+else
+   if test "$DEFAULT_VISUS_INCLUDE" != "" ; then
+      VISUS_INCLUDE="-I$DEFAULT_VISUS_INCLUDE"
+   fi
+   if test "$DEFAULT_VISUS_LIB" != "" ; then
+      VISUS_LIB="-L$DEFAULT_VISUS_LIB -lvisusidx -lvisus -lstreaming"
+   fi
+fi
+if test "$VISUS_LIB" != "" ; then
+   if test "$VISUS_INCLUDE" != "" ; then
+      VISUS="$""(VISUS)"
+      AC_MSG_RESULT(yes)
+   else
+      AC_MSG_RESULT(no)
+   fi
+else
+   AC_MSG_RESULT(no)
+fi
+AC_SUBST(VISUS)
+AC_SUBST(VISUS_INCLUDE)
+AC_SUBST(VISUS_LIB)
 
 #
 # Add Some include paths to the engine's CPPFLAGS.

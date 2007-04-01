@@ -409,6 +409,9 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec)
 //    Hank Childs, Thu Sep 23 09:23:01 PDT 2004
 //    Added needGlobalZones and needGlobalNodes.
 //
+//    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//    Added data selection list
+//
 // ****************************************************************************
 
 avtDataSpecification &
@@ -461,6 +464,8 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
     maintainOriginalConnectivity    = spec.maintainOriginalConnectivity;
 
     secondaryVariables = spec.secondaryVariables;
+
+    selList = spec.selList;
 
     return *this;
 }
@@ -534,6 +539,9 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
 //
 //    Hank Childs, Thu Sep 23 09:23:01 PDT 2004
 //    Added needGlobalZones and needGlobalNodes.
+//
+//    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//    Added data selection list
 //
 // ****************************************************************************
 
@@ -666,6 +674,17 @@ avtDataSpecification::operator==(const avtDataSpecification &ds)
             return false;
         }
     }
+
+    if (selList.size() != ds.selList.size())
+    {
+        return false;
+    }
+    for (int i = 0; i < selList.size(); i++)
+    {
+        if (*selList[i] != *(ds.selList[i]))
+            return false;
+    }
+
     return true;
 }
 
@@ -933,6 +952,74 @@ avtDataSpecification::GetSecondaryVariablesWithoutDuplicates(void)
     return newList;
 }
 
+
+
+// ****************************************************************************
+//  Method: avtDataSpecification::AddDataSelection
+//
+//  Purpose: Adds a data selection to the specification
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   September 28, 2004 
+//
+// ****************************************************************************
+
+int
+avtDataSpecification::AddDataSelection(avtDataSelection *sel)
+{
+    selList.push_back(sel);
+}
+
+// ****************************************************************************
+//  Method: avtDataSpecification::RemoveAllDataSelections
+//
+//  Purpose: Removes all data selections from the specification 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   September 28, 2004 
+//
+// ****************************************************************************
+
+void
+avtDataSpecification::RemoveAllDataSelections()
+{
+    selList.clear();
+}
+
+// ****************************************************************************
+//  Method: avtDataSpecification::GetDataSelection
+//
+//  Purpose: Gets data selection at the specified index 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   September 28, 2004 
+//
+// ****************************************************************************
+
+const avtDataSelection_p
+avtDataSpecification::GetDataSelection(int id) const
+{
+    if (id < 0 || id >= selList.size())
+        return 0;
+    return selList[id];
+}
+
+// ****************************************************************************
+//  Method: avtDataSpecification::GetAllDataSelections
+//
+//  Purpose: Gets all data selections in the specification 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   September 28, 2004 
+//
+// ****************************************************************************
+
+const std::vector<avtDataSelection_p>
+avtDataSpecification::GetAllDataSelections() const
+{
+    return selList;
+}
+
 // ****************************************************************************
 //  Method: avtSILSpecification::GetDomainList
 //
@@ -1117,5 +1204,3 @@ avtSILSpecification::operator==(const avtSILSpecification &s)
 
     return true;
 }
-
-

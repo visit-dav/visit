@@ -385,6 +385,8 @@ public:
 //    Jeremy Meredith, Thu Aug 12 11:39:38 PDT 2004
 //    changed simulation information to be a separate class.
 //
+//    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//    Added formatCanDoDomainDecomposition and Set/Get methods
 //----------------------------------------------------------------------------
 class DBATTS_API avtDatabaseMetaData : public AttributeSubject
 {
@@ -395,6 +397,7 @@ class DBATTS_API avtDatabaseMetaData : public AttributeSubject
     bool         isVirtualDatabase;
     bool         mustRepopulateOnStateChange;
     bool         mustAlphabetizeVariables;
+    bool         formatCanDoDomainDecomposition;
 
     bool         useCatchAllMesh;
 
@@ -449,6 +452,10 @@ public:
                      { return useCatchAllMesh; };
     void         SetUseCatchAllMesh(bool useIt)
                      { useCatchAllMesh = useIt; };
+
+    bool         GetFormatCanDoDomainDecomposition(void) const
+                     { return formatCanDoDomainDecomposition; };
+    void         SetFormatCanDoDomainDecomposition(bool can);
 
     void         SetIsVirtualDatabase(bool val) { isVirtualDatabase = val; };
     bool         GetIsVirtualDatabase() const { return isVirtualDatabase; };

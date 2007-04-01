@@ -11,6 +11,7 @@
 #include <set>
 #include <map>
 
+#include <avtDatabaseMetaData.h>
 #include <avtPipelineSpecification.h>
 #include <avtIOInformation.h>
 
@@ -48,7 +49,8 @@ typedef enum
 {
     LOAD_BALANCE_CONTIGUOUS_BLOCKS_TOGETHER    = 0,
     LOAD_BALANCE_STRIDE_ACROSS_BLOCKS,        /* 1 */
-    LOAD_BALANCE_RANDOM_ASSIGNMENT            /* 2 */
+    LOAD_BALANCE_RANDOM_ASSIGNMENT,           /* 2 */
+    LOAD_BALANCE_DBPLUGIN_DYNAMIC             /* 3 */
 } LoadBalanceScheme;
 
 
@@ -86,6 +88,9 @@ typedef enum
 //    Hank Childs, Mon May 12 19:34:54 PDT 2003
 //    Allow for different load balancing schemes.
 //
+//    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//    Added avtDatabaseMetaData arg to AddDatabase
+//
 // ****************************************************************************
 
 class LoadBalancer
@@ -99,7 +104,8 @@ class LoadBalancer
                                          avtPipelineSpecification_p input);
 
     void                          AddDatabase(const std::string &dbname,
-                                              const avtIOInformation &);
+                                              const avtIOInformation &,
+                                              const avtDatabaseMetaData *);
 
     int                           AddPipeline(const std::string &dbname);
     void                          ResetPipeline(int);

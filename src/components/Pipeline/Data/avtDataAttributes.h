@@ -119,6 +119,9 @@ class     avtExtents;
 //    Brad Whitlock, Tue Jul 20 12:19:38 PDT 2004
 //    Added support for units on variables.
 //
+//    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//    Added support for data selections that are applied by plugins
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -267,6 +270,10 @@ class PIPELINE_API avtDataAttributes
     WINDOW_MODE              GetWindowMode(void) const { return windowMode;} ;
     void                     SetWindowMode(WINDOW_MODE m) { windowMode = m;} ;
 
+    void                     SetSelectionsApplied(std::vector<bool> &selsApplied);
+    bool                     GetSelectionApplied(int selID) const;
+    const std::vector<bool> &GetSelectionsApplied() const;
+
   protected:
     int                      spatialDimension;
     int                      topologicalDimension;
@@ -317,6 +324,8 @@ class PIPELINE_API avtDataAttributes
     std::string              xLabel;
     std::string              yLabel;
     std::string              zLabel;
+
+    std::vector<bool>        selectionsApplied;
 
     void                     WriteLabels(avtDataObjectString &,
                                          const avtDataObjectWriter *);

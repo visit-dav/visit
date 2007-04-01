@@ -201,6 +201,9 @@ class     PickVarInfo;
 //    Added args to QueryZones and QueryNodes, to support ghost-element 
 //    indication. 
 //
+//    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//    Added vector of bools for data selections to ReadDataset
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -300,7 +303,8 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
 
     void                       ReadDataset(avtDatasetCollection &, 
                                   std::vector<int> &, avtDataSpecification_p &,
-                                  avtSourceFromDatabase *);
+                                  avtSourceFromDatabase *,
+                                  std::vector<bool> &);
 
     avtDomainBoundaries       *GetDomainBoundaryInformation(
                                                        avtDatasetCollection &,

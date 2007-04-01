@@ -10,6 +10,7 @@
 #include <deque>
 #include <set>
 
+#include <avtDatabaseMetaData.h>
 #include <avtOriginatingSink.h>
 #include <avtTerminatingSource.h>
 #include <avtIOInformation.h>
@@ -341,6 +342,10 @@ LoadBalancer::CheckDynamicLoadBalancing(avtPipelineSpecification_p input)
 //    Mark C. Miller, Wed Jun  9 21:50:12 PDT 2004
 //    Eliminated use of MPI_ANY_TAG and modified to use GetUniqueMessageTags
 //
+//    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//    Added the very trivial load balance scheme LOAD_BALANCE_DBPLUGIN_DYNAMIC
+//    where all processors are assigned the one and only block
+//
 // ****************************************************************************
 
 avtDataSpecification_p
@@ -437,6 +442,15 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
                 if (j % nProcs == rank)
                     mylist.push_back(jumbledList[j]);
             }
+        }
+        else if (scheme == LOAD_BALANCE_DBPLUGIN_DYNAMIC)
+        {
+            if (list.size()!=1 && list[0]!=0))
+            {
+                EXCEPTION1(VisitException,
+                    "invalid use of DBPLUGIN_DYNAMIC scheme"); 
+            }
+            mylist.push_back(0); // every processor gets only, whole block
         }
 
         silr->RestrictDomainsForLoadBalance(mylist);
@@ -655,10 +669,15 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
 //    Jeremy Meredith, Thu Sep 20 00:54:58 PDT 2001
 //    Added setting of fileMap from the iohints.
 //
+//    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//    Added code to set the load balance scheme if the metadata indicates
+//    plugin can do its own decomposition
+//
 // ****************************************************************************
 
 void
-LoadBalancer::AddDatabase(const string &db, const avtIOInformation &io)
+LoadBalancer::AddDatabase(const string &db, const avtIOInformation &io,
+    const avtDatabaseMetaData *md)
 {
     ioMap[db].ioInfo = io;
     ioMap[db].fileMap.resize(io.GetNDomains());
@@ -680,6 +699,9 @@ LoadBalancer::AddDatabase(const string &db, const avtIOInformation &io)
             debug4 << "\n             ";
     }
     debug4 << "]  " << endl;
+
+    if (md->GetFormatCanDoDomainDecomposition())
+        SetScheme(LOAD_BALANCE_DBPLUGIN_DYNAMIC);
 }
 
  

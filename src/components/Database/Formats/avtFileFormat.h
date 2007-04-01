@@ -14,6 +14,7 @@
 
 #include <array_ref_ptr.h>
 
+#include <avtDataSelection.h>
 #include <avtTypes.h>
 
 
@@ -50,6 +51,9 @@ class     avtVariableCache;
 //    Mark C. Miller, Mon Feb  9 16:10:16 PST 2004
 //    Added method, ActivateTimestep
 //
+//    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//    Added method, RegisterDataSelections
+//
 // ****************************************************************************
 
 class DATABASE_API avtFileFormat
@@ -84,6 +88,10 @@ class DATABASE_API avtFileFormat
 
     virtual void          RegisterVariableList(const char *,
                                           const std::vector<CharStrRef> &) {;};
+
+    virtual void          RegisterDataSelections(
+                              const std::vector<avtDataSelection_p>&,
+                              std::vector<bool> *wasApplied) {;};
 
   protected:
     avtVariableCache     *cache;

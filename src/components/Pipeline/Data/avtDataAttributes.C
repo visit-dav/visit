@@ -251,6 +251,9 @@ avtDataAttributes::DestructSelf(void)
 //    Brad Whitlock, Wed Jul 21 15:25:11 PST 2004
 //    Added variable units.
 //
+//    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//    Added vector of bools for which data selections were applied
+//
 // ****************************************************************************
 
 void
@@ -425,6 +428,12 @@ avtDataAttributes::Print(ostream &out)
         }
 
     }
+
+    out << "Selections Applied: ";
+    for (int i = 0; i < selectionsApplied.size(); i++)
+        out << (selectionsApplied[i] ? "T " : "F ");
+    out << endl;
+
 }
 
 
@@ -490,6 +499,8 @@ avtDataAttributes::Print(ostream &out)
 //    Brad Whitlock, Tue Jul 20 14:02:32 PST 2004
 //    Copied variable units.
 //
+//    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//    Added selectionsApplied
 // ****************************************************************************
 
 void
@@ -561,6 +572,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     CopyTransform(di.transform);
     canUseTransform = di.canUseTransform;
     windowMode = di.windowMode;
+    selectionsApplied = di.selectionsApplied;
 }
 
 
@@ -628,6 +640,9 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //
 //    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
 //    Test for equivalent treatAsASCII values.
+//
+//    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//    Added selectionsApplied
 //
 // ****************************************************************************
 
@@ -721,6 +736,23 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
     if (windowMode != da.windowMode)
     {
         EXCEPTION2(InvalidMergeException, windowMode, da.windowMode);
+    }
+
+    if (selectionsApplied.size() != da.selectionsApplied.size())
+    {
+        EXCEPTION2(InvalidMergeException, selectionsApplied.size(),
+                                        da.selectionsApplied.size());
+    }
+    else
+    {
+        for (int i = 0; i < selectionsApplied.size(); i++)
+        {
+            if (selectionsApplied[i] != da.selectionsApplied[i])
+            {
+                EXCEPTION2(InvalidMergeException, selectionsApplied[i], 
+                                               da.selectionsApplied[i]);
+            }
+        }
     }
 
     if (GetContainsGhostZones() == AVT_MAYBE_GHOSTS)
@@ -1547,6 +1579,9 @@ avtDataAttributes::SetTime(double d)
 //    Brad Whitlock, Tue Jul 20 14:13:37 PST 2004
 //    Added units.
 //
+//    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//    Added selectionsApplied
+//
 // ****************************************************************************
 
 void
@@ -1637,6 +1672,10 @@ avtDataAttributes::Write(avtDataObjectString &str,
     str.Append((char *) zLabel.c_str(), zLabel.size(),
                   avtDataObjectString::DATA_OBJECT_STRING_SHOULD_MAKE_COPY);
 
+    wrtr->WriteInt(str, selectionsApplied.size());
+    for (i = 0; i < selectionsApplied.size(); i++)
+        wrtr->WriteInt(str, selectionsApplied[i] ? 1 : 0);
+
     WriteLabels(str, wrtr);
     WriteInvTransform(str, wrtr);
     WriteTransform(str, wrtr);
@@ -1702,6 +1741,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //
 //    Brad Whitlock, Tue Jul 20 14:03:19 PST 2004
 //    Added units.
+//
+//    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//    Added selectionsApplied
 //
 // ****************************************************************************
 
@@ -1905,6 +1947,17 @@ avtDataAttributes::Read(char *input)
     zLabel = zl;
     size += labelSize;
     input += labelSize;
+
+    int selectionsSize;
+    memcpy(&selectionsSize, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    for (i = 0; i < selectionsSize; i++)
+    {
+        int tmp;
+        memcpy(&tmp, input, sizeof(int));
+        input += sizeof(int); size += sizeof(int);
+        selectionsApplied.push_back(tmp);
+    }
 
     s = ReadLabels(input); 
     input += s; size += s;
@@ -2977,4 +3030,59 @@ avtDataAttributes::GetTreatAsASCII(const char *varname) const
     }
 
     return variables[index].treatAsASCII;
+}
+
+// ****************************************************************************
+//  Method: avtDataAttributes::SetSelectionsApplied
+//
+//  Purpose: Sets the vector of bools indicating which selections have been
+//     applied.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   September 28, 2004 
+//
+// ****************************************************************************
+
+void
+avtDataAttributes::SetSelectionsApplied(std::vector<bool> &selsApplied)
+{
+    selectionsApplied = selsApplied;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataAttributes::GetSelectionApplied
+//
+//  Purpose: Given the id of a data selection, returns the flag indicating
+//     if it was applied. 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   September 28, 2004 
+//
+// ****************************************************************************
+
+bool
+avtDataAttributes::GetSelectionApplied(int selID) const
+{
+    if (selID < 0 || selID >= selectionsApplied.size())
+        return false;
+    else
+        return selectionsApplied[selID];
+}
+
+// ****************************************************************************
+//  Method: avtDataAttributes::GetSelectionsApplied
+//
+//  Purpose: Returns the whole vector of bools for which selections  were
+//  applied
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   September 28, 2004 
+//
+// ****************************************************************************
+
+const vector<bool> &
+avtDataAttributes::GetSelectionsApplied() const
+{
+    return selectionsApplied;
 }

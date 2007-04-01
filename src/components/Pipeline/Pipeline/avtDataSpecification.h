@@ -15,6 +15,7 @@
 #include <avtSILRestriction.h>
 #include <avtGhostData.h>
 
+#include <avtDataSelection.h>
 
 class PIPELINE_API avtSILSpecification
 {
@@ -110,6 +111,9 @@ typedef ref_ptr<avtDataSpecification> avtDataSpecification_p;
 //
 //    Hank Childs, Thu Sep 23 09:23:01 PDT 2004
 //    Added support for global ids.
+//
+//    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//    Added support for data selections
 //
 // ****************************************************************************
 
@@ -256,6 +260,11 @@ class PIPELINE_API avtDataSpecification
 
     bool                         VariablesAreTheSame(const avtDataSpecification &);
 
+    int                          AddDataSelection(avtDataSelection *sel);
+    void                         RemoveAllDataSelections();
+    const avtDataSelection_p     GetDataSelection(int id) const;
+    const std::vector<avtDataSelection_p> GetAllDataSelections() const;
+
   protected:
     int                          timestep;
     char                        *variable;
@@ -294,6 +303,12 @@ class PIPELINE_API avtDataSpecification
     // decisions like how to communicate ghost zones.
     //
     bool                         usesAllDomains;
+
+    //
+    // A place for each filter to add information regarding its selection 
+    //
+    std::vector<avtDataSelection_p>  selList;
+
 };
 
 

@@ -179,6 +179,9 @@
 #    Brad Whitlock, Thu Jul 15 15:54:25 PST 2004
 #    Added avtImageTiler.C
 #
+#    Mark C. Miller, Tue Sep 28 19:32:50 PDT 2004
+#    Added Data Selections
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -217,6 +220,7 @@ Data_src= \
   Data/avtImageRepresentation.C \
   Data/avtIntervalTree.C \
   Data/avtLightingModel.C \
+  Data/avtLogicalSelection.C \
   Data/avtMIPRangeRF.C \
   Data/avtMassVoxelExtractor.C \
   Data/avtMaterial.C \
@@ -234,6 +238,7 @@ Data_src= \
   Data/avtRayFunction.C \
   Data/avtSamplePointArbitrator.C \
   Data/avtSamplePoints.C \
+  Data/avtSpatialBoxSelection.C \
   Data/avtSpecies.C \
   Data/avtTetrahedronExtractor.C \
   Data/avtVariablePixelizer.C \
