@@ -1291,6 +1291,13 @@ avtSpheralFileFormat::ReadField(istream &ifile, int nodeListIndex,
 //  Programmer: Hank Childs
 //  Creation:   March 14, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Mon May 24 08:42:53 PDT 2004
+//    Allow for node lists to be of zero-length, because there might be
+//    multiple node lists, and one of the node lists is empty on this processor
+//    only.
+//
 // ****************************************************************************
 
 vtkPolyData *
@@ -1322,7 +1329,7 @@ avtSpheralFileFormat::ReadNodeList(istream &ifile, int nodeListIndex)
     }
 
     int nNodes = atoi(line + offsets[2]);
-    if (nNodes <= 0)
+    if (nNodes < 0)
     {
         debug1 << "Determined number of nodes to be non-positive.  Probably "
                << "an internal parsing error." << endl;

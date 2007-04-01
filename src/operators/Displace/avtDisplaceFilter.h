@@ -26,6 +26,9 @@ class vtkDataSet;
 //    Kathleen Bonnell, Wed Nov 28 16:59:53 PST 2001
 //    Added RefashionDataObjectInfo, PerformRestriction.
 //
+//    Hank Childs, Mon May 24 16:16:05 PDT 2004
+//    Added PostExecute to manage extents.
+//
 // ****************************************************************************
 
 class avtDisplaceFilter : public avtPluginStreamer
@@ -48,6 +51,7 @@ class avtDisplaceFilter : public avtPluginStreamer
     bool                 issuedWarning;
 
     virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
+    virtual void          PostExecute(void);
 
     virtual void          RefashionDataObjectInfo(void);
     virtual avtPipelineSpecification_p

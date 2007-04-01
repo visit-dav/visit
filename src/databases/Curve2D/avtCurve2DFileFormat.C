@@ -357,6 +357,11 @@ avtCurve2DFileFormat::ReadFile(void)
 //    Hank Childs, Thu Apr  3 16:58:33 PST 2003
 //    Identify different return types to make parsing easier.
 //
+//    Hank Childs, Mon May 24 14:45:14 PDT 2004
+//    Treat the line "end" as white space, since it screws up our parsing
+//    and is not really necessary for us.  Also treat parenthesis as square
+//    brackets, since parenthesis are special for us.
+//
 // ****************************************************************************
 
 CurveToken
@@ -364,6 +369,19 @@ avtCurve2DFileFormat::GetPoint(ifstream &ifile, float &x, float &y, string &ln)
 {
     char line[256];
     ifile.getline(line, 256, '\n');
+
+    //
+    // Parenthesis are special characters for variables names, etc, so just
+    // change them to square brackets to "go with the flow"...
+    //
+    int nchars = strlen(line);
+    for (int i = 0 ; i < nchars ; i++)
+    {
+        if (line[i] == '(')
+            line[i] = '<';
+        else if (line[i] == ')')
+            line[i] = '>';
+    }
     ln = line;
 
     //
@@ -384,6 +402,12 @@ avtCurve2DFileFormat::GetPoint(ifstream &ifile, float &x, float &y, string &ln)
     }
     if (allSpace)
     {
+        return WHITESPACE;
+    }
+    if (strncmp(line, "end", strlen("end")) == 0)
+    {
+        // We will infer that we have hit the end when we find a new token.
+        // Just treat this as white space to make our parsing rules easier.
         return WHITESPACE;
     }
 

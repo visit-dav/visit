@@ -13,6 +13,8 @@
 #include <vtkWarpVector.h>
 
 #include <avtCallback.h>
+#include <avtDatasetExaminer.h>
+#include <avtExtents.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
@@ -248,6 +250,35 @@ avtDisplaceFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 
 
 // ****************************************************************************
+//  Method: avtDisplaceFilter::PostExecute
+//
+//  Purpose:
+//      Finds the extents once we have been transformed and set those.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 24, 2004
+//
+// ****************************************************************************
+
+void
+avtDisplaceFilter::PostExecute(void)
+{
+    avtPluginStreamer::PostExecute();
+
+    avtDataAttributes& outAtts = GetOutput()->GetInfo().GetAttributes();
+
+    // get the outputs's spatial extents
+    double se[6];
+    avtDataset_p output = GetTypedOutput();
+    avtDatasetExaminer::GetSpatialExtents(output, se);
+
+    // over-write spatial extents
+    outAtts.GetTrueSpatialExtents()->Clear();
+    outAtts.GetCumulativeTrueSpatialExtents()->Set(se);
+}
+
+
+// ****************************************************************************
 //  Method: avtDisplaceFilter::RefashionDataObjectInfo
 //
 //  Purpose:
@@ -274,7 +305,7 @@ avtDisplaceFilter::RefashionDataObjectInfo(void)
 
 
 // ****************************************************************************
-//  Method: avtDisplaceFilter::PerformRestriciton
+//  Method: avtDisplaceFilter::PerformRestriction
 //
 //  Purpose:
 //    Turn on Zone numbers flag if needed, so that original cell array

@@ -309,12 +309,17 @@ void vtkCamera::ComputeDistance()
   double dy = this->FocalPoint[1] - this->Position[1];
   double dz = this->FocalPoint[2] - this->Position[2];
 
-  this->Distance = sqrt(dx*dx + dy*dy + dz*dz);
-
-  if (this->Distance < 0.0002) 
+  if (sqrt(dx*dx + dy*dy + dz*dz) > 0.0)
     {
-    this->Distance = 0.0002;
-    vtkDebugMacro(<< " Distance is set to minimum.");
+    this->Distance = sqrt(dx*dx + dy*dy + dz*dz);
+
+    this->DirectionOfProjection[0] = dx/this->Distance;
+    this->DirectionOfProjection[1] = dy/this->Distance;
+    this->DirectionOfProjection[2] = dz/this->Distance;
+    }
+  else
+    {
+    vtkDebugMacro(<< " Distance is set to previous value.");
 
     double *vec = this->DirectionOfProjection;
 
@@ -323,10 +328,6 @@ void vtkCamera::ComputeDistance()
     this->FocalPoint[1] = this->Position[1] + vec[1]*this->Distance;
     this->FocalPoint[2] = this->Position[2] + vec[2]*this->Distance;
     }
-
-  this->DirectionOfProjection[0] = dx/this->Distance;
-  this->DirectionOfProjection[1] = dy/this->Distance;
-  this->DirectionOfProjection[2] = dz/this->Distance;
 
   this->ComputeViewPlaneNormal();
 } 
@@ -609,25 +610,21 @@ void vtkCamera::SetClippingRange(double nearz, double farz)
     farz = temp;
     }
   
-  // front should be greater than 0.0001
-  if (nearz < 0.0001) 
+  // front should be greater than 0.0
+  if (nearz <= 0.0)
     {
-    farz += 0.0001 - nearz;
-    nearz = 0.0001;
-    vtkDebugMacro(<< " Front clipping range is set to minimum.");
+    vtkDebugMacro(<< " Nearz is less than zero, ignoring.");
+    return;
     }
-  
+
+  // back should be greater than 0.0
+  if (farz <= 0.0)
+    {
+    vtkDebugMacro(<< " Farz is less than zero, ignoring.");
+    return;
+    }
+
   thickness = farz - nearz;
-  
-  // thickness should be greater than 0.0001
-  if (thickness < 0.0001) 
-    {
-    thickness = 0.0001;
-    vtkDebugMacro(<< " ClippingRange thickness is set to minimum.");
-    
-    // set back plane
-    farz = nearz + thickness;
-    }
   
   if (nearz == this->ClippingRange[0] && 
       farz == this->ClippingRange[1] && 
