@@ -1268,6 +1268,12 @@ PluginManager::PluginOpen(const string &pluginFile)
 //   Brad Whitlock, Thu Aug 21 14:14:40 PST 2003
 //   Added a special implementation for MacOS X.
 //
+//   Brad Whitlock, Wed Mar 10 09:36:16 PDT 2004
+//   Added code to print the error message if the symbol could not be found.
+//   I did this here because most functions that call PluginSymbol use the
+//   return value to throw an exception without calling PluginError themselves.
+//   That prevents useful information from being printed to the debug logs.
+//
 // ****************************************************************************
 
 void *
@@ -1305,6 +1311,11 @@ PluginManager::PluginSymbol(const string &symbol)
 #else
     retval = dlsym(handle, symbol.c_str());
 #endif
+
+    // If the symbol was not found, print the error message.
+    if(retval == 0)
+        debug4 << PluginError() << endl;
+
     return retval;
 }
 

@@ -1,6 +1,8 @@
 #include <PDBFileObject.h>
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
+
+#if !defined(__APPLE__)
 //
 // Define some functions so if PDB was compiled with a weird non-g++ compiler,
 // we still have symbols that we need in order to link.
@@ -11,6 +13,7 @@ extern "C" void nonstandard_arithmetic(int) { }
 extern "C" void __mth_i_dpowd(void)         { }
 extern "C" void __arg_reduce_(void)         { }
 extern "C" void __pgdbg_stub(void)          { }
+#endif
 
 //
 // Define functions to free memory.
