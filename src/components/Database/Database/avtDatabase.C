@@ -1409,6 +1409,10 @@ avtDatabase::GetExtentsFromAuxiliaryData(avtDataSpecification_p spec,
     avtIntervalTree *tree = (avtIntervalTree *) *(list.list[0]);
     float fextents[6];
     tree->GetExtents(fextents);
+
+    int nvals = 2;
+    if (strcmp(type, AUXILIARY_DATA_SPATIAL_EXTENTS) == 0)
+        nvals = 6;
     for (int i = 0; i < 6; i++)
         extents[i] = fextents[i];
 

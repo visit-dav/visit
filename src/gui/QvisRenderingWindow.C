@@ -115,6 +115,9 @@ QvisRenderingWindow::~QvisRenderingWindow()
 //   Changed scalable rendering controls to use activation mode and auto
 //   threshold
 //
+//   Hank Childs, Sun Oct 24 07:36:18 PDT 2004
+//   Added shadow options.
+//
 // ****************************************************************************
 
 void
@@ -129,7 +132,7 @@ QvisRenderingWindow::CreateWindowContents()
 
     QVBoxLayout *spacer = new QVBoxLayout(options);
     spacer->addSpacing(10);
-    QGridLayout *oLayout = new QGridLayout(spacer, 14, 4);
+    QGridLayout *oLayout = new QGridLayout(spacer, 16, 4);
     oLayout->setSpacing(5);
     oLayout->setMargin(10);
 
@@ -249,6 +252,23 @@ QvisRenderingWindow::CreateWindowContents()
                                     options, "specularPowerLabel");
     oLayout->addWidget(specularPowerLabel, 13,1);
     oLayout->addMultiCellWidget(specularPowerSlider, 13,13, 2,3);
+
+    // Create the shadow lighting options
+    shadowToggle = new QCheckBox("Shadows", options,
+                                   "shadowToggle");
+    connect(shadowToggle, SIGNAL(toggled(bool)),
+            this, SLOT(shadowToggled(bool)));
+    oLayout->addMultiCellWidget(shadowToggle, 14, 14, 0,3);
+
+    shadowStrengthSlider = new QvisOpacitySlider(0, 100, 10, 60, options,
+                                             "shadowStrengthSlider", NULL);
+    shadowStrengthSlider->setTickInterval(25);
+    connect(shadowStrengthSlider, SIGNAL(valueChanged(int, const void*)),
+            this, SLOT(shadowStrengthChanged(int, const void*)));
+    shadowStrengthLabel = new QLabel(shadowStrengthSlider, "Strength",
+                                       options, "shadowStrengthLabel");
+    oLayout->addWidget(shadowStrengthLabel, 15,1);
+    oLayout->addMultiCellWidget(shadowStrengthSlider, 15,15, 2,3);
 
 
     //
@@ -375,6 +395,9 @@ QvisRenderingWindow::UpdateWindow(bool doAll)
 //   Changed scalable rendering controls to use activation mode and auto
 //   threshold
 //
+//   Hank Childs, Sun Oct 24 07:36:18 PDT 2004
+//   Added shadow options.
+//
 // ****************************************************************************
 
 void
@@ -451,6 +474,9 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             else
                scalrenActivationMode->setButton(0);
             scalrenActivationMode->blockSignals(false);
+            shadowToggle->setEnabled(itmp == RenderingAttributes::Always);
+            if (itmp != RenderingAttributes::Always)
+                shadowStrengthSlider->setEnabled(false);
             break;
         case 8: //specularFlag
             specularToggle->blockSignals(true);
@@ -473,6 +499,18 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             break;
         case 11: //specularColor
             // Not user-modifiable at this time
+            break;
+        case 12: //shadowFlag
+            shadowToggle->blockSignals(true);
+            shadowToggle->setChecked(renderAtts->GetDoShadowing());
+            shadowToggle->blockSignals(false);
+            shadowStrengthSlider->setEnabled(renderAtts->GetDoShadowing());
+            shadowStrengthLabel->setEnabled(renderAtts->GetDoShadowing());
+            break;
+        case 13: //shadowStrength
+            shadowStrengthSlider->blockSignals(true);
+            shadowStrengthSlider->setValue(int(renderAtts->GetShadowStrength()*100.));
+            shadowStrengthSlider->blockSignals(false);
             break;
         }
     }
@@ -983,6 +1021,52 @@ QvisRenderingWindow::scalrenAutoThresholdChanged(int val)
     scalrenAutoThreshold->setValue(actualVal / div);
     renderAtts->SetScalableAutoThreshold(actualVal);
 
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+//  Method:  QvisRenderingWindow::shadowToggled
+//
+//  Purpose:
+//    Callback for the shadow toggle button
+//
+//  Arguments:
+//    val        true to enable shadow
+//
+//  Programmer:  Hank Childs
+//  Creation:    October 24, 2004
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::shadowToggled(bool val)
+{
+    renderAtts->SetDoShadowing(val);
+    shadowStrengthSlider->setEnabled(renderAtts->GetDoShadowing());
+    shadowStrengthLabel->setEnabled(renderAtts->GetDoShadowing());
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+//  Method:  QvisRenderingWindow::shadowStrengthChanged
+//
+//  Purpose:
+//    Callback for the shadow coefficient slider
+//
+//  Arguments:
+//    val        the new coefficient
+//
+//  Programmer:  Hank Childs
+//  Creation:    October 24, 2004
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::shadowStrengthChanged(int val, const void*)
+{
+    renderAtts->SetShadowStrength(float(val)/100.);
     SetUpdate(false);
     Apply();
 }

@@ -42,6 +42,9 @@ class QvisOpacitySlider;
 //   Hank Childs, Sun May  9 15:54:29 PDT 2004
 //   Add support for multiple display list modes.
 //
+//   Hank Childs, Sun Oct 24 07:34:09 PDT 2004
+//   Add shadows.
+//
 // ****************************************************************************
 
 class GUI_API QvisRenderingWindow : public QvisPostableWindowSimpleObserver
@@ -76,6 +79,8 @@ private slots:
     void specularToggled(bool);
     void specularStrengthChanged(int, const void*);
     void specularPowerChanged(int, const void*);
+    void shadowToggled(bool);
+    void shadowStrengthChanged(int, const void*);
 private:
     RenderingAttributes *renderAtts;
     WindowInformation   *windowInfo;
@@ -101,6 +106,9 @@ private:
     QvisOpacitySlider *specularStrengthSlider;
     QLabel            *specularPowerLabel;
     QvisOpacitySlider *specularPowerSlider;
+    QCheckBox         *shadowToggle;
+    QLabel            *shadowStrengthLabel;
+    QvisOpacitySlider *shadowStrengthSlider;
 
     // Labels to display renderer information.
     QLabel       *scalrenUsingLabel;

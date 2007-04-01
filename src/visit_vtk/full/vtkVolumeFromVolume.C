@@ -21,15 +21,22 @@ using std::vector;
 //  Programmer: Hank Childs
 //  Creation:   October 21, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Sun Oct 24 21:05:03 PDT 2004
+//    Change ordering of shapes back to the way it was before all of the 
+//    shapes were put in a vector.  This way we won't have to update baseline
+//    images.
+//
 // ****************************************************************************
 
 vtkVolumeFromVolume::vtkVolumeFromVolume(int nPts, int ptSizeGuess)
     : vtkDataSetFromVolume(nPts, ptSizeGuess), nshapes(6)
 {
-    shapes[0] = &hexes;
-    shapes[1] = &wedges;
-    shapes[2] = &pyramids;
-    shapes[3] = &tets;
+    shapes[0] = &tets;
+    shapes[1] = &pyramids;
+    shapes[2] = &wedges;
+    shapes[3] = &hexes;
     shapes[4] = &quads;
     shapes[5] = &tris;
 }

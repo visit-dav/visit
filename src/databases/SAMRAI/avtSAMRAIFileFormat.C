@@ -1852,6 +1852,9 @@ avtSAMRAIFileFormat::ConvertMassFractionFields(vector<int> matIds,
 //    I modified the way the routine built the interval tree from the
 //    extents associated with a vector.
 //
+//    Mark C. Miller, Thu Oct 21 22:11:28 PDT 2004
+//    Fixed spatail extents for ALE mesh
+//
 // ****************************************************************************
 
 void *
@@ -1863,8 +1866,17 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int patch,
     void *rv = NULL;
     avtIntervalTree *itree = NULL;
 
-    if (strcmp(type, AUXILIARY_DATA_DATA_EXTENTS) == 0) {
-        
+    //
+    // For an ale grid, a spatial extents query is *really* a data extents
+    // query on the "Coords" variable
+    //
+    if ((strcmp(type, AUXILIARY_DATA_DATA_EXTENTS) == 0) ||
+        ((strcmp(type, AUXILIARY_DATA_SPATIAL_EXTENTS) == 0) &&
+         (grid_type == "ALE" || grid_type == "DEFORMED"))) {
+
+        if (strcmp(type, AUXILIARY_DATA_SPATIAL_EXTENTS) == 0)
+            name = "Coords";
+
         debug5 << "avtSAMRAIFileFormat::GetAuxiliaryData getting DATA_EXTENTS" << endl;
 
         std::map<std::string, var_t>::const_iterator cur_var;

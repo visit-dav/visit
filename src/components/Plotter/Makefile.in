@@ -147,6 +147,9 @@
 #    Brad Whitlock, Thu Apr 22 17:14:16 PST 2004
 #    Added more libraries so we can prelink on MacOS X.
 #
+#    Hank Childs, Sun Oct 24 08:17:46 PDT 2004
+#    Added avtSoftwareShader.
+#
 ##############################################################################
 
 ##
@@ -169,7 +172,7 @@ SRC=avtLegend.C avtVariableLegend.C avtGeometryDrawable.C avtActor.C \
     avtLineoutActor.C avtTransparencyActor.C avtLabelActor.C \
     avtDecorationsDrawable.C avtDecorationsMapper.C avtLabeledCurveMapper.C \
     avtExternallyRenderedImagesActor.C avtTensorGlyphMapper.C avtDrawable.C \
-    avtPointGlyphMapper.C 
+    avtPointGlyphMapper.C avtSoftwareShader.C
 
 
 

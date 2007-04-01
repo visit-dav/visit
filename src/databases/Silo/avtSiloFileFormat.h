@@ -93,6 +93,9 @@ typedef struct
 //    Mark C. Miller, Thu Oct 14 15:18:31 PDT 2004
 //    Added GetSpatialExtents and GetDataExtents
 //
+//    Mark C. Miller, Thu Oct 21 22:11:28 PDT 2004
+//    Added arbMeshZoneRangesToSkip to support DBzonelists with arb. zones.
+//
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -150,6 +153,8 @@ class avtSiloFileFormat : public avtSTMDFileFormat
 
     GroupInfo                                 groupInfo;
 
+    std::map<std::string, std::vector<int> >  arbMeshZoneRangesToSkip;
+
 
     DBfile               *GetFile(int);
     DBfile               *OpenFile(int, bool skipGlobalInfo = false);
@@ -177,7 +182,8 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     vtkDataSet           *GetUnstructuredMesh(DBfile *, const char *,
                                               int, const char *);
     void                  ReadInConnectivity(vtkUnstructuredGrid *,
-                                             DBzonelist *, int);
+                                             DBzonelist *, int,
+                                             std::vector<int>&);
     void                  GetConnectivityAndGroupInformation(DBfile *);
     void                  GetConnectivityAndGroupInformationFromFile(DBfile *,
                                int &, int *&,int *&,int &,int *&,int &,int *&);
@@ -187,7 +193,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
                                      int &, int *&, int &, int *&, bool, bool);
 
     avtFacelist          *CalcExternalFacelist(DBfile *, char *);
-    avtMaterial          *CalcMaterial(DBfile *, char *, int dom);
+    avtMaterial          *CalcMaterial(DBfile *, char *, const char *, int dom);
     avtSpecies           *CalcSpecies(DBfile *, char *);
     vtkDataArray         *GetGlobalNodeIds(int, const char *);
     vtkDataArray         *GetGlobalZoneIds(int, const char *);
