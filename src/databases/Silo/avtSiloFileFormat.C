@@ -244,6 +244,10 @@ avtSiloFileFormat::GetFile(int f)
 //    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
 //    Added bool to skip global information
 //
+//    Mark C. Miller, Wed Dec  8 17:12:28 PST 2004
+//    Changed open to try explicit silo drivers; PDB first, then HDF5
+//    then everything else
+//
 // ****************************************************************************
 
 DBfile *
@@ -269,14 +273,12 @@ avtSiloFileFormat::OpenFile(int f, bool skipGlobalInfo)
     debug4 << "Opening silo file " << filenames[f] << endl;
 
     //
-    // Open the Silo file.
+    // Open the Silo file. Impose priority order on drivers by first
+    // trying PDB, then HDF5, then fall-back to UNKNOWN
     //
-    dbfiles[f] = DBOpen(filenames[f], DB_UNKNOWN, DB_READ);
-
-    //
-    // Check to see if we got a valid handle.
-    //
-    if (dbfiles[f] == NULL)
+    if (((dbfiles[f] = DBOpen(filenames[f], DB_PDB, DB_READ)) == NULL) && 
+        ((dbfiles[f] = DBOpen(filenames[f], DB_HDF5, DB_READ)) == NULL) && 
+        ((dbfiles[f] = DBOpen(filenames[f], DB_UNKNOWN, DB_READ)) == NULL))
     {
         EXCEPTION1(InvalidFilesException, filenames[f]);
     }
@@ -3829,10 +3831,6 @@ avtSiloFileFormat::GetPointVar(DBfile *dbfile, const char *vname)
 //    Mark C. Miller, Thu Oct 21 22:11:28 PDT 2004
 //    Added code to set arbMeshZoneRangesToSkip and issue warning for meshes
 //    that have arbitrary polyhedra embedded in an ordinary DBzonelist
-//
-//    Mark C. Miller, Mon Dec  6 14:37:33 PST 2004
-//    Changed call to ReadInConnectivity to use zonelist origin and not mesh
-//    origin
 //
 // ****************************************************************************
 

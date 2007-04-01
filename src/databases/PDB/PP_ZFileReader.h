@@ -10,6 +10,7 @@ class vtkDataArray;
 class vtkDataSet;
 class vtkMatrix4x4;
 class avtDatabaseMetaData;
+class avtVariableCache;
 
 // ****************************************************************************
 // Class: PP_ZFileReader
@@ -37,6 +38,11 @@ class avtDatabaseMetaData;
 //   I added a FreeUpResources method to clear out the stored data in the
 //   variable cache and close the PDB file object.
 //
+//   Brad Whitlock, Mon Dec 6 16:48:18 PST 2004
+//   Added a method to set the a variable cache pointer so the object has
+//   access to the file format's variable cache object for storing auxiliary
+//   data.
+//
 // ****************************************************************************
 
 class PP_ZFileReader : public PDBReader
@@ -61,6 +67,7 @@ public:
     const double *GetTimes();
 
     void          FreeUpResources();
+    void          SetCache(avtVariableCache *);
 protected:
     virtual bool IdentifyFormat();
 
@@ -70,7 +77,8 @@ protected:
     void ReadVariable(const std::string &var);
     void CreateGhostZones(const int *, vtkDataSet *);
     bool VariableIsNodal(const std::string &var) const;
-    void ReadMixvarAndCache(const std::string &var, int state);
+    void ReadMixvarAndCache(const std::string &var,
+                            const std::string &realVar, int state);
     const int *GetIreg(int state);
     int  GetUnstructuredCellCount();
     bool PopulateMaterialNames();
@@ -103,6 +111,7 @@ protected:
     VariableDataMap          varStorage;
     bool                     varStorageInitialized;
     std::vector<std::string> nodalVars;
+    avtVariableCache        *cache;
 
     static const int         revolutionSteps;
 };

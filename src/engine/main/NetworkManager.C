@@ -1477,6 +1477,10 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender,
 //    Hank Childs, Wed Nov 24 17:28:07 PST 2004
 //    Added imageBasedPlots.
 //
+//    Mark C. Miller, Wed Dec  8 19:42:02 PST 2004
+//    Fixed problem where wrong cell-count (un multiplied one) was being used
+//    to update global cell counts on the networks
+//
 // ****************************************************************************
 avtDataObjectWriter_p
 NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
@@ -1583,7 +1587,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
 
             // update the global cell counts for each network
             for (i = 0; i < plotIds.size(); i++)
-                SetGlobalCellCount(plotIds[i], cellCounts[i+plotIds.size()]);
+                SetGlobalCellCount(plotIds[i], cellCounts[i]);
 
             plotsCurrentlyInWindow = plotIds;
             visitTimer->StopTimer(t2, "Setting up window contents");

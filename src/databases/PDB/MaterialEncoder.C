@@ -130,12 +130,14 @@ MaterialEncoder::AddClean(int zoneId, int matNumber)
 // Creation:   Wed Aug 6 11:37:37 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Dec 7 16:16:19 PST 2004
+//   Converted matVf from double to float.
+//
 // ****************************************************************************
 
 void
 MaterialEncoder::AddMixed(int zoneId, const int *matNumbers,
-    const double *matVf, int nMats)
+    const float *matVf, int nMats)
 {
     int i;
 
@@ -152,7 +154,7 @@ MaterialEncoder::AddMixed(int zoneId, const int *matNumbers,
 
         mix_zone[index] = zoneId;
         mix_mat[index]  = matNumbers[i];
-        mix_vf[index]   = float(matVf[i]);
+        mix_vf[index]   = matVf[i];
 
         if(i < nMats - 1)
             mix_next[index] = index + 2;

@@ -609,7 +609,10 @@ PDBFileObject::GetDoubleArray(const char *name, double **d, int *nvals)
 // Creation:   Thu Oct 10 08:56:46 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Dec 7 16:25:25 PST 2004
+//   I made it use GetIntegerArray when there is an array of integers
+//   instead of just one integer to prevent us from clobbering memory.
+//
 // ****************************************************************************
 
 bool
@@ -629,7 +632,18 @@ PDBFileObject::GetInteger(const char *name, int *val)
             if(strcmp(PD_entry_type(ep), "integer") == 0 ||
                strcmp(PD_entry_type(ep), "int") == 0)
             {
-                retval = (PD_read(pdb, (char *)name, (void *)val) ==  TRUE);
+                //
+                // Get the integer as an array in case there is more than 1
+                // integer. This way, we don't clobber memory when we read
+                // the integer if it happens to be an array of integers.
+                //
+                int *vals = 0, nvals = 0;
+                if(GetIntegerArray(name, &vals, &nvals) && nvals > 0)
+                {
+                    *val = vals[0];
+                    delete [] vals;
+                    retval = true;
+                }
             }
             else if(strcmp(PD_entry_type(ep), "long") == 0)
             {
