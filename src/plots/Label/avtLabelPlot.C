@@ -236,6 +236,8 @@ avtLabelPlot::ApplyOperators(avtDataObject_p input)
 // Creation:   Wed Jan 7 14:58:26 PST 2004
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Jan  6 10:34:57 PST 2005
+//   Removed TRY-CATCH block in favor of testing for ValidVariable.
 //
 // ****************************************************************************
 
@@ -271,18 +273,18 @@ avtLabelPlot::ApplyRenderingTransformation(avtDataObject_p input)
         condenseFilter = NULL;
     }
     bool removeExtraNodes = true;
-    TRY
+    if (dob->GetInfo().GetAttributes().ValidVariable(varname))
     {
         removeExtraNodes = (AVT_NODECENT == 
             dob->GetInfo().GetAttributes().GetCentering(varname));
     }
-    CATCH(ImproperUseException)
+    else 
     {
         debug1 << "We could not determine the variable centering for "
                << varname << " so let's assume that we need to remove "
                <<"extra nodes." << endl;
     }
-    ENDTRY
+    
     if(removeExtraNodes)
     {
         onefilter = visitTimer->StartTimer();
@@ -368,6 +370,10 @@ avtLabelPlot::CustomizeBehavior(void)
 // Programmer: Brad Whitlock
 // Creation:   Wed Jan 7 14:58:26 PST 2004
 //
+// Modifications:
+//   Kathleen Bonnell, Thu Jan  6 10:34:57 PST 2005
+//   Removed TRY-CATCH block in favor of testing for ValidVariable.
+//
 // ****************************************************************************
 
 void
@@ -381,16 +387,15 @@ avtLabelPlot::CustomizeMapper(avtDataObjectInformation &doi)
     //
     // Tell the renderer whether to treat the label data as ASCII.
     //
-    TRY
+    if (doi.GetAttributes().ValidVariable(varname))
     {
         renderer->SetTreatAsASCII(doi.GetAttributes().GetTreatAsASCII(varname));
     }
-    CATCH(ImproperUseException)
+    else 
     {
         // Could not get the information so set the flag to false.
         renderer->SetTreatAsASCII(false);
     }
-    ENDTRY
 
     //
     // Tell the renderer whether the data is 3D or not so it can make

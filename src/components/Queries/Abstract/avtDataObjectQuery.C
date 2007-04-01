@@ -261,3 +261,21 @@ avtDataObjectQuery::SetSILRestriction(const SILRestrictionAttributes *silAtts)
 {
     querySILR = new avtSILRestriction(*silAtts);
 }
+
+
+// ****************************************************************************
+//  Method: avtDataObjectQuery::SetSILRestriction
+//
+//  Purpose:
+//    Creates a new avtSILRestriction from the passed restriction . 
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    January 3, 2005 
+//
+// ****************************************************************************
+
+void
+avtDataObjectQuery::SetSILRestriction(const avtSILRestriction_p silr)
+{
+    querySILR = new avtSILRestriction(silr);
+}

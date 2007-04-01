@@ -361,6 +361,9 @@ avtSurfaceFilter::SkewTheValue(const double val)
 //    Hank Childs, Mon Aug 30 08:04:05 PDT 2004
 //    Set the label for the surface plot as well.
 //
+//    Kathleen Bonnell, Thu Jan  6 11:38:55 PST 2005 
+//    Removed TRY-CATCH blocks if favor of testing for ValidActiveVariable.
+//
 // ****************************************************************************
 
 void
@@ -387,30 +390,19 @@ avtSurfaceFilter::RefashionDataObjectInfo(void)
     //
     // Set the variable name as the label of the z-axis.
     //
-    TRY
+    if (GetInput()->GetInfo().GetAttributes().ValidActiveVariable())
     {
-        avtDataAttributes &in_da = GetInput()->GetInfo().GetAttributes();
-        da.SetZLabel(in_da.GetVariableName());
+        da.SetZLabel(GetInput()->GetInfo().GetAttributes().GetVariableName());
     }
-    CATCH(ImproperUseException)
-    {
-        ; // nothing
-    }
-    ENDTRY
 
     //
     // Set the Z-axis's units to match the variable units.
     // 
-    TRY
+    if (da.ValidActiveVariable())
     {
         if(da.GetVariableUnits() != "")
             da.SetZUnits(da.GetVariableUnits());
     }
-    CATCH(ImproperUseException)
-    {
-        ; // nothing.
-    }
-    ENDTRY
 }
 
 

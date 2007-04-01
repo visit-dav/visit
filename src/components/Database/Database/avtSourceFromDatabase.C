@@ -611,3 +611,24 @@ avtSourceFromDatabase::QueryCoords(const std::string &var, const int dom,
 {
     return database->QueryCoords(var, dom, zone, ts, coord, forZone, useGlobalId);
 }
+
+
+// ****************************************************************************
+//  Method: avtSourceFromDatabase::GetSIL
+//
+//  Purpose:
+//    Returns the SIL for the given timestate. 
+//
+//  Arguments:
+//    ts        The timestep to use in searching the database.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   January 3, 2005 
+//
+// ****************************************************************************
+
+avtSIL*
+avtSourceFromDatabase::GetSIL(int timestate)
+{
+    return database->GetSIL(timestate);
+}

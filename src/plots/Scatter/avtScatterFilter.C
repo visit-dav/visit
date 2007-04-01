@@ -86,24 +86,41 @@ avtScatterFilter::~avtScatterFilter()
 {
 }
 
+
+// ****************************************************************************
+//  Method: avtScatterFilter::GetDataArray
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Nov 2 22:36:23 PST 2004
+//
+//  Modifications:
+//    Kathleen Bonnell, Fri Jan  7 13:30:30 PST 2005
+//    Moved retrieval of cenering out of TRY-CATCH block, and test for
+//    ValidVariable before retrieving centering.
+//
+// ****************************************************************************
+
 vtkDataArray *
 avtScatterFilter::GetDataArray(vtkDataSet *inDS, const std::string &name,
     avtCentering targetCentering, bool &deleteArray)
 {
     vtkDataArray *retval = 0;
 
-    TRY
+    avtCentering centering = AVT_UNKNOWN_CENT;
+    if (GetInput()->GetInfo().GetAttributes().ValidVariable(name.c_str()))
     {
         // Get the variable's centering.
-        avtCentering centering = GetInput()->GetInfo().GetAttributes().
+        centering = GetInput()->GetInfo().GetAttributes().
             GetCentering(name.c_str());
 
         // Get a pointer to the array out of the dataset.
         if(centering == AVT_NODECENT)
             retval = inDS->GetPointData()->GetArray(name.c_str());
-        else
+        else if (centering == AVT_ZONECENT)
             retval = inDS->GetCellData()->GetArray(name.c_str());
-
+    }
+    TRY
+    {
         //
         // If we have a data array and its centering is not what we want
         // then create a new data array that has the opposite centering.
@@ -798,6 +815,8 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
 //  Creation:   Tue Nov 2 22:36:23 PST 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Fri Jan  7 13:30:30 PST 2005
+//    Removed TRY-CATCH blocks in favor of testing for ValidVariable.
 //
 // ****************************************************************************
 
@@ -810,54 +829,34 @@ debug4 << "avtScatterFilter::RefashionDataObjectInfo" << endl;
 
     if(atts.GetVar1Role() != ScatterAttributes::None)
     {    
-        TRY
+        if (dataAtts.ValidVariable(variableName.c_str()))
         {
             v1Units = dataAtts.GetVariableUnits(variableName.c_str());
         }
-        CATCH(VisItException)
-        {
-            // No units. That's okay.
-        }
-        ENDTRY
     }
 
     if(atts.GetVar2Role() != ScatterAttributes::None)
     {
-        TRY
+        if (dataAtts.ValidVariable(atts.GetVar2().c_str()))
         {
             v2Units = dataAtts.GetVariableUnits(atts.GetVar2().c_str());
         }
-        CATCH(VisItException)
-        {
-            // No units. That's okay.
-        }
-        ENDTRY
     }
 
     if(atts.GetVar3Role() != ScatterAttributes::None)
     {
-        TRY
+        if (dataAtts.ValidVariable(atts.GetVar3().c_str()))
         {
             v3Units = dataAtts.GetVariableUnits(atts.GetVar3().c_str());
         }
-        CATCH(VisItException)
-        {
-            // No units. That's okay.
-        }
-        ENDTRY
     }
 
     if(atts.GetVar4Role() != ScatterAttributes::None)
     {
-        TRY
+        if (dataAtts.ValidVariable(atts.GetVar4().c_str()))
         {
             v4Units = dataAtts.GetVariableUnits(atts.GetVar4().c_str());
         }
-        CATCH(VisItException)
-        {
-            // No units. That's okay.
-        }
-        ENDTRY
     }
 
     //

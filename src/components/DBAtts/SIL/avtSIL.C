@@ -507,11 +507,18 @@ avtSIL::GetNumCollections(void) const
 //  Programmer: Hank Childs
 //  Creation:   November 14, 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Jan  3 13:23:26 PST 2005
+//    Added test for negative index.
+//
 // ****************************************************************************
 
 avtSILSet_p
 avtSIL::GetSILSet(int index) const
 {
+    if (index < 0)
+        EXCEPTION2(BadIndexException, index, GetNumSets());
+
     if (index < sets.size())
     {
         return sets[index];

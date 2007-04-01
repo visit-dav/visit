@@ -69,6 +69,9 @@ typedef void                   (*InitializeProgressCallback)(void *, int);
 //    Kathleen Bonnell, Thu Dec 16 17:16:33 PST 2004 
 //    Added another bool arg to QueryCoords. 
 //
+//    Kathleen Bonnell, Mon Jan  3 13:40:42 PST 2005 
+//    Added GetSIL method. 
+//
 // ****************************************************************************
 
 class PIPELINE_API avtTerminatingSource : virtual public avtQueryableSource
@@ -108,6 +111,7 @@ class PIPELINE_API avtTerminatingSource : virtual public avtQueryableSource
 
     // Define this so derived types don't have to.
     virtual void                   Query(PickAttributes *){;};
+    virtual avtSIL                *GetSIL(int timestep){return NULL;};
     virtual bool                   FindElementForPoint(const char*, const int, 
                                        const int, const char*, float[3], int &)
                                        { return false;};

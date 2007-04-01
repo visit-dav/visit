@@ -59,6 +59,9 @@ typedef void (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Kathleen Bonnell, Wed Jul 28 08:26:05 PDT 2004 
 //    Added Set/GetUnits. 
 //
+//    Kathleen Bonnell, Mon Jan  3 15:08:37 PST 2005 
+//    Overloaded SetSILRestriction method with avtSILRestriction_p arg. 
+//
 // ****************************************************************************
 
 class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
@@ -87,6 +90,7 @@ class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
     virtual void                  SetTimeVarying(bool val) { timeVarying = val;};
 
     void                          SetSILRestriction(const SILRestrictionAttributes *);
+    void                          SetSILRestriction(const avtSILRestriction_p);
     std::string                  &GetUnits(void) { return units; };
     void                          SetUnits(const std::string &_units) { units  = _units;};
 

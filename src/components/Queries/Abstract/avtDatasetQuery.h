@@ -58,6 +58,9 @@ class vtkDataSet;
 //    Kathleen Bonnell, Thu Jun 24 07:45:47 PDT 2004 
 //    Added intVector and string arguments to PerformQueryInTime.
 //
+//    Kathleen Bonnell, Mon Jan  3 15:12:19 PST 2005 
+//    Removed PerformQueryInTime. 
+//
 // ****************************************************************************
 
 class QUERY_API avtDatasetQuery : public avtDataObjectQuery, 
@@ -69,10 +72,6 @@ class QUERY_API avtDatasetQuery : public avtDataObjectQuery,
 
 
     virtual void             PerformQuery(QueryAttributes *);
-    virtual void             PerformQueryInTime(QueryAttributes*,
-                                 const int, const int, const int,
-                                 const int, doubleVector &,
-                                 intVector &, std::string &);
     virtual std::string      GetResultMessage(void) { return resMsg; };
     virtual void             SetResultMessage(const std::string &m) 
                                  { resMsg = m; }; 

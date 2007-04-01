@@ -43,6 +43,9 @@ $0 = shift @ARGV;
 #    E.g. it would think 1.4 had an internallauncher if it found
 #    one for version 1.4.1.  This caused old versions to fail to run.
 #
+#    Jeremy Meredith, Fri Jan  7 13:48:45 PST 2005
+#    My last fix wasn't completely portable across perl versions.  I fixed it.
+#
 ###############################################################################
 
 
@@ -217,7 +220,7 @@ else
     # If there was no internal laucher for that version, then either
     # that version wasn't installed, or it is an old version that
     # didn't have a version-specific launcher script.
-    if (! grep /^"$ver"$/, @exeversions)
+    if (! grep /^${ver}$/, @exeversions)
     {
         if (! -d "$visitdir/$ver")
         {

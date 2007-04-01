@@ -110,8 +110,8 @@ avtActualDataMinMaxQuery::ApplyFilters(avtDataObject_p inData)
             GetGeneralPipelineSpecification()->GetDataSpecification();
 
         avtDataSpecification_p newDS = new 
-            avtDataSpecification(oldSpec->GetVariable(), queryAtts.GetTimeStep(), 
-                                 querySILR);
+            avtDataSpecification(oldSpec, querySILR);
+        newDS->SetTimestep(queryAtts.GetTimeStep());
 
         if (!zonesPreserved)
             newDS->TurnZoneNumbersOn();

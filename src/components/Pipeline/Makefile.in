@@ -188,6 +188,9 @@
 #    Hank Childs, Mon Nov 22 08:37:51 PST 2004
 #    Moved avtMassVoxelExtractor to Filters.
 #
+#    Kathleen Bonnell, Mon Jan  3 13:33:20 PST 2005 
+#    Add avtTimeLoopFilter. 
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -287,7 +290,8 @@ PrivateFilters_src= \
   PrivateFilters/avtSamplePointsToImageFilter.C \
   PrivateFilters/avtSamplePointsToSamplePointsFilter.C \
   PrivateFilters/avtSingleFilterFacade.C \
-  PrivateFilters/avtStreamer.C
+  PrivateFilters/avtStreamer.C \
+  PrivateFilters/avtTimeLoopFilter.C
 
 Sinks_src= \
   Sinks/avtDataObjectSink.C \
