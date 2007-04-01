@@ -11,6 +11,7 @@
 #include <TransformAttributes.h>
 
 class avtSimilarityTransformFilter;
+class avtCoordSystemConvert;
 
 
 // ****************************************************************************
@@ -40,6 +41,9 @@ class avtSimilarityTransformFilter;
 //    avtSimilarityTransformFilter.  Re-worked this filter to be a single
 //    filter facade.
 //
+//    Hank Childs, Tue Feb  1 16:37:56 PST 2005
+//    Allow for coordinate system transformations as well.
+//
 // ****************************************************************************
 
 class avtTransformFilter : public virtual avtPluginFilter,
@@ -61,6 +65,7 @@ class avtTransformFilter : public virtual avtPluginFilter,
   protected:
     TransformAttributes            atts;
     avtSimilarityTransformFilter  *stf;
+    avtCoordSystemConvert         *csc;
 
     virtual avtFilter             *GetFacadedFilter(void);
 };

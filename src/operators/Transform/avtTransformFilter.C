@@ -7,6 +7,7 @@
 #include <SimilarityTransformAttributes.h>
 
 #include <avtSimilarityTransformFilter.h>
+#include <avtCoordSystemConvert.h>
 
 // ****************************************************************************
 //  Method: avtTransformFilter constructor
@@ -21,11 +22,15 @@
 //    Hank Childs, Tue Jul  1 08:59:08 PDT 2003
 //    Reflect that this filter is now a facaded filter.
 //
+//    Hank Childs, Tue Feb  1 16:37:56 PST 2005
+//    Added coord system convert.
+//
 // ****************************************************************************
 
 avtTransformFilter::avtTransformFilter()
 {
     stf = new avtSimilarityTransformFilter();
+    csc = new avtCoordSystemConvert();
 }
 
 
@@ -42,12 +47,17 @@ avtTransformFilter::avtTransformFilter()
 //    Hank Childs, Tue Jul  1 08:59:08 PDT 2003
 //    Reflect that this filter is now a facaded filter.
 //
+//    Hank Childs, Tue Feb  1 16:37:56 PST 2005
+//    Added coord system convert.
+//
 // ****************************************************************************
 
 avtTransformFilter::~avtTransformFilter()
 {
     if (stf != NULL)
         delete stf;
+    if (csc != NULL)
+        delete csc;
 }
 
 
@@ -89,6 +99,9 @@ avtTransformFilter::Create()
 //    Blew away any interpretation of atts and added code to make similarity
 //    transform atts and pass it to that filter.
 //
+//    Hank Childs, Tue Feb  1 16:37:56 PST 2005
+//    Also add support for coordinate transformations.
+//
 // ****************************************************************************
 
 void
@@ -96,31 +109,61 @@ avtTransformFilter::SetAtts(const AttributeGroup *a)
 {
     atts = *(const TransformAttributes*)a;
 
-    SimilarityTransformAttributes st_atts;
-    st_atts.SetDoRotate(atts.GetDoRotate());
-    st_atts.SetRotateOrigin(atts.GetRotateOrigin());
-    st_atts.SetRotateAxis(atts.GetRotateAxis());
-    st_atts.SetRotateAmount(atts.GetRotateAmount());
-    switch (atts.GetRotateType())
+    if (atts.GetTransformType() == TransformAttributes::Similarity)
     {
-      case TransformAttributes::Deg:
-        st_atts.SetRotateType(SimilarityTransformAttributes::Deg);
-        break;
-      case TransformAttributes::Rad:
-        st_atts.SetRotateType(SimilarityTransformAttributes::Rad);
-        break;
+        SimilarityTransformAttributes st_atts;
+        st_atts.SetDoRotate(atts.GetDoRotate());
+        st_atts.SetRotateOrigin(atts.GetRotateOrigin());
+        st_atts.SetRotateAxis(atts.GetRotateAxis());
+        st_atts.SetRotateAmount(atts.GetRotateAmount());
+        switch (atts.GetRotateType())
+        {
+          case TransformAttributes::Deg:
+            st_atts.SetRotateType(SimilarityTransformAttributes::Deg);
+            break;
+          case TransformAttributes::Rad:
+            st_atts.SetRotateType(SimilarityTransformAttributes::Rad);
+            break;
+        }
+        st_atts.SetDoScale(atts.GetDoScale());
+        st_atts.SetScaleOrigin(atts.GetScaleOrigin());
+        st_atts.SetScaleX(atts.GetScaleX());
+        st_atts.SetScaleY(atts.GetScaleY());
+        st_atts.SetScaleZ(atts.GetScaleZ());
+        st_atts.SetDoTranslate(atts.GetDoTranslate());
+        st_atts.SetTranslateX(atts.GetTranslateX());
+        st_atts.SetTranslateY(atts.GetTranslateY());
+        st_atts.SetTranslateZ(atts.GetTranslateZ());
+    
+        stf->SetAtts(&st_atts);
     }
-    st_atts.SetDoScale(atts.GetDoScale());
-    st_atts.SetScaleOrigin(atts.GetScaleOrigin());
-    st_atts.SetScaleX(atts.GetScaleX());
-    st_atts.SetScaleY(atts.GetScaleY());
-    st_atts.SetScaleZ(atts.GetScaleZ());
-    st_atts.SetDoTranslate(atts.GetDoTranslate());
-    st_atts.SetTranslateX(atts.GetTranslateX());
-    st_atts.SetTranslateY(atts.GetTranslateY());
-    st_atts.SetTranslateZ(atts.GetTranslateZ());
-
-    stf->SetAtts(&st_atts);
+    else
+    {
+        switch (atts.GetInputCoordSys())
+        {
+           case TransformAttributes::Cartesian:
+             csc->SetInputCoordSys(CARTESIAN);
+             break;
+           case TransformAttributes::Cylindrical:
+             csc->SetInputCoordSys(CYLINDRICAL);
+             break;
+           case TransformAttributes::Spherical:
+             csc->SetInputCoordSys(SPHERICAL);
+             break;
+        }
+        switch (atts.GetOutputCoordSys())
+        {
+           case TransformAttributes::Cartesian:
+             csc->SetOutputCoordSys(CARTESIAN);
+             break;
+           case TransformAttributes::Cylindrical:
+             csc->SetOutputCoordSys(CYLINDRICAL);
+             break;
+           case TransformAttributes::Spherical:
+             csc->SetOutputCoordSys(SPHERICAL);
+             break;
+        }
+    }
 }
 
 
@@ -152,12 +195,20 @@ avtTransformFilter::Equivalent(const AttributeGroup *a)
 //  Programmer: Hank Childs
 //  Creation:   July 1, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Feb  1 16:37:56 PST 2005
+//    Add support for coordinate systems.
+//
 // ****************************************************************************
 
 avtFilter *
 avtTransformFilter::GetFacadedFilter(void)
 {
-    return stf;
+    if (atts.GetTransformType() == TransformAttributes::Similarity)
+        return stf;
+    else
+        return csc;
 }
 
 

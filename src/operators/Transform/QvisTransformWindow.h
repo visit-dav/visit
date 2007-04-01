@@ -16,6 +16,7 @@ class QvisOpacitySlider;
 class QvisColorButton;
 class QvisLineStyleWidget;
 class QvisLineWidthWidget;
+class QTabWidget;
 
 // ****************************************************************************
 //  Class:  QNarrowLineEdit
@@ -67,6 +68,9 @@ class QNarrowLineEdit : public QLineEdit
 //    Brad Whitlock, Fri Apr 12 13:16:24 PST 2002
 //    Made it inherit from QvisOperatorWindow.
 //
+//    Jeremy Meredith, Fri Feb  4 17:48:04 PST 2005
+//    Added support for coordinate transforms.
+//
 // ****************************************************************************
 
 class QvisTransformWindow : public QvisOperatorWindow
@@ -98,7 +102,12 @@ class QvisTransformWindow : public QvisOperatorWindow
     void translateXProcessText();
     void translateYProcessText();
     void translateZProcessText();
+    void pageTurned(QWidget*);
+    void inputCoordChanged(int);
+    void outputCoordChanged(int);
   private:
+    QTabWidget      *transformTypeTabs;
+
     QCheckBox       *doRotate;
     QLineEdit       *rotateOrigin;
     QLabel          *rotateOriginLabel;
@@ -126,7 +135,12 @@ class QvisTransformWindow : public QvisOperatorWindow
     QNarrowLineEdit *translateZ;
     QLabel          *translateZLabel;
 
+    QButtonGroup    *inputCoord;
+    QButtonGroup    *outputCoord;
+
     TransformAttributes *atts;
+    QFrame *firstPage;
+    QFrame *secondPage;
 };
 
 
