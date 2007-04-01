@@ -109,6 +109,10 @@ avtQueryOverTimeFilter::Create(const AttributeGroup *atts)
 //  Creation:   March 15, 2004
 //
 //  Modifications:
+//    Katthleen Bonnell, Fri Apr  2 13:18:08 PST 2004
+//    Pass along to the query: startTime,  endTimes and stride instead of an 
+//    intVector representing timesteps.  Send a doubleVector for the query
+//    to fill with values requested for x-axis (cycle, time, or timestep).
 //
 // ****************************************************************************
 
@@ -134,9 +138,16 @@ avtQueryOverTimeFilter::Execute(void)
     // End HokeyHack. 
     //
 
+    doubleVector times;
+    int startTime = atts.GetStartTime();
+    int endTime = atts.GetEndTime();
+    int stride = atts.GetStride();
+    int timeType = (int) atts.GetTimeType();  // 0 = cycle, 1 = time, 2 = timestep
+
     TRY
     {
-        query->PerformQueryInTime(&qatts, atts.GetTimeSteps());
+        query->PerformQueryInTime(&qatts, startTime, endTime, stride, 
+                                  timeType, times);
     }
     CATCH( ... )
     {
@@ -148,7 +159,6 @@ avtQueryOverTimeFilter::Execute(void)
     ENDTRY
 
     doubleVector results = qatts.GetResultsValue();
-    doubleVector times = atts.GetTimeStates(); 
 
     vtkPolyData *output = CreatePolys(times, results);
     avtDataTree_p tree = new avtDataTree(output, 0);

@@ -3066,36 +3066,28 @@ ViewerQueryManager::UpdateQueryOverTimeAtts()
 //  Creation:   March 22, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Fri Apr  2 13:18:08 PST 2004
+//    Delay request for Results window until most possible error states
+//    have been processed.  As 'Times' as request from DatabaseMetaDAta
+//    may not be accurate here, moved code determing Times/Cycles to
+//    engine-portion.  Added Warnings and Errors related to settings
+//    of start and end times.  Add call to UpdateActions so that the
+//    new window will be updated correctly.
 //
+//    Kathleen Bonnell, Fri Apr  2 17:03:50 PST 2004
+//    Modify they way centering-consistency-checks are performed, so
+//    that expressions will get evaluated correctly.  
+//    
 // ***********************************************************************
 
 void
 ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
 {
-    if (!queryTypes->TimeQueryAvailable(qA->GetName()))
+    string qName = qA->GetName();
+    if (!queryTypes->TimeQueryAvailable(qName))
     {
-        string msg = "Time history query is not available for " + 
-                      qA->GetName();
+        string msg = "Time history query is not available for " + qName;
         Error(msg.c_str());
-        return;
-    }
-    //
-    //  See if we can get a window in which to place the resulting curve.
-    //
-    ViewerWindow *resWin = NULL;
-
-    if (timeQueryAtts->GetCreateWindow())
-    {
-        resWin = ViewerWindowManager::Instance()->GetTimeQueryWindow();
-    }
-    else 
-    {
-        resWin = ViewerWindowManager::Instance()->GetWindow(
-                     timeQueryAtts->GetWindowId() -1);
-    }
-    if (resWin == NULL)
-    {
-        Error("Please choose a different window method for the time query");
         return;
     }
     //
@@ -3118,124 +3110,91 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
     bool replacePlots = ViewerWindowManager::Instance()->
                         GetClientAtts()->GetReplacePlots();
 
-    const avtDatabaseMetaData *md = origPlot->GetMetaData();
-
-    doubleVector qtimes;
-    if (md != 0)
+    string qvarName = qA->GetVariables()[0];
+  
+    //
+    // If we are querying the plot's current variable, check for
+    // centering consistency.
+    //
+    if (qvarName == vName)
     {
-        if (qA->GetName() == "Variable by Zone")
+        avtCentering centering = origPlot->GetVariableCentering();
+        if (centering == AVT_ZONECENT || centering == AVT_NODECENT)
         {
-            if (md->GetVarCentering(vName) != AVT_ZONECENT)
+            if (qName == "Variable by Zone" && centering != AVT_ZONECENT)
             {
-                string reason = "'Variable by Zone' through time requires a " ;
-                reason += "zone-centered variable, please try a "; 
-                reason += "'Variable by Node' query instead.";
-                Warning(reason.c_str()); 
+                Warning("The centering of the query (zone) does not match "
+                        "the centering of the plot's current variable "
+                        "(node).  Please try again with the appropriately "
+                        "centered query: 'Variable By Node'");
+                return;
+            }
+            else if (qName == "Variable by Node" && centering != AVT_NODECENT)
+            {
+                Warning("The centering of the query (node) does not match "
+                        "the centering of the plot's current variable "
+                        "(zone).  Please try again with the appropriately "
+                        "centered query: 'Variable By Zone'");
                 return;
             }
         }
-        else if (qA->GetName() == "Variable by Node")
-        {
-            if (md->GetVarCentering(vName) != AVT_NODECENT)
-            {
-                string reason = "'Variable by Node' through time requires a "; 
-                reason += "node-centered variable, please try a ";
-                reason += "'Variable by Zone' query instead.";
-                Warning(reason.c_str()); 
-                return;
-            }
-        }
-
-
-        if (timeQueryAtts->GetTimeType() == QueryOverTimeAttributes::Cycle)
-        {
-            intVector cycles = md->GetCycles();
-            for (int z = 0; z < cycles.size(); z++)
-                qtimes.push_back((double)cycles[z]); 
-        }
-        else if (timeQueryAtts->GetTimeType() == QueryOverTimeAttributes::DTime)
-        {
-            qtimes = md->GetTimes();
-        }
-        else 
-        {
-            for (int z = 0; z < nFrames; z++)
-                qtimes.push_back((double)z); 
-        }
-    }
-    else 
-    {
-        for (int z = 0; z < nFrames; z++)
-            qtimes.push_back((double)z); 
-        timeQueryAtts->SetTimeType(QueryOverTimeAttributes::Timestep);
-    }
-
-    // 
-    // Create the actual times to be displayed in x-axis.
-    // 
-    int sf, ef, stride= timeQueryAtts->GetStride();
-    if (!timeQueryAtts->GetStartTimeFlag() && 
-        !timeQueryAtts->GetEndTimeFlag() && stride == 1)
-    {
-        sf = 0; 
-        ef = qtimes.size() -1; 
-        timeQueryAtts->SetTimeStates(qtimes);
-    }
-    else
-    {
-        doubleVector rqtimes;
-        sf = -1; ef = -1;
-        double startT = timeQueryAtts->GetStartTimeFlag() ? 
-                        timeQueryAtts->GetStartTime() : qtimes[0];
-        double endT   = timeQueryAtts->GetEndTimeFlag() ? 
-                        timeQueryAtts->GetEndTime() : qtimes[qtimes.size()-1];
-
-        // find start and end timesteps
-        for (int z = 0; z < qtimes.size(); z++)
-        {
-            if (qtimes[z] == startT )
-            {
-                sf = z;
-                break;
-            }
-        }
-        for (int z = qtimes.size()-1; z >= 0; z--)
-        {
-            if (qtimes[z] == endT )
-            {
-                ef = z;
-                break;
-            }
-        }
-        //
-        // Grab only those cycles/dtimes/timesteps that the user wants to see.
-        //
-        for (int z = 0; z < qtimes.size(); z+= stride)
-        {
-            if (qtimes[z] >= startT && qtimes[z] <= endT)
-            {
-                rqtimes.push_back(qtimes[z]);
-            }
-        }
-        if (rqtimes[rqtimes.size()-1] != endT)
-        {
-            rqtimes.push_back(endT);
-        }
-        timeQueryAtts->SetTimeStates(rqtimes);
     }
 
     // 
     // Create a list of timesteps for the query. 
     // 
-    intVector timeSteps;
-    for (int z = sf; z <=  ef; z += stride)
-    {
-       timeSteps.push_back(z); 
-    }
-    if (timeSteps[timeSteps.size()-1] != ef)
-        timeSteps.push_back(ef);
 
-    timeQueryAtts->SetTimeSteps(timeSteps);
+    int startT = timeQueryAtts->GetStartTimeFlag() ? 
+                 timeQueryAtts->GetStartTime() : 0; 
+    int endT   = timeQueryAtts->GetEndTimeFlag() ? 
+                 timeQueryAtts->GetEndTime() : nFrames -1;
+
+    if (startT >= endT)
+    {
+        Error("Query over time: start time must be smaller than end time"
+              " please correct and try again."); 
+        return;
+    }
+    int nUserFrames = (int) ceil((endT - startT)/timeQueryAtts->GetStride())+1;
+    if (nUserFrames <= 1)
+    {
+        Error("Query over time requires more than 1 frame, "
+              "please correct start and end times try again."); 
+        return;
+    }
+    if (startT < 0)
+    {
+        Warning("Clamping start time to 0.");
+        startT = 0;
+    }
+    if (endT > nFrames-1 )
+    {
+        Warning("Clamping end time to number of available timesteps.");
+        endT = nFrames -1;
+    }
+    timeQueryAtts->SetStartTime(startT); 
+    timeQueryAtts->SetEndTime(endT); 
+
+
+    //
+    //  See if we can get a window in which to place the resulting curve.
+    //
+    ViewerWindow *resWin = NULL;
+
+    if (timeQueryAtts->GetCreateWindow())
+    {
+        resWin = ViewerWindowManager::Instance()->GetTimeQueryWindow();
+    }
+    else 
+    {
+        resWin = ViewerWindowManager::Instance()->GetWindow(
+                     timeQueryAtts->GetWindowId() -1);
+    }
+    if (resWin == NULL)
+    {
+        Error("Please choose a different window method for the time query");
+        return;
+    }
 
     int plotType = PlotPluginManager::Instance()->GetEnabledIndex("Curve_1.0");
     ViewerPlotList *plotList =  resWin->GetPlotList();
@@ -3257,27 +3216,73 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
         ViewerEngineManager::Instance()->CloneNetwork(
             origPlot->GetEngineKey(), origPlot->GetNetworkID(), timeQueryAtts);
         plotList->RealizePlots();
+        // 
+        // If there was an error, the bad curve plot should not be left
+        // around muddying up the waters.
+        // 
+        if (resultsPlot->GetErrorFlag())
+            plotList->DeletePlot(resultsPlot, false);
+
     }
     CATCH2(VisItException, e)
     {
+        // 
+        // If there was an error, the bad curve plot should not be left
+        // around muddying up the waters.
+        // 
+        plotList->DeletePlot(resultsPlot, false);
+
         //
         // Add as much information to the message as we can,
         // including query name, exception type and exception
         // message.
         //
         char message[256];
-        SNPRINTF(message, sizeof(message), "%s:  (%s)\n%s", qA->GetName().c_str(),
+        SNPRINTF(message, sizeof(message), "%s:  (%s)\n%s", qName.c_str(),
                  e.GetExceptionType().c_str(),
                  e.GetMessage().c_str());
         Error(message);
         return;
     }
     ENDTRY
+
+    //
+    // Update the actions so the menus and the toolbars have the right state.
+    //
+    ViewerWindowManager::Instance()->UpdateActions();
+
+    // The following is here because it was necessary in the Lineout case,
+    // and time-queries are similar, so do it here, too.
+    //
+    // Brad Whitlock, Fri Apr 4 15:24:28 PST 2003
+    // Do it again because for some reason, even though the curve vis window
+    // gets the right values, the actual toolbar and popup menu are not
+    // updating. If we ever figure out the problem, remove this code.
+    resWin->GetActionManager()->UpdateSingleWindow();
 }
 
 
+// ****************************************************************************
+//  Method: ViewerQueryManager::PickThroughTime 
+//
+//  Arguments:
+//    ppi       The struct containing picked point and window information.
+//    dom       The domain (optional). 
+//    el        The element number (optional). 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   March 31, 2004 
+//
+//  Modifications:
+//    Kathleen Bonnell, Fri Apr  2 17:03:50 PST 2004
+//    Modify they way centering-consistency-checks are performed, so
+//    that expressions will get evaluated correctly.  
+//
+// ****************************************************************************
+
 void
-ViewerQueryManager::PickThroughTime(PICK_POINT_INFO * ppi, const int dom, const int el)
+ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi, const int dom, 
+                                    const int el)
 {
     ViewerWindow *origWin = (ViewerWindow *)ppi->callbackData;
 
@@ -3286,24 +3291,43 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO * ppi, const int dom, const 
     origList->GetActivePlotIDs(plotIDs);
     int origPlotID = (plotIDs.size() > 0 ? plotIDs[0] : -1);
     ViewerPlot *origPlot = origList->GetPlot(origPlotID);
-    const avtDatabaseMetaData *md = origPlot->GetMetaData();
-    avtCentering cent = md->GetVarCentering(origPlot->GetVariableName());
+    string vName = origPlot->GetVariableName();
 
-    if (pickAtts->GetPickType() == PickAttributes::Zone &&
-        cent != AVT_ZONECENT) 
+    // 
+    //  We can only do one variable (for now) for a time query,
+    //  so make sure we have the right onw.
+    // 
+    string pvarName = pickAtts->GetVariables()[0];
+    if (pvarName == "default")
+        pvarName = vName;
+
+    //
+    // If we are querying the plot's current variable, check for
+    // centering consistency.
+    //
+    int type = pickAtts->GetPickType();
+    if (pvarName == vName)
     {
-        string reason = "A Zone pick through time requires a zone-centered";
-        reason +=  " variable, try a Node pick.";
-        Warning(reason.c_str()); 
-        return;
-    }
-    else if (pickAtts->GetPickType() == PickAttributes::Node &&
-             cent != AVT_NODECENT) 
-    {
-        string reason = "A Node pick through time requires a node-centered" ;
-        reason += " variable, try a Zone pick.";
-        Warning(reason.c_str());
-        return;
+        avtCentering centering = origPlot->GetVariableCentering();
+        if (centering == AVT_ZONECENT || centering == AVT_NODECENT)
+        {
+            if (type == PickAttributes::Zone && centering != AVT_ZONECENT)
+            {
+                Warning("The centering of the pick-through-time (zone) does "
+                        "not match the centering of the plot's current "
+                        "variable (node).  Please try again with the "
+                        "appropriately centered Pick");
+                return;
+            }
+            else if (type == PickAttributes::Node && centering != AVT_NODECENT)
+            {
+                Warning("The centering of the pick-through-time (node) does "
+                        "not match the centering of the plot's current "
+                        "variable (zone).  Please try again with the "
+                        "appropriately centered Pick");
+                return;
+            }
+        }
     }
 
     int valid = ComputePick(ppi, dom, el);
@@ -3314,14 +3338,14 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO * ppi, const int dom, const 
         qatts.SetElement(pickAtts->GetElementNumber());
         qatts.SetDataType(QueryAttributes::OriginalData);
         stringVector vars;
-        vars.push_back(pickAtts->GetActiveVariable());
+        vars.push_back(pvarName);
         qatts.SetVariables(vars);
-        if (pickAtts->GetPickType() == PickAttributes::Zone) 
+        if (type == PickAttributes::Zone) 
         {
             qatts.SetName("Variable by Zone");
             qatts.SetElementType(QueryAttributes::Zone);
         }
-        else if (pickAtts->GetPickType() == PickAttributes::Node)
+        else if (type == PickAttributes::Node)
         {
             qatts.SetName("Variable by Node");
             qatts.SetElementType(QueryAttributes::Node);

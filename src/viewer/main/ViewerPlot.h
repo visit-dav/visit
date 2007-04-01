@@ -218,6 +218,7 @@ class VIEWER_API ViewerPlot
 
     bool SetVariableName(const std::string &name);
     const std::string &GetVariableName() const;
+    const avtCentering GetVariableCentering() const;
 
     void SetDatabaseAtts(const AttributeSubjectMap *atts);
     const AttributeSubjectMap *GetDatabaseAtts() const;

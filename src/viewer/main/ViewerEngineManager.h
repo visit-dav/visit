@@ -145,6 +145,9 @@ class WindowAttributes;
 //    Kathleen Bonnell, Wed Mar 31 16:40:15 PST 2004 
 //    Added CloneNetwork. 
 //
+//    Jeremy Meredith, Fri Apr  2 14:29:25 PST 2004
+//    Made restartArguments be saved on a per-host (per-enginekey) basis.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -246,7 +249,8 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     bool                       executing;
     int                        nEngines;
     EngineMap                  engines;
-    std::vector<std::string>   restartArguments;
+
+    std::map<EngineKey,stringVector>  restartArguments;
 
     // Global engine computation attributes
     static MaterialAttributes *materialClientAtts;

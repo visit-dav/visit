@@ -46,6 +46,9 @@ typedef void (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Kathleen Bonnell, Thu Apr  1 16:04:44 PST 2004
 //    Added PerformQueryInTime, SetTimeVarying, SetSILUseSet.
 //
+//    Kathleen Bonnell, Fri Apr  2 08:51:17 PST 2004 
+//    Changed args to PerformQueryInTime. 
+//
 // ****************************************************************************
 
 class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
@@ -60,7 +63,8 @@ class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
     virtual bool                  OriginalData(void) { return false; };
     virtual void                  PerformQuery(QueryAttributes *) = 0;
     virtual void                  PerformQueryInTime(QueryAttributes *,
-                                      const intVector &) {;};
+                                      const int, const int, const int,
+                                      const int, doubleVector &) {;};
     virtual std::string           GetResultMessage(void) = 0;
 
     static void                   RegisterInitializeProgressCallback(

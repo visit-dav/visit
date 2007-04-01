@@ -9,7 +9,6 @@
 
 #include <vector>
 #include <string>
-#include <fstream.h>
 
 class VisMF;
 
@@ -104,6 +103,10 @@ class avtBoxlib3DFileFormat : public avtSTMDFileFormat
     // Variable readers.
     // Indexed by multifabFile
     std::vector<VisMF *>                    mfReaders;
+
+    // The VisMF class is buggy when it comes to freeing up
+    // memory.  The "clearlist" is used to sidestep those issues.
+    std::vector<int>                        clearlist;
 
     // Problem range
     double                                  probLo[3];

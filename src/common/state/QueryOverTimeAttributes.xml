@@ -11,14 +11,14 @@
     <Field name="startTimeFlag" label="startTimeFlag" type="bool">
       false
     </Field>
-    <Field name="startTime" label="startTime" type="double" enabler="startTimeFlag:true">
-      0.000000
+    <Field name="startTime" label="startTime" type="int" enabler="startTimeFlag:true">
+      0
     </Field>
     <Field name="endTimeFlag" label="endTimeFlag" type="bool">
       false
     </Field>
-    <Field name="endTime" label="endTime" type="double" enabler="endTimeFlag:true">
-      1.000000
+    <Field name="endTime" label="endTime" type="int" enabler="endTimeFlag:true">
+      1
     </Field>
     <Field name="stride" label="stride" type="int">
       1
@@ -30,9 +30,5 @@
       2
     </Field>
     <Field name="queryAtts" label="queryAtts" type="att" subtype="QueryAttributes" internal="true">
-    </Field>
-    <Field name="timeSteps" label="timeSteps" type="intVector" internal="true">
-    </Field>
-    <Field name="timeStates" label="timeStates" type="doubleVector" internal="true">
     </Field>
   </Attribute>

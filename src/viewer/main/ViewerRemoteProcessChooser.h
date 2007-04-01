@@ -3,6 +3,7 @@
 #include <viewer_exports.h>
 
 #include <string>
+#include <vector>
 
 class HostProfileList;
 class RemoteProxyBase;
@@ -34,6 +35,11 @@ class ViewerHostProfileSelector;
 //    could create a new proxy itself.  This disassociates this object
 //    from the Engine and lets it be used with the VCL (for example).
 //
+//    Jeremy Meredith, Fri Apr  2 14:35:24 PST 2004
+//    Added AddRestartArgsToCachedProfile.  This is a better way to save
+//    the arguments than what the ViewerEngineManager was doing for
+//    normal engine launches.
+//
 // ****************************************************************************
 class VIEWER_API ViewerRemoteProcessChooser 
 {
@@ -44,6 +50,8 @@ class VIEWER_API ViewerRemoteProcessChooser
     static void SetNoWinMode(bool nw);
     bool SelectProfile(HostProfileList*, const std::string&, bool skip);
     void AddProfileArguments(RemoteProxyBase*, bool addParallelArgs);
+    void AddRestartArgsToCachedProfile(const std::string&,
+                                       const std::vector<std::string>&);
     void ClearCache(const std::string&);
 
   private:

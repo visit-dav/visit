@@ -1313,6 +1313,12 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
 //    Mark C. Miller, Tue Mar 30 10:58:01 PST 2004
 //    Added code to set image compositor's background color
 //
+//    Mark C. Miller, Thu Apr  1 11:06:09 PST 2004
+//    Removed call to AdjustWindowAttributes
+//    Added use of viewported screen capture
+//    
+//    Mark C. Miller, Fri Apr  2 11:06:09 PST 2004
+//    Removed call to FullFrameOff
 // ****************************************************************************
 avtDataObjectWriter_p
 NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
@@ -1410,11 +1416,6 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
                                  viswin->GetWindowMode() == WINMODE_CURVE);
           avtImage_p theImage = viswin->ScreenCapture(viewportedMode, true);
           visitTimer->StopTimer(t3, "Screen capture for SR");
-
-          // this call is here to reset any actor's scaling before we remove
-          // them from the VisWindow so they are back to the same state
-          // it is harmless if not in 2D mode and/or not in full frame mode
-          viswin->FullFrameOff();
 
           if (dumpRenders)
           {

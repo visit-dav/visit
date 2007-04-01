@@ -266,6 +266,29 @@ ViewerRemoteProcessChooser::ClearCache(const std::string &hostName)
 
 
 // ****************************************************************************
+//  Method:  ViewerRemoteProcessChooser::AddRestartArgsToCachedProfile
+//
+//  Purpose:
+//    Modify a cached profile to include the given arguments.
+//
+//  Arguments:
+//    hostName   the host name of the remote engine
+//    args       the arguments to save
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    April  2, 2004
+//
+// ****************************************************************************
+void
+ViewerRemoteProcessChooser::AddRestartArgsToCachedProfile(
+                                          const std::string &hostName,
+                                          const std::vector<std::string> &args)
+{
+    if (selector)
+        selector->AddRestartArgsToCachedProfile(hostName, args);
+}
+
+// ****************************************************************************
 //  Method:  ViewerRemoteProcessChooser::Instance
 //
 //  Purpose:

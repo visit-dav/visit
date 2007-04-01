@@ -10,6 +10,7 @@
 #include <vtkDataSetRemoveGhostCells.h>
 #include <vtkGeometryFilter.h>
 #include <vtkPolyData.h>
+#include <vtkPolyDataRelevantPointsFilter.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkVisItFeatureEdges.h>
 
@@ -335,6 +336,9 @@ avtCompactnessQuery::PostExecute(void)
 //    Turned xBound and yBound into class data members, and made them
 //    STL vectors.  Made it collect the boundary points across all domains.
 //
+//    Jeremy Meredith, Fri Apr  2 17:14:11 PST 2004
+//    Added a relevant points filter.
+//
 // ****************************************************************************
 
 void
@@ -436,7 +440,17 @@ avtCompactnessQuery::Execute1(vtkDataSet *ds, const int dom)
         debug1 << "Did not get poly data from ghost zone filter output\n";
         return;
     }
-    vtkPolyData *pd_1d_nogz = (vtkPolyData*)ds_1d_nogz;
+    vtkPolyData *pd_1d_nogz_allpts = (vtkPolyData*)ds_1d_nogz;
+
+    //
+    // If we had stripped some lines by using a ghost zone filter, then
+    // we had better make sure the points attached to them go away.
+    //
+    vtkPolyDataRelevantPointsFilter *relPts;
+    relPts = vtkPolyDataRelevantPointsFilter::New();
+    relPts->SetInput(pd_1d_nogz_allpts);
+    vtkPolyData *pd_1d_nogz = relPts->GetOutput();
+    relPts->Update();
 
     //
     // Extract the boundary edges to a convenient format
@@ -465,6 +479,7 @@ avtCompactnessQuery::Execute1(vtkDataSet *ds, const int dom)
     gzFilter2->Delete();
     geomFilter->Delete();
     boundaryFilter->Delete();
+    relPts->Delete();
 }
 
 // ****************************************************************************
