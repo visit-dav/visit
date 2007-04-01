@@ -35,6 +35,10 @@ using std::vector;
 //    Hank Childs, Mon Apr  7 18:16:07 PDT 2003
 //    Do not read in the meta-data during the constructor.
 //
+//    Hank Childs, Wed Jun 23 09:10:11 PDT 2004
+//    Declare the number of domains as 0, so it will definitely match up with
+//    the size of the read_domain vector.
+//
 // ****************************************************************************
 
 avtSpheralFileFormat::avtSpheralFileFormat(const char *fname)
@@ -42,7 +46,7 @@ avtSpheralFileFormat::avtSpheralFileFormat(const char *fname)
 {
     rootfile = fname;
     current_file = rootfile;
-    ndomains = 1;
+    ndomains = 0;
     cycle = 0;
     gotCycle = false;
     dtime = 0.;
@@ -104,6 +108,11 @@ avtSpheralFileFormat::~avtSpheralFileFormat()
 //  Programmer: Hank Childs
 //  Creation:   March 14, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Jun 23 09:34:43 PDT 2004
+//    Avoid dangling pointers.
+//
 // ****************************************************************************
 
 void
@@ -117,6 +126,7 @@ avtSpheralFileFormat::FreeUpResources(void)
             if (cache[i].meshes[j] != NULL)
             {
                 cache[i].meshes[j]->Delete();
+                cache[i].meshes[j] = NULL;
             }
 
             for (k = 0 ; k < fields.size() ; k++)
@@ -124,6 +134,7 @@ avtSpheralFileFormat::FreeUpResources(void)
                 if (cache[i].fields[j][k] != NULL)
                 {
                     cache[i].fields[j][k]->Delete();
+                    cache[i].fields[j][k] = NULL;
                 }
             }
         }
@@ -143,6 +154,12 @@ avtSpheralFileFormat::FreeUpResources(void)
 //  Programmer: Hank Childs
 //  Creation:   March 14, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Jun 23 07:32:20 PDT 2004
+//    Make sure we have read in the meta-data, so we can get field indices
+//    properly ['5109].
+//
 // ****************************************************************************
 
 void
@@ -150,6 +167,11 @@ avtSpheralFileFormat::RegisterVariableList(const char *primVar,
                                            const vector<CharStrRef> &vars2nd)
 {
     int   i, j;
+
+    if (!readInMetaData)
+    {
+        ReadInMetaData();
+    }
 
     //
     // We want every node list (-> mat) unless we have reason not to include
