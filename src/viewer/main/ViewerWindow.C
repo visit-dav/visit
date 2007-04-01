@@ -3910,12 +3910,24 @@ ViewerWindow::ResetView2d()
 //    reset the view.  I also set more flags indicating the view is invalid
 //    in the case were we don't reset the view just to be on the safe side.
 //
+//    Eric Brugger, Thu Oct 28 14:41:35 PDT 2004
+//    I modified the routine to set the view differently depending on the
+//    navigation mode.
+//
+//
 // ****************************************************************************
 
 void
 ViewerWindow::ResetView3d()
 {
     avtView3D view3D=visWindow->GetView3D();
+
+    //
+    // Get the navigation mode.  The view is set differently depending
+    // on whether the navigation mode is Trackball or Flythrough.
+    //
+    InteractorAttributes::NavigationMode navigationMode =
+        visWindow->GetInteractorAtts()->GetNavigationMode();
 
     //
     // Set the bounding box based on the plot limits.
@@ -3964,7 +3976,14 @@ ViewerWindow::ResetView3d()
     view3D.viewAngle = 30.;
     distance = width / tan (view3D.viewAngle * 3.1415926535 / 360.);
 
-    view3D.parallelScale = width;
+    if (navigationMode == InteractorAttributes::Trackball)
+    {
+        view3D.parallelScale = width;
+    }
+    else
+    {
+        view3D.parallelScale = width / 20.;
+    }
 
     //
     // Set the view up vector, the focal point and the camera position.
@@ -3975,7 +3994,14 @@ ViewerWindow::ResetView3d()
 
     view3D.focus[0] = (boundingBox3d[1] + boundingBox3d[0]) / 2.;
     view3D.focus[1] = (boundingBox3d[3] + boundingBox3d[2]) / 2.;
-    view3D.focus[2] = (boundingBox3d[5] + boundingBox3d[4]) / 2.;
+    if (navigationMode == InteractorAttributes::Trackball)
+    {
+        view3D.focus[2] = (boundingBox3d[5] + boundingBox3d[4]) / 2.;
+    }
+    else
+    {
+        view3D.focus[2] += (1.0 - 1.0 / 20.) * distance;
+    }
 
     view3D.viewUp[0] = 0.;
     view3D.viewUp[1] = 1.;
@@ -3986,8 +4012,16 @@ ViewerWindow::ResetView3d()
     // set such that the object should not get clipped in the front or
     // back no matter the orientation when doing an orthographic projection.
     //
-    view3D.nearPlane = - 2.0 * width;
-    view3D.farPlane  =   2.0 * width;
+    if (navigationMode == InteractorAttributes::Trackball)
+    {
+        view3D.nearPlane = - 2.0 * width;
+        view3D.farPlane  =   2.0 * width;
+    }
+    else
+    {
+        view3D.nearPlane = - (1.0 / 20.) * distance * 0.99;
+        view3D.farPlane  = (1.0 - 1.0 / 20.) * distance + 2.0 * width;
+    }
 
     //
     // Reset the image pan and image zoom.
@@ -4132,6 +4166,11 @@ ViewerWindow::AdjustView3d(const double *limits)
 //  Programmer: Eric Brugger
 //  Creation:   December 22, 2003
 //
+//  Modifications:
+//    Eric Brugger, Thu Oct 28 14:41:35 PDT 2004
+//    I modified the routine to set the view differently depending on the
+//    navigation mode.
+//
 // ****************************************************************************
 
 void
@@ -4149,21 +4188,22 @@ ViewerWindow::SetInitialView3d()
     }
 
     //
+    // Get the navigation mode.  The view is set differently depending
+    // on whether the navigation mode is Trackball or Flythrough.
+    //
+    InteractorAttributes::NavigationMode navigationMode =
+        visWindow->GetInteractorAtts()->GetNavigationMode();
+
+    //
     // Get the current view.
     //
     avtView3D view3D=visWindow->GetView3D();
 
     //
-    // Calculate the new focal point.
-    //
-    view3D.focus[0] = (boundingBox3d[1] + boundingBox3d[0]) / 2.0;
-    view3D.focus[1] = (boundingBox3d[3] + boundingBox3d[2]) / 2.0;
-    view3D.focus[2] = (boundingBox3d[5] + boundingBox3d[4]) / 2.0;
-
-    //
     // Calculate the new parallel scale.
     //
     double    width;
+    double    distance;
 
     width = 0.5 * sqrt(((boundingBox3d[1] - boundingBox3d[0]) *
                         (boundingBox3d[1] - boundingBox3d[0])) +
@@ -4171,14 +4211,44 @@ ViewerWindow::SetInitialView3d()
                         (boundingBox3d[3] - boundingBox3d[2])) +
                        ((boundingBox3d[5] - boundingBox3d[4]) *
                         (boundingBox3d[5] - boundingBox3d[4])));
+    distance = width / tan (view3D.viewAngle * 3.1415926535 / 360.);
 
-    view3D.parallelScale = width;
+    if (navigationMode == InteractorAttributes::Trackball)
+    {
+        view3D.parallelScale = width;
+    }
+    else
+    {
+        view3D.parallelScale = width / 20.;
+    }
+
+    //
+    // Calculate the new focal point.
+    //
+    view3D.focus[0] = (boundingBox3d[1] + boundingBox3d[0]) / 2.;
+    view3D.focus[1] = (boundingBox3d[3] + boundingBox3d[2]) / 2.;
+    if (navigationMode == InteractorAttributes::Trackball)
+    {
+        view3D.focus[2] = (boundingBox3d[5] + boundingBox3d[4]) / 2.;
+    }
+    else
+    {
+        view3D.focus[2] += (1.0 - 1.0 / 20.) * distance;
+    }
 
     //
     // Calculate the near and far clipping planes.
     //
-    view3D.nearPlane = - 2.0 * width;
-    view3D.farPlane  =   2.0 * width;
+    if (navigationMode == InteractorAttributes::Trackball)
+    {
+        view3D.nearPlane = - 2.0 * width;
+        view3D.farPlane  =   2.0 * width;
+    }
+    else
+    {
+        view3D.nearPlane = - (1.0 / 20.) * distance * 0.99;
+        view3D.farPlane  = (1.0 - 1.0 / 20.) * distance + 2.0 * width;
+    }
 
     //
     // Update the view.
@@ -6589,7 +6659,7 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
         annots.CreateNode(windowNode, true, true);
 
         //
-        // Save out the annotations.
+        // Save out the interactor attributes.
         //
         InteractorAttributes interactor(*visWindow->GetInteractorAtts());
         interactor.CreateNode(windowNode, true, true);
@@ -6975,7 +7045,7 @@ ViewerWindow::SetFromNode(DataNode *parentNode)
     }
 
     //
-    // Read in and set the light list.
+    // Read in and set the interactor attributes.
     //
     if((node = windowNode->GetNode("InteractorAttributes")) != 0)
     {
@@ -6983,8 +7053,6 @@ ViewerWindow::SetFromNode(DataNode *parentNode)
         interactorAtts.SetFromNode(windowNode);
         SetInteractorAtts(&interactorAtts);
     }
-
-
 
     //
     // Read in the view keyframes.

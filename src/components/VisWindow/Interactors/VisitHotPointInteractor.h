@@ -6,6 +6,7 @@
 
 // Forward declarations.
 struct HotPoint;
+class FlyThrough;
 class Lineout2D;
 class Navigate2D;
 class Navigate3D;
@@ -45,6 +46,9 @@ class ZoomCurve;
 //    Eric Brugger, Wed Oct 15 17:32:48 PDT 2003
 //    Added NavigateCurve interactor.
 //
+//    Eric Brugger, Thu Oct 28 15:31:02 PDT 2004
+//    Added FlyThrough interactor.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitHotPointInteractor : public VisitInteractor
@@ -79,6 +83,7 @@ private:
     bool             hotPointMode;
     HotPoint         currentHotPoint;
 
+    FlyThrough       *flyThrough;
     Lineout2D        *lineout2D;
     Navigate3D       *navigate3D;
     Navigate2D       *navigate2D;
