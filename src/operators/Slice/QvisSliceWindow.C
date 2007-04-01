@@ -382,7 +382,8 @@ QvisSliceWindow::UpdateWindow(bool doAll)
         return;
     }
 
-    UpdateMeshNames();
+    if (doAll)
+        UpdateMeshNames();
 
     bool orthogonal = sliceAtts->GetAxisType() != SliceAttributes::Arbitrary;
 
