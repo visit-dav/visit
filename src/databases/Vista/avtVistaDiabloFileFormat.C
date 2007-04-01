@@ -159,7 +159,7 @@ avtVistaDiabloFileFormat::CreateInterface(avtVistaFileFormat *vff,
 // ****************************************************************************
 
 avtVistaDiabloFileFormat::avtVistaDiabloFileFormat(const char *filename)
-    : avtVistaFileFormat(filename)
+    : avtVistaFileFormat(filename, FTYPE_DIABLO)
 {
     spatialDim = 0;
     numPieces = 0;
@@ -243,12 +243,15 @@ avtVistaDiabloFileFormat::FreeUpResources(void)
 //    Mark C. Miller, Wed May 19 10:56:11 PDT 2004
 //    Added support for 2D meshes
 //
+//    Mark C. Miller, Tue Oct 26 10:28:36 PDT 2004
+//    Filtered out BCs from relations. Added node-centered fields
+//
 // ****************************************************************************
 
 void
 avtVistaDiabloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
-    int i, j;
+    int i, j, n;
 
     const Node *top = vTree->GetTop();
 
@@ -260,6 +263,23 @@ avtVistaDiabloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         cerr << "WARNING!!! Didn't find any domains, nothing to visualize" << endl;
         return;
+    }
+
+    //
+    // Strip out anything that looks like a boundary condition relation.
+    // They should really be fields, but thats not how Diablo is writing them
+    //
+    vector<Node*> tmpPieceNodes;
+    for (i = 0; i < numPieces; i++)
+    {
+        if (StringHelpers::FindRE(pieceNodes[i]->parent->text,"BC") < 0)
+            tmpPieceNodes.push_back(pieceNodes[i]);
+    }
+    if (tmpPieceNodes.size() < numPieces)
+    {
+        numPieces = tmpPieceNodes.size();
+        for (i = 0; i < tmpPieceNodes.size(); i++)
+            pieceNodes[i] = tmpPieceNodes[i];
     }
 
     // Adjust pieces upwards by two levels
@@ -279,7 +299,7 @@ avtVistaDiabloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     if (pieceGroups.size() > 1)
     {
         cerr << "WARNING!!! Found more than one candidate group of domains" << endl;
-        cerr << "           Using group named \"" << groupNames[0].c_str() << "\"" << endl;
+        cerr << "           Using group named \"" << groupNames[0] << "\"" << endl;
 
         // rebuild the list of pieceNodes using only the group we've chosen
         delete [] pieceNodes;
@@ -348,57 +368,111 @@ avtVistaDiabloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     //
     for (i = 0; i < numPieces; i++)
     {
-        int numFieldNodes = 0;
-        Node **fieldNodes = 0;
-
-        
-        const Node *elemView = vTree->GetNodeFromPath(pieceNodes[i], "material1");
-        vTree->FindNodes(elemView, "/%F.*", &fieldNodes, &numFieldNodes, BottomUp);
-
-        vector<string> fieldNames;
-        vector<vector<string> > fieldGroups;
-        groupNames.clear();
-        for (j = 0; j < numFieldNodes; j++)
-        {
-            fieldNames.push_back(vTree->GetPathFromNode(elemView,
-                                                        fieldNodes[j]));
-        }
-        StringHelpers::GroupStringsAsPaths(fieldNames, fieldGroups, groupNames);
-
-        // iterate over the groups adding fields to the list of fields on
-        // this piece
         vector<FieldInfo_t> fieldsOnThisPiece;
-        for (j = 0; j < fieldGroups.size(); j++)
+
+        // First pass for zone-centered fields, 2nd pass for node-centered
+        for (n = 0; n < 2; n++)
         {
+            avtCentering centering = n == 0 ? AVT_ZONECENT : AVT_NODECENT;
+            const char *viewName = n == 0 ? "material1" : "node_set";
 
-            bool eraseEntriesIfFound = true;
-            if (HasAllComponents(fieldGroups[j], eraseEntriesIfFound,
-                "CauchyStress_sig11", "CauchyStress_sig12", "CauchyStress_sig22",
-                "CauchyStress_sig23", "CauchyStress_sig31", "CauchyStress_sig33", 0))
+            int numFieldNodes = 0;
+            Node **fieldNodes = 0;
+        
+            const Node *elemView = vTree->GetNodeFromPath(pieceNodes[i], viewName);
+            vTree->FindNodes(elemView, "/%F.*", &fieldNodes, &numFieldNodes, BottomUp);
+
+            vector<string> fieldNames;
+            vector<vector<string> > fieldGroups;
+            groupNames.clear();
+            for (j = 0; j < numFieldNodes; j++)
             {
-                FieldInfo_t fieldInfo;
-                fieldInfo.visitVarName = string(groupNames[j],1,string::npos);
-                fieldInfo.visitVarName += "";
-                //fieldInfo.visitVarName += "_stress";
-                fieldInfo.varType = AVT_SYMMETRIC_TENSOR_VAR;
-                fieldInfo.centering = AVT_ZONECENT;
-                fieldInfo.compNames.push_back("CauchyStress_sig11");
-                fieldInfo.compNames.push_back("CauchyStress_sig12");
-                fieldInfo.compNames.push_back("CauchyStress_sig22");
-                fieldInfo.compNames.push_back("CauchyStress_sig23");
-                fieldInfo.compNames.push_back("CauchyStress_sig31");
-                fieldInfo.compNames.push_back("CauchyStress_sig33");
-                fieldsOnThisPiece.push_back(fieldInfo);
+                fieldNames.push_back(vTree->GetPathFromNode(elemView,
+                                                            fieldNodes[j]));
             }
+            StringHelpers::GroupStringsAsPaths(fieldNames, fieldGroups, groupNames);
 
-            for (int k = 0; k < fieldGroups[j].size(); k++)
+            // iterate over the groups adding fields to the list of fields on
+            // this piece
+            for (j = 0; j < fieldGroups.size(); j++)
             {
-                FieldInfo_t fieldInfo;
-                fieldInfo.visitVarName  = string(fieldGroups[j][k],1,string::npos);
-                fieldInfo.varType = AVT_SCALAR_VAR;
-                fieldInfo.centering = AVT_ZONECENT;
-                fieldInfo.compNames.push_back(string(fieldGroups[j][k],1,string::npos));
-                fieldsOnThisPiece.push_back(fieldInfo);
+
+                bool eraseEntriesIfFound = true;
+                if (HasAllComponents(fieldGroups[j], eraseEntriesIfFound,
+                    "CauchyStress_sig11", "CauchyStress_sig12", "CauchyStress_sig22",
+                    "CauchyStress_sig23", "CauchyStress_sig31", "CauchyStress_sig33", 0))
+                {
+                    FieldInfo_t fieldInfo;
+                    fieldInfo.visitVarName = string(groupNames[j],1,string::npos);
+                    fieldInfo.varType = AVT_SYMMETRIC_TENSOR_VAR;
+                    fieldInfo.centering = centering;
+                    fieldInfo.compNames.push_back("CauchyStress_sig11");
+                    fieldInfo.compNames.push_back("CauchyStress_sig12");
+                    fieldInfo.compNames.push_back("CauchyStress_sig22");
+                    fieldInfo.compNames.push_back("CauchyStress_sig23");
+                    fieldInfo.compNames.push_back("CauchyStress_sig31");
+                    fieldInfo.compNames.push_back("CauchyStress_sig33");
+                    fieldsOnThisPiece.push_back(fieldInfo);
+                }
+                if (HasAllComponents(fieldGroups[j], eraseEntriesIfFound,
+                    "disp_incx", "disp_incy", "disp_incz", 0))
+                {
+                    FieldInfo_t fieldInfo;
+                    fieldInfo.visitVarName = "disp_inc"; 
+                    fieldInfo.varType = AVT_VECTOR_VAR;
+                    fieldInfo.centering = centering;
+                    fieldInfo.compNames.push_back("disp_incx");
+                    fieldInfo.compNames.push_back("disp_incy");
+                    fieldInfo.compNames.push_back("disp_incz");
+                    fieldsOnThisPiece.push_back(fieldInfo);
+                }
+                if (HasAllComponents(fieldGroups[j], eraseEntriesIfFound,
+                    "disp_np1x", "disp_np1y", "disp_np1z", 0))
+                {
+                    FieldInfo_t fieldInfo;
+                    fieldInfo.visitVarName = "disp_np1"; 
+                    fieldInfo.varType = AVT_VECTOR_VAR;
+                    fieldInfo.centering = centering;
+                    fieldInfo.compNames.push_back("disp_np1x");
+                    fieldInfo.compNames.push_back("disp_np1y");
+                    fieldInfo.compNames.push_back("disp_np1z");
+                    fieldsOnThisPiece.push_back(fieldInfo);
+                }
+                if (HasAllComponents(fieldGroups[j], eraseEntriesIfFound,
+                    "coord_nx", "coord_ny", "coord_nz", 0))
+                {
+                    FieldInfo_t fieldInfo;
+                    fieldInfo.visitVarName = "coord_n"; 
+                    fieldInfo.varType = AVT_VECTOR_VAR;
+                    fieldInfo.centering = centering;
+                    fieldInfo.compNames.push_back("coord_nx");
+                    fieldInfo.compNames.push_back("coord_ny");
+                    fieldInfo.compNames.push_back("coord_nz");
+                    fieldsOnThisPiece.push_back(fieldInfo);
+                }
+                if (HasAllComponents(fieldGroups[j], eraseEntriesIfFound,
+                    "coord_np1x", "coord_np1y", "coord_np1z", 0))
+                {
+                    FieldInfo_t fieldInfo;
+                    fieldInfo.visitVarName = "coord_np1"; 
+                    fieldInfo.varType = AVT_VECTOR_VAR;
+                    fieldInfo.centering = centering;
+                    fieldInfo.compNames.push_back("coord_np1x");
+                    fieldInfo.compNames.push_back("coord_np1y");
+                    fieldInfo.compNames.push_back("coord_np1z");
+                    fieldsOnThisPiece.push_back(fieldInfo);
+                }
+
+                for (int k = 0; k < fieldGroups[j].size(); k++)
+                {
+                    FieldInfo_t fieldInfo;
+                    fieldInfo.visitVarName  = string(fieldGroups[j][k],1,string::npos);
+                    fieldInfo.varType = AVT_SCALAR_VAR;
+                    fieldInfo.centering = centering;
+                    fieldInfo.compNames.push_back(string(fieldGroups[j][k],1,string::npos));
+                    fieldsOnThisPiece.push_back(fieldInfo);
+                }
+
             }
 
         }
@@ -520,7 +594,7 @@ avtVistaDiabloFileFormat::GetMesh(int domain, const char *meshname)
     {
         const char *piecePath = vTree->GetPathFromNode(top, pieceNodes[domain]);
         char fieldName[32];
-        sprintf(fieldName, "%c_coord_np1", (char) ('x'+i));
+        sprintf(fieldName, "coord_np1%c", (char) ('x'+i));
         sprintf(tempStr, "%s/node_set/Fields/%s", piecePath, fieldName);
 
         size_t dSize = 0;
@@ -573,7 +647,7 @@ avtVistaDiabloFileFormat::GetMesh(int domain, const char *meshname)
     const double *coords0 = coords[0];
     const double *coords1 = coords[1];
     const double *coords2 = coords[2];
-    for (i = 0 ; i < numNodes; i++)
+    for (int i = 0 ; i < numNodes; i++)
     {
         *tmp++ = *coords0++;
         *tmp++ = *coords1++;
@@ -665,6 +739,10 @@ avtVistaDiabloFileFormat::GetVectorVar(int domain, const char *varname)
 //    Mark C. Miller, Wed May 19 10:56:11 PDT 2004
 //    Added support for 2D meshes
 //
+//    Mark C. Miller, Tue Oct 26 10:28:36 PDT 2004
+//    Added support for node-centered fields. Used ReadDataset function that
+//    always returns float data
+//
 // ****************************************************************************
 
 vtkFloatArray *
@@ -693,30 +771,25 @@ avtVistaDiabloFileFormat::ReadVar(int domain, const char *visitName)
 
     vistaNames = fieldInfo.compNames;
     int numComponents = vistaNames.size();
+    avtCentering centering = fieldInfo.centering;
 
     //
-    // Find 'elem' and 'node' Vista nodes beneath this domain's Vista node
+    // Find 'elem' or 'node' Vista nodes beneath this domain's Vista node
     //
-    int numElemViews = 0;
-    Node **elemViews = 0;
-    vTree->FindNodes(pieceNodes[domain], "/%Vmaterial1", &elemViews, &numElemViews, TopDown);
-    if ((numElemViews == 0) || (numElemViews > 1))
+    int numViews = 0;
+    Node **views = 0;
+    if (centering == AVT_ZONECENT)
+        vTree->FindNodes(pieceNodes[domain], "/%Vmaterial1", &views, &numViews, TopDown);
+    else
+        vTree->FindNodes(pieceNodes[domain], "/%Vnode_set", &views, &numViews, TopDown);
+    if ((numViews == 0) || (numViews > 1))
     {
-        EXCEPTION2(UnexpectedValueException, 1, numElemViews);
-    }
-    int numNodeViews = 0;
-    Node **nodeViews = 0;
-    vTree->FindNodes(pieceNodes[domain], "/%Vnode_set", &nodeViews, &numNodeViews, TopDown);
-    if ((numNodeViews == 0) || (numNodeViews > 1))
-    {
-        EXCEPTION2(UnexpectedValueException, 1, numNodeViews);
+        EXCEPTION2(UnexpectedValueException, 1, numViews);
     }
 
-    int numElems = elemViews[0]->len;
-    int numNodes = nodeViews[0]->len;
+    int numVals = views[0]->len;
 
-    delete [] elemViews;
-    delete [] nodeViews;
+    delete [] views;
 
     //
     // Figure out which file to read from
@@ -727,26 +800,31 @@ avtVistaDiabloFileFormat::ReadVar(int domain, const char *visitName)
     //
     // Read all the component's data
     //
-    int numVals;
-    double **compData = new double*[numComponents];
+    float **compData = new float*[numComponents];
     for (i = 0; i < numComponents; i++)
     {
         size_t dSize;
 
         const char *piecePath = vTree->GetPathFromNode(top, pieceNodes[domain]);
-        if (string(visitName).find_first_of('/') == string::npos)
-            sprintf(tempStr, "%s/material1/Fields/%s", piecePath, visitName);
+        if (centering == AVT_ZONECENT)
+        {
+            if (string(visitName).find_first_of('/') == string::npos)
+                sprintf(tempStr, "%s/material1/Fields/%s", piecePath, visitName);
+            else
+                sprintf(tempStr, "%s/material1/%s/Fields/%s", piecePath, visitName, vistaNames[i].c_str());
+        }
         else
-            sprintf(tempStr, "%s/material1/%s/Fields/%s", piecePath, visitName, vistaNames[i].c_str());
+        {
+            sprintf(tempStr, "%s/node_set/Fields/%s", piecePath, vistaNames[i].c_str());
+        }
 
         compData[i] = 0;
-        if (ReadDataset(fileName, tempStr, 0, &dSize, (void**) &compData[i]))
+        if (ReadDataset(fileName, tempStr, &dSize, &compData[i]))
         {
-            if (dSize != numElems)
+            if (dSize != numVals)
             {
-                EXCEPTION2(UnexpectedValueException, numElems, dSize);
+                EXCEPTION2(UnexpectedValueException, numVals, dSize);
             }
-            numVals = numElems;
             continue;
         }
         else
@@ -789,7 +867,9 @@ avtVistaDiabloFileFormat::ReadVar(int domain, const char *visitName)
     for (i = 0; i < numVals; i++)
     {
         for (j = 0; j < numComponents; j++)
+        {
             *fbuf++ = compData[j][i];
+        }
         for (j = numComponents; j < numAllocComponents; j++)
             *fbuf++ = 0.0;
     }

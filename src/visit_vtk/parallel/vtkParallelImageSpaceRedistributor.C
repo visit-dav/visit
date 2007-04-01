@@ -20,17 +20,24 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataReader.h>
-#include <vtkPolyDataReader.h>
+#include <vtkPolyDataRelevantPointsFilter.h>
 
 #include <ImproperUseException.h>
 #include <NoInputException.h>
 #include <TimingsManager.h>
 
 #include <avtParallel.h>
+#include <DebugStream.h>
 
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
+
+
+using std::string;
+using std::vector;
+
+vtkStandardNewMacro(vtkParallelImageSpaceRedistributor);
 
 // ****************************************************************************
 //  Function:  AreaOwned
@@ -55,13 +62,6 @@ static void AreaOwned(int rank, int size, int w, int h,
     y1 = (h*rank)/size;
     y2 = ((h*(rank+1))/size);
 }
-
-
-using std::string;
-using std::vector;
-
-vtkStandardNewMacro(vtkParallelImageSpaceRedistributor);
-
 
 // ****************************************************************************
 //  Constructor: vtkParallelImageSpaceRedistributor()
@@ -131,11 +131,24 @@ vtkParallelImageSpaceRedistributor::GetOutput()
 //    Rewrote basic screen-division algorithm.
 //    Made some heavy optimizations.  Freed some memory.
 //
+//    Jeremy Meredith, Tue Oct 26 22:19:35 PDT 2004
+//    Another major rewrite.  It was being naive about outgoing allocation
+//    and couldn't survive very large datasets.  I refactored a bunch,
+//    rewrote the parallel communication so it could use MPI_Alltoallv which
+//    is much faster than point-to-point, made a two-pass algorithm to
+//    count output cells for outgoing data before doing the allocations,
+//    tried to keep as much in-place transformation as possible, and added
+//    vtkPolyDataRelevantPointsFilter to prevent communicating needless
+//    point data.
+//
 // ****************************************************************************
 void
 vtkParallelImageSpaceRedistributor::Execute(void)
 {
 #ifdef PARALLEL
+    //
+    // Do some basic setup -- collect some important data
+    //
     if (ren == NULL)
     {
         EXCEPTION0(ImproperUseException)
@@ -156,75 +169,37 @@ vtkParallelImageSpaceRedistributor::Execute(void)
 
     vtkPolyData *input = GetInput();
     int ncells = input->GetNumberOfCells();
-    vector<vtkPolyData *>  givers;
-    vector<unsigned char*> giverstrings;
-    vector<unsigned char*> keeperstrings;
-    vector<unsigned int>   giverlengths;
-    vector<unsigned int>   keeperlengths;
-
-    //
-    // Create some automatic variables that we will use when generating the
-    // outputs.
-    //
     vtkPointData *inPD       = input->GetPointData();
     vtkCellData  *inCD       = input->GetCellData();
     vtkIdType     npts       = 0;
     vtkIdType    *cellPts    = 0;
+
     input->BuildCells();
 
-    // initialize outgoing datasets
-    giverstrings.resize(size);
-    giverlengths.resize(size);
-    givers.resize(size);
-    keeperstrings.resize(size);
-    keeperlengths.resize(size);
-    for (i=0; i<size; i++)
-    {
-        givers[i] = vtkPolyData::New();
-        givers[i]->SetPoints(input->GetPoints());
-        givers[i]->GetPointData()->ShallowCopy(inPD);
-        givers[i]->GetCellData()->CopyAllocate(inCD,input->GetNumberOfCells());
-        givers[i]->Allocate(input->GetNumberOfCells()*5);
-    }
 
-    // divide up data
-    float *xformedpts;
-    float *pt;
+    //
+    // Initialize outgoing datasets
+    //
+    vector<vtkPolyData *> outgoingPolyData;
+    vector<int>           outgoingCellCount;
+    outgoingPolyData.resize(size, NULL);
+    outgoingCellCount.resize(size, 0);
 
+    //
+    // Transform the points
+    //
     int TH_transform = visitTimer->StartTimer(); 
-    xformedpts = new float[3 * input->GetNumberOfPoints()];
-
-    // Get world->view matrix
-    vtkMatrix4x4 *M1 = vtkMatrix4x4::New();
-    M1->DeepCopy(ren->GetActiveCamera()->
-                                GetCompositePerspectiveTransformMatrix(1,0,1));
-
-    // Set up view->display matrix
-    vtkMatrix4x4 *M2 = vtkMatrix4x4::New();
-    {
-        float *v = ren->GetViewport();
-        float *a = ren->GetAspect();
-
-        M2->Identity();
-        M2->Element[0][0] = float(width )*(v[2]-v[0])/(2. * a[0]);
-        M2->Element[1][1] = float(height)*(v[3]-v[1])/(2. * a[1]);
-        M2->Element[0][3] = float(width )*(v[2]+v[0])/2.;
-        M2->Element[1][3] = float(height)*(v[3]+v[1])/2.;
-    }
-
-    // Compose world->display matrix
-    vtkMatrix4x4 *M3 = vtkMatrix4x4::New();
-    vtkMatrix4x4::Multiply4x4(M2,M1,M3);
-
+    vtkMatrix4x4 *worldToView = CreateWorldToDisplayMatrix();
+    float *xformedpts = new float[3 * input->GetNumberOfPoints()];
+    float *pt, p2[4];
     for (j=0; j < input->GetNumberOfPoints(); j++)
     {
         pt = input->GetPoint(j);
 
         float p1[4] = {0,0,0,1}; // set homogenous to 1.0
         input->GetPoint(j, p1);
-        float p2[4];
 
-        M3->MultiplyPoint(p1, p2);
+        worldToView->MultiplyPoint(p1, p2);
         if (p2[3] != 0)
         {
             xformedpts[j*3+0]=p2[0]/p2[3];
@@ -232,157 +207,214 @@ vtkParallelImageSpaceRedistributor::Execute(void)
             xformedpts[j*3+2]=p2[2]/p2[3];
         }
     }
-    visitTimer->StopTimer(TH_transform,
-                          "vtkParallelImageSpaceRedistributor -- transform");
+    worldToView->Delete();
+    visitTimer->StopTimer(TH_transform, "transform");
+    visitTimer->DumpTimings();
 
+
+    //
+    // Figure out how many polgons I'm going to send out
+    //
+    int TH_countdestinations = visitTimer->StartTimer(); 
+    for (i=0; i<ncells; i++)
+    {
+        input->GetCellPoints(i, npts, cellPts);
+        IncrementOutgoingCellCounts(xformedpts, npts, cellPts,
+                                    outgoingCellCount);
+    }
+    visitTimer->StopTimer(TH_countdestinations, "countdestinations");
+    visitTimer->DumpTimings();
+
+
+    //
+    // Allocate the space for any outgoing polydata
+    //
+    int TH_allocate = visitTimer->StartTimer(); 
+    for (i=0; i<size; i++)
+    {
+        if (outgoingCellCount[i] > 0)
+        {
+            outgoingPolyData[i] = vtkPolyData::New();
+            outgoingPolyData[i]->SetPoints(input->GetPoints());
+            outgoingPolyData[i]->GetPointData()->ShallowCopy(inPD);
+            outgoingPolyData[i]->GetCellData()->CopyAllocate(inCD,outgoingCellCount[i]);
+            outgoingPolyData[i]->Allocate(outgoingCellCount[i]*5);
+        }
+    }
+    visitTimer->StopTimer(TH_allocate, "allocate");
+    visitTimer->DumpTimings();
+
+    //
+    // Do the actual stuffing into the output data sets
+    //
     int TH_finddestinations = visitTimer->StartTimer(); 
     vector<int> dests;
     for (i=0; i<ncells; i++)
     {
         input->GetCellPoints(i, npts, cellPts);
 
-        int dest = WhichProcessors(xformedpts, npts, cellPts, dests);
+        int dest = WhichProcessorsForCell(xformedpts, npts, cellPts, dests);
 
+        // code: dest > 0 means single destination
+        //       dest==-1 means multiple destinations
+        //       dest==-2 means no destinations
         if (dest >= 0)
         {
-            int cnt = givers[dest]->InsertNextCell(input->GetCellType(i),
-                                               npts, cellPts);
-            givers[dest]->GetCellData()->CopyData(inCD, i, cnt);
+            int cnt = outgoingPolyData[dest]->InsertNextCell(
+                                                   input->GetCellType(i),
+                                                   npts, cellPts);
+            outgoingPolyData[dest]->GetCellData()->CopyData(inCD, i, cnt);
         }
         else if (dest == -1)
         {
             for (j=0; j<dests.size(); j++)
             {
                 int cnt;
-                cnt = givers[dests[j]]->InsertNextCell(input->GetCellType(i),
+                cnt = outgoingPolyData[dests[j]]->InsertNextCell(
+                                                       input->GetCellType(i),
                                                        npts, cellPts);
-                givers[dests[j]]->GetCellData()->CopyData(inCD, i, cnt);
+                outgoingPolyData[dests[j]]->GetCellData()->CopyData(inCD, i, cnt);
             }
             dests.clear();
         }
         // else dest==-2 and thus no one owned it.
     }
-    visitTimer->StopTimer(TH_finddestinations,
-                     "vtkParallelImageSpaceRedistributor -- finddestinations");
+    visitTimer->StopTimer(TH_finddestinations, "finddestinations");
+    visitTimer->DumpTimings();
 
-    for (i=0; i<size; i++)
-    {
-        givers[i]->Squeeze();
-    }
-    delete [] xformedpts;
+    //
+    // Done with our xformed points, so delete that memory
+    //
+    delete[] xformedpts;
 
-    // convert data to strings so we can send them to other processors
+    //
+    // Convert data to strings so we can send them to other processors
+    //
     int TH_stringize = visitTimer->StartTimer(); 
+    int totalSend = 0;
+    vector<int> sendCount;
+    vector<unsigned char*> sendString;
+    sendString.resize(size, NULL);
+    sendCount.resize(size, 0);
     for (i=0; i<size; i++)
     {
-        if (rank != i)
-            giverstrings[i] = GetDataString(giverlengths[i], givers[i]);
-    }
-    visitTimer->StopTimer(TH_stringize,
-                          "vtkParallelImageSpaceRedistributor -- stringize");
-
-    int TH_communicate = visitTimer->StartTimer(); 
-    //
-    // Send all data to the appropriate processors
-    // and Receive data from other processors
-    //
-    for (i=0; i<size; i++)
-    {
-        for (j=0; j<i; j++)
+        // Note that we don't want to bother stringizing and all-to-all'ing
+        // the polygons that we know are going to stay on this processor,
+        // so we skip when i==rank.  Also, an outgoing polydata will still have
+        // a minimal size with no cells, so explicitly skip them so we can
+        // skip that bit of communication entirely.
+        if (rank != i && outgoingCellCount[i] > 0)
         {
-            if (i!=j)
-            {
-                if (rank == i)
-                {
-                    // send size to j, then send data to j
-                    MPI_Send(&giverlengths[j], 1, MPI_INT, j, 0,
-                             MPI_COMM_WORLD);
-                    MPI_Send(giverstrings[j], giverlengths[j],
-                             MPI_UNSIGNED_CHAR, j, 0, MPI_COMM_WORLD);
-                    
-                    // receive size from j, allocate new memory,
-                    // and receive data from j
-                    keeperlengths[j] = 0;
-                    MPI_Recv(&keeperlengths[j], 1, MPI_INT, j, 0,
-                             MPI_COMM_WORLD, &stat);
-                    keeperstrings[j] = new unsigned char[ keeperlengths[j] ];
-                    MPI_Recv(keeperstrings[j], keeperlengths[j],
-                             MPI_UNSIGNED_CHAR, j, 0, MPI_COMM_WORLD, &stat);
-                }
-                else if (rank == j)
-                {
-                    // receive size from i, allocate new memory,
-                    // and receive data from i
-                    keeperlengths[i] = 0;
-                    MPI_Recv(&keeperlengths[i], 1, MPI_INT, i, 0,
-                             MPI_COMM_WORLD, &stat);
-                    keeperstrings[i] = new unsigned char[ keeperlengths[i] ];
-                    MPI_Recv(keeperstrings[i], keeperlengths[i],
-                             MPI_UNSIGNED_CHAR, i, 0, MPI_COMM_WORLD, &stat);
-
-                    // send size to i, then send data to i
-                    MPI_Send(&giverlengths[i], 1, MPI_INT, i, 0,
-                             MPI_COMM_WORLD);
-                    MPI_Send(giverstrings[i], giverlengths[i],
-                             MPI_UNSIGNED_CHAR, i, 0, MPI_COMM_WORLD);
-                    
-                }
-            }
+            sendString[i] = GetDataString(sendCount[i], outgoingPolyData[i]);
+            outgoingPolyData[i]->Delete();
+            totalSend += sendCount[i];
         }
     }
-    visitTimer->StopTimer(TH_communicate,
-                          "vtkParallelImageSpaceRedistributor -- communicate");
+    visitTimer->StopTimer(TH_stringize, "stringize");
+    visitTimer->DumpTimings();
 
-    // now all the data we need is in givers[rank] and keeperstrings.
-    givers.clear();
-    giverstrings.clear();
-    giverlengths.clear();
-    for (i=0; i<givers.size(); i++)
+
+    //
+    // Determine how much data everyone will be sending to everyone else
+    //
+    vector<int> recvCount(size);
+    MPI_Alltoall(&sendCount[0], 1, MPI_INT,
+                 &recvCount[0], 1, MPI_INT, MPI_COMM_WORLD);
+
+    int totalRecv = 0;
+    for (i = 0 ; i < size ; i++)
     {
-        delete [] giverstrings[i];
-        if (i != rank)
-            givers[i]->Delete();
+        totalRecv += recvCount[i];
     }
     
-                   
     //
-    // Now create the output.
+    // Build the displacements for Alltoallv from the known sizes
+    //
+    vector<int> sendDisp(size);
+    vector<int> recvDisp(size);
+    sendDisp[0] = 0;
+    recvDisp[0] = 0;
+    for (i = 1 ; i < size ; i++)
+    {
+        sendDisp[i] = sendDisp[i-1] + sendCount[i-1];
+        recvDisp[i] = recvDisp[i-1] + recvCount[i-1];
+    }
+
+    //
+    // Copy data to a single big buffer for the Alltoallv
+    //
+    unsigned char *big_send_buffer = new unsigned char[totalSend];
+    for (i = 0 ; i < size ; i++)
+    {
+        memcpy(&big_send_buffer[sendDisp[i]], sendString[i], sendCount[i]);
+    }
+
+    //
+    // Transfer the actual data
+    //
+    int TH_communicate = visitTimer->StartTimer(); 
+    unsigned char *big_recv_buffer = new unsigned char[totalRecv];
+    MPI_Alltoallv(big_send_buffer, &sendCount[0], &sendDisp[0], MPI_CHAR,
+                  big_recv_buffer, &recvCount[0], &recvDisp[0], MPI_CHAR,
+                  MPI_COMM_WORLD);
+    visitTimer->StopTimer(TH_communicate, "communicate");
+    visitTimer->DumpTimings();
+
+
+    //
+    // Now all the data we need is in big_recv_buffer or
+    // outgoingPolyData[rank], so free other memory
+    //
+    delete[] big_send_buffer;
+
+    for (i=0; i<sendString.size(); i++)
+    {
+        delete[] sendString[i];
+    }
+    
+    //
+    // Now convert the received data to polydata
     //
     int TH_appending = visitTimer->StartTimer(); 
-
     vtkAppendPolyData *appender = vtkAppendPolyData::New();
-    appender->AddInput(givers[rank]);
+
+    // remember we explicitly didn't convert our own data to a string, so
+    // we have to add it to the appender explicitly
+    if (outgoingPolyData[rank])
+        appender->AddInput(outgoingPolyData[rank]);
+
     for (i=0; i<size; i++)
     {
-        if (i!=rank)
+        if (recvCount[i] > 0)
         {
-            vtkPolyData *pd = GetDataVTK(keeperstrings[i], keeperlengths[i]);
+            vtkPolyData *pd = GetDataVTK(&big_recv_buffer[recvDisp[i]],
+                                         recvCount[i]);
             appender->AddInput(pd);
+            pd->Delete();
         }
     }
+    delete[] big_recv_buffer;
     
     appender->Update();
     GetOutput()->ShallowCopy(appender->GetOutput());
-    visitTimer->StopTimer(TH_appending,
-                          "vtkParallelImageSpaceRedistributor -- appending");
+    visitTimer->StopTimer(TH_appending, "appending");
+    visitTimer->DumpTimings();
 
     //
     // Free some memory!
     //
     appender->RemoveAllInputs();
     appender->Delete();
-    for (i=0; i<keeperstrings.size(); i++)
-        delete [] keeperstrings[i];
-    givers[rank]->Delete();
+    if (outgoingPolyData[rank])
+        outgoingPolyData[rank]->Delete();
 
-    visitTimer->StopTimer(TH_total,
-                          "vtkParallelImageSpaceRedistributor -- total");
+    visitTimer->StopTimer(TH_total, "vtkParallelImageSpaceRedistributor");
     visitTimer->DumpTimings();
 #endif
 }
 
 
-//***************************************************************************
+// ***************************************************************************
 //  Method: vtkParallelImageSpaceRedistributor::GetDataVTK()
 //
 //  Purpose:
@@ -397,7 +429,7 @@ vtkParallelImageSpaceRedistributor::Execute(void)
 //    Jeremy Meredith, Thu Oct 21 18:21:50 PDT 2004
 //    Cleaned up a little.
 //
-//**************************************************************************
+// **************************************************************************
 
 vtkPolyData *
 vtkParallelImageSpaceRedistributor::GetDataVTK(unsigned char *asChar,
@@ -422,7 +454,7 @@ vtkParallelImageSpaceRedistributor::GetDataVTK(unsigned char *asChar,
     return asVTK;
 }
 
-//***************************************************************************
+// ***************************************************************************
 //  Method: vtkParallelImageSpaceRedistributor::GetDataString()
 //
 //  Purpose:
@@ -437,11 +469,16 @@ vtkParallelImageSpaceRedistributor::GetDataVTK(unsigned char *asChar,
 //    Jeremy Meredith, Thu Oct 21 18:21:50 PDT 2004
 //    Cleaned up a little.
 //
-//**************************************************************************
+//    Jeremy Meredith, Tue Oct 26 22:31:02 PDT 2004
+//    Added a relevant points filter -- we may have a *lot* more point data
+//    in the outgoing datasets, because we just did a shallow copy on the
+//    points originally.
+//
+// **************************************************************************
 
 unsigned char *
-vtkParallelImageSpaceRedistributor::GetDataString(unsigned int &length,
-                                             vtkPolyData *asVTK)
+vtkParallelImageSpaceRedistributor::GetDataString(int &length,
+                                                  vtkPolyData *asVTK)
 {     
     unsigned char *asChar = NULL;
     
@@ -450,21 +487,28 @@ vtkParallelImageSpaceRedistributor::GetDataString(unsigned int &length,
         EXCEPTION0(NoInputException);
     }
 
+    vtkPolyDataRelevantPointsFilter *relpts;
+    relpts = vtkPolyDataRelevantPointsFilter::New();
+    relpts->SetInput(asVTK);
+    relpts->Update();
+
     vtkDataSetWriter *writer = vtkDataSetWriter::New();
-    writer->SetInput(asVTK);
+    writer->SetInput(relpts->GetOutput());
     writer->SetWriteToOutputString(1);
     writer->SetFileTypeToBinary();
     writer->Write();
-    length = (unsigned int) writer->GetOutputStringLength();
+    length = writer->GetOutputStringLength();
     asChar = (unsigned char *) writer->RegisterAndGetOutputString();
     writer->Delete();
+
+    relpts->Delete();
 
     return asChar;
 }
 
 
-//***************************************************************************
-//  Method: vtkParallelImageSpaceRedistributor::WhichProcessors()
+// ****************************************************************************
+//  Method: vtkParallelImageSpaceRedistributor::WhichProcessorsForCell()
 //
 //  Purpose:
 //      Given a piece of vtkPolyData, the processor that we should use
@@ -474,6 +518,7 @@ vtkParallelImageSpaceRedistributor::GetDataString(unsigned int &length,
 //      that should draw this data.
 //
 // Note:  Currently assumes a horizontal banding!
+//        See below for comments on the return values.
 //
 // Arguments:
 //    pts: an array of floats of points in imagespace
@@ -488,14 +533,24 @@ vtkParallelImageSpaceRedistributor::GetDataString(unsigned int &length,
 //    Rewrote for optimization.  It will avoid using the vector if it can.
 //    It also uses the horizontal strips assumption for speed.
 //
-//**************************************************************************
+//    Jeremy Meredith, Tue Oct 26 22:36:29 PDT 2004
+//    Renamed and added some more comments.
+//
+// ****************************************************************************
 
 int
-vtkParallelImageSpaceRedistributor::WhichProcessors(float *pts,
+vtkParallelImageSpaceRedistributor::WhichProcessorsForCell(float *pts,
                                                vtkIdType npts,
                                                vtkIdType *cellPts,
                                                vector<int> &procs)
 {
+    // dest has some special values: If it is -2, then no processor
+    // contained this cell.  If it is -1, then the client should walk
+    // the procs vector to find destinations.  If it is >=0, then
+    // there was only one destination processor, and this is it.
+    // This is a big optimization because the common case is that
+    // a polygon only belongs to one processor, and using the vector
+    // for the common case can be costly.
     int dest = -2;
 
     //
@@ -540,5 +595,111 @@ vtkParallelImageSpaceRedistributor::WhichProcessors(float *pts,
     }
 
     return dest;
+}
+
+// ****************************************************************************
+//  Method: vtkParallelImageSpaceRedistributor::IncrementOutgoingCellCounts()
+//
+//  Purpose:
+//      Almost identical to WhichProcessorsForCell, except that instead of
+//      returning a list of outgoing processors, it
+//
+// Note:  Currently assumes a horizontal banding!
+//
+// Arguments:
+//    pts: an array of floats of points in imagespace
+//    npts: number of points total
+//    cellPts: pointer to cell point ids
+//    outgoingCellCount: array of counts of outgoing cells
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   October 26, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+vtkParallelImageSpaceRedistributor::IncrementOutgoingCellCounts(float *pts,
+                                               vtkIdType npts,
+                                               vtkIdType *cellPts,
+                                               vector<int> &outgoingCellCount)
+{
+    //
+    // See WhichProcessorsForCell for more notes
+    //
+
+    // create 2d bounding box
+    float minx, maxx, miny, maxy, tempx, tempy;
+    minx = maxx = pts[3*cellPts[0]];
+    miny = maxy = pts[3*cellPts[0]+1];
+
+    int i;
+    for (i=1; i < npts; i++)
+    {
+        tempx = pts[3 * cellPts[i] ];
+        tempy = pts[3 * cellPts[i] + 1];
+        if (tempx < minx)
+            minx = tempx;
+        if (tempx > maxx)
+            maxx = tempx;
+        if (tempy < miny)
+            miny = tempy;
+        if (tempy > maxy)
+            maxy = tempy;
+    }
+
+    for (i=0; i < size; i++)
+    {
+        if (miny <= y2[i] && maxy >= y1[i])
+        {
+            outgoingCellCount[i]++;
+        }
+    }
+}
+
+// ****************************************************************************
+//  Method:  vtkParallelImageSpaceRedistributor::CreateWorldToDisplayMatrix()
+//
+//  Purpose:
+//    Get and compose all matrices required to convert world coordinates
+//    to display coordinates
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    October 26, 2004
+//
+// ****************************************************************************
+
+vtkMatrix4x4 *
+vtkParallelImageSpaceRedistributor::CreateWorldToDisplayMatrix()
+{
+    // Get world->view matrix
+    vtkMatrix4x4 *M1 = vtkMatrix4x4::New();
+    M1->DeepCopy(ren->GetActiveCamera()->
+                                GetCompositePerspectiveTransformMatrix(1,0,1));
+
+    // Set up view->display matrix
+    vtkMatrix4x4 *M2 = vtkMatrix4x4::New();
+    {
+        float *v = ren->GetViewport();
+        float *a = ren->GetAspect();
+
+        M2->Identity();
+        M2->Element[0][0] = float(width )*(v[2]-v[0])/(2. * a[0]);
+        M2->Element[1][1] = float(height)*(v[3]-v[1])/(2. * a[1]);
+        M2->Element[0][3] = float(width )*(v[2]+v[0])/2.;
+        M2->Element[1][3] = float(height)*(v[3]+v[1])/2.;
+    }
+
+    // Compose world->display matrix
+    vtkMatrix4x4 *M3 = vtkMatrix4x4::New();
+    vtkMatrix4x4::Multiply4x4(M2,M1,M3);
+    M2->Delete();
+    M1->Delete();
+
+    return M3;
 }
 

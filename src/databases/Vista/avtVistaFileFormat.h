@@ -43,10 +43,16 @@ class IMVal {
 //    Moved most of Vista/Ale3d specific stuff to its respectife file format
 //    file.
 //
+//    Mark C. Miller, Mon Oct 25 17:13:46 PDT 2004
+//    Added ReadDataset convenience function to always return float data
+//
 // ****************************************************************************
 
 class avtVistaFileFormat : public avtSTMDFileFormat
 {
+
+  public:
+
     typedef enum
     {
         FTYPE_ALE3D,
@@ -63,12 +69,12 @@ class avtVistaFileFormat : public avtSTMDFileFormat
         DTYPE_UNKNOWN
     } VistaDataType;
 
-  public:
     static avtFileFormatInterface *
                                CreateFileFormatInterface(
                                    const char * const *, int);
 
-                               avtVistaFileFormat(const char *);
+                               avtVistaFileFormat(const char *,
+                                   VistaFormatType _formatType = FTYPE_UNKNOWN);
     virtual                   ~avtVistaFileFormat();
 
     virtual const char        *GetType(void)   { return "Vista"; };
@@ -86,12 +92,6 @@ class avtVistaFileFormat : public avtSTMDFileFormat
     virtual void               PopulateDatabaseMetaData(avtDatabaseMetaData *) {};
 
   protected:
-                               avtVistaFileFormat(const char *,
-                                                  avtVistaFileFormat *morphFrom);
-    bool                 ReadDataset(const char *fileName, const char *dsPath,
-                             VistaDataType *dataType, size_t *size, void **buf);
-    void                 GetFileNameForRead(int domain, char *fileName, int size);
-
 
     class VistaTree
     {
@@ -111,7 +111,18 @@ class avtVistaFileFormat : public avtSTMDFileFormat
           char          *theVistaString;
     };
 
-    VistaTree     *vTree;
+    VistaTree           *vTree;
+    VistaFormatType      formatType;
+
+                         avtVistaFileFormat(const char *,
+                                            avtVistaFileFormat *morphFrom);
+
+    void                 GetFileNameForRead(int domain, char *fileName, int size);
+
+    bool                 ReadDataset(const char *fileName, const char *dsPath,
+                             VistaDataType *type, size_t *size, void **buf);
+    bool                 ReadDataset(const char *fileName, const char *dsPath,
+                             size_t *size, float **buf);
 
   private:
 
@@ -120,8 +131,11 @@ class avtVistaFileFormat : public avtSTMDFileFormat
     void                *OpenFile(int fid);
     void                 CloseFile(int fid);
 
+    bool                 ReadDataset(const char *fileName, const char *dsPath,
+                             VistaDataType *type, size_t *size, void **buf,
+                             bool convertToFloat);
+
     char                *writerName;
-    VistaFormatType      formatType;
 
     static const int     MASTER_FILE_INDEX;
     string               masterFileName;

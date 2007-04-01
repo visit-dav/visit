@@ -78,48 +78,25 @@ VisWinLighting::~VisWinLighting()
 //    Modify the routine to set the light position so that the light source
 //    direction vtk passes to OpenGL is normalized.
 //
+//    Kathleen Bonnell, Tue Oct 26 15:58:06 PDT 2004
+//    Camera lights should be defined defined in a coordinate space where 
+//    the camera is located at (0, 0, 1), looking towards (0, 0, 0).  Thus the
+//    focal point should always be (0, 0, 0), and the position is the negative
+//    of the avtLight's direction.
+//
 // ****************************************************************************
 
 void
 VisWinLighting::InitDefaultLight()
 {
-    //
-    //  Get the camera's distance from the focal point.
-    //
-    vtkCamera *cam = mediator.GetCanvas()->GetActiveCamera();
-    float cpos[3], cfoc[3], proj[3], projLen = 0.;
-
-    cam->GetPosition(cpos);
-    cam->GetFocalPoint(cfoc);
-    proj[0] = cpos[0] - cfoc[0];
-    proj[1] = cpos[1] - cfoc[1];
-    proj[2] = cpos[2] - cfoc[2];
-    int i; 
-    for (i = 0; i < 3; i++)
-    {
-         projLen += (proj[i] * proj[i]);
-    }
-
-    //
-    // Position the light so that vtk passes a unit vector for
-    // the light direction to OpenGL.  The projected length is
-    // actually the square of the distance, but that is what we
-    // want, so there is no use taking the square root, only to
-    // to square it again.
-    //
-    float pos[3];
-    pos[0] = cfoc[0] + proj[0] / projLen;
-    pos[1] = cfoc[0] + proj[1] / projLen;
-    pos[2] = cfoc[0] + proj[2] / projLen;
-
     lights[0]->SetLightTypeToCameraLight();
-    lights[0]->SetFocalPoint(cfoc);
-    lights[0]->SetPosition(pos);
+    lights[0]->SetFocalPoint(0, 0, 0);
+    lights[0]->SetPosition(0, 0, 1);
     lights[0]->SetColor(1., 1., 1.);
     lights[0]->SetIntensity(1.);
     lights[0]->SwitchOn();
 
-    for (i = 1 ; i < MAX_LIGHTS ; i++)
+    for (int i = 1 ; i < MAX_LIGHTS ; i++)
     {
         lights[i]->SwitchOff();
     }
@@ -386,6 +363,12 @@ VisWinLighting::GetNumLightsEnabled()
 //    Modify the routine to set the light position so that the light source
 //    direction vtk passes to OpenGL is normalized.
 //
+//    Kathleen Bonnell, Tue Oct 26 15:58:06 PDT 2004
+//    Camera lights should be defined defined in a coordinate space where 
+//    the camera is located at (0, 0, 1), looking towards (0, 0, 0).  Thus the
+//    focal point should always be (0, 0, 0), and the position is the negative
+//    of the avtLight's direction.
+//
 // ****************************************************************************
 
 void
@@ -424,11 +407,21 @@ VisWinLighting::UpdateLightPositions()
         for (i = 0; i < MAX_LIGHTS ; i++)
         {
             aLight = avtlights.Light(i);
-            pos[0] = cfoc[0] - aLight.direction[0] / projLen; 
-            pos[1] = cfoc[1] - aLight.direction[1] / projLen; 
-            pos[2] = cfoc[2] - aLight.direction[2] / projLen; 
-            lights[i]->SetPosition(pos);
-            lights[i]->SetFocalPoint(cfoc);
+            if (aLight.type == CAMERA)
+            {
+                lights[i]->SetPosition(-aLight.direction[0],
+                                       -aLight.direction[1],
+                                       -aLight.direction[2]);
+                lights[i]->SetFocalPoint(0, 0, 0);
+            }
+            else 
+            {
+                pos[0] = cfoc[0] - aLight.direction[0] / projLen; 
+                pos[1] = cfoc[1] - aLight.direction[1] / projLen; 
+                pos[2] = cfoc[2] - aLight.direction[2] / projLen; 
+                lights[i]->SetPosition(pos);
+                lights[i]->SetFocalPoint(cfoc);
+            }
         }
     }
     else 

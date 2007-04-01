@@ -178,7 +178,7 @@ avtVistaAle3dFileFormat::CreateInterface(avtVistaFileFormat *vff,
 // ****************************************************************************
 
 avtVistaAle3dFileFormat::avtVistaAle3dFileFormat(const char *filename)
-    : avtVistaFileFormat(filename)
+    : avtVistaFileFormat(filename, FTYPE_ALE3D)
 {
     spatialDim = 0;
     numPieces = 0;
@@ -271,11 +271,9 @@ avtVistaAle3dFileFormat::FreeUpResources(void)
 //  Creation:   Tue Feb 17 19:19:07 PST 2004
 //
 //  Modifications:
+//
 //    Mark C. Miller, Wed May 19 10:56:11 PDT 2004
 //    Added support for 2D meshes
-//
-//    Brad Whitlock, Mon Sep 20 09:58:27 PDT 2004
-//    Fixed so it builds on Windows.
 //
 // ****************************************************************************
 
@@ -309,7 +307,7 @@ avtVistaAle3dFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     if (pieceGroups.size() > 1)
     {
         cerr << "WARNING!!! Found more than one candidate group of domains" << endl;
-        cerr << "           Using group named \"" << groupNames[0].c_str() << "\"" << endl;
+        cerr << "           Using group named \"" << groupNames[0] << "\"" << endl;
 
         // rebuild the list of pieceNodes using only the group we've chosen
         numPieces = 0;
@@ -448,7 +446,7 @@ avtVistaAle3dFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         // Ok, now run through the map and find which fields were counted exactly
         // numPieces time and which were less (there should not be any that occured
         // more than numPieces times)
-        std::map<string, IMVal<int,0> >::const_iterator mi;
+        map<string, IMVal<int,0> >::const_iterator mi;
         for (mi = fieldMap.begin(); mi != fieldMap.end(); mi++)
         {
             if (mi->second.val == numPieces)
@@ -790,11 +788,9 @@ avtVistaAle3dFileFormat::GetMaterial(int domain, const char *var)
 //  Creation:   Tue Feb 17 19:19:07 PST 2004
 //
 //  Modifications:
+//
 //    Mark C. Miller, Wed May 19 10:56:11 PDT 2004
 //    Added support for 2D meshes
-//
-//    Brad Whitlock, Mon Sep 20 09:59:39 PDT 2004
-//    Fixed so it builds on Windows.
 //
 // ****************************************************************************
 
@@ -889,7 +885,7 @@ avtVistaAle3dFileFormat::GetMesh(int domain, const char *meshname)
     const double *coords0 = coords[0];
     const double *coords1 = coords[1];
     const double *coords2 = coords[2];
-    for (i = 0 ; i < numNodes; i++)
+    for (int i = 0 ; i < numNodes; i++)
     {
         *tmp++ = *coords0++;
         *tmp++ = *coords1++;
