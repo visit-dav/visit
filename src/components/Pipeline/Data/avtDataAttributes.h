@@ -222,7 +222,7 @@ class PIPELINE_API avtDataAttributes
             
     const std::string       &GetVariableName(void) const;
     const std::string       &GetVariableName(int) const;
-    const std::string       &GetVariableUnits(void) const;
+    const std::string       &GetVariableUnits(const char * = NULL) const;
     const std::string       &GetVariableUnits(int) const;
     int                      GetNumberOfVariables(void) const;
     void                     SetActiveVariable(const char *);

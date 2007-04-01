@@ -24,6 +24,10 @@ class     avtRevolvedSurfaceArea;
 //  Programmer: Hank Childs
 //  Creation:   March 18, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Jul 28 08:35:22 PDT 2004
+//    Added VerifyInput.
+//
 // ****************************************************************************
 
 class QUERY_API avtTotalRevolvedSurfaceAreaQuery : public avtSummationQuery
@@ -39,6 +43,7 @@ class QUERY_API avtTotalRevolvedSurfaceAreaQuery : public avtSummationQuery
 
   protected:
     virtual avtDataObject_p       ApplyFilters(avtDataObject_p);
+    virtual void                  VerifyInput(void);
     avtRevolvedSurfaceArea       *surface_area;
     virtual int                   GetNFilters() { return 1; };
 

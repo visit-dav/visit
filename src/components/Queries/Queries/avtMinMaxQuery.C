@@ -182,6 +182,9 @@ avtMinMaxQuery::PreExecute()
 //        nodal:  connected geometry only, entire mesh
 //        zonal:  per-zone quantities, per-material zonal quantities.
 //    
+//    Kathleen Bonnell, Tue Jul 27 09:53:01 PDT 2004 
+//    Store the value per material, even if not mixed. 
+//
 // ****************************************************************************
 
 void 
@@ -343,10 +346,14 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
                 matInfo = mat->ExtractCellMatInfo(elNum);
                 for (i = 0; i < matInfo.size(); ++i)
                 {
+                    matNames.push_back(matInfo[i].name);
                     if (matInfo[i].mix_index != -1)
                     {
-                        matNames.push_back(matInfo[i].name);
                         matValues.push_back(mv->GetBuffer()[matInfo[i].mix_index]);
+                    }
+                    else 
+                    {
+                        matValues.push_back(val);
                     }
                 }
                 matInfo.clear();
@@ -508,11 +515,13 @@ avtMinMaxQuery::PostExecute(void)
         int nMin = 0, nMax = 0;
         if (minInfo1.GetElementNum() != -1)
             nMin++;
-        if ((minInfo2.GetElementNum() != -1) && (minInfo1 != minInfo2))
+        if ((minInfo2.GetElementNum() != -1) && 
+            (!minInfo1.EquivalentForOutput(minInfo2)))
             nMin++;
         if (maxInfo1.GetElementNum() != -1)
             nMax++;
-        if ((maxInfo2.GetElementNum() != -1) && (maxInfo1 != maxInfo2))
+        if ((maxInfo2.GetElementNum() != -1) && 
+            (!maxInfo1.EquivalentForOutput(maxInfo2)))
             nMax++;
 
         nMin = (nMin == 0 ? nMin : (nMax > nMin ? nMax : nMin));

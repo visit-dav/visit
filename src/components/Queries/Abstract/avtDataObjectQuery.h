@@ -56,6 +56,9 @@ typedef void (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Kathleen Bonnell, Thu Jun 24 07:45:47 PDT 2004 
 //    Added intVector and string arguments to PerformQueryInTime. 
 //
+//    Kathleen Bonnell, Wed Jul 28 08:26:05 PDT 2004 
+//    Added Set/GetUnits. 
+//
 // ****************************************************************************
 
 class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
@@ -84,6 +87,8 @@ class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
     virtual void                  SetTimeVarying(bool val) { timeVarying = val;};
 
     void                          SetSILRestriction(const SILRestrictionAttributes *);
+    std::string                  &GetUnits(void) { return units; };
+    void                          SetUnits(const std::string &_units) { units  = _units;};
 
   protected:
     static InitializeProgressCallback

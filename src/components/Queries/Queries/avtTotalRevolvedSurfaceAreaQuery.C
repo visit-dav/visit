@@ -89,3 +89,28 @@ avtTotalRevolvedSurfaceAreaQuery::ApplyFilters(avtDataObject_p inData)
 }
 
 
+// ****************************************************************************
+//  Method: avtTotalRevolvedSurfaceAreaQuery::VerifyInput
+//
+//  Purpose:
+//    Now that we have an input, we can determine what the units are 
+//    and tell the base class.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   July 27, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtTotalRevolvedSurfaceAreaQuery::VerifyInput(void)
+{
+    //
+    // We want to do this in addition to what the base class does, so call the
+    // base class' version of this method as well.
+    //
+    avtSummationQuery::VerifyInput();
+
+    SetUnits(GetInput()->GetInfo().GetAttributes().GetXUnits());
+}

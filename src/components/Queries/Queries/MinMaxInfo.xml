@@ -19,6 +19,8 @@
     </Function>
     <Function name="TransformCoord" user="true" member="true">
     </Function>
+    <Function name="EquivalentForOutput" user="true" member="true">
+    </Function>
     <Include file="header" quoted="false">
       avtMatrix.h
     </Include>
