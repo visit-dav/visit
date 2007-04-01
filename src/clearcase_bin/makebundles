@@ -8,96 +8,57 @@
 # Programmer: Brad Whitlock
 # Date:       Fri Aug 29 13:46:10 PST 2003
 #
+# Modifications:
+#   Brad Whitlock, Thu May 27 12:10:02 PDT 2004
+#   I rewrote it so it uses code that is more similar to visit-bin-dist.
+#
 ###############################################################################
 
 set VISITTOP = `pwd`
 set VISITBIN = "$VISITTOP/bin"
 set VISITLIB = "$VISITTOP/lib"
 set VISITINCLUDE = "$VISITTOP/include"
+set VISITICONDIR = "$VISITTOP/common/icons"
 
 if -e $VISITBIN then
-    # This is kind of a hack, but create the top level Frameworks directory
-    # because the visit script needs it to run xml2makefile without having
-    # to set the DYLD_LIBRARY_PATH beforehand. Without this step, configure
-    # fails when trying to create plugin Makefiles.
-    if -e Frameworks then
-        rm -rf Frameworks
-    endif
-    mkdir Frameworks
-    cp lib/libqt.dylib Frameworks/libqt.3.dylib
-    
     # Get the version and cd into the bin directory.
     set VERSION = `cat VERSION`
     cd $VISITBIN
 
     ##
-    ## Create the GUI bundle.
+    ## Create the various application bundles.
     ##
-    if -e gui.app then
-        rm -f gui.app/Contents/{bin,lib}
-        rm -rf gui.app
-    endif
-    mkdir gui.app
-    mkdir gui.app/Contents
-    mkdir gui.app/Contents/MacOS
-    ln -s $VISITBIN gui.app/Contents/bin
-    ln -s $VISITLIB gui.app/Contents/lib
-    ln -s $VISITBIN/gui gui.app/Contents/MacOS/gui
-    ln -s $VISITBIN/visit gui.app/Contents/MacOS/visit
-    sed "s/PROGRAMNAME/VisIt/g" $VISITINCLUDE/Info.plist | sed "s/VERSION/$VERSION/g" > gui.app/Contents/Info.plist
-    echo "APPL????" > gui.app/Contents/PkgInfo
+    set graphicalApps="gui viewer silex xmledit"
+    set menuNames = ("VisIt" "VisIt Viewer" "Silex" "XmlEdit")
+    set creatorCodes = ("VISI" "VISV" "SILX" "XEDT")
+    set plist = ("Info.plist" "ViewerInfo.plist" "Info.plist" "Info.plist")
+    # change these when there are more icons
+    set iconFiles = ("VisItIcon" "VisItIcon" "VisItIcon" "VisItIcon")
+    @ i = 1
+    set pwd = `pwd`
+    foreach app ($graphicalApps)
+        echo "Making application bundle for $app"
 
-    ##
-    ## Create the viewer bundle.
-    ##
-    if -e viewer.app then
-        rm -f viewer.app/Contents/{bin,lib}
-        rm -rf viewer.app
-    endif
-    mkdir viewer.app
-    mkdir viewer.app/Contents
-    mkdir viewer.app/Contents/MacOS
-    ln -s $VISITBIN viewer.app/Contents/bin
-    ln -s $VISITLIB viewer.app/Contents/lib
-    ln -s $VISITBIN/viewer viewer.app/Contents/MacOS/viewer
-    ln -s $VISITBIN/visit viewer.app/Contents/MacOS/visit
-    sed "s/PROGRAMNAME/VisIt Viewer/g" $VISITINCLUDE/Info.plist | sed "s/VERSION/$VERSION/g" > viewer.app/Contents/Info.plist
-    echo "APPL????" > viewer.app/Contents/PkgInfo
+        if -e $app.app then
+            rm -f $app.app/Contents/{bin,lib}
+            rm -rf $app.app
+        endif
 
-
-    ##
-    ## Create the silex bundle.
-    ##
-    if -e silex.app then
-        rm -f silex.app/Contents/{bin,lib}
-        rm -rf silex.app
-    endif
-    mkdir silex.app
-    mkdir silex.app/Contents
-    mkdir silex.app/Contents/MacOS
-    ln -s $VISITBIN silex.app/Contents/bin
-    ln -s $VISITLIB silex.app/Contents/lib
-    ln -s $VISITBIN/silex silex.app/Contents/MacOS/silex
-    ln -s $VISITBIN/visit silex.app/Contents/MacOS/visit
-    sed "s/PROGRAMNAME/Silex/g" $VISITINCLUDE/Info.plist | sed "s/VERSION/$VERSION/g" > silex.app/Contents/Info.plist
-    echo "APPL????" > silex.app/Contents/PkgInfo
-
-    ##
-    ## Create the xmledit bundle.
-    ##
-    if -e xmledit.app then
-        rm -f xmledit.app/Contents/{bin,lib}
-        rm -rf xmledit.app
-    endif
-    mkdir xmledit.app
-    mkdir xmledit.app/Contents
-    mkdir xmledit.app/Contents/MacOS
-    ln -s $VISITBIN xmledit.app/Contents/bin
-    ln -s $VISITLIB xmledit.app/Contents/lib
-    ln -s $VISITBIN/xmledit xmledit.app/Contents/MacOS/xmledit
-    ln -s $VISITBIN/visit xmledit.app/Contents/MacOS/visit
-    sed "s/PROGRAMNAME/XMLEdit/g" $VISITINCLUDE/Info.plist | sed "s/VERSION/$VERSION/g" > xmledit.app/Contents/Info.plist
-    echo "APPL????" > xmledit.app/Contents/PkgInfo
+        mkdir $app.app
+        mkdir $app.app/Contents
+        mkdir $app.app/Contents/MacOS
+        mkdir $app.app/Contents/Resources
+        cd $app.app/Contents
+        ln -s ../../../lib  lib
+        cd MacOS
+        ln -s ../../../$app  $app
+        ln -s ../../../../../../bin/visit visit
+        cd $pwd
+        cp $VISITICONDIR/$iconFiles[$i].icns $app.app/Contents/Resources
+        sed "s/PROGRAMNAME/$menuNames[$i]/g" $VISITINCLUDE/$plist[$i] | sed "s/VERSION/$VERSION/g" | sed "s/CREATORCODE/$creatorCodes[$i]/g" | sed "s/ICONFILE/$iconFiles[$i]/g" > $app.app/Contents/Info.plist
+        echo "APPL$creatorCodes[$i]" > $app.app/Contents/PkgInfo
+        @ i++
+    end
 else
     @echo "The makebundles script must be run from the top level VisIt directory."
 endif

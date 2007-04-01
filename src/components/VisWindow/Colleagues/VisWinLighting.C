@@ -73,15 +73,48 @@ VisWinLighting::~VisWinLighting()
 //  Programmer: Kathleen Bonnell 
 //  Creation:   August 27, 2002 
 //
+//  Modifications:
+//    Eric Brugger, Tue May 25 14:03:06 PDT 2004
+//    Modify the routine to set the light position so that the light source
+//    direction vtk passes to OpenGL is normalized.
+//
 // ****************************************************************************
 
 void
 VisWinLighting::InitDefaultLight()
 {
+    //
+    //  Get the camera's distance from the focal point.
+    //
     vtkCamera *cam = mediator.GetCanvas()->GetActiveCamera();
+    float cpos[3], cfoc[3], proj[3], projLen = 0.;
+
+    cam->GetPosition(cpos);
+    cam->GetFocalPoint(cfoc);
+    proj[0] = cpos[0] - cfoc[0];
+    proj[1] = cpos[1] - cfoc[1];
+    proj[2] = cpos[2] - cfoc[2];
+    int i; 
+    for (i = 0; i < 3; i++)
+    {
+         projLen += (proj[i] * proj[i]);
+    }
+
+    //
+    // Position the light so that vtk passes a unit vector for
+    // the light direction to OpenGL.  The projected length is
+    // actually the square of the distance, but that is what we
+    // want, so there is no use taking the square root, only to
+    // to square it again.
+    //
+    float pos[3];
+    pos[0] = cfoc[0] + proj[0] / projLen;
+    pos[1] = cfoc[0] + proj[1] / projLen;
+    pos[2] = cfoc[0] + proj[2] / projLen;
+
     lights[0]->SetLightTypeToCameraLight();
-    lights[0]->SetFocalPoint(cam->GetFocalPoint());
-    lights[0]->SetPosition(cam->GetPosition());
+    lights[0]->SetFocalPoint(cfoc);
+    lights[0]->SetPosition(pos);
     lights[0]->SetColor(1., 1., 1.);
     lights[0]->SetIntensity(1.);
     lights[0]->SwitchOn();
@@ -349,6 +382,10 @@ VisWinLighting::GetNumLightsEnabled()
 //    Distinguish between 3D and 2D actions for updating the light positions.
 //    For 3D lights, update the focal point as well.
 //
+//    Eric Brugger, Tue May 25 14:03:06 PDT 2004
+//    Modify the routine to set the light position so that the light source
+//    direction vtk passes to OpenGL is normalized.
+//
 // ****************************************************************************
 
 void
@@ -379,17 +416,17 @@ VisWinLighting::UpdateLightPositions()
         //  from the light's position to the focal point.  We need
         //  to use the inverse vector in determing the position 
         //  in world coordinates.  We want to position the light
-        //  the same distance from the focal point as the camera,
-        //  along the (inverse) direction vector.
+        //  so that vtk passes a unit vector for the light direction
+        //  along the (inverse) direction vector to OpenGL.
         //
         float pos[3];
         avtLight aLight;
         for (i = 0; i < MAX_LIGHTS ; i++)
         {
             aLight = avtlights.Light(i);
-            pos[0] = cfoc[0] - projLen * aLight.direction[0]; 
-            pos[1] = cfoc[1] - projLen * aLight.direction[1]; 
-            pos[2] = cfoc[2] - projLen * aLight.direction[2]; 
+            pos[0] = cfoc[0] - aLight.direction[0] / projLen; 
+            pos[1] = cfoc[1] - aLight.direction[1] / projLen; 
+            pos[2] = cfoc[2] - aLight.direction[2] / projLen; 
             lights[i]->SetPosition(pos);
             lights[i]->SetFocalPoint(cfoc);
         }

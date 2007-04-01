@@ -145,54 +145,50 @@ vtkVisItUtility::GetPoints(vtkDataSet *inDS)
 //    If 'global' flag is set, use the "base_index" array to determine the
 //    global 'ijk'. 
 //
+//    Kathleen Bonnell, Fri May 28 10:31:25 PDT 2004 
+//    Added flag allowing adjustment for GhostZones.  Moved code that retrieves
+//    dimensions to its own method. Account for 2D data differently than 3d.
+// 
+//    Kathleen Bonnell, Fri May 28 17:27:05 PDT 2004
+//    Forgot return for bad dims, and test for invalid ijk (< 0). 
+//
 // ****************************************************************************
 
 void
 vtkVisItUtility::GetLogicalIndices(vtkDataSet *ds, const bool forCell, const int ID, 
-                                   int ijk[3], const bool global)
+                                   int ijk[3], const bool global,
+                                   const bool adjustForGhosts)
 { 
     int dimX, dimY, dims[3], base[3] = {0, 0, 0};
 
-    int type = ds->GetDataObjectType();
-    if (type == VTK_STRUCTURED_GRID)
+    GetDimensions(ds, dims);
+    if (dims[0] == -1 || dims[1] == -1 || dims[2] == -1)
     {
-        ((vtkStructuredGrid*)ds)->GetDimensions(dims);
+        ijk[0] = ijk[1] = ijk[2] = -1;
+        return;
     }
-    else if (type == VTK_RECTILINEAR_GRID)
+
+    if (global)
     {
-        ((vtkRectilinearGrid*)ds)->GetDimensions(dims);
-    }
-    else 
-    {
-        vtkIntArray *vtkDims = 
-           (vtkIntArray*)ds->GetFieldData()->GetArray("vtkOriginalDimensions");
-        if (vtkDims != NULL)
+        vtkIntArray *bi = (vtkIntArray*)ds->GetFieldData()->GetArray("base_index");
+        if (bi)
         {
-            dims[0] = vtkDims->GetValue(0);
-            dims[1] = vtkDims->GetValue(1);
-            dims[2] = vtkDims->GetValue(2);
-        }
-        else
-        {
-            ijk[0] = ijk[1] = ijk[2] = -1; 
-            return; 
+            base[0] = bi->GetValue(0);
+            base[1] = bi->GetValue(1);
+            base[2] = bi->GetValue(2);
         }
     }
 
-    vtkIntArray *bi = (vtkIntArray*)ds->GetFieldData()->GetArray("base_index");
-    if (global && bi)
+    if (adjustForGhosts)
     {
-        base[0] = bi->GetValue(0);
-        base[1] = bi->GetValue(1);
-        base[2] = bi->GetValue(2);
-    }
-
-    vtkIntArray *realDims = (vtkIntArray*)ds->GetFieldData()->GetArray("avtRealDims");
-    if (realDims)
-    {
-        base[0] -= realDims->GetValue(0);
-        base[1] -= realDims->GetValue(2);
-        base[2] -= realDims->GetValue(4);
+        vtkIntArray *realDims = 
+            (vtkIntArray*)ds->GetFieldData()->GetArray("avtRealDims");
+        if (realDims)
+        {
+            base[0] -= realDims->GetValue(0);
+            base[1] -= realDims->GetValue(2);
+            base[2] -= realDims->GetValue(4);
+        }
     }
 
     if (forCell)
@@ -206,9 +202,22 @@ vtkVisItUtility::GetLogicalIndices(vtkDataSet *ds, const bool forCell, const int
         dimY = (dims[1] == 0 ? 1 : dims[1]);
     }
 
-    ijk[0] = (ID % dimX)          + base[0];
-    ijk[1] = ((ID / dimX) % dimY) + base[1];
-    ijk[2] = (ID / (dimX * dimY)) + base[2];
+    if (dims[2] == 1)
+    {
+        ijk[0] = (ID % dimX) + base[0];
+        ijk[1] = (ID / dimX) + base[1];
+        ijk[2] = 0;
+    }
+    else 
+    {
+        ijk[0] = (ID % dimX)          + base[0];
+        ijk[1] = ((ID / dimX) % dimY) + base[1];
+        ijk[2] = (ID / (dimX * dimY)) + base[2];
+    }
+
+    ijk[0] = ijk[0] < 0 ? 0 : ijk[0];
+    ijk[1] = ijk[1] < 0 ? 0 : ijk[1];
+    ijk[2] = ijk[2] < 0 ? 0 : ijk[2];
 }
 
 
@@ -504,3 +513,46 @@ vtkVisItUtility::FindCell(vtkDataSet *ds, float x[3])
     }
 }
 
+
+// ****************************************************************************
+//  Function: GetDimensions
+//
+//  Purpose:
+//      A routine that will return the dimensions of a structured dataset. 
+//
+//  Arguments:
+//      ds      The dataset.
+//      dims    A place to hold the dimensions.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   May 27, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+ 
+void
+vtkVisItUtility::GetDimensions(vtkDataSet *ds, int dims[3])
+{ 
+    dims[0] = dims[1] = dims[2] = -1;
+    int type = ds->GetDataObjectType();
+    if (type == VTK_STRUCTURED_GRID)
+    {
+        ((vtkStructuredGrid*)ds)->GetDimensions(dims);
+    }
+    else if (type == VTK_RECTILINEAR_GRID)
+    {
+        ((vtkRectilinearGrid*)ds)->GetDimensions(dims);
+    }
+    else 
+    {
+        vtkIntArray *vtkDims = 
+           (vtkIntArray*)ds->GetFieldData()->GetArray("vtkOriginalDimensions");
+        if (vtkDims != NULL)
+        {
+            dims[0] = vtkDims->GetValue(0);
+            dims[1] = vtkDims->GetValue(1);
+            dims[2] = vtkDims->GetValue(2);
+        }
+    }
+}

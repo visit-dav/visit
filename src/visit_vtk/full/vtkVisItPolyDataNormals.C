@@ -83,6 +83,12 @@ vtkVisItPolyDataNormals::Execute()
 //    Kathleen Bonnell, Fri Aug 22 16:48:20 PDT 2003
 //    Pass along Verts and Lines.
 //
+//    Jeremy Meredith, Fri May 28 12:30:41 PDT 2004
+//    Renormalize the vectors here because VTK can't do it without
+//    under/overflow on small/big vectors.  Use double precision for
+//    critical math operations.  Added note of concern about using
+//    VTK's normal calculation at all.
+//
 // ****************************************************************************
 void
 vtkVisItPolyDataNormals::ExecutePointWithoutSplitting()
@@ -163,7 +169,10 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting()
         //
         // Technically, we can use the first three vertices only,
         // (i.e. vtkTriangle::ComputeNormal), but this is not a big
-        // hit, and it accomodates for degenerate quads.
+        // hit, and it accomodates for degenerate quads.  Note -- this
+        // will probably fail for very large/small polygons because of
+        // over/underflow.  If so, we need to switch to double precision
+        // math and avoid using the VTK code.
         //
         float normal[3];
         vtkPolygon::ComputeNormal(inPts, nVerts, connPtr, normal);
@@ -183,7 +192,13 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting()
     // Renormalize the normals; ther've only been accumulated so far
     for (i = 0 ; i < nPoints ; i++)
     {
-        vtkMath::Normalize(&newNormalPtr[i*3]);
+        double nx = newNormalPtr[i*3+0];
+        double ny = newNormalPtr[i*3+1];
+        double nz = newNormalPtr[i*3+2];
+        double length = sqrt(nx*nx + ny*ny + nz*nz);
+        newNormalPtr[i*3+0] = nx/length;
+        newNormalPtr[i*3+1] = ny/length;
+        newNormalPtr[i*3+2] = nz/length;
     }
 
     outPD->SetNormals(newNormals);
@@ -326,6 +341,9 @@ class NormalList
 //    Hank Childs, Fri Jan 30 09:35:46 PST 2004
 //    Use pointer arithmetic to avoid VTK calls.
 //
+//    Jeremy Meredith, Fri May 28 09:46:14 PDT 2004
+//    Use double precision math in critical sections.
+//
 // ****************************************************************************
 void
 vtkVisItPolyDataNormals::ExecutePointWithSplitting()
@@ -383,7 +401,7 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting()
         // Technically, we can always use only the first three vertices, but
         // it is not a big hit to do the quads better, and it accomodates for
         // degenerate quads directly.  The code is the same algorithm as
-        // vtkPolygon::ComputeNormal, but without the built-in renormalization.
+        // vtkPolygon::ComputeNormal, but changed to make it work better.
         //
         float v0[3], v1[3], v2[3];
         float normal[3] = {0, 0, 0};
@@ -400,7 +418,7 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting()
             inPts->GetPoint(cell[0],v1);
             inPts->GetPoint(cell[1],v2);
             
-            float ax, ay, az, bx, by, bz;
+            double ax, ay, az, bx, by, bz;
             for (j = 0 ; j < nVerts ; j++) 
             {
                 v0[0] = v1[0]; v0[1] = v1[1]; v0[2] = v1[2];
@@ -410,9 +428,9 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting()
                 ax = v2[0] - v1[0]; ay = v2[1] - v1[1]; az = v2[2] - v1[2];
                 bx = v0[0] - v1[0]; by = v0[1] - v1[1]; bz = v0[2] - v1[2];
 
-                normal[0] += (ay * bz - az * by);
-                normal[1] += (az * bx - ax * bz);
-                normal[2] += (ax * by - ay * bx);
+                normal[0] += float(ay * bz - az * by);
+                normal[1] += float(az * bx - ax * bz);
+                normal[2] += float(ax * by - ay * bx);
             }
             normal[0] /= nVerts;
             normal[1] /= nVerts;
@@ -420,16 +438,17 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting()
         }
 
         // Calculate the length, and throw out degenerate cases
-        float length = sqrt(normal[0]*normal[0] +
-                            normal[1]*normal[1] + 
-                            normal[2]*normal[2]);
+        double nx = normal[0];
+        double ny = normal[1];
+        double nz = normal[2];
+        double length = sqrt(nx*nx + ny*ny + nz*nz);
 
         if (length == 0) continue;
 
         // Store the normalized version separately
-        float nnormal[3] = {normal[0]/length,
-                            normal[1]/length,
-                            normal[2]/length};
+        float nnormal[3] = {nx/length,
+                            ny/length,
+                            nz/length};
 
         // Loop over all points of the cell, deciding if we need
         // to split it or can merge with an old one.  Use the feature
@@ -474,12 +493,15 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting()
                 n[1] += normal[1];
                 n[2] += normal[2];
 
-                float newlength = sqrt(n[0]*n[0] + n[1]*n[1] +  n[2]*n[2]);
+                double nx = n[0];
+                double ny = n[1];
+                double nz = n[2];
+                double newlength = sqrt(nx*nx + ny*ny + nz*nz);
 
                 float *nn = ne->nn;
-                nn[0] = n[0]/newlength;
-                nn[1] = n[1]/newlength;
-                nn[2] = n[2]/newlength;
+                nn[0] = float(double(n[0])/newlength);
+                nn[1] = float(double(n[1])/newlength);
+                nn[2] = float(double(n[2])/newlength);
             }
             else // no match found; duplicate the point
             {
@@ -588,9 +610,12 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting()
 //  Creation:    August 12, 2003
 //
 //  Modifications:
-//
 //    Hank Childs, Fri Jan 30 09:26:38 PST 2004
 //    Performance improvements.
+//
+//    Jeremy Meredith, Fri May 28 12:29:29 PDT 2004
+//    Calculate the normals here because VTK can't do it without
+//    under/overflow on small/big vectors.
 //
 // ****************************************************************************
 void
@@ -618,12 +643,70 @@ vtkVisItPolyDataNormals::ExecuteCell()
     for (int i = 0 ; i < nCells ; i++)
     {
         //
-        // Technically, we can use the first three vertices only,
-        // (i.e. vtkTriangle::ComputeNormal), but this is not a big
-        // hit, and it accomodates for degenerate quads.
+        // Technically, we can always use only the first three vertices, but
+        // it is not a big hit to do the quads better, and it accomodates for
+        // degenerate quads directly.  The code is the same algorithm as
+        // vtkPolygon::ComputeNormal, but changed to make it work better.
         //
         int nVerts = *connPtr++;
-        vtkPolygon::ComputeNormal(inPts, nVerts, connPtr, &newNormalPtr[i*3]);
+        int *cell = connPtr;
+
+        float v0[3], v1[3], v2[3];
+        float normal[3] = {0, 0, 0};
+        if (nVerts == 3)
+        {
+            inPts->GetPoint(cell[0], v0);
+            inPts->GetPoint(cell[1], v1);
+            inPts->GetPoint(cell[2], v2);
+            vtkTriangle::ComputeNormalDirection(v0, v1, v2, normal);
+        }
+        else
+        {
+            // Accumulate the normals calculated from every adjacent edge pair.
+            inPts->GetPoint(cell[0],v1);
+            inPts->GetPoint(cell[1],v2);
+            
+            double ax, ay, az, bx, by, bz;
+            for (int j = 0 ; j < nVerts ; j++) 
+            {
+                v0[0] = v1[0]; v0[1] = v1[1]; v0[2] = v1[2];
+                v1[0] = v2[0]; v1[1] = v2[1]; v1[2] = v2[2];
+                inPts->GetPoint(cell[(j+2) % nVerts],v2);
+
+                ax = v2[0] - v1[0]; ay = v2[1] - v1[1]; az = v2[2] - v1[2];
+                bx = v0[0] - v1[0]; by = v0[1] - v1[1]; bz = v0[2] - v1[2];
+
+                normal[0] += float(ay * bz - az * by);
+                normal[1] += float(az * bx - ax * bz);
+                normal[2] += float(ax * by - ay * bx);
+            }
+            normal[0] /= nVerts;
+            normal[1] /= nVerts;
+            normal[2] /= nVerts;
+        }
+
+        // Calculate the length, and throw out degenerate cases
+        double nx = normal[0];
+        double ny = normal[1];
+        double nz = normal[2];
+        double length = sqrt(nx*nx + ny*ny + nz*nz);
+
+        if (length != 0)
+        {
+            newNormalPtr[i*3+0] = nx/length;
+            newNormalPtr[i*3+1] = ny/length;
+            newNormalPtr[i*3+2] = nz/length;
+        }
+        else
+        {
+            newNormalPtr[i*3+0] = 0;
+            newNormalPtr[i*3+1] = 0;
+            newNormalPtr[i*3+2] = 1;
+        }
+
+        //
+        // Step through connectivity
+        //
         connPtr += nVerts;
     }
         

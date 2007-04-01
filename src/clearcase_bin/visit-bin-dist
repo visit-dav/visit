@@ -173,6 +173,10 @@
 #    I changed it so we copy the Qt/Mac header files since we're now using
 #    Qt/Mac free edition.
 #
+#    Brad Whitlock, Thu May 27 11:58:01 PDT 2004
+#    I added support for using different Info.plist files so the viewer gets
+#    its own plist file that prevents it from getting its own menu.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -591,6 +595,7 @@ if("$os" == "darwin") then
     set graphicalApps="gui viewer silex xmledit"
     set menuNames = ("VisIt" "VisIt Viewer" "Silex" "XmlEdit")
     set creatorCodes = ("VISI" "VISV" "SILX" "XEDT")
+    set plist = ("Info.plist" "ViewerInfo.plist" "Info.plist" "Info.plist")
     # change these when there are more icons
     set iconFiles = ("VisItIcon" "VisItIcon" "VisItIcon" "VisItIcon")
     @ i = 1
@@ -608,7 +613,7 @@ if("$os" == "darwin") then
         ln -s ../../../../../../bin/visit visit
         cd $pwd
         cp $VisItDir/common/icons/$iconFiles[$i].icns $bindir/$app.app/Contents/Resources
-        sed "s/PROGRAMNAME/$menuNames[$i]/g" $VisItDir/include/Info.plist | sed "s/VERSION/$Version/g" | sed "s/CREATORCODE/$creatorCodes[$i]/g" | sed "s/ICONFILE/$iconFiles[$i]/g" > $bindir/$app.app/Contents/Info.plist
+        sed "s/PROGRAMNAME/$menuNames[$i]/g" $VisItDir/include/$plist[$i] | sed "s/VERSION/$Version/g" | sed "s/CREATORCODE/$creatorCodes[$i]/g" | sed "s/ICONFILE/$iconFiles[$i]/g" > $bindir/$app.app/Contents/Info.plist
         echo "APPL$creatorCodes[$i]" > $bindir/$app.app/Contents/PkgInfo
         @ i++
     end

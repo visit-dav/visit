@@ -25,6 +25,7 @@
 #define __vtkVisItMesaPolyDataMapper_h
 
 #include "vtkPolyDataMapper.h"
+#include <visit_vtk_exports.h>
 
 class vtkProperty;
 class vtkRenderWindow;
@@ -39,7 +40,7 @@ class vtkTimerLog;
 //
 // ****************************************************************************
 
-class VTK_RENDERING_EXPORT vtkVisItMesaPolyDataMapper : public vtkPolyDataMapper
+class VISIT_VTK_API vtkVisItMesaPolyDataMapper : public vtkPolyDataMapper
 {
 public:
   static vtkVisItMesaPolyDataMapper *New();

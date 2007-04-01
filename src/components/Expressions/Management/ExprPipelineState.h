@@ -6,6 +6,7 @@
 #define EXPR_PIPELINE_STATE_H
 
 #include <avtDataObject.h>
+#include <expression_exports.h>
 
 class avtExpressionFilter;
 
@@ -24,7 +25,7 @@ class avtExpressionFilter;
 //
 // ****************************************************************************
 
-class ExprPipelineState
+class EXPRESSION_API ExprPipelineState
 {
 public:
                     ExprPipelineState();

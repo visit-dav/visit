@@ -2483,9 +2483,9 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
         ppi.validPick = true;
 
         if (!doTime)
-            Pick(&ppi, arg1, arg2);
+            Pick(&ppi, arg2, arg1);
         else
-            PickThroughTime(&ppi, arg1, arg2);
+            PickThroughTime(&ppi, arg2, arg1);
 
         win->SetInteractionMode(imode);
     }

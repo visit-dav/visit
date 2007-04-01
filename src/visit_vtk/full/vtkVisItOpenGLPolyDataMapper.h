@@ -25,6 +25,7 @@
 #define __vtkVisItOpenGLPolyDataMapper_h
 
 #include "vtkPolyDataMapper.h"
+#include <visit_vtk_exports.h>
 
 class vtkProperty;
 class vtkRenderWindow;
@@ -38,7 +39,7 @@ class vtkOpenGLRenderer;
 //
 // ****************************************************************************
 
-class VTK_RENDERING_EXPORT vtkVisItOpenGLPolyDataMapper : public vtkPolyDataMapper
+class VISIT_VTK_API vtkVisItOpenGLPolyDataMapper : public vtkPolyDataMapper
 {
 public:
   static vtkVisItOpenGLPolyDataMapper *New();
