@@ -40,6 +40,10 @@ class vtkAppendPolyData;
 //   Brad Whitlock, Wed Dec 22 12:45:29 PDT 2004
 //   Added ability to color by vorticity and the ability to display as ribbons.
 //
+//   Brad Whitlock, Mon Jan 3 10:56:47 PDT 2005
+//   Added SetZToZero to ensure that we can set restrict streamline sources
+//   to 2D when the input data is 2D.
+//
 // ****************************************************************************
 
 class avtStreamlineFilter : public avtStreamer
@@ -102,6 +106,8 @@ class avtStreamlineFilter : public avtStreamer
 
     vtkPolyData              *AddStartSphere(vtkPolyData *, float val,
                                              float pt[3]);
+
+    void                      SetZToZero(vtkPolyData *) const;
 };
 
 

@@ -6,7 +6,8 @@
 #define AVT_MULTIPLE_INPUT_EXPRESSION_FILTER_H
 
 #include <expression_exports.h>
-#include <avtExpressionFilter.h>
+
+#include <avtExpressionStreamer.h>
 
 
 // ****************************************************************************
@@ -23,10 +24,13 @@
 //    Hank Childs, Fri Sep 19 15:20:35 PDT 2003
 //    Add destructor.
 //
+//    Hank Childs, Mon Dec 27 10:37:15 PST 2004
+//    Changed inheritance from avtExpressionFilter to avtExpressionStreamer.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtMultipleInputExpressionFilter 
-    : public avtExpressionFilter
+    : virtual public avtExpressionStreamer
 {
   public:
                               avtMultipleInputExpressionFilter() {}
@@ -46,3 +50,5 @@ class EXPRESSION_API avtMultipleInputExpressionFilter
 };
 
 #endif
+
+

@@ -31,6 +31,8 @@ extern double *p_zcoords;
 extern double *p_zvalues;
 extern double *p_nvalues;
 
+extern int numdomains;
+
 int *nx;
 int *ny;
 int *nz;
@@ -93,6 +95,10 @@ avtSimDBFileFormat::FreeUpResources(void)
 //  Programmer: Jeremy Meredith
 //  Creation:   August 24, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Nov  1 17:28:49 PST 2004
+//    Made it two domains so it would work in parallel.
+//
 // ****************************************************************************
 
 void
@@ -106,9 +112,10 @@ avtSimDBFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     md->SetIsSimulation(true);
 
     AddMeshToMetaData(md, "mesh", AVT_CURVILINEAR_MESH, NULL,
-                      1, 0, 3, 3);
+                      numdomains, 0, 3, 3);
     AddScalarVarToMetaData(md, "speed", "mesh", AVT_NODECENT);
     AddScalarVarToMetaData(md, "density", "mesh", AVT_ZONECENT);
+    
 }
 
 // ****************************************************************************

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="SimDB" type="database" engineonly="yes" label="Simulation" version="1.0" enabled="true" dbtype="STMD" haswriter="false">
+  <Plugin name="SimDB" type="database" onlyengine="yes" label="Simulation" version="1.0" enabled="true" dbtype="STMD" haswriter="false">
     <Extensions>
       sim
     </Extensions>

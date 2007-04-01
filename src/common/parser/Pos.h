@@ -22,6 +22,9 @@
 //    I replaced min,max with Minimum,Maximum since the former are defined
 //    as macros that cause compilation errors on Windows.
 //
+//    Hank Childs, Tue Dec 28 16:04:59 PST 2004
+//    Renamed GetText to be GetErrorText.  Added new method called GetText.
+//
 // ****************************************************************************
 
 class PARSER_API Pos
@@ -41,7 +44,7 @@ class PARSER_API Pos
     void operator=(const Pos &p)  { p1=p.p1;               p2=p.p2;     }
     bool IsNull()                 { return (p1 == -1) && (p2 == -1); }
 
-    void PrintText(ostream &o, const std::string &s) const
+    void PrintErrorText(ostream &o, const std::string &s) const
     {
         int i;
         o << s.c_str() << endl;
@@ -51,7 +54,7 @@ class PARSER_API Pos
             o << '^';
         o << endl;
     }
-    std::string GetText(const std::string &s) const
+    std::string GetErrorText(const std::string &s) const
     {
         int i;
         std::string msg = s + '\n';
@@ -60,6 +63,14 @@ class PARSER_API Pos
         for (i=p1; i<=p2; i++)
             msg += '^';
         msg += '\n';
+        return msg;
+    }
+    std::string GetText(const std::string &s) const
+    {
+        std::string msg = "";
+        if (s.length() < p1 || s.length() < p2 || p1 < 0)
+            return msg;
+        msg = s.substr(p1, p2-p1+1);
         return msg;
     }
 };

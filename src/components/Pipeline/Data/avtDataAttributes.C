@@ -72,6 +72,9 @@ using     std::sort;
 //    Kathleen Bonnell, Thu Dec  9 16:12:33 PST 2004 
 //    Initialize containsGlobalNodeIds, containsGlobalZoneIds.
 //
+//    Hank Childs, Sat Jan  1 11:23:50 PST 2005
+//    Initialize meshname.
+//
 // ****************************************************************************
 
 avtDataAttributes::avtDataAttributes()
@@ -99,6 +102,7 @@ avtDataAttributes::avtDataAttributes()
     yLabel                 = "Y-Axis";
     zLabel                 = "Z-Axis";
 
+    meshname               = "<unknown>";
     filename               = "<unknown>";
     containsGhostZones     = AVT_MAYBE_GHOSTS;
     containsOriginalCells  = false;
@@ -266,6 +270,9 @@ avtDataAttributes::DestructSelf(void)
 //    Kathleen Bonnell, Thu Dec  9 16:12:33 PST 2004 
 //    Added containsGlobalNodeIds, containsGlobalZoneIds.
 //
+//    Hank Childs, Sat Jan  1 11:23:50 PST 2005
+//    Added meshname.
+//
 // ****************************************************************************
 
 void
@@ -360,6 +367,7 @@ avtDataAttributes::Print(ostream &out)
         out << endl;
     }
 
+    out << "The mesh's name is " << meshname.c_str() << endl;
     out << "The filename is " << filename.c_str() << endl;
     out << "The X-units are " << xUnits.c_str() << endl;
     out << "The Y-units are " << yUnits.c_str() << endl;
@@ -527,6 +535,9 @@ avtDataAttributes::Print(ostream &out)
 //    Kathleen Bonnell, Thu Dec  9 16:12:33 PST 2004 
 //    Added containsGlobalNodeIds, containsGlobalZoneIds.
 //
+//    Hank Childs, Sat Jan  1 11:23:50 PST 2005
+//    Added meshname.
+//
 // ****************************************************************************
 
 void
@@ -556,6 +567,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
         timeIsAccurate = false;
     }
 
+    SetMeshname(di.GetMeshname());
     SetFilename(di.GetFilename());
     SetXUnits(di.GetXUnits());
     SetYUnits(di.GetYUnits());
@@ -1680,6 +1692,9 @@ avtDataAttributes::SetTime(double d)
 //    Kathleen Bonnell, Thu Dec  9 16:12:33 PST 2004 
 //    Added containsGlobalNodeIds, containsGlobalZoneIds.
 //
+//    Hank Childs, Sat Jan  1 11:23:50 PST 2005
+//    Added meshname.
+//
 // ****************************************************************************
 
 void
@@ -1748,6 +1763,10 @@ avtDataAttributes::Write(avtDataObjectString &str,
         variables[i].currentData->Write(str, wrtr);
         variables[i].cumulativeCurrentData->Write(str, wrtr);
     }
+
+    wrtr->WriteInt(str, meshname.size());
+    str.Append((char *) meshname.c_str(), meshname.size(),
+                  avtDataObjectString::DATA_OBJECT_STRING_SHOULD_MAKE_COPY);
 
     wrtr->WriteInt(str, filename.size());
     str.Append((char *) filename.c_str(), filename.size(),
@@ -1851,6 +1870,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //
 //    Kathleen Bonnell, Thu Dec  9 16:12:33 PST 2004 
 //    Added containsGlobalNodeIds, containsGlobalZoneIds.
+//
+//    Hank Childs, Sat Jan  1 11:23:50 PST 2005
+//    Added meshname.
 //
 // ****************************************************************************
 
@@ -2018,6 +2040,14 @@ avtDataAttributes::Read(char *input)
     delete [] varDims;
     delete [] centerings;
     delete [] ascii;
+
+    int meshnameSize;
+    memcpy(&meshnameSize, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    string l2(input, meshnameSize);
+    meshname = l2;
+    size += meshnameSize;
+    input += meshnameSize;
 
     int filenameSize;
     memcpy(&filenameSize, input, sizeof(int));

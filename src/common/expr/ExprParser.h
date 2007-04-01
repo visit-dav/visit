@@ -32,6 +32,10 @@
 //    Refactored.  There's a new base class for the ExprParser and the
 //    return types became more general.
 //
+//    Jeremy Meredith, Tue Dec 28 11:18:09 PST 2004
+//    Added the current parse text as a data member to help with macro
+//    support.
+//
 // ****************************************************************************
 
 class EXPR_API ExprParser : public Parser
@@ -58,6 +62,8 @@ class EXPR_API ExprParser : public Parser
                            std::vector<Token*>&, Pos);
 
   private:
+    std::string text; // the current parse text
+
     ExprScanner scanner;
     ExprNodeFactory *factory;
     static ErrorMessageTarget errorMessageTarget;

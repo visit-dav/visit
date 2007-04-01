@@ -84,6 +84,11 @@
 #   Jeremy Meredith, Wed Nov 24 12:23:14 PST 2004
 #   Moved the old EngineExprNode stuff here and renamed it with "avt".
 #
+#   Hank Childs, Mon Dec 27 10:58:14 PST 2004
+#   Add avtExpressionStreamer and avtMacroExpressionFilter.  Also added
+#   avtCurlFilter, avtRelativeDifferenceFilter, avtMIRvfFilter,
+#   avtMatErrorFilter, avtDivergenceFilter, and avtLaplacianFilter.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -96,6 +101,8 @@ Abstract_src= \
   Abstract/avtBinaryMathFilter.C \
   Abstract/avtComparisonFilter.C \
   Abstract/avtExpressionFilter.C \
+  Abstract/avtExpressionStreamer.C \
+  Abstract/avtMacroExpressionFilter.C \
   Abstract/avtMultipleInputExpressionFilter.C \
   Abstract/avtSingleInputExpressionFilter.C \
   Abstract/avtUnaryMathFilter.C
@@ -119,15 +126,21 @@ Derivations_src=\
   Derivations/avtPrincipalTensorFilter.C 
 
 General_src= \
+  General/avtCurlFilter.C \
   General/avtDataIdFilter.C \
   General/avtDegreeFilter.C \
+  General/avtDivergenceFilter.C \
   General/avtGradientFilter.C \
+  General/avtLaplacianFilter.C \
+  General/avtMIRvfFilter.C \
   General/avtMatvfFilter.C \
+  General/avtMatErrorFilter.C \
   General/avtMagnitudeFilter.C \
   General/avtMeshCoordinateFilter.C \
   General/avtNMatsFilter.C \
   General/avtNeighborEvaluatorFilter.C \
   General/avtProcessorIdFilter.C \
+  General/avtRelativeDifferenceFilter.C \
   General/avtRandomFilter.C \
   General/avtRecenterFilter.C \
   General/avtSpecMFFilter.C \

@@ -29,6 +29,9 @@ static int mpiTagUpperBound = 32767;
 // if they should be needed prior to MPI_Init
 #define MIN_TAG_VALUE 100
 
+// If MPI was already initalized for us, we don't need to finalize either
+static bool  we_initialized_MPI = true;
+
 // Variables to hold process size information
 static int   par_rank = 0, par_size = 1;
 
@@ -48,13 +51,17 @@ static vector<char> broadcastBuffer(1000);
 //    Eric Brugger, Tue Aug 31 10:27:20 PDT 2004
 //    Made the mpi coding conditional on PARALLEL.
 //
+//    Jeremy Meredith, Mon Nov  1 16:42:58 PST 2004
+//    Do not close down MPI if we were not the ones to start it.
+//
 // ****************************************************************************
 
 void
 PAR_Exit(void)
 {
 #ifdef PARALLEL
-    MPI_Finalize();
+    if (!we_initialized_MPI)
+        MPI_Finalize();
 #endif
 }
 
@@ -77,13 +84,23 @@ PAR_Exit(void)
 //    Retrieve MPI_TAG_UB value and use it to set mpiTagUpperBound.  Use
 //    32767 if unsuccessful. 
 //
+//    Jeremy Meredith, Mon Nov  1 16:42:58 PST 2004
+//    If MPI was already started, then (1) we don't want to call MPI_Init
+//    again, and (2) we don't want to call MPI_Finalize when we quit.  This
+//    check will come into play with the VisIt Library for simulations.
+//
 // ****************************************************************************
 
 void
 PAR_Init (int &argc, char **&argv)
 {
 #ifdef PARALLEL
-    MPI_Init (&argc, &argv);
+    int flag;
+    MPI_Initialized(&flag);
+    we_initialized_MPI = !flag;
+
+    if (we_initialized_MPI)
+        MPI_Init (&argc, &argv);
 
     //
     // Find the current process rank and the size of the process pool.

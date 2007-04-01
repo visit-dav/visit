@@ -16,10 +16,10 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "simulation.h"
+#include "VisIt.h"
 
-// ****************************************************************************
-//  File:  simulation.h
+/* ****************************************************************************
+//  File:  VisIt.C
 //
 //  Purpose:
 //    Abstraction of VisIt Engine wrapper library.  Handles the
@@ -34,8 +34,40 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 25, 2004
 //
-// ****************************************************************************
+// ***************************************************************************/
 
+
+// ----------------------------------------------------------------------------
+
+#ifdef PARALLEL
+#include <mpi.h>
+static int ifparallel=1;
+#else
+static int ifparallel=0;
+#endif
+
+extern int par_rank;
+extern int par_size;
+
+static int BroadcastInt(int *value, int sender)
+{
+#ifdef PARALLEL
+    return MPI_Bcast(value, 1, MPI_INT, sender, MPI_COMM_WORLD);
+#else
+    return 0;
+#endif
+}
+
+static int BroadcastString(char *str, int len, int sender)
+{
+#ifdef PARALLEL
+    return MPI_Bcast(str, len, MPI_CHAR, sender, MPI_COMM_WORLD);
+#else
+    return 0;
+#endif
+}
+
+// ----------------------------------------------------------------------------
 
 #define INITIAL_PORT_NUMBER 5600
 #define TRUE 1
@@ -48,6 +80,8 @@ int   (*v_initialize)(void*,int,char**) = NULL;
 int   (*v_connectviewer)(void*,int,char**) = NULL;
 void  (*v_time_step_changed)(void*) = NULL;
 void  (*v_disconnect)() = NULL;
+void  (*v_set_slave_process_callback)(void(*)()) = NULL;
+
 void *v_engine = NULL;
 char  v_host[256] = "";
 char  v_port[256] = "";
@@ -56,63 +90,102 @@ char  v_key[256] = "";
 char simulationFileName[1024];
 
 char localhost[256];
-int listenPort;
-extern int listenSock;
+int listenPort = -1;
+int listenSock = -1;
 struct sockaddr_in sockin;
 
 int   v_argc = 0;
 char *v_argv[100];
 
-extern int engineinputdescriptor;
+int engineinputdescriptor = -1;
 
 void *dl_handle;
 
 
-void Disconnect()
+int  VisItGetEngineSocket(void)
 {
+    return engineinputdescriptor;
+}
+
+int  VisItGetListenSocket(void)
+{
+    return listenSock;
+}
+
+void VisItDisconnect(void)
+{
+    printf("processor %d disconnecting\n", par_rank);
     v_disconnect();
     engineinputdescriptor = -1;
     v_engine = 0;
 }
 
-void GetConnectionParameters(int desc)
+static void GetConnectionParameters(int desc)
 {
-    char buf[200] = "";
-    char *tbuf = buf;
-    char *ptr = buf;
-    int done = 0;
-    int n;
+    char buf[2000] = "";
+    int i;
 
-    v_argc = 0;
-
-    fprintf(stderr, "Engine launch command:");
-    while (!done)
+    if (par_rank == 0)
     {
-        char *tmp = strstr(tbuf, "\n");
-        while (!tmp)
+        char *tbuf = buf;
+        char *ptr = buf;
+        int done = 0;
+        int n;
+
+        v_argc = 0;
+
+        printf("Engine launch command:");
+        while (!done)
         {
-            n = recv(desc, ptr, 2000, 0);
-            ptr += n;
-            *ptr = 0;
-            tmp = strstr(tbuf, "\n");
+            char *tmp = strstr(tbuf, "\n");
+            while (!tmp)
+            {
+                n = recv(desc, ptr, 2000, 0);
+                ptr += n;
+                *ptr = 0;
+                tmp = strstr(tbuf, "\n");
                 
-        }
+            }
 
-        if (tbuf == tmp)
+            if (tbuf == tmp)
+            {
+                break;
+            }
+
+            *tmp = 0;
+            v_argv[v_argc] = strdup(tbuf);
+            printf("%s ", v_argv[v_argc]);
+            v_argc++;
+            tbuf = tmp+1;
+        }
+        printf("\n");
+
+        if (ifparallel)
         {
-            break;
+            BroadcastInt(&v_argc, 0);
+            for (i = 0 ; i < v_argc; i++)
+            {
+                int len = strlen(v_argv[i]);
+                BroadcastInt(&len, 0);
+                BroadcastString(v_argv[i], len+1, 0);
+            }
         }
-
-        *tmp = 0;
-        v_argv[v_argc] = strdup(tbuf);
-        fprintf(stderr, "%s ", v_argv[v_argc]);
-        v_argc++;
-        tbuf = tmp+1;
     }
-    fprintf(stderr, "\n");
+    else
+    {
+        BroadcastInt(&v_argc, 0);
+        for (i = 0 ; i < v_argc; i++)
+        {
+            int len;
+            BroadcastInt(&len, 0);
+            BroadcastString(buf, len+1, 0);
+            v_argv[i] = strdup(buf);
+            printf("process %d: argv[%d] = %s\n",par_rank, i, v_argv[i]);
+        }
+    }
 }
 
-int CreateEngineAndConnectToViewer()
+static int CreateEngineAndConnectToViewer(void)
 {
     /* get the engine */
     v_engine = v_getengine();
@@ -125,21 +198,21 @@ int CreateEngineAndConnectToViewer()
     if (!v_initialize(v_engine, v_argc, v_argv))
     {
         fprintf(stderr, "Could not initialize engine\n");
-        Disconnect();
+        VisItDisconnect();
         return FALSE;
     }
 
     if (!v_connectviewer(v_engine, v_argc, v_argv))
     {
         fprintf(stderr, "Could not initialize engine\n");
-        Disconnect();
+        VisItDisconnect();
         return FALSE;
     }
 
     return TRUE;
 }
 
-void GetLocalhostName()
+static void GetLocalhostName(void)
 {
     char localhostStr[256];
     struct hostent *localhostEnt = NULL;
@@ -160,10 +233,11 @@ void GetLocalhostName()
     sprintf(localhost, localhostEnt->h_name);
 }
 
-int StartListening()
+static int StartListening(void)
 {
     int portFound = FALSE;
     int on = 1;
+    int err;
 
     listenSock = socket(AF_INET, SOCK_STREAM, 0);
     if (listenSock < 0)
@@ -186,8 +260,9 @@ int StartListening()
 #endif
 
         // Set the listen socket to non-blocking
-        fcntl(listenSock, F_SETFL, O_NONBLOCK);
-        if (bind(listenSock, (struct sockaddr *)&sockin, sizeof(sockin)) < 0)
+        err = fcntl(listenSock, F_SETFL, O_NONBLOCK);
+        err = bind(listenSock, (struct sockaddr *)&sockin, sizeof(sockin));
+        if (err)
         {
             listenPort++;
         }
@@ -202,12 +277,12 @@ int StartListening()
         return FALSE;
     }
 
-    listen(listenSock, 5);
+    err = listen(listenSock, 5);
 
     return TRUE;
 }
 
-int AcceptConnection()
+static int AcceptConnection(void)
 {
     int desc = -1;
     int opt = 1;
@@ -235,14 +310,14 @@ int AcceptConnection()
     return desc;
 }
 
-const char *GetHomeDirectory()
+static const char *GetHomeDirectory(void)
 {
     struct passwd *users_passwd_entry = NULL;
     users_passwd_entry = getpwuid(getuid());
     return users_passwd_entry->pw_dir;
 }
 
-void EnsureSimulationDirectoryExists()
+static void EnsureSimulationDirectoryExists(void)
 {
     char str[1024];
     snprintf(str, 1024, "%s/.visit", GetHomeDirectory());
@@ -251,19 +326,19 @@ void EnsureSimulationDirectoryExists()
     mkdir(str, 7*64 + 7*8 + 7);
 }
 
-void RemoveSimFile()
+static void RemoveSimFile(void)
 {
     unlink(simulationFileName);
 }
 
-void InitializeSocketAndDumpSimFile(const char *name)
+void VisItInitializeSocketAndDumpSimFile(char *name)
 {
     FILE *file;
 
     EnsureSimulationDirectoryExists();
     
     snprintf(simulationFileName, 255, "%s/.visit/simulations/%012d.%s.sim",
-             GetHomeDirectory(), time(NULL), name);
+             GetHomeDirectory(), (int)time(NULL), name);
 
     file = fopen(simulationFileName, "wt");
     if (!file)
@@ -282,8 +357,9 @@ void InitializeSocketAndDumpSimFile(const char *name)
     fclose(file);
 }
 
-int LoadVisItLibrary()
+static int LoadVisItLibrary(void)
 {
+#if 1
 #ifdef HACKHACK
     /* It is necessary right now to re-open the .so.  Without doing so,
        something is hanging, and I have not yet diagnosed what.  Things
@@ -296,11 +372,18 @@ int LoadVisItLibrary()
 
     /* load library */
 
-#ifdef PARALLEL
-    dl_handle = dlopen("libvisitengine_par.so", RTLD_LAZY | RTLD_GLOBAL);
-#else
-    dl_handle = dlopen("libvisitengine_ser.so", RTLD_LAZY | RTLD_GLOBAL);
-#endif
+    if (ifparallel)
+    {
+        printf("processor %d attempting to open parallel\n",par_rank);
+        dl_handle = dlopen("libvisitengine_par.so", RTLD_NOW | RTLD_GLOBAL);
+        printf("processor %d opened parallel successfully\n",par_rank);
+    }
+    else
+    {
+        printf("processor %d attempting to open serial\n",par_rank);
+        dl_handle = dlopen("libvisitengine_ser.so", RTLD_NOW | RTLD_GLOBAL);
+        printf("processor %d opened serial successfully\n",par_rank);
+    }
 
     if (!dl_handle)
     {
@@ -309,39 +392,46 @@ int LoadVisItLibrary()
     }
 
     /* get symbols */
-    v_getengine = dlsym(dl_handle, "get_engine");
+    v_getengine = (void *(*)())dlsym(dl_handle, "get_engine");
     if (!v_getengine) { fprintf(stderr, "couldn't find symbol: %s\n", dlerror()); dl_handle = NULL; return FALSE; }
 
-    v_getdescriptor = dlsym(dl_handle, "get_descriptor");
+    v_getdescriptor = (int (*)(void *))dlsym(dl_handle, "get_descriptor");
     if (!v_getdescriptor) { fprintf(stderr, "couldn't find symbol: %s\n", dlerror()); dl_handle = NULL; return FALSE; }
 
-    v_processinput = dlsym(dl_handle, "process_input");
+    v_processinput = (int (*)(void *))dlsym(dl_handle, "process_input");
     if (!v_processinput) { fprintf(stderr, "couldn't find symbol: %s\n", dlerror()); dl_handle = NULL; return FALSE; }
 
-    v_initialize = dlsym(dl_handle, "initialize");
+    v_initialize = (int (*)(void *, int, char **))dlsym(dl_handle, "initialize");
     if (!v_initialize) { fprintf(stderr, "couldn't find symbol: %s\n", dlerror()); dl_handle = NULL; return FALSE; }
 
-    v_connectviewer = dlsym(dl_handle, "connect_to_viewer");
+    v_connectviewer = (int (*)(void *, int, char **))dlsym(dl_handle, "connect_to_viewer");
     if (!v_connectviewer) { fprintf(stderr, "couldn't find symbol: %s\n", dlerror()); dl_handle = NULL; return FALSE; }
 
-    v_time_step_changed = dlsym(dl_handle, "time_step_changed");
+    v_time_step_changed = (void (*)(void *))dlsym(dl_handle, "time_step_changed");
     if (!v_time_step_changed) { fprintf(stderr, "couldn't find symbol: %s\n", dlerror()); dl_handle = NULL; return FALSE; }
 
-    v_disconnect = dlsym(dl_handle, "disconnect");
+    v_disconnect = (void (*)())dlsym(dl_handle, "disconnect");
     if (!v_disconnect) { fprintf(stderr, "couldn't find symbol: %s\n", dlerror()); dl_handle = NULL; return FALSE; }
+
+    v_set_slave_process_callback = (void (*)())dlsym(dl_handle, "set_slave_process_callback");
+    if (!v_set_slave_process_callback) { fprintf(stderr, "couldn't find symbol: %s\n", dlerror()); dl_handle = NULL; return FALSE; }
+#endif
 
     return TRUE;
 }
 
-int AttemptToCompleteConnection()
+int VisItAttemptToCompleteConnection(void)
 {
     int socket;
 
-    /* wait for a connection */
-    socket = AcceptConnection();
+    /* wait for a connection -- only process 0 does this */
+    if (par_rank == 0)
+    {
+        socket = AcceptConnection();
 
-    if (socket < 0)
-        return FALSE;
+        if (socket < 0)
+            return FALSE;
+    }
 
     /* get the connection parameters */
     GetConnectionParameters(socket);
@@ -355,25 +445,34 @@ int AttemptToCompleteConnection()
         return FALSE;
 
     /* get the socket for listening from the viewer */
-    engineinputdescriptor = v_getdescriptor(v_engine);
+    if (par_rank == 0)
+    {
+        engineinputdescriptor = v_getdescriptor(v_engine);
+    }
 
     return TRUE;
 }
 
-void ProcessEngineCommand()
+void VisItSetSlaveProcessCallback(void (*spic)())
 {
-    if (!v_processinput(v_engine))
+    v_set_slave_process_callback(spic);
+}
+
+int VisItProcessEngineCommand(void)
+{
+    return v_processinput(v_engine);
+}
+
+void VisItTimeStepChanged(void)
+{
+    // Make sure the function exists before using it.
+    if (v_time_step_changed)
     {
-        Disconnect();
+        v_time_step_changed(v_engine);
     }
 }
 
-void TimeStepChanged()
-{
-    v_time_step_changed(v_engine);
-}
-
-void AddVisItLibraryPaths(int argc, char *argv[])
+void VisItAddLibraryPaths(int argc, char *argv[])
 {
     int i;
     char *buff;
@@ -390,9 +489,11 @@ void AddVisItLibraryPaths(int argc, char *argv[])
         sprintf(buff, "LD_LIBRARY_PATH=.:../lib");
     putenv(buff);
 
+    /*
     buff = malloc(10000);
     sprintf(buff, "VISITPLUGINDIR=.:../plugins");
     putenv(buff);
+    */
 
     buff = strdup("VISIT_PATHS_SET=1");
     putenv(buff);
@@ -405,4 +506,59 @@ void AddVisItLibraryPaths(int argc, char *argv[])
     execv(argv[0],argv2);
     fprintf(stderr, "exec failed\n");
     exit(-1);
+}
+
+void VisItSetupEnvironment(void)
+{
+    char *envoutput = malloc(10000);
+    char *envoutput_ptr;
+    FILE *file;
+    int n;
+    int i;
+    int done;
+
+    // REMOVE ME!
+    //return;
+
+    printf("BEFORE: processor %d has VISITPLUGINDIR=%s\n",par_rank,getenv("VISITPLUGINDIR") ? getenv("VISITPLUGINDIR") : "unset" );
+
+    /* VisIt can tell us what variables to set! */
+    /* (redirect stderr so it won't complain if it can't find visit) */
+    file = popen("VISITPLUGINDIR=/data_vobs/VisIt/sim visit -env 2>/dev/null", "r");
+    envoutput_ptr = envoutput;
+    while ((n = read(fileno(file), envoutput_ptr, PIPE_BUF)) > 0)
+    {
+        envoutput_ptr += n;
+    }
+    printf("proc %d: read from default visit env: %s\n", par_rank, envoutput);
+    pclose(file);
+
+    /* If there was no output, then visit wasn't in their path */
+    if (envoutput_ptr == envoutput)
+    {
+        file = popen("VISITPLUGINDIR=/data_vobs/VisIt/sim /usr/gapps/visit/bin/visit -env 2>/dev/null", "r");
+        envoutput_ptr = envoutput;
+        while ((n = read(fileno(file), envoutput_ptr, PIPE_BUF)) > 0)
+        {
+            envoutput_ptr += n;
+        }
+        pclose(file);
+    }
+    printf("proc %d: read from default or gapps visit env: %s\n", par_rank, envoutput);
+
+    /* Do a bunch of putenv calls; it should already be formatted correctly */
+    envoutput_ptr = envoutput;
+    while (envoutput_ptr[0]!='\0')
+    {
+        int i = 0;
+        while (envoutput_ptr[i]!='\n')
+            i++;
+        envoutput_ptr[i] = '\0';
+        printf("processor %d adding: %s\n",par_rank, envoutput_ptr);
+        putenv(envoutput_ptr);
+        envoutput_ptr += i+1;
+    }
+    // free(envoutput); <--- NO!  Do Not Free!  Bad Bad Bad Bad Bad!
+
+    printf("AFTER: processor %d has VISITPLUGINDIR=%s\n",par_rank,getenv("VISITPLUGINDIR"));
 }

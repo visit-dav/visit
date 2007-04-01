@@ -47,9 +47,13 @@ class     ExprPipelineState;
 //    Kathleen Bonnell, Mon Jun 28 07:48:55 PDT 2004 
 //    Add currentTimeState, ExamineSpecification.
 //
+//    Hank Childs, Mon Dec 27 10:13:44 PST 2004
+//    Separate out parts that are related to streaming.
+//
 // ****************************************************************************
 
-class EXPRESSION_API avtExpressionFilter : public avtStreamer
+class EXPRESSION_API avtExpressionFilter : virtual public 
+                                                     avtDatasetToDatasetFilter
 {
     friend class             avtExpressionEvaluatorFilter;
 
@@ -66,25 +70,23 @@ class EXPRESSION_API avtExpressionFilter : public avtStreamer
 
   protected:
     char                    *outputVariableName;
-    std::string              currentDomainsLabel;
-    int                      currentDomainsIndex;
     int                      currentTimeState;
 
     virtual bool             IsPointVariable();
 
     virtual void             PreExecute(void);
     virtual void             PostExecute(void);
-    virtual vtkDataSet      *ExecuteData(vtkDataSet *, int, std::string);
     virtual void             RefashionDataObjectInfo(void);
     virtual avtPipelineSpecification_p
                              PerformRestriction(avtPipelineSpecification_p);
     virtual void             ExamineSpecification(avtPipelineSpecification_p);
 
     virtual int              GetVariableDimension() { return 1; };
-    virtual vtkDataArray    *DeriveVariable(vtkDataSet *) = 0;
 
     vtkDataArray            *Recenter(vtkDataSet*, vtkDataArray*,avtCentering);
 };
 
 
 #endif
+
+

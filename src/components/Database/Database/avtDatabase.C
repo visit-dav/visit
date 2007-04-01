@@ -285,6 +285,9 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Kathleen Bonnell, Thu Dec  9 08:43:47 PST 2004 
 //    Set ContainsGlobalNode/ZoneIds in DataAtts from db MetaData. 
 //
+//    Hank Childs, Sat Jan  1 11:33:13 PST 2005
+//    Initialize the mesh name.
+//
 // ****************************************************************************
 
 void
@@ -310,6 +313,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
         atts.SetBlockOrigin(mmd->blockOrigin);
         atts.SetTopologicalDimension(mmd->topologicalDimension);
         atts.SetSpatialDimension(mmd->spatialDimension);
+        atts.SetMeshname(mesh);
         atts.SetXUnits(mmd->xUnits);
         atts.SetYUnits(mmd->yUnits);
         atts.SetZUnits(mmd->zUnits);

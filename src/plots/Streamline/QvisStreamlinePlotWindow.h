@@ -28,6 +28,9 @@ class StreamlineAttributes;
 //   Brad Whitlock, Wed Dec 22 13:03:49 PST 2004
 //   Added support for coloring by vorticity and ribbons.
 //
+//   Brad Whitlock, Mon Jan 3 15:32:24 PST 2005
+//   Added override of ProcessOldVersions.
+//
 // ****************************************************************************
 
 class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
@@ -41,6 +44,8 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisStreamlinePlotWindow();
     virtual void CreateWindowContents();
+
+    virtual void ProcessOldVersions(DataNode *node, const char *ver);
   public slots:
     virtual void apply();
     virtual void makeDefault();

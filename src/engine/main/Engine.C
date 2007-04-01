@@ -143,6 +143,12 @@ Engine *Engine::Instance()
 //    Added a call to PAR_CreateTypes since it is no longer called from
 //    PAR_Init.
 //
+//    Jeremy Meredith, Mon Nov  1 13:26:23 PST 2004
+//    Use a buffer connection that is visible at class scope for parallel
+//    communication.  Before, it was an automatic variable in PAR_EventLoop
+//    but I needed a separate PAR_ProcessInput method that used the same
+//    buffer connection.
+//
 // ****************************************************************************
 void
 Engine::Initialize(int *argc, char **argv[])
@@ -176,6 +182,15 @@ Engine::Initialize(int *argc, char **argv[])
     //
 #if !defined(_WIN32)
     set_new_handler(Engine::NewHandler);
+#endif
+
+#ifdef PARALLEL
+    if (!PAR_UIProcess())
+    {
+        // Set the xfer object's input connection to be the buffer connection
+        // of the object itself
+        xfer->SetInputConnection(&par_conn);
+    }
 #endif
 
     debug1 << "ENGINE started\n";
@@ -513,14 +528,17 @@ Engine::ConnectViewer(int *argc, char **argv[])
 //    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
 //    Made the engine an object.
 //
+//    Jeremy Meredith, Mon Nov  1 13:26:23 PST 2004
+//    Use a buffer connection that is visible at class scope for parallel
+//    communication.  Before, it was an automatic variable in this method
+//    but I needed a separate PAR_ProcessInput method that used the same
+//    buffer connection.
+//
 // ****************************************************************************
 
 void
 Engine::PAR_EventLoop()
 {
-    PAR_StateBuffer  buf;
-    BufferConnection conn;
-
     if (PAR_UIProcess())
     {
         // The master process executes the serial event loop since it
@@ -532,18 +550,14 @@ Engine::PAR_EventLoop()
         // to all other processes.
         if (errFlag || !noFatalExceptions)
         {
-            quitRPC->Write(conn);
-            xfer->SetInputConnection(&conn);
+            quitRPC->Write(par_conn);
+            xfer->SetInputConnection(&par_conn);
             xfer->SetEnableReadHeader(false);
             xfer->Process();
         }
     }
     else
     {
-        // Set the xfer object's input connection to be the buffer connection
-        // that was declared at the top of this routine.
-        xfer->SetInputConnection(&conn);
-
         // Non-UI Process
         while(!quitRPC->GetQuit() && noFatalExceptions)
         {
@@ -551,20 +565,48 @@ Engine::PAR_EventLoop()
             ResetTimeout(timeout * 60);
 
             // Get state information from the UI process.
-            MPI_Bcast((void *)&buf, 1, PAR_STATEBUFFER, 0, MPI_COMM_WORLD);
+            MPI_Bcast((void *)&par_buf, 1, PAR_STATEBUFFER, 0, MPI_COMM_WORLD);
 
             // We have work to do, so cancel the alarm.
             int num_seconds_in_half_hour = 30*60;
             ResetTimeout(num_seconds_in_half_hour);
 
             // Add the state information to the connection.
-            conn.Append((unsigned char *)buf.buffer, buf.nbytes);
+            par_conn.Append((unsigned char *)par_buf.buffer, par_buf.nbytes);
 
             // Process the state information.
             xfer->Process();
 
             ResetTimeout(timeout * 60);
         }
+    }
+}
+
+// ****************************************************************************
+//  Method:  Engine::PAR_ProcessInput
+//
+//  Purpose:
+//    Same purpose as ProcessInput, but parallel-aware.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November  1, 2004
+//
+// ****************************************************************************
+void
+Engine::PAR_ProcessInput()
+{    
+    if (PAR_UIProcess())
+    {
+        ProcessInput();
+    }
+    else
+    {
+        MPI_Bcast((void *)&par_buf, 1, PAR_STATEBUFFER, 0, MPI_COMM_WORLD);
+        par_conn.Append((unsigned char *)par_buf.buffer, par_buf.nbytes);
+        xfer->Process();
     }
 }
 #endif

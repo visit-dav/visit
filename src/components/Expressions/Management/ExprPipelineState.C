@@ -97,3 +97,26 @@ ExprPipelineState::ReleaseData()
         filters[i]->ReleaseData();
 }
 
+
+// ****************************************************************************
+//  Method: ExprPipelineState::Clear
+//
+//  Purpose:
+//      Clears out the pipeline state.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 31, 2004
+//
+// ****************************************************************************
+
+void
+ExprPipelineState::Clear()
+{
+    for (int i = 0; i < filters.size(); ++i)
+        delete filters[i];
+    filters.clear();
+    name_stack.clear();
+    dataObject = NULL;
+}
+
+

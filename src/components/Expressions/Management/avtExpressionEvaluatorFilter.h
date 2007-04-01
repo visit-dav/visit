@@ -53,13 +53,19 @@
 //   Kathleen Bonnell, Thu Dec 16 17:11:19 PST 2004 
 //   Added another bool arg to QueryCoords. 
 //
+//   Hank Childs, Wed Dec 29 08:02:40 PST 2004
+//   Added friend access to avtMacroExpressionFilter.  Also cache the
+//   terminating source for updates.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionEvaluatorFilter 
     : virtual public avtDatasetToDatasetFilter,
       virtual public avtQueryableSource
 {
-public:
+    friend class             avtMacroExpressionFilter;
+
+  public:
                              avtExpressionEvaluatorFilter();
     virtual                 ~avtExpressionEvaluatorFilter();
     virtual const char*      GetType(void)
@@ -79,7 +85,7 @@ public:
     virtual void             GetDomainName(const std::string &, const int,
                                  const int , std::string &);
 
-protected:
+  protected:
     virtual void             PreExecute(void) {}
     virtual void             PostExecute(void) {}
     virtual void             Execute(void);
@@ -88,11 +94,12 @@ protected:
     virtual int              AdditionalPipelineFilters(void);
     virtual void             ExamineSpecification(avtPipelineSpecification_p);
 
-protected:
+  protected:
     ExprPipelineState            pipelineState;
     avtPipelineSpecification_p   lastUsedSpec;
+    avtSourceFromAVTDataset     *termsrc;
 
-private:
+  private:
     int                          currentTimeState;
 };
 

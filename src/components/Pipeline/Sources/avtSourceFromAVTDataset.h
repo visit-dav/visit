@@ -4,6 +4,7 @@
 
 #ifndef AVT_SOURCE_FROM_AVT_DATASET_H
 #define AVT_SOURCE_FROM_AVT_DATASET_H
+
 #include <pipeline_exports.h>
 
 
@@ -30,14 +31,20 @@
 //    Moved inlined destructor definition to .C file because certain compilers
 //    have problems with them.
 //
+//    Hank Childs, Fri Dec 31 11:02:02 PST 2004
+//    Allow the data tree to be reset.
+//
 // ****************************************************************************
 
-class PIPELINE_API avtSourceFromAVTDataset : virtual public avtTerminatingDatasetSource,
-                                virtual public avtInlinePipelineSource
+class PIPELINE_API avtSourceFromAVTDataset
+     : virtual public avtTerminatingDatasetSource,
+       virtual public avtInlinePipelineSource
 {
   public:
                           avtSourceFromAVTDataset(avtDataset_p ds);
     virtual              ~avtSourceFromAVTDataset();
+
+    void                  ResetTree(avtDataTree_p t) { tree = t; };
 
   protected:
     avtDataTree_p         tree;

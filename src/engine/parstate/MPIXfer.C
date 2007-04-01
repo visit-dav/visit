@@ -8,6 +8,8 @@
 
 #include <visitstream.h>
 
+void (*MPIXfer::slaveProcessInstruction)() = NULL;
+
 // ****************************************************************************
 // Method: MPIXfer::MPIXfer
 //
@@ -174,9 +176,15 @@ MPIXfer::SendInterruption(int mpiInterruptTag)
 //    Jeremy Meredith, Fri Sep 21 14:31:22 PDT 2001
 //    Added use of buffered input.
 //
-//   Jeremy Meredith, Tue Mar  4 13:10:25 PST 2003
-//   Used the length from the new buffer.  Multiple non-blocking messages
-//   mess up MPIXfer if we don't keep track of the length for each message.
+//    Jeremy Meredith, Tue Mar  4 13:10:25 PST 2003
+//    Used the length from the new buffer.  Multiple non-blocking messages
+//    mess up MPIXfer if we don't keep track of the length for each message.
+//
+//    Jeremy Meredith, Thu Oct  7 14:09:10 PDT 2004
+//    Added callback so the master process could tell the slaves they
+//    are about to receive data.  This was needed for running inside a
+//    parallel simulation because slave processes need some way to know
+//    that the next command coming is visit-specific.
 //
 // ****************************************************************************
 
@@ -229,6 +237,8 @@ MPIXfer::Process()
                     // Buffer or send it to other processes.
                     if(buf.nbytes >= INPUT_BUFFER_SIZE)
                     {
+                        if (slaveProcessInstruction)
+                            slaveProcessInstruction();
                         MPI_Bcast((void *)&buf, 1, PAR_STATEBUFFER,
                                   0, MPI_COMM_WORLD);
 
@@ -239,6 +249,8 @@ MPIXfer::Process()
                 // Write last part of message if it exists.
                 if(buf.nbytes > 0)
                 {
+                    if (slaveProcessInstruction)
+                        slaveProcessInstruction();
                     MPI_Bcast((void *)&buf, 1, PAR_STATEBUFFER,
                               0, MPI_COMM_WORLD);
                 }
@@ -302,5 +314,26 @@ MPIXfer::Update(Subject *TheChangedSubject)
     subject->Write(*output);
     output->Flush();
 }
+
+// ****************************************************************************
+//  Method:  MPIXfer::SetSlaveProcessInstructionCallback
+//
+//  Purpose:
+//    Sets the callback for the master process to tell the slaves
+//    they are about to receive data to process.
+//
+//  Arguments:
+//    spi        the callback function
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    October  7, 2004
+//
+// ****************************************************************************
+void
+MPIXfer::SetSlaveProcessInstructionCallback(void (*spi)())
+{
+    slaveProcessInstruction = spi;
+}
+
 
 #endif
