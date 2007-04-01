@@ -8708,18 +8708,21 @@ visit_GetGlobalLineoutAttributes(PyObject *self, PyObject *args)
 //   Kathleen Bonnell, Tue Jun  1 08:29:54 PDT 2004 
 //   Swapped order of dom/el in args list, and in call to PointQuery. 
 //
+//   Kathleen Bonnell, Thu Dec 16 17:31:10 PST 2004 
+//   Added ool arg, indicating of node/zone is global or not. 
+//
 // ****************************************************************************
 
 STATIC PyObject *
-visit_DomainPick(const char *type, int el, int dom, stringVector vars)
+visit_DomainPick(const char *type, int el, int dom, stringVector vars, bool doGlobal)
 {
     double pt[3] = {0., 0., 0};
 
     MUTEX_LOCK();
-        viewer->PointQuery(type, pt, vars, false, el, dom);
+        viewer->PointQuery(type, pt, vars, false, el, dom, doGlobal);
         if(logging)
         {
-            fprintf(logFile, "%s(%d, %d (", type, el, dom);
+            fprintf(logFile, "%s(%d, %d (", type, el, dom, doGlobal);
             for(int i = 0; i < vars.size(); ++i)
             {
                 fprintf(logFile, "\"%s\"", vars[i].c_str());
@@ -8777,7 +8780,43 @@ visit_PickByZone(PyObject *self, PyObject *args)
     GetStringVectorFromPyObject(tuple, vars);
 
     // Return the success value.
-    return visit_DomainPick(type, zone, dom, vars);
+    return visit_DomainPick(type, zone, dom, vars, false);
+}
+
+// ****************************************************************************
+// Function: visit_PickByGlobalZone
+//
+// Purpose:
+//   Tells the viewer to perform Pick via global zone id. 
+//
+// Notes:      
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 16, 2004
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_PickByGlobalZone(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *type = "PickByZone";
+    int dom = 0, zone = 0;
+    PyObject *tuple = NULL;
+    if (!PyArg_ParseTuple(args, "i|O", &zone, &tuple))
+    {
+        return NULL;
+    }
+
+    // Check the tuple argument.
+    stringVector vars;
+    GetStringVectorFromPyObject(tuple, vars);
+
+    // Return the success value.
+    return visit_DomainPick(type, zone, dom, vars, true);
 }
 
 
@@ -8822,7 +8861,44 @@ visit_PickByNode(PyObject *self, PyObject *args)
     GetStringVectorFromPyObject(tuple, vars);
 
     // Return the success value.
-    return visit_DomainPick(type, node, dom, vars);
+    return visit_DomainPick(type, node, dom, vars, false);
+}
+
+
+// ****************************************************************************
+// Function: visit_PickByGlobalNode
+//
+// Purpose:
+//   Tells the viewer to perform Pick via global node id. 
+//
+// Notes:      
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 16, 2004
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_PickByGlobalNode(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *type = "PickByNode";
+    int dom = 0, node = 0;
+    PyObject *tuple = NULL;
+    if (!PyArg_ParseTuple(args, "i|O", &node, &tuple))
+    {
+        return NULL;
+    }
+
+    // Check the tuple argument.
+    stringVector vars;
+    GetStringVectorFromPyObject(tuple, vars);
+
+    // Return the success value.
+    return visit_DomainPick(type, node, dom, vars, true);
 }
 
 
@@ -9433,6 +9509,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Jeremy Meredith, Fri Oct 29 16:47:57 PDT 2004
 //   Added methods to support lighting.
 //
+//   Kathleen Bonnell, Thu Dec 16 17:31:10 PST 2004
+//   Added PickByGlobalZone and PickByGlobalNode. 
+//
 // ****************************************************************************
 
 static void
@@ -9539,6 +9618,8 @@ AddDefaultMethods()
     AddMethod("Pick", visit_Pick);
     AddMethod("PickByNode", visit_PickByNode);
     AddMethod("PickByZone", visit_PickByZone);
+    AddMethod("PickByGlobalNode", visit_PickByGlobalNode);
+    AddMethod("PickByGlobalZone", visit_PickByGlobalZone);
     AddMethod("PrintWindow", visit_PrintWindow);
     AddMethod("PromoteOperator", visit_PromoteOperator);
     AddMethod("Query", visit_Query);

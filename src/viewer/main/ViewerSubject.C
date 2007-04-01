@@ -5506,6 +5506,9 @@ ViewerSubject::CopyPlotsToWindow(int from, int to)
 //   Kathleen Bonnell, Wed Jul 23 16:10:41 PDT 2003
 //   Added int args to qm->DatabaseQuery. 
 //   
+//   Kathleen Bonnell, Wed Dec 15 17:12:47 PST 2004 
+//   Added another bool arg to qm->DatabaseQuery. 
+//   
 // ****************************************************************************
 
 void
@@ -5520,7 +5523,8 @@ ViewerSubject::DatabaseQuery()
     ViewerQueryManager *qm = ViewerQueryManager::Instance();
     qm->DatabaseQuery(vw, viewerRPC.GetQueryName(), viewerRPC.GetQueryVariables(),
                       viewerRPC.GetBoolFlag(), 
-                      viewerRPC.GetIntArg1(), viewerRPC.GetIntArg2());
+                      viewerRPC.GetIntArg1(), viewerRPC.GetIntArg2(),
+                      (bool)viewerRPC.GetIntArg3());
 
     // Clear the status
     ClearStatus();
@@ -5546,6 +5550,9 @@ ViewerSubject::DatabaseQuery()
 //   Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004 
 //   Use optional bool flag from RPC. 
 //
+//   Kathleen Bonnell, Wed Dec 15 17:12:47 PST 2004 
+//   Added another bool arg to qm->DatabaseQuery. 
+//   
 // ****************************************************************************
 
 void
@@ -5560,7 +5567,8 @@ ViewerSubject::PointQuery()
     qm->PointQuery(viewerRPC.GetQueryName(), viewerRPC.GetQueryPoint1(),
                    viewerRPC.GetQueryVariables(),
                    viewerRPC.GetIntArg1(), viewerRPC.GetIntArg2(),
-                   viewerRPC.GetBoolFlag()); 
+                   viewerRPC.GetBoolFlag(),
+                   (bool)viewerRPC.GetIntArg3()); 
 
     // Clear the status
     ClearStatus();

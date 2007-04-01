@@ -1211,6 +1211,9 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    Changed 'std::vector<int>' to 'intVector' and 'std::vector<std::string>'
 //    to stringVector.  Added call to QueryGlobalIds.
 //
+//    Kathleen Bonnell, Wed Dec 15 17:35:53 PST 2004 
+//    Added call to 'LocalIdForGlobal'.
+//
 // ****************************************************************************
 
 void               
@@ -1262,6 +1265,14 @@ avtDatabase::Query(PickAttributes *pa)
         bool logicalBZones = pa->GetShowZoneBlockLogicalCoords();
         bool includeGhosts = pa->GetIncludeGhosts();
         bool elIsGhost     = pa->GetElementIsGhost();
+
+        if (pa->GetElementIsGlobal())
+        {
+            foundEl = LocalIdForGlobal(foundDomain, vName, ts, zonePick, foundEl);
+            if (foundEl == -1)
+                return;
+            pa->SetElementNumber(foundEl);
+        }
 
         if (zonePick)
         {

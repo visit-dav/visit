@@ -74,20 +74,28 @@ avtPickByZoneQuery::~avtPickByZoneQuery()
 //    Kathleen Bonnell, Wed Oct 20 17:10:21 PDT 2004 
 //    Use vtkVisItUtility method to compute cell center. 
 //
+//    Kathleen Bonnell, Wed Dec 15 17:24:27 PST 2004 
+//    Added logic to handle case when chosen zone is to be considered global.
+//
 // ****************************************************************************
 
 void
 avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
 {
-    if (dom != pickAtts.GetDomain() || pickAtts.GetFulfilled() || ds == NULL)
+    if (pickAtts.GetFulfilled() || ds == NULL)
     {
         return;
     }
-
     int userZoneId = pickAtts.GetElementNumber();
+    if (!pickAtts.GetElementIsGlobal())
+    {
+        if (dom != pickAtts.GetDomain()) 
+            return;
+    }
+
     int zoneid = userZoneId;
     int maxEls = ds->GetNumberOfCells();
-    if (pickAtts.GetMatSelected())
+    if (pickAtts.GetMatSelected() &&  !pickAtts.GetElementIsGlobal())
     {
         //
         // The zone id stored in ElementNumber will not be correct relative
@@ -97,13 +105,23 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
         zoneid = GetCurrentZoneForOriginal(ds, userZoneId);
     }
 
-    if (zoneid < 0 || zoneid >= maxEls)
+    if (!pickAtts.GetElementIsGlobal() && (zoneid < 0 || zoneid >= maxEls))
     {
         EXCEPTION2(BadCellException, userZoneId+cellOrigin, maxEls+cellOrigin);
     }
 
+    bool DBsuppliedZoneId = true;
     if (!pickAtts.GetMatSelected() && ghostType != AVT_CREATED_GHOSTS)
     {
+        if (pickAtts.GetElementIsGlobal())
+        {
+            userZoneId = vtkVisItUtility::GetLocalElementForGlobal(
+                         ds, userZoneId, true);
+            if (userZoneId == -1)
+                return;
+            zoneid = userZoneId;
+            DBsuppliedZoneId = false;
+        }
         GetZoneCoords(ds, zoneid);
         if (RetrieveNodes(ds, zoneid))
         {
@@ -112,7 +130,7 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
         }
         else
         {
-            // the indident nodes could not be found, no further processing 
+            // the incident nodes could not be found, no further processing 
             // required.  SetDomain and ElementNumber to -1 to indicate failure. 
             pickAtts.SetDomain(-1);
             pickAtts.SetElementNumber(-1);
@@ -123,8 +141,19 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
             return; 
         }
     }
+    if (pickAtts.GetElementIsGlobal())
+        pickAtts.SetDomain(dom); 
 
     src->Query(&pickAtts);
+
+    if (!pickAtts.GetFulfilled())
+        return;
+
+    if (pickAtts.GetElementIsGlobal() && DBsuppliedZoneId)
+    {
+       zoneid =  GetCurrentZoneForOriginal(ds, pickAtts.GetElementNumber());
+       userZoneId = zoneid;
+    }
 
     pickAtts.SetElementNumber(userZoneId+cellOrigin);
 
@@ -210,16 +239,26 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
 //  Creation:   May 10, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Wed Dec 15 17:24:27 PST 2004
+//    Set domain to -1 (so that no domain-restriction is performed) if
+//    the zone is global.
 //
 // ****************************************************************************
 
 void
 avtPickByZoneQuery::Preparation()
 {
-    int dom = pickAtts.GetDomain() - blockOrigin;
-    pickAtts.SetDomain(dom < 0 ? 0 : dom);
-    int  zone = pickAtts.GetElementNumber() - cellOrigin;
-    pickAtts.SetElementNumber(zone < 0 ? 0 : zone);
+    if (!pickAtts.GetElementIsGlobal())
+    {
+        int dom = pickAtts.GetDomain() - blockOrigin;
+        pickAtts.SetDomain(dom < 0 ? 0 : dom);
+        int  zone = pickAtts.GetElementNumber() - cellOrigin;
+        pickAtts.SetElementNumber(zone < 0 ? 0 : zone);
+    }
+    else 
+    {
+        pickAtts.SetDomain(-1);
+    }
 }
 
 

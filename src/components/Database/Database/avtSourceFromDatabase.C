@@ -599,11 +599,15 @@ avtSourceFromDatabase::GetDomainName(const std::string &var, const int ts,
 //    Kathleen Bonnell, Thu Jun 10 18:15:11 PDT 2004
 //    Renamed from QueryZoneCenter to QueryCoords, added bool arg. 
 //
+//    Kathleen Bonnell, Thu Dec 16 17:11:19 PST 2004
+//    Added another bool arg.
+//
 // ****************************************************************************
 
 bool
 avtSourceFromDatabase::QueryCoords(const std::string &var, const int dom,
-    const int zone, const int ts, float coord[3], const bool forZone)
+    const int zone, const int ts, float coord[3], const bool forZone,
+    const bool useGlobalId)
 {
-    return database->QueryCoords(var, dom, zone, ts, coord, forZone);
+    return database->QueryCoords(var, dom, zone, ts, coord, forZone, useGlobalId);
 }

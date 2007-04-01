@@ -72,6 +72,9 @@ class  PickAttributes;
 //    Kathleen Bonnell, Thu Jun 10 18:15:11 PDT 2004 
 //    Rename QueryZoneCenter to QueryCoords, added bool arg.
 //
+//    Kathleen Bonnell, Thu Dec 16 17:11:19 PST 2004 
+//    Added another bool arg to QueryCoords. 
+//
 // ****************************************************************************
 
 class DATABASE_API avtSourceFromDatabase : public avtTerminatingDatasetSource
@@ -97,7 +100,7 @@ class DATABASE_API avtSourceFromDatabase : public avtTerminatingDatasetSource
     void                DatabaseProgress(int, int, const char *);
     virtual void        Query(PickAttributes *);
     virtual bool        QueryCoords(const std::string &, const int, const int,
-                                    const int, float[3], const bool);
+                                    const int, float[3], const bool, const bool);
     virtual bool        FindElementForPoint(const char *, const int, 
                             const int, const char *, float[3], int &);
     virtual void        GetDomainName(const std::string &, const int, 

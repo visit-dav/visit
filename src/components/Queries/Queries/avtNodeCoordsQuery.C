@@ -61,6 +61,10 @@ avtNodeCoordsQuery::~avtNodeCoordsQuery()
 //    Kathleen Bonnell, Tue Jul  6 15:20:56 PDT 2004 
 //    Removed MPI calls, use GetFloatArrayToRootProc. 
 //
+//    Kathleen Bonnell, Thu Dec 16 17:16:33 PST 2004 
+//    Moved code that actually finds zone center to FindLocalCenter and
+//    FindGlobalCenter. 
+//
 // ****************************************************************************
 
 void
@@ -72,57 +76,34 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
     UpdateProgress(0, 0);
 
     bool singleDomain = false;
-    intVector dlist;
-    avtDataSpecification_p dspec = 
-        GetInput()->GetTerminatingSource()->GetFullDataSpecification();
-    dspec->GetSIL().GetDomainList(dlist);
+    if (!queryAtts.GetUseGlobalId())
+    {
+        intVector dlist;
+        avtDataSpecification_p dspec = 
+            GetInput()->GetTerminatingSource()->GetFullDataSpecification();
+        dspec->GetSIL().GetDomainList(dlist);
 
-    if (dlist.size() == 1 && dspec->UsesAllDomains())
+        if (dlist.size() == 1 && dspec->UsesAllDomains())
+        {
+            singleDomain = true;
+        }
+    }
+    else
     {
         singleDomain = true;
     }
 
-    int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
-    int dim         = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
-    int domain      = qA->GetDomain()  - blockOrigin;
-    int node        = qA->GetElement(); 
-    int ts          = qA->GetTimeStep();
-    string var      = qA->GetVariables()[0];
 
     float coord[3] = {0., 0., 0.};
 
-    domain = (domain < 0 ? 0 : domain);
-
-    avtSILRestrictionTraverser trav(querySILR);
-    trav.GetDomainList(dlist);
-    bool success = false;
-
-    //
-    //  See if any processor is working with this domain.
-    //
-    intVector dAllProc;
-    trav.GetDomainListAllProcs(dAllProc);
-    bool domainUsed = false;
-    for (int j = 0; j < dAllProc.size() && !domainUsed; j++)
+    bool success;
+    if (queryAtts.GetUseGlobalId())
     {
-        if (dAllProc[j] == domain)
-            domainUsed = true;
+        success = FindGlobalCoord(coord);
     }
-
-    avtTerminatingSource *src = GetInput()->GetTerminatingSource();
-    if (domainUsed)
+    else 
     {
-        for (int i = 0; i < dlist.size() && !success; ++i) 
-        {
-            if (dlist[i] == domain)
-            {
-                success = src->QueryCoords(var, domain, node, ts, coord, false);
-            }
-        }
-    }
-    else if (PAR_Rank() == 0)
-    {
-        success = src->QueryCoords(var, domain, node, ts, coord, false);
+        success = FindLocalCoord(coord);
     }
     
     GetFloatArrayToRootProc(coord, 3, success);
@@ -134,6 +115,7 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
 
     if (success)
     {
+        int dim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
         if (singleDomain)
         {
             if (dim == 2)
@@ -149,6 +131,11 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
         }
         else
         {
+            avtTerminatingSource *src = GetInput()->GetTerminatingSource();
+            int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
+            int domain      = qA->GetDomain()  - blockOrigin;
+            int ts          = qA->GetTimeStep();
+            string var      = qA->GetVariables()[0];
             string domainName;
             src->GetDomainName(var, ts, domain, domainName);
             if (dim == 2)
@@ -180,6 +167,11 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
         }
         else
         {
+            avtTerminatingSource *src = GetInput()->GetTerminatingSource();
+            int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
+            int domain      = qA->GetDomain()  - blockOrigin;
+            int ts          = qA->GetTimeStep();
+            string var      = qA->GetVariables()[0];
             string domainName;
             src->GetDomainName(var, ts, domain, domainName);
             SNPRINTF(msg, 120, "The coords of node %d (%s) could not be determined.",
@@ -189,5 +181,124 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
 
     qA->SetResultsMessage(msg);
     UpdateProgress(1, 0);
+}
+
+
+// ****************************************************************************
+//  Method: avtNodeCoordsQuery::FindLocalCoord
+//
+//  Purpose:
+//    Find the coordinats of node specified in queryAtts in domain specified
+//    by queryAtts. 
+//
+//  Returns:
+//    true upon succesful location of node and determination of its 
+//    coordinates, false otherwise.
+//
+//  Arguments:
+//    coord     A place to store the coordinates of the node.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   December 16, 2004 (moved from method PerformQuery)
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+avtNodeCoordsQuery::FindLocalCoord(float coord[3])
+{
+    intVector dlist;
+
+    int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
+    int domain      = queryAtts.GetDomain()  - blockOrigin;
+    int node        = queryAtts.GetElement(); 
+    int ts          = queryAtts.GetTimeStep();
+    string var      = queryAtts.GetVariables()[0];
+
+    coord[0] = 0.;
+    coord[1] = 0.;
+    coord[2] = 0.;
+
+    domain = (domain < 0 ? 0 : domain);
+
+    avtSILRestrictionTraverser trav(querySILR);
+    trav.GetDomainList(dlist);
+    bool success = false;
+
+    //
+    //  See if any processor is working with this domain.
+    //
+    intVector dAllProc;
+    trav.GetDomainListAllProcs(dAllProc);
+    bool domainUsed = false;
+    for (int j = 0; j < dAllProc.size() && !domainUsed; j++)
+    {
+        if (dAllProc[j] == domain)
+            domainUsed = true;
+    }
+
+    avtTerminatingSource *src = GetInput()->GetTerminatingSource();
+    if (domainUsed)
+    {
+        for (int i = 0; i < dlist.size() && !success; ++i) 
+        {
+            if (dlist[i] == domain)
+            {
+                success = src->QueryCoords(var, domain, node, ts, coord, false, false);
+            }
+        }
+    }
+    else if (PAR_Rank() == 0)
+    {
+        success = src->QueryCoords(var, domain, node, ts, coord, false, false);
+    }
+    return success; 
+}
+
+
+// ****************************************************************************
+//  Method: avtNodeCoordsQuery::FindGlobalCoord
+//
+//  Purpose:
+//    Find the coordinates of global node specified in queryAtts.  Must search 
+//    all domains.
+//
+//  Returns:
+//    true upon succesful location of node and determination of its 
+//    coordinates, false otherwise.
+//
+//  Arguments:
+//    coord     A place to store the coordinates of the node.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   December 16, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+avtNodeCoordsQuery::FindGlobalCoord(float coord[3])
+{
+    int node        = queryAtts.GetElement(); 
+    int ts          = queryAtts.GetTimeStep();
+    string var      = queryAtts.GetVariables()[0];
+
+    coord[0] = 0.;
+    coord[1] = 0.;
+    coord[2] = 0.;
+
+    intVector dlist;
+    avtSILRestrictionTraverser trav(querySILR);
+    trav.GetDomainList(dlist);
+    bool success = false;
+
+    avtTerminatingSource *src = GetInput()->GetTerminatingSource();
+    for (int i = 0; i < dlist.size() && !success; ++i) 
+    {
+        success = src->QueryCoords(var, dlist[i], node, ts, coord, false, true);
+    }
+    return success;
 }
 

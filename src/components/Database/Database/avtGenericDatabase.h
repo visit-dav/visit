@@ -211,6 +211,12 @@ class     PickVarInfo;
 //    to intVector, 'std::vector<bool>' to 'boolVector'.  Added method
 //    'QueryGlobalIds'. 
 //
+//    Kathleen Bonnell, Wed Dec 15 17:32:29 PST 2004 
+//    Added 'LocalIdForGlobal'.
+//
+//    Kathleen Bonnell, Thu Dec 16 17:11:19 PST 2004
+//    Added another bool arg to QueryCoords. 
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -418,10 +424,13 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                           stringVector &, stringVector &); 
     virtual bool               QueryCoords(const std::string &, const int,
                                            const int, const int, float[3],
-                                           const bool);
+                                           const bool, const bool);
     virtual void               QueryGlobalIds(const int, const std::string &,
                                         const int, const bool, const int, 
                                         const intVector &, int &, intVector &);
+
+    virtual int                LocalIdForGlobal(const int, const std::string &,
+                                        const int, const bool, const int );
 
     void                       AssociateBounds(vtkDataSet *);
     void                       ScaleMesh(vtkDataSet *);

@@ -196,6 +196,12 @@ typedef struct {
 //    Changed std::vector<std::string> to stringVector, std::vector<int> to
 //    intVector.  Added 'QueryGlobalIds'. 
 //
+//    Kathleen Bonnell, Wed Dec 15 17:34:25 PST 2004 
+//    Added 'LocalIdForGlobal'.
+//
+//    Kathleen Bonnell, Thu Dec 16 17:10:43 PST 2004 
+//    Added another bool arg to QueryCoords.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -238,7 +244,8 @@ class DATABASE_API avtDatabase
                                     const int, const char *, float[3], int &)
                                     { return false; } ;
     virtual bool                QueryCoords(const std::string &, const int, 
-                                    const int, const int, float[3], const bool)
+                                    const int, const int, float[3], const bool,
+                                    const bool)
                                     { return false; } ;
 
     virtual void                GetDomainName(const std::string &, const int ts,
@@ -345,6 +352,11 @@ class DATABASE_API avtDatabase
     virtual void               QueryGlobalIds(const int, const std::string &,
                                         const int, const bool, const int, 
                                         const intVector &, int &, intVector &){ ; };
+
+    virtual int                LocalIdForGlobal(const int, const std::string &,
+                                        const int, const bool, const int)
+                                        { return -1; };
+
  
 };
 

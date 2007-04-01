@@ -119,6 +119,9 @@ QvisQueryWindow::~QvisQueryWindow()
 //   Kathleen Bonnell, Wed Sep  8 10:06:16 PDT 2004 
 //   Remove coordLabel. 
 //
+//   Kathleen Bonnell, Wed Dec 15 17:16:17 PST 2004 
+//   Added useGlobal checkbox. 
+//
 // ****************************************************************************
 
 void
@@ -160,7 +163,7 @@ QvisQueryWindow::CreateWindowContents()
     hLayout->addWidget(argPanel);
     QVBoxLayout *gLayout = new QVBoxLayout(argPanel);
     gLayout->addSpacing(15);
-    QGridLayout *sLayout = new QGridLayout(gLayout, 6, 2);
+    QGridLayout *sLayout = new QGridLayout(gLayout, 7, 2);
     sLayout->setMargin(10);
     sLayout->setSpacing(5);
 //    sLayout->addRowSpacing(0, 15);
@@ -178,6 +181,10 @@ QvisQueryWindow::CreateWindowContents()
         labels[i]->hide();
         sLayout->addWidget(labels[i], i+1, 0);
     }
+   
+    useGlobal = new QCheckBox("Use Global Id", argPanel, "useGlobal");
+    useGlobal->hide();
+    sLayout->addMultiCellWidget(useGlobal, 4, 4, 0, 1);
   
     // Add the data options radio button group to the argument panel.
     dataOpts = new QButtonGroup(0, "dataOpts");
@@ -529,6 +536,9 @@ QvisQueryWindow::UpdateResults(bool)
 //   Removed references to QueryList::CoordRep and coordLabel, 
 //   no longer exists. 
 //
+//   Kathleen Bonnell, Wed Dec 15 17:16:17 PST 2004 
+//   Added logic to handle useGlobal checkbox. 
+//
 // ****************************************************************************
 
 void
@@ -549,11 +559,13 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
     }
     // reset a few defaults
     dataOpts->setButton(0);
+    useGlobal->setChecked(0);
     
     if(index >= 0 && index < winType.size())
     {
         bool showWidgets[4] = {false, false, false, false};
         bool showDataOptions = false;
+        bool showGlobal = false;
         QueryList::WindowType winT = (QueryList::WindowType)winType[index];
         bool showTime = (bool)timeQuery[index];
       
@@ -590,13 +602,37 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
             textFields[0]->setText("0");
             labels[1]->setText("Zone");
             textFields[1]->setText("0");
+            showWidgets[0] = true;
+            showWidgets[1] = true;
+            useGlobal->setText("Use Global Zone");
+            showGlobal = true;
+        }
+        else if (winT == QueryList::DomainZoneVars)
+        {
+            labels[0]->setText("Domain");
+            textFields[0]->setText("0");
+            labels[1]->setText("Zone");
+            textFields[1]->setText("0");
             labels[2]->setText("Variables");
             textFields[2]->setText("default");
             showWidgets[0] = true;
             showWidgets[1] = true;
             showWidgets[2] = true;
+            useGlobal->setText("Use Global Zone");
+            showGlobal = true;
         }
         else if (winT == QueryList::DomainNode)
+        {
+            labels[0]->setText("Domain");
+            textFields[0]->setText("0");
+            labels[1]->setText("Node");
+            textFields[1]->setText("0");
+            showWidgets[0] = true;
+            showWidgets[1] = true;
+            useGlobal->setText("Use Global Node");
+            showGlobal = true;
+        }
+        else if (winT == QueryList::DomainNodeVars)
         {
             labels[0]->setText("Domain");
             textFields[0]->setText("0");
@@ -607,6 +643,8 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
             showWidgets[0] = true;
             showWidgets[1] = true;
             showWidgets[2] = true;
+            useGlobal->setText("Use Global Node");
+            showGlobal = true;
         }
         else if (winT == QueryList::ActualData)
         {
@@ -633,6 +671,14 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
                 labels[i]->hide();
                 textFields[i]->hide();
             }
+        }
+        if (showGlobal)
+        {
+            useGlobal->show();
+        }
+        else 
+        {
+            useGlobal->hide();
         }
 
         if (showDataOptions)
@@ -767,6 +813,9 @@ QvisQueryWindow::ConnectPlotList(PlotList *pl)
 //   The 'currentItem' of the queryList is not the correct index into queries.
 //   Test the currentText against queries->names to get valid index.
 //
+//   Kathleen Bonnell, Wed Dec 15 17:16:17 PST 2004 
+//   Added logic to handle useGlobal checkbox and new WindowTypes.
+//
 // ****************************************************************************
 
 void
@@ -819,7 +868,9 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
                 }
             }
             else if ((winT == QueryList::DomainZone) ||
-                     (winT == QueryList::DomainNode))
+                     (winT == QueryList::DomainNode) || 
+                     (winT == QueryList::DomainZoneVars) || 
+                     (winT == QueryList::DomainNodeVars))
             {
                 int dom = 0, el = 0;
                 bool goodDomain = GetNumber(0, &dom);
@@ -832,24 +883,31 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
                     goodEl = (el >= 0);
                 if (!goodEl)
                 {
-                    if (winT == QueryList::DomainZone)
+                    if (winT == QueryList::DomainZone ||
+                        winT == QueryList::DomainZoneVars)
                         Error("The zone must be an integer >= 0.");
                     else
                         Error("The node must be an integer >= 0.");
                 }
 
-                if(!GetVars(2, vars))
-                    noErrors = false;
+                if (winT == QueryList::DomainZoneVars ||
+                    winT == QueryList::DomainNodeVars )
+                {
+                    if(!GetVars(2, vars))
+                        noErrors = false;
+                }
 
                 if(noErrors && goodDomain && goodEl)
                 {
                     if (t == QueryList::DatabaseQuery)
                     {
-                        viewer->DatabaseQuery(names[index], vars, doTime, el, dom);
+                        viewer->DatabaseQuery(names[index], vars, doTime, el, dom,
+                                              useGlobal->isChecked());
                     }
                     else if (t == QueryList::PointQuery)
                     {
-                        viewer->PointQuery(names[index], p0, vars, doTime, el, dom);
+                        viewer->PointQuery(names[index], p0, vars, doTime, el, dom,
+                                              useGlobal->isChecked());
                     }
                     else 
                     {

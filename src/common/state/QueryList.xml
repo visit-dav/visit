@@ -10,7 +10,9 @@
       SinglePoint
       DoublePoint
       DomainNode
+      DomainNodeVars
       DomainZone
+      DomainZoneVars
       ActualData
       ActualDataVars
     </Enum>

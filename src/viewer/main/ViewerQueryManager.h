@@ -155,6 +155,9 @@ typedef struct {
 //    Kathleen Bonnell, Thu Aug  5 08:34:15 PDT 2004 
 //    Added ResetLineoutColor.
 //
+//    Kathleen Bonnell, Wed Dec 15 17:16:17 PST 2004 
+//    Added bool arg to DatabaseQuery and PointQuery. 
+//
 // ****************************************************************************
     
 class VIEWER_API ViewerQueryManager 
@@ -167,7 +170,8 @@ class VIEWER_API ViewerQueryManager
     void            DatabaseQuery(ViewerWindow *owin, const std::string &qName,
                             const std::vector<std::string> &vars,
                             const bool doTimeQuery,
-                            const int arg1, const int arg2);
+                            const int arg1, const int arg2,
+                            const bool elementIsGlobal);
     bool            VerifySingleInputQuery(ViewerPlotList *, const int,
                             const std::string &,
                             const std::vector<std::string> &,
@@ -185,7 +189,8 @@ class VIEWER_API ViewerQueryManager
     void            PointQuery(const std::string &qName, const double *pt, 
                             const std::vector<std::string> &vars,
                             const int arg1, const int arg2, 
-                            const bool doTimeQuery);
+                            const bool doTimeQuery,
+                            const bool elementIsGlobal);
 
     void            Pick(PICK_POINT_INFO *pd, const int dom = -1,
                          const int el = -1);

@@ -904,12 +904,17 @@ ViewerQueryManager::GetQueryClientAtts()
 //    Kathleen Bonnell, Fri Sep  3 09:59:25 PDT 2004 
 //    Modified handling of 'NonQueryableInputException'. 
 //
+//    Kathleen Bonnell, Thu Dec 16 17:32:49 PST 2004 
+//    Added 'elmentIsGlobal' arg, use it to set new QueryAttriubte 
+//    'useGlobalId'.
+//
 // ****************************************************************************
 
 void         
 ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
                             const stringVector &vars, const bool doTimeQuery,
-                            const int arg1, const int arg2)
+                            const int arg1, const int arg2,
+                            const bool elementIsGlobal)
 {
     queryClientAtts->SetResultsMessage("");
     queryClientAtts->SetResultsValue(0.);
@@ -960,6 +965,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
     QueryAttributes qa;
 
     qa.SetName(qName);
+    qa.SetUseGlobalId(elementIsGlobal);
     // Right now, use of Element and DataType are mutually
     // exclusive, and we don't necessarily have to know thich one
     // the query will use, so go ahead and use arg1 to set both atts.
@@ -2441,13 +2447,17 @@ ViewerQueryManager::HandlePickCache()
 //    Renamed 'Pick' to 'ScreenZonePick', 'NodePick' to 'ScreenNodePick' and
 //    'WorldPick' to 'Pick', 'WorldNodePick' to 'NodePick'.
 //    
+//    Kathleen Bonnell, Thu Dec 16 17:32:49 PST 2004 
+//    Added 'elementIsGlobal' arg, use to set same attribute in pickAtts. 
+//
 // ****************************************************************************
 
 void         
 ViewerQueryManager::PointQuery(const string &qName, const double *pt, 
                     const stringVector &vars, const int arg1, const int arg2,
-                    const bool doTime)
+                    const bool doTime, const bool elementIsGlobal)
 {
+    pickAtts->SetElementIsGlobal(elementIsGlobal);
     if (qName == "ScreenZonePick") 
     {
         if (!vars.empty())
@@ -2518,6 +2528,7 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
 
         win->SetInteractionMode(imode);
     }
+    pickAtts->SetElementIsGlobal(false);
 }
 
 
@@ -2837,6 +2848,12 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    world-space picks 'WorldPick'  and 'WorldNodePick' to 'Pick' and
 //    'NodePick' respectively.
 //
+//    Kathleen Bonnell, Thu Dec 16 17:32:49 PST 2004 
+//    Added two new window states, to distinguish between Domain-zone/node
+//    queries that take vars and those that do not.  Removed 'Variabley by
+//    Zone' and 'Variable by Node' queries, as those are coved by 
+//    PickByNode and PickByZone.
+//    exists.   Removed screen-coords pick 'Pick' and 'NodePick', changed
 // ****************************************************************************
 
 void
@@ -2858,11 +2875,13 @@ ViewerQueryManager::InitializeQueryList()
     QueryList::QueryType lq = QueryList::LineQuery;
 
     QueryList::WindowType basic = QueryList::Basic;
-    QueryList::WindowType sp = QueryList::SinglePoint;
-    QueryList::WindowType dp = QueryList::DoublePoint;
-    QueryList::WindowType dn = QueryList::DomainNode;
-    QueryList::WindowType dz = QueryList::DomainZone;
-    QueryList::WindowType ad = QueryList::ActualData;
+    QueryList::WindowType sp  = QueryList::SinglePoint;
+    QueryList::WindowType dp  = QueryList::DoublePoint;
+    QueryList::WindowType dn  = QueryList::DomainNode;
+    QueryList::WindowType dnv = QueryList::DomainNodeVars;
+    QueryList::WindowType dz  = QueryList::DomainZone;
+    QueryList::WindowType dzv = QueryList::DomainZoneVars;
+    QueryList::WindowType ad  = QueryList::ActualData;
     //QueryList::WindowType av = QueryList::ActualDataVars;
 
     QueryList::Groups cr = QueryList::CurveRelated;
@@ -2894,8 +2913,6 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("Weighted Variable Sum", dq, vr, basic, 1, 0, true);
     queryTypes->AddQuery("Pick", pq, pr, sp, 1, 0, true);
     queryTypes->AddQuery("NodePick", pq, pr, sp, 1, 0, true);
-    queryTypes->AddQuery("Variable by Zone", dq, vr, dz, 1, 0, true);
-    queryTypes->AddQuery("Variable by Node", dq, vr, dn, 1, 0, true);
 
     int MinMaxVars = QUERY_SCALAR_VAR | QUERY_TENSOR_VAR | QUERY_VECTOR_VAR | 
             QUERY_SYMMETRIC_TENSOR_VAR | QUERY_MATSPECIES_VAR | QUERY_CURVE_VAR;
@@ -2906,8 +2923,8 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("SpatialExtents", dq, mr, ad, 1, 0, false);
     queryTypes->AddQuery("NumNodes", dq, mr, ad, 1, 0, false);
     queryTypes->AddQuery("NumZones", dq, mr, ad, 1, 0, false);
-    queryTypes->AddQuery("PickByZone", pq, pr, dz, 1, 0, true);
-    queryTypes->AddQuery("PickByNode", pq, pr, dn, 1, 0, true);
+    queryTypes->AddQuery("PickByZone", pq, pr, dzv, 1, 0, true);
+    queryTypes->AddQuery("PickByNode", pq, pr, dnv, 1, 0, true);
     queryTypes->AddQuery("Zone Center", dq, mr, dz, 1, 0, false);
     queryTypes->AddQuery("Node Coords", dq, mr, dn, 1, 0, false);
                           
@@ -3235,6 +3252,11 @@ ViewerQueryManager::UpdateQueryOverTimeAtts()
 //    Eric Brugger, Tue Jul 27 09:31:29 PDT 2004
 //    Add a cast to fix a compile error.
 //    
+//    Kathleen Bonnell, Thu Dec 16 17:32:49 PST 2004 
+//    Allow 'Variable by Zone' and 'Variable by Node', even though they
+//    are no longer part of the QueryList, because Pick uses these
+//    queries to do a pick-through-time.
+//    
 // ***********************************************************************
 
 void
@@ -3243,9 +3265,12 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
     string qName = qA->GetName();
     if (!queryTypes->TimeQueryAvailable(qName))
     {
-        string msg = "Time history query is not available for " + qName;
-        Error(msg.c_str());
-        return;
+        if (qName != "Variable by Zone" && qName != "Variable by Node") 
+        {
+            string msg = "Time history query is not available for " + qName;
+            Error(msg.c_str());
+            return;
+        }
     }
     //
     //  Grab information from the originating window.

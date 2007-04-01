@@ -66,6 +66,9 @@ typedef void                   (*InitializeProgressCallback)(void *, int);
 //    Kathleen Bonnell, Thu Jun 10 18:31:22 PDT 2004 
 //    Renamed QueryZoneCenter to QueryCoords, added bool arg.
 //
+//    Kathleen Bonnell, Thu Dec 16 17:16:33 PST 2004 
+//    Added another bool arg to QueryCoords. 
+//
 // ****************************************************************************
 
 class PIPELINE_API avtTerminatingSource : virtual public avtQueryableSource
@@ -112,7 +115,7 @@ class PIPELINE_API avtTerminatingSource : virtual public avtQueryableSource
                                        const int, std::string &) {;};
     virtual bool                   QueryCoords(const std::string &, const int, 
                                        const int, const int, float[3],
-                                       const bool)
+                                       const bool, const bool = false)
                                        { return false;};
 
   protected:

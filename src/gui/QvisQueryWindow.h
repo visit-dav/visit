@@ -55,6 +55,9 @@ class QueryList;
 //   Kathleen Bonnell, Wed Sep  8 10:06:16 PDT 2004 
 //   Removed coordLabel, removed 'rep' arg from GetPoint.
 //
+//   Kathleen Bonnell, Wed Dec 15 17:16:17 PST 2004 
+//   Added 'useGlobal' checkbox.
+//
 // ****************************************************************************
 
 class GUI_API QvisQueryWindow : public QvisPostableWindowSimpleObserver
@@ -108,6 +111,7 @@ private:
     QGroupBox       *argPanel;
     QLabel          *labels[4];
     QLineEdit       *textFields[4];
+    QCheckBox       *useGlobal;
   
     QButtonGroup    *dataOpts;
 };

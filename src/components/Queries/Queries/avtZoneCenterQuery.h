@@ -19,6 +19,8 @@
 //  Creation:   May 25, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Dec 16 17:16:33 PST 2004
+//    Add FindLocalCenter, FindGlobalCenter.
 //
 // ****************************************************************************
 
@@ -38,6 +40,9 @@ class QUERY_API avtZoneCenterQuery : public avtDatasetQuery
   protected:
 
     virtual void             Execute(vtkDataSet*, const int){;};
+
+    bool                     FindGlobalCenter(float coord[3]);
+    bool                     FindLocalCenter(float coord[3]);
 };
 
 #endif

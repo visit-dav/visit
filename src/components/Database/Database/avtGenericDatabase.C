@@ -7538,12 +7538,25 @@ avtGenericDatabase::GetDomainName(const string &varName, const int ts,
 //    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
 //    Removed 'std::' from 'std::string'.
 //    vtkVisItUtility::GetCellCenter.
+//
+//    Kathleen Bonnell, Thu Dec 16 17:11:19 PST 2004
+//    Added bool arg specifying whether the id is global or not, find
+//    local id if so.
+//
 // ****************************************************************************
 
 bool
 avtGenericDatabase::QueryCoords(const string &varName, const int dom, 
-       const int id, const int ts, float coord[3], const bool forZone)
+       const int id, const int ts, float coord[3], const bool forZone,
+       const bool useGlobalId)
 {
+    int currentid = id;
+    if (useGlobalId)
+    {
+        currentid = LocalIdForGlobal(dom, varName, ts, forZone, id);
+        if (currentid == -1) 
+            return false;
+    }
     string meshName = GetMetaData(ts)->MeshForVar(varName);
     vtkDataSet *ds = GetMeshDataset(meshName.c_str(), ts, dom, "_all");
     bool rv = false; 
@@ -7551,7 +7564,7 @@ avtGenericDatabase::QueryCoords(const string &varName, const int dom,
     {
         if (forZone)
         {
-            int zone = id;
+            int zone = currentid;
             if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID ||
                 ds->GetDataObjectType() == VTK_STRUCTURED_GRID) 
             {
@@ -7559,7 +7572,7 @@ avtGenericDatabase::QueryCoords(const string &varName, const int dom,
                 {
                     int dims[3], ijk[3] = {0, 0, 0};
                     vtkVisItUtility::GetDimensions(ds, dims);
-                    vtkVisItUtility::GetLogicalIndices(ds, true, id, ijk, false, false);
+                    vtkVisItUtility::GetLogicalIndices(ds, true, zone, ijk, false, false);
                     vtkIntArray *realDims = 
                         (vtkIntArray*)ds->GetFieldData()->GetArray("avtRealDims");
                     if (realDims != NULL)
@@ -7578,7 +7591,7 @@ avtGenericDatabase::QueryCoords(const string &varName, const int dom,
         }
         else 
         {
-            int node = id;
+            int node = currentid;
             if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID ||
                 ds->GetDataObjectType() == VTK_STRUCTURED_GRID) 
             {
@@ -7586,7 +7599,7 @@ avtGenericDatabase::QueryCoords(const string &varName, const int dom,
                 {
                     int dims[3], ijk[3] = {0, 0, 0};
                     vtkVisItUtility::GetDimensions(ds, dims);
-                    vtkVisItUtility::GetLogicalIndices(ds, false, id, ijk, 
+                    vtkVisItUtility::GetLogicalIndices(ds, false, node, ijk, 
                                                        false, false);
                     vtkIntArray *realDims = 
                         (vtkIntArray*)ds->GetFieldData()->GetArray("avtRealDims");
@@ -7623,7 +7636,7 @@ avtGenericDatabase::QueryCoords(const string &varName, const int dom,
 //    dom       The domain to use in searching the database.
 //    var       The variable to use in searching the database.
 //    ts        The timestep to use in searching the database.
-//    zonal     Whether or not the element is a zonal or nodal id.
+//    zonal     Whether the element is a zonal or nodal id.
 //    element   The zone or node number to use in searching the database.
 //    incEls    A list of nodes/zone incident to element. 
 //    globalElement   A place to store the global element. 
@@ -7635,6 +7648,7 @@ avtGenericDatabase::QueryCoords(const string &varName, const int dom,
 //  Modifications:
 //    
 // ****************************************************************************
+
 void        
 avtGenericDatabase::QueryGlobalIds(const int dom, const string &var, const int ts,
                                    const bool zonal, const int element, 
@@ -7666,5 +7680,57 @@ avtGenericDatabase::QueryGlobalIds(const int dom, const string &var, const int t
             for (int i = 0; i < incEls.size(); i++)
                 globalIncEls.push_back(globalZones->GetValue(incEls[i]));
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::LocalIdForGlobal
+//
+//  Purpose:
+//    Given an element id, and a list of incident elements, find corresponding 
+//    global ids.
+//
+//  Returns:    The element whose global counterpart is globalElement.
+//
+//  Arguments:
+//    dom       The domain to use in searching the database.
+//    var       The variable to use in searching the database.
+//    ts        The timestep to use in searching the database.
+//    zonal     Whether the element is a zonal or nodal id.
+//    globalElement   A place to store the global element. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   December 15, 2004 
+//
+//  Modifications:
+//    
+// ****************************************************************************
+
+int        
+avtGenericDatabase::LocalIdForGlobal(const int dom, const string &var, 
+    const int ts, const bool zonal, const int globalElement)
+{
+    int retVal = -1;
+
+    vtkIntArray *globalIds = NULL; 
+    if (zonal)
+    {
+        globalIds = (vtkIntArray*)GetGlobalZoneIds(dom, var.c_str(), ts);
+    }
+    else 
+    {
+        globalIds = (vtkIntArray*)GetGlobalNodeIds(dom, var.c_str(), ts);
+    }
+
+    if (globalIds)
+    {
+        int n = globalIds->GetNumberOfTuples();
+        int *g = globalIds->GetPointer(0);
+        for (int i = 0; i < n && retVal == -1; i++)
+        {
+            retVal = (g[i] == globalElement ? i : -1);
+        }
+    }
+    return retVal; 
 }
 

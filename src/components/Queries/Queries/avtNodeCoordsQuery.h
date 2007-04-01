@@ -19,6 +19,8 @@
 //  Creation:   June 10, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Dec 16 17:16:33 PST 2004
+//    Add FindLocalCoord and FindGlobalCoord.
 //
 // ****************************************************************************
 
@@ -38,6 +40,8 @@ class QUERY_API avtNodeCoordsQuery : public avtDatasetQuery
   protected:
 
     virtual void             Execute(vtkDataSet*, const int){;};
+    bool                     FindLocalCoord(float[3]);
+    bool                     FindGlobalCoord(float[3]);
 };
 
 #endif

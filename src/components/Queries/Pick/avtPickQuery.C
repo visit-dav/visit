@@ -1190,6 +1190,53 @@ avtPickQuery::RetrieveZones(vtkDataSet *ds, int foundNode)
 
 
 // ****************************************************************************
+//  Method: avtPickQuery::GetCurrentNodeForOriginal
+//
+//  Purpose:
+//    Determines the zone in the dataset whose original node designation
+///   matches that of the passed node.
+//
+//  Arguments:
+//    ds         The dataset to retrieve information from.
+//    origNode   An 'original' node id. 
+//
+//  Returns:
+//    The node id in ds whose original node id matches the arg. 
+//    If 'avtOriginalNodeNumbers' is not present, then the value is equal to
+//    the arg value. 
+//
+//  Programmer: Kathleen Bonnell  
+//  Creation:   December 15, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int
+avtPickQuery::GetCurrentNodeForOriginal(vtkDataSet *ds, const int origNode)
+{
+    int currentNode = origNode;
+    vtkUnsignedIntArray *origNodes = vtkUnsignedIntArray::SafeDownCast(
+        ds->GetPointData()->GetArray("avtOriginalNodeNumbers"));
+    if (origNodes)
+    {
+        int nTuples = origNodes->GetNumberOfTuples();
+        int nComp = origNodes->GetNumberOfComponents();
+        int comp = nComp -1;
+        unsigned int *on = origNodes->GetPointer(0);
+        for (int i = 0; i < nTuples; i++)
+        {
+            if (on[i*nComp+comp] == origNode)
+            {
+                currentNode = i;
+                break;
+            }
+        }
+    }
+    return currentNode;
+}
+
+// ****************************************************************************
 //  Method: avtPickQuery::GetCurrentZoneForOriginal
 //
 //  Purpose:
