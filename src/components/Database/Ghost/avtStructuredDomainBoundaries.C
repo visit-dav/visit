@@ -1162,9 +1162,16 @@ avtStructuredDomainBoundaries::avtStructuredDomainBoundaries(
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 25, 2001
 //
+//  Modifications:
+//    Mark C. Miller, ed Mar 23 15:29:56 PST 2005
+//    Added code to delete stuff new'd in constructor 
+//
 // ****************************************************************************
 avtStructuredDomainBoundaries::~avtStructuredDomainBoundaries()
 {
+    delete bhf_int;
+    delete bhf_float;
+    delete bhf_uchar;
 }
 
 // ****************************************************************************

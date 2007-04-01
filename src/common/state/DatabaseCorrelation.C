@@ -980,6 +980,8 @@ DatabaseCorrelation::GetCorrelatedTimeStates(int state, intVector &states) const
 // Creation:   Sat Jan 31 19:56:11 PST 2004
 //
 // Modifications:
+//   Brad Whitlock, Fri Apr 1 15:17:08 PST 2005
+//   Fixed a rounding problem.
 //   
 // ****************************************************************************
 
@@ -1062,7 +1064,7 @@ DatabaseCorrelation::AddDatabase(const std::string &database, int nStates,
             for(int j = 0; j < maxStates; ++j)
             {
                 float t = float(j) / float(maxStates - 1);
-                int state = int(t * (databaseNStates[i] - 1));
+                int state = int(t * (databaseNStates[i] - 1) + 0.5);
                 indices.push_back(state);
             }
         }

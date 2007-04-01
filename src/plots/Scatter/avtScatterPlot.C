@@ -423,21 +423,28 @@ avtScatterPlot::SetAtts(const AttributeGroup *a)
 //  Creation:     Tue Nov 2 22:10:12 PST 2004
 //
 //  Modifications:
+//    Jeremy Meredith, Fri Apr  1 16:07:40 PST 2005
+//    Often, "varname" is passed in as the argument to this method, causing
+//    reading of freed memory.  I had it no-op the dangerous section in this
+//    case (which is the expected behavior).
 //
 // ****************************************************************************
 
 void
 avtScatterPlot::SetVarName(const char *name)
 {
-    if (varname != NULL && name != NULL)
+    if (name != varname)
     {
-        delete [] varname;
-        varname = NULL;
-    }
-    if (name != NULL)
-    {
-        varname = new char[strlen(name)+1];
-        strcpy(varname, name);
+        if (varname != NULL && name != NULL)
+        {
+            delete [] varname;
+            varname = NULL;
+        }
+        if (name != NULL)
+        {
+            varname = new char[strlen(name)+1];
+            strcpy(varname, name);
+        }
     }
 
     std::string v, D("default");

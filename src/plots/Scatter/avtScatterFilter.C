@@ -376,6 +376,9 @@ debug4 << "avtScatterFilter::ExecuteData: var2Name = " << var2Name.c_str() << en
 //    Hank Childs, Sun Mar 13 11:38:06 PST 2005
 //    Fix memory leak.
 //
+//    Jeremy Meredith, Fri Apr  1 16:07:29 PST 2005
+//    Fix UMR.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -430,6 +433,12 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
                 coord[1] = arr2->GetTuple1(i);
                 coord[2] = 0.;
 
+                // Do data min, max so we can set the min,max spatial extents.
+                xMin = (xMin < coord[0]) ? xMin : coord[0];
+                xMax = (xMax > coord[0]) ? xMax : coord[0];
+                yMin = (yMin < coord[1]) ? yMin : coord[1];
+                yMax = (yMax > coord[1]) ? yMax : coord[1];
+
                 //
                 // Only add values that are in the specified min/max range.
                 //
@@ -452,12 +461,6 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
                         ++nCells;
                     }            
                 }
-
-                // Do data min, max so we can set the min,max spatial extents.
-                xMin = (xMin < coord[0]) ? xMin : coord[0];
-                xMax = (xMax > coord[0]) ? xMax : coord[0];
-                yMin = (yMin < coord[1]) ? yMin : coord[1];
-                yMax = (yMax > coord[1]) ? yMax : coord[1];
             }
             pts->SetNumberOfPoints(nCells);
 
