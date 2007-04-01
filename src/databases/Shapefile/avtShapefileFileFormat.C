@@ -124,6 +124,9 @@ avtShapefileFileFormat::ActivateTimestep(void)
 //   Added an error function for ESRI so it can write messages to the
 //   VisIt debug logs.
 //
+//   Brad Whitlock, Wed Apr 6 10:48:52 PDT 2005
+//   Changed dbfInitialize interface.
+//
 // ****************************************************************************
 
 static void
@@ -282,7 +285,7 @@ avtShapefileFileFormat::Initialize()
         {
             dbfFileError_t code2;
 
-            dbfInitialize(1, 0, 0);
+            dbfInitialize(0, 0);
 
             // Try and open the file.
             dbfFile = dbfFileOpen(DBFfile.c_str(), &code2);

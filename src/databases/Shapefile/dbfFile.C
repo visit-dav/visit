@@ -22,10 +22,6 @@
 static int    dbfInitialized = 0;
 static int    dbfIndentAmount = 0;
 
-static int    dbfCommonStorage = 1;
-static size_t dbfCommonStorageBufferSize = 10000;
-static void  *dbfCommonStorageBuffer = 0;
-
 void*(*dbf_MallocCB)(size_t) = 0;
 void (*dbf_FreeCB)(void *) = 0;
 
@@ -286,39 +282,6 @@ dbfFreeEx(const char *f, const int line, const char *src, void *ptr)
     DBF_API_LEAVE(dbfFree);
 }
 
-/* Returns a pointer to the common storage buffer if we're doing common
-   storage. Otherwise, returns new memory.
-  */
-void *
-dbfCommonStorageAlloc(size_t s)
-{
-    void *retval = 0;
-    DBF_API_LEAVE(dbfCommonStorageAlloc);
-    if(dbfCommonStorage)
-    {
-        if(s > dbfCommonStorageBufferSize)
-        {
-            dbfFree(dbfCommonStorageBuffer);
-            dbfCommonStorageBufferSize = (size_t)(s * 1.25);
-            dbfCommonStorageBuffer = dbfMalloc(dbfCommonStorageBufferSize);
-        }
-        retval = dbfCommonStorageBuffer;
-    }
-    else
-        retval = dbfMalloc(s);
-    DBF_API_LEAVE(dbfCommonStorageAlloc);
-    return retval;
-}
-
-void
-dbfCommonStorageFree(void *ptr)
-{
-    DBF_API_LEAVE(dbfCommonStorageFree);
-    if(!dbfCommonStorage)
-        dbfFree(ptr);
-    DBF_API_LEAVE(dbfCommonStorageFree);
-}
-
 /*****************************************************************************/
 
 // ****************************************************************************
@@ -341,12 +304,14 @@ dbfCommonStorageFree(void *ptr)
 // Creation:   Mon Mar 28 01:45:32 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr 6 10:23:03 PDT 2005
+//   I removed common storage from this library since everything that we read
+//   is small and we don't do many allocations.
+//
 // ****************************************************************************
 
 void
-dbfInitialize(int commonStorage, void* (*user_malloc)(size_t),
-    void (*user_free)(void *))
+dbfInitialize(void* (*user_malloc)(size_t), void (*user_free)(void *))
 {
     const int one = 1;
     const char *logging;
@@ -368,14 +333,6 @@ dbfInitialize(int commonStorage, void* (*user_malloc)(size_t),
     else
         dbf_FreeCB = user_free;
 
-    /* Set up the common storage. */
-    dbfCommonStorage = commonStorage;
-    if(dbfCommonStorage)
-    {
-        dbfCommonStorageBufferSize = 1000;
-        dbfCommonStorageBuffer = dbfMalloc(dbfCommonStorageBufferSize);
-    }
-
     if(dbfLog)
         fprintf(DBF_LOGFILE, "dbfInitialize\n");
 }
@@ -396,19 +353,14 @@ dbfInitialize(int commonStorage, void* (*user_malloc)(size_t),
 // Creation:   Mon Mar 28 01:47:35 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr 6 10:24:04 PDT 2005
+//   I removed common storage.
+//
 // ****************************************************************************
 
 void
 dbfFinalize(void)
 {
-    if(dbfCommonStorage)
-    {
-        dbfFree(dbfCommonStorageBuffer);
-        dbfCommonStorageBuffer = 0;
-        dbfCommonStorageBufferSize = 0;
-    }
-
     if(dbfLog)
         fprintf(DBF_LOGFILE, "dbfFinalize\n");
 }
@@ -518,7 +470,9 @@ dbfFieldDescriptorRead(dbfFieldDescriptor_t *f, const unsigned char *fieldInfo)
 // Creation:   Mon Mar 28 01:52:30 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr 6 10:19:17 PDT 2005
+//   I removed common storage.
+//
 // ****************************************************************************
 
 dbfFile_t *
@@ -571,10 +525,10 @@ dbfFileOpen(const char *filename, dbfFileError_t *code)
                     fileObj->header.multiUser[i] = staticHeader[16+i];
                 fileObj->header.indexExists      = staticHeader[28];
                 fileObj->header.languageDriver   = staticHeader[29];
-                
+
                 /* Now try and read all of the field descriptors. */
                 remainingHeaderSize = fileObj->header.headerSize - 32;
-                header = (unsigned char *)dbfCommonStorageAlloc(remainingHeaderSize);
+                header = (unsigned char *)dbfMalloc(remainingHeaderSize);
                 if(fread((void *)header, 1, remainingHeaderSize, fileObj->fp) ==
                    remainingHeaderSize)
                 {
@@ -600,7 +554,7 @@ dbfFileOpen(const char *filename, dbfFileError_t *code)
                 else
                     *code = dbfFileErrorInvalidFile;
 
-                dbfCommonStorageFree(header);
+                dbfFree(header);
             }
             else
                 *code = dbfFileErrorInvalidFile;
@@ -832,7 +786,9 @@ dbfFileReadField(dbfFile_t *fileObj, const char *fieldName, dbfReadError_t *code
 // Creation:   Mon Mar 28 01:55:28 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr 6 10:26:02 PDT 2005
+//   I removed common storage since it was used so little.
+//
 // ****************************************************************************
 
 void *
@@ -909,7 +865,7 @@ dbfFileReadField2(dbfFile_t *fileObj, const char *fieldName, void *data,
                 memset(data, 0, s);
 
                 s = fieldDescriptor->fieldLength + 1;
-                tmp = (char *)dbfCommonStorageAlloc(s);
+                tmp = (char *)dbfMalloc(s);
                 memset(tmp, 0, s);
 
                 /* Read the floating/fixed point number field from each record. */
@@ -930,7 +886,7 @@ dbfFileReadField2(dbfFile_t *fileObj, const char *fieldName, void *data,
                         noError = 0;
                 }
 
-                dbfCommonStorageFree(tmp);
+                dbfFree(tmp);
 
             } // end new scope
             else
@@ -940,7 +896,7 @@ dbfFileReadField2(dbfFile_t *fileObj, const char *fieldName, void *data,
                 memset(data, 0, s);
 
                 s = fieldDescriptor->fieldLength + 1;
-                tmp = (char *)dbfCommonStorageAlloc(s);
+                tmp = (char *)dbfMalloc(s);
                 memset(tmp, 0, s);
 
                 /* Read the floating/fixed point number field from each record. */
@@ -961,7 +917,7 @@ dbfFileReadField2(dbfFile_t *fileObj, const char *fieldName, void *data,
                         noError = 0;
                 }
 
-                dbfCommonStorageFree(tmp);
+                dbfFree(tmp);
             } // end new scope
             break;
         case dbfFieldLogical:

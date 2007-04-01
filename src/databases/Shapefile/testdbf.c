@@ -8,7 +8,7 @@ main(int argc, char *argv[])
     dbfReadError_t  rcError;
     void           *data = 0;
 
-    dbfInitialize(1, 0, 0);
+    dbfInitialize(0, 0);
 
 #if 1
 #define DATABASE "m195mbsp.dbf"

@@ -17,7 +17,9 @@ extern "C" {
 // Creation:   Sun Mar 27 23:51:03 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr 6 10:30:23 PDT 2005
+//   I removed common storage support.
+//
 // ****************************************************************************
 
 typedef struct
@@ -100,8 +102,7 @@ typedef enum
 void *dbfMallocEx(const char *f, const int line, const char *src, size_t s);
 void dbfFreeEx(const char *f, const int line, const char *src, void *ptr);
 
-void dbfInitialize(int commonStorage,
-                   void*(*user_malloc)(size_t),
+void dbfInitialize(void*(*user_malloc)(size_t),
                    void (*user_free)(void *));
 void dbfFinalize();
 
