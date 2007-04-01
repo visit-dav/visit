@@ -729,10 +729,21 @@ Expression::FieldsEqual(int index_, const AttributeGroup *rhs) const
 // User-defined methods.
 ///////////////////////////////////////////////////////////////////////////////
 
+// ****************************************************************************
+//  Method:  Expression::GetNumTypes
+//
+//  Programmer:  ?
+//  Creation:    ?
+//
+//  Modifications:
+//    Jeremy Meredith, Sun Oct 10 22:58:21 PDT 2004
+//    Changed it to 8 to reflect the current number of actual expressions.
+//
+// ****************************************************************************
 const int
 Expression::GetNumTypes()
 {
-    return 6;
+    return 8;
 }
 
 const char *
