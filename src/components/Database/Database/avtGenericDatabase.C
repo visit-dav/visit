@@ -718,6 +718,11 @@ avtGenericDatabase::GetDataset(const char *varname, int ts, int domain,
 //    Jeremy Meredith, Wed Mar 19 12:22:20 PST 2003
 //    Allow for a NULL var as well as a NULL mesh.
 //
+//    Mark C. Miller, Mon Jan 10 14:06:06 PST 2005
+//    Changed order of retrieval of mesh and variable to get the mesh
+//    first and then the variable. This is so plugin can handle things
+//    like removal of arb-poly zones correctly.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -728,17 +733,6 @@ avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
     if (smd == NULL)
     {
         EXCEPTION1(InvalidVariableException, varname);
-    }
-
-    vtkDataArray *var  = GetScalarVariable(varname, ts, domain, material);
-
-    if (var == NULL)
-    {
-        //
-        // Some variables don't have a var for every domain, even if the
-        // mesh exists there.  Just propagate the NULL up.  
-        //
-        return NULL;
     }
 
     string meshname  = GetMetaData(ts)->MeshForVar(varname);
@@ -752,6 +746,18 @@ avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
         //
         return NULL;
     }
+
+    vtkDataArray *var  = GetScalarVariable(varname, ts, domain, material);
+
+    if (var == NULL)
+    {
+        //
+        // Some variables don't have a var for every domain, even if the
+        // mesh exists there.  Just propagate the NULL up.  
+        //
+        return NULL;
+    }
+
 
     //
     // Set up the scalar var's name in case we have more than one.
@@ -1019,6 +1025,11 @@ avtGenericDatabase::GetMeshDataset(const char *varname, int ts, int domain,
 //    term for colors, though we should have a better solution when colors
 //    are no longer categorized as vectors.
 //
+//    Mark C. Miller, Mon Jan 10 14:06:06 PST 2005
+//    Changed order of retrieval of mesh and variable to get the mesh
+//    first and then the variable. This is so plugin can handle things
+//    like removal of arb-poly zones correctly.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1031,17 +1042,6 @@ avtGenericDatabase::GetVectorVarDataset(const char *varname, int ts,
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    vtkDataArray *var = GetVectorVariable(varname, ts, domain, material);
-
-    if (var == NULL)
-    {
-        //
-        // Some variables don't have a var for every domain, even if the
-        // mesh exists there.  Just propagate the NULL up.  
-        //
-        return NULL;
-    }
-
     string meshname  = GetMetaData(ts)->MeshForVar(varname);
     vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material);
 
@@ -1050,6 +1050,17 @@ avtGenericDatabase::GetVectorVarDataset(const char *varname, int ts,
         //
         // Some file formats don't have a mesh for every domain (like Exodus
         // when material selection is applied).  Just propagate the NULL up.  
+        //
+        return NULL;
+    }
+
+    vtkDataArray *var = GetVectorVariable(varname, ts, domain, material);
+
+    if (var == NULL)
+    {
+        //
+        // Some variables don't have a var for every domain, even if the
+        // mesh exists there.  Just propagate the NULL up.  
         //
         return NULL;
     }
@@ -1103,6 +1114,13 @@ avtGenericDatabase::GetVectorVarDataset(const char *varname, int ts,
 //  Programmer: Hank Childs
 //  Creation:   September 22, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 10 14:06:06 PST 2005
+//    Changed order of retrieval of mesh and variable to get the mesh
+//    first and then the variable. This is so plugin can handle things
+//    like removal of arb-poly zones correctly.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1115,17 +1133,6 @@ avtGenericDatabase::GetTensorVarDataset(const char *varname, int ts,
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    vtkDataArray *var = GetTensorVariable(varname, ts, domain, material);
-
-    if (var == NULL)
-    {
-        //
-        // Some variables don't have a var for every domain, even if the
-        // mesh exists there.  Just propagate the NULL up.  
-        //
-        return NULL;
-    }
-
     string meshname  = GetMetaData(ts)->MeshForVar(varname);
     vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material);
 
@@ -1134,6 +1141,17 @@ avtGenericDatabase::GetTensorVarDataset(const char *varname, int ts,
         //
         // Some file formats don't have a mesh for every domain (like Exodus
         // when material selection is applied).  Just propagate the NULL up.  
+        //
+        return NULL;
+    }
+
+    vtkDataArray *var = GetTensorVariable(varname, ts, domain, material);
+
+    if (var == NULL)
+    {
+        //
+        // Some variables don't have a var for every domain, even if the
+        // mesh exists there.  Just propagate the NULL up.  
         //
         return NULL;
     }
@@ -1173,6 +1191,13 @@ avtGenericDatabase::GetTensorVarDataset(const char *varname, int ts,
 //  Programmer: Hank Childs
 //  Creation:   September 22, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 10 14:06:06 PST 2005
+//    Changed order of retrieval of mesh and variable to get the mesh
+//    first and then the variable. This is so plugin can handle things
+//    like removal of arb-poly zones correctly.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1186,18 +1211,6 @@ avtGenericDatabase::GetSymmetricTensorVarDataset(const char *varname, int ts,
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    vtkDataArray *var = GetSymmetricTensorVariable(varname, ts, domain,
-                                                   material);
-
-    if (var == NULL)
-    {
-        //
-        // Some variables don't have a var for every domain, even if the
-        // mesh exists there.  Just propagate the NULL up.  
-        //
-        return NULL;
-    }
-
     string meshname  = GetMetaData(ts)->MeshForVar(varname);
     vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material);
 
@@ -1206,6 +1219,18 @@ avtGenericDatabase::GetSymmetricTensorVarDataset(const char *varname, int ts,
         //
         // Some file formats don't have a mesh for every domain (like Exodus
         // when material selection is applied).  Just propagate the NULL up.  
+        //
+        return NULL;
+    }
+
+    vtkDataArray *var = GetSymmetricTensorVariable(varname, ts, domain,
+                                                   material);
+
+    if (var == NULL)
+    {
+        //
+        // Some variables don't have a var for every domain, even if the
+        // mesh exists there.  Just propagate the NULL up.  
         //
         return NULL;
     }
@@ -7218,6 +7243,11 @@ avtGenericDatabase::ScaleMesh(vtkDataSet *ds)
 //    to stringVector, 'std::vector<double>' to 'doubleVector'.  Removed
 //    use of 'std::'. 
 //    
+//    Mark C. Miller, Mon Jan 10 14:06:06 PST 2005
+//    Changed order of retrieval of mesh and variable to get the mesh
+//    first and then the variable. This is so plugin can handle things
+//    like removal of arb-poly zones correctly.
+//
 // ****************************************************************************
 
 bool
@@ -7234,10 +7264,24 @@ avtGenericDatabase::QuerySpecies(const string &varName, const int dom,
         return false;
     }
 
+    // 
+    // Retrieve the species sum for the cell/s, if it has not been
+    // retrieved already.
+    // 
     string matName = smd->materialName;
+    string meshname  = GetMetaData(ts)->MeshForVar(varName);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, dom, matName.c_str());
+    vtkDataArray *species = GetSpeciesVariable(varName.c_str(), ts, dom, 
+                                matName.c_str(), mesh->GetNumberOfCells());
     avtMaterial *mat = GetMaterial(dom, matName.c_str(), ts);
     avtSpecies *spec = GetSpecies(dom, varName.c_str(), ts);
 
+    if (species == NULL)
+    {
+        debug5 << "Querying species var, but could not retrieve"
+               << " data array!" << endl;
+        return false;
+    }
     if (mat == NULL)
     {
         debug5 << "Querying species var, but could not retrieve"
@@ -7251,25 +7295,9 @@ avtGenericDatabase::QuerySpecies(const string &varName, const int dom,
         return false;
     }
 
-    // 
-    // Retrieve the species sum for the cell/s, if it has not been
-    // retrieved already.
-    // 
-    string meshname  = GetMetaData(ts)->MeshForVar(varName);
-    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, dom, matName.c_str());
-    vtkDataArray *species = GetSpeciesVariable(varName.c_str(), ts, dom, 
-                                matName.c_str(), mesh->GetNumberOfCells());
     doubleVector vals = varInfo.GetValues();
     stringVector names;
     char buff[80];
-        
-    if (species == NULL)
-    {
-        debug5 << "Querying species var, but could not retrieve"
-               << " data array!" << endl;
-        return false;
-    }
-
     int i, j, k;
     varInfo.SetCentering(PickVarInfo::Zonal);
     bool getVal = (vals.size() == 0);
