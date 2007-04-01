@@ -32,6 +32,9 @@ class     vtkActor2D;
 //    Kathleen Bonnell, Tue Aug 13 15:15:37 PDT 2002  
 //    Added methods in support of lighting. 
 //
+//    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
+//    Removed method to set externally rendered images actor
+//
 // ****************************************************************************
 
 class PLOTTER_API avtImageDrawable : public avtDrawable
@@ -49,9 +52,6 @@ class PLOTTER_API avtImageDrawable : public avtDrawable
     virtual void                 VisibilityOff(void);
     virtual int                  SetTransparencyActor(avtTransparencyActor*)
                                      { return -1; };
-    virtual void                 SetExternallyRenderedImagesActor(
-                                     avtExternallyRenderedImagesActor*)
-                                     { return; };
 
     virtual void                 ShiftByVector(const float [3]);
     virtual void                 ScaleByVector(const float [3]);

@@ -2250,6 +2250,9 @@ ViewerWindowManager::SetViewExtentsType(avtExtentType viewType,
 //   Hank Childs, Mon May 10 08:10:40 PDT 2004
 //   Replace references to immediate mode rendering with display list mode.
 //
+//   Mark C. Miller, Tue May 11 20:21:24 PDT 2004
+//   Modified calls to set scalable controls to accomdate scalable activaation
+//   mode and scalable auto threshold
 // ****************************************************************************
 
 void
@@ -2282,9 +2285,13 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
             renderAtts->GetNotifyForEachRender())
             windows[index]->SetNotifyForEachRender(renderAtts->GetNotifyForEachRender());
 
-        if (windows[index]->GetScalableThreshold() !=
-            renderAtts->GetScalableThreshold())
-            windows[index]->SetScalableThreshold(renderAtts->GetScalableThreshold());
+        if (windows[index]->GetScalableAutoThreshold() !=
+            renderAtts->GetScalableAutoThreshold())
+            windows[index]->SetScalableAutoThreshold(renderAtts->GetScalableAutoThreshold());
+
+        if (windows[index]->GetScalableActivationMode() !=
+            renderAtts->GetScalableActivationMode())
+            windows[index]->SetScalableActivationMode(renderAtts->GetScalableActivationMode());
 
         if (windows[index]->GetSpecularFlag()  != renderAtts->GetSpecularFlag() ||
             windows[index]->GetSpecularCoeff() != renderAtts->GetSpecularCoeff() ||
@@ -3775,6 +3782,9 @@ ViewerWindowManager::UpdateLightListAtts()
 //   Hank Childs, Mon May 10 08:10:40 PDT 2004
 //   Replace references to immediate mode rendering with display list mode.
 //
+//   Mark C. Miller, Tue May 11 20:21:24 PDT 2004
+//   Modified calls to set scalable controls to accomdate scalable activaation
+//   mode and scalable auto threshold
 // ****************************************************************************
 
 void
@@ -3792,14 +3802,15 @@ ViewerWindowManager::UpdateRenderingAtts(int windowIndex)
         renderAtts->SetAntialiasing(win->GetAntialiasing());
         renderAtts->SetGeometryRepresentation(
             (RenderingAttributes::GeometryRepresentation)win->GetSurfaceRepresentation());
-        renderAtts->SetDisplayListMode((RenderingAttributes::DisplayListMode)
-                                                    win->GetDisplayListMode());
+        renderAtts->SetDisplayListMode(
+            (RenderingAttributes::TriStateMode) win->GetDisplayListMode());
         renderAtts->SetStereoRendering(win->GetStereo());
         renderAtts->SetStereoType((RenderingAttributes::StereoTypes)
             win->GetStereoType());
         renderAtts->SetNotifyForEachRender(win->GetNotifyForEachRender());
-        renderAtts->SetScalableRendering(win->GetScalableRendering());
-        renderAtts->SetScalableThreshold(win->GetScalableThreshold());
+        renderAtts->SetScalableActivationMode(
+            (RenderingAttributes::TriStateMode) win->GetScalableActivationMode());
+        renderAtts->SetScalableAutoThreshold(win->GetScalableAutoThreshold());
         renderAtts->SetSpecularFlag(win->GetSpecularFlag());
         renderAtts->SetSpecularCoeff(win->GetSpecularCoeff());
         renderAtts->SetSpecularPower(win->GetSpecularPower());
@@ -6382,6 +6393,9 @@ ViewerWindowManager::CreateVisWindow(const int windowIndex,
 //    Hank Childs, Mon May 10 08:10:40 PDT 2004
 //    Replace references to immediate mode rendering with display list mode.
 //
+//   Mark C. Miller, Tue May 11 20:21:24 PDT 2004
+//   Modified calls to set scalable controls to accomdate scalable activation
+//   mode and scalable auto threshold
 // ****************************************************************************
 
 void
@@ -6412,7 +6426,8 @@ ViewerWindowManager::SetWindowAttributes(int windowIndex, bool copyAtts)
     w->SetStereoRendering(renderAtts->GetStereoRendering(),
         (int)renderAtts->GetStereoType());
     w->SetNotifyForEachRender(renderAtts->GetNotifyForEachRender());
-    w->SetScalableThreshold(renderAtts->GetScalableThreshold());
+    w->SetScalableActivationMode(renderAtts->GetScalableActivationMode());
+    w->SetScalableAutoThreshold(renderAtts->GetScalableAutoThreshold());
     w->SetSpecularProperties(renderAtts->GetSpecularFlag(),
                              renderAtts->GetSpecularCoeff(),
                              renderAtts->GetSpecularPower(),

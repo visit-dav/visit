@@ -213,6 +213,9 @@ VisWinPlots::~VisWinPlots()
 //    Hank Childs, Mon May 10 08:42:32 PDT 2004
 //    Get the immediate morde rendering info from a different source.
 //
+//    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
+//    Elminated SetExternallyRenderedImagesActor
+//
 // ****************************************************************************
 
 void
@@ -237,7 +240,6 @@ VisWinPlots::AddPlot(avtActor_p &p)
 
     p->Add(mediator.GetCanvas(), mediator.GetForeground());
     p->SetTransparencyActor(transparencyActor);
-    p->SetExternallyRenderedImagesActor(extRenderedImagesActor);
 
     if (mediator.GetFullFrameMode())
     {

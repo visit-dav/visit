@@ -14,7 +14,6 @@
 
 class     vtkRenderer;
 class     ColorAttribute;
-class     avtExternallyRenderedImagesActor;
 class     avtTransparencyActor;
 
 
@@ -60,6 +59,9 @@ class     avtTransparencyActor;
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
+//    Removed method to SetExternallyRenderedImagesActor
+//
 // ****************************************************************************
 
 class PLOTTER_API avtDrawable
@@ -76,8 +78,6 @@ class PLOTTER_API avtDrawable
     virtual void               VisibilityOn(void) = 0;
     virtual void               VisibilityOff(void) = 0;
     virtual int                SetTransparencyActor(avtTransparencyActor*) = 0;
-    virtual void               SetExternallyRenderedImagesActor(
-                                   avtExternallyRenderedImagesActor*) = 0;
 
     virtual void               ShiftByVector(const float [3]) = 0;
     virtual void               ScaleByVector(const float [3]) = 0;

@@ -111,6 +111,10 @@ QvisRenderingWindow::~QvisRenderingWindow()
 //   Hank Childs, Sun May  9 15:54:29 PDT 2004
 //   Add support for multiple display list modes.
 //
+//   Mark C. Miller, Tue May 11 20:21:24 PDT 2004
+//   Changed scalable rendering controls to use activation mode and auto
+//   threshold
+//
 // ****************************************************************************
 
 void
@@ -213,8 +217,8 @@ QvisRenderingWindow::CreateWindowContents()
     scalrenGeometryLabel =  new QLabel("When polygon count exceeds", options, "scalrenGeometryLabel");
     oLayout->addMultiCellWidget(scalrenGeometryLabel, 10, 10, 1, 2);
     scalrenAutoThreshold = new QSpinBox(0, 10000, 500, options, "scalrenAutoThreshold");
-    scalrenAutoThreshold->setValue(RenderingAttributes::DEFAULT_SCALABLE_THRESHOLD);
-    scalrenAutoThresholdChanged(RenderingAttributes::DEFAULT_SCALABLE_THRESHOLD);
+    scalrenAutoThreshold->setValue(RenderingAttributes::DEFAULT_SCALABLE_AUTO_THRESHOLD);
+    scalrenAutoThresholdChanged(RenderingAttributes::DEFAULT_SCALABLE_AUTO_THRESHOLD);
     connect(scalrenAutoThreshold, SIGNAL(valueChanged(int)),
             this, SLOT(scalrenAutoThresholdChanged(int)));
     oLayout->addWidget(scalrenAutoThreshold, 10, 3);
@@ -367,6 +371,10 @@ QvisRenderingWindow::UpdateWindow(bool doAll)
 //   Hank Childs, Sun May  9 15:54:29 PDT 2004
 //   Add support for multiple display list modes.
 //
+//   Mark C. Miller, Tue May 11 20:21:24 PDT 2004
+//   Changed scalable rendering controls to use activation mode and auto
+//   threshold
+//
 // ****************************************************************************
 
 void
@@ -433,11 +441,12 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
         case 6: //scalableRendering
             break;
         case 7: //scalrenActivationMode
-            itmp = (int)renderAtts->GetScalableThreshold();
+            RenderingAttributes::TriStateMode itmp;
+            itmp = renderAtts->GetScalableActivationMode();
             scalrenActivationMode->blockSignals(true);
-            if (itmp == 0)
+            if (itmp == RenderingAttributes::Always)
                scalrenActivationMode->setButton(1);
-            else if (itmp == INT_MAX)
+            else if (itmp == RenderingAttributes::Never)
                scalrenActivationMode->setButton(2);
             else
                scalrenActivationMode->setButton(0);
@@ -770,7 +779,7 @@ QvisRenderingWindow::displayListModeChanged(int mode)
     else                // Never in window.
         itmp = 0;       // Never for atts' enum type
 
-    renderAtts->SetDisplayListMode((RenderingAttributes::DisplayListMode)itmp);
+    renderAtts->SetDisplayListMode((RenderingAttributes::TriStateMode)itmp);
     SetUpdate(false);
     Apply();
 }
@@ -865,6 +874,10 @@ QvisRenderingWindow::renderNotifyToggled(bool val)
 //   Mark C. Miller, Tue Apr 27 14:41:35 PDT 2004
 //   Added scalrenAutoThreshold spinbox and geometry label
 //   
+//   Mark C. Miller, Tue May 11 20:21:24 PDT 2004
+//   Changed scalable rendering controls to use activation mode and auto
+//   threshold
+//
 // ****************************************************************************
 
 void
@@ -874,19 +887,20 @@ QvisRenderingWindow::scalrenActivationModeChanged(int val)
     {
         scalrenAutoThreshold->setEnabled(1);
         scalrenGeometryLabel->setEnabled(1);
+        renderAtts->SetScalableActivationMode(RenderingAttributes::Auto);
         scalrenAutoThresholdChanged(scalrenAutoThreshold->value());
     }
     else if (val == 1)
     {
         scalrenAutoThreshold->setEnabled(0);
         scalrenGeometryLabel->setEnabled(0);
-        renderAtts->SetScalableThreshold(0);
+        renderAtts->SetScalableActivationMode(RenderingAttributes::Always);
     }
     else
     {
         scalrenAutoThreshold->setEnabled(0);
         scalrenGeometryLabel->setEnabled(0);
-        renderAtts->SetScalableThreshold(INT_MAX);
+        renderAtts->SetScalableActivationMode(RenderingAttributes::Never);
     }
     SetUpdate(false);
     Apply();
@@ -907,6 +921,10 @@ QvisRenderingWindow::scalrenActivationModeChanged(int val)
 //
 // Modifications:
 //   
+//   Mark C. Miller, Tue May 11 20:21:24 PDT 2004
+//   Changed scalable rendering controls to use activation mode and auto
+//   threshold
+//
 // ****************************************************************************
 void
 QvisRenderingWindow::scalrenAutoThresholdChanged(int val)
@@ -963,7 +981,7 @@ QvisRenderingWindow::scalrenAutoThresholdChanged(int val)
     scalrenAutoThreshold->setLineStep(step);
     scalrenAutoThreshold->setSuffix(suffix);
     scalrenAutoThreshold->setValue(actualVal / div);
-    renderAtts->SetScalableThreshold(actualVal);
+    renderAtts->SetScalableAutoThreshold(actualVal);
 
     SetUpdate(false);
     Apply();

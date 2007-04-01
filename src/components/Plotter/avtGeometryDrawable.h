@@ -54,6 +54,9 @@ class     ColorAttribute;
 //    Jeremy Meredith, Fri Nov 14 11:10:53 PST 2003
 //    Added a method to set the specular properties.
 //
+//    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
+//    Removed SetExternallyRenderedImagesActor method
+//
 // ****************************************************************************
 
 class PLOTTER_API avtGeometryDrawable : public avtDrawable
@@ -72,8 +75,6 @@ class PLOTTER_API avtGeometryDrawable : public avtDrawable
     virtual void                VisibilityOn(void);
     virtual void                VisibilityOff(void);
     virtual int                 SetTransparencyActor(avtTransparencyActor *);
-    virtual void                SetExternallyRenderedImagesActor(
-                                    avtExternallyRenderedImagesActor*);
 
     virtual void                ShiftByVector(const float [3]);
     virtual void                ScaleByVector(const float [3]);

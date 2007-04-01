@@ -377,32 +377,6 @@ avtGeometryDrawable::SetTransparencyActor(avtTransparencyActor *act)
     return rv;
 }
 
-
-// ****************************************************************************
-//  Method: avtGeometryDrawable::SetExternallyRenderedImagesActor
-//
-//  Purpose:
-//      Sets the mapper's externally rendered images actor.
-//
-//  Arguments:
-//      act      The ERI actor.
-//
-//  Returns:     The id for this actor with the ERI actor.
-//
-//  Programmer:  Mark C. Miller 
-//  Creation:    January 9, 2003 
-//
-// ****************************************************************************
-
-void
-avtGeometryDrawable::SetExternallyRenderedImagesActor(
-    avtExternallyRenderedImagesActor *act)
-{
-    if (mapper!=NULL)
-       mapper->SetExternallyRenderedImagesActor(act);
-}
-
-
 // ****************************************************************************
 //  Method: avtGeometryDrawable::UpdateScaleFactor
 //

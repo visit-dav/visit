@@ -7660,3 +7660,22 @@ ViewerPlotList::GetEngineKey() const
 {
     return engineKey;
 }
+
+// ****************************************************************************
+//  Method:  ViewerPlotList::GetNumberOfCells
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    May 11, 2004
+//
+// ****************************************************************************
+int
+ViewerPlotList::GetNumberOfCells(bool polysOnly) const
+{
+    int i;
+    int sum = 0;
+    for (i = 0; i < nPlots; i++)
+    {
+        sum += plots[i].plot->GetActor()->GetDataObject()->GetNumberOfCells(polysOnly);
+    }
+    return sum;
+}

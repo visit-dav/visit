@@ -29,6 +29,9 @@
 //    Mark C. Miller, Thu Dec 19 16:19:23 PST 2002
 //    Added new data members, extRenderedImagesActor and extRenderedImageId
 //    Added initialization for transparencyIndex;
+//
+//    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
+//    Elminated extRenderedImagesActor and extRenderedImageId
 // ****************************************************************************
 
 avtActor::avtActor()
@@ -39,7 +42,6 @@ avtActor::avtActor()
     renderer               = NULL;
     transparencyActor      = NULL;
     transparencyIndex      = -1;
-    extRenderedImagesActor = NULL;
 }
 
 
@@ -617,27 +619,6 @@ avtActor::SetTransparencyActor(avtTransparencyActor *actor)
     transparencyActor = actor;
     transparencyIndex = drawable->SetTransparencyActor(transparencyActor);
 }
-
-
-// ****************************************************************************
-//  Method: avtActor::SetExternallyRenderedImagesActor
-//
-//  Purpose:
-//      Sets the ERI actor to which this actor must defer rendering requests
-//
-//  Programmer: Mark C. Miller
-//  Creation:   January 9, 2003 
-//
-// ****************************************************************************
-
-void
-avtActor::SetExternallyRenderedImagesActor(
-   avtExternallyRenderedImagesActor *actor)
-{
-    extRenderedImagesActor = actor;
-    drawable->SetExternallyRenderedImagesActor(actor);
-}
-
 
 // ****************************************************************************
 //  Method: avtActor::UpdateScaleFactor

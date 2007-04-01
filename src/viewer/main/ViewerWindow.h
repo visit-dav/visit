@@ -305,6 +305,11 @@ struct ExternalRenderRequestInfo
 //    Hank Childs, Mon May 10 08:03:22 PDT 2004
 //    Replaced "immediate mode" bool with "display list" enum.
 //
+//    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
+//    Added ShouldSendScalableRenderinModeChangeMessage, GetNumberOfCells
+//    as well as methods to set/get scalable activation mode and scalable
+//    auto threshold
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow
@@ -389,6 +394,7 @@ public:
     void SendActivateToolMessage(const int toolId) const;
     void SendInteractionModeMessage(const INTERACTION_MODE m) const;
     void SendScalableRenderingModeChangeMessage(bool newMode);
+    bool ShouldSendScalableRenderingModeChangeMessage(bool *newMode) const;
 
     bool IsTheSameWindow(VisWindow *);
 
@@ -495,11 +501,15 @@ public:
     void SetSurfaceRepresentation(int rep);
     int  GetSurfaceRepresentation() const;
     int  GetNumTriangles() const;
+    int  GetNumberOfCells(bool polysOnly = false) const; 
     void SetNotifyForEachRender(bool val);
     bool GetNotifyForEachRender() const;
     bool GetScalableRendering() const;
-    void SetScalableThreshold(int threshold);
     int  GetScalableThreshold() const;
+    int  SetScalableActivationMode(int mode);
+    int  GetScalableActivationMode() const;
+    int  SetScalableAutoThreshold(int threshold);
+    int  GetScalableAutoThreshold() const;
     void SetSpecularProperties(bool,float,float,const ColorAttribute&);
     bool  GetSpecularFlag() const;
     float GetSpecularCoeff() const;

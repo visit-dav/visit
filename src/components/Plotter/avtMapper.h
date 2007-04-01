@@ -15,7 +15,6 @@ class   vtkActor;
 class   vtkDataObjectCollection;
 class   vtkDataSetMapper;
 
-class   avtExternallyRenderedImagesActor;
 class   avtTransparencyActor;
 
 
@@ -58,6 +57,9 @@ class   avtTransparencyActor;
 //    Added storage for the global Ambient coefficient, and a method
 //    to retrieve it. 
 //
+//    Mark C. Miller Tue May 11 20:21:24 PDT 2004
+//    Removed extRenderdImagesActor data member and method to set it
+//
 // ****************************************************************************
 
 class PLOTTER_API avtMapper : public avtOriginatingDatasetSink
@@ -83,15 +85,12 @@ class PLOTTER_API avtMapper : public avtOriginatingDatasetSink
     bool                       GetImmediateModeRendering();
 
     int                        SetTransparencyActor(avtTransparencyActor *);
-    void                       SetExternallyRenderedImagesActor(
-                                   avtExternallyRenderedImagesActor*);
 
   protected:
     bool                       immediateMode;
     avtDrawable_p              drawable;
     avtTransparencyActor      *transparencyActor;
     int                        transparencyIndex;
-    avtExternallyRenderedImagesActor *extRenderedImagesActor;
 
     vtkDataSetMapper         **mappers;
     int                        nMappers;
