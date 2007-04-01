@@ -679,6 +679,10 @@ PF3DFileFormat::GetDomainFileObject(int realDomain)
 //
 // Modifications:
 //   
+//   Hank Childs, Mon Mar 14 13:03:44 PST 2005
+//   Do not delete the file object, since it will be deleted by the reference
+//   pointer automatically.
+//
 // ****************************************************************************
 
 void
@@ -697,13 +701,10 @@ PF3DFileFormat::CloseFile(int index)
         {
             debug4 << mName << "Found a cached file object for "
                    << key << endl;
-            PDBFileObject *obj = (PDBFileObject *)(*vr);
-            delete obj;
+            // Clear the object out of the cache somehow...
+            void_ref_ptr vr2 = void_ref_ptr(0, PDBFileObject::Destruct);
+            cache->CacheVoidRef(key, FILE_KEY, timestep, -1, vr2);
         }
-
-        // Clear the object out of the cache somehow...
-        void_ref_ptr vr2 = void_ref_ptr(0, PDBFileObject::Destruct);
-        cache->CacheVoidRef(key, FILE_KEY, timestep, -1, vr2);
     }
 }
 
@@ -718,6 +719,10 @@ PF3DFileFormat::CloseFile(int index)
 //
 // Modifications:
 //   
+//   Hank Childs, Mon Mar 14 13:03:44 PST 2005
+//   Do not create empty objects to be added to the cache -- the cache will
+//   be cleared out automatically by the generic database.
+//
 // ****************************************************************************
 
 void
@@ -728,18 +733,6 @@ PF3DFileFormat::FreeUpResources()
     // Close the master file since we can automatically open it up again
     // if we need to.
     pdb->Close();
-
-    for(int realDomain = 0; realDomain < master.GetNDomains(); ++realDomain)
-    {
-        for(int i = 0; i < glob_nams.size(); ++i)
-        {
-            // Store an empty BOF in the cache so the old one gets
-            // deleted when we call this method.
-            std::string key(GetBOFKey(realDomain, glob_nams[i].c_str()));
-            void_ref_ptr vr = void_ref_ptr(0, BOF::Destruct);
-            cache->CacheVoidRef(key.c_str(), BOF_KEY, timestep, realDomain, vr);
-        }
-    }    
 }
 
 // ****************************************************************************
