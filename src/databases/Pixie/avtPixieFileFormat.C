@@ -745,6 +745,12 @@ avtPixieFileFormat::GetMesh(int timestate, const char *meshname)
             varDims[0] = varDims[2];
             varDims[2] = tmp;
         }
+        else if (nVarDims == 2)
+        {
+            int tmp = varDims[0];
+            varDims[0] = varDims[1];
+            varDims[1] = tmp;
+        }
 
         vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
         vtkFloatArray *coords[3];
@@ -921,7 +927,10 @@ avtPixieFileFormat::CreateCurvilinearMesh(int timestate, const VarInfo &info,
         // Tell the grid what its dimensions are and populate the points array.
         //
         if(nVarDims == 2)
-            sgrid->SetDimensions((int *)varDims);
+        {
+            int yxzNodes[] = {varDims[1], varDims[0], varDims[2]};
+            sgrid->SetDimensions((int *)yxzNodes);
+        }
         else
         {
             // In 3D, Pixie dimensions are stored ZYX. Reverse them so we
