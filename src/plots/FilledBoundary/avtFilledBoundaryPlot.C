@@ -549,12 +549,18 @@ avtFilledBoundaryPlot::CustomizeBehavior(void)
 //    clean-zones only.  It was formerly included in the MultiColor list,
 //    but this is a much, well, "cleaner" implementation.
 //
+//    Jeremy Meredith, Tue Jul  6 16:18:38 PDT 2004
+//    Fixed some problems with clean-zones-only.  It was possible to have the
+//    "mixed" mapper remain by turning off CZO mode, in which case not enough
+//    colors were in the list and we got an exception.  Instead, we always
+//    add the color and let the other pieces figure out whether or not it
+//    should show up in the legend.
+//
 // ****************************************************************************
 
 void 
 avtFilledBoundaryPlot::SetColors()
 {
-    bool czo = atts.GetCleanZonesOnly();
     vector < string > allLabels = atts.GetBoundaryNames();
     vector < string > labels; 
     LevelColorMap levelColorMap;
@@ -594,13 +600,10 @@ avtFilledBoundaryPlot::SetColors()
         ColorAttributeList cal(atts.GetMultiColor());
 
         //
-        // If we are doing clean-zones-only, add the mixed color to the list
+        // If we are doing clean-zones-only, we will need a mixed color
         //
-        if (czo)
-        {
-            allLabels.push_back("mixed");
-            cal.AddColorAttribute(atts.GetMixedColor());
-        }
+        allLabels.push_back("mixed");
+        cal.AddColorAttribute(atts.GetMixedColor());
 
         int numColors = cal.GetNumColorAttributes();
 
@@ -638,13 +641,10 @@ avtFilledBoundaryPlot::SetColors()
         ColorAttributeList cal(atts.GetMultiColor());
 
         //
-        // If we are doing clean-zones-only, add the mixed color to the list
+        // If we are doing clean-zones-only, we will need a mixed color
         //
-        if (czo)
-        {
-            allLabels.push_back("mixed");
-            cal.AddColorAttribute(atts.GetMixedColor());
-        }
+        allLabels.push_back("mixed");
+        cal.AddColorAttribute(atts.GetMixedColor());
 
         //
         // It is a litte more complicated to handle c.z.o. here relative
@@ -653,7 +653,7 @@ avtFilledBoundaryPlot::SetColors()
         // mixed color.  We use two "numColors" variables to handle this.
         //
         int numColorsFull = cal.GetNumColorAttributes();
-        int numColors     = czo ? (numColorsFull - 1) : (numColorsFull);
+        int numColors     = numColorsFull - 1;
         unsigned char *colors = new unsigned char[numColorsFull * 4];
         unsigned char *cptr = colors;
         avtColorTables *ct = avtColorTables::Instance();
@@ -716,6 +716,10 @@ avtFilledBoundaryPlot::SetColors()
                 delete [] rgb;
             }
         }
+        *cptr++ = (unsigned char)cal[numColors].Red();
+        *cptr++ = (unsigned char)cal[numColors].Green();
+        *cptr++ = (unsigned char)cal[numColors].Blue();
+        *cptr++ = (unsigned char)cal[numColors].Alpha();
 
         avtLUT->SetLUTColorsWithOpacity(colors, numColorsFull);
         levelsMapper->SetColors(cal);
