@@ -2456,6 +2456,9 @@ ViewerPlot::GetReader() const
 //    Eric Brugger, Tue Mar 30 15:26:33 PST 2004
 //    Added code to set the plot data extents if maintain data limits is set.
 //
+//    Mark C. Miller, Mon Apr 19 12:00:52 PDT 2004
+//    Added code to issue a warning message if actor has no data
+//
 // ****************************************************************************
 
 // only place in ViewerPlot where ViewerWindowManager is needed
@@ -2629,6 +2632,20 @@ ViewerPlot::CreateActor(bool createNew, bool turningOffScalableRendering)
     TRY
     {
         avtActor_p actor = plotList[cacheIndex]->Execute(reader);
+
+        //
+        // Issue a warning if this actor has no data
+        //
+        bool polysOnly = false;
+        if (actor->GetDataObject()->GetNumberOfCells(polysOnly) == 0)
+        {
+            char message[128];
+            SNPRINTF(message, sizeof(message),
+                "The %s plot of \"%s\" yielded no data",
+                GetPlotName(), GetVariableName().c_str());
+            Warning(message);
+        }
+
         this->SetActor(actor);
 
         // Indicate that this plot has no error.

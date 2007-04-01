@@ -190,6 +190,9 @@ typedef std::map<std::string, int> StringIntMap;
 //    Eric Brugger, Fri Apr 16 18:32:47 PDT 2004
 //    I added TimeSliderExists.
 //
+//    Brad Whitlock, Mon Apr 19 09:04:41 PDT 2004
+//    I added ValidateTimeSlider.
+//
 // ****************************************************************************
 
 
@@ -225,6 +228,7 @@ public:
     bool DeleteTimeSlider(const std::string &ts, bool update = true);
     void GetTimeSliderStates(const std::string &ts, int &state, int &nStates) const;
     bool TimeSliderExists(const std::string &ts) const;
+    void ValidateTimeSlider();
     void ForwardStep();
     void BackwardStep();
     void SetTimeSliderState(int state);

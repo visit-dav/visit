@@ -3138,11 +3138,18 @@ ViewerSubject::CreateAttributesDataNode(const avtDefaultPlotMetaData *dp) const
 //    Made it re-use command line arguments if we had some, as long as 
 //    we were in nowin mode.
 //
+//    Brad Whitlock, Mon Apr 19 10:04:47 PDT 2004
+//    I added the updateWindowInfo argument so we don't always have to update
+//    the window information since that can cause extra updates in the gui.
+//    I also added code to make the plot list check its active source vs the
+//    active time slider so it can reset the active time slider if it no
+//    longer makes sense to have one.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
-    int timeState, bool addDefaultPlots)
+    int timeState, bool addDefaultPlots, bool updateWindowInfo)
 {
     int  i;
 
@@ -3199,6 +3206,13 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
         }
 
         //
+        // Make sure that it is appropriate to have the time slider that
+        // is currently used in the plot list.
+        //
+        if(!wM->GetActiveWindow()->GetTimeLock())
+            plotList->ValidateTimeSlider();
+
+        //
         // Update the global atts since that has the list of sources.
         //
         wM->UpdateGlobalAtts();
@@ -3208,8 +3222,11 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
         // slider and time slider states when the new database was opened, send
         // back the source, time sliders, and animation information.
         //
-        wM->UpdateWindowInformation(WINDOWINFO_SOURCE | WINDOWINFO_TIMESLIDERS |
-                                    WINDOWINFO_ANIMATION);
+        if(updateWindowInfo)
+        {
+            wM->UpdateWindowInformation(WINDOWINFO_SOURCE |
+                WINDOWINFO_TIMESLIDERS | WINDOWINFO_ANIMATION);
+        }
 
         //
         // Update the expression list.
@@ -3346,13 +3363,16 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
 //   Brad Whitlock, Wed Oct 22 12:28:57 PDT 2003
 //   I made it possible for default plots to not be added.
 //
+//   Brad Whitlock, Mon Apr 19 10:00:13 PDT 2004
+//   I added another argument to OpenDatabaseHelper.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::OpenDatabase()
 {
     OpenDatabaseHelper(viewerRPC.GetDatabase(), viewerRPC.GetIntArg1(),
-                       viewerRPC.GetBoolFlag());
+                       viewerRPC.GetBoolFlag(), true);
 }
 
 // ****************************************************************************
@@ -3367,6 +3387,8 @@ ViewerSubject::OpenDatabase()
 // Creation:   Thu Jan 29 23:46:49 PST 2004
 //
 // Modifications:
+//   Brad Whitlock, Mon Apr 19 10:00:13 PDT 2004
+//   I added another argument to OpenDatabaseHelper.
 //   
 // ****************************************************************************
 
@@ -3403,7 +3425,7 @@ ViewerSubject::ActivateDatabase()
     else
     {
         // We have not seen the database before so open it.
-        OpenDatabaseHelper(database, 0, true);
+        OpenDatabaseHelper(database, 0, true, true);
     }
 }
 
@@ -3479,6 +3501,9 @@ ViewerSubject::CheckForNewStates()
 //   Jeremy Meredith, Thu Apr 15 17:01:11 PDT 2004
 //   Added the reOpenState to the ReplaceDatabase call so that the right
 //   MD/SIL would get used in all circumstances.
+//
+//   Brad Whitlock, Mon Apr 19 10:00:13 PDT 2004
+//   I added another argument to OpenDatabaseHelper.
 //
 // ****************************************************************************
 
@@ -3584,7 +3609,7 @@ ViewerSubject::ReOpenDatabase()
     //
     // Open the database.
     //
-    OpenDatabaseHelper(hostDatabase, reOpenState, false);
+    OpenDatabaseHelper(hostDatabase, reOpenState, false, true);
  
     //
     // Now perform the database replacement in all windows that use the
@@ -3638,6 +3663,11 @@ ViewerSubject::ReOpenDatabase()
 //   Brad Whitlock, Tue Jan 27 16:52:40 PST 2004
 //   Changed for multiple time sliders.
 //
+//   Brad Whitlock, Mon Apr 19 10:00:13 PDT 2004
+//   I added another argument to OpenDatabaseHelper so it won't update the
+//   window information since we're already doing that here. I also added
+//   a call to validate the plot lists's time slider.
+//
 // ****************************************************************************
 
 void
@@ -3662,7 +3692,7 @@ ViewerSubject::ReplaceDatabase()
     // First open the database.
     //
     OpenDatabaseHelper(viewerRPC.GetDatabase(), viewerRPC.GetIntArg1(),
-                       false);
+                       false, false);
 
     //
     // Now perform the database replacement.
@@ -3673,6 +3703,11 @@ ViewerSubject::ReplaceDatabase()
                               viewerRPC.GetIntArg1(),
                               true,
                               false);
+
+    //
+    // Make sure the time slider is set to something appropriate.
+    //
+    plotList->ValidateTimeSlider();
 
     //
     // We have to send back the source and the time sliders since we
@@ -3709,6 +3744,9 @@ ViewerSubject::ReplaceDatabase()
 //   Jeremy Meredith, Tue Mar 30 10:52:06 PST 2004
 //   Added an engine key used to index (and restart) engines.
 //
+//   Brad Whitlock, Mon Apr 19 10:00:13 PDT 2004
+//   I added another argument to OpenDatabaseHelper.
+//
 // ****************************************************************************
 
 void
@@ -3717,7 +3755,7 @@ ViewerSubject::OverlayDatabase()
     //
     // First open the database.
     //
-    OpenDatabaseHelper(viewerRPC.GetDatabase(), 0, false);
+    OpenDatabaseHelper(viewerRPC.GetDatabase(), 0, false, true);
 
     //
     // Now perform the database replacement.
@@ -3763,7 +3801,11 @@ ViewerSubject::CloseDatabase()
 // Creation:   Fri Jan 30 23:52:00 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Apr 19 08:44:46 PDT 2004
+//   I moved the code to update the window information from
+//   ViewerWindowManager::CreateDatabaseCorrelation to here so things in the
+//   gui don't update as frequently when opening a database.
+//
 // ****************************************************************************
 
 void
@@ -3789,6 +3831,8 @@ ViewerSubject::CreateDatabaseCorrelation()
         ViewerWindowManager::Instance()->CreateDatabaseCorrelation(
             name, viewerRPC.GetProgramOptions(),
             viewerRPC.GetIntArg1(), 0, viewerRPC.GetIntArg2());
+        ViewerWindowManager::Instance()->UpdateWindowInformation(
+            WINDOWINFO_TIMESLIDERS | WINDOWINFO_ANIMATION);
     }
 }
 

@@ -86,6 +86,9 @@
 #    Kathleen Bonnell, Tue Jan 13 08:48:14 PST 2004 
 #    Added BadNodeException.
 #
+#    Mark C. Miller, Mon Apr 19 12:00:52 PDT 2004
+#    Added PlotterException base class
+#
 ##############################################################################
 
 @SET_MAKE@
