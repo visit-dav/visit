@@ -1646,6 +1646,11 @@ ViewerSubject::GetOperatorFactory() const
 //    as a colon-delimited string, with an optional leading/trailing colon
 //    to prevent parsing errors.  The visit script fills this expectation.
 //
+//    Jeremy Meredith, Fri Mar 26 09:21:48 PST 2004
+//    Changed colons in engineargs to semicolons.  Some PSUB options now
+//    take colons, so that would mess it up.  Commas are already used in
+//    the PSUB constraints (e.g. white,batch), so those wouldn't work either.
+//
 // ****************************************************************************
 
 void
@@ -1880,7 +1885,7 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
                         "string." << endl;
                 continue;
             }
-            engineParallelArguments = SplitValues(argv2[++i], ':');
+            engineParallelArguments = SplitValues(argv2[++i], ';');
         }
         else // Unknown argument -- add it to the list
         {
