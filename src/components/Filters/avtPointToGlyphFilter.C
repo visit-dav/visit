@@ -538,6 +538,9 @@ avtPointToGlyphFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //    Jeremy Meredith, Tue May  4 12:31:47 PDT 2004
 //    Don't change topological dimension from zero if we are not glyphing.
 //
+//    Hank Childs, Wed May  5 16:05:41 PDT 2004
+//    Allow for all glyphs to get shaded.
+//
 // ****************************************************************************
 
 void
@@ -549,9 +552,6 @@ avtPointToGlyphFilter::RefashionDataObjectInfo(void)
             GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(2);
         GetOutput()->GetInfo().GetValidity().
                                     SetWireframeRenderingIsInappropriate(true);
-        if (glyphType != 2)
-            GetOutput()->GetInfo().GetValidity().
-                                              SetNormalsAreInappropriate(true); 
     }
 }
 

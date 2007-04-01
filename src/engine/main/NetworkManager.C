@@ -1771,6 +1771,9 @@ NetworkManager::StopPickMode(void)
 //    Send the SILRestriction to PickQuery (insted of UseSet).
 //    If LocateCellQuery fails, set error condition in PickAtts.
 //
+//    Kathleen Bonnell, Wed May  5 13:07:12 PDT 2004 
+//    Moved error-setting code to PickQuery, as it causes problems in parallel.
+//
 // ****************************************************************************
 
 void
@@ -1828,32 +1831,22 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
                 *pa = *(lcQ->GetPickAtts());
                 delete lcQ;
             }
-            if (pa->GetDomain() != -1)
+
+            pQ = new avtPickQuery;
+            pQ->SetInput(networkCache[id]->GetNetDB()->GetOutput());
+            if (*silr != NULL)
+                pQ->SetSILRestriction(silr->MakeAttributes());
+            if (queryInput->GetInfo().GetAttributes().HasTransform() &&
+                queryInput->GetInfo().GetAttributes().GetCanUseTransform())
             {
-                pQ = new avtPickQuery;
-                pQ->SetInput(networkCache[id]->GetNetDB()->GetOutput());
-                if (*silr != NULL)
-                    pQ->SetSILRestriction(silr->MakeAttributes());
-                if (queryInput->GetInfo().GetAttributes().HasTransform() &&
-                    queryInput->GetInfo().GetAttributes().GetCanUseTransform())
-                {
-                    pQ->SetTransform(queryInput->GetInfo().GetAttributes().GetTransform());
-                }
-                pQ->SetNeedTransform(
-                    queryInput->GetInfo().GetValidity().GetPointsWereTransformed());
-                pQ->SetPickAtts(pa);
-                pQ->PerformQuery(&qa); 
-                *pa = *(pQ->GetPickAtts());
-                delete pQ;
+                pQ->SetTransform(queryInput->GetInfo().GetAttributes().GetTransform());
             }
-            else
-            {
-                if (!pa->GetError())
-                {
-                    pa->SetError(true);
-                    pa->SetErrorMessage("Chosen pick did not intersect surface.");
-                }
-            }
+            pQ->SetNeedTransform(
+                queryInput->GetInfo().GetValidity().GetPointsWereTransformed());
+            pQ->SetPickAtts(pa);
+            pQ->PerformQuery(&qa); 
+            *pa = *(pQ->GetPickAtts());
+            delete pQ;
         }
         else 
         {

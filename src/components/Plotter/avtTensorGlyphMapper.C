@@ -10,6 +10,7 @@
 #include <vtkProperty.h>
 #include <vtkPolyData.h>
 #include <vtkTensorGlyph.h>
+#include <vtkVisItPolyDataNormals.h>
 
 #include <BadIndexException.h>
 
@@ -24,6 +25,11 @@
 //  Programmer: Hank Childs
 //  Creation:   September 23, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Wed May  5 14:19:54 PDT 2004
+//    Added poly data normals.
+//
 // ****************************************************************************
 
 avtTensorGlyphMapper::avtTensorGlyphMapper(vtkPolyData *g)
@@ -34,6 +40,7 @@ avtTensorGlyphMapper::avtTensorGlyphMapper(vtkPolyData *g)
     colorByMag        = true;
     scale             = 0.2;
     tensorFilter      = NULL;
+    normalsFilter     = NULL;
     nTensorFilters    = 0;
     lut = NULL;
 }
@@ -44,6 +51,11 @@ avtTensorGlyphMapper::avtTensorGlyphMapper(vtkPolyData *g)
 //
 //  Programmer: Hank Childs
 //  Creation:   September 23, 2003
+//
+//  Modifications:
+//
+//    Hank Childs, Wed May  5 14:19:54 PDT 2004
+//    Deleted poly data normals.
 //
 // ****************************************************************************
 
@@ -66,6 +78,17 @@ avtTensorGlyphMapper::~avtTensorGlyphMapper()
         }
         delete [] tensorFilter;
     }
+    if (normalsFilter != NULL)
+    {
+        for (int i = 0 ; i < nTensorFilters ; i++)
+        {
+            if (normalsFilter[i] != NULL)
+            {
+                normalsFilter[i]->Delete();
+            }
+        }
+        delete [] normalsFilter;
+    }
 }
 
 
@@ -78,6 +101,11 @@ avtTensorGlyphMapper::~avtTensorGlyphMapper()
 //
 //  Programmer: Hank Childs
 //  Creation:   September 23, 2003
+//
+//  Modifications:
+//
+//    Hank Childs, Wed May  5 14:19:54 PDT 2004
+//    Added poly data normals.
 //
 // ****************************************************************************
 
@@ -92,6 +120,10 @@ avtTensorGlyphMapper::CustomizeMappers(void)
             {
                 tensorFilter[i]->SetSource(glyph);
                 tensorFilter[i]->SetScaling(1);
+            }
+            if (normalsFilter[i] != NULL)
+            {
+                normalsFilter[i]->SetNormalTypeToCell();
             }
         }
     }
@@ -129,6 +161,11 @@ avtTensorGlyphMapper::CustomizeMappers(void)
 //  Programmer: Hank Childs
 //  Creation:   September 23, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Wed May  5 14:19:54 PDT 2004
+//    Added poly data normals.
+//
 // ****************************************************************************
 
 void
@@ -145,12 +182,25 @@ avtTensorGlyphMapper::SetUpFilters(int nDoms)
         }
         delete [] tensorFilter;
     }
+    if (normalsFilter != NULL)
+    {
+        for (int i = 0 ; i < nTensorFilters ; i++)
+        {
+            if (normalsFilter[i] != NULL)
+            {
+                normalsFilter[i]->Delete();
+            }
+        }
+        delete [] normalsFilter;
+    }
 
     nTensorFilters     = nDoms;
     tensorFilter       = new vtkTensorGlyph*[nTensorFilters];
+    normalsFilter      = new vtkVisItPolyDataNormals*[nTensorFilters];
     for (int i = 0 ; i < nTensorFilters ; i++)
     {
         tensorFilter[i] = NULL;
+        normalsFilter[i] = NULL;
     }
 }
 
@@ -171,6 +221,11 @@ avtTensorGlyphMapper::SetUpFilters(int nDoms)
 //  Programmer: Hank Childs
 //  Creation:   September 23, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Wed May  5 14:19:54 PDT 2004
+//    Added poly data normals.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -189,10 +244,15 @@ avtTensorGlyphMapper::InsertFilters(vtkDataSet *ds, int dom)
         //
         tensorFilter[dom] = vtkTensorGlyph::New();
     }
+    if (normalsFilter[dom] == NULL)
+    {
+        normalsFilter[dom] = vtkVisItPolyDataNormals::New();
+    }
 
     tensorFilter[dom]->SetInput(ds);
+    normalsFilter[dom]->SetInput(tensorFilter[dom]->GetOutput());
 
-    return tensorFilter[dom]->GetOutput();
+    return normalsFilter[dom]->GetOutput();
 }
 
 

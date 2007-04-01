@@ -11,13 +11,12 @@
 
 
 class vtkDataSet;
-class vtkClipDataSet;
 class vtkClipVolume;
 class vtkClipPolyData;
 class vtkImplicitBoolean;
 class vtkImplicitFunction;
 class vtkUnstructuredGrid;
-class vtkVisItClipper3D;
+class vtkVisItClipper;
 
 
 // ****************************************************************************
@@ -44,6 +43,10 @@ class vtkVisItClipper3D;
 //    Rewrote a huge chunk to make use of my new vtkVisItClipper3D.  The 
 //    speedup from using this filter whenever possible is really, really big.
 //
+//    Jeremy Meredith, Wed May  5 13:05:35 PDT 2004
+//    Made my fast clipper support 2D, and removed the old generic
+//    VTK data set clipper.
+//
 // ****************************************************************************
 
 class avtClipFilter : public avtPluginStreamer
@@ -64,9 +67,8 @@ class avtClipFilter : public avtPluginStreamer
 
   protected:
     ClipAttributes           atts;
-    vtkClipDataSet          *clipData;
     vtkClipPolyData         *clipPoly;
-    vtkVisItClipper3D       *fastClipper;
+    vtkVisItClipper         *fastClipper;
 
     virtual vtkDataSet      *ExecuteData(vtkDataSet *, int, std::string);
     virtual void             RefashionDataObjectInfo(void);

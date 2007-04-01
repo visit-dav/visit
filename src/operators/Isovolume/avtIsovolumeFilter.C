@@ -3,7 +3,7 @@
 // ************************************************************************* //
 
 #include <avtIsovolumeFilter.h>
-#include <vtkVisItClipper3D.h>
+#include <vtkVisItClipper.h>
 #include <vtkDataSet.h>
 #include <vtkDataArray.h>
 #include <vtkPointData.h>
@@ -124,13 +124,21 @@ avtIsovolumeFilter::Equivalent(const AttributeGroup *a)
 //    Jeremy Meredith, Mon Feb  2 13:13:05 PST 2004
 //    Fixed memory leak.
 //
+//    Jeremy Meredith, Wed May  5 14:56:35 PDT 2004
+//    Removed the "3D" from the end of vtkVisItClipper because I made it
+//    fully support 2D as well.  I also changed it to only take a single
+//    cutoff so the math is more robust, and that required making a "min"
+//    pass as well as a "max" pass, so that had to change in this function.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtIsovolumeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 {
-    vtkVisItClipper3D *clipper = vtkVisItClipper3D::New();
-    clipper->SetInput(in_ds);
+    vtkVisItClipper *minClipper = vtkVisItClipper::New();
+    vtkVisItClipper *maxClipper = vtkVisItClipper::New();
+    minClipper->SetInsideOut(true);
+    maxClipper->SetInsideOut(false);
 
     //
     // Get the scalar array we'll use for clipping; it must be nodal
@@ -139,8 +147,10 @@ avtIsovolumeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     if (in_ds->GetPointData()->GetScalars())
     {
         vtkDataArray *s = in_ds->GetPointData()->GetScalars();
-        clipper->SetClipScalars((float*)(s->GetVoidPointer(0)),
-                                atts.GetLbound(), atts.GetUbound());
+        minClipper->SetClipScalars((float*)(s->GetVoidPointer(0)),
+                                   atts.GetLbound());
+        maxClipper->SetClipScalars((float*)(s->GetVoidPointer(0)),
+                                   atts.GetUbound());
     }
     else if (in_ds->GetCellData()->GetScalars())
     {
@@ -159,8 +169,10 @@ avtIsovolumeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 
         // Now tell the clipper about it....
         vtkDataArray *s = temporary->GetPointData()->GetScalars();
-        clipper->SetClipScalars((float*)(s->GetVoidPointer(0)),
-                                atts.GetLbound(), atts.GetUbound());
+        minClipper->SetClipScalars((float*)(s->GetVoidPointer(0)),
+                                   atts.GetLbound());
+        maxClipper->SetClipScalars((float*)(s->GetVoidPointer(0)),
+                                   atts.GetUbound());
 
         // Wait until after the clipping is done to delete 'cd2pd' (which
         // will take 'temporary' with it)
@@ -175,9 +187,34 @@ avtIsovolumeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     //
     // Do the clipping!
     //
-    vtkDataSet *out_ds = clipper->GetOutput();
-    out_ds->Update();
+    vtkDataSet *out_ds;
+    if (atts.GetLbound() > -1e37 && atts.GetUbound() < 1e37)
+    {
+        minClipper->SetInput(in_ds);
+        maxClipper->SetInput(minClipper->GetOutput());
+        out_ds = maxClipper->GetOutput();
+        out_ds->Update();
+    }
+    else if (atts.GetLbound() > -1e37)
+    {
+        minClipper->SetInput(in_ds);
+        out_ds = minClipper->GetOutput();
+        out_ds->Update();
+    }
+    else if (atts.GetUbound() < 1e37)
+    {
+        maxClipper->SetInput(in_ds);
+        out_ds = maxClipper->GetOutput();
+        out_ds->Update();
+    }
+    else
+    {
+        out_ds = in_ds;
+    }
 
+    //
+    // Make sure there's something there
+    //
     if (out_ds->GetNumberOfCells() <= 0)
     {
         out_ds = NULL;
@@ -210,7 +247,8 @@ avtIsovolumeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     }
 
     ManageMemory(out_ds);
-    clipper->Delete();
+    minClipper->Delete();
+    maxClipper->Delete();
     if (shouldDelete)
         out_ds->Delete();
 

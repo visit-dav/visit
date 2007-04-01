@@ -1,4 +1,4 @@
-#include "vtkVisItClipper3D.h"
+#include "vtkVisItClipper.h"
 #include <vtkAppendFilter.h>
 #include <vtkCellData.h>
 #include <vtkClipDataSet.h>
@@ -24,10 +24,10 @@
 #include <ClipCases.h>
 #include <vtkTriangulationTables.h>
 
-vtkCxxRevisionMacro(vtkVisItClipper3D, "$Revision: 1.00 $");
-vtkStandardNewMacro(vtkVisItClipper3D);
+vtkCxxRevisionMacro(vtkVisItClipper, "$Revision: 1.00 $");
+vtkStandardNewMacro(vtkVisItClipper);
 
-vtkVisItClipper3D::vtkVisItClipper3D()
+vtkVisItClipper::vtkVisItClipper()
 {
     CellList = NULL;
     CellListSize = 0;
@@ -35,19 +35,19 @@ vtkVisItClipper3D::vtkVisItClipper3D()
     clipFunction = NULL;
 }
 
-vtkVisItClipper3D::~vtkVisItClipper3D()
+vtkVisItClipper::~vtkVisItClipper()
 {
 }
 
 void
-vtkVisItClipper3D::SetCellList(int *cl, int size)
+vtkVisItClipper::SetCellList(int *cl, int size)
 {
     CellList = cl;
     CellListSize = size;
 }
 
 void
-vtkVisItClipper3D::SetClipFunction(vtkImplicitFunction *func)
+vtkVisItClipper::SetClipFunction(vtkImplicitFunction *func)
 {
     // Set the clip function
     clipFunction = func;
@@ -56,8 +56,29 @@ vtkVisItClipper3D::SetClipFunction(vtkImplicitFunction *func)
     scalarArray = NULL;
 }
 
+// ****************************************************************************
+//  Method:  vtkVisItClipper::SetClipScalars
+//
+//  Purpose:
+//    Set the scalar array used for clipping, and the cutoff.
+//    To clip to a range, execute this filter once for the minimum
+//    and once for the maximum.
+//
+//  Arguments:
+//    array      the scalar array
+//    cutoff     the cutoff
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January 30, 2004
+//
+//  Modifications:
+//    Jeremy Meredith, Wed May  5 14:48:23 PDT 2004
+//    Made it allow only a single cutoff, and use the "insideOut"
+//    value to determine if this is a min or max value.
+//
+// ****************************************************************************
 void
-vtkVisItClipper3D::SetClipScalars(float *array, float lower, float upper)
+vtkVisItClipper::SetClipScalars(float *array, float cutoff)
 {
     // Clear the clip function so we know to use scalars
     clipFunction = NULL;
@@ -65,23 +86,18 @@ vtkVisItClipper3D::SetClipScalars(float *array, float lower, float upper)
     // Set the scalar array
     scalarArray = array;
 
-    // Set the range
-    minValue = lower;
-    maxValue = upper;
-
-    // Calculate the distance parameters
-    avgValue = (upper + lower) / 2;
-    halfDist = (upper - lower) / 2;
+    // Set the cutoff
+    scalarCutoff     = cutoff;
 }
 
 void
-vtkVisItClipper3D::SetInsideOut(bool io)
+vtkVisItClipper::SetInsideOut(bool io)
 {
     insideOut = io;
 }
 
 // ****************************************************************************
-//  Method:  vtkVisItClipper3D::Execute
+//  Method:  vtkVisItClipper::Execute
 //
 //  Purpose:
 //    Main execution method.  Delegate to mesh-specific functions.
@@ -98,7 +114,7 @@ vtkVisItClipper3D::SetInsideOut(bool io)
 //
 // ****************************************************************************
 void
-vtkVisItClipper3D::Execute()
+vtkVisItClipper::Execute()
 {
     vtkDataSet *input  = GetInput();
 
@@ -121,14 +137,14 @@ vtkVisItClipper3D::Execute()
     }
     else
     {
-        debug1 << "vtkVisItClipper3D: Can't operate on this dataset\n";
+        debug1 << "vtkVisItClipper: Can't operate on this dataset\n";
         GeneralExecute();
     }
 }
 
 
 // ****************************************************************************
-//  Method:  vtkVisItClipper3D::StructuredGridExecute
+//  Method:  vtkVisItClipper::StructuredGridExecute
 //
 //  Purpose:
 //    Clips a structured grid.
@@ -155,20 +171,20 @@ vtkVisItClipper3D::Execute()
 //    Jeremy Meredith, Mon Feb 16 19:07:24 PST 2004
 //    Added polygonal cell support.
 //
+//    Jeremy Meredith, Wed May  5 14:49:55 PDT 2004
+//    Made it support 2d cases as well.  Changed it to a single cutoff
+//    for scalars to make the math more robust.
+//
 // ****************************************************************************
 void
-vtkVisItClipper3D::StructuredGridExecute(void)
+vtkVisItClipper::StructuredGridExecute(void)
 {
     int  i, j;
 
     vtkStructuredGrid *sg = (vtkStructuredGrid *) GetInput();
     int pt_dims[3];
     sg->GetDimensions(pt_dims);
-    if (pt_dims[2] <= 1)
-    {
-        GeneralExecute();
-        return;
-    }
+    bool twoD = (pt_dims[2] <= 1);
 
     int                nCells = sg->GetNumberOfCells();
     vtkPoints         *inPts  = sg->GetPoints();
@@ -204,7 +220,8 @@ vtkVisItClipper3D::StructuredGridExecute(void)
         int cellK = (cellId/strideZ);
         int lookup_case = 0;
         float dist[8];
-        for (j = 7 ; j >= 0 ; j--)
+        int nCellPts = twoD ? 4 : 8;
+        for (j = nCellPts-1 ; j >= 0 ; j--)
         {
             int ptId = (cellI + X_val[j]) + (cellJ + Y_val[j])*ptstrideY +
                        (cellK + Z_val[j])*ptstrideZ;
@@ -217,7 +234,7 @@ vtkVisItClipper3D::StructuredGridExecute(void)
             else // if (scalarArray)
             {
                 float val = scalarArray[ptId];
-                dist[j] = halfDist - fabs(val - avgValue);
+                dist[j] = scalarCutoff - val;
             }
 
             if (dist[j] >= 0)
@@ -226,10 +243,20 @@ vtkVisItClipper3D::StructuredGridExecute(void)
                 lookup_case *= 2;
         }
 
-        unsigned char *splitCase = &clipShapesHex[
-                                             startClipShapesHex[lookup_case]];
-        int            numOutput = numClipShapesHex[lookup_case];
+        unsigned char *splitCase;
+        int            numOutput;
         int            interpIDs[4];
+        if (twoD)
+        {
+            splitCase = &clipShapesQua[startClipShapesQua[lookup_case]];
+            numOutput = numClipShapesQua[lookup_case];
+        }
+        else
+        {
+            splitCase = &clipShapesHex[startClipShapesHex[lookup_case]];
+            numOutput = numClipShapesHex[lookup_case];
+        }
+
         for (j = 0 ; j < numOutput ; j++)
         {
             unsigned char shapeType = *splitCase++;
@@ -371,7 +398,7 @@ vtkVisItClipper3D::StructuredGridExecute(void)
 }
 
 // ****************************************************************************
-//  Method:  vtkVisItClipper3D::RectilinearGridExecute
+//  Method:  vtkVisItClipper::RectilinearGridExecute
 //
 //  Purpose:
 //    Clips a rectilinear grid.
@@ -398,19 +425,19 @@ vtkVisItClipper3D::StructuredGridExecute(void)
 //    Jeremy Meredith, Mon Feb 16 19:07:24 PST 2004
 //    Added polygonal cell support.
 //
+//    Jeremy Meredith, Wed May  5 14:49:55 PDT 2004
+//    Made it support 2d cases as well.  Changed it to a single cutoff
+//    for scalars to make the math more robust.
+//
 // ****************************************************************************
-void vtkVisItClipper3D::RectilinearGridExecute(void)
+void vtkVisItClipper::RectilinearGridExecute(void)
 {
     int  i, j;
 
     vtkRectilinearGrid *rg = (vtkRectilinearGrid *) GetInput();
     int pt_dims[3];
     rg->GetDimensions(pt_dims);
-    if (pt_dims[2] <= 1)
-    {
-        GeneralExecute();
-        return;
-    }
+    bool twoD = (pt_dims[2] <= 1);
 
     int           nCells = rg->GetNumberOfCells();
     float        *X      = (float* ) rg->GetXCoordinates()->GetVoidPointer(0);
@@ -435,8 +462,8 @@ void vtkVisItClipper3D::RectilinearGridExecute(void)
     int ptstrideY = pt_dims[0];
     int ptstrideZ = pt_dims[0]*pt_dims[1];
     int X_val[8] = { 0, 1, 1, 0, 0, 1, 1, 0 };
-    int Y_val[8] = { 0, 0, 0, 0, 1, 1, 1, 1 };
-    int Z_val[8] = { 0, 0, 1, 1, 0, 0, 1, 1 };
+    int Y_val[8] = { 0, 0, 1, 1, 0, 0, 1, 1 };
+    int Z_val[8] = { 0, 0, 0, 0, 1, 1, 1, 1 };
     int nToProcess = (CellList != NULL ? CellListSize : nCells);
     for (i = 0 ; i < nToProcess ; i++)
     {
@@ -446,7 +473,8 @@ void vtkVisItClipper3D::RectilinearGridExecute(void)
         int cellK = (cellId/strideZ);
         int lookup_case = 0;
         float dist[8];
-        for (j = 7 ; j >= 0 ; j--)
+        int nCellPts = twoD ? 4 : 8;
+        for (j = nCellPts-1 ; j >= 0 ; j--)
         {
             if (clipFunction)
             {
@@ -461,7 +489,7 @@ void vtkVisItClipper3D::RectilinearGridExecute(void)
                 float val = scalarArray[(cellK + Z_val[j])*ptstrideZ +
                                         (cellJ + Y_val[j])*ptstrideY +
                                         (cellI + X_val[j])];
-                dist[j] = halfDist - fabs(val - avgValue);
+                dist[j] = scalarCutoff - val;
             }
 
             if (dist[j] >= 0)
@@ -470,10 +498,20 @@ void vtkVisItClipper3D::RectilinearGridExecute(void)
                 lookup_case *= 2;
         }
 
-        unsigned char *splitCase = &clipShapesHex[
-                                             startClipShapesHex[lookup_case]];
-        int            numOutput = numClipShapesHex[lookup_case];
+        unsigned char *splitCase;
+        int            numOutput;
         int            interpIDs[4];
+        if (twoD)
+        {
+            splitCase = &clipShapesQua[startClipShapesQua[lookup_case]];
+            numOutput = numClipShapesQua[lookup_case];
+        }
+        else
+        {
+            splitCase = &clipShapesHex[startClipShapesHex[lookup_case]];
+            numOutput = numClipShapesHex[lookup_case];
+        }
+
         for (j = 0 ; j < numOutput ; j++)
         {
             unsigned char shapeType = *splitCase++;
@@ -614,7 +652,7 @@ void vtkVisItClipper3D::RectilinearGridExecute(void)
 }
 
 // ****************************************************************************
-//  Method:  vtkVisItClipper3D::UnstructuredGridExecute
+//  Method:  vtkVisItClipper::UnstructuredGridExecute
 //
 //  Purpose:
 //    Clips an unstructured grid.
@@ -641,8 +679,11 @@ void vtkVisItClipper3D::RectilinearGridExecute(void)
 //    Jeremy Meredith, Mon Feb 16 19:07:24 PST 2004
 //    Added polygonal cell support.
 //
+//    Jeremy Meredith, Wed May  5 14:49:55 PDT 2004
+//    Changed it to a single cutoff for scalars to make the math more robust.
+//
 // ****************************************************************************
-void vtkVisItClipper3D::UnstructuredGridExecute(void)
+void vtkVisItClipper::UnstructuredGridExecute(void)
 {
     // The routine here is a bit trickier than for the Rectilinear or
     // Structured grids.  We want to clip an unstructured grid -- but that
@@ -718,7 +759,7 @@ void vtkVisItClipper3D::UnstructuredGridExecute(void)
                 else // if (scalarArray)
                 {
                     float val = scalarArray[pts[j]];
-                    dist[j] = halfDist - fabs(val - avgValue);
+                    dist[j] = scalarCutoff - val;
                 }
 
                 if (dist[j] >= 0)
@@ -943,7 +984,7 @@ void vtkVisItClipper3D::UnstructuredGridExecute(void)
 }
 
 // ****************************************************************************
-//  Method:  vtkVisItClipper3D::PolyDataExecute
+//  Method:  vtkVisItClipper::PolyDataExecute
 //
 //  Purpose:
 //    Clips a polydata object.
@@ -958,9 +999,11 @@ void vtkVisItClipper3D::UnstructuredGridExecute(void)
 //  Creation:    February 16, 2004
 //
 //  Modifications:
+//    Jeremy Meredith, Wed May  5 14:49:55 PDT 2004
+//    Changed it to a single cutoff for scalars to make the math more robust.
 //
 // ****************************************************************************
-void vtkVisItClipper3D::PolyDataExecute(void)
+void vtkVisItClipper::PolyDataExecute(void)
 {
     // The routine here is a bit trickier than for the Rectilinear or
     // Structured grids.  We want to clip an unstructured grid -- but that
@@ -1036,7 +1079,7 @@ void vtkVisItClipper3D::PolyDataExecute(void)
                 else // if (scalarArray)
                 {
                     float val = scalarArray[pts[j]];
-                    dist[j] = halfDist - fabs(val - avgValue);
+                    dist[j] = scalarCutoff - val;
                 }
 
                 if (dist[j] >= 0)
@@ -1260,12 +1303,12 @@ void vtkVisItClipper3D::PolyDataExecute(void)
     stuff_I_cant_clip->Delete();
 }
 
-void vtkVisItClipper3D::PrintSelf(ostream& os, vtkIndent indent)
+void vtkVisItClipper::PrintSelf(ostream& os, vtkIndent indent)
 {
     Superclass::PrintSelf(os,indent);
 }
 
-void vtkVisItClipper3D::GeneralExecute(void)
+void vtkVisItClipper::GeneralExecute(void)
 {
     ClipDataset(GetInput(), (vtkUnstructuredGrid*)GetOutput());
 }
@@ -1279,7 +1322,7 @@ void vtkVisItClipper3D::GeneralExecute(void)
 //
 // ****************************************************************************
 
-void vtkVisItClipper3D::ClipDataset(vtkDataSet *in_ds,
+void vtkVisItClipper::ClipDataset(vtkDataSet *in_ds,
                                     vtkUnstructuredGrid *out_ds)
 {
     vtkClipDataSet *clipData = vtkClipDataSet::New();

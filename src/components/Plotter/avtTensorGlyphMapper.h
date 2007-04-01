@@ -12,6 +12,7 @@
 class     vtkTensorGlyph;
 class     vtkLookupTable;
 class     vtkPolyData;
+class     vtkVisItPolyDataNormals;
 
 
 // ****************************************************************************
@@ -23,6 +24,11 @@ class     vtkPolyData;
 //
 //  Programmer: Hank Childs
 //  Creation:   September 23, 2003
+//
+//  Modifications:
+//
+//    Hank Childs, Wed May  5 16:23:29 PDT 2004
+//    Add normals calculation.
 //
 // ****************************************************************************
 
@@ -45,6 +51,7 @@ class PLOTTER_API  avtTensorGlyphMapper : public avtMapper
     float                      scale;
 
     vtkTensorGlyph           **tensorFilter;
+    vtkVisItPolyDataNormals  **normalsFilter;
     int                        nTensorFilters;
 
     virtual void               CustomizeMappers(void);

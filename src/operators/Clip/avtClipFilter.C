@@ -6,7 +6,6 @@
 
 #include <vtkCell.h>
 #include <vtkCellData.h>
-#include <vtkClipDataSet.h>
 #include <vtkClipPolyData.h>
 #include <vtkDataSet.h>
 #include <vtkIdList.h>
@@ -20,7 +19,7 @@
 #include <vtkSphere.h>
 #include <vtkStructuredPoints.h>
 #include <vtkUnstructuredGrid.h>
-#include <vtkVisItClipper3D.h>
+#include <vtkVisItClipper.h>
 #include <vtkVisItUtility.h>
 #include <vtkDataSetWriter.h>
 
@@ -47,13 +46,16 @@
 //    Jeremy Meredith, Fri Aug  8 09:18:40 PDT 2003
 //    Removed subdivision and connectivity flags.  Added fastClipper.
 //
+//    Jeremy Meredith, Wed May  5 13:05:35 PDT 2004
+//    Made my fast clipper support 2D, and removed the old generic
+//    VTK data set clipper.
+//
 // ****************************************************************************
 
 avtClipFilter::avtClipFilter()
 {
-    clipData = vtkClipDataSet::New();
     clipPoly = vtkClipPolyData::New();
-    fastClipper = vtkVisItClipper3D::New();
+    fastClipper = vtkVisItClipper::New();
 }
 
 
@@ -71,15 +73,14 @@ avtClipFilter::avtClipFilter()
 //    Jeremy Meredith, Mon Aug 11 17:04:29 PDT 2003
 //    Added fastClipper.
 //
+//    Jeremy Meredith, Wed May  5 13:05:35 PDT 2004
+//    Made my fast clipper support 2D, and removed the old generic
+//    VTK data set clipper.
+//
 // ****************************************************************************
 
 avtClipFilter::~avtClipFilter()
 {
-    if (clipData != NULL)
-    {
-        clipData->Delete();
-        clipData = NULL;
-    }
     if (clipPoly != NULL)
     {
         clipPoly->Delete();
@@ -197,6 +198,9 @@ avtClipFilter::Equivalent(const AttributeGroup *a)
 //  Creation:   August  8, 2003
 //
 //  Modifications:
+//    Jeremy Meredith, Wed May  5 13:05:35 PDT 2004
+//    Made my fast clipper support 2D, and removed the old generic
+//    VTK data set clipper.
 //
 // ****************************************************************************
 
@@ -234,23 +238,6 @@ avtClipFilter::ExecuteData(vtkDataSet *inDS, int dom, std::string)
             clipPoly->InsideOutOff();
         }
         clipPoly->Update();
-    }
-    else if(GetInput()->GetInfo().GetAttributes().GetTopologicalDimension()!=3)
-    {
-        outDS = vtkUnstructuredGrid::New();
-        clipData->SetInput(inDS);
-        clipData->SetOutput((vtkUnstructuredGrid*)outDS);
-        clipData->SetClipFunction(ifuncs);
-        clipData->GenerateClipScalarsOff();
-        if (inverse)
-        {
-            clipData->InsideOutOn();
-        }
-        else 
-        {
-            clipData->InsideOutOff();
-        }
-        clipData->Update();
     }
     else
     {
@@ -429,6 +416,9 @@ avtClipFilter::PerformRestriction(avtPipelineSpecification_p spec)
 //  Creation:   August  8, 2003
 //
 //  Modifications:
+//    Jeremy Meredith, Wed May  5 13:05:35 PDT 2004
+//    Made my fast clipper support 2D, and removed the old generic
+//    VTK data set clipper.
 //
 // ****************************************************************************
 
@@ -437,9 +427,6 @@ avtClipFilter::ReleaseData(void)
 {
     avtPluginStreamer::ReleaseData();
 
-    clipData->SetInput(NULL);
-    clipData->SetOutput(NULL);
-    clipData->SetLocator(NULL);
     clipPoly->SetInput(NULL);
     clipPoly->SetOutput(NULL);
 }

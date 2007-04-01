@@ -4,12 +4,61 @@
 
 #include <InitVTK.h>
 #include <InitVTKNoGraphics.h>
+#include <vtkVisItOpenGLPolyDataMapper.h>
+#include <vtkVisItMesaPolyDataMapper.h>
 
+#include <vtkObjectFactory.h>
+#include <vtkVersion.h>
 #if !defined(_WIN32)
 #include <vtkGraphicsFactory.h>
 #include <vtkImagingFactory.h>
 #endif
 
+
+//
+// A factory that will allow VisIt to override any vtkObject
+// with a sub-class of that object.
+//
+class VISIT_VTK_LIGHT_API vtkVisItGraphicsFactory : public vtkObjectFactory
+{
+  public:
+    vtkVisItGraphicsFactory();
+    static vtkVisItGraphicsFactory* New() { return new vtkVisItGraphicsFactory;};
+    virtual const char* GetVTKSourceVersion();
+    const char* GetDescription() { return "vtkVisItGraphicsFactory"; };
+
+  protected:
+    vtkVisItGraphicsFactory(const vtkVisItGraphicsFactory&);
+    void operator=(const vtkVisItGraphicsFactory&);
+};
+
+//
+// Necessary for each object that will override a vtkObject.
+//
+VTK_CREATE_CREATE_FUNCTION(vtkVisItOpenGLPolyDataMapper);
+VTK_CREATE_CREATE_FUNCTION(vtkVisItMesaPolyDataMapper);
+
+
+const char*
+vtkVisItGraphicsFactory::GetVTKSourceVersion()
+{
+    return VTK_SOURCE_VERSION;
+}
+
+//
+//  Create the overrides so that VTK will use VisIt's class instead.
+//
+vtkVisItGraphicsFactory::vtkVisItGraphicsFactory()
+{
+  this->RegisterOverride("vtkOpenGLPolyDataMapper", "vtkVisItOpenGLPolyDataMapper",
+                         "vtkVisItOpenGLPolyDataMapper override vtkOpenGLPolyDataMapper",
+                         1,
+                         vtkObjectFactoryCreatevtkVisItOpenGLPolyDataMapper);
+  this->RegisterOverride("vtkMesaPolyDataMapper", "vtkVisItMesaPolyDataMapper",
+                         "vtkVisItMesaPolyDataMapper override vtkMesaPolyDataMapper",
+                         1,
+                         vtkObjectFactoryCreatevtkVisItMesaPolyDataMapper);
+}
 
 // ****************************************************************************
 //  Method: InitVTK::Initialize
@@ -34,12 +83,20 @@
 //    Hank Childs, Thu Jan 22 17:31:23 PST 2004
 //    Use the InitVTKNoGraphics Initialize routine to minimize duplication.
 //
+//    Hank Childs, Wed May  5 10:15:48 PDT 2004
+//    Use the VisIt graphics factory to override the standard polydata mapper.
+//
 // ****************************************************************************
 
 void
 InitVTK::Initialize(void)
 {
     InitVTKNoGraphics::Initialize();
+
+    // Register the factory that allows VisIt objects to override vtk objects.
+    vtkVisItGraphicsFactory *factory = vtkVisItGraphicsFactory::New();
+    vtkObjectFactory::RegisterFactory(factory);
+    factory->Delete();
 }
 
 
