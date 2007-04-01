@@ -185,6 +185,10 @@ class StatusAttributes;
 //
 //    Mark C. Miller, Tue May 25 17:25:55 PDT 2004
 //    Added AnnotationObjectList arg to SetWinAnnotAtts
+//
+//    Kathleen Bonnell, Wed Jun  2 09:43:07 PDT 2004 
+//    Added another bool arg to StartPick.
+// 
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -232,7 +236,7 @@ public:
                                                   const AttributeSubject*);
     void                     Pick(const int, const PickAttributes *,
                                   PickAttributes &);
-    void                     StartPick(const bool, const int);
+    void                     StartPick(const bool, const bool, const int);
 
     void                     SetWinAnnotAtts(const WindowAttributes*,
                                              const AnnotationAttributes*,

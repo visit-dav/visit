@@ -340,6 +340,9 @@ VisWinQuery::QueryIsValid(const PickAttributes *pa, const Line *lineAtts)
 //    Modified code to more accurately calculate a shift vector and distance
 //    for 2d points. 
 //    
+//    Kathleen Bonnell, Tue Jun  1 15:26:10 PDT 2004 
+//    Account for expansion of pick types. 
+//
 // ****************************************************************************
 
 void 
@@ -360,7 +363,8 @@ VisWinQuery::Pick(const PickAttributes *pa)
         pp->SetAttachmentPoint(pt[0], pt[1], distance);
     }
 
-    pp->UseGlyph(pa->GetPickType() != PickAttributes::Zone);
+    pp->UseGlyph(pa->GetPickType() != PickAttributes::Zone &&
+                 pa->GetPickType() != PickAttributes::DomainZone);
     
     pp->SetDesignator(pa->GetPickLetter().c_str());
 

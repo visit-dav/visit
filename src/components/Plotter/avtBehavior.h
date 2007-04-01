@@ -52,6 +52,9 @@ class  vtkRenderer;
 //    Kathleen Bonnell, Mon Sep 29 13:21:12 PDT 2003 
 //    Added  SetAntialiasedRenderOrder.  Added bool arg to GetRenderOrder.
 //
+//    Kathleen Bonnell, Tue Jun  1 17:40:33 PDT 2004 
+//    Added bool args to RequriesReExecuteForQuery. 
+//
 // ****************************************************************************
 
 class PLOTTER_API avtBehavior
@@ -72,7 +75,8 @@ class PLOTTER_API avtBehavior
 
     int                        GetDimension(void);
     WINDOW_MODE                GetWindowMode(void);
-    bool                       RequiresReExecuteForQuery(void);
+    bool                       RequiresReExecuteForQuery(const bool,
+                                                         const bool);
 
     void                       SetShiftFactor(float);
     float                      GetShiftFactor(void);

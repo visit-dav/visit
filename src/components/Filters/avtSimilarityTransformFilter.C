@@ -325,6 +325,9 @@ avtSimilarityTransformFilter::SetupMatrix()
 //    Completely removed the code turning off zone numbers.  Why set a flag
 //    to false if it is already false?  False is the default setting.
 //
+//    Kathleen Bonnell, Wed Jun  2 09:08:35 PDT 2004 
+//    Added code to turn on node numbers when required. 
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -335,6 +338,10 @@ avtSimilarityTransformFilter::PerformRestriction(
     if (rv->GetDataSpecification()->MayRequireZones())
     {
         rv->GetDataSpecification()->TurnZoneNumbersOn();
+    }
+    if (rv->GetDataSpecification()->MayRequireNodes())
+    {
+        rv->GetDataSpecification()->TurnNodeNumbersOn();
     }
     return rv;
 }
@@ -387,10 +394,15 @@ avtSimilarityTransformFilter::RefashionDataObjectInfo(void)
 //  Programmer: Kathleen Bonnell 
 //  Creation:   April 10, 2003 
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Jun  2 09:08:35 PDT 2004
+//    Set both InvTransform and Transform in the output.
+//
 // ****************************************************************************
 
 void
 avtSimilarityTransformFilter::PostExecute()
 {
-    GetOutput()->GetInfo().GetAttributes().SetTransform((*invM)[0]);
+    GetOutput()->GetInfo().GetAttributes().SetInvTransform((*invM)[0]);
+    GetOutput()->GetInfo().GetAttributes().SetTransform((*M)[0]);
 }

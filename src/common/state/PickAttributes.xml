@@ -5,6 +5,8 @@
       Node
       CurveZone
       CurveNode
+      DomainZone
+      DomainNode
     </Enum>
     <Field name="variables" label="variables" type="stringVector">
       default
@@ -125,6 +127,12 @@
     <Field name="errorMessage" label="errorMessage" type="string" internal="true">
     </Field>
     <Field name="error" label="error" type="bool" internal="true">
+      false
+    </Field>
+    <Field name="matSelected" label="matSelected" type="bool" internal="true">
+      false
+    </Field>
+    <Field name="needActualCoords" label="needActualCoords" type="bool" internal="true">
       false
     </Field>
     <Function name="PrintSelf" user="true" member="true">

@@ -1016,13 +1016,17 @@ EngineProxy::Pick(const int nid, const PickAttributes *atts,
 //  Programmer:  Kathleen Bonnell 
 //  Creation:    November 26, 2001
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Jun  2 09:43:07 PDT 2004
+//    Added forZones arg.
+//
 // ****************************************************************************
 
 void 
-EngineProxy::StartPick(const bool flag, const int nid)
+EngineProxy::StartPick(const bool forZones, const bool flag, const int nid)
 {
 
-    startPickRPC(flag, nid);
+    startPickRPC(forZones, flag, nid);
 
     if (startPickRPC.GetStatus() == VisItRPC::error)
     {

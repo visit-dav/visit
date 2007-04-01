@@ -291,6 +291,9 @@ avtDisplaceFilter::PostExecute(void)
 //    Kathleen Bonnell, Mon Apr 14 09:54:06 PDT 2003
 //    Set CanUseTransform to false.
 //
+//    Kathleen Bonnell, Wed Jun  2 09:21:46 PDT 2004 
+//    Set CanUseInvTransform to false.
+//
 // ****************************************************************************
 
 void
@@ -301,6 +304,7 @@ avtDisplaceFilter::RefashionDataObjectInfo(void)
     // This operator invalidates any transform matrix in the pipeline.
     //
     GetOutput()->GetInfo().GetAttributes().SetCanUseTransform(false);
+    GetOutput()->GetInfo().GetAttributes().SetCanUseInvTransform(false);
 }
 
 
@@ -323,6 +327,9 @@ avtDisplaceFilter::RefashionDataObjectInfo(void)
 //    Completely removed the code turning off zone numbers.  Why set a flag
 //    to false if it is already false?  False is the default setting.
 //
+//    Kathleen Bonnell, Wed Jun  2 09:21:46 PDT 2004 
+//    Turn on node numbers when required.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -332,6 +339,10 @@ avtDisplaceFilter::PerformRestriction(avtPipelineSpecification_p spec)
     if (rv->GetDataSpecification()->MayRequireZones())
     {
         rv->GetDataSpecification()->TurnZoneNumbersOn();
+    }
+    if (rv->GetDataSpecification()->MayRequireNodes())
+    {
+        rv->GetDataSpecification()->TurnNodeNumbersOn();
     }
     return rv;
 }

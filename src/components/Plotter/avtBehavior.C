@@ -550,15 +550,46 @@ avtBehavior::GetRenderOrder(bool antialiased)
 //    Kathleen Bonnell, Thu Apr 10 11:00:52 PDT 2003   
 //    Added test for presence of Transform.  
 //    
+//    Kathleen Bonnell, Tue Jun  1 17:12:34 PDT 2004 
+//    The return value is now a function of whether or not points were 
+//    transformed, and the presence of either the needed transform or
+//    Original Nodes/Zones array. 
+//    
 // ****************************************************************************
 
 bool
-avtBehavior::RequiresReExecuteForQuery(void)
+avtBehavior::RequiresReExecuteForQuery(const bool needInvT, const bool needZones)
 {
-    return info.GetValidity().GetPointsWereTransformed() &&
-           (!info.GetAttributes().HasTransform() || 
-            !info.GetAttributes().GetCanUseTransform()) &&
-           !info.GetAttributes().GetContainsOriginalCells(); 
+    bool retval = false;
+    if (info.GetValidity().GetPointsWereTransformed())
+    {
+        bool invXformAvailable  = info.GetAttributes().HasInvTransform() &&
+                              info.GetAttributes().GetCanUseInvTransform();
+
+        bool xformAvailable  = info.GetAttributes().HasTransform() &&
+                           info.GetAttributes().GetCanUseTransform();
+
+        bool zonesAvailable = info.GetAttributes().GetContainsOriginalCells();
+        bool nodesAvailable = info.GetAttributes().GetContainsOriginalNodes();
+
+        if (needInvT && needZones)
+        {
+            retval = !invXformAvailable && !zonesAvailable;
+        }
+        else if (needInvT && !needZones) 
+        {
+            retval = !invXformAvailable && !nodesAvailable;
+        }
+        else if (!needInvT && needZones)
+        {
+            retval = !xformAvailable && !zonesAvailable;
+        }
+        else  //  if (!needInvT && !needZones) 
+        {
+            retval = !xformAvailable && !nodesAvailable;
+        }
+   }
+   return retval;
 }
 
 

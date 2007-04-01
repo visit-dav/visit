@@ -976,12 +976,15 @@ avtPlot::EnhanceSpecification(avtPipelineSpecification_p spec)
 //    Kathleen Bonnell, Tue Mar 25 11:18:43 PST 2003
 //    Renamed from "GetTransformedPoints" to reflect actual usage.
 //
+//    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
+//    Added args needInvT, and needZones.
+//
 // ****************************************************************************
 
 bool
-avtPlot::RequiresReExecuteForQuery()
+avtPlot::RequiresReExecuteForQuery(const bool needInvT, const bool needZones)
 {
-    return behavior->RequiresReExecuteForQuery();
+    return behavior->RequiresReExecuteForQuery(needInvT, needZones);
 }
 
 

@@ -483,6 +483,8 @@ avtMinMaxQuery::PreExecute()
 //  Creation:   February 10, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Tue Jun  1 15:26:10 PDT 2004
+//    avtDataAttributes now carries two transforms, use the InvTransform.
 //
 // ****************************************************************************
 
@@ -502,9 +504,9 @@ avtMinMaxQuery::Preparation(avtDataObject_p inData)
         singleDomain = false;
 
     avtDataAttributes &inAtts = inData->GetInfo().GetAttributes();
-    if (inAtts.HasTransform() && inAtts.GetCanUseTransform())
+    if (inAtts.HasInvTransform() && inAtts.GetCanUseInvTransform())
     {
-        invTransform = inAtts.GetTransform();
+        invTransform = inAtts.GetInvTransform();
     }
     else 
     {

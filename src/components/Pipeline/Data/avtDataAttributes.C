@@ -64,6 +64,9 @@ using     std::sort;
 //    Hank Childs, Mon Feb 23 08:59:42 PST 2004
 //    Allow for multiple variables.
 //
+//    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
+//    Initialize containsOriginalNodes, invTransform, canUseInvTransform.
+//
 // ****************************************************************************
 
 avtDataAttributes::avtDataAttributes()
@@ -94,9 +97,13 @@ avtDataAttributes::avtDataAttributes()
     filename               = "<unknown>";
     containsGhostZones     = AVT_MAYBE_GHOSTS;
     containsOriginalCells     = false;
+    containsOriginalNodes     = false;
 
     SetTopologicalDimension(3);
     SetSpatialDimension(3);
+
+    invTransform = NULL;
+    canUseInvTransform = true;
 
     transform = NULL;
     canUseTransform = true;
@@ -144,6 +151,9 @@ avtDataAttributes::~avtDataAttributes()
 //
 //    Hank Childs, Mon Feb 23 08:59:42 PST 2004
 //    Allow for multiple variables.
+//
+//    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
+//    Delete invTransform.
 //
 // ****************************************************************************
 
@@ -207,6 +217,11 @@ avtDataAttributes::DestructSelf(void)
     }
     variables.clear();
 
+    if (invTransform != NULL)
+    {
+        delete invTransform;
+        invTransform = NULL;
+    }
     if (transform != NULL)
     {
         delete transform;
@@ -227,6 +242,9 @@ avtDataAttributes::DestructSelf(void)
 //  Modifications:
 //    Brad Whitlock, Wed Mar 24 09:18:39 PDT 2004
 //    Fixed for Windows compiler.
+//
+//    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
+//    Print containsOriginalNodes, invTransform.
 //
 // ****************************************************************************
 
@@ -251,6 +269,9 @@ avtDataAttributes::Print(ostream &out)
     else
         out << "This dataset's connectivity has changed." << endl;
 
+    if (containsOriginalNodes)
+        out << "This dataset contains the original nodes list." << endl;
+
     switch (containsGhostZones)
     {
       case AVT_NO_GHOSTS:
@@ -266,6 +287,12 @@ avtDataAttributes::Print(ostream &out)
         out << "There maybe ghost zones in this dataset." << endl;
         break;
     }
+
+    if (!canUseInvTransform)
+        out << "An operation has been performed on this data that prevents "
+            << "using an invTransform" << endl;
+    if (invTransform != NULL)
+        out << invTransform << endl;
 
     if (!canUseTransform)
         out << "An operation has been performed on this data that prevents "
@@ -445,6 +472,9 @@ avtDataAttributes::Print(ostream &out)
 //    Hank Childs, Mon Feb 23 09:18:58 PST 2004
 //    Copy all variables.
 //
+//    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
+//    Copy containsOriginalNodes, invTransform.
+//
 // ****************************************************************************
 
 void
@@ -509,6 +539,9 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     labels = di.labels;
     SetContainsGhostZones(di.GetContainsGhostZones());
     SetContainsOriginalCells(di.GetContainsOriginalCells());
+    SetContainsOriginalNodes(di.GetContainsOriginalNodes());
+    CopyInvTransform(di.invTransform);
+    canUseInvTransform = di.canUseInvTransform;
     CopyTransform(di.transform);
     canUseTransform = di.canUseTransform;
     windowMode = di.windowMode;
@@ -573,6 +606,9 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //    logic got too complex for multiple variables.  Note that this is a
 //    broader change than what Mark made on 1/04.  I have spoken with Mark and
 //    he believes it is a reasonable thing to do.
+//
+//    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
+//    Merge containsOriginalNodes, invTransform.
 //
 // ****************************************************************************
 
@@ -684,6 +720,11 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
     {
         SetContainsOriginalCells(da.GetContainsOriginalCells());
     }
+    if (!GetContainsOriginalNodes()) 
+    {
+        SetContainsOriginalNodes(da.GetContainsOriginalNodes());
+    }
+
 
     canUseCumulativeAsTrueOrCurrent &= da.canUseCumulativeAsTrueOrCurrent;
 
@@ -705,7 +746,9 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
     }
 
     MergeLabels(da.labels);
+    MergeInvTransform(da.invTransform);
     MergeTransform(da.transform);
+    canUseInvTransform &= da.canUseInvTransform;
     canUseTransform &= da.canUseTransform;
 }
 
@@ -1472,6 +1515,9 @@ avtDataAttributes::SetTime(double d)
 //    Hank Childs, Mon Feb 23 14:19:15 PST 2004
 //    Account for multiple variables.
 //
+//    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
+//    Write containsOriginalNodes, invTransform.
+//
 // ****************************************************************************
 
 void
@@ -1480,7 +1526,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
 {
     int   i;
 
-    int numVals = 14 + 2*variables.size();
+    int numVals = 16 + 2*variables.size();
     int *vals = new int[numVals];
     vals[0] = topologicalDimension;
     vals[1] = spatialDimension;
@@ -1491,15 +1537,17 @@ avtDataAttributes::Write(avtDataObjectString &str,
     vals[6] = (timeIsAccurate ? 1 : 0);
     vals[7] = (int) containsGhostZones;
     vals[8] = (containsOriginalCells ? 1 : 0);
-    vals[9] = (canUseTransform ? 1 : 0);
-    vals[10] = (canUseCumulativeAsTrueOrCurrent ? 1 : 0);
-    vals[11] = windowMode;
-    vals[12] = activeVariable;
-    vals[13] = variables.size();
+    vals[9] = (containsOriginalNodes ? 1 : 0);
+    vals[10] = (canUseInvTransform ? 1 : 0);
+    vals[11] = (canUseTransform ? 1 : 0);
+    vals[12] = (canUseCumulativeAsTrueOrCurrent ? 1 : 0);
+    vals[13] = windowMode;
+    vals[14] = activeVariable;
+    vals[15] = variables.size();
     for (i = 0 ; i < variables.size() ; i++)
     {
-        vals[14+2*i]   = variables[i].dimension;
-        vals[14+2*i+1] = variables[i].centering;
+        vals[16+2*i]   = variables[i].dimension;
+        vals[16+2*i+1] = variables[i].centering;
     }
     wrtr->WriteInt(str, vals, numVals);
     wrtr->WriteDouble(str, dtime);
@@ -1548,6 +1596,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
                   avtDataObjectString::DATA_OBJECT_STRING_SHOULD_MAKE_COPY);
 
     WriteLabels(str, wrtr);
+    WriteInvTransform(str, wrtr);
     WriteTransform(str, wrtr);
 
     delete [] vals;
@@ -1603,6 +1652,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //    Hank Childs, Mon Feb 23 14:19:15 PST 2004
 //    Account for multiple variables.
 //
+//    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
+//    Read containsOriginalNodes, invTransform.
+//
 // ****************************************************************************
 
 int
@@ -1648,6 +1700,14 @@ avtDataAttributes::Read(char *input)
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
     SetContainsOriginalCells(tmp != 0 ? true : false);
+
+    memcpy(&tmp, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    SetContainsOriginalNodes(tmp != 0 ? true : false);
+
+    memcpy(&tmp, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    SetCanUseInvTransform(tmp != 0 ? true : false);
 
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
@@ -1773,6 +1833,10 @@ avtDataAttributes::Read(char *input)
 
     s = ReadLabels(input); 
     input += s; size += s;
+
+    s = ReadInvTransform(input); 
+    input += s; 
+    size  += s;
 
     s = ReadTransform(input); 
     input += s; 
@@ -2323,6 +2387,188 @@ avtDataAttributes::VariableNameToIndex(const char *vname) const
 
 
 // ****************************************************************************
+//  Method: avtDataAttributes::SetInvTransform
+//
+//  Purpose:
+//    Sets the transform matrix according to the passed argument.
+//
+//  Notes:
+//    If the passed argument is NULL, no change occurs.
+//
+//    If this object's transformed matrix is NULL, a new matrix is constructed 
+//    from the passed argument.
+//
+//    If this object's transform matrix is NOT NULL,  then it is multiplied
+//    by the matrix created from the passed argument.  This allows for 
+//    multiple transforms to occur in the same pipeline.
+//   
+//  Arguments:
+//    D         The values of the transform matrix.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   April 10, 2003 
+//
+// ****************************************************************************
+
+void
+avtDataAttributes::SetInvTransform(const double *D)
+{
+   if (D == NULL)
+       return;
+
+   if (invTransform == NULL)
+   {
+       invTransform = new avtMatrix(D);
+   }
+   else
+   {
+       *invTransform = *invTransform * avtMatrix(D);
+   }
+}
+
+
+// ****************************************************************************
+//  Method: avtDataAttributes::CopyTransform
+//
+//  Purpose:
+//    Sets the transform matrix according to the passed argument.
+//
+//  Arguments:
+//    m         The transform matrix to be copied.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   April 10, 2003 
+//
+// ****************************************************************************
+
+void
+avtDataAttributes::CopyInvTransform(const avtMatrix *m)
+{
+   if (m == NULL)
+       return;
+
+   if (invTransform == NULL)
+       invTransform = new avtMatrix();
+
+   *invTransform = *m;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataAttributes::HasInvTransform
+//
+//  Purpose:
+//      Returns whether or not there is a transfrom matrix in this object.
+//
+//  Returns:    true if it has transform, false otherwise.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   April 10, 2003 
+//
+// ****************************************************************************
+
+bool
+avtDataAttributes::HasInvTransform()
+{
+    return invTransform != NULL;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataAttributes::MergeInvTransform
+//
+//  Purpose:
+//    Merged the transform matrix with passed matrix.  This performs
+//    multiplication of the matrices if neither are NULL. 
+//
+//  Arguments:
+//    m        The transform matrix with which to merge. 
+//
+//  Progammer: Kathleen Bonnell 
+//  Creation:  April 10, 2003 
+//
+// ****************************************************************************
+
+void
+avtDataAttributes::MergeInvTransform(const avtMatrix *m)
+{
+    if (m == NULL)
+        return;
+
+    if (invTransform == NULL)
+        invTransform = new avtMatrix(*m);
+    else
+        *invTransform = (*invTransform) * (*m);
+}
+
+
+// ****************************************************************************
+//  Method: avtDataAttributes::WriteInvTransform
+//
+//  Purpose:
+//      Writes the transform matrix to a stream.
+//
+//  Arguments:
+//      str     The string (stream) to write to.
+//      wrtr    The writer that handles conversion to the destination format.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   April 10, 2003
+//
+// ****************************************************************************
+
+void
+avtDataAttributes::WriteInvTransform(avtDataObjectString &str,
+                                const avtDataObjectWriter *wrtr)
+{
+    int has = (int)HasInvTransform();
+
+    wrtr->WriteInt(str, has);
+
+    if (has)
+    {
+       double *d = (*invTransform)[0];    
+       wrtr->WriteDouble(str, d, 16);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtDataAttributes::ReadInvTransform
+//
+//  Purpose:
+//    Reads the transform matrix from a stream.
+//
+//  Arguments:
+//    input     The string (stream) to read from.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   April 10, 2003 
+//
+// ****************************************************************************
+
+int
+avtDataAttributes::ReadInvTransform(char *input)
+{
+    int size = 0;
+    int hasInvTransform;
+    memcpy(&hasInvTransform, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+
+    if (hasInvTransform)
+    {
+        double d[16];
+        int s = sizeof(double) * 16;
+        memcpy(d, input, s);
+        input += s; 
+        size += s;
+        SetInvTransform(d);
+    }
+    return size;
+}
+
+
+// ****************************************************************************
 //  Method: avtDataAttributes::SetTransform
 //
 //  Purpose:
@@ -2502,5 +2748,4 @@ avtDataAttributes::ReadTransform(char *input)
     }
     return size;
 }
-
 

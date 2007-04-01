@@ -121,6 +121,9 @@ avtVariableQuery::VerifyInput()
 //    Kathleen Bonnell, Thu Apr  1 19:06:07 PST 2004
 //    Added Calls to RetrieveNodes, RetrieveZones and RetrieveVarInfo.
 //
+//    Kathleen Bonnell, Tue Jun  1 15:26:10 PDT 2004 
+//    Use 'DomainZone' and 'DomainNode' as pick types. 
+//
 // ****************************************************************************
 
 void 
@@ -143,12 +146,12 @@ avtVariableQuery::Execute(vtkDataSet *ds, const int dom)
     bool success = false;
     if (queryAtts.GetElementType() == QueryAttributes::Zone)
     {
-        pickAtts.SetPickType(PickAttributes::Zone);
+        pickAtts.SetPickType(PickAttributes::DomainZone);
         success = RetrieveNodes(ds, searchElement);
     }
     else 
     {
-        pickAtts.SetPickType(PickAttributes::Node);
+        pickAtts.SetPickType(PickAttributes::DomainNode);
         success = RetrieveZones(ds, searchElement);
     }
 
@@ -383,6 +386,9 @@ avtVariableQuery::ApplyFilters(avtDataObject_p inData)
 //    Kathleen Bonnell, Thu May  6 17:46:59 PDT 2004
 //    Allow species and scalar vars to be looked at again if previously set.
 //    
+//    Kathleen Bonnell, Tue Jun  1 15:26:10 PDT 2004 
+//    Allow 'DomainZone' pick type to indicate a ZonePick.
+//    
 // ****************************************************************************
 
 void
@@ -396,7 +402,8 @@ avtVariableQuery::RetrieveVarInfo(vtkDataSet* ds)
     double *temp;
     double mag;
     int nComponents;
-    bool zonePick = pickAtts.GetPickType() == PickAttributes::Zone;
+    bool zonePick = pickAtts.GetPickType() == PickAttributes::Zone ||
+                    pickAtts.GetPickType() == PickAttributes::DomainZone;
     bool zoneCent;
     bool foundData = true;
 

@@ -110,6 +110,9 @@ class     avtExtents;
 //    Mark C. Miller, Sun Feb 29 18:35:00 PST 2004
 //    Added GetAnySpatialExtents method
 //
+//    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
+//    Added containsOriginalNodes, invTransform and Set/Get methods. 
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -193,6 +196,10 @@ class PIPELINE_API avtDataAttributes
                                    { return containsOriginalCells; };
     void                     SetContainsOriginalCells(bool c)
                                    { containsOriginalCells= c; };
+    bool                     GetContainsOriginalNodes(void) const
+                                   { return containsOriginalNodes; };
+    void                     SetContainsOriginalNodes(bool c)
+                                   { containsOriginalNodes= c; };
 
     bool                     GetDataExtents(double *, const char * = NULL);
     bool                     GetCurrentDataExtents(double *,
@@ -230,6 +237,13 @@ class PIPELINE_API avtDataAttributes
     const std::string       &GetZLabel(void) const { return zLabel; };
     void                     SetZLabel(const std::string &s) { zLabel=s; };
 
+    bool                     HasInvTransform(void); 
+    void                     SetInvTransform(const double *);
+    const avtMatrix         *GetInvTransform(void) { return invTransform;};
+    bool                     GetCanUseInvTransform(void) 
+                                                    { return canUseInvTransform;};
+    void                     SetCanUseInvTransform(bool b) { canUseInvTransform =b;};
+
     bool                     HasTransform(void); 
     void                     SetTransform(const double *);
     const avtMatrix         *GetTransform(void) { return transform;};
@@ -251,6 +265,9 @@ class PIPELINE_API avtDataAttributes
     bool                     cycleIsAccurate;
     avtGhostType             containsGhostZones;
     bool                     containsOriginalCells;
+    bool                     containsOriginalNodes;
+    avtMatrix               *invTransform;
+    bool                     canUseInvTransform;
     avtMatrix               *transform;
     bool                     canUseTransform;
     bool                     canUseCumulativeAsTrueOrCurrent;
@@ -290,11 +307,18 @@ class PIPELINE_API avtDataAttributes
                                          const avtDataObjectWriter *);
     int                      ReadLabels(char *);
     void                     MergeLabels(const std::vector<std::string> &);
+    void                     WriteInvTransform(avtDataObjectString &,
+                                            const avtDataObjectWriter *);
+    int                      ReadInvTransform(char *);
+    void                     MergeInvTransform(const avtMatrix *);
+    void                     CopyInvTransform(const avtMatrix *);
+
     void                     WriteTransform(avtDataObjectString &,
                                             const avtDataObjectWriter *);
     int                      ReadTransform(char *);
     void                     MergeTransform(const avtMatrix *);
     void                     CopyTransform(const avtMatrix *);
+
     int                      VariableNameToIndex(const char *) const;
 
     void                     DestructSelf(void);

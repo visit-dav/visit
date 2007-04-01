@@ -1,0 +1,280 @@
+// ************************************************************************* //
+//                             avtLocateQuery.C                              //
+// ************************************************************************* //
+
+#include <avtLocateQuery.h>
+
+#include <float.h>
+#include <vtkBox.h>
+#include <vtkMath.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkVisItCellLocator.h>
+#include <vtkVisItUtility.h>
+
+
+#include <avtParallel.h>
+
+
+
+// ****************************************************************************
+//  Method: avtLocateQuery constructor
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   May 18, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtLocateQuery::avtLocateQuery()
+{
+    foundElement = foundDomain = -1;
+    minDist = +FLT_MAX;
+}
+
+
+// ****************************************************************************
+//  Method: avtLocateQuery destructor
+//
+//  Purpose:
+//      Defines the destructor.  Note: this should not be inlined in the header
+//      because it causes problems for certain compilers.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   May 18, 2004 
+//
+// ****************************************************************************
+
+avtLocateQuery::~avtLocateQuery()
+{
+    ;
+}
+
+
+// ****************************************************************************
+//  Method: avtLocateQuery::PreExecute
+//
+//  Purpose:
+//      This is called before any of the domains are executed.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   May 18, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtLocateQuery::PreExecute(void)
+{
+    foundElement = foundDomain = -1; 
+    minDist = +FLT_MAX;
+}
+
+
+// ****************************************************************************
+//  Method: avtLocateQuery::PostExecute
+//
+//  Purpose:
+//      This is called after all of the domains are executed.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   May 18, 2004 
+//
+//  Modifications:
+//    
+// ****************************************************************************
+
+void
+avtLocateQuery::PostExecute(void)
+{
+    if (ThisProcessorHasMinimumValue(minDist))
+    {
+        pickAtts.SetDomain(foundDomain);
+        pickAtts.SetElementNumber(foundElement);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtLocateQuery::SetPickAtts
+//
+//  Purpose:
+//      Sets the pickAtts to the passed values. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   May 18, 2004 
+//
+// ****************************************************************************
+
+void
+avtLocateQuery::SetPickAtts(const PickAttributes *pa)
+{
+    pickAtts =  *pa;
+}
+
+
+// ****************************************************************************
+//  Method: avtLocateQuery::GetPickAtts
+//
+//  Purpose:
+//    Retrieve the PickAttributes being used in this query.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   May 18, 2004
+//
+// ****************************************************************************
+
+const PickAttributes *
+avtLocateQuery::GetPickAtts() 
+{
+    return &pickAtts; 
+}
+
+
+
+// ****************************************************************************
+//  Method: avtLocateQuery::RGRidIsect
+//
+//  Purpose:
+//    Determine the intersection of a point or ray with a rectilinear grid.
+//
+//  Arguments:
+//    ds        The dataset to search.
+//    dist      The distance from the isect to the ray-origin. 
+//    isect     The intersection point. 
+//    ijk       The ijk indices of the cell containing the intersection point. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   May 18, 2004
+//
+// ****************************************************************************
+
+bool                            
+avtLocateQuery::RGridIsect(vtkRectilinearGrid *rgrid, float &dist, 
+                           float isect[3], int ijk[3])
+{
+    int i;
+    float t, dsBounds[6], rayDir[3];
+    float *rayPt1 = pickAtts.GetRayPoint1();
+    float *rayPt2 = pickAtts.GetRayPoint2();
+    int success = 0;
+
+ 
+    rgrid->GetBounds(dsBounds);
+
+    if (rayPt1[0] == rayPt2[0] &&
+        rayPt1[1] == rayPt2[1] &&
+        rayPt1[2] == rayPt2[2])
+    { /* WORLD COORDINATE LOCATE */
+        success = vtkVisItUtility::ComputeStructuredCoordinates(rgrid, rayPt1, ijk);
+        if (success)
+        {
+            isect[0] = rayPt1[0];
+            isect[1] = rayPt1[1];
+            isect[2] = rayPt1[2];
+            dist = 0; 
+        }
+    }
+    else
+    { /* RAY-INTERSECTION LOCATE */
+        for (i = 0; i < 3; i++)
+        {
+           rayDir[i] = rayPt2[i] - rayPt1[i];
+        }
+        if (vtkBox::IntersectBox(dsBounds, rayPt1, rayDir, isect, t))
+        {
+            success = vtkVisItUtility::ComputeStructuredCoordinates(rgrid, 
+                          isect, ijk); 
+            if (success)
+            {
+                dist = vtkMath::Distance2BetweenPoints(rayPt1, isect);
+            }
+        }
+    }
+
+    return success;
+}
+
+
+// ****************************************************************************
+//  Method: avtLocateQuery::LocatorFindCell
+//
+//  Purpose:
+//    Uses a locator to find the cell intersected by the pick ray.
+//    Ignores ghost zones.
+//
+//  Arguments:
+//    ds      The dataset to query.
+//    dist    A place to store the distance along the ray of the 
+//            intersection point. 
+//    isect   A place to store the intersection point of the ray with the 
+//            dataset. 
+//
+//  Returns:
+//    The id of the cell that was intersected (-1 if none found).
+//
+//  Notes:  Moved vrom avtLocateCellQuery.
+//
+//  Programmer: Kathleen Bonnell  
+//  Creation:   June 2, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int
+avtLocateQuery::LocatorFindCell(vtkDataSet *ds, float &dist, float *isect)
+{
+    if (ds->GetNumberOfPoints() == 0)
+    {
+        return -1;
+    }
+    float *rayPt1 = pickAtts.GetRayPoint1();
+    float *rayPt2 = pickAtts.GetRayPoint2();
+    dist = -1;
+
+    vtkVisItCellLocator *cellLocator = vtkVisItCellLocator::New(); 
+    cellLocator->SetIgnoreGhosts(true);
+    cellLocator->SetDataSet(ds);
+    //
+    // Cells may have been removed, and unused points may still exist,
+    // giving the dataset larger bounds than just the cell bounds, so
+    // tell the locator to use the actual bounds retrieved from the
+    // plot that originated this query.  The locator will use these
+    // bounds only if they are smaller than the dataset bounds.
+    //
+    cellLocator->SetUserBounds(pickAtts.GetPlotBounds());
+    cellLocator->BuildLocator();
+
+    float pcoords[3] = {0., 0., 0.}, ptLine[3] = {0., 0., 0.};
+    int subId = 0, success = 0;
+
+    vtkIdType foundCell; 
+    if (rayPt1[0] == rayPt2[0] &&
+        rayPt1[1] == rayPt2[1] &&
+        rayPt1[2] == rayPt2[2])
+    { /* WORLD COORD LOCATE */
+        cellLocator->FindClosestPoint(rayPt1, ptLine, foundCell,
+                                     subId, dist);
+        if (foundCell >= 0 && dist >= 0)
+        {
+            success = 1;
+            isect[0] = rayPt1[0];
+            isect[1] = rayPt1[1];
+            isect[2] = rayPt1[2];
+        }
+    }
+    else 
+    { /* RAY-INTERSECT LOCATE */
+        success = cellLocator->IntersectWithLine(rayPt1, rayPt2, dist, 
+                                     isect, pcoords, subId, foundCell);
+    }
+
+    cellLocator->Delete();
+    if (success)
+        return foundCell;
+    else
+        return -1;
+}
+

@@ -26,8 +26,17 @@
 #include <avtAreaBetweenCurvesQuery.h>
 #include <avtFileWriter.h>
 #include <avtL2NormBetweenCurvesQuery.h>
+#include <avtLocateQuery.h>
 #include <avtLocateCellQuery.h>
+#include <avtLocateNodeQuery.h>
+#include <avtActualCoordsQuery.h>
+#include <avtActualNodeCoordsQuery.h>
+#include <avtActualZoneCoordsQuery.h>
 #include <avtPickQuery.h>
+#include <avtNodePickQuery.h>
+#include <avtPickByNodeQuery.h>
+#include <avtPickByZoneQuery.h>
+#include <avtZonePickQuery.h>
 #include <avtCurvePickQuery.h>
 #include <avtSourceFromAVTImage.h>
 #include <avtSourceFromImage.h>
@@ -77,6 +86,9 @@ static double RenderBalance(int numTrianglesIHave);
 //    Mark C. Miller, Tue May 25 20:44:10 PDT 2004
 //    Removed unnecessary scope. Set annotationAttributes data member
 //
+//    Kathleen Bonnell, Wed Jun  2 09:48:29 PDT 2004 
+//    Initialize requireOriginalNodes. 
+//
 // ****************************************************************************
 NetworkManager::NetworkManager(void) : virtualDatabases()
 {
@@ -84,6 +96,7 @@ NetworkManager::NetworkManager(void) : virtualDatabases()
     workingNet = NULL;
     loadBalancer = NULL;
     requireOriginalCells = false;
+    requireOriginalNodes = false;
     uniqueNetworkId = 0;
     dumpRenders = false;
 
@@ -1252,6 +1265,9 @@ NetworkManager::UpdatePlotAtts(int id, const AttributeGroup *atts)
 //    Removed MPI_Allreduce. Moved code to check for scalable threshold being
 //    exceeded to Engine::WriteData
 //
+//    Kathleen Bonnell, Wed Jun  2 09:48:29 PDT 2004 
+//    Set MayRequireNodes. 
+//
 // ****************************************************************************
 avtDataObjectWriter_p
 NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
@@ -1271,6 +1287,8 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
 
         workingNet->GetPipelineSpec()->GetDataSpecification()->
             SetMayRequireZones(requireOriginalCells); 
+        workingNet->GetPipelineSpec()->GetDataSpecification()->
+            SetMayRequireNodes(requireOriginalNodes); 
 
         avtDataObjectWriter_p writer = workingNet->GetWriter(output,
                                           workingNet->GetPipelineSpec(),
@@ -1764,12 +1782,19 @@ NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
 //  Programmer:  Kathleen Bonnell 
 //  Creation:    November 19, 2001
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Jun  2 09:48:29 PDT 2004
+//    Added bool indicating whether to request originalCells or originalNodes.
+//
 // ****************************************************************************
 void
-NetworkManager::StartPickMode(void)
+NetworkManager::StartPickMode(const bool forZones)
 {
-    //cerr << "NetworkManager::StartPickMode(void)" << endl;
-    requireOriginalCells = true;
+    //cerr << "NetworkManager::StartPickMode for Zones? " << forZones << endl;
+    if (forZones)
+        requireOriginalCells = true;
+    else 
+        requireOriginalNodes = true;
 }
 
 // ****************************************************************************
@@ -1782,12 +1807,16 @@ NetworkManager::StartPickMode(void)
 //  Programmer:  Kathleen Bonnell 
 //  Creation:    November 19, 2001
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Jun  2 09:48:29 PDT 2004
+//    Turn off requireOriginalNodes.
 // ****************************************************************************
 void
 NetworkManager::StopPickMode(void)
 {
     //cerr << "NetworkManager::StopPickMode(void)" << endl;
     requireOriginalCells = false;
+    requireOriginalNodes = false;
 }
 
 // ****************************************************************************
@@ -1843,6 +1872,9 @@ NetworkManager::StopPickMode(void)
 //    Kathleen Bonnell, Wed May  5 13:07:12 PDT 2004 
 //    Moved error-setting code to PickQuery, as it causes problems in parallel.
 //
+//    Kathleen Bonnell, Wed Jun  2 09:48:29 PDT 2004
+//    Add support for new pick classes. 
+//
 // ****************************************************************************
 
 void
@@ -1881,41 +1913,85 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
         EXCEPTION0(NoInputException);
     }
 
-    avtLocateCellQuery *lcQ = NULL;
+    avtDataAttributes &queryInputAtts = queryInput->GetInfo().GetAttributes();
+    avtDataValidity   &queryInputVal  = queryInput->GetInfo().GetValidity();
+    avtLocateQuery *lQ = NULL;
     avtPickQuery *pQ = NULL;
     avtCurvePickQuery *cpQ = NULL;
     TRY
     {
         QueryAttributes qa;
-         
-        if ((pa->GetPickType() == PickAttributes::Node) ||
-            (pa->GetPickType() == PickAttributes::Zone))
+        if (pa->GetPickType() != PickAttributes::CurveNode &&
+            pa->GetPickType() != PickAttributes::CurveZone)
         {
-            if ((pa->GetDomain() == -1) && (pa->GetElementNumber() == -1))
+            if (pa->GetPickType() == PickAttributes::Zone)
             {
-                lcQ = new avtLocateCellQuery;
-                lcQ->SetInput(queryInput);
-                lcQ->SetPickAtts(pa);
-                lcQ->PerformQuery(&qa); 
-                *pa = *(lcQ->GetPickAtts());
-                delete lcQ;
+                lQ = new avtLocateCellQuery;
+                pQ = new avtZonePickQuery;
+                lQ->SetInput(queryInput);
+                lQ->SetPickAtts(pa);
+                lQ->PerformQuery(&qa); 
+                *pa = *(lQ->GetPickAtts());
+                delete lQ;
             }
-
-            pQ = new avtPickQuery;
-            pQ->SetInput(networkCache[id]->GetNetDB()->GetOutput());
+            else if (pa->GetPickType() == PickAttributes::Node)
+            {
+                lQ = new avtLocateNodeQuery;
+                pQ = new avtNodePickQuery;
+                lQ->SetInput(queryInput);
+                lQ->SetPickAtts(pa);
+                lQ->PerformQuery(&qa); 
+                *pa = *(lQ->GetPickAtts());
+                delete lQ;
+            }
+            else if (pa->GetPickType() == PickAttributes::DomainNode)
+            {
+                pQ = new avtPickByNodeQuery;
+            }
+            else if (pa->GetPickType() == PickAttributes::DomainZone)
+            {
+                pQ = new avtPickByZoneQuery;
+            }
+            if (queryInputAtts.HasInvTransform() &&
+                queryInputAtts.GetCanUseInvTransform())
+            {
+                pQ->SetInvTransform(queryInputAtts.GetInvTransform());
+            }
+            if (queryInputAtts.HasTransform() &&
+                queryInputAtts.GetCanUseTransform())
+            {
+                pQ->SetTransform(queryInputAtts.GetTransform());
+            }
+            
             if (*silr != NULL)
-                pQ->SetSILRestriction(silr->MakeAttributes());
-            if (queryInput->GetInfo().GetAttributes().HasTransform() &&
-                queryInput->GetInfo().GetAttributes().GetCanUseTransform())
             {
-                pQ->SetTransform(queryInput->GetInfo().GetAttributes().GetTransform());
+                pQ->SetSILRestriction(silr->MakeAttributes());
             }
-            pQ->SetNeedTransform(
-                queryInput->GetInfo().GetValidity().GetPointsWereTransformed());
+            pQ->SetNeedTransform(queryInputVal.GetPointsWereTransformed());
+
+            pQ->SetInput(networkCache[id]->GetNetDB()->GetOutput());
             pQ->SetPickAtts(pa);
             pQ->PerformQuery(&qa); 
             *pa = *(pQ->GetPickAtts());
+
             delete pQ;
+
+            if (pa->GetNeedActualCoords())
+            {
+                avtActualCoordsQuery *acq = NULL;
+                if (pa->GetPickType() == PickAttributes::DomainNode)
+                    acq = new avtActualNodeCoordsQuery;
+                else if (pa->GetPickType() == PickAttributes::DomainZone)
+                    acq = new avtActualZoneCoordsQuery;
+                if (acq != NULL)
+                {
+                    acq->SetInput(queryInput);
+                    acq->SetPickAtts(pa);
+                    acq->PerformQuery(&qa);
+                    *pa = *(acq->GetPickAtts());
+                    delete acq;
+                }
+            }
         }
         else 
         {
@@ -1929,8 +2005,8 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
     }
     CATCHALL( ... )
     {
-        if (lcQ != NULL)
-            delete lcQ;
+        if (lQ != NULL)
+            delete lQ;
         if (pQ != NULL)
             delete pQ;
         if (cpQ != NULL)

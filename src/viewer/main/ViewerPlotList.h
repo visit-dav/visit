@@ -196,6 +196,9 @@ typedef std::map<std::string, int> StringIntMap;
 //    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
 //    Added method to GetNumberOfCells
 //
+//    Kathleen Bonnell, Tue Jun  1 17:57:52 PDT 2004 
+//    Added args to StartPick. 
+//
 // ****************************************************************************
 
 
@@ -341,7 +344,7 @@ public:
     bool GetPipelineCaching() const;
     void ClearPipelines();
 
-    void StartPick();
+    void StartPick(const bool, const bool);
     void StopPick();
     void ResetNetworkIds(const EngineKey &key);
     std::string GetVarName();

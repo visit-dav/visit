@@ -95,6 +95,9 @@ typedef ref_ptr<avtDataSpecification> avtDataSpecification_p;
 //    Kathleen Bonnell, Thu Apr 22 15:15:57 PDT 2004 
 //    Added method 'VariablesAreTheSame'. 
 //
+//    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
+//    Added methods Set/GetMayRequireNodes.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataSpecification
@@ -176,6 +179,11 @@ class PIPELINE_API avtDataSpecification
     void                         SetMayRequireZones(bool val) 
                                      { mayRequireZones = val; };
 
+    bool                         MayRequireNodes(void) 
+                                     { return mayRequireNodes; };
+    void                         SetMayRequireNodes(bool val) 
+                                     { mayRequireNodes = val; };
+
     bool                         GhostZonesAreAppropriate(void)
                                      { return useGhostZones; };
     void                         NoGhostZones(void);
@@ -230,6 +238,7 @@ class PIPELINE_API avtDataSpecification
     bool                         needZones;
     bool                         needNodes;
     bool                         mayRequireZones;
+    bool                         mayRequireNodes;
     bool                         useGhostZones;
     bool                         mustDoMIR;
     bool                         needInternalSurfaces;

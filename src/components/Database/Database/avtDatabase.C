@@ -250,6 +250,9 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Kathleen Bonnell, Thu Mar 11 11:17:58 PST 2004
 //    DataExtents now always has only 2 componnts. 
 //
+//    Kathleen Bonnell, Fri May 28 18:26:09 PDT 2004 
+//    Pass on containsOriginalNodes.
+//
 // ****************************************************************************
 
 void
@@ -278,6 +281,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
         atts.SetZUnits(mmd->zUnits);
         atts.SetContainsGhostZones(mmd->containsGhostZones);
         atts.SetContainsOriginalCells(mmd->containsOriginalCells);
+        atts.SetContainsOriginalNodes(mmd->containsOriginalNodes);
         validity.SetDisjointElements(mmd->disjointElements);
 
         //
@@ -1066,6 +1070,9 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    Kathleen Bonnell, Mon Apr 19 15:49:05 PDT 2004 
 //    Ensure that the timestep being queried is the active one.
 //    
+//    Kathleen Bonnell, Fri May 28 18:26:09 PDT 2004 
+//    Account for pick type of DomainZone. 
+//    
 // ****************************************************************************
 
 void               
@@ -1074,7 +1081,8 @@ avtDatabase::Query(PickAttributes *pa)
     int ts          = pa->GetTimeStep();
     int foundDomain = pa->GetDomain();
     int foundEl     = pa->GetElementNumber();
-    int zonePick    = pa->GetPickType() == PickAttributes::Zone;
+    int zonePick    = pa->GetPickType() == PickAttributes::Zone ||
+                      pa->GetPickType() == PickAttributes::DomainZone;
     float *PPT, *CPT, ppt[3], cpt[3];
     std::vector<int> incEls  = pa->GetIncidentElements();
     std::vector<std::string> pnodeCoords  = pa->GetPnodeCoords();

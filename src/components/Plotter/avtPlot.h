@@ -136,6 +136,9 @@ class     AttributeSubject;
 //    Mark C. Miller, Wed Mar 24 19:23:21 PST 2004
 //    Added AttributesDependOnDatabaseMetaData
 //
+//    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
+//    Added bool args to RequiresReExecuteForQuery. 
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
@@ -181,7 +184,7 @@ class PLOTTER_API avtPlot
 
     void                       SetIndex(int ind) { index = ind; };
 
-    bool                       RequiresReExecuteForQuery(void); 
+    bool                       RequiresReExecuteForQuery(const bool, const bool); 
     avtDataObject_p            GetIntermediateDataObject(void) 
                                   { return intermediateDataObject; };
     virtual avtMapper         *GetMapper(void) = 0;

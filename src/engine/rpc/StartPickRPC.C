@@ -12,9 +12,13 @@
 //  Programmer: Kathleen Bonnell
 //  Creation:   November 26, 2001
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Jun  2 09:45:23 PDT 2004
+//    Added another bool arg.
+//
 // ****************************************************************************
 
-StartPickRPC::StartPickRPC() : BlockingRPC("bi")
+StartPickRPC::StartPickRPC() : BlockingRPC("bbi")
 {
 }
 
@@ -48,11 +52,15 @@ StartPickRPC::~StartPickRPC()
 //  Creation:   November 26, 2001
 //
 //  Modifications:
+//    Kathleen Bonnell, Wed Jun  2 09:45:23 PDT 2004
+//    Added bool forZones arg.
+//
 // ****************************************************************************
 
 void
-StartPickRPC::operator()(const bool flag, const int nid)
+StartPickRPC::operator()(const bool forZones, const bool flag, const int nid)
 {
+    SetForZones(forZones);
     SetStartFlag(flag);
     SetNetId(nid);
 
@@ -70,14 +78,60 @@ StartPickRPC::operator()(const bool flag, const int nid)
 //  Programmer: Kathleen Bonnell
 //  Creation:   November 26, 2001
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Jun  2 09:45:23 PDT 2004
+//    Added forZones.
+//
 // ****************************************************************************
 
 void
 StartPickRPC::SelectAll()
 {
-    Select(0, (void*)&startFlag);
-    Select(1, (void*)&netId);
+    Select(0, (void*)&forZones);
+    Select(1, (void*)&startFlag);
+    Select(2, (void*)&netId);
 }
+
+
+// ****************************************************************************
+//  Method: StartPickRPC::SetForZones
+//
+//  Purpose:  Set the value of forZones.
+//
+//  Arguments:
+//    forZones  If true, pick mode is for zone picking, otherwise pick mode
+//              is for node picking.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 2, 2004 
+//
+// ****************************************************************************
+
+void
+StartPickRPC::SetForZones(const bool forZonesFlag)
+{
+    forZones = forZonesFlag;
+    Select(0, (void*)&forZones);
+}
+
+
+// ****************************************************************************
+//  Method: StartPickRPC::GetForZones
+//
+//  Purpose: 
+//    This returns the flag specifying picking is for zones or nodes.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 2, 2004 
+//
+// ****************************************************************************
+
+bool
+StartPickRPC::GetForZones() 
+{
+    return forZones;
+}
+
 
 // ****************************************************************************
 //  Method: StartPickRPC::SetStartFlag
@@ -96,7 +150,7 @@ void
 StartPickRPC::SetStartFlag(const bool flag)
 {
     startFlag = flag;
-    Select(0, (void*)&startFlag);
+    Select(1, (void*)&startFlag);
 }
 
 
@@ -134,7 +188,7 @@ void
 StartPickRPC::SetNetId(const int nid)
 {
     netId = nid;
-    Select(1, (void*)&netId);
+    Select(2, (void*)&netId);
 }
 
 

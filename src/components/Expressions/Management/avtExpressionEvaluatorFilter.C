@@ -430,6 +430,9 @@ avtExpressionEvaluatorFilter::ReleaseData(void)
 //    Kathleen Bonnell, Thu Nov 20 15:06:49 PST 2003 
 //    Allow for index == 0 when testing whether or not to add the pickVarInfo.
 //
+//    Kathleen Bonnell, Fri May 28 18:31:15 PDT 2004 
+//    Account for pick type DomainZone.
+//
 // ****************************************************************************
 
 void
@@ -512,7 +515,8 @@ avtExpressionEvaluatorFilter::Query(PickAttributes *pa)
         const intVector &incidentElements = pa->GetIncidentElements();
         int element = pa->GetElementNumber();
         int domain  = pa->GetDomain();
-        bool zonePick = pa->GetPickType() == PickAttributes::Zone;
+        bool zonePick = pa->GetPickType() == PickAttributes::Zone || 
+                        pa->GetPickType() == PickAttributes::DomainZone;
 
         avtDataset_p output = GetTypedOutput();
         for (i = 0 ; i < expr_vars.size() ; i++)

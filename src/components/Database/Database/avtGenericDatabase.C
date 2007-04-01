@@ -234,6 +234,10 @@ avtGenericDatabase::SetDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 //    Hank Childs, Fri Jan  9 13:46:43 PST 2004
 //    Use a dataset verifier before passing data into routines like the MIR.
 //
+//    Kathleen Bonnell, Fri May 28 18:31:15 PDT 2004 
+//    Add OriginalNodesArray whenever MatSelect will be performed,
+//    to ensure that pick will operate correctly.  
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -315,6 +319,7 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     if (shouldDoMatSelect)
     {
         spec->TurnZoneNumbersOn();
+        spec->TurnNodeNumbersOn();
     }
 
     //
@@ -323,6 +328,12 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     if (spec->NeedNodeNumbers())
     {
         CreateOriginalNodes(datasetCollection, domains, src);
+        //
+        // Tell everything downstream that we do have original cells.
+        //
+        avtDatabaseMetaData *md = GetMetaData(timeStep);
+        string meshname = md->MeshForVar(spec->GetVariable());
+        GetMetaData(timeStep)->SetContainsOriginalNodes(meshname, true);
     }
 
     //
@@ -1924,7 +1935,7 @@ avtGenericDatabase::AddOriginalCellsArray(vtkDataSet *ds, const int domain)
 void
 avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 {
-    if (ds == NULL || ds->GetCellData()->GetArray("avtOriginalCellNumbers"))
+    if (ds == NULL || ds->GetPointData()->GetArray("avtOriginalNodeNumbers"))
     {
         // DataSet is NULL or array is already created -- return.
         return;
@@ -2888,6 +2899,9 @@ avtGenericDatabase::ActivateTimestep(int stateIndex)
 //    Made call to ActivateTimestep call this class' implementation instead
 //    of referring to it through 'Interface->' explicitly
 //    
+//    Kathleen Bonnell, Fri May 28 18:31:15 PDT 2004 
+//    Initialize ContainsOriginalNodes in the MetaData. 
+//
 // ****************************************************************************
 
 void
@@ -2905,6 +2919,7 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
     string meshname = md->MeshForVar(spec->GetVariable());
     md->SetContainsGhostZones(meshname, AVT_NO_GHOSTS);
     md->SetContainsOriginalCells(meshname, false);
+    md->SetContainsOriginalNodes(meshname, false);
 
     //
     // Set up some things we will want for later.
