@@ -15,8 +15,13 @@
 //  Creation:    November 12, 2001
 //
 //  Modifications:
+//    Mark Miller, Tue 23 Mar 11:19:13 PDT 2004
 //    Fixed problem with character arrays longer than 1024 chars
 //    Added missing call to free memory allocated by GetVar call
+//
+//    Jeremy Meredith, Mon May 17 11:56:24 PDT 2004
+//    Rewrote character array code to fix garbage/missing character output
+//    and prevent it splitting at 1024 bytes.
 //
 // ****************************************************************************
 SiloArrayViewWindow::SiloArrayViewWindow(SiloFile *s, const QString &n, QWidget *p)
@@ -74,32 +79,33 @@ SiloArrayViewWindow::SiloArrayViewWindow(SiloFile *s, const QString &n, QWidget 
     }
     else
     {
-        char str[1024];
+        // Copy the character array into a temporary buffer,
+        // splitting at semicolons, and putting the result in a list box
+        char *str = new char[len+1];
         char *p = str;
         for (int i=0; i<len; i++)
         {
-            char c = ((char*)var)[i];
-            if (c == ';')
+            *p = ((char*)var)[i];
+            if (*p == ';')
             {
-                *p = '\0';
-                if (strlen(str) > 0)
+                if (p != str)
+                {
+                    *p = '\0';
                     lb->insertItem(str);
-                p = str;
-            }
-            else if (i % (sizeof(str)-2) == 0)
-            {
-                str[sizeof(str)-2] = c;
-                str[sizeof(str)-1] = '\0';
-                if (strlen(str) > 0)
-                    lb->insertItem(str);
+                }
                 p = str;
             }
             else
-                *(p++)=c;
+            {
+                p++;
+            }
         }
-        *p = '\0';
-        if (strlen(str) > 0)
+        if (p != str)
+        {
+            *p = '\0';
             lb->insertItem(str);
+        }
+        delete[] str;
     }
 
     free(var);

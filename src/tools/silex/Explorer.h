@@ -20,6 +20,7 @@ class Explorer : public QMainWindow
     Q_OBJECT
   public:
     Explorer(const QString &file, QWidget *p, const QString &n);
+    virtual ~Explorer();
   public slots:
     void open();
   private:

@@ -25,6 +25,7 @@ class SiloView : public QSplitter
     Q_OBJECT
   public:
     SiloView(const QString &file, QWidget *p, const QString &n);
+    virtual ~SiloView();
     void Set(const QString &file);
 
   public slots:
