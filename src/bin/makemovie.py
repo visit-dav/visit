@@ -98,6 +98,41 @@ def applyFunctionToFrames(func, nframes, conversionargs):
     applyFunctionToNFrames(func, filesPerThread, nframes, conversionargs)
 
 ###############################################################################
+# Function: CopyFile
+#
+# Purpose:    This function copies a file to another file on disk.
+#
+# Programmer: Brad Whitlock
+# Date:       Mon Apr 26 16:20:14 PST 2004
+#
+# Modifications:
+#
+###############################################################################
+
+def CopyFile(srcName, destName, allowLinks):
+    fileCopied = 0
+
+    # If we want to create a symlink instead of copying, try it now.
+    if allowLinks:
+        try:
+            os.symlink(imgname, linkname)
+            fileCopied = 1
+        except:
+            # The OS module does not have symlink
+            fileCopied = 0
+
+    # Try copying the file if a symlink could not be made.
+    if fileCopied == 0:
+        try:
+            if os.name == "nt":
+                os.system("copy %s %s" % (srcName, destName))
+            else:
+                os.system("cp %s %s" % (srcName, destName))
+        except:
+            print "Could not copy %s to %s" % (srcName, destName)
+
+
+###############################################################################
 # Function: removeFilesHelper
 #
 # Purpose:    This function removes files from the disk.
@@ -236,6 +271,9 @@ class MakeMovie:
     #   Hank Childs, Wed Mar 31 08:44:34 PST 2004
     #   Added frames per second.
     #
+    #   Brad Whitlock, Thu Apr 22 09:18:20 PDT 2004
+    #   Added frameStart and frameEnd.
+    #
     ###########################################################################
 
     def __init__(self):
@@ -262,6 +300,8 @@ class MakeMovie:
         self.outputFormat = self.OUTPUT_PPM
         self.numFrames = 0
         self.frameStep = 1
+        self.frameStart = 0
+        self.frameEnd = -1
         self.xres = 512
         self.yres = 512
         self.tmpDir = os.curdir
@@ -290,6 +330,9 @@ class MakeMovie:
     #
     #   Hank Childs, Wed Mar 31 08:44:34 PST 2004
     #   Added -fps.
+    #
+    #   Brad Whitlock, Thu Apr 22 09:18:20 PDT 2004
+    #   Added frameStart and frameEnd.
     #
     ###########################################################################
 
@@ -345,6 +388,10 @@ class MakeMovie:
         print ""
         print "    -framestep step    The number of frames to advance when going to "
         print "                       the next frame."
+        print ""
+        print "    -start frame       The frame that we want to start at."
+        print ""
+        print "    -end frame         The frame that we want to end at."
         print ""
         print "    -output moviename  The output option lets you set the name of "
         print "                       your movie."
@@ -429,6 +476,9 @@ class MakeMovie:
     #   Hank Childs, Wed Mar 31 08:44:34 PST 2004
     #   Parse -fps.
     #
+    #   Brad Whitlock, Thu Apr 22 09:18:20 PDT 2004
+    #   Added frameStart and frameEnd.
+    #
     ###########################################################################
 
     def ProcessArguments(self):
@@ -501,11 +551,37 @@ class MakeMovie:
                 if((i+1) < len(sys.argv)):
                     try:
                         self.frameStep = int(sys.argv[i+1])
-                        if(self.frameStep < 0):
+                        if(self.frameStep < 1):
                             self.frameStep = 1
                     except ValueError:
                         self.frameStep = 1
                         print "A bad value was provided for frame step. Using a frame step of 1."
+                    i = i + 1
+                else:
+                    self.PrintUsage()
+                    sys.exit(-1)
+            elif(sys.argv[i] == "-start"):
+                if((i+1) < len(sys.argv)):
+                    try:
+                        self.frameStart = int(sys.argv[i+1])
+                        if(self.frameStart < 0):
+                            self.frameStart = 0
+                    except ValueError:
+                        self.frameStart = 0
+                        print "A bad value was provided for frame start. Using a frame step of 0."
+                    i = i + 1
+                else:
+                    self.PrintUsage()
+                    sys.exit(-1)
+            elif(sys.argv[i] == "-end"):
+                if((i+1) < len(sys.argv)):
+                    try:
+                        self.frameEnd = int(sys.argv[i+1])
+                        if(self.frameEnd < 0):
+                            self.frameEnd = 0
+                    except ValueError:
+                        self.frameEnd = 0
+                        print "A bad value was provided for frame end. Using a frame end of 0."
                     i = i + 1
                 else:
                     self.PrintUsage()
@@ -724,6 +800,9 @@ class MakeMovie:
     #   I changed the animation methods so they animate using the active
     #   time slider.
     #
+    #   Brad Whitlock, Thu Apr 22 09:25:06 PDT 2004
+    #   I added support for using a user-specified start, end frame.
+    #
     ###########################################################################
 
     def GenerateFrames(self):
@@ -748,11 +827,20 @@ class MakeMovie:
             if(GetWindowInformation().cameraViewMode == 0):
                 ToggleCameraViewMode()
 
+            # Figure out a good value for the frameEnd.
+            if self.frameEnd == -1:
+                self.frameEnd = TimeSliderGetNStates() - 1
+            # If the start and end are reversed, put them in the right order.
+            if self.frameEnd < self.frameStart:
+                tmp = self.frameEnd
+                self.frameEnd = self.frameStart
+                self.frameStart = tmp
+
             # Save an image for each frame in the animation.
             self.numFrames = 0
-            i = 0
+            i = self.frameStart
             drawThePlots = 0
-            while(i < TimeSliderGetNStates()):
+            while(i <= self.frameEnd):
                 if(SetTimeSliderState(i) == 0):
                     drawThePlots = 1
                     print "There was an error when trying to set the "\
@@ -794,9 +882,20 @@ class MakeMovie:
     #   Hank Childs, Wed Mar 31 08:50:48 PST 2004
     #   Backed off compression even more.  Allow for fps to be set as well.
     #
+    #   Brad Whitlock, Mon Apr 26 16:42:39 PST 2004
+    #   I moved the code to symlink files into a method that copies files or
+    #   symlinks them depending on what the operating system can do.
+    #
     ###########################################################################
 
     def EncodeMPEGMovie(self):
+        # Tell the user about MPEGs on Windows.
+        if os.name == "nt":
+            print "The Windows version of VisIt does not come with an MPEG"
+            print "encoding program. You can use your own MPEG software to"
+            print "make a movie from the frames in %s" % self.tmpDir
+            return 0
+
         retval = 0
         self.Debug("EncodeMPEGMovie")
         paramFile = "%s-mpeg_encode-params" % self.movieBase
@@ -822,12 +921,14 @@ class MakeMovie:
             # Now create symbolic links to the images at that pad rate.
             linkbase = self.frameBase+"link"
             linkindex = 0
+            doSymlink = "symlink" in dir(os)
             for i in range(self.numFrames):
-                imgname=self.frameBase+"%04d.ppm" %(i)
+                imgname=self.tmpDir+self.slash+self.frameBase+"%04d.ppm" %(i)
                 for j in range(pad_rate):
-                   linkname=self.tmpDir+"/"+linkbase+"%04d.ppm"%(linkindex)
-                   linkindex += 1
-                   os.symlink(imgname, linkname)
+                   linkname=self.tmpDir+self.slash+linkbase+"%04d.ppm"%(linkindex)
+                   linkindex = linkindex + 1
+                   CopyFile(imgname, linkname, doSymlink)
+
             nframes=pad_rate*self.numFrames
 
             f = open(paramFile, "w")
@@ -858,15 +959,15 @@ class MakeMovie:
             r = os.system(command)
 
             # Remove the param file.
-            #RemoveFile(paramFile);
+            RemoveFile(paramFile);
 
             # Remove the symbolic links.
             linkindex = 0
             for i in range(self.numFrames):
                 for j in range(pad_rate):
-                   linkname=self.tmpDir+"/"+linkbase+"%04d.ppm"%(linkindex)
-                   #RemoveFile(linkname)
-                   linkindex += 1
+                   linkname=self.tmpDir+self.slash+linkbase+"%04d.ppm"%(linkindex)
+                   RemoveFile(linkname)
+                   linkindex = linkindex + 1
 
             retval = (r == 0)
         except IOError:
