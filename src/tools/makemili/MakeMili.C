@@ -26,10 +26,10 @@
 #include <ctype.h>
 #include <stdio.h>
 
-#include <iostream>
-#include <fstream>
 #include <vector>
 #include <string>
+
+#include <visitstream.h>
 
 extern "C"{
 #include <mili.h>
@@ -196,9 +196,12 @@ void DetermineRootAndPath(char *fname)
 //  Returns:
 //    The number of domains, or 0 on failure.
 //
-//  Notes:
-//    If there is a choice between a multi domain set of files, and a
-//    single domain file, it chooses the multi domain set.
+//  Modifications:
+//
+//    Hank Childs, Mon Dec 20 11:12:24 PST 2004
+//    If there is a choice between a multi domain set of files and a single
+//    domain file, still continue to choose the multi domain set, but then
+//    test to make sure it works.  If it doesn't declare it single domain.
 //
 // ***************************************************************************
 
@@ -241,6 +244,22 @@ int GetNumDomains()
     // If we find multi domain names, take the multi domain name.
     if (lastdomain != -1)
         singleDomainName = false;
+
+    if (!singleDomainName)
+    {
+        // Sometimes there will be additional files in the directory that
+        // appear to be multiple domains, but are actually all part of the
+        // same domain.  An mcopen will test whether or not there are actually
+        // multiple domains.
+        char rootname[255];
+        sprintf(rootname, "%s%.3d", root, 0); 
+    
+        Famid dbid;
+        int rval;
+        rval = mc_open (rootname, path, "r", &dbid);
+        if (rval != OK)
+            singleDomainName = true;
+    }
     
     if (singleDomainName)
         return 1;
@@ -283,6 +302,7 @@ void ReadDomain(int dom, MiliInfo &mi)
         rval = mc_open (root, path, "r", &dbid);
     else
         rval = mc_open (rootname, path, "r", &dbid);
+
     if (rval != OK)
     {
         char err[255];
@@ -909,7 +929,7 @@ int main(int argc, char* argv[])
             cout << "Domains found: " << ndomains;
             if (singleDomainName)
             {
-                cout << " (single familiy: " << root << ")";
+                cout << " (single family: " << root << ")";
             }
             cout << endl << endl;
         }

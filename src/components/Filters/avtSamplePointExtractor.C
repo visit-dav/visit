@@ -58,6 +58,9 @@
 //    Hank Childs, Fri Nov 19 13:57:02 PST 2004
 //    Initialized rectilinearGridsAreInWorldSpace.
 //
+//    Hank Childs, Fri Dec 10 09:59:57 PST 2004
+//    Initialized shouldDoTiling.
+//
 // ****************************************************************************
 
 avtSamplePointExtractor::avtSamplePointExtractor(int w, int h, int d)
@@ -80,6 +83,8 @@ avtSamplePointExtractor::avtSamplePointExtractor(int w, int h, int d)
 
     rectilinearGridsAreInWorldSpace = false;
     aspect = 1.;
+
+    shouldDoTiling = false;
 }
 
 
@@ -149,6 +154,29 @@ avtSamplePointExtractor::SetRectilinearGridsAreInWorldSpace(bool val,
 
 
 // ****************************************************************************
+//  Method: avtSamplePointExtractor::RestrictToTile
+//
+//  Purpose:
+//      Tells the extractor whether or not it should only sample within a tile.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 19, 2004
+//
+// ****************************************************************************
+
+void
+avtSamplePointExtractor::RestrictToTile(int wmin, int wmax, int hmin, int hmax)
+{
+    shouldDoTiling = true;
+    width_min  = wmin;
+    width_max  = wmax;
+    height_min = hmin;
+    height_max = hmax;
+    modified = true;
+}
+
+
+// ****************************************************************************
 //  Method: avtSamplePointExtractor::Execute
 //
 //  Purpose:
@@ -212,6 +240,9 @@ avtSamplePointExtractor::Execute(void)
 //    Hank Childs, Sun Dec 14 11:07:56 PST 2003
 //    Set up massVoxelExtractor.
 //
+//    Hank Childs, Fri Dec 10 09:59:57 PST 2004
+//    Do the sampling in tiles if necessary.
+//
 // ****************************************************************************
 
 void
@@ -219,8 +250,18 @@ avtSamplePointExtractor::SetUpExtractors(void)
 {
     avtSamplePoints_p output = GetTypedOutput();
 
-    output->SetVolume(width, height, depth);
+    //
+    // This will always be NULL the first time through.  For subsequent tiles
+    // (provided we are doing tiling) will not have this issue.
+    //
+    if (output->GetVolume() == NULL)
+        output->SetVolume(width, height, depth);
+    else
+        output->GetVolume()->ResetSamples();
+    output->ResetCellList();
     avtVolume *volume = output->GetVolume();
+    if (shouldDoTiling)
+        volume->Restrict(width_min, width_max-1, height_min, height_max-1);
 
     if (hexExtractor != NULL)
     {
@@ -258,6 +299,18 @@ avtSamplePointExtractor::SetUpExtractors(void)
     tetExtractor->SendCellsMode(sendCells);
     wedgeExtractor->SendCellsMode(sendCells);
     pyramidExtractor->SendCellsMode(sendCells);
+
+    if (shouldDoTiling)
+    {
+        hexExtractor->Restrict(width_min, width_max-1, height_min, height_max-1);
+        massVoxelExtractor->Restrict(width_min, width_max-1,
+                                     height_min, height_max-1);
+        tetExtractor->Restrict(width_min, width_max-1, height_min, height_max-1);
+        wedgeExtractor->Restrict(width_min, width_max-1, height_min, 
+                                 height_max-1);
+        pyramidExtractor->Restrict(width_min, width_max-1,
+                                   height_min, height_max-1);
+    }
 }
 
 

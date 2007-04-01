@@ -177,6 +177,9 @@ avtVolumeFilter::Execute(void)
 //    Fixed problem with identifying opacity variable in relation to skipping
 //    variables with vtk and avt prefixes.
 //
+//    Hank Childs, Tue Dec 21 16:42:19 PST 2004
+//    Incorporate attenuation.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -199,7 +202,7 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
     unsigned char vtf[4*256];
     atts.GetTransferFunction(vtf);
     avtOpacityMap om(256);
-    om.SetTable(vtf, 256);
+    om.SetTable(vtf, 256, atts.GetOpacityAttenuation());
     double actualRange[2];
     bool artificialMin = atts.GetUseColorVarMin();
     bool artificialMax = atts.GetUseColorVarMax();
@@ -316,7 +319,7 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
     else
     {
         om2 = new avtOpacityMap(256);
-        om2->SetTable(vtf, 256);
+        om2->SetTable(vtf, 256, atts.GetOpacityAttenuation());
         double range[2];
 
         bool artificialMin = atts.GetUseOpacityVarMin();

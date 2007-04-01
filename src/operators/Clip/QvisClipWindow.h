@@ -5,6 +5,7 @@
 class QCheckBox;
 class QComboBox;
 class QButtonGroup;
+class QGrid;
 class QLineEdit;
 class QLabel;
 class QTabWidget;
@@ -31,6 +32,10 @@ class ClipAttributes;
 //   Kathleen Bonnell, Mon Dec  6 14:35:14 PST 2004 
 //   Made plane*Status be checkable QVGroupBox, instead of QButtonGroup.
 //   Renamed plane*StatusCliced slots to plane*StatusToggled.
+//
+//   Brad Whitlock, Tue Dec 21 09:13:49 PDT 2004
+//   Added Qt version-specific coding so we can still use versions older than
+//   3.2.
 //
 // ****************************************************************************
 
@@ -64,22 +69,38 @@ private slots:
     void plane3StatusToggled(bool);
     void tabWidgetChanged(QWidget *);
 private:
+    // Method to create plane widgets.
+    void CreatePlaneGroup(QWidget *, QWidget **,
+#if QT_VERSION < 0x030200
+         QWidget **,
+#endif
+         QWidget **, QWidget **, const char *, const char *, const char *, int);
+
     QLineEdit    *plane1Origin;
     QLineEdit    *plane2Origin;
     QLineEdit    *plane3Origin;
     QLineEdit    *plane1Normal;
     QLineEdit    *plane2Normal;
     QLineEdit    *plane3Normal;
+#if QT_VERSION >= 0x030200
     QVGroupBox   *plane1Status;
     QVGroupBox   *plane2Status;
     QVGroupBox   *plane3Status;
+#else
+    QCheckBox    *plane1Status;
+    QCheckBox    *plane2Status;
+    QCheckBox    *plane3Status;
+    QVGroupBox   *plane1Group;
+    QVGroupBox   *plane2Group;
+    QVGroupBox   *plane3Group;
+#endif
     QLineEdit    *centerLineEdit;
     QLineEdit    *radiusLineEdit;
     QCheckBox    *planeInverse;
     QCheckBox    *sphereInverse;
     QTabWidget   *tabWidget;
     QVBox        *planeBox;
-    QVBox        *sphereBox;
+    QGrid        *sphereBox;
 
     ClipAttributes *clipAtts;
 };

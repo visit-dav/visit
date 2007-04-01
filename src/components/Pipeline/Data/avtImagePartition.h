@@ -4,6 +4,7 @@
 
 #ifndef AVT_IMAGE_PARTITION_H
 #define AVT_IMAGE_PARTITION_H
+
 #include <pipeline_exports.h>
 
 
@@ -24,6 +25,9 @@
 //    Hank Childs, Tue Jan  1 11:18:50 PST 2002
 //    Make partitions size be adaptively determined based on how many samples
 //    fall along each scanline.
+//
+//    Hank Childs, Fri Dec 10 10:45:26 PST 2004
+//    Add support for tiling.
 //
 // ****************************************************************************
 
@@ -53,12 +57,25 @@ class PIPELINE_API avtImagePartition
 
     int                     GetWidth(void)  { return width; };
     int                     GetHeight(void) { return height; };
+    int                     GetTileWidth(void)  
+                                  { return (!shouldDoTiling ?  width:
+                                            tile_width_max-tile_width_min);};
+    int                     GetTileHeight(void)  
+                                  { return (!shouldDoTiling ?  height:
+                                            tile_height_max-tile_height_min);};
+
+    void                    RestrictToTile(int, int, int, int);
+    void                    StopTiling(void) { shouldDoTiling = false; };
 
   protected:
     int                     width, height;
     int                     numProcessors;
     int                     thisProcessor;
     int                     thisPartition;
+
+    bool                    shouldDoTiling;
+    int                     tile_width_min, tile_width_max;
+    int                     tile_height_min, tile_height_max;
 
     bool                    establishedPartitionBoundaries;
 

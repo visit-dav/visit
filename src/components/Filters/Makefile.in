@@ -91,7 +91,7 @@ SRC=\
  avtWholeImageCompositerNoZ.C \
  avtWorldSpaceToImageSpaceTransform.C
 
-CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@
+CPPFLAGS=-I../../include @COMPONENT_CPPFLAGS@ @CPPFLAGS@
 
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)

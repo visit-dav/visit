@@ -38,6 +38,9 @@
 #    Jeremy Meredith, Wed Jul  7 12:12:52 PDT 2004
 #    I changed _ser.o to simply be .o.
 #
+#    Hank Childs, Mon Dec 20 11:46:41 PST 2004
+#    Add include directory /include/visit to pick up visitstream.h.
+#
 ##############################################################################
 
 ##
@@ -48,7 +51,7 @@
 @MPI_CC@
 @MPI_CXX@
 
-CPPFLAGS=-I. -I../../include @MILI_FLAGS@ @CPPFLAGS@
+CPPFLAGS=-I. -I../../include -I../../include/visit @MILI_FLAGS@ @CPPFLAGS@
 
 SERLIBS=@MILI_LIBS@
 PARLIBS=@MILI_LIBS@ @MPI_LIBS@ @PTHREAD_LIB@

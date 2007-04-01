@@ -126,17 +126,20 @@ avtImageCommunicator::Execute(void)
     //
     // Get the scanlines for this processor.
     //
+    int minW, maxW, minH, maxH;
+    imagePartition->GetThisPartition(minW, maxW, minH, maxH);
+    int width = (maxW-minW)+1;
+    if (width < 0)
+        width = 0;
+    int height = (maxH-minH)+1;
+    if (height < 0)
+        height = 0;
+
     unsigned char *data = NULL;
-    int  width  = 0;
-    int  height = 0;
-    if (GetImageRep().Valid())
+    if (GetImageRep().Valid() && width > 0 && height > 0)
     {
         vtkImageData  *image = GetImageRep().GetImageVTK();
         data   = (unsigned char *) image->GetScalarPointer(0, 0, 0);
-        int  extents[6];
-        image->GetExtent(extents);
-        width  = extents[1] - extents[0] + 1;
-        height = extents[3] - extents[2] + 1;
     }
 
     //
@@ -193,8 +196,8 @@ avtImageCommunicator::Execute(void)
     //
     if (myRank == 0)
     {
-        height = imagePartition->GetHeight();
-        width  = imagePartition->GetWidth();
+        height = imagePartition->GetTileHeight();
+        width  = imagePartition->GetTileWidth();
         vtkImageData *newimage = avtImageRepresentation::NewImage(width,
                                                                   height);
 

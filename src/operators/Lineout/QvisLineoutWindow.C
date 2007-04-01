@@ -65,30 +65,34 @@ QvisLineoutWindow::~QvisLineoutWindow()
 // Creation:   Fri Nov 19 11:39:48 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Dec 21 11:53:09 PDT 2004
+//   Added code to support Qt pre-3.2.
+//
 // ****************************************************************************
 
 void
 QvisLineoutWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 3,2,  10, "mainLayout");
+    QGridLayout *mainLayout = new QGridLayout(topLayout, 3,3, 5, "mainLayout");
 
     //
     // Point1
     //
-    mainLayout->addWidget(new QLabel("Point 1", central, "point1Label"), 0,0);
     point1 = new QLineEdit(central, "point1");
     connect(point1, SIGNAL(returnPressed()),
             this, SLOT(point1ProcessText()));
+    mainLayout->addWidget(new QLabel(point1, "Point 1", central,
+        "point1Label"), 0,0);
     mainLayout->addWidget(point1, 0,1);
 
     //
     // Point2
     //
-    mainLayout->addWidget(new QLabel("Point 2", central, "point2Label"), 1,0);
     point2 = new QLineEdit(central, "point2");
     connect(point2, SIGNAL(returnPressed()),
             this, SLOT(point2ProcessText()));
+    mainLayout->addWidget(new QLabel(point2, "Point 2", central,
+        "point2Label"), 1,0);
     mainLayout->addWidget(point2, 1,1);
 
     //
@@ -97,30 +101,42 @@ QvisLineoutWindow::CreateWindowContents()
     interactive = new QCheckBox("Interactive", central, "interactive");
     connect(interactive, SIGNAL(toggled(bool)),
             this, SLOT(interactiveChanged(bool)));
-    mainLayout->addWidget(interactive, 2,0);
-
+    mainLayout->addMultiCellWidget(interactive, 2,2,0,1);
 
     //
     // IgnoreGlobal
     //
+    QGroupBox *globalGroup;
+#if QT_VERSION >= 0x030200
     ignoreGlobal = new QGroupBox("Override Global Lineout Settings",
                                   central, "ignoreGlobal");
     ignoreGlobal->setCheckable(true);
+    globalGroup = ignoreGlobal;
     connect(ignoreGlobal, SIGNAL(toggled(bool)),
             this, SLOT(ignoreGlobalChanged(bool)));
     topLayout->addWidget(ignoreGlobal);
+#else
+    ignoreGlobal = new QCheckBox("Override Global Lineout Settings",
+        central, "ignoreGlobal");
+    connect(ignoreGlobal, SIGNAL(toggled(bool)),
+            this, SLOT(ignoreGlobalChanged(bool)));
+    mainLayout->addMultiCellWidget(ignoreGlobal,3,3,0,1);
 
-    QVBoxLayout *blayout = new QVBoxLayout(ignoreGlobal);
+    ignoreGlobalGroup = new QGroupBox("Global Lineout Overrides",
+        central, "ignoreGlobal");
+    topLayout->addWidget(ignoreGlobalGroup);
+    globalGroup = ignoreGlobalGroup;
+#endif
+
+    QVBoxLayout *blayout = new QVBoxLayout(globalGroup);
     blayout->setMargin(10);
- 
+    blayout->addSpacing(15);
     QGridLayout *qgrid  = new QGridLayout(blayout, 5, 2);
-    qgrid->setMargin(5);
 
-    qgrid->setRowSpacing(0, 15);
     //
     // SamplingOn
     //
-    samplingOn = new QCheckBox("Use Sampling", ignoreGlobal, "samplingOn");
+    samplingOn = new QCheckBox("Use Sampling", globalGroup, "samplingOn");
     connect(samplingOn, SIGNAL(toggled(bool)),
             this, SLOT(samplingOnChanged(bool)));
     qgrid->addWidget(samplingOn, 1,0);
@@ -128,11 +144,11 @@ QvisLineoutWindow::CreateWindowContents()
     //
     // NumberOfSamplePoints
     //
-    numberOfSamplePointsLabel = new QLabel("Samples",  ignoreGlobal,
+    numberOfSamplePointsLabel = new QLabel("Samples",  globalGroup,
                                             "numberOfSamplePointsLabel");
     numberOfSamplePointsLabel->setAlignment(Qt::AlignCenter);
     qgrid->addWidget(numberOfSamplePointsLabel,2,0);
-    numberOfSamplePoints = new QNarrowLineEdit(ignoreGlobal, "numberOfSamplePoints");
+    numberOfSamplePoints = new QNarrowLineEdit(globalGroup, "numberOfSamplePoints");
     connect(numberOfSamplePoints, SIGNAL(returnPressed()),
             this, SLOT(numberOfSamplePointsProcessText()));
     qgrid->addWidget(numberOfSamplePoints, 2,1);
@@ -140,7 +156,7 @@ QvisLineoutWindow::CreateWindowContents()
     //
     // ReflineLabels
     //
-    reflineLabels = new QCheckBox("Refline Labels", ignoreGlobal, "reflineLabels");
+    reflineLabels = new QCheckBox("Refline Labels", globalGroup, "reflineLabels");
     connect(reflineLabels, SIGNAL(toggled(bool)),
             this, SLOT(reflineLabelsChanged(bool)));
     qgrid->addWidget(reflineLabels, 3,0);
@@ -157,7 +173,9 @@ QvisLineoutWindow::CreateWindowContents()
 // Creation:   Fri Nov 19 11:39:48 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Dec 21 11:51:46 PDT 2004
+//   Added code to block signals and also some code to support Qt pre-3.2.
+//
 // ****************************************************************************
 
 void
@@ -189,10 +207,14 @@ QvisLineoutWindow::UpdateWindow(bool doAll)
             point2->setText(temp);
             break;
           case 2: //interactive
+            interactive->blockSignals(true);
             interactive->setChecked(atts->GetInteractive());
+            interactive->blockSignals(false);
             break;
           case 3: //ignoreGlobal
+            ignoreGlobal->blockSignals(true);
             ignoreGlobal->setChecked(atts->GetIgnoreGlobal());
+            ignoreGlobal->blockSignals(false);
             break;
           case 4: //samplingOn
             flag = atts->GetSamplingOn();
@@ -205,10 +227,16 @@ QvisLineoutWindow::UpdateWindow(bool doAll)
             numberOfSamplePoints->setText(temp);
             break;
           case 6: //reflineLabels
+            reflineLabels->blockSignals(true);
             reflineLabels->setChecked(atts->GetReflineLabels());
+            reflineLabels->blockSignals(false);
             break;
         }
     }
+
+#if QT_VERSION < 0x030200
+    ignoreGlobalGroup->setEnabled(atts->GetIgnoreGlobal());
+#endif
 }
 
 

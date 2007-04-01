@@ -49,8 +49,8 @@ typedef void (*PixelProgressCallback)(void *, int, int);
 //    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
 //    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray instead.
 //
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray instead.
+//    Hank Childs, Sat Dec 11 11:23:42 PST 2004
+//    Add ResetSamples.
 //
 // ****************************************************************************
 
@@ -89,6 +89,7 @@ class PIPELINE_API avtVolume
                                              int);
 
     void                      Restrict(int, int, int, int);
+    void                      ResetSamples(void);
 
     void                      GetVariables(float, vtkDataArray **);
     void                      SetGradientVariable(int);

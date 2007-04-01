@@ -22,7 +22,9 @@ class QLineEdit;
 // Creation:   Fri Nov 19 11:39:48 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Dec 21 11:46:18 PDT 2004
+//   Added version-specific Qt coding so we can use pre-3.2 versions.
+//
 // ****************************************************************************
 
 class QvisLineoutWindow : public QvisOperatorWindow
@@ -51,11 +53,16 @@ class QvisLineoutWindow : public QvisOperatorWindow
     QLineEdit *point1;
     QLineEdit *point2;
     QCheckBox *interactive;
+#if QT_VERSION >= 0x030200
     QGroupBox *ignoreGlobal;
+#else
+    QCheckBox *ignoreGlobal;
+    QGroupBox *ignoreGlobalGroup;
+#endif
     QCheckBox *samplingOn;
     QLineEdit *numberOfSamplePoints;
     QCheckBox *reflineLabels;
-    QLabel *numberOfSamplePointsLabel;
+    QLabel    *numberOfSamplePointsLabel;
 
     LineoutAttributes *atts;
 };

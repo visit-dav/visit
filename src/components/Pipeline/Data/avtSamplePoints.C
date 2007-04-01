@@ -104,6 +104,26 @@ avtSamplePoints::GetCellList(void)
 
 
 // ****************************************************************************
+//  Method: avtSamplePoints::ResetCellList
+//
+//  Purpose:
+//      Resets the cell list.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 12, 2004
+//
+// ****************************************************************************
+
+void
+avtSamplePoints::ResetCellList(void)
+{
+    if (celllist != NULL)
+        delete celllist;
+    celllist = NULL;
+}
+
+
+// ****************************************************************************
 //  Method: avtSamplePoints::SetVolume
 //
 //  Purpose:
