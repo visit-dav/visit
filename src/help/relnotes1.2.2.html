@@ -22,13 +22,13 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>VisIt's CLI has new methods to disable to the toolbar.</li>
   <li>"Reset view" and "Recenter view" buttons have been added to the View window's Advanced tab.</li>
   <li>VisIt's CLI has been enhanced so it is not so picky about taking colors that contain floating point numbers.</li>
-  <li><p>The view settings have been completely seperated into 2D, 3D and Curve views throughout all of VisIt. This has resulted in a number of changes in the GUI, the Python client and the Java client.</p><p>In the GUI, the view window has an additional panel with curve view attributes. They consist of the viewport, domain and range.</p><p>In the Python interface, Get/SetViewCurve, ViewCurveAttributes, View2DAttributes and View3DAttributes have been added. The ViewAttributes class is still there for backward compatability, but will be removed in release 1.3. ViewCurveAttributes only has curve attributes, View2DAttributes only has 2D attributes and View3DAttributes only has 3D attributes (as opposed to the ViewAttributes which has them all combinied.) GetView2D was modified to return a View2DAttributes object and GetView3D was modified to return a View3DAttributes object. SetView2D takes both View2DAttributes and ViewAttributes objects and SetView3D takes both View3DAttributes and ViewAttributes objects (again this was done to help with backward compatability.)</p><p>In the Java interface, Get/SetViewCurve, ViewCurveAttributes, View2DAttributes and View3DAttributes have been added. ViewAttributes has been removed, which will cause some backaward compatability problems.</p></li>
+  <li><p>The view settings have been completely separated into 2D, 3D and Curve views throughout all of VisIt. This has resulted in a number of changes in the GUI, the Python client and the Java client.</p><p>In the GUI, the view window has an additional panel with curve view attributes. They consist of the viewport, domain and range.</p><p>In the Python interface, Get/SetViewCurve, ViewCurveAttributes, View2DAttributes and View3DAttributes have been added. The ViewAttributes class is still there for backward compatability, but will be removed in release 1.3. ViewCurveAttributes only has curve attributes, View2DAttributes only has 2D attributes and View3DAttributes only has 3D attributes (as opposed to the ViewAttributes which has them all combined.) GetView2D was modified to return a View2DAttributes object and GetView3D was modified to return a View3DAttributes object. SetView2D takes both View2DAttributes and ViewAttributes objects and SetView3D takes both View3DAttributes and ViewAttributes objects (again this was done to help with backward compatibility.)</p><p>In the Java interface, Get/SetViewCurve, ViewCurveAttributes, View2DAttributes and View3DAttributes have been added. ViewAttributes has been removed, which will cause some backward compatability problems.</p></li>
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.2.2</font></b></p>
 <ul>
   <li>Lineout with endpoints that do not intersect a plot cause VisIt to crash.</li>
   <li>The ParallelMerge method has been made more flexible so VisIt can tolerate more variation in data among processors.</li>
-  <li>The compute engine crashes when index-selecting out of range in a FilledBounday plot.</li>
+  <li>The compute engine crashes when index-selecting out of range in a FilledBoundary plot.</li>
   <li>VisIt can output inconsistent pick results.</li>
   <li>Picking on a Pseudocolor plot with materials as a pick variable gives a bad pick result.</li>
   <li>Configuration files can specify two default hosts for a set of host profiles.</li>
@@ -60,6 +60,8 @@ enhancements and bug-fixes that were added to this release.</p>
 </ul>
 <p>Click the following link to view the release notes for the previous version 
 of VisIt: <a href="relnotes1.2.1.html">VisIt 1.2.1 Release Notes</a>.</p>
+<p>Click the following link to view the release notes for the next version 
+of VisIt: <a href="relnotes1.2.3.html">VisIt 1.2.3 Release Notes</a>.</p>
 
 </body>
 

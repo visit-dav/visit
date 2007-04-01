@@ -981,6 +981,10 @@ avtSliceFilter::ReleaseData(void)
 //    Hank Childs, Tue May  4 16:19:32 PDT 2004
 //    Calculate normals if we are not projecting to 2D.
 //
+//    Brad Whitlock, Thu Jul 22 17:32:42 PST 2004
+//    I added code to make sure that the units get switched the same way
+//    as the labels. You can only notice it when X,Y,Z have different units.
+//
 // ****************************************************************************
 
 void
@@ -1015,12 +1019,19 @@ avtSliceFilter::RefashionDataObjectInfo(void)
             {
                 outAtts.SetXLabel(inAtts.GetZLabel());
                 outAtts.SetZLabel(inAtts.GetXLabel());
+
+                outAtts.SetXUnits(inAtts.GetZUnits());
+                outAtts.SetZUnits(inAtts.GetXUnits());
             }
             else if ((up[0] == 0.) && (up[1] == 0.) && (up[2] != 0.))
             {
                 outAtts.SetXLabel(inAtts.GetYLabel());
                 outAtts.SetYLabel(inAtts.GetZLabel());
                 outAtts.SetZLabel(inAtts.GetXLabel());
+
+                outAtts.SetXUnits(inAtts.GetYUnits());
+                outAtts.SetYUnits(inAtts.GetZUnits());
+                outAtts.SetZUnits(inAtts.GetXUnits());
             }
         }
         if ((normal[0] == 0.) && (normal[1] != 0.) && (normal[2] == 0.))
@@ -1030,11 +1041,18 @@ avtSliceFilter::RefashionDataObjectInfo(void)
                 outAtts.SetYLabel(inAtts.GetXLabel());
                 outAtts.SetXLabel(inAtts.GetZLabel());
                 outAtts.SetZLabel(inAtts.GetYLabel());
+
+                outAtts.SetYUnits(inAtts.GetXUnits());
+                outAtts.SetXUnits(inAtts.GetZUnits());
+                outAtts.SetZUnits(inAtts.GetYUnits());
             }
             else if ((up[0] == 0.) && (up[1] == 0.) && (up[2] != 0.))
             {
                 outAtts.SetYLabel(inAtts.GetZLabel());
                 outAtts.SetZLabel(inAtts.GetYLabel());
+
+                outAtts.SetYUnits(inAtts.GetZUnits());
+                outAtts.SetZUnits(inAtts.GetYUnits());
             }
         }
         if ((normal[0] == 0.) && (normal[1] == 0.) && (normal[2] != 0.))
@@ -1043,6 +1061,9 @@ avtSliceFilter::RefashionDataObjectInfo(void)
             {
                 outAtts.SetXLabel(inAtts.GetYLabel());
                 outAtts.SetYLabel(inAtts.GetXLabel());
+
+                outAtts.SetXUnits(inAtts.GetYUnits());
+                outAtts.SetYUnits(inAtts.GetXUnits());
             }
             else if ((up[0] == 0.) && (up[1] != 0.) && (up[2] == 0.))
             {

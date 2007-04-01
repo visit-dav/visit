@@ -222,7 +222,7 @@ vtkDataSet *
 avtExpressionFilter::ExecuteData(vtkDataSet *in_ds, int index,
                                  std::string label)
 {
-    int   i, j;
+    int   i;
 
     //
     // Start off by having the derived type calculate the derived variable.
@@ -368,7 +368,6 @@ avtExpressionFilter::ExecuteData(vtkDataSet *in_ds, int index,
 //  Creation:   June 7, 2002
 //
 //  Modifications:
-//
 //    Akira Haddox, Mon Aug 19 16:41:12 PDT 2002
 //    Modified to set the centering of the variable to cell or point
 //    based on IsPointVariable().
@@ -376,13 +375,32 @@ avtExpressionFilter::ExecuteData(vtkDataSet *in_ds, int index,
 //    Hank Childs, Fri Feb 20 15:08:58 PST 2004
 //    Account for data attributes using multiple variables.
 //
+//    Brad Whitlock, Tue Jul 20 17:08:42 PST 2004
+//    Added code to propagate units.
+//
 // ****************************************************************************
  
 void
 avtExpressionFilter::RefashionDataObjectInfo(void)
 {
+    avtDataAttributes &inputAtts = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
-    outAtts.AddVariable(outputVariableName);
+
+    if (inputAtts.ValidActiveVariable())
+    {
+        //
+        // Expressions should really do some kind of transformation on
+        // the units. For example if you multiply a variable that has
+        // Newtons (N) times a variable that is in Meters (m), the resulting
+        // units for the output variable should be Nm  (Newton meters).
+        // Since we don't have that kind of knowhow in the expressions code
+        // yet, preserve the units of the active variable even though that's
+        // not really the correct thing to do.
+        //
+        outAtts.AddVariable(outputVariableName, inputAtts.GetVariableUnits());
+    }
+    else
+        outAtts.AddVariable(outputVariableName);
     outAtts.SetActiveVariable(outputVariableName);
     outAtts.SetVariableDimension(GetVariableDimension());
     outAtts.SetCentering(IsPointVariable()?AVT_NODECENT:AVT_ZONECENT);

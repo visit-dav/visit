@@ -38,6 +38,9 @@ class  vtkRenderer;
 //    Eric Brugger, Thu Jul 17 08:13:45 PDT 2003
 //    Added maxSize argument to GetLegendSize.
 //
+//    Brad Whitlock, Tue Jul 20 16:40:37 PST 2004
+//    Added SetVarUnits.
+//
 // ****************************************************************************
 
 class PLOTTER_API  avtLegend
@@ -62,6 +65,7 @@ class PLOTTER_API  avtLegend
     void                          SetTitle(const char *);
     void                          SetDatabaseInfo(const char *);
     void                          SetVarName(const char *);
+    void                          SetVarUnits(const char *);
     void                          SetMessage(const char *);
 
     void                          Update();
@@ -78,6 +82,7 @@ class PLOTTER_API  avtLegend
     char                         *title;
     char                         *databaseInfo;
     char                         *varName;
+    char                         *varUnits;
     char                         *message;
 
     virtual void                  ChangePosition(float, float) = 0;

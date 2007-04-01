@@ -20,6 +20,9 @@
 //    Eric Brugger, Mon Jul 14 15:50:29 PDT 2003
 //    Added fontHeight, title, databaseInfo, varName and message.
 //
+//    Brad Whitlock, Tue Jul 20 16:41:11 PST 2004
+//    Added varUnits.
+//
 // ****************************************************************************
 
 avtLegend::avtLegend()
@@ -35,6 +38,7 @@ avtLegend::avtLegend()
     title = NULL;
     databaseInfo = NULL;
     varName = NULL;
+    varUnits = NULL;
     message = NULL;
 }
 
@@ -49,6 +53,9 @@ avtLegend::avtLegend()
 //
 //    Eric Brugger, Mon Jul 14 15:50:29 PDT 2003
 //    Added minFontSize, fontHeight, title, databaseInfo, varName and message.
+//
+//    Brad Whitlock, Tue Jul 20 16:41:43 PST 2004
+//    Added varUnits.
 //
 // ****************************************************************************
 
@@ -74,6 +81,10 @@ avtLegend::~avtLegend()
     if (varName != NULL)
     {
         delete [] varName;
+    }
+    if (varUnits != NULL)
+    {
+        delete [] varUnits;
     }
     if (message != NULL)
     {
@@ -420,6 +431,37 @@ avtLegend::SetVarName(const char *str)
     }
 }
 
+// ****************************************************************************
+// Method: avtLegend::SetVarUnits
+//
+// Purpose: 
+//   Sets the variable units.
+//
+// Arguments:
+//   str : The units.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 20 16:46:40 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLegend::SetVarUnits(const char *str)
+{
+    if (varUnits != NULL) delete [] varUnits;
+
+    if (str != NULL)
+    {
+        varUnits = new char[strlen(str)+1];
+        strcpy(varUnits, str);
+    }
+    else
+    {
+        varUnits = NULL;
+    }
+}
 
 // ****************************************************************************
 //  Method: avtLegend::SetMessage
@@ -461,6 +503,10 @@ avtLegend::SetMessage(const char *str)
 //  Programmer:   Eric Brugger
 //  Creation:     July 14, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Tue Jul 20 16:48:56 PST 2004
+//    Added varUnits.
+//
 // ****************************************************************************
 
 void
@@ -478,6 +524,7 @@ avtLegend::Update()
     if (title != NULL)        len += strlen(title) + 1;
     if (databaseInfo != NULL) len += strlen(databaseInfo) + 1;
     if (varName != NULL)      len += strlen(varName) + 6;
+    if (varUnits != NULL)     len += strlen(varUnits) + 8;
     if (message != NULL)      len += strlen(message) + 1;
 
     if (len != 0)
@@ -501,6 +548,12 @@ avtLegend::Update()
         {
             strcpy(tmpstr, "\nVar: ");
             strcat(tmpstr, varName);
+            tmpstr += strlen(tmpstr);
+        }
+        if (varUnits != NULL)
+        {
+            strcpy(tmpstr, "\nUnits: ");
+            strcat(tmpstr, varUnits);
             tmpstr += strlen(tmpstr);
         }
         if (message != NULL)

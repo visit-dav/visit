@@ -72,6 +72,10 @@ vtkCxxSetObjectMacro(vtkVisItCubeAxesActor, Camera,vtkCamera);
 //   Replace Last*Extent with Last*Range.  (* = X, Y, Z)
 //   Add autoLabelScaling, userXPow, userYPow, userZPow.
 //
+//   Brad Whitlock, Fri Jul 23 18:18:41 PST 2004
+//   Added ActualXLabel et al so we can keep title separate from what's
+//   actually displayed so information is not lost.
+//
 // *************************************************************************
 
 vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
@@ -150,6 +154,10 @@ vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
   this->ZTitle = new char[7];
   SNPRINTF(this->ZTitle,7, "%s","Z-Axis");
   this->ZUnits = NULL;
+
+  this->ActualXLabel = 0;
+  this->ActualYLabel = 0;
+  this->ActualZLabel = 0;
 
   this->lastXPow = 0;
   this->lastYPow = 0;
@@ -233,6 +241,9 @@ void vtkVisItCubeAxesActor::ShallowCopy(vtkVisItCubeAxesActor *actor)
 //    Hank Childs, Fri Sep 27 17:15:07 PDT 2002
 //    Destruct new data members for units.
 //
+//    Brad Whitlock, Fri Jul 23 18:21:16 PST 2004
+//    Added more items and fixed a small memory leak.
+//
 // ****************************************************************************
 
 vtkVisItCubeAxesActor::~vtkVisItCubeAxesActor()
@@ -281,6 +292,17 @@ vtkVisItCubeAxesActor::~vtkVisItCubeAxesActor()
     delete [] this->XTitle;
     this->XTitle = NULL;
     }
+  if (this->YTitle)
+    {
+    delete [] this->YTitle;
+    this->YTitle = NULL;
+    }
+  if (this->ZTitle)
+    {
+    delete [] this->ZTitle;
+    this->ZTitle = NULL;
+    }
+
   if (this->XUnits)
     {
     delete [] this->XUnits;
@@ -295,6 +317,22 @@ vtkVisItCubeAxesActor::~vtkVisItCubeAxesActor()
     {
     delete [] this->ZUnits;
     this->ZUnits = NULL;
+    }
+
+  if (this->ActualXLabel)
+    {
+    delete [] this->ActualXLabel;
+    this->ActualXLabel = NULL;
+    }
+  if (this->ActualYLabel)
+    {
+    delete [] this->ActualYLabel;
+    this->ActualYLabel = NULL;
+    }
+  if (this->ActualZLabel)
+    {
+    delete [] this->ActualZLabel;
+    this->ActualZLabel = NULL;
     }
 }
 
@@ -719,6 +757,10 @@ vtkVisItCubeAxesActor::ComputeTickSize(float bounds[6])
 //
 //    Kathleen Bonnell, Tue Jul 20 11:41:45 PDT 2004 
 //    For title use 'x10^' instead of '10e' to designate that exponent.
+//
+//    Brad Whitlock, Fri Jul 23 18:27:30 PST 2004
+//    Added support for using user-defined titles for axes.
+//
 // ****************************************************************************
 
 void
@@ -754,9 +796,9 @@ vtkVisItCubeAxesActor::AdjustValues(const float bnds[6])
       this->mustAdjustXValue = true;
 
       if (XUnits == NULL || XUnits[0] == '\0')
-        SNPRINTF(xTitle,64, "X-Axis (x10^%d)", xPow);
+        SNPRINTF(xTitle,64, "%s (x10^%d)", this->XTitle, xPow);
       else
-        SNPRINTF(xTitle,264, "X-Axis (x10^%d %s)", xPow, XUnits);
+        SNPRINTF(xTitle,264, "%s (x10^%d %s)", this->XTitle, xPow, XUnits);
       }
     else 
       { 
@@ -772,9 +814,9 @@ vtkVisItCubeAxesActor::AdjustValues(const float bnds[6])
       this->mustAdjustXValue = false;
 
       if (XUnits == NULL || XUnits[0] == '\0')
-        SNPRINTF(xTitle,64, "X-Axis");
+        SNPRINTF(xTitle,64, this->XTitle);
       else
-        SNPRINTF(xTitle,64, "X-Axis (%s)", XUnits);
+        SNPRINTF(xTitle,64, "%s (%s)", this->XTitle, XUnits);
       }
 
 
@@ -792,9 +834,9 @@ vtkVisItCubeAxesActor::AdjustValues(const float bnds[6])
         }
       this->mustAdjustYValue = true;
       if (YUnits == NULL || YUnits[0] == '\0')
-        SNPRINTF(yTitle,64, "Y-Axis (x10^%d)", yPow);
+        SNPRINTF(yTitle,64, "%s (x10^%d)", this->YTitle, yPow);
       else
-        SNPRINTF(yTitle,64, "Y-Axis (x10^%d %s)", yPow, YUnits);
+        SNPRINTF(yTitle,64, "%s (x10^%d %s)", this->YTitle, yPow, YUnits);
       }
     else 
       { 
@@ -809,9 +851,9 @@ vtkVisItCubeAxesActor::AdjustValues(const float bnds[6])
         }
       this->mustAdjustYValue = false;
       if (YUnits == NULL || YUnits[0] == '\0')
-        SNPRINTF(yTitle,64, "Y-Axis");
+        SNPRINTF(yTitle,64, this->YTitle);
       else
-        SNPRINTF(yTitle,64, "Y-Axis (%s)", YUnits);
+        SNPRINTF(yTitle,64, "%s (%s)", this->YTitle, YUnits);
       }
 
 
@@ -829,9 +871,9 @@ vtkVisItCubeAxesActor::AdjustValues(const float bnds[6])
       this->mustAdjustZValue = true;
 
       if (ZUnits == NULL || ZUnits[0] == '\0')
-        SNPRINTF(zTitle,64, "Z-Axis (x10^%d)", zPow);
+        SNPRINTF(zTitle,64, "%s (x10^%d)", this->ZTitle, zPow);
       else
-        SNPRINTF(zTitle,64, "Z-Axis (x10^%d %s)", zPow, ZUnits);
+        SNPRINTF(zTitle,64, "%s (x10^%d %s)", this->ZTitle, zPow, ZUnits);
       }
     else 
       { 
@@ -847,18 +889,18 @@ vtkVisItCubeAxesActor::AdjustValues(const float bnds[6])
       this->mustAdjustZValue = false;
 
       if (ZUnits == NULL || ZUnits[0] == '\0')
-        SNPRINTF(zTitle,64, "Z-Axis");
+        SNPRINTF(zTitle,64, this->ZTitle);
       else
-        SNPRINTF(zTitle,64, "Z-Axis (%s)", ZUnits);
+        SNPRINTF(zTitle,64, "%s (%s)", this->ZTitle, ZUnits);
       }
   
     this->lastXPow = xPow;
     this->lastYPow = yPow;
     this->lastZPow = zPow;
 
-    SetXTitle(xTitle);
-    SetYTitle(yTitle);
-    SetZTitle(zTitle);
+    SetActualXLabel(xTitle);
+    SetActualYLabel(yTitle);
+    SetActualZLabel(zTitle);
 }
 
 
@@ -1196,9 +1238,9 @@ void vtkVisItCubeAxesActor::BuildAxes(vtkViewport *viewport)
     this->YAxes[i]->SetRange(yRange[0], yRange[1]);
     this->ZAxes[i]->SetRange(zRange[0], zRange[1]);
 
-    this->XAxes[i]->SetTitle(this->XTitle);
-    this->YAxes[i]->SetTitle(this->YTitle);
-    this->ZAxes[i]->SetTitle(this->ZTitle);
+    this->XAxes[i]->SetTitle(this->ActualXLabel);
+    this->YAxes[i]->SetTitle(this->ActualYLabel);
+    this->ZAxes[i]->SetTitle(this->ActualZLabel);
     }
 
 

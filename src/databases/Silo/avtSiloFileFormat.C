@@ -760,6 +760,10 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Use value of ascii_labels option for variables to set treatAsASCII
 //    in ScalarMetaData. 
 //
+//    Brad Whitlock, Tue Jul 20 15:48:04 PST 2004
+//    Added support for passing the variable units back up to VisIt via
+//    the metadata. I also added support for labels and a database comment.
+//
 // ****************************************************************************
 
 void
@@ -934,6 +938,18 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                 DBReadVar(dbfile, "_meshtv_searchpath", searchpath_str);
             }
         }
+
+        if (DBInqVarExists(dbfile, "_fileinfo"))
+        {
+            int lfileinfo = DBGetVarLength(dbfile, "_fileinfo");
+            if (lfileinfo > 0)
+            {
+                char *fileinfo_str = new char[lfileinfo+1];
+                DBReadVar(dbfile, "_fileinfo", fileinfo_str);
+                md->SetDatabaseComment(fileinfo_str);
+                delete [] fileinfo_str;
+            }
+        }
     }
 
     //
@@ -966,6 +982,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         int tdims;
         int cellOrigin;
         string xUnits, yUnits, zUnits;
+        string xLabel, yLabel, zLabel;
         switch (silo_mt)
         {
           case DB_UCDMESH:
@@ -987,6 +1004,14 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                     yUnits = um->units[1];
                 if (um->units[2] != NULL)
                     zUnits = um->units[2];
+
+                if (um->labels[0] != NULL)
+                    xLabel = um->labels[0];
+                if (um->labels[1] != NULL)
+                    yLabel = um->labels[1];
+                if (um->labels[2] != NULL)
+                    zLabel = um->labels[2];
+
                 DBFreeUcdmesh(um);
             }
             break;
@@ -1009,6 +1034,14 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                     yUnits = pm->units[1];
                 if (pm->units[2] != NULL)
                     zUnits = pm->units[2];
+
+                if (pm->labels[0] != NULL)
+                    xLabel = pm->labels[0];
+                if (pm->labels[1] != NULL)
+                    yLabel = pm->labels[1];
+                if (pm->labels[2] != NULL)
+                    zLabel = pm->labels[2];
+
                 DBFreePointmesh(pm);
             }
             break;
@@ -1031,6 +1064,14 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                     yUnits = qm->units[1];
                 if (qm->units[2] != NULL)
                     zUnits = qm->units[2];
+
+                if (qm->labels[0] != NULL)
+                    xLabel = qm->labels[0];
+                if (qm->labels[1] != NULL)
+                    yLabel = qm->labels[1];
+                if (qm->labels[2] != NULL)
+                    zLabel = qm->labels[2];
+
                 DBFreeQuadmesh(qm);
             }
             break;
@@ -1053,6 +1094,14 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                     yUnits = qm->units[1];
                 if (qm->units[2] != NULL)
                     zUnits = qm->units[2];
+
+                if (qm->labels[0] != NULL)
+                    xLabel = qm->labels[0];
+                if (qm->labels[1] != NULL)
+                    yLabel = qm->labels[1];
+                if (qm->labels[2] != NULL)
+                    zLabel = qm->labels[2];
+
                 DBFreeQuadmesh(qm);
             }
             break;
@@ -1078,6 +1127,9 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         mmd->xUnits = xUnits;
         mmd->yUnits = yUnits;
         mmd->zUnits = zUnits;
+        mmd->xLabel = xLabel;
+        mmd->yLabel = yLabel;
+        mmd->zLabel = zLabel;
         md->Add(mmd);
 
         // Store off the important info about this multimesh
@@ -1161,6 +1213,14 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             mmd->yUnits = qm->units[1];
         if (qm->units[2] != NULL)
             mmd->zUnits = qm->units[2];
+
+        if (qm->labels[0] != NULL)
+            mmd->xLabel = qm->labels[0];
+        if (qm->labels[1] != NULL)
+            mmd->yLabel = qm->labels[1];
+        if (qm->labels[2] != NULL)
+            mmd->zLabel = qm->labels[2];
+
         mmd->groupTitle = "blocks";
         mmd->groupPieceName = "block";
         md->Add(mmd);
@@ -1217,6 +1277,14 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
            mmd->yUnits = um->units[1];
         if (um->units[2] != NULL)
            mmd->zUnits = um->units[2];
+
+        if (um->labels[0] != NULL)
+            mmd->xLabel = um->labels[0];
+        if (um->labels[1] != NULL)
+            mmd->yLabel = um->labels[1];
+        if (um->labels[2] != NULL)
+            mmd->zLabel = um->labels[2];
+
         mmd->groupTitle = "blocks";
         mmd->groupPieceName = "block";
         mmd->disjointElements = hasDisjointElements;
@@ -1250,6 +1318,14 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             mmd->yUnits = pm->units[1];
         if (pm->units[2] != NULL)
             mmd->zUnits = pm->units[2];
+
+        if (pm->labels[0] != NULL)
+            mmd->xLabel = pm->labels[0];
+        if (pm->labels[1] != NULL)
+            mmd->yLabel = pm->labels[1];
+        if (pm->labels[2] != NULL)
+            mmd->zLabel = pm->labels[2];
+
         md->Add(mmd);
 
         delete [] name_w_dir;
@@ -1295,6 +1371,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         //
         char   *realvar = NULL;
         DBfile *correctFile = dbfile;
+        string  varUnits;
 
         DetermineFileAndDirectory(mv->varnames[0], correctFile, realvar);
         int nvals = 1;
@@ -1312,6 +1389,8 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                                                               : AVT_NODECENT);
                     nvals = uv->nvals;
                     treatAsASCII = (uv->ascii_labels);
+                    if(uv->units != 0)
+                        varUnits = string(uv->units);
                     DBFreeUcdvar(uv);
                 }
                 break;
@@ -1325,6 +1404,8 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                                                     : AVT_ZONECENT);
                     nvals = qv->nvals;
                     treatAsASCII = (qv->ascii_labels);
+                    if(qv->units != 0)
+                        varUnits = string(qv->units);
                     DBFreeQuadvar(qv);
                 }
                 break;
@@ -1337,6 +1418,8 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                         EXCEPTION1(InvalidVariableException, mv->varnames[0]);
                     nvals = pv->nvals;
                     treatAsASCII = (pv->ascii_labels);
+                    if(pv->units != 0)
+                        varUnits = string(pv->units);
                     DBFreeMeshvar(pv);
                 }
                 break;
@@ -1354,6 +1437,11 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                                                        meshname, centering);
             smd->validVariable = valid_var;
             smd->treatAsASCII = treatAsASCII;
+            if(varUnits != "")
+            {
+                smd->hasUnits = true;
+                smd->units = varUnits;
+            }
             md->Add(smd);
         }
         else
@@ -1361,6 +1449,11 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
                                              meshname, centering, nvals);
             vmd->validVariable = valid_var;
+            if(varUnits != "")
+            {
+                vmd->hasUnits = true;
+                vmd->units = varUnits;
+            }
             md->Add(vmd);
         }
         delete [] name_w_dir;
@@ -1397,12 +1490,22 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
                                                     meshname_w_dir, centering);
             smd->treatAsASCII = (qv->ascii_labels);
+            if(qv->units != 0)
+            {
+                smd->hasUnits = true;
+                smd->units = string(qv->units);
+            }
             md->Add(smd);
         }
         else
         {
             avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
                                          meshname_w_dir, centering, qv->nvals);
+            if(qv->units != 0)
+            {
+                vmd->hasUnits = true;
+                vmd->units = string(qv->units);
+            }
             md->Add(vmd);
         }
         delete [] name_w_dir;
@@ -1441,12 +1544,22 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
                                                     meshname_w_dir, centering);
             smd->treatAsASCII = (uv->ascii_labels);
+            if(uv->units != 0)
+            {
+                smd->hasUnits = true;
+                smd->units = string(uv->units);
+            }
             md->Add(smd);
         }
         else
         {
             avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
                                          meshname_w_dir, centering, uv->nvals);
+            if(uv->units != 0)
+            {
+                vmd->hasUnits = true;
+                vmd->units = string(uv->units);
+            }
             md->Add(vmd);
         }
         delete [] name_w_dir;
@@ -1479,12 +1592,22 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
                                                 meshname_w_dir, AVT_NODECENT);
             smd->treatAsASCII = (pv->ascii_labels);
+            if(pv->units != 0)
+            {
+                smd->hasUnits = true;
+                smd->units = string(pv->units);
+            }
             md->Add(smd);
         }
         else
         {
             avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
                                       meshname_w_dir, AVT_NODECENT, pv->nvals);
+            if(pv->units != 0)
+            {
+                vmd->hasUnits = true;
+                vmd->units = string(pv->units);
+            }
             md->Add(vmd);
         }
         delete [] name_w_dir;

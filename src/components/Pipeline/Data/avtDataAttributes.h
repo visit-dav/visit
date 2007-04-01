@@ -116,6 +116,9 @@ class     avtExtents;
 //    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
 //    Added treatAsASCII to VarInfo struct, and Set/Get methods. 
 //
+//    Brad Whitlock, Tue Jul 20 12:19:38 PDT 2004
+//    Added support for units on variables.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -219,9 +222,13 @@ class PIPELINE_API avtDataAttributes
             
     const std::string       &GetVariableName(void) const;
     const std::string       &GetVariableName(int) const;
+    const std::string       &GetVariableUnits(void) const;
+    const std::string       &GetVariableUnits(int) const;
     int                      GetNumberOfVariables(void) const;
     void                     SetActiveVariable(const char *);
     void                     AddVariable(const std::string &s);
+    void                     AddVariable(const std::string &s,
+                                         const std::string &units);
     void                     RemoveVariable(const std::string &s);
     bool                     ValidVariable(const std::string &s) const;
     bool                     ValidActiveVariable(void) const;
@@ -287,6 +294,7 @@ class PIPELINE_API avtDataAttributes
     typedef struct
     {
         std::string          varname;
+        std::string          varunits;
         int                  dimension;
         avtCentering         centering;
         bool                 treatAsASCII;

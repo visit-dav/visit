@@ -256,6 +256,10 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
 //    Set avtDataAttributes::treatAsASCII from ScalarMetaData::treatAsASCII.
 //
+//    Brad Whitlock, Tue Jul 20 13:35:38 PST 2004
+//    Added units for scalar, vector, tensor, symmetric tensor, and curve
+//    vars. I also added labels for meshes.
+//
 // ****************************************************************************
 
 void
@@ -282,6 +286,9 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
         atts.SetXUnits(mmd->xUnits);
         atts.SetYUnits(mmd->yUnits);
         atts.SetZUnits(mmd->zUnits);
+        atts.SetXLabel(mmd->xLabel);
+        atts.SetYLabel(mmd->yLabel);
+        atts.SetZLabel(mmd->zLabel);
         atts.SetContainsGhostZones(mmd->containsGhostZones);
         atts.SetContainsOriginalCells(mmd->containsOriginalCells);
         atts.SetContainsOriginalNodes(mmd->containsOriginalNodes);
@@ -329,7 +336,10 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
         const avtScalarMetaData *smd = GetMetaData(ts)->GetScalar(var_list[i]);
         if (smd != NULL)
         {
-            atts.AddVariable(var_list[i]);
+            if (smd->hasUnits)
+                atts.AddVariable(var_list[i], smd->units);
+            else
+                atts.AddVariable(var_list[i]);
             atts.SetVariableDimension(1, var_list[i]);
             atts.SetCentering(smd->centering, var_list[i]);
             atts.SetTreatAsASCII(smd->treatAsASCII, var_list[i]); 
@@ -351,7 +361,10 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
         const avtVectorMetaData *vmd = GetMetaData(ts)->GetVector(var_list[i]);
         if (vmd != NULL)
         {
-            atts.AddVariable(var_list[i]);
+            if (vmd->hasUnits)
+                atts.AddVariable(var_list[i], vmd->units);
+            else
+                atts.AddVariable(var_list[i]);
             atts.SetVariableDimension(vmd->varDim, var_list[i]);
             atts.SetCentering(vmd->centering, var_list[i]);
     
@@ -372,7 +385,10 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
         const avtTensorMetaData *tmd = GetMetaData(ts)->GetTensor(var_list[i]);
         if (tmd != NULL)
         {
-            atts.AddVariable(var_list[i]);
+            if (tmd->hasUnits)
+                atts.AddVariable(var_list[i], tmd->units);
+            else
+                atts.AddVariable(var_list[i]);
             atts.SetVariableDimension(9, var_list[i]);
             atts.SetCentering(tmd->centering, var_list[i]);
         }
@@ -381,7 +397,10 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
                                    GetMetaData(ts)->GetSymmTensor(var_list[i]);
         if (stmd != NULL)
         {
-            atts.AddVariable(var_list[i]);
+            if (tmd->hasUnits)
+                atts.AddVariable(var_list[i], tmd->units);
+            else
+                atts.AddVariable(var_list[i]);
             atts.SetVariableDimension(9, var_list[i]);
             atts.SetCentering(stmd->centering, var_list[i]);
         }
@@ -405,6 +424,10 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
         {
             atts.SetTopologicalDimension(1);
             atts.SetSpatialDimension(2);
+            atts.SetXUnits(cmd->xUnits);
+            atts.SetXLabel(cmd->xLabel);
+            atts.SetYUnits(cmd->yUnits);
+            atts.SetYLabel(cmd->yLabel);
         }
     }
     atts.SetActiveVariable(var);

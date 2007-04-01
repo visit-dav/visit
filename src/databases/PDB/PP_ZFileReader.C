@@ -662,6 +662,9 @@ PP_ZFileReader::InitializeVarStorage()
 //   Added support for materials, a revolved mesh, and zonal variables. Made
 //   it work on files that are missing some crucial information.
 //
+//   Brad Whitlock, Fri Jul 23 14:41:02 PST 2004
+//   I added support for reading a database comment.
+//
 // ****************************************************************************
 
 void
@@ -673,6 +676,19 @@ PP_ZFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // Make sure that everything is initialized.
     //
     Initialize();
+
+    //
+    // Add the database comment if it is present. This won't leak memory
+    // by calling GetString twice because the two keys won't ever be in the
+    // same file.
+    //
+    char *idates = 0;
+    if(pdb->GetString("idates@value", &idates) ||
+       pdb->GetString("idates@las", &idates))
+    {
+        md->SetDatabaseComment(idates);
+        delete [] idates;
+    }
 
     int cellOrigin = 1;
     int ndims = 2;

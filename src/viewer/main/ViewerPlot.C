@@ -2477,6 +2477,9 @@ ViewerPlot::GetReader() const
 //    Added call to re-enable external render request status of all windows
 //    at all early returns points.
 //
+//    Brad Whitlock, Thu Jul 22 14:41:22 PST 2004
+//    Added code to set the actor's units if applicable.
+//
 // ****************************************************************************
 
 void
@@ -2663,10 +2666,29 @@ ViewerPlot::CreateActor(bool createNew,
     TRY
     {
         avtActor_p actor = plotList[cacheIndex]->Execute(reader);
-
         bool countPolysOnly = false;
         if (actor->GetDataObject()->GetNumberOfCells(countPolysOnly) == 0)
             actorHasNoData = true;
+
+        //
+        // Set the actor's units from the data attributes.
+        //
+        TRY
+        {
+            std::string units(actor->GetDataObject()->GetInfo().GetAttributes().
+                GetVariableUnits());
+            if(units != "")
+                plotList[cacheIndex]->SetVarUnits(units.c_str());
+            else
+                plotList[cacheIndex]->SetVarUnits(0);
+        }
+        CATCH(ImproperUseException)
+        {
+            // ignore improper use exception that might occur when getting
+            // the data attributes' units.
+            plotList[cacheIndex]->SetVarUnits(0);
+        }
+        ENDTRY
 
         this->SetActor(actor);
 

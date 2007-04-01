@@ -162,6 +162,9 @@ avtVariableLegend::~avtVariableLegend()
 //    Eric Brugger, Thu Jul 17 08:47:55 PDT 2003
 //    Added maxSize argument.  It is unused in this routine so it is unnamed.
 //
+//    Brad Whitlock, Tue Jul 20 17:16:12 PST 2004
+//    Added varUnits.
+//
 // ****************************************************************************
 
 void
@@ -180,6 +183,7 @@ avtVariableLegend::GetLegendSize(float, float &w, float &h)
         if (title != NULL)        nLines += 1.0;
         if (databaseInfo != NULL) nLines += 2.0;
         if (varName != NULL)      nLines += 1.0;
+        if (varUnits != NULL)     nLines += 1.0;
         if (message != NULL)      nLines += 1.0;
         if (rangeVisibility)      nLines += 2.5;
 

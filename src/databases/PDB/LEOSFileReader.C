@@ -476,6 +476,12 @@ LEOSFileReader::BuildVarInfoMap()
 //    Mark C. Miller, Thu Jun 17 23:07:34 PDT 2004
 //    Added code to correctly serve up 1D eos vars as curve objects 
 //
+//    Brad Whitlock, Tue Jul 20 15:34:33 PST 2004
+//    Added code to set the units for the variable in the scalar metadata
+//    object. I also added units and labels to the curve objects and
+//    removed a trick that was being used to get the units into the axis
+//    labels.
+//
 // ****************************************************************************
 
 bool 
@@ -565,18 +571,32 @@ LEOSFileReader::AddVariableAndMesh(avtDatabaseMetaData *md, const char *matDirNa
                                        varInfo.ndims, AVT_RECTILINEAR_MESH);
 
         // we use a trick and include the axis lables in the units
-        mmd->xUnits = varInfo.xName + '[' + varInfo.xUnits + ']';
-        if ((varInfo.yName != "") && (varInfo.yUnits != ""))
-            mmd->yUnits = varInfo.yName + '[' + varInfo.yUnits + ']';
+        mmd->xLabel = varInfo.xName;
+        mmd->xUnits = varInfo.xUnits;
+        if (varInfo.yName != "")
+            mmd->yLabel = varInfo.yName;
+        if (varInfo.yUnits != "")
+            mmd->yUnits = varInfo.yUnits;
         md->Add(mmd);
 
         // add the variable on this mesh
         avtScalarMetaData *smd = new avtScalarMetaData(mdVarName, mdMeshName, AVT_NODECENT);
+        if(varInfo.vUnits != "" && varInfo.vUnits != "none")
+        {
+            smd->hasUnits = true;
+            smd->units = varInfo.vUnits;
+        }
         md->Add(smd);
     }
     else
     {
         avtCurveMetaData *cmd = new avtCurveMetaData(mdVarName);
+        cmd->xLabel = varInfo.xName;
+        cmd->xUnits = varInfo.xUnits;
+        if(varInfo.yName != "")
+            cmd->yLabel = varInfo.yName;
+        if (varInfo.yUnits != "")
+            cmd->yUnits = varInfo.yUnits;
         md->Add(cmd);
     }
 
@@ -783,9 +803,11 @@ LEOSFileReader::ReadMaterialInfo(const char *matDirName, string &matName,
 // Creation:   February 10, 2004 
 //
 // Modifications:
-//
 //   Mark C. Miller, Thu Jun 17 23:07:34 PDT 2004
 //   Added code to accomdate 1D variables that LEOS says are either Nx1 or 1xN
+//
+//   Brad Whitlock, Wed Jul 21 09:52:13 PDT 2004
+//   Removed an unused variable.
 //
 // ****************************************************************************
 
@@ -828,7 +850,6 @@ LEOSFileReader::ReadVariableInfo(const char *matDirName,
 
     // parse name of PDB symbol containing x data
     string tmp = '('+varInfo.xSize+')';
-    string::size_type tmpn = tmp.length();
     n = tableDesc.find(tmp);
     varInfo.xName = string(tableDesc,0,n);
 

@@ -73,6 +73,9 @@
 //    Jeremy Meredith, Tue Dec 10 09:15:35 PST 2002
 //    Initialize avtSmoothPolyDataFilter.
 //
+//    Brad Whitlock, Tue Jul 20 16:10:51 PST 2004
+//    Added variable units.
+//
 // ****************************************************************************
 
 avtPlot::avtPlot()
@@ -87,6 +90,7 @@ avtPlot::avtPlot()
     vertexNormalsFilter        = new avtVertexNormalsFilter;
     smooth                     = new avtSmoothPolyDataFilter();
     varname                = NULL;
+    varunits               = NULL;
     silr                   = NULL;
     index                  = -1;
     intermediateDataObject = NULL;
@@ -113,7 +117,7 @@ avtPlot::avtPlot()
 //    Kathleen Bonnell, Wed Sep 19 12:55:57 PDT 2001 
 //    Added compactTreeFilter. 
 //
-//    Kathleen Bonnell, Thu Oct  4 16:28:16 PDT 2001j 
+//    Kathleen Bonnell, Thu Oct  4 16:28:16 PDT 2001
 //    Added currentExtentFilter. 
 //
 //    Hank Childs, Mon Dec 31 11:36:28 PST 2001
@@ -121,6 +125,9 @@ avtPlot::avtPlot()
 //
 //    Jeremy Meredith, Tue Dec 10 09:16:39 PST 2002
 //    Added poly data smoothing filter.
+//
+//    Brad Whitlock, Tue Jul 20 16:11:26 PST 2004
+//    Added variable units.
 //
 // ****************************************************************************
 
@@ -165,6 +172,11 @@ avtPlot::~avtPlot()
     {
         delete [] varname;
         varname = NULL;
+    }
+    if (varunits != NULL)
+    {
+        delete [] varunits;
+        varunits = NULL;
     }
 }
 
@@ -245,6 +257,42 @@ avtPlot::SetVarName(const char *name)
     needsRecalculation = true;
 }
 
+// ****************************************************************************
+// Method: avtPlot::SetVarUnits
+//
+// Purpose: 
+//   Sets the units for the plot.
+//
+// Arguments:
+//   name : The name of the units.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 20 16:12:30 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtPlot::SetVarUnits(const char *name)
+{
+    if (varunits != NULL)
+    {
+        delete [] varunits;
+        varunits = NULL;
+    }
+    if (name != NULL)
+    {
+        varunits = new char[strlen(name)+1];
+        strcpy(varunits, name);
+    }
+    avtLegend_p legend = GetLegend();
+    if (*legend != NULL)
+    {
+        legend->SetVarUnits(varunits);
+        legend->Update();
+    }
+}
 
 // ****************************************************************************
 //  Method: avtPlot::Execute
@@ -329,6 +377,9 @@ avtPlot::Execute(avtDataObject_p input, avtPipelineSpecification_p spec,
 //    now totally subsumed by scalable rendering.  Also set the name of the
 //    variable for this plot.
 //
+//    Brad Whitlock, Tue Jul 20 16:39:07 PST 2004
+//    Added code to set the units for the plot.
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -372,6 +423,23 @@ avtPlot::Execute(avtDataObject_p input, avtPipelineSpecification_p spec,
        writer->SetPipelineIndex(spec->GetPipelineIndex());
        writer->Execute(spec->GetDataSpecification());
     }
+
+    //
+    // Try setting the plot's units based on the information in the dob.
+    //
+    TRY
+    {
+        std::string dobunits = dob->GetInfo().GetAttributes().GetVariableUnits();
+        if(dobunits == "")
+            SetVarUnits(NULL);
+        else
+            SetVarUnits(dobunits.c_str());
+    }
+    CATCH(ImproperUseException)
+    {
+        SetVarUnits(NULL);
+    }
+    ENDTRY
 
     return writer;
 }
