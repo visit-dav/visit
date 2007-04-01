@@ -126,6 +126,9 @@
 #   Jeremy Meredith, Wed Nov 17 11:24:23 PST 2004
 #   Added TecPlot.
 #
+#   Brad Whitlock, Fri Dec 17 13:26:46 PST 2004
+#   Added CMAT reader.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -142,7 +145,7 @@ MILI=Mili
 PDB=KullLite PDB
 SAF=SAF
 SAMPLES=Rect Hex
-REQUIRED=ANALYZE BOV Curve2D Dune EnSight Image Lines OVERFLOW \
+REQUIRED=ANALYZE BOV CMAT Curve2D Dune EnSight Image Lines OVERFLOW \
  PLOT2D PLOT3D Point3D STL Silo SimDB Spheral TecPlot Vista VTK WavefrontOBJ
 VISUS=ViSUS
 
