@@ -145,6 +145,9 @@
 #    Hank Childs, Thu Jan  8 16:49:18 PST 2004
 #    Made inverse ghost zone be required.
 #
+#    Jeremy Meredith, Fri Jan 30 17:43:11 PST 2004
+#    Added Isovolume.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -156,8 +159,8 @@ OPTIONAL=Context ConnCompReduce Decimate Displace ExternalSurface \
          MetricThreshold RemoveCells Revolve SiloDump SurfCompPrep Tube
 
 REQUIRED=Box Clip Cone Cylinder IndexSelect InverseGhostZone Isosurface \
-         Lineout OnionPeel Reflect Slice SphereSlice ThreeSlice Threshold \
-         Transform
+         Isovolume Lineout OnionPeel Reflect Slice SphereSlice ThreeSlice \
+         Threshold Transform
 
 SUBDIRS=$(REQUIRED) @OPERATOR_OPTIONAL_DIRS@
 ALLSUBDIRS=$(REQUIRED) $(OPTIONAL)

@@ -334,7 +334,9 @@ SocketConnection::DirectRead(unsigned char *buf, long ntotal)
 // Creation:   Mon Mar 25 14:33:40 PST 2002
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Fri Jan 30 17:39:47 PST 2004
+//    Fixed a bug where failed sends would restart from the beginning.
+//
 // ****************************************************************************
 
 long
@@ -347,7 +349,7 @@ SocketConnection::DirectWrite(const unsigned char *buf, long ntotal)
     nleft = ntotal;
     while (nleft > 0)
     {
-        if((nwritten = send(descriptor, (const char *)buf, ntotal, 0)) <= 0)
+        if((nwritten = send(descriptor, (const char *)ptr, nleft, 0)) <= 0)
             return nwritten;
 
         nleft -= nwritten;

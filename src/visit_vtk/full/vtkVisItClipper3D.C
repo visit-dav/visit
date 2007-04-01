@@ -49,7 +49,29 @@ vtkVisItClipper3D::SetCellList(int *cl, int size)
 void
 vtkVisItClipper3D::SetClipFunction(vtkImplicitFunction *func)
 {
+    // Set the clip function
     clipFunction = func;
+
+    // Clear the scalar array so we know to use the clip function
+    scalarArray = NULL;
+}
+
+void
+vtkVisItClipper3D::SetClipScalars(float *array, float lower, float upper)
+{
+    // Clear the clip function so we know to use scalars
+    clipFunction = NULL;
+
+    // Set the scalar array
+    scalarArray = array;
+
+    // Set the range
+    minValue = lower;
+    maxValue = upper;
+
+    // Calculate the distance parameters
+    avgValue = (upper + lower) / 2;
+    halfDist = (upper - lower) / 2;
 }
 
 void
@@ -106,6 +128,9 @@ vtkVisItClipper3D::Execute()
 //    COLOR1's material to come up with a material volume fraction for
 //    the new point; it was not needed here, but we must skip over it.
 //
+//    Jeremy Meredith, Fri Jan 30 17:27:23 PST 2004
+//    Added support for using a scalar array to clip against.
+//
 // ****************************************************************************
 void
 vtkVisItClipper3D::StructuredGridExecute(void)
@@ -159,8 +184,18 @@ vtkVisItClipper3D::StructuredGridExecute(void)
         {
             int ptId = (cellI + X_val[j]) + (cellJ + Y_val[j])*ptstrideY +
                        (cellK + Z_val[j])*ptstrideZ;
-            float *pt = pts_ptr + 3*ptId;
-            dist[j] = clipFunction->EvaluateFunction(pt[0],pt[1],pt[2]);
+
+            if (clipFunction)
+            {
+                float *pt = pts_ptr + 3*ptId;
+                dist[j] = clipFunction->EvaluateFunction(pt[0],pt[1],pt[2]);
+            }
+            else // if (scalarArray)
+            {
+                float val = scalarArray[ptId];
+                dist[j] = halfDist - fabs(val - avgValue);
+            }
+
             if (dist[j] >= 0)
                 lookup_case++;
             if (j > 0)
@@ -319,6 +354,9 @@ vtkVisItClipper3D::StructuredGridExecute(void)
 //    COLOR1's material to come up with a material volume fraction for
 //    the new point; it was not needed here, but we must skip over it.
 //
+//    Jeremy Meredith, Fri Jan 30 17:27:23 PST 2004
+//    Added support for using a scalar array to clip against.
+//
 // ****************************************************************************
 void vtkVisItClipper3D::RectilinearGridExecute(void)
 {
@@ -369,11 +407,22 @@ void vtkVisItClipper3D::RectilinearGridExecute(void)
         float dist[8];
         for (j = 7 ; j >= 0 ; j--)
         {
-            float pt[3];
-            pt[0] = X[cellI + X_val[j]];
-            pt[1] = Y[cellJ + Y_val[j]];
-            pt[2] = Z[cellK + Z_val[j]];
-            dist[j] = clipFunction->EvaluateFunction(pt[0],pt[1],pt[2]);
+            if (clipFunction)
+            {
+                float pt[3];
+                pt[0] = X[cellI + X_val[j]];
+                pt[1] = Y[cellJ + Y_val[j]];
+                pt[2] = Z[cellK + Z_val[j]];
+                dist[j] = clipFunction->EvaluateFunction(pt[0],pt[1],pt[2]);
+            }
+            else // if (scalarArray)
+            {
+                float val = scalarArray[(cellK + Z_val[j])*ptstrideZ +
+                                        (cellJ + Y_val[j])*ptstrideY +
+                                        (cellI + X_val[j])];
+                dist[j] = halfDist - fabs(val - avgValue);
+            }
+
             if (dist[j] >= 0)
                 lookup_case++;
             if (j > 0)
@@ -531,6 +580,9 @@ void vtkVisItClipper3D::RectilinearGridExecute(void)
 //    COLOR1's material to come up with a material volume fraction for
 //    the new point; it was not needed here, but we must skip over it.
 //
+//    Jeremy Meredith, Fri Jan 30 17:27:23 PST 2004
+//    Added support for using a scalar array to clip against.
+//
 // ****************************************************************************
 void vtkVisItClipper3D::UnstructuredGridExecute(void)
 {
@@ -598,8 +650,17 @@ void vtkVisItClipper3D::UnstructuredGridExecute(void)
             int lookup_case = 0;
             for (j = npts-1 ; j >= 0 ; j--)
             {
-                float *pt = pts_ptr + 3*pts[j];
-                dist[j] = clipFunction->EvaluateFunction(pt[0],pt[1],pt[2]);
+                if (clipFunction)
+                {
+                    float *pt = pts_ptr + 3*pts[j];
+                    dist[j] = clipFunction->EvaluateFunction(pt[0],pt[1],pt[2]);
+                }
+                else // if (scalarArray)
+                {
+                    float val = scalarArray[pts[j]];
+                    dist[j] = halfDist - fabs(val - avgValue);
+                }
+
                 if (dist[j] >= 0)
                     lookup_case++;
                 if (j > 0)

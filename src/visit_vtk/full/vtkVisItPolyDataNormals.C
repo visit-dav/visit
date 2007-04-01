@@ -323,6 +323,9 @@ class NormalList
 //    Pass along Verts and Lines.  Added test for ne->oldId < 0 when
 //    adding original points and normals. 
 //
+//    Hank Childs, Fri Jan 30 09:35:46 PST 2004
+//    Use pointer arithmetic to avoid VTK calls.
+//
 // ****************************************************************************
 void
 vtkVisItPolyDataNormals::ExecutePointWithSplitting()
@@ -354,10 +357,12 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting()
     // the duplicated points (where a feature edge was found).
     NormalList normalList(nPoints);
 
-    output->Allocate(inCA->GetNumberOfConnectivityEntries());
     outCD->CopyAllocate(inCD, nCells);
+    vtkIdTypeArray *list = vtkIdTypeArray::New();
+    list->SetNumberOfValues(inCA->GetNumberOfConnectivityEntries());
+    vtkIdType *nl = list->GetPointer(0);
     vtkIdType *connPtr = inCA->GetPointer();
-    vtkIdType cell[100];
+    vtkIdType *cell = NULL;
 
     int newPointIndex = nPoints;
     for (i = 0 ; i < nCells ; i++)
@@ -367,9 +372,11 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting()
         nVerts = *connPtr++;
 
         // Extract the cell vertices
+        *nl++ = nVerts;
+        cell = nl;
         for (j = 0 ; j < nVerts ; j++)
         {
-            cell[j] = *connPtr++;
+            *nl++ = *connPtr++;
         }
 
         //
@@ -492,21 +499,13 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting()
                 newPointIndex++;
             }
         }
-
-        // Now add the cell
-        if (nVerts == 3)
-        {
-            output->InsertNextCell(VTK_TRIANGLE, 3, cell);
-        }
-        else if (nVerts == 4)
-        {
-            output->InsertNextCell(VTK_QUAD, 4, cell);
-        }
-        else
-        {
-            output->InsertNextCell(VTK_POLYGON, nVerts, cell);
-        }
     }
+
+    vtkCellArray *polys = vtkCellArray::New();
+    polys->SetCells(nCells, list);
+    list->Delete();
+    output->SetPolys(polys);
+    polys->Delete();
 
     // Create the output points array
     int nOutPts = normalList.GetTotalNumberOfEntries();
@@ -588,44 +587,25 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting()
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 12, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Jan 30 09:26:38 PST 2004
+//    Performance improvements.
+//
 // ****************************************************************************
 void
 vtkVisItPolyDataNormals::ExecuteCell()
 {
-    int i;
-
     // Get all the input and output objects we'll need to reference
     vtkPolyData  *input = GetInput();
-    vtkCellArray *inCA  = input->GetPolys();
-    vtkPointData *inPD  = input->GetPointData();
-    vtkCellData  *inCD  = input->GetCellData();
+    vtkPolyData *output = GetOutput();
+    output->ShallowCopy(input);
+
     vtkPoints    *inPts = input->GetPoints();
 
+    vtkCellArray *inCA  = input->GetPolys();
     int nCells  = inCA->GetNumberOfCells();
-    int nPoints = input->GetNumberOfPoints();
-
-    vtkPolyData *output = GetOutput();
-    vtkPointData *outPD = output->GetPointData();
-    vtkCellData  *outCD = output->GetCellData();
-
-    // Pass through things which will be unchanged
-    output->SetFieldData(input->GetFieldData());
-
-    // Allocate and copy the output points; there will be no extras
-    vtkPoints *outPts = vtkPoints::New();
-    outPts->SetNumberOfPoints(nPoints);
-    outPD->CopyAllocate(inPD,nPoints);
-    int ptIdx = 0;
-    for (i = 0 ; i < nPoints ; i++)
-    {
-        float pt[3];
-        inPts->GetPoint(i, pt);
-        outPts->SetPoint(ptIdx, pt);
-        outPD->CopyData(inPD, i, ptIdx);
-        ptIdx++;
-    }
-    output->SetPoints(outPts);
-    outPts->Delete();
+    vtkIdType *connPtr = inCA->GetPointer();
 
     // Create the normals array
     vtkFloatArray *newNormals;
@@ -635,39 +615,18 @@ vtkVisItPolyDataNormals::ExecuteCell()
     newNormals->SetName("Normals");
     float *newNormalPtr = (float*)newNormals->GetVoidPointer(0);
 
-    // Create the output cell array
-    output->Allocate(inCA->GetNumberOfConnectivityEntries());
-    outCD->CopyAllocate(inCD, nCells);
-    vtkIdType *connPtr = inCA->GetPointer();
-    for (i = 0 ; i < nCells ; i++)
+    for (int i = 0 ; i < nCells ; i++)
     {
-        outCD->CopyData(inCD, i, i);
-        int nVerts = *connPtr++;
-        if (nVerts == 3)
-        {
-            output->InsertNextCell(VTK_TRIANGLE, 3,
-                                   connPtr);
-        }
-        else if (nVerts == 4)
-        {
-            output->InsertNextCell(VTK_QUAD, 4,
-                                   connPtr);
-        }
-        else
-        {
-            output->InsertNextCell(VTK_POLYGON, nVerts,
-                                   connPtr);
-        }
-
         //
         // Technically, we can use the first three vertices only,
         // (i.e. vtkTriangle::ComputeNormal), but this is not a big
         // hit, and it accomodates for degenerate quads.
         //
+        int nVerts = *connPtr++;
         vtkPolygon::ComputeNormal(inPts, nVerts, connPtr, &newNormalPtr[i*3]);
         connPtr += nVerts;
     }
         
-    outCD->SetNormals(newNormals);
+    output->GetCellData()->SetNormals(newNormals);
     newNormals->Delete();
 }
