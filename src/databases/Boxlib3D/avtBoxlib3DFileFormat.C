@@ -1165,6 +1165,10 @@ avtBoxlib3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Hank Childs, Wed Dec 10 18:41:45 PST 2003
 //    Fix cut-and-paste bug.
 //
+//    Kathleen Bonnell, Tue Jan 20 17:07:28 PST 2004 
+//    Added flag to constructor call  of avtRectilinearDomainBoundaries to 
+//    indicate that neighbors can be computed from extents.
+//
 // ****************************************************************************
 
 void
@@ -1237,7 +1241,7 @@ avtBoxlib3DFileFormat::CalculateDomainNesting(void)
     vector<int> logKMin(totalPatches);
     vector<int> logKMax(totalPatches);
     level = 0;
-    avtRectilinearDomainBoundaries *rdb = new avtRectilinearDomainBoundaries;
+    avtRectilinearDomainBoundaries *rdb = new avtRectilinearDomainBoundaries(true);
     rdb->SetNumDomains(totalPatches);
     for (int patch = 0 ; patch < totalPatches ; patch++)
     {

@@ -8,8 +8,11 @@
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
+#include <vtkUnsignedCharArray.h>
 
 #include <avtCallback.h>
+
+#include <DebugStream.h>
 
 
 // ****************************************************************************
@@ -27,32 +30,39 @@ avtDatasetVerifier::avtDatasetVerifier()
 
 
 // ****************************************************************************
-//  Method: avtDatasetVerifier::VerifyDataTree
+//  Method: avtDatasetVerifier::VerifyDatasets
 //
 //  Purpose:
-//      Verifies that every VTK dataset in the tree is valid (like the number
+//      Verifies that every VTK dataset in the list is valid (like the number
 //      of elements in the variable makes sense for the mesh, etc).
 //
 //  Arguments:
-//      tree    The tree to verify.
+//      nlist   The number of elements in the list.
+//      list    The list of datasets.
+//      domains The domain number of each dataset.
 //
 //  Programmer: Hank Childs
 //  Creation:   October 18, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Jan  9 09:40:32 PST 2004
+//    Renamed function and added arguments; made routine easily usable by
+//    the database as well the terminating dataset source.
+//
 // ****************************************************************************
 
 void
-avtDatasetVerifier::VerifyDataTree(avtDataTree_p &tree)
+avtDatasetVerifier::VerifyDatasets(int nlist, vtkDataSet **list, 
+                                   std::vector<int> &domains)
 {
-    int nLeaves;
-    vtkDataSet **ds = tree->GetAllLeaves(nLeaves);
-
-    for (int i = 0 ; i < nLeaves ; i++)
+    for (int i = 0 ; i < nlist ; i++)
     {
-        VerifyDataset(ds[i]);
+        if (list[i] != NULL)
+        {
+            VerifyDataset(list[i], domains[i]);
+        }
     }
-
-    delete [] ds;
 }
 
 
@@ -64,42 +74,73 @@ avtDatasetVerifier::VerifyDataTree(avtDataTree_p &tree)
 //
 //  Arguments:
 //      ds      A single vtk dataset.
+//      dom     The domain number.
 //
 //  Programmer: Hank Childs
 //  Creation:   October 18, 2001
 //
 //  Modifications:
+//
 //    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
 //    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray instead.
+//
+//    Hank Childs, Fri Jan  9 09:43:13 PST 2004
+//    Iterate over all variables.  Added an argument for the domain number.
+//    Also do not issue a warning if the missing values are for ghost zones.
 //
 // ****************************************************************************
 
 void
-avtDatasetVerifier::VerifyDataset(vtkDataSet *ds)
+avtDatasetVerifier::VerifyDataset(vtkDataSet *ds, int dom)
 {
+    int  i, j;
+
     int nPts   = ds->GetNumberOfPoints();
     int nCells = ds->GetNumberOfCells();
 
-    vtkDataArray *pt_var   = ds->GetPointData()->GetScalars();
-    vtkDataArray *cell_var = ds->GetCellData()->GetScalars();
-
-    if (pt_var != NULL)
+    int nPtVars = ds->GetPointData()->GetNumberOfArrays();
+    for (i = 0 ; i < nPtVars ; i++)
     {
-        int nScalars = pt_var->GetNumberOfTuples();
-        if (nScalars != nPts)
+        vtkDataArray *pt_var = ds->GetPointData()->GetArray(i);
+        int nscalars = pt_var->GetNumberOfTuples();
+        if (nscalars != nPts)
         {
             CorrectVarMismatch(ds, pt_var, true);
-            IssueVarMismatchWarning(nScalars, nPts, true);
+            IssueVarMismatchWarning(nscalars, nPts, true, dom);
         }
     }
 
-    if (cell_var != NULL)
+    int nCellVars = ds->GetCellData()->GetNumberOfArrays();
+    for (i = 0 ; i < nCellVars ; i++)
     {
-        int nScalars = cell_var->GetNumberOfTuples();
-        if (nScalars != nCells)
+        vtkDataArray *cell_var = ds->GetCellData()->GetArray(i);
+        int nscalars = cell_var->GetNumberOfTuples();
+        if (nscalars != nCells)
         {
             CorrectVarMismatch(ds, cell_var, false);
-            IssueVarMismatchWarning(nScalars, nCells, false);
+            bool issueWarning = true;
+            vtkUnsignedCharArray *gz = (vtkUnsignedCharArray *)
+                                 ds->GetCellData()->GetArray("vtkGhostLevels");
+            if (gz != NULL)
+            {
+                int ntuples = gz->GetNumberOfTuples();
+                int num_real = 0;
+                for (j = 0 ; j < ntuples ; j++)
+                {
+                    if (gz->GetValue(j) == '\0')
+                        num_real++;
+                }
+                if (num_real == nscalars)
+                {
+                    issueWarning = false;
+                    debug1 << "The input file has an invalid number of "
+                           << "entries in a zonal variable.  Since the number"
+                           << " of entries corresponds to the number of real "
+                           << "zones, no warning is being issued." << endl;
+                }
+            }
+            if (issueWarning)
+                IssueVarMismatchWarning(nscalars, nCells, false, dom);
         }
     }
 }
@@ -115,6 +156,7 @@ avtDatasetVerifier::VerifyDataset(vtkDataSet *ds)
 //      nVars    The number of values we got.
 //      nUnits   The number we should have gotten.
 //      isPoint  true if it is a ptvar, false otherwise.
+//      dom      The domain number.
 //
 //  Programmer:  Hank Childs
 //  Creation:    October 18, 2001
@@ -124,10 +166,14 @@ avtDatasetVerifier::VerifyDataset(vtkDataSet *ds)
 //    Hank Childs, Tue Dec 16 10:02:10 PST 2003
 //    Improve clarity of warning.
 //
+//    Hank Childs, Fri Jan  9 09:43:13 PST 2004
+//    Added argument dom.
+//
 // ****************************************************************************
 
 void
-avtDatasetVerifier::IssueVarMismatchWarning(int nVars, int nUnits,bool isPoint)
+avtDatasetVerifier::IssueVarMismatchWarning(int nVars, int nUnits,
+                                            bool isPoint, int dom)
 {
     if (issuedWarningForVarMismatch)
     {
@@ -140,9 +186,9 @@ avtDatasetVerifier::IssueVarMismatchWarning(int nVars, int nUnits,bool isPoint)
                           : "Some values were removed");
 
     char msg[1024];
-    sprintf(msg, "Your %s variable has %d values, but it should have %d."
-                 "%s to ensure VisIt runs smoothly.",
-                 unit_string, nVars, nUnits, action);
+    sprintf(msg, "In domain %d, your %s variable has %d values, but it should "
+                 "have %d.  %s to ensure VisIt runs smoothly.",
+                 dom, unit_string, nVars, nUnits, action);
     avtCallback::IssueWarning(msg);
 
     issuedWarningForVarMismatch = true;

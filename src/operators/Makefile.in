@@ -142,6 +142,9 @@
 #    Hank Childs, Mon Oct 20 16:29:56 PDT 2003
 #    Added Cylinder.
 #
+#    Hank Childs, Thu Jan  8 16:49:18 PST 2004
+#    Made inverse ghost zone be required.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -150,11 +153,11 @@ all: message
 	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done
 
 OPTIONAL=Context ConnCompReduce Decimate Displace ExternalSurface \
-         InverseGhostZone MetricThreshold RemoveCells Revolve SiloDump \
-         SurfCompPrep Tube
+         MetricThreshold RemoveCells Revolve SiloDump SurfCompPrep Tube
 
-REQUIRED=Box Clip Cone Cylinder IndexSelect Isosurface Lineout OnionPeel \
-         Reflect Slice SphereSlice ThreeSlice Threshold Transform
+REQUIRED=Box Clip Cone Cylinder IndexSelect InverseGhostZone Isosurface \
+         Lineout OnionPeel Reflect Slice SphereSlice ThreeSlice Threshold \
+         Transform
 
 SUBDIRS=$(REQUIRED) @OPERATOR_OPTIONAL_DIRS@
 ALLSUBDIRS=$(REQUIRED) $(OPTIONAL)

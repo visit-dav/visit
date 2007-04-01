@@ -96,6 +96,9 @@ import java.util.Vector;
 //   Kathleen Bonnell, Wed Dec 17 15:19:46 PST 2003 
 //   Added SetDefaultPickAttributes, ResetPickLetter. 
 //
+//   Brad Whitlock, Thu Jan 8 14:19:43 PST 2004
+//   I fixed a typo that prevented it from building.
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -1093,7 +1096,7 @@ public class ViewerProxy implements SimpleObserver
         return synchronous ? Synchronize() : true;
     }
 
-    public boolean SetAnnotationObjectOptions();
+    public boolean SetAnnotationObjectOptions()
     {
         rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETANNOTATIONOBJECTOPTIONSRPC);
         rpc.Notify();
@@ -1102,14 +1105,14 @@ public class ViewerProxy implements SimpleObserver
 
     public boolean SetDefaultAnnotationObjectList()
     {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETDEFAULTANNOTATIONOBJECTLIST);
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETDEFAULTANNOTATIONOBJECTLISTRPC);
         rpc.Notify();
         return synchronous ? Synchronize() : true;
     }
 
     public boolean ResetAnnotationObjectList()
     {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_RESTEANNOTATIONOBJECTLISTRPC);
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_RESETANNOTATIONOBJECTLISTRPC);
         rpc.Notify();
         return synchronous ? Synchronize() : true;
     }

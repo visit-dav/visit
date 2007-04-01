@@ -754,14 +754,24 @@ avtContourFilter::CreatePercentValues(double mn, double mx)
 //    Hank Childs, Sun Jun 17 18:42:00 PDT 2001
 //    Moved function from avtContourPlot.
 //
+//    Kathleen Bonnell, Tue Jan 20 17:38:37 PST 2004 
+//    Fix problem with delta when lo > hi.
+//
 // ****************************************************************************
 
 void
 avtContourFilter::CreateNIsoValues(double min, double max)
 {
     double lo, hi, delta, extremaOffset;
-    lo = min;
-    hi = max;
+    if (atts.GetMinFlag())
+        lo = atts.GetMin();
+    else 
+        lo = min;
+    if (atts.GetMaxFlag())
+        hi = atts.GetMax();
+    else 
+        hi = max;
+
     if (logFlag)
     {
         if (min <= 0.) 
@@ -781,7 +791,6 @@ avtContourFilter::CreateNIsoValues(double min, double max)
         }
         lo = log10(lo);
         hi = log10(hi);
-
     }
 
     //
@@ -790,26 +799,12 @@ avtContourFilter::CreateNIsoValues(double min, double max)
     //
     extremaOffset = (hi - lo) / (nLevels + 1.);
 
-    if (atts.GetMinFlag())
-    {
-        // use the artificial min as first isoValue
-        lo = atts.GetMin();
-        if (logFlag)
-            lo = log10(lo);
-    }
-    else
+    if (!atts.GetMinFlag())
     {
         lo += extremaOffset;
     }
 
-    if (atts.GetMaxFlag())
-    {
-        // use the artificial max as last isoValue
-        hi = atts.GetMax();
-        if (logFlag)
-            hi = log10(hi);
-    }
-    else
+    if (!atts.GetMaxFlag())
     {
         hi -= extremaOffset;
     }
@@ -820,7 +815,10 @@ avtContourFilter::CreateNIsoValues(double min, double max)
     }
     else
     {
-        delta = (hi - lo) / (nLevels - 1.);
+        if (lo < hi)
+            delta = (hi - lo) / (nLevels - 1.);
+        else 
+            delta = (lo - hi) / (nLevels - 1.);
     }
 
     if (logFlag)

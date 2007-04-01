@@ -2395,17 +2395,15 @@ avtStructuredDomainBoundaries::SetIndicesForRectGrid(int domain, int e[6])
 //    Added code to disallow operation if shouldComputeNeighborsFromExtents is
 //    not true.
 //
+//    Kathleen Bonnell, Tue Jan 20 17:26:40 PST 2004
+//    Reversed order of Exceptions, per Mark Miller's request.
+// 
 // ****************************************************************************
 
 void
 avtStructuredDomainBoundaries::SetIndicesForAMRPatch(int domain, 
                                                      int level, int e[6])
 {
-    if (domain >= levels.size())
-        EXCEPTION1(VisItException,
-                   "avtStructuredDomainBoundaries: "
-                   "targetted domain more than number of domains");
-
     if (!shouldComputeNeighborsFromExtents)
     {
         EXCEPTION1(VisItException,
@@ -2413,6 +2411,12 @@ avtStructuredDomainBoundaries::SetIndicesForAMRPatch(int domain,
                    "passing indices for a mesh that does not support "
                    "computation of neighbors from index extents");
     }
+
+    if (domain >= levels.size())
+        EXCEPTION1(VisItException,
+                   "avtStructuredDomainBoundaries: "
+                   "targetted domain more than number of domains");
+
 
     levels[domain] = level;
     extents[6*domain+0] = e[0];

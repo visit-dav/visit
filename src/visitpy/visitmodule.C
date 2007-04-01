@@ -9090,7 +9090,9 @@ Synchronize()
     ++syncCount;
     MUTEX_LOCK();
     syncAtts->SetSyncTag(syncCount);
+#ifndef POLLING_SYNCHRONIZE
     synchronizeCallback->SetUpdate(false);
+#endif
     syncAtts->Notify();
     syncAtts->SetSyncTag(-1);
     MUTEX_UNLOCK();

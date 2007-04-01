@@ -4,6 +4,7 @@
 
 #ifndef AVT_DATA_TREE_H
 #define AVT_DATA_TREE_H
+
 #include <pipeline_exports.h>
 
 #include <vector>
@@ -72,6 +73,9 @@ typedef void (*TraverseFunc)(avtDataRepresentation &, void *, bool &);
 //    Kathleen Bonnell, Mon Apr 29 17:49:25 PDT 2002 
 //    Added GetAllUniqueLabels and GetUniqueLabels.
 //
+//    Hank Childs, Fri Jan  9 10:04:22 PST 2004
+//    Added GetAllDomainIds.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataTree
@@ -113,6 +117,7 @@ class PIPELINE_API avtDataTree
     void                     Traverse(TraverseFunc, void *, bool &);
 
     vtkDataSet             **GetAllLeaves(int &);
+    void                     GetAllDomainIds(vector<int> &);
     void                     GetAllLabels(vector<string> &);
     void                     GetAllUniqueLabels(vector<string> &);
     avtDataTree_p            PruneTree(const vector<int> &);

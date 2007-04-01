@@ -4,8 +4,8 @@
 
 #ifndef AVT_DATASET_VERIFIER_H
 #define AVT_DATASET_VERIFIER_H
-#include <pipeline_exports.h>
 
+#include <pipeline_exports.h>
 
 #include <avtDataTree.h>
 
@@ -24,8 +24,12 @@ class     vtkDataArray;
 //  Creation:   October 18, 2001
 //
 //  Modifications:
+//
 //    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
 //    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray instead.
+//
+//    Hank Childs, Fri Jan  9 09:36:01 PST 2004
+//    Add a routine that is accessible for the generic database.
 //
 // ****************************************************************************
 
@@ -35,15 +39,15 @@ class PIPELINE_API avtDatasetVerifier
                 avtDatasetVerifier();
     virtual    ~avtDatasetVerifier() {;};
 
-    void        VerifyDataTree(avtDataTree_p &);
+    void        VerifyDatasets(int, vtkDataSet **, std::vector<int> &domains);
 
   protected:
     bool        issuedWarningForVarMismatch;
 
-    void        VerifyDataset(vtkDataSet *);
+    void        VerifyDataset(vtkDataSet *, int);
     void        CorrectVarMismatch(vtkDataSet *, vtkDataArray *, bool);
 
-    void        IssueVarMismatchWarning(int, int, bool);
+    void        IssueVarMismatchWarning(int, int, bool, int);
 };
 
 
