@@ -74,6 +74,11 @@ avtDataObjectToDatasetFilter::~avtDataObjectToDatasetFilter()
 //    Traverse and protected call to SetVariableDimension with check for
 //    success==true and activeVarDim!=-1
 //
+//    Hank Childs, Fri Feb 20 15:14:32 PST 2004
+//    Use the new data attributes method to set the active variable.
+//    Remove logic dealing with setting variable dimension -- it is now
+//    managed correctly without pseudo-logic.
+//
 // ****************************************************************************
 
 void
@@ -85,9 +90,8 @@ avtDataObjectToDatasetFilter::OutputSetActiveVariable(const char *varname)
     avtDataTree_p tree = GetDataTree();
     bool success = false;
     tree->Traverse(CSetActiveVariable, (void *) &args, success);
-    if (success && (args.activeVarDim != -1))
-        GetOutput()->GetInfo().GetAttributes().
-                                      SetVariableDimension(args.activeVarDim);
+
+    GetOutput()->GetInfo().GetAttributes().SetActiveVariable(varname);
 }
 
 

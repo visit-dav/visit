@@ -186,10 +186,12 @@ QvisThresholdWindow::UpdateWindow(bool doAll)
 // Creation:   Fri Apr 12 14:41:06 PST 2002
 //
 // Modifications:
-//   
 //   Hank Childs, Thu Sep 25 09:16:09 PDT 2003
 //   Allow for "min" and "max" to be valid values in the lbound and ubound
 //   windows.
+//
+//   Jeremy Meredith, Wed Mar  3 16:02:43 PST 2004
+//   Fixed a type with using "min".
 //
 // ****************************************************************************
 
@@ -210,7 +212,7 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
     {
         temp = lbound->displayText().simplifyWhiteSpace();
         if (temp.latin1() == QString("min"))
-            atts->SetUbound(-1e+37);
+            atts->SetLbound(-1e+37);
         else
         {
             okay = !temp.isEmpty();

@@ -44,6 +44,9 @@ avtCurrentExtentFilter::Execute(void)
 //    Hank Childs, Thu Jul 17 17:40:24 PDT 2003
 //    Treat 2D vectors as 3D since VTK will assume that vectors are 3D.
 //
+//    Hank Childs, Tue Feb 24 14:23:03 PST 2004
+//    Account for multiple variables.
+//
 // ****************************************************************************
 
 void
@@ -51,20 +54,26 @@ avtCurrentExtentFilter::RefashionDataObjectInfo(void)
 {
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
-    int dataDim = atts.GetVariableDimension();
-    if (dataDim == 2)
-        dataDim = 3;
-
-    double *de = new double[dataDim*2];
     avtDataset_p ds = GetTypedInput();
-    bool foundDE = avtDatasetExaminer::GetDataExtents(ds, de);
 
-    if (foundDE)
+    int nVars = atts.GetNumberOfVariables();
+    for (int i = 0 ; i < nVars ; i++)
     {
-        outAtts.GetCumulativeCurrentDataExtents()->Merge(de);
+        const char *vname = atts.GetVariableName(i).c_str();
+        int dataDim = atts.GetVariableDimension(vname);
+        if (dataDim == 2)
+            dataDim = 3;
+    
+        double *de = new double[dataDim*2];
+        bool foundDE = avtDatasetExaminer::GetDataExtents(ds, de, vname);
+    
+        if (foundDE)
+        {
+            outAtts.GetCumulativeCurrentDataExtents(vname)->Merge(de);
+        }
+    
+        delete [] de;
     }
-
-    delete [] de;
 
     double se[6];
     bool foundSE = avtDatasetExaminer::GetSpatialExtents(ds, se);

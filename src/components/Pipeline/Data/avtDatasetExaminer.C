@@ -188,24 +188,36 @@ avtDatasetExaminer::GetSpatialExtents(avtDataset_p &ds, double *se)
 //    Hank Childs, Fri Mar 15 17:18:00 PST 2002
 //    Moved from class avtDataset.
 //
+//    Hank Childs, Tue Feb 24 17:36:32 PST 2004
+//    Account for multiple variables.
+//
 // ****************************************************************************
  
 bool
-avtDatasetExaminer::GetDataExtents(avtDataset_p &ds, double *de)
+avtDatasetExaminer::GetDataExtents(avtDataset_p &ds, double *de,
+                                   const char *varname)
 {
+    if (varname == NULL)
+    {
+        varname = ds->GetInfo().GetAttributes().GetVariableName().c_str();
+    }
+
     avtDataTree_p dataTree = ds->dataTree;
 
     bool foundExtents = false;
-    int dim = ds->GetInfo().GetAttributes().GetVariableDimension();
+    int dim = ds->GetInfo().GetAttributes().GetVariableDimension(varname);
     for (int i = 0 ; i < dim ; i++)
     {
         de[2*i]   = +DBL_MAX;
         de[2*i+1] = -DBL_MAX;
     }
  
-    if ( *dataTree != NULL )
+    GetVariableRangeArgs gvra;
+    gvra.varname = varname;
+    gvra.extents = de;
+    if (*dataTree != NULL)
     {
-        dataTree->Traverse(CGetDataExtents, de, foundExtents);
+        dataTree->Traverse(CGetDataExtents, (void *) &gvra, foundExtents);
     }
  
     if (!foundExtents)
@@ -216,6 +228,7 @@ avtDatasetExaminer::GetDataExtents(avtDataset_p &ds, double *de)
  
     return foundExtents;
 }
+
 
 // ****************************************************************************
 //  Method: avtDatasetExaminer::GetDataMagnitudeExtents
@@ -233,86 +246,39 @@ avtDatasetExaminer::GetDataExtents(avtDataset_p &ds, double *de)
 //
 //  Modifications:
 //
+//    Hank Childs, Tue Feb 24 17:36:32 PST 2004
+//    Account for multiple variables.
+//
 // ****************************************************************************
  
 bool
-avtDatasetExaminer::GetDataMagnitudeExtents(avtDataset_p &ds, double *de)
+avtDatasetExaminer::GetDataMagnitudeExtents(avtDataset_p &ds, double *de, 
+                                            const char *varname)
 {
+    if (varname == NULL)
+    {
+        varname = ds->GetInfo().GetAttributes().GetVariableName().c_str();
+    }
+
     avtDataTree_p dataTree = ds->dataTree;
 
     bool foundExtents = false;
     de[0] = +DBL_MAX;
     de[1] = -DBL_MAX;
  
+    GetVariableRangeArgs gvra;
+    gvra.varname = varname;
+    gvra.extents = de;
     if ( *dataTree != NULL )
     {
-        dataTree->Traverse(CGetDataMagnitudeExtents, de, foundExtents);
+        dataTree->Traverse(CGetDataMagnitudeExtents, (void *) &gvra, 
+                           foundExtents);
     }
  
     if (!foundExtents)
     {
         debug1 << "Unable to determine data magnitude extents -- dataset "
                << "needs an update" << endl;
-    }
- 
-    return foundExtents;
-}
-
-// ****************************************************************************
-//  Method: avtDatasetExaminer::GetNodeCenteredDataExtents
-//
-//  Purpose:
-//      Gets the data extents associated with nodes of the dataset.
-//
-//  Arguments:
-//      de        A place to put the data extents
-//
-//  Returns:      Whether or not the extents were obtained.
-//
-//  Programmer:   Kathleen Bonnell
-//  Creation:     March 27, 2001
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Fri Apr 13 16:27:15 PDT 2001
-//    Changed to utilize avtDataTree::Traverse method.
-//
-//    Hank Childs, Tue Jul 17 13:34:28 PDT 2001
-//    Return whether or not we got the extents.
-//
-//    Hank Childs, Fri Sep  7 18:30:33 PDT 2001
-//    Changed argument from float to double.  Also made the declaration be
-//    a double * instead of a double[2], since some compilers struggle with
-//    the (non-)distinction.  Removed assumptions that we have scalar data.
-//
-//    Hank Childs, Fri Mar 15 17:18:00 PST 2002
-//    Moved from class avtDataset.
-//
-// ****************************************************************************
- 
-bool
-avtDatasetExaminer::GetNodeCenteredDataExtents(avtDataset_p &ds, double *de)
-{
-    avtDataTree_p dataTree = ds->dataTree;
-
-    bool foundExtents = false;
-    int dim = ds->GetInfo().GetAttributes().GetVariableDimension();
-    for (int i = 0 ; i < dim ; i++)
-    {
-        de[2*i]   = +DBL_MAX;
-        de[2*i+1] = -DBL_MAX;
-    }
- 
-    if ( *dataTree != NULL )
-    {
-       dataTree->Traverse(CGetNodeCenteredDataExtents, de, foundExtents);
-    }
- 
-    if (!foundExtents)
-    {
-        debug1 << "Unable to determine node centered extents -- "
-               << "either the dataset has no node-centered data, "
-               << "or the dataset needs an update" << endl;
     }
  
     return foundExtents;

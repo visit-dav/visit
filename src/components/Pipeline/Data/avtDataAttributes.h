@@ -39,19 +39,21 @@ class     avtExtents;
 //                         extents.
 //
 //                         In theory the 'true' extents are the extents of the
-//                         dataset regardless of whether only some of it has been
-//                         read in. However, for databases that don't support
-//                         the auxiliary extents data, it would be necessary to
-//                         read data that wasn't needed in a pipeline just to
-//                         get the 'true' extents set right. So we don't do that.
+//                         dataset regardless of whether only some of it has
+//                         been read in. However, for databases that don't 
+//                         support the auxiliary extents data, it would be
+//                         necessary to read data that wasn't needed in a 
+//                         pipeline just to get the 'true' extents set right. 
+//                         So we don't do that.
 //
 //      Current...Extents: The extents at the bottom of the pipeline for what
 //                         is really there.  Used for re-mapping the color to
 //                         what actually exists in what is being rendered, etc.
 //
-//                         The 'current' extents are the extents of what is left,
-//                          sort of, after various operations, which may have reduced
-//                         the data, such as thresholding, slicing, etc.
+//                         The 'current' extents are the extents of what is
+//                         left, sort of, after various operations, which may 
+//                         have reduced the data, such as thresholding, 
+//                         slicing, etc.
 //
 //      Effective...Extents: Like the current extents, but sometimes maintained
 //                         in the middle of a pipeline.  They are used for
@@ -63,10 +65,10 @@ class     avtExtents;
 //                         Then we can take all of the pieces and unify them.
 //                         This is where the pieces are stored.
 //
-//                         The cummulative variants are used as places to store
+//                         The cumulative variants are used as places to store
 //                         extents information on a per-processor basis *before*
 //                         that information is merged and unified across all
-//                         processors. Think of the cummulative variants as 
+//                         processors. Think of the cumulative variants as 
 //                         "what this processor has seen so far."
 //
 //  Programmer: Hank Childs
@@ -97,7 +99,7 @@ class     avtExtents;
 //    Added transform and Set/Get/Merge/Read/Write/Copy methods. 
 //
 //    Mark C. Miller, 15Jul03
-//    Added Set/GetCanUseCummulativeAsTrueOrCurrent
+//    Added Set/GetCanUseCumulativeAsTrueOrCurrent
 //    
 //    Eric Brugger, Wed Aug 20 09:27:54 PDT 2003
 //    Added GetWindowMode and SetWindowMode.
@@ -115,6 +117,8 @@ class PIPELINE_API avtDataAttributes
   public:
                              avtDataAttributes();
     virtual                 ~avtDataAttributes();
+
+    void                     Print(ostream &);
 
     void                     Copy(const avtDataAttributes &);
     void                     Merge(const avtDataAttributes &,
@@ -134,32 +138,29 @@ class PIPELINE_API avtDataAttributes
 
     avtExtents              *GetTrueSpatialExtents(void)
                                     { return trueSpatial; };
-    avtExtents              *GetTrueDataExtents(void)
-                                    { return trueData; };
+    avtExtents              *GetTrueDataExtents(const char * = NULL);
 
     avtExtents              *GetCumulativeTrueSpatialExtents(void)
                                     { return cumulativeTrueSpatial; };
-    avtExtents              *GetCumulativeTrueDataExtents(void)
-                                    { return cumulativeTrueData; };
+    avtExtents              *GetCumulativeTrueDataExtents(const char * = NULL);
 
     avtExtents              *GetEffectiveSpatialExtents(void)
                                     { return effectiveSpatial; };
-    avtExtents              *GetEffectiveDataExtents(void)
-                                    { return effectiveData; };
+    avtExtents              *GetEffectiveDataExtents(const char * = NULL);
 
     avtExtents              *GetCurrentSpatialExtents(void)
                                     { return currentSpatial; };
-    avtExtents              *GetCurrentDataExtents(void)
-                                    { return currentData; };
+    avtExtents              *GetCurrentDataExtents(const char * = NULL);
 
     avtExtents              *GetCumulativeCurrentSpatialExtents(void)
                                     { return cumulativeCurrentSpatial; };
-    avtExtents              *GetCumulativeCurrentDataExtents(void)
-                                    { return cumulativeCurrentData; };
-    void                     SetCanUseCummulativeAsTrueOrCurrent(bool canUse)
-                                { canUseCummulativeAsTrueOrCurrent = canUse; }
-    bool                     GetCanUseCummulativeAsTrueOrCurrent(void)
-                                { return canUseCummulativeAsTrueOrCurrent; }
+    avtExtents              *GetCumulativeCurrentDataExtents(const char * 
+                                                             = NULL);
+
+    void                     SetCanUseCumulativeAsTrueOrCurrent(bool canUse)
+                                { canUseCumulativeAsTrueOrCurrent = canUse; }
+    bool                     GetCanUseCumulativeAsTrueOrCurrent(void)
+                                { return canUseCumulativeAsTrueOrCurrent; }
 
     void                     SetTopologicalDimension(int);
     int                      GetTopologicalDimension(void) const
@@ -169,13 +170,11 @@ class PIPELINE_API avtDataAttributes
     int                      GetSpatialDimension(void) const
                                    { return spatialDimension; };
 
-    void                     SetVariableDimension(int);
-    int                      GetVariableDimension(void) const
-                                   { return variableDimension; };
+    void                     SetVariableDimension(int, const char * = NULL);
+    int                      GetVariableDimension(const char * = NULL) const;
 
-    avtCentering             GetCentering(void) const
-                                   { return centering; };
-    void                     SetCentering(avtCentering);
+    avtCentering             GetCentering(const char * = NULL) const;
+    void                     SetCentering(avtCentering, const char * = NULL);
 
     int                      GetCellOrigin(void) const
                                    { return cellOrigin; };
@@ -195,8 +194,9 @@ class PIPELINE_API avtDataAttributes
     void                     SetContainsOriginalCells(bool c)
                                    { containsOriginalCells= c; };
 
-    bool                     GetDataExtents(double *);
-    bool                     GetCurrentDataExtents(double *);
+    bool                     GetDataExtents(double *, const char * = NULL);
+    bool                     GetCurrentDataExtents(double *,
+                                                   const char * = NULL);
     bool                     GetSpatialExtents(double *);
     bool                     GetCurrentSpatialExtents(double *);
     bool                     GetAnySpatialExtents(double *);
@@ -204,9 +204,14 @@ class PIPELINE_API avtDataAttributes
     void                     SetLabels(const std::vector<std::string> &l);
     void                     GetLabels(std::vector<std::string> &l);
             
-    const std::string       &GetVariableName(void) const { return varname; };
-    void                     SetVariableName(const std::string &s)
-                                 { varname = s; };
+    const std::string       &GetVariableName(void) const;
+    const std::string       &GetVariableName(int) const;
+    int                      GetNumberOfVariables(void) const;
+    void                     SetActiveVariable(const char *);
+    void                     AddVariable(const std::string &s);
+    void                     RemoveVariable(const std::string &s);
+    bool                     ValidVariable(const std::string &s) const;
+    bool                     ValidActiveVariable(void) const;
  
     const std::string       &GetFilename(void) const { return filename; };
     void                     SetFilename(const std::string &s) { filename=s; };
@@ -228,8 +233,9 @@ class PIPELINE_API avtDataAttributes
     bool                     HasTransform(void); 
     void                     SetTransform(const double *);
     const avtMatrix         *GetTransform(void) { return transform;};
-    bool                     GetCanUseTransform(void) { return canUseTransform;};
-    void                     SetCanUseTransform(bool b) { canUseTransform = b;};
+    bool                     GetCanUseTransform(void) 
+                                                    { return canUseTransform;};
+    void                     SetCanUseTransform(bool b) { canUseTransform =b;};
 
     WINDOW_MODE              GetWindowMode(void) const { return windowMode;} ;
     void                     SetWindowMode(WINDOW_MODE m) { windowMode = m;} ;
@@ -237,8 +243,6 @@ class PIPELINE_API avtDataAttributes
   protected:
     int                      spatialDimension;
     int                      topologicalDimension;
-    int                      variableDimension;
-    avtCentering             centering;
     int                      cellOrigin;
     int                      blockOrigin;
     double                   dtime;
@@ -247,26 +251,33 @@ class PIPELINE_API avtDataAttributes
     bool                     cycleIsAccurate;
     avtGhostType             containsGhostZones;
     bool                     containsOriginalCells;
+    avtMatrix               *transform;
+    bool                     canUseTransform;
+    bool                     canUseCumulativeAsTrueOrCurrent;
 
     avtExtents              *trueSpatial;
     avtExtents              *cumulativeTrueSpatial;
     avtExtents              *effectiveSpatial;
     avtExtents              *currentSpatial;
     avtExtents              *cumulativeCurrentSpatial;
-    avtExtents              *trueData;
-    avtExtents              *cumulativeTrueData;
-    avtExtents              *effectiveData;
-    avtExtents              *currentData;
-    avtExtents              *cumulativeCurrentData;
-    bool                     canUseCummulativeAsTrueOrCurrent;
 
-    avtMatrix               *transform;
-    bool                     canUseTransform;
-  
+    typedef struct
+    {
+        std::string          varname;
+        int                  dimension;
+        avtCentering         centering;
+        avtExtents          *trueData;
+        avtExtents          *cumulativeTrueData;
+        avtExtents          *effectiveData;
+        avtExtents          *currentData;
+        avtExtents          *cumulativeCurrentData;
+    } VarInfo;
+    std::vector<VarInfo>     variables;
+    int                      activeVariable;
+
     WINDOW_MODE              windowMode;
 
     std::vector<std::string> labels;
-    std::string              varname;
     std::string              filename;
     std::string              xUnits;
     std::string              yUnits;
@@ -284,8 +295,12 @@ class PIPELINE_API avtDataAttributes
     int                      ReadTransform(char *);
     void                     MergeTransform(const avtMatrix *);
     void                     CopyTransform(const avtMatrix *);
+    int                      VariableNameToIndex(const char *) const;
+
+    void                     DestructSelf(void);
 };
 
 
 #endif
+
 

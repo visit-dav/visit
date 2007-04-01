@@ -181,13 +181,26 @@ avtPlot::~avtPlot()
 //  Programmer:  Hank Childs
 //  Creation:    March 9, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Feb 24 13:47:47 PST 2004
+//    Fixed memory leak.
+//
 // ****************************************************************************
 
 void
 avtPlot::SetVarName(const char *name)
 {
-    varname = new char[strlen(name)+1];
-    strcpy(varname, name);
+    if (varname != NULL)
+    {
+        delete [] varname;
+        varname = NULL;
+    }
+    if (name != NULL)
+    {
+        varname = new char[strlen(name)+1];
+        strcpy(varname, name);
+    }
     avtLegend_p legend = GetLegend();
     if (*legend != NULL)
     {
@@ -275,13 +288,19 @@ avtPlot::Execute(avtDataObject_p input, avtPipelineSpecification_p spec,
 //    CombinedExecute method or not. Made it a protected method. Introduced
 //    a public wrapper for this now protected method.
 //    
+//    Hank Childs, Tue Feb 24 13:47:47 PST 2004
+//    Remove old code regarding the "avtDrawer", since its functionality is
+//    now totally subsumed by scalable rendering.  Also set the name of the
+//    variable for this plot.
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
 avtPlot::Execute(avtDataObject_p input, avtPipelineSpecification_p spec,
                  const WindowAttributes *atts, const bool combinedExecute)
 {
-    
+    SetVarName(spec->GetDataSpecification()->GetVariable());
+
     if (*input == NULL)
     {
         EXCEPTION0(NoInputException);
@@ -298,26 +317,6 @@ avtPlot::Execute(avtDataObject_p input, avtPipelineSpecification_p spec,
     CopyTo(intermediateDataObject, dob);
     dob = ApplyRenderingTransformation(dob);
         
-/*
-    // 
-    //  If we have geometry output, determine if it should be converted
-    //  to an image before sending across the pipeline.
-    // 
-    if (geometryOutput->GetNumberOfZones() > SIZECUTOFF) 
-    {
-        if (drawer == NULL)
-        {
-            drawer = new avtDrawer(GetMapper());
-        }
-
-        avtDataObject_p geo;
-        geo.Copy(geometryOutput);
-        drawer->SetInput(geo);
-        imageOutput = drawer->GetTypedOutput();
-        geometryOutput = NULL;
-    }
- */
-
     if (strcmp(dob->GetType(), "avtDataset") == 0)
     {
         dob = ReduceGeometry(dob);
@@ -629,6 +628,10 @@ avtPlot::CombinedExecute(avtDataObject_p input, avtPipelineSpecification_p spec,
 //    Made it use always use the normals filter, but only
 //    do cell normals if we don't want them averaged to the nodes.
 //
+//    Hank Childs, Tue Feb 24 13:47:47 PST 2004
+//    Defer more decisions to the vertex normals filter, since it has more
+//    information.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -676,18 +679,9 @@ avtPlot::ReduceGeometry(avtDataObject_p curDS)
     }
 
     //
-    // Only create vertex normals if we don't have zone-centered data.
-    // Otherwise, create cell normals.
+    // The vertex normals filter will decide whether or not normals are 
+    // necessary and what kind of normals (point, cell) to do.
     //
-    if (rv->GetInfo().GetAttributes().GetCentering() != AVT_ZONECENT && 
-        !rv->GetInfo().GetValidity().NormalsAreInappropriate())
-    {
-        vertexNormalsFilter->SetPointNormals(true);
-    }
-    else
-    {
-        vertexNormalsFilter->SetPointNormals(false);
-    }
     vertexNormalsFilter->SetInput(rv);
     rv = vertexNormalsFilter->GetOutput();
 

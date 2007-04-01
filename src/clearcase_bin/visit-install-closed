@@ -253,7 +253,7 @@ if [ $sc = true ]
 then
    if [ $test = no ]
    then
-      scp sc1:/nfs/tmp2/$user/sc/visitbuild/visit$ver2.osf1.tar.gz .
+      scp sc1:/nfs/tmp3/$user/sc/visitbuild/visit$ver2.osf1.tar.gz .
       scp visit$ver2.osf1.tar.gz sc1:
       scp visit-install sc1:
       scp sc sc1:sc_install

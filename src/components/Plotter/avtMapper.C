@@ -679,6 +679,9 @@ avtMapper::GetRange(float &rmin, float &rmax)
 //    Hank Childs, Fri Mar 15 18:11:12 PST 2002
 //    Account for dataset examiner.
 //
+//    Hank Childs, Fri Feb 27 08:29:54 PST 2004
+//    Account for multiple variables.
+//
 //    Mark C. Miller, Sun Feb 29 18:35:00 PST 2004
 //    Added calls to GetAnySpatialExtents before arbitrarily setting to [0,1]
 //
@@ -691,38 +694,42 @@ avtMapper::PrepareExtents(void)
 
     avtDataAttributes &atts = input->GetInfo().GetAttributes();    
 
-    int  varDim = atts.GetVariableDimension();
-    double *exts = new double[2*varDim];
-    bool gotDataExtents = atts.GetDataExtents(exts);
-    if (!gotDataExtents)
+    int nvars = atts.GetNumberOfVariables();
+    for (int var = 0 ; var < nvars ; var++)
     {
-        if (!(avtDatasetExaminer::GetDataExtents(input, exts)))
+        const char *vname = atts.GetVariableName(var).c_str();
+        int  varDim = atts.GetVariableDimension(vname);
+        double *exts = new double[2*varDim];
+        bool gotDataExtents = atts.GetDataExtents(exts, vname);
+        if (!gotDataExtents)
         {
-            for (int i = 0 ; i < varDim ; i++)
+            if (!(avtDatasetExaminer::GetDataExtents(input, exts, vname)))
             {
-                exts[2*i] = 0.;
-                exts[2*i+1] = 1.;
+                for (int i = 0 ; i < varDim ; i++)
+                {
+                    exts[2*i] = 0.;
+                    exts[2*i+1] = 1.;
+                }
             }
         }
-    }
-    atts.GetTrueDataExtents()->Set(exts);
+        atts.GetTrueDataExtents(vname)->Set(exts);
 
-
-    bool gotCurrentDataExtents = atts.GetCurrentDataExtents(exts);
-    if (!gotCurrentDataExtents)
-    {
-        if (!(avtDatasetExaminer::GetDataExtents(input, exts)))
+        bool gotCurrentDataExtents = atts.GetCurrentDataExtents(exts, vname);
+        if (!gotCurrentDataExtents)
         {
-            for (int i = 0 ; i < varDim ; i++)
+            if (!(avtDatasetExaminer::GetDataExtents(input, exts, vname)))
             {
-                exts[2*i] = 0.;
-                exts[2*i+1] = 1.;
+                for (int i = 0 ; i < varDim ; i++)
+                {
+                    exts[2*i] = 0.;
+                    exts[2*i+1] = 1.;
+                }
             }
         }
-    }
-    atts.GetCurrentDataExtents()->Set(exts);
+        atts.GetCurrentDataExtents(vname)->Set(exts);
 
-    delete [] exts;
+        delete [] exts;
+    }
 
     double bounds[6];
     bool gotBounds = atts.GetSpatialExtents(bounds);

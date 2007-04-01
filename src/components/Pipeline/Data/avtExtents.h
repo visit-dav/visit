@@ -4,12 +4,14 @@
 
 #ifndef AVT_EXTENTS_H
 #define AVT_EXTENTS_H
+
 #include <pipeline_exports.h>
 
-
+class   ostream;
 class   avtDataObjectString;
 class   avtDataObjectWriter;
 class   vtkMatrix4x4;
+
 
 // ****************************************************************************
 //  Class: avtExtents
@@ -25,8 +27,12 @@ class   vtkMatrix4x4;
 //  Creation:   September 4, 2001
 //
 //  Modifications:
+//
 //    Jeremy Meredith, Mon Sep 24 14:18:03 PDT 2001
 //    Added Transform function.
+//
+//    Hank Childs, Wed Feb 25 09:00:17 PST 2004
+//    Added Print method.
 //
 // ****************************************************************************
 
@@ -36,6 +42,8 @@ class PIPELINE_API avtExtents
                           avtExtents(int);
                           avtExtents(const avtExtents &);
     virtual              ~avtExtents();
+
+    void                  Print(ostream &);
 
     bool                  HasExtents(void);
     int                   GetDimension(void)  { return dimension; };

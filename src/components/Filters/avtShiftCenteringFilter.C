@@ -136,7 +136,8 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
             outDS->GetPointData()->RemoveArray("vtkGhostLevels");
         }
         // We want to preserve knowledge of original cells 
-        vtkDataArray *origCells = inDS->GetCellData()->GetArray("avtOriginalCellNumbers");
+        vtkDataArray *origCells = 
+                       inDS->GetCellData()->GetArray("avtOriginalCellNumbers");
         if (origCells)
         {
             outDS->GetCellData()->AddArray(origCells);
@@ -191,16 +192,30 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 //  Programmer: Hank Childs
 //  Creation:   February 27, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb 26 08:15:12 PST 2004
+//    Account for multiple variables.
+//
 // ****************************************************************************
 
 void
 avtShiftCenteringFilter::RefashionDataObjectInfo(void)
 {
+    avtDataAttributes &in_atts = GetInput()->GetInfo().GetAttributes();
+    avtDataAttributes &out_atts = GetOutput()->GetInfo().GetAttributes();
+    if (!in_atts.ValidActiveVariable())
+    {
+        // We don't have enough information to figure out which variable
+        // we are shifting the centering of.
+        return;
+    }
+
     if (centeringInstruction == 1 || centeringInstruction == 2)
     {
         avtCentering centering = (centeringInstruction == 1 ? AVT_NODECENT
                                                             : AVT_ZONECENT);
-        GetOutput()->GetInfo().GetAttributes().SetCentering(centering);
+        out_atts.SetCentering(centering);
     }
 }
 

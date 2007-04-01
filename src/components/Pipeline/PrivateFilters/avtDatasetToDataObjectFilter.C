@@ -61,6 +61,11 @@ avtDatasetToDataObjectFilter::~avtDatasetToDataObjectFilter()
 //  Programmer: Hank Childs
 //  Creation:   October 24, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Feb 20 15:14:32 PST 2004
+//    Tell the data attributes what the new active variable is.
+//
 // ****************************************************************************
 
 void
@@ -78,6 +83,8 @@ avtDatasetToDataObjectFilter::InputSetActiveVariable(const char *varname)
     activeVariableIsPointData = args.activeIsPoint;
     hasPointVars              = args.hasPointVars;
     hasCellVars               = args.hasCellVars;
+
+    GetInput()->GetInfo().GetAttributes().SetActiveVariable(varname);
 }
 
 

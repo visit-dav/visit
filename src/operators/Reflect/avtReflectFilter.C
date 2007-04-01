@@ -223,6 +223,9 @@ avtReflectFilter::PreExecute(void)
 //    Hank Childs, Fri Mar 15 19:49:31 PST 2002
 //    Account for dataset examiner.
 //
+//    Hank Childs, Thu Feb 26 16:19:33 PST 2004
+//    Fix typo where data extents are being reset.
+//
 // ****************************************************************************
 
 void
@@ -231,7 +234,7 @@ avtReflectFilter::PostExecute(void)
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
     outAtts.GetTrueSpatialExtents()->Clear();
     outAtts.GetEffectiveSpatialExtents()->Clear();
-    outAtts.GetCurrentDataExtents()->Clear();
+    outAtts.GetCurrentSpatialExtents()->Clear();
 
     double bounds[6];
     avtDataset_p ds = GetTypedOutput();

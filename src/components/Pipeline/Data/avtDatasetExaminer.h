@@ -31,6 +31,9 @@ class     vtkDataArray;
 //    Kathleen Bonnell, Wed Feb 18 08:31:26 PST 2004
 //    Added GetNumberOfNodes, another GetNumberOfZones.
 //
+//    Hank Childs, Tue Feb 24 17:33:45 PST 2004
+//    Account for multiple variables.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatasetExaminer
@@ -41,10 +44,10 @@ class PIPELINE_API avtDatasetExaminer
     static void               GetNumberOfZones(avtDataset_p &, int &, int &);
     static void               GetVariableList(avtDataset_p &, VarList &);
     static bool               GetSpatialExtents(avtDataset_p &, double *);
-    static bool               GetDataExtents(avtDataset_p &, double *);
-    static bool               GetDataMagnitudeExtents(avtDataset_p &, double *);
-    static bool               GetNodeCenteredDataExtents(avtDataset_p &,
-                                                         double *);
+    static bool               GetDataExtents(avtDataset_p &, double *,
+                                             const char * = NULL);
+    static bool               GetDataMagnitudeExtents(avtDataset_p &, double*,
+                                                      const char * = NULL);
     static void               FindMinimum(avtDataset_p &, double *, double &);
     static void               FindMaximum(avtDataset_p &, double *, double &);
     static bool               FindZone(avtDataset_p &, int, int, double *);

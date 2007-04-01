@@ -28,6 +28,9 @@
 //      Moved inlined constructor and destructor definitions to .C files
 //      because certain compilers have problems with them.
 //
+//      Hank Childs, Wed Feb 25 11:41:35 PST 2004
+//      Corrected the variable dimension of the output.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtMeshCoordinateFilter 
@@ -45,7 +48,7 @@ class EXPRESSION_API avtMeshCoordinateFilter
 
   protected:
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
-    virtual int               GetVariableDimension() { return 1; }
+    virtual int               GetVariableDimension() { return 3; }
     virtual bool              IsPointVariable()      { return true; }
 };
 

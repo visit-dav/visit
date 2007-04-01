@@ -1,0 +1,81 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 1.2.8 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 1.2.8 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.2.8</font></b></p>
+<ul>
+  <li>VisIt allows you to pick a center of rotation so rotating  plots when you are zoomed in does not cause them to whiz off of the screen. To use this option, click on the <i>Choose center</i> button in the vis 
+  window's toolbar or popup menu and click on a point on the plot. The picked 
+  point will be the new center of rotation and will always appear on the screen.</li>
+  <li>VisIt now provides a MinMax query that can determine the minimum and maximum values from a database; not just the selected plot.</li>
+  <li>VisIt now provides queries that allow you to determine the number of zones or nodes in a mesh.</li>
+  <li>VisIt now allows you to perform axis-aligned lineouts. If you press the Shift key when doing a lineout, the line will be aligned to the horizontal or vertical axis, depending on the slope of the line.</li>
+  <li>VisIt is now installed with the Boxlib database reader plugin on the SCF.</li>
+  <li>VisIt no longer saves the remote host in your config file so it will not try to automatically gain access to a remote computer at startup.</li>
+  <li>The SAMRAI, Tetrad, and PDB database reader plugins are now available for the Windows version of VisIt.</li>
+  <li>VisIt now checks for bad material values so it is easier to determine if a data file was not written correctly.</li>
+  <li>Visit now issues a warning when an invalid material is encountered.</li>
+  <li>The SAMRAI and Tetrad database reader plugins are now build on mcr on the OCF.</li>
+  <li>VisIt's cursor now changes to crosshairs when entering pick mode.</li>
+  <li>Base index is now set up for Boxlib data files.</li>
+  <li>The Mesh plot can optionally now draw all cell edges.</li>
+  <li>VisIt now tells its compute engines to clear their caches when you restore a session file.</li>
+  <li>VisIt's clipping code now handles 2D cell types.</li>
+  <li>VisIt's Compute engines window now has a button to tell the active compute engine to clear its caches. Press this button if your computer becomes sluggish and the compute engine will free up some memory.</li>
+  <li>You can now open Boxlib data files by opening a "Header" file.</li>
+  <li>All variables are now available from Boxlib data files.</li>
+  <li>VisIt's config files are now readable by the Windows notepad program.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.2.8</font></b></p>
+<ul>
+  <li>VisIt's parallel compute engine can hang when changing time steps.</li>
+  <li>VisIt returns the wrong material list for individual Flash files when the list of materials has to be inferred from the ireg array. This 
+  bug caused subset selection to vary unexpectedly over time and it also caused the compute engine to crash when creating animations involving the FilledBoundary plot.</li>
+  <li>Material selection revealed an internal error message.</li>
+  <li>Certain expressions crashed VisIt's compute engine.</li>
+  <li>The IsoVolume operator can crash VisIt's compute engine.</li>
+  <li>Applying the IsoVolume operator and then applying the IsoSurface operator crashed VisIt's compute engine.</li>
+  <li>VisIt hangs on startup when old configuration files are present.</li>
+  <li>Plots disappear when animating over time when making movies.</li>
+  <li>VisIt saves the remote host into the config file.</li>
+  <li>The nmats expression does not return the right values.</li>
+  <li>VisIt's qtssh program, which is used to log into remote computers on Windows, crashes when the Cancel button is clicked.</li>
+  <li>VisIt's GUI is very sluggish with 2000+ variables in the variables list.</li>
+  <li>The matvf expression is not calculated correctly.</li>
+  <li>VisIt does not read all of the variables in a VTK file.</li>
+  <li>The Integrate query for area under a curve returns the wrong value.</li>
+  <li>Zones are missing in the FilledBoundary plot.</li>
+  <li>The OnionPeel operator should not display or work on domains that are not in the current SIL.</li>
+  <li>Subset categories are not immediately available in the OnionPeel operator window.</li>
+  <li>The OnionPeel operator window does not have the correct initial values.</li>
+  <li>Pick indicator is <i>way</i> far away from the pick point.</li>
+  <li>When a single file is in the Selected files list, VisIt's GUI shows the file's entire path.</li>
+  <li>VisIt's compute engine crashed when trying to read an Ensight data file.</li>
+  <li>Fullframe mode requires another expose event to fully activate.</li>
+  <li>Pick problems with high aspect ratio zones.</li>
+  <li>Non-square geometries are not honored by VisIt's CLI.</li>
+  <li>The Surface plot does not have the right view in scalable rendering mode.</li>
+  <li>The legend for Pseudocolor plots is incorrect when Skew scaling is used.</li>
+  <li>The nmats expression does not work properly with the FilledBoundary plot.</li>
+  <li>VisIt does not save its global toolbar visibility setting into the config file.</li>
+  <li>The Windows version of VisIt uses the wrong file name when saving config files.</li>
+  <li>The Password window's Cancel button is too close to the password text field.</li>
+  <li>The wrong warning message is issued when a remote engine launch is cancelled.</li>
+  <li>The View window's rotz command has numerical errors.</li>
+  <li>The matvf expression always returns 0 for some Boxlib data files.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href="relnotes1.2.7.html">VisIt 1.2.7 Release Notes</a>.</p>
+</body>
+</html>

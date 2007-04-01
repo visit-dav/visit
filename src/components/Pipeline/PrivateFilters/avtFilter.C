@@ -542,6 +542,9 @@ avtFilter::AdditionalPipelineFilters(void)
 //    Hank Childs, Wed Apr 17 09:33:15 PDT 2002
 //    Made argument const.
 //
+//    Hank Childs, Thu Feb 26 09:14:49 PST 2004
+//    Better account for multiple variables.
+//
 // ****************************************************************************
 
 bool
@@ -549,16 +552,20 @@ avtFilter::TryDataExtents(double *outexts, const char *varname)
 {
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
 
-    if (varname != NULL && !(atts.GetVariableName() == varname))
+    if (varname != NULL && !atts.ValidVariable(varname))
     {
         // We are looking for the extents of a different variable.
+        return false;
+    }
+    if (varname == NULL && !atts.ValidActiveVariable())
+    {
         return false;
     }
 
     //
     // Our first preference is for the effective extents.
     //
-    avtExtents *eff = atts.GetEffectiveDataExtents();
+    avtExtents *eff = atts.GetEffectiveDataExtents(varname);
     if (eff->HasExtents())
     {
         eff->CopyTo(outexts);
@@ -569,7 +576,7 @@ avtFilter::TryDataExtents(double *outexts, const char *varname)
         //
         // If we had the extents in the meta-data, use that.
         //
-        avtExtents *tr = atts.GetTrueDataExtents();
+        avtExtents *tr = atts.GetTrueDataExtents(varname);
         if (tr->HasExtents())
         {
             tr->CopyTo(outexts);

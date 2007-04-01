@@ -255,7 +255,10 @@ avtDataObjectInformation::SwapAndMerge(const avtDataObjectWriter_p dobw,
 //
 //     Mark C. Miller, Wed Jan 21 13:36:01 PST 2004
 //     Moved call to CanUseCummulativeAsTrueOrCurrent to outside the 
-//     #ifdef PARALLE block
+//     #ifdef PARALLEL block
+//
+//     Hank Childs, Wed Feb 25 11:00:09 PST 2004
+//     Correct mispelling of cumulative.
 //
 // ****************************************************************************
 
@@ -326,8 +329,7 @@ avtDataObjectInformation::ParallelMerge(const avtDataObjectWriter_p dobw)
 #endif
 
    // indicate that it is ok to use cummulative true extents as true extents;
-   GetAttributes().SetCanUseCummulativeAsTrueOrCurrent(true);
-
+   GetAttributes().SetCanUseCumulativeAsTrueOrCurrent(true);
 }
 
 // ****************************************************************************

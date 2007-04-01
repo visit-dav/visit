@@ -32,7 +32,6 @@
 #include <avtDataset.h>
 #include <avtFilter.h>
 #include <avtOriginatingSink.h>
-#include <avtPlot.h>
 #include <avtStreamer.h>
 #include <avtTerminatingSource.h>
 #include <avtVariableMapper.h>
@@ -793,6 +792,10 @@ Engine::AlarmHandler(int signal)
 //    Mark C. Miller, Wed Feb  4 19:45:35 PST 2004
 //    Made the ui_dob a 'clone' of the writer's input
 //
+//    Hank Childs, Wed Feb 25 11:40:21 PST 2004
+//    Fix mis-spelling of cumulative (the function we were calling changed
+//    names).
+//
 // ****************************************************************************
 void
 Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer)
@@ -859,7 +862,7 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer)
 
 
         // indicate that cumulative extents in data object now as good as true extents
-        ui_dob->GetInfo().GetAttributes().SetCanUseCummulativeAsTrueOrCurrent(true);
+        ui_dob->GetInfo().GetAttributes().SetCanUseCumulativeAsTrueOrCurrent(true);
 
         //
         // See if there was an error on another processor.
@@ -932,7 +935,7 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer)
 
 #else // serial
     avtDataObject_p dob = writer->GetInput();
-    dob->GetInfo().GetAttributes().SetCanUseCummulativeAsTrueOrCurrent(true);
+    dob->GetInfo().GetAttributes().SetCanUseCumulativeAsTrueOrCurrent(true);
     avtDataValidity &v = dob->GetInfo().GetValidity();
     if (!v.HasErrorOccurred())
     {

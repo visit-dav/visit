@@ -46,6 +46,9 @@ class     vtkDataArray;
 //    Kathleen Bonnell, Wed Feb 18 08:31:26 PST 2004 
 //    Added CGetNumberOfRealZones, CGetNumberOfNodes. 
 //
+//    Hank Childs, Mon Mar  1 07:49:35 PST 2004
+//    Modified data extent methods to handle multiple variables.
+//
 // ****************************************************************************
 
 //
@@ -55,7 +58,6 @@ class     vtkDataArray;
 PIPELINE_API void CGetSpatialExtents(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetDataExtents(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetDataMagnitudeExtents(avtDataRepresentation &, void *, bool &);
-PIPELINE_API void CGetNodeCenteredDataExtents(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CUpdateData(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CAddInputToAppendFilter(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetNumberOfZones(avtDataRepresentation &, void *, bool &);
@@ -73,9 +75,8 @@ PIPELINE_API void CGetVariableCentering(avtDataRepresentation &, void *, bool &)
 PIPELINE_API void CGetNumberOfNodes(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetNumberOfRealZones(avtDataRepresentation &, void *, bool &);
 
-PIPELINE_API void GetDataRange(vtkDataSet *, double *, int);
-PIPELINE_API void GetDataMagnitudeRange(vtkDataSet *, double *, int);
-PIPELINE_API void GetPointDataRange(vtkDataSet *, double *);
+PIPELINE_API void GetDataRange(vtkDataSet *, double *, const char *);
+PIPELINE_API void GetDataMagnitudeRange(vtkDataSet *, double *, const char *);
 
 
 typedef struct
@@ -113,6 +114,12 @@ typedef struct
     const char     *varname;
     avtCentering    centering;
 } GetArrayArgs;
+
+typedef struct
+{
+    double       *extents;
+    const char   *varname;
+} GetVariableRangeArgs;
 
 #endif
 

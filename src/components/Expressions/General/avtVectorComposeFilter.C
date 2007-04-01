@@ -60,12 +60,24 @@ avtVectorComposeFilter::~avtVectorComposeFilter()
 //  Programmer: Hank Childs
 //  Creation:   September 23, 2003
 //
+//   Modifications:
+//
+//    Hank Childs, Thu Feb 26 09:00:06 PST 2004
+//    Account for multiple variables.
+//
 // ****************************************************************************
 
 int
 avtVectorComposeFilter::GetVariableDimension(void)
 {
-    int inDim = GetInput()->GetInfo().GetAttributes().GetVariableDimension();
+    avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
+
+    if (activeVariable == NULL)
+        return 3;
+    if (!atts.ValidVariable(activeVariable))
+        return 3;
+
+    int inDim = atts.GetVariableDimension();
     if (inDim == 1)
         return 3;
     else if (inDim == 3)

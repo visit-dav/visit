@@ -92,6 +92,10 @@ QvisReflectWindow::~QvisReflectWindow()
 //    Brad Whitlock, Wed Jun 25 09:25:32 PDT 2003
 //    I added code that lets us have a 2D input mode.
 //
+//    Jeremy Meredith, Wed Mar  3 16:17:01 PST 2004
+//    I had it update the octant menu since we only
+//    update it when it changes now.
+//
 // ****************************************************************************
 
 void
@@ -165,6 +169,8 @@ QvisReflectWindow::CreateWindowContents()
     limitsLayout->addWidget(zSpecify,   2, 2);
     limitsLayout->addWidget(specifiedZ, 2, 3);
 
+    UpdateOctantMenuContents();
+
     connect(octant,        SIGNAL(activated(int)),
             this,          SLOT(octantChanged(int)));
     connect(xBound,        SIGNAL(clicked(int)),
@@ -199,6 +205,10 @@ QvisReflectWindow::CreateWindowContents()
 //
 //    Brad Whitlock, Wed Jun 25 10:11:14 PDT 2003
 //    I added a 2D input mode.
+//
+//    Jeremy Meredith, Wed Mar  3 16:18:08 PST 2004
+//    Only update the octant menu automatically if it has
+//    changed dimensionality.
 //
 // ****************************************************************************
 
@@ -286,12 +296,14 @@ QvisReflectWindow::UpdateWindow(bool doAll)
     }
     else if(!userSetMode)
     {
+        bool oldMode2D = mode2D;
         mode2D = true;
         modeButtons->blockSignals(true);
         modeButtons->setButton(0);
         modeButtons->blockSignals(false);
         reflect->setMode2D(mode2D);
-        UpdateOctantMenuContents();
+        if (oldMode2D != mode2D)
+            UpdateOctantMenuContents();
     }
 
     if(setOctant)

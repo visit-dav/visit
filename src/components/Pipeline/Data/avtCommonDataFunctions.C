@@ -171,41 +171,40 @@ CGetSpatialExtents(avtDataRepresentation &data, void *se, bool &success)
 //    Hank Childs, Fri Dec 14 10:57:36 PST 2001
 //    Support against memory overwrites.
 //
+//    Hank Childs, Tue Feb 24 15:08:59 PST 2004
+//    Add support for multiple variables.
+//
 // ****************************************************************************
 
 void 
-CGetDataExtents(avtDataRepresentation &data, void *de, bool &success) 
+CGetDataExtents(avtDataRepresentation &data, void *g, bool &success) 
 {
     if (data.Valid())
     {
         vtkDataSet *ds = data.GetDataVTK();
         if (ds->GetNumberOfCells() > 0 && ds->GetNumberOfPoints() > 0)
         {
-            double *dde = (double*)de;
-            int dim;
-            if (ds->GetPointData()->GetScalars() != NULL 
-                || ds->GetCellData()->GetScalars() != NULL)
-            {
-                dim = 1; // scalars
-            }
-            else if (ds->GetPointData()->GetVectors() != NULL 
-                || ds->GetCellData()->GetVectors() != NULL)
-            {
-                dim = 3; // vectors
-            }
+            GetVariableRangeArgs *gvra = (GetVariableRangeArgs *) g;
+            double *dde = gvra->extents;
+            const char *vname = gvra->varname;
+
+            vtkDataArray *da = NULL;
+            if (ds->GetPointData()->GetArray(vname) != NULL)
+                da = ds->GetPointData()->GetArray(vname);
             else
-            {
-                debug1 << "Asked to find extents of dataset with no variables."
-                       << endl;
+                da = ds->GetCellData()->GetArray(vname);
+
+            if (da == NULL)
                 return;
-            }
+
+            int dim = da->GetNumberOfComponents();
             double *range = new double[2*dim];
             for (int i = 0; i < dim; i++)
             {
                 range[2*i]   = +DBL_MAX;
                 range[2*i+1] = -DBL_MAX;
             }
-            GetDataRange(ds, range, dim);
+            GetDataRange(ds, range, vname);
 
             //
             // If we have gotten extents from another data rep, then merge the
@@ -248,6 +247,7 @@ CGetDataExtents(avtDataRepresentation &data, void *de, bool &success)
     }
 }
 
+
 // ****************************************************************************
 //  Method: CGetDataMagnitudeExtents
 //
@@ -271,43 +271,27 @@ CGetDataExtents(avtDataRepresentation &data, void *de, bool &success)
 //    Hank Childs, Tue Sep 23 23:09:02 PDT 2003
 //    Add support for tensors.
 //
+//    Hank Childs, Tue Feb 24 15:08:59 PST 2004
+//    Add support for multiple variables.
+//
 // ****************************************************************************
 
 void 
-CGetDataMagnitudeExtents(avtDataRepresentation &data, void *de, bool &success) 
+CGetDataMagnitudeExtents(avtDataRepresentation &data, void *g, bool &success) 
 {
     if (data.Valid())
     {
         vtkDataSet *ds = data.GetDataVTK();
-        if (ds->GetNumberOfCells() > 0 || ds->GetNumberOfPoints() > 0)
+        if (ds->GetNumberOfCells() > 0 && ds->GetNumberOfPoints() > 0)
         {
-            double *dde = (double*)de;
-            int dim;
-            if (ds->GetPointData()->GetScalars() != NULL 
-                || ds->GetCellData()->GetScalars() != NULL)
-            {
-                dim = 1; // scalars
-            }
-            else if (ds->GetPointData()->GetVectors() != NULL 
-                || ds->GetCellData()->GetVectors() != NULL)
-            {
-                dim = 3; // vectors
-            }
-            else if (ds->GetPointData()->GetTensors() != NULL
-                || ds->GetCellData()->GetTensors() != NULL)
-            {
-                dim = 9; // tensors
-            }
-            else
-            {
-                debug1 << "Asked to find extents of dataset with no variables."
-                       << endl;
-                return;
-            }
+            GetVariableRangeArgs *gvra = (GetVariableRangeArgs *) g;
+            double *dde = gvra->extents;
+            const char *vname = gvra->varname;
+
             double range[2];
             range[0] = +DBL_MAX;
             range[1] = -DBL_MAX;
-            GetDataMagnitudeRange(ds, range, dim);
+            GetDataMagnitudeRange(ds, range, vname);
 
             //
             // If we have gotten extents from another data rep, then merge the
@@ -315,14 +299,8 @@ CGetDataMagnitudeExtents(avtDataRepresentation &data, void *de, bool &success)
             //
             if (success)
             {
-                if (range[0] < dde[0])
-                {
-                    dde[0] = range[0];
-                }
-                if (range[1] > dde[1])
-                {
-                    dde[1] = range[1];
-                }
+                dde[0] = (dde[0] < range[0] ? dde[0] : range[0]);
+                dde[1] = (dde[1] > range[1] ? dde[1] : range[1]);
             }
             else
             {
@@ -341,100 +319,6 @@ CGetDataMagnitudeExtents(avtDataRepresentation &data, void *de, bool &success)
         debug1 << "Attempting to retrieve Data Magnitude Extents "
                << "of non-existent data." << endl;
         success = false;
-    }
-}
-
-// ****************************************************************************
-//  Method: CGetNodeCenteredDataExtents
-//
-//  Purpose:
-//      Gets the node-centered data extents of the dataset.
-//
-//  Arguments:
-//    data        The data represention from which to get the extents.
-//    de          A place to put the data extents
-//    success     Assigned true if operation successful, false otherwise. 
-//
-//  Notes:
-//      This method is designed to be used as the function parameter of
-//      avtDataTree::Iterate.
-//
-//  Programmer:   Kathleen Bonnell 
-//  Creation:     April 17, 2001 
-//
-//  Modifications:
-//
-//    Hank Childs, Fri Sep  7 17:15:03 PDT 2001
-//    Do not assume that extents are scalars or floats.
-//
-//    Kathleen Bonnell, Mon Oct  8 12:45:31 PDT 2001 
-//    Do not overwrite data extents, merge them instead.  Since
-//    this method uses GetDataRange, use that method's criteria
-//    for determing the number of <min,max> tuples that will be retrieved. 
-//
-//    Hank Childs, Tue Nov  6 14:41:52 PST 2001
-//    Make sure that there are no UMRs.
-//
-// ****************************************************************************
-
-void 
-CGetNodeCenteredDataExtents(avtDataRepresentation &data, void *de, 
-                            bool &success)
-{
-    success = false;
-    if (data.Valid())
-    {
-        double *dde = (double*)de;
-        int dim;
-        vtkDataSet *ds = data.GetDataVTK();
-        if (ds->GetPointData()->GetScalars() != NULL)
-        {
-            dim = 1;
-        }
-        else 
-        {
-            dim = 3;
-        }
-        double *range = new double[2*dim];
-        for (int i = 0; i < dim; i++)
-        {
-            range[2*i]   = +DBL_MAX;
-            range[2*i+1] = -DBL_MAX;
-        }
-        GetPointDataRange(ds, range);
-
-        //
-        // If we have gotten extents from another data rep, then merge the
-        // extents.  Otherwise copy them over.
-        //
-        if (success)
-        {
-            for (int i = 0; i < dim; i++)
-            {
-                if (range[2*i] < dde[2*i])
-                {
-                    dde[2*i] = range[2*i];
-                }
-                if (range[2*i+1] > dde[2*i+1])
-                {
-                    dde[2*i+1] = range[2*i+1];
-                }
-            }
-        }
-        else
-        {
-            for (int i = 0 ; i < 2*dim ; i++)
-            {
-                dde[i] = range[i];
-            }
-        }
-        success = true;
-        delete [] range;
-    }
-    else
-    {
-        debug1 << "Attempting to retrieve Nodal Data Extents "
-               << "of non-existent data." << endl;
     }
 }
 
@@ -974,104 +858,83 @@ CRemoveVariable(avtDataRepresentation &data, void *arg, bool &success)
 //  Creation:   September 7, 2001
 //
 //  Modifications:
+//
 //    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
 //    vtkVectors has been deprecated in VTK 4.0, use vtkDataArray instead.
+//
+//    Hank Childs, Tue Feb 24 14:54:28 PST 2004
+//    Added a variable to get the range for.
 //
 // ****************************************************************************
 
 void
-GetDataRange(vtkDataSet *ds, double *exts, int dim)
+GetDataRange(vtkDataSet *ds, double *exts, const char *vname)
 {
-    if (dim == 0)
-    {
-        return;
-    }
+    int  i, j;
 
-    if (dim == 1)
+    vtkDataArray *da = NULL;
+    if (ds->GetPointData()->GetArray(vname))
     {
-        float fexts[2];
-        ds->GetScalarRange(fexts);
-        exts[0] = (double) fexts[0];
-        exts[1] = (double) fexts[1];
+        da = ds->GetPointData()->GetArray(vname);
     }
     else
     {
-        for (int i = 0 ; i < 3 ; i++)
+        da = ds->GetCellData()->GetArray(vname);
+    }
+
+    if (da == NULL)
+        return;
+
+    int nvals = da->GetNumberOfTuples();
+    int ncomps = da->GetNumberOfComponents();
+
+    for (j = 0 ; j < ncomps ; j++)
+    {
+        exts[2*j]   = +FLT_MAX;
+        exts[2*j+1] = -FLT_MAX;
+    }
+    
+    if (da->GetDataType() == VTK_FLOAT)
+    {
+        float *ptr = (float *) da->GetVoidPointer(0);
+        for (int i = 0 ; i < nvals ; i++)
         {
-            exts[2*i]   = +DBL_MAX;
-            exts[2*i+1] = -DBL_MAX;
-        }
-        
-        if (ds->GetPointData()->GetVectors() != NULL)
-        {
-            vtkDataArray *vec = ds->GetPointData()->GetVectors();
-            int nVectors = vec->GetNumberOfTuples();
-            double vector[3];
-            for (int j = 0 ; j < nVectors ; j++)
+            for (int j = 0 ; j < ncomps ; j++)
             {
-                vec->GetTuple(j, vector);
-                if (vector[0] < exts[0])
-                {
-                    exts[0] = vector[0];
-                }
-                if (vector[0] > exts[1])
-                {
-                    exts[1] = vector[0];
-                }
-                if (vector[1] < exts[2])
-                {
-                    exts[2] = vector[1];
-                }
-                if (vector[1] > exts[3])
-                {
-                    exts[3] = vector[1];
-                }
-                if (vector[2] < exts[4])
-                {
-                    exts[4] = vector[2];
-                }
-                if (vector[2] > exts[5])
-                {
-                    exts[5] = vector[2];
-                }
+                exts[2*j] = (exts[2*j] < *ptr ? exts[2*j] : *ptr);
+                exts[2*j+1] = (exts[2*j+1] > *ptr ? exts[2*j+1] : *ptr);
+                ptr++;
             }
         }
-        if (ds->GetCellData()->GetVectors() != NULL)
+    }
+    else if (da->GetDataType() == VTK_INT)
+    {
+        int *ptr = (int *) da->GetVoidPointer(0);
+        for (int i = 0 ; i < nvals ; i++)
         {
-            vtkDataArray *vec = ds->GetCellData()->GetVectors();
-            int nVectors = vec->GetNumberOfTuples();
-            double vector[3];
-            for (int j = 0 ; j < nVectors ; j++)
+            for (int j = 0 ; j < ncomps ; j++)
             {
-                vec->GetTuple(j, vector);
-                if (vector[0] < exts[0])
-                {
-                    exts[0] = vector[0];
-                }
-                if (vector[0] > exts[1])
-                {
-                    exts[1] = vector[0];
-                }
-                if (vector[1] < exts[2])
-                {
-                    exts[2] = vector[1];
-                }
-                if (vector[1] > exts[3])
-                {
-                    exts[3] = vector[1];
-                }
-                if (vector[2] < exts[4])
-                {
-                    exts[4] = vector[2];
-                }
-                if (vector[2] > exts[5])
-                {
-                    exts[5] = vector[2];
-                }
+                exts[2*j] = (exts[2*j] < *ptr ? exts[2*j] : *ptr);
+                exts[2*j+1] = (exts[2*j+1] > *ptr ? exts[2*j+1] : *ptr);
+                ptr++;
+            }
+        }
+    }
+    else if (da->GetDataType() == VTK_UNSIGNED_CHAR)
+    {
+        unsigned char *ptr = (unsigned char *) da->GetVoidPointer(0);
+        for (int i = 0 ; i < nvals ; i++)
+        {
+            for (int j = 0 ; j < ncomps ; j++)
+            {
+                exts[2*j] = (exts[2*j] < *ptr ? exts[2*j] : *ptr);
+                exts[2*j+1] = (exts[2*j+1] > *ptr ? exts[2*j+1] : *ptr);
+                ptr++;
             }
         }
     }
 }
+
 
 // ****************************************************************************
 //  Function: GetDataMagnitudeRange
@@ -1091,189 +954,56 @@ GetDataRange(vtkDataSet *ds, double *exts, int dim)
 //    Hank Childs, Tue Sep 23 23:09:02 PDT 2003
 //    Add support for tensors.
 //
+//    Hank Childs, Tue Feb 24 14:54:28 PST 2004
+//    Added a variable to get the range for.  Reduced number of sqrt calls.
+//
 // ****************************************************************************
 
 void
-GetDataMagnitudeRange(vtkDataSet *ds, double *exts, int dim)
+GetDataMagnitudeRange(vtkDataSet *ds, double *exts, const char *vname)
 {
-    if (dim == 0)
+    int  i, j;
+
+    exts[0] = +FLT_MAX;
+    exts[1] = 0;
+
+    vtkDataArray *da = NULL;
+    if (ds->GetPointData()->GetArray(vname))
     {
+        da = ds->GetPointData()->GetArray(vname);
+    }
+    else
+    {
+        da = ds->GetCellData()->GetArray(vname);
+    }
+
+    if (da == NULL)
         return;
-    }
 
-    if (dim == 1)
+    int nvals = da->GetNumberOfTuples();
+    int ncomps = da->GetNumberOfComponents();
+
+    //
+    // We only know how to deal with floats.
+    //
+    if (da->GetDataType() != VTK_FLOAT)
+        return;
+
+    float *ptr = (float *) da->GetVoidPointer(0);
+    for (int i = 0 ; i < nvals ; i++)
     {
-        float fexts[2];
-        ds->GetScalarRange(fexts);
-        exts[0] = (double) fexts[0];
-        exts[1] = (double) fexts[1];
-    }
-    else if (dim == 3)
-    {
-        exts[0] = +DBL_MAX;
-        exts[1] = -DBL_MAX;
-
-        if (ds->GetPointData()->GetVectors() != NULL)
+        double mag = 0.;
+        for (int j = 0 ; j < ncomps ; j++)
         {
-            vtkDataArray *vec = ds->GetPointData()->GetVectors();
-            int nVectors = vec->GetNumberOfTuples();
-            double v[3];
-            for (int j = 0 ; j < nVectors ; j++)
-            {
-                vec->GetTuple(j, v);
-                double mag = sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
-                if (mag < exts[0])
-                {
-                    exts[0] = mag;
-                }
-                if (mag > exts[1])
-                {
-                    exts[1] = mag;
-                }
-            }
+            mag += *ptr * *ptr;
+            ptr++;
         }
-        if (ds->GetCellData()->GetVectors() != NULL)
-        {
-            vtkDataArray *vec = ds->GetCellData()->GetVectors();
-            int nVectors = vec->GetNumberOfTuples();
-            double v[3];
-            for (int j = 0 ; j < nVectors ; j++)
-            {
-                vec->GetTuple(j, v);
-                double mag = sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
-                if (mag < exts[0])
-                {
-                    exts[0] = mag;
-                }
-                if (mag > exts[1])
-                {
-                    exts[1] = mag;
-                }
-            }
-        }
+        exts[0] = (exts[0] < mag ? exts[0] : mag);
+        exts[1] = (exts[1] > mag ? exts[1] : mag);
     }
-    else
-    {
-        exts[0] = +DBL_MAX;
-        exts[1] = -DBL_MAX;
 
-        vtkDataArray *tens = NULL;
-        if (ds->GetPointData()->GetTensors() != NULL)
-            tens = ds->GetPointData()->GetTensors();
-        if (ds->GetCellData()->GetTensors() != NULL)
-            tens = ds->GetCellData()->GetTensors();
-
-        int ntuples = tens->GetNumberOfTuples();
-        for (int i = 0 ; i < ntuples ; i++)
-        {
-            float in[9];
-            tens->GetTuple(i, in);
-            float *mat[3];
-            float out1[3];
-            out1[0] = in[0];
-            out1[1] = in[1];
-            out1[2] = in[2];
-            float out2[3];
-            out2[0] = in[3];
-            out2[1] = in[4];
-            out2[2] = in[5];
-            float out3[3];
-            out3[0] = in[6];
-            out3[1] = in[7];
-            out3[2] = in[8];
-            mat[0] = out1;
-            mat[1] = out2;
-            mat[2] = out3;
-            float tmp1[3], tmp2[3], tmp3[3];
-            float eigenvals[3];
-            float *eigenvecs[3];
-            eigenvecs[0] = tmp1;
-            eigenvecs[1] = tmp2;
-            eigenvecs[2] = tmp3;
-            vtkMath::Jacobi(mat, eigenvals, eigenvecs);
-            exts[0] = (eigenvals[0] < exts[0] ? eigenvals[0] : exts[0]);
-            exts[1] = (eigenvals[0] > exts[1] ? eigenvals[0] : exts[1]);
-            exts[0] = (eigenvals[1] < exts[0] ? eigenvals[1] : exts[0]);
-            exts[1] = (eigenvals[1] > exts[1] ? eigenvals[1] : exts[1]);
-            exts[0] = (eigenvals[2] < exts[0] ? eigenvals[2] : exts[0]);
-            exts[1] = (eigenvals[2] > exts[1] ? eigenvals[2] : exts[1]);
-        }
-    }
-}
-
-// ****************************************************************************
-//  Function: GetPointDataRange
-//
-//  Purpose:
-//      Gets the data range of the point data from a VTK dataset.
-//
-//  Arguments:
-//      ds      The dataset to determine the range for.
-//      exts    The extents in <min, max> form.  There may be many 3 sets of
-//              extents for vector data.
-//
-//  Programmer: Hank Childs
-//  Creation:   September 7, 2001
-//
-//  Modifications:
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkVectors has been deprecated in VTK 4.0, use vtkDataArray instead.
-//
-// ****************************************************************************
-
-void
-GetPointDataRange(vtkDataSet *ds, double *exts)
-{
-    if (ds->GetPointData()->GetScalars() != NULL)
-    {
-        float fexts[2];
-        ds->GetPointData()->GetScalars()->GetRange(fexts);
-        exts[0] = fexts[0];
-        exts[1] = fexts[1];
-    }
-    else
-    {
-        for (int i = 0 ; i < 3 ; i++)
-        {
-            exts[2*i]   = +DBL_MAX;
-            exts[2*i+1] = -DBL_MAX;
-        }
-        
-        if (ds->GetPointData()->GetVectors() != NULL)
-        {
-            vtkDataArray *vec = ds->GetPointData()->GetVectors();
-            int nVectors = vec->GetNumberOfTuples();
-            double vector[3];
-            for (int j = 0 ; j < nVectors ; j++)
-            {
-                vec->GetTuple(j, vector);
-                if (vector[0] < exts[0])
-                {
-                    exts[0] = vector[0];
-                }
-                if (vector[0] > exts[1])
-                {
-                    exts[1] = vector[0];
-                }
-                if (vector[1] < exts[2])
-                {
-                    exts[2] = vector[1];
-                }
-                if (vector[1] > exts[3])
-                {
-                    exts[3] = vector[1];
-                }
-                if (vector[2] < exts[4])
-                {
-                    exts[4] = vector[2];
-                }
-                if (vector[2] > exts[5])
-                {
-                    exts[5] = vector[2];
-                }
-            }
-        }
-    }
+    exts[0] = sqrt(exts[0]);
+    exts[1] = sqrt(exts[1]);
 }
 
 
