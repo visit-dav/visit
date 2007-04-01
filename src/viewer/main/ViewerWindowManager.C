@@ -6421,7 +6421,8 @@ ViewerWindowManager::UpdateWindowRenderingInformation(int windowIndex)
 {
     int index = (windowIndex == -1) ? activeWindow : windowIndex;
     ViewerWindow *win = windows[index];
-    if(win != 0 && index == activeWindow)
+    if(win != 0 && index == activeWindow &&
+       win->GetNotifyForEachRender())
     {
         float times[3] = {0., 0., 0.};
         win->GetRenderTimes(times);

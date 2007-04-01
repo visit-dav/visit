@@ -98,6 +98,9 @@ avtUnaryMathFilter::~avtUnaryMathFilter()
 //    Hank Childs, Tue Feb 10 08:33:05 PST 2004
 //    Account for case where there is no variable to work from ['4435].
 //
+//    Hank Childs, Thu Jan  6 13:32:50 PST 2005
+//    Create the correct sized array.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -210,7 +213,8 @@ avtUnaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
         // the mesh.
         //
         ncomps = 1;
-        nvals = in_ds->GetNumberOfCells();
+        nvals = (IsPointVariable() ? in_ds->GetNumberOfPoints() 
+                                   : in_ds->GetNumberOfCells());
         vtkFloatArray *tmp = vtkFloatArray::New();
         dv = CreateArray(tmp);
         tmp->Delete();

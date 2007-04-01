@@ -2153,6 +2153,9 @@ GetMixArray(const int *ireg, const int *ilamm, const int *nummm,
 //   Brad Whitlock, Mon Dec 6 17:49:05 PST 2004
 //   Changed the code so it works and removed the conditional compilation.
 //
+//   Eric Brugger, Thu Jan  6 08:40:28 PST 2005
+//   Corrected a misuse of the CATCH_RETURN macro.
+//
 // ****************************************************************************
 
 void
@@ -2198,7 +2201,7 @@ PP_ZFileReader::ReadMixvarAndCache(const std::string &varStr,
         {
             debug4 << "Could not read required mixed material arrays." << endl;
             assumeMixedMaterialsPresent = false;
-            CATCH_RETURN();
+            CATCH_RETURN(1);
         }
         ENDTRY
 

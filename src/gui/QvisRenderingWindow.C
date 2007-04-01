@@ -550,6 +550,9 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
 //   Replaced simple QString::sprintf's with a setNum because there seems
 //   to be a bug causing numbers to be incremented by .00001.  See '5263.
 //
+//   Mark C. Miller, Wed Jan  5 16:23:01 PST 2005
+//   Fixed problem with case lables not matching Select statements
+//
 // ****************************************************************************
 
 void
@@ -572,15 +575,27 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
 
         switch(i)
         {
-        case 0: //windowMode
-        case 1: //boundingBoxNavigate
-        case 2: //spin
-        case 3: //perspective
-        case 4: //lockView
-        case 5: //viewExtentsType
-        case 6: //viewDimension
+        case 0: //activeSource
+        case 1: //activeTimeSlider
+        case 2: //timeSliders
+        case 3: //timeSliderCurrentStates
+        case 4: //animationMode
+        case 5: //windowMode
+        case 6: //boundingBoxNavigate
+        case 7: //spin
+        case 8: //fullFrame
+        case 9: //perspective
+        case 10: //lockView
+        case 11: //lockTools
+        case 12: //lockTime
+        case 13: //viewExtentsType
+        case 14: //viewDimension
+        case 15: //viewKeyframes
+        case 16: //cameraViewMode
+        case 17: // usingScalableRendering
+            scalrenUsingLabel->setText(windowInfo->GetUsingScalableRendering() ? "yes" : "no");
             break;
-        case 7: //lastRenderMin
+        case 18: //lastRenderMin
             // Determine the fps.
             if(windowInfo->GetLastRenderMin() > 0. &&
                windowInfo->GetLastRenderMin() < 1.e05)
@@ -590,7 +605,7 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
             tmp.sprintf("%1.3g", fps);
             fpsMaxLabel->setText(tmp);
             break;
-        case 8: //lastRenderAvg
+        case 19: //lastRenderAvg
             // Determine the fps.
             if(windowInfo->GetLastRenderAvg() > 0.)
                 fps = 1. / windowInfo->GetLastRenderAvg();
@@ -599,7 +614,7 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
             tmp.sprintf("%1.3g", fps);
             fpsAvgLabel->setText(tmp);
             break;
-        case 9: //lastRenderMax
+        case 20: //lastRenderMax
             // Determine the fps.
             if(windowInfo->GetLastRenderMax() > 0.)
                 fps = 1. / windowInfo->GetLastRenderMax();
@@ -608,11 +623,11 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
             tmp.sprintf("%1.3g", fps);
             fpsMinLabel->setText(tmp);
             break;
-        case 10: //numTriangles
+        case 21: //numTriangles
             tmp.sprintf("%d", windowInfo->GetNumTriangles());
             approxNumTriangles->setText(tmp);
             break;
-        case 11: //extents
+        case 22: //extents
             for(j = 0; j < 6; ++j)
             {
                 double d = windowInfo->GetExtents()[j];
@@ -622,14 +637,6 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
                     tmp.setNum(windowInfo->GetExtents()[j]);
                 extents[j]->setText(tmp);
             }
-            break;
-        case 12: // lockTools
-        case 13: // lockTime
-        case 14: // cameraViewMode
-        case 15: // fullFrame
-            break;
-        case 16: // usingScalableRendering
-            scalrenUsingLabel->setText(windowInfo->GetUsingScalableRendering() ? "yes" : "no");
             break;
         }            
     }

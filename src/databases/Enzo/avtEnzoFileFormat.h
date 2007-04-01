@@ -36,6 +36,10 @@ class avtEnzoFileFormat : public avtSTMDFileFormat
     virtual vtkDataArray  *GetVar(int, const char *);
     virtual vtkDataArray  *GetVectorVar(int, const char *);
 
+    virtual void          *GetAuxiliaryData(const char *var, int,
+                                            const char *type, void *args,
+                                            DestructorFunction &);
+    
   protected:
     // DATA MEMBERS
     struct Grid
@@ -44,6 +48,8 @@ class avtEnzoFileFormat : public avtSTMDFileFormat
         std::vector<int> childrenID;
         int              parentID;
         int              level;
+
+        int              numberOfParticles;
 
         double           minSpatialExtents[3];
         double           maxSpatialExtents[3];
