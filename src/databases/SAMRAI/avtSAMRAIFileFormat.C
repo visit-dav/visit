@@ -433,7 +433,7 @@ avtSAMRAIFileFormat::ReadMesh(int patch)
 
         if (cur_var == var_names_num_components.end())
         {
-                num_ghosts[0] = 0;
+            num_ghosts[0] = 0;
             num_ghosts[1] = 0;
             num_ghosts[2] = 0;
             should_ghost_this_patch = false;
@@ -2741,6 +2741,12 @@ avtSAMRAIFileFormat::ReadVarExtents(hid_t &h5_file)
 //  Programmer:  Walter Herrera Jimenez
 //  Creation:    August  20, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 12 17:29:19 PST 2004
+//    Added code to override xlo/xup (spatial) extents of each patch with
+//    knowledge of extents of coordinate array if its an ALE grid
+//
 // ****************************************************************************
 void 
 avtSAMRAIFileFormat::ReadPatchExtents(hid_t &h5_file)
@@ -2792,6 +2798,30 @@ avtSAMRAIFileFormat::ReadPatchExtents(hid_t &h5_file)
     H5Tclose(h5_xlo_datatype);
     H5Tclose(h5_xup_datatype);
     H5Tclose(h5_datatype);
+
+    // override xlo/xup data with extents from the "Coord" variable
+    if (grid_type == "ALE" || grid_type == "DEFORMED")
+    {
+        // find the index for the coordinate field
+        int v;
+        for (v = 0; v < num_vars; v++)
+        {
+            if (var_names[v] == "Coords")
+                break;
+        }
+
+        // now move the var_extents data to patch_extents
+        int p;
+        for (p = 0; p < num_patches; p++)
+        {
+            patch_extents[p].xlo[0] = var_extents[v][0*num_patches].min;
+            patch_extents[p].xup[0] = var_extents[v][0*num_patches].max;
+            patch_extents[p].xlo[1] = var_extents[v][1*num_patches].min;
+            patch_extents[p].xup[1] = var_extents[v][1*num_patches].max;
+            patch_extents[p].xlo[2] = var_extents[v][2*num_patches].min;
+            patch_extents[p].xup[2] = var_extents[v][2*num_patches].max;
+        }
+    }
 }
 
 
@@ -3241,6 +3271,10 @@ avtSAMRAIFileFormat::ReadSpeciesInfo(hid_t &h5_file)
 //     Changed name from BuildDomainNestingInfo to BuildDomainAuxiliaryInfo
 //     since it does more than build domain nesting information
 //
+//     Mark C. Miller, Mon Jan 12 17:29:19 PST 2004
+//     I switched to use avtCurvilinearDomainBoundaries when its in ALE
+//     mesh
+//
 // ****************************************************************************
 void 
 avtSAMRAIFileFormat::BuildDomainAuxiliaryInfo()
@@ -3306,13 +3340,20 @@ avtSAMRAIFileFormat::BuildDomainAuxiliaryInfo()
             timestep, -1, vr);
     }
 
-    void_ref_ptr rdbTmp = cache->GetVoidRef("any_mesh",
-                                            AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
-                                            timestep, -1);
-    if ((*rdbTmp == NULL) && !has_ghost)
+    void_ref_ptr dbTmp = cache->GetVoidRef("any_mesh",
+                                           AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
+                                           timestep, -1);
+    if ((*dbTmp == NULL) && !has_ghost)
     {
-        avtRectilinearDomainBoundaries *rdb = new avtRectilinearDomainBoundaries;
-        rdb->SetNumDomains(num_patches);
+        bool canComputeNeighborsFromExtents = true;
+        avtStructuredDomainBoundaries *sdb = 0;
+
+        if (grid_type == "ALE" || grid_type == "DEFORMED")
+            sdb = new avtCurvilinearDomainBoundaries(canComputeNeighborsFromExtents);
+        else
+            sdb = new avtRectilinearDomainBoundaries(canComputeNeighborsFromExtents);
+
+        sdb->SetNumDomains(num_patches);
         for (int i = 0 ; i < num_patches ; i++)
         {
             int e[6];
@@ -3322,13 +3363,14 @@ avtSAMRAIFileFormat::BuildDomainAuxiliaryInfo()
             e[3] = patch_extents[i].upper[1]+1;
             e[4] = patch_extents[i].lower[2];
             e[5] = patch_extents[i].upper[2]+1;
-            rdb->SetIndicesForAMRPatch(i, patch_map[i].level_number, e);
+            sdb->SetIndicesForAMRPatch(i, patch_map[i].level_number, e);
         }
-        rdb->CalculateBoundaries();
-        void_ref_ptr vrdb = void_ref_ptr(rdb,avtStructuredDomainBoundaries::Destruct);
+        sdb->CalculateBoundaries();
+        void_ref_ptr vsdb = void_ref_ptr(sdb,avtStructuredDomainBoundaries::Destruct);
         cache->CacheVoidRef("any_mesh",
                             AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
-                            timestep, -1, vrdb);
+                            timestep, -1, vsdb);
+
     }
 }
 

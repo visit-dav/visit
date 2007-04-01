@@ -155,12 +155,18 @@ class BoundaryHelperFunctions
 //    (the only previous support was for curvilinear grids).  Also added
 //    DeclareNumDomains and CreateGhostZones.
 //
+//    Mark C. Miller, Mon Jan 12 17:29:19 PST 2004
+//    Re-structured to permit ANY structured mesh to compute neighbors from
+//    knowledge of extents when that is possible. Used a boolean flag to
+//    indicate this condition rather than sub-classing because the class
+//    hierarchy is more involved than was worth it.
+//
 // ****************************************************************************
 
 class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
 {
   public:
-             avtStructuredDomainBoundaries();
+             avtStructuredDomainBoundaries(bool _canComputeNeighborsFromExtents = false);
     virtual ~avtStructuredDomainBoundaries();
 
     static void Destruct(void *);
@@ -169,6 +175,11 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
     void     SetExtents(int domain, int e[6]);
     void     AddNeighbor(int domain, int d,int mi, int o[3], int e[6]);
     void     Finish(int domain);
+
+    //  methods for cases where neighbors can be computed
+    void  SetIndicesForRectGrid(int domain, int e[6]);
+    void  SetIndicesForAMRPatch(int domain, int level, int e[6]);
+    void  CalculateBoundaries(void);
 
     virtual vector<vtkDataArray*>     ExchangeScalar(vector<int>   domainNum,
                                              bool                  isPointData,
@@ -211,6 +222,11 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
     vector<Boundary> wholeBoundary;
     vector<Boundary> boundary;
 
+    // data for cases where neighbors can be computed
+    bool shouldComputeNeighborsFromExtents;
+    vector<int>   extents;
+    vector<int>   levels;
+
     friend class BoundaryHelperFunctions<int>;
     friend class BoundaryHelperFunctions<float>;
     friend class BoundaryHelperFunctions<unsigned char>;
@@ -224,38 +240,33 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
     bool       *SetExistence(int, bool);
     void        CreateGhostZones(vtkDataSet *, vtkDataSet *, Boundary *);
 
-    virtual void DeclareNumDomains(int);
-
     friend ostream &operator<<(ostream&, Boundary&);
 };
 
 
+// the communication methods are optimized for each class of mesh
 class DATABASE_API avtCurvilinearDomainBoundaries
     : public avtStructuredDomainBoundaries
 {
   public:
+    avtCurvilinearDomainBoundaries(bool _canComputeNeighborsFromExtents = false) :
+        avtStructuredDomainBoundaries(_canComputeNeighborsFromExtents) {;};
+   
     virtual vector<vtkDataSet*>    ExchangeMesh(vector<int>         domainNum,
                                                 vector<vtkDataSet*> meshes);
 };
 
 
+// the communication methods are optimized for each class of mesh
 class DATABASE_API avtRectilinearDomainBoundaries
     : public avtStructuredDomainBoundaries
 {
   public:
+    avtRectilinearDomainBoundaries(bool _canComputeNeighborsFromExtents = false) :
+        avtStructuredDomainBoundaries(_canComputeNeighborsFromExtents) {;};
+
     virtual vector<vtkDataSet*>    ExchangeMesh(vector<int>         domainNum,
                                                 vector<vtkDataSet*> meshes);
-
-    void  SetIndicesForRectGrid(int domain, int e[6]);
-    void  SetIndicesForAMRPatch(int domain, int level, int e[6]);
-
-    void  CalculateBoundaries(void);
-
-  protected:
-    vector<int>   extents;
-    vector<int>   levels;
-
-    virtual void  DeclareNumDomains(int);
 };
 
 
