@@ -16,5 +16,7 @@ PyObject       *PyIndexSelectAttributes_WrapPyObject(const IndexSelectAttributes
 void            PyIndexSelectAttributes_SetLogging(bool val);
 void            PyIndexSelectAttributes_SetDefaults(const IndexSelectAttributes *atts);
 
+PyObject       *PyIndexSelectAttributes_StringRepresentation(const IndexSelectAttributes *atts);
+
 #endif
 

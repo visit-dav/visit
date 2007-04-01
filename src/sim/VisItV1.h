@@ -1,8 +1,8 @@
-#ifndef VisIt_H
-#define VisIt_H
+#ifndef VisItV1_H
+#define VisItV1_H
 
 /* ****************************************************************************
-//  File:  VisIt.h
+//  File:  VisItV1.h
 //
 //  Purpose:
 //    Abstraction of VisIt Engine wrapper library.  Handles the
@@ -22,20 +22,20 @@
 extern "C" {
 #endif
 
-int  VisItAttemptToCompleteConnection(void);
-void VisItInitializeSocketAndDumpSimFile(char *name,
+int   VisItAttemptToCompleteConnection(void);
+void  VisItInitializeSocketAndDumpSimFile(char *name,
                                          char *comment,
                                          char *path,
                                          char *inputfile);
-int  VisItGetListenSocket(void);
-int  VisItGetEngineSocket(void);
-int  VisItProcessEngineCommand(void);
-void VisItAddLibraryPaths(int argc, char *argv[]);
-void VisItDisconnect(void);
-void VisItTimeStepChanged(void);
-void VisItSetupEnvironment(void);
-void VisItSetSlaveProcessCallback(void(*)());
-void VisItSetCommandCallback(void(*)(const char*,int,float,const char*));
+int   VisItGetListenSocket(void);
+int   VisItGetEngineSocket(void);
+int   VisItProcessEngineCommand(void);
+void  VisItAddLibraryPaths(int argc, char *argv[]);
+void  VisItDisconnect(void);
+void  VisItTimeStepChanged(void);
+void  VisItSetupEnvironment(void);
+void  VisItSetSlaveProcessCallback(void(*)());
+void  VisItSetCommandCallback(void(*)(const char*,int,float,const char*));
 
 #ifdef __cplusplus
 }

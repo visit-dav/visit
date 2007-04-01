@@ -474,6 +474,9 @@ public:
 //    Brad Whitlock, Fri Apr 1 15:04:48 PST 2005
 //    Added support for avtLabelMetaData.
 //
+//    Jeremy Meredith, Thu Apr 28 17:48:21 PDT 2005
+//    Added a non-const accessor for the simulation info.
+//
 //----------------------------------------------------------------------------
 
 class DBATTS_API avtDatabaseMetaData : public AttributeSubject
@@ -553,6 +556,7 @@ public:
     bool         GetIsSimulation() const { return isSimulation; }
     void         SetSimInfo(const avtSimulationInformation&);
     const avtSimulationInformation &GetSimInfo() const;
+          avtSimulationInformation &GetSimInfo();
 
     const intVector &GetCycles() const { return cycles; };
     void         SetCycle(int, int);

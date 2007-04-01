@@ -2532,6 +2532,10 @@ ViewerFileServer::GetAllExpressions(ExpressionList &newList,
 //    Simulation commands are part of the simulation info, but unlike the
 //    other siminfo stuff, the new ones should be accepted.
 //
+//    Jeremy Meredith, Thu Apr 28 17:51:52 PDT 2005
+//    It wound up being simpler and easier run to just keep only what
+//    needed keeping.
+//
 // ****************************************************************************
 void
 ViewerFileServer::SetSimulationMetaData(const std::string &host,
@@ -2552,18 +2556,18 @@ ViewerFileServer::SetSimulationMetaData(const std::string &host,
 
         if(name == dbName)
         {
-            avtSimulationInformation simInfo = pos->second->GetSimInfo();
-
-            simInfo.ClearAvtSimulationCommandSpecifications();
-            for (int i=0; i<md.GetSimInfo().GetNumAvtSimulationCommandSpecifications(); i++)
-            {
-                simInfo.AddAvtSimulationCommandSpecification(
-                      md.GetSimInfo().GetAvtSimulationCommandSpecification(i));
-            }
+            string host = pos->second->GetSimInfo().GetHost();
+            int    port = pos->second->GetSimInfo().GetPort();
+            string key  = pos->second->GetSimInfo().GetSecurityKey();
+            vector<string> onames = pos->second->GetSimInfo().GetOtherNames();
+            vector<string> ovalues= pos->second->GetSimInfo().GetOtherValues();
 
             *(pos->second) = md;
-            pos->second->SetIsSimulation(true);
-            pos->second->SetSimInfo(simInfo);
+            pos->second->GetSimInfo().SetHost(host);
+            pos->second->GetSimInfo().SetPort(port);
+            pos->second->GetSimInfo().SetSecurityKey(key);
+            pos->second->GetSimInfo().SetOtherNames(onames);
+            pos->second->GetSimInfo().SetOtherValues(ovalues);
         }
     }
 }

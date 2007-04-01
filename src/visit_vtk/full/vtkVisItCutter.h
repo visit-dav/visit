@@ -3,8 +3,8 @@
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkVisItCutter.h,v $
   Language:  C++
-  Date:      $Date: 2002/01/22 15:29:13 $
-  Version:   $Revision: 1.54 $
+  Date:      $Date: 2003/07/01 11:20:39 $
+  Version:   $Revision: 1.60 $
 
   Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
   All rights reserved.
@@ -24,8 +24,8 @@
 //
 // In VTK, cutting means reducing a cell of dimension N to a cut surface
 // of dimension N-1. For example, a tetrahedron when cut by a plane (i.e.,
-// vtkPlane implicit function) will generate triangles. (Clipping takes
-// a N dimensional cell and creates N dimension primitives.)
+// vtkPlane implicit function) will generate triangles. (In comparison,
+// clipping takes a N dimensional cell and creates N dimension primitives.)
 //
 // vtkVisItCutter is generally used to "slice-through" a dataset, generating
 // a surface that can be visualized. It is also possible to use vtkVisItCutter
@@ -40,16 +40,16 @@
 #ifndef __vtkVisItCutter_h
 #define __vtkVisItCutter_h
 
-#include <visit_vtk_exports.h>
 #include "vtkDataSetToPolyDataFilter.h"
-#include "vtkContourValues.h" // needed for inline functions.
 
-
-class vtkImplicitFunction;
-class vtkPointLocator;
+#include "vtkContourValues.h" // Needed for inline methods
+#include <visit_vtk_exports.h>
 
 #define VTK_SORT_BY_VALUE 0
 #define VTK_SORT_BY_CELL 1
+
+class vtkImplicitFunction;
+class vtkPointLocator;
 
 class VISIT_VTK_API vtkVisItCutter : public vtkDataSetToPolyDataFilter
 {
@@ -135,11 +135,6 @@ public:
   vtkGetObjectMacro(Locator,vtkPointLocator);
 
   // Description:
-  // Specify a cell list to cut against.  This allows outside modules to 
-  // perform optimizations on which cells are cut.
-  void SetCellList(int *, int);
-
-  // Description:
   // Set the sorting order for the generated polydata. There are two
   // possibilities:
   //   Sort by value = 0 - This is the most efficient sort. For each cell,
@@ -167,11 +162,11 @@ protected:
   ~vtkVisItCutter();
 
   void Execute();
+  void UnstructuredGridCutter();
+  void DataSetCutter();
   vtkImplicitFunction *CutFunction;
   
   vtkPointLocator *Locator;
-  int *CellList;
-  int  CellListSize;
   int SortBy;
   vtkContourValues *ContourValues;
   int GenerateCutScalars;

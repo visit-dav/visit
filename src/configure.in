@@ -543,6 +543,9 @@ dnl
 dnl    Hank Childs, Wed Apr  6 13:13:10 PDT 2005
 dnl    Added tools/writer.
 dnl
+dnl    Jeremy Meredith, Thu Apr 28 17:46:44 PDT 2005
+dnl    Added explicit versioning for the VisIt Engine Library.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -2770,12 +2773,13 @@ AC_SUBST(PREBIND_LIBS)
 AC_DEFINE_UNQUOTED(PLUGIN_EXTENSION, ".${SHLIB_SOEXT}" )
 
 #
-# Now that we know about shared libraries, specify the engine wrapper library
+# Now that we know about shared libraries, specify the engine wrapper library.
+# This is versioned to ensure compatibility with future changes.
 #
 if test -d engine; then
-    ENGINEWRAPSER="$""(libdir)/libvisitengine_ser.${SHLIB_SOEXT}"
+    ENGINEWRAPSER="$""(libdir)/libvisitenginev1_ser.${SHLIB_SOEXT}"
     if test -n "$PARALLEL"; then
-        ENGINEWRAPPAR="$""(libdir)/libvisitengine_par.${SHLIB_SOEXT}"
+        ENGINEWRAPPAR="$""(libdir)/libvisitenginev1_par.${SHLIB_SOEXT}"
     fi
 fi
 AC_SUBST(ENGINEWRAPSER)

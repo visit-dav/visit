@@ -2,7 +2,6 @@
 #include <vtkAppendFilter.h>
 #include <vtkCellData.h>
 #include <vtkClipDataSet.h>
-#include <vtkCutter.h>
 #include <vtkFloatArray.h>
 #include <vtkImplicitFunction.h>
 #include <vtkObjectFactory.h>

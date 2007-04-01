@@ -143,6 +143,7 @@ void RunSimulation()
 void StopSimulation()
 {
     runflag = 0;
+    VisItTimeStepChanged();
 }
 
 void FakeConsoleCommand(char *str)

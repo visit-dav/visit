@@ -66,6 +66,9 @@ $0 = shift @ARGV;
 #    Jeremy Meredith, Fri Apr  1 16:05:49 PST 2005
 #    Added valgrind to -fullhelp, and unlimited the errors it will report.
 #
+#    Jeremy Meredith, Thu Apr 28 18:02:28 PDT 2005
+#    Added multi-compiler support.  Added linux-intel-icc platform.
+#
 ###############################################################################
 
 
@@ -215,6 +218,7 @@ $fullusage = "$usage
                              path to a visit installation directory.
                              /bin is automatically appended to this path.
         -publicpluginsonly   Disable all plugins but the default ones.
+        -compiler <cc>       Require version built with the specified compiler.
 
     Developer options
     ---------------------------------------------------------------------------
@@ -323,6 +327,7 @@ $debug_valgrind = "";
 $add_movie_args = 0;
 $envonly        = 0;
 $logging        = 0;
+$req_compiler   = "";
 
 # Parse the arguments 
 @visitargs = ();
@@ -374,6 +379,7 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-gdb-vcl")          { if($exe_name eq "vcl") {$debug_gdb = 1;} else {push @visitargs, $arg;}}
     elsif ($arg eq "-xterm")            { if($debug_gdb) {$gdb_xterm = 1;} else {push @visitargs, $arg;}}
     elsif ($arg eq "-break")            { if($debug_gdb) {$bp = shift; push @breakpoints, $bp; } else {push @visitargs, $arg;}}
+    elsif ($arg eq "-compiler")         { $req_compiler = shift; push @visitargs, "-compiler", $req_compiler; }
     elsif ($arg eq "-totalview" )       {
                                           $debug_totalview = shift;
                                           push @norun, $debug_totalview;
@@ -605,7 +611,12 @@ for ($os) {
             push @supportedarchs, "linux-x86_64";
         }
         else {
-            push @supportedarchs, "linux-intel";
+            if ($req_compiler eq "icc") {
+                push @supportedarchs, "linux-intel-icc";
+            }
+            else {
+                push @supportedarchs, "linux-intel";
+            }
         }
         $launch = "mpirun" if ($procs_set && $launch eq "");
         last;

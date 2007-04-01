@@ -85,9 +85,6 @@ void  (*v_set_command_callback)(void*,void(*)(const char*,int,float,const char*)
                                                                         = NULL;
 
 void *v_engine = NULL;
-char  v_host[256] = "";
-char  v_port[256] = "";
-char  v_key[256] = "";
 
 char simulationFileName[1024];
 
@@ -412,13 +409,13 @@ static int LoadVisItLibrary(void)
     if (ifparallel)
     {
         printf("processor %d attempting to open parallel\n",par_rank);
-        dl_handle = dlopen("libvisitengine_par.so", RTLD_NOW | RTLD_GLOBAL);
+        dl_handle = dlopen("libvisitenginev1_par.so", RTLD_NOW | RTLD_GLOBAL);
         printf("processor %d opened parallel successfully\n",par_rank);
     }
     else
     {
         printf("processor %d attempting to open serial\n",par_rank);
-        dl_handle = dlopen("libvisitengine_ser.so", RTLD_NOW | RTLD_GLOBAL);
+        dl_handle = dlopen("libvisitenginev1_ser.so", RTLD_NOW | RTLD_GLOBAL);
         printf("processor %d opened serial successfully\n",par_rank);
     }
 
@@ -511,8 +508,8 @@ int VisItProcessEngineCommand(void)
 
 void VisItTimeStepChanged(void)
 {
-    // Make sure the function exists before using it.
-    if (v_time_step_changed)
+    // Make sure the function and engine exists before using it.
+    if (v_engine && v_time_step_changed)
     {
         v_time_step_changed(v_engine);
     }

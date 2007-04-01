@@ -2030,6 +2030,9 @@ QvisGUIApplication::SetupWindows()
 //   Jeremy Meredith, Mon Apr  4 16:07:10 PDT 2005
 //   Added the Simulations window.
 //
+//   Jeremy Meredith, Thu Apr 28 17:49:31 PDT 2005
+//   Changed the exact information sent to the Simulations window.
+//
 // ****************************************************************************
 
 QvisWindowBase *
@@ -2213,7 +2216,8 @@ QvisGUIApplication::WindowFactory(int i)
                                               windowNames[i], "Simulations",
                                               mainWin->GetNotepad());
           swin->ConnectStatusAttributes(viewer->GetStatusAttributes());
-          swin->SetNewMetaData(fileServer->GetMetaData());
+          swin->SetNewMetaData(fileServer->GetOpenFile(),
+                               fileServer->GetMetaData());
           win = swin;
         }
         break;
@@ -4771,6 +4775,9 @@ QvisGUIApplication::UpdateMetaDataAttributes(Subject *subj, void *data)
 //    Jeremy Meredith, Mon Apr  4 16:07:27 PDT 2005
 //    Added an update of the simulation window.
 //
+//    Jeremy Meredith, Thu Apr 28 17:49:31 PDT 2005
+//    Changed the exact information sent to the Simulations window.
+//
 // ****************************************************************************
 
 void
@@ -4810,7 +4817,8 @@ QvisGUIApplication::HandleMetaDataUpdate()
     {
         QvisSimulationWindow *simWin =
             (QvisSimulationWindow*)otherWindows[simWinName];
-        simWin->SetNewMetaData(fileServer->GetMetaData());
+        simWin->SetNewMetaData(fileServer->GetOpenFile(),
+                               fileServer->GetMetaData());
     }
 }
 

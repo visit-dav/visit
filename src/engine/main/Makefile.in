@@ -218,6 +218,9 @@
 #    Brad Whitlock, Wed Jan 5 09:25:20 PDT 2005
 #    Added -lexpr for MacOS X.
 #
+#    Jeremy Meredith, Thu Apr 28 17:47:51 PDT 2005
+#    Added explicit versioning for the VisIt Engine Library.
+#
 ##############################################################################
 
 ##
@@ -278,7 +281,7 @@ SRC= \
 
 MAINSRC=main.C
 
-LIBRARYSRC=VisItEngine.C
+LIBRARYSRC=VisItEngineV1.C
 
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)

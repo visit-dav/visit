@@ -10513,12 +10513,13 @@ _ACEOF
 
 
 #
-# Now that we know about shared libraries, specify the engine wrapper library
+# Now that we know about shared libraries, specify the engine wrapper library.
+# This is versioned to ensure compatibility with future changes.
 #
 if test -d engine; then
-    ENGINEWRAPSER="$""(libdir)/libvisitengine_ser.${SHLIB_SOEXT}"
+    ENGINEWRAPSER="$""(libdir)/libvisitenginev1_ser.${SHLIB_SOEXT}"
     if test -n "$PARALLEL"; then
-        ENGINEWRAPPAR="$""(libdir)/libvisitengine_par.${SHLIB_SOEXT}"
+        ENGINEWRAPPAR="$""(libdir)/libvisitenginev1_par.${SHLIB_SOEXT}"
     fi
 fi
 

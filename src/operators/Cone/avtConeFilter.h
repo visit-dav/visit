@@ -12,7 +12,7 @@
 
 class vtkClipPolyData;
 class vtkCone;
-class vtkCutter;
+class vtkVisItCutter;
 class vtkDataSet;
 class vtkImplicitBoolean;
 class vtkPlane;
@@ -33,6 +33,10 @@ class vtkPolarTransformFilter;
 //  Modifications:
 //    Kathleen Bonnell, Tue May 20 10:23:38 PDT 2003
 //    Added method PerformRestriction.
+//
+//    Kathleen Bonnell, Thu Apr 28 10:28:22 PDT 2005
+//    Use vtkVisItCutter instead of vtkCutter, since it has logic to correctly
+//    handle CellData.
 //
 // ****************************************************************************
 
@@ -55,7 +59,7 @@ class avtConeFilter : public avtPluginStreamer
   protected:
     ConeAttributes               atts;
     vtkCone                     *cone;
-    vtkCutter                   *cutter;
+    vtkVisItCutter              *cutter;
     vtkImplicitBoolean          *allFunctions;
     vtkPlane                    *plane;
     vtkPolarTransformFilter     *polar;
