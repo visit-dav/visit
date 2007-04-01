@@ -8,7 +8,7 @@
 # Date:   October 26, 1996
 #
 # Usage
-#    visit-install [-a] [-c open | closed] [-g group] [-gw] [-l]
+#    visit-install [-c open | closed] [-g group] [-gw] [-l] [-r]
 #                  [-beta | -private] version platform directory
 #
 #    The default is to install this version as the current version.
@@ -64,11 +64,15 @@
 #    Eric Brugger, Tue Dec 23 11:05:37 PST 2003
 #    I added an option to enable usage logging.
 #
+#    Eric Brugger, Wed May 12 11:05:58 PDT 2004
+#    I changed the default for append to be true, and replaced the -a
+#    option with -r to make it false.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
 
-set append = false
+set append = true
 set beta = false
 set private = false
 set config = prompt
@@ -95,8 +99,8 @@ while ($option_found == true)
          shift
          shift
          breaksw
-      case -a:
-         set append = true
+      case -r:
+         set append = false
          shift
          breaksw
       case -beta:
@@ -123,7 +127,7 @@ while ($option_found == true)
 end
 
 if ($#argv != 3) then
-   echo "Usage: visit-install [-a] [-c open | closed] [-g group] [-gw] [-l]"
+   echo "Usage: visit-install [-c open | closed] [-g group] [-gw] [-l] [-r]"
    echo "                     [-beta | -private] version platform directory"
    exit (1)
 endif

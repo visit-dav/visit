@@ -48,6 +48,19 @@ do
          emperor=false
          shift
          ;;
+      -bdiv)
+         hitit=true
+         sunset=true
+         warp=true
+         shift
+         ;;
+      -lc)
+         sc=true
+         tidalwave=true
+         white=true
+         emperor=true
+         shift
+         ;;
       -hitit)
          hitit=false
          shift
@@ -145,14 +158,25 @@ ver2=`echo $ver | tr "." "_"`
 ver=`echo $ver2 | tr "_" "."`
 
 #
+# Create the header for the install script for the B Division network.
+#
+rm -f bdiv
+cat <<EOF > bdiv
+#!/bin/sh
+
+rm -f resultlog
+touch resultlog
+EOF
+
+#
 # Install on hitit.
 #
 rm -f hitit
 cat <<EOF > hitit
-#!/bin/sh
-./visit-install -private -c closed -g visit -gw -l $ver linux /usr/gapps/visit > installlog 2>&1
-rm -f resultlog
-echo "        install of visit on hitit"           > resultlog 2>&1
+
+./visit-install -r -private -c closed -g visit -gw -l $ver linux /usr/gapps/visit > installlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "        install of visit on hitit"           >> resultlog 2>&1
 echo "       ---------------------------"          >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
@@ -171,11 +195,10 @@ if [ $hitit = true ]
 then
    if [ $test = no ]
    then
+      cat hitit >> bdiv
+
       scp -P 22 hitit:/var/tmp/$user/hitit/visitbuild/visit$ver2.linux.tar.gz .
-      scp -P 22 visit$ver2.linux.tar.gz hitit:
-      scp -P 22 visit-install hitit:
-      scp -P 22 hitit hitit:hitit_install
-      ssh -p 22 hitit "chmod 750 hitit_install;./hitit_install"
+      scp -P 22 visit$ver2.linux.tar.gz sunset:
    fi
 fi
 
@@ -184,15 +207,10 @@ fi
 #
 rm -f sunset
 cat <<EOF > sunset
-#!/bin/sh
-if [ -d /usr/gapps/visit/$ver ]
-then
-   ./visit-install -private -a -c closed -g visit -gw -l $ver sunos5 /usr/gapps/visit > installlog 2>&1
-else
-   ./visit-install -private -c closed -g visit -gw -l $ver sunos5 /usr/gapps/visit > installlog 2>&1
-fi
-rm -f resultlog
-echo "        install of visit on sunset"          > resultlog 2>&1
+
+./visit-install -private -c closed -g visit -gw -l $ver sunos5 /usr/gapps/visit > installlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "        install of visit on sunset"          >> resultlog 2>&1
 echo "       ----------------------------"         >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
@@ -211,11 +229,10 @@ if [ $sunset = true ]
 then
    if [ $test = no ]
    then
+      cat sunset >> bdiv
+
       scp -P 22 sunset:/export/scratch/$user/sunset/visitbuild/visit$ver2.sunos5.tar.gz .
       scp -P 22 visit$ver2.sunos5.tar.gz sunset:
-      scp -P 22 visit-install sunset:
-      scp -P 22 sunset sunset:sunset_install
-      ssh -p 22 sunset "chmod 750 sunset_install;./sunset_install"
    fi
 fi
 
@@ -224,15 +241,10 @@ fi
 #
 rm -f warp
 cat <<EOF > warp
-#!/bin/sh
-if [ -d /usr/gapps/visit/$ver ]
-then
-   ./visit-install $verflag -a -c closed -g visit -gw -l $ver irix6 /usr/gapps/visit > installlog 2>&1
-else
-   ./visit-install $verflag -c closed -g visit -gw -l $ver irix6 /usr/gapps/visit > installlog 2>&1
-fi
-rm -f resultlog
-echo "        install of visit on warp"            > resultlog 2>&1
+
+./visit-install $verflag -c closed -g visit -gw -l $ver irix6 /usr/gapps/visit > installlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "        install of visit on warp"            >> resultlog 2>&1
 echo "       --------------------------"           >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
@@ -251,23 +263,43 @@ if [ $warp = true ]
 then
    if [ $test = no ]
    then
+      cat warp >> bdiv
+
       scp tidalwave:/fc/san1/$user/tidalwave/visitbuild/visit$ver2.irix6.tar.gz .
-      scp -P 22 visit$ver2.irix6.tar.gz warp:
-      scp -P 22 visit-install warp:
-      scp -P 22 warp warp:warp_install
-      ssh -p 22 warp "chmod 750 warp_install;./warp_install"
+      scp -P 22 visit$ver2.irix6.tar.gz sunset:
    fi
 fi
+
+#
+# Install on the B Division network.
+#
+if [ $test = no ]
+then
+   scp -P 22 visit-install sunset:
+   scp -P 22 bdiv sunset:bdiv_install
+   ssh -p 22 sunset "chmod 750 bdiv_install;./bdiv_install"
+fi
+
+#
+# Create the header for the install script for the lc machines.
+#
+rm -f lc
+cat <<EOF > lc
+#!/bin/sh
+
+rm -f resultlog
+touch resultlog
+EOF
 
 #
 # Install on sc.
 #
 rm -f sc
 cat <<EOF > sc
-#!/bin/sh
-./visit-install -private -c closed -g visit -gw -l $ver osf1 /usr/gapps/visit > installlog 2>&1
-rm -f resultlog
-echo "        install of visit on sc"              > resultlog 2>&1
+
+./visit-install -r -private -c closed -g visit -gw -l $ver osf1 /usr/gapps/visit > installlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "        install of visit on sc"              >> resultlog 2>&1
 echo "       ------------------------"             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
@@ -286,11 +318,10 @@ if [ $sc = true ]
 then
    if [ $test = no ]
    then
+      cat sc >> lc
+
       scp sc1:/nfs/tmp3/$user/sc/visitbuild/visit$ver2.osf1.tar.gz .
       scp visit$ver2.osf1.tar.gz sc1:
-      scp visit-install sc1:
-      scp sc sc1:sc_install
-      ssh sc1 "chmod 750 sc_install;./sc_install"
    fi
 fi
 
@@ -299,15 +330,10 @@ fi
 #
 rm -f tidalwave
 cat <<EOF > tidalwave
-#!/bin/sh
-if [ -d /usr/gapps/visit/$ver ]
-then
-   ./visit-install -private -a -c closed -g visit -gw -l $ver irix6 /usr/gapps/visit > installlog 2>&1
-else
-   ./visit-install -private -c closed -g visit -gw -l $ver irix6 /usr/gapps/visit > installlog 2>&1
-fi
-rm -f resultlog
-echo "        install of visit on tidalwave"       > resultlog 2>&1
+
+./visit-install -private -c closed -g visit -gw -l $ver irix6 /usr/gapps/visit > installlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "        install of visit on tidalwave"       >> resultlog 2>&1
 echo "       -------------------------------"      >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
@@ -326,11 +352,10 @@ if [ $tidalwave = true ]
 then
    if [ $test = no ]
    then
+      cat tidalwave >> lc
+
       scp tidalwave:/fc/san1/$user/tidalwave/visitbuild/visit$ver2.irix6.tar.gz .
       scp visit$ver2.irix6.tar.gz sc1:
-      scp visit-install sc1:
-      scp tidalwave sc1:tidalwave_install
-      ssh sc1 "chmod 750 tidalwave_install;./tidalwave_install"
    fi
 fi
 
@@ -339,15 +364,10 @@ fi
 #
 rm -f white
 cat <<EOF > white
-#!/bin/sh
-if [ -d /usr/gapps/visit/$ver ]
-then
-   ./visit-install -private -a -c closed -g visit -gw -l $ver aix /usr/gapps/visit > installlog 2>&1
-else
-   ./visit-install -private -c closed -g visit -gw -l $ver aix /usr/gapps/visit > installlog 2>&1
-fi
-rm -f resultlog
-echo "        install of visit on white"           > resultlog 2>&1
+
+./visit-install -private -c closed -g visit -gw -l $ver aix /usr/gapps/visit > installlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "        install of visit on white"           >> resultlog 2>&1
 echo "       ---------------------------"          >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
@@ -366,11 +386,10 @@ if [ $white = true ]
 then
    if [ $test = no ]
    then
+      cat white >> lc
+
       scp white:/p/gw1/$user/white/visitbuild/visit$ver2.aix.tar.gz .
       scp visit$ver2.aix.tar.gz sc1:
-      scp visit-install sc1:
-      scp white sc1:white_install
-      ssh sc1 "chmod 750 white_install;./white_install"
    fi
 fi
 
@@ -379,15 +398,10 @@ fi
 #
 rm -f emperor
 cat <<EOF > emperor
-#!/bin/sh
-if [ -d /usr/gapps/visit/$ver ]
-then
-   ./visit-install $verflag -a -c closed -g visit -gw -l $ver linux /usr/gapps/visit > installlog 2>&1
-else
-   ./visit-install $verflag -c closed -g visit -gw -l $ver linux /usr/gapps/visit > installlog 2>&1
-fi
-rm -f resultlog
-echo "        install of visit on emperor"         > resultlog 2>&1
+
+./visit-install $verflag -c closed -g visit -gw -l $ver linux /usr/gapps/visit > installlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "        install of visit on emperor"         >> resultlog 2>&1
 echo "       -----------------------------"        >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
@@ -406,12 +420,21 @@ if [ $emperor = true ]
 then
    if [ $test = no ]
    then
+      cat emperor >> lc
+
       scp emperor0:/usr/tmp/$user/emperor/visitbuild/visit$ver2.linux.tar.gz .
       scp visit$ver2.linux.tar.gz sc1:
-      scp visit-install sc1:
-      scp emperor sc1:emperor_install
-      ssh sc1 "chmod 750 emperor_install;./emperor_install"
    fi
+fi
+
+#
+# Install on the lc machines.
+#
+if [ $test = no ]
+then
+   scp -P 22 visit-install sc1:
+   scp -P 22 lc sc1:lc_install
+   ssh -p 22 sc1 "chmod 750 lc_install;./lc_install"
 fi
 
 #
@@ -419,5 +442,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hitit sunset warp sc tidalwave white emperor
+   rm -f bdiv hitit sunset lc warp sc tidalwave white emperor
 fi

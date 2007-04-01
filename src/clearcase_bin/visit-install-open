@@ -181,7 +181,7 @@ ver=`echo $ver2 | tr "_" "."`
 rm -f kickit
 cat <<EOF > kickit
 #!/bin/sh
-./visit-install -private -c open -g visit -gw -l $ver linux /usr/gapps/visit > installlog 2>&1
+./visit-install -r -private -c open -g visit -gw -l $ver linux /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on kickit"          > resultlog 2>&1
 echo "       ----------------------------"         >> resultlog 2>&1
@@ -218,12 +218,7 @@ fi
 rm -f sunspot
 cat <<EOF > sunspot
 #!/bin/sh
-if [ -d /usr/gapps/visit/$ver ]
-then
-   ./visit-install -private -a -c open -g visit -gw -l $ver sunos5 /usr/gapps/visit > installlog 2>&1
-else
-   ./visit-install -private -c open -g visit -gw -l $ver sunos5 /usr/gapps/visit > installlog 2>&1
-fi
+./visit-install -private -c open -g visit -gw -l $ver sunos5 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on sunspot"         > resultlog 2>&1
 echo "       -----------------------------"        >> resultlog 2>&1
@@ -259,12 +254,7 @@ fi
 rm -f hyper
 cat <<EOF > hyper
 #!/bin/sh
-if [ -d /usr/gapps/visit/$ver ]
-then
-   ./visit-install $verflag -a -c open -g visit -gw -l $ver irix6 /usr/gapps/visit > installlog 2>&1
-else
-   ./visit-install $verflag -c open -g visit -gw -l $ver irix6 /usr/gapps/visit > installlog 2>&1
-fi
+./visit-install $verflag -c open -g visit -gw -l $ver irix6 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on hyper"           > resultlog 2>&1
 echo "       ---------------------------"          >> resultlog 2>&1
@@ -300,7 +290,7 @@ fi
 rm -f gps
 cat <<EOF > gps
 #!/bin/sh
-./visit-install -private -c open -g visit -gw -l $ver osf1 /usr/gapps/visit > installlog 2>&1
+./visit-install -r -private -c open -g visit -gw -l $ver osf1 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on gps"             > resultlog 2>&1
 echo "       -------------------------"            >> resultlog 2>&1
@@ -336,12 +326,7 @@ fi
 rm -f riptide
 cat <<EOF > riptide
 #!/bin/sh
-if [ -d /usr/gapps/visit/$ver ]
-then
-   ./visit-install -private -a -c open -g visit -gw -l $ver irix6 /usr/gapps/visit > installlog 2>&1
-else
-   ./visit-install -private -c open -g visit -gw -l $ver irix6 /usr/gapps/visit > installlog 2>&1
-fi
+./visit-install -private -c open -g visit -gw -l $ver irix6 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on riptide"         > resultlog 2>&1
 echo "       -----------------------------"        >> resultlog 2>&1
@@ -377,12 +362,7 @@ fi
 rm -f frost
 cat <<EOF > frost
 #!/bin/sh
-if [ -d /usr/gapps/visit/$ver ]
-then
-   ./visit-install -private -a -c open -g visit -gw -l $ver aix /usr/gapps/visit > installlog 2>&1
-else
-   ./visit-install -private -c open -g visit -gw -l $ver aix /usr/gapps/visit > installlog 2>&1
-fi
+./visit-install -private -c open -g visit -gw -l $ver aix /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on frost"           > resultlog 2>&1
 echo "       ---------------------------"          >> resultlog 2>&1
@@ -418,12 +398,7 @@ fi
 rm -f pengra
 cat <<EOF > pengra
 #!/bin/sh
-if [ -d /usr/gapps/visit/$ver ]
-then
-   ./visit-install $verflag -a -c open -g visit -gw -l $ver linux /usr/gapps/visit > installlog 2>&1
-else
-   ./visit-install $verflag -c open -g visit -gw -l $ver linux /usr/gapps/visit > installlog 2>&1
-fi
+./visit-install $verflag -c open -g visit -gw -l $ver linux /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on pengra"          > resultlog 2>&1
 echo "       ----------------------------"         >> resultlog 2>&1
