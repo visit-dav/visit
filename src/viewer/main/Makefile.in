@@ -299,6 +299,7 @@ PRIVATE_SRC=\
     AnimationActions.C \
     EngineKey.C \
     LineoutListItem.C \
+    LockActions.C \
     NoEngineException.C \
     PlotAndOperatorActions.C \
     ViewActions.C \

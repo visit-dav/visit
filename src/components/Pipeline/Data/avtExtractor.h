@@ -133,7 +133,7 @@ avtExtractor::SnapXRight(float x)
         return restrictedMinWidth;
 
     float close_to_index = (x - FRUSTUM_MIN_X) / x_step;
-    int   index = (int)ceil(close_to_index);
+    int   index = (int)ceil((double)close_to_index);
 
     //
     // Have to correct for floating point imprecision.  Net result is
@@ -163,7 +163,7 @@ avtExtractor::SnapXLeft(float x)
         return restrictedMinWidth;
 
     float close_to_index = (x - FRUSTUM_MIN_X) / x_step;
-    int   index = (int)floor(close_to_index);
+    int   index = (int)floor((double)close_to_index);
 
     //
     // Have to correct for floating point imprecision.  Net result is
@@ -193,7 +193,7 @@ avtExtractor::SnapYTop(float y)
         return restrictedMinHeight;
 
     float close_to_index = (y - FRUSTUM_MIN_Y) / y_step;
-    int   index = (int)ceil(close_to_index);
+    int   index = (int)ceil((double)close_to_index);
 
     //
     // Have to correct for floating point imprecision.  Net result is
@@ -223,7 +223,7 @@ avtExtractor::SnapYBottom(float y)
         return restrictedMinHeight;
 
     float close_to_index = (y - FRUSTUM_MIN_Y) / y_step;
-    int   index = (int)floor(close_to_index);
+    int   index = (int)floor((double)close_to_index);
 
     //
     // Have to correct for floating point imprecision.  Net result is
@@ -253,7 +253,7 @@ avtExtractor::SnapZBack(float z)
         return 0;
 
     float close_to_index = (z - FRUSTUM_MIN_Z) / z_step;
-    int   index = (int)ceil(close_to_index);
+    int   index = (int)ceil((double)close_to_index);
 
     //
     // Have to correct for floating point imprecision.  Net result is
@@ -283,7 +283,7 @@ avtExtractor::SnapZFront(float z)
         return 0;
 
     float close_to_index = (z - FRUSTUM_MIN_Z) / z_step;
-    int   index = (int)floor(close_to_index);
+    int   index = (int)floor((double)close_to_index);
 
     //
     // Have to correct for floating point imprecision.  Net result is

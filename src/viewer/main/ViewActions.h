@@ -116,33 +116,6 @@ public:
 };
 
 // ****************************************************************************
-// Class: ToggleLockViewAction
-//
-// Purpose:
-//   Handles the lock view action.
-//
-// Notes:      
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Feb 5 16:44:34 PST 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-class VIEWER_API ToggleLockViewAction : public ViewerToggleAction
-{
-public:
-    ToggleLockViewAction(ViewerWindow *win);
-    virtual ~ToggleLockViewAction(){}
-
-    virtual void Execute();
-    virtual bool Enabled() const;
-    virtual bool Toggled() const;
-};
-
-
-// ****************************************************************************
 // Class: ToggleFullFrameAction
 //
 // Purpose:

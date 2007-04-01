@@ -307,6 +307,10 @@ typedef struct {
 //    Brad Whitlock, Thu Feb 3 14:34:45 PST 2005
 //    Added AlterTimeSlider.
 //
+//    Brad Whitlock, Wed Mar 16 16:33:04 PST 2005
+//    Added GetTimeLockedWindowIndices and made CreateMultiWindowCorrelation
+//    public.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public QObject
@@ -401,6 +405,7 @@ class VIEWER_API ViewerWindowManager : public QObject
     void ResetTimeQueryDesignation(int windowIndex = -1);
     void ResetNetworkIds(const EngineKey &k);
     int             *GetWindowIndices(int *nwin) const;
+    void             GetTimeLockedWindowIndices(intVector &ids) const;
     int              GetNumWindows() const;
     ViewerWindow    *GetActiveWindow() const;
     ViewerWindow    *GetLineoutWindow(int useThisId = -1);
@@ -452,6 +457,7 @@ class VIEWER_API ViewerWindowManager : public QObject
                                   const stringVector &dbs,
                                   int method, int nStates = -1);
     void DeleteDatabaseCorrelation(const std::string &name);
+    DatabaseCorrelation *CreateMultiWindowCorrelation(const intVector &windowIds);
     void CloseDatabase(const std::string &dbName);
 
     void CreateNode(DataNode *parentNode, bool detailed);
@@ -510,7 +516,6 @@ class VIEWER_API ViewerWindowManager : public QObject
     bool AskForCorrelationPermission(const char *, const char *,
                                      const stringVector &dbs) const;
     DatabaseCorrelation *CreateMultiWindowCorrelationHelper(const stringVector &dbs);
-    void CreateMultiWindowCorrelation(const intVector &windowIds);
     static void ToolCallback(const avtToolInterface &);
 
   private:

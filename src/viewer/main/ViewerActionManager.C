@@ -7,6 +7,7 @@
 #include <ViewerWindow.h>
 
 #include <AnimationActions.h>
+#include <LockActions.h>
 #include <PlotAndOperatorActions.h>
 #include <WindowActions.h>
 #include <ViewActions.h>
@@ -361,6 +362,9 @@ public:
 //   Brad Whitlock, Sun Jan 25 02:19:07 PDT 2004
 //   I added a new animation action and renamed some others.
 //
+//   Brad Whitlock, Fri Mar 18 17:27:44 PST 2005
+//   I added ToggleLockTimeAction.
+//
 // ****************************************************************************
 
 
@@ -378,8 +382,10 @@ ViewerActionManager::ViewerActionManager(ViewerWindow *win) : actionGroups()
     AddAction(new SaveViewAction(win), ViewerRPC::SaveViewRPC);
     AddAction(new SetCenterOfRotationAction(win), ViewerRPC::SetCenterOfRotationRPC);
     AddAction(new ToggleFullFrameAction(win), ViewerRPC::ToggleFullFrameRPC);
-    AddAction(new ToggleLockViewAction(win), ViewerRPC::ToggleLockViewModeRPC);
     AddAction(new UndoViewAction(win), ViewerRPC::UndoViewRPC);
+
+    AddAction(new ToggleLockViewAction(win), ViewerRPC::ToggleLockViewModeRPC);
+    AddAction(new ToggleLockTimeAction(win), ViewerRPC::ToggleLockTimeRPC);
 
     AddAction(new AddWindowAction(win), ViewerRPC::AddWindowRPC);
     AddAction(new CloneWindowAction(win), ViewerRPC::CloneWindowRPC);

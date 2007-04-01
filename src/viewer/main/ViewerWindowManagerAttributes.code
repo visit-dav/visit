@@ -155,6 +155,9 @@ Definition:
 //   Brad Whitlock, Sun Jan 25 19:48:23 PST 2004
 //   I renamed some actions.
 //
+//   Brad Whitlock, Fri Mar 18 17:39:05 PST 2005
+//   Added a "Lock" action group.
+//
 // ****************************************************************************
 
 void
@@ -297,6 +300,20 @@ ViewerWindowManagerAttributes::ProcessOldVersions(DataNode *parentNode,
         AddAction(actionNode, "Animation", ViewerRPC::AnimationStopRPC);
         AddAction(actionNode, "Animation", ViewerRPC::AnimationPlayRPC);
         AddAction(actionNode, "Animation", ViewerRPC::TimeSliderNextStateRPC);
+    }
+
+    //
+    // Add actions that are new in 1.4.3
+    //
+    if(VersionLessThan(configVersion, "1.4.3"))
+    {
+        // Remove "lock view" from the View group and make a new "Lock" group.
+        RemoveActionFromNode(actionNode, "View", "ToggleLockViewModeRPC");
+        ActionGroupDescription lockGroup("Lock");
+        lockGroup.SetVisible(true);
+        lockGroup.AddAction(ViewerRPC::ToggleLockViewModeRPC);
+        lockGroup.AddAction(ViewerRPC::ToggleLockTimeRPC);
+        AddActionGroup(actionNode, lockGroup);
     }
 }
 
