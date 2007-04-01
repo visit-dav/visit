@@ -224,6 +224,9 @@ avtStreamlinePlot::CustomizeBehavior(void)
 //  Creation:   Fri Oct 4 15:22:57 PST 2002
 //
 //  Modifications:
+//    Brad Whitlock, Wed Dec 22 13:02:51 PST 2004
+//    Added support for coloring by vorticity. I also added support for
+//    ribbons.
 //
 // ****************************************************************************
 
@@ -247,9 +250,9 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
     streamlineFilter->SetSourceType(atts.GetSourceType());
     streamlineFilter->SetStepLength(atts.GetStepLength());
     streamlineFilter->SetMaxTime(atts.GetMaxTime());
-    streamlineFilter->SetShowTube(atts.GetShowTube());
+    streamlineFilter->SetDisplayMethod(atts.GetDisplayMethod());
     streamlineFilter->SetShowStart(atts.GetShowStart());
-    streamlineFilter->SetTubeRadius(atts.GetTubeRadius());
+    streamlineFilter->SetRadius(atts.GetRadius());
     streamlineFilter->SetPointDensity(atts.GetPointDensity());
 
     streamlineFilter->SetPointSource(atts.GetPointSource());
@@ -262,6 +265,7 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
     streamlineFilter->SetSphereSource(atts.GetSphereOrigin(),
                                       atts.GetSphereRadius());
     streamlineFilter->SetBoxSource(atts.GetBoxExtents());
+    streamlineFilter->SetColoringMethod(int(atts.GetColoringMethod()));
 
     //
     // Set whether or not lighting is on.
@@ -271,7 +275,7 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
     //
     // Update the plot's colors if needed.
     //
-    if(atts.GetColorBySpeed())
+    if(atts.GetColoringMethod() != StreamlineAttributes::Solid)
     {
         if (updateColors || atts.GetColorTableName() == "Default")
         {

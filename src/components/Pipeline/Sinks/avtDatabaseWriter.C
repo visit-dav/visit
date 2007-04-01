@@ -130,6 +130,9 @@ avtDatabaseWriter::Write(const std::string &filename,
 //    Hank Childs, Sat Sep 11 12:14:31 PDT 2004
 //    Added argument for variable list.
 //
+//    Hank Childs, Wed Dec 22 11:25:07 PST 2004
+//    Enable expressions, since they now work inside of convert.
+//
 // ****************************************************************************
 
 void
@@ -198,12 +201,11 @@ avtDatabaseWriter::Write(const std::string &filename,
             }
         }
 
-        /* 
-         * Expressions currently only work on the engine, so don't add them.
-         *
+        //
         // We only want the expressions that correspond to the mesh we are
         // operating on.  If there is more than one mesh, then we don't 
         // really know, so don't add expressions.
+        //
         if (md->GetNumMeshes() == 1)
         {
             for (i = 0 ; i < md->GetNumberOfExpressions() ; i++)
@@ -225,8 +227,6 @@ avtDatabaseWriter::Write(const std::string &filename,
                     ds->AddSecondaryVariable(expr->GetName().c_str());
             }
         }
-         *
-         */
     }
 
     std::vector<std::string> materialList;

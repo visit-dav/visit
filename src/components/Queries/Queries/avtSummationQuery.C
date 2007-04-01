@@ -256,6 +256,9 @@ avtSummationQuery::PostExecute(void)
 //    Hank Childs, Fri Aug 27 16:02:58 PDT 2004
 //    Rename ghost data array.
 //
+//    Kathleen Bonnell, Wed Dec 22 13:03:37 PST 2004 
+//    Correct how ghostNodes are used with PointData.
+//
 // ****************************************************************************
 
 void
@@ -292,27 +295,34 @@ avtSummationQuery::Execute(vtkDataSet *ds, const int dom)
     for (int i = 0 ; i < nValues ; i++)
     {
         float val = arr->GetTuple1(i);
-        if (ghost_zones != NULL)
+        if (!pointData)
         {
-            unsigned char g = ghost_zones->GetValue(i);
-            if (g != 0)
+            if (ghost_zones != NULL)
             {
-                val = 0.;
+                unsigned char g = ghost_zones->GetValue(i);
+                if (g != 0)
+                    val = 0.;
+            }
+            else if (ghost_nodes != NULL)
+            {
+                bool allGhost = true;
+                ds->GetCellPoints(i, list);
+                vtkIdType npts = list->GetNumberOfIds();
+                for (int j = 0 ; j < npts ; j++)
+                {
+                    vtkIdType id = list->GetId(j);
+                    unsigned char g = ghost_nodes->GetValue(id);
+                    if (g == 0)
+                        allGhost = false;
+                }
+                if (allGhost)
+                    val = 0.;
             }
         }
-        if (ghost_nodes != NULL)
+        else if (ghost_nodes != NULL)
         {
-            bool allGhost = true;
-            ds->GetCellPoints(i, list);
-            vtkIdType npts = list->GetNumberOfIds();
-            for (int j = 0 ; j < npts ; j++)
-            {
-                vtkIdType id = list->GetId(j);
-                unsigned char g = ghost_nodes->GetValue(id);
-                if (g == 0)
-                    allGhost = false;
-            }
-            if (allGhost)
+            unsigned char g = ghost_nodes->GetValue(i);
+            if (g != 0)
                 val = 0.;
         }
         if (sumOnlyPositiveValues && val < 0.)

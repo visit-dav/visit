@@ -5,15 +5,16 @@
 // Forward declarations
 class QButtonGroup;
 class QCheckBox;
+class QComboBox;
 class QGroupBox;
 class QLabel;
 class QLineEdit;
 class QvisColorButton;
+class QvisColorTableButton;
 class QvisLineStyleWidget;
 class QvisLineWidthWidget;
-class VectorAttributes;
 class QvisOpacitySlider;
-class QvisColorTableButton;
+class VectorAttributes;
 
 // ****************************************************************************
 // Class: QvisVectorPlotWindow
@@ -36,6 +37,9 @@ class QvisColorTableButton;
 //
 //   Jeremy Meredith, Fri Nov 21 12:06:46 PST 2003
 //   Added radio buttons for vector origin.
+//
+//   Kathleen Bonnell, Wed Dec 22 16:42:35 PST 2004 
+//   Added widgets for min/max and limitsSelection.
 //
 // ****************************************************************************
 
@@ -71,6 +75,14 @@ private slots:
     void colorModeChanged(int);
     void colorTableClicked(bool useDefault, const QString &ctName);
     void originTypeChanged(int);
+
+    void minToggled(bool on);
+    void maxToggled(bool on);
+    void processMaxLimitText();
+    void processMinLimitText();
+    void limitsSelectChanged(int);
+
+
 private:
     int                  plotType;
     VectorAttributes     *vectorAtts;
@@ -91,6 +103,13 @@ private:
     QCheckBox            *legendToggle;
     QCheckBox            *drawHeadToggle;
     QButtonGroup         *originButtonGroup;
+
+    QGroupBox             *limitsGroupBox;
+    QCheckBox             *minToggle;
+    QCheckBox             *maxToggle;
+    QComboBox             *limitsSelect;
+    QLineEdit             *maxLineEdit;
+    QLineEdit             *minLineEdit;
 };
 
 #endif

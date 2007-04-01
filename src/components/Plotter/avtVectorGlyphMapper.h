@@ -57,6 +57,9 @@ class     vtkVisItPolyDataNormals;
 //    Kathleen Bonnell, Tue Oct 12 16:18:37 PDT 2004
 //    Use VisIt's version of vtkGlyph3d. 
 //
+//    Kathleen Bonnell, Wed Dec 22 16:42:35 PST 2004 
+//    Added methods and vars to support setting of limits for coloring. 
+//
 // ****************************************************************************
 
 class PLOTTER_API  avtVectorGlyphMapper : public avtMapper
@@ -72,6 +75,16 @@ class PLOTTER_API  avtVectorGlyphMapper : public avtMapper
     void                       ColorByMagOff(const unsigned char [3]);
     void                       SetScale(float);
     void                       SetLookupTable(vtkLookupTable *lut);
+   
+    // methods for setting limits for coloring
+    void                       SetLimitsMode(const int);
+    void                       SetMin(float);
+    void                       SetMinOff(void);
+    void                       SetMax(float);
+    void                       SetMaxOff(void);
+    virtual bool               GetRange(float &, float &);
+    virtual bool               GetCurrentRange(float &, float &);
+    bool                       GetVarRange(float &, float &);
 
   protected:
     vtkPolyData               *glyph;
@@ -84,11 +97,16 @@ class PLOTTER_API  avtVectorGlyphMapper : public avtMapper
     unsigned char              glyphColor[3];
     float                      scale;
 
+    float                      min, max;
+    bool                       setMin, setMax;
+    int                        limitsMode;
+
     vtkVisItGlyph3D           **glyphFilter;
     vtkVisItPolyDataNormals  **normalsFilter;
     int                        nGlyphFilters;
 
     virtual void               CustomizeMappers(void);
+    void                       SetMappersMinMax(void);
 
     virtual vtkDataSet        *InsertFilters(vtkDataSet *, int);
     virtual void               SetUpFilters(int);

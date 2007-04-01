@@ -25,7 +25,9 @@ class StreamlineAttributes;
 // Creation:   Mon Oct 21 14:12:49 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Dec 22 13:03:49 PST 2004
+//   Added support for coloring by vorticity and ribbons.
+//
 // ****************************************************************************
 
 class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
@@ -62,11 +64,11 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void sphereOriginProcessText();
     void sphereRadiusProcessText();
     void pointDensityChanged(int val);
-    void showTubeChanged(bool val);
+    void displayMethodChanged(int val);
     void showStartChanged(bool val);
-    void tubeRadiusProcessText();
+    void radiusProcessText();
     void lineWidthChanged(int style);
-    void colorBySpeedChanged(bool val);
+    void coloringMethodChanged(int val);
     void colorTableNameChanged(bool useDefault, const QString &ctName);
     void singleColorChanged(const QColor &color);
     void legendFlagChanged(bool val);
@@ -99,13 +101,13 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QLineEdit *boxExtents[3];
     QLabel    *boxExtentsLabel[3];
     QSpinBox  *pointDensity;
-    QCheckBox *showTube;
+    QComboBox *displayMethod;
     QCheckBox *showStart;
-    QLineEdit *tubeRadius;
-    QLabel    *tubeRadiusLabel;
+    QLineEdit *radius;
+    QLabel    *radiusLabel;
     QvisLineWidthWidget *lineWidth;
     QLabel    *lineWidthLabel;
-    QCheckBox *colorBySpeed;
+    QComboBox *coloringMethod;
     QvisColorTableButton *colorTableName;
     QLabel    *colorTableNameLabel;
     QvisColorButton *singleColor;

@@ -1,13 +1,14 @@
 #include <QvisVectorPlotWindow.h>
 #include <qlayout.h> 
 #include <qbuttongroup.h>
-#include <qgroupbox.h>
-#include <qradiobutton.h>
-#include <qpushbutton.h>
-#include <qlabel.h>
 #include <qcheckbox.h>
-#include <qlineedit.h>
+#include <qcombobox.h>
+#include <qgroupbox.h>
 #include <qhbox.h>
+#include <qlabel.h>
+#include <qlineedit.h>
+#include <qpushbutton.h>
+#include <qradiobutton.h>
 
 #include <VectorAttributes.h>
 #include <ViewerProxy.h>
@@ -102,6 +103,9 @@ QvisVectorPlotWindow::~QvisVectorPlotWindow()
 //   Jeremy Meredith, Fri Nov 21 12:29:29 PST 2003
 //   Added vector origin type radio buttons.
 //
+//   Kathleen Bonnell, Wed Dec 22 16:42:35 PST 2004
+//   Added widgets for min/max and limits selection. 
+//
 // ****************************************************************************
 
 void
@@ -137,7 +141,7 @@ QvisVectorPlotWindow::CreateWindowContents()
     QVBoxLayout *cgTopLayout = new QVBoxLayout(colorGroupBox);
     cgTopLayout->setMargin(10);
     cgTopLayout->addSpacing(15);
-    QGridLayout *cgLayout = new QGridLayout(cgTopLayout, 2, 2);
+    QGridLayout *cgLayout = new QGridLayout(cgTopLayout, 3, 3);
     cgLayout->setSpacing(10);
     cgLayout->setColStretch(1, 10);
 
@@ -151,7 +155,7 @@ QvisVectorPlotWindow::CreateWindowContents()
     rb = new QRadioButton("Constant", colorGroupBox, "constant");
     rb->setChecked(true);
     colorButtonGroup->insert(rb, 1);
-    cgLayout->addWidget(rb, 1, 0);
+    cgLayout->addWidget(rb, 2, 0);
 
     // Create the color-by-magnitude button.
     colorTableButton = new QvisColorTableButton(colorGroupBox, "colorTableButton");
@@ -164,7 +168,47 @@ QvisVectorPlotWindow::CreateWindowContents()
     vectorColor->setButtonColor(QColor(255, 0, 0));
     connect(vectorColor, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(vectorColorChanged(const QColor &)));
-    cgLayout->addWidget(vectorColor, 1, 1, AlignLeft | AlignVCenter);
+    cgLayout->addWidget(vectorColor, 2, 1, AlignLeft | AlignVCenter);
+
+    //
+    // Create the Limits stuff
+    //
+    limitsGroupBox = new QGroupBox(colorGroupBox, "limitsGroupBox");
+    limitsGroupBox->setFrameStyle(QFrame::NoFrame);
+    cgLayout->addMultiCellWidget(limitsGroupBox, 1, 1, 0, 2);
+    QGridLayout *limitsLayout = new QGridLayout(limitsGroupBox, 3, 3);
+    limitsLayout->setSpacing(10);
+    cgLayout->setColStretch(1, 10);
+
+    limitsSelect = new QComboBox(false, limitsGroupBox, "limitsSelect");
+    limitsSelect->insertItem("Use Original Data");
+    limitsSelect->insertItem("Use Current Plot");
+    connect(limitsSelect, SIGNAL(activated(int)),
+            this, SLOT(limitsSelectChanged(int))); 
+    QLabel *limitsLabel = new QLabel(limitsSelect, "Limits", 
+                                     limitsGroupBox, "limitsLabel");
+    limitsLayout->addWidget(limitsLabel, 0, 0);
+    limitsLayout->addMultiCellWidget(limitsSelect, 0, 0, 1, 2, AlignLeft);
+
+    // Create the min toggle and line edit
+    minToggle = new QCheckBox("Min", limitsGroupBox, "minToggle");
+    limitsLayout->addWidget(minToggle, 1, 1);
+    connect(minToggle, SIGNAL(toggled(bool)),
+            this, SLOT(minToggled(bool)));
+    minLineEdit = new QLineEdit(limitsGroupBox, "minLineEdit");
+    connect(minLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processMinLimitText())); 
+    limitsLayout->addWidget(minLineEdit, 1, 2);
+
+    // Create the max toggle and line edit
+    maxToggle = new QCheckBox("Max", limitsGroupBox, "maxToggle");
+    limitsLayout->addWidget(maxToggle, 2, 1);
+    connect(maxToggle, SIGNAL(toggled(bool)),
+            this, SLOT(maxToggled(bool)));
+    maxLineEdit = new QLineEdit(limitsGroupBox, "maxLineEdit");
+    connect(maxLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processMaxLimitText())); 
+    limitsLayout->addWidget(maxLineEdit, 2, 2);
 
     //
     // Create the scale-related widgets.
@@ -305,6 +349,9 @@ QvisVectorPlotWindow::CreateWindowContents()
 //   Replaced simple QString::sprintf's with a setNum because there seems
 //   to be a bug causing numbers to be incremented by .00001.  See '5263.
 //
+//   Kathleen Bonnell, Wed Dec 22 16:42:35 PST 2004
+//   Update widgets for min/max and limits selection. 
+//
 // ****************************************************************************
 
 void
@@ -368,6 +415,7 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
             colorButtonGroup->blockSignals(true);
             colorButtonGroup->setButton(vectorAtts->GetColorByMag() ? 0 : 1);
             colorButtonGroup->blockSignals(false);
+            limitsGroupBox->setEnabled(vectorAtts->GetColorByMag());
             break;
         case 9: // useLegend
             legendToggle->blockSignals(true);
@@ -402,6 +450,39 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
             }
             originButtonGroup->blockSignals(false);
           break;
+        case 13: // minFlag
+            // Disconnect the slot before setting the toggle and
+            // reconnect it after. This prevents multiple updates.
+            disconnect(minToggle, SIGNAL(toggled(bool)),
+                       this, SLOT(minToggled(bool)));
+            minToggle->setChecked(vectorAtts->GetMinFlag());
+            minLineEdit->setEnabled(vectorAtts->GetMinFlag());
+            connect(minToggle, SIGNAL(toggled(bool)),
+                    this, SLOT(minToggled(bool)));
+            break;
+        case 14: // maxFlag
+            // Disconnect the slot before setting the toggle and
+            // reconnect it after. This prevents multiple updates.
+            disconnect(maxToggle, SIGNAL(toggled(bool)),
+                       this, SLOT(maxToggled(bool)));
+            maxToggle->setChecked(vectorAtts->GetMaxFlag());
+            maxLineEdit->setEnabled(vectorAtts->GetMaxFlag());
+            connect(maxToggle, SIGNAL(toggled(bool)),
+                    this, SLOT(maxToggled(bool)));
+           break;
+        case 15: // limitsMode
+            limitsSelect->blockSignals(true);
+            limitsSelect->setCurrentItem(vectorAtts->GetLimitsMode());
+            limitsSelect->blockSignals(false);
+            break;
+        case 16: // min
+            temp.setNum(vectorAtts->GetMin());
+            minLineEdit->setText(temp);
+            break;
+        case 17: // max
+            temp.setNum(vectorAtts->GetMax());
+            maxLineEdit->setText(temp);
+            break;
         }
     } // end for
 }
@@ -422,6 +503,9 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
 // Modifications:
 //   Brad Whitlock, Fri Feb 15 11:49:34 PDT 2002
 //   Fixed format strings.
+//
+//   Kathleen Bonnell, Wed Dec 22 16:42:35 PST 2004
+//   Get values for min and max.
 //
 // ****************************************************************************
 
@@ -514,6 +598,47 @@ QvisVectorPlotWindow::GetCurrentValues(int which_widget)
             vectorAtts->SetStride(vectorAtts->GetStride());
         }
     }
+        // Do the minimum value.
+    if(which_widget == 4 || doAll)
+    {
+        temp = minLineEdit->displayText().stripWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            double val = temp.toDouble(&okay);
+            vectorAtts->SetMin(val);
+        }
+
+        if(!okay)
+        {
+            msg.sprintf("The minimum value was invalid. "
+                "Resetting to the last good value of %g.", vectorAtts->GetMin());
+            Message(msg);
+            vectorAtts->SetMin(vectorAtts->GetMin());
+        }
+    }
+
+    // Do the maximum value
+    if(which_widget == 5 || doAll)
+    {
+        temp = maxLineEdit->displayText().stripWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            double val = temp.toDouble(&okay);
+            vectorAtts->SetMax(val);
+        }
+
+        if(!okay)
+        {
+            msg.sprintf("The maximum value was invalid. "
+                "Resetting to the last good value of %g.", vectorAtts->GetMax());
+            Message(msg);
+            vectorAtts->SetMax(vectorAtts->GetMax());
+        }
+    }
+
+
 }
 
 // ****************************************************************************
@@ -816,6 +941,8 @@ QvisVectorPlotWindow::drawHeadToggled()
 // Creation:   Fri Mar 23 12:26:11 PDT 2001
 //
 // Modifications:
+//   Kathleen Bonnell, Wed Dec 22 16:42:35 PST 2004
+//   Set the enabled state for the limitsGroupBox based on ColorByMag.
 //   
 // ****************************************************************************
 
@@ -823,6 +950,7 @@ void
 QvisVectorPlotWindow::colorModeChanged(int index)
 {
     vectorAtts->SetColorByMag(index == 0);
+    limitsGroupBox->setEnabled(vectorAtts->GetColorByMag());
     Apply();
 }
 
@@ -885,3 +1013,109 @@ QvisVectorPlotWindow::originTypeChanged(int index)
     }
     Apply();
 }
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::limitsSelectChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   window's limits selection combo box. 
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 22, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisVectorPlotWindow::limitsSelectChanged(int mode)
+{
+    // Only do it if it changed.
+    if(mode != vectorAtts->GetLimitsMode())
+    {
+        vectorAtts->SetLimitsMode(VectorAttributes::LimitsMode(mode));
+        Apply();
+    }
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::processMinLimitText
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   window's min line edit text. 
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 22, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisVectorPlotWindow::processMinLimitText()
+{
+    GetCurrentValues(4);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::processMaxLimitText
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   window's max line edit text. 
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 22, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisVectorPlotWindow::processMaxLimitText()
+{
+    GetCurrentValues(5);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::minToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user toggles the
+//   window's min toggle button.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 22, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisVectorPlotWindow::minToggled(bool val)
+{
+    vectorAtts->SetMinFlag(val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::maxToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user toggles the
+//   window's max toggle button.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 22, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisVectorPlotWindow::maxToggled(bool val)
+{
+    vectorAtts->SetMaxFlag(val);
+    Apply();
+}
+
+

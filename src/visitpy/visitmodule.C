@@ -2247,6 +2247,8 @@ visit_DefineSpeciesExpression(PyObject *self, PyObject *args)
 // Creation:   Fri Jun 28 16:08:14 PDT 2002
 //
 // Modifications:
+//   Kathleen Bonnell, Wed Dec 22 12:50:20 PST 2004
+//   Notify viewer that ExpressionList has been modified.
 //   
 // ****************************************************************************
 
@@ -2271,6 +2273,8 @@ visit_DeleteExpression(PyObject *self, PyObject *args)
                 break;
             }
         }
+        list->Notify();
+        viewer->ProcessExpressions();
 
         if (logging)
             fprintf(logFile, "DeleteExpression(\"%s\")\n", exprName);
@@ -8722,7 +8726,7 @@ visit_DomainPick(const char *type, int el, int dom, stringVector vars, bool doGl
         viewer->PointQuery(type, pt, vars, false, el, dom, doGlobal);
         if(logging)
         {
-            fprintf(logFile, "%s(%d, %d (", type, el, dom, doGlobal);
+            fprintf(logFile, "%s(%d, %d (", type, el, dom);
             for(int i = 0; i < vars.size(); ++i)
             {
                 fprintf(logFile, "\"%s\"", vars[i].c_str());

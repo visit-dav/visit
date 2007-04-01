@@ -17,6 +17,7 @@
 
 #include <avtDatabaseMetaData.h>
 
+#include <InvalidDBTypeException.h>
 #include <ImproperUseException.h>
 
 
@@ -51,6 +52,11 @@ avtBOVWriter::OpenFile(const string &stemname)
 //  Programmer: Hank Childs
 //  Creation:   September 11, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Dec 22 09:16:53 PST 2004
+//    Throw a more informative exception.
+//
 // ****************************************************************************
 
 void
@@ -63,7 +69,8 @@ avtBOVWriter::WriteHeaders(const avtDatabaseMetaData *md,
     //
     if (md->GetMesh(0)->numBlocks != 1)
     {
-        EXCEPTION0(ImproperUseException);
+        EXCEPTION1(InvalidDBTypeException, 
+                         "The BOV writer can only handle single block files.");
     }
    
     // 
@@ -235,6 +242,12 @@ ResampleGrid(vtkRectilinearGrid *rgrid, float *ptr, float *samples,
 //    Brad Whitlock, Wed Nov 3 12:13:15 PDT 2004
 //    Changed long long coding for Windows.
 //
+//    Hank Childs, Wed Dec 22 09:16:53 PST 2004
+//    Throw a more informative exception.  Also support situations where the
+//    number of chunks is specified, but not the number of zones ['5736].
+//    Also quote the variable name so that we can maintain multiple word
+//    variable names. ['5733]
+//
 // ****************************************************************************
 
 void
@@ -244,7 +257,8 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
 
     if (ds->GetDataObjectType() != VTK_RECTILINEAR_GRID)
     {
-        EXCEPTION0(ImproperUseException);
+        EXCEPTION1(InvalidDBTypeException, 
+                         "The BOV writer can only handle rectilinear grids.");
     }
     vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) ds;
 
@@ -267,11 +281,15 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
         }
 
         if (arr == NULL)
-            EXCEPTION0(ImproperUseException);
+            EXCEPTION1(InvalidDBTypeException, 
+                       "The BOV writer could not find a variable to write.  "
+                       "This may be because it only supports nodal variables "
+                       "and you wanted to write a zonal variable.");
     }
 
     if (arr->GetDataType() != VTK_FLOAT)
-        EXCEPTION0(ImproperUseException);
+        EXCEPTION1(InvalidDBTypeException, 
+                       "The BOV writer can only handle floating point data.");
     float *ptr = (float *) arr->GetVoidPointer(0);
 
     char filename[1024];
@@ -301,8 +319,13 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
         brickletsPerZ = approxCubeRoot;
         nBricklets = brickletsPerX*brickletsPerY*brickletsPerZ;
     }
-    if (shouldChangeTotalZones)
+    if (shouldChangeTotalZones || shouldChangeChunks)
     {
+        // If we are changing the chunks, but not the zones, we should set the
+        // target number of zones to be the current number of zones, so we
+        // can then split that number into chunks.
+        if (!shouldChangeTotalZones)
+            targetTotalZones = dims[0]*dims[1]*dims[2];
         VISIT_LONG_LONG zonesPerBricklet = targetTotalZones / (VISIT_LONG_LONG) nBricklets;
         zonesPerBricklet += 1;
         double cubeRoot = pow( (double) zonesPerBricklet, 0.3333);
@@ -334,7 +357,7 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
 
     ofile << "DATA FORMAT: FLOATS" << endl;
 
-    ofile << "VARIABLE: " << arr->GetName() << endl;
+    ofile << "VARIABLE: \"" << arr->GetName()  << "\"" << endl;
     float max = -FLT_MAX;
     float min = +FLT_MAX;
     int nvals = dims[0]*dims[1]*dims[2];

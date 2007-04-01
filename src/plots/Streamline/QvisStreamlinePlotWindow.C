@@ -11,6 +11,7 @@
 #include <qlineedit.h>
 #include <qspinbox.h>
 #include <qtabwidget.h>
+#include <qtooltip.h>
 #include <QvisColorTableButton.h>
 #include <QvisColorButton.h>
 #include <QvisLineWidthWidget.h>
@@ -70,7 +71,9 @@ QvisStreamlinePlotWindow::~QvisStreamlinePlotWindow()
 // Creation:   Mon Oct 21 14:19:00 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Dec 22 13:05:04 PST 2004
+//   I added support for coloring by vorticity.
+//
 // ****************************************************************************
 
 void
@@ -86,7 +89,7 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     mainLayout->addWidget(stepLength, 0,1);
 
     // Create the maximum time text field.
-    mainLayout->addWidget(new QLabel("Maximum time", central, "maxTimeLabel"),1,0);
+    mainLayout->addWidget(new QLabel("Maximum steps", central, "maxTimeLabel"),1,0);
     maxTime = new QLineEdit(central, "maxTime");
     connect(maxTime, SIGNAL(returnPressed()),
             this, SLOT(maxTimeProcessText()));
@@ -227,53 +230,64 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     QGroupBox *pageAppearance = new QGroupBox(central, "pageAppearance");
     pageAppearance->setFrameStyle(QFrame::NoFrame);
     tabs->addTab(pageAppearance, "Appearance");
-    QGridLayout *aLayout = new QGridLayout(pageAppearance, 6, 2);
+    QGridLayout *aLayout = new QGridLayout(pageAppearance, 7, 2);
     aLayout->setMargin(10);
     aLayout->setSpacing(5);
 
     // Create widgets that help determine the appearance of the streamlines.
-    showTube = new QCheckBox("Show tubes", pageAppearance, "showTube");
-    connect(showTube, SIGNAL(toggled(bool)),
-            this, SLOT(showTubeChanged(bool)));
-    aLayout->addWidget(showTube, 0,0);
+    displayMethod = new QComboBox(pageAppearance, "displayMethod");
+    displayMethod->insertItem("Lines", 0);
+    displayMethod->insertItem("Tubes", 1);
+    displayMethod->insertItem("Ribbons", 2);
+    connect(displayMethod, SIGNAL(activated(int)),
+            this, SLOT(displayMethodChanged(int)));
+    aLayout->addWidget(new QLabel(displayMethod, "Display as",
+        pageAppearance, "displayMethodLabel"), 0,0);
+    aLayout->addWidget(displayMethod, 0,1);
 
-    showStart = new QCheckBox("Show tube start", pageAppearance, "showStart");
+    showStart = new QCheckBox("Show start", pageAppearance, "showStart");
     connect(showStart, SIGNAL(toggled(bool)),
             this, SLOT(showStartChanged(bool)));
-    aLayout->addWidget(showStart, 0,1);
+    aLayout->addWidget(showStart, 1,1);
 
-    tubeRadius = new QLineEdit(pageAppearance, "tubeRadius");
-    connect(tubeRadius, SIGNAL(returnPressed()),
-            this, SLOT(tubeRadiusProcessText()));
-    tubeRadiusLabel = new QLabel(tubeRadius, "Tube radius", pageAppearance, "tubeRadiusLabel");
-    aLayout->addWidget(tubeRadiusLabel,1,0);
-    aLayout->addWidget(tubeRadius, 1,1);
+    radius = new QLineEdit(pageAppearance, "radius");
+    connect(radius, SIGNAL(returnPressed()),
+            this, SLOT(radiusProcessText()));
+    radiusLabel = new QLabel(radius, "Radius", pageAppearance, "radiusLabel");
+    QToolTip::add(radiusLabel, "Radius used for tubes and ribbons.");
+    aLayout->addWidget(radiusLabel,2,0);
+    aLayout->addWidget(radius, 2,1);
 
     lineWidth = new QvisLineWidthWidget(0, pageAppearance, "lineWidth");
     connect(lineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(lineWidthChanged(int)));
     lineWidthLabel = new QLabel(lineWidth, "Line width", pageAppearance, "lineWidthLabel");
-    aLayout->addWidget(lineWidthLabel,2,0);
-    aLayout->addWidget(lineWidth, 2,1);
+    aLayout->addWidget(lineWidthLabel,3,0);
+    aLayout->addWidget(lineWidth, 3,1);
 
-    colorBySpeed = new QCheckBox("Color by speed", pageAppearance, "colorBySpeed");
-    connect(colorBySpeed, SIGNAL(toggled(bool)),
-            this, SLOT(colorBySpeedChanged(bool)));
-    aLayout->addWidget(colorBySpeed, 3,0);
+    coloringMethod = new QComboBox(pageAppearance, "coloringMethod");
+    coloringMethod->insertItem("Solid",0);
+    coloringMethod->insertItem("Speed",1);
+    coloringMethod->insertItem("Vorticity magnitude",2);
+    connect(coloringMethod, SIGNAL(activated(int)),
+            this, SLOT(coloringMethodChanged(int)));
+    aLayout->addWidget(new QLabel(coloringMethod, "Color by", 
+        pageAppearance, "colorbylabel"), 4,0);
+    aLayout->addWidget(coloringMethod, 4,1);
 
     colorTableName = new QvisColorTableButton(pageAppearance, "colorTableName");
     connect(colorTableName, SIGNAL(selectedColorTable(bool, const QString&)),
             this, SLOT(colorTableNameChanged(bool, const QString&)));
     colorTableNameLabel = new QLabel(colorTableName, "Color table", pageAppearance, "colorTableNameLabel");
-    aLayout->addWidget(colorTableNameLabel,4,0);
-    aLayout->addWidget(colorTableName, 4,1, Qt::AlignLeft);
+    aLayout->addWidget(colorTableNameLabel,5,0);
+    aLayout->addWidget(colorTableName, 5,1, Qt::AlignLeft);
 
     singleColor = new QvisColorButton(pageAppearance, "singleColor");
     connect(singleColor, SIGNAL(selectedColor(const QColor&)),
             this, SLOT(singleColorChanged(const QColor&)));
     singleColorLabel = new QLabel(singleColor, "Single color", pageAppearance, "singleColorLabel");
-    aLayout->addWidget(singleColorLabel,5,0);
-    aLayout->addWidget(singleColor, 5,1, Qt::AlignLeft);
+    aLayout->addWidget(singleColorLabel,6,0);
+    aLayout->addWidget(singleColor, 6,1, Qt::AlignLeft);
 
     //
     // Create the widget that lets the user set the point density.
@@ -310,6 +324,9 @@ QvisStreamlinePlotWindow::CreateWindowContents()
 //   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
 //   Replaced simple QString::sprintf's with a setNum because there seems
 //   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
+//   Brad Whitlock, Wed Dec 22 13:10:59 PST 2004
+//   I added support for coloring by vorticity and for showing ribbons.
 //
 // ****************************************************************************
 
@@ -407,40 +424,51 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             pointDensity->setValue(streamAtts->GetPointDensity());
             pointDensity->blockSignals(false);
             break;
-        case 14: // showTube
-            showStart->setEnabled(streamAtts->GetShowTube());
-            tubeRadius->setEnabled(streamAtts->GetShowTube());
-            tubeRadiusLabel->setEnabled(streamAtts->GetShowTube());
-            lineWidth->setEnabled(!streamAtts->GetShowTube());
-            lineWidthLabel->setEnabled(!streamAtts->GetShowTube());
+        case 14: // displayMethod
+            { // new scope
+            bool showLines = streamAtts->GetDisplayMethod() == 
+                StreamlineAttributes::Lines;
+            bool showTubes = streamAtts->GetDisplayMethod() == 
+                StreamlineAttributes::Tubes;
+            bool showRibbons = streamAtts->GetDisplayMethod() == 
+                StreamlineAttributes::Ribbons;
+            showStart->setEnabled(showTubes);
+            radius->setEnabled(showTubes || showRibbons);
+            radiusLabel->setEnabled(showTubes || showRibbons);
+            lineWidth->setEnabled(showLines);
+            lineWidthLabel->setEnabled(showLines);
 
-            showTube->blockSignals(true);
-            showTube->setChecked(streamAtts->GetShowTube());
-            showTube->blockSignals(false);
+            displayMethod->blockSignals(true);
+            displayMethod->setCurrentItem(int(streamAtts->GetDisplayMethod()));
+            displayMethod->blockSignals(false);
+            }
             break;
         case 15: // showStart
             showStart->blockSignals(true);
             showStart->setChecked(streamAtts->GetShowStart());
             showStart->blockSignals(false);
             break;
-        case 16: // tubeRadius
-            temp.setNum(streamAtts->GetTubeRadius());
-            tubeRadius->setText(temp);
+        case 16: // radius
+            temp.setNum(streamAtts->GetRadius());
+            radius->setText(temp);
             break;
         case 17: // lineWidth
             lineWidth->blockSignals(true);
             lineWidth->SetLineWidth(streamAtts->GetLineWidth());
             lineWidth->blockSignals(false);
             break;
-        case 18: // colorBySpeed
-            colorTableName->setEnabled(streamAtts->GetColorBySpeed());
-            colorTableNameLabel->setEnabled(streamAtts->GetColorBySpeed());
-            singleColor->setEnabled(!streamAtts->GetColorBySpeed());
-            singleColorLabel->setEnabled(!streamAtts->GetColorBySpeed());
+        case 18: // coloringMethod
+            {// New scope
+            bool needCT = streamAtts->GetColoringMethod() != StreamlineAttributes::Solid;
+            colorTableName->setEnabled(needCT);
+            colorTableNameLabel->setEnabled(needCT);
+            singleColor->setEnabled(!needCT);
+            singleColorLabel->setEnabled(!needCT);
 
-            colorBySpeed->blockSignals(true);
-            colorBySpeed->setChecked(streamAtts->GetColorBySpeed());
-            colorBySpeed->blockSignals(false);
+            coloringMethod->blockSignals(true);
+            coloringMethod->setCurrentItem(int(streamAtts->GetColoringMethod()));
+            coloringMethod->blockSignals(false);
+            }
             break;
         case 19: // colorTableName
             colorTableName->setColorTable(streamAtts->GetColorTableName().c_str());
@@ -618,7 +646,9 @@ QvisStreamlinePlotWindow::UpdateSourceAttributes()
 // Creation:   Mon Oct 21 14:19:00 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Dec 22 14:47:44 PST 2004
+//   Changed tubeRadius to radius.
+//
 // ****************************************************************************
 
 void
@@ -899,24 +929,24 @@ QvisStreamlinePlotWindow::GetCurrentValues(int which_widget)
             streamAtts->SetBoxExtents(d);
     }
 
-    // Do tubeRadius
+    // Do radius
     if(which_widget == 16 || doAll)
     {
-        temp = tubeRadius->displayText().simplifyWhiteSpace();
+        temp = radius->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            streamAtts->SetTubeRadius(val);
+            streamAtts->SetRadius(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of tubeRadius was invalid. "
+            msg.sprintf("The value of radius was invalid. "
                 "Resetting to the last good value of %g.",
-                streamAtts->GetTubeRadius());
+                streamAtts->GetRadius());
             Message(msg);
-            streamAtts->SetTubeRadius(streamAtts->GetTubeRadius());
+            streamAtts->SetRadius(streamAtts->GetRadius());
         }
     }
 }
@@ -1111,9 +1141,9 @@ QvisStreamlinePlotWindow::pointDensityChanged(int val)
 }
 
 void
-QvisStreamlinePlotWindow::showTubeChanged(bool val)
+QvisStreamlinePlotWindow::displayMethodChanged(int val)
 {
-    streamAtts->SetShowTube(val);
+    streamAtts->SetDisplayMethod((StreamlineAttributes::DisplayMethod)val);
     Apply();
 }
 
@@ -1126,7 +1156,7 @@ QvisStreamlinePlotWindow::showStartChanged(bool val)
 }
 
 void
-QvisStreamlinePlotWindow::tubeRadiusProcessText()
+QvisStreamlinePlotWindow::radiusProcessText()
 {
     GetCurrentValues(16);
     Apply();
@@ -1148,9 +1178,9 @@ QvisStreamlinePlotWindow::lineWidthChanged(int style)
 }
 
 void
-QvisStreamlinePlotWindow::colorBySpeedChanged(bool val)
+QvisStreamlinePlotWindow::coloringMethodChanged(int val)
 {
-    streamAtts->SetColorBySpeed(val);
+    streamAtts->SetColoringMethod((StreamlineAttributes::ColoringMethod)val);
     Apply();
 }
 

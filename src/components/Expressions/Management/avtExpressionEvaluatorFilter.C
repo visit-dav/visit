@@ -82,6 +82,10 @@ avtExpressionEvaluatorFilter::~avtExpressionEvaluatorFilter()
 //    Use the timestep retrieved during ExamineSpecification to set the
 //    timestep for the filters.
 //
+//    Hank Childs, Wed Dec 22 10:54:41 PST 2004
+//    Consult the 'lastUsedSpec' to come up with the list of secondary 
+//    variables that are needed downstream. ['5790]
+//
 // ****************************************************************************
 
 void
@@ -111,6 +115,14 @@ avtExpressionEvaluatorFilter::Execute(void)
         // Make sure that the DataSpec being used has the timestep needed.
         //
         avtPipelineSpecification_p pspec = GetGeneralPipelineSpecification();
+        avtDataSpecification_p new_dspec = pspec->GetDataSpecification();
+        avtDataSpecification_p old_dspec =lastUsedSpec->GetDataSpecification();
+        new_dspec->AddSecondaryVariable(old_dspec->GetVariable());
+        const vector<CharStrRef> &vars2nd=old_dspec->GetSecondaryVariables();
+        for (int i = 0 ; i < vars2nd.size() ; i++)
+        {
+            new_dspec->AddSecondaryVariable(*(vars2nd[i]));
+        }
         pspec->GetDataSpecification()->SetTimestep(currentTimeState);
         bottom->Update(pspec);
         GetOutput()->Copy(*(bottom->GetOutput()));

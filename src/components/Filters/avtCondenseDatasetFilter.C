@@ -101,6 +101,12 @@ avtCondenseDatasetFilter::~avtCondenseDatasetFilter()
 //    around, independent of the value of keepAVTandVTK.  Needed by pick for
 //    Vector Plots and Point Meshes.
 //
+//    Brad Whitlock, Wed Dec 22 11:20:42 PDT 2004
+//    Added an heuristic to skip relevant points for line data that has 
+//    many more points than cells. Also set the flag to skip relevant points
+//    for point meshes so it agrees with the debug log message about skipping
+//    relevant points.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -173,6 +179,20 @@ avtCondenseDatasetFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     {
         debug5 << "Not taking relevant points because we have a point mesh."
                << endl;
+        shouldTakeRelevantPoints = false;
+    }
+    else if (!bypassHeuristic &&
+             GetInput()->GetInfo().GetAttributes().GetTopologicalDimension()==1&&
+             nPoints > (nCells*5))
+    {
+        debug5 << "Not taking relevant points because we have a mesh "
+                  "consisting of lines and the number of points is more "
+                  "than 5x the number of cells. This is common with "
+                  "streamlines and we need to skip because the relevant "
+                  "points filter tends to die right now with line data of "
+                  "this kind."
+               << endl;
+        shouldTakeRelevantPoints = false;
     }
     else
     {

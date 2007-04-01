@@ -18,7 +18,6 @@
 
 #include <BadIndexException.h>
 #include <DebugStream.h>
-#include <ImproperUseException.h>
 
 
 using std::string;
@@ -314,6 +313,10 @@ avtLevelsMapper::SetPointSize(float s)
 //    Hank Childs, Tue Sep  4 16:04:18 PDT 2001
 //    Reflect new interface for avtDataAttributes.
 //
+//    Kathleen Bonnell, Wed Dec 22 16:36:29 PST 2004
+//    Removed exception for variable dimension != 1, as all var extents now
+//    contain two elements, regardless of dimension.
+//
 // ****************************************************************************
 
 void
@@ -330,10 +333,6 @@ avtLevelsMapper::GetOriginalDataRange(double &rmin, double &rmax)
     }
 
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
-    if (atts.GetVariableDimension() != 1)
-    {
-        EXCEPTION0(ImproperUseException);
-    }
     
     // we want the point data range
     double de[2];

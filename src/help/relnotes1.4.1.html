@@ -22,7 +22,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>VisIt's Expressions window now has a new <i>Insert variables</i> button that lets you choose to insert variables from a list of available variables and expressions.</li>
 <li>VisIt's Pick window now has a <i>Variables</i> button that lets you select secondary variables from a list of variables for the current plot.</li>
 <li>Many of VisIt's plot and operator attributes windows that used a line edit control for entering a variable name have been improved so they use a variable menu. The variable menu allows you to select a variable from a list of variables for the active plot or the active source.</li>
-<li>VisIt's 3D navigation mode now has a <i>Dolly interaction mode</i> that lets you move the camera through the dataset for genuine fly-throughs.</li>
+<li>VisIt's Streamline plot has been enhanced so it can integrate more smoothly and can create longer streamlines. The plot also can now color by vorticity magnitude in addition to coloring by speed and the plot can now be displayed using lines, tubes, or ribbons. Finally, the Streamline plot now works with VisIt's Point tool when you use the plot with a point streamline source.</li>
+<li>VisIt's 3D navigation mode now has a <i>Flythrough interaction mode</i> that lets you move the camera through the dataset for genuine fly-throughs.</li>
 <li>Point mesh rendering has been improved so that it is much faster.</li>
 <li>VisIt can now read mixed variables from Flash files.</li>
 <li>VisIt now supports data from the CMAT file format.</li>
@@ -85,6 +86,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>The Slice operator's percent field incremented by 0.0001 unexpectedly.</li>
 <li>VisIt's xml2window code generation program does not handle ucharVector.</li>
 <li>Some databases do not display as ASCII characters in the Label plot even though they should.</li>
+<li>Odd behavior in CLI with queries when creating and deleting plots.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.4.html">VisIt 1.4 Release Notes</a>.</p>

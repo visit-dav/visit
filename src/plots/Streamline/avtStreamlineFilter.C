@@ -8,15 +8,20 @@
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
+#include <vtkFloatArray.h>
 #include <vtkLineSource.h>
 #include <vtkPlaneSource.h>
 #include <vtkPoints.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
+#include <vtkRungeKutta4.h>
 #include <vtkSphereSource.h>
 #include <vtkVisItStreamLine.h>
 #include <vtkTubeFilter.h>
 
+#include <vtkRibbonFilter.h>
+
+#include <math.h>
 #include <avtVector.h>
 
 #include <DebugStream.h>
@@ -30,6 +35,8 @@
 //  Creation:   Fri Oct 4 15:22:57 PST 2002
 //
 //  Modifications:
+//    Brad Whitlock, Wed Dec 22 12:42:30 PDT 2004
+//    I added coloringMethod and support for ribbons.
 //
 // ****************************************************************************
 
@@ -37,10 +44,11 @@ avtStreamlineFilter::avtStreamlineFilter()
 {
     stepLength = 1.;
     maxTime = 100.;
-    showTube = false;
     showStart = true;
-    tubeRadius = 0.125;
+    radius = 0.125;
     pointDensity = 1;
+    coloringMethod = STREAMLINE_COLOR_SPEED;
+    displayMethod = STREAMLINE_DISPLAY_LINES;
 
     //
     // Initialize source values.
@@ -71,17 +79,26 @@ avtStreamlineFilter::avtStreamlineFilter()
     streamline->SetVorticity(0);
     streamline->SetTerminalSpeed(0.01);
 
+    vtkRungeKutta4 *integrator = vtkRungeKutta4::New();
+    streamline->SetIntegrator(integrator);
+
     SetSourceType(sourceType);
 
     //
     // Create and initialize the tube filter.
     //
     tubes = vtkTubeFilter::New();
-    tubes->SetRadius(tubeRadius);
+    tubes->SetRadius(radius);
     tubes->SetNumberOfSides(8);
     tubes->SetRadiusFactor(2.);
     tubes->SetCapping(1);
     tubes->ReleaseDataFlagOn();
+
+    //
+    // Create and initialize the ribbon filter.
+    //
+    ribbons = vtkRibbonFilter::New();
+    ribbons->SetWidth(0.1);
 }
 
 
@@ -92,6 +109,8 @@ avtStreamlineFilter::avtStreamlineFilter()
 //  Creation:   Fri Oct 4 15:22:57 PST 2002
 //
 //  Modifications:
+//    Brad Whitlock, Wed Dec 22 14:18:03 PST 2004
+//    Added ribbons and integrator.
 //
 // ****************************************************************************
 
@@ -104,6 +123,10 @@ avtStreamlineFilter::~avtStreamlineFilter()
     if(tubes != NULL)
     {
         tubes->Delete();
+    }
+    if(ribbons != NULL)
+    {
+        ribbons->Delete();
     }
 }
 
@@ -152,6 +175,51 @@ avtStreamlineFilter::SetMaxTime(double t)
 {
     maxTime = t;
     streamline->SetMaximumPropagationTime(maxTime);
+}
+
+// ****************************************************************************
+// Method: avtStreamlineFilter::SetColoringMethod
+//
+// Purpose: 
+//   Set the coloring method to use, which determines which auxiliary arrays
+//   (if any) are also generated.
+//
+// Arguments:
+//   m : The coloring method.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Dec 22 12:41:08 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtStreamlineFilter::SetColoringMethod(int m)
+{
+    coloringMethod = m;
+}
+
+// ****************************************************************************
+// Method: avtStreamlineFilter::SetDisplayMethod
+//
+// Purpose: 
+//   Sets the streamline display method.
+//
+// Arguments:
+//   d : The display method.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Dec 22 14:18:47 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtStreamlineFilter::SetDisplayMethod(int d)
+{
+    displayMethod = d;
 }
 
 // ****************************************************************************
@@ -308,28 +376,6 @@ avtStreamlineFilter::SetBoxSource(double E[6])
 }
 
 // ****************************************************************************
-// Method: avtStreamlineFilter::SetShowTube
-//
-// Purpose: 
-//   Indicates whether or not the filter should creates tubes.
-//
-// Arguments:
-//   val : Indicates whether or not the filter should creates tubes.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Nov 6 13:01:36 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-avtStreamlineFilter::SetShowTube(bool val)
-{
-    showTube = val;
-}
-
-// ****************************************************************************
 // Method: avtStreamlineFilter::SetShowStart
 //
 // Purpose: 
@@ -352,10 +398,10 @@ avtStreamlineFilter::SetShowStart(bool val)
 }
 
 // ****************************************************************************
-// Method: avtStreamlineFilter::SetTubeRadius
+// Method: avtStreamlineFilter::SetRadius
 //
 // Purpose: 
-//   Sets the tube radius.
+//   Sets the radius used for tubes and ribbons.
 //
 // Arguments:
 //   rad : The tube radius.
@@ -364,14 +410,18 @@ avtStreamlineFilter::SetShowStart(bool val)
 // Creation:   Wed Nov 6 13:02:45 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Dec 22 14:28:35 PST 2004
+//   Renamed the method and made it set both the tube radius and the ribbon
+//   width.
+//
 // ****************************************************************************
 
 void
-avtStreamlineFilter::SetTubeRadius(double rad)
+avtStreamlineFilter::SetRadius(double rad)
 {
-    tubeRadius = rad;
-    tubes->SetRadius(tubeRadius);
+    radius = rad;
+    tubes->SetRadius(radius);
+    ribbons->SetWidth(2. * radius);
 }
 
 // ****************************************************************************
@@ -407,7 +457,9 @@ avtStreamlineFilter::SetPointDensity(int den)
 // Creation:   Wed Nov 6 13:03:48 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Dec 22 14:29:30 PST 2004
+//   I added the ribbons filter.
+//
 // ****************************************************************************
 
 void
@@ -419,6 +471,8 @@ avtStreamlineFilter::ReleaseData(void)
     streamline->SetOutput(NULL);
     tubes->SetInput(NULL);
     tubes->SetOutput(NULL);
+    ribbons->SetInput(NULL);
+    ribbons->SetOutput(NULL);
 }
 
 // ****************************************************************************
@@ -438,6 +492,9 @@ avtStreamlineFilter::ReleaseData(void)
 //  Creation:   Fri Oct 4 15:22:57 PST 2002
 //
 //  Modifications:
+//    Brad Whitlock, Wed Dec 22 12:43:16 PDT 2004
+//    I added code to convert the vorticity array to vorticity magnitude so
+//    we can color by that too. I also added the ribbon filter.
 //
 // ****************************************************************************
 
@@ -449,6 +506,8 @@ avtStreamlineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     vtkLineSource      *line = NULL;
     vtkPlaneSource     *plane = NULL;
     vtkSphereSource    *sphere = NULL;
+
+    bool showTube = displayMethod == STREAMLINE_DISPLAY_TUBES;
 
     //
     // Create a source for the filter's streamline points.
@@ -502,8 +561,8 @@ avtStreamlineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         sphere->SetLatLongTessellation(1);
         double t = double(20 - pointDensity) / 19.;
         double angle = t * 3. + (1. - t) * 30.;
-        sphere->SetPhiResolution(angle);
-        sphere->SetThetaResolution(angle);
+        sphere->SetPhiResolution(int(angle));
+        sphere->SetThetaResolution(int(angle));
 
         if(showTube && showStart)
             ballPD = sphere->GetOutput();
@@ -541,17 +600,71 @@ avtStreamlineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         streamline->SetSource(ballPD);
     }
 
-    // Set the input to the streamline filter.
-    streamline->SetInput(inDS);
+    bool doRibbons = displayMethod == STREAMLINE_DISPLAY_RIBBONS;
+    if(coloringMethod == STREAMLINE_COLOR_SOLID)
+    {
+        // No variable coloring.
+        streamline->SetSpeedScalars(0);
+        streamline->SetVorticity(doRibbons?1:0);
+    }
+    else if(coloringMethod == STREAMLINE_COLOR_SPEED)
+    {
+        // Color by velocity magnitude.
+        streamline->SetSpeedScalars(1);
+        streamline->SetVorticity(doRibbons?1:0);
+    }
+    else
+    {
+        // Color by vorticity magnitude.
+        streamline->SetSpeedScalars(0);
+        streamline->SetVorticity(1);
+    }
 
-    if(showTube)
+    // Set the input to the streamline filter and execute it.
+    streamline->SetInput(inDS);
+    streamline->Update();
+    vtkPolyData *streams = streamline->GetOutput();
+
+    // If we're going to display the streamlines as ribbons, add the
+    // streams to the ribbon filter and get the output.
+    if(doRibbons)
+    {
+        ribbons->SetInput(streams);
+        ribbons->Update();
+        streams = ribbons->GetOutput();
+    }
+
+    // If we're coloring by vorticity magnitude, convert the vorticity to
+    // vorticity magnitude and put it in the Scalars array.
+    vtkDataArray *vorticity = streams->GetPointData()->GetVectors();
+    if(coloringMethod == STREAMLINE_COLOR_VORTICITY && vorticity != 0)
+    {
+        int n = vorticity->GetNumberOfTuples();
+        vtkFloatArray *vortMag = vtkFloatArray::New();
+        vortMag->SetNumberOfComponents(1);
+        vortMag->SetNumberOfTuples(n);
+        float *vm = (float *)vortMag->GetVoidPointer(0);
+        for(int i = 0; i < n; ++i)
+        {
+            const float *val = vorticity->GetTuple3(i);
+            *vm++ = (float)sqrt(val[0]*val[0] + val[1]*val[1] + val[2]*val[2]);
+        }
+        // If there is a scalar array, remove it.
+        vtkDataArray *oldScalars = streams->GetPointData()->GetScalars();
+        if(oldScalars != 0)
+            streams->GetPointData()->RemoveArray(oldScalars->GetName());
+        // Remove the vorticity array.
+        streams->GetPointData()->RemoveArray(vorticity->GetName());
+
+        // Make vorticity magnitude be the active scalar field.
+        streams->GetPointData()->SetVectors(0);
+        streams->GetPointData()->SetScalars(vortMag);
+    }
+
+    if(!doRibbons && showTube)
     {
         if(showStart)
         {
-            // Execute the streamline filter.
-            streamline->Update();
-            vtkPolyData *streams = streamline->GetOutput();
-
             // Execute the tube filter.
             tubes->SetInput(streams);
             tubes->Update();
@@ -628,17 +741,14 @@ avtStreamlineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         }
         else
         {
-            streamline->Update();
-            tubes->SetInput(streamline->GetOutput());
+            tubes->SetInput(streams);
             tubes->Update();
             outPD = tubes->GetOutput();
         }
     }
     else
     {
-        // Set up the streamline filter.
-        streamline->Update();
-        outPD = streamline->GetOutput();
+        outPD = streams;
     }
 
     //
@@ -674,6 +784,9 @@ avtStreamlineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 //   Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002    
 //   Use NewInstance instead of MakeObject, in order to match vtk's new api. 
 //
+//   Brad Whitlock, Wed Dec 22 14:55:46 PST 2004
+//   Changed tubeRadius to radius.
+//
 // ****************************************************************************
 
 vtkPolyData *
@@ -682,10 +795,10 @@ avtStreamlineFilter::AddStartSphere(vtkPolyData *tubeData, float val, float pt[3
     // Create the sphere polydata.
     vtkSphereSource *sphere = vtkSphereSource::New();
     sphere->SetCenter(pt[0], pt[1], pt[2]);
-    sphere->SetRadius(tubeRadius * 2.);
+    sphere->SetRadius(radius * 2.);
     sphere->SetLatLongTessellation(1);
-    sphere->SetPhiResolution(8.);
-    sphere->SetThetaResolution(8.);
+    sphere->SetPhiResolution(8);
+    sphere->SetThetaResolution(8);
     vtkPolyData *sphereData = sphere->GetOutput();
     sphereData->Update();
 

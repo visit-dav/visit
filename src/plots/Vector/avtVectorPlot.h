@@ -53,6 +53,9 @@ class     avtLookupTable;
 //    Mark C. Miller, Mon Aug 23 20:24:31 PDT 2004
 //    Changed GetCellCountMultiplierForSRThreshold to Set...
 //
+//    Kathleen Bonnell, Wed Dec 22 17:01:09 PST 2004 
+//    Added SetLimitsMode. 
+//
 // ****************************************************************************
 
 class avtVectorPlot : public avtPointDataPlot
@@ -69,6 +72,7 @@ class avtVectorPlot : public avtPointDataPlot
     virtual void                SetAtts(const AttributeGroup*);
     virtual bool                SetColorTable(const char *ctName);
 
+    void                        SetLimitsMode(int);
 
   protected:
     VectorAttributes            atts;

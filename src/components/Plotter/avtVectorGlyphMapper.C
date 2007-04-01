@@ -49,6 +49,9 @@
 //    Kathleen Bonnell, Mon Aug  9 13:54:42 PDT 2004 
 //    Initialize colorByScalar.
 //
+//    Kathleen Bonnell, Wed Dec 22 16:42:35 PST 2004 
+//    Initialize setMin, setMax and limitsMode.
+//
 // ****************************************************************************
 
 avtVectorGlyphMapper::avtVectorGlyphMapper(vtkPolyData *g)
@@ -65,6 +68,8 @@ avtVectorGlyphMapper::avtVectorGlyphMapper(vtkPolyData *g)
     normalsFilter     = NULL;
     nGlyphFilters     = 0;
     lut = NULL;
+    setMin = setMax = false;
+    limitsMode = 0;  // use original data extents
 }
 
 
@@ -142,11 +147,38 @@ avtVectorGlyphMapper::~avtVectorGlyphMapper()
 //    Kathleen Bonnell, Mon Aug  9 13:54:42 PDT 2004 
 //    Test for flag colorByScalar. 
 //
+//    Kathleen Bonnell, Wed Dec 22 16:42:35 PST 2004 
+//    Added code for setting min and max.
+//
 // ****************************************************************************
 
 void
 avtVectorGlyphMapper::CustomizeMappers(void)
 {
+    if (setMin)
+    {
+        SetMin(min);
+    }
+    else
+    {
+        SetMinOff();
+    }
+
+    if (setMax)
+    {
+        SetMax(max);
+    }
+    else
+    {
+        SetMaxOff();
+    }
+
+    //
+    // It is probable that the mappers defaults did not actually get set, so
+    // explicitly do that here.
+    //
+    SetMappersMinMax();
+
     if (glyphFilter != NULL)
     {
         for (int i = 0 ; i < nGlyphFilters ; i++)
@@ -581,4 +613,305 @@ avtVectorGlyphMapper::SetLookupTable(vtkLookupTable *LUT)
     } 
 }
 
+
+// ****************************************************************************
+//  Method: avtVectorGlyphMapper::SetMin
+//
+//  Purpose:
+//      Sets the plotter's scalar min.
+//
+//  Arguments:
+//      minArg      The new minimum.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   December 22, 2004 
+//
+// ****************************************************************************
+
+void
+avtVectorGlyphMapper::SetMin(float minArg)
+{
+    if (setMin == true && min == minArg)
+    {
+        return;
+    }
+
+    min    = minArg;
+    setMin = true;
+
+    SetMappersMinMax();
+}
+
+
+// ****************************************************************************
+//  Method: avtVectorGlyphMapper::SetMinOff
+//
+//  Purpose:
+//      Sets the bounds for the scalar's min to be off.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   December 22, 2004 
+//
+// ****************************************************************************
+
+void
+avtVectorGlyphMapper::SetMinOff(void)
+{
+    if (setMin == false)
+    {
+        return;
+    }
+    setMin = false;
+
+    SetMappersMinMax();
+}
+
+
+// ****************************************************************************
+//  Method: avtVectorGlyphMapper::SetMax
+//
+//  Purpose:
+//      Sets the plotter's scalar max.
+//
+//  Arguments:
+//      maxArg      The new maximum.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   December 22, 2004 
+//
+// ****************************************************************************
+
+void
+avtVectorGlyphMapper::SetMax(float maxArg)
+{
+    if (setMax == true && max == maxArg)
+    {
+        return;
+    }
+
+    max    = maxArg;
+    setMax = true;
+
+    SetMappersMinMax();
+}
+
+
+// ****************************************************************************
+//  Method: avtVectorGlyphMapper::SetMaxOff
+//
+//  Purpose:
+//      Sets the bounds for the scalar's max to be off.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   December 22, 2004 
+//
+// ****************************************************************************
+
+void
+avtVectorGlyphMapper::SetMaxOff(void)
+{
+    if (setMax == false)
+    {
+        return;
+    }
+    setMax = false;
+
+    SetMappersMinMax();
+}
+
+
+// ****************************************************************************
+//  Method: avtVectorGlyphMapper::SetMappersMinMax
+//
+//  Purpose:
+//      Sets the mappers min/max.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   December 22, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtVectorGlyphMapper::SetMappersMinMax(void)
+{
+    if (mappers == NULL)
+    {
+        //
+        // This happens when SetMin is called before the mappers are
+        // initialized.
+        //
+        return;
+    }
+
+    float mmin = 0.;
+    float mmax = 0.;
+
+    if (limitsMode == 1 ) // use current plot extents
+    {
+        GetCurrentRange(mmin, mmax);
+    }
+    else  // use either original data extents or user-specified limits
+    {
+        GetRange(mmin, mmax);
+    }
+
+    for (int i = 0 ; i < nMappers ; i++)
+    {
+        if (mappers[i] != NULL)
+        {
+            mappers[i]->SetScalarRange(mmin, mmax);
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtVectorGlyphMapper::GetRange
+//
+//  Purpose:
+//      Gets the range of the variable, taking into account artificial limits.
+//
+//  Arguments:
+//      rmin    The minimum in the range.
+//      rmax    The maximum in the range.
+//
+//  Returns:    True if the extents were found, false otherwise.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   December 22, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+avtVectorGlyphMapper::GetRange(float &rmin, float &rmax)
+{
+    if (mappers == NULL)
+    {
+        //
+        // We have been asked for the range before the input has been set.
+        //
+        rmin = 0.;
+        rmax = 1.;
+        return false;
+    }
+
+    float de[2];
+    bool gotExtents = avtMapper::GetRange(de[0], de[1]);
+
+    rmin = (setMin ? min : de[0]);
+    rmax = (setMax ? max : de[1]);
+
+    return gotExtents;
+}
+
+
+// ****************************************************************************
+//  Method: avtVectorGlyphMapper::GetCurrentRange
+//
+//  Purpose:
+//      Gets the current range of the variable. 
+//
+//  Arguments:
+//      rmin          The minimum in the range.
+//      rmax          The maximum in the range.
+//
+//  Returns:    True if the extents were found, false otherwise.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   December 22, 2004 
+//
+// ****************************************************************************
+
+bool
+avtVectorGlyphMapper::GetCurrentRange(float &rmin, float &rmax)
+{
+    if (mappers == NULL)
+    {
+        //
+        // We have been asked for the range before the input has been set.
+        //
+        rmin = 0.;
+        rmax = 1.;
+        return false;
+    }
+
+    float de[2];
+    bool rv = avtMapper::GetCurrentRange(de[0], de[1]);
+
+    rmin = (setMin ? min : de[0]);
+    rmax = (setMax ? max : de[1]);
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtVectorGlyphMapper::SetLimitsMode
+//
+//  Purpose:
+//    Sets the limits mode, which specifies which type of limits to use.
+//
+//  Arguments:
+//    lm        The new limits mode.
+//                0: Use Original Data limits
+//                1: Use Current Plot limits
+//                2: Use user-specified limits. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   December 22, 2004
+//
+// ****************************************************************************
+
+void
+avtVectorGlyphMapper::SetLimitsMode(const int lm)
+{
+    if (lm == limitsMode)
+    {
+        return;
+    }
+
+    limitsMode = lm;
+
+    SetMappersMinMax();
+}
+
+// ****************************************************************************
+//  Method: avtVectorGlyphMapper::GetVarRange
+//
+//  Purpose:
+//      Gets the range of the variable. (Artificial limits ignored).
+//
+//  Arguments:
+//      rmin          The minimum in the range.
+//      rmax          The maximum in the range.
+//
+//  Returns:    True if the extents were found, false otherwise.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   December 22, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+avtVectorGlyphMapper::GetVarRange(float &rmin, float &rmax)
+{
+    if (mappers == NULL)
+    {
+        //
+        // We have been asked for the range before the input has been set.
+        //
+        rmin = 0.;
+        rmax = 1.;
+        return false;
+    }
+
+    bool rv = avtMapper::GetRange(rmin, rmax);
+    return rv;
+}
 

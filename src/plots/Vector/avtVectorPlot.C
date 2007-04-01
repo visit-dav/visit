@@ -14,6 +14,8 @@
 
 #include <LineAttributes.h>
 
+#include <InvalidLimitsException.h>
+
 // ****************************************************************************
 //  Method: avtVectorPlot constructor
 //
@@ -248,11 +250,15 @@ avtVectorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 //    Set AntialiasedRenderOrder, so that vector lines get drawn without
 //    the 'halo'. 
 //    
+//    Kathleen Bonnell, Wed Dec 22 17:01:09 PST 2004 
+//    Added call to SetLimitsMode. 
+//
 // ****************************************************************************
 
 void
 avtVectorPlot::CustomizeBehavior(void)
 {
+    SetLimitsMode(atts.GetLimitsMode());
     behavior->SetShiftFactor(0.6);
     behavior->SetLegend(varLegendRefPtr);
     behavior->SetAntialiasedRenderOrder(ABSOLUTELY_LAST);
@@ -355,6 +361,9 @@ avtVectorPlot::CustomizeMapper(avtDataObjectInformation &doi)
 //    Kathleen Bonnell, Mon Aug  9 14:33:26 PDT 2004 
 //    Moved some code into SetMapperColors and added call to this new method. 
 //
+//    Kathleen Bonnell, Wed Dec 22 17:01:09 PST 2004 
+//    Added call to SetLimitsMode. 
+//
 // ****************************************************************************
 
 void
@@ -408,6 +417,8 @@ avtVectorPlot::SetAtts(const AttributeGroup *a)
         colorsInitialized = true;
         SetColorTable(atts.GetColorTableName().c_str());
     }
+
+    SetLimitsMode(atts.GetLimitsMode());
 
     //
     // Update the legend.
@@ -521,20 +532,31 @@ avtVectorPlot::SetLegend(bool legendOn)
 // Date:       Mon Dec 2 12:07:05 PDT 2002
 //
 // Modifications:
-//   
+//    Kathleen Bonnell, Wed Dec 22 17:01:09 PST 2004 
+//    Account for user-set min and max or limitsMode.
+//
 // ****************************************************************************
 
 void
 avtVectorPlot::SetLegendRanges()
 {
     float min = 0., max = 1.;
-    glyphMapper->GetRange(min, max);
+    bool validRange = false;
+    if (atts.GetLimitsMode() == VectorAttributes::OriginalData)
+    {
+        validRange = glyphMapper->GetRange(min, max);
+    }
+    else
+    {
+        validRange = glyphMapper->GetCurrentRange(min, max);
+    }
+    varLegend->SetRange(min, max);
 
     //
     // Set the range for the legend's text and colors.
     //
+    glyphMapper->GetVarRange(min, max);
     varLegend->SetVarRange(min, max);
-    varLegend->SetRange(min, max);
 }
 
 // ****************************************************************************
@@ -607,3 +629,84 @@ avtVectorPlot::SetMapperColors()
         glyphMapper->ColorByMagOff(col);
     }
 }
+
+
+// ****************************************************************************
+//  Method: avtVectorPlot::SetLimitsMode
+//
+//  Purpose:  To determine the proper limits the mapper should be using.
+//
+//  Arguments:
+//    limitsMode  Specifies which type of limits.
+//
+//  Programmer:   Kathleen Bonnell
+//  Creation:     December 22, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtVectorPlot::SetLimitsMode(int limitsMode)
+{
+    float min, max;
+    //
+    //  Retrieve the actual range of the data
+    //
+    glyphMapper->GetVarRange(min, max);
+
+    float userMin = atts.GetMinFlag() ? atts.GetMin() : min;
+    float userMax = atts.GetMaxFlag() ? atts.GetMax() : max;
+      
+    if (dataExtents.size() == 2)
+    {
+        glyphMapper->SetMin(dataExtents[0]);
+        glyphMapper->SetMax(dataExtents[1]);
+    }
+    else if (atts.GetMinFlag() && atts.GetMaxFlag())
+    {
+        if (userMin >= userMax)
+        {
+            EXCEPTION1(InvalidLimitsException, false); 
+        }
+        else
+        {
+            glyphMapper->SetMin(userMin);
+            glyphMapper->SetMax(userMax);
+        }
+    } 
+    else if (atts.GetMinFlag())
+    {
+        glyphMapper->SetMin(userMin);
+        if (userMin > userMax)
+        {
+            glyphMapper->SetMax(userMin);
+        }
+        else
+        {
+            glyphMapper->SetMaxOff();
+        }
+    }
+    else if (atts.GetMaxFlag())
+    {
+        glyphMapper->SetMax(userMax);
+        if (userMin > userMax)
+        {
+            glyphMapper->SetMin(userMax);
+        }
+        else
+        {
+            glyphMapper->SetMinOff();
+        }
+    }
+    else
+    {
+        glyphMapper->SetMinOff();
+        glyphMapper->SetMaxOff();
+    }
+    glyphMapper->SetLimitsMode(limitsMode);
+
+    SetLegendRanges();
+}
+
+
