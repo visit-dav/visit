@@ -2629,8 +2629,8 @@ avtGenericDatabase::GetGlobalNodeIds(int dom, const char *var, int ts)
     }
     else if (gnodeIds.nList == 1)
     {
-        return (vtkDataArray *) *(gnodeIds.list[0]);
         md->SetContainsGlobalNodeIds(var, true);
+        return (vtkDataArray *) *(gnodeIds.list[0]);
     }
     else
     {
@@ -3457,6 +3457,10 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
 //    Mark C. Miller, Wed Aug 11 14:41:06 PDT 2004
 //    Moved check for if ghost had been read from file to just before ghost
 //    node stuff. Made it contribute to results for shouldStop
+//
+//    Mark C. Miller, Mon Aug 16 15:01:27 PDT 2004
+//    Fixed missing initialization of boolean haveGlobalNodeIds
+//    Removed extraneous debug statements
 //    
 // ****************************************************************************
 
@@ -3475,7 +3479,6 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
     avtVarType type = md->DetermineVarType(varname);
     std::string meshname = md->MeshForVar(varname);
 
-    debug5 << "STARTING Communicate Ghosts" << endl;
     void_ref_ptr vr = cache.GetVoidRef("any_mesh",
                                    AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
                                   -1, -1);
@@ -3486,7 +3489,6 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
 
     if (*vr != NULL)
     {
-        debug5 << "STARTING Domain Boundary Stuff" << endl;
         avtDomainBoundaries *dbi = (avtDomainBoundaries*)*vr;
 
         //
@@ -3953,12 +3955,15 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
     //
     // Make sure that we actually have the node ids.
     //
-    debug5 << "STARTING Check for GlobalNodeIds" << endl;
-    bool haveGlobalNodeIds = true;
+    bool haveGlobalNodeIds = false;
     for (i = 0 ; i < doms.size() ; i++)
     {
+        haveGlobalNodeIds = true;
         if (GetGlobalNodeIds(doms[i], meshname.c_str(), ts) == NULL)
+        {
             haveGlobalNodeIds = false;
+            break;
+        }
     }
     int  shouldStop = (haveGlobalNodeIds ? 0 : 1);
 
@@ -3968,7 +3973,6 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
 
 #ifdef PARALLEL
     int  parallelShouldStop;
-    debug5 << "STARTING Allreduce for shouldStop " << shouldStop << endl;
     MPI_Allreduce(&shouldStop, &parallelShouldStop, 1, MPI_INT, MPI_MAX,
                   MPI_COMM_WORLD);
     shouldStop = parallelShouldStop;
@@ -3976,7 +3980,6 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
 
     if (shouldStop == 0)
     {
-        debug5 << "STARTING Global Node ID stuff"  << endl;
         int timerHandle = visitTimer->StartTimer();
 
         //
