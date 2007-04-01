@@ -31,6 +31,9 @@ class ViewerWindowManager;
 //   Brad Whitlock, Fri Apr 15 09:10:55 PDT 2005
 //   I added SetRPCType, GetArgs.
 //
+//   Brad Whitlock, Wed Apr 27 15:13:38 PST 2005
+//   I added CopyFrom.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerActionBase : public QObject
@@ -45,6 +48,9 @@ public:
 
     virtual void Execute() = 0;
     virtual void Update() = 0;
+
+    virtual bool CopyFrom(const ViewerActionBase *)
+                                           { return false; }
 
     virtual bool Enabled() const           { return true; }
     virtual bool VisualEnabled() const     { return allowVisualRepresentation; }

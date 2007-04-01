@@ -109,6 +109,10 @@ class Xfer;
 //    Added the ability to query for errors detected during plugin
 //    initialization.
 //
+//    Brad Whitlock, Tue Apr 26 14:33:09 PST 2005
+//    Added PartFilePattern, ConsolidateVirtualDatabases methods and added
+//    digitLength member to VirtualFileInformation.
+//
 // ****************************************************************************
 
 class MDServerConnection
@@ -137,6 +141,7 @@ class MDServerConnection
 
         std::string  path;
         stringVector files;
+        int          digitLength;
     };
 
     typedef std::map<VirtualFileName, VirtualFileInformation> VirtualFileInformationMap;
@@ -178,10 +183,15 @@ private:
 
     bool FileMatchesFilterList(const std::string &) const;
     bool FileMatchesFilter(const char *filter, const char *str, int &j) const;
-    bool GetPattern(const std::string &file, std::string &p) const;
+    bool GetPattern(const std::string &file, std::string &p, int &) const;
     std::string ExpandPathHelper(const std::string &path,
                                  const std::string &workingDir) const;
     bool FileHasVisItExtension(const std::string &file) const;
+    bool FileLooksLikePartFile(const VirtualFileInformationMap &newVirtualFiles,
+                               const std::string &pattern) const;
+    void ConsolidateVirtualDatabases(VirtualFileInformationMap &newVirtualFiles,
+                                     GetFileListRPC::FileList &files);
+
 private:
     ParentProcess              *parent;    
     Xfer                       *xfer;

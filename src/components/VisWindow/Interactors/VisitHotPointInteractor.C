@@ -429,6 +429,10 @@ VisitHotPointInteractor::Start3DMode(INTERACTION_MODE mode)
 //   Kathleen Bonnell, Tue Dec  2 17:41:31 PST 2003 
 //   Allow Pick interactions (use Pick2d). 
 //
+//   Brad Whitlock, Wed Apr 27 17:20:09 PST 2005
+//   Make it use a navigate interactor for lineout mode so we at least have
+//   an interactor in the rare case that we enter lineout mode here.
+//
 // ****************************************************************************
 
 void
@@ -443,6 +447,7 @@ VisitHotPointInteractor::StartCurveMode(INTERACTION_MODE mode)
     switch(mode)
     {
     case NAVIGATE:
+    case LINEOUT:
         if(navigateCurve == NULL)
         {
             navigateCurve = new NavigateCurve(proxy);
@@ -463,9 +468,6 @@ VisitHotPointInteractor::StartCurveMode(INTERACTION_MODE mode)
             pick2D = new Pick2D(proxy);
         }
         newInteractor = pick2D;
-        break;
-    case LINEOUT:
-        // These are only here to prevent compiler warning. 
         break;
     }
 

@@ -10,6 +10,7 @@
       Vector
       Tensor
       Symmetric_Tensor
+      Label
       Material
       Species
       Curve

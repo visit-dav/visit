@@ -206,6 +206,9 @@ avtMinMaxQuery::PreExecute()
 //    Hank Childs, Thu Mar 10 11:53:28 PST 2005
 //    Fix memory leak.
 //
+//    Kathleen Bonnell, Wed Apr 27 08:29:52 PDT 2005 
+//    Modified ghost tests to account for ghost nodes. 
+//
 // ****************************************************************************
 
 void 
@@ -216,15 +219,17 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
         return;
     }
     int i;
-    vtkUnsignedCharArray *ghosts = 
+    vtkUnsignedCharArray *ghostZones = 
            (vtkUnsignedCharArray*)ds->GetCellData()->GetArray("avtGhostZones");
+    vtkUnsignedCharArray *ghostNodes = 
+           (vtkUnsignedCharArray*)ds->GetPointData()->GetArray("avtGhostNodes");
     vtkDataArray *data = NULL;
     bool shouldDeleteData = false;
     string var = queryAtts.GetVariables()[0];
     int varType = queryAtts.GetVarTypes()[0];
     int ts = queryAtts.GetTimeStep();
     scalarCurve = false;
-    bool checkGhost = false;
+    bool checkGhost = (ghostZones != NULL || ghostNodes != NULL);
     bool haveMin1 = false;
     bool haveMin2 = false;
     bool haveMax1 = false;
@@ -240,7 +245,6 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
     {
         nodeCentered = false;
         elementName = "zone";
-        checkGhost = ghosts != NULL;
     }
     else if (varType == QueryAttributes::Curve) 
     {
@@ -287,6 +291,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
     stringVector matNames;
     floatVector matValues;
     vtkIdList *cellIds = vtkIdList::New();
+    vtkIdList *ids = vtkIdList::New();
 
     for (int elNum = 0; elNum < data->GetNumberOfTuples(); elNum++)
     {
@@ -315,14 +320,26 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
                 break; 
         }
         bool ghost = false;
-        if (checkGhost)
-        {
-            ghost = (ghosts->GetValue(elNum) > 0);
-        }
-
         if (nodeCentered)
         {
-            if (doMin) 
+            if (checkGhost)
+            {
+                if (ghostNodes != NULL)
+                {
+                    ghost = (ghostNodes->GetValue(elNum) > 0);
+                }
+                else 
+                {
+                    ds->GetPointCells(elNum, ids);
+                    int numGhostCells = 0; 
+                    for (int i = 0; i < ids->GetNumberOfIds(); i++)
+                        numGhostCells += 
+                          ghostZones->GetValue(ids->GetId(i)) > 0 ?  1 : 0;
+                    ghost = numGhostCells == ids->GetNumberOfIds();
+                }
+            }
+ 
+            if (doMin && !ghost) 
             {
                 if (val < minInfo1.GetValue())
                 {
@@ -342,7 +359,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
                 }
                 cellIds->Reset();
             }
-            if (doMax) 
+            if (doMax && !ghost) 
             {
                 if (val > maxInfo1.GetValue())
                 {
@@ -365,7 +382,24 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
         }
         else // zoneCentered
         {
-            if (mat != NULL && elNum >= 0 && elNum < mat->GetNZones())
+            if (checkGhost)
+            {
+                if (ghostZones != NULL)
+                {
+                    ghost = (ghostZones->GetValue(elNum) > 0);
+                }
+                else 
+                {
+                    ds->GetCellPoints(elNum, ids);
+                    int numGhostNodes = 0; 
+                    for (int i = 0; i < ids->GetNumberOfIds(); i++)
+                        numGhostNodes += 
+                          ghostNodes->GetValue(ids->GetId(i)) > 0 ?  1 : 0;
+                    ghost = numGhostNodes > 0;
+                }
+            }
+ 
+            if (!ghost && mat != NULL && elNum >= 0 && elNum < mat->GetNZones())
             {
                 matInfo = mat->ExtractCellMatInfo(elNum);
                 for (i = 0; i < matInfo.size(); ++i)
@@ -432,6 +466,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
         } 
     }
     cellIds->Delete();
+    ids->Delete();
 
     if (nodeCentered)
     {

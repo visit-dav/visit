@@ -358,6 +358,71 @@ SaveViewAction::Execute(int val)
 }
 
 // ****************************************************************************
+// Method: SaveViewAction::CopyFrom
+//
+// Purpose: 
+//   Copies attributes from another SaveViewAction.
+//
+// Arguments:
+//   obj : The action from which to copy attributes.
+//
+// Returns:    True if the views were copied; false otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Apr 27 15:28:11 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+SaveViewAction::CopyFrom(const ViewerActionBase *obj)
+{
+    bool retval = false;
+
+    if(std::string(GetName()) == std::string(obj->GetName()))
+    {
+        const SaveViewAction *saveView = (const SaveViewAction *)obj;
+
+        // Delete the views from the interface.
+        DeleteViewsFromInterface();
+
+        for(int i = 0; i < saveView->views.size(); ++i)
+        {
+            void *newView = 0;
+
+            if(saveView->views[i].viewType == VIEWCurve)
+            {
+                avtViewCurve *v = (avtViewCurve *)saveView->views[i].view;
+                newView = (void *) new avtViewCurve(*v);
+            }
+            else if(saveView->views[i].viewType == VIEW2D)
+            {
+                avtView2D *v = (avtView2D *)saveView->views[i].view;
+                newView = (void *) new avtView2D(*v);
+            }
+            else
+            {
+                avtView3D *v = (avtView3D *)saveView->views[i].view;
+                newView = (void *) new avtView3D(*v);
+            }
+
+            if(newView)
+            {
+                AddNewView(newView, saveView->views[i].viewType);
+                retval = true;
+            }
+        }
+
+        UpdateConstruction();
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
 // Method: SaveViewAction::SaveCurrentView
 //
 // Purpose: 

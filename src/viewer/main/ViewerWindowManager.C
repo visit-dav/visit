@@ -489,6 +489,9 @@ ViewerWindowManager::SetGeometry(const char *windowGeometry)
 //    Brad Whitlock, Thu Feb 17 14:23:24 PST 2005
 //    Added bool to ViewerPlotList::CopyFrom.
 //
+//    Brad Whitlock, Fri Apr 15 17:06:49 PST 2005
+//    Added code to copy action data.
+//
 // ****************************************************************************
 
 void
@@ -520,6 +523,7 @@ ViewerWindowManager::AddWindow(bool copyAtts)
         dest->CopyLightList(src);
         dest->CopyViewAttributes(src);
         dest->GetPlotList()->CopyFrom(src->GetPlotList(), true);
+        dest->GetActionManager()->CopyFrom(src->GetActionManager());
     }
     referenced[windowIndex] = true;
 
@@ -3383,6 +3387,10 @@ ViewerWindowManager::UpdateColorTable(const char *ctName)
 //    Modified the routine to use both the width and height for the window
 //    size, instead of using with width for both.
 //
+//    Brad Whitlock, Wed Apr 27 16:48:04 PST 2005
+//    Changed the code so window layout 1 is handled specially and we get the
+//    active window showing instead of window 1.
+//
 // ****************************************************************************
 
 void
@@ -3411,61 +3419,76 @@ ViewerWindowManager::SetWindowLayout(const int windowLayout)
     layout = windowLayout;
     layoutIndex = iLayout;
 
-    //
-    // Create at least "layout" windows layed out in the appropriate grid.
-    // If there are already more windows than the layout calls for then
-    // put the first "layout" window in the grid and layout the remaining
-    // windows down a diagonal through the grid.
-    //
-    int       iWindow;
-    int       nWindowsShort;
-    int       nWindowsProcessed;
-
-    nWindowsShort = layout - nWindows;
-    nWindowsProcessed = 0;
-
-    for (iWindow = 0; iWindow < maxWindows; iWindow++)
+    if(layoutIndex == 0)
     {
-        int       x, y;
-        int       width, height;
-
-        //
-        // If the window exists, position it properly.
-        //
-        if (windows[iWindow] != 0)
-        {
-            if (nWindowsProcessed < layout)
-            {
-                windows[iWindow]->DeIconify();
-                x      = windowLimits[layoutIndex][nWindowsProcessed].x;
-                y      = windowLimits[layoutIndex][nWindowsProcessed].y;
-                width  = windowLimits[layoutIndex][nWindowsProcessed].width;
-                height = windowLimits[layoutIndex][nWindowsProcessed].height;
-                windows[iWindow]->SetSize(width, height);
-                windows[iWindow]->SetLocation(x, y);
-            }
-            else
-            {
+        for (int iWindow = 0; iWindow < maxWindows; iWindow++)
+        {  
+            if(windows[iWindow] != 0 && windows[iWindow] != GetActiveWindow())
                 windows[iWindow]->Iconify();
-            }
-            nWindowsProcessed++;
         }
+
+        int x      = windowLimits[layoutIndex][0].x;
+        int y      = windowLimits[layoutIndex][0].y;
+        int width  = windowLimits[layoutIndex][0].width;
+        int height = windowLimits[layoutIndex][0].height;
+        GetActiveWindow()->DeIconify();
+        GetActiveWindow()->SetSize(width, height);
+        GetActiveWindow()->SetLocation(x, y);
+    }
+    else
+    {
         //
-        // If the window doesn't exist and we still don't have enough,
-        // then create one in the correct location.
+        // Create at least "layout" windows layed out in the appropriate grid.
+        // If there are already more windows than the layout calls for then
+        // put the first "layout" window in the grid and layout the remaining
+        // windows down a diagonal through the grid.
         //
-        else if (nWindowsShort > 0)
+        int nWindowsShort = layout - nWindows;
+        int nWindowsProcessed = 0;
+
+        for (int iWindow = 0; iWindow < maxWindows; iWindow++)
         {
-            x      = windowLimits[layoutIndex][iWindow].x;
-            y      = windowLimits[layoutIndex][iWindow].y;
-            width  = windowLimits[layoutIndex][iWindow].width;
-            height = windowLimits[layoutIndex][iWindow].height;
+            int       x, y;
+            int       width, height;
 
-            CreateVisWindow(iWindow, width, height, x, y);
-            SetWindowAttributes(iWindow, false);
+            //
+            // If the window exists, position it properly.
+            //
+            if (windows[iWindow] != 0)
+            {
+                if (nWindowsProcessed < layout)
+                {
+                    windows[iWindow]->DeIconify();
+                    x      = windowLimits[layoutIndex][nWindowsProcessed].x;
+                    y      = windowLimits[layoutIndex][nWindowsProcessed].y;
+                    width  = windowLimits[layoutIndex][nWindowsProcessed].width;
+                    height = windowLimits[layoutIndex][nWindowsProcessed].height;
+                    windows[iWindow]->SetSize(width, height);
+                    windows[iWindow]->SetLocation(x, y);
+                }
+                else
+                {
+                    windows[iWindow]->Iconify();
+                }
+                nWindowsProcessed++;
+            }
+            //
+            // If the window doesn't exist and we still don't have enough,
+            // then create one in the correct location.
+            //
+            else if (nWindowsShort > 0)
+            {
+                x      = windowLimits[layoutIndex][iWindow].x;
+                y      = windowLimits[layoutIndex][iWindow].y;
+                width  = windowLimits[layoutIndex][iWindow].width;
+                height = windowLimits[layoutIndex][iWindow].height;
 
-            nWindowsProcessed++;
-            nWindowsShort--;
+                CreateVisWindow(iWindow, width, height, x, y);
+                SetWindowAttributes(iWindow, false);
+
+                nWindowsProcessed++;
+                nWindowsShort--;
+            }
         }
     }
 

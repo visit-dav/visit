@@ -123,6 +123,9 @@
 #    Jeremy Meredith, Mon Apr 11 09:15:13 PDT 2005
 #    Only show failed results.  Separated summary from log.
 #
+#    Mark C. Miller, Wed Apr 27 08:29:28 PDT 2005
+#    Removed '~' from URL for test web site
+#
 # ----------------------------------------------------------------------------
 
 # list of users who want email every night with the log file
@@ -146,7 +149,7 @@ msgftr_build="\n\n------ build log follows ------\n\n"
 msghdr_testfailed="From: visit@llnl.gov\n\
 Subject: failed regression test\n\
 \n\
-Results posted at https://dnt-cs.llnl.gov/~visit/\
+Results posted at https://dnt-cs.llnl.gov/visit/\
 \n\
 This is an automated error message: \n\
 \n\
@@ -155,7 +158,7 @@ The VisIt regression test failed during an automatic run\n"
 msghdr_testpassed="From: visit@llnl.gov\n\
 Subject: passed regression test\n\
 \n\
-Results posted at https://dnt-cs.llnl.gov/~visit/\
+Results posted at https://dnt-cs.llnl.gov/visit/\
 \n\
 This is an automated message: \n\
 \n\
@@ -164,7 +167,7 @@ The VisIt regression test passed the automatic run\n"
 msghdr_partialpass="From: visit@llnl.gov\n\
 Subject: partially passed regression test\n\
 \n\
-Results posted at https://dnt-cs.llnl.gov/~visit/\
+Results posted at https://dnt-cs.llnl.gov/visit/\
 \n\
 This is an automated message: \n\
 \n\
@@ -247,7 +250,7 @@ cd ..
 curdate=`date +%Y-%m-%d-%p%I%M`
 
 # set mode to run in
-modes="serial parallel scalable,parallel"
+modes="serial parallel scalable,parallel hdf5"
 if test "`date +%A`" = "Sunday"; then
     modes="serial,hdf5 parallel,hdf5 scalable,parallel,hdf5 dlb"
 fi
