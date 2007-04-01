@@ -7481,6 +7481,12 @@ void VerdictVector::print_me()
 }
 */
 
+// Modifications:
+//
+//   Hank Childs, Wed Apr 14 20:31:05 PDT 2004
+//   Do not assert.
+//
+
 VERDICT_REAL VerdictVector::interior_angle(const VerdictVector &otherVector)
 {
   VERDICT_REAL cosAngle=0., angleRad=0., len1=0., len2=0.;
@@ -7489,8 +7495,10 @@ VERDICT_REAL VerdictVector::interior_angle(const VerdictVector &otherVector)
     cosAngle = (*this % otherVector)/(len1 * len2);
   else
   {
+/*
     assert(len1 > 0);
     assert(len2 > 0);
+ */
   }
   
   if ((cosAngle > 1.0) && (cosAngle < 1.0001))
@@ -7507,7 +7515,8 @@ VERDICT_REAL VerdictVector::interior_angle(const VerdictVector &otherVector)
     angleRad = acos(cosAngle);
   else
   {
-    assert(cosAngle < 1.0001 && cosAngle > -1.0001);
+    //assert(cosAngle < 1.0001 && cosAngle > -1.0001);
+    cosAngle = 0.;
   }
   
   return( (angleRad * 180.) / VERDICT_PI );
@@ -7553,6 +7562,12 @@ void VerdictVector::rotate(VERDICT_REAL angle, VERDICT_REAL )
   rtheta_to_xy();
 }
 
+// Modifications:
+//
+//   Hank Childs, Wed Apr 14 20:31:05 PDT 2004
+//   Do not assert.
+//
+
 void VerdictVector::blow_out(VERDICT_REAL gamma, VERDICT_REAL rmin)
 {
     // if gamma == 1, then 
@@ -7561,7 +7576,9 @@ void VerdictVector::blow_out(VERDICT_REAL gamma, VERDICT_REAL rmin)
     // in between, linearly interpolate
   xy_to_rtheta();
 //  r() = sqrt( (2. - r()) * r() ) * gamma  + r() * (1-gamma);
-  assert(gamma > 0.0);
+  //assert(gamma > 0.0);
+   if (gamma < 0)
+      gamma = 0.;
     // the following limits should really be roundoff-based
   if (r() > rmin*1.001 && r() < 1.001) {
     r() = rmin + pow(r(), gamma) * (1.0 - rmin);
@@ -7609,6 +7626,12 @@ void VerdictVector::scale_angle(VERDICT_REAL gamma, VERDICT_REAL )
   rtheta_to_xy();
 }
 
+// Modifications:
+//
+//   Hank Childs, Wed Apr 14 20:31:05 PDT 2004
+//   Do not assert.
+//
+
 VERDICT_REAL VerdictVector::vector_angle_quick(const VerdictVector& vec1, 
                                                const VerdictVector& vec2)
 {
@@ -7636,9 +7659,12 @@ VERDICT_REAL VerdictVector::vector_angle_quick(const VerdictVector& vec1,
   VERDICT_REAL y = vec2 % ry;
 
   VERDICT_REAL angle;
-  assert(x != 0.0 || y != 0.0);
+  //assert(x != 0.0 || y != 0.0);
 
-  angle = atan2(y, x);
+  if (x == 0 || y == 0)
+     angle = 0.;
+  else
+     angle = atan2(y, x);
 
   if (angle < 0.0)
   {
