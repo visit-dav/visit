@@ -1,0 +1,1251 @@
+#!/bin/sh
+# Do a little magic to run perl from anywhere in your path.
+
+lines=`cat $0 | wc -l`
+lines=`expr $lines - 10`
+tail -$lines $0 > /tmp/visitilperl$$
+echo "__END__" >> /tmp/visitilperl$$
+echo "$0 $*" >> /tmp/visitilperl$$
+exec perl /tmp/visitilperl$$ $0 ${1+"$@"}
+
+unlink $0;
+$0 = shift @ARGV;
+
+###############################################################################
+#
+#                  Run VisIt on various architectures
+#
+# Programmer:  Jeremy Meredith
+# Date      :  December  9, 2004
+#
+# NOTE: forked from what is now the "legacylauncher" script; look there
+#       for old comments and version tree history
+#
+# NOTE: this file is version-specific; feel free to put non-backwards
+#       compatible code in here and remove things which might break on
+#       old versions
+#
+# Modifications:
+#    Jeremy Meredith, Thu Dec  9 16:32:11 PST 2004
+#    Forked this script from the old visit script, which has now
+#    become the new file "legacylauncher".  This one contains things
+#    which are version-specific.  It is somewhat modified from the
+#    original visit script: it has the version argument parsing
+#    removed, it no longer can parse tools by their arguments
+#    (e.g. "-silex"), it pulls some important things (VISITVERSION,
+#    VISITPROGRAM, VISITDIR) from environment variables assuming that
+#    they came set by the frontendlauncher, I removed the old
+#    backwards-compatibility hacks, and made it assume executable
+#    programs are in a top-level 'exe' directory for development
+#    versions (e.g. running in the VOB).  I removed any assumptions
+#    about the splashscreen being a separate program as well.....
+#
+#    Jeremy Meredith, Thu Dec  9 16:51:55 PST 2004
+#    Also, added support for more than one available architecture for
+#    any platform -- e.g. try 64-bit and fall back to 32- if that
+#    fails.  Coincidentally, also added support for 64-bit objects on
+#    IBM.  It keys off the OBJECT_MODE environment variable which is
+#    standard on AIX, apparently, for their entire build toolchain.
+#
+###############################################################################
+
+
+# -----------------------------------------------------------------------------
+#                                 Setup
+# -----------------------------------------------------------------------------
+
+$visitdir = $ENV{VISITDIR};
+$progname = $ENV{VISITPROGRAM};
+$ver      = $ENV{VISITVERSION};
+$cwd      =`pwd`;
+chomp $cwd;
+
+if (!defined $visitdir or
+    !defined $progname or
+    !defined $ver)
+{
+    print STDERR "This is not meant to be called directly; I'm expecting\n";
+    print STDERR "some environment variables to be set up for me.\n";
+    exit 1;
+}
+
+# setup the usage note about full help
+$helpnote = "
+    NOTE: For a more complete list of options, use '-fullhelp'.";
+
+# Do the usage help text
+$usage = "
+    Interface options
+    ---------------------------------------------------------------------------
+        -gui                 Run with the Graphical User Interface (default).
+        -cli                 Run with the Command Line Interface.
+
+    Movie making options
+    ---------------------------------------------------------------------------
+        -movie               Run the CLI in a movie making mode. Must be
+                             combined with -sessionfile. Will produce a simple
+			     movie by drawing all the plots in the specified
+			     session for every timestep of the database.
+
+    Startup options
+    ---------------------------------------------------------------------------
+        -o <filename>        Open the specified data file at startup.
+        -s <filename>        Run the specified VisIt script. Note: This
+                             argument only takes effect with -cli or -movie.
+        -sessionfile <filename>  Open the specified session file at startup
+                             Note that this argument only takes effect with
+                             -gui or -movie.
+        -config <filename>   Initialize the viewer at startup using the named
+                             config file from your .visit directory.
+        -noconfig            Don't process configuration files at startup.
+        -launchengine <host> Launch an engine at startup. The <host> parameter
+                             is optional. If it is not specified, the engine
+                             will be launched on the local host. If you wish
+                             to launch an engine on a remote host, specify 
+                             the host's name as the <host> parameter.
+	-nosplash            Do not display the splash screen at startup.
+
+    Window options
+    ---------------------------------------------------------------------------
+        -small               Use a smaller desktop area/window size.
+        -geometry <spec>     What portion of the screen to use.  This is a
+                             standard X Windows geometry specification. This
+                             option can be used to set the size of images
+                             generated from scripts and movies.
+        -style <style>       One of: windows,cde,motif,sgi.
+        -background <color>  Background color for GUI.
+        -foreground <color>  Foreground color for GUI.
+        -nowin               Run with viewer windows off-screen (i.e. OSMesa).
+			     This is typically used with the -cli option.
+
+    Version options
+    ---------------------------------------------------------------------------
+	-version             Do NOT run VisIt. Just print the current version.
+        -beta                Run the current beta version.
+        -v <version>         Run a specified version (e.g. '1.3.3').
+
+    Other resources for help
+    ---------------------------------------------------------------------------
+        run-time:            While running VisIt, look under the \"Help\" menu.
+        on-line:             http://www.llnl.gov/visit
+        email:               visit-help\@llnl.gov
+";
+
+# Do the full usage help text
+$fullusage = "$usage
+
+    ***************************************************************************
+                              ADDITIONAL OPTIONS
+    ***************************************************************************
+
+    Parallel launch options
+    ---------------------------------------------------------------------------
+        Notes: All of these options are ordinarily obtained from host profiles.
+	However, the command line options override anything in the profiles. 
+
+	When parallel arguments are added but the engine is not the
+        component being launched, -launchengine is implied.  Explicitly
+        add -launchengine to launch a remote parallel engine.
+    ---------------------------------------------------------------------------
+        -par                 Run the parallel version. This option is implied
+                             by any of the other parallel options listed below.
+        -l    <method>       Launch in parallel using the given method.
+        -pl   <method>       Launch only the engine in parallel as specified.
+        -la   <args>         Additional arguments for the parallel launcher.
+        -np   <# procs>      The number of processors to use.
+        -nn   <# nodes>      The number of nodes to allocate.
+        -p    <part>         Partition to run in.
+        -n    <name>         The parallel job name.
+        -b    <bank>         Bank from which to draw resources.
+        -t    <time>         Maximum job run time.
+        -expedite            Makes DPCS give priority scheduling.
+
+    Load balance options
+    ---------------------------------------------------------------------------
+	Note: Each time VisIt executes a pipeline the relevant domains for the
+	execution are assigned to processors. This list of domains is sorted in
+	increasing global domain number. The options below effect how domains
+	in this list are assigned to processors. Assuming there are D domains
+	and P processors...
+    ---------------------------------------------------------------------------
+        -lb-block            Assign the first D/P domains to processor 0, the
+                             next D/P domains to processor 1, etc.
+        -lb-stride           Assign every Pth domain starting from the first
+                             to processor 0, every Pth domain starting from the
+                             second to processor 1, etc.
+        -lb-random           Randomly assign domains to processors.
+
+    Advanced options
+    ---------------------------------------------------------------------------
+        -guesshost           Try to guess the client host name from one of
+                             the SSH_CLIENT, SSH2_CLIENT, or SSH_CONNECTION
+                             environment variables.
+        -noint               Disable interruption capability.
+        -nopty               Run without PTYs.
+        -verbose             Prints status information during pipeline
+                             execution.
+        -default_format      Sets the database plugin format to use as a
+			     default if a file type cannot be determined
+			     from its extension.
+        -dir <directory>     Run a version of VisIt in the specified directory.
+                             The directory argument should specify the 
+                             path to a visit installation directory.
+                             /bin is automatically appended to this path.
+        -publicpluginsonly   Disable all plugins but the default ones.
+
+    Developer options
+    ---------------------------------------------------------------------------
+        -public              xml2makefile: force install plugins publicly
+        -private             xml2makefile: force install plugins privately
+        -clobber             Permit xml2... tools to overwrite old files
+        -noprint             do not print any debugging output
+
+    Debugging options
+    ---------------------------------------------------------------------------
+        Note: Debugging options may degrade performance 
+    ---------------------------------------------------------------------------
+        -debug <level>       Run with <level> levels of output logging.
+                             <level> must be between 1 and 5.
+	-pid                 Append process ids to the names of log files.
+        -timing              Save timing data to files.
+        -env                 Print env. variables VisIt will use when run.
+	-dump                Dump intermediate results from AVT filters.
+        -gdb                 Run under gdb.
+        -gdb-gui             Run the gui under gdb.
+        -gdb-cli             Run the cli under gdb.
+        -gdb-viewer          Run the viewer under gdb.
+        -gdb-engine          Run the engine under gdb.
+        -gdb-mdserver        Run the mdserver under gdb.
+        -break <funcname>    Add the specified breakpoint in gdb.
+        -xterm               Run gdb in an xterm window.
+        -totalview <comp>    Run totalview on the given component.
+        -numrestarts <#>     Number of attempts to restart a failed engine.
+";
+
+# Get our location
+chomp($host   = `hostname`);
+($node)       = split /\./,$host;
+($sector      = $node) =~ tr/[0-9]//d;
+
+# -----------------------------------------------------------------------------
+#                             Parse the version
+# -----------------------------------------------------------------------------
+
+# Hmm....   this doesn't seem very useful anymore, does it?
+# I'll leave it for now, but we can remove it anytime.
+
+$ver = $ENV{VISITVERSION};
+if (grep /^\d+\.\d+$/, $ver) {
+    ($ver_major = $ver) =~ s/^(\d+)\.\d+$/$1/;
+    ($ver_minor = $ver) =~ s/^\d+\.(\d+)$/$1/;
+    ($ver_tiny  = 0);
+    ($ver_beta  = 0);
+} elsif (grep /^\d+\.\d+\.\d+$/, $ver) {
+    ($ver_major = $ver) =~ s/^(\d+)\.\d+\.\d+$/$1/;
+    ($ver_minor = $ver) =~ s/^\d+\.(\d+)\.\d+$/$1/;
+    ($ver_tiny  = $ver) =~ s/^\d+\.\d+\.(\d+)$/$1/;
+    ($ver_beta  = 0);
+} elsif (grep /^\d+\.\d+b\d+$/, $ver) {
+    ($ver_major = $ver) =~ s/^(\d+)\.\d+b\d+$/$1/;
+    ($ver_minor = $ver) =~ s/^\d+\.(\d+)b\d+$/$1/;
+    ($ver_tiny  = 0);
+    ($ver_beta  = $ver) =~ s/^\d+\.\d+b(\d+)$/$1/;
+} elsif (grep /^\d+\.\d+\.\d+b\d+$/, $ver) {
+    ($ver_major = $ver) =~ s/^(\d+)\.\d+\.\d+b\d+$/$1/;
+    ($ver_minor = $ver) =~ s/^\d+\.(\d+)\.\d+b\d+$/$1/;
+    ($ver_tiny  = $ver) =~ s/^\d+\.\d+\.(\d+)b\d+$/$1/;
+    ($ver_beta  = $ver) =~ s/^\d+\.\d+\.\d+b(\d+)$/$1/;
+} else {
+    $ver_major = 0;
+    $ver_minor = 0;
+    $ver_tiny  = 0;
+    $ver_beta  = 0;
+}
+
+# -----------------------------------------------------------------------------
+#                     Determine which executable to run
+# -----------------------------------------------------------------------------
+if ($progname ne "visit")
+{
+    $exe_name = $progname;
+}
+else
+{
+    $exe_name = "gui";
+}
+
+# -----------------------------------------------------------------------------
+#                            Parse the arguments
+# -----------------------------------------------------------------------------
+
+# Set some defaults.
+$parallel     = 0;
+$launch       = "";
+@launchargs   = ();
+@norun        = ();
+$publiconly   = 0;
+$launchengine = "";
+@breakpoints  = ();
+$debug_gdb    = 0;
+$debug_totalview = "";
+$add_movie_args = 0;
+$envonly        = 0;
+$logging        = 0;
+
+# Parse the arguments 
+@visitargs = ();
+while (scalar(@ARGV) > 0) {
+    $arg = shift @ARGV;
+    if    ($arg eq "-par" || $arg eq "-parallel")  { $parallel = 1; }
+    elsif ($arg eq "-np")        { $procs= shift; $procs_set= 1; $parallel = 1; }
+    elsif ($arg eq "-nn")        { $nodes= shift; $nodes_set= 1; }
+    elsif ($arg eq "-l")         { $launch=shift; $launch_set=1; }
+    elsif ($arg eq "-pl")        { $parlaunch=shift; $parlaunch_set=1; }
+    elsif ($arg eq "-la")        { $_=shift; @launchargs=split; $launchargs_set=1; }
+    elsif ($arg eq "-n" )        { $name = shift; $name_set = 1; }
+    elsif ($arg eq "-p" )        { $part = shift; $part_set = 1; }
+    elsif ($arg eq "-b" )        { $bank = shift; $bank_set = 1; }
+    elsif ($arg eq "-t")         { $time = shift; $time_set = 1; }
+    elsif ($arg eq "-expedite")  { if($exe_name eq "engine") { $expedite_engine = 1;} else { push @visitargs, $arg; }}
+    elsif ($arg eq "-host")      { $remotehost = shift; $remotehost_set = 1; }
+    elsif ($arg eq "-key" )      { $security_key = shift; $security_key_set = 1;}
+    elsif ($arg eq "-viewer" )   { $exe_name = "viewer"; }
+    elsif ($arg eq "-gui" )      { $exe_name = "gui"; }
+    elsif ($arg eq "-cli" )      { $exe_name = "cli"; }
+    elsif ($arg eq "-mdserver" ) { $exe_name = "mdserver"; }
+    elsif ($arg eq "-engine" )   { $exe_name = "engine"; }
+    elsif ($arg eq "-vcl" )      { $exe_name = "vcl"; }
+    elsif ($arg eq "-movie" )    { $exe_name = "cli"; $add_movie_args = 1; }
+    elsif ($arg eq "-s")         { if($add_movie_args) { $sfile = shift; push @visitargs, "-scriptfile", $sfile;} else { push @visitargs, $arg;}}
+    elsif ($arg eq "-publicpluginsonly"){ $publiconly = 1; push @visitargs, $arg; }
+    elsif ($arg eq "-help")      { print STDERR "\nUSAGE: visit [options]
+				   $helpnote\n $usage\n"; exit(0); }
+    elsif ($arg eq "-h")         { print STDERR "\nUSAGE: visit [options]
+				   $helpnote\n $usage\n"; exit(0); }
+    elsif ($arg eq "--help")     { print STDERR "\nUSAGE: visit [options]
+				   $helpnote\n $usage\n"; exit(0); }
+    elsif ($arg eq "-fullhelp")  { print STDERR "\nUSAGE: visit [options]
+				   $fullusage\n"; exit(0); }
+    elsif ($arg eq "--fullhelp") { print STDERR "\nUSAGE: visit [options]
+				   $fullusage\n"; exit(0); }
+    elsif ($arg eq "-norun")     { $nr = shift; push @norun, $nr; push @visitargs, "-norun", $nr; }
+    elsif ($arg eq "-env")              { $envonly = 1; }
+    elsif ($arg eq "-launchengine")     { if (scalar(@ARGV)>0) {$launchengine = shift;}
+                                          if ($launchengine eq "") { $launchengine="localhost"; }
+                                          elsif ($launchengine =~ /^-/) { unshift @ARGV, $launchengine; $launchengine = "localhost";}}
+    elsif ($arg eq "-gdb")              { $debug_gdb = 1; $gdb_xterm = 1;}
+    elsif ($arg eq "-gdb-gui")          { if($exe_name eq "gui") {$debug_gdb = 1;} else {push @visitargs, $arg;}}
+    elsif ($arg eq "-gdb-cli")          { if($exe_name eq "cli") {$debug_gdb = 1;} else {push @visitargs, $arg;}}
+    elsif ($arg eq "-gdb-viewer")       { if($exe_name eq "viewer") {$debug_gdb = 1;} else {push @visitargs, $arg;}}
+    elsif ($arg eq "-gdb-engine")       { if($exe_name eq "engine") {$debug_gdb = 1;} else {push @visitargs, $arg;}}
+    elsif ($arg eq "-gdb-mdserver")     { if($exe_name eq "mdserver") {$debug_gdb = 1;} else {push @visitargs, $arg;}}
+    elsif ($arg eq "-gdb-vcl")          { if($exe_name eq "vcl") {$debug_gdb = 1;} else {push @visitargs, $arg;}}
+    elsif ($arg eq "-xterm")            { if($debug_gdb) {$gdb_xterm = 1;} else {push @visitargs, $arg;}}
+    elsif ($arg eq "-break")            { if($debug_gdb) {$bp = shift; push @breakpoints, $bp; } else {push @visitargs, $arg;}}
+    elsif ($arg eq "-totalview" )       {
+                                          $debug_totalview = shift;
+                                          push @norun, $debug_totalview;
+                                          push @visitargs, "-norun", $debug_totalview;
+                                          if ($exe_name ne $debug_totalview)
+                                          {
+                                            push @visitargs, "-totalview", $debug_totalview;
+                                          }
+                                        }
+    elsif ($arg eq "-guesshost" )       { $guesshost=1; }
+    else                         { push @visitargs, $arg; }
+}
+
+if ($guesshost)
+{
+    if ($ENV{SSH_CLIENT})
+    {
+        ($remotehost) = split /\s/, $ENV{SSH_CLIENT};
+        $remotehost_set = 1;
+    }
+    elsif ($ENV{SSH2_CLIENT})
+    {
+        ($remotehost) = split /\s/, $ENV{SSH2_CLIENT};
+        $remotehost_set = 1;
+    }
+    elsif ($ENV{SSH_CONNECTION})
+    {
+        ($remotehost) = split /\s/, $ENV{SSH_CONNECTION};
+        $remotehost_set = 1;
+    }
+    else
+    {
+        print STDERR "Error: -guesshost was specified, but it was\n".
+                     "unable to parse the SSH_CLIENT/CONNECTION\n".
+                     "environment variable to get a valid host name\n";
+        exit 1;
+    }
+}
+
+# ----
+#  HACK for LANL's Q machine:
+#
+#  If we're on LANL's Q machine, then we need to make sure BSUB is in our
+#  path and that libstdc++ and libmpi are in our library path.
+# ----
+if ($host =~ /^q\d+$/ || $host =~ /^qfe\d$/)
+{
+    # These are the DISCOM pipes to White from Q.  Four per login node;
+    # choose one at random.
+    $interface = int(rand(4)+1);
+    $remotehost = "172.16.$interface.1"    if ($remotehost =~ /^white128/);
+    $remotehost = "172.16.$interface.5"    if ($remotehost =~ /^white129/);
+    $remotehost = "172.16.$interface.9"    if ($remotehost =~ /^white269/);
+    $remotehost = "172.16.$interface.13"   if ($remotehost =~ /^white432/);
+
+    $ENV{PATH} = join ':' , ("$ENV{PATH}","/lsf/bin");
+    $ENV{LD_LIBRARY_PATH} = join ':' ,
+                         ("$ENV{LD_LIBRARY_PATH}",
+                          "/usr/local/gnu/packages/gcc-3.0.4/lib",
+                          "/lsfdir/Q_CD/4.2/alpha5-rms/lib",
+                          "/usr/local/opt/Compaq_MPI_64_2.5UK1_r1/usr/shlib");
+}
+
+# ----
+#  HACK to default fast connections from white to tidalwave:
+#
+#  If we're on white trying to connect back to tidalwave, use one of the
+#  jumbo gig-E paths back to tidalwave.
+# ----
+if ($host =~ /^white\d+.asci.llnl.gov$/)
+{
+    # As above, four pipes per machine, choose one at random
+    $interface = int(rand(4)+1);
+    $remotehost = "172.16.$interface.53" if ($remotehost =~ /^tidalwave/);
+    $remotehost = "172.16.$interface.54" if ($remotehost =~ /^whitecap/);
+    $remotehost = "172.16.$interface.57" if ($remotehost =~ /^edgewater/);
+}
+
+# ----
+#  HACK to allow other talk-back interfaces
+#
+#  We stripped off the "host" argument above, so put it back here.
+#  (This allowed us to change it if needed, e.g. for Q)
+#  VisIt seems to need the -host argument before the -nread and -nwrite
+#  values, so when we put it back, put it at the beginning.
+# ----
+if ($remotehost_set)
+{
+    unshift @visitargs, $remotehost;
+    unshift @visitargs, "-host";
+}
+
+
+# -----------------------------------------------------------------------------
+#                               Check for errors
+# -----------------------------------------------------------------------------
+
+if ((!$procs_set) and ($name_set or $part_set or $bank_set or
+                       $time_set or $part_set or $nodes_set))
+{
+    print STDERR "You specified a parallel argument without using -np to specify\n".
+                 "the number of processors.  Please add an -np argument.\n";
+    print STDERR $usage;
+    exit 1;
+}
+
+if (($procs_set) and ($procs < 1))
+{
+    print STDERR "You must specify more at least one processor to execute a parallel Visit engine.\n".
+                 "You specified \"$procs\" processor(s).\n";
+    exit 1;
+}
+
+@engine_parallel_args = ();
+$had_to_strip_parallel_args = 0;
+if ((($parallel) or ($launchengine)) and
+    ($exe_name ne "engine") and
+    (($exe_name ne "vcl") or (!$parlaunch_set)))
+{
+    $had_to_strip_parallel_args = 1;
+    # If we're trying to run in parallel, or we've been explicitly
+    # told to launch an engine, add any parallel arguments back on
+    push @engine_parallel_args, "-par"                   if ($parallel && !$procs_set);
+    push @engine_parallel_args, "-l",  $launch           if ($launch_set);
+    push @engine_parallel_args, "-la", "@launchargs"     if ($launchargs_set);
+    push @engine_parallel_args, "-np", $procs            if ($procs_set);
+    push @engine_parallel_args, "-nn", $nodes            if ($nodes_set);
+    push @engine_parallel_args, "-n",  $name             if ($name_set);
+    push @engine_parallel_args, "-p",  $part             if ($part_set);
+    push @engine_parallel_args, "-b",  $bank             if ($bank_set);
+    push @engine_parallel_args, "-t",  $time             if ($time_set);
+
+    # ... but don't confuse the script
+    $parallel=0;
+    $launchargs_set=0;
+    $procs_set=0;
+    $name_set=0;
+    $part_set=0;
+    $bank_set=0;
+    $time_set=0;
+    $nodes_set=0;
+
+    #
+    # The makemili and convert tool needs these parallel arguments, but to not
+    # confuse the script, we turn off the parallel flag. So we
+    # translate the executable name here.
+    #
+    if (($exe_name eq "makemili") or ($exe_name eq "convert"))
+    {
+        $exe_name .= "_par";
+    }
+    else
+    {
+        # If we didn't specify a location for the engine, assume localhost.
+        push @visitargs, "-launchengine", "localhost"   if (!$launchengine);
+        push @visitargs, "-launchengine", $launchengine if ($launchengine);
+    }
+}
+
+# -----------------------------------------------------------------------------
+#                         Determine the architecture
+# -----------------------------------------------------------------------------
+
+@supportedarchs = ();
+chomp( $os = `uname -s` );
+$os =~ tr/[A-Z]/[a-z]/;
+for ($os) {
+    /irix/ && do {
+        $version = `uname -r`;
+        $version =~ s/(^[6])\..*/irix$1/ ;
+        for ($version) {
+            /irix6/ && do {
+                push @supportedarchs, "sgi-irix6-mips2";
+                last;
+            };
+        }
+        $launch = "mpirun" if ($procs_set && $launch eq "");
+        last;
+    };
+    /sunos/ && do {
+        chomp( $mach    = `uname -m` );
+        chomp( $version = `uname -r` );
+        $version =~ s/([45])\..*/sunos$1/ ;
+        if ($mach =~ /^sun4/) {
+            push @supportedarchs, "sun4-$version-sparc";
+        }
+        $launch = "mpirun" if ($procs_set && $launch eq "");
+        last;
+    };
+    /hp-ux/ && do {
+        if (`uname -m` =~ /9000\/[78]/) {
+            push @supportedarchs, "hp-hpux-pa";
+        }
+        $launch = "mpirun" if ($procs_set && $launch eq "");
+        last;
+    };
+    /aix/ && do {
+        if ($ENV{OBJECT_MODE} and $ENV{OBJECT_MODE} eq "64")
+        {
+            push @supportedarchs, "ibm-aix-pwr64";
+        }
+        push @supportedarchs, "ibm-aix-pwr";
+        $launch = "poe" if ($procs_set && $launch eq "");
+        last;
+    };
+    /osf/ && do {
+        push @supportedarchs, "dec-osf1-alpha";
+        $launch = "mpirun" if ($procs_set && $launch eq "");
+        last;
+    };
+    /linux/ && do {
+        chomp( $mach    = `uname -m` );
+        if ($mach =~ /alpha/) {
+            push @supportedarchs, "linux-alpha";
+        }
+        elsif ($mach =~ /ia64/) {
+            push @supportedarchs, "linux-ia64";
+        }
+        elsif ($mach =~ /x86_64/) {
+            push @supportedarchs, "linux-x86_64";
+        }
+        else {
+            push @supportedarchs, "linux-intel";
+        }
+        $launch = "mpirun" if ($procs_set && $launch eq "");
+        last;
+    };
+    /darwin/ && do {
+        push @supportedarchs, "darwin-ppc";
+        $launch = "mpirun" if ($procs_set && $launch eq "");
+        last;
+    };
+    /tflops/ && do {
+        push @supportedarchs, "intel-tflops-ppro";
+        $launch = "yod" if ($procs_set && $launch eq "");
+        last;
+    };
+}
+
+#
+# If there are no supported architectures, fail
+#
+if (scalar(@supportedarchs) == 0)
+{
+    print STDERR <<"EOF";
+This hardware platform is not supported by VisIt.
+EOF
+    exit 1;
+}
+
+#
+# Pick one arch as the default in case we are running a development version.
+#
+$defaultarch = $supportedarchs[0];
+
+#
+# Set any unfinished defaults
+#
+if (!$part_set && (substr($launch,0,4) eq "psub"))
+{
+    # Set a reasonable partition for psub assuming the IBM SP environment
+    $part = "pbatch,$sector";
+    $part_set = 1;
+}
+
+# -----------------------------------------------------------------------------
+#                             Determine versions
+# -----------------------------------------------------------------------------
+
+# If we still think the exe_name is makemili or convert, we're not running 
+# in parallel.
+if (($exe_name eq "makemili") or ($exe_name eq "convert"))
+{
+    $exe_name .= "_ser" if (!$parallel);
+}
+
+# Determine the version number of the executable.
+if ($exe_name eq "engine")
+{
+    $exe_name .= "_ser" if (!$parallel);
+    $exe_name .= "_par" if ($parallel);
+
+    # if we've designated a parallel launcher, then we are sharing
+    # one batch job between the mdserver and engine (through the vcl)
+    # so: if we're launching a parallel engine with -pl specified, then
+    # make the real launcher the parallel launcher
+    if ($parallel and $parlaunch_set)
+    {
+        $launch = $parlaunch;
+    }
+}
+
+# If there is no version, then this is a development executable.
+if ($ver eq "")
+{
+    if (! -x "$visitdir/exe/$exe_name")
+    {
+        print STDERR "Development version of '$exe_name' does not exist.\n";
+        if ($exe_name eq "engine_par")
+        {
+            print STDERR "Note that the serial engine may still work.\n";
+        }
+        exit 1;
+    }
+
+    $archdir = $defaultarch;
+
+    $visitarchdir = "$visitdir";
+    $visitbindir  = "$visitdir/exe";
+    if($os eq "darwin" and ($exe_name eq "gui" or $exe_name eq "viewer" or $exe_name eq "xmledit" or $exe_name eq "silex"))
+    {
+        $visitbindir = "$visitbindir/$exe_name.app/Contents/MacOS";
+    }
+    $visitlibdir  = "$visitdir/lib";
+    $visithelpdir = "$visitdir/help";
+    $visitplugins = "$visitdir/plugins";
+    $publicversion = 0;
+}
+else # We're running a public version.
+{
+    foreach (@supportedarchs)
+    {
+        if (-x "$visitdir/$_/bin/$exe_name")
+        {
+            $archdir = $_;
+            last;
+        }
+    }
+    if (! defined $archdir)
+    {
+        print STDERR "Version $ver of '$exe_name' does not exist for \n";
+        if (scalar(@supportedarchs) > 1)
+        {
+            print STDERR "any of the valid architectures (@supportedarchs).\n";
+        }
+        else
+        {
+            print STDERR "the architecture '@supportedarchs'.\n";
+        }
+        if ($exe_name eq "engine_par")
+        {
+            print STDERR "Note that the serial engine may still work.\n";
+        }
+        exit 1;
+    }
+
+    $visitarchdir = "$visitdir/$archdir";
+    $visitbindir  = "$visitdir/$archdir/bin";
+    if($os eq "darwin" and ($exe_name eq "gui" or $exe_name eq "viewer" or $exe_name eq "xmledit" or $exe_name eq "silex"))
+    {
+        $visitbindir = "$visitbindir/$exe_name.app/Contents/MacOS";
+    }
+    $visitlibdir  = "$visitdir/$archdir/lib";
+    $visithelpdir = "$visitdir/$archdir/help";
+    $visitplugins = "$visitdir/$archdir/plugins";
+    $publicversion = 1;
+}
+
+if ($had_to_strip_parallel_args)
+{
+    if (scalar(@engine_parallel_args) > 0)
+    {
+        $engine_arg_string = ";".join(';', @engine_parallel_args);
+        push @visitargs, "-engineargs", $engine_arg_string;
+    }
+}
+
+
+# Confirm we have found some version
+$msg = "";
+if (! -e "$visitbindir/$exe_name")
+{
+    $msg = "parallel " if ($parallel);
+    print STDERR <<"EOF";
+No versions of ${msg}VisIt have been installed for this hardware platform.
+EOF
+    exit 1;
+}
+
+# Add the movie script to the arguments.
+if($add_movie_args)
+{
+    push @visitargs, "-s", "$visitbindir/makemovie.py", "-nowin";
+}
+
+
+# -----------------------------------------------------------------------------
+#                   Set up the plugin/shared library environment
+# -----------------------------------------------------------------------------
+
+@plugincategories = ("plots", "operators", "databases");
+
+
+# Make sure there is a .visit directory in the user's home directory
+# and that it includes all current plugin types.
+if (defined($ENV{HOME}))
+{
+    foreach my $archdir (@supportedarchs)
+    {
+        $makedir  = "$ENV{HOME}/.visit";mkdir $makedir,0777 if (! -e $makedir);
+        $makedir .= "/$archdir";        mkdir $makedir,0777 if (! -e $makedir);
+        $makedir .= "/plugins";         mkdir $makedir,0777 if (! -e $makedir);
+
+        foreach (@plugincategories)
+        {
+            mkdir "$makedir/$_", 0777 if (! -e $makefir);
+        }
+    }
+}
+
+# Set up stuff for shared libraries for various platforms
+$ENV{LD_LIBRARY_PATH}    = "$visitlibdir:$ENV{LD_LIBRARY_PATH}";
+$ENV{LD_LIBRARY32_PATH}  = "$visitlibdir:$ENV{LD_LIBRARY32_PATH}";
+$ENV{LD_LIBRARYN32_PATH} = "$visitlibdir:$ENV{LD_LIBRARYN32_PATH}";
+$ENV{LD_LIBRARY64_PATH}  = "$visitlibdir:$ENV{LD_LIBRARY64_PATH}";
+$ENV{LIBPATH}            = "$visitlibdir:$ENV{LIBPATH}";
+
+# Add /usr/local/lib to the shared library path.  This was added for the
+# c++ library on some sun systems, but it may have broader applicability.
+$ENV{LD_LIBRARY_PATH}    = "$ENV{LD_LIBRARY_PATH}:/usr/local/lib";
+
+# Set up some environment flags that let VisIt run on Darwin.
+if($os eq "darwin")
+{
+    $ENV{DYLD_LIBRARY_PATH}   = "$visitlibdir:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries:$ENV{DYLD_LIBRARY_PATH}";
+}
+
+# Set up plugin search paths in the correct order
+$visitprivateplugins = "$ENV{HOME}/.visit/$archdir/plugins";
+if ($publiconly)
+{
+    # Forget the private and user-specified paths, and only use the public one
+    $ENV{VISITPLUGINDIR}="$visitplugins";
+}
+elsif (!grep /$visitprivateplugins/, $ENV{VISITPLUGINDIR})
+{
+    # Don't keep adding the same paths over and over again (avoid duplicates)
+    $ENV{VISITPLUGINDIR}="$ENV{VISITPLUGINDIR}:$visitprivateplugins:$visitplugins";
+}
+
+
+# If we are using a public version, or if any main plugin directory is
+# not writeable, then we should default to a private plugin installation.
+$ENV{VISITPLUGININSTPUB}="$visitplugins";
+$ENV{VISITPLUGININSTPRI}="$visitprivateplugins";
+
+# Only set up the default installation path if needed
+if (!defined($ENV{VISITPLUGININST}))
+{
+    $shouldinstallprivate = $publicversion;
+    foreach (@plugincategories)
+    {
+        $shouldinstallprivate=1  if (! -w "$visitplugins/$_");
+    }
+
+    if ($shouldinstallprivate)
+    {
+        $ENV{VISITPLUGININST}="$visitprivateplugins";
+    }
+    else
+    {
+        $ENV{VISITPLUGININST}="$visitplugins";
+    }
+}
+
+# Set required environment variables
+$ENV{VISITHOME}     = "$visitdir";
+$ENV{VISITARCHHOME} = "$visitarchdir";
+$ENV{VISITHELPHOME} = "$visithelpdir";
+$ENV{PYTHONHOME}    = "$visitlibdir/python";
+
+# Turn off trapping of floating point exceptions.
+$ENV{TRAP_FPE} = "";
+
+# Turn off a warning message when running on Linux systems displaying
+# to a remote display.  The message messes up the communication between
+# the GUI and Viewer.
+$ENV{MESA_GLX_FX} = disable;
+
+
+# If logging is true and we are running the mdserver, then add usage
+# information to the log file.
+if ($logging and $exe_name eq "mdserver")
+{
+    chomp ( $user_info = `whoami` );
+    chomp ( $host_info = `hostname` );
+    chomp ( $date_info = `date` );
+    $info = "$user_info"." "."$host_info"." "."$date_info"."\n";
+
+    $filename=">>$visitdir/usagelog";
+    open(USERINFO, $filename);
+    print USERINFO "$info";
+    close(USERINFO);
+}
+
+# -----------------------------------------------------------------------------
+#                                   Run it!
+# -----------------------------------------------------------------------------
+
+if ($envonly)
+{
+    PrintEnvironment();
+    exit(0);
+}
+
+@visitcmd = ("$visitbindir/$exe_name", @visitargs);
+$printonly = grep(/^$exe_name$/, @norun) unless ($debug_totalview);
+
+if ($procs_set or ($parallel and $parlaunch_set))
+{
+    # mpirun
+    if ($launch eq "mpirun")
+    {
+        @parcmd = ("mpirun");
+        push @parcmd, @launchargs if $launchargs_set;
+        push @parcmd, "-np", $procs if $procs_set;
+        push @parcmd, "-p",  $part  if $part_set;
+        push @parcmd, @visitcmd;
+
+        @printcmd = @parcmd;
+        if ($security_key_set) { push @parcmd, "-key", $security_key; }
+        chomp($printcmd[0] = `basename $printcmd[0]`);
+    }
+    # dmpirun
+    elsif ($launch eq "dmpirun")
+    {
+        @parcmd = ("dmpirun");
+        push @parcmd, @launchargs if $launchargs_set;
+        push @parcmd, "-np", $procs if $procs_set;
+        push @parcmd, "-p",  $part  if $part_set;
+        push @parcmd, @visitcmd;
+
+        @printcmd = @parcmd;
+        if ($security_key_set) { push @parcmd, "-key", $security_key; }
+        chomp($printcmd[0] = `basename $printcmd[0]`);
+    }
+    # poe
+    elsif ($launch eq "poe")
+    {
+        @parcmd = @visitcmd;
+        push @parcmd, @launchargs if $launchargs_set;
+        push @parcmd, "-procs",  $procs if $procs_set;
+        push @parcmd, "-nodes",  $nodes if $nodes_set;
+        push @parcmd, "-rmpool", $part  if $part_set;
+
+        @printcmd = @parcmd;
+        if ($security_key_set) { push @parcmd, "-key", $security_key; }
+        chomp($printcmd[0] = `basename $printcmd[0]`);
+    }
+    # prun
+    elsif ($launch eq "prun")
+    {
+        @parcmd = ("prun");
+        push @parcmd, @launchargs if $launchargs_set;
+        push @parcmd, "-n",  $procs if $procs_set;
+        push @parcmd, "-N",  $nodes if $nodes_set;
+        push @parcmd, "-p",  $part  if $part_set;
+        push @parcmd, @visitcmd;
+
+        @printcmd = @parcmd;
+        if ($security_key_set) { push @parcmd, "-key", $security_key; }
+        chomp($printcmd[0] = `basename $printcmd[0]`);
+    }
+    # srun
+    elsif (substr($launch,0,4) eq "srun")
+    {
+        @parcmd = ("srun");
+        push @parcmd, @launchargs if $launchargs_set;
+        push @parcmd, "-n",  $procs if $procs_set;
+        push @parcmd, "-N",  $nodes if $nodes_set;
+        push @parcmd, "-J",  $name  if $name_set;
+        push @parcmd, "-p",  $part  if $part_set;
+        push @parcmd, "-t",  $time  if $time_set;
+        #push @parcmd, "-b";  # Could be used for "batch mode"
+        push @parcmd, @visitcmd;
+
+        @printcmd = @parcmd;
+        if ($security_key_set) { push @parcmd, "-key", $security_key; }
+        chomp($printcmd[0] = `basename $printcmd[0]`);
+    }
+    # psub
+    elsif (substr($launch,0,4) eq "psub")
+    {
+        ($psubcmd, $sublauncher) = split /\W+/, substr($launch,4);
+        $sublauncher = "" if (!defined $sublauncher);
+	if ($sublauncher eq "srun" and $procs_set)
+        {
+            $sublauncherargs = "-n $procs";
+        }
+
+        if (grep(/csh/, "$ENV{SHELL}"))
+        {
+            $libpathcmd="setenv LIBPATH $ENV{LIBPATH} ; setenv LD_LIBRARY_PATH $ENV{LIBPATH}";
+        }
+        else
+        {
+            $libpathcmd="LIBPATH=$ENV{LIBPATH} ; export LIBPATH ; LD_LIBRARY_PATH=$ENV{LIBPATH} ; export LD_LIBRARY_PATH";
+        }
+        if ($security_key_set) { push @visitcmd, "-key", $security_key; }
+        @parcmd = ("psub");
+        push @parcmd, @launchargs if $launchargs_set;
+        push @parcmd, "-x";
+        push @parcmd, "-g",  $procs if $procs_set;
+        push @parcmd, "-ln", $nodes if $nodes_set;
+        push @parcmd, "-r",  $name  if $name_set;
+        push @parcmd, "-c",  $part  if $part_set;
+        push @parcmd, "-b",  $bank  if $bank_set;
+        push @parcmd, "-tM", $time  if $time_set;
+        push @parcmd, "-expedite"   if $expedite_engine;
+        push @parcmd, "-i", "cd $cwd ; $libpathcmd ; ".
+                            " $sublauncher $sublauncherargs @visitcmd";
+        @printcmd = @parcmd;
+        push @printcmd, ("\"".(pop @printcmd)."\"");
+    }
+    # bsub
+    elsif (substr($launch,0,4) eq "bsub")
+    {
+        ($bsubcmd, $sublauncher) = split /\W+/, substr($launch,4);
+        $sublauncher = "" if (!defined $sublauncher);
+        if ($security_key_set) { push @visitcmd, "-key", $security_key; }
+        @parcmd = ("bsub");
+        push @parcmd, "-I";
+        push @parcmd, @launchargs if $launchargs_set;
+        push @parcmd, "-n",  $procs if $procs_set;
+        push @parcmd, "-q",  $part  if $part_set;
+        push @parcmd, "-W" , $time  if $time_set;
+        push @parcmd, $sublauncher;
+        push @parcmd, @visitcmd;
+        @printcmd = @parcmd;
+        push @printcmd, ("\"".(pop @printcmd)."\"");
+    }
+    # yod
+    elsif ($launch eq "yod")
+    {
+        @parcmd = ("/cougar/bin/yod");
+        push @parcmd, @launchargs if $launchargs_set;
+        push @parcmd, "-sz", $procs if $procs_set;
+        push @parcmd, @visitcmd;
+
+        @printcmd = @parcmd;
+        chomp($printcmd[0] = `basename $printcmd[0]`);
+    }
+    else
+    {
+        print STDERR "Attempted an unsupported launch method (\"$launch\").\n";
+        exit 1;
+    }
+
+    if ($printonly)
+    {
+        print STDERR "RUN USING: @parcmd\n\n";
+        PrintEnvironment();
+        exit 0;
+    }
+    else
+    {
+        print STDERR "Running: @printcmd\n";
+        exec @parcmd or die "Can't launch using $launch: $!\n";
+    }
+}
+else
+{
+    if ($printonly)
+    {
+        if ($security_key_set) { push @visitcmd, "-key", $security_key; }
+        print STDERR "RUN USING: @visitcmd\n\n";
+        PrintEnvironment();
+        exit 0;
+    }
+    elsif ($debug_totalview eq $exe_name)
+    {
+        # Run totalview
+        @debugcmd = ("totalview", "$visitbindir/$exe_name", "-a", "-dograb", @visitargs);
+        if ($security_key_set) { push @debugcmd, "-key", $security_key; }
+        print STDERR "Running: @debugcmd\n";
+        $exec_totalview_failed = 0;
+        exec @debugcmd or $exec_totalview_failed = 1;
+    }
+    elsif ($debug_gdb)
+    {
+        # Determine the name of the program. This is only necessary on
+        # MacOS X to make sure that we run the executable from its
+        # bundle directory so it gets events while we debug it.
+        $real_exe = $exe_name;
+        if($os eq "darwin" and ($exe_name eq "gui" or $exe_name eq "viewer" or $exe_name eq "xmledit" or $exe_name eq "silex"))
+        {
+            $real_exe = "$visitbindir/$exe_name";
+        }
+
+        $gdbfilename = "$exe_name$ver-gdbcommands";
+        $gdbfile_opened = 1;
+        open(GDBFILE, ">$gdbfilename") or $gdbfile_opened = 0;
+        if($gdbfile_opened)
+        {
+            # Write a GDB command file to run the desired VisIt component.
+            print GDBFILE "set environment LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}\n";
+            print GDBFILE "set environment LD_LIBRARY32_PATH=$ENV{LD_LIBRARY32_PATH}\n";
+            print GDBFILE "set environment LD_LIBRARYN32_PATH=$ENV{LD_LIBRARYN32_PATH}\n";
+            print GDBFILE "set environment LD_LIBRARY64_PATH=$ENV{LD_LIBRARY64_PATH}\n";
+            print GDBFILE "set environment LIBPATH=$ENV{LIBPATH}\n";
+            print GDBFILE "set environment VISITHOME=$ENV{VISITHOME}\n";
+            print GDBFILE "set environment VISITHELPHOME=$ENV{VISITHELPHOME}\n";
+            print GDBFILE "set environment VISITPLUGINDIR=$ENV{VISITPLUGINDIR}\n";
+            print GDBFILE "set environment PYTHONHOME=$ENV{PYTHONHOME}\n";
+            if($ENV{TRAP_FPE} ne "")
+            {
+                print GDBFILE "set environment TRAP_FPE=$ENV{TRAP_FPE}\n";
+            }
+            print GDBFILE "set environment MESA_GLX_FX=$ENV{MESA_GLX_FX}\n";
+            print GDBFILE "path $ENV{VISITHOME}/exe\n";
+            print GDBFILE "file $ENV{VISITHOME}/exe/$real_exe\n";
+            print GDBFILE "directory $ENV{VISITHOME}/common/Exceptions/Database\n";
+            print GDBFILE "directory $ENV{VISITHOME}/common/Exceptions/Pipeline\n";
+            print GDBFILE "directory $ENV{VISITHOME}/common/Exceptions/VisWindow\n";
+            print GDBFILE "directory $ENV{VISITHOME}/common/comm\n";
+            print GDBFILE "directory $ENV{VISITHOME}/common/state\n";
+            print GDBFILE "directory $ENV{VISITHOME}/common/misc\n";
+            print GDBFILE "directory $ENV{VISITHOME}/common/parser\n";
+            print GDBFILE "directory $ENV{VISITHOME}/common/proxybase\n";
+            print GDBFILE "directory $ENV{VISITHOME}/common/plugin\n";
+            print GDBFILE "directory $ENV{VISITHOME}/common/utility\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/DBAtts/MetaData\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/DBAtts/SIL\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/Database/Database\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/Database/Formats\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/Database/Ghost\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/Expressions/Abstract\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/Expressions/Conditional\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/Expressions/Derivations\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/Expressions/General\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/Expressions/Management\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/Expressions/Math\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/Expressions/MeshQuality\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/Filters\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/Math\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/MIR/Base\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/MIR/Tet\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/MIR/Zoo\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/Pipeline/Data\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/Pipeline/Pipeline\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/Pipeline/PrivateFilters\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/Pipeline/Sinks\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/Pipeline/Sources\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/Plotter\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/Preprocessor\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/QtVisWindow\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/Queries/Abstract\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/Queries/Misc\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/Queries/Queries\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/View\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/VisWindow/Colleagues\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/VisWindow/Interactors\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/VisWindow/Proxies\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/VisWindow/Tools\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/VisWindow/VisWindow\n";
+            print GDBFILE "directory $ENV{VISITHOME}/engine/main\n";
+            print GDBFILE "directory $ENV{VISITHOME}/engine/proxy\n";
+            print GDBFILE "directory $ENV{VISITHOME}/engine/rpc\n";
+            print GDBFILE "directory $ENV{VISITHOME}/gui\n";
+            print GDBFILE "directory $ENV{VISITHOME}/launcher/main\n";
+            print GDBFILE "directory $ENV{VISITHOME}/launcher/proxy\n";
+            print GDBFILE "directory $ENV{VISITHOME}/launcher/rpc\n";
+            print GDBFILE "directory $ENV{VISITHOME}/mdserver/main\n";
+            print GDBFILE "directory $ENV{VISITHOME}/mdserver/proxy\n";
+            print GDBFILE "directory $ENV{VISITHOME}/mdserver/rpc\n";
+            print GDBFILE "directory $ENV{VISITHOME}/viewer/main\n";
+            print GDBFILE "directory $ENV{VISITHOME}/viewer/proxy\n";
+            print GDBFILE "directory $ENV{VISITHOME}/viewer/rpc\n";
+            print GDBFILE "directory $ENV{VISITHOME}/visitpy\n";
+            print GDBFILE "directory $ENV{VISITHOME}/visit_vtk/full\n";
+            print GDBFILE "directory $ENV{VISITHOME}/visit_vtk/lightweight\n";
+            print GDBFILE "directory $ENV{VISITHOME}/visit_vtk/sl_io\n";
+            print GDBFILE "directory $ENV{VISITHOME}/vtkqt\n";
+            print GDBFILE "directory $ENV{VISITHOME}/winutil\n";
+
+            if ($security_key_set)
+            {
+                print GDBFILE "set args @visitargs -dograb -key $security_key\n";
+            }
+            else
+            {
+                print GDBFILE "set args @visitargs -dograb \n";
+            }
+
+            # Set up any breakpoints
+            if($#breakpoints eq -1)
+            {
+                # No breakpoints. Just run.
+                print GDBFILE "run\n";
+            }
+            else
+            {
+                # See if the user wants to break in main.
+                $breakmain = grep /^main$/, @breakpoints;
+                print GDBFILE "break main\n";
+                print GDBFILE "run\n";
+                # Print the breakpoints that are not main.
+                foreach (@breakpoints)
+                {
+                    if($_ ne "main") { print GDBFILE "break $_\n"; }
+                }
+                # If the user did not break in main, continue.
+                if($breakmain eq 0) { print GDBFILE "continue\n"; }
+            }
+            close GDBFILE;
+
+            # Run gdb directly
+            @debugcmd = ("gdb", $real_exe, "-x", $gdbfilename);
+            if($gdb_xterm)
+            {
+                # Run GDB under an xterm
+                $debugtitle = "\"Debug $real_exe\"";
+                @debugcmd = ("xterm", "-title", $debugtitle, "-fn", "fixed", "-e", "gdb", $real_exe, "-x", $gdbfilename);
+            }
+
+            print STDERR "Running: @debugcmd\n";
+            $exec_gdb_failed = 0;
+            exec @debugcmd or $exec_gdb_failed = 1;
+            if($exec_gdb_failed)
+            {
+                print STDERR "Could not run $real_exe in the gdb debugger. Running VisIt normally.\n";
+                RunComponent($real_exe, $ver, $security_key_set, $security_key, @visitcmd);
+            }
+        }
+        else
+        {
+            print STDERR "Could not create GDB command file \"$gdbfilename\". Running VisIt normally.\n";
+            RunComponent($real_exe, $ver, $security_key_set, $security_key, @visitcmd);
+        }
+    }
+    else
+    {
+        @printcmd = ("$exe_name$ver", @visitargs);
+        chomp($printcmd[0] = `basename $printcmd[0]`);
+        print STDERR "Running: @printcmd\n";
+        if ($security_key_set) { push @visitcmd, "-key", $security_key; }
+        exec @visitcmd or die "Can't execute visit: $!\n";
+    }
+}
+
+sub RunComponent {
+   my $exe_name = shift;
+   my $ver = shift;
+   my $security_key_set = shift;
+   my $security_key = shift;
+   my @visitcmd = shift;
+
+   @printcmd = ("$exe_name$ver", @visitargs);
+   chomp($printcmd[0] = `basename $printcmd[0]`);
+   print STDERR "Running: @printcmd\n";
+   if ($security_key_set) { push @visitcmd, "-key", $security_key; }
+   exec @visitcmd or die "Can't execute visit: $!\n";
+}
+
+sub PrintEnvironment {
+    if ($envonly)
+    {
+        print STDOUT <<"EOF"
+LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}
+LD_LIBRARY32_PATH=$ENV{LD_LIBRARY32_PATH}
+LD_LIBRARYN32_PATH=$ENV{LD_LIBRARYN32_PATH}
+LD_LIBRARY64_PATH=$ENV{LD_LIBRARY64_PATH}
+LIBPATH=$ENV{LIBPATH}
+VISITHOME=$ENV{VISITHOME}
+VISITHELPHOME=$ENV{VISITHELPHOME}
+VISITPLUGINDIR=$ENV{VISITPLUGINDIR}
+PYTHONHOME=$ENV{PYTHONHOME}
+TRAP_FPE=$ENV{TRAP_FPE}
+MESA_GLX_FX=$ENV{MESA_GLX_FX}
+EOF
+    }
+    elsif (grep(/csh/, "$ENV{SHELL}"))
+    {
+        print STDERR <<"EOF"
+Be sure to set your environment variables:
+    setenv LD_LIBRARY_PATH $ENV{LD_LIBRARY_PATH}
+    setenv LD_LIBRARY32_PATH $ENV{LD_LIBRARY32_PATH}
+    setenv LD_LIBRARYN32_PATH $ENV{LD_LIBRARYN32_PATH}
+    setenv LD_LIBRARY64_PATH $ENV{LD_LIBRARY64_PATH}
+    setenv LIBPATH $ENV{LIBPATH}
+    setenv VISITHOME $ENV{VISITHOME}
+    setenv VISITHELPHOME $ENV{VISITHELPHOME}
+    setenv VISITPLUGINDIR $ENV{VISITPLUGINDIR}
+    setenv PYTHONHOME $ENV{PYTHONHOME}
+    setenv TRAP_FPE $ENV{TRAP_FPE}
+    setenv MESA_GLX_FX $ENV{MESA_GLX_FX}
+EOF
+    }
+    else
+    {
+        print STDERR <<"EOF"
+Be sure to set your environment variables:
+    LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}
+    LD_LIBRARY32_PATH=$ENV{LD_LIBRARY32_PATH}
+    LD_LIBRARYN32_PATH=$ENV{LD_LIBRARYN32_PATH}
+    LD_LIBRARY64_PATH=$ENV{LD_LIBRARY64_PATH}
+    LIBPATH=$ENV{LIBPATH}
+    VISITHOME=$ENV{VISITHOME}
+    VISITHELPHOME=$ENV{VISITHELPHOME}
+    VISITPLUGINDIR=$ENV{VISITPLUGINDIR}
+    PYTHONHOME=$ENV{PYTHONHOME}
+    TRAP_FPE=$ENV{TRAP_FPE}
+    MESA_GLX_FX=$ENV{MESA_GLX_FX}
+EOF
+    }
+}
+

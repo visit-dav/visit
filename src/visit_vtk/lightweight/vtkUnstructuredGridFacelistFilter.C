@@ -508,6 +508,11 @@ Quad::RegisterMemoryManager(QuadMemoryManager *mm)
 //  Programmer: Hank Childs
 //  Creation:   October 21, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Nov 16 14:54:09 PST 2004
+//    Make more robust for degenerate input data.  Specifically, quads with 
+//    all four corners at the same node.  See '5659.
+//
 // ****************************************************************************
 
 int
@@ -529,7 +534,15 @@ Quad::AssignNodes(const int *n)
     if (n[3] > n[biggest])
        biggest = 3;
 
-    if (biggest == 3)
+    // Handle degenerate cases; it doesn't matter which one we pick
+    if (biggest == smallest)
+    {
+        ordering_case = Q0123;
+        nodes[0] = n[1];
+        nodes[1] = n[2];
+        nodes[2] = n[3];
+    }
+    else if (biggest == 3)
     { 
         if (smallest == 0)
         {
@@ -583,7 +596,7 @@ Quad::AssignNodes(const int *n)
             }
         }
     }
-    if (biggest == 2)
+    else if (biggest == 2)
     {
         if (smallest == 0)
         {
@@ -637,7 +650,7 @@ Quad::AssignNodes(const int *n)
             }
         }
     }
-    if (biggest == 1)
+    else if (biggest == 1)
     {
         if (smallest == 0)
         {
@@ -691,7 +704,7 @@ Quad::AssignNodes(const int *n)
             }
         }
     }
-    if (biggest == 0)
+    else if (biggest == 0)
     {
         if (smallest == 1)
         {

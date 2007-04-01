@@ -17,7 +17,17 @@ class Rule;
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  5, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Nov  3 12:16:49 PST 2004
+//    Added prototypes before the friend declarations.
+//
 // ****************************************************************************
+
+// Some compilers (xlC) require prototypes before friend declarations
+class Sequence;
+Sequence operator+(const Symbol&, const Symbol&);
+Sequence operator+(const Sequence&, const Symbol&);
+
 class PARSER_API Sequence
 {
   public:

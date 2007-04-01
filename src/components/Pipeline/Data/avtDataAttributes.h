@@ -125,6 +125,10 @@ class     avtExtents;
 //    Kathleen Bonnell, Tue Oct 12 16:11:15 PDT 2004 
 //    Added keepNodeZoneArrays and Set/Get methods. 
 //
+//    Jeremy Meredith, Wed Nov  3 12:13:39 PST 2004
+//    Changed a typedef anonymous struct to a normal struct.  xlC was not
+//    generating methods (e.g. copy constructor) using the C-style declaration.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -306,7 +310,7 @@ class PIPELINE_API avtDataAttributes
     avtExtents              *currentSpatial;
     avtExtents              *cumulativeCurrentSpatial;
 
-    typedef struct
+    struct VarInfo
     {
         std::string          varname;
         std::string          varunits;
@@ -318,7 +322,7 @@ class PIPELINE_API avtDataAttributes
         avtExtents          *effectiveData;
         avtExtents          *currentData;
         avtExtents          *cumulativeCurrentData;
-    } VarInfo;
+    };
     std::vector<VarInfo>     variables;
     int                      activeVariable;
 

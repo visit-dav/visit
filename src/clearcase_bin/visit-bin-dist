@@ -184,6 +184,13 @@
 #    Jeremy Meredith, Tue Nov  2 09:51:52 PST 2004
 #    Added command to copy private Qt headers.
 #
+#    Jeremy Meredith, Tue Nov  9 14:31:08 PST 2004
+#    Allowed distinction of 64-bit objects on IBM AIX systems.
+#
+#    Jeremy Meredith, Fri Dec 10 13:34:55 PST 2004
+#    Added support for version-specific visit scripts and the ability to
+#    launch tools without passing them as an argument to the visit script.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -437,8 +444,9 @@ if ($DataFiles == "TRUE") then
 endif
 
 mkdir distribution/visit/$Version
+mkdir distribution/visit/$Version/bin
 ln -s $Version distribution/visit/current
-set platforms="hp-hpux-pa sgi-irix6-mips2 sun4-sunos5-sparc ibm-aix-pwr dec-osf1-alpha linux-intel linux-ia64 linux-alpha linux-x86_64 darwin-ppc"
+set platforms="hp-hpux-pa sgi-irix6-mips2 sun4-sunos5-sparc ibm-aix-pwr ibm-aix-pwr64 dec-osf1-alpha linux-intel linux-ia64 linux-alpha linux-x86_64 darwin-ppc"
 foreach platform ($platforms)
    mkdir distribution/visit/$Version/$platform
    mkdir distribution/visit/$Version/$platform/bin
@@ -506,8 +514,18 @@ switch ($os)
 
    case aix:
       echo "Found an AIX version of visit"
-      set osver = aix
-      set visitbindir = ibm-aix-pwr
+      if ("${?OBJECT_MODE}") then
+          if ("${OBJECT_MODE}" == "64") then
+              set osver = aix64
+              set visitbindir = ibm-aix-pwr64
+          else
+              set osver = aix
+              set visitbindir = ibm-aix-pwr
+          endif
+      else
+          set osver = aix
+          set visitbindir = ibm-aix-pwr
+      endif
       breaksw
 
    case osf:
@@ -558,44 +576,77 @@ set javadir = distribution/visit/$Version/$visitbindir/java
 set frameworkdir = distribution/visit/$Version/$visitbindir/Frameworks
 
 #
+# Copy the launch scripts
+#
+cp $VisItDir/bin/legacylauncher    distribution/visit/bin/
+cp $VisItDir/bin/frontendlauncher  distribution/visit/bin/
+
+# Copy the version-specific visit script
+cp $VisItDir/bin/internallauncher $verdir/bin/
+
+#
 # Copy the executables to the distribution.
 #
 echo "Copying executables to the distribution..."
-cp $VisItDir/bin/visit         distribution/visit/bin/visit
-cp $VisItDir/bin/cli           $bindir/cli
-cp $VisItDir/bin/engine_ser    $bindir/engine_ser
-if(-e $VisItDir/bin/engine_par) then
-   cp $VisItDir/bin/engine_par $bindir/engine_par
+cp $VisItDir/exe/cli           $bindir/cli
+cp $VisItDir/exe/engine_ser    $bindir/engine_ser
+if(-e $VisItDir/exe/engine_par) then
+   cp $VisItDir/exe/engine_par $bindir/engine_par
 endif
-cp $VisItDir/bin/gui           $bindir/gui
-cp $VisItDir/bin/mdserver      $bindir/mdserver
-cp $VisItDir/bin/vcl           $bindir/vcl
-cp $VisItDir/bin/viewer        $bindir/viewer
+cp $VisItDir/exe/gui           $bindir/gui
+cp $VisItDir/exe/mdserver      $bindir/mdserver
+cp $VisItDir/exe/vcl           $bindir/vcl
+cp $VisItDir/exe/viewer        $bindir/viewer
 # copy qt's moc, too
 cp $VisItDir/bin/moc           $bindir/moc
 # copy the xml plugin creation tools
-cp $VisItDir/bin/xml2*         $bindir
-cp $VisItDir/bin/xmltest       $bindir
-cp $VisItDir/bin/xmledit       $bindir
+cp $VisItDir/exe/xml2*         $bindir
+cp $VisItDir/exe/xmltest       $bindir
+cp $VisItDir/exe/xmledit       $bindir
 # copy silex
-cp $VisItDir/bin/silex         $bindir
+cp $VisItDir/exe/silex         $bindir
 # copy curv3dprep
-cp $VisItDir/bin/curv3dprep    $bindir
+cp $VisItDir/exe/curv3dprep    $bindir
 # copy text2polys and time_annotation
-cp $VisItDir/bin/text2polys    $bindir
-cp $VisItDir/bin/time_annotation $bindir
-cp $VisItDir/bin/convert_ser $bindir
-if(-e $VisItDir/bin/convert_par) then
-   cp $VisItDir/bin/convert_par $bindir/convert_par
+cp $VisItDir/exe/text2polys    $bindir
+cp $VisItDir/exe/time_annotation $bindir
+cp $VisItDir/exe/convert_ser $bindir
+if(-e $VisItDir/exe/convert_par) then
+   cp $VisItDir/exe/convert_par $bindir/convert_par
 endif
-if(-e $VisItDir/bin/makemili_ser) then
-   cp $VisItDir/bin/makemili_ser $bindir/makemili_ser
+if(-e $VisItDir/exe/makemili_ser) then
+   cp $VisItDir/exe/makemili_ser $bindir/makemili_ser
 endif
 # Copy the MPEG encoder and the makemovie script.
-cp $VisItDir/bin/mpeg_encode   $bindir
+cp $VisItDir/exe/mpeg_encode   $bindir
 cp $VisItDir/bin/makemovie.py  $bindir
 # copy surfcomp
-cp $VisItDir/bin/surfcomp      $bindir
+cp $VisItDir/exe/surfcomp      $bindir
+
+
+#
+# Make symlinks for the programs
+#
+ln -s frontendlauncher distribution/visit/bin/convert
+ln -s frontendlauncher distribution/visit/bin/curv3dprep
+ln -s frontendlauncher distribution/visit/bin/makemili
+ln -s frontendlauncher distribution/visit/bin/mpeg_encode
+ln -s frontendlauncher distribution/visit/bin/silex
+ln -s frontendlauncher distribution/visit/bin/surfcomp
+ln -s frontendlauncher distribution/visit/bin/text2polys
+ln -s frontendlauncher distribution/visit/bin/time_annotation
+ln -s frontendlauncher distribution/visit/bin/visit
+ln -s frontendlauncher distribution/visit/bin/xml2atts
+ln -s frontendlauncher distribution/visit/bin/xml2avt
+ln -s frontendlauncher distribution/visit/bin/xml2info
+ln -s frontendlauncher distribution/visit/bin/xml2java
+ln -s frontendlauncher distribution/visit/bin/xml2makefile
+ln -s frontendlauncher distribution/visit/bin/xml2projectfile
+ln -s frontendlauncher distribution/visit/bin/xml2python
+ln -s frontendlauncher distribution/visit/bin/xml2window
+ln -s frontendlauncher distribution/visit/bin/xmledit
+ln -s frontendlauncher distribution/visit/bin/xmltest
+
 
 # If we're on Darwin, Make some bundles so VisIt can run when it's unpackaged
 if("$os" == "darwin") then

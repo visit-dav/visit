@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+  <Plugin name="TecPlot" type="database" label="TecPlot" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false">
+    <Extensions>
+      tp
+      plt
+      tec
+    </Extensions>
+    <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>

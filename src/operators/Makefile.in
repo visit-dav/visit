@@ -160,6 +160,9 @@
 #    Eric Brugger, Mon Nov 22 09:50:55 PST 2004
 #    Build the Revolve operator by default.
 #
+#    Jeremy Meredith, Fri Dec 10 13:39:08 PST 2004
+#    Tools are now run directly instead of as an argument to visit.
+# 
 ##############################################################################
 
 @SET_MAKE@
@@ -190,7 +193,7 @@ message:
 
 
 dirmakefiles:
-	for dir in $(ALLSUBDIRS); do (cd $$dir && $(tmpbin)/visit -xml2makefile -noprint -clobber $${dir}.xml) || exit 1; done
+	for dir in $(ALLSUBDIRS); do (cd $$dir && ../../bin/xml2makefile -noprint -clobber $${dir}.xml) || exit 1; done
 
 clean:
 	-$(RM) $(LIB)

@@ -14,11 +14,7 @@
 #include <avtDatabaseMetaData.h>
 #include <avtBoundaryPlot.h>
 #include <avtTypes.h>
-#if defined(_WIN32)
 #include <set>
-#else
-#include <set.h>
-#endif
 
 #include <DebugStream.h>
 #include <InvalidVariableException.h>

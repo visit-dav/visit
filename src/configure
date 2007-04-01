@@ -1322,21 +1322,6 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
-# Load the OS configuration file if present.
-UNAME="`uname 2>/dev/null`"
-SHORT_UNAME=`uname -s | tr A-Z a-z | tr -d 0-9`
-echo "$as_me:$LINENO: checking for OS configuration file" >&5
-echo $ECHO_N "checking for OS configuration file... $ECHO_C" >&6
-site_conf=config-site/$UNAME.conf
-if test -r $site_conf; then
-    echo "$as_me:$LINENO: result: $site_conf" >&5
-echo "${ECHO_T}$site_conf" >&6
-    . $site_conf
-else
-    echo "$as_me:$LINENO: result: none found" >&5
-echo "${ECHO_T}none found" >&6
-fi
-
 # Load the site configuration file if present.
 # Also check for hostnames where the first field is a node name.
 echo "$as_me:$LINENO: checking for site configuration file" >&5
@@ -1393,6 +1378,21 @@ echo "${ECHO_T}$user_conf" >&6
 else
    echo "$as_me:$LINENO: result: none specified" >&5
 echo "${ECHO_T}none specified" >&6
+fi
+
+# Load the OS configuration file if present.
+UNAME="`uname 2>/dev/null`"
+SHORT_UNAME=`uname -s | tr A-Z a-z | tr -d 0-9`
+echo "$as_me:$LINENO: checking for OS configuration file" >&5
+echo $ECHO_N "checking for OS configuration file... $ECHO_C" >&6
+site_conf=config-site/$UNAME.conf
+if test -r $site_conf; then
+    echo "$as_me:$LINENO: result: $site_conf" >&5
+echo "${ECHO_T}$site_conf" >&6
+    . $site_conf
+else
+    echo "$as_me:$LINENO: result: none found" >&5
+echo "${ECHO_T}none found" >&6
 fi
 
 #
@@ -2675,7 +2675,7 @@ echo "${ECHO_T}found" >&6
         VIEWEROBJ="$""(VOBJ)"
         # The private source can go into the executable on all UNIX versions
         # except for MacOS X.
-        if test "$SHORT_UNAME" = "darwin"; then
+        if test "$SHORT_UNAME" = "darwin" ; then
             VIEWERLIB_SRC="$""(PUBLIC_SRC) $""(PRIVATE_SRC) $""(SRCMOC)"
             VIEWEREXE_SRC="$""(MAINSRC)"
         else
@@ -9592,12 +9592,30 @@ case $SHORT_UNAME in
     ;;
 
   aix)
-    # AIX used to be the weird one.  However, it is mostly normal finally.
-    # It should be noted that for AIX to find .so's as libraries, it requires
-    # "-Wl,-brtl" in the LDFLAGS.  This is handled in the AIX.conf file.
-    if test -z "$SHLIB_CREATEPROG"; then
-        SHLIB_CREATEPROG="$""(CXX) -Wl,-G -shared -o"
-    fi
+    if test "$CXX" = "g++"; then
+        # AIX used to be the weird one.  It is mostly normal finally,
+        # as long as you use g++.  It should be noted that for AIX to find
+        # .so's as libraries, it requires "-Wl,-brtl" in the LDFLAGS.
+        # This is handled in the AIX.conf file.
+        if test -z "$SHLIB_CREATEPROG"; then
+            SHLIB_CREATEPROG="$""(CXX) -Wl,-G -shared -o"
+        fi
+    else # assume $CXX = xlC
+	# -G and -brtl are understood by the linker.
+        if test -z "$SHLIB_CREATEPROG"; then
+            SHLIB_CREATEPROG="$""(CXX) -G -brtl -o"
+        fi
+
+	# Here's the code to use .a's filled with .so's and fully
+        # resolving all shared library symbols as we go, a la
+        # MacOSX.  If we can get this to work, it could possibly
+        # launch faster.
+
+
+
+
+
+                                                            fi
     ;;
 
   osf)
@@ -15885,7 +15903,7 @@ fi
 # Temporary directories.
 
 
-tmpbin="$""(TOPDIR)/bin"
+tmpbin="$""(TOPDIR)/exe"
 
 tmpinc="$""(TOPDIR)/include"
 
@@ -17308,8 +17326,8 @@ fi
 #
 (cd include   && ${MAKE-make})
 (cd lib       && ${MAKE-make})
-rm -f $TOPDIR/bin/xml2makefile
-(cd tools/xml && ${MAKE-make} $TOPDIR/bin/xml2makefile)
+rm -f $TOPDIR/exe/xml2makefile
+(cd tools/xml && ${MAKE-make} $TOPDIR/exe/xml2makefile)
 
 # If we 're on a Darwin system, make bundles for the gui and the viewer.
 if test "$SHORT_UNAME" = "darwin";  then

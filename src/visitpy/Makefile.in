@@ -96,6 +96,10 @@
 #    Jeremy Meredith, Tue Nov 23 14:53:07 PST 2004
 #    Refactored the expression parser into two separate libraries.
 #
+#    Jeremy Meredith, Fri Dec 10 14:14:18 PST 2004
+#    Added support for version-specific visit scripts and the ability to
+#    launch tools without passing them as an argument to the visit script.
+#
 ##############################################################################
 
 ##
@@ -172,8 +176,8 @@ CXXFLAGS=@CXXFLAGS@ @PY_CXXFLAGS@ -I. -I../include/visit
 ## Standard targets...
 ##
 all:  message $(CLI) $(LIBSHARED)
-	$(RM) ../bin/$(LIBNAME)
-	mv $(LIBSHARED) ../bin/$(LIBNAME)
+	$(RM) ../exe/$(LIBNAME)
+	mv $(LIBSHARED) ../exe/$(LIBNAME)
 
 $(CLI): $(OBJ) cli.o
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $(OBJ) cli.o @PY_CLI_LIB@ $(LIBS)
@@ -182,7 +186,7 @@ pure: $(OBJ) cli.o
 	purify $(CXX) -o $(CLI) $(CXXFLAGS) $(LDFLAGS) $(OBJ) cli.o @PY_CLI_LIB@ $(LIBS)
 
 clean:
-	$(RM) $(LIBSTATIC) $(LIBSHARED) ../bin/$(LIBNAME) $(CLI)
+	$(RM) $(LIBSTATIC) $(LIBSHARED) ../exe/$(LIBNAME) $(CLI)
 	$(RM) $(OBJ) cli.o
 
 message:

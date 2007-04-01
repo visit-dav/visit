@@ -1,0 +1,34 @@
+Function: GetDiscernibleBackgroundColor
+Declaration: const ColorAttribute GetDiscernibleBackgroundColor() const;
+Definition:
+// Returns a "discernible" background color. If the background mode
+// is Solid, the returned value is just the background color. If the
+// background mode is Gradient, the returned color is an average of
+// the two gradient colors
+const ColorAttribute AnnotationAttributes::GetDiscernibleBackgroundColor() const
+{
+    ColorAttribute retval;
+    double bg[4];
+
+    if (GetBackgroundMode() == Solid)
+    {
+        GetBackgroundColor().GetRgba(bg);
+    }
+    else
+    {
+        double gbg1[4], gbg2[4];
+
+        GetGradientColor1().GetRgba(gbg1);
+        GetGradientColor2().GetRgba(gbg2);
+
+        bg[0] = (gbg1[0] + gbg2[0]) * 0.5;
+        bg[1] = (gbg1[1] + gbg2[1]) * 0.5;
+        bg[2] = (gbg1[2] + gbg2[2]) * 0.5;
+        bg[3] = (gbg1[3] + gbg2[3]) * 0.5;
+    }
+
+    retval.SetRgba2(bg);
+
+    return retval;
+}
+
