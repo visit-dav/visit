@@ -35,6 +35,9 @@ typedef ViewerRPC::ViewerRPCType ActionIndex;
 //   Brad Whitlock, Tue Feb 24 13:24:59 PST 2004
 //   I added an argument to RealizeActionGroups.
 //
+//   Brad Whitlock, Tue Mar 16 14:25:11 PST 2004
+//   I added an argument to RealizeActionGroups.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerActionManager
@@ -82,7 +85,7 @@ private:
     void        AddActionGroup(const ActionGroup &group);
     void        AddActionToActionGroup(int index, ActionIndex);
     void        UpdatePopup();
-    void        RealizeActionGroups(bool);
+    void        RealizeActionGroups(bool, bool);
 
     ViewerActionBase **actions;
     ActionGroupVector  actionGroups;

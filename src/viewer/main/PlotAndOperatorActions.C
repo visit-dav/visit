@@ -1043,7 +1043,11 @@ AddPlotAction::RemoveFromMenu(QPopupMenu *menu)
 // Creation:   Thu Mar 20 12:48:44 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Mar 16 15:34:28 PST 2004
+//   I added code to create the toolbar using the right icon size. The new
+//   code also connects a signal from the vis window that tells this object
+//   to update its icons when the icon size in the vis window changes.
+//
 // ****************************************************************************
 
 void
@@ -1059,6 +1063,14 @@ AddPlotAction::ConstructToolbar(QToolBar *toolbar)
     //
     connect(toolbar, SIGNAL(orientationChanged(Orientation)),
             this, SLOT(orientationChanged(Orientation)));
+
+    //
+    // Connect the top level window's pixmapSizeChanged signal to this
+    // object's changeMenuIconSize slot so we can change the icon size
+    // when the main window changes its icon size.
+    //
+    connect(toolbar->topLevelWidget(), SIGNAL(pixmapSizeChanged(bool)),
+            this, SLOT(changeMenuIconSize(bool)));
 
     // Add a menu bar to the toolbar.
     menu = new QMenuBar(toolbar, "AddPlotAction");
@@ -1081,8 +1093,9 @@ AddPlotAction::ConstructToolbar(QToolBar *toolbar)
         }
 
         // Add the menu to the action menu.
-        QPixmap pix(children[i]->iconSet().pixmap(QIconSet::Small,
-                    QIconSet::Normal));
+        QPixmap pix(children[i]->iconSet().pixmap(
+            windowMgr->UsesLargeIcons() ? QIconSet::Large : QIconSet::Small,
+            QIconSet::Normal));
         int id = menu->insertItem(pix, pluginEntries[i].varMenu, menu->count());
         menu->setItemEnabled(id, false);
 
@@ -1180,6 +1193,48 @@ AddPlotAction::orientationChanged(Qt::Orientation o)
     {
         menu->setMaximumWidth(maxPixmapWidth);
         menu->setMaximumHeight(1024);
+    }
+}
+
+// ****************************************************************************
+// Method: AddPlotAction::changeMenuIconSize
+//
+// Purpose: 
+//   This method is called when the vis window changes its icon size.
+//
+// Arguments:
+//   large : Whether the vis window is using large icons.
+//
+// Notes:      This code should also update the tool tips on the menu widget
+//             but that can be done later.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 16 15:26:21 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+AddPlotAction::changeMenuIconSize(bool large)
+{
+    if(large)
+    {
+        for(int i = 0; i < pluginEntries.size(); ++i)
+        {
+            QPixmap pix(children[i]->iconSet().pixmap(QIconSet::Large,
+                        QIconSet::Normal));
+            menu->changeItem(i, pix);
+        }
+    }
+    else
+    {
+        for(int i = 0; i < pluginEntries.size(); ++i)
+        {
+            QPixmap pix(children[i]->iconSet().pixmap(QIconSet::Small,
+                        QIconSet::Normal));
+            menu->changeItem(i, pix);
+        }
     }
 }
 

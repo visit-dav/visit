@@ -5,10 +5,6 @@
         <Object name="GlobalAttributes" childObjects="0">
             <Field name="cloneWindowOnFirstRef" type="bool">true</Field>
         </Object>
-        <Object name="SliceAttributes" childObjects="0">
-            <Field name="project2d" type="bool">true</Field>
-            <Field name="axisType" type="int">1</Field>
-        </Object>
         <Object name="PluginManagerAttributes" childObjects="0">
             <Field name="name" type="stringVector">Streamline InverseGhostZone </Field>
             <Field name="type" type="stringVector">plot operator </Field>
@@ -271,8 +267,8 @@
                 <Field name="partition" type="string">mcr,pbatch</Field>
                 <Field name="bankSet" type="bool">true</Field>
                 <Field name="bank" type="string">bdivp</Field>
-                <Field name="timeLimitSet" type="bool">false</Field>
-                <Field name="timeLimit" type="string"></Field>
+                <Field name="timeLimitSet" type="bool">true</Field>
+                <Field name="timeLimit" type="string">30m</Field>
                 <Field name="launchMethodSet" type="bool">true</Field>
                 <Field name="launchMethod" type="string">psub/srun</Field>
                 <Field name="forceStatic" type="bool">true</Field>
@@ -425,8 +421,8 @@
                 <Field name="partition" type="string">pengra,pbatch</Field>
                 <Field name="bankSet" type="bool">true</Field>
                 <Field name="bank" type="string">bdivp</Field>
-                <Field name="timeLimitSet" type="bool">false</Field>
-                <Field name="timeLimit" type="string"></Field>
+                <Field name="timeLimitSet" type="bool">true</Field>
+                <Field name="timeLimit" type="string">30m</Field>
                 <Field name="launchMethodSet" type="bool">true</Field>
                 <Field name="launchMethod" type="string">psub/srun</Field>
                 <Field name="forceStatic" type="bool">true</Field>

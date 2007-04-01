@@ -427,6 +427,7 @@ public:
     void SetVisible(bool);
     bool IsVisible() const;
     WINDOW_MODE GetWindowMode() const;
+    void SetLargeIcons(bool);
 
     void SetPlotColors(const double *bg, const double *fg);
 

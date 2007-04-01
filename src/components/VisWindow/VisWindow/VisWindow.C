@@ -4839,6 +4839,27 @@ VisWindow::CreateToolbar(const char *name)
     return rendering->CreateToolbar(name);
 }
 
+// ****************************************************************************
+// Method: VisWindow::SetLargeIcons
+//
+// Purpose: 
+//   Tells the window to use large icons.
+//
+// Arguments:
+//   val : Whether we should use large icons.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 16 09:51:44 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWindow::SetLargeIcons(bool val)
+{
+    rendering->SetLargeIcons(val);
+}
 
 // ****************************************************************************
 // Method: VisWindow::ReAddColleaguesToRenderWindow

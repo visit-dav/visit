@@ -113,6 +113,7 @@
       HideToolbarsForAllWindowsRPC
       ShowToolbarsRPC
       ShowToolbarsForAllWindowsRPC
+      SetToolbarIconSizeRPC
       SaveViewRPC
       SetGlobalLineoutAttributesRPC
       SetPickAttributesRPC

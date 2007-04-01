@@ -350,6 +350,8 @@ class VIEWER_API ViewerWindowManager : public QObject
     void UpdateActions();
     void HideToolbarsForAllWindows();
     void ShowToolbarsForAllWindows();
+    void SetLargeIcons(bool);
+    bool UsesLargeIcons() const;
 
     void UpdateAnimationTimer();
     void StopTimer();

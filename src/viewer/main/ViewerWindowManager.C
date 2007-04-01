@@ -6106,6 +6106,55 @@ ViewerWindowManager::ShowToolbarsForAllWindows()
 }
 
 // ****************************************************************************
+// Method: ViewerWindowManager::SetLargeIcons
+//
+// Purpose: 
+//   Tells all windows to use large icons.
+//
+// Arguments:
+//   val : Whether the windows should use large icons.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 16 09:38:36 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::SetLargeIcons(bool val)
+{
+    windowAtts->SetLargeIcons(val);
+
+    for(int i = 0; i < maxWindows; ++i)
+    {
+        if(windows[i] != 0)
+            windows[i]->SetLargeIcons(val);
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::UsesLargeIcons
+//
+// Purpose: 
+//   Returns whether the windows should use large icons.
+//
+// Returns:    Whether the windows should use large icons.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 16 14:30:23 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerWindowManager::UsesLargeIcons() const
+{
+    return windowAtts->GetLargeIcons();
+}
+
+// ****************************************************************************
 // Method: ViewerWindowManager::BeginEngineExecute
 //
 // Purpose: 

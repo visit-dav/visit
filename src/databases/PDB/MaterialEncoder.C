@@ -200,13 +200,16 @@ MaterialEncoder::AllocClean(int nZones)
 // Creation:   Wed Aug 6 11:39:25 PDT 2003
 //
 // Modifications:
+//   Eric Brugger, Tue Mar 16 16:33:08 PST 2004
+//   Modified it to return the correct size, which is one less than the
+//   next index to insert an entry.
 //   
 // ****************************************************************************
 
 int
 MaterialEncoder::GetMixedSize() const
 {
-    return _array_index;
+    return _array_index - 1;
 }
 
 // ****************************************************************************
