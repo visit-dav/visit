@@ -16,6 +16,7 @@
 #include <avtDataset.h>
 #include <avtIOInformation.h>
 #include <avtTypes.h>
+#include <vectortypes.h>
 
 
 class   vtkDataSet;
@@ -191,6 +192,10 @@ typedef struct {
 //    Mark C. Miller, Wed Oct 20 10:35:53 PDT 2004
 //    Added GetExtentsFromAuxiliaryData
 //
+//    Kathleen Bonnell, Wed Dec 15 08:31:38 PST 2004 
+//    Changed std::vector<std::string> to stringVector, std::vector<int> to
+//    intVector.  Added 'QueryGlobalIds'. 
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -286,61 +291,61 @@ class DATABASE_API avtDatabase
                                                             double *extents);
     virtual bool                QueryScalars(const std::string &, const int, 
                                              const int, const int,
-                                             const std::vector<int> &,
+                                             const intVector &,
                                              PickVarInfo &, const bool) 
                                                   {return false; };
     virtual bool                QueryVectors(const std::string &, const int, 
                                              const int, const int,
-                                             const std::vector<int> &,
+                                             const intVector &,
                                              PickVarInfo &, const bool) 
                                                   {return false; };
     virtual bool                QueryTensors(const std::string &, const int, 
                                              const int, const int,
-                                             const std::vector<int> &,
+                                             const intVector &,
                                              PickVarInfo &, const bool) 
                                                   {return false; };
     virtual bool                QuerySymmetricTensors(const std::string &,
                                              const int, const int, const int,
-                                             const std::vector<int> &,
+                                             const intVector &,
                                              PickVarInfo &, const bool) 
                                                   {return false; };
     virtual bool                QueryMaterial(const std::string &, const int, 
                                               const int, const int,
-                                              const std::vector<int> &,
+                                              const intVector &,
                                               PickVarInfo &, const bool) 
                                                   {return false; };
     virtual bool                QuerySpecies(const std::string &, const int, 
                                              const int, const int,
-                                             const std::vector<int> &,
+                                             const intVector &,
                                              PickVarInfo &, const bool) 
                                                   {return false; };
     virtual bool                QueryNodes(const std::string &, const int, 
                                            const int, bool &, const int,
-                                           std::vector<int> &, std::vector<int> &, 
+                                           intVector &, intVector &, 
                                            const bool, float [3],
                                            const int, const bool, const bool,
-                                           const bool, std::vector<std::string> &,
-                                           std::vector<std::string> &,
-                                           std::vector<std::string> &,
+                                           const bool, stringVector &,
+                                           stringVector &, stringVector &,
                                            const bool,  const bool,
-                                           std::vector<std::string> &,
-                                           std::vector<std::string> &)
+                                           stringVector &, stringVector &)
                                                {return false; };
     virtual bool                QueryMesh(const std::string &, const int, const int, 
                                           std::string &, const bool) {return false; };
 
     virtual bool                QueryZones(const std::string &, const int,int &,
-                                           bool &, const int, std::vector<int> &, 
-                                           std::vector<int> &, const bool,
+                                           bool &, const int, intVector &, 
+                                           intVector &, const bool,
                                            float [3], const int, const bool, 
                                            const bool,  const bool, 
-                                           std::vector<std::string> &,
-                                           std::vector<std::string> &,
-                                           std::vector<std::string> &,
-                                           const bool, const bool, 
-                                           std::vector<std::string> &,
-                                           std::vector<std::string> &)
+                                           stringVector &, stringVector &, 
+                                           stringVector &, const bool, const bool, 
+                                           stringVector &, stringVector &)
                                                { return false; } ;
+
+    virtual void               QueryGlobalIds(const int, const std::string &,
+                                        const int, const bool, const int, 
+                                        const intVector &, int &, intVector &){ ; };
+ 
 };
 
 

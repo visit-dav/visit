@@ -166,28 +166,6 @@ avtLabelPlot::SetForegroundColor(const double *c)
 }
 
 // ****************************************************************************
-// Method: avtLabelPlot::SetVarName
-//
-// Purpose: 
-//   Sets the name of the variable that the plot is rendering.
-//
-// Arguments:
-//   name : The new variable name.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Oct 25 08:49:51 PDT 2004
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-avtLabelPlot::SetVarName(const char *name)
-{
-    varLegend->SetVarName(name);
-}
-
-// ****************************************************************************
 // Method: avtLabelPlot::SetLegend
 //
 // Purpose: 

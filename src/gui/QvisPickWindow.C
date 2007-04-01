@@ -137,6 +137,9 @@ QvisPickWindow::~QvisPickWindow()
 //   Changed a label into a variable button so it is easier to add
 //   variables to the pick variables.
 //
+//   Kathleen Bonnell, Wed Dec 15 08:20:11 PST 2004 
+//   Added 'useGlobalIds' checkbox. 
+//
 // ****************************************************************************
 
 void
@@ -157,7 +160,7 @@ QvisPickWindow::CreateWindowContents()
         tabWidget->addTab(pages[i]," "); 
     }
 
-    QGridLayout *gLayout = new QGridLayout(topLayout, 9, 4);
+    QGridLayout *gLayout = new QGridLayout(topLayout, 10, 4);
     varsButton = new QvisVariableButton(true, false, true, -1,
         central, "varsButton");
     varsButton->setText("Variables");
@@ -197,12 +200,18 @@ QvisPickWindow::CreateWindowContents()
             this, SLOT(displayIncElsToggled(bool)));
     gLayout->addMultiCellWidget(displayIncEls, 3, 3, 0, 1);
 
+    displayGlobalIds = new QCheckBox("Display global nodes/zones.", central, 
+                                  "displayGlobalIds");
+    connect(displayGlobalIds, SIGNAL(toggled(bool)),
+            this, SLOT(displayGlobalIdsToggled(bool)));
+    gLayout->addMultiCellWidget(displayGlobalIds, 4, 4, 0, 1);
+
 
     // Node settings
     QGroupBox *nodeGroupBox = new QGroupBox(central, "nodeGroupBox");
     nodeGroupBox->setTitle("Display for Nodes:");
     nodeGroupBox->setMargin(10);
-    gLayout->addMultiCellWidget(nodeGroupBox, 4, 4, 0, 3);
+    gLayout->addMultiCellWidget(nodeGroupBox, 5, 5, 0, 3);
     QGridLayout *nLayout = new QGridLayout(nodeGroupBox, 3, 4);
     nLayout->setMargin(10);
     nLayout->setSpacing(10);
@@ -229,7 +238,7 @@ QvisPickWindow::CreateWindowContents()
     QGroupBox *zoneGroupBox = new QGroupBox(central, "zoneGroupBox");
     zoneGroupBox->setTitle("Display for Zones:");
     zoneGroupBox->setMargin(10);
-    gLayout->addMultiCellWidget(zoneGroupBox, 5, 5, 0, 3);
+    gLayout->addMultiCellWidget(zoneGroupBox, 6, 6, 0, 3);
     QGridLayout *zLayout = new QGridLayout(zoneGroupBox, 3, 4);
     zLayout->setMargin(10);
     zLayout->setSpacing(10);
@@ -253,19 +262,19 @@ QvisPickWindow::CreateWindowContents()
                                      "autoShowCheckBox");
     connect(autoShowCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(autoShowToggled(bool)));
-    gLayout->addMultiCellWidget(autoShowCheckBox, 6, 6, 0, 3);
+    gLayout->addMultiCellWidget(autoShowCheckBox, 7, 7, 0, 3);
 
     savePicksCheckBox = new QCheckBox("Don't clear this window", central,
                                      "savePicksCheckBox");
     connect(savePicksCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(savePicksToggled(bool)));
-    gLayout->addMultiCellWidget(savePicksCheckBox, 7, 7, 0, 3);
+    gLayout->addMultiCellWidget(savePicksCheckBox, 8, 8, 0, 3);
 
     timeCurveCheckBox = new QCheckBox("Create time curve with next pick.", central,
                                      "timeCurveCheckBox");
     connect(timeCurveCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(timeCurveToggled(bool)));
-    gLayout->addMultiCellWidget(timeCurveCheckBox, 8, 8, 0, 3);
+    gLayout->addMultiCellWidget(timeCurveCheckBox, 9, 9, 0, 3);
 }
 
 // ****************************************************************************
@@ -311,6 +320,9 @@ QvisPickWindow::CreateWindowContents()
 //
 //   Kathleen Bonnell, Wed Jun  9 09:41:15 PDT 2004 
 //   Added conciseOutput, showMeshName and showTimestep checkboxes. 
+//
+//   Kathleen Bonnell, Wed Dec 15 08:20:11 PST 2004 
+//   Added 'useGlobalIds'. 
 //
 // ****************************************************************************
 
@@ -459,6 +471,15 @@ QvisPickWindow::UpdateWindow(bool doAll)
         showTimestepCheckBox->setChecked(pickAtts->GetShowTimeStep());
         showTimestepCheckBox->blockSignals(false);
     }
+
+    // displayGlobalIds
+    if (pickAtts->IsSelected(52) || doAll)
+    {
+        displayGlobalIds->blockSignals(true);
+        displayGlobalIds->setChecked(pickAtts->GetDisplayGlobalIds());
+        displayGlobalIds->blockSignals(false);
+ 
+   }
 }
 
 
@@ -1155,3 +1176,26 @@ QvisPickWindow::addPickVariable(const QString &var)
     // Process the list of pick vars.
     variableProcessText();
 }
+
+// ****************************************************************************
+// Method: QvisPickWindow::displayGlobalIdsToggled
+//
+// Purpose:
+//   This is a Qt slot function that sets the flag indicating whether
+//   or not globalIds should be displayed. 
+//
+// Arguments:
+//   val : The state of the toggle button.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 15, 2004 
+//
+// ****************************************************************************
+ 
+void
+QvisPickWindow::displayGlobalIdsToggled(bool val)
+{
+    pickAtts->SetDisplayGlobalIds(val);
+    Apply();
+}
+

@@ -411,12 +411,18 @@ void QvisPointControl::SetPointType(int type)
 // Creation:   November 4, 2004 
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Dec 15 11:12:52 PDT 2004
+//   Made it work with older versions of Qt.
+//
 // ****************************************************************************
 
 int
 QvisPointControl::GetPointType() const
 {
+#if QT_VERSION >= 0x030200
     return typeButtons->selectedId();
+#else
+    return typeButtons->id(typeButtons->selected());
+#endif
 }
 

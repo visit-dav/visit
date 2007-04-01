@@ -69,6 +69,9 @@ using     std::sort;
 //    Kathleen Bonnell, Tue Oct 12 16:11:15 PDT 2004 
 //    Initialize keepNodeZoneArrays.
 //
+//    Kathleen Bonnell, Thu Dec  9 16:12:33 PST 2004 
+//    Initialize containsGlobalNodeIds, containsGlobalZoneIds.
+//
 // ****************************************************************************
 
 avtDataAttributes::avtDataAttributes()
@@ -101,6 +104,8 @@ avtDataAttributes::avtDataAttributes()
     containsOriginalCells  = false;
     containsOriginalNodes  = false;
     keepNodeZoneArrays     = false;
+    containsGlobalZoneIds  = false;
+    containsGlobalNodeIds  = false;
 
     SetTopologicalDimension(3);
     SetSpatialDimension(3);
@@ -258,6 +263,9 @@ avtDataAttributes::DestructSelf(void)
 //    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
 //    Added vector of bools for which data selections were applied
 //
+//    Kathleen Bonnell, Thu Dec  9 16:12:33 PST 2004 
+//    Added containsGlobalNodeIds, containsGlobalZoneIds.
+//
 // ****************************************************************************
 
 void
@@ -283,6 +291,12 @@ avtDataAttributes::Print(ostream &out)
 
     if (containsOriginalNodes)
         out << "This dataset contains the original nodes list." << endl;
+
+    if (containsGlobalZoneIds)
+        out << "This dataset contains the global zones list." << endl;
+
+    if (containsGlobalNodeIds)
+        out << "This dataset contains the global nodes list." << endl;
 
     switch (containsGhostZones)
     {
@@ -510,6 +524,9 @@ avtDataAttributes::Print(ostream &out)
 //    Kathleen Bonnell, Tue Oct 12 16:11:15 PDT 2004 
 //    Added keepNodeZoneArrays. 
 //
+//    Kathleen Bonnell, Thu Dec  9 16:12:33 PST 2004 
+//    Added containsGlobalNodeIds, containsGlobalZoneIds.
+//
 // ****************************************************************************
 
 void
@@ -577,6 +594,8 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     SetContainsOriginalCells(di.GetContainsOriginalCells());
     SetContainsOriginalNodes(di.GetContainsOriginalNodes());
     SetKeepNodeZoneArrays(di.GetKeepNodeZoneArrays());
+    SetContainsGlobalZoneIds(di.GetContainsGlobalZoneIds());
+    SetContainsGlobalNodeIds(di.GetContainsGlobalNodeIds());
     CopyInvTransform(di.invTransform);
     canUseInvTransform = di.canUseInvTransform;
     CopyTransform(di.transform);
@@ -656,6 +675,9 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //
 //    Kathleen Bonnell, Tue Oct 12 16:11:15 PDT 2004 
 //    Added keepNodeZoneArrays. 
+//
+//    Kathleen Bonnell, Thu Dec  9 16:12:33 PST 2004 
+//    Added containsGlobalNodeIds, containsGlobalZoneIds.
 //
 // ****************************************************************************
 
@@ -795,6 +817,14 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
     if (!GetKeepNodeZoneArrays()) 
     {
         SetKeepNodeZoneArrays(da.GetKeepNodeZoneArrays());
+    }
+    if (!GetContainsGlobalZoneIds()) 
+    {
+        SetContainsGlobalZoneIds(da.GetContainsGlobalZoneIds());
+    }
+    if (!GetContainsGlobalNodeIds()) 
+    {
+        SetContainsGlobalNodeIds(da.GetContainsGlobalNodeIds());
     }
 
 
@@ -1647,6 +1677,9 @@ avtDataAttributes::SetTime(double d)
 //    Kathleen Bonnell, Tue Oct 12 16:11:15 PDT 2004 
 //    Added keepNodeZoneArrays. 
 //
+//    Kathleen Bonnell, Thu Dec  9 16:12:33 PST 2004 
+//    Added containsGlobalNodeIds, containsGlobalZoneIds.
+//
 // ****************************************************************************
 
 void
@@ -1655,7 +1688,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
 {
     int   i;
 
-    int numVals = 17 + 3*variables.size();
+    int numVals = 19 + 3*variables.size();
     int *vals = new int[numVals];
     vals[0] = topologicalDimension;
     vals[1] = spatialDimension;
@@ -1668,17 +1701,19 @@ avtDataAttributes::Write(avtDataObjectString &str,
     vals[8] = (containsOriginalCells ? 1 : 0);
     vals[9] = (containsOriginalNodes ? 1 : 0);
     vals[10] = (keepNodeZoneArrays ? 1 : 0);
-    vals[11] = (canUseInvTransform ? 1 : 0);
-    vals[12] = (canUseTransform ? 1 : 0);
-    vals[13] = (canUseCumulativeAsTrueOrCurrent ? 1 : 0);
-    vals[14] = windowMode;
-    vals[15] = activeVariable;
-    vals[16] = variables.size();
+    vals[11] = (containsGlobalZoneIds ? 1 : 0);
+    vals[12] = (containsGlobalNodeIds ? 1 : 0);
+    vals[13] = (canUseInvTransform ? 1 : 0);
+    vals[14] = (canUseTransform ? 1 : 0);
+    vals[15] = (canUseCumulativeAsTrueOrCurrent ? 1 : 0);
+    vals[16] = windowMode;
+    vals[17] = activeVariable;
+    vals[18] = variables.size();
     for (i = 0 ; i < variables.size() ; i++)
     {
-        vals[17+3*i]   = variables[i].dimension;
-        vals[17+3*i+1] = variables[i].centering;
-        vals[17+3*i+2] = (variables[i].treatAsASCII ? 1 : 0);
+        vals[19+3*i]   = variables[i].dimension;
+        vals[19+3*i+1] = variables[i].centering;
+        vals[19+3*i+2] = (variables[i].treatAsASCII ? 1 : 0);
     }
     wrtr->WriteInt(str, vals, numVals);
     wrtr->WriteDouble(str, dtime);
@@ -1814,6 +1849,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //    Kathleen Bonnell, Tue Oct 12 16:11:15 PDT 2004 
 //    Added keepNodeZoneArrays. 
 //
+//    Kathleen Bonnell, Thu Dec  9 16:12:33 PST 2004 
+//    Added containsGlobalNodeIds, containsGlobalZoneIds.
+//
 // ****************************************************************************
 
 int
@@ -1867,6 +1905,14 @@ avtDataAttributes::Read(char *input)
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
     SetKeepNodeZoneArrays(tmp != 0 ? true : false);
+
+    memcpy(&tmp, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    SetContainsGlobalZoneIds(tmp != 0 ? true : false);
+
+    memcpy(&tmp, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    SetContainsGlobalNodeIds(tmp != 0 ? true : false);
 
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);

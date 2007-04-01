@@ -1548,12 +1548,15 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
 
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
+        c << "#if 0" << endl;
+        c << "// Ifdef this code out until all attributes have Python StringRepresentation methods" << endl;
         c << "    { // new scope" << endl;
-        c << "         PyObject *s = Py" << attType << "_StringRepresentation(atts->" << MethodNameGet() << "());" << endl;
-        c << "         str += \"" << name << " = {\"" << endl;
-        c << "         if(obj != 0) str += PyString_AS_STRING(s);" << endl;
-        c << "         str += \"}\"\n" << endl;
+        c << "         PyObject *obj = Py" << attType << "_StringRepresentation(atts->" << MethodNameGet() << "());" << endl;
+        c << "         str += \"" << name << " = {\";" << endl;
+        c << "         if(obj != 0) str += PyString_AS_STRING(obj);" << endl;
+        c << "         str += \"}\\n\";" << endl;
         c << "    }" << endl;
+        c << "#endif" << endl;
     }
 };
 

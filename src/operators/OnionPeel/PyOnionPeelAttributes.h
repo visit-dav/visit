@@ -16,5 +16,7 @@ PyObject       *PyOnionPeelAttributes_WrapPyObject(const OnionPeelAttributes *at
 void            PyOnionPeelAttributes_SetLogging(bool val);
 void            PyOnionPeelAttributes_SetDefaults(const OnionPeelAttributes *atts);
 
+PyObject       *PyOnionPeelAttributes_StringRepresentation(const OnionPeelAttributes *atts);
+
 #endif
 

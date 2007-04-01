@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="OnionPeel" type="operator" label="Onion Peel" version="1.0" iconFile="OnionPeel.xpm">
+  <Plugin name="OnionPeel" type="operator" label="Onion Peel" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" iconFile="OnionPeel.xpm">
     <Attribute name="OnionPeelAttributes" purpose="Attributes for the onion peel operator" persistent="true">
       <Enum name="NodeFace">
         Node
@@ -8,10 +8,13 @@
       <Field name="adjacencyType" label="Adjacency" type="enum" subtype="NodeFace">
         Node
       </Field>
-      <Field name="categoryName" label="Category" type="string">
+      <Field name="useGlobalId" label="useGlobalId" type="bool">
+        false
+      </Field>
+      <Field name="categoryName" label="Category" type="string" enabler="useGlobalId:false">
         Whole
       </Field>
-      <Field name="subsetName" label="Set" type="string">
+      <Field name="subsetName" label="Set" type="string" enabler="useGlobalId:false">
         Whole
       </Field>
       <Field name="index" label="Location" type="intVector">

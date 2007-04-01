@@ -22,6 +22,7 @@
       <Enum name="Renderer">
         Splatting
         Texture3D
+        RayCasting
       </Enum>
       <Enum name="GradientType">
         CenteredDifferences
@@ -50,9 +51,6 @@
         default
       </Field>
       <Field name="freeformOpacity" label="freeformOpacity" type="ucharArray" length="256" init="true">
-      </Field>
-      <Field name="doSoftware" label="doSoftware" type="bool">
-        false
       </Field>
       <Field name="useColorVarMin" label="useColorVarMin" type="bool">
         false

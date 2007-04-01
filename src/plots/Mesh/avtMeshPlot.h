@@ -101,6 +101,9 @@ class     avtVariablePointGlyphMapper;
 //    Kathleen Bonnell, Tue Nov  2 10:41:33 PST 2004 
 //    Replaced avtPointGlyphMapper with avtVariablePointGlyphMapper.
 //
+//    Brad Whitlock, Wed Dec 15 10:48:35 PDT 2004
+//    Removed SetVarName.
+//
 // ****************************************************************************
 
 class
@@ -127,7 +130,6 @@ avtMeshPlot : public avtPlot
     void            SetMeshColor(const double *);
     void            SetOpaqueColor(const unsigned char *, bool force = false);
     void            SetOpaqueColor(const double *, bool force = false);
-    void            SetVarName(const char *);
     virtual bool    SetBackgroundColor(const double *);
     virtual bool    SetForegroundColor(const double *);
 

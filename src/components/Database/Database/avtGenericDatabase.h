@@ -15,6 +15,8 @@
 #include <avtSpecies.h>
 #include <avtVariableCache.h>
 
+#include <vectortypes.h>
+
 #include <MIR.h>
 
 struct    avtDatasetCollection;
@@ -204,6 +206,11 @@ class     PickVarInfo;
 //    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
 //    Added vector of bools for data selections to ReadDataset
 //
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Changed 'std::vector<std::string>' to 'stringVector', 'std::vector<int>'
+//    to intVector, 'std::vector<bool>' to 'boolVector'.  Added method
+//    'QueryGlobalIds'. 
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -283,12 +290,12 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
 
     bool                       PrepareMaterialSelect(int, bool,
                                                   avtSILRestrictionTraverser &, 
-                                                  std::vector<std::string> &);
+                                                  stringVector &);
     avtDataTree_p              MaterialSelect(vtkDataSet *, avtMaterial *, 
                                               std::vector<avtMixedVariable *>,
                                               int, const char *, int,
-                                              std::vector<std::string> &,
-                                              std::vector<std::string> &,
+                                              stringVector &, 
+                                              stringVector &, 
                                               bool, bool, bool, bool, bool,
                                               bool, int, bool, bool&, bool&,
                                               bool);
@@ -298,66 +305,66 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     avtMaterial               *GetMaterial(int, const char *, int);
     avtSpecies                *GetSpecies(int, const char *, int);
     void                       GetMaterialIndices(avtMaterial *,
-                                                  std::vector<std::string> &,
-                                                  std::vector<int> &);
+                                                  stringVector &, 
+                                                  intVector &);
 
     void                       ReadDataset(avtDatasetCollection &, 
-                                  std::vector<int> &, avtDataSpecification_p &,
+                                  intVector &, avtDataSpecification_p &,
                                   avtSourceFromDatabase *,
-                                  std::vector<bool> &);
+                                  boolVector &);
 
     avtDomainBoundaries       *GetDomainBoundaryInformation(
                                                        avtDatasetCollection &,
-                                                       std::vector<int> &,
+                                                       intVector &, 
                                                        avtDataSpecification_p);
     bool                       CommunicateGhosts(avtGhostDataType,
-                                    avtDatasetCollection &, std::vector<int> &, 
+                                    avtDatasetCollection &, intVector &,
                                     avtDataSpecification_p &,
                                     avtSourceFromDatabase *);
     bool                       CommunicateGhostZonesFromDomainBoundaries(
                                     avtDomainBoundaries *,
-                                    avtDatasetCollection &, std::vector<int> &,
+                                    avtDatasetCollection &, intVector &, 
                                     avtDataSpecification_p &,
                                     avtSourceFromDatabase *);
     bool                     CommunicateGhostZonesFromDomainBoundariesFromFile(
-                                    avtDatasetCollection &, std::vector<int> &,
+                                    avtDatasetCollection &, intVector &, 
                                     avtDataSpecification_p &,
                                     avtSourceFromDatabase *);
     bool                     CommunicateGhostNodesFromDomainBoundariesFromFile(
-                                    avtDatasetCollection &, std::vector<int> &,
+                                    avtDatasetCollection &, intVector &, 
                                     avtDataSpecification_p &,
                                     avtSourceFromDatabase *);
     bool                       CommunicateGhostZonesFromGlobalNodeIds(
-                                    avtDatasetCollection &, std::vector<int> &,
+                                    avtDatasetCollection &, intVector &, 
                                     avtDataSpecification_p &,
                                     avtSourceFromDatabase *);
     bool                       CommunicateGhostNodesFromGlobalNodeIds(
-                                    avtDatasetCollection &, std::vector<int> &,
+                                    avtDatasetCollection &, intVector &, 
                                     avtDataSpecification_p &,
                                     avtSourceFromDatabase *);
 
     bool                       ApplyGhostForDomainNesting(avtDatasetCollection &,
-                                  std::vector<int> &, std::vector<int> &,
+                                  intVector &, intVector &, 
                                   avtDataSpecification_p &);
     void                       MaterialSelect(avtDatasetCollection &,
-                                 std::vector<int> &, avtDataSpecification_p &,
+                                 intVector &, avtDataSpecification_p &,
                                  avtSourceFromDatabase *, bool);
     void                       SpeciesSelect(avtDatasetCollection &,
-                                 std::vector<int> &, std::vector<bool> &,
+                                 intVector &, boolVector &, 
                                  avtDataSpecification_p &,
                                  avtSourceFromDatabase *);
     void                       CreateOriginalZones(avtDatasetCollection &,
-                                                   std::vector<int> &, 
+                                                   intVector &, 
                                                    avtSourceFromDatabase *);
     void                       CreateOriginalNodes(avtDatasetCollection &,
-                                                   std::vector<int> &, 
+                                                   intVector &, 
                                                    avtSourceFromDatabase *);
     void                       CreateGlobalZones(avtDatasetCollection &,
-                                                   std::vector<int> &, 
+                                                   intVector &, 
                                                    avtSourceFromDatabase *,
                                                    avtDataSpecification_p &);
     void                       CreateGlobalNodes(avtDatasetCollection &,
-                                                   std::vector<int> &, 
+                                                   intVector &, 
                                                    avtSourceFromDatabase *,
                                                    avtDataSpecification_p &);
     void                       CreateStructuredIndices(avtDatasetCollection &,
@@ -366,57 +373,55 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
 
     virtual bool               QueryScalars(const std::string &, const int, 
                                             const int , const int ,
-                                            const std::vector<int> &, 
+                                            const intVector &, 
                                             PickVarInfo &, const bool);
     virtual bool               QueryVectors(const std::string &, const int, 
                                             const int, const int,
-                                            const std::vector<int> &, 
+                                            const intVector &, 
                                             PickVarInfo &, const bool);
     virtual bool               QueryTensors(const std::string &, const int, 
                                             const int, const int,
-                                            const std::vector<int> &, 
+                                            const intVector &,
                                             PickVarInfo &, const bool);
     virtual bool               QuerySymmetricTensors(const std::string &,
                                             const int, const int, const int,
-                                            const std::vector<int> &, 
+                                            const intVector &, 
                                             PickVarInfo &, const bool);
     virtual bool               QueryMaterial(const std::string &, const int, 
                                             const int , const int,
-                                            const std::vector<int> &, 
+                                            const intVector &, 
                                             PickVarInfo &, const bool);
     virtual bool               QuerySpecies(const std::string &, const int, 
                                             const int , const int ,
-                                            const std::vector<int> &, 
+                                            const intVector &, 
                                             PickVarInfo &, const bool);
     virtual bool               QueryNodes(const std::string &, const int, 
                                           const int, bool &, const int, 
-                                          std::vector<int> &, std::vector<int> &,
+                                          intVector &, intVector &, 
                                           const bool, float [3], 
                                           const int, const bool, const bool,
-                                          const bool, std::vector<std::string> &,
-                                          std::vector<std::string> &,
-                                          std::vector<std::string> &,
+                                          const bool, stringVector &,
+                                          stringVector &, stringVector &,
                                           const bool, const bool,
-                                          std::vector<std::string> &,
-                                          std::vector<std::string> &);
+                                          stringVector &, stringVector &);
 
     virtual bool               QueryMesh(const std::string &, const int, const int, 
                                          std::string &, const bool);
 
     virtual bool               QueryZones(const std::string&, const int, int &,
-                                          bool &, const int, std::vector<int> &, 
-                                          std::vector<int> &, const bool,
+                                          bool &, const int, intVector &, 
+                                          intVector &, const bool,
                                           float [3], const int, const bool, 
                                           const bool, const bool, 
-                                          std::vector<std::string> &,
-                                          std::vector<std::string> &,
-                                          std::vector<std::string> &,
-                                          const bool, const bool, 
-                                          std::vector<std::string> &,
-                                          std::vector<std::string> &); 
+                                          stringVector &, stringVector &,
+                                          stringVector &, const bool, const bool, 
+                                          stringVector &, stringVector &); 
     virtual bool               QueryCoords(const std::string &, const int,
                                            const int, const int, float[3],
                                            const bool);
+    virtual void               QueryGlobalIds(const int, const std::string &,
+                                        const int, const bool, const int, 
+                                        const intVector &, int &, intVector &);
 
     void                       AssociateBounds(vtkDataSet *);
     void                       ScaleMesh(vtkDataSet *);

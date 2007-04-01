@@ -72,6 +72,9 @@ class avtExpressionEvaluatorFilter;
 //    Kathleen Bonnell, Thu Sep 23 17:38:15 PDT 2004 
 //    Removed SetRealIds. 
 // 
+//    Kathleen Bonnell, Wed Dec 15 09:19:39 PST 2004 
+//    Add SetGlobalIds. 
+// 
 // ****************************************************************************
 
 class QUERY_API avtPickQuery : public avtDatasetQuery
@@ -127,6 +130,8 @@ class QUERY_API avtPickQuery : public avtDatasetQuery
                                                               const int);
     intVector                       GetCurrentZoneForOriginal(vtkDataSet *, 
                                                               const intVector&);
+    void                            SetGlobalIds(vtkDataSet *, int);
+                                                              
 
     PickAttributes                  pickAtts;
     avtExpressionEvaluatorFilter   *eef;

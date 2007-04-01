@@ -374,6 +374,9 @@ class MakeMovie:
     #   Brad Whitlock, Tue Aug 3 16:58:47 PST 2004
     #   Added engineCommandLineProperties.
     #
+    #   Brad Whitlock, Wed Dec 15 11:22:42 PDT 2004
+    #   Made it possible to save PNG files.
+    #
     ###########################################################################
 
     def __init__(self):
@@ -389,6 +392,7 @@ class MakeMovie:
         self.OUTPUT_JPEG = 2
         self.OUTPUT_BMP  = 3
         self.OUTPUT_RGB  = 4
+        self.OUTPUT_PNG  = 5
 
         # Movie properties.
         self.stateFile = ""
@@ -441,6 +445,9 @@ class MakeMovie:
     #   Brad Whitlock, Tue Aug 3 17:13:25 PST 2004
     #   Added parallel options.
     #
+    #   Brad Whitlock, Wed Dec 15 11:23:53 PDT 2004
+    #   Added PNG files.
+    #
     ###########################################################################
 
     def PrintUsage(self):
@@ -470,6 +477,8 @@ class MakeMovie:
         print "                              BMP (Windows Bitmap) files."
         print "                       rgb  : Save raw movie frames as individual"
         print "                              RGB (SGI format) files."
+        print "                       png  : Save raw movie frames as individual"
+        print "                              PNG files."
         print ""
         print "                       *** Important Note ***"
         print "                       The mpeg, qt, and sm formats are not supported"
@@ -607,6 +616,9 @@ class MakeMovie:
     #   Added VisIt's parallel arguments so they can feed into calls to
     #   open a compute engine if they are given.
     #
+    #   Brad Whitlock, Wed Dec 15 11:24:51 PDT 2004
+    #   Added support for PNG files.
+    #
     ###########################################################################
 
     def ProcessArguments(self):
@@ -679,6 +691,9 @@ class MakeMovie:
                     elif(format == "rgb"):
                         self.movieFormat = self.JUST_FRAMES_MOVIE
                         self.outputFormat = self.OUTPUT_RGB
+                    elif(format == "png"):
+                        self.movieFormat = self.JUST_FRAMES_MOVIE
+                        self.outputFormat = self.OUTPUT_PNG
                     else:
                         self.PrintUsage()
                         sys.exit(-1)
@@ -920,6 +935,9 @@ class MakeMovie:
     #   Mark C. Miller, Mon Dec 13 16:35:42 PST 2004
     #   Added try/catch protection for SaveWindow
     #
+    #   Brad Whitlock, Wed Dec 15 11:25:27 PDT 2004
+    #   Added support for PNG files.
+    #
     ###########################################################################
 
     def SaveImage(self, index, ext):
@@ -936,6 +954,8 @@ class MakeMovie:
             s.format =  s.BMP
         elif(self.outputFormat == self.OUTPUT_RGB):
             s.format =  s.RGB
+        elif(self.outputFormat == self.OUTPUT_PNG):
+            s.format =  s.PNG
         s.width = self.xres
         s.height = self.yres
         s.outputToCurrentDirectory = 1
@@ -976,6 +996,10 @@ class MakeMovie:
     # Programmer: Brad Whitlock
     # Date:       Mon Jul 28 13:58:06 PST 2003
     #
+    # Modifications:
+    #   Brad Whitlock, Wed Dec 15 11:26:47 PDT 2004
+    #   Added support for PNG files.
+    #
     ###########################################################################
 
     def LookupImageExtension(self, fmt):
@@ -988,6 +1012,8 @@ class MakeMovie:
             retval = "bmp"
         elif(fmt == self.OUTPUT_RGB):
             retval = "rgb"
+        elif(fmt == self.OUTPUT_PNG):
+            retval = "png"
         return retval
 
     ###########################################################################

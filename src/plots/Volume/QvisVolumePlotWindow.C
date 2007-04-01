@@ -1,5 +1,6 @@
 #include <QvisVolumePlotWindow.h>
 #include <qapplication.h>
+#include <qcombobox.h>
 #include <qcursor.h>
 #include <qlayout.h>
 #include <qpushbutton.h>
@@ -187,6 +188,10 @@ QvisVolumePlotWindow::~QvisVolumePlotWindow()
 //
 //   Brad Whitlock, Thu Dec 9 17:36:14 PST 2004
 //   I changed the opacity control from a line edit to a variable button.
+//
+//   Brad Whitlock, Wed Dec 15 09:27:19 PDT 2004
+//   Removed "raytrace" button and added RayCasting to a new combobox that
+//   is used to set the rendering methods.
 //
 // ****************************************************************************
 
@@ -406,7 +411,7 @@ QvisVolumePlotWindow::CreateWindowContents()
     opacityMinMaxLayout->addWidget(opacityMax);
 
     // Create the resample target value
-    QGridLayout *resampleAndOpacityLayout = new QGridLayout(topLayout, 4,3, 10, "resampleAndOpacityLayout");
+    QGridLayout *rendererOptionsLayout = new QGridLayout(topLayout, 6,3, 10, "rendererOptionsLayout");
     resampleTarget = new QLineEdit(central, "resampleTarget");
     connect(resampleTarget, SIGNAL(returnPressed()),
             this, SLOT(resampleTargetProcessText()));
@@ -417,9 +422,9 @@ QvisVolumePlotWindow::CreateWindowContents()
             this, SLOT(resampleTargetSliderChanged(int)));
     connect(resampleTargetSlider, SIGNAL(sliderReleased()),
             this, SLOT(resampleTargetSliderReleased()));
-    resampleAndOpacityLayout->addWidget(resampleLabel, 0, 0);
-    resampleAndOpacityLayout->addWidget(resampleTarget, 0, 1);
-    resampleAndOpacityLayout->addWidget(resampleTargetSlider, 0, 2);
+    rendererOptionsLayout->addWidget(resampleLabel, 0, 0);
+    rendererOptionsLayout->addWidget(resampleTarget, 0, 1);
+    rendererOptionsLayout->addWidget(resampleTargetSlider, 0, 2);
 
     // Create the number of 3D slices.
     num3DSlices = new QLineEdit(central, "num3DSlices");
@@ -427,8 +432,8 @@ QvisVolumePlotWindow::CreateWindowContents()
             SLOT(num3DSlicesProcessText()));
     QLabel *num3DSlicesLabel = new QLabel(num3DSlices, "Number of slices",
                                             central, "num3DSlicesLabel");
-    resampleAndOpacityLayout->addWidget(num3DSlicesLabel, 1, 0);
-    resampleAndOpacityLayout->addWidget(num3DSlices, 1, 1);
+    rendererOptionsLayout->addWidget(num3DSlicesLabel, 1, 0);
+    rendererOptionsLayout->addWidget(num3DSlices, 1, 1);
 
     // Create the number of samples per ray.
     samplesPerRay = new QLineEdit(central, "samplesPerRay");
@@ -436,62 +441,49 @@ QvisVolumePlotWindow::CreateWindowContents()
             SLOT(samplesPerRayProcessText()));
     QLabel *samplesPerRayLabel = new QLabel(samplesPerRay, "Samples per ray",
                                             central, "samplesPerRayLabel");
-    resampleAndOpacityLayout->addWidget(samplesPerRayLabel, 2, 0);
-    resampleAndOpacityLayout->addWidget(samplesPerRay, 2, 1);
+    rendererOptionsLayout->addWidget(samplesPerRayLabel, 2, 0);
+    rendererOptionsLayout->addWidget(samplesPerRay, 2, 1);
 
     // Create the rendering method radio buttons.
-    QHBoxLayout *rendererLayout = new QHBoxLayout(topLayout);
-    rendererLayout->addWidget(new QLabel("Rendering method", central));
-    rendererButtonGroup = new QButtonGroup(0, "rendererButtonGroup");
-    connect(rendererButtonGroup, SIGNAL(clicked(int)),
+    rendererTypesComboBox = new QComboBox(central, "rendererTypesComboBox");
+    rendererTypesComboBox->insertItem("Splatting",0);
+    rendererTypesComboBox->insertItem("3D Texturing",1);
+    rendererTypesComboBox->insertItem("Ray casting",2);
+    connect(rendererTypesComboBox, SIGNAL(activated(int)),
             this, SLOT(rendererTypeChanged(int)));
-    rb = new QRadioButton("Splatting", central);
-    rendererButtonGroup->insert(rb, 0);
-    rendererLayout->addWidget(rb);
-    rb = new QRadioButton("3D Texturing", central);
-    rendererButtonGroup->insert(rb, 1);
-    rendererLayout->addWidget(rb);
+    rendererOptionsLayout->addWidget(new QLabel(rendererTypesComboBox,
+        "Rendering method", central), 3, 0);
+    rendererOptionsLayout->addMultiCellWidget(rendererTypesComboBox, 3,3,1,2);
 
     // Create the gradient method radio buttons.
-    QHBoxLayout *gradientLayout = new QHBoxLayout(topLayout);
-    gradientLayout->addWidget(new QLabel("Gradient method", central));
+    rendererOptionsLayout->addWidget(new QLabel("Gradient method", central),4,0);
     gradientButtonGroup = new QButtonGroup(0, "gradientButtonGroup");
     connect(gradientButtonGroup, SIGNAL(clicked(int)),
             this, SLOT(gradientTypeChanged(int)));
     rb = new QRadioButton("Centered diff", central);
     gradientButtonGroup->insert(rb, 0);
-    gradientLayout->addWidget(rb);
+    rendererOptionsLayout->addWidget(rb,4,1);
     rb = new QRadioButton("Sobel", central);
     gradientButtonGroup->insert(rb, 1);
-    gradientLayout->addWidget(rb);
+    rendererOptionsLayout->addWidget(rb,4,2);
 
     // Create the legend toggle.
-    QHBoxLayout *toggleLayout = new QHBoxLayout(topLayout);
-    toggleLayout->setSpacing(10);
     legendToggle = new QCheckBox("Legend", central, "legendToggle");
     connect(legendToggle, SIGNAL(toggled(bool)),
             this, SLOT(legendToggled(bool)));
-    toggleLayout->addWidget(legendToggle);
+    rendererOptionsLayout->addWidget(legendToggle,5,0);
 
     // Create the lighting toggle.
     lightingToggle = new QCheckBox("Lighting", central, "lightingToggle");
     connect(lightingToggle, SIGNAL(toggled(bool)),
             this, SLOT(lightingToggled(bool)));
-    toggleLayout->addWidget(lightingToggle);
+    rendererOptionsLayout->addWidget(lightingToggle,5,1);
 
     // Create the smooth data toggle.
     smoothDataToggle = new QCheckBox("Smooth Data", central, "smoothToggle");
     connect(smoothDataToggle, SIGNAL(toggled(bool)),
             this, SLOT(smoothDataToggled(bool)));
-    toggleLayout->addWidget(smoothDataToggle);
-
-    // Create the software toggle.
-    QHBoxLayout *softwareButtonLayout = new QHBoxLayout(topLayout);
-    softwareToggle = new QCheckBox("Ray Trace", central, "softwareToggle");
-    connect(softwareToggle, SIGNAL(toggled(bool)),
-            this, SLOT(softwareToggled(bool)));
-    softwareButtonLayout->addWidget(softwareToggle);
-    softwareButtonLayout->addStretch(10);
+    rendererOptionsLayout->addWidget(smoothDataToggle,5,2);
 
     // Create the color selection widget.
     colorSelect = new QvisColorSelectionWidget(this, "colorSelect", WType_Popup);
@@ -545,6 +537,10 @@ QvisVolumePlotWindow::CreateWindowContents()
 //   Hank Childs, Mon Nov 22 09:28:33 PST 2004
 //   Account for ray trace toggle.
 //
+//   Brad Whitlock, Wed Dec 15 09:26:05 PDT 2004
+//   I moved raytrace support into the rendering mode. I also made it be
+//   a combo box.
+//
 // ****************************************************************************
 
 void
@@ -580,7 +576,7 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             break;
         case 3: // opacityAttenuation
             attenuationSlider->blockSignals(true);
-            attenuationSlider->setValue(volumeAtts->GetOpacityAttenuation() * 255);
+            attenuationSlider->setValue(int(volumeAtts->GetOpacityAttenuation() * 255));
             attenuationSlider->blockSignals(false);
             break;
         case 4: // freeformFlag
@@ -614,78 +610,91 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
         case 8: // freeformOpacity
             UpdateFreeform();
             break;
-        case 9: // doSoftware
-            softwareToggle->blockSignals(true);
-            softwareToggle->setChecked(volumeAtts->GetDoSoftware());
-            softwareToggle->blockSignals(false);
-            break;
-        case 10: // useColorVarMin
+        case 9: // useColorVarMin
             colorMinToggle->blockSignals(true);
             colorMinToggle->setChecked(volumeAtts->GetUseColorVarMin());
             colorMinToggle->blockSignals(false);
             colorMin->setEnabled(volumeAtts->GetUseColorVarMin());
             break;
-        case 11: // colorVarMin
+        case 10: // colorVarMin
             temp.setNum(volumeAtts->GetColorVarMin());
             colorMin->setText(temp);
             break;
-        case 12: // useColorVarMax
+        case 11: // useColorVarMax
             colorMaxToggle->blockSignals(true);
             colorMaxToggle->setChecked(volumeAtts->GetUseColorVarMax());
             colorMaxToggle->blockSignals(false);
             colorMax->setEnabled(volumeAtts->GetUseColorVarMax());
             break;
-        case 13: // colorVarMax
+        case 12: // colorVarMax
             temp.setNum(volumeAtts->GetColorVarMax());
             colorMax->setText(temp);
             break;
-        case 14: // useOpacityVarMin
+        case 13: // useOpacityVarMin
             opacityMinToggle->blockSignals(true);
             opacityMinToggle->setChecked(volumeAtts->GetUseOpacityVarMin());
             opacityMinToggle->blockSignals(false);
             opacityMin->setEnabled(volumeAtts->GetUseOpacityVarMin());
             break;
-        case 15: // opacityVarMin
+        case 14: // opacityVarMin
             temp.setNum(volumeAtts->GetOpacityVarMin());
             opacityMin->setText(temp);
             break;
-        case 16: // useOpacityVarMax
+        case 15: // useOpacityVarMax
             opacityMaxToggle->blockSignals(true);
             opacityMaxToggle->setChecked(volumeAtts->GetUseOpacityVarMax());
             opacityMaxToggle->blockSignals(false);
             opacityMax->setEnabled(volumeAtts->GetUseOpacityVarMax());
             break;
-        case 17: // opacityVarMax
+        case 16: // opacityVarMax
             temp.setNum(volumeAtts->GetOpacityVarMax());
             opacityMax->setText(temp);
             break;
-        case 18: // smoothData
+        case 17: // smoothData
             smoothDataToggle->blockSignals(true);
             smoothDataToggle->setChecked(volumeAtts->GetSmoothData());
             smoothDataToggle->blockSignals(false);
-        case 19: // samplesPerRay
+        case 18: // samplesPerRay
             temp.sprintf("%d", volumeAtts->GetSamplesPerRay());
             samplesPerRay->setText(temp);
             break;
-        case 20: // rendererType
+        case 19: // rendererType
+            rendererTypesComboBox->blockSignals(true);
             if (volumeAtts->GetRendererType() == VolumeAttributes::Splatting)
             {
-                rendererButtonGroup->setButton(0);
+                rendererTypesComboBox->setCurrentItem(0);
                 num3DSlices->setEnabled(false);
+                resampleTarget->setEnabled(true);
+                resampleTargetSlider->setEnabled(true);
+                samplesPerRay->setEnabled(false);
+            }
+            else if (volumeAtts->GetRendererType() == VolumeAttributes::Texture3D)
+            {
+                rendererTypesComboBox->setCurrentItem(1);
+                num3DSlices->setEnabled(true);
+                resampleTarget->setEnabled(true);
+                resampleTargetSlider->setEnabled(true);
+                samplesPerRay->setEnabled(false);
             }
             else
             {
-                rendererButtonGroup->setButton(1);
-                num3DSlices->setEnabled(true);
+                rendererTypesComboBox->setCurrentItem(2);
+                num3DSlices->setEnabled(false);
+                resampleTarget->setEnabled(false);
+                resampleTargetSlider->setEnabled(false);
+                samplesPerRay->setEnabled(true);
             }
+            rendererTypesComboBox->blockSignals(false);
             break;
-        case 21: // gradientType
+        case 20: // gradientType
+            gradientButtonGroup->blockSignals(true);
             if (volumeAtts->GetGradientType() == VolumeAttributes::CenteredDifferences)
                 gradientButtonGroup->setButton(0);
             else
                 gradientButtonGroup->setButton(1);
+            gradientButtonGroup->blockSignals(false);
             break;
-        case 22:
+        case 21:
             temp.sprintf("%d", volumeAtts->GetNum3DSlices());
             num3DSlices->setText(temp);
             break;
@@ -1116,7 +1125,7 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             float val = temp.toFloat(&okay);
-            volumeAtts->SetSamplesPerRay(val);
+            volumeAtts->SetSamplesPerRay(int(val));
         }
 
         if(!okay)
@@ -1136,7 +1145,7 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             float val = temp.toFloat(&okay);
-            volumeAtts->SetNum3DSlices(val);
+            volumeAtts->SetNum3DSlices(int(val));
         }
 
         if(!okay)
@@ -1619,27 +1628,6 @@ QvisVolumePlotWindow::lightingToggled(bool)
 }
 
 // ****************************************************************************
-// Method: QvisVolumePlotWindow::softwareToggled
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the toggle for the software
-//   is clicked.
-//
-// Programmer: Hank Childs
-// Creation:   November 22, 2004
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisVolumePlotWindow::softwareToggled(bool)
-{
-    volumeAtts->SetDoSoftware(!volumeAtts->GetDoSoftware());
-    Apply();
-}
-
-// ****************************************************************************
 // Method: QvisVolumePlotWindow::colorMinToggled
 //
 // Purpose: 
@@ -2066,6 +2054,10 @@ QvisVolumePlotWindow::gradientTypeChanged(int val)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October  2, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Wed Dec 15 09:29:12 PDT 2004
+//    I added the RayCasting option.
+//
 // ****************************************************************************
 void
 QvisVolumePlotWindow::rendererTypeChanged(int val)
@@ -2077,6 +2069,9 @@ QvisVolumePlotWindow::rendererTypeChanged(int val)
         break;
       case 1:
         volumeAtts->SetRendererType(VolumeAttributes::Texture3D);
+        break;
+      case 2:
+        volumeAtts->SetRendererType(VolumeAttributes::RayCasting);
         break;
       default:
         EXCEPTION1(ImproperUseException,

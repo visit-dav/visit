@@ -29,6 +29,9 @@ Definition:
 //    Hank Childs, Mon Nov 22 09:37:12 PST 2004
 //    Recalculate if the ray trace button was hit.
 //
+//    Brad Whitlock, Wed Dec 15 09:31:24 PDT 2004
+//    Removed doSoftware since it's now part of rendererType.
+//
 // ****************************************************************************
 bool
 VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
@@ -40,8 +43,6 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
     if (rendererType != obj.rendererType)
         return true;
     if (smoothData != obj.smoothData)
-        return true;
-    if (doSoftware != obj.doSoftware)
         return true;
 
     return false;

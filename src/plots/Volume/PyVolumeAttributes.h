@@ -16,5 +16,7 @@ PyObject       *PyVolumeAttributes_WrapPyObject(const VolumeAttributes *attr);
 void            PyVolumeAttributes_SetLogging(bool val);
 void            PyVolumeAttributes_SetDefaults(const VolumeAttributes *atts);
 
+PyObject       *PyVolumeAttributes_StringRepresentation(const VolumeAttributes *atts);
+
 #endif
 
