@@ -25,6 +25,11 @@ const char * const AVT_NULL_DATASET_MSG = "avtDataset withheld; over scalable th
 //  Programmer: Mark C. Miller 
 //  Creation:   January 7, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Feb  4 19:47:30 PST 2004
+//    Added Instance & DerivedCopy, needed by avtDataObject->Clone
+//
 // ****************************************************************************
 
 class PIPELINE_API avtNullData : public avtDataObject
@@ -38,9 +43,11 @@ class PIPELINE_API avtNullData : public avtDataObject
     virtual const char       *GetType(void)  { return typeStr.c_str(); };
     virtual int               GetNumberOfCells(bool polysOnly = false) const { return 0;};
     virtual void              SetType(char *_typeStr )  { typeStr = _typeStr; };
+    avtDataObject            *Instance(void);
     avtDataObjectWriter      *InstantiateWriter(void);
 
   protected:
+    virtual void              DerivedCopy(avtDataObject *) {;};
     virtual void              DerivedMerge(avtDataObject *dob) {;};
 
   private:

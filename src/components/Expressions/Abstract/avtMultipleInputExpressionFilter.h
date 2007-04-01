@@ -33,6 +33,7 @@ class EXPRESSION_API avtMultipleInputExpressionFilter
     virtual                  ~avtMultipleInputExpressionFilter();
 
     virtual void              AddInputVariableName(const char *var);
+    void                      ClearInputVariableNames(void);
 
     virtual const char       *GetType(void)
                                  { return "avtMultipleInputExpressionFilter"; }

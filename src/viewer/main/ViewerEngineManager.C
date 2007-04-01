@@ -981,6 +981,10 @@ ViewerEngineManager::LaunchMessage(const char *hostName) const
 //   Brad Whitlock, Thu Dec 11 08:27:14 PDT 2003
 //   Fixed a small coding error related to the declaration of engineIndex.
 //
+//   Mark C. Miller, Wed Feb  4 19:47:30 PST 2004
+//   Added setting of engineIndex to the loop over plots. Added use of
+//   RealHostName in computing the engineIndex
+//
 // ****************************************************************************
 
 bool
@@ -1004,6 +1008,7 @@ ViewerEngineManager::ExternalRender(std::vector<const char*> pluginIDsList,
         // send per-plot RPCs
         for (int i = 0; i < plotIdsList.size(); i++)
         {
+            engineIndex = GetEngineIndex(RealHostName(hostsList[i].c_str()));
             if (!UpdatePlotAttributes(hostsList[i].c_str(),pluginIDsList[i],
                                       plotIdsList[i],attsList[i]))
             {
@@ -1024,7 +1029,7 @@ ViewerEngineManager::ExternalRender(std::vector<const char*> pluginIDsList,
         std::map<std::string,std::vector<int> >::iterator pos;
         for (pos = perEnginePlotIds.begin(); pos != perEnginePlotIds.end(); pos++)
         {
-            engineIndex = GetEngineIndex(pos->first.c_str());
+            engineIndex = GetEngineIndex(RealHostName(pos->first.c_str()));
 
             if (!SetWinAnnotAtts(pos->first.c_str(), &winAtts, &annotAtts))
             {

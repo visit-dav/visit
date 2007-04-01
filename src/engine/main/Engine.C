@@ -790,6 +790,9 @@ Engine::AlarmHandler(int signal)
 //    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
 //    Made the engine an object.
 //
+//    Mark C. Miller, Wed Feb  4 19:45:35 PST 2004
+//    Made the ui_dob a 'clone' of the writer's input
+//
 // ****************************************************************************
 void
 Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer)
@@ -808,12 +811,12 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer)
 
         avtDataObject_p ui_dob = writer->GetInput();
        
-        // Create a writer to write across the network.
-        avtDataObjectWriter_p networkwriter = ui_dob->InstantiateWriter();
-        networkwriter->SetDestinationFormat(destinationFormat);
-
         if (writer->MustMergeParallelStreams())
         {
+            // we clone here to preserve this processor's orig network output
+            // while we merge other proc's output into the cloned dob
+            ui_dob = ui_dob->Clone();
+
             for (int i=1; i<PAR_Size(); i++)
             {
                 MPI_Status stat;
@@ -849,6 +852,11 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer)
             }
         }
         visitTimer->StopTimer(collectData, "Collecting data");
+
+        // Create a writer to write across the network.
+        avtDataObjectWriter_p networkwriter = ui_dob->InstantiateWriter();
+        networkwriter->SetDestinationFormat(destinationFormat);
+
 
         // indicate that cumulative extents in data object now as good as true extents
         ui_dob->GetInfo().GetAttributes().SetCanUseCummulativeAsTrueOrCurrent(true);

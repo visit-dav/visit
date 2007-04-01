@@ -6,6 +6,26 @@
 #include <avtNullDataWriter.h>
 
 // ****************************************************************************
+//  Method: avtNullData::Instance
+//
+//  Purpose:
+//      Creates an instance of an avtNullData taking care to copy the incomming
+//      null data object's type string.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   February 4, 2004
+//
+// ****************************************************************************
+
+avtDataObject *
+avtNullData::Instance(void)
+{
+    avtDataObjectSource *src = NULL;
+    avtNullData *nd = new avtNullData(src,GetType());
+    return nd;
+}
+
+// ****************************************************************************
 //  Method: avtNullData::InstantiateWriter
 //
 //  Arguments:

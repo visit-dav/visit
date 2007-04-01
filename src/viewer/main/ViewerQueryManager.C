@@ -2472,6 +2472,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Added PickByNode, PickByZone. Allow certain queries to set their
 //    window type. 
 //
+//    Hank Childs, Tue Feb  3 17:09:41 PST 2004
+//    Added variable summation query.
+//
 // ****************************************************************************
 
 void
@@ -2498,6 +2501,8 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("Revolved surface area", QueryList::DatabaseQuery);
     queryTypes->AddQuery("Surface area", QueryList::DatabaseQuery);
     queryTypes->AddQuery("Volume", QueryList::DatabaseQuery);
+    queryTypes->AddQuery("Variable Sum", QueryList::DatabaseQuery);
+    queryTypes->AddQuery("Weighted Variable Sum", QueryList::DatabaseQuery);
     queryTypes->AddQuery("WorldPick", QueryList::PointQuery);
     queryTypes->AddQuery("WorldNodePick", QueryList::PointQuery);
     queryTypes->AddQuery("Variable by Zone", QueryList::DatabaseQuery);
