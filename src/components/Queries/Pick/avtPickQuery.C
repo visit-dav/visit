@@ -49,6 +49,9 @@ using     std::string;
 //    Kathleen Bonnell, Thu Jul 29 17:10:48 PDT 2004 
 //    Initialize eef and src. 
 //
+//    Kathleen Bonnell, Mon Aug 30 17:56:29 PDT 2004 
+//    Initialize skippedLocate.
+//
 // ****************************************************************************
 
 avtPickQuery::avtPickQuery()
@@ -60,6 +63,7 @@ avtPickQuery::avtPickQuery()
     singleDomain = false;
     eef = new avtExpressionEvaluatorFilter;
     src = NULL;
+    skippedLocate = false;
 }
 
 

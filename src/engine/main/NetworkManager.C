@@ -2027,6 +2027,9 @@ NetworkManager::StopPickMode(void)
 //    Kathleen Bonnell, Thu Aug 26 11:18:47 PDT 2004 
 //    Skip LocateQuery if picking on 2d boundary or contour plots. 
 //
+//    Kathleen Bonnell, Mon Aug 30 17:51:56 PDT 2004 
+//    Send SkipLocate flag to pick query.
+//
 // ****************************************************************************
 
 void
@@ -2140,6 +2143,7 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
 
             pQ->SetInput(networkCache[id]->GetNetDB()->GetOutput());
             pQ->SetPickAtts(pa);
+            pQ->SetSkippedLocate(skipLocate);
             pQ->PerformQuery(&qa); 
             *pa = *(pQ->GetPickAtts());
 

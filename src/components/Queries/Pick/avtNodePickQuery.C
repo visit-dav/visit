@@ -73,13 +73,20 @@ avtNodePickQuery::~avtNodePickQuery()
 //    Handle case when pickatts.domain has not yet been set. (e.g. when
 //    picking 2d contour or boundary plots.)
 //
+//    Kathleen Bonnell, Mon Aug 30 17:53:58 PDT 2004
+//    Modified early-return test -- split into two, and use new flag 
+//    skippedLocate. 
+//
 // ****************************************************************************
 
 void
 avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
 {
-    if (ds == NULL || pickAtts.GetFulfilled() ||
-        (pickAtts.GetDomain() != -1 && dom != pickAtts.GetDomain()))
+    if (ds == NULL || pickAtts.GetFulfilled()) 
+    {
+        return;
+    }
+    if (dom != pickAtts.GetDomain() && !skippedLocate)
     {
         return;
     }
