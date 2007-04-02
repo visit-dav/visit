@@ -429,6 +429,10 @@ void avtOpenFOAMFileFormat::CombineOwnerNeigbor()
 //  Purpose:
 //  derive cell types and create the internal mesh
 //
+//  Modifications:
+//    Mark C. Miller, Mon Nov 20 22:47:10 PST 2006
+//    Removed extraneous cout statement warning that poly data is slow
+//
 // ****************************************************************************
 vtkUnstructuredGrid * avtOpenFOAMFileFormat::MakeInternalMesh()
 {
@@ -742,7 +746,6 @@ vtkUnstructuredGrid * avtOpenFOAMFileFormat::MakeInternalMesh()
     //OFpolyhedron || vtkConvexPointSet
     else
       {
-      cout<<"Warning: Polyhedral Data is very Slow!"<<endl;
       foundDup = false;
 
       //get first face
@@ -2840,7 +2843,6 @@ vtkUnstructuredGrid * avtOpenFOAMFileFormat::GetCellZoneMesh(int timeState, int 
     //OFpolyhedron || vtkConvexPointSet
     else
       {
-      cout<<"Warning: Polyhedral Data is very Slow!"<<endl;
       foundDup = false;
 
       //grab face 0
