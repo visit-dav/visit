@@ -1,3 +1,40 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2006, The Regents of the University of California
+* Produced at the Lawrence Livermore National Laboratory
+* All rights reserved.
+*
+* This file is part of VisIt. For details, see http://www.llnl.gov/visit/. The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or materials provided with the distribution.
+*  - Neither the name of the UC/LLNL nor  the names of its contributors may be
+*    used to  endorse or  promote products derived from  this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED.  IN  NO  EVENT  SHALL  THE  REGENTS  OF  THE  UNIVERSITY OF
+* CALIFORNIA, THE U.S.  DEPARTMENT  OF  ENERGY OR CONTRIBUTORS BE  LIABLE  FOR
+* ANY  DIRECT,  INDIRECT,  INCIDENTAL,  SPECIAL,  EXEMPLARY,  OR CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+
 /* SIMPLE PARALLEL SIMULATION SKELETON */
 #include <VisItControlInterface_V1.h>
 #include <stdio.h>
@@ -40,7 +77,17 @@ void SlaveProcessCallback()
    BroadcastSlaveCommand(&command);
 }
 
-/* Process commands from viewer on all processors. */
+/******************************************************************************
+ *
+ * Purpose: Process commands from viewer on all processors. 
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Jan 12 13:35:53 PST 2007
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
 int ProcessVisItCommand(void)
 {
     int command;
@@ -86,7 +133,17 @@ int ProcessVisItCommand(void)
 /* Is the simulation in run mode (not waiting for VisIt input) */
 static int runFlag = 1;
 
-/* New function to contain the program's main loop. */
+/******************************************************************************
+ *
+ * Purpose: New function to contain the program's main loop.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Jan 12 13:35:53 PST 2007
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
 void mainloop(void)
 {
     int blocking, visitstate, err = 0;
@@ -94,9 +151,13 @@ void mainloop(void)
     do
     {
         blocking = runFlag ? 0 : 1;
+/* CHANGE 4 */
         /* Get input from VisIt or timeout so the simulation can run. */
-        visitstate = VisItDetectInput(blocking, -1);
-
+        if(par_rank == 0)
+            visitstate = VisItDetectInput(blocking, -1);
+#ifdef PARALLEL
+        MPI_Bcast(&visitstate, 1, MPI_INT, 0, MPI_COMM_WORLD);
+#endif
         /* Do different things depending on the output from VisItDetectInput. */
         if(visitstate >= -5 && visitstate <= -1)
         {
@@ -123,6 +184,7 @@ void mainloop(void)
         {
             /* VisIt wants to tell the engine something. */
             runFlag = 0;
+/* CHANGE 5 */
             if(!ProcessVisItCommand())
             {
                 /* Disconnect on an error or closed connection. */
@@ -133,6 +195,21 @@ void mainloop(void)
         }
     } while(!simulation_done() && err == 0);
 }
+
+/******************************************************************************
+ *
+ * Purpose: This is the main function for the program.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Jan 12 13:36:17 PST 2007
+ *
+ * Input Arguments:
+ *   argc : The number of command line arguments.
+ *   argv : The command line arguments.
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
 
 int main(int argc, char **argv)
 {

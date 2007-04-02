@@ -104,6 +104,7 @@
 #include <avtVectorDecomposeFilter.h>
 #include <avtVectorCrossProductFilter.h>
 #include <avtArrayComposeFilter.h>
+#include <avtArrayComposeWithBinsFilter.h>
 #include <avtArrayDecomposeFilter.h>
 #include <avtMeshCoordinateFilter.h>
 #include <avtProcessorIdFilter.h>
@@ -432,6 +433,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Hank Childs, Fri Dec 22 10:03:40 PST 2006
 //    Added eval_point and symm_point.
 //
+//    Hank Childs, Fri Jan 12 13:45:04 PST 2007
+//    Added array_compose_with_bins.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -479,6 +483,8 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtBinaryMultiplyFilter();
     if (functionName == "array_compose")
         return new avtArrayComposeFilter();
+    if (functionName == "array_compose_with_bins")
+        return new avtArrayComposeWithBinsFilter();
     if (functionName == "array_decompose")
         return new avtArrayDecomposeFilter();
     if (functionName == "matvf")

@@ -629,6 +629,9 @@ MDServerConnection::GetPluginErrors()
 //   Added ability to force using a specific plugin when reading
 //   the metadata from a file (if it causes the file to be opened).
 //
+//   Hank Childs, Thu Jan 11 16:14:25 PST 2007
+//   Capture the list of plugins used to open a file.
+//
 // ****************************************************************************
 
 void
@@ -648,15 +651,35 @@ MDServerConnection::ReadMetaData(std::string file, int timeState,
     //
     // Try and read the database. This could throw an exception.
     //
-    avtDatabase *db = GetDatabase(file, ts, forceReadAllCyclesAndTimes,
-                                  forcedFileType);
+    std::vector<std::string> plugins;
+    avtDatabase *db = NULL;
+    TRY
+    {
+        db = GetDatabase(file, ts, forceReadAllCyclesAndTimes,
+                                      plugins, forcedFileType);
+    }
+    CATCH2(VisItException, e)
+    {
+        EXCEPTION3(InvalidFilesException, file.c_str(), plugins, 
+                                          e.Message().c_str());
+    }
+    ENDTRY
+
     if (db != NULL)
     {
-        currentMetaData = db->GetMetaData(ts, forceReadAllCyclesAndTimes);
+        TRY
+        {
+            currentMetaData = db->GetMetaData(ts, forceReadAllCyclesAndTimes);
+        }
+        CATCHALL(...)
+        {
+            EXCEPTION2(InvalidFilesException, file.c_str(), plugins);
+        }
+        ENDTRY
     }
     else
     {
-        EXCEPTION1(InvalidFilesException, file.c_str());
+        EXCEPTION2(InvalidFilesException, file.c_str(), plugins);
     }
 
     //
@@ -754,6 +777,10 @@ MDServerConnection::GetCurrentMetaData() const
 //
 //   Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 //   Added bool arg to GetDatabase
+//
+//   Hank Childs, Thu Jan 11 16:14:25 PST 2007
+//   Capture the list of plugins used to open a file.
+//
 // ****************************************************************************
 
 void
@@ -772,7 +799,8 @@ MDServerConnection::ReadSIL(std::string file, int timeState)
     //
     // Try and read the database. This could throw an exception.
     //
-    avtDatabase *db = GetDatabase(file, ts, false);
+    std::vector<std::string> plugins;
+    avtDatabase *db = GetDatabase(file, ts, false, plugins);
     if (db != NULL)
     {
         avtSIL *s  = db->GetSIL(ts);
@@ -785,7 +813,7 @@ MDServerConnection::ReadSIL(std::string file, int timeState)
     }
     else
     {
-        EXCEPTION1(InvalidFilesException, file.c_str());
+        EXCEPTION2(InvalidFilesException, file.c_str(), plugins);
     }
 
     if (!currentSIL)
@@ -2559,11 +2587,15 @@ MDServerConnection::GetVirtualFileDefinition(const std::string &file)
 //    Also, make sure we successfully opened the file the last time
 //    before we skip the part where we re-try to open it again.
 //
+//    Hank Childs, Thu Jan 11 16:14:25 PST 2007
+//    Capture the list of plugins attempted in opening the file.
+//
 // ****************************************************************************
 
 avtDatabase *
 MDServerConnection::GetDatabase(string file, int timeState,
                                 bool forceReadAllCyclesAndTimes,
+                                std::vector<std::string> &plugins,
                                 string forcedFileType)
 {
     //
@@ -2651,7 +2683,7 @@ MDServerConnection::GetDatabase(string file, int timeState,
 
                 // Try and make a database out of the filenames.
                 currentDatabase = avtDatabaseFactory::FileList(names,
-                    fileNames.size(), timeState, 
+                    fileNames.size(), timeState, plugins,
                     forcedFileType=="" ? NULL : forcedFileType.c_str(),
                     forceReadAllCyclesAndTimes);
 
@@ -2693,14 +2725,14 @@ MDServerConnection::GetDatabase(string file, int timeState,
         else if (FileHasVisItExtension(file))
         {
             currentDatabase =
-                avtDatabaseFactory::VisitFile(fn, timeState,
+                avtDatabaseFactory::VisitFile(fn, timeState, plugins,
                                               forcedFileType=="" ? NULL : forcedFileType.c_str(),
                                               forceReadAllCyclesAndTimes);
         }
         else
         {
             currentDatabase =
-                avtDatabaseFactory::FileList(&fn, 1, timeState,
+                avtDatabaseFactory::FileList(&fn, 1, timeState, plugins,
                                              forcedFileType=="" ? NULL : forcedFileType.c_str(),
                                              forceReadAllCyclesAndTimes);
         }

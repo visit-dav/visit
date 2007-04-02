@@ -3853,6 +3853,9 @@ ViewerSubject::CreateAttributesDataNode(const avtDefaultPlotMetaData *dp) const
 //    Jeremy Meredith, Mon Aug 28 16:55:01 EDT 2006
 //    Added ability to force using a specific plugin when opening a file.
 //
+//    Hank Childs, Thu Jan 11 15:33:07 PST 2007
+//    Return an invalid time state when the file open fails.
+//
 // ****************************************************************************
 
 int
@@ -4126,6 +4129,12 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
                    << host.c_str() << ":" << db.c_str() << endl;
         }
     }
+    else
+    {
+        // We had a problem opening the file ... indicate that with the
+        // return value (which is timeState).
+        timeState = -1;
+    }
 
     //
     // Check to see if there were errors in the mdserver
@@ -4158,14 +4167,18 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
 //   Jeremy Meredith, Mon Aug 28 16:55:01 EDT 2006
 //   Added ability to force using a specific plugin when opening a file.
 //
+//   Hank Childs, Thu Jan 11 15:33:07 PST 2007
+//   Add return value to indicate errors.
+//
 // ****************************************************************************
 
-void
+bool
 ViewerSubject::OpenDatabase()
 {
-    OpenDatabaseHelper(viewerRPC.GetDatabase(), viewerRPC.GetIntArg1(),
+    int ts = OpenDatabaseHelper(viewerRPC.GetDatabase(), viewerRPC.GetIntArg1(),
                        viewerRPC.GetBoolFlag(), true,
                        viewerRPC.GetStringArg1());
+    return (ts >= 0 ? true : false);
 }
 
 // ****************************************************************************
@@ -7230,6 +7243,9 @@ ViewerSubject::SendKeepAlives()
 //    Brad Whitlock, Fri Nov 10 09:39:18 PDT 2006
 //    Added ImportEntireStateWithDifferentSourcesRPC.
 //
+//    Hank Childs, Fri Jan 12 10:02:32 PST 2007
+//    If there was a failure from an RPC, then don't call update actions.
+//
 // ****************************************************************************
 
 void
@@ -7259,6 +7275,7 @@ ViewerSubject::HandleViewerRPC()
     //
     // Handle the RPC. Note that these should be replaced with actions.
     //
+    bool everythingOK = true;
     switch(viewerRPC.GetRPCType())
     {
     case ViewerRPC::CloseRPC:
@@ -7266,7 +7283,7 @@ ViewerSubject::HandleViewerRPC()
         Close();
         break;
     case ViewerRPC::OpenDatabaseRPC:
-        OpenDatabase();
+        everythingOK = everythingOK && OpenDatabase();
         break;
     case ViewerRPC::CloseDatabaseRPC:
         CloseDatabase();
@@ -7589,7 +7606,8 @@ ViewerSubject::HandleViewerRPC()
     // We need to do this until all items in the switch statement are
     // removed and converted to actions.
     //
-    if(!actionHandled)
+
+    if (everythingOK && !actionHandled)
         ViewerWindowManager::Instance()->UpdateActions();
 
     // Tell the clients that it's okay to start logging again.

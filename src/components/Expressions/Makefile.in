@@ -180,6 +180,9 @@
 #   Hank Childs, Fri Dec 22 09:56:13 PST 2006
 #   Added avtEvalPointExpression and avtSymmPointExpression.
 #
+#   Hank Childs, Fri Jan 12 13:18:17 PST 2007
+#   Added avtArrayComposeWithBins.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -244,6 +247,7 @@ Derivations_src=\
 General_src= \
   General/avtApplyDDFExpression.C \
   General/avtArrayComposeFilter.C \
+  General/avtArrayComposeWithBinsFilter.C \
   General/avtArrayDecomposeFilter.C \
   General/avtCurlFilter.C \
   General/avtDataIdFilter.C \

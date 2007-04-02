@@ -74,13 +74,100 @@ InvalidFilesException::InvalidFilesException(int numfiles)
 //    Brad Whitlock, Thu Feb 7 11:45:26 PDT 2002
 //    Added a little to the error message.
 //
+//    Hank Childs, Fri Jan 12 09:08:30 PST 2007
+//    Remove reference to database, since that is just confusing the issue
+//    for users.
+//
 // ****************************************************************************
 
 InvalidFilesException::InvalidFilesException(const char *filename)
 {
     char str[1024];
-    sprintf(str, "The database had an error opening %s. It may be an "
-            "invalid file.", filename);
+    sprintf(str, "There was an error opening %s. It may be an invalid file.", 
+                 filename);
+
+    msg = str;
+}
+
+
+// ****************************************************************************
+//  Method: InvalidFilesException constructor
+//
+//  Arguments:
+//      filename    The name of an invalid file.
+//      plugins     A vector of strings of the plugin types used.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 11, 2007
+//
+// ****************************************************************************
+
+InvalidFilesException::InvalidFilesException(const char *filename,
+                                             std::vector<std::string> &plugins)
+{
+    char str[1024];
+    sprintf(str, "There was an error opening %s. It may be an "
+            "invalid file.  VisIt tried using the following file format "
+            "readers to open the file: ", filename);
+    for (int i = 0 ; i < plugins.size() ; i++)
+    {
+        if (i != plugins.size()-1)
+            sprintf(strlen(str)+str, "%s, ", plugins[i].c_str());
+        else
+            sprintf(strlen(str)+str, "%s", plugins[i].c_str());
+    }
+    if (plugins.size() == 0)
+    {
+        sprintf(strlen(str)+str, "<No suitable plugins were identified>");
+    }
+
+    msg = str;
+}
+
+
+// ****************************************************************************
+//  Method: InvalidFilesException constructor
+//
+//  Arguments:
+//      filename    The name of an invalid file.
+//      plugins     A vector of strings of the plugin types used.
+//      msg         The message from opening the file.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 12, 2007
+//
+// ****************************************************************************
+
+InvalidFilesException::InvalidFilesException(const char *filename,
+                                             std::vector<std::string> &plugins,
+                                             const char *msg2)
+{
+    char str[1024];
+    sprintf(str, "There was an error opening %s. It may be an "
+            "invalid file.  VisIt tried using the following file format "
+            "readers to open the file: ", filename);
+    for (int i = 0 ; i < plugins.size() ; i++)
+    {
+        if (i != plugins.size()-1)
+            sprintf(strlen(str)+str, "%s, ", plugins[i].c_str());
+        else
+            sprintf(strlen(str)+str, "%s", plugins[i].c_str());
+    }
+    if (plugins.size() == 0)
+    {
+        sprintf(strlen(str)+str, "<No suitable plugins were identified>");
+    }
+
+    //
+    // Only append the plugin thrown by the file format if it gave a useful
+    // message.  Otherwise, it is just redundant.
+    //
+    if (strstr(msg2, "It may be an invalid file") == NULL)
+    {
+        sprintf(strlen(str)+str, "\n\nThe file format reader issued the "
+                    "following error message, which may (or may not) be "
+                    "indicative of the problem:\n%s", msg2);
+    }
 
     msg = str;
 }
@@ -98,13 +185,17 @@ InvalidFilesException::InvalidFilesException(const char *filename)
 //
 //  Modifications:
 //
+//    Hank Childs, Fri Jan 12 09:08:30 PST 2007
+//    Remove reference to database, since that is just confusing the issue
+//    for users.
+//
 // ****************************************************************************
 
 InvalidFilesException::InvalidFilesException(const std::string &filename,
                                              const std::string &message)
 {
     char str[2048];
-    sprintf(str, "The database had an error opening %s: %s", filename.c_str(),
+    sprintf(str, "There was an error opening %s: %s", filename.c_str(),
             message.c_str());
 
     msg = str;
@@ -121,12 +212,18 @@ InvalidFilesException::InvalidFilesException(const std::string &filename,
 //  Programmer:  Hank Childs
 //  Creation:    September 13, 2000
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Jan 12 09:08:30 PST 2007
+//    Remove reference to database, since that is just confusing the issue
+//    for users.
+//
 // ****************************************************************************
 
 InvalidFilesException::InvalidFilesException(const char * const * list, 
                                              int listN)
 {
-    msg = "The database had an error opening one of the following files:\n";
+    msg = "There was an error opening one of the following files:\n";
     for (int i = 0 ; i < listN ; i++)
     {
         msg += "\t";

@@ -37,6 +37,9 @@
       <Field name="zone" label="zone" type="int" enabler="basedOn:ManyVarsForSingleZone">
         0
       </Field>
+      <Field name="useBinWidths" label="Use bin widths?" type="bool" enabler="basedOn:ManyVarsForSingleZone">
+        true
+      </Field>
       <Field name="outputType" label="Type of Output" type="enum" subtype="OutputType">
         Block
       </Field>

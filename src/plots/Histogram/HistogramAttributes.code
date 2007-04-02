@@ -10,6 +10,8 @@ HistogramAttributes::ChangesRequireRecalculation(const HistogramAttributes &obj)
         return true;
     if (specifyRange && (max != obj.GetMax()))
         return true;
+    if (useBinWidths != obj.GetUseBinWidths())
+        return true;
     if (outputType != obj.GetOutputType())
         return true;
     if (numBins != obj.GetNumBins())

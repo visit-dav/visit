@@ -126,6 +126,7 @@ avtDatabaseFactory::SetDefaultFormat(const char *f)
 //      filelist     A list of files.
 //      filelistN    The number of files in `filelist'.
 //      timestep     The timestep to open to.
+//      plugins      The plugins types that were tried (output argument)
 //      format       The format to try first.
 //
 //  Returns:    An avtDatabase object that is correctly typed for the filelist.
@@ -175,11 +176,15 @@ avtDatabaseFactory::SetDefaultFormat(const char *f)
 //    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 //    Added bool arg to forceReadAllCyclesTimes
 //
+//    Hank Childs, Thu Jan 11 15:56:53 PST 2007
+//    Added argument for which plugin types were tried.
+//
 // ****************************************************************************
 
 avtDatabase *
 avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
-                             int timestep, const char *format,
+                             int timestep, vector<string> &plugins,
+                             const char *format,
                              bool forceReadAllCyclesAndTimes)
 {
     int   i, j;
@@ -259,6 +264,7 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
         }
         CommonDatabasePluginInfo *info = 
             dbmgr->GetCommonPluginInfo(formatid);
+        plugins.push_back(info->GetName());
         rv = SetupDatabase(info, filelist, filelistN, timestep, fileIndex,
                            nBlocks, forceReadAllCyclesAndTimes);
 
@@ -326,6 +332,7 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
         {
             TRY
             {
+                plugins.push_back(info->GetName());
                 rv = SetupDatabase(info, filelist, filelistN, timestep,
                                    fileIndex, nBlocks, forceReadAllCyclesAndTimes);
             }
@@ -349,6 +356,7 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
             string defaultid = dbmgr->GetAllID(defaultindex);
             CommonDatabasePluginInfo *info = 
                                          dbmgr->GetCommonPluginInfo(defaultid);
+            plugins.push_back(info->GetName());
             rv = SetupDatabase(info, filelist, filelistN, timestep, fileIndex,
                                nBlocks, forceReadAllCyclesAndTimes);
         }
@@ -435,6 +443,7 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
 //  Arguments:
 //      visitFile   The name of the .visit file.
 //      timestep    The timestep to open at.
+//      plugins     The plugins types that were tried (output argument)
 //      format      The file format type (optional).
 //
 //  Returns:    An avtDatabase object that is correctly typed for the .visit
@@ -472,10 +481,14 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
 //    Brad Whitlock, Tue Jan 31 14:55:35 PST 2006
 //    Fixed a problem that lead to !NBLOCKS failing on win32.
 //
+//    Hank Childs, Thu Jan 11 15:56:53 PST 2007
+//    Added an argument for which plugins were tried.
+//
 // ****************************************************************************
 
 avtDatabase *
 avtDatabaseFactory::VisitFile(const char *visitFile, int timestep,
+                              vector<string> &plugins,
                               const char *format, bool forceReadAllCyclesAndTimes)
 {
     //
@@ -531,7 +544,7 @@ avtDatabaseFactory::VisitFile(const char *visitFile, int timestep,
     //
     // Create a database using the list of files.
     //
-    avtDatabase *rv = FileList(reallist, listcount, timestep, format,
+    avtDatabase *rv = FileList(reallist, listcount, timestep, plugins, format,
                                forceReadAllCyclesAndTimes);
 
     //

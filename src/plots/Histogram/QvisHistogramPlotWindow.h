@@ -64,7 +64,7 @@ class QvisVariableButton;
 // Notes:      This class was automatically generated!
 
 // Programmer: xml2window
-// Creation:   Wed May 24 09:22:33 PDT 2006
+// Creation:   Fri Jan 12 15:22:02 PST 2007
 //
 // Modifications:
 //   
@@ -94,11 +94,12 @@ class QvisHistogramPlotWindow : public QvisPostableWindowObserver
     void specifyRangeChanged(bool val);
     void minProcessText();
     void maxProcessText();
-    void outputTypeChanged(int val);
     void numBinsProcessText();
     void twoDAmountChanged(int val);
     void domainProcessText();
     void zoneProcessText();
+    void useBinWidthsChanged(bool val);
+    void outputTypeChanged(int val);
     void lineStyleChanged(int style);
     void lineWidthChanged(int style);
     void colorChanged(const QColor &color);
@@ -108,11 +109,12 @@ class QvisHistogramPlotWindow : public QvisPostableWindowObserver
     QCheckBox *specifyRange;
     QLineEdit *min;
     QLineEdit *max;
-    QButtonGroup *outputType;
     QLineEdit *numBins;
     QButtonGroup *twoDAmount;
     QLineEdit *domain;
     QLineEdit *zone;
+    QCheckBox *useBinWidths;
+    QButtonGroup *outputType;
     QvisLineStyleWidget *lineStyle;
     QvisLineWidthWidget *lineWidth;
     QvisColorButton *color;
@@ -120,11 +122,12 @@ class QvisHistogramPlotWindow : public QvisPostableWindowObserver
     QLabel *specifyRangeLabel;
     QLabel *minLabel;
     QLabel *maxLabel;
-    QLabel *outputTypeLabel;
     QLabel *numBinsLabel;
     QLabel *twoDAmountLabel;
     QLabel *domainLabel;
     QLabel *zoneLabel;
+    QLabel *useBinWidthsLabel;
+    QLabel *outputTypeLabel;
     QLabel *lineStyleLabel;
     QLabel *lineWidthLabel;
     QLabel *colorLabel;

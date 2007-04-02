@@ -96,6 +96,13 @@
 #define VISIT_ERROR           1
 #define VISIT_OKAY            0
 
+/* This is a new owner type for arrays that can be passed to the mesh functions to
+ * cause the input arrays to be copied to new storage. We have this option to make
+ * it possible to pass local storage to VisIt and have it not matter that the original
+ * data went out of scope.
+ */
+#define VISIT_OWNER_COPY      2
+
 const char *VISIT_F77NULLSTRING = "NULLSTRING";
 
 static char *fcdtocp_ptr = NULL;
@@ -202,9 +209,39 @@ f_visit_internal_commandcallback(const char *cmd, int intdata, float floatdata,
     const char *stringdata)
 {
     /* Call the fortran function. */
-    int lcmd = strlen(cmd);
+    char *realcmd = NULL;
+    int lcmd;
     int lstringdata = strlen(stringdata);
-    F_VISITCOMMANDCALLBACK(cmd, &lcmd, &intdata, &floatdata, stringdata, &lstringdata);
+
+    /* See if the format of the message from the viewer contains a bunch of
+     * Qt signal junk that has been added for new features. If that junk is 
+     * present and is for a push button then strip it out and send the 
+     * command string to the simulation for processing. Otherwise, pass along
+     * the unmodified message.
+     */
+    if(strncmp(cmd, "clicked();", 10) == 0)
+    {
+        char *end = NULL;
+        if((end = strstr(cmd, ";QPushButton;Simulations;NONE")) != NULL)
+        {
+            int i;
+            lcmd = end - cmd - 10;
+            realcmd = ALLOC(char, lcmd + 1);
+            memset(realcmd, 0, lcmd + 1);
+            strncpy(realcmd, cmd + 10, lcmd);
+        }
+    }
+
+    if(realcmd == NULL)
+    {
+        lcmd = strlen(cmd);
+        realcmd = ALLOC(char, lcmd + 1);
+        strcpy(realcmd, cmd);
+    }
+
+    F_VISITCOMMANDCALLBACK(realcmd, &lcmd, &intdata, &floatdata, stringdata, &lstringdata);
+
+    FREE(realcmd);
 }
 
 /*****************************************************************************
@@ -421,21 +458,29 @@ F_VISITDETECTINPUT(int *blocking, int *consoledesc)
  * Date:       Fri Jan 27 16:15:11 PST 2006
  *
  * Modifications:
+ *   Brad Whitlock, Wed Jan 10 16:01:58 PST 2007
+ *   Applied David Stuebe's change.
  *
  *****************************************************************************/
 
 FORTRAN
 F_VISITATTEMPTCONNECTION(void)
 {
-    int retval = VisItAttemptToCompleteConnection();
+    int ret;
 
     /* Set up some callbacks that will reference external FORTRAN functions. */
-    VisItSetSlaveProcessCallback(f_visit_internal_slaveprocesscallback);
     VisItSetBroadcastIntFunction(f_visit_internal_broadcastintfunction);
     VisItSetBroadcastStringFunction(f_visit_internal_broadcaststringfunction);
+
+    ret = VisItAttemptToCompleteConnection();
+
+    /* These functions need to be set up but they can't be set up until after
+     * the VisItAttemptToCompleteConnection function completes.
+     */
+    VisItSetSlaveProcessCallback(f_visit_internal_slaveprocesscallback);
     VisItSetCommandCallback(f_visit_internal_commandcallback);
 
-    return retval;
+    return ret;
 }
 
 /******************************************************************************
@@ -649,10 +694,14 @@ extern int F_VISITGETDOMAINLIST(int *);
 #define F_VISITMDMATERIALADD    F77_ID(visitmdmaterialadd_,visitmdmaterialadd,VISITMDMATERIALADD)
 #define F_VISITMDEXPRESSIONCREATE      F77_ID(visitmdexpressioncreate_,visitmdexpressioncreate,VISITMDEXPRESSIONCREATE)
 
-#define F_VISITMESHRECTILINEAR  F77_ID(visitmeshrectilinear_,visitmeshrectilinear,VISITMESHRECTILINEAR)
-#define F_VISITMESHCURVILINEAR  F77_ID(visitmeshcurvilinear_,visitmeshcurvilinear,VISITMESHCURVILINEAR)
-#define F_VISITMESHPOINT        F77_ID(visitmeshpoint_,visitmeshpoint,VISITMESHPOINT)
-#define F_VISITMESHUNSTRUCTURED F77_ID(visitmeshunstructured_,visitmeshunstructured,VISITMESHUNSTRUCTURED)
+#define F_VISITMESHRECTILINEAR   F77_ID(visitmeshrectilinear_,visitmeshrectilinear,VISITMESHRECTILINEAR)
+#define F_VISITMESHRECTILINEAR2  F77_ID(visitmeshrectilinear2_,visitmeshrectilinear2,VISITMESHRECTILINEAR2)
+#define F_VISITMESHCURVILINEAR   F77_ID(visitmeshcurvilinear_,visitmeshcurvilinear,VISITMESHCURVILINEAR)
+#define F_VISITMESHCURVILINEAR2  F77_ID(visitmeshcurvilinear2_,visitmeshcurvilinear2,VISITMESHCURVILINEAR2)
+#define F_VISITMESHPOINT         F77_ID(visitmeshpoint_,visitmeshpoint,VISITMESHPOINT)
+#define F_VISITMESHPOINT2        F77_ID(visitmeshpoint2_,visitmeshpoint2,VISITMESHPOINT2)
+#define F_VISITMESHUNSTRUCTURED  F77_ID(visitmeshunstructured_,visitmeshunstructured,VISITMESHUNSTRUCTURED)
+#define F_VISITMESHUNSTRUCTURED2 F77_ID(visitmeshunstructured2_,visitmeshunstructured2,VISITMESHUNSTRUCTURED2)
 
 #define F_VISITSCALARSETDATA    F77_ID(visitscalarsetdata_,visitscalarsetdata,VISITSCALARSETDATA)
 #define F_VISITSCALARSETDATAC   F77_ID(visitscalarsetdatac_,visitscalarsetdatac,VISITSCALARSETDATAC)
@@ -986,7 +1035,7 @@ VisIt_SimulationCallback visitCallbacks =
  *****************************************************************************
  *****************************************************************************
  ****
- **** THESE FUNCTIONS ARE CALLABLE FROM FORTAN
+ **** THESE FUNCTIONS ARE CALLABLE FROM FORTRAN
  ****
  *****************************************************************************
  *****************************************************************************
@@ -1839,6 +1888,8 @@ F_VISITMDMATERIALADD(int *mdhandle, int *mhandle, VISIT_F77STRING matname, int *
  * Date:       Fri Jan 27 16:15:11 PST 2006
  *
  * Modifications:
+ *   Brad Whitlock, Wed Jan 10 12:50:54 PDT 2007
+ *   Fill in some of the newer members of VisIt_SimulationControlCommand.
  *
  *****************************************************************************/
 
@@ -1853,13 +1904,14 @@ F_VISITMDADDSIMCOMMAND(int *mdhandle, VISIT_F77STRING commandname, int *lcommand
     {
         int index = VISIT_INVALID_HANDLE;
         VisIt_SimulationControlCommand *scc = NULL;
-        char *f_commandname = NULL;
-        COPY_FORTRAN_STRING(f_commandname, commandname, lcommandname);
+        char *f_commandname = NULL, *f_commandname2 = NULL;
+        COPY_FORTRAN_STRING(f_commandname,  commandname, lcommandname);
+        COPY_FORTRAN_STRING(f_commandname2, commandname, lcommandname);
 
         scc = ALLOC(VisIt_SimulationControlCommand, 1 + md->numGenericCommands);
         if(scc)
         {
-            /* Grow the scalar array. */
+            /* Grow the generic command array. */
             if(md->numGenericCommands > 0)
             {
                 memcpy(scc, md->genericCommands,
@@ -1871,7 +1923,9 @@ F_VISITMDADDSIMCOMMAND(int *mdhandle, VISIT_F77STRING commandname, int *lcommand
             index = md->numGenericCommands++;
 
             /* Set some properties about the new command. */
+            memset(&md->genericCommands[index], 0, sizeof(VisIt_SimulationControlCommand));
             md->genericCommands[index].name = f_commandname;
+            md->genericCommands[index].text = f_commandname2;
             md->genericCommands[index].argType = *argtype;
             md->genericCommands[index].enabled = *enabled?1:0;
             retval = VISIT_OKAY;
@@ -1994,6 +2048,53 @@ F_VISITMDEXPRESSIONCREATE(int *mdhandle, VISIT_F77STRING expressionname, int *le
     return retval;
 }
 
+static VisIt_DataArray
+VisIt_CreateDataArrayFromFloat_C(int o, float *f, int sz)
+{
+    VisIt_DataArray da;
+
+    if(o == VISIT_OWNER_COPY)
+    {
+        da.dataType = VISIT_DATATYPE_FLOAT;
+        da.owner    = VISIT_OWNER_VISIT;
+        if(f != NULL)
+        {
+            da.fArray   = (float*)malloc(sizeof(float) * sz);
+            memcpy(da.fArray, f, sizeof(float) * sz);
+        }
+        else
+            da.fArray = NULL;
+    }
+    else
+        da = VisIt_CreateDataArrayFromFloat(o, f);
+
+    return da;   
+}
+
+static VisIt_DataArray
+VisIt_CreateDataArrayFromInt_C(int o, int *i, int sz)
+{
+    VisIt_DataArray da;
+
+    if(o == VISIT_OWNER_COPY)
+    {
+        da.dataType = VISIT_DATATYPE_FLOAT;
+        da.owner    = VISIT_OWNER_VISIT;
+        if(i != NULL)
+        {
+            da.iArray   = (int*)malloc(sizeof(int) * sz);
+            memcpy(da.iArray, i, sizeof(int) * sz);
+        }
+        else
+            da.iArray = NULL;
+    }
+    else
+        da = VisIt_CreateDataArrayFromInt(o, i);
+
+    return da;   
+}
+
+
 /*****************************************************************************
  *****************************************************************************
  *****************************************************************************
@@ -2023,12 +2124,14 @@ F_VISITMDEXPRESSIONCREATE(int *mdhandle, VISIT_F77STRING expressionname, int *le
  * Date:       Fri Jan 27 16:15:11 PST 2006
  *
  * Modifications:
+ *   Brad Whitlock, Thu Jan 11 15:43:02 PST 2007
+ *   Added VISIT_OWNER_COPY support and support for setting the ownser.
  *
  *****************************************************************************/
 
 FORTRAN
-F_VISITMESHRECTILINEAR(int *meshid, int *baseindex, int *minrealindex, int *maxrealindex, 
-    int *dims, int *ndims, float *x, float *y, float *z)
+F_VISITMESHRECTILINEAR2(int *meshid, int *baseindex, int *minrealindex, int *maxrealindex, 
+    int *dims, int *ndims, float *x, float *y, float *z, int *owner)
 {
     int retval = VISIT_ERROR;
     VisIt_MeshData *mesh = (VisIt_MeshData *)GetFortranPointer(*meshid);
@@ -2049,15 +2152,26 @@ F_VISITMESHRECTILINEAR(int *meshid, int *baseindex, int *minrealindex, int *maxr
              mesh->rmesh->dims[i] = dims[i];
          }
 
-         mesh->rmesh->xcoords = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_SIM, x);
-         mesh->rmesh->ycoords = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_SIM, y);
-         mesh->rmesh->zcoords = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_SIM, z);
+         mesh->rmesh->xcoords = VisIt_CreateDataArrayFromFloat_C(*owner, x, dims[0]);
+         if(*ndims > 1)
+             mesh->rmesh->ycoords = VisIt_CreateDataArrayFromFloat_C(*owner, y, dims[1]);
+         if(*ndims > 2)
+             mesh->rmesh->zcoords = VisIt_CreateDataArrayFromFloat_C(*owner, z, dims[2]);
          retval = VISIT_OKAY;
     }
     else
         fprintf(stderr, "visitmeshrectlinear: An invalid handle was used.\n");
 
     return retval;
+}
+
+FORTRAN
+F_VISITMESHRECTILINEAR(int *meshid, int *baseindex, int *minrealindex, int *maxrealindex, 
+    int *dims, int *ndims, float *x, float *y, float *z)
+{
+    int owner = VISIT_OWNER_SIM;
+    return F_VISITMESHRECTILINEAR2(meshid, baseindex, minrealindex, maxrealindex,
+        dims, ndims, x, y, z, &owner);
 }
 
 /******************************************************************************
@@ -2078,18 +2192,20 @@ F_VISITMESHRECTILINEAR(int *meshid, int *baseindex, int *minrealindex, int *maxr
  * Date:       Fri Jan 27 16:15:11 PST 2006
  *
  * Modifications:
+ *   Brad Whitlock, Thu Jan 11 15:43:02 PST 2007
+ *   Added VISIT_OWNER_COPY support and support for setting the ownser.
  *
  *****************************************************************************/
 
 FORTRAN
-F_VISITMESHCURVILINEAR(int *meshid, int *baseindex, int *minrealindex, int *maxrealindex, 
-    int *dims, int *ndims, float *x, float *y, float *z)
+F_VISITMESHCURVILINEAR2(int *meshid, int *baseindex, int *minrealindex, int *maxrealindex, 
+    int *dims, int *ndims, float *x, float *y, float *z, int *owner)
 {
     int retval = VISIT_ERROR;
     VisIt_MeshData *mesh = (VisIt_MeshData *)GetFortranPointer(*meshid);
     if(mesh)
     {
-         int i;
+         int i, sz = 1;
          mesh->meshType = VISIT_MESHTYPE_CURVILINEAR;
          mesh->cmesh = ALLOC(VisIt_CurvilinearMesh,1);
          memset(mesh->cmesh, 0, sizeof(VisIt_CurvilinearMesh));
@@ -2104,15 +2220,33 @@ F_VISITMESHCURVILINEAR(int *meshid, int *baseindex, int *minrealindex, int *maxr
              mesh->cmesh->dims[i] = dims[i];
          }
 
-         mesh->cmesh->xcoords = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_SIM, x);
-         mesh->cmesh->ycoords = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_SIM, y);
-         mesh->cmesh->zcoords = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_SIM, z);
+         /* Compute the size of the coordinate arrays so we can copy if needed. */
+         sz = dims[0];
+         if(*ndims > 1)
+             sz *= dims[1];
+         if(*ndims > 2)
+             sz *= dims[2];
+
+         mesh->cmesh->xcoords = VisIt_CreateDataArrayFromFloat_C(*owner, x, sz);
+         if(*ndims > 1)
+             mesh->cmesh->ycoords = VisIt_CreateDataArrayFromFloat_C(*owner, y, sz);
+         if(*ndims > 2)
+             mesh->cmesh->zcoords = VisIt_CreateDataArrayFromFloat_C(*owner, z, sz);
          retval = VISIT_OKAY;
     }
     else
         fprintf(stderr, "visitmeshcurvilinear: An invalid handle was used.\n");
 
     return retval;
+}
+
+FORTRAN
+F_VISITMESHCURVILINEAR(int *meshid, int *baseindex, int *minrealindex, int *maxrealindex, 
+    int *dims, int *ndims, float *x, float *y, float *z)
+{
+    int owner = VISIT_OWNER_SIM;
+    return F_VISITMESHCURVILINEAR2(meshid, baseindex, minrealindex, maxrealindex, 
+        dims, ndims, x, y, z, &owner);
 }
 
 /******************************************************************************
@@ -2128,17 +2262,20 @@ F_VISITMESHCURVILINEAR(int *meshid, int *baseindex, int *minrealindex, int *maxr
  *   x      : The x coordinate array.
  *   y      : The y coordinate array.
  *   z      : The z coordinate array.
+ *   owner  : The owner.
  *
  * Programmer: Brad Whitlock
  * Date:       Fri Jan 27 16:15:11 PST 2006
  *
  * Modifications:
+ *   Brad Whitlock, Thu Jan 11 15:43:02 PST 2007
+ *   Added VISIT_OWNER_COPY support and support for setting the ownser.
  *
  *****************************************************************************/
 
 FORTRAN
-F_VISITMESHPOINT(int *meshid, int *ndims, int *nnodes, float *x, float *y,
-    float *z)
+F_VISITMESHPOINT2(int *meshid, int *ndims, int *nnodes, float *x, float *y,
+    float *z, int *owner)
 {
     int retval = VISIT_ERROR;
     VisIt_MeshData *mesh = (VisIt_MeshData *)GetFortranPointer(*meshid);
@@ -2152,15 +2289,24 @@ F_VISITMESHPOINT(int *meshid, int *ndims, int *nnodes, float *x, float *y,
          mesh->pmesh->nnodes = *nnodes;
          mesh->pmesh->ndims = *ndims;
 
-         mesh->pmesh->xcoords = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_SIM, x);
-         mesh->pmesh->ycoords = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_SIM, y);
-         mesh->pmesh->zcoords = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_SIM, z);
+         mesh->pmesh->xcoords = VisIt_CreateDataArrayFromFloat_C(*owner, x, *nnodes);
+         mesh->pmesh->ycoords = VisIt_CreateDataArrayFromFloat_C(*owner, y, *nnodes);
+         if(*ndims > 2)
+             mesh->pmesh->zcoords = VisIt_CreateDataArrayFromFloat_C(*owner, z, *nnodes);
          retval = VISIT_OKAY;
     }
     else
         fprintf(stderr, "visitmeshpoint: An invalid handle was used.\n");
 
     return retval;
+}
+
+FORTRAN
+F_VISITMESHPOINT(int *meshid, int *ndims, int *nnodes, float *x, float *y,
+    float *z)
+{
+    int owner = VISIT_OWNER_SIM;
+    return F_VISITMESHPOINT2(meshid, ndims, nnodes, x, y, z, &owner);
 }
 
 /******************************************************************************
@@ -2181,13 +2327,15 @@ F_VISITMESHPOINT(int *meshid, int *ndims, int *nnodes, float *x, float *y,
  * Date:       Fri Jan 27 16:15:11 PST 2006
  *
  * Modifications:
+ *   Brad Whitlock, Thu Jan 11 15:43:02 PST 2007
+ *   Added VISIT_OWNER_COPY support and support for setting the ownser.
  *
  *****************************************************************************/
 
 FORTRAN
-F_VISITMESHUNSTRUCTURED(int *meshid, int *ndims, int *nnodes, int *nzones,
+F_VISITMESHUNSTRUCTURED2(int *meshid, int *ndims, int *nnodes, int *nzones,
     int *firstrealzone, int *lastrealzone, float *x, float *y, float *z,
-    int *connectivitylen, int *connectivity)
+    int *connectivitylen, int *connectivity, int *owner)
 {
     int retval = VISIT_ERROR;
     VisIt_MeshData *mesh = (VisIt_MeshData *)GetFortranPointer(*meshid);
@@ -2204,12 +2352,14 @@ F_VISITMESHUNSTRUCTURED(int *meshid, int *ndims, int *nnodes, int *nzones,
          mesh->umesh->firstRealZone = *firstrealzone;
          mesh->umesh->lastRealZone = *lastrealzone;
 
-         mesh->umesh->xcoords = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_SIM, x);
-         mesh->umesh->ycoords = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_SIM, y);
-         mesh->umesh->zcoords = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_SIM, z);
+         mesh->umesh->xcoords = VisIt_CreateDataArrayFromFloat_C(*owner, x, *nnodes);
+         mesh->umesh->ycoords = VisIt_CreateDataArrayFromFloat_C(*owner, y, *nnodes);
+         if(*ndims > 2)
+             mesh->umesh->zcoords = VisIt_CreateDataArrayFromFloat_C(*owner, z, *nnodes);
 
          mesh->umesh->connectivityLen = *connectivitylen;
-         mesh->umesh->connectivity = VisIt_CreateDataArrayFromInt(VISIT_OWNER_SIM, connectivity);
+         mesh->umesh->connectivity = VisIt_CreateDataArrayFromInt_C(*owner, connectivity,
+              *connectivitylen);
 
          retval = VISIT_OKAY;
     }
@@ -2217,6 +2367,18 @@ F_VISITMESHUNSTRUCTURED(int *meshid, int *ndims, int *nnodes, int *nzones,
         fprintf(stderr, "visitmeshunstructured: An invalid handle was used.\n");
 
     return retval;
+}
+
+FORTRAN
+F_VISITMESHUNSTRUCTURED(int *meshid, int *ndims, int *nnodes, int *nzones,
+    int *firstrealzone, int *lastrealzone, float *x, float *y, float *z,
+    int *connectivitylen, int *connectivity)
+{
+    int owner = VISIT_OWNER_SIM;
+
+    return F_VISITMESHUNSTRUCTURED2(meshid, ndims, nnodes, nzones,
+        firstrealzone, lastrealzone, x, y, z, connectivitylen, connectivity,
+        &owner);
 }
 
 /******************************************************************************

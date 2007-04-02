@@ -396,6 +396,9 @@ avtDataAttributes::DestructSelf(void)
 //    Jeremy Meredith, Mon Aug 28 16:46:29 EDT 2006
 //    Added nodesAreCritical.  Added unitCellVectors.
 //
+//    Hank Childs, Fri Jan 12 13:00:31 PST 2007
+//    Added binRange.
+//
 // ****************************************************************************
 
 void
@@ -577,6 +580,17 @@ avtDataAttributes::Print(ostream &out)
             {
                 out << variables[i].subnames[j].c_str();
                 if (j < variables[i].subnames.size()-1)
+                    out << ", ";
+            }
+            out << endl;
+        }
+        if (variables[i].binRange.size() != 0)
+        {
+            out << "Bin ranges = " << endl;
+            for (int j = 0 ; j < variables[i].binRange.size() ; j++)
+            {
+                out << variables[i].binRange[j];
+                if (j < variables[i].binRange.size()-1)
                     out << ", ";
             }
             out << endl;
@@ -783,6 +797,9 @@ avtDataAttributes::Print(ostream &out)
 //    Jeremy Meredith, Mon Aug 28 16:46:29 EDT 2006
 //    Added nodesAreCritical.  Added unitCellVectors.
 //
+//    Hank Childs, Fri Jan 12 13:00:31 PST 2007
+//    Added binRanges.
+//
 // ****************************************************************************
 
 void
@@ -836,6 +853,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
         AddVariable(vname, di.variables[i].varunits);
         SetVariableType(di.variables[i].vartype, vname);
         SetVariableSubnames(di.variables[i].subnames, vname);
+        SetVariableBinRanges(di.variables[i].binRange, vname);
         SetVariableDimension(di.variables[i].dimension, vname);
         SetCentering(di.variables[i].centering, vname);
         SetTreatAsASCII(di.variables[i].treatAsASCII, vname);
@@ -1050,6 +1068,18 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
         }
         for (int j = 0 ; j < variables[i].subnames.size() ; j++)
             if (variables[i].subnames[j] != da.variables[i].subnames[j])
+            {
+                EXCEPTION0(InvalidMergeException);
+                EXCEPTION0(InvalidMergeException);
+            }
+        if (variables[i].binRange.size() != da.variables[i].binRange.size())
+        {
+            EXCEPTION2(InvalidMergeException, 
+                       (int) variables[i].binRange.size(),
+                       (int) da.variables[i].binRange.size());
+        }
+        for (int j = 0 ; j < variables[i].binRange.size() ; j++)
+            if (variables[i].binRange[j] != da.variables[i].binRange[j])
             {
                 EXCEPTION0(InvalidMergeException);
             }
@@ -1997,6 +2027,74 @@ avtDataAttributes::GetVariableSubnames(const char *varname) const
 
 
 // ****************************************************************************
+//  Method: avtDataAttributes::SetVariableBinRanges
+//
+//  Purpose:
+//      Sets the variable bin ranges.
+//
+//  Arguments:
+//      bn         The new bin ranges.
+//
+//  Programmer:    Hank Childs
+//  Creation:      January 12, 2007
+//
+// ****************************************************************************
+
+void
+avtDataAttributes::SetVariableBinRanges(const std::vector<double> &bn,
+                                       const char *varname)
+{
+    int index = VariableNameToIndex(varname);
+    if (index < 0)
+    {
+        //
+        // We were asked to set the variable type of a non-existent
+        // variable.
+        //
+        const char *varname_to_print = (varname != NULL ? varname
+                                         : "<null>");
+        string reason = "Attempting to set bin ranges of non-existent";
+        reason = reason +  " variable: " + varname_to_print + ".\n";
+        EXCEPTION1(ImproperUseException, reason);
+    }
+
+    variables[index].binRange = bn;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataAttributes::GetVariableBinRanges
+//
+//  Purpose:
+//      Gets the variable bin ranges for a specific variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 12, 2007
+//
+// ****************************************************************************
+
+const std::vector<double> &
+avtDataAttributes::GetVariableBinRanges(const char *varname) const
+{
+    int index = VariableNameToIndex(varname);
+    if (index < 0)
+    {
+        //
+        // We were asked to set the variable type of a non-existent
+        // variable.
+        //
+        const char *varname_to_print = (varname != NULL ? varname
+                                         : "<null>");
+        string reason = "Attempting to retrieve variable bin ranges of non-";
+        reason = reason +  "existent variable: " + varname_to_print + ".\n";
+        EXCEPTION1(ImproperUseException, reason);
+    }
+
+    return variables[index].binRange;
+}
+
+
+// ****************************************************************************
 //  Method: avtDataAttributes::SetCellOrigin
 //
 //  Purpose:
@@ -2207,6 +2305,9 @@ avtDataAttributes::SetTime(double d)
 //    Jeremy Meredith, Mon Aug 28 16:46:29 EDT 2006
 //    Added nodesAreCritical.  Added unitCellVectors.
 //
+//    Hank Childs, Fri Jan 12 13:00:31 PST 2007
+//    Added binRanges.
+//
 // ****************************************************************************
 
 void
@@ -2215,7 +2316,8 @@ avtDataAttributes::Write(avtDataObjectString &str,
 {
     int   i, j;
 
-    int numVals = 26 + 5*variables.size();
+    int varSize = 6;
+    int numVals = 26 + varSize*variables.size();
     int *vals = new int[numVals];
     vals[0] = topologicalDimension;
     vals[1] = spatialDimension;
@@ -2245,11 +2347,12 @@ avtDataAttributes::Write(avtDataObjectString &str,
     vals[25] = variables.size();
     for (i = 0 ; i < variables.size() ; i++)
     {
-        vals[26+5*i]   = variables[i].dimension;
-        vals[26+5*i+1] = variables[i].centering;
-        vals[26+5*i+2] = (variables[i].treatAsASCII ? 1 : 0);
-        vals[26+5*i+3] = variables[i].vartype;
-        vals[26+5*i+4] = variables[i].subnames.size();
+        vals[26+varSize*i]   = variables[i].dimension;
+        vals[26+varSize*i+1] = variables[i].centering;
+        vals[26+varSize*i+2] = (variables[i].treatAsASCII ? 1 : 0);
+        vals[26+varSize*i+3] = variables[i].vartype;
+        vals[26+varSize*i+4] = variables[i].subnames.size();
+        vals[26+varSize*i+5] = variables[i].binRange.size();
     }
     wrtr->WriteInt(str, vals, numVals);
     wrtr->WriteDouble(str, dtime);
@@ -2286,6 +2389,10 @@ avtDataAttributes::Write(avtDataObjectString &str,
                      variables[i].subnames[j].size(),
                      avtDataObjectString::DATA_OBJECT_STRING_SHOULD_MAKE_COPY);
         }
+        // Write the binRanges (if any).  Number of binRanges already
+        // communicated in mass "int" writing phase.
+        wrtr->WriteDouble(str, &(variables[i].binRange[0]), 
+                          variables[i].binRange.size());
         variables[i].trueData->Write(str, wrtr);
         variables[i].cumulativeTrueData->Write(str, wrtr);
         variables[i].effectiveData->Write(str, wrtr);
@@ -2448,6 +2555,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //    Jeremy Meredith, Mon Aug 28 16:46:29 EDT 2006
 //    Added nodesAreCritical.  Added unitCellVectors.
 //
+//    Hank Childs, Fri Jan 12 13:11:26 PST 2007
+//    Added binRange.
+//
 // ****************************************************************************
 
 int
@@ -2567,6 +2677,7 @@ avtDataAttributes::Read(char *input)
     bool *ascii = new bool[numVars];
     avtVarType *vartypes = new avtVarType[numVars];
     int *subnames_size = new int[numVars];
+    int *binRange_size = new int[numVars];
     for (i = 0 ; i < numVars ; i++)
     {
         memcpy(&tmp, input, sizeof(int));
@@ -2588,6 +2699,10 @@ avtDataAttributes::Read(char *input)
         memcpy(&tmp, input, sizeof(int));
         input += sizeof(int); size += sizeof(int);
         subnames_size[i] = tmp;
+
+        memcpy(&tmp, input, sizeof(int));
+        input += sizeof(int); size += sizeof(int);
+        binRange_size[i] = tmp;
     }
 
     memcpy(&dtmp, input, sizeof(double));
@@ -2651,6 +2766,18 @@ avtDataAttributes::Read(char *input)
             SetVariableSubnames(subnames, varname.c_str());
         }
 
+        std::vector<double> br;
+        if (binRange_size[i] > 0)
+        {
+            br.resize(binRange_size[i]);
+            for (j = 0 ; j < binRange_size[i] ; j++)
+            {
+                memcpy(&dtmp, input, sizeof(double));
+                input += sizeof(double); size += sizeof(double);
+                br[j] = dtmp;
+            }
+            SetVariableBinRanges(br, varname.c_str());
+        }
         SetCentering(centerings[i], varname.c_str());
         SetVariableDimension(varDims[i], varname.c_str());
         SetTreatAsASCII(ascii[i], varname.c_str());
@@ -2672,6 +2799,7 @@ avtDataAttributes::Read(char *input)
     delete [] ascii;
     delete [] vartypes;
     delete [] subnames_size;
+    delete [] binRange_size;
 
     int meshnameSize;
     memcpy(&meshnameSize, input, sizeof(int));

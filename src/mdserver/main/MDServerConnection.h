@@ -39,6 +39,7 @@
 #define MDSERVER_CONNECTION_H
 #include <map>
 #include <string>
+#include <vector>
 #include <vectortypes.h>
 #include <GetFileListRPC.h>
 
@@ -173,6 +174,10 @@ class Xfer;
 //    Jeremy Meredith, Mon Aug 28 16:48:30 EDT 2006
 //    Added ability to force using a specific plugin when reading
 //    the metadata from a file (if it causes the file to be opened).
+//
+//    Hank Childs, Thu Jan 11 16:14:25 PST 2007
+//    Add argument to GetDatabase so we can retrieve the names of plugins
+//    we used to open a file.
 //
 // ****************************************************************************
 
@@ -316,6 +321,7 @@ private:
 
     avtDatabase               *GetDatabase(std::string, int timeState,
                                            bool forceReadAllCyclesAndTimes,
+                                           std::vector<std::string> &,
                                            std::string forcedFileType="");
 };
 

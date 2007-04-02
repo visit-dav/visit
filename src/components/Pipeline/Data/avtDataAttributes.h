@@ -210,6 +210,9 @@ class     PlotInfoAttributes;
 //    Hank Childs, Thu Dec 21 10:11:30 PST 2006
 //    Add support for debug dumps.
 //
+//    Hank Childs, Fri Jan 12 13:00:31 PST 2007
+//    Add bounds for array variables.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -281,6 +284,11 @@ class PIPELINE_API avtDataAttributes
                                               const char * = NULL);
     const std::vector<std::string> &
                              GetVariableSubnames(const char * = NULL) const;
+    void                     SetVariableBinRanges(
+                                              const std::vector<double> &,
+                                              const char * = NULL);
+    const std::vector<double> &
+                             GetVariableBinRanges(const char * = NULL) const;
 
     avtCentering             GetCentering(const char * = NULL) const;
     void                     SetCentering(avtCentering, const char * = NULL);
@@ -486,6 +494,8 @@ class PIPELINE_API avtDataAttributes
         avtExtents          *currentData;
         avtExtents          *cumulativeCurrentData;
         std::vector<std::string>  subnames; // Only used for 'array' vars
+                                            // at this point.
+        std::vector<double>       binRange; // Only used for 'array' vars
                                             // at this point.
     };
     std::vector<VarInfo>     variables;
