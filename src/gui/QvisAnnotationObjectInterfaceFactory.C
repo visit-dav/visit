@@ -1,4 +1,6 @@
 #include <QvisAnnotationObjectInterfaceFactory.h>
+#include <QvisImageAnnotationInterface.h>
+#include <QvisLine2DInterface.h>
 #include <QvisText2DInterface.h>
 #include <QvisTimeSliderInterface.h>
 
@@ -48,13 +50,15 @@ QvisAnnotationObjectInterfaceFactory::~QvisAnnotationObjectInterfaceFactory()
 // Creation:   Fri Oct 31 09:31:50 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun 28 13:32:58 PST 2005
+//   Made it return 8.
+//
 // ****************************************************************************
 
 int
 QvisAnnotationObjectInterfaceFactory::GetMaxInterfaces() const
 {
-    return 7;
+    return 8;
 }
 
 // ****************************************************************************
@@ -75,7 +79,9 @@ QvisAnnotationObjectInterfaceFactory::GetMaxInterfaces() const
 // Creation:   Fri Oct 31 09:32:56 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun 28 12:09:55 PDT 2005
+//   Added John Anderson's image and line2d annotation interfaces.
+//
 // ****************************************************************************
 
 QvisAnnotationObjectInterface *
@@ -90,6 +96,15 @@ QvisAnnotationObjectInterfaceFactory::CreateInterface(int i, QWidget *parent) co
         break;
     case 2: // TimeSlider;
         retval = new QvisTimeSliderInterface(parent, "timeSliderInterface");
+        break;
+    case 3: // Line2D
+        retval = new QvisLine2DInterface(parent, "line2DInterface");
+        break;
+    // Arrow2D
+    // Arrow3D
+    // Box
+    case 7: // Image
+        retval = new QvisImageAnnotationInterface(parent, "imageAnnotationInterface");
         break;
     default:
         debug1 << "QvisAnnotationObjectInterfaceFactory::CreateInterface:"

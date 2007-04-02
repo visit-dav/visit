@@ -5,8 +5,10 @@
 #include <DebugStream.h>
 
 #include <avtAnnotationColleague.h>
-#include <avtTimeSliderColleague.h>
+#include <avtImageColleague.h>
+#include <avtLine2DColleague.h>
 #include <avtText2DColleague.h>
+#include <avtTimeSliderColleague.h>
 
 // ****************************************************************************
 // Method: VisWinAnnotations::VisWinAnnotations
@@ -180,7 +182,9 @@ VisWinAnnotations::SetFrameAndState(int nFrames,
 // Creation:   Tue Dec 2 15:41:51 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun 28 11:56:28 PDT 2005
+//   Added John Anderson's objects.
+//
 // ****************************************************************************
 
 bool
@@ -197,6 +201,12 @@ VisWinAnnotations::AddAnnotationObject(int annotType)
         break;
     case 2: // Time slider
         annot = new avtTimeSliderColleague(mediator);
+        break;
+    case 3: // Line 2D
+        annot = new avtLine2DColleague(mediator);
+        break;
+    case 7: // Image
+        annot = new avtImageColleague(mediator);
         break;
     default:
         debug1 << "VisWinAnnotations:AddAnnotationObject: Annotation type "

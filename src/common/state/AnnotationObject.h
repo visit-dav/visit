@@ -28,6 +28,7 @@ public:
         Text2D,
         Text3D,
         TimeSlider,
+        Line2D,
         Arrow2D,
         Arrow3D,
         Box,

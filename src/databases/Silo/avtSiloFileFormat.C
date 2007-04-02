@@ -864,6 +864,9 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Jeremy Meredith, Tue Jun  7 08:32:46 PDT 2005
 //    Added support for "EMPTY" domains in multi-objects.
 //
+//    Mark C. Miller, Wed Jun 29 08:49:14 PDT 2005
+//    Made it NOT throw an exception if first non-empty mesh is invalid
+//
 // ****************************************************************************
 
 void
@@ -1064,20 +1067,22 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 
         // Find the first non-empty mesh
         int meshnum = 0;
+        int silo_mt = -1;
+        bool valid_var = true;
         while (string(mm->meshnames[meshnum]) == "EMPTY")
         {
             meshnum++;
             if (meshnum >= mm->nblocks)
             {
-                EXCEPTION1(InvalidVariableException,  multimesh_names[i]);
+                valid_var = false;
+                break;
             }
         }
 
-        int silo_mt;
-        bool valid_var = true;
         TRY
         {
-            silo_mt = GetMeshtype(dbfile, mm->meshnames[meshnum]);
+            if (valid_var)
+                silo_mt = GetMeshtype(dbfile, mm->meshnames[meshnum]);
         }
         CATCH(SiloException)
         {
@@ -1245,17 +1250,20 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 
         // Store off the important info about this multimesh
         // so we can match other multi-objects to it later
-        actualMeshName.push_back(name_w_dir);
-        firstSubMesh.push_back(mm->meshnames[meshnum]);
-        blocksForMesh.push_back(mm->nblocks);
-        allSubMeshDirs.push_back(vector<string>());
-        for (int j=0; j<mm->nblocks; j++)
+        if (valid_var)
         {
-            string dir,var;
-            SplitDirVarName(mm->meshnames[j], dirname, dir,var);
-            if (j==0)
-                firstSubMeshVarName.push_back(var);
-            allSubMeshDirs[i].push_back(dir);
+            actualMeshName.push_back(name_w_dir);
+            firstSubMesh.push_back(mm->meshnames[meshnum]);
+            blocksForMesh.push_back(mm->nblocks);
+            allSubMeshDirs.push_back(vector<string>());
+            for (int j=0; j<mm->nblocks; j++)
+            {
+                string dir,var;
+                SplitDirVarName(mm->meshnames[j], dirname, dir,var);
+                if (j==0)
+                    firstSubMeshVarName.push_back(var);
+                allSubMeshDirs[i].push_back(dir);
+            }
         }
 
         delete [] name_w_dir;

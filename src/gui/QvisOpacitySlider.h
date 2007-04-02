@@ -25,6 +25,9 @@ class QTimer;
 //   Brad Whitlock, Thu Nov 13 10:01:21 PDT 2003
 //   I added the internal pixmapWidth method.
 //
+//   Brad Whitlock, Tue Jun 28 12:11:36 PDT 2005
+//   I made setGradientColor be a slot.
+//
 // ****************************************************************************
 
 class GUI_API QvisOpacitySlider : public QWidget, public QRangeControl
@@ -51,8 +54,6 @@ public:
     virtual void setTickInterval(int);
     int          tickInterval() const { return tickInt; }
 
-    void         setGradientColor(const QColor &color);
-
     int          minValue() const;
     int          maxValue() const;
     void         setMinValue(int);
@@ -68,6 +69,7 @@ public slots:
     virtual void setEnabled(bool);
     void         addStep();
     void         subtractStep();
+    void         setGradientColor(const QColor &color);
 
 signals:
     void    valueChanged(int value);

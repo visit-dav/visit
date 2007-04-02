@@ -106,6 +106,9 @@
 #    Hank Childs, Mon Jun 13 11:25:47 PDT 2005
 #    Added PyMethodDoc.
 #
+#    Brad Whitlock, Tue Jun 28 11:46:49 PDT 2005
+#    Added John Anderson's PyLineObject and PyImageObject.
+#
 ##############################################################################
 
 ##
@@ -123,9 +126,11 @@ SRC= \
     PyGlobalAttributes.C \
     PyGlobalLineoutAttributes.C \
     PyHostProfile.C \
+    PyImageObject.C \
     PyInteractorAttributes.C \
     PyKeyframeAttributes.C \
     PyLightAttributes.C \
+    PyLineObject.C \
     PyMaterialAttributes.C \
     PyMethodDoc.C \
     PyPickAttributes.C \
@@ -150,9 +155,11 @@ HDR= \
     PyGlobalAttributes.h \
     PyGlobalLineoutAttributes.h \
     PyHostProfile.h \
+    PyImageObject.h \
     PyInteractorAttributes.h \
     PyKeyframeAttributes.h \
     PyLightAttributes.h \
+    PyLineObject.h \
     PyMaterialAttributes.h \
     PyMethodDoc.h \
     PyPickAttributes.h \
