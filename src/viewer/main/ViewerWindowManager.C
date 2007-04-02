@@ -2310,8 +2310,7 @@ ViewerWindowManager::SetView2DFromClient()
         double extents[4];
         windows[activeWindow]->GetExtents(2, extents);
         bool newFullFrameMode = view2DClientAtts->GetUseFullFrame(extents);
-        ViewerPlotList *pl = windows[activeWindow]->GetPlotList();
-        if (pl && !pl->DoAllPlotsAxesHaveSameUnits())
+        if (windows[activeWindow]->DoAllPlotsAxesHaveSameUnits())
             newFullFrameMode = true;
         view2d.fullFrame = newFullFrameMode; 
     }

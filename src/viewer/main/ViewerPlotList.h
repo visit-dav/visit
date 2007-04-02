@@ -355,7 +355,6 @@ public:
     void GetPlotLimits(int nDimensions, double *limits) const;
     void SetSpatialExtentsType(avtExtentType);
     bool GetMaintainDataMode() const;
-    bool DoAllPlotsAxesHaveSameUnits() const;
 
     bool SetBackgroundColor(const double *);
     bool SetForegroundColor(const double *);

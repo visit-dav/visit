@@ -2432,6 +2432,15 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
     const View2DAttributes& view2DAtts = atts.GetView2D();
     avtView2D view2D;
     view2D.SetFromView2DAttributes(&view2DAtts);
+    if (view2DAtts.GetFullFrameActivationMode() == View2DAttributes::Auto)
+    {
+        double extents[6];
+        viswin->GetBounds(extents);
+        bool newFullFrameMode = view2DAtts.GetUseFullFrame(extents);
+        if (!viswin->DoAllPlotsAxesHaveSameUnits())
+            newFullFrameMode = true;
+        view2D.fullFrame = newFullFrameMode;
+    }
     viswin->SetView2D(view2D);
 
     const View3DAttributes& view3DAtts = atts.GetView3D();

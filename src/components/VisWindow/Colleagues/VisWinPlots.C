@@ -1930,3 +1930,44 @@ VisWinPlots::GetMaxZShift()
     }
     return maxZShift;
 }
+
+// ****************************************************************************
+//  Method: VisWinPlots::GetMaxZShift
+//
+//  Programmer: Mark C. Miller
+//  Creation:   April 5, 2006 
+//
+//  Notes: Moved from original implementation in ViewerPlotList
+// ****************************************************************************
+bool
+VisWinPlots::DoAllPlotsAxesHaveSameUnits()
+{
+    int i;
+    bool first = true;
+    std::string theUnits = "";
+    for (i = 0; i < plots.size(); i++)
+    {
+        if (plots[i]->IsVisible())
+        {
+            avtDataObject_p dob = plots[i]->GetDataObject();
+
+            if (*dob != NULL)
+            {
+                avtDataAttributes &datts = dob->GetInfo().GetAttributes();
+                if (first)
+                {
+                    if (datts.GetXUnits() != "")
+                        theUnits = datts.GetXUnits();
+                    else if (datts.GetYUnits() != "")
+                        theUnits = datts.GetYUnits();
+                    if (theUnits != "")
+                        first = false;
+                }
+                if ((datts.GetXUnits() != "" && datts.GetXUnits() != theUnits) ||
+                    (datts.GetYUnits() != "" && datts.GetYUnits() != theUnits))
+                    return false;
+            }
+        }
+    }
+    return true;
+}

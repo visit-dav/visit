@@ -312,7 +312,8 @@ skipList="scalable,parallel:tests/databases/boxlib.py \
 	  optimized:tests/plots/label.py \
 	  parallel:tests/operators/defer_expr.py \
 	  scalable,parallel:tests/operators/defer_expr.py \
-	  optimized:tests/operators/defer_expr.py"
+	  optimized:tests/operators/defer_expr.py \
+          scalable,parallel:tests/queries/bestfitline.py"
 
 # run the test(s)
 error=0

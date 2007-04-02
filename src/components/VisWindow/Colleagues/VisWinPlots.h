@@ -193,6 +193,7 @@ class VISWINDOW_API VisWinPlots : public VisWinColleague
 
     virtual void                  FullFrameOn(const double, const int);
     virtual void                  FullFrameOff(void);
+    bool                          DoAllPlotsAxesHaveSameUnits();
 
     bool                          TransparenciesExist(void);
 

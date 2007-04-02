@@ -1690,6 +1690,20 @@ ViewerWindow::GetFullFrameMode() const
     return visWindow->GetView2D().fullFrame;
 }
 
+// ****************************************************************************
+//  Method: ViewerWindow::DoAllPlotsAxesHaveSameUnits
+//
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   April 5, 2006
+// ****************************************************************************
+
+bool
+ViewerWindow::DoAllPlotsAxesHaveSameUnits()
+{
+    return visWindow->DoAllPlotsAxesHaveSameUnits();
+}
+
 
 // ****************************************************************************
 //  Method: ViewerWindow::SetViewIsLocked
@@ -4675,7 +4689,7 @@ ViewerWindow::UpdateView2d(const double *limits)
         // if plot's units are different, that overrides other considerations 
         if (plotList)
         {
-            if (!plotList->DoAllPlotsAxesHaveSameUnits())
+            if (!DoAllPlotsAxesHaveSameUnits())
                 newFullFrameMode = true;
         }
             
