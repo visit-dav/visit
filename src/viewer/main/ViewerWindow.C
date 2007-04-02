@@ -237,6 +237,9 @@ static void RotateAroundY(const avtView3D&, double, avtView3D&);
 //
 //    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
 //    Added scalableStereoType to support stereo SR
+//
+//    Mark C. Miller, Wed Aug  9 16:35:25 PDT 2006
+//    Removed scalableStereoType
 // ****************************************************************************
 
 ViewerWindow::ViewerWindow(int windowIndex) : undoViewStack(true), redoViewStack()
@@ -283,7 +286,6 @@ ViewerWindow::ViewerWindow(int windowIndex) : undoViewStack(true), redoViewStack
     isVisible = false;
     isChangingScalableRenderingMode = false;
     targetScalableRenderingMode = false;
-    scalableStereoType = -1;
     nameOfCtChangedSinceLastRender = "";
     isCompressingScalableImage = false;
     compressionActivationMode = RenderingAttributes::Never;
@@ -6237,29 +6239,17 @@ ViewerWindow::GetRenderTimes(double times[6]) const
 //    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
 //    For certain cases of stereo and SR, all the stereo work is done on the
 //    engine and the Viewer's visWindow object should NOT be in stereo. In
-//    Other cases, it is necessary for the Viewer's visWindow object to als
+//    Other cases, it is necessary for the Viewer's visWindow object to also
 //    be in stereo.
+//
+//    Mark C. Miller, Wed Aug  9 16:35:25 PDT 2006
+//    Removed above optimization
 // ****************************************************************************
 
 void
 ViewerWindow::SetStereoRendering(bool enabled, int type)
 {
-    scalableStereoType = -1;
-    if (enabled == false)
-        visWindow->SetStereoRendering(false, type);
-    else
-    {
-        if (GetScalableRendering())
-        {
-            scalableStereoType = type;
-            if (type == (int) RenderingAttributes::CrystalEyes)
-                visWindow->SetStereoRendering(true, type);
-        }
-        else
-        {
-            visWindow->SetStereoRendering(true, type);
-        }
-    }
+    visWindow->SetStereoRendering(enabled, type);
 }
 
 // ****************************************************************************
@@ -6276,15 +6266,15 @@ ViewerWindow::SetStereoRendering(bool enabled, int type)
 //    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
 //    Added logic to deal with cases in which the visWindow object itself
 //    may not be in stereo even though we are indeed doing stereo rendering.
+//
+//    Mark C. Miller, Wed Aug  9 16:35:25 PDT 2006
+//    Removed above optimization
 // ****************************************************************************
 
 bool
 ViewerWindow::GetStereo() const
 {
-    if (scalableStereoType != -1)
-        return true;
-    else
-        return visWindow->GetStereo();
+    return visWindow->GetStereo();
 }
 
 // ****************************************************************************
@@ -6306,10 +6296,7 @@ ViewerWindow::GetStereo() const
 int
 ViewerWindow::GetStereoType() const
 {
-    if (scalableStereoType != -1)
-        return scalableStereoType;
-    else
-        return visWindow->GetStereoType();
+    return visWindow->GetStereoType();
 }
 
 // ****************************************************************************
@@ -6662,6 +6649,9 @@ ViewerWindow::GetNotifyForEachRender() const
 //   Since the visWindow object isn't always in stereo for stereo SR, we
 //   need logic here to correctly put the visWindow into stereo when changing
 //   out of SR, if needed.
+//
+//   Mark C. Miller, Wed Aug  9 16:35:25 PDT 2006
+//   Removed above logic. Now visWindow will be in stereo mode
 // ****************************************************************************
 
 void
@@ -6683,23 +6673,6 @@ ViewerWindow::ChangeScalableRenderingMode(bool newMode)
         // transmute the plots
         SendWindowEnvironmentToEngine(GetPlotList()->GetEngineKey());
         GetPlotList()->TransmutePlots(!newMode);
-
-        // If we're stereo rendering, then it may be the case that the
-        // visWindow isn't already in stereo. Make it so.
-        if (GetStereo())
-        {
-            if (newMode == true)
-            {
-                scalableStereoType = visWindow->GetStereoType();
-                if (visWindow->GetStereoType() != (int) RenderingAttributes::CrystalEyes)
-                    visWindow->SetStereoRendering(false, visWindow->GetStereoType());
-            }
-            else
-            {
-                visWindow->SetStereoRendering(true, scalableStereoType);
-                scalableStereoType = -1;
-            }
-        }
 
         // set scalable rendering mode in the vis window 
         visWindow->SetScalableRendering(newMode);
@@ -7994,6 +7967,9 @@ ViewerWindow::UpdateLastExternalRenderRequestInfo(
 //    in which left/right images are in separate buffers (e.g. crystal-eyes),
 //    two render requests are needed. However, for all others, a single render
 //    request for a complete, stereo image, is all that is needed.
+//
+//    Mark C. Miller, Wed Aug  9 16:29:43 PDT 2006
+//    Removed optimization to skip second eye for non-crystal-eyes stereo mode
 // ****************************************************************************
 
 bool
@@ -8002,14 +7978,10 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
     const ExternalRenderRequestInfo& lastRequest = lastExternalRenderRequest;
 
     //
-    // Don't skip render for either eye when using crystal-eyes stereo
+    // Don't skip render for either eye when in stereo 
     //
     if (thisRequest.leftEye != lastRequest.leftEye)
-    {
-        if (thisRequest.winAtts.GetRenderAtts().GetStereoType() ==
-            RenderingAttributes::CrystalEyes)
-            return false;
-    }
+        return false;
 
     // compare window attributes but ignore a few of them by forcing
     // old/new to be equal for those few

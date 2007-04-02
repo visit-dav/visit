@@ -981,6 +981,9 @@ Engine::ProcessInput()
 //
 //    Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //    Allowed '-timings' with an 's' too 
+//
+//    Mark C. Miller, Wed Aug  9 19:40:30 PDT 2006
+//    Added "-stereo" option to support stereo in SR mode
 // ****************************************************************************
 void
 Engine::ProcessCommandLine(int argc, char **argv)
@@ -992,6 +995,8 @@ Engine::ProcessCommandLine(int argc, char **argv)
     {
         if (strcmp(argv[i], "-allowdynamic") == 0)
             LoadBalancer::AllowDynamic();
+        else if (strcmp(argv[i], "-stereo") == 0)
+            NetworkManager::SetStereoEnabled();
         else if (strcmp(argv[i], "-hw-accel") == 0)
             haveHWAccel = true;
         else if ((strcmp(argv[i], "-timing") == 0 ||

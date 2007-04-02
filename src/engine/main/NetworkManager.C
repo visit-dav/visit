@@ -103,6 +103,7 @@
 #include <avtQueryFactory.h>
 #include <CompactSILRestrictionAttributes.h>
 #include <VisWindow.h>
+#include <VisWinRendering.h> // for SetStereoEnabled
 #include <ParsingExprList.h>
 #include <avtExprNode.h>
 #include <DatabasePluginManager.h>
@@ -1867,7 +1868,6 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
     int *const &frameAndState = viswinInfo.frameAndState;
     std::vector<int>& plotsCurrentlyInWindow = viswinMap[windowID].plotsCurrentlyInWindow;
     std::vector<avtPlot_p>& imageBasedPlots = viswinMap[windowID].imageBasedPlots;
-    bool &handleLeftRightEye = viswinMap[windowID].handleLeftRightEye;
 
     TRY
     {
@@ -1878,9 +1878,9 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
         bool handledAnnotations = false;
 
         //
-        // Explicitly specify left or right eye for crystal-eyes stereo 
+        // Explicitly specify left or right eye for stereo 
         //
-        if (handleLeftRightEye)
+        if (viswin->GetStereo())
             viswin->SetStereoRendering(true, leftEye ? 4 : 5);
 
         // put all the plot objects into the VisWindow
@@ -2503,7 +2503,6 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
     WindowAttributes &windowAttributes = viswinInfo.windowAttributes;
     std::string &extentTypeString = viswinInfo.extentTypeString;
     std::string &changedCtName = viswinInfo.changedCtName;
-    bool &handleLeftRightEye = viswinInfo.handleLeftRightEye;
 
     // do nothing if nothing changed
     if ((windowAttributes == atts) && (extentTypeString == extstr) &&
@@ -2618,41 +2617,11 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
        viswin->SetSurfaceRepresentation(atts.GetRenderAtts().GetGeometryRepresentation());
     viswin->SetDisplayListMode(0);  // never
 
-    //
-    // Only enable stereo rendering in the viswin object for non-crystal-eyes modes
-    //
-    if (atts.GetRenderAtts().GetStereoRendering())
-    {
-        if (viswin->GetStereo() != true)
-        {
-            if (atts.GetRenderAtts().GetStereoType() == RenderingAttributes::CrystalEyes)
-                handleLeftRightEye = true;
-            else
-            {
-                viswin->SetStereoRendering(true, atts.GetRenderAtts().GetStereoType());
-                handleLeftRightEye = false;
-            }
-        }
-        else
-        {
-            if (viswin->GetStereoType() != atts.GetRenderAtts().GetStereoType())
-            {
-                if (atts.GetRenderAtts().GetStereoType() == RenderingAttributes::CrystalEyes)
-                    handleLeftRightEye = true;
-                else
-                {
-                    viswin->SetStereoRendering(true, atts.GetRenderAtts().GetStereoType());
-                    handleLeftRightEye = false;
-                }
-            }
-        }
-    }
-    else
-    {
-        if (viswin->GetStereo() != false)
-            viswin->SetStereoRendering(false, 0);
-        handleLeftRightEye = false;
-    }
+    // handle stereo rendering settings
+    if (viswin->GetStereo() != atts.GetRenderAtts().GetStereoRendering() ||
+        viswin->GetStereoType() != atts.GetRenderAtts().GetStereoType())
+        viswin->SetStereoRendering(atts.GetRenderAtts().GetStereoRendering(),
+                                   atts.GetRenderAtts().GetStereoType());
 
     windowAttributes = atts;
     extentTypeString = extstr;
@@ -4227,3 +4196,18 @@ NetworkManager::PickForIntersection(const int winId, PickAttributes *pa)
     }
 }
 
+// ****************************************************************************
+//  Method: SetStereoEnabled
+//
+//  Purpose: Setup stereo rendering mode
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   August 9, 2006 
+//
+// ****************************************************************************
+
+void
+NetworkManager::SetStereoEnabled()
+{
+    VisWinRendering::SetStereoEnabled();
+}

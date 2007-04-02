@@ -182,6 +182,9 @@ class VisWindowColleagueProxy;
 //    Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
 //    Added 3 most recent rendering times to set of times returned by
 //    GetRenderTimes. Added supporting data members
+//
+//    Mark C. Miller, Wed Aug  9 19:40:30 PDT 2006
+//    Removed bool arg from SetStereoEnabled since it defaults to off
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -279,8 +282,8 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     bool                     GetNotifyForEachRender() const
                                  { return notifyForEachRender; };
 
-    static void              SetStereoEnabled(bool se)
-                                 { stereoEnabled = se; };
+    static void              SetStereoEnabled()
+                                 { stereoEnabled = true; };
 
     int                      GetScalableThreshold() const;
     bool                     SetScalableRendering(bool mode);

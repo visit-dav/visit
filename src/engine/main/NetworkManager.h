@@ -79,7 +79,6 @@ typedef struct _EngineVisWinInfo
     std::vector<int>            plotsCurrentlyInWindow;
     std::vector<avtPlot_p>      imageBasedPlots;
     bool                        markedForDeletion;
-    bool                        handleLeftRightEye;
 } EngineVisWinInfo;
 
 typedef void   (*InitializeProgressCallback)(void *, int);
@@ -295,6 +294,9 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //
 //    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
 //    Added leftEye arg to Render method
+//
+//    Mark C. Miller, Wed Aug  9 19:40:30 PDT 2006
+//    Added SetStereoEnabled
 // ****************************************************************************
 
 class NetworkManager
@@ -377,6 +379,8 @@ class NetworkManager
     static void   RegisterInitializeProgressCallback(
                                            InitializeProgressCallback, void *);
     static void   RegisterProgressCallback(ProgressCallback, void *);
+
+    static void   SetStereoEnabled();
 
  private:
 

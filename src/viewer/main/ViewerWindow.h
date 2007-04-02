@@ -396,6 +396,9 @@ class ViewerToolbar;
 //    to store knowledge of stereo mode for cases where it is not appropriate
 //    to actually put the visWindow into stereo.
 //
+//    Mark C. Miller, Wed Aug  9 16:35:25 PDT 2006
+//    Removed scalableStereoType data member
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow
@@ -685,7 +688,6 @@ private:
 
     bool            isChangingScalableRenderingMode;
     bool            targetScalableRenderingMode;
-    int             scalableStereoType;
     std::string     nameOfCtChangedSinceLastRender;
     bool            isCompressingScalableImage;
     int             compressionActivationMode;
