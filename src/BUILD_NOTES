@@ -543,7 +543,16 @@ setenv LD_LIBRARY64_PATH $QTDIR/lib:$LD_LIBRARY64_PATH       # SGI
 # remove "/usr/X11R6/include" from QMAKE_INCDIR_X11
 # remove "/usr/X11R6/include" from QMAKE_INCDIR_OPENGL
 #
+
+#
+# Issuing a top level make of Qt will build all portions of Qt.  VisIt really
+# only needs libqt, moc, and libqui.  You can have only these portions be 
+# built by issuing:
+#
+make symlinks src-qmake src-moc sub-src
+cd tools/designer/uilib
 make
+cd ../../../
 
 #
 # If qt was configured with threading support then the qt library will be
