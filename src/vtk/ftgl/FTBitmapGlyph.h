@@ -45,7 +45,7 @@ class FTGL_EXPORT FTBitmapGlyph : public FTGlyph
                           const int horizontal,
                           const FTGLRenderContext *context = 0);
     
-    virtual void ConvertGlyph(const int horizontal);
+    virtual void ConvertGlyph( const int horizontal);
 
   private:
     /**
