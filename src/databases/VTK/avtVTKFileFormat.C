@@ -650,3 +650,25 @@ avtVTKFileFormat::ConvertStructuredPointsToRGrid(vtkStructuredPoints *inSP)
     inSP->Delete(); 
     return outRG; 
 }
+
+// ****************************************************************************
+//  Method: avtVTKFileFormat::GetCycleFromFilename
+//
+//  Purpose: Try to get a cycle number from a file name
+//
+//  Notes: Although all this method does is simply call the format's base
+//  class implementation of GuessCycle, doing this is a way for the VTK
+//  format to "bless" the guesses that that method makes. Otherwise, VisIt
+//  wouldn't know that VTK thinks those guesses are good. See notes in
+//  avtSTXXFileFormatInterface::SetDatabaseMetaData for further explanation.
+//
+//  Programmer: Eric Brugger
+//  Creation:   August 12, 2005
+//
+// ****************************************************************************
+
+int
+avtVTKFileFormat::GetCycleFromFilename(const char *f) const
+{
+    return GuessCycle(f);
+}
