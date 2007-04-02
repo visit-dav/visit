@@ -83,6 +83,51 @@ CopyHostentStringList(char ***destp, char **src, const char *name, const char *m
     *destp = dest;
 }
 
+static void
+CopyHostentAddress(char **dest, char *src, int length, const char *mName)
+{
+    if(src == NULL)
+    {
+        *dest = NULL;
+        debug5 << mName << " = NULL" << endl;
+    }
+    else
+    {
+        *dest = (char*)malloc(length);
+        memcpy(*dest, src, length);
+        debug5 << mName << " = ";
+        for (int i = 0; i < length - 1; ++i)
+            debug5 << (int(src[i]) & 0xff) << ".";
+        debug5 << (int(src[length-1]) & 0xff) << endl;
+    }
+}
+
+static void
+CopyHostentAddressList(char ***destp, char **src, int length, const char *name, const char *mName)
+{
+    if(src == NULL)
+    {
+       debug5 << mName << name << " = NULL" << endl;
+       *destp = NULL;
+       return;
+    }
+
+    // Count the number of items in the list.
+    int numEntries = 0;
+    for(char **ptr = src; *ptr != NULL; ++ptr)
+        ++numEntries;
+
+    char **dest = (char **)malloc(numEntries + 1);
+    debug5 << mName << name << " = {" << endl;
+    for(int i = 0; src[i] != NULL; ++i)
+        CopyHostentAddress(&dest[i], src[i], length, mName);
+    dest[numEntries] = NULL;
+    debug5 << mName << "NULL" << endl;
+    debug5 << mName << "}" << endl;
+
+    *destp = dest;
+}
+
 // ****************************************************************************
 // Method: CopyHostent
 //
@@ -127,7 +172,7 @@ CopyHostent(struct hostent *h)
     h2->h_length = h->h_length;
     debug5 << mName << "hostent->h_length = " << h2->h_length << endl;
 
-    CopyHostentStringList(&h2->h_addr_list, (char **)h->h_addr_list, "hostent->h_addr_list", mName);
+    CopyHostentAddressList(&h2->h_addr_list, (char **)h->h_addr_list, h->h_length, "hostent->h_addr_list", mName);
 
     return h2;
 }
