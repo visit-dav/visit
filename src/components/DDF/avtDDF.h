@@ -29,6 +29,11 @@ class     avtDDFFunctionInfo;
 //  Programmer: Hank Childs
 //  Creation:   February 12, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Mar 30 12:43:24 PST 2006
+//    Add method OutputDDF.
+//
 // ****************************************************************************
 
 class AVTDDF_API avtDDF
@@ -40,6 +45,7 @@ class AVTDDF_API avtDDF
     avtDDFFunctionInfo    *GetFunctionInfo(void) { return functionInfo; };
     vtkDataArray          *ApplyFunction(vtkDataSet *);
     vtkDataSet            *CreateGrid(void);
+    void                   OutputDDF(const std::string &);
 
   protected: 
     avtDDFFunctionInfo    *functionInfo;

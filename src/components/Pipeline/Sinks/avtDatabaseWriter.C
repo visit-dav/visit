@@ -157,6 +157,9 @@ avtDatabaseWriter::Write(const std::string &filename,
 //    Hank Childs, Thu Sep 15 14:13:34 PDT 2005
 //    Don't do interface reconstruction if all variables are requested ['6587].
 //
+//    Hank Childs, Thu Mar 30 12:05:56 PST 2006
+//    Do not assume we are writing a mesh.  It might be a curve.
+//
 // ****************************************************************************
 
 void
@@ -178,13 +181,19 @@ avtDatabaseWriter::Write(const std::string &filename,
     {
         //
         // We will need a pipeline specification to force an update. Get that 
-        //here.
+        // here.
         //
         avtTerminatingSource *src = dob->GetTerminatingSource();
         avtPipelineSpecification_p spec = 
                                         src->GetGeneralPipelineSpecification();
         avtDataSpecification_p ds = spec->GetDataSpecification();
-        const avtMeshMetaData *mmd = md->GetMesh(0);
+        std::string meshname;
+        if (md->GetNumMeshes() > 0)
+            meshname = md->GetMesh(0)->name;
+        else if (md->GetNumCurves() > 0)
+            meshname = md->GetCurve(0)->name;
+        else
+            EXCEPTION0(ImproperUseException);
     
         //
         // We want to process all of the variables in the dataset, so dummy up
@@ -232,7 +241,7 @@ avtDatabaseWriter::Write(const std::string &filename,
             for (i = 0 ; i < md->GetNumScalars() ; i++)
             {
                 const avtScalarMetaData *smd = md->GetScalar(i);
-                if (md->MeshForVar(smd->name) == mmd->name)
+                if (md->MeshForVar(smd->name) == meshname)
                 {
                     ds->AddSecondaryVariable(smd->name.c_str());
                     scalarList.push_back(smd->name);
@@ -241,7 +250,7 @@ avtDatabaseWriter::Write(const std::string &filename,
             for (i = 0 ; i < md->GetNumVectors() ; i++)
             {
                 const avtVectorMetaData *vmd = md->GetVector(i);
-                if (md->MeshForVar(vmd->name) == mmd->name)
+                if (md->MeshForVar(vmd->name) == meshname)
                 {
                     ds->AddSecondaryVariable(vmd->name.c_str());
                     vectorList.push_back(vmd->name);
@@ -281,7 +290,7 @@ avtDatabaseWriter::Write(const std::string &filename,
         for (i = 0 ; i < md->GetNumMaterials() ; i++)
         {
             const avtMaterialMetaData *mat_md = md->GetMaterial(i);
-            if (md->MeshForVar(mat_md->name) == mmd->name)
+            if (md->MeshForVar(mat_md->name) == meshname)
             {
                 hasMaterialsInProblem = true;
                 mustGetMaterialsAdditionally = true;

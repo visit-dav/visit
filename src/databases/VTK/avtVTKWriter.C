@@ -22,11 +22,17 @@ using     std::vector;
 //  Programmer: Hank Childs
 //  Creation:   May 24, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Mar 30 12:20:24 PST 2006
+//    Initialize doMultiBlock.
+//
 // ****************************************************************************
 
 avtVTKWriter::avtVTKWriter(DBOptionsAttributes *atts)
 {
     doBinary = atts->GetBool("Binary format");
+    doMultiBlock = true;
 }
 
 
@@ -57,6 +63,14 @@ avtVTKWriter::OpenFile(const string &stemname)
 //  Programmer: Hank Childs
 //  Creation:   September 12, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Mar 30 12:20:24 PST 2006
+//    Add support for curves.
+//
+//    Hank Childs, Thu Mar 30 12:20:24 PST 2006
+//    Initialize doMultiBlock.
+//
 // ****************************************************************************
 
 void
@@ -64,16 +78,23 @@ avtVTKWriter::WriteHeaders(const avtDatabaseMetaData *md,
                            vector<string> &scalars, vector<string> &vectors,
                            vector<string> &materials)
 {
-    char filename[1024];
-    sprintf(filename, "%s.visit", stem.c_str());
-    ofstream ofile(filename);
-    int nblocks = md->GetMesh(0)->numBlocks;
-    ofile << "!NBLOCKS " << nblocks << endl;
-    for (int i = 0 ; i < nblocks ; i++)
+    int nblocks = 1;
+    if (md->GetNumMeshes() > 0)
+        nblocks = md->GetMesh(0)->numBlocks;
+    // else probably a curve.
+    doMultiBlock = (nblocks > 1);
+    if (nblocks > 1)
     {
-        char chunkname[1024];
-        sprintf(chunkname, "%s.%d.vtk", stem.c_str(), i);
-        ofile << chunkname << endl;
+        char filename[1024];
+        sprintf(filename, "%s.visit", stem.c_str());
+        ofstream ofile(filename);
+        ofile << "!NBLOCKS " << nblocks << endl;
+        for (int i = 0 ; i < nblocks ; i++)
+        {
+            char chunkname[1024];
+            sprintf(chunkname, "%s.%d.vtk", stem.c_str(), i);
+            ofile << chunkname << endl;
+        }
     }
 }
 
@@ -92,13 +113,19 @@ avtVTKWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //    Hank Childs, Thu May 26 17:23:39 PDT 2005
 //    Add support for binary writes through DB options.
 //
+//    Hank Childs, Thu Mar 30 12:20:24 PST 2006
+//    Change name based on whether or not we are doing multi-block.
+//
 // ****************************************************************************
 
 void
 avtVTKWriter::WriteChunk(vtkDataSet *ds, int chunk)
 {
     char chunkname[1024];
-    sprintf(chunkname, "%s.%d.vtk", stem.c_str(), chunk);
+    if (doMultiBlock)
+        sprintf(chunkname, "%s.%d.vtk", stem.c_str(), chunk);
+    else
+        sprintf(chunkname, "%s.vtk", stem.c_str());
     vtkDataSetWriter *wrtr = vtkDataSetWriter::New();
     if (doBinary)
         wrtr->SetFileTypeToBinary();

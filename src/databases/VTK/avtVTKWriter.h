@@ -25,6 +25,9 @@ class DBOptionsAttributes;
 //    Hank Childs, Tue Sep 27 10:21:36 PDT 2005
 //    Use virtual inheritance.
 //
+//    Hank Childs, Thu Mar 30 12:20:24 PST 2006
+//    Better support for single-block.
+//
 // ****************************************************************************
 
 class
@@ -37,6 +40,7 @@ avtVTKWriter : public virtual avtDatabaseWriter
   protected:
     std::string    stem;
     bool           doBinary;
+    bool           doMultiBlock;
 
     virtual void   OpenFile(const std::string &);
     virtual void   WriteHeaders(const avtDatabaseMetaData *,
