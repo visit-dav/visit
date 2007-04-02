@@ -1022,6 +1022,8 @@ avtVolume::GetVariables(float defaultVal, vtkDataArray **scalars,
         wEnd++;
         hEnd++;
     }
+    if (hEnd > volumeHeight)
+        return;
 
     //
     // Put the default value into the variable, so if we don't have samples

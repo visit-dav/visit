@@ -559,10 +559,8 @@ avtResampleFilter::ResampleInput(void)
 
     bool iHaveData = false;
     if (doDistributedResample)
-    {
         iHaveData = true;
-    }
-    else
+    if (!iHaveData)
     {
         //
         // Collect will perform the parallel collection.  Does nothing in
@@ -585,6 +583,8 @@ avtResampleFilter::ResampleInput(void)
     }
     GetListToRootProc(varnames, effectiveVars);
 
+    if (height_end > height)
+        iHaveData = false;
     if (iHaveData)
     {
         vtkRectilinearGrid *rg = CreateGrid(bounds, width, height, depth,
