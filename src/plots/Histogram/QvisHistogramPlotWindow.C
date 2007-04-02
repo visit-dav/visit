@@ -12,11 +12,12 @@
 #include <qbuttongroup.h>
 #include <qradiobutton.h>
 #include <QvisColorTableButton.h>
-#include <QvisColorButton.h>
 #include <QvisOpacitySlider.h>
 #include <QvisColorButton.h>
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
+#include <QvisVariableButton.h>
+
 #include <stdio.h>
 #include <string>
 
@@ -29,7 +30,7 @@ using std::string;
 //   Constructor
 //
 // Programmer: xml2window
-// Creation:   Thu Jun 26 10:33:56 PDT 2003
+// Creation:   Wed May 24 09:22:33 PDT 2006
 //
 // Modifications:
 //   
@@ -54,7 +55,7 @@ QvisHistogramPlotWindow::QvisHistogramPlotWindow(const int type,
 //   Destructor
 //
 // Programmer: xml2window
-// Creation:   Thu Jun 26 10:33:56 PDT 2003
+// Creation:   Wed May 24 09:22:33 PDT 2006
 //
 // Modifications:
 //   
@@ -72,7 +73,7 @@ QvisHistogramPlotWindow::~QvisHistogramPlotWindow()
 //   Creates the widgets for the window.
 //
 // Programmer: xml2window
-// Creation:   Thu Jun 26 10:33:56 PDT 2003
+// Creation:   Wed May 24 09:22:33 PDT 2006
 //
 // Modifications:
 //   
@@ -81,46 +82,53 @@ QvisHistogramPlotWindow::~QvisHistogramPlotWindow()
 void
 QvisHistogramPlotWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 9,2,  10, "mainLayout");
+    QGridLayout *mainLayout = new QGridLayout(topLayout, 12,2,  10, "mainLayout");
 
+
+    basedOnLabel = new QLabel("Histogram based on", central, "basedOnLabel");
+    mainLayout->addWidget(basedOnLabel,0,0);
+    basedOn = new QButtonGroup(central, "basedOn");
+    basedOn->setFrameStyle(QFrame::NoFrame);
+    QHBoxLayout *basedOnLayout = new QHBoxLayout(basedOn);
+    basedOnLayout->setSpacing(10);
+    QRadioButton *basedOnBasedOnManyVarsForSingleZone = new QRadioButton("Array of variables (one zone)", basedOn);
+    basedOnLayout->addWidget(basedOnBasedOnManyVarsForSingleZone);
+    QRadioButton *basedOnBasedOnManyZonesForSingleVar = new QRadioButton("Many zones", basedOn);
+    basedOnLayout->addWidget(basedOnBasedOnManyZonesForSingleVar);
+    connect(basedOn, SIGNAL(clicked(int)),
+            this, SLOT(basedOnChanged(int)));
+    mainLayout->addWidget(basedOn, 0,1);
+    basedOnLabel->setEnabled(false);
+    basedOn->setEnabled(false);
 
     specifyRange = new QCheckBox("Specify Range?", central, "specifyRange");
     connect(specifyRange, SIGNAL(toggled(bool)),
             this, SLOT(specifyRangeChanged(bool)));
-    mainLayout->addWidget(specifyRange, 0,0);
+    mainLayout->addWidget(specifyRange, 1,0);
 
-    mainLayout->addWidget(new QLabel("Minimum", central, "minLabel"),1,0);
+    minLabel = new QLabel("Minimum", central, "minLabel");
+    mainLayout->addWidget(minLabel,2,0);
     min = new QLineEdit(central, "min");
     connect(min, SIGNAL(returnPressed()),
             this, SLOT(minProcessText()));
-    mainLayout->addWidget(min, 1,1);
+    mainLayout->addWidget(min, 2,1);
 
-    mainLayout->addWidget(new QLabel("Maximum", central, "maxLabel"),2,0);
+    maxLabel = new QLabel("Maximum", central, "maxLabel");
+    mainLayout->addWidget(maxLabel,3,0);
     max = new QLineEdit(central, "max");
     connect(max, SIGNAL(returnPressed()),
             this, SLOT(maxProcessText()));
-    mainLayout->addWidget(max, 2,1);
+    mainLayout->addWidget(max, 3,1);
 
-    mainLayout->addWidget(new QLabel("Type of Output", central, "outputTypeLabel"),3,0);
-    outputType = new QButtonGroup(central, "outputType");
-    outputType->setFrameStyle(QFrame::NoFrame);
-    QHBoxLayout *outputTypeLayout = new QHBoxLayout(outputType);
-    outputTypeLayout->setSpacing(10);
-    QRadioButton *outputTypeOutputTypeCurve = new QRadioButton("Curve", outputType);
-    outputTypeLayout->addWidget(outputTypeOutputTypeCurve);
-    QRadioButton *outputTypeOutputTypeBlock = new QRadioButton("Block", outputType);
-    outputTypeLayout->addWidget(outputTypeOutputTypeBlock);
-    connect(outputType, SIGNAL(clicked(int)),
-            this, SLOT(outputTypeChanged(int)));
-    mainLayout->addWidget(outputType, 3,1);
-
-    mainLayout->addWidget(new QLabel("Number of Bins", central, "numBinsLabel"),4,0);
+    numBinsLabel = new QLabel("Number of Bins", central, "numBinsLabel");
+    mainLayout->addWidget(numBinsLabel,4,0);
     numBins = new QLineEdit(central, "numBins");
     connect(numBins, SIGNAL(returnPressed()),
             this, SLOT(numBinsProcessText()));
     mainLayout->addWidget(numBins, 4,1);
 
-    mainLayout->addWidget(new QLabel("Calculate 2D based on", central, "twoDAmountLabel"),5,0);
+    twoDAmountLabel = new QLabel("Calculate 2D based on", central, "twoDAmountLabel");
+    mainLayout->addWidget(twoDAmountLabel,5,0);
     twoDAmount = new QButtonGroup(central, "twoDAmount");
     twoDAmount->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *twoDAmountLayout = new QHBoxLayout(twoDAmount);
@@ -133,24 +141,54 @@ QvisHistogramPlotWindow::CreateWindowContents()
             this, SLOT(twoDAmountChanged(int)));
     mainLayout->addWidget(twoDAmount, 5,1);
 
-    mainLayout->addWidget(new QLabel("Line Style", central, "lineStyleLabel"),6,0);
+    domainLabel = new QLabel("domain", central, "domainLabel");
+    mainLayout->addWidget(domainLabel,6,0);
+    domain = new QLineEdit(central, "domain");
+    connect(domain, SIGNAL(returnPressed()),
+            this, SLOT(domainProcessText()));
+    mainLayout->addWidget(domain, 6,1);
+
+    zoneLabel = new QLabel("zone", central, "zoneLabel");
+    mainLayout->addWidget(zoneLabel,7,0);
+    zone = new QLineEdit(central, "zone");
+    connect(zone, SIGNAL(returnPressed()),
+            this, SLOT(zoneProcessText()));
+    mainLayout->addWidget(zone, 7,1);
+
+    outputTypeLabel = new QLabel("Type of Output", central, "outputTypeLabel");
+    mainLayout->addWidget(outputTypeLabel,8,0);
+    outputType = new QButtonGroup(central, "outputType");
+    outputType->setFrameStyle(QFrame::NoFrame);
+    QHBoxLayout *outputTypeLayout = new QHBoxLayout(outputType);
+    outputTypeLayout->setSpacing(10);
+    QRadioButton *outputTypeOutputTypeCurve = new QRadioButton("Curve", outputType);
+    outputTypeLayout->addWidget(outputTypeOutputTypeCurve);
+    QRadioButton *outputTypeOutputTypeBlock = new QRadioButton("Block", outputType);
+    outputTypeLayout->addWidget(outputTypeOutputTypeBlock);
+    connect(outputType, SIGNAL(clicked(int)),
+            this, SLOT(outputTypeChanged(int)));
+    mainLayout->addWidget(outputType, 8,1);
+
+    lineStyleLabel = new QLabel("Line Style", central, "lineStyleLabel");
+    mainLayout->addWidget(lineStyleLabel,9,0);
     lineStyle = new QvisLineStyleWidget(0, central, "lineStyle");
     connect(lineStyle, SIGNAL(lineStyleChanged(int)),
             this, SLOT(lineStyleChanged(int)));
-    mainLayout->addWidget(lineStyle, 6,1);
+    mainLayout->addWidget(lineStyle, 9,1);
 
-    mainLayout->addWidget(new QLabel("Line Width", central, "lineWidthLabel"),7,0);
+    lineWidthLabel = new QLabel("Line Width", central, "lineWidthLabel");
+    mainLayout->addWidget(lineWidthLabel,10,0);
     lineWidth = new QvisLineWidthWidget(0, central, "lineWidth");
     connect(lineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(lineWidthChanged(int)));
-    mainLayout->addWidget(lineWidth, 7,1);
+    mainLayout->addWidget(lineWidth, 10,1);
 
-    mainLayout->addWidget(new QLabel("Color", central, "colorLabel"),8,0);
-    color = new QvisColorButton(central, "colorButton");
-    color->setButtonColor(QColor(255, 0, 0));
-    connect(color, SIGNAL(selectedColor(const QColor &)),
-            this, SLOT(colorChanged(const QColor &)));
-    mainLayout->addWidget(color, 8, 1);
+    colorLabel = new QLabel("Color", central, "colorLabel");
+    mainLayout->addWidget(colorLabel,11,0);
+    color = new QvisColorButton(central, "color");
+    connect(color, SIGNAL(selectedColor(const QColor&)),
+            this, SLOT(colorChanged(const QColor&)));
+    mainLayout->addWidget(color, 11,1);
 
 }
 
@@ -162,13 +200,10 @@ QvisHistogramPlotWindow::CreateWindowContents()
 //   Updates the widgets in the window when the subject changes.
 //
 // Programmer: xml2window
-// Creation:   Thu Jun 26 10:33:56 PDT 2003
+// Creation:   Wed May 24 09:22:33 PDT 2006
 //
 // Modifications:
-//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
-//   Replaced simple QString::sprintf's with a setNum because there seems
-//   to be a bug causing numbers to be incremented by .00001.  See '5263.
-//
+//   
 // ****************************************************************************
 
 void
@@ -196,54 +231,121 @@ QvisHistogramPlotWindow::UpdateWindow(bool doAll)
         QColor                tempcolor;
         switch(i)
         {
-          case 0: //specifyRange
+          case 0: //basedOn
+            if (atts->GetBasedOn() == HistogramAttributes::ManyZonesForSingleVar)
+            {
+                specifyRange->setEnabled(true);
+            }
+            else
+            {
+                specifyRange->setEnabled(false);
+            }
+            if (atts->GetBasedOn() == HistogramAttributes::ManyZonesForSingleVar)
+            {
+                numBins->setEnabled(true);
+                numBinsLabel->setEnabled(true);
+            }
+            else
+            {
+                numBins->setEnabled(false);
+                numBinsLabel->setEnabled(false);
+            }
+            if (atts->GetBasedOn() == HistogramAttributes::ManyZonesForSingleVar)
+            {
+                twoDAmount->setEnabled(true);
+                twoDAmountLabel->setEnabled(true);
+            }
+            else
+            {
+                twoDAmount->setEnabled(false);
+                twoDAmountLabel->setEnabled(false);
+            }
+            if (atts->GetBasedOn() == HistogramAttributes::ManyVarsForSingleZone)
+            {
+                domain->setEnabled(true);
+                domainLabel->setEnabled(true);
+            }
+            else
+            {
+                domain->setEnabled(false);
+                domainLabel->setEnabled(false);
+            }
+            if (atts->GetBasedOn() == HistogramAttributes::ManyVarsForSingleZone)
+            {
+                zone->setEnabled(true);
+                zoneLabel->setEnabled(true);
+            }
+            else
+            {
+                zone->setEnabled(false);
+                zoneLabel->setEnabled(false);
+            }
+            basedOn->setButton(atts->GetBasedOn());
+            break;
+          case 1: //specifyRange
             if (atts->GetSpecifyRange() == true)
+            {
                 min->setEnabled(true);
+                minLabel->setEnabled(true);
+            }
             else
+            {
                 min->setEnabled(false);
+                minLabel->setEnabled(false);
+            }
             if (atts->GetSpecifyRange() == true)
+            {
                 max->setEnabled(true);
+                maxLabel->setEnabled(true);
+            }
             else
+            {
                 max->setEnabled(false);
+                maxLabel->setEnabled(false);
+            }
             specifyRange->setChecked(atts->GetSpecifyRange());
             break;
-          case 1: //min
+          case 2: //min
             temp.setNum(atts->GetMin());
             min->setText(temp);
             break;
-          case 2: //max
+          case 3: //max
             temp.setNum(atts->GetMax());
             max->setText(temp);
             break;
-          case 3: //outputType
+          case 4: //outputType
             outputType->setButton(atts->GetOutputType());
             break;
-          case 4: //numBins
+          case 5: //numBins
             temp.sprintf("%d", atts->GetNumBins());
             numBins->setText(temp);
             break;
-          case 5: //twoDAmount
+          case 6: //twoDAmount
             twoDAmount->setButton(atts->GetTwoDAmount());
             break;
-          case 6: //lineStyle
+          case 7: //domain
+            temp.sprintf("%d", atts->GetDomain());
+            domain->setText(temp);
+            break;
+          case 8: //zone
+            temp.sprintf("%d", atts->GetZone());
+            zone->setText(temp);
+            break;
+          case 9: //lineStyle
             lineStyle->blockSignals(true);
             lineStyle->SetLineStyle(atts->GetLineStyle());
             lineStyle->blockSignals(false);
             break;
-          case 7: //lineWidth
+          case 10: //lineWidth
             lineWidth->blockSignals(true);
             lineWidth->SetLineWidth(atts->GetLineWidth());
             lineWidth->blockSignals(false);
             break;
-          case 8: //color
-            { // new scope
-            QColor temp(atts->GetColor().Red(),
-                        atts->GetColor().Green(),
-                        atts->GetColor().Blue());
-            color->blockSignals(true);
-            color->setButtonColor(temp);
-            color->blockSignals(false);
-            }
+          case 11: //color
+            tempcolor = QColor(atts->GetColor().Red(),
+                               atts->GetColor().Green(),
+                               atts->GetColor().Blue());
+            color->setButtonColor(tempcolor);
             break;
         }
     }
@@ -257,7 +359,7 @@ QvisHistogramPlotWindow::UpdateWindow(bool doAll)
 //   Gets values from certain widgets and stores them in the subject.
 //
 // Programmer: xml2window
-// Creation:   Thu Jun 26 10:33:56 PDT 2003
+// Creation:   Wed May 24 09:22:33 PDT 2006
 //
 // Modifications:
 //   
@@ -269,14 +371,20 @@ QvisHistogramPlotWindow::GetCurrentValues(int which_widget)
     bool okay, doAll = (which_widget == -1);
     QString msg, temp;
 
-    // Do specifyRange
+    // Do basedOn
     if(which_widget == 0 || doAll)
+    {
+        // Nothing for basedOn
+    }
+
+    // Do specifyRange
+    if(which_widget == 1 || doAll)
     {
         // Nothing for specifyRange
     }
 
     // Do min
-    if(which_widget == 1 || doAll)
+    if(which_widget == 2 || doAll)
     {
         temp = min->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -297,7 +405,7 @@ QvisHistogramPlotWindow::GetCurrentValues(int which_widget)
     }
 
     // Do max
-    if(which_widget == 2 || doAll)
+    if(which_widget == 3 || doAll)
     {
         temp = max->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -318,13 +426,13 @@ QvisHistogramPlotWindow::GetCurrentValues(int which_widget)
     }
 
     // Do outputType
-    if(which_widget == 3 || doAll)
+    if(which_widget == 4 || doAll)
     {
         // Nothing for outputType
     }
 
     // Do numBins
-    if(which_widget == 4 || doAll)
+    if(which_widget == 5 || doAll)
     {
         temp = numBins->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -345,25 +453,67 @@ QvisHistogramPlotWindow::GetCurrentValues(int which_widget)
     }
 
     // Do twoDAmount
-    if(which_widget == 5 || doAll)
+    if(which_widget == 6 || doAll)
     {
         // Nothing for twoDAmount
     }
 
+    // Do domain
+    if(which_widget == 7 || doAll)
+    {
+        temp = domain->displayText().simplifyWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            int val = temp.toInt(&okay);
+            atts->SetDomain(val);
+        }
+
+        if(!okay)
+        {
+            msg.sprintf("The value of domain was invalid. "
+                "Resetting to the last good value of %d.",
+                atts->GetDomain());
+            Message(msg);
+            atts->SetDomain(atts->GetDomain());
+        }
+    }
+
+    // Do zone
+    if(which_widget == 8 || doAll)
+    {
+        temp = zone->displayText().simplifyWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            int val = temp.toInt(&okay);
+            atts->SetZone(val);
+        }
+
+        if(!okay)
+        {
+            msg.sprintf("The value of zone was invalid. "
+                "Resetting to the last good value of %d.",
+                atts->GetZone());
+            Message(msg);
+            atts->SetZone(atts->GetZone());
+        }
+    }
+
     // Do lineStyle
-    if(which_widget == 6 || doAll)
+    if(which_widget == 9 || doAll)
     {
         // Nothing for lineStyle
     }
 
     // Do lineWidth
-    if(which_widget == 7 || doAll)
+    if(which_widget == 10 || doAll)
     {
         // Nothing for lineWidth
     }
 
     // Do color
-    if(which_widget == 8 || doAll)
+    if(which_widget == 11 || doAll)
     {
         // Nothing for color
     }
@@ -378,7 +528,7 @@ QvisHistogramPlotWindow::GetCurrentValues(int which_widget)
 //   Called to apply changes in the subject.
 //
 // Programmer: xml2window
-// Creation:   Thu Jun 26 10:33:56 PDT 2003
+// Creation:   Wed May 24 09:22:33 PDT 2006
 //
 // Modifications:
 //   
@@ -411,7 +561,7 @@ QvisHistogramPlotWindow::Apply(bool ignore)
 //   Qt slot function called when apply button is clicked.
 //
 // Programmer: xml2window
-// Creation:   Thu Jun 26 10:33:56 PDT 2003
+// Creation:   Wed May 24 09:22:33 PDT 2006
 //
 // Modifications:
 //   
@@ -431,7 +581,7 @@ QvisHistogramPlotWindow::apply()
 //   Qt slot function called when "Make default" button is clicked.
 //
 // Programmer: xml2window
-// Creation:   Thu Jun 26 10:33:56 PDT 2003
+// Creation:   Wed May 24 09:22:33 PDT 2006
 //
 // Modifications:
 //   
@@ -453,7 +603,7 @@ QvisHistogramPlotWindow::makeDefault()
 //   Qt slot function called when reset button is clicked.
 //
 // Programmer: xml2window
-// Creation:   Thu Jun 26 10:33:56 PDT 2003
+// Creation:   Wed May 24 09:22:33 PDT 2006
 //
 // Modifications:
 //   
@@ -463,6 +613,17 @@ void
 QvisHistogramPlotWindow::reset()
 {
     viewer->ResetPlotOptions(plotType);
+}
+
+
+void
+QvisHistogramPlotWindow::basedOnChanged(int val)
+{
+    if(val != atts->GetBasedOn())
+    {
+        atts->SetBasedOn(HistogramAttributes::BasedOn(val));
+        Apply();
+    }
 }
 
 
@@ -477,7 +638,7 @@ QvisHistogramPlotWindow::specifyRangeChanged(bool val)
 void
 QvisHistogramPlotWindow::minProcessText()
 {
-    GetCurrentValues(1);
+    GetCurrentValues(2);
     Apply();
 }
 
@@ -485,7 +646,7 @@ QvisHistogramPlotWindow::minProcessText()
 void
 QvisHistogramPlotWindow::maxProcessText()
 {
-    GetCurrentValues(2);
+    GetCurrentValues(3);
     Apply();
 }
 
@@ -504,7 +665,7 @@ QvisHistogramPlotWindow::outputTypeChanged(int val)
 void
 QvisHistogramPlotWindow::numBinsProcessText()
 {
-    GetCurrentValues(4);
+    GetCurrentValues(5);
     Apply();
 }
 
@@ -517,6 +678,22 @@ QvisHistogramPlotWindow::twoDAmountChanged(int val)
         atts->SetTwoDAmount(HistogramAttributes::TwoDAmount(val));
         Apply();
     }
+}
+
+
+void
+QvisHistogramPlotWindow::domainProcessText()
+{
+    GetCurrentValues(7);
+    Apply();
+}
+
+
+void
+QvisHistogramPlotWindow::zoneProcessText()
+{
+    GetCurrentValues(8);
+    Apply();
 }
 
 
@@ -537,9 +714,9 @@ QvisHistogramPlotWindow::lineWidthChanged(int style)
 
 
 void
-QvisHistogramPlotWindow::colorChanged(const QColor &color_)
+QvisHistogramPlotWindow::colorChanged(const QColor &color)
 {
-    ColorAttribute temp(color_.red(), color_.green(), color_.blue());
+    ColorAttribute temp(color.red(), color.green(), color.blue());
     atts->SetColor(temp);
     Apply();
 }

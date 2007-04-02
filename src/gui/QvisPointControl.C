@@ -72,7 +72,7 @@ QvisPointControl::QvisPointControl(QWidget *parent, const char *name) :
     typeComboBox = new QComboBox(this, "typeComboBox");
     typeComboBox->insertItem("Box");
     typeComboBox->insertItem("Axis");
-    typeComboBox->insertItem("Isocahedron");
+    typeComboBox->insertItem("Icosahedron");
     typeComboBox->insertItem("Point");
     typeComboBox->insertItem("Sphere");
     connect(typeComboBox, SIGNAL(activated(int)),

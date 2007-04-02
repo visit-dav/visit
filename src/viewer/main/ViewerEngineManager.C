@@ -524,6 +524,9 @@ ViewerEngineManager::EngineExists(const EngineKey &ek) const
 //    Don't let an engine be launched if we are already in the process of
 //    launching it.
 //
+//    Hank Childs, Thu May 25 09:06:23 PDT 2006
+//    Change CATCH to CATCHALL.
+//
 // ****************************************************************************
 
 bool
@@ -626,7 +629,7 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
                                   OpenWithLauncher, (void *)dialog, true);
             }
         }
-        CATCH(...)
+        CATCHALL(...)
         {
             inLaunch = false;
             RETHROW;

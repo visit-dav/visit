@@ -431,7 +431,7 @@ QvisScatterPlotWindow::CreateWindowContents()
     pointType = new QComboBox(appearanceGroup, "pointType");
     pointType->insertItem("Box");
     pointType->insertItem("Axis");
-    pointType->insertItem("Isocahedron");
+    pointType->insertItem("Icosahedron");
     pointType->insertItem("Point");
     pointType->insertItem("Sphere");
     connect(pointType, SIGNAL(activated(int)),

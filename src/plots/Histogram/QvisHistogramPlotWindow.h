@@ -16,6 +16,7 @@ class QvisOpacitySlider;
 class QvisColorButton;
 class QvisLineStyleWidget;
 class QvisLineWidthWidget;
+class QvisVariableButton;
 
 // ****************************************************************************
 // Class: QvisHistogramPlotWindow
@@ -26,7 +27,7 @@ class QvisLineWidthWidget;
 // Notes:      This class was automatically generated!
 
 // Programmer: xml2window
-// Creation:   Thu Jun 26 10:33:56 PDT 2003
+// Creation:   Wed May 24 09:22:33 PDT 2006
 //
 // Modifications:
 //   
@@ -52,26 +53,44 @@ class QvisHistogramPlotWindow : public QvisPostableWindowObserver
     void GetCurrentValues(int which_widget);
     void Apply(bool ignore = false);
   private slots:
+    void basedOnChanged(int val);
     void specifyRangeChanged(bool val);
     void minProcessText();
     void maxProcessText();
     void outputTypeChanged(int val);
     void numBinsProcessText();
     void twoDAmountChanged(int val);
+    void domainProcessText();
+    void zoneProcessText();
     void lineStyleChanged(int style);
     void lineWidthChanged(int style);
-    void colorChanged(const QColor &color_);
+    void colorChanged(const QColor &color);
   private:
     int plotType;
+    QButtonGroup *basedOn;
     QCheckBox *specifyRange;
     QLineEdit *min;
     QLineEdit *max;
     QButtonGroup *outputType;
     QLineEdit *numBins;
     QButtonGroup *twoDAmount;
+    QLineEdit *domain;
+    QLineEdit *zone;
     QvisLineStyleWidget *lineStyle;
     QvisLineWidthWidget *lineWidth;
     QvisColorButton *color;
+    QLabel *basedOnLabel;
+    QLabel *specifyRangeLabel;
+    QLabel *minLabel;
+    QLabel *maxLabel;
+    QLabel *outputTypeLabel;
+    QLabel *numBinsLabel;
+    QLabel *twoDAmountLabel;
+    QLabel *domainLabel;
+    QLabel *zoneLabel;
+    QLabel *lineStyleLabel;
+    QLabel *lineWidthLabel;
+    QLabel *colorLabel;
 
     HistogramAttributes *atts;
 };

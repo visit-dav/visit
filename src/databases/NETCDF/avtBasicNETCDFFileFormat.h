@@ -20,6 +20,9 @@ class avtFileFormatInterface;
 //    Brad Whitlock, Wed Apr 26 17:39:32 PST 2006
 //    Added a new flag.
 //
+//    Brad Whitlock, Tue May 16 14:00:05 PST 2006
+//    Added override of GetCycleFromFilename.
+//
 // ****************************************************************************
 
 class avtBasicNETCDFFileFormat : public avtSTSDFileFormat
@@ -33,11 +36,6 @@ public:
                        avtBasicNETCDFFileFormat(const char *filename);
     virtual           ~avtBasicNETCDFFileFormat();
 
-    //
-    // These are used to declare what the current time and cycle are for the
-    // file.  These should only be defined if the file format knows what the
-    // time and/or cycle is.
-    //
     virtual const char    *GetType(void) { return "NETCDF"; }
     virtual void           ActivateTimestep(void); 
     virtual void           FreeUpResources(void); 
@@ -45,7 +43,8 @@ public:
     virtual vtkDataSet    *GetMesh(const char *);
     virtual vtkDataArray  *GetVar(const char *);
 
-  protected:
+protected:
+    virtual int            GetCycleFromFilename(const char *f) const;
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
     bool                   ReturnValidDimensions(const intVector &dims,
                                                  int validDims[3],

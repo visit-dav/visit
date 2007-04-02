@@ -13,8 +13,9 @@ bool            PyHistogramAttributes_Check(PyObject *obj);
 HistogramAttributes *PyHistogramAttributes_FromPyObject(PyObject *obj);
 PyObject       *PyHistogramAttributes_NewPyObject();
 PyObject       *PyHistogramAttributes_WrapPyObject(const HistogramAttributes *attr);
-std::string     PyHistogramAttributes_GetLogString();
 void            PyHistogramAttributes_SetDefaults(const HistogramAttributes *atts);
+std::string     PyHistogramAttributes_GetLogString();
+std::string     PyHistogramAttributes_ToString(const HistogramAttributes *, const char *);
 
 #endif
 

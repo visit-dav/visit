@@ -10,11 +10,17 @@
 #include <vtkPointData.h>
 #include <vtkPointDataToCellData.h>
 #include <vtkPolyData.h>
+#include <vtkUnsignedIntArray.h>
+
+#include <PickAttributes.h>
+#include <PickVarInfo.h>
 
 #include <avtDataAttributes.h>
 #include <avtExtents.h>
 #include <avtParallel.h>
+#include <avtTerminatingSource.h>
 
+#include <BadCellException.h>
 #include <ImproperUseException.h>
 
 
@@ -74,6 +80,11 @@ avtHistogramFilter::SetAttributes(const HistogramAttributes &h_atts)
 //  Programmer: Hank Childs
 //  Creation:   June 26, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Wed May 24 10:18:09 PDT 2006
+//    Add support for array variables.
+//
 // ****************************************************************************
 
 void
@@ -83,32 +94,37 @@ avtHistogramFilter::PreExecute(void)
 
     InputSetActiveVariable(pipelineVariable);
 
-    bool extentsSpecified = atts.GetSpecifyRange();
-    double minmax[2];
-    if (!extentsSpecified)
+    if (atts.GetBasedOn() == HistogramAttributes::ManyZonesForSingleVar)
     {
-        GetDataExtents(minmax, pipelineVariable);
+        bool extentsSpecified = atts.GetSpecifyRange();
+        double minmax[2];
+        if (!extentsSpecified)
+        {
+            GetDataExtents(minmax, pipelineVariable);
+        }
+    
+        if (extentsSpecified)
+            workingMin = atts.GetMin();
+        else
+            workingMin = minmax[0];
+    
+        if (extentsSpecified)
+            workingMax = atts.GetMax();
+        else
+            workingMax = minmax[1];
+    
+        workingNumBins = atts.GetNumBins();
+        if (workingNumBins <= 1)
+            EXCEPTION0(ImproperUseException);
+    
+        if (bins != NULL)
+            delete [] bins;
+        bins = new float[workingNumBins];
+        for (int i = 0 ; i < workingNumBins ; i++)
+            bins[i] = 0.;
     }
-
-    if (extentsSpecified)
-        workingMin = atts.GetMin();
     else
-        workingMin = minmax[0];
-
-    if (extentsSpecified)
-        workingMax = atts.GetMax();
-    else
-        workingMax = minmax[1];
-
-    workingNumBins = atts.GetNumBins();
-    if (workingNumBins <= 1)
-        EXCEPTION0(ImproperUseException);
-
-    if (bins != NULL)
-        delete [] bins;
-    bins = new float[workingNumBins];
-    for (int i = 0 ; i < workingNumBins ; i++)
-        bins[i] = 0.;
+        workingNumBins = 0;
 }
 
 
@@ -139,14 +155,41 @@ avtHistogramFilter::PreExecute(void)
 //    Kathleen Bonnell, Fri May 13 11:10:35 PDT 2005 
 //    Fix memory leak. 
 //
+//    Hank Childs, Wed May 24 11:27:24 PDT 2006
+//    Add support for array variables.
+//
 // ****************************************************************************
 
 void
 avtHistogramFilter::PostExecute(void)
 {
+    int  i;
+
     avtStreamer::PreExecute();
 
-    int  i;
+    if (atts.GetBasedOn() == HistogramAttributes::ManyVarsForSingleZone)
+    {
+        //
+        // Initialize for all the processors that got no data.
+        //
+        workingNumBins = UnifyMaximumValue(workingNumBins);
+        if (workingNumBins == 0)
+        {
+            EXCEPTION1(VisItException, "The histogram could not be generated."
+                             "  The most likely source of error is that the "
+                             "zone id or domain number is invalid.  If this"
+                             " is not the case, please contact a VisIt"
+                             " developer.");
+        }
+        if (bins == NULL)
+        {
+            bins = new float[workingNumBins];
+            for (i = 0 ; i < workingNumBins ; i++)
+                bins[i] = 0.;
+        }
+        workingMin = 0.;
+        workingMax = (float) workingNumBins;
+    }
 
     float *newBins = new float[workingNumBins];
     SumFloatArrayAcrossAllProcessors(bins, newBins, workingNumBins);
@@ -278,7 +321,10 @@ avtHistogramFilter::PostExecute(void)
     double extents[6];
     extents[0] = workingMin;
     extents[1] = workingMax;
-    extents[2] = 0.;  // We always start from 0.  lo is misleading.
+    if (atts.GetBasedOn() == HistogramAttributes::ManyZonesForSingleVar)
+        extents[2] = 0.;  // We always start from 0.  lo is misleading.
+    else
+        extents[2] = (low < 0. ? low : 0.);
     extents[3] = hi;
     extents[4] = extents[5] = 0.;
 
@@ -310,20 +356,27 @@ avtHistogramFilter::PostExecute(void)
             outAtts.SetXUnits(pipelineVariable);
     }
 
-    string yunits = "";
-    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 3)
+    if (atts.GetBasedOn() == HistogramAttributes::ManyVarsForSingleZone)
     {
-        yunits = "Volume";
+        outAtts.SetYLabel("Value");
+        outAtts.SetYUnits("");
     }
     else
     {
-        if (atts.GetTwoDAmount() == HistogramAttributes::Area)
-            yunits = "Area";
+        string yunits = "";
+        if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension()==3)
+        {
+            yunits = "Volume";
+        }
         else
-            yunits = "Revolved Volume";
-
+        {
+            if (atts.GetTwoDAmount() == HistogramAttributes::Area)
+                yunits = "Area";
+            else
+                yunits = "Revolved Volume";
+        }
+        outAtts.SetYUnits(yunits);
     }
-    outAtts.SetYUnits(yunits);
 }
 
 
@@ -348,10 +401,39 @@ avtHistogramFilter::PostExecute(void)
 //    Hank Childs, Sat Oct 18 11:41:13 PDT 2003
 //    Make the bins be uniform in size.
 //
+//    Hank Childs, Wed May 24 09:57:40 PDT 2006
+//    Add support for taking a histogram based on an array variable.
+//
 // ****************************************************************************
 
 vtkDataSet *
-avtHistogramFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
+avtHistogramFilter::ExecuteData(vtkDataSet *inDS, int chunk, std::string)
+{
+    if (atts.GetBasedOn() == HistogramAttributes::ManyZonesForSingleVar)
+    {
+        StandardExecute(inDS);
+    }
+    else
+    {
+        ArrayVarExecute(inDS, chunk);
+    }
+    return NULL;
+}
+
+
+// ****************************************************************************
+//  Method: avtHistogramFilter::StandardExecute
+//
+//  Purpose:
+//      The standard way to take a histogram ... iterate over all zones.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 24, 2006
+//
+// ****************************************************************************
+
+void
+avtHistogramFilter::StandardExecute(vtkDataSet *inDS)
 {
     //
     // Get the "_amounts".  This is the area or volume that each cell
@@ -413,8 +495,77 @@ avtHistogramFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 
     if (ownBinArr)
         bin_arr->Delete();
+}
 
-    return NULL;
+
+// ****************************************************************************
+//  Method: avtHistogramFilter::ArrayVarExecute
+//
+//  Purpose:
+//      Take a histogram by finding the right zone and creating a histogram
+//      from its array variables.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 24, 2006
+//
+// ****************************************************************************
+
+void
+avtHistogramFilter::ArrayVarExecute(vtkDataSet *inDS, int chunk)
+{
+    int domain = atts.GetDomain();
+    int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
+    domain -= blockOrigin;
+    if (chunk != domain)
+        return;
+
+    vtkDataArray *arr = inDS->GetCellData()->GetArray(pipelineVariable);
+    if (arr == NULL)
+    {
+        // "Cell" data is stored as point data for point meshes.
+        arr = inDS->GetPointData()->GetArray(pipelineVariable);
+        if (arr == NULL)
+            EXCEPTION0(ImproperUseException);
+    }
+
+    vtkUnsignedIntArray *cid = (vtkUnsignedIntArray *) 
+                       inDS->GetCellData()->GetArray("avtOriginalCellNumbers");
+    if (cid == NULL)
+    {
+        // This should come down because we requested it in the data
+        // specification.
+        EXCEPTION0(ImproperUseException);
+    }
+    int ncomps = cid->GetNumberOfComponents();
+    int compOffset = ncomps-1; // 0 if 1 comp, 1 if 2 comps
+    unsigned int *ptr = cid->GetPointer(0);
+
+    // Pick returns with cell origin, but avtOriginalCellNumbers does not
+    // have a cell origin.  So subtract it off here.
+    int zone = atts.GetZone();
+    int cellOrigin  = GetInput()->GetInfo().GetAttributes().GetCellOrigin();
+    zone -= cellOrigin;
+    int ncells = inDS->GetNumberOfCells();
+    for (int i = 0 ; i < ncells ; i++)
+    {
+        if (ptr[ncomps*i + compOffset] == zone)
+        {
+            workingNumBins = arr->GetNumberOfComponents();
+            double *vals = new double[workingNumBins];
+
+            arr->GetTuple(i, vals);
+
+            if (bins != NULL)
+                delete [] bins;
+
+            bins = new float[workingNumBins];
+            for (int i = 0 ; i < workingNumBins ; i++)
+            {
+                bins[i] = vals[i];
+            }
+            delete [] vals;
+        }
+    }
 }
 
 
@@ -467,14 +618,33 @@ avtHistogramFilter::RefashionDataObjectInfo(void)
 //    other filters.  The histogram filter will now remove ghost zones before
 //    executing.
 //
+//    Hank Childs, Wed May 24 09:44:51 PDT 2006
+//    Better support for array variables.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
 avtHistogramFilter::PerformRestriction(avtPipelineSpecification_p spec)
 {
     avtPipelineSpecification_p newspec = new avtPipelineSpecification(spec);
+    if (atts.GetBasedOn() == HistogramAttributes::ManyZonesForSingleVar)
+    {
+        newspec->NoDynamicLoadBalancing();
+    }
+    else
+    {
+        newspec->GetDataSpecification()->TurnZoneNumbersOn();
+        avtSILRestriction_p silr = 
+                             newspec->GetDataSpecification()->GetRestriction();
+        int domain = atts.GetDomain();
+        int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
+        domain -= blockOrigin;
 
-    newspec->NoDynamicLoadBalancing();
+        vector<int> domain_list;
+        domain_list.push_back(domain);
+        silr->TurnOnAll();
+        silr->RestrictDomains(domain_list);
+    }
 
     return newspec;
 }

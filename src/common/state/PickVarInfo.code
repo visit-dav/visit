@@ -160,6 +160,9 @@ Definition:
 //   Kathleen Bonnell, Tue Aug 30 09:35:44 PDT 2005
 //   Change how ncomps is computed for tensor vars.
 //
+//   Hank Childs, Thu May 25 08:35:12 PDT 2006
+//   Add support for arrays.
+//
 // ****************************************************************************
 void
 PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
@@ -346,6 +349,13 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                     int ncomps = (values.size()-names.size()) / names.size();
                     PrintSymmetricTensor(os, values, i, ncomps, buf_len);
                 }
+                else if (variableType == "array")
+                {
+                    os += "\n";
+                    int buf_len = strlen(buff);
+                    int ncomps = (values.size()-names.size()) / names.size();
+                    PrintArray(os, values, i, ncomps, buf_len);
+                }
                 else if (variableType == "label")
                 {
                     int labelSize = values.size() / names.size();
@@ -388,7 +398,6 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
         os += buff;
     }
 }
-
 
 Function: PrintTensor
 Declaration: void PrintTensor(std::string &, const std::vector<double> &, int, int, int);
@@ -562,4 +571,39 @@ PickVarInfo::HasInfo()
     return (!(names.empty() && mixNames.empty()));
 }
         
+
+Function: PrintArray
+Declaration: void PrintArray(std::string &, const std::vector<double> &, int, int, int);
+Definition:
+// ****************************************************************************
+// Method: PickVarInfo::PrintArray
+//
+// Purpose:
+//     Prints the information out for an array
+//
+// Programmer: Hank Childs
+// Creation:   May 24, 2006
+//
+// ****************************************************************************
+
+void
+PickVarInfo::PrintArray(std::string &os,
+         const std::vector<double> &values, int tuple, int ncomps, int buff_len)
+{
+    int j;
+
+    int offset = tuple*ncomps;
+    char line[2048];
+    for (j = 0 ; j < buff_len ; j++)
+        os += " ";
+    sprintf(line, "(");
+    for (j = 0 ; j < ncomps ; j++)
+    {
+        if (j == ncomps-1)
+            sprintf(line+strlen(line), "%g)\n", values[offset+j]);
+        else
+            sprintf(line+strlen(line), "%g, ", values[offset+j]);
+    }
+    os += line;
+}
 

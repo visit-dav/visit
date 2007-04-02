@@ -25,6 +25,9 @@
 //    Hank Childs, Sat Oct 18 12:14:32 PDT 2003
 //    Added PerformRestriction to disable ghost zone generation.
 //
+//    Hank Childs, Wed May 24 10:00:12 PDT 2006
+//    Added support for array variables.
+//
 // ****************************************************************************
 
 class avtHistogramFilter : public avtStreamer
@@ -52,6 +55,9 @@ class avtHistogramFilter : public avtStreamer
     virtual void              PostExecute();
     virtual avtPipelineSpecification_p
                               PerformRestriction(avtPipelineSpecification_p);
+
+    virtual void              StandardExecute(vtkDataSet *);
+    virtual void              ArrayVarExecute(vtkDataSet *, int);
 };
 
 
