@@ -30,6 +30,12 @@ int avtWholeImageCompositerWithZ::objectCount = 0;
 //
 // Programmer:   Mark C. Miller (plagiarized from Katherine Price)
 // Date:         26Feb03 
+//
+// Modifications:
+//
+//   Hank Childs, Tue Nov 29 16:13:06 PST 2005
+//   Add some hand optimizations.
+//
 // ****************************************************************************
 
 static void
@@ -46,19 +52,17 @@ MergeZFPixelBuffers(void *ibuf, void *iobuf, int *count, void *datatype)
     // quiet the compiler
     datatype = datatype;
 
-    // get the bacground color info out of last entry
-    unsigned char local_bg_r = in_zfpixels[*count-1].r; 
-    unsigned char local_bg_g = in_zfpixels[*count-1].g; 
-    unsigned char local_bg_b = in_zfpixels[*count-1].b; 
+    // get the background color info out of last entry
+    const int amount = *count-1;
+    unsigned char local_bg_r = in_zfpixels[amount].r; 
+    unsigned char local_bg_g = in_zfpixels[amount].g; 
+    unsigned char local_bg_b = in_zfpixels[amount].b; 
  
-    for (i = 0; i < *count-1; i++)
+    for (i = 0; i < amount; i++)
     {
         if ( in_zfpixels[i].z < inout_zfpixels[i].z )
         {
-            inout_zfpixels[i].z = in_zfpixels[i].z;
-            inout_zfpixels[i].r = in_zfpixels[i].r;
-            inout_zfpixels[i].g = in_zfpixels[i].g;
-            inout_zfpixels[i].b = in_zfpixels[i].b;
+            memcpy(inout_zfpixels + i, in_zfpixels + i, sizeof(ZFPixel_t));
         }
         else if (in_zfpixels[i].z == inout_zfpixels[i].z)
         {

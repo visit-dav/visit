@@ -273,6 +273,9 @@ RemoteProxyBase::AddArgument(const std::string &arg)
 //    Added ability to launch visit script under mpirun in order to set up
 //    the environment on beowulf clusters (and similar).
 //
+//    Hank Childs, Sat Dec  3 20:17:07 PST 2005
+//    Added argument for hardware acceleration.
+//
 // ****************************************************************************
 
 void
@@ -395,6 +398,20 @@ RemoteProxyBase::AddProfileArguments(const HostProfile &profile,
         }
         SetLoadBalancing(0);
 #endif
+    }
+    if (profile.GetCanDoHWAccel())
+    {
+        AddArgument("-hw-accel");
+        if (profile.GetHavePreCommand())
+        {
+            AddArgument("-hw-pre");
+            AddArgument(profile.GetHwAccelPreCommand());
+        }
+        if (profile.GetHavePostCommand())
+        {
+            AddArgument("-hw-post");
+            AddArgument(profile.GetHwAccelPostCommand());
+        }
     }
 
     // Add the timeout argument

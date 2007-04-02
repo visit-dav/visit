@@ -113,6 +113,11 @@ $0 = shift @ARGV;
 #    Mark C. Miller, Tue Nov 22 09:42:57 PST 2005
 #    Removed refs to sl_io subdirectory
 #
+#    Hank Childs, Sat Dec  3 20:47:45 PST 2005
+#    Add support for hardware acceleration.  Also allow for processors to
+#    be specified without nodes being specified (ie -nn without -ln) with
+#    psub, which is tricky because syntax changes in this case.
+#
 ###############################################################################
 
 
@@ -231,6 +236,28 @@ $fullusage = "$usage
         -t    <time>         Maximum job run time.
         -machinefile <file>  Machine file.
         -expedite            Makes DPCS give priority scheduling.
+
+    Hardware acceleration options
+    ---------------------------------------------------------------------------
+        Notes: These options should only be used with parallel clusters that
+        have graphics cards.  If you are using a serial version of VisIt, you
+        are already getting hardware acceleration and these options are not 
+        needed.  In addition, VisIt is only set up to have one processor per
+        node interface with the graphics card.  So it is important that you
+        specify parallel options with one processor per node.
+
+        The -hw-pre and -hw-post command are essentially for the case where
+        the X-server is not running and VisIt must start them using xinit.
+        Usage would look like: -hw-pre xinit -hw-post \"-- /usr/bin/X11/X\"
+        which would get translated into: xinit engine_par ... -- /usr/bin/X11/X
+        This allows xinit to start the engine and allows xinit to gracefully
+        exit when engine_par terminates.  In addition, the post-command is
+        the way to give arguments to xinit.
+
+    ---------------------------------------------------------------------------
+        -hw-accel            Tells VisIt that it should use graphics cards
+        -hw-pre <string>     The command to launch an x-server
+        -hw-post <string>    The arguments for the command to launch an x-server
 
     Load balance options
     ---------------------------------------------------------------------------
@@ -387,6 +414,8 @@ $logging        = 0;
 $req_compiler   = "";
 $use_new_console = 0;
 $visit_sets_up_environment = 0;
+$pre_command = "";
+$post_command = "";
 
 # Parse the arguments 
 @visitargs = ();
@@ -462,6 +491,8 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-guesshost" )       { $guesshost = 1; }
     elsif ($arg eq "-setupenv" )        { $visit_sets_up_environment = 1; }
     elsif ($arg eq "-quiet" )           { $quiet = 1; }
+    elsif ($arg eq "-hw-pre" )          { $pre_command = shift; }
+    elsif ($arg eq "-hw-post" )         { $post_command = shift; }
     else                         { push @visitargs, $arg; }
 }
 
@@ -1003,13 +1034,23 @@ if ($envonly)
     exit(0);
 }
 
+@post_args=();
 if ($visit_sets_up_environment and
     $exe_name eq "engine_par")
 {
     @visitcmd = ();
+    if ($pre_command ne "")
+    {
+        push @visitcmd, $pre_command;
+    }
     push @visitcmd, "$visitlauncher", "-engine", "-par", "-quiet";
     push @visitcmd, "-v", $ver if $ver ne "";
     push @visitcmd, @visitargs;
+}
+elsif ($pre_command ne "")
+{
+    @visitcmd = ($pre_command, "$visitbindir/$exe_name", @visitargs);
+    @post_args = ($post_command);
 }
 else
 {
@@ -1033,6 +1074,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
 
         @printcmd = @parcmd;
         if ($security_key_set) { push @parcmd, "-key", $security_key; }
+        push @parcmd, @post_args;
         chomp($printcmd[0] = `basename $printcmd[0]`);
     }
     # dmpirun
@@ -1046,6 +1088,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
 
         @printcmd = @parcmd;
         if ($security_key_set) { push @parcmd, "-key", $security_key; }
+        push @parcmd, @post_args;
         chomp($printcmd[0] = `basename $printcmd[0]`);
     }
     # poe
@@ -1059,6 +1102,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
 
         @printcmd = @parcmd;
         if ($security_key_set) { push @parcmd, "-key", $security_key; }
+        push @parcmd, @post_args;
         chomp($printcmd[0] = `basename $printcmd[0]`);
     }
     # prun
@@ -1073,6 +1117,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
 
         @printcmd = @parcmd;
         if ($security_key_set) { push @parcmd, "-key", $security_key; }
+        push @parcmd, @post_args;
         chomp($printcmd[0] = `basename $printcmd[0]`);
     }
     # srun
@@ -1090,6 +1135,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
 
         @printcmd = @parcmd;
         if ($security_key_set) { push @parcmd, "-key", $security_key; }
+        push @parcmd, @post_args;
         chomp($printcmd[0] = `basename $printcmd[0]`);
     }
     # psub
@@ -1111,11 +1157,21 @@ if ($procs_set or ($parallel and $parlaunch_set))
             $libpathcmd="LIBPATH=$ENV{LIBPATH} ; export LIBPATH ; LD_LIBRARY_PATH=$ENV{LIBPATH} ; export LD_LIBRARY_PATH";
         }
         if ($security_key_set) { push @visitcmd, "-key", $security_key; }
+        push @visitcmd, @post_args;
         @parcmd = ("psub");
         push @parcmd, @launchargs if $launchargs_set;
         push @parcmd, "-x";
-        push @parcmd, "-g",  $procs if $procs_set;
-        push @parcmd, "-ln", $nodes if $nodes_set;
+        # Use -g to set procs if we have multiple processors per node.
+        # Otherwise, syntax is not accepted, so use -ln.
+        if ($procs_set and $nodes_set)
+        {
+            push @parcmd, "-g",  $procs;
+            push @parcmd, "-ln", $nodes;
+        }
+        elsif ($procs_set)
+        {
+            push @parcmd, "-ln",  $procs;
+        }
         push @parcmd, "-r",  $name  if $name_set;
         push @parcmd, "-c",  $part  if $part_set;
         push @parcmd, "-b",  $bank  if $bank_set;
@@ -1132,6 +1188,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
         ($bsubcmd, $sublauncher) = split /\W+/, substr($launch,4);
         $sublauncher = "" if (!defined $sublauncher);
         if ($security_key_set) { push @visitcmd, "-key", $security_key; }
+        push @visitcmd, @post_args;
         @parcmd = ("bsub");
         push @parcmd, "-I";
         push @parcmd, @launchargs if $launchargs_set;
@@ -1150,6 +1207,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
         push @parcmd, @launchargs if $launchargs_set;
         push @parcmd, "-sz", $procs if $procs_set;
         push @parcmd, @visitcmd;
+        push @parcmd, @post_args;
 
         @printcmd = @parcmd;
         chomp($printcmd[0] = `basename $printcmd[0]`);
@@ -1165,6 +1223,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
         if ($tfile_opened)
         {
             if ($security_key_set) { push @visitcmd, "-key", $security_key; }
+            push @visitcmd, @post_args;
 
             $libcmd    = "setenv LIBPATH $ENV{LIBPATH}\n";
             $ldlibcmd  = "setenv LD_LIBRARY_PATH $ENV{LD_LIBRARY_PATH}\n";

@@ -340,6 +340,9 @@ Engine::Finalize(void)
 //    Jeremy Meredith, Mon Apr  4 15:58:48 PDT 2005
 //    Added simulationCommandRPC.
 //
+//    Hank Childs, Sat Dec  3 20:32:37 PST 2005
+//    Add support for hardware acceleration.
+//
 // ****************************************************************************
 
 void
@@ -358,10 +361,6 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     DatabasePluginManager::Initialize(DatabasePluginManager::Engine, false);
 #endif
 
-    InitVTK::Initialize();
-    InitVTK::ForceMesa();
-    avtCallback::SetNowinMode(true);
-
     //
     // Load plugins
     //
@@ -371,13 +370,20 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
 
     vtkConnection = theViewer.GetReadConnection(1);
 
+    // Parse the command line.
+    ProcessCommandLine(*argc, *argv);
+
+    InitVTK::Initialize();
+    if (avtCallback::GetSoftwareRendering())
+        InitVTK::ForceMesa();
+    else
+        setenv("DISPLAY", ":0", 1);
+    avtCallback::SetNowinMode(true);
+
     //
     // Create the network manager.
     //
     netmgr = new NetworkManager;
-
-    // Parse the command line.
-    ProcessCommandLine(*argc, *argv);
 
 #if !defined(_WIN32)
     // Set up the alarm signal handler.
@@ -874,16 +880,22 @@ Engine::ProcessInput()
 //    Mark C. Miller, Thu Sep 15 11:30:18 PDT 2005
 //    Added lb-absolute option
 //
+//    Hank Childs, Sat Dec  3 20:27:16 PST 2005
+//    Add support for -hw-accel.
+//
 // ****************************************************************************
 void
 Engine::ProcessCommandLine(int argc, char **argv)
 {
     // process arguments.
     bool timingsAllowed = true;
+    bool haveHWAccel = false;
     for (int i=1; i<argc; i++)
     {
         if (strcmp(argv[i], "-allowdynamic") == 0)
             LoadBalancer::AllowDynamic();
+        else if (strcmp(argv[i], "-hw-accel") == 0)
+            haveHWAccel = true;
         else if ((strcmp(argv[i], "-timing") == 0) && timingsAllowed)
             visitTimer->Enable();
         else if (strcmp(argv[i], "-timing-processor-stride") == 0)
@@ -942,6 +954,7 @@ Engine::ProcessCommandLine(int argc, char **argv)
             LoadBalancer::SetScheme(LOAD_BALANCE_ABSOLUTE);
         }
     }
+    avtCallback::SetSoftwareRendering(!haveHWAccel);
 }
 
 // ****************************************************************************

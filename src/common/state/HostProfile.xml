@@ -89,6 +89,19 @@
     <Field name="visitSetsUpEnv" label="visitSetsUpEnv" type="bool">
       false
     </Field>
+    <Field name="canDoHWAccel" label="Machine can do hardware acceleration" type="bool">
+      false
+    </Field>
+    <Field name="havePreCommand" label="Have pre-command?" type="bool">
+      false
+    </Field>
+    <Field name="hwAccelPreCommand" label="Pre-command for hardware acceleration" type="string" enabler="havePreCommand:true">
+    </Field>
+    <Field name="havePostCommand" label="Have post-command?" type="bool">
+      false
+    </Field>
+    <Field name="hwAccelPostCommand" label="Post-command for hardware acceleration" type="string" enabler="havePostCommand:true">
+    </Field>
     <Function name="defaultUserName" user="true" member="true">
     </Function>
     <Function name="SplitHostPattern" user="true" member="true">

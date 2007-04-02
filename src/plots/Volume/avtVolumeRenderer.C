@@ -140,6 +140,11 @@ avtVolumeRenderer::New(void)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October  1, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Dec  3 20:37:07 PST 2005
+//    Change test for whether or not we are doing software rendering.
+//
 // ****************************************************************************
 void
 avtVolumeRenderer::Render(vtkDataSet *ds)
@@ -149,7 +154,7 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
         if (rendererImplementation)
             delete rendererImplementation;
 
-        if (avtCallback::GetNowinMode())
+        if (avtCallback::GetSoftwareRendering())
         {
             if (atts.GetRendererType() == VolumeAttributes::Splatting)
                 rendererImplementation = new avtMesaSplattingVolumeRenderer;

@@ -30,6 +30,9 @@
 //
 // Modifications:
 //
+//   Hank Childs, Sat Dec  3 20:39:35 PST 2005
+//   Change test for whether or not we are doing software rendering.
+//
 // ****************************************************************************
 
 avtLabelPlot::avtLabelPlot() : avtSurfaceDataPlot()
@@ -40,7 +43,7 @@ avtLabelPlot::avtLabelPlot() : avtSurfaceDataPlot()
     normalFilter = NULL;
     labelSubsetsFilter = NULL;
 
-    if (avtCallback::GetNowinMode())
+    if (avtCallback::GetSoftwareRendering())
         renderer = new avtMesaLabelRenderer;
     else
         renderer = new avtOpenGLLabelRenderer;

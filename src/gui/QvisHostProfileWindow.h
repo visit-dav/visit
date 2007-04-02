@@ -80,6 +80,9 @@ class QRadioButton;
 //    Added machine file support and the ability to use the VisIt script
 //    to set up env variables in parallel.
 //
+//    Hank Childs, Fri Dec  2 11:01:41 PST 2005
+//    Added support for hardware acceleration.
+//
 // ****************************************************************************
 
 class GUI_API QvisHostProfileWindow : public QvisPostableWindowObserver
@@ -139,6 +142,11 @@ private slots:
     void sshPortChanged(const QString &port);
     void clientHostNameMethodChanged(int);
     void clientHostNameChanged(const QString &);
+    void toggleCanDoHW(bool);
+    void preCommandChanged(const QString &);
+    void togglePreCommand(bool);
+    void postCommandChanged(const QString &);
+    void togglePostCommand(bool);
 private:
     QTabWidget   *hostTabs;
     QListBox     *emptyListBox;
@@ -194,6 +202,12 @@ private:
     QLineEdit    *clientHostName;
     QCheckBox    *sshPortCheckBox;
     QLineEdit    *sshPort;
+    QWidget      *hwGroup;
+    QCheckBox    *canDoHW;
+    QLineEdit    *preCommand;
+    QCheckBox    *preCommandCheckBox;
+    QLineEdit    *postCommand;
+    QCheckBox    *postCommandCheckBox;
 
     int          profileCounter;
 };

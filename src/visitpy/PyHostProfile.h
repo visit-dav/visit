@@ -16,5 +16,7 @@ PyObject       *PyHostProfile_WrapPyObject(const HostProfile *attr);
 void            PyHostProfile_SetLogging(bool val);
 void            PyHostProfile_SetDefaults(const HostProfile *atts);
 
+PyObject       *PyHostProfile_StringRepresentation(const HostProfile *atts);
+
 #endif
 
