@@ -15,6 +15,10 @@ using std::vector;
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 12, 2001
 //
+//  Modifications:
+//
+//    Mark C. Miller, Tue Sep 13 20:09:49 PDT 2005
+//    Added support for new silo objects; defvars, csgmesh/vars
 // ****************************************************************************
 class SiloDir
 {
@@ -24,6 +28,9 @@ class SiloDir
     vector<SiloDir*> subdir;
 
     vector<QString>  curve;
+    vector<QString>  csgmesh;
+    vector<QString>  csgvar;
+    vector<QString>  defvars;
     vector<QString>  multimesh;
     vector<QString>  multivar;
     vector<QString>  multimat;

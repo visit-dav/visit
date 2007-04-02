@@ -242,6 +242,9 @@
 #    Kathleen Bonnell, Tue May 10 11:09:36 PDT 2005
 #    Added vtkVisItExtractGrid and vtkVisItExtractRectilinearGrid.
 #
+#    Mark C. Miller, Thu Aug  4 09:07:34 PDT 2005
+#    Added vtkCSGGrid class
+#
 #    Brad Whitlock, Fri Aug 26 10:26:12 PDT 2005
 #    Added vtkVisItDataSetMapper.
 #
@@ -263,6 +266,8 @@ SRC=InitVTK.C \
     vtkAxisDepthSort.C \
     vtkBackgroundActor.C @VTK_CAMERA_SRC@\
     vtkConnectedTubeFilter.C \
+    vtkCSGCell.C \
+    vtkCSGGrid.C \
     vtkDashedXorGridMapper2D.C \
     vtkDataSetRemoveGhostCells.C \
     vtkDisjointCubesFacelistFilter.C \

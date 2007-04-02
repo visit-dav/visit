@@ -26,6 +26,8 @@
 //    Hank Childs, Fri Apr  6 17:39:40 PDT 2001
 //    Added ability to bypass filter with already valid rectilinear grids.
 //
+//    Mark C. Miller, Tue Sep 13 20:09:49 PDT 2005
+//    Added selID to support data selections
 // ****************************************************************************
 
 class AVTFILTERS_API avtResampleFilter : public avtDatasetToDatasetFilter
@@ -42,6 +44,7 @@ class AVTFILTERS_API avtResampleFilter : public avtDatasetToDatasetFilter
   protected:
     ResampleAttributes    atts;
     char                 *primaryVariable;
+    int                   selID;
 
     virtual void          Execute(void);
     virtual void          RefashionDataObjectInfo(void);

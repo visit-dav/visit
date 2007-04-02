@@ -17,6 +17,9 @@
 //    Brad Whitlock, Mon Nov 18 12:02:13 PDT 2002
 //    Ported to Windows.
 //
+//    Mark C. Miller, Tue Sep 13 20:09:49 PDT 2005
+//    Added support for new silo objects; defvars, csgmesh/vars
+//
 // ****************************************************************************
 SiloDir::SiloDir(DBfile *db, const QString &name_, const QString &path_)
 {
@@ -29,6 +32,12 @@ SiloDir::SiloDir(DBfile *db, const QString &name_, const QString &path_)
     int i;
     for (i=0; i<toc->ncurve; i++)
         curve.push_back(toc->curve_names[i]);
+    for (i=0; i<toc->ncsgmesh; i++)
+        csgmesh.push_back(toc->csgmesh_names[i]);
+    for (i=0; i<toc->ncsgvar; i++)
+        csgvar.push_back(toc->csgvar_names[i]);
+    for (i=0; i<toc->ndefvars; i++)
+        defvars.push_back(toc->defvars_names[i]);
     for (i=0; i<toc->nmultimesh; i++)
         multimesh.push_back(toc->multimesh_names[i]);
     for (i=0; i<toc->nmultivar; i++)

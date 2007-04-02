@@ -1,6 +1,15 @@
 <?xml version="1.0"?>
-  <Plugin name="Silo" label="Silo" type="database" dbtype="STMD" version="1.0" haswriter="yes">
-    <Extensions> silo pdb </Extensions>
-    <CXXFLAGS> $(SILO_INCLUDE) </CXXFLAGS>
-    <LIBS>     $(SILO_LIB)     </LIBS>
+  <Plugin name="Silo" type="database" label="Silo" version="1.0" enabled="true" mdspecificcode="true" onlyengine="false" noengine="false" dbtype="STMD" haswriter="true" hasoptions="false">
+    <CXXFLAGS>
+      $(SILO_INCLUDE)
+    </CXXFLAGS>
+    <LIBS>
+      $(SILO_LIB)
+    </LIBS>
+    <Extensions>
+      silo
+      pdb
+    </Extensions>
+    <Attribute name="" purpose="" persistent="true">
+    </Attribute>
   </Plugin>

@@ -15,6 +15,7 @@
 #include <avtParallel.h>
 #include <avtRay.h>
 #include <avtRelativeValueSamplePointArbitrator.h>
+#include <avtResampleSelection.h>
 #include <avtSamplePointExtractor.h>
 #include <avtSourceFromAVTDataset.h>
 #include <avtWorldSpaceToImageSpaceTransform.h>
@@ -45,12 +46,17 @@ vtkDataArray           *GetCoordinates(float, float, int);
 //  Programmer: Hank Childs 
 //  Creation:   March 26, 2001
 //
+//  Modifications:
+//    Mark C. Miller, Tue Sep 13 20:09:49 PDT 2005
+//    Initialized selection id
+//
 // ****************************************************************************
 
 avtResampleFilter::avtResampleFilter(const AttributeGroup *a)
 {
     atts = *(ResampleAttributes*)a;
     primaryVariable = NULL;
+    selID = -1;
 }
 
 
@@ -151,11 +157,24 @@ avtResampleFilter::Execute(void)
 //    Use vtkDataArray in place of vtkScalars for rgrid coordinates,
 //    to match VTK 4.0 API. 
 //
+//    Mark C. Miller, Tue Sep 13 20:09:49 PDT 2005
+//    Permitted poly data to pass through
+//
 // ****************************************************************************
 
 bool
 avtResampleFilter::InputNeedsNoResampling(void)
 {
+    avtDataTree_p inDT = GetInputDataTree();
+
+    //
+    // permit VTK_POLY_DATA to pass through unchanged
+    //
+    int n = 0;
+    vtkDataSet **in_dss = inDT->GetAllLeaves(n);
+    if (n && in_dss && in_dss[0] && in_dss[0]->GetDataObjectType() == VTK_POLY_DATA)
+        return true;
+
     //
     // If a specific set of dimensions was requested, then this is not going
     // to work.
@@ -170,7 +189,6 @@ avtResampleFilter::InputNeedsNoResampling(void)
     //
     // If there is more than one domain, GetSingleLeaf will return NULL.
     //
-    avtDataTree_p inDT = GetInputDataTree();
     vtkDataSet *in_ds = inDT->GetSingleLeaf();
     if (in_ds == NULL)
     {
@@ -346,11 +364,26 @@ avtResampleFilter::BypassResample(void)
 //    Hank Childs, Sun Mar 13 10:07:07 PST 2005
 //    Fix memory leak.
 //
+//    Mark C. Miller, Tue Sep 13 20:09:49 PDT 2005
+//    Added test for if data selection has already been applied 
+//
 // ****************************************************************************
 
 void
 avtResampleFilter::ResampleInput(void)
 {
+    //
+    // If the selection this filter exists to create has already been handled,
+    // then we can skip execution
+    //
+    if (GetInput()->GetInfo().GetAttributes().GetSelectionApplied(selID))
+    {
+        debug1 << "Bypassing Resample operator because database plugin "
+                  "claims to have applied the selection already" << endl;
+        SetOutputDataTree(GetInputDataTree());
+        return;
+    }
+
     int  i, j;
 
     avtRelativeValueSamplePointArbitrator *arb = NULL;
@@ -929,6 +962,9 @@ GetCoordinates(float start, float length, int numEls)
 //    Turn off ghost data, since ghost data created upstream will not be
 //    pertinent after resampling.
 //
+//    Mark C. Miller, Tue Sep 13 20:09:49 PDT 2005
+//    Added support for resample data selection
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -939,6 +975,28 @@ avtResampleFilter::PerformRestriction(avtPipelineSpecification_p oldspec)
     //
     avtPipelineSpecification_p spec = new avtPipelineSpecification(oldspec,
                                               oldspec->GetDataSpecification());
+
+    //
+    // First tell the file format reader that we are going to be doing a
+    // resample selection.
+    //
+    avtResampleSelection *sel = new avtResampleSelection;
+    int counts[3];
+    counts[0] = atts.GetWidth();
+    counts[1] = atts.GetHeight();
+    counts[2] = atts.GetDepth();
+    sel->SetCounts(counts);
+    double starts[3];
+    starts[0] = atts.GetMinX();
+    starts[1] = atts.GetMinY();
+    starts[2] = atts.GetMinZ();
+    sel->SetStarts(starts);
+    double stops[3];
+    stops[0] = atts.GetMaxX();
+    stops[1] = atts.GetMaxY();
+    stops[2] = atts.GetMaxZ();
+    sel->SetStops(stops);
+    selID = spec->GetDataSpecification()->AddDataSelection(sel);
 
     spec->NoDynamicLoadBalancing();
     spec->SetHaveRectilinearMeshOptimizations(true);

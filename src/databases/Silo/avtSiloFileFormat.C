@@ -4,6 +4,13 @@
 
 #include <avtSiloFileFormat.h>
 
+// includes from visit_vtk/full
+#ifndef MDSERVER
+#include <vtkCSGGrid.h>
+#endif
+
+#include <float.h>
+
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkCellType.h>
@@ -28,6 +35,7 @@
 #include <avtMaterial.h>
 #include <avtSpecies.h>
 #include <avtMixedVariable.h>
+#include <avtResampleSelection.h>
 #include <avtTypes.h>
 #include <avtVariableCache.h>
 
@@ -56,7 +64,7 @@
 using std::string;
 using std::vector;
 using std::map;
-
+using std::set;
 
 static void      ExceptionGenerator(char *);
 static char     *GenerateName(const char *, const char *);
@@ -173,6 +181,26 @@ avtSiloFileFormat::~avtSiloFileFormat()
 {
     FreeUpResources();
     delete [] dbfiles;
+}
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::RegisterDataSelections
+//
+//  Purpose:
+//      For CSG meshes, we want to obtain resample selection information.
+//      So, we implement, this method here.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   August 16, 2005 
+//
+// ****************************************************************************
+void
+avtSiloFileFormat::RegisterDataSelections(
+    const vector<avtDataSelection_p> &sels,
+    vector<bool> *selectionsApplied)
+{
+    selList     = sels;
+    selsApplied = selectionsApplied;
 }
 
 // ****************************************************************************
@@ -427,6 +455,7 @@ avtSiloFileFormat::GetTime()
 //  Modifications:
 //    Mark C. Miller, Thu Mar 18 10:40:50 PST 2004
 //    Added check for null metadata pointer and early return
+    
 //
 //    Mark C. Miller, Thu Mar 18 11:00:38 PST 2004
 //    Added optional md arg. Prefers setting metadata data member over
@@ -909,6 +938,15 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         multimesh_names[i] = new char[strlen(toc->multimesh_names[i])+1];
         strcpy(multimesh_names[i], toc->multimesh_names[i]);
     }
+#ifdef DBCSG_INNER // remove after silo-4.5 is released
+    int      ncsgmesh      = toc->ncsgmesh;
+    char   **csgmesh_names = new char*[ncsgmesh];
+    for (i = 0 ; i < ncsgmesh ; i++)
+    {
+        csgmesh_names[i] = new char[strlen(toc->csgmesh_names[i])+1];
+        strcpy(csgmesh_names[i], toc->csgmesh_names[i]);
+    }
+#endif
     int      nqmesh      = toc->nqmesh;
     char   **qmesh_names = new char*[nqmesh];
     for (i = 0 ; i < nqmesh ; i++)
@@ -937,6 +975,15 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         multivar_names[i] = new char[strlen(toc->multivar_names[i])+1];
         strcpy(multivar_names[i], toc->multivar_names[i]);
     }
+#ifdef DBCSG_INNER // remove after silo-4.5 is released
+    int      ncsgvar      = toc->ncsgvar;
+    char   **csgvar_names = new char*[ncsgvar];
+    for (i = 0 ; i < ncsgvar ; i++)
+    {
+        csgvar_names[i] = new char[strlen(toc->csgvar_names[i])+1];
+        strcpy(csgvar_names[i], toc->csgvar_names[i]);
+    }
+#endif
     int      nqvar      = toc->nqvar;
     char   **qvar_names = new char*[nqvar];
     for (i = 0 ; i < nqvar ; i++)
@@ -1189,6 +1236,74 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                 DBFreePointmesh(pm);
             }
             break;
+#ifdef DBCSG_INNER // remove after silo-4.5 is released
+          case DB_CSGMESH:
+            {
+#warning csg mesh spoofed as a surface mesh
+                mt = AVT_SURFACE_MESH;
+                char   *realvar;
+                DBfile *correctFile = dbfile;
+                DetermineFileAndDirectory(mm->meshnames[meshnum], correctFile,
+                                          realvar);
+                long mask = DBGetDataReadMask();
+                DBSetDataReadMask(mask|DBCSGMZonelist|DBCSGZonelistZoneNames);
+                DBcsgmesh *csgm = DBGetCsgmesh(correctFile, realvar);
+                if (csgm == NULL)
+                    EXCEPTION1(InvalidVariableException, csgmesh_names[i]);
+                DBSetDataReadMask(mask);
+
+                float   extents[6];
+                float  *extents_to_use = NULL;
+                if (!((csgm->min_extents[0] == 0.0 && csgm->max_extents[0] == 0.0 &&
+                       csgm->min_extents[1] == 0.0 && csgm->max_extents[1] == 0.0 &&
+                       csgm->min_extents[2] == 0.0 && csgm->max_extents[2] == 0.0) ||
+                      (csgm->min_extents[0] == -DBL_MAX && csgm->max_extents[0] == DBL_MAX &&
+                       csgm->min_extents[1] == -DBL_MAX && csgm->max_extents[1] == DBL_MAX &&
+                       csgm->min_extents[2] == -DBL_MAX && csgm->max_extents[2] == DBL_MAX)))
+                {
+                    for (j = 0 ; j < csgm->ndims ; j++)
+                    {
+                        extents[2*j    ] = csgm->min_extents[j];
+                        extents[2*j + 1] = csgm->max_extents[j];
+                    }
+                    extents_to_use = extents;
+                }
+
+                char *name_w_dir = GenerateName(dirname, csgmesh_names[i]);
+                avtMeshMetaData *mmd = new avtMeshMetaData(extents_to_use, name_w_dir,
+                                    csgm->zones->nzones, 0, csgm->origin, 0,
+                                    csgm->ndims, csgm->ndims, AVT_SURFACE_MESH);
+#warning USING AVT_SURFACE_MESH FOR CSG MESH
+                if (csgm->units[0] != NULL)
+                   mmd->xUnits = csgm->units[0];
+                if (csgm->units[1] != NULL)
+                   mmd->yUnits = csgm->units[1];
+                if (csgm->units[2] != NULL)
+                   mmd->zUnits = csgm->units[2];
+
+                if (csgm->labels[0] != NULL)
+                    mmd->xLabel = csgm->labels[0];
+                if (csgm->labels[1] != NULL)
+                    mmd->yLabel = csgm->labels[1];
+                if (csgm->labels[2] != NULL)
+                    mmd->zLabel = csgm->labels[2];
+
+                mmd->blockTitle = "regions";
+                if (csgm->zones->zonenames)
+                {
+                    vector<string> znames;
+                    for (j = 0; j < csgm->zones->nzones; j++)
+                        znames.push_back(csgm->zones->zonenames[j]);
+                    mmd->blockNames = znames;
+                }
+
+                md->Add(mmd);
+
+                delete [] name_w_dir;
+                DBFreeCsgmesh(csgm);
+            }
+            break;
+#endif
           case DB_QUAD_RECT:
             {
                 mt = AVT_RECTILINEAR_MESH;
@@ -1480,6 +1595,78 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         DBFreePointmesh(pm);
     }
 
+#ifdef DBCSG_INNER // remove after silo-4.5 is released
+    //
+    // Csg-meshes
+    //
+    for (i = 0 ; i < ncsgmesh ; i++)
+    {
+        char   *realvar;
+        DBfile *correctFile = dbfile;
+
+        DetermineFileAndDirectory(csgmesh_names[i], correctFile, realvar);
+
+        // We want to read the header for the csg zonelist too
+        // so we can serve up the "zones" of a csg mesh as "blocks"
+        long mask = DBGetDataReadMask();
+        DBSetDataReadMask(mask|DBCSGMZonelist|DBCSGZonelistZoneNames);
+        DBcsgmesh *csgm = DBGetCsgmesh(correctFile, realvar);
+        if (csgm == NULL)
+            EXCEPTION1(InvalidVariableException, csgmesh_names[i]);
+        DBSetDataReadMask(mask);
+
+        float   extents[6];
+        float  *extents_to_use = NULL;
+        if (!((csgm->min_extents[0] == 0.0 && csgm->max_extents[0] == 0.0 &&
+               csgm->min_extents[1] == 0.0 && csgm->max_extents[1] == 0.0 &&
+               csgm->min_extents[2] == 0.0 && csgm->max_extents[2] == 0.0) ||
+              (csgm->min_extents[0] == -DBL_MAX && csgm->max_extents[0] == DBL_MAX &&
+               csgm->min_extents[1] == -DBL_MAX && csgm->max_extents[1] == DBL_MAX &&
+               csgm->min_extents[2] == -DBL_MAX && csgm->max_extents[2] == DBL_MAX)))
+        {
+            for (j = 0 ; j < csgm->ndims ; j++)
+            {
+                extents[2*j    ] = csgm->min_extents[j];
+                extents[2*j + 1] = csgm->max_extents[j];
+            }
+            extents_to_use = extents;
+        }
+
+        char *name_w_dir = GenerateName(dirname, csgmesh_names[i]);
+        avtMeshMetaData *mmd = new avtMeshMetaData(extents_to_use, name_w_dir,
+                            csgm->zones->nzones, 0, csgm->origin, 0,
+                            csgm->ndims, csgm->ndims, AVT_SURFACE_MESH);
+#warning USING AVT_SURFACE_MESH FOR CSG MESH
+        if (csgm->units[0] != NULL)
+           mmd->xUnits = csgm->units[0];
+        if (csgm->units[1] != NULL)
+           mmd->yUnits = csgm->units[1];
+        if (csgm->units[2] != NULL)
+           mmd->zUnits = csgm->units[2];
+
+        if (csgm->labels[0] != NULL)
+            mmd->xLabel = csgm->labels[0];
+        if (csgm->labels[1] != NULL)
+            mmd->yLabel = csgm->labels[1];
+        if (csgm->labels[2] != NULL)
+            mmd->zLabel = csgm->labels[2];
+
+        mmd->blockTitle = "regions";
+        if (csgm->zones->zonenames)
+        {
+            vector<string> znames;
+            for (j = 0; j < csgm->zones->nzones; j++)
+                znames.push_back(csgm->zones->zonenames[j]);
+            mmd->blockNames = znames;
+        }
+
+        md->Add(mmd);
+
+        delete [] name_w_dir;
+        DBFreeCsgmesh(csgm);
+    }
+#endif
+
     //
     // Multi-vars
     //
@@ -1585,6 +1772,23 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                 }
                 break;
 
+
+#ifdef DBCSG_INNER // remove after silo-4.5 is released
+              case DB_CSGVAR:
+                {
+                    DBcsgvar *csgv = DBGetCsgvar(correctFile, realvar);
+                    centering = csgv->centering == DB_BNDCENT ? AVT_NODECENT
+                                                              : AVT_ZONECENT;
+                    if (csgv == NULL)
+                        EXCEPTION1(InvalidVariableException, mv->varnames[meshnum]);
+                    nvals = csgv->nvals;
+                    treatAsASCII = (csgv->ascii_labels);
+                    if(csgv->units != 0)
+                        varUnits = string(csgv->units);
+                    DBFreeCsgvar(csgv);
+                }
+                break;
+#endif
               default:
                 EXCEPTION1(InvalidVariableException, multivar_names[i]);
                 // Compiler complains about a break here.
@@ -1775,6 +1979,63 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         delete [] meshname_w_dir;
         DBFreeMeshvar(pv);
     }
+
+    //
+    // Csgvars
+    //
+#ifdef DBCSG_INNER // remove after silo-4.5 is released
+    for (i = 0 ; i < ncsgvar ; i++)
+    {
+        char   *realvar = NULL;
+        DBfile *correctFile = dbfile;
+        DetermineFileAndDirectory(csgvar_names[i], correctFile, realvar);
+        DBcsgvar *csgv = DBGetCsgvar(correctFile, realvar);
+        if (csgv == NULL)
+            EXCEPTION1(InvalidVariableException, csgvar_names[i]);
+
+        char meshname[256];
+        DBInqMeshname(correctFile, realvar, meshname);
+
+        //
+        // Get the centering information.
+        //
+#warning USING AVT_NODECENT FOR DB_BNDCENT
+        avtCentering centering = (csgv->centering == DB_BNDCENT ? AVT_NODECENT
+                                                               : AVT_ZONECENT);
+
+        //
+        // Get the dimension of the variable.
+        //
+        char *name_w_dir = GenerateName(dirname, csgvar_names[i]);
+        char *meshname_w_dir = GenerateName(dirname, meshname);
+        if (csgv->nvals == 1)
+        {
+            avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
+                                                    meshname_w_dir, centering);
+            smd->treatAsASCII = (csgv->ascii_labels);
+            if(csgv->units != 0)
+            {
+                smd->hasUnits = true;
+                smd->units = string(csgv->units);
+            }
+            md->Add(smd);
+        }
+        else
+        {
+            avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
+                                         meshname_w_dir, centering, csgv->nvals);
+            if(csgv->units != 0)
+            {
+                vmd->hasUnits = true;
+                vmd->units = string(csgv->units);
+            }
+            md->Add(vmd);
+        }
+        delete [] name_w_dir;
+        delete [] meshname_w_dir;
+        DBFreeCsgvar(csgv);
+    }
+#endif
 
     //
     // Materials
@@ -2199,6 +2460,13 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         delete [] multimesh_names[i];
     }
     delete [] multimesh_names;
+#ifdef DBCSG_INNER // remove after silo-4.5 is released
+    for (i = 0 ; i < ncsgmesh ; i++)
+    {
+        delete [] csgmesh_names[i];
+    }
+    delete [] csgmesh_names;
+#endif
     for (i = 0 ; i < nqmesh ; i++)
     {
         delete [] qmesh_names[i];
@@ -2224,6 +2492,13 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         delete [] qvar_names[i];
     }
     delete [] qvar_names;
+#ifdef DBCSG_INNER // remove after silo-4.5 is released
+    for (i = 0 ; i < ncsgvar ; i++)
+    {
+        delete [] csgvar_names[i];
+    }
+    delete [] csgvar_names;
+#endif
     for (i = 0 ; i < nucdvar ; i++)
     {
         delete [] ucdvar_names[i];
@@ -3625,8 +3900,14 @@ avtSiloFileFormat::GetMesh(int domain, const char *m)
     //
     // Sort out the bad cases.
     //
+#ifdef DBCSG_INNER // remove after silo-4.5 is released
+    if (type != DB_UCDMESH && type != DB_QUADMESH && type != DB_QUAD_CURV &&
+        type != DB_QUAD_RECT && type != DB_POINTMESH && type != DB_MULTIMESH &&
+        type != DB_CSGMESH)
+#else
     if (type != DB_UCDMESH && type != DB_QUADMESH && type != DB_QUAD_CURV &&
         type != DB_QUAD_RECT && type != DB_POINTMESH && type != DB_MULTIMESH)
+#endif
     {
         EXCEPTION1(InvalidVariableException, mesh);
     }
@@ -3648,7 +3929,11 @@ avtSiloFileFormat::GetMesh(int domain, const char *m)
     }
     else
     {
+#ifdef DBCSG_INNER // remove after silo-4.5 is released
+        if (domain != 0 && type != DB_CSGMESH)
+#else
         if (domain != 0)
+#endif
         {
             EXCEPTION2(BadDomainException, domain, 1);
         }
@@ -3681,6 +3966,12 @@ avtSiloFileFormat::GetMesh(int domain, const char *m)
     {
         rv = GetPointMesh(domain_file, directory_mesh);
     }
+#ifdef DBCSG_INNER // remove after silo-4.5 is released
+    else if (type == DB_CSGMESH)
+    {
+        rv = GetCSGMesh(domain_file, directory_mesh, domain);
+    }
+#endif
     else
     {
         EXCEPTION0(ImproperUseException);
@@ -5381,6 +5672,239 @@ avtSiloFileFormat::GetPointMesh(DBfile *dbfile, const char *mn)
     return ugrid;
 }
 
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetCSGMesh
+//
+//  Purpose:
+//      Gets the Silo construct for a CSG mesh and creates a vtkDataSet for it.
+//
+//  Arguments:
+//      dbfile    A handle to the file this variable lives in.
+//      mn        The name of the csg mesh.
+//
+//  Returns:      The vtkDataSet for mn.
+//
+//  Programmer:   Mark C. Miller 
+//  Creation:     August 8, 2005 
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtSiloFileFormat::GetCSGMesh(DBfile *dbfile, const char *mn, int dom)
+{
+#ifndef DBCSG_INNER // remove after silo-4.5 is released
+    return 0;
+#else
+#ifndef MDSERVER
+    int   i, j;
+
+    //
+    // Allow empty data sets
+    //
+    if (string(mn) == "EMPTY")
+        return NULL;
+
+    //
+    // It's ridiculous, but Silo does not have all of the `const's in their
+    // library, so let's cast it away.
+    //
+    char *meshname  = const_cast<char *>(mn);
+
+    //
+    // Get the Silo construct.
+    //
+    DBcsgmesh *csgm = DBGetCsgmesh(dbfile, meshname);
+    if (csgm == NULL)
+    {
+        EXCEPTION1(InvalidVariableException, meshname);
+    }
+
+    //
+    // Create the VTK objects and connect them up.
+    //
+    vtkCSGGrid *csggrid   = vtkCSGGrid::New(); 
+
+    //
+    // Build up the boundaries
+    //
+    vector<int> bids;
+    char *pc = (char*) csgm->coeffs;
+    for (i = 0; i < csgm->nbounds; i++)
+    {
+        int j, ncoeffs = 0;
+
+        switch (csgm->typeflags[i])
+        {
+            case DBCSG_SPHERE_PR:
+            {
+                ncoeffs = 4;
+                double coeffs[4];
+                for (j = 0; j < ncoeffs; j++)
+                    coeffs[j] = ((float*)pc)[j];
+                bids.push_back(csggrid->AddBoundary(vtkCSGGrid::SPHERE_PR,
+                                                    ncoeffs,
+                                                    coeffs));
+                break;
+            }
+            case DBCSG_PLANE_X:
+            {
+                ncoeffs = 1;
+                double coeffs[1];
+                for (j = 0; j < ncoeffs; j++)
+                    coeffs[j] = ((float*)pc)[j];
+                bids.push_back(csggrid->AddBoundary(vtkCSGGrid::PLANE_X,
+                                                    ncoeffs,
+                                                    coeffs));
+                break;
+            }
+            case DBCSG_CYLINDER_PNLR:
+            {
+                ncoeffs = 8;
+                double coeffs[8];
+                for (j = 0; j < ncoeffs; j++)
+                    coeffs[j] = ((float*)pc)[j];
+                bids.push_back(csggrid->AddBoundary(vtkCSGGrid::CYLINDER_PNLR,
+                                                    ncoeffs,
+                                                    coeffs));
+                break;
+            }
+            case DBCSG_QUADRIC_G:
+            {
+                ncoeffs = 10;
+                double coeffs[10];
+                for (j = 0; j < ncoeffs; j++)
+                    coeffs[j] = ((float*)pc)[j];
+                bids.push_back(csggrid->AddBoundary(vtkCSGGrid::QUADRIC_G,
+                                                    ncoeffs,
+                                                    coeffs));
+                break;
+            }
+        }
+
+        if (csgm->datatype == DB_DOUBLE)
+            pc += ncoeffs * sizeof(double);
+        else
+            pc += ncoeffs * sizeof(float);
+    }
+
+    //
+    // Build up the regions
+    //
+    vector<int> rids;
+    DBcsgzonelist *csgzl = csgm->zones;
+    for (i = 0; i < csgzl->nregs; i++)
+    {
+        switch (csgzl->typeflags[i])
+        {
+            case DBCSG_INNER:
+            {
+                rids.push_back(csggrid->AddRegion(csgzl->leftids[i],
+                                                  vtkCSGGrid::INNER));
+                break;
+            }
+            case DBCSG_OUTER:
+            {
+                rids.push_back(csggrid->AddRegion(csgzl->leftids[i],
+                                                  vtkCSGGrid::OUTER));
+                break;
+            }
+            case DBCSG_INTERSECT:
+            {
+                rids.push_back(csggrid->AddRegion(csgzl->leftids[i],
+                                                  csgzl->rightids[i],
+                                                  vtkCSGGrid::INTERSECT));
+                break;
+            }
+            case DBCSG_UNION:
+            {
+                rids.push_back(csggrid->AddRegion(csgzl->leftids[i],
+                                                  csgzl->rightids[i],
+                                                  vtkCSGGrid::UNION));
+                break;
+            }
+            case DBCSG_DIFF:
+            {
+                rids.push_back(csggrid->AddRegion(csgzl->leftids[i],
+                                                  csgzl->rightids[i],
+                                                  vtkCSGGrid::DIFF));
+                break;
+            }
+        }
+    }
+
+    //
+    // Enumerate the cells (that is, the complete region specifications)
+    //
+    for (i = 0; i < csgzl->nzones; i++)
+    {
+        csggrid->AddCell(csgzl->zonelist[i]);
+    }
+
+    double minX = -10.0, minY = -10.0, minZ = -10.0;
+    double maxX =  10.0, maxY =  10.0, maxZ =  10.0;
+    int nX = 100, nY = 100, nZ = 100;
+
+    if (!((csgm->min_extents[0] == 0.0 && csgm->max_extents[0] == 0.0 &&
+           csgm->min_extents[1] == 0.0 && csgm->max_extents[1] == 0.0 &&
+           csgm->min_extents[2] == 0.0 && csgm->max_extents[2] == 0.0) ||
+          (csgm->min_extents[0] == -DBL_MAX && csgm->max_extents[0] == DBL_MAX &&
+           csgm->min_extents[1] == -DBL_MAX && csgm->max_extents[1] == DBL_MAX &&
+           csgm->min_extents[2] == -DBL_MAX && csgm->max_extents[2] == DBL_MAX)))
+    {
+        minX = csgm->min_extents[0];
+        maxX = csgm->max_extents[0];
+        minY = csgm->min_extents[1];
+        maxY = csgm->max_extents[1];
+        minZ = csgm->min_extents[2];
+        maxZ = csgm->max_extents[2];
+    }
+
+    DBFreeCsgmesh(csgm);
+
+    //
+    // Use the resample selection, if present, to drive the discretization
+    //
+    for (int i = 0; i < selList.size(); i++)
+    {
+        if (string(selList[i]->GetType()) == "Resample Data Selection")
+        {
+            avtResampleSelection *sel = (avtResampleSelection *) *(selList[i]);
+            int counts[3];
+            sel->GetCounts(counts);
+            nX = counts[0];
+            nY = counts[1];
+            nZ = counts[2];
+            double starts[3];
+            sel->GetStarts(starts);
+            minX = starts[0];
+            minY = starts[1];
+            minZ = starts[2];
+            double stops[3];
+            sel->GetStops(stops);
+            maxX = stops[0];
+            maxY = stops[1];
+            maxZ = stops[2];
+
+            // overrwrite method-scope arrays with the new indexing
+            (*selsApplied)[i] = true;
+            break;
+        }
+    }
+
+    //
+    // Hack, discretize to a poly data object
+    //
+    cerr << "Discretizing with minX = " << minX << ", maxX = " << maxX << endl;
+    cerr << "                  minY = " << minY << ", maxY = " << maxY << endl;
+    cerr << "                  minZ = " << minZ << ", maxZ = " << maxZ << endl;
+    cerr << "                  nX = " << nX << ", nY = " << nY << ", nZ = " << nZ << endl;
+    return csggrid->DiscretizeSurfaces(dom, minX, maxX, nX,
+                                            minY, maxY, nY,
+                                            minZ, maxZ, nZ);
+
+#endif
+#endif
+}
 
 // ****************************************************************************
 //  Method: avtSiloFileFormat::DetermineFilenameAndDirectory
@@ -5516,6 +6040,10 @@ avtSiloFileFormat::DetermineFileAndDirectory(char *input, DBfile *&cFile,
 //    Hank Childs, Sat Jun 15 13:12:18 PDT 2002
 //    Respect built in filenames (identified with colons).
 //
+//    Jeremy Meredith, Tue Sep 13 15:58:10 PDT 2005
+//    Make sure we add the filename to an otherwise fully-qualified variable
+//    name.
+//
 // ****************************************************************************
 
 void
@@ -5526,14 +6054,25 @@ avtSiloFileFormat::GetRelativeVarName(const char *initVar, const char *newVar,
     // If the new variable starts with a slash, it is already qualified, so
     // just return that.
     //
+    int len = strlen(initVar);
     if (newVar[0] == '/')
     {
-        strcpy(outVar, newVar);
+        int colonPosition = -1;
+        for (int i = 0 ; i < len; i++)
+        {
+            if (initVar[i] == ':')
+            {
+                colonPosition = i;
+                break;
+            }
+        }
+        int numToCopy = (colonPosition < 0 ? 0 : colonPosition+1);
+        strncpy(outVar, initVar, numToCopy);
+        strcpy(outVar+numToCopy, newVar);
         return;
     }
 
     int lastToken = -1;
-    int len = strlen(initVar);
     for (int i = len-1 ; i >= 0 ; i--)
     {
         if (initVar[i] == '/' || initVar[i] == ':')
@@ -5727,6 +6266,9 @@ avtSiloFileFormat::GetMeshtype(DBfile *dbfile, char *mesh)
 //    Hank Childs, Thu Aug 16 11:06:27 PDT 2001
 //    Throw an exception here instead of in the handler.
 //
+//    Mark C. Miller, Tue Sep 13 14:25:42 PDT 2005
+//    Permit absolute pathnames for meshes (leading slashes)
+//
 // ****************************************************************************
 
 void
@@ -5741,6 +6283,11 @@ avtSiloFileFormat::GetMeshname(DBfile *dbfile, char *var, char *meshname)
         char str[1024];
         sprintf(str, "Unable to determine mesh for %s.", var);
         EXCEPTION1(SiloException, str);
+    }
+    if (meshname[0] == '/')
+    {
+        for (int i = 0; i < strlen(meshname); i++)
+            meshname[i] = meshname[i+1];
     }
 }
 
@@ -6883,21 +7430,16 @@ avtSiloFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
 //  Programmer:   Hank Childs
 //  Creation:     October 31, 2001
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Sep 13 16:00:16 PDT 2005
+//    Changed domainDirs to a set to ensure log(n) access times.
+//
 // ****************************************************************************
 
 bool
 avtSiloFileFormat::ShouldGoToDir(const char *dirname)
 {
-    int size = domainDirs.size();
-    for (int i = 0 ; i < size ; i++)
-    {
-        if (dirname == domainDirs[i])
-        {
-            return false;
-        }
-    }
-
-    return true;
+    return (domainDirs.count(dirname) == 0);
 }
 
 
@@ -6922,6 +7464,10 @@ avtSiloFileFormat::ShouldGoToDir(const char *dirname)
 //    Add support for variables that are specified absolutely instead of
 //    relatively.
 //
+//    Jeremy Meredith, Tue Sep 13 16:00:16 PDT 2005
+//    Changed domainDirs to a set to ensure log(n) access times.
+//    Added check to make sure we don't even bother for an EMPTY domain.
+//
 // ****************************************************************************
 
 void
@@ -6930,21 +7476,11 @@ avtSiloFileFormat::RegisterDomainDirs(const char * const *dirlist, int nList,
 {
     for (int i = 0 ; i < nList ; i++)
     {
+        if (strcmp(dirlist[i], "EMPTY") == 0)
+            continue;
+
         string str = PrepareDirName(dirlist[i], curDir);
-        int size = domainDirs.size();
-        bool alreadyInList = false;
-        for (int j = 0 ; j < size ; j++)
-        {
-            if (str == domainDirs[j])
-            {
-                alreadyInList = true;
-                break;
-            }
-        }
-        if (!alreadyInList)
-        {
-            domainDirs.push_back(str);
-        }
+        domainDirs.insert(str);
     }
 }
 
