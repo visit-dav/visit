@@ -1,0 +1,321 @@
+#                            Copyright 2000 - 2006
+#                 The Regents of the University of California.
+#                             All rights reserved.
+#
+# This work  was produced at the  University of California, Lawrence Livermore
+# National Laboratory  (UC LLNL)  under contract no.   W-7405-ENG-48 (Contract
+# 48) between  the U.S.  Department  of Energy (DOE)  and  The Regents  of the
+# University  of   California (University)   for   the operation  of UC  LLNL.
+# Copyright  is reserved  to     the University for   purposes  of  controlled
+# dissemination,   commercialization   through   formal licensing,   or  other
+# disposition  under  terms  of Contract   48; DOE  policies, regulations  and
+# orders;  and U.S.   statutes.  The  rights of   the  Federal Government  are
+# reserved under  Contract 48 subject to the  restrictions agreed  upon by DOE
+# and University.
+#
+#                                 DISCLAIMER
+#
+# This software was prepared as an  account of work sponsored  by an agency of
+# the United  States Government. Neither the United  States Government nor the
+# University of California  nor any  of their  employees, makes any  warranty,
+# express or  implied,  or assumes  any  liability  or responsiblity for   the
+# accuracy, completeness,  or   usefullness of   any  information,  apparatus,
+# product, or process disclosed, or represents that its use would not infringe
+# privately   owned  rights. Reference    herein to   any specific  commercial
+# products, process, or service   by trade name, trademark,   manufacturer, or
+# otherwise,  does not    necessarily  constitute or    imply its endorsement,
+# recommendation,  or  favoring by    the  United  States Government  or   the
+# University of California. The views and opinions of authors expressed herein
+# do not necessarily state or reflect those of the United States Government or
+# the University of  California,  and shall not  be  used for  advertising  or
+# product endorsement purposes.
+#
+# Modifications:
+#
+##############################################################################
+
+@SET_MAKE@
+@VARIABLES@
+
+#
+# Override some make variables
+#
+F77FLAGS=-g $(SILO_INCLUDE) -I.
+CFLAGS=-g $(SILO_INCLUDE) -I.
+LDFLAGS=
+LIBS=$(SILO_LIB) -lm
+BUILD_FORTRAN=allfortran
+
+# BOV examples
+PROGRAM_BOV=bov
+OBJ_BOV=bov.o
+FPROGRAM_BOV=fbov
+FOBJ_BOV=fbov.o
+
+# Rectilinear mesh
+PROGRAM_RECT2D=rect2d
+OBJ_RECT2D=rect2d.o
+FPROGRAM_RECT2D=frect2d
+FOBJ_RECT2D=frect2d.o
+PROGRAM_RECT3D=rect3d
+OBJ_RECT3D=rect3d.o
+FPROGRAM_RECT3D=frect3d
+FOBJ_RECT3D=frect3d.o
+
+# Curvilinear mesh
+PROGRAM_CURV2D=curv2d
+OBJ_CURV2D=curv2d.o
+FPROGRAM_CURV2D=fcurv2d
+FOBJ_CURV2D=fcurv2d.o
+PROGRAM_CURV3D=curv3d
+OBJ_CURV3D=curv3d.o
+FPROGRAM_CURV3D=fcurv3d
+FOBJ_CURV3D=fcurv3d.o
+
+# Point mesh
+PROGRAM_POINT2D=point2d
+OBJ_POINT2D=point2d.o
+FPROGRAM_POINT2D=fpoint2d
+FOBJ_POINT2D=fpoint2d.o
+PROGRAM_POINT3D=point3d
+OBJ_POINT3D=point3d.o
+FPROGRAM_POINT3D=fpoint3d
+FOBJ_POINT3D=fpoint3d.o
+
+# Unstructured mesh
+PROGRAM_UNSTRUCTURED2D=ucd2d
+OBJ_UNSTRUCTURED2D=ucd2d.o
+FPROGRAM_UNSTRUCTURED2D=fucd2d
+FOBJ_UNSTRUCTURED2D=fucd2d.o
+PROGRAM_UNSTRUCTURED3D=ucd3d
+OBJ_UNSTRUCTURED3D=ucd3d.o
+FPROGRAM_UNSTRUCTURED3D=fucd3d
+FOBJ_UNSTRUCTURED3D=fucd3d.o
+
+# QUADVAR
+PROGRAM_QUADVAR2D=quadvar2d
+OBJ_QUADVAR2D=quadvar2d.o
+FPROGRAM_QUADVAR2D=fquadvar2d
+FOBJ_QUADVAR2D=fquadvar2d.o
+PROGRAM_QUADVAR3D=quadvar3d
+OBJ_QUADVAR3D=quadvar3d.o
+FPROGRAM_QUADVAR3D=fquadvar3d
+FOBJ_QUADVAR3D=fquadvar3d.o
+
+# Ucdvar
+PROGRAM_UCDVAR2D=ucdvar2d
+OBJ_UCDVAR2D=ucdvar2d.o
+FPROGRAM_UCDVAR2D=fucdvar2d
+FOBJ_UCDVAR2D=fucdvar2d.o
+
+# Pointvar
+PROGRAM_POINTVAR3D=pointvar3d
+OBJ_POINTVAR3D=pointvar3d.o
+FPROGRAM_POINTVAR3D=fpointvar3d
+FOBJ_POINTVAR3D=fpointvar3d.o
+
+# Defvars
+PROGRAM_DEFVARS=defvars
+OBJ_DEFVARS=defvars.o
+FPROGRAM_DEFVARS=fdefvars
+FOBJ_DEFVARS=fdefvars.o
+
+# Multi objects
+PROGRAM_MULTIMESH=multimesh
+OBJ_MULTIMESH=multimesh.o
+FPROGRAM_MULTIMESH=fmultimesh
+FOBJ_MULTIMESH=fmultimesh.o
+PROGRAM_MULTIVAR=multivar
+OBJ_MULTIVAR=multivar.o
+FPROGRAM_MULTIVAR=fmultivar
+FOBJ_MULTIVAR=fmultivar.o
+
+# visit_writer examples
+OBJ_VISITWRITER=visit_writer.o
+PROGRAM_VW_REGMESH=vwregmesh
+OBJ_VW_REGMESH=vwregmesh.o
+PROGRAM_VW_RECT2D=vwrect2d
+OBJ_VW_RECT2D=vwrect2d.o
+PROGRAM_VW_RECT3D=vwrect3d
+OBJ_VW_RECT3D=vwrect3d.o
+PROGRAM_VW_CURV3D=vwcurv3d
+OBJ_VW_CURV3D=vwcurv3d.o
+PROGRAM_VW_POINT3D=vwpoint3d
+OBJ_VW_POINT3D=vwpoint3d.o
+PROGRAM_VW_UCD2D=vwucd2d
+OBJ_VW_UCD2D=vwucd2d.o
+
+all: bovexamples rectmesh curvmesh pointmesh ucdmesh quadvar ucdvar pointvar defvarprogs multiobj @BUILD_FORTRAN@ visitwriter
+
+bovexamples: $(PROGRAM_BOV)
+
+rectmesh: $(PROGRAM_RECT2D) $(PROGRAM_RECT3D)
+
+curvmesh: $(PROGRAM_CURV2D) $(PROGRAM_CURV3D)
+
+pointmesh: $(PROGRAM_POINT2D) $(PROGRAM_POINT3D)
+
+ucdmesh: $(PROGRAM_UNSTRUCTURED2D) $(PROGRAM_UNSTRUCTURED3D)
+
+quadvar: $(PROGRAM_QUADVAR2D) $(PROGRAM_QUADVAR3D)
+
+pointvar: $(PROGRAM_POINTVAR3D) 
+
+ucdvar: $(PROGRAM_UCDVAR2D) 
+
+defvarprogs: $(PROGRAM_DEFVARS) 
+
+multiobj: $(PROGRAM_MULTIMESH) $(PROGRAM_MULTIVAR)
+
+allfortran: $(FPROGRAM_BOV) $(FPROGRAM_RECT2D) $(FPROGRAM_RECT3D) $(FPROGRAM_CURV2D) $(FPROGRAM_CURV3D) \
+    $(FPROGRAM_POINT2D) $(FPROGRAM_POINT3D) $(FPROGRAM_UNSTRUCTURED2D) $(FPROGRAM_UNSTRUCTURED3D) \
+    $(FPROGRAM_QUADVAR2D) $(FPROGRAM_QUADVAR3D) $(FPROGRAM_POINTVAR3D) $(FPROGRAM_UCDVAR2D) \
+    $(FPROGRAM_DEFVARS) $(FPROGRAM_MULTIMESH) $(FPROGRAM_MULTIVAR)
+
+visitwriter: $(PROGRAM_VW_REGMESH) $(PROGRAM_VW_RECT2D) $(PROGRAM_VW_RECT3D) $(PROGRAM_VW_CURV3D) $(PROGRAM_VW_POINT3D) $(PROGRAM_VW_UCD2D)
+
+clean: cleanC_and_Fortran clean_visit_writer clean_data
+
+cleanC_and_Fortran:
+	$(RM) $(PROGRAM_BOV) $(OBJ_BOV) $(FPROGRAM_BOV) $(FOBJ_BOV)
+	$(RM) $(PROGRAM_RECT2D) $(OBJ_RECT2D) $(FPROGRAM_RECT2D) $(FOBJ_RECT2D)
+	$(RM) $(PROGRAM_RECT3D) $(OBJ_RECT3D) $(FPROGRAM_RECT3D) $(FOBJ_RECT3D)
+	$(RM) $(PROGRAM_CURV2D) $(OBJ_CURV2D) $(FPROGRAM_CURV2D) $(FOBJ_CURV2D)
+	$(RM) $(PROGRAM_CURV3D) $(OBJ_CURV3D) $(FPROGRAM_CURV3D) $(FOBJ_CURV3D)
+	$(RM) $(PROGRAM_POINT2D) $(OBJ_POINT2D) $(FPROGRAM_POINT2D) $(FOBJ_POINT2D)
+	$(RM) $(PROGRAM_POINT3D) $(OBJ_POINT3D) $(FPROGRAM_POINT3D) $(FOBJ_POINT3D)
+	$(RM) $(PROGRAM_UNSTRUCTURED2D) $(OBJ_UNSTRUCTURED2D) $(FPROGRAM_UNSTRUCTURED2D) $(FOBJ_UNSTRUCTURED2D)
+	$(RM) $(PROGRAM_UNSTRUCTURED3D) $(OBJ_UNSTRUCTURED3D) $(FPROGRAM_UNSTRUCTURED3D) $(FOBJ_UNSTRUCTURED3D)
+	$(RM) $(PROGRAM_QUADVAR2D) $(OBJ_QUADVAR2D) $(FPROGRAM_QUADVAR2D) $(FOBJ_QUADVAR2D)
+	$(RM) $(PROGRAM_QUADVAR3D) $(OBJ_QUADVAR3D) $(FPROGRAM_QUADVAR3D) $(FOBJ_QUADVAR3D)
+	$(RM) $(PROGRAM_POINTVAR3D) $(OBJ_POINTVAR3D) $(FPROGRAM_POINTVAR3D) $(FOBJ_POINTVAR3D)
+	$(RM) $(PROGRAM_DEFVARS) $(OBJ_DEFVARS) $(FPROGRAM_DEFVARS) $(FOBJ_DEFVARS)
+	$(RM) $(PROGRAM_MULTIMESH) $(OBJ_MULTIMESH) $(FPROGRAM_MULTIMESH) $(FOBJ_MULTIMESH)
+	$(RM) $(PROGRAM_MULTIVAR) $(OBJ_MULTIVAR) $(FPROGRAM_MULTIVAR) $(FOBJ_MULTIVAR)
+	$(RM) $(PROGRAM_UCDVAR2D) $(OBJ_UCDVAR2D) $(FPROGRAM_UCDVAR2D) $(FOBJ_UCDVAR2D)
+	$(RM) $(OBJ_VISITWRITER) $(PROGRAM_VW_REGMESH) $(OBJ_VW_REGMESH) $(PROGRAM_VW_RECT2D) $(OBJ_VW_RECT2D)
+	$(RM) $(PROGRAM_VW_RECT3D) $(OBJ_VW_RECT3D) $(PROGRAM_VW_CURV3D) $(OBJ_VW_CURV3D)
+	$(RM) $(PROGRAM_VW_POINT3D) $(OBJ_VW_POINT3D) $(PROGRAM_VW_UCD2D) $(OBJ_VW_UCD2D)
+
+clean_visit_writer:
+	$(RM) $(OBJ_VISITWRITER)
+	$(RM) $(PROGRAM_VW_REGMESH) $(OBJ_VW_REGMESH)
+
+clean_data:
+	$(RM) *.silo *.vtk *.bov *.values
+
+$(PROGRAM_BOV): $(OBJ_BOV)
+	$(CC) -o $(PROGRAM_BOV) $(OBJ_BOV) $(LDFLAGS) $(LIBS)
+
+$(FPROGRAM_BOV): $(FOBJ_BOV)
+	$(F77) -o $(FPROGRAM_BOV) $(FOBJ_BOV) $(LDFLAGS) $(LIBS)
+
+$(PROGRAM_RECT2D): $(OBJ_RECT2D)
+	$(CC) -o $(PROGRAM_RECT2D) $(OBJ_RECT2D) $(LDFLAGS) $(LIBS)
+
+$(FPROGRAM_RECT2D): $(FOBJ_RECT2D)
+	$(F77) -o $(FPROGRAM_RECT2D) $(FOBJ_RECT2D) $(LDFLAGS) $(LIBS)
+
+$(PROGRAM_RECT3D): $(OBJ_RECT3D)
+	$(CC) -o $(PROGRAM_RECT3D) $(OBJ_RECT3D) $(LDFLAGS) $(LIBS)
+
+$(FPROGRAM_RECT3D): $(FOBJ_RECT3D)
+	$(F77) -o $(FPROGRAM_RECT3D) $(FOBJ_RECT3D) $(LDFLAGS) $(LIBS)
+
+$(PROGRAM_CURV2D): $(OBJ_CURV2D)
+	$(CC) -o $(PROGRAM_CURV2D) $(OBJ_CURV2D) $(LDFLAGS) $(LIBS)
+
+$(FPROGRAM_CURV2D): $(FOBJ_CURV2D)
+	$(F77) -o $(FPROGRAM_CURV2D) $(FOBJ_CURV2D) $(LDFLAGS) $(LIBS)
+
+$(PROGRAM_CURV3D): $(OBJ_CURV3D)
+	$(CC) -o $(PROGRAM_CURV3D) $(OBJ_CURV3D) $(LDFLAGS) $(LIBS)
+
+$(FPROGRAM_CURV3D): $(FOBJ_CURV3D)
+	$(F77) -o $(FPROGRAM_CURV3D) $(FOBJ_CURV3D) $(LDFLAGS) $(LIBS)
+
+$(PROGRAM_POINT2D): $(OBJ_POINT2D)
+	$(CC) -o $(PROGRAM_POINT2D) $(OBJ_POINT2D) $(LDFLAGS) $(LIBS)
+
+$(FPROGRAM_POINT2D): $(FOBJ_POINT2D)
+	$(F77) -o $(FPROGRAM_POINT2D) $(FOBJ_POINT2D) $(LDFLAGS) $(LIBS)
+
+$(PROGRAM_POINT3D): $(OBJ_POINT3D)
+	$(CC) -o $(PROGRAM_POINT3D) $(OBJ_POINT3D) $(LDFLAGS) $(LIBS)
+
+$(FPROGRAM_POINT3D): $(FOBJ_POINT3D)
+	$(F77) -o $(FPROGRAM_POINT3D) $(FOBJ_POINT3D) $(LDFLAGS) $(LIBS)
+
+$(PROGRAM_QUADVAR2D): $(OBJ_QUADVAR2D)
+	$(CC) -o $(PROGRAM_QUADVAR2D) $(OBJ_QUADVAR2D) $(LDFLAGS) $(LIBS)
+
+$(FPROGRAM_QUADVAR2D): $(FOBJ_QUADVAR2D)
+	$(F77) -o $(FPROGRAM_QUADVAR2D) $(FOBJ_QUADVAR2D) $(LDFLAGS) $(LIBS)
+
+$(PROGRAM_QUADVAR3D): $(OBJ_QUADVAR3D)
+	$(CC) -o $(PROGRAM_QUADVAR3D) $(OBJ_QUADVAR3D) $(LDFLAGS) $(LIBS)
+
+$(FPROGRAM_QUADVAR3D): $(FOBJ_QUADVAR3D)
+	$(F77) -o $(FPROGRAM_QUADVAR3D) $(FOBJ_QUADVAR3D) $(LDFLAGS) $(LIBS)
+
+$(PROGRAM_POINTVAR3D): $(OBJ_POINTVAR3D)
+	$(CC) -o $(PROGRAM_POINTVAR3D) $(OBJ_POINTVAR3D) $(LDFLAGS) $(LIBS)
+
+$(FPROGRAM_POINTVAR3D): $(FOBJ_POINTVAR3D)
+	$(F77) -o $(FPROGRAM_POINTVAR3D) $(FOBJ_POINTVAR3D) $(LDFLAGS) $(LIBS)
+
+$(PROGRAM_DEFVARS): $(OBJ_DEFVARS)
+	$(CC) -o $(PROGRAM_DEFVARS) $(OBJ_DEFVARS) $(LDFLAGS) $(LIBS)
+
+$(FPROGRAM_DEFVARS): $(FOBJ_DEFVARS)
+	$(F77) -o $(FPROGRAM_DEFVARS) $(FOBJ_DEFVARS) $(LDFLAGS) $(LIBS)
+
+$(PROGRAM_MULTIMESH): $(OBJ_MULTIMESH)
+	$(CC) -o $(PROGRAM_MULTIMESH) $(OBJ_MULTIMESH) $(LDFLAGS) $(LIBS)
+
+$(FPROGRAM_MULTIMESH): $(FOBJ_MULTIMESH)
+	$(F77) -o $(FPROGRAM_MULTIMESH) $(FOBJ_MULTIMESH) $(LDFLAGS) $(LIBS)
+
+$(PROGRAM_MULTIVAR): $(OBJ_MULTIVAR)
+	$(CC) -o $(PROGRAM_MULTIVAR) $(OBJ_MULTIVAR) $(LDFLAGS) $(LIBS)
+
+$(FPROGRAM_MULTIVAR): $(FOBJ_MULTIVAR)
+	$(F77) -o $(FPROGRAM_MULTIVAR) $(FOBJ_MULTIVAR) $(LDFLAGS) $(LIBS)
+
+$(PROGRAM_UNSTRUCTURED2D): $(OBJ_UNSTRUCTURED2D)
+	$(CC) -o $(PROGRAM_UNSTRUCTURED2D) $(OBJ_UNSTRUCTURED2D) $(LDFLAGS) $(LIBS)
+
+$(FPROGRAM_UNSTRUCTURED2D): $(FOBJ_UNSTRUCTURED2D)
+	$(F77) -o $(FPROGRAM_UNSTRUCTURED2D) $(FOBJ_UNSTRUCTURED2D) $(LDFLAGS) $(LIBS)
+
+$(PROGRAM_UNSTRUCTURED3D): $(OBJ_UNSTRUCTURED3D)
+	$(CC) -o $(PROGRAM_UNSTRUCTURED3D) $(OBJ_UNSTRUCTURED3D) $(LDFLAGS) $(LIBS)
+
+$(FPROGRAM_UNSTRUCTURED3D): $(FOBJ_UNSTRUCTURED3D)
+	$(F77) -o $(FPROGRAM_UNSTRUCTURED3D) $(FOBJ_UNSTRUCTURED3D) $(LDFLAGS) $(LIBS)
+
+$(PROGRAM_UCDVAR2D): $(OBJ_UCDVAR2D)
+	$(CC) -o $(PROGRAM_UCDVAR2D) $(OBJ_UCDVAR2D) $(LDFLAGS) $(LIBS)
+
+$(FPROGRAM_UCDVAR2D): $(FOBJ_UCDVAR2D)
+	$(F77) -o $(FPROGRAM_UCDVAR2D) $(FOBJ_UCDVAR2D) $(LDFLAGS) $(LIBS)
+
+$(PROGRAM_VW_REGMESH): $(OBJ_VW_REGMESH) $(OBJ_VISITWRITER)
+	$(CC) -o $(PROGRAM_VW_REGMESH) $(OBJ_VW_REGMESH) $(OBJ_VISITWRITER) -lm
+
+$(PROGRAM_VW_RECT2D): $(OBJ_VW_RECT2D) $(OBJ_VISITWRITER)
+	$(CC) -o $(PROGRAM_VW_RECT2D) $(OBJ_VW_RECT2D) $(OBJ_VISITWRITER) -lm
+
+$(PROGRAM_VW_RECT3D): $(OBJ_VW_RECT3D) $(OBJ_VISITWRITER)
+	$(CC) -o $(PROGRAM_VW_RECT3D) $(OBJ_VW_RECT3D) $(OBJ_VISITWRITER) -lm
+
+$(PROGRAM_VW_CURV3D): $(OBJ_VW_CURV3D) $(OBJ_VISITWRITER)
+	$(CC) -o $(PROGRAM_VW_CURV3D) $(OBJ_VW_CURV3D) $(OBJ_VISITWRITER) -lm
+
+$(PROGRAM_VW_POINT3D): $(OBJ_VW_POINT3D) $(OBJ_VISITWRITER)
+	$(CC) -o $(PROGRAM_VW_POINT3D) $(OBJ_VW_POINT3D) $(OBJ_VISITWRITER) -lm
+
+$(PROGRAM_VW_UCD2D): $(OBJ_VW_UCD2D) $(OBJ_VISITWRITER)
+	$(CC) -o $(PROGRAM_VW_UCD2D) $(OBJ_VW_UCD2D) $(OBJ_VISITWRITER) -lm
+
+@TARGETS@
