@@ -585,6 +585,9 @@ avtTransform::TransformRectilinearToCurvilinear(vtkRectilinearGrid *rgrid)
 //    Also transformed current spatial extents.  Also told output that its
 //    points were transformed.
 //
+//    Hank Childs, Fri Jan 13 09:49:08 PST 2006
+//    Invalidate spatial meta-data.
+//
 // ****************************************************************************
 
 void
@@ -611,6 +614,7 @@ avtTransform::RefashionDataObjectInfo(void)
     outAtts.GetCurrentSpatialExtents()->Transform(t);
 
     GetOutput()->GetInfo().GetValidity().SetPointsWereTransformed(true);
+    GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();
 }
 
 

@@ -486,6 +486,7 @@ public:
                 return f111;
             }
         }
+        return 0.0;
     }
 
     double x0,y0,z0,x1,y1,z1;

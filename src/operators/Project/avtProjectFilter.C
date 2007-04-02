@@ -446,6 +446,9 @@ avtProjectFilter::ProjectVectors(vtkDataSet *old_ds,
 //    Hank Childs, Tue Feb  1 15:37:37 PST 2005
 //    Allow normals, since if they are not appropriate, it will be detected.
 //
+//    Hank Childs, Fri Jan 13 09:58:47 PST 2006
+//    Invalidate spatial meta-data.
+//
 // ****************************************************************************
 void
 avtProjectFilter::RefashionDataObjectInfo(void)
@@ -455,6 +458,8 @@ avtProjectFilter::RefashionDataObjectInfo(void)
    
     if (inAtts.GetSpatialDimension() == 3)
         outAtts.SetSpatialDimension(2);
+
+    GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();
 }
 
 // ****************************************************************************

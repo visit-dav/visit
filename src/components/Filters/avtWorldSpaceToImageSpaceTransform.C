@@ -421,6 +421,11 @@ avtWorldSpaceToImageSpaceTransform::CalculateOrthographicTransform(
 //  Programmer: Hank Childs
 //  Creation:   June 6, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Jan 13 09:52:24 PST 2006
+//    Don't use the interval tree if spatial meta-data has been invalidated.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -428,14 +433,18 @@ avtWorldSpaceToImageSpaceTransform::PerformRestriction(
                                                avtPipelineSpecification_p spec)
 {
     avtPipelineSpecification_p rv = spec;
-    avtIntervalTree *tree = GetMetaData()->GetSpatialExtents();
-    if (tree != NULL)
+    if (GetInput()->GetInfo().GetValidity().GetSpatialMetaDataPreserved())
     {
-        vector<int> domains;
-        GetDomainsList(view, domains, tree);
-
-        rv = new avtPipelineSpecification(spec);
-        rv->GetDataSpecification()->GetRestriction()->RestrictDomains(domains);
+        avtIntervalTree *tree = GetMetaData()->GetSpatialExtents();
+        if (tree != NULL)
+        {
+            vector<int> domains;
+            GetDomainsList(view, domains, tree);
+    
+            rv = new avtPipelineSpecification(spec);
+            rv->GetDataSpecification()->GetRestriction()
+                                                    ->RestrictDomains(domains);
+        }
     }
 
     return rv;

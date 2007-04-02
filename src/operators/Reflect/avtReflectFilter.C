@@ -379,6 +379,9 @@ avtReflectFilter::PerformRestriction(avtPipelineSpecification_p spec)
 //    Kathleen Bonnell, Wed Jun  2 09:21:46 PDT 2004 
 //    Set CanUseInvTransform to false.
 // 
+//    Hank Childs, Fri Jan 13 09:58:47 PST 2006
+//    Invalidate spatial meta-data.
+//
 // ****************************************************************************
  
 void
@@ -391,6 +394,8 @@ avtReflectFilter::RefashionDataObjectInfo(void)
     //
     GetOutput()->GetInfo().GetAttributes().SetCanUseInvTransform(false);
     GetOutput()->GetInfo().GetAttributes().SetCanUseTransform(false);
+
+    GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();
 }
 
 

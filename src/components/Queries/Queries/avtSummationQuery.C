@@ -202,6 +202,9 @@ avtSummationQuery::PreExecute(void)
 //    Add units if they exist. Set the results value. Renamed 'SetMessage' to
 //    'SetResultMessage'.
 //
+//    Hank Childs, Thu Jan 12 14:58:07 PST 2006
+//    Add qualifier message if it exists.
+//
 // ****************************************************************************
 
 void
@@ -223,6 +226,11 @@ avtSummationQuery::PostExecute(void)
     {
         SNPRINTF(buf, 1024, " %s%s", units.c_str(), unitsAppend.c_str());
         str += buf; 
+    }
+    if (!qualifier.empty())
+    {
+        str += "\n";
+        str += qualifier;
     }
   
     //

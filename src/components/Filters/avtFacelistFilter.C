@@ -1038,6 +1038,9 @@ avtFacelistFilter::InitializeFilter(void)
 //    Hank Childs, Sat Feb 19 14:55:03 PST 2005
 //    Do not assume we have a valid input.
 //
+//    Hank Childs, Thu Jan 12 15:54:38 PST 2006
+//    Add support for edges.
+//
 // ****************************************************************************
 
 void
@@ -1050,6 +1053,13 @@ avtFacelistFilter::RefashionDataObjectInfo(void)
         avtDataObject_p output = GetOutput();
         output->GetInfo().GetValidity().InvalidateZones();
         output->GetInfo().GetAttributes().SetTopologicalDimension(2);
+    }
+    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 2
+        && createEdgeListFor2DDatasets)
+    {
+        avtDataObject_p output = GetOutput();
+        output->GetInfo().GetValidity().InvalidateZones();
+        output->GetInfo().GetAttributes().SetTopologicalDimension(1);
     }
 }
 
