@@ -88,25 +88,6 @@ avtRandomFilter::~avtRandomFilter()
 
 
 // ****************************************************************************
-//  Method: avtRandomFilter::PreExecute
-//
-//  Purpose:
-//      Called before the execution begins.  Initializes the random number
-//      generator (srand).
-//
-//  Programmer: Hank Childs
-//  Creation:   July 10, 2006
-//
-// ****************************************************************************
-
-void
-avtRandomFilter::PreExecute(void)
-{
-    srand(0);
-}
-
-
-// ****************************************************************************
 //  Method: avtRandomFilter::DeriveVariable
 //
 //  Purpose:
@@ -121,11 +102,18 @@ avtRandomFilter::PreExecute(void)
 //  Programmer:   Hank Childs
 //  Creation:     March 7, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Aug 24 11:24:41 PDT 2006
+//    Initialize the random seed so that we can have reproducible results.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtRandomFilter::DeriveVariable(vtkDataSet *in_ds)
 {
+    srand(currentDomainsIndex);
+
     int npts   = in_ds->GetNumberOfPoints();
 
     vtkFloatArray *rv = vtkFloatArray::New();

@@ -122,6 +122,9 @@ avtDatasetQuery::~avtDatasetQuery()
 //    Ensure all procs Execute, even if they have empty trees (a valid state
 //    when in parallel and more processors than domains.) 
 //
+//    Hank Childs, Fri Aug 25 17:47:21 PDT 2006
+//    Change error message with no data, as it is misleading.
+//
 // ****************************************************************************
 
 void
@@ -175,8 +178,9 @@ avtDatasetQuery::PerformQuery(QueryAttributes *qA)
     else
     {
         queryAtts.SetResultsMessage("Query(" + queryAtts.GetName() + ")"
-                " encountered an internal error and could not execute "
-                " successfully. Please contact a VisIt developer.");
+                " was asked to execute on an empty data set.  The query "
+                "produced the following message: " + resMsg); 
+        queryAtts.SetResultsValue(resValue);
     }
 
     UpdateProgress(1, 0);

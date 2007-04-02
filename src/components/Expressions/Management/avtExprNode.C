@@ -491,6 +491,10 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //      Hank Childs, Thu May 11 12:14:51 PDT 2006
 //      Added curvature.
 //
+//      Hank Childs, Fri Aug 25 17:23:34 PDT 2006
+//      Make the parsing more robust when the wrong number of arguments are
+//      specified.
+//
 // ****************************************************************************
 void
 avtFunctionExpr::CreateFilters(ExprPipelineState *state)
@@ -865,7 +869,17 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
     int i;
     for (i = 0; i < nvars; i++)
     {
-        string inputName = state->PopName();
+        string inputName;
+        if (state->GetNumNames() > 0)
+            inputName = state->PopName();
+        else
+        {
+            EXCEPTION1(ExpressionException, "Parsing of your expression has "
+                       "failed.  Failures of the type VisIt's parser has "
+                       "encountered are often caused when an expression is "
+                       "given less arguments than that expression expects.");
+        }
+
         inputStack.push_back(inputName);
         outputName += inputName;
         if (i != 0)

@@ -1679,6 +1679,9 @@ avtKullLiteFileFormat::GetMeshTagMaterial(const char *var, int dom)
 //    Hank Childs, Wed Jul 28 08:22:06 PDT 2004
 //    Added materials for receive zones as well.
 //
+//    Hank Childs, Fri Aug 25 17:08:25 PDT 2006
+//    Beef up some logic where bad data can crash the reader.
+//
 // ****************************************************************************
 
 void *
@@ -1834,16 +1837,28 @@ avtKullLiteFileFormat::GetRealMaterial(int domain)
         
         // For unpure materials, we need to add entries to the tables.  
         material_list[i] = -1 * (1 + mix_zone.size());
+        int numMatch = 0;
         for (j = 0; j < num_materials; ++j)
         {
             if (values[j][i] < 0)
                 continue;
             // For each material, we add an entry to each table.
+            numMatch++;
             mix_zone.push_back(i);
             mix_mat.push_back(j);
             mix_vf.push_back(values[j][i]);
             mix_next.push_back(mix_zone.size() + 1);
         }
+
+        if (numMatch == 0)
+        {
+            char msg[1024];
+            sprintf(msg, "Zone %d of domain %d does not have "
+                         "any materials defined on it.  VisIt treats this "
+                         "as an error condition.", i, domain);
+            EXCEPTION1(VisItException, msg);
+        }
+
         // When we're done, the last entry we put in is a 0 in the mix_next
         mix_next[mix_next.size() - 1] = 0;
     }
