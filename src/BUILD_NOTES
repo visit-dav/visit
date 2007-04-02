@@ -66,10 +66,10 @@ operating systems.  It is suggested that you use the same compilers.
 
    Operating System                        Compiler
    ================                        ========
-   AIX 5.1                                 g++ 3.1 or xlc
+   AIX 5.1                                 xlc
    IRIX64 6.5                              MIPSpro 7.41
    Redhad Enterprise Linux 3 (x86)         g++ 3.2.3
-   Redhad Enterprise Linux 4 (x86, ia64)   g++ 3.2.3 or icc 9.0
+   Redhad Enterprise Linux 4 (x86, ia64)   g++ 3.2.3 or icc 9.1
    Redhad Enterprise Linux 4 (x86_64)      g++ 3.4.4
    Solaris 7                               g++ 3.2
    Tru64 5.1                               g++ 3.3.3
@@ -79,7 +79,8 @@ compile VisIt or will generate bad code.
 
    Operating System                        Compiler
    ================                        ========
-   AIX 5.1                                 g++ 3.2.3 -> 3.3.3
+   AIX 5.1                                 g++
+   All                                     g++ earlier than 3.2
 
 It is essential that you build all the dependent packages and VisIt using
 the same c++ compiler or you will encounter linking problems because different
@@ -123,18 +124,15 @@ multiple machine architectures.  Lets create an environment variable to
 hold the name of the architecture specific directory.  Some examples
 include:
 
-setenv VISITARCH aix_5_gcc_3.1
-setenv VISITARCH aix_5_xlc_64
+setenv VISITARCH aix_5_ll_xlc_32
+setenv VISITARCH aix_5_fed_64_xlc_64
 setenv VISITARCH altix_gcc_3.3.3
 setenv VISITARCH chaos_3_ia64_elan4_gcc_3.2.3
 setenv VISITARCH chaos_3_x86_64_ib_gcc_3.4.4
 setenv VISITARCH chaos_3_x86_elan3_gcc_3.2.3
-setenv VISITARCH chaos_3_x86_elan3_icc_9.0
-setenv VISITARCH irix64_cc_7.3.1.2_64
+setenv VISITARCH chaos_3_x86_elan3_icc_9.1
 setenv VISITARCH irix64_cc_7.41_64
 setenv VISITARCH linux_rhel3_gcc_3.2.3
-setenv VISITARCH linux_redhat7_gcc_3.2.3
-setenv VISITARCH solaris_gcc_2.95.2
 setenv VISITARCH solaris_gcc_3.2
 setenv VISITARCH tru64_5_gcc_3.3.3
 
@@ -298,13 +296,13 @@ cd VTK
 ../cmake-2.2.3/bin/cmake .
 
 #
-# On tru64 systems using g++ 3.0.4, several files in the Imaging directory
+# On tru64 systems using g++ 3.3.3, several files in the Imaging directory
 # will not compile because of an internal compiler error.  You will need to
-# comment out the code in the method ThreadedExecute (with "#if 0" as the
-# first line in the method and "#endif" as the last line in the method.)
+# comment out the code in the Execute method (with "#if 0" as the first
+# line in the method and "#endif" as the last line in the method.)  The
+# execute methods are named "classname"Execute, (e.g. for vtkImageVariance3D,
+# the method would be vtkImageVariance3DExecute).
 # The files are:
-#    Imaging/vtkImageContinuousDilate3D.cxx
-#    Imaging/vtkImageContinuousErode3D.cxx
 #    Imaging/vtkImageConvolve.cxx
 #    Imaging/vtkImageRange3D.cxx
 #    Imaging/vtkImageVariance3D.cxx
@@ -524,6 +522,7 @@ setenv LD_LIBRARY64_PATH $QTDIR/lib:$LD_LIBRARY64_PATH       # SGI
 # use the linux-g++-64 platform.
 #
 ./configure -platform aix-g++ -shared -no-largefile -qt-libpng
+./configure -platform aix-xlc -shared -qt-libpng
 ./configure -platform aix-xlc-64 -shared -qt-libpng
 ./configure -platform irix-cc-64 -shared -qt-libpng
 ./configure -platform linux-g++ -shared -qt-libpng
@@ -1274,9 +1273,9 @@ More information about building VisIt follows after that.
 #
 # Build and install it in the visit directory.
 #
-gunzip visit060918.tar.gz
-tar xf visit060918.tar
-cd visit060918/config-site
+gunzip visit061218.tar.gz
+tar xf visit061218.tar
+cd visit061218/config-site
 echo VISITHOME=$VISITDIR > `hostname`.conf
 sed "s/ARCH/$VISITARCH/" Template.conf >> `hostname`.conf
 cd ..
@@ -1294,14 +1293,14 @@ clearcase_bin/visit-bin-dist
 # Use the appropriate install command based on the operating system on
 # which you built VisIt.
 #
-clearcase_bin/visit-install 1.5.4 aix $VISITDIR
-clearcase_bin/visit-install 1.5.4 darwin $VISITDIR
-clearcase_bin/visit-install 1.5.4 irix6 $VISITDIR
-clearcase_bin/visit-install 1.5.4 linux $VISITDIR
-clearcase_bin/visit-install 1.5.4 linux-ia64 $VISITDIR
-clearcase_bin/visit-install 1.5.4 linux-x86_64 $VISITDIR
-clearcase_bin/visit-install 1.5.4 osf1 $VISITDIR
-clearcase_bin/visit-install 1.5.4 sunos5 $VISITDIR
+clearcase_bin/visit-install 1.5.5 aix $VISITDIR
+clearcase_bin/visit-install 1.5.5 darwin $VISITDIR
+clearcase_bin/visit-install 1.5.5 irix6 $VISITDIR
+clearcase_bin/visit-install 1.5.5 linux $VISITDIR
+clearcase_bin/visit-install 1.5.5 linux-ia64 $VISITDIR
+clearcase_bin/visit-install 1.5.5 linux-x86_64 $VISITDIR
+clearcase_bin/visit-install 1.5.5 osf1 $VISITDIR
+clearcase_bin/visit-install 1.5.5 sunos5 $VISITDIR
 
 When running the configure script you can enable or disable certain dependent
 packages.  All the configure options are listed at the beginning of the

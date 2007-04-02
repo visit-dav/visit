@@ -51,7 +51,7 @@ up=true
 pengra=true
 pengra_icc=true
 thunder=true
-vertex=true
+prism=true
 yana=true
 
 dist=undefined
@@ -73,7 +73,7 @@ do
          pengra=false
          pengra_icc=false
          thunder=false
-         vertex=false
+         prism=false
          yana=false
          shift
          ;;
@@ -141,12 +141,12 @@ do
          thunder=true
          shift
          ;;
-      -vertex)
-         vertex=false
+      -prism)
+         prism=false
          shift
          ;;
-      +vertex)
-         vertex=true
+      +prism)
+         prism=true
          shift
          ;;
       -yana)
@@ -204,8 +204,6 @@ cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
-cp /lib/libgcc_s.so.1 lib
-cp /usr/lib/libstdc++.so.5 lib
 make -j 4 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.linux.tar.gz ..
@@ -256,8 +254,6 @@ cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 ./configure >> ../buildlog 2>&1
-cp /usr/local/lib/libgcc_s.so.1 lib
-cp /usr/local/lib/libstdc++.so.5 lib
 cd databases/Fluent
 sed "s/\\\$(CXXFLAGSORIG)/-D_LARGEFILE64_SOURCE -Wall -Wno-sign-compare -Wno-deprecated/" Makefile > Makefile+;rm Makefile;mv Makefile+ Makefile
 cd ../..
@@ -361,11 +357,6 @@ cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../buildlog 2>&1
-cp /usr/local/tools/gnu/gcc/3.1_aix_5/lib/libgcc_s.a lib
-cp /usr/local/tools/gnu/gcc/3.1_aix_5/lib/libstdc++.a lib
-cd databases/Fluent
-sed "s/\\\$(CXXFLAGSORIG)/-D_LARGEFILE64_SOURCE -Wall -Wno-sign-compare -Wno-deprecated/" Makefile > Makefile+;rm Makefile;mv Makefile+ Makefile
-cd ../..
 gmake -j 4 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist -make gmake >> ../buildlog 2>&1
 mv visit\$ver2.aix.tar.gz ..
@@ -466,8 +457,6 @@ cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
-cp /lib/libgcc_s.so.1 lib
-cp /usr/lib/libstdc++.so.5 lib
 make -j 3 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.linux.tar.gz ..
@@ -568,8 +557,6 @@ cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
-cp /lib/libgcc_s.so.1 lib
-cp /usr/lib/libstdc++.so.5 lib
 make -j 3 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.linux-ia64.tar.gz ..
@@ -600,35 +587,33 @@ then
 fi
 
 #
-# Build on vertex.
+# Build on prism.
 #
-rm -f vertex
-cat <<EOF > vertex
+rm -f prism
+cat <<EOF > prism
 #!/bin/sh
 if test ! -d /usr/tmp/$user ; then
    mkdir /usr/tmp/$user
 fi
-if test ! -d /usr/tmp/$user/vertex ; then
-   mkdir /usr/tmp/$user/vertex
+if test ! -d /usr/tmp/$user/prism ; then
+   mkdir /usr/tmp/$user/prism
 fi
-rm -rf /usr/tmp/$user/vertex/visitbuild
-mkdir /usr/tmp/$user/vertex/visitbuild
-mv vertex_$dist.tar.gz /usr/tmp/$user/vertex/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/vertex/visitbuild
+rm -rf /usr/tmp/$user/prism/visitbuild
+mkdir /usr/tmp/$user/prism/visitbuild
+mv prism_$dist.tar.gz /usr/tmp/$user/prism/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/prism/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
-cp /usr/local/tools/gnu/gcc/3.4.4_RH_chaos_3_x86_64/usr/lib64/libgcc_s.so.1 lib
-cp /usr/local/tools/gnu/gcc/3.4.4_RH_chaos_3_x86_64/usr/lib64/libstdc++.so.6 lib
 make -j 3 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist -switch ib >> ../buildlog 2>&1
 mv visit\$ver2.linux-x86_64-ib.tar.gz ..
 cd ..
 rm -f resultlog
-echo "        build of visit on vertex"       > resultlog 2>&1
-echo "       --------------------------"      >> resultlog 2>&1
+echo "        build of visit on prism"        > resultlog 2>&1
+echo "       -------------------------"       >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
@@ -641,13 +626,13 @@ ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | s
 mail $emailName < resultlog
 EOF
 
-if [ $vertex = true ]
+if [ $prism = true ]
 then
    if [ $test = no ]
    then
-      scp vertex vertex0:vertex_buildit
-      scp $dist.tar.gz vertex0:vertex_$dist.tar.gz
-      ssh vertex0 "chmod 750 vertex_buildit;./vertex_buildit" &
+      scp prism prism0:prism_buildit
+      scp $dist.tar.gz prism0:prism_$dist.tar.gz
+      ssh prism0 "chmod 750 prism_buildit;./prism_buildit" &
    fi
 fi
 
@@ -672,8 +657,6 @@ cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
-cp /usr/local/tools/gnu/gcc/3.4.4_RH_chaos_3_x86_64/usr/lib64/libgcc_s.so.1 lib
-cp /usr/local/tools/gnu/gcc/3.4.4_RH_chaos_3_x86_64/usr/lib64/libstdc++.so.6 lib
 make -j 6 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ..
@@ -708,5 +691,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth sunspot quad berg up pengra pengra_icc thunder vertex yana
+   rm -f hoth sunspot quad berg up pengra pengra_icc thunder prism yana
 fi

@@ -113,6 +113,7 @@ int         UTILITY_API VisItFstat(int fd, VisItStat_t *buf);
 
 inline char *C_strdup(char const * const);
 inline char *CXX_strdup(char const * const);
+inline char *CXX_strndup(char const * const, size_t);
 inline void  InlineCopy(char *&, const char * const &, const int &);
 inline void  InlineExtract(char * const &, const char *&, const int &);
 
@@ -163,11 +164,36 @@ C_strdup(char const * const c)
 //
 // ****************************************************************************
 
-char *
+inline char *
 CXX_strdup(char const * const c)
 {
     char *p = new char[strlen(c)+1];
     strcpy(p, c);
+    return p;
+}
+
+
+// ****************************************************************************
+//  Method: CXX_strndup
+//
+//  Purpose:
+//      Acts like a strndup, which is not used because it is apparently unsafe.
+//      Makes a copy of the string using new.
+//
+//  Returns:    A copy of the argument string.
+//
+//  Programmer: Eric Brugger
+//  Creation:   December 11, 2006
+//
+// ****************************************************************************
+
+inline char *
+CXX_strndup(char const * const c, size_t n)
+{
+    int len = (strlen(c) < n) ? strlen(c) : n;
+    char *p = new char[len+1];
+    memcpy(p, c, len);
+    p[len] = '\0';
     return p;
 }
 

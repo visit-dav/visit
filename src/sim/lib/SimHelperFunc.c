@@ -171,7 +171,6 @@ void VisItAddStripChartDataPoint( VisIt_SimulationMetaData mdd, double dataX,dou
     {
       sprintf (mdd.genericCommands[index].text, "%10f", dataX);     
       sprintf (mdd.genericCommands[index].value, "%10f", dataY); 
-      //printf ( "new data = %s %s enabled = %d\n", //mdd.genericCommands[index].text,mdd.genericCommands[index].value,enable);
       if ( enable != -1 )
          mdd.genericCommands[index].enabled = enable;   
     }
