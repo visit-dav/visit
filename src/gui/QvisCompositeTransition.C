@@ -125,7 +125,7 @@ QvisCompositeTransition::getNFrames() const
     return nFrames->value();
 }
 
-bool
+void
 QvisCompositeTransition::setReverse(bool val)
 {
     reverseCheckbox->setChecked(val);

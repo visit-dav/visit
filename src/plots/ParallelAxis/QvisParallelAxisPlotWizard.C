@@ -427,7 +427,7 @@ QvisParallelAxisPlotWizard::InitializeParallelAxisAttributes(const std::string &
     minTimeOrds.push_back(0);
     maxTimeOrds.push_back(0);
     groupNames.push_back(std::string("(not_in_a_group)"));
-    labelStates.push_back(PCP_DRAW_ALL_LABELS | PCP_LABELS_NOW_VISIBLE);
+    labelStates.push_back(EA_DRAW_ALL_LABELS | EA_LABELS_NOW_VISIBLE);
     xIntervals.push_back(-1.0);
 
     parAxisAtts->SetOrderedAxisNames(axisNames);

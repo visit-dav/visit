@@ -42,7 +42,7 @@
 #ifndef AVT_WARP_FILTER_H
 #define AVT_WARP_FILTER_H
 
-
+#include <filters_exports.h>
 #include <avtStreamer.h>
 
 
@@ -57,10 +57,12 @@
 //  Creation:   July 12, 2006 
 //
 //  Modifications:
+//    Kathleen Bonnell, Fri Nov 17 13:05:53 PST 2006
+//    Needs FILTERS api for windows build.
 //
 // ****************************************************************************
 
-class avtWarpFilter : public avtStreamer
+class AVTFILTERS_API avtWarpFilter : public avtStreamer
 {
   public:
                               avtWarpFilter();

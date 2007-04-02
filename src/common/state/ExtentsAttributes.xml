@@ -7,6 +7,10 @@
     <Field name="maxima" label="maxima" type="doubleVector"> 1.0 </Field>
     <Field name="minTimeOrdinals" label="minTimeOrdinals" type="intVector"> 0 </Field>
     <Field name="maxTimeOrdinals" label="maxTimeOrdinals" type="intVector"> 0 </Field>
+    <Field name="toolDrawsAxisLabels" label="toolDrawsAxisLabels" type="bool"> false </Field>
+    <Field name="axisGroupNames" label="axisGroupNames" type="stringVector"> (not_in_a_group) </Field>
+    <Field name="axisLabelStates" label="axisLabelStates" type="intVector"> 65543 </Field>
+    <Field name="axisXIntervals" label="axisXIntervals" type="doubleVector"> -1.0 </Field>
     <Field name="leftSliderX" label="leftSliderX" type="double"> 0.04 </Field>
     <Field name="rightSliderX" label="rightSliderX" type="double"> 0.96 </Field>
     <Field name="slidersBottomY" label="slidersBottomY" type="double"> 0.12 </Field>

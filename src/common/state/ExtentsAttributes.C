@@ -17,9 +17,12 @@
 //     Mark Blair, Thu Sep 14 16:44:17 PDT 2006
 //     Added slider change time ordinal lists.
 //   
+//     Mark Blair, Thu Nov  2 12:33:23 PST 2006
+//     Added attributes to support selective axis labeling in associated plot.
+//
 // ****************************************************************************
 
-ExtentsAttributes::ExtentsAttributes() : AttributeSubject("s*d*d*d*d*i*i*dddd")
+ExtentsAttributes::ExtentsAttributes() : AttributeSubject("s*d*d*d*d*i*i*bs*i*d*dddd")
 {
     scalarNames.clear();
     scalarMinima.clear(); scalarMaxima.clear();
@@ -32,7 +35,12 @@ ExtentsAttributes::ExtentsAttributes() : AttributeSubject("s*d*d*d*d*i*i*dddd")
         scalarMinima.push_back(-1e+37); scalarMaxima.push_back(1e+37);
         minima.push_back(0.0); maxima.push_back(1.0);
         minTimeOrdinals.push_back(0); maxTimeOrdinals.push_back(0);
+        axisGroupNames.push_back(std::string("(not_in_a_group)"));
+        axisLabelStates.push_back(EA_DRAW_ALL_LABELS | EA_LABELS_NOW_VISIBLE);
+        axisXIntervals.push_back(-1.0);
     }
+
+    toolDrawsAxisLabels = false;
 
     leftSliderX    = EA_DEFAULT_LEFT_SLIDER_X;
     rightSliderX   = EA_DEFAULT_RIGHT_SLIDER_X;
@@ -54,10 +62,13 @@ ExtentsAttributes::ExtentsAttributes() : AttributeSubject("s*d*d*d*d*i*i*dddd")
 //     Mark Blair, Thu Sep 14 16:44:17 PDT 2006
 //     Added slider change time ordinal lists.
 //   
+//     Mark Blair, Thu Nov  2 12:33:23 PST 2006
+//     Added attributes to support selective axis labeling in associated plot.
+//
 // ****************************************************************************
 
 ExtentsAttributes::ExtentsAttributes(const ExtentsAttributes &obj) :
-    AttributeSubject("s*d*d*d*d*i*i*dddd")
+    AttributeSubject("s*d*d*d*d*i*i*bs*i*d*dddd")
 {
     scalarNames = obj.scalarNames;
 
@@ -69,6 +80,12 @@ ExtentsAttributes::ExtentsAttributes(const ExtentsAttributes &obj) :
     
     minTimeOrdinals = obj.minTimeOrdinals;
     maxTimeOrdinals = obj.maxTimeOrdinals;
+    
+    toolDrawsAxisLabels = obj.toolDrawsAxisLabels;
+    
+    axisGroupNames  = obj.axisGroupNames;
+    axisLabelStates = obj.axisLabelStates;
+    axisXIntervals  = obj.axisXIntervals;
 
     leftSliderX    = obj.leftSliderX;
     rightSliderX   = obj.rightSliderX;
@@ -110,6 +127,9 @@ ExtentsAttributes::~ExtentsAttributes()
 //     Mark Blair, Thu Sep 14 16:44:17 PDT 2006
 //     Added slider change time ordinal lists.
 //   
+//     Mark Blair, Thu Nov  2 12:33:23 PST 2006
+//     Added support for selective axis labeling in associated plot.
+//
 // ****************************************************************************
 
 void ExtentsAttributes::operator = (const ExtentsAttributes &obj)
@@ -124,6 +144,12 @@ void ExtentsAttributes::operator = (const ExtentsAttributes &obj)
 
     minTimeOrdinals = obj.minTimeOrdinals;
     maxTimeOrdinals = obj.maxTimeOrdinals;
+
+    toolDrawsAxisLabels = obj.toolDrawsAxisLabels;
+    
+    axisGroupNames  = obj.axisGroupNames;
+    axisLabelStates = obj.axisLabelStates;
+    axisXIntervals  = obj.axisXIntervals;
 
     leftSliderX    = obj.leftSliderX;
     rightSliderX   = obj.rightSliderX;
@@ -147,52 +173,28 @@ void ExtentsAttributes::operator = (const ExtentsAttributes &obj)
 //     Mark Blair, Thu Sep 14 16:44:17 PDT 2006
 //     Added slider change time ordinal lists.
 //   
+//     Mark Blair, Thu Nov  2 12:33:23 PST 2006
+//     Added support for selective axis labeling in associated plot.
+//
 // ****************************************************************************
 
 bool ExtentsAttributes::operator == (const ExtentsAttributes &obj) const
 {
-    int extentCount, extentNum;
-    
-    if ((extentCount = scalarNames.size()) != obj.scalarNames.size()) return false;
-    if (obj.scalarMinima.size()    != extentCount) return false; // Shouldn't happen
-    if (obj.scalarMaxima.size()    != extentCount) return false; // Shouldn't happen
-    if (obj.minima.size()          != extentCount) return false; // Shouldn't happen
-    if (obj.maxima.size()          != extentCount) return false; // Shouldn't happen
-    if (obj.minTimeOrdinals.size() != extentCount) return false; // Shouldn't happen
-    if (obj.maxTimeOrdinals.size() != extentCount) return false; // Shouldn't happen
-    
-    if (obj.minTimeOrdinals != minTimeOrdinals) return false;
-    if (obj.maxTimeOrdinals != maxTimeOrdinals) return false;
-
-    double coordEpsilon = (slidersTopY - slidersBottomY) * 0.000001;
-
-    if (fabs(leftSliderX    - obj.leftSliderX   ) > coordEpsilon) return false;
-    if (fabs(rightSliderX   - obj.rightSliderX  ) > coordEpsilon) return false;
-    if (fabs(slidersBottomY - obj.slidersBottomY) > coordEpsilon) return false;
-    if (fabs(slidersTopY    - obj.slidersTopY   ) > coordEpsilon) return false;
-
-    if (extentCount == 0) return true;
-
-    double scalarEpsilon;
-
-    for (extentNum = 0; extentNum < extentCount; extentNum++)
-    {
-        if (obj.scalarNames[extentNum] != scalarNames[extentNum]) return false;
-        
-        scalarEpsilon = (scalarMaxima[extentNum] - scalarMinima[extentNum]) * 0.000001;
-
-        if (fabs(scalarMinima[extentNum]-obj.scalarMinima[extentNum]) > scalarEpsilon)
-            return false;
-        if (fabs(scalarMaxima[extentNum]-obj.scalarMaxima[extentNum]) > scalarEpsilon)
-            return false;
-
-        if (fabs(minima[extentNum] - obj.minima[extentNum]) > 0.000001)
-            return false;
-        if (fabs(maxima[extentNum] - obj.maxima[extentNum]) > 0.000001)
-            return false;
-    }
-
-    return true;
+    return ((scalarNames         == obj.scalarNames) &&
+            (scalarMinima        == obj.scalarMinima) &&
+            (scalarMaxima        == obj.scalarMaxima) &&
+            (minima              == obj.minima) &&
+            (maxima              == obj.maxima) &&
+            (minTimeOrdinals     == obj.minTimeOrdinals) &&
+            (maxTimeOrdinals     == obj.maxTimeOrdinals) &&
+            (toolDrawsAxisLabels == obj.toolDrawsAxisLabels) &&
+            (axisGroupNames      == obj.axisGroupNames) &&
+            (axisLabelStates     == obj.axisLabelStates) &&
+            (axisXIntervals      == obj.axisXIntervals) &&
+            (leftSliderX         == obj.leftSliderX) &&
+            (rightSliderX        == obj.rightSliderX) &&
+            (slidersBottomY      == obj.slidersBottomY) &&
+            (slidersTopY         == obj.slidersTopY));
 }
 
 
@@ -318,6 +320,9 @@ AttributeSubject *ExtentsAttributes::NewInstance(bool copy) const
 //     Mark Blair, Thu Sep 14 16:44:17 PDT 2006
 //     Added slider change time ordinal lists.
 //   
+//     Mark Blair, Thu Nov  2 12:33:23 PST 2006
+//     Added support for selective axis labeling in associated plot.
+//
 // ****************************************************************************
 
 void ExtentsAttributes::SelectAll()
@@ -329,10 +334,14 @@ void ExtentsAttributes::SelectAll()
     Select( 4, (void *)&maxima);
     Select( 5, (void *)&minTimeOrdinals);
     Select( 6, (void *)&maxTimeOrdinals);
-    Select( 7, (void *)&leftSliderX);
-    Select( 8, (void *)&rightSliderX);
-    Select( 9, (void *)&slidersBottomY);
-    Select(10, (void *)&slidersTopY);
+    Select( 7, (void *)&toolDrawsAxisLabels);
+    Select( 8, (void *)&axisGroupNames);
+    Select( 9, (void *)&axisLabelStates);
+    Select(10, (void *)&axisXIntervals);
+    Select(11, (void *)&leftSliderX);
+    Select(12, (void *)&rightSliderX);
+    Select(13, (void *)&slidersBottomY);
+    Select(14, (void *)&slidersTopY);
 }
 
 
@@ -355,6 +364,9 @@ void ExtentsAttributes::SelectAll()
 //     Mark Blair, Thu Sep 14 16:44:17 PDT 2006
 //     Added slider change time ordinal lists.
 //   
+//     Mark Blair, Thu Nov  2 12:33:23 PST 2006
+//     Added support for selective axis labeling in associated plot.
+//
 // ****************************************************************************
 
 bool ExtentsAttributes::CreateNode(
@@ -414,22 +426,46 @@ bool ExtentsAttributes::CreateNode(
     if (completeSave || !FieldsEqual(7, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("leftSliderX", leftSliderX));
+        node->AddNode(new DataNode("toolDrawsAxisLabels", toolDrawsAxisLabels));
     }
 
     if (completeSave || !FieldsEqual(8, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("rightSliderX", rightSliderX));
+        node->AddNode(new DataNode("axisGroupNames", axisGroupNames));
     }
 
     if (completeSave || !FieldsEqual(9, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("slidersBottomY", slidersBottomY));
+        node->AddNode(new DataNode("axisLabelStates", axisLabelStates));
     }
 
     if (completeSave || !FieldsEqual(10, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("axisXIntervals", axisXIntervals));
+    }
+
+    if (completeSave || !FieldsEqual(11, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("leftSliderX", leftSliderX));
+    }
+
+    if (completeSave || !FieldsEqual(12, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("rightSliderX", rightSliderX));
+    }
+
+    if (completeSave || !FieldsEqual(13, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("slidersBottomY", slidersBottomY));
+    }
+
+    if (completeSave || !FieldsEqual(14, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("slidersTopY", slidersTopY));
@@ -459,6 +495,9 @@ bool ExtentsAttributes::CreateNode(
 //     Mark Blair, Thu Sep 14 16:44:17 PDT 2006
 //     Added slider change time ordinal lists.
 //   
+//     Mark Blair, Thu Nov  2 12:33:23 PST 2006
+//     Added support for selective axis labeling in associated plot.
+//
 // ****************************************************************************
 
 void ExtentsAttributes::SetFromNode(DataNode *parentNode)
@@ -490,6 +529,18 @@ void ExtentsAttributes::SetFromNode(DataNode *parentNode)
 
     if ((node = searchNode->GetNode("maxTimeOrdinals")) != NULL)
         SetMaxTimeOrdinals(node->AsIntVector());
+
+    if ((node = searchNode->GetNode("toolDrawsAxisLabels")) != NULL)
+        SetToolDrawsAxisLabels(node->AsBool());
+
+    if ((node = searchNode->GetNode("axisGroupNames")) != NULL)
+        SetAxisGroupNames(node->AsStringVector());
+
+    if ((node = searchNode->GetNode("axisLabelStates")) != NULL)
+        SetAxisLabelStates(node->AsIntVector());
+
+    if ((node = searchNode->GetNode("axisXIntervals")) != NULL)
+        SetAxisXIntervals(node->AsDoubleVector());
 
     if ((node = searchNode->GetNode("leftSliderX")) != NULL)
         SetLeftSliderX(node->AsDouble());
@@ -559,31 +610,59 @@ void ExtentsAttributes::SetMaxTimeOrdinals(const intVector &maxTimeOrdinals_)
 }
 
 
+void ExtentsAttributes::SetToolDrawsAxisLabels(bool toolDrawsAxisLabels_)
+{
+    toolDrawsAxisLabels = toolDrawsAxisLabels_;
+    Select(7, (void *)&toolDrawsAxisLabels);
+}
+
+
+void ExtentsAttributes::SetAxisGroupNames(const stringVector &axisGroupNames_)
+{
+    axisGroupNames = axisGroupNames_;
+    Select(8, (void *)&axisGroupNames);
+}
+
+
+void ExtentsAttributes::SetAxisLabelStates(const intVector &axisLabelStates_)
+{
+    axisLabelStates = axisLabelStates_;
+    Select(9, (void *)&axisLabelStates);
+}
+
+
+void ExtentsAttributes::SetAxisXIntervals(const doubleVector &axisXIntervals_)
+{
+    axisXIntervals = axisXIntervals_;
+    Select(10, (void *)&axisXIntervals);
+}
+
+
 void ExtentsAttributes::SetLeftSliderX(double leftSliderX_)
 {
     leftSliderX = leftSliderX_;
-    Select(7, (void *)&leftSliderX);
+    Select(11, (void *)&leftSliderX);
 }
 
 
 void ExtentsAttributes::SetRightSliderX(double rightSliderX_)
 {
     rightSliderX = rightSliderX_;
-    Select(8, (void *)&rightSliderX);
+    Select(12, (void *)&rightSliderX);
 }
 
 
 void ExtentsAttributes::SetSlidersBottomY(double slidersBottomY_)
 {
     slidersBottomY = slidersBottomY_;
-    Select(9, (void *)&slidersBottomY);
+    Select(13, (void *)&slidersBottomY);
 }
 
 
 void ExtentsAttributes::SetSlidersTopY(double slidersTopY_)
 {
     slidersTopY = slidersTopY_;
-    Select(10, (void *)&slidersTopY);
+    Select(14, (void *)&slidersTopY);
 }
 
 
@@ -631,6 +710,30 @@ const intVector &ExtentsAttributes::GetMinTimeOrdinals() const
 const intVector &ExtentsAttributes::GetMaxTimeOrdinals() const
 {
     return maxTimeOrdinals;
+}
+
+
+bool ExtentsAttributes::GetToolDrawsAxisLabels() const
+{
+    return toolDrawsAxisLabels;
+}
+
+
+const stringVector &ExtentsAttributes::GetAxisGroupNames() const
+{
+    return axisGroupNames;
+}
+
+
+const intVector &ExtentsAttributes::GetAxisLabelStates() const
+{
+    return axisLabelStates;
+}
+
+
+const doubleVector &ExtentsAttributes::GetAxisXIntervals() const
+{
+    return axisXIntervals;
 }
 
 
@@ -711,27 +814,51 @@ void ExtentsAttributes::SelectMaxTimeOrdinals()
 }
 
 
+void ExtentsAttributes::SelectToolDrawsAxisLabels()
+{
+    Select (7, (void *)&toolDrawsAxisLabels);
+}
+
+
+void ExtentsAttributes::SelectAxisGroupNames()
+{
+    Select (8, (void *)&axisGroupNames);
+}
+
+
+void ExtentsAttributes::SelectAxisLabelStates()
+{
+    Select (9, (void *)&axisLabelStates);
+}
+
+
+void ExtentsAttributes::SelectAxisXIntervals()
+{
+    Select (10, (void *)&axisXIntervals);
+}
+
+
 void ExtentsAttributes::SelectLeftSliderX()
 {
-    Select (7, (void *)&leftSliderX);
+    Select (11, (void *)&leftSliderX);
 }
 
 
 void ExtentsAttributes::SelectRightSliderX()
 {
-    Select (8, (void *)&rightSliderX);
+    Select (12, (void *)&rightSliderX);
 }
 
 
 void ExtentsAttributes::SelectSlidersBottomY()
 {
-    Select (9, (void *)&slidersBottomY);
+    Select (13, (void *)&slidersBottomY);
 }
 
 
 void ExtentsAttributes::SelectSlidersTopY()
 {
-    Select (10, (void *)&slidersTopY);
+    Select (14, (void *)&slidersTopY);
 }
 
 
@@ -753,6 +880,9 @@ void ExtentsAttributes::SelectSlidersTopY()
 //     Mark Blair, Thu Sep 14 16:44:17 PDT 2006
 //     Added slider change time ordinal lists.
 //   
+//     Mark Blair, Thu Nov  2 12:33:23 PST 2006
+//     Added support for selective axis labeling in associated plot.
+//
 // ****************************************************************************
 
 std::string ExtentsAttributes::GetFieldName(int index) const
@@ -765,10 +895,14 @@ std::string ExtentsAttributes::GetFieldName(int index) const
         case  4:  return "maxima";
         case  5:  return "minTimeOrdinals";
         case  6:  return "maxTimeOrdinals";
-        case  7:  return "leftSliderX";
-        case  8:  return "rightSliderX";
-        case  9:  return "slidersBottomY";
-        case 10:  return "slidersTopY";
+        case  7:  return "toolDrawsAxisLabels";
+        case  8:  return "axisGroupNames";
+        case  9:  return "axisLabelStates";
+        case 10:  return "axisXIntervals";
+        case 11:  return "leftSliderX";
+        case 12:  return "rightSliderX";
+        case 13:  return "slidersBottomY";
+        case 14:  return "slidersTopY";
         default:  return "invalid index";
     }
 }
@@ -787,6 +921,9 @@ std::string ExtentsAttributes::GetFieldName(int index) const
 //     Mark Blair, Thu Sep 14 16:44:17 PDT 2006
 //     Added slider change time ordinal lists.
 //   
+//     Mark Blair, Thu Nov  2 12:33:23 PST 2006
+//     Added support for selective axis labeling in associated plot.
+//
 // ****************************************************************************
 
 AttributeGroup::FieldType ExtentsAttributes::GetFieldType(int index) const
@@ -799,10 +936,14 @@ AttributeGroup::FieldType ExtentsAttributes::GetFieldType(int index) const
         case  4:  return FieldType_doubleVector;
         case  5:  return FieldType_intVector;
         case  6:  return FieldType_intVector;
-        case  7:  return FieldType_double;
-        case  8:  return FieldType_double;
-        case  9:  return FieldType_double;
-        case 10:  return FieldType_double;
+        case  7:  return FieldType_bool;
+        case  8:  return FieldType_stringVector;
+        case  9:  return FieldType_intVector;
+        case 10:  return FieldType_doubleVector;
+        case 11:  return FieldType_double;
+        case 12:  return FieldType_double;
+        case 13:  return FieldType_double;
+        case 14:  return FieldType_double;
         default:  return FieldType_unknown;
     }
 }
@@ -821,6 +962,9 @@ AttributeGroup::FieldType ExtentsAttributes::GetFieldType(int index) const
 //     Mark Blair, Thu Sep 14 16:44:17 PDT 2006
 //     Added slider change time ordinal lists.
 //   
+//     Mark Blair, Thu Nov  2 12:33:23 PST 2006
+//     Added support for selective axis labeling in associated plot.
+//
 // ****************************************************************************
 
 std::string ExtentsAttributes::GetFieldTypeName(int index) const
@@ -833,10 +977,14 @@ std::string ExtentsAttributes::GetFieldTypeName(int index) const
         case  4:  return "doubleVector";
         case  5:  return "intVector";
         case  6:  return "intVector";
-        case  7:  return "double";
-        case  8:  return "double";
-        case  9:  return "double";
-        case 10:  return "double";
+        case  7:  return "bool";
+        case  8:  return "stringVector";
+        case  9:  return "intVector";
+        case 10:  return "doubleVector";
+        case 11:  return "double";
+        case 12:  return "double";
+        case 13:  return "double";
+        case 14:  return "double";
         default:  return "invalid index";
     }
 }
@@ -855,16 +1003,14 @@ std::string ExtentsAttributes::GetFieldTypeName(int index) const
 //     Mark Blair, Thu Sep 14 16:44:17 PDT 2006
 //     Added slider change time ordinal lists.
 //   
+//     Mark Blair, Thu Nov  2 12:33:23 PST 2006
+//     Added support for selective axis labeling in associated plot.
+//
 // ****************************************************************************
 
 bool ExtentsAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 {
     const ExtentsAttributes &obj = *((const ExtentsAttributes*)rhs);
-
-    int extentNum;
-    int extentCount = scalarNames.size();
-    double coordEpsilon = (slidersTopY - slidersBottomY) * 0.000001;
-    double scalarEpsilon;
 
     switch (index_) {
         case 0:
@@ -872,53 +1018,19 @@ bool ExtentsAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
             break;
 
         case 1:
-            if (obj.scalarMinima.size() != extentCount) return false;
-
-            for (extentNum = 0; extentNum < extentCount; extentNum++)
-            {
-                scalarEpsilon =
-                    (scalarMaxima[extentNum] - scalarMinima[extentNum]) * 0.000001;
-
-                if (fabs(scalarMinima[extentNum]-obj.scalarMinima[extentNum]) > scalarEpsilon)
-                    return false;
-            }
-
+            if (obj.scalarMinima != scalarMinima) return false;
             break;
 
         case 2:
-            if (obj.scalarMaxima.size() != extentCount) return false;
-
-            for (extentNum = 0; extentNum < extentCount; extentNum++)
-            {
-                scalarEpsilon =
-                    (scalarMaxima[extentNum] - scalarMinima[extentNum]) * 0.000001;
-
-                if (fabs(scalarMaxima[extentNum]-obj.scalarMaxima[extentNum]) > scalarEpsilon)
-                    return false;
-            }
-
+            if (obj.scalarMaxima != scalarMaxima) return false;
             break;
 
         case 3:
-            if (obj.minima.size() != extentCount) return false;
-
-            for (extentNum = 0; extentNum < extentCount; extentNum++)
-            {
-                if (fabs(minima[extentNum] - obj.minima[extentNum]) > 0.000001)
-                    return false;
-            }
-
+            if (obj.minima != minima) return false;
             break;
 
         case 4:
-            if (obj.maxima.size() != extentCount) return false;
-
-            for (extentNum = 0; extentNum < extentCount; extentNum++)
-            {
-                if (fabs(maxima[extentNum] - obj.maxima[extentNum]) > 0.000001)
-                    return false;
-            }
-
+            if (obj.maxima != maxima) return false;
             break;
 
         case 5:
@@ -930,19 +1042,35 @@ bool ExtentsAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
             break;
 
         case 7:
-            if (fabs(leftSliderX - obj.leftSliderX) > coordEpsilon) return false;
+            if (obj.toolDrawsAxisLabels != toolDrawsAxisLabels) return false;
             break;
 
         case 8:
-            if (fabs(rightSliderX - obj.rightSliderX) > coordEpsilon) return false;
+            if (obj.axisGroupNames != axisGroupNames) return false;
             break;
 
         case 9:
-            if (fabs(slidersBottomY - obj.slidersBottomY) > coordEpsilon) return false;
+            if (obj.axisLabelStates != axisLabelStates) return false;
             break;
 
         case 10:
-            if (fabs(slidersTopY - obj.slidersTopY) > coordEpsilon) return false;
+            if (obj.axisXIntervals != axisXIntervals) return false;
+            break;
+
+        case 11:
+            if (obj.leftSliderX != leftSliderX) return false;
+            break;
+
+        case 12:
+            if (obj.rightSliderX != rightSliderX) return false;
+            break;
+
+        case 13:
+            if (obj.slidersBottomY != slidersBottomY) return false;
+            break;
+
+        case 14:
+            if (obj.slidersTopY != slidersTopY) return false;
             break;
 
         default:

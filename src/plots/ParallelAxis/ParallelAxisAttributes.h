@@ -8,19 +8,7 @@
 #define PCP_H_TOP_AXIS_Y_FRACTION         0.93
 #define PCP_V_TOP_AXIS_Y_FRACTION         0.88
 
-#define PCP_MAX_HORIZONTAL_TITLE_AXES     7
-
-#define PCP_DRAW_AXIS_TITLE               0x00000001
-#define PCP_DRAW_AXIS_LIMITS              0x00000002
-#define PCP_DRAW_EXTENTS_TOOL_LIMITS      0x00000004
-#define PCP_DRAW_ALL_LABELS              (PCP_DRAW_AXIS_TITLE          |       \
-                                          PCP_DRAW_AXIS_LIMITS         |       \
-                                          PCP_DRAW_EXTENTS_TOOL_LIMITS )
-
-#define PCP_LABELS_NOW_VISIBLE            0x00010000
-#define PCP_LABEL_VISIBILITY_SET_BY_USER  0x00020000
-
-#include <AttributeSubject.h>
+#include <ExtentsAttributes.h>
 
 #include <vector>
 #include <string>

@@ -93,6 +93,9 @@ class vtkPoints;
 //      Removed scratch file method, which is no longer necessary.  Also added
 //      support for non-uniform axis spacing.
 //
+//      Mark Blair, Wed Nov  8 16:01:27 PST 2006
+//      Changed InitializeDataTupleInput API.
+//
 // ****************************************************************************
 
 class avtParallelAxisFilter : public avtDataTreeStreamer
@@ -127,7 +130,7 @@ private:
     void                        StoreAxisAttributesForOutsideQueries();
 
     void                        InitializePlotAtts();
-    void                        InitializeDataTupleInput();
+    void                        InitializeDataTupleInput(bool drawAxisLabels);
     void                        InitializeOutputDataSets();
     void                        InputDataTuple(const floatVector &inputTuple);
 
