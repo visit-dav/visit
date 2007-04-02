@@ -47,6 +47,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
+#include <vtkUnstructuredGrid.h>
 #include <vtkVisItUtility.h>
 
 // **************************************************************************
@@ -78,6 +79,9 @@ vtkVertexFilter::vtkVertexFilter()
 //
 //    Hank Childs, Fri Jun  9 13:13:20 PDT 2006
 //    Remove unused variable.
+//
+//    Hank Childs, Thu Sep  7 14:34:48 PDT 2006
+//    Code around VTK slowness for convex point sets ['7311].
 //
 // ****************************************************************************
 
@@ -153,9 +157,37 @@ void vtkVertexFilter::Execute(void)
     outPts->SetNumberOfPoints(nOutPts);
     outPD->CopyAllocate(inCd, nOutPts);
     double point[3];
+
+    vtkUnstructuredGrid *ugrid = NULL;
+    if (input->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+    {
+        ugrid = (vtkUnstructuredGrid *) input;
+    }
+
     for (i = 0 ; i < nOutPts ; i++)
       {
-      vtkVisItUtility::GetCellCenter(input->GetCell(i), point);
+      // Calling GetCellCenter on ConvexPointSet cells takes ~1/2 second,
+      // so avoid that if possible.
+      if (ugrid != NULL && ugrid->GetCellType(i) == VTK_CONVEX_POINT_SET)
+      {
+          int npts;
+          vtkIdType *pts;
+          ugrid->GetCellPoints(i, npts, pts);
+          point[0] = 0.;
+          point[1] = 0.;
+          point[2] = 0.;
+          double weight = 1./npts;
+          for (j = 0 ; j < npts ; j++)
+          {
+              double pt2[3];
+              ugrid->GetPoint(pts[j], pt2);
+              point[0] += weight*pt2[0];
+              point[1] += weight*pt2[1];
+              point[2] += weight*pt2[2];
+          }
+      }
+      else
+        vtkVisItUtility::GetCellCenter(input->GetCell(i), point);
       outPts->SetPoint(i, point);
       outPD->CopyData(inCd, i, i);
       }

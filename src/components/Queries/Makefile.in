@@ -168,6 +168,9 @@
 #   Hank Childs, Mon Aug 28 16:55:05 PDT 2006
 #   Added avtPartialWeightedLineSegmentDistributionQuery.
 #
+#   Dave Bremer, Thu Sep  7 16:15:12 PDT 2006
+#   Added line scan transform query.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -224,6 +227,7 @@ Queries_src= \
  Queries/avtIntegrateQuery.C  \
  Queries/avtKurtosisQuery.C  \
  Queries/avtLineScanQuery.C  \
+ Queries/avtLineScanTransformQuery.C  \
  Queries/avtL2NormQuery.C  \
  Queries/avtL2NormBetweenCurvesQuery.C  \
  Queries/avtLocalizedCompactnessFactorQuery.C  \

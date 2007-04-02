@@ -79,6 +79,10 @@ class QvisVariableButton;
 //   Mark Blair, Tue Aug  8 17:47:00 PDT 2006
 //   Now accommodates an empty list of threshold variables.
 //
+//   Mark Blair, Wed Sep  6 19:33:00 PDT 2006
+//   Removed problematic mechanism for accommodating ExtentsAttributes from
+//   extents tool.
+//
 // ****************************************************************************
 
 class QvisThresholdWindow : public QvisOperatorWindow
@@ -112,7 +116,6 @@ private slots:
 
 private:
     void                UpdateShownFields();
-    void                RecordGUIAttributeChangeIfActuallyChanged();
 
     QButtonGroup        *outputMeshType;
     QButtonGroup        *zonePortion;
@@ -132,8 +135,6 @@ private:
     const QBitmap       *rightArrowBitmap;
 
     ThresholdAttributes *atts;
-    ThresholdAttributes  latestGUIAtts;
-    bool                 changedAttsInGUI;
 };
 
 #endif

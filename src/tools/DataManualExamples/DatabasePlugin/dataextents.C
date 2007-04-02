@@ -32,7 +32,7 @@ avtXXXXFileFormat::GetAuxiliaryData(const char *var,
             double range[2];
             range[0] = minvals[dom];
             range[1] = maxvals[dom];
-            itree->AddDomain(dom, range);
+            itree->AddElement(dom, range);
         }
         itree->Calculate(true);
 

@@ -31,7 +31,7 @@ avtXXXXFileFormat::GetAuxiliaryData(const char *var,
         double *extents = spatialextents;
         for(int dom = 0; dom < ndoms; ++dom)
         {
-            itree->AddDomain(dom, extents);
+            itree->AddElement(dom, extents);
             extents += 6;
         }
         itree->Calculate(true);

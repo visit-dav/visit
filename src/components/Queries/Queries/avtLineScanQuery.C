@@ -361,7 +361,10 @@ avtLineScanQuery::Execute(vtkDataSet *ds, const int chunk)
 //
 //    Hank Childs, Tue Sep  5 11:40:33 PDT 2006
 //    Reset the time out so that queries can take longer than ten minutes.
-//
+//  
+//    Dave Bremer, Thu Sep  7 16:43:27 PDT 2006
+//    Set the lines member.
+//    
 // ****************************************************************************
 
 void
@@ -400,10 +403,12 @@ avtLineScanQuery::Execute(avtDataTree_p tree)
         // Cause our artificial pipeline to execute.
         //
         filt.GetOutput()->Update(pspec);
+        lines = filt.GetLines();
 
         avtDataset_p ds2 = filt.GetTypedOutput();
         avtDataTree_p tree = ds2->GetDataTree();
         ExecuteTree(tree);
+        lines = NULL;
 
         //
         // Reset the timeout for the next iteration.

@@ -3332,6 +3332,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Added the "ShapeRelated" group of queries and added some new chord 
 //    and ray length distribution queries.
 //
+//    Dave Bremer, Fri Sep  8 11:32:33 PDT 2006
+//    Added line scan transform.
+//
 // ****************************************************************************
 
 void
@@ -3393,6 +3396,7 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("Ray Length Distribution (aggregate)", dq, sr, ld, 1, 0, qo);
     queryTypes->AddQuery("Mass Distribution", dq, sr, ld, 1, 0, qo);
     queryTypes->AddQuery("Distance From Boundary", dq, sr, ld, 1, 0, qo);
+    queryTypes->AddQuery("Line Scan Transform", dq, sr, ld, 1, 0, qo);
     queryTypes->AddQuery("Skewness", dq, cr, basic, 1, 0, qo);
     queryTypes->AddQuery("Integrate", dq, cr, basic, 1, 0, qo);
     queryTypes->AddQuery("Expected Value", dq, cr, basic, 1, 0, qo);
