@@ -1817,6 +1817,10 @@ ViewerQueryManager::ClearPickPoints()
 //    Kathleen Bonnell, Mon Oct 23 08:45:18 PDT 2006 
 //    Ensure error message gets passed to clients. 
 //
+//    Hank Childs, Fri Jan  5 12:51:07 PST 2007
+//    When we pick on an array variable (to make a histogram plot), make sure
+//    the time state is correct.
+//
 // ****************************************************************************
 
 bool
@@ -2217,6 +2221,13 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
             plotList->SetHostDatabaseName(hdbName);
             plotList->SetEngineKey(engineKey);
             bool replacePlots = true;
+            if (plist->TimeSliderExists(hdbName))
+            {
+                int state, nStates;
+                plist->GetTimeSliderStates(hdbName, state, nStates);
+                plotList->CreateTimeSlider(hdbName, state);
+                plotList->SetActiveTimeSlider(hdbName);
+            }
             int pid = plotList->AddPlot(plotType,arrayname,replacePlots,false);
             ViewerPlot *resultsPlot = plotList->GetPlot(pid);
 
