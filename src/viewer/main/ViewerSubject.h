@@ -93,6 +93,7 @@ class ViewerWindow;
 class PluginManagerAttributes;
 class MaterialAttributes;
 class DataNode;
+class PlotInfoAttributes;
 struct avtDefaultPlotMetaData;
 
 // ****************************************************************************
@@ -425,6 +426,9 @@ struct avtDefaultPlotMetaData;
 //    Brad Whitlock, Thu May 11 15:05:17 PST 2006
 //    Added ErrorClear.
 //
+//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006 
+//    Added UpatePlotInfoAtts. 
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -603,6 +607,7 @@ private:
     void ResizeWindow();
 
     void OpenClient();
+    void UpdatePlotInfoAtts();
 
 private slots:
     void AddInputToXfer(ViewerClientConnection *, AttributeSubject *subj);
@@ -685,6 +690,7 @@ private:
     ClientInformationList *clientInformationList;
     MovieAttributes       *movieAtts;
     ViewerRPC             *logRPC;
+    PlotInfoAttributes    *plotInfoAtts;
 
     bool                   nowin;
     std::string            borders;

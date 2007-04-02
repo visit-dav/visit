@@ -48,6 +48,7 @@
 
 #include <avtDataObjectInformation.h>
 #include <avtLegend.h>
+#include <PlotInfoAttributes.h>
 #include <RenderOrder.h>
 #include <VisWindowTypes.h>
 
@@ -95,6 +96,9 @@ class  vtkRenderer;
 //    Jeremy Meredith, Thu Aug 12 14:13:24 PDT 2004
 //    Added a const method for GetInfo.
 //
+//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
+//    Added GetPlotInfoAtts.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtBehavior
@@ -130,6 +134,8 @@ class PLOTTER_API avtBehavior
 
     void                       SetLegend(avtLegend_p);
     avtLegend_p                GetLegend(void)       { return legend; };
+
+    const PlotInfoAttributes  *GetPlotInfoAtts(void);
     
   protected:
     avtDataObjectInformation   info;

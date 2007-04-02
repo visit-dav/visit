@@ -53,6 +53,7 @@
 class     avtDataObjectString;
 class     avtDataObjectWriter;
 class     avtExtents;
+class     PlotInfoAttributes;
 
 
 // ****************************************************************************
@@ -198,6 +199,9 @@ class     avtExtents;
 //
 //    Kathleen Bonnell, Mon May  1 08:57:41 PDT 2006 
 //    Changed origNodesRequiredForPick to origElementsRequiredForPick.
+//
+//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
+//    Added Set/Get/Read/Write PlotInfoAtts. 
 //
 // ****************************************************************************
 
@@ -410,6 +414,10 @@ class PIPELINE_API avtDataAttributes
     void                     SetMeshCoordType(avtMeshCoordType t)
                                    { meshCoordType = t; };
 
+    const PlotInfoAttributes *GetPlotInfoAtts(void) const
+                                   { return plotInfoAtts; };
+    void                     SetPlotInfoAtts(const PlotInfoAttributes *);
+
   protected:
     int                      spatialDimension;
     int                      topologicalDimension;
@@ -484,6 +492,8 @@ class PIPELINE_API avtDataAttributes
 
     std::vector<bool>        selectionsApplied;
 
+    PlotInfoAttributes      *plotInfoAtts;
+
     void                     WriteLabels(avtDataObjectString &,
                                          const avtDataObjectWriter *);
     int                      ReadLabels(char *);
@@ -503,6 +513,10 @@ class PIPELINE_API avtDataAttributes
     int                      VariableNameToIndex(const char *) const;
 
     void                     DestructSelf(void);
+
+    void                     WritePlotInfoAtts(avtDataObjectString &,
+                                         const avtDataObjectWriter *);
+    int                      ReadPlotInfoAtts(char *);
 };
 
 

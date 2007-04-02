@@ -1243,3 +1243,25 @@ ViewerQuery::SetFollowsTime(bool val)
         resultsPlot->SetFollowsTime(val);
 }
 
+// ****************************************************************************
+//  Method: ViewerQuery::UpdateResultsTime
+//
+//  Purpose:  Sets the cache index for the results plot. 
+// 
+//  Arguments:
+//    ts        The new time state. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   June 21, 2006
+//
+// ****************************************************************************
+
+void
+ViewerQuery::UpdateResultsTime(int ts)
+{
+    if (resultsPlot)
+    {
+        resultsPlot->SetCacheIndex(ts);
+    }
+}
+

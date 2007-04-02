@@ -44,6 +44,7 @@
 #include <filters_exports.h>
 
 #include <avtDatasetToDatasetFilter.h>
+#include <vectortypes.h>
 
 
 // ****************************************************************************
@@ -67,6 +68,9 @@
 //    Hank Childs, Fri Oct  3 11:10:29 PDT 2003
 //    Moved from /plots/Curve.  Renamed to CurveConstructorFilter.
 //
+//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006 
+//    Add PostExecute and outputArray.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtCurveConstructorFilter : public avtDatasetToDatasetFilter
@@ -82,7 +86,9 @@ class AVTFILTERS_API avtCurveConstructorFilter : public avtDatasetToDatasetFilte
 
  
   protected:
+    doubleVector              outputArray;
     virtual void              Execute(void);
+    virtual void              PostExecute(void);
     virtual void              VerifyInput(void);
     avtPipelineSpecification_p
                            PerformRestriction(avtPipelineSpecification_p spec);

@@ -92,6 +92,9 @@ class avtToolInterface;
 //    Kathleen Bonnell, Thu Feb  3 16:03:32 PST 2005 
 //    Added new copy constructor, MatchTimeState, SetFollowsTime. 
 //
+//    Kathleen Bonnell, Wed Jun 21 17:52:26 PDT 2006
+//    Added UpdateResultsTime. 
+//
 // ****************************************************************************
 
 
@@ -130,6 +133,8 @@ class VIEWER_API ViewerQuery : public SimpleObserver
     void             ReCreateLineout();
 
     bool             UpdateLineFromSlice(PlaneAttributes *);
+
+    void             UpdateResultsTime(int ts);
 
   private:
     void             CreateLineout(const bool fromDefault = true);

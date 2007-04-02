@@ -82,6 +82,7 @@
 #include <MovieAttributes.h>
 #include <ParentProcess.h>
 #include <PickAttributes.h>
+#include <PlotInfoAttributes.h>
 #include <PlotList.h>
 #include <PluginManagerAttributes.h>
 #include <PostponedAction.h>
@@ -231,6 +232,9 @@
 //    Hank Childs, Mon Feb 13 21:44:04 PST 2006
 //    Added construct DDF attributes.
 //
+//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
+//    Added plotInfoAtts.
+//
 // ****************************************************************************
 
 ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
@@ -288,6 +292,7 @@ ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
     movieAtts            = new MovieAttributes;
     meshManagementAtts   = new MeshManagementAttributes;
     logRPC               = new ViewerRPC;
+    plotInfoAtts         = new PlotInfoAttributes;
 
     // Make the proxy observe the SIL restriction attributes.
     silRestrictionAtts->Attach(this);
@@ -444,6 +449,9 @@ ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
 //    Hank Childs, Mon Feb 13 21:46:04 PST 2006
 //    Added constructDDF.
 //
+//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
+//    Added plotInfoAtts.
+//
 // ****************************************************************************
 
 ViewerProxy::~ViewerProxy()
@@ -503,6 +511,7 @@ ViewerProxy::~ViewerProxy()
     delete movieAtts;
     delete meshManagementAtts;
     delete logRPC;
+    delete plotInfoAtts;
 
     //
     // Delete the plot attribute state objects.
@@ -928,6 +937,9 @@ ViewerProxy::AddArgument(const std::string &arg)
 //    Hank Childs, Mon Feb 13 21:47:32 PST 2006
 //    Added construct DDF.
 //
+//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
+//    Added plotInfoAtts.
+//
 // ****************************************************************************
 
 void
@@ -1015,6 +1027,7 @@ ViewerProxy::Create(int *inputArgc, char ***inputArgv)
     xfer->Add(clientMethod);
     xfer->Add(clientInformation);
     xfer->Add(clientInformationList);
+    xfer->Add(plotInfoAtts);
 
     // Objects that can come to the client whenever.
     xfer->Add(pluginManagerAttributes);
@@ -6111,3 +6124,32 @@ ViewerProxy::SuppressQueryOutput(bool onOff)
     viewerRPC->Notify();
 }
 
+
+// ****************************************************************************
+// Method: ViewerProxy::UpdatePlotInfoAtts
+//
+// Purpose: 
+//   Update the plotInfoAttributes from the given plot and window.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   June 20, 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::UpdatePlotInfoAtts(int plotID, int winID)
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    viewerRPC->SetRPCType(ViewerRPC::UpdatePlotInfoAttsRPC);
+    viewerRPC->SetWindowId(winID);
+    viewerRPC->SetIntArg1(plotID);
+
+    //
+    // Issue the RPC.
+    //
+    viewerRPC->Notify();
+}

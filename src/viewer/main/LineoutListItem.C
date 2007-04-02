@@ -653,6 +653,9 @@ LineoutListItem::DisableTool()
 //    Kathleen Bonnell, Thu Feb  3 16:27:10 PST 2005 
 //    Added case for CacheIndex change. 
 //
+//    Kathleen Bonnell, Wed Jun 21 17:52:26 PDT 2006
+//    Modified the way CacheIndex change is handled. 
+//
 // ****************************************************************************
 
 void
@@ -701,7 +704,11 @@ LineoutListItem::Update(Subject *TheChangedSubject)
                  else
                  {
                      int newf = origPlotQueryInfo->GetNewFrameIndex();
-                     vpl->SetTimeSliderState(newf);
+                     for (i = 0; i < nQueries; i++)
+                     {
+                         queries[i]->UpdateResultsTime(newf);
+                     }
+                     vpl->UpdateFrame(false);
                  }
                  break;
              case PlotQueryInfo::AddOp:          // fall through

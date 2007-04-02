@@ -76,6 +76,7 @@ class MessageAttributes;
 class MovieAttributes;
 class ParentProcess;
 class PickAttributes;
+class PlotInfoAttributes;
 class PlotList;
 class PluginManagerAttributes;
 class PostponedAction;
@@ -441,6 +442,9 @@ class Xfer;
 //    Brad Whitlock, Tue Mar 7 16:36:16 PST 2006
 //    Added RedoView.
 //
+//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
+//    Added UpdatePlotInfoAtts, GetPlotInfoAtts.
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -785,6 +789,9 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
                                     {return meshManagementAtts;}
     ViewerRPC                  *GetLogRPC() const
                                     {return logRPC; }
+    PlotInfoAttributes         *GetPlotInfoAtts() const
+                                    {return plotInfoAtts; }
+    void                        UpdatePlotInfoAtts(int winId=-1, int plotId=-1);
 
     // Don't use this method unless absolutely necessary.
     void SetXferUpdate(bool val);
@@ -850,6 +857,7 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     MovieAttributes            *movieAtts;
     MeshManagementAttributes   *meshManagementAtts;
     ViewerRPC                  *logRPC;
+    PlotInfoAttributes         *plotInfoAtts;
 
     AttributeSubject           **plotAtts;
     AttributeSubject           **operatorAtts;

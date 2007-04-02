@@ -64,8 +64,9 @@ class     avtDatasetToDatasetFilter;
 class     avtSmoothPolyDataFilter;
 class     avtVertexNormalsFilter;
 class     AttributeGroup;
-class     WindowAttributes;
 class     AttributeSubject;
+class     PlotInfoAttributes;
+class     WindowAttributes;
 
 // ****************************************************************************
 //  Class: avtPlot
@@ -208,6 +209,9 @@ class     AttributeSubject;
 //    Hank Childs, Sun Dec  4 17:52:16 PST 2005
 //    Added GetNumberOfStagesForImageBasedPlots.
 //
+//    Kathleen Bonnell Tue Jun 20 16:02:38 PDT 2006
+//    Added GetPlotInfoAtts.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
@@ -270,6 +274,7 @@ class PLOTTER_API avtPlot
                               *SetOpaqueMeshIsAppropriate(bool)
                                    { return NULL; };
     float                      GetCellCountMultiplierForSRThreshold() const;
+    const PlotInfoAttributes  *GetPlotInfoAtts(); 
 
   protected:
     bool                       needsRecalculation;

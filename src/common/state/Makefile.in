@@ -271,8 +271,8 @@
 #    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 #    Added MeshManagementAttributes
 #
-#    Hank Childs, Mon Feb 13 21:11:20 PST 2006
-#    Added ConstructDDFAttributes.
+#    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006 
+#    Added PlotInfoAttributes.
 #
 ##############################################################################
 
@@ -343,6 +343,7 @@ SRC=    AnimationAttributes.C \
         PickAttributes.C \
         PickVarInfo.C \
         Plot.C \
+        PlotInfoAttributes.C \
         PlotList.C \
         PlotQueryInfo.C \
         PluginManagerAttributes.C \
