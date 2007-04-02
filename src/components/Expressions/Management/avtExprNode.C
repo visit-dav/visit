@@ -8,6 +8,10 @@
 #include <avtBinaryMultiplyFilter.h>
 #include <avtBinaryDivideFilter.h>
 #include <avtBinaryPowerFilter.h>
+#include <avtCeilingFilter.h>
+#include <avtFloorFilter.h>
+#include <avtModuloFilter.h>
+#include <avtRoundFilter.h>
 #include <avtSinFilter.h>
 #include <avtCosFilter.h>
 #include <avtRandomFilter.h>
@@ -47,6 +51,7 @@
 #include <avtBase10LogFilter.h>
 #include <avtSquareRootFilter.h>
 #include <avtSquareFilter.h>
+#include <avtCylindricalCoordinatesFilter.h>
 #include <avtPolarCoordinatesFilter.h>
 #include <avtVariableSkewFilter.h>
 #include <avtVectorComposeFilter.h>
@@ -71,6 +76,7 @@
 #include <avtTestNotEqualToFilter.h>
 #include <avtNeighborEvaluatorFilter.h>
 #include <avtDataIdFilter.h>
+#include <avtExpressionComponentMacro.h>
 
 #include <stdio.h>
 #include <ExpressionException.h>
@@ -381,6 +387,10 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //      Jeremy Meredith, Mon Jun 13 17:20:44 PDT 2005
 //      This class now holds its name directly.  Use that instead.
 //
+//      Hank Childs, Thu Jun 30 15:55:06 PDT 2005
+//      Added cylindrical, components of cylindrical and polar, mod, floor,
+//      round, and ceil.
+//
 // ****************************************************************************
 void
 avtFunctionExpr::CreateFilters(ExprPipelineState *state)
@@ -415,6 +425,14 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtSquareRootFilter();
     else if ((functionName == "sq") || (functionName == "sqr"))
         f = new avtSquareFilter();
+    else if (functionName == "mod")
+        f = new avtModuloFilter();
+    else if (functionName == "ceil")
+        f = new avtCeilingFilter();
+    else if (functionName == "floor")
+        f = new avtFloorFilter();
+    else if (functionName == "round")
+        f = new avtRoundFilter();
     else if ((functionName == "random") || (functionName == "rand"))
         f = new avtRandomFilter();
     else if (functionName == "cross")
@@ -453,6 +471,8 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtPrincipalDeviatoricTensorFilter();
     else if (functionName == "degree")
         f = new avtDegreeFilter();
+    else if (functionName == "cylindrical")
+        f = new avtCylindricalCoordinatesFilter();
     else if (functionName == "polar")
         f = new avtPolarCoordinatesFilter();
     else if (functionName == "coord" || functionName == "coords")
@@ -593,6 +613,36 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
         avtNeighborEvaluatorFilter *ff = new avtNeighborEvaluatorFilter;
         ff->SetEvaluationType(avtNeighborEvaluatorFilter::AVERAGE_NEIGHBOR);
         f = ff;
+    }
+    else if (functionName == "cylindrical_radius")
+    {
+        avtExpressionComponentMacro *ecm = new avtExpressionComponentMacro;
+        ecm->SetMacro("cylindrical", 0);
+        f = ecm;
+    }
+    else if (functionName == "cylindrical_theta")
+    {
+        avtExpressionComponentMacro *ecm = new avtExpressionComponentMacro;
+        ecm->SetMacro("cylindrical", 1);
+        f = ecm;
+    }
+    else if (functionName == "polar_radius")
+    {
+        avtExpressionComponentMacro *ecm = new avtExpressionComponentMacro;
+        ecm->SetMacro("polar", 0);
+        f = ecm;
+    }
+    else if (functionName == "polar_theta")
+    {
+        avtExpressionComponentMacro *ecm = new avtExpressionComponentMacro;
+        ecm->SetMacro("polar", 1);
+        f = ecm;
+    }
+    else if (functionName == "polar_phi")
+    {
+        avtExpressionComponentMacro *ecm = new avtExpressionComponentMacro;
+        ecm->SetMacro("polar", 2);
+        f = ecm;
     }
     else
     {

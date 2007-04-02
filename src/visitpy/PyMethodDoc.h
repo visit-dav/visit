@@ -41,6 +41,7 @@ extern const char *visit_EvalCubic_doc;
 extern const char *visit_EvalCubicSpline_doc;
 extern const char *visit_EvalLinear_doc;
 extern const char *visit_EvalQuadratic_doc;
+extern const char *visit_ExportDatabase_doc;
 extern const char *visit_Expressions_doc;
 extern const char *visit_GetActiveColorTable_doc;
 extern const char *visit_GetActiveTimeSlider_doc;

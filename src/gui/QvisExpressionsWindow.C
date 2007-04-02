@@ -42,6 +42,11 @@
 //    Hank Childs, Thu Jan 20 15:51:16 PST 2005
 //    Added side volume, resrad.
 //
+//    Hank Childs, Thu Jun 30 15:00:42 PDT 2005
+//    Added polar_radius, polar_theta, polar_phi, cylindrical_radius,
+//    cylindrical_theta, cylindrical, mod, round, ceil, floor, zoneid,
+//    nodeid, global_zoneid, and global_nodeid.
+//
 // ****************************************************************************
 struct ExprNameList
 {
@@ -77,8 +82,12 @@ const char *expr_meshquality[] = {
 
 const char *expr_math[] = {
     "abs",
+    "ceil",
+    "floor",
     "ln",
     "log10",
+    "mod",
+    "round",
     "sqr",
     "sqrt",
     "+",
@@ -154,10 +163,20 @@ const char *expr_materials[] = {
 const char *expr_mesh[] = {
     "area",
     "coord",
+    "cylindrical",
+    "cylindrical_radius",
+    "cylindrical_theta",
+    "global_nodeid",
+    "global_zoneid",
+    "nodeid",
     "polar",
+    "polar_radius",
+    "polar_theta",
+    "polar_phi",
     "revolved_surface_area",
     "revolved_volume",
     "volume",
+    "zoneid",
     NULL
 };
 
