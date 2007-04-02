@@ -171,6 +171,10 @@
 #    Mark C. Miller, Fri Nov 17 22:03:34 PST 2006
 #    Temporarily disabled purify runs
 #    Added locus to serial and parallel skip lists, defer_expr to serial
+#
+#    Mark C. Miller, Mon Nov 27 18:06:02 PST 2006
+#    Copied data from debug build to optimized. Added sending of failed build
+#    email for optimized runs
 # ----------------------------------------------------------------------------
 
 # list of users who want email every night with the log file
@@ -420,6 +424,9 @@ ipcs -m | grep visit | cut -d' ' -f2 | xargs -n 1 ipcrm -m 1> /dev/null 2>&1
 ipcs -s | grep visit | cut -d' ' -f2 | xargs -n 1 ipcrm -s 1> /dev/null 2>&1
 ipcs -q | grep visit | cut -d' ' -f2 | xargs -n 1 ipcrm -q 1> /dev/null 2>&1
 
+# copy the data dir for use in optimized testing
+cp -R data /gscratch/visit_test/. 1> /dev/null 2>&1
+
 # rebuild an optimized visit
 cleartool startview visit_VOBowner_testopt  1> /dev/null 2>&1
 cd /view/visit_VOBowner_testopt/data_vobs/VisIt 
@@ -431,15 +438,43 @@ LD_LIBRARY_PATH=/usr/local/lib
 export LD_LIBRARY_PATH
 env CXXFLAGS="-O2" ./configure --enable-parallel 1>> buildlog 2>&1
 rm -f plugins/*/*.so
-(cd data; clearmake clean 1> /dev/null 2>&1 )
+(cd data; clearmake clean 1> /dev/null 2>&1)
 clearmake clean 1> /dev/null 2>&1
 clearmake -J 4 1>> buildlog 2>&1
+error=$?
 
-# make sure all needed data files exist
-cd data
-make test 1> /dev/null 2>&1
-#          (we should probably check for errors here)
-cd ..
+# email if the build failed
+if test ! "$error" = "0"; then
+    # email the users
+    rm -f mailmsg
+    echo -e $msghdr_build  >> mailmsg
+    echo -e $msg_yourfault >> mailmsg
+    echo -e $msg_userlist  >> mailmsg
+    echo -e $msgftr_build  >> mailmsg
+    cat buildlog        >> mailmsg
+    for user in $users; do
+        sendregressionmail $user mailmsg
+    done
+
+    # email the log recipients
+    rm -f mailmsg
+    echo -e $msghdr_build  >> mailmsg
+    echo -e $msg_userlist  >> mailmsg
+    echo -e $msgftr_build  >> mailmsg
+    cat buildlog        >> mailmsg
+    for user in $logrecipients; do
+        sendregressionmail $user mailmsg
+    done
+
+    rm -f mailmsg
+    exit
+fi
+
+#
+# Copy the debug version of data
+#
+cp -R /gscratch/visit_test/data . 1> /dev/null 2>&1
+rm -rf /gscratch/visit_test/data 1> /dev/null 2>&1
 
 #
 # Make directory for where to store core files

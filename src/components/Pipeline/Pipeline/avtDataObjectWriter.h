@@ -54,6 +54,7 @@
 
 class     avtDataObjectInformation;
 class     avtDataObjectString;
+class     AttributeGroup;
 
 
 // ****************************************************************************
@@ -86,6 +87,9 @@ class     avtDataObjectString;
 //    Mark C. Miller, Mon Oct 31 18:12:49 PST 2005
 //    Added code to support compression of data object string
 //
+//    Kathleen Bonnell, Mon Nov 27 12:32:24 PST 2006
+//    Added WriteAtts method. 
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataObjectWriter : virtual public avtOriginatingSink
@@ -108,6 +112,8 @@ class PIPELINE_API avtDataObjectWriter : virtual public avtOriginatingSink
                                           int) const;
     void                       WriteDouble(avtDataObjectString &,
                                            const double *, int) const;
+    void                       WriteAtts(avtDataObjectString &,
+                                         AttributeGroup *) const;
 
     virtual bool               MustMergeParallelStreams(void) { return false;};
 
