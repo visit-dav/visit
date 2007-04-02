@@ -41,6 +41,7 @@
 
 #include <VisItException.h>
 #include <DebugStream.h>
+#include <Init.h>
 
 // ****************************************************************************
 //  Method:  VisItException constructor
@@ -69,12 +70,17 @@ VisItException::VisItException()
 //  Programmer: Kathleen Bonnell 
 //  Creation:   April 27, 2001 
 //
+//  Modifications:
+//  
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added component name to exception string
+//
 // ****************************************************************************
 
 VisItException::VisItException(const std::string &m)
 {
     filename = "Unknown";
-    msg      = m; 
+    msg      = std::string(Init::GetComponentName()) + ": " + m; 
     type     = "VisItException";
     line     = -1;
     log      = &debug1_real;
@@ -244,6 +250,8 @@ typedef struct
 //   Mark C. Miller, Mon Apr 19 11:41:07 PDT 2004
 //   Added PlotterException base class for plotter exceptions
 //
+//   Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//   Added PointerNotInCacheException for transform manager
 
 static const exception_info exception_tree[] =
 {
@@ -304,7 +312,8 @@ static const exception_info exception_tree[] =
     {"StubReferencedException",            "PipelineException"},
     {"UnexpectedValueException",           "PipelineException"},
     {"VisItException",                     NULL},
-    {"VisWindowException",                 "VisItException"}
+    {"VisWindowException",                 "VisItException"},
+    {"PointerNotInCacheException",         "DatabaseException"}
 };
 
 //

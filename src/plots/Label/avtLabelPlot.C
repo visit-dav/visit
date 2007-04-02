@@ -447,6 +447,9 @@ avtLabelPlot::CustomizeBehavior(void)
 //   Kathleen Bonnell, Thu Jan  6 10:34:57 PST 2005
 //   Removed TRY-CATCH block in favor of testing for ValidVariable.
 //
+//   Mark C. Miller, Sat Dec  2 18:58:26 PST 2006
+//   Initialized e to fix valgrind error
+//
 // ****************************************************************************
 
 void
@@ -484,7 +487,7 @@ avtLabelPlot::CustomizeMapper(avtDataObjectInformation &doi)
     // GetCumulativeCurrentSpatialExtents
     // GetSpatialExtents
     // GetAnySpatialExtents
-    double e[6];
+    double e[6] = {0.,1.,0.,1.,0.,1.};
     doi.GetAttributes().GetTrueSpatialExtents()->CopyTo(e);
     float fe[6];
     int i;

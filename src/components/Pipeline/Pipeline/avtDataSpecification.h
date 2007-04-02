@@ -169,6 +169,9 @@ typedef ref_ptr<avtDataSpecification> avtDataSpecification_p;
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Added members and methods for mesh discretization 
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added flatness tolerance.
 // ****************************************************************************
 
 class PIPELINE_API avtDataSpecification
@@ -349,6 +352,9 @@ class PIPELINE_API avtDataSpecification
     void                         SetDiscTol(double tol) { discTol = tol; };
     double                       DiscTol() const { return discTol; };
 
+    void                         SetFlatTol(double tol) { flatTol = tol; };
+    double                       FlatTol() const { return flatTol; };
+
     void                         SetDiscMode(int mode) { discMode = mode; };
     int                          DiscMode() const { return discMode; };
 
@@ -401,6 +407,7 @@ class PIPELINE_API avtDataSpecification
     avtGhostDataType             desiredGhostDataType;
     std::map<int,bool>           admissibleDataTypes;
     double                       discTol;
+    double                       flatTol;
     int                          discMode;
     bool                         discBoundaryOnly;
     bool                         passNativeCSG;

@@ -8628,4 +8628,55 @@ avtDatabaseMetaData::IssueWarning(const char *msg)
     }
 }
 
-
+// ****************************************************************************
+//  Function: ConvertCSGDomainId
+//
+//  Purpose: Handle spoofing of CSG domain ids
+//
+//  A vtkCSGGrid object served up by a plugin is a bunch of CSG regions, not
+//  just one region. It is most intuitive to have each region treated as a
+//  VisIt "domain." However, that means that VisIt's notion of domains DOES
+//  NOT map 1:1 to vtkCSGGrid objects because a single vtkCSGGrid object
+//  represents multiple domains. The problem is further complicated by the
+//  "multi-block" case where we have multiple vtkCSGGrid objects knitted together
+//  to form a multi-block CSG mesh.
+//
+//  To deal with this, we adopt the convention to treat each region of a single
+//  vtkCSGGrid object as a VisIt domain and multiple vtkCSGGrid objects as
+//  "groups" of domains.
+//
+//  This function maps VisIt's domain ids into a block number (e.g. which of
+//  the multiple vtkCSGGrid objects) and a region number within the block
+//  (e.g. which region within the vtkCSGGrid object)
+//
+//  Programmer: Mark C. Miller
+//  Creation:   June 28, 2006
+//
+// ****************************************************************************
+bool
+avtDatabaseMetaData::ConvertCSGDomainToBlockAndRegion(const char *const var,
+    int *domain, int *region) const
+{
+    int domainAsVisItSeesIt = *domain;
+    std::string meshname = MeshForVar(var);
+    const avtMeshMetaData *mmd = GetMesh(meshname);
+    if (mmd->meshType == AVT_CSG_MESH)
+    {
+        const intVector& groupIds = mmd->groupIds;
+        if (groupIds.size() > domainAsVisItSeesIt)
+        {
+            int i, j = groupIds[domainAsVisItSeesIt];
+            for (i = domainAsVisItSeesIt; i >= 0 && groupIds[i] == j; i--)
+                ; // no-op
+            *domain = j;
+            if (region) *region = domainAsVisItSeesIt - i + 1;
+        }
+        else
+        {
+            *domain = 0;
+            if (region) *region = domainAsVisItSeesIt;
+        }
+        return true;
+    }
+    return false;
+}

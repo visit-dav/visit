@@ -86,6 +86,7 @@
 #include <avtSILGenerator.h>
 #include <avtSILRestrictionTraverser.h>
 #include <avtSourceFromDatabase.h>
+#include <avtTransformManager.h>
 #include <avtTypes.h>
 #include <avtUnstructuredPointBoundaries.h>
 #include <PickAttributes.h>
@@ -110,355 +111,6 @@ static const char   *GetOriginalVariableName(const avtDatabaseMetaData *,
                                              const char *);
 
 // ****************************************************************************
-//  Function: GetArrayTypeName 
-//
-//  Purpose: Given a vtk data array, return the a char * for its type name
-//
-//  Programmer: Mark C. Miller 
-//  Creation:   April 4, 2005 
-// 
-//  Modifications:
-//
-//    Hank Childs, Fri Jun  9 14:03:55 PDT 2006
-//    Add return statement for unmet cases.
-//
-// ****************************************************************************
-
-static const char *DataArrayTypeName(vtkDataArray *arr)
-{
-    switch (arr->GetDataType())
-    {
-        case VTK_VOID:           return "void*"; 
-        // case VTK_BIT: not sure what to do here
-        case VTK_CHAR:           return "char"; 
-        case VTK_UNSIGNED_CHAR:  return "unsigned char"; 
-        case VTK_SHORT:          return "short";
-        case VTK_UNSIGNED_SHORT: return "unsigned short";
-        case VTK_INT:            return "int";
-        case VTK_UNSIGNED_INT:   return "unsigned int";
-        case VTK_LONG:           return "long";
-        case VTK_UNSIGNED_LONG:  return "unsigned long";
-        case VTK_FLOAT:          return "float";
-        case VTK_DOUBLE:         return "double";
-        case VTK_ID_TYPE:        return "vtkIdType";
-    }
-
-    return "<does not match any known type>";
-}
-
-// ****************************************************************************
-//  Function: PrecisionInBytes
-//
-//  Purpose: Given a vtk data type, return its precision in bytes 
-//
-//  Programmer: Mark C. Miller 
-//  Creation:   April 4, 2005 
-// 
-//  Modifications:
-//     Mark C. Miller, Tue Sep 13 20:07:48 PDT 2005
-//     Made it just take data type as arg instead of a vtkDataArray
-//
-//    Hank Childs, Fri Jun  9 14:03:55 PDT 2006
-//    Add return statement for unmet cases.
-//
-// ****************************************************************************
-
-static int
-PrecisionInBytes(int dataType)
-{
-    switch (dataType)
-    {
-        case VTK_VOID:           return sizeof(void*);
-        // case VTK_BIT: not sure what to do here
-        case VTK_CHAR:           return sizeof(char);
-        case VTK_UNSIGNED_CHAR:  return sizeof(unsigned char);
-        case VTK_SHORT:          return sizeof(short);
-        case VTK_UNSIGNED_SHORT: return sizeof(unsigned short);
-        case VTK_INT:            return sizeof(int);
-        case VTK_UNSIGNED_INT:   return sizeof(unsigned int);
-        case VTK_LONG:           return sizeof(long);
-        case VTK_UNSIGNED_LONG:  return sizeof(unsigned long);
-        case VTK_FLOAT:          return sizeof(float);
-        case VTK_DOUBLE:         return sizeof(double);
-        case VTK_ID_TYPE:        return sizeof(vtkIdType);
-    }
-
-    return -1;
-}
-
-// ****************************************************************************
-//  Function: PrecisionInBytes
-//
-//  Purpose: Given a vtk data array, return its precision in bytes 
-//
-//  Programmer: Mark C. Miller 
-//  Creation:   August 10, 2005 
-// 
-// ****************************************************************************
-static int
-PrecisionInBytes(vtkDataArray *var)
-{
-    if (var)
-        return PrecisionInBytes(var->GetDataType());
-    else
-        return PrecisionInBytes(VTK_FLOAT);
-}
-
-// ****************************************************************************
-//  Function: IsAdmissibleDataType
-//
-//  Purpose: Given a vector of admissible types and a given type, return
-//  whehter or not the given type is in the vector
-//
-//  Programmer: Mark C. Miller 
-//  Creation:   April 4, 2005 
-// 
-// ****************************************************************************
-
-static bool
-IsAdmissibleDataType(const vector<int>& admissibleTypes, const int type)
-{
-    for (int i = 0; i < admissibleTypes.size(); i++)
-    {
-        if (admissibleTypes[i] == type)
-            return true;
-    }
-    return false;
-}
-
-// ****************************************************************************
-//  Template: ConvertToType
-//
-//  Purpose: Template for conversion, usually to float 
-//
-//  Programmer: Mark C. Miller 
-//  Creation:   April 4, 2005 
-// 
-// ****************************************************************************
-template <class oT, class iT>
-static void ConvertToType(oT *obuf, const iT* ibuf, int n)
-{
-    for (int i = 0; i < n; i++)
-        obuf[i] = (oT) ibuf[i];
-}
-
-// ****************************************************************************
-//  Function: ConvertDataArrayToFloat 
-//
-//  Purpose: Given a vtk data array, make a copie of it that is converted
-//  to float
-//
-//  Programmer: Mark C. Miller 
-//  Creation:   April 4, 2005 
-// 
-//  Modifications:
-//    Jeremy Meredith, Tue Apr  5 11:49:30 PDT 2005
-//    Removed the templating.  It was causing compiler errors.
-//
-//    Mark C. Miller, Tue Aug 16 13:56:55 PDT 2005
-//    Eliminated attempt to print array's name using GetName()
-//
-// ****************************************************************************
-
-static vtkDataArray * 
-ConvertDataArrayToFloat(vtkDataArray *oldArr)
-{
-    vtkDataArray *newArr = 0; 
-
-    if (oldArr->GetDataType() != VTK_FLOAT)
-    {
-        debug5 << "avtGenericDatabase::Converting vktDataArray from type \""
-               << DataArrayTypeName(oldArr) << "\" to \"float\"" << endl;
-
-        newArr = vtkFloatArray::New();
-
-        int numTuples = oldArr->GetNumberOfTuples();
-        int numComponents = oldArr->GetNumberOfComponents();
-
-        newArr->SetNumberOfComponents(numComponents);
-        newArr->SetNumberOfTuples(numTuples);
-
-        float *newBuf = (float*) newArr->GetVoidPointer(0);
-        void *oldBuf = oldArr->GetVoidPointer(0);
-
-        int numValues = numTuples * numComponents;
-        switch (oldArr->GetDataType())
-        {
-            case VTK_CHAR:
-                ConvertToType(newBuf, (char*) oldBuf, numValues);
-                break;
-            case VTK_UNSIGNED_CHAR:
-                ConvertToType(newBuf, (unsigned char*) oldBuf, numValues);
-                break;
-            case VTK_SHORT:
-                ConvertToType(newBuf, (short*) oldBuf, numValues);
-                break;
-            case VTK_UNSIGNED_SHORT:
-                ConvertToType(newBuf, (unsigned short*) oldBuf, numValues);
-                break;
-            case VTK_INT:
-                ConvertToType(newBuf, (int*) oldBuf, numValues);
-                break;
-            case VTK_UNSIGNED_INT:
-                ConvertToType(newBuf, (unsigned int*) oldBuf, numValues);
-                break;
-            case VTK_LONG:
-                ConvertToType(newBuf, (long*) oldBuf, numValues);
-                break;
-            case VTK_UNSIGNED_LONG:
-                ConvertToType(newBuf, (unsigned long*) oldBuf, numValues);
-                break;
-            case VTK_DOUBLE:
-                ConvertToType(newBuf, (double*) oldBuf, numValues);
-                break;
-            case VTK_ID_TYPE:
-                ConvertToType(newBuf, (vtkIdType*) oldBuf, numValues);
-                break;
-            default:
-                {   char msg[256];
-                    SNPRINTF(msg, sizeof(msg), "Cannot convert from type \"%s\" to float",
-                        DataArrayTypeName(oldArr));
-                    EXCEPTION1(ImproperUseException, msg); 
-                }
-        }
-    }
-
-    return newArr;
-}
-
-// ****************************************************************************
-//  Funcion: GetCoordDataType
-//
-//  Purpose: Given a vtkDataSet, return a sample the first of its
-//  coordinate arrays
-//
-//  Programmer: Mark C. Miller 
-//  Creation:   April 4, 2005 
-// 
-//  Modifications:
-//    Mark C. Miller, Tue Sep 13 20:07:48 PDT 2005
-//    Made it return the coordinate data type explicitly. Also, made it
-//    a little more lenient about getting null pointers
-// ****************************************************************************
-static int 
-GetCoordDataType(vtkDataSet *ds)
-{
-    switch (ds->GetDataObjectType())
-    {
-        case VTK_POLY_DATA:
-        case VTK_STRUCTURED_GRID:
-        case VTK_UNSTRUCTURED_GRID:
-            {
-                vtkPointSet *ps = vtkPointSet::SafeDownCast(ds);
-                if (ps && ps->GetPoints() && ps->GetPoints()->GetData())
-                {
-                    return ps->GetPoints()->GetData()->GetDataType();
-                }
-            }
-            break;
-
-        case VTK_RECTILINEAR_GRID:
-            {
-                vtkRectilinearGrid *rg = vtkRectilinearGrid::SafeDownCast(ds);
-                if (rg && rg->GetXCoordinates())
-                {
-                    return rg->GetXCoordinates()->GetDataType();
-                }
-            }
-            break;
-    }
-    return VTK_FLOAT;
-}
-
-// ****************************************************************************
-//  Function: ConvertDataSetToFloat
-//
-//  Purpose: Given a vtkDataSet, convert its coordinate arrays, if any,
-//  to float
-//
-//  Programmer: Mark C. Miller 
-//  Creation:   April 4, 2005 
-// 
-// ****************************************************************************
-static vtkDataSet * 
-ConvertDataSetToFloat(vtkDataSet *oldds)
-{
-    vtkDataSet *newds = 0;
-
-    switch (oldds->GetDataObjectType())
-    {
-        case VTK_POLY_DATA:
-        case VTK_STRUCTURED_GRID:
-        case VTK_UNSTRUCTURED_GRID:
-            {
-                vtkPointSet *oldps = vtkPointSet::SafeDownCast(oldds);
-                if (oldps != 0)
-                {
-                    vtkDataArray *oldArr = oldps->GetPoints()->GetData();
-                    vtkDataArray *newArr = ConvertDataArrayToFloat(oldArr);
-
-                    if (newArr != 0)
-                    {
-                        vtkPointSet *newps = oldps->NewInstance(); 
-                        newps->DeepCopy(oldps);
-
-                        vtkPoints *newpts = vtkPoints::New();
-                        newpts->DeepCopy(oldps->GetPoints());
-
-                        newpts->SetData(newArr);
-                        newArr->Delete();
-
-                        newps->SetPoints(newpts);
-                        newpts->Delete();
-
-                        newds = newps;
-                    }
-                }
-            }
-            break;
-
-        case VTK_RECTILINEAR_GRID:
-            {
-                vtkRectilinearGrid *oldrg = vtkRectilinearGrid::SafeDownCast(oldds);
-                if (oldrg != 0)
-                {
-                    vtkDataArray *oldX = oldrg->GetXCoordinates();
-                    vtkDataArray *newX = ConvertDataArrayToFloat(oldX);
-                    vtkDataArray *oldY = oldrg->GetYCoordinates();
-                    vtkDataArray *newY = ConvertDataArrayToFloat(oldY);
-                    vtkDataArray *oldZ = oldrg->GetZCoordinates();
-                    vtkDataArray *newZ = ConvertDataArrayToFloat(oldZ);
-
-                    if (newX != 0 && newY != 0 && newZ != 0)
-                    {
-                        vtkRectilinearGrid *newrg = vtkRectilinearGrid::New();
-                        newrg->DeepCopy(oldrg);
-
-                        newrg->SetXCoordinates(newX);
-                        newX->Delete();
-
-                        newrg->SetYCoordinates(newY);
-                        newY->Delete();
-
-                        newrg->SetZCoordinates(newZ);
-                        newZ->Delete();
-
-                        newds = newrg;
-                    }
-                }
-            }
-            break;
-
-        case VTK_IMAGE_DATA:
-        case VTK_STRUCTURED_POINTS:
-            // we have nothing to do here
-            break;
-    }
-    return newds;
-}
-
-
-// ****************************************************************************
 //  Method: avtGenericDatabase constructor
 //
 //  Arguments:
@@ -476,12 +128,15 @@ ConvertDataSetToFloat(vtkDataSet *oldds)
 //    Hank Childs, Fri Mar 11 11:24:25 PST 2005
 //    Initialize non-cachable references.
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added transform manager 
 // ****************************************************************************
 
 avtGenericDatabase::avtGenericDatabase(avtFileFormatInterface *inter)
 {
     Interface = inter;
     Interface->SetCache(&cache);
+    xformManager = new avtTransformManager(&cache);
     lastTimestep = -1;
     nonCachableVariableReference = NULL;
     nonCachableMeshReference = NULL;
@@ -494,6 +149,10 @@ avtGenericDatabase::avtGenericDatabase(avtFileFormatInterface *inter)
 //  Programmer: Hank Childs
 //  Creation:   March 1, 2001
 //
+//  Modifications:
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added transform manager 
 // ****************************************************************************
 
 avtGenericDatabase::~avtGenericDatabase()
@@ -501,6 +160,12 @@ avtGenericDatabase::~avtGenericDatabase()
     if (Interface != NULL)
     {
         delete Interface;
+        Interface = NULL;
+    }
+    if (xformManager != NULL)
+    {
+        delete xformManager;
+        xformManager = NULL;
     }
 }
 
@@ -739,6 +404,10 @@ avtGenericDatabase::SetCycleTimeInDatabaseMetaData(avtDatabaseMetaData *md, int 
 //    Jeremy Meredith, Mon Aug 28 16:43:10 EDT 2006
 //    Added support for enumerated scalar selections.
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Moved GetMetaData to top of routine so transform manager would have it
+//    Changed uses of GetMetaData()-> to md->. Added call to TransformDataset
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -747,6 +416,7 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
 {
     int timerHandle = visitTimer->StartTimer();
     int timeStep = spec->GetTimestep();
+    avtDatabaseMetaData *md = GetMetaData(timeStep);
 
     UpdateInternalState(timeStep);
 
@@ -786,11 +456,21 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
                 spec->AddSecondaryVariable(varname.c_str());
         }
 
-
         //
         // This is the primary routine that reads things in from disk.
         //
         ReadDataset(datasetCollection, domains, spec, src, selectionsApplied);
+
+        //
+        // Do any transformations necessary to convert data from a form VisIt
+        // cannot, in general, handle to a form that it can. Typically, this
+        // is a no-op. The kind of transformations here include
+        // such things as precision conversion, making the mesh a "conforming"
+        // mesh (e.g. removing hanging nodes), converting arbitrary polyhdra
+        // to zoo-type, discretizing a csg mesh, etc.
+        //
+        xformManager->TransformDataset(datasetCollection, domains, spec, src,
+                          selectionsApplied, md);
 
         //
         // Now that we have read things in from disk, verify that the dataset
@@ -830,7 +510,6 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
         //
         // Do enumeration selection if appropriate
         //
-        avtDatabaseMetaData *md = GetMetaData(timeStep);
         for (i = 0 ; i < enumCount ; i++)
         {
             bool needSelection;
@@ -901,9 +580,8 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
         //
         // Tell everything downstream that we do have original cells.
         //
-        avtDatabaseMetaData *md = GetMetaData(timeStep);
         string meshname = md->MeshForVar(spec->GetVariable());
-        GetMetaData(timeStep)->SetContainsOriginalNodes(meshname, true);
+        md->SetContainsOriginalNodes(meshname, true);
     }
 
     //
@@ -915,9 +593,8 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
         //
         // Tell everything downstream that we do have original cells.
         //
-        avtDatabaseMetaData *md = GetMetaData(timeStep);
         string meshname = md->MeshForVar(spec->GetVariable());
-        GetMetaData(timeStep)->SetContainsOriginalCells(meshname, true);
+        md->SetContainsOriginalCells(meshname, true);
     }
 
     //
@@ -945,9 +622,8 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
         //
         // Tell everything downstream that we do have original cells.
         //
-        avtDatabaseMetaData *md = GetMetaData(timeStep);
         string meshname = md->MeshForVar(spec->GetVariable());
-        GetMetaData(timeStep)->SetContainsOriginalCells(meshname, true);
+        md->SetContainsOriginalCells(meshname, true);
     }
 
     //
@@ -1075,6 +751,7 @@ avtGenericDatabase::FreeUpResources(void)
     debug4 << "Generic database freeing up resources (file descriptors, "
            << "memory)" << endl;
     Interface->FreeUpResources(-1, -1);
+    xformManager->FreeUpResources(lastTimestep);
     cache.ClearTimestep(lastTimestep);
     ManageMemoryForNonCachableVar(NULL);
     ManageMemoryForNonCachableMesh(NULL);
@@ -2332,6 +2009,9 @@ avtGenericDatabase::GetSpeciesVariable(const char *specname, int ts,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Replaced data type args with data specification 
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Moved code dealing with precision transformation to transform manager
 // ****************************************************************************
 
 vtkDataArray *
@@ -2339,19 +2019,6 @@ avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
                                       const char *material,
                                       const avtDataSpecification_p dspec)
 {
-    bool needNativePrecision;
-    vector<int> admissibleDataTypes;
-    if (*dspec)
-    {
-        needNativePrecision = dspec->NeedNativePrecision();
-        admissibleDataTypes = dspec->GetAdmissibleDataTypes();
-    }
-    else
-    {
-        needNativePrecision = false;
-        admissibleDataTypes.push_back(VTK_FLOAT);
-    }
-
     //
     // We have to be leery about doing any caching when the variables are
     // defined on sub-meshes.  This is because if we add new secondary
@@ -2361,56 +2028,9 @@ avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
     vtkDataArray *var = NULL;
     if (!Interface->HasVarsDefinedOnSubMeshes())
     {
-        //
-        // First, look for native precision data in the cache
-        //
         var = (vtkDataArray *) cache.GetVTKObject(varname,
-                         avtVariableCache::NATIVE_SCALARS_NAME,
-                         ts, domain, material);
-
-        if ((var != NULL) &&
-            IsAdmissibleDataType(admissibleDataTypes, var->GetDataType())) 
-        {
-            if (!needNativePrecision &&
-                (PrecisionInBytes(var) > sizeof(float)))
-            {
-                var = (vtkDataArray *) cache.GetVTKObject(varname,
-                                 avtVariableCache::SCALARS_NAME,
-                                 ts, domain, material);
-
-                if (var == NULL)
-                {
-                    //
-                    // At this point, we know we've got ONLY native data
-                    // in the cache but either visit is NOT requesting
-                    // native data or the native precision is greater
-                    // than float. So, even though the pipeline supports
-                    // this data, we're going to convert because there
-                    // is no value added in running with higher precision
-                    // when it is not necessary. After we've converted
-                    // we'll cache the converted result.
-                    //
-                    var = (vtkDataArray *) cache.GetVTKObject(varname,
-                        avtVariableCache::NATIVE_SCALARS_NAME,
-                        ts, domain, material);
-                    vtkDataArray *var1 = ConvertDataArrayToFloat(var);
-                    if (var1)
-                    {
-                        cache.CacheVTKObject(varname,
-                            avtVariableCache::SCALARS_NAME,
-                            ts, domain, material, var1);
-                        var1->Delete();
-                        var = var1;
-                    }
-                }
-            }
-        }
-        else
-        {
-            var = (vtkDataArray *) cache.GetVTKObject(varname,
                              avtVariableCache::SCALARS_NAME,
                              ts, domain, material);
-        }
     }
 
     //
@@ -2433,34 +2053,14 @@ avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
         // We haven't read in this domain before, so fetch it from the files.
         //
         var = Interface->GetVar(ts, domain, real_varname);
-
         if (var != NULL)
         {
-            //
-            // Convert BEFORE caching only if native precision is greater
-            // than float and VisIt has NOT asked for native precision
-            //
-            const char *cacheTypeName =
-                var->GetDataType() == VTK_FLOAT ?
-                avtVariableCache::SCALARS_NAME :
-                avtVariableCache::NATIVE_SCALARS_NAME;
-            if (PrecisionInBytes(var) > sizeof(float) && !needNativePrecision)
-            {
-                vtkDataArray *var1 = ConvertDataArrayToFloat(var);
-                if (var1)
-                {
-                    var->Delete();
-                    var = var1;
-                    cacheTypeName = avtVariableCache::SCALARS_NAME;
-                }
-            }
-
             //
             // Cache the variable if we can
             //
             if (Interface->CanCacheVariable(real_varname))
             {
-                cache.CacheVTKObject(varname, cacheTypeName, ts, domain,
+                cache.CacheVTKObject(varname, avtVariableCache::SCALARS_NAME, ts, domain,
                                      material, var);
             }
             else
@@ -2476,32 +2076,6 @@ avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
             //
             var->Delete();
 
-            //
-            // Convert BEFORE returning to VisIt only if precision in 
-            // cache is NOT supported by current pipeline. Also, if we
-            // convert here, go ahead and cache the converted result too.
-            //
-            if (!IsAdmissibleDataType(admissibleDataTypes, var->GetDataType()))
-            {
-                vtkDataArray *var1 = ConvertDataArrayToFloat(var);
-
-                if (var1)
-                {
-                    cacheTypeName = avtVariableCache::SCALARS_NAME;
-
-                    if (Interface->CanCacheVariable(real_varname))
-                    {
-                        cache.CacheVTKObject(varname, cacheTypeName, ts, domain,
-                                             material, var1);
-                    }
-                    else
-                    {
-                        ManageMemoryForNonCachableVar(var1);
-                    }
-                    var1->Delete();
-                    var = var1;
-                }
-            }
         }
     }
 
@@ -2549,6 +2123,9 @@ avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Replaced data type args with data specification 
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Moved code dealing with precision transformation to transform manager
 // ****************************************************************************
 
 vtkDataArray *
@@ -2556,19 +2133,6 @@ avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
                                       const char *material,
                                       const avtDataSpecification_p dspec)
 {
-    bool needNativePrecision;
-    vector<int> admissibleDataTypes;
-    if (*dspec)
-    {
-        needNativePrecision = dspec->NeedNativePrecision();
-        admissibleDataTypes = dspec->GetAdmissibleDataTypes();
-    }
-    else
-    {
-        needNativePrecision = false;
-        admissibleDataTypes.push_back(VTK_FLOAT);
-    }
-
     //
     // We have to be leery about doing any caching when the variables are
     // defined on sub-meshes.  This is because if we add new secondary
@@ -2578,56 +2142,9 @@ avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
     vtkDataArray *var = NULL;
     if (!Interface->HasVarsDefinedOnSubMeshes())
     {
-        //
-        // First, look for native precision data in the cache
-        //
         var = (vtkDataArray *) cache.GetVTKObject(varname,
-                         avtVariableCache::NATIVE_VECTORS_NAME,
-                         ts, domain, material);
-
-        if ((var != NULL) &&
-            IsAdmissibleDataType(admissibleDataTypes, var->GetDataType()))
-        {
-            if (!needNativePrecision &&
-                (PrecisionInBytes(var) > sizeof(float)))
-            {
-                var = (vtkDataArray *) cache.GetVTKObject(varname,
                                  avtVariableCache::VECTORS_NAME,
                                  ts, domain, material);
-
-                if (var == NULL)
-                {
-                    //
-                    // At this point, we know we've got ONLY native data
-                    // in the cache but either visit is NOT requesting
-                    // native data or the native precision is greater
-                    // than float. So, even though the pipeline supports
-                    // this data, we're going to convert because there
-                    // is no value added in running with higher precision
-                    // when it is not necessary. After we've converted
-                    // we'll cache the converted result.
-                    //
-                    var = (vtkDataArray *) cache.GetVTKObject(varname,
-                         avtVariableCache::NATIVE_VECTORS_NAME,
-                         ts, domain, material);
-                    vtkDataArray *var1 = ConvertDataArrayToFloat(var);
-                    if (var1)
-                    {
-                        cache.CacheVTKObject(varname,
-                            avtVariableCache::VECTORS_NAME,
-                            ts, domain, material, var1);
-                        var1->Delete();
-                        var = var1;
-                    }
-                }
-            }
-        }
-        else
-        {
-            var = (vtkDataArray *) cache.GetVTKObject(varname,
-                                 avtVariableCache::VECTORS_NAME,
-                                 ts, domain, material);
-        }
     }
 
     //
@@ -2650,31 +2167,11 @@ avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
         // We haven't read in this domain before, so fetch it from the files.
         //
         var = Interface->GetVectorVar(ts, domain, real_varname);
-
         if (var != NULL)
         {
-            //
-            // Convert IMMEDIATELY only if native precision is greater
-            // than float and VisIt has NOT asked for native precision
-            //
-            const char *cacheTypeName = 
-                var->GetDataType() == VTK_FLOAT ?
-                avtVariableCache::VECTORS_NAME :
-                avtVariableCache::NATIVE_VECTORS_NAME;
-            if (PrecisionInBytes(var) > sizeof(float) && !needNativePrecision)
-            {
-                vtkDataArray *var1 = ConvertDataArrayToFloat(var);
-                if (var1)
-                {
-                    var->Delete();
-                    var = var1;
-                    cacheTypeName = avtVariableCache::VECTORS_NAME;
-                }
-            }
-
             if (Interface->CanCacheVariable(real_varname))
             {
-                cache.CacheVTKObject(varname, cacheTypeName, 
+                cache.CacheVTKObject(varname, avtVariableCache::VECTORS_NAME, 
                                      ts, domain, material, var);
             }
             else
@@ -2689,31 +2186,6 @@ avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
             // Since we have cached it, we can do it now.
             //
             var->Delete();
-
-            //
-            // Convert BEFORE returning to VisIt only if precision in
-            // cache is NOT supported by current pipeline. Also, if we
-            // convert here, go ahead and cache the converted result too.
-            //
-            if (!IsAdmissibleDataType(admissibleDataTypes, var->GetDataType()))
-            {
-                vtkDataArray *var1 = ConvertDataArrayToFloat(var);
-
-                if (var1)
-                {
-                    if (Interface->CanCacheVariable(real_varname))
-                    {
-                        cache.CacheVTKObject(varname, avtVariableCache::VECTORS_NAME,
-                                             ts, domain, material, var1);
-                    }
-                    else
-                    {
-                        ManageMemoryForNonCachableVar(var1);
-                    }
-                    var1->Delete();
-                    var = var1;
-                }
-            }
         }
     }
 
@@ -2752,6 +2224,9 @@ avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Replaced data type args with data specification 
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Moved code dealing with precision transformation to transform manager
 // ****************************************************************************
 
 vtkDataArray *
@@ -2759,19 +2234,6 @@ avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
                                       const char *material,
                                       const avtDataSpecification_p dspec)
 {
-    bool needNativePrecision;
-    vector<int> admissibleDataTypes;
-    if (*dspec)
-    {
-        needNativePrecision = dspec->NeedNativePrecision();
-        admissibleDataTypes = dspec->GetAdmissibleDataTypes();
-    }
-    else
-    {
-        needNativePrecision = false;
-        admissibleDataTypes.push_back(VTK_FLOAT);
-    }
-
     //
     // We have to be leery about doing any caching when the variables are
     // defined on sub-meshes.  This is because if we add new secondary
@@ -2781,57 +2243,9 @@ avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
     vtkDataArray *var = NULL;
     if (!Interface->HasVarsDefinedOnSubMeshes())
     {
-        //
-        // First, look for native precision data in the cache
-        //
         var = (vtkDataArray *) cache.GetVTKObject(varname,
-                         avtVariableCache::NATIVE_TENSORS_NAME,
-                         ts, domain, material);
-
-        if ((var != NULL) &&
-            IsAdmissibleDataType(admissibleDataTypes, var->GetDataType()))
-        {
-            if (!needNativePrecision &&
-                (PrecisionInBytes(var) > sizeof(float)))
-            {
-                var = (vtkDataArray *) cache.GetVTKObject(varname,
-                                 avtVariableCache::TENSORS_NAME,
-                                 ts, domain, material);
-
-                if (var == NULL)
-                {
-                    //
-                    // At this point, we know we've got ONLY native data
-                    // in the cache but either visit is NOT requesting
-                    // native data or the native precision is greater
-                    // than float. So, even though the pipeline supports
-                    // this data, we're going to convert because there
-                    // is no value added in running with higher precision
-                    // when it is not necessary. After we've converted
-                    // we'll cache the converted result.
-                    //
-                    var = (vtkDataArray *) cache.GetVTKObject(varname,
-                        avtVariableCache::NATIVE_TENSORS_NAME,
-                        ts, domain, material);
-                    vtkDataArray *var1 = ConvertDataArrayToFloat(var);
-                    if (var1)
-                    {
-                        cache.CacheVTKObject(varname,
-                            avtVariableCache::TENSORS_NAME,
-                            ts, domain, material, var1);
-                        var1->Delete();
-                        var = var1;
-                    }
-                }
-            }
-        }
-        else
-        {
-            var = (vtkDataArray *) cache.GetVTKObject(varname,
                              avtVariableCache::TENSORS_NAME,
                              ts, domain, material);
-        }
-
     }
 
     //
@@ -2855,31 +2269,11 @@ avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
         // Note: we use the vector var interface to get tensors.
         //
         var = Interface->GetVectorVar(ts, domain, real_varname);
-
         if (var != NULL)
         {
-            //
-            // Convert BEFORE caching only if native precision is greater
-            // than float and VisIt has NOT asked for native precision
-            //
-            const char *cacheTypeName = 
-                var->GetDataType() == VTK_FLOAT ?
-                avtVariableCache::TENSORS_NAME :
-                avtVariableCache::NATIVE_TENSORS_NAME;
-            if (PrecisionInBytes(var) > sizeof(float) && !needNativePrecision)
-            {
-                vtkDataArray *var1 = ConvertDataArrayToFloat(var);
-                if (var1)
-                {
-                    var->Delete();
-                    var = var1;
-                    cacheTypeName = avtVariableCache::TENSORS_NAME;
-                }
-            }
-
             if (Interface->CanCacheVariable(real_varname))
             {
-                cache.CacheVTKObject(varname, cacheTypeName,
+                cache.CacheVTKObject(varname, avtVariableCache::TENSORS_NAME,
                                      ts, domain, material, var);
             }
             else
@@ -2894,31 +2288,6 @@ avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
             // Since we have cached it, we can do it now.
             //
             var->Delete();
-
-            //
-            // Convert BEFORE returning to VisIt only if precision in
-            // cache is NOT supported by current pipeline. Also, if we
-            // convert here, go ahead and cache the converted result too.
-            //
-            if (!IsAdmissibleDataType(admissibleDataTypes, var->GetDataType()))
-            {
-                vtkDataArray *var1 = ConvertDataArrayToFloat(var);
-
-                if (var1)
-                {
-                    if (Interface->CanCacheVariable(real_varname))
-                    {
-                        cache.CacheVTKObject(varname, avtVariableCache::TENSORS_NAME,
-                                             ts, domain, material, var1);
-                    }
-                    else
-                    {
-                        ManageMemoryForNonCachableVar(var1);
-                    }
-                    var1->Delete();
-                    var = var1;
-                }
-            }
         }
     }
 
@@ -2957,6 +2326,9 @@ avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Replaced data type args with data specification 
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Moved code dealing with precision transformation to transform manager
 // ****************************************************************************
 
 vtkDataArray *
@@ -2964,19 +2336,6 @@ avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
                                                int domain,const char *material,
                                            const avtDataSpecification_p dspec)
 {
-    bool needNativePrecision;
-    vector<int> admissibleDataTypes;
-    if (*dspec)
-    {
-        needNativePrecision = dspec->NeedNativePrecision();
-        admissibleDataTypes = dspec->GetAdmissibleDataTypes();
-    }
-    else
-    {
-        needNativePrecision = false;
-        admissibleDataTypes.push_back(VTK_FLOAT);
-    }
-
     //
     // We have to be leery about doing any caching when the variables are
     // defined on sub-meshes.  This is because if we add new secondary
@@ -2986,56 +2345,9 @@ avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
     vtkDataArray *var = NULL;
     if (!Interface->HasVarsDefinedOnSubMeshes())
     {
-        //
-        // First, look for native precision data in the cache
-        //
         var = (vtkDataArray *) cache.GetVTKObject(varname,
-                         avtVariableCache::NATIVE_SYMMETRIC_TENSORS_NAME,
-                         ts, domain, material);
-
-        if ((var != NULL) &&
-            IsAdmissibleDataType(admissibleDataTypes, var->GetDataType()))
-        {
-            if (!needNativePrecision &&
-                (PrecisionInBytes(var) > sizeof(float)))
-            {
-                var = (vtkDataArray *) cache.GetVTKObject(varname,
-                                 avtVariableCache::SYMMETRIC_TENSORS_NAME,
-                                 ts, domain, material);
-
-                if (var == NULL)
-                {
-                    //
-                    // At this point, we know we've got ONLY native data
-                    // in the cache but either visit is NOT requesting
-                    // native data or the native precision is greater
-                    // than float. So, even though the pipeline supports
-                    // this data, we're going to convert because there
-                    // is no value added in running with higher precision
-                    // when it is not necessary. After we've converted
-                    // we'll cache the converted result.
-                    //
-                    var = (vtkDataArray *) cache.GetVTKObject(varname,
-                        avtVariableCache::NATIVE_SYMMETRIC_TENSORS_NAME,
-                        ts, domain, material);
-                    vtkDataArray *var1 = ConvertDataArrayToFloat(var);
-                    if (var1)
-                    {
-                        cache.CacheVTKObject(varname,
-                            avtVariableCache::SYMMETRIC_TENSORS_NAME,
-                            ts, domain, material, var1);
-                        var1->Delete();
-                        var = var1;
-                    }
-                }
-            }
-        }
-        else
-        {
-            var = (vtkDataArray *) cache.GetVTKObject(varname,
                              avtVariableCache::SYMMETRIC_TENSORS_NAME,
                              ts, domain, material);
-        }
     }
 
     //
@@ -3060,35 +2372,14 @@ avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
         // Note: we use the vector var interface to get tensors.
         //
         var = Interface->GetVectorVar(ts, domain, real_varname);
-
         if (var != NULL)
         {
-            //
-            // Convert BEFORE caching only if native precision is greater
-            // than float and VisIt has NOT asked for native precision
-            //
-            const char *cacheTypeName = 
-                var->GetDataType() == VTK_FLOAT ?
-                avtVariableCache::SYMMETRIC_TENSORS_NAME :
-                avtVariableCache::NATIVE_SYMMETRIC_TENSORS_NAME;
-            if (PrecisionInBytes(var) > sizeof(float) && !needNativePrecision)
-            {
-                vtkDataArray *var1 = ConvertDataArrayToFloat(var);
-                if (var1)
-                {
-                    var->Delete();
-                    var = var1;
-                    cacheTypeName = avtVariableCache::SYMMETRIC_TENSORS_NAME;
-                }
-            }
-
             //
             // Cache the variable if we can
             //
             if (Interface->CanCacheVariable(real_varname))
             {
-                cache.CacheVTKObject(varname,
-                                     avtVariableCache::SYMMETRIC_TENSORS_NAME,
+                cache.CacheVTKObject(varname, avtVariableCache::SYMMETRIC_TENSORS_NAME,
                                      ts, domain, material, var);
             }
             else
@@ -3103,32 +2394,6 @@ avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
             // Since we have cached it, we can do it now.
             //
             var->Delete();
-
-            //
-            // Convert BEFORE returning to VisIt only if precision in
-            // cache is NOT supported by current pipeline. Also, if we
-            // convert here, go ahead and cache the converted result too.
-            //
-            if (!IsAdmissibleDataType(admissibleDataTypes, var->GetDataType()))
-            {
-                vtkDataArray *var1 = ConvertDataArrayToFloat(var);
-                
-                if (var1)
-                {
-                    if (Interface->CanCacheVariable(real_varname))
-                    {
-                        cache.CacheVTKObject(varname,
-                            avtVariableCache::SYMMETRIC_TENSORS_NAME,
-                            ts, domain, material, var1);
-                    }
-                    else
-                    {
-                        ManageMemoryForNonCachableVar(var1);
-                    }
-                    var1->Delete();
-                    var = var1;
-                }
-            }
         }
     }
 
@@ -3157,6 +2422,9 @@ avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Replaced data type args with data specification 
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Moved code dealing with precision transformation to transform manager
 // ****************************************************************************
 
 vtkDataArray *
@@ -3164,19 +2432,6 @@ avtGenericDatabase::GetArrayVariable(const char *varname, int ts, int domain,
                                      const char *material,
                                      const avtDataSpecification_p dspec)
 {
-    bool needNativePrecision;
-    vector<int> admissibleDataTypes;
-    if (*dspec)
-    {
-        needNativePrecision = dspec->NeedNativePrecision();
-        admissibleDataTypes = dspec->GetAdmissibleDataTypes();
-    }
-    else
-    {
-        needNativePrecision = false;
-        admissibleDataTypes.push_back(VTK_FLOAT);
-    }
-
     //
     // We have to be leery about doing any caching when the variables are
     // defined on sub-meshes.  This is because if we add new secondary
@@ -3186,57 +2441,9 @@ avtGenericDatabase::GetArrayVariable(const char *varname, int ts, int domain,
     vtkDataArray *var = NULL;
     if (!Interface->HasVarsDefinedOnSubMeshes())
     {
-        //
-        // First, look for native precision data in the cache
-        //
         var = (vtkDataArray *) cache.GetVTKObject(varname,
-                         avtVariableCache::NATIVE_ARRAYS_NAME,
-                         ts, domain, material);
-
-        if ((var != NULL) &&
-            IsAdmissibleDataType(admissibleDataTypes, var->GetDataType()))
-        {
-            if (!needNativePrecision &&
-                (PrecisionInBytes(var) > sizeof(float)))
-            {
-                var = (vtkDataArray *) cache.GetVTKObject(varname,
-                                 avtVariableCache::ARRAYS_NAME,
-                                 ts, domain, material);
-
-                if (var == NULL)
-                {
-                    //
-                    // At this point, we know we've got ONLY native data
-                    // in the cache but either visit is NOT requesting
-                    // native data or the native precision is greater
-                    // than float. So, even though the pipeline supports
-                    // this data, we're going to convert because there
-                    // is no value added in running with higher precision
-                    // when it is not necessary. After we've converted
-                    // we'll cache the converted result.
-                    //
-                    var = (vtkDataArray *) cache.GetVTKObject(varname,
-                        avtVariableCache::NATIVE_ARRAYS_NAME,
-                        ts, domain, material);
-                    vtkDataArray *var1 = ConvertDataArrayToFloat(var);
-                    if (var1)
-                    {
-                        cache.CacheVTKObject(varname,
-                            avtVariableCache::ARRAYS_NAME,
-                            ts, domain, material, var1);
-                        var1->Delete();
-                        var = var1;
-                    }
-                }
-            }
-        }
-        else
-        {
-            var = (vtkDataArray *) cache.GetVTKObject(varname,
                              avtVariableCache::ARRAYS_NAME,
                              ts, domain, material);
-        }
-
     }
 
     //
@@ -3260,31 +2467,11 @@ avtGenericDatabase::GetArrayVariable(const char *varname, int ts, int domain,
         // Note: we use the vector var interface to get arrays.
         //
         var = Interface->GetVectorVar(ts, domain, real_varname);
-
         if (var != NULL)
         {
-            //
-            // Convert BEFORE caching only if native precision is greater
-            // than float and VisIt has NOT asked for native precision
-            //
-            const char *cacheTypeName = 
-                var->GetDataType() == VTK_FLOAT ?
-                avtVariableCache::ARRAYS_NAME :
-                avtVariableCache::NATIVE_ARRAYS_NAME;
-            if (PrecisionInBytes(var) > sizeof(float) && !needNativePrecision)
-            {
-                vtkDataArray *var1 = ConvertDataArrayToFloat(var);
-                if (var1)
-                {
-                    var->Delete();
-                    var = var1;
-                    cacheTypeName = avtVariableCache::ARRAYS_NAME;
-                }
-            }
-
             if (Interface->CanCacheVariable(real_varname))
             {
-                cache.CacheVTKObject(varname, cacheTypeName,
+                cache.CacheVTKObject(varname, avtVariableCache::ARRAYS_NAME,
                                      ts, domain, material, var);
             }
             else
@@ -3299,31 +2486,6 @@ avtGenericDatabase::GetArrayVariable(const char *varname, int ts, int domain,
             // Since we have cached it, we can do it now.
             //
             var->Delete();
-
-            //
-            // Convert BEFORE returning to VisIt only if precision in
-            // cache is NOT supported by current pipeline. Also, if we
-            // convert here, go ahead and cache the converted result too.
-            //
-            if (!IsAdmissibleDataType(admissibleDataTypes, var->GetDataType()))
-            {
-                vtkDataArray *var1 = ConvertDataArrayToFloat(var);
-
-                if (var1)
-                {
-                    if (Interface->CanCacheVariable(real_varname))
-                    {
-                        cache.CacheVTKObject(varname, avtVariableCache::ARRAYS_NAME,
-                                             ts, domain, material, var1);
-                    }
-                    else
-                    {
-                        ManageMemoryForNonCachableVar(var1);
-                    }
-                    var1->Delete();
-                    var = var1;
-                }
-            }
         }
     }
 
@@ -3392,7 +2554,6 @@ avtGenericDatabase::GetLabelVariable(const char *varname, int ts, int domain,
         // We haven't read in this domain before, so fetch it from the files.
         //
         var = Interface->GetVar(ts, domain, real_varname);
-
         if (var != NULL)
         {
             if (Interface->CanCacheVariable(real_varname))
@@ -3497,6 +2658,11 @@ avtGenericDatabase::GetLabelVariable(const char *varname, int ts, int domain,
 //    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
 //    Add PointData Scalars to a curve mesh. 
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Moved code dealing with precision transformation to transform manager.
+//    Moved code to discretize CSG mesh to transform manager.
+//    Added call to register object pointer pair in variable cache due to
+//    fact that generic db returns copy of object in cache
 // ****************************************************************************
 
 vtkDataSet *
@@ -3504,19 +2670,6 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
                             const char *material,
                             const avtDataSpecification_p dspec)
 {
-    bool needNativePrecision;
-    vector<int> admissibleDataTypes;
-    if (*dspec)
-    {
-        needNativePrecision = dspec->NeedNativePrecision();
-        admissibleDataTypes = dspec->GetAdmissibleDataTypes();
-    }
-    else
-    {
-        needNativePrecision = false;
-        admissibleDataTypes.push_back(VTK_FLOAT);
-    }
-
     //
     // We have to be leery about doing any caching when the variables are
     // defined on sub-meshes.  This is because if we add new secondary
@@ -3526,57 +2679,9 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
     vtkDataSet *mesh = NULL;
     if (!Interface->HasVarsDefinedOnSubMeshes())
     {
-
-        //
-        // First, look for native precision data in the cache
-        //
         mesh = (vtkDataSet *) cache.GetVTKObject(meshname,
-                         avtVariableCache::NATIVE_DATASET_NAME,
-                         ts, domain, material);
-
-        if ((mesh != NULL) && IsAdmissibleDataType(admissibleDataTypes,
-                                  GetCoordDataType(mesh)))
-        {
-            if (!needNativePrecision &&
-                (PrecisionInBytes(GetCoordDataType(mesh)) > sizeof(float)))
-            {
-                mesh = (vtkDataSet *) cache.GetVTKObject(meshname,
-                                 avtVariableCache::DATASET_NAME,
-                                 ts, domain, material);
-
-                if (mesh == NULL)
-                {
-                    //
-                    // At this point, we know we've got ONLY native data
-                    // in the cache but either visit is NOT requesting
-                    // native data or the native precision is greater
-                    // than float. So, even though the pipeline supports
-                    // this data, we're going to convert because there
-                    // is no value added in running with higher precision
-                    // when it is not necessary. After we've converted
-                    // we'll cache the converted result.
-                    //
-                    mesh = (vtkDataSet *) cache.GetVTKObject(meshname,
-                        avtVariableCache::NATIVE_DATASET_NAME,
-                        ts, domain, material);
-                    vtkDataSet *mesh1 = ConvertDataSetToFloat(mesh);
-                    if (mesh1)
-                    {
-                        cache.CacheVTKObject(meshname,
-                            avtVariableCache::DATASET_NAME,
-                            ts, domain, material, mesh1);
-                        mesh1->Delete();
-                        mesh = mesh1;
-                    }
-                }
-            }
-        }
-        else
-        {
-            mesh = (vtkDataSet *) cache.GetVTKObject(meshname,
                          avtVariableCache::DATASET_NAME,
                          ts, domain, material);
-        }
     }
 
     //
@@ -3606,56 +2711,11 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
         // We haven't read in this domain before, so fetch it from the files.
         //
         mesh = Interface->GetMesh(ts, domain, real_meshname);
-
         if (mesh == NULL)
         {
             debug5 << "Mesh returned by file format is NULL for domain "
                    << domain << ", material = " << material << endl;
             return NULL;
-        }
-
-        //
-        // If this is a CSG mesh, then discretize it now
-        // This is a bit of a Hack right now. This code should be
-        // replaced by a call to a MeshManager database services
-        // object in the future.
-        if (mesh->GetDataObjectType() == VTK_CSG_GRID)
-        {
-            int rank = 0;
-            int nprocs = 1;
-#ifdef PARALLEL
-            rank = PAR_Rank();
-            nprocs = PAR_Size();
-#endif
-
-            vtkCSGGrid *csgmesh = vtkCSGGrid::SafeDownCast(mesh);
-            const double *bnds = csgmesh->GetBounds();
-
-            vtkDataSet *dgrid;
-            if (dspec->DiscBoundaryOnly())
-            {
-                dgrid = csgmesh->DiscretizeSurfaces(domain,
-                                                 dspec->DiscTol(),
-                                                 bnds[0], bnds[1], bnds[2],
-                                                 bnds[3], bnds[4], bnds[5]);
-            }
-            else if (dspec->DiscMode() == 1)
-            {
-                dgrid = csgmesh->DiscretizeSpace(domain, rank, nprocs,
-                                                 dspec->DiscTol(),
-                                                 bnds[0], bnds[1], bnds[2],
-                                                 bnds[3], bnds[4], bnds[5]);
-            }
-            else
-            {
-                dgrid = csgmesh->DiscretizeSpace(domain,
-                                                 dspec->DiscTol(),
-                                                 bnds[0], bnds[1], bnds[2],
-                                                 bnds[3], bnds[4], bnds[5]);
-            }
-            csgmesh->Delete();
-
-            mesh = dgrid;
         }
 
         //
@@ -3666,28 +2726,9 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
 
         AssociateBounds(mesh);
 
-        //
-        // Convert BEFORE caching only if native precision is greater
-        // than float and VisIt has NOT asked for native precision
-        //
-        const char *cacheTypeName = GetCoordDataType(mesh) == VTK_FLOAT ?
-            avtVariableCache::DATASET_NAME :
-            avtVariableCache::NATIVE_DATASET_NAME;
-        if (PrecisionInBytes(GetCoordDataType(mesh)) > sizeof(float) &&
-            !needNativePrecision)
-        {
-            vtkDataSet *mesh1 = ConvertDataSetToFloat(mesh);
-            if (mesh1)
-            {
-                mesh->Delete();
-                mesh = mesh1;
-                cacheTypeName = avtVariableCache::DATASET_NAME;
-            }
-        }
-
         if (Interface->CanCacheVariable(real_meshname))
         {
-            cache.CacheVTKObject(meshname, cacheTypeName, ts,
+            cache.CacheVTKObject(meshname, avtVariableCache::DATASET_NAME, ts,
                                  domain, material, mesh);
         }
         else
@@ -3702,32 +2743,6 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
         // cached it, we can do it now.
         //
         mesh->Delete();
-
-        //
-        // Convert BEFORE returning to VisIt only if precision in
-        // cache is NOT supported by current pipeline. Also, if we
-        // convert here, go ahead and cache the converted result too.
-        //
-        if (!IsAdmissibleDataType(admissibleDataTypes,
-                                  GetCoordDataType(mesh)))
-        {
-            vtkDataSet *mesh1 = ConvertDataSetToFloat(mesh);
-
-            if (mesh1)
-            {
-                if (Interface->CanCacheVariable(real_meshname))
-                {
-                    cache.CacheVTKObject(meshname, avtVariableCache::DATASET_NAME,
-                                         ts, domain, material, mesh1);
-                }
-                else
-                {
-                    ManageMemoryForNonCachableMesh(mesh1);
-                }
-                mesh1->Delete();
-                mesh = mesh1;
-            }
-        }
     }
 
     //
@@ -3739,6 +2754,7 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
     //
     vtkDataSet *rv = (vtkDataSet *) mesh->NewInstance();
     rv->CopyStructure(mesh);
+    cache.AddObjectPointerPair(rv, mesh);
 
     //
     // There are some mesh variables that we want to copy over -- namely
@@ -3872,7 +2888,6 @@ avtGenericDatabase::GetAuxiliaryData(avtDataSpecification_p spec,
             DestructorFunction df;
             void *d = Interface->GetAuxiliaryData(real_var, ts, domains[i],
                                                   type, args, df);
-
             if (d != NULL)
             {
                 //
@@ -4214,6 +3229,8 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 //    Removed call to SetSource(NULL), with new vtk pipeline, it also removes
 //    necessary information from the dataset. 
 //
+//    Mark C. Miller, Sun Dec  3 11:32:07 PST 2006
+//    Fixed possible reference through nil pointer during Exception
 // ****************************************************************************
 
 avtDataTree_p
@@ -4235,13 +3252,29 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
                         bool &notAllCellsSubdivided,
                         bool reUseMIR)
 {
+    if (ds == NULL)
+    {
+        char msg[128];
+        SNPRINTF(msg, sizeof(msg),
+                "In domain number %d, the dataset object is NULL", dom);
+        EXCEPTION1(InvalidDBTypeException, msg); 
+    }
+
     //
     // We need to have the material indices as well.
     //
     intVector mindex;
     GetMaterialIndices(mat, mnames, mindex);
 
-    if (mat == NULL || ds == NULL || mat->GetNZones() !=ds->GetNumberOfCells())
+    if (mat == NULL)
+    {
+        char msg[128];
+        SNPRINTF(msg,sizeof(msg),
+            "In domain number %d, the material object is NULL", dom);
+        EXCEPTION1(InvalidDBTypeException, msg); 
+    }
+
+    if (mat->GetNZones() !=ds->GetNumberOfCells())
     {
         char msg[128];
         SNPRINTF(msg,sizeof(msg),"In domain number %d, the material object "
@@ -4548,10 +3581,14 @@ avtGenericDatabase::GetMaterialIndices(avtMaterial *mat, stringVector &mn,
 //    Brad Whitlock, Thu Apr 4 16:25:10 PST 2002
 //    Changed CopyTo to an inline template function.
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added data specification arg as well as transformation of material,
+//    if neededb
 // ****************************************************************************
 
 avtMaterial *
-avtGenericDatabase::GetMaterial(int dom, const char *var, int ts)
+avtGenericDatabase::GetMaterial(int dom, const char *var, int ts,
+    const avtDataSpecification_p dspec)
 {
     avtDatabaseMetaData *md = GetMetaData(ts);
 
@@ -4571,6 +3608,9 @@ avtGenericDatabase::GetMaterial(int dom, const char *var, int ts)
     }
     
     avtMaterial *rv = (avtMaterial *) *(mats.list[0]);
+
+    // this is a no-op unless transformation is needed
+    xformManager->TransformMaterialDataset(md, *dspec ? dspec : spec, &rv);
 
     return rv;
 }
@@ -5364,6 +4404,9 @@ avtGenericDatabase::ActivateTimestep(int stateIndex)
 //    every domain, so the ghost zone communication routines can work
 //    correctly.
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added calls to set Vars and Vars2nd members of dataset collection.
+//    Added data specification to call to get material.
 // ****************************************************************************
 
 void
@@ -5459,6 +4502,8 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
             forceMIR = true;
     }
 
+    ds.SetVar(var);
+    ds.SetVars2nd(vars2nd);
     for (i = 0 ; i < nDomains ; i++)
     {
         stringVector labels;
@@ -5579,7 +4624,7 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
 
                 // Get the material
                 ds.matnames[i] = matnames;
-                avtMaterial *mat = GetMaterial(domains[i], var, ts);
+                avtMaterial *mat = GetMaterial(domains[i], var, ts, spec);
                 ds.SetMaterial(i, mat);
 
                 // Get the mixed variables
@@ -5623,7 +4668,6 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
     visitTimer->StopTimer(timerHandle, "Reading dataset");
     visitTimer->DumpTimings();
 }
-
 
 // ****************************************************************************
 //  Method: avtGenericDatabase::CommunicateGhosts
@@ -10392,7 +9436,7 @@ avtGenericDatabase::LocalIdForGlobal(const int dom, const string &var,
 
 
 // ****************************************************************************
-//  Method: avtGenericDatabase::GetOriginalVariableName
+//  Function: GetOriginalVariableName
 //
 //  Purpose:
 //      Gets the original variable name from the variable name being used
@@ -10465,5 +9509,3 @@ GetOriginalVariableName(const avtDatabaseMetaData *md, const char *varname)
 
     return varname;
 }
-
-

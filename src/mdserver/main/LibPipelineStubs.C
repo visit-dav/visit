@@ -81,6 +81,8 @@ DEFSTUB(void*, vtkStructuredPointsWriter, New, (), 0);
 DEFSTUB(void*, vtkUnstructuredGridReader, GetOutput, (), 0);          
 DEFSTUB(void*, vtkUnstructuredGridReader, New, (), 0);          
 
-DEFSTUB(void, vtkCSGGrid, DiscretizeSpace, (int,int,int,double,double,double,double,double,double,double), /*void*/);          
-DEFSTUB(void, vtkCSGGrid, DiscretizeSurfaces, (int,double,double,double,double,double,double,double), /*void*/);          
-DEFSTUB(void, vtkCSGGrid, DiscretizeSpace, (int,double,double,double,double,double,double,double), /*void*/);          
+DEFSTUB(void, vtkCSGGrid, DiscretizeSpace, (int,int,int,double,double,double,double,double,double,double), /*void*/);
+DEFSTUB(void, vtkCSGGrid, DiscretizeSpace2, (int,int,int,double,double,double,double,double,double,double), /*void*/);
+DEFSTUB(void, vtkCSGGrid, DiscretizeSpace3, (int,int,int,double,double,double,double,double,double,double,double), /*void*/);
+DEFSTUB(void, vtkCSGGrid, DiscretizeSurfaces, (int,double,double,double,double,double,double,double), /*void*/);
+DEFSTUB(void, vtkCSGGrid, DiscretizeSpace, (int,double,double,double,double,double,double,double), /*void*/);

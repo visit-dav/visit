@@ -239,6 +239,9 @@
 #   Brad Whitlock, Thu Nov 9 14:00:40 PST 2006
 #   Added SimV1Writer plugin.
 #
+#   Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+#   Removed reference to SAF
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -256,7 +259,6 @@ HDF5=Tetrad SAMRAI CosmosPP Pixie FLASH Chombo GTC
 MILI=Mili
 NETCDF=NETCDF
 PDB=KullLite PDB
-SAF=SAF
 SAMPLES=Rect Hex
 REQUIRED=\
  ANALYZE \
@@ -305,8 +307,9 @@ CFITSIO=FITS
 
 OPTIONAL=
 
-SUBDIRS=$(REQUIRED) @DB_OPTIONAL_DIRS@ @EXODUS@ @SAF@ @HDF4@ @HDF5@ @PDB@ @MILI@ @BOXLIB2D@ @BOXLIB3D@ @VISUS@ @NETCDF@ @CGNS@ @GDAL@ @CFITSIO@
-ALLSUBDIRS=$(REQUIRED) $(EXODUS) $(SAF) $(HDF4) $(HDF5) $(MILI) $(PDB) $(BOXLIB2D) $(BOXLIB3D) $(VISUS) $(NETCDF) $(CGNS) $(GDAL) $(CFITSIO) $(SAMPLES) $(OPTIONAL)
+SUBDIRS=$(REQUIRED) @DB_OPTIONAL_DIRS@ @EXODUS@ @HDF4@ @HDF5@ @PDB@ @MILI@ @BOXLIB2D@ @BOXLIB3D@ @VISUS@ @NETCDF@ @CGNS@ @GDAL@ @CFITSIO@
+ALLSUBDIRS=$(REQUIRED) $(EXODUS) $(HDF4) $(HDF5) $(MILI) $(PDB) $(BOXLIB2D) $(BOXLIB3D) $(VISUS) $(NETCDF) $(CGNS) $(GDAL) $(CFITSIO) $(SAMPLES) $(OPTIONAL)
+
 
 message:
 	@echo

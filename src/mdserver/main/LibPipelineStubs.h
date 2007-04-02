@@ -137,6 +137,8 @@ class vtkUnstructuredGridReader {
 class vtkCSGGrid {
   public:
     void DiscretizeSpace(int,int,int,double,double,double,double,double,double,double);
+    void DiscretizeSpace2(int,int,int,double,double,double,double,double,double,double);
+    void DiscretizeSpace3(int,int,int,double,double,double,double,double,double,double,double);
     void DiscretizeSurfaces(int, double, double, double, double, double, double, double);
     void DiscretizeSpace(int, double, double, double, double, double, double, double);
 };

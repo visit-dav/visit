@@ -35,76 +35,35 @@
 *
 *****************************************************************************/
 
-#ifndef QVISMESHMANAGEMENTWINDOW_H
-#define QVISMESHMANAGEMENTWINDOW_H
-#include <gui_exports.h>
-#include <QvisPostableWindowObserver.h>
-#include <AttributeSubject.h>
+// ************************************************************************* //
+//                         PointerNotInCacheException.h                      //
+// ************************************************************************* //
 
-// Forward declarations.
-class MeshManagementAttributes;
-class QButtonGroup;
-class QCheckBox;
-class QGroupBox;
-class QLabel;
-class QLineEdit;
-class QTabWidget;
-class QVBox;
+#ifndef POINTER_NOT_IN_CACHE_EXCEPTION_H
+#define POINTER_NOT_IN_CACHE_EXCEPTION_H
+#include <avtexception_exports.h>
+
+#include <DatabaseException.h>
 
 // ****************************************************************************
-// Class: QvisMeshManagementWindow
+//  Class: PointerNotInCacheException
 //
-// Purpose: Creates window for mesh management controls 
+//  Purpose:
+//      The exception that should be thrown whenever transform manager is
+//      unable to find items in variable cache given object pointer
 //
-// Programmer: Mark C. Miller 
-// Creation:   November 5, 2005
-//
-// Modifications:
-//
-//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
-//    Added makeDefault and reset slots
+//  Programmer: Mark C. Miller
+//  Creation:   November 30, 2006 
 //
 // ****************************************************************************
 
-class GUI_API QvisMeshManagementWindow : public QvisPostableWindowObserver
+class AVTEXCEPTION_API PointerNotInCacheException : public DatabaseException
 {
-    Q_OBJECT
-public:
-    QvisMeshManagementWindow(MeshManagementAttributes *subj,
-                        const char *caption = 0,
-                        const char *shortName = 0,
-                        QvisNotepadArea *notepad = 0);
-    virtual ~QvisMeshManagementWindow();
-    virtual void CreateWindowContents();
-public slots:
-    virtual void apply();
-    virtual void makeDefault();
-    virtual void reset();
-protected:
-    void UpdateWindow(bool doAll);
-    void Apply(bool ignore = false);
-    void GetCurrentValues(const QWidget *widget = 0);
-private slots:
-    void processDiscretizationToleranceText();
-    void processDiscretizationToleranceText(const QString &);
-    void tabSelected(const QString &tabLabel);
-    void renderCSGDirectChanged(bool);
-    void discretizeBoundaryOnlyChanged(bool);
-    void discretizationModeChanged(int);
-private:
-    MeshManagementAttributes *mmAtts;
-
-    QVBox            *pageCSG;
-    QGroupBox        *pageCSGGroup;
-    QCheckBox        *renderCSGDirect;
-    QCheckBox        *discretizeBoundaryOnly;
-    QLabel           *discretizeModeLabel;
-    QButtonGroup     *discretizationMode;
-    QLabel           *discretizationToleranceLabel;
-    QLineEdit        *discretizationToleranceLineEdit;
-
-
-    QTabWidget       *tabs;
-
+  public:
+                    PointerNotInCacheException(const void *);
+    virtual        ~PointerNotInCacheException() VISIT_THROW_NOTHING {;};
 };
+
 #endif
+
+

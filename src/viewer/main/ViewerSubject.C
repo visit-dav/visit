@@ -900,6 +900,8 @@ ViewerSubject::ConnectObjectsAndHandlers()
 //    Brad Whitlock, Wed Jun 22 10:23:00 PDT 2005
 //    Added movieAtts.
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added MeshManagementAttributes
 // ****************************************************************************
 
 void
@@ -925,6 +927,7 @@ ViewerSubject::ConnectConfigManager()
     configMgr->Add(ViewerWindowManager::GetPrinterClientAtts());
     configMgr->Add(ViewerWindowManager::GetRenderingAttributes());
     configMgr->Add(ViewerEngineManager::GetMaterialDefaultAtts());
+    configMgr->Add(ViewerEngineManager::GetMeshManagementDefaultAtts());
     configMgr->Add(ViewerWindowManager::GetDefaultAnnotationObjectList());
     configMgr->Add(ViewerQueryManager::Instance()->GetPickDefaultAtts());
     configMgr->Add(ViewerQueryManager::Instance()->GetQueryOverTimeDefaultAtts());

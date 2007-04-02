@@ -278,7 +278,7 @@ $fullusage = "$usage
         -machinefile <file>  Machine file.
         -expedite            Makes DPCS give priority scheduling.
 
-    Hardware acceleration options
+    Hardware accelerated parallel (scalable) rendering options
     ---------------------------------------------------------------------------
         Notes: These options should only be used with parallel clusters that
         have graphics cards.  If you are using a serial version of VisIt, you
@@ -349,6 +349,7 @@ $fullusage = "$usage
         -private             xml2makefile: force install plugins privately
         -clobber             Permit xml2... tools to overwrite old files
         -noprint             do not print any debugging output
+	-arch                print supported architecture(s) and exit
 
     Debugging options
     ---------------------------------------------------------------------------
@@ -461,6 +462,7 @@ $use_new_console = 0;
 $visit_sets_up_environment = 0;
 $pre_command = "";
 $post_command = "";
+$print_arch     = 0;
 
 # Parse the arguments 
 @visitargs = ();
@@ -500,6 +502,7 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "--fullhelp") { print STDERR "\nUSAGE: visit [options]
 				   $fullusage\n"; exit(0); }
     elsif ($arg eq "-norun")     { $nr = shift; push @norun, $nr; push @visitargs, "-norun", $nr; }
+    elsif ($arg eq "-arch")      { $print_arch = 1; } 
     elsif ($arg eq "-env")              { $envonly = 1; }
     elsif ($arg eq "-launchengine")     { if (scalar(@ARGV)>0) {$launchengine = shift;}
                                           if ($launchengine eq "") { $launchengine="localhost"; }
@@ -817,6 +820,17 @@ EOF
 # Pick one arch as the default in case we are running a development version.
 #
 $defaultarch = $supportedarchs[0];
+
+#
+# If -arch was requested, just print architecture info and exit
+#
+if ($print_arch)
+{
+    print STDOUT <<"EOF";
+@supportedarchs
+EOF
+    exit 1;
+}
 
 #
 # Set any unfinished defaults
@@ -1373,7 +1387,7 @@ else
         # Note: could use --tool=addrcheck because it uses much less memory
         #       and runs twice as fast, but it doesn't catch UMRs
         # Note: could add --leak-check=yes to either tool
-        @debugcmd = ("valgrind", "--tool=memcheck", "--error-limit=no", "--num-callers=32", "$visitbindir/$exe_name", @visitargs);
+        @debugcmd = ("valgrind", "--tool=memcheck", "--error-limit=no", "--num-callers=64", "$visitbindir/$exe_name", @visitargs);
         if ($security_key_set) { push @debugcmd, "-key", $security_key; }
         print STDERR "Running: @debugcmd\n" if (! $quiet);
         exec @debugcmd or die "Could not execute $exe_name under valgrind\n";

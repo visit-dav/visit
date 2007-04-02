@@ -35,76 +35,25 @@
 *
 *****************************************************************************/
 
-#ifndef QVISMESHMANAGEMENTWINDOW_H
-#define QVISMESHMANAGEMENTWINDOW_H
-#include <gui_exports.h>
-#include <QvisPostableWindowObserver.h>
-#include <AttributeSubject.h>
+// ************************************************************************* //
+//                        PointerNotInCacheException.C                       //
+// ************************************************************************* //
 
-// Forward declarations.
-class MeshManagementAttributes;
-class QButtonGroup;
-class QCheckBox;
-class QGroupBox;
-class QLabel;
-class QLineEdit;
-class QTabWidget;
-class QVBox;
+#include <snprintf.h>
+#include <PointerNotInCacheException.h>
+
 
 // ****************************************************************************
-// Class: QvisMeshManagementWindow
+//  Method: PointerNotInCacheException constructor
 //
-// Purpose: Creates window for mesh management controls 
-//
-// Programmer: Mark C. Miller 
-// Creation:   November 5, 2005
-//
-// Modifications:
-//
-//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
-//    Added makeDefault and reset slots
+//  Programmer: Mark C. Miller 
+//  Creation:   November 30, 2006 
 //
 // ****************************************************************************
 
-class GUI_API QvisMeshManagementWindow : public QvisPostableWindowObserver
+PointerNotInCacheException::PointerNotInCacheException(const void *p)
 {
-    Q_OBJECT
-public:
-    QvisMeshManagementWindow(MeshManagementAttributes *subj,
-                        const char *caption = 0,
-                        const char *shortName = 0,
-                        QvisNotepadArea *notepad = 0);
-    virtual ~QvisMeshManagementWindow();
-    virtual void CreateWindowContents();
-public slots:
-    virtual void apply();
-    virtual void makeDefault();
-    virtual void reset();
-protected:
-    void UpdateWindow(bool doAll);
-    void Apply(bool ignore = false);
-    void GetCurrentValues(const QWidget *widget = 0);
-private slots:
-    void processDiscretizationToleranceText();
-    void processDiscretizationToleranceText(const QString &);
-    void tabSelected(const QString &tabLabel);
-    void renderCSGDirectChanged(bool);
-    void discretizeBoundaryOnlyChanged(bool);
-    void discretizationModeChanged(int);
-private:
-    MeshManagementAttributes *mmAtts;
-
-    QVBox            *pageCSG;
-    QGroupBox        *pageCSGGroup;
-    QCheckBox        *renderCSGDirect;
-    QCheckBox        *discretizeBoundaryOnly;
-    QLabel           *discretizeModeLabel;
-    QButtonGroup     *discretizationMode;
-    QLabel           *discretizationToleranceLabel;
-    QLineEdit        *discretizationToleranceLineEdit;
-
-
-    QTabWidget       *tabs;
-
-};
-#endif
+    char str[1024];
+    SNPRINTF(str, sizeof(str), "Unable to find object with pointer %X in cache", p);
+    msg = str;
+}
