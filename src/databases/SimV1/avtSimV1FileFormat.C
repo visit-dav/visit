@@ -535,6 +535,9 @@ avtSimV1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Jeremy Meredith, Wed May 11 10:56:01 PDT 2005
 //    Added ghost zone support.
 //
+//    Jeremy Meredith, Wed May 25 14:38:35 PDT 2005
+//    Added unstructured mesh support.
+//
 // ****************************************************************************
 vtkDataSet *
 avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
@@ -557,6 +560,10 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
       case VISIT_MESHTYPE_CURVILINEAR:
         {
             VisIt_CurvilinearMesh *cmesh = vmesh->cmesh;
+
+            if (!cmesh)
+                return NULL;
+
             //
             // Create the VTK objects and connect them up.
             //
@@ -651,6 +658,10 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
       case VISIT_MESHTYPE_RECTILINEAR:
         {
             VisIt_RectilinearMesh *rmesh = vmesh->rmesh;
+
+            if (!rmesh)
+                return NULL;
+
             //
             // Create the VTK objects and connect them up.
             //
@@ -751,6 +762,188 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
             arr->Delete();
 
             return rgrid;
+        }
+        break;
+      case VISIT_MESHTYPE_UNSTRUCTURED:
+        {
+            VisIt_UnstructuredMesh *umesh = vmesh->umesh;
+
+            if (!umesh)
+                return NULL;
+
+
+            if (umesh->connectivity.dataType != VISIT_DATATYPE_INT)
+            {
+                EXCEPTION1(ImproperUseException,
+                           "Connectivity array must be ints.");
+            }
+
+            vtkUnstructuredGrid  *ugrid = vtkUnstructuredGrid::New();
+            vtkPoints            *points  = vtkPoints::New();
+            ugrid->SetPoints(points);
+            points->Delete();
+
+            //
+            // Populate the coordinates.
+            //
+            int npts = umesh->nnodes;
+            points->SetNumberOfPoints(npts);
+            float *pts = (float *) points->GetVoidPointer(0);
+
+            if (umesh->xcoords.dataType == VISIT_DATATYPE_FLOAT)
+            {
+                for (int i=0; i<npts; i++)
+                {
+                    pts[i*3 + 0] = umesh->xcoords.fArray[i];
+                    pts[i*3 + 1] = umesh->ycoords.fArray[i];
+                    if (umesh->ndims==3)
+                        pts[i*3 + 2] = umesh->zcoords.fArray[i];
+                    else
+                        pts[i*3 + 2] = 0;
+                }
+            }
+            else if (umesh->xcoords.dataType == VISIT_DATATYPE_DOUBLE)
+            {
+                for (int i=0; i<npts; i++)
+                {
+                    pts[i*3 + 0] = umesh->xcoords.dArray[i];
+                    pts[i*3 + 1] = umesh->ycoords.dArray[i];
+                    if (umesh->ndims==3)
+                        pts[i*3 + 2] = umesh->zcoords.dArray[i];
+                    else
+                        pts[i*3 + 2] = 0;
+                }
+            }
+            else
+            {
+                EXCEPTION1(ImproperUseException,
+                           "Coordinate arrays must be float or double.\n");
+            }
+
+            int celltype_npts[10];
+            celltype_npts[VISIT_CELL_BEAM]  = 2;
+            celltype_npts[VISIT_CELL_TRI]   = 3;
+            celltype_npts[VISIT_CELL_QUAD]  = 4;
+            celltype_npts[VISIT_CELL_TET]   = 4;
+            celltype_npts[VISIT_CELL_PYR]   = 5;
+            celltype_npts[VISIT_CELL_WEDGE] = 6;
+            celltype_npts[VISIT_CELL_HEX]   = 8;
+
+            int celltype_idtype[10];
+            celltype_idtype[VISIT_CELL_BEAM]  = VTK_LINE;
+            celltype_idtype[VISIT_CELL_TRI]   = VTK_TRIANGLE;
+            celltype_idtype[VISIT_CELL_QUAD]  = VTK_QUAD;
+            celltype_idtype[VISIT_CELL_TET]   = VTK_TETRA;
+            celltype_idtype[VISIT_CELL_PYR]   = VTK_PYRAMID;
+            celltype_idtype[VISIT_CELL_WEDGE] = VTK_WEDGE;
+            celltype_idtype[VISIT_CELL_HEX]   = VTK_HEXAHEDRON;
+
+            vtkIdTypeArray *nlist = vtkIdTypeArray::New();
+            nlist->SetNumberOfValues(umesh->connectivityLen);
+            vtkIdType *nl = nlist->GetPointer(0);
+
+            vtkUnsignedCharArray *cellTypes = vtkUnsignedCharArray::New();
+            cellTypes->SetNumberOfValues(umesh->nzones);
+            unsigned char *ct = cellTypes->GetPointer(0);
+
+            vtkIntArray *cellLocations = vtkIntArray::New();
+            cellLocations->SetNumberOfValues(umesh->nzones);
+            int *cl = cellLocations->GetPointer(0);
+
+            int numCells = 0;
+            int offset = 0;
+            while (offset < umesh->connectivityLen)
+            {
+                int celltype = umesh->connectivity.iArray[offset];
+
+                int vtktype = celltype_idtype[celltype];
+                int nelempts = celltype_npts[celltype];
+                *ct++ = vtktype;
+                *nl++ = nelempts;
+
+                for (int j=0; j<nelempts; j++)
+                {
+                    *nl++ = umesh->connectivity.iArray[offset+1+j];
+                }
+
+                numCells++;
+                *cl++ = offset;
+                offset += nelempts+1;
+            }
+
+            if (numCells != umesh->nzones)
+            {
+                EXCEPTION1(ImproperUseException,
+                           "Number of zones and length of connectivity "
+                           "array did not match!");
+            }
+
+            vtkCellArray *cells = vtkCellArray::New();
+            cells->SetCells(umesh->nzones, nlist);
+            nlist->Delete();
+
+            ugrid->SetCells(cellTypes, cellLocations, cells);
+            cellTypes->Delete();
+            cellLocations->Delete();
+            cells->Delete();
+
+            int firstCell = umesh->firstRealZone;
+            int lastCell  = umesh->lastRealZone;
+            if (firstCell == 0 && lastCell == 0 )
+            {
+                debug5 << "Cannot tell if ghost zones are present because "
+                       << "min_index & max_index are both zero!" << endl;
+            }
+            else if (firstCell < 0 || firstCell >= numCells ||
+                     lastCell  < 0 || lastCell  >= numCells ||
+                     firstCell > lastCell)
+            {
+                // bad min or max index
+                debug5 << "Invalid min/max index for determining ghost zones:  "
+                       << "\n\tnumCells: " << numCells
+                       << "\n\tfirstRealZone: " << firstCell
+                       << "\n\tlastRealZone: " << lastCell << endl;
+            }
+            else if (firstCell != 0 || lastCell != numCells -1)
+            {
+                int i;
+                vtkUnsignedCharArray *ghostZones = vtkUnsignedCharArray::New();
+                ghostZones->SetName("avtGhostZones");
+                ghostZones->SetNumberOfTuples(numCells);
+                unsigned char *tmp = ghostZones->GetPointer(0);
+                for (i = 0; i < firstCell; i++)
+                {
+                    //
+                    //  ghostZones at the begining of the zone list
+                    //
+                    unsigned char val = 0;
+                    avtGhostData::AddGhostZoneType(val, 
+                                           DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+                    *tmp++ = val;
+                }
+                for (i = firstCell; i <= lastCell; i++)
+                {
+                    //
+                    // real zones
+                    //
+                    *tmp++ = 0;
+                }
+                for (i = lastCell+1; i < numCells; i++)
+                {
+                    //
+                    //  ghostZones at the end of the zone list
+                    //
+                    unsigned char val = 0;
+                    avtGhostData::AddGhostZoneType(val, 
+                                           DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+                    *tmp++ = val;
+                }
+                ugrid->GetCellData()->AddArray(ghostZones);
+                ghostZones->Delete();
+                ugrid->SetUpdateGhostLevel(0);
+            }
+
+            return ugrid;
         }
         break;
       default:
@@ -981,6 +1174,10 @@ avtSimV1FileFormat::GetMaterial(int domain, const char *varname)
 //    Jeremy Meredith, Thu Apr 28 18:00:32 PDT 2005
 //    Added true data array structures in place of raw array pointers.
 //
+//    Jeremy Meredith, Wed May 25 14:37:58 PDT 2005
+//    Added ability to have separate types for x/y values.  Added support
+//    for integer X's.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -999,25 +1196,49 @@ avtSimV1FileFormat::GetCurve(const char *name)
     int npts = cd->len;
     pts->SetNumberOfPoints(npts);
 
-    if (cd->x.dataType == VISIT_DATATYPE_FLOAT)
+    float *xpts = new float[npts];
+    if (cd->x.dataType == VISIT_DATATYPE_INT)
     {
         for (int j=0; j<npts; j++)
-        {
-            pts->SetPoint(j, cd->x.fArray[j], cd->y.fArray[j], 0);
-        }
+            xpts[j] = cd->x.iArray[j];
+    }
+    else if (cd->x.dataType == VISIT_DATATYPE_FLOAT)
+    {
+        for (int j=0; j<npts; j++)
+            xpts[j] = cd->x.fArray[j];
     }
     else if (cd->x.dataType == VISIT_DATATYPE_DOUBLE)
     {
         for (int j=0; j<npts; j++)
+            xpts[j] = cd->x.dArray[j];
+    }
+    else
+    {
+        EXCEPTION1(ImproperUseException, "Curve coordinate arrays "
+                   "must be float, double, or int in X.\n");
+    }
+
+    if (cd->y.dataType == VISIT_DATATYPE_FLOAT)
+    {
+        for (int j=0; j<npts; j++)
         {
-            pts->SetPoint(j, cd->x.dArray[j], cd->y.dArray[j], 0);
+            pts->SetPoint(j, xpts[j], cd->y.fArray[j], 0);
+        }
+    }
+    else if (cd->y.dataType == VISIT_DATATYPE_DOUBLE)
+    {
+        for (int j=0; j<npts; j++)
+        {
+            pts->SetPoint(j, xpts[j], cd->y.dArray[j], 0);
         }
     }
     else
     {
         EXCEPTION1(ImproperUseException,
-                   "Curve coordinate arrays must be float or double.\n");
+                   "Curve coordinate arrays must be float or double in Y.\n");
     }
+
+    delete[] xpts;
 
     FreeDataArray(cd->x);
     FreeDataArray(cd->y);

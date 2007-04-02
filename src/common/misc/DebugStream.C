@@ -520,10 +520,13 @@ DebugStream::close()
 //    Ignore SIGPIPE because it can defeat our mechanisms for detecting when
 //    we lose a connection to a component.
 //
+//    Jeremy Meredith, Tue May 17 11:20:51 PDT 2005
+//    Allow disabling of signal handlers.
+//
 // ****************************************************************************
 
 void
-DebugStream::Initialize(const char *progname, int debuglevel)
+DebugStream::Initialize(const char *progname, int debuglevel, bool sigs)
 {
     switch (debuglevel)
     {
@@ -541,18 +544,21 @@ DebugStream::Initialize(const char *progname, int debuglevel)
         break;
     }
 
+    if (sigs)
+    {
 #if !defined(_WIN32)
-    signal(SIGQUIT,  signalhandler_core);
-    signal(SIGTRAP,  signalhandler_core);
-    signal(SIGSYS,   signalhandler_core);
-    signal(SIGBUS,   signalhandler_core);
-    signal(SIGPIPE,  SIG_IGN);
+        signal(SIGQUIT,  signalhandler_core);
+        signal(SIGTRAP,  signalhandler_core);
+        signal(SIGSYS,   signalhandler_core);
+        signal(SIGBUS,   signalhandler_core);
+        signal(SIGPIPE,  SIG_IGN);
 #endif
 
-    signal(SIGILL,   signalhandler_core);
-    signal(SIGABRT,  signalhandler_core);
-    signal(SIGFPE,   SIG_IGN);
-    signal(SIGSEGV,  signalhandler_core);
-    signal(SIGTERM,  signalhandler_exit);
-    signal(SIGINT,   signalhandler_exit);
+        signal(SIGILL,   signalhandler_core);
+        signal(SIGABRT,  signalhandler_core);
+        signal(SIGFPE,   SIG_IGN);
+        signal(SIGSEGV,  signalhandler_core);
+        signal(SIGTERM,  signalhandler_exit);
+        signal(SIGINT,   signalhandler_exit);
+    }
 }

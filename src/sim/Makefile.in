@@ -7,11 +7,11 @@
 
 SIMSER=sim
 SIMPAR=psim
-SIMSRC=sim.c VisItV1.c simconnection.c
+SIMSRC=sim.c VisItControlInterface_V1.c simconnection.c
 SIMSEROBJ=$(SIMSRC:.c=.o)
 SIMPAROBJ=$(SIMSRC:.c=_par.o)
 
-CPPFLAGS=@CPPFLAGS@ -I. -I../include/visit
+CPPFLAGS=@CPPFLAGS@ -I. -I../include -I../include/visit
 
 SERLIBS=
 PARLIBS=@MPI_LIBS@

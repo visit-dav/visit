@@ -36,6 +36,9 @@
 //    Jeremy Meredith, Wed May 11 09:17:44 PDT 2005
 //    Forced the RESTRICTED load balancer mode.
 //
+//    Jeremy Meredith, Wed May 25 13:25:45 PDT 2005
+//    Disabled our own signal handlers.
+//
 // ****************************************************************************
 
 void *get_engine()
@@ -47,7 +50,7 @@ void *get_engine()
 int initialize(void *e, int argc, char *argv[])
 {
     Engine *engine = (Engine*)(e);
-    engine->Initialize(&argc, &argv);
+    engine->Initialize(&argc, &argv, false);
     return 1;
 }
 

@@ -23,10 +23,14 @@
 //    Split command parsing out into a separate function.
 //    Added more options to the sim file dumping.
 //
+//    Jeremy Meredith, Wed May 25 14:16:00 PDT 2005
+//    Major reorg in the main routine because I drastically updated
+//    VisItControlInterface_V1.
+//
 // ****************************************************************************
 
 
-#include "VisItV1.h"
+#include "VisItControlInterface_V1.h"
 #include "sim.h"
 
 #include <stdlib.h>
@@ -53,10 +57,6 @@ int par_size = 1;
 #define MIN(a,b) ((a)<(b)?(a):(b))
 #define MAX3(a,b,c) MAX(a,MAX(b,c))
 
-static int consoleinputdescriptor = 0;
-static int engineinputdescriptor = -1;
-static int listenSock = -1;
-
 int runflag = 0;
 int quitflag = 0;
 
@@ -72,6 +72,18 @@ float *p_zvalues;
 float *p_nvalues;
 
 int numdomains = 1;
+
+#ifdef PARALLEL
+static int visit_broadcast_int_callback(int *value, int sender)
+{
+    return MPI_Bcast(value, 1, MPI_INT, sender, MPI_COMM_WORLD) ;
+}
+
+static int visit_broadcast_string_callback(char *str, int len, int sender)
+{
+    return MPI_Bcast(str, len, MPI_CHAR, sender, MPI_COMM_WORLD) ;
+}
+#endif
 
 void InitializeVariables()
 {
@@ -224,10 +236,21 @@ void ProcessConsoleCommand()
 
     ProcessCommand(buff);
 }
+#define VISIT_COMMAND_PROCESS 0
+#define VISIT_COMMAND_SUCCESS 1
+#define VISIT_COMMAND_FAILURE 2
+
+static void BroadcastSlaveCommand(int *command)
+{
+#ifdef PARALLEL
+    MPI_Bcast(command, 1, MPI_INT, 0, MPI_COMM_WORLD);
+#endif
+}
 
 void SlaveProcessCallback()
 {
-    FakeConsoleCommand("visit_process");
+   int command = VISIT_COMMAND_PROCESS;
+   BroadcastSlaveCommand(&command);
 }
 
 void ControlCommandCallback(const char *cmd,
@@ -240,118 +263,141 @@ void ControlCommandCallback(const char *cmd,
     ProcessCommand(cmd);
 }
 
+int ProcessVisItCommand(void)
+{
+   int command;
+   if (par_rank==0) {
+      int success = VisItProcessEngineCommand();
+
+      if (success) {
+         command = VISIT_COMMAND_SUCCESS;
+         BroadcastSlaveCommand(&command);
+         return 1;
+      }
+      else {
+         command = VISIT_COMMAND_FAILURE;
+         BroadcastSlaveCommand(&command);
+         return 0;
+      }
+   }
+   else {
+      /* Note: only through the SlaveProcessCallback callback
+       * above can the rank 0 process send a VISIT_COMMAND_PROCESS
+       * instruction to the non-rank 0 processes. */
+      while (1) {
+         int command;
+         BroadcastSlaveCommand(&command);
+         switch (command) {
+           case VISIT_COMMAND_PROCESS:
+             VisItProcessEngineCommand();
+             break;
+
+           case VISIT_COMMAND_SUCCESS:
+             return 1;
+
+           case VISIT_COMMAND_FAILURE:
+             return 0;
+         }
+      }
+   }
+}
+
 void MainLoop()
 {
-    fprintf(stderr, "command> ");
-    fflush(stderr);
+    if (par_rank == 0)
+    {
+        fprintf(stderr, "command> ");
+        fflush(stderr);
+    }
 
     while (!quitflag)
     {
+        int visitstate;
         if (par_rank == 0)
         {
-            fd_set readSet;
-
-            int maxdescriptor = MAX3(consoleinputdescriptor,
-                                     engineinputdescriptor,
-                                     listenSock);
-
-            int ret = 0;
             int blocking = runflag ? FALSE : TRUE;
-            struct timeval ZeroTimeout = {0,0};
-            struct timeval *timeout = (blocking ? NULL : &ZeroTimeout);
+            visitstate = VisItDetectInput(blocking, fileno(stdin));
+        }
+#ifdef PARALLEL
+        MPI_Bcast(&visitstate, 1, MPI_INT, 0, MPI_COMM_WORLD);
+#endif
 
-            FD_ZERO(&readSet);
+        switch (visitstate)
+        {
+          case -5:
+          case -4:
+          case -3:
+          case -2:
+          case -1:
+            // A result less than zero is an unfixable error
+            fprintf(stderr, "\nUnrecoverable error... exiting.\n");
+            quitflag = 1;
+            break;
 
-            FD_SET(consoleinputdescriptor, &readSet);
+          case 0:
+            // Timed out -- means we were running
+            RunSingleCycle();
+            break;
 
-            if (engineinputdescriptor >= 0)
+          case 1:
+            // VisIt is connecting
+            runflag = 0;
+            if (!VisItAttemptToCompleteConnection())
             {
-                FD_SET(engineinputdescriptor, &readSet);
-            }
-
-            if (listenSock >= 0)
-            {
-                FD_SET(listenSock, &readSet);
-            }
-
-            ret = select(maxdescriptor+1, &readSet, (fd_set *)NULL, (fd_set *)NULL,
-                         timeout);
-
-            if (ret < 0)
-            {
-                int err = errno;
-                if (err == EINTR)
+                if (par_rank == 0)
                 {
-                    fprintf(stderr, "\nInterrupted...... quitting\n");
-                    quitflag = 1;
-                }
-                else if (err == EBADF)
-                {
-                    fprintf(stderr,"\nBad file descriptor in select\n");
-                    quitflag = 1;
-                }
-                else if (err == EINVAL)
-                {
-                    fprintf(stderr,"\nBad argument to select\n");
-                    quitflag = 1;
-                }
-                else
-                {
-                    fprintf(stderr, "Error in select at line %d\n",__LINE__);
-                    exit(1);
-                }
-            }
-            else if (ret == 0)
-            {
-                if (runflag)
-                {
-                    FakeConsoleCommand("step");
-                    RunSingleCycle();
+                    char *err = VisItGetLastError();
+                    if (strlen(err) > 0)
+                    {
+                        fprintf(stderr, "%s\n", err);
+                    }
+                    else
+                    {
+                        fprintf(stderr,
+                                "VisIt failed to connect successfully\n");
+                    }
                 }
             }
             else
             {
-                if (FD_ISSET(listenSock, &readSet))
+                if (par_rank == 0)
                 {
-                    fprintf(stderr, "GOT CONNECTION ATTEMPT ON LISTEN SOCKET!\n");
-                    FakeConsoleCommand("visit_connect");
-                    if (!VisItAttemptToCompleteConnection())
-                    {
-                        fprintf(stderr, "Failed to connect!\n");
-                        continue;
-                    }
-                    engineinputdescriptor = VisItGetEngineSocket();
-                    VisItSetSlaveProcessCallback(SlaveProcessCallback);
-                    VisItSetCommandCallback(ControlCommandCallback);
+                    fprintf(stderr, "Connected successfully!\n");
                 }
-                else if (FD_ISSET(consoleinputdescriptor, &readSet))
-                {
-                    ProcessConsoleCommand();
-                    if (!quitflag && !runflag)
-                    {
-                        fprintf(stderr, "command> ");
-                        fflush(stderr);
-                    }
-                }
-                else if (FD_ISSET(engineinputdescriptor, &readSet))
-                {
-                    if (!VisItProcessEngineCommand())
-                    {
-                        FakeConsoleCommand("visit_disconnect");
-                        VisItDisconnect();
-                        engineinputdescriptor = -1;
-                    }
-                }
-                else
-                {
-                    fprintf(stderr, "Unknown FD set by select at line %d\n",__LINE__);
-                    exit(1);
-                }
+                VisItSetSlaveProcessCallback(SlaveProcessCallback);
+                VisItSetCommandCallback(ControlCommandCallback);
             }
-        }
-        else
-        {
+            if (par_rank == 0)
+            {
+                fprintf(stderr, "command> ");
+                fflush(stderr);
+            }
+            break;
+
+          case 2:
+            // VisIt wants to tell the engine something
+            runflag = 0;
+            if (!ProcessVisItCommand())
+            {
+                // Disconnect on an error or closed connection
+                VisItDisconnect();
+            }
+            break;
+
+          case 3:
+            // Someone was typing something -- fall through
+            // and read from the console.
             ProcessConsoleCommand();
+            if (!quitflag && !runflag)
+            {
+                if (par_rank == 0)
+                {
+                    fprintf(stderr, "command> ");
+                    fflush(stderr);
+                }
+
+            }
+            break;
         }
     }
 }
@@ -375,14 +421,19 @@ int main(int argc, char *argv[])
     }
 #endif
 
+#ifdef PARALLEL
+   VisItSetBroadcastIntFunction(visit_broadcast_int_callback);
+   VisItSetBroadcastStringFunction(visit_broadcast_string_callback);
+#endif
+   VisItSetParallel(par_size > 1);
+   VisItSetParallelRank(par_rank);
+
     if (par_rank == 0)
     {
         VisItInitializeSocketAndDumpSimFile("proto",
                                             "Prototype Simulation",
                                             "/no/useful/path",
                                             NULL);
-        listenSock = VisItGetListenSocket();
-
         printf("\n          >>> STARTING SIMULATION PROTOTYPE <<<\n\n\n");
 
         printf("Known Commands:\n"

@@ -44,6 +44,9 @@
 //    Change the DebugStreamBuf member to be a pointered value instead of
 //    a referenced value so that it works with the MIPSpro compiler.
 //
+//    Jeremy Meredith, Tue May 17 11:20:51 PDT 2005
+//    Allow disabling of signal handlers.
+//
 // ****************************************************************************
 
 class MISC_API DebugStream : public ostream
@@ -55,7 +58,7 @@ class MISC_API DebugStream : public ostream
     operator       bool()   {return enabled;};
     void           open(const char *progname);
     void           close();
-    static void    Initialize(const char *, int);
+    static void    Initialize(const char *, int, bool=true);
   private:
     class DebugStreamBuf : public streambuf
     {

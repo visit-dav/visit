@@ -56,6 +56,14 @@ extern "C"
 #define VISIT_OWNER_SIM                   0
 #define VISIT_OWNER_VISIT                 1
 
+/* Cell Types */
+#define VISIT_CELL_BEAM                   0
+#define VISIT_CELL_TRI                    1
+#define VISIT_CELL_QUAD                   2
+#define VISIT_CELL_TET                    3
+#define VISIT_CELL_PYR                    4
+#define VISIT_CELL_WEDGE                  5
+#define VISIT_CELL_HEX                    6
 
 typedef struct VisIt_DataArray
 {
@@ -182,12 +190,25 @@ typedef struct VisIt_RectilinearMesh
 
 typedef struct VisIt_UnstructuredMesh
 {
-    /* FILL IN */
+    int ndims;
+    int nnodes;
+    int nzones;
+
+    int firstRealZone;
+    int lastRealZone;
+
+    VisIt_DataArray xcoords;
+    VisIt_DataArray ycoords;
+    VisIt_DataArray zcoords;
+
+    int connectivityLen;
+    VisIt_DataArray connectivity;
 } VisIt_UnstructuredMesh;
 
 typedef struct VisIt_PointMesh
 {
     /* FILL IN */
+    int dummy;
 } VisIt_PointMesh;
 
 typedef struct VisIt_MeshData
@@ -230,6 +251,7 @@ typedef struct VisIt_MaterialData
 typedef struct VisIt_SpeciesData
 {
     /* FILL IN */
+    int dummy;
 } VisIt_SpeciesData;
 
 typedef struct VisIt_CurveData
