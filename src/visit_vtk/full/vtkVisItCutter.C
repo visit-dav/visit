@@ -350,6 +350,12 @@ void vtkVisItCutter::DataSetCutter()
   output->Squeeze();
 }
 
+// ***************************************************************************
+//  Modifications:
+//    Kathleen Bonnell, Fri May 13 15:03:26 PDT 2005
+//    Fix memory leak.
+//
+// ***************************************************************************
 
 void vtkVisItCutter::UnstructuredGridCutter()
 {
@@ -377,7 +383,6 @@ void vtkVisItCutter::UnstructuredGridCutter()
 
   float range[2];
 
-  cellScalars=vtkFloatArray::New();
 
   // Create objects to hold output of contour operation
   //

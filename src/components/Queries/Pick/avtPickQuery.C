@@ -916,6 +916,9 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
 //    Kathleen Bonnell, Wed Dec 15 09:19:39 PST 2004 
 //    Added call to 'SetGlobalIds'. 
 //
+//    Kathleen Bonnell, Mon May 16 07:35:27 PDT 2005 
+//    Fix memory leak. 
+//
 // ****************************************************************************
 
 bool
@@ -944,7 +947,7 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
     {
         unsigned char *gNodes = NULL; 
         unsigned char *gZones = NULL; 
-        vtkIdList *cells;
+        vtkIdList *cells = NULL;
         bool findGhosts = (ghostType == AVT_HAS_GHOSTS &&
                  ((ds->GetPointData()->GetArray("avtGhostNodes") != NULL) ||
                   (ds->GetCellData()->GetArray("avtGhostZones") != NULL)));
@@ -1071,6 +1074,8 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
         pickAtts.SetElementIsGhost((gZones && gZones[zone]) ||
             (nGnodes > 0 && nGnodes == ptIds->GetNumberOfIds()));
         ptIds->Delete();
+        if (cells)
+            cells->Delete();
     }
     if (success && pickAtts.GetDisplayGlobalIds())
     {

@@ -56,19 +56,23 @@ avtCurveComparisonQuery::avtCurveComparisonQuery()
 //  Programmer:   Hank Childs
 //  Creation:     October 2, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu May 12 17:21:34 PDT 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 avtCurveComparisonQuery::~avtCurveComparisonQuery()
 {
     if (curve1 != NULL)
     {
-        curve1 = NULL;
         delete curve1;
+        curve1 = NULL;
     }
     if (curve2 != NULL)
     {
-        curve2 = NULL;
         delete curve2;
+        curve2 = NULL;
     }
 }
 
@@ -85,6 +89,10 @@ avtCurveComparisonQuery::~avtCurveComparisonQuery()
 //
 //  Programmer:   Hank Childs
 //  Creation:     October 2, 2003
+//
+//  Modifications:
+//    Kathleen Bonnell, Thu May 12 17:21:34 PDT 2005
+//    Fix memory leak.
 //
 // ****************************************************************************
 
@@ -272,6 +280,7 @@ avtCurveComparisonQuery::PutOnSameXIntervals(int on1, const float *ox1,
          if (uniquePoint)
              unique_x.push_back(all_xs[i]);
     }
+    delete [] all_xs;
     total_n_pts = unique_x.size();
 
     int nextIndForCurve1 = 0;

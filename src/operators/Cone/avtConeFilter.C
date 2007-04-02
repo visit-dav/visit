@@ -535,6 +535,9 @@ avtConeFilter::SetUpCone(void)
 //    Use 4-tuples for multiplying points (or else VTK does a UMR).
 //    Also renormalize basis vectors to ensure they are truly unit vectors.
 //
+//    Kathleen Bonnell, Fri May 13 15:03:26 PDT 2005
+//    Fix memory leak. 
+//
 // ****************************************************************************
 
 void
@@ -632,7 +635,6 @@ avtConeFilter::SetUpProjection(void)
     mtlt->SetInput(result_transposed);
     result_transposed->Delete();
  
-    transform = vtkTransformPolyDataFilter::New();
     transform->SetTransform(mtlt);
     mtlt->Delete();
 

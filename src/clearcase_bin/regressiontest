@@ -261,10 +261,11 @@ cd ..
 
 # set the datestamp used for all test modes
 curdate=`date +%Y-%m-%d-%p%I%M`
+theDay=`date +%A`
 
 # set mode to run in
 modes="serial parallel scalable,parallel purify"
-if test "`date +%A`" = "Sunday"; then
+if test "$theDay" = "Sunday"; then
     modes="hdf5 dlb serial,purify scalable,parallel,purify"
 fi
 
@@ -273,19 +274,45 @@ skipList="scalable,parallel:tests/databases/boxlib.py \
           scalable,parallel:tests/hybrid/locus.py \
           dlb:tests/databases/global_node_ids.py \
           dlb:tests/queries/pick.py \
-	  purify:tests/databases/global_node_ids.py \
-	  purify:tests/databases/pdbdatabase.py \
-	  purify:tests/queries/queriesOverTime.py \
-	  purify:tests/queries/pick.py"
+          purify:tests/databases/global_node_ids.py \
+          purify:tests/databases/pdbdatabase.py \
+          purify:tests/queries/queriesOverTime.py \
+          purify:tests/queries/pick.py"
 
 # run the test(s)
 error=0
 cd test
 for m in $modes; do
-    if test "$skipList" = ""; then
-        ./runtest -q -p -m "$m" -d "$curdate" -notrackmem
+    if test "$m" = "purify"; then
+        theTests=""
+        case $theDay in
+           "Monday")
+              theTests="tests/databases/*.py"
+              ;;
+           "Tuesday")
+              theTests="tests/hybrid/*.py"
+              ;;
+           "Wednesday")
+              theTests="tests/meshtype/*.py tests/operators/*.py tests/plots/*.py"
+              ;;
+           "Thursday")
+              theTests="tests/queries/*.py"
+              ;;
+           "Friday")
+              theTests="tests/rendering/*.py tests/session/*.py"
+              ;;
+        esac
+        if test "$skipList" = ""; then
+            ./runtest -q -p -m "$m" -d "$curdate" -notrackmem $theTests
+        else
+            ./runtest -q -s "$skipList" -p -m "$m" -d "$curdate" -notrackmem $theTests
+        fi
     else
-        ./runtest -q -s "$skipList" -p -m "$m" -d "$curdate" -notrackmem
+        if test "$skipList" = ""; then
+            ./runtest -q -p -m "$m" -d "$curdate" -notrackmem
+        else
+            ./runtest -q -s "$skipList" -p -m "$m" -d "$curdate" -notrackmem
+        fi
     fi
     curerror=$?
     if test ! "$curerror" = "0"; then
