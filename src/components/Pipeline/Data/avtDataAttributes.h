@@ -53,6 +53,7 @@
 class     avtDataObjectString;
 class     avtDataObjectWriter;
 class     avtExtents;
+class     avtWebpage;
 class     PlotInfoAttributes;
 
 
@@ -205,6 +206,9 @@ class     PlotInfoAttributes;
 //
 //    Jeremy Meredith, Mon Aug 28 16:46:29 EDT 2006
 //    Added nodesAreCritical.  Added unitCellVectors.
+//
+//    Hank Childs, Thu Dec 21 10:11:30 PST 2006
+//    Add support for debug dumps.
 //
 // ****************************************************************************
 
@@ -430,6 +434,8 @@ class PIPELINE_API avtDataAttributes
     const PlotInfoAttributes *GetPlotInfoAtts(void) const
                                    { return plotInfoAtts; };
     void                     SetPlotInfoAtts(const PlotInfoAttributes *);
+
+    void                     DebugDump(avtWebpage *);
 
   protected:
     int                      spatialDimension;

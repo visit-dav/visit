@@ -46,6 +46,8 @@
 #include <avtDataObjectString.h>
 #include <avtDataObjectWriter.h>
 #include <avtExtents.h>
+#include <avtWebpage.h>
+
 #include <BufferConnection.h>
 #include <PlotInfoAttributes.h>
 
@@ -4082,6 +4084,205 @@ avtDataAttributes::SetPlotInfoAtts(const PlotInfoAttributes *pia)
         plotInfoAtts = new PlotInfoAttributes();
     }
     *plotInfoAtts = *pia;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataAttributes::DebugDump
+//
+//  Purpose:
+//    Dump the attributes to a webpage.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 21, 2006
+//
+// ****************************************************************************
+
+static const char *
+YesOrNo(bool b)
+{
+    static const char *yes_str = "yes";
+    static const char *no_str  = "no";
+    if (b)
+        return yes_str;
+
+    return no_str;
+}
+
+static void ExtentsToString(avtExtents *exts, char *str)
+{
+    int dim = exts->GetDimension();
+    double e[6];
+    exts->CopyTo(e);
+    if (!exts->HasExtents())
+        strcpy(str, "not set");
+    else if (dim == 1)
+       sprintf(str, "(%e -> %e)", e[0], e[1]);
+    else if (dim == 2)
+       sprintf(str, "(%e -> %e, %e -> %e)", e[0], e[1], e[2], e[3]);
+    else
+       sprintf(str, "(%e -> %e, %e -> %e, %e -> %e)",
+                   e[0],e[1],e[2],e[3],e[4],e[5]);
+}
+
+
+void
+avtDataAttributes::DebugDump(avtWebpage *webpage)
+{
+    char str[1024];
+
+    webpage->AddSubheading("Basic data attributes");
+    webpage->StartTable();
+    webpage->AddTableHeader2("Field", "Value");
+    sprintf(str, "%d", spatialDimension);
+    webpage->AddTableEntry2("Spatial Dimension", str);
+    sprintf(str, "%d", topologicalDimension);
+    webpage->AddTableEntry2("Topological Dimension", str);
+    sprintf(str, "%d", cellOrigin);
+    switch (containsGhostZones)
+    {
+      case AVT_NO_GHOSTS:
+        strcpy(str, "None");
+        break;
+      case AVT_HAS_GHOSTS:
+        strcpy(str, "Yes");
+        break;
+      case AVT_CREATED_GHOSTS:
+        strcpy(str, "Yes (created by VisIt)");
+        break;
+      case AVT_MAYBE_GHOSTS:
+        strcpy(str, "Unknown");
+        break;
+    }
+    webpage->AddTableEntry2("Ghosts", str);
+    webpage->EndTable();
+
+    webpage->AddSubheading("Data attributes that rarely change");
+    webpage->StartTable();
+    webpage->AddTableHeader2("Field", "Value");
+    webpage->AddTableEntry2("Contains global zone ids?", 
+                            YesOrNo(containsGlobalZoneIds));
+    webpage->AddTableEntry2("Contains global node ids?", 
+                            YesOrNo(containsGlobalNodeIds));
+    webpage->AddTableEntry2("Cell Origin", str);
+    sprintf(str, "%d", blockOrigin);
+    webpage->AddTableEntry2("Block Origin", str);
+    sprintf(str, "%d", groupOrigin);
+    webpage->AddTableEntry2("Group Origin", str);
+    webpage->AddTableEntry2("Contains original cells?", 
+                            YesOrNo(containsOriginalCells));
+    webpage->AddTableEntry2("Contains original nodes?", 
+                            YesOrNo(containsOriginalNodes));
+    webpage->AddTableEntry2("Should keep node and zone arrays?", 
+                            YesOrNo(keepNodeZoneArrays));
+    webpage->AddTableEntry2("Has interface reconstruction occurred?",
+                            YesOrNo(mirOccurred));
+    webpage->AddTableEntry2("Can use original zones?",
+                            YesOrNo(canUseOrigZones));
+    webpage->AddTableEntry2("Are the original elements required for pick?",
+                            YesOrNo(origElementsRequiredForPick));
+    switch (meshCoordType)
+    {
+      case AVT_XY:
+        strcpy(str, "XY (cartesian)");
+        break;
+      case AVT_ZR:
+        strcpy(str, "ZR (cylindrical)");
+        break;
+      case AVT_RZ:
+        strcpy(str, "RZ (cylindrical)");
+        break;
+     }
+    webpage->AddTableEntry2("Coordinate type", str);
+    webpage->AddTableEntry2("Are the nodes critical?",
+                            YesOrNo(nodesAreCritical));
+    webpage->AddTableEntry2("X Units", xUnits.c_str());
+    webpage->AddTableEntry2("Y Units", yUnits.c_str());
+    webpage->AddTableEntry2("Z Units", zUnits.c_str());
+    webpage->AddTableEntry2("X Label", xLabel.c_str());
+    webpage->AddTableEntry2("Y Label", yLabel.c_str());
+    webpage->AddTableEntry2("Z Label", zLabel.c_str());
+    webpage->EndTable();
+    webpage->AddSubheading("File information");
+    webpage->StartTable();
+    webpage->AddTableHeader2("Field", "Value");
+    webpage->AddTableEntry2("Database name", fullDBName.c_str());
+    webpage->AddTableEntry2("File name", filename.c_str());
+    webpage->AddTableEntry2("Mesh name", meshname.c_str());
+    sprintf(str, "%d", numStates);
+    webpage->AddTableEntry2("Number of time slices?", str);
+    if (timeIsAccurate)
+        sprintf(str, "%f", dtime);
+    else
+        sprintf(str, "%f (guess)", dtime);
+    webpage->AddTableEntry2("Time", str);
+    if (cycleIsAccurate)
+        sprintf(str, "%d", cycle);
+    else
+        sprintf(str, "%d (guess)", cycle);
+    webpage->AddTableEntry2("Cycle", str);
+    webpage->EndTable();
+
+    webpage->AddSubheading("Spatial extents attributes");
+    webpage->StartTable();
+    webpage->AddTableHeader2("Field", "Value");
+    ExtentsToString(trueSpatial, str);
+    webpage->AddTableEntry2("True spatial extents", str);
+    ExtentsToString(cumulativeTrueSpatial, str);
+    webpage->AddTableEntry2("Cumulative true spatial extents", str);
+    ExtentsToString(effectiveSpatial, str);
+    webpage->AddTableEntry2("Effective spatial extents", str);
+    ExtentsToString(currentSpatial, str);
+    webpage->AddTableEntry2("Current spatial extents", str);
+    ExtentsToString(cumulativeCurrentSpatial, str);
+    webpage->AddTableEntry2("Cumulative current spatial extents", str);
+    webpage->AddTableEntry2("Can use the cumulative extents are true or current extents?", 
+                            YesOrNo(canUseCumulativeAsTrueOrCurrent));
+    webpage->EndTable();
+
+    webpage->AddSubheading("Variable attributes");
+    if (variables.size() > 0)
+    {
+        webpage->StartTable();
+        webpage->AddTableHeader3("Variable", "Field", "Value");
+        for (int i = 0 ; i < variables.size() ; i++)
+        {
+            webpage->AddTableEntry3(variables[i].varname.c_str(), NULL, NULL);
+            webpage->AddTableEntry3(NULL, "Type", 
+                                   avtVarTypeToString(variables[i].vartype).c_str());
+            webpage->AddTableEntry3(NULL, "Units", variables[i].varunits.c_str());
+            sprintf(str, "%d", variables[i].dimension);
+            webpage->AddTableEntry3(NULL, "Dimension", str);
+            switch (variables[i].centering)
+            {
+              case AVT_NODECENT:
+                strcpy(str, "nodal");
+                break;
+              case AVT_ZONECENT:
+                strcpy(str, "zonal");
+                break;
+              default:
+                strcpy(str, "unknown");
+                break;
+            }
+            webpage->AddTableEntry3(NULL, "Centering", str);
+            webpage->AddTableEntry3(NULL, "Treat variable as ASCII characters?",
+                                    YesOrNo(variables[i].treatAsASCII));
+            ExtentsToString(variables[i].cumulativeTrueData, str);
+            webpage->AddTableEntry3(NULL, "Cumulative true data extents", str);
+            ExtentsToString(variables[i].effectiveData, str);
+            webpage->AddTableEntry3(NULL, "Effective data extents", str);
+            ExtentsToString(variables[i].currentData, str);
+            webpage->AddTableEntry3(NULL, "Current data extents", str);
+            ExtentsToString(variables[i].cumulativeCurrentData, str);
+            webpage->AddTableEntry3(NULL, "Cumulative current data extents", str);
+        }
+        webpage->EndTable();
+    }
+    else
+    {
+        webpage->AddSubheading("--> No variables!");
+    }
 }
 
 

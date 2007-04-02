@@ -1005,25 +1005,28 @@ class MakeMovie:
 
     def SendEmail(self, subject, msg):
         if self.emailAddresses != "":
-            import sys, smtplib
-            server = smtplib.SMTP('localhost')
+            try:
+                import sys, smtplib
+                server = smtplib.SMTP('localhost')
 
-            domain = "llnl.gov"
-            d = string.split(os.uname()[1], ".")
-            if len(d) > 2:
-                name = ""
-                for i in range(1, len(d)):
-                    name = name + d[i]
-                    if i < len(d)-1:
-                        name = name + "."
-            fromaddr = "visit@" + domain
+                domain = "llnl.gov"
+                d = string.split(os.uname()[1], ".")
+                if len(d) > 2:
+                    name = ""
+                    for i in range(1, len(d)):
+                        name = name + d[i]
+                        if i < len(d)-1:
+                            name = name + "."
+                fromaddr = "visit@" + domain
 
-            msg2 = "To: %s\n" % self.emailAddresses
-            msg2 = msg2 + "Subject: %s\n" % subject
-            msg2 = msg2 + msg
-            self.Debug(2, "E-mail sent: \n" + msg)
-            server.sendmail(fromaddr, self.emailAddresses, msg2)
-            server.quit()
+                msg2 = "To: %s\n" % self.emailAddresses
+                msg2 = msg2 + "Subject: %s\n" % subject
+                msg2 = msg2 + msg
+                self.Debug(2, "E-mail sent: \n" + msg)
+                server.sendmail(fromaddr, self.emailAddresses, msg2)
+                server.quit()
+            except:
+                self.Debug(2, "E-mail not sent due to an exception.\n" + msg)
         else:
             self.Debug(2, "E-mail not sent.\n" + msg)
 
@@ -2180,11 +2183,12 @@ class MakeMovie:
                 # Read the XML file.
                 self.Debug(1, "Opening template file: %s" % self.templateFile)
                 f = open(self.templateFile, "rt")
-                templateReader = MovieTemplateReader()
-                parser = make_parser()    
-                parser.setContentHandler(templateReader) 
-                parser.parse(f)
+                lines = f.readlines()
                 f.close()
+                templateReader = MovieTemplateReader()
+                for line in lines:
+                   templateReader.feed(line)
+                templateReader.close()
 
                 # Get the name of the template work file from the XML template.
                 templatePY = prefix + "movietemplates" + self.slash + "visitmovietemplate.py"

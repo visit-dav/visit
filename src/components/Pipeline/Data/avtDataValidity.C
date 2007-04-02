@@ -43,6 +43,7 @@
 
 #include <avtDataObjectString.h>
 #include <avtDataObjectWriter.h>
+#include <avtWebpage.h>
 
 
 // ****************************************************************************
@@ -594,6 +595,72 @@ avtDataValidity::Read(char *input)
     input += esSize;
 
     return size;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataValidity::DebugDump
+//
+//  Purpose:
+//      Dumps the data validity object to a webpage.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 21, 2006
+//
+// ****************************************************************************
+
+static const char *
+YesOrNo(bool b)
+{
+    static const char *yes_str = "yes";
+    static const char *no_str  = "no";
+    if (b)
+        return yes_str;
+
+    return no_str;
+}
+
+void
+avtDataValidity::DebugDump(avtWebpage *webpage)
+{
+    webpage->AddSubheading("Data Validity");
+    webpage->StartTable();
+    webpage->AddTableHeader2("Field", "Value");
+    webpage->AddTableEntry2("Are the zones preserved?", YesOrNo(zonesPreserved));
+    webpage->AddTableEntry2("Are the nodes preserved?", YesOrNo(nodesPreserved));
+    webpage->AddTableEntry2("Are the original zones intact?", 
+                            YesOrNo(originalZonesIntact));
+    webpage->AddTableEntry2("Is the spatial meta data preserved?", 
+                            YesOrNo(spatialMetaDataPreserved));
+    webpage->AddTableEntry2("Has an operation failed?",
+                            YesOrNo(operationFailed));
+    webpage->AddTableEntry2("The pipeline is using all of the data",
+                            YesOrNo(usingAllData));
+    webpage->AddTableEntry2("The pipeline is using all of the domains",
+                            YesOrNo(usingAllDomains));
+    webpage->AddTableEntry2("The pipeline execution is using dynamic load balancing",
+                            YesOrNo(isThisDynamic));
+    webpage->AddTableEntry2("The points have been transformed",
+                            YesOrNo(pointsWereTransformed));
+    webpage->AddTableEntry2("Wireframe rendering would be inappropriate",
+                            YesOrNo(wireframeRenderingIsInappropriate));
+    webpage->AddTableEntry2("Normals would be inappropriate",
+                            YesOrNo(normalsAreInappropriate));
+    webpage->AddTableEntry2("Subdivision has occurred",
+                            YesOrNo(subdivisionOccurred));
+    webpage->AddTableEntry2("Have all of the cells been subdivided?",
+                            YesOrNo(notAllCellsSubdivided));
+    webpage->AddTableEntry2("Are there disjoint elements?",
+                            YesOrNo(disjointElements));
+    webpage->AddTableEntry2("Is it queryable?",
+                            YesOrNo(queryable));
+    webpage->AddTableEntry2("Has this pipeline *ever* owned a domain?",
+                            YesOrNo(hasEverOwnedAnyDomain));
+    webpage->AddTableEntry2("Has an error occurred?",
+                            YesOrNo(errorOccurred));
+    if (errorOccurred)
+        webpage->AddTableEntry2("Error Message:", errorString.c_str());
+    webpage->EndTable();
 }
 
 

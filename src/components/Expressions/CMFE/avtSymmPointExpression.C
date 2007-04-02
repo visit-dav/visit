@@ -36,83 +36,64 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtOriginatingSink.h                          //
+//                          avtSymmPointExpression.h                         //
 // ************************************************************************* //
 
-#ifndef AVT_ORIGINATING_SINK_H
-#define AVT_ORIGINATING_SINK_H
+#include <avtSymmPointExpression.h>
 
-#include <pipeline_exports.h>
-
-#include <avtDataObjectSink.h>
-#include <avtPipelineSpecification.h>
-
-class     avtWebpage;
-
-
-typedef  bool (*GuideFunction)(void *, int);
+#include <stdio.h>
 
 
 // ****************************************************************************
-//  Class: avtOriginatingSink
-//
-//  Purpose:
-//      This sink object serves as the originator of a pipeline.  It 
-//      understands that there are many pipelines and what its pipeline index
-//      is.  It also understands that dynamic load balancing may occur and
-//      that it may have to execute a pipeline multiple times.
+//  Method: avtSymmPointExpression constructor
 //
 //  Programmer: Hank Childs
-//  Creation:   May 29, 2001
-//
-//  Modifications:
-//
-//    Hank Childs, Fri Sep 28 13:18:47 PDT 2001
-//    Added DynamicLoadBalanceCleanUp.
-//
-//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
-//    Moved inlined destructor definition to .C file because certain compilers 
-//    have problems with them.
-//
-//    Hank Childs, Wed Mar  2 11:16:01 PST 2005
-//    Take a full-blown pipeline specification rather than a data spec and a
-//    pipeline index.
-//
-//    Hank Childs, Thu Dec 21 09:43:22 PST 2006
-//    Add support for debug dumps
+//  Creation:   December 21, 2006
 //
 // ****************************************************************************
 
-class PIPELINE_API avtOriginatingSink : virtual public avtDataObjectSink
+avtSymmPointExpression::avtSymmPointExpression()
 {
-  public:
-                              avtOriginatingSink();
-    virtual                  ~avtOriginatingSink();
-
-    void                      Execute(avtPipelineSpecification_p);
-
-    static void               SetGuideFunction(GuideFunction, void *);
-    static void               GetGuideFunction(GuideFunction &, void *&);
-
-    static void               DebugDump(bool d) {debugDump = d;}
-    static void               AddDumpReference(const char *, const char *);
-
-  protected:
-    virtual void              InputIsReady(void);
-    virtual void              DynamicLoadBalanceCleanUp(void);
-
-    static bool               debugDump;
-    static avtWebpage        *webpage;
-
-    void                      FinalizeWebpage(void);
-    void                      InitializeWebpage(void);
-
-  private:
-    static GuideFunction      guideFunction;
-    static void              *guideFunctionArgs;
-};
+    ;
+}
 
 
-#endif
+// ****************************************************************************
+//  Method: avtSymmPointExpression destructor
+//
+//  Programmer: Hank Childs
+//  Creation:   December 21, 2006
+//
+// ****************************************************************************
+
+avtSymmPointExpression::~avtSymmPointExpression()
+{
+    ;
+}
+
+
+// ****************************************************************************
+//  Method: avtSymmPointExpression::GetMacro
+//
+//  Purpose:
+//      Applies the macro to create a new expression corresponding to
+//      the symmetry around a point.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 21, 2006
+//
+// ****************************************************************************
+
+void
+avtSymmPointExpression::GetMacro(std::vector<std::string> &args, std::string &ne,
+                             Expression::ExprType &type)
+{
+    char new_expr[1024];
+    sprintf(new_expr, "%s - eval_point(%s, %s, %s)",
+                 args[0].c_str(), args[0].c_str(), args[0].c_str(),
+                 args[1].c_str());
+    ne = new_expr;
+    type = Expression::ScalarMeshVar;
+}
 
 

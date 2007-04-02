@@ -36,80 +36,35 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtOriginatingSink.h                          //
+//                           avtEvalPointExpression.h                        //
 // ************************************************************************* //
 
-#ifndef AVT_ORIGINATING_SINK_H
-#define AVT_ORIGINATING_SINK_H
+#ifndef AVT_EVAL_POINT_EXPRESSION_H
+#define AVT_EVAL_POINT_EXPRESSION_H
 
-#include <pipeline_exports.h>
-
-#include <avtDataObjectSink.h>
-#include <avtPipelineSpecification.h>
-
-class     avtWebpage;
-
-
-typedef  bool (*GuideFunction)(void *, int);
+#include <avtSymmEvalExpression.h>
 
 
 // ****************************************************************************
-//  Class: avtOriginatingSink
+//  Class: avtEvalPointExpression
 //
 //  Purpose:
-//      This sink object serves as the originator of a pipeline.  It 
-//      understands that there are many pipelines and what its pipeline index
-//      is.  It also understands that dynamic load balancing may occur and
-//      that it may have to execute a pipeline multiple times.
+//      Creates an expression that evaluates values after a transformation.
 //
 //  Programmer: Hank Childs
-//  Creation:   May 29, 2001
-//
-//  Modifications:
-//
-//    Hank Childs, Fri Sep 28 13:18:47 PDT 2001
-//    Added DynamicLoadBalanceCleanUp.
-//
-//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
-//    Moved inlined destructor definition to .C file because certain compilers 
-//    have problems with them.
-//
-//    Hank Childs, Wed Mar  2 11:16:01 PST 2005
-//    Take a full-blown pipeline specification rather than a data spec and a
-//    pipeline index.
-//
-//    Hank Childs, Thu Dec 21 09:43:22 PST 2006
-//    Add support for debug dumps
+//  Creation:   December 21, 2006
 //
 // ****************************************************************************
 
-class PIPELINE_API avtOriginatingSink : virtual public avtDataObjectSink
+class EXPRESSION_API avtEvalPointExpression : public avtSymmEvalExpression
 {
   public:
-                              avtOriginatingSink();
-    virtual                  ~avtOriginatingSink();
-
-    void                      Execute(avtPipelineSpecification_p);
-
-    static void               SetGuideFunction(GuideFunction, void *);
-    static void               GetGuideFunction(GuideFunction &, void *&);
-
-    static void               DebugDump(bool d) {debugDump = d;}
-    static void               AddDumpReference(const char *, const char *);
+                              avtEvalPointExpression();
+    virtual                  ~avtEvalPointExpression();
 
   protected:
-    virtual void              InputIsReady(void);
-    virtual void              DynamicLoadBalanceCleanUp(void);
-
-    static bool               debugDump;
-    static avtWebpage        *webpage;
-
-    void                      FinalizeWebpage(void);
-    void                      InitializeWebpage(void);
-
-  private:
-    static GuideFunction      guideFunction;
-    static void              *guideFunctionArgs;
+    virtual int               GetNumberOfInputParameters(void) { return 3; };
+    virtual avtDataObject_p   TransformData(avtDataObject_p);
 };
 
 

@@ -51,8 +51,9 @@
 
 class     avtDataObjectSource;
 class     avtDataObjectWriter;
-class     avtTerminatingSource;
 class     avtQueryableSource;
+class     avtTerminatingSource;
+class     avtWebpage;
 
 
 // **************************************************************************** 
@@ -74,6 +75,9 @@ class     avtQueryableSource;
 //
 //    Hank Childs, Sat Feb 19 14:49:17 PST 2005
 //    Added method to get the source of the data object.
+//
+//    Hank Childs, Thu Dec 21 09:58:57 PST 2006
+//    Added method for debug dumps.
 //
 // ****************************************************************************
 
@@ -105,6 +109,8 @@ class PIPELINE_API avtDataObject
 
     virtual avtDataObjectWriter     *InstantiateWriter(void);
     
+    virtual void                     DebugDump(avtWebpage *, const char *);
+
   protected:
     avtDataObjectInformation         info;
     avtDataObjectSource             *source;

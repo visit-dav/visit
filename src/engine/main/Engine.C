@@ -79,7 +79,6 @@
 #include <avtFilter.h>
 #include <avtOriginatingSink.h>
 #include <avtParallel.h>
-#include <avtStreamer.h>
 #include <avtTerminatingSource.h>
 #include <avtTypes.h>
 #include <avtVariableMapper.h>
@@ -993,7 +992,13 @@ Engine::ProcessInput()
 //
 //    Mark C. Miller, Wed Aug  9 19:40:30 PDT 2006
 //    Added "-stereo" option to support stereo in SR mode
+//
+//    Hank Childs, Thu Dec 21 09:19:37 PST 2006
+//    Change DebugDump method from avtStreamer to avtFilter, since it is
+//    now supported at a higher level.
+//
 // ****************************************************************************
+
 void
 Engine::ProcessCommandLine(int argc, char **argv)
 {
@@ -1065,7 +1070,8 @@ Engine::ProcessCommandLine(int argc, char **argv)
         }
         else if (strcmp(argv[i], "-dump") == 0)
         {
-            avtStreamer::DebugDump(true);
+            avtFilter::DebugDump(true);
+            avtOriginatingSink::DebugDump(true);
             shouldDoDashDump = true;
         }
         else if (strcmp(argv[i], "-lb-block") == 0)

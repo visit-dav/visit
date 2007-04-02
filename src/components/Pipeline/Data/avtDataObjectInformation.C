@@ -47,6 +47,7 @@
 #include <avtDataObjectInformation.h>
 #include <avtDataObjectString.h>
 #include <avtDataObjectWriter.h>
+#include <avtWebpage.h>
 
 
 // ****************************************************************************
@@ -428,6 +429,25 @@ avtDataObjectInformation::Read(char *str)
     int size1 = atts.Read(str);
     int size2 = validity.Read(str + size1);
     return (size1 + size2);
+}
+
+
+// ****************************************************************************
+//  Method: avtDataObjectInformation::DebugDump
+//
+//  Purpose:
+//      Outputs the data object information to a webpage.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 21, 2006
+//
+// ****************************************************************************
+
+void
+avtDataObjectInformation::DebugDump(avtWebpage *webpage)
+{
+    atts.DebugDump(webpage);
+    validity.DebugDump(webpage);
 }
 
 

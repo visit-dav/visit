@@ -237,6 +237,9 @@
 #    Hank Childs, Mon Sep 11 15:02:43 PDT 2006
 #    Added avtIntegrationRF.
 #
+#    Hank Childs, Thu Dec 21 11:54:34 PST 2006
+#    Added avtWebpage.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -317,7 +320,8 @@ Pipeline_src= \
   Pipeline/avtNullDataReader.C \
   Pipeline/avtNullDataWriter.C \
   Pipeline/avtParallel.C \
-  Pipeline/avtPipelineSpecification.C
+  Pipeline/avtPipelineSpecification.C \
+  Pipeline/avtWebpage.C
 
 PrivateFilters_src= \
   PrivateFilters/avtCompactTreeFilter.C \

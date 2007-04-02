@@ -38,8 +38,8 @@
 // ************************************************************************* //
 //                         avtDataRepresentation.C                           //
 // ************************************************************************* //
+
 #include <avtDataRepresentation.h>
-#include <avtCommonDataFunctions.h>
 
 #include <vtkCharArray.h>
 #include <vtkDataSet.h>
@@ -53,6 +53,10 @@
 #include <vtkStructuredGridReader.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkUnstructuredGridReader.h>
+
+#include <avtCommonDataFunctions.h>
+#include <avtParallel.h>
+#include <avtWebpage.h>
 
 #include <NoInputException.h>
 #include <ImproperUseException.h>
@@ -876,3 +880,79 @@ avtDataRepresentation::GetTimeToDecompress() const
 {
     return timeToDecompress;
 }
+
+
+// ****************************************************************************
+//  Method: avtDataRepresentation::DebugDump
+//
+//  Purpose:
+//      Writes out its information to a webpage.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 21, 2006
+//
+// ****************************************************************************
+
+const char *
+avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
+{
+    if (asVTK == NULL)
+    {
+        return "EMPTY DATA SET";
+    }
+
+    static int times = 0;
+    char name[1024];
+
+    if (PAR_Size() > 1)
+    {
+        int rank = PAR_Rank();
+        sprintf(name, "%s%d.%d.vtk", prefix, times, rank);
+    }
+    else
+        sprintf(name, "%s%d.vtk", prefix, times);
+    times++;
+    vtkDataSetWriter *wrtr = vtkDataSetWriter::New();
+    wrtr->SetInput(asVTK);
+    wrtr->SetFileName(name);
+    wrtr->Write();
+    wrtr->Delete();
+
+    const char *type = "<unknown mesh type>";
+    int nzones = asVTK->GetNumberOfCells();
+    int nnodes = asVTK->GetNumberOfPoints();
+    int dims[3] = { -1, -1, -1 };
+    int vtktype = asVTK->GetDataObjectType();
+    switch (vtktype)
+    {
+      case VTK_RECTILINEAR_GRID:
+        type = "rectilinear mesh";
+        ((vtkRectilinearGrid *) asVTK)->GetDimensions(dims);
+        break;
+
+      case VTK_STRUCTURED_GRID:
+        type = "curvilinear mesh";
+        ((vtkStructuredGrid *) asVTK)->GetDimensions(dims);
+        break;
+
+      case VTK_UNSTRUCTURED_GRID:
+        type = "unstructured mesh";
+        break;
+
+      case VTK_POLY_DATA:
+        type = "poly data mesh";
+        break;
+    }
+
+    static char str[1024];
+    if (dims[0] > 0)
+        sprintf(str, "%s, %s, ncells = %d, npts = %d, dims = %d, %d, %d",
+                name, type, nzones, nnodes, dims[0], dims[1], dims[2]);
+    else
+        sprintf(str, "%s, %s, ncells = %d, npts = %d",
+                name, type, nzones, nnodes);
+
+    return str;
+}
+
+

@@ -408,3 +408,21 @@ avtDataObject::ReleaseData(void)
 }
 
 
+// ****************************************************************************
+//  Method: avtDataObject::DebugDump
+//
+//  Purpose:
+//      Writes out its information to a webpage.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 21, 2006
+//
+// ****************************************************************************
+
+void
+avtDataObject::DebugDump(avtWebpage *webpage, const char *prefix)
+{
+    info.DebugDump(webpage);
+}
+
+

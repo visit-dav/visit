@@ -41,6 +41,7 @@
 
 #ifndef AVT_DATASET_H
 #define AVT_DATASET_H
+
 #include <pipeline_exports.h>
 
 #include <avtCommonDataFunctions.h>
@@ -48,6 +49,7 @@
 #include <avtDataTree.h>
 
 class   avtDataRepresentation;
+class   avtWebpage;
 
 
 // ****************************************************************************
@@ -100,6 +102,9 @@ class   avtDataRepresentation;
 //    Hank Childs, Wed Aug  2 15:10:42 PDT 2006
 //    Add friend status for avtLineScanQuery.
 //
+//    Hank Childs, Thu Dec 21 09:58:57 PST 2006
+//    Added method for debug dumps.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataset : public avtDataObject
@@ -133,6 +138,8 @@ class PIPELINE_API avtDataset : public avtDataObject
 
     void                     WriteTreeStructure(ostream &os, int indent = 0);
     void                     Compact(void);
+
+    virtual void             DebugDump(avtWebpage *, const char *);
 
   protected:
     avtDataTree_p            dataTree;

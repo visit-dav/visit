@@ -34,8 +34,7 @@
 # DAMAGE.
 #
 ##############################################################################
-from xml.sax import make_parser 
-from xml.sax.handler import ContentHandler 
+from xmllib import *
 import string
 
 ###############################################################################
@@ -52,7 +51,13 @@ import string
 #
 ###############################################################################
 
-class MovieTemplateReader(ContentHandler): 
+def attrs_getValue(dict, name):
+    ret = None
+    if name in dict.keys():
+        ret = dict[name]
+    return ret
+
+class MovieTemplateReader(XMLParser): 
     ###########################################################################
     # Method: __init__
     #
@@ -70,6 +75,10 @@ class MovieTemplateReader(ContentHandler):
     ###########################################################################
 
     def __init__ (self): 
+        XMLParser.__init__(self)
+        self.elements = {"Object" : ("<Object>", "</Object>"), "Field" : ("<Field>", "</Field>")}
+        self.attributes = {"name" : "", "type" : None, "length" : 0}
+
         self.viewport_data = {}
 	self.sequence_data = {}
 	self.generic_data = {}
@@ -105,35 +114,36 @@ class MovieTemplateReader(ContentHandler):
     #
     ###########################################################################
 
-    def startElement(self, name, attrs): 
+    def handle_starttag(self, name, method, attrs): 
         self.line = ""
         self.fieldName = ""
         self.fieldType = ""
         self.fieldLength = 0
 
-        #print "<%s name=\"%s\">" % (name, attrs.getValue("name"))
+        #print "<%s name=\"%s\">" % (name, attrs_getValue(attrs, "name"))
 	if name == "Object":
-            if attrs.getValue("name") == "VIEWPORTS":
+            if attrs_getValue(attrs, "name") == "VIEWPORTS":
                 self.readMode = self.READ_VIEWPORT
                 self.objectIndent = 1
-	    elif attrs.getValue("name") == "SEQUENCEDATA":
+	    elif attrs_getValue(attrs, "name") == "SEQUENCEDATA":
                 self.readMode = self.READ_SEQUENCE
                 self.objectIndent = 1
             else:
                 self.objectIndent = self.objectIndent + 1
 	    
         if name == "Object":
-            objName = attrs.getValue("name")
+            objName = attrs_getValue(attrs, "name")
             if self.readMode == self.READ_VIEWPORT:
                 self.viewport_name = objName
             elif self.readMode == self.READ_SEQUENCE:
                 self.sequence_name = objName
         elif name == "Field":
-            self.fieldName = attrs.getValue("name")
-            self.fieldType = attrs.getValue("type")
+            self.fieldName = attrs_getValue(attrs, "name")
+            self.fieldType = attrs_getValue(attrs, "type")
             try:
-                self.fieldLength = eval(attrs.getValue("length"))
-	    except KeyError:
+                #print "length=", attrs_getValue(attrs,"length")
+                self.fieldLength = int(attrs_getValue(attrs,"length"))
+	    except:
                 self.fieldLength = 0
 
     ###########################################################################
@@ -154,8 +164,9 @@ class MovieTemplateReader(ContentHandler):
     #
     ###########################################################################
 
-    def characters (self, ch): 
-        self.line = self.line + ch
+    def handle_data(self, data):
+        #print "handle_data: data=", data
+        self.line = self.line + data
 
     ###########################################################################
     # Method: SpacedListToStringTuple
@@ -292,7 +303,7 @@ class MovieTemplateReader(ContentHandler):
     #
     ###########################################################################
 
-    def endElement(self, name): 
+    def handle_endtag(self, name, method):
         #print self.line
         #print "</%s name=%s, type=%s, length=%d>" % (name, self.fieldName, self.fieldType, self.fieldLength)
         if name == "Field":
@@ -1218,8 +1229,8 @@ class VisItMovieTemplate:
                                           "seqBase=%s, outputName=%s" % \
                                           (nFrames, seqBase, outputName))
 
-                            command = "visit -transition %s %s %s %s" % \
-                            (transitionInputs[0], transitionInputs[1],\
+                            command = "visit -transition -v %s %s %s %s %s" % \
+                            (Version(), transitionInputs[0], transitionInputs[1],\
                              transitionInputs[2], transitionInputs[3])
                             command = command + " -style %s" % transitionTypes2Arg[thisSequence["sequenceType"]]
                             command = command + " -output %s -nframes %d" % (outputName, nFrames)
@@ -1504,7 +1515,10 @@ class VisItMovieTemplate:
                             seqIndex = i
                             break
 
-                    sequence_t[seq] = float(image_in_sequence[seq]) / float(sequence_frames[seq][0]-1)
+                    if sequence_frames[seq][0] > 1:
+                        sequence_t[seq] = float(image_in_sequence[seq]) / float(sequence_frames[seq][0]-1)
+                    else:
+                        sequence_t[seq] = 1.
                     if seqType in self.compositingSequences:
                         # Get the filename for the composite sequence since 
                         # this sequence is kind of a transition and needs inputs.
@@ -1644,7 +1658,7 @@ class VisItMovieTemplate:
                         index = index + 1
                     f.close()
 
-                    command = "visit -composite %s %s" % (paramFile, outputName)
+                    command = "visit -composite -v %s %s %s" % (Version(), paramFile, outputName)
                     self.Debug(5, command)
                     os.system(command)
 

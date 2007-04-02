@@ -41,7 +41,9 @@
 
 #ifndef AVT_DATA_OBJECT_INFORMATION_H
 #define AVT_DATA_OBJECT_INFORMATION_H
+
 #include <pipeline_exports.h>
+
 #include <ref_ptr.h>
 
 #include <avtDataAttributes.h>
@@ -49,6 +51,8 @@
 
 class     avtDataObjectString;
 class     avtDataObjectWriter;
+class     avtWebpage;
+
 
 // ****************************************************************************
 //  Class: avtDataObjectInformation
@@ -76,6 +80,9 @@ class     avtDataObjectWriter;
 //    Mark C. Miller, Thu Jun 10 10:05:09 PDT 2004
 //    Added message tag args to private comm functions
 //
+//    Hank Childs, Thu Dec 21 10:10:09 PST 2006
+//    Add support for debug dumps.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataObjectInformation
@@ -98,6 +105,8 @@ class PIPELINE_API avtDataObjectInformation
                                    const avtDataObjectWriter *);
     int                      Read(char *);
 
+    void                     DebugDump(avtWebpage *);
+
   protected:
     avtDataAttributes        atts;
     avtDataValidity          validity;
@@ -112,3 +121,5 @@ class PIPELINE_API avtDataObjectInformation
 };
 
 #endif
+
+

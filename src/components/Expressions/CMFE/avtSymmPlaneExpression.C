@@ -36,7 +36,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                        avtSymmPlaneExpression.h                       //
+//                          avtSymmPlaneExpression.h                         //
 // ************************************************************************* //
 
 #include <avtSymmPlaneExpression.h>
@@ -77,7 +77,7 @@ avtSymmPlaneExpression::~avtSymmPlaneExpression()
 //
 //  Purpose:
 //      Applies the macro to create a new expression corresponding to
-//      the Laplacian.
+//      plane symmetry.
 //
 //  Programmer: Hank Childs
 //  Creation:   January 21, 2006

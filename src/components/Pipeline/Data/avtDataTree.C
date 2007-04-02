@@ -47,8 +47,9 @@
 #include <vtkDataSet.h>
 #include <vtkDataSetWriter.h>
 
-#include <avtDataRepresentation.h>
 #include <avtCommonDataFunctions.h>
+#include <avtDataRepresentation.h>
+#include <avtWebpage.h>
 
 #include <BadIndexException.h>
 #include <InvalidMergeException.h>
@@ -1479,4 +1480,67 @@ avtDataTree::GetUniqueLabels(vector<string> &labels, set<string> &labelSet)
         }
     }
 }
+
+
+// ****************************************************************************
+//  Method: avtDataTree::DebugDump
+//
+//  Purpose:
+//      Dumps out debug information.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 21, 2006
+//
+// ****************************************************************************
+
+void
+avtDataTree::DebugDump(avtWebpage *webpage, const char *prefix, 
+                       int id, int parent)
+{
+    static int nextNodeId = 0;
+    if (id == 0)
+        nextNodeId = 1;
+
+    char id_str[256];
+    sprintf(id_str, "n%d", id);
+
+    char parent_str[32];
+    sprintf(parent_str, "n%d", parent);
+    if (parent < 0)
+        strcpy(parent_str, "root");
+
+    if (nChildren > 0)
+    {
+        int  nNull = 0;
+        int  i;
+        for (i = 0 ; i < nChildren ; i++)
+            if (*children[i] == NULL)
+                nNull++;
+        char str[1024];
+        sprintf(str, "%d children (%d NULL)", nChildren, nNull);
+        webpage->AddTableEntry4(id_str, parent_str, "INTERNAL", str);
+        int idStart = nextNodeId;
+        nextNodeId += (nChildren-nNull);
+        for (i = 0 ; i < nChildren ; i++)
+            if (*children[i] != NULL)
+            {
+                children[i]->DebugDump(webpage, prefix, idStart++, id);
+            }
+    }
+    else if (dataRep != NULL)
+    {
+        const char *desc = dataRep->DebugDump(webpage, prefix);
+        if (dataRep->GetLabel() != "")
+            sprintf(id_str, "n%d, domain = %d, label = %s", id, 
+                         dataRep->GetDomain(), dataRep->GetLabel().c_str());
+        else
+            sprintf(id_str, "n%d, domain = %d", id, dataRep->GetDomain());
+        webpage->AddTableEntry4(id_str, parent_str, "LEAF", desc);
+    }
+    else
+    {
+        webpage->AddTableEntry4(id_str, parent_str, "BAD NODE", NULL);
+    }
+}
+
 

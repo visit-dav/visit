@@ -36,83 +36,99 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtOriginatingSink.h                          //
+//                            avtEvalPointExpression.h                       //
 // ************************************************************************* //
 
-#ifndef AVT_ORIGINATING_SINK_H
-#define AVT_ORIGINATING_SINK_H
+#include <avtEvalPointExpression.h>
 
-#include <pipeline_exports.h>
+#include <vtkMatrix4x4.h>
 
-#include <avtDataObjectSink.h>
-#include <avtPipelineSpecification.h>
+#include <avtCustomTransform.h>
+#include <avtSourceFromAVTDataset.h>
 
-class     avtWebpage;
-
-
-typedef  bool (*GuideFunction)(void *, int);
+#include <ExpressionException.h>
 
 
 // ****************************************************************************
-//  Class: avtOriginatingSink
+//  Method: avtEvalPointExpression constructor
 //
 //  Purpose:
-//      This sink object serves as the originator of a pipeline.  It 
-//      understands that there are many pipelines and what its pipeline index
-//      is.  It also understands that dynamic load balancing may occur and
-//      that it may have to execute a pipeline multiple times.
+//      Defines the constructor.  Note: this should not be inlined in the
+//      header because it causes problems for certain compilers.
 //
 //  Programmer: Hank Childs
-//  Creation:   May 29, 2001
-//
-//  Modifications:
-//
-//    Hank Childs, Fri Sep 28 13:18:47 PDT 2001
-//    Added DynamicLoadBalanceCleanUp.
-//
-//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
-//    Moved inlined destructor definition to .C file because certain compilers 
-//    have problems with them.
-//
-//    Hank Childs, Wed Mar  2 11:16:01 PST 2005
-//    Take a full-blown pipeline specification rather than a data spec and a
-//    pipeline index.
-//
-//    Hank Childs, Thu Dec 21 09:43:22 PST 2006
-//    Add support for debug dumps
+//  Creation:   December 21, 2006
 //
 // ****************************************************************************
 
-class PIPELINE_API avtOriginatingSink : virtual public avtDataObjectSink
+avtEvalPointExpression::avtEvalPointExpression()
 {
-  public:
-                              avtOriginatingSink();
-    virtual                  ~avtOriginatingSink();
-
-    void                      Execute(avtPipelineSpecification_p);
-
-    static void               SetGuideFunction(GuideFunction, void *);
-    static void               GetGuideFunction(GuideFunction &, void *&);
-
-    static void               DebugDump(bool d) {debugDump = d;}
-    static void               AddDumpReference(const char *, const char *);
-
-  protected:
-    virtual void              InputIsReady(void);
-    virtual void              DynamicLoadBalanceCleanUp(void);
-
-    static bool               debugDump;
-    static avtWebpage        *webpage;
-
-    void                      FinalizeWebpage(void);
-    void                      InitializeWebpage(void);
-
-  private:
-    static GuideFunction      guideFunction;
-    static void              *guideFunctionArgs;
-};
+}
 
 
-#endif
+// ****************************************************************************
+//  Method: avtEvalPointExpression destructor
+//
+//  Purpose:
+//      Defines the destructor.  Note: this should not be inlined in the
+//      header because it causes problems for certain compilers.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 21, 2006
+//
+// ****************************************************************************
+
+avtEvalPointExpression::~avtEvalPointExpression()
+{
+}
+
+
+// ****************************************************************************
+//  Method: avtEvalPointExpression::TransformData
+//
+//  Purpose:
+//      Transforms the data based on the input parameters.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 21, 2006
+//
+// ****************************************************************************
+
+avtDataObject_p
+avtEvalPointExpression::TransformData(avtDataObject_p input)
+{
+    //
+    // Gameplan:  For each point (X,Y,Z), the vector to a point (X0, Y0, Z0)
+    // is (X0-X, Y0-Y, Z0-Z).  So we want to move 2*(X0-X, Y0-Y, Z0-Z).
+    // Then the final point is (2X0-X, 2Y0-Y, 2Z0-Z).  So set up a transform
+    // that does this.
+    //
+    float X = inputParameters[0];
+    float Y = inputParameters[1];
+    float Z = inputParameters[2];
+
+    vtkMatrix4x4 *mat = vtkMatrix4x4::New();
+    mat->SetElement(0, 0, -1);
+    mat->SetElement(1, 1, -1);
+    mat->SetElement(2, 2, -1);
+    mat->SetElement(0, 3, +2*X);
+    mat->SetElement(1, 3, +2*Y);
+    mat->SetElement(2, 3, +2*Z);
+
+    avtDataset_p ds;
+    CopyTo(ds, input);
+    avtSourceFromAVTDataset termsrc(ds);
+
+    avtCustomTransform transform;
+    transform.SetMatrix(mat);
+    transform.SetInput(termsrc.GetOutput());
+
+    avtDataObject_p output = transform.GetOutput();
+    output->Update(GetGeneralPipelineSpecification());
+
+    mat->Delete();
+
+    return output;
+}
 
 

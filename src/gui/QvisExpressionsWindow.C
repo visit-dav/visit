@@ -112,7 +112,11 @@
 //    Mark C. Miller, Wed Nov 15 12:47:05 PST 2006
 //    Added zonetype expression
 //
+//    Hank Childs, Fri Dec 22 10:27:45 PST 2006
+//    Added symm_point.
+//
 // ****************************************************************************
+
 struct ExprNameList
 {
     const char *name;
@@ -287,6 +291,7 @@ const char *expr_imageprocessing[] = {
 const char *expr_comparison[] = {
     "conn_cmfe",
     "pos_cmfe",
+    "symm_point",
     "symm_plane",
     "symm_transform",
     NULL
@@ -1001,6 +1006,9 @@ QvisExpressionsWindow::displayAllVarsChanged()
 //    Hank Childs, Mon Mar 13 16:48:23 PST 2006
 //    Added min and max.
 //
+//    Hank Childs, Fri Dec 22 10:31:40 PST 2006
+//    Added symm_point.
+//
 // ****************************************************************************
 
 void
@@ -1021,6 +1029,11 @@ QvisExpressionsWindow::insertFunction(int id)
     else if (str == "pos_cmfe")
     {
         definitionEdit->insert("(<filename:var>, <meshname>, <default-var>)");
+        doParens = false;
+    }
+    else if (str == "symm_point")
+    {
+        definitionEdit->insert("(<var>, [Px, Py, Pz])");
         doParens = false;
     }
     else if (str == "symm_plane")

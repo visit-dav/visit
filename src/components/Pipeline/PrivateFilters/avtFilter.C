@@ -44,8 +44,10 @@
 #include <avtDynamicAttribute.h>
 #include <avtExtents.h>
 #include <avtMetaData.h>
+#include <avtOriginatingSink.h>
 #include <avtParallel.h>
 #include <avtTerminatingSource.h>
+#include <avtWebpage.h>
 
 #include <vtkSystemIncludes.h> // for VTK_FLOAT
 
@@ -61,11 +63,19 @@ using std::string;
 using std::vector;
 
 
+bool avtFilter::debugDump = false;
+
+
 // ****************************************************************************
 //  Method: avtFilter constructor
 //
 //  Programmer: Hank Childs
 //  Creation:   May 30, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Dec 22 07:55:21 PST 2006
+//    Initialize webpage.
 //
 // ****************************************************************************
 
@@ -73,6 +83,7 @@ avtFilter::avtFilter()
 {
     modified    = true;
     inExecute   = false;
+    webpage     = NULL;
 }
 
 
@@ -86,11 +97,17 @@ avtFilter::avtFilter()
 //  Programmer: Hank Childs
 //  Creation:   February 5, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Dec 22 07:55:21 PST 2006
+//    Delete the webpage.
+//
 // ****************************************************************************
 
 avtFilter::~avtFilter()
 {
-    ;
+    if (webpage != NULL)
+        delete webpage;;
 }
 
 
@@ -167,6 +184,9 @@ avtFilter::UpdateProgress(int current, int total)
 //    Moved timings code from avtDataTreeStreamer to this routine so that
 //    all filters are timed.
 //
+//    Hank Childs, Thu Dec 21 09:15:00 PST 2006
+//    Add support for the "-dump" option.
+//
 // ****************************************************************************
 
 bool
@@ -212,9 +232,13 @@ avtFilter::Update(avtPipelineSpecification_p spec)
             debug1 << "Executing " << GetType() << endl;
             UpdateProgress(0, 0);
             ResolveDynamicAttributes();
+            if (debugDump)
+                DumpDataObject(GetInput(), "input");
             PreExecute();
             Execute();
             PostExecute();
+            if (debugDump)
+                DumpDataObject(GetOutput(), "output");
             UpdateProgress(1, 0);
             debug1 << "Done executing " << GetType() << endl;
             modified = false;
@@ -1139,6 +1163,81 @@ void
 avtFilter::SearchDataForDataExtents(double *, const char *)
 {
     EXCEPTION0(ImproperUseException);
+}
+
+
+// ****************************************************************************
+//  Method: avtFilter::DumpDataObject
+//
+//  Purpose:
+//      "Dumps" a data object.  This means create a web page and put the
+//      data attributes in that web page.  The data object also can add to
+//      the web page, depending on whether or not it has reimplemented a 
+//      virtual function on how to write itself out.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 21, 2006
+//
+// ****************************************************************************
+
+void
+avtFilter::DumpDataObject(avtDataObject_p dob, const char *prefix)
+{
+    if (strcmp(prefix, "input") == 0)
+    {
+        if (webpage != NULL)
+        {
+            debug1 << "DUMP CODE: open file handle, exception previously?" 
+                   << endl;
+            delete webpage;
+        }
+  
+        static int filter_id = 0;
+        char name[128];
+        if (PAR_Size() > 1)
+        {
+            int rank = PAR_Rank();
+            sprintf(name, "filt%d.%d.html", filter_id, rank);
+        }
+        else
+            sprintf(name, "filt%d.html", filter_id);
+        filter_id++;
+        webpage = new avtWebpage(name);
+  
+        // Add the reference to the main webpage.
+        char line[1024];
+        avtOriginatingSink::AddDumpReference(name, GetType());
+ 
+        // Now set up our webpage.
+        char pagename[128];
+        sprintf(pagename, "%s dump info", GetType());
+        webpage->InitializePage(pagename);
+        webpage->WriteTitle(pagename);
+ 
+        std::string input_string;
+        char prefix[128];
+        sprintf(prefix, "before_%s", GetType());
+        webpage->AddHeading("INPUT");
+        dob->DebugDump(webpage, prefix);
+    }
+    else if (strcmp(prefix, "output") == 0)
+    {
+        if (webpage == NULL)
+        {
+            debug1 << "Webpage not initialized ... shouldn't happen" << endl;
+            return;
+        }
+ 
+        std::string output_string;
+        char prefix[128];
+        sprintf(prefix, "after_%s", GetType());
+        webpage->AddHeading("OUTPUT");
+        dob->DebugDump(webpage, prefix);
+ 
+        webpage->FinalizePage();
+        delete webpage;
+        webpage = NULL;
+    }
 }
 
 

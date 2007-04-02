@@ -41,13 +41,8 @@
 
 #include <vtkDataSet.h>
 
-#include <vtkDataSetWriter.h>
-
 #include <avtDataTree.h>
-#include <avtParallel.h>
 #include <avtStreamer.h>
-
-bool avtStreamer::debugDump = false;
 
 
 // ****************************************************************************
@@ -180,48 +175,18 @@ avtStreamer::ReleaseData(void)
 //    Hank Childs, Wed Aug 31 09:10:11 PDT 2005
 //    Make sure that -dump in parallel increments the dump index.
 //
+//    Hank Childs, Thu Dec 21 15:38:53 PST 2006
+//    Removed -dump functionality, since it is now handled at a lower level.
+//
 // ****************************************************************************
 
 avtDataTree_p
 avtStreamer::ExecuteDataTree(vtkDataSet* ds, int dom, std::string label)
 {
-    char name[1024];
-    static int times = 0;
-
-    if (debugDump)
-    {
-        if (PAR_Size() > 1)
-        {
-            int rank = PAR_Rank();
-            sprintf(name, "before_%s%d.%d.vtk", GetType(), times, rank);
-        }
-        else
-            sprintf(name, "before_%s%d.vtk", GetType(), times);
-        vtkDataSetWriter *wrtr = vtkDataSetWriter::New();
-        wrtr->SetInput(ds);
-        wrtr->SetFileName(name);
-        wrtr->Write();
-    }
-
     vtkDataSet *out_ds = ExecuteData(ds, dom, label);
     if (out_ds == NULL)
     {
         return NULL;
-    }
-
-    if (debugDump)
-    {
-        if (PAR_Size() > 1)
-        {
-            int rank = PAR_Rank();
-            sprintf(name, "after_%s%d.%d.vtk", GetType(), times++, rank);
-        }
-        else
-            sprintf(name, "after_%s%d.vtk", GetType(), times++);
-        vtkDataSetWriter *wrtr2 = vtkDataSetWriter::New();
-        wrtr2->SetInput(out_ds);
-        wrtr2->SetFileName(name);
-        wrtr2->Write();
     }
 
     return new avtDataTree(out_ds, dom, label);

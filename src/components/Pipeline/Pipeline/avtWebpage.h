@@ -35,81 +35,53 @@
 *
 *****************************************************************************/
 
-// ************************************************************************* //
-//                             avtOriginatingSink.h                          //
-// ************************************************************************* //
-
-#ifndef AVT_ORIGINATING_SINK_H
-#define AVT_ORIGINATING_SINK_H
+#ifndef AVT_WEBPAGE_H
+#define AVT_WEBPAGE_H
 
 #include <pipeline_exports.h>
-
-#include <avtDataObjectSink.h>
-#include <avtPipelineSpecification.h>
-
-class     avtWebpage;
-
-
-typedef  bool (*GuideFunction)(void *, int);
+#include <visitstream.h>
 
 
 // ****************************************************************************
-//  Class: avtOriginatingSink
+// Class: avtWebpage
 //
-//  Purpose:
-//      This sink object serves as the originator of a pipeline.  It 
-//      understands that there are many pipelines and what its pipeline index
-//      is.  It also understands that dynamic load balancing may occur and
-//      that it may have to execute a pipeline multiple times.
+// Purpose:
+//     Creates webpages that are custom to AVT.
 //
-//  Programmer: Hank Childs
-//  Creation:   May 29, 2001
-//
-//  Modifications:
-//
-//    Hank Childs, Fri Sep 28 13:18:47 PDT 2001
-//    Added DynamicLoadBalanceCleanUp.
-//
-//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
-//    Moved inlined destructor definition to .C file because certain compilers 
-//    have problems with them.
-//
-//    Hank Childs, Wed Mar  2 11:16:01 PST 2005
-//    Take a full-blown pipeline specification rather than a data spec and a
-//    pipeline index.
-//
-//    Hank Childs, Thu Dec 21 09:43:22 PST 2006
-//    Add support for debug dumps
+// Programmer: Hank Childs
+// Creation:   December 21, 2006
 //
 // ****************************************************************************
 
-class PIPELINE_API avtOriginatingSink : virtual public avtDataObjectSink
+class PIPELINE_API avtWebpage
 {
   public:
-                              avtOriginatingSink();
-    virtual                  ~avtOriginatingSink();
+                  avtWebpage(const char *filename);
+    virtual      ~avtWebpage();
+    
+    void          InitializePage(const char *heading);
+    void          WriteTitle(const char *title);
+    void          FinalizePage(void);
 
-    void                      Execute(avtPipelineSpecification_p);
+    void          AddLink(const char *, const char *);
 
-    static void               SetGuideFunction(GuideFunction, void *);
-    static void               GetGuideFunction(GuideFunction &, void *&);
-
-    static void               DebugDump(bool d) {debugDump = d;}
-    static void               AddDumpReference(const char *, const char *);
+    void          AddHeading(const char *);
+    void          AddSubheading(const char *);
+    void          AddEntry(const char *);
+    void          AddSubentry(const char *);
+    void          StartTable(void);
+    void          AddTableHeader2(const char *, const char *);
+    void          AddTableEntry2(const char *, const char *);
+    void          AddTableHeader3(const char *, const char *, const char *);
+    void          AddTableEntry3(const char *, const char *, const char *);
+    void          AddTableHeader4(const char *, const char *, const char *,
+                                  const char *);
+    void          AddTableEntry4(const char *, const char *, const char *,
+                                 const char *);
+    void          EndTable(void);
 
   protected:
-    virtual void              InputIsReady(void);
-    virtual void              DynamicLoadBalanceCleanUp(void);
-
-    static bool               debugDump;
-    static avtWebpage        *webpage;
-
-    void                      FinalizeWebpage(void);
-    void                      InitializeWebpage(void);
-
-  private:
-    static GuideFunction      guideFunction;
-    static void              *guideFunctionArgs;
+    ofstream     *ofile;
 };
 
 
