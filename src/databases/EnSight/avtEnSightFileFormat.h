@@ -67,6 +67,10 @@ class     vtkVisItGenericEnSightReader;
 //
 //    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //    Added timeState arg to PopulateDatabaseMetaData to satisfy new interface
+//
+//    Brad Whitlock, Tue Jun 27 10:07:36 PDT 2006
+//    Added GetTimes method.
+//
 // ****************************************************************************
 
 class avtEnSightFileFormat : public avtMTMDFileFormat
@@ -84,6 +88,7 @@ class avtEnSightFileFormat : public avtMTMDFileFormat
     virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 
     virtual int           GetNTimesteps(void);
+    virtual void          GetTimes(std::vector<double> &times);
 
     virtual void          RegisterVariableList(const char *,
                                                const std::vector<CharStrRef>&);
