@@ -73,7 +73,7 @@ avtRoundFilter::DoOperation(vtkDataArray *in, vtkDataArray *out,
         for (int j = 0 ; j < ncomponents ; j++)
         {
             float val = in->GetComponent(i, j);
-            out->SetComponent(i, j, round(val));
+            out->SetComponent(i, j, floor(val+0.5));
         }
     }
 }

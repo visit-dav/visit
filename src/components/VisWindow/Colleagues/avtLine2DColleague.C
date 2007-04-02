@@ -480,7 +480,7 @@ avtLine2DColleague::SetOptions(const AnnotationObject &annot)
     else if(beginArrowStyle == 2)
         allData->AddInput(beginArrowSolid);
 
-    if(endArrowStyle && not allData)
+    if(endArrowStyle && ! allData)
         allData = vtkAppendPolyData::New();
 
     if(endArrowStyle == 1)

@@ -17,7 +17,7 @@ Unix and Mac OS X:
 
     where
 
-        "version" will be 1.4.3 for the current distribution.
+        "version" will be 1.4.4 for the current distribution.
 
         "platform" will be one of the following:  aix, darwin, irix6, linux,
         osf1, or sunos5 depending on the machine.  The one you use should
@@ -28,17 +28,17 @@ Unix and Mac OS X:
 
     For example
 
-        visit-install 1.4.3 irix6 /usr/local/visit
+        visit-install 1.4.4 irix6 /usr/local/visit
 
-    will install the irix6, 1.4.3 version of visit in the directory
+    will install the irix6, 1.4.4 version of visit in the directory
     "/usr/local/visit".  Note that you will need to have the file
-    "visit1_4_3.irix6.tar.gz" present in the current directory for this
+    "visit1_4_4.irix6.tar.gz" present in the current directory for this
     to function properly.  You can install multiple binaries into the
     same directory.  For example, you could then execute
 
-        visit-install 1.4.3 linux /usr/local/visit
+        visit-install 1.4.4 linux /usr/local/visit
 
-    to add a linux, 1.4.3 version of visit to the same directory.
+    to add a linux, 1.4.4 version of visit to the same directory.
 
 2.  Add the bin directory below the installation directory
     (/usr/local/visit/bin in our example) to each user's search path.
@@ -76,8 +76,8 @@ Unix and Mac OS X:
 
 Windows:
 
-1.  Copy the file visit1.4.3.exe to your desktop.
+1.  Copy the file visit1.4.4.exe to your desktop.
 
-2.  Double click on the visit1.4.3.exe icon to run the installer.
+2.  Double click on the visit1.4.4.exe icon to run the installer.
 
 3.  Follow the directions provided by the installer.
