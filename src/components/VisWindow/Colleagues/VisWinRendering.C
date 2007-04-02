@@ -101,6 +101,8 @@ bool VisWinRendering::stereoEnabled = false;
 //    Replaced scalableThreshold member with scalableAutoThreshold
 //    Added scalableActivationMode member
 //
+//    Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
+//    Added initialization for 3 most recent rendering times
 // ****************************************************************************
 
 VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) 
@@ -113,6 +115,9 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p)
     summedRenderTime               = 0.;
     maxRenderTime                  = 0.;
     minRenderTime                  = 1.e6;
+    curRenderTimes[0]              = 0.0;
+    curRenderTimes[1]              = 0.0;
+    curRenderTimes[2]              = 0.0;
     stereo                         = false;
     stereoType                     = 2;
     displayListMode                = 2;  // Auto
@@ -524,13 +529,18 @@ VisWinRendering::EnableUpdates(void)
 //    Brad Whitlock, Thu Sep 19 17:04:58 PST 2002
 //    I added code to send the rendering time back to the client.
 //
+//    Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
+//    Added args to Start/Stop timer to force acquisition of timing information
+//    even if timings were not enabled on the command-line.
+//    Added 3 most recent rendering times to set of times returned
 // ****************************************************************************
 
 void
 VisWinRendering::Render()
 {
-    int timingsIndex = visitTimer->StartTimer();
-    bool timingEnabled = (timingsIndex != -1);
+    const bool forceTiming = true;
+    const bool timingEnabled = visitTimer->Enabled(); 
+    const int timingsIndex = visitTimer->StartTimer(forceTiming);
     float rt = 0.;
 
     if (realized)
@@ -544,28 +554,23 @@ VisWinRendering::Render()
     }
 
     // Determine the time taken to render the image.
+    rt = (float)visitTimer->StopTimer(timingsIndex, "Render one frame", forceTiming);
     if(timingEnabled)
     {
         // VisIt's timer is going so use its return value.
-        rt = (float)visitTimer->StopTimer(timingsIndex, "Render one frame");
         // Dump the timings to the timings file.
         visitTimer->DumpTimings();
-    }
-    else
-    {
-        // The timer is not going, use the render time for all of the
-        // renderers.
-        rt = background->GetLastRenderTimeInSeconds() + 
-            canvas->GetLastRenderTimeInSeconds() + 
-            foreground->GetLastRenderTimeInSeconds();
     }
 
     // Update the render times and call the renderer information callback
     // if we need to.
     summedRenderTime += (rt >= 0.) ? rt : 0.;
-    ++nRenders;
     minRenderTime = (rt < minRenderTime) ? rt : minRenderTime;
     maxRenderTime = (rt > maxRenderTime) ? rt : maxRenderTime;
+    curRenderTimes[2] = curRenderTimes[1];
+    curRenderTimes[1] = curRenderTimes[0];
+    curRenderTimes[0] = (rt >= 0.) ? rt : 0.;
+    ++nRenders;
 
     // Call the rendering information callback
     if(notifyForEachRender && !inMotion && renderInfo != 0)
@@ -586,6 +591,8 @@ VisWinRendering::Render()
 //
 // Modifications:
 //   
+//    Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
+//    Added reseting of 3 most recent rendering times
 // ****************************************************************************
 
 void
@@ -595,6 +602,9 @@ VisWinRendering::ResetCounters()
     summedRenderTime = 0.;
     maxRenderTime = 0.;
     minRenderTime = 1.e6;
+    curRenderTimes[0] = 0.0;
+    curRenderTimes[1] = 0.0;
+    curRenderTimes[2] = 0.0;
 }
 
 // ****************************************************************************
@@ -1448,14 +1458,19 @@ VisWinRendering::SetAntialiasing(bool enabled)
 //
 // Modifications:
 //   
+//    Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
+//    Added 3 most recent rendering times to set of times returned
 // ****************************************************************************
 
 void
-VisWinRendering::GetRenderTimes(float times[3]) const
+VisWinRendering::GetRenderTimes(float times[6]) const
 {
     times[0] = minRenderTime;
     times[1] = (nRenders > 0) ? (summedRenderTime / float(nRenders)) : 0.;
     times[2] = maxRenderTime;
+    times[3] = curRenderTimes[0];
+    times[4] = curRenderTimes[1];
+    times[5] = curRenderTimes[2];
 }
 
 // ****************************************************************************

@@ -1,6 +1,7 @@
 // ************************************************************************* //
 //                        avtImageRepresentation.C                           //
 // ************************************************************************* //
+#include <visit-config.h>
 
 #include <vtkCharArray.h>
 #include <vtkFloatArray.h>
@@ -13,6 +14,12 @@
 #include <avtImageRepresentation.h>
 #include <NoInputException.h>
 #include <ImproperUseException.h>
+
+#ifdef HAVE_LIBBZ2
+#include <bzlib.h>
+#include <TimingsManager.h>
+#include <DebugStream.h>
+#endif
 
 
 //
@@ -184,6 +191,7 @@ avtImageRepresentation::Initialize(void)
     asCharRef    = NULL;
     rowOrigin    = 0;
     colOrigin    = 0;
+    compressionRatio = -1.0;
 }
 
 
@@ -315,16 +323,54 @@ avtImageRepresentation::Valid(void)
 // ****************************************************************************
 //  Method: avtImageRepresentation::GetImageString
 //
+//  Purpose: Public interface to GetImageString
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   October 24, 2005
+//
+// ****************************************************************************
+
+unsigned char *
+avtImageRepresentation::GetImageString(int &length)
+{
+    const bool useCompression = false;
+    return GetImageString(length, useCompression);
+}
+
+// ****************************************************************************
+//  Method: avtImageRepresentation::GetCompressedImageString
+//
+//  Purpose: Public interface to GetImageString
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   October 24, 2005
+//
+// ****************************************************************************
+
+unsigned char *
+avtImageRepresentation::GetCompressedImageString(int &length)
+{
+    const bool useCompression = true;
+    return GetImageString(length, useCompression);
+}
+
+// ****************************************************************************
+//  Method: avtImageRepresentation::GetImageString
+//
 //  Purpose:
 //      Gets the image as a character string.
 //
 //  Programmer: Hank Childs
 //  Creation:   November 21, 2000
 //
+//  Modifications:
+//
+//    Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
+//    Added compression
 // ****************************************************************************
 
 unsigned char *
-avtImageRepresentation::GetImageString(int &length)
+avtImageRepresentation::GetImageString(int &length, bool compress)
 {
     if (asChar == NULL)
     {
@@ -336,6 +382,46 @@ avtImageRepresentation::GetImageString(int &length)
         CreateStringFromInput(asVTK, zbuffer, asChar, asCharLength);
         asCharRef = new int(1);
     }
+
+#ifdef HAVE_LIBBZ2
+
+    if (compress)
+    {
+        // shoot for >=2:1 compression ratio. Fall back to no compression
+        // if can't achieve it
+        unsigned int asCharLengthTMP = asCharLength;
+        unsigned int asCharLengthBZ2 = asCharLength / 2;
+        unsigned char *asCharBZ2 = new unsigned char [asCharLengthBZ2+10];
+        int startCompress = debug5_real ? visitTimer->StartTimer(true) : 0;
+        if (BZ2_bzBuffToBuffCompress((char*)asCharBZ2, &asCharLengthBZ2,
+                                     (char*)asChar, asCharLengthTMP,
+                                     1, 0, 250) != BZ_OK)
+        {
+            double dummy = debug5_real ?
+                           visitTimer->StopTimer(startCompress,
+                                                 "Compressing image", true)
+                                       : 0.0;
+            delete [] asCharBZ2;
+        }
+        else
+        {
+            double timeToCompress = debug5_real ?
+                                    visitTimer->StopTimer(startCompress,
+                                                          "Compressing image",
+                                                          true)
+                                    : 0.0;
+            debug5 << "Compressed image "
+                   << (float) asCharLength / (float) asCharLengthBZ2
+                   << ":1 in " << timeToCompress << " seconds" << endl;
+            sprintf((char*) &asCharBZ2[asCharLengthBZ2], "%10d", asCharLength);
+            delete [] asChar;
+            asChar = asCharBZ2;
+            asCharLength = asCharLengthBZ2+10;
+            compressionRatio = (float) asCharLength / (float) asCharLengthBZ2;
+        }
+    }
+
+#endif
 
     length = asCharLength;
     return asChar;
@@ -605,11 +691,58 @@ CreateStringFromVTKInput(vtkImageData *img, unsigned char *&str, int &len)
 //     Mark C. Miller, 22Jul03
 //     Re-wrote to avoid use of memcpy. 
 //
+//     Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
+//     Added compression support
 // ****************************************************************************
 
 void avtImageRepresentation::GetImageFromString(unsigned char *str,
         int strLength, vtkImageData *&img, float *&zbuffer)
 {
+
+#ifdef HAVE_LIBBZ2
+
+    //
+    // Handle a possibly compressed input string
+    //
+    if (str[0] == 'B' && str[1] == 'Z' && str[2] == 'h')
+    {
+        unsigned int strLengthTMP = strLength;
+        unsigned int strLengthOrig;
+        sscanf((char*) &str[strLength-10], "%10d", &strLengthOrig);
+        unsigned char *strOrig = new unsigned char[strLengthOrig];
+        int startDecompress = debug5_real ? visitTimer->StartTimer(true) : 0;
+        if (BZ2_bzBuffToBuffDecompress((char*) strOrig, &strLengthOrig,
+                                       (char*) str, strLengthTMP, 0, 0) != BZ_OK)
+        {
+            double dummy = debug5_real ?
+                           visitTimer->StopTimer(startDecompress,
+                                                 "Decompressing image", true)
+                           : 0.0;
+            debug5 << "Found 3 character \"BZh\" header in image string "
+                   << "but failed to decompress. Assuming coincidence." << endl;
+        }
+        else
+        {
+            double timeToDecompress = debug5_real ?
+                                      visitTimer->StopTimer(startDecompress,
+                                                           "Decompressing image",
+                                                           true)
+                                      : 0.0;
+            debug5 << "Uncompressed image 1:"
+                   << (float) strLengthOrig / (float) strLength
+                   << " in " << timeToDecompress << " seconds" << endl;
+            delete [] str;
+            str = strOrig;
+            strLength = strLengthOrig;
+
+            // update the object, too
+            asChar = strOrig;
+            asCharLength = strLengthOrig;
+            compressionRatio = (float) strLengthOrig / (float) strLength;
+        }
+    }
+#endif
+
     // read the string assuming its just an image
     vtkStructuredPointsReader *reader = vtkStructuredPointsReader::New();
     vtkCharArray *charArray = vtkCharArray::New();
@@ -739,4 +872,23 @@ avtImageRepresentation::GetNumberOfCells(bool polysOnly) const
       else
          return asVTK->GetNumberOfCells();
    }
+}
+
+float
+avtImageRepresentation::GetCompressionRatio() const
+{
+    if (compressionRatio != -1.0)
+        return compressionRatio;
+
+    if (asChar != NULL)
+    {
+        if (asChar[0] == 'B' && asChar[1] == 'Z' && asChar[2] == 'h')
+        {
+            unsigned int asCharLengthOrig;
+            sscanf((char*) &asChar[asCharLength-10], "%10d", &asCharLengthOrig);
+            return (float) asCharLengthOrig / (float) asCharLength;
+        }
+    }
+
+    return compressionRatio;
 }

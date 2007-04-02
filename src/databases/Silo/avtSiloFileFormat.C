@@ -1277,7 +1277,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 #ifdef DBCSG_INNER // remove after silo-4.5 is released
           case DB_CSGMESH:
             {
-#warning csg mesh spoofed as a surface mesh
+//#warning csg mesh spoofed as a surface mesh
                 mt = AVT_SURFACE_MESH;
                 char   *realvar;
                 DBfile *correctFile = dbfile;
@@ -1311,7 +1311,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                 avtMeshMetaData *mmd = new avtMeshMetaData(extents_to_use, name_w_dir,
                                     csgm->zones->nzones, 0, csgm->origin, 0,
                                     csgm->ndims, csgm->ndims, AVT_SURFACE_MESH);
-#warning USING AVT_SURFACE_MESH FOR CSG MESH
+//#warning USING AVT_SURFACE_MESH FOR CSG MESH
                 if (csgm->units[0] != NULL)
                    mmd->xUnits = csgm->units[0];
                 if (csgm->units[1] != NULL)
@@ -1674,7 +1674,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         avtMeshMetaData *mmd = new avtMeshMetaData(extents_to_use, name_w_dir,
                             csgm->zones->nzones, 0, csgm->origin, 0,
                             csgm->ndims, csgm->ndims, AVT_SURFACE_MESH);
-#warning USING AVT_SURFACE_MESH FOR CSG MESH
+//#warning USING AVT_SURFACE_MESH FOR CSG MESH
         if (csgm->units[0] != NULL)
            mmd->xUnits = csgm->units[0];
         if (csgm->units[1] != NULL)
@@ -2037,7 +2037,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         //
         // Get the centering information.
         //
-#warning USING AVT_NODECENT FOR DB_BNDCENT
+//#warning USING AVT_NODECENT FOR DB_BNDCENT
         avtCentering centering = (csgv->centering == DB_BNDCENT ? AVT_NODECENT
                                                                : AVT_ZONECENT);
 

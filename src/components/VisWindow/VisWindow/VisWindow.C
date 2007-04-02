@@ -4581,11 +4581,14 @@ VisWindow::GetAntialiasing() const
 // Creation:   Mon Sep 23 14:07:40 PST 2002
 //
 // Modifications:
+//
+//   Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
+//   Added 3 most recent rendering times to set of times returned
 //   
 // ****************************************************************************
 
 void
-VisWindow::GetRenderTimes(float times[3]) const
+VisWindow::GetRenderTimes(float times[6]) const
 {
     rendering->GetRenderTimes(times);
 }

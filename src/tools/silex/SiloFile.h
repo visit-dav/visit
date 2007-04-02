@@ -19,6 +19,9 @@ using std::vector;
 //
 //    Mark C. Miller, Tue Sep 13 20:09:49 PDT 2005
 //    Added support for new silo objects; defvars, csgmesh/vars
+//
+//    Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
+//    Added support for multimesh adjacency object
 // ****************************************************************************
 class SiloDir
 {
@@ -32,6 +35,7 @@ class SiloDir
     vector<QString>  csgvar;
     vector<QString>  defvars;
     vector<QString>  multimesh;
+    vector<QString>  multimeshadj;
     vector<QString>  multivar;
     vector<QString>  multimat;
     vector<QString>  multimatspecies;

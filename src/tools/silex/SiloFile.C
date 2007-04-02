@@ -20,6 +20,9 @@
 //    Mark C. Miller, Tue Sep 13 20:09:49 PDT 2005
 //    Added support for new silo objects; defvars, csgmesh/vars
 //
+//    Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
+//    Made it able to compile with different versions of Silo
+//
 // ****************************************************************************
 SiloDir::SiloDir(DBfile *db, const QString &name_, const QString &path_)
 {
@@ -32,16 +35,24 @@ SiloDir::SiloDir(DBfile *db, const QString &name_, const QString &path_)
     int i;
     for (i=0; i<toc->ncurve; i++)
         curve.push_back(toc->curve_names[i]);
+#ifdef DBCSG_QUADRIC_G
     for (i=0; i<toc->ncsgmesh; i++)
         csgmesh.push_back(toc->csgmesh_names[i]);
     for (i=0; i<toc->ncsgvar; i++)
         csgvar.push_back(toc->csgvar_names[i]);
+#endif
+#ifdef DB_VARTYPE_SCALAR
     for (i=0; i<toc->ndefvars; i++)
         defvars.push_back(toc->defvars_names[i]);
+#endif
     for (i=0; i<toc->nmultimesh; i++)
         multimesh.push_back(toc->multimesh_names[i]);
     for (i=0; i<toc->nmultivar; i++)
         multivar.push_back(toc->multivar_names[i]);
+#ifdef DBCSG_QUADRIC_G // mmadj came into Silo same time as CSG stuff
+    for (i=0; i<toc->nmultimeshadj; i++)
+        multimeshadj.push_back(toc->multimeshadj_names[i]);
+#endif
     for (i=0; i<toc->nmultimat; i++)
         multimat.push_back(toc->multimat_names[i]);
     for (i=0; i<toc->nmultimatspecies; i++)

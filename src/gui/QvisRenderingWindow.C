@@ -38,6 +38,8 @@
 //   Hank Childs, Sun May  9 15:54:29 PDT 2004
 //   Initialize dlMode.
 //
+//   Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
+//   Added compression controls
 // ****************************************************************************
 
 QvisRenderingWindow::QvisRenderingWindow(const char *caption,
@@ -51,6 +53,7 @@ QvisRenderingWindow::QvisRenderingWindow(const char *caption,
     dlMode = 0;
     stereoType = 0;
     scalrenActivationMode = 0;
+    scalrenCompressMode = 0;
 }
 
 // ****************************************************************************
@@ -70,6 +73,8 @@ QvisRenderingWindow::QvisRenderingWindow(const char *caption,
 //   Hank Childs, Sun May  9 15:54:29 PDT 2004
 //   Delete dlMode.
 //
+//   Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
+//   Added compression controls
 // ****************************************************************************
 
 QvisRenderingWindow::~QvisRenderingWindow()
@@ -78,6 +83,7 @@ QvisRenderingWindow::~QvisRenderingWindow()
     delete dlMode;
     delete stereoType;
     delete scalrenActivationMode;
+    delete scalrenCompressMode;
 
     if(renderAtts)
         renderAtts->Detach(this);
@@ -124,6 +130,8 @@ QvisRenderingWindow::~QvisRenderingWindow()
 //   Kathleen Bonnell, Thu Jun 30 15:29:55 PDT 2005 
 //   Added redgreen radiobutton.
 //
+//   Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
+//   Added compression controls
 // ****************************************************************************
 
 void
@@ -138,7 +146,7 @@ QvisRenderingWindow::CreateWindowContents()
 
     QVBoxLayout *spacer = new QVBoxLayout(options);
     spacer->addSpacing(10);
-    QGridLayout *oLayout = new QGridLayout(spacer, 16, 4);
+    QGridLayout *oLayout = new QGridLayout(spacer, 18, 4);
     oLayout->setSpacing(5);
     oLayout->setMargin(10);
 
@@ -235,12 +243,32 @@ QvisRenderingWindow::CreateWindowContents()
             this, SLOT(scalrenAutoThresholdChanged(int)));
     oLayout->addWidget(scalrenAutoThreshold, 11, 3);
 
+    // Create the compress mode widgets.
+    scalrenCompressLabel = new QLabel("Compress scalable rendered image",
+                                                   options, "compressModeLabel");
+    oLayout->addMultiCellWidget(scalrenCompressLabel, 12, 12, 0, 3);
+    scalrenCompressMode = new QButtonGroup(0, "compressMode");
+    connect(scalrenCompressMode, SIGNAL(clicked(int)),
+            this, SLOT(scalrenCompressModeChanged(int)));
+    QRadioButton *cmp_auto = new QRadioButton("Auto", options, "cmp_auto");
+    cmp_auto->setEnabled(0); // disabled until implemented
+    scalrenCompressMode->insert(cmp_auto);
+    oLayout->addWidget(cmp_auto, 13, 1);
+    QRadioButton *cmp_always = new QRadioButton("Always", options,
+        "cmp_always");
+    scalrenCompressMode->insert(cmp_always);
+    oLayout->addWidget(cmp_always, 13, 2);
+    QRadioButton *cmp_never = new QRadioButton("Never", options,
+        "cmp_never");
+    scalrenCompressMode->insert(cmp_never);
+    oLayout->addWidget(cmp_never, 13, 3);
+
     // Create the specular lighting options
     specularToggle = new QCheckBox("Specular lighting", options,
                                    "specularToggle");
     connect(specularToggle, SIGNAL(toggled(bool)),
             this, SLOT(specularToggled(bool)));
-    oLayout->addMultiCellWidget(specularToggle, 12, 12, 0,3);
+    oLayout->addMultiCellWidget(specularToggle, 14, 14, 0,3);
 
     specularStrengthSlider = new QvisOpacitySlider(0, 100, 10, 60, options,
                                              "specularStrengthSlider", NULL);
@@ -249,8 +277,8 @@ QvisRenderingWindow::CreateWindowContents()
             this, SLOT(specularStrengthChanged(int, const void*)));
     specularStrengthLabel = new QLabel(specularStrengthSlider, "Strength",
                                        options, "specularStrengthLabel");
-    oLayout->addWidget(specularStrengthLabel, 13,1);
-    oLayout->addMultiCellWidget(specularStrengthSlider, 13,13, 2,3);
+    oLayout->addWidget(specularStrengthLabel, 15,1);
+    oLayout->addMultiCellWidget(specularStrengthSlider, 15,15, 2,3);
 
     specularPowerSlider = new QvisOpacitySlider(0, 1000, 100, 100, options,
                                                 "specularPowerSlider", NULL);
@@ -259,15 +287,15 @@ QvisRenderingWindow::CreateWindowContents()
             this, SLOT(specularPowerChanged(int, const void*)));
     specularPowerLabel = new QLabel(specularPowerSlider, "Sharpness",
                                     options, "specularPowerLabel");
-    oLayout->addWidget(specularPowerLabel, 14,1);
-    oLayout->addMultiCellWidget(specularPowerSlider, 14,14, 2,3);
+    oLayout->addWidget(specularPowerLabel, 16,1);
+    oLayout->addMultiCellWidget(specularPowerSlider, 16,16, 2,3);
 
     // Create the shadow lighting options
     shadowToggle = new QCheckBox("Shadows", options,
                                    "shadowToggle");
     connect(shadowToggle, SIGNAL(toggled(bool)),
             this, SLOT(shadowToggled(bool)));
-    oLayout->addMultiCellWidget(shadowToggle, 15, 15, 0,3);
+    oLayout->addMultiCellWidget(shadowToggle, 17, 17, 0,3);
 
     shadowStrengthSlider = new QvisOpacitySlider(0, 100, 10, 60, options,
                                              "shadowStrengthSlider", NULL);
@@ -276,8 +304,8 @@ QvisRenderingWindow::CreateWindowContents()
             this, SLOT(shadowStrengthChanged(int, const void*)));
     shadowStrengthLabel = new QLabel(shadowStrengthSlider, "Strength",
                                        options, "shadowStrengthLabel");
-    oLayout->addWidget(shadowStrengthLabel, 16,1);
-    oLayout->addMultiCellWidget(shadowStrengthSlider, 16,16, 2,3);
+    oLayout->addWidget(shadowStrengthLabel, 18,1);
+    oLayout->addMultiCellWidget(shadowStrengthSlider, 18,18, 2,3);
 
 
     //
@@ -413,6 +441,8 @@ QvisRenderingWindow::UpdateWindow(bool doAll)
 //   Kathleen Bonnell, Thu Jun 30 15:29:55 PDT 2005 
 //   Added redgreen radiobutton.
 //
+//   Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
+//   Added compression controls
 // ****************************************************************************
 
 void
@@ -478,18 +508,18 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             renderNotifyToggle->blockSignals(false);
             break;
         case 6: //scalrenActivationMode
-            RenderingAttributes::TriStateMode itmp;
-            itmp = renderAtts->GetScalableActivationMode();
+            RenderingAttributes::TriStateMode rtmp;
+            rtmp = renderAtts->GetScalableActivationMode();
             scalrenActivationMode->blockSignals(true);
-            if (itmp == RenderingAttributes::Always)
+            if (rtmp == RenderingAttributes::Always)
                scalrenActivationMode->setButton(1);
-            else if (itmp == RenderingAttributes::Never)
+            else if (rtmp == RenderingAttributes::Never)
                scalrenActivationMode->setButton(2);
             else
                scalrenActivationMode->setButton(0);
             scalrenActivationMode->blockSignals(false);
-            shadowToggle->setEnabled(itmp == RenderingAttributes::Always);
-            if (itmp != RenderingAttributes::Always)
+            shadowToggle->setEnabled(rtmp == RenderingAttributes::Always);
+            if (rtmp != RenderingAttributes::Always)
                 shadowStrengthSlider->setEnabled(false);
             break;
         case 7: //scalrenAutoThreshold
@@ -538,6 +568,18 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             shadowStrengthSlider->blockSignals(true);
             shadowStrengthSlider->setValue(int(renderAtts->GetShadowStrength()*100.));
             shadowStrengthSlider->blockSignals(false);
+            break;
+        case 14: //scalrenCompressMode
+            itmp = (int) renderAtts->GetCompressionActivationMode();
+            if (itmp == 2) // Auto for atts's enum type order
+                itmp2 = 0; // Order of Auto in window
+            else if (itmp == 1) // Always for atts' enum type order
+                itmp2 = 1; // Order of Always in window.
+            else           // Never for atts' enum type order
+                itmp2 = 2; // Order of Never in window.
+            scalrenCompressMode->blockSignals(true);
+            scalrenCompressMode->setButton(itmp2);
+            scalrenCompressMode->blockSignals(false);
             break;
         }
     }
@@ -970,6 +1012,8 @@ QvisRenderingWindow::scalrenActivationModeChanged(int val)
     {
         scalrenAutoThreshold->setEnabled(1);
         scalrenGeometryLabel->setEnabled(1);
+        scalrenCompressMode->setEnabled(1);
+        scalrenCompressLabel->setEnabled(1);
         renderAtts->SetScalableActivationMode(RenderingAttributes::Auto);
         scalrenAutoThresholdChanged(scalrenAutoThreshold->value());
     }
@@ -977,12 +1021,16 @@ QvisRenderingWindow::scalrenActivationModeChanged(int val)
     {
         scalrenAutoThreshold->setEnabled(0);
         scalrenGeometryLabel->setEnabled(0);
+        scalrenCompressMode->setEnabled(1);
+        scalrenCompressLabel->setEnabled(1);
         renderAtts->SetScalableActivationMode(RenderingAttributes::Always);
     }
     else
     {
         scalrenAutoThreshold->setEnabled(0);
         scalrenGeometryLabel->setEnabled(0);
+        scalrenCompressMode->setEnabled(0);
+        scalrenCompressLabel->setEnabled(0);
         renderAtts->SetScalableActivationMode(RenderingAttributes::Never);
     }
     SetUpdate(false);
@@ -1093,6 +1141,29 @@ QvisRenderingWindow::scalrenAutoThresholdChanged(int val)
     Apply();
 }
 
+// ****************************************************************************
+// Method: QvisRenderingWindow::scalrenCompressModeChanged
+//
+// Programmer: Mark C. Miller
+// Creation:   November 2, 2005 
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::scalrenCompressModeChanged(int mode)
+{
+    int itmp = 0;
+    if (mode == 0)      // Auto in Window
+        itmp = 2;       // Auto for atts' enum type
+    else if (mode == 1) // Always in window
+        itmp = 1;       // Always for atts' enum type
+    else                // Never in window.
+        itmp = 0;       // Never for atts' enum type
+
+    renderAtts->SetCompressionActivationMode((RenderingAttributes::TriStateMode)itmp);
+    SetUpdate(false);
+    Apply();
+}
 // ****************************************************************************
 //  Method:  QvisRenderingWindow::shadowToggled
 //

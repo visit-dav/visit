@@ -51,6 +51,8 @@ class QvisOpacitySlider;
 //   Kathleen Bonnell, Thu Jun 30 15:29:55 PDT 2005 
 //   Added redgreen radio button. 
 //
+//   Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
+//   Added compression controls
 // ****************************************************************************
 
 class GUI_API QvisRenderingWindow : public QvisPostableWindowSimpleObserver
@@ -83,6 +85,7 @@ private slots:
     void renderNotifyToggled(bool);
     void scalrenActivationModeChanged(int);
     void scalrenAutoThresholdChanged(int val);
+    void scalrenCompressModeChanged(int);
     void specularToggled(bool);
     void specularStrengthChanged(int, const void*);
     void specularPowerChanged(int, const void*);
@@ -109,6 +112,8 @@ private:
     QRadioButton *scalrenNever;
     QLabel       *scalrenGeometryLabel;
     QSpinBox     *scalrenAutoThreshold;
+    QLabel       *scalrenCompressLabel;
+    QButtonGroup *scalrenCompressMode;
     QCheckBox         *specularToggle;
     QLabel            *specularStrengthLabel;
     QvisOpacitySlider *specularStrengthSlider;

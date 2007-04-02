@@ -56,6 +56,8 @@ SiloDirView::SiloDirView(QWidget *p, const QString &n)
 //    Mark C. Miller, Tue Sep 13 20:09:49 PDT 2005
 //    Added support for new silo objects; defvars, csgmesh/vars
 //
+//    Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
+//    Added multimesh-adjacency object support 
 // ****************************************************************************
 void
 SiloDirView::Set(SiloDir *d)
@@ -78,6 +80,7 @@ SiloDirView::Set(SiloDir *d)
     total_items += d->multimat.size()        + (d->multimat.size()        ? 1:0);
     total_items += d->multivar.size()        + (d->multivar.size()        ? 1:0);
     total_items += d->multimesh.size()       + (d->multimesh.size()       ? 1:0);
+    total_items += d->multimeshadj.size()    + (d->multimeshadj.size()    ? 1:0);
     total_items += d->curve.size()           + (d->curve.size()           ? 1:0);
     total_items += d->csgvar.size()          + (d->csgvar.size()          ? 1:0);
     total_items += d->csgmesh.size()         + (d->csgmesh.size()         ? 1:0);
@@ -111,6 +114,17 @@ SiloDirView::Set(SiloDir *d)
         multivar->setOpen(true);
         expandVars = false;
     }
+
+    if (d->multimeshadj.size())
+    {
+        SiloDirViewItem *multimeshadj = new SiloDirViewItem(NULL,this, "MultiMesheadjs");
+        multimeshadj->setPixmap(0, *mesh_pixmap);
+        for (int i=0; i<d->multimeshadj.size(); i++)
+            new SiloDirViewItem(d,multimeshadj, d->multimeshadj[i]);
+        multimeshadj->setOpen(true);
+        expandVars = false;
+    }
+
 
     if (d->multimat.size())
     {

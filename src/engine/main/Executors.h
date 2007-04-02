@@ -828,6 +828,8 @@ RPCExecutor<SetWinAnnotAttsRPC>::Execute(SetWinAnnotAttsRPC *rpc)
 //    Hank Childs, Sun Mar 27 14:02:22 PST 2005
 //    Use OutputAllTimings, in case timings are being withheld.
 //
+//    Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
+//    Added compression control
 // ****************************************************************************
 template<>
 void
@@ -894,6 +896,7 @@ RPCExecutor<ExecuteRPC>::Execute(ExecuteRPC *rpc)
         bool scalableThresholdExceeded = false;
 
         // Send the data back to the viewer.
+        writer->SetUseCompression(false);
         engine->WriteData(rpc, writer, rpc->GetRespondWithNull(),
                     scalableThreshold, &scalableThresholdExceeded,
                     currentTotalGlobalCellCount, cellCountMultiplier,
@@ -1228,6 +1231,9 @@ RPCExecutor<DefineVirtualDatabaseRPC>::Execute(DefineVirtualDatabaseRPC *rpc)
 //
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Added code to operate on specific window id
+//
+//    Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
+//    Added compression controls
 // ****************************************************************************
 template<>
 void
@@ -1252,6 +1258,10 @@ RPCExecutor<RenderRPC>::Execute(RenderRPC *rpc)
         avtDataObjectWriter_p writer =
             netmgr->Render(rpc->GetIDs(),rpc->GetSendZBuffer(),
                            rpc->GetAnnotMode(), rpc->GetWindowID());
+
+        // set writer to compress as necessary
+        writer->SetUseCompression(
+            netmgr->GetShouldUseCompression(rpc->GetWindowID()));
 
         // Send the data back to the viewer.
         engine->WriteData(rpc, writer);

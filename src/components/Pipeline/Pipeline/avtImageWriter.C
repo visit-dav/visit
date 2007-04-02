@@ -67,6 +67,9 @@ avtImageWriter::~avtImageWriter()
 //    Hank Childs, Mon Oct  1 09:31:50 PDT 2001
 //    Renamed to DataObjectWrite.
 //
+//    Mark C. Miller, Mon Oct 31 18:12:49 PST 2005
+//    Added code to support compression of data object string
+//
 // ****************************************************************************
 
 void
@@ -74,7 +77,9 @@ avtImageWriter::DataObjectWrite(avtDataObjectString &str)
 {
     avtImageRepresentation &image = GetImageRep();
     int length;
-    unsigned char *imagestr = image.GetImageString(length);
+    unsigned char *imagestr = useCompression ?
+                              image.GetCompressedImageString(length) :
+                              image.GetImageString(length);
 
     //
     // Write out how long the image string is.

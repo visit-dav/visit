@@ -281,15 +281,18 @@ TimingsManager::OutputAllTimings(void)
 //    Jeremy Meredith, Fri Oct  4 16:47:47 PDT 2002
 //    Added number of current timings.
 //
+//    Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
+//    Added ability to force acquisition of timing info even if we're not
+//    logging timings to files
 // ****************************************************************************
 
 int
-TimingsManager::StartTimer(void)
+TimingsManager::StartTimer(bool forced)
 {
     //
     // Return if timings disabled.
     //
-    if (!enabled)
+    if (!enabled && !forced)
     {
         return -1;
     }
@@ -327,14 +330,17 @@ TimingsManager::StartTimer(void)
 //    Jeremy Meredith, Fri Oct  4 16:47:47 PDT 2002
 //    Added number of current timings and indentation based on it.
 //
+//    Mark C. Miller, Wed Nov  2 09:07:05 PST 2005
+//    Added code to force return of timing info even if logging is not enabled
+//
 // ****************************************************************************
 
 double
-TimingsManager::StopTimer(int index, const std::string &summary)
+TimingsManager::StopTimer(int index, const std::string &summary, bool forced)
 {
     double t = 0.;
 
-    if (enabled)
+    if (enabled || forced)
     {
         if (index < 0 || index >= numTimings)
         {
@@ -347,9 +353,12 @@ TimingsManager::StopTimer(int index, const std::string &summary)
 
             t = PlatformStopTimer(index);
             times.push_back(t);
-            char indented[1000];
-            sprintf(indented, "%*s%s", 3*numCurrentTimings, " ", summary.c_str());
-            summaries.push_back(indented);
+            if (enabled)
+            {
+                char indented[1000];
+                sprintf(indented, "%*s%s", 3*numCurrentTimings, " ", summary.c_str());
+                summaries.push_back(indented);
+            }
         }
     }
 
