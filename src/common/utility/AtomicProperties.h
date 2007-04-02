@@ -42,15 +42,15 @@
 #define MAX_ELEMENT_NUMBER 109
 #define KNOWN_AMINO_ACIDS  23
 
-extern unsigned char aminocolors[KNOWN_AMINO_ACIDS][3];
-extern unsigned char shapelycolors[KNOWN_AMINO_ACIDS][3];
-extern unsigned char jmolcolors[MAX_ELEMENT_NUMBER][3];
-extern unsigned char rasmolcolors[MAX_ELEMENT_NUMBER][3];
-extern float         atomic_radius[MAX_ELEMENT_NUMBER];
-extern float         covalent_radius[MAX_ELEMENT_NUMBER];
+extern UTILITY_API unsigned char aminocolors[KNOWN_AMINO_ACIDS][3];
+extern UTILITY_API unsigned char shapelycolors[KNOWN_AMINO_ACIDS][3];
+extern UTILITY_API unsigned char jmolcolors[MAX_ELEMENT_NUMBER][3];
+extern UTILITY_API unsigned char rasmolcolors[MAX_ELEMENT_NUMBER][3];
+extern UTILITY_API float         atomic_radius[MAX_ELEMENT_NUMBER];
+extern UTILITY_API float         covalent_radius[MAX_ELEMENT_NUMBER];
 
-extern const char   *element_names[MAX_ELEMENT_NUMBER];
-extern const char   *residue_names[KNOWN_AMINO_ACIDS];
+extern UTILITY_API const char   *element_names[MAX_ELEMENT_NUMBER];
+extern UTILITY_API const char   *residue_names[KNOWN_AMINO_ACIDS];
 
 int  UTILITY_API ElementNameToAtomicNumber(const char *element);
 int  UTILITY_API ResiduenameToNumber(const char *name);

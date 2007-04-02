@@ -1396,7 +1396,7 @@ int
 VisItStat(const char *file_name, VisItStat_t *buf)
 {
 #if defined(_WIN32)
-   return _stat(name, &statbuf);
+   return _stat(file_name, buf);
 #else
 
 #if SIZEOF_OFF64_T > 4
@@ -1423,7 +1423,7 @@ int
 VisItFstat(int fd, VisItStat_t *buf)
 {
 #if defined(_WIN32)
-   return _fstat(fd, &statbuf);
+   return _fstat(fd, buf);
 #else
 
 #if SIZEOF_OFF64_T > 4

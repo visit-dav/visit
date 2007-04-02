@@ -62,6 +62,7 @@
         255
       </Field>
       <Field name="radiusVariable" label="Variable for atom radius" type="variablename" enabler="scaleRadiusBy:Variable" vartypes="01000000000">
+        Default
       </Field>
       <Field name="radiusScaleFactor" label="Atom radius scale factor" type="float" enabler="scaleRadiusBy:Atomic,Covalent,Variable">
         1.000000

@@ -356,16 +356,20 @@ endif
 cd distribution/visit/$version
 
 # Determine the platform
-set findgui = `find . -name gui`
-set platformBin = `echo "$findgui" | sed -e "s/gui//"`
-set savepwd = `pwd`
-cd $platformBin/..
-set platformPath = `pwd`
-cd $savepwd
-set platformDir = ""
-foreach f (`echo $platformPath | tr "/" " "`)
-    set platformDir = $f
-end
+if("$os" == "darwin") then
+    set platformDir = "darwin-ppc"
+else
+    set findgui = `find . -name gui`
+    set platformBin = `echo "$findgui" | sed -e "s/gui//"`
+    set savepwd = `pwd`
+    cd $platformBin/..
+    set platformPath = `pwd`
+    cd $savepwd
+    set platformDir = ""
+    foreach f (`echo $platformPath | tr "/" " "`)
+        set platformDir = $f
+    end
+endif
 # Copy the files
 find . -print | cpio -pmud $dir/$version+
 cd ../../..

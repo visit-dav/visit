@@ -18,6 +18,10 @@
       avtADAPTFileFormat.C
       avtLODIFileFormat.C
       avtLODIParticleFileFormat.C
+      avtFVCOM_STSDFileFormat.C
+      avtFVCOMReader.C
+      avtFVCOMParticleFileFormat.C
+      avtFVCOM_MTSDFileFormat.C
       NETCDFFileObject.C
     </Files>
     <Files components="E">
@@ -26,6 +30,10 @@
       avtADAPTFileFormat.C
       avtLODIFileFormat.C
       avtLODIParticleFileFormat.C
+      avtFVCOM_STSDFileFormat.C
+      avtFVCOMReader.C
+      avtFVCOMParticleFileFormat.C
+      avtFVCOM_MTSDFileFormat.C
       NETCDFFileObject.C
     </Files>
     <Attribute name="" purpose="" persistent="true">

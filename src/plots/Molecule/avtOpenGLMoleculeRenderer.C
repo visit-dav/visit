@@ -88,6 +88,10 @@
 
 #define SHORTEN_BONDS
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 static int sphere_quality_levels[4][2] = {
     {6,3},
     {12,6},

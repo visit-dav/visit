@@ -2,5 +2,5 @@
   <Plugin name="SAMRAI" type="database" label="SAMRAI" version="1.0" dbtype="STMD">
     <Extensions> samrai </Extensions>
     <CXXFLAGS> $(HDF5_INCLUDE) </CXXFLAGS>
-    <LIBS>     $(HDF5_LIB)     </LIBS>
+    <LIBS>     $(HDF5_LIB) $(ZLIB_LIB) </LIBS>
   </Plugin>

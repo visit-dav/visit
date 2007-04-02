@@ -2,5 +2,5 @@
   <Plugin name="Enzo" label="Enzo" type="database" dbtype="STMD" version="1.0">
     <Extensions> hierarchy boundary </Extensions>
     <CXXFLAGS> $(HDF4_FLAGS) $(HDF5_INCLUDE) </CXXFLAGS>
-    <LIBS>     $(HDF4_LIBS)  $(HDF5_LIB)     </LIBS>
+    <LIBS>     $(HDF4_LIBS)  $(HDF5_LIB)  $(ZLIB_LIB) </LIBS>
   </Plugin>

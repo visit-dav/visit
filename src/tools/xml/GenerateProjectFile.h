@@ -84,6 +84,9 @@
 //    Brad Whitlock, Thu Aug 18 11:17:29 PDT 2005
 //    Prevented Windows directory names when not on Windows.
 //
+//    Brad Whitlock, Wed Jun 14 15:32:44 PST 2006
+//    Added vtkFiltering.lib to the list of libs for database plugins.
+//
 // ****************************************************************************
 
 class ProjectFileGeneratorPlugin
@@ -1359,7 +1362,7 @@ protected:
         out << "# ADD BSC32 /nologo\n";
         out << "LINK32=link.exe\n";
         out << "# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386\n";
-        out << "# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib  state.lib misc.lib plugin.lib pipeline_ser.lib dbatts.lib database_ser.lib avtexceptions.lib vtkCommon.lib /nologo /dll /machine:I386 /out:\"Release/lib" << pluginType << name << "Database"<<pluginSuffix<<".dll\"\n";
+        out << "# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib  state.lib misc.lib plugin.lib pipeline_ser.lib dbatts.lib database_ser.lib avtexceptions.lib vtkCommon.lib vtkFiltering.lib /nologo /dll /machine:I386 /out:\"Release/lib" << pluginType << name << "Database"<<pluginSuffix<<".dll\"\n";
         out << "# Begin Special Build Tool\n";
         out << "SOURCE=\"$(InputPath)\"\n";
         out << "PostBuild_Cmds=copy Release\\lib" << pluginType << name << "Database" << pluginSuffix << ".dll ..\\..\\bin\\Release\\databases\n";
@@ -1389,7 +1392,7 @@ protected:
         out << "# ADD BSC32 /nologo\n";
         out << "LINK32=link.exe\n";
         out << "# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept\n";
-        out << "# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib state.lib misc.lib plugin.lib pipeline_ser.lib dbatts.lib database_ser.lib avtexceptions.lib vtkCommon.lib /nologo /dll /debug /machine:I386 /out:\"Debug/lib" << pluginType << name << "Database"<<pluginSuffix<<".dll\" /pdbtype:sept\n";
+        out << "# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib state.lib misc.lib plugin.lib pipeline_ser.lib dbatts.lib database_ser.lib avtexceptions.lib vtkCommon.lib vtkFiltering.lib /nologo /dll /debug /machine:I386 /out:\"Debug/lib" << pluginType << name << "Database"<<pluginSuffix<<".dll\" /pdbtype:sept\n";
         out << "# Begin Special Build Tool\n";
         out << "SOURCE=\"$(InputPath)\"\n";
         out << "PostBuild_Cmds=copy Debug\\lib" << pluginType << name << "Database" << pluginSuffix << ".dll ..\\..\\bin\\Debug\\databases\n";
@@ -1468,7 +1471,7 @@ protected:
         out << "\t\t\t\tName=\"VCCustomBuildTool\"/>" << endl;
         out << "\t\t\t<Tool" << endl;
         out << "\t\t\t\tName=\"VCLinkerTool\"" << endl;
-        out << "\t\t\t\tAdditionalDependencies=\"odbc32.lib odbccp32.lib state.lib misc.lib plugin.lib utility.lib pipeline_ser.lib dbatts.lib database_ser.lib avtexceptions.lib vtkCommon.lib\"" << endl;
+        out << "\t\t\t\tAdditionalDependencies=\"odbc32.lib odbccp32.lib state.lib misc.lib plugin.lib utility.lib pipeline_ser.lib dbatts.lib database_ser.lib avtexceptions.lib vtkCommon.lib vtkFiltering.lib\"" << endl;
         out << "\t\t\t\tOutputFile=\"..\\..\\bin\\MSVC7.Net\\Release\\databases\\lib" << pluginType << name << pluginSuffix << ".dll\"" << endl;
         out << "\t\t\t\tLinkIncremental=\"1\"" << endl;
         out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"" << endl;
@@ -1534,7 +1537,7 @@ protected:
         out << "\t\t\t\tName=\"VCCustomBuildTool\"/>" << endl;
         out << "\t\t\t<Tool" << endl;
         out << "\t\t\t\tName=\"VCLinkerTool\"" << endl;
-        out << "\t\t\t\tAdditionalDependencies=\"odbc32.lib odbccp32.lib state.lib misc.lib plugin.lib utility.lib pipeline_ser.lib dbatts.lib database_ser.lib avtexceptions.lib vtkCommon.lib\"" << endl;
+        out << "\t\t\t\tAdditionalDependencies=\"odbc32.lib odbccp32.lib state.lib misc.lib plugin.lib utility.lib pipeline_ser.lib dbatts.lib database_ser.lib avtexceptions.lib vtkCommon.lib vtkFiltering.lib\"" << endl;
         out << "\t\t\t\tOutputFile=\"..\\..\\bin\\MSVC7.Net\\Debug\\databases\\lib" << pluginType << name << pluginSuffix << ".dll\"" << endl;
         out << "\t\t\t\tLinkIncremental=\"1\"" << endl;
         out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"" << endl;

@@ -708,6 +708,7 @@ LineoutListItem::Update(Subject *TheChangedSubject)
                      {
                          queries[i]->UpdateResultsTime(newf);
                      }
+                     resWin->SetMergeViewLimits(true);
                      vpl->UpdateFrame(false);
                  }
                  break;

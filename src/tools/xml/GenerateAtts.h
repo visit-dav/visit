@@ -1611,7 +1611,7 @@ class AttsGeneratorAttribute
     // ------------------------------------------------------------------------
     void WriteHeader(ostream &h)
     {
-        h << copyright_str << endl;
+        h << copyright_str.c_str() << endl;
         h << "#ifndef " << name.upper() << "_H" << endl;
         h << "#define " << name.upper() << "_H" << endl;
         if(!exportInclude.isEmpty())
@@ -2463,7 +2463,7 @@ class AttsGeneratorAttribute
     void WriteSource(ostream &c)
     {
         int i;
-        c << copyright_str << endl;
+        c << copyright_str.c_str() << endl;
         c << "#include <" << name << ".h>" << endl;
         WriteSourceIncludes(c);
 

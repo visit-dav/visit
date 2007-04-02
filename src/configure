@@ -6462,7 +6462,7 @@ else
       HDF5_INCLUDE="-I$DEFAULT_HDF5_INCLUDE $HDF5_INCLUDE"
    fi
    if test "$DEFAULT_HDF5_LIB" != "" ; then
-      HDF5_LIB="$DEFAULT_HDF5_LIB/libhdf5.$H5_LIBEXT -lz $HDF5_LIB"
+      HDF5_LIB="$DEFAULT_HDF5_LIB/libhdf5.$H5_LIBEXT $HDF5_LIB"
    fi
 fi
 if test "$HDF5_LIB" != "" ; then
@@ -10672,7 +10672,7 @@ case $SHORT_UNAME in
     PREBIND_LIBS="$""(PREBIND_LIBS)"
     # Create the address.txt file with the initial offset for the VisIt libraries.
     rm -f address.txt linkedit.log
-    echo "0x36e9f000" > address.txt
+    echo "0x249a8000" > address.txt
     ;;
 esac
 # Set up the defaults

@@ -1953,7 +1953,7 @@ class PythonGeneratorAttribute
 
     void WriteHeader(ostream &h)
     {
-        h << copyright_str << endl;
+        h << copyright_str.c_str() << endl;
         h << "#ifndef PY_" << name.upper() << "_H" << endl;
         h << "#define PY_" << name.upper() << "_H" << endl;
         h << "#include <Python.h>" << endl;
@@ -2414,7 +2414,7 @@ class PythonGeneratorAttribute
 
     void WriteSource(ostream &c)
     {
-        c << copyright_str << endl;
+        c << copyright_str.c_str() << endl;
         c << "#include <Py" << name << ".h>" << endl;
         c << "#include <ObserverToCallback.h>" << endl;
         WriteIncludedHeaders(c);

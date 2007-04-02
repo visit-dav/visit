@@ -33,6 +33,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>VisIt's KullLite database reader plug-in has been enhanced so it can read scalar fields from the files.</li>
 <li>VisIt's Spheral database reader plug-in can now return accurate cycle and time values.</li>
 <li>VisIt's Enzo database reader plug-in now supports tracer particles.</li>
+<li>VisIt's NETCDF database reader plug-in was extended to support FVCOM (unstructured grid coastal ocean model) files by David Stuebe at MIT.</li>
 <li>The <i>NodePick</i> query now has a <i>PointQuery</i> alias in the Query window.</li>
 <li>The Python Interface Manual has been updated to fix a flaw in the documentation for the <i>CreateAnnotationObject</i> function.</li>
 <li>VisIt's Point3D database reader plugin has been changed so the first three columns of data are once again the X,Y,Z coordinates of the point while the fourth column is reserved for data. For users having data files in the X,Y,V,Z representation where the Z coordinate was provided by the fourth column, there is a compatability mode that you can use by adding <i>#coordflag xyvz</i> as the second line in your Point3D data file. You can also create a "Point3D.ini" file in your <i>.visit</i> directory, containing the line: <i>coordflag xyvz</i>, if you want to apply the compatibility mode to all Point3D files without changing the files themselves.</li>
