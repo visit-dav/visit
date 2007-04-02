@@ -7774,6 +7774,8 @@ visit_SetLight(PyObject *self, PyObject *args)
 // Creation:   October 28, 2004
 //
 // Modifications:
+//   Kathleen Bonnell, Fri Feb 24 10:36:00 PST 2006
+//   Ensure light 0 is always enabled.
 //
 // ****************************************************************************
 
@@ -7788,6 +7790,10 @@ visit_GetLight(PyObject *self, PyObject *args)
 
     PyObject *pylight = PyLightAttributes_NewPyObject();
     LightAttributes *light = PyLightAttributes_FromPyObject(pylight);
+    if (index == 0)
+    {
+        light->SetEnabledFlag(true);
+    }
     *light = viewer->GetLightList()->GetLight(index);
 
     return pylight;

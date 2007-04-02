@@ -92,6 +92,9 @@ vtkVisItPolyDataNormals::Execute()
 //    Hank Childs, Fri Jul 30 09:00:51 PDT 2004
 //    Copy along cell data from verts and lines as well.
 //
+//    Kathleen Bonnell, Fri Feb 24 09:43:20 PST 2006 
+//    Avoid divide-by-zero errors.
+//
 // ****************************************************************************
 void
 vtkVisItPolyDataNormals::ExecutePointWithoutSplitting()
@@ -204,9 +207,12 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting()
         double ny = newNormalPtr[i*3+1];
         double nz = newNormalPtr[i*3+2];
         double length = sqrt(nx*nx + ny*ny + nz*nz);
-        newNormalPtr[i*3+0] = nx/length;
-        newNormalPtr[i*3+1] = ny/length;
-        newNormalPtr[i*3+2] = nz/length;
+        if (length != 0.0)
+        {
+            newNormalPtr[i*3+0] = nx/length;
+            newNormalPtr[i*3+1] = ny/length;
+            newNormalPtr[i*3+2] = nz/length;
+        }
     }
 
     outPD->SetNormals(newNormals);
@@ -361,6 +367,9 @@ class NormalList
 //
 //    Kathleen Bonnell, Tue Nov 16 10:29:25 PST 2004 
 //    Make nOtherCells be the count of verts and lines (not polys and lines). 
+//
+//    Kathleen Bonnell, Fri Feb 24 09:43:20 PST 2006 
+//    Avoid divide-by-zero errors.
 //
 // ****************************************************************************
 void
@@ -521,9 +530,18 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting()
                 double newlength = sqrt(nx*nx + ny*ny + nz*nz);
 
                 float *nn = ne->nn;
-                nn[0] = float(double(n[0])/newlength);
-                nn[1] = float(double(n[1])/newlength);
-                nn[2] = float(double(n[2])/newlength);
+                if (newlength != 0.0)
+                {
+                    nn[0] = float(double(n[0])/newlength);
+                    nn[1] = float(double(n[1])/newlength);
+                    nn[2] = float(double(n[2])/newlength);
+                }
+                else
+                {
+                    nn[0] = n[0];
+                    nn[1] = n[1];
+                    nn[2] = n[2];
+                }
             }
             else // no match found; duplicate the point
             {
