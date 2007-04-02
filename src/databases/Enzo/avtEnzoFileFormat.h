@@ -26,6 +26,9 @@
 //    Jeremy Meredith, Fri Jul 15 15:27:49 PDT 2005
 //    Added fixes for multi-timestep Enzo runs.
 //
+//    Jeremy Meredith, Wed Aug  3 10:21:56 PDT 2005
+//    Added support for 2D Enzo files.
+//
 // ****************************************************************************
 
 class avtEnzoFileFormat : public avtSTMDFileFormat
@@ -65,6 +68,8 @@ class avtEnzoFileFormat : public avtSTMDFileFormat
         int              parentID;
         int              level;
 
+        int              dimension;
+
         int              numberOfParticles;
 
         double           minSpatialExtents[3];
@@ -88,6 +93,8 @@ class avtEnzoFileFormat : public avtSTMDFileFormat
     std::string fname_base;
     std::string fnameB;
     std::string fnameH;
+
+    int dimension;
 
     std::vector<Grid> grids;
     int numGrids;

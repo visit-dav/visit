@@ -5077,6 +5077,9 @@ avtDatabaseMetaData::SetFormatCanDoDomainDecomposition(bool can)
 //    Added code to assure topological dimension is zero if its a point
 //    mesh. VisIt has subtle problems with pipeline if it is not.
 //
+//    Jeremy Meredith, Tue Aug  2 10:45:01 PDT 2005
+//    Changed the new m.m.d. for point meshes to avoid using a temporary.
+//
 // ****************************************************************************
 
 void
@@ -5091,9 +5094,9 @@ avtDatabaseMetaData::Add(avtMeshMetaData *mmd)
     if (mmd->meshType == AVT_POINT_MESH && mmd->topologicalDimension != 0)
     {
         // we shouldn't modify the caller's object, so make a copy
-        avtMeshMetaData tmpmmd(*mmd);
-        tmpmmd.topologicalDimension = 0;
-        meshes.push_back(&tmpmmd);
+        avtMeshMetaData *tmpmmd = new avtMeshMetaData(*mmd);
+        tmpmmd->topologicalDimension = 0;
+        meshes.push_back(tmpmmd);
     }
     else
     {

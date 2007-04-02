@@ -145,6 +145,43 @@ ConfigManager::WriteQuotedStringData(const std::string &str)
 }
 
 // ****************************************************************************
+// Method: ConfigManager::WriteEscapedStringData
+//
+// Purpose: 
+//   Writes the string to the file escaping various characters as needed.
+//
+// Arguments:
+//   str : The string to write to the file.
+//
+// Programmer: Jeremy Meredith
+// Creation:   August  2, 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ConfigManager::WriteEscapedString(const std::string &str)
+{
+    if(str.size() > 0)
+    {
+        const char *cptr = str.c_str();
+        for (int i = 0; i < str.size(); ++i)
+        {
+            // Add escape characters.
+            if (cptr[i] == '"'  ||
+               cptr[i] == '\\' ||
+               cptr[i] == '<'  ||
+               cptr[i] == '>')
+            {
+                fputc('\\', fp);
+            }
+            fputc(cptr[i], fp);
+        }
+    }
+}
+
+// ****************************************************************************
 // Method: ConfigManager::WriteData
 //
 // Purpose: 
@@ -164,6 +201,9 @@ ConfigManager::WriteQuotedStringData(const std::string &str)
 //   Brad Whitlock, Fri Oct 3 16:00:21 PST 2003
 //   I made string vectors and arrays quote their strings so they read in
 //   correctly if the strings contain spaces.
+//
+//   Jeremy Meredith, Tue Aug  2 16:11:36 PDT 2005
+//   I made single strings escape special characters.
 //
 // ****************************************************************************
 
@@ -193,7 +233,7 @@ ConfigManager::WriteData(DataNode *node)
         fprintf(fp, "%g", node->AsDouble());
         break;
     case STRING_NODE:
-        fprintf(fp, "%s", node->AsString().c_str());
+        WriteEscapedString(node->AsString());
         break;
     case BOOL_NODE:
         if(node->AsBool())
@@ -505,6 +545,9 @@ ConfigManager::FinishTag()
 //   Brad Whitlock, Fri Oct 3 17:12:07 PST 2003
 //   Added crude character escaping.
 //
+//   Jeremy Meredith, Tue Aug  2 16:13:04 PDT 2005
+//   I made escaping work even for < and > characters.
+//
 // ****************************************************************************
 
 stringVector
@@ -521,7 +564,7 @@ ConfigManager::ReadStringVector(char termChar)
     while(keepgoing)
     {
         c = ReadChar();
-        keepgoing = (!feof(fp) && c != termChar);
+        keepgoing = (!feof(fp) && (escaped || c != termChar));
 
         if(c == ' ')
         {
@@ -537,6 +580,12 @@ ConfigManager::ReadStringVector(char termChar)
                 tempString = "";
                 reading = false;
             }
+        }
+        else if(escaped && (c == '<' || c == '>'))
+        {
+            tempString += c;
+            reading = true;
+            escaped = false;
         }
         else if(c == '\\')
         {
