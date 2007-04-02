@@ -259,7 +259,7 @@ rm -f plugins/*/*.so
 (cd data; clearmake clean 1> /dev/null 2>&1 )
 
 # clean everything
-clearmake clean
+clearmake clean 1> /dev/null 2>&1
 uncleanedFiles=`find . -regex '.*\.o$' | grep -v -e '_pure_p9_c0_'`
 if test ! "$uncleanedFiles" = ""; then
     rm -f mailmsg
@@ -426,7 +426,7 @@ export LD_LIBRARY_PATH
 env CXXFLAGS="-O2" ./configure --enable-parallel 1>> buildlog 2>&1
 rm -f plugins/*/*.so
 (cd data; clearmake clean 1> /dev/null 2>&1 )
-clearmake clean
+clearmake clean 1> /dev/null 2>&1
 clearmake -J 4 1>> buildlog 2>&1
 
 # make sure all needed data files exist
