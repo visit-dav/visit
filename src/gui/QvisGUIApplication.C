@@ -3525,7 +3525,7 @@ QvisGUIApplication::sessionFileHelper_LoadSession(const QString &filename)
     // pass the inVisItDir flag as false because we don't want to have
     // the viewer prepend the .visit directory to the file since it's
     // already part of the filename.
-    viewer->ImportEntireState(filename, false);
+    viewer->ImportEntireState(filename.latin1(), false);
 }
 
 // ****************************************************************************

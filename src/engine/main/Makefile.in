@@ -224,6 +224,9 @@
 #    Jeremy Meredith, Thu Apr 28 17:47:51 PDT 2005
 #    Added explicit versioning for the VisIt Engine Library.
 #
+#    Kathleen Bonnell, Mon Nov 21 14:21:03 PST 2005 
+#    Added PLATFORM_CPPFLAGS.
+#
 ##############################################################################
 
 ##
@@ -236,7 +239,7 @@
 
 LIB=libengine
 
-CPPFLAGS= -I@tmpinc@ @ENGINE_CPPFLAGS@ @CPPFLAGS@ \
+CPPFLAGS= -I@tmpinc@ @ENGINE_CPPFLAGS@ @PLATFORM_CPPFLAGS@ @CPPFLAGS@ \
          -I. -I../../include/visit
 
 COMMONLIBS=-L../../lib -lplugin -lavtview \

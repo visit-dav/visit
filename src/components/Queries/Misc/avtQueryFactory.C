@@ -7,6 +7,7 @@
 #include <avtActualDataNumNodesQuery.h>
 #include <avtActualDataNumZonesQuery.h>
 #include <avtAreaBetweenCurvesQuery.h>
+#include <avtBestFitLineQuery.h>
 #include <avtCentroidQuery.h>
 #include <avtCompactnessQuery.h>
 #include <avtCycleQuery.h>
@@ -150,6 +151,9 @@ avtQueryFactory::Instance()
 //
 //    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005 
 //    Added TrajectoryByNode/Zone queries.
+//
+//    Brad Whitlock, Thu Nov 17 10:18:41 PDT 2005
+//    Added Best Fit Line.
 //
 // ****************************************************************************
 
@@ -325,6 +329,11 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     {
         query = new avtTrajectoryByNode();
     }
+    else if (qname == "Best Fit Line")
+    {
+        query = new avtBestFitLineQuery();
+    }
+
     return query;
 }
 

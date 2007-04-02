@@ -110,6 +110,9 @@
 #   Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005 
 #   Added TrajectoryByNode/Zone. 
 #
+#   Brad Whitlock, Thu Nov 17 10:15:40 PDT 2005
+#   Added Best Fit Line.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -150,6 +153,7 @@ Queries_src= \
  Queries/avtActualDataNumNodesQuery.C  \
  Queries/avtActualDataNumZonesQuery.C  \
  Queries/avtAreaBetweenCurvesQuery.C  \
+ Queries/avtBestFitLineQuery.C \
  Queries/avtCentroidQuery.C  \
  Queries/avtCompactnessQuery.C  \
  Queries/avtCycleQuery.C  \

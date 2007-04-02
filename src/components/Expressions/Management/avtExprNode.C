@@ -14,6 +14,7 @@
 #include <avtRoundFilter.h>
 #include <avtSinFilter.h>
 #include <avtCosFilter.h>
+#include <avtDistanceToBestFitLineFilter.h>
 #include <avtRandomFilter.h>
 #include <avtArctanFilter.h>
 #include <avtArcsinFilter.h>
@@ -413,6 +414,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //      Added external_node, surface normals, min_side_volume, max_side_volume,
 //      min_edge_length, and max_edge_length.
 //
+//      Brad Whitlock, Fri Nov 18 15:59:27 PST 2005
+//      Added distance_to_best_fit_line.
+//
 // ****************************************************************************
 void
 avtFunctionExpr::CreateFilters(ExprPipelineState *state)
@@ -709,6 +713,16 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
         ecm->SetMacro("polar", 1);
         f = ecm;
     }
+    else if (functionName == "polar_phi")
+    {
+        avtExpressionComponentMacro *ecm = new avtExpressionComponentMacro;
+        ecm->SetMacro("polar", 2);
+        f = ecm;
+    }
+    else if (functionName == "distance_to_best_fit_line")
+        f = new avtDistanceToBestFitLineFilter(true);
+    else if (functionName == "distance_to_best_fit_line2")
+        f = new avtDistanceToBestFitLineFilter(false);
     else if (functionName == "polar_phi")
     {
         avtExpressionComponentMacro *ecm = new avtExpressionComponentMacro;

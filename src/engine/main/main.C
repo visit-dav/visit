@@ -9,6 +9,26 @@
 #endif
 
 // ****************************************************************************
+//  BEGIN HACK, because AIX won't link the engine against GL unless it
+//  needs to resolve symbols directly from this source.
+//  GL dependencies exist in libplotter, libvisit_vtk and libvtkRendering
+//  When these extended dependencies are removed and the engine no
+//  longer needs to link against GL, this hack can be removed.
+#ifdef AIX
+#include <GL/gl.h>
+void foogl(void)
+{
+   GLfloat mad[] = {0.1, 0.5, 0.8, 1.0};
+   glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, mad);
+}
+#endif
+//
+// END HACK
+// ****************************************************************************
+
+
+
+// ****************************************************************************
 // Function: main
 //
 // Purpose:
