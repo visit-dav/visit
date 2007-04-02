@@ -37,6 +37,7 @@
 
 #ifndef THRESHOLDATTRIBUTES_H
 #define THRESHOLDATTRIBUTES_H
+
 #include <string>
 #include <AttributeSubject.h>
 
@@ -53,23 +54,31 @@
 //
 // Modifications:
 //   
+//   Mark Blair, Tue Mar  7 13:25:00 PST 2006
+//   Upgraded to support multiple threshold variables.
+//
 // ****************************************************************************
 
 class ThresholdAttributes : public AttributeSubject
 {
 public:
-    enum Amount
+    enum OutputMeshType
     {
-        Some,
-        All,
-        PointsOnly
+        InputZones,
+        PointMesh
+    };
+
+    enum ZonePortion
+    {
+        EntireZone,
+        PartOfZone
     };
 
     ThresholdAttributes();
     ThresholdAttributes(const ThresholdAttributes &obj);
     virtual ~ThresholdAttributes();
 
-    virtual ThresholdAttributes& operator = (const ThresholdAttributes &obj);
+    virtual void operator = (const ThresholdAttributes &obj);
     virtual bool operator == (const ThresholdAttributes &obj) const;
     virtual bool operator != (const ThresholdAttributes &obj) const;
 
@@ -78,34 +87,83 @@ public:
     virtual AttributeSubject *CreateCompatible(const std::string &) const;
     virtual AttributeSubject *NewInstance(bool) const;
 
+    // Property setting methods
+    void SetOutputMeshType(OutputMeshType outputMeshType_);
+    void SetOutputMeshType(int outputMeshType_);
+    void SetListedVariables(const stringVector &listedVarNames_);
+    void SetShownVariablePosition(int shownVarPosition_);
+    void SetZonePortions(const std::vector<ZonePortion> &zonePortions_);
+    void SetZonePortions(const intVector &zonePortions_);
+    void SetLowerBounds(const doubleVector &lowerBounds_);
+    void SetUpperBounds(const doubleVector &upperBounds_);
+
+    void SwitchToPipelineVariable(const std::string &pipelineVarName_);
+
+    // Property getting methods
+    OutputMeshType         GetOutputMeshType() const;
+    const std::string     &GetShownVariable() const;
+          std::string     &GetShownVariable();
+    const std::string     &GetVariable() const;   // Same as GetShownVariable
+          std::string     &GetVariable();         // Same as GetShownVariable
+    ZonePortion            GetZonePortion() const;
+    double                 GetLowerBound() const;
+    double                 GetUpperBound() const;
+
+    const stringVector    &GetListedVariables() const;
+    const intVector       &GetZonePortions() const;
+    const doubleVector    &GetLowerBounds() const;
+    const doubleVector    &GetUpperBounds() const;
+
+    // Property changing methods
+    void                   ChangeZonePortion(ZonePortion newZonePortion_);
+    void                   ChangeZonePortion(int newZonePortion_);
+    void                   ChangeLowerBound(double newLowerBound_);
+    void                   ChangeUpperBound(double newUpperBound_);
+
+    void                   InsertVariable(const std::string &variable_);
+    void                   DeleteVariable(const std::string &variable_);
+    void                   SwapVariable(const std::string &variable_);
+    void                   ShowPreviousVariable();
+    void                   ShowNextVariable();
+
     // Property selection methods
     virtual void SelectAll();
     void SelectVariable();
 
-    // Property setting methods
-    void SetAmount(Amount amount_);
-    void SetLbound(double lbound_);
-    void SetUbound(double ubound_);
-    void SetVariable(const std::string &variable_);
+    // Python compatibility methods
+    void                   SetListedVarNames(const stringVector &listedVarNames_);
+    void                   SetShownVarPosition(int shownVarPosition_);
 
-    // Property getting methods
-    Amount            GetAmount() const;
-    double            GetLbound() const;
-    double            GetUbound() const;
-    const std::string &GetVariable() const;
-          std::string &GetVariable();
+    const stringVector    &GetListedVarNames() const;
+          stringVector    &GetListedVarNames();
+    int                    GetShownVarPosition() const;
+    intVector             &GetZonePortions();
+    doubleVector          &GetLowerBounds();
+    doubleVector          &GetUpperBounds();
+
+    void                   SelectOutputMeshType();
+    void                   SelectListedVarNames();
+    void                   SelectShownVarPosition();
+    void                   SelectZonePortions();
+    void                   SelectLowerBounds();
+    void                   SelectUpperBounds();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
     virtual void SetFromNode(DataNode *node);
 
     // Enum conversion functions
-    static std::string Amount_ToString(Amount);
-    static bool Amount_FromString(const std::string &, Amount &);
-protected:
-    static std::string Amount_ToString(int);
-public:
+    static std::string OutputMeshType_ToString(OutputMeshType);
+    static bool OutputMeshType_FromString(const std::string &, OutputMeshType &);
 
+    static std::string ZonePortion_ToString(ZonePortion);
+    static bool ZonePortion_FromString(const std::string &, ZonePortion &);
+
+protected:
+    static std::string OutputMeshType_ToString(int);
+    static std::string ZonePortion_ToString(int);
+
+public:
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
     virtual AttributeGroup::FieldType GetFieldType(int index) const;
@@ -113,10 +171,12 @@ public:
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
 private:
-    int         amount;
-    double      lbound;
-    double      ubound;
-    std::string variable;
+    int                 outputMeshType;
+    stringVector        listedVarNames;
+    int                 shownVarPosition;
+    intVector           zonePortions;
+    doubleVector        lowerBounds;
+    doubleVector        upperBounds;
 };
 
 #endif

@@ -50,8 +50,9 @@ bool            PyThresholdAttributes_Check(PyObject *obj);
 ThresholdAttributes *PyThresholdAttributes_FromPyObject(PyObject *obj);
 PyObject       *PyThresholdAttributes_NewPyObject();
 PyObject       *PyThresholdAttributes_WrapPyObject(const ThresholdAttributes *attr);
-std::string     PyThresholdAttributes_GetLogString();
 void            PyThresholdAttributes_SetDefaults(const ThresholdAttributes *atts);
+std::string     PyThresholdAttributes_GetLogString();
+std::string     PyThresholdAttributes_ToString(const ThresholdAttributes *, const char *);
 
 #endif
 

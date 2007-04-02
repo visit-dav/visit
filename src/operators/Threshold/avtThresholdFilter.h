@@ -70,22 +70,24 @@ class     vtkDataSet;
 //    Hank Childs, Tue Sep 13 09:07:05 PDT 2005
 //    Add support for PointsOnly mode.
 //
+//    Mark Blair, Tue Mar  7 13:25:00 PST 2006
+//    Reworked to support multi-variable thresholding.
+//
 // ****************************************************************************
 
 class avtThresholdFilter : public avtPluginStructuredChunkStreamer
 {
   public:
-                         avtThresholdFilter();
-    virtual             ~avtThresholdFilter() {;};
+                          avtThresholdFilter();
+    virtual              ~avtThresholdFilter() {;};
 
-    static avtFilter    *Create();
+    static avtFilter     *Create();
 
-    virtual const char  *GetType(void)  { return "avtThresholdFilter"; };
-    virtual const char  *GetDescription(void)
-                             { return "Thresholding"; };
+    virtual const char   *GetType(void)  { return "avtThresholdFilter"; };
+    virtual const char   *GetDescription(void) { return "Thresholding"; };
 
-    virtual void         SetAtts(const AttributeGroup*);
-    virtual bool         Equivalent(const AttributeGroup*);
+    virtual void          SetAtts(const AttributeGroup*);
+    virtual bool          Equivalent(const AttributeGroup*);
 
   protected:
     ThresholdAttributes   atts;
@@ -96,12 +98,10 @@ class avtThresholdFilter : public avtPluginStructuredChunkStreamer
     virtual vtkDataSet   *ProcessOneChunk(vtkDataSet *, int, std::string,bool);
     virtual void          GetAssignments(vtkDataSet *, const int *,
                       std::vector<avtStructuredMeshChunker::ZoneDesignation>&);
+    vtkDataSet           *ThresholdToPointMesh(vtkDataSet *in_ds);
 
     virtual void          RefashionDataObjectInfo(void);
     virtual void          PreExecute(void);
-
-    vtkDataArray         *GetThresholdVariable(vtkDataSet *, bool &);
-    vtkDataSet           *ThresholdToPointMesh(vtkDataSet *);
 };
 
 

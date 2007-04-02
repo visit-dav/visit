@@ -47,7 +47,9 @@
 #include <qspinbox.h>
 #include <qvbox.h>
 #include <qbuttongroup.h>
+#include <qpushbutton.h>
 #include <qradiobutton.h>
+#include <qbitmap.h>
 #include <QvisColorTableButton.h>
 #include <QvisOpacitySlider.h>
 #include <QvisColorButton.h>
@@ -71,6 +73,9 @@ using std::string;
 //
 // Modifications:
 //   
+//   Mark Blair, Tue Mar  7 13:25:00 PST 2006
+//   Upgraded to support multiple threshold variables.
+//
 // ****************************************************************************
 
 QvisThresholdWindow::QvisThresholdWindow(const int type,
@@ -81,6 +86,9 @@ QvisThresholdWindow::QvisThresholdWindow(const int type,
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
     atts = subj;
+
+    latestGUIAtts = *subj;
+    changedAttsInGUI = false;
 }
 
 
@@ -99,6 +107,7 @@ QvisThresholdWindow::QvisThresholdWindow(const int type,
 
 QvisThresholdWindow::~QvisThresholdWindow()
 {
+    // nothing here
 }
 
 
@@ -118,74 +127,121 @@ QvisThresholdWindow::~QvisThresholdWindow()
 //   Hank Childs, Tue Sep 13 09:25:35 PDT 2005
 //   Add support for "PointsOnly".
 //
+//   Mark Blair, Tue Mar  7 13:25:00 PST 2006
+//   Upgraded to support multiple threshold variables.
+//
 // ****************************************************************************
 
 void
 QvisThresholdWindow::CreateWindowContents()
 {
-    QGroupBox *rangeBox = new QGroupBox(central, "rangeBox");
-    rangeBox->setTitle("Threshold Range");
-    topLayout->addWidget(rangeBox);
+    static unsigned char leftArrow[8] =
+        { 0x00, 0x01, 0x07, 0x1f, 0x7f, 0x1f, 0x07, 0x01 };
+    static unsigned char rightArrow[8] =
+        { 0x00, 0x80, 0xe0, 0xf8, 0xfe, 0xf8, 0xe0, 0x80 };
 
-    QGridLayout *mainLayout = new QGridLayout(rangeBox, 4,2);
-    mainLayout->setMargin(10);
-    mainLayout->setSpacing(5);
-    mainLayout->addRowSpacing(0, 10);
-    mainLayout->addWidget(new QLabel("Lower bound", rangeBox, "lboundLabel"),1,0);
-    lbound = new QLineEdit(rangeBox, "lbound");
-    connect(lbound, SIGNAL(returnPressed()),
-            this, SLOT(lboundProcessText()));
-    mainLayout->addMultiCellWidget(lbound, 1,1, 1,1);
+    QGroupBox *shownVarBox = new QGroupBox(central, "shownVarBox");
+    shownVarBox->setTitle("For the currently selected variable");
+    topLayout->addWidget(shownVarBox);
 
-    mainLayout->addWidget(new QLabel("Upper bound", rangeBox, "uboundLabel"),2,0);
-    ubound = new QLineEdit(rangeBox, "ubound");
-    connect(ubound, SIGNAL(returnPressed()),
-            this, SLOT(uboundProcessText()));
-    mainLayout->addMultiCellWidget(ubound, 2, 2, 1, 1);
+    QGridLayout *shownVarLayout = new QGridLayout(shownVarBox, 6, 5, 15, 5);
 
-    mainLayout->addWidget(new QLabel("Variable", rangeBox, "variableLabel"),3,0);
-    variable = new QvisVariableButton(true, true, true,
-        QvisVariableButton::Scalars, rangeBox, "variable");
-    connect(variable, SIGNAL(activated(const QString &)),
-            this, SLOT(variableChanged(const QString &)));
-    mainLayout->addMultiCellWidget(variable, 3,3, 1, 1);
+    shownVarLayout->addRowSpacing(0, 15);
 
-    QGroupBox *nodalBox = new QGroupBox(central, "nodalBox");
-    nodalBox->setTitle("Nodal Quantities Only");
-    topLayout->addWidget(nodalBox);
+    zonePortionLabel =
+        new QLabel("Include zone if", shownVarBox, "zonePortionLabel");
+    shownVarLayout->addMultiCellWidget(zonePortionLabel, 1, 1, 0, 1);
+    zonePortion = new QButtonGroup(shownVarBox, "zonePortion");
+    zonePortion->setFrameStyle(QFrame::NoFrame);
+    QHBoxLayout *zonePortionLayout = new QHBoxLayout(zonePortion, 0, 10);
+    QRadioButton *entirelyInRange =
+        new QRadioButton("Entirely in range", zonePortion);
+    zonePortionLayout->addWidget(entirelyInRange);
+    QRadioButton *anyPartInRange =
+        new QRadioButton("Any part in range", zonePortion);
+    zonePortionLayout->addWidget(anyPartInRange);
+    connect(zonePortion, SIGNAL(clicked(int)),
+            this, SLOT(zonePortionChanged(int)));
+    shownVarLayout->addMultiCellWidget(zonePortion, 1, 1, 2, 5);
 
-    QGridLayout *nodalLayout = new QGridLayout(nodalBox, 3,3);
-    nodalLayout->setMargin(10);
-    nodalLayout->setSpacing(5);
-    nodalLayout->addRowSpacing(0, 10);
+    shownVarLayout->addMultiCellWidget(
+        new QLabel("Lower bound", shownVarBox, "lowerBoundLabel"), 2, 2, 0, 1);
+    lowerBound = new QLineEdit(shownVarBox, "lowerBound");
+    connect(lowerBound, SIGNAL(returnPressed()), this, SLOT(lowerBoundChanged()));
+    connect(lowerBound, SIGNAL(lostFocus()), this, SLOT(lowerBoundChanged()));
+    shownVarLayout->addMultiCellWidget(lowerBound, 2, 2, 2, 5);
 
-    nodalLayout->addMultiCellWidget(new QLabel("Output mesh is ",
-        nodalBox, "meshType"),1,1,0,0);
-    meshType = new QButtonGroup(nodalBox, "meshType");
-    meshType->setFrameStyle(QFrame::NoFrame);
-    QHBoxLayout *meshTypeLayout = new QHBoxLayout(meshType);
-    meshTypeLayout->setSpacing(10);
-    QRadioButton *meshTypeCells = new QRadioButton("Cells from input", meshType);
-    meshTypeLayout->addWidget(meshTypeCells);
-    QRadioButton *meshTypePoints = new QRadioButton("Point mesh", meshType);
-    meshTypeLayout->addWidget(meshTypePoints);
-    connect(meshType, SIGNAL(clicked(int)),
-            this, SLOT(meshTypeChanged(int)));
-    nodalLayout->addMultiCellWidget(meshType, 1,1, 1,2);
+    shownVarLayout->addMultiCellWidget(
+        new QLabel("Upper bound", shownVarBox, "upperBoundLabel"), 3, 3, 0, 1);
+    upperBound = new QLineEdit(shownVarBox, "upperBound");
+    connect(upperBound, SIGNAL(returnPressed()), this, SLOT(upperBoundChanged()));
+    connect(upperBound, SIGNAL(lostFocus()), this, SLOT(upperBoundChanged()));
+    shownVarLayout->addMultiCellWidget(upperBound, 3, 3, 2, 5);
 
-    amountLabel = new QLabel("Nodes in range ", nodalBox, "meshType");
-    nodalLayout->addMultiCellWidget(amountLabel, 2,2,0,0);
-    amount = new QButtonGroup(nodalBox, "amount");
-    amount->setFrameStyle(QFrame::NoFrame);
-    QHBoxLayout *amountLayout = new QHBoxLayout(amount);
-    amountLayout->setSpacing(10);
-    QRadioButton *amountAll = new QRadioButton("All", amount);
-    amountLayout->addWidget(amountAll);
-    QRadioButton *amountOne = new QRadioButton("At least one", amount);
-    amountLayout->addWidget(amountOne);
-    connect(amount, SIGNAL(clicked(int)),
-            this, SLOT(amountChanged(int)));
-    nodalLayout->addMultiCellWidget(amount, 2,2, 1,2);
+    shownVarLayout->addMultiCellWidget(new QLabel("Variable selected:",
+        shownVarBox, "varShownLabel"), 4, 4, 0, 1);
+    shownVariable = new QLabel("default", shownVarBox, "shownVariable");
+    shownVarLayout->addMultiCellWidget(shownVariable, 4, 4, 2, 4);
+
+    QButtonGroup *prevVarOrNext = new QButtonGroup(shownVarBox, "prevVarOrNext");
+    prevVarOrNext->setFrameStyle(QFrame::NoFrame);
+    QHBoxLayout *prevOrNextLayout = new QHBoxLayout(prevVarOrNext);
+    prevOrNextLayout->setSpacing(0);
+    showPrevVariable = new QPushButton(prevVarOrNext);
+    leftArrowBitmap = new QBitmap(8, 8, leftArrow);
+    showPrevVariable->setPixmap(*leftArrowBitmap);
+    prevOrNextLayout->addWidget(showPrevVariable);
+    connect(showPrevVariable, SIGNAL(clicked()), this, SLOT(prevVarClicked()));
+    showNextVariable = new QPushButton(prevVarOrNext);
+    rightArrowBitmap = new QBitmap(8, 8, rightArrow);
+    showNextVariable->setPixmap(*rightArrowBitmap);
+    prevOrNextLayout->addWidget(showNextVariable);
+    connect(showNextVariable, SIGNAL(clicked()), this, SLOT(nextVarClicked()));
+    shownVarLayout->addWidget(prevVarOrNext, 4, 5);
+
+    QGroupBox *varsInListBox = new QGroupBox(central, "varsInListBox");
+    varsInListBox->setTitle("For the list of threshold variables");
+    topLayout->addWidget(varsInListBox);
+
+    QGridLayout *varsInListLayout = new QGridLayout(varsInListBox, 6, 3, 15, 5);
+
+    varsInListLayout->addRowSpacing(0, 15);
+
+    varsInListLayout->addMultiCellWidget(new QLabel("Output mesh is",
+        varsInListBox, "outputMeshLabel"), 1, 1, 0, 1);
+    outputMeshType = new QButtonGroup(varsInListBox, "outputMeshType");
+    outputMeshType->setFrameStyle(QFrame::NoFrame);
+    QHBoxLayout *outputMeshTypeLayout = new QHBoxLayout(outputMeshType, 0, 10);
+    QRadioButton *zonesFromInput =
+        new QRadioButton("Zones from input", outputMeshType);
+    outputMeshTypeLayout->addWidget(zonesFromInput);
+    QRadioButton *pointMesh = new QRadioButton("Point mesh", outputMeshType);
+    outputMeshTypeLayout->addWidget(pointMesh);
+    connect(outputMeshType, SIGNAL(clicked(int)),
+            this, SLOT(outputMeshTypeChanged(int)));
+    varsInListLayout->addMultiCellWidget(outputMeshType, 1, 1, 2, 5);
+
+    addVariable = new QvisVariableButton(false, true, true,
+        QvisVariableButton::Scalars, varsInListBox, "addVariable");
+    addVariable->setText("Add variable");
+    addVariable->setChangeTextOnVariableChange(false);
+    connect(addVariable, SIGNAL(activated(const QString &)),
+            this, SLOT(variableAdded(const QString &)));
+    varsInListLayout->addMultiCellWidget(addVariable, 2, 2, 0, 1);
+    deleteVariable = new QvisVariableButton(false, true, true,
+        QvisVariableButton::Scalars, varsInListBox, "deleteVariable");
+    deleteVariable->setText("Delete variable");
+    deleteVariable->setChangeTextOnVariableChange(false);
+    connect(deleteVariable, SIGNAL(activated(const QString &)),
+            this, SLOT(variableDeleted(const QString &)));
+    varsInListLayout->addMultiCellWidget(deleteVariable, 2, 2, 2, 3);
+    swapVariable = new QvisVariableButton(false, true, true,
+        QvisVariableButton::Scalars, varsInListBox, "swapVariable");
+    swapVariable->setText("Swap variable");
+    swapVariable->setChangeTextOnVariableChange(false);
+    connect(swapVariable, SIGNAL(activated(const QString &)),
+            this, SLOT(variableSwapped(const QString &)));
+    varsInListLayout->addMultiCellWidget(swapVariable, 2, 2, 4, 5);
 }
 
 
@@ -211,61 +267,75 @@ QvisThresholdWindow::CreateWindowContents()
 //   Hank Childs, Thu Sep 15 15:31:34 PDT 2005
 //   Add support for meshType.
 //
+//   Mark Blair, Tue Mar  7 13:25:00 PST 2006
+//   Upgraded to support multiple threshold variables.
+//
 // ****************************************************************************
 
 void
 QvisThresholdWindow::UpdateWindow(bool doAll)
 {
+    ThresholdAttributes::OutputMeshType currentMeshType;
     QString temp;
 
-    for(int i = 0; i < atts->NumAttributes(); ++i)
-    {
-        if(!doAll)
-        {
-            if(!atts->IsSelected(i))
-            {
-                continue;
-            }
-        }
+    if (changedAttsInGUI) *atts = latestGUIAtts;
 
-        switch(i)
+    for (int attIndex = 0; attIndex < atts->NumAttributes(); attIndex++)
+    {
+
+/* Always apply all attributes.
+        if (!doAll) {
+            if (!atts->IsSelected(attIndex)) continue;
+        }
+*/
+        switch (attIndex)
         {
-          case 0: //amount
-            if (atts->GetAmount() == 2)
-            {
-                amountLabel->setEnabled(false);
-                amount->setEnabled(false);
-                meshType->setButton(1);
-            }
-            else
-            {
-                amountLabel->setEnabled(true);
-                amount->setEnabled(true);
-                meshType->setButton(0);
-                if (atts->GetAmount() == ThresholdAttributes::All)
-                    amount->setButton(0);
-                else if (atts->GetAmount() == ThresholdAttributes::Some)
-                    amount->setButton(1);
-            }
-            break;
-          case 1: //lbound
-            if (atts->GetLbound() == -1e+37)
-                temp = "min";
-            else
-                temp.setNum(atts->GetLbound());
-            lbound->setText(temp);
-            break;
-          case 2: //ubound
-            if (atts->GetUbound() == +1e+37)
-                temp = "max";
-            else
-                temp.setNum(atts->GetUbound());
-            ubound->setText(temp);
-            break;
-          case 3: //variable
-            temp = atts->GetVariable().c_str();
-            variable->setText(temp);
-            break;
+            case 0:  // outputMeshType
+                currentMeshType = atts->GetOutputMeshType();
+                outputMeshType->setButton((int)currentMeshType);
+
+                if (currentMeshType == ThresholdAttributes::InputZones)
+                {
+                    zonePortionLabel->setEnabled(true);
+                    zonePortion->setEnabled(true);
+                }
+                else
+                {   // ThresholdAttributes::PartOfZone
+                    zonePortionLabel->setEnabled(false);
+                    zonePortion->setEnabled(false);
+                }
+
+                break;
+
+            case 1:  // listedVarNames
+                break;
+
+            case 2:  // shownVarPosition
+                temp = atts->GetShownVariable().c_str();
+                shownVariable->setText(temp);
+                break;
+
+            case 3:  // zonePortions
+                zonePortion->setButton((int)atts->GetZonePortion());
+                break;
+
+            case 4:  // lowerBounds
+                if (atts->GetLowerBound() < -9e+36)
+                    temp = "min";
+                else
+                    temp.setNum(atts->GetLowerBound());
+
+                lowerBound->setText(temp);
+                break;
+
+            case 5:  // upperBounds
+                if (atts->GetUpperBound() > +9e+36)
+                    temp = "max";
+                else
+                    temp.setNum(atts->GetUpperBound());
+
+                upperBound->setText(temp);
+                break;
         }
     }
 }
@@ -291,6 +361,9 @@ QvisThresholdWindow::UpdateWindow(bool doAll)
 //   Brad Whitlock, Fri Dec 10 09:43:19 PDT 2004
 //   Removed code to get the variable.
 //
+//   Mark Blair, Tue Mar  7 13:25:00 PST 2006
+//   Added support for multiple threshold variables.
+//
 // ****************************************************************************
 
 void
@@ -300,106 +373,126 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
     QString msg, temp;
 
     // Do amount
-    if(which_widget == 0 || doAll)
-    {
+    if ((which_widget == 0) || doAll) {
         // Nothing for amount
     }
 
     // Do lbound
-    if(which_widget == 1 || doAll)
-    {
-        temp = lbound->displayText().simplifyWhiteSpace();
-        if (temp.latin1() == QString("min"))
-            atts->SetLbound(-1e+37);
-        else
-        {
+    if ((which_widget == 1) || doAll) {
+        temp = lowerBound->displayText().simplifyWhiteSpace();
+
+        if (temp.latin1() == QString("min")) atts->ChangeLowerBound(-1e+37);
+        else {
             okay = !temp.isEmpty();
-            if(okay)
+
+            if (okay)
             {
                 double val = temp.toDouble(&okay);
-                atts->SetLbound(val);
+                atts->ChangeLowerBound(val);
             }
 
-            if(!okay)
+            if (!okay)
             {
-                msg.sprintf("The value of lbound was invalid. "
+                msg.sprintf ("The value of lbound was invalid. "
                     "Resetting to the last good value of %g.",
-                    atts->GetLbound());
+                    atts->GetLowerBound());
                 Message(msg);
-                atts->SetLbound(atts->GetLbound());
+                atts->ChangeLowerBound(atts->GetLowerBound());
             }
         }
     }
 
     // Do ubound
-    if(which_widget == 2 || doAll)
-    {
-        temp = ubound->displayText().simplifyWhiteSpace();
-        if (temp.latin1() == QString("max"))
-            atts->SetUbound(1e+37);
-        else
-        {
+    if ((which_widget == 2) || doAll) {
+        temp = upperBound->displayText().simplifyWhiteSpace();
+
+        if (temp.latin1() == QString("max")) atts->ChangeUpperBound(+1e+37);
+        else {
             okay = !temp.isEmpty();
-            if(okay)
+
+            if (okay)
             {
                 double val = temp.toDouble(&okay);
-                atts->SetUbound(val);
+                atts->ChangeUpperBound(val);
             }
     
-            if(!okay)
+            if (!okay)
             {
                 msg.sprintf("The value of ubound was invalid. "
                     "Resetting to the last good value of %g.",
-                    atts->GetUbound());
+                    atts->GetUpperBound());
                 Message(msg);
-                atts->SetUbound(atts->GetUbound());
+                atts->ChangeUpperBound(atts->GetUpperBound());
             }
         }
     }
+
+    RecordGUIAttributeChangeIfActuallyChanged();
 }
 
 
+// ****************************************************************************
 //
 // Qt Slot functions
 //
+// ****************************************************************************
 
 
 void
-QvisThresholdWindow::amountChanged(int val)
+QvisThresholdWindow::apply()
 {
-    ThresholdAttributes::Amount newVal = (val == 0 
-                                       ? ThresholdAttributes::All
-                                       : ThresholdAttributes::Some);
-    if(newVal != atts->GetAmount())
-    {
-        atts->SetAmount(newVal);
-        Apply();
-    }
-}
+    QvisOperatorWindow::apply();
 
-void
-QvisThresholdWindow::meshTypeChanged(int val)
-{
-    ThresholdAttributes::Amount newVal;
-    if (val == 1)
-        newVal = ThresholdAttributes::PointsOnly;
-    else
-    {
-        int selectedId = amount->id(amount->selected());
-        newVal = (selectedId == 0 ? ThresholdAttributes::All
-                                  : ThresholdAttributes::Some);
-    }
-
-    if(newVal != atts->GetAmount())
-    {
-        atts->SetAmount(newVal);
-        Apply();
-    }
+    latestGUIAtts = *atts;
+    changedAttsInGUI = false;
 }
 
 
 void
-QvisThresholdWindow::lboundProcessText()
+QvisThresholdWindow::outputMeshTypeChanged(int buttonID)
+{
+    ThresholdAttributes::OutputMeshType newOutputMeshType =
+        ThresholdAttributes::OutputMeshType(buttonID);
+
+    if (newOutputMeshType != atts->GetOutputMeshType())
+    {
+        atts->SetOutputMeshType(newOutputMeshType);
+        RecordGUIAttributeChangeIfActuallyChanged();
+
+        if (newOutputMeshType == ThresholdAttributes::InputZones)
+        {
+            zonePortionLabel->setEnabled(true);
+            zonePortion->setEnabled(true);
+        }
+        else
+        {   // YhresholdAttributes::PartOfZone
+            zonePortionLabel->setEnabled(false);
+            zonePortion->setEnabled(false);
+        }
+
+        Apply();
+    }
+}
+
+
+void
+QvisThresholdWindow::zonePortionChanged(int buttonID)
+{
+    ThresholdAttributes::ZonePortion newZonePortion =
+        ThresholdAttributes::ZonePortion(buttonID);
+
+    if (newZonePortion != atts->GetZonePortion())
+    {
+        atts->ChangeZonePortion(newZonePortion);
+        RecordGUIAttributeChangeIfActuallyChanged();
+
+        Apply();
+    }
+}
+
+
+void
+QvisThresholdWindow::lowerBoundChanged()
 {
     GetCurrentValues(1);
     Apply();
@@ -407,7 +500,7 @@ QvisThresholdWindow::lboundProcessText()
 
 
 void
-QvisThresholdWindow::uboundProcessText()
+QvisThresholdWindow::upperBoundChanged()
 {
     GetCurrentValues(2);
     Apply();
@@ -415,11 +508,104 @@ QvisThresholdWindow::uboundProcessText()
 
 
 void
-QvisThresholdWindow::variableChanged(const QString &var)
+QvisThresholdWindow::prevVarClicked()
 {
-    atts->SetVariable(var.latin1());
+    atts->ShowPreviousVariable();
+    UpdateShownFields();
+}
+
+
+void
+QvisThresholdWindow::nextVarClicked()
+{
+    atts->ShowNextVariable();
+    UpdateShownFields();
+}
+
+
+void
+QvisThresholdWindow::variableAdded(const QString &variableToAdd)
+{
+    atts->InsertVariable(variableToAdd.latin1());
+    UpdateShownFields();
+}
+
+
+void
+QvisThresholdWindow::variableDeleted(const QString &variableToDelete)
+{
+    atts->DeleteVariable(variableToDelete.latin1());
+    UpdateShownFields();
+}
+
+
+void
+QvisThresholdWindow::variableSwapped(const QString &variableToSwapIn)
+{
+    atts->SwapVariable(variableToSwapIn.latin1());
+    UpdateShownFields();
+}
+
+
+// ****************************************************************************
+// Method: QvisThresholdWindow::UpdateShownFields
+//
+// Purpose: Updates all widgets that display data for the variable whose data
+//          is currently being shown, which is one variable in the list of
+//          currently selected threshold variables.
+//
+// Programmer: Mark Blair
+// Creation:   Tue Mar  7 13:25:00 PST 2006
+//
+// ****************************************************************************
+
+void
+QvisThresholdWindow::UpdateShownFields()
+{
+    QString fieldString = atts->GetShownVariable().c_str();
+    shownVariable->setText(fieldString);
+
+    zonePortion->setButton((int)atts->GetZonePortion());
+
+    if (atts->GetLowerBound() < -9e+36)
+        fieldString = "min";
+    else
+        fieldString.setNum(atts->GetLowerBound());
+
+    lowerBound->setText(fieldString);
+
+    if (atts->GetUpperBound() > +9e+36)
+        fieldString = "max";
+    else
+        fieldString.setNum(atts->GetUpperBound());
+
+    upperBound->setText(fieldString);
+
+    RecordGUIAttributeChangeIfActuallyChanged();
+
     SetUpdate(false);
     Apply();
 }
 
 
+// ****************************************************************************
+// Method: QvisThresholdWindow::RecordGUIAttributeChangeIfActuallyChanged
+//
+// Purpose: Record pending attribute changes so they can be restored if the
+//          Threshold window is updated with an attribute subject that does
+//          not yet incorporate those changes.
+//
+// Programmer: Mark Blair
+// Creation:   Tue Mar  7 13:25:00 PST 2006
+//
+// ****************************************************************************
+
+void
+QvisThresholdWindow::RecordGUIAttributeChangeIfActuallyChanged()
+{
+    if (*atts != latestGUIAtts)
+    {
+        latestGUIAtts = *atts;
+        changedAttsInGUI = true;
+    }
+}

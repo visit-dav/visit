@@ -36,45 +36,96 @@
 *****************************************************************************/
 
 #include <ThresholdAttributes.h>
+/* Use of Extents tool temporarily short-curcuited so that multi-variable
+   Threshold operator can be added to VisIt 1.5.3 without the Extents tool or
+   the HighDimension plot.  (mb -- 5/12/06)
+
+#include <ExtentsAttributes.h>
+*/
 #include <DataNode.h>
 
+
 //
-// Enum conversion methods for ThresholdAttributes::Amount
+// Enum conversion methods for ThresholdAttributes::OutputMeshType
 //
 
-static const char *Amount_strings[] = {
-"Some", "All", "PointsOnly"
-};
+static const char *OutputMeshType_strings[] = { "InputZones", "PointMesh" };
 
 std::string
-ThresholdAttributes::Amount_ToString(ThresholdAttributes::Amount t)
+ThresholdAttributes::OutputMeshType_ToString(ThresholdAttributes::OutputMeshType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 3) index = 0;
-    return Amount_strings[index];
+    if (index < 0 || index >= 2)
+        index = 0;
+    return OutputMeshType_strings[index];
 }
+
 
 std::string
-ThresholdAttributes::Amount_ToString(int t)
+ThresholdAttributes::OutputMeshType_ToString(int t)
 {
-    int index = (t < 0 || t >= 3) ? 0 : t;
-    return Amount_strings[index];
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return OutputMeshType_strings[index];
 }
 
+
 bool
-ThresholdAttributes::Amount_FromString(const std::string &s, ThresholdAttributes::Amount &val)
+ThresholdAttributes::OutputMeshType_FromString(
+    const std::string &s, ThresholdAttributes::OutputMeshType &val)
 {
-    val = ThresholdAttributes::Some;
-    for(int i = 0; i < 3; ++i)
-    {
-        if(s == Amount_strings[i])
-        {
-            val = (Amount)i;
+    val = ThresholdAttributes::InputZones;
+
+    for (int i = 0; i < 2; ++i) {
+        if (s == OutputMeshType_strings[i]) {
+            val = (OutputMeshType)i;
             return true;
         }
     }
+
     return false;
 }
+
+
+//
+// Enum conversion methods for ThresholdAttributes::ZonePortion
+//
+
+static const char *ZonePortion_strings[] = { "EntireZone", "PartOfZone" };
+
+std::string
+ThresholdAttributes::ZonePortion_ToString(ThresholdAttributes::ZonePortion t)
+{
+    int index = int(t);
+    if (index < 0 || index >= 2)
+        index = 0;
+    return ZonePortion_strings[index];
+}
+
+
+std::string
+ThresholdAttributes::ZonePortion_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return ZonePortion_strings[index];
+}
+
+
+bool
+ThresholdAttributes::ZonePortion_FromString(
+    const std::string &s, ThresholdAttributes::ZonePortion &val)
+{
+    val = ThresholdAttributes::PartOfZone;
+
+    for (int i = 0; i < 2; ++i) {
+        if (s == ZonePortion_strings[i]) {
+            val = (ZonePortion)i;
+            return true;
+        }
+    }
+
+    return false;
+}
+
 
 // ****************************************************************************
 // Method: ThresholdAttributes::ThresholdAttributes
@@ -88,16 +139,22 @@ ThresholdAttributes::Amount_FromString(const std::string &s, ThresholdAttributes
 // Creation:   Tue Sep 13 08:54:28 PDT 2005
 //
 // Modifications:
-//   
+//
+//   Mark Blair, Tue Mar  7 13:25:00 PST 2006
+//   Upgraded to support multiple threshold variables.
+//
 // ****************************************************************************
 
-ThresholdAttributes::ThresholdAttributes() : AttributeSubject("idds"),
-    variable("default")
+ThresholdAttributes::ThresholdAttributes() : AttributeSubject("is*ii*d*d*")
 {
-    amount = Some;
-    lbound = -1e+37;
-    ubound = 1e+37;
+    outputMeshType = (int)InputZones;
+    listedVarNames.push_back(std::string("__default__"));
+    shownVarPosition = 0;
+    zonePortions.push_back((int)PartOfZone);
+    lowerBounds.push_back(-1e+37);
+    upperBounds.push_back(+1e+37);
 }
+
 
 // ****************************************************************************
 // Method: ThresholdAttributes::ThresholdAttributes
@@ -112,17 +169,24 @@ ThresholdAttributes::ThresholdAttributes() : AttributeSubject("idds"),
 //
 // Modifications:
 //   
+//   Mark Blair, Tue Mar  7 13:25:00 PST 2006
+//   Upgraded to support multiple threshold variables.
+//
 // ****************************************************************************
 
-ThresholdAttributes::ThresholdAttributes(const ThresholdAttributes &obj) : AttributeSubject("idds")
+ThresholdAttributes::ThresholdAttributes(const ThresholdAttributes &obj) :
+    AttributeSubject("is*ii*d*d*")
 {
-    amount = obj.amount;
-    lbound = obj.lbound;
-    ubound = obj.ubound;
-    variable = obj.variable;
+    outputMeshType = obj.outputMeshType;
+    listedVarNames = obj.listedVarNames;
+    shownVarPosition = obj.shownVarPosition;
+    zonePortions = obj.zonePortions;
+    lowerBounds = obj.lowerBounds;
+    upperBounds = obj.upperBounds;
 
     SelectAll();
 }
+
 
 // ****************************************************************************
 // Method: ThresholdAttributes::~ThresholdAttributes
@@ -132,6 +196,8 @@ ThresholdAttributes::ThresholdAttributes(const ThresholdAttributes &obj) : Attri
 //
 // Note:       Autogenerated by xml2atts.
 //
+// Programmer: xml2atts
+// Creation:   Thu Dec 18 11:50:21 PDT 2003
 // Programmer: xml2atts
 // Creation:   Tue Sep 13 08:54:28 PDT 2005
 //
@@ -143,6 +209,7 @@ ThresholdAttributes::~ThresholdAttributes()
 {
     // nothing here
 }
+
 
 // ****************************************************************************
 // Method: ThresholdAttributes::operator = 
@@ -157,20 +224,24 @@ ThresholdAttributes::~ThresholdAttributes()
 //
 // Modifications:
 //   
+//   Mark Blair, Tue Mar  7 13:25:00 PST 2006
+//   Upgraded to support multiple threshold variables.
+//
 // ****************************************************************************
 
-ThresholdAttributes& 
+void
 ThresholdAttributes::operator = (const ThresholdAttributes &obj)
 {
-    if (this == &obj) return *this;
-    amount = obj.amount;
-    lbound = obj.lbound;
-    ubound = obj.ubound;
-    variable = obj.variable;
+    outputMeshType = obj.outputMeshType;
+    listedVarNames = obj.listedVarNames;
+    shownVarPosition = obj.shownVarPosition;
+    zonePortions = obj.zonePortions;
+    lowerBounds = obj.lowerBounds;
+    upperBounds = obj.upperBounds;
 
     SelectAll();
-    return *this;
 }
+
 
 // ****************************************************************************
 // Method: ThresholdAttributes::operator == 
@@ -185,17 +256,23 @@ ThresholdAttributes::operator = (const ThresholdAttributes &obj)
 //
 // Modifications:
 //   
+//   Mark Blair, Tue Mar  7 13:25:00 PST 2006
+//   Upgraded to support multiple threshold variables.
+//
 // ****************************************************************************
 
 bool
 ThresholdAttributes::operator == (const ThresholdAttributes &obj) const
 {
     // Create the return value
-    return ((amount == obj.amount) &&
-            (lbound == obj.lbound) &&
-            (ubound == obj.ubound) &&
-            (variable == obj.variable));
+    return ((outputMeshType == obj.outputMeshType) &&
+            (listedVarNames == obj.listedVarNames) &&
+            (shownVarPosition == obj.shownVarPosition) &&
+            (zonePortions == obj.zonePortions) &&
+            (lowerBounds == obj.lowerBounds) &&
+            (upperBounds == obj.upperBounds));
 }
+
 
 // ****************************************************************************
 // Method: ThresholdAttributes::operator != 
@@ -218,6 +295,7 @@ ThresholdAttributes::operator != (const ThresholdAttributes &obj) const
     return !(this->operator == (obj));
 }
 
+
 // ****************************************************************************
 // Method: ThresholdAttributes::TypeName
 //
@@ -227,7 +305,7 @@ ThresholdAttributes::operator != (const ThresholdAttributes &obj) const
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Tue Sep 13 08:54:28 PDT 2005
+// Creation:   Thu Dec 18 11:50:21 PDT 2003
 //
 // Modifications:
 //   
@@ -238,6 +316,7 @@ ThresholdAttributes::TypeName() const
 {
     return "ThresholdAttributes";
 }
+
 
 // ****************************************************************************
 // Method: ThresholdAttributes::CopyAttributes
@@ -252,20 +331,69 @@ ThresholdAttributes::TypeName() const
 //
 // Modifications:
 //   
+//   Mark Blair, Tue Mar  7 13:25:00 PST 2006
+//   Upgraded to support multiple threshold variables.
+//
 // ****************************************************************************
 
 bool
 ThresholdAttributes::CopyAttributes(const AttributeGroup *atts)
 {
-    if(TypeName() != atts->TypeName())
-        return false;
+    bool retval = false;
 
-    // Call assignment operator.
-    const ThresholdAttributes *tmp = (const ThresholdAttributes *)atts;
-    *this = *tmp;
+    if (TypeName() == atts->TypeName())
+    {
+        // Call assignment operator.
+        const ThresholdAttributes *tmp = (const ThresholdAttributes *)atts;
+        *this = *tmp;
+        retval = true;
+    }
+/* Use of Extents tool temporarily short-curcuited so that multi-variable
+   Threshold operator can be added to VisIt 1.5.3 without the Extents tool or
+   the HighDimension plot.  (mb -- 5/12/06)
 
-    return true;
+    else if (atts->TypeName() == "ExtentsAttributes")
+    {
+        int varPosition, extentNum;
+        double scalarMin, extentSize;
+        std::string listedVarName;
+
+        const ExtentsAttributes *extAtts = (const ExtentsAttributes *)atts;
+
+        stringVector copiedScalarNames  = extAtts->GetScalarNames();
+        doubleVector copiedScalarMinima = extAtts->GetScalarMinima();
+        doubleVector copiedScalarMaxima = extAtts->GetScalarMaxima();
+        doubleVector copiedMinima       = extAtts->GetMinima();
+        doubleVector copiedMaxima       = extAtts->GetMaxima();
+
+        for (varPosition = 0; varPosition < listedVarNames.size(); varPosition++)
+        {
+            listedVarName = listedVarNames[varPosition];
+
+            for (extentNum = 0; extentNum < copiedScalarNames.size(); extentNum++)
+            {
+                if (copiedScalarNames[extentNum] == listedVarName) break;
+            }
+
+            if (extentNum < copiedScalarNames.size())
+            {
+                scalarMin = copiedScalarMinima[extentNum];
+                extentSize = copiedScalarMaxima[extentNum] - scalarMin;
+
+                lowerBounds[varPosition] =
+                    scalarMin + copiedMinima[extentNum]*extentSize;
+                upperBounds[varPosition] =
+                    scalarMin + copiedMaxima[extentNum]*extentSize;
+            }
+        }
+
+        retval = true;
+    }
+*/
+
+    return retval;
 }
+
 
 // ****************************************************************************
 // Method: ThresholdAttributes::CreateCompatible
@@ -285,13 +413,15 @@ ThresholdAttributes::CopyAttributes(const AttributeGroup *atts)
 AttributeSubject *
 ThresholdAttributes::CreateCompatible(const std::string &tname) const
 {
-    AttributeSubject *retval = 0;
-    if(TypeName() == tname)
+    AttributeSubject *retval = NULL;
+
+    if (TypeName() == tname)
         retval = new ThresholdAttributes(*this);
     // Other cases could go here too. 
 
     return retval;
 }
+
 
 // ****************************************************************************
 // Method: ThresholdAttributes::NewInstance
@@ -302,6 +432,8 @@ ThresholdAttributes::CreateCompatible(const std::string &tname) const
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
+// Creation:   Thu Dec 18 11:50:21 PDT 2003
+// Programmer: xml2atts
 // Creation:   Tue Sep 13 08:54:28 PDT 2005
 //
 // Modifications:
@@ -311,14 +443,569 @@ ThresholdAttributes::CreateCompatible(const std::string &tname) const
 AttributeSubject *
 ThresholdAttributes::NewInstance(bool copy) const
 {
-    AttributeSubject *retval = 0;
-    if(copy)
+    AttributeSubject *retval = NULL;
+
+    if (copy)
         retval = new ThresholdAttributes(*this);
     else
         retval = new ThresholdAttributes;
 
     return retval;
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Persistence methods
+///////////////////////////////////////////////////////////////////////////////
+
+
+// ****************************************************************************
+// Method: ThresholdAttributes::CreateNode
+//
+// Purpose: This method creates a DataNode representation of the object so it
+//          can be saved to a config file.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   Tue Sep 13 08:54:28 PDT 2005
+//
+// Modifications:
+//   
+//   Mark Blair, Tue Mar  7 13:25:00 PST 2006
+//   Upgraded to support multiple threshold variables.
+//
+// ****************************************************************************
+
+bool
+ThresholdAttributes::CreateNode(
+    DataNode *parentNode, bool completeSave, bool forceAdd)
+{
+    if (parentNode == NULL)
+        return false;
+
+    ThresholdAttributes defaultObject;
+    bool addToParent = false;
+
+    // Create a node for ThresholdAttributes.
+    DataNode *node = new DataNode("ThresholdAttributes");
+
+    if (completeSave || !FieldsEqual(0, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("outputMeshType", outputMeshType));
+    }
+
+    if (completeSave || !FieldsEqual(1, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("listedVarNames", listedVarNames));
+    }
+
+    if (completeSave || !FieldsEqual(2, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("shownVarPosition", shownVarPosition));
+    }
+
+    if (completeSave || !FieldsEqual(3, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("zonePortions", zonePortions));
+    }
+
+    if (completeSave || !FieldsEqual(4, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("lowerBounds", lowerBounds));
+    }
+
+    if (completeSave || !FieldsEqual(5, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("upperBounds", upperBounds));
+    }
+
+    // Add the node to the parent node.
+    if (addToParent || forceAdd)
+        parentNode->AddNode(node);
+    else
+        delete node;
+
+    return (addToParent || forceAdd);
+}
+
+
+// ****************************************************************************
+// Method: ThresholdAttributes::SetFromNode
+//
+// Purpose: 
+//   This method sets attributes in this object from values in a DataNode
+//   representation of the object.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   Tue Sep 13 08:54:28 PDT 2005
+//
+// Modifications:
+//   
+//   Mark Blair, Tue Mar  7 13:25:00 PST 2006
+//   Upgraded to support multiple threshold variables.
+//
+// ****************************************************************************
+
+void
+ThresholdAttributes::SetFromNode(DataNode *parentNode)
+{
+    int i;
+
+    if (parentNode == NULL)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("ThresholdAttributes");
+
+    if (searchNode == NULL)
+        return;
+
+    DataNode *node;
+
+    if ((node = searchNode->GetNode("outputMeshType")) != NULL)
+    {
+        SetOutputMeshType(node->AsInt());
+    }
+
+    if ((node = searchNode->GetNode("listedVarNames")) != NULL)
+    {
+        SetListedVariables(node->AsStringVector());
+    }
+
+    if ((node = searchNode->GetNode("shownVarPosition")) != NULL)
+    {
+        SetShownVariablePosition(node->AsInt());
+    }
+
+    if ((node = searchNode->GetNode("zonePortions")) != NULL)
+    {
+        SetZonePortions(node->AsIntVector());
+    }
+
+    if ((node = searchNode->GetNode("lowerBounds")) != NULL)
+    {
+        SetLowerBounds(node->AsDoubleVector());
+    }
+
+    if ((node = searchNode->GetNode("upperBounds")) != NULL)
+    {
+        SetUpperBounds(node->AsDoubleVector());
+    }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Set property methods
+///////////////////////////////////////////////////////////////////////////////
+
+
+void
+ThresholdAttributes::SetOutputMeshType(OutputMeshType outputMeshType_)
+{
+    outputMeshType = (int)outputMeshType_;
+    Select(0, (void *)&outputMeshType);
+}
+
+
+void
+ThresholdAttributes::SetOutputMeshType(int outputMeshType_)
+{
+    outputMeshType = outputMeshType_;
+    Select(0, (void *)&outputMeshType);
+}
+
+
+void
+ThresholdAttributes::SetListedVariables(const stringVector &listedVarNames_)
+{
+    listedVarNames = listedVarNames_;
+    Select(1, (void *)&listedVarNames);
+}
+
+
+void
+ThresholdAttributes::SetShownVariablePosition(int shownVarPosition_)
+{
+    shownVarPosition = shownVarPosition_;
+    Select(2, (void *)&shownVarPosition);
+}
+
+
+void
+ThresholdAttributes::SetZonePortions(const std::vector<ZonePortion> &zonePortions_)
+{
+    zonePortions.clear();
+
+    for (int zpIndex = 0; zpIndex < zonePortions_.size(); zpIndex++ )
+    {
+        zonePortions.push_back((int)zonePortions_[zpIndex]);
+    }
+
+    Select(3, (void *)&zonePortions);
+}
+
+
+void
+ThresholdAttributes::SetZonePortions(const intVector &zonePortions_)
+{
+    zonePortions = zonePortions_;
+    Select(3, (void *)&zonePortions);
+}
+
+
+void
+ThresholdAttributes::SetLowerBounds(const doubleVector &lowerBounds_)
+{
+    lowerBounds = lowerBounds_;
+    Select(4, (void *)&lowerBounds);
+}
+
+
+void
+ThresholdAttributes::SetUpperBounds(const doubleVector &upperBounds_)
+{
+    upperBounds = upperBounds_;
+    Select(5, (void *)&upperBounds);
+}
+
+
+void
+ThresholdAttributes::SwitchToPipelineVariable(const std::string &pipelineVarName_)
+{
+    for (int varPosition = 0; varPosition < listedVarNames.size(); varPosition++)
+    {
+        if (listedVarNames[varPosition] == std::string("__default__"))
+        {
+            listedVarNames[varPosition] = pipelineVarName_;
+        }
+    }
+
+    Select(1, (void *)&listedVarNames);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Methods to change a given attribute.  When an attribute is "changed", its
+// value is not only set to the new value, but the values of one or more other
+// attributes may be changed as well.
+//
+// DO NOT USE THESE METHODS TO SET ATTRIBUTES FROM A SERIALIZED DATA STRUCTURE.
+//
+////////////////////////////////////////////////////////////////////////////////
+
+
+void
+ThresholdAttributes::ChangeZonePortion(ZonePortion newZonePortion_)
+{
+    zonePortions[shownVarPosition] = (int)newZonePortion_;
+    Select(3, (void *)&zonePortions);
+}
+
+
+void
+ThresholdAttributes::ChangeZonePortion(int newZonePortion_)
+{
+    zonePortions[shownVarPosition] = newZonePortion_;
+    Select(3, (void *)&zonePortions);
+}
+
+
+void
+ThresholdAttributes::ChangeLowerBound(double newLowerBound_)
+{
+    lowerBounds[shownVarPosition] = newLowerBound_;
+    Select(4, (void *)&lowerBounds);
+}
+
+
+void
+ThresholdAttributes::ChangeUpperBound(double newUpperBound_)
+{
+    upperBounds[shownVarPosition] = newUpperBound_;
+    Select(5, (void *)&upperBounds);
+}
+
+
+// ****************************************************************************
+// Method: ThresholdAttributes::InsertVariable
+//
+// Purpose: Insert a newly selected variable in the list of active threshold
+//          variable names.  All other attributes of the new variable are
+//          initialized to default values.
+//
+// Programmer: Mark Blair
+// Creation:   Tue Mar  7 13:25:00 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ThresholdAttributes::InsertVariable(const std::string &variable_)
+{
+    int varPosition;
+
+    for (varPosition = 0; varPosition < listedVarNames.size(); varPosition++ )
+    {
+        if (listedVarNames[varPosition] == variable_) break;
+    }
+
+    if (varPosition >= listedVarNames.size())
+    {
+        shownVarPosition = listedVarNames.size(); // Will be correct new position.
+
+        listedVarNames.push_back(variable_);
+        zonePortions.push_back((int)PartOfZone);
+        lowerBounds.push_back(-1e+37);
+        upperBounds.push_back(+1e+37);
+
+        Select(1, (void *)&listedVarNames);
+        Select(2, (void *)&shownVarPosition);
+        Select(3, (void *)&zonePortions);
+        Select(4, (void *)&lowerBounds);
+        Select(5, (void *)&upperBounds);
+    }
+}
+
+
+// ****************************************************************************
+// Method: ThresholdAttributes::DeleteVariable
+//
+// Purpose: Delete a variable from the list of active threshold variable names.
+//          Corresponding entries in the other lists of variable attributes
+//          are also deleted.
+//
+// Programmer: Mark Blair
+// Creation:   Tue Mar  7 13:25:00 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ThresholdAttributes::DeleteVariable(const std::string &variable_)
+{
+    if (listedVarNames.size() == 1) return;
+
+    int varPosition;
+
+    for (varPosition = 0; varPosition < listedVarNames.size(); varPosition++)
+    {
+        if (listedVarNames[varPosition] == variable_) break;
+    }
+
+    if (varPosition < listedVarNames.size())
+    {
+        listedVarNames.erase(listedVarNames.begin() + varPosition);
+        zonePortions.erase(zonePortions.begin() + varPosition);
+        lowerBounds.erase(lowerBounds.begin() + varPosition);
+        upperBounds.erase(upperBounds.begin() + varPosition);
+
+        if (varPosition <= shownVarPosition)
+        {
+            shownVarPosition =
+            (shownVarPosition + zonePortions.size() - 1) % zonePortions.size();
+        }
+
+        Select(1, (void *)&listedVarNames);
+        Select(2, (void *)&shownVarPosition);
+        Select(3, (void *)&zonePortions);
+        Select(4, (void *)&lowerBounds);
+        Select(5, (void *)&upperBounds);
+    }
+}
+
+
+// ****************************************************************************
+// Method: ThresholdAttributes::SwapVariable
+//
+// Purpose: Swap one variable for another in the list of active threshold
+//          variable names.  All other attributes of the variable swapped in are
+//          initialized to default values.
+//
+// Programmer: Mark Blair
+// Creation:   Tue Mar  7 13:25:00 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ThresholdAttributes::SwapVariable(const std::string &variable_)
+{
+    int varPosition;
+
+    for (varPosition = 0; varPosition < listedVarNames.size(); varPosition++)
+    {
+        if (listedVarNames[varPosition] == variable_) break;
+    }
+
+    if (varPosition < listedVarNames.size()) return;
+
+    std::string shownVarName = listedVarNames[shownVarPosition];
+
+    InsertVariable(variable_);
+    DeleteVariable(shownVarName);
+}
+
+
+// ****************************************************************************
+// Method: ThresholdAttributes::ShowPreviousVariable
+//
+// Purpose: Sets list index of the active threshold variable to be shown (or
+//          whatever other purpose the caller may have in mind) to point to
+//          the preceding (circularly) variable in the list.
+//
+// Programmer: Mark Blair
+// Creation:   Tue Mar  7 13:25:00 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ThresholdAttributes::ShowPreviousVariable()
+{
+    if (listedVarNames.size() == 1) return;
+
+    shownVarPosition =
+        (shownVarPosition + listedVarNames.size() - 1) % listedVarNames.size();
+    Select(2, (void *)&shownVarPosition);
+}
+
+
+// ****************************************************************************
+// Method: ThresholdAttributes::ShowNextVariable
+//
+// Purpose: Sets list index of the active threshold variable to be shown (or
+//          whatever other purpose the caller may have in mind) to point to
+//          the next (circularly) variable in the list.
+//
+// Programmer: Mark Blair
+// Creation:   Tue Mar  7 13:25:00 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ThresholdAttributes::ShowNextVariable()
+{
+    if (listedVarNames.size() == 1) return;
+
+    shownVarPosition = (shownVarPosition + 1) % listedVarNames.size();
+    Select(2, (void *)&shownVarPosition);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Get property methods
+///////////////////////////////////////////////////////////////////////////////
+
+
+ThresholdAttributes::OutputMeshType
+ThresholdAttributes::GetOutputMeshType() const
+{
+    return (OutputMeshType)outputMeshType;
+}
+
+
+const std::string &
+ThresholdAttributes::GetShownVariable() const
+{
+    return listedVarNames[shownVarPosition];
+}
+
+
+std::string &
+ThresholdAttributes::GetShownVariable()
+{
+    return listedVarNames[shownVarPosition];
+}
+
+
+const std::string &
+ThresholdAttributes::GetVariable() const
+{
+    return listedVarNames[shownVarPosition];
+}
+
+
+std::string &
+ThresholdAttributes::GetVariable()
+{
+    return listedVarNames[shownVarPosition];
+}
+
+
+ThresholdAttributes::ZonePortion
+ThresholdAttributes::GetZonePortion() const
+{
+    return (ZonePortion)zonePortions[shownVarPosition];
+}
+
+
+double
+ThresholdAttributes::GetLowerBound() const
+{
+    return lowerBounds[shownVarPosition];
+}
+
+
+double
+ThresholdAttributes::GetUpperBound() const
+{
+    return upperBounds[shownVarPosition];
+}
+
+
+const stringVector &
+ThresholdAttributes::GetListedVariables() const
+{
+    return listedVarNames;
+}
+
+
+const intVector &
+ThresholdAttributes::GetZonePortions() const
+{
+    return zonePortions;
+}
+
+
+const doubleVector &
+ThresholdAttributes::GetLowerBounds() const
+{
+    return lowerBounds;
+}
+
+
+const doubleVector &
+ThresholdAttributes::GetUpperBounds() const
+{
+    return upperBounds;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Select property methods
+///////////////////////////////////////////////////////////////////////////////
+
+
+void
+ThresholdAttributes::SelectVariable()
+{
+    Select(2, (void *)&shownVarPosition);
+}
+
 
 // ****************************************************************************
 // Method: ThresholdAttributes::SelectAll
@@ -333,211 +1020,131 @@ ThresholdAttributes::NewInstance(bool copy) const
 //
 // Modifications:
 //   
+//   Mark Blair, Tue Mar  7 13:25:00 PST 2006
+//   Upgraded to support multiple threshold variables.
+//
 // ****************************************************************************
 
 void
 ThresholdAttributes::SelectAll()
 {
-    Select(0, (void *)&amount);
-    Select(1, (void *)&lbound);
-    Select(2, (void *)&ubound);
-    Select(3, (void *)&variable);
+    Select(0, (void *)&outputMeshType);
+    Select(1, (void *)&listedVarNames);
+    Select(2, (void *)&shownVarPosition);
+    Select(3, (void *)&zonePortions);
+    Select(4, (void *)&lowerBounds);
+    Select(5, (void *)&upperBounds);
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////
-// Persistence methods
+// Python compatibility methods
 ///////////////////////////////////////////////////////////////////////////////
 
-// ****************************************************************************
-// Method: ThresholdAttributes::CreateNode
-//
-// Purpose: 
-//   This method creates a DataNode representation of the object so it can be saved to a config file.
-//
-// Note:       Autogenerated by xml2atts.
-//
-// Programmer: xml2atts
-// Creation:   Tue Sep 13 08:54:28 PDT 2005
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-bool
-ThresholdAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
-{
-    if(parentNode == 0)
-        return false;
-
-    ThresholdAttributes defaultObject;
-    bool addToParent = false;
-    // Create a node for ThresholdAttributes.
-    DataNode *node = new DataNode("ThresholdAttributes");
-
-    if(completeSave || !FieldsEqual(0, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("amount", Amount_ToString(amount)));
-    }
-
-    if(completeSave || !FieldsEqual(1, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("lbound", lbound));
-    }
-
-    if(completeSave || !FieldsEqual(2, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("ubound", ubound));
-    }
-
-    if(completeSave || !FieldsEqual(3, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("variable", variable));
-    }
-
-
-    // Add the node to the parent node.
-    if(addToParent || forceAdd)
-        parentNode->AddNode(node);
-    else
-        delete node;
-
-    return (addToParent || forceAdd);
-}
-
-// ****************************************************************************
-// Method: ThresholdAttributes::SetFromNode
-//
-// Purpose: 
-//   This method sets attributes in this object from values in a DataNode representation of the object.
-//
-// Note:       Autogenerated by xml2atts.
-//
-// Programmer: xml2atts
-// Creation:   Tue Sep 13 08:54:28 PDT 2005
-//
-// Modifications:
-//   
-// ****************************************************************************
 
 void
-ThresholdAttributes::SetFromNode(DataNode *parentNode)
+ThresholdAttributes::SetListedVarNames(const stringVector &listedVarNames_)
 {
-    int i;
-    if(parentNode == 0)
-        return;
-
-    DataNode *searchNode = parentNode->GetNode("ThresholdAttributes");
-    if(searchNode == 0)
-        return;
-
-    DataNode *node;
-    if((node = searchNode->GetNode("amount")) != 0)
-    {
-        // Allow enums to be int or string in the config file
-        if(node->GetNodeType() == INT_NODE)
-        {
-            int ival = node->AsInt();
-            if(ival >= 0 && ival < 3)
-                SetAmount(Amount(ival));
-        }
-        else if(node->GetNodeType() == STRING_NODE)
-        {
-            Amount value;
-            if(Amount_FromString(node->AsString(), value))
-                SetAmount(value);
-        }
-    }
-    if((node = searchNode->GetNode("lbound")) != 0)
-        SetLbound(node->AsDouble());
-    if((node = searchNode->GetNode("ubound")) != 0)
-        SetUbound(node->AsDouble());
-    if((node = searchNode->GetNode("variable")) != 0)
-        SetVariable(node->AsString());
+    listedVarNames = listedVarNames_;
+    Select(1, (void *)&listedVarNames);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Set property methods
-///////////////////////////////////////////////////////////////////////////////
 
 void
-ThresholdAttributes::SetAmount(ThresholdAttributes::Amount amount_)
+ThresholdAttributes::SetShownVarPosition(int shownVarPosition_)
 {
-    amount = amount_;
-    Select(0, (void *)&amount);
+    shownVarPosition = shownVarPosition_;
+    Select(2, (void *)&shownVarPosition);
 }
+
+
+const stringVector &
+ThresholdAttributes::GetListedVarNames() const
+{
+    return listedVarNames;
+}
+
+
+stringVector &
+ThresholdAttributes::GetListedVarNames()
+{
+    return listedVarNames;
+}
+
+
+int
+ThresholdAttributes::GetShownVarPosition() const
+{
+    return shownVarPosition;
+}
+
+intVector &
+ThresholdAttributes::GetZonePortions()
+{
+    return zonePortions;
+}
+
+
+doubleVector &
+ThresholdAttributes::GetLowerBounds()
+{
+    return lowerBounds;
+}
+
+
+doubleVector &
+ThresholdAttributes::GetUpperBounds()
+{
+    return upperBounds;
+}
+
 
 void
-ThresholdAttributes::SetLbound(double lbound_)
+ThresholdAttributes::SelectOutputMeshType()
 {
-    lbound = lbound_;
-    Select(1, (void *)&lbound);
+    Select(0, (void *)&outputMeshType);
 }
+
 
 void
-ThresholdAttributes::SetUbound(double ubound_)
+ThresholdAttributes::SelectListedVarNames()
 {
-    ubound = ubound_;
-    Select(2, (void *)&ubound);
+    Select(1, (void *)&listedVarNames);
 }
+
 
 void
-ThresholdAttributes::SetVariable(const std::string &variable_)
+ThresholdAttributes::SelectShownVarPosition()
 {
-    variable = variable_;
-    Select(3, (void *)&variable);
+    Select(2, (void *)&shownVarPosition);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Get property methods
-///////////////////////////////////////////////////////////////////////////////
-
-ThresholdAttributes::Amount
-ThresholdAttributes::GetAmount() const
-{
-    return Amount(amount);
-}
-
-double
-ThresholdAttributes::GetLbound() const
-{
-    return lbound;
-}
-
-double
-ThresholdAttributes::GetUbound() const
-{
-    return ubound;
-}
-
-const std::string &
-ThresholdAttributes::GetVariable() const
-{
-    return variable;
-}
-
-std::string &
-ThresholdAttributes::GetVariable()
-{
-    return variable;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// Select property methods
-///////////////////////////////////////////////////////////////////////////////
 
 void
-ThresholdAttributes::SelectVariable()
+ThresholdAttributes::SelectZonePortions()
 {
-    Select(3, (void *)&variable);
+    Select(3, (void *)&zonePortions);
 }
+
+
+void
+ThresholdAttributes::SelectLowerBounds()
+{
+    Select(4, (void *)&lowerBounds);
+}
+
+
+void
+ThresholdAttributes::SelectUpperBounds()
+{
+    Select(5, (void *)&upperBounds);
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Keyframing methods
 ///////////////////////////////////////////////////////////////////////////////
+
 
 // ****************************************************************************
 // Method: ThresholdAttributes::GetFieldName
@@ -552,6 +1159,9 @@ ThresholdAttributes::SelectVariable()
 //
 // Modifications:
 //   
+//   Mark Blair, Tue Mar  7 13:25:00 PST 2006
+//   Upgraded to support multiple threshold variables.
+//
 // ****************************************************************************
 
 std::string
@@ -559,13 +1169,16 @@ ThresholdAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-        case 0:  return "Amount of cell in the range";
-        case 1:  return "Lower bound";
-        case 2:  return "Upper bound";
-        case 3:  return "variable";
-        default:  return "invalid index";
+        case 0: return "outputMeshType";
+        case 1: return "listedVarNames";
+        case 2: return "shownVarPosition";
+        case 3: return "zonePortions";
+        case 4: return "lowerBounds";
+        case 5: return "upperBounds";
+        default: return "invalid index";
     }
 }
+
 
 // ****************************************************************************
 // Method: ThresholdAttributes::GetFieldType
@@ -580,6 +1193,9 @@ ThresholdAttributes::GetFieldName(int index) const
 //
 // Modifications:
 //   
+//   Mark Blair, Tue Mar  7 13:25:00 PST 2006
+//   Upgraded to support multiple threshold variables.
+//
 // ****************************************************************************
 
 AttributeGroup::FieldType
@@ -587,13 +1203,16 @@ ThresholdAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-        case 0:  return FieldType_enum;
-        case 1:  return FieldType_double;
-        case 2:  return FieldType_double;
-        case 3:  return FieldType_variablename;
-        default:  return FieldType_unknown;
+        case 0: return FieldType_int;
+        case 1: return FieldType_stringVector;
+        case 2: return FieldType_int;
+        case 3: return FieldType_intVector;
+        case 4: return FieldType_doubleVector;
+        case 5: return FieldType_doubleVector;
+        default: return FieldType_unknown;
     }
 }
+
 
 // ****************************************************************************
 // Method: ThresholdAttributes::GetFieldTypeName
@@ -608,6 +1227,9 @@ ThresholdAttributes::GetFieldType(int index) const
 //
 // Modifications:
 //   
+//   Mark Blair, Tue Mar  7 13:25:00 PST 2006
+//   Upgraded to support multiple threshold variables.
+//
 // ****************************************************************************
 
 std::string
@@ -615,13 +1237,16 @@ ThresholdAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-        case 0:  return "enum";
-        case 1:  return "double";
-        case 2:  return "double";
-        case 3:  return "variablename";
-        default:  return "invalid index";
+        case 0: return "int";
+        case 1: return "stringVector";
+        case 2: return "int";
+        case 3: return "intVector";
+        case 4: return "doubleVector";
+        case 5: return "doubleVector";
+        default: return "invalid index";
     }
 }
+
 
 // ****************************************************************************
 // Method: ThresholdAttributes::FieldsEqual
@@ -636,6 +1261,9 @@ ThresholdAttributes::GetFieldTypeName(int index) const
 //
 // Modifications:
 //   
+//   Mark Blair, Tue Mar  7 13:25:00 PST 2006
+//   Upgraded to support multiple threshold variables.
+//
 // ****************************************************************************
 
 bool
@@ -643,26 +1271,37 @@ ThresholdAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 {
     const ThresholdAttributes &obj = *((const ThresholdAttributes*)rhs);
     bool retval = false;
+
     switch (index_)
     {
     case 0:
         {  // new scope
-        retval = (amount == obj.amount);
+        retval = (outputMeshType == obj.outputMeshType);
         }
         break;
     case 1:
         {  // new scope
-        retval = (lbound == obj.lbound);
+        retval = (listedVarNames == obj.listedVarNames);
         }
         break;
     case 2:
         {  // new scope
-        retval = (ubound == obj.ubound);
+        retval = (shownVarPosition == obj.shownVarPosition);
         }
         break;
     case 3:
         {  // new scope
-        retval = (variable == obj.variable);
+        retval = (zonePortions == obj.zonePortions);
+        }
+        break;
+    case 4:
+        {  // new scope
+        retval = (lowerBounds == obj.lowerBounds);
+        }
+        break;
+    case 5:
+        {  // new scope
+        retval = (upperBounds == obj.upperBounds);
         }
         break;
     default: retval = false;
@@ -671,7 +1310,7 @@ ThresholdAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     return retval;
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////
 // User-defined methods.
 ///////////////////////////////////////////////////////////////////////////////
-
