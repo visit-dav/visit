@@ -5,7 +5,6 @@
 #ifndef AVT_Truecolor_FILTER_H
 #define AVT_Truecolor_FILTER_H
 
-
 #include <avtStreamer.h>
 
 
@@ -24,6 +23,9 @@
 //     Added "variable_name" member variable
 //     Added SetVarName member function
 //
+//     Hank Childs, Fri May 20 14:55:06 PDT 2005
+//     Remove RefashionDataObjectInfo (it was empty).
+//
 // ****************************************************************************
 
 class avtTruecolorFilter : public avtStreamer
@@ -40,9 +42,10 @@ class avtTruecolorFilter : public avtStreamer
 
   protected:
     virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
-    virtual void              RefashionDataObjectInfo(void);
     const char               *variable_name;
 };
 
 
 #endif
+
+

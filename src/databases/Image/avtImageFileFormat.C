@@ -2,14 +2,15 @@
 //                            avtImageFileFormat.C                           //
 // ************************************************************************* //
 
-#include <avtDataSelection.h>
 #include <avtImageFileFormat.h>
-#include <avtLogicalSelection.h>
-#include <avtSpatialBoxSelection.h>
 
 #include <string>
+#include <vector>
 #include <visitstream.h>
+#include <visit-config.h>
 
+#include <vtkCellData.h>
+#include <vtkCellType.h>
 #include <vtkFloatArray.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
@@ -22,20 +23,23 @@
 #include <vtkJPEGReader.h>
 #include <vtkTIFFReader.h>
 #include <vtkBMPReader.h>
+#include <vtkStimulateReader.h>
 #endif
 
 #include <avtDatabaseMetaData.h>
+#include <avtDataSelection.h>
+#include <avtLogicalSelection.h>
+#include <avtParallel.h>
+#include <avtSpatialBoxSelection.h>
 
-#include <InvalidVariableException.h>
-
+#include <DebugStream.h>
 #include <BadIndexException.h>
-#include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
-#include <vtkCellType.h>
-#include <vtkCellData.h>
-#include <vector>
+#include <InvalidVariableException.h>
+
 using     std::vector;
 using     std::string;
+
 
 // ****************************************************************************
 //  Method: avtImage constructor
@@ -53,6 +57,9 @@ using     std::string;
 //     Moved code to load variable names from PopulateDatabaseMetaData to here
 //     Moved code to determine file extension from ReadInImage to here
 //
+//     Hank Childs, Fri Mar 18 10:11:36 PST 2005
+//     Move heavy lifting to Initialize method.
+//
 // ****************************************************************************
 
 avtImageFileFormat::avtImageFileFormat(const char *filename)
@@ -61,22 +68,11 @@ avtImageFileFormat::avtImageFileFormat(const char *filename)
     fname = filename;
     image = NULL;
     haveReadWholeImage = false;
-
-    // load variable names
-    cellvarnames.push_back("red");
-    cellvarnames.push_back("green");
-    cellvarnames.push_back("blue");
-    cellvarnames.push_back("alpha");
-    cellvarnames.push_back("intensity");
-
-    // find the file extension
-    int i, start;
-    for(i=0; i<fname.size(); i++)
-        if(fname[i] == '.')
-            start = i;
-    fext = string(fname, start+1, fname.size()-1);
+    haveImageVolume = false;
+    haveInitialized = false;
+    indexOfImageAlreadyRead = -1;
+    indexOfImageToRead = -1;
 }
-
 
 // ***************************************************************************
 //  Method: avtImageFileFormat destructor
@@ -98,11 +94,181 @@ avtImageFileFormat::~avtImageFileFormat()
     cellvarnames.clear();
 }
 
+
+// ****************************************************************************
+//  Method: avtImageFileFormat::Initialize
+//
+//  Purpose:
+//      Initializes the reader.  This is not done in the constructor, because
+//      many of these objects may be instantiated at one time.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 18, 2005
+//
+//  Modifications:
+//
+//     Hank Childs, Thu Mar 17 15:33:44 PST 2005
+//     If we are using the stimulate image format, don't add color channels.
+//     Also add support for image volumes, where we pull out the extension.
+//
+// ****************************************************************************
+
+void
+avtImageFileFormat::Initialize(void)
+{
+    if (haveInitialized)
+        return;
+    haveInitialized = true;
+
+    // find the file extension
+    int i, start;
+    for(i=0; i<fname.size(); i++)
+        if(fname[i] == '.')
+            start = i;
+    fext = string(fname, start+1, fname.size()-1);
+
+    // If we have an image volume, do some special processing.
+    if (fext == "imgvol")
+    {
+        ReadImageVolumeHeader();
+        for(i=0; i<subImages[0].size(); i++)
+            if(subImages[0][i] == '.')
+                start = i;
+        image_fext = string(subImages[0], start+1, subImages[0].size()-1);
+    }
+    else
+    {
+        image_fext = fext;
+        subImages.push_back(fname);
+    }
+
+    // Check to see if we have color channels.
+    bool hasColorChannels = true;
+    int numExtsWithoutColorChannels = 4;
+    char *extsWithoutColorChannels[4] = { "spr", "SPR", "sdt", "SDT" };
+    for (int i = 0 ; i < numExtsWithoutColorChannels ; i++)
+        if (image_fext == extsWithoutColorChannels[i])
+            hasColorChannels = false;
+
+    // load variable names
+    if (hasColorChannels)
+    {
+        cellvarnames.push_back("red");
+        cellvarnames.push_back("green");
+        cellvarnames.push_back("blue");
+        cellvarnames.push_back("alpha");
+    }
+    cellvarnames.push_back("intensity");
+}
+
+
+// ****************************************************************************
+//  Method: avtImageFileFormat::ActivateTimestep
+//
+//  Purpose:
+//      Activates this file format, allowing some initialization work to
+//      happen.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 18, 2005
+//
+// ****************************************************************************
+
+void
+avtImageFileFormat::ActivateTimestep(void)
+{
+    Initialize();
+}
+
+
+// ****************************************************************************
+//  Method: avtImageFileFormat::ReadImageVolumeHeader
+//
+//  Purpose:
+//      Reads in a header file that lists a series of images that should be
+//      combined as a volume.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 18, 2005
+//
+//  Modifications:
+//
+//    Hank Childs, Fri May 20 10:33:16 PDT 2005
+//    Add support for relative paths.
+//
+// ****************************************************************************
+
+void
+avtImageFileFormat::ReadImageVolumeHeader(void)
+{
+    ifstream ifile(fname.c_str());
+    if (ifile.fail())
+    {
+        debug1 << "Cannot open image volume file \"" << fname.c_str() << "\"."
+               << endl;
+        EXCEPTION1(InvalidFilesException, fname.c_str());
+    }
+
+    specifiedZStart = 0;
+    zStart = 0;
+    specifiedZStep = 0;
+    zStep = 1;
+
+    const char   *filename = fname.c_str();
+    char          dir[1024];
+    const char   *p = filename, *q = NULL;
+    while ((q = strstr(p, SLASH_STRING)) != NULL)
+    {
+        p = q+1;
+    }
+    strncpy(dir, filename, p-filename);
+    dir[p-filename] = '\0';
+
+    char line[1024];
+    while (!ifile.eof())
+    {
+        ifile.getline(line, 1024);
+        if (line[0] == '\0')
+            continue;
+        if (strncmp(line, "Z_START:", strlen("Z_START:")) == 0)
+        {
+            zStart = atof(line + strlen("Z_START:"));
+            specifiedZStart = true;
+        }    
+        else if (strncmp(line, "Z_STEP:", strlen("Z_STEP:")) == 0)
+        {
+            zStep = atof(line + strlen("Z_STEP:"));
+            specifiedZStep = true;
+        }    
+        else
+        {
+            char line_with_dir[1024];
+            if (line[0] == SLASH_CHAR)
+            {
+                strcpy(line_with_dir, line);
+            }
+            else
+            {
+                sprintf(line_with_dir, "%s%s", dir, line);
+            }
+            subImages.push_back(line_with_dir);
+        }
+    }
+
+    haveImageVolume = true;
+}
+
+
 // ***************************************************************************
 //  Method: CanCacheVariable 
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   November 9, 2004 
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Mar 18 11:41:04 PST 2005
+//    Disallow caching of image volumes.
 //
 // **************************************************************************
 
@@ -110,7 +276,7 @@ bool
 avtImageFileFormat::CanCacheVariable(const char*)
 {
     // if we've read the whole image, we can cache its variables
-    return haveReadWholeImage;
+    return (haveReadWholeImage && !haveImageVolume);
 }
 
 // ***************************************************************************
@@ -145,6 +311,9 @@ avtImageFileFormat::RegisterDataSelections(
 //    Mark C. Miller, Tue Nov  9 13:41:33 PST 2004
 //    Made it not process any selections for certain image file formats
 //
+//    Hank Childs, Thu Mar 17 15:33:44 PST 2005
+//    Don't process data selections for Stimulate images.
+//
 // **************************************************************************
 
 bool
@@ -154,10 +323,12 @@ avtImageFileFormat::ProcessDataSelections(int *xmin, int *xmax,
     bool retval = false;
 
     // some image file formats don't support selection on read.
-    if ((fext == "png")||(fext == "PNG")||(fext == "tif")||
-        (fext == "tiff")||(fext == "TIF")||(fext == "TIFF")||
-        (fext == "jpg")||(fext == "jpeg")||(fext == "JPG")||
-        (fext == "JPEG"))
+    if ((image_fext == "png")||(image_fext == "PNG")||(image_fext == "tif")||
+        (image_fext == "tiff")||(image_fext == "TIF")||(image_fext == "TIFF")||
+        (image_fext == "jpg")||(image_fext == "jpeg")||(image_fext == "JPG")||
+        (image_fext == "JPEG") || (image_fext == "spr") || (image_fext == "SPR")
+        || (image_fext == "sdt") || (image_fext == "SDT") 
+        || (image_fext == "imgvol"))
     {
         for (int i = 0; i < selList.size(); i++)
             (*selsApplied)[i] = false;
@@ -301,6 +472,9 @@ avtImageFileFormat::ProcessDataSelections(int *xmin, int *xmax,
 //    Hank Childs, Fri Mar 11 10:05:51 PST 2005
 //    Fix memory leak.
 //
+//    Hank Childs, Thu Mar 17 15:33:44 PST 2005
+//    Add support for the stimulate image format.
+//
 // *****************************************************************************
 
 void avtImageFileFormat::ReadInImage(void)
@@ -310,8 +484,12 @@ void avtImageFileFormat::ReadInImage(void)
 #else
 
     // if we've already read the entire image, then do nothing
-    if (haveReadWholeImage)
+    if (haveReadWholeImage &&
+        ((indexOfImageToRead < 0) ||
+         (indexOfImageToRead == indexOfImageAlreadyRead)))
+    {
         return;
+    }
 
     if (image != NULL)
     {
@@ -324,62 +502,85 @@ void avtImageFileFormat::ReadInImage(void)
     bool haveSelections = ProcessDataSelections(&xmin, &xmax, &ymin, &ymax);
 
     haveReadWholeImage = true;
+    indexOfImageAlreadyRead = indexOfImageToRead;
     if (haveSelections)
         haveReadWholeImage = false;
 
+    xStart = yStart = 0;
+    xStep = yStep = 1;
+
+    int idx = indexOfImageToRead;
+    idx = (idx < 0 ? 0 : idx);
+
     // select the appropriate reader for the file extension
-    if((fext == "pnm")||(fext == "PNM")||(fext == "ppm")||(fext == "PPM"))
+    if ((image_fext == "pnm") || (image_fext == "PNM") || 
+        (image_fext == "ppm") || (image_fext == "PPM"))
     {
         vtkPNMReader *reader = vtkPNMReader::New();
         if (haveSelections)
             reader->SetDataVOI(xmin,xmax,ymin,ymax,0,0);
-        reader->SetFileName(filename);
+        reader->SetFileName(subImages[idx].c_str());
         image = reader->GetOutput();
         image->Register(NULL);
         image->Update();
         image->SetSource(NULL);
         reader->Delete();
     }
-    else if((fext == "png")||(fext == "PNG"))
+    else if ((image_fext == "png") || (image_fext == "PNG"))
     {
         vtkPNGReader *reader = vtkPNGReader::New();
-        reader->SetFileName(filename);
+        reader->SetFileName(subImages[idx].c_str());
         image = reader->GetOutput();
         image->Register(NULL);
         image->Update();
         image->SetSource(NULL);
         reader->Delete();
     }
-    else if((fext == "jpg")||(fext == "jpeg")||(fext == "JPG")||(fext == "JPEG"))
+    else if ((image_fext == "jpg") || (image_fext == "jpeg") || 
+             (image_fext == "JPG") || (image_fext == "JPEG"))
     {
         vtkJPEGReader *reader = vtkJPEGReader::New();
-        reader->SetFileName(filename);
+        reader->SetFileName(subImages[idx].c_str());
         image = reader->GetOutput();
         image->Register(NULL);
         image->Update();
         image->SetSource(NULL);
         reader->Delete();
     }
-    else if((fext == "tif")||(fext == "tiff")||(fext == "TIF")||(fext == "TIFF"))
+    else if ((image_fext == "tif") || (image_fext == "tiff") || 
+             (image_fext == "TIF") || (image_fext == "TIFF"))
     {
         vtkTIFFReader *reader = vtkTIFFReader::New();
-        reader->SetFileName(filename);
+        reader->SetFileName(subImages[idx].c_str());
         image = reader->GetOutput();
         image->Register(NULL);
         image->Update();
         image->SetSource(NULL);
         reader->Delete();
     }
-    else if((fext == "bmp")||(fext == "BMP"))
+    else if ((image_fext == "bmp") || (image_fext == "BMP"))
     {
         vtkBMPReader *reader = vtkBMPReader::New();
         if (haveSelections)
             reader->SetDataVOI(xmin,xmax,ymin,ymax,0,0);
-        reader->SetFileName(filename);
+        reader->SetFileName(subImages[idx].c_str());
         image = reader->GetOutput();
         image->Register(NULL);
         image->Update();
         image->SetSource(NULL);
+        reader->Delete();
+    }
+    else if ((image_fext == "spr") || (image_fext == "SPR") || 
+             (image_fext == "sdt") || (image_fext == "SDT"))
+    {
+        vtkStimulateReader *reader = vtkStimulateReader::New();
+        reader->SetFileName(subImages[idx].c_str());
+        image = reader->GetOutput();
+        image->Register(NULL);
+        image->Update();
+        image->SetSource(NULL);
+        reader->GetOrigin(xStart, yStart);
+        reader->GetStep(xStep, yStep);
         reader->Delete();
     }
     else
@@ -454,35 +655,173 @@ avtImageFileFormat::FreeUpResources(void)
 //     Mark C. Miller, Wed Dec 15 10:26:07 PST 2004
 //     Added support for node-centered representation of image
 //
+//     Hank Childs, Fri Mar 18 10:22:20 PST 2005
+//     Make sure to call initialize.  Also add support for image volumes.
+//
 // ****************************************************************************
 
 void
 avtImageFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
-    //if( !xdim || !ydim)
-    //    EXCEPTION1(InvalidFilesException, fname.c_str());
+    Initialize();
 
-    AddMeshToMetaData(md, "ImageMesh", AVT_RECTILINEAR_MESH, NULL, 1, 0, 2, 2);
-    AddMeshToMetaData(md, "ImageMesh_nodal", AVT_RECTILINEAR_MESH, NULL, 1, 0, 2, 2);
-
-    // we do not create a list of vector variables,
-    // because there is only one vector variable, "color", 
-    // which is created from these scalar variables
+    int dim = (fext == "imgvol" ? 3 : 2);
+    AddMeshToMetaData(md, "ImageMesh", AVT_RECTILINEAR_MESH, NULL, 1, 0, 
+                      dim, dim);
+    AddMeshToMetaData(md, "ImageMesh_nodal", AVT_RECTILINEAR_MESH, NULL, 
+                      1, 0, dim, dim);
 
     // add these variable names to the metadata
     int i;
     for(i=0; i<cellvarnames.size(); i++)
     {
         AddScalarVarToMetaData(md, cellvarnames[i], "ImageMesh", AVT_ZONECENT);
-        AddScalarVarToMetaData(md, cellvarnames[i] + "_nodal", "ImageMesh_nodal", AVT_NODECENT);
+        AddScalarVarToMetaData(md, cellvarnames[i] + "_nodal", 
+                               "ImageMesh_nodal", AVT_NODECENT);
     }
-    AddVectorVarToMetaData(md, "color", "ImageMesh", AVT_ZONECENT, 4);
-    AddVectorVarToMetaData(md, "color_nodal", "ImageMesh_nodal", AVT_NODECENT, 4);
+
+    // Check to see if we support colors.
+    bool supportColors = true;
+    int numExtsThatDontSupportColors = 5;
+    char *extsThatDontSupportColors[5] = { "spr", "SPR", "sdt", "SDT",
+                                          "imgvol" };
+    for (int i = 0 ; i < numExtsThatDontSupportColors ; i++)
+        if (image_fext == extsThatDontSupportColors[i])
+            supportColors = false;
+
+    // we do not create a list of vector variables,
+    // because there is only one vector variable, "color", 
+    // which is created from these scalar variables
+    if (supportColors)
+    {
+        AddVectorVarToMetaData(md, "color", "ImageMesh", AVT_ZONECENT, 4);
+        AddVectorVarToMetaData(md, "color_nodal", "ImageMesh_nodal",
+                               AVT_NODECENT, 4);
+    }
+
+    if (fext == "imgvol")
+    {
+        md->SetFormatCanDoDomainDecomposition(true);
+    }
 }
 
 
 // ****************************************************************************
 //  Method: avtImageFileFormat::GetMesh
+//
+//  Purpose:
+//      Gets the mesh associated with this file.  
+//
+//  Arguments:
+//      meshname    The name of the mesh of interest.  This can be ignored if
+//                  there is only one mesh.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 18, 2005
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtImageFileFormat::GetMesh(const char *meshname)
+{
+    if (haveImageVolume)
+    {
+        return GetImageVolumeMesh(meshname);
+    }
+    else
+    {
+        return GetOneMesh(meshname);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtImageFileFormat::GetImageVolumeMesh
+//
+//  Purpose:
+//      Gets a series of meshes.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 23, 2005
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtImageFileFormat::GetImageVolumeMesh(const char *meshname)
+{
+    int addOne = 1;
+    if (strcmp(meshname, "ImageMesh_nodal") == 0)
+        addOne = 0;
+
+    float myStart = (specifiedZStart ? zStart : 0.);
+    int   mySteps = subImages.size();
+    float myZStep = (specifiedZStep ? zStep : 1.);
+
+#ifdef PARALLEL
+    int rank = PAR_Rank();
+    int nprocs = PAR_Size();
+    int stepsPerProc = mySteps / nprocs;
+    if ((mySteps % nprocs) != 0)
+        stepsPerProc += 1;
+    int startImg = rank*stepsPerProc;
+    if (startImg >= mySteps)
+        startImg = mySteps;
+    int endImg = (rank+1)*stepsPerProc;
+    if (endImg >= mySteps)
+        endImg = mySteps;
+
+    if (!addOne)
+    {
+        //
+        // We want to make sure this mesh matches up with that of the previous
+        // processor.  If we don't do this, we will get a gap.
+        //
+        if (startImg > 0)
+            startImg--;
+    }
+    myStart = myStart + startImg*myZStep;
+    mySteps = endImg - startImg;
+#endif
+   
+    // -1 means we will take any image.
+    indexOfImageToRead = -1;
+    vtkDataSet *one_slice = GetOneMesh(meshname);
+
+    //
+    // This shouldn't happen, but it is always good to check assumptions.
+    //
+    if (one_slice == NULL)
+    {
+        debug1 << "Return value from avtImageFileFormat::GetOneMesh was "
+               << "NULL, returning early" << endl;
+        return NULL;
+    }
+    if (one_slice->GetDataObjectType() != VTK_RECTILINEAR_GRID)
+    {
+        debug1 << "Return value from avtImageFileFormat::GetOneMesh was "
+               << "not rectilinear, returning early" << endl;
+        return NULL;
+    }
+
+    vtkFloatArray *z = vtkFloatArray::New();
+    z->SetNumberOfTuples(mySteps+addOne);
+    for (int i = 0 ; i < mySteps+addOne ; i++)
+        z->SetTuple1(i, myStart + (i-addOne/2.)*myZStep);
+
+    vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) one_slice;
+    int dims[3];
+    rgrid->GetDimensions(dims);
+    dims[2] = mySteps+addOne;
+    rgrid->SetDimensions(dims);
+    rgrid->SetZCoordinates(z);
+    z->Delete();
+
+    return rgrid;
+}
+
+
+// ****************************************************************************
+//  Method: avtImageFileFormat::GetOneMesh
 //
 //  Purpose:
 //      Gets the mesh associated with this file.  The mesh is returned as a
@@ -503,10 +842,14 @@ avtImageFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Mark C. Miller, Wed Dec 15 10:26:07 PST 2004
 //    Added support for node-centered representation of image
 //
+//    Hank Childs, Fri Mar 18 11:41:04 PST 2005
+//    Renamed to GetOneMesh.  Also added support for setting up images that
+//    do not start at (0,0) with steps of size 1.
+//
 // ****************************************************************************
 
 vtkDataSet *
-avtImageFileFormat::GetMesh(const char *meshname)
+avtImageFileFormat::GetOneMesh(const char *meshname)
 {
     ReadInImage();
 
@@ -519,13 +862,6 @@ avtImageFileFormat::GetMesh(const char *meshname)
     int xdim = dims[0];
     int ydim = dims[1];
 
-    int extents[6];
-    image->GetExtent(extents);
-    int xmin = extents[0];
-    int xmax = extents[1];
-    int ymin = extents[2];
-    int ymax = extents[3];
-
     // Set up rectilinear grid representing the image...
     // Since the colors are cell variables,
     //    we create an extra row of nodes in each dimesion
@@ -533,10 +869,10 @@ avtImageFileFormat::GetMesh(const char *meshname)
     int i;
     vtkFloatArray *xCoords = vtkFloatArray::New();
     for(i=0; i<xdim + addOne; i++)
-        xCoords->InsertNextValue((float) i+xmin-addOne/2.0);
+        xCoords->InsertNextValue((float) xStart + i*xStep-addOne/2.0);
     vtkFloatArray *yCoords = vtkFloatArray::New();
     for(i=0; i<ydim + addOne; i++)
-        yCoords->InsertNextValue((float) i+ymin-addOne/2.0);
+        yCoords->InsertNextValue((float) yStart + i*yStep -addOne/2.0);
     vtkFloatArray *zCoords = vtkFloatArray::New();
     zCoords->InsertNextValue(0.0);
     
@@ -556,6 +892,135 @@ avtImageFileFormat::GetMesh(const char *meshname)
 
 // ****************************************************************************
 //  Method: avtImageFileFormat::GetVar
+//
+//  Purpose:
+//      Gets the var associated with this file.  
+//
+//  Arguments:
+//      varname    The name of the var of interest.  This can be ignored if
+//                 there is only one var.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 18, 2005
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtImageFileFormat::GetVar(const char *varname)
+{
+    if (haveImageVolume)
+    {
+        return GetImageVolumeVar(varname);
+    }
+    else
+    {
+        return GetOneVar(varname);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtImageFileFormat::GetImageVolumeVar
+//
+//  Purpose:
+//      Gets the variable for the image volume.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 23, 2005
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtImageFileFormat::GetImageVolumeVar(const char *varname)
+{
+    int myStart = 0;
+    int myStop = subImages.size();
+
+    const char *vtmp = varname;
+    int len = strlen(varname);
+    int len2 = strlen("_nodal");
+    if (len > len2)
+        vtmp = varname + len - len2;
+    bool isNodal = (strcmp(vtmp, "_nodal") == 0);
+
+#ifdef PARALLEL
+    int rank = PAR_Rank();
+    int nprocs = PAR_Size();
+    int stepsPerProc = myStop / nprocs;
+    if ((myStop % nprocs) != 0)
+        stepsPerProc += 1;
+    int startImg = rank*stepsPerProc;
+    if (startImg >= myStop)
+        startImg = myStop;
+    int endImg = (rank+1)*stepsPerProc;
+    if (endImg >= myStop)
+        endImg = myStop;
+
+    if (isNodal)
+    {
+        //
+        // We want to make sure this mesh matches up with that of the previous
+        // processor.  If we don't do this, we will get a gap.
+        //
+        if (startImg > 0)
+            startImg--;
+    }
+
+    myStart = startImg;
+    myStop = endImg;
+#endif
+   
+    vtkFloatArray *arr = vtkFloatArray::New();
+    bool haveInitialized = false;
+    int  valsPerSlice = 0;
+    for (int i = myStart ; i < myStop ; i++)
+    {
+        indexOfImageToRead = i;
+        vtkDataArray *one_slice = GetOneVar(varname);
+
+        //
+        // This shouldn't happen, but it is always good to check assumptions.
+        //
+        if (one_slice == NULL)
+        {
+            debug1 << "Return value from avtImageFileFormat::GetOneVar was "
+                   << "NULL, returning early" << endl;
+            return NULL;
+        }
+        if (one_slice->GetDataType() != VTK_FLOAT)
+        {
+            debug1 << "Return value from avtImageFileFormat::GetOneVar was "
+                   << "not floating point, returning early" << endl;
+            return NULL;
+        }
+        if (one_slice->GetNumberOfComponents() != 1)
+        {
+            debug1 << "Return value from avtImageFileFormat::GetOneVar had "
+                   << "more than 1 component.  Not supported." << endl;
+            return NULL;
+        }
+
+        if (!haveInitialized)
+        {
+            valsPerSlice = one_slice->GetNumberOfTuples();
+            int ntups = valsPerSlice*(myStop - myStart);
+            arr->SetNumberOfTuples(ntups);
+            haveInitialized = true;
+        }
+       
+        float *p1 = (float *) one_slice->GetVoidPointer(0);
+        float *p2 = (float *) arr->GetVoidPointer(0);
+        p2 += valsPerSlice*(i-myStart);
+        memcpy(p2, p1, valsPerSlice*sizeof(float));
+        one_slice->Delete();
+    }
+
+    return arr;
+}
+
+
+// ****************************************************************************
+//  Method: avtImageFileFormat::GetOneVar
 //
 //  Purpose:
 //      Gets a scalar variable associated with this file.  Although VTK has
@@ -579,10 +1044,17 @@ avtImageFileFormat::GetMesh(const char *meshname)
 //    Mark C. Miller, Wed Dec 15 10:26:07 PST 2004
 //    Added support for node-centered representation of image
 //
+//    Hank Childs, Wed Mar 23 15:30:41 PST 2005
+//    Renamed to GetOneVar from GetVar.
+//
+//    Hank Childs, Fri May 20 11:03:10 PDT 2005
+//    Fixed flipping of green and blue channels.  Also added fast track for
+//    float and unsigned char data.
+//
 // ****************************************************************************
 
 vtkDataArray *
-avtImageFileFormat::GetVar(const char *varname)
+avtImageFileFormat::GetOneVar(const char *varname)
 {
     ReadInImage();
 
@@ -601,9 +1073,9 @@ avtImageFileFormat::GetVar(const char *varname)
     int channel = -2;
     if (strncmp(varname, "red", 3) == 0)
         channel = 0;
-    else if (strncmp(varname, "blue", 4) == 0)
-        channel = 1;
     else if (strncmp(varname, "green", 5) == 0)
+        channel = 1;
+    else if (strncmp(varname, "blue", 4) == 0)
         channel = 2;
     else if (strncmp(varname, "alpha", 5) == 0)
         channel = 3;
@@ -625,24 +1097,91 @@ avtImageFileFormat::GetVar(const char *varname)
     float *ptr = (float *)scalars->GetVoidPointer(0);
 
     int i, j;
+    int nChannels = image->GetNumberOfScalarComponents();
+    if (channel < 0 && nChannels < 3)
+        channel = 0;  // Treat the 0th channel as intensity in this case.
+    if (nChannels == 1)
+        channel = 0;
     if (channel >= 0)
     {
-        for (j = 0; j < ydim; j++)
+        if (image->GetScalarType() == VTK_FLOAT)
         {
-            for (i = 0; i < xdim; i++)
-                ptr[j*xdim + i] = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0,channel);
+            float *data = (float *) image->GetScalarPointer();
+            for (j = 0; j < ydim; j++)
+            {
+                for (i = 0; i < xdim; i++)
+                {
+                    int index = j*xdim + i;
+                    ptr[index] = data[nChannels*index + channel];
+                }
+            }
+        }
+        else if (image->GetScalarType() == VTK_UNSIGNED_CHAR)
+        {
+            unsigned char *data = (unsigned char *) image->GetScalarPointer();
+            for (j = 0; j < ydim; j++)
+            {
+                for (i = 0; i < xdim; i++)
+                {
+                    int index = j*xdim + i;
+                    ptr[index] = (float) (data[nChannels*index + channel]);
+                }
+            }
+        }
+        else
+        {
+            for (j = 0; j < ydim; j++)
+            {
+                for (i = 0; i < xdim; i++)
+                    ptr[j*xdim + i] = 
+                     image->GetScalarComponentAsFloat(i+xmin,j+ymin,0,channel);
+            }
         }
     }
     else
     {
-        for (j = 0; j < ydim; j++)
+        if (image->GetScalarType() == VTK_FLOAT)
         {
-            for (i = 0; i < xdim; i++)
+            float *data = (float *) image->GetScalarPointer();
+            for (j = 0; j < ydim; j++)
             {
-                float r = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0,0);
-                float g = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0,1);
-                float b = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0,2);
-                ptr[j*xdim + i] = (r + g + b) / 3.0;
+                for (i = 0; i < xdim; i++)
+                {
+                    int index = j*xdim + i;
+                    float r = data[nChannels*index + 0];
+                    float g = data[nChannels*index + 1];
+                    float b = data[nChannels*index + 2];
+                    ptr[j*xdim + i] = (r + g + b) / 3.0;
+                }
+            }
+        }
+        if (image->GetScalarType() == VTK_UNSIGNED_CHAR)
+        {
+            unsigned char *data = (unsigned char *) image->GetScalarPointer();
+            for (j = 0; j < ydim; j++)
+            {
+                for (i = 0; i < xdim; i++)
+                {
+                    int index = j*xdim + i;
+                    unsigned char r = data[nChannels*index + 0];
+                    unsigned char g = data[nChannels*index + 1];
+                    unsigned char b = data[nChannels*index + 2];
+                    ptr[j*xdim + i] = (r + g + b) / 3.0;
+                }
+            }
+        }
+        else
+        {
+            for (j = 0; j < ydim; j++)
+            {
+                for (i = 0; i < xdim; i++)
+                {
+                    float r, g, b;
+                    r = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0,0);
+                    g = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0,1);
+                    b = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0,2);
+                    ptr[j*xdim + i] = (r + g + b) / 3.0;
+                }
             }
         }
     }
