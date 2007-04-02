@@ -935,6 +935,10 @@ QvisExpressionsWindow::displayAllVarsChanged()
 //    Hank Childs, Sun Jan 22 12:49:57 PST 2006
 //    Add special insertion code for complicated expressions.
 //
+//    Hank Childs, Fri Mar 10 14:28:11 PST 2006
+//    Change ordering of arguments for pos_cmfe, since the first pass was
+//    incorrect.
+//
 // ****************************************************************************
 
 void
@@ -954,7 +958,7 @@ QvisExpressionsWindow::insertFunction(int id)
     }
     else if (str == "pos_cmfe")
     {
-        definitionEdit->insert("(<filename:var>, <default-var>, <meshname>)");
+        definitionEdit->insert("(<filename:var>, <meshname>, <default-var>)");
         doParens = false;
     }
     else if (str == "symm_plane")

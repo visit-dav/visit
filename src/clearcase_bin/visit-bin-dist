@@ -228,6 +228,9 @@
 #    length restrictions on old Irix systems.  Add links for libqt.a and
 #    libqui.a.
 #
+#    Eric Brugger, Fri Mar 10 09:40:34 PST 2006
+#    I added visit-config-nersc and visit-config-ornl to the distrtibution.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -961,7 +964,9 @@ endif
 #
 mkdir $verdir/.visit
 cp $VisItDir/clearcase_bin/visit-config-closed $verdir/.visit
+cp $VisItDir/clearcase_bin/visit-config-nersc  $verdir/.visit
 cp $VisItDir/clearcase_bin/visit-config-open   $verdir/.visit
+cp $VisItDir/clearcase_bin/visit-config-ornl   $verdir/.visit
 ln -s visit-config-open $verdir/.visit/config
 
 #

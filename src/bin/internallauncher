@@ -527,6 +527,7 @@ if ($guesshost)
                      "environment variable to get a valid host name\n";
         exit 1;
     }
+    $remotehost =~ s/.*:([^:]*)/$1/;
 }
 
 # ----
