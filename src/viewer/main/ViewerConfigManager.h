@@ -39,6 +39,7 @@
 #define VIEWER_CONFIGURATION_MANAGER_H
 #include <viewer_exports.h>
 #include <ConfigManager.h>
+#include <ViewerBase.h>
 #include <string>
 #include <vectortypes.h>
 
@@ -98,9 +99,12 @@ class ViewerSubject;
 //    Brad Whitlock, Fri Nov 10 10:58:11 PDT 2006
 //    I added arguments to ImportEntireState.
 //
+//    Brad Whitlock, Mon Feb 12 18:01:20 PST 2007
+//    Use ViewerBase base class.
+//
 // ****************************************************************************
 
-class VIEWER_API ViewerConfigManager : public ConfigManager
+class VIEWER_API ViewerConfigManager : public ViewerBase, public ConfigManager
 {
 public:
     ViewerConfigManager(ViewerSubject *);

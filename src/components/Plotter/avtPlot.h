@@ -54,7 +54,6 @@
 #include <avtImage.h>
 #include <avtLegend.h>
 #include <avtMapper.h>
-#include <avtTheater.h>
 #include <avtBehavior.h>
 
 #include <vector>
@@ -281,7 +280,7 @@ class PLOTTER_API avtPlot
     int                        index;
     int                        spatialDim;
     int                        topologicalDim;
-    avtTheater                 theater;
+    avtActor_p                 actor;
     avtBehavior_p              behavior;
     avtDrawer                 *drawer;
     avtCondenseDatasetFilter  *condenseDatasetFilter;

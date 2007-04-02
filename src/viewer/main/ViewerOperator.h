@@ -42,6 +42,7 @@
 #ifndef VIEWER_OPERATOR_H
 #define VIEWER_OPERATOR_H
 #include <viewer_exports.h>
+#include <ViewerBase.h>
 
 // Forward declarations
 class AttributeSubject;
@@ -106,9 +107,12 @@ class avtPluginFilter;
 //    I added a copy constructor and a method to set the plot pointer
 //    for the operator.
 //
+//    Brad Whitlock, Mon Feb 12 17:49:49 PST 2007
+//    Added ViewerBase base class.
+//
 // ****************************************************************************
 
-class VIEWER_API ViewerOperator
+class VIEWER_API ViewerOperator : public ViewerBase
 {
   public:
     ViewerOperator(const int type_, 

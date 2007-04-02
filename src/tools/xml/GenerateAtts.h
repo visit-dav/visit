@@ -2605,6 +2605,8 @@ class AttsGeneratorPlugin
     vector<QString> efiles;     // engine
     bool customwfiles;
     vector<QString> wfiles;     // widgets
+    bool customvwfiles;
+    vector<QString> vwfiles;    // viewer widgets
 
     AttsGeneratorAttribute *atts;
   public:

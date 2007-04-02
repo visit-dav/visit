@@ -46,6 +46,7 @@
 #ifdef TIME_WITH_SYS_TIME
 #include <time.h>
 #endif
+#include <set>
 
 #include "Field.h"
 
@@ -121,6 +122,10 @@
 //    Hank Childs, Fri Jun  9 09:53:32 PDT 2006
 //    Added copyright string.
 //
+//    Brad Whitlock, Tue Feb 13 13:34:11 PST 2007
+//    Made it use GetViewerMethods() and made it more aggressive about
+//    blocking signals in the Update method.
+//
 // ****************************************************************************
 
 class WindowGeneratorField : public virtual Field
@@ -161,7 +166,7 @@ class WindowGeneratorField : public virtual Field
     {
         c << "        //writeSourceUpdate unknown for " << type << " (variable " << name << ")" << endl;
     }
-    virtual void               writeSourceCallback(QString &classname, QString &windowname, ostream &c)
+    virtual void               writeSourceCallback(QString &classname, QString &windowname, ostream &c, bool isEnabler)
     {
         c << "//writeSourceCallback unknown for " << type << " (variable " << name << ")" << endl;
     }
@@ -236,15 +241,19 @@ class WindowGeneratorInt : public virtual Int , public virtual WindowGeneratorFi
     {
         if (rangeSet)
         {
+            c << "            "<<name<<"->blockSignals(true);" << endl;
             c << "            "<<name<<"->setValue(atts->Get"<<Name<<"());" << endl;
+            c << "            "<<name<<"->blockSignals(false);" << endl;
         }
         else
         {
+            c << "            "<<name<<"->blockSignals(true);" << endl;
             c << "            temp.sprintf(\"%d\", atts->Get"<<Name<<"());" << endl;
             c << "            "<<name<<"->setText(temp);" << endl;
+            c << "            "<<name<<"->blockSignals(false);" << endl;
         }
     }
-    virtual void            writeSourceCallback(QString &, QString &windowname, ostream &c)
+    virtual void            writeSourceCallback(QString &, QString &windowname, ostream &c, bool isEnabler)
     {
         if (rangeSet)
         {
@@ -252,6 +261,8 @@ class WindowGeneratorInt : public virtual Int , public virtual WindowGeneratorFi
             c << windowname<<"::"<<name<<"Changed(int val)" << endl;
             c << "{" << endl;
             c << "    atts->Set"<<Name<<"(val);" << endl;
+            if(!isEnabler)
+                c << "    SetUpdate(false);" << endl;
             c << "    Apply();" << endl;
             c << "}" << endl;
         }
@@ -319,14 +330,18 @@ class WindowGeneratorBool : public virtual Bool , public virtual WindowGenerator
     }
     virtual void            writeSourceUpdateWindow(ostream &c)
     {
+        c << "            "<<name<<"->blockSignals(true);" << endl;
         c << "            "<<name<<"->setChecked(atts->Get"<<Name<<"());" << endl;
+        c << "            "<<name<<"->blockSignals(false);" << endl;
     }
-    virtual void            writeSourceCallback(QString &, QString &windowname, ostream &c)
+    virtual void            writeSourceCallback(QString &, QString &windowname, ostream &c, bool isEnabler)
     {
         c << "void" << endl;
         c << windowname<<"::"<<name<<"Changed(bool val)" << endl;
         c << "{" << endl;
         c << "    atts->Set"<<Name<<"(val);" << endl;
+        if(!isEnabler)
+            c << "    SetUpdate(false);" << endl;
         c << "    Apply();" << endl;
         c << "}" << endl;
     }
@@ -378,10 +393,12 @@ class WindowGeneratorFloat : public virtual Float , public virtual WindowGenerat
     }
     virtual void            writeSourceUpdateWindow(ostream &c)
     {
+        c << "            "<<name<<"->blockSignals(true);" << endl;
         c << "            temp.setNum(atts->Get"<<Name<<"());" << endl;
         c << "            "<<name<<"->setText(temp);" << endl;
+        c << "            "<<name<<"->blockSignals(false);" << endl;
     }
-    virtual void            writeSourceCallback(QString &, QString &windowname, ostream &c)
+    virtual void            writeSourceCallback(QString &, QString &windowname, ostream &c, bool isEnabler)
     {
         c << "void" << endl;
         c << windowname<<"::"<<name<<"ProcessText()" << endl;
@@ -480,9 +497,11 @@ class WindowGeneratorFloatArray : public virtual FloatArray , public virtual Win
             if (i<length-1) c << ", ";
         }
         c << ");" << endl;
+        c << "            "<<name<<"->blockSignals(true);" << endl;
         c << "            "<<name<<"->setText(temp);" << endl;
+        c << "            "<<name<<"->blockSignals(false);" << endl;
     }
-    virtual void               writeSourceCallback(QString &, QString &windowname, ostream &c)
+    virtual void               writeSourceCallback(QString &, QString &windowname, ostream &c, bool isEnabler)
     {
         c << "void" << endl;
         c << windowname<<"::"<<name<<"ProcessText()" << endl;
@@ -539,10 +558,12 @@ class WindowGeneratorDouble : public virtual Double , public virtual WindowGener
     }
     virtual void            writeSourceUpdateWindow(ostream &c)
     {
+        c << "            "<<name<<"->blockSignals(true);" << endl;
         c << "            temp.setNum(atts->Get"<<Name<<"());" << endl;
         c << "            "<<name<<"->setText(temp);" << endl;
+        c << "            "<<name<<"->blockSignals(false);" << endl;
     }
-    virtual void            writeSourceCallback(QString &, QString &windowname, ostream &c)
+    virtual void            writeSourceCallback(QString &, QString &windowname, ostream &c, bool isEnabler)
     {
         c << "void" << endl;
         c << windowname<<"::"<<name<<"ProcessText()" << endl;
@@ -641,9 +662,11 @@ class WindowGeneratorDoubleArray : public virtual DoubleArray , public virtual W
             if (i<length-1) c << ", ";
         }
         c << ");" << endl;
+        c << "            "<<name<<"->blockSignals(true);" << endl;
         c << "            "<<name<<"->setText(temp);" << endl;
+        c << "            "<<name<<"->blockSignals(false);" << endl;
     }
-    virtual void               writeSourceCallback(QString &, QString &windowname, ostream &c)
+    virtual void               writeSourceCallback(QString &, QString &windowname, ostream &c, bool isEnabler)
     {
         c << "void" << endl;
         c << windowname<<"::"<<name<<"ProcessText()" << endl;
@@ -743,9 +766,11 @@ class WindowGeneratorString : public virtual String , public virtual WindowGener
     virtual void            writeSourceUpdateWindow(ostream &c)
     {
         c << "            temp = atts->Get"<<Name<<"().c_str();" << endl;
+        c << "            "<<name<<"->blockSignals(true);" << endl;
         c << "            "<<name<<"->setText(temp);" << endl;
+        c << "            "<<name<<"->blockSignals(false);" << endl;
     }
-    virtual void            writeSourceCallback(QString &, QString &windowname, ostream &c)
+    virtual void            writeSourceCallback(QString &, QString &windowname, ostream &c, bool isEnabler)
     {
         c << "void" << endl;
         c << windowname<<"::"<<name<<"ProcessText()" << endl;
@@ -798,14 +823,18 @@ class WindowGeneratorColorTable : public virtual ColorTable , public virtual Win
     }
     virtual void            writeSourceUpdateWindow(ostream &c)
     {
+        c << "            "<<name<<"->blockSignals(true);" << endl;
         c << "            "<<name<<"->setColorTable(atts->Get"<<Name<<"().c_str());" << endl;
+        c << "            "<<name<<"->blockSignals(false);" << endl;
     }
-    virtual void            writeSourceCallback(QString &, QString &windowname, ostream &c)
+    virtual void            writeSourceCallback(QString &, QString &windowname, ostream &c, bool isEnabler)
     {
         c << "void" << endl;
         c << windowname<<"::"<<name<<"Changed(bool useDefault, const QString &ctName)" << endl;
         c << "{" << endl;
         c << "    atts->Set"<<Name<<"(ctName.latin1());" << endl;
+        if(!isEnabler)
+            c << "    SetUpdate(false);" << endl;
         c << "    Apply();" << endl;
         c << "}" << endl;
     }
@@ -845,17 +874,19 @@ class WindowGeneratorColor : public virtual Color , public virtual WindowGenerat
         c << "            tempcolor = QColor(atts->Get"<<Name<<"().Red()," << endl;
         c << "                               atts->Get"<<Name<<"().Green()," << endl;
         c << "                               atts->Get"<<Name<<"().Blue());" << endl;
-        //c << "            "<<name<<"->blockSignals(true);" << endl;
+        c << "            "<<name<<"->blockSignals(true);" << endl;
         c << "            "<<name<<"->setButtonColor(tempcolor);" << endl;
-        //c << "            "<<name<<"->blockSignals(false);" << endl;
+        c << "            "<<name<<"->blockSignals(false);" << endl;
     }
-    virtual void            writeSourceCallback(QString &, QString &windowname, ostream &c)
+    virtual void            writeSourceCallback(QString &, QString &windowname, ostream &c, bool isEnabler)
     {
         c << "void" << endl;
         c << windowname<<"::"<<name<<"Changed(const QColor &color)" << endl;
         c << "{" << endl;
         c << "    ColorAttribute temp(color.red(), color.green(), color.blue());" << endl;
         c << "    atts->Set"<<Name<<"(temp);" << endl;
+        if(!isEnabler)
+            c << "    SetUpdate(false);" << endl;
         c << "    Apply();" << endl;
         c << "}" << endl;
     }
@@ -898,12 +929,14 @@ class WindowGeneratorOpacity : public virtual Opacity , public virtual WindowGen
         c << "            "<<name<<"->setValue(int(atts->Get"<<Name<<"()*255.));" << endl;
         c << "            "<<name<<"->blockSignals(false);" << endl;
     }
-    virtual void            writeSourceCallback(QString &, QString &windowname, ostream &c)
+    virtual void            writeSourceCallback(QString &, QString &windowname, ostream &c, bool isEnabler)
     {
         c << "void" << endl;
         c << windowname<<"::"<<name<<"Changed(int opacity, const void*)" << endl;
         c << "{" << endl;
         c << "    atts->Set"<<Name<<"((float)opacity/255.);" << endl;
+        if(!isEnabler)
+            c << "    SetUpdate(false);" << endl;
         c << "    Apply();" << endl;
         c << "}" << endl;
     }
@@ -944,12 +977,14 @@ class WindowGeneratorLineStyle : public virtual LineStyle , public virtual Windo
         c << "            "<<name<<"->SetLineStyle(atts->Get"<<Name<<"());" << endl;
         c << "            "<<name<<"->blockSignals(false);" << endl;
     }
-    virtual void            writeSourceCallback(QString &, QString &windowname, ostream &c)
+    virtual void            writeSourceCallback(QString &, QString &windowname, ostream &c, bool isEnabler)
     {
         c << "void" << endl;
         c << windowname<<"::"<<name<<"Changed(int style)" << endl;
         c << "{" << endl;
         c << "    atts->Set"<<Name<<"(style);" << endl;
+        if(!isEnabler)
+            c << "    SetUpdate(false);" << endl;
         c << "    Apply();" << endl;
         c << "}" << endl;
     }
@@ -990,12 +1025,14 @@ class WindowGeneratorLineWidth : public virtual LineWidth , public virtual Windo
         c << "            "<<name<<"->SetLineWidth(atts->Get"<<Name<<"());" << endl;
         c << "            "<<name<<"->blockSignals(false);" << endl;
     }
-    virtual void            writeSourceCallback(QString &, QString &windowname, ostream &c)
+    virtual void            writeSourceCallback(QString &, QString &windowname, ostream &c, bool isEnabler)
     {
         c << "void" << endl;
         c << windowname<<"::"<<name<<"Changed(int style)" << endl;
         c << "{" << endl;
         c << "    atts->Set"<<Name<<"(style);" << endl;
+        if(!isEnabler)
+            c << "    SetUpdate(false);" << endl;
         c << "    Apply();" << endl;
         c << "}" << endl;
     }
@@ -1070,9 +1107,11 @@ class WindowGeneratorVariableName : public virtual VariableName , public virtual
     }
     virtual void            writeSourceUpdateWindow(ostream &c)
     {
+        c << "            "<<name<<"->blockSignals(true);" << endl;
         c << "            "<<name<<"->setText(atts->Get"<<Name<<"().c_str());" << endl;
+        c << "            "<<name<<"->blockSignals(false);" << endl;
     }
-    virtual void            writeSourceCallback(QString &, QString &windowname, ostream &c)
+    virtual void            writeSourceCallback(QString &, QString &windowname, ostream &c, bool isEnabler)
     {
         c << "void" << endl;
         c << windowname<<"::"<<name<<"Changed(const QString &varName)" << endl;
@@ -1148,9 +1187,11 @@ class WindowGeneratorEnum : public virtual Enum , public virtual WindowGenerator
     }
     virtual void            writeSourceUpdateWindow(ostream &c)
     {
+        c << "            "<<name<<"->blockSignals(true);" << endl;
         c << "            "<<name<<"->setButton(atts->Get"<<Name<<"());" << endl;
+        c << "            "<<name<<"->blockSignals(false);" << endl;
     }
-    virtual void            writeSourceCallback(QString &classname, QString &windowname, ostream &c)
+    virtual void            writeSourceCallback(QString &classname, QString &windowname, ostream &c, bool isEnabler)
     {
         c << "void" << endl;
         c << windowname<<"::"<<name<<"Changed(int val)" << endl;
@@ -1158,6 +1199,8 @@ class WindowGeneratorEnum : public virtual Enum , public virtual WindowGenerator
         c << "    if(val != atts->Get"<<Name<<"())" << endl;
         c << "    {" << endl;
         c << "        atts->Set"<<Name<<"("<<GetCPPName(true,classname)<<"(val));" << endl;
+        if(!isEnabler)
+            c << "        SetUpdate(false);" << endl;
         c << "        Apply();" << endl;
         c << "    }" << endl;
         c << "}" << endl;
@@ -1684,9 +1727,9 @@ class WindowGeneratorAttribute
             c << "        atts->Notify();" << endl;
             c << "" << endl;
             if (plugintype == "plot")
-                c << "        viewer->SetPlotOptions(plotType);" << endl;
+                c << "        GetViewerMethods()->SetPlotOptions(plotType);" << endl;
             else if(plugintype != "operator")
-                c << "        viewer->Set"<<name<<"();" << endl;
+                c << "        GetViewerMethods()->Set"<<name<<"();" << endl;
             c << "    }" << endl;
             c << "    else" << endl;
             c << "        atts->Notify();" << endl;
@@ -1723,9 +1766,9 @@ class WindowGeneratorAttribute
             c << "    GetCurrentValues(-1);" << endl;
             c << "    atts->Notify();" << endl;
             if (plugintype == "plot")
-                c << "    viewer->SetDefaultPlotOptions(plotType);" << endl;
+                c << "    GetViewerMethods()->SetDefaultPlotOptions(plotType);" << endl;
             else if(plugintype != "operator")
-                c << "    viewer->SetDefault"<<name<<"();" << endl;
+                c << "    GetViewerMethods()->SetDefault"<<name<<"();" << endl;
             c << "}" << endl;
             c << endl;
             c << endl;
@@ -1736,19 +1779,31 @@ class WindowGeneratorAttribute
             c << windowname << "::reset()" << endl;
             c << "{" << endl;
             if (plugintype == "plot")
-                c << "    viewer->ResetPlotOptions(plotType);" << endl;
+                c << "    GetViewerMethods()->ResetPlotOptions(plotType);" << endl;
             else if(plugintype != "operator")
-                c << "    viewer->Reset"<<name<<"();" << endl;
+                c << "    GetViewerMethods()->Reset"<<name<<"();" << endl;
             c << "}" << endl;
             c << endl;
             c << endl;
+        }
+
+        // Create a set of the fields that enable other fields so we can 
+        // influence how the source callback methods get "SetUpdate(false)".
+        std::set<Field*> enablers;
+        for (i=0; i<fields.size(); i++)
+        {
+            if (fields[i]->internal) continue;
+            for (int j=0; j<fields.size(); j++)
+                if (fields[j]->enabler == fields[i])
+                    enablers.insert(fields[i]);
         }
 
         // callbacks
         for (i=0; i<fields.size(); i++)
         {
             if (fields[i]->internal) continue;
-            fields[i]->writeSourceCallback(name, windowname, c);
+            bool isEnabler = enablers.find(fields[i]) != enablers.end();
+            fields[i]->writeSourceCallback(name, windowname, c, isEnabler);
             c << endl;
             c << endl;
         }
@@ -1786,6 +1841,8 @@ class WindowGeneratorPlugin
     vector<QString> efiles;     // engine
     bool customwfiles;
     vector<QString> wfiles;     // widgets
+    bool customvwfiles;
+    vector<QString> vwfiles;    // viewer widgets
 
     WindowGeneratorAttribute *atts;
   public:

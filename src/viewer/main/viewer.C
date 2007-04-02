@@ -48,7 +48,6 @@
 #include <InitVTK.h>
 #include <RemoteProcess.h>
 #include <ViewerPasswordWindow.h>
-#include <ViewerMessaging.h>
 #include <avtCallback.h>
 
 static void ErrorCallback(void *, const char *);
@@ -130,6 +129,10 @@ void foobz2(void)
 //    Hank Childs, Tue Feb 15 12:16:38 PST 2005
 //    Register a warning function.
 //
+//    Brad Whitlock, Mon Feb 12 17:18:15 PST 2007
+//    Pass the ViewerSubject address to the error and warning callback 
+//    registration functions.
+//
 // ****************************************************************************
 
 int
@@ -140,18 +143,23 @@ main(int argc, char *argv[])
     TRY
     {
         //
-        // Initialize the error logging.
+        // Do basic initialization.
         //
         Init::Initialize(argc, argv, 0, 1, false);
-        Init::SetComponentName("viewer");
-        Init::ComponentRegisterErrorFunction(ErrorCallback, NULL);
-        InitVTK::Initialize();
-        avtCallback::RegisterWarningCallback(ViewerWarningCallback, NULL);
 
         //
         // Create the viewer subject.
         //
         ViewerSubject viewer;
+
+        //
+        // Initialize the error logging.
+        //
+        Init::SetComponentName("viewer");
+        Init::ComponentRegisterErrorFunction(ErrorCallback, (void*)&viewer);
+        InitVTK::Initialize();
+        avtCallback::RegisterWarningCallback(ViewerWarningCallback, 
+            (void*)&viewer);
 
         //
         // Connect back to the client and perform some initialization.
@@ -198,19 +206,22 @@ main(int argc, char *argv[])
 //      A callback routine that can issue error messages.
 //
 //  Arguments:
-//      args    Arguments to the callback.  Not needed for this routine, but
-//              necessary to match the callback signature.
+//      args    Arguments to the callback.
 //      msg     The message to issue.
 //
 //  Programmer: Hank Childs
 //  Creation:   August 8, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Mon Feb 12 17:17:49 PST 2007
+//    Passed in the ViewerSubject pointer.
+//
 // ****************************************************************************
 
 static void
-ErrorCallback(void *, const char *msg)
+ErrorCallback(void *ptr, const char *msg)
 {
-    Error(msg);
+    ((ViewerSubject *)ptr)->Error(msg);
 }
 
 
@@ -221,19 +232,22 @@ ErrorCallback(void *, const char *msg)
 //      A callback routine that can issue warning messages.
 //
 //  Arguments:
-//      args    Arguments to the callback.  Not needed for this routine, but
-//              necessary to match the callback signature.
+//      args    Arguments to the callback.
 //      msg     The message to issue.
 //
 //  Programmer: Hank Childs
 //  Creation:   February 15, 2005
 //
+//  Modifications:
+//    Brad Whitlock, Mon Feb 12 17:17:49 PST 2007
+//    Passed in the ViewerSubject pointer.
+//
 // ****************************************************************************
 
 static void
-ViewerWarningCallback(void *, const char *msg)
+ViewerWarningCallback(void *ptr, const char *msg)
 {
-    Warning(msg);
+    ((ViewerSubject *)ptr)->Warning(msg);
 }
 
 

@@ -36,7 +36,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                               VolumePluginInfo.h                            //
+//                               VolumePluginInfo.h                          //
 // ************************************************************************* //
 
 #ifndef VOLUME_PLUGIN_INFO_H
@@ -101,9 +101,7 @@ class VolumeViewerPluginInfo: public virtual ViewerPlotPluginInfo, public virtua
 
     virtual avtPlot *AllocAvtPlot();
 
-    virtual void InitializePlotAtts(AttributeSubject *atts,
-        const avtDatabaseMetaData *md,
-        const char *variableName);
+    virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
     virtual const char **XPMIconData() const;
     virtual int GetVariableTypes() const;
 

@@ -59,6 +59,9 @@ class QCheckBox;
 //    Jeremy Meredith, Wed Jul  7 17:08:03 PDT 2004
 //    Allow for mdserver-specific code in a plugin's source files.
 //
+//    Brad Whitlock, Fri Feb 23 17:47:21 PST 2007
+//    Added viewer widgets.
+//
 // ****************************************************************************
 class XMLEditMakefile : public QFrame
 {
@@ -79,12 +82,14 @@ class XMLEditMakefile : public QFrame
     void mfilesTextChanged(const QString&);
     void efilesTextChanged(const QString&);
     void wfilesTextChanged(const QString&);
+    void vwfilesTextChanged(const QString&);
     void customgfilesChanged();
     void customsfilesChanged();
     void customvfilesChanged();
     void custommfilesChanged();
     void customefilesChanged();
     void customwfilesChanged();
+    void customvwfilesChanged();
     void mdSpecificCodeChanged();
   private:
     XMLDocument     *xmldoc;
@@ -104,6 +109,8 @@ class XMLEditMakefile : public QFrame
     QLineEdit       *EFiles;
     QCheckBox       *customWFiles;
     QLineEdit       *WFiles;
+    QCheckBox       *customVWFiles;
+    QLineEdit       *VWFiles;
     QCheckBox       *mdSpecificCode;
 };
 

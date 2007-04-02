@@ -107,7 +107,7 @@ int SimCommandSlots::SendCMD(QString sig, const QObject *ui, QString value)
 
     QString cmd = sig + ";" + ui->name() + ";" + ui->className() + ";" +
                   ui->parent()->name() + ";" + value;
-    viewer->SendSimulationCommand(host, sim, cmd.latin1());
+    viewer->GetViewerMethods()->SendSimulationCommand(host, sim, cmd.latin1());
 
     return 0;
 }

@@ -101,9 +101,7 @@ class StreamlineViewerPluginInfo: public virtual ViewerPlotPluginInfo, public vi
 
     virtual avtPlot *AllocAvtPlot();
 
-    virtual void InitializePlotAtts(AttributeSubject *atts,
-        const avtDatabaseMetaData *md,
-        const char *variableName);
+    virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
     virtual const char **XPMIconData() const;
     virtual int GetVariableTypes() const;
 

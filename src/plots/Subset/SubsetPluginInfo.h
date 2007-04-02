@@ -111,17 +111,11 @@ class SubsetViewerPluginInfo: public virtual ViewerPlotPluginInfo, public virtua
 
     virtual avtPlot *AllocAvtPlot();
 
-    virtual void InitializePlotAtts(AttributeSubject *atts,
-        const avtDatabaseMetaData *md,
-        const char *variableName);
+    virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
 
-    virtual void ReInitializePlotAtts(AttributeSubject *atts,
-        const avtDatabaseMetaData *md,
-        const char *variableName);
+    virtual void ReInitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
 
-    virtual void ResetPlotAtts(AttributeSubject *atts,
-        const avtDatabaseMetaData *md,
-        const char *variableName);
+    virtual void ResetPlotAtts(AttributeSubject *atts, ViewerPlot *);
 
     virtual const char **XPMIconData() const;
     virtual int GetVariableTypes() const;
@@ -131,9 +125,7 @@ class SubsetViewerPluginInfo: public virtual ViewerPlotPluginInfo, public virtua
     static SubsetAttributes *defaultAtts;
     static SubsetAttributes *clientAtts;
 
-    void   PrivateSetPlotAtts(AttributeSubject *atts,
-        const avtDatabaseMetaData *md,
-        const char *variableName);
+    void   PrivateSetPlotAtts(AttributeSubject *atts, ViewerPlot *);
 };
 
 class SubsetEnginePluginInfo: public virtual EnginePlotPluginInfo, public virtual SubsetCommonPluginInfo

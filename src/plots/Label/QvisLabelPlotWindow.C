@@ -564,7 +564,7 @@ QvisLabelPlotWindow::Apply(bool ignore)
         GetCurrentValues(-1);
         labelAtts->Notify();
 
-        viewer->SetPlotOptions(plotType);
+        GetViewerMethods()->SetPlotOptions(plotType);
     }
     else
         labelAtts->Notify();
@@ -614,7 +614,7 @@ QvisLabelPlotWindow::makeDefault()
 {
     GetCurrentValues(-1);
     labelAtts->Notify();
-    viewer->SetDefaultPlotOptions(plotType);
+    GetViewerMethods()->SetDefaultPlotOptions(plotType);
 }
 
 
@@ -634,7 +634,7 @@ QvisLabelPlotWindow::makeDefault()
 void
 QvisLabelPlotWindow::reset()
 {
-    viewer->ResetPlotOptions(plotType);
+    GetViewerMethods()->ResetPlotOptions(plotType);
 }
 
 

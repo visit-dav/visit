@@ -167,7 +167,7 @@ QvisInterpreter::ProcessCommands()
 
             // Relay an "Interpret" method command to the viewer where it should
             // be routed to the CLI.
-            ClientMethod *method = viewer->GetClientMethod();
+            ClientMethod *method = GetViewerState()->GetClientMethod();
             method->ClearArgs();
             method->AddArgument(code);
             method->SetMethodName("Interpret");
@@ -206,7 +206,7 @@ QvisInterpreter::Initialize()
         stringVector args;
         args.push_back("-cli");
         args.push_back("-newconsole");
-        viewer->OpenClient("CLI", GetVisItLauncher(), args);
+        GetViewerMethods()->OpenClient("CLI", GetVisItLauncher(), args);
         launched = true;
     }
 
@@ -238,7 +238,7 @@ QvisInterpreter::NoInterpretingClient() const
     // Check all of the client information until we find a client that
     // supports the Interpret method with a string argument.
     //
-    const ClientInformationList *cL = viewer->GetClientInformationList();
+    const ClientInformationList *cL = GetViewerState()->GetClientInformationList();
     for(int i = 0; i < cL->GetNumClientInformations(); ++i)
     {
         const ClientInformation &client = cL->operator[](i);

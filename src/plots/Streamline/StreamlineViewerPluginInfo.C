@@ -201,7 +201,7 @@ StreamlineViewerPluginInfo::AllocAvtPlot()
 
 void
 StreamlineViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    const avtDatabaseMetaData *, const char *)
+    ViewerPlot *)
 {
     *(StreamlineAttributes*)atts = *defaultAtts;
 }

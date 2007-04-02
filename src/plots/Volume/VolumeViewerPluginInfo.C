@@ -201,7 +201,7 @@ VolumeViewerPluginInfo::AllocAvtPlot()
 
 void
 VolumeViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    const avtDatabaseMetaData *, const char *)
+    ViewerPlot *)
 {
     *(VolumeAttributes*)atts = *defaultAtts;
 }

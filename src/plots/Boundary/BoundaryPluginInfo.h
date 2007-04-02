@@ -101,17 +101,11 @@ class BoundaryViewerPluginInfo: public virtual ViewerPlotPluginInfo, public virt
 
     virtual avtPlot *AllocAvtPlot();
 
-    virtual void InitializePlotAtts(AttributeSubject *atts,
-        const avtDatabaseMetaData *md,
-        const char *variableName);
+    virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
 
-    virtual void ReInitializePlotAtts(AttributeSubject *atts,
-        const avtDatabaseMetaData *md,
-        const char *variableName);
+    virtual void ReInitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
 
-    virtual void ResetPlotAtts(AttributeSubject *atts,
-        const avtDatabaseMetaData *md,
-        const char *variableName);
+    virtual void ResetPlotAtts(AttributeSubject *atts, ViewerPlot *);
 
     virtual const char **XPMIconData() const;
     virtual int GetVariableTypes() const;
@@ -121,9 +115,7 @@ class BoundaryViewerPluginInfo: public virtual ViewerPlotPluginInfo, public virt
     static BoundaryAttributes *defaultAtts;
     static BoundaryAttributes *clientAtts;
 
-    void   PrivateSetPlotAtts(AttributeSubject *atts,
-        const avtDatabaseMetaData *md,
-        const char *variableName);
+    void   PrivateSetPlotAtts(AttributeSubject *atts, ViewerPlot *);
 };
 
 class BoundaryEnginePluginInfo: public virtual EnginePlotPluginInfo, public virtual BoundaryCommonPluginInfo

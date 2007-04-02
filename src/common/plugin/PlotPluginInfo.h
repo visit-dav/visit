@@ -56,6 +56,7 @@ class QWidget;
 class avtDatabaseMetaData;
 class ExpressionList;
 class avtPlot;
+class ViewerPlot;
 
 // ****************************************************************************
 //  Class: *PluginInfo
@@ -126,6 +127,9 @@ class avtPlot;
 //    Mark Blair, Mon Aug 21 18:29:00 PDT 2006
 //    Added to information passed to plot wizard when created.
 //
+//    Brad Whitlock, Wed Feb 7 15:53:14 PST 2007
+//    Added methods for alternate display in the viewer plugin info.
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralPlotPluginInfo
@@ -172,20 +176,23 @@ class PLUGIN_API ViewerPlotPluginInfo : public virtual CommonPlotPluginInfo
 
     virtual avtPlot *AllocAvtPlot() = 0;
 
-    virtual void InitializePlotAtts(AttributeSubject *atts,
-        const avtDatabaseMetaData *,
-        const char *variableName) = 0;
-
-    virtual void ReInitializePlotAtts(AttributeSubject *atts,
-        const avtDatabaseMetaData *,
-        const char *variableName) { ; };
+    virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *) = 0;
+    virtual void ReInitializePlotAtts(AttributeSubject *atts, 
+        ViewerPlot *) { ; }
 
     virtual void ResetPlotAtts(AttributeSubject *atts,
-        const avtDatabaseMetaData *md,
-        const char *variableName) { ; } ;
+        ViewerPlot *) { ; }
 
     virtual const char **XPMIconData() const { return 0; }
     virtual int GetVariableTypes() const = 0;
+
+    virtual void *AlternateDisplayCreate(ViewerPlot *plot) { return 0; }
+    virtual void AlternateDisplayDestroy(void *dpy) {; }
+    virtual void AlternateDisplayClear(void *dpy) {; }
+    virtual void AlternateDisplayHide(void *dpy) {; }
+    virtual void AlternateDisplayShow(void *dpy) {; }
+    virtual void AlternateDisplayIconify(void *dpy) {; }
+    virtual void AlternateDisplayDeIconify(void *dpy) {; }
 };
 
 class PLUGIN_API EnginePlotPluginInfo : public virtual CommonPlotPluginInfo

@@ -61,7 +61,6 @@
 #include <QueryAttributes.h>
 #include <StatusAttributes.h>
 #include <ViewerFileServer.h>
-#include <ViewerMessaging.h>
 #include <ViewerOperator.h>
 #include <ViewerPlot.h>
 #include <ViewerSubject.h>

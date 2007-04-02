@@ -109,9 +109,7 @@ class ParallelAxisViewerPluginInfo: public virtual ViewerPlotPluginInfo, public 
 
     virtual avtPlot *AllocAvtPlot();
 
-    virtual void InitializePlotAtts(AttributeSubject *atts,
-        const avtDatabaseMetaData *md,
-        const char *variableName);
+    virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
     virtual const char **XPMIconData() const;
     virtual int GetVariableTypes() const;
 

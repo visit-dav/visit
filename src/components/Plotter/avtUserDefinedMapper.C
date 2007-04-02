@@ -318,6 +318,28 @@ avtUserDefinedMapper::SetSurfaceRepresentation(int rep)
     renderer->SetSurfaceRepresentation(rep);
 }
 
+// ****************************************************************************
+// Method: avtUserDefinedMapper::SetAlternateDisplay
+//
+// Purpose: 
+//   Tells the plot to use its own rendering method instead of putting the
+//   plot into the vis window.
+//
+// Arguments:
+//   dpy : Handle to the plot's display.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Feb 7 16:20:43 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtUserDefinedMapper::SetAlternateDisplay(void *dpy)
+{
+    renderer->SetAlternateDisplay(dpy);
+}
 
 // ****************************************************************************
 //  Method: vtkUserDefinedMapperBridge::New

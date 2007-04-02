@@ -68,7 +68,6 @@ using std::string;
 #include <ViewerActionManager.h>
 #include <ViewerEngineManager.h>
 #include <ViewerFileServer.h>
-#include <ViewerMessaging.h>
 #include <ViewerPlot.h> 
 #include <ViewerPlotList.h> 
 #include <ViewerPopupMenu.h>
@@ -240,9 +239,14 @@ static void RotateAroundY(const avtView3D&, double, avtView3D&);
 //
 //    Mark C. Miller, Wed Aug  9 16:35:25 PDT 2006
 //    Removed scalableStereoType
+//
+//    Brad Whitlock, Mon Feb 12 17:43:04 PST 2007
+//    Added ViewerBase base class.
+//
 // ****************************************************************************
 
-ViewerWindow::ViewerWindow(int windowIndex) : undoViewStack(true), redoViewStack()
+ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(0, "ViewerWindow"),
+    undoViewStack(true), redoViewStack()
 {
     if (doNoWinMode)
     {

@@ -173,7 +173,7 @@ QvisDatabaseCorrelationWindow::CreateWidgets(
     // Simplify the source names.
     //
     NameSimplifier simplifier;
-    const stringVector &sources = viewer->GetGlobalAttributes()->GetSources();
+    const stringVector &sources = GetViewerState()->GetGlobalAttributes()->GetSources();
     for(i = 0; i < sources.size(); ++i)
         simplifier.AddName(sources[i]);
     stringVector shortSources;
@@ -443,7 +443,7 @@ QvisDatabaseCorrelationWindow::actionClicked()
         else
         {
             // See if the name is already used.
-            DatabaseCorrelationList *cL = viewer->GetDatabaseCorrelationList();
+            DatabaseCorrelationList *cL = GetViewerState()->GetDatabaseCorrelationList();
             if(cL->FindCorrelation(name))
             {
                 Warning("The given database correlation name is already "
@@ -462,7 +462,7 @@ QvisDatabaseCorrelationWindow::actionClicked()
     // Simplify the current source names.
     //
     NameSimplifier simplifier;
-    const stringVector &sources = viewer->GetGlobalAttributes()->GetSources();
+    const stringVector &sources = GetViewerState()->GetGlobalAttributes()->GetSources();
     int i;
     for(i = 0; i < sources.size(); ++i)
         simplifier.AddName(sources[i]);
@@ -492,11 +492,11 @@ QvisDatabaseCorrelationWindow::actionClicked()
     //
     if(createMode)
     {
-        viewer->CreateDatabaseCorrelation(name, dbs, method);
+        GetViewerMethods()->CreateDatabaseCorrelation(name, dbs, method);
     }
     else
     {
-        viewer->AlterDatabaseCorrelation(name, dbs, method);
+        GetViewerMethods()->AlterDatabaseCorrelation(name, dbs, method);
     }
 
     cancelClicked();

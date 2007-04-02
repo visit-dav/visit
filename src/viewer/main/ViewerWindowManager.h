@@ -42,7 +42,7 @@
 #ifndef VIEWER_WINDOW_MANAGER_H
 #define VIEWER_WINDOW_MANAGER_H
 #include <viewer_exports.h>
-#include <qobject.h>
+#include <ViewerBase.h>
 #include <VisWindowTypes.h>
 #include <avtTypes.h>
 #include <avtImage.h>
@@ -364,9 +364,12 @@ typedef struct {
 //    Brad Whitlock, Thu Nov 9 16:41:47 PST 2006
 //    Made some interface changes to allow db parameterized sessions.
 //
+//    Brad Whitlock, Mon Feb 12 17:37:57 PST 2007
+//    Changed base class.
+//
 // ****************************************************************************
 
-class VIEWER_API ViewerWindowManager : public QObject
+class VIEWER_API ViewerWindowManager : public ViewerBase
 {
     Q_OBJECT
   public:

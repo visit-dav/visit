@@ -1005,19 +1005,19 @@ QvisViewWindow::Apply(bool ignore)
         if(doCurve || ignore)
         {
             viewCurve->Notify();
-            viewer->SetViewCurve();
+            GetViewerMethods()->SetViewCurve();
         }
         // Tell the viewer to set the 2D view attributes.
         if(do2d || ignore)
         {
             view2d->Notify();
-            viewer->SetView2D();
+            GetViewerMethods()->SetView2D();
         }
         // Tell the viewer to set the 3D view attributes.
         if(do3d || ignore)
         {
             view3d->Notify();
-            viewer->SetView3D();
+            GetViewerMethods()->SetView3D();
         }
     }
     else
@@ -1892,17 +1892,17 @@ QvisViewWindow::ParseViewCommands(const char *str)
         }
         else if(strncmp(command, "reset", 5) == 0)
         {
-            viewer->ResetView();
+            GetViewerMethods()->ResetView();
             doApply = false;
         }
         else if(strncmp(command, "recenter", 7) == 0)
         {
-            viewer->RecenterView();
+            GetViewerMethods()->RecenterView();
             doApply = false;
         }
         else if(strncmp(command, "undo", 4) == 0)
         {
-            viewer->UndoView();
+            GetViewerMethods()->UndoView();
             doApply = false;
         }
         else
@@ -2730,7 +2730,7 @@ QvisViewWindow::viewButtonClicked(int index)
 void
 QvisViewWindow::lockedViewChecked(bool)
 {
-    viewer->ToggleLockViewMode();
+    GetViewerMethods()->ToggleLockViewMode();
 }
 
 // ****************************************************************************
@@ -2749,7 +2749,7 @@ QvisViewWindow::lockedViewChecked(bool)
 void
 QvisViewWindow::extentTypeChanged(int val)
 {
-    viewer->SetViewExtentsType(val);
+    GetViewerMethods()->SetViewExtentsType(val);
 }
 
 // ****************************************************************************
@@ -2768,7 +2768,7 @@ QvisViewWindow::extentTypeChanged(int val)
 void
 QvisViewWindow::resetView()
 {
-    viewer->ResetView();
+    GetViewerMethods()->ResetView();
 }
 
 // ****************************************************************************
@@ -2787,7 +2787,7 @@ QvisViewWindow::resetView()
 void
 QvisViewWindow::recenterView()
 {
-    viewer->RecenterView();
+    GetViewerMethods()->RecenterView();
 }
 
 // ****************************************************************************
@@ -2806,7 +2806,7 @@ QvisViewWindow::recenterView()
 void
 QvisViewWindow::undoView()
 {
-    viewer->UndoView();
+    GetViewerMethods()->UndoView();
 }
 
 // ****************************************************************************
@@ -2825,7 +2825,7 @@ QvisViewWindow::undoView()
 void
 QvisViewWindow::copyViewFromCameraChecked(bool)
 {
-    viewer->ToggleCameraViewMode();
+    GetViewerMethods()->ToggleCameraViewMode();
 }
 
 // ****************************************************************************
@@ -2844,7 +2844,7 @@ QvisViewWindow::copyViewFromCameraChecked(bool)
 void
 QvisViewWindow::makeViewKeyframe()
 {
-    viewer->SetViewKeyframe();
+    GetViewerMethods()->SetViewKeyframe();
 }
 
 // ****************************************************************************

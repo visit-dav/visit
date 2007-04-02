@@ -184,6 +184,9 @@
 //    Re ordered $(PY_CXXFLAGS)
 //    Added $(GLEW_LIBS) for Mac dependences
 //
+//    Brad Whitlock, Fri Feb 23 17:07:43 PST 2007
+//    Added support for viewer widgets.
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin
@@ -218,6 +221,8 @@ class MakefileGeneratorPlugin
     vector<QString> efiles;     // engine
     bool customwfiles;
     vector<QString> wfiles;     // widgets
+    bool customvwfiles;
+    vector<QString> vwfiles;    // viewer widgets
     vector<QString> defaultgfiles;
     vector<QString> defaultsfiles;
     vector<QString> defaultvfiles;
@@ -243,12 +248,14 @@ class MakefileGeneratorPlugin
         custommfiles = false;
         customefiles = false;
         customwfiles = false;
+        customvwfiles = false;
         gfiles.clear();
         sfiles.clear();
         vfiles.clear();
         mfiles.clear();
         efiles.clear();
         wfiles.clear();
+        vwfiles.clear();
         if (type == "database")
         {
             QString filter = QString("avt") + name + "FileFormat.C";
@@ -358,6 +365,17 @@ class MakefileGeneratorPlugin
                 for (int i=0; i<wfiles.size(); i++)
                     out << " " << wfiles[i];
             out << endl;
+            out << "VIEWERWIDGETS=";
+            if (customvwfiles)
+            {
+                for (int i=0; i<vwfiles.size(); i++)
+                {
+                    out << vwfiles[i];
+                    if(i < vwfiles.size() - 1)
+                        out << " ";
+                }
+            }
+            out << endl;
             out << "ISRC="<<name<<"PluginInfo.C" << endl;
             out << "COMMONSRC=";
 #ifndef __APPLE__
@@ -463,6 +481,17 @@ class MakefileGeneratorPlugin
             if (customwfiles)
                 for (int i=0; i<wfiles.size(); i++)
                     out << " " << wfiles[i];
+            out << endl;
+            out << "VIEWERWIDGETS=";
+            if (customvwfiles)
+            {
+                for (int i=0; i<vwfiles.size(); i++)
+                {
+                    out << vwfiles[i];
+                    if(i < vwfiles.size() - 1)
+                        out << " ";
+                }
+            }
             out << endl;
             out << "ISRC="<<name<<"PluginInfo.C" << endl;
             out << "COMMONSRC=";
@@ -582,6 +611,7 @@ class MakefileGeneratorPlugin
             out << endl;
 
             out << "WIDGETS=" << endl;
+            out << "VIEWERWIDGETS=" << endl;
             out << "ISRC="<<name<<"PluginInfo.C" << endl;
             out << "COMMONSRC=";
 #ifndef __APPLE__
@@ -658,7 +688,10 @@ class MakefileGeneratorPlugin
         out << "" << endl;
         out << "MOCSRC = $(WIDGETS:.h=_moc.C)" << endl;
         out << "MOCOBJ = $(MOCSRC:.C=.o)" << endl;
-        out << "" << endl;
+        out << endl;
+        out << "VIEWERMOCSRC = $(VIEWERWIDGETS:.h=_moc.C)" << endl;
+        out << "VIEWERMOCOBJ = $(VIEWERMOCSRC:.C=.o)" << endl;
+        out << endl;
         out << "##" << endl;
         out << "## Standard targets..." << endl;
         out << "##" << endl;
@@ -679,7 +712,7 @@ class MakefileGeneratorPlugin
         out << "clean:" << endl;
         out << "\t$(RM) $(IOBJ) $(COMMONOBJ)" << endl;
         out << "\t$(RM) $(GOBJ) $(SOBJ) $(VOBJ) $(MOBJ) $(ESEROBJ) $(EPAROBJ)" << endl;
-        out << "\t$(RM) $(MOCSRC) $(MOCOBJ)" << endl;
+        out << "\t$(RM) $(MOCSRC) $(MOCOBJ) $(VIEWERMOCSRC) $(VIEWERMOCOBJ)" << endl;
         out << "\t$(RM) $(IDSO) $(GDSO) $(SDSO) $(VDSO) $(MDSO) $(ESERDSO) $(EPARDSO)" << endl;
         out << "\t$(RM) $(JAVAOBJ)" << endl;
         out << "" << endl;
@@ -716,6 +749,10 @@ class MakefileGeneratorPlugin
         out << "## moc" << endl;
         out << "##" << endl;
         out << "$(MOCSRC) or_no_widgets: $(WIDGETS)" << endl;
+        out << "\t@rm -f $@" << endl;
+        out << "\t$(MOC) $(@:_moc.C=.h) > $@" << endl;
+        out << "" << endl;
+        out << "$(VIEWERMOCSRC) or_no_viewer_widgets: $(VIEWERWIDGETS)" << endl;
         out << "\t@rm -f $@" << endl;
         out << "\t$(MOC) $(@:_moc.C=.h) > $@" << endl;
         out << "" << endl;

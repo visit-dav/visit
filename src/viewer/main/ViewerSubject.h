@@ -47,9 +47,8 @@
 #include <viewer_exports.h>
 #include <qobject.h>
 
+#include <ViewerBase.h>
 #include <ParentProcess.h>
-#include <ViewerRPC.h>
-#include <PostponedAction.h>
 #include <ViewerMasterXfer.h>
 #include <VisWindowTypes.h>
 #include <avtTypes.h>
@@ -58,42 +57,23 @@
 #include <string>
 #include <map>
 
-struct avtViewInfo;
 class avtDatabaseMetaData;
-class AnnotationAttributes;
-class AppearanceAttributes;
 class BufferConnection;
-class ClientInformation;
-class ClientInformationList;
-class ClientMethod;
-class ColorTableAttributes;
-class InteractorAttributes;
-class MeshManagementAttributes;
-class MessageAttributes;
-class MovieAttributes;
-class ProcessAttributes;
 class QApplication;
 class QSocketNotifier;
 class QTimer;
 class SILAttributes;
-class StatusAttributes;
-class SyncAttributes;
 class ViewerActionBase;
 class ViewerClientConnection;
 class ViewerConfigManager;
 class ViewerMessageBuffer;
 class ViewerMetaDataObserver;
 class ViewerSILAttsObserver;
+class ViewerObserverToSignal;
 class ViewerOperatorFactory;
 class ViewerPlotFactory;
-class ViewerRPCObserver;
-class ViewerRPC;
-class ViewerState;
 class ViewerWindow;
-class PluginManagerAttributes;
-class MaterialAttributes;
 class DataNode;
-class PlotInfoAttributes;
 struct avtDefaultPlotMetaData;
 
 // ****************************************************************************
@@ -436,9 +416,12 @@ struct avtDefaultPlotMetaData;
 //    Added return value for OpenDatabase so that we can do a better job
 //    when opening a bad file.
 //
+//    Brad Whitlock, Tue Feb 13 14:00:29 PST 2007
+//    I made it use ViewerState for all of its state objects.
+//
 // ****************************************************************************
 
-class VIEWER_API ViewerSubject : public QObject
+class VIEWER_API ViewerSubject : public ViewerBase
 {
     Q_OBJECT
 public:
@@ -453,16 +436,6 @@ public:
     ViewerOperatorFactory *GetOperatorFactory() const;
 
     void MessageRendererThread(const char *message);
-    void Error(const char *message);
-    void Warning(const char *message);
-    void Message(const char *message);
-    void ErrorClear();
-    void Status(const char *message);
-    void Status(const char *message, int milliseconds);
-    void Status(const char *sender, const char *message);
-    void Status(const char *sender, int percent, int curStage,
-                const char *curStageName, int maxStage);
-    void ClearStatus(const char *sender = 0);
 
     static void ProcessEventsCB(void *cbData);
     static bool LaunchProgressCB(void *data, int stage);
@@ -633,6 +606,7 @@ private slots:
                                const avtDatabaseMetaData *md);
     void HandleSILAttsUpdated(const std::string &host, const std::string &db,
                               const SILAttributes *md);
+    void HandleColorTable();
     void ProcessRendererMessage();
     void ReadFromParentAndProcess(int);
     void DelayedProcessSettings();
@@ -675,31 +649,15 @@ private:
 
     ViewerMasterXfer       xfer;
     ParentProcess         *parent;
-    ViewerState           *viewerState;
     ViewerClientConnectionVector clients;
     BufferConnection      *inputConnection;
 
-    ViewerRPCObserver     *viewerRPCObserver;
-    ViewerRPC              viewerRPC;
-    PostponedAction        postponedAction;
-    ViewerRPCObserver     *postponedActionObserver;
-    ViewerRPCObserver     *syncObserver;
-    ViewerRPCObserver     *clientMethodObserver;
-    ViewerRPCObserver     *clientInformationObserver;
-
-    MessageAttributes     *messageAtts;
-    StatusAttributes      *statusAtts;
-    AppearanceAttributes  *appearanceAtts;
-    SyncAttributes        *syncAtts;
-    avtDatabaseMetaData   *metaData;
-    SILAttributes         *silAtts;
-    ProcessAttributes     *procAtts;
-    ClientMethod          *clientMethod;
-    ClientInformation     *clientInformation;
-    ClientInformationList *clientInformationList;
-    MovieAttributes       *movieAtts;
-    ViewerRPC             *logRPC;
-    PlotInfoAttributes    *plotInfoAtts;
+    ViewerObserverToSignal *viewerRPCObserver;
+    ViewerObserverToSignal *postponedActionObserver;
+    ViewerObserverToSignal *syncObserver;
+    ViewerObserverToSignal *clientMethodObserver;
+    ViewerObserverToSignal *clientInformationObserver;
+    ViewerObserverToSignal *colorTableObserver;
 
     bool                   nowin;
     std::string            borders;
@@ -721,8 +679,6 @@ private:
 
     ViewerMessageBuffer   *messageBuffer;
     int                    messagePipe[2];
-
-    PluginManagerAttributes *pluginAtts;
 
     std::map<int,EngineKey>                     simulationSocketToKey;
     std::map<EngineKey,QSocketNotifier*>        engineKeyToNotifier;

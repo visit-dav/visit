@@ -346,7 +346,7 @@ QvisKerbelPlotWindow::Apply(bool ignore)
         GetCurrentValues(-1);
         atts->Notify();
 
-        viewer->SetPlotOptions(plotType);
+        GetViewerMethods()->SetPlotOptions(plotType);
     }
     else
         atts->Notify();
@@ -396,7 +396,7 @@ QvisKerbelPlotWindow::makeDefault()
 {
     GetCurrentValues(-1);
     atts->Notify();
-    viewer->SetDefaultPlotOptions(plotType);
+    GetViewerMethods()->SetDefaultPlotOptions(plotType);
 }
 
 
@@ -416,7 +416,7 @@ QvisKerbelPlotWindow::makeDefault()
 void
 QvisKerbelPlotWindow::reset()
 {
-    viewer->ResetPlotOptions(plotType);
+    GetViewerMethods()->ResetPlotOptions(plotType);
 }
 
 

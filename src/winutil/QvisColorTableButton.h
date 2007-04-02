@@ -35,22 +35,73 @@
 *
 *****************************************************************************/
 
-#ifndef VIEWER_MESSAGING_H
-#define VIEWER_MESSAGING_H
-#include <viewer_exports.h>
+#ifndef QVIS_COLORTABLE_BUTTON_H
+#define QVIS_COLORTABLE_BUTTON_H
+#include <winutil_exports.h>
+#include <vector>
+#include <qpushbutton.h>
 
-// Functions to send messages
-VIEWER_API void Error(const char *message);
-VIEWER_API void Warning(const char *message);
-VIEWER_API void Message(const char *message);
-VIEWER_API void ErrorClear();
+// Forward declarations.
+class QPopupMenu;
 
-// Functions to send status
-void Status(const char *message);
-void Status(const char *message, int milliseconds);
-void Status(const char *sender, const char *message);
-void Status(const char *sender, int percent, int curStage,
-            const char *curStageName, int maxStage);
-void ClearStatus(const char *sender = 0);
+// ****************************************************************************
+// Class: QvisColorTableButton
+//
+// Purpose:
+//   This is a type of push button that is aware of the different color tables
+//   that can be used for plots.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jun 20 12:37:24 PDT 2001
+//
+// Modifications:
+//   Brad Whitlock, Thu Feb 14 13:37:41 PST 2002
+//   Added a counter.
+//
+//   Brad Whitlock, Tue Feb 20 11:47:37 PDT 2007
+//   Changed API.
+//
+// ****************************************************************************
+
+class WINUTIL_API QvisColorTableButton : public QPushButton
+{
+    Q_OBJECT
+
+    typedef std::vector<QvisColorTableButton *> ColorTableButtonVector;
+public:
+    QvisColorTableButton(QWidget *parent, const char *name = 0);
+    virtual ~QvisColorTableButton();
+    virtual QSize sizeHint() const;
+    virtual QSizePolicy sizePolicy () const;
+
+    void setColorTable(const QString &ctName);
+    const QString &getColorTable() const;
+    void useDefaultColorTable();
+
+    // Methods to set the list of internal color tables.
+    static void clearAllColorTables();
+    static void addColorTable(const QString &ctName);
+    static void updateColorTableButtons();
+signals:
+    void selectedColorTable(bool useDefault, const QString &ctName);
+private slots:
+    void popupPressed();
+    void colorTableSelected(int index);
+private:
+    static int  getColorTableIndex(const QString &ctName);
+    static void regeneratePopupMenu();
+
+    QString                        colorTable;
+
+    static int                     numInstances;
+    static QPopupMenu             *colorTablePopup;
+    static bool                    popupHasEntries;
+    static ColorTableButtonVector  buttons;
+
+    static int                     numColorTableNames;
+    static QString                *colorTableNames;
+};
 
 #endif

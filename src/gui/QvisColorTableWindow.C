@@ -884,7 +884,7 @@ QvisColorTableWindow::UpdateDiscreteSettings()
         {
             SetUpdate(false);
             colorAtts->Notify();
-            viewer->UpdateColorTable(currentColorTable.latin1());
+            GetViewerMethods()->UpdateColorTable(currentColorTable.latin1());
         }
     }
 }
@@ -1203,7 +1203,7 @@ QvisColorTableWindow::Apply(bool ignore)
         colorAtts->Notify();
 
         // Make the viewer update the plots that use the specified colortable.
-        viewer->UpdateColorTable(currentColorTable.latin1());
+        GetViewerMethods()->UpdateColorTable(currentColorTable.latin1());
     }
     else
         colorAtts->Notify();
@@ -1529,7 +1529,7 @@ QvisColorTableWindow::deleteColorTable()
     if(index >= 0 && index < colorAtts->GetNumColorTables())
     {
         std::string ctName(colorAtts->GetNames()[index]);
-        viewer->DeleteColorTable(ctName.c_str());
+        GetViewerMethods()->DeleteColorTable(ctName.c_str());
     }
 }
 
@@ -1967,5 +1967,5 @@ QvisColorTableWindow::resizeColorTable(int size)
 void
 QvisColorTableWindow::exportColorTable()
 {
-    viewer->ExportColorTable(currentColorTable.latin1());
+    GetViewerMethods()->ExportColorTable(currentColorTable.latin1());
 }

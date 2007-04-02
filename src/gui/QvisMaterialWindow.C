@@ -434,7 +434,7 @@ QvisMaterialWindow::Apply(bool ignore)
         GetCurrentValues(-1);
         atts->Notify();
 
-        viewer->SetMaterialAttributes();
+        GetViewerMethods()->SetMaterialAttributes();
         GUIBase::Warning("Note:  These settings only apply to new plots.  "
                          "To apply them to current plots, re-open the file.");
     }
@@ -486,7 +486,7 @@ QvisMaterialWindow::makeDefault()
 {
     GetCurrentValues(-1);
     atts->Notify();
-    viewer->SetDefaultMaterialAttributes();
+    GetViewerMethods()->SetDefaultMaterialAttributes();
 }
 
 
@@ -506,7 +506,7 @@ QvisMaterialWindow::makeDefault()
 void
 QvisMaterialWindow::reset()
 {
-    viewer->ResetMaterialAttributes();
+    GetViewerMethods()->ResetMaterialAttributes();
 }
 
 

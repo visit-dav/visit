@@ -101,17 +101,11 @@ class LabelViewerPluginInfo: public virtual ViewerPlotPluginInfo, public virtual
 
     virtual avtPlot *AllocAvtPlot();
 
-    virtual void InitializePlotAtts(AttributeSubject *atts,
-        const avtDatabaseMetaData *md,
-        const char *variableName);
+    virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
 
-    virtual void ReInitializePlotAtts(AttributeSubject *atts,
-        const avtDatabaseMetaData *md,
-        const char *variableName);
+    virtual void ReInitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
 
-    virtual void ResetPlotAtts(AttributeSubject *atts,
-        const avtDatabaseMetaData *md,
-        const char *variableName);
+    virtual void ResetPlotAtts(AttributeSubject *atts, ViewerPlot *);
 
     virtual const char **XPMIconData() const;
     virtual int GetVariableTypes() const;
@@ -121,9 +115,7 @@ class LabelViewerPluginInfo: public virtual ViewerPlotPluginInfo, public virtual
     static LabelAttributes *defaultAtts;
     static LabelAttributes *clientAtts;
 
-    virtual void PrivateSetPlotAtts(AttributeSubject *atts,
-        const avtDatabaseMetaData *md,
-        const char *variableName);
+    virtual void PrivateSetPlotAtts(AttributeSubject *atts, ViewerPlot *);
 };
 
 class LabelEnginePluginInfo: public virtual EnginePlotPluginInfo, public virtual LabelCommonPluginInfo

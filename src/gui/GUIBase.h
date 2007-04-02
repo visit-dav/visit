@@ -44,7 +44,9 @@
 class QString;
 class FileServerList;
 class MessageAttributes;
+class ViewerMethods;
 class ViewerProxy;
+class ViewerState;
 struct StatusSubject;
 struct QualifiedFilename;
 class SimpleObserver;
@@ -93,6 +95,9 @@ class SimpleObserver;
 //.  Brad Whitlock, Mon May 3 17:27:11 PST 2004
 //   I added an argument to GetTimeSliderStateForDatabaseState.
 //
+//   Brad Whitlock, Tue Feb 13 09:21:03 PDT 2007
+//   I added GetViewerMethods and GetViewerState.
+//
 // ****************************************************************************
 
 class GUI_API GUIBase
@@ -103,9 +108,12 @@ public:
 
     // Functions to set information global to all of the window classes.
     void ConnectMessageAttr(MessageAttributes *attr);
-public:
-    static ViewerProxy       *viewer;
 protected:
+    void           SetViewerProxy(ViewerProxy *);
+    ViewerProxy   *GetViewerProxy() const;
+    ViewerState   *GetViewerState() const;
+    ViewerMethods *GetViewerMethods() const;
+
     void Error(const QString &msg);
     void Warning(const QString &msg);
     void Message(const QString &msg);
@@ -128,6 +136,8 @@ protected:
     int  GetTimeSliderStateForDatabaseState(const std::string &tsName,
                                             const QualifiedFilename &source,
                                             int dbState) const;
+private:
+    static ViewerProxy       *viewer;
 protected:
     static StatusSubject     *statusSubject;
     static bool              writeToConsole;

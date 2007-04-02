@@ -504,7 +504,7 @@ QvisLightingWindow::Apply(bool ignore)
     {
         lights->Notify();
 
-        viewer->SetLightList();
+        GetViewerMethods()->SetLightList();
     }
     else
         lights->Notify();
@@ -554,7 +554,7 @@ QvisLightingWindow::makeDefault()
     GetCurrentValues(-1);
     lights->Notify();
 
-    viewer->SetDefaultLightList();
+    GetViewerMethods()->SetDefaultLightList();
 }
 
 // ****************************************************************************
@@ -574,7 +574,7 @@ QvisLightingWindow::makeDefault()
 void
 QvisLightingWindow::reset()
 {
-    viewer->ResetLightList();
+    GetViewerMethods()->ResetLightList();
 }
 
 // ****************************************************************************

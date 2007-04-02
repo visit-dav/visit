@@ -40,9 +40,7 @@
 #include <VisItException.h>
 #include <avtSILRestrictionTraverser.h>
 
-// External functions from the VisIt module.
-extern void VisItErrorFunc(const char *errString);
-extern const ViewerProxy *VisItViewer();
+#include <visitmodulehelpers.h>
 
 // ****************************************************************************
 //  Notes:   I wanted the data member to be an actual SIL restriction (as 
@@ -851,7 +849,7 @@ NewSILRestrictionObject()
     // Create a new SIL restriction based on the viewer's current restriction.
     newObject->silr = new avtSILRestriction_p;
     *(newObject->silr) =
-                 new avtSILRestriction(VisItViewer()->GetPlotSILRestriction());
+                 new avtSILRestriction(GetViewerProxy()->GetPlotSILRestriction());
     return (PyObject *)newObject;
 }
 

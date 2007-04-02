@@ -986,7 +986,7 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
                 {
                     if (t == QueryList::DatabaseQuery)
                     {
-                        viewer->DatabaseQuery(names[index], vars, doTime, useActualData);
+                        GetViewerMethods()->DatabaseQuery(names[index], vars, doTime, useActualData);
                     }
                     else 
                     {
@@ -1029,13 +1029,13 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
                 {
                     if (t == QueryList::DatabaseQuery)
                     {
-                        viewer->DatabaseQuery(names[index], vars, doTime, el, dom,
-                                              useGlobal->isChecked());
+                        GetViewerMethods()->DatabaseQuery(names[index], 
+                            vars, doTime, el, dom, useGlobal->isChecked());
                     }
                     else if (t == QueryList::PointQuery)
                     {
-                        viewer->PointQuery(names[index], p0, vars, doTime, el, dom,
-                                              useGlobal->isChecked());
+                        GetViewerMethods()->PointQuery(names[index], p0, 
+                            vars, doTime, el, dom, useGlobal->isChecked());
                     }
                     else 
                     {
@@ -1055,7 +1055,8 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
                 {
                     if (t == QueryList::PointQuery)
                     {
-                        viewer->PointQuery(names[index], p0, vars, doTime);
+                        GetViewerMethods()->PointQuery(names[index], p0,
+                            vars, doTime);
                     }
                     else 
                     {
@@ -1077,7 +1078,8 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
                 {
                     if (t == QueryList::LineQuery)
                     {
-                        viewer->LineQuery(names[index], p0, p1, vars, 50);
+                        GetViewerMethods()->LineQuery(names[index], p0, p1,
+                            vars, 50);
                     }
                     else 
                     {
@@ -1095,7 +1097,8 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
                 {
                     if (t == QueryList::DatabaseQuery)
                     {
-                        viewer->DatabaseQuery(names[index], vars, doTime, useActualData);
+                        GetViewerMethods()->DatabaseQuery(names[index], 
+                            vars, doTime, useActualData);
                     }
                     else 
                     {
@@ -1123,8 +1126,8 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
                     doubleVector vmin(1), vmax(1);
                     vmin[0] = min;
                     vmax[0] = max;
-                    viewer->DatabaseQuery(names[index], vars, false, nLines,
-                                          nBins, true, vmin, vmax);
+                    GetViewerMethods()->DatabaseQuery(names[index], vars, 
+                        false, nLines, nBins, true, vmin, vmax);
                 }
             }
             else if (winT == QueryList::HohlraumFlux)
@@ -1167,8 +1170,8 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
                     radiusThetaPhi[2] = atof(v[2].c_str());
                 }
                 if (noErrors)
-                    viewer->DatabaseQuery(names[index], vars, doTime, nLines,
-                                          0, true, pos, radiusThetaPhi);
+                    GetViewerMethods()->DatabaseQuery(names[index], vars, 
+                        doTime, nLines, 0, true, pos, radiusThetaPhi);
             }
 
             // Display a status message.

@@ -296,7 +296,7 @@ QvisParallelAxisPlotWindow::Apply(bool ignore)
         parAxisAtts->Notify();
 
         // Tell the viewer to set the ParallelAxis plot attributes.
-        viewer->SetPlotOptions(plotType);
+        GetViewerMethods()->SetPlotOptions(plotType);
     }
     else
     {
@@ -349,7 +349,7 @@ QvisParallelAxisPlotWindow::makeDefault()
     // Tell the viewer to set the default high dimension plot attributes.
     GetCurrentValues(-1);
     parAxisAtts->Notify();
-    viewer->SetDefaultPlotOptions(plotType);
+    GetViewerMethods()->SetDefaultPlotOptions(plotType);
 }
 
 
@@ -373,7 +373,7 @@ QvisParallelAxisPlotWindow::reset()
     // applied values.
 
 /*
-    viewer->ResetPlotOptions(plotType);
+    GetViewerMethods()->ResetPlotOptions(plotType);
 */
 }
 

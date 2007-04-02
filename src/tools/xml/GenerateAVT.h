@@ -164,6 +164,8 @@ class AVTGeneratorPlugin
     vector<QString> efiles;     // engine
     bool customwfiles;
     vector<QString> wfiles;     // widget
+    bool customvwfiles;
+    vector<QString> vwfiles;    // viewer widget
 
     Attribute *atts;
   public:

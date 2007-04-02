@@ -708,7 +708,7 @@ QvisSurfacePlotWindow::Apply(bool ignore)
         surfaceAtts->Notify();
 
         // Tell the viewer to set the surface plot attributes.
-        viewer->SetPlotOptions(plotType);
+        GetViewerMethods()->SetPlotOptions(plotType);
     }
     else
         surfaceAtts->Notify();
@@ -765,7 +765,7 @@ QvisSurfacePlotWindow::makeDefault()
     // Tell the viewer to set the default surface plot attributes.
     GetCurrentValues(-1);
     surfaceAtts->Notify();
-    viewer->SetDefaultPlotOptions(plotType);
+    GetViewerMethods()->SetDefaultPlotOptions(plotType);
 }
 
 
@@ -789,7 +789,7 @@ QvisSurfacePlotWindow::reset()
 {
     // Tell the viewer to reset the surface plot attributes to the last
     // applied values.
-    viewer->ResetPlotOptions(plotType);
+    GetViewerMethods()->ResetPlotOptions(plotType);
 }
 
 

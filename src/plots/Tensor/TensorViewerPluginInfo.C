@@ -201,7 +201,7 @@ TensorViewerPluginInfo::AllocAvtPlot()
 
 void
 TensorViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    const avtDatabaseMetaData *, const char *)
+    ViewerPlot *)
 {
     *(TensorAttributes*)atts = *defaultAtts;
 }

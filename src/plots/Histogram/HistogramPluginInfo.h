@@ -101,17 +101,11 @@ class HistogramViewerPluginInfo: public virtual ViewerPlotPluginInfo, public vir
 
     virtual avtPlot *AllocAvtPlot();
 
-    virtual void InitializePlotAtts(AttributeSubject *atts,
-        const avtDatabaseMetaData *md,
-        const char *variableName);
+    virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
 
-    virtual void ReInitializePlotAtts(AttributeSubject *atts,
-        const avtDatabaseMetaData *md,
-        const char *variableName);
+    virtual void ReInitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
 
-    virtual void ResetPlotAtts(AttributeSubject *atts,
-        const avtDatabaseMetaData *md,
-        const char *variableName);
+    virtual void ResetPlotAtts(AttributeSubject *atts, ViewerPlot *);
 
     virtual const char **XPMIconData() const;
     virtual int GetVariableTypes() const;

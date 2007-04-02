@@ -201,7 +201,7 @@ MeshViewerPluginInfo::AllocAvtPlot()
 
 void
 MeshViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    const avtDatabaseMetaData *, const char *)
+    ViewerPlot *)
 {
     *(MeshAttributes*)atts = *defaultAtts;
 }

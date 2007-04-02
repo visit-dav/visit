@@ -35,47 +35,64 @@
 *
 *****************************************************************************/
 
-#ifndef VIEWER_PALETTE_H
-#define VIEWER_PALETTE_H
-#include <viewer_exports.h>
+// ************************************************************************* //
+//                    avtConnectedComponentsVolumeQuery.h                   //
+// ************************************************************************* //
 
-class ColorAttribute;
+#ifndef AVT_CONN_COMPONENTS_VOLUME_QUERY_H
+#define AVT_CONN_COMPONENTS_VOLUME_QUERY_H
+#include <query_exports.h>
+
+#include <avtDatasetQuery.h>
+#include <avtConnComponentsQuery.h>
+
+#include <string>
+
+class avtVMetricVolume;
+class avtRevolvedVolume;
+
+class vtkDataSet;
+
 
 // ****************************************************************************
-// Class: ViewerPalette
+//  Class: avtConnComponentsVolumeQuery
 //
-// Purpose:
-//   Maintains a global list of colors that the viewer can use for plots, etc.
+//  Purpose:
+//      Obtains the volume of each connected component. 
+//      Requires a 3D or revolved volume dataset. 
 //
-// Notes:      
+//  Programmer: Cyrus Harrison
+//  Creation:   February 8, 2007 
 //
-// Programmer: Brad Whitlock
-// Creation:   Mon Dec 11 12:50:07 PDT 2000
-//
-// Modifications:
-//    Jeremy Meredith, Mon Feb 26 15:49:31 PST 2001
-//    Changed the default palette to an unsigned char array.
-//   
 // ****************************************************************************
 
-class VIEWER_API ViewerPalette
+class QUERY_API avtConnComponentsVolumeQuery : public avtConnComponentsQuery
 {
-public:
-    ~ViewerPalette();
-    static ViewerPalette *Instance();
+  public:
+                                    avtConnComponentsVolumeQuery();
+    virtual                        ~avtConnComponentsVolumeQuery();
 
-    const ColorAttribute &Color(int i) const;
-    void SetColor(int i, const ColorAttribute &color);
-    int NumColors() const;
-protected:
-    ViewerPalette();
-    ViewerPalette(const ViewerPalette &);
-private:
-    static ViewerPalette *instance;
-    static unsigned char  defaultPalette[];
+    virtual const char             *GetType(void)
+                                  { return "avtConnComponentsVolumeQuery"; };
+    virtual const char             *GetDescription(void)
+                                  { return "Finding per component volume."; };
 
-    ColorAttribute       *palette;
-    int                  ncolors;
+  protected:
+
+    avtRevolvedVolume              *revolvedVolumeFilter;
+    avtVMetricVolume               *volumeFilter;
+
+    vector<double>                  volPerComp;
+
+    virtual void                    Execute(vtkDataSet *, const int);
+    virtual void                    PreExecute(void);
+    virtual void                    PostExecute(void);
+    virtual avtDataObject_p         ApplyFilters(avtDataObject_p);
+    virtual void                    VerifyInput();
 };
 
+
 #endif
+
+
+

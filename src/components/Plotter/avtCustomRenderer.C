@@ -106,6 +106,12 @@ avtCustomRenderer::SetVTKRenderer(vtkRenderer *r)
 }
 
 
+void
+avtCustomRenderer::SetAlternateDisplay(void *)
+{
+    // nothing.
+}
+
 // ****************************************************************************
 //  Method: avtCustomRenderer::SetView
 //

@@ -143,8 +143,12 @@ QvisColorTableButton::~QvisColorTableButton()
         }
 
         // Delete the color table names.
-        delete [] colorTableNames;
-        numColorTableNames = 0;
+        if(colorTableNames != 0)
+        {
+            delete [] colorTableNames;
+            colorTableNames = 0;
+            numColorTableNames = 0;
+        }
     }
 }
 

@@ -168,7 +168,7 @@ QvisExportDBWindow::CreateWindowContents()
 
     fileFormatComboBox = new QComboBox(false, infoBox, "fileFormatComboBox");
   
-    DBPluginInfoAttributes *dbPluginInfoAtts = viewer->GetDBPluginInfoAttributes();
+    DBPluginInfoAttributes *dbPluginInfoAtts = GetViewerState()->GetDBPluginInfoAttributes();
     int nTypes = dbPluginInfoAtts->GetTypes().size();
     for (int i = 0 ; i < nTypes ; i++)
         if (dbPluginInfoAtts->GetHasWriter()[i] > 0)
@@ -260,7 +260,7 @@ QvisExportDBWindow::UpdateWindow(bool doAll)
                 for (j = count-1 ; j >= 0 ; j--)
                     fileFormatComboBox->removeItem(j);
                 DBPluginInfoAttributes *dbPluginInfoAtts =
-                                           viewer->GetDBPluginInfoAttributes();
+                                           GetViewerState()->GetDBPluginInfoAttributes();
                 int nTypes = dbPluginInfoAtts->GetTypes().size();
                 int curItem = -1;
                 int nItems = 0;
@@ -493,7 +493,7 @@ QvisExportDBWindow::fileFormatChanged(int index)
     exportDBAtts->SetDb_type(tmp.latin1());
     
     DBPluginInfoAttributes *dbPluginInfoAtts =
-                                           viewer->GetDBPluginInfoAttributes();
+                                           GetViewerState()->GetDBPluginInfoAttributes();
     int ntypes = dbPluginInfoAtts->GetTypes().size();
     for (int i = 0 ; i < ntypes ; i++)
     {
@@ -531,7 +531,7 @@ QvisExportDBWindow::exportDB()
     Apply();
     if(isVisible() && !posted())
         hide();
-    viewer->ExportDatabase();
+    GetViewerMethods()->ExportDatabase();
 }
 
 // ****************************************************************************

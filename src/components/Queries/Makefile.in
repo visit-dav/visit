@@ -180,6 +180,9 @@
 #    Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
 #    Added $(GLEW_LIBS)  
 #
+#   Cyrus Harrison, Tue Feb 20 15:10:58 PST 2007
+#   Added connected components related queries.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -226,6 +229,12 @@ Queries_src= \
  Queries/avtBestFitLineQuery.C \
  Queries/avtCentroidQuery.C  \
  Queries/avtCompactnessQuery.C  \
+ Queries/avtConnComponentsQuery.C\
+ Queries/avtConnComponentsCentroidQuery.C\
+ Queries/avtConnComponentsAreaQuery.C\
+ Queries/avtConnComponentsVolumeQuery.C\
+ Queries/avtConnComponentsVariableQuery.C\
+ Queries/avtConnComponentsWeightedVariableQuery.C\
  Queries/avtCycleQuery.C  \
  Queries/avtDistanceFromBoundaryQuery.C  \
  Queries/avtEllipticalCompactnessFactorQuery.C  \
@@ -269,6 +278,7 @@ Queries_src= \
  Queries/avtWeightedVariableSummationQuery.C \
  Queries/avtZoneCenterQuery.C \
  Queries/MinMaxInfo.C
+
 
 
 CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@

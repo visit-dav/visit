@@ -214,7 +214,7 @@ ContourViewerPluginInfo::AllocAvtPlot()
 
 void
 ContourViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    const avtDatabaseMetaData *, const char *)
+    ViewerPlot *)
 {
     ContourAttributes *contour = (ContourAttributes *)atts;
     *contour = *defaultAtts;

@@ -182,12 +182,12 @@ QvisOperatorWindow::GetCurrentValues(int)
 void
 QvisOperatorWindow::SetOperatorOptions()
 {
-    PlotList *plots = viewer->GetPlotList();
+    PlotList *plots = GetViewerState()->GetPlotList();
 
     // If there are plots, see if the operator should be applied.
     if(plots->GetNumPlots() > 0)
     {
-        bool applyToAll = viewer->GetGlobalAttributes()->GetApplyOperator();
+        bool applyToAll = GetViewerState()->GetGlobalAttributes()->GetApplyOperator();
         int i, j;
 
         // Look to see if the operator exists in the plots
@@ -216,7 +216,7 @@ QvisOperatorWindow::SetOperatorOptions()
 
             // Only ask the user if we are not automatically adding the
             // operator.
-            if(!viewer->GetGlobalAttributes()->GetAutomaticallyAddOperator())
+            if(!GetViewerState()->GetGlobalAttributes()->GetAutomaticallyAddOperator())
             {
                 OperatorPluginManager *opMgr = OperatorPluginManager::Instance();
 
@@ -240,13 +240,13 @@ QvisOperatorWindow::SetOperatorOptions()
                 // to false in the call to AddOperator, so that the operator 
                 // knows to initialize the atts from client rather than the 
                 // ususal default atts. 
-                viewer->SetOperatorOptions(operatorType);
-                viewer->AddOperator(operatorType, false);
+                GetViewerMethods()->SetOperatorOptions(operatorType);
+                GetViewerMethods()->AddOperator(operatorType, false);
             }
             else if (button == 2)
             {
                 // Make it so no confirmation is needed.
-                GlobalAttributes *globalAtts = viewer->GetGlobalAttributes();
+                GlobalAttributes *globalAtts = GetViewerState()->GetGlobalAttributes();
                 globalAtts->SetAutomaticallyAddOperator(true);
                 globalAtts->Notify();
 
@@ -254,12 +254,12 @@ QvisOperatorWindow::SetOperatorOptions()
                 // to false in the call to AddOperator, so that the operator 
                 // knows to initialize the atts from client rather than the 
                 // ususal default atts. 
-                viewer->SetOperatorOptions(operatorType);
-                viewer->AddOperator(operatorType, false);
+                GetViewerMethods()->SetOperatorOptions(operatorType);
+                GetViewerMethods()->AddOperator(operatorType, false);
             }
         }
         else
-            viewer->SetOperatorOptions(operatorType);
+            GetViewerMethods()->SetOperatorOptions(operatorType);
     }
 }
 
@@ -306,7 +306,7 @@ QvisOperatorWindow::makeDefault()
     // Tell the viewer to set the default pc attributes.
     GetCurrentValues(-1);
     subject->Notify();
-    viewer->SetDefaultOperatorOptions(operatorType);
+    GetViewerMethods()->SetDefaultOperatorOptions(operatorType);
 }
 
 // ****************************************************************************
@@ -328,7 +328,7 @@ QvisOperatorWindow::reset()
 {
     // Tell the viewer to reset the aslice attributes to the last
     // applied values.
-    viewer->ResetOperatorOptions(operatorType);
+    GetViewerMethods()->ResetOperatorOptions(operatorType);
 }
 
 

@@ -42,6 +42,7 @@
 #ifndef VIEWER_PLOT_LIST_H
 #define VIEWER_PLOT_LIST_H
 #include <viewer_exports.h>
+#include <ViewerBase.h>
 #include <avtTypes.h>
 #include <avtSILRestriction.h>
 #include <EngineKey.h>
@@ -259,6 +260,9 @@ typedef std::map<std::string, int> StringIntMap;
 //    Brad Whitlock, Thu Nov 9 16:47:17 PST 2006
 //    Added an argument to CreateNode and SetFromNode.
 //
+//    Brad Whitlock, Mon Feb 12 17:40:22 PST 2007
+//    Added ViewerBase base class.
+//
 // ****************************************************************************
 
 
@@ -271,14 +275,15 @@ struct ViewerPlotListElement
     int        id;
 };
     
-class VIEWER_API ViewerPlotList
+class VIEWER_API ViewerPlotList : public ViewerBase
 {
+    Q_OBJECT
 public:
     typedef enum {PlayMode, StopMode, ReversePlayMode} AnimationMode;
     typedef enum {Looping, PlayOnce, Swing}            PlaybackMode;
 
     ViewerPlotList(ViewerWindow *const viewerWindow);
-    ~ViewerPlotList();
+    virtual ~ViewerPlotList();
 
     static PlotList *GetClientAtts();
     static SILRestrictionAttributes *GetClientSILRestrictionAtts();
@@ -443,7 +448,9 @@ public:
     void        UpdateWindow(bool immediateUpdate);
 
     static std::string SILRestrictionKey(const std::string &, const std::string &, int);
-
+ 
+  public slots:
+    void AlternateDisplayChangedPlotAttributes(ViewerPlot *);
   private:
     static PlotList                 *clientAtts;
     static SILRestrictionAttributes *clientSILRestrictionAtts;

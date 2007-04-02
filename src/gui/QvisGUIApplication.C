@@ -527,7 +527,7 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     savedGUILocation[1] = 0;
 
     // Create the viewer, statusSubject, and fileServer for GUIBase.
-    viewer = new ViewerProxy;
+    SetViewerProxy(new ViewerProxy());
     statusSubject = new StatusSubject;
     fileServer = new FileServerList;
 
@@ -551,7 +551,7 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     // If any appearance command line arguments were given, store the values
     // into the appearance attributes so we can override the values from
     // the config files.
-    AppearanceAttributes *aa = viewer->GetAppearanceAttributes();
+    AppearanceAttributes *aa = GetViewerState()->GetAppearanceAttributes();
     if(foregroundColor.length() > 0)
         aa->SetForeground(foregroundColor.latin1());
     if(backgroundColor.length() > 0)
@@ -572,11 +572,12 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
         qt_argv[i] = strdup(argv[i]);
     }
     qt_argv[argc] = strdup("-font");
-    qt_argv[argc+1] = strdup((char*)viewer->GetAppearanceAttributes()->GetFontDescription().c_str());
+    qt_argv[argc+1] = strdup((char*)GetViewerState()->GetAppearanceAttributes()->
+        GetFontDescription().c_str());
     qt_argv[argc+2] = NULL;
     mainApp = new QvisApplication(qt_argc, qt_argv);
     SetWaitCursor();
-    viewer->GetAppearanceAttributes()->SelectAll();
+    GetViewerState()->GetAppearanceAttributes()->SelectAll();
     CustomizeAppearance(false);
 
     // If the geometry was not passed on the command line then the 
@@ -647,21 +648,23 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     //
     // Create an observer for the sync attributes.
     //
-    syncObserver = new ObserverToCallback(viewer->GetSyncAttributes(),
+    syncObserver = new ObserverToCallback(GetViewerState()->GetSyncAttributes(),
          QvisGUIApplication::SyncCallback, this);
 
     //
     // Create an observer for the meta data attributes.
     //
-    metaDataObserver = new ObserverToCallback(viewer->GetDatabaseMetaData(),
+    metaDataObserver = new ObserverToCallback(GetViewerState()->
+         GetDatabaseMetaData(),
          QvisGUIApplication::UpdateMetaDataAttributes, this);
-    SILObserver = new ObserverToCallback(viewer->GetSILAtts(),
+    SILObserver = new ObserverToCallback(GetViewerState()->GetSILAttributes(),
          QvisGUIApplication::UpdateMetaDataAttributes, this);
 
     //
     // Create an observer for the client method attributes.
     //
-    clientMethodObserver = new ObserverToCallback(viewer->GetClientMethod(),
+    clientMethodObserver = new ObserverToCallback(
+         GetViewerState()->GetClientMethod(),
          QvisGUIApplication::ClientMethodCallback, this);
 
     //
@@ -752,17 +755,16 @@ QvisGUIApplication::~QvisGUIApplication()
             if(closeAllClients)
             {
                 debug1 << "Telling viewer to close." << endl;
-                viewer->Close();
+                GetViewerProxy()->Close();
             }
             else
             {
                 debug1 << "Telling viewer to detach this GUI." << endl;
-                viewer->Detach();
+                GetViewerProxy()->Detach();
             }
         }
     }
-    delete viewer;
-    viewer = 0;
+    delete GetViewerProxy();
 
     // Delete the status subject that is used for the status bar.
     delete statusSubject;
@@ -872,7 +874,7 @@ QvisGUIApplication::HeavyInitialization()
     case 5:
         // Create the socket notifier and hook it up to the viewer.
         fromViewer = new QSocketNotifier(
-            viewer->GetWriteConnection()->GetDescriptor(),
+            GetViewerProxy()->GetWriteConnection()->GetDescriptor(),
             QSocketNotifier::Read);
         connect(fromViewer, SIGNAL(activated(int)),
                 this, SLOT(ReadFromViewer(int)));
@@ -884,7 +886,7 @@ QvisGUIApplication::HeavyInitialization()
         // Initialize the file server. This connects the GUI to the mdserver
         // running on localhost.
 
-        fileServer->SetConnectCallback(StartMDServer, (void *)viewer);
+        fileServer->SetConnectCallback(StartMDServer, (void *)GetViewerProxy());
         fileServer->Initialize();
         visitTimer->StopTimer(timeid, "stage 6 - Launching mdserver");
         break;
@@ -938,7 +940,7 @@ QvisGUIApplication::HeavyInitialization()
         // Loading plugins before that stalls the gui if the mdserver is
         // slow about loading plugins.
         fileServer->LoadPlugins();
-        viewer->UpdateDBPluginInfo(fileServer->GetHost());
+        GetViewerMethods()->UpdateDBPluginInfo(fileServer->GetHost());
         visitTimer->StopTimer(timeid, "stage 15 - Telling mdserver to load plugins");
         break;
     case 16:
@@ -991,12 +993,12 @@ QvisGUIApplication::LaunchViewer()
     {
         // Add some more arguments and launch the viewer.
         AddViewerSpaceArguments();
-        viewer->AddArgument("-defer");
-        viewer->Create(&qt_argc, &qt_argv);
+        GetViewerProxy()->AddArgument("-defer");
+        GetViewerProxy()->Create(&qt_argc, &qt_argv);
         viewerIsAlive = true;
 
         // Set the default user name in the host profiles.
-        HostProfile::SetDefaultUserName(viewer->GetLocalUserName());
+        HostProfile::SetDefaultUserName(GetViewerProxy()->GetLocalUserName());
     }
     CATCH(IncompatibleVersionException)
     {
@@ -1034,9 +1036,9 @@ void
 QvisGUIApplication::Synchronize(int tag)
 {
     // Send a tag to the viewer.
-    viewer->GetSyncAttributes()->SetSyncTag(tag);
+    GetViewerState()->GetSyncAttributes()->SetSyncTag(tag);
     syncObserver->SetUpdate(false);
-    viewer->GetSyncAttributes()->Notify();
+    GetViewerState()->GetSyncAttributes()->Notify();
 }
 
 // ****************************************************************************
@@ -1079,7 +1081,7 @@ QvisGUIApplication::HandleSynchronize(int val)
     else if(val == LOAD_ACTIVESOURCE_TAG)
     {
         // Check the window information for the active source.
-        loadFile = QualifiedFilename(viewer->GetWindowInformation()->
+        loadFile = QualifiedFilename(GetViewerState()->GetWindowInformation()->
             GetActiveSource());
         LoadFile(loadFile, false);
     }
@@ -1216,13 +1218,13 @@ QvisGUIApplication::FinalInitialization()
 
 #ifndef Q_WS_MACX
         // Tell the viewer to show all of its windows.
-        viewer->ShowAllWindows();
+        GetViewerMethods()->ShowAllWindows();
 
         // Show the main window
         mainWin->show();
 #else
         // On MacOS X, just tell the viewer to show for now.
-        viewer->ShowAllWindows();
+        GetViewerMethods()->ShowAllWindows();
 #endif
 
         // Indicate that future messages should go to windows and not
@@ -1410,7 +1412,8 @@ QvisGUIApplication::Quit()
 {
     if(!viewerInitiatedQuit)
     {
-        if(viewer->GetClientInformationList()->GetNumClientInformations() > 1)
+        if(GetViewerState()->GetClientInformationList()->
+           GetNumClientInformations() > 1)
         {
             // disconnect some slots so we don't keep getting the dialog.
             disconnect(mainApp, SIGNAL(aboutToQuit()), mainApp, SLOT(closeAllWindows()));
@@ -1523,7 +1526,7 @@ QvisGUIApplication::Quit()
 void
 QvisGUIApplication::ProcessArguments(int &argc, char **argv)
 {
-    AppearanceAttributes *aa = viewer->GetAppearanceAttributes();
+    AppearanceAttributes *aa = GetViewerState()->GetAppearanceAttributes();
 
     //
     // If we're reverse launching then there are certain arguments that we
@@ -1834,7 +1837,7 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
 void
 QvisGUIApplication::CustomizeAppearance(bool notify)
 {
-    AppearanceAttributes *aa = viewer->GetAppearanceAttributes();
+    AppearanceAttributes *aa = GetViewerState()->GetAppearanceAttributes();
     bool backgroundSelected = aa->IsSelected(0);
     bool foregroundSelected = aa->IsSelected(1);
 //    bool fontSelected = aa->IsSelected(2);
@@ -1942,7 +1945,7 @@ QvisGUIApplication::CustomizeAppearance(bool notify)
 
         // Tell the viewer about the new appearance.
         aa->Notify();
-        viewer->SetAppearanceAttributes();
+        GetViewerMethods()->SetAppearanceAttributes();
     }
     else
     {
@@ -1984,7 +1987,7 @@ QvisGUIApplication::SetOrientation(int orientation)
     //
     int x, y, w, h;
     CalculateViewerArea(orientation, x, y, w, h);
-    viewer->SetWindowArea(x, y, w, h);
+    GetViewerMethods()->SetWindowArea(x, y, w, h);
 }
 
 // ****************************************************************************
@@ -2098,7 +2101,7 @@ QvisGUIApplication::MoveAndResizeMainWindow(int orientation)
 void
 QvisGUIApplication::AddViewerArguments(int argc, char **argv)
 {
-    AppearanceAttributes *aa = viewer->GetAppearanceAttributes();
+    AppearanceAttributes *aa = GetViewerState()->GetAppearanceAttributes();
 
     for(int i = 1; i < argc; ++i)
     {
@@ -2110,24 +2113,24 @@ QvisGUIApplication::AddViewerArguments(int argc, char **argv)
         }
         else if(arg == "-foreground" || arg == "-fg")
         {
-            viewer->AddArgument(argv[i]);
-            viewer->AddArgument(aa->GetForeground());
+            GetViewerProxy()->AddArgument(argv[i]);
+            GetViewerProxy()->AddArgument(aa->GetForeground());
             ++i;
         }
         else if(arg == "-background" || arg == "-bg")
         {
-            viewer->AddArgument(argv[i]);
-            viewer->AddArgument(aa->GetBackground());
+            GetViewerProxy()->AddArgument(argv[i]);
+            GetViewerProxy()->AddArgument(aa->GetBackground());
             ++i;
         }
         else if(arg == "-style")
         {
-            viewer->AddArgument(argv[i]);
-            viewer->AddArgument(aa->GetStyle());
+            GetViewerProxy()->AddArgument(argv[i]);
+            GetViewerProxy()->AddArgument(aa->GetStyle());
             ++i;
         }
         else
-            viewer->AddArgument(argv[i]);
+            GetViewerProxy()->AddArgument(argv[i]);
     }
 }
 
@@ -2308,31 +2311,31 @@ QvisGUIApplication::AddViewerSpaceArguments()
 {
     char temp[100];
     int x, y, width, height;
-    int orientation = viewer->GetAppearanceAttributes()->GetOrientation();
+    int orientation = GetViewerState()->GetAppearanceAttributes()->GetOrientation();
 
     // Figure out where the viewer's windows should go.
     CalculateViewerArea(orientation, x, y, width, height);
 
     // Tell the viewer where it can put its window.
-    viewer->AddArgument("-geometry");
+    GetViewerProxy()->AddArgument("-geometry");
     sprintf(temp, "%dx%d+%d+%d", width, height, x, y);
-    viewer->AddArgument(temp);
+    GetViewerProxy()->AddArgument(temp);
 
     // Tell the viewer the size of the window borders.
-    viewer->AddArgument("-borders");
+    GetViewerProxy()->AddArgument("-borders");
     sprintf(temp, "%d,%d,%d,%d", borders[0], borders[1],
             borders[2], borders[3]);
-    viewer->AddArgument(temp);
+    GetViewerProxy()->AddArgument(temp);
 
     // Tell the viewer the amount of the window shift.
-    viewer->AddArgument("-shift");
+    GetViewerProxy()->AddArgument("-shift");
     sprintf(temp, "%d,%d", shiftX,shiftY);
-    viewer->AddArgument(temp);
+    GetViewerProxy()->AddArgument(temp);
 
     // Tell the viewer the amount of the window preshift.
-    viewer->AddArgument("-preshift");
+    GetViewerProxy()->AddArgument("-preshift");
     sprintf(temp, "%d,%d", preshiftX,preshiftY);
-    viewer->AddArgument(temp);
+    GetViewerProxy()->AddArgument(temp);
 }
 
 // ****************************************************************************
@@ -2386,7 +2389,7 @@ QvisGUIApplication::AddViewerSpaceArguments()
 void
 QvisGUIApplication::CreateMainWindow()
 {
-    int orientation = viewer->GetAppearanceAttributes()->GetOrientation();
+    int orientation = GetViewerState()->GetAppearanceAttributes()->GetOrientation();
 
     // Make it so the application terminates when the last
     // window is closed.
@@ -2431,10 +2434,10 @@ QvisGUIApplication::CreateMainWindow()
 #endif
     mainWin->ConnectMessageAttr(&message);
     mainWin->ConnectGUIMessageAttributes();
-    mainWin->ConnectGlobalAttributes(viewer->GetGlobalAttributes());
-    mainWin->ConnectWindowInformation(viewer->GetWindowInformation());
-    mainWin->ConnectPlotList(viewer->GetPlotList());
-    mainWin->ConnectViewerStatusAttributes(viewer->GetStatusAttributes());
+    mainWin->ConnectGlobalAttributes(GetViewerState()->GetGlobalAttributes());
+    mainWin->ConnectWindowInformation(GetViewerState()->GetWindowInformation());
+    mainWin->ConnectPlotList(GetViewerState()->GetPlotList());
+    mainWin->ConnectViewerStatusAttributes(GetViewerState()->GetStatusAttributes());
 
     // Move and resize the GUI so that we can get accurate size and
     // position information from it.
@@ -2658,7 +2661,7 @@ QvisGUIApplication::WindowFactory(int i)
     case WINDOW_FILE_SELECTION:
         // Create a file selection window.
         { QvisFileSelectionWindow *fsWin = new QvisFileSelectionWindow(windowNames[i]);
-          fsWin->ConnectSubjects(viewer->GetHostProfileList());
+          fsWin->ConnectSubjects(GetViewerState()->GetHostProfileList());
           win = fsWin;
         }
         break;
@@ -2678,100 +2681,100 @@ QvisGUIApplication::WindowFactory(int i)
         break;
     case WINDOW_HOSTPROFILES:
         // Create the host profile window
-        win = new QvisHostProfileWindow(viewer->GetHostProfileList(),
+        win = new QvisHostProfileWindow(GetViewerState()->GetHostProfileList(),
             windowNames[i], "Profiles", mainWin->GetNotepad());
         break;
     case WINDOW_SAVE:
         // Create the save window.
-        win = new QvisSaveWindow(viewer->GetSaveWindowAttributes(),
+        win = new QvisSaveWindow(GetViewerState()->GetSaveWindowAttributes(),
            windowNames[i], "Save options", mainWin->GetNotepad());
         break;
     case WINDOW_ENGINE:
         // Create the engine window.
-        { QvisEngineWindow *ewin = new QvisEngineWindow(viewer->GetEngineList(),
+        { QvisEngineWindow *ewin = new QvisEngineWindow(GetViewerState()->GetEngineList(),
             windowNames[i], "Engines", mainWin->GetNotepad());
-          ewin->ConnectStatusAttributes(viewer->GetStatusAttributes());
+          ewin->ConnectStatusAttributes(GetViewerState()->GetStatusAttributes());
           win = ewin;
         }
         break;
     case WINDOW_ANIMATION:
         // Create the animation window.
-        win = new QvisAnimationWindow(viewer->GetAnimationAttributes(),
+        win = new QvisAnimationWindow(GetViewerState()->GetAnimationAttributes(),
             windowNames[i], "Animation", mainWin->GetNotepad());
         break;
     case WINDOW_ANNOTATION:
         // Create the annotation window.
         { QvisAnnotationWindow *aWin = new QvisAnnotationWindow(windowNames[i],
              "Annotation", mainWin->GetNotepad());
-          aWin->ConnectAnnotationAttributes(viewer->GetAnnotationAttributes());
-          aWin->ConnectAnnotationObjectList(viewer->GetAnnotationObjectList());
+          aWin->ConnectAnnotationAttributes(GetViewerState()->GetAnnotationAttributes());
+          aWin->ConnectAnnotationObjectList(GetViewerState()->GetAnnotationObjectList());
           win = aWin;
         }
         break;
     case WINDOW_COLORTABLE:
         // Create the colortable window,
-        win = new QvisColorTableWindow(viewer->GetColorTableAttributes(),
+        win = new QvisColorTableWindow(GetViewerState()->GetColorTableAttributes(),
             windowNames[i], "Color tables", mainWin->GetNotepad());
         break;
     case WINDOW_EXPRESSIONS:
         // Create the expressions window,
-        win = new QvisExpressionsWindow(viewer->GetExpressionList(),
+        win = new QvisExpressionsWindow(GetViewerState()->GetExpressionList(),
             windowNames[i], "Expressions", mainWin->GetNotepad());
         break;
     case WINDOW_SUBSET:
         // Create the subset window.
-        win = new QvisSubsetWindow(viewer->GetSILRestrictionAttributes(),
+        win = new QvisSubsetWindow(GetViewerState()->GetSILRestrictionAttributes(),
             windowNames[i], "Subset", mainWin->GetNotepad());
         break;
     case WINDOW_PLUGINMANAGER:
         // Create the plugin manager window.
-        win = new QvisPluginWindow(viewer->GetPluginManagerAttributes(),
+        win = new QvisPluginWindow(GetViewerState()->GetPluginManagerAttributes(),
             windowNames[i], "Plugins", mainWin->GetNotepad());
         break;
     case WINDOW_VIEW:
         // Create the view window.
         { QvisViewWindow *viewWin = new QvisViewWindow(windowNames[i], "View",
               mainWin->GetNotepad());
-           viewWin->ConnectCurveAttributes(viewer->GetViewCurveAttributes());
-           viewWin->Connect2DAttributes(viewer->GetView2DAttributes());
-           viewWin->Connect3DAttributes(viewer->GetView3DAttributes());
-           viewWin->ConnectWindowInformation(viewer->GetWindowInformation());
+           viewWin->ConnectCurveAttributes(GetViewerState()->GetViewCurveAttributes());
+           viewWin->Connect2DAttributes(GetViewerState()->GetView2DAttributes());
+           viewWin->Connect3DAttributes(GetViewerState()->GetView3DAttributes());
+           viewWin->ConnectWindowInformation(GetViewerState()->GetWindowInformation());
            win = viewWin;
         }
         break;
     case WINDOW_APPEARANCE:
         // Create the appearance window.
-        win = new QvisAppearanceWindow(viewer->GetAppearanceAttributes(),
+        win = new QvisAppearanceWindow(GetViewerState()->GetAppearanceAttributes(),
              windowNames[i], "Appearance", mainWin->GetNotepad());
         break;
     case WINDOW_KEYFRAME:
         // Create the keyframe window.
         { QvisKeyframeWindow *kfWin = new QvisKeyframeWindow(
-            viewer->GetKeyframeAttributes(), windowNames[i], 
+            GetViewerState()->GetKeyframeAttributes(), windowNames[i], 
             "Keyframer", mainWin->GetNotepad());
-          kfWin->ConnectWindowInformation(viewer->GetWindowInformation());
-          kfWin->ConnectPlotList(viewer->GetPlotList());
+          kfWin->ConnectWindowInformation(GetViewerState()->GetWindowInformation());
+          kfWin->ConnectPlotList(GetViewerState()->GetPlotList());
           win = kfWin;
         }
         break;
     case WINDOW_LIGHTING:
         // Create the lighting window.
-        win = new QvisLightingWindow(viewer->GetLightList(),
+        win = new QvisLightingWindow(GetViewerState()->GetLightList(),
             windowNames[i], "Lighting", mainWin->GetNotepad());
         break;
     case WINDOW_GLOBALLINEOUT:
         // Create the global lineout window.
-        win = new QvisGlobalLineoutWindow(viewer->GetGlobalLineoutAttributes(),
+        win = new QvisGlobalLineoutWindow(GetViewerState()->GetGlobalLineoutAttributes(),
             windowNames[i], "Lineout", mainWin->GetNotepad());
         break;
     case WINDOW_MATERIALOPTIONS:
         // Create the material options window.
-        win = new QvisMaterialWindow(viewer->GetMaterialAttributes(),
+        win = new QvisMaterialWindow(GetViewerState()->GetMaterialAttributes(),
             windowNames[i], "MIR Options", mainWin->GetNotepad());
         break;
     case WINDOW_PICK:
         // Create the pick window.
-        { QvisPickWindow *pwin = new QvisPickWindow(viewer->GetPickAttributes(),
+        { QvisPickWindow *pwin = new QvisPickWindow(GetViewerState()->GetPickAttributes(),
             windowNames[i], "Pick", mainWin->GetNotepad());
             pwin->CreateEntireWindow();
           win = pwin;
@@ -2785,50 +2788,50 @@ QvisGUIApplication::WindowFactory(int i)
         // Create the query window.
         { QvisQueryWindow *queryWin = new QvisQueryWindow(windowNames[i],
             "Query", mainWin->GetNotepad());
-          queryWin->ConnectQueryList(viewer->GetQueryList());
-          queryWin->ConnectQueryAttributes(viewer->GetQueryAttributes());
-          queryWin->ConnectPickAttributes(viewer->GetPickAttributes());
-          queryWin->ConnectPlotList(viewer->GetPlotList());
+          queryWin->ConnectQueryList(GetViewerState()->GetQueryList());
+          queryWin->ConnectQueryAttributes(GetViewerState()->GetQueryAttributes());
+          queryWin->ConnectPickAttributes(GetViewerState()->GetPickAttributes());
+          queryWin->ConnectPlotList(GetViewerState()->GetPlotList());
           win = queryWin;
         }
         break;
     case WINDOW_PREFERENCES:
         // Create the preferences window.
-        win = new QvisPreferencesWindow(viewer->GetGlobalAttributes(),
+        win = new QvisPreferencesWindow(GetViewerState()->GetGlobalAttributes(),
             windowNames[i], "Preferences", mainWin->GetNotepad());
         break;
     case WINDOW_RENDERING:
         // Create the rendering preferences window.
         { QvisRenderingWindow *renderingWin = new QvisRenderingWindow(
             windowNames[i], "Rendering", mainWin->GetNotepad());
-          renderingWin->ConnectRenderingAttributes(viewer->GetRenderingAttributes());
-          renderingWin->ConnectWindowInformation(viewer->GetWindowInformation());
+          renderingWin->ConnectRenderingAttributes(GetViewerState()->GetRenderingAttributes());
+          renderingWin->ConnectWindowInformation(GetViewerState()->GetWindowInformation());
           win = renderingWin;
         }
         break;
     case WINDOW_CORRELATION:
         // Create the database correlation list window.
         win = new QvisDatabaseCorrelationListWindow(
-            viewer->GetDatabaseCorrelationList(), windowNames[i],
+            GetViewerState()->GetDatabaseCorrelationList(), windowNames[i],
             "Correlations", mainWin->GetNotepad());
         break;
     case WINDOW_TIMEQUERY:
         // Create the time query window.
-        win = new QvisQueryOverTimeWindow(viewer->GetQueryOverTimeAttributes(),
+        win = new QvisQueryOverTimeWindow(GetViewerState()->GetQueryOverTimeAttributes(),
             windowNames[i], "QueryOverTime", mainWin->GetNotepad());
         break;
     case WINDOW_INTERACTOR:
         // Create the time query window.
-        win = new QvisInteractorWindow(viewer->GetInteractorAttributes(),
+        win = new QvisInteractorWindow(GetViewerState()->GetInteractorAttributes(),
             windowNames[i], "Interactor", mainWin->GetNotepad());
         break;
     case WINDOW_SIMULATION:
         // Create the simulation window.
         { QvisSimulationWindow *swin =
-                     new QvisSimulationWindow(viewer->GetEngineList(),
+                     new QvisSimulationWindow(GetViewerState()->GetEngineList(),
                                               windowNames[i], "Simulations",
                                               mainWin->GetNotepad());
-          swin->ConnectStatusAttributes(viewer->GetStatusAttributes());
+          swin->ConnectStatusAttributes(GetViewerState()->GetStatusAttributes());
           const QualifiedFilename &qf = fileServer->GetOpenFile();
           swin->SetNewMetaData(qf,fileServer->GetMetaData(qf, GetStateForSource(qf),
                                                          !FileServerList::ANY_STATE,
@@ -2838,7 +2841,7 @@ QvisGUIApplication::WindowFactory(int i)
         break;
     case WINDOW_EXPORT_DB:
         // Create the export DB window.
-        win = new QvisExportDBWindow(viewer->GetExportDBAttributes(),
+        win = new QvisExportDBWindow(GetViewerState()->GetExportDBAttributes(),
            windowNames[i], "Export Database", mainWin->GetNotepad());
         break;
     case WINDOW_COMMAND:
@@ -2849,14 +2852,14 @@ QvisGUIApplication::WindowFactory(int i)
         break;
     case WINDOW_MESH_MANAGEMENT:
         // Create the mesh management window.
-        win = new QvisMeshManagementWindow(viewer->GetMeshManagementAttributes(),
+        win = new QvisMeshManagementWindow(GetViewerState()->GetMeshManagementAttributes(),
             windowNames[i], "MeshManagement", mainWin->GetNotepad());
         break;
     case WINDOW_FILE_OPEN:
         // Create a file open window.
         { QvisFileOpenWindow *foWin = new QvisFileOpenWindow(windowNames[i]);
-            foWin->ConnectSubjects(viewer->GetHostProfileList(),
-                                   viewer->GetDBPluginInfoAttributes());
+            foWin->ConnectSubjects(GetViewerState()->GetHostProfileList(),
+                                   GetViewerState()->GetDBPluginInfoAttributes());
           win = foWin;
         }
         break;
@@ -3114,7 +3117,7 @@ QvisGUIApplication::LoadPlugins()
 
     int timeid = visitTimer->StartTimer();
     SplashScreenProgress("Loading plugins...", 92);
-    viewer->LoadPlugins();
+    GetViewerProxy()->LoadPlugins();
     visitTimer->StopTimer(timeid, "Loading plugins");
 
     timeid = visitTimer->StartTimer();
@@ -3195,7 +3198,7 @@ QvisGUIApplication::CreatePluginWindows()
         // Add the attributes to the keyframe window
         /*
           DISABLED TEMPORARILY - 5/8/02 JSM
-        keyframeWin->ConnectPlotAttributes(viewer->GetPlotAttributes(i),i);
+        keyframeWin->ConnectPlotAttributes(GetViewerMethods()->GetPlotAttributes(i),i);
         */
 
         // Add an option to the main window's plot manager widget's plot list.
@@ -3257,7 +3260,7 @@ QvisGUIApplication::EnsurePlotWindowIsCreated(int i)
    
         // Create the plot plugin window.
         plotWindows[i] = GUIInfo->CreatePluginWindow(i,
-            viewer->GetPlotAttributes(i), mainWin->GetNotepad());
+            GetViewerState()->GetPlotAttributes(i), mainWin->GetNotepad());
     }
 }
 
@@ -3292,7 +3295,7 @@ QvisGUIApplication::EnsureOperatorWindowIsCreated(int i)
 
         // Create the operator plugin window.
         operatorWindows[i] = GUIInfo->CreatePluginWindow(i,
-            viewer->GetOperatorAttributes(i), mainWin->GetNotepad());
+            GetViewerState()->GetOperatorAttributes(i), mainWin->GetNotepad());
     }
 }
 
@@ -3388,7 +3391,7 @@ QvisGUIApplication::WriteConfigFile(const char *filename)
     fileServer->CreateNode(guiNode, true, true);
 
     // Save the appearance attributes.
-    viewer->GetAppearanceAttributes()->CreateNode(guiNode, true, false);
+    GetViewerState()->GetAppearanceAttributes()->CreateNode(guiNode, true, false);
 
     // Make the windows save their attributes.
     for(WindowBaseMap::iterator pos = otherWindows.begin();
@@ -3411,7 +3414,7 @@ QvisGUIApplication::WriteConfigFile(const char *filename)
     // files from the active window.
     //
     stringVector plotDatabases;
-    const PlotList *pl = viewer->GetPlotList();
+    const PlotList *pl = GetViewerState()->GetPlotList();
     for(int j = 0; j < pl->GetNumPlots(); ++j)
     {
         const Plot &p = pl->GetPlot(j);
@@ -3579,7 +3582,7 @@ QvisGUIApplication::SaveSessionFile(const QString &fileName)
         sessionName += sessionExtension;
 
     // Tell the viewer to save a session file.
-    viewer->ExportEntireState(sessionName.latin1());
+    GetViewerMethods()->ExportEntireState(sessionName.latin1());
 
     // Write the gui part of the session with a ".gui" extension.
     QString retval(sessionName);
@@ -3755,7 +3758,7 @@ QvisGUIApplication::ReadConfigFile(const char *filename)
         return node;
 
     // Force the appearance attributes to be set from the datanodes.
-    viewer->GetAppearanceAttributes()->SetFromNode(guiNode);
+    GetViewerState()->GetAppearanceAttributes()->SetFromNode(guiNode);
 
     return node;
 }
@@ -3969,7 +3972,7 @@ QvisGUIApplication::RestoreSessionFile(const QString &s,
                     //
                     // Customize the GUI's appearance based on the session.
                     //
-                    viewer->GetAppearanceAttributes()->SetFromNode(guiNode);
+                    GetViewerState()->GetAppearanceAttributes()->SetFromNode(guiNode);
                     CustomizeAppearance(true);
 
                     //
@@ -3995,7 +3998,7 @@ QvisGUIApplication::RestoreSessionFile(const QString &s,
                         // If we're going to be opening up files, have the
                         // viewer tell all engines to clear their caches.
                         //
-                        viewer->ClearCacheForAllEngines();
+                        GetViewerMethods()->ClearCacheForAllEngines();
 
                         // Make sure that when the helper has loaded all of the
                         // files, it calls back to this object and tells the
@@ -4022,7 +4025,7 @@ QvisGUIApplication::RestoreSessionFile(const QString &s,
                             // If we're going to be opening up files, have the
                             // viewer tell all engines to clear their caches.
                             //
-                            viewer->ClearCacheForAllEngines();
+                            GetViewerMethods()->ClearCacheForAllEngines();
 
                             // Make sure that when the helper has loaded all of the
                             // files, it calls back to this object and tells the
@@ -4046,7 +4049,7 @@ QvisGUIApplication::RestoreSessionFile(const QString &s,
             // pass the inVisItDir flag as false because we don't want to have
             // the viewer prepend the .visit directory to the file since it's
             // already part of the filename.
-            viewer->ImportEntireState(filename, false);
+            GetViewerMethods()->ImportEntireState(filename, false);
         }
     }
 }
@@ -4102,7 +4105,7 @@ QvisGUIApplication::sessionFileHelper_LoadSession(const QString &filename)
     // pass the inVisItDir flag as false because we don't want to have
     // the viewer prepend the .visit directory to the file since it's
     // already part of the filename.
-    viewer->ImportEntireState(filename.latin1(), false);
+    GetViewerMethods()->ImportEntireState(filename.latin1(), false);
 }
 
 // ****************************************************************************
@@ -4133,7 +4136,7 @@ QvisGUIApplication::sessionFileHelper_LoadSessionWithDifferentSources(
     // pass the inVisItDir flag as false because we don't want to have
     // the viewer prepend the .visit directory to the file since it's
     // already part of the filename.
-    viewer->ImportEntireStateWithDifferentSources(filename.latin1(),
+    GetViewerMethods()->ImportEntireStateWithDifferentSources(filename.latin1(),
         false, sources);
 }
 
@@ -4489,7 +4492,7 @@ QvisGUIApplication::StartMDServer(const std::string &hostName,
 
     // Have the viewer tells its mdserver running on hostName to connect
     // to the gui.
-    theViewer->ConnectToMetaDataServer(hostName, args);
+    theViewer->GetViewerMethods()->ConnectToMetaDataServer(hostName, args);
 }
 
 // ****************************************************************************
@@ -4838,7 +4841,7 @@ QvisGUIApplication::RefreshFileList()
             {
                 debug1 << "Telling the viewer to check " << fileName.c_str()
                        << " for new time states." << endl;
-                viewer->CheckForNewStates(fileName);
+                GetViewerMethods()->CheckForNewStates(fileName);
             }
         }
     }
@@ -4868,7 +4871,7 @@ void
 QvisGUIApplication::RefreshFileListAndNextFrame()
 {
     RefreshFileList();
-    viewer->TimeSliderNextState();
+    GetViewerMethods()->TimeSliderNextState();
 }
 
 // ****************************************************************************
@@ -5023,13 +5026,13 @@ QvisGUIApplication::LoadFile(QualifiedFilename &f, bool addDefaultPlots)
             // Tell the viewer to show all of its windows since launching
             // an engine could take a while and we want the viewer window
             // to still pop up at roughly the same time as the gui.
-            viewer->ShowAllWindows();
+            GetViewerMethods()->ShowAllWindows();
 
             // Try and open the data file for plotting.
             SetOpenDataFile(f, timeState);
 
             // Tell the viewer to open the file too.
-            viewer->OpenDatabase(f.FullName().c_str(), timeState,
+            GetViewerMethods()->OpenDatabase(f.FullName().c_str(), timeState,
                                  addDefaultPlots);
         }
         CATCH2(BadHostException, bhe)
@@ -5138,7 +5141,7 @@ QvisGUIApplication::ReadFromViewer(int)
         TRY
         {
             // Tell the viewer proxy that it has input to process.
-            viewer->ProcessInput();
+            GetViewerProxy()->ProcessInput();
         }
         CATCH(LostConnectionException)
         {
@@ -5238,7 +5241,7 @@ QvisGUIApplication::SaveSettings()
     delete [] configFile;
 
     // Tell the viewer to write out its portion of the config file.
-    viewer->WriteConfigFile();
+    GetViewerMethods()->WriteConfigFile();
 
     // Clear the status bar.
     ClearStatus();
@@ -5376,7 +5379,7 @@ QvisGUIApplication::IconifyWindows(bool isSpontaneous)
 #endif
 
     // Iconify the viewer windows
-    viewer->IconifyAllWindows();
+    GetViewerMethods()->IconifyAllWindows();
 }
 
 // ****************************************************************************
@@ -5406,7 +5409,7 @@ void
 QvisGUIApplication::DeIconifyWindows()
 {
     // Deiconify all of the viewer windows.
-    viewer->DeIconifyAllWindows();
+    GetViewerMethods()->DeIconifyAllWindows();
 
     // Deiconify the main window.
     mainWin->showNormal();
@@ -5524,7 +5527,7 @@ QvisGUIApplication::SplashScreenProgress(const char *msg, int prog)
 void
 QvisGUIApplication::SaveWindow()
 {
-    viewer->SaveWindow();
+    GetViewerMethods()->SaveWindow();
 }
 
 // ****************************************************************************
@@ -5606,7 +5609,7 @@ QvisGUIApplication::SetPrinterOptions()
             if(PMSessionPrintDialog(psession, psettings, pformat, &accepted) == kPMNoError &&
                accepted == true)
             {
-                PrinterAttributes *p = viewer->GetPrinterAttributes();
+                PrinterAttributes *p = GetViewerState()->GetPrinterAttributes();
         
                 // Get the name of the printer to use for printing the image.
                 CFArrayRef printerList = NULL;
@@ -5658,7 +5661,7 @@ QvisGUIApplication::SetPrinterOptions()
                 // Set some of the last properties
                 p->SetOutputToFile(false);
                 p->SetPrintColor(true);
-                p->SetCreator(viewer->GetLocalUserName());
+                p->SetCreator(GetViewerProxy()->GetLocalUserName());
 
                 // Tell the viewer what the properties are.
                 if(printerObserver != 0)             
@@ -5697,7 +5700,7 @@ QvisGUIApplication::SetPrinterOptions()
         // print once the options are set.
         //
         if(okayToPrint)
-            viewer->PrintWindow();
+            GetViewerMethods()->PrintWindow();
     }
     else
     {
@@ -5710,10 +5713,13 @@ QvisGUIApplication::SetPrinterOptions()
         {
             int timeid = visitTimer->StartTimer();
             printer = new QPrinter;
-            printerObserver = new ObserverToCallback(viewer->GetPrinterAttributes(),
+            printerObserver = new ObserverToCallback(
+                GetViewerState()->GetPrinterAttributes(),
                 UpdatePrinterAttributes, (void *)printer);
-            viewer->GetPrinterAttributes()->SetCreator(viewer->GetLocalUserName());
-            PrinterAttributesToQPrinter(viewer->GetPrinterAttributes(), printer);
+            GetViewerState()->GetPrinterAttributes()->SetCreator(
+                GetViewerProxy()->GetLocalUserName());
+            PrinterAttributesToQPrinter(GetViewerState()->GetPrinterAttributes(),
+                printer);
             visitTimer->StopTimer(timeid, "Setting up printer");
         }
 
@@ -5722,9 +5728,9 @@ QvisGUIApplication::SetPrinterOptions()
             //
             // Send all of the Qt printer options to the viewer
             //
-            PrinterAttributes *p = viewer->GetPrinterAttributes();
+            PrinterAttributes *p = GetViewerState()->GetPrinterAttributes();
             QPrinterToPrinterAttributes(printer, p);
-            p->SetCreator(viewer->GetLocalUserName());
+            p->SetCreator(GetViewerProxy()->GetLocalUserName());
             printerObserver->SetUpdate(false);
             p->Notify();
         }
@@ -5749,7 +5755,7 @@ QvisGUIApplication::SetPrinterOptions()
 void
 QvisGUIApplication::PrintWindow()
 {
-    viewer->PrintWindow();
+    GetViewerMethods()->PrintWindow();
 }
 
 // ****************************************************************************
@@ -5901,11 +5907,11 @@ void
 QvisGUIApplication::HandleMetaDataUpdate()
 {
     // Poke the metadata into the file server
-    fileServer->SetOpenFileMetaData(viewer->GetDatabaseMetaData(),
+    fileServer->SetOpenFileMetaData(GetViewerState()->GetDatabaseMetaData(),
                                     GetStateForSource(fileServer->GetOpenFile()));
 
     // Poke the SIL into the file server
-    avtSIL *sil = new avtSIL(*viewer->GetSILAtts());
+    avtSIL *sil = new avtSIL(*GetViewerState()->GetSILAttributes());
     fileServer->SetOpenFileSIL(sil);
     delete sil;
 
@@ -5984,8 +5990,8 @@ QvisGUIApplication::AddPlot(int plotType, const QString &varName)
         !FileServerList::ANY_STATE, !FileServerList::GET_NEW_MD);
     QString wName; wName.sprintf("plot_wizard_%d", plotType);
     QvisWizard *wiz = GUIInfo->CreatePluginWizard(
-        viewer->GetPlotAttributes(plotType), mainWin, varName.latin1(),
-        md, viewer->GetExpressionList(), wName.latin1());
+        GetViewerState()->GetPlotAttributes(plotType), mainWin, varName.latin1(),
+        md, GetViewerState()->GetExpressionList(), wName.latin1());
 
     if(wiz == 0)
     {
@@ -5993,11 +5999,11 @@ QvisGUIApplication::AddPlot(int plotType, const QString &varName)
         SetWaitCursor();
 
         // Tell the viewer to add a plot.
-        viewer->AddPlot(plotType, varName.latin1());
+        GetViewerMethods()->AddPlot(plotType, varName.latin1());
 
         // If we're in auto update mode, tell the viewer to draw the plot.
         if(AutoUpdate())
-            viewer->DrawPlots();
+            GetViewerMethods()->DrawPlots();
     }
     else
     {
@@ -6014,14 +6020,14 @@ QvisGUIApplication::AddPlot(int plotType, const QString &varName)
             // attributes window. That method could work if setting the
             // plot options also caused them to be sent back to the client.
             wiz->SendAttributes();
-            viewer->SetDefaultPlotOptions(plotType);
+            GetViewerMethods()->SetDefaultPlotOptions(plotType);
 
             // Tell the viewer to add a plot.
-            viewer->AddPlot(plotType, varName.latin1());
+            GetViewerMethods()->AddPlot(plotType, varName.latin1());
 
             // If we're in auto update mode, tell the viewer to draw the plot.
             if(AutoUpdate())
-                viewer->DrawPlots();
+                GetViewerMethods()->DrawPlots();
         }
 
         wiz->deleteLater();
@@ -6059,12 +6065,12 @@ QvisGUIApplication::AddOperator(int operatorType)
     // Try and create a wizard for the desired operator type.
     QString wName; wName.sprintf("operator_wizard_%d", operatorType);
     QvisWizard *wiz = GUIInfo->CreatePluginWizard(
-        viewer->GetOperatorAttributes(operatorType), mainWin, wName.latin1());
+        GetViewerState()->GetOperatorAttributes(operatorType), mainWin, wName.latin1());
 
     if(wiz == 0)
     {
         // The operator has no wizard so just add the operator.
-        viewer->AddOperator(operatorType);
+        GetViewerMethods()->AddOperator(operatorType);
     }
     else
     {
@@ -6075,10 +6081,10 @@ QvisGUIApplication::AddOperator(int operatorType)
             // the operator is added because we may have drawn plots that
             // will be re-executed right away.
             wiz->SendAttributes();
-            viewer->SetOperatorOptions(operatorType);
+            GetViewerMethods()->SetOperatorOptions(operatorType);
 
             // Tell the viewer to add an operator.
-            viewer->AddOperator(operatorType, false);
+            GetViewerMethods()->AddOperator(operatorType, false);
         }
 
         wiz->deleteLater();
@@ -6186,7 +6192,7 @@ QvisGUIApplication::updateVisItCompleted(const QString &program)
 #endif
 
         // Tell the viewer to save a session file.
-        viewer->ExportEntireState(fileName.latin1());
+        GetViewerMethods()->ExportEntireState(fileName.latin1());
 
         // Write the gui part of the session with a ".gui" extension.
         QString gfileName(fileName + ".gui");
@@ -6285,7 +6291,7 @@ void
 QvisGUIApplication::SendInterface()
 {
     // The viewer uses this method to discover information about the GUI.
-    ClientInformation *info = viewer->GetClientInformation();
+    ClientInformation *info = GetViewerState()->GetClientInformation();
     info->SetClientName("gui");
     info->ClearMethods();
 
@@ -6338,7 +6344,7 @@ QvisGUIApplication::SendInterface()
 void
 QvisGUIApplication::HandleClientMethod()
 {
-    ClientMethod *method = viewer->GetClientMethod();
+    ClientMethod *method = GetViewerState()->GetClientMethod();
     int index;
 
     if(method->GetMethodName() == "_QueryClientInformation")
@@ -6352,7 +6358,7 @@ QvisGUIApplication::HandleClientMethod()
     }
     else
     {
-        int okay = viewer->MethodRequestHasRequiredInformation();
+        int okay = GetViewerProxy()->MethodRequestHasRequiredInformation();
      
         if(okay == 0)
         {
@@ -6525,7 +6531,7 @@ QvisGUIApplication::HandleClientMethod()
 void
 QvisGUIApplication::SendMessageBoxResult0()
 {
-    ClientMethod *method = viewer->GetClientMethod();
+    ClientMethod *method = GetViewerState()->GetClientMethod();
     method->SetMethodName("MessageBoxResult");
     method->ClearArgs();
     method->AddArgument(0);
@@ -6536,7 +6542,7 @@ QvisGUIApplication::SendMessageBoxResult0()
 void
 QvisGUIApplication::SendMessageBoxResult1()
 {
-    ClientMethod *method = viewer->GetClientMethod();
+    ClientMethod *method = GetViewerState()->GetClientMethod();
     method->SetMethodName("MessageBoxResult");
     method->ClearArgs();
     method->AddArgument(1);
@@ -6783,7 +6789,7 @@ QvisGUIApplication::SaveMovie()
 {
     // Stimulate the viewer to send back its current window size so we'll have
     // it available for the Save movie wizard.
-    const GlobalAttributes *globalAtts = viewer->GetGlobalAttributes();
+    const GlobalAttributes *globalAtts = GetViewerState()->GetGlobalAttributes();
     const intVector &winids = globalAtts->GetWindows();
     int winid = globalAtts->GetActiveWindow() + 1;
     for(int i = 0; i < winids.size(); ++i)
@@ -6792,7 +6798,7 @@ QvisGUIApplication::SaveMovie()
         {
             debug5 << "QvisGUIApplication::SaveMovie: CREATE A NEW RPC TO "
                       "SEND BACK THE WINDOW INFO!" << endl;
-            viewer->SetActiveWindow(winid);
+            GetViewerMethods()->SetActiveWindow(winid);
             break;
         }
     }
@@ -6830,12 +6836,12 @@ QvisGUIApplication::SaveMovie()
 void
 QvisGUIApplication::SaveMovieMain()
 {
-    MovieAttributes *movieAtts = viewer->GetMovieAttributes();
+    MovieAttributes *movieAtts = GetViewerState()->GetMovieAttributes();
 
     // Replace the widths and heights of formats using the current window
     // size with the current window size so the values shown will be right
     // if the user changes the format to use a specific width, height.
-    WindowInformation *winInfo = viewer->GetWindowInformation();
+    WindowInformation *winInfo = GetViewerState()->GetWindowInformation();
     int cw = winInfo->GetWindowSize()[0];
     int ch = winInfo->GetWindowSize()[1];
     UpdateCurrentWindowSizes(movieAtts, cw, ch);
@@ -7042,7 +7048,7 @@ QvisGUIApplication::SaveMovieMain()
 void
 QvisGUIApplication::CancelMovie()
 {
-    ClientMethod *method = viewer->GetClientMethod();
+    ClientMethod *method = GetViewerState()->GetClientMethod();
     method->ClearArgs();
     method->SetMethodName("Interrupt");
     method->Notify();

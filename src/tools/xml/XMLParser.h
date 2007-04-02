@@ -54,13 +54,14 @@ using std::vector;
 
 enum ComponentTypes
 {
-    COMP_NONE      = 0x00,
-    COMP_GUI       = 0x01,
-    COMP_SCRIPTING = 0x02,
-    COMP_VIEWER    = 0x04,
-    COMP_MDSERVER  = 0x08,
-    COMP_ENGINE    = 0x10,
-    COMP_WIDGETS   = 0x20
+    COMP_NONE            = 0x00,
+    COMP_GUI             = 0x01,
+    COMP_SCRIPTING       = 0x02,
+    COMP_VIEWER          = 0x04,
+    COMP_MDSERVER        = 0x08,
+    COMP_ENGINE          = 0x10,
+    COMP_WIDGETS         = 0x20,
+    COMP_VIEWER_WIDGETS  = 0x40
 };
 
 inline vector<QString>
@@ -172,6 +173,9 @@ ParseCharacters(const QString &buff)
 //    Fix problem where "NULL" QStrings were getting used elsewhere in the
 //    code where empty strings should be used.
 //
+//    Brad Whitlock, Fri Feb 23 17:09:30 PST 2007
+//    Added support for viewer widgets.
+//
 // ****************************************************************************
 
 class XMLParser : public QXmlDefaultHandler
@@ -222,6 +226,8 @@ class XMLParser : public QXmlDefaultHandler
                     currentPlugin->efiles.push_back(strings[i]);
                 if (currentFileComponents & COMP_WIDGETS)
                     currentPlugin->wfiles.push_back(strings[i]);
+                if (currentFileComponents & COMP_VIEWER_WIDGETS)
+                    currentPlugin->vwfiles.push_back(strings[i]);
             }
             else if (currentTag == "CXXFLAGS")
             {
@@ -419,6 +425,12 @@ class XMLParser : public QXmlDefaultHandler
                     currentPlugin->wfiles.clear();
                     comps3 |= COMP_WIDGETS;
                     currentPlugin->customwfiles = true;
+                }
+                else if (comps2[i] == "VW")
+                {
+                    currentPlugin->vwfiles.clear();
+                    comps3 |= COMP_VIEWER_WIDGETS;
+                    currentPlugin->customvwfiles = true;
                 }
                 else
                     throw QString().sprintf("invalid file '%s' for components attribute of Files tag", comps2[i].latin1());

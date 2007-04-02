@@ -601,7 +601,7 @@ QvisHistogramPlotWindow::Apply(bool ignore)
         GetCurrentValues(-1);
         atts->Notify();
 
-        viewer->SetPlotOptions(plotType);
+        GetViewerMethods()->SetPlotOptions(plotType);
     }
     else
         atts->Notify();
@@ -651,7 +651,7 @@ QvisHistogramPlotWindow::makeDefault()
 {
     GetCurrentValues(-1);
     atts->Notify();
-    viewer->SetDefaultPlotOptions(plotType);
+    GetViewerMethods()->SetDefaultPlotOptions(plotType);
 }
 
 
@@ -671,7 +671,7 @@ QvisHistogramPlotWindow::makeDefault()
 void
 QvisHistogramPlotWindow::reset()
 {
-    viewer->ResetPlotOptions(plotType);
+    GetViewerMethods()->ResetPlotOptions(plotType);
 }
 
 

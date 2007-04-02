@@ -69,8 +69,8 @@ QvisFileOpenDialog::QvisFileOpenDialog(const char *caption) :
     in_loop = false;
     _result = Rejected;
 
-    ConnectSubjects(viewer->GetHostProfileList(),
-                    viewer->GetDBPluginInfoAttributes());
+    ConnectSubjects(GetViewerState()->GetHostProfileList(),
+                    GetViewerState()->GetDBPluginInfoAttributes());
 
     connect(this, SIGNAL(selectedFile(const QString &)),
             this, SLOT(userSelectedFile(const QString &)));

@@ -146,6 +146,7 @@
 #include <avtSymmPointExpression.h>
 #include <avtTimeExpression.h>
 #include <avtMinMaxExpression.h>
+#include <avtConnComponentsExpression.h>
 
 #include <stdio.h>
 #include <ExpressionException.h>
@@ -436,7 +437,10 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //
 //    Hank Childs, Fri Jan 12 13:45:04 PST 2007
 //    Added array_compose_with_bins.
-//
+// 
+//    Cyrus Harrison, Wed Feb 21 09:37:38 PST 2007
+//    Added conn_components  
+// 
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -560,6 +564,8 @@ avtFunctionExpr::CreateFilters(string functionName)
         g->SetDoLogicalGradient(true);
         return g;
     }
+    if (functionName == "conn_components")
+        return new avtConnComponentsExpression();
     if (functionName == "gradient")
         return new avtGradientFilter();
     if (functionName == "curl")

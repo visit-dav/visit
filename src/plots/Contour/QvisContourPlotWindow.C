@@ -973,7 +973,7 @@ QvisContourPlotWindow::Apply(bool ignore)
         contourAtts->Notify();
 
         // Tell the viewer to set the contour plot attributes.
-        viewer->SetPlotOptions(plotType);
+        GetViewerMethods()->SetPlotOptions(plotType);
     }
     else
         contourAtts->Notify();
@@ -1027,7 +1027,7 @@ QvisContourPlotWindow::makeDefault()
     // Tell the viewer to set the default contour plot attributes.
     GetCurrentValues(-1);
     contourAtts->Notify();
-    viewer->SetDefaultPlotOptions(plotType);
+    GetViewerMethods()->SetDefaultPlotOptions(plotType);
 }
 
 // ****************************************************************************
@@ -1049,7 +1049,7 @@ QvisContourPlotWindow::reset()
 {
     // Tell the viewer to reset the contour plot attributes to the last
     // applied values.
-    viewer->ResetPlotOptions(plotType);
+    GetViewerMethods()->ResetPlotOptions(plotType);
 }
 
 // ****************************************************************************

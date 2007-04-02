@@ -325,7 +325,7 @@ QvisPostableWindowSimpleObserver::makeDefaultHelper()
         {
             // Make it so no confirmation is needed.
             makeDefaultConfirm = false;
-            GlobalAttributes *globalAtts = viewer->GetGlobalAttributes();
+            GlobalAttributes *globalAtts = GetViewerState()->GetGlobalAttributes();
             globalAtts->SetMakeDefaultConfirm(false);
             globalAtts->Notify();
 

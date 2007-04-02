@@ -219,7 +219,7 @@ QvisTruecolorPlotWindow::Apply(bool ignore)
         GetCurrentValues(-1);
         atts->Notify();
 
-        viewer->SetPlotOptions(plotType);
+        GetViewerMethods()->SetPlotOptions(plotType);
     }
     else
         atts->Notify();
@@ -269,7 +269,7 @@ QvisTruecolorPlotWindow::makeDefault()
 {
     GetCurrentValues(-1);
     atts->Notify();
-    viewer->SetDefaultPlotOptions(plotType);
+    GetViewerMethods()->SetDefaultPlotOptions(plotType);
 }
 
 
@@ -289,7 +289,7 @@ QvisTruecolorPlotWindow::makeDefault()
 void
 QvisTruecolorPlotWindow::reset()
 {
-    viewer->ResetPlotOptions(plotType);
+    GetViewerMethods()->ResetPlotOptions(plotType);
 }
 
 

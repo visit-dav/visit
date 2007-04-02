@@ -43,6 +43,8 @@
 #include <avtHistogramPlot.h>
 #include <avtDatabaseMetaData.h>
 
+#include <ViewerPlot.h>
+
 #if defined(__APPLE__)
 #define GetViewerInfo Histogram_GetViewerInfo
 #endif
@@ -196,12 +198,16 @@ HistogramViewerPluginInfo::AllocAvtPlot()
 //  Programmer: Hank Childs
 //  Creation:   May 24, 2006
 //
+//  Modifications:
+//    Brad Whitlock, Wed Feb 21 14:26:31 PST 2007
+//    Changed API.
+//
 // ****************************************************************************
 void
 HistogramViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
-    const avtDatabaseMetaData *md, const char *varName)
+    ViewerPlot *plot)
 {
-    ReInitializePlotAtts(atts, md, varName);
+    ReInitializePlotAtts(atts, plot);
 }
 
 // ****************************************************************************
@@ -216,24 +222,29 @@ HistogramViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
 //  Programmer: Hank Childs
 //  Creation:   May 24, 2006
 //
+//  Modifications:
+//    Brad Whitlock, Wed Feb 21 14:25:26 PST 2007
+//    Changed API.
+//
 // ****************************************************************************
 
 void
 HistogramViewerPluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
-    const avtDatabaseMetaData *md, const char *varName)
+    ViewerPlot *plot)
 {
     HistogramAttributes *hatts = (HistogramAttributes *) atts;
 
     //
     // Get the meta-data and initialize the variable type in the atts.
     //
+    const avtDatabaseMetaData *md = plot->GetMetaData();
     if (md == NULL)
     {
         hatts->SetBasedOn(HistogramAttributes::ManyZonesForSingleVar);
         return;
     }
 
-    avtVarType t = md->DetermineVarType(varName);
+    avtVarType t = md->DetermineVarType(plot->GetVariableName());
     if (t == AVT_SCALAR_VAR)
         hatts->SetBasedOn(HistogramAttributes::ManyZonesForSingleVar);
     else if (t == AVT_ARRAY_VAR)
@@ -257,15 +268,17 @@ HistogramViewerPluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
 //  Creation:   Wed May 24 09:22:33 PDT 2006
 //
 //  Modifications:
-//
 //    Hank Childs, Wed May 24 08:45:06 PDT 2006
 //    Populated with custom code.
+//
+//    Brad Whitlock, Wed Feb 21 14:26:13 PST 2007
+//    Changed API.
 //
 // ****************************************************************************
 
 void
 HistogramViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    const avtDatabaseMetaData *md, const char *varName)
+    ViewerPlot *plot)
 {
     *(HistogramAttributes*)atts = *defaultAtts;
     HistogramAttributes *hatts = (HistogramAttributes *) atts;
@@ -273,13 +286,14 @@ HistogramViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
     //
     // Get the meta-data and initialize the variable type in the atts.
     //
+    const avtDatabaseMetaData *md = plot->GetMetaData();
     if (md == NULL)
     {
         hatts->SetBasedOn(HistogramAttributes::ManyZonesForSingleVar);
         return;
     }
 
-    avtVarType t = md->DetermineVarType(varName);
+    avtVarType t = md->DetermineVarType(plot->GetVariableName());
     if (t == AVT_SCALAR_VAR)
         hatts->SetBasedOn(HistogramAttributes::ManyZonesForSingleVar);
     else if (t == AVT_ARRAY_VAR)

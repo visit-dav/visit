@@ -235,7 +235,7 @@ QvisAnimationWindow::Apply(bool ignore)
         if(animationAtts->NumAttributesSelected() > 0 || ignore)
         {
             animationAtts->Notify();
-            viewer->SetAnimationAttributes();
+            GetViewerMethods()->SetAnimationAttributes();
         }
     }
     else

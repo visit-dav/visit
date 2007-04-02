@@ -297,6 +297,10 @@
 #
 #    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 #    Added FILIB_LIBS
+#
+#    Brad Whitlock, Mon Feb 12 12:14:30 PDT 2007
+#    Moved ViewerState to the rpc lib and added ViewerBase here.
+#
 ##############################################################################
 
 ##
@@ -334,10 +338,9 @@ CPPFLAGS=@PLATFORM_CPPFLAGS@ @CPPFLAGS@ $(VTK_INCLUDE) -I../../vtkqt \
 ##
 
 PUBLIC_SRC= \
-    ViewerMessaging.C \
+    ViewerBase.C \
     ViewerOperator.C \
     ViewerPlot.C \
-    ViewerState.C \
     ViewerSubject.C
 
 PRIVATE_SRC=\
@@ -365,6 +368,7 @@ PRIVATE_SRC=\
     ViewerMessageBuffer.C \
     ViewerMetaDataObserver.C \
     ViewerMultipleAction.C \
+    ViewerObserverToSignal.C \
     ViewerOperatorFactory.C \
     ViewerPasswordWindow.C \
     ViewerPlotFactory.C \
@@ -373,7 +377,6 @@ PRIVATE_SRC=\
     ViewerQuery.C \
     ViewerQueryManager.C \
     ViewerRemoteProcessChooser.C \
-    ViewerRPCObserver.C \
     ViewerServerManager.C \
     ViewerSILAttsObserver.C \
     ViewerToggleAction.C \
@@ -387,6 +390,7 @@ MAINSRC=viewer.C
 
 HDRMOC = \
     PlotAndOperatorActions.h \
+    ViewerBase.h \
     ViewerAction.h \
     ViewerActionBase.h \
     ViewerClientConnection.h \
@@ -394,8 +398,10 @@ HDRMOC = \
     ViewerHostProfileSelectorWithWin.h \
     ViewerMetaDataObserver.h \
     ViewerMultipleAction.h \
+    ViewerObserverToSignal.h \
     ViewerPasswordWindow.h \
-    ViewerRPCObserver.h \
+    ViewerPlot.h \
+    ViewerPlotList.h \
     ViewerSILAttsObserver.h \
     ViewerSubject.h \
     ViewerWindowManager.h

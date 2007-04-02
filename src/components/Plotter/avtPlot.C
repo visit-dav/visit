@@ -56,7 +56,6 @@
 #include <avtSourceFromAVTDataset.h>
 #include <avtSourceFromDataset.h>
 #include <avtTerminatingSource.h>
-#include <avtTheater.h>
 #include <avtVertexNormalsFilter.h>
 #include <avtSmoothPolyDataFilter.h>
 
@@ -127,7 +126,10 @@
 avtPlot::avtPlot()
 {
     needsRecalculation = true;
-    behavior           = theater.GetBehavior();
+    actor              = new avtActor;
+    behavior           = new avtBehavior;
+    actor->SetBehavior(behavior);
+
     drawer             = NULL;
     condenseDatasetFilter      = new avtCondenseDatasetFilter;
     ghostZoneAndFacelistFilter = new avtGhostZoneAndFacelistFilter;
@@ -592,6 +594,9 @@ avtPlot::Execute(avtDataObjectReader_p reader)
 //    Hank Childs, Sun Mar 13 11:13:01 PST 2005
 //    Fix memory leak.
 //
+//    Brad Whitlock, Wed Feb 7 12:19:17 PDT 2007
+//    Removed avtThreater.
+//
 // ****************************************************************************
 
 avtActor_p
@@ -768,11 +773,13 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
     }
 
     //
-    // Create a theater that will add behavior to our drawable.  Set the
-    // window mode based on the spatial dimension.  Call CustomizeBehavior
-    // to give the derived types a chance to add legends, etc.
+    // Add behavior to our drawable. Set the window mode based on the 
+    // spatial dimension.  Call CustomizeBehavior to give the derived 
+    // types a chance to add legends, etc.
     //
-    theater.SetInput(drawable, info, decorations);
+    actor->SetDrawable(drawable);
+    actor->SetDecorations(decorations);
+    behavior->SetInfo(info);
     if (behavior->GetInfo().GetAttributes().GetSpatialDimension() == 2)
         behavior->GetInfo().GetAttributes().SetWindowMode(WINMODE_2D);
     else
@@ -785,7 +792,7 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
     //
     CustomizeMapper(info);
 
-    return theater.GetActor();
+    return actor;
 }
 
 // ****************************************************************************
@@ -1254,7 +1261,9 @@ avtPlot::ReleaseData(void)
         GetMapper()->SetInput(NULL);
     }
     avtDataObjectInformation doi;
-    theater.SetInput(NULL, doi, NULL);
+    behavior->SetInfo(doi);
+    actor->SetDrawable(NULL);
+    actor->SetDecorations(NULL);
 }
 
 // ****************************************************************************

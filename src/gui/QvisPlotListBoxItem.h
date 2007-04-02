@@ -62,6 +62,9 @@
 //   Brad Whitlock, Wed Jul 28 17:37:15 PST 2004
 //   I added a method to return the prefix.
 //
+//   Brad Whitlock, Fri Feb 23 14:15:12 PST 2007
+//   Added non const GetPlot method.
+//
 // ****************************************************************************
     
 class GUI_API QvisPlotListBoxItem : public QListBoxItem
@@ -106,6 +109,7 @@ public:
     int    activeOperatorIndex() const;
 
     const Plot &GetPlot() const { return plot; };
+    Plot &GetPlot() { return plot; };
     const QString &GetPrefix() const { return prefix; };
 protected:
     void paint(QPainter *);

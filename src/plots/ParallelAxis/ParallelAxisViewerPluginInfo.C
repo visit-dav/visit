@@ -12,6 +12,7 @@
 #include <InvalidVariableException.h>
 #include <ImproperUseException.h>
 #include <DebugStream.h>
+#include <ViewerPlot.h>
 
 #include <string.h>
 
@@ -281,12 +282,15 @@ ParseArrayComponentVariables(
 //
 //      Mark Blair, Wed Sep 20 10:59:41 PDT 2006
 //      Added support for time ordinals.
-//   
+// 
+//      Brad Whitlock, Wed Feb 21 14:37:05 PST 2007
+//      Changed API.
+//
 // ****************************************************************************
 
 void
 ParallelAxisViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    const avtDatabaseMetaData *md, const char *variableName)
+    ViewerPlot *plot)
 {
     // Since a ParallelAxis plot requires at least 2 scalar axis variables,
     // the presence of fewer than 2 in the plot's default attributes indicates
@@ -317,11 +321,11 @@ ParallelAxisViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
         Expression *exp;
         const char *expChars, *arrayExpression;
         
-        if ((exp = ParsingExprList::GetExpression(variableName)) == NULL)
+        if ((exp = ParsingExprList::GetExpression(plot->GetVariableName())) == NULL)
         {
             debug1 << "ParallelAxis plot variable is neither a scalar nor an expression."
                    << endl;
-            EXCEPTION1(InvalidVariableException, variableName);
+            EXCEPTION1(InvalidVariableException, plot->GetVariableName());
         }
 
         expChars = exp->GetDefinition().c_str();

@@ -458,7 +458,7 @@ QvisCurvePlotWindow::Apply(bool ignore)
         GetCurrentValues(-1);
         atts->Notify();
 
-        viewer->SetPlotOptions(plotType);
+        GetViewerMethods()->SetPlotOptions(plotType);
     }
     else
         atts->Notify();
@@ -508,7 +508,7 @@ QvisCurvePlotWindow::makeDefault()
 {
     GetCurrentValues(-1);
     atts->Notify();
-    viewer->SetDefaultPlotOptions(plotType);
+    GetViewerMethods()->SetDefaultPlotOptions(plotType);
 }
 
 
@@ -528,7 +528,7 @@ QvisCurvePlotWindow::makeDefault()
 void
 QvisCurvePlotWindow::reset()
 {
-    viewer->ResetPlotOptions(plotType);
+    GetViewerMethods()->ResetPlotOptions(plotType);
 }
 
 

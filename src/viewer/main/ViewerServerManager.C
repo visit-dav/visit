@@ -79,10 +79,12 @@ void * ViewerServerManager::cbData[2] = {0,0};
 // Creation:   Fri May 3 16:23:16 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Feb 12 17:47:27 PST 2007
+//   Added ViewerBase base class.
+//
 // ****************************************************************************
 
-ViewerServerManager::ViewerServerManager()
+ViewerServerManager::ViewerServerManager() : ViewerBase(0, "ViewerServerManager")
 {
 }
 

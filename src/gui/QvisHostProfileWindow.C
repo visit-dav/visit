@@ -925,9 +925,9 @@ QvisHostProfileWindow::UpdateActiveProfile()
     if(i < 0)
     {
         profileName->setText("");
-        hostName->setEditText(viewer->GetLocalHostName().c_str());
+        hostName->setEditText(GetViewerProxy()->GetLocalHostName().c_str());
         hostAliases->setText("");
-        userName->setText(viewer->GetLocalUserName().c_str());
+        userName->setText(GetViewerProxy()->GetLocalUserName().c_str());
         numProcessors->setValue(1);
         timeout->setValue(60*4);   // 4 hour default
         parallelCheckBox->setChecked(false);
@@ -965,7 +965,7 @@ QvisHostProfileWindow::UpdateActiveProfile()
         hostAliases->setText(current.GetHostAliases().c_str());
         // If there is no user name then give it a valid user name.
         if(current.GetUserName() == "notset")
-            userName->setText(viewer->GetLocalUserName().c_str());
+            userName->setText(GetViewerProxy()->GetLocalUserName().c_str());
         else
             userName->setText(current.GetUserName().c_str());
 
@@ -1144,7 +1144,7 @@ QvisHostProfileWindow::ReplaceLocalHost()
     {
         HostProfile &current = profiles->operator[](i);
         if(current.GetHost() == lh)
-            current.SetHost(viewer->GetLocalHostName());
+            current.SetHost(GetViewerProxy()->GetLocalHostName());
     }
 }
 
@@ -1370,7 +1370,7 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
             std::string newHost(temp.latin1());
             if(newHost == "localhost")
             {
-                newHost = viewer->GetLocalHostName();
+                newHost = GetViewerProxy()->GetLocalHostName();
                 hostName->setEditText(newHost.c_str());
             }
             if (newHost != current.GetHost())
@@ -1750,9 +1750,9 @@ QvisHostProfileWindow::newProfile()
     else
     {
         // Set the default user name.
-        temp.SetUserName(viewer->GetLocalUserName());
+        temp.SetUserName(GetViewerProxy()->GetLocalUserName());
         // Set the default host name.
-        temp.SetHost(viewer->GetLocalHostName());
+        temp.SetHost(GetViewerProxy()->GetLocalHostName());
         // Make the first created profile active.
         temp.SetActive(true);
     }

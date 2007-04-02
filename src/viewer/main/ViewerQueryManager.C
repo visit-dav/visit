@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2006, The Regents of the University of California
+* Copyright (c) 2000 - 2007, The Regents of the University of California
 * Produced at the Lawrence Livermore National Laboratory
 * All rights reserved.
 *
@@ -72,7 +72,6 @@
 #include <ViewerEngineManager.h>
 #include <ParsingExprList.h>
 #include <ViewerFileServer.h>
-#include <ViewerMessaging.h>
 #include <ViewerOperator.h>
 #include <ViewerOperatorFactory.h>
 #include <ViewerPlot.h>
@@ -212,9 +211,12 @@ CreateExtentsString(const double * extents, const int dim, const char *type);
 //    Kathleen Bonnell, Wed Aug 10 16:46:17 PDT 2005 
 //    Added activePlotsChanged. 
 //
+//    Brad Whitlock, Mon Feb 12 17:45:24 PST 2007
+//    Added ViewerBase base class.
+//
 // ****************************************************************************
 
-ViewerQueryManager::ViewerQueryManager()
+ViewerQueryManager::ViewerQueryManager() : ViewerBase(0, "ViewerQueryManager")
 {
     lineoutList    = 0;
     nLineouts      = 0;
@@ -3373,6 +3375,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Dave Bremer, Fri Dec  8 17:52:22 PST 2006
 //    Added hohlraum flux query.
 //
+//    Cyrus Harrison, Tue Feb 20 15:27:36 PST 2007
+//    Added connected components queries
+//
 // ****************************************************************************
 
 void
@@ -3401,6 +3406,7 @@ ViewerQueryManager::InitializeQueryList()
     QueryList::Groups tr = QueryList::TimeRelated;
     QueryList::Groups vr = QueryList::VariableRelated;
     QueryList::Groups sr = QueryList::ShapeRelated;
+    QueryList::Groups ccl_r = QueryList::ConnectedComponentsRelated;
 
     QueryList::WindowType basic = QueryList::Basic;
     QueryList::WindowType sp  = QueryList::SinglePoint;
@@ -3462,6 +3468,14 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("ZonePick (aka Pick)", pq, pr, sp, 1, 0, qt);
     queryTypes->AddQuery("NodePick", pq, pr, sp, 1, 0, qt);
     queryTypes->AddQuery("PointPick (aka NodePick)", pq, pr, sp, 1, 0, qt);
+
+    queryTypes->AddQuery("Number of Connected Components", dq, ccl_r, basic, 1, 0, qo);
+    queryTypes->AddQuery("Connected Component Area", dq, ccl_r, basic, 1, 0, qo);
+    queryTypes->AddQuery("Connected Component Centroids", dq, ccl_r, basic, 1, 0, qo);
+    queryTypes->AddQuery("Connected Component Volume", dq, ccl_r, basic, 1, 0, qo);
+    queryTypes->AddQuery("Connected Component Variable Sum", dq, ccl_r, basic, 1, 0, qo);
+    queryTypes->AddQuery("Connected Component Weighted Variable Sum", dq, ccl_r, basic, 1, 0, qo);
+
 
     int MinMaxVars = QUERY_SCALAR_VAR | QUERY_TENSOR_VAR | QUERY_VECTOR_VAR |
             QUERY_SYMMETRIC_TENSOR_VAR | QUERY_MATSPECIES_VAR | QUERY_CURVE_VAR;

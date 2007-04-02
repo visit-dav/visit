@@ -57,6 +57,7 @@
 #endif
 #endif
 
+#include <visitmodulehelpers.h>
 #include <Connection.h>
 #include <Observer.h>
 #include <ObserverToCallback.h>
@@ -187,12 +188,6 @@ extern "C"
     PyObject *visit_SetDebugLevel(PyObject *, PyObject *);
     PyObject *visit_AddArgument(PyObject *, PyObject *);
 }
-
-//
-// Visible Prototypes.
-//
-void VisItErrorFunc(const char *errString);
-const ViewerProxy *VisItViewer();
 
 //
 // Prototypes
@@ -333,7 +328,7 @@ private:
 //
 // VisIt module state flags and objects.
 //
-ViewerProxy          *viewer = 0;
+ViewerProxy                 *viewer = 0;
 
 static PyObject             *visitModule = 0;
 static bool                  moduleInitialized = false;
@@ -413,7 +408,7 @@ static HANDLE                received_sync_from_viewer = INVALID_HANDLE_VALUE;
 
 static void WakeMainThread(Subject *, void *)
 {
-    if(viewer->GetSyncAttributes()->GetSyncTag() == syncCount || !keepGoing)
+    if(GetViewerState()->GetSyncAttributes()->GetSyncTag() == syncCount || !keepGoing)
         SetEvent(received_sync_from_viewer);
 }
 
@@ -464,7 +459,7 @@ static ObserverToCallback   *synchronizeCallback = 0;
 
 static void WakeMainThread(Subject *, void *)
 {
-    if(viewer->GetSyncAttributes()->GetSyncTag() == syncCount || !keepGoing)
+    if(GetViewerState()->GetSyncAttributes()->GetSyncTag() == syncCount || !keepGoing)
         pthread_cond_signal(&received_sync_from_viewer);
 }
 
@@ -818,7 +813,7 @@ visit_AddArgument(PyObject *self, PyObject *args)
         if(!PyArg_ParseTuple(args, "s", &arg))
             return NULL;
 
-        viewer->AddArgument(arg);
+        GetViewerProxy()->AddArgument(arg);
     }
     else
     {
@@ -1006,7 +1001,7 @@ STATIC PyObject *
 visit_LaunchNowin(PyObject *self, PyObject *args)
 {
     if(noViewer)
-        viewer->AddArgument("-nowin");
+        GetViewerProxy()->AddArgument("-nowin");
     return visit_Launch(self, args);
 }
 
@@ -1044,10 +1039,10 @@ visit_SetDebugLevel(PyObject *self, PyObject *args)
         // Save the debug level.
         moduleDebugLevel = dLevel;
 
-        viewer->AddArgument("-debug");
+        GetViewerProxy()->AddArgument("-debug");
         char tmp[10];
         SNPRINTF(tmp, 10, "%d", moduleDebugLevel);
-        viewer->AddArgument(tmp); 
+        GetViewerProxy()->AddArgument(tmp); 
     }
     else
     {
@@ -1150,7 +1145,7 @@ STATIC PyObject *
 visit_GetLocalHostName(PyObject *self, PyObject *args)
 {
     NO_ARGUMENTS();
-    return PyString_FromString(viewer->GetLocalHostName().c_str());
+    return PyString_FromString(GetViewerProxy()->GetLocalHostName().c_str());
 }
 
 // ****************************************************************************
@@ -1170,7 +1165,7 @@ STATIC PyObject *
 visit_GetLocalUserName(PyObject *self, PyObject *args)
 {
     NO_ARGUMENTS();
-    return PyString_FromString(viewer->GetLocalUserName().c_str());
+    return PyString_FromString(GetViewerProxy()->GetLocalUserName().c_str());
 }
 
 // ****************************************************************************
@@ -1276,7 +1271,7 @@ visit_AddWindow(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->AddWindow();
+        GetViewerMethods()->AddWindow();
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -1305,7 +1300,7 @@ visit_ShowAllWindows(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->ShowAllWindows();
+        GetViewerMethods()->ShowAllWindows();
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -1336,7 +1331,7 @@ visit_CloneWindow(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->CloneWindow();
+        GetViewerMethods()->CloneWindow();
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -1376,8 +1371,8 @@ visit_GetDatabaseNStates(PyObject *self, PyObject *args)
 {
     NO_ARGUMENTS();
 
-    WindowInformation *wi = viewer->GetWindowInformation();
-    DatabaseCorrelationList *correlations = viewer->GetDatabaseCorrelationList();
+    WindowInformation *wi = GetViewerState()->GetWindowInformation();
+    DatabaseCorrelationList *correlations = GetViewerState()->GetDatabaseCorrelationList();
 
     // Get the number of states for the active source.
     const std::string &source = wi->GetActiveSource();
@@ -1410,7 +1405,7 @@ visit_TimeSliderNextState(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->TimeSliderNextState();
+        GetViewerMethods()->TimeSliderNextState();
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -1437,7 +1432,7 @@ visit_TimeSliderPreviousState(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->TimeSliderPreviousState();
+        GetViewerMethods()->TimeSliderPreviousState();
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -1471,7 +1466,7 @@ visit_SetTimeSliderState(PyObject *self, PyObject *args)
     //
     // Make sure that there is a time slider.
     //
-    WindowInformation *wi = viewer->GetWindowInformation();
+    WindowInformation *wi = GetViewerState()->GetWindowInformation();
     if(wi->GetActiveTimeSlider() < 0)
     {
         fprintf(stderr, "SetTimeSliderState was called when there was no "
@@ -1484,11 +1479,11 @@ visit_SetTimeSliderState(PyObject *self, PyObject *args)
     //
     int nStates = 1;
     const std::string &ts = wi->GetTimeSliders()[wi->GetActiveTimeSlider()];
-    if(viewer->GetKeyframeAttributes()->GetEnabled())
-        nStates = viewer->GetKeyframeAttributes()->GetNFrames();
+    if(GetViewerState()->GetKeyframeAttributes()->GetEnabled())
+        nStates = GetViewerState()->GetKeyframeAttributes()->GetNFrames();
     else
     {
-        DatabaseCorrelationList *correlations = viewer->GetDatabaseCorrelationList();
+        DatabaseCorrelationList *correlations = GetViewerState()->GetDatabaseCorrelationList();
         DatabaseCorrelation *c = correlations->FindCorrelation(ts);
         if(c != 0)
             nStates = c->GetNumStates();
@@ -1508,7 +1503,7 @@ visit_SetTimeSliderState(PyObject *self, PyObject *args)
     }
 
     MUTEX_LOCK();
-        viewer->SetTimeSliderState(state);
+        GetViewerMethods()->SetTimeSliderState(state);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -1535,7 +1530,7 @@ visit_SetTryHarderCyclesTimes(PyObject *self, PyObject *args)
         return NULL;
 
     MUTEX_LOCK();
-        viewer->SetTryHarderCyclesTimes(flag);
+        GetViewerMethods()->SetTryHarderCyclesTimes(flag);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -1571,7 +1566,7 @@ visit_SetActiveTimeSlider(PyObject *self, PyObject *args)
         return NULL;
 
     MUTEX_LOCK();
-        viewer->SetActiveTimeSlider(tsName);
+        GetViewerMethods()->SetActiveTimeSlider(tsName);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -1597,7 +1592,7 @@ visit_GetActiveTimeSlider(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
     NO_ARGUMENTS();
 
-    const WindowInformation *wi = viewer->GetWindowInformation();
+    const WindowInformation *wi = GetViewerState()->GetWindowInformation();
     std::string activeTS("");
     if(wi->GetActiveTimeSlider() >= 0)
          activeTS = wi->GetTimeSliders()[wi->GetActiveTimeSlider()];
@@ -1623,7 +1618,7 @@ visit_GetTimeSliders(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
     NO_ARGUMENTS();
 
-    const WindowInformation *wi = viewer->GetWindowInformation();
+    const WindowInformation *wi = GetViewerState()->GetWindowInformation();
     const stringVector &timeSliders = wi->GetTimeSliders();
     const intVector &timeSliderStates = wi->GetTimeSliderCurrentStates();
 
@@ -1666,14 +1661,14 @@ visit_TimeSliderGetNStates(PyObject *self, PyObject *args)
     //
     // Get the number of states for the active time slider.
     //
-    WindowInformation *wi = viewer->GetWindowInformation();
+    WindowInformation *wi = GetViewerState()->GetWindowInformation();
     const std::string &ts = wi->GetTimeSliders()[wi->GetActiveTimeSlider()];
     int nStates = 1;
-    if(viewer->GetKeyframeAttributes()->GetEnabled() && ts == "Keyframe animation")
-        nStates = viewer->GetKeyframeAttributes()->GetNFrames();
+    if(GetViewerState()->GetKeyframeAttributes()->GetEnabled() && ts == "Keyframe animation")
+        nStates = GetViewerState()->GetKeyframeAttributes()->GetNFrames();
     else
     {
-        DatabaseCorrelationList *correlations = viewer->GetDatabaseCorrelationList();
+        DatabaseCorrelationList *correlations = GetViewerState()->GetDatabaseCorrelationList();
         DatabaseCorrelation *c = correlations->FindCorrelation(ts);
         if(c != 0)
             nStates = c->GetNumStates();
@@ -1712,7 +1707,7 @@ visit_AnimationSetNFrames(PyObject *self, PyObject *args)
         return NULL;
 
     MUTEX_LOCK();
-        viewer->AnimationSetNFrames(nFrames);
+        GetViewerMethods()->AnimationSetNFrames(nFrames);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -1746,7 +1741,7 @@ visit_SetWindowLayout(PyObject *self, PyObject *args)
        return NULL;
 
     MUTEX_LOCK();
-        viewer->SetWindowLayout(winLayout);
+        GetViewerMethods()->SetWindowLayout(winLayout);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -1780,7 +1775,7 @@ visit_SetActiveWindow(PyObject *self, PyObject *args)
        return NULL;
 
     MUTEX_LOCK();
-        viewer->SetActiveWindow(activewin);
+        GetViewerMethods()->SetActiveWindow(activewin);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -1809,7 +1804,7 @@ visit_IconifyAllWindows(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->IconifyAllWindows();
+        GetViewerMethods()->IconifyAllWindows();
     MUTEX_UNLOCK();
 
     Py_INCREF(Py_None);
@@ -1838,7 +1833,7 @@ visit_DeIconifyAllWindows(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->DeIconifyAllWindows();
+        GetViewerMethods()->DeIconifyAllWindows();
     MUTEX_UNLOCK();
 
     Py_INCREF(Py_None);
@@ -1894,14 +1889,14 @@ visit_OpenDatabase(PyObject *self, PyObject *args)
     // Open the database.
     MUTEX_LOCK();
         if (!format)
-            viewer->OpenDatabase(fileName, timeIndex);
+            GetViewerMethods()->OpenDatabase(fileName, timeIndex);
         else
-            viewer->OpenDatabase(fileName, timeIndex, true, format);
+            GetViewerMethods()->OpenDatabase(fileName, timeIndex, true, format);
 
         static bool loadedPluginInfo = false;
         if (!loadedPluginInfo)
         {
-            viewer->UpdateDBPluginInfo("localhost");
+            GetViewerMethods()->UpdateDBPluginInfo("localhost");
             loadedPluginInfo = true;
         }
     MUTEX_UNLOCK();
@@ -1938,7 +1933,7 @@ visit_ReOpenDatabase(PyObject *self, PyObject *args)
 
     // Open the database.
     MUTEX_LOCK();
-        viewer->ReOpenDatabase(fileName);
+        GetViewerMethods()->ReOpenDatabase(fileName);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -1976,7 +1971,7 @@ visit_OverlayDatabase(PyObject *self, PyObject *args)
 
     // Overlay the database.
     MUTEX_LOCK();
-        viewer->OverlayDatabase(fileName);
+        GetViewerMethods()->OverlayDatabase(fileName);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -2023,7 +2018,7 @@ visit_ReplaceDatabase(PyObject *self, PyObject *args)
 
     // Replace the database.
     MUTEX_LOCK();
-        viewer->ReplaceDatabase(fileName, timeState);
+        GetViewerMethods()->ReplaceDatabase(fileName, timeState);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -2056,7 +2051,7 @@ visit_ActivateDatabase(PyObject *self, PyObject *args)
 
     // Activate the database.
     MUTEX_LOCK();
-        viewer->ActivateDatabase(fileName);
+        GetViewerMethods()->ActivateDatabase(fileName);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -2090,7 +2085,7 @@ visit_CheckForNewStates(PyObject *self, PyObject *args)
 
     // Check the database for new states.
     MUTEX_LOCK();
-        viewer->CheckForNewStates(fileName);
+        GetViewerMethods()->CheckForNewStates(fileName);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -2121,7 +2116,7 @@ visit_CloseDatabase(PyObject *self, PyObject *args)
 
     // Close the database.
     MUTEX_LOCK();
-        viewer->CloseDatabase(fileName);
+        GetViewerMethods()->CloseDatabase(fileName);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -2173,7 +2168,7 @@ visit_CreateDatabaseCorrelation(PyObject *self, PyObject *args)
 
     // Create the database correlation
     MUTEX_LOCK();
-        viewer->CreateDatabaseCorrelation(name, dbs, method);
+        GetViewerMethods()->CreateDatabaseCorrelation(name, dbs, method);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -2224,7 +2219,7 @@ visit_AlterDatabaseCorrelation(PyObject *self, PyObject *args)
 
     // Alter the database correlation
     MUTEX_LOCK();
-        viewer->AlterDatabaseCorrelation(name, dbs, method);
+        GetViewerMethods()->AlterDatabaseCorrelation(name, dbs, method);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -2255,7 +2250,7 @@ visit_DeleteDatabaseCorrelation(PyObject *self, PyObject *args)
 
     // Delete the database correlation
     MUTEX_LOCK();
-        viewer->DeleteDatabaseCorrelation(name);
+        GetViewerMethods()->DeleteDatabaseCorrelation(name);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -2307,7 +2302,7 @@ visit_SetDatabaseCorrelationOptions(PyObject *self, PyObject *args)
     MUTEX_LOCK();
         // Let VisIt automatically correlate since we're likely running
         // -nowin and we can't prompt the user.
-        DatabaseCorrelationList *cL = viewer->GetDatabaseCorrelationList();
+        DatabaseCorrelationList *cL = GetViewerState()->GetDatabaseCorrelationList();
         cL->SetNeedPermission(false);
         cL->SetDefaultCorrelationMethod(defaultCorrelationMethod);
         cL->SetWhenToCorrelate((DatabaseCorrelationList::WhenToCorrelate)
@@ -2341,7 +2336,7 @@ visit_GetDatabaseCorrelation(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "s", &name))
         return NULL;
 
-    DatabaseCorrelationList *cL = viewer->GetDatabaseCorrelationList();
+    DatabaseCorrelationList *cL = GetViewerState()->GetDatabaseCorrelationList();
     DatabaseCorrelation *C = cL->FindCorrelation(name);
     PyObject *retval = 0;
     if(C != 0)
@@ -2376,7 +2371,7 @@ visit_GetDatabaseCorrelationNames(PyObject *self, PyObject *args)
 
     // Allocate a tuple the with enough entries to hold the database
     // correlation name list.
-    DatabaseCorrelationList *cL = viewer->GetDatabaseCorrelationList();
+    DatabaseCorrelationList *cL = GetViewerState()->GetDatabaseCorrelationList();
     PyObject *retval = PyTuple_New(cL->GetNumDatabaseCorrelations());
 
     for(int i = 0; i < cL->GetNumDatabaseCorrelations(); ++i)
@@ -2428,14 +2423,14 @@ ExpressionDefinitionHelper(PyObject *args, const char *name, Expression::ExprTyp
     // Access the expression list and add a new one.
     MUTEX_LOCK();
 
-        ExpressionList *list = viewer->GetExpressionList();
+        ExpressionList *list = GetViewerState()->GetExpressionList();
         Expression *e = new Expression();
         e->SetName(exprName);
         e->SetDefinition(exprDef);
         e->SetType(t);
         list->AddExpression(*e);
         list->Notify();
-        viewer->ProcessExpressions();
+        GetViewerMethods()->ProcessExpressions();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -2552,7 +2547,7 @@ visit_DeleteExpression(PyObject *self, PyObject *args)
     // Access the expression list and add a new one.
     MUTEX_LOCK();
 
-        ExpressionList *list = viewer->GetExpressionList();
+        ExpressionList *list = GetViewerState()->GetExpressionList();
         for(int i=0;i<list->GetNumExpressions();i++)
         {
             if (strcmp((*list)[i].GetName().c_str(),exprName) == 0)
@@ -2562,7 +2557,7 @@ visit_DeleteExpression(PyObject *self, PyObject *args)
             }
         }
         list->Notify();
-        viewer->ProcessExpressions();
+        GetViewerMethods()->ProcessExpressions();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -2652,9 +2647,9 @@ OpenComponentHelper(PyObject *self, PyObject *args, bool openEngine)
     MUTEX_LOCK();
         // Either open an engine or an mdserver.
         if(openEngine)
-            viewer->OpenComputeEngine(hostName, argv);
+            GetViewerMethods()->OpenComputeEngine(hostName, argv);
         else
-            viewer->OpenMDServer(hostName, argv);
+            GetViewerMethods()->OpenMDServer(hostName, argv);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -2738,7 +2733,7 @@ OpenClientHelper(PyObject *self, PyObject *args, int componentNumber)
 
     MUTEX_LOCK();
         // Open a client
-        viewer->OpenClient(clientName, program, argv);
+        GetViewerMethods()->OpenClient(clientName, program, argv);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -2779,8 +2774,8 @@ visit_InvertBackgroundColor(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->InvertBackgroundColor();
-        viewer->RedrawWindow();
+        GetViewerMethods()->InvertBackgroundColor();
+        GetViewerMethods()->RedrawWindow();
     MUTEX_UNLOCK();
 
     Py_INCREF(Py_None);
@@ -2840,7 +2835,7 @@ visit_AddPlot(PyObject *self, PyObject *args)
     }
    
     MUTEX_LOCK();
-        viewer->AddPlot(plotTypeIndex, varName);
+        GetViewerMethods()->AddPlot(plotTypeIndex, varName);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -2910,11 +2905,11 @@ visit_AddOperator(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         // Set the apply to all plots toggle.
-        viewer->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
-        viewer->GetGlobalAttributes()->Notify();
+        GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
+        GetViewerState()->GetGlobalAttributes()->Notify();
 
         // Add the operator
-        viewer->AddOperator(operTypeIndex);
+        GetViewerMethods()->AddOperator(operTypeIndex);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -2945,7 +2940,7 @@ visit_DrawPlots(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->DrawPlots();
+        GetViewerMethods()->DrawPlots();
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -3004,8 +2999,8 @@ visit_CloseComputeEngine(PyObject *self, PyObject *args)
     MUTEX_LOCK();
          if(useFirstEngine)
          {
-             const stringVector &engines = viewer->GetEngineList()->GetEngines();
-             const stringVector &sims = viewer->GetEngineList()->GetSimulationName();
+             const stringVector &engines = GetViewerState()->GetEngineList()->GetEngines();
+             const stringVector &sims = GetViewerState()->GetEngineList()->GetSimulationName();
              if(engines.size() > 0)
              {
                  engineName = engines[0].c_str();
@@ -3014,8 +3009,8 @@ visit_CloseComputeEngine(PyObject *self, PyObject *args)
          }
          else if (useFirstSimulation)
          {
-             const stringVector &engines = viewer->GetEngineList()->GetEngines();
-             const stringVector &sims = viewer->GetEngineList()->GetSimulationName();
+             const stringVector &engines = GetViewerState()->GetEngineList()->GetEngines();
+             const stringVector &sims = GetViewerState()->GetEngineList()->GetSimulationName();
              for (int i=0; i<engines.size(); i++)
              {
                  if (engines[i] == engineName)
@@ -3027,7 +3022,7 @@ visit_CloseComputeEngine(PyObject *self, PyObject *args)
          }
 
          if (engineName != 0 && simulationName != 0)
-             viewer->CloseComputeEngine(engineName, simulationName);
+             GetViewerMethods()->CloseComputeEngine(engineName, simulationName);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -3059,7 +3054,7 @@ visit_SetPlotFrameRange(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "iii", &plotId, &frame0, &frame1))
         return NULL;
  
-    viewer->SetPlotFrameRange(plotId, frame0, frame1);
+    GetViewerMethods()->SetPlotFrameRange(plotId, frame0, frame1);
  
     Py_INCREF(Py_None);
     return Py_None;
@@ -3090,7 +3085,7 @@ visit_DeletePlotKeyframe(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "ii", &plotId, &frame))
         return NULL;
  
-    viewer->DeletePlotKeyframe(plotId, frame);
+    GetViewerMethods()->DeletePlotKeyframe(plotId, frame);
  
     Py_INCREF(Py_None);
     return Py_None;
@@ -3121,7 +3116,7 @@ visit_MovePlotKeyframe(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "iii", &plotId, &oldFrame, &newFrame))
         return NULL;
  
-    viewer->MovePlotKeyframe(plotId, oldFrame, newFrame);
+    GetViewerMethods()->MovePlotKeyframe(plotId, oldFrame, newFrame);
  
     Py_INCREF(Py_None);
     return Py_None;
@@ -3152,7 +3147,7 @@ visit_SetPlotDatabaseState(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "iii", &plotId, &frame, &state))
         return NULL;
  
-    viewer->SetPlotDatabaseState(plotId, frame, state);
+    GetViewerMethods()->SetPlotDatabaseState(plotId, frame, state);
  
     Py_INCREF(Py_None);
     return Py_None;
@@ -3183,7 +3178,7 @@ visit_DeletePlotDatabaseKeyframe(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "ii", &plotId, &frame))
         return NULL;
  
-    viewer->DeletePlotDatabaseKeyframe(plotId, frame);
+    GetViewerMethods()->DeletePlotDatabaseKeyframe(plotId, frame);
  
     Py_INCREF(Py_None);
     return Py_None;
@@ -3214,7 +3209,7 @@ visit_MovePlotDatabaseKeyframe(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "iii", &plotId, &oldFrame, &newFrame))
         return NULL;
  
-    viewer->MovePlotDatabaseKeyframe(plotId, oldFrame, newFrame);
+    GetViewerMethods()->MovePlotDatabaseKeyframe(plotId, oldFrame, newFrame);
  
     Py_INCREF(Py_None);
     return Py_None;
@@ -3247,7 +3242,7 @@ visit_ChangeActivePlotsVar(PyObject *self, PyObject *args)
         return NULL;
 
     MUTEX_LOCK();
-         viewer->ChangeActivePlotsVar(varName);
+         GetViewerMethods()->ChangeActivePlotsVar(varName);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -3281,7 +3276,7 @@ visit_CopyAnnotationsToWindow(PyObject *self, PyObject *args)
         return NULL;
 
     MUTEX_LOCK();
-         viewer->CopyAnnotationsToWindow(from, to);
+         GetViewerMethods()->CopyAnnotationsToWindow(from, to);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -3315,7 +3310,7 @@ visit_CopyLightingToWindow(PyObject *self, PyObject *args)
         return NULL;
 
     MUTEX_LOCK();
-        viewer->CopyLightingToWindow(from, to);
+        GetViewerMethods()->CopyLightingToWindow(from, to);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -3349,7 +3344,7 @@ visit_CopyViewToWindow(PyObject *self, PyObject *args)
         return NULL;
 
     MUTEX_LOCK();
-        viewer->CopyViewToWindow(from, to);
+        GetViewerMethods()->CopyViewToWindow(from, to);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -3381,7 +3376,7 @@ visit_CopyPlotsToWindow(PyObject *self, PyObject *args)
         return NULL;
 
     MUTEX_LOCK();
-        viewer->CopyPlotsToWindow(from, to);
+        GetViewerMethods()->CopyPlotsToWindow(from, to);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -3410,7 +3405,7 @@ visit_DeleteActivePlots(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->DeleteActivePlots();
+        GetViewerMethods()->DeleteActivePlots();
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -3445,13 +3440,13 @@ visit_DeleteAllPlots(PyObject *self, PyObject *args)
         //
         // First set all plots active.
         //
-        int nPlots = viewer->GetPlotList()->GetNumPlots();
+        int nPlots = GetViewerState()->GetPlotList()->GetNumPlots();
         intVector plots;
         for(int i = 0; i < nPlots; ++i)
             plots.push_back(i);
-        viewer->SetActivePlots(plots);
+        GetViewerMethods()->SetActivePlots(plots);
 
-        viewer->DeleteActivePlots();
+        GetViewerMethods()->DeleteActivePlots();
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -3489,11 +3484,11 @@ visit_RemoveLastOperator(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         // Set the apply to all plots toggle.
-        viewer->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
-        viewer->GetGlobalAttributes()->Notify();
+        GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
+        GetViewerState()->GetGlobalAttributes()->Notify();
 
         // Remove the last operator.
-        viewer->RemoveLastOperator();
+        GetViewerMethods()->RemoveLastOperator();
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -3531,11 +3526,11 @@ visit_RemoveAllOperators(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         // Set the apply to all plots toggle.
-        viewer->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
-        viewer->GetGlobalAttributes()->Notify();
+        GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
+        GetViewerState()->GetGlobalAttributes()->Notify();
 
         // Remove all operators.
-        viewer->RemoveAllOperators();
+        GetViewerMethods()->RemoveAllOperators();
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -3564,7 +3559,7 @@ visit_ClearWindow(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->ClearWindow();
+        GetViewerMethods()->ClearWindow();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -3592,7 +3587,7 @@ visit_ClearAllWindows(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->ClearAllWindows();
+        GetViewerMethods()->ClearAllWindows();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -3635,7 +3630,7 @@ visit_ClearCache(PyObject *self, PyObject *args)
     }
 
     MUTEX_LOCK();
-        viewer->ClearCache(engineName, simulationName);
+        GetViewerMethods()->ClearCache(engineName, simulationName);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -3664,7 +3659,7 @@ visit_ClearCacheForAllEngines(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->ClearCacheForAllEngines();
+        GetViewerMethods()->ClearCacheForAllEngines();
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -3693,8 +3688,8 @@ visit_ClearPickPoints(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->ClearPickPoints();
-        viewer->RedrawWindow();
+        GetViewerMethods()->ClearPickPoints();
+        GetViewerMethods()->RedrawWindow();
     MUTEX_UNLOCK();
 
     Py_INCREF(Py_None);
@@ -3723,8 +3718,8 @@ visit_ClearReferenceLines(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->ClearReferenceLines();
-        viewer->RedrawWindow();
+        GetViewerMethods()->ClearReferenceLines();
+        GetViewerMethods()->RedrawWindow();
     MUTEX_UNLOCK();
 
     Py_INCREF(Py_None);
@@ -3758,11 +3753,11 @@ visit_SaveWindow(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->SaveWindow();
+        GetViewerMethods()->SaveWindow();
     MUTEX_UNLOCK();
     int errorFlag = Synchronize();
 
-    std::string realname = viewer->GetSaveWindowAttributes()->GetLastRealFilename();
+    std::string realname = GetViewerState()->GetSaveWindowAttributes()->GetLastRealFilename();
     PyObject *retval = NULL;
 
     if (errorFlag == 0)
@@ -3803,7 +3798,7 @@ visit_DeleteWindow(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->DeleteWindow();
+        GetViewerMethods()->DeleteWindow();
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -3832,7 +3827,7 @@ visit_DisableRedraw(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->DisableRedraw();
+        GetViewerMethods()->DisableRedraw();
     MUTEX_UNLOCK();
 
     Py_INCREF(Py_None);
@@ -3861,7 +3856,7 @@ visit_RedrawWindow(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->RedrawWindow();
+        GetViewerMethods()->RedrawWindow();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -3890,7 +3885,7 @@ visit_ResizeWindow(PyObject *self, PyObject *args)
         return NULL;
 
     MUTEX_LOCK();
-        viewer->ResizeWindow(win, i0, i1);
+        GetViewerMethods()->ResizeWindow(win, i0, i1);
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -3919,7 +3914,7 @@ visit_MoveWindow(PyObject *self, PyObject *args)
         return NULL;
 
     MUTEX_LOCK();
-        viewer->MoveWindow(win, i0, i1);
+        GetViewerMethods()->MoveWindow(win, i0, i1);
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -3948,7 +3943,7 @@ visit_MoveAndResizeWindow(PyObject *self, PyObject *args)
         return NULL;
 
     MUTEX_LOCK();
-        viewer->MoveAndResizeWindow(win, i0, i1, i2, i3);
+        GetViewerMethods()->MoveAndResizeWindow(win, i0, i1, i2, i3);
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -3976,7 +3971,7 @@ visit_RecenterView(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->RecenterView();
+        GetViewerMethods()->RecenterView();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -4004,7 +3999,7 @@ visit_ResetView(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->ResetView();
+        GetViewerMethods()->ResetView();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -4035,7 +4030,7 @@ visit_SetCenterOfRotation(PyObject *self, PyObject *args)
         return NULL;
 
     MUTEX_LOCK();
-        viewer->SetCenterOfRotation(c0, c1, c2);
+        GetViewerMethods()->SetCenterOfRotation(c0, c1, c2);
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -4075,12 +4070,12 @@ visit_ChooseCenterOfRotation(PyObject *self, PyObject *args)
         if(havePoint)
         {
             // We know where we want to pick.
-            viewer->ChooseCenterOfRotation(sx, sy);
+            GetViewerMethods()->ChooseCenterOfRotation(sx, sy);
         }
         else
         {
             // Choose the point interactively
-            viewer->ChooseCenterOfRotation();
+            GetViewerMethods()->ChooseCenterOfRotation();
         }
     MUTEX_UNLOCK();
 
@@ -4113,7 +4108,7 @@ visit_RestoreSession(PyObject *self, PyObject *args)
         return NULL;
 
     MUTEX_LOCK();
-        viewer->ImportEntireState(filename, sessionStoredInVisItDir!=0);
+        GetViewerMethods()->ImportEntireState(filename, sessionStoredInVisItDir!=0);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -4158,7 +4153,7 @@ visit_RestoreSessionWithDifferentSources(PyObject *self, PyObject *args)
     }
 
     MUTEX_LOCK();
-        viewer->ImportEntireStateWithDifferentSources(filename,
+        GetViewerMethods()->ImportEntireStateWithDifferentSources(filename,
             sessionStoredInVisItDir!=0, dbs);
     MUTEX_UNLOCK();
 
@@ -4191,7 +4186,7 @@ visit_SaveSession(PyObject *self, PyObject *args)
         return NULL;
 
     MUTEX_LOCK();
-        viewer->ExportEntireState(filename);
+        GetViewerMethods()->ExportEntireState(filename);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -4221,7 +4216,7 @@ visit_GetEngineList(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     // Allocate a tuple the with enough entries to hold the engine list.
-    const stringVector &engines = viewer->GetEngineList()->GetEngines();
+    const stringVector &engines = GetViewerState()->GetEngineList()->GetEngines();
     PyObject *retval = PyTuple_New(engines.size());
     for(int i = 0; i < engines.size(); ++i)
     {
@@ -4258,7 +4253,7 @@ visit_HideActivePlots(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->HideActivePlots();
+        GetViewerMethods()->HideActivePlots();
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -4291,7 +4286,7 @@ visit_HideToolbars(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         // If we passed an argument then hide toolbars for all windows.
-        viewer->HideToolbars(hideForAllWindows != 0);
+        GetViewerMethods()->HideToolbars(hideForAllWindows != 0);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -4324,7 +4319,7 @@ visit_ShowToolbars(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         // If we passed an argument then show toolbars for all windows.
-        viewer->ShowToolbars(showForAllWindows != 0);
+        GetViewerMethods()->ShowToolbars(showForAllWindows != 0);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -4368,9 +4363,9 @@ visit_SetAnnotationAttributes(PyObject *self, PyObject *args)
         AnnotationAttributes *va = PyAnnotationAttributes_FromPyObject(annot);
 
         // Copy the object into the view attributes.
-        *(viewer->GetAnnotationAttributes()) = *va;
-        viewer->GetAnnotationAttributes()->Notify();
-        viewer->SetAnnotationAttributes();
+        *(GetViewerState()->GetAnnotationAttributes()) = *va;
+        GetViewerState()->GetAnnotationAttributes()->Notify();
+        GetViewerMethods()->SetAnnotationAttributes();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -4401,8 +4396,8 @@ visit_SetCloneWindowOnFirstRef(PyObject *self, PyObject *args)
        return NULL;
 
     MUTEX_LOCK();
-        viewer->GetGlobalAttributes()->SetCloneWindowOnFirstRef(flag);
-        viewer->GetGlobalAttributes()->Notify();
+        GetViewerState()->GetGlobalAttributes()->SetCloneWindowOnFirstRef(flag);
+        GetViewerState()->GetGlobalAttributes()->Notify();
     MUTEX_UNLOCK();
     int errorFlag = Synchronize();
 
@@ -4447,9 +4442,9 @@ visit_SetDefaultAnnotationAttributes(PyObject *self, PyObject *args)
         AnnotationAttributes *va = PyAnnotationAttributes_FromPyObject(annot);
 
         // Copy the object into the view attributes.
-        *(viewer->GetAnnotationAttributes()) = *va;
-        viewer->GetAnnotationAttributes()->Notify();
-        viewer->SetDefaultAnnotationAttributes();
+        *(GetViewerState()->GetAnnotationAttributes()) = *va;
+        GetViewerState()->GetAnnotationAttributes()->Notify();
+        GetViewerMethods()->SetDefaultAnnotationAttributes();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -4480,7 +4475,7 @@ visit_GetAnnotationAttributes(PyObject *self, PyObject *args)
     AnnotationAttributes *aa = PyAnnotationAttributes_FromPyObject(retval);
 
     // Copy the viewer proxy's annotation atts into the return data structure.
-    *aa = *(viewer->GetAnnotationAttributes());
+    *aa = *(GetViewerState()->GetAnnotationAttributes());
 
     return retval;
 }
@@ -4522,9 +4517,9 @@ visit_SetKeyframeAttributes(PyObject *self, PyObject *args)
         KeyframeAttributes *va = PyKeyframeAttributes_FromPyObject(keyframe);
  
         // Copy the object into the view attributes.
-        *(viewer->GetKeyframeAttributes()) = *va;
-        viewer->GetKeyframeAttributes()->Notify();
-        viewer->SetKeyframeAttributes();
+        *(GetViewerState()->GetKeyframeAttributes()) = *va;
+        GetViewerState()->GetKeyframeAttributes()->Notify();
+        GetViewerMethods()->SetKeyframeAttributes();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -4555,7 +4550,7 @@ visit_GetKeyframeAttributes(PyObject *self, PyObject *args)
     KeyframeAttributes *aa = PyKeyframeAttributes_FromPyObject(retval);
  
     // Copy the viewer proxy's keyframe atts into the return data structure.
-    *aa = *(viewer->GetKeyframeAttributes());
+    *aa = *(GetViewerState()->GetKeyframeAttributes());
  
     return retval;
 }
@@ -4597,9 +4592,9 @@ visit_SetMaterialAttributes(PyObject *self, PyObject *args)
         MaterialAttributes *va = PyMaterialAttributes_FromPyObject(mat);
 
         // Copy the object into the view attributes.
-        *(viewer->GetMaterialAttributes()) = *va;
-        viewer->GetMaterialAttributes()->Notify();
-        viewer->SetMaterialAttributes();
+        *(GetViewerState()->GetMaterialAttributes()) = *va;
+        GetViewerState()->GetMaterialAttributes()->Notify();
+        GetViewerMethods()->SetMaterialAttributes();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -4642,9 +4637,9 @@ visit_SetDefaultMaterialAttributes(PyObject *self, PyObject *args)
         MaterialAttributes *va = PyMaterialAttributes_FromPyObject(mat);
 
         // Copy the object into the view attributes.
-        *(viewer->GetMaterialAttributes()) = *va;
-        viewer->GetMaterialAttributes()->Notify();
-        viewer->SetDefaultMaterialAttributes();
+        *(GetViewerState()->GetMaterialAttributes()) = *va;
+        GetViewerState()->GetMaterialAttributes()->Notify();
+        GetViewerMethods()->SetDefaultMaterialAttributes();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -4676,7 +4671,7 @@ visit_GetMaterialAttributes(PyObject *self, PyObject *args)
     MaterialAttributes *aa = PyMaterialAttributes_FromPyObject(retval);
 
     // Copy the viewer proxy's material atts into the return data structure.
-    *aa = *(viewer->GetMaterialAttributes());
+    *aa = *(GetViewerState()->GetMaterialAttributes());
 
     return retval;
 }
@@ -4718,8 +4713,8 @@ visit_SetPrinterAttributes(PyObject *self, PyObject *args)
         PrinterAttributes *va = PyPrinterAttributes_FromPyObject(print);
 
         // Copy the object into the view attributes.
-        *(viewer->GetPrinterAttributes()) = *va;
-        viewer->GetPrinterAttributes()->Notify();
+        *(GetViewerState()->GetPrinterAttributes()) = *va;
+        GetViewerState()->GetPrinterAttributes()->Notify();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -4765,8 +4760,8 @@ visit_SetSaveWindowAttributes(PyObject *self, PyObject *args)
         SaveWindowAttributes *va = PySaveWindowAttributes_FromPyObject(annot);
 
         // Copy the object into the view attributes.
-        *(viewer->GetSaveWindowAttributes()) = *va;
-        viewer->GetSaveWindowAttributes()->Notify();
+        *(GetViewerState()->GetSaveWindowAttributes()) = *va;
+        GetViewerState()->GetSaveWindowAttributes()->Notify();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -4800,7 +4795,7 @@ visit_GetSaveWindowAttributes(PyObject *self, PyObject *args)
     SaveWindowAttributes *aa = PySaveWindowAttributes_FromPyObject(retval);
 
     // Copy the viewer proxy's saveimage atts into the return data structure.
-    *aa = *(viewer->GetSaveWindowAttributes());
+    *aa = *(GetViewerState()->GetSaveWindowAttributes());
 
     return retval;
 }
@@ -4841,7 +4836,7 @@ visit_ExportDatabase(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         DBPluginInfoAttributes *dbplugininfo = 
-                                          viewer->GetDBPluginInfoAttributes();
+                                          GetViewerState()->GetDBPluginInfoAttributes();
     MUTEX_UNLOCK();
 
     const stringVector &types = dbplugininfo->GetTypes();
@@ -4881,9 +4876,9 @@ visit_ExportDatabase(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         // Copy the object into the view attributes.
-        *(viewer->GetExportDBAttributes()) = *va;
-        viewer->GetExportDBAttributes()->Notify();
-        viewer->ExportDatabase();
+        *(GetViewerState()->GetExportDBAttributes()) = *va;
+        GetViewerState()->GetExportDBAttributes()->Notify();
+        GetViewerMethods()->ExportDatabase();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -4926,9 +4921,9 @@ visit_ConstructDDF(PyObject *self, PyObject *args)
         ConstructDDFAttributes *va = PyConstructDDFAttributes_FromPyObject(ddf_info);
 
         // Copy the object into the constructDDF attributes.
-        *(viewer->GetConstructDDFAttributes()) = *va;
-        viewer->GetConstructDDFAttributes()->Notify();
-        viewer->ConstructDDF();
+        *(GetViewerState()->GetConstructDDFAttributes()) = *va;
+        GetViewerState()->GetConstructDDFAttributes()->Notify();
+        GetViewerMethods()->ConstructDDF();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -4971,9 +4966,9 @@ visit_SetViewCurve(PyObject *self, PyObject *args)
         ViewCurveAttributes *va = PyViewCurveAttributes_FromPyObject(view);
 
         // Copy the object into the view attributes.
-        *(viewer->GetViewCurveAttributes()) = *va;
-        viewer->GetViewCurveAttributes()->Notify();
-        viewer->SetViewCurve();
+        *(GetViewerState()->GetViewCurveAttributes()) = *va;
+        GetViewerState()->GetViewCurveAttributes()->Notify();
+        GetViewerMethods()->SetViewCurve();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -5004,7 +4999,7 @@ visit_GetViewCurve(PyObject *self, PyObject *args)
     ViewCurveAttributes *va = PyViewCurveAttributes_FromPyObject(retval);
 
     // Copy the viewer proxy's curve view into the return data structure.
-    *va = *(viewer->GetViewCurveAttributes());
+    *va = *(GetViewerState()->GetViewCurveAttributes());
 
     return retval;
 }
@@ -5044,9 +5039,9 @@ visit_SetView2D(PyObject *self, PyObject *args)
             View2DAttributes *va = PyView2DAttributes_FromPyObject(view);
 
             // Copy the object into the view attributes.
-            *(viewer->GetView2DAttributes()) = *va;
-            viewer->GetView2DAttributes()->Notify();
-            viewer->SetView2D();
+            *(GetViewerState()->GetView2DAttributes()) = *va;
+            GetViewerState()->GetView2DAttributes()->Notify();
+            GetViewerMethods()->SetView2D();
         MUTEX_UNLOCK();
     }
     else if (PyViewAttributes_Check(view))
@@ -5058,13 +5053,13 @@ visit_SetView2D(PyObject *self, PyObject *args)
         //
         MUTEX_LOCK();
             ViewAttributes *va = PyViewAttributes_FromPyObject(view);
-            View2DAttributes *v2da = viewer->GetView2DAttributes();
+            View2DAttributes *v2da = GetViewerState()->GetView2DAttributes();
 
             // Copy the object into the view attributes.
             v2da->SetWindowCoords(va->GetWindowCoords());
             v2da->SetViewportCoords(va->GetViewportCoords());
             v2da->Notify();
-            viewer->SetView2D();
+            GetViewerMethods()->SetView2D();
 
             cerr << "Warning: Passing a ViewAttribute to SetView2D is"
                  << " deprecated.  Pass a" << endl
@@ -5107,7 +5102,7 @@ visit_GetView2D(PyObject *self, PyObject *args)
     View2DAttributes *va = PyView2DAttributes_FromPyObject(retval);
 
     // Copy the viewer proxy's 2d view into the return data structure.
-    *va = *(viewer->GetView2DAttributes());
+    *va = *(GetViewerState()->GetView2DAttributes());
 
     return retval;
 }
@@ -5147,9 +5142,9 @@ visit_SetView3D(PyObject *self, PyObject *args)
             View3DAttributes *va = PyView3DAttributes_FromPyObject(view);
 
             // Copy the object into the view attributes.
-            *(viewer->GetView3DAttributes()) = *va;
-            viewer->GetView3DAttributes()->Notify();
-            viewer->SetView3D();
+            *(GetViewerState()->GetView3DAttributes()) = *va;
+            GetViewerState()->GetView3DAttributes()->Notify();
+            GetViewerMethods()->SetView3D();
         MUTEX_UNLOCK();
     }
     else if (PyViewAttributes_Check(view))
@@ -5161,7 +5156,7 @@ visit_SetView3D(PyObject *self, PyObject *args)
         //
         MUTEX_LOCK();
             ViewAttributes *va = PyViewAttributes_FromPyObject(view);
-            View3DAttributes *v3da = viewer->GetView3DAttributes();
+            View3DAttributes *v3da = GetViewerState()->GetView3DAttributes();
 
             // Copy the object into the view attributes.
             v3da->SetViewNormal(va->GetViewNormal());
@@ -5175,7 +5170,7 @@ visit_SetView3D(PyObject *self, PyObject *args)
             v3da->SetImageZoom(va->GetImageZoom());
             v3da->SetPerspective(va->GetPerspective());
             v3da->Notify();
-            viewer->SetView3D();
+            GetViewerMethods()->SetView3D();
 
             cerr << "Warning: Passing a ViewAttribute to SetView3D is"
                  << " deprecated.  Pass a" << endl
@@ -5218,7 +5213,7 @@ visit_GetView3D(PyObject *self, PyObject *args)
     View3DAttributes *va = PyView3DAttributes_FromPyObject(retval);
 
     // Copy the viewer proxy's 3d view into the return data structure.
-    *va = *(viewer->GetView3DAttributes());
+    *va = *(GetViewerState()->GetView3DAttributes());
 
     return retval;
 }
@@ -5245,7 +5240,7 @@ visit_ClearViewKeyframes(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->ClearViewKeyframes();
+        GetViewerMethods()->ClearViewKeyframes();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -5276,7 +5271,7 @@ visit_DeleteViewKeyframe(PyObject *self, PyObject *args)
         return NULL;
 
     MUTEX_LOCK();
-        viewer->DeleteViewKeyframe(frame);
+        GetViewerMethods()->DeleteViewKeyframe(frame);
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -5307,7 +5302,7 @@ visit_MoveViewKeyframe(PyObject *self, PyObject *args)
         return NULL;
 
     MUTEX_LOCK();
-        viewer->MoveViewKeyframe(oldFrame, newFrame);
+        GetViewerMethods()->MoveViewKeyframe(oldFrame, newFrame);
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -5335,7 +5330,7 @@ visit_SetViewKeyframe(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->SetViewKeyframe();
+        GetViewerMethods()->SetViewKeyframe();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -5387,7 +5382,7 @@ visit_SetViewExtentsType(PyObject *self, PyObject *args)
     }
 
     MUTEX_LOCK();
-        viewer->SetViewExtentsType(extType);
+        GetViewerMethods()->SetViewExtentsType(extType);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -5418,7 +5413,7 @@ visit_GetGlobalAttributes(PyObject *self, PyObject *args)
     GlobalAttributes *ga = PyGlobalAttributes_FromPyObject(retval);
 
     // Copy the viewer proxy's window information into the return data structure.
-    *ga = *(viewer->GetGlobalAttributes());
+    *ga = *(GetViewerState()->GetGlobalAttributes());
 
     return retval;
 }
@@ -5449,7 +5444,7 @@ visit_GetWindowInformation(PyObject *self, PyObject *args)
     WindowInformation *wi = PyWindowInformation_FromPyObject(retval);
 
     // Copy the viewer proxy's window information into the return data structure.
-    *wi = *(viewer->GetWindowInformation());
+    *wi = *(GetViewerState()->GetWindowInformation());
 
     return retval;
 }
@@ -5480,7 +5475,7 @@ visit_GetRenderingAttributes(PyObject *self, PyObject *args)
     RenderingAttributes *ra = PyRenderingAttributes_FromPyObject(retval);
 
     // Copy the viewer proxy's window information into the return data structure.
-    *ra = *(viewer->GetRenderingAttributes());
+    *ra = *(GetViewerState()->GetRenderingAttributes());
 
     return retval;
 }
@@ -5522,9 +5517,9 @@ visit_SetRenderingAttributes(PyObject *self, PyObject *args)
         RenderingAttributes *ra = PyRenderingAttributes_FromPyObject(renderAtts);
 
         // Copy the object into the view attributes.
-        *(viewer->GetRenderingAttributes()) = *ra;
-        viewer->GetRenderingAttributes()->Notify();
-        viewer->SetRenderingAttributes();
+        *(GetViewerState()->GetRenderingAttributes()) = *ra;
+        GetViewerState()->GetRenderingAttributes()->Notify();
+        GetViewerMethods()->SetRenderingAttributes();
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -5554,10 +5549,10 @@ visit_SetColorTexturingEnabled(PyObject *self, PyObject *args)
         return NULL;
 
     MUTEX_LOCK();
-        RenderingAttributes *ra = viewer->GetRenderingAttributes();
+        RenderingAttributes *ra = GetViewerState()->GetRenderingAttributes();
         ra->SetColorTexturingFlag(value != 0);
         ra->Notify();
-        viewer->SetRenderingAttributes();
+        GetViewerMethods()->SetRenderingAttributes();
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -5615,7 +5610,7 @@ visit_SetWindowMode(PyObject *self, PyObject *args)
     }
 
     MUTEX_LOCK();
-        viewer->SetWindowMode(mode);
+        GetViewerMethods()->SetWindowMode(mode);
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -5661,7 +5656,7 @@ visit_EnableTool(PyObject *self, PyObject *args)
     }
 
     MUTEX_LOCK();
-        viewer->EnableTool(tool, enabled==1);
+        GetViewerMethods()->EnableTool(tool, enabled==1);
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -5713,7 +5708,7 @@ visit_ListPlots(PyObject *self, PyObject *args)
     //
     // Print out the plot list.
     //
-    PlotList *pl = viewer->GetPlotList();
+    PlotList *pl = GetViewerState()->GetPlotList();
     PlotPluginManager *plugins = PlotPluginManager::Instance();
     std::string outStr;
 
@@ -5819,7 +5814,7 @@ visit_Expressions(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-    ExpressionList *list = viewer->GetExpressionList();
+    ExpressionList *list = GetViewerState()->GetExpressionList();
 
     // Allocate a tuple the with enough entries to hold the expression list.
     PyObject *retval = PyTuple_New(list->GetNumExpressions());
@@ -5901,11 +5896,11 @@ visit_ResetOperatorOptions(PyObject *self, PyObject *args)
     {
         MUTEX_LOCK();
             // Set the apply to all plots toggle.
-            viewer->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
-            viewer->GetGlobalAttributes()->Notify();
+            GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
+            GetViewerState()->GetGlobalAttributes()->Notify();
 
             // Reset the operator options.
-            viewer->ResetOperatorOptions(operatorTypeIndex);
+            GetViewerMethods()->ResetOperatorOptions(operatorTypeIndex);
         MUTEX_UNLOCK();
         errorFlag = Synchronize();
     }
@@ -5969,7 +5964,7 @@ visit_ResetPlotOptions(PyObject *self, PyObject *args)
     else
     {
         MUTEX_LOCK();
-            viewer->ResetPlotOptions(plotTypeIndex);
+            GetViewerMethods()->ResetPlotOptions(plotTypeIndex);
         MUTEX_UNLOCK();
         errorFlag = Synchronize();
     }
@@ -6042,7 +6037,7 @@ visit_SetActivePlots(PyObject *self, PyObject *args)
     intVector activePlots;
     for(int j = 0; j < vec.size(); ++j)
     {
-        if(vec[j] < 0 || vec[j] >= viewer->GetPlotList()->GetNumPlots())
+        if(vec[j] < 0 || vec[j] >= GetViewerState()->GetPlotList()->GetNumPlots())
         {
             okayToSet = false;
             break;
@@ -6054,7 +6049,7 @@ visit_SetActivePlots(PyObject *self, PyObject *args)
         }
     }
     if(okayToSet)
-        viewer->SetActivePlots(activePlots);
+        GetViewerMethods()->SetActivePlots(activePlots);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -6158,8 +6153,8 @@ visit_SetOperatorOptions(PyObject *self, PyObject *args)
     if(viewer)
     {
         // Set the apply to all plots toggle.
-        viewer->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
-        viewer->GetGlobalAttributes()->Notify();
+        GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
+        GetViewerState()->GetGlobalAttributes()->Notify();
 
         // If the active operator was set, change the plot selection so we can set
         // the active operator.
@@ -6167,7 +6162,7 @@ visit_SetOperatorOptions(PyObject *self, PyObject *args)
         intVector oldActiveOperators, oldExpandedPlots;
         if(activeOperator != -1)
         {
-            PlotList *plotList = viewer->GetPlotList();
+            PlotList *plotList = GetViewerState()->GetPlotList();
             for(int i = 0; i < plotList->GetNumPlots(); ++i)
             {
                 const Plot &current = plotList->operator[](i);
@@ -6185,23 +6180,23 @@ visit_SetOperatorOptions(PyObject *self, PyObject *args)
 
             if(selectedPlots.size() > 0)
             {
-                viewer->SetActivePlots(selectedPlots, newActiveOperators,
+                GetViewerMethods()->SetActivePlots(selectedPlots, newActiveOperators,
                                        newExpandedPlots);
             }
         }
 
         // Set the operator attributes.
-        AttributeSubject *operAtts = viewer->GetOperatorAttributes(objPluginIndex);
+        AttributeSubject *operAtts = GetViewerState()->GetOperatorAttributes(objPluginIndex);
         std::string id(pluginManager->GetEnabledID(objPluginIndex));
         CommonOperatorPluginInfo *general = pluginManager->GetCommonPluginInfo(id);
         general->CopyAttributes(operAtts, ((AttributesObject *)obj)->data);
         operAtts->Notify();
-        viewer->SetOperatorOptions(objPluginIndex);
+        GetViewerMethods()->SetOperatorOptions(objPluginIndex);
 
         // Restore the plot selection.
         if(activeOperator != -1 && selectedPlots.size() > 0)
         {
-            viewer->SetActivePlots(selectedPlots, oldActiveOperators, oldExpandedPlots);
+            GetViewerMethods()->SetActivePlots(selectedPlots, oldActiveOperators, oldExpandedPlots);
         }
     }
     MUTEX_UNLOCK();
@@ -6253,16 +6248,16 @@ PromoteDemoteRemoveOperatorHelper(PyObject *self, PyObject *args, int option)
     if(viewer)
     {
         // Set the apply to all plots toggle.
-        viewer->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
-        viewer->GetGlobalAttributes()->Notify();
+        GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
+        GetViewerState()->GetGlobalAttributes()->Notify();
 
         // Do the operation.
         if(option == 0)
-            viewer->PromoteOperator(operatorIndex);
+            GetViewerMethods()->PromoteOperator(operatorIndex);
         else if(option == 1)
-            viewer->DemoteOperator(operatorIndex);
+            GetViewerMethods()->DemoteOperator(operatorIndex);
         else if(option == 2)
-            viewer->RemoveOperator(operatorIndex);
+            GetViewerMethods()->RemoveOperator(operatorIndex);
     }
     MUTEX_UNLOCK();
 
@@ -6398,14 +6393,14 @@ visit_SetDefaultOperatorOptions(PyObject *self, PyObject *args)
     MUTEX_LOCK();
     if(viewer)
     {
-        AttributeSubject *operAtts = viewer->GetOperatorAttributes(objPluginIndex);
+        AttributeSubject *operAtts = GetViewerState()->GetOperatorAttributes(objPluginIndex);
         std::string id(pluginManager->GetEnabledID(objPluginIndex));
         CommonOperatorPluginInfo *general = pluginManager->GetCommonPluginInfo(id);
         ScriptingOperatorPluginInfo *scripting = pluginManager->GetScriptingPluginInfo(id);
         general->CopyAttributes(operAtts, ((AttributesObject *)obj)->data);
         scripting->SetDefaults(operAtts);
         operAtts->Notify();
-        viewer->SetDefaultOperatorOptions(objPluginIndex);
+        GetViewerMethods()->SetDefaultOperatorOptions(objPluginIndex);
     }
     MUTEX_UNLOCK();
 
@@ -6484,14 +6479,14 @@ visit_SetDefaultPlotOptions(PyObject *self, PyObject *args)
     MUTEX_LOCK();
     if(viewer)
     {
-        AttributeSubject *plotAtts = viewer->GetPlotAttributes(objPluginIndex);
+        AttributeSubject *plotAtts = GetViewerState()->GetPlotAttributes(objPluginIndex);
         std::string id(pluginManager->GetEnabledID(objPluginIndex));
         CommonPlotPluginInfo *general = pluginManager->GetCommonPluginInfo(id);
         ScriptingPlotPluginInfo *scripting = pluginManager->GetScriptingPluginInfo(id);
         general->CopyAttributes(plotAtts, ((AttributesObject *)obj)->data);
         scripting->SetDefaults(plotAtts);
         plotAtts->Notify();
-        viewer->SetDefaultPlotOptions(objPluginIndex);
+        GetViewerMethods()->SetDefaultPlotOptions(objPluginIndex);
     }
     MUTEX_UNLOCK();
 
@@ -6567,12 +6562,12 @@ visit_SetPlotOptions(PyObject *self, PyObject *args)
     MUTEX_LOCK();
     if(viewer)
     {
-        AttributeSubject *plotAtts = viewer->GetPlotAttributes(objPluginIndex);
+        AttributeSubject *plotAtts = GetViewerState()->GetPlotAttributes(objPluginIndex);
         std::string id(pluginManager->GetEnabledID(objPluginIndex));
         CommonPlotPluginInfo *general = pluginManager->GetCommonPluginInfo(id);
         general->CopyAttributes(plotAtts, ((AttributesObject *)obj)->data);
         plotAtts->Notify();
-        viewer->SetPlotOptions(objPluginIndex);
+        GetViewerMethods()->SetPlotOptions(objPluginIndex);
     }
     MUTEX_UNLOCK();
 
@@ -6639,12 +6634,12 @@ visit_SetPlotSILRestriction(PyObject *self, PyObject *args)
     if(viewer)
     {
         // Set the apply to all plots toggle.
-        viewer->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
-        viewer->GetGlobalAttributes()->Notify();
+        GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
+        GetViewerState()->GetGlobalAttributes()->Notify();
 
         // Set the sil restriction.
         avtSILRestriction_p silr = PySILRestriction_FromPyObject(obj);
-        viewer->SetPlotSILRestriction(silr);
+        GetViewerProxy()->SetPlotSILRestriction(silr);
     }
     MUTEX_UNLOCK();
 
@@ -6677,7 +6672,7 @@ visit_GetPickOutput(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     std::string pickOut;
-    PickAttributes *pa = viewer->GetPickAttributes();
+    PickAttributes *pa = GetViewerState()->GetPickAttributes();
     if (pa->GetFulfilled())
     {
         pa->CreateOutputString(pickOut);
@@ -6715,7 +6710,7 @@ visit_GetQueryOutputString(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     std::string queryOut;
-    QueryAttributes *qa = viewer->GetQueryAttributes();
+    QueryAttributes *qa = GetViewerState()->GetQueryAttributes();
     queryOut = qa->GetResultsMessage();
     return PyString_FromString(queryOut.c_str());
 }
@@ -6743,7 +6738,7 @@ visit_GetQueryOutputValue(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
     NO_ARGUMENTS();
 
-    QueryAttributes *qa = viewer->GetQueryAttributes();
+    QueryAttributes *qa = GetViewerState()->GetQueryAttributes();
     doubleVector vals = qa->GetResultsValue();
     PyObject *retval;
     if (vals.size() == 1)
@@ -6795,12 +6790,12 @@ visit_GetOutputArray(PyObject *self, PyObject *args)
     }
     PyObject *retval;
     MUTEX_LOCK();
-        viewer->UpdatePlotInfoAtts(plotId, winId);
+        GetViewerMethods()->UpdatePlotInfoAtts(plotId, winId);
     MUTEX_UNLOCK();
     // Wait until viewer has finished updating the plot Info atts
     int error = Synchronize();
     // Retrieve the update plot info atts.
-    PlotInfoAttributes *pia = viewer->GetPlotInfoAtts();
+    PlotInfoAttributes *pia = GetViewerState()->GetPlotInfoAttributes();
     if (pia == NULL)
     {
         retval = PyString_FromString("Plot did not define an output array."); 
@@ -6857,7 +6852,7 @@ ListCategoryHelper(SILCategoryRole role)
     MUTEX_LOCK();
     if(viewer)
     {
-        avtSILRestriction_p silr = viewer->GetPlotSILRestriction();
+        avtSILRestriction_p silr = GetViewerProxy()->GetPlotSILRestriction();
 
         // Print the material collections for each whole set in the SIL.
         avtSILRestrictionTraverser trav(silr);
@@ -6921,7 +6916,7 @@ GetCategoryTupleHelper(SILCategoryRole role)
     MUTEX_LOCK();
     if(viewer)
     {
-        avtSILRestriction_p silr = viewer->GetPlotSILRestriction();
+        avtSILRestriction_p silr = GetViewerProxy()->GetPlotSILRestriction();
 
         // Print the material collections for each whole set in the SIL.
         for(int i = 0; i < silr->GetNumCollections(); ++i)
@@ -6998,7 +6993,7 @@ bool
 TurnOnOffHelper(SILCategoryRole role, bool val, const stringVector &names)
 {
     bool retval = true;
-    avtSILRestriction_p silr = viewer->GetPlotSILRestriction();
+    avtSILRestriction_p silr = GetViewerProxy()->GetPlotSILRestriction();
 
     // Print the material collections for each whole set in the SIL.
     for(int i = 0; i < silr->GetNumCollections(); ++i)
@@ -7053,11 +7048,11 @@ TurnOnOffHelper(SILCategoryRole role, bool val, const stringVector &names)
     }
 
     // Set the apply to all plots toggle.
-    viewer->GetGlobalAttributes()->SetApplyOperator(false);
-    viewer->GetGlobalAttributes()->Notify();
+    GetViewerState()->GetGlobalAttributes()->SetApplyOperator(false);
+    GetViewerState()->GetGlobalAttributes()->Notify();
 
     // Send the modified SIL restriction to the viewer.
-    viewer->SetPlotSILRestriction(silr);
+    GetViewerProxy()->SetPlotSILRestriction(silr);
 
     return retval;
 }
@@ -7377,7 +7372,7 @@ visit_ColorTableNames(PyObject *self, PyObject *args)
     MUTEX_LOCK();
 
     // Allocate a tuple the with enough entries to hold the plugin name list.
-    const stringVector &ctNames = viewer->GetColorTableAttributes()->GetNames();
+    const stringVector &ctNames = GetViewerState()->GetColorTableAttributes()->GetNames();
     PyObject *retval = PyTuple_New(ctNames.size());
 
     for(int i = 0; i < ctNames.size(); ++i)
@@ -7413,7 +7408,7 @@ visit_NumColorTables(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
     NO_ARGUMENTS();
 
-    const stringVector &ctNames = viewer->GetColorTableAttributes()->GetNames();
+    const stringVector &ctNames = GetViewerState()->GetColorTableAttributes()->GetNames();
     PyObject *retval = PyLong_FromLong(ctNames.size());
 
     return retval;
@@ -7449,7 +7444,7 @@ visit_SetActiveContinuousColorTable(PyObject *self, PyObject *args)
     }
 
     MUTEX_LOCK();
-        viewer->SetActiveContinuousColorTable(ctName);
+        GetViewerMethods()->SetActiveContinuousColorTable(ctName);
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -7483,7 +7478,7 @@ visit_SetActiveDiscreteColorTable(PyObject *self, PyObject *args)
     }
 
     MUTEX_LOCK();
-        viewer->SetActiveDiscreteColorTable(ctName);
+        GetViewerMethods()->SetActiveDiscreteColorTable(ctName);
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -7509,7 +7504,7 @@ visit_GetActiveContinuousColorTable(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
-    const std::string &ct = viewer->GetColorTableAttributes()->GetActiveContinuous();
+    const std::string &ct = GetViewerState()->GetColorTableAttributes()->GetActiveContinuous();
     PyObject *retval = PyString_FromString(ct.c_str());
 
     return retval;
@@ -7536,7 +7531,7 @@ visit_GetActiveDiscreteColorTable(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
     NO_ARGUMENTS();
 
-    const std::string &ct = viewer->GetColorTableAttributes()->GetActiveDiscrete();
+    const std::string &ct = GetViewerState()->GetColorTableAttributes()->GetActiveDiscrete();
     PyObject *retval = PyString_FromString(ct.c_str());
 
     return retval;
@@ -7563,7 +7558,7 @@ visit_GetNumPlots(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
     NO_ARGUMENTS();
 
-    return PyInt_FromLong(long(viewer->GetPlotList()->GetNumPlots()));
+    return PyInt_FromLong(long(GetViewerState()->GetPlotList()->GetNumPlots()));
 }
 
 // ****************************************************************************
@@ -7695,10 +7690,10 @@ visit_Queries(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
     NO_ARGUMENTS();
 
-    stringVector queries = viewer->GetQueryList()->GetNames();
+    stringVector queries = GetViewerState()->GetQueryList()->GetNames();
 
     // We only want to include Database queries, so count them.
-    intVector types = viewer->GetQueryList()->GetTypes();
+    intVector types = GetViewerState()->GetQueryList()->GetTypes();
     int nQueries = 0; 
     for(int i = 0; i < types.size(); ++i)
     {
@@ -7749,11 +7744,11 @@ visit_QueriesOverTime(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
     NO_ARGUMENTS();
 
-    stringVector queries = viewer->GetQueryList()->GetNames();
+    stringVector queries = GetViewerState()->GetQueryList()->GetNames();
 
     // We only want to include Database time queries, so count them.
-    intVector types = viewer->GetQueryList()->GetTypes();
-    intVector mode = viewer->GetQueryList()->GetQueryMode();
+    intVector types = GetViewerState()->GetQueryList()->GetTypes();
+    intVector mode = GetViewerState()->GetQueryList()->GetQueryMode();
     int nQueries = 0; 
     for(int i = 0; i < types.size(); ++i)
     {
@@ -7832,7 +7827,7 @@ visit_PrintWindow(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->PrintWindow();
+        GetViewerMethods()->PrintWindow();
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -7862,7 +7857,7 @@ visit_SetWindowArea(PyObject *self, PyObject *args)
         return NULL;
 
     MUTEX_LOCK();
-        viewer->SetWindowArea(x, y, w, h);
+        GetViewerMethods()->SetWindowArea(x, y, w, h);
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -7899,10 +7894,10 @@ visit_SetAnimationTimeout(PyObject *self, PyObject *args)
     }
 
     MUTEX_LOCK();
-        AnimationAttributes *atts = viewer->GetAnimationAttributes();
+        AnimationAttributes *atts = GetViewerState()->GetAnimationAttributes();
         atts->SetTimeout(milliSeconds);
         atts->Notify();
-        viewer->SetAnimationAttributes();
+        GetViewerMethods()->SetAnimationAttributes();
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -7929,7 +7924,7 @@ visit_GetAnimationTimeout(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
     NO_ARGUMENTS();
-    return PyLong_FromLong(long(viewer->GetAnimationAttributes()->GetTimeout()));
+    return PyLong_FromLong(long(GetViewerState()->GetAnimationAttributes()->GetTimeout()));
 }
 
 // ****************************************************************************
@@ -7957,10 +7952,10 @@ visit_SetPipelineCachingMode(PyObject *self, PyObject *args)
         return NULL;
 
     MUTEX_LOCK();
-        AnimationAttributes *atts = viewer->GetAnimationAttributes();
+        AnimationAttributes *atts = GetViewerState()->GetAnimationAttributes();
         atts->SetPipelineCachingMode(val != 0);
         atts->Notify();
-        viewer->SetAnimationAttributes();
+        GetViewerMethods()->SetAnimationAttributes();
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -7987,7 +7982,7 @@ visit_GetPipelineCachingMode(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
     NO_ARGUMENTS();
-    return PyLong_FromLong(long(viewer->GetAnimationAttributes()->GetPipelineCachingMode()?1:0));
+    return PyLong_FromLong(long(GetViewerState()->GetAnimationAttributes()->GetPipelineCachingMode()?1:0));
 }
 
 // ****************************************************************************
@@ -8023,10 +8018,10 @@ visit_SetLight(PyObject *self, PyObject *args)
              << "for all plots, change light 0 type to Ambient." << endl; 
     }
     MUTEX_LOCK();
-    LightList *lightlist = viewer->GetLightList();
+    LightList *lightlist = GetViewerState()->GetLightList();
     lightlist->SetLight(index, *light);
     lightlist->Notify();
-    viewer->SetLightList();
+    GetViewerMethods()->SetLightList();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -8062,7 +8057,7 @@ visit_GetLight(PyObject *self, PyObject *args)
     {
         light->SetEnabledFlag(true);
     }
-    *light = viewer->GetLightList()->GetLight(index);
+    *light = GetViewerState()->GetLightList()->GetLight(index);
 
     return pylight;
 }
@@ -8163,7 +8158,7 @@ visit_ToggleMaintainViewMode(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->ToggleMaintainViewMode();
+        GetViewerMethods()->ToggleMaintainViewMode();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -8189,7 +8184,7 @@ visit_ToggleMaintainDataMode(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->ToggleMaintainDataMode();
+        GetViewerMethods()->ToggleMaintainDataMode();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -8215,7 +8210,7 @@ visit_ToggleLockTime(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->ToggleLockTime();
+        GetViewerMethods()->ToggleLockTime();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -8241,7 +8236,7 @@ visit_ToggleLockTools(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->ToggleLockTools();
+        GetViewerMethods()->ToggleLockTools();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -8269,7 +8264,7 @@ visit_ToggleBoundingBoxMode(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->ToggleBoundingBoxMode();
+        GetViewerMethods()->ToggleBoundingBoxMode();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -8297,7 +8292,7 @@ visit_ToggleLockViewMode(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->ToggleLockViewMode();
+        GetViewerMethods()->ToggleLockViewMode();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -8325,7 +8320,7 @@ visit_ToggleSpinMode(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->ToggleSpinMode();
+        GetViewerMethods()->ToggleSpinMode();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());;
@@ -8353,7 +8348,7 @@ visit_ToggleCameraViewMode(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->ToggleCameraViewMode();
+        GetViewerMethods()->ToggleCameraViewMode();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());;
@@ -8380,7 +8375,7 @@ visit_ToggleFullFrameMode(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->ToggleFullFrameMode();
+        GetViewerMethods()->ToggleFullFrameMode();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());;
@@ -8408,7 +8403,7 @@ visit_UndoView(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->UndoView();
+        GetViewerMethods()->UndoView();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -8436,7 +8431,7 @@ visit_RedoView(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->RedoView();
+        GetViewerMethods()->RedoView();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -8464,7 +8459,7 @@ visit_WriteConfigFile(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->WriteConfigFile();
+        GetViewerMethods()->WriteConfigFile();
     MUTEX_LOCK();
 
     Py_INCREF(Py_None);
@@ -8588,7 +8583,7 @@ visit_Query(PyObject *self, PyObject *args)
     }
 
     MUTEX_LOCK();
-        viewer->DatabaseQuery(qname, vars, false, arg1, arg2, doGlobal,
+        GetViewerMethods()->DatabaseQuery(qname, vars, false, arg1, arg2, doGlobal,
                               darg1, darg2);
     MUTEX_UNLOCK();
 
@@ -8617,7 +8612,7 @@ visit_SuppressQueryOutputOn(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
     NO_ARGUMENTS();
     MUTEX_LOCK();
-        viewer->SuppressQueryOutput(true);
+        GetViewerMethods()->SuppressQueryOutput(true);
     MUTEX_UNLOCK();
     return IntReturnValue(Synchronize());
 }
@@ -8642,7 +8637,7 @@ visit_SuppressQueryOutputOff(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
     NO_ARGUMENTS();
     MUTEX_LOCK();
-        viewer->SuppressQueryOutput(false);
+        GetViewerMethods()->SuppressQueryOutput(false);
     MUTEX_UNLOCK();
     return IntReturnValue(Synchronize());
 }
@@ -8708,7 +8703,7 @@ visit_QueryOverTime(PyObject *self, PyObject *args)
     }
 
     MUTEX_LOCK();
-        viewer->DatabaseQuery(queryName, vars, true, arg1, arg2);
+        GetViewerMethods()->DatabaseQuery(queryName, vars, true, arg1, arg2);
 
         char tmp[1024];
         SNPRINTF(tmp, 1024, "QueryOverTime(\"%s\", %d, %d, %s)\n", queryName,
@@ -8791,9 +8786,9 @@ visit_Pick(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         if (!wp)
-            viewer->Pick(x, y, vars);
+            GetViewerMethods()->Pick(x, y, vars);
         else 
-            viewer->Pick(pt,  vars);
+            GetViewerMethods()->Pick(pt,  vars);
 
         char tmp[1024];
         SNPRINTF(tmp, 1024, "Pick(%d, %d, %s)\n", x, y,
@@ -8868,9 +8863,9 @@ visit_NodePick(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         if (!wp)
-            viewer->NodePick(x, y, vars);
+            GetViewerMethods()->NodePick(x, y, vars);
         else 
-            viewer->NodePick(pt, vars);
+            GetViewerMethods()->NodePick(pt, vars);
 
         char tmp[1024];
         SNPRINTF(tmp, 1024, "Pick(%d, %d, %s)\n", x, y,
@@ -8904,7 +8899,7 @@ visit_ResetPickLetter(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->ResetPickLetter();
+        GetViewerMethods()->ResetPickLetter();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -8932,7 +8927,7 @@ visit_ResetLineoutColor(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->ResetLineoutColor();
+        GetViewerMethods()->ResetLineoutColor();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -8960,7 +8955,7 @@ visit_ResetPickAttributes(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->ResetPickAttributes();
+        GetViewerMethods()->ResetPickAttributes();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());;
@@ -9003,9 +8998,9 @@ visit_SetPickAttributes(PyObject *self, PyObject *args)
         PickAttributes *pa = PyPickAttributes_FromPyObject(pick);
 
         // Copy the object into the pick attributes.
-        *(viewer->GetPickAttributes()) = *pa;
-        viewer->GetPickAttributes()->Notify();
-        viewer->SetPickAttributes();
+        *(GetViewerState()->GetPickAttributes()) = *pa;
+        GetViewerState()->GetPickAttributes()->Notify();
+        GetViewerMethods()->SetPickAttributes();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());;
@@ -9049,9 +9044,9 @@ visit_SetDefaultPickAttributes(PyObject *self, PyObject *args)
         PickAttributes *pa = PyPickAttributes_FromPyObject(pick);
 
         // Copy the object into the view attributes.
-        *(viewer->GetPickAttributes()) = *pa;
-        viewer->GetPickAttributes()->Notify();
-        viewer->SetDefaultPickAttributes();
+        *(GetViewerState()->GetPickAttributes()) = *pa;
+        GetViewerState()->GetPickAttributes()->Notify();
+        GetViewerMethods()->SetDefaultPickAttributes();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());;
@@ -9082,7 +9077,7 @@ visit_GetPickAttributes(PyObject *self, PyObject *args)
     PickAttributes *pa = PyPickAttributes_FromPyObject(retval);
 
     // Copy the viewer proxy's pick atts into the return data structure.
-    *pa = *(viewer->GetPickAttributes());
+    *pa = *(GetViewerState()->GetPickAttributes());
 
     return retval;
 }
@@ -9110,7 +9105,7 @@ visit_ResetInteractorAttributes(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->ResetInteractorAttributes();
+        GetViewerMethods()->ResetInteractorAttributes();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());;
@@ -9154,9 +9149,9 @@ visit_SetInteractorAttributes(PyObject *self, PyObject *args)
         InteractorAttributes *ia = PyInteractorAttributes_FromPyObject(interactor);
 
         // Copy the object into the pick attributes.
-        *(viewer->GetInteractorAttributes()) = *ia;
-        viewer->GetInteractorAttributes()->Notify();
-        viewer->SetInteractorAttributes();
+        *(GetViewerState()->GetInteractorAttributes()) = *ia;
+        GetViewerState()->GetInteractorAttributes()->Notify();
+        GetViewerMethods()->SetInteractorAttributes();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());;
@@ -9200,9 +9195,9 @@ visit_SetDefaultInteractorAttributes(PyObject *self, PyObject *args)
         InteractorAttributes *ia = PyInteractorAttributes_FromPyObject(interactor);
 
         // Copy the object into the view attributes.
-        *(viewer->GetInteractorAttributes()) = *ia;
-        viewer->GetInteractorAttributes()->Notify();
-        viewer->SetDefaultInteractorAttributes();
+        *(GetViewerState()->GetInteractorAttributes()) = *ia;
+        GetViewerState()->GetInteractorAttributes()->Notify();
+        GetViewerMethods()->SetDefaultInteractorAttributes();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());;
@@ -9233,7 +9228,7 @@ visit_GetInteractorAttributes(PyObject *self, PyObject *args)
     InteractorAttributes *ia = PyInteractorAttributes_FromPyObject(retval);
 
     // Copy the viewer proxy's pick atts into the return data structure.
-    *ia = *(viewer->GetInteractorAttributes());
+    *ia = *(GetViewerState()->GetInteractorAttributes());
 
     return retval;
 }
@@ -9261,7 +9256,7 @@ visit_ResetQueryOverTimeAttributes(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        viewer->ResetQueryOverTimeAttributes();
+        GetViewerMethods()->ResetQueryOverTimeAttributes();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());;
@@ -9305,9 +9300,9 @@ visit_SetQueryOverTimeAttributes(PyObject *self, PyObject *args)
             PyQueryOverTimeAttributes_FromPyObject(queryOverTime);
 
         // Copy the object into the pick attributes.
-        *(viewer->GetQueryOverTimeAttributes()) = *tqa;
-        viewer->GetQueryOverTimeAttributes()->Notify();
-        viewer->SetQueryOverTimeAttributes();
+        *(GetViewerState()->GetQueryOverTimeAttributes()) = *tqa;
+        GetViewerState()->GetQueryOverTimeAttributes()->Notify();
+        GetViewerMethods()->SetQueryOverTimeAttributes();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());;
@@ -9352,9 +9347,9 @@ visit_SetDefaultQueryOverTimeAttributes(PyObject *self, PyObject *args)
             PyQueryOverTimeAttributes_FromPyObject(queryOverTime);
 
         // Copy the object into the time query attributes.
-        *(viewer->GetQueryOverTimeAttributes()) = *tqa;
-        viewer->GetQueryOverTimeAttributes()->Notify();
-        viewer->SetDefaultQueryOverTimeAttributes();
+        *(GetViewerState()->GetQueryOverTimeAttributes()) = *tqa;
+        GetViewerState()->GetQueryOverTimeAttributes()->Notify();
+        GetViewerMethods()->SetDefaultQueryOverTimeAttributes();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());;
@@ -9385,7 +9380,7 @@ visit_GetQueryOverTimeAttributes(PyObject *self, PyObject *args)
     QueryOverTimeAttributes *tqa = PyQueryOverTimeAttributes_FromPyObject(retval);
 
     // Copy the viewer proxy's pick atts into the return data structure.
-    *tqa = *(viewer->GetQueryOverTimeAttributes());
+    *tqa = *(GetViewerState()->GetQueryOverTimeAttributes());
 
     return retval;
 }
@@ -9429,9 +9424,9 @@ visit_SetGlobalLineoutAttributes(PyObject *self, PyObject *args)
             PyGlobalLineoutAttributes_FromPyObject(globalLineout);
 
         // Copy the object into the global lineout attributes.
-        *(viewer->GetGlobalLineoutAttributes()) = *gla;
-        viewer->GetGlobalLineoutAttributes()->Notify();
-        viewer->SetGlobalLineoutAttributes();
+        *(GetViewerState()->GetGlobalLineoutAttributes()) = *gla;
+        GetViewerState()->GetGlobalLineoutAttributes()->Notify();
+        GetViewerMethods()->SetGlobalLineoutAttributes();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());;
@@ -9463,7 +9458,7 @@ visit_GetGlobalLineoutAttributes(PyObject *self, PyObject *args)
     GlobalLineoutAttributes *gla = PyGlobalLineoutAttributes_FromPyObject(retval);
 
     // Copy the viewer proxy's global lineout atts into the return data structure.
-    *gla = *(viewer->GetGlobalLineoutAttributes());
+    *gla = *(GetViewerState()->GetGlobalLineoutAttributes());
 
     return retval;
 }
@@ -9498,7 +9493,7 @@ visit_DomainPick(const char *type, int el, int dom, stringVector vars, bool doGl
     double pt[3] = {0., 0., 0};
 
     MUTEX_LOCK();
-        viewer->PointQuery(type, pt, vars, false, el, dom, doGlobal);
+        GetViewerMethods()->PointQuery(type, pt, vars, false, el, dom, doGlobal);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -9749,9 +9744,9 @@ visit_Lineout(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         // Lineout should not be applied to more than one plot at a time. 
-        viewer->GetGlobalAttributes()->SetApplyOperator(false);
-        viewer->GetGlobalAttributes()->Notify();
-        viewer->Lineout(p0, p1, vars, samples);
+        GetViewerState()->GetGlobalAttributes()->SetApplyOperator(false);
+        GetViewerState()->GetGlobalAttributes()->Notify();
+        GetViewerMethods()->Lineout(p0, p1, vars, samples);
 
         // Write the output to the log
         char tmp[1024];
@@ -9860,7 +9855,7 @@ visit_CreateAnnotationObject(PyObject *self, PyObject *args)
 
     // Create the annotation.
     MUTEX_LOCK();
-        viewer->AddAnnotationObject(annotTypeIndex);
+        GetViewerMethods()->AddAnnotationObject(annotTypeIndex);
     MUTEX_UNLOCK();
     int errorFlag = Synchronize();
 
@@ -9870,7 +9865,7 @@ visit_CreateAnnotationObject(PyObject *self, PyObject *args)
     if(errorFlag == 0)
     {
         MUTEX_LOCK();
-            AnnotationObjectList *aol = viewer->GetAnnotationObjectList();
+            AnnotationObjectList *aol = GetViewerState()->GetAnnotationObjectList();
             const AnnotationObject &newObject = aol->operator[](aol->GetNumAnnotationObjects() - 1);
 
             //
@@ -9970,14 +9965,15 @@ visit_GetProcessAttributes(PyObject *self, PyObject *args)
     PyObject *retval = PyProcessAttributes_NewPyObject();
     ProcessAttributes *pa = PyProcessAttributes_FromPyObject(retval);
 
-    viewer->QueryProcessAttributes(componentName, engineHostName, engineDbName);
+    int id = Init::ComponentNameToID(componentName);
+    GetViewerMethods()->QueryProcessAttributes(id, engineHostName, engineDbName);
 
     Synchronize();
 
-    viewer->GetProcessAttributes();
+    GetViewerState()->GetProcessAttributes();
 
     // Copy the viewer proxy's window information into the return data structure.
-    *pa = *(viewer->GetProcessAttributes());
+    *pa = *(GetViewerState()->GetProcessAttributes());
 
     return retval;
 }
@@ -10003,7 +9999,7 @@ visit_GetMeshManagementAttributes(PyObject *self, PyObject *args)
     MeshManagementAttributes *ra = PyMeshManagementAttributes_FromPyObject(retval);
 
     // Copy the viewer proxy's window information into the return data structure.
-    *ra = *(viewer->GetMeshManagementAttributes());
+    *ra = *(GetViewerState()->GetMeshManagementAttributes());
 
     return retval;
 }
@@ -10041,9 +10037,9 @@ visit_SetMeshManagementAttributes(PyObject *self, PyObject *args)
         MeshManagementAttributes *ra = PyMeshManagementAttributes_FromPyObject(mmAtts);
 
         // Copy the object into the view attributes.
-        *(viewer->GetMeshManagementAttributes()) = *ra;
-        viewer->GetMeshManagementAttributes()->Notify();
-        viewer->SetMeshManagementAttributes();
+        *(GetViewerState()->GetMeshManagementAttributes()) = *ra;
+        GetViewerState()->GetMeshManagementAttributes()->Notify();
+        GetViewerMethods()->SetMeshManagementAttributes();
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -10082,9 +10078,9 @@ visit_SetDefaultMeshManagementAttributes(PyObject *self, PyObject *args)
         MeshManagementAttributes *va = PyMeshManagementAttributes_FromPyObject(mma);
 
         // Copy the object into the view attributes.
-        *(viewer->GetMeshManagementAttributes()) = *va;
-        viewer->GetMeshManagementAttributes()->Notify();
-        viewer->SetDefaultMeshManagementAttributes();
+        *(GetViewerState()->GetMeshManagementAttributes()) = *va;
+        GetViewerState()->GetMeshManagementAttributes()->Notify();
+        GetViewerMethods()->SetDefaultMeshManagementAttributes();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -10130,7 +10126,7 @@ UpdateAnnotationHelper(AnnotationObject *annot)
     else
     {
         // The annotation was in the local object list.
-        AnnotationObjectList *aol = viewer->GetAnnotationObjectList();
+        AnnotationObjectList *aol = GetViewerState()->GetAnnotationObjectList();
         if(aol->GetNumAnnotationObjects() == localObjectList.size())
         {
             MUTEX_LOCK();
@@ -10147,7 +10143,7 @@ UpdateAnnotationHelper(AnnotationObject *annot)
             aol->Notify();
 
             // Make the viewer use the options.
-            viewer->SetAnnotationObjectOptions();
+            GetViewerMethods()->SetAnnotationObjectOptions();
 
             MUTEX_UNLOCK();
 
@@ -10187,7 +10183,7 @@ DeleteAnnotationObjectHelper(AnnotationObject *annot)
     MUTEX_LOCK();
 
     bool needToDelete = false;
-    AnnotationObjectList *aol = viewer->GetAnnotationObjectList();
+    AnnotationObjectList *aol = GetViewerState()->GetAnnotationObjectList();
     if(aol->GetNumAnnotationObjects() == localObjectList.size())
     {
         std::vector<AnnotationObject *> compactedObjectList;
@@ -10238,7 +10234,7 @@ DeleteAnnotationObjectHelper(AnnotationObject *annot)
         // it to the viewer.
         aol->SelectAll();
         aol->Notify();
-        viewer->SetAnnotationObjectOptions();
+        GetViewerMethods()->SetAnnotationObjectOptions();
     }
     MUTEX_UNLOCK();
     Synchronize();
@@ -10247,7 +10243,7 @@ DeleteAnnotationObjectHelper(AnnotationObject *annot)
     if(needToDelete)
     {
         MUTEX_LOCK();
-        viewer->DeleteActiveAnnotationObjects();
+        GetViewerMethods()->DeleteActiveAnnotationObjects();
         MUTEX_UNLOCK();
 
         Synchronize();
@@ -10340,7 +10336,7 @@ visit_ClientMethod(PyObject *self, PyObject *args)
     const char *CMError = "The tuple passed as the arguments to the"
                           "client method must contain only int, long, "
                           " float, tuples, or lists.";
-    ClientMethod *m = viewer->GetClientMethod();
+    ClientMethod *m = GetViewerState()->GetClientMethod();
     m->ClearArgs();
 
     if (!PyArg_ParseTuple(args, "s", &name))
@@ -10538,7 +10534,7 @@ ExecuteClientMethod(ClientMethod *method, bool onNewThread)
     if(method->GetMethodName() == "_QueryClientInformation")
     {
         // The viewer uses this method to discover information about the GUI.
-        ClientInformation *info = viewer->GetClientInformation();
+        ClientInformation *info = GetViewerState()->GetClientInformation();
         info->SetClientName("cli");
         info->ClearMethods();
 
@@ -10561,10 +10557,10 @@ ExecuteClientMethod(ClientMethod *method, bool onNewThread)
         // from the first thread, we did not arrive here from xfer and
         // turning off its updates messes up Synchronize.
         if(onNewThread)
-           viewer->SetXferUpdate(true);
+           GetViewerProxy()->SetXferUpdate(true);
         info->Notify();
         if(onNewThread)
-           viewer->SetXferUpdate(false);
+           GetViewerProxy()->SetXferUpdate(false);
     }
     else if(method->GetMethodName() == "Interrupt")
     {
@@ -10603,7 +10599,7 @@ ExecuteClientMethod(ClientMethod *method, bool onNewThread)
             // from the first thread, we did not arrive here from xfer and
             // turning off its updates messes up Synchronize.
             if(onNewThread)
-               viewer->SetXferUpdate(true);
+               GetViewerProxy()->SetXferUpdate(true);
 
             // We don't want to get here re-entrantly so disable the client method
             // observer temporarily.
@@ -10611,14 +10607,14 @@ ExecuteClientMethod(ClientMethod *method, bool onNewThread)
 
             stringVector args;
             args.push_back(Macro_GetString());
-            ClientMethod *newM = viewer->GetClientMethod();
+            ClientMethod *newM = GetViewerState()->GetClientMethod();
             newM->ClearArgs();
             newM->SetMethodName("AcceptRecordedMacro");
             newM->SetStringArgs(args);
             newM->Notify();
 
             if(onNewThread)
-               viewer->SetXferUpdate(false);
+               GetViewerProxy()->SetXferUpdate(false);
         }
 
         Macro_SetString("");
@@ -10627,7 +10623,7 @@ ExecuteClientMethod(ClientMethod *method, bool onNewThread)
     else
     {
         // Determine whether the method is supported by this client.
-        int okay = viewer->MethodRequestHasRequiredInformation();
+        int okay = GetViewerProxy()->MethodRequestHasRequiredInformation();
      
         if(okay == 0)
         {
@@ -11422,23 +11418,23 @@ AddExtensions()
 static void
 InitializeExtensions()
 {
-    PyAnnotationAttributes_StartUp(viewer->GetAnnotationAttributes(), 0);
-    PyConstructDDFAttributes_StartUp(viewer->GetConstructDDFAttributes(), 0);
-    PyExportDBAttributes_StartUp(viewer->GetExportDBAttributes(), 0);
-    PyGlobalAttributes_StartUp(viewer->GetGlobalAttributes(), 0);
+    PyAnnotationAttributes_StartUp(GetViewerState()->GetAnnotationAttributes(), 0);
+    PyConstructDDFAttributes_StartUp(GetViewerState()->GetConstructDDFAttributes(), 0);
+    PyExportDBAttributes_StartUp(GetViewerState()->GetExportDBAttributes(), 0);
+    PyGlobalAttributes_StartUp(GetViewerState()->GetGlobalAttributes(), 0);
     PyHostProfile_StartUp(0, 0);
-    PyMaterialAttributes_StartUp(viewer->GetMaterialAttributes(), 0);
-    PyMeshManagementAttributes_StartUp(viewer->GetMeshManagementAttributes(), 0);
-    PyPickAttributes_StartUp(viewer->GetPickAttributes(), 0);
-    PyPrinterAttributes_StartUp(viewer->GetPrinterAttributes(), 0);
-    PyProcessAttributes_StartUp(viewer->GetProcessAttributes(), 0);
-    PyRenderingAttributes_StartUp(viewer->GetRenderingAttributes(), 0);
-    PySaveWindowAttributes_StartUp(viewer->GetSaveWindowAttributes(), 0);
-    PyWindowInformation_StartUp(viewer->GetWindowInformation(), 0);
+    PyMaterialAttributes_StartUp(GetViewerState()->GetMaterialAttributes(), 0);
+    PyMeshManagementAttributes_StartUp(GetViewerState()->GetMeshManagementAttributes(), 0);
+    PyPickAttributes_StartUp(GetViewerState()->GetPickAttributes(), 0);
+    PyPrinterAttributes_StartUp(GetViewerState()->GetPrinterAttributes(), 0);
+    PyProcessAttributes_StartUp(GetViewerState()->GetProcessAttributes(), 0);
+    PyRenderingAttributes_StartUp(GetViewerState()->GetRenderingAttributes(), 0);
+    PySaveWindowAttributes_StartUp(GetViewerState()->GetSaveWindowAttributes(), 0);
+    PyWindowInformation_StartUp(GetViewerState()->GetWindowInformation(), 0);
 
-    PyViewCurveAttributes_StartUp(viewer->GetViewCurveAttributes(), (void *)SS_log_ViewCurve);
-    PyView2DAttributes_StartUp(viewer->GetView2DAttributes(), (void *)SS_log_View2D);
-    PyView3DAttributes_StartUp(viewer->GetView3DAttributes(), (void *)SS_log_View3D);
+    PyViewCurveAttributes_StartUp(GetViewerState()->GetViewCurveAttributes(), (void *)SS_log_ViewCurve);
+    PyView2DAttributes_StartUp(GetViewerState()->GetView2DAttributes(), (void *)SS_log_View2D);
+    PyView3DAttributes_StartUp(GetViewerState()->GetView3DAttributes(), (void *)SS_log_View3D);
 }
 
 // ****************************************************************************
@@ -11525,7 +11521,7 @@ PlotPluginAddInterface()
         debug1 << "Initializing "
                << info->GetName()
                << " plot plugin." << endl;
-        info->InitializePlugin(viewer->GetPlotAttributes(i), 0);
+        info->InitializePlugin(GetViewerState()->GetPlotAttributes(i), 0);
 
         // Add the plugin's methods to the visit module's table of methods.
         int  nMethods = 0;
@@ -11596,7 +11592,7 @@ OperatorPluginAddInterface()
         debug1 << "Initializing "
                << pluginManager->GetCommonPluginInfo(id)->GetName()
                << " operator plugin." << endl;
-        info->InitializePlugin(viewer->GetOperatorAttributes(i), 0);
+        info->InitializePlugin(GetViewerState()->GetOperatorAttributes(i), 0);
 
         // Add the plugin's methods to the visit module's table of methods.
         int  nMethods = 0;
@@ -11663,7 +11659,7 @@ DelayedLoadPlugins()
 
     // Tell the viewer proxy to load its plugins now that we know which
     // ones we need to load.
-    viewer->LoadPlugins();
+    GetViewerProxy()->LoadPlugins();
 
     debug1 << "DelayedLoadPlugins: end" << endl;
 }
@@ -11780,39 +11776,39 @@ InitializeModule()
     // Ensure that the viewer will be run in a mode that does not check for
     // interruption when reading back from the engine.
     //
-    viewer->AddArgument("-noint");
+    GetViewerProxy()->AddArgument("-noint");
 
     //
     // Add the debuglevel argument to the viewer proxy.
     //
     if(moduleDebugLevel > 0)
     {
-        viewer->AddArgument("-debug");
+        GetViewerProxy()->AddArgument("-debug");
         char tmp[10];
         SNPRINTF(tmp, 10, "%d", moduleDebugLevel);
-        viewer->AddArgument(tmp);        
+        GetViewerProxy()->AddArgument(tmp);        
     }
 
     //
     // Add the optional command line arguments coming from cli_argv.
     //
     for(int i = 1; i < cli_argc; ++i)
-        viewer->AddArgument(cli_argv[i]);
+        GetViewerProxy()->AddArgument(cli_argv[i]);
 
     //
     // Hook up observers
     //
-    messageObserver = new VisItMessageObserver(viewer->GetMessageAttributes());
-    statusObserver = new VisItStatusObserver(viewer->GetStatusAttributes());
+    messageObserver = new VisItMessageObserver(GetViewerState()->GetMessageAttributes());
+    statusObserver = new VisItStatusObserver(GetViewerState()->GetStatusAttributes());
     statusObserver->SetVerbose(moduleVerbose);
-    pluginLoader = new ObserverToCallback(viewer->GetPluginManagerAttributes(),
+    pluginLoader = new ObserverToCallback(GetViewerState()->GetPluginManagerAttributes(),
                                           NeedToLoadPlugins);
-    clientMethodObserver = new ObserverToCallback(viewer->GetClientMethod(),
+    clientMethodObserver = new ObserverToCallback(GetViewerState()->GetClientMethod(),
                                           ExecuteClientMethodHelper);
-    stateLoggingObserver = new ObserverToCallback(viewer->GetLogRPC(),
+    stateLoggingObserver = new ObserverToCallback(GetViewerState()->GetLogRPC(),
                                                   LogRPCs);
 #ifndef POLLING_SYNCHRONIZE
-    synchronizeCallback = new ObserverToCallback(viewer->GetSyncAttributes(),
+    synchronizeCallback = new ObserverToCallback(GetViewerState()->GetSyncAttributes(),
                                                  WakeMainThread);
 #endif
 
@@ -11993,12 +11989,12 @@ LaunchViewer(const char *visitProgram)
         //
         // Try and connect to the viewer.
         //
-        viewer->Create(visitProgram, &cli_argc, &cli_argv);
+        GetViewerProxy()->Create(visitProgram, &cli_argc, &cli_argv);
 
         //
         // Tell the windows to show themselves
         //
-        viewer->ShowAllWindows();
+        GetViewerMethods()->ShowAllWindows();
 
         //
         // Set a flag indicating the viewer exists.
@@ -12152,7 +12148,7 @@ CloseModule()
     {
         debug1 << "Telling the viewer to close." << endl;
         if(!viewerInitiatedQuit)
-            viewer->Detach();
+            GetViewerMethods()->Detach();
         delete viewer;
         viewer = 0;
         debug1 << "The viewer closed." << endl;
@@ -12255,24 +12251,66 @@ cli_runscript(const char *fileName)
 }
 
 // ****************************************************************************
-// Function: VisItViewer
+// Function: GetViewerProxy
 //
 // Purpose:
-//   Returns a read-only pointer to the viewer proxy.
+//   Gets the viewer proxy.
 //
 // Notes:      
 //
 // Programmer: Brad Whitlock
-// Creation:   Tue Dec 18 11:19:00 PDT 2001
+// Creation:   Tue Feb 13 11:57:53 PDT 2007
 //
 // Modifications:
 //   
 // ****************************************************************************
 
-const ViewerProxy *
-VisItViewer()
+ViewerProxy *
+GetViewerProxy()
 {
     return viewer;
+}
+
+// ****************************************************************************
+// Function: GetViewerState
+//
+// Purpose: 
+//   Returns a pointer to the viewer's state.
+//
+// Returns:    A pointer to the viewer's state
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Feb 13 11:48:45 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ViewerState *
+GetViewerState()
+{
+    return viewer->GetViewerState();
+}
+
+// ****************************************************************************
+// Function: GetViewerMethods
+//
+// Purpose: 
+//   Returns a pointer to the viewer's methods.
+//
+// Returns:    A pointer to the viewer's methods.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Feb 13 11:48:05 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ViewerMethods *
+GetViewerMethods()
+{
+    return viewer->GetViewerMethods();
 }
 
 // ****************************************************************************
@@ -12539,14 +12577,14 @@ visit_eventloop(void *)
     {
         // Block until we have input to read.
         viewerBlockingRead = true;
-        if(viewer->GetWriteConnection()->NeedsRead(true))
+        if(GetViewerProxy()->GetWriteConnection()->NeedsRead(true))
         {
             viewerBlockingRead = false;
             TRY
             {
                 // Process input.
                 MUTEX_LOCK();
-                    viewer->ProcessInput();
+                    GetViewerProxy()->ProcessInput();
                 MUTEX_UNLOCK();
             }
             CATCH(LostConnectionException)
@@ -12655,7 +12693,7 @@ Synchronize()
     // correct value.
     MUTEX_LOCK();
     ++syncCount;
-    SyncAttributes *syncAtts = viewer->GetSyncAttributes();
+    SyncAttributes *syncAtts = GetViewerState()->GetSyncAttributes();
     syncAtts->SetSyncTag(syncCount);
 #ifndef POLLING_SYNCHRONIZE
     synchronizeCallback->SetUpdate(false);

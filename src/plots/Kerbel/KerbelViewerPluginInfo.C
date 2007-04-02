@@ -201,7 +201,7 @@ KerbelViewerPluginInfo::AllocAvtPlot()
 
 void
 KerbelViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    const avtDatabaseMetaData *, const char *)
+    ViewerPlot *)
 {
     *(KerbelAttributes*)atts = *defaultAtts;
 }

@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2006, The Regents of the University of California
+* Copyright (c) 2000 - 2007, The Regents of the University of California
 * Produced at the Lawrence Livermore National Laboratory
 * All rights reserved.
 *
@@ -34,214 +34,189 @@
 * DAMAGE.
 *
 *****************************************************************************/
+#include <avtSpreadsheetRenderer.h>
 
-#include <ViewerMessaging.h>
-#include <ViewerSubject.h>
+#include <vtkFieldData.h>
+#include <vtkDataArray.h>
+#include <vtkDataSet.h>
+#include <vtkRenderer.h>
+#include <vtkRenderWindow.h>
 
-// An external pointer to the ViewerSubject.
-extern ViewerSubject *viewerSubject;
+#include <avtCallback.h>
 
-// ****************************************************************************
-// Function: Error
-//
-// Purpose:
-//   Sends an error message to the observers of the viewer's messageAtts
-//   subject.
-//
-// Notes:      
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Apr 23 14:03:48 PST 2001
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-Error(const char *message)
-{
-    viewerSubject->Error(message);
-}
+#include <avtOpenGLSpreadsheetTraceRenderer.h>
+#include <avtMesaSpreadsheetTraceRenderer.h>
 
 // ****************************************************************************
-// Function: Warning
-//
-// Purpose:
-//   Sends a warning message to the observers of the viewer's messageAtts
-//   subject.
-//
-// Notes:      
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Apr 23 14:03:48 PST 2001
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-Warning(const char *message)
-{
-    viewerSubject->Warning(message);
-}
-
-// ****************************************************************************
-// Function: Message
-//
-// Purpose:
-//   Sends a message to the observers of the viewer's messageAtts subject.
-//
-// Notes:      
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Apr 23 14:03:48 PST 2001
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-Message(const char *message)
-{
-    viewerSubject->Message(message);
-}
-
-// ****************************************************************************
-// Function: ErrorClear
-//
-// Purpose:
-//   Sends an error clear message to the observers of the viewer's messageAtts
-//   subject.
-//
-// Notes:      
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu May 11 15:04:39 PST 2006
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ErrorClear()
-{
-    viewerSubject->ErrorClear();
-}
-
-// ****************************************************************************
-// Function: Status
+// Method: avtSpreadsheetRenderer::avtSpreadsheetRenderer
 //
 // Purpose: 
-//   Sends a status message to the GUI. This is displayed in the status bar.
-//
-// Arguments:
-//   message : The message that gets displayed.
+//   Constructor for the avtSpreadsheetRenderer class.
 //
 // Programmer: Brad Whitlock
-// Creation:   Mon Apr 30 14:45:28 PST 2001
+// Creation:   Tue Feb 20 14:29:14 PST 2007
 //
 // Modifications:
 //   
 // ****************************************************************************
 
-void
-Status(const char *message)
+avtSpreadsheetRenderer::avtSpreadsheetRenderer() : avtCustomRenderer(), atts()
 {
-    viewerSubject->Status(message);
+    plotDisplay = 0;
+    rendererImplementation = 0;
+    fgColor[0] = fgColor[1] = fgColor[2] = 1.;
 }
 
 // ****************************************************************************
-// Function: Status
+// Method: avtSpreadsheetRenderer::~avtSpreadsheetRenderer
 //
 // Purpose: 
-//   Sends a status message to the GUI. This is displayed in the status bar.
-//
-// Arguments:
-//   message      : The message that gets displayed.
-//   milliseconds : How long the message shoould be displayed.
+//   Destructor for the avtSpreadsheetRenderer class.
 //
 // Programmer: Brad Whitlock
-// Creation:   Fri Sep 21 13:22:01 PST 2001
+// Creation:   Tue Feb 20 14:29:58 PST 2007
 //
 // Modifications:
 //   
 // ****************************************************************************
 
-void
-Status(const char *message, int milliseconds)
+avtSpreadsheetRenderer::~avtSpreadsheetRenderer()
 {
-    viewerSubject->Status(message, milliseconds);
+    ReleaseGraphicsResources();
 }
 
 // ****************************************************************************
-// Function: Status
+// Method: avtSpreadsheetRenderer::New
 //
 // Purpose: 
-//   Sends a status message to the GUI. This is displayed in the status bar.
-//
-// Arguments:
-//   message : The message that gets displayed.
+//   Returns a new instance of the class.
 //
 // Programmer: Brad Whitlock
-// Creation:   Mon Apr 30 14:45:28 PST 2001
+// Creation:   Tue Feb 20 14:30:14 PST 2007
 //
 // Modifications:
 //   
 // ****************************************************************************
 
-void
-Status(const char *sender, const char *message)
+avtSpreadsheetRenderer *
+avtSpreadsheetRenderer::New(void)
 {
-    viewerSubject->Status(sender, message);
+    return new avtSpreadsheetRenderer;
 }
 
 // ****************************************************************************
-// Function: Status
+// Method: avtSpreadsheetRenderer::ReleaseGraphicsResources
 //
 // Purpose: 
-//   Sends a status message back to the GUI. This message contains information
-//   about a progressive operation in the engine.
-//
-// Arguments:
-//   sender       : The component that sent the status update. This is a
-//                  host name for an engine that sent the message.
-//   percent      : The percent through the current stage.
-//   curStage     : The number of the current stage.
-//   curStageName : The name of the current stage.
-//   maxStage     : The maximum number of stages.
+//   Releases the graphics resources.
 //
 // Programmer: Brad Whitlock
-// Creation:   Mon Apr 30 14:46:17 PST 2001
+// Creation:   Wed Feb 21 09:48:14 PDT 2007
 //
 // Modifications:
 //   
 // ****************************************************************************
 
 void
-Status(const char *sender, int percent, int curStage,
-       const char *curStageName, int maxStage)
+avtSpreadsheetRenderer::ReleaseGraphicsResources()
 {
-    viewerSubject->Status(sender, percent, curStage, curStageName, maxStage);
+    if (rendererImplementation != 0)
+    {
+        VTKRen->GetRenderWindow()->MakeCurrent();
+        delete rendererImplementation;
+        rendererImplementation = 0;
+    }
 }
 
 // ****************************************************************************
-// Function: ClearStatus
+// Method: avtSpreadsheetRenderer::SetAtts
 //
 // Purpose: 
-//   Clears the status bar in the GUI.
+//   Sets the plot attributes that will be used for rendering.
 //
 // Arguments:
-//   sender : The component that sent the message.
+//   ssa : The spreadsheet attributes that will be used.
 //
 // Programmer: Brad Whitlock
-// Creation:   Mon Apr 30 14:47:14 PST 2001
+// Creation:   Tue Feb 20 14:30:37 PST 2007
 //
 // Modifications:
 //   
 // ****************************************************************************
 
 void
-ClearStatus(const char *sender)
+avtSpreadsheetRenderer::SetAtts(const AttributeGroup *ssa)
 {
-    viewerSubject->ClearStatus(sender);
+    atts = *((SpreadsheetAttributes *)ssa);
 }
+
+// ****************************************************************************
+// Method: avtSpreadsheetRenderer::SetForegroundColor
+//
+// Purpose: 
+//   Sets the foreground so the renderer can draw the plot bounding box in the
+//   correct color.
+//
+// Arguments:
+//   fg : The rgb values for the color.
+//
+// Returns:    True if the foreground does not matched the cached foreground
+//             color. False otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Feb 20 14:31:07 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+avtSpreadsheetRenderer::SetForegroundColor(const double *fg)
+{
+    bool retVal = (fgColor[0] != fg[0] || 
+                   fgColor[1] != fg[1] || 
+                   fgColor[2] != fg[2]);
+    fgColor[0] = fg[0];
+    fgColor[1] = fg[1];
+    fgColor[2] = fg[2];
+
+    return retVal;
+}
+
+// ****************************************************************************
+// Method: avtSpreadsheetRenderer::RenderTracePlane
+//
+// Purpose: 
+//   Renders the trace plane for the dataset. This is the piece of the
+//   Spreadsheet plot that exists in the vis window.
+//
+// Arguments:
+//   ds : The data to be rendered by the Spreadsheet plot.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Feb 20 14:32:10 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtSpreadsheetRenderer::RenderTracePlane(vtkDataSet *ds)
+{
+    // Get the extents
+    vtkDataArray *bounds = ds->GetFieldData()->GetArray("avtOriginalBounds");
+    if(bounds != 0 && atts.GetShowTracerPlane())
+    {
+        if(rendererImplementation == 0)
+        {
+            if(avtCallback::GetSoftwareRendering())
+                rendererImplementation = new avtMesaSpreadsheetTraceRenderer;
+            else
+                rendererImplementation = new avtOpenGLSpreadsheetTraceRenderer;
+        }
+         
+        if(rendererImplementation != 0)
+             rendererImplementation->Render(ds, bounds, atts, fgColor);
+    }
+}
+

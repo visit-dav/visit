@@ -638,7 +638,7 @@ QvisSaveMovieWizard::WriteTemplateSpecification()
                 // new template
                 debug1 << mName << "Telling viewer to export session "
                        << sessionFile.c_str() << endl;
-                viewer->ExportEntireState(sessionFile);
+                GetViewerMethods()->ExportEntireState(sessionFile);
                 templateSpec->SetSessionFile(sessionFile);
             }
 

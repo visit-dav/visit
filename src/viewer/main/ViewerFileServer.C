@@ -61,7 +61,6 @@
 #include <ParsingExprList.h>
 #include <SILAttributes.h>
 #include <ViewerConnectionProgressDialog.h>
-#include <ViewerMessaging.h>
 #include <ViewerWindowManager.h>
 
 #include <DebugStream.h>

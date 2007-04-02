@@ -78,6 +78,9 @@
 #    Brad Whitlock, Fri Apr 15 10:29:41 PDT 2005
 #    I added PostponedAction.
 #
+#    Brad Whitlock, Mon Feb 12 09:12:56 PDT 2007
+#    I added ViewerMethdods and ViewerState.
+#
 ##############################################################################
 
 ##
@@ -92,8 +95,8 @@ CPPFLAGS=-I. @CPPFLAGS@
 ##
 ## Files...
 ##
-SRC=PostponedAction.C ViewerRPC.C
-HDR=PostponedAction.h ViewerRPC.h
+SRC=PostponedAction.C ViewerRPC.C ViewerMethods.C ViewerState.C
+HDR=PostponedAction.h ViewerRPC.h ViewerMethods.h ViewerState.h
 OBJ=$(SRC:.C=.o)
 LIB=libviewerrpc
 LIBS=-lmisc -lstate -lcomm -lutility

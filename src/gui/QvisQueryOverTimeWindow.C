@@ -445,7 +445,7 @@ QvisQueryOverTimeWindow::Apply(bool ignore)
         GetCurrentValues(-1);
         atts->Notify();
 
-        viewer->SetQueryOverTimeAttributes();
+        GetViewerMethods()->SetQueryOverTimeAttributes();
     }
     else
         atts->Notify();
@@ -495,7 +495,7 @@ QvisQueryOverTimeWindow::makeDefault()
 {
     GetCurrentValues(-1);
     atts->Notify();
-    viewer->SetDefaultQueryOverTimeAttributes();
+    GetViewerMethods()->SetDefaultQueryOverTimeAttributes();
 }
 
 
@@ -515,7 +515,7 @@ QvisQueryOverTimeWindow::makeDefault()
 void
 QvisQueryOverTimeWindow::reset()
 {
-    viewer->ResetQueryOverTimeAttributes();
+    GetViewerMethods()->ResetQueryOverTimeAttributes();
 }
 
 

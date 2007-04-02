@@ -38,6 +38,7 @@
 #ifndef VIEWER_SERVER_MANAGER_H
 #define VIEWER_SERVER_MANAGER_H
 #include <viewer_exports.h>
+#include <ViewerBase.h>
 #include <vectortypes.h>
 #include <map>
 
@@ -72,9 +73,12 @@ class ViewerConnectionProgressDialog;
 //    Jeremy Meredith, Tue Mar 30 10:51:33 PST 2004
 //    Added support for simulations.
 //
+//    Brad Whitlock, Mon Feb 12 17:46:53 PST 2007
+//    Added ViewerBase base class.
+//
 // ****************************************************************************
 
-class VIEWER_API ViewerServerManager
+class VIEWER_API ViewerServerManager : public ViewerBase
 {
     typedef std::map<std::string, LauncherProxy *> LauncherMap;
 public:

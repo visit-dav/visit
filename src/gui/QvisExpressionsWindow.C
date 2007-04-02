@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2006, The Regents of the University of California
+* Copyright (c) 2000 - 2007, The Regents of the University of California
 * Produced at the Lawrence Livermore National Laboratory
 * All rights reserved.
 *
@@ -117,6 +117,9 @@
 //
 //    Hank Childs, Fri Jan 12 13:20:33 PST 2007
 //    Added array_compose_with_bins
+//
+//    Cyrus Harrison, Tue Feb 20 12:02:00 PST 2007
+//    Added conn_components
 //
 // ****************************************************************************
 
@@ -268,6 +271,7 @@ const char *expr_mesh[] = {
 };
 
 const char *expr_misc[] = {
+    "conn_components",
     "curl",
     "divergence",
     "gauss_curvature",
@@ -689,7 +693,7 @@ QvisExpressionsWindow::Apply(bool forceUpdate)
     exprList->Notify();
 
     if (AutoUpdate() || forceUpdate)
-        viewer->ProcessExpressions();
+        GetViewerMethods()->ProcessExpressions();
 }
 
 // ****************************************************************************
