@@ -82,19 +82,19 @@ avtTecplotWriter::WriteHeaders(const avtDatabaseMetaData *md,
 
     // BAD -- ASSUMES 3D
     variableList.clear();
-    file << "TITLE = \"" << md->GetDatabaseName() << ": "
-         <<md->GetDatabaseComment() <<"\"" << endl;
+    file << "TITLE = \"" << md->GetDatabaseName().c_str() << ": "
+         << md->GetDatabaseComment().c_str() <<"\"" << endl;
     file << "VARIABLES = \"X\", \"Y\", \"Z\", ";
     for (int i=0; i < scalars.size(); i++)
     {
         variableList.push_back(scalars[i]);
-        file << "\"" << scalars[i] << "\"";
+        file << "\"" << scalars[i].c_str() << "\"";
         if (i < scalars.size()-1 || hadMaterial)
             file << ", ";
     }
 
     if (hadMaterial)
-        file << "\"" << materials[0] << "\"";
+        file << "\"" << materials[0].c_str() << "\"";
 
     file << endl;
 }
@@ -266,7 +266,7 @@ avtTecplotWriter::WriteUnstructuredMesh(vtkUnstructuredGrid *ug, int chunk)
          << "N="<<npts<<", "
          << "E="<<nelements<<", "
          << "F=FEBLOCK, "
-         << "ET=" << elemType << endl;
+         << "ET=" << elemType.c_str() << endl;
     file << endl;
 
     vtkPoints *vtk_pts = ug->GetPoints();

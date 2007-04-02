@@ -2357,70 +2357,70 @@ QvisAnnotationWindow::GetCurrentValues(int which_widget)
     if (which_widget == 17 || doAll)
     {
         temp = xAxisUserTitleLineEdit2D->displayText().stripWhiteSpace();
-        annotationAtts->SetXAxisUserTitle2D(temp);
+        annotationAtts->SetXAxisUserTitle2D(temp.latin1());
     }
 
     // Do yAxisUserTitle2D
     if (which_widget == 18 || doAll)
     {
         temp = yAxisUserTitleLineEdit2D->displayText().stripWhiteSpace();
-        annotationAtts->SetYAxisUserTitle2D(temp);
+        annotationAtts->SetYAxisUserTitle2D(temp.latin1());
     }
 
     // Do xAxisUserUnits2D
     if (which_widget == 19 || doAll)
     {
         temp = xAxisUserUnitsLineEdit2D->displayText().stripWhiteSpace();
-        annotationAtts->SetXAxisUserUnits2D(temp);
+        annotationAtts->SetXAxisUserUnits2D(temp.latin1());
     }
 
     // Do yAxisUserUnits2D
     if (which_widget == 20 || doAll)
     {
         temp = yAxisUserUnitsLineEdit2D->displayText().stripWhiteSpace();
-        annotationAtts->SetYAxisUserUnits2D(temp);
+        annotationAtts->SetYAxisUserUnits2D(temp.latin1());
     }
 
     // Do xAxisUserTitle
     if (which_widget == 21 || doAll)
     {
         temp = xAxisUserTitleLineEdit->displayText().stripWhiteSpace();
-        annotationAtts->SetXAxisUserTitle(temp);
+        annotationAtts->SetXAxisUserTitle(temp.latin1());
     }
 
     // Do yAxisUserTitle
     if (which_widget == 22 || doAll)
     {
         temp = yAxisUserTitleLineEdit->displayText().stripWhiteSpace();
-        annotationAtts->SetYAxisUserTitle(temp);
+        annotationAtts->SetYAxisUserTitle(temp.latin1());
     }
 
     // Do zAxisUserTitle
     if (which_widget == 23 || doAll)
     {
         temp = zAxisUserTitleLineEdit->displayText().stripWhiteSpace();
-        annotationAtts->SetZAxisUserTitle(temp);
+        annotationAtts->SetZAxisUserTitle(temp.latin1());
     }
 
     // Do xAxisUserUnits
     if (which_widget == 24 || doAll)
     {
         temp = xAxisUserUnitsLineEdit->displayText().stripWhiteSpace();
-        annotationAtts->SetXAxisUserUnits(temp);
+        annotationAtts->SetXAxisUserUnits(temp.latin1());
     }
 
     // Do yAxisUserUnits
     if (which_widget == 25 || doAll)
     {
         temp = yAxisUserUnitsLineEdit->displayText().stripWhiteSpace();
-        annotationAtts->SetYAxisUserUnits(temp);
+        annotationAtts->SetYAxisUserUnits(temp.latin1());
     }
 
     // Do zAxisUserUnits
     if (which_widget == 26 || doAll)
     {
         temp = zAxisUserUnitsLineEdit->displayText().stripWhiteSpace();
-        annotationAtts->SetZAxisUserUnits(temp);
+        annotationAtts->SetZAxisUserUnits(temp.latin1());
     }
 }
 

@@ -9,7 +9,7 @@
 #include <avtSTSDFileFormat.h>
 
 
-struct DBOptionsAttributes;
+class DBOptionsAttributes;
 
 
 // ****************************************************************************

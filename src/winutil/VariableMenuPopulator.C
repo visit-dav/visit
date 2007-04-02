@@ -15,6 +15,65 @@ using std::string;
 using std::vector;
 
 // ****************************************************************************
+// Function: Split
+//
+// Purpose: 
+//   Splits a variable name but it ignores slashes that are enclosed in
+//   parenthesis so Subset variables in subdirectories are split correctly.
+//
+// Arguments:
+//   varName : The path to split.
+//   pieces  : The pieces of the path.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Aug 20 17:23:19 PST 2002
+//
+// Modifications:
+//   Brad Whitlock, Thu Aug 18 15:58:40 PST 2005
+//   I made it be a static function since it has to work on data from two
+//   classes and it did not have access to one of the class's data.
+//
+// ****************************************************************************
+
+static void
+Split(const std::string &varName, stringVector &pieces)
+{
+    std::string word;
+    int         parenthesis = 0;
+
+    // Iterate through the characters in the word splitting
+    for(int i = 0; i < varName.size(); ++i)
+    {
+        char c = varName[i];
+        if(c == '(')
+        {
+            ++parenthesis;
+            word += c;
+        }
+        else if(c == ')')
+        {
+            --parenthesis;
+            word += c;
+        }
+        else if(c == '/')
+        {
+            if(parenthesis > 0)
+                word += c;
+            else
+            {
+                pieces.push_back(word);
+                word = "";
+            }
+        }
+        else
+            word += c;
+    }
+
+    if(word.size() > 0)
+        pieces.push_back(word);
+}
+
+// ****************************************************************************
 // Method: VariableMenuPopulator::VariableMenuPopulator
 //
 // Purpose: 
@@ -795,62 +854,6 @@ VariableMenuPopulator::UpdateSingleMenu(QvisVariablePopupMenu *menu,
 }
 
 // ****************************************************************************
-// Method: VariableMenuPopulator::Split
-//
-// Purpose: 
-//   Splits a variable name but it ignores slashes that are enclosed in
-//   parenthesis so Subset variables in subdirectories are split correctly.
-//
-// Arguments:
-//   varName : The path to split.
-//   pieces  : The pieces of the path.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Aug 20 17:23:19 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-VariableMenuPopulator::Split(const std::string &varName, stringVector &pieces)
-{
-    std::string word;
-    int         parenthesis = 0;
-
-    // Iterate through the characters in the word splitting
-    for(int i = 0; i < varName.size(); ++i)
-    {
-        char c = varName[i];
-        if(c == '(')
-        {
-            ++parenthesis;
-            word += c;
-        }
-        else if(c == ')')
-        {
-            --parenthesis;
-            word += c;
-        }
-        else if(c == '/')
-        {
-            if(parenthesis > 0)
-                word += c;
-            else
-            {
-                pieces.push_back(word);
-                word = "";
-            }
-        }
-        else
-            word += c;
-    }
-
-    if(word.size() > 0)
-        pieces.push_back(word);
-}
-
-// ****************************************************************************
 // Method: VariableMenuPopulator::AddVars
 //
 // Purpose: 
@@ -1109,6 +1112,10 @@ VariableMenuPopulator::VariableList::Size() const
 // Programmer: Mark C. Miller 
 // Creation:   Tue Jul 26 17:22:22 PDT 2005 
 //
+// Modifications:
+//    Brad Whitlock, Thu Aug 18 15:55:19 PST 2005
+//    Fixed on win32.
+//
 // ****************************************************************************
 
 bool
@@ -1119,7 +1126,7 @@ VariableMenuPopulator::VariableList::IsGroupingRequired(
     string var;
     bool validVar;
     bool isGroupingRequired = false;
-    map<string, vector<string> > entriesAtPath;
+    std::map<std::string, stringVector> entriesAtPath;
     InitTraversal();
     while(GetNextVariable(var, validVar))
     {
@@ -1130,7 +1137,7 @@ VariableMenuPopulator::VariableList::IsGroupingRequired(
         string path;
         for (j = 0; j < pathvar.size(); j++)
         {
-            map<string, vector<string> >::const_iterator p2 =
+            std::map<std::string, stringVector>::const_iterator p2 =
                 entriesAtPath.find(path);
             if (p2 == entriesAtPath.end())
                 entriesAtPath[path].push_back(pathvar[j]);
@@ -1164,7 +1171,7 @@ VariableMenuPopulator::VariableList::IsGroupingRequired(
     if (!isGroupingRequired)
         return false;
 
-    map<string, vector<vector<string> > > groupsAtPath;
+    std::map<std::string, std::vector<stringVector> > groupsAtPath;
     InitTraversal();
     while(GetNextVariable(var, validVar))
     {
@@ -1179,7 +1186,7 @@ VariableMenuPopulator::VariableList::IsGroupingRequired(
             {
                 if (groupsAtPath.find(path) == groupsAtPath.end())
                 {
-                    vector<vector<string> > groups;
+                    vector<stringVector> groups;
                     StringHelpers::GroupStringsFixedAlpha(entriesAtPath[path], 30, groups);
                     groupsAtPath[path] = groups;
                 }

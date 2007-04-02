@@ -2287,7 +2287,7 @@ avtArrayMetaData::Print(ostream &out, int indent) const
     out << "Components are: ";
     for (int i = 0 ; i < compNames.size() ; i++)
     {
-        out << compNames[i];
+        out << compNames[i].c_str();
         if (i != compNames.size()-1)
             out << ", ";
         else

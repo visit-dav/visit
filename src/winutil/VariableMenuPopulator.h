@@ -59,6 +59,9 @@ class QObject;
 //   Mark C. Miller, Tue Jul 26 17:22:22 PDT 2005
 //   Added support for grouping of the variable menu hierarchy
 //
+//   Brad Whitlock, Thu Aug 18 15:07:32 PST 2005
+//   Removed Split method and made it be a static function in the .C file.
+//
 // ****************************************************************************
 
 class WINUTIL_API VariableMenuPopulator
@@ -109,7 +112,6 @@ private:
 
     void UpdateSingleMenu(QvisVariablePopupMenu *, VariableList &vars,
                           QObject *, const char *slot);
-    static void Split(const std::string &varName, stringVector &pieces);
     void AddVars(VariableList &to, VariableList &from);
     void AddExpression(const Expression &);
     void GetRelevantExpressions(ExpressionList &newExpressionList,
