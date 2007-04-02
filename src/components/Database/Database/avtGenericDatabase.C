@@ -7206,6 +7206,9 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
 //    Hank Childs, Sat Mar  5 19:26:05 PST 2005
 //    Added argument canDoCollectiveCommunication.
 //
+//    Hank Childs, Fri Jan 20 17:11:59 PST 2006
+//    Added error message.
+//
 // ****************************************************************************
 
 bool
@@ -7241,7 +7244,13 @@ avtGenericDatabase::ApplyGhostForDomainNesting(avtDatasetCollection &ds,
 
         bool rightMesh = dn->ConfirmMesh(doms, list);
         if (!rightMesh)
+        {
+            debug1 << "UNUSUAL: the domain nesting object could not be used."
+                   << "  This is expected behavior if there are multiple "
+                   << "meshes, but is indicative of an error if there is only"
+                   << " one mesh." << endl;
             shouldStop = 1;
+        }
     }
     else
         shouldStop = 1;

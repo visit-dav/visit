@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+  <Plugin name="Chombo" type="database" label="Chombo" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false">
+    <CXXFLAGS> $(HDF5_INCLUDE) </CXXFLAGS>
+    <LIBS> $(HDF5_LIB) </LIBS>
+    <Extensions> hdf5 h5 </Extensions>
+  </Plugin>
