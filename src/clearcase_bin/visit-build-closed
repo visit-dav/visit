@@ -208,7 +208,14 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
+LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gnu/gcc-3.2/lib
+export LD_LIBRARY_PATH
 env CXXFLAGS=-O2 ./configure >> ../buildlog 2>&1
+cp /usr/local/gnu/gcc-3.2/lib/libgcc_s.so.1 lib
+cp /usr/local/gnu/gcc-3.2/lib/libstdc++.so.5 lib
+cd databases/Fluent
+sed "s/\\\$(CXXFLAGSORIG)/-D_LARGEFILE64_SOURCE -Wall -Wno-sign-compare -Wno-deprecated/" Makefile > Makefile+;rm Makefile;mv Makefile+ Makefile
+cd ../..
 make -j 4 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.sunos5.tar.gz ..
@@ -257,6 +264,9 @@ cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../buildlog 2>&1
+cd databases/Fluent
+sed "s/\\\$(CXXFLAGSORIG)/-isystem \\/usr\\/local\\/include -Wno-deprecated/" Makefile > Makefile+;rm Makefile;mv Makefile+ Makefile
+cd ../..
 gmake -j 3 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist -make gmake >> ../buildlog 2>&1
 mv visit\$ver2.osf1.tar.gz ..
@@ -355,6 +365,9 @@ cp /usr/gapps/visit/bz2/bzlib.h include
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../buildlog 2>&1
+cd databases/Fluent
+sed "s/\\\$(CXXFLAGSORIG)/-D_LARGEFILE64_SOURCE -Wall -Wno-sign-compare -Wno-deprecated/" Makefile > Makefile+;rm Makefile;mv Makefile+ Makefile
+cd ../..
 gmake -j 6 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist -make gmake >> ../buildlog 2>&1
 mv visit\$ver2.aix.tar.gz ..
