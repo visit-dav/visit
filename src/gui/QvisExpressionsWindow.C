@@ -690,6 +690,10 @@ QvisExpressionsWindow::addExpression()
 // Creation:   October 10, 2004
 //
 // Modifications:
+//    Jeremy Meredith, Mon Oct 17 10:39:56 PDT 2005
+//    Made the delete action access the expression list by index in the
+//    expression list (instead of assuming its index in the list box was
+//    correct).  This was an oversight from my 10/25/04 change.  ('5682)
 //   
 // ****************************************************************************
 void
@@ -700,7 +704,7 @@ QvisExpressionsWindow::delExpression()
     if (index <  0)
         return;
 
-    exprList->RemoveExpression(index);
+    exprList->RemoveExpression(indexMap[index]);
 
     exprList->Notify();
 }
@@ -751,6 +755,10 @@ QvisExpressionsWindow::definitionTextChanged()
 //    Always access the expression list by index, just in case there
 //    are two expressions with the same name.
 //
+//    Jeremy Meredith, Mon Oct 17 10:42:08 PDT 2005
+//    Never allow an empty name to get into the expression list.  This
+//    could cause crashes.  ('6295)
+//
 // ****************************************************************************
 void
 QvisExpressionsWindow::nameTextChanged(const QString &text)
@@ -763,6 +771,21 @@ QvisExpressionsWindow::nameTextChanged(const QString &text)
     Expression &e = (*exprList)[indexMap[index]];
 
     QString newname = text.stripWhiteSpace();
+
+    if (newname.isEmpty())
+    {
+        int newid = 1;
+        bool okay = false;
+        while (!okay)
+        {
+            newname.sprintf("unnamed%d", newid);
+            if ((*exprList)[newname.latin1()])
+                newid++;
+            else
+                okay = true;
+        }
+    }
+
     e.SetName(newname.latin1());
     BlockAllSignals(true);
     exprListBox->changeItem(newname, index);
