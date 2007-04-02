@@ -181,6 +181,9 @@
 #
 #    Mark C. Miller, Tue Nov 28 23:50:15 PST 2006
 #    Changed maxdiff to meddiff
+#
+#    Mark C. Miller, Wed Nov 29 08:19:52 PST 2006 
+#    Changed meddiff to avgdiff
 # ----------------------------------------------------------------------------
 
 # list of users who want email every night with the log file
@@ -491,12 +494,12 @@ mkdir test/cores
 
 # run the test
 #    - pixdiff is max % of pixels that can be different
-#    - meddiff is max median diff (in grayscale) of in any one pixel
+#    - avgdiff is max median diff (in grayscale) of in any one pixel
 cd test
 if test "$skipList" = ""; then
-    ./runtest -q -p -m optimized -d "$curdate" -notrackmem -pixdiff 10 -meddiff 10
+    ./runtest -q -p -m optimized -d "$curdate" -notrackmem -pixdiff 10 -avgdiff 10
 else
-    ./runtest -q -s "$skipList" -p -m optimized -d "$curdate" -notrackmem -pixdiff 10 -meddiff 10
+    ./runtest -q -s "$skipList" -p -m optimized -d "$curdate" -notrackmem -pixdiff 10 -avgdiff 10
 fi
 curerror=$?
 if test ! "$curerror" = "0"; then

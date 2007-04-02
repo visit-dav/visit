@@ -158,6 +158,8 @@ bool avtSiloFileFormat::madeGlobalSiloCalls = false;
 //    Mark C. Miller, Mon Jun 12 22:22:38 PDT 2006
 //    Enabled Silo's checksums
 //
+//    Mark C. Miller, Wed Nov 29 15:08:21 PST 2006
+//    Initialized connectivityIsTimeVarying
 // ****************************************************************************
 
 avtSiloFileFormat::avtSiloFileFormat(const char *toc_name)
@@ -200,6 +202,7 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name)
     tocIndex = 0;
 
     readGlobalInfo = false;
+    connectivityIsTimeVarying = false;
     groupInfo.haveGroups = false;
     hasDisjointElements = false;
 
@@ -991,6 +994,8 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Mark C. Miller, Thu Jul 13 22:41:56 PDT 2006
 //    Added reading of material colors, if available
 //
+//    Mark C. Miller, Wed Nov 29 15:08:21 PST 2006
+//    Set value for connectivityIsTimeVarying
 // ****************************************************************************
 
 void
@@ -1151,6 +1156,14 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     char  *searchpath_str = NULL;
     if (strcmp(dirname, "/") == 0)
     {
+        if (DBInqVarExists(dbfile, "ConnectivityIsTimeVarying"))
+        {
+            int tvFlag;
+            DBReadVar(dbfile, "ConnectivityIsTimeVarying", &tvFlag);
+            if (tvFlag == 1)
+                connectivityIsTimeVarying = true;
+        }
+
         if (DBInqVarExists(dbfile, "AlphabetizeVariables"))
         {
             int alphaFlag;
@@ -2906,13 +2919,19 @@ avtSiloFileFormat::DoRootDirectoryWork(avtDatabaseMetaData *md)
 //    avoids a bug where changing time steps could cause problems because 
 //    the processors with no data don't get back to this function anyway.
 //
+//    Mark C. Miller, Wed Nov 29 14:56:26 PST 2006
+//    Cached connectivity and group information for given timestep or -1
+//    depending on database setting for "ConnectivityIsTimeVarying" var
+//
 // ****************************************************************************
 
 void
 avtSiloFileFormat::GetConnectivityAndGroupInformation(DBfile *dbfile)
 {
+    int ts = connectivityIsTimeVarying ? timestep : -1;
+
     void_ref_ptr vr = cache->GetVoidRef("any_mesh",
-                            AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, -1, -1);
+                            AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, ts, -1);
     if (*vr != NULL)
     {
         // We've already got it from a previous time step;
@@ -3004,7 +3023,7 @@ avtSiloFileFormat::GetConnectivityAndGroupInformation(DBfile *dbfile)
         void_ref_ptr vr = void_ref_ptr(dbi,
                                       avtStructuredDomainBoundaries::Destruct);
         cache->CacheVoidRef("any_mesh",
-                       AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, -1, -1, vr);
+                       AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, ts, -1, vr);
 
         //
         // Hard to characterize when we would or would not be

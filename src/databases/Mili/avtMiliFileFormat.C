@@ -2076,6 +2076,10 @@ avtMiliFileFormat::GetNTimesteps()
 //    to address off-by-one errors during pick. Bob Corey says that so far,
 //    all clients that write mili data are Fortran clients. They expect to
 //    get node/zone numbers from pick starting from '1'. 
+//
+//    Mark C. Miller, Wed Nov 29 12:08:49 PST 2006
+//    Suppress creation of "no_free_nodes" flavors of expressions when
+//    not needed
 //    
 // ****************************************************************************
 
@@ -2085,6 +2089,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 {
     int i;
 
+    bool has_any_fn_mesh = false;
     vector<bool> has_fn_mesh;
     for (i = 0; i < nmeshes; ++i)
     {
@@ -2155,6 +2160,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                 md->Add(nofnmesh);
 
                 has_fn_mesh[i] = true;
+                has_any_fn_mesh = true;
             }
         }
     }
@@ -2263,15 +2269,18 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
     vector<string> dirs;
     dirs.push_back("");
-    dirs.push_back(string(no_free_nodes_str) + "/");
+    if (has_any_fn_mesh)
+        dirs.push_back(string(no_free_nodes_str) + "/");
 
     vector<string> ndirs;
     ndirs.push_back("");
-    ndirs.push_back(string(free_nodes_str) + "/");
+    if (has_any_fn_mesh)
+        ndirs.push_back(string(free_nodes_str) + "/");
 
     vector<string> nsuff; 
     nsuff.push_back("");
-    nsuff.push_back("_" + string(free_nodes_str));
+    if (has_any_fn_mesh)
+        nsuff.push_back("_" + string(free_nodes_str));
 
     TRY
     {
