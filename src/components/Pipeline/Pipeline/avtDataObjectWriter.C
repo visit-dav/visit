@@ -26,10 +26,14 @@
 //    Hank Childs, Mon Oct  1 09:08:13 PDT 2001
 //    Removed initialization of dataset, image.
 //
+//    Mark C. Miller, Wed Dec 14 16:43:07 PST 2005
+//    Added initialization of useCompression
+//
 // ****************************************************************************
 
 avtDataObjectWriter::avtDataObjectWriter() 
 {
+    useCompression = false;
 }
 
 

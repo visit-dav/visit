@@ -172,6 +172,9 @@
 #   Brad Whitlock, Tue Sep 6 11:37:20 PDT 2005
 #   Added a GDAL reader.
 #
+#   Hank Childs, Tue Dec 13 15:45:32 PST 2005
+#   Added Miranda reader.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -192,8 +195,8 @@ PDB=KullLite PDB
 SAF=SAF
 SAMPLES=Rect Hex
 REQUIRED=ANALYZE ANSYS AUXFile BOV CMAT Curve2D Dune EnSight Image Lines \
- NASTRAN OVERFLOW PATRAN PLOT2D PLOT3D Point3D SAR STL Shapefile Silo SimV1 \
- Spheral TFT Tecplot Vista VTK WavefrontOBJ Xmdv
+ Miranda NASTRAN OVERFLOW PATRAN PLOT2D PLOT3D Point3D SAR STL Shapefile Silo \
+ SimV1 Spheral TFT Tecplot Vista VTK WavefrontOBJ Xmdv
 VISUS=ViSUS
 
 OPTIONAL=

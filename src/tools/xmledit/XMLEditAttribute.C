@@ -189,10 +189,20 @@ XMLEditAttribute::purposeTextChanged(const QString &text)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Dec 13 16:16:43 PST 2005
+//    Handle empty code files more gracefully.
+//
 // ****************************************************************************
 void
 XMLEditAttribute::codefileTextChanged(const QString &text)
 {
+    if (text.isEmpty())
+    {
+        xmldoc->attribute->codeFile = NULL;
+        return;
+    }
     QString file = text;
     QString path = FilePath(xmldoc->filename);
     if (!path.isEmpty())

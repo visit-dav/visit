@@ -139,6 +139,11 @@ avtLevelsMapper::~avtLevelsMapper()
 //    Mark C. Miller, Thu Jan 20 22:27:39 PST 2005
 //    Passed opacity to InputWasModified
 //
+//    Hank Childs, Thu Dec  8 18:23:50 PST 2005
+//    Reset the specular color when we're done, since the SetColor call
+//    clobbers the specular light color, which in turn greatly diminishes
+//    the specular effect.  ['5636] ['5580]
+//
 // ****************************************************************************
 
 void
@@ -156,7 +161,12 @@ avtLevelsMapper::CustomizeMappers(void)
             //
             GetLevelColor(labelsForColorMapping[i], col);
             vtkProperty* prop = actors[i]->GetProperty();
+            float spec_color[4];
+            if (prop->GetSpecular() > 0.)
+                prop->GetSpecularColor(spec_color);
             prop->SetColor(col[0], col[1], col[2]);
+            if (prop->GetSpecular() > 0.)
+                prop->SetSpecularColor(spec_color);
             prop->SetOpacity(col[3]);
             prop->SetLineStipplePattern(LineStyle2StipplePattern(lineStyle));
             prop->SetLineWidth(LineWidth2Int(lineWidth));
@@ -417,11 +427,16 @@ avtLevelsMapper::SetLabels(vector<string> &labels, bool fromTree)
 //
 // Modifications:
 //
-//   Hank Childs, Tue Jul  9 08:44:00 PDT 2002
-//   Add support for transparency.
+//    Hank Childs, Tue Jul  9 08:44:00 PDT 2002
+//    Add support for transparency.
 //
 //    Mark C. Miller, Thu Jan 20 22:27:39 PST 2005
 //    Passed opacity to InputWasModified
+//
+//    Hank Childs, Thu Dec  8 18:23:50 PST 2005
+//    Reset the specular color when we're done, since the SetColor call
+//    clobbers the specular light color, which in turn greatly diminishes
+//    the specular effect.  ['5636] ['5580]
 //
 // ****************************************************************************
 
@@ -436,7 +451,12 @@ avtLevelsMapper::SetColors(const ColorAttributeList &c)
         {
             GetLevelColor(labelsForColorMapping[i], col);
             vtkProperty* prop = actors[i]->GetProperty();
+            float spec_color[4];
+            if (prop->GetSpecular() > 0.)
+                prop->GetSpecularColor(spec_color);
             prop->SetColor(col[0], col[1], col[2]);
+            if (prop->GetSpecular() > 0.)
+                prop->SetSpecularColor(spec_color);
             prop->SetOpacity(col[3]);
 
             if (transparencyActor != NULL)

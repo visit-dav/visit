@@ -1531,6 +1531,13 @@ class AttsGeneratorVariableName : public virtual VariableName , public virtual P
 //
 // ------------------------------------ Att -----------------------------------
 //
+// Modifications:
+//
+//   Hank Childs, Wed Dec 14 10:42:09 PST 2005
+//   Added print statement so that users will be redirected to get/set methods.
+//
+// ----------------------------------------------------------------------------
+
 class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorField
 {
   public:
@@ -1539,12 +1546,30 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
 
     virtual void WriteGetAttr(ostream &c, const QString &className)
     {
+        if(internal)
+            return;
+
         // Not implemented yet!
+        c << "    if (strcmp(name, \"" << name << "\") == 0)" << endl;
+        c << "    {" << endl;
+        c << "        cerr << \"You cannot access this data member directly.\";"
+          << endl;
+        c << "        cerr << \"\\nUse " << MethodNameGet() << "()\\n\\n\";" << endl;
+        c << "    }" << endl;
     }
 
     virtual void WriteSetAttr(ostream &c, const QString &className, bool first)
     {
+        if(internal)
+            return;
+
         // Not implemented yet!
+        c << "    if (strcmp(name, \"" << name << "\") == 0)" << endl;
+        c << "    {" << endl;
+        c << "        cerr << \"You cannot access this data member directly.\";"
+          << endl;
+        c << "        cerr << \"\\nUse " << MethodNameSet() << "()\\n\\n\";" << endl;
+        c << "    }" << endl;
     }
 
     virtual bool HasSetAttr()

@@ -103,6 +103,9 @@ class ProcessAttributes;
 //    Hank Childs, Thu May 26 11:50:45 PDT 2005
 //    Add ExportDatabase.
 //
+//    Mark C. Miller, Wed Dec 14 17:19:38 PST 2005
+//    Added compression bool to WriteData
+//
 // ****************************************************************************
 
 class Engine
@@ -141,6 +144,7 @@ class Engine
 
     // Method to write data back to the viewer
     void            WriteData(NonBlockingRPC *, avtDataObjectWriter_p &,
+                        bool useCompression=false,
                         bool respondWithNull=false, int scalableThresold=-1,
                         bool *scalableThresholdExceeded=0,
                         int currentTotalGlobalCellCount=0,
