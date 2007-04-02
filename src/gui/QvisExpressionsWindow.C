@@ -47,6 +47,9 @@
 //    cylindrical_theta, cylindrical, mod, round, ceil, floor, zoneid,
 //    nodeid, global_zoneid, and global_nodeid.
 //
+//    Hank Childs, Tue Aug 16 09:05:03 PDT 2005
+//    Added image processing category.
+//
 // ****************************************************************************
 struct ExprNameList
 {
@@ -196,20 +199,28 @@ const char *expr_misc[] = {
     NULL
 };
 
+const char *expr_imageprocessing[] = {
+    "conservative_smoothing",
+    "mean_filter",
+    "median_filter",
+    NULL
+};
+
 ExprNameList exprlist[] =
 {
-    {"Math",          expr_math},
-    {"Vector",        expr_vector},
-    {"Tensor",        expr_tensor},
-    {"Array",         expr_array},
-    {"Material",      expr_materials},
-    {"Mesh",          expr_mesh},
-    {"Mesh Quality",  expr_meshquality},
-    {"Miscellaneous", expr_misc},
-    {"Trigonometry",  expr_trig},
-    {"Comparison",    expr_comparison},
-    {"Conditional",   expr_conditional},
-    {"Logical",       expr_logical},
+    {"Math",             expr_math},
+    {"Vector",           expr_vector},
+    {"Tensor",           expr_tensor},
+    {"Array",            expr_array},
+    {"Material",         expr_materials},
+    {"Mesh",             expr_mesh},
+    {"Mesh Quality",     expr_meshquality},
+    {"Image Processing", expr_imageprocessing},
+    {"Miscellaneous",    expr_misc},
+    {"Trigonometry",     expr_trig},
+    {"Comparison",       expr_comparison},
+    {"Conditional",      expr_conditional},
+    {"Logical",          expr_logical},
     {NULL,NULL}
 };
 

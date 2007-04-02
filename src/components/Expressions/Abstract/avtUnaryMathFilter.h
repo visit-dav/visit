@@ -26,6 +26,10 @@ class     vtkDataArray;
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Hank Childs, Tue Aug 16 09:03:39 PDT 2005
+//    Add data member cur_mesh so derived types can access mesh when
+//    deriving variables.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtUnaryMathFilter : public avtSingleInputExpressionFilter
@@ -46,6 +50,7 @@ class EXPRESSION_API avtUnaryMathFilter : public avtSingleInputExpressionFilter
                                           { return numInInput; };
 
     avtCentering              centering;
+    vtkDataSet               *cur_mesh;
 };
 
 

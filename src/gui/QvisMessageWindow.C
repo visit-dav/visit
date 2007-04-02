@@ -109,6 +109,10 @@ QvisMessageWindow::~QvisMessageWindow()
 //   I made it smarter about dealing with messages that occur close together in time.
 //   Now, it will catenate them.
 //
+//   Mark C. Miller, Wed Jun 29 17:04:13 PDT 2005
+//   I made it catenate new message *only* if existing message didn't already
+//   contain text of new message.
+//
 // *************************************************************************************
 
 void
@@ -139,9 +143,12 @@ QvisMessageWindow::Update(Subject *)
 
         // catenate new message onto old 
         msgText = messageText->text();
-        msgText += "\n\nShortly thereafter, the following occured...\n\n";
         QString newMsgText = QString(ma->GetText().c_str());
-        msgText += newMsgText;
+        if (msgText.find(newMsgText) == -1)
+        {
+            msgText += "\n\nShortly thereafter, the following occured...\n\n";
+            msgText += newMsgText;
+        }
     }
     else
     {

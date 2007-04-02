@@ -103,5 +103,5 @@ CoordSwapGeneralPluginInfo::GetID() const
 bool
 CoordSwapGeneralPluginInfo::EnabledByDefault() const
 {
-    return true;
+    return false;
 }

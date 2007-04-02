@@ -771,6 +771,25 @@ void BroadcastInt(int &i)
 }
 
 // ****************************************************************************
+//  Function:  BroadcastBool
+//
+//  Purpose: Broadcast a bool from processor 0 to all other processors
+//
+//  Arguments:
+//    b          reference to the bool 
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    June 7, 2005 
+//
+// ****************************************************************************
+void BroadcastBool(bool &b)
+{
+    int tmp = b ? 1 : 0;
+    BroadcastInt(tmp);
+    b = tmp == 1 ? true : false;
+}
+
+// ****************************************************************************
 //  Function:  BroadcastIntVector
 //
 //  Purpose:

@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
-  <Plugin name="Decimate" label="Decimate" type="operator" version="1.0">
-    <Attribute name="DecimateAttributes" purpose="This class contains attributes for the decimate operator.">
-      <Field name="target" label="Target Reduction " type="double">0.1</Field>
+  <Plugin name="Decimate" type="operator" label="Decimate" version="1.0" enabled="false" mdspecificcode="false" onlyengine="false" noengine="false">
+    <Attribute name="DecimateAttributes" purpose="This class contains attributes for the decimate operator." persistent="true">
+      <Field name="target" label="Target Reduction " type="double">
+        0.100000
+      </Field>
     </Attribute>
   </Plugin>

@@ -174,6 +174,9 @@ typedef struct {
 //    Kathleen Bonnell, Wed Aug 10 16:46:17 PDT 2005
 //    Added ActivePlotsChanged. 
 //
+//    Kathleen Bonnell, Tue Aug 16 10:03:27 PDT 2005 
+//    Changed arg from ViewerWindow to ViewerPlot for EngineExistsForQuery. 
+//
 // ****************************************************************************
     
 class VIEWER_API ViewerQueryManager 
@@ -283,7 +286,7 @@ class VIEWER_API ViewerQueryManager
                     ViewerQueryManager();
 
   private:
-    bool            EngineExistsForQuery(ViewerWindow *);
+    bool            EngineExistsForQuery(ViewerPlot *);
     void            AddQuery(ViewerWindow *origwin, Line *lineAtts,
                              const bool fromDefault = true);
 

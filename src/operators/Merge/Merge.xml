@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+  <Plugin name="Merge" type="operator" label="Merge" version="1.0" enabled="false" mdspecificcode="false" onlyengine="false" noengine="false">
+    <Attribute name="MergeOperatorAttributes" purpose="Attributes for Merge operaetor" persistent="true" exportAPI="" exportInclude="">
+      <Field name="dummy" label="Unused field" type="bool">
+        true
+      </Field>
+    </Attribute>
+  </Plugin>

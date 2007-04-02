@@ -66,7 +66,7 @@
         default
       </Field>
       <Field name="pointType" label="Point Type" type="enum" subtype="PointType">
-        Box
+        Point
       </Field>
       <Field name="opaqueMeshIsAppropriate" label="Opaque Mesh Is Appropriate" type="bool" internal="true">
         true
@@ -75,7 +75,7 @@
         false
       </Field>
       <Field name="pointSizePixels" label="Point size pixels" type="int">
-        1
+        2
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>

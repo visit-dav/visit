@@ -34,6 +34,9 @@ using std::vector;
 //    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //    Added timeState arg to PopulateDatabaseMetaData to satisfy new interface
 //
+//    Mark C. Miller, Tue Aug 16 13:56:55 PDT 2005
+//    Added GetFile/GetTimeInfo
+//
 // ****************************************************************************
 
 class avtViSUSFileFormat : public avtMTSDFileFormat
@@ -64,6 +67,8 @@ class avtViSUSFileFormat : public avtMTSDFileFormat
 
   private:
 
+    void                   GetFile();
+    void                   GetTimeInfo();
     void                   SetupRectilinearCoordinates();
     void                   SetupDomainAndZoneIndexing(int *zoneCounts,
                                                       int *stepSizes,
@@ -73,6 +78,7 @@ class avtViSUSFileFormat : public avtMTSDFileFormat
 
     string fileName;
     IDX_file_descriptor idxFile;
+    bool haveOpenedFile;
 
     bool useGetData3D;
     bool haveSetupCoordinates;

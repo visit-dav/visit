@@ -107,6 +107,9 @@
 #
 #    Jeremy Meredith, Fri Dec 10 13:39:08 PST 2004
 #    Tools are now run directly instead of as an argument to visit.
+#
+#    Mark C. Miller, Tue Aug 16 13:56:55 PDT 2005
+#    Made Truecolor plot non-optional
 # 
 ##############################################################################
 
@@ -116,10 +119,10 @@
 all: message
 	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done
 
-OPTIONAL=Topology Truecolor
+OPTIONAL=Topology
 
 REQUIRED=Boundary Contour Curve FilledBoundary Histogram Label Mesh Pseudocolor \
-         Scatter Streamline Subset Surface Tensor Vector Volume
+         Scatter Streamline Subset Surface Tensor Truecolor Vector Volume
 
 SUBDIRS=$(REQUIRED) @PLOT_OPTIONAL_DIRS@
 ALLSUBDIRS=$(REQUIRED) $(OPTIONAL)

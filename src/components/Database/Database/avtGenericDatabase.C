@@ -180,6 +180,9 @@ static void ConvertToType(oT *obuf, const iT* ibuf, int n)
 //    Jeremy Meredith, Tue Apr  5 11:49:30 PDT 2005
 //    Removed the templating.  It was causing compiler errors.
 //
+//    Mark C. Miller, Tue Aug 16 13:56:55 PDT 2005
+//    Eliminated attempt to print array's name using GetName()
+//
 // ****************************************************************************
 
 static vtkDataArray * 
@@ -189,8 +192,7 @@ ConvertDataArrayToFloat(vtkDataArray *oldArr)
 
     if (oldArr->GetDataType() != VTK_FLOAT)
     {
-        debug5 << "avtGenericDatabase::Converting vktDataArray, \""
-               << oldArr->GetName() << "\" from type \""
+        debug5 << "avtGenericDatabase::Converting vktDataArray from type \""
                << DataArrayTypeName(oldArr) << "\" to \"float\"" << endl;
 
         newArr = vtkFloatArray::New();

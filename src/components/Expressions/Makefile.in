@@ -105,13 +105,18 @@
 #   Hank Childs, Thu Jul 21 11:24:46 PDT 2005
 #   Added avtArrayCompose/ArrayDecompose Filter.
 #
+#   Hank Childs, Mon Aug 15 14:51:30 PDT 2005
+#   Added ImageProcessing directory.
+#
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 
-SUBDIRS=Abstract Conditional Derivations General Management Math MeshQuality 
-SRC=$(Abstract_src) $(Conditional_src) $(Derivations_src) $(General_src) $(Management_src) $(Math_src) $(MeshQuality_src) 
+SUBDIRS=Abstract Conditional Derivations General ImageProcessing Management \
+        Math MeshQuality 
+SRC=$(Abstract_src) $(Conditional_src) $(Derivations_src) $(General_src) \
+    $(ImageProcessing_src) $(Management_src) $(Math_src) $(MeshQuality_src) 
 
 Abstract_src= \
   Abstract/avtBinaryMathFilter.C \
@@ -167,6 +172,11 @@ General_src= \
   General/avtVariableSkewFilter.C \
   General/avtVectorComposeFilter.C \
   General/avtVectorDecomposeFilter.C
+
+ImageProcessing_src= \
+  ImageProcessing/avtConservativeSmoothingExpression.C \
+  ImageProcessing/avtMeanFilterExpression.C \
+  ImageProcessing/avtMedianFilterExpression.C
 
 Management_src= \
   Management/avtExpressionEvaluatorFilter.C \
