@@ -159,7 +159,14 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
+LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/gapps/visit/gnu/3.2.3/linux_redhat7/lib
+export LD_LIBRARY_PATH
 env CXXFLAGS=-O2 ./configure >> ../buildlog 2>&1
+cp /usr/gapps/visit/gnu/3.2.3/linux_redhat7/lib/libgcc_s.so.1 lib
+cp /usr/gapps/visit/gnu/3.2.3/linux_redhat7/lib/libstdc++.so.5 lib
+cd databases/Fluent
+sed "s/\\\$(CXXFLAGSORIG)/-D_LARGEFILE64_SOURCE/" Makefile > Makefile+;rm Makefile;mv Makefile+ Makefile
+cd ../..
 make -j 4 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.linux.tar.gz ..
@@ -264,6 +271,8 @@ cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../buildlog 2>&1
+cp /usr/local/tools/gnu/gcc/3.3.3_tru64_5/lib/libgcc_s.so.1 lib
+cp /usr/local/tools/gnu/gcc/3.3.3_tru64_5/lib/libstdc++.so.5 lib
 cd databases/Fluent
 sed "s/\\\$(CXXFLAGSORIG)/-isystem \\/usr\\/local\\/include -Wno-deprecated/" Makefile > Makefile+;rm Makefile;mv Makefile+ Makefile
 cd ../..
@@ -365,6 +374,8 @@ cp /usr/gapps/visit/bz2/bzlib.h include
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../buildlog 2>&1
+cp /usr/local/tools/gnu/gcc/3.1_aix_5/lib/libgcc_s.a lib
+cp /usr/local/tools/gnu/gcc/3.1_aix_5/lib/libstdc++.a lib
 cd databases/Fluent
 sed "s/\\\$(CXXFLAGSORIG)/-D_LARGEFILE64_SOURCE -Wall -Wno-sign-compare -Wno-deprecated/" Makefile > Makefile+;rm Makefile;mv Makefile+ Makefile
 cd ../..
@@ -465,6 +476,8 @@ cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
+cp /lib/libgcc_s.so.1 lib
+cp /usr/lib/libstdc++.so.5 lib
 make -j 3 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.linux.tar.gz ..
@@ -515,6 +528,8 @@ cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
+cp /usr/local/tools/gnu/gcc/3.4.4_RH_chaos_3_x86_64/usr/lib64/libgcc_s.so.1 lib
+cp /usr/local/tools/gnu/gcc/3.4.4_RH_chaos_3_x86_64/usr/lib64/libstdc++.so.1 lib
 make -j 3 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ..

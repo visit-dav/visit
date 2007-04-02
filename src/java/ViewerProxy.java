@@ -221,6 +221,9 @@ import java.util.prefs.BackingStoreException;
 //   Brad Whitlock, Thu Mar 16 16:23:50 PST 2006
 //   Added DDF attributes.
 //
+//   Brad Whitlock, Fri Sep 22 14:17:25 PST 2006
+//   Added PlotInfoAttributes.
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -287,6 +290,7 @@ public class ViewerProxy implements SimpleObserver
         movieAtts = new MovieAttributes();
         meshManagementAtts = new MeshManagementAttributes();
         logRPC = new ViewerRPC();
+        plotInfoAtts = new PlotInfoAttributes();
 
         // Create the plugin managers.
         plotPlugins = new PluginManager("plot");
@@ -382,6 +386,7 @@ public class ViewerProxy implements SimpleObserver
             xfer.Add(clientMethod);
             xfer.Add(clientInformation);
             xfer.Add(clientInformationList);
+            xfer.Add(plotInfoAtts);
 
             xfer.Add(pluginAtts);
             xfer.Add(appearanceAtts);
@@ -1803,6 +1808,7 @@ public class ViewerProxy implements SimpleObserver
     public MovieAttributes GetMovieAttributes() { return movieAtts; }
     public MeshManagementAttributes GetMeshManagementAttributes() { return meshManagementAtts; }
     public ConstructDDFAttributes GetDDFAttributes() { return constructDDFAtts; }
+    public PlotInfoAttributes GetPlotInfoAttributes() { return plotInfoAtts; }
 
     public int GetPlotIndex(String plotName)
     {
@@ -1980,4 +1986,5 @@ public class ViewerProxy implements SimpleObserver
     private MovieAttributes          movieAtts;
     private MeshManagementAttributes meshManagementAtts;
     private ViewerRPC                logRPC;
+    private PlotInfoAttributes       plotInfoAtts;
 }
