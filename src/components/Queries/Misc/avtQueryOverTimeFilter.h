@@ -82,6 +82,10 @@ class vtkRectilinearGrid;
 //    Curves now represented as 1D RectilinearGrid, Renamed CreatedPolys to
 //    CreateRGRid.
 //
+//    Hank Childs, Thu Feb  8 09:52:25 PST 2007
+//    Try to correctly quote how many additional filters there will be
+//    for one time step.
+//
 // ****************************************************************************
 
 class QUERY_API avtQueryOverTimeFilter : public avtTimeLoopFilter,
@@ -108,11 +112,13 @@ class QUERY_API avtQueryOverTimeFilter : public avtTimeLoopFilter,
 
     bool                  useTimeForXAxis;
     int                   nResultsToStore;
+    int                   numAdditionalFilters;
 
     virtual void          Execute(void);
     virtual void          RefashionDataObjectInfo(void);
 
-    virtual int           AdditionalPipelineFilters(void) { return 1; };
+    virtual int           AdditionalPipelineFilters(void) 
+                                            { return numAdditionalFilters; };
 
     virtual void          CreateFinalOutput(void);
     virtual bool          ExecutionSuccessful(void) { return success; } ;

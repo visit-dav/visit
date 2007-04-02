@@ -102,6 +102,9 @@ typedef void (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005 
 //    Added GetTimeCurveSpecs. 
 //
+//    Hank Childs, Thu Feb  8 09:57:39 PST 2007
+//    Made GetNFilters be a public method.
+//
 // ****************************************************************************
 
 class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
@@ -126,6 +129,7 @@ class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
 
     static void                   RegisterProgressCallback(ProgressCallback,
                                                            void *);
+    virtual int                   GetNFilters();
 
     virtual void                  SetTimeVarying(bool val) { timeVarying = val;};
     virtual void                  GetTimeCurveSpecs(bool &timeForX, int &nRes);
@@ -144,7 +148,6 @@ class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
     static void                  *progressCallbackArgs;
 
     void                          Init(const int ntimesteps = 1);
-    virtual int                   GetNFilters();
 
     void                          UpdateProgress(int, int);
     virtual void                  ChangedInput(void);

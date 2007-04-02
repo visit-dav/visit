@@ -192,6 +192,13 @@ avtDataObjectQuery::UpdateProgress(int current, int total)
 //    Kathleen Bonnell, Wed Mar 31 15:52:54 PST 2004
 //    Added nTimesteps argument.
 // 
+//    Hank Childs, Thu Feb  8 14:39:07 PST 2007
+//    Do not initialize the progress callback if there is more than 1 timestep.
+//    The terminating source will do the initialization in that case.
+//    (And the QueryOverTimeFilter will call this method once for each 
+//     timestep, which means the progress will be re-initialized 
+//     inappropriately.)
+//
 // ****************************************************************************
 
 void
@@ -204,7 +211,8 @@ avtDataObjectQuery::Init(const int nTimesteps)
         //
         int nstages = (GetNFilters() + 1) * nTimesteps;
 
-        initializeProgressCallback(initializeProgressCallbackArgs,nstages);
+        if (nTimesteps <= 1)
+            initializeProgressCallback(initializeProgressCallbackArgs,nstages);
     }
 }
 

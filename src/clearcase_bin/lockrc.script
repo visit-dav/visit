@@ -2,6 +2,15 @@
 
 # This script locks the RC branch to the current user so that no one else
 # can modify the RC branch.  This is useful for doing merges.
+#
+# Modifications:
+#
+#   Mark C. Miller, Thu Feb  8 17:35:43 PST 2007
+#   Made a 'no' answer to poll for lock exit with 13, not 1
+#   to distinguish this exit status from other 'normal' errors
+#
+
+$projnm = "visit";
 
 $user = shift;
 
@@ -157,7 +166,7 @@ EOF
             {
                 exec("/view/visit_VOBowner_main/data_vobs/VisIt/clearcase_bin/spinlock $branchname $user $silo_opt");
             } else {
-                exit(1);
+                exit(13);
             }
         }
     }

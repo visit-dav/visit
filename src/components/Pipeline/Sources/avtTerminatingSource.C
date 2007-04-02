@@ -65,11 +65,17 @@ void                *avtTerminatingSource::initializeProgressCallbackArgs=NULL;
 //  Programmer: Hank Childs
 //  Creation:   June 5, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Feb  7 13:29:14 PST 2007
+//    Initialize numberOfExecutions.
+//
 // ****************************************************************************
 
 avtTerminatingSource::avtTerminatingSource()
 {
     metadata = new avtMetaData(this);
+    numberOfExecutions = 1;
 }
 
 
@@ -542,6 +548,10 @@ avtTerminatingSource::BalanceLoad(avtPipelineSpecification_p spec)
 //    Hank Childs, Fri Oct 26 15:35:37 PDT 2001
 //    Allow for terminating sources to have stages.
 //
+//    Hank Childs, Wed Feb  7 13:29:14 PST 2007
+//    If there will be multiple executions (like for the time loop filter), 
+//    then we want to declare the correct number of stages.
+//
 // ****************************************************************************
 
 void
@@ -583,8 +593,23 @@ avtTerminatingSource::InitPipeline(avtPipelineSpecification_p spec)
                 int sourceStages = NumStagesForFetch(data);
                 nstages = spec->GetNFilters() + sourceStages;
                 GetOutput()->GetInfo().GetValidity().SetIsThisDynamic(false);
+                if (numberOfExecutions > 1)
+                    nstages *= numberOfExecutions;
             }
-            initializeProgressCallback(initializeProgressCallbackArgs,nstages);
+            bool shouldIssue = false;
+            if (numberOfExecutions <= 1)
+                shouldIssue = true;
+            else if (numberOfExecutions > 1)
+            {
+                if (!haveIssuedProgress)
+                {
+                    shouldIssue = true;
+                    haveIssuedProgress = true;
+                }
+            }
+            if (shouldIssue)
+                initializeProgressCallback(initializeProgressCallbackArgs,
+                                           nstages);
         }
     }
 }

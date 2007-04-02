@@ -42,6 +42,14 @@
 #include <string>
 
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  8 10:22:45 PST 2007
+//    Make sure that MaxStageNum is never less than CurStageNum.
+//
+// ****************************************************************************
+
 class Xfer;
 
 //-----------------------------------------------------------------------------
@@ -138,9 +146,11 @@ public:
         void SetReplyLen(int l)     { replyLen=l;     Select(1,&replyLen); };
         int  GetReplyLen() const    { return replyLen;       };
         void SetCurStageNum(int n)  { curStageNum=n;  Select(2,&curStageNum); };
+        void SetCurStageNumWithoutSending(int n)  { curStageNum=n; };
         int  GetCurStageNum() const { return curStageNum;        };
         void SetMaxStageNum(int n)  { maxStageNum=n;  Select(3,&maxStageNum); };
-        int  GetMaxStageNum() const { return maxStageNum;        };
+        int  GetMaxStageNum() const { return (maxStageNum > curStageNum ?
+                                              maxStageNum : curStageNum+1);   };
         void SetCurStageName(const std::string &s)
                                     { curStageName=s; Select(4,&curStageName);};
         std::string GetCurStageName() const
@@ -178,6 +188,7 @@ public:
                     int maxStages);
     void SendReply(int l);
     void SendReply(AttributeSubject *rd=NULL);
+    void SetCurStageNum(int n) { completion.SetCurStageNumWithoutSending(n); };
 
     void RecvReply();
 protected:

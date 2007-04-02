@@ -112,6 +112,9 @@ typedef void                   (*InitializeProgressCallback)(void *, int);
 //    Kathleen Bonnell, Tue Jan 25 07:59:28 PST 2005 
 //    Added const char *arg to QueryCoords. 
 //
+//    Hank Childs, Wed Feb  7 13:18:28 PST 2007
+//    Add support for progress from time queries.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtTerminatingSource : virtual public avtQueryableSource
@@ -145,6 +148,9 @@ class PIPELINE_API avtTerminatingSource : virtual public avtQueryableSource
                                                      void *);
     static void                    RegisterInitializeProgressCallback(
                                            InitializeProgressCallback, void *);
+    void                           SetNumberOfExecutions(int numEx)
+                                         { numberOfExecutions = numEx;
+                                           haveIssuedProgress = false; };
 
     virtual avtDataSpecification_p GetFullDataSpecification(void);
     avtPipelineSpecification_p     GetGeneralPipelineSpecification(void);
@@ -197,6 +203,11 @@ class PIPELINE_API avtTerminatingSource : virtual public avtQueryableSource
     void                           InitPipeline(avtPipelineSpecification_p);
     virtual bool                   CanDoDynamicLoadBalancing(void);
 
+    // These data members are important when there are multiple executions, like
+    // with the time loop filter.  This information is important to keep track
+    // of progress.
+    int                            numberOfExecutions;
+    bool                           haveIssuedProgress;
 };
 
 

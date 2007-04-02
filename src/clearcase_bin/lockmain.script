@@ -7,6 +7,10 @@
 #   Mark C. Miller, Tue Jun 20 09:01:19 PDT 2006
 #   Added support for locking Silo vob
 #
+#   Mark C. Miller, Thu Feb  8 17:35:43 PST 2007
+#   Made a 'no' answer to poll for lock exit with 13, not 1
+#   to distinguish this exit status from other 'normal' errors
+#
 
 $projnm = "visit";
 $vobnm = "VisIt";
@@ -155,7 +159,7 @@ EOF
             {
                 exec("/view/visit_VOBowner_main/data_vobs/VisIt/clearcase_bin/spinlock main $user $silo_opt");
             } else {
-                exit(1);
+                exit(13);
             }
         }
     }
