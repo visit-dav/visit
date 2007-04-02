@@ -1761,6 +1761,32 @@ QvisMainWindow::showEvent(QShowEvent *e)
 //
 
 // ****************************************************************************
+// Method: QvisMainWindow::show
+//
+// Purpose: 
+//   Shows the window and raises it.
+//
+// Note:       We override this method from QvisWindowBase because we don't
+//             want the main window to obey the new window anchor stuff.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Nov 22 10:54:52 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::show()
+{
+    // Indicate that the window should be saved.
+    saveWindowDefaults = true;
+
+    QMainWindow::show();
+    QMainWindow::raise();
+}
+
+// ****************************************************************************
 // Method: QvisMainWindow::reopenFile
 //
 // Purpose: 

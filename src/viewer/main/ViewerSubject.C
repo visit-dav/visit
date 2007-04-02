@@ -2185,6 +2185,9 @@ ViewerSubject::GetOperatorFactory() const
 //    Pass "-stereo" to engine. Allow "-timings" in addition to "-timing"
 //    Changed interface to SetStereoEnabled to void args
 //
+//    Brad Whitlock, Wed Nov 22 09:27:10 PDT 2006
+//    Added -viewer_geometry.
+//
 // ****************************************************************************
 
 void
@@ -2192,6 +2195,8 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
 {
     int    argc2 = *argc;
     char **argv2 = *argv;
+    std::string tmpGeometry, tmpViewerGeometry;
+    bool geometryProvided = false, viewerGeometryProvided = false;
 
     //
     // Process the command line for the viewer.
@@ -2235,7 +2240,19 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
                 cerr << "Geometry string missing for -geometry option" << endl;
                 continue;
             }
-            geometry = argv2[i+1];
+            tmpGeometry = argv2[i+1];
+            geometryProvided = true;
+            i += 1;
+        }
+        else if (strcmp(argv2[i], "-viewer_geometry") == 0)
+        {
+            if (i + 1 >= argc2)
+            {
+                cerr << "Geometry string missing for -viewer_geometry option" << endl;
+                continue;
+            }
+            tmpViewerGeometry = argv2[i+1];
+            viewerGeometryProvided = true;
             i += 1;
         }
         else if (strcmp(argv2[i], "-small") == 0)
@@ -2454,6 +2471,13 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
             unknownArguments.push_back(argv2[i]);
         }
     }
+
+    // Set the geometry based on the argument that was provided with
+    // -viewer_geometry taking precedence.
+    if(viewerGeometryProvided)
+        geometry = tmpViewerGeometry;
+    else if(geometryProvided)
+        geometry = tmpGeometry;
 
     ViewerServerManager::SetArguments(unknownArguments);
 }
