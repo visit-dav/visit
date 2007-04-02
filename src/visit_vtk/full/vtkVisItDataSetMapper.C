@@ -34,6 +34,9 @@ vtkStandardNewMacro(vtkVisItDataSetMapper);
 //   Brad Whitlock, Fri Aug 26 10:07:55 PDT 2005
 //   Added PointTextureMethod.
 //
+//   Brad Whitlock, Fri Aug 25 10:44:31 PDT 2006
+//   Added EnableColorTexturing.
+//
 // ****************************************************************************
 
 vtkVisItDataSetMapper::vtkVisItDataSetMapper()
@@ -41,6 +44,7 @@ vtkVisItDataSetMapper::vtkVisItDataSetMapper()
   this->GeometryExtractor = NULL;
   this->PolyDataMapper = NULL;
   this->PointTextureMethod = TEXTURE_NO_POINTS;
+  this->EnableColorTexturing = false;
 }
 
 vtkVisItDataSetMapper::~vtkVisItDataSetMapper()
@@ -91,6 +95,9 @@ void vtkVisItDataSetMapper::ReleaseGraphicsResources( vtkWindow *renWin )
 //   Added PointTextureMethod and made sure that the point texturing mode
 //   for the polydata mapper gets initialized on creation.
 //
+//   Brad Whitlock, Fri Aug 25 10:46:54 PDT 2006
+//   Added a call to SetEnableColorTexturing.
+//
 // ****************************************************************************
 
 void vtkVisItDataSetMapper::Render(vtkRenderer *ren, vtkActor *act)
@@ -122,6 +129,7 @@ void vtkVisItDataSetMapper::Render(vtkRenderer *ren, vtkActor *act)
     this->GeometryExtractor = gf;
     this->PolyDataMapper = pm;
     this->SetPointTextureMethod(this->PointTextureMethod);
+    this->SetEnableColorTexturing(this->EnableColorTexturing);
     }
 
   // share clipping planes with the PolyDataMapper
@@ -278,6 +286,46 @@ vtkVisItDataSetMapper::SetPointTextureMethod(
         else if(this->PointTextureMethod == TEXTURE_USING_POINTSPRITES)
             m->SetPointTextureMethod(
                vtkVisItMesaPolyDataMapper::TEXTURE_USING_POINTSPRITES);
+      }
+    }
+}
+
+// ****************************************************************************
+// Method: vtkVisItDataSetMapper::SetEnableColorTexturing
+//
+// Purpose: 
+//   Sets whether the mapper will perform color texturing.
+//
+// Arguments:
+//   val : Whether color texturing will be performed.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 25 10:45:51 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+vtkVisItDataSetMapper::SetEnableColorTexturing(bool val)
+{
+  this->EnableColorTexturing = val;
+
+  if(this->PolyDataMapper != NULL)
+    {
+    if(strcmp(this->PolyDataMapper->GetClassName(),
+              "vtkVisItOpenGLPolyDataMapper") == 0)
+      {
+        vtkVisItOpenGLPolyDataMapper *m = 
+            (vtkVisItOpenGLPolyDataMapper *)this->PolyDataMapper;
+        m->SetEnableColorTexturing(val);
+      }
+    else if(strcmp(this->PolyDataMapper->GetClassName(), 
+                   "vtkVisItMesaPolyDataMapper") == 0)
+      {
+        vtkVisItMesaPolyDataMapper *m = 
+            (vtkVisItMesaPolyDataMapper *)this->PolyDataMapper;
+        m->SetEnableColorTexturing(val);
       }
     }
 }

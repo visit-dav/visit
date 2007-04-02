@@ -828,6 +828,30 @@ avtActor::SetSpecularProperties(bool flag, double coeff, double power,
     }
 }
 
+// ****************************************************************************
+// Method: avtActor::SetColorTexuringFlag
+//
+// Purpose: 
+//   Sets the actor's color texturing flag.
+//
+// Arguments:
+//   val : The new color texturing flag value.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 18 11:20:20 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtActor::SetColorTexturingFlag(bool val)
+{
+    if (*(drawable) != NULL)
+    {
+        drawable->SetColorTexturingFlag(val);
+    } 
+}
 
 // *******************************************************************************
 //   Method: avtActor::IsVisible

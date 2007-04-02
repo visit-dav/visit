@@ -100,6 +100,9 @@ class     ColorAttribute;
 //    Kathleen Bonnell, Mon Jun 27 15:19:14 PDT 2005 
 //    Added GetZPosition.
 //
+//    Brad Whitlock, Mon Sep 18 11:23:02 PDT 2006
+//    Added SetColorTexturingFlag.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtGeometryDrawable : public avtDrawable
@@ -132,6 +135,8 @@ class PLOTTER_API avtGeometryDrawable : public avtDrawable
 
     virtual void                SetSpecularProperties(bool,double,double,
                                                       const ColorAttribute&);
+
+    virtual void                SetColorTexturingFlag(bool);
 
     virtual avtDataObject_p     GetDataObject(void);
 

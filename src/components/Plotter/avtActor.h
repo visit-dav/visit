@@ -128,6 +128,9 @@ class     avtTransparencyActor;
 //    Kathleen Bonnell, Mon Jun 27 14:48:12 PDT 2005 
 //    Added GetZPosition. 
 //
+//    Brad Whitlock, Mon Sep 18 11:19:11 PDT 2006
+//    Added SetColorTexturingFlag.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtActor
@@ -169,6 +172,8 @@ class PLOTTER_API avtActor
 
     void                          SetSpecularProperties(bool,double,double,
                                                         const ColorAttribute&);
+
+    void                          SetColorTexturingFlag(bool);
 
     avtDataObject_p               GetDataObject(void);
 

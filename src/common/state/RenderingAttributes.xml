@@ -64,6 +64,9 @@
     <Field name="compressionActivationMode" label="compressionActivationMode" type="enum" subtype="TriStateMode">
       Never
     </Field>
+    <Field name="colorTexturingFlag" label="colorTexturingFlag" type="bool">
+      true
+    </Field>
     <Function name="GetEffectiveScalableThreshold" user="true" member="true">
     </Function>
     <Constant name="DEFAULT_SCALABLE_AUTO_THRESHOLD" member="false">

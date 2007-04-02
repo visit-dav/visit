@@ -551,6 +551,29 @@ avtGeometryDrawable::SetSpecularProperties(bool flag, double coeff, double power
 }
 
 // ****************************************************************************
+// Method: avtGeometryDrawable::SetColorTexturingFlag
+//
+// Purpose: 
+//   Sets the mapper's color texturing flag.
+//
+// Arguments:
+//   val : The new color texturing mode.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 18 11:24:19 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtGeometryDrawable::SetColorTexturingFlag(bool val)
+{
+    if (mapper != NULL)
+        mapper->SetColorTexturingFlag(val);
+}
+
+// ****************************************************************************
 // Method: avtGeometryDrawable::SetImmediateModeRendering
 //
 // Purpose: 

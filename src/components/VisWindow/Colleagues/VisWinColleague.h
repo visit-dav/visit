@@ -105,6 +105,9 @@ class     ColorAttribute;
 //    Added 4 functions for suspending and resuming opaque and
 //    translucent geometry.
 //
+//    Brad Whitlock, Mon Sep 18 11:11:09 PDT 2006
+//    Added color texturing.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinColleague
@@ -144,6 +147,8 @@ class VISWINDOW_API VisWinColleague
 
     virtual void              SetSpecularProperties(bool,double,double,
                                                     const ColorAttribute&) {;};
+
+    virtual void              SetColorTexturingFlag(bool) {;};
 
     virtual void              UpdateView(void)     {;};
 

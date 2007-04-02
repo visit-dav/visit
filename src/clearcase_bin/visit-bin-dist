@@ -243,6 +243,9 @@
 #    Eric Brugger, Mon Jul 17 13:01:02 PDT 2006
 #    Copy the include/vtk/{GenericFiltering,Utilities} headers and txx files.
 #
+#    Brad Whitlock, Fri Sep 15 10:28:51 PDT 2006
+#    I added support for the GLEW library.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -466,6 +469,11 @@ if (("$MesaLibs" == "TRUE") && \
    echo " "
    exit (1)
 endif
+
+#
+# Determine the name of the GLEW library.
+#
+set GLEWLibName = "libGLEW.$SHLIB_SOEXT"
 
 #
 # Set the names of the VTK shared libraries.
@@ -800,6 +808,13 @@ endif
 #
 cp $VisItDir/lib/$MesaOSMesaLibName $libdir/$MesaOSMesaLibName
 cp $VisItDir/lib/$MesaMesaGLLibName $libdir/$MesaMesaGLLibName
+
+#
+# Copy the GLEW library, if it exists, to the distribution.
+#
+if(-e $VisItDir/lib/$GLEWLibName) then
+    cp $VisItDir/lib/$GLEWLibName $libdir/$GLEWLibName
+endif
 
 #
 # Copy Python to the distribution

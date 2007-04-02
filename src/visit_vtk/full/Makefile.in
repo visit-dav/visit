@@ -290,6 +290,10 @@
 #
 #    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 #    Removed vtkCSGCell.C 
+#
+#    Brad Whitlock, Fri Sep 15 14:56:55 PST 2006
+#    Added -I../../include.
+#
 ##############################################################################
 
 ##
@@ -361,12 +365,12 @@ SRC=InitVTK.C \
     vtkVolumeFromVolume.C
 
 
-CPPFLAGS=@VISIT_VTK_CPPFLAGS@ @CPPFLAGS@ @ANNOTATION_FLAGS@ -I.
+CPPFLAGS=@VISIT_VTK_CPPFLAGS@ @CPPFLAGS@ @ANNOTATION_FLAGS@ -I. -I../../include $(GLEW_INCLUDE)
 
 OBJ=$(SRC:.C=.o) $(OPENGL_OBJ) $(MESA_OBJ)
 LIB=libvisit_vtk
 LIBS_FOR_MACOSX_PREBINDING=-framework Carbon
-LIBS=-lmisc -lavtexceptions -llightweight_visit_vtk $(VTK_LIBS) $(LIBS_FOR_MACOSX_PREBINDING) $(X_LIBS)
+LIBS=-lmisc -lavtexceptions -llightweight_visit_vtk $(GLEW_LIBS) $(VTK_LIBS) $(LIBS_FOR_MACOSX_PREBINDING) $(X_LIBS)
 
 
 ##

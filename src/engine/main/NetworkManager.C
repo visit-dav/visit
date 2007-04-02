@@ -2497,6 +2497,10 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
 //    Other modes (e.g. Red-Blue) can be rendered in a single ext. render.
 //    Consequently, the engine's viswin object is put into stereo mode only
 //    for certain cases.
+//
+//    Brad Whitlock, Mon Sep 18 11:54:28 PDT 2006
+//    Added color texturing flag.
+//
 // ****************************************************************************
 void
 NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
@@ -2590,10 +2594,14 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
     const LightList& lights = atts.GetLights();
     viswin->SetLightList(&lights);
 
+    // Set the specular properties.
     viswin->SetSpecularProperties(atts.GetRenderAtts().GetSpecularFlag(),
                                   atts.GetRenderAtts().GetSpecularCoeff(),
                                   atts.GetRenderAtts().GetSpecularPower(),
                                   atts.GetRenderAtts().GetSpecularColor());
+
+    // Set the color texturing flag.
+    viswin->SetColorTexturingFlag(atts.GetRenderAtts().GetColorTexturingFlag());
 
     //
     // Set the background/foreground colors

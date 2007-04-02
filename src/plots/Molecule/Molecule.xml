@@ -1,5 +1,11 @@
 <?xml version="1.0"?>
   <Plugin name="Molecule" type="plot" label="Molecule" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" vartype="scalar" iconFile="Molecule.xpm">
+    <CXXFLAGS>
+      $(GLEW_INCLUDE)
+    </CXXFLAGS>
+    <LIBS>
+      $(GLEW_LIBS) $(GL_LIBS)
+    </LIBS>
     <Files components="V">
       avtMoleculeRenderer.C
       avtOpenGLMoleculeRenderer.C
@@ -7,7 +13,6 @@
       avtOpenGLAtomTexturer.C
       avtMesaAtomTexturer.C
       avtMoleculeFilter.C
-      glew.C
     </Files>
     <Files components="E">
       avtMoleculeRenderer.C
@@ -16,7 +21,6 @@
       avtOpenGLAtomTexturer.C
       avtMesaAtomTexturer.C
       avtMoleculeFilter.C
-      glew.C
     </Files>
     <Attribute name="MoleculeAttributes" purpose="This class contains the plot attributes for the molecule plot." persistent="true" codefile="MoleculeAttributes.code">
       <Enum name="AtomRenderingMode">

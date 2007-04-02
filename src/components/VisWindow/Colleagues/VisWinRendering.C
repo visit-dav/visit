@@ -140,6 +140,10 @@ bool VisWinRendering::stereoEnabled = false;
 //
 //    Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
 //    Added initialization for 3 most recent rendering times
+//
+//    Brad Whitlock, Mon Sep 18 11:07:54 PDT 2006
+//    Added colorTexturingFlag.
+//
 // ****************************************************************************
 
 VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) 
@@ -163,6 +167,7 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p)
     specularCoeff                  = .6;
     specularPower                  = 10.0;
     specularColor                  = ColorAttribute(255,255,255,255);
+    colorTexturingFlag             = true;
     renderInfo                     = 0;
     renderInfoData                 = 0;
     notifyForEachRender            = false;
@@ -1668,6 +1673,44 @@ VisWinRendering::SetSpecularProperties(bool flag, double coeff, double power,
     specularCoeff = coeff;
     specularPower = power;
     specularColor = color;
+}
+
+// ****************************************************************************
+// Method: VisWinRendering::SetColorTexturingFlag
+//
+// Purpose: 
+//   Sets the color texturing flag.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 18 11:09:39 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWinRendering::SetColorTexturingFlag(bool val)
+{
+    colorTexturingFlag = val;
+}
+
+// ****************************************************************************
+// Method: VisWinRendering::GetColorTexturingFlag
+//
+// Purpose: 
+//   Returns the color texturing flag.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 18 11:09:23 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+VisWinRendering::GetColorTexturingFlag() const
+{
+    return colorTexturingFlag;
 }
 
 // ****************************************************************************

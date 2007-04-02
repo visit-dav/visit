@@ -185,6 +185,10 @@ class VisWindowColleagueProxy;
 //
 //    Mark C. Miller, Wed Aug  9 19:40:30 PDT 2006
 //    Removed bool arg from SetStereoEnabled since it defaults to off
+//
+//    Brad Whitlock, Mon Sep 18 11:06:09 PDT 2006
+//    Added color texturing support.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -270,12 +274,16 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
                                                    const ColorAttribute&);
     bool                     GetSpecularFlag() const
                                  { return specularFlag; };
-    double                    GetSpecularCoeff() const
+    double                   GetSpecularCoeff() const
                                  { return specularCoeff; };
-    double                    GetSpecularPower() const
+    double                   GetSpecularPower() const
                                  { return specularPower; };
     const ColorAttribute    &GetSpecularColor() const
                                  { return specularColor; };
+
+    virtual void             SetColorTexturingFlag(bool);
+    bool                     GetColorTexturingFlag() const;
+
     int                      GetNumPrimitives() const;
     void                     SetNotifyForEachRender(bool val)
                                  { notifyForEachRender = val; };
@@ -312,9 +320,10 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     int                           displayListMode;
     int                           surfaceRepresentation;
     bool                          specularFlag;
-    double                         specularCoeff;
-    double                         specularPower;
+    double                        specularCoeff;
+    double                        specularPower;
     ColorAttribute                specularColor;
+    bool                          colorTexturingFlag;
     void(*renderInfo)(void *);
     void                         *renderInfoData;
     bool                          notifyForEachRender;

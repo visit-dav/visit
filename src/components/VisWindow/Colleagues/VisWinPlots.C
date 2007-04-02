@@ -257,6 +257,9 @@ VisWinPlots::~VisWinPlots()
 //    Moved getting of anti-aliasing and call to ReAddColleaguesToRenderWindow
 //    into OrderPlots along with
 //
+//    Brad Whitlock, Mon Sep 18 11:17:39 PDT 2006
+//    Added color texturing flag.
+//
 // ****************************************************************************
 
 void
@@ -361,6 +364,9 @@ VisWinPlots::AddPlot(avtActor_p &p)
     {
         p->SetSpecularProperties(false, 0, 0, ColorAttribute());
     }
+
+    // Ensure that the new plot has the right color texturing flag.
+    p->SetColorTexturingFlag(vw->GetColorTexturingFlag());
 
     //
     // Must do explicit render if we want the changes to show up.
@@ -1690,6 +1696,26 @@ VisWinPlots::SetSpecularProperties(bool flag, double coeff, double power,
     }
 }
 
+// ****************************************************************************
+//  Method: VisWinPlots::SetColorTexturingFlag
+//
+//  Purpose:
+//      Set color texturing flag on actors.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Mon Sep 18 11:15:16 PDT 2006
+//
+// ****************************************************************************
+
+void
+VisWinPlots::SetColorTexturingFlag(bool val)
+{
+    std::vector< avtActor_p >::iterator it;
+    for (it = plots.begin() ; it != plots.end() ; it++)
+    {
+        (*it)->SetColorTexturingFlag(val);
+    }
+}
 
 // ****************************************************************************
 //  Method: VisWinPlots::SetExternalRenderCallback

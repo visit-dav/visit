@@ -48,6 +48,8 @@
 
 #include <avtTransparencyActor.h>
 
+#include <vtkVisItDataSetMapper.h>
+
 #include <BadIndexException.h>
 #include <ImproperUseException.h>
 
@@ -80,6 +82,9 @@
 //    Kathleen Bonnell, Tue Dec  3 16:14:25 PST 2002 
 //    Re-initialize lineWidth based on new LineAttributes. 
 //
+//    Brad Whitlock, Mon Sep 18 11:28:35 PDT 2006
+//    Added colorTexturingFlag.
+//
 // ****************************************************************************
 
 avtVariableMapper::avtVariableMapper()
@@ -91,6 +96,7 @@ avtVariableMapper::avtVariableMapper()
     lineWidth = LW_0;
     lineStyle = SOLID; 
     limitsMode = 0;  // use original data extents
+    colorTexturingFlag = true;
 }
 
 
@@ -137,6 +143,9 @@ avtVariableMapper::~avtVariableMapper()
 //    Use enum types from LineAttributes in order to ensure that
 //    proper pattern is sent down to vtk. 
 //
+//    Brad Whitlock, Fri Aug 25 10:41:25 PDT 2006
+//    Added code to enable color texturing in the mapper.
+//
 // ****************************************************************************
 
 void
@@ -182,6 +191,13 @@ avtVariableMapper::CustomizeMappers(void)
         if (mappers[i] != NULL)
         {
             mappers[i]->SetLookupTable(lut);
+
+            // Turn on color texturing in the mapper.
+            if(strcmp(mappers[i]->GetClassName(), "vtkVisItDataSetMapper")==0)
+            {
+                vtkVisItDataSetMapper *m = (vtkVisItDataSetMapper *)mappers[i];
+                m->SetEnableColorTexturing(colorTexturingFlag);
+            }
         }
         if (actors[i] != NULL)
         {
@@ -898,4 +914,39 @@ avtVariableMapper::GetLighting()
     return lighting;
 }
 
+// ****************************************************************************
+// Method: avtVariableMapper::SetColorTexturingFlag
+//
+// Purpose: 
+//   Sets the color texturing flag in each mapper.
+//
+// Arguments:
+//   val : The new color texturing flag value.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 18 11:32:24 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
 
+void
+avtVariableMapper::SetColorTexturingFlag(bool val)
+{
+    if (mappers == NULL)
+        return;
+
+    colorTexturingFlag = val;
+    for (int i = 0 ; i < nMappers ; i++)
+    {
+        if (mappers[i] != NULL)
+        {
+            // Turn on color texturing in the mapper.
+            if(strcmp(mappers[i]->GetClassName(), "vtkVisItDataSetMapper")==0)
+            {
+                vtkVisItDataSetMapper *m = (vtkVisItDataSetMapper *)mappers[i];
+                m->SetEnableColorTexturing(colorTexturingFlag);
+            }
+        }
+    }
+}

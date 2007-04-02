@@ -98,6 +98,9 @@ class vtkLookupTable;
 //    Kathleen Bonnell, Tue Aug 13 15:15:37 PDT 2002   
 //    Added GetLighting virtual method. 
 //
+//    Brad Whitlock, Mon Sep 18 11:26:26 PDT 2006
+//    Added SetColorTexturingFlag.
+//
 // ****************************************************************************
 
 class PLOTTER_API  avtVariableMapper : public avtMapper
@@ -125,6 +128,8 @@ class PLOTTER_API  avtVariableMapper : public avtMapper
     void                       SetLineStyle(_LineStyle);
     void                       SetPointSize(double);
 
+    virtual void               SetColorTexturingFlag(bool);
+
   protected:
     double                     min, max;
     bool                       setMin, setMax;
@@ -133,6 +138,7 @@ class PLOTTER_API  avtVariableMapper : public avtMapper
     bool                       lighting;
     double                     opacity;
     int                        limitsMode;
+    bool                       colorTexturingFlag;
     vtkLookupTable            *lut;
 
     virtual void               CustomizeMappers(void);

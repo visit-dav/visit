@@ -41,6 +41,9 @@ class vtkTimerLog;
 //    Hank Childs, Tue May 25 10:04:36 PDT 2004
 //    Break display lists up into smaller display lists.
 //
+//    Brad Whitlock, Thu Aug 24 16:06:03 PST 2006
+//    I added support for color texturing for point data.
+//
 // ****************************************************************************
 
 class VISIT_VTK_API vtkVisItMesaPolyDataMapper : public vtkPolyDataMapper
@@ -73,6 +76,11 @@ public:
   // Sets/Gets the point texturing method. 
   vtkSetMacro(PointTextureMethod, PointTextureMode);
   vtkGetMacro(PointTextureMethod, PointTextureMode);
+
+  // Description:
+  // Sets/Gets the whether color texturing is enabled.
+  vtkSetMacro(EnableColorTexturing, bool);
+  vtkGetMacro(EnableColorTexturing, bool);
   
 protected:
   vtkVisItMesaPolyDataMapper();
@@ -134,6 +142,22 @@ protected:
   // Makes the sphere textures used when PointTextureMethod is
   // equal to TEXTURE_USING_POINTSPRITES.
   void MakeTextures();
+
+  bool          EnableColorTexturing;
+  bool          ColorTexturingAllowed;
+  bool          ColorTextureLoaded;
+  bool          ColorTextureLooksDiscrete;
+  unsigned int  ColorTextureName;
+  float        *ColorTexture;
+  int           ColorTextureSize;
+  bool          OpenGLSupportsVersion1_2;
+
+  bool MapScalarsWithTextureSupport(double);
+  void BeginColorTexturing();
+  void EndColorTexturing();
+  bool UsesPointData(vtkDataSet *input, int scalarMode,
+                     int arrayAccessMode, int arrayId, const char *arrayName,
+                     int& offset);
 
   vtkRenderWindow *RenderWindow;   // RenderWindow used for the previous render
 private:

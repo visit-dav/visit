@@ -2628,6 +2628,9 @@ ViewerWindowManager::SetViewExtentsType(avtExtentType viewType,
 //   Hank Childs, Sun Oct 24 13:39:57 PDT 2004
 //   Added shading properties.
 //
+//   Brad Whitlock, Mon Sep 18 10:42:40 PDT 2006
+//   Added a flag for color texturing.
+//
 // ****************************************************************************
 
 void
@@ -2689,6 +2692,13 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
         {
             windows[index]->SetShadingProperties(renderAtts->GetDoShadowing(),
                                                  renderAtts->GetShadowStrength());
+        }
+
+        if (windows[index]->GetColorTexturingFlag() != 
+            renderAtts->GetColorTexturingFlag())
+        {
+            windows[index]->SetColorTexturingFlag(
+                renderAtts->GetColorTexturingFlag());
         }
 
         // If the updatesEnabled flag was true before we temporarily disabled
@@ -4224,6 +4234,9 @@ ViewerWindowManager::UpdateLightListAtts()
 //   Hank Childs, Sun Oct 24 13:39:57 PDT 2004
 //   Added updates for shading.
 //
+//   Brad Whitlock, Mon Sep 18 10:43:28 PDT 2006
+//   Added update for color texturing.
+//
 // ****************************************************************************
 
 void
@@ -4256,6 +4269,7 @@ ViewerWindowManager::UpdateRenderingAtts(int windowIndex)
         renderAtts->SetSpecularColor(win->GetSpecularColor());
         renderAtts->SetDoShadowing(win->GetDoShading());
         renderAtts->SetShadowStrength(win->GetShadingStrength());
+        renderAtts->SetColorTexturingFlag(win->GetColorTexturingFlag());
 
         // Tell the client about the new rendering information.
         renderAtts->Notify();

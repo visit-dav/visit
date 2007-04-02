@@ -4958,6 +4958,48 @@ VisWindow::GetSpecularColor()
 }
 
 // ****************************************************************************
+// Method: VisWindow::SetColorTexturingFlag
+//
+// Purpose: 
+//   Sets the window's color texturing flag.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 18 11:04:39 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWindow::SetColorTexturingFlag(bool val)
+{
+    std::vector< VisWinColleague * >::iterator it;
+    for (it = colleagues.begin() ; it != colleagues.end() ; it++)
+    {
+        (*it)->SetColorTexturingFlag(val);
+    }
+}
+
+// ****************************************************************************
+// Method: VisWindow::GetColorTexturingFlag
+//
+// Purpose: 
+//   Returns the window's color texturing flag.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 18 11:04:16 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+VisWindow::GetColorTexturingFlag() const
+{
+    return rendering->GetColorTexturingFlag();
+}
+
+// ****************************************************************************
 // Method: VisWindow::GetNumPrimitives
 //
 // Purpose: 

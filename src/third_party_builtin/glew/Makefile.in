@@ -56,32 +56,6 @@
 #    endorsement purposes.
 #
 # Modifications:
-#   Brad Whitlock, Tue Sep 30 13:41:00 PST 2003
-#   I removed -lXext since it is not needed.
-#
-#   Jeremy Meredith, Wed Jul  7 12:12:52 PDT 2004
-#   I changed _ser.o to simply be .o.
-#
-#   Brad Whitlock, Tue Nov 2 08:49:59 PDT 2004
-#   I fixed the parallel target.
-#
-#   Jeremy Meredith, Tue Nov 23 14:53:07 PST 2004
-#   Refactored the expression parser into two separate libraries.
-#
-#   Brad Whitlock, Fri Apr 29 11:59:25 PDT 2005
-#   Ser/par changes.
-#
-#   Hank Childs, Thu Sep 22 09:01:31 PDT 2005
-#   Add filters library, since expressions now depend on them.
-#
-#   Mark C. Miller, Mon Dec 12 20:53:03 PST 2005
-#   Added BZIP2_LIBS variable
-#
-#   Hank Childs, Sun Feb 19 13:08:29 PST 2006
-#   Added libavtddf.
-#
-#   Mark C. Miller, Tue Sep  5 10:16:03 PDT 2006
-#   Replaced '$(OBJ)' with '$(SEROBJ) $(PAROBJ) in clean target
 #
 ##############################################################################
 
@@ -90,41 +64,53 @@
 ##
 @SET_MAKE@
 @VARIABLES@
-@MPI_CC@
-@MPI_CXX@
 
-CPPFLAGS=-I. -I../../include -I../../include/visit
+# Add the GLEW include dir to both CXXFLAGS and CPPFLAGS
+CXXFLAGS=-Iglew/include @CXXFLAGS@
+CPPFLAGS=-Iglew/include @CPPFLAGS@
+LIBS=@GL_LIBS@
 
-SERLIBS=-L../../lib -ldatabase_ser -lpipeline_ser -lexpressions_ser -lavtfilters_ser -lavtview -lavtddf_ser -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_ser -lavtexceptions -lmir_ser -lplugin @VTK_LIBS@ $(X_LIBS) $(BZIP2_LIBS) $(GLEW_LIBS) @LIBS@ @PTHREAD_LIB@
-PARLIBS=-L../../lib -ldatabase_par -lpipeline_par -lexpressions_par -lavtfilters_par -lavtview -lavtddf_par -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_par -lavtexceptions -lmir_par -lplugin @VTK_LIBS@ $(X_LIBS) $(BZIP2_LIBS) $(GLEW_LIBS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
-LIBDEP=
+##
+## We distribute sources for glew with VisIt via the tar file
+##
+NOT_DISTRIB=glew
+DISTRIB=glew-1.3.4-src.tgz
 
 ##
 ## Files...
 ##
-SRC=convert.C
-SEROBJ=$(SRC:.C=.o)
-PAROBJ=$(SRC:.C=_par.o)
-
+SRC=glew/src/glew.c
+HDR=
+OBJ=$(SRC:.c=.o)
+LIB=libGLEW
 
 ##
 ## Standard targets...
 ##
-all: $(LIB) @CONVERT_SER@ @CONVERT_PAR@
+all: message $(LIBSHARED)
 
 clean:
-	$(RM) $(SEROBJ) $(PAROBJ) @CONVERT_SER@ @CONVERT_PAR@
+	$(RM) $(OBJ) $(SRC) $(LIBSHARED)
+	$(RM) -R ../../include/glew
+
+credits.html:
+	gunzip < glew-1.3.4-src.tgz | tar xvf - > /dev/null
+	cp glew/doc/credits.html .
+	cp -R glew/include ../../include/glew
+
+glew/src/glew.c: credits.html
 
 ##
-## Other targets...
+## Other targets
 ##
-@CONVERT_SER@ or_no_ser: $(LIBDEP) $(SEROBJ)
-	$(CXX) -o $@ $(SEROBJ) $(LDFLAGS) $(SERLIBS)
-
-@CONVERT_PAR@ or_no_par: $(LIBDEP) $(PAROBJ)
-	$(CXX) -o $@ $(PAROBJ) $(LDFLAGS) $(PARLIBS) @MPI_LIBS@
+message:
+	@echo
+	@echo "****************************************************************************"
+	@echo "*** Building GLEW Library ($(LIB))"
+	@echo "****************************************************************************"
 
 ##
 ## Automatic dependency stuff
 ##
 @TARGETS@
+@LIBTARGETS@

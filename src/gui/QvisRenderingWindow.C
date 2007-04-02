@@ -172,6 +172,10 @@ QvisRenderingWindow::~QvisRenderingWindow()
 //
 //   Mark C. Miller, Wed Nov 16 14:17:01 PST 2005
 //   Changed label string for compression 
+//
+//   Brad Whitlock, Mon Sep 18 10:46:02 PDT 2006
+//   Added colorTexturing check box.
+//
 // ****************************************************************************
 
 void
@@ -186,7 +190,7 @@ QvisRenderingWindow::CreateWindowContents()
 
     QVBoxLayout *spacer = new QVBoxLayout(options);
     spacer->addSpacing(10);
-    QGridLayout *oLayout = new QGridLayout(spacer, 18, 4);
+    QGridLayout *oLayout = new QGridLayout(spacer, 19, 4);
     oLayout->setSpacing(5);
     oLayout->setMargin(10);
 
@@ -347,6 +351,12 @@ QvisRenderingWindow::CreateWindowContents()
     oLayout->addWidget(shadowStrengthLabel, 18,1);
     oLayout->addMultiCellWidget(shadowStrengthSlider, 18,18, 2,3);
 
+    // Create color texturing options.
+    colorTexturingToggle = new QCheckBox("Apply color using textures", options,
+        "colorTexturingToggle");
+    connect(colorTexturingToggle, SIGNAL(toggled(bool)),
+            this, SLOT(colorTexturingToggled(bool)));
+    oLayout->addMultiCellWidget(colorTexturingToggle, 19, 19, 0, 3);
 
     //
     // Create the renderer information group.
@@ -483,6 +493,10 @@ QvisRenderingWindow::UpdateWindow(bool doAll)
 //
 //   Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
 //   Added compression controls
+//
+//   Brad Whitlock, Mon Sep 18 10:49:51 PDT 2006
+//   Added colorTexturingFlag.
+//
 // ****************************************************************************
 
 void
@@ -620,6 +634,11 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             scalrenCompressMode->blockSignals(true);
             scalrenCompressMode->setButton(itmp2);
             scalrenCompressMode->blockSignals(false);
+            break;
+        case 15: //colorTexturingFlag
+            colorTexturingToggle->blockSignals(true);
+            colorTexturingToggle->setChecked(renderAtts->GetColorTexturingFlag());
+            colorTexturingToggle->blockSignals(false);
             break;
         }
     }
@@ -1327,6 +1346,31 @@ void
 QvisRenderingWindow::specularPowerChanged(int val, const void*)
 {
     renderAtts->SetSpecularPower(float(val)/10.);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::colorTexturingToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the colorTexturing check
+//   box is toggled.
+//
+// Arguments:
+//   val : The new on/off value for the widget.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 18 10:52:30 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisRenderingWindow::colorTexturingToggled(bool val)
+{
+    renderAtts->SetColorTexturingFlag(val);
     SetUpdate(false);
     Apply();
 }

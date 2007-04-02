@@ -2132,6 +2132,9 @@ ViewerWindow::InvertBackgroundColor()
 //   Hank Childs, Sun Oct 24 13:39:57 PDT 2004
 //   Add shading.
 //
+//   Brad Whitlock, Mon Sep 18 10:56:09 PDT 2006
+//   Added color texturing.
+//
 // ****************************************************************************
 
 void
@@ -2152,6 +2155,7 @@ ViewerWindow::CopyGeneralAttributes(const ViewerWindow *source)
                           source->GetSpecularPower(),
                           source->GetSpecularColor());
     SetShadingProperties(source->GetDoShading(), source->GetShadingStrength());
+    SetColorTexturingFlag(source->GetColorTexturingFlag());
 
     //
     // Set window mode flags.
@@ -5470,6 +5474,10 @@ ViewerWindow::SetLargeIcons(bool val)
 //
 //   Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
 //   Added code to set stereo rendering information
+//
+//   Brad Whitlock, Mon Sep 18 10:57:15 PDT 2006
+//   Added color texturing flag.
+//
 // ****************************************************************************
 
 WindowAttributes
@@ -5555,6 +5563,8 @@ ViewerWindow::GetWindowAttributes() const
 
     renderAtts.SetDoShadowing(GetDoShading());
     renderAtts.SetShadowStrength(GetShadingStrength());
+
+    renderAtts.SetColorTexturingFlag(GetColorTexturingFlag());
 
     renderAtts.SetCompressionActivationMode(
         (RenderingAttributes::TriStateMode) compressionActivationMode);
@@ -6538,6 +6548,44 @@ ViewerWindow::GetSpecularColor() const
 }
 
 // ****************************************************************************
+// Method: ViewerWindow::SetColorTexturingFlag
+//
+// Purpose: 
+//   Set the color texturing flag.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 18 10:58:27 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::SetColorTexturingFlag(bool val)
+{
+    visWindow->SetColorTexturingFlag(val);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::GetColorTexturingFlag
+//
+// Purpose: 
+//   Get the color texturing flag.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 18 10:58:48 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerWindow::GetColorTexturingFlag() const
+{
+    return visWindow->GetColorTexturingFlag();
+}
+
+// ****************************************************************************
 // Method: ViewerWindow::GetNumPrimitives
 //
 // Purpose: 
@@ -6985,6 +7033,9 @@ ViewerWindow::GetIsCompressingScalableImage() const
 //   part of the window. We need that in order to produce movies with the
 //   exact right size in visit -movie when the -geometry flag is not given.
 //
+//   Brad Whitlock, Mon Sep 18 10:59:44 PDT 2006
+//   Added colorTexturingFlag.
+//
 // ****************************************************************************
 
 void
@@ -7069,6 +7120,7 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
         specColor.CreateNode(windowNode, true, true);
         windowNode->AddNode(new DataNode("doShading", GetDoShading()));
         windowNode->AddNode(new DataNode("shadingStrength", GetShadingStrength()));
+        windowNode->AddNode(new DataNode("colorTexturingFlag", GetColorTexturingFlag()));
 
         //
         // View
@@ -7195,6 +7247,9 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
 //
 //   Hank Childs, Mon Feb 20 17:03:19 PST 2006
 //   Fix type of shading strength ['5654].
+//
+//   Brad Whitlock, Mon Sep 18 11:00:09 PDT 2006
+//   Added color texturing.
 //
 // ****************************************************************************
 
@@ -7475,6 +7530,12 @@ ViewerWindow::SetFromNode(DataNode *parentNode)
     if (numParamsSaved == 2)
     {
         SetShadingProperties(tmpDoShading, tmpShadingStrength);
+    }
+
+    // Set the color texturing properties.
+    if((node = windowNode->GetNode("colorTexturingFlag")) != 0)
+    {
+        SetColorTexturingFlag(node->AsBool());
     }
 
     //

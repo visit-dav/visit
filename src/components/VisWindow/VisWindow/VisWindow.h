@@ -548,6 +548,9 @@ public:
     double               GetSpecularPower();
     const ColorAttribute &GetSpecularColor();
 
+    bool                 GetColorTexturingFlag() const;
+    void                 SetColorTexturingFlag(bool val);
+
     void                 SetPickTypeToIntersection(void);
     void                 SetPickTypeToNormal(void);
 

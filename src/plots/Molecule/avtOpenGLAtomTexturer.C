@@ -40,15 +40,16 @@
 #include <math.h>
 #include <DebugStream.h>
 
-#ifndef TextureModeData
-#define GLEW_SUPPORTED
-#endif
-
-#ifdef GLEW_SUPPORTED
-#include <GL/glew.h>
-#endif
+//
+// If we're creating the OpenGL version of this class then check to see if
+// the GLEW library is available so we can use shaders.
+//
 
 #ifndef VTK_IMPLEMENT_MESA_CXX
+  #include <visit-config.h>
+  #ifdef HAVE_LIBGLEW
+    #include <GL/glew.h>
+  #endif
   #if defined(__APPLE__) && (defined(VTK_USE_CARBON) || defined(VTK_USE_COCOA))
     #include <OpenGL/gl.h>
   #else
@@ -373,7 +374,7 @@ TextureModeData::MakeTextures()
    }
 }
 
-#ifdef GLEW_SUPPORTED
+#ifdef HAVE_LIBGLEW
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 ///
@@ -654,7 +655,9 @@ ShaderModeData::SetHint(int hint, int val)
 // Creation:   Tue Mar 28 10:45:03 PDT 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Sep 15 13:32:08 PST 2006
+//   Made sure that GLEW can initialize okay.
+//
 // ****************************************************************************
 
 bool
@@ -662,7 +665,13 @@ ShaderModeData::ModeAvailable()
 {
     if(!GLSL_init)
     {
-        glewInit();
+        GLenum err = glewInit();
+        if(err != GLEW_OK)
+        {
+            debug1 << "ShaderModeData::ModeAvailable: glewInit() failed: "
+                   << glewGetErrorString(err) << endl;
+            return false;
+        }
         GLSL_init = true;
     }
     return GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader;
@@ -799,7 +808,7 @@ ShaderModeData::EndSphereTexturing()
 }
 #else
 //
-// Dummy implementation for when we don't define GLEW_SUPPORTED
+// Dummy implementation for when we don't define HAVE_LIBGLEW
 //
 class ShaderModeData
 {
@@ -929,18 +938,29 @@ avtOpenGLAtomTexturer::EndSphereTexturing()
 // Creation:   Tue Mar 28 10:19:59 PDT 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Sep 15 10:36:34 PDT 2006
+//   Added debug log output.
+//
 // ****************************************************************************
 
 avtOpenGLAtomTexturer::TexMode_t
 avtOpenGLAtomTexturer::GetMode()
 { 
+    const char *mName = "avtOpenGLAtomTexturer::GetMode";
+
     if(!modeDetermined)
     {
         if( ((ShaderModeData *)sData)->ModeAvailable() )
+        {
             mode = ShaderMode;
+            debug1 << mName << "Shading is available." << endl;
+        }
         else
+        {
             mode = TextureMode;
+            debug1 << mName << "Shading is not available. Texturing will "
+                               "be used." << endl;
+        }
         modeDetermined = true;
     }
 

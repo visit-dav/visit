@@ -66,6 +66,12 @@ public:
   // Sets/Gets the point texturing method. 
   void SetPointTextureMethod(PointTextureMode);
   vtkGetMacro(PointTextureMethod, PointTextureMode);
+
+  // Description:
+  // Sets/Gets the color texturing mode. 
+  void SetEnableColorTexturing(bool);
+  vtkGetMacro(EnableColorTexturing, bool);
+
 protected:
   vtkVisItDataSetMapper();
   ~vtkVisItDataSetMapper();
@@ -73,6 +79,7 @@ protected:
   vtkDataSetSurfaceFilter *GeometryExtractor;
   vtkPolyDataMapper       *PolyDataMapper;
   PointTextureMode         PointTextureMethod;
+  bool                     EnableColorTexturing;
 
   virtual void ReportReferences(vtkGarbageCollector*);
   virtual int FillInputPortInformation(int port, vtkInformation *info);

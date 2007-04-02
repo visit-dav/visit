@@ -41,8 +41,6 @@
 
 #include "avtOpenGL3DTextureVolumeRenderer.h"
 
-#include <visit-config.h>
-
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkRectilinearGrid.h>
@@ -60,11 +58,14 @@
 
 #include <float.h>
 
-#ifdef NEED_GLEXT_PROTO
-#define GL_GLEXT_PROTOTYPES
-#endif
-
 #ifndef VTK_IMPLEMENT_MESA_CXX
+  // Include GLEW.
+  #include <visit-config.h>
+  #ifdef HAVE_LIBGLEW
+     #include <GL/glew.h>
+     static bool glew_initialized = false;
+  #endif
+
   #if defined(__APPLE__) && (defined(VTK_USE_CARBON) || defined(VTK_USE_COCOA))
     #include <OpenGL/gl.h>
   #else
@@ -84,12 +85,6 @@
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 #endif
 
-#if defined(_WIN32) && !defined(avtOpenGL3DTextureVolumeRenderer)
-// On Windows, we have to access glTexImage3D as an OpenGL extension.
-static PFNGLTEXIMAGE3DEXTPROC glTexImage3D_ptr = 0;
-#endif
-
-
 // ****************************************************************************
 //  Method: avtOpenGL3DTextureVolumeRenderer::avtOpenGL3DTextureVolumeRenderer
 //
@@ -103,6 +98,10 @@ static PFNGLTEXIMAGE3DEXTPROC glTexImage3D_ptr = 0;
 //    Brad Whitlock, Fri Aug 20 16:52:18 PST 2004
 //    Added support for looking up glTexImage3D extension on Windows.
 //
+//    Brad Whitlock, Fri Sep 15 12:50:14 PDT 2006
+//    I removed the code to get the glTexImage3D extension and initialized 
+//    the GLEW library.
+//
 // ****************************************************************************
 
 avtOpenGL3DTextureVolumeRenderer::avtOpenGL3DTextureVolumeRenderer()
@@ -110,14 +109,15 @@ avtOpenGL3DTextureVolumeRenderer::avtOpenGL3DTextureVolumeRenderer()
     volumetex = NULL;
     volumetexId = 0;
 
-#if defined(_WIN32) && !defined(avtOpenGL3DTextureVolumeRenderer)
-    // On Windows, glTexImage3D is an OpenGL extension. We have to look
-    // up the function pointer.
-    if(glTexImage3D_ptr == 0)
-        glTexImage3D_ptr = (PFNGLTEXIMAGE3DEXTPROC)wglGetProcAddress("glTexImage3D");
-
-    if(glTexImage3D_ptr == 0)
-        debug1 << "The glTexImage3D function was not located." << endl;
+#ifdef HAVE_LIBGLEW
+    GLenum err = glewInit();
+    if(err != GLEW_OK)
+    {
+        debug1 << "avtOpenGL3DTextureVolumeRenderer ctor: "
+               << glewGetErrorString(err) << endl;
+    }
+    else
+        glew_initialized = true;
 #endif
 }
 
@@ -186,6 +186,9 @@ avtOpenGL3DTextureVolumeRenderer::~avtOpenGL3DTextureVolumeRenderer()
 //    I removed the ifdef that prevented the code from building on Windows
 //    and moved it into visit-config.h. I also added Windows-specific code.
 //
+//    Brad Whitlock, Fri Sep 15 12:52:53 PDT 2006
+//    I made it use GLEW for getting the texture3D function.
+//
 // ****************************************************************************
 
 void
@@ -199,17 +202,28 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
                                          float *gx, float *gy, float *gz,
                                          float *gmn)
 {
-#if defined(_WIN32) && !defined(avtOpenGL3DTextureVolumeRenderer)
-    // Make sure that the glTexImage3D pointer is valid before doing
-    // anything in this routine.
-    if(glTexImage3D_ptr == 0)
+#ifndef VTK_IMPLEMENT_MESA_CXX
+    // OpenGL mode
+#ifdef HAVE_LIBGLEW
+    // If we have GLEW then we're in the OpenGL version and we should
+    // be sure that the extension exists on the display.
+    if(glew_initialized && !GLEW_EXT_texture3D)
     {
-        debug1 << "avtOpenGL3DTextureVolumeRenderer::Render: returning because glTexImage3D_ptr == 0." << endl;
+        debug1 << "avtOpenGL3DTextureVolumeRenderer::Render: "
+                  "returning because there is no texture3D extension."
+               << endl;
         return;
     }
+#elif !defined(GL_VERSION_1_2)
+    // We're not using GLEW for some reason so return if OpenGL's
+    // version is less than 1.2.
+    debug1 << "avtOpenGL3DTextureVolumeRenderer::Render: "
+              "returning because there is no texture3D. The "
+              "version of OpenGL is too old."
+           << endl;
+    return;
 #endif
-
-#if defined(HAVE_GL_TEX_IMAGE_3D) || defined(avtOpenGL3DTextureVolumeRenderer)
+#endif
 
     // Get the transfer function
     int ncolors=256;
@@ -401,11 +415,19 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
         glGenTextures(1, &volumetexId);
         glBindTexture(GL_TEXTURE_3D, volumetexId);
 
-#if defined(_WIN32) && !defined(avtOpenGL3DTextureVolumeRenderer)
-        // On Windows, we have to access glTexImage3D via a function pointer.
-        glTexImage3D_ptr(GL_TEXTURE_3D, 0, GL_RGBA, newnx, newny, newnz,
-                         0, GL_RGBA, GL_UNSIGNED_BYTE, volumetex);
+#ifndef VTK_IMPLEMENT_MESA_CXX
+        // OpenGL mode
+#ifdef HAVE_LIBGLEW
+        // glTexImage3D via GLEW.
+        glTexImage3DEXT(GL_TEXTURE_3D, 0, GL_RGBA, newnx, newny, newnz,
+                        0, GL_RGBA, GL_UNSIGNED_BYTE, volumetex);
+#elif defined(GL_VERSION_1_2)
+        // OpenGL supports glTexImage3D.
+        glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, newnx, newny, newnz,
+                     0, GL_RGBA, GL_UNSIGNED_BYTE, volumetex);
+#endif
 #else
+        // Mesa mode
         glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, newnx, newny, newnz,
                      0, GL_RGBA, GL_UNSIGNED_BYTE, volumetex);
 #endif
@@ -531,7 +553,6 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
     opac->Delete();
     data->Delete();
     camera->Delete();
-#endif
 }
 
 
