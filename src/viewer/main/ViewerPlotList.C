@@ -1554,6 +1554,10 @@ ViewerPlotList::DeleteTimeSlider(const std::string &ts, bool update)
 //   Added text to the message to indicate correlation type and warn
 //   about the operation potentially taking a long time.
 //
+//   Brad Whitlock, Mon Jun 27 15:08:24 PST 2005
+//   Reformatted the text and put it at the end of the prompt instead of
+//   in the middle.
+//
 // ****************************************************************************
 
 bool
@@ -1579,35 +1583,31 @@ ViewerPlotList::AskForCorrelationPermission(const stringVector &dbs) const
         int defMethod = cL->GetDefaultCorrelationMethod();
 
         static char prompt[512];
-        if (defMethod == DatabaseCorrelation::TimeCorrelation)
-        {
-            SNPRINTF(prompt, sizeof(prompt),
-                "Would you like to create a \"Time\" correlation for\n"
-                "the following databases?\n"
-                "PLEASE BE AWARE THAT \"Time\" CORRELATIONS REQUIRE OPENING\n"
-                "AND READING TIME INFORMATION FROM ALL FILES IN THE DATABASE.\n"
-                "DEPENDING ON THE DATABASE PLUGIN TYPE AND FILESYSTEM, THIS\n"
-                "OPERATION COULD TAKE AS MUCH AS A FEW MINUTES.\n");
-        }
-        else
-        {
-            SNPRINTF(prompt, sizeof(prompt), "Would you like to create a \"%s\" "
-                "correlation for the following databases?\n",
+        SNPRINTF(prompt, sizeof(prompt), "Would you like to create a \"%s\" "
+                "database correlation for the following databases?\n",
                 DatabaseCorrelation::GetMethodNameFromMethod(
                     cL->GetDefaultCorrelationMethod()));
-        }
-
-        // Pop up a Qt dialog to ask the user whether or not to correlate
-        // the specified databases.
         QString text(prompt);
         QString fileStr;
         for(int i = 0; i < dbs.size(); ++i)
             fileStr += (QString(dbs[i].c_str()) + QString("\n"));
         text += fileStr;
 
+        // Add a disclaimer in the event of a "Time" correlation.
+        if (defMethod == DatabaseCorrelation::TimeCorrelation)
+        {
+            text += "\n"
+               "Please be aware that \"Time\" database correlations may require\n"
+               "opening and reading time information from all files in the database.\n"
+               "Depending on the database plugin type and the file system, this\n"
+               "operation could take as much as a few minutes.";
+        }
+
         debug3 << "Asking for permission to create correlation. Prompt="
                << text.latin1() << endl;
 
+        // Pop up a Qt dialog to ask the user whether or not to correlate
+        // the specified databases.
         viewerSubject->BlockSocketSignals(true);
         permission = (QMessageBox::information(0, "Correlate databases?",
             text, QMessageBox::Yes, QMessageBox::No, QMessageBox::NoButton) ==

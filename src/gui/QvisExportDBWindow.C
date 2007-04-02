@@ -72,6 +72,10 @@ QvisExportDBWindow::~QvisExportDBWindow()
 // Programmer: Hank Childs
 // Creation:   May 25, 2005
 //
+// Modifications:
+//   Brad Whitlock, Mon Jun 27 13:52:24 PST 2005
+//   I added a directory selection button.
+//
 // ****************************************************************************
 
 void
@@ -93,11 +97,24 @@ QvisExportDBWindow::CreateWindowContents()
     infoLayout->addWidget(filenameLabel, 1, 0);
     infoLayout->addWidget(filenameLineEdit, 1, 1);
 
-    directoryNameLineEdit = new QLineEdit(infoBox, "directoryNameLineEdit");
-    connect(directoryNameLineEdit, SIGNAL(returnPressed()), this, SLOT(processDirectoryNameText()));
-    QLabel *directoryNameLabel = new QLabel(directoryNameLineEdit, "Directory name", infoBox, "directoryNameLabel");
+    QHBox *directoryParent = new QHBox(infoBox, "directoryParent");
+    directoryNameLineEdit = new QLineEdit(directoryParent, "directoryNameLineEdit");
+    connect(directoryNameLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processDirectoryNameText()));
+    QLabel *directoryNameLabel = new QLabel(directoryNameLineEdit,
+        "Directory name", infoBox, "directoryNameLabel");
+    QPushButton *directorySelectButton = new QPushButton("...",
+         directoryParent, "directorySelectButton");
+    directorySelectButton->setMaximumWidth(
+         fontMetrics().boundingRect("...").width() + 6);
+    directorySelectButton->setSizePolicy(QSizePolicy(QSizePolicy::Fixed,
+         QSizePolicy::Minimum));
+    connect(directorySelectButton, SIGNAL(clicked()),
+            this, SLOT(selectOutputDirectory()));
+    directoryParent->setSpacing(0);
+    directoryParent->setStretchFactor(directoryNameLineEdit, 100);
     infoLayout->addWidget(directoryNameLabel, 2, 0);
-    infoLayout->addWidget(directoryNameLineEdit, 2, 1);
+    infoLayout->addWidget(directoryParent, 2, 1);
 
     fileFormatComboBox = new QComboBox(false, infoBox, "fileFormatComboBox");
   
@@ -509,3 +526,37 @@ QvisExportDBWindow::variableProcessText()
     Apply();
 }
 
+// ****************************************************************************
+// Method: QvisExportDBWindow::selectOutputDirectory
+//
+// Purpose: 
+//   This is a Qt slot function that is called when we want to interactively
+//   select a new output directory.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 27 13:52:55 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisExportDBWindow::selectOutputDirectory()
+{
+    //
+    // Try and get a directory using a file dialog.
+    //
+    QString initialDir(exportDBAtts->GetDirname().c_str());
+    QString dirName = QFileDialog::getExistingDirectory(initialDir, this,
+        "getDirectoryDialog", "Select output directory");
+
+    //
+    // If a directory was chosen, use it as the output directory.
+    //
+    if(!dirName.isEmpty())
+    {
+        directoryNameLineEdit->setText(dirName);
+        GetCurrentValues(1);
+        Apply();
+    }
+}

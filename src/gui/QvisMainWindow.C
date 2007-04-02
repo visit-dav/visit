@@ -1538,7 +1538,9 @@ QvisMainWindow::reopenFile(int fileIndex)
 // Creation:   Fri Feb 27 11:51:59 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jun 27 14:53:14 PST 2005
+//   Added a little code to update the file panel.
+//
 // ****************************************************************************
 
 void
@@ -1559,6 +1561,9 @@ QvisMainWindow::closeFile(int fileIndex)
         // the viewer will issue a warning message.
         //
         viewer->CloseDatabase(sources[fileIndex]);
+
+        // Update the file panel based on what's selected.
+        filePanel->UpdateOpenButtonState();
     }
 }
 

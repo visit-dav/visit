@@ -1,0 +1,57 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 1.4.4 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 1.4.4 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.4.4</font></b></p>
+<ul>
+<li>Saving movies of the plots in your active visualization window is now possible within VisIt's GUI using the <b>Save movie</b> wizard. The <b>Save movie</b> wizard, located in the <b>Main</b> window's <b>File</b> menu, leads you through a set of screens that allow you to pick the resolutions and formats, output location, and generation method for your movie. Once you have completed the wizard's screens, VisIt starts making your movie. VisIt can use your current VisIt session to make your movie so you can use any processors that you have already allocated, or VisIt can start a new VisIt session, or tell you the command to use to generate your movie. If you choose to use your current VisIt session to make your movie, you will be able to watch your movie play through on screen. The movie's progress is also displayed in a <b>Movie progress</b> dialog so you can track VisIt's progress in generating your movie. The <b>Movie progress</b> dialog also provides a Cancel button if you decide to cancel your movie so you can resume working in your VisIt session.</li>
+<li>VisIt has been enhanced so that multiple user interfaces can be used to drive the viewer. This makes it possible to use both the GUI and the CLI on the same visualizations. It is even possible to use multiple GUI's - even custom GUI's that you have written yourself in C++ or Java. The CLI, which is itself a type of VisIt user interface, provides functions <i>(OpenClient, OpenGUI)</i> that can be used to connect other VisIt clients to the viewer.</li>
+<li>VisIt's GUI now provides a <b>Command</b> window that allows you to edit up to 8 Python scripts and execute them in VisIt's CLI at the click of a button. The <b>Command</b> window is available in the <b>Controls</b> menu. Saving your settings will cause the <b>Command</b> window's scripts to be saved so they are accessible in future VisIt sessions. Note that when VisIt executes scripts in this manner, the actual script execution is still performed by VisIt's CLI, which will display any script output in a seperate CLI window since the GUI and CLI are separate programs with little awareness of one another.</li>
+<li>It is now possible to export variables, materials, and meshes from your active database to a file using the new <b>Export database</b> window. The <b>Export database</b> window is available in the <b>File</b> menu. The new window allows you to pick the output name, directory, format, of the exported database as wells as the list of variables, meshes, or materials that will be exported. The list of available formats for exporting databases is determined by those database reader plugins that can write out data in their native file format.</li>
+<li>VisIt now provides an option to read all cycles and times from collections of single time-step databases <i>(like Silo)</i>. This option allows VisIt to display the cycles and times in the selected files list in the <b>Main</b> window and it also allows VisIt to create meaningful cycle or time-based database correlations for these types of databases. Database correlations are used to relate multiple time-varying databases on a common time scale, with a common time slider. Since VisIt can now create accurate cycle and time database correlations for collections of single time-step databases, it is now possible to more easily compare two or more simulations using a common time scale. Since it can be expensive to read in the extra time metadata for some types of files, this option is not enabled by default but VisIt will ask if you want to read in the extra data when it needs it. You can make VisIt always read in cycles and times by choosing <b>Try harder to get accurate cycles/times</b> in the <b>Preferences</b> window. If you want this option to take effect by default, be sure to save your settings after changing the setting in the <b>Preferences</b> window.</li>
+<li>VisIt's CLI now has embedded documentation for most of its functions, making it easy to see the argument list and usage information for each function.</li>
+<li>VisIt's Image database reader plugin has been improved in a number of ways. For example, only processor 0 will read the image header now. Caching has been re-enabled and the reader can now generate ghost data.</li>
+<li>VisIt now supports multimeshes, multivars, multimaterials, and multispecies where some domains have no data. This means that in the multi-object definition, which usually points to the name of another file's variable for a particular domain, you can now provide "EMPTY" to indicate that the domain has no data.</li>
+<li>VisIt now has <i>Moment of Inertia</i> and <i>Centroid</i> queries.</li>
+<li>VisIt can now read in a set of image slices as a 3D volume. Simply create a file ending in ".imgvol" that contains the names of the image files that make up the 3D volume and VisIt will use the images to construct a 3D volume. This feature is useful for viewing CT data, which is often stored as a set of 2D images.</li>
+<li>Expressions stored in a Silo file in the <i>meshtv_defvars</i> variable do not show up if their names contain slashes.</li>
+<li>VisIt can now make movies using the window size stored in a session file if you omit the <i>-geometry</i> argument to the <i>visit -movie</i> script. There is also a new <i>Make movie</i> option that does this when you right-click on a session file on the Windows platform.</li>
+<li>The Verdict <i>volume</i> expression should be tuned for rectilinear meshes.</li>
+<li>The Transform operator now changes the axis labels when switching from Cartesian coordinates to cylindrical or spherical coordinates.</li>
+<li>The KullLite database reader plugin can now adaptively switch its axis labels from X-Y to R-Z.</li>
+<li>VisIt's metadata server no longer automatically consolidates virtual databases of Flash files into larger virtual databases since that behavior caused problems for some users. If you want to make VisIt do this again, set the <i>VISIT_CONSOLIDATE_VIRTUAL_DATABASES</i> environment variable to <i>on</i>.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.4.4</font></b></p>
+<ul>
+<li>VisIt's viewer can crash when picking on a vector field created using an expression.</li>
+<li>Expressions are being recalculated each time the user picks on a surface.</li>
+<li>It is not possible to select a high cell seed number for an OnionPeel operator that has been applied to a FilledBoundary plot.</li>
+<li>VisIt's Silo database reader plugin does not correctly recognize blocks/groups from Hydra.</li>
+<li>Creating an elevated Surface of a 2D dataset using the Elevate operator makes VisIt lose the ability to control lighting on that surface.</li>
+<li>The <i>divergence</i> expression does not work on 2D vectors.</li>
+<li>Unhiding a Mesh plot when VisIt is in scalable-rendering mode forces the Mesh plot to be opaque.</li>
+<li>VisIt's image reader has several problems that result in incorrect colors being used as well as general inefficiency.</li>
+<li>Node picking on sliced FilledBoundary plots can return the wrong information because VisIt is not using the right coordinates to extract the data.</li>
+<li>Curves generated by Lineout operations look like their X coordinates are reversed.</li>
+<li>FilledBoundary plots of points can cause VisIt's point glypher to become confused if there are extra points in the dataset that do not belong to any cell.</li>
+<li>Pick is not displaying global zone or node ids when they have been requested.</li>
+<li>VisIt refuses to plot a FilledBoundary plot to which the Displace operator has been applied.</li>
+<li>Some VisIt filters do not make use of spatial and data extents when they should due to a coding issue a filter that is a facade for other filters.</li>
+<li>VisIt's <i>visitconvert</i> program issues a lot of warnings when converting image files to another format.</li>
+<li>Recentering a color image from zonal to nodal causes the Truecolor plot to display nothing.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href="relnotes1.4.3.html">VisIt 1.4.3 Release Notes</a>.</p>
+</body>
+</html>

@@ -102,6 +102,8 @@ class ViewerProxy;
 //   Brad Whitlock, Mon Dec 20 12:18:36 PDT 2004
 //   I added UpdateReplaceButtonEnabledState
 //
+//   Brad Whitlock, Mon Jun 27 14:54:27 PST 2005
+//   Added updateOpenButtonState and 
 // ****************************************************************************
 
 class GUI_API QvisFilePanel : public QWidget, public SimpleObserver, public GUIBase
@@ -150,6 +152,8 @@ public:
     void SetShowSelectedFiles(bool);
     bool GetAllowFileSelectionChange() const;
     void SetAllowFileSelectionChange(bool);
+
+    void UpdateOpenButtonState();
 signals:
     void reopenOnNextFrame();
 private:
@@ -160,6 +164,7 @@ private:
     void UpdateTimeFieldText(int timeState);
     void UpdateAnimationControlsEnabledState();
     bool UpdateReplaceButtonEnabledState();
+    void UpdateOpenButtonState(QvisListViewFileItem *fileItem);
 
     bool OpenFile(const QualifiedFilename &filename, int timeState,
                   bool reOpen);

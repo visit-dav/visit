@@ -19,39 +19,147 @@ Another benefit of the distributed architecture is that VisIt can visualize the
 data where it is generated, eliminating the need to move the data. VisIt can be 
 controlled by a Graphical User Interface (GUI) or through the Python or Java  
 programming languages.</p>
-<p><b><font size="4">Database Features:</font></b></p>
-<ul>
-  <li>2D and 3D database support</li>
-  <li>Silo database support</li>
-  <li>Exodus database support</li>
-  <li>VTK database support</li>
-  <li>Alias Wavefront Obj database support</li>
-</ul>
-<p><b><font size="4">Plotting Features:</font></b></p>
-<ul>
-  <li>Contour (with optional transparency)</li>
-  <li>Curve</li>
-  <li>Mesh</li>
-  <li>Pseudocolor (with optional transparency)</li>
-  <li>Streamlines</li>
-  <li>Subset (with optional transparency)</li>
-  <li>Surface</li>
-  <li>Vector</li>
-  <li>Volume-rendering (software and hardware)</li>
-</ul>
-<p><font size="4"><b>Operators:</b></font></p>
-<ul>
-  <li>Box clip</li>
-  <li>Cone slice</li>
-  <li>Index select</li>
-  <li>Isosurface</li>
-  <li>Onion peel</li>
-  <li>Planar slice</li>
-  <li>Sphere slice</li>
-  <li>Threshold</li>
-  <li>Transform</li>
-</ul>
-<p>&nbsp;</p>
+<h2>Key Features</h2>
+<table cellSpacing="1" cellPadding="5" width="90%" align="center" border="0">
+  <tr vAlign="top">
+    <th width="20%" bgColor="#9999cc"><font color="#ffffff">Feature</font></th>
+    <th width="80%" bgColor="#9999cc"><font color="#ffffff">Description/Example</font></th>
+  </tr>
+  <tr vAlign="top">
+    <td width="20%" bgColor="#ccccff">Has rich feature set for scalar, vector, 
+    and tensor&nbsp; field visualization</td>
+    <td width="40%" bgColor="#ccccff">VisIt’s visualization capabilities are 
+    primarily grouped into two categories:
+    <ul>
+      <li><b>Plots </b>are 
+      used to visualize data and include Boundary, Contour, Curve, Mesh, 
+      Pseudocolor, Scatter, Streamline, Surface, Tensor, Truecolor, Vector, and 
+      Volume.</li>
+      <li><b>Operators</b> 
+      transform the data prior to visualization. Some examples include Slice, 
+      Index select, Iso-surface, Onion peel, Reflect, Threshold. See the chapter 
+      on operators for the complete list of operators that VisIt supports.</li>
+    </ul>
+    <p>VisIt handles 2D and 3D data equally well. VisIt also has the ability to 
+    animate data, allowing users to see the time evolution of their data. </td>
+  </tr>
+  <tr vAlign="top">
+    <td width="20%" bgColor="#ccccff">Reads many popular data file formats</td>
+    <td width="20%" bgColor="#ccccff">VisIt can natively read many file formats, 
+    without the help of any translator utility. Some examples of the data file 
+    formats that VisIt can read are: Alias Wavefront OBJ, BOV, Boxlib, Ensight 
+    Gold, ESRI Shapefile, Exodus, Image (<i>bmp, jpeg, png, rgb, tiff</i>), 
+    PLOT3D, SAMRAI, SAR, Silo, Spheral, STL, TecPlot, VTK. VisIt reads many more 
+    types of files and can easily be extended to read other types of files by 
+    writing database reader plugins.</td>
+  </tr>
+  <tr vAlign="top">
+    <td width="20%" bgColor="#ccccff">Provides qualitative and quantitative 
+    visualization and analysis</td>
+    <td width="20%" bgColor="#ccccff">VisIt is also a powerful analysis tool. It 
+    provides support for derived fields, which allow new fields to be calculated 
+    using existing fields. For example, if a dataset contains a velocity field, 
+    it is possible to define a new field that is the velocity magnitude. VisIt’s 
+    quantitative analysis tools include:<ul>
+      <li>Line-out, which 
+      allows you to create curves from higher dimensional datasets by 
+      interactively defining lines using the mouse. </li>
+      <li>Pick and query, 
+      which allows you to query the dataset by clicking on images. </li>
+    </ul>
+    <p>VisIt also supports a generalized query interface, which allows you to 
+    query derived quantities such as volume or surface area.</td>
+  </tr>
+  <tr vAlign="top">
+    <td width="20%" bgColor="#ccccff">Supports multiple mesh types</td>
+    <td width="20%" bgColor="#ccccff">VisIt provides support for a wide range of 
+    computational meshes, including two- and three-dimensional rectilinear, 
+    curvilinear, unstructured , and AMR meshes.</td>
+  </tr>
+  <tr vAlign="top">
+    <td width="20%" bgColor="#ccccff">Powerful, full-featured graphical user 
+    interface (GUI)</td>
+    <td width="20%" bgColor="#ccccff">VisIt’s graphical user interface allows 
+    novice users to quickly get started visualizing their data, as well as 
+    allowing power users access to advanced features. VisIt automatically 
+    creates time-based animations from data sets that contain multiple time 
+    steps. In addition, it also has a keyframe animation capability that allows 
+    users to create sophisticated animations. VisIt allows users to pan, zoom, 
+    and rotate objects interactively using the mouse. It also gives users the 
+    ability to interactively size and position geometric objects such as planes 
+    and spheres.</td>
+  </tr>
+  <tr vAlign="top">
+    <td bgColor="#ccccff">Parallel and distributed architecture for visualizing 
+    terascale data sets</td>
+    <td bgColor="#ccccff">VisIt employs a distributed and parallel architecture 
+    in order to handle extremely large data sets interactively. VisIt’s 
+    rendering and data processing capabilities are split into viewer and engine 
+    components that may be distributed across multiple machines:<ul>
+      <li>Viewer—Responsible for rendering and is typically run on a local 
+      desktop or visualization server so that it can leverage the extremely 
+      powerful graphics cards that have been developed in the last few years.
+      </li>
+      <li>Engine—Responsible for the bulk of the data processing and 
+      input/output (I/O) and is typically run on a remote machine where the data 
+      is located. This eliminates the need move the data and makes high-end 
+      compute and I/O resources available to it. The engine can be run serially 
+      on a single processor or in parallel on thousands of processors. </li>
+    </ul>
+    </td>
+  </tr>
+  <tr vAlign="top">
+    <td bgColor="#ccccff">Interfaces with C++, Python, and Java</td>
+    <td bgColor="#ccccff">VisIt also supports C++, Python and Java interfaces. 
+    The C++ and Java interfaces make it possible to provide alternate user 
+    interfaces for VisIt or allow existing C++ or Java applications to add 
+    visualization support. The Python scripting interface gives users the 
+    ability to batch process data using a powerful scripting language. This 
+    feature can be used to create extremely sophisticated animations or 
+    implement regression suites. It also allows simulation systems that use 
+    Python as a back-plane to easily integrate visualization capabilities into 
+    their systems. </td>
+  </tr>
+  <tr vAlign="top">
+    <td bgColor="#ccccff">Extensible with dynamically loaded plug-ins</td>
+    <td bgColor="#ccccff">VisIt achieves extensibility through the use of 
+    dynamically loaded plugins. All of VisIt’s plots, operators, and database 
+    readers are implemented as plugins and are loaded at run-time from the 
+    plugin directory. New plugins can be added simply by installing them in this 
+    directory. VisIt comes with a graphical plugin creation tool, which greatly 
+    simplifies the process of creating new plugins. The user describes the 
+    properties of the plugin and then the tool generates most of the code 
+    necessary to implement the plugin. For example, in the case of an operator, 
+    the plugin creation tool creates the code necessary for the graphical user 
+    interface attribute window; the C++, Python, and Java interfaces; and the 
+    code necessary to interface to VisIt. The only code you need to write is the 
+    C++ code that actually performs the operation.</td>
+  </tr>
+  <tr vAlign="top">
+    <td bgColor="#ccccff">Multi-platform support</td>
+    <td bgColor="#ccccff">VisIt operates on UNIX (Irix, Tru64, AIX, Linux, 
+    Solaris), Windows, and MacOS X platforms. Software for these platforms can 
+    be downloaded at 
+    ftp://ftp.llnl.gov/pub/visit.</td>
+  </tr>
+  <tr vAlign="top">
+    <td bgColor="#ccccff">Open-source code</td>
+    <td bgColor="#ccccff">VisIt's code is open source, allowing programmers to 
+    read, redistribute, and modify the source code.</td>
+  </tr>
+  <tr vAlign="top">
+    <td bgColor="#ccccff">Customer support</td>
+    <td bgColor="#ccccff">
+    <ul>
+    <li>Send e-mail regarding VisIt to <i>visit-help@llnl.gov</i>.</li>
+    <li>LLNL users can dial extension 4-2VIS during normal working hours (8am-5pm PST)
+        to reach the VisIt help desk.
+    </li>
+    </ul>
+    </td>
+  </tr>
+</table>
+<h2>&nbsp;</h2>
 <p>&nbsp;</p>
 
 </body>

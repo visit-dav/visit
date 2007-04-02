@@ -2433,6 +2433,32 @@ QvisFilePanel::GetAllowFileSelectionChange() const
     return allowFileSelectionChange;
 }
 
+// ****************************************************************************
+// Method: QvisFilePanel::UpdateOpenButtonState
+//
+// Purpose: 
+//   Updates the text and enabled state of the Open button based on what
+//   file is currently selected in the list view.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 27 14:53:26 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFilePanel::UpdateOpenButtonState()
+{
+    QListViewItem *item = fileListView->selectedItem();
+    if(item != 0)
+    {
+        // Cast to a derived type.
+        QvisListViewFileItem *fileItem = (QvisListViewFileItem *)item;
+        UpdateOpenButtonState(fileItem);
+    }
+}
+
 //
 // Qt slot functions.
 //
@@ -2733,6 +2759,10 @@ QvisFilePanel::fileExpanded(QListViewItem *item)
 //   I moved the code to update the enabled state of the replace button into
 //   its own method.
 //
+//   Brad Whitlock, Mon Jun 27 14:49:43 PST 2005
+//   I moved the code that updates the text and enabled state for the Open
+//   button into its own method.
+//
 // ****************************************************************************
 
 void
@@ -2743,7 +2773,35 @@ QvisFilePanel::highlightFile(QListViewItem *item)
 
     // Cast to a derived type.
     QvisListViewFileItem *fileItem = (QvisListViewFileItem *)item;
+    UpdateOpenButtonState(fileItem);
 
+    //
+    // If the highlighted file is not the active file, then
+    // enable the open, replace, overlay buttons.
+    //
+    bool enable = UpdateReplaceButtonEnabledState();
+    overlayButton->setEnabled(enable);
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::UpdateOpenButtonState
+//
+// Purpose: 
+//   Updates the state of the Open button based on what item is highlighted.
+//
+// Arguments:
+//   fileItem : The highlighted item in the list view.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 27 14:57:22 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFilePanel::UpdateOpenButtonState(QvisListViewFileItem *fileItem)
+{
     // If the filename is not a file. Disable the open files button.
     if(!fileItem->isFile())
     {
@@ -2763,13 +2821,6 @@ QvisFilePanel::highlightFile(QListViewItem *item)
     else
         openButton->setText("Open");
     openButton->setEnabled(true);
-
-    //
-    // If the highlighted file is not the active file, then
-    // enable the open, replace, overlay buttons.
-    //
-    bool enable = UpdateReplaceButtonEnabledState();
-    overlayButton->setEnabled(enable);
 }
 
 // ****************************************************************************

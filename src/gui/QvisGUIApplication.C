@@ -5794,9 +5794,9 @@ QvisGUIApplication::SaveMovie()
         {
             // Determine the location of the makemovie script.
 #if defined(_WIN32)
-            std::string makemovie(GetVisItInstallationDirectory() + "\\makemovie.py");
+            std::string makemovie(GetVisItArchitectureDirectory() + "\\makemovie.py");
 #else
-            std::string makemovie(GetVisItInstallationDirectory() + "/bin/makemovie.py");
+            std::string makemovie(GetVisItArchitectureDirectory() + "/bin/makemovie.py");
 #endif
 
             // Assemble a string of code to execute.

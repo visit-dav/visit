@@ -26,6 +26,10 @@ class ExportDBAttributes;
 // Programmer: Hank Childs
 // Creation:   May 25, 2005
 //
+// Modifications:
+//   Brad Whitlock, Mon Jun 27 13:51:01 PST 2005
+//   Added a directory selection button.
+//
 // ****************************************************************************
 
 class GUI_API QvisExportDBWindow : public QvisPostableWindowObserver
@@ -51,6 +55,7 @@ protected slots:
     void exportDB();
     void exportButtonClicked();
     void addVariable(const QString &);
+    void selectOutputDirectory();
 private:
     QLineEdit           *filenameLineEdit;
     QLineEdit           *directoryNameLineEdit;
