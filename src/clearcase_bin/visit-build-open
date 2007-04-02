@@ -20,9 +20,6 @@ user=`whoami`
 #
 emailName=brugger1@llnl.gov
 case $user in
-   ahern)
-      emailName=ahern1@llnl.gov
-      ;;
    kbonnell)
       emailName=bonnell2@llnl.gov
       ;; 
@@ -32,14 +29,11 @@ case $user in
    childs)
       emailName=childs3@llnl.gov
       ;;
-   jennings)
-      emailName=jennings4@llnl.gov
+   mcmiller)
+      emailName=miller86@llnl.gov
       ;;
-   meredith)
-      emailName=meredith6@llnl.gov
-      ;;
-   murguia)
-      emailName=murguia1@llnl.gov
+   miller)
+      emailName=miller86@llnl.gov
       ;;
    whitlocb)
       emailName=whitlock2@llnl.gov
@@ -57,6 +51,7 @@ berg=true
 up=true
 pengra=true
 thunder=true
+vertex=true
 
 dist=undefined
 
@@ -77,6 +72,7 @@ do
          up=false
          pengra=false
          thunder=false
+         vertex=false
          shift
          ;;
       -hoth)
@@ -141,6 +137,14 @@ do
          ;;
       +thunder)
          thunder=true
+         shift
+         ;;
+      -vertex)
+         vertex=false
+         shift
+         ;;
+      +vertex)
+         vertex=true
          shift
          ;;
       -d)
@@ -375,16 +379,16 @@ fi
 rm -f berg
 cat <<EOF > berg
 #!/bin/sh
-if test ! -e /p/glocal1/$user ; then
-   mkdir /p/glocal1/$user
+if test ! -e /g/g17/$user ; then
+   mkdir /g/g17/$user
 fi
-if test ! -e /p/glocal1/$user/berg ; then
-   mkdir /p/glocal1/$user/berg
+if test ! -e /g/g17/$user/berg ; then
+   mkdir /g/g17/$user/berg
 fi
-rm -rf /p/glocal1/$user/berg/visitbuild
-mkdir /p/glocal1/$user/berg/visitbuild
-mv berg_$dist.tar.gz /p/glocal1/$user/berg/visitbuild/$dist.tar.gz
-cd /p/glocal1/$user/berg/visitbuild
+rm -rf /g/g17/$user/berg/visitbuild
+mkdir /g/g17/$user/berg/visitbuild
+mv berg_$dist.tar.gz /g/g17/$user/berg/visitbuild/$dist.tar.gz
+cd /g/g17/$user/berg/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`
@@ -570,9 +574,59 @@ then
 fi
 
 #
+# Build on vertex.
+#
+rm -f vertex
+cat <<EOF > vertex
+#!/bin/sh
+if test ! -d /usr/tmp/$user ; then
+   mkdir /usr/tmp/$user
+fi
+if test ! -d /usr/tmp/$user/vertex ; then
+   mkdir /usr/tmp/$user/vertex
+fi
+rm -rf /usr/tmp/$user/vertex/visitbuild
+mkdir /usr/tmp/$user/vertex/visitbuild
+mv vertex_$dist.tar.gz /usr/tmp/$user/vertex/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/vertex/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
+make -j 3 >> ../buildlog 2>&1
+clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
+mv visit\$ver2.linux-x86_64.tar.gz ..
+cd ..
+rm -f resultlog
+echo "        build of visit on vertex"       > resultlog 2>&1
+echo "       --------------------------"      >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $vertex = true ]
+then
+   if [ $test = no ]
+   then
+      scp vertex vertex0:vertex_buildit
+      scp $dist.tar.gz vertex0:vertex_$dist.tar.gz
+      ssh vertex0 "chmod 750 vertex_buildit;./vertex_buildit" &
+   fi
+fi
+
+#
 # Clean up.
 #
 if [ $test = no ]
 then
-   rm -f hoth sunspot quad gps berg up pengra thunder
+   rm -f hoth sunspot quad gps berg up pengra thunder vertex
 fi

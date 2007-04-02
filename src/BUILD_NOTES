@@ -201,9 +201,9 @@ gunzip cmake-2.2.3.tar.gz
 tar xf cmake-2.2.3.tar
 cd cmake-2.2.3
 
-# We have experienced problems with CMake not using the right compilers 
+# We have experienced problems with CMake not using the right compilers
 # even if specified on the command line, so they should be set in your
-# environemnt: 
+# environemnt:
 # e.g.
 #    setenv CC=xlc
 #    setenv CXX=xlC
@@ -223,15 +223,14 @@ env CXXFLAGS=""  CFLAGS="" ./bootstrap
 # (ccmake) either with the curses header or library.  (Mainly with AIX).
 # To prevent CMake from attempting to build ccmake, open CMakeCache.txt
 # and set CURSES_LIBRARY:FILEPATH=   to ""
-
 make
 
 #
 # Build VTK
 #
 cd ..
-gunzip vtk_5.0.0a.tar.gz
-tar xf vtk_5.0.0a.tar
+gunzip vtk-5.0.0a.tar.gz
+tar xf vtk-5.0.0a.tar
 cd VTK
 #
 # On irix systems we have experienced problems with CMake not using the
@@ -241,9 +240,9 @@ cd VTK
 #
 ../cmake-2.2.3/bin/cmake .
 #
-# Edit CMakeCache.txt.  Turn BUILD_SHARED_LIBS, VTK_USE_HYBRID,
-# VTK_USE_MANGLED_MESA, and VTK_USE_ANSI_STDLIB on. Turn VTK_USE_RPATH 
-# and BUILD_TESTING off.
+# Edit CMakeCache.txt.  Turn BUILD_SHARED_LIBS, VTK_USE_MANGLED_MESA, and
+# VTK_USE_ANSI_STDLIB on (Note that some platforms will have a definition
+# for VTK_USE_ANSI_STDLIB and some will not). Turn BUILD_TESTING off.
 #
 # If you want to change the compilers you should modify CMAKE_CXX_COMPILER
 # and CMAKE_C_COMPILER.  If you want to change the compiler flags you should
@@ -328,7 +327,7 @@ cp Rendering/*.h                    $VISITDIR/vtk/5.0.0a/$VISITARCH/Rendering
 cp Utilities/*.h                    $VISITDIR/vtk/5.0.0a/$VISITARCH/Utilities
 cp Utilities/vtktiff/*.h            $VISITDIR/vtk/5.0.0a/$VISITARCH/Utilities/vtktiff
 cp Utilities/vtkexpat/*.h           $VISITDIR/vtk/5.0.0a/$VISITARCH/Utilities/vtkexpat
-cp Utilities/vtkzlib/*.h           $VISITDIR/vtk/5.0.0a/$VISITARCH/Utilities/vtkzlib
+cp Utilities/vtkzlib/*.h            $VISITDIR/vtk/5.0.0a/$VISITARCH/Utilities/vtkzlib
 cp VolumeRendering/*.h              $VISITDIR/vtk/5.0.0a/$VISITARCH/VolumeRendering
 cp MangleMesaInclude/*.h            $VISITDIR/vtk/5.0.0a/$VISITARCH/MangleMesaInclude
 cp vtkstd/*                         $VISITDIR/vtk/5.0.0a/$VISITARCH/vtkstd
@@ -849,9 +848,9 @@ HDF5 is an I/O library that is used by many of the VisIt database plugins.
 #
 # Build HDF5.
 #
-gunzip hdf5-1.6.0.tar.gz
-tar xf hdf5-1.6.0.tar
-cd hdf5-1.6.0
+gunzip hdf5-1.6.5.tar.gz
+tar xf hdf5-1.6.5.tar
+cd hdf5-1.6.5
 
 HDF5 can be built as a serial or a parallel library.  Always build the
 serial version of HDF5 for VisIt.  Both the serial and parallel versions
@@ -871,22 +870,26 @@ HDF5 will by default want to use the vendor supplied compiler so you will
 probably need to specify the compiler.  This can be done by preceding the
 configure command with "env CC=compiler_name".
 
+On irix systems if you want to build a 64 bit version you will need to
+precede the configure command with "env CC="cc -O2 -64" CFLAGS="-O2 -64".
+The CC part is to get around a bug in their make system.
+
 On itanium (ia64) systems you will need to add -fPIC to the compile flags.
 This can be done by preceding the configure command with "env CFLAGS=-fPIC".
 
 On opteron systems you will need to add "-m64 -fPIC" to the compile
 flags.  This can be done by preceding the configure command with
-"env CFLAGS=-m64 -fPIC".
+"env CFLAGS="-m64 -fPIC"".
 
-./configure --disable-shared -prefix=$VISITDIR/hdf5/1.6.0/$VISITARCH
+./configure --disable-shared -prefix=$VISITDIR/hdf5/1.6.5/$VISITARCH
 make
 
 #
 # Install it in the visit directory under the hdf5 directory.
 #
 mkdir $VISITDIR/hdf5
-mkdir $VISITDIR/hdf5/1.6.0
-mkdir $VISITDIR/hdf5/1.6.0/$VISITARCH
+mkdir $VISITDIR/hdf5/1.6.5
+mkdir $VISITDIR/hdf5/1.6.5/$VISITARCH
 make install
 cd ..
 
@@ -1180,7 +1183,3 @@ SAF files.  The third group of options are used when building with support
 for reading exodus files.
 
 If you have any problems send e-mail to visit-help@llnl.gov.
-
-
-
-
