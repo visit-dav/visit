@@ -68,46 +68,21 @@ LIBS=
 ##
 ## We distribute sources for filib with VisIt via the tar file
 ##
-DISTRIB=filib++-visit-dist.tar.gz
+DISTRIB=boost-interval.tar.bz2
 
 ##
 ## Standard targets...
 ##
-all: message filib.installed
+all: message bilib.installed
 
 clean:
-	$(RM) -r interval install filib.installed
+	$(RM) bilib.installed
+	$(RM) -r boost-interval 
 
-#
-# We can't use clearmake below this level because filib's Makefile's
-# aren't necessarily clearmake compatible. We link to the installed
-# files here because we don't want to "install" to VisIt's top-level
-# and we don't want to move them after having installed them.
-#
-filib.installed: filib++-visit-dist.tar.gz
-	gunzip < filib++-visit-dist.tar.gz | tar xf -
-	@topDir=`pwd`; \
-	useMake=$(MAKE); \
-	if test "$$useMake" = "clearmake"; then \
-	    useMake=make; \
-	fi; \
-	cd interval; \
-	$$useMake libs; \
-	theUser=$$USER; \
-	if test "$$theUser" = ""; then \
-	    theUser=`whoami`; \
-	fi; \
-	theGroup=$$GROUP; \
-	if test "$$theGroup" = ""; then \
-	    theGroup=`id | cut -d'=' -f4 | cut -d')' -f1 | cut -d'(' -f2`; \
-	fi; \
-	$$useMake install PREFIX=$$topDir/install OWN=$$theUser GRP=$$theGroup; \
-	cd ..; \
-	for f in install/lib/*; do \
-	    ln -fs $$topDir/$$f ../../lib/`basename $$f`; \
-	done; \
-	ln -fs $$topDir/install/include ../../include/filib
-	touch filib.installed
+bilib.installed: boost-interval.tar.bz2
+	bunzip2 < boost-interval.tar.bz2 | tar xf -
+	ln -fs $(TOPDIR)/third_party_builtin/bilib/boost-interval ../../include/boost
+	touch bilib.installed
 
 ##
 ## Other targets
@@ -115,7 +90,7 @@ filib.installed: filib++-visit-dist.tar.gz
 message:
 	@echo
 	@echo "****************************************************************************"
-	@echo "*** Building Fast Interval Library ($(LIB))"
+	@echo "*** Installing Boost Interval Template Library"
 	@echo "****************************************************************************"
 
 ##

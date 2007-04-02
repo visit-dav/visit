@@ -166,7 +166,7 @@ QvisMeshManagementWindow::CreateWindowContents()
     layoutCSGGroup->addWidget(discretizeUniform, 2, 1);
     QRadioButton *discretizeAdaptive = new QRadioButton("Adaptive", pageCSGGroup, "Adaptive");
     discretizationMode->insert(discretizeAdaptive);
-#if !HAVE_FILIB
+#if !HAVE_BILIB
     discretizeAdaptive->setEnabled(false);
 #endif
     layoutCSGGroup->addWidget(discretizeAdaptive, 2, 2);
@@ -246,11 +246,11 @@ QvisMeshManagementWindow::UpdateWindow(bool doAll)
                     discretizationMode->setButton(0);
                 else if (dMode == MeshManagementAttributes::Adaptive)
                 {
-#if HAVE_FILIB
+#if HAVE_BILIB
                     discretizationMode->setButton(1);
 #else
                     GUIBase::Warning("Adaptive not available. "
-                                     "Missing fast interval library (filib). "
+                                     "Missing boost interval template library. "
                                      "Overriding to Uniform.");
                     discretizationMode->setButton(0);
 #endif
@@ -438,11 +438,11 @@ QvisMeshManagementWindow::discretizationModeChanged(int val)
         mmAtts->SetDiscretizationMode(MeshManagementAttributes::Uniform);
     else if (val == 1)
     {
-#if HAVE_FILIB
+#if HAVE_BILIB
         mmAtts->SetDiscretizationMode(MeshManagementAttributes::Adaptive);
 #else
         GUIBase::Warning("Adaptive not available. "
-                         "Missing fast interval library (filib). "
+                         "Missing boost interval template library. "
                          "Overriding to Uniform.");
         mmAtts->SetDiscretizationMode(MeshManagementAttributes::Uniform);
 #endif

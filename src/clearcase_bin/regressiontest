@@ -270,7 +270,7 @@ echo -e "LD_LIBRARY_PATH = $LD_LIBRARY_PATH" 1> buildlog 2>&1
 echo -e "Forcing LD_LIBRARY_PATH to /usr/local/lib" 1> buildlog 2>&1
 LD_LIBRARY_PATH=/usr/local/lib
 export LD_LIBRARY_PATH
-env CXXFLAGS="-g" ./configure --enable-parallel 1>> buildlog 2>&1
+env CXXFLAGS="-g" MAKE=clearmake ./configure --enable-parallel 1>> buildlog 2>&1
 rm -f plugins/*/*.so
 (cd data; clearmake clean 1> /dev/null 2>&1 )
 
@@ -435,7 +435,7 @@ ipcs -q | grep visit | cut -d' ' -f2 | xargs -n 1 ipcrm -q 1> /dev/null 2>&1
 
 # copy the data dir for use in optimized testing
 cp -R data /gscratch/visit_test/. 1> /dev/null 2>&1
-chmod -R g+rX /gscratch/visit_test/data
+chmod -R g+rX /gscratch/visit_test/data 1> /dev/null 2>&1
 
 # rebuild an optimized visit
 cleartool startview visit_VOBowner_testopt  1> /dev/null 2>&1
@@ -446,7 +446,7 @@ echo -e "LD_LIBRARY_PATH = $LD_LIBRARY_PATH" 1> buildlog 2>&1
 echo -e "Forcing LD_LIBRARY_PATH to /usr/local/lib" 1> buildlog 2>&1
 LD_LIBRARY_PATH=/usr/local/lib
 export LD_LIBRARY_PATH
-env CXXFLAGS="-O2" ./configure --enable-parallel 1>> buildlog 2>&1
+env CXXFLAGS="-O2" MAKE=clearmake ./configure --enable-parallel 1>> buildlog 2>&1
 rm -f plugins/*/*.so
 (cd data; clearmake clean 1> /dev/null 2>&1)
 clearmake clean 1> /dev/null 2>&1
