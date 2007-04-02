@@ -7606,6 +7606,9 @@ avtSiloFileFormat::CalcSpecies(DBfile *dbfile, char *specname)
 //    Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
 //    Freed ucdmesh prior to early return for null facelist
 //
+//    Hank Childs, Tue Jun 13 14:23:48 PDT 2006
+//    Add flag to read mask.  The current flag works with PDB, but not HDF5.
+//
 // ****************************************************************************
 
 avtFacelist *
@@ -7618,7 +7621,7 @@ avtSiloFileFormat::CalcExternalFacelist(DBfile *dbfile, char *mesh)
     // We want to get just the facelist.  So we need to get the ReadMask,
     // set it to read facelists, then set it back.
     long mask = DBGetDataReadMask();
-    DBSetDataReadMask(DBUMFacelist);
+    DBSetDataReadMask(DBUMFacelist | DBFacelistInfo);
     DBucdmesh *um = DBGetUcdmesh(correctFile, realvar);
     if (um == NULL)
         EXCEPTION1(InvalidVariableException, mesh);

@@ -479,6 +479,9 @@ avtCMFEExpression::Execute()
 //    Post a special error message for time derivatives, since they will
 //    cause the error message from this routine to execute most frequently.
 //
+//    Hank Childs, Tue Jun 13 13:10:11 PDT 2006
+//    Fix a typo in warning message.
+//
 // ****************************************************************************
 
 int
@@ -561,8 +564,8 @@ avtCMFEExpression::GetTimestate(ref_ptr<avtDatabase> dbp)
         actualTimestep = 0;
         if (isDelta && firstDBTime == 0 && timeIndex == -1)
             avtCallback::IssueWarning("VisIt uses the current time state and "
-               "the previus time state when doing a time derivative.  Because "
-               "you are at the first time state, there is no previous time "
+               "the previous time state when doing a time derivative.  Because"
+               " you are at the first time state, there is no previous time "
                "state to difference with.  So the resulting plot will have no "
                "differences.  This feature will work correctly, however, for "
                "the rest of the time states.");
