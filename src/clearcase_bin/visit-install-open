@@ -59,6 +59,7 @@ gps=true
 berg=true
 up=true
 pengra=true
+pengra_icc=true
 thunder=true
 vertex=true
 
@@ -81,6 +82,7 @@ do
          berg=false
          up=false
          pengra=false
+         pengra_icc=false
          thunder=false
          vertex=false
          shift
@@ -139,6 +141,14 @@ do
          ;;
       +pengra)
          pengra=true
+         shift
+         ;;
+      -pengra_icc)
+         pengra_icc=false
+         shift
+         ;;
+      +pengra_icc)
+         pengra_icc=true
          shift
          ;;
       -thunder)
@@ -451,6 +461,42 @@ then
 fi
 
 #
+# Install an icc version on pengra.
+#
+rm -f pengra_icc
+cat <<EOF > pengra_icc
+#!/bin/sh
+./visit-install -private -c open -g visit -b bdivp -gw -l $ver linux_chaos_icc /usr/gapps/visit > installlog 2>&1
+rm -f resultlog
+echo "        install of visit on pengra_icc"      > resultlog 2>&1
+echo "       --------------------------------"     >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+df -k /usr/gapps/visit                             >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver/linux-intel-icc/bin    >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/linux-intel-icc/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/linux-intel-icc/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/linux-intel-icc/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "The database plugins:"                       >> resultlog 2>&1
+ls /usr/gapps/visit/$ver/linux-intel-icc/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/linux-intel-icc\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $pengra_icc = true ]
+then
+   if [ $test = no ]
+   then
+      scp pengra2:/usr/tmp/$user/pengra/visitbuild/visit$ver2.linux-icc.tar.gz visit$ver2.linux_chaos_icc.tar.gz
+      scp visit$ver2.linux_chaos_icc.tar.gz gps15:
+      scp visit-install gps15:
+      scp pengra_icc gps15:pengra_icc_install
+      ssh gps15 "chmod 750 pengra_icc_install;./pengra_icc_install"
+   fi
+fi
+
+#
 # Install on thunder.
 #
 rm -f thunder
@@ -527,5 +573,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth sunspot quad gps berg up pengra thunder vertex
+   rm -f hoth sunspot quad gps berg up pengra pengra_icc thunder vertex
 fi
