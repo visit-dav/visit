@@ -370,6 +370,9 @@ avtCracksClipperFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
 //    Always request the secondary vars.  Added cracks_vol expression to
 //    secondary var list.
 //
+//    Kathleen Bonnell, Wed Jan 10 13:30:40 PST 2007 
+//    Ensure any existing secondary variables get added to the new DataSpec. 
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -377,10 +380,19 @@ avtCracksClipperFilter::PerformRestriction(avtPipelineSpecification_p pspec)
 {
     avtDataSpecification_p ds = pspec->GetDataSpecification();
 
+    // Retrieve secondary variables, if any, to pass along to the 
+    // newly created DataSpec
+    std::vector<CharStrRef> csv = ds->GetSecondaryVariables();
+
     // Create a new dspec so that we can add secondary vars
     avtDataSpecification_p nds = new avtDataSpecification(ds->GetVariable(),
                 ds->GetTimestep(), ds->GetRestriction());
 
+    // Add any previously existing SecondaryVariables.
+    for (int i = 0; i < csv.size(); i++)
+        nds->AddSecondaryVariable(*(csv[i]));
+
+    // Add secondary variables necessary for CracksClipper
     nds->AddSecondaryVariable(atts.GetCrack1Var().c_str());
     nds->AddSecondaryVariable(atts.GetCrack2Var().c_str());
     nds->AddSecondaryVariable(atts.GetCrack3Var().c_str());
