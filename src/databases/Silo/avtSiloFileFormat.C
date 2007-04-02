@@ -397,6 +397,8 @@ avtSiloFileFormat::OpenFile(int f, bool skipGlobalInfo)
 //    Remove support for vector defvars -- they are now correctly handled at a
 //    higher level.
 //
+//    Mark C. Miller, Wed Dec 13 16:55:30 PST 2006
+//    Added call to GetMultivarToMultimeshMap
 // ****************************************************************************
 
 void
@@ -412,6 +414,11 @@ avtSiloFileFormat::ReadGlobalInformation(DBfile *dbfile)
     // information related to that.
     //
     GetConnectivityAndGroupInformation(dbfile);
+
+    //
+    // Read multi-var to multi-mesh mapping information.
+    //
+    GetMultivarToMultimeshMap(dbfile);
 
     readGlobalInfo = true;
 }
@@ -998,6 +1005,10 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Removed all EXCEPTIONs from this routine except for NULL toc to make
 //    the plugin more fault tolerant. Added code to support multi-block CSG
 //    meshes
+//
+//    Mark C. Miller, Wed Dec 13 16:55:30 PST 2006
+//    Added calls to RegisterDomainDirs to loops over multivars, multimats
+//    and multimatspecies
 // ****************************************************************************
 
 void
@@ -1822,6 +1833,9 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         DBmultivar *mv = GetMultivar(dirname, multivar_names[i]);
         if (mv != NULL)
         {
+
+            RegisterDomainDirs(mv->varnames, mv->nvars, dirname);
+
             // Find the first non-empty mesh
             while (string(mv->varnames[meshnum]) == "EMPTY")
             {
@@ -2318,6 +2332,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             valid_var = false;
             mm = DBAllocMultimat(0);
         }
+        RegisterDomainDirs(mm->matnames, mm->nmats, dirname);
 
         // Find the first non-empty mesh
         int meshnum = 0;
@@ -2487,6 +2502,8 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                                                      multimatspecies_names[i]);
         if (ms == NULL)
             EXCEPTION1(InvalidVariableException, multimatspecies_names[i]);
+
+        RegisterDomainDirs(ms->specnames, ms->nspec, dirname);
 
         // Find the first non-empty mesh
         int meshnum = 0;
@@ -6621,6 +6638,10 @@ avtSiloFileFormat::GetRelativeVarName(const char *initVar, const char *newVar,
 //    Added code to try an exact match with the leading slash, if one exists,
 //    removed from the meshname. This is to work around a bug in data files
 //    generated with earlier versions of the HDF5 driver.
+//
+//    Mark C. Miller, Wed Dec 13 16:55:30 PST 2006
+//    Added code to use explicit multivar to multimesh mapping information,
+//    when available.
 // ****************************************************************************
 
 string
@@ -6633,6 +6654,17 @@ avtSiloFileFormat::DetermineMultiMeshForSubVariable(DBfile *dbfile,
     int i;
     char subMesh[256];
     char subMeshTmp[256];
+
+    //
+    // First, see if we've got the answer in the multivarToMultimeshMap
+    //
+    map<string,string>::const_iterator cit = multivarToMultimeshMap.find(name);
+    if (cit != multivarToMultimeshMap.end())
+    {
+        debug5 << "Matched multivar \"" << name << "\" to multimesh \""
+               << cit->second << "\" using multivarToMultimeshMap" << endl;
+        return cit->second;
+    }
 
     // Find the first non-empty mesh
     int meshnum = 0;
@@ -6698,7 +6730,7 @@ avtSiloFileFormat::DetermineMultiMeshForSubVariable(DBfile *dbfile,
     // Look for a multimesh which has the same name as the mesh for
     // the multivar, and match up domains by directory name.
     //
-    debug5 << "Using fuzzy logic to match multivar to a multimesh" << endl;
+    debug5 << "Using fuzzy logic to match multivar \"" << name << "\" to a multimesh" << endl;
     string dir,varmesh;
     SplitDirVarName(subMesh, curdir, dir, varmesh);
     for (i = 0 ; i < size ; i++)
@@ -7992,6 +8024,10 @@ avtSiloFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
 bool
 avtSiloFileFormat::ShouldGoToDir(const char *dirname)
 {
+    if (domainDirs.count(dirname) == 0)
+        debug5 << "Deciding to go into dir \"" << dirname << "\"" << endl;
+    else
+        debug5 << "Skipping dir \"" << dirname << "\"" << endl;
     return (domainDirs.count(dirname) == 0);
 }
 
@@ -8809,5 +8845,81 @@ static void RemoveValuesForSkippedZones(vector<int>& zoneRangesSkipped,
 
         outArrayIndex++;
         inArrayIndex++;
+    }
+}
+
+// ****************************************************************************
+//  Function: GetMultivarToMultimeshMap
+//
+//  Purpose: Handle explicit multivar to multimesh mapping convention 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   December 12, 2006 
+//
+// ****************************************************************************
+void
+avtSiloFileFormat::GetMultivarToMultimeshMap(DBfile *dbfile)
+{
+    int lvars = DBGetVarLength(dbfile, "MultivarToMultimeshMap_vars");
+    int lmeshes = DBGetVarLength(dbfile, "MultivarToMultimeshMap_meshes");
+    if (lvars > 0 && lmeshes > 0)
+    {
+        int i;
+        string tmpStr;
+
+        char  *vars = new char[lvars+1];
+        for (i = 0 ; i < lvars+1 ; i++)
+            vars[i] = '\0';
+        DBReadVar(dbfile, "MultivarToMultimeshMap_vars", vars);
+
+        vector<string> varVec;
+        tmpStr.clear();
+        for (i = 0 ; i < lvars+1; i++)
+        {
+            if (vars[i] == ';' || (i == lvars))
+            {
+                varVec.push_back(tmpStr);
+                tmpStr.clear();
+            }
+            else
+            {
+                tmpStr += vars[i];
+            }
+        }
+        delete [] vars;
+
+        char  *meshes = new char[lmeshes+1];
+        for (i = 0 ; i < lmeshes+1 ; i++)
+            meshes[i] = '\0';
+        DBReadVar(dbfile, "MultivarToMultimeshMap_meshes", meshes);
+
+        vector<string> meshVec;
+        tmpStr.clear();
+        for (i = 0 ; i < lmeshes+1; i++)
+        {
+            if (meshes[i] == ';' || (i == lmeshes))
+            {
+                meshVec.push_back(tmpStr);
+                tmpStr.clear();
+            }
+            else
+            {
+                tmpStr += meshes[i];
+            }
+        }
+        delete [] meshes;
+
+        if (varVec.size() != meshVec.size())
+        {
+            EXCEPTION1(InvalidVariableException, "MultivarToMultimeshMap: "
+                "vars|meshes have different number of entries");
+        }
+
+        debug5 << "Building multivarToMultimeshMap" << endl;
+        for (i = 0; i < varVec.size(); i++)
+        {
+            debug5 << "    var \"" << varVec[i] << "\" : mesh \"" << meshVec[i] << "\"" << endl;
+            multivarToMultimeshMap[varVec[i]] = meshVec[i];
+        }
     }
 }
