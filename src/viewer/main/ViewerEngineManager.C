@@ -3316,6 +3316,9 @@ ViewerEngineManager::CloneNetwork(const EngineKey &ek, int nid,
 //   I set the host name into the profile in case the host profile's host
 //   was not set in the stored profile.
 //
+//   Cyrus Harrison, Thu Mar 15 11:26:58 PDT 2007
+//   Added save of material attributes and mesh management attributes
+//
 // ****************************************************************************
 
 void
@@ -3326,10 +3329,15 @@ ViewerEngineManager::CreateNode(DataNode *parentNode) const
     for (it = engines.begin() ; it != engines.end(); ++it)
         haveNonSimEngines |= (!it->first.IsSimulation());
 
+    DataNode *vemNode = new DataNode("ViewerEngineManager");
+    parentNode->AddNode(vemNode);
+
+    // save material and mesh management attributes
+    GetMaterialClientAtts()->CreateNode(vemNode,true,true);
+    GetMeshManagementClientAtts()->CreateNode(vemNode,true,true);
+
     if(haveNonSimEngines)
     {
-        DataNode *vemNode = new DataNode("ViewerEngineManager");
-        parentNode->AddNode(vemNode);
         DataNode *runningEnginesNode = new DataNode("RunningEngines");
         vemNode->AddNode(runningEnginesNode);
 
@@ -3345,6 +3353,39 @@ ViewerEngineManager::CreateNode(DataNode *parentNode) const
             }
         }
     }
+}
+
+
+// ****************************************************************************
+// Method: ViewerEngineManager::SetFromNode
+//
+// Purpose: 
+//   Restores material and mesh management attributes 
+//
+// Arguments:
+//   parentNode : The parent node that will contain the data for this object.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Thu Mar 15 11:30:11 PDT 2007
+//
+// ****************************************************************************
+
+void
+ViewerEngineManager::SetFromNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return;
+
+    // get the ViewerEngineManager node
+    DataNode *vem_node = parentNode->GetNode("ViewerEngineManager");
+    if(vem_node == 0)
+        return;
+
+    // restore material and mesh management attributes
+    GetMaterialClientAtts()->SetFromNode(vem_node);
+    GetMeshManagementClientAtts()->SetFromNode(vem_node);
+    GetMaterialClientAtts()->Notify();
+    GetMeshManagementClientAtts()->Notify();
 }
 
 

@@ -3924,6 +3924,10 @@ QvisGUIApplication::RestoreSessionWithDifferentSources()
 //   I added code to pass the list of sources that will be used to restore
 //   the session into this routine.
 //
+//   Cyrus Harrison, Tue Mar 20 10:11:26 PDT 2007
+//   Added call to allow the viewer to restore from a session when no
+//   plots exist in the session file.
+//
 // ****************************************************************************
 
 void
@@ -4036,6 +4040,11 @@ QvisGUIApplication::RestoreSessionFile(const QString &s,
                             // Start loading files.
                             sessionFileHelper->SetDatabases(plotDatabases->AsStringVector());
                             sessionFileHelper->Start(filename.c_str());
+                        }
+                        else
+                        {
+                            // If there are no plots, we still need to restore
+                            GetViewerMethods()->ImportEntireState(filename, false);
                         }
                     }
                 }

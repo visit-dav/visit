@@ -100,6 +100,9 @@ typedef enum
 //    Hank Childs, Thu Dec 21 10:07:40 PST 2006
 //    Add support for debug dumps
 //
+//    Cyrus Harrison, Tue Mar 13 11:37:30 PDT 2007
+//    Add support for debug dumps without full vtk dataset dump (-info-dump)
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataRepresentation
@@ -131,6 +134,8 @@ class PIPELINE_API avtDataRepresentation
 
     const char         *DebugDump(avtWebpage *, const char *);
 
+    static void         DatasetDump(bool d) {datasetDump = d;}
+
   protected:
     vtkDataSet         *asVTK;
     unsigned char      *asChar;
@@ -147,6 +152,7 @@ class PIPELINE_API avtDataRepresentation
 
     static bool         initializedNullDataset;
     static vtkDataSet  *nullDataset;
+    static bool         datasetDump;
 
     unsigned char      *GetDataString(int &, DataSetType &, bool);
     static void         InitializeNullDataset(void);

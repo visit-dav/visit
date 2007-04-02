@@ -272,6 +272,9 @@ class avtDatabaseMetaData;
 //    Brad Whitlock, Thu Jan 25 14:14:29 PST 2007
 //    Added GetCommandFromSimulation.
 //
+//    Cyrus Harrison, Thu Mar 15 11:24:38 PDT 2007
+//    Added SetFromNode
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -387,6 +390,8 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     bool ConstructDDF(const EngineKey &ek, int id);
 
     void CreateNode(DataNode *) const;
+    void SetFromNode(DataNode *);
+
     void UpdateExpressionsFromPlot(const ViewerPlot *);
 
   protected:

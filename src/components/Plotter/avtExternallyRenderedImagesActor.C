@@ -415,6 +415,11 @@ avtExternallyRenderedImagesActor::GetVisibility(void)
 //  Modifications:
 //    Mark C. Miller, Wed Nov 15 23:04:02 PST 2006
 //    Removed call to SetVisibility to zero
+//
+//    Dave Bremer, Wed Mar 21 15:49:29 PDT 2007
+//    This method is also used to disable scalable rendering.  In this use,
+//    the method also needs to stop drawing an image if it was drawing one
+//    before.
 // ****************************************************************************
 
 bool
@@ -422,6 +427,9 @@ avtExternallyRenderedImagesActor::DisableExternalRenderRequests(void)
 {
    bool oldMode = makeExternalRenderRequests;
    makeExternalRenderRequests = false;
+   
+   myMapper->SetInput(dummyImage);
+   
    return oldMode; 
 }
 

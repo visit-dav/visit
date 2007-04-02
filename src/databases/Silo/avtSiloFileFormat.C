@@ -121,6 +121,8 @@ static void TranslateSiloWedgeToVTKWedge(const int *, vtkIdType [6]);
 static void TranslateSiloPyramidToVTKPyramid(const int *, vtkIdType [5]);
 static void TranslateSiloTetrahedronToVTKTetrahedron(const int *,
                                                      vtkIdType [4]);
+static bool TetsAreInverted(const int *siloTetrahedron,
+                            vtkUnstructuredGrid *ugrid);
 
 static int  ComputeNumZonesSkipped(vector<int>& zoneRangesSkipped);
 
@@ -467,20 +469,29 @@ avtSiloFileFormat::ReadGlobalInformation(DBfile *dbfile)
 //  Modifications:
 //    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 //    Made it return INVALID_CYCLE for a bad value
+//
+//    Mark C. Miller, Wed Mar 21 10:37:01 PDT 2007
+//    Re-factored Silo work to a static function so it can be called from
+//    multiple places.
 // ****************************************************************************
 
-int
-avtSiloFileFormat::GetCycle()
+static int GetCycle(DBfile *dbfile)
 {
-    const bool canSkipGlobalInfo = true;
-    DBfile *dbfile = OpenFile(tocIndex, canSkipGlobalInfo);
     if (DBInqVarExists(dbfile, "cycle"))
     {
         int cycle;
         DBReadVar(dbfile, "cycle", &cycle);
         return cycle;
     }
-    return INVALID_CYCLE;
+    return avtFileFormat::INVALID_CYCLE;
+}
+
+int
+avtSiloFileFormat::GetCycle()
+{
+    const bool canSkipGlobalInfo = true;
+    DBfile *dbfile = OpenFile(tocIndex, canSkipGlobalInfo);
+    return ::GetCycle(dbfile);
 }
 
 // ****************************************************************************
@@ -517,13 +528,13 @@ avtSiloFileFormat::GetCycleFromFilename(const char *f) const
 //    Mark C. Miller, Mon Mar 19 15:52:24 PDT 2007
 //    Added fall back to 'time' if can't filed 'dtime'
 //
+//    Mark C. Miller, Wed Mar 21 10:37:01 PDT 2007
+//    Re-factored Silo work to a static function so it can be called from
+//    multiple places.
 // ****************************************************************************
 
-double
-avtSiloFileFormat::GetTime()
+static double GetTime(DBfile *dbfile)
 {
-    const bool canSkipGlobalInfo = true;
-    DBfile *dbfile = OpenFile(tocIndex, canSkipGlobalInfo);
     if (DBInqVarExists(dbfile, "dtime"))
     {
         double dtime;
@@ -536,7 +547,14 @@ avtSiloFileFormat::GetTime()
         DBReadVar(dbfile, "time", &time);
         return (double) time;
     }
-    return INVALID_TIME;
+    return avtFileFormat::INVALID_TIME;
+}
+
+double avtSiloFileFormat::GetTime()
+{
+    const bool canSkipGlobalInfo = true;
+    DBfile *dbfile = OpenFile(tocIndex, canSkipGlobalInfo);
+    return ::GetTime(dbfile);
 }
 
 // ****************************************************************************
@@ -553,7 +571,6 @@ avtSiloFileFormat::GetTime()
 //  Modifications:
 //    Mark C. Miller, Thu Mar 18 10:40:50 PST 2004
 //    Added check for null metadata pointer and early return
-    
 //
 //    Mark C. Miller, Thu Mar 18 11:00:38 PST 2004
 //    Added optional md arg. Prefers setting metadata data member over
@@ -562,6 +579,8 @@ avtSiloFileFormat::GetTime()
 //    Mark C. Miller, Thu May 19 09:57:07 PDT 2005
 //    Made it indicate the specified timestep has accurate cycle/time
 //
+//    Mark C. Miller, Wed Mar 21 10:37:01 PDT 2007
+//    Modified for re-factored GetCycle/GetTime static functions to
 // ****************************************************************************
 
 void
@@ -576,17 +595,15 @@ avtSiloFileFormat::GetTimeVaryingInformation(DBfile *dbfile,
     //
     // Read out the cycle number and time.
     //
-    if (DBInqVarExists(dbfile, "cycle"))
+    int cycle = ::GetCycle(dbfile);
+    if (cycle != INVALID_CYCLE)
     {
-        int cycle;
-        DBReadVar(dbfile, "cycle", &cycle);
         tmpMd->SetCycle(timestep, cycle);
         tmpMd->SetCycleIsAccurate(true, timestep);
     }
-    if (DBInqVarExists(dbfile, "dtime"))
+    double dtime = ::GetTime(dbfile);
+    if (dtime != INVALID_TIME)
     {
-        double dtime;
-        DBReadVar(dbfile, "dtime", &dtime);
         tmpMd->SetTime(timestep, dtime);
         tmpMd->SetTimeIsAccurate(true, timestep);
     }
@@ -5308,6 +5325,8 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
         }
         else
         {
+            bool tetsAreInverted = false;
+            bool firstTet = true;
             for (j = 0 ; j < shapecnt ; j++)
             {
                 *ct++ = effective_vtk_zonetype;
@@ -5348,9 +5367,36 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
                 {
                     *nl++ = 4;
 
+                    if (firstTet)
+                    {
+                        firstTet = false;
+                        tetsAreInverted = TetsAreInverted(nodelist, ugrid);
+                        static bool haveIssuedWarning = false;
+                        if (tetsAreInverted)
+                        {
+                            haveIssuedWarning = true;
+                            char msg[1024];
+                            SNPRINTF(msg, sizeof(msg), "An examination of the first tet "
+                                "element in this mesh indicates that the node order is "
+                                "inverted from Silo's standard conventions. All tets are "
+                                "being automatically re-ordered.\n"
+                                "Further messages of this issue will be suppressed.");
+                            avtCallback::IssueWarning(msg);
+                        }
+                    }
+
                     vtkIdType vtk_tetra[4];
-                    TranslateSiloTetrahedronToVTKTetrahedron(nodelist,
-                                                             vtk_tetra);
+                    if (tetsAreInverted)
+                    {
+                        for (k = 0 ; k < 4 ; k++)
+                            vtk_tetra[k] = nodelist[k];
+                    }
+                    else
+                    {
+                        TranslateSiloTetrahedronToVTKTetrahedron(nodelist,
+                                                                 vtk_tetra);
+                    }
+
                     for (k = 0 ; k < 4 ; k++)
                     {
                         *nl++ = vtk_tetra[k]-origin;
@@ -8873,6 +8919,54 @@ TranslateSiloTetrahedronToVTKTetrahedron(const int *siloTetrahedron,
     vtkTetrahedron[1] = siloTetrahedron[0];
     vtkTetrahedron[2] = siloTetrahedron[2];
     vtkTetrahedron[3] = siloTetrahedron[3];
+}
+
+// ****************************************************************************
+//  Function: TetsAreInverted 
+//
+//  Purpose: Determine if Tets in Silo are inverted from Silo's Normal ordering
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    March 21, 2007 
+//
+// ****************************************************************************
+
+bool
+TetsAreInverted(const int *siloTetrahedron, vtkUnstructuredGrid *ugrid)
+{
+    //
+    // initialize set of 4 points of tet
+    //
+    float *pts = (float *) ugrid->GetPoints()->GetVoidPointer(0); 
+    float p[4][3];
+    for (int i = 0; i < 4; i++)
+    {
+        for (int j = 0; j < 3; j++)
+            p[i][j] = pts[3*siloTetrahedron[i] + j];
+    }
+
+    //
+    // Compute a vector normal to plane of first 3 points
+    //
+    float n1[3] = {p[1][0] - p[0][0], p[1][1] - p[0][1], p[1][2] - p[0][2]};
+    float n2[3] = {p[2][0] - p[0][0], p[2][1] - p[0][1], p[2][2] - p[0][2]};
+    float n1Xn2[3] = {  n1[1]*n2[2] - n1[2]*n2[1],
+                      -(n1[0]*n2[2] - n1[2]*n2[0]),
+                        n1[0]*n2[1] - n1[1]*n2[0]};
+    
+    //
+    // Compute a dot-product of normal with a vector to the 4th point.
+    // If the tet is specified as Silo normally expects it, this dot
+    // product should be negative. If it is not negative, then tets
+    // are inverted
+    //
+    float n3[3] = {p[3][0] - p[0][0], p[3][1] - p[0][1], p[3][2] - p[0][2]};
+    float n3Dotn1Xn2 = n3[0]*n1Xn2[0] + n3[1]*n1Xn2[1] + n3[2]*n1Xn2[2];
+
+    if (n3Dotn1Xn2 > 0)
+        return true;
+    else
+        return false;
 }
 
 
