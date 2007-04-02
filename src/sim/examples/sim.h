@@ -17,5 +17,4 @@ extern float *p_nvalues;
 
 extern int numdomains;
 extern int par_rank;
-extern VisIt_SimulationMetaData *md;
-void Update_UI_Commands();
+

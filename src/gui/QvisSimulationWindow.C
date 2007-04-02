@@ -136,10 +136,6 @@ QvisSimulationWindow::CreateWindowContents()
     simInfo->setResizeMode(QListView::AllColumns);
     topLayout->addWidget(simInfo, 10);
 
-    // Create the status bars.
-    //QLabel *totalStatusLabel = new QLabel("Total progress:", central, "totalStatusLabel");
-    //topLayout->addWidget(totalStatusLabel);
-
     simulationMode = new QLabel("Simulation Status: ", central);
     topLayout->addWidget(simulationMode);
 
@@ -212,6 +208,9 @@ QvisSimulationWindow::CreateWindowContents()
 //   Brad Whitlock, Tue Jan 31 16:40:02 PST 2006
 //   Refactored code from elsewhere into this method.
 //
+//   Shelly Prevost, Mon Mar 13 14:49:07 PST 2006
+//   Changed the default directory to check for ui files from UI to ui.
+//
 // ****************************************************************************
 
 QString
@@ -223,13 +222,13 @@ QvisSimulationWindow::GetUIFileDirectory() const
     if (dirName.isEmpty())
     {
         dirName = getenv("HOME");
-        if (!dirName.isEmpty()) dirName += "/.visit/UI/";
+        if (!dirName.isEmpty()) dirName += "/.visit/ui/";
     }
     // if not defined then look in global location
     if ( dirName.isEmpty())
     {
         dirName = getenv("VISITDIR");
-        if (!dirName.isEmpty()) dirName += "/UI/";
+        if (!dirName.isEmpty()) dirName += "/ui/";
     }
 
     return dirName;

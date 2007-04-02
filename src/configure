@@ -17052,7 +17052,7 @@ OPERATOR_FILES="operators/Makefile"
 DATABASE_FILES="databases/Makefile"
 
 DATA_FILES="data/Makefile"
-SIMULATION_PROTOTYPE_FILES="sim/Makefile"
+SIMULATION_PROTOTYPE_FILES="sim/lib/Makefile"
 CQSCORE_FILES="cqscore/Makefile"
 THIRD_PARTY_BUILTIN_FILES="third_party_builtin/Makefile
                            third_party_builtin/bzip2/Makefile"

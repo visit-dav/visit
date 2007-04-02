@@ -18,12 +18,13 @@
 #include <stdio.h>
 #include <string.h>
 
+#define MAX_SIG_CONNECTIONS 100
 static int lastSigConnection =0;
-sigInfoConnect sigConnections[100];
+sigInfoConnect sigConnections[MAX_SIG_CONNECTIONS];
 
 
 // ****************************************************************************
-// Function: char *parseCommand ( const char *cmd, char *signalName, char *buttonName )
+// Function: char *VisItParseCommand ( const char *cmd, char *signalName, char *buttonName )
 //
 // Purpose:
 //   Relays the valued Changed signal from the VisIt custom UI to the simulation side
@@ -40,22 +41,31 @@ sigInfoConnect sigConnections[100];
 //
 // ****************************************************************************
 
-char *parseCommand ( const char *cmd, char *signalName, char *buttonName )
+char *VisItParseCommand( const char *cmd, char *signalName, char *buttonName )
 {
     char *str = strdup (cmd );
-    strcpy( signalName, strtok(str, ";" ));
-    strcpy( buttonName, strtok(NULL, ";"));
-#ifdef DEBUG_PRINT
-    printf("name and ui comp = %s %s \n",signalName, buttonName);
-#endif
-
-//    fprintf(stderr, "token = %s with command '%s'\n", str2,cmd);
+    char *tok = NULL;
+    tok = strtok(str, ";" );
+    if ( tok ) strcpy( signalName,tok );
+    else
+    {
+        signalName[0] = '\0';
+        fprintf(stderr, "parseCommand: signal  not found \n");
+    }
+    
+    tok = strtok(NULL, ";" ); 
+    if( tok) strcpy( buttonName, tok);
+    else
+    {
+        buttonName[0] = '\0';
+        fprintf(stderr,"parseCommand: invalid command \n");
+    }
     return signalName;
 }
 
 
 // ****************************************************************************
-// Function: void ClickedSignal ( const char *cmd )
+// Function: void VisItClickedSignal ( const char *cmd )
 //
 // Purpose:
 //   Relays the clicked signal from the VisIt custom UI to the simulation side
@@ -70,35 +80,31 @@ char *parseCommand ( const char *cmd, char *signalName, char *buttonName )
 //
 // ****************************************************************************
 
-void ClickedSignal ( const char *cmd )
+void VisItClickedSignal( const char *cmd )
 {
     int i;
 
     char sig[64];
     char ui_component[256];
 
-    char *action = parseCommand (cmd, sig, ui_component);
-#ifdef DEBUG_PRINT
-    printf("looking for name = %s \n", ui_component);
-#endif
+    char *action = VisItParseCommand (cmd, sig, ui_component);
     for ( i =0; i < lastSigConnection; i++)
     {
         if ( !strcmp ( sigConnections[i].sig, action))
         {
-            if ( !strcmp ( sigConnections[i].name, ui_component))
-            {
-               ((slotFunc)((sigConnections[i].slot)))(cmd);
-            }
+          if ( !strcmp ( sigConnections[i].name, ui_component))
+          {
+            ((slotFunc)((sigConnections[i].slot)))(cmd);
+          }
         }
     }
-#ifdef DEBUG_PRINT
+
     fprintf(stderr, "SIGNAL Clicked with command '%s'\n", cmd);
-#endif
 }
 
 
 // ****************************************************************************
-// Function: ValueChangedSignal ( const char *cmd )
+// Function: VisItValueChangedSignal ( const char *cmd )
 //
 // Purpose:
 //   Relays the valued Changed signal from the VisIt custom UI to the simulation side
@@ -113,36 +119,31 @@ void ClickedSignal ( const char *cmd )
 //
 // ****************************************************************************
 
-void ValueChangedSignal ( const char *cmd )
+void VisItValueChangedSignal( const char *cmd )
 {
     int i;
     char sig[64];
     char ui_component[256];
 
-    char *action = parseCommand (cmd, sig, ui_component);
-#ifdef DEBUG_PRINT
-    printf("looking for name = %s \n", ui_component);
-#endif
+    char *action = VisItParseCommand (cmd, sig, ui_component);
     for ( i =0; i < lastSigConnection; i++)
     {
-         //if ( !strcmp ( sigConnections[i].sig, "clicked()"))
         if ( !strcmp ( sigConnections[i].sig, action))
         {
-            if ( !strcmp ( sigConnections[i].name, ui_component))
-            {
-                (*sigConnections[i].slot)(cmd);
-            }
+          if ( !strcmp ( sigConnections[i].name, ui_component))
+          {
+            (*sigConnections[i].slot)(cmd);
+          }
         }
     }
-#ifdef DEBUG_PRINT
+    
     fprintf(stderr, "SIGNAL ValueChanged with command '%s'\n", cmd);
-#endif
 }
 
 
 
 // ****************************************************************************
-// Function: void TextChangedSignal ( const char *cmd )
+// Function: void VisItTextChangedSignal ( const char *cmd )
 //
 // Purpose:
 //   Relays the valued Changed signal from the VisIt custom UI to the simulation side
@@ -157,17 +158,15 @@ void ValueChangedSignal ( const char *cmd )
 //
 // ****************************************************************************
 
-void TextChangedSignal ( const char *cmd )
+void VisItTextChangedSignal( const char *cmd )
 {
-#ifdef DEBUG_PRINT
-    fprintf(stderr, "SIGNAL TextChanged with command '%s'\n", cmd);
-#endif
+     fprintf(stderr, "SIGNAL TextChanged with command '%s'\n", cmd);
 }
 
 
 
 // ****************************************************************************
-// Function: void ActivatedSignal ( const char *cmd )
+// Function: void VisItActivatedSignal ( const char *cmd )
 //
 // Purpose:
 //   Relays the valued Changed signal from the VisIt custom UI to the simulation side
@@ -182,17 +181,15 @@ void TextChangedSignal ( const char *cmd )
 //
 // ****************************************************************************
 
-void ActivatedSignal ( const char *cmd )
+void VisItActivatedSignal( const char *cmd )
 {
-#ifdef DEBUG_PRINT
     fprintf(stderr, "SIGNAL Activated with command '%s'\n", cmd);
-#endif
 }
 
 
 
 // ****************************************************************************
-// Function: void CurrentChangedSignal ( const char *cmd )
+// Function: void VisItCurrentChangedSignal ( const char *cmd )
 //
 // Purpose:
 //   Relays the valued Changed signal from the VisIt custom UI to the simulation side
@@ -207,16 +204,14 @@ void ActivatedSignal ( const char *cmd )
 //
 // ****************************************************************************
 
-void CurrentChangedSignal ( const char *cmd )
+void VisItCurrentChangedSignal( const char *cmd )
 {
-#ifdef DEBUG_PRINT
-    fprintf(stderr, "SIGNAL CurrentChanged with command '%s'\n", cmd);
-#endif
+     fprintf(stderr, "SIGNAL CurrentChanged with command '%s'\n", cmd);
 }
 
 
 // ****************************************************************************
-// Function: void addConnection ( char * name, char* sig, slotFunc theSlot )
+// Function: void VisItAddConnection ( char * name, char* sig, slotFunc theSlot )
 //
 // Purpose:
 //   Relays the valued Changed signal from the VisIt custom UI to the simulation side
@@ -233,21 +228,22 @@ void CurrentChangedSignal ( const char *cmd )
 //
 // ****************************************************************************
 
-void addConnection ( char * name, char* sig, slotFunc theSlot )
+void VisItAddConnection( char * name, char* sig, slotFunc theSlot )
 {
-    sigConnections[lastSigConnection].name = strdup (name);
-    sigConnections[lastSigConnection].sig = strdup (sig);
-    sigConnections[lastSigConnection].slot = theSlot;
-#ifdef DEBUG_PRINT
-    printf ( "Added new connection %s %s \n", name, sig);
-#endif
-    lastSigConnection++;
+    if ( lastSigConnection < MAX_SIG_CONNECTIONS )
+    {
+        sigConnections[lastSigConnection].name = strdup (name);
+        sigConnections[lastSigConnection].sig = strdup (sig);
+        sigConnections[lastSigConnection].slot = theSlot;
+        lastSigConnection++;
+    }
+    else  fprintf(stderr, "Maximum number of signal connections exceeded\n");
 }
 
 
 
 // ****************************************************************************
-// Function: void ProcessCustomCommand ( const char *cmd)
+// Function: void VisItProcessCustomCommand ( const char *cmd)
 //
 // Purpose:
 //   Relays the valued Changed signal from the VisIt custom UI to the simulation side
@@ -262,31 +258,26 @@ void addConnection ( char * name, char* sig, slotFunc theSlot )
 //
 // ****************************************************************************
 
-void ProcessCustomCommand ( const char *cmd)
-{   // These are the signal that are generated by
+void VisItProcessCustomCommand( const char *cmd)
+{
+    // These are the signal that are generated by
     // the custom UI in VisIt
-
-
     int i;
     char sig[64];
     char ui_component[256];
 
-    char *action = parseCommand (cmd, sig, ui_component);
-#ifdef DEBUG_PRINT
-    printf("looking for name = %s with sig = %s \n", ui_component, action);
-#endif
-    for ( i =0; i < lastSigConnection; i++)
+    char *action = VisItParseCommand (cmd, sig, ui_component);
+    if ( action != NULL && ui_component != NULL)
     {
-         //if ( !strcmp ( sigConnections[i].sig, "clicked()"))
-        if ( !strcmp ( sigConnections[i].sig, action))
+        for ( i =0; i < lastSigConnection; i++)
         {
-            if ( !strcmp ( sigConnections[i].name, ui_component))
+            if ( !strcmp ( sigConnections[i].sig, action))
             {
+              if ( !strcmp ( sigConnections[i].name, ui_component))
+              {
                 (*sigConnections[i].slot)(cmd);
+              }
             }
         }
     }
-#ifdef DEBUG_PRINT
-    fprintf(stderr, "SIGNAL %s with command '%s'\n",action, cmd);
-#endif
 }
