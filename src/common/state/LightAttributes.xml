@@ -9,7 +9,7 @@
       true
     </Field>
     <Field name="enabledFlag" label="enabledFlag" type="bool" enabler="enabledFlagCanBeToggled:true">
-      false
+      true
     </Field>
     <Field name="type" label="type" type="enum" subtype="LightType">
       Camera

@@ -1161,23 +1161,36 @@ RPCExecutor<ReleaseDataRPC>::Execute(ReleaseDataRPC *rpc)
 //    Jeremy Meredith, Wed Aug 25 12:01:15 PDT 2004
 //    Send metadata to the client if we are a simulation.
 //
+//    Hank Childs, Wed May 17 16:14:56 PDT 2006
+//    Added exception handling.
+//
 // ****************************************************************************
 template<>
 void
 RPCExecutor<OpenDatabaseRPC>::Execute(OpenDatabaseRPC *rpc)
 {
-    Engine         *engine = Engine::Instance();
-    NetworkManager *netmgr = engine->GetNetMgr();
+    TRY
+    {
+        Engine         *engine = Engine::Instance();
+        NetworkManager *netmgr = engine->GetNetMgr();
 
-    debug2 << "Executing OpenDatabaseRPC: db=" <<rpc->GetDatabaseName().c_str()
-           << ", time=" << rpc->GetTime() << endl;
-    DatabasePluginManager::Instance()->PluginAvailable(rpc->GetFileFormat());
+        debug2 << "Executing OpenDatabaseRPC: db=" 
+               << rpc->GetDatabaseName().c_str()
+               << ", time=" << rpc->GetTime() << endl;
+        DatabasePluginManager::Instance()
+                                       ->PluginAvailable(rpc->GetFileFormat());
+    
+        netmgr->GetDBFromCache(rpc->GetDatabaseName(), rpc->GetTime(),
+                               rpc->GetFileFormat().c_str());
 
-    netmgr->GetDBFromCache(rpc->GetDatabaseName(), rpc->GetTime(),
-                           rpc->GetFileFormat().c_str());
-
-    engine->PopulateSimulationMetaData(rpc->GetDatabaseName(),
-                                       rpc->GetFileFormat());
+        engine->PopulateSimulationMetaData(rpc->GetDatabaseName(),
+                                           rpc->GetFileFormat());
+    }
+    CATCH(VisItException)
+    {
+        debug1 << "An error occurred while opening the database." << endl;
+    }
+    ENDTRY
 }
 
 // ****************************************************************************

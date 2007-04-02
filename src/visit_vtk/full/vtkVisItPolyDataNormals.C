@@ -101,6 +101,9 @@ vtkVisItPolyDataNormals::Execute()
 //    VTK api computes normals using double, so create double array to store
 //    normal accumulation, then store back to vtkFloatArray.
 //
+//    Hank Childs, Wed May 17 09:07:21 PDT 2006
+//    Fix uninitialized memory read.
+//
 // ****************************************************************************
 void
 vtkVisItPolyDataNormals::ExecutePointWithoutSplitting()
@@ -206,7 +209,7 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting()
         connPtr += nVerts;
     }
 
-    // Renormalize the normals; ther've only been accumulated so far,
+    // Renormalize the normals; they've only been accumulated so far,
     // and store in the vtkFloatArray.
     float *newNormalPtr = (float*)newNormals->GetPointer(0);
     for (i = 0 ; i < nPoints ; i++)
@@ -220,6 +223,12 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting()
             newNormalPtr[i*3+0] = (float)(nx/length);
             newNormalPtr[i*3+1] = (float)(ny/length);
             newNormalPtr[i*3+2] = (float)(nz/length);
+        }
+        else
+        {
+            newNormalPtr[i*3+0] = 0.;
+            newNormalPtr[i*3+1] = 0.;
+            newNormalPtr[i*3+2] = 0.;
         }
     }
     outPD->SetNormals(newNormals);
