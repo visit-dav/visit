@@ -4711,7 +4711,12 @@ ViewerWindow::UpdateViewCurve(const double *limits)
 //    vwm->UpdateViewAtts use appropriate bool flags
 //
 //    Mark C. Miller, Tue Mar 14 17:49:26 PST 2006
-//    Retrieved full frame activation mode from avtView class, not atts 
+//    Retrieved full frame activation mode from avtView class, not atts.
+//
+//    Brad Whitlock, Wed Jul 26 13:33:25 PST 2006
+//    Added code to set a fullframe scale into the plots so their mappers
+//    can compensate for fullframe if they need to.
+//
 // ****************************************************************************
 
 void
@@ -4721,9 +4726,9 @@ ViewerWindow::UpdateView2d(const double *limits)
     View2DAttributes view2dAtts;
     view2d.SetToView2DAttributes(&view2dAtts);
 
+    bool currentFullFrameMode = GetFullFrameMode();
     if (view2d.fullFrameActivationMode == (int) View2DAttributes::Auto)
     {
-        const bool currentFullFrameMode = GetFullFrameMode();
         bool newFullFrameMode = view2dAtts.GetUseFullFrame(limits); 
 
         // if plot's units are different, that overrides other considerations 
@@ -4734,9 +4739,12 @@ ViewerWindow::UpdateView2d(const double *limits)
         }
             
         if (currentFullFrameMode != newFullFrameMode)
+        {
             SetFullFrameMode(newFullFrameMode);
+            currentFullFrameMode = newFullFrameMode;
+        }
     }
-        
+
     //
     // If this is the first time that this routine is being called for this
     // window, set the limits and reset the view.
@@ -4791,6 +4799,25 @@ ViewerWindow::UpdateView2d(const double *limits)
 
         ViewerWindowManager::Instance()->UpdateViewAtts(-1, false, true, false);
     }
+
+
+    //
+    // Get the fullframe scale and pass it to all of the plots in the plot
+    // list so the ones that have mappers that need to readjust can do so.
+    //
+    double scale[] = {1., 1., 1.}, s;
+    int t = 0;
+    visWindow->GetScaleFactorAndType(s, t);
+    if(t == 0)
+        scale[0] = s;
+    else if(t == 1)
+        scale[1] = s;
+    debug5 << "ViewerWindow::UpdateView2d: Fullframe="
+           << (currentFullFrameMode?"true":"false")
+           << ". scale={" << scale[0] << ", " << scale[1] << ", " << scale[2]
+           << "}" << endl;
+    plotList->SetFullFrameScaling(currentFullFrameMode, scale);
+
 
     viewSetIn2d = true;
 }

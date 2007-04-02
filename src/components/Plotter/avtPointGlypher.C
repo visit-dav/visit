@@ -830,3 +830,35 @@ avtPointGlypher::ColorByScalarOff()
     }
 }
 
+// ****************************************************************************
+// Method: avtPointGlypher::ProtectedSetFullFrameScaling
+//
+// Purpose: 
+//   Sets fullframe scaling in the glyphers.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 26 13:57:21 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+avtPointGlypher::ProtectedSetFullFrameScaling(bool useScale, const double *s)
+{
+    bool retval = false;
+
+    if (glyphFilter != NULL)
+    {
+        for (int i = 0 ; i < nGlyphFilters ; i++)
+        {
+            if (glyphFilter[i] != NULL)
+            {
+                if(glyphFilter[i]->SetFullFrameScaling(useScale?1:0, s))
+                    retval = true;
+            }
+        }
+    }
+
+    return retval;
+}

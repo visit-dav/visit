@@ -431,6 +431,7 @@ class VIEWER_API ViewerPlot
     int GetWindowId(void) const;
 
     void UpdateDataExtents();
+    bool SetFullFrameScaling(bool, double *);
 
     const PlotInfoAttributes *GetPlotInfoAtts(void);
 

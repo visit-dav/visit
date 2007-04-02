@@ -63,6 +63,9 @@
 //    Added an override for the SetGlyphType method that lets us switch
 //    mapper inputs when we enter of leave point glyphing mode.
 //
+//    Brad Whitlock, Wed Jul 26 13:53:29 PST 2006
+//    Added SetFullFrameScaling.
+//
 // ****************************************************************************
 
 class PLOTTER_API  avtVariablePointGlyphMapper : virtual public avtVariableMapper,
@@ -76,6 +79,7 @@ class PLOTTER_API  avtVariablePointGlyphMapper : virtual public avtVariableMappe
     void                       ColorBySingleColor(const double [3]);
     virtual void               ScaleByVar(const std::string &);
     void                       SetGlyphType(const int type);
+    virtual bool               SetFullFrameScaling(bool, const double *);
 
   protected:
     double                     singleColor[3];

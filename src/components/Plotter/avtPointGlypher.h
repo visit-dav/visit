@@ -103,6 +103,7 @@ class PLOTTER_API  avtPointGlypher
     virtual void               CustomizeGlyphs(int);
 
     void                       DataScalingOn(const std::string &, int = 1);
+    bool                       ProtectedSetFullFrameScaling(bool useScale, const double *s);
 
   private:
     int                        spatialDim;

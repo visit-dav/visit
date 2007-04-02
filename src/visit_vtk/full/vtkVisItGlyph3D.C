@@ -61,6 +61,11 @@ vtkVisItGlyph3D::vtkVisItGlyph3D()
   this->ScalarsForScaling = NULL;
   this->VectorsForColoring = NULL;
   this->VectorsForScaling = NULL;
+
+  this->UseFullFrameScaling = 0;
+  this->FullFrameScaling[0] = 1.;
+  this->FullFrameScaling[1] = 1.;
+  this->FullFrameScaling[2] = 1.;
 }
 
 vtkVisItGlyph3D::~vtkVisItGlyph3D()
@@ -652,7 +657,16 @@ void vtkVisItGlyph3D::Execute()
         }
       trans->Scale(scalex,scaley,scalez);
       }
-    
+
+      // If we are using full frame scaling then add an additional
+      // transform to undo what fullframe will do.
+      if (this->UseFullFrameScaling)
+        {
+          trans->Scale(1. / this->FullFrameScaling[0],
+                       1. / this->FullFrameScaling[1],
+                       1. / this->FullFrameScaling[2]);
+        }
+
     // multiply points and normals by resulting matrix
     trans->TransformPoints(sourcePts,newPts);
     
@@ -863,4 +877,33 @@ void vtkVisItGlyph3D::ComputeInputUpdateExtents( vtkDataObject *output )
                                     outPd->GetUpdateNumberOfPieces(),
                                     outPd->GetUpdateGhostLevel());
   this->GetInput()->RequestExactExtentOn();
+}
+
+int
+vtkVisItGlyph3D::SetFullFrameScaling(int useIt, const double *s)
+{
+  int ret = ((useIt != this->UseFullFrameScaling) ||
+             (s[0] != this->FullFrameScaling[0]) ||
+             (s[1] != this->FullFrameScaling[1]) ||
+             (s[2] != this->FullFrameScaling[2])) ? 1 : 0;
+
+  this->UseFullFrameScaling = useIt;
+
+  if(useIt)
+  {
+      this->FullFrameScaling[0] = s[0];
+      this->FullFrameScaling[1] = s[1];
+      this->FullFrameScaling[2] = s[2];
+  }
+  else
+  {
+      this->FullFrameScaling[0] = 1.;
+      this->FullFrameScaling[1] = 1.;
+      this->FullFrameScaling[2] = 1.;
+  }
+
+  if(ret==1)
+      this->Modified();
+
+  return ret;
 }

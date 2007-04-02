@@ -1836,6 +1836,10 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
 //    Added leftEye arg as well as logic to force rendering for one or the
 //    other eye.
+//
+//    Brad Whitlock, Wed Jul 26 13:16:06 PST 2006
+//    Added code to set the fullframe scale into the plot's mappers.
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -1921,6 +1925,12 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
             // see if there are any non-mesh plots in the list
             bool hasNonMeshPlots = HasNonMeshPlots(plotIds);
 
+            // Fullframe scale.
+            double FFScale[] = {1., 1., 1.};
+            bool setFFScale = false;
+            bool useFFScale = false;
+            bool determinedFFScale = false;
+
             for (i = 0; i < plotIds.size(); i++)
             {
                 int t7 = visitTimer->StartTimer();
@@ -1973,6 +1983,34 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
                 if (plot->PlotIsImageBased())
                     imageBasedPlots.push_back(plot);
                 visitTimer->StopTimer(t6, "Adding plot to the vis window");
+
+                // Now that a plot has been added to the viswindow, we know
+                // if the window is 2D or curve.
+                if(!determinedFFScale)
+                {
+                    determinedFFScale = true;
+                    setFFScale = viswin->GetWindowMode() == WINMODE_2D ||
+                                 viswin->GetWindowMode() == WINMODE_CURVE;
+                    useFFScale = viswin->GetFullFrameMode();
+                    if(setFFScale)
+                    {
+                        int fft = 0;
+                        double ffs = 1.;
+                        viswin->GetScaleFactorAndType(ffs, fft);
+                        if(fft == 0)
+                            FFScale[0] = ffs;
+                        else if(fft == 1)
+                            FFScale[1] = ffs;
+                    }
+                }
+
+                // If we need to set the fullframe scale, set it now.
+                if(setFFScale)
+                {
+                    workingNetSaved->GetPlot()->GetMapper()->
+                        SetFullFrameScaling(useFFScale, FFScale);
+                }
+
                 visitTimer->StopTimer(t7, "Setting up one plot");
             }
 

@@ -100,6 +100,9 @@ class     vtkVisItPolyDataNormals;
 //    Kathleen Bonnell, Wed Dec 22 16:42:35 PST 2004 
 //    Added methods and vars to support setting of limits for coloring. 
 //
+//    Brad Whitlock, Mon Jul 24 13:55:10 PST 2006
+//    Added override of SetFullFrameScaling.
+//
 // ****************************************************************************
 
 class PLOTTER_API  avtVectorGlyphMapper : public avtMapper
@@ -117,6 +120,7 @@ class PLOTTER_API  avtVectorGlyphMapper : public avtMapper
     void                       SetScaleByMagnitude(bool);
     void                       SetAutoScale(bool);
     void                       SetLookupTable(vtkLookupTable *lut);
+    virtual bool               SetFullFrameScaling(bool, const double *);
    
     // methods for setting limits for coloring
     void                       SetLimitsMode(const int);
