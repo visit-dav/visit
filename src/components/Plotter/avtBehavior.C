@@ -563,6 +563,9 @@ avtBehavior::GetRenderOrder(bool antialiased)
 //    Hank Childs, Thu Mar  3 08:59:29 PST 2005
 //    If we are doing DLB, then we need to re-execute.
 //
+//    Kathleen Bonnell, Thu Aug  4 15:47:59 PDT 2005 
+//    Added more conditions -- CanUseOrigZones and OrigNodesRequiredForPick.
+//
 // ****************************************************************************
 
 bool
@@ -571,7 +574,7 @@ avtBehavior::RequiresReExecuteForQuery(const bool needInvT, const bool needZones
     bool retval = false;
     if (GetInfo().GetValidity().GetIsThisDynamic())
         retval = true;
-    else if (info.GetAttributes().GetTopologicalDimension() == 0)
+    else if (info.GetAttributes().GetTopologicalDimension() == 0) 
     {
         // 
         // Handle things differently for Vector plots and point meshes.
@@ -579,7 +582,12 @@ avtBehavior::RequiresReExecuteForQuery(const bool needInvT, const bool needZones
         bool zonesAvailable = info.GetAttributes().GetContainsOriginalCells();
         bool nodesAvailable = info.GetAttributes().GetContainsOriginalNodes();
         bool keptNodeZone = info.GetAttributes().GetKeepNodeZoneArrays();
-        retval = (!keptNodeZone || (!nodesAvailable && !zonesAvailable));
+        bool canUseZones = info.GetAttributes().CanUseOrigZones();
+        bool needNodes = info.GetAttributes().OrigNodesRequiredForPick();
+        if (needZones)
+            retval = (!keptNodeZone || (canUseZones && !zonesAvailable));
+        else
+            retval = (!keptNodeZone || (needNodes && !nodesAvailable ));
     }
     else if (info.GetValidity().GetPointsWereTransformed())
     {
@@ -591,10 +599,11 @@ avtBehavior::RequiresReExecuteForQuery(const bool needInvT, const bool needZones
 
         bool zonesAvailable = info.GetAttributes().GetContainsOriginalCells();
         bool nodesAvailable = info.GetAttributes().GetContainsOriginalNodes();
+        bool canUseZones = info.GetAttributes().CanUseOrigZones();
 
         if (needInvT && needZones)
         {
-            retval = !invXformAvailable && !zonesAvailable;
+            retval = !invXformAvailable && canUseZones && !zonesAvailable;
         }
         else if (needInvT && !needZones) 
         {
@@ -602,14 +611,19 @@ avtBehavior::RequiresReExecuteForQuery(const bool needInvT, const bool needZones
         }
         else if (!needInvT && needZones)
         {
-            retval = !xformAvailable && !zonesAvailable;
+            retval = !xformAvailable && canUseZones && !zonesAvailable;
         }
         else  //  if (!needInvT && !needZones) 
         {
             retval = !xformAvailable && !nodesAvailable;
         }
-   }
-   return retval;
+    }
+    else if (info.GetAttributes().OrigNodesRequiredForPick())
+    {
+        retval = !needZones && 
+                 !info.GetAttributes().GetContainsOriginalNodes();
+    }
+    return retval;
 }
 
 

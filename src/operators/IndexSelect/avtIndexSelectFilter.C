@@ -562,6 +562,9 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //    turned off remains so.  When determining if StructuredIndices are
 //    required, ensure checking is done only on domains needed by this filter. 
 //
+//    Kathleen Bonnell, Thu Aug  4 15:47:59 PDT 2005 
+//    Request original node numbers when required. 
+//    
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -721,6 +724,9 @@ avtIndexSelectFilter::PerformRestriction(avtPipelineSpecification_p spec)
     sel->SetStrides(vec);
     selID = rv->GetDataSpecification()->AddDataSelection(sel);
 
+    if (rv->GetDataSpecification()->MayRequireNodes())
+        rv->GetDataSpecification()->TurnNodeNumbersOn();
+
     return rv;
 }
 
@@ -846,4 +852,35 @@ avtIndexSelectFilter::ReleaseData(void)
     r->Delete();
 }
 
+// ****************************************************************************
+//  Method: avtIndexSelectFilter::RefashionDataObjectInfo
+//
+//  Purpose:
+//    Indicates that original nodes are required for Pick, and that
+//    original zones cannot be used with Pick.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 4, 2005 
+//
+// ****************************************************************************
 
+void
+avtIndexSelectFilter::RefashionDataObjectInfo(void)
+{
+    //
+    // Node Pick returns wrong results on an Index selected plot unless it has 
+    // original node numbers.  (The points are not transformed, but their 
+    // numbering is probably different.  So set a flag that specifies that
+    // they are needed for pick. 
+    //
+
+    GetOutput()->GetInfo().GetAttributes().SetOrigNodesRequiredForPick(true);
+
+    //
+    // Zone Pick CANNOT use Original zone numbers on an Index selected plot
+    // because it may be the case that MANY original zones map to a SINGLE
+    // current zone.  So set a flag specifying that the original zones
+    // array CANNOT be used with pick.
+    //
+    GetOutput()->GetInfo().GetAttributes().SetCanUseOrigZones(false);
+}
