@@ -7,6 +7,7 @@
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkIdList.h>
+#include <vtkIntArray.h>
 #include <vtkPointData.h>
 #include <vtkUnsignedCharArray.h>
 
@@ -16,8 +17,10 @@
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
 #include <snprintf.h>
+#include <set>
 
 using     std::string;
+using     std::set;
 
 
 // ****************************************************************************
@@ -28,12 +31,17 @@ using     std::string;
 //  Programmer: Kathleen Bonnell
 //  Creation:   September 30, 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Mar  2 15:05:17 PST 2006
+//    Added sumFromOriginalElement.
+//
 // ****************************************************************************
 
 avtSummationQuery::avtSummationQuery()
 {
     sumGhostValues = false;
     sumOnlyPositiveValues = false;
+    sumFromOriginalElement = false;
     sum = 0.;
     sumType = "";
     strcpy(descriptionBuffer, "Summing up variable");
@@ -167,6 +175,28 @@ avtSummationQuery::SumOnlyPositiveValues(bool val)
 
 
 // ****************************************************************************
+//  Method: avtSummationQuery::SumFromOriginalElement
+//
+//  Purpose:
+//    Specifies whether or not original cell information should be considered,
+//    all values from the same original cell contribute only once to the sum. 
+//
+//  Arguments:
+//      val     True if we should sum from original cells.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   February 28, 2006
+//
+// ****************************************************************************
+
+void
+avtSummationQuery::SumFromOriginalElement(bool val)
+{
+    sumFromOriginalElement = val;
+}
+
+
+// ****************************************************************************
 //  Method: avtSummationQuery::PreExecute
 //
 //  Notes:  Taken mostly from Hank Childs' avtSummationFilter.
@@ -267,6 +297,13 @@ avtSummationQuery::PostExecute(void)
 //    Kathleen Bonnell, Wed Dec 22 13:03:37 PST 2004 
 //    Correct how ghostNodes are used with PointData.
 //
+//    Kathleen Bonnell, Thu Mar  2 15:05:17 PST 2006 
+//    Added logic so that if sumFromOriginalElement flag is set, will check
+//    OriginalCells/Nodes arrays, and use the value from the 'original' element
+//    only once in the sum, regardless of how many new sub-elements the original
+//    cell was split into -- because when that original cell was split, the
+//    variable's value was passed intact to the new cells.
+//
 // ****************************************************************************
 
 void
@@ -297,9 +334,45 @@ avtSummationQuery::Execute(vtkDataSet *ds, const int dom)
         ghost_nodes = (vtkUnsignedCharArray *)
                                  ds->GetPointData()->GetArray("avtGhostNodes");
     }
+    int comp =0;
+    vtkIntArray *originalCells = NULL;
+    vtkIntArray *originalNodes = NULL;
+    if (sumFromOriginalElement)
+    {
+        if (pointData)
+        {
+            originalNodes = (vtkIntArray *)
+                         ds->GetPointData()->GetArray("avtOriginalNodeNumbers");
+            if (originalNodes)
+            {
+                comp = originalNodes->GetNumberOfComponents() - 1;
+            }
+            else 
+            {
+                debug3 << "Summation Query told to sum from original nodes but "
+                   << "could not find avtOriginalNodeNumbers array." << endl;
+            }
+        }
+        else
+        {
+            originalCells = (vtkIntArray *)
+                         ds->GetCellData()->GetArray("avtOriginalCellNumbers");
+            if (originalCells)
+            {
+                comp = originalCells->GetNumberOfComponents() - 1;
+            }
+            else 
+            {
+                debug3 << "Summation Query told to sum from original cells but "
+                   << "could not find avtOriginalCellNumbers array." << endl;
+            }
+        }
+    }
+    set<int> summedElements;
 
     int nValues = arr->GetNumberOfTuples();
     vtkIdList *list = vtkIdList::New();
+
     for (int i = 0 ; i < nValues ; i++)
     {
         float val = arr->GetTuple1(i);
@@ -335,6 +408,20 @@ avtSummationQuery::Execute(vtkDataSet *ds, const int dom)
         }
         if (sumOnlyPositiveValues && val < 0.)
             continue;
+        
+        if (originalCells)
+        {
+            int origCell = (int)originalCells->GetComponent(i, comp); 
+            if (!(summedElements.insert(origCell)).second) 
+                continue;
+        } 
+        else if (originalNodes)
+        {
+            int origNode = (int)originalNodes->GetComponent(i, comp); 
+            if (origNode == -1 || !(summedElements.insert(origNode)).second) 
+                continue;
+        } 
+
 
         sum += val;
     }

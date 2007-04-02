@@ -4,6 +4,7 @@
 
 #include <avtVariableSummationQuery.h>
 
+#include <avtCondenseDatasetFilter.h>
 #include <avtTerminatingSource.h>
 #include <BadIndexException.h>
 
@@ -16,10 +17,17 @@ using     std::string;
 //  Programmer: Hank Childs 
 //  Creation:   February 3, 2004 
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Mar  2 15:05:17 PST 2006
+//    Add condense filter.
+//
 // ****************************************************************************
 
 avtVariableSummationQuery::avtVariableSummationQuery() : avtSummationQuery()
 {
+    condense = new avtCondenseDatasetFilter;
+    condense->KeepAVTandVTK(true);
+    condense->BypassHeuristic(true);
 }
 
 
@@ -29,10 +37,19 @@ avtVariableSummationQuery::avtVariableSummationQuery() : avtSummationQuery()
 //  Programmer: Hank Childs 
 //  Creation:   February 3, 2004 
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Mar  2 15:05:17 PST 2006
+//    Add condense filter.
+//
 // ****************************************************************************
 
 avtVariableSummationQuery::~avtVariableSummationQuery()
 {
+    if (condense != NULL)
+    {
+        delete condense;
+        condense = NULL;
+    }
 }
 
 
@@ -83,3 +100,81 @@ avtVariableSummationQuery::VerifyInput(void)
 }
 
 
+// ****************************************************************************
+//  Method: avtVariableSummationQuery::ApplyFilters
+//
+//  Purpose:
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   February 24, 2006 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtDataObject_p
+avtVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
+{
+    avtDataValidity &dval = GetInput()->GetInfo().GetValidity();
+    avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
+    bool cellData = false;
+
+    avtCentering cent = AVT_UNKNOWN_CENT;
+    if (datts.ValidVariable(variableName))
+    {
+        cent = datts.GetCentering(variableName.c_str());
+        cellData = (cent != AVT_NODECENT);
+    }
+    else 
+    {
+        // we can't determine the centering, assume zone-centered
+        cellData = true;
+    }
+
+    if (dval.SubdivisionOccurred() || 
+       (!dval.GetOriginalZonesIntact() && cellData))
+    {
+        // This will work for time-varying data, too.
+
+        // tell parent class to sum from original element values.
+        // e.g. each 'original' cell/node constributes only once to
+        // the sum.
+        SumFromOriginalElement(true);
+
+        // Need to request original cell and/or node numbers
+        avtDataSpecification_p oldSpec = inData->GetTerminatingSource()->
+            GetGeneralPipelineSpecification()->GetDataSpecification();
+
+        avtDataSpecification_p newDS = new 
+            avtDataSpecification(oldSpec, querySILR);
+        newDS->SetTimestep(queryAtts.GetTimeStep());
+
+        if (cent == AVT_ZONECENT)
+        {
+            newDS->TurnZoneNumbersOn();
+        }
+        else if (cent == AVT_NODECENT)
+        {
+            newDS->TurnNodeNumbersOn();
+        }
+        else 
+        {
+            newDS->TurnZoneNumbersOn();
+            newDS->TurnNodeNumbersOn();
+        }
+
+        avtPipelineSpecification_p pspec = 
+            new avtPipelineSpecification(newDS, queryAtts.GetPipeIndex());
+
+        avtDataObject_p temp;
+        CopyTo(temp, inData);
+        condense->SetInput(temp);
+        avtDataObject_p rv = condense->GetOutput();
+        rv->Update(pspec);
+        return rv;
+    }
+    else 
+    {
+        return avtSummationQuery::ApplyFilters(inData);
+    }
+}

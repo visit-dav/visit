@@ -357,6 +357,8 @@ avtCracksClipperFilter::PerformRestriction(avtPipelineSpecification_p pspec)
 //  Creation:   Thu Oct 13 08:17:36 PDT 2005
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Mar  2 14:26:06 PST 2006 
+//    Set ZonesSplit.
 //
 // ****************************************************************************
 
@@ -364,6 +366,7 @@ void
 avtCracksClipperFilter::RefashionDataObjectInfo()
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
+    GetOutput()->GetInfo().GetValidity().ZonesSplit();
 }
 
 

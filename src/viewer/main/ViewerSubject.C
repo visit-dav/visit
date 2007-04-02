@@ -1161,6 +1161,10 @@ ViewerSubject::DisconnectClient(ViewerClientConnection *client)
 //    Catch all exceptions and keep executing.  This will probably lead to
 //    crashes in some cases, but the alternative is to just quit.
 //
+//    Hank Childs, Thu Mar  2 09:51:29 PST 2006
+//    Correct logic from last change ... exit normally when we have a normal
+//    exit condition.
+//
 // ****************************************************************************
 
 int
@@ -1170,16 +1174,19 @@ ViewerSubject::Execute()
     // Enter the event processing loop.
     //
     int retval;
-    while (1)
+    bool keepGoing = true;
+    while (keepGoing)
     {
         TRY
         {
             retval = mainApp->exec();
+            keepGoing = false;
         }
         CATCH(LostConnectionException)
         {
             cerr << "The component that launched VisIt's viewer has terminated "
                     "abnormally." << endl;
+            keepGoing = false;
             retval = -1;
         }
         CATCH2(VisItException, ve)
@@ -1193,6 +1200,7 @@ ViewerSubject::Execute()
                     "session may still cause VisIt to malfunction.", 
                      ve.Message().c_str());
             Error(msg);
+            keepGoing = true;
         }
         ENDTRY
     }

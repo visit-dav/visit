@@ -39,6 +39,9 @@ class vtkDataSet;
 //    Hank Childs, Thu Jan 12 14:58:07 PST 2006
 //    Added qualifier.
 //
+//    Kathleen Bonnell, Thu Mar  2 15:05:17 PST 2006
+//    Added sumFromOriginalElement.
+//
 // ****************************************************************************
 
 class QUERY_API avtSummationQuery : public avtDatasetQuery
@@ -58,6 +61,7 @@ class QUERY_API avtSummationQuery : public avtDatasetQuery
 
     void                            SumGhostValues(bool);
     void                            SumOnlyPositiveValues(bool);
+    void                            SumFromOriginalElement(bool);
 
   protected:
     double                          sum;
@@ -67,6 +71,7 @@ class QUERY_API avtSummationQuery : public avtDatasetQuery
     std::string                     qualifier;
     bool                            sumGhostValues;
     bool                            sumOnlyPositiveValues;
+    bool                            sumFromOriginalElement;
     char                            descriptionBuffer[1024];
 
     virtual void                    Execute(vtkDataSet *, const int);

@@ -218,6 +218,10 @@ avtCylinderFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //  Programmer: Hank Childs
 //  Creation:   October 21, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Mar  2 14:26:06 PST 2006 
+//    Set ZonesSplit.
+//
 // ****************************************************************************
 
 void
@@ -229,6 +233,7 @@ avtCylinderFilter::RefashionDataObjectInfo(void)
 
     outAtts.SetTopologicalDimension(inAtts.GetTopologicalDimension()-1);
     outValidity.InvalidateZones();
+    outValidity.ZonesSplit();
 }
 
 
