@@ -98,6 +98,7 @@
 #include <QvisRenderingWindow.h>
 #include <QvisSaveMovieWizard.h>
 #include <QvisSaveWindow.h>
+#include <QvisSessionFileDatabaseLoader.h>
 #include <QvisSimulationWindow.h>
 #include <QvisSubsetWindow.h>
 #include <QvisQueryOverTimeWindow.h>
@@ -110,6 +111,7 @@
 #include <WindowMetrics.h>
 
 #include <BadHostException.h>
+#include <CancelledConnectException.h>
 #include <CouldNotConnectException.h>
 #include <IncompatibleVersionException.h>
 #include <IncompatibleSecurityTokenException.h>
@@ -398,6 +400,9 @@ LongFileName(const char *shortName)
 //   Brad Whitlock, Thu Jul 14 11:00:40 PDT 2005
 //   Removed developmentVersion.
 //
+//   Brad Whitlock, Thu Oct 27 14:17:01 PST 2005
+//   Added sessionFileHelper.
+//
 // ****************************************************************************
 
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
@@ -448,6 +453,7 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     saveMovieWizard = 0;    
     interpreter = 0;
     movieProgress = 0;
+    sessionFileHelper = 0;
 
     // Create the viewer, statusSubject, and fileServer for GUIBase.
     viewer = new ViewerProxy;
@@ -3302,6 +3308,11 @@ QvisGUIApplication::RestoreSession()
 //   Brad Whitlock, Wed Aug 4 15:51:26 PST 2004
 //   I made LoadFile take an argument.
 //
+//   Brad Whitlock, Thu Oct 27 16:27:44 PST 2005
+//   I added sessionFileHelper, an object that makes sure the databases for
+//   the session all get opened but quits the session loading if we cancel
+//   any mdserver launches.
+//
 // ****************************************************************************
 
 void
@@ -3311,7 +3322,7 @@ QvisGUIApplication::RestoreSessionFile(const QString &s)
     if(!s.isEmpty())
     {
         std::string filename(s.latin1());
-         
+          
         // Make the gui read in its part of the config.
         std::string guifilename(filename);
         guifilename += ".gui";
@@ -3366,28 +3377,89 @@ QvisGUIApplication::RestoreSessionFile(const QString &s)
                         viewer->ClearCacheForAllEngines();
 
                         //
-                        // Open each of the files that we'll need.
+                        // Have the session file helper open each of the files
+                        // that we'll need.
                         //
-                        const stringVector &db = plotDatabases->AsStringVector();
-                        for(int i = 0; i < db.size(); ++i)
+                        if(sessionFileHelper == 0)
                         {
-                            QualifiedFilename f(db[i]);
-                            if(!fileServer->HaveOpenedFile(f))
-                                LoadFile(f, false);
+                            sessionFileHelper = new QvisSessionFileDatabaseLoader(
+                                this, "sessionFileHelper");
+                            connect(sessionFileHelper, SIGNAL(complete(const QString &)),
+                                    this, SLOT(sessionFileHelper_LoadSession(const QString &)));
+                            connect(sessionFileHelper, SIGNAL(loadFile(const QString &)),
+                                    this, SLOT(sessionFileHelper_LoadFile(const QString &)));
                         }
+                        sessionFileHelper->SetDatabases(plotDatabases->AsStringVector());
+                        sessionFileHelper->Start(filename.c_str());
                     }
                 }
             }
 
             delete node;
         }
-
-        // Have the viewer read in its part of the config. Note that we
-        // pass the inVisItDir flag as false because we don't want to have
-        // the viewer prepend the .visit directory to the file since it's
-        // already part of the filename.
-        viewer->ImportEntireState(filename, false);
+        else
+        {
+            // Have the viewer read in its part of the config. Note that we
+            // pass the inVisItDir flag as false because we don't want to have
+            // the viewer prepend the .visit directory to the file since it's
+            // already part of the filename.
+            viewer->ImportEntireState(filename, false);
+        }
     }
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::sessionFileHelper_LoadFile
+//
+// Purpose: 
+//   Qt slot function used with sessionFileHelper to load a particular
+//   database.
+//
+// Arguments:
+//   db : The name of the database to load.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct 27 16:28:45 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::sessionFileHelper_LoadFile(const QString &db)
+{
+    QualifiedFilename f(db.latin1());
+    if(!fileServer->HaveOpenedFile(f))
+        LoadFile(f, false);
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::sessionFileHelper_LoadSession
+//
+// Purpose: 
+//   Qt slot function that tells the viewer to load the session file.
+//
+// Arguments:
+//   filename : The name of the session file to load.
+//
+// Note:       This slot is only called by sessionFileHelper if all of the
+//             required databases were loaded (no mdserver cancellations).
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct 27 16:29:28 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::sessionFileHelper_LoadSession(const QString &filename)
+{
+    // Have the viewer read in its part of the config. Note that we
+    // pass the inVisItDir flag as false because we don't want to have
+    // the viewer prepend the .visit directory to the file since it's
+    // already part of the filename.
+    viewer->ImportEntireState(filename, false);
 }
 
 // ****************************************************************************
@@ -3705,6 +3777,9 @@ QvisGUIApplication::StartMDServer(const std::string &hostName,
 //   connect to the mdserver. I also added code to prevent the path from
 //   being changed if we're going to load a file.
 //
+//   Brad Whitlock, Thu Oct 27 16:06:55 PST 2005
+//   Added code to catch CancelledConnectException.
+//
 // ****************************************************************************
 
 void
@@ -3833,6 +3908,13 @@ QvisGUIApplication::InitializeFileServer(DataNode *guiNode)
         QString msgStr;
         msgStr.sprintf("VisIt could not launch a metadata server on "
                        "host \"%s\".", fileServer->GetHost().c_str());
+        Error(msgStr);
+    }
+    CATCH(CancelledConnectException)
+    {
+        QString msgStr;
+        msgStr.sprintf("The launch of a metadata server on "
+                       "host \"%s\" was cancelled.", fileServer->GetHost().c_str());
         Error(msgStr);
     }
     ENDTRY
@@ -4082,6 +4164,9 @@ QvisGUIApplication::RefreshFileListAndNextFrame()
 //   session file was specified and moved it to a higher level so this
 //   method always does something provided the input file is not empty.
 //
+//   Brad Whitlock, Thu Oct 27 16:08:29 PST 2005
+//   Added code to catch CancelledConnectException.
+//
 // ****************************************************************************
 
 void
@@ -4229,6 +4314,10 @@ QvisGUIApplication::LoadFile(QualifiedFilename &f, bool addDefaultPlots)
                            f.FullName().c_str(),
                            fileServer->GetHost().c_str());
             Error(msgStr);
+        }
+        CATCH(CancelledConnectException)
+        {
+            // nothing
         }
         ENDTRY
 

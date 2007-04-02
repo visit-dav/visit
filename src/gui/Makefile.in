@@ -407,6 +407,7 @@ HDRMOC = \
     QvisScreenPositionEdit.h \
     QvisScreenPositioner.h \
     QvisScribbleOpacityBar.h \
+    QvisSessionFileDatabaseLoader.h \
     QvisSimulationWindow.h \
     QvisSpectrumBar.h \
     QvisSubsetListView.h \

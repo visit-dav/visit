@@ -16,6 +16,7 @@
 #include <QvisRecentPathRemovalWindow.h>
 #include <FileServerList.h>
 #include <BadHostException.h>
+#include <CancelledConnectException.h>
 #include <ChangeDirectoryException.h>
 #include <CouldNotConnectException.h>
 #include <DebugStream.h>
@@ -1262,6 +1263,10 @@ QvisFileSelectionWindow::GetCurrentValues(bool allowPathChange)
 //    which we could not connect is in the host profiles and removing it
 //    confuses people.
 //
+//    Brad Whitlock, Thu Oct 27 15:43:13 PST 2005
+//    Catching CancelledConnectException now that the file server throws it
+//    instead of catching it internally.
+//
 // ****************************************************************************
 
 bool
@@ -1274,6 +1279,7 @@ QvisFileSelectionWindow::ChangeHosts()
     {
         // Take the string from the text field and strip whitespace.
         std::string host(hostComboBox->currentText().stripWhiteSpace().latin1());
+        std::string currentHost(fileServer->GetHost());
 
         if(host != fileServer->GetHost())
         {
@@ -1285,41 +1291,57 @@ QvisFileSelectionWindow::ChangeHosts()
             // Change the application cursor to the wait cursor.
             SetWaitCursor();
 
-            TRY
+            bool repeat;
+            int  loopCount = 0;
+            do
             {
-                // Try to set the host name
-                fileServer->SetHost(host);
-                fileServer->Notify();
+                repeat = false;
 
-                // If the host is in the invalidHosts list then remove it.
-                stringVector::iterator pos = std::find(invalidHosts.begin(),
-                    invalidHosts.end(), host);
-                if(pos != invalidHosts.end())
-                    invalidHosts.erase(pos);
-            }
-            CATCH(BadHostException)
-            {
-                // Tell the user that the hostname is not valid.
-                QString msgStr;
-                msgStr.sprintf("\"%s\" is not a valid host.", host.c_str());
-                Error(msgStr);
+                TRY
+                {
+                    // Try to set the host name
+                    fileServer->SetHost(host);
+                    fileServer->Notify();
 
-                // Remove the invalid host from the combo box and make the
-                // active host active in the combo box.
-                invalidHosts.push_back(host);
-                UpdateHostComboBox();
-                hostComboBox->setEditText(host.c_str());
-                HighlightComboBox(hostComboBox);
+                    // If the host is in the invalidHosts list then remove it.
+                    stringVector::iterator pos = std::find(invalidHosts.begin(),
+                        invalidHosts.end(), host);
+                    if(pos != invalidHosts.end())
+                        invalidHosts.erase(pos);
+                }
+                CATCH(BadHostException)
+                {
+                    // Tell the user that the hostname is not valid.
+                    QString msgStr;
+                    msgStr.sprintf("\"%s\" is not a valid host.", host.c_str());
+                    Error(msgStr);
 
-                // We had an error.
-                errFlag = true;
-            }
-            CATCH(CouldNotConnectException)
-            {
-                // We had an error.
-                errFlag = true;
-            }
-            ENDTRY
+                    // Remove the invalid host from the combo box and make the
+                    // active host active in the combo box.
+                    invalidHosts.push_back(host);
+                    UpdateHostComboBox();
+                    hostComboBox->setEditText(host.c_str());
+                    HighlightComboBox(hostComboBox);
+
+                    // We had an error.
+                    errFlag = true;
+                }
+                CATCH(CouldNotConnectException)
+                {
+                    // We had an error.
+                    errFlag = true;
+                }
+                CATCH(CancelledConnectException)
+                {
+                    // We had an error.
+                    errFlag = true;
+
+                    // Let's restore the old host.
+                    host = currentHost;
+                    repeat = (loopCount++ == 0);
+                }
+                ENDTRY
+            } while(repeat);
 
             // Clear the status line.
             ClearStatus();

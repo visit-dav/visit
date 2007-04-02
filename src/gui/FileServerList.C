@@ -1,5 +1,6 @@
 #include <FileServerList.h>
 #include <BadHostException.h>
+#include <CancelledConnectException.h>
 #include <ChangeDirectoryException.h>
 #include <CouldNotConnectException.h>
 #include <GetFileListException.h>
@@ -610,6 +611,9 @@ FileServerList::SilentNotify()
 //   Jeremy Meredith, Wed Jul  7 17:04:03 PDT 2004
 //   I made the filter be global to all hosts.
 //
+//   Brad Whitlock, Thu Oct 27 14:45:52 PST 2005
+//   I made it throw cancelledconnect exception instead of catching it.
+//
 // ****************************************************************************
 
 void
@@ -662,6 +666,14 @@ FileServerList::SetHost(const std::string &host)
     }
     CATCH(CouldNotConnectException)
     {
+        // Rethrow the exception.
+        RETHROW;
+    }
+    CATCH(CancelledConnectException)
+    {
+        debug1 << "FileServerList::SetHost: activeHost="
+               << activeHost.c_str() << endl;
+
         // Rethrow the exception.
         RETHROW;
     }

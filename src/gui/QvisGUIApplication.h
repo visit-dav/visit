@@ -32,6 +32,7 @@ class QvisPickWindow;
 class QvisPluginWindow;
 class QvisPreferencesWindow;
 class QvisSaveMovieWizard;
+class QvisSessionFileDatabaseLoader;
 class QvisVisItUpdate;
 class SplashScreen;
 
@@ -255,6 +256,9 @@ class SplashScreen;
 //    Brad Whitlock, Thu Jul 14 11:00:23 PDT 2005
 //    removed developmentVersion;
 //
+//    Brad Whitlock, Thu Oct 27 16:26:46 PST 2005
+//    Added sessionFileHelper to help open the databases in a session file.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -347,6 +351,8 @@ private slots:
     void RestoreSession();
     void RestoreSessionFile(const QString &);
     void SaveSession();
+    void sessionFileHelper_LoadFile(const QString &);
+    void sessionFileHelper_LoadSession(const QString &);
 
     // Plot, operator related slots.
     void AddPlot(int, const QString &);
@@ -432,6 +438,7 @@ private:
     // Important objects
     QvisInterpreter              *interpreter;
     QvisVisItUpdate              *visitUpdate;
+    QvisSessionFileDatabaseLoader *sessionFileHelper;
 
     // Contains pointers to all of the plot windows.
     WindowBaseVector             plotWindows;
