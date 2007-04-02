@@ -77,12 +77,12 @@ do
    $cmd visit$version2.aix.tar.gz           >> $output
    $cmd visit$version2.aix64-xlc.tar.gz     >> $output
    $cmd visit$version2.darwin.tar.gz        >> $output
-#  $cmd visit$version2.irix6.tar.gz         >> $output
+   $cmd visit$version2.irix6.tar.gz         >> $output
 #  $cmd visit$version2.linux-altix.tar.gz   >> $output
    $cmd visit$version2.linux-ia64.tar.gz    >> $output
    $cmd visit$version2.linux-x86_64.tar.gz  >> $output
    $cmd visit$version2.linux_chaos.tar.gz   >> $output
-   $cmd visit$version2.linux_rh71.tar.gz    >> $output
+#  $cmd visit$version2.linux_rh71.tar.gz    >> $output
    $cmd visit$version2.linux_rhel3.tar.gz   >> $output
    $cmd visit$version2.osf1.tar.gz          >> $output
    $cmd visit$version2.sunos5.tar.gz        >> $output
