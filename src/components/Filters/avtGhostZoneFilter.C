@@ -134,6 +134,9 @@ avtGhostZoneFilter::~avtGhostZoneFilter()
 //    Hank Childs, Tue Dec 19 09:52:33 PST 2006
 //    Allow rectilinear grids to pass through.
 //
+//    Hank Childs, Wed Dec 27 10:14:27 PST 2006
+//    Allow curvilinear grids to pass through.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -213,6 +216,15 @@ avtGhostZoneFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
         !ghostDataMustBeRemoved)
     {
         debug5 << "Allow rectilinear grid to travel through with ghost data;"
+               << " depending on mapper to remove ghost data during render." 
+               << endl;
+        return in_ds;
+    }
+
+    if (in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID && 
+        !ghostDataMustBeRemoved)
+    {
+        debug5 << "Allow structured grid to travel through with ghost data;"
                << " depending on mapper to remove ghost data during render." 
                << endl;
         return in_ds;

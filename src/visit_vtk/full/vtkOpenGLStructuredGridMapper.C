@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkOpenGLRectilinearGridMapper.cxx,v $
+  Module:    $RCSfile: vtkOpenGLStructuredGridMapper.cxx,v $
   Language:  C++
   Date:      $Date: 2003/04/28 19:13:10 $
   Version:   $Revision: 1.78 $
@@ -15,7 +15,7 @@
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#include "vtkOpenGLRectilinearGridMapper.h"
+#include "vtkOpenGLStructuredGridMapper.h"
 
 #include <vtkPoints.h>
 #include "vtkCellArray.h"
@@ -28,7 +28,7 @@
 #include "vtkPlane.h"
 #include "vtkPlaneCollection.h"
 #include "vtkPointData.h"
-#include "vtkRectilinearGrid.h"
+#include "vtkStructuredGrid.h"
 #include "vtkPolygon.h"
 #include "vtkProperty.h"
 #include "vtkTimerLog.h"
@@ -58,8 +58,8 @@ static const int dlSize = 8192;
 #include <math.h>
 
 #ifndef VTK_IMPLEMENT_MESA_CXX
-vtkCxxRevisionMacro(vtkOpenGLRectilinearGridMapper, "$Revision: 1.78 $");
-vtkStandardNewMacro(vtkOpenGLRectilinearGridMapper);
+vtkCxxRevisionMacro(vtkOpenGLStructuredGridMapper, "$Revision: 1.78 $");
+vtkStandardNewMacro(vtkOpenGLStructuredGridMapper);
 #endif
 
 static float vtk1Over255[] = {
@@ -102,7 +102,7 @@ static float vtk1Over255[] = {
 };
 
 
-vtkOpenGLRectilinearGridMapper::vtkOpenGLRectilinearGridMapper()
+vtkOpenGLStructuredGridMapper::vtkOpenGLStructuredGridMapper()
 {
   this->ListStart = 0;
   this->doingDisplayLists = false;
@@ -124,7 +124,7 @@ vtkOpenGLRectilinearGridMapper::vtkOpenGLRectilinearGridMapper()
 }
 
 // Destructor (don't call ReleaseGraphicsResources() since it is virtual
-vtkOpenGLRectilinearGridMapper::~vtkOpenGLRectilinearGridMapper()
+vtkOpenGLStructuredGridMapper::~vtkOpenGLStructuredGridMapper()
 {
   if (this->LastWindow)
     {
@@ -140,7 +140,7 @@ vtkOpenGLRectilinearGridMapper::~vtkOpenGLRectilinearGridMapper()
 // the display list if any.
 // ****************************************************************************
 
-void vtkOpenGLRectilinearGridMapper::ReleaseGraphicsResources(vtkWindow *win)
+void vtkOpenGLStructuredGridMapper::ReleaseGraphicsResources(vtkWindow *win)
 {
   if (this->ListStart && win)
     {
@@ -158,10 +158,10 @@ void vtkOpenGLRectilinearGridMapper::ReleaseGraphicsResources(vtkWindow *win)
     }
 }
 
-void vtkOpenGLRectilinearGridMapper::Render(vtkRenderer *ren, vtkActor *act)
+void vtkOpenGLStructuredGridMapper::Render(vtkRenderer *ren, vtkActor *act)
 {
   vtkIdType numPts;
-  vtkRectilinearGrid *input= this->GetInput();
+  vtkStructuredGrid *input= this->GetInput();
   vtkPlaneCollection *clipPlanes;
   vtkPlane *plane;
   int i, numClipPlanes;
@@ -393,19 +393,11 @@ void vtkOpenGLRectilinearGridMapper::Render(vtkRenderer *ren, vtkActor *act)
     }
 }
 
-// ****************************************************************************
-//  Modifications:
-//
-//    Hank Childs, Wed Dec 27 10:27:48 PST 2006
-//    Fix indexing bug for ghost data.
-//
-// ****************************************************************************
-
-int vtkOpenGLRectilinearGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
+int vtkOpenGLStructuredGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
 {
    int  i;
 
-   vtkRectilinearGrid *input = this->GetInput();
+   vtkStructuredGrid *input = this->GetInput();
    int dims[3];
    input->GetDimensions(dims);
    if (dims[2] != 1)
@@ -478,24 +470,10 @@ int vtkOpenGLRectilinearGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
      nodeData = false;
      }
 
-   float *X = new float[dims[0]];
-   for (i = 0 ; i < dims[0] ; i++)
-       X[i] = input->GetXCoordinates()->GetTuple1(i);
-   float *Y = new float[dims[1]];
-   for (i = 0 ; i < dims[1] ; i++)
-       Y[i] = input->GetYCoordinates()->GetTuple1(i);
-   float *Z = new float[dims[2]];
-   for (i = 0 ; i < dims[2] ; i++)
-       Z[i] = input->GetZCoordinates()->GetTuple1(i);
+   float *pts = (float *) input->GetPoints()->GetVoidPointer(0);
 
-   bool normalQuadOrder = true;
-   if (dims[0] > 1 && X[1] < X[0])
-       normalQuadOrder = !normalQuadOrder;
-   if (dims[1] > 1 && Y[1] < Y[0])
-       normalQuadOrder = !normalQuadOrder;
-   int normalquadorder[4] = { 0, 1, 3, 2 };
-   int otherquadorder[4] = { 0, 2, 3, 1 };
-   int *quadorder = (normalQuadOrder ? normalquadorder : otherquadorder);
+   int Iorder[4] = { 0, 1, 1, 0 };
+   int Jorder[4] = { 0, 0, 1, 1 };
 
    glBegin(GL_QUADS);
    for (int j = 0 ; j < dims[1]-1 ; j++)
@@ -519,8 +497,10 @@ int vtkOpenGLRectilinearGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
            {
                for (int k = 0 ; k < 4 ; k++)
                {
-                   glVertex3f(X[i + quadorder[k] % 2], Y[j + quadorder[k]/2],
-                              Z[0]);
+                   int x = i + Iorder[k];
+                   int y = j + Jorder[k];
+                   int idx = y*dims[0] + x;
+                   glVertex3fv(pts + 3*idx);
                }
            }
            else
@@ -534,22 +514,24 @@ int vtkOpenGLRectilinearGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
                        glTexCoord1f(vtk1Over255[(colors + 4*idx)[0]]);
                    for (int k = 0 ; k < 4 ; k++)
                    {
-                       glVertex3f(X[i + quadorder[k] % 2], 
-                                  Y[j + quadorder[k]/2], Z[0]);
+                       int x = i + Iorder[k];
+                       int y = j + Jorder[k];
+                       int idx = y*dims[0] + x;
+                       glVertex3fv(pts + 3*idx);
                    }
                }
                else
                {
                    for (int k = 0 ; k < 4 ; k++)
                    {
-                       int idx = (j + quadorder[k]/2)*dims[0] + 
-                                 (i+(quadorder[k]%2));
+                       int x = i + Iorder[k];
+                       int y = j + Jorder[k];
+                       int idx = y*dims[0] + x;
                        if (!this->ColorTexturingAllowed)
                            glColor4ubv(colors + 4*idx);
                        else
                            glTexCoord1f(vtk1Over255[colors[4*idx]]);
-                       glVertex3f(X[i + quadorder[k] % 2], 
-                                  Y[j + quadorder[k]/2], Z[0]);
+                       glVertex3fv(pts + 3*idx);
                    }
                }
            }
@@ -573,21 +555,17 @@ int vtkOpenGLRectilinearGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
    if (this->doingDisplayLists)
        glEndList();
 
-   delete [] X;
-   delete [] Y;
-   delete [] Z;
-
    return 1;
 }
 
 
-void vtkOpenGLRectilinearGridMapper::PrintSelf(ostream& os, vtkIndent indent)
+void vtkOpenGLStructuredGridMapper::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
 }
 
 // ****************************************************************************
-// Method: vtkOpenGLRectilinearGridMapper::MapScalarsWithTextureSupport
+// Method: vtkOpenGLStructuredGridMapper::MapScalarsWithTextureSupport
 //
 // Purpose:
 //   This method calls MapScalars to use the lookup tables to set this->Colors.
@@ -610,14 +588,14 @@ void vtkOpenGLRectilinearGridMapper::PrintSelf(ostream& os, vtkIndent indent)
 //             for vtkVisItOpenGLPolyDataMapper.
 //
 // Programmer: Hank Childs
-// Creation:   December 19, 2006
+// Creation:   December 27, 2006
 //
 // Modifications:
 //
 // ****************************************************************************
 
 bool
-vtkOpenGLRectilinearGridMapper::MapScalarsWithTextureSupport(double opacity)
+vtkOpenGLStructuredGridMapper::MapScalarsWithTextureSupport(double opacity)
 {
     bool saveColors = this->EnableColorTexturing &&
                       this->LookupTable != NULL &&
@@ -756,7 +734,7 @@ vtkOpenGLRectilinearGridMapper::MapScalarsWithTextureSupport(double opacity)
 }
 
 // ****************************************************************************
-// Method: vtkOpenGLRectilinearGridMapper::BeginColorTexturing
+// Method: vtkOpenGLStructuredGridMapper::BeginColorTexturing
 //
 // Purpose:
 //   Begins color texturing if it is enabled.
@@ -765,14 +743,14 @@ vtkOpenGLRectilinearGridMapper::MapScalarsWithTextureSupport(double opacity)
 //             for vtkVisItOpenGLPolyDataMapper.
 //
 // Programmer: Hank Childs
-// Creation:   December 19, 2006
+// Creation:   December 27, 2006
 //
 // Modifications:
 //
 // ****************************************************************************
 
 void
-vtkOpenGLRectilinearGridMapper::BeginColorTexturing()
+vtkOpenGLStructuredGridMapper::BeginColorTexturing()
 {
     if(!this->ColorTexturingAllowed)
         return;
@@ -864,7 +842,7 @@ vtkOpenGLRectilinearGridMapper::BeginColorTexturing()
 
 
 // ****************************************************************************
-// Method: vtkOpenGLRectilinearGridMapper::EndColorTexturing
+// Method: vtkOpenGLStructuredGridMapper::EndColorTexturing
 //
 // Purpose:
 //   Ends color texturing if it is enabled.
@@ -873,14 +851,14 @@ vtkOpenGLRectilinearGridMapper::BeginColorTexturing()
 //             for vtkVisItOpenGLPolyDataMapper.
 //
 // Programmer: Hank Childs
-// Creation:   December 19, 2006
+// Creation:   December 27, 2006
 //
 // Modifications:
 //
 // ****************************************************************************
 
 void
-vtkOpenGLRectilinearGridMapper::EndColorTexturing()
+vtkOpenGLStructuredGridMapper::EndColorTexturing()
 {
     if(!this->ColorTexturingAllowed)
         return;
@@ -905,7 +883,7 @@ vtkOpenGLRectilinearGridMapper::EndColorTexturing()
 
 
 // ****************************************************************************
-// Method: vtkOpenGLRectilinearGridMapper::UsesPointData
+// Method: vtkOpenGLStructuredGridMapper::UsesPointData
 //
 // Purpose:
 //   Follows the same rules as the GetScalars method except that it returns
@@ -918,14 +896,14 @@ vtkOpenGLRectilinearGridMapper::EndColorTexturing()
 //             for vtkVisItOpenGLPolyDataMapper.
 //
 // Programmer: Hank Childs
-// Creation:   December 19, 2006
+// Creation:   December 27, 2006
 //
 // Modifications:
 //
 // ****************************************************************************
 
 bool
-vtkOpenGLRectilinearGridMapper::UsesPointData(vtkDataSet *input, int scalarMode,
+vtkOpenGLStructuredGridMapper::UsesPointData(vtkDataSet *input, int scalarMode,
     int arrayAccessMode, int arrayId, const char *arrayName, int& offset)
 {
   vtkDataArray *scalars=NULL;

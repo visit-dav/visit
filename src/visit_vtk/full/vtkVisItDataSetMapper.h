@@ -29,6 +29,7 @@
 
 class vtkPolyDataMapper;
 class vtkRectilinearGridMapper;
+class vtkStructuredGridMapper;
 class vtkDataSetSurfaceFilter;
 
 class VISIT_VTK_API vtkVisItDataSetMapper : public vtkMapper 
@@ -80,6 +81,7 @@ protected:
   vtkDataSetSurfaceFilter   *GeometryExtractor;
   vtkPolyDataMapper         *PolyDataMapper;
   vtkRectilinearGridMapper  *RectilinearGridMapper;
+  vtkStructuredGridMapper   *StructuredGridMapper;
   PointTextureMode           PointTextureMethod;
   bool                       EnableColorTexturing;
 
