@@ -8,6 +8,7 @@
 #include <RemoteProxyBase.h>
 #include <LostConnectionException.h>
 #include <CouldNotConnectException.h>
+#include <CancelledConnectException.h>
 #include <ViewerConnectionProgressDialog.h>
 #include <ViewerPasswordWindow.h>
 #include <ViewerSubject.h>
@@ -669,6 +670,11 @@ ViewerServerManager::StartLauncher(const std::string &host,
 //   Brad Whitlock, Tue Jun 10 14:22:01 PST 2003
 //   I made it extract the path to VisIt from the arguments.
 //
+//   Brad Whitlock, Thu Mar 9 10:35:40 PDT 2006
+//   I made it throw a CancelledConnect exception in the event that we're
+//   launching on a machine that shares mdserver and engine batch jobs. That
+//   way, if the launch was cancelled, we don't crash!
+//
 // ****************************************************************************
 
 void
@@ -679,6 +685,7 @@ ViewerServerManager::OpenWithLauncher(
     bool retry = false;
     int  numAttempts = 0;
     bool launched = false;
+    bool cancelled = false;
 
     do
     {
@@ -705,10 +712,15 @@ ViewerServerManager::OpenWithLauncher(
             StartLauncher(remoteHost, visitPath, dialog);
 
             // Try to make the launcher launch the process.
-            launchers[remoteHost]->LaunchProcess(args);
+            if(launchers.find(remoteHost) == launchers.end())
+                cancelled = true;
+            else
+            {
+                launchers[remoteHost]->LaunchProcess(args);
+                // Indicate success.
+                launched = true;
+            }
 
-            // Indicate success.
-            launched = true;
             retry = false;
         }
         CATCH(LostConnectionException)
@@ -728,6 +740,11 @@ ViewerServerManager::OpenWithLauncher(
         // can be handled by the managers.
         ENDTRY
     } while(retry && numAttempts < 2);
+
+    if(cancelled)
+    {
+        EXCEPTION0(CancelledConnectException);
+    }
 
     if(!launched)
     {
@@ -758,6 +775,14 @@ ViewerServerManager::OpenWithLauncher(
 //    Jeremy Meredith, Wed May 11 09:04:52 PDT 2005
 //    Added security key to simulation connection.
 //
+//    Brad Whitlock, Thu Mar 9 10:35:40 PDT 2006
+//    I made it throw a CancelledConnect exception in the event that we're
+//    launching on a machine that shares mdserver and engine batch jobs. That
+//    way, if the launch was cancelled, we don't crash! I also added support
+//    for a connection progress dialog when launching VCL. A connection
+//    progress dialog for aborting the connection to the sim will take quite
+//    a bit more work.
+//
 // ****************************************************************************
 
 void
@@ -768,6 +793,7 @@ ViewerServerManager::SimConnectThroughLauncher(const std::string &remoteHost,
     bool retry = false;
     int  numAttempts = 0;
     bool launched = false;
+    bool cancelled = false;
 
     do
     {
@@ -775,7 +801,9 @@ ViewerServerManager::SimConnectThroughLauncher(const std::string &remoteHost,
         {
             // We use the data argument to pass in a pointer to the connection
             // progress window.
-            typedef struct {std::string h; int p; std::string k;} SimData;
+            typedef struct {
+                string h; int p; string k;
+                 ViewerConnectionProgressDialog *d;} SimData;
             SimData *simData = (SimData*)data;
 
             // Search the args list and see if we've supplied the path to
@@ -791,16 +819,21 @@ ViewerServerManager::SimConnectThroughLauncher(const std::string &remoteHost,
             }
 
             // Try to start a launcher on remoteHost.
-            StartLauncher(remoteHost, visitPath, NULL);
+            StartLauncher(remoteHost, visitPath, simData->d);
 
             // Try to make the launcher launch the process.
-            launchers[remoteHost]->ConnectSimulation(args,
-                                                     simData->h,
-                                                     simData->p,
-                                                     simData->k);
+            if(launchers.find(remoteHost) == launchers.end())
+                cancelled = true;
+            else
+            {
+                launchers[remoteHost]->ConnectSimulation(args,
+                                                         simData->h,
+                                                         simData->p,
+                                                         simData->k);
+                // Indicate success.
+                launched = true;
+            }
 
-            // Indicate success.
-            launched = true;
             retry = false;
         }
         CATCH(LostConnectionException)
@@ -820,6 +853,11 @@ ViewerServerManager::SimConnectThroughLauncher(const std::string &remoteHost,
         // can be handled by the managers.
         ENDTRY
     } while(retry && numAttempts < 2);
+
+    if(cancelled)
+    {
+        EXCEPTION0(CancelledConnectException);
+    }
 
     if(!launched)
     {

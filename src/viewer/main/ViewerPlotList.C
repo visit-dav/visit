@@ -8034,6 +8034,14 @@ ViewerPlotList::GetWindowId() const
 //  Programmer:  Mark C. Miller 
 //  Creation:    July 15, 2005 
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Mar  8 18:14:40 PST 2006
+//    Changed to look at only x,y (first two of the three axes) because
+//    in 2D plots, only 2 of the three axes matter AND, apparently, by the
+//    time data attributes arrive here, they have been manipulated such that
+//    the two being used are always the first two.
+//
 // ****************************************************************************
 bool
 ViewerPlotList::DoAllPlotsAxesHaveSameUnits() const
@@ -8060,14 +8068,11 @@ ViewerPlotList::DoAllPlotsAxesHaveSameUnits() const
                             theUnits = datts.GetXUnits();
                         else if (datts.GetYUnits() != "")
                             theUnits = datts.GetYUnits();
-                        else if (datts.GetZUnits() != "")
-                            theUnits = datts.GetZUnits();
                         if (theUnits != "")
                             first = false;
                     }
                     if ((datts.GetXUnits() != "" && datts.GetXUnits() != theUnits) ||
-                        (datts.GetYUnits() != "" && datts.GetYUnits() != theUnits) ||
-                        (datts.GetZUnits() != "" && datts.GetZUnits() != theUnits))
+                        (datts.GetYUnits() != "" && datts.GetYUnits() != theUnits))
                         return false;
                 }
             }

@@ -186,6 +186,9 @@ c     Create a moving curvilinear mesh by filling cx, cy
               cy(i,j) = ((j - 1) / 99.) * 5. + sin(angle + displ)
 71        continue
 70    continue
+
+c     Delay a little so it's like it took more to process the cycle
+      call sleep(1)
  
       write (6,*) 'Finished cycle', simcycle, ' time', simtime
 
