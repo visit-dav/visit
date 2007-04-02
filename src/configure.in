@@ -588,6 +588,9 @@ dnl    Changed support for bzip2 to a third_party_builtin library
 dnl    This means it is part of the distribution and gets built whenever
 dnl    VisIt gets built. It can be disabled with --disable-bzip2
 dnl
+dnl    Mark C. Miller, Mon Dec 12 20:53:03 PST 2005
+dnl    Moved -lbz2 to BZIP2_LIBS config/make variable
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1247,12 +1250,14 @@ AC_ARG_ENABLE(bzip2,
    [  --disable-bzip2         do not build or use bzip2 library -- disables compression],
    Usebzip2="$enable_bzip2", Usebzip2=yes)
 BUILD_BZIP2=""
+BZIP2_LIBS=""
 if test "$Usebzip2" = "yes"; then
     BUILD_BZIP2="bzip2"
     AC_DEFINE(HAVE_LIBBZ2)
-    LIBS="-lbz2 $LIBS"
+    BZIP2_LIBS="-lbz2"
 fi
 AC_SUBST(BUILD_BZIP2)
+AC_SUBST(BZIP2_LIBS)
 
 dnl
 dnl Make note if no CXXFLAGS have STILL yet been specified; this is the

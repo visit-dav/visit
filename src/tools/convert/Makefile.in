@@ -49,6 +49,9 @@
 #   Hank Childs, Thu Sep 22 09:01:31 PDT 2005
 #   Add filters library, since expressions now depend on them.
 #
+#   Mark C. Miller, Mon Dec 12 20:53:03 PST 2005
+#   Added BZIP2_LIBS variable
+#
 ##############################################################################
 
 ##
@@ -61,8 +64,8 @@
 
 CPPFLAGS=-I. -I../../include -I../../include/visit
 
-SERLIBS=-L../../lib -ldatabase_ser -lpipeline_ser -lexpressions_ser -lavtfilters_ser -lavtview -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_ser -lavtexceptions -lmir_ser -lplugin @VTK_LIBS@ $(X_LIBS) @LIBS@ @PTHREAD_LIB@
-PARLIBS=-L../../lib -ldatabase_par -lpipeline_par -lexpressions_par -lavtfilters_par -lavtview -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_par -lavtexceptions -lmir_par -lplugin @VTK_LIBS@ $(X_LIBS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
+SERLIBS=-L../../lib -ldatabase_ser -lpipeline_ser -lexpressions_ser -lavtfilters_ser -lavtview -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_ser -lavtexceptions -lmir_ser -lplugin @VTK_LIBS@ $(X_LIBS) $(BZIP2_LIBS) @LIBS@ @PTHREAD_LIB@
+PARLIBS=-L../../lib -ldatabase_par -lpipeline_par -lexpressions_par -lavtfilters_par -lavtview -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_par -lavtexceptions -lmir_par -lplugin @VTK_LIBS@ $(X_LIBS) $(BZIP2_LIBS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
 LIBDEP=
 
 ##

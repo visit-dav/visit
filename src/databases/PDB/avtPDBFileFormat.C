@@ -10,7 +10,7 @@
 #include <LEOSFileFormat.h>
 
 // ****************************************************************************
-// Method: PDBCommonPluginInfo::CreateInterface
+// Method: PDB_CreateFileFormatInterface
 //
 // Purpose: 
 //   Opens the first PDB file in the list and attempts to use the various file
@@ -28,11 +28,13 @@
 // Creation:   Tue Sep 16 12:06:19 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Dec 9 17:38:23 PST 2005
+//   Renamed to avoid namespace conflicts on Tru64.
+//
 // ****************************************************************************
 
 avtFileFormatInterface *
-CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
+PDB_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
 {
     avtFileFormatInterface *ffi = 0;
 

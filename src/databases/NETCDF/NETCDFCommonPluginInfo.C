@@ -57,6 +57,10 @@ NETCDFCommonPluginInfo::GetDefaultExtensions()
 //  Programmer: Brad Whitlock
 //  Creation:   Fri Aug 12 09:46:51 PDT 2005
 //
+//  Modifications:
+//    Brad Whitlock, Fri Dec 9 17:39:34 PST 2005
+//    I renamed a method call.
+//
 // ****************************************************************************
 avtDatabase *
 NETCDFCommonPluginInfo::SetupDatabase(const char *const *list,
@@ -67,7 +71,7 @@ NETCDFCommonPluginInfo::SetupDatabase(const char *const *list,
     //
     // Create a file format interface.
     //
-    avtFileFormatInterface *ffi = CreateFileFormatInterface(list, nList, nBlock);
+    avtFileFormatInterface *ffi = NETCDF_CreateFileFormatInterface(list, nList, nBlock);
 
     //
     // If we created a file format interface, try creating a database.
