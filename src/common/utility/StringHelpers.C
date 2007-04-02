@@ -40,6 +40,10 @@ static int CompareRelevantStrings(const void *arg1, const void *arg2)
     return strcmp(str1.c_str(),str2.c_str());
 }
 
+//
+// Groups a list of strings by finding identical leading substrings
+// of length numLeadingVals.
+//
 void
 StringHelpers::GroupStrings(vector<string> stringList,
                             vector<vector<string> > &stringGroups,
@@ -99,10 +103,11 @@ StringHelpers::GroupStrings(vector<string> stringList,
        }
    }
 
+   //
    // now, scan the sorted list of strings for value transitions
    // in first N (default 3) chars. Each such transition indicates the end of
-   // one group and the beginning of the next. The 'first 3' criterion
-   // is arbitrary but seems to work well.
+   // one group and the beginning of the next.
+   //
    groupNames.push_back(RelevantString(stringPtrs[0]));
    vector<string> curGroup;
    curGroup.push_back(stringPtrs[0]);
@@ -146,6 +151,10 @@ StringHelpers::GroupStrings(vector<string> stringList,
    delete [] stringPtrs;
 }
 
+//
+// Groups a list of strings that look like file paths into groups
+// that have same dirname
+//
 void
 StringHelpers::GroupStringsAsPaths(vector<string> stringList,
                             vector<vector<string> > &stringGroups,
@@ -197,6 +206,53 @@ StringHelpers::GroupStringsAsPaths(vector<string> stringList,
    stringGroups.push_back(curGroup);
 
    delete [] stringPtrs;
+}
+
+
+//
+// Groups a list of strings into a fixed number of groups
+// by alphabetizing and then dividing the alphabetized list into pieces
+//
+void
+StringHelpers::GroupStringsFixedAlpha(vector<string> stringList,
+                            int numGroups,
+                            vector<vector<string> > &stringGroups)
+{
+
+   int i;
+   int nStrings = stringList.size();
+
+   if (nStrings == 0)
+       return;
+
+   // prime the input to the compare functions
+   IGNORE_CHARS = "";
+
+   // first, we need to sort the strings. Well, we don't really sort the
+   // strings. Instead we sort an array of pointers to the strings. We
+   // build that array here.
+   const char **stringPtrs = new const char*[nStrings];
+   for (i = 0; i < nStrings; i++)
+       stringPtrs[i] = stringList[i].c_str();
+
+   // now, call qsort for this array of string pointers
+   qsort(stringPtrs, nStrings, sizeof(char *), CompareRelevantStrings);
+
+   int groupSize = nStrings / numGroups;
+   if (nStrings % numGroups)
+       groupSize++;
+   for (i = 0; i < nStrings; i++)
+   {
+       int groupNum = i / groupSize;
+       int groupIdx = i % groupSize;
+
+       if (groupIdx == 0)
+       {
+           vector<string> newGroup;
+           stringGroups.push_back(newGroup);
+       }
+       stringGroups[groupNum].push_back(stringPtrs[i]);
+    }
 }
 
 int

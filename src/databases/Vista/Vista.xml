@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
   <Plugin name="Vista" type="database" label="Vista" version="1.0" dbtype="STMD">
     <Extensions> vista </Extensions>
-    <Files components="E,M">avtVistaFileFormat.C avtVistaAle3dFileFormat.C avtVistaDiabloFileFormat.C StringHelpers.C</Files>
+    <Files components="E,M">avtVistaFileFormat.C avtVistaAle3dFileFormat.C avtVistaDiabloFileFormat.C</Files>
     <CXXFLAGS> $(SILO_INCLUDE) $(HDF5_INCLUDE) </CXXFLAGS>
     <LIBS>     $(SILO_LIB)     $(HDF5_LIB)     </LIBS>
   </Plugin>

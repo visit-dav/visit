@@ -34,7 +34,8 @@
 #define WINDOWINFO_RENDERINFO       16
 // Use when the window size could have changed.
 #define WINDOWINFO_WINDOWSIZE       32
-
+// Use when the window mode (WINMODE) needs to be updated
+#define WINDOWINFO_WINMODEONLY      64
 
 class AnimationAttributes;
 class AnnotationAttributes;

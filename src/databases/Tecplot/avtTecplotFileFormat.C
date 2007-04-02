@@ -19,13 +19,15 @@
 
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
-#include <visitstream.h>
+#include <Expression.h>
+#include <DebugStream.h>
 
 using std::string;
 using std::vector;
 #ifndef MAX
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #endif
+
 
 // ****************************************************************************
 //  Method:  avtTecplotFileFormat::PushBackToken
@@ -602,11 +604,14 @@ avtTecplotFileFormat::ParsePOINT(int numI, int numJ, int numK)
 //  Creation:    December 10, 2004
 //
 //  Modifications:
-//
 //    Hank Childs, Sat Mar  5 14:28:52 PST 2005
 //    Add call to 'clear' so that the file can be re-used on subsequent calls.
 //
+//    Brad Whitlock, Tue Jul 26 14:09:45 PST 2005
+//    I made it understand DATASETAUXDATA.
+//
 // ****************************************************************************
+
 void
 avtTecplotFileFormat::ReadFile()
 {
@@ -616,6 +621,15 @@ avtTecplotFileFormat::ReadFile()
     int numVars = 0;
     bool got_next_token_already = false;
     bool first_token = true;
+
+#define READING_UNTIL_END_OF_LINE !next_char_eof     &&\
+                                  tok != "TITLE"     &&\
+                                  tok != "VARIABLES" &&\
+                                  tok != "ZONE"      &&\
+                                  tok != "GEOMETRY"  &&\
+                                  tok != "TEXT"      &&\
+                                  tok != "DATASETAUXDATA"
+
     while (!next_char_eof)
     {
         got_next_token_already = false;
@@ -632,12 +646,7 @@ avtTecplotFileFormat::ReadFile()
         {
             // unsupported
             tok = GetNextToken();
-            while (!next_char_eof     &&
-                   tok != "TITLE"     &&
-                   tok != "VARIABLES" &&
-                   tok != "ZONE"      &&
-                   tok != "GEOMETRY"  &&
-                   tok != "TEXT")
+            while (READING_UNTIL_END_OF_LINE)
             {
                 // Skipping token
                 tok = GetNextToken();
@@ -648,12 +657,7 @@ avtTecplotFileFormat::ReadFile()
         {
             // unsupported
             tok = GetNextToken();
-            while (!next_char_eof     &&
-                   tok != "TITLE"     &&
-                   tok != "VARIABLES" &&
-                   tok != "ZONE"      &&
-                   tok != "GEOMETRY"  &&
-                   tok != "TEXT")
+            while (READING_UNTIL_END_OF_LINE)
             {
                 // Skipping token
                 tok = GetNextToken();
@@ -677,11 +681,11 @@ avtTecplotFileFormat::ReadFile()
                         tok[i] = '_';
                 }
 
-                if (tok == "X" || tok == "x")
+                if (tok == "X" || tok == "x" || tok == "I")
                 {
                     Xindex = numTotalVars;
                 }
-                else if (tok == "Y" || tok == "y")
+                else if (tok == "Y" || tok == "y" || tok == "J")
                 {
                     Yindex = numTotalVars;
                     spatialDimension = (spatialDimension < 2) ? 2 : spatialDimension;
@@ -712,11 +716,11 @@ avtTecplotFileFormat::ReadFile()
 
                 while (true)
                 {
-                    if (tok == "X" || tok == "x")
+                    if (tok == "X" || tok == "x" || tok == "I")
                     {
                         Xindex = numTotalVars;
                     }
-                    else if (tok == "Y" || tok == "y")
+                    else if (tok == "Y" || tok == "y" || tok == "J")
                     {
                         Yindex = numTotalVars;
                         spatialDimension = (spatialDimension < 2) ? 2 : spatialDimension;
@@ -852,6 +856,64 @@ avtTecplotFileFormat::ReadFile()
                 EXCEPTION2(InvalidFilesException, filename, msg);
             }
         }
+        else if(tok == "DATASETAUXDATA")
+        {
+            int  tokIndex = 0;
+            bool haveVectorExpr = false;
+            tok = GetNextToken();
+
+            while (READING_UNTIL_END_OF_LINE)
+            {
+                if(tokIndex == 0)
+                {
+                    haveVectorExpr = (tok == "VECTOR");
+                }
+                else if(tokIndex == 1)
+                {
+                    if(haveVectorExpr)
+                    {
+                        // Remove spaces
+                        std::string::size_type pos = tok.find(" ");
+                        while(pos != std::string::npos)
+                        {
+                            tok.replace(pos, 1, "");
+                            pos = tok.find(" ");
+                        }
+
+                        // Look for '('
+                        pos = tok.find("(");
+                        if(pos != std::string::npos)
+                        {
+                            std::string exprName(tok.substr(0, pos));
+                            std::string exprDef(tok.substr(pos, tok.size()-pos));
+
+                            exprDef.replace(0, 1, "{");
+
+                            // Replace ')' with '}'
+                            pos = exprDef.find(")");
+                            if(pos != std::string::npos)
+                            {
+                                exprDef.replace(pos, 1, "}");
+                                debug4 << "Expr name=" << exprName.c_str()
+                                       << ", Expr def=" << exprDef.c_str()
+                                       << endl;
+                                Expression newE;
+                                newE.SetName(exprName);
+                                newE.SetDefinition(exprDef);
+                                newE.SetType(Expression::VectorMeshVar);
+                                expressions.AddExpression(newE);
+                            }
+                        }
+                    }
+                }
+
+                // Skipping token
+                tok = GetNextToken();
+                ++tokIndex;
+            }
+
+            got_next_token_already = true;
+        }
         else if (first_token && token_was_string)
         {
             // Robust: assume it's a title
@@ -894,10 +956,14 @@ avtTecplotFileFormat::ReadFile()
 //  Programmer: Jeremy Meredith
 //  Creation:   November  7, 2004
 //
+//  Modifications:
+//    Brad Whitlock, Tue Jul 26 14:59:48 PST 2005
+//    Initialized expressions.
+//
 // ****************************************************************************
 
 avtTecplotFileFormat::avtTecplotFileFormat(const char *fname)
-    : avtSTMDFileFormat(&fname, 1)
+    : avtSTMDFileFormat(&fname, 1), expressions()
 {
     file_read = false;
     filename = fname;
@@ -942,10 +1008,12 @@ avtTecplotFileFormat::~avtTecplotFileFormat()
 //  Creation:   Fri Nov 5 15:44:16 PST 2004
 //
 //  Modifications:
-//
 //    Hank Childs, Sat Mar  5 10:03:47 PST 2005
 //    Do not blow away file name, because we will need that to re-read the file
 //    if asked.
+//
+//    Brad Whitlock, Tue Jul 26 14:59:03 PST 2005
+//    Clear the expression list.
 //
 // ****************************************************************************
 
@@ -986,6 +1054,7 @@ avtTecplotFileFormat::FreeUpResources(void)
     curveFirstVar.clear();
     curveSecondVar.clear();
     zoneTitles.clear();
+    expressions.ClearExpressions();
 }
 
 
@@ -999,6 +1068,10 @@ avtTecplotFileFormat::FreeUpResources(void)
 //
 //  Programmer: meredith -- generated by xml2avt
 //  Creation:   Fri Nov 5 15:44:16 PST 2004
+//
+//  Modifications:
+//    Brad Whitlock, Tue Jul 26 15:00:41 PST 2005
+//    I made it add expressions if there are any.
 //
 // ****************************************************************************
 
@@ -1114,6 +1187,10 @@ avtTecplotFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             }
         }
     }
+
+    // Add expressions to the metadata.
+    for(int i = 0; i < expressions.GetNumExpressions(); ++i)
+        md->AddExpression(new Expression(expressions[i]));
 }
 
 

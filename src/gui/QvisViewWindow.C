@@ -10,6 +10,7 @@
 #include <qlayout.h>
 #include <qlineedit.h>
 #include <qpushbutton.h>
+#include <qradiobutton.h>
 #include <qtabwidget.h>
 #include <qvbox.h>
 #include <qslider.h>
@@ -60,6 +61,7 @@ QvisViewWindow::QvisViewWindow(const char *caption, const char *shortName,
     view3d = 0;
     windowInfo = 0;
     activeTab = 1;
+    activeTabSetBySlot = false;
 }
 
 // ****************************************************************************
@@ -142,6 +144,8 @@ QvisViewWindow::~QvisViewWindow()
 //   Eric Brugger, Tue Feb 10 10:30:15 PST 2004
 //   I added center of rotation controls to the advanced tab.
 //
+//   Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
+//   Added stuff for auto full frame mode
 // ****************************************************************************
 
 void
@@ -209,13 +213,13 @@ QvisViewWindow::CreateWindowContents()
 
     QVBoxLayout *internalLayout2d = new QVBoxLayout(view2DGroup);
     internalLayout2d->addSpacing(10);
-    QGridLayout *Layout2d = new QGridLayout(internalLayout2d, 3, 2);
+    QGridLayout *Layout2d = new QGridLayout(internalLayout2d, 3, 4);
     Layout2d->setSpacing(5);
 
     viewportLineEdit = new QLineEdit(view2DGroup, "viewportLineEdit");
     connect(viewportLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processViewportText()));
-    Layout2d->addWidget(viewportLineEdit, 0, 1);
+    Layout2d->addMultiCellWidget(viewportLineEdit, 0, 0, 1, 4);
     QLabel *viewportLabel = new QLabel(viewportLineEdit, "Viewport",
                                        view2DGroup, "viewportLabel");
     Layout2d->addWidget(viewportLabel, 0, 0);
@@ -223,17 +227,26 @@ QvisViewWindow::CreateWindowContents()
     windowLineEdit = new QLineEdit(view2DGroup, "windowLineEdit");
     connect(windowLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processWindowText()));
-    Layout2d->addWidget(windowLineEdit, 1, 1);
+    Layout2d->addMultiCellWidget(windowLineEdit, 1, 1, 1, 4);
     QLabel *windowLabel = new QLabel(windowLineEdit, "Window",
                                      view2DGroup, "windowLabel");
     Layout2d->addWidget(windowLabel, 1, 0);
     internalLayout2d->addStretch(10);
 
-    fullFrameToggle = new QCheckBox("Full frame", view2DGroup,
-        "fullFrameToggle");
-    connect(fullFrameToggle, SIGNAL(toggled(bool)),
-            this, SLOT(fullFrameToggled(bool)));
-    Layout2d->addWidget(fullFrameToggle, 2, 1);
+    QLabel *fullFrameLabel = new QLabel("Full Frame", view2DGroup, "fullFrameLabel");
+    Layout2d->addWidget(fullFrameLabel, 2, 0);
+    fullFrameActivationMode = new QButtonGroup(0, "fullFrameActivationMode");
+    connect(fullFrameActivationMode, SIGNAL(clicked(int)),
+            this, SLOT(fullFrameActivationModeChanged(int)));
+    fullFrameAuto = new QRadioButton("Auto", view2DGroup, "Auto");
+    fullFrameActivationMode->insert(fullFrameAuto);
+    Layout2d->addWidget(fullFrameAuto, 2, 1);
+    fullFrameOn = new QRadioButton("On", view2DGroup, "On");
+    fullFrameActivationMode->insert(fullFrameOn);
+    Layout2d->addWidget(fullFrameOn, 2, 2);
+    fullFrameOff = new QRadioButton("Off", view2DGroup, "Off");
+    fullFrameActivationMode->insert(fullFrameOff);
+    Layout2d->addWidget(fullFrameOff, 2, 3);
 
     //
     // Add the simple controls for the 3d view.
@@ -620,6 +633,8 @@ QvisViewWindow::UpdateCurve(bool doAll)
 //   Eric Brugger, Thu Oct 16 12:22:54 PDT 2003
 //   I added full frame mode to the 2D view tab.
 //
+//   Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
+//   Added logic for auto full frame mode
 // ****************************************************************************
 
 void
@@ -650,9 +665,16 @@ QvisViewWindow::Update2D(bool doAll)
             break;
           }
         case 2: // fullframe.
-            fullFrameToggle->blockSignals(true);
-            fullFrameToggle->setChecked(view2d->GetFullFrame());
-            fullFrameToggle->blockSignals(false);
+            View2DAttributes::TriStateMode itmp;
+            itmp = view2d->GetFullFrameActivationMode();
+            fullFrameActivationMode->blockSignals(true);
+            if (itmp == View2DAttributes::On)
+               fullFrameActivationMode->setButton(1);
+            else if (itmp == View2DAttributes::Off)
+               fullFrameActivationMode->setButton(2);
+            else
+               fullFrameActivationMode->setButton(0);
+            fullFrameActivationMode->blockSignals(false);
             break;
         }
     }
@@ -691,6 +713,8 @@ QvisViewWindow::Update2D(bool doAll)
 //   Replaced simple QString::sprintf's with a setNum because there seems
 //   to be a bug causing numbers to be incremented by .00001.  See '5263.
 //
+//   Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
+//   Fixed confusion in indices for eyeAngle and perspective members
 // ****************************************************************************
 
 void
@@ -755,15 +779,15 @@ QvisViewWindow::Update3D(bool doAll)
             temp.setNum(view3d->GetImageZoom());
             imageZoomLineEdit->setText(temp);
             break;
-        case 9: // eyeAngle
-            temp.setNum(view3d->GetEyeAngle());
-            eyeAngleLineEdit->setText(temp);
-            UpdateEyeAngleSliderFromAtts();
-            break;
-        case 10: // perspective.
+        case 9: // perspective.
             perspectiveToggle->blockSignals(true);
             perspectiveToggle->setChecked(view3d->GetPerspective());
             perspectiveToggle->blockSignals(false);
+            break;
+        case 10: // eyeAngle
+            temp.setNum(view3d->GetEyeAngle());
+            eyeAngleLineEdit->setText(temp);
+            UpdateEyeAngleSliderFromAtts();
             break;
         case 11: // centerOfRotationSet.
             centerToggle->blockSignals(true);
@@ -803,6 +827,9 @@ QvisViewWindow::Update3D(bool doAll)
 //   Eric Brugger, Fri Apr 18 11:47:08 PDT 2003
 //   I removed auto center view.
 //
+//   Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
+//   Fixed confusion in indices of members of WindowInformation and case labels 
+//   Added logic for setting tab to whatever the active window's mode is.
 // ****************************************************************************
 
 void
@@ -818,41 +845,37 @@ QvisViewWindow::UpdateGlobal(bool doAll)
 
         switch(i)
         {
-        case 0: // windowMode
-        case 1: // boundingBoxNavigate
-            break;
-        case 2: // spin
-        case 3: // perspective
-            break;
-        case 4: // lockView
+        case 10: // lockView
             lockedViewToggle->blockSignals(true);
             lockedViewToggle->setChecked(windowInfo->GetLockView());
             lockedViewToggle->blockSignals(false);
             break;
-        case 5: // viewExtentsType
+        case 13: // viewExtentsType
             extentComboBox->blockSignals(true);
             extentComboBox->setCurrentItem(windowInfo->GetViewExtentsType());
             extentComboBox->blockSignals(false);
             break;
-        case 6: // viewDimension
-            // Do not change the active pane anymore.
-            break;
-        case 7:  // lastRenderMin
-        case 8:  // lastRenderAvg
-        case 9:  // lastRenderMax
-        case 10: // numTriangles
-        case 11: // extents, 6
-        case 12: // lockTools
-        case 13: // lockTime
-            break;
-        case 14: // cameraViewMode
+        case 16: // cameraViewMode
             copyViewFromCameraToggle->blockSignals(true);
             copyViewFromCameraToggle->setChecked(
                                               windowInfo->GetCameraViewMode());
             copyViewFromCameraToggle->blockSignals(false);
             break;
-        case 15: // fullFrame
+        case 24: // winMode
+            if (!activeTabSetBySlot)
+            {
+                tabs->blockSignals(true);
+                switch(windowInfo->GetWinMode())
+                {
+                    case 0: activeTab = 1; tabs->showPage(page2D); break;
+                    case 1: activeTab = 2; tabs->showPage(page3D); break;
+                    case 2: activeTab = 0; tabs->showPage(pageCurve); break;
+                    default: break;
+                }
+                tabs->blockSignals(false);
+            }
             break;
+        default: break;
         }
     }
 }
@@ -2306,6 +2329,18 @@ QvisViewWindow::show()
 {
     QvisPostableWindowSimpleObserver::show();
 
+    if (windowInfo != 0)
+    {
+        switch(windowInfo->GetWinMode())
+        {
+            case 0: activeTab = 1; break;
+            case 1: activeTab = 2; break;
+            case 2: activeTab = 0; break;
+            default: break;
+        }
+        activeTabSetBySlot = false;
+    }
+
     tabs->blockSignals(true);
     if(activeTab == 0)
         tabs->showPage(pageCurve);
@@ -2367,6 +2402,7 @@ QvisViewWindow::tabSelected(const QString &tabLabel)
         activeTab = 2;
     else
         activeTab = 3;
+    activeTabSetBySlot = true;
 }
 
 //
@@ -2410,14 +2446,6 @@ QvisViewWindow::processWindowText()
 {
     GetCurrentValues(1);
     Apply();    
-}
-
-void
-QvisViewWindow::fullFrameToggled(bool val)
-{
-    view2d->SetFullFrame(val);
-    SetUpdate(false);
-    Apply();
 }
 
 //
@@ -2809,4 +2837,26 @@ QvisViewWindow::processCenterText()
 {
     GetCurrentValues(14);
     Apply();    
+}
+
+// ****************************************************************************
+// Method: QvisViewWindow::fullFrameActivationModeChanged
+//
+// Purpose: Qt slot function to handle changes in full frame mode 
+//
+// Programmer: Mark C. Miller 
+// Creation:   July 5, 2005 
+//
+// ****************************************************************************
+void
+QvisViewWindow::fullFrameActivationModeChanged(int val)
+{
+    if (val == 0)
+        view2d->SetFullFrameActivationMode(View2DAttributes::Auto);
+    else if (val == 1)
+        view2d->SetFullFrameActivationMode(View2DAttributes::On);
+    else
+        view2d->SetFullFrameActivationMode(View2DAttributes::Off);
+    SetUpdate(false);
+    Apply();
 }

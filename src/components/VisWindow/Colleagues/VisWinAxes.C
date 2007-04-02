@@ -779,16 +779,18 @@ VisWinAxes::AdjustRange(float min_x, float max_x, float min_y, float max_y)
 //    Akira Haddox, Wed Jul 16 16:48:20 PDT 2003
 //    Added special case for when range is zero.
 //
+//    Mark C. Miller, Wed Jul 27 08:39:38 PDT 2005
+//    Moved test for non-positive range to *before* call to log10
+//
 // ****************************************************************************
 
 int
 Digits(float min, float max)
 {
     float  range = max - min;
-    float  pow10   = log10(range);
-
-    if (range <= 0)
-        pow10 = -5;
+    float  pow10 = -5.0;
+    if (range > 0)
+        pow10 = log10(range);
 
     int    ipow10  = (int)floor(pow10);
 

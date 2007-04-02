@@ -784,10 +784,14 @@ PDBFileObject::SymbolExists(const char *name, TypeEnum *t,
     syment *ep = 0;
 
     // Indicate that there is no type initially.
-    *t = NO_TYPE;
-    *nTotalElements = 0;
-    *dimensions = 0;
-    *nDims = 0;
+    if (t)
+        *t = NO_TYPE;
+    if (nTotalElements)
+        *nTotalElements = 0;
+    if (dimensions)
+        *dimensions = 0;
+    if (nDims)
+        *nDims = 0;
 
     if(AutoOpen())
     {
@@ -835,32 +839,39 @@ PDBFileObject::SymbolExists(const char *name, TypeEnum *t,
             debug4 << "}" << endl;
 
             // Set some of the return values.
-            *dimensions = dims;
-            *nDims = nd;
-            *nTotalElements = length;
+            if (dimensions)
+                *dimensions = dims;
+            if (nDims)
+                *nDims = nd;
+            if (nTotalElements)
+                *nTotalElements = length;
 
             //
             // Take the storage type along with the length to determine the real
             // type that we want to report. Also allocate memory for the
             // variable.
             //
-            retval = true;
-            if(strcmp(PD_entry_type(ep), "char") == 0 ||
-               strcmp(PD_entry_type(ep), "string") == 0)
-                *t = (length > 1) ? CHARARRAY_TYPE : CHAR_TYPE;
-            else if(strcmp(PD_entry_type(ep), "int") == 0 ||
-                    strcmp(PD_entry_type(ep), "integer") == 0)
-                *t = (length > 1) ? INTEGERARRAY_TYPE : INTEGER_TYPE;
-            else if(strcmp(PD_entry_type(ep), "float") == 0)
-                *t = (length > 1) ? FLOATARRAY_TYPE : FLOAT_TYPE;
-            else if(strcmp(PD_entry_type(ep), "double") == 0)
-                *t = (length > 1) ? DOUBLEARRAY_TYPE : DOUBLE_TYPE;
-            else if(strcmp(PD_entry_type(ep), "long") == 0)
-                *t = (length > 1) ? LONGARRAY_TYPE : LONG_TYPE;
-            else
+            if (t)
             {
-                *t = OBJECT_TYPE;
+                if(strcmp(PD_entry_type(ep), "char") == 0 ||
+                   strcmp(PD_entry_type(ep), "string") == 0)
+                    *t = (length > 1) ? CHARARRAY_TYPE : CHAR_TYPE;
+                else if(strcmp(PD_entry_type(ep), "int") == 0 ||
+                        strcmp(PD_entry_type(ep), "integer") == 0)
+                    *t = (length > 1) ? INTEGERARRAY_TYPE : INTEGER_TYPE;
+                else if(strcmp(PD_entry_type(ep), "float") == 0)
+                    *t = (length > 1) ? FLOATARRAY_TYPE : FLOAT_TYPE;
+                else if(strcmp(PD_entry_type(ep), "double") == 0)
+                    *t = (length > 1) ? DOUBLEARRAY_TYPE : DOUBLE_TYPE;
+                else if(strcmp(PD_entry_type(ep), "long") == 0)
+                    *t = (length > 1) ? LONGARRAY_TYPE : LONG_TYPE;
+                else
+                {
+                    *t = OBJECT_TYPE;
+                }
             }
+
+            retval = true;
         }
     }
 

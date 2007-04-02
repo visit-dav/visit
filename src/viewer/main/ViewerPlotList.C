@@ -42,7 +42,6 @@
 
 #include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
-#include <avtPlot.h>
 #include <avtToolInterface.h>
 #include <ExprNode.h>
 
@@ -7922,4 +7921,52 @@ int
 ViewerPlotList::GetWindowId() const
 {
     return window->GetWindowId();
+}
+
+// ****************************************************************************
+//  Method:  ViewerPlotList::DoAllPlotsAxesHaveSameUnits
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    July 15, 2005 
+//
+// ****************************************************************************
+bool
+ViewerPlotList::DoAllPlotsAxesHaveSameUnits() const
+{
+    int i;
+    bool first = true;
+    std::string theUnits = "";
+    for (i = 0; i < nPlots; i++)
+    {
+        if (plots[i].realized)
+        {
+            avtActor_p actor = plots[i].plot->GetActor();
+
+            if (*actor != NULL)
+            {
+                avtDataObject_p dob = actor->GetDataObject();
+
+                if (*dob != NULL)
+                {
+                    avtDataAttributes &datts = dob->GetInfo().GetAttributes();
+                    if (first)
+                    {
+                        if (datts.GetXUnits() != "")
+                            theUnits = datts.GetXUnits();
+                        else if (datts.GetYUnits() != "")
+                            theUnits = datts.GetYUnits();
+                        else if (datts.GetZUnits() != "")
+                            theUnits = datts.GetZUnits();
+                        if (theUnits != "")
+                            first = false;
+                    }
+                    if ((datts.GetXUnits() != "" && datts.GetXUnits() != theUnits) ||
+                        (datts.GetYUnits() != "" && datts.GetYUnits() != theUnits) ||
+                        (datts.GetZUnits() != "" && datts.GetZUnits() != theUnits))
+                        return false;
+                }
+            }
+        }
+    }
+    return true;
 }

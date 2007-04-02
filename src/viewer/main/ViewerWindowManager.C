@@ -2157,6 +2157,9 @@ ViewerWindowManager::SetViewCurveFromClient()
 //    Eric Brugger, Thu Oct 16 14:32:08 PDT 2003
 //    I added a full frame mode to the 2d view.
 //
+//    Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
+//    Added logic to manage auto full frame mode
+//
 // ****************************************************************************
 
 void
@@ -2172,7 +2175,22 @@ ViewerWindowManager::SetView2DFromClient()
         view2d.viewport[i] = viewport[i];
         view2d.window[i]   = window[i];
     }
-    view2d.fullFrame = view2DClientAtts->GetFullFrame();
+
+    if (view2DClientAtts->GetFullFrameActivationMode() ==
+        View2DAttributes::Auto)
+    {
+        double extents[4];
+        windows[activeWindow]->GetExtents(2, extents);
+        bool newFullFrameMode = view2DClientAtts->GetUseFullFrame(extents);
+        ViewerPlotList *pl = windows[activeWindow]->GetPlotList();
+        if (pl && !pl->DoAllPlotsAxesHaveSameUnits())
+            newFullFrameMode = true;
+        view2d.fullFrame = newFullFrameMode; 
+    }
+    else
+    {
+        view2d.fullFrame = view2DClientAtts->GetUseFullFrame();
+    }
 
     //
     // Set the 2D view for the active viewer window.
@@ -3840,6 +3858,9 @@ ViewerWindowManager::UpdateGlobalAtts() const
 //    Eric Brugger, Wed Aug 20 13:22:14 PDT 2003
 //    I split the view attributes into 2d and 3d parts.
 //
+//    Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
+//    Added logic to UpdateWindowInformation, win mode only so that GUI
+//    would know what WINMODE the window is in
 // ****************************************************************************
 
 void
@@ -3853,6 +3874,8 @@ ViewerWindowManager::UpdateViewAtts(int windowIndex, bool updateCurve,
 
     if(index == activeWindow || windows[index]->GetViewIsLocked())
     {
+        bool haveNotified = false;
+
         //
         // Set the curve attributes from the window's view.
         //
@@ -3860,6 +3883,7 @@ ViewerWindowManager::UpdateViewAtts(int windowIndex, bool updateCurve,
         {
             viewCurve.SetToViewCurveAttributes(viewCurveClientAtts);
             viewCurveClientAtts->Notify();
+            haveNotified = true;
         }
 
         //
@@ -3869,6 +3893,7 @@ ViewerWindowManager::UpdateViewAtts(int windowIndex, bool updateCurve,
         {
             view2d.SetToView2DAttributes(view2DClientAtts);
             view2DClientAtts->Notify();
+            haveNotified = true;
         }
 
         //
@@ -3878,7 +3903,11 @@ ViewerWindowManager::UpdateViewAtts(int windowIndex, bool updateCurve,
         {
             view3d.SetToView3DAttributes(view3DClientAtts);
             view3DClientAtts->Notify();
+            haveNotified = true;
         }
+
+        if(haveNotified)
+            UpdateWindowInformation(WINDOWINFO_WINMODEONLY, index);
     }
      
     //
@@ -6490,6 +6519,10 @@ ViewerWindowManager::GetWindowInformation()
 //   list of time states. Finally, I added the flags argument so we can
 //   do partial sends of data to the client.
 //
+//   Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
+//   Fixed problem where windowInfo->SetWindowMode was called twice, once
+//   with interaction mode and once with window mode. Added calls to
+//   windowInfo->SetWinMode()
 // ****************************************************************************
 
 void
@@ -6553,12 +6586,12 @@ ViewerWindowManager::UpdateWindowInformation(int flags, int windowIndex)
         //
         if((flags & WINDOWINFO_WINDOWFLAGS) != 0)
         {
-            windowInfo->SetWindowMode(int(win->GetInteractionMode()));
+            windowInfo->SetInteractionMode(int(win->GetInteractionMode()));
             windowInfo->SetBoundingBoxNavigate(win->GetBoundingBoxMode());
             windowInfo->SetSpin(win->GetSpinMode());
             windowInfo->SetLockView(win->GetViewIsLocked());
             windowInfo->SetViewExtentsType(int(win->GetViewExtentsType()));
-            windowInfo->SetWindowMode(win->GetWindowMode());
+            windowInfo->SetWinMode(win->GetWindowMode());
             windowInfo->SetPerspective(win->GetPerspectiveProjection());
             windowInfo->SetLockTools(win->GetToolLock());
             windowInfo->SetLockTime(win->GetTimeLock());
@@ -6568,6 +6601,12 @@ ViewerWindowManager::UpdateWindowInformation(int flags, int windowIndex)
             // indicate if we're in scalable rendering mode
             windowInfo->SetUsingScalableRendering(win->GetScalableRendering());
         }
+
+        //
+        // Set WINMODE only
+        //
+        if ((flags & WINDOWINFO_WINMODEONLY) != 0)
+            windowInfo->SetWinMode(win->GetWindowMode());
 
         //
         // Get the window size.

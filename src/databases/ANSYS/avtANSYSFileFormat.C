@@ -144,7 +144,9 @@ avtANSYSFileFormat::ActivateTimestep()
 // Creation:   Wed Jul 6 16:00:08 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Jul 27 10:55:58 PDT 2005
+//   Fixed for win32.
+//
 // ****************************************************************************
 
 bool
@@ -212,7 +214,11 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
 
         // Get the line
         ifile.getline(line, 1024);
+#if defined(_WIN32)
+        int linelen = strlen(line);
+#else
         int linelen = strlen(line)-1; // account for the end of line char.
+#endif
 
         // Determine what the line is for.
         bool rightLength = (linelen == expectedLineLength);

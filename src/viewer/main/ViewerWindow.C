@@ -1252,7 +1252,7 @@ ViewerWindow::SetViewKeyframe()
         const avtView2D &view2d = visWindow->GetView2D();
         curView2D->SetWindowCoords(view2d.window);
         curView2D->SetViewportCoords(view2d.viewport);
-        curView2D->SetFullFrame(view2d.fullFrame);
+        curView2D->SetUseFullFrame(view2d.fullFrame);
         view2DAtts->SetAtts(curIndex, curView2D);
 
         //
@@ -2418,14 +2418,24 @@ ViewerWindow::SetViewCurve(const avtViewCurve &v)
 //    Eric Brugger, Thu Apr 22 15:18:37 PDT 2004
 //    I renamed haveRenderedIn2d to viewSetIn2d, since it was more accurate.
 //
+//    Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
+//    Added logic to adjust setting the viewSetIn2d bool if the only thing
+//    that changed is is fullFrame
 // ****************************************************************************
 
 void
 ViewerWindow::SetView2D(const avtView2D &v)
 {
+    const avtView2D& oldView = visWindow->GetView2D();
+    avtView2D oldViewCopy = oldView;
+    oldViewCopy.fullFrame = v.fullFrame;
+
     visWindow->SetView2D(v);
 
-    viewSetIn2d = true;
+    if (oldViewCopy == v)
+        viewSetIn2d = false;
+    else
+        viewSetIn2d = true;
 
     viewModified2d = true;
 }
@@ -4330,6 +4340,8 @@ ViewerWindow::SetInitialView3d()
 //    I renamed haveRenderedInCurve to viewSetInCurve, since it was more
 //    accurate.
 //
+//    Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
+//    Made it set bools appropriately for call to vwm->UpdateViewAtts
 // ****************************************************************************
 
 void
@@ -4359,7 +4371,7 @@ ViewerWindow::UpdateViewCurve(const double *limits)
             visWindow->UpdateView();
         }
 
-        ViewerWindowManager::Instance()->UpdateViewAtts();
+        ViewerWindowManager::Instance()->UpdateViewAtts(-1, true, false, false);
     }
     //
     // If the centering is invalid or if maintain view is off, the view has
@@ -4394,7 +4406,7 @@ ViewerWindow::UpdateViewCurve(const double *limits)
             RecenterViewCurve(limits);
         }
 
-        ViewerWindowManager::Instance()->UpdateViewAtts();
+        ViewerWindowManager::Instance()->UpdateViewAtts(-1, true, false, false);
     }
     //
     // Update the view to scale any new plots appropriately.
@@ -4443,11 +4455,33 @@ ViewerWindow::UpdateViewCurve(const double *limits)
 //    Eric Brugger, Thu Apr 22 15:18:37 PDT 2004
 //    I renamed haveRenderedIn2d to viewSetIn2d, since it was more accurate.
 //
+//    Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
+//    Added logic to support auto full frame mode. Made call to
+//    vwm->UpdateViewAtts use appropriate bool flags
 // ****************************************************************************
 
 void
 ViewerWindow::UpdateView2d(const double *limits)
 {
+    const View2DAttributes *view2dAtts = ViewerWindowManager::Instance()->
+                                             GetView2DClientAtts();
+
+    if (view2dAtts->GetFullFrameActivationMode() == View2DAttributes::Auto)
+    {
+        const bool currentFullFrameMode = GetFullFrameMode();
+        bool newFullFrameMode = view2dAtts->GetUseFullFrame(limits); 
+
+        // if plot's units are different, that overrides other considerations 
+        if (plotList)
+        {
+            if (!plotList->DoAllPlotsAxesHaveSameUnits())
+                newFullFrameMode = true;
+        }
+            
+        if (currentFullFrameMode != newFullFrameMode)
+            SetFullFrameMode(newFullFrameMode);
+    }
+        
     //
     // If this is the first time that this routine is being called for this
     // window, set the limits and reset the view.
@@ -4465,7 +4499,7 @@ ViewerWindow::UpdateView2d(const double *limits)
             ResetView2d();
         }
 
-        ViewerWindowManager::Instance()->UpdateViewAtts();
+        ViewerWindowManager::Instance()->UpdateViewAtts(-1, false, true, false);
     }
     //
     // If the centering is invalid or if maintain view is off, the view has
@@ -4500,7 +4534,7 @@ ViewerWindow::UpdateView2d(const double *limits)
             RecenterView2d(limits);
         }
 
-        ViewerWindowManager::Instance()->UpdateViewAtts();
+        ViewerWindowManager::Instance()->UpdateViewAtts(-1, false, true, false);
     }
 
     viewSetIn2d = true;
@@ -4550,6 +4584,9 @@ ViewerWindow::UpdateView2d(const double *limits)
 //    I also added viewPartialSetIn3d to distinguish the view being set from
 //    a session file and from the client.
 //
+//    Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
+//    Added bools to call to vwm->UpdateViewAtts
+//
 // ****************************************************************************
 
 void
@@ -4579,7 +4616,7 @@ ViewerWindow::UpdateView3d(const double *limits)
             }
         }
 
-        ViewerWindowManager::Instance()->UpdateViewAtts();
+        ViewerWindowManager::Instance()->UpdateViewAtts(-1, false, false, true);
     }
     //
     // If the centering is invalid or if maintain view is off and the limits
@@ -4618,7 +4655,7 @@ ViewerWindow::UpdateView3d(const double *limits)
             AdjustView3d(limits);
         }
 
-        ViewerWindowManager::Instance()->UpdateViewAtts();
+        ViewerWindowManager::Instance()->UpdateViewAtts(-1, false, false, true);
     }
 
     viewSetIn3d = true;

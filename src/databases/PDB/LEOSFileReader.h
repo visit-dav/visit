@@ -26,6 +26,9 @@ using std::map;
 // Modifications:
 //   Mark C. Miller, Thu Jun 17 23:07:34 PDT 2004
 //   Added matNameMap data member, GetCurve
+//   
+//   Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
+//   Added xdim/ydim data members to var info
 // ****************************************************************************
 
 class LEOSFileReader : public PDBReader
@@ -45,6 +48,8 @@ protected:
     // struct to organize eos variable information 
     typedef struct _eosVarInfo {
         int ndims;
+        int xdim;      // size in x (obtained directly from PDB variable)
+        int ydim;      // size in y (obtained directly from PDB variable)
 
         string vName;  // name of PDB symbol containing variable data
         string vUnits; // units of variable data

@@ -10,6 +10,7 @@
 #include <vector>
 #include <map>
 #include <visitstream.h>
+#include <ExpressionList.h>
 
 class vtkFloatArray;
 class vtkPoints;
@@ -27,6 +28,9 @@ class vtkUnstructuredGrid;
 //  Modifications:
 //    Jeremy Meredith, Thu Mar 17 09:37:26 PST 2005
 //    Fixed memory leak.
+//
+//    Brad Whitlock, Tue Jul 26 14:57:47 PST 2005
+//    Added expressions.
 //
 // ****************************************************************************
 
@@ -65,6 +69,7 @@ class avtTecplotFileFormat : public avtSTMDFileFormat
     bool next_char_eol;
     bool token_was_string;
     std::string filename;
+    ExpressionList expressions;
 
     int Xindex;
     int Yindex;
