@@ -552,6 +552,9 @@ dnl
 dnl    Brad Whitlock, Wed Jul 13 09:36:25 PDT 2005
 dnl    Updated MacOS X start address due to library size changes.
 dnl
+dnl    Brad Whitlock, Tue Aug 9 17:31:30 PST 2005
+dnl    I added checks for netCDF.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -2277,6 +2280,53 @@ AC_SUBST(VISUS_INCLUDE)
 AC_SUBST(VISUS_LIB)
 
 #
+# Look for netCDF
+#
+AC_MSG_CHECKING(for netCDF)
+NETCDF=""
+NETCDF_INCLUDE=""
+NETCDF_LIB=""
+AC_ARG_WITH(netcdf,
+	    [  --with-netcdf=INC-DIR,LIB-DIR     Location of netCDF header and library],
+           netcdf_specified="yes",
+           netcdf_specified="no"
+           )
+if test "$SHORT_UNAME" = "darwin"; then
+    NETCDF_LIBEXT="dylib"
+else
+    NETCDF_LIBEXT="a"
+fi
+if test "$hdf5_specified" = "yes"; then
+   if test "$withval" != "no"; then
+      NETCDF_INCLUDE="-I`echo $withval |cut -f1 -d,`"
+      NETCDF_LIB="`echo $withval |cut -f2 -d, -s`/libnetcdf.$NETCDF_LIBEXT"
+   fi
+else
+   if test "$DEFAULT_NETCDF_INCLUDE" != "" ; then
+      NETCDF_INCLUDE="-I$DEFAULT_NETCDF_INCLUDE $NETCDF_INCLUDE"
+   fi
+   if test "$DEFAULT_NETCDF_LIB" != "" ; then
+      NETCDF_LIB="$DEFAULT_NETCDF_LIB/libnetcdf.$NETCDF_LIBEXT $NETCDF_LIB"
+   fi
+fi
+if test "$NETCDF_LIB" != "" ; then
+   if test "$NETCDF_INCLUDE" != "" ; then
+      HDF5="$""(NETCDF)"
+      AC_MSG_RESULT(yes)
+      AC_DEFINE(HAVE_NETCDF_H)
+      AC_DEFINE(HAVE_LIBNETCDF)
+   else
+      AC_MSG_RESULT(no)
+   fi
+else
+   AC_MSG_RESULT(no)
+fi
+AC_SUBST(NETCDF)
+AC_SUBST(NETCDF_INCLUDE)
+AC_SUBST(NETCDF_LIB)
+
+
+#
 # Add Some include paths to the engine's CPPFLAGS.
 #
 ENGINE_CPPFLAGS="$ENGINE_CPPFLAGS $VTK_INCLUDES"
@@ -2801,14 +2851,15 @@ AC_SUBST(ENGINEWRAPPAR)
 
 #
 # This helps the Makefile in the lib directory make the right links
-# to Silo, Mili, HDF4, and HDF5. It is only needed on MacOS X because on
-# other platforms, these libraries are statically linked into the
-# database plugins and on MacOS X they are dynamically linked.
+# to Silo, Mili, HDF4, HDF5, and NETCDF. It is only needed on MacOS X
+# because on other platforms, these libraries are statically linked into
+# the database plugins and on MacOS X they are dynamically linked.
 #
 CREATE_SILO_LINK=""
 CREATE_MILI_LINK=""
 CREATE_HDF4_LINK=""
 CREATE_HDF5_LINK=""
+CREATE_NETCDF_LINK=""
 case $SHORT_UNAME in
   darwin)
     if test "$SILO_LIB" != "" ; then
@@ -2823,12 +2874,16 @@ case $SHORT_UNAME in
     if test "$HDF5_LIB" != "" ; then
         CREATE_HDF5_LINK="create_hdf5_link"
     fi
+    if test "$NETCDF_LIB" != "" ; then
+        CREATE_NETCDF_LINK="create_netcdf_link"
+    fi
   ;;
 esac
 AC_SUBST(CREATE_SILO_LINK)
 AC_SUBST(CREATE_MILI_LINK)
 AC_SUBST(CREATE_HDF4_LINK)
 AC_SUBST(CREATE_HDF5_LINK)
+AC_SUBST(CREATE_NETCDF_LINK)
 
 #
 # Check for library functions that can work around, or that we have
