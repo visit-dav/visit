@@ -12,6 +12,10 @@
  *  Programmer:  Jeremy Meredith
  *  Creation:    April  4, 2005
  *
+ *  Modifications:
+ *    Shelly Prevost, Wed Jan 25 08:52:18 PST 2006
+ *    Added a guifile argument to VisItInitializeSocketAndDumpSimFile.
+ *
  *****************************************************************************/
 #ifdef __cplusplus
 extern "C" {
@@ -28,7 +32,8 @@ int   VisItSetupEnvironment(void);
 int   VisItInitializeSocketAndDumpSimFile(const char *name,
                                           const char *comment,
                                           const char *path,
-                                          const char *inputfile);
+                                          const char *inputfile,
+                                          const char *guifile);
 int   VisItDetectInput(int blocking, int consoledesc);
 int   VisItAttemptToCompleteConnection(void);
 void  VisItSetSlaveProcessCallback(void(*)(void));

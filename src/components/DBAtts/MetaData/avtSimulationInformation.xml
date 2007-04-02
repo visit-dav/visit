@@ -16,9 +16,11 @@
     </Field>
     <Field name="otherValues" label="otherValues" type="stringVector">
     </Field>
-    <Field name="commands" label="commands" type="attVector" subtype="avtSimulationCommandSpecification">
+    <Field name="genericCommands" label="genericCommands" type="attVector" subtype="avtSimulationCommandSpecification">
     </Field>
     <Field name="mode" label="mode" type="enum" subtype="RunMode">
       Unknown
+    </Field>
+    <Field name="customCommands" label="customCommands" type="attVector" subtype="avtSimulationCommandSpecification">
     </Field>
   </Attribute>

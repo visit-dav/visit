@@ -1,5 +1,10 @@
 #include <QvisSimulationWindow.h>
 #include <qlabel.h>
+#include <qlineedit.h>
+#include <qtextedit.h>
+#include <qcheckbox.h>
+#include <qdial.h>
+#include <qslider.h>
 #include <qlayout.h>
 #include <qprogressbar.h>
 #include <qpushbutton.h>
@@ -8,15 +13,26 @@
 #include <qmessagebox.h>
 #include <qlineedit.h>
 #include <qlistview.h>
+#include <qlcdnumber.h>
+#include <qwidgetfactory.h>
+#include <qobjectlist.h>
+#include <qtable.h>
+#include <qprogressbar.h>
+#include <qradiobutton.h> 
+#include <qspinbox.h>
+#include <qmetaobject.h>
+#include <qdatetimeedit.h>
+#include <qfile.h>
 
+#include <DebugStream.h>
 #include <EngineList.h>
+#include <SimCommandSlots.h>
 #include <StatusAttributes.h>
 #include <ViewerProxy.h>
 #include <avtSimulationInformation.h>
 #include <avtSimulationCommandSpecification.h>
 #include <QualifiedFilename.h>
 #include <time.h>
-#include <string>
 #include <string>
 
 using std::string;
@@ -32,6 +48,8 @@ using std::vector;
 // Creation:   March 21, 2005
 //
 // Modifications:
+//   Shelly Prevost, Tue Jan 24 17:06:49 PST 2006
+//   Added a custom simulation control window.
 //   
 // ****************************************************************************
 
@@ -45,6 +63,7 @@ QvisSimulationWindow::QvisSimulationWindow(EngineList *engineList,
     caller = engines;
     statusAtts = 0;
     metadata = new avtDatabaseMetaData;
+    DynamicCommandsWin = NULL;
 }
 
 // ****************************************************************************
@@ -84,6 +103,8 @@ QvisSimulationWindow::~QvisSimulationWindow()
 // Creation:   March 21, 2005
 //
 // Modifications:
+//   Shelly Prevost, Tue Jan 24 17:06:49 PST 2006
+//   Added a custom simulation control window.
 //
 // ****************************************************************************
 
@@ -123,7 +144,7 @@ QvisSimulationWindow::CreateWindowContents()
 
     totalProgressBar = new QProgressBar(central, "totalProgressBar");
     totalProgressBar->setTotalSteps(100);
-    progressLayout->addWidget(totalProgressBar);
+    //progressLayout->addWidget(totalProgressBar);
 
     QGridLayout *buttonLayout1 = new QGridLayout(topLayout, 1, 3);
     buttonLayout1->setSpacing(10);
@@ -143,15 +164,41 @@ QvisSimulationWindow::CreateWindowContents()
     clearCacheButton->setEnabled(false);
     buttonLayout1->addWidget(clearCacheButton, 0, 1);
 
+    CreateCommandUI();
+
+    topLayout->addSpacing(10);
+}
+
+// ****************************************************************************
+// Method: void QvisSimulationWindow::CreateCommandUI()
+//
+// Purpose:
+//   Updates the ui components in the Costom UI popup. It check for matches
+//   between ui updates sent from the simulations to ui components in the
+//   custom ui popup. If it finds a match it update the ui component.
+//
+// Programmer: Shelly Prevost
+// Creation:   December 21, 2005
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisSimulationWindow::CreateCommandUI()
+{
+    int simindex = simCombo->currentItem();
+    int index = simulationToEngineListMap[simindex];
+
+    // Create the group box and generic buttons.
     QGroupBox *commandGroup = new QGroupBox(central, "commandGroup");
     commandGroup->setTitle("Commands");
     topLayout->addWidget(commandGroup);
     QVBoxLayout *cmdTopLayout = new QVBoxLayout(commandGroup);
     cmdTopLayout->setMargin(10);
     cmdTopLayout->addSpacing(15);
-
     QGridLayout *buttonLayout2 = new QGridLayout(cmdTopLayout, 3, 3);
-    for (int r=0; r<3; r++)
+    for (int r=0; r<2; r++)
     {
         for (int c=0; c<3; c++)
         {
@@ -159,29 +206,135 @@ QvisSimulationWindow::CreateWindowContents()
             buttonLayout2->addWidget(cmdButtons[r*3+c],r,c);
         }
     }
+
+    // connect up the generic buttons
     connect(cmdButtons[0],SIGNAL(clicked()),this,SLOT(executePushButtonCommand0()));
     connect(cmdButtons[1],SIGNAL(clicked()),this,SLOT(executePushButtonCommand1()));
     connect(cmdButtons[2],SIGNAL(clicked()),this,SLOT(executePushButtonCommand2()));
     connect(cmdButtons[3],SIGNAL(clicked()),this,SLOT(executePushButtonCommand3()));
     connect(cmdButtons[4],SIGNAL(clicked()),this,SLOT(executePushButtonCommand4()));
-    connect(cmdButtons[5],SIGNAL(clicked()),this,SLOT(executePushButtonCommand5()));
-    connect(cmdButtons[6],SIGNAL(clicked()),this,SLOT(executePushButtonCommand6()));
-    connect(cmdButtons[7],SIGNAL(clicked()),this,SLOT(executePushButtonCommand7()));
-    connect(cmdButtons[8],SIGNAL(clicked()),this,SLOT(executePushButtonCommand8()));
-    /*
-      simCommandEdit = new QLineEdit(central, "simCommandEdit");
-      topLayout->addWidget(simCommandEdit);
-      connect(simCommandEdit, SIGNAL(returnPressed()),
-              this, SLOT(executeSimCommand()));
-    */
+    connect(cmdButtons[5],SIGNAL(clicked()),this,SLOT(showCommandWindow()));
+    
+    // get ui filename from value array
+    QString key;
+    QString uiFilename("defaultUI.ui");
 
-    topLayout->addSpacing(10);
+    // Check for a valid engine.
+    const stringVector &s = engines->GetEngines();
+    if (index == -1 || s.size() < 1)
+    {
+        QMessageBox::warning(this, "No Valid engines found", "",
+                             "Ok", 0, 0, 1);
+        QDialog *NoUI = new QDialog(0, "No Custom Interface");
+        DynamicCommandsWin = NoUI;
+        return;
+    }
+ 
+    key.sprintf("%s:%s",
+                engines->GetEngines()[index].c_str(),
+                engines->GetSimulationName()[index].c_str());
+                    
+    avtDatabaseMetaData *md = metadataMap[key];
+    QListViewItem *item;
+
+    const vector<string> &names  = md->GetSimInfo().GetOtherNames();
+    const vector<string> &values = md->GetSimInfo().GetOtherValues();
+                  
+    for (int i=0; i<names.size(); i++)
+    {
+        if ( !strcmp(names[i].c_str(),"uiFile"))  uiFilename = values[i];
+    }
+
+    if ((simindex < 0)  || (uiFilename == "defaultUI.ui"))
+    {
+        QMessageBox::warning(this, "VisIt", "Custom UI NOT Found",
+                             "Ok", 0, 0, 0, 1);
+    }
+
+    // Now get the directory prefix for the file name    
+    QString fname;
+    // First look in user defined variable
+    QString dirName(getenv("VISITSIMDIR"));
+    // if still not defined then look in the users home directory
+    if (dirName.isEmpty())
+    {
+        dirName = getenv("HOME");
+        if (!dirName.isEmpty()) dirName += "/.visit/UI/";
+    }
+    // if not defined then look in global location
+    if ( dirName.isEmpty())
+    {
+        dirName = getenv("VISITDIR");
+        if (!dirName.isEmpty()) dirName += "/UI/";
+    }
+    
+    fname = dirName + uiFilename;
+    debug5 << "UI_DIR = " << fname.latin1() << endl;
+
+    // Dynamically create the custom UI be reading in it's xml file.
+    SimCommandSlots *CommandConnections = new SimCommandSlots(viewer,
+        engines, index);
+    DynamicCommandsWin  = QWidgetFactory::create(fname, CommandConnections);
+    
+    // if creation failed then jump out 
+    if (DynamicCommandsWin == NULL)
+    {
+        cmdButtons[5]->setEnabled(false);
+        QMessageBox::warning(this, "VisIt File NOT Found", fname.latin1(),
+                             "Ok", 0, 0, 1);
+        QDialog *NoUI = new QDialog(0, "No Custom Interface");
+        DynamicCommandsWin = NoUI;
+        return;
+    }
+     
+    const QObjectList *GUI_Objects  = DynamicCommandsWin->queryList();
+
+    // Connect up handlers to all signals based on component type.
+    QObject *ui = NULL;
+    for (ui =  (( QObjectList *)GUI_Objects)->first(); ui;
+        ui = (( QObjectList *)GUI_Objects)->next())
+    {
+        QMetaObject *mo = ui->metaObject();       
+        QStrList thesSignalList = mo->signalNames(true);
+        if (thesSignalList.find("clicked()") != -1)
+            connect(ui, SIGNAL(clicked()), CommandConnections,
+                   SLOT(ClickedHandler()));
+        if (thesSignalList.find("valueChanged(int)") != -1)
+            connect(ui, SIGNAL(valueChanged(int)), CommandConnections,
+                    SLOT(ValueChangedHandler(int)));
+        if (thesSignalList.find("valueChanged(const QDate&)") != -1)
+            connect(ui, SIGNAL(valueChanged(const QDate&)), CommandConnections,
+                    SLOT(ValueChangedHandler(const QDate &)));
+        if (thesSignalList.find("valueChanged(const QTime&)") != -1)
+            connect(ui, SIGNAL(valueChanged(const QTime&)), CommandConnections,
+                    SLOT(ValueChangedHandler(const QTime &)));
+        if (thesSignalList.find("stateChanged(int)") != -1)
+            connect(ui, SIGNAL(stateChanged(int)), CommandConnections,
+                    SLOT(StateChangedHandler(int)));
+        if (thesSignalList.find("activated(int)") != -1)
+            connect(ui, SIGNAL(activated(int)), CommandConnections,
+                    SLOT(ActivatedHandler(int)));
+        if (thesSignalList.find("textChanged(const QString&)") != -1)
+            connect(ui, SIGNAL(textChanged(const QString &)),
+                    CommandConnections,
+                    SLOT(TextChangedHandler(const QString&)));
+        if (thesSignalList.find("currentChanged(int,int)") != -1)
+            connect(ui, SIGNAL(currentChanged(int, int)), CommandConnections,
+                    SLOT(CurrentChangedHandler(int, int)));
+            //connect(ui, SIGNAL(dialMoved(int)), CommandConnections,
+            //        SLOT(valueChangedHandler(int)));
+    }
+
+    // enable custom command UI button
+    debug5 << "enabling custom command button" << endl;
+    cmdButtons[5]->setEnabled(true);
+    debug5 << "successfully added simulation interface" << endl;
 }
 
 // ****************************************************************************
 // Method: QvisSimulationWindow::Update
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the subjects that the window observes are
 //   modified.
 //
@@ -228,6 +381,255 @@ QvisSimulationWindow::SubjectRemoved(Subject *TheRemovedSubject)
         engines = 0;
     else if (TheRemovedSubject == statusAtts)
         statusAtts = 0;
+}
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::UpdateCustomUIComponent
+//
+// Purpose:
+//   Updates the ui components in the Costom UI popup. It check for matches
+//   between ui updates sent from the simulations to ui components in the
+//   custom ui popup. If it finds a match it update the ui component.
+//
+// Arguments:
+//   cmd : command specification that update the UI component
+//
+// Programmer: Shelly Prevost
+// Creation:   December 21, 2005
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void 
+QvisSimulationWindow::UpdateCustomUIComponent (avtSimulationCommandSpecification *cmd)
+{
+    QObject *ui = NULL;
+    ui  = DynamicCommandsWin->child(cmd->GetName().c_str());
+    if (ui)
+    {
+        debug5 << "Looking up component = " << cmd->GetName().c_str() << endl;
+        if (ui->isA("QLabel"))
+        {
+            debug5 << "found label " << cmd->GetName().c_str() << " text = "
+                   << cmd->GetText().c_str() << endl;
+            const QString label(cmd->GetText().c_str());
+            ((QLabel*)ui)->setText(label );
+        }
+
+        // just set the generic button attributes. more specific attributes will be set latter
+        if (ui->inherits("QButton"))
+        {
+            debug5 << "found button " << cmd->GetName().c_str() << " text = "
+                   << cmd->GetText().c_str() << endl;
+            const QString label(cmd->GetText().c_str());
+            ((QButton*)ui)->setText(label );
+            ((QButton*)ui)->setEnabled(cmd->GetEnabled());
+        }
+
+        if (ui->isA("QPushButton"))
+        {
+            debug5 << "found button" << cmd->GetName().c_str() << " text = "
+                   << cmd->GetText().c_str() << endl;
+            const QString label(cmd->GetText().c_str());
+            ((QButton*)ui)->setText(label);
+            ((QButton*)ui)->setEnabled(cmd->GetEnabled()); 
+        }
+
+        if (ui->isA("QTabWidget"))
+        {
+            debug5 << "found button " << cmd->GetName().c_str() << " text = "
+                   << cmd->GetText().c_str() << endl;
+            const QString label(cmd->GetText().c_str());
+            ((QButton*)ui)->setText(label);
+            ((QButton*)ui)->setEnabled(cmd->GetEnabled());
+        }
+
+        if (ui->isA( "QLineEdit"))
+        {
+            debug5 << "found button " << cmd->GetName().c_str() << " text = "
+                   << cmd->GetText().c_str() << endl;
+            const QString label(cmd->GetText().c_str());
+            ((QLineEdit*)ui)->setText(label );
+            ((QLineEdit*)ui)->setEnabled(cmd->GetEnabled());
+        }
+
+        if (ui->isA("QRadioButton"))
+        {
+            debug5 << "found button " << cmd->GetName().c_str() << " text = "
+                   << cmd->GetText().c_str() << endl;
+            const QString label(cmd->GetText().c_str());
+            ((QButton*)ui)->setText(label);
+            ((QRadioButton*)ui)->setChecked(cmd->GetIsOn());
+            ((QButton*)ui)->setEnabled(cmd->GetEnabled());
+        }
+
+        if (ui->isA("QProgressBar"))
+        {
+            debug5 << "found ProgressBar " << cmd->GetName().c_str()
+                   << " text = " << cmd->GetText().c_str() << endl;
+            const QString label(cmd->GetValue().c_str());
+            ((QProgressBar*)ui)->setProgress(label.toInt());
+        }
+
+        if (ui->isA("QSpinBox"))
+        {
+            debug5 << "found QSpinBox " << cmd->GetName().c_str() << " text = "
+                   << cmd->GetValue().c_str() << endl;
+            const QString label(cmd->GetValue().c_str());
+            ((QSpinBox*)ui)->setValue(label.toInt());
+            ((QSpinBox*)ui)->setEnabled(cmd->GetEnabled());
+        }
+
+        if (ui->isA("QDial"))
+        {
+            debug5 << "found QDial " << cmd->GetName().c_str() << " text = "
+                   << cmd->GetValue().c_str() << endl;
+            const QString label(cmd->GetValue().c_str());
+            ((QDial*)ui)->setValue(label.toInt());
+            ((QDial*)ui)->setEnabled(cmd->GetEnabled());
+        }
+
+        if (ui->isA("QSlider"))
+        {
+            debug5 << "found QSlider " << cmd->GetName().c_str() << " text = "
+                   << cmd->GetValue().c_str() << endl;
+            const QString label(cmd->GetValue().c_str());
+            ((QSlider*)ui)->setValue(label.toInt());
+            ((QSlider*)ui)->setEnabled(cmd->GetEnabled());
+        }
+
+        if (ui->isA("QTextEdit"))
+        {
+            debug5 << "found QTextEdit " << cmd->GetName().c_str()
+                   << " text = " << cmd->GetText().c_str() << endl;
+            const QString label(cmd->GetText().c_str());
+            ((QTextEdit*)ui)->setText(label);
+            ((QTextEdit*)ui)->setEnabled(cmd->GetEnabled());
+        }
+
+        if ( ui->isA ( "QLineEdit"))
+        {
+            debug5 << "found QTextEdit " << cmd->GetName().c_str()
+                   << " text = " << cmd->GetText().c_str() << endl;
+            const QString label(cmd->GetText().c_str());
+            ((QLineEdit*)ui)->setText(label);
+            ((QLineEdit*)ui)->setEnabled(cmd->GetEnabled());
+        }
+
+        if ( ui->isA ( "QLCDNumber"))
+        {
+            debug5 << "found QLCDNumber " << cmd->GetName().c_str()
+                   << " value = " << cmd->GetValue().c_str() << endl;
+            const QString label(cmd->GetValue().c_str());
+            ((QLCDNumber*)ui)->display(label);
+            ((QLCDNumber*)ui)->setEnabled(cmd->GetEnabled());
+        }
+
+        if ( ui->isA ( "QTimeEdit"))
+        {
+            debug5 << "found QTimeEdit " << cmd->GetName().c_str()
+                   << " text = " << cmd->GetText().c_str() << endl;
+            const QString label(cmd->GetText().c_str());
+            QTime time1 = QTime::fromString(cmd->GetText().c_str());
+            ((QTimeEdit*)ui)->setTime(time1);
+            ((QTimeEdit*)ui)->setEnabled(cmd->GetEnabled());
+        }
+
+        if (ui->isA("QDateEdit"))
+        {
+            debug5 << "found QTDateEdit " << cmd->GetName().c_str()
+                   << " text = " << cmd->GetText().c_str() << endl;
+            const QString label(cmd->GetText().c_str());
+            QDate date = QDate::fromString( label );
+            ((QDateEdit*)ui)->setDate(date);
+            ((QDateEdit*)ui)->setEnabled(cmd->GetEnabled());
+        }
+        if (ui->isA("QCheckBox"))
+        {
+            debug5 << "found QCheckBox " << cmd->GetName().c_str()
+                   << " value = " << cmd->GetValue().c_str() << endl;
+            //const QString label(cmd->GetValue().c_str());
+            ((QCheckBox*)ui)->setEnabled(cmd->GetEnabled());
+            ((QCheckBox*)ui)->setChecked(cmd->GetIsOn());
+        }
+    }
+    else
+        debug5 << "could not find UI component named "
+               << cmd->GetName().c_str() << endl;
+}
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::ConnectStatusAttributes
+//
+// Purpose: 
+//   Connects the status attributes subject that the window will observe.
+//
+// Arguments:
+//   s : A pointer to the status attributes that the window will observe.
+//
+// Programmer: Jeremy Meredith
+// Creation:   March 21, 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSimulationWindow::ConnectStatusAttributes(StatusAttributes *s)
+{
+    if (s)
+    {
+        statusAtts = s;
+        statusAtts->Attach(this);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::SetNewMetaData
+//
+// Purpose:
+//    Update the meta data for the given file.
+//
+// Arguments:
+//   qf        the host+file
+//   md        the new meta data
+//
+// Programmer: Jeremy Meredith
+// Creation:   March 21, 2005
+//
+// Modifications:
+//    Jeremy Meredith, Thu Apr 28 18:03:57 PDT 2005
+//    It needed more info to construct the key correctly.
+//
+// ****************************************************************************
+
+void
+QvisSimulationWindow::SetNewMetaData(const QualifiedFilename &qf,
+                                     const avtDatabaseMetaData *md)
+{
+    if (md && md->GetIsSimulation())
+    {
+        *metadata = *md;
+
+        QString key;
+        std::string host = qf.host;
+        if (host == "localhost")
+            host = viewer->GetLocalHostName();
+
+        std::string path = qf.PathAndFile();
+
+        key.sprintf("%s:%s", host.c_str(), path.c_str());
+        UpdateMetaDataEntry(key);
+
+        // If the sender of the status message is the engine that we're
+        // currently looking at, update the status widgets.
+        if (key == activeEngine)
+        {
+            UpdateStatusArea();
+            UpdateInformation(key);
+        }
+    }
 }
 
 // ****************************************************************************
@@ -329,9 +731,9 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
     if (caller == statusAtts || doAll)
     {
         QString key(statusAtts->GetSender().c_str());
-
+        debug5 << "Status being updated" << endl; 
         if (key != QString("viewer"))
-        {    
+        {
             UpdateStatusEntry(key);
 
             // If the sender of the status message is the engine that we're
@@ -345,52 +747,76 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
 }
 
 // ****************************************************************************
-// Method: QvisSimulationWindow::SetNewMetaData
+// Method: QvisSimulationWindow::UpdateCustomUI
 //
 // Purpose:
-//    Update the meta data for the given file.
+//   Updates the ui components in the Costom UI popup.
 //
 // Arguments:
-//   qf        the host+file
-//   md        the new meta data
+//   md : meta data from the simulation.
+//
+// Programmer: Shelly Prevost
+// Creation:   December 9, 2005
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisSimulationWindow::UpdateCustomUI (avtDatabaseMetaData *md)
+{
+    int numCustCommands = md->GetSimInfo().GetNumAvtSimulationCustCommandSpecifications();
+    // loop thru all command updates and updates the matching UI component.
+    for (int c=0; c<numCustCommands; c++)
+    {
+        UpdateCustomUIComponent (&(md->GetSimInfo().GetAvtSimulationCustCommandSpecification(c)));
+    }
+}
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::UpdateStatusArea
+//
+// Purpose: 
+//   Updates the window so it reflects the status information for the 
+//   currently selected engine.
 //
 // Programmer: Jeremy Meredith
 // Creation:   March 21, 2005
 //
 // Modifications:
-//    Jeremy Meredith, Thu Apr 28 18:03:57 PDT 2005
-//    It needed more info to construct the key correctly.
 //
 // ****************************************************************************
 
 void
-QvisSimulationWindow::SetNewMetaData(const QualifiedFilename &qf,
-                                     const avtDatabaseMetaData *md)
+QvisSimulationWindow::UpdateStatusArea()
 {
-    if (md && md->GetIsSimulation())
+    SimulationStatusMap::Iterator pos;
+    if ((pos = statusMap.find(activeEngine)) == statusMap.end())
+        return;
+
+    StatusAttributes *s = pos.data();
+    if (s->GetClearStatus())
     {
-        *metadata = *md;
-
-        QString key;
-        std::string host = qf.host;
-        if (host == "localhost")
-            host = viewer->GetLocalHostName();
-
-        std::string path = qf.PathAndFile();
-
-        key.sprintf("%s:%s", host.c_str(), path.c_str());
-        UpdateMetaDataEntry(key);
-
-        // If the sender of the status message is the engine that we're
-        // currently looking at, update the status widgets.
-        if (key == activeEngine)
+        s->SetStatusMessage("");
+        totalProgressBar->reset();
+    }
+    else
+    {
+        int total;
+        if (s->GetMaxStage() > 0)
         {
-            UpdateStatusArea();
-            UpdateInformation(key);
+            float pct0  = float(s->GetPercent()) / 100.;
+            float pct1  = float(s->GetCurrentStage()-1) / float(s->GetMaxStage());
+            float pct2  = float(s->GetCurrentStage())   / float(s->GetMaxStage());
+            total = int(100. * ((pct0 * pct2) + ((1.-pct0) * pct1)));
         }
+        else
+            total = 0;
+
+        // Set the progress bar percent done.
+        totalProgressBar->setProgress(total);
     }
 }
-
 
 // ****************************************************************************
 // Method: QvisSimulationWindow::UpdateInformation
@@ -405,9 +831,12 @@ QvisSimulationWindow::SetNewMetaData(const QualifiedFilename &qf,
 // Creation:   March 21, 2005
 //
 // Modifications:
-//    Jeremy Meredith, Thu Apr 28 18:05:36 PDT 2005
-//    Added concept of disabled control command.
-//    Added concept of a simulation mode (e.g. running/stopped).
+//   Jeremy Meredith, Thu Apr 28 18:05:36 PDT 2005
+//   Added concept of disabled control command.
+//   Added concept of a simulation mode (e.g. running/stopped).
+//
+//   Shelly Prevost, Tue Jan 24 17:06:49 PST 2006
+//   Added a custom simulation control window.
 //
 // ****************************************************************************
 
@@ -415,13 +844,14 @@ void
 QvisSimulationWindow::UpdateInformation(int index)
 {
     const stringVector &s = engines->GetEngines();
+    debug5 << "Update Information was called" << endl;
 
     // Set the values of the engine information widgets.
     if (index == -1 || s.size() < 1)
     {
         simInfo->clear();
         simInfo->setEnabled(false);
-        for (int c=0; c<9; c++)
+        for (int c=0; c<6; c++)
         {
             cmdButtons[c]->hide();
         }
@@ -441,7 +871,7 @@ QvisSimulationWindow::UpdateInformation(int index)
         {
             simInfo->clear();
             simInfo->setEnabled(false);
-            for (int c=0; c<9; c++)
+            for (int c=0; c<6; c++)
             {
                 cmdButtons[c]->hide();
             }
@@ -490,6 +920,7 @@ QvisSimulationWindow::UpdateInformation(int index)
             simInfo->insertItem(item);
         }
 
+        debug5 << "Updating Status information" << endl;
         switch (md->GetSimInfo().GetMode())
         {
           case avtSimulationInformation::Unknown:
@@ -503,7 +934,7 @@ QvisSimulationWindow::UpdateInformation(int index)
             break;
         }
 
-        for (int c=0; c<9; c++)
+        for (int c=0; c<6; c++)
         {
             if (md->GetSimInfo().GetNumAvtSimulationCommandSpecifications()<=c)
             {
@@ -519,7 +950,8 @@ QvisSimulationWindow::UpdateInformation(int index)
                     cmdButtons[c]->setText(QString(md->GetSimInfo().
                             GetAvtSimulationCommandSpecification(c).
                             GetName().c_str()));
-                    cmdButtons[c]->setEnabled(e);
+                    // **** MSP **** remove after fixing custome UI enabling
+                    if ( c != 5 )cmdButtons[c]->setEnabled(e);
                     cmdButtons[c]->show();
                 }
                 else
@@ -528,7 +960,8 @@ QvisSimulationWindow::UpdateInformation(int index)
                 }
             }
         }
-        
+        // update ui component informatinon in the meta data
+        UpdateCustomUI(md);
         simInfo->setEnabled(true);
     }
 }
@@ -571,78 +1004,6 @@ QvisSimulationWindow::UpdateInformation(const QString &key)
         {
             UpdateInformation(index);
         }
-    }
-}
-
-
-// ****************************************************************************
-// Method: QvisSimulationWindow::UpdateStatusArea
-//
-// Purpose: 
-//   Updates the window so it reflects the status information for the 
-//   currently selected engine.
-//
-// Programmer: Jeremy Meredith
-// Creation:   March 21, 2005
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-QvisSimulationWindow::UpdateStatusArea()
-{
-    SimulationStatusMap::Iterator pos;
-    if ((pos = statusMap.find(activeEngine)) == statusMap.end())
-        return;
-
-    StatusAttributes *s = pos.data();
-    if (s->GetClearStatus())
-    {
-        s->SetStatusMessage("");
-        totalProgressBar->reset();
-    }
-    else
-    {
-        int total;
-        if (s->GetMaxStage() > 0)
-        {
-            float pct0  = float(s->GetPercent()) / 100.;
-            float pct1  = float(s->GetCurrentStage()-1) / float(s->GetMaxStage());
-            float pct2  = float(s->GetCurrentStage())   / float(s->GetMaxStage());
-            total = int(100. * ((pct0 * pct2) + ((1.-pct0) * pct1)));
-        }
-        else
-            total = 0;
-
-        // Set the progress bar percent done.
-        totalProgressBar->setProgress(total);
-    }
-}
-
-// ****************************************************************************
-// Method: QvisSimulationWindow::ConnectStatusAttributes
-//
-// Purpose: 
-//   Connects the status attributes subject that the window will observe.
-//
-// Arguments:
-//   s : A pointer to the status attributes that the window will observe.
-//
-// Programmer: Jeremy Meredith
-// Creation:   March 21, 2005
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisSimulationWindow::ConnectStatusAttributes(StatusAttributes *s)
-{
-    if (s)
-    {
-        statusAtts = s;
-        statusAtts->Attach(this);
     }
 }
 
@@ -908,35 +1269,6 @@ QvisSimulationWindow::interruptEngine()
 }
 
 // ****************************************************************************
-// Method: QvisSimulationWindow::clearCache
-//
-// Purpose: 
-//   This is a Qt slot function that is called to tell the current engine
-//   to clear its cache.
-//
-// Programmer: Jeremy Meredith
-// Creation:   March 21, 2005
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-QvisSimulationWindow::clearCache()
-{
-    int index = simCombo->currentItem();
-    if (index < 0)
-        return;
-    string host = engines->GetEngines()[index];
-    string sim  = engines->GetSimulationName()[index];
-
-    if (viewer->GetLocalHostName() == host)
-        viewer->ClearCache("localhost", sim);
-    else
-        viewer->ClearCache(host, sim);
-}
-
-// ****************************************************************************
 // Method: QvisSimulationWindow::selectEngine
 //
 // Purpose: 
@@ -972,6 +1304,57 @@ QvisSimulationWindow::selectEngine(int simindex)
     UpdateInformation(index);
 }
 
+// ****************************************************************************
+// Method: QvisSimulationWindow::clearCache
+//
+// Purpose: 
+//   This is a Qt slot function that is called to tell the current engine
+//   to clear its cache.
+//
+// Programmer: Jeremy Meredith
+// Creation:   March 21, 2005
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisSimulationWindow::clearCache()
+{
+    int index = simCombo->currentItem();
+    if (index < 0)
+        return;
+    string host = engines->GetEngines()[index];
+    string sim  = engines->GetSimulationName()[index];
+
+    if (viewer->GetLocalHostName() == host)
+        viewer->ClearCache("localhost", sim);
+    else
+        viewer->ClearCache(host, sim);
+}
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::showCommandWindow
+//
+// Purpose:
+//   This method is called when the subjects that the window observes are
+//   modified.
+//
+// Programmer: Shelly Prevost
+// Creation:   December 21, 2005
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void QvisSimulationWindow::showCommandWindow()
+{
+    if (DynamicCommandsWin != NULL)
+        DynamicCommandsWin->show();
+    else
+        QMessageBox::warning(this, "VisIt", "Custom UI NOT Found", "Ok", 0,
+                             0, 0, 1);
+}
 
 void
 QvisSimulationWindow::executeSimCommand()

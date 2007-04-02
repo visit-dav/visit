@@ -90,6 +90,9 @@
 #    Brad Whitlock, Mon Dec 5 12:06:20 PDT 2005
 #    Added support for ExodusII on MacOS X.
 #
+#    Eric Brugger, Tue Jan 24 08:42:55 PST 2006
+#    I added links to qui.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -114,6 +117,7 @@ LIBVTKFTGL=libvtkftgl.@SHLIB_LIBEXT@
 LIBMESAGL=libMesaGL.@SHLIB_LIBEXT@
 LIBOSMESA=libOSMesa.@SHLIB_LIBEXT@
 LIBQT=libqt.@SHLIB_LIBEXT@
+LIBQUI=libqui.@SHLIB_LIBEXT@
 LIBSILO=libsilo.@SHLIB_LIBEXT@
 
 # The following targets were split up so that they would work properly
@@ -121,7 +125,7 @@ LIBSILO=libsilo.@SHLIB_LIBEXT@
 all: libvtkcommon libvtkdicom libvtkfiltering libvtkgraphics libvtkhybrid \
      libvtkio libvtkimaging libvtkrendering libvtkzlib libvtkpng libvtkjpeg \
      libvtkexpat libvtktiff libvtkfreetype libvtkftgl libosmesa libmesagl \
-     libqt pythondir @CREATE_SILO_LINK@ @CREATE_MILI_LINK@ @CREATE_HDF4_LINK@ @CREATE_HDF5_LINK@ @CREATE_NETCDF_LINK@ @CREATE_CGNS_LINK@ @CREATE_GDAL_LINK@ @CREATE_EXODUS_LINK@
+     libqt libqui pythondir @CREATE_SILO_LINK@ @CREATE_MILI_LINK@ @CREATE_HDF4_LINK@ @CREATE_HDF5_LINK@ @CREATE_NETCDF_LINK@ @CREATE_CGNS_LINK@ @CREATE_GDAL_LINK@ @CREATE_EXODUS_LINK@
 
 libvtkcommon:
 	$(RM) $(LIBVTKCOMMON)
@@ -195,6 +199,12 @@ libqt:
 	if test -n "@QT_LIB@"; then              \
 	    $(RM) $(LIBQT)*                 ;   \
 	    ln -s @QT_LIB@/$(LIBQT)* .   ;   \
+	fi
+
+libqui:
+	if test -n "@QT_LIB@"; then           \
+	    $(RM) $(LIBQUI)*              ;   \
+	    ln -s @QT_LIB@/$(LIBQUI)* .   ;   \
 	fi
 
 pythondir:

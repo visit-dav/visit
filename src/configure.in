@@ -594,6 +594,10 @@ dnl
 dnl    Brad Whitlock, Fri Dec 16 17:03:10 PST 2005
 dnl    Improved glTexImage3D detection on MacOS X.
 dnl
+dnl    Eric Brugger, Tue Jan 24 11:21:01 PST 2006
+dnl    I added QUI_LIBS which is used by the gui to dynamically load custom
+dnl    simulation control windows.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -2567,6 +2571,8 @@ if test "$enable_gui" = "yes"; then
     AC_SUBST(QT_LIB)
     QT_LIBS=-lqt
     AC_SUBST(QT_LIBS)
+    QUI_LIBS=-lqui
+    AC_SUBST(QUI_LIBS)
     QT_LDFLAGS=""
     AC_SUBST(QT_LDFLAGS)
     QT_STATICLDFLAGS=-L$QT_LIB
@@ -2591,6 +2597,8 @@ else
     AC_SUBST(QT_LIB)
     QT_LIBS=""
     AC_SUBST(QT_LIBS)
+    QUI_LIBS=""
+    AC_SUBST(QUI_LIBS)
     QT_LDFLAGS=""
     AC_SUBST(QT_LDFLAGS)
     QT_CXXFLAGS=""

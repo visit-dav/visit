@@ -31,6 +31,7 @@
 
 
 #include "VisItControlInterface_V1.h"
+#include "UI_Connection.h"
 #include "sim.h"
 
 #include <stdlib.h>
@@ -72,6 +73,38 @@ float *p_zvalues;
 float *p_nvalues;
 
 int numdomains = 1;
+
+
+void testSlot ( char *cmd )
+{
+
+  printf ( "sim >>>>  inside simulation pushButton code callback slot1.... \n");
+}
+
+void testSlot2 ( char *cmd )
+{
+
+  printf ( "sim >>>>  inside simulation code callback slot2 .... \n");
+}
+
+void apply ( char *cmd )
+{
+
+  printf ( "sim >>>>  inside simulation apply code callback  .... \n");
+}
+
+void valueChanged ( char *cmd )
+{
+
+  printf ( "sim >>>>  inside simulation valueChanged code callback .... \n");
+}
+
+void currentChanged ( char *cmd )
+{
+
+  printf ( "sim >>>>  inside simulation currentChanged code callback .... \n");
+}
+
 
 #ifdef PARALLEL
 static int visit_broadcast_int_callback(int *value, int sender)
@@ -167,6 +200,8 @@ void FakeConsoleCommand(char *str)
 #endif
 }
 
+
+
 void ProcessCommand(const char *cmd)
 {
 #ifdef PARALLEL
@@ -194,6 +229,16 @@ void ProcessCommand(const char *cmd)
         printf("execution paused....\n");
         StopSimulation();
     }
+    else if (!strcmp(cmd, "restart"))
+    {
+        printf("not implemented yet....\n");
+        StopSimulation();
+    }
+    else if (!strcmp(cmd, "sync"))
+    {
+        printf("not implemented yet....\n");
+        StopSimulation();
+    }
     else if (!strcmp(cmd, "visit_disconnect"))
     {
         VisItDisconnect();
@@ -212,7 +257,7 @@ void ProcessCommand(const char *cmd)
     }
     else
     {
-        fprintf(stderr, "Error: unknown command '%s'\n", cmd);
+        ProcessCustomCommand(cmd );
     }
 }
 
@@ -426,12 +471,39 @@ int main(int argc, char *argv[])
     VisItSetParallelRank(par_rank);
 #endif
 
+// make a connection between the UI component, the signal and the function to call
+// when the signal from that component is recieved.
+
+    addConnection ( "Shelly_Button_3", "clicked()", testSlot);
+    addConnection ( "Shelly_Button_3", "clicked()", testSlot2);
+    addConnection ( "Top_Button_1", "clicked()", testSlot2);
+    addConnection ( "Bottom_Button_2", "clicked()", testSlot);
+    addConnection ( "RadioButton1", "clicked()", testSlot2);
+    addConnection ( "RadioButton2", "clicked()", testSlot2);
+    addConnection ( "RadioButton3", "clicked()", testSlot2);
+    // monitor value changed if you care about a change
+    // when some other radio button is pressed.
+    addConnection ( "RadioButton1", "stateChanged()", testSlot2);
+    addConnection ( "RadioButton2", "stateChanged()", testSlot2);
+    addConnection ( "RadioButton3", "stateChanged()", testSlot2);
+    
+    addConnection ( "ShellyLineEdit1","textChanged()", valueChanged);
+    addConnection ( "ShellyTable_1","currentChanged()", currentChanged);
+    addConnection ( "ShellySlider_1","valueChanged()", valueChanged);
+    addConnection ( "ShellyDial_1","valueChanged()", valueChanged);
+    addConnection ( "apply", "clicked()", apply);
+
+    addConnection ( "timeEdit1" ,"valueChanged()", valueChanged);
+    addConnection ( "dateEdit1" ,"valueChanged()", valueChanged);
+    addConnection ( " CheckBox1", "clicked()" , testSlot2);
+
     if (par_rank == 0)
     {
         VisItInitializeSocketAndDumpSimFile("proto",
                                             "Prototype Simulation",
                                             "/no/useful/path",
-                                            NULL);
+                                            NULL,
+                                            "SimGUI_1.ui");
         printf("\n          >>> STARTING SIMULATION PROTOTYPE <<<\n\n\n");
 
         printf("Known Commands:\n"
