@@ -34,6 +34,9 @@ extern ViewerSubject *viewerSubject;
 //   Kathleen Bonnell, Tue Jan 11 16:14:14 PST 2005
 //   Set minimum for numNodes spinbox to 1.
 //
+//   Jeremy Meredith, Thu Sep 15 16:37:24 PDT 2005
+//   Added machinefile for some mpich implementations.
+//
 // ****************************************************************************
 
 ViewerHostProfileSelectorWithWin::ViewerHostProfileSelectorWithWin(QWidget *parent, const char *name)
@@ -43,7 +46,7 @@ ViewerHostProfileSelectorWithWin::ViewerHostProfileSelectorWithWin(QWidget *pare
 
     QVBoxLayout *topLayout = new QVBoxLayout(this);
 
-    QGridLayout *layout = new QGridLayout(topLayout, 4, 4);
+    QGridLayout *layout = new QGridLayout(topLayout, 5, 4);
     layout->setMargin(10);
     layout->setSpacing(5);
     layout->setRowStretch(0, 100);
@@ -81,6 +84,11 @@ ViewerHostProfileSelectorWithWin::ViewerHostProfileSelectorWithWin(QWidget *pare
     timeLimit = new QLineEdit(this, "timeLimit");
     layout->addMultiCellWidget(timeLimitLabel, 2,2, 2,2);
     layout->addMultiCellWidget(timeLimit,      2,2, 3,3);
+
+    machinefileLabel = new QLabel("Machine file", this, "machinefileLabel");
+    machinefile = new QLineEdit(this, "machinefile");
+    layout->addMultiCellWidget(machinefileLabel, 3,3, 0,0);
+    layout->addMultiCellWidget(machinefile,      3,3, 1,3);
 
     QHBoxLayout *buttonLayout = new QHBoxLayout(topLayout);
     buttonLayout->setMargin(10);
@@ -153,6 +161,9 @@ ViewerHostProfileSelectorWithWin::~ViewerHostProfileSelectorWithWin()
 //
 //    Jeremy Meredith, Wed Oct 27 13:59:14 PDT 2004
 //    Prevented recursion into QDialog::exec().  See VisIt00005532.
+//
+//    Jeremy Meredith, Thu Sep 15 16:37:24 PDT 2005
+//    Added machinefile for some mpich implementations.
 //
 // ****************************************************************************
 
@@ -234,6 +245,7 @@ ViewerHostProfileSelectorWithWin::SelectProfile(
             profile.SetNumNodes(numNodes->value());
             profile.SetBank(bankName->text().latin1());
             profile.SetTimeLimit(timeLimit->text().latin1());
+            profile.SetMachinefile(machinefile->text().latin1());
         }
 
         // Save it for use later
@@ -267,6 +279,9 @@ ViewerHostProfileSelectorWithWin::SelectProfile(
 //    Made it grey out the other parallel options if the profile wasn't
 //    parallel.
 //
+//   Jeremy Meredith, Thu Sep 15 16:37:24 PDT 2005
+//   Added machinefile for some mpich implementations.
+//
 // ****************************************************************************
 
 void
@@ -294,6 +309,10 @@ ViewerHostProfileSelectorWithWin::newProfileSelected()
     timeLimitLabel->setEnabled(parallel && profile.GetTimeLimitSet());
     timeLimit->setEnabled(parallel && profile.GetTimeLimitSet());
     timeLimit->setText(profile.GetTimeLimit().c_str());
+
+    machinefileLabel->setEnabled(parallel && profile.GetMachinefileSet());
+    machinefile->setEnabled(parallel && profile.GetMachinefileSet());
+    machinefile->setText(profile.GetMachinefile().c_str());
 }
 
 

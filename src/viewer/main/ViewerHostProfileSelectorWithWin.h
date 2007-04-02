@@ -31,6 +31,9 @@ class HostProfileList;
 //    Added flag so we know when we are waiting on a user already so that
 //    we don't try to ask them multiple times about launching the same engine.
 //
+//    Jeremy Meredith, Thu Sep 15 16:42:48 PDT 2005
+//    Added machine file for some mpich implementations.
+//
 // ****************************************************************************
 class VIEWER_API ViewerHostProfileSelectorWithWin : public QDialog, 
                                                     public ViewerHostProfileSelector
@@ -58,6 +61,8 @@ class VIEWER_API ViewerHostProfileSelectorWithWin : public QDialog,
     QLineEdit *bankName;
     QLabel    *timeLimitLabel;
     QLineEdit *timeLimit;
+    QLabel    *machinefileLabel;
+    QLineEdit *machinefile;
 
     QPushButton *okayButton;
     QPushButton *cancelButton;

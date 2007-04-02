@@ -164,6 +164,9 @@ QvisHostProfileWindow::~QvisHostProfileWindow()
 //   Kathleen Bonnell, Tue Jan 11 16:14:14 PST 2005 
 //   Set minimum for numNodes spinbox to 1. 
 //
+//   Jeremy Meredith, Thu Sep 15 16:37:24 PDT 2005
+//   Added machinefile and useVisItScriptForEnv.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::CreateWindowContents()
@@ -281,7 +284,7 @@ QvisHostProfileWindow::CreateWindowContents()
     innerParLayout->setMargin(10);
     innerParLayout->addSpacing(15);
 
-    QGridLayout *parLayout = new QGridLayout(innerParLayout, 8, 4);
+    QGridLayout *parLayout = new QGridLayout(innerParLayout, 9, 4);
     parLayout->setColStretch(2, 50);
     parLayout->setColStretch(3, 50);
     parLayout->setSpacing(10);
@@ -392,6 +395,17 @@ QvisHostProfileWindow::CreateWindowContents()
     parLayout->addMultiCellWidget(timeLimit, prow, prow, 2, 3);
     prow++;
 
+    machinefile = new QLineEdit(parGroup, "machinefile");
+    connect(machinefile, SIGNAL(returnPressed()),
+            this, SLOT(processMachinefileText()));
+    machinefileCheckBox = new QCheckBox("Default Machine File",
+                                      parGroup, "machinefileLabel");
+    connect(machinefileCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(toggleMachinefile(bool)));
+    parLayout->addMultiCellWidget(machinefileCheckBox, prow, prow, 0, 1);
+    parLayout->addMultiCellWidget(machinefile, prow, prow, 2, 3);
+    prow++;
+
     advancedGroup = new QWidget(central, "advancedGroup");
     optionsTabs->addTab(advancedGroup, "Advanced options");
 
@@ -399,7 +413,7 @@ QvisHostProfileWindow::CreateWindowContents()
     innerAdvLayout->setMargin(10);
     innerAdvLayout->addSpacing(15);
 
-    QGridLayout *advLayout = new QGridLayout(innerAdvLayout, 8, 4);
+    QGridLayout *advLayout = new QGridLayout(innerAdvLayout, 9, 4);
     advLayout->setColStretch(0, 10);
     advLayout->setColStretch(1, 10);
     advLayout->setColStretch(2, 40);
@@ -413,6 +427,14 @@ QvisHostProfileWindow::CreateWindowContents()
     parLayout->addMultiCellWidget(shareMDServerCheckBox, arow,arow, 0,3);
     connect(shareMDServerCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleShareMDServer(bool)));
+    arow++;
+
+    useVisItScriptForEnvCheckBox = new QCheckBox(
+                             "Use VisIt script to set up parallel environment",
+                             advancedGroup, "useVisItScriptForEnvCheckBox");
+    parLayout->addMultiCellWidget(useVisItScriptForEnvCheckBox, arow,arow, 0,3);
+    connect(useVisItScriptForEnvCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(toggleUseVisItScriptForEnv(bool)));
     arow++;
 
     clientHostNameMethod = new QButtonGroup(0, "clientHostNameMethod");
@@ -724,6 +746,9 @@ QvisHostProfileWindow::UpdateProfileList()
 //   parsed from the SSH_CLIENT (or related) environment variables.  Added
 //   ability to specify an SSH port.
 //
+//   Jeremy Meredith, Thu Sep 15 16:39:13 PDT 2005
+//   Added machinefile and useVisItScriptForEnv.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::UpdateActiveProfile()
@@ -743,6 +768,8 @@ QvisHostProfileWindow::UpdateActiveProfile()
     bankName->blockSignals(true);
     timeLimitCheckBox->blockSignals(true);
     timeLimit->blockSignals(true);
+    machinefileCheckBox->blockSignals(true);
+    machinefile->blockSignals(true);
     launchArgsCheckBox->blockSignals(true);
     launchArgs->blockSignals(true);
     launchCheckBox->blockSignals(true);
@@ -779,6 +806,8 @@ QvisHostProfileWindow::UpdateActiveProfile()
         bankName->setText("");
         timeLimitCheckBox->setChecked(false);
         timeLimit->setText("");
+        machinefileCheckBox->setChecked(false);
+        machinefile->setText("");
         launchArgsCheckBox->setChecked(false);
         launchArgs->setText("");
         loadBalancing->setButton(0);
@@ -808,6 +837,8 @@ QvisHostProfileWindow::UpdateActiveProfile()
         bool parEnabled = current.GetParallel();
         if (parEnabled)
             shareMDServerCheckBox->setChecked(current.GetShareOneBatchJob());
+        if (parEnabled)
+            useVisItScriptForEnvCheckBox->setChecked(current.GetVisitSetsUpEnv());
         launchCheckBox->setChecked(parEnabled && current.GetLaunchMethodSet());
         if (parEnabled && current.GetLaunchMethodSet())
         {
@@ -852,6 +883,11 @@ QvisHostProfileWindow::UpdateActiveProfile()
             timeLimit->setText(current.GetTimeLimit().c_str());
         else
             timeLimit->setText("");
+        machinefileCheckBox->setChecked(parEnabled && current.GetMachinefileSet());
+        if (parEnabled && current.GetMachinefileSet())
+            machinefile->setText(current.GetMachinefile().c_str());
+        else
+            machinefile->setText("");
         activeProfileCheckBox->setChecked(current.GetActive());
         int lb = 0;
         if (current.GetForceStatic())
@@ -905,6 +941,8 @@ QvisHostProfileWindow::UpdateActiveProfile()
     bankName->blockSignals(false);
     timeLimitCheckBox->blockSignals(false);
     timeLimit->blockSignals(false);
+    machinefileCheckBox->blockSignals(false);
+    machinefile->blockSignals(false);
     launchArgsCheckBox->blockSignals(false);
     launchArgs->blockSignals(false);
     launchCheckBox->blockSignals(false);
@@ -980,6 +1018,9 @@ QvisHostProfileWindow::ReplaceLocalHost()
 //    parsed from the SSH_CLIENT (or related) environment variables.  Added
 //    ability to specify an SSH port.
 //
+//    Jeremy Meredith, Thu Sep 15 16:39:31 PDT 2005
+//    Added machinefile and useVisItScriptForEnv.
+//
 // ****************************************************************************
 
 void
@@ -1020,6 +1061,8 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
     bankName->setEnabled(parEnabled && current->GetBankSet());
     timeLimitCheckBox->setEnabled(parEnabled);
     timeLimit->setEnabled(parEnabled && current->GetTimeLimitSet());
+    machinefileCheckBox->setEnabled(parEnabled);
+    machinefile->setEnabled(parEnabled && current->GetMachinefileSet());
 #if 0 // disabling dynamic load balancing for now
     loadBalancingLabel->setEnabled(parEnabled);
     lbAuto->setEnabled(parEnabled);
@@ -1095,6 +1138,9 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
 //   Jeremy Meredith, Thu Nov 13 15:59:59 PST 2003
 //   Moved timeout to the right spot in the list.  Its placement moved
 //   other widgets out of their required orderings.
+//
+//   Jeremy Meredith, Thu Sep 15 16:39:35 PDT 2005
+//   Added machinefile and useVisItScriptForEnv.
 //
 // ****************************************************************************
 bool
@@ -1393,6 +1439,15 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
             if (prof.GetHost() == current.GetHost())
                 prof.SetSshPort(newPort);
         }
+    }
+    widget++;
+
+    // Do the machine file
+    if(current.GetParallel() && (which_widget == widget || doAll))
+    {
+        temp = machinefile->displayText();
+        temp = temp.stripWhiteSpace();
+        current.SetMachinefile(std::string(temp.latin1()));
     }
     widget++;
 
@@ -1943,6 +1998,34 @@ QvisHostProfileWindow::toggleTimeLimit(bool state)
 }
 
 // ****************************************************************************
+// Method: QvisHostProfileWindow::toggleMachinefile
+//
+// Purpose: 
+//   This is a Qt slot function that enables the Machinefile widget.
+//
+// Programmer: Jeremy Meredith
+// Creation:   September 15, 2005
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisHostProfileWindow::toggleMachinefile(bool state)
+{
+    HostProfileList *profiles = (HostProfileList *)subject;
+    if(profiles->GetActiveProfile() >= 0)
+    {
+        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
+        current.SetMachinefileSet(state);
+        profiles->MarkActiveProfile();
+        UpdateWindowSensitivity();
+        SetUpdate(false);
+        Apply();
+    }
+}
+
+// ****************************************************************************
 // Method: QvisHostProfileWindow::processTimeLimitText
 //
 // Purpose: 
@@ -1961,6 +2044,29 @@ QvisHostProfileWindow::processTimeLimitText()
 {
     // Update the timeLimit name.
     if(!GetCurrentValues(8))
+        SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::processMachinefileText
+//
+// Purpose: 
+//   This is a Qt slot function that sets the machinefile name for the active
+//   host profile.
+//
+// Programmer: Jeremy Meredith
+// Creation:   September 15, 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisHostProfileWindow::processMachinefileText()
+{
+    // Update the machinefile name.
+    if(!GetCurrentValues(15))
         SetUpdate(false);
     Apply();
 }
@@ -2195,6 +2301,35 @@ QvisHostProfileWindow::toggleShareMDServer(bool state)
     {
         HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
         current.SetShareOneBatchJob(state);
+        profiles->MarkActiveProfile();
+        SetUpdate(false);
+        Apply();
+    }
+}
+
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::toggleUseVisItScriptForEnv
+//
+// Purpose: 
+//   This is a Qt slot function that is activated when the Use VisIt
+//   to Set up Environment check box is toggled.
+//
+// Programmer: Jeremy Meredith
+// Creation:   September 15, 2005
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisHostProfileWindow::toggleUseVisItScriptForEnv(bool state)
+{
+    HostProfileList *profiles = (HostProfileList *)subject;
+    if(profiles->GetActiveProfile() >= 0)
+    {
+        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
+        current.SetVisitSetsUpEnv(state);
         profiles->MarkActiveProfile();
         SetUpdate(false);
         Apply();

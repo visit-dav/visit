@@ -35,6 +35,9 @@ class DBOptionsAttributes;
 //    Eric Brugger, Fri Aug 12 11:28:43 PDT 2005
 //    Added GetCycleFromFilename.
 //
+//    Mark C. Miller, Thu Sep 15 19:45:51 PDT 2005
+//    Added GetAuxiliaryData to support materials
+//
 // ****************************************************************************
 
 class avtVTKFileFormat : public avtSTSDFileFormat
@@ -46,6 +49,8 @@ class avtVTKFileFormat : public avtSTSDFileFormat
     virtual vtkDataSet   *GetMesh(const char *);
     virtual vtkDataArray *GetVar(const char *);
     virtual vtkDataArray *GetVectorVar(const char *);
+    virtual void         *avtVTKFileFormat::GetAuxiliaryData(const char *var,
+                              const char *type, void *, DestructorFunction &df);
 
     virtual const char   *GetType(void)  { return "VTK File Format"; };
 
@@ -61,6 +66,10 @@ class avtVTKFileFormat : public avtSTSDFileFormat
 
     static const char    *MESHNAME;
     static const char    *VARNAME;
+    char                 *matvarname;
+    std::vector<int>      matnos;
+    std::vector<std::string> matnames;
+
 
     void                  ReadInDataset(void);
     vtkDataSet           *ConvertStructuredPointsToRGrid(vtkStructuredPoints *);

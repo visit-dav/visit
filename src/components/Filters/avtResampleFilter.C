@@ -170,10 +170,12 @@ avtResampleFilter::InputNeedsNoResampling(void)
     //
     // permit VTK_POLY_DATA to pass through unchanged
     //
+#if 0
     int n = 0;
     vtkDataSet **in_dss = inDT->GetAllLeaves(n);
     if (n && in_dss && in_dss[0] && in_dss[0]->GetDataObjectType() == VTK_POLY_DATA)
         return true;
+#endif
 
     //
     // If a specific set of dimensions was requested, then this is not going
@@ -367,23 +369,15 @@ avtResampleFilter::BypassResample(void)
 //    Mark C. Miller, Tue Sep 13 20:09:49 PDT 2005
 //    Added test for if data selection has already been applied 
 //
+//    Mark C. Miller, Thu Sep 15 11:30:18 PDT 2005
+//    Modified where data selection bypass is done and added matching
+//    collective calls
+//
 // ****************************************************************************
 
 void
 avtResampleFilter::ResampleInput(void)
 {
-    //
-    // If the selection this filter exists to create has already been handled,
-    // then we can skip execution
-    //
-    if (GetInput()->GetInfo().GetAttributes().GetSelectionApplied(selID))
-    {
-        debug1 << "Bypassing Resample operator because database plugin "
-                  "claims to have applied the selection already" << endl;
-        SetOutputDataTree(GetInputDataTree());
-        return;
-    }
-
     int  i, j;
 
     avtRelativeValueSamplePointArbitrator *arb = NULL;
@@ -471,6 +465,49 @@ avtResampleFilter::ResampleInput(void)
     //
     int width, height, depth;
     GetDimensions(width, height, depth, bounds);
+
+    //
+    // If the selection this filter exists to create has already been handled,
+    // or if there are no pieces for this processor to process, then we can skip
+    // execution. But, take care to emmulate the same collective
+    // calls other processors may make before returning.
+    //
+    if (GetInput()->GetInfo().GetAttributes().GetSelectionApplied(selID))
+    {
+        debug1 << "Bypassing Resample operator because database plugin "
+                  "claims to have applied the selection already" << endl;
+
+        SetOutputDataTree(GetInputDataTree());
+
+        // we can save a lot of time if we know everyone can bypass
+        if (!UnifyMaximumValue(0))
+            return;
+
+        // here is some dummied up code to match collective calls below
+        int myVarstmp = 0;
+        int effectiveVarstmp = UnifyMaximumValue(myVarstmp);
+        float *ptrtmp = new float[width*height*depth];
+        for (int jj = 0; jj < width*height*depth; jj++)
+            ptrtmp[jj] = atts.GetDefaultVal();
+        for (i = 0 ; i < effectiveVarstmp ; i++)
+            Collect(ptrtmp, width*height*depth);
+        delete [] ptrtmp;
+        std::vector<std::string> varnamestmp;
+        GetListToRootProc(varnamestmp, 0);
+        return;
+    }
+    else
+    {
+        UnifyMaximumValue(1);
+    }
+
+    //
+    //
+    // PROBLEM SIZED WORK OCCURS BEYOND THIS POINT
+    // If you add collecive calls below this point, make sure to
+    // put matching sequence into bypass code above
+    //
+    //
 
     avtSamplePointExtractor extractor(width, height, depth);
     extractor.Set3DMode(is3D);

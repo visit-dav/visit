@@ -413,6 +413,16 @@ LoadBalancer::CheckDynamicLoadBalancing(avtPipelineSpecification_p input)
 //    non-global filesystems and simulation-mode engines.  It occurs when
 //    each processor can only access a limited subset of the domains.
 //
+//    Mark C. Miller, Thu Sep 15 11:30:18 PDT 2005
+//    Added "absolute" load balancing mode where domains are assigned based
+//    upon their absolute domain number modulo the number of processors.
+//    This guarentees that domains are never re-read on other processors.
+//    However, it obviously can negatively effect balance based on the
+//    current SIL restriction. Nonetheless, assuming the user has chosen
+//    a number of processors to achieve adaquate performance in the
+//    worst-case plotting scanerio, this scheme will certainly do no worse
+//    and might do better due to guarenteeing that no re-reading is done.
+//
 // ****************************************************************************
 
 avtDataSpecification_p
@@ -513,6 +523,14 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
             for (int j = 0 ; j < list.size() ; j++)
             {
                 if (j % nProcs == rank)
+                    mylist.push_back(list[j]);
+            }
+        }
+        else if (scheme == LOAD_BALANCE_ABSOLUTE)
+        {
+            for (int j = 0 ; j < list.size() ; j++)
+            {
+                if (list[j] % nProcs == rank)
                     mylist.push_back(list[j]);
             }
         }

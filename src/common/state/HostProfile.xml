@@ -81,6 +81,14 @@
     </Field>
     <Field name="manualClientHostName" label="Client host name" type="string">
     </Field>
+    <Field name="machinefileSet" label="machinefileSet" type="bool">
+      false
+    </Field>
+    <Field name="machinefile" label="machinefile" type="string">
+    </Field>
+    <Field name="visitSetsUpEnv" label="visitSetsUpEnv" type="bool">
+      false
+    </Field>
     <Function name="defaultUserName" user="true" member="true">
     </Function>
     <Function name="SplitHostPattern" user="true" member="true">

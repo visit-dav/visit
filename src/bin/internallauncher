@@ -93,6 +93,11 @@ $0 = shift @ARGV;
 #    plugin dirs explicitly.  In some cases, the engine may try to set them
 #    differently from the other components, and the existing logic would fail.
 #
+#    Jeremy Meredith, Thu Sep 15 16:34:15 PDT 2005
+#    Added ability to launch visit script under mpirun in order to set up
+#    the environment on beowulf clusters (and similar).  Added -machinefile
+#    for the same enviroment under mpich.
+#
 ###############################################################################
 
 
@@ -196,6 +201,8 @@ $fullusage = "$usage
         component being launched, -launchengine is implied.  Explicitly
         add -launchengine to launch a remote parallel engine.
     ---------------------------------------------------------------------------
+        -setupenv            Use the VisIt script to set up the environment
+                             for the engine on the compute nodes.
         -par                 Run the parallel version. This option is implied
                              by any of the other parallel options listed below.
         -l    <method>       Launch in parallel using the given method.
@@ -207,6 +214,7 @@ $fullusage = "$usage
         -n    <name>         The parallel job name.
         -b    <bank>         Bank from which to draw resources.
         -t    <time>         Maximum job run time.
+        -machinefile <file>  Machine file.
         -expedite            Makes DPCS give priority scheduling.
 
     Load balance options
@@ -222,6 +230,10 @@ $fullusage = "$usage
         -lb-stride           Assign every Pth domain starting from the first
                              to processor 0, every Pth domain starting from the
                              second to processor 1, etc.
+	-lb-absolute         Assign domains by absolute domain number % P. This
+	                     guarentees a given domain is always processed
+			     by the same processor but can also lead to poor
+			     balance when only a subset of domains is selected.
         -lb-random           Randomly assign domains to processors.
         -allowdynamic        Dedicate one processor to spreading the work 
                              dynamically among the other processors.  This mode
@@ -283,6 +295,7 @@ $fullusage = "$usage
         -totalview <comp>    Run totalview on the given component.
         -valgrind <comp>     Run valgrind on the given component.
         -numrestarts <#>     Number of attempts to restart a failed engine.
+        -quiet               Don't print the Running message.
 ";
 
 # Get our location
@@ -342,6 +355,7 @@ else
 # -----------------------------------------------------------------------------
 
 # Set some defaults.
+$quiet        = 0;
 $parallel     = 0;
 $launch       = "";
 @launchargs   = ();
@@ -357,6 +371,7 @@ $envonly        = 0;
 $logging        = 0;
 $req_compiler   = "";
 $use_new_console = 0;
+$visit_sets_up_environment = 0;
 
 # Parse the arguments 
 @visitargs = ();
@@ -372,6 +387,7 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-p" )        { $part = shift; $part_set = 1; }
     elsif ($arg eq "-b" )        { $bank = shift; $bank_set = 1; }
     elsif ($arg eq "-t")         { $time = shift; $time_set = 1; }
+    elsif ($arg eq "-machinefile") { $machinefile = shift; $machinefile_set = 1; }
     elsif ($arg eq "-expedite")  { if($exe_name eq "engine") { $expedite_engine = 1;} else { push @visitargs, $arg; }}
     elsif ($arg eq "-host")      { $remotehost = shift; $remotehost_set = 1; }
     elsif ($arg eq "-key" )      { $security_key = shift; $security_key_set = 1;}
@@ -428,7 +444,9 @@ while (scalar(@ARGV) > 0) {
                                             push @visitargs, "-valgrind", $debug_valgrind;
                                           }
                                         }
-    elsif ($arg eq "-guesshost" )       { $guesshost=1; }
+    elsif ($arg eq "-guesshost" )       { $guesshost = 1; }
+    elsif ($arg eq "-setupenv" )        { $visit_sets_up_environment = 1; }
+    elsif ($arg eq "-quiet" )           { $quiet = 1; }
     else                         { push @visitargs, $arg; }
 }
 
@@ -967,7 +985,19 @@ if ($envonly)
     exit(0);
 }
 
-@visitcmd = ("$visitbindir/$exe_name", @visitargs);
+if ($visit_sets_up_environment and
+    $exe_name eq "engine_par")
+{
+    @visitcmd = ();
+    push @visitcmd, "visit", "-engine", "-par", "-quiet";
+    push @visitcmd, "-v", $ver if $ver ne "";
+    push @visitcmd, @visitargs;
+}
+else
+{
+    @visitcmd = ("$visitbindir/$exe_name", @visitargs);
+}
+
 $printonly = grep(/^$exe_name$/, @norun) unless ($debug_totalview or
                                                  $debug_valgrind);
 
@@ -980,6 +1010,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
         push @parcmd, @launchargs if $launchargs_set;
         push @parcmd, "-np", $procs if $procs_set;
         push @parcmd, "-p",  $part  if $part_set;
+	push @parcmd, "-machinefile", $machinefile if $machinefile_set;
         push @parcmd, @visitcmd;
 
         @printcmd = @parcmd;
@@ -1119,7 +1150,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
     }
     else
     {
-        print STDERR "Running: @printcmd\n";
+        print STDERR "Running: @printcmd\n" if (! $quiet);
         exec @parcmd or die "Can't launch using $launch: $!\n";
     }
 }
@@ -1137,7 +1168,7 @@ else
         # Run totalview
         @debugcmd = ("totalview", "$visitbindir/$exe_name", "-a", "-dograb", @visitargs);
         if ($security_key_set) { push @debugcmd, "-key", $security_key; }
-        print STDERR "Running: @debugcmd\n";
+        print STDERR "Running: @debugcmd\n" if (! $quiet);
         $exec_totalview_failed = 0;
         exec @debugcmd or $exec_totalview_failed = 1;
     }
@@ -1149,7 +1180,7 @@ else
         # Note: could add --leak-check=yes to either tool
         @debugcmd = ("valgrind", "--tool=memcheck", "--error-limit=no", "--num-callers=32", "$visitbindir/$exe_name", @visitargs);
         if ($security_key_set) { push @debugcmd, "-key", $security_key; }
-        print STDERR "Running: @debugcmd\n";
+        print STDERR "Running: @debugcmd\n" if (! $quiet);
         exec @debugcmd or die "Could not execute $exe_name under valgrind\n";
     }
     elsif ($debug_gdb)
@@ -1289,7 +1320,7 @@ else
                 @debugcmd = ("xterm", "-title", $debugtitle, "-fn", "fixed", "-e", "gdb", $real_exe, "-x", $gdbfilename);
             }
 
-            print STDERR "Running: @debugcmd\n";
+            print STDERR "Running: @debugcmd\n" if (! $quiet);
             $exec_gdb_failed = 0;
             exec @debugcmd or $exec_gdb_failed = 1;
             if($exec_gdb_failed)
@@ -1308,7 +1339,7 @@ else
     {
         @printcmd = ("$exe_name$ver", @visitargs);
         chomp($printcmd[0] = `basename $printcmd[0]`);
-        print STDERR "Running: @printcmd\n";
+        print STDERR "Running: @printcmd\n" if (! $quiet);
         if ($security_key_set) { push @visitcmd, "-key", $security_key; }
 
         $launched = 0;
@@ -1373,7 +1404,7 @@ sub RunComponent {
 
    @printcmd = ("$exe_name$ver", @visitargs);
    chomp($printcmd[0] = `basename $printcmd[0]`);
-   print STDERR "Running: @printcmd\n";
+   print STDERR "Running: @printcmd\n" if (! $quiet);
    if ($security_key_set) { push @visitcmd, "-key", $security_key; }
    exec @visitcmd or die "Can't execute visit: $!\n";
 }
