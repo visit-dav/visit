@@ -130,6 +130,9 @@ QvisThresholdWindow::~QvisThresholdWindow()
 //   Mark Blair, Tue Mar  7 13:25:00 PST 2006
 //   Upgraded to support multiple threshold variables.
 //
+//   Mark Blair, Tue Aug  8 17:47:00 PDT 2006
+//   Now accommodates an empty list of threshold variables.
+//
 // ****************************************************************************
 
 void
@@ -164,15 +167,15 @@ QvisThresholdWindow::CreateWindowContents()
             this, SLOT(zonePortionChanged(int)));
     shownVarLayout->addMultiCellWidget(zonePortion, 1, 1, 2, 5);
 
-    shownVarLayout->addMultiCellWidget(
-        new QLabel("Lower bound", shownVarBox, "lowerBoundLabel"), 2, 2, 0, 1);
+    lowerBoundLabel = new QLabel("Lower bound", shownVarBox, "lowerBoundLabel");
+    shownVarLayout->addMultiCellWidget(lowerBoundLabel, 2, 2, 0, 1);
     lowerBound = new QLineEdit(shownVarBox, "lowerBound");
     connect(lowerBound, SIGNAL(returnPressed()), this, SLOT(lowerBoundChanged()));
     connect(lowerBound, SIGNAL(lostFocus()), this, SLOT(lowerBoundChanged()));
     shownVarLayout->addMultiCellWidget(lowerBound, 2, 2, 2, 5);
 
-    shownVarLayout->addMultiCellWidget(
-        new QLabel("Upper bound", shownVarBox, "upperBoundLabel"), 3, 3, 0, 1);
+    upperBoundLabel = new QLabel("Upper bound", shownVarBox, "upperBoundLabel");
+    shownVarLayout->addMultiCellWidget(upperBoundLabel, 3, 3, 0, 1);
     upperBound = new QLineEdit(shownVarBox, "upperBound");
     connect(upperBound, SIGNAL(returnPressed()), this, SLOT(upperBoundChanged()));
     connect(upperBound, SIGNAL(lostFocus()), this, SLOT(upperBoundChanged()));
@@ -270,40 +273,30 @@ QvisThresholdWindow::CreateWindowContents()
 //   Mark Blair, Tue Mar  7 13:25:00 PST 2006
 //   Upgraded to support multiple threshold variables.
 //
+//   Mark Blair, Tue Aug  8 17:47:00 PDT 2006
+//   Now accommodates an empty list of threshold variables.
+//
 // ****************************************************************************
 
 void
 QvisThresholdWindow::UpdateWindow(bool doAll)
 {
-    ThresholdAttributes::OutputMeshType currentMeshType;
-    QString temp;
+    QString fieldString;
+    std::string shownVarName;
 
     if (changedAttsInGUI) *atts = latestGUIAtts;
+    
+    bool varListIsEmpty =
+        (atts->GetShownVariable() == std::string("(no variables in list)"));
+    bool enableZonePortion = (!varListIsEmpty &&
+        (atts->GetOutputMeshType() == ThresholdAttributes::InputZones));
 
     for (int attIndex = 0; attIndex < atts->NumAttributes(); attIndex++)
     {
-
-/* Always apply all attributes.
-        if (!doAll) {
-            if (!atts->IsSelected(attIndex)) continue;
-        }
-*/
         switch (attIndex)
         {
             case 0:  // outputMeshType
-                currentMeshType = atts->GetOutputMeshType();
-                outputMeshType->setButton((int)currentMeshType);
-
-                if (currentMeshType == ThresholdAttributes::InputZones)
-                {
-                    zonePortionLabel->setEnabled(true);
-                    zonePortion->setEnabled(true);
-                }
-                else
-                {   // ThresholdAttributes::PartOfZone
-                    zonePortionLabel->setEnabled(false);
-                    zonePortion->setEnabled(false);
-                }
+                outputMeshType->setButton((int)atts->GetOutputMeshType());
 
                 break;
 
@@ -311,30 +304,50 @@ QvisThresholdWindow::UpdateWindow(bool doAll)
                 break;
 
             case 2:  // shownVarPosition
-                temp = atts->GetShownVariable().c_str();
-                shownVariable->setText(temp);
+                shownVarName = atts->GetShownVariable();
+                
+                if (shownVarName == std::string("default"))
+                    shownVarName = atts->GetDefaultVarName();
+
+                shownVariable->setText(QString(shownVarName));
+
                 break;
 
             case 3:  // zonePortions
                 zonePortion->setButton((int)atts->GetZonePortion());
+
+                zonePortion->setEnabled(enableZonePortion);
+                zonePortionLabel->setEnabled(enableZonePortion);
+                
                 break;
 
             case 4:  // lowerBounds
                 if (atts->GetLowerBound() < -9e+36)
-                    temp = "min";
+                    fieldString = "min";
                 else
-                    temp.setNum(atts->GetLowerBound());
+                    fieldString.setNum(atts->GetLowerBound());
+                    
+                lowerBound->setText(fieldString);
 
-                lowerBound->setText(temp);
+                lowerBound->setReadOnly(varListIsEmpty);
+                lowerBoundLabel->setEnabled(!varListIsEmpty);
+
                 break;
 
             case 5:  // upperBounds
                 if (atts->GetUpperBound() > +9e+36)
-                    temp = "max";
+                    fieldString = "max";
                 else
-                    temp.setNum(atts->GetUpperBound());
+                    fieldString.setNum(atts->GetUpperBound());
+                    
+                upperBound->setText(fieldString);
 
-                upperBound->setText(temp);
+                upperBound->setReadOnly(varListIsEmpty);
+                upperBoundLabel->setEnabled(!varListIsEmpty);
+
+                break;
+                
+            case 6:   // defaultVarName
                 break;
         }
     }
@@ -458,18 +471,14 @@ QvisThresholdWindow::outputMeshTypeChanged(int buttonID)
     {
         atts->SetOutputMeshType(newOutputMeshType);
         RecordGUIAttributeChangeIfActuallyChanged();
-
-        if (newOutputMeshType == ThresholdAttributes::InputZones)
-        {
-            zonePortionLabel->setEnabled(true);
-            zonePortion->setEnabled(true);
-        }
-        else
-        {   // YhresholdAttributes::PartOfZone
-            zonePortionLabel->setEnabled(false);
-            zonePortion->setEnabled(false);
-        }
-
+        
+        bool enableZonePortion =
+            ((newOutputMeshType == ThresholdAttributes::InputZones) &&
+             (atts->GetShownVariable() != std::string("(no variables in list)")));
+             
+        zonePortionLabel->setEnabled(enableZonePortion);
+        zonePortion->setEnabled(enableZonePortion);
+    
         Apply();
     }
 }
@@ -557,15 +566,32 @@ QvisThresholdWindow::variableSwapped(const QString &variableToSwapIn)
 // Programmer: Mark Blair
 // Creation:   Tue Mar  7 13:25:00 PST 2006
 //
+// Modifications:
+//   
+//    Mark Blair, Tue Aug  8 17:47:00 PDT 2006
+//    Now accommodates an empty list of threshold variables.
+//
 // ****************************************************************************
 
 void
 QvisThresholdWindow::UpdateShownFields()
 {
-    QString fieldString = atts->GetShownVariable().c_str();
-    shownVariable->setText(fieldString);
+    QString fieldString;
+    std::string shownVarName = atts->GetShownVariable();
+    bool varListIsEmpty =
+        (atts->GetShownVariable() == std::string("(no variables in list)"));
+    bool enableZonePortion = (!varListIsEmpty &&
+        (atts->GetOutputMeshType() == ThresholdAttributes::InputZones));
+    
+    if (shownVarName == std::string("default"))
+        shownVarName = atts->GetDefaultVarName();
+
+    shownVariable->setText(QString(shownVarName));
 
     zonePortion->setButton((int)atts->GetZonePortion());
+
+    zonePortion->setEnabled(enableZonePortion);
+    zonePortionLabel->setEnabled(enableZonePortion);
 
     if (atts->GetLowerBound() < -9e+36)
         fieldString = "min";
@@ -574,12 +600,18 @@ QvisThresholdWindow::UpdateShownFields()
 
     lowerBound->setText(fieldString);
 
+    lowerBound->setReadOnly(varListIsEmpty);
+    lowerBoundLabel->setEnabled(!varListIsEmpty);
+
     if (atts->GetUpperBound() > +9e+36)
         fieldString = "max";
     else
         fieldString.setNum(atts->GetUpperBound());
 
     upperBound->setText(fieldString);
+
+    upperBound->setReadOnly(varListIsEmpty);
+    upperBoundLabel->setEnabled(!varListIsEmpty);
 
     RecordGUIAttributeChangeIfActuallyChanged();
 

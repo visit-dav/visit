@@ -73,6 +73,9 @@ class     vtkDataSet;
 //    Mark Blair, Tue Mar  7 13:25:00 PST 2006
 //    Reworked to support multi-variable thresholding.
 //
+//    Mark Blair, Tue Aug  8 17:47:00 PDT 2006
+//    Now accommodates an empty list of threshold variables; does pass-through.
+//
 // ****************************************************************************
 
 class avtThresholdFilter : public avtPluginStructuredChunkStreamer

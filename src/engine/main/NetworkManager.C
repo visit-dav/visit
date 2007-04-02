@@ -1841,6 +1841,9 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //    Brad Whitlock, Wed Jul 26 13:16:06 PST 2006
 //    Added code to set the fullframe scale into the plot's mappers.
 //
+//    Mark C. Miller, Mon Aug 14 12:26:18 PDT 2006
+//    Added code to return viswin to its true stereo type upon completion
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -1876,12 +1879,16 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
         bool needToSetUpWindowContents = false;
         int *cellCounts = new int[2 * plotIds.size()];
         bool handledAnnotations = false;
+        int stereoType = -1;
 
         //
         // Explicitly specify left or right eye for stereo 
         //
         if (viswin->GetStereo())
+        {
+            stereoType = viswin->GetStereoType();
             viswin->SetStereoRendering(true, leftEye ? 4 : 5);
+        }
 
         // put all the plot objects into the VisWindow
         viswin->SetScalableRendering(false);
@@ -2411,6 +2418,10 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
         }
         
         delete [] cellCounts;
+
+        // return viswindow to its true stereo mode
+        if (stereoType != -1)
+            viswin->SetStereoRendering(true, stereoType);
 
         // return it
         visitTimer->StopTimer(t1, "Total time for NetworkManager::Render");

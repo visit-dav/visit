@@ -44,6 +44,8 @@
 
 #include <ViewerPlot.h>
 
+#include <DebugStream.h>
+
 #if defined(__APPLE__)
 #define GetViewerInfo Threshold_GetViewerInfo
 #endif
@@ -185,6 +187,10 @@ ThresholdViewerPluginInfo::GetClientAtts(AttributeSubject *atts)
 //     Mark Blair, Thu Mar  9 18:25:00 PST 2006
 //     Upgraded to support multiple threshold variables.
 //
+//     Mark Blair, Tue Aug  8 17:47:00 PDT 2006
+//     Now accommodates an empty list of threshold variables; does pass-through.
+//     Also checks for attribute consistency.
+//
 // ****************************************************************************
 
 void
@@ -192,31 +198,61 @@ ThresholdViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
                                                   const ViewerPlot *plot,
                                                   const bool fromDefault)
 {
+    bool setVarListEmpty = false;
     std::string plotVarName = plot->GetVariableName();
-    stringVector curVarNames;
+    ThresholdAttributes *initAtts = fromDefault ? defaultAtts : clientAtts;
     
-    if (fromDefault)
+    stringVector initVarNames    = initAtts->GetListedVarNames();
+    intVector initZonePortions   = initAtts->GetZonePortions();
+    doubleVector initLowerBounds = initAtts->GetLowerBounds();
+    doubleVector initUpperBounds = initAtts->GetUpperBounds();
+    
+    int varListSize = initVarNames.size();
+    int varNum;
+    
+    if (!initAtts->AttributesAreConsistent())
     {
-        curVarNames = defaultAtts->GetListedVariables();
-        
-        if (curVarNames[0] == std::string("default"))
-        {
-            defaultAtts->SwitchToPipelineVariable(plotVarName);
-        }
-
-        *(ThresholdAttributes *)atts = *defaultAtts;
+        debug1 << "Threshold operator attributes are inconsistent." << endl;
+        setVarListEmpty = true;
     }
     else
     {
-        curVarNames = clientAtts->GetListedVariables();
+        bool defaultIsListed = false;
+        std::string initVarName;
 
-        if (curVarNames[0] == std::string("default"))
+        for (varNum = 0; varNum < varListSize; varNum++)
         {
-            clientAtts->SwitchToPipelineVariable(plotVarName);
+            if ((initVarName = initVarNames[varNum]) == plotVarName)
+                defaultIsListed = true;
+            else if (initVarName == std::string("default"))
+                defaultIsListed = true;
         }
-
-        *(ThresholdAttributes *)atts = *clientAtts;
+        
+        if (defaultIsListed)
+        {
+            if (plot->GetVarType() != AVT_SCALAR_VAR)
+                setVarListEmpty = true;
+        }
     }
+    
+    if (setVarListEmpty)
+    {
+        initVarNames.clear();
+        initZonePortions.clear();
+        initLowerBounds.clear();
+        initUpperBounds.clear();
+        
+        initAtts->SetListedVarNames(initVarNames);
+        initAtts->SetZonePortions(initZonePortions);
+        initAtts->SetLowerBounds(initLowerBounds);
+        initAtts->SetUpperBounds(initUpperBounds);
+        
+        initAtts->SetShownVarPosition(0);
+    }
+
+    initAtts->SetDefaultVarName(plotVarName);
+
+    *(ThresholdAttributes *)atts = *initAtts;
 }
 
 // ****************************************************************************

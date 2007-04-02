@@ -57,6 +57,9 @@
 //   Mark Blair, Tue Mar  7 13:25:00 PST 2006
 //   Upgraded to support multiple threshold variables.
 //
+//   Mark Blair, Tue Aug  8 17:47:00 PDT 2006
+//   Now accommodates an empty list of threshold variables.
+//
 // ****************************************************************************
 
 class ThresholdAttributes : public AttributeSubject
@@ -96,7 +99,9 @@ public:
     void SetZonePortions(const intVector &zonePortions_);
     void SetLowerBounds(const doubleVector &lowerBounds_);
     void SetUpperBounds(const doubleVector &upperBounds_);
+    void SetDefaultVarName(const std::string &defaultVarName_);
 
+    bool AttributesAreConsistent() const;
     void SwitchToPipelineVariable(const std::string &pipelineVarName_);
 
     // Property getting methods
@@ -106,6 +111,8 @@ public:
     ZonePortion            GetZonePortion() const;
     double                 GetLowerBound() const;
     double                 GetUpperBound() const;
+    const std::string     &GetDefaultVarName() const;
+          std::string     &GetDefaultVarName();
 
     const stringVector    &GetListedVariables() const;
     const intVector       &GetZonePortions() const;
@@ -145,6 +152,7 @@ public:
     void                   SelectZonePortions();
     void                   SelectLowerBounds();
     void                   SelectUpperBounds();
+    void                   SelectDefaultVarName();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -175,6 +183,7 @@ private:
     intVector           zonePortions;
     doubleVector        lowerBounds;
     doubleVector        upperBounds;
+    std::string         defaultVarName;
 };
 
 #endif

@@ -115,6 +115,9 @@ avtThresholdFilter::Create()
 //    Mark Blair, Tue Mar  7 13:25:00 PST 2006
 //    No longer recognizes the "default" variable.
 //
+//    Mark Blair, Tue Aug  8 17:47:00 PDT 2006
+//    Now accommodates an empty list of threshold variables; does pass-through.
+//
 // ****************************************************************************
 
 void
@@ -122,8 +125,17 @@ avtThresholdFilter::SetAtts(const AttributeGroup *a)
 {
     atts = *(const ThresholdAttributes*)a;
     
-    if (atts.GetShownVariable() != std::string("default"))
-        SetActiveVariable(atts.GetShownVariable().c_str());
+    if (!atts.AttributesAreConsistent()) return;
+    
+    std::string shownVariable = atts.GetShownVariable();
+    
+    if (shownVariable != std::string("(no variables in list)"))
+    {
+        if (shownVariable != std::string("default"))
+        {
+            SetActiveVariable(shownVariable.c_str());
+        }
+    }
 }
 
 
@@ -248,12 +260,29 @@ static void UpdateNeighborCells(int pt, const int *pt_dims,
 //    Mark Blair, Wed May 31 18:17:00 PDT 2006
 //    SetInputScalars deprecated, now use SetInputArrayToProcess.
 //
+//    Mark Blair, Tue Aug  8 17:47:00 PDT 2006
+//    Now accommodates an empty list of threshold variables; does pass-through.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtThresholdFilter::ProcessOneChunk(
     vtkDataSet *in_ds, int domain, std::string label, bool fromChunker)
 {
+    if (!atts.AttributesAreConsistent())
+    {
+        debug1 << "Threshold operator attributes are inconsistent." << endl;
+
+        in_ds->Register(NULL);
+        return in_ds;
+    }
+
+    if (atts.GetShownVariable() == std::string("(no variables in list)"))
+    {
+        in_ds->Register(NULL);
+        return in_ds;
+    }
+
     if (atts.GetOutputMeshType() == ThresholdAttributes::PointMesh)
     {
         return ThresholdToPointMesh(in_ds);
@@ -283,30 +312,41 @@ avtThresholdFilter::ProcessOneChunk(
     for (int curVarNum = 0; curVarNum < curVariables.size(); curVarNum++)
     {
         threshold = vtkThreshold::New();
-        
+
         curVarName = curVariables[curVarNum].c_str();
 
         threshold->SetInput(curOutDataSet);
+
+        threshold->SetInputArrayToProcess(
+            0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS_THEN_CELLS,
+            vtkDataSetAttributes::SCALARS);
+
+        if (curZonePortions[curVarNum] == (int)ThresholdAttributes::PartOfZone)
+        {
+            threshold->AllScalarsOff();
+        }
+        else if (curZonePortions[curVarNum] == (int)ThresholdAttributes::EntireZone)
+        {
+            threshold->AllScalarsOn();
+        }
+        else
+        {
+            debug1 << "Invalid zone inclusion option encountered "
+                   << "in Threshold operator attributes." << endl;
+            threshold->AllScalarsOff();
+        }
+
         threshold->ThresholdBetween(
             curLowerBounds[curVarNum], curUpperBounds[curVarNum]);
     
         if (curOutDataSet->GetPointData()->GetArray(curVarName) != NULL)
         {
-            threshold->SetInputArrayToProcess (
+            threshold->SetInputArrayToProcess(
                 0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, curVarName);
-
-            if (curZonePortions[curVarNum] == (int)ThresholdAttributes::PartOfZone)
-            {
-                threshold->AllScalarsOff();
-            }
-            else if (curZonePortions[curVarNum] == (int)ThresholdAttributes::EntireZone)
-            {
-                threshold->AllScalarsOn();
-            }
         }
         else if (curOutDataSet->GetCellData()->GetArray(curVarName) != NULL)
         {
-            threshold->SetInputArrayToProcess (
+            threshold->SetInputArrayToProcess(
                 0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, curVarName);
         }
         else
@@ -314,9 +354,9 @@ avtThresholdFilter::ProcessOneChunk(
             curOutDataSet->Register(NULL);
             threshold->Delete();
     
-            sprintf (errMsg,
-                "Data for variable \"%s\" is not currently available.",
-                curVarName);
+            sprintf (errMsg, "Data for variable \"%s\" is not currently available.",
+                     curVarName);
+            debug1 << errMsg << endl;
             EXCEPTION1(VisItException, errMsg);
         }
 
@@ -335,7 +375,7 @@ avtThresholdFilter::ProcessOneChunk(
 
         threshold->Delete();
     }
-    
+
     if (curOutDataSet != NULL)
     {
         curOutDataSet->GetFieldData()->PassData(in_ds->GetFieldData());
@@ -629,12 +669,22 @@ avtThresholdFilter::RefashionDataObjectInfo(void)
 //    Mark Blair, Tue Mar  7 13:25:00 PST 2006
 //    No longer recognizes the "default" variable.
 //
+//    Mark Blair, Tue Aug  8 17:47:00 PDT 2006
+//    Now accommodates an empty list of threshold variables; does pass-through.
+//
 // ****************************************************************************
 
 void
 avtThresholdFilter::PreExecute(void)
 {
     avtPluginStructuredChunkStreamer::PreExecute();
+
+/*  Since the list of threshold variables can now be empty, this check is no
+    longer necessary.  If a plot has no scalar default variable, like in the
+    case of a Material or Vector plot, and if no other scalar variable has been
+    selected for thresholding, the threshold variable list will be empty and
+    the input data to the Threshold operator will simply be passed through as
+    its output.  (mb)
 
     if (GetInput()->GetInfo().GetAttributes().GetVariableName() == "<unknown>")
     {
@@ -646,6 +696,7 @@ avtThresholdFilter::PreExecute(void)
         //
         EXCEPTION1(NoDefaultVariableException, "Threshold");
     }
+*/
 }
 
 
@@ -674,13 +725,29 @@ avtThresholdFilter::PreExecute(void)
 //    Kathleen Bonnell, Mon May  1 08:50:46 PDT 2006 
 //    Turn on Node & Zone numbers when appropriate. 
 //
+//    Mark Blair, Tue Aug  8 17:47:00 PDT 2006
+//    Now accommodates an empty list of threshold variables; does pass-through.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
 avtThresholdFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
 {
-    const char *pipelineVar = in_spec->GetDataSpecification()->GetVariable();
+    if (!atts.AttributesAreConsistent())
+        return in_spec;
+        
+    std::string shownVariable = atts.GetShownVariable();
     
+    if (shownVariable == std::string("(no variables in list)"))
+        return in_spec;
+
+    const char *pipelineVar = in_spec->GetDataSpecification()->GetVariable();
+
+    const char *activeVar = pipelineVar;
+
+    if (atts.GetShownVariable() != std::string("default"))
+        activeVar = atts.GetShownVariable().c_str();
+
     atts.SwitchToPipelineVariable(std::string(pipelineVar));
     
     avtPipelineSpecification_p outSpec = new avtPipelineSpecification(in_spec);
@@ -689,14 +756,14 @@ avtThresholdFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
         outSpec->GetDataSpecification()->GetSecondaryVariables();
     const stringVector curListedVars = atts.GetListedVariables();
     const char *curListedVar;
-    const char *curSecondaryVar;
     int listedVarNum, secVarNum;
 
     for (listedVarNum = 0; listedVarNum < curListedVars.size(); listedVarNum++)
     {
         curListedVar = curListedVars[listedVarNum].c_str();
         
-        if (strcmp(curListedVar, pipelineVar) != 0)
+        if ((strcmp(curListedVar, pipelineVar) != 0) &&
+            (strcmp(curListedVar, activeVar  ) != 0))
         {
             for (secVarNum = 0; secVarNum < curSecondaryVars.size(); secVarNum++)
             {
@@ -710,25 +777,6 @@ avtThresholdFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
             {
                 outSpec->GetDataSpecification()->AddSecondaryVariable(curListedVar);
             }
-        }
-    }
-
-    for (secVarNum = 0; secVarNum < curSecondaryVars.size(); secVarNum++)
-    {
-        curSecondaryVar = *curSecondaryVars[secVarNum];
-
-        for (listedVarNum = 0; listedVarNum < curListedVars.size(); listedVarNum++)
-        {
-            if (strcmp(curListedVars[listedVarNum].c_str(), curSecondaryVar) == 0)
-            {
-                break;
-            }
-        }
-
-        if (listedVarNum >= curListedVars.size())
-        {
-            outSpec->GetDataSpecification()->
-            RemoveSecondaryVariable(curSecondaryVar);
         }
     }
 
@@ -746,7 +794,7 @@ avtThresholdFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
     for (listedVarNum = 0; listedVarNum < curListedVars.size(); listedVarNum++)
     {
         curListedVar = curListedVars[listedVarNum].c_str();
-
+        
         if ((it = GetMetaData()->GetDataExtents(curListedVar)) != NULL)
         {
             lowerBound = curLowerBounds[listedVarNum];
