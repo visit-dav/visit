@@ -5,10 +5,17 @@
 
 #include <avtCompactTreeFilter.h>
 
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
 
 #include <avtSourceFromAVTDataset.h>
+#include <avtDataObjectString.h>
+#include <avtDataObjectReader.h>
+#include <avtDataObjectWriter.h>
 #include <avtDataSpecification.h>
 #include <avtMetaData.h>
+#include <avtParallel.h>
 #include <avtPipelineSpecification.h>
 #include <avtCommonDataFunctions.h>
 
@@ -32,12 +39,17 @@
 //    Hank Childs, Wed Aug 24 15:45:14 PDT 2005
 //    Initialized createCleanPolyData.
 //
+//    Hank Childs, Thu Sep 22 17:02:47 PDT 2005
+//    Initialize tolerance.
+//
 // ****************************************************************************
 
 avtCompactTreeFilter::avtCompactTreeFilter()
 {
     executionDependsOnDLB = false;
     createCleanPolyData = false;
+    tolerance = 0;
+    parallelMerge = false;
 }
 
 // ****************************************************************************
@@ -80,6 +92,10 @@ avtCompactTreeFilter::avtCompactTreeFilter()
 //    Hank Childs, Wed Aug 24 15:45:14 PDT 2005
 //    Create clean poly data if requested.
 //
+//    Hank Childs, Thu Sep 22 17:02:23 PDT 2005
+//    Account for tolerance when cleaning poly data.  Also add logic for doing
+//    a parallel merge.
+//
 // ****************************************************************************
 
 void
@@ -97,6 +113,55 @@ avtCompactTreeFilter::Execute(void)
     }
 
     avtDataTree_p inTree = GetInputDataTree();
+
+    if (parallelMerge)
+    {
+        int mpiSendDataTag    = GetUniqueMessageTag();
+        int mpiSendObjSizeTag = GetUniqueMessageTag();
+
+        avtDataObject_p bigDS = GetTypedInput()->Clone();
+        if (PAR_UIProcess())
+        {
+            int nprocs = PAR_Size();
+#ifdef PARALLEL
+            for (int i = 1 ; i < nprocs ; i++)
+            {
+                avtDataObjectReader reader;
+                int len = 0;
+                MPI_Status stat;
+                MPI_Recv(&len, 1, MPI_INT, i, mpiSendObjSizeTag, 
+                         MPI_COMM_WORLD, &stat);
+                char *buff = new char[len];
+                MPI_Recv(buff, len, MPI_CHAR, i, mpiSendDataTag, 
+                         MPI_COMM_WORLD, &stat);
+                reader.Read(len, buff);
+                avtDataObject_p ds2 = reader.GetOutput();
+                bigDS->Merge(*(ds2));
+                //buff freed by reader
+            }
+#endif
+
+            avtDataset_p ds2;
+            CopyTo(ds2, bigDS);
+            inTree = ds2->GetDataTree();
+        }
+        else
+        {
+#ifdef PARALLEL
+            avtDataObjectWriter_p writer = GetInput()->InstantiateWriter();
+            writer->SetInput(GetInput());
+            avtDataObjectString str;
+            writer->Write(str);
+            int len = 0;
+            char *buff = NULL;
+            str.GetWholeString(buff, len);
+            MPI_Send(&len, 1, MPI_INT, 0, mpiSendObjSizeTag, MPI_COMM_WORLD);
+            MPI_Send(buff, len, MPI_CHAR, 0, mpiSendDataTag, MPI_COMM_WORLD);
+#endif
+
+            inTree = new avtDataTree(); // Make an empty tree, so we exit early
+        }
+    }
 
     if (inTree->IsEmpty())
     {
@@ -182,6 +247,8 @@ avtCompactTreeFilter::Execute(void)
             {
                 vtkCleanPolyData *cpd = vtkCleanPolyData::New();
                 cpd->SetInput((vtkPolyData *) ds);
+                cpd->SetToleranceIsAbsolute(1);
+                cpd->SetAbsoluteTolerance(tolerance);
                 cpd->Update();
                 outTree = new avtDataTree(cpd->GetOutput(), -1);
                 cpd->Delete();

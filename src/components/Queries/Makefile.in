@@ -104,6 +104,9 @@
 #   Hank Childs, Fri Aug  5 09:59:12 PDT 2005
 #   Added kurtosis, skewness.
 #
+#   Hank Childs, Fri Sep 23 16:09:48 PDT 2005
+#   Added watertight query.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -171,6 +174,7 @@ Queries_src= \
  Queries/avtVariableByNodeQuery.C \
  Queries/avtVariableByZoneQuery.C \
  Queries/avtVariableSummationQuery.C \
+ Queries/avtWatertightQuery.C \
  Queries/avtWeightedVariableSummationQuery.C \
  Queries/avtZoneCenterQuery.C \
  Queries/MinMaxInfo.C

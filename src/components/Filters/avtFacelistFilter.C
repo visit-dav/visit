@@ -63,6 +63,9 @@ using     std::vector;
 //    Hank Childs, Fri Mar 11 08:07:26 PST 2005
 //    Removed data member filters.
 //
+//    Hank Childs, Fri Sep 23 10:51:19 PDT 2005
+//    Initialize createEdgeListFor2DDatasets.
+//
 // ****************************************************************************
 
 avtFacelistFilter::avtFacelistFilter()
@@ -70,6 +73,7 @@ avtFacelistFilter::avtFacelistFilter()
     useFacelists = true;
     create3DCellNumbers = false;
     forceFaceConsolidation = false;
+    createEdgeListFor2DDatasets = false;
 }
 
 
@@ -147,6 +151,28 @@ avtFacelistFilter::SetForceFaceConsolidation(bool afc)
 
 
 // ****************************************************************************
+//  Method:  avtFacelistFilter::SetCreateEdgeListFor2DDatasets
+//
+//  Purpose:
+//      Tells the facelist filter that it should create an edge list for 2D
+//      data sets.
+//
+//  Arguments:
+//      val      True if we should create an edge list.
+//
+//  Programmer:  Hank Childs
+//  Creation:    September 23, 2005
+//
+// ****************************************************************************
+
+void
+avtFacelistFilter::SetCreateEdgeListFor2DDatasets(bool val)
+{
+    createEdgeListFor2DDatasets = val;
+}
+
+
+// ****************************************************************************
 //  Method: avtFacelistFilter::ExecuteData
 //
 //  Purpose:
@@ -182,6 +208,9 @@ avtFacelistFilter::SetForceFaceConsolidation(bool afc)
 //
 //    Kathleen Bonnell, Fri Feb 18 15:08:32 PST 2005 
 //    Convert 'point' and 'line' Structured or Rectilinear grids to poly data. 
+//
+//    Hank Childs, Fri Sep 23 11:31:00 PDT 2005
+//    Add support for taking edges instead of 2D faces.
 //
 // ****************************************************************************
 
@@ -232,13 +261,16 @@ avtFacelistFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 
       // 2D meshes or surfaces
       case 2:
-        if (sDim == 3)
+        if (sDim == 3 && !createEdgeListFor2DDatasets)
         {
             out_ds = in_ds;
         }
         else
         {
-            out_ds = Take2DFaces(in_ds);
+            if (createEdgeListFor2DDatasets)
+                out_ds = FindEdges(in_ds);
+            else
+                out_ds = Take2DFaces(in_ds);
         }
         break;
 
@@ -559,6 +591,241 @@ avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds)
 
     ManageMemory(out_ds);
     out_ds->Delete();
+
+    return out_ds;
+}
+
+
+// ****************************************************************************
+//  Method: avtFacelistFilter::FindEdges
+//
+//  Purpose:
+//      Finds the edges.  This means that it will a 2D data set and find the
+//      set of edges on the exterior.
+//
+//  Arguments:
+//      in_ds      The input dataset.
+//
+//  Returns:       The output dataset.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 23, 2005
+//
+// ****************************************************************************
+
+struct Edge
+{
+    int  p1, p2;
+    int  cellId;
+};
+
+class EdgeHash
+{
+  public:
+               EdgeHash(int numEdges);
+    virtual   ~EdgeHash();
+    
+    void       HashEdge(Edge &);
+    Edge      *GetEdges(int &);
+
+  private:
+    Edge     **edgeList;
+    int       *nEdges;
+    int        hashSize;
+
+    int        GetHashIndex(int p1, int p2)  
+                     { return (p1*37 + p2*53)%hashSize; }
+};
+
+EdgeHash::EdgeHash(int numEdges)
+{
+    hashSize = numEdges*2;
+    edgeList = new Edge*[hashSize];
+    nEdges   = new int[hashSize];
+    for (int i = 0 ; i < hashSize ; i++)
+    {
+        edgeList[i] = NULL;
+        nEdges[i] = 0;
+    }
+}
+
+EdgeHash::~EdgeHash()
+{
+    for (int i = 0 ; i < hashSize ; i++)
+    {
+        if (edgeList[i] != NULL)
+            delete [] edgeList[i];
+    }
+    delete [] edgeList;
+    delete [] nEdges;
+}
+
+void EdgeHash::HashEdge(Edge &e)
+{
+    int  i, j;
+    int idx = GetHashIndex(e.p1, e.p2);
+    bool alreadyHaveEdge = false;
+    for (i = 0 ; i < nEdges[idx] ; i++)
+    {
+        if (edgeList[idx][i].p1 == e.p1 && edgeList[idx][i].p2 == e.p2)
+            alreadyHaveEdge = true;
+    }
+    if (alreadyHaveEdge)
+    {
+        int newSize = nEdges[idx]-1;
+        Edge *tmpPtr = new Edge[newSize];
+        int curIdx = 0;
+        for (i = 0 ; i < nEdges[idx] ; i++)
+        {
+            if (edgeList[idx][i].p1 == e.p1 && edgeList[idx][i].p2 == e.p2)
+                continue;
+            Edge &e1 = tmpPtr[curIdx++];
+            Edge &e2 = edgeList[idx][i];
+            e1 = e2;
+        }
+        if (edgeList[idx] != NULL)
+            delete [] edgeList[idx];
+        edgeList[idx] = tmpPtr;
+        nEdges[idx] = newSize;
+    }
+    else
+    {
+        int newSize = nEdges[idx]+1;
+        Edge *tmpPtr = new Edge[newSize];
+        for (i = 0 ; i < nEdges[idx] ; i++)
+        {
+            Edge &e1 = tmpPtr[i];
+            Edge &e2 = edgeList[idx][i];
+            e1 = e2;
+        }
+        Edge &e1 = tmpPtr[nEdges[idx]];
+        e1 = e;
+        if (edgeList[idx] != NULL)
+            delete [] edgeList[idx];
+        edgeList[idx] = tmpPtr;
+        nEdges[idx] = newSize;
+    }
+}
+
+Edge *EdgeHash::GetEdges(int &totalEdges)
+{
+    int  i, j;
+
+    totalEdges = 0;
+    for (i = 0 ; i < hashSize ; i++)
+        totalEdges += nEdges[i];
+
+    Edge *rv = new Edge[totalEdges];
+    int curEdgeIdx = 0;
+    for (i = 0 ; i < hashSize ; i++)
+    {
+        for (j = 0 ; j < nEdges[i] ; j++)
+        {
+            Edge &curEdge = rv[curEdgeIdx++];
+            Edge &storedEdge = edgeList[i][j];
+            curEdge = storedEdge;
+        }
+    }
+
+    return rv;
+}
+
+vtkDataSet *
+avtFacelistFilter::FindEdges(vtkDataSet *in_ds)
+{
+    int i, j;
+
+    int nCells = in_ds->GetNumberOfCells();
+    int guessForEdges = 4*nCells;
+    EdgeHash hash(guessForEdges);
+    for (i = 0 ; i < nCells ; i++)
+    {
+        vtkCell *cell = in_ds->GetCell(i);
+        int nEdges = cell->GetNumberOfEdges();
+        for (j = 0 ; j < nEdges ; j++)
+        {
+            vtkCell *edge = cell->GetEdge(j);
+            vtkIdList *ids = edge->GetPointIds();
+            Edge e;
+            e.p1 = ids->GetId(0);
+            e.p2 = ids->GetId(1);
+            if (e.p1 > e.p2)
+            {
+                int tmp;
+                tmp = e.p1; e.p1 = e.p2; e.p2 = tmp;
+            }
+            e.cellId = i;
+            hash.HashEdge(e);
+        }
+    }
+
+    int nEdges;
+    Edge *edges = hash.GetEdges(nEdges);
+    int nPts = in_ds->GetNumberOfPoints();
+    bool *usedPt = new bool[nPts];
+    int  *ptLookup = new int[nPts];
+    for (i = 0 ; i < nPts ; i++)
+        usedPt[i] = false;
+    for (i = 0 ; i < nEdges ; i++)
+    {
+        usedPt[edges[i].p1] = true;
+        usedPt[edges[i].p2] = true;
+    }
+    int cur = 0;
+    int nPtsUsed = 0;
+    for (i = 0 ; i < nPts ; i++)
+        if (usedPt[i])
+            nPtsUsed++;
+    int *reverseLookup = new int[nPtsUsed];
+    for (i = 0 ; i < nPts ; i++)
+    {
+        if (usedPt[i])
+        {
+            reverseLookup[cur] = i;
+            ptLookup[i] = cur;
+            cur++;
+        }
+        else
+            ptLookup[i] = -1;
+    }
+
+    vtkPolyData *out_ds = vtkPolyData::New();
+    out_ds->GetFieldData()->PassData(in_ds->GetFieldData());
+    out_ds->Allocate(3*nEdges);
+    vtkCellData  *inCD  = in_ds->GetCellData();
+    vtkPointData *inPD  = in_ds->GetPointData();
+    vtkCellData  *outCD = out_ds->GetCellData();
+    vtkPointData *outPD = out_ds->GetPointData();
+    outPD->CopyAllocate(inPD, nPtsUsed);
+    outCD->CopyAllocate(inCD, nEdges);
+
+    vtkPoints *pts = vtkPoints::New();
+    pts->SetNumberOfPoints(nPtsUsed);
+    out_ds->SetPoints(pts);
+    pts->Delete();
+    for (i = 0 ; i < nPtsUsed ; i++)
+    {
+        float pt[3];
+        in_ds->GetPoint(reverseLookup[i], pt);
+        pts->SetPoint(i, pt);
+        outPD->CopyData(inPD, reverseLookup[i], i);
+    }
+
+    vtkIdType lines[2];
+    for (i = 0 ; i < nEdges ; i++)
+    {
+        lines[0] = ptLookup[edges[i].p1];
+        lines[1] = ptLookup[edges[i].p2];
+        out_ds->InsertNextCell(VTK_LINE, 2, lines);
+        outCD->CopyData(inCD, edges[i].cellId, i);
+    }
+    
+    ManageMemory(out_ds);
+    out_ds->Delete();
+    delete [] edges;
+    delete [] usedPt;
+    delete [] ptLookup;
+    delete [] reverseLookup;
 
     return out_ds;
 }

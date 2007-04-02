@@ -54,6 +54,9 @@ class   avtDataRepresentation;
 //    Hank Childs, Mon Aug 29 14:57:42 PDT 2005
 //    Add friend status for avtCMFEExpression.
 //
+//    Hank Childs, Thu Sep 22 17:34:12 PDT 2005
+//    Add friend status for avtCompactTreeFilter.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataset : public avtDataObject
@@ -63,12 +66,14 @@ class PIPELINE_API avtDataset : public avtDataObject
     friend                   class avtSourceFromAVTDataset;
     friend                   class avtDatasetExaminer;
     friend                   class avtCMFEExpression;
+    friend                   class avtCompactTreeFilter;
 
   public:
                              avtDataset(avtDataObjectSource *);
                              avtDataset(ref_ptr<avtDataset> ds,
                                         bool dontCopyData = false);
                              avtDataset(vtkDataSet *);
+                             avtDataset(vtkDataSet *, avtDataset *);
     virtual                 ~avtDataset();
 
     virtual const char      *GetType(void)  { return "avtDataset"; };

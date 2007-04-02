@@ -3112,6 +3112,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Hank Childs, Fri Aug  5 09:49:12 PDT 2005
 //    Added kurtosis, skewness.
 //
+//    Hank Childs, Fri Sep 23 16:16:28 PDT 2005
+//    Added watertight query.
+//
 // ****************************************************************************
 
 void
@@ -3173,6 +3176,7 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("Centroid", dq, mr, basic, 1, 0, false);
     queryTypes->AddQuery("Spherical Compactness Factor", dq, mr, basic, 1, 0, true);
     queryTypes->AddQuery("Variable Sum", dq, vr, basic, 1, 0, true);
+    queryTypes->AddQuery("Watertight", dq, mr, basic, 1, 0, false);
     queryTypes->AddQuery("Weighted Variable Sum", dq, vr, basic, 1, 0, true);
     queryTypes->AddQuery("Pick", pq, pr, sp, 1, 0, true);
     queryTypes->AddQuery("NodePick", pq, pr, sp, 1, 0, true);

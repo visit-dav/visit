@@ -61,6 +61,9 @@ class   avtMultiFacelist;
 //    Hank Childs, Fri Mar 11 08:07:26 PST 2005
 //    Remove data member filters.  Also remove ReleaseData.
 //
+//    Hank Childs, Fri Sep 23 10:48:36 PDT 2005
+//    Add a flag that will cause edge list generation for 2D datasets.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtFacelistFilter : public avtStreamer
@@ -76,15 +79,18 @@ class AVTFILTERS_API avtFacelistFilter : public avtStreamer
 
     void                                 SetCreate3DCellNumbers(bool);
     void                                 SetForceFaceConsolidation(bool);
+    void                                 SetCreateEdgeListFor2DDatasets(bool);
 
   protected:
     bool                                 useFacelists;
     bool                                 create3DCellNumbers;
+    bool                                 createEdgeListFor2DDatasets;
     int                                  forceFaceConsolidation;
 
     virtual vtkDataSet                  *ExecuteData(vtkDataSet *, int,
                                                      std::string);
     vtkDataSet                          *Take2DFaces(vtkDataSet *);
+    vtkDataSet                          *FindEdges(vtkDataSet *);
     vtkDataSet                          *Take3DFaces(vtkDataSet *, int);
     vtkDataSet                          *TakeFacesForDisjointElementMesh(
                                                             vtkDataSet *, int);

@@ -104,6 +104,10 @@ avtExpressionEvaluatorFilter::~avtExpressionEvaluatorFilter()
 //    Hank Childs, Tue Aug 16 16:53:20 PDT 2005
 //    Added called to VerifyVariableTypes ['6485]
 //
+//    Hank Childs, Fri Sep 23 09:50:49 PDT 2005
+//    Directly use 'lastUsedSpec's data specification, since it has the
+//    best description of the data we want.
+//
 // ****************************************************************************
 
 void
@@ -133,15 +137,10 @@ avtExpressionEvaluatorFilter::Execute(void)
         // Make sure that the DataSpec being used has the timestep needed.
         //
         avtPipelineSpecification_p pspec = GetGeneralPipelineSpecification();
-        avtDataSpecification_p new_dspec = pspec->GetDataSpecification();
-        avtDataSpecification_p old_dspec =lastUsedSpec->GetDataSpecification();
-        new_dspec->AddSecondaryVariable(old_dspec->GetVariable());
-        const vector<CharStrRef> &vars2nd=old_dspec->GetSecondaryVariables();
-        for (int i = 0 ; i < vars2nd.size() ; i++)
-        {
-            new_dspec->AddSecondaryVariable(*(vars2nd[i]));
-        }
-        pspec->GetDataSpecification()->SetTimestep(currentTimeState);
+        avtDataSpecification_p new_dspec = 
+                new avtDataSpecification(lastUsedSpec->GetDataSpecification());
+        new_dspec->SetTimestep(currentTimeState);
+        pspec = new avtPipelineSpecification(pspec, new_dspec);
         bottom->Update(pspec);
         GetOutput()->Copy(*(bottom->GetOutput()));
     } else {
@@ -487,17 +486,32 @@ avtExpressionEvaluatorFilter::PerformRestriction(
             haveActiveVariable = true;
     }
 
-    // Set up the data spec.
+    // Set up the data spec.  Note: This data spec is used in two places.
+    // The first is to tell the expressions what secondary variables are 
+    // needed, what the pipeline variable is, etc, as well as let them
+    // modify the pipeline specification.  The second use is to send
+    // the resulting pipeline spec up to the database.
+    //
+    // For the first, it is important the pipeline variable be the variable
+    // we are going to use later in the pipeline.  This means that we will
+    // use expression variables.
+    //
+    // But if we send the expression variables up to the database, it won't
+    // know about the variables we are referring to.  So that's a bad idea.
+    // So we should remove the expression variables before they get up to the
+    // database.
+    //
+    // So start off by creating a pipeline specification that has the
+    // expression variable for expression filters.  Then, after they have
+    // modified the pipeline specification, swap out the variable for a real
+    // variable.
+
     it = real_list.begin();
     newds = new avtDataSpecification(ds);
-    if (!haveActiveVariable)
-        newds->SetDBVariable((*it).c_str());
-
     newds->RemoveAllSecondaryVariables();
     for ( ; it != real_list.end() ; it++)
         if (*it != ds->GetVariable())
             newds->AddSecondaryVariable((*it).c_str());
-
     rv = new avtPipelineSpecification(spec, newds);
 
     //
@@ -519,6 +533,17 @@ avtExpressionEvaluatorFilter::PerformRestriction(
     for (i = 0 ; i < filters.size() ; i++)
     {
         rv = filters[i]->PerformRestriction(rv);
+    }
+
+    // Here's the part where we swap out the active variable for a real one
+    // in the database.  See extended comment above for more details.
+    if (!haveActiveVariable)
+    {
+        it = real_list.begin();
+        newds = new avtDataSpecification(rv->GetDataSpecification(), 
+                                         (*it).c_str());
+        newds->SetOriginalVariable(ds->GetVariable());
+        rv = new avtPipelineSpecification(rv, newds);
     }
 
     return rv;

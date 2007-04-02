@@ -30,6 +30,7 @@
 #include <avtVariableByNodeQuery.h>
 #include <avtVariableByZoneQuery.h>
 #include <avtVariableSummationQuery.h>
+#include <avtWatertightQuery.h>
 #include <avtWeightedVariableSummationQuery.h>
 #include <avtZoneCenterQuery.h>
 
@@ -142,6 +143,9 @@ avtQueryFactory::Instance()
 //    Hank Childs, Fri Aug  5 09:49:12 PDT 2005
 //    Added kurtosis, skewness.
 //
+//    Hank Childs, Fri Sep 23 16:11:07 PDT 2005
+//    Added watertight query.
+//
 // ****************************************************************************
 
 
@@ -228,6 +232,10 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     else if (qname == "Spherical Compactness Factor")
     {
         query = new avtSphericalCompactnessFactorQuery();
+    }
+    else if (qname == "Watertight")
+    {
+        query = new avtWatertightQuery();
     }
     else if (qname == "Weighted Variable Sum")
     {

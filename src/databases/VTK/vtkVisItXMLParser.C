@@ -1,0 +1,501 @@
+/*=========================================================================
+
+  Program:   Visualization Toolkit
+  Module:    $RCSfile: vtkVisItXMLParser.cxx,v $
+
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
+  All rights reserved.
+  See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
+
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+     PURPOSE.  See the above copyright notice for more information.
+
+=========================================================================*/
+// Hack access to the fstream implementation if necessary.  This is
+// only needed on a few SGI MIPSpro compiler versions.
+#if defined(__sgi) && !defined(__GNUC__) && defined(_COMPILER_VERSION)
+# if _COMPILER_VERSION == 730
+#  include "vtkConfigure.h"
+#  if VTK_STREAM_EOF_SEVERITY == 3
+#   define protected public
+#   define private public
+#   include <fstream>
+#   undef private
+#   undef protected
+#  endif
+# endif
+#endif
+
+#include "vtkVisItXMLParser.h"
+#include "vtkObjectFactory.h"
+#include <expat.h>
+#include <ctype.h>
+#include <sys/stat.h>
+
+vtkCxxRevisionMacro(vtkVisItXMLParser, "$Revision: 1.24 $");
+vtkStandardNewMacro(vtkVisItXMLParser);
+
+//----------------------------------------------------------------------------
+vtkVisItXMLParser::vtkVisItXMLParser()
+{
+  this->Stream            = 0;
+  this->Parser            = 0;
+  this->FileName          = 0;
+  this->InputString       = 0;
+  this->InputStringLength = 0;
+  this->ParseError        = 0;
+}
+
+//----------------------------------------------------------------------------
+vtkVisItXMLParser::~vtkVisItXMLParser()
+{
+  this->SetStream(0);
+  this->SetFileName(0);
+}
+
+//----------------------------------------------------------------------------
+void vtkVisItXMLParser::PrintSelf(ostream& os, vtkIndent indent)
+{
+  this->Superclass::PrintSelf(os, indent);
+  if(this->Stream)
+    {
+    os << indent << "Stream: " << this->Stream << "\n";
+    }
+  else
+    {
+    os << indent << "Stream: (none)\n";
+    }
+  os << indent << "FileName: " << (this->FileName? this->FileName : "(none)")
+     << "\n";
+}
+
+//----------------------------------------------------------------------------
+static int vtkVisItXMLParserFail(istream* stream)
+{
+  // The fail() method returns true if either the failbit or badbit is set.
+#if defined(__HP_aCC)
+  // The HP compiler sets the badbit too often, so we ignore it.
+  return (stream->rdstate() & ios::failbit)? 1:0;
+#else
+  return stream->fail()? 1:0;
+#endif
+}
+
+//----------------------------------------------------------------------------
+long vtkVisItXMLParser::TellG()
+{
+  // Standard tellg returns -1 if fail() is true.
+  if(!this->Stream || vtkVisItXMLParserFail(this->Stream))
+    {
+    return -1;
+    }
+#if VTK_STREAM_EOF_SEVERITY == 0
+  // No work-around required.  Just return the position.
+  return this->Stream->tellg();
+#else
+  long pos = this->Stream->tellg();
+  if(pos == -1)
+    {
+    // Clear the fail bit from failing tellg.
+    this->Stream->clear(this->Stream->rdstate() & ~ios::failbit);
+
+    // Save the eof bit.
+    int eof = this->Stream->eof()?1:0;
+
+    // Clear the eof bit.
+    if(eof)
+      {
+      this->Stream->clear(this->Stream->rdstate() & ~ios::eofbit);
+      }
+
+# if VTK_STREAM_EOF_SEVERITY == 2
+    // Re-seek to the end to escape the buggy stream state.
+    this->Stream->seekg(0, ios::end);
+# elif VTK_STREAM_EOF_SEVERITY == 3
+    // Call an internal filebuf method to escape the buggy stream
+    // state.  This is a very ugly hack.
+    static_cast<ifstream*>(this->Stream)->rdbuf()->_M_seek_return(0,0);
+# endif
+
+    // Call tellg to get the position.
+    pos = this->Stream->tellg();
+
+    // Restore the eof bit.
+    if(eof)
+      {
+      this->Stream->clear(this->Stream->rdstate() | ios::eofbit);
+      }
+    }
+  return pos;
+#endif
+}
+
+//----------------------------------------------------------------------------
+void vtkVisItXMLParser::SeekG(long position)
+{
+  // Standard seekg does nothing if fail() is true.
+  if(!this->Stream || vtkVisItXMLParserFail(this->Stream))
+    {
+    return;
+    }
+#if VTK_STREAM_EOF_SEVERITY == 0
+  // No work-around required.  Just seek to the position.
+  this->Stream->seekg(position);
+#else
+  // Save the eof bit.
+  int eof = this->Stream->eof()?1:0;
+
+  // Clear the eof bit.
+  if(eof)
+    {
+    this->Stream->clear(this->Stream->rdstate() & ~ios::eofbit);
+    }
+
+# if VTK_STREAM_EOF_SEVERITY == 3
+  // Check if the stream is in the buggy state.
+  if(long(this->Stream->tellg()) == -1)
+    {
+    // Call an internal filebuf method to escape the buggy stream
+    // state.  This is a very ugly hack.
+    this->Stream->clear(this->Stream->rdstate() & ~ios::failbit);
+    this->Stream->clear(this->Stream->rdstate() & ~ios::eofbit);
+    static_cast<ifstream*>(this->Stream)->rdbuf()->_M_seek_return(0,0);
+    }
+# endif
+
+  // Seek to the given position.
+  this->Stream->seekg(position);
+
+  // Restore the eof bit.
+  if(eof)
+    {
+    this->Stream->clear(this->Stream->rdstate() | ios::eofbit);
+    }
+#endif
+}
+
+//----------------------------------------------------------------------------
+int vtkVisItXMLParser::Parse(const char* inputString)
+{
+  this->InputString = inputString;
+  this->InputStringLength = -1;
+  int result = this->vtkVisItXMLParser::Parse();
+  this->InputString = 0;
+  return result;
+}
+
+//----------------------------------------------------------------------------
+int vtkVisItXMLParser::Parse(const char* inputString, unsigned int length)
+{
+  this->InputString = inputString;
+  this->InputStringLength = length;
+  int result = this->vtkVisItXMLParser::Parse();
+  this->InputString = 0;
+  this->InputStringLength = -1;
+  return result;
+}
+
+
+//----------------------------------------------------------------------------
+int vtkVisItXMLParser::Parse()
+{
+  // Select source of XML
+  ifstream ifs;
+  if ( !this->InputString && !this->Stream && this->FileName )
+    {
+    // If it is file, open it and set the appropriate stream
+    struct stat fs;
+    if (stat(this->FileName, &fs) != 0)
+      {
+      vtkErrorMacro("Cannot open XML file: " << this->FileName);
+      return 0;
+      }
+#ifdef _WIN32
+    ifs.open(this->FileName, ios::binary | ios::in);
+#else
+    ifs.open(this->FileName, ios::in);
+#endif
+    if ( !ifs )
+      {
+      vtkErrorMacro("Cannot open XML file: " << this->FileName);
+      return 0;
+      }
+    this->Stream = &ifs;
+    }
+
+  // Create the expat XML parser.
+  this->Parser = XML_ParserCreate(0);
+  XML_SetElementHandler(static_cast<XML_Parser>(this->Parser),
+                        &vtkVisItXMLParserStartElement,
+                        &vtkVisItXMLParserEndElement);
+  XML_SetCharacterDataHandler(static_cast<XML_Parser>(this->Parser),
+                              &vtkVisItXMLParserCharacterDataHandler);
+  XML_SetUserData(static_cast<XML_Parser>(this->Parser), this);
+
+  // Parse the input.
+  int result = this->ParseXML();
+
+  if(result)
+    {
+    // Tell the expat XML parser about the end-of-input.
+    if(!XML_Parse(static_cast<XML_Parser>(this->Parser), "", 0, 1))
+      {
+      this->ReportXmlParseError();
+      result = 0;
+      }
+    }
+
+  // Clean up the parser.
+  XML_ParserFree(static_cast<XML_Parser>(this->Parser));
+  this->Parser = 0;
+
+  // If the source was a file, reset the stream
+  if ( this->Stream == &ifs )
+    {
+    this->Stream = 0;
+    }
+
+  return result;
+}
+
+//----------------------------------------------------------------------------
+int vtkVisItXMLParser::InitializeParser()
+{
+  if ( this->Parser )
+    {
+    vtkErrorMacro("Parser already initialized");
+    this->ParseError = 1;
+    return 0;
+    }
+  // Create the expat XML parser.
+  this->Parser = XML_ParserCreate(0);
+  XML_SetElementHandler(static_cast<XML_Parser>(this->Parser),
+                        &vtkVisItXMLParserStartElement,
+                        &vtkVisItXMLParserEndElement);
+  XML_SetCharacterDataHandler(static_cast<XML_Parser>(this->Parser),
+                              &vtkVisItXMLParserCharacterDataHandler);
+  XML_SetUserData(static_cast<XML_Parser>(this->Parser), this);
+  this->ParseError = 0;
+  return 1;
+}
+
+//----------------------------------------------------------------------------
+int vtkVisItXMLParser::ParseChunk(const char* inputString, unsigned int length)
+{
+  if ( !this->Parser )
+    {
+    vtkErrorMacro("Parser not initialized");
+    this->ParseError = 1;
+    return 0;
+    }
+  int res;
+  res = this->ParseBuffer(inputString, length);
+  if ( res == 0 )
+    {
+    this->ParseError = 1;
+    }
+  return res;
+}
+
+//----------------------------------------------------------------------------
+int vtkVisItXMLParser::CleanupParser()
+{
+  if ( !this->Parser )
+    {
+    vtkErrorMacro("Parser not initialized");
+    this->ParseError = 1;
+    return 0;
+    }
+  int result = !this->ParseError;
+  if(result)
+    {
+    // Tell the expat XML parser about the end-of-input.
+    if(!XML_Parse(static_cast<XML_Parser>(this->Parser), "", 0, 1))
+      {
+      this->ReportXmlParseError();
+      result = 0;
+      }
+    }
+
+  // Clean up the parser.
+  XML_ParserFree(static_cast<XML_Parser>(this->Parser));
+  this->Parser = 0;
+
+  return result;
+}
+
+//----------------------------------------------------------------------------
+int vtkVisItXMLParser::ParseXML()
+{
+  // Parsing of message
+  if ( this->InputString )
+    {
+    if ( this->InputStringLength >= 0 )
+      {
+      return this->ParseBuffer(this->InputString, this->InputStringLength);
+      }
+    else
+      {
+      return this->ParseBuffer(this->InputString);
+      }
+    }
+
+  // Make sure we have input.
+  if(!this->Stream)
+    {
+    vtkErrorMacro("Parse() called with no Stream set.");
+    return 0;
+    }
+
+  // Default stream parser just reads a block at a time.
+  istream& in = *(this->Stream);
+  const int bufferSize = 4096;
+  char buffer[bufferSize];
+
+  // Read in the stream and send its contents to the XML parser.  This
+  // read loop is very sensitive on certain platforms with slightly
+  // broken stream libraries (like HPUX).  Normally, it is incorrect
+  // to not check the error condition on the fin.read() before using
+  // the data, but the fin.gcount() will be zero if an error occurred.
+  // Therefore, the loop should be safe everywhere.
+  while(!this->ParseError && !this->ParsingComplete() && in)
+    {
+    in.read(buffer, bufferSize);
+    if(in.gcount())
+      {
+      if(!this->ParseBuffer(buffer, in.gcount()))
+        {
+        return 0;
+        }
+      }
+    }
+
+  // Clear the fail and eof bits on the input stream so we can later
+  // seek back to read data.
+  this->Stream->clear(this->Stream->rdstate() & ~ios::eofbit);
+  this->Stream->clear(this->Stream->rdstate() & ~ios::failbit);
+
+  return 1;
+}
+
+//----------------------------------------------------------------------------
+int vtkVisItXMLParser::ParsingComplete()
+{
+  // Default behavior is to parse to end of stream.
+  return 0;
+}
+
+//----------------------------------------------------------------------------
+void vtkVisItXMLParser::StartElement(const char *name,
+                                const char ** vtkNotUsed(atts))
+{
+  this->ReportUnknownElement(name);
+}
+
+//----------------------------------------------------------------------------
+void vtkVisItXMLParser::EndElement(const char * vtkNotUsed(name))
+{
+}
+
+//----------------------------------------------------------------------------
+void vtkVisItXMLParser::CharacterDataHandler(const char* vtkNotUsed(inData),
+                                        int vtkNotUsed(inLength))
+{
+}
+
+//----------------------------------------------------------------------------
+void vtkVisItXMLParser::ReportStrayAttribute(const char* element, const char* attr,
+                                        const char* value)
+{
+  vtkWarningMacro("Stray attribute in XML stream: Element " << element
+                  << " has " << attr << "=\"" << value << "\"");
+}
+
+//----------------------------------------------------------------------------
+void vtkVisItXMLParser::ReportMissingAttribute(const char* element,
+                                          const char* attr)
+{
+  vtkErrorMacro("Missing attribute in XML stream: Element " << element
+                << " is missing " << attr);
+}
+
+//----------------------------------------------------------------------------
+void vtkVisItXMLParser::ReportBadAttribute(const char* element, const char* attr,
+                                      const char* value)
+{
+  vtkErrorMacro("Bad attribute value in XML stream: Element " << element
+                << " has " << attr << "=\"" << value << "\"");
+}
+
+//----------------------------------------------------------------------------
+void vtkVisItXMLParser::ReportUnknownElement(const char* element)
+{
+  vtkErrorMacro("Unknown element in XML stream: " << element);
+}
+
+//----------------------------------------------------------------------------
+void vtkVisItXMLParser::ReportXmlParseError()
+{
+  vtkErrorMacro("Error parsing XML in stream at line "
+                << XML_GetCurrentLineNumber(static_cast<XML_Parser>(this->Parser))
+                << ": " << XML_ErrorString(XML_GetErrorCode(static_cast<XML_Parser>(this->Parser))));
+}
+
+//----------------------------------------------------------------------------
+unsigned long vtkVisItXMLParser::GetXMLByteIndex()
+{
+  return XML_GetCurrentByteIndex(static_cast<XML_Parser>(this->Parser));
+}
+
+//----------------------------------------------------------------------------
+int vtkVisItXMLParser::ParseBuffer(const char* buffer, unsigned int count)
+{
+  // Pass the buffer to the expat XML parser.
+  if(!XML_Parse(static_cast<XML_Parser>(this->Parser), buffer, count, 0))
+    {
+    this->ReportXmlParseError();
+    return 0;
+    }
+  return 1;
+}
+
+//----------------------------------------------------------------------------
+int vtkVisItXMLParser::ParseBuffer(const char* buffer)
+{
+  return this->ParseBuffer(buffer, static_cast<int>(strlen(buffer)));
+}
+
+//----------------------------------------------------------------------------
+int vtkVisItXMLParser::IsSpace(char c)
+{
+  return isspace(c);
+}
+
+//----------------------------------------------------------------------------
+void vtkVisItXMLParserStartElement(void* parser, const char *name,
+                              const char **atts)
+{
+  // Begin element handler that is registered with the XML_Parser.
+  // This just casts the user data to a vtkVisItXMLParser and calls
+  // StartElement.
+  static_cast<vtkVisItXMLParser*>(parser)->StartElement(name, atts);
+}
+
+//----------------------------------------------------------------------------
+void vtkVisItXMLParserEndElement(void* parser, const char *name)
+{
+  // End element handler that is registered with the XML_Parser.  This
+  // just casts the user data to a vtkVisItXMLParser and calls EndElement.
+  static_cast<vtkVisItXMLParser*>(parser)->EndElement(name);
+}
+
+//----------------------------------------------------------------------------
+void vtkVisItXMLParserCharacterDataHandler(void* parser, const char* data,
+                                      int length)
+{
+  // Character data handler that is registered with the XML_Parser.
+  // This just casts the user data to a vtkVisItXMLParser and calls
+  // CharacterDataHandler.
+  static_cast<vtkVisItXMLParser*>(parser)->CharacterDataHandler(data, length);
+}

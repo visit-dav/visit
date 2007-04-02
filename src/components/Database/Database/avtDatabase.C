@@ -774,6 +774,9 @@ avtDatabase::GetNewMetaData(int timeState, bool forceReadAllCyclesTimes)
 //    Hank Childs, Thu May 26 15:45:48 PDT 2005
 //    Mark mesh quality expressions as auto-expressions.
 //
+//    Hank Childs, Thu Sep 22 15:49:34 PDT 2005
+//    Change side_volume to min_side_volume.  Add edge length as well.
+//
 // ****************************************************************************
 
 void
@@ -802,7 +805,7 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
         if (topoDim == 0 || topoDim == 1)
             continue;
 
-        const int nPairs = 21;
+        const int nPairs = 24;
         MQExprTopoPair exprs[nPairs];
         exprs[0]  = MQExprTopoPair("area", 2);
         exprs[1]  = MQExprTopoPair("aspect_gamma", 3);
@@ -823,8 +826,11 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
         exprs[16] = MQExprTopoPair("stretch", -1);
         exprs[17] = MQExprTopoPair("taper", -1);
         exprs[18] = MQExprTopoPair("volume", 3);
-        exprs[19] = MQExprTopoPair("side_volume", 3);
-        exprs[20] = MQExprTopoPair("warpage", 2);
+        exprs[19] = MQExprTopoPair("min_side_volume", 3);
+        exprs[20] = MQExprTopoPair("max_side_volume", 3);
+        exprs[21] = MQExprTopoPair("warpage", 2);
+        exprs[22] = MQExprTopoPair("min_edge_length", -1);
+        exprs[23] = MQExprTopoPair("max_edge_length", -1);
 
         string name = mmd->name;
         for (int i = 0 ; i < nPairs ; i++)

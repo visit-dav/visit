@@ -138,6 +138,11 @@ avtSourceFromDatabase::~avtSourceFromDatabase()
 //    Made call to GetMetaData set flag to force it to read the current
 //    timeState's cycle/time information.
 //
+//    Hank Childs, Fri Sep 23 10:23:01 PDT 2005
+//    No longer use the DBVariable to make a new data specification.  The EEF
+//    will guarantee that the variable list coming to the database will 
+//    contain only variables that the database is familiar with.
+//
 // ****************************************************************************
 
 bool
@@ -146,9 +151,7 @@ avtSourceFromDatabase::FetchDataset(avtDataSpecification_p spec,
 {
     TRY
     {
-        avtDataSpecification_p tmp_spec = new avtDataSpecification(spec,
-                                                        spec->GetDBVariable());
-        tree = database->GetOutput(tmp_spec, this);
+        tree = database->GetOutput(spec, this);
     }
     CATCH2(VisItException, e)
     {
@@ -417,6 +420,10 @@ avtSourceFromDatabase::FetchSpeciesAuxiliaryData(const char *type, void *args,
 //    Hank Childs, Sun Mar  6 11:15:11 PST 2005
 //    Add special support for NeedBoundarySurfaces in lieu of fix for '5723.
 //
+//    Hank Childs, Fri Sep 23 10:23:01 PDT 2005
+//    Return a data specification with the original variable.  This is the
+//    variable that the pipeline is plotting.
+//
 // ****************************************************************************
 
 avtDataSpecification_p
@@ -424,7 +431,7 @@ avtSourceFromDatabase::GetFullDataSpecification(void)
 {
     const char *acting_var = variable;
     if (*lastSpec != NULL)
-        acting_var = lastSpec->GetVariable();
+        acting_var = lastSpec->GetOriginalVariable();
 
     avtSIL *sil = database->GetSIL(timestep);
     avtSILRestriction_p silr = new avtSILRestriction(sil);

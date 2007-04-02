@@ -34,6 +34,9 @@ class   avtFacelistFilter;
 //    Hank Childs, Wed Aug 11 09:46:53 PDT 2004
 //    Added PerformRestriction.
 //
+//    Hank Childs, Fri Sep 23 10:38:31 PDT 2005
+//    Add support for edge lists.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtGhostZoneAndFacelistFilter :
@@ -51,6 +54,7 @@ class AVTFILTERS_API avtGhostZoneAndFacelistFilter :
     void                  SetUseFaceFilter(bool val) { useFaceFilter = val; };
     void                  SetCreate3DCellNumbers(bool val);
     void                  SetForceFaceConsolidation(bool);
+    void                  SetCreateEdgeListFor2DDatasets(bool val);
 
     virtual void          ReleaseData(void);
 

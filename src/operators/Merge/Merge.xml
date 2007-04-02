@@ -1,8 +1,11 @@
 <?xml version="1.0"?>
   <Plugin name="Merge" type="operator" label="Merge" version="1.0" enabled="false" mdspecificcode="false" onlyengine="false" noengine="false">
     <Attribute name="MergeOperatorAttributes" purpose="Attributes for Merge operaetor" persistent="true" exportAPI="" exportInclude="">
-      <Field name="dummy" label="Unused field" type="bool">
-        true
+      <Field name="parallelMerge" label="Merge across all processors?" type="bool">
+        false
+      </Field>
+      <Field name="tolerance" label="Maximum distance between points that should be merged" type="double">
+        0.000000
       </Field>
     </Attribute>
   </Plugin>

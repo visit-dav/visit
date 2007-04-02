@@ -16,5 +16,7 @@ PyObject       *PyThresholdAttributes_WrapPyObject(const ThresholdAttributes *at
 void            PyThresholdAttributes_SetLogging(bool val);
 void            PyThresholdAttributes_SetDefaults(const ThresholdAttributes *atts);
 
+PyObject       *PyThresholdAttributes_StringRepresentation(const ThresholdAttributes *atts);
+
 #endif
 

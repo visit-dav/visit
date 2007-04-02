@@ -30,6 +30,9 @@ class     vtkDataSet;
 //    Hank Childs, Sun Mar 27 11:34:04 PST 2005
 //    Inherit from new base type that supports structured chunking.
 //
+//    Hank Childs, Tue Sep 13 09:07:05 PDT 2005
+//    Add support for PointsOnly mode.
+//
 // ****************************************************************************
 
 class avtThresholdFilter : public avtPluginStructuredChunkStreamer
@@ -61,6 +64,7 @@ class avtThresholdFilter : public avtPluginStructuredChunkStreamer
     virtual void          PreExecute(void);
 
     vtkDataArray         *GetThresholdVariable(vtkDataSet *, bool &);
+    vtkDataSet           *ThresholdToPointMesh(vtkDataSet *);
 };
 
 

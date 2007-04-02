@@ -56,6 +56,25 @@ avtDataset::avtDataset(vtkDataSet *ds)
 
 
 // ****************************************************************************
+//  Method: avtDataset constructor
+//
+//  Arguments:
+//      ds      A vtk dataset.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 21, 2005
+//
+// ****************************************************************************
+
+avtDataset::avtDataset(vtkDataSet *ds, avtDataset *obj)
+    : avtDataObject(obj->source)
+{
+    info.Copy(obj->GetInfo());
+    dataTree = new avtDataTree(ds, 0);
+}
+
+
+// ****************************************************************************
 //  Method: avtDataset copy constructor
 //
 //  Programmer: Mark C. Miller 

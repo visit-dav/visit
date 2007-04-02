@@ -348,6 +348,9 @@ NetworkManager::ClearNetworksWithDatabase(const std::string &db)
 //    Hank Childs, Sun Feb 27 12:30:17 PST 2005
 //    Added avtDatabase argument to AddDatabase.
 //
+//    Hank Childs, Tue Sep 20 13:03:00 PDT 2005
+//    Don't assume that filename lengths are bigger than 6 characters ['6616].
+//
 // ****************************************************************************
 
 NetnodeDB *
@@ -399,7 +402,8 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
         avtDatabase *db = NULL;
         NetnodeDB *netDB = NULL;
         const char *filename_c = filename.c_str();
-        if (filename.substr(filename.length() - 6) == ".visit")
+        if (filename.length() >= 6 &&
+            filename.substr(filename.length() - 6) == ".visit")
             db = avtDatabaseFactory::VisitFile(filename_c, time, format);
         else
             db = avtDatabaseFactory::FileList(&filename_c, 1, time, format);

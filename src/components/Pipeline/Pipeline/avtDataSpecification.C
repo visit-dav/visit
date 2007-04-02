@@ -95,6 +95,9 @@ using     std::map;
 //    Set the default back to Tet temporarily.  This is only to make sure
 //    the test suite still passes.
 //
+//    Hank Childs, Fri Sep 23 10:10:12 PDT 2005
+//    Change db_variable to orig_variable.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts,
@@ -134,11 +137,11 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
     strcpy(variable, var);
 
     //
-    // Assume the 'db' variable is the input variable.  If this is not true,
+    // Assume the 'orig' variable is the input variable.  If this is not true,
     // it will be corrected later.
     //
-    db_variable = new char[strlen(var)+1];
-    strcpy(db_variable, var);
+    orig_variable = new char[strlen(var)+1];
+    strcpy(orig_variable, var);
 }
 
 
@@ -212,6 +215,9 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
 //    Jeremy Meredith, Thu Aug 18 17:54:51 PDT 2005
 //    Added a new isovolume algorithm, with adjustable VF cutoff.
 //
+//    Hank Childs, Fri Sep 23 10:10:12 PDT 2005
+//    Change db_variable to orig_variable.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
@@ -253,8 +259,8 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
     // Assume the 'db' variable is the input variable.  If this is not true,
     // it will be corrected later.
     //
-    db_variable = new char[strlen(var)+1];
-    strcpy(db_variable, var);
+    orig_variable = new char[strlen(var)+1];
+    strcpy(orig_variable, var);
 }
 
 
@@ -276,13 +282,16 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
 //    Hank Childs, Thu Sep 25 08:28:28 PDT 2003
 //    Initialized db_variable to NULL.
 //
+//    Hank Childs, Fri Sep 23 10:10:12 PDT 2005
+//    Change db_variable to orig_variable.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec,
                                            avtSILRestriction_p silr)
 {
     variable = NULL;
-    db_variable = NULL;
+    orig_variable = NULL;
     (*this) = **spec;
     sil.useRestriction = true;
     sil.silr = silr;
@@ -304,13 +313,16 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec,
 //    Hank Childs, Thu Sep 25 08:28:28 PDT 2003
 //    Initialized db_variable to NULL.
 //
+//    Hank Childs, Fri Sep 23 10:10:12 PDT 2005
+//    Change db_variable to orig_variable.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec,
                                            int cdi)
 {
     variable = NULL;
-    db_variable = NULL;
+    orig_variable = NULL;
     (*this) = **spec;
     sil.useRestriction = false;
     sil.dataChunk = cdi;
@@ -335,13 +347,16 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec,
 //    Hank Childs, Thu Sep 25 08:28:28 PDT 2003
 //    Handle the db_variable as well.
 //
+//    Hank Childs, Fri Sep 23 10:10:12 PDT 2005
+//    Change db_variable to orig_variable.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec,
                                            const char *name)
 {
     variable = NULL;
-    db_variable = NULL;
+    orig_variable = NULL;
 
     (*this) = **spec;
 
@@ -349,15 +364,15 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec,
     {
         delete [] variable;
     }
-    if (db_variable != NULL)
+    if (orig_variable != NULL)
     {
-        delete [] db_variable;
+        delete [] orig_variable;
     }
 
     variable = new char[strlen(name)+1];
     strcpy(variable, name);
-    db_variable = new char[strlen(name)+1];
-    strcpy(db_variable, name);
+    orig_variable = new char[strlen(name)+1];
+    strcpy(orig_variable, name);
 }
 
 
@@ -375,12 +390,15 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec,
 //    Hank Childs, Thu Sep 25 08:28:28 PDT 2003
 //    Initialized db_variable to NULL.
 //
+//    Hank Childs, Fri Sep 23 10:10:12 PDT 2005
+//    Change db_variable to orig_variable.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec)
 {
     variable = NULL;
-    db_variable = NULL;
+    orig_variable = NULL;
     (*this) = **spec;
 }
 
@@ -460,6 +478,9 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec)
 //    Jeremy Meredith, Thu Aug 18 17:54:51 PDT 2005
 //    Added a new isovolume algorithm, with adjustable VF cutoff.
 //
+//    Hank Childs, Fri Sep 23 10:10:12 PDT 2005
+//    Change db_variable to orig_variable.
+//
 // ****************************************************************************
 
 avtDataSpecification &
@@ -469,9 +490,9 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
     {
         delete [] variable;
     }
-    if (db_variable != NULL)
+    if (orig_variable != NULL)
     {
-        delete [] db_variable;
+        delete [] orig_variable;
     }
 
     timestep = spec.timestep;
@@ -479,8 +500,8 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
     variable = new char[strlen(spec.variable)+1];
     strcpy(variable, spec.variable);
 
-    db_variable = new char[strlen(spec.db_variable)+1];
-    strcpy(db_variable, spec.db_variable);
+    orig_variable = new char[strlen(spec.orig_variable)+1];
+    strcpy(orig_variable, spec.orig_variable);
 
     sil.useRestriction = spec.sil.useRestriction;
     if (sil.useRestriction)
@@ -605,6 +626,9 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
 //    Jeremy Meredith, Thu Aug 18 17:54:51 PDT 2005
 //    Added a new isovolume algorithm, with adjustable VF cutoff.
 //
+//    Hank Childs, Fri Sep 23 10:10:12 PDT 2005
+//    Change db_variable to orig_variable.
+//
 // ****************************************************************************
 
 bool
@@ -622,7 +646,7 @@ avtDataSpecification::operator==(const avtDataSpecification &ds)
     {
         return false;
     }
-    if (strcmp(db_variable, ds.db_variable) != 0)
+    if (strcmp(orig_variable, ds.orig_variable) != 0)
     {
         return false;
     }
@@ -785,6 +809,9 @@ avtDataSpecification::operator==(const avtDataSpecification &ds)
 //    Hank Childs, Thu Sep 25 08:28:28 PDT 2003
 //    Destruct db_variable.
 //
+//    Hank Childs, Fri Sep 23 10:10:12 PDT 2005
+//    Change db_variable to orig_variable.
+//
 // ****************************************************************************
 
 avtDataSpecification::~avtDataSpecification()
@@ -794,16 +821,16 @@ avtDataSpecification::~avtDataSpecification()
         delete [] variable;
         variable = NULL;
     }
-    if (db_variable != NULL)
+    if (orig_variable != NULL)
     {
-        delete [] db_variable;
-        db_variable = NULL;
+        delete [] orig_variable;
+        orig_variable = NULL;
     }
 }
 
 
 // ****************************************************************************
-//  Method: avtDataSpecification::SetDBVariable
+//  Method: avtDataSpecification::SetOriginalVariable
 //
 //  Purpose:
 //      Sets the variable that is known to be good on the database.
@@ -811,20 +838,25 @@ avtDataSpecification::~avtDataSpecification()
 //  Programmer: Hank Childs
 //  Creation:   September 25, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Sep 23 10:10:12 PDT 2005
+//    Change db_variable to orig_variable.
+//
 // ****************************************************************************
 
 void
-avtDataSpecification::SetDBVariable(const char *v)
+avtDataSpecification::SetOriginalVariable(const char *v)
 {
-    if (db_variable != NULL)
+    if (orig_variable != NULL)
     {
-        delete [] db_variable;
-        db_variable = NULL;
+        delete [] orig_variable;
+        orig_variable = NULL;
     }
     if (v != NULL)
     {
-        db_variable = new char[strlen(v)+1];
-        strcpy(db_variable, v);
+        orig_variable = new char[strlen(v)+1];
+        strcpy(orig_variable, v);
     }
 }
 
@@ -954,6 +986,11 @@ avtDataSpecification::RemoveSecondaryVariable(const char *var)
 //  Programmer: Kathleen Bonnell 
 //  Creation:   April 22, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Sep 23 10:10:12 PDT 2005
+//    Change db_variable to orig_variable.
+//
 // ****************************************************************************
 
 bool
@@ -966,7 +1003,7 @@ avtDataSpecification::VariablesAreTheSame(const avtDataSpecification &ds)
     {
         return false;
     }
-    if (strcmp(db_variable, ds.db_variable) != 0)
+    if (strcmp(orig_variable, ds.orig_variable) != 0)
     {
         return false;
     }
@@ -1001,6 +1038,11 @@ avtDataSpecification::VariablesAreTheSame(const avtDataSpecification &ds)
 //  Programmer:  Jeremy Meredith
 //  Creation:    July  9, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Sep 23 10:10:12 PDT 2005
+//    Fix typo in test.
+//
 // ****************************************************************************
 
 vector<CharStrRef>
@@ -1012,7 +1054,7 @@ avtDataSpecification::GetSecondaryVariablesWithoutDuplicates(void)
         bool duplicate = false;
 
         // don't allow duplicates of the primary variable
-        if (variable && strcmp(db_variable, *(secondaryVariables[i])) == 0)
+        if (variable && strcmp(variable, *(secondaryVariables[i])) == 0)
         {
             duplicate = true;
         }

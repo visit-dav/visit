@@ -22,11 +22,17 @@
 //  Programmer: Hank Childs
 //  Creation:   January 20, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Sep 22 15:39:11 PDT 2005
+//    Initialize takeMin.
+//
 // ****************************************************************************
 
 avtSideVolume::avtSideVolume()
 {
     haveIssuedWarning = false;
+    takeMin = true;
 }
 
 
@@ -62,7 +68,7 @@ avtSideVolume::PreExecute(void)
 //
 //  Purpose:
 //      Calculate each of the side volumes and assign the output to have the
-//      smallest of each of its sides (for each zone).
+//      smallest (or biggest) of each of its sides (for each zone).
 //
 //  Programmer: Hank Childs
 //  Creation:   January 20, 2005
@@ -91,7 +97,8 @@ avtSideVolume::DeriveVariable(vtkDataSet *in_ds)
 //  Method: avtSideVolume::GetZoneVolume
 //
 //  Purpose:
-//      Break the zone into sides and return the volume of the smallest side.
+//      Break the zone into sides and return the volume of the smallest 
+//      (or biggest) side.
 //
 //  Arguments:
 //      cell    The input zone.
@@ -104,6 +111,9 @@ avtSideVolume::DeriveVariable(vtkDataSet *in_ds)
 //  Modifications:
 //    Brad Whitlock, Thu Feb 24 16:16:05 PST 2005
 //    Fixed i redefinition for win32.
+//
+//    Hank Childs, Thu Sep 22 15:39:11 PDT 2005
+//    Account for max variant as well.
 //
 // ****************************************************************************
  
@@ -180,6 +190,8 @@ avtSideVolume::GetZoneVolume(vtkCell *cell)
     // edges.
     //
     double rv = +FLT_MAX;
+    if (!takeMin)
+        rv = -FLT_MAX;
     for (i = 0 ; i < nFaces ; i++)
     {
         vtkCell *face = cell->GetFace(i);
@@ -214,7 +226,10 @@ avtSideVolume::GetZoneVolume(vtkCell *cell)
             cross[2] = b[0]*c[1] - b[1]*c[0];
 
             double vol = (a[0]*cross[0] + a[1]*cross[1] + a[2]*cross[2]) / 6.0;
-            rv = (rv < vol ? rv : vol);
+            if (takeMin)
+                rv = (rv < vol ? rv : vol);
+            else
+                rv = (rv > vol ? rv : vol);
         }
     }
     

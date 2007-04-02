@@ -111,6 +111,9 @@
 #   Hank Childs, Fri Aug 26 07:32:58 PDT 2005
 #   Added CMFE directory.
 #
+#   Hank Childs, Wed Sep 21 17:16:30 PDT 2005
+#   Added avtExternalNodeExpression, avtSurfaceNormalExpression, avtEdgeLength.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -162,6 +165,7 @@ General_src= \
   General/avtDegreeFilter.C \
   General/avtDivergenceFilter.C \
   General/avtExpressionComponentMacro.C \
+  General/avtExternalNodeExpression.C \
   General/avtGradientFilter.C \
   General/avtLaplacianFilter.C \
   General/avtMIRvfFilter.C \
@@ -177,6 +181,7 @@ General_src= \
   General/avtRandomFilter.C \
   General/avtRecenterFilter.C \
   General/avtSpecMFFilter.C \
+  General/avtSurfaceNormalExpression.C \
   General/avtVariableSkewFilter.C \
   General/avtVectorComposeFilter.C \
   General/avtVectorDecomposeFilter.C
@@ -228,6 +233,7 @@ Math_src= \
   Math/avtVectorCrossProductFilter.C
 
 MeshQuality_src= \
+  MeshQuality/avtEdgeLength.C \
   MeshQuality/avtNeighborFilter.C \
   MeshQuality/avtNodeDegreeFilter.C \
   MeshQuality/avtRevolvedSurfaceArea.C \

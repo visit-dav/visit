@@ -78,6 +78,26 @@ avtGhostZoneAndFacelistFilter::AdditionalPipelineFilters(void)
 
 
 // ****************************************************************************
+//  Method: avtGhostZoneAndFacelistFilter::SetCreateEdgeListFor2DDatasets
+//
+//  Purpose:
+//      This is a Boolean that is passed directly to the facelist filter.  
+//      It is used to tell the facelist filter to create an external edge list
+//      when dealing with 2D data sets.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 23, 2005
+//
+// ****************************************************************************
+
+void
+avtGhostZoneAndFacelistFilter::SetCreateEdgeListFor2DDatasets(bool val)
+{
+    faceFilter->SetCreateEdgeListFor2DDatasets(val);
+}
+
+
+// ****************************************************************************
 //  Method: avtGhostZoneAndFacelistFilter::SetCreate3DCellNumbers
 //
 //  Purpose:

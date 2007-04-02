@@ -31,14 +31,20 @@ class     vtkCell;
 //      V1, V2, center(F1) and center(Z), where the other tet
 //      consists of V1, V2, center(F2) and center(Z).
 //      
-//      The side volume expression returns the smallest volume of the sides of
-//      a zone.  This is a little bit of laziness on our part, since the
-//      right thing to do would probably be to subdivide the mesh into tets
-//      and go from there.  But then there would be additional issues, and
-//      all of the customers agree this is a reasonable thing to do.
+//      The side volume expression returns either the smallest volume or the 
+//      largest volume of the sides of a zone.  This is a little bit of 
+//      laziness on our part, since the right thing to do would probably be to 
+//      subdivide the mesh into tets and go from there.  But then there would 
+//      be additional issues, and all of the customers agree this is a 
+//      reasonable thing to do.
 //
 //  Programmer: Hank Childs
 //  Creation:   January 20, 2005
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Sep 22 15:39:11 PDT 2005
+//    Add min and max variants.
 //
 // ****************************************************************************
 
@@ -50,9 +56,12 @@ class EXPRESSION_API avtSideVolume : public avtSingleInputExpressionFilter
     virtual const char         *GetType(void) { return "avtSideVolume"; };
     virtual const char         *GetDescription(void)
                                     { return "Calculating side volume"; };
+
+    void                        SetTakeMin(bool tm) { takeMin = tm; };
     
   protected:
     bool                        haveIssuedWarning;
+    bool                        takeMin;
 
     virtual vtkDataArray       *DeriveVariable(vtkDataSet *);
     virtual void                PreExecute(void);
