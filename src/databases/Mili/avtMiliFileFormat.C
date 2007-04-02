@@ -1127,6 +1127,10 @@ avtMiliFileFormat::GetSizeInfoForGroup(const char *group_name, int &offset,
 //    Mark C. Miller, Tue Jan  3 17:55:22 PST 2006
 //    Added code to get initial nodal positions with mc_load_nodes()
 //
+//    Eric Brugger, Thu Mar 29 11:43:07 PDT 2007
+//    Added code to detect tetrahedra stored as degenerate hexahedra and
+//    convert them to tetrahedra.
+//
 // ****************************************************************************
 
 void
@@ -1307,9 +1311,22 @@ avtMiliFileFormat::ReadMesh(int dom)
                                                      conn_count[i], conn);
                         break;
                       case M_HEX:
-                        connectivity[dom][mesh_id]->InsertNextCell(
-                                                                VTK_HEXAHEDRON,
+                        if (conn[2] == conn[3] && conn[4] == conn[5] &&
+                            conn[5] == conn[6] && conn[6] == conn[7])
+                        {
+                            int tet[4];
+                            tet[0] = conn[0]; tet[1] = conn[1];
+                            tet[2] = conn[2]; tet[3] = conn[4];
+                            connectivity[dom][mesh_id]->InsertNextCell(
+                                                     VTK_TETRA,
+                                                     4, tet);
+                        }
+                        else
+                        {
+                            connectivity[dom][mesh_id]->InsertNextCell(
+                                                     VTK_HEXAHEDRON,
                                                      conn_count[i], conn);
+                        }
                         break;
                       default:
                         debug1 << "Unable to add cell" << endl;

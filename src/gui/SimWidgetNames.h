@@ -35,21 +35,21 @@
 *
 *****************************************************************************/
 
-// ****************************************************************************
-// Class: QvisSimulationWindow
-//
-// Purpose:
-//   This file contain the public names of the widgets found in the
-//   VisIt simulation window.
-//
-// Notes:      .
-//
-// Programmer: Shelly Prevost
-// Creation:   Fri Mar 16 12:05:22 PDT 2007
-//
-// Modifications:.
-//
-// ****************************************************************************
+/*****************************************************************************
+* Class: QvisSimulationWindow
+*
+* Purpose:
+*   This file contain the public names of the widgets found in the
+*   VisIt simulation window.
+*
+* Notes:
+*
+* Programmer: Shelly Prevost
+* Creation:   Fri Mar 16 12:05:22 PDT 2007
+*
+* Modifications:
+*
+*****************************************************************************/
 
 #define MESSAGE_WIDGET_NAME "MessageViewerTextEdit"
 #define STRIP_CHART_WIDGET_NAME "StripChart"

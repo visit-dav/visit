@@ -1,8 +1,9 @@
 #!/bin/sh
 #-----------------------------------------------------------------------
 #
-# VISIT-CREATE-CHKSUMS - Create the md5 and sha1 checksums for the
-#                        visit distributions.
+# VISIT-CREATE-CHKSUMS - Create lists of the md5 checksums, sha1
+#                        checksums, and file sizes for the visit
+#                        distribution.
 #
 # Author: Eric Brugger
 # Date:   August 30, 2005
@@ -52,71 +53,77 @@ fi
 version2=`echo $version | tr "." "_"`
 
 #
-# Create the md5 checksums followed by the sha1 checksums.
+# Create an awk script for use with the filesize command
 #
-cmds="md5sum sha1sum"
+rm -f format_filesize
+cat <<EOF > format_filesize
+BEGIN { FS = " " }
+      { printf "%-25s %s\n", \$5, \$9}
+EOF
+
+#
+# Create a script to generate the file size.
+#
+rm -f filesize
+cat <<EOF > filesize
+#!/bin/sh
+ls -l \$1 | sed "s/  */ /g" | gawk -f ../visit$version/format_filesize
+EOF
+chmod 755 filesize
+
+#
+# Create the md5 checksums, the sha1 checksums, and the file sizes.
+#
+cmds="md5sum sha1sum ../visit$version/filesize"
 for cmd in $cmds
 do
-   if [ $cmd = md5sum ]
-   then
-      output=visit_md5_checksums
-   else
-      output=visit_sha1_checksums
-   fi
+   case $cmd in
+      md5sum)
+         property=checksums
+         output=visit_md5_checksums
+         ;;
+      sha1sum)
+         property=checksums
+         output=visit_sha1_checksums
+         ;;
+      ../visit$version/filesize)
+         property="file sizes"
+         output=visit_filesizes
+         ;;
+   esac
 
    rm -f $output
 
    echo ""                                  >  $output
-   echo "The VisIt executable checksums"    >> $output
+   echo "The VisIt executable $property"    >> $output
    echo ""                                  >> $output
    $cmd INSTALL_NOTES                       >> $output
    $cmd visit-install                       >> $output
    $cmd jvisit$version.tar.gz               >> $output
    $cmd visit$version.exe                   >> $output
-   $cmd visit$version2.aix.tar.gz           >> $output
-   $cmd visit$version2.aix64-xlc.tar.gz     >> $output
+   $cmd visit$version2.aix64.tar.gz         >> $output
    $cmd visit$version2.darwin.tar.gz        >> $output
    $cmd visit$version2.irix6.tar.gz         >> $output
-#  $cmd visit$version2.linux-altix.tar.gz   >> $output
+   $cmd visit$version2.linux-altix.tar.gz   >> $output
    $cmd visit$version2.linux-ia64.tar.gz    >> $output
    $cmd visit$version2.linux-x86_64.tar.gz  >> $output
-   $cmd visit$version2.linux_chaos.tar.gz   >> $output
    $cmd visit$version2.linux_rhel3.tar.gz   >> $output
-   $cmd visit$version2.osf1.tar.gz          >> $output
    $cmd visit$version2.sunos5.tar.gz        >> $output
 
    echo ""                                  >> $output
-   echo "The VisIt source code checksums"   >> $output
+   echo "The VisIt source code $property"   >> $output
    echo ""                                  >> $output
    $cmd BUILD_NOTES                         >> $output
    $cmd BUILD_NOTES_MacOSX                  >> $output
    $cmd $dist.tar.gz                        >> $output
    $cmd visitdev$version.exe                >> $output
    cd ../visit_third_party
-   $cmd CMake_020314.tar.gz                 >> ../visit$version/$output
-   $cmd CMake1.4.7-src-unix.tar.gz          >> ../visit$version/$output
-   $cmd cmake-1.8.1.tar.gz                  >> ../visit$version/$output
    $cmd cmake-2.2.3.tar.gz                  >> ../visit$version/$output
-   $cmd Mesa-4.1-mangled.tar.gz             >> ../visit$version/$output
    $cmd Mesa-5.0-mangled.tar.gz             >> ../visit$version/$output
-   $cmd Python-2.1.2.tar.gz                 >> ../visit$version/$output
    $cmd Python-2.4.2.tgz                    >> ../visit$version/$output
-   $cmd qt-x11-2.3.0.tar.gz                 >> ../visit$version/$output
-   $cmd qt-x11-free-3.0.2.tar.gz            >> ../visit$version/$output
    $cmd qt-x11-free-3.3.2.tar.gz            >> ../visit$version/$output
-   $cmd silo020325.sh                       >> ../visit$version/$output
-   $cmd silo040308.sh                       >> ../visit$version/$output
-   $cmd silo041018.sh                       >> ../visit$version/$output
-   $cmd silo050228.sh                       >> ../visit$version/$output
-   $cmd silo050506.sh                       >> ../visit$version/$output
-   $cmd silo051121.sh                       >> ../visit$version/$output
    $cmd silo060605.sh                       >> ../visit$version/$output
-   $cmd VTK_020314.tar.gz                   >> ../visit$version/$output
-   $cmd vtk_cvs_16Dec02.tar.gz              >> ../visit$version/$output
-   $cmd vtk_cvs_2003_10_28.tar.gz           >> ../visit$version/$output
-   $cmd vtk_cvs_2003_10_28c.tar.gz          >> ../visit$version/$output
-   $cmd vtk-5.0.0a.tar.gz                   >> ../visit$version/$output
-   $cmd vtk-5.0.0b.tar.gz                   >> ../visit$version/$output
+   $cmd vtk-5.0.0c.tar.gz                   >> ../visit$version/$output
    cd ../visit$version
 
    shift

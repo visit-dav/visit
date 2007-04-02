@@ -1041,6 +1041,72 @@ DataNode::AddNode(DataNode *node)
 // Method: DataNode::RemoveNode
 //
 // Purpose: 
+//   Removes the specified node if it exists under the current node.
+//
+// Arguments:
+//   node : The node to remove.
+//
+// Programmer: Eric Brugger
+// Creation:   Tue Mar 27 15:57:42 PDT 2007
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+DataNode::RemoveNode(DataNode *node, bool deleteNode)
+{
+    if(NodeType != INTERNAL_NODE)
+        return;
+    if(Length < 1)
+        return;
+
+    if(Length == 1)
+    {
+        if((DataNode *)Data == node)
+        {
+            if(deleteNode)
+                delete node;
+            Data = 0;
+            Length = 0;
+        }
+    }
+    else
+    {
+        DataNode **nodeArray = (DataNode **)Data;
+        bool start = false;
+
+        for(int i = 0; i < Length; ++i)
+        {
+            if(!start && nodeArray[i] == node)
+            {
+                if(deleteNode)
+                    delete nodeArray[i];
+                start = true;
+            }
+
+            if(start && (i < (Length - 1)))
+                nodeArray[i] = nodeArray[i + 1];
+        }
+        if(start)
+        {
+            --Length;
+
+            // If we're down to 1, convert to a single pointer.
+            if(Length == 1)
+            {
+                DataNode *temp = nodeArray[0];
+                delete [] nodeArray;
+                Data = (void *)temp;
+            } 
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: DataNode::RemoveNode
+//
+// Purpose: 
 //   Removes the node with the specified key if it exists under the 
 //   current node.
 //

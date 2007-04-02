@@ -76,6 +76,10 @@ typedef enum
 //   Brad Whitlock, Mon Feb 2 15:36:49 PST 2004
 //   Added an optional argument to RemoveNode.
 //
+//   Eric Brugger, Tue Mar 27 15:57:03 PDT 2007
+//   Added an additional RemoveNode method that takes a DataNode as an
+//   argument.
+//
 // ****************************************************************************
 
 class STATE_API DataNode
@@ -169,6 +173,7 @@ public:
     // Node operations
     DataNode *GetNode(const std::string &key, DataNode *parentNode = 0);
     void AddNode(DataNode *node);
+    void RemoveNode(DataNode *node, bool deleteNode = true);
     void RemoveNode(const std::string &key, bool deleteNode = true);
 
     // Functions to return private members.
