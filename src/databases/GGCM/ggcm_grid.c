@@ -10,6 +10,7 @@
 float *ggcm_grid(MHDdata *data, int *ndim, char * const grid_name)
 {
     MHDdata *dat = data;
+    float *grid;
 
     /* find the size of the data referenced by grid_name, and
      * return it via side effect in ndim */
@@ -22,7 +23,7 @@ float *ggcm_grid(MHDdata *data, int *ndim, char * const grid_name)
     }
 
     /* we know the sizeof the data now, gather them up */
-    float *grid = (float *)malloc((*ndim)*sizeof(float));
+    grid = (float *)malloc((*ndim)*sizeof(float));
     memcpy(grid, dat->data, sizeof(float) * (*ndim));
     return grid;
 }

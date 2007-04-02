@@ -2046,11 +2046,12 @@ avtFLASHFileFormat::ReadParticleAttributes_FLASH3()
     // create the right-size string, and a char array to read the data into
     hid_t string24 = H5Tcopy(H5T_C_S1);
     H5Tset_size(string24, 24);
-    char cnames[24*numNames];
+    char *cnames = new char[24*numNames];
     H5Dread(pnameId, string24, H5S_ALL, H5S_ALL, H5P_DEFAULT, cnames);
 
     // Convert the single string to individual variable names.
     string  snames(cnames);
+    delete[] cnames;
     for (int i = 0; i < numNames; i++)
     { 
         string name = snames.substr(i*24, 24);

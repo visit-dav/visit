@@ -23,32 +23,31 @@
 #include "libggcm.h"
 
 #include <stdio.h>
-#include <stdbool.h>
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
 #include <assert.h>
 
 /** fscanf that is expected to work; aborts on error */
-#define SCAN(fp, match, ...)                \
-    {                                        \
+#define SCAN(fp, match, v1)                   \
+    {                                         \
         int err;                              \
-        err = fscanf(fp, match, __VA_ARGS__); \
+        err = fscanf(fp, match, v1);          \
         if(err == EOF) {                      \
-            perror("scanning in libggcm");     \
-            abort();                           \
+            perror("scanning in libggcm");    \
+            abort();                          \
         }                                     \
     }
 /** more stringent; give the number of arguments which must match. */
-#define NSCAN(fp, num, match, ...)             \
-    {                                           \
-        int err;                                 \
-        err = fscanf(fp, match, __VA_ARGS__);    \
-        if(err == EOF || err != num) {           \
-            perror("scanning in libggcm");        \
-            fprintf(stderr, "%d matches\n", err); \
-            abort();                              \
-        }                                        \
+#define NSCAN(fp, num, match, v1, v2, v3, v4, v5, v6)     \
+    {                                                     \
+        int err;                                          \
+        err = fscanf(fp, match, v1, v2, v3, v4, v5, v6);  \
+        if(err == EOF || err != num) {                    \
+            perror("scanning in libggcm");                \
+            fprintf(stderr, "%d matches\n", err);         \
+            abort();                                      \
+        }                                                 \
     }
 
 static int wrndec(unsigned char *in_string, int *out_array);
@@ -58,7 +57,7 @@ static int field_match(const char * const match_list[],
 static int readMHDField(MHDdata *data, char *field_info,
                         const char * const match_list[]);
 static int read_time_line(MHDdata *);
-static bool ggcm_read_field_metadata(MHDdata *);
+static int ggcm_read_field_metadata(MHDdata *);
 
 /** alias for ggcm_init_mhd */
 void initMHD(MHDdata *data) { ggcm_init_mhd(data); }
@@ -108,7 +107,6 @@ void ggcm_init_mhd(MHDdata *data)
     data->co_vector[0] = NULL;
     data->co_vector[1] = NULL;
     data->co_vector[2] = NULL;
-    data->co_vector[3] = NULL;
 }
 
 /** creates a list which contains all of the metadata for a given GGCM file,
@@ -120,14 +118,14 @@ MHDdata *ggcm_read_metadata(const char *filename)
     unsigned int lines, i;        /* how many lines to skip, current line */
     size_t len;                   /* length of temp buffer */
     char *line;                   /* temp buffer for junking lines */
-    bool fields = false;          /* more fields to read? */
+    int fields = 0;               /* more fields to read? */
 
     head = prev = cur = malloc(sizeof(MHDdata));
     head->mhd_fp = fopen(filename, "r");
 
     len = 1024;
     line = malloc(len);
-    while((fields = ggcm_read_field_metadata(cur)) != false) {
+    while((fields = ggcm_read_field_metadata(cur)) != 0) {
         prev = cur;
         /* how many lines should we skip? */
         lines = ((cur->number % 64) != 0) ?
@@ -138,9 +136,10 @@ MHDdata *ggcm_read_metadata(const char *filename)
          * fseek here, but we only know how many *lines* the data are, not how
          * many *bytes* they are.  So we have to scan every line... */
         for(i=0; i < lines; ++i) {
-            /* fgets works pretty well too; getline is slightly faster.  fscanf is
-             * extremely slow. */
-            getline(&line, &len, cur->mhd_fp);
+            /* fgets works pretty well too; getline is slightly faster.
+               fscanf is extremely slow.  Using fgets since it is portable,
+               whereas getline is only on linux. */
+            fgets(line, len, cur->mhd_fp);
         }
 
         cur->next = malloc(sizeof(MHDdata)); /* need another elem in the list */
@@ -165,7 +164,7 @@ MHDdata *ggcm_read_metadata(const char *filename)
  *       reading the last bit of information ("line 5").  This will allow a
  *       more efficient reader when I rewrite that in the future, since it can
  *       know exactly where to seek to. */
-static bool ggcm_read_field_metadata(MHDdata *mhd)
+static int ggcm_read_field_metadata(MHDdata *mhd)
 {
     char junk[512];
 
@@ -178,7 +177,7 @@ static bool ggcm_read_field_metadata(MHDdata *mhd)
         abort();
     }
     if(feof(mhd->mhd_fp)) {
-        return false;
+        return 0;
     }
 
     SCAN(mhd->mhd_fp, "%s\n", mhd->field_name);
@@ -192,7 +191,7 @@ static bool ggcm_read_field_metadata(MHDdata *mhd)
     NSCAN(mhd->mhd_fp, 6, "WRN2 %d%f %f %f %d%[^\n]\n", &mhd->number,
                           &mhd->wrn2_z1, &mhd->wrn2_z2, &mhd->wrn2_rid,
                           &mhd->wrn2_it, mhd->wrn2_cid);
-    return true;
+    return 1;
 }
 
 /** wrndec(): decodes a line of run-length encoded ascii data into an

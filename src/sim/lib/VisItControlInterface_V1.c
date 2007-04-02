@@ -726,13 +726,19 @@ static int LoadVisItLibrary(void)
 * Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
 *
 * Modifications:
+*   Eric Brugger, Thu Sep 14 12:53:46 PDT 2006
+*   Changed the routine to read at most ENV_BUF_SIZE bytes of output from
+*   the execution of the command.
 *
 *******************************************************************************/
+#define ENV_BUF_SIZE 10000
+
 static int ReadEnvironmentFromCommand(const char *visitpath, char *output)
 {
    /* VisIt will tell us what variables to set. */
    /* (redirect stderr so it won't complain if it can't find visit) */
    int n;
+   int lbuf;
    char command[200];
    char *ptr;
    FILE *file;
@@ -749,9 +755,11 @@ static int ReadEnvironmentFromCommand(const char *visitpath, char *output)
 
    file = popen(command, "r");
    ptr = output;
-   while ((n = read(fileno(file), ptr, PIPE_BUF)) > 0)
+   lbuf = ENV_BUF_SIZE;
+   while ((n = read(fileno(file), ptr, lbuf)) > 0)
    {
       ptr += n;
+      lbuf -= n;
    }
    *ptr = '\0';
 
@@ -880,11 +888,14 @@ void VisItSetOptions(char *o)
 * Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
 *
 * Modifications:
+*   Eric Brugger, Thu Sep 14 12:53:46 PDT 2006
+*   Changed the routine to allocate the buffer new_env to be ENV_BUF_SIZE
+*   bytes in size instead of 10000.
 *
 *******************************************************************************/
 int VisItSetupEnvironment(void)
 {
-   char *new_env = (char*)(malloc(10000));
+   char *new_env = (char*)(malloc(ENV_BUF_SIZE));
    int done = 0;
    char *ptr;
 
@@ -922,7 +933,7 @@ int VisItSetupEnvironment(void)
       putenv(ptr);
       ptr += i+1;
    }
-   /* free(envoutput); <--- NO!  You are not supposed to free this memory! */
+   /* free(new_env); <--- NO!  You are not supposed to free this memory! */
 
    return TRUE;
 }

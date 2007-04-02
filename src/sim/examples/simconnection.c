@@ -48,21 +48,22 @@ VisIt_SimulationMetaData *md = NULL;
 void Update_UI_Commands();
 
 
-/******************************************************************************
-** Method: void InitializeMD(int MaxNumCustCMD )
-**
-** Purpose:
-**    Initialize the metadata structure including allocating space for the
-**  Command arrays.
-**
-** Arguments:
-**   MaxNumCustCMD: The maximun number of ui components will will be  controling
-**
-** Programmer: Jeremy Meredith
-** Creation:   : April  4, 2005
-**
-** ****************************************************************************/
-void InitializeMD(int MaxNumCustCMD )
+/*****************************************************************************
+* Method: InitializeMD
+*
+* Purpose:
+*   Initialize the metadata structure including allocating space for the
+*   Command arrays.
+*
+* Arguments:
+*   MaxNumCustCMD: The maximun number of ui components will will be controling
+*
+* Programmer: Jeremy Meredith
+* Creation:   April  4, 2005
+*
+*****************************************************************************/
+void
+InitializeMD(int MaxNumCustCMD)
 {
     md = malloc(sizeof(VisIt_SimulationMetaData));
 
@@ -107,105 +108,120 @@ void InitializeMD(int MaxNumCustCMD )
     VisItInitAllCMD(md, MaxNumCustCMD);
 }                    
 
-/******************************************************************************
-** Method: VisIt_SimulationMetaData *VisItGetMetaData()
-**
-** Purpose:
-**   Called via VisIt to get the simulation MetaData.
-**
-** Arguments:
-**   MaxNumCustCMD: The maximun number of ui components will will be  controling
-**
-** Programmer: Jeremy Meredith
-** Creation:   : April  4, 2005
-**
-** Modifications:
-**   Shelly Prevost, Tue Sep 12 12:02:21 PDT 2006
-**   Added Custom UI command control creation.
-**   Enhanced function header compliance.
-**   Added Gerneric button lable calls
-**
-** ****************************************************************************/
-VisIt_SimulationMetaData *VisItGetMetaData()
+/*****************************************************************************
+* Method: VisItGetMetaData
+*
+* Purpose:
+*   Called via VisIt to get the simulation MetaData.
+*
+* Arguments:
+*   MaxNumCustCMD: The maximun number of ui components will will be controling
+*
+* Programmer: Jeremy Meredith
+* Creation:   April  4, 2005
+*
+* Modifications:
+*   Shelly Prevost, Tue Sep 12 12:02:21 PDT 2006
+*   Added Custom UI command control creation.
+*   Enhanced function header compliance.
+*   Added Gerneric button lable calls
+*
+*****************************************************************************/
+VisIt_SimulationMetaData *
+VisItGetMetaData()
 {
-    /* maximum number of UI components connections
-       that you will be creating        */
+    /*
+     * maximum number of UI components connections
+     * that you will be creating
+     */
     int MAX_NUMBER_CUST_CMD = 15;
 
-    /* if the first time setup the meta data
-    ** and create meta data slots for the UI control
-    ** Do this only once.  */
+    /*
+     * If the first time setup the meta data
+     * and create meta data slots for the UI control
+     * Do this only once.
+     */
     if (md == NULL )
     {
-      InitializeMD(MAX_NUMBER_CUST_CMD);
+        InitializeMD(MAX_NUMBER_CUST_CMD);
 
-      /* set up the specific ui channel to control the
-         ui compenents in the VisIt custom commands dialog
-         These names should be the exact same name as defined
-         in the interface file.  */
-      VisItCreateCMD( *md, "MainTextLabel");
-      VisItCreateCMD( *md, "ShellySpinBox1");
-      VisItCreateCMD( *md, "progressBar1");
-      VisItCreateCMD( *md, "Top_Button_1");
-      VisItCreateCMD( *md, "ShellySlider_1");
-      VisItCreateCMD( *md, "ShellyDial_1");
-      VisItCreateCMD( *md, "ShellyLineEdit1");
-      VisItCreateCMD( *md, "ShellyText_2");
-      VisItCreateCMD( *md, "RadioButton1");
-      VisItCreateCMD( *md, "RadioButton2");
-      VisItCreateCMD( *md, "RadioButton3");
-      VisItCreateCMD( *md, "LCDNumber1");
-      VisItCreateCMD( *md, "CheckBox1");
-      VisItCreateCMD( *md, "timeEdit1");
-      VisItCreateCMD( *md, "dateEdit1");
-      /* if you want to rename the generic
-      ** button on the main sim window use
-      ** these commands. You are limited to 5
-      ** main buttons  */
-      VisItLabelGenericButton( md, 0, "halt",1);
-      VisItLabelGenericButton( md, 1, "step",1);
-      VisItLabelGenericButton( md, 2, "run",1);
-      VisItLabelGenericButton( md, 3, "wdmp",1);
-      VisItLabelGenericButton( md, 4, "wgdmp",1);
+        /*
+         * set up the specific ui channel to control the
+         * ui compenents in the VisIt custom commands dialog
+         * These names should be the exact same name as defined
+         * in the interface file.
+         */
+        VisItCreateCMD( *md, "MainTextLabel");
+        VisItCreateCMD( *md, "ShellySpinBox1");
+        VisItCreateCMD( *md, "progressBar1");
+        VisItCreateCMD( *md, "Top_Button_1");
+        VisItCreateCMD( *md, "ShellySlider_1");
+        VisItCreateCMD( *md, "ShellyDial_1");
+        VisItCreateCMD( *md, "ShellyLineEdit1");
+        VisItCreateCMD( *md, "ShellyText_2");
+        VisItCreateCMD( *md, "RadioButton1");
+        VisItCreateCMD( *md, "RadioButton2");
+        VisItCreateCMD( *md, "RadioButton3");
+        VisItCreateCMD( *md, "LCDNumber1");
+        VisItCreateCMD( *md, "CheckBox1");
+        VisItCreateCMD( *md, "timeEdit1");
+        VisItCreateCMD( *md, "dateEdit1");
+
+        /*
+         * if you want to rename the generic
+         * button on the main sim window use
+         * these commands. You are limited to 5
+         * main buttons
+         */
+        VisItLabelGenericButton( md, 0, "halt",1);
+        VisItLabelGenericButton( md, 1, "step",1);
+        VisItLabelGenericButton( md, 2, "run",1);
+        VisItLabelGenericButton( md, 3, "wdmp",1);
+        VisItLabelGenericButton( md, 4, "wgdmp",1);
     }
-    
 
-    /* now update the meta data so that the custom
-    ** command interface will be brought up to date
-    ** with what is going on in the simulation */
+    /*
+     * now update the meta data so that the custom
+     * command interface will be brought up to date
+     * with what is going on in the simulation
+     */
     Update_UI_Commands();
-    /* no return the updated meta data that will
-    ** be sent to the VisIt program   */
+
+    /*
+     * no return the updated meta data that will
+     * be sent to the VisIt program
+     */
     return md;
 }
 
-/******************************************************************************
-** Method: void Update_UI_Commands()
-**
-** Purpose:
-**   This function updates the values displayed in the VisIt simulation Window.
-**   Here is where you want to put the changing information.
-**   This information will be sent back to VisIt and update
-**   the matching UI components in the simulation window.
-**
-** Arguments:
-**  
-**
-** Programmer: Jeremy Meredith
-** Creation:   : April  4, 2005
-**
-** Modifications:
-**   Shelly Prevost, Tue Sep 12 12:02:21 PDT 2006
-**   Added Custom UI command control functions to demonstrate how
-**   to set simulation data values in the custom UI window in VisIt
-**   Enhanced function header compliance.
-**   Added a call to demostrate displaying a message in the
-**   simulation window.
-**
-** ***************************************************************************/
-void Update_UI_Commands()
+/*****************************************************************************
+* Method: Update_UI_Commands
+*
+* Purpose:
+*   This function updates the values displayed in the VisIt simulation Window.
+*   Here is where you want to put the changing information.
+*   This information will be sent back to VisIt and update
+*   the matching UI components in the simulation window.
+*
+* Arguments:
+*  
+* Programmer: Jeremy Meredith
+* Creation:   April  4, 2005
+*
+* Modifications:
+*   Shelly Prevost, Tue Sep 12 12:02:21 PDT 2006
+*   Added Custom UI command control functions to demonstrate how
+*   to set simulation data values in the custom UI window in VisIt
+*   Enhanced function header compliance.
+*   Added a call to demostrate displaying a message in the
+*   simulation window.
+*
+*****************************************************************************/
+#define MAX_CMD_STR_LEN 64
+
+void
+Update_UI_Commands()
 {
-      int MAX_CMD_STR_LEN = 64;
       /* put updated UI information here. */
       static int timeStep = 0;
       char value[MAX_CMD_STR_LEN];
@@ -248,25 +264,26 @@ void Update_UI_Commands()
       timeStep++;
 }
 
-/******************************************************************************
-** Method: VisIt_MeshData *VisItGetMesh(int domain,const char *name)
-**
-** Purpose:
-**   This function gets the simulation mesh data.
-**
-** Arguments:
-**   domain: the domain requested.
-**   name  : the name of the variable that the data is requested from.
-**
-** Programmer: Jeremy Meredith
-** Creation:   : April  4, 2005
-**
-** Modifications:
-**   Shelly Prevost, Tue Sep 12 12:02:21 PDT 2006
-**   Enhanced function header compliance.
-**
+/*****************************************************************************
+* Method: VisItGetMesh
+*
+* Purpose:
+*   This function gets the simulation mesh data.
+*
+* Arguments:
+*   domain: the domain requested.
+*   name  : the name of the variable that the data is requested from.
+*
+* Programmer: Jeremy Meredith
+* Creation:   April  4, 2005
+*
+* Modifications:
+*   Shelly Prevost, Tue Sep 12 12:02:21 PDT 2006
+*   Enhanced function header compliance.
+*
 *****************************************************************************/
-VisIt_MeshData *VisItGetMesh(int domain,const char *name)
+VisIt_MeshData *
+VisItGetMesh(int domain,const char *name)
 {
     VisIt_MeshData *mesh = malloc(sizeof(VisIt_MeshData));
 
@@ -299,48 +316,51 @@ VisIt_MeshData *VisItGetMesh(int domain,const char *name)
 }
 
 /*****************************************************************************
-** Method: VisIt_MaterialData *VisItGetMaterial(int domain,const char *name)
-**
-** Purpose:
-**   This function gets the simulation meterial data.
-**
-** Arguments:
-**   domain: the domain requested.  ( not uesed)
-**   name  : the name of the variable that the data is requested from.  ( not used)
-**
-** Programmer: Jeremy Meredith
-** Creation:   : April  4, 2005
-**
-** Modifications:
-**   Shelly Prevost, Tue Sep 12 12:02:21 PDT 2006
-**   Enhanced function header compliance.
-**
-****************************************************************************/
-VisIt_MaterialData *VisItGetMaterial(int domain,const char *name)
+* Method: VisItGetMaterial
+*
+* Purpose:
+*   This function gets the simulation meterial data.
+*
+* Arguments:
+*   domain: the domain requested.  (not used)
+*   name  : the name of the variable that the data is requested from.
+*           (not used)
+*
+* Programmer: Jeremy Meredith
+* Creation:   April  4, 2005
+*
+* Modifications:
+*   Shelly Prevost, Tue Sep 12 12:02:21 PDT 2006
+*   Enhanced function header compliance.
+*
+*****************************************************************************/
+VisIt_MaterialData *
+VisItGetMaterial(int domain,const char *name)
 {
     fprintf(stderr, "VisItGetMaterial\n");
     return NULL;
 }
 
 /*****************************************************************************
-** Method: VisIt_ScalarData *VisItGetScalar(int domain,const char *name)
-**
-** Purpose:
-**   This function gets the simulation scalar data.
-**
-** Arguments:
-**   domain: the domain requested.
-**   name  : the name of the variable that the data is requested from.
-**
-** Programmer: Jeremy Meredith
-** Creation:   : April  4, 2005
-**
-** Modifications:
-**   Shelly Prevost, Tue Sep 12 12:02:21 PDT 2006
-**   Enhanced function header compliance.
-**
-** ***************************************************************************/
-VisIt_ScalarData *VisItGetScalar(int domain,const char *name)
+* Method: VisItGetScalar
+*
+* Purpose:
+*   This function gets the simulation scalar data.
+*
+* Arguments:
+*   domain: the domain requested.
+*   name  : the name of the variable that the data is requested from.
+*
+* Programmer: Jeremy Meredith
+* Creation:   April  4, 2005
+*
+* Modifications:
+*   Shelly Prevost, Tue Sep 12 12:02:21 PDT 2006
+*   Enhanced function header compliance.
+*
+*****************************************************************************/
+VisIt_ScalarData *
+VisItGetScalar(int domain,const char *name)
 {
     if (strcmp(name,"density")==0)
     {
@@ -361,24 +381,24 @@ VisIt_ScalarData *VisItGetScalar(int domain,const char *name)
 }
 
 /*****************************************************************************
-** Method: VisIt_DomainList *VisItGetDomainList()
-**
-** Purpose:
-**   This function create a list of domains and return them to the
-**   calling function.
-**
-** Arguments:
-**
-**
-** Programmer: Jeremy Meredith
-** Creation:   : April  4, 2005
-**
-** Modifications:
-**   Shelly Prevost, Tue Sep 12 12:02:21 PDT 2006
-**   Enhanced function header compliance.
-**
-** ***************************************************************************/
-VisIt_DomainList *VisItGetDomainList()
+* Method: VisItGetDomainList
+*
+* Purpose:
+*   This function create a list of domains and return them to the
+*   calling function.
+*
+* Arguments:
+*
+* Programmer: Jeremy Meredith
+* Creation:   April  4, 2005
+*
+* Modifications:
+*   Shelly Prevost, Tue Sep 12 12:02:21 PDT 2006
+*   Enhanced function header compliance.
+*
+*****************************************************************************/
+VisIt_DomainList *
+VisItGetDomainList()
 {
     int i;
     VisIt_DomainList *dl = malloc(sizeof(VisIt_DomainList));
@@ -387,30 +407,29 @@ VisIt_DomainList *VisItGetDomainList()
 
     dl->nMyDomains = 1;
     dl->myDomains = VisIt_CreateDataArrayFromInt(VISIT_OWNER_VISIT,
-                                               malloc(sizeof(int)));
+                                                 malloc(sizeof(int)));
     dl->myDomains.iArray[0] = par_rank;
 
     return dl;
 }
 
 /*****************************************************************************
-** Struct: VisIt_SimulationCallback visitCallbacks
-**
-** Purpose:
-**   This structure holds all the function pointers that allow visit to get
-**   access to the simulation data.
-**
-** Arguments:
-**
-**
-** Programmer: Jeremy Meredith
-** Creation:   : April  4, 2005
-**
-** Modifications:
-**   Shelly Prevost, Tue Sep 12 12:02:21 PDT 2006
-**   Enhanced function header compliance.
-**
-** **************************************************************************/
+* Struct: visitCallbacks
+*
+* Purpose:
+*   This structure holds all the function pointers that allow visit to get
+*   access to the simulation data.
+*
+* Arguments:
+*
+* Programmer: Jeremy Meredith
+* Creation:   April  4, 2005
+*
+* Modifications:
+*   Shelly Prevost, Tue Sep 12 12:02:21 PDT 2006
+*   Enhanced function header compliance.
+*
+*****************************************************************************/
 VisIt_SimulationCallback visitCallbacks =
 {
     &VisItGetMetaData,
@@ -422,9 +441,3 @@ VisIt_SimulationCallback visitCallbacks =
     NULL,  /* mixed scalar */
     VisItGetDomainList
 };
-
-
-
-
-
-
