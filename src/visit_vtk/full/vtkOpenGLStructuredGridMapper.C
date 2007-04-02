@@ -400,9 +400,13 @@ int vtkOpenGLStructuredGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
    vtkStructuredGrid *input = this->GetInput();
    int dims[3];
    input->GetDimensions(dims);
-   if (dims[2] != 1)
+   bool flatI = (dims[0] <= 1);
+   bool flatJ = (dims[1] <= 1);
+   bool flatK = (dims[2] <= 1);
+   if (!flatI && !flatJ && !flatK)
    {
-       cerr << "3D grid ... aborting!" << endl;
+       vtkErrorMacro("One of the dimensions must be flat!!\n"
+                     "Rectilinear grid mapper unable to render");
        return 0;
    }
 
@@ -412,7 +416,11 @@ int vtkOpenGLStructuredGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
        this->primsInCurrentList = 0;
    }
 
-   glDisable(GL_LIGHTING);
+   if (SceneIs3D)
+       glEnable(GL_LIGHTING);
+   else
+       glDisable(GL_LIGHTING);
+
    const unsigned char *colors = NULL;
    if (this->Colors != NULL)
        colors = this->Colors->GetPointer(0);
@@ -475,19 +483,49 @@ int vtkOpenGLStructuredGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
    int Iorder[4] = { 0, 1, 1, 0 };
    int Jorder[4] = { 0, 0, 1, 1 };
 
+   int slowDim = 0;
+   int fastDim = 0;
+   if (flatI)
+   {
+       fastDim = dims[1];
+       slowDim = dims[2];
+   }
+   if (flatJ)
+   {
+       fastDim = dims[0];
+       slowDim = dims[2];
+   }
+   if (flatK)
+   {
+       fastDim = dims[0];
+       slowDim = dims[1];
+   }
+
+   bool cellNormals = false;
+   vtkDataArray *normals = input->GetPointData()->GetNormals();
+   if (normals == NULL)
+   {
+       normals = input->GetCellData()->GetNormals();
+       if (normals != NULL)
+           cellNormals = true;
+   }
+   float *n = NULL;
+   if (normals != NULL)
+       n = (float *) normals->GetVoidPointer(0);
+
    glBegin(GL_QUADS);
-   for (int j = 0 ; j < dims[1]-1 ; j++)
-       for (int i = 0 ; i < dims[0]-1 ; i++)
+   for (int j = 0 ; j < slowDim-1 ; j++)
+       for (int i = 0 ; i < fastDim-1 ; i++)
        {
            if (ghost_zones != NULL)
                if (*(ghost_zones++) != '\0')
                    continue;
            if (ghost_nodes != NULL)
            {
-               int p0 = j*dims[0]+i;
-               int p1 = j*dims[0]+i+1;
-               int p2 = (j+1)*dims[0]+i;
-               int p3 = (j+1)*dims[0]+i+1;
+               int p0 = j*fastDim+i;
+               int p1 = j*fastDim+i+1;
+               int p2 = (j+1)*fastDim+i;
+               int p3 = (j+1)*fastDim+i+1;
                if (ghost_nodes[p0] && ghost_nodes[p1] && ghost_nodes[p2]
                    && ghost_nodes[p3])
                   continue;
@@ -495,11 +533,18 @@ int vtkOpenGLStructuredGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
 
            if (colors == NULL)
            {
+               if (n != NULL && cellNormals)
+               {
+                   int idx = j*(fastDim-1) + i;
+                   glNormal3fv(n + 3*idx);
+               }
                for (int k = 0 ; k < 4 ; k++)
                {
-                   int x = i + Iorder[k];
-                   int y = j + Jorder[k];
-                   int idx = y*dims[0] + x;
+                   int I = i + Iorder[k];
+                   int J = j + Jorder[k];
+                   int idx = J*(fastDim) + I;
+                   if (n != NULL && !cellNormals)
+                       glNormal3fv(n + 3*idx);
                    glVertex3fv(pts + 3*idx);
                }
            }
@@ -507,30 +552,41 @@ int vtkOpenGLStructuredGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
            {
                if (!nodeData)
                {
-                   int idx = j*(dims[0]-1) + i;
+                   int idx = j*(fastDim-1) + i;
                    if (!this->ColorTexturingAllowed)
                        glColor4ubv(colors + 4*idx);
                    else
                        glTexCoord1f(vtk1Over255[(colors + 4*idx)[0]]);
+                   if (n != NULL && cellNormals)
+                       glNormal3fv(n + 3*idx);
                    for (int k = 0 ; k < 4 ; k++)
                    {
-                       int x = i + Iorder[k];
-                       int y = j + Jorder[k];
-                       int idx = y*dims[0] + x;
+                       int I = i + Iorder[k];
+                       int J = j + Jorder[k];
+                       int idx = J*fastDim + I;
+                       if (n != NULL && !cellNormals)
+                           glNormal3fv(n + 3*idx);
                        glVertex3fv(pts + 3*idx);
                    }
                }
                else
                {
+                   if (n != NULL && cellNormals)
+                   {
+                       int idx = j*(fastDim-1) + i;
+                       glNormal3fv(n + 3*idx);
+                   }
                    for (int k = 0 ; k < 4 ; k++)
                    {
-                       int x = i + Iorder[k];
-                       int y = j + Jorder[k];
-                       int idx = y*dims[0] + x;
+                       int I = i + Iorder[k];
+                       int J = j + Jorder[k];
+                       int idx = J*fastDim + I;
                        if (!this->ColorTexturingAllowed)
                            glColor4ubv(colors + 4*idx);
                        else
                            glTexCoord1f(vtk1Over255[colors[4*idx]]);
+                       if (n != NULL && !cellNormals)
+                           glNormal3fv(n + 3*idx);
                        glVertex3fv(pts + 3*idx);
                    }
                }

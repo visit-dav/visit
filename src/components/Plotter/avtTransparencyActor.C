@@ -51,6 +51,7 @@
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetMapper.h>
+#include <vtkDataSetRemoveGhostCells.h>
 #include <vtkDepthSortPolyData.h>
 #include <vtkFloatArray.h>
 #include <vtkGeometryFilter.h>
@@ -61,6 +62,7 @@
 #include <vtkProperty.h>
 #include <vtkRenderer.h>
 #include <vtkParallelImageSpaceRedistributor.h>
+#include <vtkVisItPolyDataNormals.h>
 
 #include <DebugStream.h>
 #include <BadIndexException.h>
@@ -928,6 +930,11 @@ avtTransparencyActor::SetUpActor(void)
 //    Do a better job of handling normals for cell-based normals.  This is more
 //    important because the poly data mapper no longer calculates them for us.
 //
+//    Hank Childs, Fri Dec 29 09:53:13 PST 2006
+//    Accomodate situations where rectilinear and curvilinear grids are
+//    getting shipped down as is (i.e. not poly data).  This means we must
+//    add normals and remove ghost data.
+//
 // ****************************************************************************
 
 void
@@ -1002,10 +1009,31 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
     // that we are actually dealing with polydata.
     //
     vtkGeometryFilter *gf = vtkGeometryFilter::New();
+    vtkDataSetRemoveGhostCells *ghost_filter=vtkDataSetRemoveGhostCells::New();
+    vtkVisItPolyDataNormals *normals = vtkVisItPolyDataNormals::New();
     vtkPolyData *pd = NULL;
     if (in_ds->GetDataObjectType() == VTK_POLY_DATA)
     {
         pd = (vtkPolyData *) in_ds;
+    }
+    else if (in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
+    {
+        gf->SetInput(in_ds);
+        ghost_filter->SetInput(gf->GetOutput());
+        ghost_filter->Update();
+        pd = (vtkPolyData *) ghost_filter->GetOutput();
+    }
+    else if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    {
+        gf->SetInput(in_ds);
+        if (mapper->GetScalarVisibility() != 0 &&
+            in_ds->GetPointData()->GetScalars() == NULL &&
+            in_ds->GetCellData()->GetScalars() != NULL)
+            normals->SetNormalTypeToCell();
+        normals->SetInput(gf->GetOutput());
+        ghost_filter->SetInput(normals->GetOutput());
+        ghost_filter->Update();
+        pd = (vtkPolyData *) ghost_filter->GetOutput();
     }
     else
     {
@@ -1202,6 +1230,8 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
     //
     gf->Delete();
     prepDS->Delete();
+    ghost_filter->Delete();
+    normals->Delete();
 }
 
 

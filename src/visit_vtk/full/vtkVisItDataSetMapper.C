@@ -46,6 +46,9 @@ vtkStandardNewMacro(vtkVisItDataSetMapper);
 //   Hank Childs, Wed Dec 27 09:51:10 PST 2006
 //   Initialize structured grid mapper.
 //
+//   Hank Childs, Thu Dec 28 11:04:05 PST 2006
+//   Initialize SceneIs3D.
+//
 // ****************************************************************************
 
 vtkVisItDataSetMapper::vtkVisItDataSetMapper()
@@ -56,6 +59,7 @@ vtkVisItDataSetMapper::vtkVisItDataSetMapper()
   this->StructuredGridMapper = NULL;
   this->PointTextureMethod = TEXTURE_NO_POINTS;
   this->EnableColorTexturing = false;
+  this->SceneIs3D = true;
 }
 
 vtkVisItDataSetMapper::~vtkVisItDataSetMapper()
@@ -123,6 +127,9 @@ void vtkVisItDataSetMapper::ReleaseGraphicsResources( vtkWindow *renWin )
 //   Hank Childs, Wed Dec 27 09:51:10 PST 2006
 //   Add support for curvilinear rendering.
 //
+//   Hank Childs, Thu Dec 28 11:08:51 PST 2006
+//   Tell our rectilinear mapper whether or not the scene is 3D.
+//
 // ****************************************************************************
 
 void vtkVisItDataSetMapper::Render(vtkRenderer *ren, vtkActor *act)
@@ -159,6 +166,7 @@ void vtkVisItDataSetMapper::Render(vtkRenderer *ren, vtkActor *act)
     this->StructuredGridMapper = sgm;
     this->SetPointTextureMethod(this->PointTextureMethod);
     this->SetEnableColorTexturing(this->EnableColorTexturing);
+    this->SetSceneIs3D(this->SceneIs3D);
     }
 
   // For efficiency: if input type is vtkPolyData, there's no need to 
@@ -436,3 +444,30 @@ vtkVisItDataSetMapper::SetEnableColorTexturing(bool val)
       }
     }
 }
+
+
+// ****************************************************************************
+// Method: vtkVisItDataSetMapper::SetSceneIs3D
+//
+// Purpose: 
+//     Sets whether the scene is 3D.
+//
+// Arguments:
+//   val : Whether the scene is 3D.
+//
+// Programmer: Hank Childs
+// Creation:   December 28, 2006
+//
+// ****************************************************************************
+
+void
+vtkVisItDataSetMapper::SetSceneIs3D(bool val)
+{
+  this->SceneIs3D = val;
+  if (this->RectilinearGridMapper != NULL)
+     this->RectilinearGridMapper->SetSceneIs3D(val);
+  if (this->StructuredGridMapper != NULL)
+     this->StructuredGridMapper->SetSceneIs3D(val);
+}
+
+

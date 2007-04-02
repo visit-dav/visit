@@ -62,6 +62,7 @@ pengra_icc=true
 thunder=true
 prism=true
 yana=true
+davinci=true
 
 ver=undefined
 verflag=-private
@@ -85,6 +86,7 @@ do
          thunder=false
          prism=false
          yana=false
+         davinci=false
          shift
          ;;
       -hoth)
@@ -165,6 +167,14 @@ do
          ;;
       +yana)
          yana=true
+         shift
+         ;;
+      -davinci)
+         davinci=false
+         shift
+         ;;
+      +davinci)
+         davinci=true
          shift
          ;;
       -v)
@@ -569,9 +579,45 @@ then
 fi
 
 #
+# Install on davinci.
+#
+rm -f davinci
+cat <<EOF > davinci
+#!/bin/sh
+./visit-install -r -private -c nersc -b bdivp $ver linux-altix visit > installlog 2>&1
+rm -f resultlog
+echo "        install of visit on davinci"         > resultlog 2>&1
+echo "       -----------------------------"        >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+df -k visit                                        >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+ls -l visit/$ver/linux-ia64/bin                    >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "number of database plugins = "\`ls visit/$ver/linux-ia64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls visit/$ver/linux-ia64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls visit/$ver/linux-ia64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "The database plugins:"                       >> resultlog 2>&1
+ls visit/$ver/linux-ia64/plugins/databases/libI* | sed "s/visit\/$ver\/linux-ia64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $davinci = true ]
+then
+   if [ $test = no ]
+   then
+      scp davinci.nersc.gov:visit$ver2.linux-ia64.tar.gz visit$ver2.linux-altix.tar.gz
+      scp visit$ver2.linux-altix.tar.gz davinci.nersc.gov:
+      scp visit-install davinci.nersc.gov:
+      scp davinci davinci.nersc.gov:davinci_install
+      ssh davinci.nersc.gov "chmod 750 davinci_install;./davinci_install"
+   fi
+fi
+
+#
 # Clean up.
 #
 if [ $test = no ]
 then
-   rm -f hoth sunspot quad berg up pengra pengra_icc thunder prism yana
+   rm -f hoth sunspot quad berg up pengra pengra_icc thunder prism yana davinci
 fi

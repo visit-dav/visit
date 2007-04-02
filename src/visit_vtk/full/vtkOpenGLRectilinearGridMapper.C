@@ -399,6 +399,9 @@ void vtkOpenGLRectilinearGridMapper::Render(vtkRenderer *ren, vtkActor *act)
 //    Hank Childs, Wed Dec 27 10:27:48 PST 2006
 //    Fix indexing bug for ghost data.
 //
+//    Hank Childs, Thu Dec 28 10:24:53 PST 2006
+//    Add support for grids in three dimensional space.
+//
 // ****************************************************************************
 
 int vtkOpenGLRectilinearGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
@@ -408,9 +411,13 @@ int vtkOpenGLRectilinearGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
    vtkRectilinearGrid *input = this->GetInput();
    int dims[3];
    input->GetDimensions(dims);
-   if (dims[2] != 1)
+   bool flatI = (dims[0] <= 1);
+   bool flatJ = (dims[1] <= 1);
+   bool flatK = (dims[2] <= 1);
+   if (!flatI && !flatJ && !flatK)
    {
-       cerr << "3D grid ... aborting!" << endl;
+       vtkErrorMacro("One of the dimensions must be flat!!\n"
+                     "Rectilinear grid mapper unable to render");
        return 0;
    }
 
@@ -420,7 +427,10 @@ int vtkOpenGLRectilinearGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
        this->primsInCurrentList = 0;
    }
 
-   glDisable(GL_LIGHTING);
+   if (SceneIs3D)
+       glEnable(GL_LIGHTING);
+   else
+       glDisable(GL_LIGHTING);
    const unsigned char *colors = NULL;
    if (this->Colors != NULL)
        colors = this->Colors->GetPointer(0);
@@ -488,28 +498,51 @@ int vtkOpenGLRectilinearGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
    for (i = 0 ; i < dims[2] ; i++)
        Z[i] = input->GetZCoordinates()->GetTuple1(i);
 
-   bool normalQuadOrder = true;
+   bool normalQuadOrder = !flatJ;
    if (dims[0] > 1 && X[1] < X[0])
        normalQuadOrder = !normalQuadOrder;
    if (dims[1] > 1 && Y[1] < Y[0])
+       normalQuadOrder = !normalQuadOrder;
+   if (dims[2] > 1 && Z[1] < Z[0])
        normalQuadOrder = !normalQuadOrder;
    int normalquadorder[4] = { 0, 1, 3, 2 };
    int otherquadorder[4] = { 0, 2, 3, 1 };
    int *quadorder = (normalQuadOrder ? normalquadorder : otherquadorder);
 
+   int slowDim = 0;
+   int fastDim = 0;
+   if (flatI)
+   {
+       glNormal3f(1., 0., 0.);
+       fastDim = dims[1];
+       slowDim = dims[2];
+   }
+   if (flatJ)
+   {
+       glNormal3f(0., 1., 0.);
+       fastDim = dims[0];
+       slowDim = dims[2];
+   }
+   if (flatK)
+   {
+       glNormal3f(0., 0., 1.);
+       fastDim = dims[0];
+       slowDim = dims[1];
+   }
+
    glBegin(GL_QUADS);
-   for (int j = 0 ; j < dims[1]-1 ; j++)
-       for (int i = 0 ; i < dims[0]-1 ; i++)
+   for (int j = 0 ; j < slowDim-1 ; j++)
+       for (int i = 0 ; i < fastDim-1 ; i++)
        {
            if (ghost_zones != NULL)
                if (*(ghost_zones++) != '\0')
                    continue;
            if (ghost_nodes != NULL)
            {
-               int p0 = j*dims[0]+i;
-               int p1 = j*dims[0]+i+1;
-               int p2 = (j+1)*dims[0]+i;
-               int p3 = (j+1)*dims[0]+i+1;
+               int p0 = j*fastDim+i;
+               int p1 = j*fastDim+i+1;
+               int p2 = (j+1)*fastDim+i;
+               int p3 = (j+1)*fastDim+i+1;
                if (ghost_nodes[p0] && ghost_nodes[p1] && ghost_nodes[p2]
                    && ghost_nodes[p3])
                   continue;
@@ -519,37 +552,58 @@ int vtkOpenGLRectilinearGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
            {
                for (int k = 0 ; k < 4 ; k++)
                {
-                   glVertex3f(X[i + quadorder[k] % 2], Y[j + quadorder[k]/2],
-                              Z[0]);
+                   if (flatI)
+                       glVertex3f(X[0], Y[i + quadorder[k] % 2], 
+                                  Z[j + quadorder[k]/2]);
+                   else if (flatJ)
+                       glVertex3f(X[i + quadorder[k] % 2], Y[0],
+                                  Z[j + quadorder[k]/2]);
+                   else if (flatK)
+                       glVertex3f(X[i + quadorder[k] % 2], 
+                                  Y[j + quadorder[k]/2], Z[0]);
                }
            }
            else
            {
                if (!nodeData)
                {
-                   int idx = j*(dims[0]-1) + i;
+                   int idx = j*(fastDim-1) + i;
                    if (!this->ColorTexturingAllowed)
                        glColor4ubv(colors + 4*idx);
                    else
                        glTexCoord1f(vtk1Over255[(colors + 4*idx)[0]]);
                    for (int k = 0 ; k < 4 ; k++)
                    {
-                       glVertex3f(X[i + quadorder[k] % 2], 
-                                  Y[j + quadorder[k]/2], Z[0]);
+                       if (flatI)
+                           glVertex3f(X[0], Y[i + quadorder[k] % 2], 
+                                      Z[j + quadorder[k]/2]);
+                       else if (flatJ)
+                           glVertex3f(X[i + quadorder[k] % 2], Y[0],
+                                      Z[j + quadorder[k]/2]);
+                       else if (flatK)
+                           glVertex3f(X[i + quadorder[k] % 2], 
+                                      Y[j + quadorder[k]/2], Z[0]);
                    }
                }
                else
                {
                    for (int k = 0 ; k < 4 ; k++)
                    {
-                       int idx = (j + quadorder[k]/2)*dims[0] + 
+                       int idx = (j + quadorder[k]/2)*fastDim + 
                                  (i+(quadorder[k]%2));
                        if (!this->ColorTexturingAllowed)
                            glColor4ubv(colors + 4*idx);
                        else
                            glTexCoord1f(vtk1Over255[colors[4*idx]]);
-                       glVertex3f(X[i + quadorder[k] % 2], 
-                                  Y[j + quadorder[k]/2], Z[0]);
+                       if (flatI)
+                           glVertex3f(X[0], Y[i + quadorder[k] % 2], 
+                                      Z[j + quadorder[k]/2]);
+                       else if (flatJ)
+                           glVertex3f(X[i + quadorder[k] % 2], Y[0],
+                                      Z[j + quadorder[k]/2]);
+                       else if (flatK)
+                           glVertex3f(X[i + quadorder[k] % 2], 
+                                      Y[j + quadorder[k]/2], Z[0]);
                    }
                }
            }

@@ -44,7 +44,7 @@
 
 #include <filters_exports.h>
 
-#include <avtStreamer.h>
+#include <avtDataTreeStreamer.h>
 
 
 class   vtkRectilinearGridFacelistFilter;
@@ -104,9 +104,13 @@ class   avtMultiFacelist;
 //    Hank Childs, Wed Dec 20 09:25:42 PST 2006
 //    Add a flag that forces poly data construction.
 //
+//    Hank Childs, Thu Dec 28 09:08:34 PST 2006
+//    Re-inherit from data tree streamer (a single input may now produce
+//    multiple outputs ... 3D structured grid gives 6 2D structured grids).
+//
 // ****************************************************************************
 
-class AVTFILTERS_API avtFacelistFilter : public avtStreamer
+class AVTFILTERS_API avtFacelistFilter : public avtDataTreeStreamer
 {
   public:
                                          avtFacelistFilter();
@@ -131,13 +135,12 @@ class AVTFILTERS_API avtFacelistFilter : public avtStreamer
     bool                                 mustCreatePolyData;
     int                                  forceFaceConsolidation;
 
-    virtual vtkDataSet                  *ExecuteData(vtkDataSet *, int,
+    virtual avtDataTree_p                ExecuteDataTree(vtkDataSet *, int,
                                                      std::string);
     vtkDataSet                          *Take2DFaces(vtkDataSet *);
     vtkDataSet                          *FindEdges(vtkDataSet *);
-    vtkDataSet                          *Take3DFaces(vtkDataSet *, int);
-    vtkDataSet                          *TakeFacesForDisjointElementMesh(
-                                                            vtkDataSet *, int);
+    avtDataTree_p                        Take3DFaces(vtkDataSet *, int,
+                                                     std::string);
     vtkDataSet                          *ConvertToPolys(vtkDataSet *, int);
 
     virtual void                         InitializeFilter(void);

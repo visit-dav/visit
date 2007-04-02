@@ -53,6 +53,8 @@
 #include <avtDatasetExaminer.h>
 #include <avtTransparencyActor.h>
 
+#include <vtkVisItDataSetMapper.h>
+
 #include <BadIndexException.h>
 #include <DebugStream.h>
 
@@ -182,6 +184,9 @@ avtLevelsMapper::~avtLevelsMapper()
 //    clobbers the specular light color, which in turn greatly diminishes
 //    the specular effect.  ['5636] ['5580]
 //
+//    Hank Childs, Fri Dec 29 14:42:42 PST 2006
+//    Tell the mapper whether or not we have a 3D scene.
+//
 // ****************************************************************************
 
 void
@@ -193,6 +198,12 @@ avtLevelsMapper::CustomizeMappers(void)
         if (mappers[i] != NULL)
         {
             mappers[i]->ScalarVisibilityOff();
+
+            if (strcmp(mappers[i]->GetClassName(), "vtkVisItDataSetMapper")==0)
+            {                 
+                vtkVisItDataSetMapper *m = (vtkVisItDataSetMapper *)mappers[i];
+                m->SetSceneIs3D(GetInput()->GetInfo().GetAttributes().                                                    GetSpatialDimension() == 3);
+            }
 
             //
             //  Use labels for mapping to a color.

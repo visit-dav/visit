@@ -45,6 +45,7 @@ vtkRectilinearGridMapper *vtkRectilinearGridMapper::New()
 //----------------------------------------------------------------------------
 vtkRectilinearGridMapper::vtkRectilinearGridMapper()
 {
+  this->SceneIs3D = true;
 }
 
 //----------------------------------------------------------------------------

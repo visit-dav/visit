@@ -74,6 +74,11 @@ public:
   void SetEnableColorTexturing(bool);
   vtkGetMacro(EnableColorTexturing, bool);
 
+  // Description:
+  // Sets/Gets whether the scene is in 3D.
+  void SetSceneIs3D(bool);
+  vtkGetMacro(SceneIs3D, bool);
+
 protected:
   vtkVisItDataSetMapper();
   ~vtkVisItDataSetMapper();
@@ -84,6 +89,7 @@ protected:
   vtkStructuredGridMapper   *StructuredGridMapper;
   PointTextureMode           PointTextureMethod;
   bool                       EnableColorTexturing;
+  bool                       SceneIs3D;
 
   virtual void ReportReferences(vtkGarbageCollector*);
   virtual int FillInputPortInformation(int port, vtkInformation *info);

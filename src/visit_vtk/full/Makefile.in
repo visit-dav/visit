@@ -303,6 +303,9 @@
 #    Hank Childs, Wed Dec 27 09:59:14 PST 2006
 #    Added curvilinear mapper modules.
 #
+#    Hank Childs, Thu Dec 28 15:25:50 PST 2006
+#    Added vtkVisItStructuredGridNormals.
+#
 ##############################################################################
 
 ##
@@ -375,6 +378,7 @@ SRC=InitVTK.C \
     vtkVisItSTLWriter.C \
     vtkVisItScalarTree.C \
     vtkVisItStreamLine.C \
+    vtkVisItStructuredGridNormals.C \
     vtkVisItTensorGlyph.C \
     vtkVisItTIFFWriter.C \
     vtkVolumeFromVolume.C

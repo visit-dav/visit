@@ -234,6 +234,13 @@ int vtkVisItExtractRectilinearGrid::RequestInformation(
 //   Test for boundary condition with cell data, so we don't increment past
 //   array boundaries.
 //
+//   Hank Childs, Fri Dec 29 14:26:23 PST 2006
+//   Since AVT isn't participating in the whole "extents" game, discontinue
+//   its passing downstream.  This is screwing up repeated uses of
+//   this filter (i.e. twice in one pipeline), which happens with a 3D
+//   structured grid getting index selected and also facelisted.  Also pass
+//   through field data.
+//
 //----------------------------------------------------------------------------
 int vtkVisItExtractRectilinearGrid::RequestData(
   vtkInformation *,
@@ -292,7 +299,14 @@ int vtkVisItExtractRectilinearGrid::RequestData(
       }
     }
 
-  output->SetExtent(uExt);
+  int tmpExt[6];
+  tmpExt[0] = 0;
+  tmpExt[1] = uExt[1] - uExt[0];
+  tmpExt[2] = 0;
+  tmpExt[3] = uExt[3] - uExt[2];
+  tmpExt[4] = 0;
+  tmpExt[5] = uExt[5] - uExt[4];
+  output->SetExtent(tmpExt);
 
   // If output same as input, just pass data through
   if ( uExt[0] <= inExt[0] && uExt[1] >= inExt[1] &&
@@ -305,6 +319,7 @@ int vtkVisItExtractRectilinearGrid::RequestData(
     output->SetZCoordinates(input->GetZCoordinates());
     output->GetPointData()->PassData(input->GetPointData());
     output->GetCellData()->PassData(input->GetCellData());
+    output->GetFieldData()->PassData(input->GetFieldData());
     vtkDebugMacro(<<"Passed data through bacause input and output are the same");
     return 1;
     }
@@ -314,6 +329,7 @@ int vtkVisItExtractRectilinearGrid::RequestData(
   outSize = (uExt[1]-uExt[0]+1)*(uExt[3]-uExt[2]+1)*(uExt[5]-uExt[4]+1);
   outPD->CopyAllocate(pd,outSize,outSize);
   outCD->CopyAllocate(cd,outSize,outSize);
+  output->GetFieldData()->PassData(input->GetFieldData());
 
   // Setup the new "geometry"
   vtkDataArray *inCoords;

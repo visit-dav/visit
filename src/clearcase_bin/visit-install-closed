@@ -188,7 +188,7 @@ if [ $crier = true ]
 then
    if [ $test = no ]
    then
-      scp -P 22 crier:/gscratch/$user/crier/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_rhel3.tar.gz
+      scp -P 22 crier:/export/scratch/$user/crier/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_rhel3.tar.gz
       scp -P 22 visit$ver2.linux_rhel3.tar.gz crier:
       scp -P 22 visit-install crier:
       scp -P 22 crier crier:crier_install
@@ -460,5 +460,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hitit sunset sc ice purple lilac gauss
+   rm -f crier hitit sunset sc ice purple lilac gauss
 fi

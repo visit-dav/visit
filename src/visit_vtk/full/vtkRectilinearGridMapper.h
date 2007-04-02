@@ -50,9 +50,15 @@ public:
   virtual void GetBounds(double bounds[6])
     {this->Superclass::GetBounds(bounds);};
 
+  // Description:
+  // Sets/Gets whether the scene is in 3D.
+  vtkSetMacro(SceneIs3D, bool);
+  vtkGetMacro(SceneIs3D, bool);
+
 protected:  
   vtkRectilinearGridMapper();
   ~vtkRectilinearGridMapper() {};
+   bool    SceneIs3D;
 
   virtual int FillInputPortInformation(int, vtkInformation*);
 
