@@ -169,6 +169,9 @@
 #   Hank Childs, Thu May 11 12:14:51 PDT 2006
 #   Added avtCurvatureExpression.
 #
+#   Hank Childs, Fri Oct  6 15:33:13 PDT 2006
+#   Added avtAbelInversionExpression.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -255,6 +258,7 @@ General_src= \
   General/avtVectorDecomposeFilter.C
 
 ImageProcessing_src= \
+  ImageProcessing/avtAbelInversionExpression.C \
   ImageProcessing/avtConservativeSmoothingExpression.C \
   ImageProcessing/avtMeanFilterExpression.C \
   ImageProcessing/avtMedianFilterExpression.C

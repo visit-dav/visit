@@ -106,6 +106,9 @@
 //    Added mean_curvature, gauss_curvature, compose vector, and compose 
 //    tensor.
 //
+//    Hank Childs, Fri Oct  6 15:47:04 PDT 2006
+//    Added abel_inversion.
+//
 // ****************************************************************************
 struct ExprNameList
 {
@@ -270,6 +273,7 @@ const char *expr_misc[] = {
 };
 
 const char *expr_imageprocessing[] = {
+    "abel_inversion",
     "conservative_smoothing",
     "mean_filter",
     "median_filter",

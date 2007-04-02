@@ -121,6 +121,7 @@
 #include <avtNeighborEvaluatorFilter.h>
 #include <avtDataIdFilter.h>
 #include <avtExpressionComponentMacro.h>
+#include <avtAbelInversionExpression.h>
 #include <avtConservativeSmoothingExpression.h>
 #include <avtMeanFilterExpression.h>
 #include <avtMedianFilterExpression.h>
@@ -495,6 +496,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //      Make the parsing more robust when the wrong number of arguments are
 //      specified.
 //
+//      Hank Childs, Fri Oct  6 15:45:26 PDT 2006
+//      Add inverse of Abel transform.
+//
 // ****************************************************************************
 void
 avtFunctionExpr::CreateFilters(ExprPipelineState *state)
@@ -728,6 +732,8 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtMeanFilterExpression;
     else if (functionName == "median_filter")
         f = new avtMedianFilterExpression;
+    else if (functionName == "abel_inversion")
+        f = new avtAbelInversionExpression;
     else if (functionName == "conn_cmfe")
         f = new avtConnCMFEExpression;
     else if (functionName == "pos_cmfe")

@@ -297,11 +297,16 @@ avtCompactnessQuery::MidExecute(void)
 //    Jeremy Meredith, Wed Jul 23 13:34:18 PDT 2003
 //    Turned xBound and yBound into class data members, and free them here.
 //
+//    Hank Childs, Fri Oct  6 09:39:54 PDT 2006
+//    Made the compactness query return an array for Python.
+//
 // ****************************************************************************
 
 void
 avtCompactnessQuery::PostExecute(void)
 {
+    doubleVector values;
+
     SumIntAcrossAllProcessors(numDomains);
     SumDoubleAcrossAllProcessors(distBound_da_xsa);
     SumDoubleAcrossAllProcessors(distBound_da_vol);
@@ -355,6 +360,13 @@ avtCompactnessQuery::PostExecute(void)
              distBound_dv_xsa,
              distBound_dv_vol,
              distOrigin_da);
+    values.push_back(totalXSectArea);
+    values.push_back(totalRotVolume);
+    values.push_back(distBound_da_xsa);
+    values.push_back(distBound_da_vol);
+    values.push_back(distBound_dv_xsa);
+    values.push_back(distBound_dv_vol);
+    values.push_back(distOrigin_da);
 
 
     // If we have a density variable available
@@ -388,7 +400,14 @@ avtCompactnessQuery::PostExecute(void)
                  distBound_dv_den_vol,
                  distCMass_dv_den_vol);
         SetResultMessage(msg2);
+        values.push_back(totalRotMass);
+        values.push_back(centMassX);
+        values.push_back(centMassY);
+        values.push_back(distBound_dv_den_vol);
+        values.push_back(distCMass_dv_den_vol);
     }
+
+    SetResultValues(values);
 }
 
 // ****************************************************************************
