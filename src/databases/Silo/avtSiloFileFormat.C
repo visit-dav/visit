@@ -6170,6 +6170,9 @@ avtSiloFileFormat::GetExternalFacelist(int dom, const char *mesh)
 //    Mark C. Miller, Tue Jun 28 17:28:56 PDT 2005
 //    Made it handle the new "EMPTY" domain convention
 //
+//    Hank Childs, Wed Jul 13 10:04:33 PDT 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -6182,7 +6185,11 @@ avtSiloFileFormat::GetGlobalNodeIds(int dom, const char *mesh)
 
     char *meshname = AllocAndDetermineMeshnameForUcdmesh(dom, mesh);
     if (meshname == NULL || string(meshname) == "EMPTY")
+    {
+        if (meshname != NULL)
+            delete [] meshname;
         return NULL;
+    }
 
     //
     // Some Silo objects are distributed across several files,
