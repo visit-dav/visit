@@ -516,6 +516,7 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
                 createdData = true;
                 newColorData->Squeeze();
                 outDS->GetPointData()->SetScalars(newColorData);
+                newColorData->Delete();
             }
             pts->SetNumberOfPoints(nCells);
         }
@@ -600,6 +601,7 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
                 createdData = true;
                 newColorData->Squeeze();
                 outDS->GetPointData()->SetScalars(newColorData);
+                newColorData->Delete();
             }
 
             pts->SetNumberOfPoints(nCells);
