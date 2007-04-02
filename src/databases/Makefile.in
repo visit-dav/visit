@@ -148,6 +148,9 @@
 #   Added Shapefile reader for ESRI shape files, which are popular in
 #   GIS visualization.
 #
+#   Brad Whitlock, Fri Jun 17 15:03:29 PST 2005
+#   Added Mark's AUXFile reader.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -164,7 +167,7 @@ MILI=Mili
 PDB=KullLite PDB
 SAF=SAF
 SAMPLES=Rect Hex
-REQUIRED=ANALYZE BOV CMAT Curve2D Dune EnSight Image Lines OVERFLOW \
+REQUIRED=ANALYZE AUXFile BOV CMAT Curve2D Dune EnSight Image Lines OVERFLOW \
  PLOT2D PLOT3D Point3D SAR STL Shapefile Silo SimV1 Spheral TFT Tecplot Vista \
  VTK WavefrontOBJ
 VISUS=ViSUS

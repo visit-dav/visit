@@ -626,7 +626,8 @@ public class NIFGUI extends JPanel implements Runnable, ActionListener, ItemList
         // Tell VisIt to shut down.
         viewer.Close();
 
-        // How do you shut down SWING?
+        // Close down Java
+        System.exit(0);
     }
 
     //

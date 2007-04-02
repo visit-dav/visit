@@ -145,6 +145,13 @@ import java.util.prefs.BackingStoreException;
 //   path unless the user overrides it. I also added GetDataPath so it is
 //   easier to write test programs that know where to find default data files.
 //
+//   Brad Whitlock, Thu Jun 16 17:24:58 PST 2005
+//   I made the code that waits for the plugins to get loaded use the Yielder
+//   class, which makes the thread sleep if yield is not sufficient to make
+//   the thread reduce its CPU usage. I also changed things so the Create
+//   method never turns off xfer's reading thread. This means that the class
+//   will now always read from the viewer unless you call StopProcessing.
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -163,6 +170,7 @@ public class ViewerProxy implements SimpleObserver
 
         xfer = new Xfer();
         messageObserver = new MessageObserver();
+        syncNotifier = new SyncNotifier();
 
         // State objects
         rpc = new ViewerRPC();
@@ -234,6 +242,13 @@ public class ViewerProxy implements SimpleObserver
         {
             PrintMessage("Cannot access preferences");
         }
+    }
+
+    // Close the viewer when the object is garbage collected.
+    protected void finalize() throws Throwable
+    {
+        Close();
+        super.finalize();
     }
 
     // Sets the location of the visit binary.
@@ -318,29 +333,33 @@ public class ViewerProxy implements SimpleObserver
             // hook up the message observer.
             messageObserver.Attach(messageAtts);
 
+            // Hook up the syncAtts notifier.
+            syncAtts.Attach(syncNotifier);
+
             // Hook up this object to the plugin atts.
             pluginAtts.Attach(this);
 
             // Start reading input from the viewer so we can load the
-            // plugins that the viewer has loaded. After the plugins are
-            // loaded, stop processing input.
+            // plugins that the viewer has loaded.
             StartProcessing();
-            while(!pluginsLoaded)
+            Yielder y = new Yielder(1000);
+            boolean errFlag = false;
+            while(!errFlag && !pluginsLoaded)
             {
                 // Yield to other threads so we don't swamp the CPU with
                 // zero work.
-                Thread.yield();
+                try
+                {
+                    y.yield();
+                }
+                catch(java.lang.InterruptedException e)
+                {
+                    errFlag = true;
+                }
             }
-            StopProcessing();
         }
 
         return retval;
-    }
-
-    // Makes the proxy read information back from the viewer.
-    public void ProcessInput() throws LostConnectionException
-    {
-        xfer.Process();
     }
 
     // Starts automatic processing of information from the viewer.
@@ -358,18 +377,10 @@ public class ViewerProxy implements SimpleObserver
     }
 
     // Sets the synchronous flag which determines if there is a synchronization
-    // step after sending a viewer rpc. If xfer is not automatically
-    // processing viewer input, make it or this class's Synchronize method
-    // will block forever.
+    // step after sending a viewer rpc.
     public void SetSynchronous(boolean val)
     {
         synchronous = val;
-
-        if(synchronous)
-        {
-            if(!xfer.IsProcessing())
-                xfer.StartProcessing();
-        }
     }
 
     // Sets a flag that determines if messages from the viewer are printed to
@@ -382,6 +393,7 @@ public class ViewerProxy implements SimpleObserver
         operatorPlugins.SetVerbose(val);
         viewer.SetVerbose(val);
         xfer.SetVerbose(val);
+        syncNotifier.SetVerbose(val);
     }
 
 //
@@ -389,9 +401,11 @@ public class ViewerProxy implements SimpleObserver
 //
     public boolean Close()
     {
+        PrintMessage("Closing the viewer.");
         xfer.StopProcessing();
         rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_CLOSERPC);
         rpc.Notify();
+        viewer.Close();
         return true;
     }
 
@@ -1551,27 +1565,39 @@ public class ViewerProxy implements SimpleObserver
         return synchronous ? Synchronize() : true;
     }
 
-    public boolean Synchronize()
+    public synchronized boolean Synchronize()
     {
         // Clear any error in the message observer.
         messageObserver.ClearError();
 
-        // Send a new synchronization tag
+        // Tell the syncObserver to notify this thread when the new syncCount
+        // gets returned from the viewer.
         ++syncCount;
+        syncNotifier.NotifyThreadOnValue(Thread.currentThread(), syncCount);
+        syncNotifier.SetUpdate(false);
+
+        // Send a new synchronization tag
         syncAtts.SetSyncTag(syncCount);
         syncAtts.Notify();
         syncAtts.SetSyncTag(-1);
 
-        while(syncAtts.GetSyncTag() != syncCount)
+        // Wait until the syncNotifier notifies us that it's okay to proceed.
+        boolean noErrors = true;
+        try
         {
-            // Wait until the viewer passes back the right value.
-            // Yield to other threads so we don't swamp the CPU with
-            // zero work.
-            Thread.yield();
+            synchronized(Thread.currentThread())
+            { 
+                PrintMessage("Waiting for viewer sync.");
+                Thread.currentThread().wait();
+            }
+        }
+        catch(java.lang.InterruptedException e)
+        {
+            noErrors = false;
         }
 
         // Make it return true if there are no errors.
-        return !messageObserver.GetErrorFlag();
+        return noErrors && !messageObserver.GetErrorFlag();
     }
 
     public String GetLastError()
@@ -1730,6 +1756,7 @@ public class ViewerProxy implements SimpleObserver
     private int                  syncCount;
     private boolean              synchronous;
     private MessageObserver      messageObserver;
+    private SyncNotifier         syncNotifier;
     private boolean              pluginsLoaded;
     private boolean              doUpdate;
     private boolean              verbose;
