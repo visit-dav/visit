@@ -87,6 +87,9 @@
 //    Hank Childs, Sun Jan  1 12:33:37 PST 2006
 //    Added support for kernel based sampling.
 //
+//    Hank Childs, Mon Sep 11 15:10:50 PDT 2006
+//    Added friend status for the avtIntegrationRF.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtRay
@@ -98,6 +101,7 @@ class PIPELINE_API avtRay
     friend class                  avtAverageValueRF;
     friend class                  avtCompositeRF;
     friend class                  avtDistanceToValueRF;
+    friend class                  avtIntegrationRF;
     friend class                  avtMaximumIntensityProjectionRF;
     friend class                  avtMIPRangeRF;
     friend class                  avtVolume;

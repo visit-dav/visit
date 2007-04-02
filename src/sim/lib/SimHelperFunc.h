@@ -35,12 +35,37 @@
 *
 *****************************************************************************/
 
+/*****************************************************************************
+** Helper Functions:
+**
+** Purpose:
+**   These are a bunch of functions that make it easier and less error
+**   prone to use the Simulation Steering API.
+**
+** Notes: 
+**
+** Programmer: Shelly Prevost
+** Creation:   Dec. 6, 2005
+**
+** Modifications:
+**   Shelly Prevost, Tue Sep 12 16:08:13 PDT 2006
+**   I added functions to overide generic button lables.
+**   I added VisItCommandTypes enumerated types so that user
+**   will have an easier time to use the generic UI
+**
+****************************************************************************/
+
+ 
 #ifndef SIMHELPERFUNC_H
 #define SIMHELPERFUNC_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+typedef char *CMD_String[64] ;
 void Update_UI_Commands();
 extern void VisItInitAllCMD(VisIt_SimulationMetaData *mdd, int MaxNumCustCMD  );
-extern int VisItFindCMD (VisIt_SimulationMetaData mdd, char *name );
+extern int VisItFindCMD (VisIt_SimulationMetaData mdd, char *name, int customCMD );
 extern void VisItCreateCMD ( VisIt_SimulationMetaData mdd, char *name );
 extern void VisItInitCMD ( VisIt_SimulationControlCommand *cmd );
 extern void VisItSetCMDEnable (VisIt_SimulationMetaData mdd, char *name, int enabledCMD );
@@ -48,6 +73,11 @@ extern void VisItSetCMDIsOn (VisIt_SimulationMetaData mdd, char *name, int isOn)
 extern void VisItSetCMDValue (VisIt_SimulationMetaData mdd, char *name, int value );
 extern void VisItSetCMDText (VisIt_SimulationMetaData mdd, char *name, char *text );
 extern void VisItSetCMD ( VisIt_SimulationMetaData mdd, VisIt_SimulationControlCommand cmd  );
-
-
+extern void VisItUpdateMainSimWinGUI ( VisIt_SimulationMetaData mdd, char *name, char *data, int enable );
+extern void VisItInitGenericCMD (VisIt_SimulationMetaData mdd, int index,char *name, char *text,char *value, int enable );
+extern void VisItLabelGenericButton (VisIt_SimulationMetaData *mdd, int button, char *text,int enable );
+enum VisItCommandTypes { STATUS_MESSAGE = 9, TIME_LABEL,TIME_VALUE, STEP_LABEL, STEP_VALUE};
+#ifdef __cplusplus
+}
+#endif
 #endif

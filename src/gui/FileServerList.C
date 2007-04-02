@@ -2347,7 +2347,6 @@ const avtDatabaseMetaData *
 FileServerList::GetMetaData(const QualifiedFilename &filename,
     int timeState, bool anyStateOk, bool dontGetNew, string *key)
 {
-
     // build set of keys for cached metadata
     vector<string> mdKeys = MDCacheKeys(filename.FullName(),
                                         timeState);
@@ -2370,14 +2369,17 @@ FileServerList::GetMetaData(const QualifiedFilename &filename,
             {
                 // gnu's compare(0,n,string) is buggy, so use compare(0,n,string,0,n)
                 if (fullName.compare(0, n, mdit->first, 0, n) == 0)
+                {
+                  if (key)*key = mdit->first;
                     return mdit->second;
+                }
             }
             if (dontGetNew)
                 return 0;
         }
         else
         {
-            if (dontGetNew)
+             if (dontGetNew)
                 return 0;
         }
 
@@ -2394,7 +2396,7 @@ FileServerList::GetMetaData(const QualifiedFilename &filename,
         // cache what we got
         if (md)
         {
-            // make a copy to cache
+           // make a copy to cache
             avtDatabaseMetaData *newmd = new avtDatabaseMetaData;
             *newmd = *md;
 
@@ -2418,7 +2420,6 @@ FileServerList::GetMetaData(const QualifiedFilename &filename,
     }
     else
     {// found it in cache, return it.
-
         if (key) *key = it->first;
         return fileMetaData[it->first];
     }
@@ -2889,18 +2890,19 @@ FileServerList::GetSeparatorString(const string &host)
 //   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //   Changed interfaces to GetMetaData and GetSIL
 //   Made fileMetaData and SILData MRUCache's
+//
+//   Shelly Prevost, Fri Sept 8 12:18
+//   Rolled back Mark's changes because it breaks the
+//   Simulation windows ability to get updated metadata.
+//   The key is not valid.
 // ****************************************************************************
 
 void
 FileServerList::SetOpenFileMetaData(const avtDatabaseMetaData *md, int timeState)
 {
-    string foundAtKey;
-    const avtDatabaseMetaData *fmd = GetMetaData(openFile, timeState, !GET_NEW_MD,
-                                                 &foundAtKey);
-
-    if (fmd)
+   if(fileMetaData.find(openFile.FullName()) != fileMetaData.end())
     {
-        *(fileMetaData[foundAtKey]) = *fmd;
+        *(fileMetaData[openFile.FullName()]) = *md;
         // hack to have it return that the file changed
         fileAction=FILE_OPEN;
         Select(5, (void *)&fileAction);

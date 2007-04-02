@@ -34,12 +34,20 @@
 * DAMAGE.
 *
 *****************************************************************************/
-
-/* File      : VisItDataInterface_V1.h
- *
- * Programmer: Jeremy Meredith
- * Date      : March 17, 2005
- */
+/****************************************************************************
+** File      : VisItDataInterface_V1.h
+**
+** Purpose:
+**
+** Programmer: Jeremy Meredith
+** Creation:   March 17, 2005
+**
+** Modifications:
+**   Shelly Prevost, Tue Sep 12 15:42:17 PDT 2006
+**   Changed struct VisIt_SimulationControlCommand name field from a
+**   const to a variable.
+**
+*****************************************************************************/
 
 #ifndef VISIT_DATA_INTERFACE_V1_H
 #define VISIT_DATA_INTERFACE_V1_H
@@ -114,7 +122,7 @@ typedef struct VisIt_DataArray
 
 typedef struct VisIt_SimulationControlCommand
 {
-    const char *name;
+    char       *name;
     int         argType;   /* CMDARG */
     int         enabled;   /* boolean */
     char       *signal;

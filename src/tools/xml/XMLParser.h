@@ -168,6 +168,10 @@ ParseCharacters(const QString &buff)
 //    Hank Childs, Tue May 24 09:41:53 PDT 2005
 //    Added hasoptions.
 //
+//    Hank Childs, Tue Sep 12 09:25:05 PDT 2006
+//    Fix problem where "NULL" QStrings were getting used elsewhere in the
+//    code where empty strings should be used.
+//
 // ****************************************************************************
 
 class XMLParser : public QXmlDefaultHandler
@@ -282,7 +286,11 @@ class XMLParser : public QXmlDefaultHandler
             QString codefile      = atts.value("codefile");
             QString persistent    = atts.value("persistent");
             QString exportAPI     = atts.value("exportAPI");
+            if (exportAPI.isNull())
+                exportAPI = "";
             QString exportInclude = atts.value("exportInclude");
+            if (exportInclude.isNull())
+                exportInclude = "";
             if (!filepath.isNull() && !codefile.isNull())
                 codefile = filepath + codefile;
             currentAttribute = new Attribute(name, purpose, codefile,

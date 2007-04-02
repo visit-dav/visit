@@ -36,7 +36,6 @@
 *****************************************************************************/
 
 #include "VisItControlInterface_V1.h"
-
 #include <dlfcn.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -1110,7 +1109,6 @@ int  VisItDetectInput(int blocking, int consoleFileDescriptor)
 int VisItAttemptToCompleteConnection(void)
 {
     int socket;
-
     /* wait for a connection -- only process 0 does this */
     if (parallelRank == 0)
     {
@@ -1127,21 +1125,17 @@ int VisItAttemptToCompleteConnection(void)
     /* get the connection parameters */
     if (!GetConnectionParameters(socket))
         return FALSE;
-
     /* load the library */
     if (LoadVisItLibrary() == 0)
         return FALSE;
-
     /* connect to the viewer */
     if (CreateEngineAndConnectToViewer() == 0)
         return FALSE;
-
     /* get the socket for listening from the viewer */
     if (parallelRank == 0)
     {
         engineSocket = v_getdescriptor(engine);
     }
-
     return TRUE;
 }
 

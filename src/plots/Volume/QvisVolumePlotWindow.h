@@ -103,6 +103,9 @@ class QvisVariableButton;
 //    Hank Childs, Sun Jan  8 08:14:11 PST 2006
 //    Added support for kernel based sampling.
 //
+//    Hank Childs, Mon Sep 11 11:46:01 PDT 2006
+//    Created data members for previously untracked radio buttons.
+//
 // ****************************************************************************
 
 class QvisVolumePlotWindow : public QvisPostableWindowObserver
@@ -203,6 +206,8 @@ private:
     QButtonGroup             *samplingButtonGroup;
     QRadioButton             *rasterizationButton;
     QRadioButton             *kernelButton;
+    QRadioButton             *centeredDiffButton;
+    QRadioButton             *sobelButton;
     QLineEdit                *resampleTarget;
     QSlider                  *resampleTargetSlider;
     QLineEdit                *num3DSlices;

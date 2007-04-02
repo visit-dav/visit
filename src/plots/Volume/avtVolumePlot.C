@@ -172,15 +172,20 @@ avtVolumePlot::~avtVolumePlot()
 //  Creation:   November 24, 2004
 //
 //  Modifications:
+//
 //    Brad Whitlock, Wed Dec 15 09:33:40 PDT 2004
 //    I made it use the renderer type instead.
+//
+//    Hank Childs, Mon Sep 11 14:50:28 PDT 2006
+//    Add support for the integration ray function.
 //
 // ****************************************************************************
 
 bool
 avtVolumePlot::PlotIsImageBased(void)
 {
-    return atts.GetRendererType() == VolumeAttributes::RayCasting;
+    return (atts.GetRendererType() == VolumeAttributes::RayCasting ||
+            atts.GetRendererType() == VolumeAttributes::RayCastingIntegration);
 }
 
 
@@ -478,6 +483,9 @@ avtVolumePlot::ApplyOperators(avtDataObject_p input)
 //    Brad Whitlock, Wed Dec 15 09:34:33 PDT 2004
 //    I made it use the renderer type instead.
 //
+//    Hank Childs, Mon Sep 11 14:50:28 PDT 2006
+//    Added support for the integration ray function.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -498,7 +506,8 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
     }
 
     avtDataObject_p dob = input;
-    if (atts.GetRendererType() == VolumeAttributes::RayCasting)
+    if (atts.GetRendererType() == VolumeAttributes::RayCasting ||
+        atts.GetRendererType() == VolumeAttributes::RayCastingIntegration)
     {
         volumeFilter = new avtVolumeFilter();
         volumeFilter->SetAttributes(atts);

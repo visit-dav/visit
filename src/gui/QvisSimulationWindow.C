@@ -48,6 +48,7 @@
 #include <qcombobox.h>
 #include <qgroupbox.h>
 #include <qmessagebox.h>
+#include <qtextedit.h>
 #include <qlineedit.h>
 #include <qlistview.h>
 #include <qlcdnumber.h>
@@ -76,6 +77,7 @@ using std::string;
 using std::vector;
 
 #define CUSTOM_BUTTON 5
+#define NUM_GENRIC_BUTTONS 6
 
 // ****************************************************************************
 // Method: QvisSimulationWindow::QvisSimulationWindow
@@ -148,6 +150,9 @@ QvisSimulationWindow::~QvisSimulationWindow()
 //   Brad Whitlock, Tue Jan 31 16:04:07 PST 2006
 //   I moved the generic button creation code back to this method.
 //
+//   Shelly Prevost, Tue Sep 12 14:53:40 PDT 2006
+//   I added a new set of time range text boxes and activation checkbox.
+//   I Added an message box to display simulation code messages.
 // ****************************************************************************
 
 void
@@ -174,15 +179,45 @@ QvisSimulationWindow::CreateWindowContents()
     topLayout->addWidget(simInfo, 10);
 
     simulationMode = new QLabel("Simulation Status: ", central);
-    topLayout->addWidget(simulationMode);
+    topLayout->addWidget(simulationMode);  
 
-    QHBoxLayout *progressLayout = new QHBoxLayout(topLayout);
+    QGridLayout *timeLayout = new QGridLayout(topLayout);
+    QHBoxLayout *progressLayout2 = new QHBoxLayout(topLayout);
 
-    progressLayout->addWidget(new QLabel("VisIt Status", central));
+    progressLayout2->addWidget(new QLabel("VisIt Status", central));
 
     totalProgressBar = new QProgressBar(central, "totalProgressBar");
     totalProgressBar->setTotalSteps(100);
-    progressLayout->addWidget(totalProgressBar);
+    progressLayout2->addWidget(totalProgressBar);
+    
+    startCycle = new QLineEdit(central,"StartLineEdit");
+    startCycle->setEnabled(false); 
+    startLabel = new QLabel(central,"StartLabel");
+    startLabel->setText("Start");
+    timeLayout->addWidget(startLabel,0,0);
+    timeLayout->addWidget(startCycle,0,1);
+    connect(startCycle,SIGNAL(returnPressed()),this,SLOT(executeSpinBoxStartCommand()));
+
+    stepCycle = new QLineEdit(central,"StepLineEdit");
+    stepCycle->setEnabled(false);    
+    stepLabel = new QLabel(central,"StepLabel");
+    stepLabel->setText("Step");
+    timeLayout->addWidget(stepLabel,0,2);
+    timeLayout->addWidget(stepCycle,0,3);
+    connect(stepCycle,SIGNAL(returnPressed()),this,SLOT(executeSpinBoxStepCommand()));
+    
+    stopCycle = new QLineEdit(central,"StopLineEdit");
+    stopCycle->setEnabled(false);    
+    stopLabel = new QLabel(central,"StopLabel");
+    stopLabel->setText("Stop");
+    timeLayout->addWidget(stopLabel,0,4);
+    timeLayout->addWidget(stopCycle,0,5);
+    connect(stopCycle,SIGNAL(returnPressed()),this,SLOT(executeSpinBoxStopCommand()));
+
+    enableTimeRange = new QCheckBox(central);
+    enableTimeRange->setText("Enable Time Ranging");
+    connect(enableTimeRange,SIGNAL(stateChanged(int)),this,SLOT(executeEnableTimeRange()));
+    timeLayout->addMultiCellWidget(enableTimeRange,1,1,0,2);
 
     QGridLayout *buttonLayout1 = new QGridLayout(topLayout, 1, 3);
     buttonLayout1->setSpacing(10);
@@ -226,8 +261,19 @@ QvisSimulationWindow::CreateWindowContents()
     connect(cmdButtons[3],SIGNAL(clicked()),this,SLOT(executePushButtonCommand3()));
     connect(cmdButtons[4],SIGNAL(clicked()),this,SLOT(executePushButtonCommand4()));
     connect(cmdButtons[CUSTOM_BUTTON],SIGNAL(clicked()),this,SLOT(showCommandWindow()));
-
+   
     topLayout->addSpacing(10);
+    
+        // Create the group box and generic buttons.
+    QLabel *messageLabel = new QLabel(central,"MessageViewerLabel");
+    messageLabel->setText("Message Viewer");
+    topLayout->addWidget(messageLabel);
+
+    QTextEdit *messageViewer = new QTextEdit(central, "MessageViewerTextEdit");
+    messageViewer->setReadOnly( true );
+    messageViewer->setMaximumHeight( 40 );
+    topLayout->addWidget(messageViewer);
+
 }
 
 // ****************************************************************************
@@ -491,7 +537,8 @@ QvisSimulationWindow::SubjectRemoved(Subject *TheRemovedSubject)
 //   custom ui popup. If it finds a match it update the ui component.
 //
 // Arguments:
-//   cmd : command specification that update the UI component
+//   cmd   : command specification that update the UI component
+//   window: the parent window that contains the ui
 //
 // Programmer: Shelly Prevost
 // Creation:   December 21, 2005
@@ -501,16 +548,22 @@ QvisSimulationWindow::SubjectRemoved(Subject *TheRemovedSubject)
 //   I made the method return early if the dynamic commands window has not
 //   yet been created. It's now created more on-demand.
 //
+//   Shelly Prevost, Tue Sep 12 14:53:40 PDT 2006
+//   I generalized this function to work with both the custom GUI
+//   and this window. I also modified the QTextWidget to not append the
+//   text if it is equal to "". This fixes the problem of not being able
+//   to shut off messages.
+//
 // ****************************************************************************
 
 void 
-QvisSimulationWindow::UpdateCustomUIComponent (avtSimulationCommandSpecification *cmd)
+QvisSimulationWindow::UpdateUIComponent (QWidget *window, avtSimulationCommandSpecification *cmd)
 {
-    if(DynamicCommandsWin == NULL)
+    if(window == NULL)
         return;
 
     QObject *ui = NULL;
-    ui  = DynamicCommandsWin->child(cmd->GetName().c_str());
+    ui  = window->child(cmd->GetName().c_str());
     if (ui)
     {
         debug5 << "Looking up component = " << cmd->GetName().c_str() << endl;
@@ -577,23 +630,23 @@ QvisSimulationWindow::UpdateCustomUIComponent (avtSimulationCommandSpecification
         if (ui->isA("QProgressBar"))
         {
             debug5 << "found ProgressBar " << cmd->GetName().c_str()
-                   << " text = " << cmd->GetText().c_str() << endl;
+                   << " value = " << cmd->GetText().c_str() << endl;
             const QString label(cmd->GetValue().c_str());
             ((QProgressBar*)ui)->setProgress(label.toInt());
         }
 
         if (ui->isA("QSpinBox"))
         {
-            debug5 << "found QSpinBox " << cmd->GetName().c_str() << " text = "
+            debug5 << "found QSpinBox " << cmd->GetName().c_str() << " value = "
                    << cmd->GetValue().c_str() << endl;
             const QString label(cmd->GetValue().c_str());
             ((QSpinBox*)ui)->setValue(label.toInt());
             ((QSpinBox*)ui)->setEnabled(cmd->GetEnabled());
         }
-
+ 
         if (ui->isA("QDial"))
         {
-            debug5 << "found QDial " << cmd->GetName().c_str() << " text = "
+            debug5 << "found QDial " << cmd->GetName().c_str() << " value = "
                    << cmd->GetValue().c_str() << endl;
             const QString label(cmd->GetValue().c_str());
             ((QDial*)ui)->setValue(label.toInt());
@@ -602,7 +655,7 @@ QvisSimulationWindow::UpdateCustomUIComponent (avtSimulationCommandSpecification
 
         if (ui->isA("QSlider"))
         {
-            debug5 << "found QSlider " << cmd->GetName().c_str() << " text = "
+            debug5 << "found QSlider " << cmd->GetName().c_str() << " value = "
                    << cmd->GetValue().c_str() << endl;
             const QString label(cmd->GetValue().c_str());
             ((QSlider*)ui)->setValue(label.toInt());
@@ -613,8 +666,14 @@ QvisSimulationWindow::UpdateCustomUIComponent (avtSimulationCommandSpecification
         {
             debug5 << "found QTextEdit " << cmd->GetName().c_str()
                    << " text = " << cmd->GetText().c_str() << endl;
-            const QString label(cmd->GetText().c_str());
-            ((QTextEdit*)ui)->setText(label);
+            const QString message(cmd->GetText().c_str());
+            // we need a way to keep from repeating whatever is
+            // in the text field without deleting the command channel.
+            // For now use a minus sign to say don't append the line
+            // again. I'll add special commands to handle this case
+            // in general in the next release.
+            if ( message != "" )
+                 ((QTextEdit*)ui)->append(message);
             ((QTextEdit*)ui)->setEnabled(cmd->GetEnabled());
         }
 
@@ -872,13 +931,14 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
             }
         }
     }
+   
 }
 
 // ****************************************************************************
 // Method: QvisSimulationWindow::UpdateCustomUI
 //
 // Purpose:
-//   Updates the ui components in the Costom UI popup.
+//   Updates the ui components in the Custom UI popup.
 //
 // Arguments:
 //   md : meta data from the simulation.
@@ -887,6 +947,9 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
 // Creation:   December 9, 2005
 //
 // Modifications:
+//   Shelly Prevost, Tue Sep 12 15:05:31 PDT 2006
+//   The new version of UpdateUIComponent requires you pass in the
+//   window as an arguement.
 //
 // ****************************************************************************
 
@@ -897,10 +960,36 @@ QvisSimulationWindow::UpdateCustomUI (avtDatabaseMetaData *md)
     // loop thru all command updates and updates the matching UI component.
     for (int c=0; c<numCustCommands; c++)
     {
-        UpdateCustomUIComponent (&(md->GetSimInfo().GetAvtSimulationCustCommandSpecification(c)));
+        UpdateUIComponent (DynamicCommandsWin,&(md->GetSimInfo().GetAvtSimulationCustCommandSpecification(c)));
     }
 }
 
+// ****************************************************************************
+// Method: QvisSimulationWindow::UpdateSimulationUI
+//
+// Purpose:
+//   Updates the ui components in the simulation window UI.
+//
+// Arguments:
+//   md : meta data from the simulation.
+//
+// Programmer: Shelly Prevost
+// Creation:   August 25, 2006
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisSimulationWindow::UpdateSimulationUI (avtDatabaseMetaData *md)
+{
+    int numCommands = md->GetSimInfo().GetNumAvtSimulationCommandSpecifications();
+    // loop thru all command updates and updates the matching UI component.
+    for (int c=NUM_GENRIC_BUTTONS; c<numCommands; c++)
+    {
+        UpdateUIComponent (this,&(md->GetSimInfo().GetAvtSimulationCommandSpecification(c)));
+    }
+}
 // ****************************************************************************
 // Method: QvisSimulationWindow::UpdateStatusArea
 //
@@ -943,7 +1032,7 @@ QvisSimulationWindow::UpdateStatusArea()
 
         // Set the progress bar percent done.
         totalProgressBar->setProgress(total);
-    }
+   }
 }
 
 // ****************************************************************************
@@ -969,6 +1058,11 @@ QvisSimulationWindow::UpdateStatusArea()
 //   Brad Whitlock, Tue Jan 31 16:32:36 PST 2006
 //   Added code to set the enabled state of the custom command button.
 //
+//   Shelly Prevost, Tue Sep 12 15:05:31 PDT 2006
+//   Remove hard coded number of buttons and use a definded const instead.
+//   Added Update SimulationUi call now that the main window needs to be
+//   updated also.
+//
 // ****************************************************************************
 
 void
@@ -982,7 +1076,7 @@ QvisSimulationWindow::UpdateInformation(int index)
     {
         simInfo->clear();
         simInfo->setEnabled(false);
-        for (int c=0; c<6; c++)
+        for (int c=0; c<NUM_GENRIC_BUTTONS; c++)
         {
             cmdButtons[c]->hide();
         }
@@ -1002,7 +1096,7 @@ QvisSimulationWindow::UpdateInformation(int index)
         {
             simInfo->clear();
             simInfo->setEnabled(false);
-            for (int c=0; c<6; c++)
+            for (int c=0; c<NUM_GENRIC_BUTTONS; c++)
             {
                 cmdButtons[c]->hide();
             }
@@ -1074,7 +1168,7 @@ QvisSimulationWindow::UpdateInformation(int index)
             cmdButtons[CUSTOM_BUTTON]->setEnabled(!fname.isEmpty());
         }
 
-        for (int c=0; c<6; c++)
+        for (int c=0; c<NUM_GENRIC_BUTTONS; c++)
         {
             if (md->GetSimInfo().GetNumAvtSimulationCommandSpecifications()<=c)
             {
@@ -1087,9 +1181,8 @@ QvisSimulationWindow::UpdateInformation(int index)
                 bool e = md->GetSimInfo().GetAvtSimulationCommandSpecification(c).GetEnabled();
                 if (t == avtSimulationCommandSpecification::CmdArgNone)
                 {
-                    cmdButtons[c]->setText(QString(md->GetSimInfo().
-                            GetAvtSimulationCommandSpecification(c).
-                            GetName().c_str()));
+                    QString bName = QString(md->GetSimInfo().GetAvtSimulationCommandSpecification(c).GetName().c_str());
+                    cmdButtons[c]->setText(bName);
                     // **** MSP **** remove after fixing custome UI enabling
                     if ( c != 5 )cmdButtons[c]->setEnabled(e);
                     cmdButtons[c]->show();
@@ -1102,6 +1195,7 @@ QvisSimulationWindow::UpdateInformation(int index)
         }
         // update ui component informatinon in the meta data
         UpdateCustomUI(md);
+        UpdateSimulationUI(md);
         simInfo->setEnabled(true);
     }
 }
@@ -1499,6 +1593,22 @@ void QvisSimulationWindow::showCommandWindow()
         DynamicCommandsWin->show();
 }
 
+// ****************************************************************************
+// Method: QvisSimulationWindow::showCommandWindow
+//
+// Purpose:
+//   This method is called when the subjects that the window observes are
+//   modified.
+//
+// Programmer: Shelly Prevost
+// Creation:   December 21, 2005
+//
+// Modifications:
+//    Brad Whitlock, Tue Jan 31 15:54:43 PST 2006
+//    I made it create the commands window on the fly instead of creating
+//    it at the same time as the regular Window is created.
+//
+// ****************************************************************************
 void
 QvisSimulationWindow::executeSimCommand()
 {
@@ -1517,6 +1627,22 @@ QvisSimulationWindow::executeSimCommand()
     }
 }
 
+// ****************************************************************************
+// Method: QvisSimulationWindow::showCommandWindow
+//
+// Purpose:
+//   This method is called when the subjects that the window observes are
+//   modified.
+//
+// Programmer: Shelly Prevost
+// Creation:   December 21, 2005
+//
+// Modifications:
+//    Brad Whitlock, Tue Jan 31 15:54:43 PST 2006
+//    I made it create the commands window on the fly instead of creating
+//    it at the same time as the regular Window is created.
+//
+// ****************************************************************************
 void
 QvisSimulationWindow::executePushButtonCommand(int bi)
 {
@@ -1528,62 +1654,326 @@ QvisSimulationWindow::executePushButtonCommand(int bi)
     string sim  = engines->GetSimulationName()[index];
 
     QString cmd = cmdButtons[bi]->text();
+    cmd = "clicked();" + cmd + ";QPushButton;Simulations;NONE";
     if (!cmd.isEmpty())
     {
         viewer->SendSimulationCommand(host, sim, cmd.latin1());
     }
 }
 
+// ****************************************************************************
+// Method: QvisSimulationWindow::executePushButtonCommand
+//
+// Purpose:
+//   This method is called when the user presses one of the generic buttons
+//   in the this window.
+//
+// Programmer: Shelly Prevost
+// Creation:   December 21, 2005
+//
+// Modifications:
+//   
+//
+// ****************************************************************************
 void
 QvisSimulationWindow::executePushButtonCommand0()
 {
     executePushButtonCommand(0);
 }
 
+// ****************************************************************************
+// Method: QvisSimulationWindow::executePushButtonCommand
+//
+// Purpose:
+//   This method is called when the user presses one of the generic buttons
+//   in the this window.
+//
+// Programmer: Shelly Prevost
+// Creation:   December 21, 2005
+//
+// Modifications:
+//
+//
+// ****************************************************************************
 void
 QvisSimulationWindow::executePushButtonCommand1()
 {
     executePushButtonCommand(1);
 }
 
+// ****************************************************************************
+// Method: QvisSimulationWindow::executePushButtonCommand
+//
+// Purpose:
+//   This method is called when the user presses one of the generic buttons
+//   in the this window.
+//
+// Programmer: Shelly Prevost
+// Creation:   December 21, 2005
+//
+// Modifications:
+//
+//
+// ****************************************************************************
 void
 QvisSimulationWindow::executePushButtonCommand2()
 {
     executePushButtonCommand(2);
 }
 
+// ****************************************************************************
+// Method: QvisSimulationWindow::executePushButtonCommand
+//
+// Purpose:
+//   This method is called when the user presses one of the generic buttons
+//   in the this window.
+//
+// Programmer: Shelly Prevost
+// Creation:   December 21, 2005
+//
+// Modifications:
+//
+//
+// ****************************************************************************
 void
 QvisSimulationWindow::executePushButtonCommand3()
 {
     executePushButtonCommand(3);
 }
 
+// ****************************************************************************
+// Method: QvisSimulationWindow::executePushButtonCommand
+//
+// Purpose:
+//   This method is called when the user presses one of the generic buttons
+//   in the this window.
+//
+// Programmer: Shelly Prevost
+// Creation:   December 21, 2005
+//
+// Modifications:
+//
+//
+// ****************************************************************************
 void
 QvisSimulationWindow::executePushButtonCommand4()
 {
     executePushButtonCommand(4);
 }
 
+// ****************************************************************************
+// Method: QvisSimulationWindow::executePushButtonCommand
+//
+// Purpose:
+//   This method is called when the user presses one of the generic buttons
+//   in the this window.
+//
+// Programmer: Shelly Prevost
+// Creation:   December 21, 2005
+//
+// Modifications:
+//
+//
+// ****************************************************************************
 void
 QvisSimulationWindow::executePushButtonCommand5()
 {
     executePushButtonCommand(5);
 }
 
+// ****************************************************************************
+// Method: QvisSimulationWindow::executePushButtonCommand
+//
+// Purpose:
+//   This method is called when the user presses one of the generic buttons
+//   in the this window.
+//
+// Programmer: Shelly Prevost
+// Creation:   December 21, 2005
+//
+// Modifications:
+//
+//
+// ****************************************************************************
 void
 QvisSimulationWindow::executePushButtonCommand6()
 {
     executePushButtonCommand(6);
 }
 
+// ****************************************************************************
+// Method: QvisSimulationWindow::executePushButtonCommand
+//
+// Purpose:
+//   This method is called when the user presses one of the generic buttons
+//   in the this window.
+//
+// Programmer: Shelly Prevost
+// Creation:   December 21, 2005
+//
+// Modifications:
+//
+//
+// ****************************************************************************
 void
 QvisSimulationWindow::executePushButtonCommand7()
 {
     executePushButtonCommand(7);
 }
 
+// ****************************************************************************
+// Method: QvisSimulationWindow::executePushButtonCommand
+//
+// Purpose:
+//   This method is called when the user presses one of the generic buttons
+//   in the this window.
+//
+// Programmer: Shelly Prevost
+// Creation:   December 21, 2005
+//
+// Modifications:
+//
+//
+// ****************************************************************************
 void
 QvisSimulationWindow::executePushButtonCommand8()
 {
     executePushButtonCommand(8);
+}
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::executeEnableTimeRange()
+//
+// Purpose:
+//   This method is called when the user clicks on the enable button
+//   for the time range ui
+//
+// Programmer: Shelly Prevost
+// Creation:   December 21, 2005
+//
+// Modifications:
+//
+//
+// ****************************************************************************
+void
+QvisSimulationWindow::executeEnableTimeRange()
+{
+    int simindex = simCombo->currentItem();
+    if (simindex < 0)
+        return;
+    int index = simulationToEngineListMap[simindex];
+    string host = engines->GetEngines()[index];
+    string sim  = engines->GetSimulationName()[index];
+
+    QString cmd = startCycle->text();
+    cmd = "clicked();TimeLimitsEnabled;QCheckBox;Simulations;" + cmd;
+
+    if (!cmd.isEmpty())
+    {
+        viewer->SendSimulationCommand(host, sim, cmd.latin1());
+    }
+    
+    bool enabled = enableTimeRange->isChecked();
+    startCycle->setEnabled(enabled);    
+    stepCycle->setEnabled(enabled);    
+    stopCycle->setEnabled(enabled);    
+
+}
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::executeSpinBoxStartCommand()
+//
+// Purpose:
+//   This method is called when the types into the start text box for time
+//   range control.
+//
+// Programmer: Shelly Prevost
+// Creation:   December 21, 2005
+//
+// Modifications:
+//
+//
+// ****************************************************************************
+void 
+QvisSimulationWindow::executeSpinBoxStartCommand()
+{
+    int simindex = simCombo->currentItem();
+    if (simindex < 0)
+        return;
+    int index = simulationToEngineListMap[simindex];
+    string host = engines->GetEngines()[index];
+    string sim  = engines->GetSimulationName()[index];
+
+    QString cmd = startCycle->text();
+    cmd = "returnedPressed();Start;QLineEdit;Simulations;" + cmd;
+    
+    if (!cmd.isEmpty())
+    {
+        viewer->SendSimulationCommand(host, sim, cmd.latin1());
+    }
+}
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::executeSpinBoxStepCommand()
+//
+// Purpose:
+//   This method is called when the types into the step text box for time
+//   range control.
+//
+// Programmer: Shelly Prevost
+// Creation:   December 21, 2005
+//
+// Modifications:
+//
+//
+// ****************************************************************************
+void 
+QvisSimulationWindow::executeSpinBoxStepCommand()
+{
+    int simindex = simCombo->currentItem();
+    if (simindex < 0)
+        return;
+    int index = simulationToEngineListMap[simindex];
+    string host = engines->GetEngines()[index];
+    string sim  = engines->GetSimulationName()[index];
+
+    QString cmd1 = stepCycle->text();
+    cmd1 = "returnedPressed();Step;QLineEdit;Simulations;" + cmd1;
+    
+     if (!cmd1.isEmpty())
+    {     
+        viewer->SendSimulationCommand(host, sim, cmd1.latin1());
+    }
+}
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::executeSpinBoxStopCommand()
+//
+// Purpose:
+//   This method is called when the types into the stop text box for time
+//   range control.
+//
+// Programmer: Shelly Prevost
+// Creation:   December 21, 2005
+//
+// Modifications:
+//
+//
+// ****************************************************************************
+void 
+QvisSimulationWindow::executeSpinBoxStopCommand()
+{
+    int simindex = simCombo->currentItem();
+    if (simindex < 0)
+        return;
+    int index = simulationToEngineListMap[simindex];
+    string host = engines->GetEngines()[index];
+    string sim  = engines->GetSimulationName()[index];
+    
+    QString cmd2 = stopCycle->text();
+    cmd2 = "returnedPressed();Stop;QLineEdit;Simulations;" + cmd2;
+    if (!cmd2.isEmpty())
+    {
+        viewer->SendSimulationCommand(host, sim, cmd2.latin1()); 
+    }
 }

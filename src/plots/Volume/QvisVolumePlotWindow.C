@@ -245,6 +245,9 @@ QvisVolumePlotWindow::~QvisVolumePlotWindow()
 //   Hank Childs, Sun Jan  8 08:09:23 PST 2006
 //   Added sampling.
 //
+//   Hank Childs, Mon Sep 11 10:34:32 PDT 2006
+//   I added the RayCastingIntegration option.
+//
 // ****************************************************************************
 
 void
@@ -540,7 +543,8 @@ QvisVolumePlotWindow::CreateWindowContents()
     rendererTypesComboBox = new QComboBox(central, "rendererTypesComboBox");
     rendererTypesComboBox->insertItem("Splatting",0);
     rendererTypesComboBox->insertItem("3D Texturing",1);
-    rendererTypesComboBox->insertItem("Ray casting",2);
+    rendererTypesComboBox->insertItem("Ray casting: compositing",2);
+    rendererTypesComboBox->insertItem("Ray casting: integration",3);
     connect(rendererTypesComboBox, SIGNAL(activated(int)),
             this, SLOT(rendererTypeChanged(int)));
     rendererOptionsLayout->addWidget(new QLabel(rendererTypesComboBox,
@@ -552,12 +556,12 @@ QvisVolumePlotWindow::CreateWindowContents()
     gradientButtonGroup = new QButtonGroup(0, "gradientButtonGroup");
     connect(gradientButtonGroup, SIGNAL(clicked(int)),
             this, SLOT(gradientTypeChanged(int)));
-    rb = new QRadioButton("Centered diff", central);
-    gradientButtonGroup->insert(rb, 0);
-    rendererOptionsLayout->addWidget(rb,4,1);
-    rb = new QRadioButton("Sobel", central);
-    gradientButtonGroup->insert(rb, 1);
-    rendererOptionsLayout->addWidget(rb,4,2);
+    centeredDiffButton = new QRadioButton("Centered diff", central);
+    gradientButtonGroup->insert(centeredDiffButton, 0);
+    rendererOptionsLayout->addWidget(centeredDiffButton,4,1);
+    sobelButton = new QRadioButton("Sobel", central);
+    gradientButtonGroup->insert(sobelButton, 1);
+    rendererOptionsLayout->addWidget(sobelButton,4,2);
 
     // Create the sampling method buttons.
     rendererOptionsLayout->addWidget(new QLabel("Sampling method", central),5,0);
@@ -650,6 +654,9 @@ QvisVolumePlotWindow::CreateWindowContents()
 //
 //   Hank Childs, Sun Jan  8 08:19:39 PST 2006
 //   Add support for kernel based sampling.
+//
+//   Hank Childs, Mon Sep 11 10:34:32 PDT 2006
+//   I added the RayCastingIntegration option.
 //
 // ****************************************************************************
 
@@ -772,6 +779,11 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             rendererTypesComboBox->blockSignals(true);
             if (volumeAtts->GetRendererType() == VolumeAttributes::Splatting)
             {
+                colorWidgetGroup->setEnabled(true);
+                opacityWidgetGroup->setEnabled(true);
+                lightingToggle->setEnabled(true);
+                centeredDiffButton->setEnabled(true);
+                sobelButton->setEnabled(true);
                 rendererTypesComboBox->setCurrentItem(0);
                 num3DSlices->setEnabled(false);
                 resampleTarget->setEnabled(true);
@@ -782,6 +794,11 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             }
             else if (volumeAtts->GetRendererType() == VolumeAttributes::Texture3D)
             {
+                colorWidgetGroup->setEnabled(true);
+                opacityWidgetGroup->setEnabled(true);
+                lightingToggle->setEnabled(true);
+                centeredDiffButton->setEnabled(true);
+                sobelButton->setEnabled(true);
                 rendererTypesComboBox->setCurrentItem(1);
                 num3DSlices->setEnabled(true);
                 resampleTarget->setEnabled(true);
@@ -790,9 +807,29 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 rasterizationButton->setEnabled(false);
                 kernelButton->setEnabled(false);
             }
-            else
+            else if (volumeAtts->GetRendererType() == VolumeAttributes::RayCasting)
             {
+                colorWidgetGroup->setEnabled(true);
+                opacityWidgetGroup->setEnabled(true);
+                lightingToggle->setEnabled(true);
+                centeredDiffButton->setEnabled(true);
+                sobelButton->setEnabled(true);
                 rendererTypesComboBox->setCurrentItem(2);
+                num3DSlices->setEnabled(false);
+                resampleTarget->setEnabled(false);
+                resampleTargetSlider->setEnabled(false);
+                samplesPerRay->setEnabled(true);
+                rasterizationButton->setEnabled(true);
+                kernelButton->setEnabled(true);
+            }
+            else if (volumeAtts->GetRendererType() == VolumeAttributes::RayCastingIntegration)
+            {
+                colorWidgetGroup->setEnabled(false);
+                opacityWidgetGroup->setEnabled(false);
+                lightingToggle->setEnabled(false);
+                centeredDiffButton->setEnabled(false);
+                sobelButton->setEnabled(false);
+                rendererTypesComboBox->setCurrentItem(3);
                 num3DSlices->setEnabled(false);
                 resampleTarget->setEnabled(false);
                 resampleTargetSlider->setEnabled(false);
@@ -2259,6 +2296,9 @@ QvisVolumePlotWindow::samplingTypeChanged(int val)
 //    Brad Whitlock, Wed Dec 15 09:29:12 PDT 2004
 //    I added the RayCasting option.
 //
+//    Hank Childs, Mon Sep 11 10:34:32 PDT 2006
+//    I added the RayCastingIntegration option.
+//
 // ****************************************************************************
 void
 QvisVolumePlotWindow::rendererTypeChanged(int val)
@@ -2273,6 +2313,9 @@ QvisVolumePlotWindow::rendererTypeChanged(int val)
         break;
       case 2:
         volumeAtts->SetRendererType(VolumeAttributes::RayCasting);
+        break;
+      case 3:
+        volumeAtts->SetRendererType(VolumeAttributes::RayCastingIntegration);
         break;
       default:
         EXCEPTION1(ImproperUseException,
