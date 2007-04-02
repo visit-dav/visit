@@ -210,6 +210,8 @@ class avtToolInterface;
 //    Kathleen Bonnell, Tue Jul  5 14:46:52 PDT 2005 
 //    Added GetRealVarType method.
 //
+//    Mark C. Miller, Wed Nov  9 12:35:15 PST 2005
+//    Added PrepareCacheForReplace
 // ****************************************************************************
 
 class VIEWER_API ViewerPlot
@@ -326,7 +328,8 @@ class VIEWER_API ViewerPlot
     void ClearActors();
     void ClearCurrentActor();
     void TransmuteActor(bool turningOffScalableRendering);
-
+    void PrepareCacheForReplace(int newCacheIndex, int newNumStates,
+                                bool kfMode);
 
     bool ExecuteEngineRPC();
 

@@ -553,7 +553,10 @@ avtVTKFileFormat::FreeUpResources(void)
 //
 //    Mark C. Miller, Thu Sep 15 19:45:51 PDT 2005
 //    Added support for arrays representing materials
-//    
+// 
+//    Brad Whitlock, Wed Nov 9 10:59:35 PDT 2005
+//    Added support for color vectors (ncomps==4).
+//
 // ****************************************************************************
 
 void
@@ -666,7 +669,7 @@ avtVTKFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             bool ascii = arr->GetDataType() == VTK_CHAR;
             AddScalarVarToMetaData(md, name, MESHNAME, AVT_NODECENT, NULL, ascii);
         }
-        else if (ncomp <= 3)
+        else if (ncomp <= 4)
         {
             AddVectorVarToMetaData(md, name, MESHNAME, AVT_NODECENT, ncomp);
         }
@@ -726,7 +729,7 @@ avtVTKFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             bool ascii = arr->GetDataType() == VTK_CHAR;
             AddScalarVarToMetaData(md, name, MESHNAME, AVT_ZONECENT, NULL, ascii);
         }
-        else if (ncomp <= 3)
+        else if (ncomp <= 4)
         {
             AddVectorVarToMetaData(md, name, MESHNAME, AVT_ZONECENT, ncomp);
         }

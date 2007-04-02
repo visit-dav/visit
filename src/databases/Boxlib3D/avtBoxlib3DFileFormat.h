@@ -34,6 +34,8 @@ class VisMF;
 //    Hank Childs, Thu Jun 23 14:46:22 PDT 2005
 //    Broadcast Header from proc. 0
 //
+//    Mark C. Miller, Wed Nov  9 12:35:15 PST 2005
+//    Added GetCycleFromFilename
 // ****************************************************************************
 
 class avtBoxlib3DFileFormat : public avtSTMDFileFormat
@@ -47,6 +49,7 @@ class avtBoxlib3DFileFormat : public avtSTMDFileFormat
     virtual bool          HasInvariantMetaData(void) const { return false; };
     
     virtual int           GetCycle(void) { return cycle; };
+    virtual int           GetCycleFromFilename(const char *f) const;
  
     virtual vtkDataSet   *GetMesh(int, const char *);
     virtual vtkDataArray *GetVar(int, const char *);

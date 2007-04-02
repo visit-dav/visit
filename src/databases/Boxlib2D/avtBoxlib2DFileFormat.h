@@ -36,6 +36,9 @@ class VisMF;
 //    Hank Childs, Thu Jun 23 11:16:52 PDT 2005
 //    Added ActivateTimestep.
 //
+//    Mark C. Miller, Wed Nov  9 12:35:15 PST 2005
+//    Added GetCycleFromFilename
+//
 // ****************************************************************************
 
 class avtBoxlib2DFileFormat : public avtSTMDFileFormat
@@ -49,6 +52,7 @@ class avtBoxlib2DFileFormat : public avtSTMDFileFormat
     virtual bool          HasInvariantMetaData(void) const { return false; };
     
     virtual int           GetCycle(void) { return cycle; };
+    virtual int           GetCycleFromFilename(const char *f) const;
  
     virtual vtkDataSet   *GetMesh(int, const char *);
     virtual vtkDataArray *GetVar(int, const char *);

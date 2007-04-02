@@ -69,6 +69,41 @@ static void   EatUpWhiteSpace(ifstream &in);
 static int    VSSearch(const vector<string> &, const string &); 
 
 // ****************************************************************************
+//  Function:  GetCycleFromRootPath 
+//
+//  Programmer:  Hank Childs
+//  Creation:    December 10, 2003
+//
+//  Modifications:
+//
+//    Mark C. Miller, Tue Nov  8 21:14:00 PST 2005
+//    Re-factored from constructor. Added possible invalid return
+// ****************************************************************************
+
+static int GetCycleFromRootPath(const std::string &rpath)
+{
+    int cyc = 0;
+    const char *cur = rpath.c_str();
+    const char *last = NULL;
+    while (cur != NULL)
+    {
+        cur = strstr(cur, "plt");
+        if (cur != NULL)
+        {
+            last = cur;
+            cur = cur+1;
+        }
+    }
+    if (last != NULL)
+    {
+        cyc = atoi(last + strlen("plt"));
+        return cyc;
+    }
+
+    return avtFileFormat::INVALID_CYCLE;
+}
+
+// ****************************************************************************
 //  Constructor:  avtBoxlib2DFileFormat::avtBoxlib2DFileFormat
 //
 //  Arguments:
@@ -88,6 +123,9 @@ static int    VSSearch(const vector<string> &, const string &);
 //    Hank Childs, Thu Jun 23 14:39:04 PDT 2005
 //    Initialize haveReadTimeAndCycle.
 //
+//    Mark C. Miller, Wed Nov  9 12:35:15 PST 2005
+//    Moved code to parse cycle to GetCycleFromRootPath
+//
 // ****************************************************************************
 
 avtBoxlib2DFileFormat::avtBoxlib2DFileFormat(const char *fname)
@@ -96,22 +134,7 @@ avtBoxlib2DFileFormat::avtBoxlib2DFileFormat(const char *fname)
     // The root path is the boxlib name.  This needs to change.
     rootPath = GetDirName(fname);
 
-    cycle = 0;
-    const char *cur = rootPath.c_str();
-    const char *last = NULL;
-    while (cur != NULL)
-    {
-        cur = strstr(cur, "plt");
-        if (cur != NULL) 
-        {
-            last = cur;
-            cur = cur+1;
-        }
-    }
-    if (last != NULL)
-    {
-        cycle = atoi(last + strlen("plt"));
-    }
+    cycle = GetCycleFromRootPath(rootPath);
 
     static const char *t ="";
     timestepPath = t;
@@ -154,6 +177,18 @@ avtBoxlib2DFileFormat::ActivateTimestep(void)
     InitializeReader();
 }
 
+// ****************************************************************************
+//  Method: avtBoxlib2DFileFormat::ActivateTimestep
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 8, 2005
+//
+// ****************************************************************************
+int
+avtBoxlib2DFileFormat::GetCycleFromFilename(const char *fname) const
+{
+    return GetCycleFromRootPath(GetDirName(fname));
+}
 
 // ****************************************************************************
 //  Method: avtBoxlib2DFileFormat::InitializeReader

@@ -866,6 +866,30 @@ ViewerPlot::IsInRange() const
 }
 
 // ****************************************************************************
+//  Method: ViewerPlot::PrepareCacheForReplace
+//
+//  Purpose: Adjusts the indices effecting the cache to account for the
+//           new database that is replacing the old one.
+//
+//  Notes:   Should only have to be called near the beginning of a
+//           ReplaceDatabase operation so that subsequent attempts made by
+//           ViewerPlot to obtain internal state information actually obtain
+//           information for the new, target state of the ViewerPlot object
+//           after the ReplaceDatabase operation has completed.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   November 9, 2005
+//
+// ****************************************************************************
+void
+ViewerPlot::PrepareCacheForReplace(int newCacheIndex, int newNumStates,
+                                   bool kfMode)
+{
+    ResizeCache(newNumStates);
+    SetCacheIndex(newCacheIndex);
+}
+
+// ****************************************************************************
 //  Method: ViewerPlot::SetHostDatabaseName
 //
 //  Purpose:

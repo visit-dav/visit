@@ -127,6 +127,9 @@ avtSAMRAIFileFormat::FinalizeHDF5(void)
 //    Hank Childs, Sat Mar  5 11:46:24 PST 2005
 //    Initialize have_read_metadata_file.
 //
+//    Mark C. Miller, Wed Nov  9 12:35:15 PST 2005
+//    Initialized cycle/time info to INVALID values
+//
 // ****************************************************************************
 avtSAMRAIFileFormat::avtSAMRAIFileFormat(const char *fname)
     : avtSTMDFileFormat(&fname, 1)
@@ -138,7 +141,8 @@ avtSAMRAIFileFormat::avtSAMRAIFileFormat(const char *fname)
         InitializeHDF5();
     avtSAMRAIFileFormat::objcnt++;
 
-    time_step_number = 0;
+    time_step_number = INVALID_CYCLE;
+    time = INVALID_TIME;
 
     cached_patches = NULL;
     xlo = NULL;
@@ -2097,6 +2101,56 @@ avtSAMRAIFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
 
     ioInfo.SetNDomains(num_patches);
     ioInfo.AddHints(groups);
+}
+
+// ****************************************************************************
+//  Method:  avtSAMRAIFileFormat::GetCycleFromFilename, GetCycle, GetTime
+//
+//  Programmer: Mark C. Miller
+//  Creation:   November 8, 2005
+//
+// ****************************************************************************
+int
+avtSAMRAIFileFormat::GetCycleFromFilename(const char *f) const
+{
+    if (f)
+    {
+        const int len1 = strlen("00000/summary.samrai");
+        const int len2 = strlen(f);
+        if (len2 > len1)
+        {
+            int cycle;
+            if (sscanf(&f[len2-len1], "%05d", &cycle) == 1)
+                return cycle;
+        }
+    }
+    return INVALID_CYCLE;
+}
+
+int
+avtSAMRAIFileFormat::GetCycle()
+{
+    if (time_step_number != INVALID_CYCLE)
+        return time_step_number;
+
+    hid_t summaryFile = H5Fopen(file_name.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+    ReadTimeStepNumber(summaryFile);
+    ReadTime(summaryFile); // might as well do this too since we're here
+    H5Fclose(summaryFile);
+    return time_step_number;
+}
+
+double
+avtSAMRAIFileFormat::GetTime()
+{
+    if (time != INVALID_TIME)
+        return time;
+
+    hid_t summaryFile = H5Fopen(file_name.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+    ReadTime(summaryFile);
+    ReadTimeStepNumber(summaryFile); // might as well do this too since we're here
+    H5Fclose(summaryFile);
+    return time;
 }
 
 // ****************************************************************************

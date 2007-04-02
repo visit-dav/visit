@@ -4151,6 +4151,10 @@ ViewerPlotList::CloseDatabase(const std::string &dbName)
 //   I added a VisItException catch because various types of exceptions could
 //   be thrown from inside the expression parsing code.
 //
+//   Mark C. Miller, Wed Nov  9 12:35:15 PST 2005
+//   Added code to get metadata for new database's state and call to
+//   PrepareCacheForReplace.
+//
 // ****************************************************************************
 
 void
@@ -4181,8 +4185,20 @@ ViewerPlotList::ReplaceDatabase(const EngineKey &key,
         //
         // Replace the database in the plot.
         //
+        int numNewStates = -2;
         if (doReplace)
         {
+            //
+            // Get metadata so we can adjust the cache for the new plot 
+            //
+            if (numNewStates == -2)
+            {
+                avtDatabaseMetaData *md = (avtDatabaseMetaData *)
+                                          ViewerFileServer::Instance()->
+                                          GetMetaDataForState(host, database, timeState);
+                numNewStates = md ? md->GetNumStates() : -1;
+            }
+
             //
             // Get a new SIL restriction for the plot.
             //
@@ -4192,6 +4208,12 @@ ViewerPlotList::ReplaceDatabase(const EngineKey &key,
                     database, plot->GetVariableName(), timeState);
                 if (*silr != 0)
                 {
+                    //
+                    // First, adjust the plot's cache for new database
+                    //
+                    plot->PrepareCacheForReplace(timeState, numNewStates,
+                                                 GetKeyframeMode());
+
                     //
                     // Try and set the new sil restriction from the old.
                     // This is useful for related files that have not been
