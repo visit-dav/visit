@@ -450,6 +450,12 @@ static void AddWedge(vtkIdType *, int, HashEntryList &);
 static void AddPyramid(vtkIdType *, int, HashEntryList &);
 static void AddHexahedron(vtkIdType *, int, HashEntryList &);
 static void AddVoxel(vtkIdType *, int, HashEntryList &);
+
+static void AddQuadraticTriangle(vtkIdType *, int, HashEntryList &);
+static void AddQuadraticQuad(vtkIdType *, int, HashEntryList &);
+static void AddQuadraticTetrahedron(vtkIdType *, int, HashEntryList &);
+static void AddQuadraticHexahedron(vtkIdType *, int, HashEntryList &);
+
 static int  LoopOverAllCells(vtkUnstructuredGrid *, HashEntryList &);
 static void LoopOverPolygonalCells(vtkUnstructuredGrid *, vtkPolyData *,
                                    vtkCellData *, vtkCellData *);
@@ -1796,6 +1802,9 @@ vtkUnstructuredGridFacelistFilter::Execute()
 //    Since we are translating a pixel into a quad, make sure to tell the
 //    output that it is of "quad" type.
 //
+//    Brad Whitlock, Mon May 8 14:29:48 PST 2006
+//    Added support for turning VTK_QUADRATIC_EDGE into VTK_POLY_LINE.
+//
 // ****************************************************************************
 
 void
@@ -1808,7 +1817,7 @@ LoopOverPolygonalCells(vtkUnstructuredGrid *input, vtkPolyData *output,
         return;
     }
 
-    vtkIdType   pixel_ids[4];
+    vtkIdType   ids[4];
     vtkIdType   cellId;
     vtkIdType   newCellId;
     vtkIdType   npts;
@@ -1833,11 +1842,19 @@ LoopOverPolygonalCells(vtkUnstructuredGrid *input, vtkPolyData *output,
             break;
 
           case VTK_PIXEL:
-            pixel_ids[0] = pts[0];
-            pixel_ids[1] = pts[1];
-            pixel_ids[2] = pts[3];
-            pixel_ids[3] = pts[2];
-            newCellId = output->InsertNextCell(VTK_QUAD, npts, pixel_ids);
+            ids[0] = pts[0];
+            ids[1] = pts[1];
+            ids[2] = pts[3];
+            ids[3] = pts[2];
+            newCellId = output->InsertNextCell(VTK_QUAD, npts, ids);
+            out_cd->CopyData(in_cd, cellId, newCellId);
+            break;
+
+          case VTK_QUADRATIC_EDGE:
+            ids[0] = pts[0];
+            ids[1] = pts[2];
+            ids[2] = pts[1];
+            newCellId = output->InsertNextCell(VTK_POLY_LINE, 3, ids);
             out_cd->CopyData(in_cd, cellId, newCellId);
             break;
         }
@@ -1856,6 +1873,11 @@ LoopOverPolygonalCells(vtkUnstructuredGrid *input, vtkPolyData *output,
 //
 //  Programmer: Hank Childs
 //  Creation:   November 4, 2002
+//
+// Modifications:
+//   Brad Whitlock, Mon May 8 14:54:58 PST 2006
+//   Added cases to add the faces of quadratic cells to the hash entry list
+//   as sets of linear triangles.
 //
 // ****************************************************************************
 
@@ -1889,6 +1911,7 @@ LoopOverAllCells(vtkUnstructuredGrid *input, HashEntryList &list)
           case VTK_QUAD:
           case VTK_POLYGON:
           case VTK_PIXEL:
+          case VTK_QUADRATIC_EDGE:
             numPolygonalCells++;
             break;
  
@@ -1911,12 +1934,27 @@ LoopOverAllCells(vtkUnstructuredGrid *input, HashEntryList &list)
           case VTK_PYRAMID:
             AddPyramid(pts, cellId, list);
             break;
+
+          case VTK_QUADRATIC_TRIANGLE:
+            AddQuadraticTriangle(pts, cellId, list);
+            break;
+
+          case VTK_QUADRATIC_QUAD:
+            AddQuadraticQuad(pts, cellId, list);
+            break;
+
+          case VTK_QUADRATIC_TETRA:
+            AddQuadraticTetrahedron(pts, cellId, list);
+            break;
+
+          case VTK_QUADRATIC_HEXAHEDRON:
+            AddQuadraticHexahedron(pts, cellId, list);
+            break;
         }
     }
 
     return numPolygonalCells;
 }
-
 
 // ****************************************************************************
 //  Function: AddTetrahedron
@@ -2127,4 +2165,153 @@ AddPyramid(vtkIdType *pts, int cellId, HashEntryList &list)
     list.AddQuad(nodes, cellId);
 }
 
+// ****************************************************************************
+// Function: AddQuadraticTriangle
+//
+// Purpose: 
+//   Breaks up the quadratic triangle into linear triangles and adds them
+//   to the hash entry list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon May 8 14:52:30 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
 
+void
+AddQuadraticTriangle(vtkIdType *pts, int cellId, HashEntryList &list)
+{
+    vtkIdType nodes[3];
+    nodes[0] = pts[0];
+    nodes[1] = pts[3];
+    nodes[2] = pts[5];
+    list.AddTri(nodes, cellId);
+    nodes[0] = pts[3];
+    nodes[1] = pts[1];
+    nodes[2] = pts[4];
+    list.AddTri(nodes, cellId);
+    nodes[0] = pts[5];
+    nodes[1] = pts[4];
+    nodes[2] = pts[2];
+    list.AddTri(nodes, cellId);
+    nodes[0] = pts[3];
+    nodes[1] = pts[4];
+    nodes[2] = pts[5];
+    list.AddTri(nodes, cellId);
+}
+
+// ****************************************************************************
+// Function: AddQuadraticQuad
+//
+// Purpose: 
+//   Breaks up the quadratic quad into linear triangles and adds them
+//   to the hash entry list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon May 8 14:52:30 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+AddQuadraticQuad(vtkIdType *pts, int cellId, HashEntryList &list)
+{
+    vtkIdType nodes[3];
+    nodes[0] = pts[0];
+    nodes[1] = pts[4];
+    nodes[2] = pts[7];
+    list.AddTri(nodes, cellId);
+    nodes[0] = pts[4];
+    nodes[1] = pts[1];
+    nodes[2] = pts[5];
+    list.AddTri(nodes, cellId);
+    nodes[0] = pts[5];
+    nodes[1] = pts[2];
+    nodes[2] = pts[6];
+    list.AddTri(nodes, cellId);
+    nodes[0] = pts[6];
+    nodes[1] = pts[3];
+    nodes[2] = pts[7];
+    list.AddTri(nodes, cellId);
+    nodes[0] = pts[4];
+    nodes[1] = pts[6];
+    nodes[2] = pts[7];
+    list.AddTri(nodes, cellId);
+    nodes[0] = pts[4];
+    nodes[1] = pts[5];
+    nodes[2] = pts[6];
+    list.AddTri(nodes, cellId);
+}
+
+// ****************************************************************************
+// Function: AddQuadraticTetrahedron
+//
+// Purpose: 
+//   Breaks up the faces of the quadratic tet into linear triangles and adds
+//   them to the hash entry list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon May 8 14:52:30 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+AddQuadraticTetrahedron(vtkIdType *pts, int cellId, HashEntryList &list)
+{
+    // Break up the surface of the quadratic tet into triangles.
+    const int triangles[][3] = {
+        {0,4,7},{4,1,8},{4,8,7},{8,3,7},
+        {2,6,9},{6,0,7},{6,7,9},{7,3,9},
+        {1,5,8},{5,2,9},{5,9,8},{9,3,8},
+        {1,4,5},{4,0,6},{4,6,5},{6,2,5}
+    };
+    vtkIdType nodes[3];
+    for(int i = 0; i < 16; ++i)
+    {
+        nodes[0] = pts[triangles[i][0]];
+        nodes[1] = pts[triangles[i][1]];
+        nodes[2] = pts[triangles[i][2]];
+        list.AddTri(nodes, cellId);
+    }
+}
+
+// ****************************************************************************
+// Function: AddQuadraticHexahedron
+//
+// Purpose: 
+//   Breaks up the faces of the quadratic hex into linear triangles and adds
+//   them to the hash entry list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon May 8 14:52:30 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+AddQuadraticHexahedron(vtkIdType *pts, int cellId, HashEntryList &list)
+{
+    // Break up the surface of the quadratic hex into triangles.
+    const int triangles[][3] = {
+        {0,8,16},{8,1,17},{17,5,12},{12,4,16},{8,17,12},{8,12,16},
+        {1,9,17},{9,2,18},{18,6,13},{13,5,17},{9,18,13},{9,13,17},
+        {2,10,18},{10,3,19},{19,7,14},{14,18,6},{10,19,14},{10,14,18},
+        {3,11,19},{11,0,16},{16,4,15},{15,7,19},{11,16,15},{11,15,19},
+        {4,12,15},{12,5,13},{13,6,14},{14,7,15},{12,13,14},{12,14,15},
+        {3,10,11},{10,2,9},{9,1,8},{8,0,11},{10,9,8},{10,8,11}
+    };
+
+    vtkIdType nodes[3];
+    for(int i = 0; i < 36; ++i)
+    {
+        nodes[0] = pts[triangles[i][0]];
+        nodes[1] = pts[triangles[i][1]];
+        nodes[2] = pts[triangles[i][2]];
+        list.AddTri(nodes, cellId);
+    }
+}
