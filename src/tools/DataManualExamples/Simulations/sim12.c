@@ -1,5 +1,7 @@
 /* SIMPLE PARALLEL SIMULATION SKELETON */
 #include <VisItControlInterface_V1.h>
+/* DATA ACCESS FUNCTIONS */
+#include <VisItDataInterface_V1.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -11,6 +13,7 @@ int  simulation_done(void)   { return 0; }
 static int    runFlag = 1;
 static int    simcycle = 0;
 static double simtime = 0.;
+
 
 /* Callback function for control commands. */
 void ControlCommandCallback(const char *cmd,
@@ -101,17 +104,23 @@ void simulate_one_timestep(void)
     sleep(1);
 }
 
-/* DATA ACCESS FUNCTIONS */
-#include <VisItDataInterface_V1.h>
 
 VisIt_SimulationMetaData *VisItGetMetaData(void)
 {
+    /* maximum number of custom UI components connections
+    that you will be creating. This is zero unless
+    you have added a custom UI.       */
+    int MaxNumCustCMD = 0;
+    
     /* Create a metadata object with no variables. */
     size_t sz = sizeof(VisIt_SimulationMetaData);
     VisIt_SimulationMetaData *md = 
         (VisIt_SimulationMetaData *)malloc(sz);
     memset(md, 0, sz);
 
+    /* this will set up the generic and custom commands*/
+    VisItInitAllCMD(md, MaxNumCustCMD);
+    
     /* Set the simulation state. */
     md->currentMode = runFlag ? VISIT_SIMMODE_RUNNING : VISIT_SIMMODE_STOPPED;
     md->currentCycle = simcycle;
@@ -209,23 +218,19 @@ VisIt_SimulationMetaData *VisItGetMetaData(void)
     md->expressions[1].definition = strdup("nodeid(mesh3d)");
     md->expressions[1].vartype = VISIT_VARTYPE_SCALAR;
 
-    /* Add some custom commands. */
-    md->numGenericCommands = 3;
-    sz = sizeof(VisIt_SimulationControlCommand) * md->numGenericCommands;
-    md->genericCommands = (VisIt_SimulationControlCommand *)malloc(sz);
-    memset(md->genericCommands, 0, sz);
-
-    md->genericCommands[0].name = strdup("halt");
-    md->genericCommands[0].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[0].enabled = 1;
-
-    md->genericCommands[1].name = strdup("step");
-    md->genericCommands[1].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[1].enabled = 1;
-
-    md->genericCommands[2].name = strdup("run");
-    md->genericCommands[2].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[2].enabled = 1;
+    /* Set the labels on the generic commands buttons
+       to the desired names. These are the names that
+       the user will see on the buttons in the simulation
+       window.
+       The command looks like this:
+       VisItLabelGenericButton( metadata, button,"label",enable);
+    */
+    VisItLabelGenericButton( md, 0,"halt",1);
+    VisItLabelGenericButton( md, 1,"step",1);
+    VisItLabelGenericButton( md, 2,"run",1);
+    VisItLabelGenericButton( md, 3,"",0);
+    VisItLabelGenericButton( md, 4,"",0);
+ 
 
     return md;
 }

@@ -75,11 +75,19 @@ int main(int argc, char **argv)
 
 VisIt_SimulationMetaData *VisItGetMetaData(void)
 {
+    /* maximum number of custom UI components connections
+    that you will be creating. This is zero unless
+    you have added a custom UI.       */
+    int MaxNumCustCMD = 0;
+
     /* Create a metadata object with no variables. */
     size_t sz = sizeof(VisIt_SimulationMetaData);
-    VisIt_SimulationMetaData *md = 
+    VisIt_SimulationMetaData *md =
         (VisIt_SimulationMetaData *)malloc(sz);
     memset(md, 0, sz);
+
+    /* this will set up the generic and custom commands*/
+    VisItInitAllCMD(md, MaxNumCustCMD);
     return md;
 }
 

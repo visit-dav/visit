@@ -474,9 +474,10 @@ ProcessConsoleCommand()
     /* Read A Command */
     char buff[10000];
 
+    strcpy( buff,"console;");
     if (par_rank == 0)
     {
-        int iseof = (fgets(buff, 10000, stdin) == NULL);
+        int iseof = (fgets(&buff[8], 10000, stdin) == NULL);
         if (iseof)
         {
             sprintf(buff, "quit");
@@ -486,7 +487,7 @@ ProcessConsoleCommand()
         if (strlen(buff)>0 && buff[strlen(buff)-1] == '\n')
             buff[strlen(buff)-1] = '\0';
     }
-
+           
     ProcessCommand(buff);
 }
 

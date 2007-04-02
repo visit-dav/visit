@@ -355,7 +355,10 @@ avtSimV1FileFormat::FreeUpResources(void)
 //
 //    Shelly Prevost, Tue Sep 12 15:42:17 PDT 2006
 //    I added code to copy all the fields in the
-//    generic command array.
+//    generic command array. This is now needed because
+//    simulation will be control the main simulation window
+//    in a very simular way as the custom simulation window
+//    works.
 //
 //    Brad Whitlock, Fri Nov 3 10:29:21 PDT 2006
 //    Fixed memory leak.
@@ -512,25 +515,12 @@ avtSimV1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         }
         avtSimulationCommandSpecification scs;
         scs.SetName(scc->name);
-#if 0
-// Having these fields set prevents the simulations that I've tried from
-// being able to return metadata. For an example of one that would not 
-// work due to these lines of code, check out 
-// tools/DataManualExamples/Simulations/writeback.c
-//
-// That simulation has NULL values for these strings, since they are
-// not necessary (or were not necessary until recently) for simulations
-// to provide simple commands to the GUI. These fields should not be
-// required because they work with widgets that go into the Sim window
-// instead of to a custom UI window.
-//
         scs.SetText(scc->text);
         scs.SetValue(scc->value);
         scs.SetIsOn(scc->isOn);
         scs.SetUiType(scc->uiType);
         scs.SetClassName(scc->className);
         scs.SetSignal(scc->signal);
-#endif
         scs.SetArgumentType(t);
         scs.SetEnabled(scc->enabled);
         md->GetSimInfo().AddAvtSimulationCommandSpecification(scs);
