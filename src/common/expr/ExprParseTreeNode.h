@@ -33,6 +33,9 @@ class Token;
 //    Jeremy Meredith, Thu Nov 11 12:35:11 PST 2004
 //    Refactored the non-expression related things to another class.
 //
+//    Hank Childs, Thu Sep  8 15:37:05 PDT 2005
+//    Added method GetVarLeafNodes.
+//
 // ****************************************************************************
 class EXPR_API ExprParseTreeNode : public ParseTreeNode
 {
@@ -42,6 +45,8 @@ class EXPR_API ExprParseTreeNode : public ParseTreeNode
     virtual const std::string GetTypeName() {return "ExprParseTreeNode";}
     virtual std::set<std::string> GetVarLeaves() 
                                             {return std::set<std::string>();}
+    virtual std::set<ExprParseTreeNode *> GetVarLeafNodes() 
+                                      {return std::set<ExprParseTreeNode *>();}
 };
 
 #endif

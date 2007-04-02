@@ -7,6 +7,8 @@
 
 using     std::vector;
 
+bool    VarExpr::getVarLeavesRequiresCurrentDB = true;
+
 //    Jeremy Meredith, Wed Nov 24 11:46:43 PST 2004
 //    Made expression language specific tokens have a more specific
 //    base class.  Renamed GrammarNode to ParseTreeNode.
@@ -97,6 +99,22 @@ BinaryExpr::GetVarLeaves()
     return lset;
 }
 
+std::set<ExprParseTreeNode *>
+BinaryExpr::GetVarLeafNodes()
+{
+    std::set<ExprParseTreeNode *> lset = left->GetVarLeafNodes();
+    std::set<ExprParseTreeNode *> rset = right->GetVarLeafNodes();
+
+    while (!rset.empty())
+    {
+        std::set<ExprParseTreeNode *>::iterator i = rset.begin();
+        lset.insert(*i);
+        rset.erase(i);
+    }
+
+    return lset;
+}
+
 void
 IndexExpr::PrintNode(ostream &o)
 {
@@ -143,6 +161,32 @@ VectorExpr::GetVarLeaves()
     while (!zset.empty())
     {
         std::set<std::string>::iterator i = zset.begin();
+        xset.insert(*i);
+        zset.erase(i);
+    }
+
+    return xset;
+}
+
+std::set<ExprParseTreeNode *>
+VectorExpr::GetVarLeafNodes()
+{
+    std::set<ExprParseTreeNode *> xset = x->GetVarLeafNodes();
+    std::set<ExprParseTreeNode *> yset = y->GetVarLeafNodes();
+    std::set<ExprParseTreeNode *> zset;
+    if (z)
+        zset = z->GetVarLeafNodes();
+
+    while (!yset.empty())
+    {
+        std::set<ExprParseTreeNode *>::iterator i = yset.begin();
+        xset.insert(*i);
+        yset.erase(i);
+    }
+
+    while (!zset.empty())
+    {
+        std::set<ExprParseTreeNode *>::iterator i = zset.begin();
         xset.insert(*i);
         zset.erase(i);
     }
@@ -200,6 +244,15 @@ ListExpr::GetVarLeaves()
         return (*elems)[0]->GetVarLeaves();
     else
         return std::set<std::string>();
+}
+
+std::set<ExprParseTreeNode *>
+ListExpr::GetVarLeafNodes()
+{
+    if (elems->size() != 0)
+        return (*elems)[0]->GetVarLeafNodes();
+    else
+        return std::set<ExprParseTreeNode *>();
 }
 
 void
@@ -292,6 +345,31 @@ FunctionExpr::GetVarLeaves()
     return ret;
 }
 
+std::set<ExprParseTreeNode *>
+FunctionExpr::GetVarLeafNodes()
+{
+    std::set<ExprParseTreeNode *> ret;
+
+    if (!args)
+        return ret;
+
+    std::vector<ArgExpr*> *a = args->GetArgs();
+
+    for (int i = 0; i < a->size(); i++)
+    {
+        std::set<ExprParseTreeNode *> vars = (*a)[i]->GetExpr()->GetVarLeafNodes();
+
+        while (!vars.empty())
+        {
+            std::set<ExprParseTreeNode *>::iterator i = vars.begin();
+            ret.insert(*i);
+            vars.erase(i);
+        }
+    }
+
+    return ret;
+}
+
 void
 PathExpr::Append(const std::string &s)
 {
@@ -365,8 +443,33 @@ VarExpr::GetVarLeaves()
 {
     std::set<std::string> ret;
 
-    if (db == NULL)
+    if (db == NULL || !getVarLeavesRequiresCurrentDB)
         ret.insert(var->GetFullpath());
 
     return ret;
 }
+
+std::set<ExprParseTreeNode *>
+VarExpr::GetVarLeafNodes()
+{
+    std::set<ExprParseTreeNode *> ret;
+
+    if (db == NULL || !getVarLeavesRequiresCurrentDB)
+        ret.insert(this);
+
+    return ret;
+}
+
+bool
+VarExpr::GetVarLeavesRequiresCurrentDB(void)
+{
+    return getVarLeavesRequiresCurrentDB;
+}
+
+void
+VarExpr::SetGetVarLeavesRequiresCurrentDB(bool b)
+{
+    getVarLeavesRequiresCurrentDB = b;
+}
+
+

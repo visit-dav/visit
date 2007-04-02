@@ -990,6 +990,9 @@ avtEnzoFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Jeremy Meredith, Wed Aug  3 10:22:36 PDT 2005
 //    Added support for 2D files.  Added support for single-level files.
 //
+//    Jeremy Meredith, Thu Sep  8 12:03:55 PDT 2005
+//    Added support for float32 coordinates in HDF4.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1073,9 +1076,9 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
 
         // Get the number of particles
         int32 dims[3];
+        int32 data_type;
         {
             int32 ndims;
-            int32 data_type;
             char name[65];
             int32 nattrs;
             SDgetinfo(var_handle_x, name, &ndims, dims, &data_type, &nattrs);
@@ -1095,25 +1098,56 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
         float *pts = (float *) points->GetVoidPointer(0);
         int i;
 
-        double *ddata = new double[npart];
-        SDreaddata(var_handle_x, start, NULL, dims, ddata);
-        for (i=0; i<npart; i++)
-            pts[i*3+0] = float(ddata[i]);
-
-        SDreaddata(var_handle_y, start, NULL, dims, ddata);
-        for (i=0; i<npart; i++)
-            pts[i*3+1] = float(ddata[i]);
-
-        if (dimension == 3)
+        if (data_type == DFNT_FLOAT32)
         {
-            SDreaddata(var_handle_z, start, NULL, dims, ddata);
+            float *fdata = new float[npart];
+            SDreaddata(var_handle_x, start, NULL, dims, fdata);
             for (i=0; i<npart; i++)
-                pts[i*3+2] = float(ddata[i]);
+                pts[i*3+0] = fdata[i];
+
+            SDreaddata(var_handle_y, start, NULL, dims, fdata);
+            for (i=0; i<npart; i++)
+                pts[i*3+1] = fdata[i];
+
+            if (dimension == 3)
+            {
+                SDreaddata(var_handle_z, start, NULL, dims, fdata);
+                for (i=0; i<npart; i++)
+                    pts[i*3+2] = fdata[i];
+            }
+            else
+            {
+                for (i=0; i<npart; i++)
+                    pts[i*3+2] = 0;
+            }
+        }
+        else if (data_type == DFNT_FLOAT64)
+        {
+            double *ddata = new double[npart];
+            SDreaddata(var_handle_x, start, NULL, dims, ddata);
+            for (i=0; i<npart; i++)
+                pts[i*3+0] = float(ddata[i]);
+
+            SDreaddata(var_handle_y, start, NULL, dims, ddata);
+            for (i=0; i<npart; i++)
+                pts[i*3+1] = float(ddata[i]);
+
+            if (dimension == 3)
+            {
+                SDreaddata(var_handle_z, start, NULL, dims, ddata);
+                for (i=0; i<npart; i++)
+                    pts[i*3+2] = float(ddata[i]);
+            }
+            else
+            {
+                for (i=0; i<npart; i++)
+                    pts[i*3+2] = 0;
+            }
         }
         else
         {
-            for (i=0; i<npart; i++)
-                pts[i*3+2] = 0;
+            // ERROR: UKNOWN TYPE 
+            EXCEPTION1(InvalidVariableException, meshname);
         }
 
         SDendaccess(var_handle_x);

@@ -53,6 +53,10 @@ class Pos;
 //    Hank Childs, Thu Sep  1 11:25:35 PDT 2005
 //    Added access for TimeExpr's.
 //
+//    Hank Childs, Thu Sep  8 15:25:03 PDT 2005
+//    Added GetVarLeafNodes, which is like GetVarLeaves, but returns
+//    ExprNodes instead.
+//
 // ****************************************************************************
 class EXPR_API ExprNode : public ExprParseTreeNode
 {
@@ -61,6 +65,7 @@ class EXPR_API ExprNode : public ExprParseTreeNode
         : ExprParseTreeNode(p) {}
     virtual ~ExprNode() { }
     virtual std::set<std::string> GetVarLeaves() = 0;
+    virtual std::set<ExprParseTreeNode *> GetVarLeafNodes() = 0;
     virtual const std::string GetTypeName() = 0;
 };
 
@@ -72,6 +77,8 @@ class EXPR_API ConstExpr : public virtual ExprNode
     virtual ~ConstExpr() { }
     virtual std::set<std::string> GetVarLeaves()
                             { return std::set<std::string>(); }
+    virtual std::set<ExprParseTreeNode *> GetVarLeafNodes()
+                            { return std::set<ExprParseTreeNode *>(); }
     virtual ConstType GetConstantType() { return constType; }
   protected:
     ConstType constType;
@@ -149,6 +156,8 @@ class EXPR_API UnaryExpr : public MathExpr
     virtual void PrintNode(ostream &o);
     virtual std::set<std::string> GetVarLeaves()
         {return expr->GetVarLeaves();}
+    virtual std::set<ExprParseTreeNode *> GetVarLeafNodes()
+        { return std::set<ExprParseTreeNode *>(); }
     virtual const std::string GetTypeName() { return "Unary"; }
     ExprNode *GetExpr(void) { return expr; };
   protected:
@@ -163,6 +172,7 @@ class EXPR_API BinaryExpr : public MathExpr
     virtual ~BinaryExpr() { delete left; delete right; }
     virtual void PrintNode(ostream &o);
     virtual std::set<std::string> GetVarLeaves();
+    virtual std::set<ExprParseTreeNode *> GetVarLeafNodes();
     virtual const std::string GetTypeName() { return "Binary"; }
   protected:
     ExprNode *left;
@@ -178,6 +188,8 @@ class EXPR_API IndexExpr : public virtual ExprNode
     virtual void PrintNode(ostream &o);
     virtual std::set<std::string> GetVarLeaves()
         {return expr->GetVarLeaves();}
+    virtual std::set<ExprParseTreeNode *> GetVarLeafNodes()
+        { return expr->GetVarLeafNodes(); }
     virtual const std::string GetTypeName() { return "Index"; }
   protected:
     ExprNode *expr;
@@ -192,6 +204,7 @@ class EXPR_API VectorExpr : public virtual ExprNode
     virtual ~VectorExpr() { delete x; delete y; delete z; }
     virtual void PrintNode(ostream &o);
     virtual std::set<std::string> GetVarLeaves();
+    virtual std::set<ExprParseTreeNode *> GetVarLeafNodes();
     virtual const std::string GetTypeName() { return "Vector"; }
   protected:
     ExprNode *x, *y, *z;
@@ -225,6 +238,7 @@ class EXPR_API ListExpr : public ExprParseTreeNode
     virtual const std::string GetTypeName() { return "List"; }
     std::vector<ListElemExpr*> *GetElems(void) { return elems; }
     virtual std::set<std::string> GetVarLeaves();
+    virtual std::set<ExprParseTreeNode *> GetVarLeafNodes();
   protected:
     std::vector<ListElemExpr*> *elems;
 };
@@ -269,6 +283,7 @@ class EXPR_API FunctionExpr : public virtual ExprNode
     virtual ~FunctionExpr() { delete args; }
     virtual void PrintNode(ostream &o);
     virtual std::set<std::string> GetVarLeaves();
+    virtual std::set<ExprParseTreeNode *> GetVarLeafNodes();
     virtual const std::string GetTypeName() { return "Function"; }
   protected:
     std::string name;
@@ -348,13 +363,17 @@ class EXPR_API VarExpr : public virtual ExprNode
     virtual ~VarExpr() { delete db; delete var; }
     virtual void PrintNode(ostream &o);
     virtual std::set<std::string> GetVarLeaves();
+    virtual std::set<ExprParseTreeNode *> GetVarLeafNodes();
     virtual const std::string GetTypeName() { return "Var"; }
     PathExpr *GetVar(void) { return var; };
     DBExpr   *GetDB(void) { return db; };
+    static bool      GetVarLeavesRequiresCurrentDB(void);
+    static void      SetGetVarLeavesRequiresCurrentDB(bool);
   protected:
     DBExpr   *db;
     PathExpr *var;
     bool      canexpand;
+    static bool    getVarLeavesRequiresCurrentDB;
 };
 
 

@@ -23,6 +23,12 @@ class     avtDatabase;
 //  Programmer: Hank Childs
 //  Creation:   August 26, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Sep  9 09:38:08 PDT 2005
+//    Add support for expressions.  Also add GetVariableDimension, which is
+//    necessary for non-scalars.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtCMFEExpression : public avtExpressionFilter
@@ -36,6 +42,7 @@ class EXPRESSION_API avtCMFEExpression : public avtExpressionFilter
                                            {return "Evaluating field";};
     virtual void              ProcessArguments(ArgsExpr*, ExprPipelineState *);
     virtual int               NumVariableArguments() { return 1; };
+    virtual int               GetVariableDimension() { return varDim; };
 
   protected:
     bool                      issuedWarning;
@@ -47,6 +54,8 @@ class EXPRESSION_API avtCMFEExpression : public avtExpressionFilter
     double                    dtime;
     bool                      isDelta;
     int                       firstDBTime;
+    std::string               argument_expression;
+    int                       varDim;
 
     virtual void              PreExecute(void);
     virtual void              Execute(void);
