@@ -64,6 +64,9 @@
 //    Brad Whitlock, Tue Feb 27 11:45:59 PDT 2007
 //    Added CountShapeTypes.
 //
+//    Brad Whitlock, Wed Mar 7 11:42:07 PDT 2007
+//    Added support for tessellation.
+//
 // ****************************************************************************
 
 class avtShapefileFileFormat : public avtSTSDFileFormat
@@ -105,6 +108,7 @@ protected:
     {
         esriShapeType_t  shapeType;
         void            *shape;
+        int              nRepeats;
     };
 
     typedef std::vector<esriShape> esriShapeVector;
@@ -114,14 +118,18 @@ protected:
     int                    CountMemberPoints(esriShapeType_t) const;
     int                    CountShapes(esriShapeType_t) const;
     int                    CountCellsForShape(esriShapeType_t) const;
-    int                    GetNumRepeats(void *shape, esriShapeType_t shapeType) const;
+    int                    GetNumRepeats(const esriShape &shape, bool) const;
     int                    CountShapeTypes() const;
+    vtkDataSet            *GetMesh_TessellatedPolygon();
 
     bool                   initialized;
     esriShapeVector        shapes;
     int                    numShapeTypes;
     dbfFile_t             *dbfFile;
+
+    // Options.
     bool                   polygonsAsLines;
+    bool                   tessellatePolygons;
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
 };

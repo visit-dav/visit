@@ -5387,6 +5387,10 @@ avtDatabaseMetaData::IsCycleAccurate(int ts) const
 //  Programmer:  Mark C. Miller 
 //  Creation:    March 16, 2005 
 //
+//  Modifications:
+//    Mark C. Miller, Tue Mar  6 23:40:10 PST 2007
+//    Corrected logic for monotone increasing
+//
 // ****************************************************************************
 
 bool
@@ -5404,7 +5408,7 @@ avtDatabaseMetaData::AreAllCyclesAccurateAndValid(int expectedNumStates) const
     {
         if (cyclesAreAccurate[i] == 0)
             return false;
-        if ((i > 0) && (cycles[i] <= cycles[i-1]))
+        if ((i > 0) && !((cycles[i-1] <= cycles[i])))
             return false;
     }
     return true;
@@ -5489,6 +5493,9 @@ avtDatabaseMetaData::IsTimeAccurate(int ts) const
 //  Programmer:  Mark C. Miller 
 //  Creation:    March 16, 2005 
 //
+//  Modifications:
+//    Mark C. Miller, Tue Mar  6 23:40:10 PST 2007
+//    Corrected logic for monotone increasing
 // ****************************************************************************
 
 bool
@@ -5506,7 +5513,7 @@ avtDatabaseMetaData::AreAllTimesAccurateAndValid(int expectedNumStates) const
     {
         if (timesAreAccurate[i] == 0)
             return false;
-        if ((i > 0) && (times[i] <= times[i-1]))
+        if ((i > 0) && !((times[i-1] <= times[i])))
             return false;
     }
     return true;
