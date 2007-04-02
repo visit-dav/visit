@@ -9,12 +9,17 @@
 #include <LabelAttributes.h>
 #include <vtkSystemIncludes.h>
 #include <map>
+#include <string>
 
 class vtkDataArray;
 class vtkFloatArray;
 class vtkMatrix4x4;
 class vtkPoints;
 class vtkPolyData;
+
+#define RENDERER_ACTION_NOTHING       0
+#define RENDERER_ACTION_INIT_ZBUFFER  1
+#define RENDERER_ACTION_FREE_ZBUFFER  2
 
 // ****************************************************************************
 //  Class: avtLabelRenderer
@@ -40,6 +45,10 @@ class vtkPolyData;
 //    Make MAX_LABEL_SIZE be a dynamic quantity based on the size of the
 //    variable being rendered (ie scalar, vector, tensor, array, mesh).
 //
+//    Brad Whitlock, Tue Aug 2 15:24:36 PST 2005
+//    I removed single cell/node stuff. I also added support for specifying
+//    whether a binned label came from nodes or cells.
+//
 // ****************************************************************************
 
 class avtLabelRenderer : public avtCustomRenderer
@@ -57,6 +66,10 @@ public:
     void                    SetTreatAsASCII(bool);
     void                    Set3D(bool val);
     void                    SetExtents(const float *ext);
+    void                    SetGlobalLabel(const std::string &L);
+    void                    SetUseGlobalLabel(bool val);
+    void                    SetRendererAction(int);
+
 protected:
     struct LabelInfo
     {
@@ -64,6 +77,7 @@ protected:
         ~LabelInfo();
 
         float screenPoint[3];
+        int   type;
         const char *label;
     };
 
@@ -74,13 +88,8 @@ protected:
     void ClearLabelCaches();
 
     void ResetLabelBins();
-    void PopulateBinsWithCellLabels3D();
-    void PopulateBinsWithNodeLabels3D();
-
-    void SetupSingleCellLabel();
-    void SetupSingleNodeLabel();
-
-    bool AllowLabelInBin(const float *vert, const char *labelString);
+    bool AllowLabelInBin(const float *vert, const char *labelString, int t);
+    bool DepthTestPoint(float screenPoint[3]) const;
 
     vtkFloatArray *GetCellCenterArray();
     float *TransformPoints(const float *inputPoints,
@@ -99,14 +108,14 @@ protected:
     bool                   renderLabels3D;
     double                 fgColor[4];
     float                  spatialExtents[6];
+    std::string            globalLabel;
+    bool                   useGlobalLabel;
+    int                    rendererAction;
 
     int                    numXBins, numYBins;
     LabelInfo             *labelBins;
-    LabelInfo              singleCellInfo;
-    LabelInfo              singleNodeInfo;
-    int                    singleCellIndex;
-    int                    singleNodeIndex;
     int                    maxLabelLength;
+    int                    maxLabelRows;
 
     //
     // Cache the label strings for cell and node variables.

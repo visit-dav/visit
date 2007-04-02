@@ -47,20 +47,22 @@
 //    Hank Childs, Thu Jul 21 14:45:04 PDT 2005
 //    Initialize MAX_LABEL_SIZE.
 //
+//    Brad Whitlock, Tue Aug 2 15:26:43 PST 2005
+//    I removed the single cell/node stuff.
+//
 // ****************************************************************************
 
-avtLabelRenderer::avtLabelRenderer() : avtCustomRenderer(), singleCellInfo(),
-    singleNodeInfo()
+avtLabelRenderer::avtLabelRenderer() : avtCustomRenderer(), globalLabel()
 {
     input = 0;
     varname = 0;
     numXBins = 10;
     numYBins = 10;
     labelBins = 0;
-    singleCellIndex = -1;
-    singleNodeIndex = -1;
-    maxLabelLength = 0;
+    maxLabelLength = 1;
+    maxLabelRows = 0;
     MAX_LABEL_SIZE = 36;
+    rendererAction = RENDERER_ACTION_NOTHING;
 
     fgColor[0] = 1.;
     fgColor[1] = 1.;
@@ -79,6 +81,8 @@ avtLabelRenderer::avtLabelRenderer() : avtCustomRenderer(), singleCellInfo(),
 
     for(int i = 0; i < 256; ++i)
         visiblePoint[i] = false;
+
+    useGlobalLabel = false;
 }
 
 // ****************************************************************************
@@ -135,7 +139,9 @@ avtLabelRenderer::~avtLabelRenderer()
 // Creation:   Mon Oct 25 08:55:14 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Aug 4 11:14:27 PDT 2005
+//   Changed when the function returns true.
+//
 // ****************************************************************************
 
 bool
@@ -143,7 +149,9 @@ avtLabelRenderer::SetForegroundColor(const double *fg)
 {
     bool retVal = false;
 
-    if (atts.GetUseForegroundTextColor())
+    if (atts.GetSpecifyTextColor1() ||
+        (atts.GetVarType() == LabelAttributes::LABEL_VT_MESH &&
+         atts.GetSpecifyTextColor2()))
     {
        if (fgColor[0] != fg[0] || fgColor[1] != fg[1] || fgColor[2] != fg[2])
        {
@@ -276,7 +284,9 @@ avtLabelRenderer::ReleaseGraphicsResources()
 // Creation:   Mon Oct 25 08:56:11 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Aug 4 11:18:20 PDT 2005
+//   Initialize the type to 0.
+//
 // ****************************************************************************
 
 void
@@ -287,7 +297,10 @@ avtLabelRenderer::ResetLabelBins()
         labelBins = new LabelInfo[n];
 
     for(int i = 0; i < n; ++i)
+    {
+        labelBins[i].type = 0;
         labelBins[i].label = 0;
+    }
 }
 
 // ****************************************************************************
@@ -400,6 +413,73 @@ avtLabelRenderer::SetExtents(const float *ext)
 }
 
 // ****************************************************************************
+// Method: avtLabelRenderer::SetGlobalLabel
+//
+// Purpose: 
+//   Sets the global label to be used by the renderer.
+//
+// Arguments:
+//   L : The global label.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Aug 9 09:50:08 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLabelRenderer::SetGlobalLabel(const std::string &L)
+{
+    globalLabel = L;
+}
+
+// ****************************************************************************
+// Method: avtLabelRenderer::SetUseGlobalLabel
+//
+// Purpose: 
+//   Tells the renderer that it should use a global label instead of creating
+//   labels for each cell, node.
+//
+// Arguments:
+//   val : Whether or not to use a global label.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Aug 9 09:49:23 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLabelRenderer::SetUseGlobalLabel(bool val)
+{
+    useGlobalLabel = val;
+}
+
+// ****************************************************************************
+// Method: avtLabelRenderer::SetRendererAction
+//
+// Purpose: 
+//   Tells the renderer what special actions it can perform during its render.
+//
+// Arguments:
+//   a : The new set of actions.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Aug 9 09:48:53 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLabelRenderer::SetRendererAction(int a)
+{
+    rendererAction = a;
+}
+
+// ****************************************************************************
 // Method: avtLabelRenderer::GetCellCenterArray
 //
 // Purpose: 
@@ -435,155 +515,6 @@ avtLabelRenderer::GetCellCenterArray()
         cellCenters = (vtkFloatArray *)data;
 
     return cellCenters;
-}
-
-// ****************************************************************************
-// Method: avtLabelRenderer::SetupSingleCellLabel
-//
-// Purpose: 
-//   Sets up the label that will be used when drawing a single cell.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Oct 25 09:01:34 PDT 2004
-//
-// Modifications:
-//   Brad Whitlock, Wed Apr 13 13:08:36 PST 2005
-//   I removed a check that prevented the single cell label from showing up
-//   when a mesh is sliced.
-//
-// ****************************************************************************
-
-void
-avtLabelRenderer::SetupSingleCellLabel()
-{
-    //
-    // Figure out where the single cell, if specified, should be plotted.
-    //
-    vtkIdType nCells = input->GetNumberOfCells();
-    if(singleCellIndex >= 0)
-    {
-        //
-        // Look for the cell center array that the label filter calculated.
-        //
-        vtkDataArray *data = input->GetCellData()->GetArray("LabelFilterCellCenters");
-        if(data == 0)
-        {
-            debug3 << "The avtLabelRenderer was not able to find the LabelFilterCellCenters array!" << endl;
-            return;
-        }
-        else if(!data->IsA("vtkFloatArray"))
-        {
-            debug3 << "The avtLabelRenderer found the LabelFilterCellCenters array but it was not a vtkFloatArray.!" << endl;
-            return;
-        }
-        vtkFloatArray *cellCenters = (vtkFloatArray *)data;
-
-        //
-        // Look for the original cell number array.
-        //
-        data = input->GetCellData()->GetArray("LabelFilterOriginalCellNumbers");
-        unsigned int realCellIndex = singleCellIndex;
-        if(data != 0 && data->IsA("vtkUnsignedIntArray"))
-        {
-            vtkUnsignedIntArray *originalCells = (vtkUnsignedIntArray *)data;
-            // Look through the original cell indices for the real index to use
-            // when getting the cell center.
-            for(vtkIdType cellid = 0; cellid < nCells; ++cellid)
-            {
-                unsigned int realCellId = originalCells->GetValue(cellid);
-                if(realCellId == realCellIndex)
-                {
-                    realCellIndex = (unsigned int)cellid;
-                    break;
-                }
-            }
-        }
-
-        //
-        // Figure out where the point projects on the screen.
-        //
-        if(realCellIndex < nCells)
-        {
-            float *vert = cellCenters->GetTuple3(realCellIndex);
-            singleCellInfo.screenPoint[0] = vert[0];
-            singleCellInfo.screenPoint[1] = vert[1];
-            singleCellInfo.screenPoint[2] = vert[2];
-            singleCellInfo.label = atts.GetTextLabel().c_str();
-        }
-        else
-        {
-            debug4 << "realCellIndex=" << realCellIndex
-                   << " but it must be smaller than nCells=" << nCells
-                   << endl;
-        }
-    }
-}
-
-// ****************************************************************************
-// Method: avtLabelRenderer::SetupSingleNodeLabel
-//
-// Purpose: 
-//   Figures out the single node label.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Oct 25 09:02:31 PDT 2004
-//
-// Modifications:
-//   Brad Whitlock, Wed Apr 13 13:07:31 PST 2005
-//   Removed a check that prevented the single node label from showing up
-//   when a mesh is sliced.
-//
-// ****************************************************************************
-
-void
-avtLabelRenderer::SetupSingleNodeLabel()
-{
-    //
-    // Figure out where the single node, if specified, should be plotted.
-    //
-    vtkPoints *p = input->GetPoints();
-    vtkIdType npts = p ? p->GetNumberOfPoints() : 0;
-    if(singleNodeIndex >= 0)
-    {
-        //
-        // Look for the original cell number array.
-        //
-        vtkDataArray *data = input->GetPointData()->GetArray("LabelFilterOriginalNodeNumbers");
-        int realNodeIndex = singleNodeIndex;
-        if(data != 0 && data->IsA("vtkUnsignedIntArray"))
-        {
-            vtkUnsignedIntArray *originalNodes = (vtkUnsignedIntArray *)data;
-
-            // Look through the original cell indices for the real index to use
-            // when getting the cell center.
-            for(int i = 0; i < npts; ++i)
-            {
-                int realNodeId(originalNodes->GetValue(i));
-                if(realNodeId == realNodeIndex)
-                {
-                    realNodeIndex = i;
-                    break;
-                }
-            }
-        }
-
-        //
-        // Figure out where the point projects on the screen.
-        //
-        if(realNodeIndex < npts)
-        {           
-            const float *vert = p->GetPoint(realNodeIndex);
-            singleNodeInfo.screenPoint[0] = vert[0];
-            singleNodeInfo.screenPoint[1] = vert[1];
-            singleNodeInfo.screenPoint[2] = vert[2];
-            singleNodeInfo.label = atts.GetTextLabel().c_str();
-        }
-        else
-        {
-            debug4 << "realNodeIndex=" << realNodeIndex 
-                   << " but it must be smaller than npts=" << npts << endl;
-        }
-    }
 }
 
 // ****************************************************************************
@@ -712,6 +643,7 @@ avtLabelRenderer::ClearLabelCaches()
     // Delete the label caches.
     //
     maxLabelLength = 0;
+    maxLabelRows = 1;
 
     std::map<vtkPolyData*,char*>::iterator it;
     for (it=cellLabelsCacheMap.begin(); it != cellLabelsCacheMap.end(); it++)
@@ -737,6 +669,7 @@ avtLabelRenderer::ClearLabelCaches()
 // Arguments:
 //   screenPoint : The label's location in normalized display space [0,1], [0,1].
 //   labelString : A pointer to the label being considered.
+//   t           : The type of label.
 //
 // Returns:    True if the label is allowed to be in the cell.
 //
@@ -750,7 +683,8 @@ avtLabelRenderer::ClearLabelCaches()
 // ****************************************************************************
 
 bool
-avtLabelRenderer::AllowLabelInBin(const float *screenPoint, const char *labelString)
+avtLabelRenderer::AllowLabelInBin(const float *screenPoint, 
+    const char *labelString, int t)
 {
     bool retval = false;
 
@@ -777,6 +711,7 @@ avtLabelRenderer::AllowLabelInBin(const float *screenPoint, const char *labelStr
             info->screenPoint[2] = screenPoint[2];
             retval = true;
             info->label = labelString;
+            info->type = t;
         }
     }
     else
@@ -785,6 +720,33 @@ avtLabelRenderer::AllowLabelInBin(const float *screenPoint, const char *labelStr
     }
 
     return retval;
+}
+
+// ****************************************************************************
+// Method: avtLabelRenderer::DepthTestPoint
+//
+// Purpose: 
+//   Returns whether or not the point is visible according to the Z buffer.
+//
+// Arguments:
+//   screenPoint : The point to test for its Z. The point is in normalized
+//                 device coords.
+//
+// Returns:    True if the point is allowed closer than the Z buffer value.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Aug 8 09:12:22 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+avtLabelRenderer::DepthTestPoint(float screenPoint[3]) const
+{
+    return true;
 }
 
 // ****************************************************************************
@@ -932,194 +894,6 @@ avtLabelRenderer::TransformPoints(const float *inputPoints,
 }
 
 // ****************************************************************************
-// Method: avtLabelRenderer::PopulateBinsWithNodeLabels3D
-//
-// Purpose: 
-//   Adds node labels to the 3D label bins.
-//
-// Note:       The transformed points are stored in the bins.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Oct 25 09:08:35 PDT 2004
-//
-// Modifications:
-//    Jeremy Meredith, Mon Nov  8 17:25:19 PST 2004
-//    Caching is now on a per-dataset basis.
-//
-// ****************************************************************************
-
-void
-avtLabelRenderer::PopulateBinsWithNodeLabels3D()
-{
-    vtkPoints *inputPoints = input->GetPoints();
-
-    if(!inputPoints->GetData()->IsA("vtkFloatArray"))
-    {
-        debug4 << "The points array is not vtkFloatArray!" << endl;
-        return;
-    }
-
-    int total = visitTimer->StartTimer();
-
-    //
-    // Get the dataset's input points.
-    //
-    vtkFloatArray *fa = (vtkFloatArray *)inputPoints->GetData();
-    const float *pts = (const float *)fa->GetVoidPointer(0);
-
-    //
-    // See if the dataset has quantized node normals. If so, use them to
-    // do backface culling on the labels that are facing away from the
-    // camera.
-    //
-    const unsigned char *quantizedNormalIndices = 0;
-    if(atts.GetDrawLabelsFacing() != LabelAttributes::FrontAndBack)
-    {
-        vtkUnsignedCharArray *qnna = (vtkUnsignedCharArray *)input->
-            GetPointData()->GetArray("LabelFilterQuantizedNodeNormals");
-        quantizedNormalIndices = (qnna != 0) ?
-            (const unsigned char *)qnna->GetVoidPointer(0): 0;
-    }
-
-    //
-    // Transform the points that face the camera.
-    //
-    int stageTimer = visitTimer->StartTimer();
-    float *xformedPoints = TransformPoints(pts, quantizedNormalIndices,
-        inputPoints->GetNumberOfPoints());
-    visitTimer->StopTimer(stageTimer, "Transforming points");
-
-    //
-    // Here we use the label cache.
-    //
-    stageTimer = visitTimer->StartTimer();
-    int n = fa->GetNumberOfTuples();
-    float *transformedPoint = xformedPoints;
-    const char *currentLabel = nodeLabelsCacheMap[input];
-    if(quantizedNormalIndices != 0)
-    {
-        //
-        // Here we only allow visible points in the bins.
-        //
-        for(int i = 0; i < n; ++i)
-        {
-            if(visiblePoint[quantizedNormalIndices[i]])
-                AllowLabelInBin(transformedPoint, currentLabel);
-            transformedPoint += 3;
-            currentLabel += MAX_LABEL_SIZE;
-        }
-    }
-    else
-    {
-        //
-        // Here we only allow visible points in the bins.
-        //
-        for(int i = 0; i < n; ++i)
-        {
-            AllowLabelInBin(transformedPoint, currentLabel);
-            transformedPoint += 3;
-            currentLabel += MAX_LABEL_SIZE;
-        }
-    }
-    visitTimer->StopTimer(stageTimer, "Binning the 3D node labels");
-
-    delete [] xformedPoints;
-
-    visitTimer->StopTimer(total, "PopulateBinsWithNodeLabels3D");
-}
-
-// ****************************************************************************
-// Method: avtLabelRenderer::PopulateBinsWithCellLabels3D
-//
-// Purpose: 
-//   Adds cell labels to the 3D label bins.
-//
-// Note:       The transformed points are stored in the bins.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Oct 25 09:08:35 PDT 2004
-//
-// Modifications:
-//    Jeremy Meredith, Mon Nov  8 17:25:19 PST 2004
-//    Caching is now on a per-dataset basis.
-//
-// ****************************************************************************
-
-void
-avtLabelRenderer::PopulateBinsWithCellLabels3D()
-{
-    //
-    // Get the cell centers.
-    //
-    vtkFloatArray *cellCenters = GetCellCenterArray();
-    if(cellCenters == 0)
-        return;
-    const float *pts = (const float *)cellCenters->GetVoidPointer(0);
-
-    int total = visitTimer->StartTimer();
-
-    //
-    // See if the dataset has quantized node normals. If so, use them to
-    // do backface culling on the labels that are facing away from the
-    // camera.
-    //
-    const unsigned char *quantizedNormalIndices = 0;
-    if(atts.GetDrawLabelsFacing() != LabelAttributes::FrontAndBack)
-    {
-        vtkUnsignedCharArray *qcna = (vtkUnsignedCharArray *)input->
-            GetCellData()->GetArray("LabelFilterQuantizedCellNormals");
-        quantizedNormalIndices = (qcna != 0) ?
-            (const unsigned char *)qcna->GetVoidPointer(0): 0;
-    }
-
-    //
-    // Transform the points that face the camera.
-    //
-    int stageTimer = visitTimer->StartTimer();
-    float *xformedPoints = TransformPoints(pts, quantizedNormalIndices,
-        input->GetNumberOfCells());
-    visitTimer->StopTimer(stageTimer, "Transforming points");
-
-    //
-    // Here we use the label cache.
-    //
-    stageTimer = visitTimer->StartTimer();
-    float *transformedPoint = xformedPoints;
-    int n = cellCenters->GetNumberOfTuples();
-    const char *currentLabel = cellLabelsCacheMap[input];
-    if(quantizedNormalIndices != 0)
-    {
-        //
-        // Here we only allow visible points in the bins.
-        //
-        for(int i = 0; i < n; ++i)
-        {
-            if(visiblePoint[quantizedNormalIndices[i]])
-                AllowLabelInBin(transformedPoint, currentLabel);
-            transformedPoint += 3;
-            currentLabel += MAX_LABEL_SIZE;
-        }
-    }
-    else
-    {
-        //
-        // Here we only allow visible points in the bins.
-        //
-        for(int i = 0; i < n; ++i)
-        {
-            AllowLabelInBin(transformedPoint, currentLabel);
-            transformedPoint += 3;
-            currentLabel += MAX_LABEL_SIZE;
-        }
-    }
-    visitTimer->StopTimer(stageTimer, "Binning the 3D cell labels");
-  
-    delete [] xformedPoints;
-
-    visitTimer->StopTimer(total, "PopulateBinsWithCellLabels3D");
-}
-
-// ****************************************************************************
 //  Method:  avtLabelRenderer::SetAtts
 //
 //  Purpose:
@@ -1138,7 +912,11 @@ avtLabelRenderer::PopulateBinsWithCellLabels3D()
 //    not a big price to pay, and the code winds up a bit simpler because
 //    it is now just a single function call.
 //
+//    Brad Whitlock, Tue Aug 2 15:26:23 PST 2005
+//    I removed the single cell/node stuff.
+//
 // ****************************************************************************
+
 void
 avtLabelRenderer::SetAtts(const AttributeGroup *a)
 {
@@ -1166,44 +944,6 @@ avtLabelRenderer::SetAtts(const AttributeGroup *a)
         numXBins = numYBins = nBins;
     }
 
-    debug4 << "atts.GetSingleCellIndex() = " << atts.GetSingleCellIndex() << endl;
-    debug4 << "singleCellIndex = " << singleCellIndex << endl;
-
-    //
-    // Save the single cell index so that can be drawn.
-    //
-    if(atts.GetShowSingleCell() && atts.GetSingleCellIndex() >= 0)
-    {
-        if(singleCellIndex < 0 || singleCellIndex != atts.GetSingleCellIndex())
-            singleCellIndex = atts.GetSingleCellIndex();
-    }
-    else
-    {
-        singleCellInfo.label = 0;
-        singleCellIndex = -1;
-    }
-
-    //
-    // Save the single node index so that can be drawn.
-    //
-    if(atts.GetShowSingleNode() && atts.GetSingleNodeIndex() >= 0)
-    {
-        if(singleNodeIndex < 0 || singleNodeIndex != atts.GetSingleNodeIndex())
-            singleNodeIndex = atts.GetSingleNodeIndex();
-    }
-    else
-    {
-        singleNodeInfo.label = 0;
-        singleNodeIndex = -1;
-    }
-
-    if(singleCellInfo.label != 0 &&
-       atts.GetTextLabel() != std::string(singleCellInfo.label))
-    {
-        singleCellInfo.label = 0;
-        singleNodeInfo.label = 0;
-    }
-
     //
     // If we're changing the display format then we have to clear the
     // label cache.
@@ -1223,6 +963,7 @@ avtLabelRenderer::LabelInfo::LabelInfo()
      screenPoint[1] = 0.f;
      screenPoint[2] = 0.f;
      label = 0;
+     type = 0;
 }
 
 avtLabelRenderer::LabelInfo::~LabelInfo()

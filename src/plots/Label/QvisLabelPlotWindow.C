@@ -3,12 +3,15 @@
 #include <LabelAttributes.h>
 #include <ViewerProxy.h>
 
+#include <qbuttongroup.h>
 #include <qcheckbox.h>
 #include <qcombobox.h>
 #include <qgroupbox.h>
+#include <qhbox.h>
 #include <qlabel.h>
 #include <qlayout.h>
 #include <qlineedit.h>
+#include <qradiobutton.h>
 #include <qspinbox.h>
 #include <QvisColorButton.h>
 
@@ -31,7 +34,9 @@
 // Creation:   Thu Oct 21 18:18:16 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Aug 9 14:05:35 PST 2005
+//   Added depthTestButtonGroup.
+//
 // ****************************************************************************
 
 QvisLabelPlotWindow::QvisLabelPlotWindow(const int type,
@@ -41,6 +46,8 @@ QvisLabelPlotWindow::QvisLabelPlotWindow(const int type,
 {
     plotType = type;
     labelAtts = subj;
+
+    depthTestButtonGroup = 0;
 }
 
 // ****************************************************************************
@@ -53,11 +60,14 @@ QvisLabelPlotWindow::QvisLabelPlotWindow(const int type,
 // Creation:   Thu Oct 21 18:18:16 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Aug 9 14:05:27 PST 2005
+//   Added depthTestButtonGroup.
+//
 // ****************************************************************************
 
 QvisLabelPlotWindow::~QvisLabelPlotWindow()
 {
+    delete depthTestButtonGroup;
 }
 
 // ****************************************************************************
@@ -70,7 +80,11 @@ QvisLabelPlotWindow::~QvisLabelPlotWindow()
 // Creation:   Thu Oct 21 18:18:16 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Aug 2 14:50:32 PST 2005
+//   I removed the single cell/node controls. I also added controls for
+//   zbuffering and additional controls for changing label color and height
+//   for meshes.
+//
 // ****************************************************************************
 
 void
@@ -85,7 +99,7 @@ QvisLabelPlotWindow::CreateWindowContents()
     QVBoxLayout *selTopLayout = new QVBoxLayout(selectionGroupBox);
     selTopLayout->setMargin(10);
     selTopLayout->addSpacing(15);
-    QGridLayout *selLayout = new QGridLayout(selTopLayout, 3, 3);
+    QGridLayout *selLayout = new QGridLayout(selTopLayout, 4, 3);
     selLayout->setSpacing(5);
 
     showNodesToggle = new QCheckBox("Show nodes", selectionGroupBox,
@@ -124,6 +138,22 @@ QvisLabelPlotWindow::CreateWindowContents()
     selLayout->addMultiCellWidget(new QLabel("Draw labels that face",
         selectionGroupBox, "drawLabelsLabel"), 2, 2, 0, 1);
 
+    depthTestButtonGroup = new QButtonGroup(0, "depthTestButtonGroup");
+    QHBox *dtHBox = new QHBox(selectionGroupBox, "dtHBox");
+    dtHBox->setSpacing(5);
+    dtHBox->setMargin(0);
+    QRadioButton *rb = new QRadioButton("Auto", dtHBox);
+    depthTestButtonGroup->insert(rb, 0);
+    rb = new QRadioButton("Always", dtHBox);
+    depthTestButtonGroup->insert(rb, 1);
+    rb = new QRadioButton("Never", dtHBox);
+    depthTestButtonGroup->insert(rb, 2);
+    connect(depthTestButtonGroup, SIGNAL(clicked(int)),
+            this, SLOT(depthTestButtonGroupChanged(int)));
+    selLayout->addWidget(new QLabel("Depth test mode", selectionGroupBox,
+        "dtLabel"), 3, 0);
+    selLayout->addMultiCellWidget(dtHBox, 3, 3, 1, 2);
+
     //
     // Create formatting widgets
     //
@@ -133,7 +163,7 @@ QvisLabelPlotWindow::CreateWindowContents()
     QVBoxLayout *fmtTopLayout = new QVBoxLayout(formattingGroupBox);
     fmtTopLayout->setMargin(10);
     fmtTopLayout->addSpacing(15);
-    QGridLayout *fmtLayout = new QGridLayout(fmtTopLayout, 6, 2);
+    QGridLayout *fmtLayout = new QGridLayout(fmtTopLayout, 7, 2);
     fmtLayout->setSpacing(5);
 
     labelDisplayFormatComboBox = new QComboBox(formattingGroupBox,
@@ -147,28 +177,47 @@ QvisLabelPlotWindow::CreateWindowContents()
     fmtLayout->addWidget(new QLabel(labelDisplayFormatComboBox,
         "Label display format", formattingGroupBox, "labelDisplayLabel"), 0, 0);
     
-    useForegroundTextColorToggle = new QCheckBox("Use foreground color",
-        formattingGroupBox, "useForegroundTextColorToggle");
-    connect(useForegroundTextColorToggle, SIGNAL(toggled(bool)),
-            this, SLOT(useForegroundTextColorToggled(bool)));
-    fmtLayout->addMultiCellWidget(useForegroundTextColorToggle, 1,1, 0, 1);
+    specifyTextColor1Toggle = new QCheckBox("Specify label color",
+        formattingGroupBox, "specifyTextColor1Toggle");
+    connect(specifyTextColor1Toggle, SIGNAL(toggled(bool)),
+            this, SLOT(specifyTextColor1Toggled(bool)));
+    fmtLayout->addWidget(specifyTextColor1Toggle, 1, 0);
 
-    textColorButton = new QvisColorButton(formattingGroupBox, "textColorButton");
-    connect(textColorButton, SIGNAL(selectedColor(const QColor&)),
-            this, SLOT(textColorChanged(const QColor&)));
-    textColorLabel = new QLabel(textColorButton, "Label color",
-        formattingGroupBox, "textColorLabel");
-    fmtLayout->addWidget(textColorLabel, 2, 0);
-    fmtLayout->addWidget(textColorButton, 2,1, Qt::AlignLeft);
+    textColor1Button = new QvisColorButton(formattingGroupBox, "textColor1Button");
+    connect(textColor1Button, SIGNAL(selectedColor(const QColor&)),
+            this, SLOT(textColor1Changed(const QColor&)));
+    fmtLayout->addWidget(textColor1Button, 1, 1, Qt::AlignLeft);
 
-    textHeightSpinBox = new QSpinBox(1, 100, 1, formattingGroupBox,
-        "textHeightSpinBox");
-    textHeightSpinBox->setSuffix("%");
-    connect(textHeightSpinBox, SIGNAL(valueChanged(int)),
-            this, SLOT(textHeightChanged(int)));
-    fmtLayout->addWidget(textHeightSpinBox, 3, 1);
-    fmtLayout->addWidget(new QLabel("Label height",
-        formattingGroupBox, "labelDisplayLabel"), 3, 0);
+    specifyTextColor2Toggle = new QCheckBox("Specify node label color",
+        formattingGroupBox, "specifyTextColor2Toggle");
+    connect(specifyTextColor2Toggle, SIGNAL(toggled(bool)),
+            this, SLOT(specifyTextColor2Toggled(bool)));
+    fmtLayout->addWidget(specifyTextColor2Toggle, 2, 0);
+
+    textColor2Button = new QvisColorButton(formattingGroupBox, "textColor2Button");
+    connect(textColor2Button, SIGNAL(selectedColor(const QColor&)),
+            this, SLOT(textColor2Changed(const QColor&)));
+    fmtLayout->addWidget(textColor2Button, 2, 1, Qt::AlignLeft);
+
+    textHeight1SpinBox = new QSpinBox(1, 100, 1, formattingGroupBox,
+        "textHeight1SpinBox");
+    textHeight1SpinBox->setSuffix("%");
+    connect(textHeight1SpinBox, SIGNAL(valueChanged(int)),
+            this, SLOT(textHeight1Changed(int)));
+    textHeight1Label = new QLabel("Label height",
+        formattingGroupBox, "labelDisplayLabel");
+    fmtLayout->addWidget(textHeight1Label, 3, 0);
+    fmtLayout->addWidget(textHeight1SpinBox, 3, 1);
+
+    textHeight2SpinBox = new QSpinBox(1, 100, 1, formattingGroupBox,
+        "textHeight2SpinBox");
+    textHeight2SpinBox->setSuffix("%");
+    connect(textHeight2SpinBox, SIGNAL(valueChanged(int)),
+            this, SLOT(textHeight2Changed(int)));
+    textHeight2Label = new QLabel("Node label height",
+        formattingGroupBox, "labelDisplayLabel");
+    fmtLayout->addWidget(textHeight2Label, 4, 0);
+    fmtLayout->addWidget(textHeight2SpinBox, 4, 1);
 
     horizontalJustificationComboBox = new QComboBox(formattingGroupBox,
         "horizontalJustificationComboBox");
@@ -177,9 +226,9 @@ QvisLabelPlotWindow::CreateWindowContents()
     horizontalJustificationComboBox->insertItem("Right");
     connect(horizontalJustificationComboBox, SIGNAL(activated(int)),
             this, SLOT(horizontalJustificationChanged(int)));
-    fmtLayout->addWidget(horizontalJustificationComboBox, 4, 1);
+    fmtLayout->addWidget(horizontalJustificationComboBox, 5, 1);
     fmtLayout->addWidget(new QLabel(horizontalJustificationComboBox,
-        "Horizontal justification", formattingGroupBox, "hjustLabel"), 4, 0);
+        "Horizontal justification", formattingGroupBox, "hjustLabel"), 5, 0);
 
     verticalJustificationComboBox = new QComboBox(formattingGroupBox,
         "verticalJustificationComboBox");
@@ -188,50 +237,9 @@ QvisLabelPlotWindow::CreateWindowContents()
     verticalJustificationComboBox->insertItem("Bottom");
     connect(verticalJustificationComboBox, SIGNAL(activated(int)),
             this, SLOT(verticalJustificationChanged(int)));
-    fmtLayout->addWidget(verticalJustificationComboBox, 5, 1);
+    fmtLayout->addWidget(verticalJustificationComboBox, 6, 1);
     fmtLayout->addWidget(new QLabel(verticalJustificationComboBox,
-        "Vertical justification", formattingGroupBox, "vjustLabel"), 5, 0);
-
-    //
-    // Create formatting widgets
-    //
-    singleValueGroupBox = new QGroupBox(central, "singleValueGroupBox");
-    singleValueGroupBox->setTitle("Single value options");
-    topLayout->addWidget(singleValueGroupBox);
-    QVBoxLayout *svalTopLayout = new QVBoxLayout(singleValueGroupBox);
-    svalTopLayout->setMargin(10);
-    svalTopLayout->addSpacing(15);
-    QGridLayout *svalLayout = new QGridLayout(svalTopLayout, 3, 2);
-    svalLayout->setSpacing(5);
-
-    showSingleNodeToggle = new QCheckBox("Show single node", 
-        singleValueGroupBox, "showSingleNodeToggle");
-    connect(showSingleNodeToggle, SIGNAL(toggled(bool)),
-            this, SLOT(showSingleNodeToggled(bool)));
-    svalLayout->addWidget(showSingleNodeToggle, 0,0);
-
-    singleNodeLineEdit = new QLineEdit(singleValueGroupBox, "singleNodeLineEdit");
-    connect(singleNodeLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(singleNodeProcessText()));
-    svalLayout->addWidget(singleNodeLineEdit, 0, 1);
-
-    showSingleCellToggle = new QCheckBox("Show single cell",
-        singleValueGroupBox, "showSingleCellToggle");
-    connect(showSingleCellToggle, SIGNAL(toggled(bool)),
-            this, SLOT(showSingleCellToggled(bool)));
-    svalLayout->addWidget(showSingleCellToggle, 1,0);
-
-    singleCellLineEdit = new QLineEdit(singleValueGroupBox, "singleCellLineEdit");
-    connect(singleCellLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(singleCellProcessText()));
-    svalLayout->addWidget(singleCellLineEdit, 1,1);
-
-    markerTextLineEdit = new QLineEdit(singleValueGroupBox, "markerTextLineEdit");
-    connect(markerTextLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(markerProcessText()));
-    svalLayout->addWidget(markerTextLineEdit, 2,1);
-    svalLayout->addWidget(new QLabel(markerTextLineEdit,
-       "Marker text", singleValueGroupBox, "markerTextLabel"), 2, 0);
+        "Vertical justification", formattingGroupBox, "vjustLabel"), 6, 0);
 
     // Lagend toggle
     legendToggle = new QCheckBox("Legend", central, "legendFlag");
@@ -251,7 +259,10 @@ QvisLabelPlotWindow::CreateWindowContents()
 // Creation:   Thu Oct 21 18:18:16 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Aug 2 14:51:19 PST 2005
+//   Changed field ordering. Added widgets that allow for setting colors for
+//   node and cell labels.
+//
 // ****************************************************************************
 
 void
@@ -272,93 +283,120 @@ QvisLabelPlotWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-        case 0: //legendFlag
+        case 0: //varType
+            {// new scope
+            bool varIsMesh = labelAtts->GetVarType() == LabelAttributes::LABEL_VT_MESH;
+            showNodesToggle->setEnabled(varIsMesh);
+            showCellsToggle->setEnabled(varIsMesh);
+            specifyTextColor1Toggle->setText(varIsMesh?"Specify cell label color":"Specify label color");  
+            textHeight1Label->setText(varIsMesh?"Cell label height" : "Label height");
+            if(varIsMesh)
+            {
+                textColor2Button->show();
+                specifyTextColor2Toggle->show();
+                textHeight2Label->show();
+                textHeight2SpinBox->show();
+                updateGeometry();
+            }
+            else
+            {
+                textColor2Button->hide();
+                specifyTextColor2Toggle->hide();
+                textHeight2Label->hide();
+                textHeight2SpinBox->hide();
+                updateGeometry();
+            }
+            }
+            break;
+        case 1: //legendFlag
             legendToggle->blockSignals(true);
             legendToggle->setChecked(labelAtts->GetLegendFlag());
             legendToggle->blockSignals(false);
             break;
-        case 1: //showNodes
+        case 2: //showNodes
             showNodesToggle->blockSignals(true);
             showNodesToggle->setChecked(labelAtts->GetShowNodes());
             showNodesToggle->blockSignals(false);
             break;
-        case 2: //showCells
+        case 3: //showCells
             showCellsToggle->blockSignals(true);
             showCellsToggle->setChecked(labelAtts->GetShowCells());
             showCellsToggle->blockSignals(false);
             break;
-        case 3: //restrictNumberOfLabels
+        case 4: //restrictNumberOfLabels
             restrictNumberOfLabelsToggle->blockSignals(true);
             restrictNumberOfLabelsToggle->setChecked(labelAtts->GetRestrictNumberOfLabels());
             restrictNumberOfLabelsToggle->blockSignals(false);
             numberOfLabelsSpinBox->setEnabled(labelAtts->GetRestrictNumberOfLabels());
             break;
-        case 4: //drawLabelsFacing
+        case 5: //drawLabelsFacing
             drawLabelsFacingComboBox->blockSignals(true);
             drawLabelsFacingComboBox->setCurrentItem(int(labelAtts->GetDrawLabelsFacing()));
             drawLabelsFacingComboBox->blockSignals(false);
             break;
-        case 5: //showSingleNode
-            showSingleNodeToggle->blockSignals(true);
-            showSingleNodeToggle->setChecked(labelAtts->GetShowSingleNode());
-            showSingleNodeToggle->blockSignals(false);
-            break;
-        case 6: //showSingleCell
-            showSingleCellToggle->blockSignals(true);
-            showSingleCellToggle->setChecked(labelAtts->GetShowSingleCell());
-            showSingleCellToggle->blockSignals(false);
-            break;
-        case 7: //useForegroundTextColor
-            useForegroundTextColorToggle->blockSignals(true);
-            useForegroundTextColorToggle->setChecked(labelAtts->GetUseForegroundTextColor());
-            useForegroundTextColorToggle->blockSignals(false);
-
-            textColorButton->setEnabled(!labelAtts->GetUseForegroundTextColor());
-            textColorLabel->setEnabled(!labelAtts->GetUseForegroundTextColor());
-            break;
-        case 8: //labelDisplayFormat
+        case 6: //labelDisplayFormat
             labelDisplayFormatComboBox->blockSignals(true);
             labelDisplayFormatComboBox->setCurrentItem(int(labelAtts->GetLabelDisplayFormat()));
             labelDisplayFormatComboBox->blockSignals(false);
             break;
-        case 9: //numberOfLabels
+        case 7: //numberOfLabels
             numberOfLabelsSpinBox->blockSignals(true);
             numberOfLabelsSpinBox->setValue(labelAtts->GetNumberOfLabels());
             numberOfLabelsSpinBox->blockSignals(false);
             break;
-        case 10: //textColor
-            tempcolor = QColor(labelAtts->GetTextColor().Red(),
-                               labelAtts->GetTextColor().Green(),
-                               labelAtts->GetTextColor().Blue());
-            textColorButton->setButtonColor(tempcolor);
+        case 8: //specifyTextColor1
+            specifyTextColor1Toggle->blockSignals(true);
+            specifyTextColor1Toggle->setChecked(labelAtts->GetSpecifyTextColor1());
+            specifyTextColor1Toggle->blockSignals(false);
+
+            textColor1Button->setEnabled(labelAtts->GetSpecifyTextColor1());
             break;
-        case 11: //textHeight
-            textHeightSpinBox->blockSignals(true);
-            textHeightSpinBox->setValue(int(labelAtts->GetTextHeight() * 100.f + 0.5f));
-            textHeightSpinBox->blockSignals(false);
+        case 9: //textColor1
+            tempcolor = QColor(labelAtts->GetTextColor1().Red(),
+                               labelAtts->GetTextColor1().Green(),
+                               labelAtts->GetTextColor1().Blue());
+            textColor1Button->setButtonColor(tempcolor);
             break;
-        case 12: //textLabel
-            markerTextLineEdit->setText(labelAtts->GetTextLabel().c_str());
+        case 10: //textHeight1
+            textHeight1SpinBox->blockSignals(true);
+            textHeight1SpinBox->setValue(int(labelAtts->GetTextHeight1() * 100.f + 0.5f));
+            textHeight1SpinBox->blockSignals(false);
             break;
-        case 13: //horizontalJustification
+
+        case 11: //specifyTextColor2
+            specifyTextColor2Toggle->blockSignals(true);
+            specifyTextColor2Toggle->setChecked(labelAtts->GetSpecifyTextColor2());
+            specifyTextColor2Toggle->blockSignals(false);
+
+            textColor2Button->setEnabled(labelAtts->GetSpecifyTextColor2());
+            break;
+        case 12: //textColor2
+            tempcolor = QColor(labelAtts->GetTextColor2().Red(),
+                               labelAtts->GetTextColor2().Green(),
+                               labelAtts->GetTextColor2().Blue());
+            textColor2Button->setButtonColor(tempcolor);
+            break;
+        case 13: //textHeight2
+            textHeight2SpinBox->blockSignals(true);
+            textHeight2SpinBox->setValue(int(labelAtts->GetTextHeight2() * 100.f + 0.5f));
+            textHeight2SpinBox->blockSignals(false);
+            break;
+        case 14: //horizontalJustification
             horizontalJustificationComboBox->blockSignals(true);
             horizontalJustificationComboBox->setCurrentItem(int(labelAtts->
                 GetHorizontalJustification()));
             horizontalJustificationComboBox->blockSignals(false);
             break;
-        case 14: //verticalJustification
+        case 15: //verticalJustification
             verticalJustificationComboBox->blockSignals(true);
             verticalJustificationComboBox->setCurrentItem(int(labelAtts->
                 GetVerticalJustification()));
             verticalJustificationComboBox->blockSignals(false);
             break;
-        case 15: //singleNodeIndex
-            temp.sprintf("%d", labelAtts->GetSingleNodeIndex());
-            singleNodeLineEdit->setText(temp);
-            break;
-        case 16: //singleCellIndex
-            temp.sprintf("%d", labelAtts->GetSingleCellIndex());
-            singleCellLineEdit->setText(temp);
+        case 16: //depthTestMode
+            depthTestButtonGroup->blockSignals(true);
+            depthTestButtonGroup->setButton(int(labelAtts->GetDepthTestMode()));
+            depthTestButtonGroup->blockSignals(false);
             break;
         }
     }
@@ -378,6 +416,9 @@ QvisLabelPlotWindow::UpdateWindow(bool doAll)
 //   Brad Whitlock, Mon Nov 29 15:27:08 PST 2004
 //   Added code to get the values from the numberOfLabelsSpinBox and
 //   textHeightSpinBox so it is not necessary to hit the Enter key.
+//
+//   Brad Whitlock, Tue Aug 2 14:54:10 PST 2005
+//   I removed some fields and added code for textHeight2SpinBox.
 //
 // ****************************************************************************
 
@@ -408,14 +449,14 @@ QvisLabelPlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Do textHeightSpinBox
+    // Do textHeight1SpinBox
     if(which_widget == 1 || doAll)
     {
-        temp = textHeightSpinBox->text();
-        int plen = (temp.find(textHeightSpinBox->prefix()) != -1) ? 
-            textHeightSpinBox->prefix().length() : 0;
-        int slen = (temp.find(textHeightSpinBox->suffix()) != -1) ? 
-            textHeightSpinBox->suffix().length() : 0;
+        temp = textHeight1SpinBox->text();
+        int plen = (temp.find(textHeight1SpinBox->prefix()) != -1) ? 
+            textHeight1SpinBox->prefix().length() : 0;
+        int slen = (temp.find(textHeight1SpinBox->suffix()) != -1) ? 
+            textHeight1SpinBox->suffix().length() : 0;
         temp = temp.mid(plen, temp.length() - plen - slen);
         temp.simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -423,78 +464,44 @@ QvisLabelPlotWindow::GetCurrentValues(int which_widget)
         {
             int ival = temp.toInt(&okay);
             float val = float(ival) * 0.01f;
-            labelAtts->SetTextHeight(val);
+            labelAtts->SetTextHeight1(val);
         }
 
         if(!okay)
         {
             msg.sprintf("The value entered for the number of labels was invalid. "
                 "Resetting to the last good value of %d.",
-                int(labelAtts->GetTextHeight() * 100.));
+                int(labelAtts->GetTextHeight1() * 100.));
             Message(msg);
-            labelAtts->SetTextHeight(labelAtts->GetTextHeight());
+            labelAtts->SetTextHeight1(labelAtts->GetTextHeight1());
         }
     }
 
-    // Do singleNodeIndex
+    // Do textHeight2SpinBox
     if(which_widget == 2 || doAll)
     {
-        temp = singleNodeLineEdit->displayText().simplifyWhiteSpace();
+        temp = textHeight2SpinBox->text();
+        int plen = (temp.find(textHeight2SpinBox->prefix()) != -1) ? 
+            textHeight2SpinBox->prefix().length() : 0;
+        int slen = (temp.find(textHeight2SpinBox->suffix()) != -1) ? 
+            textHeight2SpinBox->suffix().length() : 0;
+        temp = temp.mid(plen, temp.length() - plen - slen);
+        temp.simplifyWhiteSpace();
         okay = !temp.isEmpty();
         if(okay)
         {
-            int val = temp.toInt(&okay);
-            labelAtts->SetSingleNodeIndex(val);
+            int ival = temp.toInt(&okay);
+            float val = float(ival) * 0.01f;
+            labelAtts->SetTextHeight2(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value entered for the single node index was invalid. "
+            msg.sprintf("The value entered for the number of labels was invalid. "
                 "Resetting to the last good value of %d.",
-                labelAtts->GetSingleNodeIndex());
+                int(labelAtts->GetTextHeight2() * 100.));
             Message(msg);
-            labelAtts->SetSingleNodeIndex(labelAtts->GetSingleNodeIndex());
-        }
-    }
-
-    // Do singleCellIndex
-    if(which_widget == 3 || doAll)
-    {
-        temp = singleCellLineEdit->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            int val = temp.toInt(&okay);
-            labelAtts->SetSingleCellIndex(val);
-        }
-
-        if(!okay)
-        {
-            msg.sprintf("The value of singleCellIndex was invalid. "
-                "Resetting to the last good value of %d.",
-                labelAtts->GetSingleCellIndex());
-            Message(msg);
-            labelAtts->SetSingleCellIndex(labelAtts->GetSingleCellIndex());
-        }
-    }
-
-    // Do textLabel
-    if(which_widget == 4 || doAll)
-    {
-        temp = markerTextLineEdit->displayText();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            labelAtts->SetTextLabel(temp.latin1());
-        }
-
-        if(!okay)
-        {
-            msg.sprintf("The value of textLabel was invalid. "
-                "Resetting to the last good value of %s.",
-                labelAtts->GetTextLabel().c_str());
-            Message(msg);
-            labelAtts->SetTextLabel(labelAtts->GetTextLabel());
+            labelAtts->SetTextHeight2(labelAtts->GetTextHeight2());
         }
     }
 }
@@ -658,26 +665,51 @@ QvisLabelPlotWindow::labelDisplayFormatChanged(int val)
 }
 
 void
-QvisLabelPlotWindow::textColorChanged(const QColor &color)
+QvisLabelPlotWindow::textColor1Changed(const QColor &color)
 {
     ColorAttribute temp(color.red(), color.green(), color.blue());
-    labelAtts->SetTextColor(temp);
+    labelAtts->SetTextColor1(temp);
     SetUpdate(false);
     Apply();
 }
 
 void
-QvisLabelPlotWindow::useForegroundTextColorToggled(bool val)
+QvisLabelPlotWindow::textColor2Changed(const QColor &color)
 {
-    labelAtts->SetUseForegroundTextColor(val);
+    ColorAttribute temp(color.red(), color.green(), color.blue());
+    labelAtts->SetTextColor2(temp);
+    SetUpdate(false);
     Apply();
 }
 
 void
-QvisLabelPlotWindow::textHeightChanged(int val)
+QvisLabelPlotWindow::specifyTextColor1Toggled(bool val)
+{
+    labelAtts->SetSpecifyTextColor1(val);
+    Apply();
+}
+
+void
+QvisLabelPlotWindow::specifyTextColor2Toggled(bool val)
+{
+    labelAtts->SetSpecifyTextColor2(val);
+    Apply();
+}
+
+void
+QvisLabelPlotWindow::textHeight1Changed(int val)
 {
     float textHeight = float(val) * 0.01f;
-    labelAtts->SetTextHeight(textHeight);
+    labelAtts->SetTextHeight1(textHeight);
+    SetUpdate(false);
+    Apply();
+}
+
+void
+QvisLabelPlotWindow::textHeight2Changed(int val)
+{
+    float textHeight = float(val) * 0.01f;
+    labelAtts->SetTextHeight2(textHeight);
     SetUpdate(false);
     Apply();
 }
@@ -705,40 +737,10 @@ QvisLabelPlotWindow::verticalJustificationChanged(int val)
 }
 
 void
-QvisLabelPlotWindow::showSingleNodeToggled(bool val)
+QvisLabelPlotWindow::depthTestButtonGroupChanged(int val)
 {
-    labelAtts->SetShowSingleNode(val);
+    labelAtts->SetDepthTestMode((LabelAttributes::DepthTestMode)val);
     SetUpdate(false);
-    Apply();
-}
-
-void
-QvisLabelPlotWindow::singleNodeProcessText()
-{
-    GetCurrentValues(2);
-    Apply();
-}
-
-void
-QvisLabelPlotWindow::showSingleCellToggled(bool val)
-{
-    labelAtts->SetShowSingleCell(val);
-    SetUpdate(false);
-    Apply();
-}
-
-
-void
-QvisLabelPlotWindow::singleCellProcessText()
-{
-    GetCurrentValues(3);
-    Apply();
-}
-
-void
-QvisLabelPlotWindow::markerProcessText()
-{
-    GetCurrentValues(4);
     Apply();
 }
 

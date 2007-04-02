@@ -1,8 +1,11 @@
 // ****************************************************************************
 //  Modifications:
-//
 //    Hank Childs, Wed Jul 20 17:21:46 PDT 2005
 //    Add support for tensors, arrays.
+//
+//    Brad Whitlock, Thu Aug 4 15:08:28 PST 2005
+//    I made tensors and arrays set maxLabelRows so the dynamic layout can
+//    do a little better.
 //
 // ****************************************************************************
 
@@ -20,11 +23,18 @@
     vtkIdType     npts = p ? p->GetNumberOfPoints() : 0;
     vtkIdType     skipIncrement = 1;
 
+    // By default, the max number of rows is 1.
+    maxLabelRows = 1;
+
     //
     // If the data array is empty then try and get the node numbers so we can
     // label the node numbers using the original node numbers.
     //
     vtkUnsignedIntArray *originalNodes = 0;
+    if(data == 0 && atts.GetVarType() == LabelAttributes::LABEL_VT_VECTOR_VAR)
+    {
+        data = input->GetPointData()->GetVectors();
+    }
     if(data == 0)
     {
         vtkDataArray *tmpNodes = input->GetPointData()->GetArray("LabelFilterOriginalNodeNumbers");
@@ -141,6 +151,7 @@ debug3 << "Labelling nodes with 3d vector data" << endl;
         else if(data->GetNumberOfComponents() == 9)
         {
 debug3 << "Labelling nodes with 3d tensor data" << endl;
+            maxLabelRows = 3;
             for(vtkIdType id = 0; id < npts; ++id)
             {
                 // float *vert = cellCenters->GetTuple3(id);
@@ -161,6 +172,7 @@ debug3 << "Labelling nodes with 3d tensor data" << endl;
             int row_size = 1;
             while (row_size*row_size < nComps)
                 row_size++;
+            maxLabelRows = row_size;
             char formatStringStart[8] = "(%g, ";
             char formatStringMiddle[8] = "%g, ";
             char formatStringEnd[8] = "%g)\n";

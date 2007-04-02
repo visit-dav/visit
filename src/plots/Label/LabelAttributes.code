@@ -7,3 +7,11 @@ LabelAttributes::ChangesRequireRecalculation(const LabelAttributes &) const
     return false;
 }
 
+Function: VarChangeRequiresReset
+Declaration: virtual bool VarChangeRequiresReset(void);
+Definition:
+bool
+LabelAttributes::VarChangeRequiresReset()
+{
+    return true;
+}
