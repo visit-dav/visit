@@ -124,6 +124,9 @@ avtExpressionStreamer::~avtExpressionStreamer()
 //    Hank Childs, Tue Nov 15 11:41:28 PST 2005
 //    Make a comment to debug logs when we can "bypass".
 //
+//    Hank Childs, Sun Feb 19 10:26:49 PST 2006
+//    Fix a crash.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -156,6 +159,12 @@ avtExpressionStreamer::ExecuteData(vtkDataSet *in_ds, int index,
     if (dat == NULL)
     {
         dat = DeriveVariable(in_ds);
+        if (dat == NULL)
+        {
+            EXCEPTION1(ExpressionException, "an unknown error occurred while " 
+                  "trying to calculate your expression.  Please contact a "
+                  "VisIt developer.");
+        }
         dat->SetName(outputVariableName);
     }
 

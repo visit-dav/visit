@@ -247,6 +247,9 @@
 #    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 #    Added MeshManagementAttributes
 #
+#    Hank Childs, Mon Feb 13 21:11:20 PST 2006
+#    Added ConstructDDFAttributes.
+#
 ##############################################################################
 
 ##
@@ -281,6 +284,7 @@ SRC=    AnimationAttributes.C \
         ColorTableManager.C \
         CompactSILRestrictionAttributes.C \
         ConfigManager.C \
+        ConstructDDFAttributes.C \
         ContourOpAttributes.C \
         DatabaseAttributes.C \
         DatabaseCorrelation.C \

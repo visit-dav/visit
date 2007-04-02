@@ -17033,6 +17033,7 @@ VISIT_VTK_FILES="visit_vtk/Makefile
                  visit_vtk/parallel/Makefile"
 COMPONENT_FILES="components/Makefile
                  components/DBAtts/Makefile
+                 components/DDF/Makefile
                  components/Database/Makefile
                  components/Expressions/Makefile
                  components/FileWriter/Makefile

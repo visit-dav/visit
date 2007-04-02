@@ -382,6 +382,9 @@ struct avtDefaultPlotMetaData;
 //    Brad Whitlock, Thu Nov 17 17:06:30 PST 2005
 //    Added MoveWindow, ResizeWindow, MoveAndResizeWindow.
 //
+//    Hank Childs, Mon Feb 13 21:59:53 PST 2006
+//    Added ConstructDDF.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -472,6 +475,7 @@ private:
     void ClearCache();
     void ClearCacheForAllEngines();
     void ExportDatabase();
+    void ConstructDDF();
     void UpdateDBPluginInfo();
 
     void SendSimulationCommand();

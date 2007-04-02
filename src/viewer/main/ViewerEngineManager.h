@@ -29,6 +29,7 @@ class AnnotationAttributes;
 class AnnotationObjectList;
 class WindowAttributes;
 class ExportDBAttributes;
+class ConstructDDFAttributes;
 class avtDatabaseMetaData;
 
 // ****************************************************************************
@@ -223,6 +224,10 @@ class avtDatabaseMetaData;
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Added mesh management attributes
+//
+//    Hank Childs, Mon Feb 13 21:59:53 PST 2006
+//    Added ConstructDDFAtts.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -293,6 +298,9 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     static ExportDBAttributes *GetExportDBAtts();
     static void SetExportDBAtts(ExportDBAttributes *);
 
+    static ConstructDDFAttributes *GetConstructDDFAtts();
+    static void SetConstructDDFAtts(ConstructDDFAttributes *);
+
     //
     // Engine RPCs
     //
@@ -330,6 +338,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     bool CloneNetwork(const EngineKey &ek, int id, 
                       const QueryOverTimeAttributes *qatts);
     bool ExportDatabase(const EngineKey &ek, int id);
+    bool ConstructDDF(const EngineKey &ek, int id);
 
     void CreateNode(DataNode *) const;
     void UpdateExpressionsFromPlot(const ViewerPlot *);
@@ -363,6 +372,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     static MeshManagementAttributes *meshManagementClientAtts;
     static MeshManagementAttributes *meshManagementDefaultAtts;
     static ExportDBAttributes *exportDBAtts;
+    static ConstructDDFAttributes *constructDDFAtts;
 };
 
 #endif

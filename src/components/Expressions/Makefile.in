@@ -129,6 +129,9 @@
 #   Brad Whitlock, Thu Jan 26 15:39:36 PST 2006
 #   Added libs for Mac build.
 #
+#   Hank Childs, Sat Feb 18 10:25:59 PST 2006
+#   Added ApplyDDF.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -181,6 +184,7 @@ Derivations_src=\
   Derivations/avtPrincipalTensorFilter.C 
 
 General_src= \
+  General/avtApplyDDFExpression.C \
   General/avtArrayComposeFilter.C \
   General/avtArrayDecomposeFilter.C \
   General/avtCurlFilter.C \

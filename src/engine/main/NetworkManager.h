@@ -18,6 +18,7 @@ class LoadBalancer;
 class DataNetwork;
 class Netnode;
 class NetnodeDB;
+class ConstructDDFAttributes;
 class ExportDBAttributes;
 class PickAttributes;
 class QueryAttributes;
@@ -25,6 +26,7 @@ class QueryOverTimeAttributes;
 class MaterialAttributes;
 class MeshManagementAttributes;
 class VisWindow;
+class avtDDF;
 
 typedef struct _EngineVisWinInfo
 {
@@ -243,6 +245,9 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Hank Childs, Tue Jan  3 14:04:35 PST 2006
 //    Add methods to issue progress callbacks.
 //
+//    Hank Childs, Mon Feb 13 22:25:04 PST 2006
+//    Add support for DDFs.
+//
 // ****************************************************************************
 class NetworkManager
 {
@@ -312,6 +317,8 @@ class NetworkManager
     void          Pick(const int, const int, PickAttributes *);
     void          Query(const std::vector<int> &, QueryAttributes*);
     void          ExportDatabase(const int, ExportDBAttributes *);
+    void          ConstructDDF(const int, ConstructDDFAttributes *);
+    avtDDF       *GetDDF(const char *);
 
     void          DumpRenders(void) { dumpRenders = true; };
 
@@ -347,6 +354,9 @@ class NetworkManager
     std::map<int, EngineVisWinInfo>   viswinMap;
 
     bool                        dumpRenders;
+
+    std::vector<avtDDF *>       ddf;
+    std::vector<std::string>    ddf_names;
 
     static InitializeProgressCallback
                                 initializeProgressCallback;

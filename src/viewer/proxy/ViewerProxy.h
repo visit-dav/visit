@@ -20,6 +20,7 @@ class ClientInformation;
 class ClientInformationList;
 class ColorTableAttributes;
 class Connection;
+class ConstructDDFAttributes;
 class DatabaseCorrelationList;
 class DBPluginInfoAttributes;
 class ExportDBAttributes;
@@ -397,6 +398,9 @@ class Xfer;
 //    Brad Whitlock, Thu Nov 17 16:37:06 PST 2005
 //    Added methods to move and resize windows.
 //
+//    Hank Childs, Mon Feb 13 21:39:02 PST 2006
+//    Added GetConstructDDFAttributes, ConstructDDF.
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -453,6 +457,7 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void ClearCacheForAllEngines();
     void UpdateDBPluginInfo(const std::string &hostName);
     void ExportDatabase(void);
+    void ConstructDDF(void);
 
     void CreateDatabaseCorrelation(const std::string &name,
                                    const stringVector &dbs, int method,
@@ -657,6 +662,8 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
                                     {return appearanceAtts;};
     ColorTableAttributes       *GetColorTableAttributes() const 
                                     {return colorTableAtts;};
+    ConstructDDFAttributes     *GetConstructDDFAttributes() const
+                                    {return constructDDFAtts;}
     DatabaseCorrelationList    *GetDatabaseCorrelationList() const
                                     {return correlationList; };
     DBPluginInfoAttributes     *GetDBPluginInfoAttributes() const
@@ -763,6 +770,7 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     DatabaseCorrelationList    *correlationList;
     DBPluginInfoAttributes     *dbPluginInfoAtts;
     ExportDBAttributes         *exportDBAtts;
+    ConstructDDFAttributes     *constructDDFAtts;
     PlotList                   *plotList;
     ColorTableAttributes       *colorTableAtts;
     ExpressionList             *exprList;

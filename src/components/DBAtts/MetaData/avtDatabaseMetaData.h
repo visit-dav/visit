@@ -529,6 +529,10 @@ public:
 //    Hank Childs, Tue Jul 19 11:04:49 PDT 2005
 //    Add array variables.
 //
+//    Hank Childs, Sun Feb 19 10:57:47 PST 2006
+//    Add a Boolean array to "DetermineVarType", since the database does not
+//    want results from expressions.
+//
 //----------------------------------------------------------------------------
 
 class DBATTS_API avtDatabaseMetaData : public AttributeSubject
@@ -716,7 +720,7 @@ public:
     int                 GetNumberOfExpressions(void) const;
 
     int          GetNDomains(std::string) const;
-    avtVarType   DetermineVarType(std::string) const;
+    avtVarType   DetermineVarType(std::string, bool = true) const;
     avtSubsetType   DetermineSubsetType(const std::string &) const;
     std::string  MeshForVar(std::string) const;
     std::string  MaterialOnMesh(std::string) const;

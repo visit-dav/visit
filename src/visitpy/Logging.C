@@ -9,6 +9,7 @@
 #include <visit-config.h>
 
 #include <PyAnnotationAttributes.h>
+#include <PyConstructDDFAttributes.h>
 #include <PyExportDBAttributes.h>
 #include <PyGlobalLineoutAttributes.h>
 #include <PyHostProfile.h>
@@ -1462,6 +1463,12 @@ static void log_UpdateDBPluginInfoRPC(ViewerRPC *rpc, char *str)
     MESSAGE_COMMENT("UpdateDBPluginInfo", str, MSG_UNSUPPORTED);
 }
 
+static void log_ConstructDDFRPC(ViewerRPC *rpc, char *str)
+{
+    std::string s(PyConstructDDFAttributes_GetLogString());
+    SNPRINTF(str, SLEN, "%sConstructDDFtabase(ConstructDDFAtts)\n", s.c_str());
+}
+
 static void log_ExportDBRPC(ViewerRPC *rpc, char *str)
 {
     std::string s(PyExportDBAttributes_GetLogString());
@@ -1534,6 +1541,9 @@ static void log_MoveAndResizeWindowRPC(ViewerRPC *rpc, char *str)
 //
 // Modifications:
 //   
+//   Hank Childs, Mon Feb 13 21:39:02 PST 2006
+//   Added ConstructDDFRPC.
+//
 // ****************************************************************************
 
 void
@@ -2025,6 +2035,9 @@ LogRPCs(Subject *subj, void *)
         break;
     case ViewerRPC::MoveAndResizeWindowRPC:
         log_MoveAndResizeWindowRPC(rpc, str);
+        break;
+    case ViewerRPC::ConstructDDFRPC:
+        log_ConstructDDFRPC(rpc, str);
         break;
 
     // RPCs that we don't want to log:

@@ -5,6 +5,7 @@
 class ApplyOperatorRPC;
 class ClearCacheRPC;
 class CloneNetworkRPC;
+class ConstructDDFRPC;
 class DefineVirtualDatabaseRPC;
 class ExecuteRPC;
 class ExportDatabaseRPC;
@@ -108,6 +109,9 @@ class ProcessAttributes;
 //
 //    Hank Childs, Thu Jan  5 14:24:06 PST 2006
 //    Added a Boolean for whether or not we are using "-dump".
+//
+//    Hank Childs, Mon Feb 13 22:25:04 PST 2006
+//    Added ConstructDDF.
 //
 // ****************************************************************************
 
@@ -241,6 +245,7 @@ class Engine
     ProcInfoRPC              *procInfoRPC;
     SimulationCommandRPC     *simulationCommandRPC;
     ExportDatabaseRPC        *exportDatabaseRPC;
+    ConstructDDFRPC          *constructDDFRPC;
 
     // The metadata, filename, format, control data for a simulation
     std::string               filename;

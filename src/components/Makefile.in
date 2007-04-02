@@ -79,13 +79,16 @@
 #   I changed the build order for MacOS X because expressions and queries
 #   now depend on the database library.
 #
+#   Hank Childs, Mon Feb 13 20:52:50 PST 2006
+#   Added DDF directory.
+#
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 @DIRTARGETS@
 
-SUBDIRS=DBAtts Math Pipeline MIR \
+SUBDIRS=DBAtts DDF Math Pipeline MIR \
         View Filters Database Expressions Queries Plotter FileWriter \
         @VISWINDOW@ QtVisWindow
 

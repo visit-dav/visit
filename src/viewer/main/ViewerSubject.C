@@ -28,6 +28,7 @@
 #include <ClientInformation.h>
 #include <ClientInformationList.h>
 #include <ColorTableAttributes.h>
+#include <ConstructDDFAttributes.h>
 #include <DatabaseCorrelation.h>
 #include <DatabaseCorrelationList.h>
 #include <DBPluginInfoAttributes.h>
@@ -582,6 +583,10 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
 //   
 //   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //   Added mesh management attributes
+//
+//   Hank Childs, Mon Feb 13 21:54:12 PST 2006
+//   Added construct ddf attributes.
+//
 // ****************************************************************************
 
 void
@@ -621,6 +626,7 @@ ViewerSubject::CreateState()
     viewerState->Add(silAtts,      false);
     viewerState->Add(ViewerFileServer::Instance()->GetDBPluginInfoAtts(), false);
     viewerState->Add(ViewerEngineManager::Instance()->GetExportDBAtts(),  false);
+    viewerState->Add(ViewerEngineManager::Instance()->GetConstructDDFAtts(),  false);
     viewerState->Add(clientMethod,          false);
     viewerState->Add(clientInformation,     false);
     viewerState->Add(clientInformationList, false);
@@ -4695,6 +4701,62 @@ ViewerSubject::UpdateDBPluginInfo()
 }
 
 // ****************************************************************************
+// Method: ViewerSubject::ConstructDDF
+//
+// Purpose: 
+//     Construct a derived data function.
+//
+// Programmer: Hank Childs
+// Creation:   February 13, 2006
+//
+// ****************************************************************************
+
+void
+ViewerSubject::ConstructDDF()
+{
+    //
+    // Perform the RPC.
+    //
+    ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
+    ViewerPlotList *plist = win->GetPlotList();
+    intVector plotIDs;
+    plist->GetActivePlotIDs(plotIDs);
+    if (plotIDs.size() <= 0)
+    {
+        Error("To construct a derived data function, you must have an active"
+              " plot.  No DDF was created.");
+        return;
+    }
+    if (plotIDs.size() > 1)
+        Message("Only one DDF can be created at a time.  VisIt is using the "
+                "first active plot.");
+
+    ViewerPlot *plot = plist->GetPlot(plotIDs[0]);
+    const EngineKey   &engineKey = plot->GetEngineKey();
+    int networkId = plot->GetNetworkID();
+    TRY
+    {
+        if (ViewerEngineManager::Instance()->ConstructDDF(engineKey, 
+                                                          networkId))
+        {
+            Message("Created DDF");
+        }
+        else
+        {
+            Error("Unable to create DDF");
+        }
+    }
+    CATCH2(VisItException, e)
+    {
+        char message[1024];
+        SNPRINTF(message, 1024, "(%s): %s\n", e.GetExceptionType().c_str(),
+                                             e.Message().c_str());
+        Error(message);
+    }
+    ENDTRY
+}
+
+// ****************************************************************************
 // Method: ViewerSubject::ExportDatabase
 //
 // Purpose: 
@@ -7249,6 +7311,9 @@ ViewerSubject::HandleViewerRPC()
         break;
     case ViewerRPC::ResizeWindowRPC:
         ResizeWindow();
+        break;
+    case ViewerRPC::ConstructDDFRPC:
+        ConstructDDF();
         break;
     case ViewerRPC::MaxRPC:
         break;

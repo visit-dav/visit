@@ -353,6 +353,9 @@ Engine::Finalize(void)
 //    Fix issue with -dump since code that instantiates network manager has
 //    moved.
 //
+//    Hank Childs, Mon Feb 13 22:25:04 PST 2006
+//    Added constructDDFRPC.
+//
 // ****************************************************************************
 
 void
@@ -426,6 +429,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     procInfoRPC                     = new ProcInfoRPC;
     simulationCommandRPC            = new SimulationCommandRPC;
     exportDatabaseRPC               = new ExportDatabaseRPC;
+    constructDDFRPC                 = new ConstructDDFRPC;
 
     xfer->Add(quitRPC);
     xfer->Add(keepAliveRPC);
@@ -449,6 +453,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     xfer->Add(procInfoRPC);
     xfer->Add(simulationCommandRPC);
     xfer->Add(exportDatabaseRPC);
+    xfer->Add(constructDDFRPC);
 
     // Create an object to implement the RPCs
     rpcExecutors.push_back(new RPCExecutor<QuitRPC>(quitRPC));
@@ -476,6 +481,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     rpcExecutors.push_back(new RPCExecutor<ProcInfoRPC>(procInfoRPC));
     rpcExecutors.push_back(new RPCExecutor<SimulationCommandRPC>(simulationCommandRPC));
     rpcExecutors.push_back(new RPCExecutor<ExportDatabaseRPC>(exportDatabaseRPC));
+    rpcExecutors.push_back(new RPCExecutor<ConstructDDFRPC>(constructDDFRPC));
 
     // Hook up the expression list as an observed object.
     Parser *p = new ExprParser(new avtExprNodeFactory());
