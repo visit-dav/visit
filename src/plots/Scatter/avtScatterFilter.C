@@ -443,6 +443,9 @@ debug4 << "avtScatterFilter::ExecuteData" << endl;
 //    I made the extents get calculated in PreExecute so we have the extents
 //    from all domains.
 //
+//    Hank Childs, Thu Sep 14 09:16:23 PDT 2006
+//    Fix indexing bug and initialization bugs pointed out by Matt Wheeler.  
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -779,8 +782,8 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
 
         if(d2scale == 1)
         {
-            float uyMin = d2->useMin ? d2min : uyMin;
-            float uyMax = d2->useMax ? d2max : uyMax;
+            float uyMin = d2->useMin ? d2min : yMin;
+            float uyMax = d2->useMax ? d2max : yMax;
             badLimits |= (uyMin <= 0. || uyMax <= 0.);
             yMin = LOG10_Y(uyMin);
             yMax = LOG10_Y(uyMax);
@@ -856,7 +859,7 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
     //
     if(NeedSpatialExtents())
     {
-        double spatialExtents[5];
+        double spatialExtents[6];
         spatialExtents[0] = xMin;
         spatialExtents[1] = xMax;
         spatialExtents[2] = yMin;
