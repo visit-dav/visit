@@ -138,6 +138,9 @@
 #   Hank Childs, Mon Mar 13 16:43:55 PST 2006
 #   Added avtMinMaxExpression.
 #
+#   Hank Childs, Sat Apr 29 14:40:47 PDT 2006
+#   Added avtLocalizedCompactnessExpression.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -185,6 +188,7 @@ CMFE_src= \
 
 Derivations_src=\
   Derivations/avtEffectiveTensorFilter.C \
+  Derivations/avtLocalizedCompactnessExpression.C \
   Derivations/avtTensorMaximumShearFilter.C \
   Derivations/avtPrincipalDeviatoricTensorFilter.C \
   Derivations/avtPrincipalTensorFilter.C 

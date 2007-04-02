@@ -66,6 +66,7 @@
 #include <avtDegreeFilter.h>
 #include <avtVMetrics.h>
 #include <avtRecenterFilter.h>
+#include <avtLocalizedCompactnessExpression.h>
 #include <avtApplyDDFExpression.h>
 #include <avtConstantCreatorFilter.h>
 #include <avtRelativeDifferenceFilter.h>
@@ -446,6 +447,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //      Hank Childs, Mon Mar 13 16:43:55 PST 2006
 //      Added min and max expressions.
 //
+//      Hank Childs, Sat Apr 29 14:40:47 PDT 2006
+//      Added localized compactness expression.
+//
 // ****************************************************************************
 void
 avtFunctionExpr::CreateFilters(ExprPipelineState *state)
@@ -508,6 +512,8 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtSpecMFFilter();
     else if (functionName == "nmats")
         f = new avtNMatsFilter();
+    else if (functionName == "localized_compactness")
+        f = new avtLocalizedCompactnessExpression();
     else if (functionName == "recenter")
         f = new avtRecenterFilter();
     else if (functionName == "det" || functionName == "determinant")

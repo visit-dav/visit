@@ -28,6 +28,10 @@
 //
 //    Mark C. Miller, Tue Sep 13 20:09:49 PDT 2005
 //    Added selID to support data selections
+//
+//    Hank Childs, Sat Apr 29 15:53:13 PDT 2006
+//    Add argument to GetDimensions.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtResampleFilter : public avtDatasetToDatasetFilter
@@ -49,7 +53,8 @@ class AVTFILTERS_API avtResampleFilter : public avtDatasetToDatasetFilter
     virtual void          Execute(void);
     virtual void          RefashionDataObjectInfo(void);
 
-    void                  GetDimensions(int &, int &, int &, const double *);
+    void                  GetDimensions(int &, int &, int &, const double *,
+                                        bool);
     bool                  InputNeedsNoResampling(void);
     void                  ResampleInput(void);
     void                  BypassResample(void);
