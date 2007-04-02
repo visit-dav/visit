@@ -1182,6 +1182,9 @@ avtSAMRAIFileFormat::ReadMatSpecFractions(int patch, string mat_name,
 //    Modify the allocation of an array of float pointers so that it
 //    compiles on all platforms.
 //
+//    Kathleen Bonnell, Mon May 23 16:55:35 PDT 2005
+//    Fix memory leaks. 
+// 
 // ****************************************************************************
 
 avtMaterial *
@@ -1305,6 +1308,7 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
 
         bytesInFile = 0.0;
         bytesInMem = (ncells * sizeof(int));
+        delete [] matlist;
 
     }
     else
@@ -1567,6 +1571,9 @@ avtSAMRAIFileFormat::DebugMixedMaterials(int ncells, int* &matfield,
 //    Mark C. Miller, Wed Jan  7 11:35:37 PST 2004
 //    Added stuff to compute amount of compression achieved
 //
+//    Kathleen Bonnell, Mon May 23 16:55:35 PDT 2005
+//    Fix memory leaks. 
+// 
 // ****************************************************************************
 
 avtSpecies *
@@ -1687,6 +1694,9 @@ avtSAMRAIFileFormat::GetSpecies(int patch, const char *specObjName)
                << bytesInFile / bytesInMem << "x [cummulative = "
                << bytesInFileTotal / bytesInMemTotal << "x]" << endl;
 
+        delete [] mixList;
+        delete [] specList;
+
         return spec;
     }
 
@@ -1761,10 +1771,13 @@ avtSAMRAIFileFormat::GetSpecies(int patch, const char *specObjName)
                 for (j = 0; j < numSpecs; j++)
                     SAFE_DELETE(matSpecFracs[i][j]);
             }
+            SAFE_DELETE(matSpecFracs[i]);
             currPatchMatId++;
         }
     }
-
+    free(species_mf);
+    SAFE_DELETE(mixList);
+    SAFE_DELETE(specList);
     bytesInMem = (mat->GetMixlen() + ncells) * sizeof(int) + nspecies_mf * sizeof(float);
 
     bytesInFileTotal += bytesInFile;

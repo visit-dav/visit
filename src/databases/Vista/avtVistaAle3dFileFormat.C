@@ -295,6 +295,9 @@ avtVistaAle3dFileFormat::GetFileNameForRead(int dom, char *fileName, int size)
 //    Mark C. Miller, Wed May 19 10:56:11 PDT 2004
 //    Added support for 2D meshes
 //
+//    Kathleen Bonnell, Mon May 23 16:55:35 PDT 2005
+//    Fix memory leaks.
+//
 // ****************************************************************************
 
 void
@@ -384,7 +387,7 @@ avtVistaAle3dFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // Add the GLOBAL mesh object
     //
     avtMeshMetaData *mesh = new avtMeshMetaData;
-    mesh->name = CXX_strdup(top->child[0]->text);
+    mesh->name = top->child[0]->text;
     mesh->meshType = AVT_UNSTRUCTURED_MESH;
     mesh->topologicalDimension = spatialDim;
     mesh->spatialDimension = spatialDim;
@@ -496,6 +499,7 @@ avtVistaAle3dFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         matNames.push_back(matNodes[i]->text);
     StringHelpers::GroupStrings(matNames, matGroups, groupNames, 3, "");
 
+    delete [] matNodes;
     //
     // Process the group names to extract either names or numbers
     // and populate this object's knowledge of materials
@@ -819,6 +823,9 @@ avtVistaAle3dFileFormat::GetMaterial(int domain, const char *var)
 //    Mark C. Miller, Wed May 19 10:56:11 PDT 2004
 //    Added support for 2D meshes
 //
+//    Kathleen Bonnell, Mon May 23 16:55:35 PDT 2005
+//    Fix memory leaks.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -937,6 +944,7 @@ avtVistaAle3dFileFormat::GetMesh(int domain, const char *meshname)
         ugrid->InsertNextCell(vtkCellType, numNodesPerElem, &elemToNode[i*numNodesPerElem]);
     }
     points->Delete();
+    delete [] elemToNode;
     return ugrid;
 }
 

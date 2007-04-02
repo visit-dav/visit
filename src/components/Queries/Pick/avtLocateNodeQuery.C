@@ -314,6 +314,9 @@ avtLocateNodeQuery::DeterminePickedNode(vtkDataSet *ds, int foundCell, float *pp
 //    Kathleen Bonnell, Fri May 13 15:16:12 PDT 2005 
 //    Fix memory leak. 
 //
+//    Kathleen Bonnell, Mon May 23 12:17:37 PDT 2005 
+//    Arg origNode was not getting set.
+//
 // ****************************************************************************
 
 int
@@ -347,18 +350,18 @@ avtLocateNodeQuery::FindClosestPoint(vtkDataSet *ds, const int isectedCell,
             vtkIdList *cellPts = vtkIdList::New();
             ds->GetCellPoints(isectedCell, cellPts);
             int comp = origNodes->GetNumberOfComponents()-1;
-            int oNode = -1;
-            for (int i = 0; i < ncp && oNode == -1; i++)
+            origNode = -1;
+            for (int i = 0; i < ncp && origNode == -1; i++)
             {
                 id = closestPoints->GetId(i);
-                oNode = (int)origNodes->GetComponent(id, comp);
-                if (oNode != -1 && (cellPts->IsId(id) == -1))
+                origNode = (int)origNodes->GetComponent(id, comp);
+                if (origNode != -1 && (cellPts->IsId(id) == -1))
                 {
                     //
                     // We only want to consider nodes that are part of
                     // the isected cell.
                     //
-                    oNode = -1;
+                    origNode = -1;
                 }
             }
             cellPts->Delete();
