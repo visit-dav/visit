@@ -265,6 +265,10 @@ class SplashScreen;
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Added mesh management attributes window
+//
+//    Brad Whitlock, Thu Feb 2 18:53:59 PST 2006
+//    I split SaveMovie into SaveMovie and SaveMovieMain.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -350,6 +354,7 @@ private slots:
     void CancelMovie();
 
     void SaveMovie();
+    void SaveMovieMain();
     void SaveWindow();
     void SetPrinterOptions();
     void PrintWindow();

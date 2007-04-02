@@ -25,7 +25,9 @@ class QSpinBox;
 // Creation:   Mon Mar 21 16:44:22 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Feb 2 18:48:28 PST 2006
+//   Added default size for movie.
+//
 // ****************************************************************************
 
 class QvisSaveMovieWizard : public QvisWizard
@@ -37,6 +39,7 @@ public:
     virtual ~QvisSaveMovieWizard();
 
     int Exec();
+    void SetDefaultMovieSize(int,int);
 protected:
     virtual void keyPressEvent(QKeyEvent *e);
 private slots:
@@ -91,6 +94,7 @@ private:
 
     QString SplitPrompt(const QString &s) const;
 
+    float            default_movie_size[2];
     bool             page0_usePreviousSettingsAllowed;
     bool             page1_createNewTemplate;
     bool             page2_customizeTemplate;

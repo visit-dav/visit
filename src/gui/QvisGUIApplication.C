@@ -50,6 +50,7 @@
 #include <AnnotationObjectList.h>
 #include <AppearanceAttributes.h>
 #include <HostProfile.h>
+#include <GlobalAttributes.h>
 #include <GlobalLineoutAttributes.h>
 #include <InteractorAttributes.h>
 #include <MovieAttributes.h>
@@ -133,6 +134,7 @@
 #define SET_FILE_HIGHLIGHT_TAG 101
 #define LOAD_ACTIVESOURCE_TAG  102
 #define INTERPRETER_SYNC_TAG   103
+#define SAVE_MOVIE_SYNC_TAG    104
 
 #define WINDOW_FILE_SELECTION    0
 #define WINDOW_FILE_INFORMATION  1
@@ -949,6 +951,9 @@ QvisGUIApplication::Synchronize(int tag)
 //   Brad Whitlock, Fri May 6 11:17:04 PDT 2005
 //   Added a tag to make the interpreter execute some commands.
 //
+//   Brad Whitlock, Thu Feb 2 18:55:30 PST 2006
+//   Added a tag to open up the "Save movie" wizard.
+//
 // ****************************************************************************
 
 void
@@ -974,6 +979,10 @@ QvisGUIApplication::HandleSynchronize(int val)
     else if(val == INTERPRETER_SYNC_TAG)
     {
         QTimer::singleShot(10, interpreter, SLOT(ProcessCommands()));
+    }
+    else if(val == SAVE_MOVIE_SYNC_TAG)
+    {
+        QTimer::singleShot(10, this, SLOT(SaveMovieMain()));
     }
 }
 
@@ -6028,6 +6037,47 @@ MakeCodeSlashes(const QString &s)
 // Method: QvisGUIApplication::SaveMovie
 //
 // Purpose: 
+//   This is a Qt slot function that gets the current vis window size and
+//   initiates a set of events that eventually calls the SendMovieMain 
+//   slot, which opens the Save movie wizard.
+//
+// Notes:      The code to stimulate the viewer to send its window size should
+//             be replaced with a new RPC that does the job.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb 2 18:58:55 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::SaveMovie()
+{
+    // Stimulate the viewer to send back its current window size so we'll have
+    // it available for the Save movie wizard.
+    const GlobalAttributes *globalAtts = viewer->GetGlobalAttributes();
+    const intVector &winids = globalAtts->GetWindows();
+    int winid = globalAtts->GetActiveWindow() + 1;
+    for(int i = 0; i < winids.size(); ++i)
+    {
+        if(winids[i] == winid)
+        {
+            debug5 << "QvisGUIApplication::SaveMovie: CREATE A NEW RPC TO "
+                      "SEND BACK THE WINDOW INFO!" << endl;
+            viewer->SetActiveWindow(winid);
+            break;
+        }
+    }
+    
+    // Activate the Save movie wizard when the sync is complete.
+    Synchronize(SAVE_MOVIE_SYNC_TAG);
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::SaveMovieMain
+//
+// Purpose: 
 //   This is Qt slot function that opens the "Save movie" wizard and leads 
 //   the user through setting various movie options.
 //
@@ -6040,10 +6090,15 @@ MakeCodeSlashes(const QString &s)
 //   so we don't have to put code in the viewer to close the dialog if the
 //   CLI can't be launched.
 //
+//   Brad Whitlock, Thu Feb 2 18:57:19 PST 2006
+//   I renamed the method and added code to set the default movie size into
+//   the movie wizard so we have a good value for the current window size when
+//   we tell the wizard to use the current window size.
+//
 // ****************************************************************************
 
 void
-QvisGUIApplication::SaveMovie()
+QvisGUIApplication::SaveMovieMain()
 {
     MovieAttributes *movieAtts = viewer->GetMovieAttributes();
 
@@ -6059,9 +6114,13 @@ QvisGUIApplication::SaveMovie()
     {
         saveMovieWizard = new QvisSaveMovieWizard(movieAtts,
             mainWin, "Save movie wizard");
+        saveMovieWizard->SetDefaultMovieSize(cw, ch);
     }
     else
+    {
+        saveMovieWizard->SetDefaultMovieSize(cw, ch);
         saveMovieWizard->UpdateAttributes();
+    }
 
     // Execute the save movie wizard to gather the requirements for the movie.
     if(saveMovieWizard->Exec() == QDialog::Accepted)

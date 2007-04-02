@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2001
+#                            Copyright 2000 - 2006
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -44,7 +44,7 @@
 
 CPPFLAGS=@CPPFLAGS@ @SILO_INCLUDE@ -I$(TOPDIR)/include/visit
 
-LIBS=@SILO_LIB@ @LIBS@
+LIBS=$(SILO_LIB) @LIBS@
 LIBDEP=
 
 ##
