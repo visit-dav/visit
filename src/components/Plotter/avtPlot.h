@@ -22,6 +22,7 @@
 
 #include <vector>
 
+class     avtCondenseDatasetFilter;
 class     avtDatasetToDatasetFilter;
 class     avtSmoothPolyDataFilter;
 class     avtVertexNormalsFilter;
@@ -236,7 +237,7 @@ class PLOTTER_API avtPlot
     avtTheater                 theater;
     avtBehavior_p              behavior;
     avtDrawer                 *drawer;
-    avtDatasetToDatasetFilter *condenseDatasetFilter;
+    avtCondenseDatasetFilter  *condenseDatasetFilter;
     avtDatasetToDatasetFilter *ghostZoneAndFacelistFilter;
     avtDatasetToDatasetFilter *compactTreeFilter;
     avtDatasetToDatasetFilter *currentExtentFilter;

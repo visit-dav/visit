@@ -839,6 +839,11 @@ avtPlot::CombinedExecute(avtDataObject_p input, avtPipelineSpecification_p spec,
 //    Defer more decisions to the vertex normals filter, since it has more
 //    information.
 //
+//    Hank Childs, Tue Jun 14 18:17:02 PDT 2005
+//    Always do the relevant points when we have point meshes, since the
+//    glypher glyphs the points in the point list, not the vertices in the
+//    cell list.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -873,6 +878,8 @@ avtPlot::ReduceGeometry(avtDataObject_p curDS)
     }
 
     condenseDatasetFilter->SetInput(rv);
+    if (atts.GetTopologicalDimension() == 0)
+        condenseDatasetFilter->BypassHeuristic(true);
     rv = condenseDatasetFilter->GetOutput();
 
     //

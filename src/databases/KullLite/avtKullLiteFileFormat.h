@@ -41,6 +41,9 @@ class vtkUnstructuredGrid;
 //    Hank Childs, Mon Jul 26 08:59:40 PDT 2004
 //    Add support for mesh tags.
 //
+//    Hank Childs, Tue Jun 14 16:31:33 PDT 2005
+//    Add support for IsRZ.
+//
 // ****************************************************************************
 
 class avtKullLiteFileFormat : public avtSTMDFileFormat
@@ -105,6 +108,7 @@ class avtKullLiteFileFormat : public avtSTMDFileFormat
     void          ReadInMaterialName(int);
     bool          ReadMeshFromFile(void);
     bool          GetMeshDimension(void);
+    bool          IsRZ(void);
 
     bool          ClassifyAndAdd2DZone(pdb_mesh2d *, int, 
                                        vtkUnstructuredGrid *);
