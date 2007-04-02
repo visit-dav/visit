@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+  <Plugin name="SimV1Writer" type="database" label="SimulationWriter" version="1.0" enabled="true" mdspecificcode="true" onlyengine="false" noengine="false" dbtype="STMD" haswriter="true" hasoptions="false">
+    <CXXFLAGS>
+      -I../SimV1
+    </CXXFLAGS>
+    <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>

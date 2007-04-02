@@ -61,7 +61,7 @@ DrawPlots()
 
 # Write the clipped data back to the simulation as a mesh called "OBJ".
 e = ExportDBAttributes()
-e.db_type = "SimV1"
+e.db_type = "SimV1Writer"
 e.variables = ()
 e.filename = "OBJ"
 ExportDatabase(e)

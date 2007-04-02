@@ -47,7 +47,7 @@ F77FLAGS=-I$(TOPDIR)/include/visit
 FLIBS=@LIBS@ -lsimf -lsim
 BUILD_FORTRAN=allfortran
 
-PARLIBS=-lmpich
+PARLIBS=@MPI_LIBS@
 
 # LIBSIM examples
 SIM1=sim1
@@ -136,6 +136,14 @@ OBJ_SCALAR=scalar.o
 FSCALAR=fscalar
 FOBJ_SCALAR=fscalar.o
 
+# Writeback demonstration
+WRITEBACK=writeback
+WRITEBACK_PAR=writeback_par
+SRC_WRITEBACK=writeback.c
+OBJ_WRITEBACK=$(SRC_WRITEBACK:.c=.o)
+OBJ_WRITEBACK_PAR=$(SRC_WRITEBACK:.c=_par.o)
+
+.SUFFIXES: _par.o
 
 all: allc @BUILD_FORTRAN@
 
@@ -143,7 +151,7 @@ allc: libsimdemo metadata meshsims scalarsims
 
 allfortran: flibsimdemo fmetadata fmeshsims fscalarsims
 
-libsimdemo: $(SIM1) $(SIM2) $(SIM2P) $(SIM3) $(SIM3P) $(SIM4) $(SIM4P)
+libsimdemo: $(SIM1) $(SIM2) $(SIM2P) $(SIM3) $(SIM3P) $(SIM4) $(SIM4P) $(WRITEBACK) $(WRITEBACK_PAR)
 
 flibsimdemo: $(FSIM4)
 
@@ -166,6 +174,8 @@ cleanlibsim:
 	$(RM) $(SIM2) $(OBJ_SIM2) $(SIM2P) $(OBJ_SIM2P)
 	$(RM) $(SIM3) $(OBJ_SIM3) $(SIM3P) $(OBJ_SIM3P)
 	$(RM) $(SIM4) $(OBJ_SIM4) $(SIM4P) $(OBJ_SIM4P) $(FSIM4) $(FOBJ_SIM4)
+	$(RM) $(WRITEBACK) $(OBJ_WRITEBACK)
+	$(RM) $(WRITEBACK_PAR) $(OBJ_WRITEBACK_PAR)
 
 cleanmetadata:
 	$(RM) $(SIM5) $(OBJ_SIM5) $(FSIM5) $(FOBJ_SIM5)
@@ -282,5 +292,11 @@ $(SCALAR): $(OBJ_SCALAR)
 $(FSCALAR): $(FOBJ_SCALAR)
 	$(F77) -o $(FSCALAR) $(FOBJ_SCALAR) $(LDFLAGS) $(FLIBS)
 
+
+$(WRITEBACK): $(OBJ_WRITEBACK)
+	$(CC) -o $(WRITEBACK) $(OBJ_WRITEBACK) $(LDFLAGS) $(LIBS)
+
+$(WRITEBACK_PAR): $(OBJ_WRITEBACK_PAR)
+	$(CC) -o $(WRITEBACK_PAR) $(OBJ_WRITEBACK_PAR) $(LDFLAGS) $(LIBS) $(PARLIBS)
 
 @TARGETS@

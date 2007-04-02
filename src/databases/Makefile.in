@@ -236,6 +236,9 @@
 #   Hank Childs, Fri Sep  8 14:33:44 PDT 2006
 #   Added the Fluent reader (for Brian Dotson and Terry Jordan).
 #
+#   Brad Whitlock, Thu Nov 9 14:00:40 PST 2006
+#   Added SimV1Writer plugin.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -286,6 +289,7 @@ REQUIRED=\
  Shapefile \
  Silo \
  SimV1 \
+ SimV1Writer \
  Spheral \
  TFT \
  TSurf \

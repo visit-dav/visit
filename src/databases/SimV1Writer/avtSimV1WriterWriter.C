@@ -34,7 +34,7 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#include <avtSimV1Writer.h>
+#include <avtSimV1WriterWriter.h>
 
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
@@ -98,7 +98,7 @@ static void FreeDataArray(VisIt_DataArray &da)
 }
 
 // ****************************************************************************
-// Method: avtSimV1Writer::avtSimV1Writer
+// Method: avtSimV1WriterWriter::avtSimV1WriterWriter
 //
 // Purpose: 
 //   Constructor
@@ -110,7 +110,7 @@ static void FreeDataArray(VisIt_DataArray &da)
 //   
 // ****************************************************************************
 
-avtSimV1Writer::avtSimV1Writer() : avtDatabaseWriter(), objectName(), varList()
+avtSimV1WriterWriter::avtSimV1WriterWriter() : avtDatabaseWriter(), objectName(), varList()
 {
     metadata = 0;
 
@@ -123,7 +123,7 @@ avtSimV1Writer::avtSimV1Writer() : avtDatabaseWriter(), objectName(), varList()
 }
 
 // ****************************************************************************
-// Method: avtSimV1Writer::~avtSimV1Writer
+// Method: avtSimV1WriterWriter::~avtSimV1WriterWriter
 //
 // Purpose: 
 //   Destructor.
@@ -135,12 +135,12 @@ avtSimV1Writer::avtSimV1Writer() : avtDatabaseWriter(), objectName(), varList()
 //   
 // ****************************************************************************
 
-avtSimV1Writer::~avtSimV1Writer()
+avtSimV1WriterWriter::~avtSimV1WriterWriter()
 {
 }
 
 // ****************************************************************************
-// Method: avtSimV1Writer::OpenFile
+// Method: avtSimV1WriterWriter::OpenFile
 //
 // Purpose: 
 //   This method is called when we want to begin data export.
@@ -157,7 +157,7 @@ avtSimV1Writer::~avtSimV1Writer()
 // ****************************************************************************
 
 void
-avtSimV1Writer::OpenFile(const std::string &objName)
+avtSimV1WriterWriter::OpenFile(const std::string &objName)
 {
     objectName = objName;
 
@@ -170,13 +170,13 @@ avtSimV1Writer::OpenFile(const std::string &objName)
     if(objectName.size() == 0) 
         objectName = "mesh";
 
-    debug1 << "avtSimV1Writer::OpenFile(\"" << objName.c_str() << "\")\n";
+    debug1 << "avtSimV1WriterWriter::OpenFile(\"" << objName.c_str() << "\")\n";
     if(cb.WriteBegin != 0)
         cb.WriteBegin(objName.c_str());
 }
 
 // ****************************************************************************
-// Method: avtSimV1Writer::WriteHeaders
+// Method: avtSimV1WriterWriter::WriteHeaders
 //
 // Purpose: 
 //   This method is called when the caller wants to write out a table of 
@@ -196,12 +196,12 @@ avtSimV1Writer::OpenFile(const std::string &objName)
 // ****************************************************************************
 
 void
-avtSimV1Writer::WriteHeaders(const avtDatabaseMetaData *md,
+avtSimV1WriterWriter::WriteHeaders(const avtDatabaseMetaData *md,
     std::vector<std::string> &scalars,
     std::vector<std::string> &vectors,
     std::vector<std::string> &)
 {
-    debug1 << "avtSimV1Writer::WriteHeaders(...)\n";
+    debug1 << "avtSimV1WriterWriter::WriteHeaders(...)\n";
     varList = scalars;
     for(int i = 0; i < vectors.size(); ++i)
         varList.push_back(vectors[i]);
@@ -209,7 +209,7 @@ avtSimV1Writer::WriteHeaders(const avtDatabaseMetaData *md,
 }
 
 // ****************************************************************************
-// Method: avtSimV1Writer::WriteChunk
+// Method: avtSimV1WriterWriter::WriteChunk
 //
 // Purpose: 
 //   This method is called to export one VTK dataset to the application.
@@ -230,7 +230,7 @@ avtSimV1Writer::WriteHeaders(const avtDatabaseMetaData *md,
 // ****************************************************************************
 
 void
-avtSimV1Writer::WriteChunk(vtkDataSet *ds, int chunk)
+avtSimV1WriterWriter::WriteChunk(vtkDataSet *ds, int chunk)
 {
     //
     // Assemble mesh metadata using the data attributes and the metadata.
@@ -303,7 +303,7 @@ avtSimV1Writer::WriteChunk(vtkDataSet *ds, int chunk)
 }
 
 // ****************************************************************************
-// Method: avtSimV1Writer::CloseFile
+// Method: avtSimV1WriterWriter::CloseFile
 //
 // Purpose: 
 //   This method is called when the export is completed.
@@ -318,15 +318,15 @@ avtSimV1Writer::WriteChunk(vtkDataSet *ds, int chunk)
 // ****************************************************************************
 
 void
-avtSimV1Writer::CloseFile(void)
+avtSimV1WriterWriter::CloseFile(void)
 {
-    debug1 << "avtSimV1Writer::CloseFile()\n";
+    debug1 << "avtSimV1WriterWriter::CloseFile()\n";
     if(cb.WriteEnd != 0)
         cb.WriteEnd(objectName.c_str());
 }
 
 // ****************************************************************************
-// Method: avtSimV1Writer::WriteCurvilinearMesh
+// Method: avtSimV1WriterWriter::WriteCurvilinearMesh
 //
 // Purpose: 
 //   Converts a VTK dataset to a SimV1 curvilinear mesh and passes it to the
@@ -345,10 +345,10 @@ avtSimV1Writer::CloseFile(void)
 // ****************************************************************************
 
 void
-avtSimV1Writer::WriteCurvilinearMesh(vtkStructuredGrid *ds, int chunk,
+avtSimV1WriterWriter::WriteCurvilinearMesh(vtkStructuredGrid *ds, int chunk,
     VisIt_MeshMetaData *vmmd)
 {
-    debug1 << "avtSimV1Writer::WriteCurvilinearMesh(chunk=" << chunk << ")\n";
+    debug1 << "avtSimV1WriterWriter::WriteCurvilinearMesh(chunk=" << chunk << ")\n";
 
     // Set the mesh type in the sim1 metadata.
     vmmd->meshType = VISIT_MESHTYPE_CURVILINEAR;
@@ -437,7 +437,7 @@ avtSimV1Writer::WriteCurvilinearMesh(vtkStructuredGrid *ds, int chunk,
 }
 
 // ****************************************************************************
-// Method: avtSimV1Writer::WriteRectilinearMesh
+// Method: avtSimV1WriterWriter::WriteRectilinearMesh
 //
 // Purpose: 
 //   Converts a VTK dataset to a SimV1 rectilinear mesh and passes it to the
@@ -456,10 +456,10 @@ avtSimV1Writer::WriteCurvilinearMesh(vtkStructuredGrid *ds, int chunk,
 // ****************************************************************************
 
 void
-avtSimV1Writer::WriteRectilinearMesh(vtkRectilinearGrid *ds, int chunk, 
+avtSimV1WriterWriter::WriteRectilinearMesh(vtkRectilinearGrid *ds, int chunk, 
     VisIt_MeshMetaData *vmmd)
 {
-    debug1 << "avtSimV1Writer::WriteRectilinearMesh(chunk=" << chunk << ")\n";
+    debug1 << "avtSimV1WriterWriter::WriteRectilinearMesh(chunk=" << chunk << ")\n";
 
     // Set the mesh type in the sim1 metadata.
     vmmd->meshType = VISIT_MESHTYPE_RECTILINEAR;
@@ -535,7 +535,7 @@ avtSimV1Writer::WriteRectilinearMesh(vtkRectilinearGrid *ds, int chunk,
 }
 
 // ****************************************************************************
-// Method: avtSimV1Writer::WriteUnstructuredMesh
+// Method: avtSimV1WriterWriter::WriteUnstructuredMesh
 //
 // Purpose: 
 //   Converts a VTK dataset to a SimV1 unstructured mesh of a point mesh and 
@@ -554,10 +554,10 @@ avtSimV1Writer::WriteRectilinearMesh(vtkRectilinearGrid *ds, int chunk,
 // ****************************************************************************
 
 void
-avtSimV1Writer::WriteUnstructuredMesh(vtkUnstructuredGrid *ds, int chunk,
+avtSimV1WriterWriter::WriteUnstructuredMesh(vtkUnstructuredGrid *ds, int chunk,
     VisIt_MeshMetaData *vmmd)
 {
-    const char *mName = "avtSimV1Writer::WriteUnstructuredMesh: ";
+    const char *mName = "avtSimV1WriterWriter::WriteUnstructuredMesh: ";
     debug1 << mName << "chunk=" << chunk << ")\n";
 
     // The largest VTK cell type number is currently 67.
@@ -780,7 +780,7 @@ avtSimV1Writer::WriteUnstructuredMesh(vtkUnstructuredGrid *ds, int chunk,
 }
 
 // ****************************************************************************
-// Method: avtSimV1Writer::WritePolyDataMesh
+// Method: avtSimV1WriterWriter::WritePolyDataMesh
 //
 // Purpose: 
 //   Converts a VTK dataset to a SimV1 point mesh or an unstructured mesh
@@ -799,9 +799,9 @@ avtSimV1Writer::WriteUnstructuredMesh(vtkUnstructuredGrid *ds, int chunk,
 // ****************************************************************************
 
 void
-avtSimV1Writer::WritePolyDataMesh(vtkPolyData *ds, int chunk, VisIt_MeshMetaData *vmmd)
+avtSimV1WriterWriter::WritePolyDataMesh(vtkPolyData *ds, int chunk, VisIt_MeshMetaData *vmmd)
 {
-    debug1 << "avtSimV1Writer::WritePolyDataMesh(chunk=" << chunk << ")\n";
+    debug1 << "avtSimV1WriterWriter::WritePolyDataMesh(chunk=" << chunk << ")\n";
 
     // Build up an unstructured mesh from the types of data in the polydata.
     vtkIdType pts[100];
@@ -999,7 +999,7 @@ avtSimV1Writer::WritePolyDataMesh(vtkPolyData *ds, int chunk, VisIt_MeshMetaData
 }
 
 // ****************************************************************************
-// Method: avtSimV1Writer::WriteOneDataArray
+// Method: avtSimV1WriterWriter::WriteOneDataArray
 //
 // Purpose: 
 //   Transfers a VTK data array to the application.
@@ -1017,10 +1017,10 @@ avtSimV1Writer::WritePolyDataMesh(vtkPolyData *ds, int chunk, VisIt_MeshMetaData
 // ****************************************************************************
 
 void
-avtSimV1Writer::WriteOneDataArray(vtkDataArray *arr, const std::string &objectName,
+avtSimV1WriterWriter::WriteOneDataArray(vtkDataArray *arr, const std::string &objectName,
     int chunk, int cent)
 {
-    debug1 << "avtSimV1Writer::WriteOneDataArray(chunk=" << chunk 
+    debug1 << "avtSimV1WriterWriter::WriteOneDataArray(chunk=" << chunk 
            << ", name=\"" << arr->GetName() << "\")\n";
     int t = -1;
     if(arr->GetDataType() == VTK_CHAR)
@@ -1107,7 +1107,7 @@ ConditionalDataArrayCopy(T *in, int in_size, int ncomps, unsigned int out_size,
 }
 
 // ****************************************************************************
-// Method: avtSimV1Writer::WriteCellDataArrayConditionally
+// Method: avtSimV1WriterWriter::WriteCellDataArrayConditionally
 //
 // Purpose: 
 //   Creates a modified copy of the cell data and sends it to the application.
@@ -1127,10 +1127,10 @@ ConditionalDataArrayCopy(T *in, int in_size, int ncomps, unsigned int out_size,
 // ****************************************************************************
 
 void
-avtSimV1Writer::WriteCellDataArrayConditionally(vtkDataArray *arr,
+avtSimV1WriterWriter::WriteCellDataArrayConditionally(vtkDataArray *arr,
     const std::string &objectName, int chunk, const unsigned char *cellCopy)
 {
-    debug1 << "avtSimV1Writer::WriteOneCellDataArrayConditionally(chunk=" << chunk 
+    debug1 << "avtSimV1WriterWriter::WriteOneCellDataArrayConditionally(chunk=" << chunk 
            << ", name=\"" << arr->GetName() << "\")\n";
 
     // Sum up the size of the cellCopy array so we can size the array
@@ -1201,7 +1201,7 @@ avtSimV1Writer::WriteCellDataArrayConditionally(vtkDataArray *arr,
 }
 
 // ****************************************************************************
-// Method: avtSimV1Writer::WriteDataArrays
+// Method: avtSimV1WriterWriter::WriteDataArrays
 //
 // Purpose: 
 //   Sends all of the exported data arrays to the application.
@@ -1218,7 +1218,7 @@ avtSimV1Writer::WriteCellDataArrayConditionally(vtkDataArray *arr,
 // ****************************************************************************
 
 void
-avtSimV1Writer::WriteDataArrays(vtkDataSet *ds, int chunk)
+avtSimV1WriterWriter::WriteDataArrays(vtkDataSet *ds, int chunk)
 {
     if(cb.WriteDataArray != 0)
     {
@@ -1251,7 +1251,7 @@ avtSimV1Writer::WriteDataArrays(vtkDataSet *ds, int chunk)
 }
 
 // ****************************************************************************
-// Method: avtSimV1Writer::WriteDataArraysConditionally
+// Method: avtSimV1WriterWriter::WriteDataArraysConditionally
 //
 // Purpose: 
 //   Writes all of the exported arrays, taking special care of cell-centered
@@ -1271,7 +1271,7 @@ avtSimV1Writer::WriteDataArrays(vtkDataSet *ds, int chunk)
 // ****************************************************************************
 
 void
-avtSimV1Writer::WriteDataArraysConditionally(vtkDataSet *ds, int chunk,
+avtSimV1WriterWriter::WriteDataArraysConditionally(vtkDataSet *ds, int chunk,
     const unsigned char *cellCopy)
 {
     if(cb.WriteDataArray != 0)
