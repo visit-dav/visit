@@ -80,17 +80,17 @@ class QvisCracksClipperWindow : public QvisOperatorWindow
     void crack2VarChanged(const QString &);
     void crack3VarChanged(const QString &);
     void strainVarChanged(const QString &);
-    void useCrack1Changed(bool val);
-    void useCrack2Changed(bool val);
-    void useCrack3Changed(bool val);
+    void showCrack1Changed(bool val);
+    void showCrack2Changed(bool val);
+    void showCrack3Changed(bool val);
   private:
     QvisVariableButton *crack1Var;
     QvisVariableButton *crack2Var;
     QvisVariableButton *crack3Var;
     QvisVariableButton *strainVar;
-    QCheckBox *useCrack1;
-    QCheckBox *useCrack2;
-    QCheckBox *useCrack3;
+    QCheckBox *showCrack1;
+    QCheckBox *showCrack2;
+    QCheckBox *showCrack3;
     CracksClipperAttributes *atts;
 };
 

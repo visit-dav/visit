@@ -50,8 +50,9 @@ bool            PyCracksClipperAttributes_Check(PyObject *obj);
 CracksClipperAttributes *PyCracksClipperAttributes_FromPyObject(PyObject *obj);
 PyObject       *PyCracksClipperAttributes_NewPyObject();
 PyObject       *PyCracksClipperAttributes_WrapPyObject(const CracksClipperAttributes *attr);
-std::string     PyCracksClipperAttributes_GetLogString();
 void            PyCracksClipperAttributes_SetDefaults(const CracksClipperAttributes *atts);
+std::string     PyCracksClipperAttributes_GetLogString();
+std::string     PyCracksClipperAttributes_ToString(const CracksClipperAttributes *, const char *);
 
 #endif
 

@@ -573,8 +573,7 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
 
     vtkCellIntersections *cellIntersections = NULL;
     vtkGenericCell *cell;
-    double isect[3], pc[3], p1[3], t;
-    int sub;
+    double isect[3], p1[3], t;
     bool endPointInCell = false;
     if (!rgrid)
     {
@@ -606,9 +605,9 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
             // Check both directions of the line, because we don't want
             // to intersect only a node.
             if (cellIntersections->CellIntersectWithLine(cell, pt1, pt2, 
-                                        t, isect, pc, sub) &&
+                                        t, isect) &&
                 cellIntersections->CellIntersectWithLine(cell, pt2, pt1, 
-                                        t, isect2, pc, sub))
+                                        t, isect2))
             {
                 if (vtkVisItUtility::PointsEqual(isect, isect2))
                 {

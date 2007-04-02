@@ -64,12 +64,15 @@ class     avtVMetricVolume;
 //    Kathleen Bonnell, Wed Oct 23 15:11:44 PDT 2002 
 //    Add VerifyInput.
 //
+//    Kathleen Bonnell, Fri Sep 15 09:23:50 PDT 2006
+//    Added bool constructor arg.
+//
 // ****************************************************************************
 
 class QUERY_API avtTotalVolumeQuery : public avtSummationQuery
 {
   public:
-                         avtTotalVolumeQuery();
+                         avtTotalVolumeQuery(bool uvh = true);
     virtual             ~avtTotalVolumeQuery();
 
     virtual const char  *GetType(void)  

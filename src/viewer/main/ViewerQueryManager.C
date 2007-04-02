@@ -3335,6 +3335,10 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Dave Bremer, Fri Sep  8 11:32:33 PDT 2006
 //    Added line scan transform.
 //
+//    Kathleen Bonnell, Fri Sep 15 09:23:50 PDT 2006
+//    Added Volume2, which calculates hex-volumes differently than
+//    Volume (which uses verdict).
+//
 // ****************************************************************************
 
 void
@@ -3407,6 +3411,7 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("2D area", dq, mr, basic, 1, 0, qt);
     queryTypes->AddQuery("3D surface area", dq, mr, basic, 1, 0, qt);
     queryTypes->AddQuery("Volume", dq, mr, basic, 1, 0, qt);
+    queryTypes->AddQuery("Volume2", dq, mr, basic, 1, 0, qt);
     queryTypes->AddQuery("Moment of Inertia", dq, mr, basic, 1, 0, qo);
     queryTypes->AddQuery("Centroid", dq, mr, basic, 1, 0, qo);
     queryTypes->AddQuery("Localized Compactness Factor", dq, sr, basic, 1, 0, qt);

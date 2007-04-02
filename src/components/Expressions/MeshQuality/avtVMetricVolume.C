@@ -51,6 +51,8 @@
 #include <DebugStream.h>
 
 
+double d_hex_volume(double coords[][3]);
+
 inline
 void Copy3(double coords[][3], double a[], int i)
 {
@@ -66,11 +68,17 @@ void Copy3(double coords[][3], double a[], int i)
 //  Programmer: Hank Childs
 //  Creation:   August 31, 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Fri Sep 15 09:23:50 PDT 2006
+//    Added useVerdictHex flag, so that volume of hex can be calculated
+//    differently if desired.
+//
 // ****************************************************************************
 
 avtVMetricVolume::avtVMetricVolume()
 {
     useOnlyPositiveVolumes = false;
+    useVerdictHex = true;
 }
 
 
@@ -105,6 +113,9 @@ avtVMetricVolume::avtVMetricVolume()
 //    library.  Also fixed problem with wedge volumes where the tets we
 //    were using were inverted.
 //
+//    Kathleen Bonnell, Fri Sep 15 09:55:55 PDT 2006 
+//    Use different hex volume caluclation if useVerdictHex is false. 
+//    
 // ****************************************************************************
 
 double avtVMetricVolume::Metric (double coords[][3], int type)
@@ -116,7 +127,10 @@ double avtVMetricVolume::Metric (double coords[][3], int type)
       case VTK_VOXEL:   // Note that the verdict filter already swapped the
                         // coordinates to make a voxel be like a hex.
       case VTK_HEXAHEDRON:
-        rv = v_hex_volume(8,coords);
+        if (useVerdictHex)
+            rv = v_hex_volume(8,coords); 
+        else
+            rv = d_hex_volume(coords);
         break;
         
       case VTK_TETRA:
@@ -243,3 +257,31 @@ avtVMetricVolume::MetricForWholeMesh(vtkDataSet *ds, vtkDataArray *rv)
     delete [] Zdist;
 }
 
+double d_hex_volume(double coords[][3])
+{
+  double x[8];
+  double y[8];
+  double z[8];
+  for (int i = 0; i < 8; i++)
+  {
+      x[i] = coords[i][0];
+      y[i] = coords[i][1];
+      z[i] = coords[i][2];
+  }
+  double aj[9];
+  aj[0]=-x[0]-x[1]+x[2]+x[3]-x[4]-x[5]+x[6]+x[7];
+  aj[3]=-x[0]-x[1]-x[2]-x[3]+x[4]+x[5]+x[6]+x[7];
+  aj[6]=-x[0]+x[1]+x[2]-x[3]-x[4]+x[5]+x[6]-x[7];
+  aj[1]=-y[0]-y[1]+y[2]+y[3]-y[4]-y[5]+y[6]+y[7];
+  aj[4]=-y[0]-y[1]-y[2]-y[3]+y[4]+y[5]+y[6]+y[7];
+  aj[7]=-y[0]+y[1]+y[2]-y[3]-y[4]+y[5]+y[6]-y[7];
+  aj[2]=-z[0]-z[1]+z[2]+z[3]-z[4]-z[5]+z[6]+z[7];
+  aj[5]=-z[0]-z[1]-z[2]-z[3]+z[4]+z[5]+z[6]+z[7];
+  aj[8]=-z[0]+z[1]+z[2]-z[3]-z[4]+z[5]+z[6]-z[7];
+
+  double vol = aj[0]*(aj[4]*aj[8]-aj[5]*aj[7])
+             + aj[1]*(aj[5]*aj[6]-aj[3]*aj[8])
+             + aj[2]*(aj[3]*aj[7]-aj[4]*aj[6]);
+  vol *= 0.0156250;
+  return vol;
+}

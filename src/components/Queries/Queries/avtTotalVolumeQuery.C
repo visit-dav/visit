@@ -61,9 +61,12 @@ using     std::string;
 //    Kathleen Bonnell, Fri Jul 11 16:06:59 PDT 2003
 //    Set units_append.
 //
+//    Kathleen Bonnell, Fri Sep 15 09:23:50 PDT 2006
+//    Added bool constructor arg, passed to avtVMetricVolume.
+//
 // ****************************************************************************
 
-avtTotalVolumeQuery::avtTotalVolumeQuery() : avtSummationQuery()
+avtTotalVolumeQuery::avtTotalVolumeQuery(bool useVerdictHex) : avtSummationQuery()
 {
     string      varname = "volume";
     string      sum_type = "Volume";    
@@ -72,6 +75,7 @@ avtTotalVolumeQuery::avtTotalVolumeQuery() : avtSummationQuery()
     volume      = new avtVMetricVolume;
     volume->SetOutputVariableName(varname.c_str());
     volume->UseOnlyPositiveVolumes(true);
+    volume->UseVerdictHex(useVerdictHex);
 
     SetVariableName(varname);
     SetSumType(sum_type);

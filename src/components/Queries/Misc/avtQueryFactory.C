@@ -232,6 +232,10 @@ avtQueryFactory::Instance()
 //    Dave Bremer, Thu Sep  7 16:16:41 PDT 2006
 //    Added line scan transform query.
 //
+//    Kathleen Bonnell, Fri Sep 15 09:23:50 PDT 2006
+//    Added Volume2, which calculates hex-volumes differently than
+//    Volume (which uses verdict).
+//
 // ****************************************************************************
 
 
@@ -252,6 +256,10 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     else if (qname == "Volume")
     {
         query = new avtTotalVolumeQuery();
+    }
+    else if (qname == "Volume2")
+    {
+        query = new avtTotalVolumeQuery(false);
     }
     else if (qname == "Revolved volume")
     {

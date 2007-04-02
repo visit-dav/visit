@@ -40,13 +40,131 @@
 // ************************************************************************* //
 
 #include <avtCracksClipperFilter.h>
+#include <vtkCell.h>
 #include <vtkCellData.h>
 #include <vtkCracksClipper.h>
 #include <vtkCrackWidthFilter.h>
+#include <vtkExtractCells.h>
+#include <vtkFloatArray.h>
+#include <vtkIdList.h>
+#include <vtkPointData.h>
+#include <vtkPoints.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkAppendFilter.h>
+#include <vtkVisItUtility.h>
+
+#include <Expression.h>
+#include <ExpressionList.h>
+#include <ParsingExprList.h>
+
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
+
+
+// ****************************************************************************
+//  Method: GetCrackVar 
+//
+//  Purpose:  Convenience method to return a crack variable.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   Fri Oct 13 11:05:01 PDT 2006
+//
+// ****************************************************************************
+
+char * 
+GetCrackVar(int which, CracksClipperAttributes *a)
+{
+    if (0 == which) 
+        return const_cast<char*>(a->GetCrack1Var().c_str());
+    else if (1 == which) 
+        return const_cast<char*>(a->GetCrack2Var().c_str());
+    else 
+        return const_cast<char*>(a->GetCrack3Var().c_str());
+}
+
+
+// ****************************************************************************
+//  Method: GetShowCrack 
+//
+//  Purpose:  Convenience method to return the value of ShowCrack.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   Fri Oct 13 11:05:01 PDT 2006
+//
+// ****************************************************************************
+
+bool  
+GetShowCrack(int which, CracksClipperAttributes *a)
+{
+    if (0 == which) 
+        return a->GetShowCrack1();
+    else if (1 == which) 
+        return a->GetShowCrack2();
+    else 
+        return a->GetShowCrack3();
+}
+
+// ****************************************************************************
+//  Method: GetCrackWidth 
+//
+//  Purpose:  Convenience method to return the crack width.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   Fri Oct 13 11:05:01 PDT 2006
+//
+// ****************************************************************************
+
+char * 
+GetCrackWidth(int which)
+{
+    if (0 == which) 
+        return "avtCrack1Width";
+    else if (1 == which) 
+        return "avtCrack2Width";
+    else 
+        return "avtCrack3Width";
+}
+
+
+// ****************************************************************************
+//  Method: GetCrackWidth 
+//
+//  Purpose:  Convenience method to create max-to-min odering of delta. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   Fri Oct 13 11:05:01 PDT 2006
+//
+// ****************************************************************************
+
+void 
+OrderThem2(double delta[3], int co[3])
+{
+  int min, mid, max;
+  if (delta[0] <= delta[1] && delta[0] <= delta[2])
+    min = 0; 
+  else if (delta[1] <= delta[0] && delta[1] <= delta[2])
+    min = 1; 
+  else 
+    min = 2; 
+
+  if (delta[0] >= delta[1] && delta[0] >= delta[2])
+    max = 0; 
+  else if (delta[1] >= delta[0] && delta[1] >= delta[2])
+    max = 1; 
+  else 
+    max = 2; 
+
+  if (min == 0)
+    mid = (max == 1 ? 2 : 1);    
+  else if (min == 1)
+    mid = (max == 2 ? 0 : 2);    
+  else 
+    mid = (max == 0 ? 1 : 0);    
+
+  co[0] = max;
+  co[1] = mid;
+  co[2] = min;
+}
 
 
 // ****************************************************************************
@@ -149,6 +267,8 @@ avtCracksClipperFilter::Equivalent(const AttributeGroup *a)
 //  Creation:   Thu Oct 13 08:17:36 PDT 2005
 //
 //  Modifications:
+//    Kathleen Bonnell, Fri Oct 13 11:05:01 PDT 2006
+//    RemoveCracks has been restructured, only called once now.
 //
 // ****************************************************************************
 
@@ -186,12 +306,9 @@ avtCracksClipperFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
     //
     vtkCrackWidthFilter *cwf = vtkCrackWidthFilter::New();
     cwf->SetInput(in_ds); 
-    if (atts.GetUseCrack1())
-      cwf->SetCrack1Var(atts.GetCrack1Var().c_str());
-    if (atts.GetUseCrack2())
-      cwf->SetCrack2Var(atts.GetCrack2Var().c_str());
-    if (atts.GetUseCrack3())
-      cwf->SetCrack3Var(atts.GetCrack3Var().c_str());
+    cwf->SetCrack1Var(atts.GetCrack1Var().c_str());
+    cwf->SetCrack2Var(atts.GetCrack2Var().c_str());
+    cwf->SetCrack3Var(atts.GetCrack3Var().c_str());
     cwf->SetStrainVar(atts.GetStrainVar().c_str());
     cwf->Update();
 
@@ -215,101 +332,19 @@ avtCracksClipperFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
         return rv;
     }
 
-    vtkDataSet *output[3] = {NULL, NULL, NULL};
-    if (needsProc[0]  && mw[0] > 0)
+    vtkDataSet *output = RemoveCracks(cwf->GetOutput());
+    if (output->GetNumberOfCells() <= 0)
     {
-        output[0] = RemoveCracks(cwf->GetOutput(), 0);
+        output->Delete();
+        output = NULL;
+        rv = NULL;
     }
-    if (needsProc[1]  && mw[1] > 0)
+    else 
     {
-        if (needsProc[0]  && mw[0] > 0)
-        {
-            output[1] = RemoveCracks(output[0], 1);
-            output[0]->Delete();
-            output[0] = NULL;
-        }
-        else 
-        {
-            output[1] = RemoveCracks(cwf->GetOutput(), 1);
-        }
-    }
-    if (needsProc[2]  && mw[2] > 0)
-    {
-        if (needsProc[1]  && mw[1] > 0)
-        {
-            output[2] = RemoveCracks(output[1], 2);
-            output[1]->Delete();
-            output[1] = NULL;
-        }
-        else if (needsProc[0]  && mw[0] > 0)
-        {
-            output[2] = RemoveCracks(output[0], 2);
-            output[0]->Delete();
-            output[0] = NULL;
-        }
-        else 
-        {
-            output[2] = RemoveCracks(cwf->GetOutput(), 2);
-        }
-    }
-
-    cwf->Delete();
-    if (output[2] != NULL)
-    {
-        if (output[2]->GetNumberOfCells() <= 0)
-        {
-            output[2]->Delete();
-            output[2] = NULL;
-            rv = NULL;
-        }
-        else
-        {
-            RemoveExtraArrays(output[2], true);
-            rv = output[2];
-            ManageMemory(output[2]);
-            output[2]->Delete();
-        }
-        defaultReturn->Delete();
-    }
-    else if (output[1] != NULL)
-    {
-        if (output[1]->GetNumberOfCells() <= 0)
-        {
-            output[1]->Delete();
-            output[1] = NULL;
-            rv = NULL; 
-        }
-        else
-        {
-            RemoveExtraArrays(output[1], true);
-            rv = output[1];
-            ManageMemory(output[1]);
-            output[1]->Delete();
-        }
-        defaultReturn->Delete();
-    }
-    else if (output[0] != NULL)
-    {
-        if (output[0]->GetNumberOfCells() <= 0)
-        {
-            output[0]->Delete();
-            output[0] = NULL;
-            rv = NULL;
-        }
-        else
-        {
-            RemoveExtraArrays(output[0], true);
-            rv = output[0];
-            ManageMemory(output[0]);
-            output[0]->Delete();
-        }
-        defaultReturn->Delete();
-    }
-    else
-    {
-        rv = defaultReturn;
-        ManageMemory(defaultReturn);
-        defaultReturn->Delete();
+        RemoveExtraArrays(output, true);
+        rv = output;
+        ManageMemory(output);
+        output->Delete();
     }
     return rv;
 }
@@ -331,6 +366,9 @@ avtCracksClipperFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
 //  Creation:   Thu Oct 13 08:17:36 PDT 2005
 //
 //  Modifications:
+//    Kathleen Bonnell, Fri Oct 13 11:05:01 PDT 2006
+//    Always request the secondary vars.  Added cracks_vol expression to
+//    secondary var list.
 //
 // ****************************************************************************
 
@@ -343,12 +381,23 @@ avtCracksClipperFilter::PerformRestriction(avtPipelineSpecification_p pspec)
     avtDataSpecification_p nds = new avtDataSpecification(ds->GetVariable(),
                 ds->GetTimestep(), ds->GetRestriction());
 
-    if (atts.GetUseCrack1())
-      nds->AddSecondaryVariable(atts.GetCrack1Var().c_str());
-    if (atts.GetUseCrack2())
-      nds->AddSecondaryVariable(atts.GetCrack2Var().c_str());
-    if (atts.GetUseCrack3())
-      nds->AddSecondaryVariable(atts.GetCrack3Var().c_str());
+    nds->AddSecondaryVariable(atts.GetCrack1Var().c_str());
+    nds->AddSecondaryVariable(atts.GetCrack2Var().c_str());
+    nds->AddSecondaryVariable(atts.GetCrack3Var().c_str());
+
+    avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
+
+    ExpressionList *elist = ParsingExprList::Instance()->GetList();
+    Expression *e = new Expression();
+
+    string edef = string("volume2(<") + data.GetMeshname() + string(">)");
+    e->SetName("cracks_vol");
+    e->SetDefinition(edef.c_str());
+    e->SetType(Expression::ScalarMeshVar);
+    elist->AddExpression(*e);
+    delete e;
+
+    nds->AddSecondaryVariable("cracks_vol");
 
     nds->AddSecondaryVariable(atts.GetStrainVar().c_str());
     avtPipelineSpecification_p rv = new avtPipelineSpecification(pspec, nds);
@@ -357,7 +406,6 @@ avtCracksClipperFilter::PerformRestriction(avtPipelineSpecification_p pspec)
     // Since this filter 'clips' the dataset, the zone and possibly
     // node numbers will be invalid, request them when needed.
     //
-    avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
     if (pspec->GetDataSpecification()->MayRequireZones() || 
         pspec->GetDataSpecification()->MayRequireNodes())
     {
@@ -455,6 +503,8 @@ avtCracksClipperFilter::PostExecute()
 //  Creation:   Thu Oct 13 08:17:36 PDT 2005
 // 
 //  Modifications:
+//    Kathleen Bonnell, Fri Oct 13 11:05:01 PDT 2006
+//    Reflect atts api change.
 //
 // ****************************************************************************
 
@@ -479,7 +529,7 @@ avtCracksClipperFilter::NeedsProcessing(vtkDataSet *ds, bool *np)
     for (i = 0; i < 3; i++)
         np[i] = false;
     vtkDataArray *cracks[3] = {NULL, NULL, NULL};
-    if (atts.GetUseCrack1())
+    if (atts.GetShowCrack1())
     {
         cracks[0] = ds->GetCellData()->GetArray(atts.GetCrack1Var().c_str());
         if (cracks[0] == NULL)
@@ -488,7 +538,7 @@ avtCracksClipperFilter::NeedsProcessing(vtkDataSet *ds, bool *np)
         } 
         np[0] = true;
     }
-    if (atts.GetUseCrack2())
+    if (atts.GetShowCrack2())
     {
         cracks[1] = ds->GetCellData()->GetArray(atts.GetCrack2Var().c_str());
         if (cracks[1] == NULL)
@@ -497,7 +547,7 @@ avtCracksClipperFilter::NeedsProcessing(vtkDataSet *ds, bool *np)
         } 
         np[1] = true;
     }
-    if (atts.GetUseCrack3())
+    if (atts.GetShowCrack3())
     {
         cracks[2] = ds->GetCellData()->GetArray(atts.GetCrack3Var().c_str());
         if (cracks[2] == NULL)
@@ -516,6 +566,7 @@ avtCracksClipperFilter::NeedsProcessing(vtkDataSet *ds, bool *np)
     // non-zero strain values for a given crack direction that will 
     // necessitate further processing?
     //
+
     int nc = strain->GetNumberOfTuples();
     int idx[3] = {0, 4, 8};
     float *s = (float*)strain->GetVoidPointer(0);
@@ -534,7 +585,6 @@ avtCracksClipperFilter::NeedsProcessing(vtkDataSet *ds, bool *np)
                 np[i] = true;
         }
     }
-
     return np[0] || np[1] || np[2];
 }
 
@@ -556,93 +606,176 @@ avtCracksClipperFilter::NeedsProcessing(vtkDataSet *ds, bool *np)
 //  Creation:   Thu Oct 13 08:17:36 PDT 2005
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Oct 12 16:04:38 PDT 2006
+//    Clip on a cell-by-cell basis, considering crack size and clipping
+//    with largest crack direction first in all cases.
 //
 // ****************************************************************************
 
 vtkDataSet *
-avtCracksClipperFilter::RemoveCracks(vtkDataSet *inds, int whichCrack)
+avtCracksClipperFilter::RemoveCracks(vtkDataSet *inds)
 {
+    vtkFloatArray *strain = (vtkFloatArray*)inds->GetCellData()->
+                             GetArray(atts.GetStrainVar().c_str());
+
+    int nc = inds->GetNumberOfCells(); 
+    char *centers = "avtCellCenters";
     char *crackvar;
     char *crackwidth;
-    char *centers = "avtCellCenters";
+    vtkAppendFilter *apd = vtkAppendFilter::New();
 
-    //
-    // Retrieve the correct variable names to be sent to the cracks clipper
-    //
-    if (whichCrack == 0)
+    vtkDataSet *dsToUse = inds->NewInstance();
+    dsToUse->ShallowCopy(inds);
+    double delta[3];
+    int cellId;
+    int processedCell[3] = {0, 0, 0};
+    vtkIdList *cellsToKeepIntact = vtkIdList::New();
+                       
+    for (int i = 0; i < nc; i++)
     {
-        crackvar = const_cast<char*>(atts.GetCrack1Var().c_str());
-        crackwidth = "avtCrack1Width";
-    }
-    else if (whichCrack == 1)
-    {
-        crackvar = const_cast<char*>(atts.GetCrack2Var().c_str());
-        crackwidth = "avtCrack2Width";
-    }
-    else // if (whichCrack == 2)
-    {
-        crackvar = const_cast<char*>(atts.GetCrack3Var().c_str());
-        crackwidth = "avtCrack3Width";
-    }
+        cellId = i;
+        delta[0] = strain->GetComponent(i, 0);
+        delta[1] = strain->GetComponent(i, 4);
+        delta[2] = strain->GetComponent(i, 8);
+    
+        if (delta[0] == 0. && delta[1] == 0. && delta[2] == 0.)
+        {
+            cellsToKeepIntact->InsertNextId(cellId);
+            continue;
+        }
 
+        
+        int crackOrder[3] = {0, 1, 2};
+        OrderThem2(delta, crackOrder);
+        bool first = true;
+        for (int j = 0; j < 3; j++)
+        {
+            int whichCrack = crackOrder[j];
+            processedCell[whichCrack] = 0;
+            if (!GetShowCrack(whichCrack, &atts) || delta[whichCrack] == 0)
+            {
+                continue;
+            }
+            crackvar = GetCrackVar(whichCrack, &atts);
+            crackwidth = GetCrackWidth(whichCrack);
 
-    //
-    //  Requires two clips in order to remove the 'crack'.
-    //
-    vtkDataSet *outds1 = vtkUnstructuredGrid::New();
+            if (first)
+                dsToUse->ShallowCopy(inds);
 
-    vtkCracksClipper *posClip = vtkCracksClipper::New();
-    posClip->SetUseOppositePlane(false);
-    posClip->SetInput(inds);
-    posClip->SetCrackDir(crackvar);
-    posClip->SetCrackWidth(crackwidth);
-    posClip->SetCellCenters(centers);
-    posClip->SetOutput((vtkUnstructuredGrid*)outds1);
-    posClip->Update();
-    posClip->Delete();
+            //
+            //  Requires two clips in order to remove the 'crack'.
+            //
+            vtkDataSet *outds1 = vtkUnstructuredGrid::New();
 
-    if (outds1->GetNumberOfCells() <= 0)
-    {
-        outds1->Delete();
-        outds1 = NULL;
-    }
+            vtkCracksClipper *posClip = vtkCracksClipper::New();
+            if (first)
+                posClip->SetCellList(&cellId, 1);
+            posClip->SetUseOppositePlane(false);
+            posClip->SetInput(dsToUse);
+            posClip->SetCrackDir(crackvar);
+            posClip->SetCrackWidth(crackwidth);
+            posClip->SetCellCenters(centers);
+            posClip->SetOutput((vtkUnstructuredGrid*)outds1);
+            posClip->Update();
+            posClip->Delete();
 
-    vtkDataSet *outds2 = vtkUnstructuredGrid::New();
+            if (outds1->GetNumberOfCells() <= 0)
+            {
+                outds1->Delete();
+                outds1 = NULL;
+            }
 
-    vtkCracksClipper *negClip = vtkCracksClipper::New();
-    negClip->SetUseOppositePlane(true);
-    negClip->SetInput(inds);
-    negClip->SetCrackDir(crackvar);
-    negClip->SetCrackWidth(crackwidth);
-    negClip->SetCellCenters(centers);
-    negClip->SetOutput((vtkUnstructuredGrid*)outds2);
-    negClip->Update();
-    negClip->Delete();
+            vtkDataSet *outds2 = vtkUnstructuredGrid::New();
 
-    if (outds2->GetNumberOfCells() <= 0)
-    {
-       outds2->Delete();
-       outds2 = NULL;
-    }
+            vtkCracksClipper *negClip = vtkCracksClipper::New();
+            if (first)
+                negClip->SetCellList(&cellId, 1);
+            negClip->SetUseOppositePlane(true);
+            negClip->SetInput(dsToUse);
+            negClip->SetCrackDir(crackvar);
+            negClip->SetCrackWidth(crackwidth);
+            negClip->SetCellCenters(centers);
+            negClip->SetOutput((vtkUnstructuredGrid*)outds2);
+            negClip->Update();
+            negClip->Delete();
+
+            first = false;
+            if (outds2->GetNumberOfCells() <= 0)
+            {
+               outds2->Delete();
+               outds2 = NULL;
+            }
  
-    if (outds1 == NULL)
+            if (outds1 == NULL && outds2 == NULL)
+            {
+                processedCell[whichCrack] = 1;
+                continue;
+            } 
+            processedCell[whichCrack] = 2;
+            if (outds1 == NULL)
+            {
+                dsToUse->ShallowCopy(outds2);
+                outds2->Delete();
+            } 
+            else if (outds2 == NULL)
+            {
+                dsToUse->ShallowCopy(outds1);
+                outds1->Delete();
+            } 
+            else
+            {
+                vtkAppendFilter *append = vtkAppendFilter::New();
+                append->AddInput(outds1);
+                append->AddInput(outds2);
+                append->GetOutput()->Update();
+                dsToUse->ShallowCopy(append->GetOutput());
+                outds1->Delete();
+                outds2->Delete();
+                append->Delete();
+            }
+        }
+        if (processedCell[0] == 0 && 
+            processedCell[1] == 0 && processedCell[2] == 0)
+        {
+            cellsToKeepIntact->InsertNextId(cellId);
+            continue;
+        }
+        else if (!(processedCell[0] == 1 &&
+                   processedCell[1] == 1 &&
+                   processedCell[2] == 1))
+        {
+            if (i % 5 == 0 && apd->GetTotalNumberOfInputConnections() > 1)
+            {
+                apd->GetOutput()->Update();
+                dsToUse->ShallowCopy(apd->GetOutput());
+                apd->Delete();
+                apd = vtkAppendFilter::New();
+            }
+            apd->AddInput(dsToUse);
+        }
+    }
+    if (nc == cellsToKeepIntact->GetNumberOfIds())
     {
-        return outds2; 
-    } 
-    if (outds2 == NULL)
+        dsToUse->Delete();
+        cellsToKeepIntact->Delete();
+        apd->Delete();
+        return inds;
+    }
+    vtkExtractCells *extract = vtkExtractCells::New(); 
+    if (cellsToKeepIntact->GetNumberOfIds() > 0)
     {
-        return outds1; 
-    } 
-    vtkAppendFilter *append = vtkAppendFilter::New();
-    append->AddInput(outds1);
-    append->AddInput(outds2);
-    append->GetOutput()->Update();
-
-    vtkDataSet *ds = outds1->NewInstance();
-    ds->ShallowCopy(append->GetOutput());
-    outds1->Delete();
-    outds2->Delete();
-    append->Delete();
+        extract->SetInput(inds);
+        extract->SetCellList(cellsToKeepIntact);
+        apd->AddInput(extract->GetOutput());
+    }
+    
+    apd->GetOutput()->Update();
+    vtkDataSet *ds = apd->GetOutput()->NewInstance();
+    ds->ShallowCopy(apd->GetOutput());
+    apd->Delete();
+    extract->Delete();
+    cellsToKeepIntact->Delete();
+    dsToUse->Delete();
     return ds;
 }
 
@@ -663,6 +796,8 @@ avtCracksClipperFilter::RemoveCracks(vtkDataSet *inds, int whichCrack)
 //  Creation:   Thu Oct 13 08:17:36 PDT 2005
 //
 //  Modifications:
+//    Kathleen Bonnell, Fri Oct 13 11:05:01 PDT 2006
+//    Remove cracks_vol var.
 //
 // ****************************************************************************
 
@@ -681,7 +816,6 @@ avtCracksClipperFilter::RemoveExtraArrays(vtkDataSet *ds, bool all)
         ds->GetCellData()->RemoveArray("avtCrack1Width");
         ds->GetCellData()->RemoveArray("avtCrack2Width");
         ds->GetCellData()->RemoveArray("avtCrack3Width");
+        ds->GetCellData()->RemoveArray("cracks_vol");
     } 
 }
-
-
