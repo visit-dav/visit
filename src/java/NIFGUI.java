@@ -26,7 +26,9 @@ import llnl.visit.plots.CurveAttributes;
 // Creation:   Fri Apr 8 08:51:58 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jun 6 17:29:15 PST 2005
+//   I made it use GetDataPath to locate some default data.
+//
 // ****************************************************************************
 
 public class NIFGUI extends JPanel implements Runnable, ActionListener, ItemListener
@@ -66,7 +68,7 @@ public class NIFGUI extends JPanel implements Runnable, ActionListener, ItemList
         visitLaunched = false;
         visitVisible = false;
         visitBinPath = new String("/usr/gapps/visit/bin");
-        visitDatabase = new String("/usr/gapps/visit/data/noise.silo");
+        visitDatabase = new String(viewer.GetDataPath() + "noise.silo");
         visitPlotVar  = new String("hgslice");
         visitImageWidth = 300;
         visitImageHeight = 300;

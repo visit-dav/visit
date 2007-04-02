@@ -861,6 +861,9 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Added support for passing the variable units back up to VisIt via
 //    the metadata. I also added support for labels and a database comment.
 //
+//    Jeremy Meredith, Tue Jun  7 08:32:46 PDT 2005
+//    Added support for "EMPTY" domains in multi-objects.
+//
 // ****************************************************************************
 
 void
@@ -1059,16 +1062,27 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             EXCEPTION1(InvalidVariableException, multimesh_names[i]);
         RegisterDomainDirs(mm->meshnames, mm->nblocks, dirname);
 
+        // Find the first non-empty mesh
+        int meshnum = 0;
+        while (string(mm->meshnames[meshnum]) == "EMPTY")
+        {
+            meshnum++;
+            if (meshnum >= mm->nblocks)
+            {
+                EXCEPTION1(InvalidVariableException,  multimesh_names[i]);
+            }
+        }
+
         int silo_mt;
         bool valid_var = true;
         TRY
         {
-            silo_mt = GetMeshtype(dbfile, mm->meshnames[0]);
+            silo_mt = GetMeshtype(dbfile, mm->meshnames[meshnum]);
         }
         CATCH(SiloException)
         {
             debug1 << "Giving up on mesh \"" << multimesh_names[i] 
-                   << "\" since its first block (" << mm->meshnames[0]
+                   << "\" since its first non-empty block (" << mm->meshnames[meshnum]
                    << ") is invalid." << endl;
             valid_var = false;
         }
@@ -1087,11 +1101,11 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                 mt = AVT_UNSTRUCTURED_MESH;
                 char   *realvar;
                 DBfile *correctFile = dbfile;
-                DetermineFileAndDirectory(mm->meshnames[0], correctFile,
+                DetermineFileAndDirectory(mm->meshnames[meshnum], correctFile,
                                           realvar);
                 DBucdmesh *um = DBGetUcdmesh(correctFile, realvar);
                 if (um == NULL)
-                    EXCEPTION1(InvalidVariableException, mm->meshnames[0]);
+                    EXCEPTION1(InvalidVariableException, mm->meshnames[meshnum]);
                 ndims = um->ndims;
                 tdims = ndims; 
                 cellOrigin = um->origin;
@@ -1117,11 +1131,11 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                 mt = AVT_POINT_MESH;
                 char   *realvar;
                 DBfile *correctFile = dbfile;
-                DetermineFileAndDirectory(mm->meshnames[0], correctFile,
+                DetermineFileAndDirectory(mm->meshnames[meshnum], correctFile,
                                           realvar);
                 DBpointmesh *pm = DBGetPointmesh(correctFile, realvar);
                 if (pm == NULL)
-                    EXCEPTION1(InvalidVariableException, mm->meshnames[0]);
+                    EXCEPTION1(InvalidVariableException, mm->meshnames[meshnum]);
                 ndims = pm->ndims;
                 tdims = 0;
                 cellOrigin = pm->origin;
@@ -1147,11 +1161,11 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                 mt = AVT_RECTILINEAR_MESH;
                 char   *realvar;
                 DBfile *correctFile = dbfile;
-                DetermineFileAndDirectory(mm->meshnames[0], correctFile,
+                DetermineFileAndDirectory(mm->meshnames[meshnum], correctFile,
                                           realvar);
                 DBquadmesh *qm = DBGetQuadmesh(correctFile, realvar);
                 if (qm == NULL)
-                    EXCEPTION1(InvalidVariableException, mm->meshnames[0]);
+                    EXCEPTION1(InvalidVariableException, mm->meshnames[meshnum]);
                 ndims = qm->ndims;
                 tdims = ndims;
                 cellOrigin = qm->origin;
@@ -1177,11 +1191,11 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                 mt = AVT_CURVILINEAR_MESH;
                 char   *realvar;
                 DBfile *correctFile = dbfile;
-                DetermineFileAndDirectory(mm->meshnames[0], correctFile,
+                DetermineFileAndDirectory(mm->meshnames[meshnum], correctFile,
                                           realvar);
                 DBquadmesh *qm = DBGetQuadmesh(correctFile, realvar);
                 if (qm == NULL)
-                    EXCEPTION1(InvalidVariableException, mm->meshnames[0]);
+                    EXCEPTION1(InvalidVariableException, mm->meshnames[meshnum]);
                 ndims = qm->ndims;
                 tdims = ndims; 
                 cellOrigin = qm->origin;
@@ -1232,7 +1246,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         // Store off the important info about this multimesh
         // so we can match other multi-objects to it later
         actualMeshName.push_back(name_w_dir);
-        firstSubMesh.push_back(mm->meshnames[0]);
+        firstSubMesh.push_back(mm->meshnames[meshnum]);
         blocksForMesh.push_back(mm->nblocks);
         allSubMeshDirs.push_back(vector<string>());
         for (int j=0; j<mm->nblocks; j++)
@@ -1437,8 +1451,21 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         DBmultivar *mv = GetMultivar(dirname, multivar_names[i]);
         if (mv == NULL)
             EXCEPTION1(InvalidVariableException, multivar_names[i]);
+
+        // Find the first non-empty mesh
+        int meshnum = 0;
+        while (string(mv->varnames[meshnum]) == "EMPTY")
+        {
+            meshnum++;
+            if (meshnum >= mv->nvars)
+            {
+                EXCEPTION1(InvalidVariableException,  multivar_names[i]);
+            }
+        }
+
         string meshname;
         bool valid_var = true;
+
         TRY
         {
             // NOTE: There is an explicit assumption that the corresponding
@@ -1455,7 +1482,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         CATCH(SiloException)
         {
             debug1 << "Giving up on var \"" << multivar_names[i] 
-                   << "\" since its first block (" << mv->varnames[0]
+                   << "\" since its first non-empty block (" << mv->varnames[meshnum]
                    << ") is invalid." << endl;
             valid_var = false;
         }
@@ -1470,18 +1497,18 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         DBfile *correctFile = dbfile;
         string  varUnits;
 
-        DetermineFileAndDirectory(mv->varnames[0], correctFile, realvar);
+        DetermineFileAndDirectory(mv->varnames[meshnum], correctFile, realvar);
         int nvals = 1;
         if (valid_var)
         {
-            switch (mv->vartypes[0])
+            switch (mv->vartypes[meshnum])
             {
               case DB_UCDVAR:
                 {
                     DBucdvar *uv = NULL;
                     uv = DBGetUcdvar(correctFile, realvar);
                     if (uv == NULL)
-                        EXCEPTION1(InvalidVariableException, mv->varnames[0]);
+                        EXCEPTION1(InvalidVariableException, mv->varnames[meshnum]);
                     centering = (uv->centering == DB_ZONECENT ? AVT_ZONECENT 
                                                               : AVT_NODECENT);
                     nvals = uv->nvals;
@@ -1496,7 +1523,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                 {
                     DBquadvar *qv = DBGetQuadvar(correctFile, realvar);
                     if (qv == NULL)
-                        EXCEPTION1(InvalidVariableException, mv->varnames[0]);
+                        EXCEPTION1(InvalidVariableException, mv->varnames[meshnum]);
                     centering = (qv->align[0] == 0. ? AVT_NODECENT 
                                                     : AVT_ZONECENT);
                     nvals = qv->nvals;
@@ -1512,7 +1539,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                     centering = AVT_NODECENT;   // Only one possible
                     DBmeshvar *pv = DBGetPointvar(correctFile, realvar);
                     if (pv == NULL)
-                        EXCEPTION1(InvalidVariableException, mv->varnames[0]);
+                        EXCEPTION1(InvalidVariableException, mv->varnames[meshnum]);
                     nvals = pv->nvals;
                     treatAsASCII = (pv->ascii_labels);
                     if(pv->units != 0)
@@ -1770,7 +1797,19 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         DBmultimat *mm = GetMultimat(dirname, multimat_names[i]);
         if (mm == NULL)
             EXCEPTION1(InvalidVariableException, multimat_names[i]);
-        char *material = mm->matnames[0];
+
+        // Find the first non-empty mesh
+        int meshnum = 0;
+        while (string(mm->matnames[meshnum]) == "EMPTY")
+        {
+            meshnum++;
+            if (meshnum >= mm->nmats)
+            {
+                EXCEPTION1(InvalidVariableException,  multimat_names[i]);
+            }
+        }
+
+        char *material = mm->matnames[meshnum];
 
         char   *realvar = NULL;
         DBfile *correctFile = dbfile;
@@ -1778,13 +1817,13 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 
         DBmaterial *mat = DBGetMaterial(correctFile, realvar);
         if (mat == NULL)
-            EXCEPTION1(InvalidVariableException, mm->matnames[0]);
+            EXCEPTION1(InvalidVariableException, mm->matnames[meshnum]);
 
         bool valid_var = true;
         if (mat == NULL)
         {
             debug1 << "Giving up on material \"" << multimat_names[i] 
-                   << "\" since its first block (" << material
+                   << "\" since its first non-empty block (" << material
                    << ") is invalid." << endl;
             DBFreeMaterial(mat);
             valid_var = false;
@@ -1830,7 +1869,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         CATCH(SiloException)
         {
             debug1 << "Giving up on var \"" << multimat_names[i] 
-                   << "\" since its first block (" << material
+                   << "\" since its first non-empty block (" << material
                    << ") is invalid." << endl;
             valid_var = false;
         }
@@ -1902,6 +1941,17 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         if (ms == NULL)
             EXCEPTION1(InvalidVariableException, multimatspecies_names[i]);
 
+        // Find the first non-empty mesh
+        int meshnum = 0;
+        while (string(ms->specnames[meshnum]) == "EMPTY")
+        {
+            meshnum++;
+            if (meshnum >= ms->nspec)
+            {
+                EXCEPTION1(InvalidVariableException,  multimatspecies_names[i]);
+            }
+        }
+
         // get the associated multimat
 
         // We can only get this "matname" using GetComponent.  It it not
@@ -1914,7 +1964,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         DBmultimat *mm = GetMultimat(dirname, multimatName);
         if (mm == NULL)
             EXCEPTION1(InvalidVariableException, multimatspecies_names[i]);
-        char *material = mm->matnames[0];
+        char *material = mm->matnames[meshnum];
 
         string meshname;
         bool valid_var = true;
@@ -1928,14 +1978,14 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         CATCH(SiloException)
         {
             debug1 << "Giving up on var \"" << multimatspecies_names[i]
-                   << "\" since its first block (" << material
+                   << "\" since its first non-empty block (" << material
                    << ") is invalid." << endl;
             valid_var = false;
         }
         ENDTRY
 
         // get the species info
-        char *species = ms->specnames[0];
+        char *species = ms->specnames[meshnum];
 
         char   *realvar = NULL;
         DBfile *correctFile = dbfile;
@@ -1948,7 +1998,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         if (spec == NULL)
         {
             debug1 << "Giving up on species \"" << multimatspecies_names[i]
-                   << "\" since its first block (" << species
+                   << "\" since its first non-empty block (" << species
                    << ") is invalid." << endl;
             valid_var = false;
         }
@@ -3929,12 +3979,21 @@ avtSiloFileFormat::GetPointVar(DBfile *dbfile, const char *vname)
 //    Do not send a C-array into a C++-construct.  It will eventually call 
 //    "delete" when it should call "free".
 //
+//    Jeremy Meredith, Tue Jun  7 08:32:46 PDT 2005
+//    Added support for "EMPTY" domains in multi-objects.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
                                        int domain, const char *mesh)
 {
+    //
+    // Allow empty data sets
+    //
+    if (string(mn) == "EMPTY")
+        return NULL;
+
     //
     // It's ridiculous, but Silo does not have all of the `const's in their
     // library, so let's cast it away.
@@ -4431,11 +4490,20 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
 //    Added int arg for domain, to be used in retrieving connectivity extents
 //    for setting base_index when necessary. 
 //
+//    Jeremy Meredith, Tue Jun  7 08:32:46 PDT 2005
+//    Added support for "EMPTY" domains in multi-objects.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtSiloFileFormat::GetQuadMesh(DBfile *dbfile, const char *mn, int domain)
 {
+    //
+    // Allow empty data sets
+    //
+    if (string(mn) == "EMPTY")
+        return NULL;
+
     //
     // It's ridiculous, but Silo does not have all of the `const's in their
     // library, so let's cast it away.
@@ -5138,12 +5206,21 @@ avtSiloFileFormat::GetQuadGhostZones(DBquadmesh *qm, vtkDataSet *ds)
 //    Hank Childs, Sat Jun 22 19:53:24 PDT 2002
 //    Finally populated routine.
 //
+//    Jeremy Meredith, Tue Jun  7 08:32:46 PDT 2005
+//    Added support for "EMPTY" domains in multi-objects.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtSiloFileFormat::GetPointMesh(DBfile *dbfile, const char *mn)
 {
     int   i, j;
+
+    //
+    // Allow empty data sets
+    //
+    if (string(mn) == "EMPTY")
+        return NULL;
 
     //
     // It's ridiculous, but Silo does not have all of the `const's in their
@@ -5405,6 +5482,9 @@ avtSiloFileFormat::GetRelativeVarName(const char *initVar, const char *newVar,
 //    Added some logic to handle the case where a multi-var is only
 //    defined on some domains of its associated multi-mesh.
 //
+//    Jeremy Meredith, Tue Jun  7 10:55:18 PDT 2005
+//    Allowed EMPTY domains.
+//
 // ****************************************************************************
 
 string
@@ -5415,7 +5495,19 @@ avtSiloFileFormat::DetermineMultiMeshForSubVariable(DBfile *dbfile,
                                                     const char *curdir)
 {
     char subMesh[256];
-    GetMeshname(dbfile, varname[0], subMesh);
+
+    // Find the first non-empty mesh
+    int meshnum = 0;
+    while (string(varname[meshnum]) == "EMPTY")
+    {
+        meshnum++;
+        if (meshnum >= nblocks)
+        {
+            EXCEPTION1(InvalidVariableException,  name);
+        }
+    }
+
+    GetMeshname(dbfile, varname[meshnum], subMesh);
 
     //
     // varname is very likely qualified with a file name.  We need to figure
@@ -5423,7 +5515,7 @@ avtSiloFileFormat::DetermineMultiMeshForSubVariable(DBfile *dbfile,
     // meaningfully compare it with our list of submeshes.
     //
     char subMeshWithFile[1024];
-    GetRelativeVarName(varname[0], subMesh, subMeshWithFile);
+    GetRelativeVarName(varname[meshnum], subMesh, subMeshWithFile);
 
     //
     // Attempt an "exact" match, where the first mesh for the multivar is
@@ -5472,10 +5564,10 @@ avtSiloFileFormat::DetermineMultiMeshForSubVariable(DBfile *dbfile,
     // levels above us determine what the right thing to do is.
     //
     char str[1024];
-    sprintf(str, "Was not able to match variable \"%s\" and its \n" 
-                 "first submesh %s in file %s to a standard multi-mesh.\n"
+    sprintf(str, "Was not able to match variable \"%s\" and its first \n" 
+                 "non-empty submesh %s in file %s to a standard multi-mesh.\n"
                  "This typically leads to failure.\n",
-            varname[0], subMesh, subMeshWithFile);
+            varname[meshnum], subMesh, subMeshWithFile);
     EXCEPTION1(SiloException, str);
 }
 
@@ -5588,8 +5680,8 @@ avtSiloFileFormat::GetComponent(DBfile *dbfile, char *var, char *compname)
     if (rv == NULL && strcmp(compname, "facelist") != 0)
     {
         char str[1024];
-        sprintf(str, "Unable to get component %s for variable %s.", compname,
-                                                                    var);
+        sprintf(str, "Unable to get component '%s' for variable '%s'",
+                compname, var);
         EXCEPTION1(SiloException, str);
     }
     return rv;
@@ -5713,6 +5805,9 @@ avtSiloFileFormat::GetAuxiliaryData(const char *var, int domain,
 //    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
 //    Changed call to OpenFile() to GetFile()
 //
+//    Jeremy Meredith, Tue Jun  7 08:32:46 PDT 2005
+//    Added support for "EMPTY" domains in multi-objects.
+//
 // ****************************************************************************
 
 avtMaterial *
@@ -5763,6 +5858,10 @@ avtSiloFileFormat::GetMaterial(int dom, const char *mat)
         {
             EXCEPTION2(BadDomainException, dom, mm->nmats);
         }
+
+        if (strcmp(mm->matnames[dom], "EMPTY") == 0)
+            return NULL;
+
         matname = CXX_strdup(mm->matnames[dom]);
     }
     else // (type == DB_MATERIAL)
@@ -5815,6 +5914,9 @@ avtSiloFileFormat::GetMaterial(int dom, const char *mat)
 //    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
 //    Changed call to OpenFile() to GetFile()
 //
+//    Jeremy Meredith, Tue Jun  7 08:32:46 PDT 2005
+//    Added support for "EMPTY" domains in multi-objects.
+//
 // ****************************************************************************
 
 avtSpecies *
@@ -5866,6 +5968,10 @@ avtSiloFileFormat::GetSpecies(int dom, const char *spec)
         {
             EXCEPTION2(BadDomainException, dom, ms->nspec);
         }
+
+        if (strcmp(ms->specnames[dom], "EMPTY") == 0)
+            return NULL;
+
         specname = CXX_strdup(ms->specnames[dom]);
     }
     else // (type == DB_MATSPECIES)

@@ -2,6 +2,8 @@ package llnl.visit;
 
 import java.lang.ArrayIndexOutOfBoundsException;
 import java.util.Vector;
+import java.util.prefs.Preferences;
+import java.util.prefs.BackingStoreException;
 
 // ****************************************************************************
 // Class: ViewerProxy
@@ -134,6 +136,15 @@ import java.util.Vector;
 //   Brad Whitlock, Thu May 12 13:46:37 PST 2005
 //   Added ProcessAttributes.
 //
+//   Brad Whitlock, Mon Jun 6 09:39:33 PDT 2005
+//   Added some code to yield to other threads so we don't tie up the CPU
+//   in some of our blocking loops. I also added code to try and determine
+//   VisIt's installation location using java.util.prefs. The Windows
+//   installer for VisIt pokes the right values into the registry so Java
+//   will know where to look for VisIt. On UNIX, we use the default binary
+//   path unless the user overrides it. I also added GetDataPath so it is
+//   easier to write test programs that know where to find default data files.
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -194,12 +205,46 @@ public class ViewerProxy implements SimpleObserver
         // Create the plugin managers.
         plotPlugins = new PluginManager("plot");
         operatorPlugins = new PluginManager("operator");
+
+        // The VISITHOME Java preference will not have been set on
+        // UNIX, set the default paths to where we install in /usr/gapps.
+        SetBinPath("/usr/gapps/visit/bin");
+        dataPath = new String("/usr/gapps/visit/data/");
+
+        // Now that the default paths have been set, try and override them
+        // with information from the Java preferences.
+        try
+        {
+            String visitHomeKey = new String("/llnl/visit");           
+            if(Preferences.systemRoot().nodeExists(visitHomeKey))
+            {
+                // Get the node
+                Preferences visitNode = Preferences.systemRoot().node(visitHomeKey);
+                String defaultValue = new String("");
+                String visitPath = visitNode.get("VISITHOME", defaultValue);
+                if(!visitPath.equals(defaultValue))
+                {
+                    PrintMessage("Setting visit path to: " + visitPath);
+                    SetBinPath(visitPath);
+                    dataPath = new String(visitPath + "\\data\\");
+                }
+            }
+        }
+        catch(BackingStoreException e)
+        {
+            PrintMessage("Cannot access preferences");
+        }
     }
 
     // Sets the location of the visit binary.
     public void SetBinPath(String path)
     {
         viewer.SetBinPath(path);
+    }
+
+    public String GetDataPath()
+    {
+        return dataPath;
     }
 
     // Adds extra arguments to the viewer's command line.
@@ -280,7 +325,12 @@ public class ViewerProxy implements SimpleObserver
             // plugins that the viewer has loaded. After the plugins are
             // loaded, stop processing input.
             StartProcessing();
-            while(!pluginsLoaded) { ; }
+            while(!pluginsLoaded)
+            {
+                // Yield to other threads so we don't swamp the CPU with
+                // zero work.
+                Thread.yield();
+            }
             StopProcessing();
         }
 
@@ -1515,6 +1565,9 @@ public class ViewerProxy implements SimpleObserver
         while(syncAtts.GetSyncTag() != syncCount)
         {
             // Wait until the viewer passes back the right value.
+            // Yield to other threads so we don't swamp the CPU with
+            // zero work.
+            Thread.yield();
         }
 
         // Make it return true if there are no errors.
@@ -1680,6 +1733,7 @@ public class ViewerProxy implements SimpleObserver
     private boolean              pluginsLoaded;
     private boolean              doUpdate;
     private boolean              verbose;
+    private String               dataPath;
 
 //
 // State objects

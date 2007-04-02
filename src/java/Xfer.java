@@ -26,6 +26,10 @@ import java.io.IOException;
 //   we can maintain the same object ordering as the viewer without
 //   having to write a state object if we don't want to.
 //
+//   Brad Whitlock, Mon Jun 6 10:19:14 PDT 2005
+//   I added code code to make the working thread sleep a little to reduce
+//   workload on the CPU if nothing's getting processed.
+//
 // ****************************************************************************
 
 class Xfer implements SimpleObserver, Runnable
@@ -150,8 +154,10 @@ class Xfer implements SimpleObserver, Runnable
         header.Flush();
     }
 
-    public synchronized void Process() throws LostConnectionException
+    public synchronized boolean Process() throws LostConnectionException
     {
+        boolean retval = false;
+
         // Try and read from the viewer.
         int nbytes = viewer.CanRead();
         if(nbytes > 0)
@@ -192,7 +198,11 @@ class Xfer implements SimpleObserver, Runnable
                              " disposed of "+length+ " bytes");
                 input.Shift(length);
             }
+
+            retval = true;
         }
+
+        return retval;
     }
 
     public void StartProcessing()
@@ -245,11 +255,44 @@ class Xfer implements SimpleObserver, Runnable
     // we process it too.
     public void run()
     {
+        int idlecount = 0;
         while(processing && viewerInit)
         {
             try
             {
-                Process();
+                if(!Process())
+                {
+                    ++idlecount;
+                    if(idlecount < 10)
+                    {
+                        // Yield to other threads.
+                        Thread.currentThread().yield();
+                    }
+                    else
+                    {
+                        // The thread has been idle for a while, sleep
+                        // instead of yield because sleep does not require
+                        // any work.
+                        int timeout = 200;
+                        if(idlecount > 50 && idlecount < 100)
+                            timeout = 500;
+                        else if(idlecount >= 100)
+                            timeout = 1000;
+                        else if(idlecount >= 500)
+                            timeout = 2000;
+
+                        try
+                        {
+                            Thread.currentThread().sleep(timeout);
+                        }
+                        catch(java.lang.InterruptedException e)
+                        {
+                            processing = false;
+                        }
+                    }
+                }
+                else
+                    idlecount = 0;
             }
             catch(LostConnectionException e3)
             {

@@ -4276,6 +4276,9 @@ avtGenericDatabase::GetGlobalZoneIds(int dom, const char *var, int ts)
 //    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
 //    Changed 'vector<int>' to 'intVector', and 'vector<bool>' to 'boolVector'.
 //
+//    Jeremy Meredith, Tue Jun  7 10:55:18 PDT 2005
+//    Allowed empty domains.
+//
 // ****************************************************************************
 
 void
@@ -4293,6 +4296,10 @@ avtGenericDatabase::SpeciesSelect(avtDatasetCollection &dsc,
     {
         int m = 0; // Using 0 assumes that the file format does not do matsel. 
         vtkDataSet *ds = dsc.GetDataset(i, m);
+
+        // Allow for empty domains
+        if (!ds)
+            continue;
 
         int n_cell_vars = ds->GetCellData()->GetNumberOfArrays();
         // If we don't make a copy of the cell data and then go mucking with

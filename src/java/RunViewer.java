@@ -24,6 +24,10 @@ import llnl.visit.AnnotationAttributes;
 //   Brad Whitlock, Thu Mar 20 10:53:39 PDT 2003
 //   I made it use port 5600.
 //
+//   Brad Whitlock, Mon Jun 6 10:18:10 PDT 2005
+//   I added a little code to reduce CPU usage. I also made it use
+//   GetDataPath to locate the data.
+//
 // ****************************************************************************
 
 public class RunViewer
@@ -88,6 +92,15 @@ public class RunViewer
             // viewer around so we can do stuff with it.
             while(stay)
             {
+                try
+                {
+                    // Sleep a little so we don't hog the CPU.
+                    Thread.currentThread().sleep(200);
+                }
+                catch(java.lang.InterruptedException e)
+                {
+                    stay = false;
+                }
             }
 
             viewer.Close();
@@ -112,7 +125,7 @@ public class RunViewer
     protected void work(String[] args)
     {
         // Do a plot
-        if(viewer.OpenDatabase("localhost:/usr/gapps/visit/data/globe.silo"))
+        if(viewer.OpenDatabase(viewer.GetDataPath() + "globe.silo"))
         {
             viewer.AddPlot("Pseudocolor", "u");
             viewer.AddPlot("Mesh", "mesh1");

@@ -20,6 +20,9 @@ import llnl.visit.plots.PseudocolorAttributes;
 //   Eric Brugger, Wed Aug 27 09:04:55 PDT 2003
 //   I modified it to use the new view interface.
 //
+//   Brad Whitlock, Mon Jun 6 17:25:34 PST 2005
+//   I made it use GetDataPath to locate the data.
+//
 // ****************************************************************************
 
 public class PlotAtts extends RunViewer
@@ -31,7 +34,7 @@ public class PlotAtts extends RunViewer
 
     protected void work(String[] args)
     {
-        if(viewer.OpenDatabase("localhost:/usr/gapps/visit/data/globe.silo"))
+        if(viewer.OpenDatabase(viewer.GetDataPath() + "globe.silo"))
         {
             // Create a plot.
             viewer.AddPlot("Pseudocolor", "u");

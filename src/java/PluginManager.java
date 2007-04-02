@@ -29,6 +29,9 @@ import java.net.MalformedURLException;
 //   I fixed it so that the plugin list is sorted when it is created to
 //   guarantee that the plugins are always loaded in the proper order.
 //
+//   Brad Whitlock, Mon Jun 6 18:20:35 PST 2005
+//   I made it use the right path separator so it works on Windows.
+//
 // ****************************************************************************
 
 class PluginManager
@@ -154,7 +157,7 @@ class PluginManager
         // Create a class path based on the type of plugin that we
         // want to read.
         String classPath = System.getProperty("java.class.path");
-        String[] pathList = classPath.split(new String(":"));
+        String[] pathList = classPath.split(java.io.File.pathSeparator);
         if(pathList.length > 0)
         {
             // Create the URL list that we'll use to create a class loader.
