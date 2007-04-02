@@ -110,7 +110,9 @@ avtSpreadsheetFilter::SetAtts(const SpreadsheetAttributes &a)
 // Creation:   Wed Feb 21 17:16:40 PST 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 28 18:25:33 PST 2007
+//   Force MIR to be off.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -188,6 +190,10 @@ avtSpreadsheetFilter::PerformRestriction(avtPipelineSpecification_p spec)
             silr->TurnOnAll();
         }
     }
+
+    // Force material interface reconstuction to be off.
+    rv->GetDataSpecification()->ForceMaterialInterfaceReconstructionOff();
+    rv->GetDataSpecification()->SetNeedMixedVariableReconstruction(false);
 
     return rv;
 }

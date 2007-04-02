@@ -2644,6 +2644,9 @@ ViewerSubject::MessageRendererThread(const char *message)
 //   can reference it from other parts of the session to make it easier to
 //   change databases.
 //
+//   Brad Whitlock, Tue Mar 27 11:18:36 PDT 2007
+//   Made GetDatabasesForWindows get all databases not just MT ones.
+//
 // ****************************************************************************
 
 void
@@ -2665,8 +2668,9 @@ ViewerSubject::CreateNode(DataNode *parentNode, bool detailed)
         wIds.push_back(windowIndices[i]);
     delete [] windowIndices;
 
-    // Get the databases that are open in the specified windows.
-    wM->GetDatabasesForWindows(wIds, databases);
+    // Get all of the databases that are open in the specified windows
+    // (even the ST databases).
+    wM->GetDatabasesForWindows(wIds, databases, true);
 
     // Create a map of source ids to source names and also store
     // that information into the session.

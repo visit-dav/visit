@@ -1826,6 +1826,10 @@ ViewerQueryManager::ClearPickPoints()
 //    When we pick on an array variable (to make a histogram plot), make sure
 //    the time state is correct.
 //
+//    Kathleen Bonnell, Wed Mar 28 09:56:11 PDT 2007 
+//    Due to changes in NoWin rendering, certain glyphPicks must alwasy be
+//    performed on the engine, add test for this. 
+//
 // ****************************************************************************
 
 bool
@@ -2009,6 +2013,11 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                   ((plot->GetMeshType() == AVT_POINT_MESH) &&
                    (strcmp(plot->GetPlotTypeName(), "Label") != 0));
 
+        bool mustGlyphPickOnEngine = doGlyphPick && win->GetNoWinMode() && 
+                  ((plot->GetMeshType() == AVT_POINT_MESH) &&
+                   (strcmp(plot->GetPlotTypeName(), "Mesh") != 0));
+
+
         bool isLinesData = (plot->GetSpatialDimension() == 2) &&
                   ((strcmp(plot->GetPlotTypeName(), "Boundary") == 0) ||
                    (strcmp(plot->GetPlotTypeName(), "Contour") == 0));
@@ -2016,12 +2025,13 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         pickAtts->SetInputTopoDim(plot->GetTopologicalDimension());
                   
 
-        if (doGlyphPick && win->GetScalableRendering() && 
-            (dom ==-1 || el == -1))
+        if (mustGlyphPickOnEngine || 
+            (doGlyphPick && win->GetScalableRendering() && 
+            (dom ==-1 || el == -1)))
         {
             pickAtts->SetRequiresGlyphPick(true);
         }
-        else if (doGlyphPick && !win->GetScalableRendering())
+        else if (doGlyphPick && !(win->GetScalableRendering())) 
         {
             int d = -1, e = -1;
             bool forCell = false;

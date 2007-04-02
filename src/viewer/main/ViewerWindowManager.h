@@ -561,7 +561,7 @@ class VIEWER_API ViewerWindowManager : public ViewerBase
     static void                          SetClientInteractorAttsFromDefault();
     static void                          SetDefaultInteractorAttsFromClient();
 
-    void GetDatabasesForWindows(const intVector &,stringVector &) const;
+    void GetDatabasesForWindows(const intVector &,stringVector &, bool) const;
 
   signals:
     void createWindow(ViewerWindow *);

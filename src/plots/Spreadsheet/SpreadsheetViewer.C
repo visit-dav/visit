@@ -101,7 +101,9 @@
 // Creation:   Tue Feb 20 14:00:14 PST 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 28 17:30:31 PST 2007
+//   Changed layout of window so the tracer plane can be turned off.
+//
 // ****************************************************************************
 
 SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent, 
@@ -126,20 +128,22 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent,
     QFrame *top = new QFrame(this, "vbox");
     setCentralWidget(top);
     QVBoxLayout *topLayout = new QVBoxLayout(top);
+    topLayout->setSpacing(5);
     topLayout->setMargin(10);
-    QGridLayout *layout = new QGridLayout(topLayout, 4, 5);
+    QHBoxLayout *layout = new QHBoxLayout(topLayout);
     layout->setSpacing(5);
 
     //
     // 3D controls
     //
     controls3D = new QGroupBox("3D", top, "controls3D");
-    layout->addMultiCellWidget(controls3D, 0, 0, 0, 4);
+    layout->addWidget(controls3D, 10);
     QVBoxLayout *inner3D = new QVBoxLayout(controls3D);
     inner3D->addSpacing(10);
     inner3D->setMargin(10);
     QGridLayout *layout3D = new QGridLayout(inner3D, 2, 3);
     layout3D->setSpacing(5);
+    inner3D->addStretch(1);
 
     kLabel = new QLabel("k [1,1]", controls3D, "kLabel");
     layout3D->addWidget(kLabel, 0, 0);
@@ -170,17 +174,45 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent,
     normalButtonGroup->insert(rb, 2);
     normalRadioButtons->setStretchFactor(rb, 5);
 
-    tracerCheckBox = new QCheckBox("Show tracer plane", controls3D, "tracerCheckBox");
+    //
+    // Display controls
+    //
+    QGroupBox *display = new QGroupBox("Display", top, "display");
+    layout->addWidget(display);
+    QVBoxLayout *innerDisplay = new QVBoxLayout(display);
+    innerDisplay->addSpacing(10);
+    innerDisplay->setMargin(10);
+    QGridLayout *layoutDisplay = new QGridLayout(innerDisplay, 3, 2);
+    layoutDisplay->setSpacing(5);
+
+    formatLabel = new QLabel("Format", display, "formatLabel");
+    layoutDisplay->addWidget(formatLabel, 0, 0);
+    formatLineEdit = new QLineEdit(display, "formatLineEdit");
+    connect(formatLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(formatChanged()));
+    layoutDisplay->addWidget(formatLineEdit, 0, 1);
+
+    colorTableCheckBox = new QCheckBox("Color", display, "colorTableCheckBox");
+    connect(colorTableCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(colorTableCheckBoxToggled(bool)));
+    layoutDisplay->addWidget(colorTableCheckBox, 1, 0);
+
+    // Just a push button for now. It will be a color table button later.
+    colorTableButton = new QvisColorTableButton(display, "colorTableButton");
+    connect(colorTableButton, SIGNAL(selectedColorTable(bool, const QString &)),
+            this, SLOT(selectedColorTable(bool, const QString &)));
+    layoutDisplay->addWidget(colorTableButton, 1, 1);
+
+    tracerCheckBox = new QCheckBox("Show tracer plane", display, "tracerCheckBox");
     connect(tracerCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(tracerCheckBoxToggled(bool)));
-    layout3D->addWidget(tracerCheckBox, 1, 2, Qt::AlignRight);
+    layoutDisplay->addMultiCellWidget(tracerCheckBox, 2, 2, 0, 1);
 
     //
     // Tables
     //
     zTabs = new SpreadsheetTabWidget(top, "zTabs");
-    layout->addMultiCellWidget(zTabs, 1, 1, 0, 4);
-    layout->setRowStretch(1, 10);
+    topLayout->addWidget(zTabs, 10);
     nTables = 1;
     tables = new SpreadsheetTable*[1];
     tables[0] = new SpreadsheetTable(0, "table");
@@ -195,54 +227,31 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent,
             this, SLOT(tabChanged(QWidget*)));
 
     //
-    // Controls and information display.
+    // Variables and min,max buttons
     //
-    formatLabel = new QLabel("Format", top, "formatLabel");
-    layout->addWidget(formatLabel, 2, 0);
-    formatLineEdit = new QLineEdit(top, "formatLineEdit");
-    connect(formatLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(formatChanged()));
-    layout->addWidget(formatLineEdit, 2, 1);
-
-    colorTableCheckBox = new QCheckBox("Color", top, "colorTableCheckBox");
-    connect(colorTableCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(colorTableCheckBoxToggled(bool)));
-    layout->addWidget(colorTableCheckBox, 3, 0);
-
-    // Just a push button for now. It will be a color table button later.
-    colorTableButton = new QvisColorTableButton(top, "colorTableButton");
-    connect(colorTableButton, SIGNAL(selectedColorTable(bool, const QString &)),
-            this, SLOT(selectedColorTable(bool, const QString &)));
-    layout->addWidget(colorTableButton, 3, 1);
-
-    QFrame *splitter = new QFrame(top, "splitter");
-    splitter->setFrameStyle(QFrame::VLine + QFrame::Raised);
-    layout->addMultiCellWidget(splitter, 2, 3, 2, 2);
-
-    QHBox *varBox = new QHBox(top, "varBox");
-    varBox->setSpacing(5);
-    layout->addMultiCellWidget(varBox, 2, 2, 3, 4);
-
-    varLabel = new QLabel("Variable", varBox, "varLabel");
-
+    QGridLayout *varLayout = new QGridLayout(topLayout, 2, 3);
+    varLayout->setSpacing(5);
+    varLayout->setColStretch(1, 5);
+    varLayout->setColStretch(2, 5);
+    varLabel = new QLabel("Variable", top, "varLabel");
+    varLayout->addWidget(varLabel, 0, 0);
     // Have to display metadata -- the list of variables.
     varButton = new QvisVariableButton(false, false, true, 
-        QvisVariableButton::Scalars, varBox, "varComboBox");
+        QvisVariableButton::Scalars, top, "varComboBox");
     connect(varButton, SIGNAL(activated(const QString &)),
             this, SLOT(changedVariable(const QString &)));
-    varBox->setStretchFactor(varButton, 5);
+    varLayout->addMultiCellWidget(varButton, 0, 0, 1, 2);    
 
     // min, max buttons
     minButton = new QPushButton("Min = ", top, "minButton");
     connect(minButton, SIGNAL(clicked()),
             this, SLOT(minClicked()));
-    layout->addWidget(minButton, 3, 3);
-    layout->setColStretch(3, 6);
+    varLayout->addMultiCellWidget(minButton, 1,1,1,1);
+
     maxButton = new QPushButton("Max = ", top, "maxButton");
     connect(maxButton, SIGNAL(clicked()),
             this, SLOT(maxClicked()));
-    layout->addWidget(maxButton, 3, 4);
-    layout->setColStretch(4, 6);
+    varLayout->addMultiCellWidget(maxButton, 1,1,2,2);
 
 
     //
@@ -312,13 +321,17 @@ SpreadsheetViewer::~SpreadsheetViewer()
 // Creation:   Tue Feb 20 14:01:29 PST 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 28 17:29:40 PST 2007
+//   Set the input to 0 since if we're here then we're rendering a new dataset
+//   but we have not made it to the render method yet.
+//
 // ****************************************************************************
 
 void
 SpreadsheetViewer::setAllowRender(bool val)
 {
     allowRender = val;
+    input = 0;
 }
 
 // ****************************************************************************
@@ -426,6 +439,29 @@ SpreadsheetViewer::enterEvent(QEvent *e)
 {
     QMainWindow::enterEvent(e);
     updateVariableMenus();
+}
+
+// ****************************************************************************
+// Method: SpreadsheetViewer::closeEvent
+//
+// Purpose: 
+//   Minimize the window instead of closing it.
+//
+// Arguments:
+//   e : The event to handle.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 28 18:49:50 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SpreadsheetViewer::closeEvent(QCloseEvent *e)
+{
+    e->ignore();
+    showMinimized();
 }
 
 // ****************************************************************************
