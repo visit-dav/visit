@@ -20,7 +20,7 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkTriangulationTables.h>
 
-#include <Array.h>
+#include <VisItArray.h>
 #include "BitUtils.h"
 #include "RecursiveCellReconstructor.h"
 #include "IsovolumeCellReconstructor.h"

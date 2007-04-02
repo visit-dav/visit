@@ -2,6 +2,7 @@
 #define CELL_RECONSTRUCTOR_H
 
 #include <ZooMIR.h>
+#include <VisItArray.h>
 
 // ****************************************************************************
 //  Class:  CellReconstructor
@@ -19,6 +20,9 @@
 //    ReconstructCell pure-virtual, and I needed to keep track of whether
 //    or not edge points were shared across materials.
 //
+//    Mark C. Miller, Thu Feb  9 21:06:10 PST 2006
+//    Renamed Array class to VisItArray to avoid name collisions with
+//    third-party libs
 // ****************************************************************************
 class CellReconstructor
 {
@@ -71,8 +75,8 @@ class CellReconstructor
     };
 
     ZooMIR::EdgeHashTable  edges;
-    Array<TempCell>        outlist;
-    Array<TempCell>        tmplist;
+    VisItArray<TempCell>   outlist;
+    VisItArray<TempCell>   tmplist;
 
     void CreateCentroidPoint(TempCell&, int, int, int, int, int, int*);
     void CreateOutputShape(TempCell&, TempCell&, int, int, int*, int);

@@ -3,7 +3,7 @@
 #include <mir_exports.h>
 
 #include "Tet.h"
-#include "Array.h"
+#include "VisItArray.h"
 #include "mat3d_tet.h"
 
 // ****************************************************************************
@@ -36,11 +36,15 @@
 //    Added a "forced material" where if it is >=0, any added tet will have
 //    the forced material instead of the normal requested material.
 //
+//    Mark C. Miller, Thu Feb  9 21:06:10 PST 2006
+//    Renamed Array class to VisItArray to avoid name collisions with
+//    third-party libs
+//
 // ****************************************************************************
 class MIR_API TetList
 {
   private:
-    Array<Tet> list;
+    VisItArray<Tet> list;
     void operator=(const TetList &rhs) { };
   public:
     void       Clear()                 {list.clear();}
@@ -49,7 +53,7 @@ class MIR_API TetList
     Tet       &operator[](const int i) {return list[i];}
     void Add(const Tet&, int);
     void AddTet(int, int,   const Tet::Node&,const Tet::Node&,const Tet::Node&,const Tet::Node&, int);
-    static void Swap(TetList &a, TetList &b) {Array<Tet>::Swap(a.list, b.list);}
+    static void Swap(TetList &a, TetList &b) {VisItArray<Tet>::Swap(a.list, b.list);}
 };
 
 // ****************************************************************************

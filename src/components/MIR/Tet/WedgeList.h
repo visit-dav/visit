@@ -3,7 +3,7 @@
 #include <mir_exports.h>
 
 #include "Wedge.h"
-#include "Array.h"
+#include "VisItArray.h"
 #include "mat3d_tet.h"
 
 // ****************************************************************************
@@ -23,11 +23,14 @@
 //
 //  Modifications:
 //
+//    Mark C. Miller, Thu Feb  9 21:06:10 PST 2006
+//    Renamed Array class to VisItArray to avoid name collisions with
+//    third-party libs
 // ****************************************************************************
 class MIR_API WedgeList
 {
   private:
-    Array<Wedge> list;
+    VisItArray<Wedge> list;
     void operator=(const WedgeList &rhs) { };
   public:
     void       Clear()                 {list.clear();}
@@ -37,7 +40,7 @@ class MIR_API WedgeList
     void Add(const Wedge&, int);
     void AddWedge(int, int, const Tet::Node&,const Tet::Node&,const Tet::Node&,
                             const Tet::Node&,const Tet::Node&,const Tet::Node&, int);
-    static void Swap(WedgeList &a, WedgeList &b) {Array<Wedge>::Swap(a.list, b.list);}
+    static void Swap(WedgeList &a, WedgeList &b) {VisItArray<Wedge>::Swap(a.list, b.list);}
 };
 
 // ****************************************************************************
