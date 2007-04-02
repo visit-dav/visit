@@ -323,10 +323,10 @@ if (currentQuad >=  numQuads) {                                    \
   // to force max values that lie on grid cell bdry to just under
 
 #define SNAP2GRIDX() {                                                                     \
-  min1idx = floor( ((YMIN - gridYmin)/gridSpacing));                                       \
-  max1idx = floor( ((YMAX - gridYmin)/gridSpacing) *EPS);                                  \
-  min2idx = floor( ((ZMIN - gridZmin)/gridSpacing));                                       \
-  max2idx = floor( ((ZMAX - gridZmin)/gridSpacing) *EPS);                                  \
+  min1idx = (int) floor( ((YMIN - gridYmin)/gridSpacing));                                       \
+  max1idx = (int) floor( ((YMAX - gridYmin)/gridSpacing) *EPS);                                  \
+  min2idx = (int) floor( ((ZMIN - gridZmin)/gridSpacing));                                       \
+  max2idx = (int) floor( ((ZMAX - gridZmin)/gridSpacing) *EPS);                                  \
   if ((min1idx < 0)||(max1idx > (gridYsize-1))||(min2idx < 0)||(max2idx > (gridZsize-1))) {\
     /* ymin, ymax, zmin or zmax are out of bounds */                                       \
     debug1 << "Error: Min-Max Coords of Data Set provided by user have been exceeded!!!"   \
@@ -336,10 +336,10 @@ if (currentQuad >=  numQuads) {                                    \
 }
 
 #define SNAP2GRIDY() {                                                                     \
-  min1idx = floor( ((XMIN - gridXmin)/gridSpacing));                                       \
-  max1idx = floor( ((XMAX - gridXmin)/gridSpacing) *EPS);                                  \
-  min2idx = floor( ((ZMIN - gridZmin)/gridSpacing));                                       \
-  max2idx = floor( ((ZMAX - gridZmin)/gridSpacing) *EPS);                                  \
+  min1idx = (int) floor( ((XMIN - gridXmin)/gridSpacing));                                       \
+  max1idx = (int) floor( ((XMAX - gridXmin)/gridSpacing) *EPS);                                  \
+  min2idx = (int) floor( ((ZMIN - gridZmin)/gridSpacing));                                       \
+  max2idx = (int) floor( ((ZMAX - gridZmin)/gridSpacing) *EPS);                                  \
   if ((min1idx < 0)||(max1idx > (gridXsize-1))||(min2idx < 0)||(max2idx > (gridZsize-1))) {\
     /* ymin, ymax, zmin or zmax are out of bounds */                                       \
     debug1 << "Error: Min-Max Coords of Data Set provided by user have been exceeded!!!"   \
@@ -349,10 +349,10 @@ if (currentQuad >=  numQuads) {                                    \
 }
 
 #define SNAP2GRIDZ() {                                                                     \
-  min1idx = floor( ((XMIN - gridXmin)/gridSpacing));                                       \
-  max1idx = floor( ((XMAX - gridXmin)/gridSpacing) *EPS);                                  \
-  min2idx = floor( ((YMIN - gridYmin)/gridSpacing));                                       \
-  max2idx = floor( ((YMAX - gridYmin)/gridSpacing) *EPS);                                  \
+  min1idx = (int) floor( ((XMIN - gridXmin)/gridSpacing));                                       \
+  max1idx = (int) floor( ((XMAX - gridXmin)/gridSpacing) *EPS);                                  \
+  min2idx = (int) floor( ((YMIN - gridYmin)/gridSpacing));                                       \
+  max2idx = (int) floor( ((YMAX - gridYmin)/gridSpacing) *EPS);                                  \
   if ((min2idx < 0)||(max2idx > (gridYsize-1))||(min1idx < 0)||(max1idx > (gridXsize-1))) {\
     /* ymin, ymax, zmin or zmax are out of bounds */                                       \
     debug1 << "Error: Min-Max Coords of Data Set provided by user have been exceeded!!!"   \
@@ -488,7 +488,7 @@ if (currentQuad >=  numQuads) {                                    \
               zone = savedZone;                             \
             }  /* end *** */                                \
             /* now add this zone to grid cell */            \
-            thisGridCell->farFaceZoneNo = ZONEID;           \
+            thisGridCell->farFaceZoneNo = (int) ZONEID;     \
             thisGridCell->maxFarFace = FF;                  \
           }                                                 \
         } /* end else          */                           \
@@ -522,7 +522,7 @@ if (currentQuad >=  numQuads) {                                    \
              QUADS[currentQuad].Ymax = YMAX2;               \
              QUADS[currentQuad].Zmin = ZMIN2;               \
              QUADS[currentQuad].Zmax = ZMAX2;               \
-             CELLIDS[currentQuad++] = ZONEID;               \
+             CELLIDS[currentQuad++] = (int) ZONEID;         \
            }                                                \
          }                                                  \
       }                                                     \

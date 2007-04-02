@@ -2020,6 +2020,9 @@ avtStructuredDomainBoundaries::ExchangeIntVector(vector<int>        domainNum,
 //    way, use the "match", which is already pre-computed by the client for
 //    this purpose.
 //
+//    Hank Childs, Fri Jun  9 14:18:11 PDT 2006
+//    Remove unused variable.
+//
 // ****************************************************************************
 vector<avtMaterial*>
 avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
@@ -2073,7 +2076,6 @@ avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
         int newmixlen = oldmixlen;
         for (int n=0; n<bi.neighbors.size(); n++)
         {
-            int d1 = bi.domain;
             int mi = bi.neighbors[n].match;
             int d2 = bi.neighbors[n].domain;
             newmixlen += mixlen[d2][mi];
@@ -2171,6 +2173,9 @@ avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
 //    way, use the "match", which is already pre-computed by the client for
 //    this purpose.
 //
+//    Hank Childs, Fri Jun  9 14:18:11 PDT 2006
+//    Remove unused variable.
+//
 // ****************************************************************************
 vector<avtMixedVariable*>
 avtStructuredDomainBoundaries::ExchangeMixVar(vector<int>            domainNum,
@@ -2265,7 +2270,6 @@ avtStructuredDomainBoundaries::ExchangeMixVar(vector<int>            domainNum,
         int newmixlen = oldmixlen;
         for (int n=0; n<bi.neighbors.size(); n++)
         {
-            int d1 = bi.domain;
             int mi = bi.neighbors[n].match;
             int d2 = bi.neighbors[n].domain;
             newmixlen += mixlen[d2][mi];
@@ -3009,12 +3013,15 @@ avtStructuredDomainBoundaries::SetIndicesForAMRPatch(int domain,
 //    Do some sorting so that we know the "match" entry for the neighbor
 //    index will be correct.
 //
+//    Hank Childs, Fri Jun  9 14:18:11 PDT 2006
+//    Remove unused variable.
+//
 // ****************************************************************************
 
 void
 avtStructuredDomainBoundaries::CalculateBoundaries(void)
 {
-    int i, j, k;
+    int i, j;
 
     if (!shouldComputeNeighborsFromExtents)
     {

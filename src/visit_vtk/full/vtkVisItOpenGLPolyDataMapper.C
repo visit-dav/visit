@@ -444,6 +444,9 @@ static void vtkOpenGLBeginPolyTriangleOrQuad(GLenum aGlFunction,
 //   Hank Childs, Tue May 25 10:51:06 PDT 2004
 //   Added new arguments for display lists.  DID NOT MAKE USE OF.
 //
+//   Hank Childs, Fri Jun  9 13:13:20 PDT 2006
+//   Remove unused variable.
+//
 static void vtkOpenGLDraw01(vtkCellArray *aPrim, GLenum aGlFunction,
                             vtkIdType &, vtkPoints *p, vtkDataArray *, 
                             vtkUnsignedCharArray *, vtkDataArray *, 
@@ -452,7 +455,6 @@ static void vtkOpenGLDraw01(vtkCellArray *aPrim, GLenum aGlFunction,
                             int &CurrentList)
 {
   int i,j;
-  vtkIdType *pts = 0;
   vtkIdType npts = 0;
   int count = 0;
 
@@ -501,6 +503,9 @@ static void vtkOpenGLDraw01(vtkCellArray *aPrim, GLenum aGlFunction,
 //   Hank Childs, Tue May 25 10:51:06 PDT 2004
 //   Break display lists into smaller chunks.
 //
+//   Hank Childs, Fri Jun  9 13:13:20 PDT 2006
+//   Remove unused variable.
+//
 static void vtkOpenGLDrawN013(vtkCellArray *aPrim, GLenum aGlFunction,
                               vtkIdType &, vtkPoints *p, vtkDataArray *n, 
                               vtkUnsignedCharArray *, vtkDataArray *, 
@@ -509,8 +514,6 @@ static void vtkOpenGLDrawN013(vtkCellArray *aPrim, GLenum aGlFunction,
                               int &CurrentList)
 {
   int j;
-  vtkIdType *pts = 0;
-  vtkIdType npts = 0;
   int count = 0;
 
   GLenum previousGlFunction=GL_INVALID_VALUE;
@@ -578,6 +581,9 @@ static void vtkOpenGLDrawN013(vtkCellArray *aPrim, GLenum aGlFunction,
 //   Hank Childs, Tue Jun  1 16:47:49 PDT 2004
 //   Index using the cellNum argument.
 //
+//   Hank Childs, Fri Jun  9 13:13:20 PDT 2006
+//   Remove unused variable.
+//
 static void vtkOpenGLDrawCN013(vtkCellArray *aPrim, GLenum aGlFunction,
                                vtkIdType &cellNum, vtkPoints *p, 
                                vtkDataArray *n, vtkUnsignedCharArray *, 
@@ -587,8 +593,6 @@ static void vtkOpenGLDrawCN013(vtkCellArray *aPrim, GLenum aGlFunction,
                                int &CurrentList)
 {
   int j;
-  vtkIdType *pts = 0;
-  vtkIdType npts = 0;
   int count = 0;
   
   GLenum previousGlFunction=GL_INVALID_VALUE;
@@ -658,6 +662,9 @@ static void vtkOpenGLDrawCN013(vtkCellArray *aPrim, GLenum aGlFunction,
 //   Optimize this case since this comes up for pseudocolors of
 //   point meshes with point glyphs.
 //
+//   Hank Childs, Fri Jun  9 13:13:20 PDT 2006
+//   Remove unused variable.
+//
 static void vtkOpenGLDrawS01(vtkCellArray *aPrim, GLenum aGlFunction,
                              vtkIdType &, vtkPoints *p, vtkDataArray *, 
                              vtkUnsignedCharArray *c, vtkDataArray *, 
@@ -666,7 +673,6 @@ static void vtkOpenGLDrawS01(vtkCellArray *aPrim, GLenum aGlFunction,
                              int &CurrentList)
 {
   int j;
-  vtkIdType *pts = 0;
   int count = 0;
   
   GLenum previousGlFunction=GL_INVALID_VALUE;
@@ -733,6 +739,9 @@ static void vtkOpenGLDrawS01(vtkCellArray *aPrim, GLenum aGlFunction,
 //   Hank Childs, Tue May 25 10:51:06 PDT 2004
 //   Break display lists into smaller chunks.
 //
+//   Hank Childs, Fri Jun  9 13:13:20 PDT 2006
+//   Remove unused variable.
+//
 static void vtkOpenGLDrawNS013(vtkCellArray *aPrim, GLenum aGlFunction,
                                vtkIdType &, vtkPoints *p, vtkDataArray *n, 
                                vtkUnsignedCharArray *c, vtkDataArray *, 
@@ -741,8 +750,6 @@ static void vtkOpenGLDrawNS013(vtkCellArray *aPrim, GLenum aGlFunction,
                                int &CurrentList)
 {
   int j;
-  vtkIdType *pts = 0;
-  vtkIdType npts = 0;
   int count = 0;
   
   GLenum previousGlFunction=GL_INVALID_VALUE;
@@ -815,6 +822,9 @@ static void vtkOpenGLDrawNS013(vtkCellArray *aPrim, GLenum aGlFunction,
 //   Hank Childs, Tue Jun  1 16:47:49 PDT 2004
 //   Index using the cellNum argument.
 //
+//   Hank Childs, Fri Jun  9 13:13:20 PDT 2006
+//   Remove unused variable.
+//
 
 static void vtkOpenGLDrawCNS013(vtkCellArray *aPrim, GLenum aGlFunction,
                                 vtkIdType &cellNum, vtkPoints *p, 
@@ -825,8 +835,6 @@ static void vtkOpenGLDrawCNS013(vtkCellArray *aPrim, GLenum aGlFunction,
                                 int &CurrentList)
 {
   int j;
-  vtkIdType *pts = 0;
-  vtkIdType npts = 0;
   int count = 0;
   
   GLenum previousGlFunction=GL_INVALID_VALUE;
@@ -1296,6 +1304,9 @@ static void vtkOpenGLDrawCS01(vtkCellArray *aPrim, GLenum aGlFunction,
 //   Hank Childs, Tue Jun  1 16:47:49 PDT 2004
 //   Index using the cellNum argument.
 //
+//   Hank Childs, Fri Jun  9 13:13:20 PDT 2006
+//   Remove unused variable.
+//
 static void vtkOpenGLDrawNCS013(vtkCellArray *aPrim, GLenum aGlFunction,
                                 vtkIdType &cellNum, vtkPoints *p, 
                                 vtkDataArray *n, vtkUnsignedCharArray *c, 
@@ -1305,8 +1316,6 @@ static void vtkOpenGLDrawNCS013(vtkCellArray *aPrim, GLenum aGlFunction,
                                 int &CurrentList)
 {
   int j;
-  vtkIdType *pts = 0;
-  vtkIdType npts = 0;
   int count = 0;
   
   GLenum previousGlFunction=GL_INVALID_VALUE;
@@ -1378,6 +1387,9 @@ static void vtkOpenGLDrawNCS013(vtkCellArray *aPrim, GLenum aGlFunction,
 //   Hank Childs, Tue Jun  1 16:47:49 PDT 2004
 //   Index using the cellNum argument.
 //
+//   Hank Childs, Fri Jun  9 13:13:20 PDT 2006
+//   Remove unused variable.
+//
 static void vtkOpenGLDrawCNCS013(vtkCellArray *aPrim, GLenum aGlFunction,
                                  vtkIdType &cellNum, vtkPoints *p, 
                                  vtkDataArray *n, vtkUnsignedCharArray *c, 
@@ -1387,8 +1399,6 @@ static void vtkOpenGLDrawCNCS013(vtkCellArray *aPrim, GLenum aGlFunction,
                                  int &CurrentList)
 {
   int j;
-  vtkIdType *pts = 0;
-  vtkIdType npts = 0;
   int count = 0;
   
   GLenum previousGlFunction=GL_INVALID_VALUE;
@@ -1635,6 +1645,9 @@ static void vtkOpenGLDrawCNCST013(vtkCellArray *aPrim, GLenum aGlFunction,
 //   Hank Childs, Tue May 25 10:51:06 PDT 2004
 //   Break display lists into smaller chunks.
 //
+//   Hank Childs, Fri Jun  9 13:13:20 PDT 2006
+//   Remove unused variable.
+//
 static void vtkOpenGLDraw3(vtkCellArray *aPrim, GLenum aGlFunction,
                            vtkIdType &, vtkPoints *p, vtkDataArray *, 
                            vtkUnsignedCharArray *, vtkDataArray *, 
@@ -1643,8 +1656,6 @@ static void vtkOpenGLDraw3(vtkCellArray *aPrim, GLenum aGlFunction,
                            int &CurrentList)
 {
   int j;
-  vtkIdType *pts = 0;
-  vtkIdType npts = 0;
   int count = 0;
   
   GLenum previousGlFunction=GL_INVALID_VALUE;
@@ -1707,6 +1718,9 @@ static void vtkOpenGLDraw3(vtkCellArray *aPrim, GLenum aGlFunction,
 //   Hank Childs, Tue May 25 10:51:06 PDT 2004
 //   Break display lists into smaller chunks.
 //
+//   Hank Childs, Fri Jun  9 13:13:20 PDT 2006
+//   Remove unused variable.
+//
 static void vtkOpenGLDrawS3(vtkCellArray *aPrim, GLenum aGlFunction,
                             vtkIdType &, vtkPoints *p, vtkDataArray *, 
                             vtkUnsignedCharArray *c, vtkDataArray *, 
@@ -1715,8 +1729,6 @@ static void vtkOpenGLDrawS3(vtkCellArray *aPrim, GLenum aGlFunction,
                             int &CurrentList)
 {
   int j;
-  vtkIdType *pts = 0;
-  vtkIdType npts = 0;
   int count = 0;
 
   GLenum previousGlFunction=GL_INVALID_VALUE;
@@ -1904,6 +1916,9 @@ static void vtkOpenGLDrawST3(vtkCellArray *aPrim, GLenum aGlFunction,
 //   Hank Childs, Tue Jun  1 16:47:49 PDT 2004
 //   Index using the cellNum argument.
 //
+//   Hank Childs, Fri Jun  9 13:13:20 PDT 2006
+//   Remove unused variable.
+//
 static void vtkOpenGLDrawCS3(vtkCellArray *aPrim, GLenum aGlFunction,
                              vtkIdType &cellNum, vtkPoints *p, vtkDataArray *, 
                              vtkUnsignedCharArray *c, vtkDataArray *, 
@@ -1912,8 +1927,6 @@ static void vtkOpenGLDrawCS3(vtkCellArray *aPrim, GLenum aGlFunction,
                              int &CurrentList)
 {
   int j;
-  vtkIdType *pts = 0;
-  vtkIdType npts = 0;
   int count = 0;
   
   GLenum previousGlFunction=GL_INVALID_VALUE;
@@ -3700,6 +3713,9 @@ vtkVisItOpenGLPolyDataMapper::EndFancyPoints(
 //   Brad Whitlock, Tue Dec 6 13:41:18 PST 2005
 //   I changed it to 1-pass texturing.
 //
+//   Hank Childs, Fri Jun  9 13:13:20 PDT 2006
+//   Remove unused variable.
+//
 // ****************************************************************************
 
 void
@@ -3707,12 +3723,12 @@ vtkVisItOpenGLPolyDataMapper::MakeTextures()
 {
    int i, j;
 
-   float dx = SPHERE_TEX_H * 0.5f;
-   float dy = SPHERE_TEX_H * 0.5f;
-   float R = dx-2;
+   /* float dx = SPHERE_TEX_H * 0.5f; */
+   /* float dy = SPHERE_TEX_H * 0.5f; */
+   /* float R = dx-2; */
 
-   float minT = 0.;
-   float maxT = 0.;
+   /* float minT = 0.; */
+   /* float maxT = 0.; */
 
    GLubyte texture[SPHERE_TEX_H][SPHERE_TEX_H][2];
 

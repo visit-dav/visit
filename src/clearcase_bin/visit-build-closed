@@ -24,7 +24,7 @@ sunset=true
 sc=true
 tidalwave=true
 white=true
-pu=true
+purple=true
 lilac=true
 gauss=true
 
@@ -44,7 +44,7 @@ do
          sc=false
          tidalwave=false
          white=false
-         pu=false
+         purple=false
          lilac=false
          gauss=false
          shift
@@ -89,12 +89,12 @@ do
          white=true
          shift
          ;;
-      -pu)
-         pu=false
+      -purple)
+         purple=false
          shift
          ;;
-      +pu)
-         pu=true
+      +purple)
+         purple=true
          shift
          ;;
       -lilac)
@@ -338,7 +338,7 @@ fi
 rm -f white
 cat <<EOF > white
 #!/bin/sh
-PATH=/usr/local/bin:$PATH
+PATH=/usr/local/bin:\$PATH
 if test ! -d /p/gw1/$user ; then
    mkdir /p/gw1/$user
 fi
@@ -383,22 +383,22 @@ then
 fi
 
 #
-# Build on pu, both serial and parallel versions.
+# Build on purple, both serial and parallel versions.
 #
-rm -f pu
-cat <<EOF > pu
+rm -f purple
+cat <<EOF > purple
 #!/bin/sh
-PATH=/usr/local/bin:$PATH
-if test ! -d /p/gpu1/$user ; then
-   mkdir /p/gpu1/$user
+PATH=/usr/local/bin:\$PATH
+if test ! -d /p/gp1/$user ; then
+   mkdir /p/gp1/$user
 fi
-if test ! -d /p/gpu1/$user/pu ; then
-   mkdir /p/gpu1/$user/pu
+if test ! -d /p/gp1/$user/purple ; then
+   mkdir /p/gp1/$user/purple
 fi
-rm -rf /p/gpu1/$user/pu/visitbuild
-mkdir /p/gpu1/$user/pu/visitbuild
-mv pu_$dist.tar.gz /p/gpu1/$user/pu/visitbuild/$dist.tar.gz
-cd /p/gpu1/$user/pu/visitbuild
+rm -rf /p/gp1/$user/purple/visitbuild
+mkdir /p/gp1/$user/purple/visitbuild
+mv purple_$dist.tar.gz /p/gp1/$user/purple/visitbuild/$dist.tar.gz
+cd /p/gp1/$user/purple/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`
@@ -408,8 +408,8 @@ gmake -j 4 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist -compiler xlc -make gmake >> ../buildlog 2>&1
 mv visit\$ver2.aix64-xlc.tar.gz ..
 cd ..
-echo "        build of visit on pu"           > resultlog 2>&1
-echo "       ----------------------"          >> resultlog 2>&1
+echo "        build of visit on purple"       > resultlog 2>&1
+echo "       --------------------------"      >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
@@ -421,13 +421,13 @@ echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
 
-if [ $pu = true ]
+if [ $purple = true ]
 then
    if [ $test = no ]
    then
-      scp pu pu:pu_buildit
-      scp $dist.tar.gz pu:pu_$dist.tar.gz
-      ssh pu "chmod 750 pu_buildit;./pu_buildit" &
+      scp purple purple:purple_buildit
+      scp $dist.tar.gz purple:purple_$dist.tar.gz
+      ssh purple "chmod 750 purple_buildit;./purple_buildit" &
    fi
 fi
 
@@ -485,6 +485,8 @@ fi
 rm -f gauss
 cat <<EOF > gauss
 #!/bin/sh
+XLOCALEDIR=/usr/lib/X11/locale
+PATH=/usr/bin/X11:\$PATH
 if test ! -d /usr/tmp/$user ; then
    mkdir /usr/tmp/$user
 fi
@@ -533,5 +535,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hitit sunset sc tidalwave white pu lilac gauss
+   rm -f hitit sunset sc tidalwave white purple lilac gauss
 fi

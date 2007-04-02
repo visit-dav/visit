@@ -233,6 +233,9 @@ QvisImageAnnotationInterface::GetMenuText(const AnnotationObject &annot) const
 //
 // Modifications:
 //   
+//   Hank Childs, Thu Jun  8 13:48:28 PDT 2006
+//   Fix compiler warning for casting.
+//
 // ****************************************************************************
 
 void
@@ -253,8 +256,8 @@ QvisImageAnnotationInterface::UpdateControls()
     widthSpinBox->blockSignals(true);
     heightSpinBox->blockSignals(true);
     linkedWH->setChecked(annot->GetFontShadow());
-    widthSpinBox->setValue(annot->GetPosition2()[0]);
-    heightSpinBox->setValue(annot->GetPosition2()[1]);
+    widthSpinBox->setValue((int)(annot->GetPosition2()[0]));
+    heightSpinBox->setValue((int)(annot->GetPosition2()[1]));
     widthSpinBox->blockSignals(false);
     heightSpinBox->blockSignals(false);
     linkedWH->blockSignals(false);

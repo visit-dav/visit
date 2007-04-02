@@ -1100,6 +1100,11 @@ VisitInteractor::PanImage3D(const int x, const int y)
 //  Programmer: Eric Brugger
 //  Creation:   October 28, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Jun  9 14:51:31 PDT 2006
+//    Remove unused variable.
+//
 // ****************************************************************************
 
 void
@@ -1128,7 +1133,6 @@ VisitInteractor::PanCamera3D(const int x, const int y)
 
         avtVector VPN(oldView3D.normal);
         avtVector VUP(oldView3D.viewUp);
-        avtVector Focus(oldView3D.focus);
 
         //
         // Calculate the coordinate transformation from the world coordinate
@@ -1517,6 +1521,11 @@ VisitInteractor::RotateAboutFocus3D(const int x, const int y,
 //  Programmer: Eric Brugger
 //  Creation:   October 28, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Jun  9 14:51:31 PDT 2006
+//    Remove unused variable.
+//
 // ****************************************************************************
 
 void
@@ -1571,7 +1580,6 @@ VisitInteractor::RotateAboutCamera3D(const int x, const int y)
 
         avtVector VPN(oldView3D.normal);
         avtVector VUP(oldView3D.viewUp);
-        avtVector Focus(oldView3D.focus);
 
         //
         // Calculate the coordinate transformation from the world coordinate

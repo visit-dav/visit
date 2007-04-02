@@ -46,6 +46,7 @@
 #include <stdio.h>
 
 #include <Expression.h>
+#include <ExprNode.h>
 #include <ParsingExprList.h>
 #include <PickAttributes.h>
 #include <PickVarInfo.h>
@@ -921,6 +922,11 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
 //  Programmer: Hank Childs
 //  Creation:   January 11, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Jun  9 13:57:29 PDT 2006
+//    Add default to switch statement.
+//
 // ****************************************************************************
 
 void
@@ -965,6 +971,8 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
              break;
            case AVT_AMR_MESH:
              doPos  = true;
+             break;
+           default:
              break;
          }
 
@@ -1635,6 +1643,9 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    Hank Childs, Tue Jul 19 15:56:13 PDT 2005
 //    Added support for array variables.
 //
+//    Kathleen Bonnell, Fri Jun  9 11:28:49 PDT 2006 
+//    Fix MLK.
+//
 // ****************************************************************************
 
 void               
@@ -1769,12 +1780,16 @@ avtDatabase::Query(PickAttributes *pa)
         {
             if (pa->GetPickVarInfo(varNum).GetVariableType() == "scalar") 
             {
+                ExprNode *tree = ParsingExprList::GetExpressionTree(vName);
                 //
                 // If an expression, skip it, otherwise it might be a
                 // mixed-var, so let the db add more info if available.
                 //
-                if (ParsingExprList::GetExpressionTree(vName) != NULL)
+                if (tree != NULL)
+                {
+                   delete tree;
                    continue;
+                }
             }
             else 
             {
@@ -1791,6 +1806,7 @@ avtDatabase::Query(PickAttributes *pa)
             {
                 varType = ParsingExprList::GetAVTType
                           (ParsingExprList::GetExpression(vName)->GetType());
+                delete tree;
             }
             else
             {

@@ -111,12 +111,17 @@ avtEdgeLength::DeriveVariable(vtkDataSet *in_ds)
 //  Programmer: Hank Childs
 //  Creation:   September 22, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Jun  9 14:34:50 PDT 2006
+//    Removed unused variable.
+//
 // ****************************************************************************
  
 double
 avtEdgeLength::GetEdgeLength(vtkCell *cell)
 {
-    int  i, j;
+    int  i;
 
     //
     // Calculate the value of each edge and then return the minimum or maximum.

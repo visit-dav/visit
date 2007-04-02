@@ -60,6 +60,9 @@
 //    ReconstructCell pure-virtual, and I needed to keep track of whether
 //    or not edge points were shared across materials.
 //
+//    Hank Childs, Fri Jun  9 15:05:25 PDT 2006
+//    Reorder initializers to match declaration order in class definition.
+//
 // ****************************************************************************
 CellReconstructor::CellReconstructor(vtkDataSet *d,
                                      avtMaterial *m,
@@ -69,9 +72,9 @@ CellReconstructor::CellReconstructor(vtkDataSet *d,
                                      MIRConnectivity &mc,
                                      ZooMIR &z)
     : mesh(d), mat(m), rm(r), nPoints(np), nCells(nc),
-      allMaterialsSharePoints(matsSharePoints),
       conn(mc), mir(z),
       nMaterials(mat->GetNMaterials()),
+      allMaterialsSharePoints(matsSharePoints),
       edges(nPoints/2),
       outlist(200),
       tmplist(200)

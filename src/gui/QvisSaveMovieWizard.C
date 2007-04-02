@@ -595,6 +595,9 @@ QvisSaveMovieWizard::CreateSettingsOkayPage()
 //
 // Modifications:
 //   
+//   Hank Childs, Thu Jun  8 13:48:28 PDT 2006
+//   Fix compiler warning for casting.
+//
 // ****************************************************************************
 
 void
@@ -659,7 +662,7 @@ QvisSaveMovieWizard::CreateFormatPage()
 
     page9_widthSpinBox = new QSpinBox(32, 4096, 1, formatAndResolution,
         "page9_widthSpinBox");
-    page9_widthSpinBox->setValue(default_movie_size[0]);
+    page9_widthSpinBox->setValue((int)(default_movie_size[0]));
     page9_widthSpinBox->setEnabled(false);
     connect(page9_widthSpinBox, SIGNAL(valueChanged(int)),
             this, SLOT(page9_widthChanged(int)));
@@ -671,7 +674,7 @@ QvisSaveMovieWizard::CreateFormatPage()
     
     page9_heightSpinBox = new QSpinBox(32, 4096, 1, formatAndResolution,
         "page9_heightSpinBox");
-    page9_heightSpinBox->setValue(default_movie_size[1]);
+    page9_heightSpinBox->setValue((int)(default_movie_size[1]));
     page9_heightSpinBox->setEnabled(false);
     connect(page9_heightSpinBox, SIGNAL(valueChanged(int)),
             this, SLOT(page9_heightChanged(int)));
@@ -1125,8 +1128,8 @@ QvisSaveMovieWizard::UpdatePage()
             if(!page9_UpdateFormat(MPEG_FORMAT))
                 page9_UpdateFormat(TIFF_FORMAT);
 
-            page9_UpdateResolution(true, 1., default_movie_size[0],
-                                   default_movie_size[1]);
+            page9_UpdateResolution(true, 1., (int)(default_movie_size[0]),
+                                   (int)(default_movie_size[1]));
         }
     case 10: // stereo
         //qDebug("Update the stereo page.");

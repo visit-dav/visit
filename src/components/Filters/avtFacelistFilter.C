@@ -701,9 +701,16 @@ EdgeHash::~EdgeHash()
     delete [] nEdges;
 }
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Fri Jun  9 13:47:29 PDT 2006
+//    Remove unused variable.
+//
+// ****************************************************************************
 void EdgeHash::HashEdge(Edge &e)
 {
-    int  i, j;
+    int  i;
     int idx = GetHashIndex(e.p1, e.p2);
     bool alreadyHaveEdge = false;
     for (i = 0 ; i < nEdges[idx] ; i++)

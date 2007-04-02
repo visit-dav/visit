@@ -116,6 +116,9 @@ void vtkDataSetRemoveGhostCells::Execute()
 //    Hank Childs, Thu Mar  2 11:14:53 PST 2006
 //    Created.
 //
+//    Hank Childs, Fri Jun  9 12:54:36 PDT 2006
+//    Remove unused variables.
+//
 // ****************************************************************************
 
 void vtkDataSetRemoveGhostCells::GenericExecute()
@@ -143,8 +146,6 @@ void vtkDataSetRemoveGhostCells::GenericExecute()
             nOut++;
     ugrid->Allocate(8*nOut);
    
-    vtkIdType npts;
-    vtkIdType *pts;
     int cellId = 0;
     vtkCellData *inCD  = ds->GetCellData();
     vtkCellData *outCD = ugrid->GetCellData();

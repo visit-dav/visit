@@ -670,6 +670,9 @@ LauncherApplication::LaunchProcess(const stringVector &launchArgs)
 //    Jeremy Meredith, Wed May 11 09:04:52 PDT 2005
 //    Added security key to simulation connection.
 //
+//    Hank Childs, Fri Jun  9 15:53:20 PDT 2006
+//    Replace sprintf(tmp, "") with strcpy(tmp, "") to remove compiler warning.
+//
 // ****************************************************************************
 void
 LauncherApplication::ConnectSimulation(const stringVector &launchArgs,
@@ -752,7 +755,7 @@ LauncherApplication::ConnectSimulation(const stringVector &launchArgs,
     //
     // Receive a reply
     //
-    sprintf(tmp,"");
+    strcpy(tmp,"");
     char *tbuf = tmp;
     char *tptr = tmp;
     int n;
@@ -771,7 +774,7 @@ LauncherApplication::ConnectSimulation(const stringVector &launchArgs,
     }
 
     // Create the Launch args
-    sprintf(tmp, "");
+    strcpy(tmp, "");
     for (int i=0; i<launchArgs.size(); i++)
     {
         strcat(tmp, launchArgs[i].c_str());

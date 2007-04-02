@@ -745,6 +745,9 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds)
 //    Hank Childs, Thu May 25 08:31:28 PDT 2006
 //    Added support for array variables.
 //
+//    Kathleen Bonnell, Fri Jun  9 09:59:49 PDT 2006 
+//    Fix UMR.
+//
 // ****************************************************************************
 
 void
@@ -776,7 +779,7 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
     {
         stringVector names; 
         doubleVector vals; 
-        PickVarInfo::Centering centering;
+        PickVarInfo::Centering centering(PickVarInfo::None);
         if (pickAtts.GetFulfilled())
         {
             if (pickAtts.GetPickVarInfo(varNum).HasInfo() 

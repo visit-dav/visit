@@ -551,12 +551,15 @@ ConfigManager::PutBackChar(char c)
 //
 // Modifications:
 //   
+//   Hank Childs, Thu Jun  8 16:14:54 PDT 2006
+//   Initialize 'c' to remove compiler warning.
+//
 // ****************************************************************************
 
 void
 ConfigManager::FinishTag()
 {
-    char c;
+    char c = '\0';
     for(int i = 0; !feof(fp) && ((c = ReadChar()) != '>'); ++i);
 
     if(c != '>')

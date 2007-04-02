@@ -514,7 +514,7 @@ if [ $vertex = true ]
 then
    if [ $test = no ]
    then
-      scp vertex2:/usr/tmp/$user/vertex/visitbuild/visit$ver2.linux-x86_64.tar.gz .
+      scp vertex0:/usr/tmp/$user/vertex/visitbuild/visit$ver2.linux-x86_64.tar.gz .
       scp visit$ver2.linux-x86_64.tar.gz gps15:
       scp visit-install gps15:
       scp vertex gps15:vertex_install

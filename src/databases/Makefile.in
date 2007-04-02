@@ -218,6 +218,9 @@
 #   Brad Whitlock, Thu Apr 27 13:16:09 PST 2006
 #   Added ORNL points (GTC) format.
 #
+#   Hank Childs, Fri Jun  9 16:27:50 PDT 2006
+#   Added MFIX reader.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -238,7 +241,7 @@ PDB=KullLite PDB
 SAF=SAF
 SAMPLES=Rect Hex
 REQUIRED=ANALYZE ANSYS AUXFile BOV BOW CMAT Curve2D Dune EnSight Image Lines \
- NASTRAN OVERFLOW PATRAN PLOT2D PLOT3D Point3D ProteinDataBank SAR STL \
+ MFIX NASTRAN OVERFLOW PATRAN PLOT2D PLOT3D Point3D ProteinDataBank SAR STL \
  Shapefile Silo SimV1 Spheral TFT TSurf Tecplot Vista VTK WavefrontOBJ Xmdv
 VISUS=ViSUS
 

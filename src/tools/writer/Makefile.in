@@ -55,6 +55,11 @@
 #    of  California,  and  shall  not  be  used  for  advertising  or  product
 #    endorsement purposes.
 #
+#  Modifications:
+#
+#    Hank Childs, Thu Jun  8 14:14:58 PDT 2006
+#    Fix typo where CXX flags were being used for C flags.
+#
 ##############################################################################
 ##
 ## Programs and options...
@@ -84,7 +89,7 @@ LDFLAGS=-L../lib @PY_LDFLAGS@ @LDFLAGS@
 LIBS=@LIBS@ -lviewerproxy -lviewerrpc -lcomm -lmisc -lstate -lutility \
      -lplugin -ldbatts -lavtexceptions -lexpr -lparser @PY_LIB@
 CXXFLAGS=@CXXFLAGS@ @PY_CXXFLAGS@ -I. -I../include/visit
-CFLAGS=@CXXFLAGS@ @PY_CXXFLAGS@ -I. -I../include/visit
+CFLAGS=@CFLAGS@ -I. -I../include/visit
 
 
 ##

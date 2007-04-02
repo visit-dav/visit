@@ -430,6 +430,9 @@ QvisFilledBoundaryPlotWindow::CreateWindowContents()
 //    Brad Whitlock, Wed Jul 20 17:42:45 PST 2005
 //    Added pointSizePixels.
 //
+//    Hank Childs, Thu Jun  8 13:41:24 PDT 2006
+//    Fix compiler warning for casting.
+//
 // ****************************************************************************
 
 void
@@ -505,7 +508,7 @@ QvisFilledBoundaryPlotWindow::UpdateWindow(bool doAll)
             break;
         case 10: // opacity
             overallOpacity->blockSignals(true);
-            overallOpacity->setValue((float)boundaryAtts->GetOpacity() * 255.f);
+            overallOpacity->setValue((int)(boundaryAtts->GetOpacity() * 255.f));
             overallOpacity->blockSignals(false);
             break;
         case 11: // wireframe

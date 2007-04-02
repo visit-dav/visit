@@ -52,6 +52,8 @@
 #include <VisWindow.h>
 #include <VisWindowColleagueProxy.h>
 
+#include <DebugStream.h>
+
 
 //
 // Static Function Prototypes
@@ -661,6 +663,9 @@ VisWinAxes::UpdatePlotList(vector<avtActor_p> &list)
 //    I rewrote the routine to get the range from the curve or 2d view from
 //    the vis window.
 //
+//    Hank Childs, Fri Jun  9 14:43:27 PDT 2006
+//    Add missing cases for the switch statement.
+//
 // ****************************************************************************
 
 void
@@ -687,6 +692,9 @@ VisWinAxes::GetRange(double &min_x, double &max_x, double &min_y, double &max_y)
         min_y = viewCurve.range[0];
         max_y = viewCurve.range[1];
         }
+        break;
+      default:
+        debug1 << "Asked for range of non-2D window." << endl;
         break;
     }
 }

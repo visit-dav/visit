@@ -118,6 +118,9 @@
 //    Hank Childs, Tue May 24 09:54:36 PDT 2005
 //    Added bool to constructor for hasoptions.
 //
+//    Hank Childs, Fri Jun  9 09:53:32 PDT 2006
+//    Added copyright string.
+//
 // ****************************************************************************
 
 class WindowGeneratorField : public virtual Field
@@ -1348,10 +1351,14 @@ class WindowGeneratorAttribute
     //   Brad Whitlock, Wed Dec 8 16:12:32 PST 2004
     //   Added support for variable buttons.
     //
+    //   Hank Childs, Fri Jun  9 09:54:46 PDT 2006
+    //   Added copyright string.
+    //
     // ************************************************************************
 
     void WriteHeader(ostream &h)
     {
+        h << copyright_str << endl;
         h << "#ifndef " << windowname.upper() << "_H" << endl;
         h << "#define " << windowname.upper() << "_H" << endl;
         h << endl;
@@ -1464,10 +1471,14 @@ class WindowGeneratorAttribute
     //   Brad Whitlock, Wed Dec 8 16:13:25 PST 2004
     //   Added support for variable names.
     //
+    //   Hank Childs, Fri Jun  9 09:54:46 PDT 2006
+    //   Added copyright string.
+    //
     // ************************************************************************
 
     void WriteSource(ostream &c)
     {
+        c << copyright_str << endl;
         c << "#include \""<<windowname<<".h\"" << endl;
         c << endl;
         c << "#include <"<<name<<".h>" << endl;

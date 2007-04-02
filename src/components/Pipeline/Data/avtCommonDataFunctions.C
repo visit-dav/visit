@@ -2061,6 +2061,11 @@ CMaybeCompressedDataString(const unsigned char *dstr)
 //  Programmer: Mark C. Miller 
 //  Creation:   November 15, 2005 
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Jun  9 13:21:29 PDT 2006
+//    Remove unused variable.
+//
 // ****************************************************************************
 bool CCompressDataString(const unsigned char *dstr, int len,
                          unsigned char **newdstr, int *newlen,
@@ -2073,8 +2078,7 @@ bool CCompressDataString(const unsigned char *dstr, int len,
     if (BZ2_bzBuffToBuffCompress((char*)dstrBZ2, &lenBZ2, (char*) dstr, len,
                                  1, 0, 250) != BZ_OK)
     {
-        double dummy =
-            visitTimer->StopTimer(startCompress,
+        visitTimer->StopTimer(startCompress,
                         "Failed attempt to compress data", true);
         delete [] dstrBZ2;
         return false;
@@ -2108,6 +2112,11 @@ bool CCompressDataString(const unsigned char *dstr, int len,
 //  Programmer: Mark C. Miller 
 //  Creation:   November 15, 2005 
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Jun  9 13:21:29 PDT 2006
+//    Remove unused variable.
+//
 // ****************************************************************************
 
 bool CDecompressDataString(const unsigned char *dstr, int len,
@@ -2126,8 +2135,7 @@ bool CDecompressDataString(const unsigned char *dstr, int len,
         if (BZ2_bzBuffToBuffDecompress((char*) strOrig, &strLengthOrig,
                                        (char*) dstr, len, 0, 0) != BZ_OK)
         {
-            double dummy =
-                visitTimer->StopTimer(startDecompress,
+            visitTimer->StopTimer(startDecompress,
                             "Failed attempt to decompress data", true);
             debug5 << "Found 3 character \"BZh\" header in data string "
                    << "but failed to decompress. Assuming coincidence." << endl;

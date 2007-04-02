@@ -106,8 +106,8 @@ class vtkStructuredGrid;
 #define ASCII 1
 
 #define NATIVE_ENDIAN 0
-#define BIG_ENDIAN 1
-#define LITTLE_ENDIAN 2
+#define VTK_BIG_ENDIAN 1
+#define VTK_LITTLE_ENDIAN 2
 
 #define STRUCTURED 0
 #define UNSTRUCTURED 1
@@ -604,6 +604,10 @@ MatchesSubstring(const char *c1, const char *c2)
 //    automatic array variable allocation of sizes that are non-const, even
 //    if they are provably known at compile time.
 //
+//    Hank Childs, Thu Jun  8 14:04:15 PDT 2006
+//    Change BIG_ENDIAN to VTK_BIG_ENDIAN because of namespace conflict with
+//    endian.h on SUSE.
+//
 // ****************************************************************************
 
 void vtkVisItPLOT3DReader::CollectInfo(char *x_file, char *s_file)
@@ -664,11 +668,11 @@ void vtkVisItPLOT3DReader::CollectInfo(char *x_file, char *s_file)
       }
       else if (MatchesSubstring(infoLine,"BIG_ENDIAN"))
       {  
-        Endianness = BIG_ENDIAN;
+        Endianness = VTK_BIG_ENDIAN;
       }
       else if (MatchesSubstring(infoLine,"LITTLE_ENDIAN"))
       {
-        Endianness = LITTLE_ENDIAN;
+        Endianness = VTK_LITTLE_ENDIAN;
       }
       else if (MatchesSubstring(infoLine,"STRUCTURED"))
       {
@@ -2446,6 +2450,10 @@ void vtkVisItPLOT3DReader::RemoveAllFunctions()
 //    Since 'output' is a float*, not a float*&, we cannot meaningfully
 //    allocate space for it inside this method.  I disallowed it.
 //
+//    Hank Childs, Thu Jun  8 14:04:15 PDT 2006
+//    Change BIG_ENDIAN to VTK_BIG_ENDIAN because of namespace conflict with
+//    endian.h on SUSE.
+//
 // ****************************************************************************
 
 int vtkVisItPLOT3DReader::ReadNumbers( FILE *fp, unsigned int numbersToRead, 
@@ -2501,8 +2509,8 @@ int vtkVisItPLOT3DReader::ReadNumbers( FILE *fp, unsigned int numbersToRead,
       }
       else
       {
-        if ((this->Endianness == BIG_ENDIAN && isLittleEndian) ||
-           (this->Endianness == LITTLE_ENDIAN && !isLittleEndian))
+        if ((this->Endianness == VTK_BIG_ENDIAN && isLittleEndian) ||
+           (this->Endianness == VTK_LITTLE_ENDIAN && !isLittleEndian))
         {
           vtkByteSwap::Swap4BERange(output,numbersToRead);
         }
@@ -2517,8 +2525,8 @@ int vtkVisItPLOT3DReader::ReadNumbers( FILE *fp, unsigned int numbersToRead,
       }
       else
       {
-        if (( this->Endianness == BIG_ENDIAN && isLittleEndian) ||
-            ( this->Endianness == LITTLE_ENDIAN && !isLittleEndian))
+        if (( this->Endianness == VTK_BIG_ENDIAN && isLittleEndian) ||
+            ( this->Endianness == VTK_LITTLE_ENDIAN && !isLittleEndian))
         {
           vtkByteSwap::Swap8BERange(doubleOutput,numbersToRead);
         }
@@ -2550,6 +2558,10 @@ int vtkVisItPLOT3DReader::ReadNumbers( FILE *fp, unsigned int numbersToRead,
 //  Modifications:
 //    Jeremy Meredith, Tue Feb 22 12:57:17 PST 2005
 //    Check for a NULL output array.
+//
+//    Hank Childs, Thu Jun  8 14:04:15 PDT 2006
+//    Change BIG_ENDIAN to VTK_BIG_ENDIAN because of namespace conflict with
+//    endian.h on SUSE.
 //
 // ****************************************************************************
 
@@ -2603,8 +2615,8 @@ int vtkVisItPLOT3DReader::ReadNumbers( FILE *fp, unsigned int numbersToRead,
       #ifdef WORDS_BIGENDIAN
         isLittleEndian = false;
       #endif
-      if ((this->Endianness == BIG_ENDIAN && isLittleEndian) ||
-          (this->Endianness == LITTLE_ENDIAN && !isLittleEndian))
+      if ((this->Endianness == VTK_BIG_ENDIAN && isLittleEndian) ||
+          (this->Endianness == VTK_LITTLE_ENDIAN && !isLittleEndian))
       {
         vtkByteSwap::Swap4BERange(output,numbersToRead);
       }

@@ -563,6 +563,12 @@ void vtkCSGGrid::DeepCopy(vtkDataObject *srcObject)
 }
 
 //----------------------------------------------------------------------------
+// Modifications:
+//
+//   Hank Childs, Fri Jun  9 12:54:36 PDT 2006
+//   Add "default" to switch statement
+//
+//----------------------------------------------------------------------------
 void vtkCSGGrid::PrintSelf(ostream& os, vtkIndent indent)
 {
     int i;
@@ -616,6 +622,11 @@ void vtkCSGGrid::PrintSelf(ostream& os, vtkIndent indent)
                   quadric->PrintSelf(os, indent2.GetNextIndent());
                 break;
             }
+            default:
+            {
+                os << ", is an unexpected implicit function type" << endl;
+                break;
+            }
         }
     }
 
@@ -665,6 +676,12 @@ void vtkCSGGrid::PrintSelf(ostream& os, vtkIndent indent)
                               quadric->PrintSelf(os, indent2.GetNextIndent());
                             break;
                         }
+                        default:
+                        {
+                            os << "is an unexpected implicit function type"
+                               << endl;
+                            break;
+                        }
                     }
                 }
                 else
@@ -712,10 +729,22 @@ void vtkCSGGrid::PrintSelf(ostream& os, vtkIndent indent)
                   quadric->PrintSelf(os, indent2.GetNextIndent());
                 break;
             }
+            default:
+            {
+                os << "is an unexpected implicit function type"
+                   << endl;
+                break;
+            }
         }
     }
 }
 
+//----------------------------------------------------------------------------
+// Modifications:
+//
+//   Hank Childs, Fri Jun  9 12:54:36 PDT 2006
+//   Add "default" to switch statement
+//
 //----------------------------------------------------------------------------
 vtkIdType vtkCSGGrid::AddBoundary(BoundaryType type, int numcoeffs,
                                   const double *coeffs)
@@ -749,7 +778,8 @@ vtkIdType vtkCSGGrid::AddBoundary(BoundaryType type, int numcoeffs,
             }
             else
             {
-                double Nx = coeffs[3], Ny = coeffs[4], Nz = coeffs[5];
+                double Nx = coeffs[3], Ny = coeffs[4];
+                /* double Nz = coeffs[5]; */
                 double rotz = acos(Ny) * 180.0 / M_PI;
                 double roty = acos(Nx/sqrt(1-Ny*Ny)) * 180.0 / M_PI;
 
@@ -816,6 +846,12 @@ vtkIdType vtkCSGGrid::AddBoundary(BoundaryType type, int numcoeffs,
                                       coeffs[9]); // constant term
 
             newBoundary = quadric;
+            break;
+        }
+
+        default:
+        {
+            // No-op, logic below will handle.
             break;
         }
 
@@ -954,6 +990,12 @@ vtkIdType vtkCSGGrid::AddRegion(vtkIdType bndId, RegionOp op)
             break;
         }
 
+        default:
+        {
+            // No-op, logic below will handle
+            break;
+        }
+
     } // switch
 
     if (newRegion)
@@ -993,6 +1035,12 @@ vtkIdType vtkCSGGrid::AddRegion(vtkIdType bndId, RegionOp op)
 }
 
 //----------------------------------------------------------------------------
+// Modifications:
+//
+//   Hank Childs, Fri Jun  9 12:54:36 PDT 2006
+//   Add "default" to switch statement
+//
+//----------------------------------------------------------------------------
 vtkIdType vtkCSGGrid::AddRegion(vtkIdType regIdLeft, vtkIdType regIdRight,
                                 RegionOp op)
 {
@@ -1006,6 +1054,7 @@ vtkIdType vtkCSGGrid::AddRegion(vtkIdType regIdLeft, vtkIdType regIdRight,
         case INTERSECT: boolReg->SetOperationTypeToIntersection(); break;
         case UNION:     boolReg->SetOperationTypeToUnion();        break;
         case DIFF:      boolReg->SetOperationTypeToDifference();   break;
+        default:        break;  // Avoid compiler warning
     }
 
     boolReg->AddFunction(left);
@@ -1017,6 +1066,12 @@ vtkIdType vtkCSGGrid::AddRegion(vtkIdType regIdLeft, vtkIdType regIdRight,
     return funcMap[boolReg]; 
 }
 
+//----------------------------------------------------------------------------
+// Modifications:
+//
+//   Hank Childs, Fri Jun  9 12:54:36 PDT 2006
+//   Add "default" to switch statement
+//
 //----------------------------------------------------------------------------
 vtkIdType vtkCSGGrid::AddRegion(vtkIdType regId, const double *coeffs)
 {
@@ -1075,6 +1130,12 @@ vtkIdType vtkCSGGrid::AddRegion(vtkIdType regId, const double *coeffs)
             newQuadric->SetCoefficients(oldQuadric->GetCoefficients());
 
             newRegion = newQuadric;
+            break;
+        }
+
+        default:
+        {
+            // No-op, logic below will handle.
             break;
         }
 
@@ -1183,13 +1244,19 @@ vtkPolyData  *vtkCSGGrid::DiscretizeSurfaces(
     return appender->GetOutput();
 }
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Fri Jun  9 12:54:36 PDT 2006
+//    Remove unused variables.
+//
+// ****************************************************************************
 vtkUnstructuredGrid *vtkCSGGrid::DiscretizeSpace(
     int specificZone, double tol,
     double minX, double maxX,
     double minY, double maxY,
     double minZ, double maxZ)
 {
-    vtkUnstructuredGrid *retval = 0;
     vtkAppendFilter *appender = vtkAppendFilter::New();
 
     //
@@ -1283,6 +1350,13 @@ vtkCSGGrid::MakeMeshZone(const Box *theBox,
     ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, pointIds);
 }
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Fri Jun  9 12:54:36 PDT 2006
+//    Moved currently unused variables into "if 0" preprocessor directive.
+//
+// ****************************************************************************
 vtkUnstructuredGrid *vtkCSGGrid::DiscretizeSpace(
     int specificZone, int rank, int nprocs, double tol,
     double minX, double maxX,
@@ -1405,10 +1479,10 @@ vtkUnstructuredGrid *vtkCSGGrid::DiscretizeSpace(
                // Subdivide this box
                //
                int j;
-               int numX = 0, numY = 0, numZ = 0;
                vector<Box*> newBoxes, newXBoxes, newYBoxes, newZBoxes;
 
 #if 0
+               int numX = 0, numY = 0, numZ = 0;
                Box::FuncState newState;
 
                //

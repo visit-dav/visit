@@ -30,6 +30,9 @@ Definition:
 //   Kathleen Bonnell, Wed Jun  9 12:24:09 PDT 2004 
 //   Add conciseOutput.
 //
+//   Hank Childs, Thu Jun  8 16:21:44 PDT 2006
+//   Initialize showId to avoid compiler warning.
+//
 // ****************************************************************************
 void
 PickAttributes::PrintSelf(ostream &os)
@@ -138,7 +141,7 @@ PickAttributes::PrintSelf(ostream &os)
     }
     if (displayIncidentElements)
     {
-        bool showId;
+        bool showId = false;
         if (pickType == Zone || pickType == DomainZone)
         {
             os << "Incident Nodes " ; 
@@ -238,6 +241,9 @@ Definition:
 //   Mark C. Miller, Tue Aug 24 19:53:18 PDT 2004
 //   Added block/group piece names
 //   
+//   Hank Childs, Thu Jun  8 16:21:44 PDT 2006
+//   Initialize showId to avoid compiler warning.
+//
 // ****************************************************************************
 void
 PickAttributes::CreateOutputString(std::string &os, bool withLetter)
@@ -413,7 +419,7 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
     }
     if (displayIncidentElements)
     {
-        bool showId;
+        bool showId = false;
         bool showGlobal = globalIncidentElements.size() == incidentElements.size();
         if (pickType == Zone || pickType == DomainZone)
         {
@@ -843,6 +849,9 @@ Definition:
 //   Mark C. Miller, Tue Aug 24 19:53:18 PDT 2004
 //   Added block/group piece names
 //   
+//   Hank Childs, Thu Jun  8 16:21:44 PDT 2006
+//   Initialize showId to avoid compiler warning.
+//
 // ****************************************************************************
 
 void
@@ -980,7 +989,7 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
     }
     if (displayIncidentElements)
     {
-        bool showId;
+        bool showId = false;
         bool showGlobal = globalIncidentElements.size() == incidentElements.size();
         if (pickType == Zone || pickType == DomainZone)
         {

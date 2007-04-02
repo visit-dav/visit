@@ -213,6 +213,9 @@ static double CalculateShadow_Antialiased(int l_width, int l_height,
 //
 //  Modifications:
 //
+//    Hank Childs, Fri Jun  9 14:43:27 PDT 2006
+//    Comment out currently unused variable to address compiler warning.
+//
 // ****************************************************************************
 static double CalculateShadow_Soft(int l_width, int l_height,
                                   float *light_image_zbuff,
@@ -251,7 +254,7 @@ static double CalculateShadow_Soft(int l_width, int l_height,
         {
             double A = z10 - z00;
             double B = z00 - z01;
-            double C = 1;
+            // double C = 1;
             double D = -z00;
             double f0 = f_display[0]-double(display[0]);
             double f1 = f_display[1]-double(display[1]);
@@ -575,6 +578,10 @@ avtSoftwareShader::AddShadows(avtImage_p light_image, avtImage_p current_image,
 //  Creation:   October 28, 2004
 //
 //  Modifications:
+//
+//    Hank Childs, Fri Jun  9 14:43:27 PDT 2006
+//    Removed unused variable.
+//
 // ****************************************************************************
 
 avtView3D
@@ -613,7 +620,6 @@ avtSoftwareShader::FindLightView(avtImage_p current_image,
     //
     // Set up the buffers we will be reading from and writing to.
     //
-    unsigned char *rgb = current_image->GetImage().GetRGBBuffer();
     float *cur_image_zbuff = current_image->GetImage().GetZBuffer();
     int rs, cs;
     current_image->GetImage().GetSize(&rs, &cs);

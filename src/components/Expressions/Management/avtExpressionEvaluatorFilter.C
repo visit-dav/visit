@@ -217,6 +217,9 @@ avtExpressionEvaluatorFilter::Execute(void)
 //    Don't bother checking against 'unknown', since it probably comes from
 //    a CMFE expression.
 //
+//    Hank Childs, Fri Jun  9 14:34:50 PDT 2006
+//    Add default to switch statement.
+//
 // ****************************************************************************
 
 void
@@ -252,6 +255,9 @@ avtExpressionEvaluatorFilter::VerifyVariableTypes(void)
             break;
           case Expression::ArrayMeshVar:
             et_as_avt = AVT_ARRAY_VAR;
+            break;
+          default:
+            // Handled in logic below.
             break;
         }
         if (vt != et_as_avt)

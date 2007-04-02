@@ -76,6 +76,9 @@ vtkVertexFilter::vtkVertexFilter()
 //    Kathleen Bonnell, Wed Oct 20 17:10:21 PDT 2004 
 //    Use vtkVisItUtility method to compute cell center. 
 //
+//    Hank Childs, Fri Jun  9 13:13:20 PDT 2006
+//    Remove unused variable.
+//
 // ****************************************************************************
 
 void vtkVertexFilter::Execute(void)
@@ -149,7 +152,6 @@ void vtkVertexFilter::Execute(void)
     nOutPts = nCells;
     outPts->SetNumberOfPoints(nOutPts);
     outPD->CopyAllocate(inCd, nOutPts);
-    int subId=0;
     double point[3];
     for (i = 0 ; i < nOutPts ; i++)
       {

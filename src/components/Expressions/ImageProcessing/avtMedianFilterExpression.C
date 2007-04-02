@@ -195,14 +195,15 @@ FindMedian(float *list, int nlist)
 //    Hank Childs, Tue Aug 23 09:37:51 PDT 2005
 //    Fix indexing bug.
 //
+//    Hank Childs, Fri Jun  9 14:34:50 PDT 2006
+//    Remove unused variable.
+//
 // ****************************************************************************
 
 void
 avtMedianFilterExpression::DoOperation(vtkDataArray *in1, vtkDataArray *out, 
                            int ncomponents,int ntuples)
 {
-    int  i;
-
     if (cur_mesh->GetDataObjectType() != VTK_RECTILINEAR_GRID &&
         cur_mesh->GetDataObjectType() != VTK_STRUCTURED_GRID)
     {

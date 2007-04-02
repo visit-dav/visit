@@ -360,14 +360,18 @@ avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
 //    Find intersected cell and test if it is a ghost before proceeding
 //    further.  
 //
+//    Hank Childs, Fri Jun  9 14:43:27 PDT 2006
+//    Move currently unused variable into section removed by preprocessor
+//    directive.  Purpose is to remove compiler warning.
+//
 // ****************************************************************************
 
 int
 avtNodePickQuery::DeterminePickedNode(vtkDataSet *ds)
 {
-    double *bnds = ds->GetBounds();
     double *pp = pickAtts.GetPickPoint();
 #if 0
+    double *bnds = ds->GetBounds();
 
     if (pp[0] < bnds[0] || pp[0] > bnds[1] ||
         pp[1] < bnds[2] || pp[1] > bnds[3] ||

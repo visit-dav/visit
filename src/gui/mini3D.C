@@ -565,6 +565,9 @@ m3d_line_c::addToRenderer(m3d_renderer &renderer, color C,
 //
 // Modifications:
 //   
+//   Hank Childs, Thu Jun  8 14:14:58 PDT 2006
+//   Fix compiler warning for casting.
+//
 // ****************************************************************************
 
 void
@@ -581,7 +584,7 @@ m3d_line_c::draw(m3d_renderer &renderer)
        pen.setStyle(Qt::DashDotLine);
     QPainter *p = painter(renderer);
     p->setPen(pen);
-    p->drawLine(v[0].x, v[0].y, v[1].x, v[1].y);
+    p->drawLine((int) (v[0].x), (int) (v[0].y), (int) (v[1].x),(int) (v[1].y));
     setDrawn(true);
 }
 
@@ -743,6 +746,9 @@ m3d_tri_c::addToRenderer(m3d_renderer &renderer, color C,
 //   Brad Whitlock, Fri Aug 22 08:57:56 PDT 2003
 //   Forced it to have a pen color so it draws correctly on MacOS X.
 //
+//   Hank Childs, Thu Jun  8 14:14:58 PDT 2006
+//   Fix compiler warning for casting.
+//
 // ****************************************************************************
 
 void
@@ -750,9 +756,9 @@ m3d_tri_c::draw(m3d_renderer &renderer)
 {
     QPointArray tri(3);
 
-    tri.setPoint(0, v[0].x, v[0].y);
-    tri.setPoint(1, v[1].x, v[1].y);
-    tri.setPoint(2, v[2].x, v[2].y);
+    tri.setPoint(0, (int) v[0].x, (int) v[0].y);
+    tri.setPoint(1, (int) v[1].x, (int) v[1].y);
+    tri.setPoint(2, (int) v[2].x, (int) v[2].y);
 
     QColor triColor(get_pixel_color(&c));
     QBrush b(triColor);
@@ -944,6 +950,9 @@ m3d_tri_n::addToRenderer(m3d_renderer &renderer, color C,
 //   Brad Whitlock, Fri Aug 22 08:59:04 PDT 2003
 //   I made it have a pen color so it draws correctly on MacOS X.
 //
+//   Hank Childs, Thu Jun  8 14:14:58 PDT 2006
+//   Fix compiler warning for casting.
+//
 // ****************************************************************************
 
 void
@@ -951,9 +960,9 @@ m3d_tri_n::draw(m3d_renderer &renderer)
 {
     QPointArray tri(3);
 
-    tri.setPoint(0, v[0].x, v[0].y);
-    tri.setPoint(1, v[1].x, v[1].y);
-    tri.setPoint(2, v[2].x, v[2].y);
+    tri.setPoint(0, (int) v[0].x, (int) v[0].y);
+    tri.setPoint(1, (int) v[1].x, (int) v[1].y);
+    tri.setPoint(2, (int) v[2].x, (int) v[2].y);
 
     QColor triColor(get_pixel_color(&lit_color));
     QBrush b(triColor);
