@@ -2963,6 +2963,8 @@ case $SHORT_UNAME in
     if test "$EXODUS_LIB" != "" ; then
         CREATE_EXODUS_LINK="create_exodus_link"
     fi
+  ;;
+  *)
     if test "$FILIB_LIBS" != ""; then
         CREATE_FILIB_LINK="libfilib"
     fi
