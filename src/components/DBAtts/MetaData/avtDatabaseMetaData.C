@@ -152,10 +152,14 @@ VariableNamesEqual(const std::string &v1, const std::string &v2)
 //
 //    Jeremy Meredith, Fri Aug 25 17:14:58 EDT 2006
 //    Added nodesAreCritical and unitCellVectors.
+//
+//    Jeremy Meredith, Thu Feb 15 11:42:44 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData()
-    : AttributeSubject("sssiiiiiibDDs*ii*ssbssssssibbbbbsiiibF")
+    : AttributeSubject("sssiiiiiibDDs*ii*ssbssssssibbbbbsiiibFbD")
 {
     blockTitle = "domains";
     blockPieceName = "domain";
@@ -188,6 +192,14 @@ avtMeshMetaData::avtMeshMetaData()
         for (int k=0; k<3; k++)
         {
             unitCellVectors[j*3+k] = (j==k) ? 1.0 : 0.0;
+        }
+    }
+    rectilinearGridHasTransform = false;
+    for (int m=0; m<4; m++)
+    {
+        for (int n=0; n<4; n++)
+        {
+            rectilinearGridTransform[m*4+n] = (m==n) ? 1.0 : 0.0;
         }
     }
 }
@@ -256,12 +268,16 @@ avtMeshMetaData::avtMeshMetaData()
 //
 //    Jeremy Meredith, Fri Aug 25 17:14:58 EDT 2006
 //    Added nodesAreCritical and unitCellVectors.
+//
+//    Jeremy Meredith, Thu Feb 15 11:42:44 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData(const double *extents, std::string s, int nb,
                                  int bo, int co, int go, int sd, int td,
                                  avtMeshType mt)
-    : AttributeSubject("sssiiiiiibDDs*ii*ssbssssssibbbbbsiiibF")
+    : AttributeSubject("sssiiiiiibDDs*ii*ssbssssssibbbbbsiiibFbD")
 {
     name                 = s;
     originalName         = name;
@@ -296,6 +312,14 @@ avtMeshMetaData::avtMeshMetaData(const double *extents, std::string s, int nb,
         for (int k=0; k<3; k++)
         {
             unitCellVectors[j*3+k] = (j==k) ? 1.0 : 0.0;
+        }
+    }
+    rectilinearGridHasTransform = false;
+    for (int m=0; m<4; m++)
+    {
+        for (int n=0; n<4; n++)
+        {
+            rectilinearGridTransform[m*4+n] = (m==n) ? 1.0 : 0.0;
         }
     }
 }
@@ -367,11 +391,15 @@ avtMeshMetaData::avtMeshMetaData(const double *extents, std::string s, int nb,
 //
 //    Jeremy Meredith, Fri Aug 25 17:14:58 EDT 2006
 //    Added nodesAreCritical and unitCellVectors.
+//
+//    Jeremy Meredith, Thu Feb 15 11:42:44 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int go,
                                  int sd, int td, avtMeshType mt)
-    : AttributeSubject("sssiiiiiibDDs*ii*ssbssssssibbbbbsiiibF")
+    : AttributeSubject("sssiiiiiibDDs*ii*ssbssssssibbbbbsiiibFbD")
 {
     name                 = s;
     originalName         = name;
@@ -409,6 +437,14 @@ avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int go,
         for (int k=0; k<3; k++)
         {
             unitCellVectors[j*3+k] = (j==k) ? 1.0 : 0.0;
+        }
+    }
+    rectilinearGridHasTransform = false;
+    for (int m=0; m<4; m++)
+    {
+        for (int n=0; n<4; n++)
+        {
+            rectilinearGridTransform[m*4+n] = (m==n) ? 1.0 : 0.0;
         }
     }
 }
@@ -479,10 +515,13 @@ avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int go,
 //    Jeremy Meredith, Fri Aug 25 17:14:58 EDT 2006
 //    Added nodesAreCritical and unitCellVectors.
 //
+//    Jeremy Meredith, Thu Feb 15 11:42:44 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData(const avtMeshMetaData &rhs)
-    : AttributeSubject("sssiiiiiibDDs*ii*ssbssssssibbbbbsiiibF")
+    : AttributeSubject("sssiiiiiibDDs*ii*ssbssssssibbbbbsiiibFbD")
 {
     name                     = rhs.name;
     originalName             = rhs.originalName;
@@ -527,6 +566,14 @@ avtMeshMetaData::avtMeshMetaData(const avtMeshMetaData &rhs)
         for (int k=0; k<3; k++)
         {
             unitCellVectors[j*3+k] = rhs.unitCellVectors[j*3+k];
+        }
+    }
+    rectilinearGridHasTransform = rhs.rectilinearGridHasTransform;
+    for (int m=0; m<4; m++)
+    {
+        for (int n=0; n<4; n++)
+        {
+            rectilinearGridTransform[m*4+n]=rhs.rectilinearGridTransform[m*4+n];
         }
     }
 }
@@ -611,6 +658,9 @@ avtMeshMetaData::~avtMeshMetaData()
 //    Jeremy Meredith, Fri Aug 25 17:14:58 EDT 2006
 //    Added nodesAreCritical and unitCellVectors.
 //
+//    Jeremy Meredith, Thu Feb 15 11:42:44 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
 // ****************************************************************************
 
 const avtMeshMetaData &
@@ -659,6 +709,14 @@ avtMeshMetaData::operator=(const avtMeshMetaData &rhs)
         for (int k=0; k<3; k++)
         {
             unitCellVectors[j*3+k] = rhs.unitCellVectors[j*3+k];
+        }
+    }
+    rectilinearGridHasTransform = rhs.rectilinearGridHasTransform;
+    for (int m=0; m<4; m++)
+    {
+        for (int n=0; n<4; n++)
+        {
+            rectilinearGridTransform[m*4+n]=rhs.rectilinearGridTransform[m*4+n];
         }
     }
 
@@ -722,6 +780,9 @@ avtMeshMetaData::operator=(const avtMeshMetaData &rhs)
 //    Jeremy Meredith, Fri Aug 25 17:14:58 EDT 2006
 //    Added nodesAreCritical and unitCellVectors.
 //
+//    Jeremy Meredith, Thu Feb 15 11:42:44 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
 // ****************************************************************************
 
 void
@@ -763,6 +824,8 @@ avtMeshMetaData::SelectAll()
     Select(33, (void*)&meshCoordType);
     Select(34, (void*)&nodesAreCritical);
     Select(35, (void*)unitCellVectors, 9);
+    Select(36, (void*)&rectilinearGridHasTransform);
+    Select(37, (void*)&rectilinearGridTransform, 16);
 }
 
 
@@ -880,6 +943,9 @@ avtMeshMetaData::SetExtents(const double *extents)
 //
 //    Jeremy Meredith, Fri Aug 25 17:14:58 EDT 2006
 //    Added nodesAreCritical and unitCellVectors.
+//
+//    Jeremy Meredith, Thu Feb 15 11:42:44 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
 //
 // ****************************************************************************
 
@@ -1068,6 +1134,24 @@ avtMeshMetaData::Print(ostream &out, int indent) const
             << unitCellVectors[i*3+0] << " "
             << unitCellVectors[i*3+1] << " "
             << unitCellVectors[i*3+2] << endl;
+    }
+
+    Indent(out, indent);
+    out << "Rectilinear grids "
+        << (rectilinearGridHasTransform ? "do " : "do not ")
+        << "have an implicit transform." << endl;
+    if (rectilinearGridHasTransform)
+    {
+        for (int i=0; i<4; i++)
+        {
+            Indent(out, indent);
+            out << "   [ "
+                << rectilinearGridTransform[i*4+0] << " "
+                << rectilinearGridTransform[i*4+1] << " "
+                << rectilinearGridTransform[i*4+2] << " "
+                << rectilinearGridTransform[i*4+3] << " "
+                << "]" << endl;
+        }
     }
 }
 

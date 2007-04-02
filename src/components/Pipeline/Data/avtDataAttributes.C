@@ -143,6 +143,9 @@ using     std::sort;
 //    Jeremy Meredith, Mon Aug 28 16:46:29 EDT 2006
 //    Added nodesAreCritical.  Added unitCellVectors.
 //
+//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
 // ****************************************************************************
 
 avtDataAttributes::avtDataAttributes()
@@ -205,6 +208,14 @@ avtDataAttributes::avtDataAttributes()
             unitCellVectors[i*3+j] = (i==j) ? 1.0 : 0.0;
         }
     }
+    for (int m=0; m<4; m++)
+    {
+        for (int n=0; n<4; n++)
+        {
+            rectilinearGridTransform[m*4+n] = (m==n) ? 1.0 : 0.0;
+        }
+    }
+    rectilinearGridHasTransform = false;
     plotInfoAtts = NULL;
 }
 
@@ -398,6 +409,9 @@ avtDataAttributes::DestructSelf(void)
 //
 //    Hank Childs, Fri Jan 12 13:00:31 PST 2007
 //    Added binRange.
+//
+//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
 //
 // ****************************************************************************
 
@@ -687,6 +701,22 @@ avtDataAttributes::Print(ostream &out)
             << unitCellVectors[i*3+2] << endl;
     }
 
+    out << "Rectilinear grids "
+        << (rectilinearGridHasTransform ? "do" : "do not")
+        << " have an implicit transform." << endl;
+    if (rectilinearGridHasTransform)
+    {
+        out << "The rectilinear grid transform is:" << endl;
+        for (i=0; i<4; i++)
+        {
+            for (int j=0; j<4; j++)
+            {
+                out << "  " << rectilinearGridTransform[i*4+j];
+            }
+            out << endl;
+        }
+    }
+
     out << "PlotInfoAttributes: ";
     if (plotInfoAtts == NULL)
         out << "Not Set";
@@ -800,6 +830,9 @@ avtDataAttributes::Print(ostream &out)
 //    Hank Childs, Fri Jan 12 13:00:31 PST 2007
 //    Added binRanges.
 //
+//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
 // ****************************************************************************
 
 void
@@ -889,6 +922,9 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     nodesAreCritical = di.nodesAreCritical;
     for (int j=0; j<9; j++)
         unitCellVectors[j] = di.unitCellVectors[j];
+    rectilinearGridHasTransform = di.rectilinearGridHasTransform;
+    for (int k=0; k<16; k++)
+        rectilinearGridTransform[k] = di.rectilinearGridTransform[k];
     SetPlotInfoAtts(di.plotInfoAtts);
 }
 
@@ -998,6 +1034,9 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //
 //    Jeremy Meredith, Mon Aug 28 16:46:29 EDT 2006
 //    Added nodesAreCritical.  Added unitCellVectors.
+//
+//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
 //
 // ****************************************************************************
 
@@ -1152,7 +1191,14 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
 
     if (nodesAreCritical != da.nodesAreCritical)
     {
-        EXCEPTION2(InvalidMergeException, nodesAreCritical, da.nodesAreCritical);
+        EXCEPTION2(InvalidMergeException,nodesAreCritical,da.nodesAreCritical);
+    }
+
+    if (rectilinearGridHasTransform != da.rectilinearGridHasTransform)
+    {
+        EXCEPTION2(InvalidMergeException,
+                   rectilinearGridHasTransform,
+                   da.rectilinearGridHasTransform);
     }
 
     if (GetContainsGhostZones() == AVT_MAYBE_GHOSTS)
@@ -1222,7 +1268,7 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
     origElementsRequiredForPick |= da.origElementsRequiredForPick;
     SetPlotInfoAtts(da.plotInfoAtts);
 
-    // there's no good answer for unitCellVectors
+    // there's no good answer for unitCellVectors or rectilinearGridTransform
 }
 
 
@@ -2308,6 +2354,9 @@ avtDataAttributes::SetTime(double d)
 //    Hank Childs, Fri Jan 12 13:00:31 PST 2007
 //    Added binRanges.
 //
+//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
 // ****************************************************************************
 
 void
@@ -2317,7 +2366,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
     int   i, j;
 
     int varSize = 6;
-    int numVals = 26 + varSize*variables.size();
+    int numVals = 27 + varSize*variables.size();
     int *vals = new int[numVals];
     vals[0] = topologicalDimension;
     vals[1] = spatialDimension;
@@ -2343,16 +2392,17 @@ avtDataAttributes::Write(avtDataObjectString &str,
     vals[21] = origElementsRequiredForPick;
     vals[22] = meshCoordType;
     vals[23] = (nodesAreCritical ? 1 : 0);
-    vals[24] = activeVariable;
-    vals[25] = variables.size();
+    vals[24] = (rectilinearGridHasTransform ? 1 : 0);
+    vals[25] = activeVariable;
+    vals[26] = variables.size();
     for (i = 0 ; i < variables.size() ; i++)
     {
-        vals[26+varSize*i]   = variables[i].dimension;
-        vals[26+varSize*i+1] = variables[i].centering;
-        vals[26+varSize*i+2] = (variables[i].treatAsASCII ? 1 : 0);
-        vals[26+varSize*i+3] = variables[i].vartype;
-        vals[26+varSize*i+4] = variables[i].subnames.size();
-        vals[26+varSize*i+5] = variables[i].binRange.size();
+        vals[27+varSize*i]   = variables[i].dimension;
+        vals[27+varSize*i+1] = variables[i].centering;
+        vals[27+varSize*i+2] = (variables[i].treatAsASCII ? 1 : 0);
+        vals[27+varSize*i+3] = variables[i].vartype;
+        vals[27+varSize*i+4] = variables[i].subnames.size();
+        vals[27+varSize*i+5] = variables[i].binRange.size();
     }
     wrtr->WriteInt(str, vals, numVals);
     wrtr->WriteDouble(str, dtime);
@@ -2434,6 +2484,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 
     for (i = 0; i < 9 ; i++)
         wrtr->WriteDouble(str, unitCellVectors[i]);
+
+    for (i = 0; i < 16 ; i++)
+        wrtr->WriteDouble(str, rectilinearGridTransform[i]);
 
     wrtr->WriteInt(str, selectionsApplied.size());
     for (i = 0; i < selectionsApplied.size(); i++)
@@ -2558,6 +2611,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //    Hank Childs, Fri Jan 12 13:11:26 PST 2007
 //    Added binRange.
 //
+//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
 // ****************************************************************************
 
 int
@@ -2663,6 +2719,10 @@ avtDataAttributes::Read(char *input)
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
     nodesAreCritical = (tmp != 0 ? true : false);
+
+    memcpy(&tmp, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    rectilinearGridHasTransform = (tmp != 0 ? true : false);
 
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
@@ -2870,6 +2930,13 @@ avtDataAttributes::Read(char *input)
         memcpy(&dtmp, input, sizeof(double));
         input += sizeof(double); size += sizeof(double);
         unitCellVectors[i] = dtmp;
+    }
+
+    for (i = 0; i < 16 ; i++)
+    {
+        memcpy(&dtmp, input, sizeof(double));
+        input += sizeof(double); size += sizeof(double);
+        rectilinearGridTransform[i] = dtmp;
     }
 
     int selectionsSize;
@@ -4224,6 +4291,10 @@ avtDataAttributes::SetPlotInfoAtts(const PlotInfoAttributes *pia)
 //  Programmer: Hank Childs
 //  Creation:   December 21, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
 // ****************************************************************************
 
 static const char *
@@ -4324,6 +4395,8 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
     webpage->AddTableEntry2("Coordinate type", str);
     webpage->AddTableEntry2("Are the nodes critical?",
                             YesOrNo(nodesAreCritical));
+    webpage->AddTableEntry2("Is there an implied rectilinear grid transform?",
+                            YesOrNo(rectilinearGridHasTransform));
     webpage->AddTableEntry2("X Units", xUnits.c_str());
     webpage->AddTableEntry2("Y Units", yUnits.c_str());
     webpage->AddTableEntry2("Z Units", zUnits.c_str());

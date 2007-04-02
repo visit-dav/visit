@@ -75,6 +75,9 @@ class avtSimulationInformation;
 //    Jeremy Meredith, Fri Aug 25 17:16:38 EDT 2006
 //    Added nodesAreCritical and unitCellVectors.
 //
+//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
 //----------------------------------------------------------------------------
 struct DBATTS_API avtMeshMetaData : public AttributeSubject
 {
@@ -120,6 +123,8 @@ struct DBATTS_API avtMeshMetaData : public AttributeSubject
     avtMeshCoordType meshCoordType;
     bool          nodesAreCritical;
     float         unitCellVectors[9];
+    bool          rectilinearGridHasTransform;
+    double        rectilinearGridTransform[16];
 
 public:
     avtMeshMetaData();

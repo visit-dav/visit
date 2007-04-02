@@ -74,6 +74,10 @@
 //    Hank Childs, Fri Nov 19 14:50:58 PST 2004
 //    Initialize gridsAreInWorldSpace.
 //
+//    Jeremy Meredith, Thu Feb 15 13:11:34 EST 2007
+//    Added an ability to extract voxels using the world-space version
+//    even when they're really in image space.
+//
 // ****************************************************************************
 
 avtMassVoxelExtractor::avtMassVoxelExtractor(int w, int h, int d,
@@ -81,6 +85,7 @@ avtMassVoxelExtractor::avtMassVoxelExtractor(int w, int h, int d,
     : avtExtractor(w, h, d, vol, cl)
 {
     gridsAreInWorldSpace = false;
+    pretendGridsAreInWorldSpace = false;
     aspect = 1;
     view_to_world_transform = vtkMatrix4x4::New();
     ProportionSpaceToZBufferSpace = new float[depth];
@@ -136,12 +141,17 @@ avtMassVoxelExtractor::~avtMassVoxelExtractor()
 //  Programmer: Hank Childs
 //  Creation:   November 19, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 13:11:34 EST 2007
+//    Added an ability to extract voxels using the world-space version
+//    even when they're really in image space.
+//
 // ****************************************************************************
 
 void
 avtMassVoxelExtractor::Extract(vtkRectilinearGrid *rgrid)
 {
-    if (gridsAreInWorldSpace)
+    if (gridsAreInWorldSpace || pretendGridsAreInWorldSpace)
         ExtractWorldSpaceGrid(rgrid);
     else
         ExtractImageSpaceGrid(rgrid);
@@ -158,122 +168,167 @@ avtMassVoxelExtractor::Extract(vtkRectilinearGrid *rgrid)
 //  Programmer: Hank Childs
 //  Creation:   November 20, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 13:11:34 EST 2007
+//    Added an ability to extract voxels using the world-space version
+//    even when they're really in image space.
+//
 // ****************************************************************************
 
 void
 avtMassVoxelExtractor::SetGridsAreInWorldSpace(bool val, const avtViewInfo &v,
-                                               double asp)
+                                               double asp, const double *xform)
 {
     gridsAreInWorldSpace = val;
-    if (gridsAreInWorldSpace)
+
+    if (!gridsAreInWorldSpace)
     {
-        view = v;
-        aspect = asp;
+        if (xform)
+        {
+            // We're essentially doing resampling, but we cannot
+            // use the faster version because there is another
+            // transform to take into consideration.  In this case,
+            // just revert to the world space algorithm and
+            // fake the necessary parameters.
+            pretendGridsAreInWorldSpace = true;
+        }
+        else
+        {
+            // We can use the faster version that doesn't depend on the
+            // rest of the parameters set in this function, so return;
+            return;
+        }
+    }
 
-        //
-        // Set up a VTK camera.  This will allow us to get the direction of
-        // each ray and also the origin of each ray (this is simply the
-        // position of the camera for perspective projection).
-        //
-        vtkCamera *cam = vtkCamera::New();
-        view.SetCameraFromView(cam);
-        cam->GetClippingRange(cur_clip_range);
-        vtkMatrix4x4 *mat = cam->GetCompositePerspectiveTransformMatrix(aspect,
+    view = v;
+    aspect = asp;
+
+    if (pretendGridsAreInWorldSpace)
+    {
+        view = avtViewInfo();
+        view.setScale = true;
+        view.parallelScale = 1;
+        view.nearPlane = 1;
+        view.farPlane = 2;
+
+        aspect = 1.0;
+    }
+
+    //
+    // Set up a VTK camera.  This will allow us to get the direction of
+    // each ray and also the origin of each ray (this is simply the
+    // position of the camera for perspective projection).
+    //
+    vtkCamera *cam = vtkCamera::New();
+    view.SetCameraFromView(cam);
+    cam->GetClippingRange(cur_clip_range);
+    vtkMatrix4x4 *mat = cam->GetCompositePerspectiveTransformMatrix(aspect,
                                          cur_clip_range[0], cur_clip_range[1]);
+
+    if (xform)
+    {
+        vtkMatrix4x4 *rectTrans = vtkMatrix4x4::New();
+        rectTrans->DeepCopy(xform);
+        vtkMatrix4x4::Multiply4x4(mat, rectTrans, view_to_world_transform);
+        view_to_world_transform->Invert();
+        rectTrans->Delete();
+    }
+    else
+    {
         vtkMatrix4x4::Invert(mat, view_to_world_transform);
-        cam->Delete();
+    }
+    cam->Delete();
 
-        //
-        // When we are casting a ray, we sample along the segment that the
-        // ray makes when intersecting it with the near and far planes of the
-        // view frustum.  The temptation is to sample at even intervals along
-        // this segment.  Unfortunately, our alternative, unstructured 
-        // volume renderer does its sampling in Z-buffer space.  In addition,
-        // when comparing with opaque images, it is more convenient to have
-        // samples be done in even intervals in Z-buffer space.
-        //
-        // So: we are going to do the sampling in even intervals in Z-buffer
-        // space (as opposed to world space).  When incrementing over a segment
-        // it would be too costly to calculate all of the increments in
-        // Z-buffer space.  So instead we will calculate them here once and
-        // use them repeatedly when we do our sampling.
-        //
-        // So here's the gameplan:
-        // For a sample K, we are going to want to know what proportion (in
-        // world space) to move along the segment to be at position K/N in
-        // Z-buffer space along the sample.  Concretely, if we wanted to
-        // find sample 125/250 in Z-buffer space, that may map to proportion 
-        // 0.8 in world space along the segment.  So S[125] = 0.8.
-        //
-        // Fortunately, there is a nice property of the projection matrix
-        // here.  You can calculate S[K] for one ray, and it will apply to all
-        // rays.  I intend to add a derivation showing this.  It was one my
-        // whiteboard at one time.  :)
-        // 
-        float view_near[4];
-        float world_near[4];
-        view_near[0] = 0;
-        view_near[1] = 0;
-        view_near[2] = cur_clip_range[0];
-        view_near[3] = 1.;
+    //
+    // When we are casting a ray, we sample along the segment that the
+    // ray makes when intersecting it with the near and far planes of the
+    // view frustum.  The temptation is to sample at even intervals along
+    // this segment.  Unfortunately, our alternative, unstructured 
+    // volume renderer does its sampling in Z-buffer space.  In addition,
+    // when comparing with opaque images, it is more convenient to have
+    // samples be done in even intervals in Z-buffer space.
+    //
+    // So: we are going to do the sampling in even intervals in Z-buffer
+    // space (as opposed to world space).  When incrementing over a segment
+    // it would be too costly to calculate all of the increments in
+    // Z-buffer space.  So instead we will calculate them here once and
+    // use them repeatedly when we do our sampling.
+    //
+    // So here's the gameplan:
+    // For a sample K, we are going to want to know what proportion (in
+    // world space) to move along the segment to be at position K/N in
+    // Z-buffer space along the sample.  Concretely, if we wanted to
+    // find sample 125/250 in Z-buffer space, that may map to proportion 
+    // 0.8 in world space along the segment.  So S[125] = 0.8.
+    //
+    // Fortunately, there is a nice property of the projection matrix
+    // here.  You can calculate S[K] for one ray, and it will apply to all
+    // rays.  I intend to add a derivation showing this.  It was one my
+    // whiteboard at one time.  :)
+    // 
+    float view_near[4];
+    float world_near[4];
+    view_near[0] = 0;
+    view_near[1] = 0;
+    view_near[2] = cur_clip_range[0];
+    view_near[3] = 1.;
 
-        view_to_world_transform->MultiplyPoint(view_near, world_near);
-        if (world_near[3] != 0)
-        {
-            world_near[0] /= world_near[3];
-            world_near[1] /= world_near[3];
-            world_near[2] /= world_near[3];
-        }
+    view_to_world_transform->MultiplyPoint(view_near, world_near);
+    if (world_near[3] != 0)
+    {
+        world_near[0] /= world_near[3];
+        world_near[1] /= world_near[3];
+        world_near[2] /= world_near[3];
+    }
 
-        float view_far[4];
-        float world_far[4];
-        view_far[0] = 0;
-        view_far[1] = 0;
-        view_far[2] = cur_clip_range[1];
-        view_far[3] = 1.;
+    float view_far[4];
+    float world_far[4];
+    view_far[0] = 0;
+    view_far[1] = 0;
+    view_far[2] = cur_clip_range[1];
+    view_far[3] = 1.;
 
-        view_to_world_transform->MultiplyPoint(view_far, world_far);
-        if (world_far[3] != 0)
-        {
-            world_far[0] /= world_far[3];
-            world_far[1] /= world_far[3];
-            world_far[2] /= world_far[3];
-        }
+    view_to_world_transform->MultiplyPoint(view_far, world_far);
+    if (world_far[3] != 0)
+    {
+        world_far[0] /= world_far[3];
+        world_far[1] /= world_far[3];
+        world_far[2] /= world_far[3];
+    }
 
-        float diff[3];
-        diff[0] = world_far[0] - world_near[0];
-        diff[1] = world_far[1] - world_near[1];
-        diff[2] = world_far[2] - world_near[2];
-        float total_dist = 
-                     sqrt(diff[0]*diff[0] + diff[1]*diff[1] + diff[2]*diff[2]);
+    float diff[3];
+    diff[0] = world_far[0] - world_near[0];
+    diff[1] = world_far[1] - world_near[1];
+    diff[2] = world_far[2] - world_near[2];
+    float total_dist = 
+        sqrt(diff[0]*diff[0] + diff[1]*diff[1] + diff[2]*diff[2]);
  
-        for (int i = 0 ; i < depth ; i++)
-        {
-            float view_i[4];
-            view_i[0] = 0;
-            view_i[1] = 0;
-            view_i[2] = cur_clip_range[0] + 
-                          (cur_clip_range[1] - cur_clip_range[0])*
-                          (float(i)/(depth-1.));
-            view_i[3] = 1.;
+    for (int i = 0 ; i < depth ; i++)
+    {
+        float view_i[4];
+        view_i[0] = 0;
+        view_i[1] = 0;
+        view_i[2] = cur_clip_range[0] + 
+            (cur_clip_range[1] - cur_clip_range[0])*
+            (float(i)/(depth-1.));
+        view_i[3] = 1.;
   
-            float world_i[4];
-            view_to_world_transform->MultiplyPoint(view_i, world_i);
-            if (world_i[3] != 0)
-            {
-                world_i[0] /= world_i[3];
-                world_i[1] /= world_i[3];
-                world_i[2] /= world_i[3];
-            }
-    
-            diff[0] = world_i[0] - world_near[0];
-            diff[1] = world_i[1] - world_near[1];
-            diff[2] = world_i[2] - world_near[2];
-            float dist = 
-                     sqrt(diff[0]*diff[0] + diff[1]*diff[1] + diff[2]*diff[2]);
- 
-            ProportionSpaceToZBufferSpace[i] = dist / total_dist;
+        float world_i[4];
+        view_to_world_transform->MultiplyPoint(view_i, world_i);
+        if (world_i[3] != 0)
+        {
+            world_i[0] /= world_i[3];
+            world_i[1] /= world_i[3];
+            world_i[2] /= world_i[3];
         }
+    
+        diff[0] = world_i[0] - world_near[0];
+        diff[1] = world_i[1] - world_near[1];
+        diff[2] = world_i[2] - world_near[2];
+        float dist = 
+            sqrt(diff[0]*diff[0] + diff[1]*diff[1] + diff[2]*diff[2]);
+ 
+        ProportionSpaceToZBufferSpace[i] = dist / total_dist;
     }
 }
 
@@ -471,6 +526,10 @@ avtMassVoxelExtractor::RegisterGrid(vtkRectilinearGrid *rgrid)
 //  Programmer: Hank Childs
 //  Creation:   November 21, 2004
 //
+// 
+//    Jeremy Meredith, Fri Feb  9 14:00:51 EST 2007
+//    Flip back across the x axis if pretendGridsAreInWorldSpace is set.
+//
 // ****************************************************************************
 
 void
@@ -484,7 +543,13 @@ avtMassVoxelExtractor::GetSegment(int w, int h, float *origin, float *terminus)
     // easiest place to fix it.  I haven't tracked down where it is, but it
     // would appear to a problem with the interface from our images to VTK's.
     //
+    // Note: If we're only pretending that grids are in world space -- i.e.
+    // we're resampling, not raycasting an image -- then flipping across
+    // the x axis like this is wrong.  Take this into account here.
+    //
     view[0] = (w - width/2.)/(width/2.);
+    if (pretendGridsAreInWorldSpace)
+        view[0] *= -1;
     view[1] = (h - height/2.)/(height/2.);
     view[2] = cur_clip_range[0];
     view[3] = 1.;
@@ -497,6 +562,8 @@ avtMassVoxelExtractor::GetSegment(int w, int h, float *origin, float *terminus)
     }
 
     view[0] = (w - width/2.)/(width/2.);
+    if (pretendGridsAreInWorldSpace)
+        view[0] *= -1;
     view[1] = (h - height/2.)/(height/2.);
     view[2] = cur_clip_range[1];
     view[3] = 1.;
@@ -618,6 +685,11 @@ avtMassVoxelExtractor::FindPlaneNormal(const float *pt1, const float *pt2,
 //  Programmer: Hank Childs
 //  Creation:   November 21, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 13:11:34 EST 2007
+//    Added an ability to extract voxels using the world-space version
+//    even when they're really in image space.
+//
 // ****************************************************************************
 
 bool
@@ -653,6 +725,13 @@ avtMassVoxelExtractor::GridOnPlusSideOfPlane(const float *origin,
         float val  = normal[0]*(pt[0] - origin[0])
                    + normal[1]*(pt[1] - origin[1])
                    + normal[2]*(pt[2] - origin[2]);
+
+        // Note: If we're only pretending that grids are in world space -- i.e.
+        // we're resampling, not raycasting an image -- then flipping across
+        // the x axis also negates the proper normal values here.
+        if (pretendGridsAreInWorldSpace)
+            val *= -1;
+
         if (val >= 0)
             return true;
     }

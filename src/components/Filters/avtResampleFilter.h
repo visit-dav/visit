@@ -69,6 +69,9 @@
 //    Hank Childs, Sat Apr 29 15:53:13 PDT 2006
 //    Add argument to GetDimensions.
 //
+//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtResampleFilter : public avtDatasetToDatasetFilter
@@ -100,6 +103,8 @@ class AVTFILTERS_API avtResampleFilter : public avtDatasetToDatasetFilter
 
     virtual avtPipelineSpecification_p
                           PerformRestriction(avtPipelineSpecification_p);
+    
+    virtual bool          FilterUnderstandsTransformedRectMesh();
 };
 
 

@@ -409,13 +409,19 @@ avtEulerianQuery::PostExecute(void)
 //  Programmer: Kathleen Bonnell
 //  Creation:   November 15, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
+//    Call inherited PreExecute before everything else.
+//
 // ****************************************************************************
 
 void
 avtEulerianQuery::PreExecute()
 {
-   if (!domToEulerMap.empty())
-       domToEulerMap.clear();
+    avtDatasetQuery::PreExecute();
+
+    if (!domToEulerMap.empty())
+        domToEulerMap.clear();
 }
 
 

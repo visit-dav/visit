@@ -134,11 +134,17 @@ avtCentroidQuery::~avtCentroidQuery()
 //  Programmer: Hank Childs
 //  Creation:   May 19, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
+//    Call inherited PreExecute before everything else.
+//
 // ****************************************************************************
 
 void
 avtCentroidQuery::PreExecute(void)
 {
+    avtDatasetQuery::PreExecute();
+
     for (int i = 0 ; i < 3 ; i++)
         C[i] = 0.;
     total_mass = 0.;

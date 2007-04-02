@@ -129,12 +129,16 @@ avtLocateQuery::VerifyInput()
 //  Creation:   May 18, 2004
 //
 //  Modifications:
+//    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
+//    Call inherited PreExecute before everything else.
 //
 // ****************************************************************************
 
 void
 avtLocateQuery::PreExecute(void)
 {
+    avtDatasetQuery::PreExecute();
+
     foundElement = foundDomain = -1; 
     minDist = +FLT_MAX;
 }

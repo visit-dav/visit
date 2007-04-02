@@ -84,7 +84,6 @@ class avtReplicateFilter : public virtual avtDataTreeStreamer,
   protected:
     ReplicateAttributes   atts;
 
-    virtual void          PreExecute(void);
     virtual void          PostExecute(void);
     virtual avtDataTree_p ExecuteDataTree(vtkDataSet *, int, std::string);
     virtual avtPipelineSpecification_p

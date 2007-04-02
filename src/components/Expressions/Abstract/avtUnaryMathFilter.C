@@ -340,3 +340,25 @@ avtUnaryMathFilter::GetVariableDimension(void)
 }
 
 
+// ****************************************************************************
+//  Method:  avtUnaryMathFilter::FilterUnderstandsTransformedRectMesh
+//
+//  Purpose:
+//    If this filter returns true, this means that it correctly deals
+//    with rectilinear grids having an implied transform set in the
+//    data attributes.  It can do this conditionally if desired.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 15, 2007
+//
+// ****************************************************************************
+bool
+avtUnaryMathFilter::FilterUnderstandsTransformedRectMesh()
+{
+    // simple unary math operates only on variables and
+    // shouldn't be directly affected by coordinates
+    return true;
+}

@@ -113,11 +113,17 @@ avtBestFitLineQuery::~avtBestFitLineQuery()
 //  Programmer: Brad Whitlock
 //  Creation:   Wed Nov 16 14:38:19 PST 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
+//    Call inherited PreExecute before everything else.
+//
 // ****************************************************************************
 
 void
 avtBestFitLineQuery::PreExecute(void)
 {
+    avtSummationQuery::PreExecute();
+
     sums[N_SUM] = 0.;
     sums[X_SUM] = 0.;
     sums[Y_SUM] = 0.;

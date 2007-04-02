@@ -27,6 +27,8 @@
 #include "vtkCellData.h"
 #include "vtkCommand.h"
 #include "vtkDataArray.h"
+#include "vtkDoubleArray.h"
+#include "vtkFloatArray.h"
 #include "vtkMatrix4x4.h"
 #include "vtkObjectFactory.h"
 #include "vtkOpenGLRenderer.h"
@@ -407,6 +409,10 @@ void vtkOpenGLRectilinearGridMapper::Render(vtkRenderer *ren, vtkActor *act)
 //    Hank Childs, Thu Dec 28 10:24:53 PST 2006
 //    Add support for grids in three dimensional space.
 //
+//    Jeremy Meredith, Thu Feb 15 11:41:19 EST 2007
+//    Added support for rectilinear grids with an inherent  transform.
+//    These will have a new field array in the data set.
+//
 // ****************************************************************************
 
 int vtkOpenGLRectilinearGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
@@ -414,6 +420,11 @@ int vtkOpenGLRectilinearGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
    int  i;
 
    vtkRectilinearGrid *input = this->GetInput();
+
+   bool transform = false;
+   if (input->GetFieldData()->GetArray("RectilinearGridTransform"))
+       transform = true;
+
    int dims[3];
    input->GetDimensions(dims);
    bool flatI = (dims[0] <= 1);
@@ -431,6 +442,21 @@ int vtkOpenGLRectilinearGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
        glNewList(this->CurrentList,GL_COMPILE);
        this->primsInCurrentList = 0;
    }
+
+   if (transform)
+   {
+       vtkDoubleArray *xform = (vtkDoubleArray*)input->GetFieldData()->
+                                          GetArray("RectilinearGridTransform");
+       double *matrix = xform->GetPointer(0);
+       // OpenGL wants the transpose of our VTK matrix.
+       float glmatrix[16] = {matrix[ 0], matrix[ 4], matrix[ 8], matrix[12],
+                             matrix[ 1], matrix[ 5], matrix[ 9], matrix[13],
+                             matrix[ 2], matrix[ 6], matrix[10], matrix[14],
+                             matrix[ 3], matrix[ 7], matrix[11], matrix[15]};
+       glPushMatrix();
+       glMultMatrixf(glmatrix);
+   }
+
 
    if (SceneIs3D)
        glEnable(GL_LIGHTING);
@@ -628,6 +654,10 @@ int vtkOpenGLRectilinearGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
            }
        }
    glEnd();
+
+   if (transform)
+       glPopMatrix();
+
    glEnable(GL_LIGHTING);
    if (this->doingDisplayLists)
        glEndList();

@@ -461,3 +461,26 @@ avtGhostZoneAndFacelistFilter::PerformRestriction(
     return spec;
 }
 
+// ****************************************************************************
+//  Method: avtGhostZoneAndFacelistFilter::FilterUnderstandsTransformedRectMesh
+//
+//  Purpose:
+//    If this filter returns true, this means that it correctly deals
+//    with rectilinear grids having an implied transform set in the
+//    data attributes.  It can do this conditionally if desired.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 15, 2007
+//
+// ****************************************************************************
+bool
+avtGhostZoneAndFacelistFilter::FilterUnderstandsTransformedRectMesh()
+{
+    // The ghost zone and facelist filters return the correct values
+    // when queried about whether they can support these meshes.
+    return true;
+}
+

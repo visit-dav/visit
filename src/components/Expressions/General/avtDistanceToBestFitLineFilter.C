@@ -105,12 +105,16 @@ avtDistanceToBestFitLineFilter::~avtDistanceToBestFitLineFilter()
 // Creation:   Fri Nov 18 16:17:07 PST 2005
 //
 // Modifications:
+//    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
+//    Call inherited PreExecute before everything else.
 //   
 // ****************************************************************************
 
 void
 avtDistanceToBestFitLineFilter::PreExecute(void)
 {
+    avtBinaryMathFilter::PreExecute();
+
     sums[N_SUM] = 0.;
     sums[X_SUM] = 0.;
     sums[Y_SUM] = 0.;

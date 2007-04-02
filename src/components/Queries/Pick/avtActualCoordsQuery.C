@@ -124,12 +124,16 @@ avtActualCoordsQuery::GetPickAtts()
 //  Creation:   June 2, 2004 
 //
 //  Modifications:
+//    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
+//    Call inherited PreExecute before everything else.
 //
 // ****************************************************************************
 
 void
 avtActualCoordsQuery::PreExecute()
 {
+    avtDatasetQuery::PreExecute();
+
     actualId = -1;
     actualCoords[0] = 0.;
     actualCoords[1] = 0.;

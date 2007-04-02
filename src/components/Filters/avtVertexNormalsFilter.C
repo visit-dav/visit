@@ -242,3 +242,26 @@ avtVertexNormalsFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 }
 
 
+// ****************************************************************************
+//  Method:  avtVertexNormalsFilter::FilterUnderstandsTransformedRectMesh
+//
+//  Purpose:
+//    If this filter returns true, this means that it correctly deals
+//    with rectilinear grids having an implied transform set in the
+//    data attributes.  It can do this conditionally if desired.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 15, 2007
+//
+// ****************************************************************************
+
+bool
+avtVertexNormalsFilter::FilterUnderstandsTransformedRectMesh()
+{
+    // Creating normals for a transformed rectilinar mesh is okay;
+    // the normals will be transformed when the mesh is.
+    return true;
+}

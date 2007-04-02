@@ -473,11 +473,17 @@ avtNodePickQuery::SetInvTransform(const avtMatrix *m)
 //  Programmer: Kathleen Bonnell
 //  Creation:   December 6, 2004 
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
+//    Call inherited PreExecute before everything else.
+//
 // ****************************************************************************
 
 void
 avtNodePickQuery::PreExecute(void)
 {
+    avtPickQuery::PreExecute();
+
     minDist = +FLT_MAX;
     foundNode = -1;
     foundDomain = -1;

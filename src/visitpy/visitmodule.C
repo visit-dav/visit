@@ -1874,6 +1874,10 @@ visit_DeIconifyAllWindows(PyObject *self, PyObject *args)
 //   exists for that at this time, make sure we load the info well in advance
 //   (ie in this function).
 //
+//   Jeremy Meredith, Wed Feb 14 16:10:50 EST 2007
+//   Added support for specifying the plugin to use when opening files.
+//   Also, made the argument parsing "better".
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -1883,17 +1887,16 @@ visit_OpenDatabase(PyObject *self, PyObject *args)
 
     char *fileName;
     int timeIndex = 0;
-    if (!PyArg_ParseTuple(args, "s", &fileName))
-    {
-        if(!PyArg_ParseTuple(args, "si", &fileName, &timeIndex))
-            return NULL;
-        else
-            PyErr_Clear();
-    }
+    char *format = NULL;
+    if (!PyArg_ParseTuple(args, "s|is", &fileName, &timeIndex, &format))
+        return NULL;
 
     // Open the database.
     MUTEX_LOCK();
-        viewer->OpenDatabase(fileName, timeIndex);
+        if (!format)
+            viewer->OpenDatabase(fileName, timeIndex);
+        else
+            viewer->OpenDatabase(fileName, timeIndex, true, format);
 
         static bool loadedPluginInfo = false;
         if (!loadedPluginInfo)
@@ -10638,7 +10641,7 @@ ExecuteClientMethod(ClientMethod *method, bool onNewThread)
             void **cbData = new void *[2];
             ClientMethod *m = new ClientMethod(*method);
             cbData[0] = (void *)m;
-            cbData[1] = (void *)(onNewThread?1:0);
+            cbData[1] = (void *)(onNewThread?1l:0);
             if(onNewThread)
             {
 #if defined(_WIN32)

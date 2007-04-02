@@ -81,6 +81,9 @@ class vtkDataSet;
 //    Added a flag that tells this filter to force usage of relevant points 
 //    filter (bypassHeuristic).  
 //
+//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtCondenseDatasetFilter : public avtStreamer
@@ -102,6 +105,7 @@ class AVTFILTERS_API avtCondenseDatasetFilter : public avtStreamer
     vtkUnstructuredGridRelevantPointsFilter *rpfUG;
 
     virtual vtkDataSet  *ExecuteData(vtkDataSet *, int, std::string);
+    virtual bool         FilterUnderstandsTransformedRectMesh();
 
   private:
     bool                 keepAVTandVTK;

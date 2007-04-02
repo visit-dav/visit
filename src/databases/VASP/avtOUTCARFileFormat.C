@@ -118,6 +118,11 @@ avtOUTCARFileFormat::OpenFileAtBeginning()
 //  Programmer: Jeremy Meredith
 //  Creation:   August 29, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 13:31:51 EST 2007
+//    If ntimesteps is zero, that means this is an intial-conditions-only
+//    file and has no force variables.
+//
 // ****************************************************************************
 
 void
@@ -145,9 +150,14 @@ avtOUTCARFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ts)
     md->Add(mmd_bbox);
 
     AddScalarVarToMetaData(md, "element", "mesh", AVT_NODECENT);
-    AddScalarVarToMetaData(md, "fx", "mesh", AVT_NODECENT);
-    AddScalarVarToMetaData(md, "fy", "mesh", AVT_NODECENT);
-    AddScalarVarToMetaData(md, "fz", "mesh", AVT_NODECENT);
+    if (ntimesteps != 0)
+    {
+        // If only initial consitions are saved, then we don't
+        // have any force variables
+        AddScalarVarToMetaData(md, "fx", "mesh", AVT_NODECENT);
+        AddScalarVarToMetaData(md, "fy", "mesh", AVT_NODECENT);
+        AddScalarVarToMetaData(md, "fz", "mesh", AVT_NODECENT);
+    }
     //md->Add(new avtLabelMetaData("elementname", "mesh", AVT_NODECENT));
 
     Expression forcevec_expr;
@@ -417,12 +427,20 @@ avtOUTCARFileFormat::GetVectorVar(int ts, const char *varname)
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 29, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 13:31:51 EST 2007
+//    If ntimesteps is zero, that means this is an intial-conditions-only
+//    file -- fake that ntimesteps is actually "1" when needed.
+//
 // ****************************************************************************
 int
 avtOUTCARFileFormat::GetNTimesteps(void)
 {
     ReadAllMetaData();
-    return ntimesteps;
+    if (ntimesteps==0)
+        return 1;
+    else
+        return ntimesteps;
 }
 
 // ****************************************************************************
@@ -436,6 +454,11 @@ avtOUTCARFileFormat::GetNTimesteps(void)
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 29, 2006
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 13:31:51 EST 2007
+//    If ntimesteps is zero, that means this is an intial-conditions-only
+//    file -- fake that ntimesteps is actually "1" when needed.
 //
 // ****************************************************************************
 void
@@ -589,7 +612,7 @@ avtOUTCARFileFormat::ReadAllMetaData()
         in.getline(line, 132);
     }
 
-    allatoms.resize(ntimesteps);
+    allatoms.resize(ntimesteps>0 ? ntimesteps : 1);
 }
 
 
@@ -614,6 +637,10 @@ avtOUTCARFileFormat::ReadAllMetaData()
 //    for loop and inside the corresponding block, it claims "v1" was declared
 //    twice.
 //
+//    Jeremy Meredith, Thu Feb 15 13:31:51 EST 2007
+//    If ntimesteps is zero, that means this is an intial-conditions-only
+//    file.  Read the atoms from a different location in the file.
+//
 // ****************************************************************************
 void
 avtOUTCARFileFormat::ReadAtomsForTimestep(int timestep)
@@ -626,33 +653,68 @@ avtOUTCARFileFormat::ReadAtomsForTimestep(int timestep)
     vector<Atom> &atoms = allatoms[timestep];    
 
     char line[132];
-    in.getline(line, 132);
 
-    int curtime = -1;
-    while (in && curtime < timestep)
+    if (ntimesteps > 0)
     {
-        string s(line);
-        if (s.substr(0,9) == " POSITION")
-        {
-            curtime++;
-        }
         in.getline(line, 132);
-    }
 
-    // skip the separator
-
-    atoms.resize(natoms);
-
-    int index = 0;
-    for (int et_index = 0; et_index < element_counts.size(); et_index++)
-    {
-        for (int a2=0; a2<element_counts[et_index]; a2++)
+        int curtime = -1;
+        while (in && curtime < timestep)
         {
-            Atom &a = atoms[index];
-            a.elementtype_index = et_index;
-            in >> a.x  >> a.y  >> a.z;
-            in >> a.fx >> a.fy >> a.fz;
-            index++;
+            string s(line);
+            if (s.substr(0,9) == " POSITION")
+            {
+                curtime++;
+            }
+            in.getline(line, 132);
+        }
+
+        // skip the separator
+
+        atoms.resize(natoms);
+
+        int index = 0;
+        for (int et_index = 0; et_index < element_counts.size(); et_index++)
+        {
+            for (int a2=0; a2<element_counts[et_index]; a2++)
+            {
+                Atom &a = atoms[index];
+                a.elementtype_index = et_index;
+                in >> a.x  >> a.y  >> a.z;
+                in >> a.fx >> a.fy >> a.fz;
+                index++;
+            }
+        }
+    }
+    else
+    {
+        while (in)
+        {
+            in.getline(line, 132);
+            string s(line);
+            if (s.substr(0,42) == " position of ions in cartesian coordinates")
+            {
+                break;
+            }
+        }
+        if (!in)
+        {
+            EXCEPTION1(InvalidFilesException, filename.c_str());            
+        }
+
+        atoms.resize(natoms);
+
+        int index = 0;
+        for (int et_index = 0; et_index < element_counts.size(); et_index++)
+        {
+            for (int a2=0; a2<element_counts[et_index]; a2++)
+            {
+                Atom &a = atoms[index];
+                a.elementtype_index = et_index;
+                in >> a.x  >> a.y  >> a.z;
+                a.fx = a.fy = a.fz = 0.;
+                index++;
+            }
         }
     }
 }

@@ -823,3 +823,32 @@ avtExpressionEvaluatorFilter::ExamineSpecification(avtPipelineSpecification_p ps
     currentTimeState = pspec->GetDataSpecification()->GetTimestep();
 }
 
+// ****************************************************************************
+//  Method:  avtExpressionEvaluatorFilter::FilterUnderstandsTransformedRectMesh
+//
+//  Purpose:
+//    If this filter returns true, this means that it correctly deals
+//    with rectilinear grids having an implied transform set in the
+//    data attributes.  It can do this conditionally if desired.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 15, 2007
+//
+// ****************************************************************************
+bool
+avtExpressionEvaluatorFilter::FilterUnderstandsTransformedRectMesh()
+{
+    // If all of the created filters can understand a transformed
+    // rectilinear mesh, then return true.
+    vector<avtExpressionFilter*> &filters = pipelineState.GetFilters();
+    for (int i=0; i<filters.size(); i++)
+    {
+        if (!filters[i]->FilterUnderstandsTransformedRectMesh())
+            return false;
+    }
+
+    return true;
+}

@@ -116,11 +116,17 @@ avtLocalizedCompactnessFactorQuery::~avtLocalizedCompactnessFactorQuery()
 //  Programmer: Hank Childs
 //  Creation:   April 29, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
+//    Call inherited PreExecute before everything else.
+//
 // ****************************************************************************
 
 void
 avtLocalizedCompactnessFactorQuery::PreExecute(void)
 {
+    avtDatasetQuery::PreExecute();
+
     sum = 0.;
     numEntries = 0;
 }

@@ -146,26 +146,6 @@ avtReplicateFilter::Equivalent(const AttributeGroup *a)
 
 
 // ****************************************************************************
-//  Method: avtReplicateFilter::PreExecute
-//
-//  Purpose:
-//      Determines what lines/planes the data should be replicated across.  This
-//      may be trivial (if they are all specified) or require some work (if
-//      we are running in parallel).
-//
-//  Programmer: Jeremy Meredith
-//  Creation:   August 29, 2006
-//
-//  Modifications:
-// ****************************************************************************
-
-void
-avtReplicateFilter::PreExecute(void)
-{
-}
-
-
-// ****************************************************************************
 //  Method: avtReplicateFilter::PostExecute
 //
 //  Purpose:
@@ -180,6 +160,8 @@ avtReplicateFilter::PreExecute(void)
 void
 avtReplicateFilter::PostExecute(void)
 {
+    avtDataTreeStreamer::PostExecute();
+
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
     outAtts.GetTrueSpatialExtents()->Clear();
     outAtts.GetEffectiveSpatialExtents()->Clear();

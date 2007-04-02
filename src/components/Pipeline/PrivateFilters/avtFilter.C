@@ -1250,3 +1250,28 @@ avtFilter::DumpDataObject(avtDataObject_p dob, const char *prefix)
 }
 
 
+
+// ****************************************************************************
+//  Method:  avtFilter::FilterUnderstandsTransformedRectMesh
+//
+//  Purpose:
+//    If this filter returns true, this means that it correctly deals
+//    with rectilinear grids having an implied transform set in the
+//    data attributes.  It can do this conditionally if desired.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 15, 2007
+//
+// ****************************************************************************
+bool
+avtFilter::FilterUnderstandsTransformedRectMesh(void)
+{
+    // This is the base class default, which reports "false".  This is
+    // the safest behavior, allowing us to optimize those classes
+    // that need it, and report "true" only for those known to exhibit
+    // truly correct behavior.
+    return false;
+}

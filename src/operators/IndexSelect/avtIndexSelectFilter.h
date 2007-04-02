@@ -81,6 +81,9 @@ class vtkVisItExtractRectilinearGrid;
 //    Kathleen Bonnell,  Mon Jan 30 15:10:26 PST 2006 
 //    Add vtkMaskPoints for a points filter. 
 //
+//    Jeremy Meredith, Wed Jan 17 11:41:51 EST 2007
+//    Added support for transformed rectilinear grids.
+//
 // ****************************************************************************
 
 class avtIndexSelectFilter : public avtPluginStreamer
@@ -117,7 +120,8 @@ class avtIndexSelectFilter : public avtPluginStreamer
     virtual void                RefashionDataObjectInfo(void);
 
     virtual avtPipelineSpecification_p
-                            PerformRestriction(avtPipelineSpecification_p);
+                                PerformRestriction(avtPipelineSpecification_p);
+    virtual bool                FilterUnderstandsTransformedRectMesh();
 };
 
 

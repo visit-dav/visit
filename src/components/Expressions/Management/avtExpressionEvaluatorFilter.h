@@ -112,6 +112,9 @@ typedef avtDDF *   (*GetDDFCallback)(void *, const char *);
 //   Hank Childs, Sun Feb 19 09:54:19 PST 2006
 //   Add support for DDFs.
 //
+//   Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//   Added support for rectilinear grids with an inherent transform.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionEvaluatorFilter 
@@ -153,6 +156,7 @@ class EXPRESSION_API avtExpressionEvaluatorFilter
                              PerformRestriction(avtPipelineSpecification_p);
     virtual int              AdditionalPipelineFilters(void);
     virtual void             ExamineSpecification(avtPipelineSpecification_p);
+    virtual bool             FilterUnderstandsTransformedRectMesh();
 
   protected:
     ExprPipelineState            pipelineState;

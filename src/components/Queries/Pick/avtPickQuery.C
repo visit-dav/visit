@@ -188,11 +188,15 @@ avtPickQuery::GetPickAtts()
 //    Kathleen Bonnell, Mon Mar  8 08:10:09 PST 2004 
 //    Moved code to ApplyFilters method. 
 // 
+//    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
+//    Call inherited PreExecute before everything else.
+//
 // ****************************************************************************
 
 void
 avtPickQuery::PreExecute(void)
 {
+    avtDatasetQuery::PreExecute();
 }
 
 

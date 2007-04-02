@@ -1310,3 +1310,29 @@ avtFacelistFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
 }
 
 
+// ****************************************************************************
+//  Method:  avtFacelistFilter::FilterUnderstandsTransformedRectMesh
+//
+//  Purpose:
+//    If this filter returns true, this means that it correctly deals
+//    with rectilinear grids having an implied transform set in the
+//    data attributes.  It can do this conditionally if desired.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 15, 2007
+//
+// ****************************************************************************
+bool
+avtFacelistFilter::FilterUnderstandsTransformedRectMesh()
+{
+    // Edge lists and poly data have not yet been optimized for a
+    // transformed rectilinear mesh.  Otherwise, we're okay.
+    if (createEdgeListFor2DDatasets || mustCreatePolyData)
+        return false;
+    else
+        return true;
+}
+

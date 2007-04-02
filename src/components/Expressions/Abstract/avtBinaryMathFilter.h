@@ -73,6 +73,10 @@ class     vtkDataArray;
 //      Hank Childs, Fri Aug 19 14:04:25 PDT 2005
 //      Do a better job of determining the variable dimension.
 //
+//      Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//      Added support for rectilinear grids with an inherent transform.
+//      Binary math filters can handle these with no modifications.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtBinaryMathFilter 
@@ -98,6 +102,8 @@ class EXPRESSION_API avtBinaryMathFilter
                                                     : ncompsIn2);
                                          };
     virtual int               GetVariableDimension(void);
+
+    virtual bool              FilterUnderstandsTransformedRectMesh();
 
     avtCentering              centering;
     vtkDataSet               *cur_mesh;

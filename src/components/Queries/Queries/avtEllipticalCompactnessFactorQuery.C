@@ -118,11 +118,17 @@ avtEllipticalCompactnessFactorQuery::~avtEllipticalCompactnessFactorQuery()
 //  Programmer: Hank Childs
 //  Creation:   May 8, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
+//    Call inherited PreExecute before everything else.
+//
 // ****************************************************************************
 
 void
 avtEllipticalCompactnessFactorQuery::PreExecute(void)
 {
+    avtTwoPassDatasetQuery::PreExecute();
+
     for (int i = 0 ; i < 3 ; i++)
         centroid[i] = 0.;
     total_volume = 0.;

@@ -53,6 +53,7 @@
 #include <vtkDataSetMapper.h>
 #include <vtkDataSetRemoveGhostCells.h>
 #include <vtkDepthSortPolyData.h>
+#include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkGeometryFilter.h>
 #include <vtkMatrix4x4.h>
@@ -62,6 +63,8 @@
 #include <vtkProperty.h>
 #include <vtkRenderer.h>
 #include <vtkParallelImageSpaceRedistributor.h>
+#include <vtkTransform.h>
+#include <vtkTransformFilter.h>
 #include <vtkVisItPolyDataNormals.h>
 
 #include <DebugStream.h>
@@ -940,6 +943,13 @@ avtTransparencyActor::SetUpActor(void)
 //    to the poly data we are rendering.  Some mappers are linked to 
 //    vtkRectilinearGrids or vtkStructuredGrids.
 //
+//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//    All rectilinear grids that made it here get converted to polydata now --
+//    the difference with these is that they need an extra transform applied.
+//    These should all be 2D grids (i.e. external polygons) anyway, so the
+//    performance penalty is small.
+//
 // ****************************************************************************
 
 void
@@ -1016,6 +1026,8 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
     vtkGeometryFilter *gf = vtkGeometryFilter::New();
     vtkDataSetRemoveGhostCells *ghost_filter=vtkDataSetRemoveGhostCells::New();
     vtkVisItPolyDataNormals *normals = vtkVisItPolyDataNormals::New();
+    vtkTransformFilter *xform_filter = vtkTransformFilter::New();
+    vtkTransform *xform = vtkTransform::New();
     vtkPolyData *pd = NULL;
     if (in_ds->GetDataObjectType() == VTK_POLY_DATA)
     {
@@ -1037,8 +1049,22 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
             normals->SetNormalTypeToCell();
         normals->SetInput(gf->GetOutput());
         ghost_filter->SetInput(normals->GetOutput());
-        ghost_filter->Update();
-        pd = (vtkPolyData *) ghost_filter->GetOutput();
+        // Apply any inherent rectilinear grid transforms from the input.
+        if (in_ds->GetFieldData()->GetArray("RectilinearGridTransform"))
+        {
+            vtkDoubleArray *matrix = (vtkDoubleArray*)in_ds->GetFieldData()->
+                                          GetArray("RectilinearGridTransform");
+            xform->SetMatrix(matrix->GetPointer(0));
+            xform_filter->SetInput(ghost_filter->GetOutput());
+            xform_filter->SetTransform(xform);
+            xform_filter->Update();
+            pd = (vtkPolyData *) xform_filter->GetOutput();
+        }
+        else
+        {
+            ghost_filter->Update();
+            pd = (vtkPolyData *) ghost_filter->GetOutput();
+        }
     }
     else
     {
@@ -1238,6 +1264,8 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
     prepDS->Delete();
     ghost_filter->Delete();
     normals->Delete();
+    xform_filter->Delete();
+    xform->Delete();
 }
 
 

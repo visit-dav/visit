@@ -168,11 +168,16 @@ avtCompactnessQuery::VerifyInput()
 //    STL vectors.  This way we can easily collect the boundary points
 //    across all domains and processors.
 //
+//    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
+//    Call inherited PreExecute before everything else.
+//
 // ****************************************************************************
 
 void
 avtCompactnessQuery::PreExecute(void)
 {
+    avtTwoPassDatasetQuery::PreExecute();
+
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
     if (atts.GetSpatialDimension() != 2)
     {

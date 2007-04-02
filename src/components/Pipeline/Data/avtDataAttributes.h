@@ -213,6 +213,9 @@ class     PlotInfoAttributes;
 //    Hank Childs, Fri Jan 12 13:00:31 PST 2007
 //    Add bounds for array variables.
 //
+//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -439,6 +442,16 @@ class PIPELINE_API avtDataAttributes
     void                     SetUnitCellVectors(const float *v)
                              { for (int i=0;i<9;i++) unitCellVectors[i]=v[i]; }
 
+    bool                     GetRectilinearGridHasTransform() const
+                             { return rectilinearGridHasTransform; }
+    void                     SetRectilinearGridHasTransform(bool v)
+                             { rectilinearGridHasTransform = v; }
+
+    const double            *GetRectilinearGridTransform(void) const
+                                   { return rectilinearGridTransform; }
+    void                     SetRectilinearGridTransform(const double *v)
+                   { for (int i=0;i<16;i++) rectilinearGridTransform[i]=v[i]; }
+
     const PlotInfoAttributes *GetPlotInfoAtts(void) const
                                    { return plotInfoAtts; };
     void                     SetPlotInfoAtts(const PlotInfoAttributes *);
@@ -473,6 +486,8 @@ class PIPELINE_API avtDataAttributes
     avtMeshCoordType         meshCoordType;
     bool                     nodesAreCritical;
     float                    unitCellVectors[9];
+    bool                     rectilinearGridHasTransform;
+    double                   rectilinearGridTransform[16];
 
     avtExtents              *trueSpatial;
     avtExtents              *cumulativeTrueSpatial;

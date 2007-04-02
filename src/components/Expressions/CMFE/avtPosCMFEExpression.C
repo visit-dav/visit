@@ -108,3 +108,36 @@ avtPosCMFEExpression::PerformCMFE(avtDataTree_p output_mesh,
 }
 
 
+// ****************************************************************************
+//  Method:  avtPosCMFEAlgorithm::FilterUnderstandsTransformedRectMesh
+//
+//  Purpose:
+//    If this filter returns true, this means that it correctly deals
+//    with rectilinear grids having an implied transform set in the
+//    data attributes.  It can do this conditionally if desired.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 15, 2007
+//
+//  Note:
+//    Report explicitly that this filter does NOT understand transformed
+//    rectilinear grids.  This method should default to returning false
+//    anyway, but there are specific reasons this filter cannot yet be
+//    optimized in this fashion, so ensure that even if other CMFE's change
+//    to default to true, this one remains false until it can be fixed.
+//
+// ****************************************************************************
+
+bool
+avtPosCMFEExpression::FilterUnderstandsTransformedRectMesh()
+{
+    // This avtPosCMFEAlgorithm is not optimized for transformed
+    // rectilinear grids.  Furthermore, it calls a form of
+    // avtDatasetExaminer::GetSpatialExtents that also does not
+    // understand these transformed rectilinear grids.  These
+    // both must be fixed before this can return 'true'.
+    return false;
+}

@@ -150,3 +150,45 @@ avtDatasetToDataObjectFilter::SearchDataForDataExtents(double *extents,
 }
 
 
+// ****************************************************************************
+//  Method:  avtDatasetToDataObjectFilter::PreExecute
+//
+//  Purpose:
+//    Called before main filter execution.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 15, 2007
+//
+// ****************************************************************************
+void
+avtDatasetToDataObjectFilter::PreExecute(void)
+{
+    avtFilter::PreExecute();
+
+    // Here we check if the filter we are about to execute can
+    // understand rectilinear grids with implied transforms set
+    // in the data attributes.  If the filter can't, then we need
+    // to apply the transform to the rectilinear grid, converting
+    // it into a curvilinear grid.
+    avtDataAttributes &inatts = GetInput()->GetInfo().GetAttributes();
+    if (inatts.GetRectilinearGridHasTransform() &&
+        !FilterUnderstandsTransformedRectMesh())
+    {
+        avtDataTree_p tree = GetInputDataTree();
+        bool dummy;
+        tree->Traverse(CApplyTransformToRectGrid,
+                       (void*)inatts.GetRectilinearGridTransform(), dummy);
+
+        // since we transformed the input, we need to change the input
+        // data attributes
+        inatts.SetRectilinearGridHasTransform(false);
+
+        // ... and if we already copied the input data atts to the output,
+        // we need to also update the output data attributes
+        avtDataAttributes &outatts = GetOutput()->GetInfo().GetAttributes();
+        outatts.SetRectilinearGridHasTransform(false);
+    }
+}

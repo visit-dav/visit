@@ -103,12 +103,16 @@ avtCurvePickQuery::~avtCurvePickQuery()
 //  Creation:   December 2, 2003
 //
 //  Modifications:
+//    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
+//    Call inherited PreExecute before everything else.
 //
 // ****************************************************************************
 
 void
 avtCurvePickQuery::PreExecute(void)
 {
+    avtDatasetQuery::PreExecute();
+
     foundDomain = -1; 
     minDist = +FLT_MAX;
 }

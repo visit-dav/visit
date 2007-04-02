@@ -258,6 +258,9 @@ avtDataTreeStreamer::Execute(avtDataTree_p inDT)
 //    Kathleen Bonnell, Thu Mar 11 10:14:20 PST 2004
 //    DataExtents now always have a size of 1 (num components = 2).
 //
+//    Jeremy Meredith, Tue Feb 20 11:04:44 PST 2007
+//    Add support for transformed rectilinear grids.
+//
 // ****************************************************************************
 
 void
@@ -279,7 +282,8 @@ avtDataTreeStreamer::UpdateExtents(avtDataTree_p tree)
         }
         double bounds[6];
         bool gotBounds = false;
-        tree->Traverse(CGetSpatialExtents, (void *) bounds, gotBounds);
+        struct {double *se; const double *xform;} info = {bounds,NULL};
+        tree->Traverse(CGetSpatialExtents, (void *)&info, gotBounds);
         if (gotBounds)
         {
             trueSpatialExtents->Merge(bounds);

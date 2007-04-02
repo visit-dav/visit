@@ -157,11 +157,17 @@ avtMomentOfInertiaQuery::VerifyInput()
 //  Programmer: Hank Childs
 //  Creation:   May 17, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
+//    Call inherited PreExecute before everything else.
+//
 // ****************************************************************************
 
 void
 avtMomentOfInertiaQuery::PreExecute(void)
 {
+    avtDatasetQuery::PreExecute();
+
     for (int i = 0 ; i < 9 ; i++)
         I[i] = 0.;
 }

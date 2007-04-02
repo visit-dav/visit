@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2006, The Regents of the University of California
+* Copyright (c) 2000 - 2007, The Regents of the University of California
 * Produced at the Lawrence Livermore National Laboratory
 * All rights reserved.
 *
@@ -74,6 +74,9 @@ class   avtIntervalTree;
 //    Hank Childs, Fri Nov 19 13:38:21 PST 2004
 //    Define ExecuteData so we can pass rectilinear grids through if specified.
 //
+//    Jeremy Meredith, Wed Jan 17 11:39:01 EST 2007
+//    Added support for transformed rectilinear grids.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtWorldSpaceToImageSpaceTransform : public avtTransform
@@ -120,6 +123,7 @@ class AVTFILTERS_API avtWorldSpaceToImageSpaceTransform : public avtTransform
 
     virtual void            RefashionDataObjectInfo(void);
     virtual void            PreExecute(void);
+    virtual bool            FilterUnderstandsTransformedRectMesh();
 };
 
 

@@ -501,11 +501,16 @@ avtSliceFilter::PerformRestriction(avtPipelineSpecification_p spec)
 //    Made origin be determined in this routine since it may require parallel
 //    execution.
 //
+//    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
+//    Call inherited PreExecute before everything else.
+//
 // ****************************************************************************
 
 void
 avtSliceFilter::PreExecute(void)
 {
+    avtPluginStreamer::PreExecute();
+
     double nx = atts.GetNormal()[0];
     double ny = atts.GetNormal()[1];
     double nz = atts.GetNormal()[2];

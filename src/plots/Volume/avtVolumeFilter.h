@@ -70,6 +70,9 @@ class     WindowAttributes;
 //    methods that are no longer necessary since this filter doesn't switch
 //    between multiple modes.
 //
+//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
 // ****************************************************************************
 
 class avtVolumeFilter : public avtDatasetToDatasetFilter
@@ -94,6 +97,7 @@ class avtVolumeFilter : public avtDatasetToDatasetFilter
     virtual avtPipelineSpecification_p
                              PerformRestriction(avtPipelineSpecification_p);
     virtual void             VerifyInput(void);
+    virtual bool             FilterUnderstandsTransformedRectMesh();
 };
 
 

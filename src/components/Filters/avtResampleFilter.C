@@ -951,6 +951,11 @@ CreateViewFromBounds(avtViewInfo &view, const double *bounds, double scale[3])
 //    spatial dimension (ie lines and points get promoted using kernel
 //    scheme).
 //
+//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//    Since the resample filter creates a new mesh by taking into account
+//    any inherent transforms, we clear this value for our new output mesh.
+//
 // ****************************************************************************
 
 void
@@ -959,6 +964,8 @@ avtResampleFilter::RefashionDataObjectInfo(void)
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
     GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(
                   GetInput()->GetInfo().GetAttributes().GetSpatialDimension());
+    GetOutput()->GetInfo().GetAttributes().
+                                         SetRectilinearGridHasTransform(false);
 }
 
 
@@ -1157,3 +1164,25 @@ avtResampleFilter::PerformRestriction(avtPipelineSpecification_p oldspec)
 }
 
 
+// ****************************************************************************
+//  Method:  avtResampleFilter::FilterUnderstandsTransformedRectMesh
+//
+//  Purpose:
+//    If this filter returns true, this means that it correctly deals
+//    with rectilinear grids having an implied transform set in the
+//    data attributes.  It can do this conditionally if desired.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 15, 2007
+//
+// ****************************************************************************
+
+bool
+avtResampleFilter::FilterUnderstandsTransformedRectMesh()
+{
+    // Resampling has been extended to understand these meshes.
+    return true;
+}

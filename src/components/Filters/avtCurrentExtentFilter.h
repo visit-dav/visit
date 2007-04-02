@@ -56,6 +56,10 @@
 //  Programmer: Kathleen Bonnell 
 //  Creation:   October 2, 2001 
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtCurrentExtentFilter : public avtDatasetToDatasetFilter
@@ -71,6 +75,7 @@ class AVTFILTERS_API avtCurrentExtentFilter : public avtDatasetToDatasetFilter
   protected:
     virtual void          Execute(void);
     virtual void          RefashionDataObjectInfo(void);
+    virtual bool          FilterUnderstandsTransformedRectMesh();
 
 };
 

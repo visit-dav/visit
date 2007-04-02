@@ -70,6 +70,10 @@ class     vtkDataArray;
 //    Hank Childs, Fri Aug 19 14:04:25 PDT 2005
 //    Do a better job of determining the variable dimension.
 //
+//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//    Unary math filters can handle these with no modifications.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtUnaryMathFilter : public avtSingleInputExpressionFilter
@@ -89,6 +93,8 @@ class EXPRESSION_API avtUnaryMathFilter : public avtSingleInputExpressionFilter
     virtual int               GetNumberOfComponentsInOutput(int numInInput)
                                           { return numInInput; };
     virtual int               GetVariableDimension(void);
+
+    virtual bool              FilterUnderstandsTransformedRectMesh();
 
     avtCentering              centering;
     vtkDataSet               *cur_mesh;

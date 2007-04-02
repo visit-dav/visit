@@ -149,11 +149,17 @@ avtPDFFilter::Equivalent(const AttributeGroup *a)
 //  Programmer: Hank Childs
 //  Creation:   November 21, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
+//    Call inherited PreExecute before everything else.
+//
 // ****************************************************************************
 
 void
 avtPDFFilter::PreExecute(void)
 {
+    avtPluginStreamer::PreExecute();
+
     //
     // Make sure that all the variables we need are in the input.
     //

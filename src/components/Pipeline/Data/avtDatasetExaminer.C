@@ -153,6 +153,10 @@ avtDatasetExaminer::GetVariableList(avtDataset_p &ds, VarList &vl)
 //    Hank Childs, Fri Mar 15 17:18:00 PST 2002
 //    Moved from class avtDataset.
 //
+//    Jeremy Meredith, Thu Feb 15 13:09:05 EST 2007
+//    Also pass along any inherent transform to be applied to rectilinear
+//    grids.
+//
 // ****************************************************************************
  
 bool
@@ -171,7 +175,15 @@ avtDatasetExaminer::GetSpatialExtents(avtDataset_p &ds, double *se)
  
     if ( *dataTree != NULL )
     {
-        dataTree->Traverse(CGetSpatialExtents, se, foundExtents);
+        // See if we're supposed to apply a transform to any rectilinear grids.
+        const double *rectXform = NULL;
+        avtDataAttributes &atts = ds->GetInfo().GetAttributes();
+        if (atts.GetRectilinearGridHasTransform())
+            rectXform = atts.GetRectilinearGridTransform();
+
+        // Create an info structure with the needed variables.
+        struct {double *se; const double *xform;} info = { se, rectXform };
+        dataTree->Traverse(CGetSpatialExtents, &info, foundExtents);
     }
  
     if (!foundExtents)
@@ -198,6 +210,14 @@ avtDatasetExaminer::GetSpatialExtents(avtDataset_p &ds, double *se)
 //  Programmer:   Hank Childs
 //  Creation:     January 9, 2006
 //
+//  Note: this will not perform correctly on transformed rectilinear grids
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Jan 18 10:56:28 EST 2007
+//    The CGetSpatialExtents traversal now also expects a unit cell vector
+//    pointer.  We pass in NULL, which is the best we can do without
+//    further information from the avtDataAttributes.
+//
 // ****************************************************************************
  
 bool
@@ -214,7 +234,13 @@ avtDatasetExaminer::GetSpatialExtents(std::vector<avtDataTree_p> &l,double *se)
  
     for (i = 0 ; i < l.size() ; i++)
     {
-        l[i]->Traverse(CGetSpatialExtents, se, foundExtents);
+        // We don't have access to avtDataAttributes here, so assume
+        // that there is no rectilinear transform applied
+        const double *rectXform = NULL;
+
+        // Create an info structure with the needed variables.
+        struct {double *se; const double *xform;} info = { se, rectXform };
+        l[i]->Traverse(CGetSpatialExtents, &info, foundExtents);
     }
  
     if (!foundExtents)

@@ -212,11 +212,16 @@ avtArrayDecomposeFilter::ProcessArguments(ArgsExpr *args,
 //  Programmer: Hank Childs
 //  Creation:   July 21, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 12:02:51 EST 2007
+//    Call inherited PreExecute before everything else.
+//
 // ****************************************************************************
 
 void
 avtArrayDecomposeFilter::PreExecute(void)
 {
+    avtSingleInputExpressionFilter::PreExecute();
     issuedWarning = false;
 }
 

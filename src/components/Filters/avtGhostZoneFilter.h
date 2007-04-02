@@ -74,6 +74,9 @@ class     vtkDataSetRemoveGhostCells;
 //    Hank Childs, Wed Dec 20 09:25:42 PST 2006
 //    Add "ghost data must be removed".
 //
+//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtGhostZoneFilter : public avtStreamer
@@ -97,6 +100,7 @@ class AVTFILTERS_API avtGhostZoneFilter : public avtStreamer
 
     virtual vtkDataSet         *ExecuteData(vtkDataSet *, int, std::string);
     virtual void                RefashionDataObjectInfo(void);
+    virtual bool                FilterUnderstandsTransformedRectMesh();
 };
 
 
