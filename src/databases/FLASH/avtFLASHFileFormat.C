@@ -2276,6 +2276,9 @@ avtFLASHFileFormat::ReadParticleAttributes_FLASH3()
 //
 //  Modifications:
 //
+//    Hank Childs, Thu Mar  8 10:00:33 PST 2007
+//    Use version macro to get around hsize_t/hssize_t problem.
+//
 // ****************************************************************************
 
 void
@@ -2291,7 +2294,13 @@ avtFLASHFileFormat::ReadParticleVar(hid_t pointId, const char *vname,
     hsize_t memspace = H5Screate_simple(1, memdims, NULL);
     int index = particleOriginalIndexMap[vname];
 
-    hsize_t offset[2] = {0, index};
+#if HDF5_VERSION_GE(1,6,4)
+    hsize_t offset[2];
+#else
+    hssize_t offset[2];
+#endif
+    offset[0] = 0;
+    offset[1] = index;
     hsize_t count[2] = {numParticles, 1}; 
 
     H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, offset, NULL, 
