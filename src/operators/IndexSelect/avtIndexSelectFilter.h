@@ -11,6 +11,7 @@
 
 
 class vtkDataSet;
+class vtkMaskPoints;
 class vtkVisItExtractGrid;
 class vtkVisItExtractRectilinearGrid;
 
@@ -40,6 +41,9 @@ class vtkVisItExtractRectilinearGrid;
 //    Kathleen Bonnell, Thu Aug  4 15:47:59 PDT 2005 
 //    Added RefashionDataObjectInfo.
 //
+//    Kathleen Bonnell,  Mon Jan 30 15:10:26 PST 2006 
+//    Add vtkMaskPoints for a points filter. 
+//
 // ****************************************************************************
 
 class avtIndexSelectFilter : public avtPluginStreamer
@@ -66,6 +70,7 @@ class avtIndexSelectFilter : public avtPluginStreamer
 
     vtkVisItExtractGrid                  *curvilinearFilter;
     vtkVisItExtractRectilinearGrid       *rectilinearFilter;
+    vtkMaskPoints                        *pointsFilter;
 
     void                        PrepareFilters(int [3]);
 

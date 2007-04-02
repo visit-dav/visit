@@ -1177,6 +1177,7 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
         // For now, always close the file
         SDend(file_handle);
 
+#ifdef DEBUG_ENZO_PARTICLES
         if (0)
         {
             char name[200];
@@ -1186,7 +1187,7 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
             wrtr->SetFileName(name);
             wrtr->Write();
         }
-
+#endif
         return ugrid;
     }
     else if (fileType == ENZO_FT_HDF5)

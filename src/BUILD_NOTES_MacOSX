@@ -236,9 +236,19 @@ make
 # after it has been built.
 cd src
 vi Makefile
+Change TARGET0 to libqt.dylib
 Add -install_name @executable_path/../lib/libqt.dylib -undefined dynamic_lookup to LFLAGS and save
 rm ../lib/libqt*
 make
+
+# We must also change the qui library that comes with Qt.
+cd ../tools/designer/uilib
+vi Makefile
+Change -lqt-mt to -lqt
+Add -install_name @executable_path/../lib/libqui.dylib -undefined dynamic_lookup to LFLAGS and save
+rm ../../../lib/libqui*
+make
+cd ../../../
 
 # Install Qt
 mkdir $VISITPATH/qt
@@ -251,6 +261,7 @@ cd include; cp *.h $VISITPATH/qt/include
 cp private/*.h $VISITPATH/qt/include/private
 cd ../lib
 cp libqt-mt.3.3.1.dylib $VISITPATH/qt/lib/libqt.dylib
+cp libqui.dylib $VISITPATH/qt/lib/libqui.dylib
 cd ../..
 
 ==============================================================================

@@ -24,7 +24,7 @@ sunset=true
 sc=true
 tidalwave=true
 white=true
-uv=true
+pu=true
 lilac=true
 
 ver=undefined
@@ -44,7 +44,7 @@ do
          sc=false
          tidalwave=false
          white=false
-         uv=false
+         pu=false
          lilac=false
          shift
          ;;
@@ -57,7 +57,7 @@ do
          sc=true
          tidalwave=true
          white=true
-         uv=true
+         pu=true
          lilac=true
          shift
          ;;
@@ -101,12 +101,12 @@ do
          white=true
          shift
          ;;
-      -uv)
-         uv=false
+      -pu)
+         pu=false
          shift
          ;;
-      +uv)
-         uv=true
+      +pu)
+         pu=true
          shift
          ;;
       -lilac)
@@ -360,14 +360,14 @@ then
 fi
 
 #
-# Install on uv.
+# Install on pu.
 #
-rm -f uv
-cat <<EOF > uv
+rm -f pu
+cat <<EOF > pu
 
 ./visit-install -private -c closed -g visit -gw -l $ver aix64-xlc /usr/gapps/visit > installlog 2>&1
 echo ""                                            >> resultlog 2>&1
-echo "        install of visit on uv"              >> resultlog 2>&1
+echo "        install of visit on pu"              >> resultlog 2>&1
 echo "       ------------------------"             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
@@ -382,13 +382,13 @@ echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver/ibm-aix-pwr64-xlc/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/ibm-aix-pwr64-xlc\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
 
-if [ $uv = true ]
+if [ $pu = true ]
 then
    if [ $test = no ]
    then
-      cat uv >> lc
+      cat pu >> lc
 
-      scp uv:/p/guv1/$user/uv/visitbuild/visit$ver2.aix64-xlc.tar.gz .
+      scp pu:/p/gpu1/$user/pu/visitbuild/visit$ver2.aix64-xlc.tar.gz .
       scp visit$ver2.aix64-xlc.tar.gz sc1:
    fi
 fi
@@ -442,5 +442,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f bdiv hitit sunset lc sc tidalwave white uv lilac
+   rm -f bdiv hitit sunset lc sc tidalwave white pu lilac
 fi

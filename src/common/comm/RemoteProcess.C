@@ -1058,7 +1058,7 @@ RemoteProcess::Open(const std::string &rHost,
                       createAsThoughLocal);
     for(int i = 0; i < commandLine.size(); ++i)
     {
-        debug5 << commandLine[i];
+        debug5 << commandLine[i].c_str();
         if(i < commandLine.size()-1)
             debug5 << ", ";
     } 

@@ -1212,7 +1212,7 @@ MDServerConnection::ReadCWD()
 void
 MDServerConnection::ReadFileList()
 {
-    int total = visitTimer->StartTimer();
+    int timeid, total = visitTimer->StartTimer();
 
     readFileListReturnValue = 0;
     validFileList = true;
@@ -1284,7 +1284,7 @@ MDServerConnection::ReadFileList()
     }
 #else
     // Clear out the current file list.
-    int timeid = visitTimer->StartTimer();
+    timeid = visitTimer->StartTimer();
     GetFileListRPC::FileList &fl = currentFileList;
     currentFileList.Clear();
     visitTimer->StopTimer(timeid, "Clearing file list");
@@ -1962,9 +1962,9 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
         // Create virtual databases using the information stored in the
         // newVirtualFiles map.
         //
-        int stage3 = visitTimer->StartTimer();
+        int fileIndex, stage3 = visitTimer->StartTimer();
         GetFileListRPC::FileList virtualFilesToCheck;
-        for(int fileIndex = 0; fileIndex < files.names.size(); ++fileIndex)
+        for(fileIndex = 0; fileIndex < files.names.size(); ++fileIndex)
         {
             // Look for the current filename in the new virtual files map. If the
             // name is not in the list then it's not a virtual file.
@@ -2007,7 +2007,7 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
         int stage5 = visitTimer->StartTimer();
         int vfIndex = 0;
         bool needToSortFileList = false;
-        for(int fileIndex = 0; fileIndex < files.names.size(); ++fileIndex)
+        for(fileIndex = 0; fileIndex < files.names.size(); ++fileIndex)
         {
             pos = newVirtualFiles.find(files.names[fileIndex]);
             if(pos == newVirtualFiles.end())

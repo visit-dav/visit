@@ -428,15 +428,15 @@ QvisHostProfileWindow::CreateWindowContents()
     hwLayout->setColStretch(3, 50);
     hwLayout->setSpacing(10);
 
-    std::string str1 = "These options are for hardware accelerating the\n"
-                       "scalable rendering feature on a parallel cluster.\n"
-                       "In other modes, VisIt will automatically use hardware acceleration.\n"
-                       "This tab only needs to be modified for parallel \n"
-                       "clusters that have graphics cards.\n";
+    QString str1("These options are for hardware accelerating the\n"
+                 "scalable rendering feature on a parallel cluster.\n"
+                 "In other modes, VisIt will automatically use hardware acceleration.\n"
+                 "This tab only needs to be modified for parallel \n"
+                 "clusters that have graphics cards.\n");
   
     int hrow = 0;
-    hwLayout->addMultiCellWidget(new QLabel(str1, hwGroup, "disclaimer1"),
-                                 hrow, hrow+4, 0, 1);
+    hwLayout->addMultiCellWidget(new QLabel(str1, hwGroup,
+                                 "disclaimer1"), hrow, hrow+4, 0, 1);
     hrow += 4;
 
     canDoHW = new QCheckBox("Use cluster's graphics cards",

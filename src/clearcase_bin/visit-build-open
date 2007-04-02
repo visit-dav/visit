@@ -360,7 +360,7 @@ cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
-gmake -j 4 >> ../buildlog 2>&1
+env PARALLEL=4 make -P >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.irix6.tar.gz ..
 cd ..
@@ -411,7 +411,7 @@ ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../buildlog 2>&1
 gmake >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
+clearcase_bin/visit-bin-dist -make gmake >> ../buildlog 2>&1
 mv visit\$ver2.osf1.tar.gz ..
 cd ..
 rm -f resultlog
@@ -461,7 +461,7 @@ ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../buildlog 2>&1
 gmake -j 4 >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
+clearcase_bin/visit-bin-dist -make gmake >> ../buildlog 2>&1
 mv visit\$ver2.aix.tar.gz ..
 cd ..
 rm -f resultlog
@@ -512,7 +512,7 @@ ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../buildlog 2>&1
 gmake -j 4 >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist -compiler xlc >> ../buildlog 2>&1
+clearcase_bin/visit-bin-dist -compiler xlc -make gmake >> ../buildlog 2>&1
 mv visit\$ver2.aix64-xlc.tar.gz ..
 cd ..
 echo "        build of visit on up"           > resultlog 2>&1

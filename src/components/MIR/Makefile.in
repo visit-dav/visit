@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2005
+#                            Copyright 2000 - 2006
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -54,6 +54,9 @@
 #   triggered accidentally on occasion and trying to rebuild read-only files
 #   in the VOB.  It never changes anymore anyway.....
 #
+#   Brad Whitlock, Thu Jan 26 15:30:52 PST 2006
+#   Added libs for MacOS X.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -89,8 +92,9 @@ CPPFLAGS=-I../../include @COMPONENT_CPPFLAGS@ @CPPFLAGS@
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libmir
-SERLIBS=-ldbatts -lpipeline_ser -lavtmath_ser -lavtexceptions -lstate -lutility -lmisc -lcomm -lexpr -lparser -llightweight_visit_vtk $(VTK_LIBS)
-PARLIBS=-ldbatts -lpipeline_par -lavtmath_par -lavtexceptions -lstate -lutility -lmisc -lcomm -lexpr -lparser -llightweight_visit_vtk $(VTK_LIBS)
+LIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS)
+SERLIBS=-ldbatts -lpipeline_ser -lavtmath_ser -lavtexceptions -lstate -lutility -lmisc -lcomm -lexpr -lparser -llightweight_visit_vtk $(VTK_LIBS) $(LIBS_FOR_MACOSX_PREBINDING)
+PARLIBS=-ldbatts -lpipeline_par -lavtmath_par -lavtexceptions -lstate -lutility -lmisc -lcomm -lexpr -lparser -llightweight_visit_vtk $(VTK_LIBS) $(LIBS_FOR_MACOSX_PREBINDING)
 
 ##
 ## Standard targets...

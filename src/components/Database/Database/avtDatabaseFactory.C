@@ -431,6 +431,10 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
 //
 //    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 //    Added bool arg to forceReadAllCyclesTimes
+//
+//    Brad Whitlock, Tue Jan 31 14:55:35 PST 2006
+//    Fixed a problem that lead to !NBLOCKS failing on win32.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -469,7 +473,8 @@ avtDatabaseFactory::VisitFile(const char *visitFile, int timestep,
             // If the filename contains a colon, assume that it contains
             // the whole path to the file. We don't need to prepend a 
             // path if it already contains one.
-            if(fileName.find(":") != std::string::npos)
+            if((fileName.find(":") != std::string::npos) ||
+               (fileName.size() > 0 && fileName[0] == '!')
                 continue;
 
             // If the filename begins with "./", remove it.

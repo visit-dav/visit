@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <time.h>
 #include "Field.h"
+#include <qregexp.h>
 
 using std::vector;
 
@@ -2235,7 +2236,7 @@ class PythonGeneratorAttribute
     void WriteCallLogRoutineMethod(ostream &c)
     {
         QString shortName(name);
-        shortName.replace("Attributes", "Atts");
+        shortName.replace(QRegExp("Attributes"), "Atts");
 
         c << "std::string" << endl;
         c << "Py" << name << "_GetLogString()" << endl;

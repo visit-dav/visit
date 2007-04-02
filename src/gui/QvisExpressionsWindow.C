@@ -934,11 +934,10 @@ QvisExpressionsWindow::insertFunction(int id)
     if (!definitionEdit->isEnabled())
         return;
 
-    QString orig = definitionEdit->text();
     definitionEdit->insert(insertFunctionMenu->text(id));
 
     bool doParens = (insertFunctionMenu->text(id).length() >= 2);
-    std::string str = insertFunctionMenu->text(id);
+    std::string str = insertFunctionMenu->text(id).latin1();
     if (str == "conn_cmfe")
     {
         definitionEdit->insert("(<filename:var>, <meshname>)");

@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2005
+#                            Copyright 2000 - 2006
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -203,6 +203,9 @@
 #    Mark C. Miller, Tue Aug 16 19:28:18 PDT 2005
 #    Added avtResampleSelection.C
 #
+#    Brad Whitlock, Thu Jan 26 15:27:04 PST 2006
+#    Added -lbz2 for MacOS X
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -350,8 +353,9 @@ CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libpipeline
-SERLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lutility -lexpr -lparser -lavtmath_ser -llightweight_visit_vtk @VTK_LIBS@ $(X_LIBS) @LIBS@
-PARLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lutility -lexpr -lparser -lavtmath_par -llightweight_visit_vtk @VTK_LIBS@ $(X_LIBS) @LIBS@ @SHLIB_MPI_LIBS@
+LIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS)
+SERLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lutility -lexpr -lparser -lavtmath_ser -llightweight_visit_vtk @VTK_LIBS@ $(LIBS_FOR_MACOSX_PREBINDING) $(X_LIBS) @LIBS@
+PARLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lutility -lexpr -lparser -lavtmath_par -llightweight_visit_vtk @VTK_LIBS@ $(LIBS_FOR_MACOSX_PREBINDING) $(X_LIBS) @LIBS@ @SHLIB_MPI_LIBS@
 
 ##
 ## Standard targets...

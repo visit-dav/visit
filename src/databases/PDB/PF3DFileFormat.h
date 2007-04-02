@@ -65,6 +65,7 @@ protected:
     //
     class MasterInformation
     {
+    public:
         struct MemberData
         {
             MemberData();

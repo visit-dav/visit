@@ -60,7 +60,7 @@ int SimCommandSlots::SendCMD(QString sig, const QObject *ui, QString value)
     if (simIndex < 0)
     {
         QMessageBox::warning(0, "VisIt",
-                             "Invalid index encounterd for Sim engine access",
+                             "Invalid index encountered for Sim engine access",
                              "Ok", 0, 0, 0, 1 );
         return -1;
     }
@@ -70,7 +70,7 @@ int SimCommandSlots::SendCMD(QString sig, const QObject *ui, QString value)
 
     QString cmd = sig + ";" + ui->name() + ";" + ui->className() + ";" +
                   ui->parent()->name() + ";" + value;
-    viewer->SendSimulationCommand(host, sim, cmd);
+    viewer->SendSimulationCommand(host, sim, cmd.latin1());
 
     return 0;
 }

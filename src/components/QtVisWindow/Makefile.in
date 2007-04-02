@@ -1,4 +1,4 @@
-#                            Copyright 1991 - 2005
+#                            Copyright 1991 - 2006
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -46,6 +46,9 @@
 #    Brad Whitlock, Fri Apr 29 11:57:13 PDT 2005
 #    I changed -lplotter to -lplotter_ser and -lviswindow to -lviswindow_ser.
 #
+#    Brad Whitlock, Mon Jan 30 11:05:00 PDT 2006
+#    Added another MacOS X lib.
+#
 ##############################################################################
 
 ##
@@ -65,7 +68,8 @@ CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@ @VTKQT_CPPFLAGS@
 
 OBJ=$(SRC:.C=.o)
 LIB=libqtviswindow
-LIBS=-ldbatts -lviswindow_ser -lpipeline_ser -lavtfilters_ser -lavtmath_ser -lavtview -lavtexceptions -lplotter_ser -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser -lmisc -lstate -lcomm -lexpr -lparser -lutility @VTKQT_LIBS@ $(VTK_LIBS) $(X_LIBS)
+LIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS)
+LIBS=-ldbatts -lviswindow_ser -lpipeline_ser -lavtfilters_ser -lavtmath_ser -lavtview -lavtexceptions -lplotter_ser -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser -lmisc -lstate -lcomm -lexpr -lparser -lutility $(LIBS_FOR_MACOSX_PREBINDING) @VTKQT_LIBS@ $(VTK_LIBS) $(X_LIBS)
 
 ##
 ## Standard targets...

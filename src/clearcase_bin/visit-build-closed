@@ -24,7 +24,7 @@ sunset=true
 sc=true
 tidalwave=true
 white=true
-uv=true
+pu=true
 lilac=true
 
 dist=undefined
@@ -43,7 +43,7 @@ do
          sc=false
          tidalwave=false
          white=false
-         uv=false
+         pu=false
          lilac=false
          shift
          ;;
@@ -87,12 +87,12 @@ do
          white=true
          shift
          ;;
-      -uv)
-         uv=false
+      -pu)
+         pu=false
          shift
          ;;
-      +uv)
-         uv=true
+      +pu)
+         pu=true
          shift
          ;;
       -lilac)
@@ -248,7 +248,7 @@ ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../buildlog 2>&1
 gmake -j 3 >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
+clearcase_bin/visit-bin-dist -make gmake >> ../buildlog 2>&1
 mv visit\$ver2.osf1.tar.gz ..
 cd ..
 echo "        build of visit on sc"           > resultlog 2>&1
@@ -346,7 +346,7 @@ ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../buildlog 2>&1
 gmake -j 6 >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
+clearcase_bin/visit-bin-dist -make gmake >> ../buildlog 2>&1
 mv visit\$ver2.aix.tar.gz ..
 cd ..
 echo "        build of visit on white"        > resultlog 2>&1
@@ -373,32 +373,32 @@ then
 fi
 
 #
-# Build on uv, both serial and parallel versions.
+# Build on pu, both serial and parallel versions.
 #
-rm -f uv
-cat <<EOF > uv
+rm -f pu
+cat <<EOF > pu
 #!/bin/sh
 PATH=/usr/local/bin:$PATH
-if test ! -d /p/guv1/$user ; then
-   mkdir /p/guv1/$user
+if test ! -d /p/gpu1/$user ; then
+   mkdir /p/gpu1/$user
 fi
-if test ! -d /p/guv1/$user/uv ; then
-   mkdir /p/guv1/$user/uv
+if test ! -d /p/gpu1/$user/pu ; then
+   mkdir /p/gpu1/$user/pu
 fi
-rm -rf /p/guv1/$user/uv/visitbuild
-mkdir /p/guv1/$user/uv/visitbuild
-mv uv_$dist.tar.gz /p/guv1/$user/uv/visitbuild/$dist.tar.gz
-cd /p/guv1/$user/uv/visitbuild
+rm -rf /p/gpu1/$user/pu/visitbuild
+mkdir /p/gpu1/$user/pu/visitbuild
+mv pu_$dist.tar.gz /p/gpu1/$user/pu/visitbuild/$dist.tar.gz
+cd /p/gpu1/$user/pu/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../buildlog 2>&1
 gmake -j 4 >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist -compiler xlc >> ../buildlog 2>&1
+clearcase_bin/visit-bin-dist -compiler xlc -make gmake >> ../buildlog 2>&1
 mv visit\$ver2.aix64-xlc.tar.gz ..
 cd ..
-echo "        build of visit on uv"           > resultlog 2>&1
+echo "        build of visit on pu"           > resultlog 2>&1
 echo "       ----------------------"          >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
@@ -411,13 +411,13 @@ echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
 
-if [ $uv = true ]
+if [ $pu = true ]
 then
    if [ $test = no ]
    then
-      scp uv uv:uv_buildit
-      scp $dist.tar.gz uv:uv_$dist.tar.gz
-      ssh uv "chmod 750 uv_buildit;./uv_buildit" &
+      scp pu pu:pu_buildit
+      scp $dist.tar.gz pu:pu_$dist.tar.gz
+      ssh pu "chmod 750 pu_buildit;./pu_buildit" &
    fi
 fi
 
@@ -474,5 +474,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hitit sunset sc tidalwave white uv lilac
+   rm -f hitit sunset sc tidalwave white pu lilac
 fi

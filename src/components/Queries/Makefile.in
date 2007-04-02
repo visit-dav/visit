@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2005
+#                            Copyright 2000 - 2006
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -116,6 +116,9 @@
 #   Brad Whitlock, Wed Nov 23 10:35:24 PDT 2005
 #   Added libs required for Mac linking.
 #
+#   Kathleen Bonnell, Tue Jan 31 15:49:04 PST 2006 
+#   Added OriginalData SpatialExtents query.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -173,6 +176,7 @@ Queries_src= \
  Queries/avtOriginalDataMinMaxQuery.C  \
  Queries/avtOriginalDataNumNodesQuery.C  \
  Queries/avtOriginalDataNumZonesQuery.C  \
+ Queries/avtOriginalDataSpatialExtentsQuery.C  \
  Queries/avtSkewnessQuery.C  \
  Queries/avtSphericalCompactnessFactorQuery.C  \
  Queries/avtSummationQuery.C  \
@@ -197,7 +201,8 @@ CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libquery
-COMMONLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lutility -lplugin -lavtview -lvisit_vtk -llightweight_visit_vtk
+LIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS)
+COMMONLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lutility -lplugin -lavtview -lvisit_vtk -llightweight_visit_vtk $(LIBS_FOR_MACOSX_PREBINDING)
 SERLIBS=$(COMMONLIBS) -lpipeline_ser -lavtmath_ser -lavtfilters_ser -lexpressions_ser -ldatabase_ser -lmir_ser $(VTK_LIBS) $(X_LIBS) @LIBS@
 PARLIBS=$(COMMONLIBS) -lpipeline_par -lavtmath_par -lavtfilters_par -lexpressions_par -ldatabase_par -lmir_par $(VTK_LIBS) $(X_LIBS) @LIBS@ @SHLIB_MPI_LIBS@
 

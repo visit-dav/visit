@@ -7,8 +7,7 @@
 #include <vtkCell.h>
 #include <vtkCellData.h>
 #include <vtkDataSetRemoveGhostCells.h>
-#include <vtkVisItExtractGrid.h>
-#include <vtkVisItExtractRectilinearGrid.h>
+#include <vtkMaskPoints.h>
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -16,6 +15,8 @@
 #include <vtkStructuredGrid.h>
 #include <vtkUnsignedIntArray.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkVisItExtractGrid.h>
+#include <vtkVisItExtractRectilinearGrid.h>
 #include <vtkVisItUtility.h>
 
 #include <avtCallback.h>
@@ -43,12 +44,18 @@
 //    they have been modified to correctly handle cell data when VOI is
 //    along max boundary. 
 //
+//    Kathleen Bonnell, Mon Jan 30 15:10:26 PST 2006 
+//    Add vtkMaskPoints for a points filter. 
+// 
 // ****************************************************************************
 
 avtIndexSelectFilter::avtIndexSelectFilter()
 {
     curvilinearFilter = vtkVisItExtractGrid::New();
     rectilinearFilter = vtkVisItExtractRectilinearGrid::New();
+    pointsFilter = vtkMaskPoints::New();
+    pointsFilter->GenerateVerticesOn();
+    pointsFilter->RandomModeOff();
     haveIssuedWarning = false;
     selID             = -1;
 }
@@ -61,6 +68,8 @@ avtIndexSelectFilter::avtIndexSelectFilter()
 //  Creation:   Wed Jun 5 09:09:11 PDT 2002
 //
 //  Modifications:
+//    Kathleen Bonnell, Mon Jan 30 15:10:26 PST 2006 
+//    Delete vtkMaskPoints.
 //
 // ****************************************************************************
 
@@ -75,6 +84,11 @@ avtIndexSelectFilter::~avtIndexSelectFilter()
     {
         rectilinearFilter->Delete();
         rectilinearFilter = NULL;
+    }
+    if (pointsFilter != NULL)
+    {
+        pointsFilter->Delete();
+        pointsFilter = NULL;
     }
 }
 
@@ -133,6 +147,9 @@ avtIndexSelectFilter::SetAtts(const AttributeGroup *a)
 //    Kathleen Bonnell, Wed Jul 20 11:39:34 PDT 2005 
 //    Don't subtract 1 from the groupIndices. 
 //
+//    Kathleen Bonnell, Mon Jan 30 15:10:26 PST 2006 
+//    Setup vtkMaskPoints.
+//
 // ****************************************************************************
 
 void
@@ -187,7 +204,17 @@ avtIndexSelectFilter::PrepareFilters(int groupIndices[3])
     sampleRate[2] = atts.GetZIncr();
     curvilinearFilter->SetSampleRate(sampleRate);
     rectilinearFilter->SetSampleRate(sampleRate);
-
+    pointsFilter->SetOnRatio(sampleRate[0]);
+    pointsFilter->SetOffset(voi[0]);
+    if (voi[1] != 1000000)
+    {
+        int maxpts = (voi[1] - voi[0]) / sampleRate[0]; 
+        pointsFilter->SetMaximumNumberOfPoints(maxpts);
+    }
+    else
+    {
+        pointsFilter->SetMaximumNumberOfPoints(VTK_LARGE_INTEGER);
+    }
     curvilinearFilter->SetIncludeBoundary(1);
     rectilinearFilter->SetIncludeBoundary(1);
 }
@@ -264,12 +291,18 @@ avtIndexSelectFilter::Equivalent(const AttributeGroup *a)
 //    'zones not preserved' case.   Removed retrieval and use of
 //    'avtRealDims'.  Its retrieval was incorrect so it was never ever used.
 //
+//    Kathleen Bonnell, Mon Jan 30 15:10:26 PST 2006 
+//    Use vtkMaskPoints for point meshes.
+//
 // ****************************************************************************
 
 vtkDataSet *
-avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
+avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
 {
     vtkDataSet *out_ds = NULL;
+
+    int topoDim = GetInput()->GetInfo().GetAttributes().
+                  GetTopologicalDimension();
 
     //
     // If the selection this filter exists to create has already been handled,
@@ -339,6 +372,13 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
             rectilinearFilter->SetInput((vtkRectilinearGrid *) ds);
             rectilinearFilter->Update();
             rv = rectilinearFilter->GetOutput();
+        }
+        else if (topoDim == 0 && 
+                 (dstype == VTK_POLY_DATA || dstype == VTK_UNSTRUCTURED_GRID))
+        {
+            pointsFilter->SetInput(ds);
+            pointsFilter->Update();
+            rv = pointsFilter->GetOutput();
         }
         else
         {
@@ -845,6 +885,9 @@ avtIndexSelectFilter::PostExecute(void)
 //    Hank Childs, Fri Mar 11 07:37:05 PST 2005
 //    Fix non-problem size leak introduced with last fix.
 //
+//    Kathleen Bonnell, Mon Jan 30 15:10:26 PST 2006
+//    Handle vtkMaskPoints. 
+//
 // ****************************************************************************
 
 void
@@ -861,6 +904,11 @@ avtIndexSelectFilter::ReleaseData(void)
     vtkRectilinearGrid *r = vtkRectilinearGrid::New();
     rectilinearFilter->SetOutput(r);
     r->Delete();
+
+    pointsFilter->SetInput(NULL);
+    vtkPolyData *p = vtkPolyData::New();
+    pointsFilter->SetOutput(p);
+    p->Delete();
 }
 
 // ****************************************************************************

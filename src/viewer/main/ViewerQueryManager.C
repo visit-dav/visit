@@ -974,6 +974,10 @@ ViewerQueryManager::GetQueryClientAtts()
 //    Moved warning/error condition detection code to beginning of method.
 //    Check for non-hidden active plot before checking if EngineExists. 
 //
+//    Kathleen Bonnell, Tue Jan 31 15:45:23 PST 2006
+//    If points were transformed, perform OrignalData SpatialExtents query
+//    like other queries. 
+//
 // ****************************************************************************
 
 void         
@@ -1071,8 +1075,22 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
         // NO NEED TO GO TO THE ENGINE FOR THIS INFORMATION, AS
         // IT IS AVAILABLE FROM THE PLOT
         //
-        DoSpatialExtentsQuery(plist->GetPlot(plotIds[0]), arg1);
-        return;
+        if (arg1 == AVT_ORIGINAL_EXTENTS)
+        {
+             
+            avtDataObjectReader_p rdr = plist->GetPlot(plotIds[0])->GetReader();
+            avtDataObject_p dob = rdr->GetOutput();
+            if (!dob->GetInfo().GetValidity().GetPointsWereTransformed())
+            {
+                DoSpatialExtentsQuery(plist->GetPlot(plotIds[0]), arg1);
+                return;
+            }
+        }
+        else
+        {
+            DoSpatialExtentsQuery(plist->GetPlot(plotIds[0]), arg1);
+            return;
+        }
     }
 
     QueryAttributes qa;

@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2005
+#                            Copyright 2000 - 2006
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -86,7 +86,8 @@ SRC=EngineProxy.C
 HDR=EngineProxy.h
 OBJ=$(SRC:.C=.o)
 LIB=libengineproxy
-LIBS=-lenginerpc -ldbatts -lpipeline_ser -lavtmath_ser -lavtexceptions -lcomm -lmisc -lstate -lplugin -lexpr -lparser -lutility -lproxybase -llightweight_visit_vtk $(VTK_LIBS)
+LIBS_FOR_MACOSX_PREBINDING=-lexpr $(BZIP2_LIBS)
+LIBS=-lenginerpc -ldbatts -lpipeline_ser -lavtmath_ser -lavtexceptions -lcomm -lmisc -lstate -lplugin -lparser -lutility -lproxybase -llightweight_visit_vtk $(LIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)
 
 
 ##

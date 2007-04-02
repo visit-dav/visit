@@ -414,8 +414,7 @@ avtZeusMPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     //
     // Add scalars
     //
-    for(DatasetInfoMap::const_iterator pos = varsToDatasets.begin();
-        pos != varsToDatasets.end(); ++pos)
+    for(pos = varsToDatasets.begin(); pos != varsToDatasets.end(); ++pos)
     {
         AddScalarVarToMetaData(md, pos->first, "Mesh", AVT_ZONECENT);
     }
