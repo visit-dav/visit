@@ -119,6 +119,25 @@ avtFLASHFileFormat::avtFLASHFileFormat(const char *cfilename)
 
 
 // ****************************************************************************
+//  Method: avtFLASHFileFormat::ActivateTimestep
+//
+//  Purpose:
+//      Tells the reader to activate the current time step.  This means 
+//      rebuilding the nesting structure if it is not available.
+//
+//  Programmer: Hank Childs
+//  Creation:   April 28, 2006
+//
+// ****************************************************************************
+
+void
+avtFLASHFileFormat::ActivateTimestep(void)
+{
+    BuildDomainNesting();
+}
+
+
+// ****************************************************************************
 //  Method: avtFLASHFileFormat::FreeUpResources
 //
 //  Purpose:

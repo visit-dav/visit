@@ -135,6 +135,9 @@
 #   Hank Childs, Sun Mar  5 16:00:07 PST 2006
 #   Added avtTimeExpression.
 #
+#   Hank Childs, Mon Mar 13 16:43:55 PST 2006
+#   Added avtMinMaxExpression.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -204,6 +207,7 @@ General_src= \
   General/avtMatErrorFilter.C \
   General/avtMagnitudeFilter.C \
   General/avtMeshCoordinateFilter.C \
+  General/avtMinMaxExpression.C \
   General/avtNMatsFilter.C \
   General/avtNeighborEvaluatorFilter.C \
   General/avtProcessorIdFilter.C \

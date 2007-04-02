@@ -94,6 +94,7 @@
 #include <avtEvalPlaneExpression.h>
 #include <avtSymmPlaneExpression.h>
 #include <avtTimeExpression.h>
+#include <avtMinMaxExpression.h>
 
 #include <stdio.h>
 #include <ExpressionException.h>
@@ -442,6 +443,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //      Hank Childs, Sun Mar  5 16:01:34 PST 2006
 //      Added time.
 //
+//      Hank Childs, Mon Mar 13 16:43:55 PST 2006
+//      Added min and max expressions.
+//
 // ****************************************************************************
 void
 avtFunctionExpr::CreateFilters(ExprPipelineState *state)
@@ -768,6 +772,18 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtDistanceToBestFitLineFilter(true);
     else if (functionName == "distance_to_best_fit_line2")
         f = new avtDistanceToBestFitLineFilter(false);
+    else if (functionName == "min" || functionName == "minimum")
+    {
+        avtMinMaxExpression *mm = new avtMinMaxExpression;
+        mm->SetDoMinimum(true);
+        f = mm;
+    }
+    else if (functionName == "max" || functionName == "maximum")
+    {
+        avtMinMaxExpression *mm = new avtMinMaxExpression;
+        mm->SetDoMinimum(false);
+        f = mm;
+    }
     else
     {
         string error =

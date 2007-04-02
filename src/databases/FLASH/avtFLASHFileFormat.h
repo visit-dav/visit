@@ -30,6 +30,9 @@
 //    Jeremy Meredith, Tue Sep 27 14:22:29 PDT 2005
 //    Added "new" style particle support.
 //
+//    Hank Childs, Fri Apr 28 14:20:35 PDT 2006
+//    Added activate timestep.
+//
 // ****************************************************************************
 
 class avtFLASHFileFormat : public avtSTMDFileFormat
@@ -43,6 +46,7 @@ class avtFLASHFileFormat : public avtSTMDFileFormat
 
     virtual const char    *GetType(void)   { return "FLASH"; };
     virtual void           FreeUpResources(void); 
+    virtual void           ActivateTimestep(void);
 
     virtual void          *GetAuxiliaryData(const char *var, int,
                                             const char *type, void *args,
