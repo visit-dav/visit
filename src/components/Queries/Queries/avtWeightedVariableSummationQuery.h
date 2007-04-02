@@ -32,6 +32,9 @@ class     avtVMetricVolume;
 //    Kathleen Bonnell, Fri Feb  3 10:32:12 PST 2006 
 //    Added revolvedVolume. 
 //
+//    Hank Childs, Thu May 11 13:28:50 PDT 2006
+//    Added new virtual methods so that new queries can inherit from this.
+//
 // ****************************************************************************
 
 class QUERY_API avtWeightedVariableSummationQuery : public avtSummationQuery
@@ -52,6 +55,9 @@ class QUERY_API avtWeightedVariableSummationQuery : public avtSummationQuery
     virtual avtDataObject_p    ApplyFilters(avtDataObject_p);
     virtual int                GetNFilters(void) { return 2; };
     virtual void               VerifyInput(void);
+
+    virtual avtDataObject_p    CreateVariable(avtDataObject_p d) { return d; };
+    virtual std::string        GetVarname(std::string &s) { return s; };
 };
 
 

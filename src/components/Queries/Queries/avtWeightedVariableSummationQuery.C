@@ -107,6 +107,10 @@ avtWeightedVariableSummationQuery::~avtWeightedVariableSummationQuery()
 //    Kathleen Bonnell, Fri Feb  3 10:32:12 PST 2006
 //    Added revolvedVolume, use it when 2D data and meshcoord type is RZ or ZR.
 //
+//    Hank Childs, Thu May 11 13:31:55 PDT 2006
+//    Add support for filters to inherit from this class and create new
+//    variables based on the mesh.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -126,6 +130,7 @@ avtWeightedVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
     avtDataSpecification_p dspec = GetInput()->GetTerminatingSource()
                                      ->GetFullDataSpecification();
     string varname = dspec->GetVariable();
+    varname = GetVarname(varname);
     SetSumType(varname);
 
     int topo = GetInput()->GetInfo().GetAttributes().GetTopologicalDimension();
@@ -151,6 +156,11 @@ avtWeightedVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
         dob = volume->GetOutput();
     }
 
+    //
+    // Let the derived type create a new variable if necessary.
+    //
+    dob = CreateVariable(dob);
+
     multiply->SetInput(dob);
     multiply->ClearInputVariableNames();
     multiply->AddInputVariableName("avt_weights");
@@ -161,6 +171,14 @@ avtWeightedVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
     //
     avtPipelineSpecification_p pspec = 
         inData->GetTerminatingSource()->GetGeneralPipelineSpecification();
+
+    if (CalculateAverage())
+    {
+        denomVariableName = "avt_weights";
+        // State that we want avt_weights as an output, so it doesn't get
+        // thrown out after the multiply.
+        pspec->GetDataSpecification()->AddSecondaryVariable("avt_weights");
+    }
 
     if (timeVarying) 
     { 
@@ -190,6 +208,10 @@ avtWeightedVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
 //    Kathleen Bonnell, Thu Jan  6 10:34:57 PST 2005 
 //    Remove TRY-CATCH block in favor of testing for ValidActiveVariable. 
 //
+//    Hank Childs, Thu May 11 14:13:30 PDT 2006
+//    Do not set the units if the variable doesn't match the variable of
+//    interest.
+//
 // ****************************************************************************
 
 void
@@ -201,12 +223,19 @@ avtWeightedVariableSummationQuery::VerifyInput(void)
     //
     avtSummationQuery::VerifyInput();
 
-    if (GetInput()->GetInfo().GetAttributes().ValidActiveVariable()) 
+    if (GetInput()->GetInfo().GetAttributes().ValidActiveVariable())
     {
-        //
-        // Set the base class units to be used in output.
-        //
-        SetUnits(GetInput()->GetInfo().GetAttributes().GetVariableUnits());
+        std::string varname1 = 
+                        GetInput()->GetInfo().GetAttributes().GetVariableName();
+        std::string varname2 = GetVarname(varname1);
+        if (varname1 == varname2)
+        {
+            //
+            // Set the base class units to be used in output.
+            //
+            SetUnits(GetInput()->GetInfo().GetAttributes().GetVariableUnits());
+        }
     }
 }
+
 

@@ -7,6 +7,7 @@
 #include <avtActualDataNumNodesQuery.h>
 #include <avtActualDataNumZonesQuery.h>
 #include <avtAreaBetweenCurvesQuery.h>
+#include <avtAverageMeanCurvatureQuery.h>
 #include <avtBestFitLineQuery.h>
 #include <avtCentroidQuery.h>
 #include <avtCompactnessQuery.h>
@@ -163,6 +164,9 @@ avtQueryFactory::Instance()
 //
 //    Hank Childs, Sat Apr 29 14:40:47 PDT 2006
 //    Added localized and elliptical compactness factor queries.
+//
+//    Hank Childs, Thu May 11 13:21:18 PDT 2006
+//    Added average mean curvature.
 //
 // ****************************************************************************
 
@@ -353,6 +357,10 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     else if (qname == "SpatialExtents")
     {
         query = new avtOriginalDataSpatialExtentsQuery();
+    }
+    else if (qname == "Average Mean Curvature")
+    {
+        query = new avtAverageMeanCurvatureQuery();
     }
 
     return query;

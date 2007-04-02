@@ -42,6 +42,9 @@ class vtkDataSet;
 //    Kathleen Bonnell, Thu Mar  2 15:05:17 PST 2006
 //    Added sumFromOriginalElement.
 //
+//    Hank Childs, Tue May 16 09:14:41 PDT 2006
+//    Add support for averaging.
+//
 // ****************************************************************************
 
 class QUERY_API avtSummationQuery : public avtDatasetQuery
@@ -65,7 +68,9 @@ class QUERY_API avtSummationQuery : public avtDatasetQuery
 
   protected:
     double                          sum;
+    double                          denomSum;
     std::string                     variableName;
+    std::string                     denomVariableName;
     std::string                     sumType;
     std::string                     unitsAppend;
     std::string                     qualifier;
@@ -77,6 +82,7 @@ class QUERY_API avtSummationQuery : public avtDatasetQuery
     virtual void                    Execute(vtkDataSet *, const int);
     virtual void                    PreExecute(void);
     virtual void                    PostExecute(void);
+    virtual bool                    CalculateAverage() { return false; };
 };
 
 

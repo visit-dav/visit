@@ -29,6 +29,7 @@
 #include <avtPrincipalDeviatoricTensorFilter.h>
 #include <avtPrincipalTensorFilter.h>
 #include <avtEffectiveTensorFilter.h>
+#include <avtCurvatureExpression.h>
 #include <avtGradientFilter.h>
 #include <avtCurlFilter.h>
 #include <avtDivergenceFilter.h>
@@ -450,6 +451,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //      Hank Childs, Sat Apr 29 14:40:47 PDT 2006
 //      Added localized compactness expression.
 //
+//      Hank Childs, Thu May 11 12:14:51 PDT 2006
+//      Added curvature.
+//
 // ****************************************************************************
 void
 avtFunctionExpr::CreateFilters(ExprPipelineState *state)
@@ -544,6 +548,18 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtMeshCoordinateFilter();
     else if (functionName == "procid")
         f = new avtProcessorIdFilter();
+    else if (functionName == "mean_curvature")
+    {
+        avtCurvatureExpression *c = new avtCurvatureExpression;
+        c->DoGaussCurvature(false);
+        f = c;
+    }
+    else if (functionName == "gauss_curvature")
+    {
+        avtCurvatureExpression *c = new avtCurvatureExpression;
+        c->DoGaussCurvature(true);
+        f = c;
+    }
     else if (functionName == "ijk_gradient" || functionName == "ij_gradient")
     {
         avtGradientFilter *g = new avtGradientFilter();

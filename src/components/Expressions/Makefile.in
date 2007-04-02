@@ -141,6 +141,9 @@
 #   Hank Childs, Sat Apr 29 14:40:47 PDT 2006
 #   Added avtLocalizedCompactnessExpression.
 #
+#   Hank Childs, Thu May 11 12:14:51 PDT 2006
+#   Added avtCurvatureExpression.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -187,6 +190,7 @@ CMFE_src= \
 
 
 Derivations_src=\
+  Derivations/avtCurvatureExpression.C \
   Derivations/avtEffectiveTensorFilter.C \
   Derivations/avtLocalizedCompactnessExpression.C \
   Derivations/avtTensorMaximumShearFilter.C \

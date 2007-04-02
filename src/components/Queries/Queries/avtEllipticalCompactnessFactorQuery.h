@@ -24,15 +24,14 @@ class avtRevolvedVolume;
 //  Class: avtEllipticalCompactnessFactorQuery
 //
 //  Purpose:
-//      Calculates the spherical compactness factor of a data set.  This will
-//      calculate the volume of the data set.  It will then calculate what the
-//      radius of that volume would be if it was a perfect sphere.  Then it
-//      will calculate what percentage of the data set is within that sphere.
-//      (Note that this last step is the hardest, since it requires determining
-//      where the center of the idealized sphere should be placed.)
+//      Calculates the elliptical compactness factor of a data set.  This will
+//      calculate the volume of the data set.  It will then propose many
+//      possible ellipses that have the same volume.  Then it
+//      will calculate what percentage of the data set is within each of
+//      the ellipses.  The ECF is the highest percentage.
 //
 //  Programmer: Hank Childs
-//  Creation:   July 14, 2005
+//  Creation:   May 16, 2006
 //
 // ****************************************************************************
 
@@ -50,10 +49,15 @@ class QUERY_API avtEllipticalCompactnessFactorQuery
 
   protected:
     double                          centroid[3];
-    double                          sphere_center[3];
-    double                          radius;
+    double                          ellipse_center[3];
+    // NOTE: numGuesses should have an integer sqrt.
+    static const int                numGuesses = 289;
+    double                          x_radius[numGuesses];
+    double                          y_radius[numGuesses];
+    double                          z_radius[numGuesses];
+    double                          bounds[6];
     double                          total_volume;
-    double                          volume_inside;
+    double                          volume_inside[numGuesses];
     bool                            is2D;
     avtRevolvedVolume              *rev_volume;
     avtVMetricVolume               *volume;

@@ -89,6 +89,13 @@ avtEllipticalCompactnessFactorQuery::PreExecute(void)
     for (int i = 0 ; i < 3 ; i++)
         centroid[i] = 0.;
     total_volume = 0.;
+
+    bounds[0] = +FLT_MAX;
+    bounds[1] = -FLT_MAX;
+    bounds[2] = +FLT_MAX;
+    bounds[3] = -FLT_MAX;
+    bounds[4] = +FLT_MAX;
+    bounds[5] = -FLT_MAX;
 }
 
 
@@ -119,19 +126,70 @@ avtEllipticalCompactnessFactorQuery::MidExecute(void)
     centroid[1] = C_tmp[1];
     centroid[2] = C_tmp[2];
 
-    volume_inside = 0.;
-    radius = pow(total_volume*0.75/M_PI, 0.3333333);
+    for (int i = 0 ; i < numGuesses ; i++)
+        volume_inside[i] = 0.;
+
+    //
+    // Now we have to choose the lengths of the major and minor axes, which
+    // is hard.  One choice would be to let them vary from 0 to infinity,
+    // but we only have a few steps in between, so the steps would be too 
+    // coarse.  So we need to narrow the range.  Using the bounds of the
+    // data seems to be a good place to start.  But, we don't want to set
+    // the length of the axes to be based on these axes, because this
+    // won't cover the things at the extrema.  Restated, if X spans (-a,a)
+    // and Y spans (0,b) (cylindrical), then choosing a and b as axes lengths
+    // would give us an ellipsoid with volume 4/3pi(a)(b)(b), but the cylinder
+    // that volume covers would be 2pi(a)(b)(b).  So let's lengthen out a and
+    // b by (50%)^1/3.  Then the ellipsoid would have a matching volume.
+    //
     if (is2D)
     {
-        sphere_center[0] = centroid[0];
-        sphere_center[1] = 0.;
-        sphere_center[2] = 0.;
+        float Amax = ((bounds[1] - bounds[0]) / 2.)*1.5;
+        float Bmax = (bounds[3])*0.5;
+        float Bmin = sqrt(total_volume * 0.75 / (M_PI*Amax));
+        for (int i = 0 ; i < numGuesses ; i++)
+        {
+            y_radius[i] = Bmin + (Bmax-Bmin)*((float)i/(float)numGuesses);
+            z_radius[i] = y_radius[i];
+            x_radius[i] = total_volume*0.75 / (M_PI*y_radius[i]*z_radius[i]);
+        }
     }
     else
     {
-        sphere_center[0] = centroid[0];
-        sphere_center[1] = centroid[1];
-        sphere_center[2] = centroid[2];
+        float Amax = ((bounds[1] - bounds[0]) / 2.)*1.5;
+        float Bmax = ((bounds[3] - bounds[2]) / 2.)*1.5;
+        float Cmax = ((bounds[5] - bounds[4]) / 2.)*1.5;
+        float Amin = sqrt(total_volume * 0.75 / (M_PI*Bmax*Cmax));
+        float Bmin = sqrt(total_volume * 0.75 / (M_PI*Amax*Cmax));
+        float Cmin = sqrt(total_volume * 0.75 / (M_PI*Amax*Bmax));
+        // Get integer square root.
+        int dims = (int) ceil(sqrt(numGuesses-0.1));
+        for (int i = 0 ; i < dims ; i++)
+        {
+            float A = Amin + (Amax-Amin)*((float)i/(float)dims);
+            for (int j = 0 ; j < dims ; j++)
+            {
+                float B = Bmin + (Bmax-Bmin)*((float)j/(float)dims);
+                float C = total_volume*0.75 / (M_PI*A*B);
+                int index = i*dims+j;
+                x_radius[index] = A;
+                y_radius[index] = B;
+                z_radius[index] = C;
+            }
+        }
+    }
+
+    if (is2D)
+    {
+        ellipse_center[0] = centroid[0];
+        ellipse_center[1] = 0.;
+        ellipse_center[2] = 0.;
+    }
+    else
+    {
+        ellipse_center[0] = centroid[0];
+        ellipse_center[1] = centroid[1];
+        ellipse_center[2] = centroid[2];
     }
 }
 
@@ -150,10 +208,17 @@ avtEllipticalCompactnessFactorQuery::MidExecute(void)
 void
 avtEllipticalCompactnessFactorQuery::PostExecute(void)
 {
-    SumDoubleAcrossAllProcessors(volume_inside);
-    if (total_volume == 0.)
+    double vi_tmp[numGuesses];
+    SumDoubleArrayAcrossAllProcessors(volume_inside, vi_tmp, numGuesses);
+    int biggest = 0;
+    double biggestVal = vi_tmp[0];
+    for (int i = 1 ; i < numGuesses ; i++)
     {
-        total_volume = 1;
+        if (vi_tmp[i] > biggestVal)
+        {
+            biggestVal = vi_tmp[i];
+            biggest    = i;
+        }
     }
 
     //
@@ -163,13 +228,13 @@ avtEllipticalCompactnessFactorQuery::PostExecute(void)
     //
     char msg[4096];
     SNPRINTF(msg, 4096, "Elliptical Compactness Factor = %f.  Using centroid "
-                        "for sphere origin.  Centroid used was (%f, %f, %f)."
-                        "  Radius was %f",
-                         volume_inside / total_volume, 
-                         sphere_center[0], sphere_center[1], sphere_center[2],
-                         radius);
+                        "for ellipse origin.  Centroid used was (%f, %f, %f)."
+                        "  Best fitting axes were %f,%f,%f.",
+                         biggestVal / total_volume, 
+                         ellipse_center[0], ellipse_center[1], ellipse_center[2],
+                         x_radius[biggest], y_radius[biggest], z_radius[biggest]);
     SetResultMessage(msg);
-    SetResultValue(volume_inside / total_volume);
+    SetResultValue(biggestVal / total_volume);
 }
 
 
@@ -207,6 +272,12 @@ avtEllipticalCompactnessFactorQuery::Execute1(vtkDataSet *ds, const int dom)
         centroid[0] += volume*center[0];
         centroid[1] += volume*center[1];
         centroid[2] += volume*center[2];
+        bounds[0] = (center[0] < bounds[0] ? center[0] : bounds[0]);
+        bounds[1] = (center[0] > bounds[1] ? center[0] : bounds[1]);
+        bounds[2] = (center[1] < bounds[2] ? center[1] : bounds[2]);
+        bounds[3] = (center[1] > bounds[3] ? center[1] : bounds[3]);
+        bounds[4] = (center[2] < bounds[4] ? center[2] : bounds[4]);
+        bounds[5] = (center[2] > bounds[5] ? center[2] : bounds[5]);
         total_volume += volume;
     }
 }
@@ -234,7 +305,7 @@ avtEllipticalCompactnessFactorQuery::Execute2(vtkDataSet *ds, const int dom)
     {
         EXCEPTION0(ImproperUseException);
     }
-    float rad_squared = radius*radius;
+    float d[3];
     for (int i = 0 ; i < nCells ; i++)
     {
         if (ghosts != NULL && ghosts->GetTuple1(i) != 0.)
@@ -242,14 +313,22 @@ avtEllipticalCompactnessFactorQuery::Execute2(vtkDataSet *ds, const int dom)
         vtkCell *cell = ds->GetCell(i);
         double center[3];
         vtkVisItUtility::GetCellCenter(cell, center);
-        float dist = (center[0]-sphere_center[0])*(center[0]-sphere_center[0])
-                   + (center[1]-sphere_center[1])*(center[1]-sphere_center[1])
-                   + (center[2]-sphere_center[2])*(center[2]-sphere_center[2]);
-        if (dist > rad_squared)
-            continue;  // Not inside.
+        d[0] = center[0] - ellipse_center[0];
+        d[1] = center[1] - ellipse_center[1];
+        d[2] = center[2] - ellipse_center[2];
         float volume = var->GetTuple1(i);
         volume = (volume < 0 ? -volume : volume);
-        volume_inside += volume;
+        for (int j = 0 ; j < numGuesses ; j++)
+        {
+            float dist = 0;
+            dist += d[0]*d[0] / (x_radius[j]*x_radius[j]);
+            dist += d[1]*d[1] / (y_radius[j]*y_radius[j]);
+            dist += d[2]*d[2] / (z_radius[j]*z_radius[j]);
+            if (dist < 1.)
+            {
+                volume_inside[j] += volume;
+            }
+        }
     }
 }
 

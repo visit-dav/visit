@@ -65,6 +65,10 @@
 //    Hank Childs, Mon Mar 13 16:48:23 PST 2006
 //    Added minimum and maximum.
 //
+//    Hank Childs, Thu May 11 12:45:39 PDT 2006
+//    Added mean_curvature, gauss_curvature, compose vector, and compose 
+//    tensor.
+//
 // ****************************************************************************
 struct ExprNameList
 {
@@ -213,10 +217,12 @@ const char *expr_mesh[] = {
 const char *expr_misc[] = {
     "curl",
     "divergence",
+    "gauss_curvature",
     "gradient",
     "ij_gradient",
     "ijk_gradient",
     "Laplacian",
+    "mean_curvature",
     "recenter",
     "resrad",
     "surface_normal",
