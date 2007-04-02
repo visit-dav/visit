@@ -76,6 +76,9 @@ class     avtWebpage;
 //    Hank Childs, Sat Feb 19 14:49:17 PST 2005
 //    Added method to get the source of the data object.
 //
+//    Hank Childs, Thu May 25 16:40:20 PDT 2006
+//    Add support for releasing data in the middle of a pipeline execution.
+//
 //    Hank Childs, Thu Dec 21 09:58:57 PST 2006
 //    Added method for debug dumps.
 //
@@ -109,11 +112,22 @@ class PIPELINE_API avtDataObject
 
     virtual avtDataObjectWriter     *InstantiateWriter(void);
     
+    void                             SetTransientStatus(bool b)
+                                                            { transient = b; };
+    bool                             IsTransient(void) { return transient; };
+
     virtual void                     DebugDump(avtWebpage *, const char *);
 
   protected:
     avtDataObjectInformation         info;
     avtDataObjectSource             *source;
+
+    // "Transient" implies that this object is only needed so that a filter
+    // can process it and calculate its output.  Almost all data objects are
+    // "transient".  An example of a non-transient data object is the
+    // "intermediate data object" of a plot, which must not be deleted, 
+    // because we need it for queries.
+    bool                             transient;
 
     virtual void                     DerivedCopy(avtDataObject *);
     virtual void                     DerivedMerge(avtDataObject *);

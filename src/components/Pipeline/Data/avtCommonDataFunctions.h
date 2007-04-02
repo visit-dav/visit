@@ -99,6 +99,9 @@ class     vtkDataArray;
 //    Mark C. Miller, Wed Nov 16 14:17:01 PST 2005
 //    Added compression support functions 
 //
+//    Hank Childs, Tue Jan 16 15:58:02 PST 2007
+//    Added CBreakVTKPipelineConnections.
+//
 // ****************************************************************************
 
 //
@@ -109,6 +112,8 @@ PIPELINE_API void CGetSpatialExtents(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetDataExtents(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CUpdateData(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CAddInputToAppendFilter(avtDataRepresentation &, void *, bool &);
+PIPELINE_API void CBreakVTKPipelineConnections(avtDataRepresentation &, 
+                                               void *, bool &);
 PIPELINE_API void CGetAllDatasets(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetNumberOfZones(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetChunkByDomain(avtDataRepresentation &, void *, bool &);

@@ -8,7 +8,7 @@
 # Date:   October 26, 1996
 #
 # Usage
-#    visit-install [-c open | closed] [-g group] [-gw] [-l] [-r]
+#    visit-install [-c open | closed | nersc | ornl] [-g group] [-gw] [-l] [-r]
 #                  [-beta | -private] version platform directory
 #
 #    The default is to install this version as the current version.
@@ -117,6 +117,9 @@
 #    I made it use mpeg2encode. I also made it install visit_composite
 #    and visit_transition.
 #
+#    Sean Ahern, Wed Jan 17 14:20:07 EST 2007
+#    Added documentation for "-c ornl" or "-c nersc".
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -184,8 +187,9 @@ while ($option_found == true)
 end
 
 if ($#argv != 3) then
-   echo "Usage: visit-install [-c open | closed] [-g group] [-b bank] [-gw] [-l]"
-   echo "                     [-r] [-beta | -private] version platform directory"
+   echo "Usage: visit-install [-c open | closed | ornl | nersc] [-g group] [-b bank]"
+   echo "                     [-gw] [-l] [-r] [-beta | -private] version"
+   echo "                     platform directory"
    exit (1)
 endif
 

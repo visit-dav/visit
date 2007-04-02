@@ -668,6 +668,11 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
 //
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Added setting of flatness tolerance to data spec for CSG stuff
+//
+//    Hank Childs, Wed Jan 17 10:42:21 PST 2007
+//    Tell the output of the expression evaluator filter that it is *not*
+//    transient, since picks sometimes like to look at these.
+//
 // ****************************************************************************
 
 void
@@ -699,6 +704,7 @@ NetworkManager::StartNetwork(const string &format,
     avtExpressionEvaluatorFilter *f = new avtExpressionEvaluatorFilter();
     NetnodeFilter *filt = new NetnodeFilter(f, "ExpressionEvaluator");
     filt->GetInputNodes().push_back(netDB);
+    f->GetOutput()->SetTransientStatus(false);
 
     // Push the ExpressionEvaluator onto the working list.
     workingNetnodeList.push_back(filt);

@@ -718,15 +718,15 @@ avtIntervalTree::GetElementsListFromRange(const double *min_vec,
 //  Method: avtIntervalTree::GetElementsFromAxiallySymmetricLineIntersection
 //
 //  Purpose:
-//      This test will only work with 2D items (called domains) and 
-//      intersections with a 3D line.  The idea is that the "domains" are
-//      revolved into 3D and we need to figure out which domains intersect
+//      This test will only work with 2D items and 
+//      intersections with a 3D line.  The idea is that the terms are
+//      revolved into 3D and we need to figure out which items intersect
 //      with a line when revolved into 3D.
 //
 //  Arguments:
 //      P1         A point on the line.
 //      D1         The direction of the line.
-//      list          The list of domains that satisfy the linear equation.
+//      list       The list of items that satisfy the linear equation.
 //
 //  Programmer: Hank Childs
 //  Creation:   July 28, 2006
@@ -974,8 +974,8 @@ AxiallySymmetricLineIntersection(const double *P1, const double *D1,
     double B = 2*P1[0]*D1[0] + 2*P1[1]*D1[1];
     double C0 = P1[0]*P1[0] + P1[1]*P1[1];
     double C = C0-Rmin*Rmin;
-    double det = B*B - 4*A*C;
-    if (det < 0)
+    double discriminant = B*B - 4*A*C;
+    if (A == 0 || discriminant < 0)
     {
         // There are no roots, so the inequality is either always true
         // or always false (for all t).  So evaluate it and see which one.
@@ -991,7 +991,7 @@ AxiallySymmetricLineIntersection(const double *P1, const double *D1,
     }
     else
     {
-        double root = sqrt(det);
+        double root = sqrt(discriminant);
         double soln1 = (-B + root) / (2*A);
         double soln2 = (-B - root) / (2*A);
         if (soln1 == soln2)
@@ -1041,8 +1041,8 @@ AxiallySymmetricLineIntersection(const double *P1, const double *D1,
     double r2_int1[2] = { 10e30, -10e30 };
     double r2_int2[2] = { 10e30, -10e30 };
     C = C0-Rmax*Rmax;
-    det = B*B - 4*A*C;
-    if (det < 0)
+    discriminant = B*B - 4*A*C;
+    if (A == 0 || discriminant < 0)
     {
         // There are no roots, so the inequality is either always true
         // or always false (for all t).  So evaluate it and see which one.
@@ -1058,7 +1058,7 @@ AxiallySymmetricLineIntersection(const double *P1, const double *D1,
     }
     else
     {
-        double root = sqrt(det);
+        double root = sqrt(discriminant);
         double soln1 = (-B + root) / (2*A);
         double soln2 = (-B - root) / (2*A);
         if (soln1 == soln2)
@@ -1424,7 +1424,7 @@ avtIntervalTree::GetElementsList(double origin[3], double rayDir[3],
 //  Method: avtIntervalTree::GetElementsListFromRay
 //
 //  Purpose:
-//    Takes in a ray origin and direction,  and determines which elements 
+//    Takes in a ray origin and direction, and determines which elements 
 //    are intersected by the ray. 
 //
 //  Notes: Copied from GetElementsLists for an equation, just changed the

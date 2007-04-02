@@ -142,19 +142,27 @@ avtDataObjectToDatasetFilter::OutputSetActiveVariable(const char *varname)
 //  Programmer: Hank Childs
 //  Creation:   July 27, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Jan 16 11:24:53 PST 2007
+//    Break all VTK pipeline connections.
+//
 // ****************************************************************************
 
 void
 avtDataObjectToDatasetFilter::PostExecute(void)
 {
+    avtDataTree_p tree = GetDataTree();
+    bool dummy;
+
     avtDataAttributes &atts = GetOutput()->GetInfo().GetAttributes();
     if ((atts.GetSpatialDimension()==3 && atts.GetTopologicalDimension()<3) ||
         (atts.GetSpatialDimension()==2 && atts.GetTopologicalDimension()<2))
     {
-        avtDataTree_p tree = GetDataTree();
-        bool dummy;
         tree->Traverse(CConvertUnstructuredGridToPolyData, NULL, dummy);
     }
+
+    tree->Traverse(CBreakVTKPipelineConnections, NULL, dummy);
 }
 
 

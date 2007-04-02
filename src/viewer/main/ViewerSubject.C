@@ -350,6 +350,9 @@ ViewerSubject::ViewerSubject() : xfer(), clients(), viewerRPC(),
 //    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006 
 //    Add plotInfoAtts. 
 //
+//    Mark C. Miller, Wed Jan 10 11:50:51 PST 2007
+//    Fixed mismatched delete for configFileName
+//
 // ****************************************************************************
 
 ViewerSubject::~ViewerSubject()
@@ -369,7 +372,7 @@ ViewerSubject::~ViewerSubject()
     delete appearanceAtts;
     delete syncAtts;
     delete syncObserver;
-    delete configFileName;
+    delete [] configFileName;
     delete metaData;
     delete silAtts;
     delete procAtts;
