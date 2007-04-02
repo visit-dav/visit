@@ -561,6 +561,9 @@ dnl
 dnl    Brad Whitlock, Fri Sep 2 15:07:19 PST 2005
 dnl    Fixed up some things for MacOS X 10.4
 dnl
+dnl    Brad Whitlock, Tue Sep 6 11:24:53 PDT 2005
+dnl    I added checks for GDAL.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -2381,6 +2384,56 @@ AC_SUBST(CGNS)
 AC_SUBST(CGNS_INCLUDE)
 AC_SUBST(CGNS_LIB)
 
+
+#
+# Look for GDAL
+#
+AC_MSG_CHECKING(for GDAL)
+GDAL=""
+GDAL_INCLUDE=""
+GDAL_LIB=""
+GDAL_LIBS=""
+AC_ARG_WITH(GDAL,
+	    [  --with-GDAL=INC-DIR,LIB-DIR     Location of GDAL header and library],
+           GDAL_specified="yes",
+           GDAL_specified="no"
+           )
+if test "$SHORT_UNAME" = "darwin"; then
+    GDAL_LIBEXT="dylib"
+else
+    GDAL_LIBEXT="a"
+fi
+if test "$GDAL_specified" = "yes"; then
+   if test "$withval" != "no"; then
+      GDAL_INCLUDE="-I`echo $withval |cut -f1 -d,`"
+      GDAL_LIB="`echo $withval |cut -f2 -d, -s`/libgdal.$GDAL_LIBEXT"
+   fi
+else
+   if test "$DEFAULT_GDAL_INCLUDE" != "" ; then
+      GDAL_INCLUDE="-I$DEFAULT_GDAL_INCLUDE $GDAL_INCLUDE"
+   fi
+   if test "$DEFAULT_GDAL_LIB" != "" ; then
+      GDAL_LIB="$DEFAULT_GDAL_LIB/libgdal.$GDAL_LIBEXT $GDAL_LIB"
+   fi
+fi
+if test "$GDAL_LIB" != "" ; then
+   if test "$GDAL_INCLUDE" != "" ; then
+      GDAL_LIBS="$GDAL_LIB -ljpeg -lpng -lgif -ldl"
+      GDAL="$""(GDAL)"
+      AC_MSG_RESULT(yes)
+      AC_DEFINE(HAVE_GDAL_H)
+      AC_DEFINE(HAVE_LIBGDAL)
+   else
+      AC_MSG_RESULT(no)
+   fi
+else
+   AC_MSG_RESULT(no)
+fi
+AC_SUBST(GDAL)
+AC_SUBST(GDAL_INCLUDE)
+AC_SUBST(GDAL_LIB)
+AC_SUBST(GDAL_LIBS)
+
 #
 # Add Some include paths to the engine's CPPFLAGS.
 #
@@ -2906,9 +2959,10 @@ AC_SUBST(ENGINEWRAPPAR)
 
 #
 # This helps the Makefile in the lib directory make the right links
-# to Silo, Mili, HDF4, HDF5, NETCDF, and CGNS. It is only needed on MacOS X
-# because on other platforms, these libraries are statically linked into
-# the database plugins and on MacOS X they are dynamically linked.
+# to Silo, Mili, HDF4, HDF5, NETCDF, CGNS, and GDAL. It is only needed 
+# on MacOS X because on other platforms, these libraries are statically
+# linked into the database plugins and on MacOS X they are dynamically
+# linked.
 #
 CREATE_SILO_LINK=""
 CREATE_MILI_LINK=""
@@ -2916,6 +2970,7 @@ CREATE_HDF4_LINK=""
 CREATE_HDF5_LINK=""
 CREATE_NETCDF_LINK=""
 CREATE_CGNS_LINK=""
+CREATE_GDAL_LINK=""
 case $SHORT_UNAME in
   darwin)
     if test "$SILO_LIB" != "" ; then
@@ -2936,6 +2991,9 @@ case $SHORT_UNAME in
     if test "$CGNS_LIB" != "" ; then
         CREATE_CGNS_LINK="create_cgns_link"
     fi
+    if test "$GDAL_LIB" != "" ; then
+        CREATE_GDAL_LINK="create_gdal_link"
+    fi
   ;;
 esac
 AC_SUBST(CREATE_SILO_LINK)
@@ -2944,6 +3002,7 @@ AC_SUBST(CREATE_HDF4_LINK)
 AC_SUBST(CREATE_HDF5_LINK)
 AC_SUBST(CREATE_NETCDF_LINK)
 AC_SUBST(CREATE_CGNS_LINK)
+AC_SUBST(CREATE_GDAL_LINK)
 
 #
 # Check for library functions that can work around, or that we have
