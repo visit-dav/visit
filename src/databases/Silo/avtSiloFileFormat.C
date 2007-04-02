@@ -766,9 +766,9 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     //
     // We're just interested in metadata for now, so tell Silo not
     // to read the extra data arrays, except for material names and 
-    // numbers.
+    // numbers and colors.
     //
-    DBSetDataReadMask(DBMatMatnames|DBMatMatnos);
+    DBSetDataReadMask(DBMatMatnames|DBMatMatnos|DBMatMatcolors);
 
     //
     // Do a recursive search through the subdirectories.
@@ -987,6 +987,9 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 // 
 //    Hank Childs, Thu May 18 11:33:27 PDT 2006
 //    Fix UMR with mesh coord types and point meshes.
+//
+//    Mark C. Miller, Thu Jul 13 22:41:56 PDT 2006
+//    Added reading of material colors, if available
 //
 // ****************************************************************************
 
@@ -2214,8 +2217,12 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         // they have names in the Silo file, use those as well.
         //
         vector<string>  matnames;
+        vector<string>  matcolors;
         for (j = 0 ; j < mat->nmat ; j++)
         {
+            //
+            // Deal with material names
+            //
             char *num = NULL;
             int dlen = int(log10(float(mat->matnos[j]+1))) + 1;
             if (mat->matnames == NULL)
@@ -2231,12 +2238,30 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             }
             matnames.push_back(num);
             delete[] num;
+
+            //
+            // Deal with material colors
+            //
+#ifdef DBOPT_MATCOLORS
+            if (mat->matcolors)
+            {
+                if (mat->matcolors[j] && mat->matcolors[j][0])
+                    matcolors.push_back(mat->matcolors[j]);
+                else
+                    matcolors.push_back("");
+            }
+#endif
         }
 
         char *name_w_dir = GenerateName(dirname, mat_names[i]);
         char *meshname_w_dir = GenerateName(dirname, meshname);
-        avtMaterialMetaData *mmd = new avtMaterialMetaData(name_w_dir,
-                                          meshname_w_dir, mat->nmat, matnames);
+        avtMaterialMetaData *mmd;
+        if (matcolors.size())
+            mmd = new avtMaterialMetaData(name_w_dir, meshname_w_dir,
+                                          mat->nmat, matnames, matcolors);
+        else
+            mmd = new avtMaterialMetaData(name_w_dir, meshname_w_dir,
+                                          mat->nmat, matnames);
         md->Add(mmd);
 
         delete [] name_w_dir;
@@ -2293,6 +2318,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         // there are names in the Silo file, use those as well.
         //
         vector<string>  matnames;
+        vector<string>  matcolors;
         string meshname;
         if (valid_var)
         {
@@ -2313,6 +2339,16 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                 }
                 matnames.push_back(num);
                 delete[] num;
+
+#ifdef DBOPT_MATCOLORS
+                if (mat->matcolors)
+                {
+                    if (mat->matcolors[j] && mat->matcolors[j][0])
+                        matcolors.push_back(mat->matcolors[j]);
+                    else
+                        matcolors.push_back("");
+                }
+#endif
             }
 
             TRY
@@ -2335,9 +2371,15 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         }
 
         char *name_w_dir = GenerateName(dirname, multimat_names[i]);
-        avtMaterialMetaData *mmd = new avtMaterialMetaData(name_w_dir,
-                                                meshname,
-                                                mat ? mat->nmat : 0, matnames);
+        avtMaterialMetaData *mmd;
+        if (matcolors.size())
+            mmd = new avtMaterialMetaData(name_w_dir, meshname,
+                                          mat ? mat->nmat : 0, matnames,
+                                          matcolors);
+        else
+            mmd = new avtMaterialMetaData(name_w_dir, meshname,
+                                          mat ? mat->nmat : 0, matnames);
+
         mmd->validVariable = valid_var;
         md->Add(mmd);
 

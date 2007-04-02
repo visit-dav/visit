@@ -308,6 +308,9 @@ public:
 //    Hank Childs, Mon Feb 14 14:11:29 PST 2005
 //    Added originalName.
 //
+//    Mark C. Miller, Thu Jul 13 22:41:56 PDT 2006
+//    Added colorNames
+//
 //----------------------------------------------------------------------------
 struct DBATTS_API avtMaterialMetaData : public AttributeSubject
 {
@@ -317,6 +320,7 @@ struct DBATTS_API avtMaterialMetaData : public AttributeSubject
 
     int           numMaterials;
     stringVector  materialNames;
+    stringVector  colorNames;
     
     bool          validVariable;
 
@@ -324,6 +328,8 @@ public:
     avtMaterialMetaData();
     avtMaterialMetaData(std::string, std::string, int, 
                         stringVector);
+    avtMaterialMetaData(std::string, std::string, int, 
+                        stringVector, stringVector);
     avtMaterialMetaData(const avtMaterialMetaData&);
     virtual ~avtMaterialMetaData();
     const avtMaterialMetaData &operator=(const avtMaterialMetaData&);

@@ -2476,10 +2476,13 @@ avtArrayMetaData::Print(ostream &out, int indent) const
 //    Hank Childs, Mon Feb 14 14:16:49 PST 2005
 //    Added original name.
 //
+//    Mark C. Miller, Thu Jul 13 22:41:56 PDT 2006
+//    Added colorNames stringVector
+//
 // ****************************************************************************
 
 avtMaterialMetaData::avtMaterialMetaData()
-    : AttributeSubject("ssis*bs")
+    : AttributeSubject("ssis*bss*")
 {
     validVariable = true;
 }
@@ -2505,11 +2508,14 @@ avtMaterialMetaData::avtMaterialMetaData()
 //    Hank Childs, Mon Feb 14 14:16:49 PST 2005
 //    Added original name.
 //
+//    Mark C. Miller, Thu Jul 13 22:41:56 PDT 2006
+//    Added colorNames stringVector
+//
 // ****************************************************************************
 
 avtMaterialMetaData::avtMaterialMetaData(std::string n,std::string mesh,int nm, 
                                          std::vector<std::string> names)
-    : AttributeSubject("ssis*bs")
+    : AttributeSubject("ssis*bss*")
 {
     name          = n;
     originalName  = name;
@@ -2517,6 +2523,30 @@ avtMaterialMetaData::avtMaterialMetaData(std::string n,std::string mesh,int nm,
     numMaterials  = nm;
     materialNames = names;
     validVariable = true;
+}
+
+// ****************************************************************************
+//  Method: avtMaterialMetaData constructor
+//
+//  Purpose: constructor that includes material colors
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   July 12, 2006
+//
+// ****************************************************************************
+
+avtMaterialMetaData::avtMaterialMetaData(std::string n,std::string mesh,int nm, 
+                                         std::vector<std::string> names,
+                                         std::vector<std::string> colors)
+    : AttributeSubject("ssis*bss*")
+{
+    name          = n;
+    originalName  = name;
+    meshName      = mesh;
+    numMaterials  = nm;
+    materialNames = names;
+    validVariable = true;
+    colorNames    = colors;
 }
 
 
@@ -2537,10 +2567,13 @@ avtMaterialMetaData::avtMaterialMetaData(std::string n,std::string mesh,int nm,
 //    Hank Childs, Mon Feb 14 14:16:49 PST 2005
 //    Added original name.
 //
+//    Mark C. Miller, Thu Jul 13 22:41:56 PDT 2006
+//    Added colorNames stringVector
+//
 // ****************************************************************************
 
 avtMaterialMetaData::avtMaterialMetaData(const avtMaterialMetaData &rhs)
-    : AttributeSubject("ssis*bs")
+    : AttributeSubject("ssis*bss*")
 {
     name          = rhs.name;
     originalName  = rhs.originalName;
@@ -2548,6 +2581,7 @@ avtMaterialMetaData::avtMaterialMetaData(const avtMaterialMetaData &rhs)
     numMaterials  = rhs.numMaterials;
     materialNames = rhs.materialNames; // safe on a std::vector<std::string>
     validVariable = rhs.validVariable;
+    colorNames    = rhs.colorNames;
 }
 
 
@@ -2583,6 +2617,9 @@ avtMaterialMetaData::~avtMaterialMetaData()
 //    Hank Childs, Mon Feb 14 14:16:49 PST 2005
 //    Added original name.
 //
+//    Mark C. Miller, Thu Jul 13 22:41:56 PDT 2006
+//    Added colorNames stringVector
+//
 // ****************************************************************************
 
 const avtMaterialMetaData &
@@ -2594,6 +2631,7 @@ avtMaterialMetaData::operator=(const avtMaterialMetaData &rhs)
     numMaterials  = rhs.numMaterials;
     materialNames = rhs.materialNames; // safe on a std::vector<std::string>
     validVariable = rhs.validVariable;
+    colorNames    = rhs.colorNames;
     return *this;
 }
 
@@ -2614,6 +2652,9 @@ avtMaterialMetaData::operator=(const avtMaterialMetaData &rhs)
 //    Hank Childs, Mon Feb 14 14:16:49 PST 2005
 //    Added original name.
 //
+//    Mark C. Miller, Thu Jul 13 22:41:56 PDT 2006
+//    Added colorNames stringVector
+//
 // ****************************************************************************
 
 void
@@ -2625,6 +2666,7 @@ avtMaterialMetaData::SelectAll()
     Select(3, (void*)&materialNames);
     Select(4, (void*)&validVariable);
     Select(5, (void*)&originalName);
+    Select(6, (void*)&colorNames);
 }
 
 
@@ -2651,6 +2693,9 @@ avtMaterialMetaData::SelectAll()
 //    Hank Childs, Mon Feb 14 14:16:49 PST 2005
 //    Added original name.
 //
+//    Mark C. Miller, Thu Jul 13 22:41:56 PDT 2006
+//    Added colorNames stringVector
+//
 // ****************************************************************************
 
 void
@@ -2674,6 +2719,8 @@ avtMaterialMetaData::Print(ostream &out, int indent) const
     for (int i = 0; i < materialNames.size() ; ++i)
     {
         out << "\"" << materialNames[i].c_str() << "\"";
+        if (colorNames.size() && colorNames[i] != "")
+            out << "(color=\"" << colorNames[i].c_str() << "\")";
         if(i < materialNames.size() - 1)
             out << ", ";
     }

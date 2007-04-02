@@ -319,6 +319,9 @@ FilledBoundaryViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
 //    in the MultiColor list -- it is its own field in the attributes, and
 //    it gets added to the plot/legend color mapping separately.
 //
+//    Mark C. Miller, Thu Jul 13 22:41:56 PDT 2006
+//    Added use of colorNames from avtMaterialMetaData, if specified 
+//
 // ****************************************************************************
 
 void
@@ -348,6 +351,7 @@ FilledBoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
 
 
     stringVector       sv;
+    stringVector       matColors;
     stringVector::const_iterator pos;
     set<int> groupSet;
     vector<int> gIDS;
@@ -413,6 +417,7 @@ FilledBoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
               {
                   sv.push_back(*pos);
               }
+              matColors = mat->colorNames;
           }
           break;
 
@@ -431,11 +436,16 @@ FilledBoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
         // The CT is discrete, get its color color control points.
         for(int i = 0; i < sv.size(); ++i)
         {
-            unsigned char rgb[3] = {0,0,0};
-            ct->GetControlPointColor(ct->GetDefaultDiscreteColorTable(), i, rgb);
-            ca[i].SetRed(int(rgb[0]));
-            ca[i].SetGreen(int(rgb[1]));
-            ca[i].SetBlue(int(rgb[2]));
+            if (matColors.size() && matColors[i] != "")
+                ca[i].SetByName(matColors[i].c_str());
+            else
+            {
+                unsigned char rgb[3] = {0,0,0};
+                ct->GetControlPointColor(ct->GetDefaultDiscreteColorTable(), i, rgb);
+                ca[i].SetRed(int(rgb[0]));
+                ca[i].SetGreen(int(rgb[1]));
+                ca[i].SetBlue(int(rgb[2]));
+            }
         }
     }
     else
@@ -448,9 +458,14 @@ FilledBoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
         {
             for(int i = 0; i < sv.size(); ++i)
             {
-                ca[i].SetRed(int(rgb[i*3]));
-                ca[i].SetGreen(int(rgb[i*3+1]));
-                ca[i].SetBlue(int(rgb[i*3+2]));
+                if (matColors.size() && matColors[i] != "")
+                    ca[i].SetByName(matColors[i].c_str());
+                else
+                {
+                    ca[i].SetRed(int(rgb[i*3]));
+                    ca[i].SetGreen(int(rgb[i*3+1]));
+                    ca[i].SetBlue(int(rgb[i*3+2]));
+                }
             }
             delete [] rgb;
         }
@@ -462,16 +477,34 @@ FilledBoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     {
         if (idx < boundaryAtts->GetMultiColor().GetNumColorAttributes())
         {
-            // The meshIndex is within the defaultAtts' color
-            // vector size.
-            cal.AddColorAttribute(boundaryAtts->GetMultiColor()[idx]);
+            if (matColors.size() && matColors[idx] != "")
+            {
+                ColorAttribute tmpca;
+                tmpca.SetByName(matColors[idx].c_str());
+                cal.AddColorAttribute(tmpca);
+            }
+            else
+            {
+                // The meshIndex is within the defaultAtts' color
+                // vector size.
+                cal.AddColorAttribute(boundaryAtts->GetMultiColor()[idx]);
+            }
         }
         else
         {
             // The meshIndex is greater than the size of the
             // defaultAtts' color vector. Use colors from the
             // default discrete color table.
-            cal.AddColorAttribute(ca[idx]);
+            if (matColors.size() && matColors[idx] != "")
+            {
+                ColorAttribute tmpca;
+                tmpca.SetByName(matColors[idx].c_str());
+                cal.AddColorAttribute(tmpca);
+            }
+            else
+            {
+                cal.AddColorAttribute(ca[idx]);
+            }
         }
     }
 
