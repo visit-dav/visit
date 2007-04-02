@@ -45,6 +45,7 @@ class VISIT_VTK_API vtkVisItClipper
     virtual void SetInsideOut(bool);
 
     void SetCellList(int *, int);
+    virtual void SetUpClipFunction(int) { ; };
 
 
   protected:

@@ -173,6 +173,9 @@
 #    Hank Childs, Wed Sep 21 16:47:17 PDT 2005
 #    Added DeferExpression operator.
 #
+#    Kathleen Bonnell, Thu Oct 13 11:32:38 PDT 2005 
+#    Added CracksClipper.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -183,10 +186,11 @@ all: message
 OPTIONAL=Context ConnCompReduce MetricThreshold RemoveCells SiloDump \
          SubdivideQuads SurfCompPrep
 
-REQUIRED=Box Clip Cone CoordSwap Cylinder Decimate DeferExpression Displace \
-         Elevate ExternalSurface IndexSelect InverseGhostZone Isosurface \
-         Isovolume Lineout Merge OnionPeel Project Reflect Resample Revolve \
-         Slice Smooth SphereSlice ThreeSlice Threshold Transform Tube
+REQUIRED=Box Clip Cone CoordSwap CracksClipper Cylinder Decimate \
+         DeferExpression Displace Elevate ExternalSurface IndexSelect \
+         InverseGhostZone Isosurface Isovolume Lineout Merge OnionPeel \
+         Project Reflect Resample Revolve Slice Smooth SphereSlice ThreeSlice \
+         Threshold Transform Tube
 
 SUBDIRS=$(REQUIRED) @OPERATOR_OPTIONAL_DIRS@
 ALLSUBDIRS=$(REQUIRED) $(OPTIONAL)
