@@ -240,6 +240,8 @@ cd VTK
 # files that cmake finds are not C++ compliant. Change "/usr/lpp/X11/include"
 # to "/usr/include" for CMAKE_X_CFLAGS, X11_X11_INCLUDE_PATH,
 # X11_Xlib_INCLUDE_PATH and X11_Xutil_INCLUDE_PATH.
+# If this should lead to errors related to standard C++ headers (e.g. stdio), 
+# remove the CMAKE_X_CFLAGS string and re-run cmake.
 #
 ../cmake-1.8.1/bin/cmake .
 #

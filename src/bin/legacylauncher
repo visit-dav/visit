@@ -348,6 +348,8 @@ $0 = shift @ARGV;
 #    Moved this script over to legacy support only.  It will no longer
 #    be used to launch development versions or new public versions.
 #
+#    Mark C. Miller, Tue Nov 22 09:42:57 PST 2005
+#    Removed refs to sl_io subdirectory
 ###############################################################################
 
 
@@ -1494,7 +1496,6 @@ else
             print GDBFILE "directory $ENV{VISITHOME}/visitpy\n";
             print GDBFILE "directory $ENV{VISITHOME}/visit_vtk/full\n";
             print GDBFILE "directory $ENV{VISITHOME}/visit_vtk/lightweight\n";
-            print GDBFILE "directory $ENV{VISITHOME}/visit_vtk/sl_io\n";
             print GDBFILE "directory $ENV{VISITHOME}/vtkqt\n";
             print GDBFILE "directory $ENV{VISITHOME}/winutil\n";
 

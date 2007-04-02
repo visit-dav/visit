@@ -26,9 +26,8 @@
 #define __vtkOBJReader_h
 
 #include "vtkPolyDataSource.h"
-#include <vtk_sl_io_exports.h>
 
-class VTK_SL_IO_API vtkOBJReader : public vtkPolyDataSource 
+class vtkOBJReader : public vtkPolyDataSource 
 {
 public:
   static vtkOBJReader *New();

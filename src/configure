@@ -9884,7 +9884,7 @@ if test "${ac_cv_lib_X11_main+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   ac_check_lib_save_LIBS=$LIBS
-LIBS="-lX11 -lXt $X_LIBS $LIBS"
+LIBS="-lX11 $X_LIBS $LIBS"
 cat >conftest.$ac_ext <<_ACEOF
 #line $LINENO "configure"
 /* confdefs.h.  */
@@ -17060,7 +17060,6 @@ TOOLS_FILES="tools/Makefile
 VISIT_VTK_FILES="visit_vtk/Makefile
                  visit_vtk/lightweight/Makefile
                  visit_vtk/full/Makefile
-                 visit_vtk/sl_io/Makefile
                  visit_vtk/parallel/Makefile"
 COMPONENT_FILES="components/Makefile
                  components/DBAtts/Makefile

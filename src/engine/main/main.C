@@ -21,6 +21,13 @@ void foogl(void)
    GLfloat mad[] = {0.1, 0.5, 0.8, 1.0};
    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, mad);
 }
+#ifdef HAVE_LIBBZ2
+#include <bzlib.h>
+void foobz2(void)
+{
+   BZ2_bzlibVersion();
+}
+#endif
 #endif
 //
 // END HACK
