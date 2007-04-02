@@ -166,6 +166,9 @@ using std::vector;
 //    Hank Childs, Thu Jun  8 16:52:47 PDT 2006
 //    Added copyright.
 //
+//    Cyrus Harrison, Wed Mar  7 09:47:13 PST 2007
+//    Allow for engine-specific code in a plugin's source files
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -2588,6 +2591,7 @@ class AttsGeneratorPlugin
     QString dbtype;
     bool    enabledByDefault;
     bool    has_MDS_specific_code;
+    bool    hasEngineSpecificCode;
 
     vector<QString> cxxflags;
     vector<QString> ldflags;
@@ -2615,6 +2619,7 @@ class AttsGeneratorPlugin
     {
         enabledByDefault = true;
         has_MDS_specific_code = false;
+        hasEngineSpecificCode = false;
     }
     void Print(ostream &out)
     {

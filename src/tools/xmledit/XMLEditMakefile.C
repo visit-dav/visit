@@ -64,6 +64,9 @@
 //    Brad Whitlock, Fri Feb 23 17:47:37 PST 2007
 //    Added viewer widgets.
 //
+//    Cyrus Harrison, Wed Mar  7 09:03:38 PST 2007
+//    Allow for engine-specific code in a plugin's source files.
+//
 // ****************************************************************************
 XMLEditMakefile::XMLEditMakefile(QWidget *p, const QString &n)
     : QFrame(p, n)
@@ -128,9 +131,17 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p, const QString &n)
     topLayout->addMultiCellWidget(EFiles, row,row, 1,2);
     row++;
 
-    mdSpecificCode = new QCheckBox("Plugin has code specific to the MDServer", this);
+    engSpecificCode = new QCheckBox("Plugin has code specific to the Engine",
+                                    this);
+    topLayout->addMultiCellWidget(engSpecificCode, row,row, 0,2);
+    row++;
+
+    mdSpecificCode = new QCheckBox("Plugin has code specific to the MDServer "
+                                   "(Database Plugins only)", this);
     topLayout->addMultiCellWidget(mdSpecificCode, row,row, 0,2);
     row++;
+
+
 
     topLayout->setRowStretch(row, 100);
     row++;
@@ -171,6 +182,8 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p, const QString &n)
             this, SLOT(customvwfilesChanged()));
     connect(mdSpecificCode, SIGNAL(clicked()),
             this, SLOT(mdSpecificCodeChanged()));
+    connect(engSpecificCode, SIGNAL(clicked()),
+            this, SLOT(engSpecificCodeChanged()));
 }
 
 // ****************************************************************************
@@ -191,6 +204,9 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p, const QString &n)
 //
 //    Brad Whitlock, Fri Feb 23 17:49:59 PST 2007
 //    Added viewer widgets.
+//
+//    Cyrus Harrison, Wed Mar  7 09:07:37 PST 2007
+//    Allow for engine-specific code in a plugin's source files.
 //
 // ****************************************************************************
 void
@@ -239,7 +255,17 @@ XMLEditMakefile::UpdateWindowContents()
         else
             VWFiles->setText("");
         customVWFiles->setChecked(p->customvwfiles);
-        mdSpecificCode->setChecked(p->has_MDS_specific_code);
+       engSpecificCode->setChecked(p->hasEngineSpecificCode);
+       // only allow mdserver-specific code if this is a database plugin
+       if(xmldoc->plugin->type !="database")
+           p->has_MDS_specific_code=false;
+
+       mdSpecificCode->setChecked(p->has_MDS_specific_code);
+    }
+    else
+    {
+        mdSpecificCode->setChecked(false);
+        engSpecificCode->setChecked(false);
     }
 
     UpdateWindowSensitivity();
@@ -266,6 +292,9 @@ XMLEditMakefile::UpdateWindowContents()
 //    Brad Whitlock, Fri Feb 23 17:52:42 PST 2007
 //    Added viewer widgets.
 //
+//    Cyrus Harrison, Wed Mar  7 09:07:37 PST 2007
+//    Allow for engine-specific code in a plugin's source files.
+//
 // ****************************************************************************
 void
 XMLEditMakefile::UpdateWindowSensitivity()
@@ -289,7 +318,9 @@ XMLEditMakefile::UpdateWindowSensitivity()
     customWFiles->setEnabled(plugin);
     VWFiles->setEnabled(plugin && xmldoc->plugin->customvwfiles);
     customVWFiles->setEnabled(plugin);
-    mdSpecificCode->setEnabled(plugin);
+    engSpecificCode->setEnabled(plugin);
+    // only enable for a database plugin
+    mdSpecificCode->setEnabled(plugin && xmldoc->plugin->type =="database");
 }
 
 // ****************************************************************************
@@ -315,6 +346,9 @@ XMLEditMakefile::UpdateWindowSensitivity()
 //    Brad Whitlock, Fri Feb 23 17:53:03 PST 2007
 //    Added viewer widgets.
 //
+//    Cyrus Harrison, Wed Mar  7 09:07:37 PST 2007
+//    Allow for engine-specific code in a plugin's source files.
+//
 // ****************************************************************************
 void
 XMLEditMakefile::BlockAllSignals(bool block)
@@ -337,6 +371,7 @@ XMLEditMakefile::BlockAllSignals(bool block)
     VWFiles->blockSignals(block);
     customVWFiles->blockSignals(block);
     mdSpecificCode->blockSignals(block);
+    engSpecificCode->blockSignals(block);
 }
 
 // ----------------------------------------------------------------------------
@@ -585,3 +620,19 @@ XMLEditMakefile::mdSpecificCodeChanged()
     xmldoc->plugin->has_MDS_specific_code = mdSpecificCode->isChecked();
     UpdateWindowContents();
 }
+
+
+// ****************************************************************************
+//  Method:  XMLEditMakefile::engSpecificCodeChanged
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    March  7, 2007
+//
+// ****************************************************************************
+void
+XMLEditMakefile::engSpecificCodeChanged()
+{
+    xmldoc->plugin->hasEngineSpecificCode = engSpecificCode->isChecked();
+    UpdateWindowContents();
+}
+

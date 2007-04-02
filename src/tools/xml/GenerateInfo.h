@@ -141,6 +141,9 @@
 //    Hank Childs, Thu Jun  8 16:46:56 PDT 2006
 //    Added copyright string.
 //
+//    Cyrus Harrison, Wed Mar  7 09:48:24 PST 2007
+//    Allow for engine-specific code in a plugin's source files
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -182,6 +185,7 @@ class InfoGeneratorPlugin
     bool    hasoptions;
     bool    enabledByDefault;
     bool    has_MDS_specific_code;
+    bool    hasEngineSpecificCode;
     bool    onlyEnginePlugin;
     bool    noEnginePlugin;
 

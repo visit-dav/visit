@@ -107,6 +107,9 @@
 //    Hank Childs, Thu Jun  8 16:46:56 PDT 2006
 //    Added copyright string.
 //
+//    Cyrus Harrison, Wed Mar  7 09:46:07 PST 2007
+//    Allow for engine-specific code in a plugin's source files
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -147,6 +150,7 @@ class AVTGeneratorPlugin
     bool    hasoptions;
     bool    enabledByDefault;
     bool    has_MDS_specific_code;
+    bool    hasEngineSpecificCode;
 
     vector<QString> cxxflags;
     vector<QString> ldflags;

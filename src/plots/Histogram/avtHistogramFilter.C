@@ -204,6 +204,9 @@ avtHistogramFilter::PreExecute(void)
 //    Hank Childs, Fri Jan 12 15:27:01 PST 2007
 //    Use bin spacing if possible.
 //
+//    Cyrus Harrison, Wed Mar  7 15:46:29 PST 2007
+//    Added support for point histograms and true "Frequency" histograms
+//
 // ****************************************************************************
 
 void
@@ -447,17 +450,50 @@ avtHistogramFilter::PostExecute(void)
     }
     else
     {
+        int topo = GetInput()->GetInfo().GetAttributes().GetTopologicalDimension();
         string yunits = "";
-        if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension()==3)
+        // default histogram type
+        if(atts.GetHistogramType() == HistogramAttributes::Auto)
         {
-            yunits = "Volume";
+            // for point data default to a frequency histogram
+            if(topo == 0)
+            {
+                yunits = "# of Points";
+            } // for 3d data use weighted volume
+            else if(topo == 3)
+            {   
+                yunits = "Volume";
+            } // for 2d data use weighted with area or revolved volume
+            else // topo = 2
+            {
+                if (atts.GetTwoDAmount() == HistogramAttributes::Area)
+                    yunits = "Area";
+                else
+                    yunits = "Revolved Volume";
+            }
+               
+
+        }
+        else if(atts.GetHistogramType() == HistogramAttributes::Frequency)
+        {
+            if(topo == 0)
+                yunits = "# of Points";
+            else
+                yunits = "# of Cells";
         }
         else
         {
-            if (atts.GetTwoDAmount() == HistogramAttributes::Area)
-                yunits = "Area";
-            else
-                yunits = "Revolved Volume";
+            if (topo==3)
+            {
+                yunits = "Volume";
+            }
+            else // topo = 2 
+            {
+                if (atts.GetTwoDAmount() == HistogramAttributes::Area)
+                    yunits = "Area";
+                else
+                    yunits = "Revolved Volume";
+            }
         }
         outAtts.SetYUnits(yunits);
     }
@@ -487,54 +523,156 @@ avtHistogramFilter::PostExecute(void)
 //
 //    Hank Childs, Wed May 24 09:57:40 PDT 2006
 //    Add support for taking a histogram based on an array variable.
+//  
+//    Cyrus Harrison, Thu Mar  8 08:08:38 PST 2007
+//    Add support for point histograms and frequency histograms
 //
 // ****************************************************************************
 
 vtkDataSet *
 avtHistogramFilter::ExecuteData(vtkDataSet *inDS, int chunk, std::string)
 {
-    if (atts.GetBasedOn() == HistogramAttributes::ManyZonesForSingleVar)
+    if (atts.GetBasedOn() == HistogramAttributes::ManyVarsForSingleZone)
     {
-        StandardExecute(inDS);
+        ArrayVarExecute(inDS,chunk);
     }
-    else
+    else if(atts.GetHistogramType() == HistogramAttributes::Auto)
     {
-        ArrayVarExecute(inDS, chunk);
+        // use freqz for point data, weighted otherwise
+        if(GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
+            FreqzExecute(inDS);
+        else
+            WeightedExecute(inDS);
+    }
+    else if(atts.GetHistogramType() == HistogramAttributes::Frequency)
+    {
+        FreqzExecute(inDS);
+    }
+    else if(atts.GetHistogramType() == HistogramAttributes::Weighted)
+    {
+        WeightedExecute(inDS);
     }
     return NULL;
 }
 
-
 // ****************************************************************************
-//  Method: avtHistogramFilter::StandardExecute
+//  Method: avtHistogramFilter::FreqzExecute
 //
 //  Purpose:
-//      The standard way to take a histogram ... iterate over all zones.
+//      Standard Frequency Histogram (bins accumlate cell or point counts)
 //
-//  Programmer: Hank Childs
-//  Creation:   May 24, 2006
+//  Notes: Based on Hank's old StandardExecute method
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   March 7, 2007
 //
 // ****************************************************************************
-
 void
-avtHistogramFilter::StandardExecute(vtkDataSet *inDS)
+avtHistogramFilter::FreqzExecute(vtkDataSet *inDS)
 {
-    //
-    // Get the "_amounts".  This is the area or volume that each cell
-    // takes up.
-    //
-    vtkDataArray *amount_arr = inDS->GetCellData()->GetArray("_amounts");
-    if (amount_arr == NULL)
-        EXCEPTION0(ImproperUseException);
-
     //
     // Get the variable that we are binning by.
     //
     const char *var = pipelineVariable;
     vtkDataArray *bin_arr = NULL;
     bool ownBinArr = false;
-    if (inDS->GetPointData()->GetArray(var) != NULL)
+    
+    
+    // if we have points obtain point data
+    if(GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
     {
+        // in the point case, get point date
+        bin_arr = inDS->GetPointData()->GetArray(var);
+    }
+    else if ( inDS->GetPointData()->GetArray(var) != NULL)
+    {
+        // in the 2d or 3d case make sure to get zone centered data
+        vtkDataSet *new_in_ds = (vtkDataSet *) inDS->NewInstance();
+
+        // convert to zone centered 
+        new_in_ds->CopyStructure(inDS);
+        new_in_ds->GetPointData()->AddArray(
+                                          inDS->GetPointData()->GetArray(var));
+
+        vtkPointDataToCellData *pd2cd = vtkPointDataToCellData::New();
+        pd2cd->SetInput(new_in_ds);
+        pd2cd->Update();
+
+        bin_arr = pd2cd->GetOutput()->GetCellData()->GetArray(var);
+        bin_arr->Register(NULL);
+        ownBinArr = true;
+
+        new_in_ds->Delete();
+        pd2cd->Delete();
+    }
+    else
+    {
+        // otherwise simply use zone data
+        bin_arr = inDS->GetCellData()->GetArray(var);
+    }
+    if (bin_arr == NULL)
+        EXCEPTION0(ImproperUseException);
+
+    //
+    // Now we will walk through each value and sort them into bins.
+    //
+    int nvals = bin_arr->GetNumberOfTuples();
+    float binStep = (workingMax - workingMin) / (workingNumBins);
+    for (int i = 0 ; i < nvals ; i++)
+    {
+        float val = bin_arr->GetTuple1(i);
+        if (val < workingMin || val > workingMax)
+            continue;
+        int index = (int)((val - workingMin) / binStep);
+        if (index >= workingNumBins)
+            index = workingNumBins-1;
+        bins[index] += 1;
+    }
+
+    if (ownBinArr)
+        bin_arr->Delete();
+}
+
+
+// ****************************************************************************
+//  Method: avtHistogramFilter::WeightedExecute
+//
+//  Purpose:
+//      Weighted Histogram (bins accumlate area of volume of cells)
+//
+//  Notes: Based on Hank's old StandardExecute method
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   March 7, 2007
+//
+// ****************************************************************************
+void
+avtHistogramFilter::WeightedExecute(vtkDataSet *inDS)
+{
+    // Get the "_amounts".  This is the area or volume that each cell
+    // takes up.
+    //
+    vtkDataArray *amount_arr = inDS->GetCellData()->GetArray("_amounts");
+    if (amount_arr == NULL)
+        EXCEPTION0(ImproperUseException);
+    //
+    // Get the variable that we are binning by.
+    //
+    const char *var = pipelineVariable;
+    vtkDataArray *bin_arr = NULL;
+    bool ownBinArr = false;
+
+    
+
+    if(GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
+    {
+        // weighted case does not make sense for point data
+        EXCEPTION0(ImproperUseException);
+    }
+    
+    if ( inDS->GetPointData()->GetArray(var) != NULL)
+    {
+        // in the 2d or 3d case make sure to get zone centered data
         //
         // The input is point-centered, but we would prefer zone-centered.
         //

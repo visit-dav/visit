@@ -126,6 +126,12 @@
 //    Made it use GetViewerMethods() and made it more aggressive about
 //    blocking signals in the Update method.
 //
+//    Cyrus Harrison, Wed Mar  7 09:54:36 PST 2007
+//    Allow for engine-specific code in a plugin's source files.
+//
+//    Cyrus Harrison, Thu Mar  8 16:20:50 PST 2007
+//    Fixed problem with uninitialized labels for bool types.
+//
 // ****************************************************************************
 
 class WindowGeneratorField : public virtual Field
@@ -319,6 +325,7 @@ class WindowGeneratorBool : public virtual Bool , public virtual WindowGenerator
     }
     virtual void            writeSourceCreate(ostream &c)
     {
+        c << "    "<<name<<"Label = NULL;" << endl;
         c << "    "<<name<<" = new QCheckBox(\""<<label<<"\", central, \""<<name<<"\");" << endl;
         c << "    connect("<<name<<", SIGNAL(toggled(bool))," << endl
           << "            this, SLOT("<<name<<"Changed(bool)));" << endl;
@@ -1674,12 +1681,14 @@ class WindowGeneratorAttribute
                 c << ")" << endl;
                 c << "            {\n";
                 c << "                "<<enablees[j]->name<<"->setEnabled(true);" << endl;
-                c << "                "<<enablees[j]->name<<"Label->setEnabled(true);" << endl;
+                c << "                if("<<enablees[j]->name<<"Label)" << endl;
+                c << "                    "<<enablees[j]->name<<"Label->setEnabled(true);" << endl;
                 c << "            }\n";
                 c << "            else" << endl;
                 c << "            {\n";
                 c << "                "<<enablees[j]->name<<"->setEnabled(false);" << endl;
-                c << "                "<<enablees[j]->name<<"Label->setEnabled(false);" << endl;
+                c << "                if("<<enablees[j]->name<<"Label)" << endl;
+                c << "                    "<<enablees[j]->name<<"Label->setEnabled(false);" << endl;
                 c << "            }\n";
             }
             fields[i]->writeSourceUpdateWindow(c);
@@ -1824,6 +1833,7 @@ class WindowGeneratorPlugin
     QString windowname;
     bool    enabledByDefault;
     bool    has_MDS_specific_code;
+    bool    hasEngineSpecificCode;
 
     vector<QString> cxxflags;
     vector<QString> ldflags;
@@ -1851,6 +1861,7 @@ class WindowGeneratorPlugin
     {
         enabledByDefault = true;
         has_MDS_specific_code = false;
+        hasEngineSpecificCode = false;
         if (type == "plot")
             windowname = QString("Qvis")+name+QString("PlotWindow");
         else if (type == "operator")

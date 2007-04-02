@@ -22,7 +22,8 @@ HistogramAttributes::ChangesRequireRecalculation(const HistogramAttributes &obj)
         return true;
     if (domain != obj.GetDomain())
         return true;
- 
+    if (histogramType != obj.GetHistogramType())
+        return true; 
     return false;
 }
 

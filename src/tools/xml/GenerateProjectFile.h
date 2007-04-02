@@ -90,6 +90,9 @@
 //    Brad Whitlock, Fri Feb 23 17:18:42 PST 2007
 //    Added viewer widgets.
 //
+//    Cyrus Harrison, Wed Mar  7 09:50:01 PST 2007
+//    Allow for engine-specific code in a plugin's source files.
+//
 // ****************************************************************************
 
 class ProjectFileGeneratorPlugin
@@ -105,6 +108,7 @@ class ProjectFileGeneratorPlugin
     bool    hasoptions;
     bool    enabledByDefault;
     bool    has_MDS_specific_code;
+    bool    hasEngineSpecificCode;
     bool    onlyEnginePlugin;
     bool    noEnginePlugin;
 

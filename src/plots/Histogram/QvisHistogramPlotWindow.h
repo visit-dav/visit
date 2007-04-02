@@ -44,6 +44,7 @@
 class HistogramAttributes;
 class QLabel;
 class QCheckBox;
+class QGroupBox;
 class QLineEdit;
 class QSpinBox;
 class QVBox;
@@ -63,8 +64,8 @@ class QvisVariableButton;
 //
 // Notes:      This class was automatically generated!
 
-// Programmer: xml2window
-// Creation:   Fri Jan 12 15:22:02 PST 2007
+// Programmer: Cyrus Harrison - generated using xml2window
+// Creation:   Thu Mar 8 08:20:00 PDT 2007
 //
 // Modifications:
 //   
@@ -91,11 +92,12 @@ class QvisHistogramPlotWindow : public QvisPostableWindowObserver
     void Apply(bool ignore = false);
   private slots:
     void basedOnChanged(int val);
+    void histogramTypeChanged(int val);
+    void twoDAmountChanged(int val);
     void specifyRangeChanged(bool val);
     void minProcessText();
     void maxProcessText();
     void numBinsProcessText();
-    void twoDAmountChanged(int val);
     void domainProcessText();
     void zoneProcessText();
     void useBinWidthsChanged(bool val);
@@ -106,11 +108,12 @@ class QvisHistogramPlotWindow : public QvisPostableWindowObserver
   private:
     int plotType;
     QButtonGroup *basedOn;
+    QButtonGroup *histogramType;
+    QButtonGroup *twoDAmount;
     QCheckBox *specifyRange;
     QLineEdit *min;
     QLineEdit *max;
     QLineEdit *numBins;
-    QButtonGroup *twoDAmount;
     QLineEdit *domain;
     QLineEdit *zone;
     QCheckBox *useBinWidths;
@@ -119,18 +122,21 @@ class QvisHistogramPlotWindow : public QvisPostableWindowObserver
     QvisLineWidthWidget *lineWidth;
     QvisColorButton *color;
     QLabel *basedOnLabel;
-    QLabel *specifyRangeLabel;
+    QLabel *histogramTypeLabel;
+    QLabel *twoDAmountLabel;
     QLabel *minLabel;
     QLabel *maxLabel;
     QLabel *numBinsLabel;
-    QLabel *twoDAmountLabel;
     QLabel *domainLabel;
     QLabel *zoneLabel;
-    QLabel *useBinWidthsLabel;
     QLabel *outputTypeLabel;
     QLabel *lineStyleLabel;
     QLabel *lineWidthLabel;
     QLabel *colorLabel;
+
+    QGroupBox *histGroupBox;
+    QGroupBox *barGroupBox;
+    QGroupBox *styleGroupBox;
 
     HistogramAttributes *atts;
 };

@@ -176,6 +176,9 @@ ParseCharacters(const QString &buff)
 //    Brad Whitlock, Fri Feb 23 17:09:30 PST 2007
 //    Added support for viewer widgets.
 //
+//    Cyrus Harrison, Wed Mar  7 09:35:48 PST 2007
+//    Allow for engine-specific code in a plugin's source files.
+//
 // ****************************************************************************
 
 class XMLParser : public QXmlDefaultHandler
@@ -269,6 +272,7 @@ class XMLParser : public QXmlDefaultHandler
             QString iconFile  = atts.value("iconFile");
             QString enabled   = atts.value("enabled");
             QString mdspecific= atts.value("mdspecificcode");
+            QString engspecific= atts.value("engspecificcode");
             QString onlyengine= atts.value("onlyengine");
             QString noengine  = atts.value("noengine");
             currentPlugin = new Plugin(name, label, type, vartype,
@@ -285,6 +289,11 @@ class XMLParser : public QXmlDefaultHandler
             {
                 currentPlugin->has_MDS_specific_code = Text2Bool(mdspecific);
             }
+            if (!engspecific.isNull())
+            {
+                currentPlugin->hasEngineSpecificCode = Text2Bool(engspecific);
+            }
+
         }
         else if (tag == "Attribute")
         {
