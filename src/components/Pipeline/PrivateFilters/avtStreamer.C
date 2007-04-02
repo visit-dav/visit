@@ -137,6 +137,9 @@ avtStreamer::ReleaseData(void)
 //    Hank Childs, Mon Jun 27 10:02:55 PDT 2005
 //    Choose better file names when doing a "-dump" in parallel.
 //
+//    Hank Childs, Tue Jul  5 09:41:28 PDT 2005
+//    Fix cut-n-paste bug with last change.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -174,7 +177,7 @@ avtStreamer::ExecuteDataTree(vtkDataSet* ds, int dom, std::string label)
             sprintf(name, "after_%s%d.%d.vtk", GetType(), times, rank);
         }
         else
-            sprintf(name, "after_%s%d.vtk", GetType(), times);
+            sprintf(name, "after_%s%d.vtk", GetType(), times++);
         vtkDataSetWriter *wrtr2 = vtkDataSetWriter::New();
         wrtr2->SetInput(out_ds);
         wrtr2->SetFileName(name);

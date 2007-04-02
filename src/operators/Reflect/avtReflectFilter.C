@@ -532,47 +532,107 @@ avtReflectFilter::Reflect(vtkDataSet *ds, int dim)
 //    Hank Childs, Fri Aug 27 15:25:22 PDT 2004
 //    Rename ghost data arrays.
 //
+//    Hank Childs, Tue Jul  5 09:44:27 PDT 2005
+//    Don't produce meshes that are "inside-out"/"degenerate". ['6321]
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtReflectFilter::ReflectRectilinear(vtkRectilinearGrid *ds, int dim)
 {
     vtkRectilinearGrid *out = (vtkRectilinearGrid *) ds->NewInstance();
-    out->ShallowCopy(ds);
-    int nPts = out->GetNumberOfPoints();
+    int nPts = ds->GetNumberOfPoints();
     int dims[3];
-    out->GetDimensions(dims);
+    ds->GetDimensions(dims);
+    out->GetFieldData()->ShallowCopy(ds->GetFieldData());
+    out->SetDimensions(dims);
+    out->GetPointData()->CopyAllocate(ds->GetPointData());
+    out->GetCellData()->CopyAllocate(ds->GetCellData());
 
     //
     // Reflect across X if appropriate.
     //
+    bool flipI = false;
     if (dim & 1)
     {
-        vtkDataArray *tmp = ReflectDataArray(out->GetXCoordinates(), xReflect);
+        vtkDataArray *tmp = ReflectDataArray(ds->GetXCoordinates(), xReflect);
         out->SetXCoordinates(tmp);
         tmp->Delete();
+        flipI = true;
     }
+    else
+        out->SetXCoordinates(ds->GetXCoordinates());
 
     //
     // Reflect across Y if appropriate.
     //
+    bool flipJ = false;
     if (dim & 2)
     {
-        vtkDataArray *tmp = ReflectDataArray(out->GetYCoordinates(), yReflect);
+        vtkDataArray *tmp = ReflectDataArray(ds->GetYCoordinates(), yReflect);
         out->SetYCoordinates(tmp);
         tmp->Delete();
+        flipJ = true;
     }
+    else
+        out->SetYCoordinates(ds->GetYCoordinates());
 
     //
     // Reflect across Z if appropriate.
     //
+    bool flipK = false;
     if (dim & 4)
     {
-        vtkDataArray *tmp = ReflectDataArray(out->GetZCoordinates(), zReflect);
+        vtkDataArray *tmp = ReflectDataArray(ds->GetZCoordinates(), zReflect);
         out->SetZCoordinates(tmp);
         tmp->Delete();
+        flipK = true;
     }
+    else
+        out->SetZCoordinates(ds->GetZCoordinates());
 
+
+    //
+    // Copy over the point data.
+    //
+    int i, j, k;
+    vtkPointData *inPD  = ds->GetPointData();
+    vtkPointData *outPD = out->GetPointData();
+    for (k = 0 ; k < dims[2] ; k++)
+        for (j = 0 ; j < dims[1] ; j++)
+            for (i = 0 ; i < dims[0] ; i++)
+            {
+                int idx = k*dims[1]*dims[0] + j*dims[0] + i;
+                int oldI = (flipI ? dims[0]-1-i : i);
+                int oldJ = (flipJ ? dims[1]-1-j : j);
+                int oldK = (flipK ? dims[2]-1-k : k);
+                int oldIdx = oldK*dims[1]*dims[0] + oldJ*dims[0] + oldI;
+                outPD->CopyData(inPD, oldIdx, idx);
+            }
+    vtkCellData *inCD  = ds->GetCellData();
+    vtkCellData *outCD = out->GetCellData();
+
+    int iEnd = dims[0]-1;
+    if (iEnd <= 0)
+        iEnd = 1;
+    int jEnd = dims[1]-1;
+    if (jEnd <= 0)
+        jEnd = 1;
+    int kEnd = dims[2]-1;
+    if (kEnd <= 0)
+        kEnd = 1;
+    for (k = 0 ; k < kEnd ; k++)
+        for (j = 0 ; j < jEnd ; j++)
+            for (i = 0 ; i < iEnd ; i++)
+            {
+                int idx = k*(dims[1]-1)*(dims[0]-1) + j*(dims[0]-1) + i;
+                int oldI = (flipI ? iEnd-1-i : i);
+                int oldJ = (flipJ ? jEnd-1-j : j);
+                int oldK = (flipK ? kEnd-1-k : k);
+                int oldIdx =oldK*(dims[1]-1)*(dims[0]-1)+oldJ*(dims[0]-1)+oldI;
+                outCD->CopyData(inCD, oldIdx, idx);
+            }
+    
     // Figure out which octents are present, meaning that nodes that are on
     // the reflection plane are now interior.
     bool doX, doY, doZ;
@@ -676,6 +736,10 @@ avtReflectFilter::ReflectRectilinear(vtkRectilinearGrid *ds, int dim)
 //    Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002   
 //    Use NewInstance instead of MakeObject in order to match vtk's new api. 
 //    
+//    Hank Childs, Fri Jul  1 10:50:58 PDT 2005
+//    Reverse the coordinate array as we go.  Otherwise the grid will be
+//    inverted.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -691,7 +755,7 @@ avtReflectFilter::ReflectDataArray(vtkDataArray *coords, double val)
     float *n = newcoords->GetTuple(0);
     for (int i = 0 ; i < nc ; i++)
     {
-        n[i] = 2*val - c[i];
+        n[nc-i-1] = 2*val - c[i];
     }
 
     return newcoords;

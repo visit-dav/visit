@@ -16,6 +16,7 @@
 
 #include <vtkVisItUtility.h>
 
+#include <avtDatasetExaminer.h>
 #include <avtExtents.h>
 
 
@@ -145,54 +146,25 @@ avtCoordSystemConvert::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //  Programmer: Hank Childs
 //  Creation:   June 30, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Jul  5 09:23:13 PDT 2005
+//    Properly create extents.
+//
 // ****************************************************************************
  
 void
 avtCoordSystemConvert::PostExecute()
 {
-    avtDataAttributes &inAtts  = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
+    outAtts.GetTrueSpatialExtents()->Clear();
+    outAtts.GetEffectiveSpatialExtents()->Clear();
+    outAtts.GetCurrentSpatialExtents()->Clear();
 
-/*
-    double b[6];
-    THIS HAS BEEN MORE TROUBLE THAN ITS WORTH.  LEAVING THE CODE HERE IN
-    CASE THIS EVER BECOMES IMPORTANT TO ANYONE.  THE ISSUE IS THAT IT JUST
-    DOESN'T COME CLOSE ENOUGH ON THE REAL EXTENTS.
-    if (inAtts.GetTrueSpatialExtents()->HasExtents())
-    {
-        inAtts.GetTrueSpatialExtents()->CopyTo(b);
-        TransformExtents(b);
-        outAtts.GetTrueSpatialExtents()->Set(b);
-    }
-
-    if (inAtts.GetCumulativeTrueSpatialExtents()->HasExtents())
-    {
-        inAtts.GetCumulativeTrueSpatialExtents()->CopyTo(b);
-        TransformExtents(b);
-        outAtts.GetCumulativeTrueSpatialExtents()->Set(b);
-    }
-
-    if (inAtts.GetEffectiveSpatialExtents()->HasExtents())
-    {
-        inAtts.GetEffectiveSpatialExtents()->CopyTo(b);
-        TransformExtents(b);
-        outAtts.GetEffectiveSpatialExtents()->Set(b);
-    }
-
-    if (inAtts.GetCurrentSpatialExtents()->HasExtents())
-    {
-        inAtts.GetCurrentSpatialExtents()->CopyTo(b);
-        TransformExtents(b);
-        outAtts.GetCurrentSpatialExtents()->Set(b);
-    }
-
-    if (inAtts.GetCumulativeCurrentSpatialExtents()->HasExtents())
-    {
-        inAtts.GetCumulativeCurrentSpatialExtents()->CopyTo(b);
-        TransformExtents(b);
-        outAtts.GetCumulativeCurrentSpatialExtents()->Set(b);
-    }
-*/
+    double bounds[6];
+    avtDataset_p ds = GetTypedOutput();
+    avtDatasetExaminer::GetSpatialExtents(ds, bounds);
+    outAtts.GetCumulativeTrueSpatialExtents()->Set(bounds);
 }
 
 

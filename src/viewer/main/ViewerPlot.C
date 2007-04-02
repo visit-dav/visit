@@ -3973,6 +3973,34 @@ ViewerPlot::GetVarType(const std::string &var) const
         databaseName, var, GetState());
 }
 
+
+// ****************************************************************************
+//  Method:  ViewerPlot::GetRealVarType
+//
+//  Purpose:
+//    Returns the type of the real variable behind this plot's variable.
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    July 05, 2005 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtVarType 
+ViewerPlot::GetRealVarType() const
+{
+    return GetRealVarType(variableName);
+}
+
+avtVarType 
+ViewerPlot::GetRealVarType(const std::string &var) const
+{
+    return ViewerFileServer::Instance()->DetermineRealVarType(hostName,
+        databaseName, var, GetState());
+}
+
+
 // ****************************************************************************
 //  Method:  ViewerPlot::CheckCache
 //

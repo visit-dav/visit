@@ -23,7 +23,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>VisIt's CLI now has embedded documentation for most of its functions, making it easy to see the argument list and usage information for each function.</li>
 <li>VisIt now supports image annotation objects, which allow you to place logos or other graphics in your visualizations. To add an image annotation, open the <b>Annotations</b> window, click on the <b>Objects</b> tab, and click on the <b>Image</b> button. Clicking on the <b>Image</b> button will tell VisIt to create an empty image annotation object. Once you select an image file using the <b>Image</b> annotation object's controls in the <b>Annotations</b> window and click the <b>Apply</b> button, VisIt will load your image and insert it into your visualization.</li>
 <li>VisIt now supports 2D line annotation objects, which allow you to point to objects within your visualization. The lines have optional arrow endpoints that can be used to indicate direction.To add a 2D line annotation, open the <b>Annotations</b> window, click on the <b>Objects</b> tab, and click on the <b>2D line</b> button.</li>
-<li>VisIt now supports multimeshes, multivars, multimaterials, and multispecies where some domains have no data. This means that in the multi-object definition, which usually points to the name of another file's variable for a particular domain, you can now provide "EMPTY" to indicate that the domain has no data.</li>
+<li>VisIt now supports multimeshes, multivars, multimaterials, and multispecies where some domains have no data. This means that in the multi-object definition, which usually points to the name of another file's variable for a particular domain, you can now provide "EMPTY" to indicate that the domain has no data. This enhancement prevents VisIt from failing to recognize when a mesh's domain list changes between time steps for certain database types.</li>
 <li>VisIt now has <i>Moment of Inertia</i> and <i>Centroid</i> queries.</li>
 <li>VisIt can now read in a set of image slices as a 3D volume. Simply create a file ending in ".imgvol" that contains the names of the image files that make up the 3D volume and VisIt will use the images to construct a 3D volume. This feature is useful for viewing CT data, which is often stored as a set of 2D images.</li>
 <li>VisIt's Image database reader plugin has been improved in a number of ways. For example, only processor 0 will read the image header now. Caching has been re-enabled and the reader can now generate ghost data.</li>
@@ -37,6 +37,9 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>VisIt's ghost zone communication was heavily optimized.</li>
 <li>The following new math expressions were added: mod, round, ceil, and floor</li>
 <li>VisIt can now use expressions to calculate what your mesh's coordinates are in cylindrical coordinates.  In addition, new expressions were added to access components of these coordinates -- cylindrical_radius and cylindrical_theta, as well as polar_radius, polar_theta, and polar_phi.</li>
+<li>VisIt's window layout logic has been changed so VisIt will always create the largest square windows in the available space.</li>
+<li>VisIt's rarely used 4x4 window layout has been replaced by a 2x3 window layout.</li>
+<li>VisIt now supports the creation of red/green stereo images.</li>
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.4.4</font></b></p>
 <ul>
@@ -57,6 +60,10 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>VisIt's <i>visitconvert</i> program issues a lot of warnings when converting image files to another format.</li>
 <li>Recentering a color image from zonal to nodal causes the Truecolor plot to display nothing.</li>
 <li>The spatial extents query now has the correct return type in the command-line interface</li>
+<li>Volume rendering now works correctly on rectilinear grids that have been reflected using the Reflect operator.</li>
+<li>Picking on plots using the <i>mirvf</i> expression yields incorrect results on second and subsequent picks.</li>
+<li>Picking on 2D Contour plots is broken.</li>
+<li>Pick letters are not visible with an opaque Mesh plot of Boxlib data.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.4.3.html">VisIt 1.4.3 Release Notes</a>.</p>

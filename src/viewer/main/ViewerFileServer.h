@@ -124,6 +124,10 @@ class SILAttributes;
 //
 //    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 //    Added methods to Set/Get tryHarderCyclesTimes
+//
+//    Kathleen Bonnell, Tue Jul  5 14:46:52 PDT 2005 
+//    Added DetermineRealVarType method. 
+//
 // ****************************************************************************
 
 class ViewerFileServer : public ViewerServerManager
@@ -240,6 +244,10 @@ public:
     stringVector               GetOpenDatabases() const;
 
     avtVarType                 DetermineVarType(const std::string &host,
+                                                const std::string &db,
+                                                const std::string &var,
+                                                int state);
+    avtVarType                 DetermineRealVarType(const std::string &host,
                                                 const std::string &db,
                                                 const std::string &var,
                                                 int state);
