@@ -47,6 +47,7 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkFloatArray.h>
 
+#include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
 
 #include <InvalidFilesException.h>
@@ -95,10 +96,35 @@ avtPoint3DFileFormat::avtPoint3DFileFormat(const char *fname)
 //  Programmer: Hank Childs
 //  Creation:   March 15, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Mar 17 16:29:45 PDT 2007
+//    Call FreeUpResources instead of doing destructing here.
+//
 // ****************************************************************************
 
 avtPoint3DFileFormat::~avtPoint3DFileFormat()
 {
+    FreeUpResources();
+}
+
+
+// ****************************************************************************
+//  Method: avtPoint3DFileFormat::FreeUpResources
+//
+//  Purpose:
+//      Frees up the resources associated with this format's file.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 17, 2007
+//
+// ****************************************************************************
+
+void
+avtPoint3DFileFormat::FreeUpResources(void)
+{
+    haveReadData = false;
+
     if (column1 != NULL)
     {
         column1->Delete();
@@ -265,6 +291,9 @@ avtPoint3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Added support for a config file as well as setting coordflag in the
 //    file itself.
 //
+//    Hank Childs, Sat Mar 17 16:29:45 PDT 2007
+//    Make reading for meta-data more lightweight.
+//
 // ****************************************************************************
 
 void
@@ -290,6 +319,9 @@ avtPoint3DFileFormat::ReadData(void)
         ifile >> buf;
         varnames.push_back(buf);
     }
+
+    if (avtDatabase::OnlyServeUpMetaData())
+        return;
 
     char     line[1024];
 
