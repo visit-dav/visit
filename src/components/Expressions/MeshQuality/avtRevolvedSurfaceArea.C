@@ -105,6 +105,10 @@ avtRevolvedSurfaceArea::PreExecute(void)
 //    Kathleen Bonnell, Tue Feb  7 14:14:33 PST 2006
 //    Changed GetLineArea call to GetCellArea. 
 //
+//    Kathleen Bonnell, Tue May 16 09:41:46 PDT 2006 
+//    Removed call to SetSource(NULL), with new vtk pipeline, it also removes
+//    necessary information from the dataset. 
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -149,7 +153,8 @@ avtRevolvedSurfaceArea::DeriveVariable(vtkDataSet *in_ds)
         boundaryFilter->GetOutput()->Update();
 
         allLines = boundaryFilter->GetOutput();
-        allLines->SetSource(NULL);
+        // using SetSource(NULL) for vtkDataSets no longer a good idea.
+        //allLines->SetSource(NULL);
     }
     else if (tmp_ds->GetDataObjectType() == VTK_POLY_DATA)
     {
@@ -159,7 +164,8 @@ avtRevolvedSurfaceArea::DeriveVariable(vtkDataSet *in_ds)
     {
         geomFilter->SetInput(tmp_ds);
         allLines = geomFilter->GetOutput();
-        allLines->SetSource(NULL);
+        // using SetSource(NULL) for vtkDataSets no longer a good idea.
+        //allLines->SetSource(NULL);
     }
 
     //

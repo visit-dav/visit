@@ -131,6 +131,10 @@ avtDataTreeStreamer::Execute(void)
 //    Hank Childs, Sat Jan  5 10:31:48 PST 2002
 //    Fix memory leak.
 //
+//    Kathleen Bonnell, Tue May 16 09:41:46 PDT 2006 
+//    Removed call to SetSource(NULL), with new vtk pipeline, it also removes
+//    necessary information from the dataset. 
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -163,7 +167,8 @@ avtDataTreeStreamer::Execute(avtDataTree_p inDT)
         // Setting the source to NULL for the input will break the 
         // pipeline.
         //
-        in_ds->SetSource(NULL);
+        // NO LONGER A GOOD IDEA
+        //in_ds->SetSource(NULL);
 
         //
         // We own the returned dataset because you cannot delete it if

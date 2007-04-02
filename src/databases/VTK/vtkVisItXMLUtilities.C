@@ -29,7 +29,7 @@
 typedef vtkstd::vector<vtkVisItXMLDataElement*> vtkVisItXMLUtilitiesDataElementContainer;
 
 vtkStandardNewMacro(vtkVisItXMLUtilities);
-vtkCxxRevisionMacro(vtkVisItXMLUtilities, "$Revision: 1.5 $");
+vtkCxxRevisionMacro(vtkVisItXMLUtilities, "$Revision: 1.6 $");
 
 #define  VTK_XML_UTILITIES_FACTORED_POOL_NAME "FactoredPool"
 #define  VTK_XML_UTILITIES_FACTORED_NAME      "Factored"

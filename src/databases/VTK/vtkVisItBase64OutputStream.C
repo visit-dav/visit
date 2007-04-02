@@ -2,16 +2,13 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkVisItBase64OutputStream.cxx,v $
-  Language:  C++
-  Date:      $Date: 2002/10/28 14:42:03 $
-  Version:   $Revision: 1.3 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
@@ -20,7 +17,7 @@
 #include "vtkVisItBase64Utilities.h"
 
 //----------------------------------------------------------------------------
-vtkCxxRevisionMacro(vtkVisItBase64OutputStream, "$Revision: 1.3 $");
+vtkCxxRevisionMacro(vtkVisItBase64OutputStream, "$Revision: 1.4 $");
 vtkStandardNewMacro(vtkVisItBase64OutputStream);
 
 //----------------------------------------------------------------------------

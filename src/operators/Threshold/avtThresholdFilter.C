@@ -203,6 +203,10 @@ static void UpdateNeighborCells(int pt, const int *pt_dims,
 //    Hank Childs, Tue Sep 13 09:03:12 PDT 2005
 //    Add support for "PointsOnly".
 //
+//    Kathleen Bonnell, Tue May 16 15:49:24 PDT 2006
+//    SetAttributeModeTo* deprecated, now use SetInputArrayToProcess. 
+//    Pass FieldData, as it is no longer done internally by vtkThreshold.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -230,7 +234,9 @@ avtThresholdFilter::ProcessOneChunk(vtkDataSet *in_ds, int domain,
     // Set up the threshold filter from the attributes.
     //
     threshold->SetInput(in_ds);
-    threshold->SetAttributeModeToDefault();
+    threshold->SetInputArrayToProcess(0,0,0, 
+                vtkDataObject::FIELD_ASSOCIATION_POINTS_THEN_CELLS, 
+                vtkDataSetAttributes::SCALARS);
     if (atts.GetAmount() == ThresholdAttributes::Some)
     {
         threshold->AllScalarsOff();
@@ -259,15 +265,21 @@ avtThresholdFilter::ProcessOneChunk(vtkDataSet *in_ds, int domain,
     }
     if (usePointData)
     {
-        threshold->SetAttributeModeToUsePointData();
+        threshold->SetInputArrayToProcess(0,0,0, 
+                vtkDataObject::FIELD_ASSOCIATION_POINTS, 
+                vtkDataSetAttributes::SCALARS);
     }
     else
     {
-        threshold->SetAttributeModeToUseCellData();
+        threshold->SetInputArrayToProcess(0,0,0, 
+                vtkDataObject::FIELD_ASSOCIATION_CELLS, 
+                vtkDataSetAttributes::SCALARS);
     }
     
     vtkDataSet *out_ds = threshold->GetOutput();
     out_ds->Update();
+    // this is no longer done free for us!!!
+    out_ds->GetFieldData()->PassData(in_ds->GetFieldData());
 
     if (out_ds->GetNumberOfCells() <= 0)
     {

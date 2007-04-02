@@ -79,6 +79,11 @@ avtTwoPassDatasetQuery::Execute(avtDataTree_p inDT)
 //  Programmer: Jeremy Meredith
 //  Creation:   April 16, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed May 17 15:22:06 PDT 2006
+//    Remove call to SetSource(NULL) as it now removes information necessary
+//    for the dataset.
+//
 // ****************************************************************************
 void
 avtTwoPassDatasetQuery::ExecuteNthPass(avtDataTree_p inDT, int pass)
@@ -107,7 +112,7 @@ avtTwoPassDatasetQuery::ExecuteNthPass(avtDataTree_p inDT, int pass)
         // Setting the source to NULL for the input will break the
         // pipeline.
         //
-        in_ds->SetSource(NULL);
+        //in_ds->SetSource(NULL);
 
         if (pass==1)
             Execute1(in_ds, dom);

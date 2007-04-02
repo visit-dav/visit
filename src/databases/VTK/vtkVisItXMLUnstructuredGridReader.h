@@ -2,16 +2,13 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkVisItXMLUnstructuredGridReader.h,v $
-  Language:  C++
-  Date:      $Date: 2003/05/05 13:45:23 $
-  Version:   $Revision: 1.3 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
@@ -45,7 +42,7 @@ public:
   void SetOutput(vtkUnstructuredGrid *output);
   vtkUnstructuredGrid *GetOutput();
   vtkUnstructuredGrid *GetOutput(int idx);
-  
+
 protected:
   vtkVisItXMLUnstructuredGridReader();
   ~vtkVisItXMLUnstructuredGridReader();
@@ -61,12 +58,14 @@ protected:
   void SetupNextPiece();
   int ReadPieceData();
   
-  // Read a data array whose tuples coorrespond to cells.
+  // Read a data array whose tuples correspond to cells.
   int ReadArrayForCells(vtkVisItXMLDataElement* da, vtkDataArray* outArray);
   
   // Get the number of cells in the given piece.  Valid after
   // UpdateInformation.
   virtual vtkIdType GetNumberOfCellsInPiece(int piece);
+
+  virtual int FillOutputPortInformation(int, vtkInformation*);
 
   // The index of the cell in the output where the current piece
   // begins.
@@ -76,6 +75,9 @@ protected:
   vtkVisItXMLDataElement** CellElements;
   vtkIdType* NumberOfCells;
   
+  int CellsTimeStep;
+  unsigned long CellsOffset;
+
 private:
   vtkVisItXMLUnstructuredGridReader(const vtkVisItXMLUnstructuredGridReader&);  // Not implemented.
   void operator=(const vtkVisItXMLUnstructuredGridReader&);  // Not implemented.

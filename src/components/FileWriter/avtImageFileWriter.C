@@ -5,6 +5,7 @@
 #include <avtImageFileWriter.h>
 
 #include <vtkBMPWriter.h>
+#include <vtkImageData.h>
 #include <vtkJPEGWriter.h>
 #include <vtkVisItTIFFWriter.h>
 #include <vtkPostScriptWriter.h>

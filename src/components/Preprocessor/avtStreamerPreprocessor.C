@@ -79,6 +79,11 @@ avtStreamerPreprocessor::Preprocess(void)
 //  Programmer: Hank Childs
 //  Creation:   September 9, 2001
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed May 17 15:15:24 PDT 2006
+//    Remove call to SetSource(NULL) as it now removes information necessary
+//    for the dataset.
+//
 // ****************************************************************************
 
 void
@@ -107,7 +112,8 @@ avtStreamerPreprocessor::PreprocessTree(avtDataTree_p tree)
         //
         // Ensure that there is no funny business when we do an Update.
         //
-        in_ds->SetSource(NULL);
+        // NO LONGER A GOOD IDEA
+        //in_ds->SetSource(NULL);
 
         ProcessDomain(in_ds, dom);
     }

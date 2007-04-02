@@ -160,6 +160,11 @@ avtDatasetQuery::PerformQuery(QueryAttributes *qA)
 //  Programmer: Kathleen Bonnell 
 //  Creation:   November 15, 2002 
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed May 17 15:22:06 PDT 2006
+//    Remove call to SetSource(NULL) as it now removes information necessary 
+//    for the dataset.
+//
 // ****************************************************************************
 
 void
@@ -189,7 +194,8 @@ avtDatasetQuery::Execute(avtDataTree_p inDT)
         // Setting the source to NULL for the input will break the
         // pipeline.
         //
-        in_ds->SetSource(NULL);
+        // NO LONGER A GOOD IDEA
+        //in_ds->SetSource(NULL);
         Execute(in_ds, dom);
         if (!timeVarying)
         {

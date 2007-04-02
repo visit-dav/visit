@@ -2,16 +2,13 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkVisItStructuredGridReader.h,v $
-  Language:  C++
-  Date:      $Date: 2002/05/31 23:12:41 $
-  Version:   $Revision: 1.46 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
@@ -45,17 +42,24 @@ public:
   // Description:
   // Get the output of this reader.
   vtkStructuredGrid *GetOutput();
-  vtkStructuredGrid *GetOutput(int idx)
-    {return (vtkStructuredGrid *) this->vtkSource::GetOutput(idx); };
+  vtkStructuredGrid *GetOutput(int idx);
   void SetOutput(vtkStructuredGrid *output);  
+
+  // Description:
+  // Read the meta information from the file.  This needs to be public to it
+  // can be accessed by vtkDataSetReader.
+  virtual int ReadMetaData(vtkInformation *outInfo);
 
 protected:
   vtkVisItStructuredGridReader();
   ~vtkVisItStructuredGridReader();
 
-  void ExecuteInformation();
-  void Execute();
+  virtual int RequestInformation(vtkInformation *, vtkInformationVector **,
+                                 vtkInformationVector *);
+  virtual int RequestData(vtkInformation *, vtkInformationVector **,
+                          vtkInformationVector *);
 
+  virtual int FillOutputPortInformation(int, vtkInformation*);
 private:
   vtkVisItStructuredGridReader(const vtkVisItStructuredGridReader&);  // Not implemented.
   void operator=(const vtkVisItStructuredGridReader&);  // Not implemented.

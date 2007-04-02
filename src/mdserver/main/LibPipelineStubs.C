@@ -24,6 +24,8 @@ DEFSTUB(void*, vtkDataSetWriter, New, (), 0);
 
 DEFSTUB(char*, vtkDataWriter, RegisterAndGetOutputString, (), 0);
 
+DEFSTUB(void, vtkWriter, SetInput, (vtkDataObject*), /*void*/);
+
 DEFSTUB(void*, vtkPolyDataReader, GetOutput, (), 0);
 DEFSTUB(void*, vtkPolyDataReader, New, (), 0);
 

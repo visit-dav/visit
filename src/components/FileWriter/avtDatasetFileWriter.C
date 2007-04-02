@@ -12,6 +12,7 @@
 #include <vtkCellData.h>
 #include <vtkCellDataToPointData.h>
 #include <vtkDataSetWriter.h>
+#include <vtkInformation.h>
 #include <vtkFloatArray.h>
 #include <vtkOBJWriter.h>
 #include <vtkPointData.h>
@@ -710,6 +711,12 @@ avtDatasetFileWriter::CreateFilename(const char *base, bool family,
 //  Programmer: Hank Childs
 //  Creation:   May 26, 2002
 //
+//  Modificatons:
+//    Kathleen Bonnell, Wed May 17 14:44:08 PDT 2006
+//    Changed GetNumberOfInputs to GetTotalNumberOfInputConnections.  Can
+//    no longer call 'GetInputs' on vtkAppendFillter, must get individual port
+//    info, then the dataset from the info. 
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -732,17 +739,20 @@ avtDatasetFileWriter::GetSingleDataset(void)
         dt->Traverse(CAddInputToAppendFilter, &pmap, dummy);
     }
 
-    if (pmap.af->GetNumberOfInputs() > 1 && pmap.pf->GetNumberOfInputs() > 1)
+    if (pmap.af->GetTotalNumberOfInputConnections() > 1 && 
+        pmap.pf->GetTotalNumberOfInputConnections() > 1)
     {
         //
         // We have inputs that are unstructured and poly data.  Put them all
         // into the unstructured grid.
         //
-        int numInputs = pmap.pf->GetNumberOfInputs();
-        vtkDataObject **list = pmap.pf->GetInputs();
+        int numInputs = pmap.pf->GetTotalNumberOfInputConnections();
+        vtkInformation *inInfo;
         for (int i = 0 ; i < numInputs ; i++)
         {
-            pmap.af->AddInput((vtkDataSet *) list[i]);
+            inInfo = pmap.pf->GetInputPortInformation(i);
+            pmap.af->AddInput(vtkPolyData::SafeDownCast(
+                              inInfo->Get(vtkDataObject::DATA_OBJECT()))); 
         }
         pmap.pf->RemoveAllInputs();
     }
@@ -752,9 +762,9 @@ avtDatasetFileWriter::GetSingleDataset(void)
     // or in the poly data append filter (from logic above).
     //
     vtkDataSet *rv = NULL;
-    if (pmap.af->GetNumberOfInputs() > 1)
+    if (pmap.af->GetTotalNumberOfInputConnections() > 1)
     {
-        if (pmap.af->GetNumberOfInputs() == 1)
+        if (pmap.af->GetTotalNumberOfInputConnections() == 1)
         {
             rv = pmap.af->GetInput();
         }
@@ -765,7 +775,7 @@ avtDatasetFileWriter::GetSingleDataset(void)
     }
     else
     {
-        if (pmap.pf->GetNumberOfInputs() == 1)
+        if (pmap.pf->GetTotalNumberOfInputConnections() == 1)
         {
             rv = pmap.pf->GetInput();
         }

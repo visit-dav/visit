@@ -159,6 +159,8 @@ avtGeometryDrawable::Add(vtkRenderer *ren)
 //    Added a trick/hack to allow actors to be removed from a window without
 //    affecting their display lists.
 //
+//    Kathleen Bonnell, Wed May 17 15:08:39 PDT 2006
+//    GetProps->RemoveItem has been deprecated, use GetViewProps->RemoveItem.
 // ****************************************************************************
 
 void
@@ -190,7 +192,7 @@ avtGeometryDrawable::Remove(vtkRenderer *ren)
             //
             ren->GetActors()->RemoveItem(actors[i]);
             actors[i]->RemoveConsumer(ren);
-            ren->GetProps()->RemoveItem(actors[i]);
+            ren->GetViewProps()->RemoveItem(actors[i]);
         }
     }
     renderer = NULL;

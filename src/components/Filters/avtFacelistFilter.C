@@ -499,6 +499,10 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain)
 //    Hank Childs, Fri Mar 11 08:11:03 PST 2005
 //    Instantiate VTK filters on the fly.
 //
+//    Kathleen Bonnell, Wed May 17 14:44:08 PDT 2006 
+//    Remove call to SetSource(NULL) as it now removes information necessary
+//    for the dataset. 
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -537,7 +541,7 @@ avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds)
         rf->SetOutput(out_ds);
         out_ds->Update();
         rf->SetOutput(NULL);
-        out_ds->SetSource(NULL);
+        //out_ds->SetSource(NULL);
         rf->Delete();
     }
     else if (dstype == VTK_STRUCTURED_GRID)

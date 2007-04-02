@@ -121,6 +121,9 @@
 #    Eric Brugger, Mon Feb  6 12:58:57 PST 2006
 #    I added links to libqt.a and libqui.a.
 #
+#    Kathleen Bonnell, Wed May 17 15:39:08 PDT 2006 
+#    Update vtk libs for update to 5.0 version. 
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -142,6 +145,10 @@ LIBVTKEXPAT=libvtkexpat.@SHLIB_LIBEXT@
 LIBVTKTIFF=libvtktiff.@SHLIB_LIBEXT@
 LIBVTKFREETYPE=libvtkfreetype.@SHLIB_LIBEXT@
 LIBVTKFTGL=libvtkftgl.@SHLIB_LIBEXT@
+LIBVTKSYS=libvtksys.@SHLIB_LIBEXT@
+LIBVTKEXOIIC=libvtkexoIIc.@SHLIB_LIBEXT@
+LIBVTKNETCDF=libvtkNetCDF.@SHLIB_LIBEXT@
+LIBVTKMPEG2ENCODE=libvtkMPEG2Encode.@SHLIB_LIBEXT@
 LIBMESAGL=libMesaGL.@SHLIB_LIBEXT@
 LIBOSMESA=libOSMesa.@SHLIB_LIBEXT@
 LIBQT=libqt.@SHLIB_LIBEXT@
@@ -152,68 +159,84 @@ LIBSILO=libsilo.@SHLIB_LIBEXT@
 # with the make on AIX systems.
 all: libvtkcommon libvtkdicom libvtkfiltering libvtkgraphics libvtkhybrid \
      libvtkio libvtkimaging libvtkrendering libvtkzlib libvtkpng libvtkjpeg \
-     libvtkexpat libvtktiff libvtkfreetype libvtkftgl libosmesa libmesagl \
-     libqt libqui pythondir @CREATE_SILO_LINK@ @CREATE_MILI_LINK@ @CREATE_HDF4_LINK@ @CREATE_HDF5_LINK@ @CREATE_NETCDF_LINK@ @CREATE_CGNS_LINK@ @CREATE_GDAL_LINK@ @CREATE_EXODUS_LINK@
+     libvtkexpat libvtktiff libvtkfreetype libvtkftgl libvtksys libvtkexoIIc \
+     libvtknetcdf libvtkmpeg2encode libosmesa libmesagl libqt libqui pythondir @CREATE_SILO_LINK@ @CREATE_MILI_LINK@ @CREATE_HDF4_LINK@ @CREATE_HDF5_LINK@ @CREATE_NETCDF_LINK@ @CREATE_CGNS_LINK@ @CREATE_GDAL_LINK@ @CREATE_EXODUS_LINK@
 
 libvtkcommon:
-	$(RM) $(LIBVTKCOMMON)
-	ln -s @VTK_DIR@/lib/$(LIBVTKCOMMON)   .
+	$(RM) $(LIBVTKCOMMON)*
+	ln -s @VTK_DIR@/lib/$(LIBVTKCOMMON)*   .
 
 libvtkdicom:
-	$(RM) $(LIBVTKDICOM)
-	ln -s @VTK_DIR@/lib/$(LIBVTKDICOM)   .
+	$(RM) $(LIBVTKDICOM)*
+	ln -s @VTK_DIR@/lib/$(LIBVTKDICOM)*   .
 
 libvtkfiltering:
-	$(RM) $(LIBVTKFILTERING)
-	ln -s @VTK_DIR@/lib/$(LIBVTKFILTERING)   .
+	$(RM) $(LIBVTKFILTERING)*
+	ln -s @VTK_DIR@/lib/$(LIBVTKFILTERING)*   .
 
 libvtkgraphics:
-	$(RM) $(LIBVTKGRAPHICS)
-	ln -s @VTK_DIR@/lib/$(LIBVTKGRAPHICS) .
+	$(RM) $(LIBVTKGRAPHICS)*
+	ln -s @VTK_DIR@/lib/$(LIBVTKGRAPHICS)* .
 
 libvtkhybrid:
-	$(RM) $(LIBVTKHYBRID)
-	ln -s @VTK_DIR@/lib/$(LIBVTKHYBRID) .
+	$(RM) $(LIBVTKHYBRID)*
+	ln -s @VTK_DIR@/lib/$(LIBVTKHYBRID)* .
 
 libvtkio:
-	$(RM) $(LIBVTKIO)
-	ln -s @VTK_DIR@/lib/$(LIBVTKIO) .
+	$(RM) $(LIBVTKIO)*
+	ln -s @VTK_DIR@/lib/$(LIBVTKIO)* .
 
 libvtkimaging:
-	$(RM) $(LIBVTKIMAGING)
-	ln -s @VTK_DIR@/lib/$(LIBVTKIMAGING)  .
+	$(RM) $(LIBVTKIMAGING)*
+	ln -s @VTK_DIR@/lib/$(LIBVTKIMAGING)*  .
 
 libvtkrendering:
-	$(RM) $(LIBVTKRENDERING)
-	ln -s @VTK_DIR@/lib/$(LIBVTKRENDERING)  .
+	$(RM) $(LIBVTKRENDERING)*
+	ln -s @VTK_DIR@/lib/$(LIBVTKRENDERING)*  .
 
 libvtkzlib:
-	$(RM) $(LIBVTKZLIB)
-	ln -s @VTK_DIR@/lib/$(LIBVTKZLIB)  .
+	$(RM) $(LIBVTKZLIB)*
+	ln -s @VTK_DIR@/lib/$(LIBVTKZLIB)*  .
 
 libvtkjpeg:
-	$(RM) $(LIBVTKJPEG)
-	ln -s @VTK_DIR@/lib/$(LIBVTKJPEG)  .
+	$(RM) $(LIBVTKJPEG)*
+	ln -s @VTK_DIR@/lib/$(LIBVTKJPEG)*  .
 
 libvtkpng:
-	$(RM) $(LIBVTKPNG)
-	ln -s @VTK_DIR@/lib/$(LIBVTKPNG)  .
+	$(RM) $(LIBVTKPNG)*
+	ln -s @VTK_DIR@/lib/$(LIBVTKPNG)*  .
 
 libvtkexpat:
-	$(RM) $(LIBVTKEXPAT)
-	ln -s @VTK_DIR@/lib/$(LIBVTKEXPAT)  .
+	$(RM) $(LIBVTKEXPAT)*
+	ln -s @VTK_DIR@/lib/$(LIBVTKEXPAT)*  .
 
 libvtktiff:
-	$(RM) $(LIBVTKTIFF)
-	ln -s @VTK_DIR@/lib/$(LIBVTKTIFF)  .
+	$(RM) $(LIBVTKTIFF)*
+	ln -s @VTK_DIR@/lib/$(LIBVTKTIFF)*  .
 
 libvtkfreetype:
-	$(RM) $(LIBVTKFREETYPE)
-	ln -s @VTK_DIR@/lib/$(LIBVTKFREETYPE)  .
+	$(RM) $(LIBVTKFREETYPE)*
+	ln -s @VTK_DIR@/lib/$(LIBVTKFREETYPE)*  .
 
 libvtkftgl:
-	$(RM) $(LIBVTKFTGL)
-	ln -s @VTK_DIR@/lib/$(LIBVTKFTGL)  .
+	$(RM) $(LIBVTKFTGL)*
+	ln -s @VTK_DIR@/lib/$(LIBVTKFTGL)*  .
+
+libvtksys:
+	$(RM) $(LIBVTKSYS)*
+	ln -s @VTK_DIR@/lib/$(LIBVTKSYS)*  .
+
+libvtkexoIIc:
+	$(RM) $(LIBVTKEXOIIC)*
+	ln -s @VTK_DIR@/lib/$(LIBVTKEXOIIC)*  .
+
+libvtknetcdf:
+	$(RM) $(LIBVTKNETCDF)*
+	ln -s @VTK_DIR@/lib/$(LIBVTKNETCDF)*  .
+
+libvtkmpeg2encode:
+	$(RM) $(LIBVTKMPEG2ENCODE)*
+	ln -s @VTK_DIR@/lib/$(LIBVTKMPEG2ENCODE)*  .
 
 libmesagl:
 	$(RM) $(LIBMESAGL)
@@ -288,22 +311,32 @@ clean distclean:
 	$(LIBMESAGL) \
 	$(LIBOSMESA) \
 	$(LIBQT)* \
-	$(LIBVTKCOMMON) \
-	$(LIBVTKFILTERING) \
-	$(LIBVTKHYBRID) \
-	$(LIBVTKIMAGING) \
-	$(LIBVTKIO) \
-	$(LIBVTKJPEG) \
-	$(LIBVTKPNG) \
-	$(LIBVTKTIFF) \
-	$(LIBVTKFREETYPE) \
-	$(LIBVTKFTGL) \
-	$(LIBVTKZLIB) \
+	$(LIBQUI)* \
+	$(LIBVTKCOMMON)* \
+	$(LIBVTKDICOM)* \
+	$(LIBVTKFILTERING)* \
+	$(LIBVTKHYBRID)* \
+	$(LIBVTKIMAGING)* \
+	$(LIBVTKIO)* \
+	$(LIBVTKJPEG)* \
+	$(LIBVTKPNG)* \
+	$(LIBVTKTIFF)* \
+	$(LIBVTKFREETYPE)* \
+	$(LIBVTKFTGL)* \
+	$(LIBVTKZLIB)* \
+	$(LIBVTKSYS)* \
+	$(LIBVTKEXOIIC)* \
+	$(LIBVTKNETCDF)* \
+	$(LIBVTKMPEG2ENCODE)* \
 	$(LIBPYTHON) \
-	$(LIBVTKEXPAT) \
-	$(LIBVTKGRAPHICS) \
-	$(LIBVTKRENDERING) \
-	$(LIBSILO)
+	$(LIBVTKEXPAT)* \
+	$(LIBVTKGRAPHICS)* \
+	$(LIBVTKRENDERING)* \
+	$(LIBSILO) \
+	python \
+        lib@PYVERSION@.@SHLIB_LIBEXT@ \
+	libqt.a \
+	libqui.a
 
 install:
 install_bin:
@@ -311,9 +344,10 @@ install_lib:
 install_dirs:
 
 # for clearcase:
-.NO_WINK_IN: $(LIBVTKCOMMON) $(LIBVTKFILTERING) $(LIBVTKGRAPHICS) \
-   $(LIBVTKHYBRID) $(LIBVTKIO) $(LIBVTKIMAGING) $(LIBVTKRENDERING) \
-   $(LIBVTKZLIB) $(LIBVTKPNG) $(LIBVTKJPEG) $(LIBVTKEXPAT) $(LIBVTKTIFF) \
-   $(LIBVTKFREETYPE) $(LIBVTKFTGL)  $(LIBOSMESA) $(LIBMESAGL) $(LIBQT) $(LIBPYTHON) \
-   $(LIBSILO)
+.NO_WINK_IN: $(LIBVTKCOMMON) $(LIBVTKDICOM) $(LIBVTKFILTERING) \
+   $(LIBVTKGRAPHICS) $(LIBVTKHYBRID) $(LIBVTKIO) $(LIBVTKIMAGING) \
+   $(LIBVTKRENDERING) $(LIBVTKZLIB) $(LIBVTKPNG) $(LIBVTKJPEG) $(LIBVTKEXPAT) \
+   $(LIBVTKTIFF) $(LIBVTKFREETYPE) $(LIBVTKFTGL) $(LIBVTKSYS) $(LIBVTKEXOIIC) \
+   $(LIBVTKNETCDF) $(LIBVTKMPEG2ENCODE) $(LIBOSMESA) $(LIBMESAGL) $(LIBQT) \
+   $(LIBQUI) $(LIBPYTHON) $(LIBSILO)
 

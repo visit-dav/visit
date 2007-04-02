@@ -78,6 +78,10 @@ avtWavefrontOBJFileFormat::~avtWavefrontOBJFileFormat()
 //    Hank Childs, Tue May 28 08:50:58 PDT 2002
 //    Don't assume that there are texture coordinates.
 //
+//    Kathleen Bonnell, Wed May 17 10:58:54 PDT 2006
+//    Remove call to SetSource(NULL) as it now removes information necessary
+//    for the dataset. 
+//
 // ****************************************************************************
 
 void
@@ -108,7 +112,7 @@ avtWavefrontOBJFileFormat::ReadInDataset(void)
     // eat up too many file descriptors.
     //
     dataset->Update();
-    dataset->SetSource(NULL);
+    //dataset->SetSource(NULL);
     reader->Delete();
 
     vtkDataArray *tcoords = dataset->GetPointData()->GetTCoords();

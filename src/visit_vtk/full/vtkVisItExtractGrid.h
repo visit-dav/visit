@@ -3,26 +3,25 @@
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkVisItExtractGrid.h,v $
 
-  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-// .NAME vtkVisItExtractGrid - select piece (e.g., volume of interest) 
-// and/or subsample structured grid dataset
+// .NAME vtkVisItExtractGrid - select piece (e.g., volume of interest) and/or 
+// subsample structured grid dataset
 
 // .SECTION Description
-// vtkVisItExtractGrid is a filter that selects a portion of an input 
-// structured grid dataset, or subsamples an input dataset. (The selected 
-// portion of interested is referred to as the Volume Of Interest, or VOI.) 
-// The output of this filter is a structured grid dataset. The filter 
-// treats input data of any topological dimension (i.e., point, line, 
-// image, or volume) and can generate output data of any topological 
-// dimension.
+// vtkVisItExtractGrid is a filter that selects a portion of an input structured
+// grid dataset, or subsamples an input dataset. (The selected portion of
+// interested is referred to as the Volume Of Interest, or VOI.) The output of
+// this filter is a structured grid dataset. The filter treats input data of
+// any topological dimension (i.e., point, line, image, or volume) and can
+// generate output data of any topological dimension.
 //
 // To use this filter set the VOI ivar which are i-j-k min/max indices that
 // specify a rectangular region in the data. (Note that these are 0-offset.)
@@ -39,14 +38,14 @@
 #ifndef __vtkVisItExtractGrid_h
 #define __vtkVisItExtractGrid_h
 
-#include <vtkStructuredGridToStructuredGridFilter.h>
+#include <vtkStructuredGridAlgorithm.h>
 #include <visit_vtk_exports.h>
 
-class VISIT_VTK_API vtkVisItExtractGrid : public vtkStructuredGridToStructuredGridFilter
+class VISIT_VTK_API vtkVisItExtractGrid : public vtkStructuredGridAlgorithm
 {
 public:
   static vtkVisItExtractGrid *New();
-  vtkTypeRevisionMacro(vtkVisItExtractGrid,vtkStructuredGridToStructuredGridFilter);
+  vtkTypeRevisionMacro(vtkVisItExtractGrid,vtkStructuredGridAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
@@ -79,9 +78,9 @@ protected:
   vtkVisItExtractGrid();
   ~vtkVisItExtractGrid() {};
 
-  void Execute();
-  void ExecuteInformation();
-  void ComputeInputUpdateExtents(vtkDataObject *out);
+  virtual int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
+  virtual int RequestInformation(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
+  virtual int RequestUpdateExtent(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
   
   int VOI[6];
   int SampleRate[3];

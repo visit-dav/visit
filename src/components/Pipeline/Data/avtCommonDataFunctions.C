@@ -485,6 +485,10 @@ CUpdateData(avtDataRepresentation &data, void *, bool &modified)
 //    Hank Childs, Tue Sep 25 09:32:26 PDT 2001
 //    Add check for no cells.
 //
+//    Kathleen Bonnell, Wed May 17 14:51:16 PDT 2006
+//    Remove call to SetSource(NULL) as it now removes information necessary
+//    to the dataset. 
+//
 // ****************************************************************************
 
 void
@@ -513,7 +517,8 @@ CAddInputToAppendFilter(avtDataRepresentation & data, void *arg, bool &)
 
     pmap = (struct map *) arg;
 
-    ds->SetSource(NULL);
+    // using SetSource(NULL) no longer a good idea.
+    //ds->SetSource(NULL);
 
     //
     //  We only want to use the append filters on poly data or

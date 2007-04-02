@@ -689,6 +689,10 @@ avtTransparencyActor::AddToRenderer(vtkRenderer *ren)
 //  Programmer: Hank Childs
 //  Creation:   July 9, 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed May 17 15:08:39 PDT 2006
+//    GetProps->RemoveItem has been deprecated, use GetViewProps.
+//
 // ****************************************************************************
 
 void
@@ -711,7 +715,7 @@ avtTransparencyActor::RemoveFromRenderer(vtkRenderer *ren)
     //
     ren->GetActors()->RemoveItem(myActor);
     myActor->RemoveConsumer(ren);
-    ren->GetProps()->RemoveItem(myActor);
+    ren->GetViewProps()->RemoveItem(myActor);
 }
 
 
@@ -744,6 +748,8 @@ avtTransparencyActor::RemoveFromRenderer(vtkRenderer *ren)
 //    needed an update, and it needed unification in parallel.  Honor
 //    the suspension of transparent rendering for two-pass mode.
 //
+//    Kathleen Bonnell, Wed May 17 15:08:39 PDT 2006
+///   Ensure that appender has non-NULL input (can have empty input, not NULL).
 // ****************************************************************************
 
 void
@@ -752,6 +758,7 @@ avtTransparencyActor::SetUpActor(void)
     appender->RemoveAllInputs();
     int numActors = datasets.size();
     vtkActor *repActor = NULL;
+    bool addedInput = false;
     for (int i = 0 ; i < numActors ; i++)
     {
         if (useActor[i] && visibility[i] == true)
@@ -762,11 +769,23 @@ avtTransparencyActor::SetUpActor(void)
                 PrepareDataset(i, j);
                 if (preparedDataset[i][j] != NULL)
                 {
+                    addedInput = true;
                     appender->AddInput(preparedDataset[i][j]);
                     repActor = actors[i][j];
                 }
             }
         }
+    }
+
+    // 
+    //  VTK pipeline now requires its filters to have non-null inputs.
+    // 
+    if (!addedInput)
+    {
+        // use empty input? 
+        vtkPolyData *pd = vtkPolyData::New();
+        appender->AddInput(pd);
+        pd->Delete();
     }
 
     // Force the appender to update; this is needed in parallel SR mode

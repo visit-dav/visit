@@ -22,13 +22,13 @@
 #define __vtkVisItContourFilter_h
 
 #include <visit_vtk_exports.h>
-#include "vtkDataSetToPolyDataFilter.h"
+#include "vtkPolyDataAlgorithm.h"
 
 
-class VISIT_VTK_API vtkVisItContourFilter : public vtkDataSetToPolyDataFilter
+class VISIT_VTK_API vtkVisItContourFilter : public vtkPolyDataAlgorithm
 {
 public:
-  vtkTypeRevisionMacro(vtkVisItContourFilter,vtkDataSetToPolyDataFilter);
+  vtkTypeRevisionMacro(vtkVisItContourFilter,vtkPolyDataAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
@@ -50,11 +50,15 @@ protected:
   vtkVisItContourFilter();
   ~vtkVisItContourFilter();
 
-  void Execute();
-  void RectilinearGridExecute();
-  void StructuredGridExecute();
-  void UnstructuredGridExecute();
-  void GeneralExecute();
+  virtual int RequestData(vtkInformation *,
+                          vtkInformationVector **,
+                          vtkInformationVector *);
+  virtual int FillInputPortInformation(int, vtkInformation *);
+
+  void RectilinearGridExecute(vtkDataSet *, vtkPolyData*);
+  void StructuredGridExecute(vtkDataSet *, vtkPolyData*);
+  void UnstructuredGridExecute(vtkDataSet *, vtkPolyData*);
+  void GeneralExecute(vtkDataSet *, vtkPolyData*);
   void ContourDataset(vtkDataSet *, vtkPolyData *);
   
   float Isovalue;
@@ -62,7 +66,7 @@ protected:
   int *CellList;
   int  CellListSize;
 
-  float *GetPointScalars(void);
+  float *GetPointScalars(vtkDataSet*);
   
 private:
   vtkVisItContourFilter(const vtkVisItContourFilter&);  // Not implemented.

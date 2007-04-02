@@ -2,11 +2,8 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkVisItTIFFWriter.h,v $
-  Language:  C++
-  Date:      $Date: 2003/10/08 13:46:13 $
-  Version:   $Revision: 1.23 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen 
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 

@@ -2,16 +2,13 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkVisItXMLDataReader.cxx,v $
-  Language:  C++
-  Date:      $Date: 2003/06/26 17:36:51 $
-  Version:   $Revision: 1.7 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
@@ -24,8 +21,13 @@
 #include "vtkPointData.h"
 #include "vtkVisItXMLDataElement.h"
 #include "vtkVisItXMLDataParser.h"
+#include "vtkInformationVector.h"
+#include "vtkInformation.h"
+#include "vtkExecutive.h"
 
-vtkCxxRevisionMacro(vtkVisItXMLDataReader, "$Revision: 1.7 $");
+#include "assert.h"
+
+vtkCxxRevisionMacro(vtkVisItXMLDataReader, "$Revision: 1.25.6.1 $");
 
 //----------------------------------------------------------------------------
 vtkVisItXMLDataReader::vtkVisItXMLDataReader()
@@ -43,14 +45,35 @@ vtkVisItXMLDataReader::vtkVisItXMLDataReader()
   this->DataProgressObserver = vtkCallbackCommand::New();
   this->DataProgressObserver->SetCallback(&vtkVisItXMLDataReader::DataProgressCallbackFunction);
   this->DataProgressObserver->SetClientData(this);
+
+  this->PointDataTimeStep = NULL;
+  this->PointDataOffset = NULL;
+  this->CellDataTimeStep = NULL;
+  this->CellDataOffset = NULL;
 }
 
 //----------------------------------------------------------------------------
 vtkVisItXMLDataReader::~vtkVisItXMLDataReader()
 {
-  if(this->XMLParser) { this->DestroyXMLParser(); }
-  if(this->NumberOfPieces) { this->DestroyPieces(); }
+  if(this->XMLParser)
+    {
+    this->DestroyXMLParser();
+    }
+  if(this->NumberOfPieces) 
+    { 
+    this->DestroyPieces(); 
+    }
   this->DataProgressObserver->Delete();
+  if( this->NumberOfPointArrays )
+    {
+    delete[] this->PointDataTimeStep;
+    delete[] this->PointDataOffset;
+    }
+  if( this->NumberOfCellArrays )
+    {
+    delete[] this->CellDataTimeStep;
+    delete[] this->CellDataOffset;
+    }
 }
 
 //----------------------------------------------------------------------------
@@ -77,10 +100,74 @@ void vtkVisItXMLDataReader::DestroyXMLParser()
   this->Superclass::DestroyXMLParser();
 }
 
+
+
+//----------------------------------------------------------------------------
+// Note that any changes (add or removing information) made to this method
+// should be replicated in CopyOutputInformation
+void vtkVisItXMLDataReader::SetupOutputInformation(vtkInformation *outInfo)
+{
+  if (this->InformationError)
+    {
+    vtkErrorMacro("Should not still be processing output information if have set InformationError");
+    return;
+    }
+
+  // Initialize DataArraySelections to enable all that are present
+  this->SetDataArraySelections(this->PointDataElements[0], this->PointDataArraySelection);
+  this->SetDataArraySelections(this->CellDataElements[0], this->CellDataArraySelection);
+
+  // Setup the Field Information for PointData.  We only need the
+  // information from one piece because all pieces have the same set of arrays.
+  vtkInformationVector *infoVector = NULL;
+  if (!this->SetFieldDataInfo(this->PointDataElements[0],
+    vtkDataObject::FIELD_ASSOCIATION_POINTS, this->GetNumberOfPoints(), infoVector))
+    {
+    return;
+    }
+  if (infoVector)
+    {
+    outInfo->Set(vtkDataObject::POINT_DATA_VECTOR(), infoVector);
+    infoVector->Delete();
+    }
+
+  // now the Cell data
+  infoVector = NULL;
+  if (!this->SetFieldDataInfo(this->CellDataElements[0],
+    vtkDataObject::FIELD_ASSOCIATION_CELLS, this->GetNumberOfCells(), infoVector))
+    {
+    return;
+    }
+  if (infoVector)
+    {
+    outInfo->Set(vtkDataObject::CELL_DATA_VECTOR(), infoVector);
+    infoVector->Delete();
+    }
+}
+
+
+//----------------------------------------------------------------------------
+void vtkVisItXMLDataReader::CopyOutputInformation(vtkInformation *outInfo, int port)
+  {
+  vtkInformation *localInfo = this->GetExecutive()->GetOutputInformation( port );
+  if ( localInfo->Has(vtkDataObject::POINT_DATA_VECTOR()) )
+    {
+    outInfo->CopyEntry( localInfo, vtkDataObject::POINT_DATA_VECTOR() );
+    }
+  if ( localInfo->Has(vtkDataObject::CELL_DATA_VECTOR()) )
+    {
+    outInfo->CopyEntry( localInfo, vtkDataObject::CELL_DATA_VECTOR() );
+    }
+  }
+
+
 //----------------------------------------------------------------------------
 int vtkVisItXMLDataReader::ReadPrimaryElement(vtkVisItXMLDataElement* ePrimary)
 {
-  if(!this->Superclass::ReadPrimaryElement(ePrimary)) { return 0; }
+  if(!this->Superclass::ReadPrimaryElement(ePrimary)) 
+    { 
+    return 0; 
+    }
   
   // Count the number of pieces in the file.
   int numNested = ePrimary->GetNumberOfNestedElements();
@@ -89,7 +176,10 @@ int vtkVisItXMLDataReader::ReadPrimaryElement(vtkVisItXMLDataElement* ePrimary)
   for(i=0; i < numNested; ++i)
     {
     vtkVisItXMLDataElement* eNested = ePrimary->GetNestedElement(i);
-    if(strcmp(eNested->GetName(), "Piece") == 0) { ++numPieces; }
+    if(strcmp(eNested->GetName(), "Piece") == 0) 
+      { 
+      ++numPieces; 
+      }
     }
   
   // Now read each piece.  If no "Piece" elements were found, assume
@@ -103,14 +193,20 @@ int vtkVisItXMLDataReader::ReadPrimaryElement(vtkVisItXMLDataElement* ePrimary)
       vtkVisItXMLDataElement* eNested = ePrimary->GetNestedElement(i);
       if(strcmp(eNested->GetName(), "Piece") == 0)
         {
-        if(!this->ReadPiece(eNested, piece++)) { return 0; }
+        if(!this->ReadPiece(eNested, piece++)) 
+          { 
+          return 0; 
+          }
         }
       }
     }
   else
     {
     this->SetupPieces(1);
-    if(!this->ReadPiece(ePrimary, 0)) { return 0; }
+    if(!this->ReadPiece(ePrimary, 0)) 
+      { 
+      return 0; 
+      }
     }
   return 1;
 }
@@ -118,9 +214,12 @@ int vtkVisItXMLDataReader::ReadPrimaryElement(vtkVisItXMLDataElement* ePrimary)
 //----------------------------------------------------------------------------
 void vtkVisItXMLDataReader::SetupPieces(int numPieces)
 {
-  if(this->NumberOfPieces) { this->DestroyPieces(); }
+  if(this->NumberOfPieces) 
+    { 
+    this->DestroyPieces(); 
+    }
   this->NumberOfPieces = numPieces;
-  if (numPieces > 0)
+  if(numPieces > 0)
     {
     this->PointDataElements = new vtkVisItXMLDataElement*[numPieces];
     this->CellDataElements = new vtkVisItXMLDataElement*[numPieces];
@@ -143,88 +242,14 @@ void vtkVisItXMLDataReader::DestroyPieces()
   this->NumberOfPieces = 0;
 }
 
-//----------------------------------------------------------------------------
-void vtkVisItXMLDataReader::SetupOutputInformation()
-{
-  this->Superclass::SetupOutputInformation();
-  if(!this->NumberOfPieces) { return; }
-  
-  int i;
-  vtkPointData* pointData = this->GetOutputAsDataSet(0)->GetPointData();
-  vtkCellData* cellData = this->GetOutputAsDataSet(0)->GetCellData();  
- 
-  // Get the size of the output arrays.
-  int pointTuples = this->GetNumberOfPoints();
-  int cellTuples = this->GetNumberOfCells();
-
-  // Allocate the arrays in the output.  We only need the information
-  // from one piece because all pieces have the same set of arrays.
-  vtkVisItXMLDataElement* ePointData = this->PointDataElements[0];
-  vtkVisItXMLDataElement* eCellData = this->CellDataElements[0];
-
-  // Setup the point and cell data arrays without allocation.
-  this->NumberOfPointArrays = 0;
-  this->SetDataArraySelections(ePointData, this->PointDataArraySelection); 
-  if(ePointData)
-    {
-    for(i=0;i < ePointData->GetNumberOfNestedElements();++i)
-      {
-      vtkVisItXMLDataElement* eNested = ePointData->GetNestedElement(i);
-      if(this->PointDataArrayIsEnabled(eNested))
-        {
-        this->NumberOfPointArrays++;
-        vtkDataArray* array = this->CreateDataArray(eNested);
-        if(array)
-          {      
-          array->SetNumberOfTuples(pointTuples);
-          pointData->AddArray(array);
-          array->Delete();
-          }
-        else
-          {
-          this->InformationError = 1;
-          }
-        }
-      }
-    }
-  this->NumberOfCellArrays = 0;
-  this->SetDataArraySelections(eCellData, this->CellDataArraySelection); 
-  if(eCellData)
-    {
-    for(i=0;i < eCellData->GetNumberOfNestedElements();++i)
-      {
-      vtkVisItXMLDataElement* eNested = eCellData->GetNestedElement(i);
-      if(this->CellDataArrayIsEnabled(eNested)) 
-        {
-        this->NumberOfCellArrays++;
-        vtkDataArray* array = this->CreateDataArray(eNested);
-        if(array)
-          {
-          array->SetNumberOfTuples(cellTuples);
-          cellData->AddArray(array);
-          array->Delete();
-          }
-        else
-          {
-          this->InformationError = 1;
-          }
-        }
-      }
-    }
-  
-  // Setup attribute indices for the point data and cell data.
-  this->ReadAttributeIndices(ePointData, pointData);
-  this->ReadAttributeIndices(eCellData, cellData);
-}
 
 //----------------------------------------------------------------------------
 void vtkVisItXMLDataReader::SetupOutputData()
 {
   this->Superclass::SetupOutputData();
   
-  vtkDataSet* output = this->GetOutputAsDataSet(0);
-  vtkPointData* pointData = output->GetPointData();
-  vtkCellData* cellData = output->GetCellData();
+  vtkPointData* pointData = this->GetOutputAsDataSet(0)->GetPointData();
+  vtkCellData* cellData = this->GetOutputAsDataSet(0)->GetCellData();
   
   // Get the size of the output arrays.
   unsigned long pointTuples = this->GetNumberOfPoints();
@@ -234,29 +259,83 @@ void vtkVisItXMLDataReader::SetupOutputData()
   // from one piece because all pieces have the same set of arrays.
   vtkVisItXMLDataElement* ePointData = this->PointDataElements[0];
   vtkVisItXMLDataElement* eCellData = this->CellDataElements[0];
-  int i;
-  if(ePointData)
+  this->NumberOfPointArrays = 0;
+  if (ePointData)
     {
-    int a =0;
-    for(i=0;i < ePointData->GetNumberOfNestedElements();++i)
+    for (int i = 0; i < ePointData->GetNumberOfNestedElements(); i++)
       {
       vtkVisItXMLDataElement* eNested = ePointData->GetNestedElement(i);
-      if(this->PointDataArrayIsEnabled(eNested) )
+      if (this->PointDataArrayIsEnabled(eNested) && 
+        !pointData->HasArray(eNested->GetAttribute("Name")))
         {
-        pointData->GetArray(a++)->SetNumberOfTuples(pointTuples);
+        this->NumberOfPointArrays++;
+        vtkDataArray* array = this->CreateDataArray(eNested);
+        if (array)
+          {
+          array->SetNumberOfTuples(pointTuples);
+          pointData->AddArray(array);
+          array->Delete();
+          }
+        else
+          {
+          this->DataError = 1;
+          }
         }
       }
     }
-  if(eCellData)
+  assert( this->NumberOfPointArrays == this->PointDataArraySelection->GetNumberOfArraysEnabled());
+
+  this->NumberOfCellArrays = 0;
+  if (eCellData)
     {
-    int a = 0;
-    for(i=0;i < eCellData->GetNumberOfNestedElements();++i)
+    for (int i = 0; i < eCellData->GetNumberOfNestedElements(); i++)
       {
       vtkVisItXMLDataElement* eNested = eCellData->GetNestedElement(i);
-      if(this->CellDataArrayIsEnabled(eNested)) 
+      if (this->CellDataArrayIsEnabled(eNested) && 
+        !cellData->HasArray(eNested->GetAttribute("Name")))
         {
-        cellData->GetArray(a++)->SetNumberOfTuples(cellTuples);
+        this->NumberOfCellArrays++;
+        vtkDataArray* array = this->CreateDataArray(eNested);
+        if (array)
+          {
+          array->SetNumberOfTuples(cellTuples);
+          cellData->AddArray(array);
+          array->Delete();
+          }
+        else
+          {
+          this->DataError = 1;
+          }
         }
+      }
+    }
+  assert( this->NumberOfCellArrays == this->CellDataArraySelection->GetNumberOfArraysEnabled());
+
+  // Setup attribute indices for the point data and cell data.
+  this->ReadAttributeIndices(ePointData, pointData);
+  this->ReadAttributeIndices(eCellData, cellData);
+
+  // Since NumberOfCellArrays and NumberOfPointArrays are valid
+  // lets allocate PointDataTimeStep, CellDataTimeStep, PointDataOffset
+  // CellDataOffset
+  if( this->NumberOfPointArrays )
+    {
+    this->PointDataTimeStep = new int[this->NumberOfPointArrays];
+    this->PointDataOffset = new unsigned long[this->NumberOfPointArrays];
+    for(int i=0; i<this->NumberOfPointArrays;i++)
+      {
+      this->PointDataTimeStep[i] = -1;
+      this->PointDataOffset[i] = (unsigned long)-1;
+      }
+    }
+  if( this->NumberOfCellArrays )
+    {
+    this->CellDataTimeStep = new int[this->NumberOfCellArrays];
+    this->CellDataOffset = new unsigned long[this->NumberOfCellArrays];
+    for(int i=0; i<this->NumberOfCellArrays;i++)
+      {
+      this->CellDataTimeStep[i] = -1;
+      this->CellDataOffset[i]   = (unsigned long)-1;
       }
     }
 }
@@ -320,25 +399,29 @@ int vtkVisItXMLDataReader::ReadPieceData()
              !this->AbortExecute);++i)
       {
       vtkVisItXMLDataElement* eNested = ePointData->GetNestedElement(i);
-      if(this->PointDataArrayIsEnabled(eNested))
+      if (this->PointDataArrayIsEnabled(eNested))
         {
-        if (strcmp(eNested->GetName(), "DataArray") != 0)
+        if( strcmp(eNested->GetName(), "DataArray") != 0 )
           {
           vtkErrorMacro("Invalid DataArray");
-          this->InformationError = 1;
+          this->DataError = 1;
           return 0;
           }
-        // Set the range of progress for this array.
-        this->SetProgressRange(progressRange, currentArray++, numArrays);
-        
-        // Read the array.
-        if(!this->ReadArrayForPoints(eNested, pointData->GetArray(a++)))
+        int needToRead = this->PointDataNeedToReadTimeStep(eNested);
+        if( needToRead )
           {
-          vtkErrorMacro("Cannot read point data array \""
-                        << pointData->GetArray(a-1)->GetName() << "\" from "
-                        << ePointData->GetName() << " in piece " << this->Piece
-                        << ".  The data array in the element may be too short.");
-          return 0;
+          // Set the range of progress for this array.
+          this->SetProgressRange(progressRange, currentArray++, numArrays);
+
+          // Read the array.
+          if(!this->ReadArrayForPoints(eNested, pointData->GetArray(a++)))
+            {
+            vtkErrorMacro("Cannot read point data array \""
+              << pointData->GetArray(a-1)->GetName() << "\" from "
+              << ePointData->GetName() << " in piece " << this->Piece
+              << ".  The data array in the element may be too short.");
+            return 0;
+            }
           }
         }
       }
@@ -350,25 +433,29 @@ int vtkVisItXMLDataReader::ReadPieceData()
              !this->AbortExecute);++i)
       {
       vtkVisItXMLDataElement* eNested = eCellData->GetNestedElement(i);
-      if(this->CellDataArrayIsEnabled(eNested))
+      if (this->CellDataArrayIsEnabled(eNested))
         {
-        if (strcmp(eNested->GetName(), "DataArray") != 0)
+        if( strcmp(eNested->GetName(), "DataArray") != 0 )
           {
-          this->InformationError = 1;
-          vtkErrorMacro("Invalid DataARray");
+          this->DataError = 1;
+          vtkErrorMacro("Invalid DataArray" );
           return 0;
           }
-        // Set the range of progress for this array.
-        this->SetProgressRange(progressRange, currentArray++, numArrays);
-        
-        // Read the array.
-        if(!this->ReadArrayForCells(eNested, cellData->GetArray(a++)))
+        int needToRead = this->CellDataNeedToReadTimeStep(eNested);
+        if( needToRead )
           {
-          vtkErrorMacro("Cannot read cell data array \""
-                        << cellData->GetArray(a-1)->GetName() << "\" from "
-                        << ePointData->GetName() << " in piece " << this->Piece
-                        << ".  The data array in the element may be too short.");
-          return 0;
+          // Set the range of progress for this array.
+          this->SetProgressRange(progressRange, currentArray++, numArrays);
+
+          // Read the array.
+          if(!this->ReadArrayForCells(eNested, cellData->GetArray(a++)))
+            {
+            vtkErrorMacro("Cannot read cell data array \""
+              << cellData->GetArray(a-1)->GetName() << "\" from "
+              << ePointData->GetName() << " in piece " << this->Piece
+              << ".  The data array in the element may be too short.");
+            return 0;
+            }
           }
         }
       }
@@ -381,6 +468,44 @@ int vtkVisItXMLDataReader::ReadPieceData()
   
   return 1;
 }
+
+//----------------------------------------------------------------------------
+void vtkVisItXMLDataReader::ReadXMLData()
+{
+  // Let superclasses read data.  This also allocates output data.
+  this->Superclass::ReadXMLData();
+
+  if (this->FieldDataElement) // read the field data information
+    {
+    int i, numTuples;
+    vtkFieldData *fieldData = this->GetOutputDataObject(0)->GetFieldData();
+    for(i=0; i < this->FieldDataElement->GetNumberOfNestedElements() &&
+             !this->AbortExecute; i++)
+      {
+      vtkVisItXMLDataElement* eNested = this->FieldDataElement->GetNestedElement(i);
+      vtkDataArray* array = this->CreateDataArray(eNested);
+      if (array)
+        {
+        if(eNested->GetScalarAttribute("NumberOfTuples", numTuples))
+          {
+          array->SetNumberOfTuples(numTuples);
+          }
+        else
+          {
+          numTuples = 0;
+          }
+        fieldData->AddArray(array);
+        array->Delete();  
+        if (!this->ReadData(eNested, array->GetVoidPointer(0),
+          array->GetDataType(), 0, numTuples*array->GetNumberOfComponents()))
+          {
+          this->DataError = 1;
+          }
+        }
+      }
+    }
+}
+
 
 //----------------------------------------------------------------------------
 int vtkVisItXMLDataReader::ReadArrayForPoints(vtkVisItXMLDataElement* da,
@@ -406,7 +531,7 @@ int vtkVisItXMLDataReader::ReadArrayForCells(vtkVisItXMLDataElement* da,
 
 //----------------------------------------------------------------------------
 int vtkVisItXMLDataReader::ReadData(vtkVisItXMLDataElement* da, void* data, int wordType,
-                               int startWord, int numWords)
+                               vtkIdType startWord, vtkIdType numWords)
 {
   // Skip real read if aborting.
   if(this->AbortExecute)
@@ -415,8 +540,8 @@ int vtkVisItXMLDataReader::ReadData(vtkVisItXMLDataElement* da, void* data, int 
     }
   
   this->InReadData = 1;
-  unsigned long num = numWords;
-  int result = 0;
+  vtkIdType num = numWords;
+  int result;
   if(da->GetAttribute("offset"))
     {
     int offset = 0;
@@ -428,7 +553,10 @@ int vtkVisItXMLDataReader::ReadData(vtkVisItXMLDataElement* da, void* data, int 
     {
     int isAscii = 1;
     const char* format = da->GetAttribute("format");
-    if(format && (strcmp(format, "binary") == 0)) { isAscii = 0; }
+    if(format && (strcmp(format, "binary") == 0)) 
+      { 
+      isAscii = 0; 
+      }
     result = (this->XMLParser->ReadInlineData(da, isAscii, data,
                                               startWord, numWords, wordType)
               == num);
@@ -460,6 +588,142 @@ void vtkVisItXMLDataReader::DataProgressCallback()
     }
 }
 
+//----------------------------------------------------------------------------
+int vtkVisItXMLDataReader::PointDataNeedToReadTimeStep(vtkVisItXMLDataElement *eNested)
+{
+  // First thing need to find the id of this dataarray from its name:
+  const char* name = eNested->GetAttribute("Name");
+  int idx = this->PointDataArraySelection->GetEnabledArrayIndex(name);
 
+  // Easy case no timestep:
+  int numTimeSteps = eNested->GetVectorAttribute("TimeStep", 
+    this->NumberOfTimeSteps, this->TimeSteps);
+  if( !(numTimeSteps <= this->NumberOfTimeSteps) )
+    {
+    vtkErrorMacro("Invalid TimeStep specification");
+    this->DataError = 1;
+    return 0;
+    }
+  if (!numTimeSteps && !this->NumberOfTimeSteps)
+    {
+    assert( this->PointDataTimeStep[idx] == -1 ); //No timestep in this file
+    return 1;
+    }
+  // else TimeStep was specified but no TimeValues associated were found
+  assert( this->NumberOfTimeSteps ); 
 
+  // case numTimeSteps > 1
+  int isCurrentTimeInArray = 
+    vtkVisItXMLReader::IsTimeStepInArray(this->CurrentTimeStep, this->TimeSteps, numTimeSteps);
+  if( numTimeSteps && !isCurrentTimeInArray)
+    {
+    return 0;
+    }
+  // we know that time steps are specified and that CurrentTimeStep is in the array
+  // we need to figure out if we need to read the array or if it was forwarded
+  // Need to check the current 'offset'
+  unsigned long offset;
+  if( eNested->GetScalarAttribute("offset", offset) )
+    {
+    if( this->PointDataOffset[idx] != offset )
+      {
+      // save the pointsOffset
+      assert( this->PointDataTimeStep[idx] == -1 ); //cannot have mixture of binary and appended
+      this->PointDataOffset[idx] = offset;
+      return 1;
+      }
+    }
+  else
+    {
+    // No offset is specified this is a binary file
+    // First thing to check if numTimeSteps == 0:
+    if( !numTimeSteps && this->NumberOfTimeSteps && this->PointDataTimeStep[idx] == -1)
+      {
+      // Update last PointsTimeStep read
+      this->PointDataTimeStep[idx] = this->CurrentTimeStep;
+      return 1;
+      }
+    int isLastTimeInArray = vtkVisItXMLReader::IsTimeStepInArray(
+      this->PointDataTimeStep[idx], this->TimeSteps, numTimeSteps);
+     // If no time is specified or if time is specified and match then read
+    if (isCurrentTimeInArray && !isLastTimeInArray)
+      {
+      // CurrentTimeStep is in TimeSteps but Last is not := need to read
+      // Update last PointsTimeStep read
+      this->PointDataTimeStep[idx] = this->CurrentTimeStep;
+      return 1;
+      }
+    }
+  // all other cases we don't need to read:
+  return 0;
+}
 
+//----------------------------------------------------------------------------
+int vtkVisItXMLDataReader::CellDataNeedToReadTimeStep(vtkVisItXMLDataElement *eNested)
+{
+  // First thing need to find the id of this dataarray from its name:
+  const char* name = eNested->GetAttribute("Name");
+  int idx = this->CellDataArraySelection->GetEnabledArrayIndex(name);
+
+  // Easy case no timestep:
+  int numTimeSteps = eNested->GetVectorAttribute("TimeStep", 
+    this->NumberOfTimeSteps, this->TimeSteps);
+  if( !(numTimeSteps <= this->NumberOfTimeSteps) )
+    {
+    vtkErrorMacro( "Invalid TimeSteps specification");
+    this->DataError = 1;
+    return 0;
+    }
+  if (!numTimeSteps && !this->NumberOfTimeSteps)
+    {
+    assert( this->CellDataTimeStep[idx] == -1 ); //No timestep in this file
+    return 1;
+    }
+  // else TimeStep was specified but no TimeValues associated were found
+  assert( this->NumberOfTimeSteps ); 
+
+  // case numTimeSteps > 1
+  int isCurrentTimeInArray = 
+    vtkVisItXMLReader::IsTimeStepInArray(this->CurrentTimeStep, this->TimeSteps, numTimeSteps);
+  if( numTimeSteps && !isCurrentTimeInArray)
+    {
+    return 0;
+    }
+  // we know that time steps are specified and that CurrentTimeStep is in the array
+  // we need to figure out if we need to read the array or if it was forwarded
+  // Need to check the current 'offset'
+  unsigned long offset;
+  if( eNested->GetScalarAttribute("offset", offset) )
+    {
+    if( this->CellDataOffset[idx] != offset )
+      {
+      // save the pointsOffset
+      assert( this->CellDataTimeStep[idx] == -1 ); //cannot have mixture of binary and appended
+      this->CellDataOffset[idx] = offset;
+      return 1;
+      }
+    }
+  else
+    {
+    // No offset is specified this is a binary file
+    // First thing to check if numTimeSteps == 0:
+    if( !numTimeSteps && this->NumberOfTimeSteps && this->CellDataTimeStep[idx] == -1)
+      {
+      // Update last CellDataTimeStep read
+      this->CellDataTimeStep[idx] = this->CurrentTimeStep;
+      return 1;
+      }
+    int isLastTimeInArray = vtkVisItXMLReader::IsTimeStepInArray(
+      this->CellDataTimeStep[idx], this->TimeSteps, numTimeSteps);
+     // If no time is specified or if time is specified and match then read
+    if (isCurrentTimeInArray && !isLastTimeInArray)
+      {
+      // CurrentTimeStep is in TimeSteps but Last is not := need to read
+      // Update last CellsTimeStep read
+      this->CellDataTimeStep[idx] = this->CurrentTimeStep;
+      return 1;
+      }
+    }
+  // all other cases we don't need to read:
+  return 0;
+}

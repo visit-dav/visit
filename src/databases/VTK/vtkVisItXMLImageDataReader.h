@@ -2,16 +2,13 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkVisItXMLImageDataReader.h,v $
-  Language:  C++
-  Date:      $Date: 2003/02/07 20:06:29 $
-  Version:   $Revision: 1.2 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
@@ -45,6 +42,11 @@ public:
   void SetOutput(vtkImageData *output);
   vtkImageData *GetOutput();
   vtkImageData *GetOutput(int idx);
+
+  // Description:
+  // For the specified port, copy the information this reader sets up in
+  // SetupOutputInformation to outInfo
+  virtual void CopyOutputInformation(vtkInformation *outInfo, int port);
   
 protected:
   vtkVisItXMLImageDataReader();
@@ -56,7 +58,11 @@ protected:
   const char* GetDataSetName();
   void SetOutputExtent(int* extent);
   int ReadPrimaryElement(vtkVisItXMLDataElement* ePrimary);
-  void SetupOutputInformation();
+
+  // Setup the output's information.
+  void SetupOutputInformation(vtkInformation *outInfo);
+
+  virtual int FillOutputPortInformation(int, vtkInformation*);
   
 private:
   vtkVisItXMLImageDataReader(const vtkVisItXMLImageDataReader&);  // Not implemented.

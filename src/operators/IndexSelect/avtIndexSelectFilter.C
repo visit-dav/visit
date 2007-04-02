@@ -294,6 +294,10 @@ avtIndexSelectFilter::Equivalent(const AttributeGroup *a)
 //    Kathleen Bonnell, Mon Jan 30 15:10:26 PST 2006 
 //    Use vtkMaskPoints for point meshes.
 //
+//    Kathleen Bonnell, Wed May 17 10:46:58 PDT 2006
+//    Remove call to SetSource(NULL) as it now removes information necessary
+//    for the dataset. 
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -321,7 +325,7 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
         // We have the normal case -- a structured mesh that we are going to
         // index select.
         //
-        vtkDataSet *ds = in_ds;
+        vtkDataSet *ds = NULL;
 
         //
         // All of our indices are incorrect if we leave the ghost zones in -- 
@@ -332,15 +336,19 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
         if (in_ds->GetCellData()->GetArray("avtGhostZones"))
         {
             removeGhostCells  = vtkDataSetRemoveGhostCells::New();
-            removeGhostCells->SetInput(ds);
+            removeGhostCells->SetInput(in_ds);
     
             //
             // There is something buggy about the extents when this filter is 
             // used for repeated executions.  Just force the execution now.
             //
-            ds = removeGhostCells->GetOutput();
-            ds->Update();
-            ds->SetSource(NULL);
+            removeGhostCells->Update();
+            ds = removeGhostCells->GetOutput()->NewInstance();
+            ds->ShallowCopy(removeGhostCells->GetOutput());
+        }
+        else
+        {
+            ds = in_ds;
         }
         in_ds->GetPointData()->RemoveArray("avtGhostNodes");
     

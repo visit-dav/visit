@@ -109,6 +109,10 @@ avtVertexNormalsFilter::~avtVertexNormalsFilter()
 //    Break all memory references.  I didn't think this was necessary, but
 //    the data wouldn't delete until I did this.
 //
+//    Kathleen Bonnell, Tue May 16 09:41:46 PDT 2006 
+//    Removed call to SetSource(NULL), with new vtk pipeline, it also removes
+//    necessary information from the dataset. 
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -157,7 +161,7 @@ avtVertexNormalsFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 
     vtkPolyData *out_ds = normals->GetOutput();
     out_ds->Register(NULL);
-    out_ds->SetSource(NULL);
+    //out_ds->SetSource(NULL);
     ManageMemory(out_ds);
     out_ds->Delete();
     normals->Delete();

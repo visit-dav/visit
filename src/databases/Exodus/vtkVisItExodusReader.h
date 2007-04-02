@@ -5,7 +5,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkExodusReader.h,v $
+  Module:    $RCSfile: vtkVisItExodusReader.h,v $
   Language:  C++
   Date:      $Date: 2000/12/10 20:08:25 $
   Version:   $Revision: 1.14 $
@@ -43,9 +43,9 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =========================================================================*/
-// .NAME vtkExodusReader - Read exodus 2 files .ex2
+// .NAME vtkVisItExodusReader - Read exodus 2 files .ex2
 // .SECTION Description
-// vtkExodusReader is a unstructured grid source object that reads ExodusII
+// vtkVisItExodusReader is a unstructured grid source object that reads ExodusII
 // files.  Most of the meta data associated with the file is loaded when 
 // UpdateInformation is called.  This includes information like Title, number
 // of blocks, number and names of arrays. This data can be retrieved from 
@@ -67,18 +67,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //   Added support for reading global node numbers.
 //
 
-#ifndef __vtkExodusReader_h
-#define __vtkExodusReader_h
+#ifndef __vtkVisItExodusReader_h
+#define __vtkVisItExodusReader_h
 
 #include <stdio.h>
-#include "vtkUnstructuredGridSource.h"
+#include "vtkUnstructuredGridAlgorithm.h"
 #include "vtkIntArray.h"
 
-class vtkExodusReader : public vtkUnstructuredGridSource 
+class vtkVisItExodusReader : public vtkUnstructuredGridAlgorithm 
 {
 public:
-  static vtkExodusReader *New();
-  vtkTypeMacro(vtkExodusReader,vtkUnstructuredGridSource);
+  static vtkVisItExodusReader *New();
+  vtkTypeMacro(vtkVisItExodusReader,vtkUnstructuredGridAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
@@ -167,22 +167,25 @@ public:
                            ? Times[ts]
                            : 0.); };
 protected:
-  vtkExodusReader();
-  ~vtkExodusReader();
+  vtkVisItExodusReader();
+  ~vtkVisItExodusReader();
   
-  void Execute();
-  void ExecuteInformation();
-  void ReadGeometry(int exoid);
-  void ReadCells(int exoid);
-  void ReadPoints(int exoid);
-  void ReadArrays(int exoid);
+  int RequestInformation(vtkInformation *, vtkInformationVector **, 
+                          vtkInformationVector*);
+  int RequestData(vtkInformation *, vtkInformationVector **, 
+                   vtkInformationVector*);
+
+  void ReadGeometry(int exoid, vtkUnstructuredGrid *);
+  void ReadCells(int exoid, vtkUnstructuredGrid *);
+  void ReadPoints(int exoid, vtkUnstructuredGrid *);
+  void ReadArrays(int exoid, vtkUnstructuredGrid *);
   vtkDataArray *ReadPointDataArray(int exoid, int varIndex);
   vtkDataArray *ReadPointDataVector(int exoid, int varIndex, int dim);
   vtkDataArray *ReadCellDataArray(int exoid, int varIndex);
   vtkDataArray *ReadCellDataVector(int exoid, int varIndex, int dim);
-  void GenerateExtraArrays();
+  void GenerateExtraArrays(vtkUnstructuredGrid *);
 
-  void CheckForProblems();
+  void CheckForProblems(vtkUnstructuredGrid *);
   
   // Used internally for allocating memory for meta data.
   // Simplyfy combines arrays into vectors.
@@ -254,8 +257,8 @@ protected:
   int *CellDataArrayFlags;  
 
 private:
-  vtkExodusReader(const vtkExodusReader&);
-  void operator=(const vtkExodusReader&);
+  vtkVisItExodusReader(const vtkVisItExodusReader&);
+  void operator=(const vtkVisItExodusReader&);
 };
 
 #endif

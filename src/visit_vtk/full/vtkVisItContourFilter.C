@@ -21,10 +21,13 @@
 #include <vtkContourFilter.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkStructuredGrid.h>
 #include <vtkSurfaceFromVolume.h>
 #include <vtkTriangulationTables.h>
@@ -54,35 +57,52 @@ void vtkVisItContourFilter::SetCellList(int *cl, int size)
     this->CellListSize = size;
 }
 
-void vtkVisItContourFilter::Execute()
+int vtkVisItContourFilter::RequestData(
+  vtkInformation *request,
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector)
 {
-    vtkDataSet *input  = GetInput();
+    vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+    vtkDataSet *input = vtkDataSet::SafeDownCast(
+      inInfo->Get(vtkDataObject::DATA_OBJECT()));
+
+    if (!input)
+    {
+        return 0;
+    }
+
+    vtkInformation *outInfo = outputVector->GetInformationObject(0);
+    vtkPolyData *output = vtkPolyData::SafeDownCast(
+      outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
+    if (!output)
+    {
+        return 0;
+    }
 
     int do_type = input->GetDataObjectType();
     if (do_type == VTK_RECTILINEAR_GRID)
     {
-        RectilinearGridExecute();
+        RectilinearGridExecute(input, output);
     }
     else if (do_type == VTK_STRUCTURED_GRID)
     {
-        StructuredGridExecute();
+        StructuredGridExecute(input, output);
     }
     else if (do_type == VTK_UNSTRUCTURED_GRID)
     {
-        UnstructuredGridExecute();
+        UnstructuredGridExecute(input, output);
     }
     else
     {
-        GeneralExecute();
+        GeneralExecute(input, output);
     }
 }
 
 
 float *
-vtkVisItContourFilter::GetPointScalars(void)
+vtkVisItContourFilter::GetPointScalars(vtkDataSet *in_ds)
 {
-    vtkDataSet *in_ds = GetInput();
-
     vtkDataArray *arr = in_ds->GetPointData()->GetScalars();
     if (arr == NULL)
     {
@@ -118,24 +138,23 @@ vtkVisItContourFilter::GetPointScalars(void)
 // ****************************************************************************
 
 void
-vtkVisItContourFilter::StructuredGridExecute(void)
+vtkVisItContourFilter::StructuredGridExecute(vtkDataSet *input, 
+                                             vtkPolyData *output)
 {
     int  i, j;
 
-    vtkStructuredGrid *sg = (vtkStructuredGrid *) GetInput();
+    vtkStructuredGrid *sg = (vtkStructuredGrid *)input;
     int pt_dims[3];
     sg->GetDimensions(pt_dims);
     if (pt_dims[0] <= 1 || pt_dims[1] <= 1 || pt_dims[2] <= 1)
     {
-        GeneralExecute();
+        GeneralExecute(input, output);
         return;
     }
-
     int                nCells = sg->GetNumberOfCells();
     vtkPoints         *inPts  = sg->GetPoints();
     vtkCellData       *inCD   = sg->GetCellData();
     vtkPointData      *inPD   = sg->GetPointData();
-    vtkPolyData       *output = GetOutput();
 
     int ptSizeGuess = (this->CellList == NULL
                          ? (int) pow(float(nCells), 0.6667f) * 5 + 100
@@ -145,7 +164,7 @@ vtkVisItContourFilter::StructuredGridExecute(void)
 
     float *pts_ptr = (float *) inPts->GetVoidPointer(0);
 
-    float *var = GetPointScalars();
+    float *var = GetPointScalars(input);
     if (var == NULL)
         return;
 
@@ -224,16 +243,18 @@ vtkVisItContourFilter::StructuredGridExecute(void)
 //
 // ****************************************************************************
 
-void vtkVisItContourFilter::RectilinearGridExecute(void)
+void 
+vtkVisItContourFilter::RectilinearGridExecute(vtkDataSet *input,
+                                              vtkPolyData *output)
 {
     int  i, j;
 
-    vtkRectilinearGrid *rg = (vtkRectilinearGrid *) GetInput();
+    vtkRectilinearGrid *rg = (vtkRectilinearGrid *)input;
     int pt_dims[3];
     rg->GetDimensions(pt_dims);
     if (pt_dims[0] <= 1 || pt_dims[1] <= 1 || pt_dims[2] <= 1)
     {
-        GeneralExecute();
+        GeneralExecute(input, output);
         return;
     }
 
@@ -243,7 +264,6 @@ void vtkVisItContourFilter::RectilinearGridExecute(void)
     float        *Z      = (float* ) rg->GetZCoordinates()->GetVoidPointer(0);
     vtkCellData  *inCD   = rg->GetCellData();
     vtkPointData *inPD   = rg->GetPointData();
-    vtkPolyData  *output = GetOutput();
 
     int ptSizeGuess = (this->CellList == NULL
                          ? (int) pow(float(nCells), 0.6667f) * 5 + 100
@@ -251,7 +271,7 @@ void vtkVisItContourFilter::RectilinearGridExecute(void)
 
     vtkSurfaceFromVolume sfv(ptSizeGuess);
 
-    float *var = GetPointScalars();
+    float *var = GetPointScalars(input);
     if (var == NULL)
         return;
 
@@ -325,7 +345,9 @@ void vtkVisItContourFilter::RectilinearGridExecute(void)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-void vtkVisItContourFilter::UnstructuredGridExecute(void)
+void 
+vtkVisItContourFilter::UnstructuredGridExecute(vtkDataSet *input,
+                                               vtkPolyData *output)
 {
     // The routine here is a bit trickier than for the Rectilinear or
     // Structured grids.  We want to contour an unstructured grid -- but that
@@ -339,13 +361,12 @@ void vtkVisItContourFilter::UnstructuredGridExecute(void)
 
     int   i, j;
 
-    vtkUnstructuredGrid *ug = (vtkUnstructuredGrid *) GetInput();
+    vtkUnstructuredGrid *ug = (vtkUnstructuredGrid *)input;
 
     int                nCells = ug->GetNumberOfCells();
     vtkPoints         *inPts  = ug->GetPoints();
     vtkCellData       *inCD   = ug->GetCellData();
     vtkPointData      *inPD   = ug->GetPointData();
-    vtkPolyData       *output = GetOutput();
 
     int ptSizeGuess = (this->CellList == NULL
                          ? (int) pow(float(nCells), 0.6667f) * 5 + 100
@@ -359,7 +380,7 @@ void vtkVisItContourFilter::UnstructuredGridExecute(void)
     stuff_I_cant_contour->Allocate(nCells);
 
     float *pts_ptr = (float *) inPts->GetVoidPointer(0);
-    float *var = GetPointScalars();
+    float *var = GetPointScalars(input);
     if (var == NULL)
         return;
 
@@ -491,9 +512,10 @@ void vtkVisItContourFilter::UnstructuredGridExecute(void)
 }
 
 
-void vtkVisItContourFilter::GeneralExecute(void)
+void 
+vtkVisItContourFilter::GeneralExecute(vtkDataSet *input, vtkPolyData* output)
 {
-    ContourDataset(GetInput(), GetOutput());
+    ContourDataset(input, output);
 }
 
 void vtkVisItContourFilter::ContourDataset(vtkDataSet *in_ds,
@@ -516,4 +538,11 @@ void vtkVisItContourFilter::PrintSelf(ostream& os, vtkIndent indent)
   this->Superclass::PrintSelf(os,indent);
 
   os << indent << "Isovalue: " << Isovalue << "\n";
+}
+
+int 
+vtkVisItContourFilter::FillInputPortInformation(int, vtkInformation *info)
+{
+  info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+  return 1;
 }

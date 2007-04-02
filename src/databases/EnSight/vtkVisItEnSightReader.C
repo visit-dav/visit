@@ -28,7 +28,7 @@
 #include <vtkstd/string>
 #include <vtkstd/vector>
 
-vtkCxxRevisionMacro(vtkVisItEnSightReader, "$Revision: 1.49 $");
+vtkCxxRevisionMacro(vtkVisItEnSightReader, "$Revision: 1.58 $");
 
 //----------------------------------------------------------------------------
 typedef vtkstd::vector< vtkSmartPointer<vtkIdList> > vtkVisItEnSightReaderCellIdsTypeBase;
@@ -82,7 +82,6 @@ vtkVisItEnSightReader::vtkVisItEnSightReader()
   this->NumberOfGeometryParts = 0;
 
   this->NumberOfMeasuredPoints = 0;
-  this->MeasuredNodeIds = vtkIdList::New();
   
   this->OutputsAreValid = 1;
   this->InitialRead = 1;
@@ -134,9 +133,6 @@ vtkVisItEnSightReader::~vtkVisItEnSightReader()
   this->UnstructuredPartIds->Delete();
   this->UnstructuredPartIds = NULL;  
     
-  this->MeasuredNodeIds->Delete();
-  this->MeasuredNodeIds = NULL;
-  
   this->VariableTimeSetIds->Delete();
   this->VariableTimeSetIds = NULL;
   this->ComplexVariableTimeSetIds->Delete();
@@ -384,6 +380,7 @@ void vtkVisItEnSightReader::Update()
     if ( this->GetOutput(i) )
       {
       this->GetOutput(i)->DataHasBeenGenerated();
+      this->GetOutput(i)->SetUpdateExtentToWholeExtent();
       }
     }
 }
@@ -520,14 +517,14 @@ int vtkVisItEnSightReader::ReadCaseFile()
       {
       if (strncmp(line, "model:", 6) == 0)
         {
-        if (sscanf(line, " %*s %d %d %s", &timeSet, &fileSet, subLine) == 3)
+        if (sscanf(line, " %*s %d%*[ \t]%d%*[ \t]%s", &timeSet, &fileSet, subLine) == 3)
           {
           this->GeometryTimeSet = timeSet;
           this->GeometryFileSet = fileSet;
           this->SetGeometryFileName(subLine);
           vtkDebugMacro(<<this->GetGeometryFileName());
           }
-        else if (sscanf(line, " %*s %d %s", &timeSet, subLine) == 2)
+        else if (sscanf(line, " %*s %d%*[ \t]%s", &timeSet, subLine) == 2)
           {
           this->GeometryTimeSet = timeSet;
           this->SetGeometryFileName(subLine);
@@ -541,14 +538,14 @@ int vtkVisItEnSightReader::ReadCaseFile()
         }
       else if (strncmp(line, "measured:", 9) == 0)
         {
-        if (sscanf(line, " %*s %d %d %s", &timeSet, &fileSet, subLine) == 3)
+        if (sscanf(line, " %*s %d%*[ \t]%d%*[ \t]%s", &timeSet, &fileSet, subLine) == 3)
           {
           this->MeasuredTimeSet = timeSet;
           this->MeasuredFileSet = fileSet;
           this->SetMeasuredFileName(subLine);
           vtkDebugMacro(<< this->GetMeasuredFileName());
           }
-        else if (sscanf(line, " %*s %d %s", &timeSet, subLine) == 2)
+        else if (sscanf(line, " %*s %d%*[ \t]%s", &timeSet, subLine) == 2)
           {
           this->MeasuredTimeSet = timeSet;
           this->SetMeasuredFileName(subLine);
@@ -773,7 +770,33 @@ int vtkVisItEnSightReader::ReadCaseFile()
         }
       else if (strncmp(line, "tensor", 6) == 0)
         {
-        sscanf(line, " %*s %*s %*s %s", subLine);
+        // According to EnSight documentation tensor entry should be of the form:
+        // tensor symm per node/element
+        // but it seems like you can also find:
+        // tensor per node/element
+        // Let handle this case here:
+        char symm[10];
+        char per[10];
+        if( sscanf(line, " %*s %s %s %s", symm, per, subLine) != 3 )
+          {
+          vtkErrorMacro( "Error while reading: " << line );
+          }
+        if (!(strcmp(symm, "symm") == 0 && strcmp(per, "per") == 0))
+          {
+          if( sscanf(line, " %*s %s %s", per, subLine) != 2 )
+            {
+            vtkErrorMacro( "Error while reading: " << line );
+            }
+          if (strcmp(per, "per") == 0)
+            {
+            //Not valid file but seems alright, only 'symm' is missing
+            vtkWarningMacro( "Looks almost like a valid case file, continuing" );
+            }
+          else
+            {
+            vtkErrorMacro("Trouble reading: " << line );
+            }
+          }
         if (strcmp(subLine, "node:") == 0)
           {
           vtkDebugMacro("tensor symm per node");
@@ -829,6 +852,10 @@ int vtkVisItEnSightReader::ReadCaseFile()
             }
           this->AddVariableType();
           this->NumberOfTensorsSymmPerElement++;
+          }
+        else
+          {
+          vtkErrorMacro("Unknow type, faulty line was:" << line );
           }
         this->AddVariableFileName(subLine);
         this->NumberOfVariables++;
@@ -1021,7 +1048,6 @@ int vtkVisItEnSightReader::ReadCaseFile()
           }
         this->TimeSetFileNameNumbers->AddItem(filenameNumbers);
         filenameNumbers->Delete();
-        filenameNumbers = NULL;
         this->ReadLine(line);
         }
       vtkFloatArray *timeValues = vtkFloatArray::New();
@@ -1067,7 +1093,6 @@ int vtkVisItEnSightReader::ReadCaseFile()
         }
       this->TimeSets->AddItem(timeValues);
       timeValues->Delete();
-      timeValues = NULL;
       }
     }
   
@@ -1107,9 +1132,7 @@ int vtkVisItEnSightReader::ReadCaseFile()
       this->FileSetNumberOfSteps->AddItem(numSteps);
       
       filenameNums->Delete();
-      filenameNums = NULL;
       numSteps->Delete();
-      numSteps = NULL;
       }
     }
 
@@ -1131,7 +1154,8 @@ int vtkVisItEnSightReader::ReadVariableFiles()
   vtkDataArray *times;
   float newTime;
   vtkIdList *numStepsList, *filenameNumbers;
-  int validTime, fileNum, filenameNum;
+  //int fileNum;
+  int validTime, filenameNum;
   char* fileName, *fileName2;
   
   for (i = 0; i < this->NumberOfVariables; i++)
@@ -1160,7 +1184,7 @@ int vtkVisItEnSightReader::ReadVariableFiles()
     
     timeStep = 0;
     timeStepInFile = 1;
-    fileNum = 1;
+    //fileNum = 1;
     validTime = 1;
     fileName = new char[strlen(this->VariableFileNames[i]) + 1];
     strcpy(fileName, this->VariableFileNames[i]);
@@ -1221,7 +1245,7 @@ int vtkVisItEnSightReader::ReadVariableFiles()
             numSteps += numStepsList->GetId(i);
             if (timeStep > numSteps)
               {
-              fileNum++;
+              //fileNum++;
               timeStepInFile -= numStepsList->GetId(i);
               }
             }
@@ -1302,7 +1326,7 @@ int vtkVisItEnSightReader::ReadVariableFiles()
       }
     timeStep = 0;
     timeStepInFile = 1;
-    fileNum = 1;
+    //fileNum = 1;
     validTime = 1;
     fileName = new char[strlen(this->ComplexVariableFileNames[2*i]) + 1];
     strcpy(fileName, this->ComplexVariableFileNames[2*i]);
@@ -1364,7 +1388,7 @@ int vtkVisItEnSightReader::ReadVariableFiles()
             numSteps += numStepsList->GetId(i);
             if (timeStep > numSteps)
               {
-              fileNum++;
+              //fileNum++;
               timeStepInFile -= numStepsList->GetId(i);
               }
             }
@@ -1431,8 +1455,8 @@ int vtkVisItEnSightReader::ReadVariableFiles()
 }
 
 //----------------------------------------------------------------------------
-void vtkVisItEnSightReader::AddVariableFileName(char* fileName1,
-                                           char* fileName2)
+void vtkVisItEnSightReader::AddVariableFileName(const char* fileName1,
+                                           const char* fileName2)
 {
   int size;
   int i;
@@ -1511,7 +1535,7 @@ void vtkVisItEnSightReader::AddVariableFileName(char* fileName1,
 }
 
 //----------------------------------------------------------------------------
-void vtkVisItEnSightReader::AddVariableDescription(char* description)
+void vtkVisItEnSightReader::AddVariableDescription(const char* description)
 {
   int size;
   int i;
@@ -1647,7 +1671,29 @@ void vtkVisItEnSightReader::AddVariableType()
     }
 }
 
-int vtkVisItEnSightReader::GetElementType(char* line)
+//----------------------------------------------------------------------------
+int vtkVisItEnSightReader::GetSectionType(const char *line)
+{
+  if (strncmp(line, "coordinates", 5) == 0)
+    {
+    return vtkVisItEnSightReader::COORDINATES;
+    }
+  else if (strncmp(line, "block", 4) == 0)
+    {
+    return vtkVisItEnSightReader::BLOCK;
+    }
+  else if (this->GetElementType(line) != -1)
+    {
+    return vtkVisItEnSightReader::ELEMENT;
+    }
+  else
+    {
+    return -1;
+    }
+}
+
+//----------------------------------------------------------------------------
+int vtkVisItEnSightReader::GetElementType(const char* line)
 {
   if (strncmp(line, "point", 5) == 0)
     {

@@ -30,11 +30,11 @@
 #include "vtkVisItXMLParser.h"
 #include "vtkObjectFactory.h"
 #include "Utility.h"
-#include <expat.h>
+#include "vtk_expat.h"
 #include <ctype.h>
 #include <sys/stat.h>
 
-vtkCxxRevisionMacro(vtkVisItXMLParser, "$Revision: 1.24 $");
+vtkCxxRevisionMacro(vtkVisItXMLParser, "$Revision: 1.25 $");
 vtkStandardNewMacro(vtkVisItXMLParser);
 
 //----------------------------------------------------------------------------
@@ -198,7 +198,7 @@ int vtkVisItXMLParser::Parse(const char* inputString, unsigned int length)
 }
 
 
-//    Mark C. Miller, Thu Mar 30 16:45:35 PST 2006
+//    Mark C. Miller, Thu Mar 30 16:45:34 PST 2006
 //    Made it use VisItStat instead of stat
 //
 //----------------------------------------------------------------------------

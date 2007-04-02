@@ -96,6 +96,9 @@ avtCompactTreeFilter::avtCompactTreeFilter()
 //    Account for tolerance when cleaning poly data.  Also add logic for doing
 //    a parallel merge.
 //
+//    Kathleen Bonnell, Wed May 17 14:51:16 PDT 2006 
+//    Changed GetNumberofInputs to GetTotalNumberOfInputConnections. 
+//
 // ****************************************************************************
 
 void
@@ -205,8 +208,8 @@ avtCompactTreeFilter::Execute(void)
         pmap->polyFilter = vtkAppendPolyData::New();
         inTree->Traverse(CAddInputToAppendFilter, pmap, dummy);
         vtkDataSet *ds; 
-        int nPolyInput = pmap->polyFilter->GetNumberOfInputs();
-        int nUGridInput = pmap->filter->GetNumberOfInputs();
+        int nPolyInput = pmap->polyFilter->GetTotalNumberOfInputConnections();
+        int nUGridInput = pmap->filter->GetTotalNumberOfInputConnections();
         //
         // 2D datasets sometimes have sgrids and ugrids/pdata
         // so don't use filter output unless we've accounted for
@@ -306,14 +309,14 @@ avtCompactTreeFilter::Execute(void)
             pmap->filter = filters[i];
             pmap->polyFilter = polyFilters[i];
             child->Traverse(CAddInputToAppendFilter, pmap, dummy);
-            if (filters[i]->GetNumberOfInputs() > 1)
+            if (filters[i]->GetTotalNumberOfInputConnections() > 1)
             {
                 ds[i] = vtkUnstructuredGrid::New();
                 filters[i]->SetOutput((vtkUnstructuredGrid*)ds[i]);
                 filters[i]->Update();
                 temp[i] = new avtDataTree(ds[i], -1, newLabels[i]);
             }
-            else if (polyFilters[i]->GetNumberOfInputs() > 1)
+            else if (polyFilters[i]->GetTotalNumberOfInputConnections() > 1)
             {
                 ds[i] = vtkPolyData::New();
                 polyFilters[i]->SetOutput((vtkPolyData*)ds[i]);

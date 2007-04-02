@@ -183,7 +183,7 @@ void
 vtkLineLegend::BuildLine(vtkViewport *viewport)
 {
   this->TransformFilter->GetInput()->Update();
-  double *bounds = this->TransformFilter->GetInput()->GetBounds();
+  double *bounds = ((vtkPolyData*)this->TransformFilter->GetInput())->GetBounds();
 
   //Get position information
   int *x1, *x2, *x3;

@@ -2,16 +2,13 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkVisItXMLImageDataReader.cxx,v $
-  Language:  C++
-  Date:      $Date: 2003/02/07 20:06:29 $
-  Version:   $Revision: 1.3 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
@@ -22,19 +19,21 @@
 #include "vtkObjectFactory.h"
 #include "vtkPointData.h"
 #include "vtkVisItXMLDataElement.h"
+#include "vtkInformation.h"
+#include "vtkStreamingDemandDrivenPipeline.h"
 
-vtkCxxRevisionMacro(vtkVisItXMLImageDataReader, "$Revision: 1.3 $");
+vtkCxxRevisionMacro(vtkVisItXMLImageDataReader, "$Revision: 1.11 $");
 vtkStandardNewMacro(vtkVisItXMLImageDataReader);
 
 //----------------------------------------------------------------------------
 vtkVisItXMLImageDataReader::vtkVisItXMLImageDataReader()
 {
-  // Copied from vtkImageDataReader constructor:
-  this->SetOutput(vtkImageData::New());
+  vtkImageData *output = vtkImageData::New();
+  this->SetOutput(output);
   // Releasing data for pipeline parallism.
   // Filters will know it is empty. 
-  this->Outputs[0]->ReleaseData();
-  this->Outputs[0]->Delete();
+  output->ReleaseData();
+  output->Delete();
 }
 
 //----------------------------------------------------------------------------
@@ -51,23 +50,19 @@ void vtkVisItXMLImageDataReader::PrintSelf(ostream& os, vtkIndent indent)
 //----------------------------------------------------------------------------
 void vtkVisItXMLImageDataReader::SetOutput(vtkImageData *output)
 {
-  this->Superclass::SetNthOutput(0, output);
+  this->GetExecutive()->SetOutputData(0, output);
 }
 
 //----------------------------------------------------------------------------
 vtkImageData* vtkVisItXMLImageDataReader::GetOutput()
 {
-  if(this->NumberOfOutputs < 1)
-    {
-    return 0;
-    }
-  return static_cast<vtkImageData*>(this->Outputs[0]);
+  return this->GetOutput(0);
 }
 
 //----------------------------------------------------------------------------
 vtkImageData* vtkVisItXMLImageDataReader::GetOutput(int idx)
 {
-  return static_cast<vtkImageData*>(this->Superclass::GetOutput(idx));
+  return vtkImageData::SafeDownCast( this->GetOutputDataObject(idx) );
 }
 
 
@@ -108,20 +103,38 @@ int vtkVisItXMLImageDataReader::ReadPrimaryElement(vtkVisItXMLDataElement* ePrim
 }
 
 //----------------------------------------------------------------------------
-void vtkVisItXMLImageDataReader::SetupOutputInformation()
+// Note that any changes (add or removing information) made to this method
+// should be replicated in CopyOutputInformation
+void vtkVisItXMLImageDataReader::SetupOutputInformation(vtkInformation *outInfo)
 {
-  this->Superclass::SetupOutputInformation();
-  
-  // Backward-compatability support for scalar information in output.
-  vtkImageData* output = this->GetOutput();
-  
-  output->SetOrigin(this->Origin);
-  output->SetSpacing(this->Spacing);
-  
-  vtkDataArray* scalars = output->GetPointData()->GetScalars();
-  if(scalars)
-    {
-    output->SetScalarType(scalars->GetDataType());
-    output->SetNumberOfScalarComponents(scalars->GetNumberOfComponents());
-    }  
+  this->Superclass::SetupOutputInformation(outInfo);
+
+  outInfo->Set(vtkDataObject::ORIGIN(), this->Origin, 3);
+  outInfo->Set(vtkDataObject::SPACING(), this->Spacing, 3);
 }
+
+
+//----------------------------------------------------------------------------
+void vtkVisItXMLImageDataReader::CopyOutputInformation(vtkInformation *outInfo, int port)
+{
+  this->Superclass::CopyOutputInformation(outInfo, port);
+  vtkInformation *localInfo = this->GetExecutive()->GetOutputInformation( port );
+  
+  if ( localInfo->Has(vtkDataObject::ORIGIN()) )
+    {
+    outInfo->CopyEntry( localInfo, vtkDataObject::ORIGIN() );
+    }
+  if ( localInfo->Has(vtkDataObject::SPACING()) )
+    {
+    outInfo->CopyEntry( localInfo, vtkDataObject::SPACING() );
+    }
+}
+
+
+//----------------------------------------------------------------------------
+int vtkVisItXMLImageDataReader::FillOutputPortInformation(int, vtkInformation* info)
+{
+  info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkImageData");
+  return 1;
+}
+

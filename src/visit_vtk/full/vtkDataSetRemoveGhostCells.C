@@ -446,7 +446,7 @@ void vtkDataSetRemoveGhostCells::RectilinearGridExecute()
  
   output->ShallowCopy(extractor->GetOutput());
   extractor->Delete();
-
+  output->GetFieldData()->PassData(input->GetFieldData());
   output->GetFieldData()->RemoveArray("avtRealDims");
   output->GetCellData()->RemoveArray("avtGhostZones");
 }
@@ -505,7 +505,7 @@ void vtkDataSetRemoveGhostCells::StructuredGridExecute()
  
   output->ShallowCopy(extractor->GetOutput());
   extractor->Delete();
- 
+  output->GetFieldData()->PassData(input->GetFieldData()); 
   output->GetFieldData()->RemoveArray("avtRealDims");
   output->GetCellData()->RemoveArray("avtGhostZones");
 }

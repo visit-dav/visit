@@ -4,6 +4,8 @@
 #include <vtkCellData.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkMath.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
@@ -46,26 +48,38 @@ vtkVisItPolyDataNormals::vtkVisItPolyDataNormals()
 //  Creation:    August 13, 2003
 //
 // ****************************************************************************
-void
-vtkVisItPolyDataNormals::Execute()
+int
+vtkVisItPolyDataNormals::RequestData(vtkInformation *vtkNotUsed(request),
+    vtkInformationVector **inputVector, vtkInformationVector *outputVector)
 {
+    // get the info objects
+    vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+    vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
+    // get the input and output
+    vtkPolyData *input = vtkPolyData::SafeDownCast(
+        inInfo->Get(vtkDataObject::DATA_OBJECT()));
+    vtkPolyData *output = vtkPolyData::SafeDownCast(
+        outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
     if (ComputePointNormals)
     {
         // Point normals
         if (Splitting)
         {
-            ExecutePointWithSplitting();
+            ExecutePointWithSplitting(input, output);
         }
         else
         {
-            ExecutePointWithoutSplitting();
+            ExecutePointWithoutSplitting(input, output);
         }
     }
     else
     {
         // Cell normals
-        ExecuteCell();
+        ExecuteCell(input, output);
     }
+    return 1;
 }
 
 
@@ -106,12 +120,12 @@ vtkVisItPolyDataNormals::Execute()
 //
 // ****************************************************************************
 void
-vtkVisItPolyDataNormals::ExecutePointWithoutSplitting()
+vtkVisItPolyDataNormals::ExecutePointWithoutSplitting(
+  vtkPolyData *input, vtkPolyData *output)
 {
     int i;
 
     // Get all the input and output objects we'll need to reference
-    vtkPolyData  *input = GetInput();
     vtkCellArray *inCA  = input->GetPolys();
     vtkPointData *inPD  = input->GetPointData();
     vtkCellData  *inCD  = input->GetCellData();
@@ -124,7 +138,6 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting()
 
     int nPoints = input->GetNumberOfPoints();
 
-    vtkPolyData *output = GetOutput();
     vtkPointData *outPD = output->GetPointData();
     vtkCellData  *outCD = output->GetCellData();
 
@@ -390,12 +403,12 @@ class NormalList
 //
 // ****************************************************************************
 void
-vtkVisItPolyDataNormals::ExecutePointWithSplitting()
+vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
+                                                   vtkPolyData *output)
 {
     int i, j;
 
     // Get all the input and output objects we'll need to reference
-    vtkPolyData  *input = GetInput();
     vtkCellArray *inCA  = input->GetPolys();
     vtkPointData *inPD  = input->GetPointData();
     vtkCellData  *inCD  = input->GetCellData();
@@ -408,7 +421,6 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting()
 
     int nPoints = input->GetNumberOfPoints();
 
-    vtkPolyData *output = GetOutput();
     vtkPointData *outPD = output->GetPointData();
     vtkCellData  *outCD = output->GetCellData();
 
@@ -683,13 +695,11 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting()
 //
 // ****************************************************************************
 void
-vtkVisItPolyDataNormals::ExecuteCell()
+vtkVisItPolyDataNormals::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
 {
     int  i;
 
     // Get all the input and output objects we'll need to reference
-    vtkPolyData  *input = GetInput();
-    vtkPolyData *output = GetOutput();
     output->ShallowCopy(input);
 
     vtkPoints    *inPts = input->GetPoints();

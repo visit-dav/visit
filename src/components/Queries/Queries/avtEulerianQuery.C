@@ -128,6 +128,10 @@ avtEulerianQuery::VerifyInput()
 //    Kathleen Bonnell, Mon May 16 10:28:15 PDT 2005 
 //    Fix memory leak. 
 //
+//    Kathleen Bonnell, Wed May 17 15:22:06 PDT 2006 
+//    Remove call to SetSource(NULL) as it now removes information necessary
+//    for the dataset. 
+//
 // ****************************************************************************
 
 void 
@@ -135,7 +139,7 @@ avtEulerianQuery::Execute(vtkDataSet *in_ds, const int dom)
 {
     vtkDataSet *nds = (vtkDataSet*) in_ds->NewInstance();
     nds->ShallowCopy(in_ds);
-    nds->SetSource(NULL);
+    //nds->SetSource(NULL);
 
     gFilter->SetInput(nds);
     vtkDataSetRemoveGhostCells *ghost_remover =

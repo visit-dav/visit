@@ -2,16 +2,13 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkVisItXMLStructuredDataReader.h,v $
-  Language:  C++
-  Date:      $Date: 2002/10/23 15:49:47 $
-  Version:   $Revision: 1.2 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
@@ -53,6 +50,10 @@ public:
   vtkGetMacro(WholeSlices, int);
   vtkBooleanMacro(WholeSlices, int);
   
+  // Description:
+  // For the specified port, copy the information this reader sets up in
+  // SetupOutputInformation to outInfo
+  virtual void CopyOutputInformation(vtkInformation *outInfo, int port);
 protected:
   vtkVisItXMLStructuredDataReader();
   ~vtkVisItXMLStructuredDataReader();
@@ -67,9 +68,9 @@ protected:
   // from a streamed write.
   int* PieceExtents;
   int* PiecePointDimensions;
-  int* PiecePointIncrements;
+  vtkIdType* PiecePointIncrements;
   int* PieceCellDimensions;
-  int* PieceCellIncrements;
+  vtkIdType* PieceCellIncrements;
   
   // Whether to read in whole slices mode.
   int WholeSlices;
@@ -78,8 +79,8 @@ protected:
   int UpdateExtent[6];
   int PointDimensions[3];
   int CellDimensions[3];
-  int PointIncrements[3];
-  int CellIncrements[3];
+  vtkIdType PointIncrements[3];
+  vtkIdType CellIncrements[3];
   
   // The extent currently being read.
   int SubExtent[6];
@@ -95,8 +96,8 @@ protected:
   
   // Internal utility methods.
   int ReadPiece(vtkVisItXMLDataElement* ePiece);
-  int ReadSubExtent(int* inExtent, int* inDimensions, int* inIncrements,
-                    int* outExtent, int* outDimensions, int* outIncrements,
+  int ReadSubExtent(int* inExtent, int* inDimensions, vtkIdType* inIncrements,
+                    int* outExtent,int* outDimensions,vtkIdType* outIncrements,
                     int* subExtent, int* subDimensions, vtkVisItXMLDataElement* da,
                     vtkDataArray* array);
   

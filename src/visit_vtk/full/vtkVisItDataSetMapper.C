@@ -2,11 +2,8 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkVisItDataSetMapper.cxx,v $
-  Language:  C++
-  Date:      $Date: 2002/11/03 22:52:54 $
-  Version:   $Revision: 1.63 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen 
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
@@ -17,15 +14,19 @@
 =========================================================================*/
 #include "vtkVisItDataSetMapper.h"
 
-#include "vtkPolyDataMapper.h"
-#include "vtkObjectFactory.h"
-#include "vtkDataSetSurfaceFilter.h"
 #include "vtkDataSet.h"
+#include "vtkDataSetSurfaceFilter.h"
+#include "vtkExecutive.h"
+#include "vtkGarbageCollector.h"
+#include "vtkInformation.h"
+#include "vtkObjectFactory.h"
+#include "vtkPolyData.h"
+#include "vtkPolyDataMapper.h"
 
 #include <vtkVisItOpenGLPolyDataMapper.h>
 #include <vtkVisItMesaPolyDataMapper.h>
 
-vtkCxxRevisionMacro(vtkVisItDataSetMapper, "$Revision: 1.63 $");
+vtkCxxRevisionMacro(vtkVisItDataSetMapper, "$Revision: 1.70 $");
 vtkStandardNewMacro(vtkVisItDataSetMapper);
 
 // ****************************************************************************
@@ -57,17 +58,20 @@ vtkVisItDataSetMapper::~vtkVisItDataSetMapper()
 
 void vtkVisItDataSetMapper::SetInput(vtkDataSet *input)
 {
-  this->vtkProcessObject::SetNthInput(0, input);
+  if (input)
+    {
+    this->SetInputConnection(0, input->GetProducerPort());
+    }
+  else 
+    {
+    // Setting a NULL input removes the connection.
+    this->SetInputConnection(0, 0);
+    }
 }
 
 vtkDataSet *vtkVisItDataSetMapper::GetInput()
 {
-  if (this->NumberOfInputs < 1)
-    {
-    return NULL;
-    }
-  
-  return (vtkDataSet *)(this->Inputs[0]);
+  return this->Superclass::GetInputAsDataSet();
 }
 
 void vtkVisItDataSetMapper::ReleaseGraphicsResources( vtkWindow *renWin )
@@ -149,6 +153,8 @@ void vtkVisItDataSetMapper::Render(vtkRenderer *ren, vtkActor *act)
   this->PolyDataMapper->SetImmediateModeRendering(
     this->GetImmediateModeRendering());
   this->PolyDataMapper->SetColorMode(this->GetColorMode());
+  this->PolyDataMapper->SetInterpolateScalarsBeforeMapping(
+                               this->GetInterpolateScalarsBeforeMapping());
   this->PolyDataMapper->SetScalarMode(this->GetScalarMode());
   if ( this->ScalarMode == VTK_SCALAR_MODE_USE_POINT_FIELD_DATA ||
        this->ScalarMode == VTK_SCALAR_MODE_USE_CELL_FIELD_DATA )
@@ -202,6 +208,26 @@ unsigned long vtkVisItDataSetMapper::GetMTime()
     }
 
   return mTime;
+}
+
+//----------------------------------------------------------------------------
+int vtkVisItDataSetMapper::FillInputPortInformation(
+  int vtkNotUsed(port), vtkInformation* info)
+{
+  info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+  return 1;
+}
+
+//----------------------------------------------------------------------------
+void vtkVisItDataSetMapper::ReportReferences(vtkGarbageCollector* collector)
+{
+  this->Superclass::ReportReferences(collector);
+  // These filters share our input and are therefore involved in a
+  // reference loop.
+  vtkGarbageCollectorReport(collector, this->GeometryExtractor,
+                            "GeometryExtractor");
+  vtkGarbageCollectorReport(collector, this->PolyDataMapper,
+                            "PolyDataMapper");
 }
 
 // ****************************************************************************

@@ -5,7 +5,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkExodusReader.cxx,v $
+  Module:    $RCSfile: vtkVisItExodusReader.cxx,v $
   Language:  C++
   Date:      $Date: 2001/06/28 18:49:49 $
   Version:   $Revision: 1.16 $
@@ -45,12 +45,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =========================================================================*/
 #include <vector>
 #include <string>
-#include "vtkExodusReader.h"
+#include "vtkVisItExodusReader.h"
 #include <vtkCell.h>
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkIdList.h>
 #include <vtkIdTypeArray.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkIntArray.h>
 #include <vtkFloatArray.h>
 #include <vtkMath.h>
@@ -88,7 +90,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //    Replace 'New' method with Macro to match VTK 4.0 API.
 //----------------------------------------------------------------------------
 
-vtkStandardNewMacro(vtkExodusReader);
+vtkStandardNewMacro(vtkVisItExodusReader);
 
 
 //----------------------------------------------------------------------------
@@ -105,7 +107,7 @@ vtkStandardNewMacro(vtkExodusReader);
 //----------------------------------------------------------------------------
 // Description:
 // Instantiate object with NULL filename.
-vtkExodusReader::vtkExodusReader()
+vtkVisItExodusReader::vtkVisItExodusReader()
 {
   this->FileName = NULL;
   this->TimeStep = 1;
@@ -141,6 +143,8 @@ vtkExodusReader::vtkExodusReader()
 
   this->Times = NULL;
   this->alreadyDoneExecuteInfo = false;
+
+  this->SetNumberOfInputPorts(0);
 }
 
 
@@ -149,7 +153,7 @@ vtkExodusReader::vtkExodusReader()
 //    Hank Childs, Sat Apr 17 07:44:05 PDT 2004
 //    Destruct times.
 //----------------------------------------------------------------------------
-vtkExodusReader::~vtkExodusReader()
+vtkVisItExodusReader::~vtkVisItExodusReader()
 {
   this->SetFileName(NULL);
 
@@ -181,7 +185,7 @@ vtkExodusReader::~vtkExodusReader()
 }
 
 //----------------------------------------------------------------------------
-void vtkExodusReader::SetNumberOfPointDataArrays(int num)
+void vtkVisItExodusReader::SetNumberOfPointDataArrays(int num)
 {
   int idx;
   
@@ -236,7 +240,7 @@ void vtkExodusReader::SetNumberOfPointDataArrays(int num)
 //----------------------------------------------------------------------------
 // Combine separate XYZ arrays into vectors.
 // To do this, we have to analize names.
-int vtkExodusReader::SimplifyArrayNames(char **ArrayNames,
+int vtkVisItExodusReader::SimplifyArrayNames(char **ArrayNames,
                                         int *ArrayNumComps,
                                         int NumScalarArrays)
 {
@@ -311,7 +315,7 @@ int vtkExodusReader::SimplifyArrayNames(char **ArrayNames,
 
 
 //----------------------------------------------------------------------------
-void vtkExodusReader::SetNumberOfCellDataArrays(int num)
+void vtkVisItExodusReader::SetNumberOfCellDataArrays(int num)
 {
   int idx;
   
@@ -364,7 +368,7 @@ void vtkExodusReader::SetNumberOfCellDataArrays(int num)
 }
 
 
-void vtkExodusReader::LoadTimes()
+void vtkVisItExodusReader::LoadTimes()
 {
   float version;
   int CPU_word_size, IO_word_size;
@@ -407,7 +411,10 @@ void vtkExodusReader::LoadTimes()
 //
 //----------------------------------------------------------------------------
 
-void vtkExodusReader::ExecuteInformation()
+int vtkVisItExodusReader::RequestInformation(
+  vtkInformation *vtkNotUsed(request),
+  vtkInformationVector **vtkNotUsed(inputVector),
+  vtkInformationVector *vtkNotUsed(outputVector))
 {
   int exoid;
   int error;
@@ -426,7 +433,7 @@ void vtkExodusReader::ExecuteInformation()
   char elem_type[MAX_STR_LENGTH+1];
   
   if (alreadyDoneExecuteInfo)
-      return;
+      return 1;
   alreadyDoneExecuteInfo = true;
 
   CPU_word_size = 0;  // float or double.
@@ -437,7 +444,7 @@ void vtkExodusReader::ExecuteInformation()
   if (exoid < 0)
     {
     vtkErrorMacro("Problem reading information from file " << this->FileName);
-    return;
+    return 0;
     }
   
   if (this->Title == NULL)
@@ -559,6 +566,8 @@ void vtkExodusReader::ExecuteInformation()
     this->StartBlock = 0;
     this->EndBlock = this->NumberOfBlocks - 1;
     }
+
+  return 1;
 }
 
 //----------------------------------------------------------------------------
@@ -569,15 +578,24 @@ void vtkExodusReader::ExecuteInformation()
 //   a problem and takes a long time to execute.
 //
 //----------------------------------------------------------------------------
-void vtkExodusReader::Execute()
+int vtkVisItExodusReader::RequestData(
+  vtkInformation *vtkNotUsed(request),
+  vtkInformationVector **vtkNotUsed(inputVector),
+  vtkInformationVector *outputVector)
 {
+  // get the info object
+  vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
+  // get the output
+  vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(
+    outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
   int exoid;
   int CPU_word_size, IO_word_size;
   float version;
   char title[MAX_LINE_LENGTH+1];
   int num_dim, num_nodes, num_elem, num_elem_blk;
   int num_node_sets, num_side_sets;
-  vtkUnstructuredGrid *output = this->GetOutput();
   int piece, numPieces, startBlock, endBlock;
   
   CPU_word_size = 0;  // float or double.
@@ -588,7 +606,7 @@ void vtkExodusReader::Execute()
   if (exoid < 0)
     {
     vtkErrorMacro("Problem opening file " << this->FileName);
-    return;
+    return 0;
     }
   
   ex_get_init(exoid, title, &num_dim, &num_nodes, &num_elem, 
@@ -598,14 +616,14 @@ void vtkExodusReader::Execute()
       this->NumberOfElements != num_elem || this->NumberOfBlocks !=num_elem_blk)
     {
     vtkErrorMacro("Information mismatch.");
-    return;
+    return 0;
     }
   
   piece = output->GetUpdatePiece();
   numPieces = output->GetUpdateNumberOfPieces();
   if (piece < 0 || piece > numPieces || numPieces < 1)
     { // Requested nothing.
-    return;
+    return 1;
     }
   
   startBlock = this->NumberOfBlocks * piece / numPieces;
@@ -616,7 +634,7 @@ void vtkExodusReader::Execute()
     this->StartBlock = startBlock;
     this->EndBlock = endBlock;
     this->GeometryCache->ReleaseData();
-    return;
+    return 1;
     }
   
   if (this->GeometryFileName == NULL || 
@@ -625,7 +643,7 @@ void vtkExodusReader::Execute()
     {
     this->StartBlock = startBlock;
     this->EndBlock = endBlock;
-    this->ReadGeometry(exoid);
+    this->ReadGeometry(exoid, output);
     }
   else
     {
@@ -635,34 +653,36 @@ void vtkExodusReader::Execute()
   // Read in the arrays.
   // If we are execution then either the file, the time step or array 
   // selections changed.  In all cases we have to reload the arrays.
-  this->ReadArrays(exoid);
+  this->ReadArrays(exoid, output);
 
   // Extra arrays that the reader can generate.
-  this->GenerateExtraArrays();
+  this->GenerateExtraArrays(output);
 
   // Reclaim any extra space.
   output->Squeeze();
   
   // Read element block attributes.  
   ex_close(exoid);
+
+  return 1;
 }
 
 
 //----------------------------------------------------------------------------
-void vtkExodusReader::ReadGeometry(int exoid)
+void vtkVisItExodusReader::ReadGeometry(int exoid, vtkUnstructuredGrid *output)
 {
   // It would be better if the cache released when the file name changed.
   this->GeometryCache->ReleaseData();
   this->PointMapOutIn->Reset();
   this->SetGeometryFileName(NULL);
   
-  this->ReadCells(exoid);
-  this->ReadPoints(exoid);
+  this->ReadCells(exoid, output);
+  this->ReadPoints(exoid, output);
   
-  if (this->GetOutput()->GetReleaseDataFlag() == 0)
+  if (output->GetReleaseDataFlag() == 0)
     {
     this->SetGeometryFileName(this->FileName);
-    this->GeometryCache->ShallowCopy(this->GetOutput());
+    this->GeometryCache->ShallowCopy(output);
     }
 }
 
@@ -693,7 +713,7 @@ void vtkExodusReader::ReadGeometry(int exoid)
 //   Added SHELL4 element.
 //
 //----------------------------------------------------------------------------
-void vtkExodusReader::ReadCells(int exoid)
+void vtkVisItExodusReader::ReadCells(int exoid, vtkUnstructuredGrid *output)
 {
   int i, j, k;
   std::vector<int> num_elem_in_block;
@@ -702,7 +722,6 @@ void vtkExodusReader::ReadCells(int exoid)
   std::vector<std::string> elem_type;
   char all_caps_elem_type[MAX_STR_LENGTH+1];
   std::vector<int *> connect;
-  vtkUnstructuredGrid *output = this->GetOutput();
   int cellType;
   int cellNumPoints;
   int *pointMapInOutArray;
@@ -941,10 +960,9 @@ void vtkExodusReader::ReadCells(int exoid)
 //   some default data for us.
 //
 //----------------------------------------------------------------------------
-void vtkExodusReader::ReadPoints(int exoid)
+void vtkVisItExodusReader::ReadPoints(int exoid, vtkUnstructuredGrid *output)
 {
   float *x, *y, *z;
-  vtkUnstructuredGrid *output = this->GetOutput();
   vtkPoints *newPoints;
   int inId, outId;
   vtkIdType outPtCount;
@@ -1018,7 +1036,7 @@ void vtkExodusReader::ReadPoints(int exoid)
         arr->SetValue(outId, ids[inId]);
         }
 
-      GetOutput()->GetPointData()->AddArray(arr);
+      output->GetPointData()->AddArray(arr);
       arr->Delete();
       }
 
@@ -1035,13 +1053,12 @@ void vtkExodusReader::ReadPoints(int exoid)
 
 
 //----------------------------------------------------------------------------
-void vtkExodusReader::ReadArrays(int exoid)
+void vtkVisItExodusReader::ReadArrays(int exoid, vtkUnstructuredGrid *output)
 {
   vtkDataArray *array;
   int dim, arrayIdx, idx;
   int vectorFlag;
   int scalarFlag;
-  vtkUnstructuredGrid *output = this->GetOutput();
   
   // Read point arrays.
   // The first vector array encounters is set to vectors,
@@ -1187,7 +1204,7 @@ void vtkExodusReader::ReadArrays(int exoid)
 //   Use vtkIdType for outPtCount, pointMapOutInArray, to match VTK 4.0 API. 
 //
 //----------------------------------------------------------------------------
-vtkDataArray *vtkExodusReader::ReadPointDataArray(int exoid, int varIndex)
+vtkDataArray *vtkVisItExodusReader::ReadPointDataArray(int exoid, int varIndex)
 {
   int error;
   float *x;
@@ -1234,7 +1251,7 @@ vtkDataArray *vtkExodusReader::ReadPointDataArray(int exoid, int varIndex)
 //   Use vtkIdType for outPtCount, pointMapOutInArray to match VTK 4.0 API.
 //
 //----------------------------------------------------------------------------
-vtkDataArray *vtkExodusReader::ReadPointDataVector(int exoid, int startIdx, 
+vtkDataArray *vtkVisItExodusReader::ReadPointDataVector(int exoid, int startIdx, 
                                                    int dim)
 {
   int error;
@@ -1333,7 +1350,7 @@ vtkDataArray *vtkExodusReader::ReadPointDataVector(int exoid, int startIdx,
 //   Fixed off-by-one error in indexing the truth table
 //
 //----------------------------------------------------------------------------
-vtkDataArray *vtkExodusReader::ReadCellDataArray(int exoid, int varIndex)
+vtkDataArray *vtkVisItExodusReader::ReadCellDataArray(int exoid, int varIndex)
 {
   int error, idx, blockIdx, num;
   float *x;
@@ -1403,7 +1420,7 @@ vtkDataArray *vtkExodusReader::ReadCellDataArray(int exoid, int varIndex)
 
 //----------------------------------------------------------------------------
 // Read the first three vectors and put in vectors as displacement.
-vtkDataArray *vtkExodusReader::ReadCellDataVector(int exoid, int startIdx, 
+vtkDataArray *vtkVisItExodusReader::ReadCellDataVector(int exoid, int startIdx, 
                                                   int dim)
 {
   int error, idx, blockIdx, num;
@@ -1515,10 +1532,9 @@ vtkDataArray *vtkExodusReader::ReadCellDataVector(int exoid, int startIdx,
 //   these from the file.
 //
 //----------------------------------------------------------------------------
-void vtkExodusReader::GenerateExtraArrays()
+void vtkVisItExodusReader::GenerateExtraArrays(vtkUnstructuredGrid *output)
 {
   vtkIntArray *array;
-  vtkUnstructuredGrid *output = this->GetOutput();
   int numCells = output->GetNumberOfCells();
   int numPts = output->GetNumberOfPoints();
   int count, id;
@@ -1588,7 +1604,7 @@ void vtkExodusReader::GenerateExtraArrays()
 
   
 //----------------------------------------------------------------------------
-int vtkExodusReader::GetNumberOfElementsInBlock(int blockIdx)
+int vtkVisItExodusReader::GetNumberOfElementsInBlock(int blockIdx)
 {
   if (blockIdx < 0 || blockIdx >= this->NumberOfBlocks)
     {
@@ -1602,7 +1618,7 @@ int vtkExodusReader::GetNumberOfElementsInBlock(int blockIdx)
 }
 
 //----------------------------------------------------------------------------
-int vtkExodusReader::GetBlockId(int blockIdx)
+int vtkVisItExodusReader::GetBlockId(int blockIdx)
 {
   if (blockIdx < 0 || blockIdx >= this->NumberOfBlocks)
     {
@@ -1616,7 +1632,7 @@ int vtkExodusReader::GetBlockId(int blockIdx)
 }
 
 //----------------------------------------------------------------------------
-const char *vtkExodusReader::GetPointDataArrayName(int arrayIdx)
+const char *vtkVisItExodusReader::GetPointDataArrayName(int arrayIdx)
 {
   if (arrayIdx < 0 || arrayIdx >= this->NumberOfPointDataArrays)
     {
@@ -1629,7 +1645,7 @@ const char *vtkExodusReader::GetPointDataArrayName(int arrayIdx)
 }
 
 //----------------------------------------------------------------------------
-int vtkExodusReader::GetPointDataArrayNumberOfComponents(int arrayIdx)
+int vtkVisItExodusReader::GetPointDataArrayNumberOfComponents(int arrayIdx)
 {
   if (arrayIdx < 0 || arrayIdx >= this->NumberOfPointDataArrays)
     {
@@ -1642,7 +1658,7 @@ int vtkExodusReader::GetPointDataArrayNumberOfComponents(int arrayIdx)
 }
 
 //----------------------------------------------------------------------------
-int vtkExodusReader::GetPointDataArrayLoadFlag(int arrayIdx)
+int vtkVisItExodusReader::GetPointDataArrayLoadFlag(int arrayIdx)
 {
   if (arrayIdx < 0 || arrayIdx >= this->NumberOfPointDataArrays)
     {
@@ -1655,7 +1671,7 @@ int vtkExodusReader::GetPointDataArrayLoadFlag(int arrayIdx)
 }
 
 //----------------------------------------------------------------------------
-void vtkExodusReader::SetPointDataArrayLoadFlag(int arrayIdx, int flag)
+void vtkVisItExodusReader::SetPointDataArrayLoadFlag(int arrayIdx, int flag)
 {
   if (arrayIdx < 0 || arrayIdx >= this->NumberOfPointDataArrays)
     {
@@ -1675,7 +1691,7 @@ void vtkExodusReader::SetPointDataArrayLoadFlag(int arrayIdx, int flag)
 
     
 //----------------------------------------------------------------------------
-const char *vtkExodusReader::GetCellDataArrayName(int arrayIdx)
+const char *vtkVisItExodusReader::GetCellDataArrayName(int arrayIdx)
 {
   if (arrayIdx < 0 || arrayIdx >= this->NumberOfCellDataArrays)
     {
@@ -1688,7 +1704,7 @@ const char *vtkExodusReader::GetCellDataArrayName(int arrayIdx)
 }
 
 //----------------------------------------------------------------------------
-int vtkExodusReader::GetCellDataArrayNumberOfComponents(int arrayIdx)
+int vtkVisItExodusReader::GetCellDataArrayNumberOfComponents(int arrayIdx)
 {
   if (arrayIdx < 0 || arrayIdx >= this->NumberOfCellDataArrays)
     {
@@ -1702,7 +1718,7 @@ int vtkExodusReader::GetCellDataArrayNumberOfComponents(int arrayIdx)
 
     
 //----------------------------------------------------------------------------
-int vtkExodusReader::GetCellDataArrayLoadFlag(int arrayIdx)
+int vtkVisItExodusReader::GetCellDataArrayLoadFlag(int arrayIdx)
 {
   if (arrayIdx < 0 || arrayIdx >= this->NumberOfCellDataArrays)
     {
@@ -1715,7 +1731,7 @@ int vtkExodusReader::GetCellDataArrayLoadFlag(int arrayIdx)
 }    
 
 //----------------------------------------------------------------------------
-void vtkExodusReader::SetCellDataArrayLoadFlag(int arrayIdx, int flag)
+void vtkVisItExodusReader::SetCellDataArrayLoadFlag(int arrayIdx, int flag)
 {
   if (arrayIdx < 0 || arrayIdx >= this->NumberOfCellDataArrays)
     {
@@ -1734,9 +1750,8 @@ void vtkExodusReader::SetCellDataArrayLoadFlag(int arrayIdx, int flag)
 
 
 //----------------------------------------------------------------------------
-void vtkExodusReader::CheckForProblems()
+void vtkVisItExodusReader::CheckForProblems(vtkUnstructuredGrid *output)
 {
-  vtkUnstructuredGrid *output = this->GetOutput();
   int numPts = output->GetNumberOfPoints();
   int numCells = output->GetNumberOfCells();
   int i, num;
@@ -1794,7 +1809,7 @@ void vtkExodusReader::CheckForProblems()
   
   
 //----------------------------------------------------------------------------
-void vtkExodusReader::PrintSelf(ostream& os, vtkIndent indent)
+void vtkVisItExodusReader::PrintSelf(ostream& os, vtkIndent indent)
 {
   int idx;
   

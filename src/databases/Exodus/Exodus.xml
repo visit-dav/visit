@@ -3,7 +3,7 @@
     <Extensions> ex e exo ex2 exII exii gen EX E EXO EX2 EXII exoII EXOII GEN exodus EXODUS nemesis NEMESIS </Extensions>
     <Files components="M,E">
       avtExodusFileFormat.C
-      vtkExodusReader.C
+      vtkVisItExodusReader.C
     </Files>
     <CXXFLAGS> $(EXODUS_FLAGS) </CXXFLAGS>
     <LIBS>     $(EXODUS_LIBS)  </LIBS>

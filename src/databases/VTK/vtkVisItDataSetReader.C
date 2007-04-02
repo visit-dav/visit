@@ -14,11 +14,14 @@
 =========================================================================*/
 #include "vtkVisItDataSetReader.h"
 
+#include "vtkInformation.h"
+#include "vtkInformationVector.h"
 #include "vtkObjectFactory.h"
 #include "vtkPolyData.h"
 #include "vtkVisItPolyDataReader.h"
 #include "vtkRectilinearGrid.h"
 #include "vtkVisItRectilinearGridReader.h"
+#include "vtkStreamingDemandDrivenPipeline.h"
 #include "vtkStructuredGrid.h"
 #include "vtkVisItStructuredGridReader.h"
 #include "vtkStructuredPoints.h"
@@ -26,7 +29,7 @@
 #include "vtkUnstructuredGrid.h"
 #include "vtkVisItUnstructuredGridReader.h"
 
-vtkCxxRevisionMacro(vtkVisItDataSetReader, "$Revision: 1.64 $");
+vtkCxxRevisionMacro(vtkVisItDataSetReader, "$Revision: 1.70 $");
 vtkStandardNewMacro(vtkVisItDataSetReader);
 
 vtkVisItDataSetReader::vtkVisItDataSetReader()
@@ -37,39 +40,119 @@ vtkVisItDataSetReader::~vtkVisItDataSetReader()
 {
 }
 
-vtkDataSet * vtkVisItDataSetReader::GetOutput() 
+int vtkVisItDataSetReader::RequestDataObject(
+  vtkInformation *,
+  vtkInformationVector** vtkNotUsed(inputVector) , 
+  vtkInformationVector* outputVector)
 {
-  // check to see if an execute is necessary.
-  if (this->Outputs && this->Outputs[0] && 
-      this->Outputs[0]->GetUpdateTime() > this->GetMTime())
-    {
-    return (vtkDataSet *)(this->Outputs[0]);
-    }
-  
-  // The filename might have changed (changing the output).
-  // We need to re execute.
-  if (this->GetFileName() == NULL && 
-      (this->GetReadFromInputString() == 0 || 
+  if (this->GetFileName() == NULL &&
+      (this->GetReadFromInputString() == 0 ||
        (this->GetInputArray() == NULL && this->GetInputString() == NULL)))
     {
     vtkWarningMacro(<< "FileName must be set");
-    return (vtkDataSet *) NULL;
+    return 0;
     }
 
-  this->Execute();
-  if (this->Outputs == NULL)
+  int outputType = this->ReadOutputType();
+
+  vtkInformation* info = outputVector->GetInformationObject(0);
+  vtkDataSet *output = vtkDataSet::SafeDownCast(
+    info->Get(vtkDataObject::DATA_OBJECT()));
+
+  if (output && (output->GetDataObjectType() == outputType))
     {
-    return NULL;
+    return 1;
     }
-  else
+
+  if (!output || output->GetDataObjectType() != outputType) 
     {
-    return (vtkDataSet *)this->Outputs[0];
+    switch (outputType)
+      {
+      case VTK_POLY_DATA:
+        output = vtkPolyData::New();
+        break;
+      case VTK_STRUCTURED_POINTS:
+        output = vtkStructuredPoints::New();
+        break;
+      case VTK_STRUCTURED_GRID:
+        output = vtkStructuredGrid::New();
+        break;
+      case VTK_RECTILINEAR_GRID:
+        output = vtkRectilinearGrid::New();
+        break;
+      case VTK_UNSTRUCTURED_GRID:
+        output = vtkUnstructuredGrid::New();
+        break;
+      default:
+        return 0;
+      }
+    
+    this->GetExecutive()->SetOutputData(0, output);
+    output->Delete();
+    this->GetOutputPortInformation(0)->Set(
+      vtkDataObject::DATA_EXTENT_TYPE(), output->GetExtentType());
     }
+
+  return 1;
 }
 
-void vtkVisItDataSetReader::Execute()
+int vtkVisItDataSetReader::RequestInformation(
+  vtkInformation *,
+  vtkInformationVector **,
+  vtkInformationVector *outputVector)
 {
-  vtkDataObject *output;
+  vtkInformation *outInfo = outputVector->GetInformationObject(0);
+  if (this->GetFileName() == NULL &&
+      (this->GetReadFromInputString() == 0 ||
+       (this->GetInputArray() == NULL && this->GetInputString() == NULL)))
+    {
+    vtkWarningMacro(<< "FileName must be set");
+    return 0;
+    }
+
+  vtkVisItDataReader *reader = 0;
+  int retVal;
+  switch (this->ReadOutputType())
+    {
+    case VTK_POLY_DATA:
+      reader = vtkVisItPolyDataReader::New();
+      break;
+    case VTK_STRUCTURED_POINTS:
+      reader = vtkVisItStructuredPointsReader::New();
+      break;
+    case VTK_STRUCTURED_GRID:
+      reader = vtkVisItStructuredGridReader::New();
+      break;
+    case VTK_RECTILINEAR_GRID:
+      reader = vtkVisItRectilinearGridReader::New();
+      break;
+    case VTK_UNSTRUCTURED_GRID:
+      reader = vtkVisItUnstructuredGridReader::New();
+      break;
+    default:
+      reader = NULL;
+    }
+
+  if (reader)
+    {
+    reader->SetFileName(this->GetFileName());
+    reader->SetReadFromInputString(this->GetReadFromInputString());
+    reader->SetInputArray(this->GetInputArray());
+    reader->SetInputString(this->GetInputString());
+    retVal = reader->ReadMetaData(outInfo);
+    reader->Delete();
+    return retVal;
+    }
+  return 1;
+}
+
+int vtkVisItDataSetReader::RequestData(
+  vtkInformation *,
+  vtkInformationVector **,
+  vtkInformationVector *outputVector)
+{
+  vtkInformation *outInfo = outputVector->GetInformationObject(0);
+  vtkDataObject *output = outInfo->Get(vtkDataObject::DATA_OBJECT());
   
   vtkDebugMacro(<<"Reading vtk dataset...");
 
@@ -99,21 +182,19 @@ void vtkVisItDataSetReader::Execute()
       preader->SetReadAllFields(this->GetReadAllFields());
       preader->Update();
       // Can we use the old output?
-      output = this->Outputs ? this->Outputs[0] : NULL;
-      if (output && strcmp(output->GetClassName(), "vtkPolyData") == 0)
-        {
-        output->ShallowCopy(preader->GetOutput());
-        }
-      else
+      if(!(output && strcmp(output->GetClassName(), "vtkPolyData") == 0))
         {
         // Hack to make sure that the object is not modified
         // with SetNthOutput. Otherwise, extra executions occur.
         vtkTimeStamp ts = this->MTime;
-        this->SetNthOutput(0, preader->GetOutput());
+        output = vtkPolyData::New();
+        this->GetExecutive()->SetOutputData(0, output);
+        output->Delete();
         this->MTime = ts;
         }
+      output->ShallowCopy(preader->GetOutput());
       preader->Delete();
-      return;
+      return 1;
       }
     case VTK_STRUCTURED_POINTS:
       {
@@ -139,21 +220,22 @@ void vtkVisItDataSetReader::Execute()
       preader->SetReadAllFields(this->GetReadAllFields());
       preader->Update();
       // Can we use the old output?
-      output = this->Outputs ? this->Outputs[0] : NULL;
-      if (output && strcmp(output->GetClassName(), "vtkStructuredPoints") == 0)
-        {
-        output->ShallowCopy(preader->GetOutput());
-        }
-      else
+      if(!(output && strcmp(output->GetClassName(), "vtkStructuredPoints") == 0))
         {
         // Hack to make sure that the object is not modified
         // with SetNthOutput. Otherwise, extra executions occur.
         vtkTimeStamp ts = this->MTime;
-        this->SetNthOutput(0, preader->GetOutput());
+        output = vtkStructuredPoints::New();
+        this->GetExecutive()->SetOutputData(0, output);
+        output->Delete();
         this->MTime = ts;
         }
+      output->ShallowCopy(preader->GetOutput());
+      output->GetPipelineInformation()->CopyEntry(
+        preader->GetOutput()->GetPipelineInformation(),
+        vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT());
       preader->Delete();
-      return;
+      return 1;
       }
     case VTK_STRUCTURED_GRID:
       {
@@ -179,21 +261,19 @@ void vtkVisItDataSetReader::Execute()
       preader->SetReadAllFields(this->GetReadAllFields());
       preader->Update();
       // Can we use the old output?
-      output = this->Outputs ? this->Outputs[0] : NULL;
-      if (output && strcmp(output->GetClassName(), "vtkStructuredGrid") == 0)
-        {
-        output->ShallowCopy(preader->GetOutput());
-        }
-      else
+      if(!(output && strcmp(output->GetClassName(), "vtkStructuredGrid") == 0))
         {
         // Hack to make sure that the object is not modified
         // with SetNthOutput. Otherwise, extra executions occur.
         vtkTimeStamp ts = this->MTime;
-        this->SetNthOutput(0, preader->GetOutput());
+        output = vtkStructuredGrid::New();
+        this->GetExecutive()->SetOutputData(0, output);
+        output->Delete();
         this->MTime = ts;
         }
+      output->ShallowCopy(preader->GetOutput());
       preader->Delete();
-      return;
+      return 1;
       }
     case VTK_RECTILINEAR_GRID:
       {
@@ -219,21 +299,19 @@ void vtkVisItDataSetReader::Execute()
       preader->SetReadAllFields(this->GetReadAllFields());
       preader->Update();
       // Can we use the old output?
-      output = this->Outputs ? this->Outputs[0] : NULL;
-      if (output && strcmp(output->GetClassName(), "vtkRectilinearGrid") == 0)
-        {
-        output->ShallowCopy(preader->GetOutput());
-        }
-      else
+      if(!(output && strcmp(output->GetClassName(), "vtkRectilinearGrid") == 0))
         {
         // Hack to make sure that the object is not modified
         // with SetNthOutput. Otherwise, extra executions occur.
         vtkTimeStamp ts = this->MTime;
-        this->SetNthOutput(0, preader->GetOutput());
+        output = vtkRectilinearGrid::New();
+        this->GetExecutive()->SetOutputData(0, output);
+        output->Delete();
         this->MTime = ts;
         }
+      output->ShallowCopy(preader->GetOutput());
       preader->Delete();
-      return;
+      return 1;
       }
     case VTK_UNSTRUCTURED_GRID:
       {
@@ -259,27 +337,25 @@ void vtkVisItDataSetReader::Execute()
       preader->SetReadAllFields(this->GetReadAllFields());
       preader->Update();
       // Can we use the old output?
-      output = this->Outputs ? this->Outputs[0] : NULL;
-      if (output && strcmp(output->GetClassName(), "vtkUnstructuredGrid") == 0)
-        {
-        output->ShallowCopy(preader->GetOutput());
-        }
-      else
+      if(!(output && strcmp(output->GetClassName(), "vtkUnstructuredGrid") == 0))
         {
         // Hack to make sure that the object is not modified
         // with SetNthOutput. Otherwise, extra executions occur.
         vtkTimeStamp ts = this->MTime;
-        this->SetNthOutput(0, preader->GetOutput());
+        output = vtkUnstructuredGrid::New();
+        this->GetExecutive()->SetOutputData(0, output);
+        output->Delete();
         this->MTime = ts;
         }
+      output->ShallowCopy(preader->GetOutput());
       preader->Delete();
-      return;
+      return 1;
       }
     default:
         vtkErrorMacro("Could not read file " << this->FileName);
     }
+  return 0;
 }
-
 
 int vtkVisItDataSetReader::ReadOutputType()
 {
@@ -296,7 +372,7 @@ int vtkVisItDataSetReader::ReadOutputType()
   //
   if (!this->ReadString(line))
     {
-    //vtkErrorMacro(<< "Premature EOF reading dataset keyword");
+    vtkDebugMacro(<< "Premature EOF reading dataset keyword");
     return -1;
     }
 
@@ -306,7 +382,7 @@ int vtkVisItDataSetReader::ReadOutputType()
     //
     if (!this->ReadString(line))
       {
-      //vtkErrorMacro(<< "Premature EOF reading type");
+      vtkDebugMacro(<< "Premature EOF reading type");
       this->CloseVTKFile ();
       return -1;
       }
@@ -334,27 +410,21 @@ int vtkVisItDataSetReader::ReadOutputType()
       }
     else
       {
-      //vtkErrorMacro(<< "Cannot read dataset type: " << line);
+      vtkDebugMacro(<< "Cannot read dataset type: " << line);
       return -1;
       }
     }
-
   else if ( !strncmp(this->LowerCase(line),"field",(unsigned long)5) )
     {
-    //vtkErrorMacro(<<"This object can only read datasets, not fields");
+    vtkDebugMacro(<<"This object can only read datasets, not fields");
     }
-  
   else
     {
-    //vtkErrorMacro(<<"Expecting DATASET keyword, got " << line << " instead");
+    vtkDebugMacro(<<"Expecting DATASET keyword, got " << line << " instead");
     }
 
   return -1;
 }
-
-
-
-
 
 vtkPolyData *vtkVisItDataSetReader::GetPolyDataOutput()
 {
@@ -381,16 +451,6 @@ vtkRectilinearGrid *vtkVisItDataSetReader::GetRectilinearGridOutput()
   return vtkRectilinearGrid::SafeDownCast(this->GetOutput());
 }
 
-
-//----------------------------------------------------------------------------
-void vtkVisItDataSetReader::Update()
-{
-  if (this->GetOutput())
-    {
-    this->GetOutput()->Update();
-    }
-}
-
 void vtkVisItDataSetReader::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
@@ -398,5 +458,28 @@ void vtkVisItDataSetReader::PrintSelf(ostream& os, vtkIndent indent)
 
 vtkDataSet *vtkVisItDataSetReader::GetOutput(int idx)
 {
-  return static_cast<vtkDataSet *>(this->vtkSource::GetOutput(idx)); 
+  return vtkDataSet::SafeDownCast(this->GetOutputDataObject(idx));
+}
+
+vtkDataSet *vtkVisItDataSetReader::GetOutput()
+{
+  return vtkDataSet::SafeDownCast(this->GetOutputDataObject(0));
+}
+
+int vtkVisItDataSetReader::FillOutputPortInformation(int, vtkInformation *info)
+{
+  info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
+  return 1;
+}
+
+int vtkVisItDataSetReader::ProcessRequest(vtkInformation* request,
+                                     vtkInformationVector** inputVector,
+                                     vtkInformationVector* outputVector)
+{
+  // generate the data
+  if(request->Has(vtkDemandDrivenPipeline::REQUEST_DATA_OBJECT()))
+    {
+    return this->RequestDataObject(request, inputVector, outputVector);
+    }
+  return this->Superclass::ProcessRequest(request, inputVector, outputVector);
 }

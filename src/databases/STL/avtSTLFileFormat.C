@@ -66,6 +66,10 @@ avtSTLFileFormat::~avtSTLFileFormat()
 //  Programmer: Hank Childs
 //  Creation:   May 24, 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed May 17 14:03:29 PDT 2006
+//    Remove call to SetSource(NULL), as it now removes information necessary
+//    to the dataset.
 // ****************************************************************************
 
 void
@@ -96,7 +100,7 @@ avtSTLFileFormat::ReadInDataset(void)
     // eat up too many file descriptors.
     //
     dataset->Update();
-    dataset->SetSource(NULL);
+    //dataset->SetSource(NULL);
     reader->Delete();
 
     readInDataset = true;

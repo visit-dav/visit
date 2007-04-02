@@ -2,16 +2,13 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkVisItRectilinearGridReader.h,v $
-  Language:  C++
-  Date:      $Date: 2002/05/31 23:12:41 $
-  Version:   $Revision: 1.31 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
@@ -45,17 +42,24 @@ public:
   // Description:
   // Get and set the output of this reader.
   vtkRectilinearGrid *GetOutput();
-  vtkRectilinearGrid *GetOutput(int idx)
-    {return (vtkRectilinearGrid *) this->vtkSource::GetOutput(idx); };
+  vtkRectilinearGrid *GetOutput(int idx);
   void SetOutput(vtkRectilinearGrid *output);
+
+  // Description:
+  // Read the meta information from the file.  This needs to be public to it
+  // can be accessed by vtkDataSetReader.
+  virtual int ReadMetaData(vtkInformation *outInfo);
 
 protected:
   vtkVisItRectilinearGridReader();
   ~vtkVisItRectilinearGridReader();
 
-  void Execute();
-  void ExecuteInformation();
+  virtual int RequestData(vtkInformation *, vtkInformationVector **,
+                          vtkInformationVector *);
+  virtual int RequestInformation(vtkInformation *, vtkInformationVector **,
+                                 vtkInformationVector *);
 
+  virtual int FillOutputPortInformation(int, vtkInformation*);
 private:
   vtkVisItRectilinearGridReader(const vtkVisItRectilinearGridReader&);  // Not implemented.
   void operator=(const vtkVisItRectilinearGridReader&);  // Not implemented.

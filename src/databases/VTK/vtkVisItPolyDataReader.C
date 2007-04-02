@@ -2,16 +2,13 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkVisItPolyDataReader.cxx,v $
-  Language:  C++
-  Date:      $Date: 2002/12/26 18:18:50 $
-  Version:   $Revision: 1.24 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
@@ -19,19 +16,23 @@
 
 #include "vtkCellArray.h"
 #include "vtkFieldData.h"
+#include "vtkInformation.h"
+#include "vtkInformationVector.h"
 #include "vtkObjectFactory.h"
 #include "vtkPolyData.h"
+#include "vtkStreamingDemandDrivenPipeline.h"
 
-vtkCxxRevisionMacro(vtkVisItPolyDataReader, "$Revision: 1.24 $");
+vtkCxxRevisionMacro(vtkVisItPolyDataReader, "$Revision: 1.28 $");
 vtkStandardNewMacro(vtkVisItPolyDataReader);
 
 vtkVisItPolyDataReader::vtkVisItPolyDataReader()
 {
-  this->vtkSource::SetNthOutput(0, vtkPolyData::New());
+  vtkPolyData *output = vtkPolyData::New();
+  this->SetOutput(output);
   // Releasing data for pipeline parallism.
   // Filters will know it is empty. 
-  this->Outputs[0]->ReleaseData();
-  this->Outputs[0]->Delete();
+  output->ReleaseData();
+  output->Delete();
   this->ExecutePiece = this->ExecuteNumberOfPieces = 0;
   this->ExecuteGhostLevel = 0;
 }
@@ -41,50 +42,47 @@ vtkVisItPolyDataReader::~vtkVisItPolyDataReader()
 }
 
 //----------------------------------------------------------------------------
-vtkPolyData *vtkVisItPolyDataReader::GetOutput()
+vtkPolyData* vtkVisItPolyDataReader::GetOutput()
 {
-  if (this->NumberOfOutputs < 1)
-    {
-    return NULL;
-    }
-  
-  return (vtkPolyData *)(this->Outputs[0]);
+  return this->GetOutput(0);
+}
+
+//----------------------------------------------------------------------------
+vtkPolyData* vtkVisItPolyDataReader::GetOutput(int idx)
+{
+  return vtkPolyData::SafeDownCast(this->GetOutputDataObject(idx));
 }
 
 //----------------------------------------------------------------------------
 void vtkVisItPolyDataReader::SetOutput(vtkPolyData *output)
 {
-  this->vtkSource::SetNthOutput(0, output);
+  this->GetExecutive()->SetOutputData(0, output);
 }
 
 
 //----------------------------------------------------------------------------
-void vtkVisItPolyDataReader::ComputeInputUpdateExtents(vtkDataObject *data)
+int vtkVisItPolyDataReader::RequestUpdateExtent(
+  vtkInformation *,
+  vtkInformationVector **,
+  vtkInformationVector *outputVector)
 {
-  int piece, numPieces, ghostLevel;
-  vtkPolyData *output = (vtkPolyData *)data;
-  int idx;
+  vtkInformation *outInfo = outputVector->GetInformationObject(0);
 
-  output->GetUpdateExtent(piece, numPieces, ghostLevel);
+  int piece, numPieces, ghostLevel;
+
+  piece = outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_PIECE_NUMBER());
+  numPieces = outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_PIECES());
+  ghostLevel = outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS());
   
   // make sure piece is valid
   if (piece < 0 || piece >= numPieces)
     {
-    return;
+    return 1;
     }
   
   if (ghostLevel < 0)
     {
-    return;
-    }
-  
-  // just copy the Update extent as default behavior.
-  for (idx = 0; idx < this->NumberOfInputs; ++idx)
-    {
-    if (this->Inputs[idx])
-      {
-      this->Inputs[idx]->SetUpdateExtent(piece, numPieces, ghostLevel);
-      }
+    return 1;
     }
   
   // Save the piece so execute can use this information.
@@ -92,15 +90,22 @@ void vtkVisItPolyDataReader::ComputeInputUpdateExtents(vtkDataObject *data)
   this->ExecuteNumberOfPieces = numPieces;
   
   this->ExecuteGhostLevel = ghostLevel;
+
+  return 1;
 }
 
-void vtkVisItPolyDataReader::Execute()
+int vtkVisItPolyDataReader::RequestData(
+  vtkInformation *,
+  vtkInformationVector **,
+  vtkInformationVector *outputVector)
 {
+  vtkInformation *outInfo = outputVector->GetInformationObject(0);
   int numPts=0;
   char line[256];
   int npts, size, ncells, i;
   int done=0;
-  vtkPolyData *output = this->GetOutput();
+  vtkPolyData *output = vtkPolyData::SafeDownCast(
+    outInfo->Get(vtkDataObject::DATA_OBJECT()));
   int *tempArray;
   vtkIdType *idArray;
   
@@ -108,7 +113,7 @@ void vtkVisItPolyDataReader::Execute()
 
   if ( !(this->OpenVTKFile()) || !this->ReadHeader())
     {
-    return;
+    return 1;
     }
 //
 // Read polygonal data specific stuff
@@ -117,7 +122,7 @@ void vtkVisItPolyDataReader::Execute()
     {
     vtkErrorMacro(<<"Data file ends prematurely!");
     this->CloseVTKFile ();
-    return;
+    return 1;
     }
 
   if ( !strncmp(this->LowerCase(line),"dataset",(unsigned long)7) )
@@ -129,14 +134,14 @@ void vtkVisItPolyDataReader::Execute()
       {
       vtkErrorMacro(<<"Data file ends prematurely!");
       this->CloseVTKFile ();
-      return;
+      return 1;
       } 
 
     if ( strncmp(this->LowerCase(line),"polydata",8) )
       {
       vtkErrorMacro(<< "Cannot read dataset type: " << line);
       this->CloseVTKFile ();
-      return;
+      return 1;
       }
 //
 // Might find points, vertices, lines, polygons, or triangle strips
@@ -160,7 +165,7 @@ void vtkVisItPolyDataReader::Execute()
           {
           vtkErrorMacro(<<"Cannot read number of points!");
           this->CloseVTKFile ();
-          return;
+          return 1;
           }
 
         this->ReadPoints(output, numPts);
@@ -173,7 +178,7 @@ void vtkVisItPolyDataReader::Execute()
           {
           vtkErrorMacro(<<"Cannot read vertices!");
           this->CloseVTKFile ();
-          return;
+          return 1;
           }
 
         tempArray = new int[size];
@@ -197,7 +202,7 @@ void vtkVisItPolyDataReader::Execute()
           {
           vtkErrorMacro(<<"Cannot read lines!");
           this->CloseVTKFile ();
-          return;
+          return 1;
           }
         tempArray = new int[size];
         idArray = lines->WritePointer(ncells, size);
@@ -221,7 +226,7 @@ void vtkVisItPolyDataReader::Execute()
           {
           vtkErrorMacro(<<"Cannot read polygons!");
           this->CloseVTKFile ();
-          return;
+          return 1;
           }
 
         tempArray = new int[size];
@@ -245,7 +250,7 @@ void vtkVisItPolyDataReader::Execute()
           {
           vtkErrorMacro(<<"Cannot read triangle strips!");
           this->CloseVTKFile ();
-          return;
+          return 1;
           }
 
         tempArray = new int[size];
@@ -268,13 +273,13 @@ void vtkVisItPolyDataReader::Execute()
           {
           vtkErrorMacro(<<"Cannot read cell data!");
           this->CloseVTKFile ();
-          return;
+          return 1;
           }
         
         if ( ncells != output->GetNumberOfCells() )
           {
           vtkErrorMacro(<<"Number of cells don't match number data values!");
-          return;
+          return 1;
           }
 
         this->ReadCellData(output, ncells);
@@ -287,13 +292,13 @@ void vtkVisItPolyDataReader::Execute()
           {
           vtkErrorMacro(<<"Cannot read point data!");
           this->CloseVTKFile ();
-          return;
+          return 1;
           }
         
         if ( npts != numPts )
           {
           vtkErrorMacro(<<"Number of points don't match number data values!");
-          return;
+          return 1;
           }
 
         this->ReadPointData(output, npts);
@@ -304,7 +309,7 @@ void vtkVisItPolyDataReader::Execute()
         {
         vtkErrorMacro(<< "Unrecognized keyword: " << line);
         this->CloseVTKFile ();
-        return;
+        return 1;
         }
       }
 
@@ -321,7 +326,7 @@ void vtkVisItPolyDataReader::Execute()
       {
       vtkErrorMacro(<<"Cannot read cell data!");
       this->CloseVTKFile ();
-      return;
+      return 1;
       }
 
     this->ReadCellData(output, ncells);
@@ -334,7 +339,7 @@ void vtkVisItPolyDataReader::Execute()
       {
       vtkErrorMacro(<<"Cannot read point data!");
       this->CloseVTKFile ();
-      return;
+      return 1;
       }
 
     this->ReadPointData(output, numPts);
@@ -345,6 +350,16 @@ void vtkVisItPolyDataReader::Execute()
     vtkErrorMacro(<< "Unrecognized keyword: " << line);
     }
   this->CloseVTKFile ();
+
+  return 1;
+}
+
+//----------------------------------------------------------------------------
+int vtkVisItPolyDataReader::FillOutputPortInformation(int,
+                                                 vtkInformation* info)
+{
+  info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
+  return 1;
 }
 
 void vtkVisItPolyDataReader::PrintSelf(ostream& os, vtkIndent indent)

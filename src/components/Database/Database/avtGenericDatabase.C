@@ -4114,6 +4114,10 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 //    Hank Childs, Thu Jan 12 14:49:44 PST 2006
 //    Make warning also include domain number.
 //
+//    Kathleen Bonnell, Tue May 16 09:41:46 PDT 2006 
+//    Removed call to SetSource(NULL), with new vtk pipeline, it also removes
+//    necessary information from the dataset. 
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -4258,7 +4262,8 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
             bf->Update();
 
             out_ds[d]->Register(NULL);
-            out_ds[d]->SetSource(NULL);
+            //  Using SetSource(NULL) on vtkDataSets no longer a good idea.
+            //out_ds[d]->SetSource(NULL);
             bf->Delete();
 
             if (out_ds != NULL && out_ds[d]->GetNumberOfCells() == 0)

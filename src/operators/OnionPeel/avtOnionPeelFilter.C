@@ -222,6 +222,10 @@ avtOnionPeelFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Wed Jan  4 10:51:42 PST 2006
 //    Fix memory leak.
 //
+//    Kathleen Bonnell, Wed May 17 10:46:58 PDT 2006
+//    Remove call to SetSource(NULL), as it now removes information necessary 
+//    for the dataset. 
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -307,7 +311,8 @@ avtOnionPeelFilter::ExecuteData(vtkDataSet *in_ds, int DOM, std::string)
         removeGhostCells->SetInput(ds);
         ds = removeGhostCells->GetOutput();
         ds->Update();
-        ds->SetSource(NULL);
+        // using SetSource(NULL) no longer a good idea.
+        //ds->SetSource(NULL);
     }
 
     avtDataAttributes &da = GetInput()->GetInfo().GetAttributes();

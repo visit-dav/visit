@@ -2,11 +2,8 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkVisItStreamLine.cxx,v $
-  Language:  C++
-  Date:      $Date: 2002/01/22 15:29:47 $
-  Version:   $Revision: 1.50 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen 
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm     for details.
 
@@ -28,6 +25,7 @@
 #include "vtkVisItStreamLine.h"
 
 #include <vtkCellArray.h>
+#include <vtkDataSet.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkGenericCell.h>
@@ -112,6 +110,7 @@ void vtkVisItStreamLine::Execute()
     vtkIdList *pts;
     double tOffset, x[3], v[3], s, r;
     vtkPolyData   *output = this->GetOutput();
+    vtkDataSet   *input = vtkDataSet::SafeDownCast(this->GetOutput());
 
 #ifdef VORTICITY
     double theta;
@@ -157,7 +156,7 @@ void vtkVisItStreamLine::Execute()
     }
 #endif
 
-    if(this->GetInput()->GetPointData()->GetScalars() ||
+    if(input->GetPointData()->GetScalars() ||
        this->SpeedScalars || this->OrientationScalars)
     {
         newScalars = vtkFloatArray::New();
@@ -349,7 +348,7 @@ vtkVisItStreamLine::ThreadedIntegrate( void *arg)
     thread_count = ((vtkMultiThreader::ThreadInfo *)(arg))->NumberOfThreads;
     self = (vtkVisItStreamLine *)(((vtkMultiThreader::ThreadInfo *)(arg))->UserData);
 
-    input     = self->GetInput();
+    input     = vtkDataSet::SafeDownCast(self->GetInput());
     pd        = input->GetPointData();
     inScalars = pd->GetScalars();
     inVectors = pd->GetVectors();
@@ -578,7 +577,7 @@ vtkVisItStreamLine::ThreadedIntegrate( void *arg)
 
 void vtkVisItStreamLine::Integrate()
 {
-    vtkDataSet *input = this->GetInput();
+    vtkDataSet *input = vtkDataSet::SafeDownCast(this->GetInput());
     vtkDataSet *source = this->GetSource();
     vtkPointData *pd=input->GetPointData();
     vtkDataArray *inScalars;
