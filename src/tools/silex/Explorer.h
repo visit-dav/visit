@@ -51,6 +51,10 @@ class SiloView;
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 12, 2001
 //
+//  Modifications:
+//    Mark C. Miller, Thu Jul 20 15:45:55 PDT 2006
+//    Added HasSiloView()
+//
 // ****************************************************************************
 class Explorer : public QMainWindow
 {
@@ -58,6 +62,7 @@ class Explorer : public QMainWindow
   public:
     Explorer(const QString &file, QWidget *p, const QString &n);
     virtual ~Explorer();
+    bool HasSiloView() const { return view != 0; };
   public slots:
     void open();
   private:

@@ -221,6 +221,12 @@
 #   Hank Childs, Fri Jun  9 16:27:50 PDT 2006
 #   Added MFIX reader.
 #
+#   Brad Whitlock, Wed Jul 12 17:26:47 PST 2006
+#   Added MM5 reader and Vis5D reader.
+#
+#   Brad Whitlock, Thu Jul 20 11:54:34 PDT 2006
+#   Added FITS reader.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -241,14 +247,16 @@ PDB=KullLite PDB
 SAF=SAF
 SAMPLES=Rect Hex
 REQUIRED=ANALYZE ANSYS AUXFile BOV BOW CMAT Curve2D Dune EnSight Image Lines \
- MFIX NASTRAN OVERFLOW PATRAN PLOT2D PLOT3D Point3D ProteinDataBank SAR STL \
- Shapefile Silo SimV1 Spheral TFT TSurf Tecplot Vista VTK WavefrontOBJ Xmdv
+ MFIX MM5 NASTRAN OVERFLOW PATRAN PLOT2D PLOT3D Point3D ProteinDataBank SAR \
+ STL Shapefile Silo SimV1 Spheral TFT TSurf Tecplot Vis5D Vista VTK \
+ WavefrontOBJ Xmdv
 VISUS=ViSUS
+CFITSIO=FITS
 
 OPTIONAL=
 
-SUBDIRS=$(REQUIRED) @DB_OPTIONAL_DIRS@ @EXODUS@ @SAF@ @HDF4@ @HDF5@ @PDB@ @MILI@ @BOXLIB2D@ @BOXLIB3D@ @VISUS@ @NETCDF@ @CGNS@ @GDAL@
-ALLSUBDIRS=$(REQUIRED) $(EXODUS) $(SAF) $(HDF4) $(HDF5) $(MILI) $(PDB) $(BOXLIB2D) $(BOXLIB3D) $(VISUS) $(NETCDF) $(CGNS) $(GDAL) $(SAMPLES) $(OPTIONAL)
+SUBDIRS=$(REQUIRED) @DB_OPTIONAL_DIRS@ @EXODUS@ @SAF@ @HDF4@ @HDF5@ @PDB@ @MILI@ @BOXLIB2D@ @BOXLIB3D@ @VISUS@ @NETCDF@ @CGNS@ @GDAL@ @CFITSIO@
+ALLSUBDIRS=$(REQUIRED) $(EXODUS) $(SAF) $(HDF4) $(HDF5) $(MILI) $(PDB) $(BOXLIB2D) $(BOXLIB3D) $(VISUS) $(NETCDF) $(CGNS) $(GDAL) $(CFITSIO) $(SAMPLES) $(OPTIONAL)
 
 message:
 	@echo

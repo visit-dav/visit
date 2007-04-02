@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+  <Plugin name="FITS" type="database" label="FITS" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false">
+    <CXXFLAGS>
+      $(CFITSIO_INCLUDE)
+    </CXXFLAGS>
+    <LIBS>
+      $(CFITSIO_LIB)
+    </LIBS>
+    <Extensions>
+      fit
+      fits
+      imh
+    </Extensions>
+    <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>

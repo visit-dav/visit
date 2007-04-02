@@ -61,6 +61,9 @@
 //    I prevented the application from getting the Windows style when we're
 //    on MacOS X.
 //
+//    Mark C. Miller, Thu Jul 20 15:45:55 PDT 2006
+//    Made it more graceful on failure to open file
+//
 // ****************************************************************************
 
 int main( int argc, char **argv )
@@ -70,10 +73,19 @@ int main( int argc, char **argv )
 #ifndef Q_WS_MACX
     a.setStyle(new QWindowsStyle);
 #endif
-    Explorer *w;
+    Explorer *w = 0;
     if (argc > 1)
+    {
         w = new Explorer(argv[1], NULL, "Explorer");
-    else
+        if (!w->HasSiloView())
+        {
+            delete w;
+            w = 0;
+            cerr << "Unable to open file \"" << argv[1] << "\"" << endl;
+        }
+    }
+
+    if (!w)
     {
         QString file =
             QFileDialog::getOpenFileName(QString(),

@@ -56,6 +56,10 @@ class SiloDirView;
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 12, 2001
 //
+//  Modifications:
+//    Mark C. Miller, Thu Jul 20 15:45:55 PDT 2006
+//    Added HasSiloFile
+//
 // ****************************************************************************
 class SiloView : public QSplitter
 {
@@ -64,6 +68,7 @@ class SiloView : public QSplitter
     SiloView(const QString &file, QWidget *p, const QString &n);
     virtual ~SiloView();
     void Set(const QString &file);
+    bool HasSiloFile() const { return silo != 0; };
 
   public slots:
    void ShowObject(const QString &name);

@@ -157,14 +157,18 @@ SiloDir::~SiloDir()
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 12, 2001
 //
+//  Modifications:
+//    Mark C. Miller, Thu Jul 20 15:45:55 PDT 2006
+//    Made it more graceful on failure to open
+//
 // ****************************************************************************
 SiloFile::SiloFile(const QString &name)
 {
     db = DBOpen((char*)name.latin1(), DB_UNKNOWN, DB_READ);
-    if (!db)
-        throw "Could not open silo file";
-
-    root = new SiloDir(db, "/", "/");
+    if (db)
+        root = new SiloDir(db, "/", "/");
+    else
+        root = 0;
 }
 
 
@@ -174,10 +178,17 @@ SiloFile::SiloFile(const QString &name)
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 12, 2001
 //
+//  Modifications:
+//    Mark C. Miller, Thu Jul 20 15:45:55 PDT 2006
+//    Added some missing delete calls
+//
 // ****************************************************************************
 SiloFile::~SiloFile()
 {
-    DBClose(db);
+    if (root) delete root;
+    root = 0;
+    if (db) DBClose(db);
+    db = 0;
 }
 
 

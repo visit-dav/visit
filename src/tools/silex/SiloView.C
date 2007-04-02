@@ -60,24 +60,37 @@
 //    I added a call to set the root directory in the directory-contents
 //    panel.  This was unnecessary in Qt versions before 3.x.
 //
+//    Mark C. Miller, Thu Jul 20 15:45:55 PDT 2006
+//    Made it more graceful on failure to open silo
+//
 // ****************************************************************************
 SiloView::SiloView(const QString &file, QWidget *p, const QString &n)
     : QSplitter(p, n)
 {
     silo        = new SiloFile(file);
-    dirTreeView = new SiloDirTreeView(silo, this, "DirTreeView");
-    dirView     = new SiloDirView(this, "DirView");
+    if (!silo->IsOpen())
+    {
+        delete silo;
+        silo = 0;
+        dirTreeView = 0;
+        dirView = 0;
+    }
+    else
+    {
+        dirTreeView = new SiloDirTreeView(silo, this, "DirTreeView");
+        dirView     = new SiloDirView(this, "DirView");
 
-    connect(dirTreeView, SIGNAL(currentChanged(QListViewItem*)),
-            this,        SLOT(SetDir(QListViewItem*)));
-    connect(dirView,     SIGNAL(doubleClicked(QListViewItem*)),
-            this,        SLOT(ShowItem(QListViewItem*)));
+        connect(dirTreeView, SIGNAL(currentChanged(QListViewItem*)),
+                this,        SLOT(SetDir(QListViewItem*)));
+        connect(dirView,     SIGNAL(doubleClicked(QListViewItem*)),
+                this,        SLOT(ShowItem(QListViewItem*)));
 
-    dirTreeView->OpenRootDir();
-    dirView->Set(silo->root);
+        dirTreeView->OpenRootDir();
+        dirView->Set(silo->root);
 
-    dirTreeView->header()->setResizeEnabled(false);
-    dirView->header()->setResizeEnabled(false);
+        dirTreeView->header()->setResizeEnabled(false);
+        dirView->header()->setResizeEnabled(false);
+    }
 }
 
 // ****************************************************************************
@@ -86,10 +99,16 @@ SiloView::SiloView(const QString &file, QWidget *p, const QString &n)
 //  Programmer:  Jeremy Meredith
 //  Creation:    May 17, 2004
 //
+//  Modifications:
+//    Mark C. Miller, Thu Jul 20 15:45:55 PDT 2006
+//    Added some missing delete calls
+//
 // ****************************************************************************
 SiloView::~SiloView()
 {
-    delete silo;
+    if (silo) delete silo;
+    if (dirTreeView) delete dirTreeView;
+    if (dirView) delete dirView;
 }
 
 // ****************************************************************************
@@ -107,15 +126,26 @@ SiloView::~SiloView()
 //    do it automatically by setting the first child (root dir) as selcted
 //    inside SiloDirTreeView.
 //
+//    Mark C. Miller, Thu Jul 20 15:45:55 PDT 2006
+//    Made it more graceful if Silo failed to open
+//
 // ****************************************************************************
 void
 SiloView::Set(const QString &file)
 {
     delete silo;
     silo = new SiloFile(file);
-    dirTreeView->Set(silo);
-    dirTreeView->OpenRootDir();
-    dirView->ChangeDir(dirTreeView->firstChild());
+    if (!silo->IsOpen())
+    {
+        dirTreeView = 0;
+        dirView = 0;
+    }
+    else
+    {
+        dirTreeView->Set(silo);
+        dirTreeView->OpenRootDir();
+        dirView->ChangeDir(dirTreeView->firstChild());
+    }
 }
 
 // ****************************************************************************
