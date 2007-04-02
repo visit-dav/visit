@@ -110,7 +110,7 @@ public:
     int Alpha() const;
     void SetRgba2(double c[4]);
     bool SetByName(const char *const colorName);
-    const char *const GetByName() const;
+    const char *GetByName() const;
 private:
     unsigned char color[4];
 };

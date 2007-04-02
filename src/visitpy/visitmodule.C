@@ -177,8 +177,15 @@
 extern "C"
 {
     void initvisit();
+    void initvisit2();
     void cli_initvisit(int, bool, int, char **);
     void cli_runscript(const char *);
+
+    // Expose these functions so we can call them from a facade
+    // VisIt module from "import visit" inside of Python.
+    PyObject *visit_Launch(PyObject *, PyObject *);
+    PyObject *visit_SetDebugLevel(PyObject *, PyObject *);
+    PyObject *visit_AddArgument(PyObject *, PyObject *);
 }
 
 //
@@ -198,7 +205,7 @@ static void *visit_eventloop(void *);
 #endif
 static void CloseModule();
 static void CreateListenerThread();
-static void LaunchViewer();
+static void LaunchViewer(const char *);
 static int  Synchronize();
 static void DelayedLoadPlugins();
 static void PlotPluginAddInterface();
@@ -802,7 +809,7 @@ GetDoubleArrayFromPyObject(PyObject *obj, double *array, int maxLen)
 //
 // ****************************************************************************
 
-STATIC PyObject *
+PyObject *
 visit_AddArgument(PyObject *self, PyObject *args)
 {
     if(noViewer)
@@ -867,13 +874,14 @@ visit_Version(PyObject *self, PyObject *args)
 //   launch has happened. This prevents client methods from stalling the
 //   launch process.
 //
+//   Brad Whitlock, Wed Nov 22 14:31:34 PST 2006
+//   I added code to accept the name of the VisIt script to run.
+//
 // ****************************************************************************
 
-STATIC PyObject *
+PyObject *
 visit_Launch(PyObject *self, PyObject *args)
 {
-    NO_ARGUMENTS();
-
     debug1 << "Launch: 0" << endl;
 
     //
@@ -885,12 +893,22 @@ visit_Launch(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    debug1 << "Launch: 1" << endl;
+    //
+    // Determine if the function was called with any arguments.
+    //
+    char *visitProgram = 0;
+    static char *visitProgramDefault = "visit";
+    if (!PyArg_ParseTuple(args, "s", &visitProgram))
+    {
+        visitProgram = visitProgramDefault;
+        PyErr_Clear();
+    }
+    debug1 << "Launch: 1: " << visitProgram << endl;
 
     //
     // Launch the viewer.
     //
-    LaunchViewer();
+    LaunchViewer(visitProgram);
 
     debug1 << "Launch: 2" << endl;
 
@@ -1008,7 +1026,7 @@ visit_LaunchNowin(PyObject *self, PyObject *args)
 //
 // ****************************************************************************
 
-STATIC PyObject *
+PyObject *
 visit_SetDebugLevel(PyObject *self, PyObject *args)
 {
     int dLevel;
@@ -11686,6 +11704,11 @@ NeedToLoadPlugins(Subject *, void *)
 //   Brad Whitlock, Tue Jan 10 11:57:31 PDT 2006
 //   I made it use LogFile_open.
 //
+//   Brad Whitlock, Wed Nov 22 14:00:22 PST 2006
+//   I changed the name of the log file so it does not interfere when we
+//   use the module with "import visit". I also moved the code to read
+//   the plugin directory until later.
+//
 // ****************************************************************************
 
 static int
@@ -11711,10 +11734,6 @@ InitializeModule()
 
         Init::Initialize(argc, argv, 0, 1, false);
         Init::SetComponentName("cli");
-
-        // Read the plugins.
-        PlotPluginManager::Initialize(PlotPluginManager::Scripting);
-        OperatorPluginManager::Initialize(OperatorPluginManager::Scripting);
     }
     CATCH(VisItException)
     {
@@ -11722,13 +11741,6 @@ InitializeModule()
         ret = true;
     }
     ENDTRY
-
-    // If there was an initialization error, return.
-    if(ret)
-    {
-        viewer = 0;
-        return 1;
-    }
 
     //
     // Create the viewer proxy and add some default arguments.
@@ -11781,7 +11793,7 @@ InitializeModule()
     //
     // Open the log file
     //
-    const char *logName = "visit.py";
+    const char *logName = "visitlog.py";
     if(!LogFile_Open(logName))
         fprintf(stderr, "Could not open %s log file.\n", logName);
 
@@ -11796,6 +11808,77 @@ InitializeModule()
     moduleInitialized = true;
 
     return 0;
+}
+
+// ****************************************************************************
+// Function: ReadVisItPluginDir
+//
+// Purpose: 
+//   Reads VISITPLUGINDIR that would be set up by the VisIt script that
+//   is passed into this function.
+//
+// Arguments:
+//   visitProgram : The fully qualified filename to the visit script that
+//                  we want to run.
+//
+// Returns:    A new string containing the contents of VISITPLUGINDIR or
+//             NULL if there was a problem.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Nov 22 15:17:56 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+char *
+ReadVisItPluginDir(const char *visitProgram)
+{
+    FILE *p = NULL;
+    char *VISITPLUGINDIR = NULL;
+    char line[2000];
+    char *command =  NULL;
+    int vpdLen = 0;
+    const char *vpd = "VISITPLUGINDIR=";
+    vpdLen = strlen(vpd);
+
+    command = (char*)malloc(strlen(visitProgram) + 1 + strlen(" -env"));
+    if(command == NULL)
+        return NULL;
+    sprintf(command, "%s -env", visitProgram);
+    p = popen(command, "r");
+    if(p == NULL)
+    {
+        free(command);
+        return NULL;
+    }
+
+    while(!feof(p))
+    {
+        fgets(line, 2000, p);
+        if(strncmp(line, vpd, vpdLen) == 0)
+        {
+            char *value = NULL, *end = NULL;
+            int len;
+            value = line + vpdLen + 1;
+            len = strlen(value);
+            /* Trim off the newlines at the end.*/
+            end = value + len;
+            while(*end == '\0' || *end == '\n')
+                *end-- = '\0';
+            /* Copy the string. */
+            VISITPLUGINDIR=(char *)malloc(len + 1);
+            strcpy(VISITPLUGINDIR, value);
+            break;
+        }
+    }
+
+    pclose(p);
+    free(command);
+
+    return VISITPLUGINDIR;
 }
 
 // ****************************************************************************
@@ -11821,17 +11904,60 @@ InitializeModule()
 //   Added cli_argc, cli_argv to the Create call so we can do reverse
 //   launching (viewer launching cli).
 //
+//   Brad Whitlock, Wed Nov 22 15:22:08 PST 2006
+//   Added visitProgram argument and code to try and set VISITPLUGINDIR if
+//   it has not been set already.
+//
 // ****************************************************************************
 
 static void
-LaunchViewer()
+LaunchViewer(const char *visitProgram)
 {
+    // If noViewer is false at this stage then we have tried to launch
+    // the viewer already and we should not try again.
+    if(!noViewer)
+        return;
+
+    //
+    // If we've not set up VISITPLUGINDIR then we're probably running
+    // from "import visit" in a regular Python shell. Let's do our best
+    // to set up VISITPLUGINDIR using the provided visitProgram.
+    //
+    bool freeVPD = false;
+    char *VISITPLUGINDIR = getenv("VISITPLUGINDIR");
+    if(VISITPLUGINDIR == NULL)
+    {
+        VISITPLUGINDIR = ReadVisItPluginDir(visitProgram);
+        freeVPD = (VISITPLUGINDIR != NULL);
+    }
+
+    TRY
+    {
+        // Read the plugins.
+        PlotPluginManager::Initialize(PlotPluginManager::Scripting, 
+                                      false, VISITPLUGINDIR);
+        OperatorPluginManager::Initialize(OperatorPluginManager::Scripting,
+                                      false, VISITPLUGINDIR);
+    }
+    CATCH(VisItException)
+    {
+        if(freeVPD) 
+            free(VISITPLUGINDIR);
+        // Return since we could not initialize VisIt.
+        CATCH_RETURN(1);
+    }
+    ENDTRY
+
+    // Free the VISITPLUGINDIR array if we need to.
+    if(freeVPD) 
+        free(VISITPLUGINDIR);
+
     TRY
     {
         //
         // Try and connect to the viewer.
         //
-        viewer->Create(&cli_argc, &cli_argv);
+        viewer->Create(visitProgram, &cli_argc, &cli_argv);
 
         //
         // Tell the windows to show themselves
@@ -12165,6 +12291,9 @@ initscriptfunctions()
 //   Removed code to release the interpreter lock because it was unnecessary
 //   and it was preventing code from running on Windows.
 //
+//   Brad Whitlock, Wed Nov 22 14:00:57 PST 2006
+//   I removed the code to print an error and exit.
+//
 // ****************************************************************************
 
 void
@@ -12203,10 +12332,94 @@ initvisit()
 
     // Define builtin visit functions that are written in python.
     initscriptfunctions();
+}
 
-    // If the call to LaunchViewer returned an error code then print an error.
-    if(initCode == 1)
-        VisItErrorFunc("Could not initialize VisIt!");
+// ****************************************************************************
+// Method: initvisit2
+//
+// Purpose: 
+//   Same as initvisit except that if the "visit" module is not already
+//   available then we add functions to the global namespace instead of
+//   to the "visit" module.
+//
+// Note:       This method is only called from the "front end" visit module
+//             that we use from a standard Python interpreter. It differs
+//             from initvisit because we may be doing "import visit" or
+//             "from visit import *" in the standard Python interpreter and
+//             since we're doing something a little funny (clobbering the
+//             front end interface's methods with these) we need to know
+//             which namespace to use. If the front end VisIt module was
+//             imported using "import visit" then there will be a module
+//             entry called "visit" in the global symbols and we want to
+//             append functions to it. Otherwise, just append the functions
+//             to the global namespace.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Dec 13 11:37:05 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+initvisit2()
+{
+    int initCode = 0;
+    PyObject *d = NULL;
+
+    // save a pointer to the main PyThreadState object
+    mainThreadState = PyThreadState_Get();
+
+    //
+    // Initialize the module, but only do it one time.
+    //
+    if(!moduleInitialized)
+    {
+        MUTEX_CREATE();
+#ifndef POLLING_SYNCHRONIZE
+        SYNC_CREATE();
+#endif
+        THREAD_INIT();
+        initCode = InitializeModule();
+    }
+
+    d = PyEval_GetLocals();
+
+    if(PyDict_GetItemString(d, "visit") != NULL)
+    {
+        // Add the VisIt module to Python. Note that we're passing the address
+        // of the first element of a vector.
+        visitModule = Py_InitModule("visit", &VisItMethods[0]);
+
+        // Add the Python error message.
+        d = PyModule_GetDict(visitModule);
+    }
+    else
+    {
+        // Add the VisIt module's functions to the global namespace.
+        localNameSpace = true;
+        d = PyEval_GetLocals();
+        for(int i = 0; i < VisItMethods.size(); ++i)
+        {
+            if(VisItMethods[i].ml_name != NULL)
+            {
+                PyObject *v = PyCFunction_New(&VisItMethods[i], Py_None);
+                if(v == NULL)
+                    continue;
+                if(PyDict_SetItemString(d, VisItMethods[i].ml_name, v) != 0)
+                    continue;
+                Py_DECREF(v);
+            }
+        }
+    }
+
+    VisItError = PyErr_NewException("visit.VisItException", NULL, NULL);
+    PyDict_SetItemString(d, "VisItException", VisItError);
+    VisItInterrupt = PyErr_NewException("visit.VisItInterrupt", NULL, NULL);
+    PyDict_SetItemString(d, "VisItInterrupt", VisItInterrupt);
+
+    // Define builtin visit functions that are written in python.
+    initscriptfunctions();
 }
 
 // ****************************************************************************

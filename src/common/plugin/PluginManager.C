@@ -89,6 +89,9 @@ using std::sort;
 //    Jeremy Meredith, Tue Feb  8 08:40:57 PST 2005
 //    Added initialization of pluginInitErrors.
 //
+//    Brad Whitlock, Wed Nov 22 16:26:20 PST 2006
+//    I removed the call to SetPluginDir.
+//
 // ****************************************************************************
 
 PluginManager::PluginManager(const string &mgr)
@@ -99,7 +102,6 @@ PluginManager::PluginManager(const string &mgr)
     category = no_category;
     handle = 0;
     pluginError = new char[MAX_PLUGINERROR];
-    SetPluginDir();
 }
 
 // ****************************************************************************
@@ -1279,27 +1281,37 @@ void *dlsym(void *handle, const char *symbol)
 //    parsing algorithm for UNIX directories is inadequate for Windows
 //    directory names.
 //
+//    Brad Whitlock, Wed Nov 22 16:25:19 PST 2006
+//    I made it possible to pass in the plugin directory. If it does not
+//    get passed in (the default) then we use VISITPLUGINDIR.
+//
 // ****************************************************************************
 
 void
-PluginManager::SetPluginDir()
+PluginManager::SetPluginDir(const char *PluginDir)
 {
     // Get the plugin directory from the environment.
-    char *plugindir = getenv("VISITPLUGINDIR");
-    if (!plugindir)
+    const char *plugindir = 0;
+    if(PluginDir == 0)
     {
+        plugindir = getenv("VISITPLUGINDIR");
+        if (!plugindir)
+        {
 #if defined(_WIN32)
-        plugindir = "C:\\VisItWindows\\bin";
+            plugindir = "C:\\VisItWindows\\bin";
 #else
-        EXCEPTION1(VisItException,
+            EXCEPTION1(VisItException,
                    "The environment variable VISITPLUGINDIR must be defined.");
 #endif
+        }
     }
-    
+    else
+        plugindir = PluginDir;
+
 #if defined(_WIN32)
     pluginDirs.push_back(string(plugindir) + SLASH_STRING + managerName + "s");
 #else
-    char *c = plugindir;
+    const char *c = plugindir;
     while (*c)
     {
         string dir;

@@ -149,6 +149,9 @@
 #    Brad Whitlock, Tue Mar 21 14:27:38 PST 2006
 #    I made it build libsim.
 #
+#    Brad Whitlock, Wed Nov 22 11:41:54 PDT 2006
+#    I added a top level visitmodule target.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -200,3 +203,6 @@ message:
 maintainer-clean: distclean
 	-$(RM) ${DISTCLEAN_FILES}
 	-$(RM) configure include/config.h.in
+
+visitmodule:
+	do (cd visitpy && $(MAKE) $@) || exit 1; done

@@ -1618,7 +1618,7 @@ bool ColorAttribute::SetByName(const char *const colorName)
 // Creation:   July 13, 2006
 // **************************************************************************
 
-const char *const ColorAttribute::GetByName() const
+const char *ColorAttribute::GetByName() const
 {
     for (int i = 0; i < numNamedColors; i++)
     {

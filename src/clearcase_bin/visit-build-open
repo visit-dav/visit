@@ -9,6 +9,10 @@
 # Usage:
 #    visit-build-open -d <distribution>
 #
+# Modifications:
+#   Brad Whitlock, Fri Dec 15 09:51:55 PDT 2006
+#   Added --enable-visitmodule for some platforms.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -203,7 +207,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
+env CXXFLAGS=-O2 ./configure --enable-parallel --enable-visitmodule >> ../buildlog 2>&1
 make -j 4 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.linux.tar.gz ..
@@ -253,7 +257,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure >> ../buildlog 2>&1
+env CXXFLAGS=-O2 ./configure --enable-visitmodule >> ../buildlog 2>&1
 cd databases/Fluent
 sed "s/\\\$(CXXFLAGSORIG)/-D_LARGEFILE64_SOURCE -Wall -Wno-sign-compare -Wno-deprecated/" Makefile > Makefile+;rm Makefile;mv Makefile+ Makefile
 cd ../..
@@ -306,7 +310,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
+env CXXFLAGS=-O2 ./configure --enable-parallel --enable-visitmodule >> ../buildlog 2>&1
 make >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.irix6.tar.gz ..
@@ -456,7 +460,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
+env CXXFLAGS=-O2 ./configure --enable-parallel --enable-visitmodule >> ../buildlog 2>&1
 make -j 3 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.linux.tar.gz ..
@@ -506,7 +510,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-env CC=icc CXX=icpc CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
+env CC=icc CXX=icpc CXXFLAGS=-O2 ./configure --enable-parallel --enable-visitmodule >> ../buildlog 2>&1
 make -j 3 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist -compiler icc >> ../buildlog 2>&1
 mv visit\$ver2.linux-icc.tar.gz ..
@@ -556,7 +560,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
+env CXXFLAGS=-O2 ./configure --enable-parallel --enable-visitmodule >> ../buildlog 2>&1
 make -j 3 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.linux-ia64.tar.gz ..
@@ -606,7 +610,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
+env CXXFLAGS=-O2 ./configure --enable-parallel --enable-visitmodule >> ../buildlog 2>&1
 make -j 3 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist -switch ib >> ../buildlog 2>&1
 mv visit\$ver2.linux-x86_64-ib.tar.gz ..
@@ -656,7 +660,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
+env CXXFLAGS=-O2 ./configure --enable-parallel --enable-visitmodule >> ../buildlog 2>&1
 make -j 6 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ..

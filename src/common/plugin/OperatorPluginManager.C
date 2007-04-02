@@ -100,15 +100,20 @@ OperatorPluginManager::~OperatorPluginManager()
 //    Jeremy Meredith, Wed Jan 16 09:47:44 PST 2002
 //    Added parallel flag.
 //
+//    Brad Whitlock, Wed Nov 22 16:23:24 PST 2006
+//    I added the pluginDir flag so applications can tell the plugin 
+//    manager where to look directly without environment vars.
+//
 // ****************************************************************************
 
 void
 OperatorPluginManager::Initialize(const PluginCategory pluginCategory,
-                                  bool                 parallel)
+                                  bool parallel, const char *pluginDir)
 {
     Instance();
     instance->category = pluginCategory;
     instance->parallel = parallel;
+    instance->SetPluginDir(pluginDir);
     instance->ReadPluginInfo();
 }
 

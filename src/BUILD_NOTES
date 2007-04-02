@@ -14,7 +14,7 @@ shell prompt.
     Library  Version   Description            For More Information
     =======  =======   ===========            ====================
     Mesa     5.0       3-D Graphics Library   http://www.mesa3d.org/
-    Python   2.1.2     Scripting Language     http://www.python.org
+    Python   2.5       Scripting Language     http://www.python.org
     Qt       3.3.2     GUI Toolkit            http://www.trolltech.com
     Silo     4.5.1     File I/O library       http://www.llnl.gov/bdiv/meshtv
     VTK      5.0.0b    Visualization Toolkit  http://www.kitware.com
@@ -728,16 +728,7 @@ directions listed below to build Python.  If you have any problems building
 or installing Python, read the README file in the Python distribution for more
 information.
 
-Note that instructions for building 2 different versions of Python are given
-here because versions of VisIt built using xlc (7.0.0.2 or later) can have 
-threading problems that lead to crashes of the CLI when Python 2.1.2 is used.
-For that reason, if you are building on AIX using a newer version of xlc,
-download the Python 2.4.2 source code from http://www.python.org and use 
-it to build VisIt. VisIt will eventually be upgraded to use Python 2.4.2 or
-later on all platforms.
-
-
-Building Python 2.1.2
+Building Python 2.5
 ======================
 
 On itanium (ia64) systems, the -fPIC flag is needed.  On opteron systems,
@@ -758,12 +749,25 @@ as described above but -64 is added to OPT and LDFLAGS.  For example:
 
 env OPT="-64 -O2" LDFLAGS="-64" ./configure --prefix=$VISITDIR/python/$VISITARCH
 
+When you need to specify a C compiler other than the default gcc compiler 
+that Python's configure process will detect, you should also specify a 
+compatible C++ compiler so you can build C++ Python extensions. You can
+specify compilers using the following example command lines:
+
+env CXX=CC ./configure --with-gcc=cc --with-cxx=CC --prefix=$VISITDIR/python/$VISITARCH     # irix
+env CXX=xlC ./configure --with-gcc=xlc --with-cxx=xlC --prefix=$VISITDIR/python/$VISITARCH  # aix
+
+On AIX systems, you may want to build using the vendor xlc compiler in 64 bit mode.
+Use the following command line to do so:
+
+env CXX=xlC ./configure --with-gcc="xlc -q64 -O2" --with-cxx="xlC -q64 -O2" --disable-ipv6 AR="ar -X64" --prefix=$VISITDIR/python/$VISITARCH 
+
 #
 # Build and install it in the visit directory under the python directory.
 #
-gunzip Python-2.1.2.tar.gz
-tar xf Python-2.1.2.tar
-cd Python-2.1.2
+gunzip Python-2.5.tgz
+tar xf Python-2.5.tar
+cd Python-2.5
 ./configure --prefix=$VISITDIR/python/$VISITARCH
 make
 make install
@@ -773,51 +777,21 @@ make install
 #
 mkdir tmpdir
 cd tmpdir
-ar -x ../libpython2.1.a
+ar -x ../libpython2.5.a
 # Use the appropriate command based on the operating system on which
 # you are creating the shared library.
-g++ -Wl,-G -shared -o ../libpython2.1.so *.o                         # aix
-g++ -shared -o ../libpython2.1.so *.o                                # irix
-CC  -shared -o ../libpython2.1.so *.o                                # irix
-CC  -64 -shared -o ../libpython2.1.so *.o                            # irix 64
-g++ -shared -o ../libpython2.1.so *.o                                # linux
-g++ -m64 -shared -o ../libpython2.1.so *.o                           # opteron
-g++ -Wl,-G -o ../libpython2.1.so *.o                                 # solaris
-g++ -Wl,-expect_unresolved -Wl,'*' -shared -o ../libpython2.1.so *.o # tru64
+xlc -qmkshrobj -o ../libpython2.5.so ../libpython2.5.a -lm           # aix / xlc
+g++ -Wl,-G -shared -o ../libpython2.5.so *.o                         # aix / gcc
+g++ -shared -o ../libpython2.5.so *.o                                # irix
+CC  -shared -o ../libpython2.5.so *.o                                # irix
+CC  -64 -shared -o ../libpython2.5.so *.o                            # irix 64
+g++ -shared -o ../libpython2.5.so *.o                                # linux
+g++ -m64 -shared -o ../libpython2.5.so *.o                           # opteron
+g++ -Wl,-G -o ../libpython2.5.so *.o                                 # solaris
+g++ -Wl,-expect_unresolved -Wl,'*' -shared -o ../libpython2.5.so *.o # tru64
 cd ..
 rm -rf tmpdir
-cp libpython2.1.so $VISITDIR/python/$VISITARCH/lib/python2.1/config/libpython2.1.so
-cd ..
-
-
-Building Python 2.4.2 (AIX instructions)
-=========================================
-
-tar zxvf Python-2.4.2.tar.gz
-cd Python-2.4.2
-
-#
-# Make changes to setup.py
-# Comment out lines 469-475, 727-735, 960, 1066
-# Save the changes and exit your editor
-#
-
-#
-# Configure and build Python
-#
-./configure --with-gcc="xlc_r -q64 -O2" --with-cxx="xlC_r -q64 -O2" --disable-ipv6 AR="ar -X64" --prefix=$VISITDIR/python/$VISITARCH 
-make
-make install
-
-#
-# Create a shared library version of the python library.
-#
-xlc -qmkshrobj -o libpython2.4.so libpython2.4.a -lm
-
-#
-# Install the shared library version of the python library.
-#
-cp libpython2.4.so $VISITDIR/python/$VISITARCH/lib/python2.4/config/libpython2.4.so
+cp libpython2.5.so $VISITDIR/python/$VISITARCH/lib/python2.5/config/libpython2.5.so
 cd ..
 
 

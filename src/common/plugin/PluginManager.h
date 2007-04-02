@@ -81,6 +81,9 @@
 //    for PluginSymbol to not print an error if requested to be
 //    silent about such things.
 //
+//    Brad Whitlock, Wed Nov 22 16:26:54 PST 2006
+//    I added an argument to SetPluginDir.
+//
 // ****************************************************************************
 
 class PLUGIN_API PluginManager
@@ -97,10 +100,6 @@ class PLUGIN_API PluginManager
     };
   public:
     virtual ~PluginManager();
-
-    static void                     Initialize(const std::string &managerName,
-                                               const PluginCategory,
-                                               bool=false);
 
     void                            DisablePlugin(const std::string&);
     void                            EnablePlugin(const std::string&);
@@ -131,7 +130,7 @@ class PLUGIN_API PluginManager
   protected:
                                     PluginManager(const std::string&);
     void                            ReadPluginInfo();
-    void                            SetPluginDir();
+    void                            SetPluginDir(const char *);
     void                            ReadPluginDir(std::vector<
                                                   std::pair<std::string,
                                                             std::string> > &);

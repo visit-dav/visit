@@ -940,10 +940,19 @@ ViewerProxy::AddArgument(const std::string &arg)
 //    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
 //    Added plotInfoAtts.
 //
+//    Brad Whitlock, Wed Nov 22 14:17:53 PST 2006
+//    Added visitProgram argument.
+//
 // ****************************************************************************
 
 void
 ViewerProxy::Create(int *inputArgc, char ***inputArgv)
+{
+    Create("visit", inputArgc, inputArgv);
+}
+
+void
+ViewerProxy::Create(const char *visitProgram, int *inputArgc, char ***inputArgv)
 {
     //
     // Look for flags required for reverse launching.
@@ -973,7 +982,7 @@ ViewerProxy::Create(int *inputArgc, char ***inputArgv)
         // Create the viewer process.  The viewer is executed using
         // "visit -viewer".
         //
-        viewer = new RemoteProcess(std::string("visit"));
+        viewer = new RemoteProcess(std::string(visitProgram));
         viewer->AddArgument(std::string("-viewer"));
 
         //

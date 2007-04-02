@@ -92,6 +92,7 @@ PlotPluginManager::~PlotPluginManager()
 //  Arguments:
 //    pluginCategory:   either GUI, Viewer, or Engine
 //    parallel      :   true if need parallel libraries
+//    pluginDir     :   Allows us to pass in the plugin dir that we want to use.
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    September 26, 2001
@@ -100,15 +101,19 @@ PlotPluginManager::~PlotPluginManager()
 //    Jeremy Meredith, Wed Jan 16 09:47:44 PST 2002
 //    Added parallel flag.
 //
+//    Brad Whitlock, Wed Nov 22 16:29:46 PST 2006
+//    Added pluginDir.
+//
 // ****************************************************************************
 
 void
 PlotPluginManager::Initialize(const PluginCategory pluginCategory,
-                              bool                 parallel)
+                              bool parallel, const char *pluginDir)
 {
     Instance();
     instance->category = pluginCategory;
     instance->parallel = parallel;
+    instance->SetPluginDir(pluginDir);
     instance->ReadPluginInfo();
 }
 

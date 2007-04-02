@@ -105,7 +105,9 @@ class PLUGIN_API OperatorPluginManager : public PluginManager
   public:
     virtual                        ~OperatorPluginManager();
 
-    static void                     Initialize(const PluginCategory, bool=false);
+    static void                     Initialize(const PluginCategory pluginCategory,
+                                               bool parallel=false,
+                                               const char *pluginDir = 0);
     static OperatorPluginManager   *Instance();
 
     virtual void                    ReloadPlugins();
