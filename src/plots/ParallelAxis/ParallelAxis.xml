@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+  <Plugin name="ParallelAxis" type="plot" label="ParallelAxis" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" vartype="scalar,array" iconFile="ParallelAxis.xpm">
+    <Files components="G">
+        QvisParallelAxisWidget.C QvisParallelAxisPlotWizard.C
+    </Files>
+    <Files components="W">
+        QvisParallelAxisWidget.h QvisParallelAxisPlotWizard.h
+    </Files>
+    <Files components="V">
+        avtParallelAxisFilter.C PortableFont.C
+    </Files>
+    <Files components="E">
+        avtParallelAxisFilter.C PortableFont.C
+    </Files>
+    <Attribute name="ParallelAxisAttributes" purpose="This class contains the plot attributes for the ParallelAxis plot." persistent="true" codefile="ParallelAxis.code">
+      <Field name="orderedAxisNames" label="orderedAxisNames" type="stringVector">
+        default
+      </Field>
+      <Field name="shownVarAxisPosition" label="shownVarAxisPosition" type="int">
+        0
+      </Field>
+      <Field name="axisMinima" label="axisMinima" type="doubleVector">
+        -1e+37
+      </Field>
+      <Field name="axisMaxima" label="axisMaxima" type="doubleVector">
+        1e+37
+      </Field>
+      <Field name="extentMinima" label="extentMinima" type="doubleVector">
+        0.0
+      </Field>
+      <Field name="extentMaxima" label="extentMaxima" type="doubleVector">
+        1.0
+      </Field>
+    </Attribute>
+  </Plugin>

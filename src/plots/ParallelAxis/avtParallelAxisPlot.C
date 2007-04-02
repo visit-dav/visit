@@ -1,0 +1,425 @@
+// ************************************************************************* //
+//                              avtParallelAxisPlot.C                        //
+// ************************************************************************* //
+
+#include <avtParallelAxisPlot.h>
+#include <avtParallelAxisFilter.h>
+
+#include <ParallelAxisAttributes.h>
+
+#include <ColorAttribute.h>
+
+#include <avtColorTables.h>
+#include <avtLevelsMapper.h>
+#include <avtLookupTable.h>
+
+#include <math.h>
+#include <limits.h>
+#include <float.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+
+// ****************************************************************************
+//  Method: avtParallelAxisPlot
+//
+//  Purpose: Constructor for the avtParallelAxisPlot class.
+//
+//  Programmer: Mark Blair
+//  Creation:   Mon Mar 27 18:24:00 PST 2006
+//
+//  Modifications:
+//   
+// ****************************************************************************
+
+avtParallelAxisPlot::avtParallelAxisPlot()
+{
+    levelsMapper  = new avtLevelsMapper;
+    avtLUT        = new avtLookupTable;
+    parAxisFilter = NULL;
+}
+
+
+// ****************************************************************************
+//  Method: ~avtParallelAxisPlot
+//
+//  Purpose: Destructor for the avtParallelAxisPlot class.
+//
+//  Programmer: Mark Blair
+//  Creation:   Mon Mar 27 18:24:00 PST 2006
+//
+//  Modifications:
+//   
+// ****************************************************************************
+
+avtParallelAxisPlot::~avtParallelAxisPlot()
+{
+    if (levelsMapper != NULL)
+    {
+        delete levelsMapper;
+        levelsMapper = NULL;
+    }
+
+    if (parAxisFilter != NULL)
+    {
+        delete parAxisFilter;
+        parAxisFilter = NULL;
+    }
+
+    if (avtLUT != NULL)
+    {
+        delete avtLUT;
+        avtLUT = NULL;
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  avtParallelAxisPlot::Create
+//
+//  Purpose: Calls the constructor.
+//
+//  Programmer: Mark Blair
+//  Creation:   Mon Mar 27 18:24:00 PST 2006
+//
+//  Modifications:
+//   
+// ****************************************************************************
+
+avtPlot*
+avtParallelAxisPlot::Create()
+{
+    return new avtParallelAxisPlot;
+}
+
+
+// ****************************************************************************
+//  Method: avtParallelAxisPlot::SetAtts
+//
+//  Purpose: Sets attributes in the plot to specified values.
+//
+//  Arguments:
+//      atts    The attribute values for this ParallelAxis plot.
+//
+//  Programmer: Mark Blair
+//  Creation:   Mon Mar 27 18:24:00 PST 2006
+//
+//  Modifications:
+//   
+// ****************************************************************************
+
+void
+avtParallelAxisPlot::SetAtts(const AttributeGroup *a)
+{
+    needsRecalculation =
+        atts.ChangesRequireRecalculation(*(const ParallelAxisAttributes*)a);
+    atts = *(const ParallelAxisAttributes*)a;
+    
+    SetColors();
+
+    behavior->SetRenderOrder(DOES_NOT_MATTER);
+    behavior->SetAntialiasedRenderOrder(DOES_NOT_MATTER);
+}
+
+
+// ****************************************************************************
+//  Method: avtParallelAxisPlot::SetColors
+//
+//  Purpose: Sets RGB components of colors used in the plot.
+//
+//  Programmer: Mark Blair
+//  Creation:   Mon Mar 27 18:24:00 PST 2006
+//
+//  Modifications:
+//   
+// ****************************************************************************
+
+void
+avtParallelAxisPlot::SetColors()
+{
+    int levelColor, redID, red, green, blue;
+    unsigned char *plotColors = new unsigned char[16];
+
+    ColorAttribute colorAtt;
+    ColorAttributeList colorAttList;
+
+    for (redID = 0; redID < 16; redID += 4)
+    {
+        switch (redID)
+        {
+            case  0: levelColor = PCP_ALTERNATE_DATA_CURVE_COLOR;
+                     break;
+            case  4: levelColor = PCP_DEFAULT_AXIS_COLOR;
+                     break;
+            case  8: levelColor = PCP_DEFAULT_AXIS_TITLE_COLOR;
+                     break;
+            case 12: levelColor = PCP_DEFAULT_RANGE_BOUND_COLOR;
+                     break;
+            default:
+                     break;
+        }
+
+        red   = (levelColor >> 24) & 0xff;
+        green = (levelColor >> 16) & 0xff;
+        blue  = (levelColor >>  8) & 0xff;
+
+        colorAtt.SetRgba(red, green, blue, 255);
+        colorAttList.AddColorAttribute(colorAtt);
+
+        plotColors[redID  ] = (unsigned char)red;
+        plotColors[redID+1] = (unsigned char)green;
+        plotColors[redID+2] = (unsigned char)blue;
+        plotColors[redID+3] = 255;
+    }
+
+    avtLUT->SetLUTColorsWithOpacity(plotColors, 4);
+    levelsMapper->SetColors(colorAttList);
+
+    delete [] plotColors;
+}
+
+
+// ****************************************************************************
+//  Method: avtParallelAxisPlot::GetMapper
+//
+//  Purpose: Gets the levels mapper as its base class (avtMapper) for the
+//           plot's class (avtPlot).
+//
+//  Returns: The mapper for this plot.
+//
+//  Programmer: Mark Blair
+//  Creation:   Mon Mar 27 18:24:00 PST 2006
+//
+//  Modifications:
+//   
+// ****************************************************************************
+
+avtMapper *
+avtParallelAxisPlot::GetMapper(void)
+{
+    return levelsMapper;
+}
+
+
+// ****************************************************************************
+//  Method: avtParallelAxisPlot::ApplyOperators
+//
+//  Purpose: Applies the implied operators for a ParallelAxis plot, namely,
+//           no operators at all.
+//
+//  Arguments:
+//      input   The input data object.
+//
+//  Returns:    The input data object.
+//
+//  Programmer: Mark Blair
+//  Creation:   Mon Mar 27 18:24:00 PST 2006
+//
+//  Modifications:
+//   
+// ****************************************************************************
+
+avtDataObject_p
+avtParallelAxisPlot::ApplyOperators(avtDataObject_p input)
+{
+    return input;
+}
+
+// ****************************************************************************
+//  Method: avtParallelAxisPlot::ApplyRenderingTransformation
+//
+//  Purpose: Performs the rendering transformation for a ParallelAxis plot,
+//           namely, an avtParallelAxisFilter.
+//
+//  Arguments:
+//      input   The input data object.
+//
+//  Returns:    The data object after the ParallelAxis filter is applied.
+//
+//  Programmer: Mark Blair
+//  Creation:   Mon Mar 27 18:24:00 PST 2006
+//
+//  Modifications:
+//   
+// ****************************************************************************
+
+avtDataObject_p
+avtParallelAxisPlot::ApplyRenderingTransformation(avtDataObject_p input)
+{
+    if (parAxisFilter != NULL)
+    {
+        delete parAxisFilter;
+        parAxisFilter = NULL;
+    }
+
+    parAxisFilter = new avtParallelAxisFilter(atts);
+
+    parAxisFilter->SetInput(input);
+
+    return parAxisFilter->GetOutput();
+}
+
+
+// ****************************************************************************
+//  Method: avtParallelAxisPlot::CustomizeBehavior
+//
+//  Purpose: Customizes the behavior of the output.  
+//
+//  Programmer: Mark Blair
+//  Creation:   Mon Mar 27 18:24:00 PST 2006
+//
+//  Modifications:
+//   
+// ****************************************************************************
+
+void
+avtParallelAxisPlot::CustomizeBehavior(void)
+{
+    behavior->GetInfo().GetAttributes().SetWindowMode(WINMODE_CURVE);
+
+    behavior->SetShiftFactor(0.0);
+    behavior->SetLegend(NULL);
+}
+
+
+// ****************************************************************************
+//  Method: avtParallelAxisPlot::CustomizeMapper
+//
+//  Purpose: (Currently just a place holder).
+//
+//  Programmer: Mark Blair
+//  Creation:   Mon Mar 27 18:24:00 PST 2006
+//
+//  Modifications:
+//   
+// ****************************************************************************
+
+void
+avtParallelAxisPlot::CustomizeMapper(avtDataObjectInformation &info)
+{
+//  May need to do something here in the future.
+    return;
+}
+
+
+// ****************************************************************************
+//  Method: avtParallelAxisPlot::EnhanceSpecification
+//
+//  Purpose: Make sure that all axis variables are specified as secondary
+//           variables except those which are components of the pipeline
+//           variable.
+//
+//  Programmer: Mark Blair
+//  Creation:   Fri Apr 14 18:49:00 PDT 2006
+//
+//  Modifications:
+//
+//      Mark Blair, Wed Aug 16 16:46:00 PDT 2006
+//      Added check for attribute consistency.
+//
+// ****************************************************************************
+
+avtPipelineSpecification_p
+avtParallelAxisPlot::EnhanceSpecification(avtPipelineSpecification_p in_spec)
+{
+    if (!atts.AttributesAreConsistent())
+        return in_spec;
+
+    stringVector curAxisVarNames = atts.GetOrderedAxisNames();
+    stringVector needSecondaryVars;
+    const char *inPipelineVar = in_spec->GetDataSpecification()->GetVariable();
+    std::string outPipelineVar(inPipelineVar);
+    std::string axisVarName;
+    int axisNum;
+
+    avtPipelineSpecification_p outSpec;
+
+    for (axisNum = 0; axisNum < curAxisVarNames.size(); axisNum++)
+    {
+        if (curAxisVarNames[axisNum] == outPipelineVar) break;
+    }
+    
+    if (axisNum < curAxisVarNames.size())
+    {
+        outSpec = new avtPipelineSpecification(in_spec);
+    }
+    else
+    {
+        outPipelineVar = curAxisVarNames[0];
+        
+        avtDataSpecification_p newDataSpec = new avtDataSpecification(
+            in_spec->GetDataSpecification(), outPipelineVar.c_str());
+        outSpec = new avtPipelineSpecification(in_spec, newDataSpec);
+    }
+
+    for (axisNum = 0; axisNum < curAxisVarNames.size(); axisNum++)
+    {
+        if ((axisVarName = curAxisVarNames[axisNum]) != outPipelineVar)
+        {
+            needSecondaryVars.push_back(axisVarName);
+        }
+    }
+        
+    const std::vector<CharStrRef> curSecondaryVars =
+        in_spec->GetDataSpecification()->GetSecondaryVariables();
+    int needSecVNum, curSecVNum;
+    const char *needSecondaryVar;
+    const char *curSecondaryVar;
+
+    for (needSecVNum = 0; needSecVNum < needSecondaryVars.size(); needSecVNum++)
+    {
+        needSecondaryVar = needSecondaryVars[needSecVNum].c_str();
+
+        for (curSecVNum = 0; curSecVNum < curSecondaryVars.size(); curSecVNum++)
+        {
+            if (strcmp(*curSecondaryVars[curSecVNum], needSecondaryVar) == 0)
+            {
+                break;
+            }
+        }
+
+        if (curSecVNum >= curSecondaryVars.size())
+        {
+          outSpec->GetDataSpecification()->AddSecondaryVariable(needSecondaryVar);
+        }
+    }
+
+    for (curSecVNum = 0; curSecVNum < curSecondaryVars.size(); curSecVNum++ ) {
+        curSecondaryVar = *curSecondaryVars[curSecVNum];
+
+        for (needSecVNum = 0; needSecVNum < needSecondaryVars.size(); needSecVNum++)
+        {
+            if (strcmp(needSecondaryVars[needSecVNum].c_str(),curSecondaryVar) == 0)
+            {
+                break;
+            }
+        }
+
+        if (needSecVNum >= needSecondaryVars.size())
+        {
+          outSpec->GetDataSpecification()->RemoveSecondaryVariable(curSecondaryVar);
+        }
+    }
+
+    return outSpec;
+}
+
+// ****************************************************************************
+//  Method: avtParallelAxisPlot::ReleaseData
+//
+//  Purpose: Release the problem-sized data associated with this plot.
+//
+//  Programmer: Mark Blair
+//  Creation:   Mon Mar 27 18:24:00 PST 2006
+//
+//  Modifications:
+//   
+// ****************************************************************************
+
+void
+avtParallelAxisPlot::ReleaseData(void)
+{
+    avtSurfaceDataPlot::ReleaseData();
+
+    if (parAxisFilter != NULL) parAxisFilter->ReleaseData();
+}

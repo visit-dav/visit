@@ -45,6 +45,8 @@
 #include <plugin_vartypes.h>
 #include <stdio.h>
 
+#include <string>
+
 // Forward declarations.
 class AttributeSubject;
 class QvisNotepadArea;
@@ -52,6 +54,7 @@ class QvisPostableWindowObserver;
 class QvisWizard;
 class QWidget;
 class avtDatabaseMetaData;
+class ExpressionList;
 class avtPlot;
 
 // ****************************************************************************
@@ -120,6 +123,9 @@ class avtPlot;
 //    Brad Whitlock, Thu Jan 5 14:40:42 PST 2006
 //    I removed explicit support for logging from the scripting plugins.
 //
+//    Mark Blair, Mon Aug 21 18:29:00 PDT 2006
+//    Added to information passed to plot wizard when created.
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralPlotPluginInfo
@@ -147,8 +153,9 @@ class PLUGIN_API GUIPlotPluginInfo : public virtual CommonPlotPluginInfo
     virtual int GetVariableTypes() const = 0;
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, QvisNotepadArea *notepad) = 0;
-    virtual QvisWizard *CreatePluginWizard(AttributeSubject *attr,
-        QWidget *parent, const char *name =0)
+    virtual QvisWizard *CreatePluginWizard(AttributeSubject *attr, QWidget *parent,
+        const std::string &varName, const avtDatabaseMetaData *md,
+        const ExpressionList *expList, const char *name =0)
     {
         return 0;
     }
