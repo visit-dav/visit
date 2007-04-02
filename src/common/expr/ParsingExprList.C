@@ -309,6 +309,9 @@ ParsingExprList::GetExpressionTree(Expression *expr)
 //    a vector of strings because the vector constructor was not taking
 //    the set container's iterators successfully on MSVC 6.0.
 //
+//    Jeremy Meredith, Mon Jun 13 15:51:50 PDT 2005
+//    Delete the parse tree when we're done with it.  This fixes leaks.
+//
 // ****************************************************************************
 
 static string
@@ -343,7 +346,10 @@ GetRealVariableHelper(const string &var, set<string> expandedVars)
     // Get the leaves for this expression
     const set<string> &varLeaves = tree->GetVarLeaves();
     if (varLeaves.empty())
+    {
+        delete tree;
         return "";
+    }
 
     // For each leaf, look for a real variable
 #if defined(_WIN32) && defined(USING_MSVC6)
@@ -359,10 +365,14 @@ GetRealVariableHelper(const string &var, set<string> expandedVars)
 
         // If we found a real variable, return it!
         if (!realvar.empty())
+        {
+            delete tree;
             return realvar;
+        }
     }
 
     // Didn't find any real variables
+    delete tree;
     return "";
 }
 

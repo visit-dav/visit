@@ -91,6 +91,12 @@ ExprParser::ExprParser(ExprNodeFactory *f) : Parser(), factory(f)
 //    Hank Childs, Fri Jan 28 14:07:18 PST 2005
 //    Use exception macros.
 //
+//    Jeremy Meredith, Mon Jun 13 15:46:22 PDT 2005
+//    Split ConstExpr into multiple concrete base classes.
+//    Made FunctionExpr, MachExpr, and ArgsExpr use names
+//    instead of Identifier tokens.  These two changes were to
+//    remove Token references from the parse tree node classes.
+//
 // ****************************************************************************
 ParseTreeNode*
 ExprParser::ApplyRule(const Symbol           &sym,
@@ -111,7 +117,6 @@ ExprParser::ApplyRule(const Symbol           &sym,
                            (ExprNode*)(E[2]));
 
             break;
-
         case 1:
             node = factory->CreateBinaryExpr(p,
                                           ((Character*)T[1])->GetVal(),
@@ -192,16 +197,20 @@ ExprParser::ApplyRule(const Symbol           &sym,
         switch (rule->GetID())
         {
         case 0:
-            node = factory->CreateConstExpr(p, (ExprToken *)T[0]);
+            node = factory->CreateIntegerConstExpr(p,
+                                         ((IntegerConst *)T[0])->GetValue());
             break;
         case 1:
-            node = factory->CreateConstExpr(p, (ExprToken *)T[0]);
+            node = factory->CreateFloatConstExpr(p,
+                                         ((FloatConst *)T[0])->GetValue());
             break;
         case 2:
-            node = factory->CreateConstExpr(p, (ExprToken *)T[0]);
+            node = factory->CreateStringConstExpr(p,
+                                         ((StringConst *)T[0])->GetValue());
             break;
         case 3:
-            node = factory->CreateConstExpr(p, (ExprToken *)T[0]);
+            node = factory->CreateBooleanConstExpr(p,
+                                         ((BoolConst *)T[0])->GetValue());
             break;
         }
     } else if (sym == Vector)
@@ -261,12 +270,13 @@ ExprParser::ApplyRule(const Symbol           &sym,
         switch (rule->GetID())
         {
         case 0:
-            node = factory->CreateFunctionExpr(p, ((Identifier*)T[0]));
+            node = factory->CreateFunctionExpr(p,
+                                               ((Identifier*)T[0])->GetVal());
             break;
         case 1:
             node = factory->CreateFunctionExpr(p,
-                                            ((Identifier*)T[0]),
-                                            (ArgsExpr*)(E[2]));
+                                               ((Identifier*)T[0])->GetVal(),
+                                               (ArgsExpr*)(E[2]));
             break;
         }
     } else if (sym == Args)
@@ -288,7 +298,8 @@ ExprParser::ApplyRule(const Symbol           &sym,
             node = new ArgExpr(p, (ExprParseTreeNode*)E[0], p.GetText(text));
             break;
         case 1:
-            node = new ArgExpr(p, ((Identifier*)T[0]),(ExprParseTreeNode*)E[2],
+            node = new ArgExpr(p, ((Identifier*)T[0])->GetVal(),
+                               (ExprParseTreeNode*)E[2],
                                p.GetText(text));
             break;
         case 2:
@@ -304,15 +315,15 @@ ExprParser::ApplyRule(const Symbol           &sym,
             ((PathExpr *) node)->Append("/");
             ((PathExpr *) node)->Append(((Identifier*)T[2])->GetVal());
 
-            delete  E[1];
+            delete E[1];
             break;
         case 1:
             node = new PathExpr(p, "/");
             ((PathExpr *) node)->Append(((Identifier*)T[1])->GetVal());
-            delete  E[0];
+            delete E[0];
             break;
         case 2:
-          node = new PathExpr(p, ((Identifier*)T[0])->GetVal());
+            node = new PathExpr(p, ((Identifier*)T[0])->GetVal());
             break;
         }
     } else if (sym == MultiSlash)
@@ -384,7 +395,7 @@ ExprParser::ApplyRule(const Symbol           &sym,
         switch (rule->GetID())
         {
         case 0:
-            node = new MachExpr(p, ((Identifier*)T[1]));
+            node = new MachExpr(p, ((Identifier*)T[1])->GetVal());
             break;
         }
     } else if (sym == TimeSpec)
@@ -463,6 +474,10 @@ ExprParser::ApplyRule(const Symbol           &sym,
 //    Hank Childs, Fri Jan 28 14:07:18 PST 2005
 //    Use exception macros.
 //
+//    Jeremy Meredith, Mon Jun 13 16:17:14 PDT 2005
+//    Delete the tokens that have not taken part in a rule reduction -- in 
+//    this case that means Space tokens and the final EOF token.
+//
 // ****************************************************************************
 ParseTreeNode*
 ExprParser::Parse(const std::string &s)
@@ -484,7 +499,10 @@ ExprParser::Parse(const std::string &s)
             token = scanner.ScanOneToken();
             if (token->GetType() != TT_Space)
                 ParseOneToken(token);
+            else
+                delete token;
         }
+        delete token;
     }
     CATCH2(UnhandledReductionException, e)
     {

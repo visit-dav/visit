@@ -25,6 +25,9 @@
 //    Hank Childs, Tue Dec 28 16:04:59 PST 2004
 //    Renamed GetText to be GetErrorText.  Added new method called GetText.
 //
+//    Jeremy Meredith, Mon Jun 13 12:14:21 PDT 2005
+//    Let Join() work with null positions.
+//
 // ****************************************************************************
 
 class PARSER_API Pos
@@ -34,7 +37,7 @@ class PARSER_API Pos
     int Minimum(int a, int b) { return (a < b) ? a : b; }
     int Maximum(int a, int b) { return (a > b) ? a : b; }
   public:
-    Pos()             { p1 = -1;              p2 = -1;              }
+    Pos()             { p1 = 999999;          p2 = -1;              }
     Pos(const Pos &p) { p1 = p.p1;            p2 = p.p2;            }
     Pos(int p)        { p1 = p;               p2 = p;               }
     Pos(int a, int b) { p1 = Minimum(a,b);        p2 = Maximum(a,b);        }
@@ -42,7 +45,7 @@ class PARSER_API Pos
 
     void Join(const Pos &p)       { p1=Minimum(p1, p.p1); p2=Maximum(p2, p.p2); }
     void operator=(const Pos &p)  { p1=p.p1;               p2=p.p2;     }
-    bool IsNull()                 { return (p1 == -1) && (p2 == -1); }
+    bool IsNull()                 { return (p2 == -1); }
 
     void PrintErrorText(ostream &o, const std::string &s) const
     {

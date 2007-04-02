@@ -103,6 +103,9 @@ avtRandomFilter::DeriveVariable(vtkDataSet *in_ds)
 //    Renamed EngineExprNode to avtExprNode due to a refactoring.
 //    Also renamed Token to ExprToken for the same reason.
 //
+//    Jeremy Meredith, Mon Jun 13 11:42:38 PDT 2005
+//    Changed the way constant expressions work.
+//
 // ****************************************************************************
 void
 avtRandomFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
@@ -130,24 +133,16 @@ avtRandomFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     // Pull off the second argument and make sure it's a constant.
     ArgExpr *secondarg = (*arguments)[1];
     avtExprNode *secondTree = dynamic_cast<avtExprNode*>(secondarg->GetExpr());
-    if (secondTree->GetTypeName() != "Const")
+    if (secondTree->GetTypeName() != "IntegerConst")
     {
         debug5 << "avtRandomFilter: Second argument is not a constant: "
                << secondTree->GetTypeName().c_str() << endl;
-        EXCEPTION1(ExpressionException, "avtRandomFilter: Second argument is not a constant.");
-    }
-    avtConstExpr *con = dynamic_cast<avtConstExpr*>(secondTree);
-
-    // Now check that it's an int.
-    ExprToken *t = con->GetToken();
-    if (t->GetType() != TT_IntegerConst)
-    {
-        debug5 << "avtRandomFilter: Second argument is not an integer: "
-               << GetTokenTypeString(t->GetType()).c_str() << endl;
-        EXCEPTION1(ExpressionException, "avtRandomFilter: Second argument is not an integer.");
+        EXCEPTION1(ExpressionException, "avtRandomFilter: Second argument is "
+                   "not an integer constant.");
     }
 
-    int val = dynamic_cast<IntegerConst*>(t)->GetValue();
+    // Get its value
+    int val = dynamic_cast<IntegerConstExpr*>(secondTree)->GetValue();
     debug5 << "avtRandomFilter: Setting random seed to: " << val << endl;
     srand(val);
 

@@ -10,7 +10,6 @@
 #include <Symbol.h>
 #include <State.h>
 #include <Grammar.h>
-#include <TokenParseTreeNode.h>
 
 // ****************************************************************************
 //  Class:  ParseElem
@@ -31,24 +30,32 @@
 //    This was to remove all static data and have the Parser look up
 //    the symbol in a dictionary.
 //
+//    Jeremy Meredith, Mon Jun 13 15:59:20 PDT 2005
+//    Removed TokenParseTreeNode -- it had become superfluous and was keeping
+//    an extra pointer to Tokens around, preventing good memory management.
+//    Added pos here to prevent having to look in the node or token members.
+//
 // ****************************************************************************
 struct PARSER_API ParseElem
 {
     const Symbol   *sym;
     ParseTreeNode  *node;
     Token          *token;
+    Pos             pos;
 
     ParseElem(const Symbol *s, Token * t)
     {
         sym = s;
-        node = new TokenParseTreeNode(t);
+        node = NULL;
         token = t;
+        pos = t->GetPos();
     }
     ParseElem(const Symbol *s, ParseTreeNode *n)
     {
         sym = s;
         node = n;
         token = NULL;
+        pos = n->GetPos();
     }
 };
 

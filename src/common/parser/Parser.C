@@ -88,6 +88,12 @@ Parser::Shift(Token *t, int s)
 //    Hank Childs, Fri Jan 28 13:19:33 PST 2005
 //    Use exception macros.
 //
+//    Jeremy Meredith, Mon Jun 13 15:53:51 PDT 2005
+//    I made other changes to enforce that no Token will be stored
+//    inside a parse tree node, leaving us free to delete them after
+//    applying the reduction.  This fixes a number of memory leaks.
+//    I also ensured that pos was well populated in all cases.
+//
 // ****************************************************************************
 void
 Parser::Reduce(int r)
@@ -102,19 +108,23 @@ Parser::Reduce(int r)
     int len = rule->GetRHS().Length();
     vector<ParseTreeNode*> E;
     vector<Token*> T;
+    Pos p;
     int i;
     for (i=0; i<len; i++)
     {
         int index = elems.size() - len + i;
         E.push_back(elems[index].node);
         T.push_back(elems[index].token);
+        p.Join(elems[index].pos);
     }
 
-    Pos p;
-    if (len)
-        p = Pos(E[0]->GetPos(), E[len-1]->GetPos());
-
     ParseTreeNode *node = ApplyRule(sym, rule, E, T, p);
+
+    // We're done with the tokens now that we've applied the rule
+    for (i=0; i<len; i++)
+    {
+        delete T[i];
+    }
 
     if (!node)
     {

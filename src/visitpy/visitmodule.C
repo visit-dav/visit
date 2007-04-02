@@ -97,6 +97,8 @@
 #include <PyView3DAttributes.h>
 #include <PyWindowInformation.h>
 
+#include <PyMethodDoc.h>
+
 #include <avtSILRestrictionTraverser.h>
 
 //
@@ -9835,6 +9837,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Brad Whitlock, Thu Mar 17 10:17:32 PDT 2005
 //   Added ToggleLockTools, GetDatabaseCorrelation, GetDatabaseCorrelationNames.
 //
+//   Hank Childs, Mon Jun 13 11:23:41 PDT 2005
+//   Added docstrings.
+//
 // ****************************************************************************
 
 static void
@@ -9845,226 +9850,343 @@ AddDefaultMethods()
     // information to the script about how VisIt is being run. These can be
     // called before the viewer is launched.
     //
-    AddMethod("AddArgument", visit_AddArgument);
-    AddMethod("Close",  visit_Close);
-    AddMethod("Launch", visit_Launch);
-    AddMethod("LaunchNowin", visit_LaunchNowin);
-    AddMethod("LocalNameSpace", visit_LocalNameSpace);
-    AddMethod("GetDebugLevel", visit_GetDebugLevel);
-    AddMethod("GetLastError", visit_GetLastError);
-    AddMethod("SetDebugLevel", visit_SetDebugLevel);
-    AddMethod("Version", visit_Version);
-    AddMethod("LongFileName", visit_LongFileName);
+    AddMethod("AddArgument", visit_AddArgument, visit_AddArgument_doc);
+    AddMethod("Close",  visit_Close, visit_Close_doc);
+    AddMethod("Launch", visit_Launch, visit_Launch_doc);
+    AddMethod("LaunchNowin", visit_LaunchNowin, visit_Launch_doc);
+    AddMethod("LocalNameSpace", visit_LocalNameSpace,visit_LocalNamespace_doc);
+    AddMethod("GetDebugLevel", visit_GetDebugLevel, visit_DebugLevel_doc);
+    AddMethod("GetLastError", visit_GetLastError, visit_GetLastError_doc);
+    AddMethod("SetDebugLevel", visit_SetDebugLevel, visit_DebugLevel_doc);
+    AddMethod("Version", visit_Version, visit_Version_doc);
+    AddMethod("LongFileName", visit_LongFileName, visit_LongFileName_doc);
 
     //
     // Viewer proxy methods.
     //
-    AddMethod("ActivateDatabase", visit_ActivateDatabase);
-    AddMethod("AddOperator", visit_AddOperator);
-    AddMethod("AddPlot", visit_AddPlot);
-    AddMethod("AddWindow",  visit_AddWindow);
-    AddMethod("AlterDatabaseCorrelation", visit_AlterDatabaseCorrelation);
-    AddMethod("AnimationSetNFrames", visit_AnimationSetNFrames);
-    AddMethod("ChangeActivePlotsVar", visit_ChangeActivePlotsVar);
-    AddMethod("CheckForNewStates", visit_CheckForNewStates);
-    AddMethod("ChooseCenterOfRotation",  visit_ChooseCenterOfRotation);
-    AddMethod("ClearAllWindows", visit_ClearAllWindows);
-    AddMethod("ClearCache", visit_ClearCache);
-    AddMethod("ClearCacheForAllEngines", visit_ClearCacheForAllEngines);
-    AddMethod("ClearPickPoints", visit_ClearPickPoints);
-    AddMethod("ClearReferenceLines", visit_ClearReferenceLines);
-    AddMethod("ClearViewKeyframes", visit_ClearViewKeyframes);
-    AddMethod("ClearWindow", visit_ClearWindow);
-    AddMethod("CloneWindow",  visit_CloneWindow);
-    AddMethod("CloseComputeEngine", visit_CloseComputeEngine);
-    AddMethod("CloseDatabase", visit_CloseDatabase);
-    AddMethod("CopyAnnotationsToWindow", visit_CopyAnnotationsToWindow);
-    AddMethod("CopyLightingToWindow", visit_CopyLightingToWindow);
-    AddMethod("CopyPlotsToWindow", visit_CopyPlotsToWindow);
-    AddMethod("CopyViewToWindow", visit_CopyViewToWindow);
-    AddMethod("CreateAnnotationObject", visit_CreateAnnotationObject);
-    AddMethod("CreateDatabaseCorrelation", visit_CreateDatabaseCorrelation);
-    AddMethod("DefineMeshExpression", visit_DefineMeshExpression);
-    AddMethod("DefineMaterialExpression", visit_DefineMaterialExpression);
-    AddMethod("DefineScalarExpression", visit_DefineScalarExpression);
-    AddMethod("DefineSpeciesExpression", visit_DefineSpeciesExpression);
-    AddMethod("DefineVectorExpression", visit_DefineVectorExpression);
-    AddMethod("DeleteDatabaseCorrelation", visit_DeleteDatabaseCorrelation);
-    AddMethod("DeleteExpression", visit_DeleteExpression);
-    AddMethod("DeIconifyAllWindows", visit_DeIconifyAllWindows);
-    AddMethod("DeleteActivePlots", visit_DeleteActivePlots);
-    AddMethod("DeleteAllPlots", visit_DeleteAllPlots);
-    AddMethod("DeletePlotDatabaseKeyframe", visit_DeletePlotDatabaseKeyframe);
-    AddMethod("DeletePlotKeyframe", visit_DeletePlotKeyframe);
-    AddMethod("DeleteViewKeyframe", visit_DeleteViewKeyframe);
-    AddMethod("DeleteWindow", visit_DeleteWindow);
-    AddMethod("DemoteOperator", visit_DemoteOperator);
-    AddMethod("DisableRedraw", visit_DisableRedraw);
-    AddMethod("DrawPlots", visit_DrawPlots);
-    AddMethod("EnableTool", visit_EnableTool);
-    AddMethod("GetAnimationTimeout", visit_GetAnimationTimeout);
-    AddMethod("GetAnnotationObject", visit_GetAnnotationObject);
-    AddMethod("GetLocalHostName", visit_GetLocalHostName);
-    AddMethod("GetLocalUserName", visit_GetLocalUserName);
-    AddMethod("GetSaveWindowAttributes", visit_GetSaveWindowAttributes);
-    AddMethod("GetViewCurve", visit_GetViewCurve);
-    AddMethod("GetView2D", visit_GetView2D);
-    AddMethod("GetView3D", visit_GetView3D);
-    AddMethod("GetAnnotationAttributes", visit_GetAnnotationAttributes);
-    AddMethod("GetDatabaseCorrelation", visit_GetDatabaseCorrelation);
-    AddMethod("GetDatabaseCorrelationNames", visit_GetDatabaseCorrelationNames);
-    AddMethod("GetDatabaseNStates", visit_GetDatabaseNStates);
-    AddMethod("GetEngineList", visit_GetEngineList);
-    AddMethod("GetGlobalAttributes", visit_GetGlobalAttributes);
-    AddMethod("GetGlobalLineoutAttributes", visit_GetGlobalLineoutAttributes);
-    AddMethod("GetInteractorAttributes", visit_GetInteractorAttributes);
-    AddMethod("GetKeyframeAttributes", visit_GetKeyframeAttributes);
-    AddMethod("GetMaterialAttributes", visit_GetMaterialAttributes);
-    AddMethod("GetPickAttributes", visit_GetPickAttributes);
-    AddMethod("GetPickOutput", visit_GetPickOutput);
-    AddMethod("GetPipelineCachingMode", visit_GetPipelineCachingMode);
-    AddMethod("GetProcessAttributes", visit_GetProcessAttributes);
-    AddMethod("GetQueryOutputString", visit_GetQueryOutputString);
-    AddMethod("GetQueryOutputValue", visit_GetQueryOutputValue);
-    AddMethod("GetRenderingAttributes", visit_GetRenderingAttributes);
-    AddMethod("GetQueryOverTimeAttributes", visit_GetQueryOverTimeAttributes);
-    AddMethod("GetWindowInformation", visit_GetWindowInformation);
-    AddMethod("HideActivePlots", visit_HideActivePlots);
-    AddMethod("HideToolbars", visit_HideToolbars);
-    AddMethod("IconifyAllWindows", visit_IconifyAllWindows);
-    AddMethod("InvertBackgroundColor", visit_InvertBackgroundColor);
-    AddMethod("Lineout", visit_Lineout);
-    AddMethod("MovePlotDatabaseKeyframe", visit_MovePlotDatabaseKeyframe);
-    AddMethod("MovePlotKeyframe", visit_MovePlotKeyframe);
-    AddMethod("MoveViewKeyframe", visit_MoveViewKeyframe);
-    AddMethod("NodePick", visit_NodePick);
-    AddMethod("OpenDatabase", visit_OpenDatabase);
-    AddMethod("OpenComputeEngine", visit_OpenComputeEngine);
-    AddMethod("OpenMDServer", visit_OpenMDServer);
-    AddMethod("OverlayDatabase", visit_OverlayDatabase);
-    AddMethod("Pick", visit_Pick);
-    AddMethod("PickByNode", visit_PickByNode);
-    AddMethod("PickByZone", visit_PickByZone);
-    AddMethod("PickByGlobalNode", visit_PickByGlobalNode);
-    AddMethod("PickByGlobalZone", visit_PickByGlobalZone);
-    AddMethod("PrintWindow", visit_PrintWindow);
-    AddMethod("PromoteOperator", visit_PromoteOperator);
-    AddMethod("Query", visit_Query);
-    AddMethod("QueryOverTime", visit_QueryOverTime);
-    AddMethod("RecenterView", visit_RecenterView);
-    AddMethod("RedrawWindow", visit_RedrawWindow);
-    AddMethod("RemoveAllOperators", visit_RemoveAllOperators);
-    AddMethod("RemoveLastOperator", visit_RemoveLastOperator);
-    AddMethod("RemoveOperator", visit_RemoveOperator);
-    AddMethod("ReOpenDatabase", visit_ReOpenDatabase);
-    AddMethod("ReplaceDatabase", visit_ReplaceDatabase);
-    AddMethod("ResetLineoutColor", visit_ResetLineoutColor);
-    AddMethod("ResetOperatorOptions", visit_ResetOperatorOptions);
+    AddMethod("ActivateDatabase", visit_ActivateDatabase, 
+                                                   visit_ActivateDatabase_doc);
+    AddMethod("AddOperator", visit_AddOperator, visit_AddOperator_doc);
+    AddMethod("AddPlot", visit_AddPlot, visit_AddPlot_doc);
+    AddMethod("AddWindow",  visit_AddWindow, visit_AddWindow_doc);
+    AddMethod("AlterDatabaseCorrelation", visit_AlterDatabaseCorrelation, 
+                                           visit_AlterDatabaseCorrelation_doc);
+    AddMethod("AnimationSetNFrames", visit_AnimationSetNFrames, NULL);
+    AddMethod("ChangeActivePlotsVar", visit_ChangeActivePlotsVar, 
+                                               visit_ChangeActivePlotsVar_doc);
+    AddMethod("CheckForNewStates", visit_CheckForNewStates, 
+                                                  visit_CheckForNewStates_doc);
+    AddMethod("ChooseCenterOfRotation",  visit_ChooseCenterOfRotation, 
+                                             visit_ChooseCenterOfRotation_doc);
+    AddMethod("ClearAllWindows", visit_ClearAllWindows, visit_Clear_doc);
+    AddMethod("ClearCache", visit_ClearCache, visit_ClearCache_doc);
+    AddMethod("ClearCacheForAllEngines", visit_ClearCacheForAllEngines,
+                                                         visit_ClearCache_doc);
+    AddMethod("ClearPickPoints", visit_ClearPickPoints,
+                                                    visit_ClearPickPoints_doc);
+    AddMethod("ClearReferenceLines", visit_ClearReferenceLines,
+                                                visit_ClearReferenceLines_doc);
+    AddMethod("ClearViewKeyframes", visit_ClearViewKeyframes,
+                                                 visit_ClearViewKeyframes_doc);
+    AddMethod("ClearWindow", visit_ClearWindow, visit_Clear_doc);
+    AddMethod("CloneWindow",  visit_CloneWindow, visit_CloneWindow_doc);
+    AddMethod("CloseComputeEngine", visit_CloseComputeEngine, 
+                                                 visit_CloseComputeEngine_doc);
+    AddMethod("CloseDatabase", visit_CloseDatabase, visit_CloseDatabase_doc);
+    AddMethod("CopyAnnotationsToWindow", visit_CopyAnnotationsToWindow,
+                                                               visit_Copy_doc);
+    AddMethod("CopyLightingToWindow", visit_CopyLightingToWindow,
+                                                               visit_Copy_doc);
+    AddMethod("CopyPlotsToWindow", visit_CopyPlotsToWindow, visit_Copy_doc);
+    AddMethod("CopyViewToWindow", visit_CopyViewToWindow, visit_Copy_doc);
+    AddMethod("CreateAnnotationObject", visit_CreateAnnotationObject,
+                                             visit_CreateAnnotationObject_doc);
+    AddMethod("CreateDatabaseCorrelation", visit_CreateDatabaseCorrelation,
+                                          visit_CreateDatabaseCorrelation_doc);
+    AddMethod("DefineMeshExpression", visit_DefineMeshExpression,
+                                               visit_DefineExpression_doc);
+    AddMethod("DefineMaterialExpression", visit_DefineMaterialExpression,
+                                           visit_DefineExpression_doc);
+    AddMethod("DefineScalarExpression", visit_DefineScalarExpression,
+                                             visit_DefineExpression_doc);
+    AddMethod("DefineSpeciesExpression", visit_DefineSpeciesExpression,
+                                            visit_DefineExpression_doc);
+    AddMethod("DefineVectorExpression", visit_DefineVectorExpression,
+                                             visit_DefineExpression_doc);
+    AddMethod("DeleteDatabaseCorrelation", visit_DeleteDatabaseCorrelation,
+                                          visit_DeleteDatabaseCorrelation_doc);
+    AddMethod("DeleteExpression", visit_DeleteExpression,
+                                                   visit_DeleteExpression_doc);
+    AddMethod("DeIconifyAllWindows", visit_DeIconifyAllWindows,
+                                                visit_DeIconifyAllWindows_doc);
+    AddMethod("DeleteActivePlots", visit_DeleteActivePlots,
+                                                        visit_DeletePlots_doc);
+    AddMethod("DeleteAllPlots", visit_DeleteAllPlots,visit_DeletePlots_doc);
+    AddMethod("DeletePlotDatabaseKeyframe", visit_DeletePlotDatabaseKeyframe,
+                                         visit_DeletePlotDatabaseKeyframe_doc);
+    AddMethod("DeletePlotKeyframe", visit_DeletePlotKeyframe,
+                                                 visit_DeletePlotKeyframe_doc);
+    AddMethod("DeleteViewKeyframe", visit_DeleteViewKeyframe,
+                                                 visit_DeleteViewKeyframe_doc);
+    AddMethod("DeleteWindow", visit_DeleteWindow, visit_DeleteWindow_doc);
+    AddMethod("DemoteOperator", visit_DemoteOperator,visit_DemoteOperator_doc);
+    AddMethod("DisableRedraw", visit_DisableRedraw, visit_DisableRedraw_doc);
+    AddMethod("DrawPlots", visit_DrawPlots, visit_DrawPlots_doc);
+    AddMethod("EnableTool", visit_EnableTool, visit_EnableTool_doc);
+    AddMethod("GetAnimationTimeout", visit_GetAnimationTimeout,
+                                                visit_GetAnimationTimeout_doc);
+    AddMethod("GetAnnotationObject", visit_GetAnnotationObject,
+                                                visit_GetAnnotationObject_doc);
+    AddMethod("GetLocalHostName", visit_GetLocalHostName,
+                                                       visit_GetLocalName_doc);
+    AddMethod("GetLocalUserName", visit_GetLocalUserName,
+                                                       visit_GetLocalName_doc);
+    AddMethod("GetSaveWindowAttributes", visit_GetSaveWindowAttributes,
+                                            visit_GetSaveWindowAttributes_doc);
+    AddMethod("GetViewCurve", visit_GetViewCurve, visit_GetView_doc);
+    AddMethod("GetView2D", visit_GetView2D, visit_GetView_doc);
+    AddMethod("GetView3D", visit_GetView3D, visit_GetView_doc);
+    AddMethod("GetAnnotationAttributes", visit_GetAnnotationAttributes,
+                                            visit_GetAnnotationAttributes_doc);
+    AddMethod("GetDatabaseCorrelation", visit_GetDatabaseCorrelation, NULL);
+    AddMethod("GetDatabaseCorrelationNames", visit_GetDatabaseCorrelationNames,
+                                                                         NULL);
+    AddMethod("GetDatabaseNStates", visit_GetDatabaseNStates,
+                                                 visit_GetDatabaseNStates_doc);
+    AddMethod("GetEngineList", visit_GetEngineList, visit_GetEngineList_doc);
+    AddMethod("GetGlobalAttributes", visit_GetGlobalAttributes,
+                                                visit_GetGlobalAttributes_doc);
+    AddMethod("GetGlobalLineoutAttributes", visit_GetGlobalLineoutAttributes,
+                                         visit_GetGlobalLineoutAttributes_doc);
+    AddMethod("GetInteractorAttributes", visit_GetInteractorAttributes,
+                                            visit_GetInteractorAttributes_doc);
+    AddMethod("GetKeyframeAttributes", visit_GetKeyframeAttributes,
+                                              visit_GetKeyframeAttributes_doc);
+    AddMethod("GetMaterialAttributes", visit_GetMaterialAttributes,
+                                              visit_GetMaterialAttributes_doc);
+    AddMethod("GetPickAttributes", visit_GetPickAttributes,
+                                                  visit_GetPickAttributes_doc);
+    AddMethod("GetPickOutput", visit_GetPickOutput, visit_GetPickOutput_doc);
+    AddMethod("GetPipelineCachingMode", visit_GetPipelineCachingMode,
+                                             visit_GetPipelineCachingMode_doc);
+    AddMethod("GetProcessAttributes", visit_GetProcessAttributes, NULL);
+    AddMethod("GetQueryOutputString", visit_GetQueryOutputString,
+                                                     visit_GetQueryOutput_doc);
+    AddMethod("GetQueryOutputValue", visit_GetQueryOutputValue,
+                                                     visit_GetQueryOutput_doc);
+    AddMethod("GetRenderingAttributes", visit_GetRenderingAttributes,
+                                             visit_GetRenderingAttributes_doc);
+    AddMethod("GetQueryOverTimeAttributes", visit_GetQueryOverTimeAttributes,
+                                         visit_GetQueryOverTimeAttributes_doc);
+    AddMethod("GetWindowInformation", visit_GetWindowInformation,
+                                               visit_GetWindowInformation_doc);
+    AddMethod("HideActivePlots", visit_HideActivePlots,
+                                                    visit_HideActivePlots_doc);
+    AddMethod("HideToolbars", visit_HideToolbars, visit_HideToolbars_doc);
+    AddMethod("IconifyAllWindows", visit_IconifyAllWindows,
+                                                  visit_IconifyAllWindows_doc);
+    AddMethod("InvertBackgroundColor", visit_InvertBackgroundColor,
+                                              visit_InvertBackgroundColor_doc);
+    AddMethod("Lineout", visit_Lineout, visit_Lineout_doc);
+    AddMethod("MovePlotDatabaseKeyframe", visit_MovePlotDatabaseKeyframe,
+                                           visit_MovePlotDatabaseKeyframe_doc);
+    AddMethod("MovePlotKeyframe", visit_MovePlotKeyframe,
+                                                   visit_MovePlotKeyframe_doc);
+    AddMethod("MoveViewKeyframe", visit_MoveViewKeyframe,
+                                                   visit_MoveViewKeyframe_doc);
+    AddMethod("NodePick", visit_NodePick, visit_NodePick_doc);
+    AddMethod("OpenDatabase", visit_OpenDatabase, visit_OpenDatabase_doc);
+    AddMethod("OpenComputeEngine", visit_OpenComputeEngine,
+                                                  visit_OpenComputeEngine_doc);
+    AddMethod("OpenMDServer", visit_OpenMDServer, visit_OpenMDServer_doc);
+    AddMethod("OverlayDatabase", visit_OverlayDatabase, 
+                                                    visit_OverlayDatabase_doc);
+    AddMethod("Pick", visit_Pick, visit_Pick_doc);
+    AddMethod("PickByNode", visit_PickByNode, visit_PickByNode_doc);
+    AddMethod("PickByZone", visit_PickByZone, visit_PickByZone_doc);
+    AddMethod("PickByGlobalNode", visit_PickByGlobalNode, 
+                                                   visit_PickByGlobalNode_doc);
+    AddMethod("PickByGlobalZone", visit_PickByGlobalZone,
+                                                   visit_PickByGlobalZone_doc);
+    AddMethod("PrintWindow", visit_PrintWindow, visit_PrintWindow_doc);
+    AddMethod("PromoteOperator", visit_PromoteOperator,
+                                                    visit_PromoteOperator_doc);
+    AddMethod("Query", visit_Query, visit_Query_doc);
+    AddMethod("QueryOverTime", visit_QueryOverTime, visit_QueryOverTime_doc);
+    AddMethod("RecenterView", visit_RecenterView, visit_RecenterView_doc);
+    AddMethod("RedrawWindow", visit_RedrawWindow, visit_RedrawWindow_doc);
+    AddMethod("RemoveAllOperators", visit_RemoveAllOperators,
+                                                     visit_RemoveOperator_doc);
+    AddMethod("RemoveLastOperator", visit_RemoveLastOperator,
+                                                     visit_RemoveOperator_doc);
+    AddMethod("RemoveOperator", visit_RemoveOperator,visit_RemoveOperator_doc);
+    AddMethod("ReOpenDatabase", visit_ReOpenDatabase,visit_ReOpenDatabase_doc);
+    AddMethod("ReplaceDatabase", visit_ReplaceDatabase,
+                                                    visit_ReplaceDatabase_doc);
+    AddMethod("ResetLineoutColor", visit_ResetLineoutColor,
+                                                  visit_ResetLineoutColor_doc);
+    AddMethod("ResetOperatorOptions", visit_ResetOperatorOptions,
+                                               visit_ResetOperatorOptions_doc);
     AddMethod("ResetPickAttributes", visit_ResetPickAttributes);
-    AddMethod("ResetPickLetter", visit_ResetPickLetter);
-    AddMethod("ResetPlotOptions", visit_ResetPlotOptions);
+    AddMethod("ResetPickLetter", visit_ResetPickLetter, 
+                                                    visit_ResetPickLetter_doc);
+    AddMethod("ResetPlotOptions", visit_ResetPlotOptions, 
+                                                   visit_ResetPlotOptions_doc);
     AddMethod("ResetQueryOverTimeAttributes", visit_ResetQueryOverTimeAttributes);
-    AddMethod("ResetView", visit_ResetView);
-    AddMethod("RestoreSession", visit_RestoreSession);
-    AddMethod("SaveSession", visit_SaveSession);
-    AddMethod("SaveWindow", visit_SaveWindow);
-    AddMethod("SetActivePlots", visit_SetActivePlots);
-    AddMethod("SetActiveTimeSlider", visit_SetActiveTimeSlider);
-    AddMethod("SetActiveWindow", visit_SetActiveWindow);
-    AddMethod("SetAnimationTimeout", visit_SetAnimationTimeout);
-    AddMethod("SetAnnotationAttributes", visit_SetAnnotationAttributes);
-    AddMethod("SetCenterOfRotation",  visit_SetCenterOfRotation);
+    AddMethod("ResetView", visit_ResetView, visit_ResetView_doc);
+    AddMethod("RestoreSession", visit_RestoreSession,visit_RestoreSession_doc);
+    AddMethod("SaveSession", visit_SaveSession, visit_SaveSession_doc);
+    AddMethod("SaveWindow", visit_SaveWindow, visit_SaveWindow_doc);
+    AddMethod("SetActivePlots", visit_SetActivePlots,visit_SetActivePlots_doc);
+    AddMethod("SetActiveTimeSlider", visit_SetActiveTimeSlider, 
+                                                visit_SetActiveTimeSlider_doc);
+    AddMethod("SetActiveWindow", visit_SetActiveWindow, 
+                                                    visit_SetActiveWindow_doc);
+    AddMethod("SetAnimationTimeout", visit_SetAnimationTimeout,
+                                                visit_SetAnimationTimeout_doc);
+    AddMethod("SetAnnotationAttributes", visit_SetAnnotationAttributes,
+                                            visit_SetAnnotationAttributes_doc);
+    AddMethod("SetCenterOfRotation", visit_SetCenterOfRotation,
+                                                visit_SetCenterOfRotation_doc);
     AddMethod("SetCloneWindowOnFirstRef", visit_SetCloneWindowOnFirstRef);
-    AddMethod("SetDefaultAnnotationAttributes", visit_SetDefaultAnnotationAttributes);
-    AddMethod("SetDefaultInteractorAttributes", visit_SetDefaultInteractorAttributes);
-    AddMethod("SetDefaultMaterialAttributes", visit_SetDefaultMaterialAttributes);
-    AddMethod("SetDefaultOperatorOptions", visit_SetDefaultOperatorOptions);
-    AddMethod("SetDefaultPickAttributes", visit_SetDefaultPickAttributes);
-    AddMethod("SetDefaultPlotOptions", visit_SetDefaultPlotOptions);
+    AddMethod("SetDefaultAnnotationAttributes", visit_SetDefaultAnnotationAttributes,
+                                            visit_SetAnnotationAttributes_doc);
+    AddMethod("SetDefaultInteractorAttributes", visit_SetDefaultInteractorAttributes,
+                                            visit_SetInteractorAttributes_doc);
+    AddMethod("SetDefaultMaterialAttributes", visit_SetDefaultMaterialAttributes,
+                                            visit_SetMaterialAttributes_doc);
+    AddMethod("SetDefaultOperatorOptions", visit_SetDefaultOperatorOptions,
+                                                 visit_SetOperatorOptions_doc);
+    AddMethod("SetDefaultPickAttributes", visit_SetDefaultPickAttributes,
+                                                  visit_SetPickAttributes_doc);
+    AddMethod("SetDefaultPlotOptions", visit_SetDefaultPlotOptions,
+                                                visit_SetPlotOptions_doc);
     AddMethod("SetDefaultQueryOverTimeAttributes", visit_SetDefaultQueryOverTimeAttributes);
-    AddMethod("SetGlobalLineoutAttributes", visit_SetGlobalLineoutAttributes);
-    AddMethod("SetInteractorAttributes", visit_SetInteractorAttributes);
-    AddMethod("SetKeyframeAttributes", visit_SetKeyframeAttributes);
-    AddMethod("SetMaterialAttributes", visit_SetMaterialAttributes);
-    AddMethod("SetOperatorOptions", visit_SetOperatorOptions);
-    AddMethod("SetPickAttributes", visit_SetPickAttributes);
-    AddMethod("SetPipelineCachingMode", visit_SetPipelineCachingMode);
-    AddMethod("SetPlotDatabaseState", visit_SetPlotDatabaseState);
-    AddMethod("SetPlotFrameRange", visit_SetPlotFrameRange);
-    AddMethod("SetPlotOptions", visit_SetPlotOptions);
-    AddMethod("SetPlotSILRestriction", visit_SetPlotSILRestriction);
-    AddMethod("SetPrinterAttributes", visit_SetPrinterAttributes);
-    AddMethod("SetRenderingAttributes", visit_SetRenderingAttributes);
-    AddMethod("SetSaveWindowAttributes", visit_SetSaveWindowAttributes);
-    AddMethod("SetQueryOverTimeAttributes", visit_SetQueryOverTimeAttributes);
-    AddMethod("SetTimeSliderState", visit_SetTimeSliderState);
+    AddMethod("SetGlobalLineoutAttributes", visit_SetGlobalLineoutAttributes,
+                                         visit_SetGlobalLineoutAttributes_doc);
+    AddMethod("SetInteractorAttributes", visit_SetInteractorAttributes,
+                                            visit_SetInteractorAttributes_doc);
+    AddMethod("SetKeyframeAttributes", visit_SetKeyframeAttributes,
+                                              visit_SetKeyframeAttributes_doc);
+    AddMethod("SetMaterialAttributes", visit_SetMaterialAttributes,
+                                            visit_SetMaterialAttributes_doc);
+    AddMethod("SetOperatorOptions", visit_SetOperatorOptions,
+                                                 visit_SetOperatorOptions_doc);
+    AddMethod("SetPickAttributes", visit_SetPickAttributes,
+                                                  visit_SetPickAttributes_doc);
+    AddMethod("SetPipelineCachingMode", visit_SetPipelineCachingMode,
+                                             visit_SetPipelineCachingMode_doc);
+    AddMethod("SetPlotDatabaseState", visit_SetPlotDatabaseState,
+                                               visit_SetPlotDatabaseState_doc);
+    AddMethod("SetPlotFrameRange", visit_SetPlotFrameRange,
+                                                  visit_SetPlotFrameRange_doc);
+    AddMethod("SetPlotOptions", visit_SetPlotOptions,visit_SetPlotOptions_doc);
+    AddMethod("SetPlotSILRestriction", visit_SetPlotSILRestriction,
+                                              visit_SetPlotSILRestriction_doc);
+    AddMethod("SetPrinterAttributes", visit_SetPrinterAttributes,
+                                               visit_SetPrinterAttributes_doc);
+    AddMethod("SetRenderingAttributes", visit_SetRenderingAttributes,
+                                             visit_SetRenderingAttributes_doc);
+    AddMethod("SetSaveWindowAttributes", visit_SetSaveWindowAttributes,
+                                            visit_SetSaveWindowAttributes_doc);
+    AddMethod("SetQueryOverTimeAttributes", visit_SetQueryOverTimeAttributes,
+                                         visit_SetQueryOverTimeAttributes_doc);
+    AddMethod("SetTimeSliderState", visit_SetTimeSliderState,
+                                                 visit_SetTimeSliderState_doc);
     AddMethod("SetTryHarderCyclesTimes", visit_SetTryHarderCyclesTimes);
-    AddMethod("SetViewExtentsType", visit_SetViewExtentsType);
-    AddMethod("SetViewCurve", visit_SetViewCurve);
-    AddMethod("SetView2D", visit_SetView2D);
-    AddMethod("SetView3D", visit_SetView3D);
-    AddMethod("SetViewKeyframe", visit_SetViewKeyframe);
-    AddMethod("SetWindowArea",  visit_SetWindowArea);
-    AddMethod("SetWindowLayout",  visit_SetWindowLayout);
-    AddMethod("SetWindowMode",  visit_SetWindowMode);
-    AddMethod("ShowAllWindows",  visit_ShowAllWindows);
-    AddMethod("ShowToolbars", visit_ShowToolbars);
-    AddMethod("TimeSliderGetNStates",visit_TimeSliderGetNStates );
-    AddMethod("TimeSliderNextState", visit_TimeSliderNextState);
-    AddMethod("TimeSliderPreviousState", visit_TimeSliderPreviousState);
-    AddMethod("TimeSliderSetState", visit_SetTimeSliderState);
-    AddMethod("ToggleBoundingBoxMode", visit_ToggleBoundingBoxMode);
-    AddMethod("ToggleCameraViewMode", visit_ToggleCameraViewMode);
-    AddMethod("ToggleFullFrameMode", visit_ToggleFullFrameMode);
-    AddMethod("ToggleLockTime", visit_ToggleLockTime);
-    AddMethod("ToggleLockTools", visit_ToggleLockTools);
-    AddMethod("ToggleLockViewMode", visit_ToggleLockViewMode);
-    AddMethod("ToggleMaintainViewMode", visit_ToggleMaintainViewMode);
-    AddMethod("ToggleMaintainDataMode", visit_ToggleMaintainDataMode);
-    AddMethod("ToggleSpinMode", visit_ToggleSpinMode);
-    AddMethod("UndoView",  visit_UndoView);
-    AddMethod("WriteConfigFile",  visit_WriteConfigFile);
-    AddMethod("ZonePick", visit_Pick);
+    AddMethod("SetViewExtentsType", visit_SetViewExtentsType,
+                                                 visit_SetViewExtentsType_doc);
+    AddMethod("SetViewCurve", visit_SetViewCurve, visit_SetView_doc);
+    AddMethod("SetView2D", visit_SetView2D, visit_SetView_doc);
+    AddMethod("SetView3D", visit_SetView3D, visit_SetView_doc);
+    AddMethod("SetViewKeyframe", visit_SetViewKeyframe,
+                                                    visit_SetViewKeyframe_doc);
+          
+    AddMethod("SetWindowArea", visit_SetWindowArea, visit_SetWindowArea_doc);
+    AddMethod("SetWindowLayout", visit_SetWindowLayout,
+                                                    visit_SetWindowLayout_doc);
+    AddMethod("SetWindowMode", visit_SetWindowMode, visit_SetWindowMode_doc);
+    AddMethod("ShowAllWindows", visit_ShowAllWindows,visit_ShowAllWindows_doc);
+    AddMethod("ShowToolbars", visit_ShowToolbars, visit_ShowToolbars_doc);
+    AddMethod("TimeSliderGetNStates", visit_TimeSliderGetNStates,
+                                               visit_TimeSliderGetNStates_doc);
+    AddMethod("TimeSliderNextState", visit_TimeSliderNextState,
+                                                visit_TimeSliderNextState_doc);
+    AddMethod("TimeSliderPreviousState", visit_TimeSliderPreviousState,
+                                                visit_TimeSliderPrevState_doc);
+    AddMethod("TimeSliderSetState", visit_SetTimeSliderState,
+                                                 visit_SetTimeSliderState_doc);
+    AddMethod("ToggleBoundingBoxMode", visit_ToggleBoundingBoxMode,
+                                                         visit_ToggleMode_doc);
+    AddMethod("ToggleCameraViewMode", visit_ToggleCameraViewMode,
+                                                         visit_ToggleMode_doc);
+    AddMethod("ToggleFullFrameMode", visit_ToggleFullFrameMode,
+                                                         visit_ToggleMode_doc);
+    AddMethod("ToggleLockTime", visit_ToggleLockTime, visit_ToggleMode_doc);
+    AddMethod("ToggleLockTools", visit_ToggleLockTools, visit_ToggleMode_doc);
+    AddMethod("ToggleLockViewMode", visit_ToggleLockViewMode,
+                                                         visit_ToggleMode_doc);
+    AddMethod("ToggleMaintainViewMode", visit_ToggleMaintainViewMode,
+                                                         visit_ToggleMode_doc);
+    AddMethod("ToggleMaintainDataMode", visit_ToggleMaintainDataMode,
+                                                         visit_ToggleMode_doc);
+    AddMethod("ToggleSpinMode", visit_ToggleSpinMode, visit_ToggleMode_doc);
+    AddMethod("UndoView",  visit_UndoView, visit_UndoView_doc);
+    AddMethod("WriteConfigFile",  visit_WriteConfigFile, 
+                                                    visit_WriteConfigFile_doc);
+    AddMethod("ZonePick", visit_Pick, visit_Pick_doc);
 
     //
     // Extra methods that are not part of the ViewerProxy but allow the
     // script writer to do interesting things.
     //
-    AddMethod("Source", visit_Source);
-    AddMethod("ListPlots", visit_ListPlots);
-    AddMethod("Expressions", visit_Expressions);
-    AddMethod("GetActiveTimeSlider", visit_GetActiveTimeSlider);
-    AddMethod("GetDomains", visit_GetDomains);
-    AddMethod("GetMaterials", visit_GetMaterials);
-    AddMethod("GetTimeSliders", visit_GetTimeSliders);
-    AddMethod("ListDomains", visit_ListDomains);
-    AddMethod("ListMaterials", visit_ListMaterials);
-    AddMethod("NumOperatorPlugins", visit_NumOperatorPlugins);
-    AddMethod("NumPlotPlugins", visit_NumPlotPlugins);
-    AddMethod("OperatorPlugins", visit_OperatorPlugins);
-    AddMethod("PlotPlugins", visit_PlotPlugins);
-    AddMethod("Queries",  visit_Queries);
-    AddMethod("SetDatabaseCorrelationOptions", visit_SetDatabaseCorrelationOptions);
-    AddMethod("TurnDomainsOff",  visit_TurnDomainsOff);
-    AddMethod("TurnDomainsOn",  visit_TurnDomainsOn);
-    AddMethod("TurnMaterialsOff",  visit_TurnMaterialsOff);
-    AddMethod("TurnMaterialsOn",  visit_TurnMaterialsOn);
-    AddMethod("QueriesOverTime",  visit_QueriesOverTime);
+    AddMethod("Source", visit_Source, visit_Source_doc);
+    AddMethod("ListPlots", visit_ListPlots, visit_ListPlots_doc);
+    AddMethod("Expressions", visit_Expressions, visit_Expressions_doc);
+    AddMethod("GetActiveTimeSlider", visit_GetActiveTimeSlider,
+                                                visit_GetActiveTimeSlider_doc);
+    AddMethod("GetDomains", visit_GetDomains, visit_GetDomains_doc);
+    AddMethod("GetMaterials", visit_GetMaterials, visit_GetMaterials_doc);
+    AddMethod("GetTimeSliders", visit_GetTimeSliders,visit_GetTimeSliders_doc);
+    AddMethod("ListDomains", visit_ListDomains, visit_List_doc);
+    AddMethod("ListMaterials", visit_ListMaterials, visit_List_doc);
+    AddMethod("NumOperatorPlugins", visit_NumOperatorPlugins,
+                                                 visit_NumOperatorPlugins_doc);
+    AddMethod("NumPlotPlugins", visit_NumPlotPlugins,
+                                                     visit_NumPlotPlugins_doc);
+    AddMethod("OperatorPlugins", visit_OperatorPlugins,
+                                                    visit_OperatorPlugins_doc);
+    AddMethod("PlotPlugins", visit_PlotPlugins, visit_PlotPlugins_doc);
+    AddMethod("Queries",  visit_Queries, visit_Queries_doc);
+    AddMethod("SetDatabaseCorrelationOptions", visit_SetDatabaseCorrelationOptions,
+                                      visit_SetDatabaseCorrelationOptions_doc);
+    AddMethod("TurnDomainsOff", visit_TurnDomainsOff, visit_Turn_doc);
+    AddMethod("TurnDomainsOn", visit_TurnDomainsOn, visit_Turn_doc);
+    AddMethod("TurnMaterialsOff", visit_TurnMaterialsOff, visit_Turn_doc);
+    AddMethod("TurnMaterialsOn", visit_TurnMaterialsOn, visit_Turn_doc);
+    AddMethod("QueriesOverTime",  visit_QueriesOverTime,
+                                                    visit_QueriesOverTime_doc);
 
     //
     // Lighting
     //
-    AddMethod("GetLight", visit_GetLight);
-    AddMethod("SetLight", visit_SetLight);
+    AddMethod("GetLight", visit_GetLight, visit_GetLight_doc);
+    AddMethod("SetLight", visit_SetLight, visit_SetLight_doc);
 
     // Temporary methods
-    AddMethod("ColorTableNames", visit_ColorTableNames);
-    AddMethod("NumColorTableNames", visit_NumColorTables);
-    AddMethod("SetActiveContinuousColorTable", visit_SetActiveContinuousColorTable);
-    AddMethod("SetActiveDiscreteColorTable", visit_SetActiveDiscreteColorTable);
-    AddMethod("GetActiveContinuousColorTable", visit_GetActiveContinuousColorTable);
-    AddMethod("GetActiveDiscreteColorTable", visit_GetActiveDiscreteColorTable);
-    AddMethod("GetNumPlots", visit_GetNumPlots);
+    AddMethod("ColorTableNames", visit_ColorTableNames, 
+                                                    visit_ColorTableNames_doc);
+    AddMethod("NumColorTableNames", visit_NumColorTables,
+                                                 visit_NumColorTableNames_doc);
+    AddMethod("SetActiveContinuousColorTable", visit_SetActiveContinuousColorTable,
+                                                visit_SetActiveColorTable_doc);
+    AddMethod("SetActiveDiscreteColorTable", visit_SetActiveDiscreteColorTable,
+                                                visit_SetActiveColorTable_doc);
+    AddMethod("GetActiveContinuousColorTable", visit_GetActiveContinuousColorTable,
+                                                visit_GetActiveColorTable_doc);
+    AddMethod("GetActiveDiscreteColorTable", visit_GetActiveDiscreteColorTable,
+                                                visit_GetActiveColorTable_doc);
+    AddMethod("GetNumPlots", visit_GetNumPlots, visit_GetNumPlots_doc);
 }
 
 // ****************************************************************************

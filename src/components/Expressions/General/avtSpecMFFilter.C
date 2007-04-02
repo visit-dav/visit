@@ -479,6 +479,9 @@ avtSpecMFFilter::DeriveVariable(vtkDataSet *in_ds)
 //    Also renamed Token to ExprToken for the same reason.
 //    Changed base type for an Arg's expression.
 //
+//    Jeremy Meredith, Mon Jun 13 11:42:38 PDT 2005
+//    Changed the way constant expressions work.
+//
 // ****************************************************************************
 void
 avtSpecMFFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
@@ -514,10 +517,10 @@ avtSpecMFFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     ArgExpr *secondarg = (*arguments)[1];
     ExprParseTreeNode *secondTree = secondarg->GetExpr();
     string secondtype = secondTree->GetTypeName();
-    if ((secondtype != "Const"))
+    if (secondtype != "IntegerConst" && secondtype != "StringConst")
     {
-        debug5 << "avtSpecMFFilter: Second argument is not a constant: " << secondtype.c_str() << endl;
-        EXCEPTION1(ExpressionException, "avtSpecMFFilter: Second argument is not a constant.");
+        debug5 << "avtSpecMFFilter: Second argument is not a string or integer constant: " << secondtype.c_str() << endl;
+        EXCEPTION1(ExpressionException, "avtSpecMFFilter: Second argument is not a string or integer constant.");
     }
 
     // It's a single constant.
@@ -527,13 +530,13 @@ avtSpecMFFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     ArgExpr *thirdarg = (*arguments)[2];
     ExprParseTreeNode *thirdTree = thirdarg->GetExpr();
     string thirdtype = thirdTree->GetTypeName();
-    if ((thirdtype != "Const") && (thirdtype != "List"))
+    if ((thirdtype != "IntegerConst") && (thirdtype != "StringConst") && (thirdtype != "List"))
     {
-        debug5 << "avtSpecMFFilter: Third argument is not a constant or a list: " << thirdtype.c_str() << endl;
-        EXCEPTION1(ExpressionException, "avtSpecMFFilter: Third argument is not a constant or a list.");
+        debug5 << "avtSpecMFFilter: Third argument is not a string/int constant or a list: " << thirdtype.c_str() << endl;
+        EXCEPTION1(ExpressionException, "avtSpecMFFilter: Third argument is not a string/int constant or a list.");
     }
 
-    if (thirdtype == "Const")
+    if (thirdtype == "IntegerConst" || thirdtype == "StringConst")
     {
         // It's a single constant.
         AddSpecies(dynamic_cast<ConstExpr*>(thirdTree));
@@ -552,31 +555,18 @@ avtSpecMFFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
                 ExprNode *endExpr  = (*elems)[i]->GetEnd();
                 ExprNode *skipExpr = (*elems)[i]->GetSkip();
                 
-                if (begExpr->GetTypeName() != "Const" ||
-                    endExpr->GetTypeName() != "Const" ||
-                    (skipExpr && skipExpr->GetTypeName() != "Const"))
+                if (begExpr->GetTypeName() != "IntegerConst" ||
+                    endExpr->GetTypeName() != "IntegerConst" ||
+                    (skipExpr && skipExpr->GetTypeName() != "IntegerConst"))
                 {
                     EXCEPTION1(ExpressionException, "avtSpecMFFilter: "
                                "Range must contain integers.");
                 }
 
-                ExprToken *begTok  = dynamic_cast<ConstExpr*>(begExpr)->GetToken();
-                ExprToken *endTok  = dynamic_cast<ConstExpr*>(endExpr)->GetToken();
-                ExprToken *skipTok = !skipExpr ? NULL :
-                                dynamic_cast<ConstExpr*>(skipExpr)->GetToken();
-
-                if (begTok->GetType() != TT_IntegerConst ||
-                    endTok->GetType() != TT_IntegerConst ||
-                    (skipTok && skipTok->GetType() != TT_IntegerConst))
-                {
-                    EXCEPTION1(ExpressionException, "avtSpecMFFilter: "
-                               "Range must contain integers.");
-                }
-
-                int beg  = dynamic_cast<IntegerConst*>(begTok)->GetValue();
-                int end  = dynamic_cast<IntegerConst*>(endTok)->GetValue();
-                int skip = !skipTok ? 1 : 
-                           dynamic_cast<IntegerConst*>(skipTok)->GetValue();
+                int beg  = dynamic_cast<IntegerConstExpr*>(begExpr)->GetValue();
+                int end  = dynamic_cast<IntegerConstExpr*>(endExpr)->GetValue();
+                int skip = !skipExpr ? 1 : 
+                           dynamic_cast<IntegerConstExpr*>(skipExpr)->GetValue();
 
                 if (skip <= 0 || beg > end)
                 {
@@ -591,12 +581,13 @@ avtSpecMFFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
             {
                 ExprNode *item = (*elems)[i]->GetItem();
                 string type = item->GetTypeName();
-                if (type != "Const")
+                if (type != "IntegerConst" && type != "StringConst")
                 {
-                    debug5 << "avtSpecMFFilter: List element is not a constant "
+                    debug5 << "avtSpecMFFilter: List element is not an "
+                              "integer constant, a string constant, "
                               "or a list: " << type.c_str() << endl;
                     EXCEPTION1(ExpressionException, "avtSpecMFFilter: "
-                               "List element is not a constant or a list.");
+                               "List element is not a string/int constant or a list.");
                 }
 
                 AddSpecies(dynamic_cast<ConstExpr*>(item));
@@ -612,17 +603,11 @@ avtSpecMFFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
         ArgExpr *fourtharg = (*arguments)[3];
         ExprParseTreeNode *fourthTree = fourtharg->GetExpr();
         string fourthtype = fourthTree->GetTypeName();
-        if ((secondtype != "Const"))
+        if ((secondtype != "BooleanConst"))
         {
             EXCEPTION1(ExpressionException, "avtSpecMFFilter: Fourth argument is not a constant boolean.");
         }
-        ConstExpr *constExpr = dynamic_cast<ConstExpr*>(fourthTree);
-        ExprToken *t = constExpr->GetToken();
-        if (t->GetType() != TT_BoolConst)
-        {
-            EXCEPTION1(ExpressionException, "avtSpecMFFilter: Fourth argument is not a constant boolean.");
-        }
-        weightByVF = dynamic_cast<BoolConst*>(t)->GetValue();
+        weightByVF = dynamic_cast<BooleanConstExpr*>(fourthTree)->GetValue();
     }
 }
 
@@ -639,29 +624,21 @@ avtSpecMFFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
 //  Creation:    June  8, 2004
 //
 //  Modifications:
+//    Jeremy Meredith, Mon Jun 13 11:42:38 PDT 2005
+//    Changed the way constant expressions work.
 //
 // ****************************************************************************
 void
 avtSpecMFFilter::AddMaterial(ConstExpr *c)
 {
-    // Check that it's a string.
-    Token *t = c->GetToken();
-    if (t->GetType() != TT_StringConst && t->GetType() != TT_IntegerConst)
+    if (c->GetConstantType() == ConstExpr::String)
     {
-        debug5 << "avtSpecMFFilter: material argument is not a string or integer: "
-               << GetTokenTypeString(t->GetType()).c_str() << endl;
-        EXCEPTION1(ExpressionException, "avtSpecMFFilter: "
-                   "material argument is not a string or interger.");
-    }
-
-    if (t->GetType() == TT_StringConst)
-    {
-        string matname = dynamic_cast<StringConst*>(t)->GetValue();
+        string matname = dynamic_cast<StringConstExpr*>(c)->GetValue();
         matNames.push_back(matname);
     }
-    else // t->GetType() == TT_IntegerConst
+    else // c->GetConstantType() == ConstExpr::Integer
     {
-        int matindex = dynamic_cast<IntegerConst*>(t)->GetValue();
+        int matindex = dynamic_cast<IntegerConstExpr*>(c)->GetValue();
         matIndices.push_back(matindex);
     }
 }
@@ -680,29 +657,21 @@ avtSpecMFFilter::AddMaterial(ConstExpr *c)
 //  Creation:    June  8, 2004
 //
 //  Modifications:
+//    Jeremy Meredith, Mon Jun 13 11:42:38 PDT 2005
+//    Changed the way constant expressions work.
 //
 // ****************************************************************************
 void
 avtSpecMFFilter::AddSpecies(ConstExpr *c)
 {
-    // Check that it's a string.
-    Token *t = c->GetToken();
-    if (t->GetType() != TT_StringConst && t->GetType() != TT_IntegerConst)
+    if (c->GetConstantType() == ConstExpr::String)
     {
-        debug5 << "avtSpecMFFilter: species argument is not a string or integer: "
-               << GetTokenTypeString(t->GetType()).c_str() << endl;
-        EXCEPTION1(ExpressionException, "avtSpecMFFilter: "
-                   "species argument is not a string or interger.");
-    }
-
-    if (t->GetType() == TT_StringConst)
-    {
-        string specname = dynamic_cast<StringConst*>(t)->GetValue();
+        string specname = dynamic_cast<StringConstExpr*>(c)->GetValue();
         specNames.push_back(specname);
     }
-    else // t->GetType() == TT_IntegerConst
+    else // c->GetConstantType() == ConstExpr::Integer
     {
-        int specindex = dynamic_cast<IntegerConst*>(t)->GetValue();
+        int specindex = dynamic_cast<IntegerConstExpr*>(c)->GetValue();
         specIndices.push_back(specindex);
     }
 }

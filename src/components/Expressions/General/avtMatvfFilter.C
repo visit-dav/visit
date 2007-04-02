@@ -397,6 +397,9 @@ avtMatvfFilter::DeriveVariable(vtkDataSet *in_ds)
 //    Also renamed Token to ExprToken for the same reason.
 //    Changed the base type for an Arg's expression.
 //
+//    Jeremy Meredith, Mon Jun 13 11:42:38 PDT 2005
+//    Changed the way constant expressions work.
+//
 // ****************************************************************************
 void
 avtMatvfFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
@@ -432,13 +435,13 @@ avtMatvfFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     ArgExpr *secondarg = (*arguments)[1];
     ExprParseTreeNode *secondTree = secondarg->GetExpr();
     string type = secondTree->GetTypeName();
-    if ((type != "Const") && (type != "List"))
+    if ((type != "IntegerConst") && (type != "StringConst") && (type != "List"))
     {
         debug5 << "avtMatvfFilter: Second argument is not a constant or a list: " << type.c_str() << endl;
         EXCEPTION1(ExpressionException, "avtMatvfFilter: Second argument is not a constant or a list.");
     }
 
-    if (type == "Const")
+    if (type == "IntegerConst" || type == "StringConst")
     {
         // It's a single constant.
         AddMaterial(dynamic_cast<ConstExpr*>(secondTree));
@@ -457,31 +460,18 @@ avtMatvfFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
                 ExprNode *endExpr  = (*elems)[i]->GetEnd();
                 ExprNode *skipExpr = (*elems)[i]->GetSkip();
                 
-                if (begExpr->GetTypeName() != "Const" ||
-                    endExpr->GetTypeName() != "Const" ||
-                    (skipExpr && skipExpr->GetTypeName() != "Const"))
+                if (begExpr->GetTypeName() != "IntegerConst" ||
+                    endExpr->GetTypeName() != "IntegerConst" ||
+                    (skipExpr && skipExpr->GetTypeName() != "IntegerConst"))
                 {
                     EXCEPTION1(ExpressionException, "avtMatvfFilter: "
                                "Range must contain integers.");
                 }
 
-                ExprToken *begTok  = dynamic_cast<ConstExpr*>(begExpr)->GetToken();
-                ExprToken *endTok  = dynamic_cast<ConstExpr*>(endExpr)->GetToken();
-                ExprToken *skipTok = !skipExpr ? NULL :
-                                     dynamic_cast<ConstExpr*>(skipExpr)->GetToken();
-
-                if (begTok->GetType() != TT_IntegerConst ||
-                    endTok->GetType() != TT_IntegerConst ||
-                    (skipTok && skipTok->GetType() != TT_IntegerConst))
-                {
-                    EXCEPTION1(ExpressionException, "avtMatvfFilter: "
-                               "Range must contain integers.");
-                }
-
-                int beg  = dynamic_cast<IntegerConst*>(begTok)->GetValue();
-                int end  = dynamic_cast<IntegerConst*>(endTok)->GetValue();
-                int skip = !skipTok ? 1 : 
-                           dynamic_cast<IntegerConst*>(skipTok)->GetValue();
+                int beg  = dynamic_cast<IntegerConstExpr*>(begExpr)->GetValue();
+                int end  = dynamic_cast<IntegerConstExpr*>(endExpr)->GetValue();
+                int skip = !skipExpr ? 1 : 
+                           dynamic_cast<IntegerConstExpr*>(skipExpr)->GetValue();
 
                 if (skip <= 0 || beg > end)
                 {
@@ -496,12 +486,14 @@ avtMatvfFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
             {
                 ExprNode *item = (*elems)[i]->GetItem();
                 string type = item->GetTypeName();
-                if (type != "Const")
+                if (type != "IntegerConst" && type != "StringConst")
                 {
-                    debug5 << "avtMatvfFilter: List element is not a constant "
+                    debug5 << "avtMatvfFilter: List element is not an "
+                              "integer constant, a string constant, "
                               "or a list: " << type.c_str() << endl;
                     EXCEPTION1(ExpressionException, "avtMatvfFilter: "
-                               "List element is not a constant or a list.");
+                               "List element is not an int/string constant "
+                               "or a list.");
                 }
 
                 AddMaterial(dynamic_cast<ConstExpr*>(item));
@@ -526,28 +518,21 @@ avtMatvfFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
 //    Jeremy Meredith, Mon Sep 29 12:13:04 PDT 2003
 //    Added support for integer material indices.
 //
+//    Jeremy Meredith, Mon Jun 13 11:42:38 PDT 2005
+//    Changed the way constant expressions work.
+//
 // ****************************************************************************
 void
 avtMatvfFilter::AddMaterial(ConstExpr *c)
 {
-    // Check that it's a string.
-    Token *t = c->GetToken();
-    if (t->GetType() != TT_StringConst && t->GetType() != TT_IntegerConst)
+    if (c->GetConstantType() == ConstExpr::String)
     {
-        debug5 << "avtMatvfFilter: Matfv argument is not a string or integer: "
-               << GetTokenTypeString(t->GetType()).c_str() << endl;
-        EXCEPTION1(ExpressionException, "avtMatvfFilter: "
-                   "Matfv argument is not a string or interger.");
-    }
-
-    if (t->GetType() == TT_StringConst)
-    {
-        string matname = dynamic_cast<StringConst*>(t)->GetValue();
+        string matname = dynamic_cast<StringConstExpr*>(c)->GetValue();
         matNames.push_back(matname);
     }
-    else // t->GetType() == TT_IntegerConst
+    else // c->GetConstantType() == ConstExpr::Integer
     {
-        int matindex = dynamic_cast<IntegerConst*>(t)->GetValue();
+        int matindex = dynamic_cast<IntegerConstExpr*>(c)->GetValue();
         matIndices.push_back(matindex);
     }
 }

@@ -82,29 +82,55 @@
 
 using std::string;
 
+// ****************************************************************************
+// Method: avtIntegerConstExpr::CreateFilters
+//
+// Purpose:
+//     Creates the avt filters that are necessary to complete the given
+//     constant
+//
+// Programmer: Jeremy Meredith
+// Creation:   June 13, 2005
+//
+// Note:  taken roughly from the old ConstExpr::CreateFilters
+//
+// Modifications:
+//
+// ****************************************************************************
 void
-avtConstExpr::CreateFilters(ExprPipelineState *state)
+avtIntegerConstExpr::CreateFilters(ExprPipelineState *state)
 {
-    // First, check if this is a constant that we can handle.  Only numbers
-    // are supported right now.
-    double value;
-    switch(token->GetType())
-    {
-    case TT_IntegerConst:
-        value = dynamic_cast<IntegerConst*>(token)->GetValue();
-        break;
-    case TT_FloatConst:
-        value = dynamic_cast<FloatConst*>(token)->GetValue();
-        break;
-    default:
-        string error =
-            string("avtConstExpr::CreateFilters: "
-                   "Unsupported constant type: ") +
-                   GetTokenTypeString(token->GetType());
+    avtConstantCreatorFilter *f = new avtConstantCreatorFilter();
+    f->SetValue(value);
+    char strrep[30];
+    SNPRINTF(strrep, 30, "'%d'", value);
+    state->PushName(string(strrep));
+    f->SetOutputVariableName(strrep);
 
-        EXCEPTION1(ExpressionException, error);
-    }
+    // Keep track of the current dataObject.
+    f->SetInput(state->GetDataObject());
+    state->SetDataObject(f->GetOutput());
+    state->AddFilter(f);
+}
 
+// ****************************************************************************
+// Method: avtFloatConstExpr::CreateFilters
+//
+// Purpose:
+//     Creates the avt filters that are necessary to complete the given
+//     constant
+//
+// Programmer: Jeremy Meredith
+// Creation:   June 13, 2005
+//
+// Note:  taken roughly from the old ConstExpr::CreateFilters
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+avtFloatConstExpr::CreateFilters(ExprPipelineState *state)
+{
     avtConstantCreatorFilter *f = new avtConstantCreatorFilter();
     f->SetValue(value);
     char strrep[30];
@@ -117,6 +143,47 @@ avtConstExpr::CreateFilters(ExprPipelineState *state)
     state->SetDataObject(f->GetOutput());
     state->AddFilter(f);
 }
+
+// ****************************************************************************
+// Method: avtStringConstExpr::CreateFilters
+//
+// Purpose:
+//     Issue an error -- we don't support string constants like this.
+//
+// Programmer: Jeremy Meredith
+// Creation:   June 13, 2005
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+avtStringConstExpr::CreateFilters(ExprPipelineState *state)
+{
+    EXCEPTION1(ExpressionException,
+               "avtStringConstExpr::CreateFilters: "
+               "Unsupported constant type: String");
+}
+
+// ****************************************************************************
+// Method: avtBooleanConstExpr::CreateFilters
+//
+// Purpose:
+//     Issue an error -- we don't support boolean constants like this.
+//
+// Programmer: Jeremy Meredith
+// Creation:   June 13, 2005
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+avtBooleanConstExpr::CreateFilters(ExprPipelineState *state)
+{
+    EXCEPTION1(ExpressionException,
+               "avtStringConstExpr::CreateFilters: "
+               "Unsupported constant type: Bool");
+}
+
 
 void
 avtUnaryExpr::CreateFilters(ExprPipelineState *state)
@@ -311,12 +378,15 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //      Kathleen Bonnell, Thu Mar  3 11:13:22 PST 2005 
 //      Added var_skew. 
 //
+//      Jeremy Meredith, Mon Jun 13 17:20:44 PDT 2005
+//      This class now holds its name directly.  Use that instead.
+//
 // ****************************************************************************
 void
 avtFunctionExpr::CreateFilters(ExprPipelineState *state)
 {
     // Figure out which filter to add and add it.
-    string functionName = name->GetVal();
+    string functionName = name;
     avtExpressionFilter *f = NULL;
 
     if (functionName == "sin")
