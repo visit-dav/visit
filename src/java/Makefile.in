@@ -189,7 +189,7 @@ ViewerProxy.java \
 Xfer.java \
 Yielder.java
 
-MAIN_SRC = NIFGUI.java RunViewer.java TryLighting.java TryQuery.java
+MAIN_SRC = NIFGUI.java RunViewer.java TryLighting.java TryQuery.java PlotAtts.java
 MAIN_CLASS = $(MAIN_SRC:.java=.class)
 
 VERSIONWRITER = versionwriter

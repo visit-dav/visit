@@ -10451,7 +10451,7 @@ case $SHORT_UNAME in
     PREBIND_LIBS="$""(PREBIND_LIBS)"
     # Create the address.txt file with the initial offset for the VisIt libraries.
     rm -f address.txt linkedit.log
-    echo "0x22f8f000" > address.txt
+    echo "0x2322a000" > address.txt
     ;;
 esac
 # Set up the defaults

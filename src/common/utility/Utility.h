@@ -41,6 +41,9 @@ std::string UTILITY_API GetVisItInstallationDirectory();
 std::string UTILITY_API GetVisItInstallationDirectory(const char *version);
 std::string UTILITY_API GetVisItArchitectureDirectory();
 std::string UTILITY_API GetVisItArchitectureDirectory(const char *version);
+std::string UTILITY_API GetVisItLauncher();
+void        UTILITY_API SetIsDevelopmentVersion(bool val);
+bool        UTILITY_API GetIsDevelopmentVersion();
 
 std::string UTILITY_API GetUserVisItDirectory();
 UTILITY_API char *      GetDefaultConfigFile(const char *filename = 0, const char *home = 0);

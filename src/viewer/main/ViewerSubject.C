@@ -661,7 +661,7 @@ ViewerSubject::ConnectXfer()
     // Set up all of the objects that have been added to viewerState so far.
     //
     for(int i = 0; i < viewerState->GetNObjects(); ++i)
-        xfer.Add(viewerState->GetObject(i));
+        xfer.Add(viewerState->GetStateObject(i));
 
     //
     // Set up special opcodes and their handler.
@@ -7776,7 +7776,7 @@ ViewerSubject::GetProcessAttributes()
 // Creation:   Wed May 4 11:36:45 PDT 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

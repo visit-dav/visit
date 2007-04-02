@@ -95,7 +95,7 @@ Symbol::operator==(const Symbol &rhs) const
 // ****************************************************************************
 ostream &operator<<(ostream &o, const Symbol &s)
 {
-    o << s.displaystring;
+    o << s.displaystring.c_str();
     return o;
 }
 

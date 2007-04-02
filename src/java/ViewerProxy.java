@@ -161,6 +161,10 @@ import java.util.prefs.BackingStoreException;
 //   method never turns off xfer's reading thread. This means that the class
 //   will now always read from the viewer unless you call StopProcessing.
 //
+//   Brad Whitlock, Thu Jul 14 12:25:11 PDT 2005
+//   I made SetPlotOptions and SetOperatorOptions complain if they are given
+//   invalid indices or names.
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -882,19 +886,26 @@ public class ViewerProxy implements SimpleObserver
 
     public boolean SetPlotOptions(int type)
     {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETPLOTOPTIONSRPC);
-        rpc.SetPlotType(type);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
+        boolean retval = false;
+        if(type >= 0)
+        {
+            rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETPLOTOPTIONSRPC);
+            rpc.SetPlotType(type);
+            rpc.Notify();
+            retval = synchronous ? Synchronize() : true;
+        }
+        else
+        {
+            PrintMessage("SetPlotOptions: " + type + 
+                         " is an invalid plot index.");
+        }
+
+        return retval;
     }
 
     public boolean SetPlotOptions(String type)
     {
-        int index = plotPlugins.IndexFromName(type);
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETPLOTOPTIONSRPC);
-        rpc.SetPlotType(index);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
+        return SetPlotOptions(plotPlugins.IndexFromName(type));
     }
 
     public boolean ResetPlotOptions(int type)
@@ -915,19 +926,26 @@ public class ViewerProxy implements SimpleObserver
 
     public boolean SetOperatorOptions(int type)
     {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETOPERATOROPTIONSRPC);
-        rpc.SetOperatorType(type);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
+        boolean retval = false;
+        if(type >= 0)
+        {
+            rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETOPERATOROPTIONSRPC);
+            rpc.SetOperatorType(type);
+            rpc.Notify();
+            retval = synchronous ? Synchronize() : true;
+        }
+        else
+        {
+            PrintMessage("SetPlotOptions: " + type + 
+                         " is an invalid operator index.");
+        }
+
+        return retval;
     }
 
     public boolean SetOperatorOptions(String type)
     {
-        int index = operatorPlugins.IndexFromName(type);
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETOPERATOROPTIONSRPC);
-        rpc.SetOperatorType(index);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
+        return SetOperatorOptions(operatorPlugins.IndexFromName(type));
     }
 
     public boolean ResetOperatorOptions(int type)

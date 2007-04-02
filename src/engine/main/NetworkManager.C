@@ -3232,7 +3232,8 @@ NetworkManager::ExportDatabase(int id, ExportDBAttributes *atts)
 
     if (wrtr == NULL)
     {
-        debug1 << "Unable to locate writer for \"" << db_type << "\"" << endl;
+        debug1 << "Unable to locate writer for \"" << db_type.c_str()
+               << "\"" << endl;
         EXCEPTION0(ImproperUseException);
     }
 

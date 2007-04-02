@@ -53,8 +53,14 @@ wizard_page_info pageInfo[] = {
 //
 // Movie format information.
 //
+#if !defined(_WIN32)
 #define MPEG_FORMAT "MPEG movie"
 #define TIFF_FORMAT "TIFF images"
+#else
+// Make TIFF images be the default on Windows for now.
+#define MPEG_FORMAT "TIFF images"
+#define TIFF_FORMAT "TIFF images"
+#endif
 
 struct movie_format_info
 {
@@ -68,10 +74,12 @@ movie_format_info movieFormatInfo[] = {
     {"PNG  images",     "png"},
     {"PPM  images",     "ppm"},
     {"RGB  images",     "rgb"},
-    {TIFF_FORMAT,       "tiff"},
-    {MPEG_FORMAT,       "mpeg"},
+    {TIFF_FORMAT,       "tiff"}
+#if !defined(_WIN32)
+   ,{MPEG_FORMAT,       "mpeg"},
     {"Quicktime movie", "qt"},
     {"Streaming movie", "sm"}
+#endif
 };
 
 #define N_MOVIE_FORMATS  (sizeof(movieFormatInfo) / sizeof(movie_format_info))
@@ -688,7 +696,9 @@ QvisSaveMovieWizard::CreateStereoMoviePage()
 // Creation:   Thu Jun 23 11:21:37 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Jul 14 13:51:20 PST 2005
+//   Prevented the "..." button width from being set on MacOS X.
+//
 // ****************************************************************************
 
 void
@@ -724,8 +734,10 @@ QvisSaveMovieWizard::CreateFilenamePage()
             this, SLOT(page11_processOutputDirectoryText(const QString &)));
     QPushButton *outputSelectButton = new QPushButton("...", outputDirectoryParent,
         "outputSelectButton");
+#ifndef Q_WS_MACX
     outputSelectButton->setMaximumWidth(
          fontMetrics().boundingRect("...").width() + 6);
+#endif
     outputSelectButton->setSizePolicy(QSizePolicy(QSizePolicy::Fixed,
          QSizePolicy::Minimum));
     connect(outputSelectButton, SIGNAL(clicked()),
@@ -954,7 +966,12 @@ QvisSaveMovieWizard::SplitPrompt(const QString &s) const
 // Creation:   Thu Jun 23 11:29:19 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jul 11 08:59:19 PDT 2005
+//   Fixed the output directory on Windows.
+//
+//   Brad Whitlock, Thu Jul 14 14:24:22 PST 2005
+//   Disabled the Next button on Windows and MacOS X.
+//
 // ****************************************************************************
 
 void
@@ -1052,6 +1069,10 @@ QvisSaveMovieWizard::UpdatePage()
         if(movieAtts->GetOutputDirectory() == ".")
         {
             std::string outDir(QDir::currentDirPath().latin1());
+#if defined(_WIN32)
+            for(int c = 0; c < outDir.length(); ++c)
+                outDir[c] = (outDir[c] == '/') ? SLASH_CHAR : outDir[c];
+#endif
             if(outDir.size() > 0 && outDir[outDir.size() - 1] != SLASH_CHAR)
                 outDir += SLASH_STRING;
             movieAtts->SetOutputDirectory(outDir);
@@ -1079,6 +1100,9 @@ QvisSaveMovieWizard::UpdatePage()
         else
             page12_buttongroup->setButton(2);
         page12_buttongroup->blockSignals(false);
+#if defined(Q_WS_WIN) || defined(Q_WS_MACX)
+        nextButton()->setEnabled(false);
+#endif
         break;
     default:
         ;//qDebug("Update page: pageIndex=%d", pageIndex);

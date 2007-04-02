@@ -80,16 +80,16 @@ Sequence::Print(ostream &o, int pos) const
     {
         o << "e ";
         if (pos == 0)
-            o << dot << " ";
+            o << dot.c_str() << " ";
     }
     else
     {
         for (int i=0; i<symbols.size(); i++)
         {
-            if (pos == i) o << dot << " ";
+            if (pos == i) o << dot.c_str() << " ";
                 o << *(symbols[i]) << " ";
         }
-        if (pos == symbols.size()) o << dot << " ";
+        if (pos == symbols.size()) o << dot.c_str() << " ";
     }
 }
 

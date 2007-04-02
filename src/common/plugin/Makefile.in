@@ -68,6 +68,9 @@
 #    Hank Childs, Mon May 23 17:21:33 PDT 2005
 #    Add database plugins.
 #
+#    Brad Whitlock, Wed Jul 13 10:42:09 PDT 2005
+#    Updated LIBS.
+#
 ##############################################################################
 
 ##
@@ -91,7 +94,7 @@ SRC=PluginManager.C DatabasePluginManager.C \
 OBJ=$(SRC:.C=.o)
 
 LIB=libplugin
-LIBS=-lmisc
+LIBS=-lstate -lcomm -lutility -lmisc
 
 ##
 ## Standard targets...

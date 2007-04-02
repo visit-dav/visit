@@ -232,9 +232,10 @@ avtImageColleague::SetOptions(const AnnotationObject &annot)
     bool haveImage = true;
 
     const stringVector &text = annot.GetText();
-    if(text.size() && (text[0] != currentImage ||
-                       useOpacityColor != annot.GetIntAttribute1() ||
-                       (useOpacityColor && opacityColor != annot.GetColor1())))
+    if(text.size() > 0 &&
+       (text[0] != currentImage ||
+        useOpacityColor != (annot.GetIntAttribute1()>0) ||
+        (useOpacityColor && (opacityColor != annot.GetColor1()))))
     {
         useOpacityColor = annot.GetIntAttribute1();
         if(useOpacityColor)

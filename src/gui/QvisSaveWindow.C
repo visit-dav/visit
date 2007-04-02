@@ -109,7 +109,10 @@ QvisSaveWindow::~QvisSaveWindow()
 //   Kathleen Bonnell, Wed Dec 15 08:20:11 PST 2004 
 //   Changed SLOT for saveButton from 'saveWindow' to 'saveButtonClicked' so
 //   that 'apply' can be called before the save.
-//   
+//
+//   Brad Whitlock, Thu Jul 14 13:50:15 PST 2005
+//   Prevented "..." button max width from being set on MacOS X.
+//
 // ****************************************************************************
 
 void
@@ -140,8 +143,10 @@ QvisSaveWindow::CreateWindowContents()
             this, SLOT(processOutputDirectoryText()));
     outputDirectorySelectButton = new QPushButton("...", outputDirectoryParent,
         "outputSelectButton");
+#ifndef Q_WS_MACX
     outputDirectorySelectButton->setMaximumWidth(
          fontMetrics().boundingRect("...").width() + 6);
+#endif
     outputDirectorySelectButton->setSizePolicy(QSizePolicy(QSizePolicy::Fixed,
          QSizePolicy::Minimum));
     connect(outputDirectorySelectButton, SIGNAL(clicked()),

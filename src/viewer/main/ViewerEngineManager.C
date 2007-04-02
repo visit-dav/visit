@@ -2163,15 +2163,18 @@ ViewerEngineManager::StartQuery(const EngineKey &ek, const bool flag,
 //    Kathleen Bonnell, Tue Jun  1 17:57:52 PDT 2004 
 //    Added forZones arg. 
 //
+//    Kathleen Bonnell, Thu Jul 14 09:12:43 PDT 2005 
+//    Made it use the macro that does not start an engine if none exists.
+//
 // ****************************************************************************
 
 bool
 ViewerEngineManager::StartPick(const EngineKey &ek, const bool forZones,
                                const bool flag, const int nid)
 {
-    ENGINE_PROXY_RPC_BEGIN("StartPick");
+    ENGINE_PROXY_RPC_BEGIN_NOSTART("StartPick");
     engine->StartPick(forZones, flag, nid);
-    ENGINE_PROXY_RPC_END;
+    ENGINE_PROXY_RPC_END_NORESTART;
 }
 
 // ****************************************************************************

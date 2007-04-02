@@ -395,6 +395,9 @@ LongFileName(const char *shortName)
 //   Added saveMovieWizard, movieAtts, interpreter, and observer for
 //   client method.
 //
+//   Brad Whitlock, Thu Jul 14 11:00:40 PDT 2005
+//   Removed developmentVersion.
+//
 // ****************************************************************************
 
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
@@ -428,7 +431,6 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     // Default values.
     localOnly = false;
     readConfig = true;
-    developmentVersion = false;
     sessionCount = 0;
     initStage = 0;
     heavyInitStage = 0;
@@ -1044,6 +1046,9 @@ QvisGUIApplication::ClientMethodCallback(Subject *s, void *data)
 //   Added code to show the release notes the first time a the use runs a
 //   new version of VisIt.
 //
+//   Brad Whitlock, Thu Jul 14 11:01:26 PDT 2005
+//   I made it use GetIsDevelopmentVersion.
+//
 // ****************************************************************************
 
 void
@@ -1158,7 +1163,7 @@ QvisGUIApplication::FinalInitialization()
     case 10:
         // Show the release notes if this is the first time that the
         // user has run this version of VisIt.
-        if(developmentVersion)
+        if(GetIsDevelopmentVersion())
         {
             // Make sure that we don't allow updates in development versions.
             mainWin->updateNotAllowed();
@@ -1350,6 +1355,9 @@ QvisGUIApplication::Quit()
 //    I made sure that host and port are preserved when we are reverse
 //    launching the gui.
 //
+//    Brad Whitlock, Thu Jul 14 10:52:46 PDT 2005
+//    I made it use SetIsDevelopmentVersion.
+//
 // ****************************************************************************
 
 void
@@ -1362,7 +1370,7 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
     // should not strip out here. They will be stripped out by ViewerProxy.
     //
     int i;
-    for(int i = 1; i < argc; ++i)
+    for(i = 1; i < argc; ++i)
     {
         std::string current(argv[i]);
         if(current == "-reverse_launch")
@@ -1372,7 +1380,7 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
         }
     }
 
-    for(int i = 1; i < argc; ++i)
+    for(i = 1; i < argc; ++i)
     {
         std::string current(argv[i]);
 
@@ -1523,7 +1531,7 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
         }
         else if(current == "-dv")
         {
-            developmentVersion = true;
+            SetIsDevelopmentVersion(true);
         }
     }
 }
@@ -5435,7 +5443,9 @@ QvisGUIApplication::SendInterface()
 // Creation:   Wed May 4 18:07:21 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jul 11 09:21:55 PDT 2005
+//   Moved creation of movie progress dialog to this method.
+//
 // ****************************************************************************
 
 void
@@ -5568,11 +5578,25 @@ QvisGUIApplication::HandleClientMethod()
             else if(method->GetMethodName() == "MovieProgress")
             {
                 // Set the movie progress dialog's properties.
+                if(movieProgress == 0)
+                {
+                    movieProgress = new QvisMovieProgressDialog(mainWin,
+                        "movieProgress");
+                    movieProgress->setCaption("VisIt movie progress");
+                    movieProgress->setLabelText("Making movie");
+                    movieProgress->setProgress(0);
+                    connect(movieProgress, SIGNAL(cancelled()),
+                            this, SLOT(CancelMovie()));
+                }
+
                 if(movieProgress != 0)
                 {
                     QString labelText(method->GetStringArgs()[0].c_str());
                     int current = method->GetIntArgs()[0];
                     int total   = method->GetIntArgs()[1];
+
+                    if(!movieProgress->isVisible())
+                        movieProgress->show();
                     if(labelText != movieProgress->labelText())
                         movieProgress->setLabelText(labelText);
                     if(total != movieProgress->totalSteps())
@@ -5627,6 +5651,39 @@ QvisGUIApplication::SendMessageBoxResult1()
 }
 
 // ****************************************************************************
+// Function: QuoteSpaces
+//
+// Purpose: 
+//   Adds quotes around a string that contains spaces.
+//
+// Arguments:
+//   s : The string to check.
+//
+// Returns:    The original string or a quoted string if the original had
+//             spaces.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 12 13:34:39 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+QuoteSpaces(const std::string &s)
+{
+    bool nospaces = true;
+    for(int i = 0; i < s.size() && nospaces; ++i)
+        nospaces &= (s[i] != ' ');
+
+    std::string retval(s);
+    if(!nospaces)
+        retval = std::string("\"") + retval + std::string("\"");
+
+    return retval;
+}
+
+// ****************************************************************************
 // Function: GetMovieCommandLine
 //
 // Purpose: 
@@ -5641,17 +5698,15 @@ QvisGUIApplication::SendMessageBoxResult1()
 // Creation:   Thu Jun 2 10:50:21 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Jul 14 10:55:37 PDT 2005
+//   I made it use GetVisItLauncher.
+//
 // ****************************************************************************
 
 void
 GetMovieCommandLine(const MovieAttributes *movieAtts, stringVector &args)
 {
-#if defined(_WIN32)
-    args.push_back(GetVisItInstallationDirectory() + "\\visit.exe");
-#else
-    args.push_back(GetVisItInstallationDirectory() + "/bin/visit");
-#endif
+    args.push_back(QuoteSpaces(GetVisItLauncher()));
     args.push_back("-movie");
 
     // iterate over the formats
@@ -5690,7 +5745,7 @@ GetMovieCommandLine(const MovieAttributes *movieAtts, stringVector &args)
     if(dirFile == ".")
         dirFile += SLASH_STRING;
     dirFile += movieAtts->GetOutputName();
-    args.push_back(dirFile);
+    args.push_back(QuoteSpaces(dirFile));
 }
 
 // ****************************************************************************
@@ -5740,6 +5795,43 @@ UpdateCurrentWindowSizes(MovieAttributes *movieAtts, int currentWidth,
 }
 
 // ****************************************************************************
+// Function: MakeCodeSlashes
+//
+// Purpose: 
+//   Turns '\' characters into "\\" in the output string.
+//
+// Arguments:
+//   s : The string to convert.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jul 11 10:13:48 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QString
+MakeCodeSlashes(const QString &s)
+{
+#if defined(_WIN32)
+    QString retval;
+    char tmp[2] = {'\0', '\0'};
+
+    for(int i = 0; i < s.length(); ++i)
+    {
+        tmp[0] = s[i];
+        if(s[i] == '\\')
+            retval += tmp;
+        retval += tmp;
+    }
+
+    return retval;
+#else
+    return s;
+#endif
+}
+
+// ****************************************************************************
 // Method: QvisGUIApplication::SaveMovie
 //
 // Purpose: 
@@ -5750,7 +5842,11 @@ UpdateCurrentWindowSizes(MovieAttributes *movieAtts, int currentWidth,
 // Creation:   Mon Mar 21 15:39:15 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jul 11 09:24:51 PDT 2005
+//   Moved creation of the movie progress dialog into the ClientMethod handler
+//   so we don't have to put code in the viewer to close the dialog if the
+//   CLI can't be launched.
+//
 // ****************************************************************************
 
 void
@@ -5801,8 +5897,12 @@ QvisGUIApplication::SaveMovie()
             std::string makemovie(GetVisItArchitectureDirectory() + "/bin/makemovie.py");
 #endif
 
+            // Turn "\" into "\\" so the interpreter is happy.
+            QString makemovie2(MakeCodeSlashes(makemovie.c_str()));
+            dirFile   = MakeCodeSlashes(dirFile);
+
             // Assemble a string of code to execute.
-            QString code; code.sprintf("try:\n    Source('%s')\n", makemovie.c_str());
+            QString code; code.sprintf("try:\n    Source('%s')\n", makemovie2.latin1());
             code += "    movie = MakeMovie()\n";
             code += "    movie.usesCurrentPlots = 1\n";
             code += "    movie.sendClientFeedback = 1\n";
@@ -5836,21 +5936,6 @@ QvisGUIApplication::SaveMovie()
             code += "    raise\n";
             code += "ClientMethod(\"MovieProgressEnd\")\n";
             Interpret(code);
-
-            // Hide all of the GUI and viewer windows.
-            // Start the "visit -movie" code in the interpreter on another thread.
-            // Pop up the Movie progress dialog.
-            // Show the GUI and viewer windows again.
-            if(movieProgress == 0)
-            {
-                movieProgress = new QvisMovieProgressDialog(mainWin, "movieProgress");
-                movieProgress->setCaption("VisIt movie progress");
-                connect(movieProgress, SIGNAL(cancelled()),
-                        this, SLOT(CancelMovie()));
-            }
-            movieProgress->setLabelText("Making movie");
-            movieProgress->setProgress(0);
-            movieProgress->show();
         }
         else
         {
@@ -5862,7 +5947,7 @@ QvisGUIApplication::SaveMovie()
             stringVector args;
             GetMovieCommandLine(movieAtts, args);
             args.push_back("-sessionfile");
-            args.push_back(sessionFile.latin1());
+            args.push_back(QuoteSpaces(std::string(sessionFile.latin1())));
 
             if (movieAtts->GetGenerationMethod() == MovieAttributes::NowNewInstance)
             {

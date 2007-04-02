@@ -7,6 +7,9 @@
 #include <vtkVisItCellDataToPointData.h>
 #include <vtkVisItOpenGLPolyDataMapper.h>
 #include <vtkVisItMesaPolyDataMapper.h>
+#if defined(__APPLE__)
+#include <vtkOSMesaRenderWindow.h>
+#endif
 
 #include <vtkObjectFactory.h>
 #include <vtkVersion.h>
@@ -39,6 +42,9 @@ class vtkVisItGraphicsFactory : public vtkObjectFactory
 VTK_CREATE_CREATE_FUNCTION(vtkVisItOpenGLPolyDataMapper);
 VTK_CREATE_CREATE_FUNCTION(vtkVisItMesaPolyDataMapper);
 VTK_CREATE_CREATE_FUNCTION(vtkVisItCellDataToPointData);
+#if defined(__APPLE__)
+VTK_CREATE_CREATE_FUNCTION(vtkOSMesaRenderWindow);
+#endif
 
 
 const char*
@@ -51,9 +57,11 @@ vtkVisItGraphicsFactory::GetVTKSourceVersion()
 //  Create the overrides so that VTK will use VisIt's class instead.
 //
 //  Modifications:
-//
 //    Hank Childs, Fri Oct 22 07:13:35 PDT 2004
 //    Added vtkVisItCellDataToPointData.
+//
+//    Brad Whitlock, Wed Jul 13 15:11:53 PST 2005
+//    Added vtkOSMesaRenderWindow on MacOS X.
 //
 vtkVisItGraphicsFactory::vtkVisItGraphicsFactory()
 {
@@ -69,6 +77,12 @@ vtkVisItGraphicsFactory::vtkVisItGraphicsFactory()
                          "vtkVisItCellDataToPointData override vtkCellDataToPointData",
                          1,
                          vtkObjectFactoryCreatevtkVisItCellDataToPointData);
+#if defined(__APPLE__)
+  this->RegisterOverride("vtkCarbonRenderWindow", "vtkOSMesaRenderWindow",
+                         "vtkOSMesaRenderWindow override vtkCarbonRenderWindow",
+                         1,
+                         vtkObjectFactoryCreatevtkOSMesaRenderWindow);
+#endif
 }
 
 // ****************************************************************************

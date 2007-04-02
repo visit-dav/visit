@@ -646,7 +646,7 @@ avtReflectFilter::ReflectRectilinear(vtkRectilinearGrid *ds, int dim)
     //
     // Start off by turning everything to 0.
     //
-    for (int i = 0 ; i < nPts ; i++)
+    for (i = 0 ; i < nPts ; i++)
         gnp[i] = 0;
 
     //

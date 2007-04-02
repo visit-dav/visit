@@ -165,6 +165,9 @@ typedef struct {
 //    Kathleen Bonnell, Wed Mar 23 15:09:16 PST 2005 
 //    Added ClearRefLines.
 //
+//    Kathleen Bonnell, Thu Jul 14 09:16:22 PDT 2005
+//    Added EngineExistsForQuery. 
+//
 // ****************************************************************************
     
 class VIEWER_API ViewerQueryManager 
@@ -269,6 +272,7 @@ class VIEWER_API ViewerQueryManager
                     ViewerQueryManager();
 
   private:
+    bool            EngineExistsForQuery(ViewerWindow *);
     void            AddQuery(ViewerWindow *origwin, Line *lineAtts,
                              const bool fromDefault = true);
 

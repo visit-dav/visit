@@ -549,6 +549,9 @@ dnl
 dnl    Jeremy Meredith, Thu Apr 28 17:46:44 PDT 2005
 dnl    Added explicit versioning for the VisIt Engine Library.
 dnl
+dnl    Brad Whitlock, Wed Jul 13 09:36:25 PDT 2005
+dnl    Updated MacOS X start address due to library size changes.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -2717,7 +2720,7 @@ case $SHORT_UNAME in
     PREBIND_LIBS="$""(PREBIND_LIBS)"
     # Create the address.txt file with the initial offset for the VisIt libraries.
     rm -f address.txt linkedit.log
-    echo "0x22f8f000" > address.txt
+    echo "0x2322a000" > address.txt
     ;;
 esac
 # Set up the defaults

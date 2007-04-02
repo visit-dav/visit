@@ -252,6 +252,9 @@ class SplashScreen;
 //    Brad Whitlock, Wed May 4 18:00:32 PST 2005
 //    Added support for executing client methods.
 //
+//    Brad Whitlock, Thu Jul 14 11:00:23 PDT 2005
+//    removed developmentVersion;
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -442,7 +445,7 @@ private:
     // Options that can be set via the command line
     bool                         localOnly;
     bool                         readConfig;
-    bool                         developmentVersion;
+
     // These hold the border sizes of the main window.
     int                          borders[4];
     // Other sizing parameters for windows

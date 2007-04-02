@@ -157,13 +157,24 @@ directions or VisIt will not be prebound. Remember that you can always use the
 otool command to check whether a library or executable is prebound.
 
 Before building VisIt or any of its support libraries, you need to create a
-"visit" directory in which the support libraries will be installed. We also create
-file that contains the path so we can use that in some of the instructions
-later on.
+"visit" directory in which the support libraries will be installed. We also 
+create a file that contains the path so we can use that in some of the
+instructions later on.
 
 mkdir visit
 echo `pwd`/visit > visitpath
 set VISITPATH="`pwd`/visit"
+
+Also, note when these instructions indicate that a library's source code must
+be replaced or modified. VTK requires some source code modifications before
+compilation. Since the source exists within VisIt's source code directory, 
+take this opportunity to unzip VisIt's source code distribution and set an
+environment variable that will be used to identify VisIt's source code 
+directory.
+
+gunzip visit050718.tar.gz
+tar xf visit050718.tar
+setenv VISITSOURCE `pwd`/visit050718
 
 ==============================================================================
 Building Qt as a set of prebound dynamic libraries
@@ -290,26 +301,168 @@ VTK/README.html file included in the VTK distribution for more information.
 
 gunzip vtk_cvs_2003_10_28.tar.gz
 tar xf vtk_cvs_2003_10_28.tar
+
+
+Source code and build modifications:
+====================================
+
+The above VTK distribution must be modified a little to support features that
+VisIt needs in order to run properly. For example, VisIt requires VTK to be built
+with support for mangled mesa in order to support offscreen rendering. VisIt
+uses offscreen rendering to save images, do scalable rendering in parallel, and
+to render images when the CLI is run in -nowin mode. VTK cannot be built with 
+mangled mesa support on MacOS X without some modifications to its source code 
+and build system. Follow each of the next instructions before building VTK to
+ensure that you produce VTK libraries that meet VisIt's needs.
+
+1. Edit VTK/CMakeLists.txt. Look for -flat_namespace and replace it with: 
+   -twolevel_namespace. Also delete the -U flag and its argument.
+
+2. Edit VTK/Utilities/ftgl/CMakeLists.txt and look for:
+   SET (VTKFTGL_LIBS "${VTKFTGL_LIBS};${OPENGL_LIBRARY}"). Add the following
+   code after the above string:
+
+      IF (FTGL_SUPPORT_MANGLE_MESA)
+          SET (VTKFTGL_LIBS "${VTKFTGL_LIBS};${MANGLED_MESA_LIBRARY}")
+      ENDIF (FTGL_SUPPORT_MANGLE_MESA)
+
+3. Edit VTK/Rendering/CMakeLists.txt and remove the line that contains
+   vtkXMesaRenderWindow.cxx.
+
+4. Open VTK/Rendering/vtkGraphicsFactory.cxx and wrap the
+   #include "vtkXMesaRenderWindow.h" with #if !defined(__APPLE__) / #endif to
+   prevent that header from being included.
+
+5. Open VTK/Rendering/vtkMesaRenderWindow.cxx and change
+   #include "vtkXMesaRenderWindow.h" to #include "vtkMesaRenderWindow.h".
+
+6. The vtkImagingFactory class does not support creation of Mesa objects under
+   Carbon. Find the code in VTK/Rendering/vtkImagingFactory.cxx that looks like
+   this:
+
+   #ifdef VTK_USE_CARBON
+     if (!strcmp("CarbonOpenGL",rl))
+       {
+       if(strcmp(vtkclassname, "vtkTextMapper") == 0)
+         {
+         return vtkOpenGLFreeTypeTextMapper::New();
+         }
+       if(strcmp(vtkclassname, "vtkImageMapper") == 0)
+         {
+         return vtkOpenGLImageMapper::New();
+         }
+       if(strcmp(vtkclassname, "vtkPolyDataMapper2D") == 0)
+         {
+         return vtkOpenGLPolyDataMapper2D::New();
+         }
+       }
+   #endif
+
+   Modify that code so it includes the code to create Mesa objects when VTK has
+   been instructed to use Mesa. The modified code will look like this:   
+
+   #ifdef VTK_USE_CARBON
+     if (!strcmp("CarbonOpenGL",rl))
+       {
+       if(strcmp(vtkclassname, "vtkTextMapper") == 0)
+         {
+   #if defined(VTK_USE_MANGLED_MESA)
+         if ( vtkImagingFactory::UseMesaClasses )
+           {
+           return vtkMesaFreeTypeTextMapper::New();
+           }
+   #endif
+         return vtkOpenGLFreeTypeTextMapper::New();
+         }
+       if(strcmp(vtkclassname, "vtkImageMapper") == 0)
+         {
+   #if defined(VTK_USE_MANGLED_MESA)
+         if ( vtkImagingFactory::UseMesaClasses )
+           {
+           return vtkMesaImageMapper::New();
+           }
+   #endif
+         return vtkOpenGLImageMapper::New();
+         }
+       if(strcmp(vtkclassname, "vtkPolyDataMapper2D") == 0)
+         {
+   #if defined(VTK_USE_MANGLED_MESA)
+         if ( vtkImagingFactory::UseMesaClasses )
+           {
+           return vtkMesaPolyDataMapper2D::New();
+           }
+   #endif
+         return vtkOpenGLPolyDataMapper2D::New();
+         }
+       }
+   #endif
+
+7. Replace vtkCamera.cxx with VisIt's vtkCamera. Issue the following command
+   to do so:
+     cp $VISITSOURCE/visit_vtk/full/vtkCamera.C VTK/Rendering/vtkCamera.cxx
+     cp $VISITSOURCE/visit_vtk/full/vtkCamera.h VTK/Rendering/vtkCamera.h
+
+You may have noticed that we don't do anything in VTK to preclude the use of
+vtkCarbonRenderWindow, even though it cannot support Mesa. We register an
+override of vtkCarbonRenderWindow later in VisIt's visit_vtk library that
+forces VTK to create one of VisIt's vtkOSMesaRenderWindow objects instead
+of creating vtkCarbonRenderWindow objects. This allows us to do offscreen
+rendering in MacOS X without having to rewrite vtkCarbonRenderWindow.
+
+
+Configuring VTK:
+================
+
 cd VTK
-../cmake-1.8.1/bin/cmake .
-#
-# Edit CMakeCache.txt.  Turn BUILD_SHARED_LIBS, VTK_USE_HYBRID, and
-# VTK_USE_MANGLED_MESA on, Turn BUILD_TESTING off.
-#
-# Look for the following CMake keys and set these values:
-#
-# CMAKE_BUILD_TYPE:STRING = Release
-# CMAKE_CXX_FLAGS_RELEASE:STRING = '-O2'
-# CMAKE_EXE_LINKER_FLAGS_RELEASE:STRING='-prebind'
-# CMAKE_MODULE_LINKER_FLAGS_RELEASE:STRING='-prebind'
-# CMAKE_SHARED_LINKER_FLAGS_RELASE:STRING='-prebind'
-# CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
-# VTK_USE_MANGLED_MESA:BOOL=ON
-#
-# Look for -flat_namespace and replace it with -twolevel_namespace, delete
-# the -U flag and its argument.
-#
-../cmake-1.8.1/bin/cmake .
+../cmake-1.8.1/bin/ccmake .
+
+The above ccmake program is a menu for configuring VTK. Follow these steps to 
+configure VTK and generate its makefiles. You must perform these steps before
+you can build VTK.
+
+1. First, press "c" for configure.
+2. When it is finished, press "t" for advanced options, and change the 
+   options listed below:
+
+    Option                             Value
+    =================================================
+    SHARED_LIBS                        ON
+    CMAKE_BUILD_TYPE                   Release
+    CMAKE_VERBOSE_MAKEFILE             TRUE
+    VTK_USE_HYBRID                     ON
+    BUILD_TESTING                      OFF
+    CMAKE_CXX_FLAGS_RELEASE            -O2
+    CMAKE_C_FLAGS_RELEASE              -O2
+    CMAKE_EXE_LINKER_FLAGS_RELEASE     -prebind
+    CMAKE_MODULE_LINKER_FLAGS_RELEASE  -prebind
+    CMAKE_SHARED_LINKER_FLAGS_RELEASE  -prebind
+    VTK_OPENGL_HAS_MESA                OFF
+    VTK_USE_MANGLED_MESA               ON
+
+3. Type "c" to make ccmake configure. When it is done there are more options to
+   fill in. The use of $VISITHOME in this case is for illustration purposes only.
+   Since you are inside of ccmake, substitute the actual value for $VISITHOME
+   instead of using the $VISTIHOME environment variable.
+
+   Option                              Value
+   =================================================
+   OSMESA_INCLUDE_DIR                  $VISITHOME/mesa/include
+   OSMESA_LIBRARY                      $VISITHOME/mesa/lib/libOSMesa.dylib
+   MANGLED_MESA_INCLUDE_DIR            $VISITHOME/mesa/include
+   MANGLED_MESA_LIBRARY                $VISITHOME/mesa/lib/libMesaGL.dylib
+   MANGLED_OSMESA_INCLUDE              $VISITHOME/mesa/include
+   MANGLED_OSMESA_LIB                  $VISITHOME/mesa/lib/libOSMesa.dylib
+
+4. Type "c" to configure
+5. Type "g" to generate and quit
+
+
+Building VTK:
+=============
+
+Now that VTK's source and build have been modified and you've configured and
+generated VTK's Makefiles, you can start building VTK.
+
 make
 
 VTK does not provide targets for building prebound shared libraries. Rather than
@@ -334,10 +487,10 @@ libvtkDICOMParser.dylib 20d17000
 libvtkCommon.dylib      20dec000
 libvtkFiltering.dylib   21111000
 libvtkGraphics.dylib    2125b000
-libvtkIO.dylib          2186a000
-libvtkImaging.dylib     21b96000
-libvtkRendering.dylib   21f6f000
-libvtkHybrid.dylib      21601000 (offset out of order but that's okay)
+libvtkIO.dylib          21601000
+libvtkImaging.dylib     2192d000
+libvtkRendering.dylib   21d06000
+libvtkHybrid.dylib      22081000
 
 Since we added -prebind to the flags that are used when trying to link a shared
 library, we can open each Makefile for the projects listed above and add the
@@ -399,15 +552,15 @@ cp Utilities/jpeg/*.h             $VISITPATH/jpeg/include
 cp bin/libvtkjpeg.dylib           $VISITPATH/jpeg/lib/libjpeg.dylib
 
 
-The next offset after libvtkRendering.dylib, which has an offset of 0x21f6f000 and
-a library size of 3,260,676 (0x31c104) bytes is:
+The next offset after libvtkHybrid.dylib, which has an offset of 0x22081000 and
+a library size of 2,406,052 (0x24b6a4) bytes is:
 
 # Next offset
-offset = 0x21f6f000 + int(float(0x31c104) * 1.05)
-# Align the offset tp 0x1000 byte boundaries
+offset = 0x22081000 + int(float(0x24b6a4) * 1.05)
+# Align the offset to 0x1000 byte boundaries
 offset = offset + (0x1000 - offset % 0x1000)
 # Next offset
-offset = 0x222b3000
+offset = 0x222ea000
 
 ===============================================================================
 Building Python as a prebound dynamic library
@@ -438,19 +591,19 @@ cd tmplib
 ar -x ../libpython2.3.a
 echo "char **environ=0;" > environhack.c
 gcc -o environhack.o -c environhack.c
-gcc -dynamiclib -prebind -Wl,-seg1addr,0x222b3000,-install_name,@executable_path/../lib/libpython2.3.dylib,-compatibility_version,2.3.3,-current_version,2.3.3 -twolevel_namespace -o libpython2.3.dylib *.o -framework Carbon
+gcc -dynamiclib -prebind -Wl,-seg1addr,0x222ea000,-install_name,@executable_path/../lib/libpython2.3.dylib,-compatibility_version,2.3.3,-current_version,2.3.3 -twolevel_namespace -o libpython2.3.dylib *.o -framework Carbon
 cp libpython2.3.dylib $VISITPATH/python/lib/python2.3/config/libpython2.3.dylib
 cd ../..
 
-The next offset after libpython.dylib, which has an offset of 0x222b3000 and a library
+The next offset after libpython.dylib, which has an offset of 0x222ea000 and a library
 size of 3,311,968 (0x328960) bytes is:
 
 # Next offset
-offset = 0x222b3000 + int(float(0x328960) * 1.05)
+offset = 0x222ea000 + int(float(0x328960) * 1.05)
 # Align the offset to 0x1000 byte boundaries
 offset = offset + (0x1000 - offset % 0x1000)
 # Next offset
-offset = 0x22605000
+offset = 0x2263c000
 
 ===============================================================================
 Building HDF5 as a prebound dynamic library
@@ -474,7 +627,7 @@ make
 # address of the library and make it be prebound. We'll build our own
 # version of the library using the prebuilt sources.
 cd src
-gcc -dynamiclib -prebind -twolevel_namespace -Wl,-seg1addr,0x22605000,-install_name,@executable_path/../lib/libhdf5.dylib,-compatibility_version,1.6,-current_version,1.6 -o libhdf5.dylib *.lo -lz
+gcc -dynamiclib -prebind -twolevel_namespace -Wl,-seg1addr,0x2263c000,-install_name,@executable_path/../lib/libhdf5.dylib,-compatibility_version,1.6,-current_version,1.6 -o libhdf5.dylib *.lo -lz
 
 # Install HDF5
 mkdir $VISITPATH/hdf5
@@ -484,15 +637,15 @@ cp libhdf5.dylib $VISITPATH/hdf5/lib
 cp *.h $VISITPATH/hdf5/include
 cd ../..
 
-The next offset after libhdf5.dylib, which has an offset of 0x22605000 and
+The next offset after libhdf5.dylib, which has an offset of 0x2263c000 and
 a library size of 1,055,884 (0x101c8c) bytes is:
 
 # Next offset
-offset = 0x22605000 + int(float(0x101c8c) * 1.05)
+offset = 0x2263c000 + int(float(0x101c8c) * 1.05)
 # Align the offset to 0x1000 byte boundaries
 offset = offset + (0x1000 - offset % 0x1000)
 # Next offset
-offset = 0x22714000
+offset = 0x2274b000
 
 ===============================================================================
 Building Silo as a prebound dynamic library
@@ -526,7 +679,7 @@ cd lib
 mkdir tmplib
 cd tmplib
 ar -x ../libsilo.a
-gcc -dynamiclib -prebind -twolevel_namespace -Wl,-seg1addr,0x22714000,-install_name,@executable_path/../lib/libsilo.dylib,-compatibility_version,4.4.3,-current_version,4.4.3 -o ../libsilo.dylib *.o -L$HDF5LIB -lhdf5
+gcc -dynamiclib -prebind -twolevel_namespace -Wl,-seg1addr,0x2274b000,-install_name,@executable_path/../lib/libsilo.dylib,-compatibility_version,4.4.3,-current_version,4.4.3 -o ../libsilo.dylib *.o -L$HDF5LIB -lhdf5
 cd ..
 
 # Install Silo
@@ -540,15 +693,15 @@ cp silo/sdx/sdx.inc   $VISITDIR/silo/include
 cp lib/libsilo.dylib  $VISITDIR/silo/lib
 cd ..
 
-The next offset after libsilo.dylib, which has an offset of 0x22714000 and a library
+The next offset after libsilo.dylib, which has an offset of 0x2274b000 and a library
 size of 599,372 (0x9254c) bytes is:
 
 # Next offset
-offset = 0x22714000 + int(float(0x9254c) * 1.05)
+offset = 0x2274b000 + int(float(0x9254c) * 1.05)
 # Align the offset to 0x1000 byte boundaries
 offset = offset + (0x1000 - offset % 0x1000)
 # Next offset
-offset = 0x227ae000
+offset = 0x227e5000
 
 ===============================================================================
 Building Mili as a prebound dynamic library
@@ -570,8 +723,8 @@ the Mili's src directory
 
 CC=gcc
 CFLAGS = -I. -O2 -fno-common -fPIC
-MILI_LDFLAGS=-Wl,-seg1addr,0x227b1000 -L. -lgahl
-GAHL_LDFLAGS=-Wl,-seg1addr,0x227ae000
+MILI_LDFLAGS=-Wl,-seg1addr,0x227e8000 -L. -lgahl
+GAHL_LDFLAGS=-Wl,-seg1addr,0x227e5000
 LDFLAGS=-dynamiclib -prebind -twolevel_namespace -Wl,-install_name,@executable_path/../lib/$@
 .SUFFIXES : .o .c
 MILI_SRC=mili.c direc.c param.c io.c util.c dep.c svar.c srec.c mesh_u.c wrap_c.c io_mem.c eprtf.c sarray.c
@@ -602,11 +755,11 @@ The next offset after libmili.dylib, which has an offset of 0x227b1000 and
 a library size of 109,556 (0x1abf4) bytes is:
 
 # Next offset
-offset = 0x227b1000 + int(float(0x1abf4) * 1.05)
+offset = 0x227e8000 + int(float(0x1abf4) * 1.05)
 # Align the offset to 0x1000 byte boundaries
 offset = offset + (0x1000 - offset % 0x1000)
 # Next offset
-offset = 0x227ce000
+offset = 0x22805000
 
 ==============================================================================
 Building HDF4 as a prebound dynamic library
@@ -634,7 +787,7 @@ cd hdf/src
 mkdir tmp
 cd tmp
 ar -x ../libdf.a
-gcc -dynamiclib -prebind -twolevel_namespace -o libdf.dylib *.o -L$VISITPATH/jpeg/lib -ljpeg -lz -Wl,-seg1addr,0x227ce000,-install_name,@executable_path/../lib/libdf.dylib,-compatibility_version,2.0,-current_version,2.0
+gcc -dynamiclib -prebind -twolevel_namespace -o libdf.dylib *.o -L$VISITPATH/jpeg/lib -ljpeg -lz -Wl,-seg1addr,0x22805000,-install_name,@executable_path/../lib/libdf.dylib,-compatibility_version,2.0,-current_version,2.0
 mkdir $VISITPATH/hdf4
 mkdir $VISITPATH/hdf4/lib
 mkdir $VISITPATH/hdf4/include
@@ -645,7 +798,7 @@ cd ../../../mfhdf/libsrc
 mkdir tmp
 cd tmp
 ar -x ../libmfhdf.a
-gcc -dynamiclib -prebind -twolevel_namespace -o libmfhdf.dylib *.o L$VISITPATH/jpeg/lib -L$VISITPATH/hdf4/lib -ljpeg -ldf -Wl,-seg1addr,0x22865000,-install_name,@executable_path/../lib/libmfhdf.dylib,-compatibility_version,2.0,-current_version,2.0
+gcc -dynamiclib -prebind -twolevel_namespace -o libmfhdf.dylib *.o L$VISITPATH/jpeg/lib -L$VISITPATH/hdf4/lib -ljpeg -ldf -Wl,-seg1addr,0x228a0000,-install_name,@executable_path/../lib/libmfhdf.dylib,-compatibility_version,2.0,-current_version,2.0
 mv libmfhdf.dylib $VISITPATH/hdf4/lib
 cd ../../..
 
@@ -664,14 +817,14 @@ reserve a memory range after the Python library. Suppose all other
 libraries that we want can fit in 10Mb. If that assumption becomes invalid,
 we can recalculate the offset for the VisIt libraries. The starting address
 for the VisIt libraries using the current assumptions would then be:
-0x22605000 + 10Mb
+0x228a0000 + 10Mb
 
 # Next offset
-offset = 0x22605000 + 0x2faf080
+offset = 0x228a0000 + 0x2faf080
 # Align the offset to 0x1000 byte boundaries
 offset = offset + (0x1000 - offset % 0x1000)
 # Next offset
-offset = 0x22f8f000
+offset = 0x2322a000
 
 VisIt uses GNU's autoconf system to provide platform independence when
 building VisIt in a UNIX environment. Autoconf creates a script called

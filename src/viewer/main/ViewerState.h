@@ -29,8 +29,8 @@ public:
     void Add(AttributeSubject *, bool partialSendOkay = true);
     void SetOwnsObjects(bool);
 
-    AttributeSubject *GetObject(int i);
-    const AttributeSubject *GetObject(int i) const;
+    AttributeSubject *GetStateObject(int i);
+    const AttributeSubject *GetStateObject(int i) const;
     bool  GetPartialSendFlag(int i) const;
     int   GetNObjects() const;
 private:

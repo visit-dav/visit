@@ -49,7 +49,7 @@ FloatConstExpr::~FloatConstExpr()
 void
 StringConstExpr::PrintNode(ostream &o)
 {
-    o << "StringConstant: "<<value << endl;
+    o << "StringConstant: "<<value.c_str() << endl;
 }
 
 StringConstExpr::~StringConstExpr()
@@ -207,7 +207,7 @@ ArgExpr::PrintNode(ostream &o)
 {
     if (identifier != "")
     {
-        o << "name='" << identifier << "':";
+        o << "name='" << identifier.c_str() << "':";
     }
     o << endl;
     expr->Print(o);
@@ -250,7 +250,7 @@ ArgsExpr::PrintNode(ostream &o)
 void
 FunctionExpr::PrintNode(ostream &o)
 {
-    o << "Function '" << name << "' with ";
+    o << "Function '" << name.c_str() << "' with ";
     if (args)
         args->PrintNode(o);
     else
@@ -312,7 +312,7 @@ PathExpr::PrintNode(ostream &o)
 void
 MachExpr::PrintNode(ostream &o)
 {
-    o << "Machine="<<host<<endl;
+    o << "Machine="<<host.c_str()<<endl;
 }
 
 void

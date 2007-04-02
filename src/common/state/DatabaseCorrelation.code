@@ -500,7 +500,7 @@ DatabaseCorrelation::GetInverseCorrelatedTimeState(const std::string &db,
 }
 
 Function: OutputOperator
-Declaration: ostream& operator << (ostream &os, const DatabaseCorrelation &);
+Declaration: STATE_API ostream& operator << (ostream &os, const DatabaseCorrelation &);
 Definition:
 // ****************************************************************************
 // Method: operator <<

@@ -148,7 +148,7 @@ avtImageFileFormat::Initialize(void)
     bool hasColorChannels = true;
     int numExtsWithoutColorChannels = 4;
     char *extsWithoutColorChannels[4] = { "spr", "SPR", "sdt", "SDT" };
-    for (int i = 0 ; i < numExtsWithoutColorChannels ; i++)
+    for (i = 0 ; i < numExtsWithoutColorChannels ; i++)
         if (image_fext == extsWithoutColorChannels[i])
             hasColorChannels = false;
 
@@ -738,7 +738,7 @@ avtImageFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     int numExtsThatDontSupportColors = 5;
     char *extsThatDontSupportColors[5] = { "spr", "SPR", "sdt", "SDT",
                                           "imgvol" };
-    for (int i = 0 ; i < numExtsThatDontSupportColors ; i++)
+    for (i = 0 ; i < numExtsThatDontSupportColors ; i++)
         if (image_fext == extsThatDontSupportColors[i])
             supportColors = false;
 

@@ -1,6 +1,7 @@
 #include <ViewerClientConnection.h>
 
 #include <qsocketnotifier.h>
+#include <AttributeSubject.h>
 #include <ExistingRemoteProcess.h>
 #include <LostConnectionException.h>
 #include <ParentProcess.h>
@@ -47,8 +48,8 @@ ViewerClientConnection::ViewerClientConnection(const ViewerState *s,
     xfer = new Xfer;
     for(int i = 0; i < viewerState->GetNObjects(); ++i)
     {
-        xfer->Add(viewerState->GetObject(i));
-        viewerState->GetObject(i)->Attach(this);
+        xfer->Add(viewerState->GetStateObject(i));
+        viewerState->GetStateObject(i)->Attach(this);
     }
     xfer->CreateNewSpecialOpcode(); // animationStopOpcode
     xfer->CreateNewSpecialOpcode(); // iconifyOpcode
@@ -98,8 +99,8 @@ ViewerClientConnection::ViewerClientConnection(ParentProcess *p,
     viewerState = new ViewerState(*s);
     for(int i = 0; i < viewerState->GetNObjects(); ++i)
     {
-        xfer->Add(viewerState->GetObject(i));
-        viewerState->GetObject(i)->Attach(this);
+        xfer->Add(viewerState->GetStateObject(i));
+        viewerState->GetStateObject(i)->Attach(this);
     }
     xfer->CreateNewSpecialOpcode(); // animationStopOpcode
     xfer->CreateNewSpecialOpcode(); // iconifyOpcode
@@ -115,15 +116,20 @@ ViewerClientConnection::ViewerClientConnection(ParentProcess *p,
 // Creation:   Tue May 31 13:40:48 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jul 11 08:43:49 PDT 2005
+//   Fixed a memory problem on Windows.
+//
 // ****************************************************************************
 
 ViewerClientConnection::~ViewerClientConnection()
 {
     // Disconnect the socket notifier since it will not necessarily
     // be freed by this object.
-    disconnect(notifier, SIGNAL(activated(int)),
-               this, SLOT(ReadFromClientAndProcess(int)));
+    if(notifier != 0)
+    {
+        disconnect(notifier, SIGNAL(activated(int)),
+                   this, SLOT(ReadFromClientAndProcess(int)));
+    }
     if(ownsNotifier)
         delete notifier;
 
@@ -162,7 +168,9 @@ ViewerClientConnection::~ViewerClientConnection()
 
 void
 ViewerClientConnection::LaunchClient(const std::string &program,
-    const stringVector &args, ConnectCallback cb, void *cbData,
+    const stringVector &args, 
+    void (*cb)(const std::string &, const stringVector &, void *),
+    void *cbData,
     bool (*connectProgressCB)(void *, int),
     void *connectProgressCBData)
 {
@@ -194,7 +202,8 @@ ViewerClientConnection::LaunchClient(const std::string &program,
     debug1 << mName << "Process arguments:" << endl;
     debug1 << "\t-reverse_launch" << endl;
     remoteProcess->AddArgument("-reverse_launch");
-    for(int i = 0; i < args.size(); ++i)
+    int i;
+    for(i = 0; i < args.size(); ++i)
     {
         remoteProcess->AddArgument(args[i]);
         debug1 << "\t" << args[i].c_str() << endl;
@@ -222,11 +231,11 @@ ViewerClientConnection::LaunchClient(const std::string &program,
     // are: ViewerRPC, PostponedRPC, syncAtts, messageAtts, statusAtts,
     // metaData, silAtts.
     debug1 << mName << "Sending state objects to client." << endl;
-    for(int i = FreelyExchangedState; i < viewerState->GetNObjects(); ++i)
+    for(i = FreelyExchangedState; i < viewerState->GetNObjects(); ++i)
     {
-        viewerState->GetObject(i)->SelectAll();
+        viewerState->GetStateObject(i)->SelectAll();
         SetUpdate(false);
-        viewerState->GetObject(i)->Notify();
+        viewerState->GetStateObject(i)->Notify();
     }
 
     //
@@ -303,7 +312,7 @@ ViewerClientConnection::Update(Subject *subj)
     // see if it is a viewer RPC and if it is DetachRPC then emit a
     // different signal.
     //
-    if(subj == viewerState->GetObject(0))
+    if(subj == viewerState->GetStateObject(0))
     {
         ViewerRPC *rpc = (ViewerRPC *)subj;
         if(rpc->GetRPCType() == ViewerRPC::DetachRPC)
@@ -331,7 +340,7 @@ ViewerClientConnection::SubjectRemoved(Subject *TheRemovedSubject)
 {
     for(int i = 0; i < viewerState->GetNObjects(); ++i)
     {
-        if((AttributeSubject *)TheRemovedSubject == viewerState->GetObject(i))
+        if((AttributeSubject *)TheRemovedSubject == viewerState->GetStateObject(i))
         {
             TheRemovedSubject->Detach(this);
         }
@@ -368,7 +377,7 @@ ViewerClientConnection::BroadcastToClient(AttributeSubject *src)
     // PostponedAction back to the client.
     if(index >= 2 && index < viewerState->GetNObjects())
     {
-        AttributeSubject *dest = viewerState->GetObject(index);
+        AttributeSubject *dest = viewerState->GetStateObject(index);
 
         //
         // If the object is eligible for partial sends, figure out which

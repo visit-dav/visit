@@ -723,6 +723,7 @@ if ($ver eq "")
     $visitarchdir   = "$visitdir";
     $visitbindir    = "$visitdir/exe";
     $visitscriptdir = "$visitdir/bin";
+    $visitlauncher  = "$visitdir/bin/visit";
     if($os eq "darwin" and ($exe_name eq "gui" or $exe_name eq "viewer" or $exe_name eq "xmledit" or $exe_name eq "silex"))
     {
         $visitbindir = "$visitbindir/$exe_name.app/Contents/MacOS";
@@ -763,6 +764,7 @@ else # We're running a public version.
     $visitarchdir   = "$visitdir/$archdir";
     $visitbindir    = "$visitdir/$archdir/bin";
     $visitscriptdir = "$visitdir/$archdir/bin";
+    $visitlauncher  = "$visitdir/../bin/visit";
     if($os eq "darwin" and ($exe_name eq "gui" or $exe_name eq "viewer" or $exe_name eq "xmledit" or $exe_name eq "silex"))
     {
         $visitbindir = "$visitbindir/$exe_name.app/Contents/MacOS";
@@ -1136,8 +1138,8 @@ else
                 print GDBFILE "set environment TRAP_FPE=$ENV{TRAP_FPE}\n";
             }
             print GDBFILE "set environment MESA_GLX_FX=$ENV{MESA_GLX_FX}\n";
-            print GDBFILE "path $ENV{VISITHOME}/exe\n";
-            print GDBFILE "file $ENV{VISITHOME}/exe/$real_exe\n";
+            print GDBFILE "path $visitbindir\n";
+            print GDBFILE "file $visitbindir/$real_exe\n";
             print GDBFILE "directory $ENV{VISITHOME}/common/Exceptions/Database\n";
             print GDBFILE "directory $ENV{VISITHOME}/common/Exceptions/Pipeline\n";
             print GDBFILE "directory $ENV{VISITHOME}/common/Exceptions/VisWindow\n";
@@ -1264,14 +1266,49 @@ else
         print STDERR "Running: @printcmd\n";
         if ($security_key_set) { push @visitcmd, "-key", $security_key; }
 
+        $launched = 0;
         if($use_new_console)
         {
-            @tmpcmd = @visitcmd;
-            @visitcmd = ("xterm", "-title", "VisIt $exe_name$ver", "-fn", "fixed", "-e");
-            push @visitcmd, @tmpcmd;
+            if($os eq "darwin")
+            {
+                if($ENV{TERM_PROGRAM} eq "Apple_Terminal")
+                {
+                    push @newcmd, $visitlauncher;
+                    push @newcmd, "-$exe_name";
+                    splice @visitcmd, 0, 1, @newcmd;
+
+                    open(OSAHANDLE, "| osascript");
+                    print OSAHANDLE "tell application \"Terminal\"\n";
+                    print OSAHANDLE "activate\n";
+                    print OSAHANDLE "do script with command \"cd $ENV{PWD};@visitcmd; exit\"\n";
+                    print OSAHANDLE "end tell\n";
+                    close OSAHANDLE;
+
+                    $launched = 1;
+                }
+                elsif($ENV{TERM} eq "xterm")
+                {
+                    @tmpcmd = @visitcmd;
+                    @visitcmd = ("xterm", "-title", "VisIt $exe_name$ver", "-fn", "fixed", "-e");
+                    push @visitcmd, @tmpcmd;
+                }
+                else
+                {
+                    print STDERR "VisIt does not recognize your terminal application so it will ignore the -newconsole argument.\n";
+                }
+            }
+            else
+            {
+                @tmpcmd = @visitcmd;
+                @visitcmd = ("xterm", "-title", "VisIt $exe_name$ver", "-fn", "fixed", "-e");
+                push @visitcmd, @tmpcmd;
+            }
         }
 
-        exec @visitcmd or die "Can't execute visit: $!\n";
+        if(!$launched)
+        {
+            exec @visitcmd or die "Can't execute visit: $!\n";
+        }
     }
 }
 

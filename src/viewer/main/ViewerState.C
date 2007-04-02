@@ -20,7 +20,7 @@ ViewerState::ViewerState(const ViewerState &vs) : objVector(),
 
 debug1 << "\tobject[" << i << "] = " << (void*)newObj;
 if(newObj != 0)
-    debug1 << "  type=" << newObj->TypeName() << endl;
+    debug1 << "  type=" << newObj->TypeName().c_str() << endl;
 else
     debug1 << endl;
 
@@ -48,14 +48,14 @@ ViewerState::Add(AttributeSubject *obj, bool partialSendOkay)
 }
 
 AttributeSubject *
-ViewerState::GetObject(int i)
+ViewerState::GetStateObject(int i)
 {
     return (i >= 0 && i < objVector.size()) ?
            ((AttributeSubject *)objVector[i]) : 0;
 }
 
 const AttributeSubject *
-ViewerState::GetObject(int i) const
+ViewerState::GetStateObject(int i) const
 {
     return (i >= 0 && i < objVector.size()) ?
            ((const AttributeSubject *)objVector[i]) : 0;

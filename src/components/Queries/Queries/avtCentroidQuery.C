@@ -1,5 +1,5 @@
 // ************************************************************************* //
-//                         avtCentroidQuery.C                         //
+//                             avtCentroidQuery.C                            //
 // ************************************************************************* //
 
 #include <avtCentroidQuery.h>
@@ -63,7 +63,7 @@ avtCentroidQuery::avtCentroidQuery()
 //      because it causes problems for certain compilers.
 //
 //  Programmer: Hank Childs
-//  Creation:   May 19, 2004
+//  Creation:   May 19, 2005
 //
 // ****************************************************************************
 

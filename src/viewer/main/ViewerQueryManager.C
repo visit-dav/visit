@@ -946,6 +946,9 @@ ViewerQueryManager::GetQueryClientAtts()
 //    Only set 'DataType' from arg1 if the named query is an 'actual/original'
 //    type of query, otherwise set DataType to 'Actual'.
 //
+//    Kathleen Bonnell, Thu Jul 14 09:16:22 PDT 2005 
+//    Test for existence of engine before proceeding. 
+//    
 // ****************************************************************************
 
 void         
@@ -954,6 +957,11 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
                             const int arg1, const int arg2,
                             const bool elementIsGlobal)
 {
+    // test if engine is running
+    if (!EngineExistsForQuery(oWin))
+    {
+        return;
+    }
     bool canBeDLBPlots = true;
     if (canBeDLBPlots)
     {
@@ -2041,11 +2049,19 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
 //   Kathleen Bonnell, Tue Dec 28 14:36:44 PST 2004
 //   Allow pick letter to NOT be displayed. 
 //
+//    Kathleen Bonnell, Thu Jul 14 09:16:22 PDT 2005 
+//    Test for existence of engine before proceeding. 
+//    
 // ****************************************************************************
 
 void
 ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
 {
+    if (!EngineExistsForQuery((ViewerWindow *)ppi->callbackData))
+    {
+        return;
+    }
+ 
     if (pickAtts->GetDoTimeCurve())
     {
         PickThroughTime(ppi, dom, el);
@@ -2598,6 +2614,9 @@ ViewerQueryManager::HandlePickCache()
 //    Kathleen Bonnell, Thu Dec 16 17:32:49 PST 2004 
 //    Added 'elementIsGlobal' arg, use to set same attribute in pickAtts. 
 //
+//    Kathleen Bonnell, Thu Jul 14 09:16:22 PDT 2005 
+//    Test for existence of engine before proceeding. 
+//    
 // ****************************************************************************
 
 void         
@@ -2605,24 +2624,26 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
                     const stringVector &vars, const int arg1, const int arg2,
                     const bool doTime, const bool elementIsGlobal)
 {
+    ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
+    if (!EngineExistsForQuery(win))
+    {
+        return;
+    }
     pickAtts->SetElementIsGlobal(elementIsGlobal);
     if (qName == "ScreenZonePick") 
     {
         if (!vars.empty())
             pickAtts->SetVariables(vars);
-        ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
         win->Pick((int)pt[0], (int)pt[1], ZONE_PICK);
     }
     else if (qName == "ScreenNodePick") 
     {
         if (!vars.empty())
             pickAtts->SetVariables(vars);
-        ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
         win->Pick((int)pt[0], (int)pt[1], NODE_PICK);
     }
     else if (qName == "Pick" || qName == "NodePick")
     {
-        ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
         if (!vars.empty())
             pickAtts->SetVariables(vars);
 
@@ -2647,7 +2668,6 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
     }
     else if (qName == "PickByZone"  || qName == "PickByNode") 
     {
-        ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
         if (!vars.empty())
             pickAtts->SetVariables(vars);
 
@@ -3063,6 +3083,7 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("Volume", dq, mr, basic, 1, 0, true);
     queryTypes->AddQuery("Moment of Inertia", dq, mr, basic, 1, 0, false);
     queryTypes->AddQuery("Centroid", dq, mr, basic, 1, 0, false);
+    queryTypes->AddQuery("Spherical Compactness Factor", dq, mr, basic, 1, 0, true);
     queryTypes->AddQuery("Variable Sum", dq, vr, basic, 1, 0, true);
     queryTypes->AddQuery("Weighted Variable Sum", dq, vr, basic, 1, 0, true);
     queryTypes->AddQuery("Pick", pq, pr, sp, 1, 0, true);
@@ -4302,4 +4323,46 @@ ViewerQueryManager::ClearRefLines(ViewerWindow *origWin)
             lineoutList[i]->StopObservingPlot();
         }
     }
+}
+
+
+// ****************************************************************************
+//  Method: ViewerQueryManager::EngineExistsForQuery
+//
+//  Purpose:
+//    Tests for a running engine associated with the active plot.
+//    Issues warning if the engine does not exist. 
+//
+//  Arguments:
+//    win       The window that is being queried.     
+//
+//  Returns:
+//    true if an engine exists for the active plot, false otherwise.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   July 14, 2005 
+//
+// ****************************************************************************
+
+bool
+ViewerQueryManager::EngineExistsForQuery(ViewerWindow *win)
+{
+    bool engineExists = false;
+    ViewerPlotList *plist = win->GetPlotList();
+    if (plist)
+    {
+        intVector plotIds;
+        plist->GetActivePlotIDs(plotIds);
+        if (plotIds.size() > 0)
+        {
+            EngineKey key = plist->GetPlot(plotIds[0])->GetEngineKey();
+            engineExists = ViewerEngineManager::Instance()->EngineExists(key);
+        }
+    }
+    if (!engineExists)
+    {
+        Warning("There is no running engine with which to perform the query."
+              "  Please ensure the plot has finished drawing and try again.");
+    }
+    return engineExists;
 }

@@ -403,7 +403,7 @@ Grammar::WriteStateInitialization(const string &name, ostream &o)
     o << "//   Automatically generated!!!  Use 'make init' to rebuild." << endl;
     o << "//" << endl;
     o << endl;
-    o << "#include \""<<name<<".h\"" << endl;
+    o << "#include \""<<name.c_str()<<".h\"" << endl;
     o << endl;
     o << "" << endl;
     o << "static void SetShiftState(State &s, int next, const Symbol *sym)" << endl;
@@ -438,7 +438,7 @@ Grammar::WriteStateInitialization(const string &name, ostream &o)
 
             o << "    SetShiftState(s,"<<str<<", d.Get(";
             if (s->IsNonTerminal())
-                o << "\"" << s->GetDisplayString() << "\"";
+                o << "\"" << s->GetDisplayString().c_str() << "\"";
             else
                 if (tt < 256)
                     o << "'" << char(tt) << "'";
@@ -479,7 +479,7 @@ Grammar::WriteStateInitialization(const string &name, ostream &o)
 
             o << "    SetReduceRule(s,"<<str<<", d.Get(";
             if (s->IsNonTerminal())
-                o << "\"" << s->GetDisplayString() << "\"";
+                o << "\"" << s->GetDisplayString().c_str() << "\"";
             else
                 if (tt < 256)
                     o << "'" << char(tt) << "'";
@@ -491,7 +491,7 @@ Grammar::WriteStateInitialization(const string &name, ostream &o)
         o << "}" << endl;
         o << endl;
     }
-    o << "bool " << name << "::Initialize()" << endl;
+    o << "bool " << name.c_str() << "::Initialize" << endl;
     o << "{" << endl;
     o << "    states.resize(" << states.size() << ");" << endl;
     o << endl;
