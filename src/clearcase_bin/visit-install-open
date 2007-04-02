@@ -62,6 +62,7 @@ pengra_icc=true
 thunder=true
 prism=true
 yana=true
+xchem=true
 davinci=true
 
 ver=undefined
@@ -86,6 +87,7 @@ do
          thunder=false
          prism=false
          yana=false
+         xchem=false
          davinci=false
          shift
          ;;
@@ -167,6 +169,14 @@ do
          ;;
       +yana)
          yana=true
+         shift
+         ;;
+      -xchem)
+         xchem=false
+         shift
+         ;;
+      +xchem)
+         xchem=true
          shift
          ;;
       -davinci)
@@ -579,6 +589,42 @@ then
 fi
 
 #
+# Install on xchem.
+#
+rm -f xchem
+cat <<EOF > xchem
+#!/bin/sh
+./visit-install -private -c open -b bdivp -gw -l $ver linux-x86_64-fedora4 /opt/llnl/visit > installlog 2>&1
+rm -f resultlog
+echo "        install of visit on xchem"           > resultlog 2>&1
+echo "       ---------------------------"          >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+df -k /opt/llnl/visit                              >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+ls -l /opt/llnl/visit/$ver/linux-x86_64/bin        >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "number of database plugins = "\`ls /opt/llnl/visit/$ver/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /opt/llnl/visit/$ver/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /opt/llnl/visit/$ver/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "The database plugins:"                       >> resultlog 2>&1
+ls /opt/llnl/visit/$ver/linux-x86_64/plugins/databases/libI* | sed "s/\/opt\/llnl\/visit\/$ver\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $xchem = true ]
+then
+   if [ $test = no ]
+   then
+      scp xchem:tmp/$user/xchem/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-fedora4.tar.gz
+      scp visit$ver2.linux-x86_64-fedora4.tar.gz xchem:
+      scp visit-install xchem:
+      scp xchem xchem:xchem_install
+      ssh xchem "chmod 750 xchem_install;./xchem_install"
+   fi
+fi
+
+#
 # Install on davinci.
 #
 rm -f davinci
@@ -619,5 +665,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth sunspot quad berg up pengra pengra_icc thunder prism yana davinci
+   rm -f hoth sunspot quad berg up pengra pengra_icc thunder prism yana xchem davinci
 fi

@@ -120,6 +120,9 @@ class QRadioButton;
 //    Hank Childs, Fri Dec  2 11:01:41 PST 2005
 //    Added support for hardware acceleration.
 //
+//    Eric Brugger, Thu Feb 15 12:10:21 PST 2007
+//    Added support for additional sublauncher arguments.
+//
 // ****************************************************************************
 
 class GUI_API QvisHostProfileWindow : public QvisPostableWindowObserver
@@ -156,6 +159,7 @@ private slots:
     void processTimeLimitText();
     void processMachinefileText();
     void processLaunchArgsText();
+    void processSublaunchArgsText();
     void numProcessorsChanged(int value);
     void timeoutChanged(int value);
     void launchMethodChanged(const QString &method);
@@ -168,6 +172,7 @@ private slots:
     void toggleTimeLimit(bool);
     void toggleMachinefile(bool);
     void toggleLaunchArgs(bool);
+    void toggleSublaunchArgs(bool);
     void toggleParallel(bool);
     void toggleShareMDServer(bool);
     void toggleUseVisItScriptForEnv(bool);
@@ -229,6 +234,8 @@ private:
     QWidget      *parGroup;
     QCheckBox    *launchArgsCheckBox;
     QLineEdit    *launchArgs;
+    QCheckBox    *sublaunchArgsCheckBox;
+    QLineEdit    *sublaunchArgs;
     QWidget      *advancedGroup;
     QCheckBox    *shareMDServerCheckBox;
     QCheckBox    *useVisItScriptForEnvCheckBox;

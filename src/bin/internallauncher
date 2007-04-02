@@ -150,8 +150,14 @@ $0 = shift @ARGV;
 #    Made GDB only set paths to the main program source directory
 #    for the executable being launched.
 #
+#    Eric Brugger, Thu Feb 15 12:35:04 PST 2007
+#    Added support for passing additional sublauncher arguments.  Enhanced
+#    the qsub launch method to support qsub/mpiexec and qsub/srun.  Corrected
+#    several qsub errors.
+#
 ###############################################################################
 
+use POSIX qw(ceil);
 
 # -----------------------------------------------------------------------------
 #                                 Setup
@@ -273,6 +279,7 @@ $fullusage = "$usage
         -l    <method>       Launch in parallel using the given method.
         -pl   <method>       Launch only the engine in parallel as specified.
         -la   <args>         Additional arguments for the parallel launcher.
+        -sla  <args>         Additional arguments for the parallel sublauncher.
         -np   <# procs>      The number of processors to use.
         -nn   <# nodes>      The number of nodes to allocate.
         -p    <part>         Partition to run in.
@@ -478,6 +485,7 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-l")         { $launch=shift; $launch_set=1; }
     elsif ($arg eq "-pl")        { $parlaunch=shift; $parlaunch_set=1; }
     elsif ($arg eq "-la")        { $_=shift; @launchargs=split; $launchargs_set=1; }
+    elsif ($arg eq "-sla")       { $_=shift; @sublaunchargs=split; $sublaunchargs_set=1; }
     elsif ($arg eq "-n" )        { $name = shift; $name_set = 1; }
     elsif ($arg eq "-p" )        { $part = shift; $part_set = 1; }
     elsif ($arg eq "-b" )        { $bank = shift; $bank_set = 1; }
@@ -1229,13 +1237,15 @@ if ($procs_set or ($parallel and $parlaunch_set))
     {
         ($psubcmd, $sublauncher) = split /\W+/, substr($launch,4);
         $sublauncher = "" if (!defined $sublauncher);
+        $sublauncherargs = "";
+        $sublauncherargs = "$sublaunchargs $sublauncherargs" if $sublaunchargs_set;
 	if ($sublauncher eq "srun" and $procs_set)
         {
-            $sublauncherargs = "-n $procs";
+            $sublauncherargs = "$sublauncherargs -n $procs";
         }
         elsif ($sublauncher eq "mpirun" and $procs_set)
         {
-            $sublauncherargs = "-np $procs";
+            $sublauncherargs = "$sublauncherargs -np $procs";
         }
 
         if (grep(/csh/, "$ENV{SHELL}"))
@@ -1289,6 +1299,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
         push @parcmd, "-q",  $part  if $part_set;
         push @parcmd, "-W" , $time  if $time_set;
         push @parcmd, $sublauncher;
+        push @parcmd, $sublaunchargs if $sublaunchargs_set;
         push @parcmd, @visitcmd;
         @printcmd = @parcmd;
         push @printcmd, ("\"".(pop @printcmd)."\"");
@@ -1308,6 +1319,8 @@ if ($procs_set or ($parallel and $parlaunch_set))
     # qsub
     elsif (substr($launch,0,4) eq "qsub")
     {
+        ($psubcmd, $sublauncher) = split /\W+/, substr($launch,4);
+        $sublauncher = "" if (!defined $sublauncher);
         chomp($tdate = `date | cut -c 12-19`);
         chomp($tuser = `whoami`);
         $tfilename = "/tmp/visit.$tuser.$tdate";
@@ -1318,21 +1331,38 @@ if ($procs_set or ($parallel and $parlaunch_set))
             if ($security_key_set) { push @visitcmd, "-key", $security_key; }
             push @visitcmd, @post_args;
 
+            $cdcmd     = "cd $cwd\n";
             $libcmd    = "setenv LIBPATH $ENV{LIBPATH}\n";
             $ldlibcmd  = "setenv LD_LIBRARY_PATH $ENV{LD_LIBRARY_PATH}\n";
             $plugincmd = "setenv VISITPLUGINDIR $ENV{VISITPLUGINDIR}\n";
-            $mpicmd    = "mpiexec -np $procs -pernode @visitcmd\n";
+            if ($sublauncher eq "mpiexec")
+            {
+                @mpicmd = ("mpiexec");
+                push @mpicmd, @sublaunchargs if $sublaunchargs_set;
+                push @mpicmd, "-n", $procs if $procs_set;
+                push @mpicmd, "@visitcmd\n";
+            }
+            elsif ($sublauncher eq "srun")
+            {
+                @mpicmd = ("srun");
+                push @mpicmd, @launchargs if $launchargs_set;
+                push @mpicmd, "-n",  $procs if $procs_set;
+                push @mpicmd, "@visitcmd\n";
+            }
 
             print TFILE "#!/bin/tcsh\n";
+            print TFILE $cdcmd;
             print TFILE $libcmd;
             print TFILE $ldlibcmd;
             print TFILE $plugincmd;
-            print TFILE $mpicmd;
+            print TFILE "@mpicmd";
             close(TFILE);
            
             @parcmd = ("qsub");
             push @parcmd, @launchargs if $launchargs_set;
-            push @parcmd, "-l nodes=$procs:ppn=2:vis" if $procs_set;
+            $nodes = $procs if (!$nodes_set);
+            $ppn = ceil($procs / $nodes);
+            push @parcmd, "-l nodes=$nodes:ppn=$ppn";
             if ($time_set)
             {
                 $wtime = $time*60;
@@ -1342,10 +1372,11 @@ if ($procs_set or ($parallel and $parlaunch_set))
           
             @printcmd = @parcmd;
             push @parcmd, $tfilename;
+            push @printcmd, $cdcmd;
             push @printcmd, $libcmd; 
             push @printcmd, $ldlibcmd; 
             push @printcmd, $plugincmd; 
-            push @printcmd, $mpicmd; 
+            push @printcmd, @mpicmd; 
             push @printcmd, ("\"".(pop @printcmd)."\"");
         }
     }

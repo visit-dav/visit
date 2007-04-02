@@ -313,6 +313,9 @@ RemoteProxyBase::AddArgument(const std::string &arg)
 //    Hank Childs, Sat Dec  3 20:17:07 PST 2005
 //    Added argument for hardware acceleration.
 //
+//    Eric Brugger, Thu Feb 15 12:04:45 PST 2007
+//    Added an argument for passing additional sublauncher arguments.
+//
 // ****************************************************************************
 
 void
@@ -395,6 +398,13 @@ RemoteProxyBase::AddProfileArguments(const HostProfile &profile,
             {
                 AddArgument("-la");
                 AddArgument(profile.GetLaunchArgs());
+            }
+
+            if (profile.GetSublaunchArgsSet() &&
+                profile.GetSublaunchArgs().length() > 0)
+            {
+                AddArgument("-sla");
+                AddArgument(profile.GetSublaunchArgs());
             }
 
             if (profile.GetMachinefileSet() &&

@@ -65,6 +65,11 @@
     </Field>
     <Field name="launchArgs" label="launchArgs" type="string">
     </Field>
+    <Field name="sublaunchArgsSet" label="sublaunchArgsSet" type="bool">
+      false
+    </Field>
+    <Field name="sublaunchArgs" label="sublaunchArgs" type="string">
+    </Field>
     <Field name="hostAliases" label="hostAliases" type="string">
     </Field>
     <Field name="shareOneBatchJob" label="shareOneBatchJob" type="bool">
