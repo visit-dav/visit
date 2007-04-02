@@ -44,6 +44,9 @@ class vtkUnstructuredGrid;
 //    Hank Childs, Tue Jun 14 16:31:33 PDT 2005
 //    Add support for IsRZ.
 //
+//    Hank Childs, Thu May 11 08:52:27 PDT 2006
+//    Add support for reading densities.
+//
 // ****************************************************************************
 
 class avtKullLiteFileFormat : public avtSTMDFileFormat
@@ -109,6 +112,7 @@ class avtKullLiteFileFormat : public avtSTMDFileFormat
     bool          ReadMeshFromFile(void);
     bool          GetMeshDimension(void);
     bool          IsRZ(void);
+    bool          ContainsDensities(void);
 
     bool          ClassifyAndAdd2DZone(pdb_mesh2d *, int, 
                                        vtkUnstructuredGrid *);
