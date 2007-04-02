@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2004
+#                            Copyright 2000 - 2006
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -110,7 +110,10 @@
 #
 #    Mark C. Miller, Tue Aug 16 13:56:55 PDT 2005
 #    Made Truecolor plot non-optional
-# 
+#
+#    Brad Whitlock, Jeremy Meredith, Fri Feb 10 15:47:12 PST 2006
+#    Added Molecule plot.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -121,8 +124,9 @@ all: message
 
 OPTIONAL=Topology
 
-REQUIRED=Boundary Contour Curve FilledBoundary Histogram Label Mesh Pseudocolor \
-         Scatter Streamline Subset Surface Tensor Truecolor Vector Volume
+REQUIRED=Boundary Contour Curve FilledBoundary Histogram Label Mesh Molecule \
+         Pseudocolor Scatter Streamline Subset Surface Tensor Truecolor Vector \
+         Volume
 
 SUBDIRS=$(REQUIRED) @PLOT_OPTIONAL_DIRS@
 ALLSUBDIRS=$(REQUIRED) $(OPTIONAL)

@@ -1,0 +1,117 @@
+<?xml version="1.0"?>
+  <Plugin name="Molecule" type="plot" label="Molecule" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" vartype="scalar" iconFile="Molecule.xpm">
+    <Files components="V">
+      avtMoleculeRenderer.C
+      avtOpenGLMoleculeRenderer.C
+      avtMesaMoleculeRenderer.C
+      avtOpenGLAtomTexturer.C
+      avtMesaAtomTexturer.C
+      avtMoleculeFilter.C
+    </Files>
+    <Files components="E">
+      avtMoleculeRenderer.C
+      avtOpenGLMoleculeRenderer.C
+      avtMesaMoleculeRenderer.C
+      avtOpenGLAtomTexturer.C
+      avtMesaAtomTexturer.C
+      avtMoleculeFilter.C
+    </Files>
+    <Attribute name="MoleculeAttributes" purpose="This class contains the plot attributes for the molecule plot." persistent="true" codefile="MoleculeAttributes.code">
+      <Enum name="AtomRenderingMode">
+        NoAtoms
+        SphereAtoms
+        ImposterAtoms
+      </Enum>
+      <Enum name="RadiusType">
+        Fixed
+        Covalent
+        Atomic
+        Variable
+      </Enum>
+      <Enum name="BondColoringMode">
+        ColorByAtom
+        SingleColor
+      </Enum>
+      <Enum name="BondRenderingMode">
+        NoBonds
+        LineBonds
+        CylinderBonds
+      </Enum>
+      <Enum name="DetailLevel">
+        Low
+        Medium
+        High
+        Super
+      </Enum>
+      <Field name="drawAtomsAs" label="Draw atoms as" type="enum" subtype="AtomRenderingMode">
+        SphereAtoms
+      </Field>
+      <Field name="scaleRadiusBy" label="Scale radius by" type="enum" subtype="RadiusType">
+        Fixed
+      </Field>
+      <Field name="drawBondsAs" label="Draw bonds as" type="enum" subtype="BondRenderingMode">
+        CylinderBonds
+      </Field>
+      <Field name="colorBonds" label="Color bonds by" type="enum" subtype="BondColoringMode" enabler="drawBondsAs:LineBonds,CylinderBonds">
+        ColorByAtom
+      </Field>
+      <Field name="bondSingleColor" label="Bond single color" type="color" enabler="colorBonds:SingleColor">
+        128
+        128
+        128
+        255
+      </Field>
+      <Field name="radiusVariable" label="Variable for atom radius" type="variablename" enabler="scaleRadiusBy:Variable" vartypes="01000000000">
+      </Field>
+      <Field name="radiusScaleFactor" label="Atom radius scale factor" type="float" enabler="scaleRadiusBy:Atomic,Covalent,Variable">
+        1.000000
+      </Field>
+      <Field name="radiusFixed" label="Fixed atom radius" type="float" enabler="scaleRadiusBy:Fixed">
+        0.300000
+      </Field>
+      <Field name="atomSphereQuality" label="Atom sphere quality" type="enum" subtype="DetailLevel">
+        Medium
+      </Field>
+      <Field name="bondCylinderQuality" label="Bond cylinder quality" type="enum" subtype="DetailLevel">
+        Medium
+      </Field>
+      <Field name="bondRadius" label="Bond radius" type="float" enabler="drawBondsAs:CylinderBonds">
+        0.120000
+      </Field>
+      <Field name="bondLineWidth" label="Bond line width" type="linewidth" enabler="drawBondsAs:LineBonds">
+        0
+      </Field>
+      <Field name="bondLineStyle" label="Bond line style" type="linestyle" enabler="drawBondsAs:LineBonds">
+        0
+      </Field>
+      <Field name="elementColorTable" label="Color table for elements" type="colortable">
+        cpk_jmol
+      </Field>
+      <Field name="residueTypeColorTable" label="Color table for residue types" type="colortable">
+        amino_shapely
+      </Field>
+      <Field name="residueSequenceColorTable" label="Color table for residue sequence" type="colortable">
+        Default
+      </Field>
+      <Field name="continuousColorTable" label="Color table for scalars" type="colortable">
+        Default
+      </Field>
+      <Field name="legendFlag" label="Legend" type="bool">
+        true
+      </Field>
+      <Field name="minFlag" label="Use min" type="bool">
+        false
+      </Field>
+      <Field name="scalarMin" label="Minimum value" type="float" enabler="minFlag:true">
+        0.000000
+      </Field>
+      <Field name="maxFlag" label="Use max" type="bool">
+        false
+      </Field>
+      <Field name="scalarMax" label="Maximum value" type="float" enabler="maxFlag:true">
+        1.000000
+      </Field>
+      <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+    </Attribute>
+  </Plugin>

@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2005
+#                            Copyright 2000 - 2006
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -184,6 +184,9 @@
 #   Hank Childs, Thu Jan 19 09:40:30 PST 2006
 #   Added Chombo reader.
 #
+#   Jeremy Meredith, Wed Mar 22 13:46:20 PST 2006
+#   Added ProteinDataBank reader
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -204,8 +207,8 @@ PDB=KullLite PDB
 SAF=SAF
 SAMPLES=Rect Hex
 REQUIRED=ANALYZE ANSYS AUXFile BOV CMAT Curve2D Dune EnSight Image Lines \
- NASTRAN OVERFLOW PATRAN PLOT2D PLOT3D Point3D SAR STL Shapefile Silo \
- SimV1 Spheral TFT Tecplot Vista VTK WavefrontOBJ Xmdv
+ NASTRAN OVERFLOW PATRAN PLOT2D PLOT3D Point3D ProteinDataBank SAR STL \
+ Shapefile Silo SimV1 Spheral TFT Tecplot Vista VTK WavefrontOBJ Xmdv
 VISUS=ViSUS
 
 OPTIONAL=
