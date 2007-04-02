@@ -182,6 +182,10 @@ ptym_open(char *pts_name)
 //    Jeremy Meredith, Thu May 17 11:32:26 PDT 2001
 //    Removed a line of debug output.
 //
+//    Eric Brugger, Mon Oct 23 13:34:37 PDT 2006
+//    Remove the checks for the error codes from the ioctl calls since they
+//    may fail on some systems.
+//
 // ****************************************************************************
 int
 ptys_open(int fdm, char *pts_name)
@@ -193,24 +197,11 @@ ptys_open(int fdm, char *pts_name)
         close(fdm);
         return(-5);
     }
-    if (ioctl(fds, I_PUSH, "ptem") < 0) {
-        close(fdm);
-        close(fds);
-        return(-6);
-    }
-    if (ioctl(fds, I_PUSH, "ldterm") < 0) {
-        close(fdm);
-        close(fds);
-        return(-7);
-    }
-    /*
-    THIS IS UNSUPPORTED ON SEVERAL PLATFORMS AND GENERATES AN ERROR
-    if (ioctl(fds, I_PUSH, "ttcompat") < 0) {
-        close(fdm);
-        close(fds);
-        return(-8);
-    }
-    */
+    // The following commands may fail on some systems so just
+    // ignore the error codes.
+    ioctl(fds, I_PUSH, "ptem");
+    ioctl(fds, I_PUSH, "ldterm");
+    ioctl(fds, I_PUSH, "ttcompat");
 
     return(fds);
 }

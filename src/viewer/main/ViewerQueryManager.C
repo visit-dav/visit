@@ -1807,6 +1807,9 @@ ViewerQueryManager::ClearPickPoints()
 //    Hank Childs, Thu May 25 11:29:49 PDT 2006
 //    If we are picking on an array variable, make a histogram plot.
 //
+//    Kathleen Bonnell, Mon Oct 23 08:45:18 PDT 2006 
+//    Ensure error message gets passed to clients. 
+//
 // ****************************************************************************
 
 bool
@@ -2099,6 +2102,11 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                    // Reset vars to what the user actually typed.
                    //
                    pickAtts->SetVariables(userVars);
+                   if (pa.GetError())
+                   {
+                       pickAtts->SetError(pa.GetError());
+                       pickAtts->SetErrorMessage(pa.GetErrorMessage());
+                   }
                    UpdatePickAtts();
                
                    //SEND ERROR MESSAGE TO GUI WINDOW FOR DISPLAY
