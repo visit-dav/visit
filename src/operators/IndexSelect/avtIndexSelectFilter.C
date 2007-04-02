@@ -7,8 +7,8 @@
 #include <vtkCell.h>
 #include <vtkCellData.h>
 #include <vtkDataSetRemoveGhostCells.h>
-#include <vtkExtractGrid.h>
-#include <vtkExtractRectilinearGrid.h>
+#include <vtkVisItExtractGrid.h>
+#include <vtkVisItExtractRectilinearGrid.h>
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -38,12 +38,17 @@
 //    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
 //    Added data selection id
 //
+//    Kathleen Bonnell, Tue May 10 11:19:24 PDT 2005 
+//    Use VisIt versions of vtkExtractGrid and vtkExtractRectilinearGrid, 
+//    they have been modified to correctly handle cell data when VOI is
+//    along max boundary. 
+//
 // ****************************************************************************
 
 avtIndexSelectFilter::avtIndexSelectFilter()
 {
-    curvilinearFilter = vtkExtractGrid::New();
-    rectilinearFilter = vtkExtractRectilinearGrid::New();
+    curvilinearFilter = vtkVisItExtractGrid::New();
+    rectilinearFilter = vtkVisItExtractRectilinearGrid::New();
     haveIssuedWarning = false;
     selID             = -1;
 }

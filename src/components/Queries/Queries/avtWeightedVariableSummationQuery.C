@@ -20,6 +20,10 @@ using     std::string;
 //  Programmer: Hank Childs 
 //  Creation:   February 3, 2004 
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Aug 10 14:05:07 PDT 2005
+//    Force only positive volumes, but allow negative values from var.
+//
 // ****************************************************************************
 
 avtWeightedVariableSummationQuery::avtWeightedVariableSummationQuery() 
@@ -33,11 +37,12 @@ avtWeightedVariableSummationQuery::avtWeightedVariableSummationQuery()
 
     volume = new avtVMetricVolume;
     volume->SetOutputVariableName("avt_weights");
+    volume->UseOnlyPositiveVolumes(true);
 
     string vname = "avt_sum";
     SetVariableName(vname);
     SumGhostValues(false);
-    SumOnlyPositiveValues(true);
+    SumOnlyPositiveValues(false);
 }
 
 

@@ -867,6 +867,9 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Mark C. Miller, Wed Jun 29 08:49:14 PDT 2005
 //    Made it NOT throw an exception if first non-empty mesh is invalid
 //
+//    Mark C. Miller, Wed Aug 10 08:15:21 PDT 2005
+//    Added code to handle Silo's new defvars objects
+//
 // ****************************************************************************
 
 void
@@ -985,6 +988,15 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         origdir_names[i] = new char[strlen(toc->dir_names[i])+1];
         strcpy(origdir_names[i], toc->dir_names[i]);
     }
+#ifdef DB_SCALAR // this test can be removed after Silo-4.5-pre3 is released
+    int      ndefvars = toc->ndefvars;
+    char   **defvars_names = new char*[ndefvars];
+    for (i = 0 ; i < ndefvars; i++)
+    {
+        defvars_names[i] = new char[strlen(toc->defvars_names[i])+1];
+        strcpy(defvars_names[i], toc->defvars_names[i]);
+    }
+#endif
 
     //
     // The dbfile will probably change, so read in the meshtv_defvars and
@@ -2043,6 +2055,48 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         delete [] name_w_dir;
         DBFreeMatspecies(spec);
     }
+
+    //
+    // Add defvars objects (like _visit_defvars except a real Silo object)
+    //
+#ifdef DB_SCALAR // this test can be removed after Silo-4.5-pre3 is released
+    for (i = 0; i < ndefvars; i++)
+    {
+        DBdefvars *defv = DBGetDefvars(dbfile, defvars_names[i]); 
+        if (defv == NULL)
+            EXCEPTION1(InvalidVariableException, defvars_names[i]);
+
+        for (int j = 0; j < defv->ndefs; j++)
+        {
+            Expression::ExprType vartype = Expression::Unknown;
+            switch (defv->types[j])
+            {
+                case DB_SCALAR: vartype = Expression::ScalarMeshVar; break;
+                case DB_VECTOR: vartype = Expression::VectorMeshVar; break;
+                case DB_TENSOR: vartype = Expression::TensorMeshVar; break;
+#ifdef DB_ARRAY // this test can be removed after Silo-4.5-pre3 is released
+                case DB_ARRAY:  vartype = Expression::ArrayMeshVar; break;
+                case DB_MATERIAL: vartype = Expression::Material; break;
+                case DB_SPECIES: vartype = Expression::Species ; break;
+#endif
+                default:        vartype = Expression::Unknown; break;
+            }
+
+            if (vartype == Expression::Unknown)
+            {
+                debug5 << "Warning: unknown defvar type for derived "
+                       << "variable \"" << defv->names[j] << "\"" << endl;
+                continue;
+            }
+
+            Expression expr;
+                expr.SetName(defv->names[j]);
+                expr.SetDefinition(defv->defns[j]);
+                expr.SetType(vartype);
+            md->AddExpression(&expr);
+        }
+    }
+#endif
 
     //
     // If the meshtv searchpath is defined then replace the list of

@@ -11,8 +11,8 @@
 
 
 class vtkDataSet;
-class vtkExtractGrid;
-class vtkExtractRectilinearGrid;
+class vtkVisItExtractGrid;
+class vtkVisItExtractRectilinearGrid;
 
 
 // ****************************************************************************
@@ -31,6 +31,11 @@ class vtkExtractRectilinearGrid;
 //
 //    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
 //    Added data selection id
+//
+//    Kathleen Bonnell, Tue May 10 11:19:24 PDT 2005 
+//    Use VisIt versions of vtkExtractGrid and vtkExtractRectilinearGrid, 
+//    they have been modified to correctly handle cell data when VOI is
+//    along max boundary. 
 //
 // ****************************************************************************
 
@@ -56,8 +61,8 @@ class avtIndexSelectFilter : public avtPluginStreamer
     bool                        successfullyExecuted;
     int                         selID;
 
-    vtkExtractGrid                  *curvilinearFilter;
-    vtkExtractRectilinearGrid       *rectilinearFilter;
+    vtkVisItExtractGrid                  *curvilinearFilter;
+    vtkVisItExtractRectilinearGrid       *rectilinearFilter;
 
     void                        PrepareFilters(int [3]);
 
