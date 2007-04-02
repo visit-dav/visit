@@ -531,10 +531,14 @@ avtSiloWriter::WriteChunk(vtkDataSet *ds, int chunk)
     //
     char filename[1024];
     sprintf(filename, "%s.%d.silo", stem.c_str(), chunk);
+#ifdef E_CHECKSUM
     int oldEnable = DBSetEnableChecksums(0);
+#endif
     DBfile *dbfile = DBCreate(filename, 0, DB_LOCAL, 
                               "Silo file written by VisIt", DB_PDB);
+#ifdef E_CHECKSUM
     DBSetEnableChecksums(oldEnable);
+#endif
     
     //
     // Use sub-routines to do the mesh-type specific writes.
@@ -607,10 +611,14 @@ avtSiloWriter::CloseFile(void)
     {
         char filename[1024];
         sprintf(filename, "%s.silo", stem.c_str());
+#ifdef E_CHECKSUM
         int oldEnable = DBSetEnableChecksums(0);
+#endif
         DBfile *dbfile = DBCreate(filename, 0, DB_LOCAL, 
                                   "Silo file written by VisIt", DB_PDB);
+#ifdef E_CHECKSUM
         DBSetEnableChecksums(oldEnable);
+#endif
 
         ConstructMultimesh(dbfile, mmd);
         for (i = 0 ; i < headerScalars.size() ; i++)

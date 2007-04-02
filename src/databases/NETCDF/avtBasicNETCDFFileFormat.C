@@ -444,6 +444,9 @@ avtBasicNETCDFFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //   
 //   Mark C. Miller, Tue Aug 15 15:28:11 PDT 2006
 //   Added code to support on-the-fly domain decomposition 
+//
+//   Mark C. Miller, Wed Aug 16 14:45:22 PDT 2006
+//   Fixed possible exit without initializing all contents of starts/counts
 // ****************************************************************************
 
 bool
@@ -486,6 +489,18 @@ avtBasicNETCDFFileFormat::ReturnValidDimensions(const intVector &dims, int valid
     if (nCells != nValues)
         return false;
 
+    if (!(dimStarts && dimCounts))
+        return true;
+
+    //
+    // Initialize starts/counts
+    //
+    for (i = 0; i < 3; i++)
+    {
+        dimStarts[i] = 0;
+        dimCounts[i] = 1;
+    }
+
     //
     // We won't decompose something that is smaller than some threshold
     //
@@ -497,6 +512,11 @@ avtBasicNETCDFFileFormat::ReturnValidDimensions(const intVector &dims, int valid
         {
             dimStarts[i] = 0;
             dimCounts[i] = validDims[i];
+        }
+        for (i = nValidDims; i < 3; i++)
+        {
+            dimStarts[i] = 0;
+            dimCounts[i] = 1; 
         }
         return true;
     }
@@ -536,17 +556,19 @@ avtBasicNETCDFFileFormat::ReturnValidDimensions(const intVector &dims, int valid
     // compute the bounds, in terms of output zone numbers,
     // of this processor's domain.
     //
-    if (dimStarts && dimCounts)
+    debug4 << "Processor " << procNum << " zone-centered bounds..." << endl;
+    for (i = 0; i < nValidDims; i++)
     {
-        debug4 << "Processor " << procNum << " zone-centered bounds..." << endl;
-        for (i = 0; i < nValidDims; i++)
-        {
-            avtDatabase::ComputeDomainBounds(validZDims[i], domCount[i], domLogicalCoords[i],
-                &dimStarts[i], &dimCounts[i]);
-            dimCounts[i]++; // convert to # of zones to # of nodes  
-            debug4 << "   start[" << i << "] = " << dimStarts[i]
-                   << ",  count[" << i << "] = " << dimCounts[i]-1 << endl;
-        }
+        avtDatabase::ComputeDomainBounds(validZDims[i], domCount[i], domLogicalCoords[i],
+            &dimStarts[i], &dimCounts[i]);
+        dimCounts[i]++; // convert to # of zones to # of nodes  
+        debug4 << "   start[" << i << "] = " << dimStarts[i]
+               << ",  count[" << i << "] = " << dimCounts[i]-1 << endl;
+    }
+    for (i = nValidDims; i < 3; i++)
+    {
+        dimStarts[i] = 0;
+        dimCounts[i] = 1;
     }
 }
 
@@ -701,6 +723,9 @@ avtBasicNETCDFFileFormat::GetMesh(const char *var)
 //   Mark C. Miller, Tue Aug 15 15:28:11 PDT 2006
 //   Added logic to support on-the-fly domain decomposition. Added macro to
 //   do a partial read
+//
+//   Mark C. Miller, Wed Aug 16 14:45:22 PDT 2006
+//   Fixed reversal of coords between VisIt and netcdf
 //   
 // ****************************************************************************
 
@@ -714,7 +739,13 @@ avtBasicNETCDFFileFormat::GetMesh(const char *var)
             debug4 << "Allocated a " << \
                     #VTKTYPE \
                    << " of " << nElems << " elements" << endl; \
-            if(fileObject->ReadVariableInto(var, t, dimStarts, dimCounts,\
+            int rdimStarts[3], rdimCounts[3];\
+            for (int kk = 0; kk < 3; kk++)\
+            {\
+                rdimStarts[kk] = dimStarts[ndims-kk-1];\
+                rdimCounts[kk] = dimCounts[ndims-kk-1];\
+            }\
+            if(fileObject->ReadVariableInto(var, t, rdimStarts, rdimCounts,\
                                             arr->GetVoidPointer(0)))\
                 retval = arr;\
             else\
@@ -753,7 +784,7 @@ avtBasicNETCDFFileFormat::GetVar(const char *var)
     {
         int i, validDims[3], dimStarts[3], dimCounts[3], nValidDims;
         intVector vdims;
-        for (i = 0; i < ndims; i++) vdims.push_back(dims[i]);
+        for (i = ndims-1; i >= 0; i--) vdims.push_back(dims[i]);
         ReturnValidDimensions(vdims, validDims, nValidDims,
             dimStarts, dimCounts);
 

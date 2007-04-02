@@ -109,6 +109,9 @@ avtMoleculePlot::avtMoleculePlot()
 //  Creation:   February  3, 2006
 //
 //  Modifications:
+//
+//    Mark C. Miller, Thu Aug 10 11:36:57 PDT 2006
+//    Fixed leak for levelsLUT, variableLUT
 // ****************************************************************************
 
 avtMoleculePlot::~avtMoleculePlot()
@@ -119,17 +122,22 @@ avtMoleculePlot::~avtMoleculePlot()
         mapper = NULL;
     }
 
-    /*
-    if (avtLUT != NULL)
-    {
-        delete avtLUT;
-        avtLUT = NULL;
-        }*/
-
     if (moleculeFilter != NULL)
     {
         delete moleculeFilter;
         moleculeFilter = NULL;
+    }
+
+    if (levelsLUT != NULL)
+    {
+        delete levelsLUT;
+        levelsLUT = NULL;
+    }
+
+    if (variableLUT != NULL)
+    {
+        delete variableLUT;
+        variableLUT = NULL;
     }
 
     renderer = NULL;

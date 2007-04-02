@@ -2121,6 +2121,9 @@ avtGenericDatabase::GetSpeciesDataset(const char *specname, int ts, int domain,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Replaced data type args with data specification 
+//
+//    Mark C. Miller, Thu Aug 10 11:36:57 PDT 2006
+//    Fixed leak of lvs
 // ****************************************************************************
 
 vtkDataSet *
@@ -2181,6 +2184,7 @@ avtGenericDatabase::GetLabelVarDataset(const char *varname, int ts,
     unsigned int *uintptr = (unsigned int *)lvs->GetVoidPointer(0);
     *uintptr = var->GetNumberOfComponents();
     mesh->GetFieldData()->AddArray(lvs);
+    lvs->Delete();
 
     return mesh;
 }

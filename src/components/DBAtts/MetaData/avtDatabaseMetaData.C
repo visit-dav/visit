@@ -147,6 +147,8 @@ VariableNamesEqual(const std::string &v1, const std::string &v2)
 //    Kathleen Bonnell, Fri Feb  3 10:23:36 PST 2006 
 //    Added meshCoordType.
 //
+//    Mark C. Miller, Tue Aug 15 21:48:46 PDT 2006
+//    Called SetExtents to initialize extents. Keeps purify happy.
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData()
@@ -162,7 +164,7 @@ avtMeshMetaData::avtMeshMetaData()
     spatialDimension = 3;
     topologicalDimension = 3;
     meshType = AVT_UNKNOWN_MESH;
-    hasSpatialExtents = false;
+    SetExtents(0);
     groupTitle = "groups";
     groupPieceName = "group";
     disjointElements = false;
@@ -339,6 +341,8 @@ avtMeshMetaData::avtMeshMetaData(const double *extents, std::string s, int nb,
 //    Kathleen Bonnell, Fri Feb  3 10:23:36 PST 2006 
 //    Added meshCoordType.
 //
+//    Mark C. Miller, Tue Aug 15 21:48:46 PDT 2006
+//    Called SetExtents to initialize extents. Keeps purify happy.
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int go,
@@ -355,7 +359,7 @@ avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int go,
     spatialDimension     = sd;
     meshType             = mt;
 
-    hasSpatialExtents    = false;
+    SetExtents(0);
     blockTitle           = "domains";
     blockPieceName       = "domain";
     numGroups            = 0;
@@ -720,6 +724,9 @@ avtMeshMetaData::SelectAll()
 //    Hank Childs, Tue May  1 12:53:10 PDT 2001
 //    Check for NULL extents.
 //
+//    Mark C. Miller, Tue Aug 15 21:45:50 PDT 2006
+//    Added code to initialize extents to [0,1] if null was passed in. Keeps
+//    purify happy.
 // ****************************************************************************
 
 void
@@ -728,6 +735,11 @@ avtMeshMetaData::SetExtents(const double *extents)
     if (extents == NULL)
     {
         hasSpatialExtents = false;
+        for (int i = 0 ; i < spatialDimension ; i++)
+        {
+            minSpatialExtents[i] = 0.0;  
+            maxSpatialExtents[i] = 1.0; 
+        }
     }
     else
     {

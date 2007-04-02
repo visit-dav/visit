@@ -162,6 +162,12 @@
 #    Mark C. Miller, Wed Jun  7 16:46:19 PDT 2006
 #    Added several items to skip list to get test suite passing again
 #
+#    Mark C. Miller, Wed Aug 16 15:48:21 PDT 2006
+#    Added code to clean view before remaking. Increased processor
+#    count for make from 2 to 4. Added checks for whether make clean
+#    removed all .o files. Added stuff to create cores dir in test
+#    directory.
+#
 # ----------------------------------------------------------------------------
 
 # list of users who want email every night with the log file
@@ -251,7 +257,35 @@ export LD_LIBRARY_PATH
 env CXXFLAGS="-g" ./configure --enable-parallel 1>> buildlog 2>&1
 rm -f plugins/*/*.so
 (cd data; clearmake clean 1> /dev/null 2>&1 )
-clearmake -J 2 1>> buildlog 2>&1
+
+# clean everything
+clearmake clean
+uncleanedFiles=`find . -regex '.*\.o$'`
+if test ! "$uncleanedFiles" = ""; then
+    rm -f mailmsg
+    echo -e $msghdr_build  >> mailmsg
+    echo -e "make clean missed these files..." >> mailmsg
+    echo -e $uncleanedFiles >> mailmsg
+    echo -e "The are being removed manually" >> mailmsg
+    echo -e $msg_yourfault >> mailmsg
+    echo -e $msg_userlist  >> mailmsg
+    for user in $users; do
+        sendregressionmail $user mailmsg
+    done
+    rm -f mailmsg
+    echo -e $msghdr_build  >> mailmsg
+    echo -e "make clean missed some files..." >> mailmsg
+    echo -e $uncleanedFiles >> mailmsg
+    echo -e "The are being removed manually" >> mailmsg
+    echo -e $msg_userlist  >> mailmsg
+    for user in $logrecipients; do
+        sendregressionmail $user mailmsg
+    done
+    # explicitly remove these .o files
+    find . -regex '.*\.o$' -exec rm -f {} \; 1> /dev/null 2>&1
+fi
+
+clearmake -J 4 1>> buildlog 2>&1
 error=$?
 
 # email if the build failed
@@ -321,6 +355,19 @@ skipList="scalable,parallel:tests/databases/boxlib.py \
           scalable,parallel:tests/databases/ProteinDataBank.py \
 	  scalable,parallel:tests/operators/transform.py"
 
+#
+# Make sure that there isn't anything in ~/.visit that could
+# effect the test suite
+#
+rm -rf ~/.visit 1> /dev/null 2>&1
+
+#
+# Make directory for where to store core files
+#
+rm -rf test/cores
+mkdir test/cores
+
+#
 # run the test(s)
 error=0
 cd test
