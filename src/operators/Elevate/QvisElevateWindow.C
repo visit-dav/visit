@@ -173,6 +173,9 @@ QvisElevateWindow::CreateWindowContents()
 //   Brad Whitlock, Thu Mar 3 13:32:37 PST 2005
 //   I removed unused variables.
 //
+//   Hank Childs, Mon Nov 14 14:23:09 PST 2005
+//   Only active min and max text fields when appropriate.  ['6784]
+//
 // ****************************************************************************
 
 void
@@ -215,7 +218,10 @@ QvisElevateWindow::UpdateWindow(bool doAll)
             }
             if (atts->GetUseXYLimits() == true)
             {
-                min->setEnabled(true);
+                if (atts->GetMinFlag())
+                    min->setEnabled(true);
+                else
+                    min->setEnabled(false);
                 minFlag->setEnabled(true);
                 //minFlagLabel->setEnabled(true);
             }
@@ -227,7 +233,10 @@ QvisElevateWindow::UpdateWindow(bool doAll)
             }
             if (atts->GetUseXYLimits() == true)
             {
-                max->setEnabled(true);
+                if (atts->GetMaxFlag())
+                    max->setEnabled(true);
+                else
+                    max->setEnabled(false);
                 maxFlag->setEnabled(true);
                 //maxFlagLabel->setEnabled(true);
             }

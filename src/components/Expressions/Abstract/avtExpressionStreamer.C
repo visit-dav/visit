@@ -121,6 +121,9 @@ avtExpressionStreamer::~avtExpressionStreamer()
 //    Hank Childs, Tue Aug 30 13:46:19 PDT 2005
 //    Move code for calculating cumulative extents to avtExpressionFilter.
 //
+//    Hank Childs, Tue Nov 15 11:41:28 PST 2005
+//    Make a comment to debug logs when we can "bypass".
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -139,7 +142,11 @@ avtExpressionStreamer::ExecuteData(vtkDataSet *in_ds, int index,
     if (dat == NULL)
         dat = in_ds->GetCellData()->GetArray(outputVariableName);
     if (dat != NULL)
+    {
+        debug1 << "NOTE: variable " << outputVariableName 
+               << " already exists and it is not being recalculated." << endl;
         dat->Register(NULL);  // At the end of the routine, we will free this.
+    }
 
     //
     // Start off by having the derived type calculate the derived variable.
