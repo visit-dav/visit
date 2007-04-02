@@ -1100,12 +1100,16 @@ avtDataSpecification::InitAdmissibleDataTypes()
 //  Programmer: Mark C. Miller 
 //  Creation:   March 23, 2005 
 //
+//  Modifications:
+//    Brad Whitlock, Tue May 10 15:03:30 PST 2005
+//    Fixed for win32.
+//
 // ****************************************************************************
 
 void
 avtDataSpecification::UpdateAdmissibleDataTypes(vector<int> admissibleTypes)
 {
-    map<int,bool>::iterator it;
+    std::map<int,bool>::iterator it;
     for (it = admissibleDataTypes.begin();
          it != admissibleDataTypes.end(); it++)
     {
@@ -1131,12 +1135,16 @@ avtDataSpecification::UpdateAdmissibleDataTypes(vector<int> admissibleTypes)
 //  Programmer: Mark C. Miller 
 //  Creation:   March 23, 2005 
 //
+//  Modifications:
+//    Brad Whitlock, Tue May 10 15:03:30 PST 2005
+//    Fixed for win32.
+//
 // ****************************************************************************
 
 bool
 avtDataSpecification::IsAdmissibleDataType(int theType) const
 {
-    map<int,bool>::const_iterator fit =
+    std::map<int,bool>::const_iterator fit =
         admissibleDataTypes.find(theType);
     if (fit != admissibleDataTypes.end())
         return fit->second;
@@ -1151,12 +1159,17 @@ avtDataSpecification::IsAdmissibleDataType(int theType) const
 //  Programmer: Mark C. Miller 
 //  Creation:   March 23, 2005 
 //
+//  Modifications:
+//    Brad Whitlock, Tue May 10 15:03:30 PST 2005
+//    Fixed for win32.
+//
 // ****************************************************************************
+
 vector<int>
 avtDataSpecification::GetAdmissibleDataTypes() const
 {
     vector<int> admissibleTypes;
-    map<int,bool>::const_iterator it;
+    std::map<int,bool>::const_iterator it;
     for (it = admissibleDataTypes.begin();
          it != admissibleDataTypes.end(); it++)
     {

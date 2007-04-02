@@ -110,6 +110,9 @@
 #    Brad Whitlock, Wed Jan 5 09:25:20 PDT 2005
 #    Added -lexpr for MacOS X.
 #
+#    Brad Whitlock, Fri Apr 29 11:35:19 PDT 2005
+#    I made it be ser/par for parallel build on MacOS X.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -176,20 +179,23 @@ VisWindow_src= \
 
 CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@ @ANNOTATION_FLAGS@ @VTK_INCLUDES@ $(MESA_INCLUDE)
 
-OBJ=$(SRC:.C=.o)
+SEROBJ=$(SRC:.C=.o)
+PAROBJ=$(SRC:.C=_par.o)
 LIB=libviswindow
-LIBS=-ldbatts -lpipeline_ser -lavtfilters_ser -lavtmath_ser -lavtexceptions -lavtview -lmisc -lstate -lcomm -lexpr -lparser -lutility -lplotter -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser @VTKQT_LIBS@ $(VTK_LIBS) $(X_LIBS)
+SERLIBS=-ldbatts -lpipeline_ser -lavtfilters_ser -lavtmath_ser -lavtexceptions -lavtview -lmisc -lstate -lcomm -lexpr -lparser -lutility -lplotter_ser -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser @VTKQT_LIBS@ $(VTK_LIBS) $(X_LIBS)
+PARLIBS=-ldbatts -lpipeline_par -lavtfilters_par -lavtmath_par -lavtexceptions -lavtview -lmisc -lstate -lcomm -lexpr -lparser -lutility -lplotter_par -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_par @VTKQT_LIBS@ $(VTK_LIBS) $(X_LIBS)
 
 ##
 ## Standard targets...
 ##
-all: $(LIBSHARED)
+all: $(LIBSHAREDSER) @LIBSHAREDPAR@
 
 clean:
-	$(RM) $(OBJ) $(LIBSHARED)
+	$(RM) $(LIBSHAREDSER) @LIBSHAREDPAR@
+	$(RM) $(SEROBJ) $(PAROBJ)
 
 ##
 ## Automatic dependency stuff
 ##
 @TARGETS@
-@LIBTARGETS@
+@PARLIBTARGETS@

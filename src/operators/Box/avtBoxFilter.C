@@ -679,7 +679,7 @@ GetRange(vtkDataArray *c, float Rmin, float Rmax, bool needAll,
     //
     bool setMin = false;
     bool setMax = false;
-    for (int i = 0 ; i < nC-1 ; i++)
+    for (i = 0 ; i < nC-1 ; i++)
     {
         float zMin = c->GetTuple1(i);
         float zMax = c->GetTuple1(i+1);
@@ -712,7 +712,6 @@ GetRange(vtkDataArray *c, float Rmin, float Rmax, bool needAll,
 vtkRectilinearGrid *
 avtBoxFilter::RectilinearExecute(vtkRectilinearGrid *in_ds)
 {
-    int   i;
     bool needAll = (atts.GetAmount() == BoxAttributes::All);
 
     float minX = atts.GetMinx();

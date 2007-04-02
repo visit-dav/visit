@@ -40,6 +40,9 @@
 #    Brad Whitlock, Wed Jan 5 09:25:20 PDT 2005
 #    Added -lexpr for MacOS X.
 #
+#    Brad Whitlock, Fri Apr 29 11:35:19 PDT 2005
+#    I made it be ser/par for parallel build on MacOS X.
+#
 ##############################################################################
 
 ##
@@ -56,20 +59,23 @@ SRC=avtImageFileWriter.C avtDatasetFileWriter.C avtFileWriter.C
 
 CPPFLAGS=-I../../include/visit @COMPONENT_CPPFLAGS@ @CPPFLAGS@
 
-OBJ=$(SRC:.C=.o)
+SEROBJ=$(SRC:.C=.o)
+PAROBJ=$(SRC:.C=_par.o)
 LIB=libavtwriter
-LIBS=-ldbatts -lpipeline_ser -lavtmath_ser -lavtexceptions -lvisit_vtk -llightweight_visit_vtk -lmisc -lstate -lcomm -lexpr -lparser -lutility $(VTK_LIBS) $(X_LIBS)
+SERLIBS=-ldbatts -lpipeline_ser -lavtmath_ser -lavtexceptions -lvisit_vtk -llightweight_visit_vtk -lmisc -lstate -lcomm -lexpr -lparser -lutility $(VTK_LIBS) $(X_LIBS)
+PARLIBS=-ldbatts -lpipeline_par -lavtmath_par -lavtexceptions -lvisit_vtk -llightweight_visit_vtk -lmisc -lstate -lcomm -lexpr -lparser -lutility $(VTK_LIBS) $(X_LIBS)
 
 ##
 ## Standard targets...
 ##
-all: $(LIBSHARED)
+all: $(LIBSHAREDSER) @LIBSHAREDPAR@
 
 clean:
-	$(RM) $(OBJ) $(LIBSHARED)
+	$(RM) $(LIBSHAREDSER) @LIBSHAREDPAR@
+	$(RM) $(SEROBJ) $(PAROBJ)
 
 ##
 ## Automatic dependency stuff
 ##
 @TARGETS@
-@LIBTARGETS@
+@PARLIBTARGETS@

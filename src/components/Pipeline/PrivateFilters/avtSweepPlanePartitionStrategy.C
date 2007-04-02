@@ -322,7 +322,8 @@ avtSweepPlanePartitionStrategy::ProposeGrid(int iStart, int iEnd, int jStart,
     // remove all the previous candidates.
     //
     std::vector<bool> removeGrid(proposedGrid.size(), false);
-    for (int i = iStart ; i <= iEnd ; i++)
+    int i;
+    for (i = iStart ; i <= iEnd ; i++)
         for (int j = jStart ; j <= jEnd ; j++)
             for (int k = kStart ; k <= kEnd ; k++)
             {
@@ -347,7 +348,7 @@ avtSweepPlanePartitionStrategy::ProposeGrid(int iStart, int iEnd, int jStart,
         {
             GridCandidate &gc = proposedGrid[g];
             gc.stillCandidate = false;
-            for (int i = gc.iStart ; i <= gc.iEnd ; i++)
+            for (i = gc.iStart ; i <= gc.iEnd ; i++)
                 for (int j = gc.jStart ; j <= gc.jEnd ; j++)
                     for (int k = gc.kStart ; k <= gc.kEnd ; k++)
                     {
@@ -370,7 +371,7 @@ avtSweepPlanePartitionStrategy::ProposeGrid(int iStart, int iEnd, int jStart,
     gc.stillCandidate = true;
     proposedGrid.push_back(gc);
     int gridIndex = proposedGrid.size() - 1;
-    for (int i = iStart ; i <= iEnd ; i++)
+    for (i = iStart ; i <= iEnd ; i++)
         for (int j = jStart ; j <= jEnd ; j++)
             for (int k = kStart ; k <= kEnd ; k++)
             {

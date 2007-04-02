@@ -19,10 +19,10 @@ SimulationCommandRPC::operator()(const std::string &c,
                                  int i,float f,const std::string &s)
 {
     debug3 << "Executing SimulationCommandRPC"
-           << "\n\t command='"<<c<<"'"
+           << "\n\t command='"<<c.c_str()<<"'"
            << "\n\t int_data="<<i
            << "\n\t float_data="<<f
-           << "\n\t string_data='"<<s<<"'"
+           << "\n\t string_data='"<<s.c_str()<<"'"
            << endl;
 
     SetCommand(c);

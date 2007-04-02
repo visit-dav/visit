@@ -252,6 +252,9 @@
 #    Brad Whitlock, Wed Jan 5 09:25:20 PDT 2005
 #    Added -lexpr for MacOS X.
 #
+#    Brad Whitlock, Tue Apr 12 09:55:58 PDT 2005
+#    Made certain libraries be ser/par to link parallel VisIt on MacOS X.
+#
 ##############################################################################
 
 ##
@@ -269,8 +272,8 @@ VTK_LIBS=@VTK_LIBS@
 VTK_INCLUDE=@VTK_INCLUDES@
 LIBS=-L../../lib -L../../vtkqt -lengineproxy -lenginerpc -lviewerrpc \
      -lmdserverproxy -lmdserverrpc -lvclproxy -lvclrpc -ldbatts -lexpr \
-     -lexpr -lparser -lplugin -lqtviswindow -lviswindow -lavtmath_ser -lplotter \
-     -lavtfilters_ser -lavtwriter -lavtview -lpipeline_ser -lvisit_vtk \
+     -lexpr -lparser -lplugin -lqtviswindow -lviswindow_ser -lavtmath_ser -lplotter_ser \
+     -lavtfilters_ser -lavtwriter_ser -lavtview -lpipeline_ser -lvisit_vtk \
      -llightweight_visit_vtk -lparallel_visit_vtk_ser -lvtkqt -lwinutil \
      @QT_LIBS@ -lproxybase -lmisc -lcomm -lstate -lutility -lavtexceptions \
      $(VTK_LIBS) $(X_LIBS) @LIBS@ @PTHREAD_LIB@
@@ -389,7 +392,7 @@ $(tmpbin)/viewer: $(LIBDEP) $(VIEWEREXE_OBJ) $(LIBSHARED)
 	$(CXX) -o $@ $(VIEWEREXE_OBJ) $(LDFLAGS) -lviewer $(LIBS)
 
 purify: $(LIBDEP) $(VIEWEREXE_OBJ) $(LIBSHARED)
-	purify $(CXX) -o $(tmpbin)/viewer $(VIEWEREXE_OBJ) $(LDFLAGS) -lviewer $(LIBS)
+	purify -cache-dir=$(TOPDIR)/lib -always-use-cache-dir $(CXX) -o $(tmpbin)/viewer $(VIEWEREXE_OBJ) $(LDFLAGS) -lviewer $(LIBS)
 
 quantify: $(LIBDEP) $(VIEWEREXE_OBJ) $(LIBSHARED)
 	quantify $(CXX) -o $(tmpbin)/viewer $(VIEWEREXE_OBJ) $(LDFLAGS) -lviewer $(LIBS)

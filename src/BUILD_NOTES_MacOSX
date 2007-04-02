@@ -541,14 +541,14 @@ cp lib/libsilo.dylib  $VISITDIR/silo/lib
 cd ..
 
 The next offset after libsilo.dylib, which has an offset of 0x22714000 and a library
-size of 595,036 (0x9145c) bytes is:
+size of 599,372 (0x9254c) bytes is:
 
 # Next offset
-offset = 0x22714000 + int(float(0x9145c) * 1.05)
+offset = 0x22714000 + int(float(0x9254c) * 1.05)
 # Align the offset to 0x1000 byte boundaries
 offset = offset + (0x1000 - offset % 0x1000)
 # Next offset
-offset = 0x227ad000
+offset = 0x227ae000
 
 ===============================================================================
 Building Mili as a prebound dynamic library
@@ -570,8 +570,8 @@ the Mili's src directory
 
 CC=gcc
 CFLAGS = -I. -O2 -fno-common -fPIC
-MILI_LDFLAGS=-Wl,-seg1addr,0x227b0000 -L. -lgahl
-GAHL_LDFLAGS=-Wl,-seg1addr,0x227ad000
+MILI_LDFLAGS=-Wl,-seg1addr,0x227b1000 -L. -lgahl
+GAHL_LDFLAGS=-Wl,-seg1addr,0x227ae000
 LDFLAGS=-dynamiclib -prebind -twolevel_namespace -Wl,-install_name,@executable_path/../lib/$@
 .SUFFIXES : .o .c
 MILI_SRC=mili.c direc.c param.c io.c util.c dep.c svar.c srec.c mesh_u.c wrap_c.c io_mem.c eprtf.c sarray.c
@@ -598,15 +598,15 @@ cp mili.h $VISITPATH/mili
 cp mili_enum.h $VISITPATH/mili
 cd ../..
 
-The next offset after libmili.dylib, which has an offset of 0x227b0000 and
+The next offset after libmili.dylib, which has an offset of 0x227b1000 and
 a library size of 109,556 (0x1abf4) bytes is:
 
 # Next offset
-offset = 0x227b0000 + int(float(0x1abf4) * 1.05)
+offset = 0x227b1000 + int(float(0x1abf4) * 1.05)
 # Align the offset to 0x1000 byte boundaries
 offset = offset + (0x1000 - offset % 0x1000)
 # Next offset
-offset = 0x227cd000
+offset = 0x227ce000
 
 ==============================================================================
 Building HDF4 as a prebound dynamic library
@@ -634,7 +634,7 @@ cd hdf/src
 mkdir tmp
 cd tmp
 ar -x ../libdf.a
-gcc -dynamiclib -prebind -twolevel_namespace -o libdf.dylib *.o -L$VISITPATH/jpeg/lib -ljpeg -lz -Wl,-seg1addr,0x227cd000,-install_name,@executable_path/../lib/libdf.dylib,-compatibility_version,2.0,-current_version,2.0
+gcc -dynamiclib -prebind -twolevel_namespace -o libdf.dylib *.o -L$VISITPATH/jpeg/lib -ljpeg -lz -Wl,-seg1addr,0x227ce000,-install_name,@executable_path/../lib/libdf.dylib,-compatibility_version,2.0,-current_version,2.0
 mkdir $VISITPATH/hdf4
 mkdir $VISITPATH/hdf4/lib
 mkdir $VISITPATH/hdf4/include
@@ -645,7 +645,7 @@ cd ../../../mfhdf/libsrc
 mkdir tmp
 cd tmp
 ar -x ../libmfhdf.a
-gcc -dynamiclib -prebind -twolevel_namespace -o libmfhdf.dylib *.o L$VISITPATH/jpeg/lib -L$VISITPATH/hdf4/lib -ljpeg -ldf -Wl,-seg1addr,0x2286000,-install_name,@executable_path/../lib/libmfhdf.dylib,-compatibility_version,2.0,-current_version,2.0
+gcc -dynamiclib -prebind -twolevel_namespace -o libmfhdf.dylib *.o L$VISITPATH/jpeg/lib -L$VISITPATH/hdf4/lib -ljpeg -ldf -Wl,-seg1addr,0x22865000,-install_name,@executable_path/../lib/libmfhdf.dylib,-compatibility_version,2.0,-current_version,2.0
 mv libmfhdf.dylib $VISITPATH/hdf4/lib
 cd ../../..
 

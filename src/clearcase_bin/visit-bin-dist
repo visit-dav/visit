@@ -200,6 +200,9 @@
 #    Jeremy Meredith, Mon Apr 25 10:48:08 PDT 2005
 #    Added some basic multi-compiler support.
 #
+#    Brad Whitlock, Thu May 12 11:30:24 PDT 2005
+#    Added code to copy MacOS X address computation script and address file.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -648,7 +651,11 @@ cp $VisItDir/exe/mpeg_encode   $bindir
 cp $VisItDir/bin/makemovie.py  $bindir
 # copy surfcomp
 cp $VisItDir/exe/surfcomp      $bindir
-
+# Copy MacOS X address computation script and address file.
+cp $VisItDir/bin/linkedit.py   $bindir
+if(-e $VisItDir/address.txt) then
+   cp $VisItDir/address.txt distribution/visit/$Version/$visitbindir/
+endif
 
 #
 # Make symlinks for the programs

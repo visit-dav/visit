@@ -445,7 +445,7 @@ avtMultiResolutionPartitionStrategy::AddBox(int *extents)
 void
 avtMultiResolutionPartitionStrategy::FindBoxes(int level, int cell)
 {
-    int  i, j;
+    int  i;
 
     RegionDescription &rd = reg_desc[level][cell];
     if (rd.allOn)

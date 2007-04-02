@@ -101,6 +101,7 @@
 #include <strings.h>
 #include <unistd.h>
 #else
+#include <process.h>
 #endif
 
 #include <algorithm>
@@ -7310,7 +7311,11 @@ ViewerSubject::ResetInteractorAttributes()
 //
 // Programmer: Mark C. Miller
 // Creation:   Tuesday, January 18, 2004 
-//   
+// 
+// Modifications:
+//   Brad Whitlock, Tue May 10 16:36:54 PST 2005
+//   Made it work on Win32.
+//
 // ****************************************************************************
 
 void
@@ -7329,8 +7334,13 @@ ViewerSubject::GetProcessAttributes()
     }
     else if (componentName == "viewer")
     {
+#if defined(_WIN32)
+        int pid = _getpid();
+        int ppid = -1;
+#else
         int pid = getpid();
         int ppid = getppid();
+#endif
         char myHost[256];
         gethostname(myHost, sizeof(myHost));
 

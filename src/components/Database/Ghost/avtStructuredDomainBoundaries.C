@@ -2448,6 +2448,9 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>        domainNum,
 //    Do not create domain-processor map, since that requires communication
 //    and cannot be used with dynamic load balancing.
 //
+//    Brad Whitlock, Tue May 10 15:08:21 PST 2005
+//    Fixed for win32.
+//
 // ****************************************************************************
 
 void
@@ -2462,9 +2465,9 @@ avtStructuredDomainBoundaries::CreateGhostNodes(vector<int>         domainNum,
     // trick because the rest of the routine does not care which domains 
     // are on which processors -- only that we are using them.
     //
-    int ntotaldomains = wholeBoundary.size();
+    int i, ntotaldomains = wholeBoundary.size();
     vector<int> domain2proc(ntotaldomains, -1);
-    for (int i = 0 ; i < allDomains.size() ; i++)
+    for (i = 0 ; i < allDomains.size() ; i++)
     {
         if (domain2proc[allDomains[i]] < 0)
             domain2proc[allDomains[i]] = 0;
@@ -2472,7 +2475,7 @@ avtStructuredDomainBoundaries::CreateGhostNodes(vector<int>         domainNum,
 
     CreateCurrentDomainBoundaryInformation(domain2proc);
 
-    for (int i = 0 ; i < domainNum.size() ; i++)
+    for (i = 0 ; i < domainNum.size() ; i++)
     {
         int dom = domainNum[i];
         Boundary *bi = &boundary[dom];

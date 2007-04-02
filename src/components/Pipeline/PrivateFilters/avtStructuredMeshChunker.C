@@ -765,7 +765,7 @@ avtStructuredMeshChunker::SplitIntoSubgrids(const int *dims, vtkDataSet *in_ds,
     if ((boxes.size() % 6) != 0)
         EXCEPTION0(ImproperUseException);
     int nBoxes = boxes.size() / 6;
-    for (int i = 0 ; i < nBoxes ; i++)
+    for (i = 0 ; i < nBoxes ; i++)
     {
         // Now mark everything as being "in the grid".
         MeshDescription descr;

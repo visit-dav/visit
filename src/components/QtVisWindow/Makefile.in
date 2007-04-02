@@ -43,6 +43,9 @@
 #    Brad Whitlock, Wed Jan 5 09:25:20 PDT 2005
 #    Added -lexpr for MacOS X.
 #
+#    Brad Whitlock, Fri Apr 29 11:57:13 PDT 2005
+#    I changed -lplotter to -lplotter_ser and -lviswindow to -lviswindow_ser.
+#
 ##############################################################################
 
 ##
@@ -62,7 +65,7 @@ CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@ @VTKQT_CPPFLAGS@
 
 OBJ=$(SRC:.C=.o)
 LIB=libqtviswindow
-LIBS=-ldbatts -lviswindow -lpipeline_ser -lavtfilters_ser -lavtmath_ser -lavtview -lavtexceptions -lplotter -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser -lmisc -lstate -lcomm -lexpr -lparser -lutility @VTKQT_LIBS@ $(VTK_LIBS) $(X_LIBS)
+LIBS=-ldbatts -lviswindow_ser -lpipeline_ser -lavtfilters_ser -lavtmath_ser -lavtview -lavtexceptions -lplotter_ser -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser -lmisc -lstate -lcomm -lexpr -lparser -lutility @VTKQT_LIBS@ $(VTK_LIBS) $(X_LIBS)
 
 ##
 ## Standard targets...

@@ -1323,7 +1323,7 @@ void
 RPCExecutor<SimulationCommandRPC>::Execute(SimulationCommandRPC *rpc)
 {
     Engine *engine = Engine::Instance();
-    debug2 << "Executing SimulationCommandRPC: " << rpc->GetCommand() << endl;
+    debug2 << "Executing SimulationCommandRPC: " << rpc->GetCommand().c_str() << endl;
 
     TRY
     {

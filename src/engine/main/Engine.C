@@ -5,6 +5,8 @@
 #include <strings.h>
 #include <sys/types.h>   // for getpid()
 #include <unistd.h>      // for alarm()
+#else
+#include <process.h>     // for _getpid()
 #endif
 #include <new.h>
 
@@ -1965,7 +1967,12 @@ Engine::ExecuteSimulationCommand(const std::string &command,
 //  Programmer:  Mark C. Miller 
 //  Creation:    March 8, 2005 
 //
+//  Modifications:
+//    Brad Whitlock, Tue May 10 15:52:16 PST 2005
+//    Fixed for win32.
+//
 // ****************************************************************************
+
 ProcessAttributes *
 Engine::GetProcessAttributes()
 {
@@ -1980,8 +1987,13 @@ Engine::GetProcessAttributes()
         doubleVector ppids;
         stringVector hosts;
 
+#if defined(_WIN32)
+        int myPid = _getpid();
+        int myPpid = -1;
+#else
         int myPid = getpid();
         int myPpid = getppid();
+#endif
 
 #ifdef PARALLEL
 
