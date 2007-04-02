@@ -207,6 +207,10 @@ avtEnzoFileFormat::Grid::DetermineExtentsGlobally(int numLevels,
 //    level grids, all of the root level grid extents must be unified
 //    to determine any individual grid's logical extents.
 //
+//    Jeremy Meredith, Fri Oct 14 14:34:54 PDT 2005
+//    Fixed bug where the last line of the .hierarchy file was assumed
+//    to be a known item.
+//
 // ****************************************************************************
 void
 avtEnzoFileFormat::ReadHierachyFile()
@@ -236,7 +240,7 @@ avtEnzoFileFormat::ReadHierachyFile()
     int parent = 0;
     while (h)
     {
-        while (buff != "Grid" && buff != "Pointer:" && buff != "Time")
+        while (h && buff != "Grid" && buff != "Pointer:" && buff != "Time")
             h >> buff;
         if (buff == "Grid")
         {

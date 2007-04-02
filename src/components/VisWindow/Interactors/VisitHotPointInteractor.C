@@ -182,6 +182,13 @@ VisitHotPointInteractor::~VisitHotPointInteractor()
 //   If the current interactor has buttons depressed, allow it to finish
 //   gracefully.
 //
+//   Jeremy Meredith, Fri Oct 14 12:17:16 PDT 2005
+//   Make sure if the mouse button is still down for an interactor getting
+//   re-applied, restart the appropriate button actions.  ('6643)
+//   Don't set hotPointMode to false.  It's not cleanly ending the hot point
+//   mode, and more importantly, we don't need to end it just because the
+//   interactor changes out from underneath us.  ('6715)
+//
 // ****************************************************************************
 
 void
@@ -198,8 +205,18 @@ VisitHotPointInteractor::SetInteractor(VisitInteractor *newInteractor)
     }
 
     newInteractor->SetInteractor(Interactor);
+
+    if (newInteractor != NULL)
+    {
+        if (newInteractor->LeftButtonIsDown())
+            newInteractor->StartLeftButtonAction();
+        if (newInteractor->RightButtonIsDown())
+            newInteractor->StartRightButtonAction();
+        if (newInteractor->MiddleButtonIsDown())
+            newInteractor->StartMiddleButtonAction();
+    }
+
     currentInteractor = newInteractor;
-    hotPointMode = false;
 }
 
 // ****************************************************************************
