@@ -53,6 +53,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "vtkPolyDataMapper2D.h"
 
+struct vtkRubberBandMapper2DOverlay;
+
 class VISIT_VTK_API vtkRubberBandMapper2D : public vtkPolyDataMapper2D
 {
 public:
@@ -63,10 +65,15 @@ public:
   // Actually draw the poly data.
   void RenderOverlay(vtkViewport* viewport, vtkActor2D* actor);
 
-protected:
-  vtkRubberBandMapper2D() {};
-  ~vtkRubberBandMapper2D() {};
+  // Description:
+  // Release graphics resources.
+  virtual void ReleaseGraphicsResources(vtkWindow *);
 
+protected:
+  vtkRubberBandMapper2D();
+  ~vtkRubberBandMapper2D();
+
+  vtkRubberBandMapper2DOverlay *overlay;
 private:
   vtkRubberBandMapper2D(const vtkRubberBandMapper2D&);
   void operator=(const vtkRubberBandMapper2D&);

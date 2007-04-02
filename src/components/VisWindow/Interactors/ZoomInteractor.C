@@ -38,6 +38,11 @@
 //    Kathleen Bonnell, Wed Aug 18 10:10:35 PDT 2004 
 //    Set shouldClampSquare and shouldDrawGuides based on InteractorAtts.
 //
+//    Brad Whitlock, Fri Mar 10 17:43:07 PST 2006
+//    Added APPLE-specific code where we create polydata that can contain
+//    4 points instead of 2. This lets us draw the lines at the same time
+//    into an overlay window.
+//
 // ****************************************************************************
 
 ZoomInteractor::ZoomInteractor(VisWindowInteractorProxy &vw) 
@@ -56,6 +61,17 @@ ZoomInteractor::ZoomInteractor(VisWindowInteractorProxy &vw)
     rubberBand       = vtkPolyData::New();
 
     vtkPoints *pts = vtkPoints::New();
+#if defined(__APPLE__)
+    pts->SetNumberOfPoints(4);
+    rubberBand->SetPoints(pts);
+    pts->Delete();
+
+    vtkCellArray *lines  = vtkCellArray::New();
+    vtkIdType  ids[] = { 0, 1, 2, 3, 0};
+    lines->InsertNextCell(5, ids);
+    rubberBand->SetLines(lines);
+    lines->Delete();
+#else
     pts->SetNumberOfPoints(2);
     rubberBand->SetPoints(pts);
     pts->Delete();
@@ -65,6 +81,7 @@ ZoomInteractor::ZoomInteractor(VisWindowInteractorProxy &vw)
     lines->InsertNextCell(2, ids);
     rubberBand->SetLines(lines);
     lines->Delete();
+#endif
 
     rubberBandMapper = vtkRubberBandMapper2D::New();
     rubberBandMapper->SetInput(rubberBand);
@@ -157,6 +174,11 @@ ZoomInteractor::SetCanvasViewport(void)
 //    Kathleen Bonnell, Wed Aug 18 10:10:35 PDT 2004 
 //    Set shouldClampSquare and shouldDrawGuides based on InteractorAtts.
 //
+//    Brad Whitlock, Mon Mar 13 11:08:22 PDT 2006
+//    I added code to set the actor's color to the current foreground
+//    color so it uses the right color on MacOS X. Other platforms use the
+//    XOR drawing mode so the color will vary there.
+//
 // ****************************************************************************
 
 void
@@ -170,6 +192,11 @@ ZoomInteractor::StartRubberBand(int x, int y)
     VisWindow *win = proxy;
     shouldClampSquare = win->GetInteractorAtts()->GetClampSquare();
     shouldDrawGuides = win->GetInteractorAtts()->GetShowGuidelines();
+
+    // Set the actor's color.
+    float fg[3];
+    proxy.GetForegroundColor(fg);
+    rubberBandActor->GetProperty()->SetColor(fg[0], fg[1], fg[2]);
 
     //
     // Add the rubber band actors to the background.  We do this since the
@@ -521,6 +548,11 @@ GetSegment(int a, int l, int n, int &outl, int &newl)
 //  Programmer: Hank Childs
 //  Creation:   May 22, 2000
 //
+//  Modifications:
+//    Brad Whitlock, Fri Mar 10 17:45:22 PST 2006
+//    I added code for APPLE that lets us draw all line segments at the same
+//    time. The mapper that we're using in this case does not XOR so it's ok.
+//   
 // ****************************************************************************
 
 void
@@ -533,6 +565,20 @@ ZoomInteractor::UpdateRubberBand(int aX, int aY, int lX, int lY,int nX,int nY)
         //
         return;
     }
+
+#if defined(__APPLE__)
+    // This code assumes that the lines will be drawn at the same time
+    // in an overlay window that the rubber-band mapper will create.
+    vtkViewport *ren = proxy.GetBackground();
+    vtkPoints *pts = rubberBand->GetPoints();
+    pts->SetPoint(0, (double) aX, (double) aY, 0.);   
+    pts->SetPoint(1, (double) nX, (double) aY, 0.);   
+    pts->SetPoint(2, (double) nX, (double) nY, 0.);   
+    pts->SetPoint(3, (double) aX, (double) nY, 0.);
+    rubberBandMapper->RenderOverlay(ren, rubberBandActor);
+#else
+    // This code assumes that the line segments will be drawn individually
+    // with XOR.
 
     //
     // Crossing over the anchor gives us a big problem.  Break up this case.
@@ -611,6 +657,7 @@ ZoomInteractor::UpdateRubberBand(int aX, int aY, int lX, int lY,int nX,int nY)
         GetSegment(aX, lX, nX, lastX, newX);
         DrawRubberBandLine(lastX, aY, newX, aY);
     }
+#endif
 }
 
 

@@ -57,9 +57,36 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #if defined(_WIN32)
 #include <windows.h>
 #elif defined(__APPLE__)
-int placeholder;
+#include <Carbon/Carbon.h>
+#include <qwidget.h>
 #else
 #include <X11/Intrinsic.h>
+#endif
+
+#if defined(__APPLE__)
+struct vtkRubberBandMapper2DOverlay
+{
+    WindowRef    window;
+    CGContextRef ctx;
+};
+
+// Create an overlay window.
+static OSStatus CreateOverlayWindow( Rect* inBounds, WindowRef* outOverlayWindow)
+{
+    UInt32 flags = kWindowHideOnSuspendAttribute | kWindowIgnoreClicksAttribute;
+    OSStatus err = CreateNewWindow( kOverlayWindowClass, flags, inBounds, outOverlayWindow);
+    require_noerr(err, CreateNewWindowFAILED);
+    ShowWindow( *outOverlayWindow );
+    
+CreateNewWindowFAILED:
+    return err;
+}
+
+#else
+struct vtkRubberBandMapper2DOverlay
+{
+    int placeholder;
+};
 #endif
 
 // ***************************************************************************
@@ -70,6 +97,91 @@ int placeholder;
 
 vtkStandardNewMacro(vtkRubberBandMapper2D);
 
+// ****************************************************************************
+// Method: vtkRubberBandMapper2D::vtkRubberBandMapper2D
+//
+// Purpose: 
+//   Constructor.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 13 10:04:25 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+vtkRubberBandMapper2D::vtkRubberBandMapper2D() : vtkPolyDataMapper2D()
+{
+    overlay = 0;
+}
+
+// ****************************************************************************
+// Method: vtkRubberBandMapper2D::~vtkRubberBandMapper2D
+//
+// Purpose: 
+//   Destructor.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 13 10:04:03 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+vtkRubberBandMapper2D::~vtkRubberBandMapper2D()
+{
+    if(overlay != 0)
+    {
+#if defined(__APPLE__)
+        // Release the context that we used to draw on the window.
+        QDEndCGContext(GetWindowPort(overlay->window), &overlay->ctx);
+
+        // Destroy the transparent overlay window.
+        DisposeWindow(overlay->window);
+#endif
+        delete overlay;
+        overlay = 0;
+    }
+}
+
+// ****************************************************************************
+// Method: vtkRubberBandMapper2D::ReleaseGraphicsResources
+//
+// Purpose: 
+//   Releases the mapper's graphics resources.
+//
+// Arguments:
+//   win : The vtkWindow for which resources are released.
+//
+// Note:       The APPLE implementation frees a transparent overlay rendering
+//             window.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 13 10:01:08 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+vtkRubberBandMapper2D::ReleaseGraphicsResources(vtkWindow *win)
+{
+    if(overlay != 0)
+    {
+#if defined(__APPLE__)
+        // Release the context that we used to draw on the window.
+        QDEndCGContext(GetWindowPort(overlay->window), &overlay->ctx);
+
+        // Destroy the transparent overlay window.
+        DisposeWindow(overlay->window);
+#endif
+        delete overlay;
+        overlay = 0;
+    }
+
+    // Call the superclass's ReleaseGraphicsResources method.
+    vtkPolyDataMapper2D::ReleaseGraphicsResources(win);
+}
 
 // ***************************************************************************
 //  Modifications:
@@ -94,6 +206,9 @@ vtkStandardNewMacro(vtkRubberBandMapper2D);
 //    Fixed offset applied to Windows lines so they are not drawn in the
 //    wrong location anymore. The offset used to be correct, but at some point,
 //    it broke so now I'm making it so no offset is used.
+//
+//    Brad Whitlock, Mon Mar 13 11:12:00 PDT 2006
+//    Added MacOS X implementation that draws into a transparent overlay window.
 //
 // ****************************************************************************
 
@@ -137,6 +252,12 @@ void vtkRubberBandMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* act
 
 #define FLUSH_AND_SYNC() if(validPen) DeleteObject(pen);
 
+#define BEGIN_POLYLINE(X,Y)
+
+#define END_POLYLINE()
+
+#define CLEAN_UP() delete [] points;
+
     HPEN pen = 0;
     bool validPen = false;
     POINT *points = new POINT[1024];
@@ -158,17 +279,82 @@ void vtkRubberBandMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* act
 //
 // ***************************************************************************
 
-// for now...
-int *points = new int[1024];
-
 #define STORE_POINT(P, X, Y) cerr << "STORE_POINT macro for Mac." << endl;
-#define SET_FOREGROUND_F(rgba) cerr << "SET_FOREGROUND_F macro for Mac." << endl;
-#define SET_FOREGROUND(rgba) cerr << "SET_FOREGROUND macro for Mac." << endl;
-#define DRAW_POLYGON(points, npts) cerr << "DRAW_POLYGON macro for Mac." << endl;
-#define RESIZE_POINT_ARRAY(points, npts, currSize) cerr << "RESIZE_POINT_ARRAY macro for Mac." << endl;
-#define DRAW_XOR_LINE(x1, y1, x2, y2) cerr << "DRAW_XOR_LINE macro for Mac." << endl;
-#define FLUSH_AND_SYNC() cerr << "FLUSH_AND_SYNC macro for Mac." << endl;
 
+#define SET_FOREGROUND_F(rgba) \
+    CGContextSetRGBStrokeColor(overlay->ctx, rgba[0], rgba[1], rgba[2], 1.);
+
+#define SET_FOREGROUND(rgba) \
+    CGContextSetRGBStrokeColor(overlay->ctx, rgba[0], rgba[1], rgba[2], 1.);
+
+#define DRAW_POLYGON(points, npts) \
+    cerr << "DRAW_POLYGON macro for Mac." << endl;
+
+#define RESIZE_POINT_ARRAY(points, npts, currSize) \
+    cerr << "RESIZE_POINT_ARRAY macro for Mac." << endl;
+
+#define DRAW_XOR_LINE(x1, y1, x2, y2) \
+    CGContextAddLineToPoint(overlay->ctx, x2, H-(y2)); 
+
+#define FLUSH_AND_SYNC() CGContextFlush(overlay->ctx);
+
+#define CLEAN_UP()
+
+#define BEGIN_POLYLINE(X, Y) CGContextBeginPath(overlay->ctx);\
+CGContextMoveToPoint(overlay->ctx, X,H-(Y));
+
+#define END_POLYLINE() CGContextStrokePath(overlay->ctx);
+
+    // Get a pointer to the GL widget that the vtkQtRenderWindow owns.
+    // Note that this only works because we've made the GenericDisplayId 
+    // method return the GL widget pointer. On other platforms where 
+    // the display is actually used for something, this does not work.
+    QWidget *gl = (QWidget *)window->GetGenericDisplayId();
+    int H = gl->height();
+
+    //
+    // Try and create the window if we've not yet created it.
+    //
+    if(overlay == 0)
+    {
+        // Get the GL widget's global screen coordinates.
+        Rect wRect;
+        wRect.left = gl->x();
+        wRect.right = gl->x() + gl->width();
+        wRect.top = gl->y();
+        wRect.bottom = gl->y() + gl->height();
+        QDLocalToGlobalRect(GetWindowPort((WindowPtr)gl->handle()), &wRect );
+        
+        // Try and create the overlay window.        
+        overlay = new vtkRubberBandMapper2DOverlay;
+        OSStatus err = CreateOverlayWindow(&wRect, &overlay->window);
+        if (err == noErr)
+        {
+            // Create the Quartz context that we'll use to draw on the
+            // overlay window.
+            QDBeginCGContext(GetWindowPort(overlay->window), &overlay->ctx);
+        }
+        else
+        {
+            // We could not create the overlay window so delete the
+            // overlay object.
+            delete overlay;
+            overlay = 0;
+            return;
+        }
+    }
+    
+    // Set the line color
+    float* actorColor = actor->GetProperty()->GetColor();
+    SET_FOREGROUND_F(actorColor);
+
+    // Clear the window so it's ready for us to draw.
+    CGRect r;
+    r.origin.x = 0;
+    r.origin.y = 0;
+    r.size.width = gl->width();
+    r.size.height = gl->height();
+    CGContextClearRect(overlay->ctx, r);
 
 #else
 // ***************************************************************************
@@ -210,6 +396,12 @@ int *points = new int[1024];
 
 #define FLUSH_AND_SYNC() XFlush(displayId); XSync(displayId, False); \
       XFreeGC(displayId, gc);
+
+#define BEGIN_POLYLINE(X,Y)
+
+#define END_POLYLINE()
+
+#define CLEAN_UP() delete [] points;
 
     XColor aColor;
     XPoint *points = new XPoint [1024];
@@ -366,7 +558,8 @@ int *points = new int[1024];
 
         lastX = (int)(actorPos[0] + ftmp[0]);
         lastY = (int)(actorPos[1] - ftmp[1]);
-
+        BEGIN_POLYLINE(lastX, lastY);
+        
         for (j = 1; j < npts; j++) 
         {
             ftmp = p->GetPoint(pts[j]);
@@ -383,13 +576,15 @@ int *points = new int[1024];
             lastX = X;
             lastY = Y;
         }
+        
+        END_POLYLINE();
     }
 
     // Finish drawing.
     FLUSH_AND_SYNC();
 
     // Clean up.
-    delete [] points;
+    CLEAN_UP();
     if ( this->TransformCoordinate )
         p->Delete();
 

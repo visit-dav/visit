@@ -82,6 +82,8 @@ protected:
 private:
     vtkQtRenderWindow *qtRenWin;
     QTimer qTimer;
+    bool alt;
+    bool altshift;
 };
 
 inline const char *vtkQtRenderWindowInteractor::GetClassName() const { return "vtkQtRenderWindowInteractor"; }

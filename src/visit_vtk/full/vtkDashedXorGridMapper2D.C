@@ -59,12 +59,126 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #if defined(_WIN32)
 #include <windows.h>
 #elif defined(__APPLE__)
-/*MAC_UNFINISHED*/
+#include <Carbon/Carbon.h>
+#include <qwidget.h>
 #else
 #include <X11/Intrinsic.h>
 #endif
 
+#if defined(__APPLE__)
+struct vtkDashedXorGridMapper2DOverlay
+{
+    WindowRef    window;
+    CGContextRef ctx;
+};
+
+// Create an overlay window.
+static OSStatus CreateOverlayWindow( Rect* inBounds, WindowRef* outOverlayWindow)
+{
+    UInt32 flags = kWindowHideOnSuspendAttribute | kWindowIgnoreClicksAttribute;
+    OSStatus err = CreateNewWindow( kOverlayWindowClass, flags, inBounds, outOverlayWindow);
+    require_noerr(err, CreateNewWindowFAILED);
+    ShowWindow( *outOverlayWindow );
+    
+CreateNewWindowFAILED:
+    return err;
+}
+
+#else
+struct vtkDashedXorGridMapper2DOverlay
+{
+    int placeholder;
+};
+#endif
+
 vtkStandardNewMacro(vtkDashedXorGridMapper2D);
+
+// ****************************************************************************
+// Method: vtkDashedXorGridMapper2D::vtkDashedXorGridMapper2D
+//
+// Purpose: 
+//   Constructor.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 13 10:04:25 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+vtkDashedXorGridMapper2D::vtkDashedXorGridMapper2D() : vtkPolyDataMapper2D()
+{
+    overlay = 0;
+}
+
+// ****************************************************************************
+// Method: vtkDashedXorGridMapper2D::~vtkDashedXorGridMapper2D
+//
+// Purpose: 
+//   Destructor.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 13 10:04:03 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+vtkDashedXorGridMapper2D::~vtkDashedXorGridMapper2D()
+{
+    if(overlay != 0)
+    {
+#if defined(__APPLE__)
+        // Release the context that we used to draw on the window.
+        QDEndCGContext(GetWindowPort(overlay->window), &overlay->ctx);
+
+        // Destroy the transparent overlay window.
+        DisposeWindow(overlay->window);
+#endif
+        delete overlay;
+        overlay = 0;
+    }
+}
+
+// ****************************************************************************
+// Method: vtkDashedXorGridMapper2D::ReleaseGraphicsResources
+//
+// Purpose: 
+//   Releases the mapper's graphics resources.
+//
+// Arguments:
+//   win : The vtkWindow for which resources are released.
+//
+// Note:       The APPLE implementation frees a transparent overlay rendering
+//             window.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 13 10:01:08 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+vtkDashedXorGridMapper2D::ReleaseGraphicsResources(vtkWindow *win)
+{
+    if(overlay != 0)
+    {
+#if defined(__APPLE__)
+        // Release the context that we used to draw on the window.
+        QDEndCGContext(GetWindowPort(overlay->window), &overlay->ctx);
+
+        // Destroy the transparent overlay window.
+        DisposeWindow(overlay->window);
+#endif
+        delete overlay;
+        overlay = 0;
+    }
+
+    // Call the superclass's ReleaseGraphicsResources method.
+    vtkPolyDataMapper2D::ReleaseGraphicsResources(win);
+}
+
 
 void
 vtkDashedXorGridMapper2D::SetDots(int drawn, int spaced)
@@ -79,7 +193,10 @@ vtkDashedXorGridMapper2D::SetDots(int drawn, int spaced)
 //    Fixed offset applied to Windows lines so they are not drawn in the
 //    wrong location anymore. The offset used to be correct, but at some point,
 //    it broke so now I'm making it so no offset is used.
-//   
+//
+//    Brad Whitlock, Mon Mar 13 11:22:50 PDT 2006
+//    Added MacOS X implementation.
+//
 // ****************************************************************************
 
 void vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* actor)
@@ -90,8 +207,6 @@ void vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* 
 //
 // Win32 coding and macros
 //
-#define STORE_POINT(P, X, Y) P.x = long((X) + borderL);  P.y = long((Y)+borderT);
-
 #define SET_FOREGROUND_F(rgba) if(validPen) DeleteObject(pen); \
       pen = CreatePen(PS_SOLID, 1, GetNearestColor(hdc, \
           RGB(int(255*rgba[0]),int(255*rgba[0]),int(255*rgba[0])))); \
@@ -103,22 +218,14 @@ void vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* 
       SelectObject(hdc, pen); \
       validPen = true;
 
-#define DRAW_POLYGON(points, npts) Polygon(hdc, points, npts)
-
-#define RESIZE_POINT_ARRAY(points, npts, currSize) \
-      if (npts > currSize) \
-      { \
-      delete [] points; \
-      points = new POINT[npts]; \
-      currSize = npts; \
-      }
-
 #define DRAW_XOR_LINE(x1, y1, x2, y2) \
       MoveToEx(hdc, x1+borderL, y1+borderT, &oldPoint); \
       LineTo(hdc, x2+borderL, y2+borderT); \
       LineTo(hdc, x2+borderL+1, y2+borderT+1);
 
 #define FLUSH_AND_SYNC() if(validPen) DeleteObject(pen);
+
+#define CLEAN_UP() delete [] points;
 
     HPEN pen = 0;
     bool validPen = false;
@@ -139,22 +246,77 @@ void vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* 
 // MacOS X coding and macros
 //
 
-/*MAC_UNFINISHED*/
-#define STORE_POINT(P, X, Y)
-#define SET_FOREGROUND_F(rgba)
-#define SET_FOREGROUND(rgba)
-#define DRAW_POLYGON(points, npts) 
-#define RESIZE_POINT_ARRAY(points, npts, currSize) 
-#define DRAW_XOR_LINE(x1, y1, x2, y2)
-#define FLUSH_AND_SYNC()
-int *points = new int[1024];
+#define SET_FOREGROUND_F(rgba) \
+    CGContextSetRGBStrokeColor(overlay->ctx, rgba[0], rgba[1], rgba[2], 1.);
+
+#define SET_FOREGROUND(rgba) \
+    CGContextSetRGBStrokeColor(overlay->ctx, rgba[0], rgba[1], rgba[2], 1.);
+
+#define DRAW_XOR_LINE(x1, y1, x2, y2) \
+    CGContextBeginPath(overlay->ctx);\
+    CGContextMoveToPoint(overlay->ctx, x1,H-(y1));\
+    CGContextAddLineToPoint(overlay->ctx, x2, H-(y2)); \
+    CGContextStrokePath(overlay->ctx);
+
+#define FLUSH_AND_SYNC() CGContextFlush(overlay->ctx);
+
+#define CLEAN_UP()
+
+    // Get a pointer to the GL widget that the vtkQtRenderWindow owns.
+    // Note that this only works because we've made the GenericDisplayId 
+    // method return the GL widget pointer. On other platforms where 
+    // the display is actually used for something, this does not work.
+    QWidget *gl = (QWidget *)window->GetGenericDisplayId();
+    int H = gl->height();
+
+    //
+    // Try and create the window if we've not yet created it.
+    //
+    if(overlay == 0)
+    {
+        // Get the GL widget's global screen coordinates.
+        Rect wRect;
+        wRect.left = gl->x();
+        wRect.right = gl->x() + gl->width();
+        wRect.top = gl->y();
+        wRect.bottom = gl->y() + gl->height();
+        QDLocalToGlobalRect(GetWindowPort((WindowPtr)gl->handle()), &wRect );
+        
+        // Try and create the overlay window.        
+        overlay = new vtkDashedXorGridMapper2DOverlay;
+        OSStatus err = CreateOverlayWindow(&wRect, &overlay->window);
+        if (err == noErr)
+        {
+            // Create the Quartz context that we'll use to draw on the
+            // overlay window.
+            QDBeginCGContext(GetWindowPort(overlay->window), &overlay->ctx);
+        }
+        else
+        {
+            // We could not create the overlay window so delete the
+            // overlay object.
+            delete overlay;
+            overlay = 0;
+            return;
+        }
+    }
+    
+    // Set the line color
+    float* actorColor = actor->GetProperty()->GetColor();
+    SET_FOREGROUND_F(actorColor);
+
+    // Clear the window so it's ready for us to draw.
+    CGRect r;
+    r.origin.x = 0;
+    r.origin.y = 0;
+    r.size.width = gl->width();
+    r.size.height = gl->height();
+    CGContextClearRect(overlay->ctx, r);
 
 #else
 //
 // X11 coding and macros
 //
-
-#define STORE_POINT(P, X, Y) P.x = short(X); P.y = short(Y);
 
 #define SET_FOREGROUND_F(rgba) \
       aColor.red = (unsigned short) (rgba[0] * 65535.0); \
@@ -171,22 +333,13 @@ int *points = new int[1024];
       XAllocColor(displayId, attr.colormap, &aColor); \
       XSetForeground(displayId, gc, aColor.pixel);
 
-#define DRAW_POLYGON(points, npts) XFillPolygon(displayId, drawable, \
-      gc, points, npts, Complex, CoordModeOrigin);
-
-#define RESIZE_POINT_ARRAY(points, npts, currSize) \
-      if (npts > currSize) \
-      { \
-      delete [] points; \
-      points = new XPoint [npts]; \
-      currSize = npts; \
-      }
-
 #define DRAW_XOR_LINE(x1, y1, x2, y2) \
       XDrawLine(displayId, drawable, xorGC, x1, y1, x2, y2);
 
 #define FLUSH_AND_SYNC() XFlush(displayId); XSync(displayId, False); \
       XFreeGC(displayId, gc);
+
+#define CLEAN_UP() delete [] points;
 
     XColor aColor;
     XPoint *points = new XPoint [1024];
@@ -478,7 +631,7 @@ int *points = new int[1024];
     FLUSH_AND_SYNC();
 
     // Clean up.
-    delete [] points;
+    CLEAN_UP();
     if ( this->TransformCoordinate )
         p->Delete();
 }

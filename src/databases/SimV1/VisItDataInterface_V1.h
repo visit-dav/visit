@@ -217,8 +217,12 @@ typedef struct VisIt_UnstructuredMesh
 
 typedef struct VisIt_PointMesh
 {
-    /* FILL IN */
-    int dummy;
+    int ndims;
+    int nnodes;
+
+    VisIt_DataArray xcoords;
+    VisIt_DataArray ycoords;
+    VisIt_DataArray zcoords;
 } VisIt_PointMesh;
 
 typedef struct VisIt_MeshData

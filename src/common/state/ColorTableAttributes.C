@@ -1089,12 +1089,21 @@ ColorTableAttributes::GetColorControlPoints(const std::string &name) const
 //   Brad Whitlock, Mon Nov 25 12:00:52 PDT 2002
 //   I added code to sort the color table using a map.
 //
+//   Brad Whitlock, Mon Mar 13 17:14:55 PST 2006
+//   Make sure that a pre-existing color table with the same name is removed
+//   before adding the new color table.
+//
 // ****************************************************************************
 
 void
 ColorTableAttributes::AddColorTable(const std::string &name,
     const ColorControlPointList &cpts)
 {
+    // Remove the color table if it already exists in the list.
+    int index = GetColorTableIndex(name);
+    if(index != -1)
+        RemoveColorTable(index);
+
     // Append the color table to the list.
     names.push_back(name);
     AddColorControlPointList(cpts);

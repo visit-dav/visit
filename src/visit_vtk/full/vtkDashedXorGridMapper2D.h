@@ -56,6 +56,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "vtkPolyDataMapper2D.h"
 
+struct vtkDashedXorGridMapper2DOverlay;
+
 class VISIT_VTK_API vtkDashedXorGridMapper2D : public vtkPolyDataMapper2D
 {
 public:
@@ -65,6 +67,10 @@ public:
   // Description:
   // Actually draw the poly data.
   void RenderOverlay(vtkViewport* viewport, vtkActor2D* actor);
+
+  // Description:
+  // Release graphics resources.
+  virtual void ReleaseGraphicsResources(vtkWindow *);
 
   // Description:
   // Sets length of dashes and spaces. Call before first use.
@@ -79,9 +85,10 @@ public:
 protected:
   int pixelDrawn, pixelSpaced;
   bool horizontalBias;
-  
-  vtkDashedXorGridMapper2D() {};
-  ~vtkDashedXorGridMapper2D() {};
+  vtkDashedXorGridMapper2DOverlay *overlay;
+
+  vtkDashedXorGridMapper2D();
+  ~vtkDashedXorGridMapper2D();
 
   // Returns whether a point in is on a dashed line.
   bool IsDash(int x)

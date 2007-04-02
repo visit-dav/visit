@@ -238,6 +238,10 @@
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Added mesh management attributes window
+//
+//    Brad Whitlock, Mon Mar 13 17:19:28 PST 2006
+//    Changed print option to Ctrl+P.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -333,7 +337,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     filePopup->insertItem(saveMovieIcon, tr("Save movie . . ."), this, SIGNAL(saveMovie()));
     id = filePopup->insertItem(tr("Export database . . ."), this, SIGNAL(activateExportDBWindow()));
     id = filePopup->insertItem(printIcon, tr("Print window"), this, SIGNAL(printWindow()));
-    id = filePopup->insertItem(tr("Set Print options . . ."), this, SIGNAL(activatePrintWindow()));
+    id = filePopup->insertItem(tr("Set Print options . . ."), this, SIGNAL(activatePrintWindow()), CTRL+Key_P);
     filePopup->insertSeparator();
     id = filePopup->insertItem(tr("Restore session . . ."), this, SIGNAL(restoreSession()));
     id = filePopup->insertItem(tr("Save session . . ."), this, SIGNAL(saveSession()));
@@ -356,7 +360,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     id = ctrls->insertItem(globalLineoutIcon, tr("&Lineout . . ."), this, SIGNAL(activateGlobalLineoutWindow()), CTRL+SHIFT+Key_L );
     id = ctrls->insertItem(materialIcon, tr("&Material Options . . ."), this, SIGNAL(activateMaterialWindow()), CTRL+Key_M);
     id = ctrls->insertItem(tr("&Mesh management . . ."), this, SIGNAL(activateMeshManagementWindow()), CTRL+SHIFT+Key_M);
-    id = ctrls->insertItem(pickIcon, tr("&Pick . . ."), this, SIGNAL(activatePickWindow()), CTRL+Key_P );
+    id = ctrls->insertItem(pickIcon, tr("&Pick . . ."), this, SIGNAL(activatePickWindow()), CTRL+SHIFT+Key_P );
     id = ctrls->insertItem(tr("&Query . . ."), this, SIGNAL(activateQueryWindow()), CTRL+Key_Q );
     id = ctrls->insertItem(tr("&Query over time options . . ."), this, SIGNAL(activateQueryOverTimeWindow()), CTRL+SHIFT+Key_Q );
     id = ctrls->insertItem(subsetIcon, tr("S&ubset . . ."), this, SIGNAL(activateSubsetWindow()), CTRL+Key_U);
@@ -370,7 +374,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     pref->insertItem( tr("&Appearance . . ."), this, SIGNAL(activateAppearanceWindow()), CTRL+SHIFT+Key_A);
     pref->insertItem(computerIcon, tr("&Host profiles . . ."), this, SIGNAL(activateHostWindow()), CTRL+Key_H );
     pref->insertItem(tr("&Interactors . . ."), this, SIGNAL(activateInteractorWindow()), CTRL+SHIFT+Key_I );
-    pref->insertItem(pluginIcon, tr("&Plugin Manager . . ."), this, SIGNAL(activatePluginWindow()), CTRL+SHIFT+Key_P);
+    pref->insertItem(pluginIcon, tr("&Plugin Manager . . ."), this, SIGNAL(activatePluginWindow()));
     pref->insertItem(tr("Preferences . . ."), this, SIGNAL(activatePreferencesWindow()));
     pref->insertItem(tr("Rendering . . ."), this, SIGNAL(activateRenderingWindow()));
     pref->insertSeparator();

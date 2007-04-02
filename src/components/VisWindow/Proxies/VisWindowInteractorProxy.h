@@ -45,6 +45,9 @@
 //    Hank Childs, Thu Jul 11 17:45:50 PDT 2002
 //    Add support for motion tracking.
 //
+//    Brad Whitlock, Mon Mar 13 10:51:15 PDT 2006
+//    Made it possible to get the foreground color.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowInteractorProxy : public VisWindowProtectionProxy
@@ -85,6 +88,9 @@ class VISWINDOW_API VisWindowInteractorProxy : public VisWindowProtectionProxy
 
     void                MotionBegin(void) { ProxiedMotionBegin(); };
     void                MotionEnd(void)   { ProxiedMotionEnd(); };
+
+    void                GetForegroundColor(float *fg)
+                                  { ProxiedGetForegroundColor(fg); };
 };
 
 

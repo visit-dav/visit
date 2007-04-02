@@ -30,6 +30,7 @@ tidalwave=true
 white=true
 pu=true
 lilac=true
+gauss=true
 
 ver=undefined
 verflag=-private
@@ -50,6 +51,7 @@ do
          white=false
          pu=false
          lilac=false
+         gauss=false
          shift
          ;;
       +bdiv)
@@ -119,6 +121,14 @@ do
          ;;
       +lilac)
          lilac=true
+         shift
+         ;;
+      -gauss)
+         gauss=false
+         shift
+         ;;
+      +gauss)
+         gauss=true
          shift
          ;;
       -v)
@@ -441,10 +451,46 @@ then
    ssh sc1 "chmod 750 lc_install;./lc_install"
 fi
 
+
+# Install on gauss.
+#
+rm -f gauss
+cat <<EOF > gauss
+#!/bin/sh
+./visit-install $verflag -c open -g visit -b bdivp -gw -l $ver linux-x86_64 /usr/gapps/visit > installlog 2>&1
+rm -f resultlog
+echo "        install of visit on gauss"           > resultlog 2>&1
+echo "       ---------------------------"          >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+df -k /usr/gapps/visit                             >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver/linux-x86_64/bin       >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "The database plugins:"                       >> resultlog 2>&1
+ls /usr/gapps/visit/$ver/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $gauss = true ]
+then
+   if [ $test = no ]
+   then
+      scp gauss2:/usr/tmp/$user/gauss/visitbuild/visit$ver2.linux-x86_64.tar.gz .
+      scp visit$ver2.linux-x86_64.tar.gz gps15:
+      scp visit-install gps15:
+      scp gauss gps15:gauss_install
+      ssh gps15 "chmod 750 gauss_install;./gauss_install"
+   fi
+fi
+
 #
 # Clean up.
 #
 if [ $test = no ]
 then
-   rm -f bdiv hitit sunset lc sc tidalwave white pu lilac
+   rm -f bdiv hitit sunset lc sc tidalwave white pu lilac gauss
 fi

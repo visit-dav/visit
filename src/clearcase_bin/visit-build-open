@@ -49,7 +49,6 @@ esac
 #
 # Parse the execute line, providing default values for error checking.
 #
-kickit=true
 hoth=true
 sunspot=true
 quad=true
@@ -58,7 +57,6 @@ berg=true
 up=true
 pengra=true
 thunder=true
-gauss=true
 
 dist=undefined
 
@@ -71,7 +69,6 @@ for abc
 do
    case $1 in
       -none)
-         kickit=false
          hoth=false
          sunspot=false
          quad=false
@@ -80,15 +77,6 @@ do
          up=false
          pengra=false
          thunder=false
-         gauss=false
-         shift
-         ;;
-      -kickit)
-         kickit=false
-         shift
-         ;;
-      +kickit)
-         kickit=true
          shift
          ;;
       -hoth)
@@ -155,14 +143,6 @@ do
          thunder=true
          shift
          ;;
-      -gauss)
-         gauss=false
-         shift
-         ;;
-      +gauss)
-         gauss=true
-         shift
-         ;;
       -d)
          dist=$2
          shift 2
@@ -187,56 +167,6 @@ if [ ! -f $distfile ]
 then
    echo "Distribution file doesn't exist."
    exit
-fi
-
-#
-# Build on kickit.
-#
-rm -f kickit
-cat <<EOF > kickit
-#!/bin/sh
-if test ! -e /var/tmp/$user ; then
-   mkdir /var/tmp/$user
-fi
-if test ! -e /var/tmp/$user/kickit ; then
-   mkdir /var/tmp/$user/kickit
-fi
-rm -rf /var/tmp/$user/kickit/visitbuild
-mkdir /var/tmp/$user/kickit/visitbuild
-mv kickit_$dist.tar.gz /var/tmp/$user/kickit/visitbuild/$dist.tar.gz
-cd /var/tmp/$user/kickit/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure >> ../buildlog 2>&1
-make -j 4 >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
-mv visit\$ver2.linux.tar.gz ..
-cd ..
-rm -f resultlog
-echo "        build of visit on kickit"       > resultlog 2>&1
-echo "       --------------------------"      >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
-EOF
-
-if [ $kickit = true ]
-then
-   if [ $test = no ]
-   then
-      scp kickit kickit:kickit_buildit
-      scp $dist.tar.gz kickit:kickit_$dist.tar.gz
-      ssh kickit "chmod 750 kickit_buildit;./kickit_buildit" &
-   fi
 fi
 
 #
@@ -640,59 +570,9 @@ then
 fi
 
 #
-# Build on gauss.
-#
-rm -f gauss
-cat <<EOF > gauss
-#!/bin/sh
-if test ! -d /usr/tmp/$user ; then
-   mkdir /usr/tmp/$user
-fi
-if test ! -d /usr/tmp/$user/gauss ; then
-   mkdir /usr/tmp/$user/gauss
-fi
-rm -rf /usr/tmp/$user/gauss/visitbuild
-mkdir /usr/tmp/$user/gauss/visitbuild
-mv gauss_$dist.tar.gz /usr/tmp/$user/gauss/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/gauss/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
-make -j 3 >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
-mv visit\$ver2.linux-x86_64.tar.gz ..
-cd ..
-rm -f resultlog
-echo "        build of visit on gauss"        > resultlog 2>&1
-echo "       -------------------------"       >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
-EOF
-
-if [ $gauss = true ]
-then
-   if [ $test = no ]
-   then
-      scp gauss gauss2:gauss_buildit
-      scp $dist.tar.gz gauss2:gauss_$dist.tar.gz
-      ssh gauss2 "chmod 750 gauss_buildit;./gauss_buildit" &
-   fi
-fi
-
-#
 # Clean up.
 #
 if [ $test = no ]
 then
-   rm -f kickit hoth sunspot quad gps berg up pengra thunder gauss
+   rm -f hoth sunspot quad gps berg up pengra thunder
 fi

@@ -6,6 +6,10 @@
 ! Date: Fri Jan 27 17:53:41 PST 2006
 !
 ! Modifications:
+!   Brad Whitlock, Wed Mar 1 15:26:24 PST 2006
+!   I added functions to set more mesh attributes and I added functions
+!   to create expression metadata. I also added functions to create 
+!   point meshes and unstructured meshes.
 !
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -47,6 +51,16 @@
       integer  visitmdmeshcreate
       external visitmdmeshsetunits
       integer  visitmdmeshsetunits
+      external visitmdmeshsetlabels
+      integer  visitmdmeshsetlabels
+      external visitmdmeshsetblocktitle
+      integer  visitmdmeshsetblocktitle
+      external visitmdmeshsetblockpiecename
+      integer  visitmdmeshsetblockpiecename
+      external visitmdmeshsetgrouptitle
+      integer  visitmdmeshsetgrouptitle
+      external visitmdmeshsetgrouppiecename
+      integer  visitmdmeshsetgrouppiecename
       external visitmdscalarcreate
       integer  visitmdscalarcreate
       external visitmdscalarsetunits
@@ -63,11 +77,17 @@
       integer  visitmdmaterialcreate
       external visitmdmaterialadd
       integer  visitmdmaterialadd
+      external visitmdexpressioncreate
+      integer  visitmdexpressioncreate
 
       external visitmeshrectilinear
       integer  visitmeshrectilinear
       external visitmeshcurvilinear
       integer  visitmeshcurvilinear
+      external visitmeshpoint
+      integer  visitmeshpoint
+      external visitmeshunstructured
+      integer  visitmeshunstructured
 
       external visitscalarsetdata
       integer  visitscalarsetdata
