@@ -125,6 +125,9 @@ avtLocateNodeQuery::~avtLocateNodeQuery()
 //    Set foundElement = foundNode only if OriginalZones intact (eg not
 //    clipped, contoured, etc). 
 //
+//    Kathleen Bonnell, Thu Oct 26 10:27:36 PDT 2006 
+//    Added test for NodesPreserved.
+//
 // ****************************************************************************
 
 void
@@ -188,7 +191,8 @@ avtLocateNodeQuery::Execute(vtkDataSet *ds, const int dom)
                 int comp = origNodes->GetNumberOfComponents() -1;
                 foundElement = (int) origNodes->GetComponent(foundNode, comp);
             }
-            else if (info.GetValidity().GetOriginalZonesIntact() &&
+            else if (info.GetValidity().GetNodesPreserved() &&
+                     info.GetValidity().GetOriginalZonesIntact() &&
                      (info.GetValidity().GetZonesPreserved()   ||
                      !info.GetValidity().GetPointsWereTransformed()) &&
                      info.GetAttributes().GetContainsGhostZones() 

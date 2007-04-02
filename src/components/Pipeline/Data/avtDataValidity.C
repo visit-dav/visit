@@ -100,12 +100,16 @@ avtDataValidity::~avtDataValidity()
 //    Kathleen Bonnell, Thu Mar  2 14:04:06 PST 2006
 //    Added originalZonesIntact.
 //
+//    Kathleen Bonnell, Thu Oct 26 09:17:08 PDT 2006 
+//    Added nodesPreserved.
+//
 // ****************************************************************************
 
 void
 avtDataValidity::Reset(void)
 {
     zonesPreserved                    = true;
+    nodesPreserved                    = true;
     originalZonesIntact               = true;
     dataMetaDataPreserved             = true;
     spatialMetaDataPreserved          = true;
@@ -173,12 +177,16 @@ avtDataValidity::Reset(void)
 //    Kathleen Bonnell, Thu Mar  2 14:04:06 PST 2006
 //    Added originalZonesIntact.
 //
+//    Kathleen Bonnell, Thu Oct 26 09:17:08 PDT 2006 
+//    Added nodesPreserved.
+//
 // ****************************************************************************
 
 void
 avtDataValidity::Copy(const avtDataValidity &di)
 {
     zonesPreserved                    = di.zonesPreserved;
+    nodesPreserved                    = di.nodesPreserved;
     originalZonesIntact               = di.originalZonesIntact;
     spatialMetaDataPreserved          = di.spatialMetaDataPreserved;
     dataMetaDataPreserved             = di.dataMetaDataPreserved;
@@ -246,12 +254,16 @@ avtDataValidity::Copy(const avtDataValidity &di)
 //    Kathleen Bonnell, Thu Mar  2 14:04:06 PST 2006
 //    Added originalZonesIntact.
 //
+//    Kathleen Bonnell, Thu Oct 26 09:17:08 PDT 2006 
+//    Added nodesPreserved.
+//
 // ****************************************************************************
 
 void
 avtDataValidity::Merge(const avtDataValidity &di)
 {
     zonesPreserved           = zonesPreserved && di.zonesPreserved;
+    nodesPreserved           = nodesPreserved && di.nodesPreserved;
     originalZonesIntact      = originalZonesIntact && di.originalZonesIntact;
     spatialMetaDataPreserved = spatialMetaDataPreserved
                                && di.spatialMetaDataPreserved;
@@ -350,33 +362,37 @@ avtDataValidity::Merge(const avtDataValidity &di)
 //    Kathleen Bonnell, Thu Mar  2 14:04:06 PST 2006
 //    Added originalZonesIntact.
 //
+//    Kathleen Bonnell, Thu Oct 26 09:17:08 PDT 2006 
+//    Added nodesPreserved.
+//
 // ****************************************************************************
 
 void
 avtDataValidity::Write(avtDataObjectString &str,
                        const avtDataObjectWriter *wrtr)
 {
-    const int numVals = 18;
+    const int numVals = 19;
     int  vals[numVals];
 
     vals[0] = (zonesPreserved ? 1 : 0);
-    vals[1] = (originalZonesIntact ? 1 : 0);
-    vals[2] = (dataMetaDataPreserved ? 1 : 0);
-    vals[3] = (spatialMetaDataPreserved ? 1 : 0);
-    vals[4] = (operationFailed ? 1 : 0);
-    vals[5] = (usingAllData ? 1 : 0);
-    vals[6] = (usingAllDomains ? 1 : 0);
-    vals[7] = (isThisDynamic ? 1 : 0);
-    vals[8] = (pointsWereTransformed ? 1 : 0);
-    vals[9] = (wireframeRenderingIsInappropriate ? 1 : 0);
-    vals[10] = (normalsAreInappropriate ? 1 : 0);
-    vals[11]= (subdivisionOccurred ? 1 : 0);
-    vals[12]= (notAllCellsSubdivided ? 1 : 0);
-    vals[13]= (disjointElements ? 1 : 0);
-    vals[14]= (queryable ? 1 : 0);
-    vals[15]= (hasEverOwnedAnyDomain ? 1 : 0);
-    vals[16]= (errorOccurred ? 1 : 0);
-    vals[17]= errorString.size();
+    vals[1] = (nodesPreserved ? 1 : 0);
+    vals[2] = (originalZonesIntact ? 1 : 0);
+    vals[3] = (dataMetaDataPreserved ? 1 : 0);
+    vals[4] = (spatialMetaDataPreserved ? 1 : 0);
+    vals[5] = (operationFailed ? 1 : 0);
+    vals[6] = (usingAllData ? 1 : 0);
+    vals[7] = (usingAllDomains ? 1 : 0);
+    vals[8] = (isThisDynamic ? 1 : 0);
+    vals[9] = (pointsWereTransformed ? 1 : 0);
+    vals[10] = (wireframeRenderingIsInappropriate ? 1 : 0);
+    vals[11] = (normalsAreInappropriate ? 1 : 0);
+    vals[12]= (subdivisionOccurred ? 1 : 0);
+    vals[13]= (notAllCellsSubdivided ? 1 : 0);
+    vals[14]= (disjointElements ? 1 : 0);
+    vals[15]= (queryable ? 1 : 0);
+    vals[16]= (hasEverOwnedAnyDomain ? 1 : 0);
+    vals[17]= (errorOccurred ? 1 : 0);
+    vals[18]= errorString.size();
     wrtr->WriteInt(str, vals, numVals);
 
     str.Append((char *) errorString.c_str(), errorString.size(),
@@ -433,6 +449,9 @@ avtDataValidity::Write(avtDataObjectString &str,
 //    Kathleen Bonnell, Thu Mar  2 14:04:06 PST 2006
 //    Added originalZonesIntact.
 //
+//    Kathleen Bonnell, Thu Oct 26 09:17:08 PDT 2006 
+//    Added nodesPreserved.
+//
 // ****************************************************************************
 
 int
@@ -447,6 +466,15 @@ avtDataValidity::Read(char *input)
     if (zp == 0)
     {
         InvalidateZones();
+    }
+
+    // read nodes preserved
+    int np;
+    memcpy(&np, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    if (np == 0)
+    {
+        InvalidateNodes();
     }
 
     // read zones intact
