@@ -1,0 +1,59 @@
+##
+## Programs and options...
+##
+@SET_MAKE@
+@VARIABLES@
+
+CPPFLAGS=-I. -I../../include @CPPFLAGS@ @VTK_INCLUDES@ @SILO_INCLUDE@
+LIBS=
+
+##
+## We distribute sources for bzip2 with VisIt via the tar file
+##
+NOT_DISTRIB=blocksort.c huffman.c crctable.c randtable.c compress.c decompress.c \
+            bzlib.c bzlib.h  bzlib_private.h words* LICENSE
+DISTRIB=bzip2-1.0.3.v.tar.gz
+
+##
+## Files...
+##
+SRC=blocksort.c huffman.c crctable.c randtable.c compress.c decompress.c bzlib.c
+HDR=bzlib.h  bzlib_private.h
+OBJ=$(SRC:.c=.o)
+LIB=libbz2
+
+##
+## Standard targets...
+##
+all: message $(LIBSHARED)
+
+clean:
+	$(RM) $(OBJ) $(SRC) $(HDR) $(LIBSHARED) LICENSE words* ../../include/bzlib.h
+
+LICENSE:
+	gunzip < bzip2-1.0.3.v.tar.gz | tar xvf -
+	touch LICENSE
+	cp bzlib.h ../../include/visit/.
+
+blocksort.c: LICENSE 	 
+huffman.c: LICENSE
+crctable.c: LICENSE
+randtable.c: LICENSE
+compress.c: LICENSE
+decompress.c: LICENSE
+bzlib.c: LICENSE
+
+##
+## Other targets
+##
+message:
+	@echo
+	@echo "****************************************************************************"
+	@echo "*** Building Bzip2 Library ($(LIB))"
+	@echo "****************************************************************************"
+
+##
+## Automatic dependency stuff
+##
+@TARGETS@
+@LIBTARGETS@
