@@ -52,14 +52,14 @@ class PLOTTER_API avtUserDefinedMapper : public avtMapper
                                avtUserDefinedMapper(avtCustomRenderer_p);
     virtual                   ~avtUserDefinedMapper();
 
-    bool                       GetDataRange(float &, float &);    
-    bool                       GetCurrentDataRange(float &, float &);    
+    bool                       GetDataRange(double &, double &);    
+    bool                       GetCurrentDataRange(double &, double &);    
 
     virtual void               GlobalLightingOn(void);
     virtual void               GlobalLightingOff(void);
-    virtual void               GlobalSetAmbientCoefficient(const float);
+    virtual void               GlobalSetAmbientCoefficient(const double);
     virtual void               SetSurfaceRepresentation(int rep);
-    virtual void               SetSpecularProperties(bool,float,float,
+    virtual void               SetSpecularProperties(bool,double,double,
                                                       const ColorAttribute&);
   protected:
     avtCustomRenderer_p        renderer;

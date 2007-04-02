@@ -72,14 +72,14 @@ avtEffectiveTensorFilter::DoOperation(vtkDataArray *in, vtkDataArray *out,
     {
         for (int i = 0 ; i < ntuples ; i++)
         {
-            float *vals = in->GetTuple9(i);   
+            double *vals = in->GetTuple9(i);   
 
             double trace = -(vals[0] + vals[4] + vals[8]) / 3.;
             double dev0 = vals[0] + trace;
             double dev1 = vals[4] + trace;
             double dev2 = vals[8] + trace;
 
-            float out2 = 0.5*(dev0*dev0 + dev1*dev1 + dev2*dev2) +
+            double out2 = 0.5*(dev0*dev0 + dev1*dev1 + dev2*dev2) +
                          vals[1]*vals[1] + vals[2]*vals[2] +
                          vals[5]*vals[5];
             out2 = sqrt(3.*out2);

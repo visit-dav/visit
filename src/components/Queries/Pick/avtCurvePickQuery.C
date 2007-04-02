@@ -123,8 +123,8 @@ avtCurvePickQuery::Execute(vtkDataSet *ds, const int dom)
         GetInput()->GetTerminatingSource()->GetFullDataSpecification();
     pickAtts.SetTimeStep(dspec->GetTimestep());
  
-    float pt1[3] = { 0., 0., 0.};
-    float pt2[3] = { 0., 0., 0.};
+    double pt1[3] = { 0., 0., 0.};
+    double pt2[3] = { 0., 0., 0.};
 
     int pointId = pickAtts.GetElementNumber();
     if (pointId == -1)
@@ -134,26 +134,16 @@ avtCurvePickQuery::Execute(vtkDataSet *ds, const int dom)
 
     if (pointId != -1)
     {
-        float *p;
         if (pickAtts.GetPickType() == PickAttributes::CurveNode)
         {
-            p = ds->GetPoint(pointId);
-            pt1[0] = p[0];
-            pt1[1] = p[1];
-            pt1[2] = p[2];
+            ds->GetPoint(pointId, pt1);
         }
         else
         {
             vtkIdList *ptIds = vtkIdList::New();
             ds->GetCellPoints(pointId, ptIds);
-            p = ds->GetPoint(ptIds->GetId(0));
-            pt1[0] = p[0];
-            pt1[1] = p[1];
-            pt1[2] = p[2];
-            p = ds->GetPoint(ptIds->GetId(1));
-            pt2[0] = p[0];
-            pt2[1] = p[1];
-            pt2[2] = p[2];
+            ds->GetPoint(ptIds->GetId(0), pt1);
+            ds->GetPoint(ptIds->GetId(1), pt2);
             ptIds->Delete();
         }
         pickAtts.SetNodePoint(pt1);
@@ -227,15 +217,15 @@ avtCurvePickQuery::FindClosestPoint(vtkDataSet *ds)
     {
         return -1;
     }
-    float *rayPt1 = pickAtts.GetRayPoint1();
+    double *rayPt1 = pickAtts.GetRayPoint1();
 
     vtkPointLocator *pointLocator = vtkPointLocator::New(); 
     pointLocator->SetDataSet(ds);
     pointLocator->BuildLocator();
 
     vtkIdType foundPoint = -1; 
-    float pt[3] = {rayPt1[0], rayPt1[1], 0.};
-    float dist, rad = minDist;
+    double pt[3] = {rayPt1[0], rayPt1[1], 0.};
+    double dist, rad = minDist;
     foundPoint = pointLocator->FindClosestPointWithinRadius(rad, pt, dist);
 
     if (foundPoint >= 0 && dist < minDist)

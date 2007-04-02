@@ -190,7 +190,7 @@ avtTransparencyActor::~avtTransparencyActor()
 // ****************************************************************************
 
 void
-avtTransparencyActor::InputWasModified(int transparencyIndex, float opacity)
+avtTransparencyActor::InputWasModified(int transparencyIndex, double opacity)
 {
     inputModified = true;
     if (opacity != -1.0)
@@ -609,7 +609,7 @@ avtTransparencyActor::PrepareForRender(vtkCamera *cam)
             // Based on what the direction of project is, set up the best 
             // sorting.
             //
-            float proj[3];
+            double proj[3];
             cam->GetDirectionOfProjection(proj);
             int biggest = 0;
             if (fabs(proj[biggest]) < fabs(proj[1]))
@@ -974,13 +974,13 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
         colors->SetNumberOfComponents(4);
         colors->SetNumberOfTuples(npts);
         colors->SetName("Colors");
-        float *color   = actor->GetProperty()->GetColor();
-        float  opacity = actor->GetProperty()->GetOpacity();
+        double *color   = actor->GetProperty()->GetColor();
+        double  opacity = actor->GetProperty()->GetOpacity();
         unsigned char rgba[4];
-        rgba[0] = (unsigned char) (color[0] * 255);
-        rgba[1] = (unsigned char) (color[1] * 255);
-        rgba[2] = (unsigned char) (color[2] * 255);
-        rgba[3] = (unsigned char) (opacity * 255);
+        rgba[0] = (unsigned char) ((float)color[0] * 255);
+        rgba[1] = (unsigned char) ((float)color[1] * 255);
+        rgba[2] = (unsigned char) ((float)color[2] * 255);
+        rgba[3] = (unsigned char) ((float)opacity * 255);
         unsigned char *ptr = (unsigned char *) colors->GetVoidPointer(0);
         for (int i = 0 ; i < npts ; i++)
         {
@@ -1016,7 +1016,7 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
             // Now let the mapper create the buffer of unsigned chars that it
             // would have created if we were to let it do the actual mapping.
             //
-            float opacity = actor->GetProperty()->GetOpacity();
+            double opacity = actor->GetProperty()->GetOpacity();
             unsigned char *buff = 
               (unsigned char *) mapper->MapScalars(opacity)->GetVoidPointer(0);
 
@@ -1084,7 +1084,7 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
             pts->SetNumberOfPoints(count);
             for (i = 0 ; i < count ; i++)
             {
-                float pt[3];
+                double pt[3];
                 in_pts->GetPoint(ptIds[i], pt);
                 pts->SetPoint(i, pt);
             }
@@ -1100,7 +1100,7 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
             colors->SetNumberOfTuples(count);
             colors->SetName("Colors");
             unsigned char *ptr = (unsigned char *) colors->GetVoidPointer(0);
-            float opacity = actor->GetProperty()->GetOpacity();
+            double opacity = actor->GetProperty()->GetOpacity();
             unsigned char *buff = 
               (unsigned char *) mapper->MapScalars(opacity)->GetVoidPointer(0);
             for (i = 0 ; i < count ; i++)
@@ -1164,7 +1164,7 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
 // ****************************************************************************
 
 void
-avtTransparencyActor::ScaleByVector(const float vec[3])
+avtTransparencyActor::ScaleByVector(const double vec[3])
 {
     myActor->SetScale(vec[0], vec[1], vec[2]);
 }
@@ -1234,7 +1234,7 @@ avtTransparencyActor::TransparenciesExist()
 bool
 avtTransparencyActor::TransparenciesMightExist() const
 {
-    std::map<int,float>::const_iterator it;
+    std::map<int,double>::const_iterator it;
     bool has_transparency = false;
     for (it = inputsOpacities.begin(); it != inputsOpacities.end(); it++)
     {

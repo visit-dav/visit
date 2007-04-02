@@ -216,12 +216,12 @@ vtkParallelImageSpaceRedistributor::Execute(void)
     int TH_transform = visitTimer->StartTimer(); 
     vtkMatrix4x4 *worldToView = CreateWorldToDisplayMatrix();
     float *xformedpts = new float[3 * input->GetNumberOfPoints()];
-    float *pt, p2[4];
+    double pt[3], p2[4];
     for (j=0; j < input->GetNumberOfPoints(); j++)
     {
-        pt = input->GetPoint(j);
+        input->GetPoint(j, pt);
 
-        float p1[4] = {0,0,0,1}; // set homogenous to 1.0
+        double p1[4] = {0,0,0,1}; // set homogenous to 1.0
         input->GetPoint(j, p1);
 
         worldToView->MultiplyPoint(p1, p2);
@@ -709,8 +709,8 @@ vtkParallelImageSpaceRedistributor::CreateWorldToDisplayMatrix()
     // Set up view->display matrix
     vtkMatrix4x4 *M2 = vtkMatrix4x4::New();
     {
-        float *v = ren->GetViewport();
-        float *a = ren->GetAspect();
+        double *v = ren->GetViewport();
+        double *a = ren->GetAspect();
 
         M2->Identity();
         M2->Element[0][0] = float(width )*(v[2]-v[0])/(2. * a[0]);

@@ -109,7 +109,7 @@ VisWinUserInfo::~VisWinUserInfo()
 // ****************************************************************************
 
 void
-VisWinUserInfo::SetForegroundColor(float fr, float fg, float fb)
+VisWinUserInfo::SetForegroundColor(double fr, double fg, double fb)
 {
     infoActor->GetTextProperty()->SetColor(fr, fg, fb);
 }

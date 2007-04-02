@@ -244,9 +244,9 @@ VisitPointTool::Start3DMode()
 // ****************************************************************************
 
 void
-VisitPointTool::SetForegroundColor(float r, float g, float b)
+VisitPointTool::SetForegroundColor(double r, double g, double b)
 {
-    float color[3] = {r, g, b};
+    double color[3] = {r, g, b};
 
     // Set the colors of the text actors.
     pointTextActor->GetTextProperty()->SetColor(color);
@@ -393,7 +393,7 @@ VisitPointTool::UpdateText()
             hotPoints[0].pt.x, hotPoints[0].pt.y, hotPoints[0].pt.z);
     pointTextActor->SetInput(str);
     avtVector originScreen = ComputeWorldToDisplay(hotPoints[0].pt);
-    float pt[3] = {originScreen.x, originScreen.y, 0.};
+    double pt[3] = {originScreen.x, originScreen.y, 0.};
     pointTextActor->GetPositionCoordinate()->SetValue(pt);
 }
 
@@ -550,16 +550,16 @@ VisitPointTool::UpdateGuide()
     //
     // Now that we have guide points, create a polydata from that.
     //
-    float fg[3];
+    double fg[3];
     proxy.GetForegroundColor(fg);
-    unsigned char r = (unsigned char)(fg[0] * 255.);
-    unsigned char g = (unsigned char)(fg[1] * 255.);
-    unsigned char b = (unsigned char)(fg[2] * 255.);
+    unsigned char r = (unsigned char)((float)fg[0] * 255.f);
+    unsigned char g = (unsigned char)((float)fg[1] * 255.f);
+    unsigned char b = (unsigned char)((float)fg[2] * 255.f);
     int i, index;
     for(i = 0, index = 0; i < nverts; ++i, index += 3)
     {
         // Add points to the vertex list.
-        float coord[3];
+        double coord[3];
         coord[0] = verts[i].x;
         coord[1] = verts[i].y;
         coord[2] = verts[i].z;
@@ -619,7 +619,7 @@ VisitPointTool::GetGuidePoints(avtVector *pts)
     int axis = FacingAxis();
 
     // Fill the return pts array.
-    float bounds[6];
+    double bounds[6];
     proxy.GetBounds(bounds);
     double xmin = bounds[0];
     double xmax = bounds[1];
@@ -766,7 +766,7 @@ VisitPointTool::ComputeTranslationDistance(int direction)
     int i;
 
     int *size = proxy.GetCanvas()->GetSize();
-    float bounds[6];
+    double bounds[6];
     proxy.GetBounds(bounds);
 
     double dx = bounds[1] - bounds[0];

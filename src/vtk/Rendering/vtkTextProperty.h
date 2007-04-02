@@ -2,16 +2,13 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkTextProperty.h,v $
-  Language:  C++
-  Date:      $Date: 2002/07/23 19:24:35 $
-  Version:   $Revision: 1.5 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
@@ -43,14 +40,14 @@ public:
 
   // Description:
   // Set the color of the text..
-  vtkSetVector3Macro(Color,float);
-  vtkGetVectorMacro(Color,float,3);
+  vtkSetVector3Macro(Color,double);
+  vtkGetVectorMacro(Color,double,3);
 
   // Description:
   // Set/Get the text's opacity. 1.0 is totally opaque and 0.0 is completely
   // transparent.
-  vtkSetMacro(Opacity,float);
-  vtkGetMacro(Opacity,float);
+  vtkSetMacro(Opacity,double);
+  vtkGetMacro(Opacity,double);
 
   // Description:
   // Set/Get the font family. Three font types are allowed: Arial (VTK_ARIAL),
@@ -129,22 +126,22 @@ public:
   void SetVerticalJustificationToTop() 
     {this->SetVerticalJustification(VTK_TEXT_TOP);};
   char *GetVerticalJustificationAsString();
-    
+
   // Description:
   // Set/Get the text orientation. The default is horizontal.
   vtkSetClampMacro(Orientation,int,VTK_TEXT_VERTICAL,VTK_TEXT_HORIZONTAL);
   vtkGetMacro(Orientation,int);
   char *GetOrientationAsString();
-
+    
   // Description:
   // These methods can be used to control the spacing and placement of 
   // text (in the vertical direction). LineOffset is a vertical offset 
   // (measured in pixels); LineSpacing is the spacing between lines, 
   // expressed as a text height multiplication factor.
-  vtkSetMacro(LineOffset, float);
-  vtkGetMacro(LineOffset, float);
-  vtkSetMacro(LineSpacing, float);
-  vtkGetMacro(LineSpacing, float);
+  vtkSetMacro(LineOffset, double);
+  vtkGetMacro(LineOffset, double);
+  vtkSetMacro(LineSpacing, double);
+  vtkGetMacro(LineSpacing, double);
   
   // Description:
   // Shallow copy of a text property.
@@ -160,8 +157,8 @@ protected:
   vtkTextProperty();
   ~vtkTextProperty();
 
-  float Color[3];
-  float Opacity;
+  double Color[3];
+  double Opacity;
   int   FontFamily;
   int   FontSize;
   int   Bold;
@@ -171,8 +168,8 @@ protected:
   int   Justification;
   int   Orientation;
   int   VerticalJustification;
-  float LineOffset;
-  float LineSpacing;
+  double LineOffset;
+  double LineSpacing;
   char  *FaceFileName;
   
 private:
@@ -243,5 +240,6 @@ inline char *vtkTextProperty::GetOrientationAsString(void)
     }
   return (char *)"Unknown";
 }
+
 
 #endif

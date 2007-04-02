@@ -600,12 +600,12 @@ avtSamplePointExtractor::KernelBasedSample(vtkDataSet *ds)
         // 
         // Figure out what the bounding box is.
         //
-        float bbox[6];
+        double bbox[6];
         if (npts > 1)
             cell->GetBounds(bbox);
         else
         {
-            float pt_loc[3];
+            double pt_loc[3];
             vtkIdList *ids = cell->GetPointIds();
             vtkIdType id = ids->GetId(0);
             ds->GetPoint(id, pt_loc);
@@ -813,7 +813,8 @@ avtSamplePointExtractor::ExtractHex(vtkHexahedron *hex, vtkDataSet *ds,
     vtkPoints *pts = hex->GetPoints();
     for (i = 0 ; i < 8 ; i++)
     {
-        float *pt = pts->GetPoint(i);
+        double pt[3];
+        pts->GetPoint(i, pt);
         h.pts[i][0] = pt[0];
         h.pts[i][1] = pt[1];
         h.pts[i][2] = pt[2];
@@ -917,7 +918,8 @@ avtSamplePointExtractor::ExtractWedge(vtkWedge *wedge, vtkDataSet *ds,
     vtkPoints *pts = wedge->GetPoints();
     for (i = 0 ; i < 6 ; i++)
     {
-        float *pt = pts->GetPoint(i);
+        double pt[3];
+        pts->GetPoint(i, pt);
         w.pts[i][0] = pt[0];
         w.pts[i][1] = pt[1];
         w.pts[i][2] = pt[2];
@@ -1021,7 +1023,8 @@ avtSamplePointExtractor::ExtractTet(vtkTetra *tet, vtkDataSet *ds,
     vtkPoints *pts = tet->GetPoints();
     for (i = 0 ; i < 4 ; i++)
     {
-        float *pt = pts->GetPoint(i);
+        double pt[3];
+        pts->GetPoint(i, pt);
         t.pts[i][0] = pt[0];
         t.pts[i][1] = pt[1];
         t.pts[i][2] = pt[2];
@@ -1125,7 +1128,8 @@ avtSamplePointExtractor::ExtractPyramid(vtkPyramid *pyr, vtkDataSet *ds,
     vtkPoints *pts = pyr->GetPoints();
     for (i = 0 ; i < 5 ; i++)
     {
-        float *pt = pts->GetPoint(i);
+        double pt[3];
+        pts->GetPoint(i, pt);
         p.pts[i][0] = pt[0];
         p.pts[i][1] = pt[1];
         p.pts[i][2] = pt[2];
@@ -1234,7 +1238,8 @@ avtSamplePointExtractor::ExtractVoxel(vtkVoxel *voxel, vtkDataSet *ds,
     vtkPoints *pts = voxel->GetPoints();
     for (i = 0 ; i < 8 ; i++)
     {
-        float *pt = pts->GetPoint(i);
+        double pt[3];
+        pts->GetPoint(i, pt);
         h.pts[vth[i]][0] = pt[0];
         h.pts[vth[i]][1] = pt[1];
         h.pts[vth[i]][2] = pt[2];
@@ -1331,7 +1336,8 @@ avtSamplePointExtractor::ExtractTriangle(vtkTriangle *tri, vtkDataSet *ds,
     vtkPoints *pts = tri->GetPoints();
     for (i = 0 ; i < 3 ; i++)
     {
-        float *pt = pts->GetPoint(i);
+        double pt[3];
+        pts->GetPoint(i, pt);
         w.pts[i][0] = pt[0];
         w.pts[i][1] = pt[1];
         w.pts[i][2] = pt[2]-0.1;  // Make the cell be 3D
@@ -1434,7 +1440,8 @@ avtSamplePointExtractor::ExtractQuad(vtkQuad *quad, vtkDataSet *ds,
     vtkPoints *pts = quad->GetPoints();
     for (i = 0 ; i < 4 ; i++)
     {
-        float *pt = pts->GetPoint(i);
+        double pt[3];
+        pts->GetPoint(i, pt);
         h.pts[i][0] = pt[0];
         h.pts[i][1] = pt[1];
         h.pts[i][2] = pt[2]-0.1;  // Make the cell be 3D
@@ -1538,7 +1545,8 @@ avtSamplePointExtractor::ExtractPixel(vtkPixel *pixel, vtkDataSet *ds,
     int pix2quad[4] = { 0, 1, 3, 2 };
     for (i = 0 ; i < 4 ; i++)
     {
-        float *pt = pts->GetPoint(pix2quad[i]);
+        double pt[3];
+        pts->GetPoint(pix2quad[i], pt);
         h.pts[i][0] = pt[0];
         h.pts[i][1] = pt[1];
         h.pts[i][2] = pt[2]-0.1;  // Make the cell be 3D

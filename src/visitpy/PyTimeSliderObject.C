@@ -91,8 +91,8 @@ TimeSliderObject_SetPosition(PyObject *self, PyObject *args)
 {
     TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
 
-    float *fvals = obj->data->GetPosition();
-    if(!PyArg_ParseTuple(args, "ff", &fvals[0], &fvals[1]))
+    double *dvals = obj->data->GetPosition();
+    if(!PyArg_ParseTuple(args, "dd", &dvals[0], &dvals[1]))
     {
         PyObject     *tuple;
         if(!PyArg_ParseTuple(args, "O", &tuple))
@@ -108,13 +108,13 @@ TimeSliderObject_SetPosition(PyObject *self, PyObject *args)
             {
                 PyObject *item = PyTuple_GET_ITEM(tuple, i);
                 if(PyFloat_Check(item))
-                    fvals[i] = float(PyFloat_AS_DOUBLE(item));
+                    dvals[i] = (PyFloat_AS_DOUBLE(item));
                 else if(PyInt_Check(item))
-                    fvals[i] = float(PyInt_AS_LONG(item));
+                    dvals[i] = double(PyInt_AS_LONG(item));
                 else if(PyLong_Check(item))
-                    fvals[i] = float(PyLong_AsDouble(item));
+                    dvals[i] = (PyLong_AsDouble(item));
                 else
-                    fvals[i] = 0.;
+                    dvals[i] = 0.;
             }
         }
         else
@@ -136,7 +136,7 @@ TimeSliderObject_GetPosition(PyObject *self, PyObject *args)
     TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
     // Allocate a tuple the with enough entries to hold the position.
     PyObject *retval = PyTuple_New(2);
-    const float *position = obj->data->GetPosition();
+    const double *position = obj->data->GetPosition();
     for(int i = 0; i < 2; ++i)
         PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(double(position[i])));
     return retval;
@@ -147,14 +147,14 @@ TimeSliderObject_SetWidth(PyObject *self, PyObject *args)
 {
     TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
     // Set the width in the object.
 /*CUSTOM*/
-    float *pos2 = obj->data->GetPosition2();
-    pos2[0] = fval;
+    double *pos2 = obj->data->GetPosition2();
+    pos2[0] = dval;
     obj->data->SelectPosition2();
     UpdateAnnotationHelper(obj->data);
 
@@ -167,7 +167,7 @@ TimeSliderObject_GetWidth(PyObject *self, PyObject *args)
 {
     TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
 /*CUSTOM*/
-    float *pos2 = obj->data->GetPosition2();
+    double *pos2 = obj->data->GetPosition2();
     PyObject *retval = PyFloat_FromDouble(double(pos2[0]));
     return retval;
 }
@@ -177,14 +177,14 @@ TimeSliderObject_SetHeight(PyObject *self, PyObject *args)
 {
     TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
     // Set the height in the object.
 /*CUSTOM*/
-    float *pos2 = obj->data->GetPosition2();
-    pos2[1] = fval;
+    double *pos2 = obj->data->GetPosition2();
+    pos2[1] = dval;
     obj->data->SelectPosition2();
     UpdateAnnotationHelper(obj->data);
 
@@ -197,7 +197,7 @@ TimeSliderObject_GetHeight(PyObject *self, PyObject *args)
 {
     TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
 /*CUSTOM*/
-    float *pos2 = obj->data->GetPosition2();
+    double *pos2 = obj->data->GetPosition2();
     PyObject *retval = PyFloat_FromDouble(double(pos2[1]));
     return retval;
 }
@@ -590,16 +590,16 @@ TimeSliderObject_SetPercentComplete(PyObject *self, PyObject *args)
 {
     TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
     // Set the timeDisplay in the object.
-    if(fval >= 0. && fval <= 100.)
+    if(dval >= 0. && dval <= 100.)
     {
 /*CUSTOM*/
-        float percent = fval * 0.01f;
-        obj->data->SetFloatAttribute1(percent);
+        double percent = dval * 0.01;
+        obj->data->SetDoubleAttribute1(percent);
         UpdateAnnotationHelper(obj->data);
     }
     else
@@ -618,7 +618,7 @@ TimeSliderObject_GetPercentComplete(PyObject *self, PyObject *args)
 {
     TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
 /*CUSTOM*/
-    float percent = obj->data->GetFloatAttribute1() * 100.f;
+    double percent = obj->data->GetDoubleAttribute1() * 100.;
     PyObject *retval = PyInt_FromLong(long(percent));
     return retval;
 }
@@ -856,7 +856,7 @@ TimeSliderObject_print(PyObject *v, FILE *fp, int flags)
         fprintf(fp, "active = 1\n");
     else
         fprintf(fp, "active = 0\n");
-    {   const float *position = obj->data->GetPosition();
+    {   const double *position = obj->data->GetPosition();
         fprintf(fp, "position = (");
         for(int i = 0; i < 2; ++i)
         {
@@ -867,7 +867,7 @@ TimeSliderObject_print(PyObject *v, FILE *fp, int flags)
         fprintf(fp, ")\n");
     }
 /*CUSTOM*/
-    const float *position2 = obj->data->GetPosition2();
+    const double *position2 = obj->data->GetPosition2();
     fprintf(fp, "width = %g\n", position2[0]);
     fprintf(fp, "height = %g\n", position2[1]);
     const unsigned char *textColor = obj->data->GetTextColor().GetColor();
@@ -898,7 +898,7 @@ TimeSliderObject_print(PyObject *v, FILE *fp, int flags)
         fprintf(fp, "timeDisplay = StatesForPlot  # %s\n", timeDisplay_names);
     else
         fprintf(fp, "timeDisplay = UserSpecified  # %s\n", timeDisplay_names);
-    fprintf(fp, "percentComplete = %g\n", obj->data->GetFloatAttribute1() * 100.f);
+    fprintf(fp, "percentComplete = %g\n", obj->data->GetDoubleAttribute1() * 100.);
 /*CUSTOM*/
     int rounded = obj->data->GetIntAttribute1() & 1;
     if(rounded)

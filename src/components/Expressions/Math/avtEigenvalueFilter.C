@@ -72,11 +72,11 @@ avtEigenvalueFilter::DoOperation(vtkDataArray *in, vtkDataArray *out,
     {
         for (int i = 0 ; i < ntuples ; i++)
         {
-            float *vals = in->GetTuple9(i);
-            float *input[3];
-            float row1[3];
-            float row2[3];
-            float row3[3];
+            double *vals = in->GetTuple9(i);
+            double *input[3];
+            double row1[3];
+            double row2[3];
+            double row3[3];
             input[0] = row1;
             input[1] = row2;
             input[2] = row3;
@@ -89,14 +89,14 @@ avtEigenvalueFilter::DoOperation(vtkDataArray *in, vtkDataArray *out,
             input[2][0] = vals[6];
             input[2][1] = vals[7];
             input[2][2] = vals[8];
-            float *eigenvecs[3];
-            float outrow1[3];
-            float outrow2[3];
-            float outrow3[3];
+            double *eigenvecs[3];
+            double outrow1[3];
+            double outrow2[3];
+            double outrow3[3];
             eigenvecs[0] = outrow1;
             eigenvecs[1] = outrow2;
             eigenvecs[2] = outrow3;
-            float eigenvals[3];
+            double eigenvals[3];
             vtkMath::Jacobi(input, eigenvals, eigenvecs);
             out->SetTuple(i, eigenvals);
         }

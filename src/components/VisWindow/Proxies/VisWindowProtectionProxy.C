@@ -106,7 +106,7 @@ VisWindowProtectionProxy::ProxiedGetBoundingBoxMode() const
 // ****************************************************************************
 
 void
-VisWindowProtectionProxy::ProxiedGetForegroundColor(float fg[3])
+VisWindowProtectionProxy::ProxiedGetForegroundColor(double fg[3])
 {
     viswin->GetForegroundColor(fg);
 }
@@ -154,7 +154,7 @@ VisWindowProtectionProxy::ProxiedGetHotPoint(int x, int y, HotPoint &h) const
 // ****************************************************************************
 
 void
-VisWindowProtectionProxy::ProxiedGetViewport(float vport[4])
+VisWindowProtectionProxy::ProxiedGetViewport(double vport[4])
 {
     viswin->GetViewport(vport);
 }
@@ -426,7 +426,7 @@ VisWindowProtectionProxy::ProxiedHasPlots(bool p)
 // ****************************************************************************
 
 void
-VisWindowProtectionProxy::ProxiedGetBounds(float bounds[6])
+VisWindowProtectionProxy::ProxiedGetBounds(double bounds[6])
 {
     viswin->GetBounds(bounds);
 }
@@ -535,9 +535,9 @@ VisWindowProtectionProxy::ProxiedLineout(int x1, int y1, int x2, int y2)
 //
 // ****************************************************************************
 
-float
-VisWindowProtectionProxy::ProxiedComputeVectorTextScaleFactor(const float *p, 
-                                                              const float *v)
+double
+VisWindowProtectionProxy::ProxiedComputeVectorTextScaleFactor(const double *p, 
+                                                              const double *v)
 {
     return viswin->ComputeVectorTextScaleFactor(p, v);
 }
@@ -608,7 +608,7 @@ VisWindowProtectionProxy::ProxiedGetAmbientOn(void)
 //
 // ****************************************************************************
 
-float
+double
 VisWindowProtectionProxy::ProxiedGetAmbientCoefficient(void)
 {
     return viswin->GetAmbientCoefficient();
@@ -808,7 +808,7 @@ VisWindowProtectionProxy::ProxiedGetSpecularFlag()
 //  Creation:    November 14, 2003
 //
 // ****************************************************************************
-float
+double
 VisWindowProtectionProxy::ProxiedGetSpecularCoeff()
 {
     return viswin->GetSpecularCoeff();
@@ -824,7 +824,7 @@ VisWindowProtectionProxy::ProxiedGetSpecularCoeff()
 //  Creation:    November 14, 2003
 //
 // ****************************************************************************
-float
+double
 VisWindowProtectionProxy::ProxiedGetSpecularPower()
 {
     return viswin->GetSpecularPower();
@@ -987,7 +987,7 @@ VisWindowProtectionProxy::ProxiedResumeTranslucentGeometry()
 //
 // ***************************************************************************
 
-float
+double
 VisWindowProtectionProxy::ProxiedGetMaxPlotZShift()
 {
     return viswin->GetMaxPlotZShift();

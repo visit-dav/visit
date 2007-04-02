@@ -443,7 +443,7 @@ TetMIR::Reconstruct3DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
     visitTimer->StopTimer(timerHandle5, "MIR: Creating zone clean list");
 
     // create the grid for the coordinate hash table
-    float *bounds = mesh->GetBounds();
+    double *bounds = mesh->GetBounds();
     xGrid = 1./((bounds[1]-bounds[0])/(1.0e6));
     yGrid = 1./((bounds[3]-bounds[2])/(1.0e6));
     zGrid = 1./((bounds[5]-bounds[4])/(1.0e6));
@@ -717,7 +717,7 @@ TetMIR::Reconstruct2DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
     visitTimer->StopTimer(timerHandle5, "MIR: Creating zone clean list");
 
     // create the grid for the coordinate hash table
-    float *bounds = mesh->GetBounds();
+    double *bounds = mesh->GetBounds();
     xGrid = 1./((bounds[1]-bounds[0])/(1.0e6));
     yGrid = 1./((bounds[3]-bounds[2])/(1.0e6));
     zGrid = 1;

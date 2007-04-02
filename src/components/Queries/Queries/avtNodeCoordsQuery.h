@@ -40,8 +40,8 @@ class QUERY_API avtNodeCoordsQuery : public avtDatasetQuery
   protected:
 
     virtual void             Execute(vtkDataSet*, const int){;};
-    bool                     FindLocalCoord(float[3]);
-    bool                     FindGlobalCoord(float[3]);
+    bool                     FindLocalCoord(double[3]);
+    bool                     FindGlobalCoord(double[3]);
 };
 
 #endif

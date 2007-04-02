@@ -81,7 +81,7 @@ main(int argc, char *argv[])
         vtkPoints *pts = output->GetPoints();
         if (pts->GetNumberOfPoints() > 0)
         {
-            float pt[3];
+            double pt[3];
             pts->GetPoint(0, pt);
             pt[2] = 0.0001;
             pts->SetPoint(0, pt);

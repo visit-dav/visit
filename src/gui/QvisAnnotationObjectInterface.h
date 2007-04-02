@@ -47,7 +47,7 @@ protected:
     virtual void UpdateControls() = 0;
     void SetUpdate(bool);
 
-    bool GetCoordinate(QLineEdit *le, float c[3], bool force2D);
+    bool GetCoordinate(QLineEdit *le, double c[3], bool force2D);
     void GetPosition(QLineEdit *le, const QString &name);
     void GetScreenPosition(QvisScreenPositionEdit *spe, const QString &name);
     void GetPosition2(QLineEdit *le, const QString &name);

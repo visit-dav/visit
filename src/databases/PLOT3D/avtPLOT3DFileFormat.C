@@ -1525,7 +1525,8 @@ void vtkVisItPLOT3DReader::ComputeDensity(vtkPointData *outputPD)
 
 void vtkVisItPLOT3DReader::ComputeTemperature(vtkPointData *outputPD)
 {
-  float *m, e, rr, u, v, w, v2, p, d, rrgas;
+  double *m;
+  float e, rr, u, v, w, v2, p, d, rrgas;
   int i;
   vtkFloatArray *temperature;
 
@@ -1569,7 +1570,8 @@ void vtkVisItPLOT3DReader::ComputeTemperature(vtkPointData *outputPD)
 
 void vtkVisItPLOT3DReader::ComputePressure(vtkPointData *outputPD)
 { 
-  float *m, e, u, v, w, v2, p, d, rr;
+  double *m;
+  float e, u, v, w, v2, p, d, rr;
   int i;
   vtkFloatArray *pressure;
 
@@ -1611,7 +1613,8 @@ void vtkVisItPLOT3DReader::ComputePressure(vtkPointData *outputPD)
 
 void vtkVisItPLOT3DReader::ComputeEnthalpy(vtkPointData *outputPD)
 { 
-  float *m, e, u, v, w, v2, d, rr;
+  double *m;
+  float e, u, v, w, v2, d, rr;
   int i;
   vtkFloatArray *enthalpy;
 
@@ -1659,7 +1662,8 @@ void vtkVisItPLOT3DReader::ComputeInternalEnergy(vtkPointData *outputPD)
 
 void vtkVisItPLOT3DReader::ComputeKineticEnergy(vtkPointData *outputPD)
 {
-  float *m, u, v, w, v2, d, rr;
+  double *m;
+  float u, v, w, v2, d, rr;
   int i;
   vtkFloatArray *kineticEnergy;
 
@@ -1697,7 +1701,8 @@ void vtkVisItPLOT3DReader::ComputeKineticEnergy(vtkPointData *outputPD)
 
 void vtkVisItPLOT3DReader::ComputeVelocityMagnitude(vtkPointData *outputPD)
 {
-  float *m, u, v, w, v2, d, rr;
+  double *m;
+  float u, v, w, v2, d, rr;
   int i;
   vtkFloatArray *velocityMag;
 
@@ -1744,7 +1749,8 @@ void vtkVisItPLOT3DReader::ComputeStagnationEnergy(vtkPointData *outputPD)
 
 void vtkVisItPLOT3DReader::ComputeEntropy(vtkPointData *outputPD)
 {
-  float *m, u, v, w, v2, d, rr, s, p, e;
+  double *m;
+  float u, v, w, v2, d, rr, s, p, e;
   int i;
   vtkFloatArray *entropy;
 
@@ -1788,7 +1794,8 @@ void vtkVisItPLOT3DReader::ComputeSwirl(vtkPointData *outputPD)
 {
   vtkDataArray *currentVector;
   vtkDataArray *vorticity;
-  float d, rr, *m, u, v, w, v2, *vort, s;
+  float d, rr, u, v, w, v2, s;
+  double *vort, *m;
   int i;
   vtkFloatArray *swirl;
 
@@ -1854,7 +1861,8 @@ void vtkVisItPLOT3DReader::ComputeSwirl(vtkPointData *outputPD)
 // Vector functions
 void vtkVisItPLOT3DReader::ComputeVelocity(vtkPointData *outputPD)
 {
-  float *m, v[3], d, rr;
+  double *m;
+  float v[3], d, rr;
   int i;
   vtkFloatArray *velocity;
 
@@ -1898,7 +1906,8 @@ void vtkVisItPLOT3DReader::ComputeVorticity(vtkPointData *outputPD)
   int dims[3], ijsize;
   vtkPoints *points;
   int i, j, k, idx, idx2, ii;
-  float vort[3], xp[3], xm[3], vp[3], vm[3], factor;
+  double xp[3], xm[3], vp[3], vm[3];
+  float vort[3], factor;
   float xxi, yxi, zxi, uxi, vxi, wxi;
   float xeta, yeta, zeta, ueta, veta, weta;
   float xzeta, yzeta, zzeta, uzeta, vzeta, wzeta;
@@ -2134,7 +2143,8 @@ void vtkVisItPLOT3DReader::ComputePressureGradient(vtkPointData *outputPD)
   int dims[3], ijsize;
   vtkPoints *points;
   int i, j, k, idx, idx2, ii;
-  float g[3], xp[3], xm[3], pp, pm, factor;
+  double xp[3], xm[3];
+  float g[3], pp, pm, factor;
   float xxi, yxi, zxi, pxi;
   float xeta, yeta, zeta, peta;
   float xzeta, yzeta, zzeta, pzeta;

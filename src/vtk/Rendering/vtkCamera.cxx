@@ -2,16 +2,13 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkCamera.cxx,v $
-  Language:  C++
-  Date:      $Date: 2003/05/12 18:50:26 $
-  Version:   $Revision: 1.105 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
@@ -25,7 +22,7 @@
 
 #include <math.h>
 
-vtkCxxRevisionMacro(vtkCamera, "$Revision: 1.105 $");
+vtkCxxRevisionMacro(vtkCamera, "$Revision: 1.109 $");
 
 //----------------------------------------------------------------------------
 // Needed when we don't use the vtkStandardNewMacro.
@@ -732,6 +729,12 @@ void vtkCamera::ComputePerspectiveTransform(double aspect,
 {
   this->PerspectiveTransform->Identity();
 
+  // apply user defined transform last if there is one 
+  if (this->UserTransform)
+    {
+    this->PerspectiveTransform->Concatenate(this->UserTransform->GetMatrix());
+    }
+
   // adjust Z-buffer range
   this->PerspectiveTransform->AdjustZBuffer(-1, +1, nearz, farz);
 
@@ -830,11 +833,6 @@ void vtkCamera::ComputePerspectiveTransform(double aspect,
                                       this->ViewShear[2]*this->Distance);
     }
   
-  // apply user defined transform last if there is one 
-  if (this->UserTransform)
-    {
-    this->PerspectiveTransform->Concatenate(this->UserTransform->GetMatrix());
-    }
 }
 
 //----------------------------------------------------------------------------
@@ -915,7 +913,7 @@ void vtkCamera::SetViewPlaneNormal(double vtkNotUsed(x),
 //----------------------------------------------------------------------------
 // Return the 6 planes (Ax + By + Cz + D = 0) that bound
 // the view frustum. 
-void vtkCamera::GetFrustumPlanes(float aspect, float planes[24])
+void vtkCamera::GetFrustumPlanes(double aspect, double planes[24])
 {
   int i;
   double f, normals[6][4], matrix[4][4];
@@ -932,8 +930,9 @@ void vtkCamera::GetFrustumPlanes(float aspect, float planes[24])
     }
 
   // get the composite perspective matrix
-  vtkMatrix4x4::DeepCopy(*matrix, 
-        this->GetCompositePerspectiveTransformMatrix(aspect,-1,+1));
+  vtkMatrix4x4::DeepCopy(
+    *matrix, 
+    this->GetCompositePerspectiveTransformMatrix(aspect,-1,+1));
   
   // transpose the matrix for use with normals
   vtkMatrix4x4::Transpose(*matrix,*matrix);
@@ -946,7 +945,7 @@ void vtkCamera::GetFrustumPlanes(float aspect, float planes[24])
     f = 1.0/sqrt(normals[i][0]*normals[i][0] +
                  normals[i][1]*normals[i][1] +
                  normals[i][2]*normals[i][2]);
-
+    
     planes[4*i + 0] = normals[i][0]*f;
     planes[4*i + 1] = normals[i][1]*f;
     planes[4*i + 2] = normals[i][2]*f;
@@ -1014,8 +1013,8 @@ void vtkCamera::PrintSelf(ostream& os, vtkIndent indent)
 vtkMatrix4x4 *vtkCamera::GetViewTransformMatrix() 
 { return this->ViewTransform->GetMatrix(); }
 
-float *vtkCamera::GetOrientation() 
+double *vtkCamera::GetOrientation() 
 { return this->ViewTransform->GetOrientation(); };
 
-float *vtkCamera::GetOrientationWXYZ() 
+double *vtkCamera::GetOrientationWXYZ() 
 { return this->ViewTransform->GetOrientationWXYZ(); };

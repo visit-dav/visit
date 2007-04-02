@@ -281,7 +281,7 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     virtual void               ActivateTimestep(int stateIndex);
 
     virtual bool               FindElementForPoint(const char *, const int, 
-                                    const int, const char *, float[3], int &);
+                                    const int, const char *, double[3], int &);
     virtual void               GetDomainName(const std::string &, const int ts,
                                     const int dom, std::string &);
 
@@ -479,7 +479,7 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     virtual bool               QueryNodes(const std::string &, const int, 
                                           const int, bool &, const int, 
                                           intVector &, intVector &, 
-                                          const bool, float [3], 
+                                          const bool, double [3], 
                                           const int, const bool, const bool,
                                           const bool, stringVector &,
                                           stringVector &, stringVector &,
@@ -492,13 +492,13 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     virtual bool               QueryZones(const std::string&, const int, int &,
                                           bool &, const int, intVector &, 
                                           intVector &, const bool,
-                                          float [3], const int, const bool, 
+                                          double [3], const int, const bool, 
                                           const bool, const bool, 
                                           stringVector &, stringVector &,
                                           stringVector &, const bool, const bool, 
                                           stringVector &, stringVector &); 
     virtual bool               QueryCoords(const std::string &, const int,
-                                           const int, const int, float[3],
+                                           const int, const int, double[3],
                                            const bool, const bool, const char *mn = NULL);
     virtual void               QueryGlobalIds(const int, const std::string &,
                                         const int, const bool, const int, 

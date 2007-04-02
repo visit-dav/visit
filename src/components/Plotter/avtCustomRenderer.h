@@ -57,13 +57,13 @@ class PLOTTER_API avtCustomRenderer
     void                    Execute(vtkDataSet *);
     void                    SetView(avtViewInfo &);
 
-    void                    SetRange(float, float);
+    void                    SetRange(double, double);
 
     virtual bool            OperatesOnScalars(void) { return false; };
 
     virtual void            GlobalLightingOn(void);
     virtual void            GlobalLightingOff(void);
-    virtual void            GlobalSetAmbientCoefficient(const float); 
+    virtual void            GlobalSetAmbientCoefficient(const double); 
 
     virtual void            ImmediateModeRenderingOn(void); 
     virtual void            ImmediateModeRenderingOff(void);
@@ -71,7 +71,7 @@ class PLOTTER_API avtCustomRenderer
     virtual bool            GetImmediateModeRendering(void);
 
     virtual void            SetSurfaceRepresentation(int rep);
-    virtual void            SetSpecularProperties(bool,float,float,
+    virtual void            SetSpecularProperties(bool,double,double,
                                                   const ColorAttribute&);
  
 
@@ -81,7 +81,7 @@ class PLOTTER_API avtCustomRenderer
 
   protected:
     avtViewInfo             view;
-    float                   varmin, varmax;
+    double                  varmin, varmax;
     vtkRenderer            *VTKRen;
     bool                    immediateModeRendering;
 

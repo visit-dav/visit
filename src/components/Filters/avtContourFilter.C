@@ -250,8 +250,8 @@ avtContourFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
         // The interval tree solves linear equations.  A contour is the linear
         // equations 1x = val.
         //
-        float eqn[1] = { 1. };
-        float val = isoValues[i];
+        double eqn[1] = { 1. };
+        double val = isoValues[i];
 
         vector<int> list;
         it->GetDomainsList(eqn, val, list);

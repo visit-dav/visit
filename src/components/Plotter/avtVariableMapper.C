@@ -171,7 +171,7 @@ avtVariableMapper::CustomizeMappers(void)
 // ****************************************************************************
 
 void
-avtVariableMapper::SetMin(float minArg)
+avtVariableMapper::SetMin(double minArg)
 {
     if (setMin == true && min == minArg)
     {
@@ -224,7 +224,7 @@ avtVariableMapper::SetMinOff(void)
 // ****************************************************************************
 
 void
-avtVariableMapper::SetMax(float maxArg)
+avtVariableMapper::SetMax(double maxArg)
 {
     if (setMax == true && max == maxArg)
     {
@@ -305,8 +305,8 @@ avtVariableMapper::SetMappersMinMax(void)
         return;
     }
 
-    float mmin = 0.;
-    float mmax = 0.;
+    double mmin = 0.;
+    double mmax = 0.;
 
     if (limitsMode == 1 ) // use current plot extents
     {
@@ -368,7 +368,7 @@ avtVariableMapper::SetMappersMinMax(void)
 // ****************************************************************************
 
 bool
-avtVariableMapper::GetRange(float &rmin, float &rmax)
+avtVariableMapper::GetRange(double &rmin, double &rmax)
 {
     if (mappers == NULL)
     {
@@ -380,7 +380,7 @@ avtVariableMapper::GetRange(float &rmin, float &rmax)
         return false;
     }
 
-    float de[2];
+    double de[2];
     bool gotExtents = avtMapper::GetRange(de[0], de[1]);
 
     rmin = (setMin ? min : de[0]);
@@ -422,7 +422,7 @@ avtVariableMapper::GetRange(float &rmin, float &rmax)
 // ****************************************************************************
 
 bool
-avtVariableMapper::GetVarRange(float &rmin, float &rmax)
+avtVariableMapper::GetVarRange(double &rmin, double &rmax)
 {
     if (mappers == NULL)
     {
@@ -551,7 +551,7 @@ avtVariableMapper::TurnLightingOff(void)
 // ****************************************************************************
 
 void
-avtVariableMapper::SetOpacity(float opac)
+avtVariableMapper::SetOpacity(double opac)
 {
     if (opac < 0. || opac > 1.)
     {
@@ -744,7 +744,7 @@ avtVariableMapper::SetLineStyle(_LineStyle ls)
 // ****************************************************************************
 
 void
-avtVariableMapper::SetPointSize(float s)
+avtVariableMapper::SetPointSize(double s)
 {
     if ( actors == NULL )
     {
@@ -788,7 +788,7 @@ avtVariableMapper::SetPointSize(float s)
 // ****************************************************************************
 
 bool
-avtVariableMapper::GetCurrentRange(float &rmin, float &rmax)
+avtVariableMapper::GetCurrentRange(double &rmin, double &rmax)
 {
     if (mappers == NULL)
     {
@@ -800,7 +800,7 @@ avtVariableMapper::GetCurrentRange(float &rmin, float &rmax)
         return false;
     }
 
-    float de[2];
+    double de[2];
     bool rv = avtMapper::GetCurrentRange(de[0], de[1]);
 
     rmin = (setMin ? min : de[0]);

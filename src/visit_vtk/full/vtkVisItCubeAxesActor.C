@@ -30,10 +30,10 @@ using std::vector;
 #include <string>
 using std::string;
 
-int LabelExponent(float min, float max);
-int Digits(float min, float max);
-float MaxOf(float, float);
-float MaxOf(float, float, float, float); 
+int LabelExponent(double min, double max);
+int Digits(double min, double max);
+double MaxOf(double, double);
+double MaxOf(double, double, double, double); 
 
 // *************************************************************************
 // Modifications:
@@ -414,10 +414,10 @@ int vtkVisItCubeAxesActor::RenderOpaqueGeometry(vtkViewport *viewport)
 
 // Do final adjustment of axes to control offset, etc.
 void 
-vtkVisItCubeAxesActor::AdjustAxes(float bounds[6], float xCoords[4][6], 
-                                float yCoords[4][6], float zCoords[4][6],
-                                float xRange[2], float yRange[2], 
-                                float zRange[2])
+vtkVisItCubeAxesActor::AdjustAxes(double bounds[6], double xCoords[4][6], 
+                                double yCoords[4][6], double zCoords[4][6],
+                                double xRange[2], double yRange[2], 
+                                double zRange[2])
 {
   xRange[0] = bounds[0];
   xRange[1] = bounds[1];
@@ -433,7 +433,7 @@ vtkVisItCubeAxesActor::AdjustAxes(float bounds[6], float xCoords[4][6],
    {
    for (int i = 0; i < 4; i++)
      {
-     float ave;
+     double ave;
 
      // x-axis
      ave = (xCoords[i][0] + xCoords[i][2]) / 2.0;
@@ -497,7 +497,7 @@ void vtkVisItCubeAxesActor::ReleaseGraphicsResources(vtkWindow *win)
 //   Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003 
 //   Removed support for Prop and Input. 
 // *************************************************************************
-void vtkVisItCubeAxesActor::GetBounds(float bounds[6])
+void vtkVisItCubeAxesActor::GetBounds(double bounds[6])
 {
   for (int i=0; i< 6; i++)
     {
@@ -506,9 +506,9 @@ void vtkVisItCubeAxesActor::GetBounds(float bounds[6])
 }
 
 // Compute the bounds
-void vtkVisItCubeAxesActor::GetBounds(float& xmin, float& xmax, 
-                                   float& ymin, float& ymax,
-                                   float& zmin, float& zmax)
+void vtkVisItCubeAxesActor::GetBounds(double& xmin, double& xmax, 
+                                   double& ymin, double& ymax,
+                                   double& zmin, double& zmax)
 {
   xmin = this->Bounds[0];
   xmax = this->Bounds[1];
@@ -519,7 +519,7 @@ void vtkVisItCubeAxesActor::GetBounds(float& xmin, float& xmax,
 }
 
 // Compute the bounds
-float *vtkVisItCubeAxesActor::GetBounds()
+double *vtkVisItCubeAxesActor::GetBounds()
 {
   return this->Bounds;
 }
@@ -597,11 +597,11 @@ void vtkVisItCubeAxesActor::PrintSelf(ostream& os, vtkIndent indent)
 
 
 void vtkVisItCubeAxesActor::TransformBounds(vtkViewport *viewport, 
-                                          const float bounds[6], 
-                                          float pts[8][3])
+                                          const double bounds[6], 
+                                          double pts[8][3])
 {
   int i, j, k, idx;
-  float x[3];
+  double x[3];
 
   //loop over verts of bounding box
   for (k=0; k<2; k++)
@@ -645,7 +645,7 @@ void vtkVisItCubeAxesActor::TransformBounds(vtkViewport *viewport,
 // ***********************************************************************
 
 bool
-vtkVisItCubeAxesActor::ComputeTickSize(float bounds[6])
+vtkVisItCubeAxesActor::ComputeTickSize(double bounds[6])
 {
   bool xRangeChanged = this->LastXRange[0] != bounds[0] ||
                        this->LastXRange[1] != bounds[1];
@@ -663,9 +663,9 @@ vtkVisItCubeAxesActor::ComputeTickSize(float bounds[6])
     }
 
   int i;
-  float xExt = bounds[1] - bounds[0];
-  float yExt = bounds[3] - bounds[2];
-  float zExt = bounds[5] - bounds[4];
+  double xExt = bounds[1] - bounds[0];
+  double yExt = bounds[3] - bounds[2];
+  double zExt = bounds[5] - bounds[4];
   
   if (xRangeChanged)
     {
@@ -690,8 +690,8 @@ vtkVisItCubeAxesActor::ComputeTickSize(float bounds[6])
   this->LastZRange[0] = bounds[4];
   this->LastZRange[1] = bounds[5];
 
-  float major = 0.02 * (xExt + yExt + zExt) / 3.;
-  float minor = 0.5 * major;
+  double major = 0.02 * (xExt + yExt + zExt) / 3.;
+  double minor = 0.5 * major;
   for (i = 0; i < 4; i++)
     {
     this->XAxes[i]->SetMajorTickSize(major);
@@ -764,7 +764,7 @@ vtkVisItCubeAxesActor::ComputeTickSize(float bounds[6])
 // ****************************************************************************
 
 void
-vtkVisItCubeAxesActor::AdjustValues(const float bnds[6])
+vtkVisItCubeAxesActor::AdjustValues(const double bnds[6])
 {
     char xTitle[64];
 
@@ -930,9 +930,9 @@ vtkVisItCubeAxesActor::AdjustValues(const float bnds[6])
 // ****************************************************************************
 
 void
-vtkVisItCubeAxesActor::AdjustRange(const float bnds[6])
+vtkVisItCubeAxesActor::AdjustRange(const double bnds[6])
 {
-    float xrange[2], yrange[2], zrange[2];
+    double xrange[2], yrange[2], zrange[2];
     xrange[0] = bnds[0];
     xrange[1] = bnds[1];
     yrange[0] = bnds[2];
@@ -1019,10 +1019,10 @@ vtkVisItCubeAxesActor::AdjustRange(const float bnds[6])
 // ****************************************************************************
 
 int
-Digits(float min, float max )
+Digits(double min, double max )
 {
-    float  range = max - min;
-    float  pow10   = log10(range);
+    double  range = max - min;
+    double  pow10   = log10(range);
     int    ipow10  = (int)floor(pow10);
     int    digitsPastDecimal = -ipow10;
 
@@ -1044,7 +1044,7 @@ Digits(float min, float max )
 
         //
         // Anything more than 5 is just noise.  (and probably 5 is noise with
-        // floating point if the part before the decimal is big).
+        // doubleing point if the part before the decimal is big).
         //
         if (digitsPastDecimal > 5)
         {
@@ -1089,7 +1089,7 @@ Digits(float min, float max )
 // ****************************************************************************
 
 int
-LabelExponent(float min, float max)
+LabelExponent(double min, double max)
 {
     if (min == max)
         return 0;
@@ -1097,19 +1097,19 @@ LabelExponent(float min, float max)
     //
     // Determine power of 10 to scale axis labels to.
     //
-    float range = (fabs(min) > fabs(max) ? fabs(min) : fabs(max));
-    float pow10 = log10(range);
+    double range = (fabs(min) > fabs(max) ? fabs(min) : fabs(max));
+    double pow10 = log10(range);
 
     //
     // Cutoffs for using scientific notation.  The following 4 variables
     // should all be static for maximum performance but were made non-static
     // to get around a compiler bug with the MIPSpro 7.2.1.3 compiler.
     //
-    float eformat_cut_min = -1.5;
-    float eformat_cut_max =  3.0;
-    float cut_min = pow(10.f, eformat_cut_min);
-    float cut_max = pow(10.f, eformat_cut_max);
-    float ipow10;
+    double eformat_cut_min = -1.5;
+    double eformat_cut_max =  3.0;
+    double cut_min = pow(10., eformat_cut_min);
+    double cut_max = pow(10., eformat_cut_max);
+    double ipow10;
     if (range < cut_min || range > cut_max)
     {
         //
@@ -1152,8 +1152,8 @@ LabelExponent(float min, float max)
 
 void vtkVisItCubeAxesActor::BuildAxes(vtkViewport *viewport)
 {
-  float bounds[6]; 
-  float pts[8][3];
+  double bounds[6]; 
+  double pts[8][3];
   int i; 
 
   if ((this->GetMTime() < this->BuildTime.GetMTime())) 
@@ -1173,7 +1173,7 @@ void vtkVisItCubeAxesActor::BuildAxes(vtkViewport *viewport)
   this->TransformBounds(viewport, bounds, pts);
 
   // Setup the axes for plotting
-  float xCoords[4][6], yCoords[4][6], zCoords[4][6];
+  double xCoords[4][6], yCoords[4][6], zCoords[4][6];
 
   // these arrays are accessed by 'location':  mm, mX, XX, or Xm.
   int mm1[4] = { 0, 0, 1, 1 };
@@ -1200,7 +1200,7 @@ void vtkVisItCubeAxesActor::BuildAxes(vtkViewport *viewport)
     zCoords[i][5] = bounds[5];
     }
 
-  float xRange[2], yRange[2], zRange[2];
+  double xRange[2], yRange[2], zRange[2];
 
   // this method sets the Coords, and offsets if necessary.
   this->AdjustAxes(bounds, xCoords, yCoords, zCoords, xRange, yRange, zRange);
@@ -1265,34 +1265,34 @@ void vtkVisItCubeAxesActor::BuildAxes(vtkViewport *viewport)
       this->ForceZLabelReset)
     {
     // labels were re-built, need to recompute the scale. 
-    float center[3]; 
+    double center[3]; 
 
     center[0] = (this->Bounds[1] - this->Bounds[0]) * 0.5;
     center[1] = (this->Bounds[3] - this->Bounds[2]) * 0.5;
     center[2] = (this->Bounds[5] - this->Bounds[4]) * 0.5;
 
 
-    float lenX = this->XAxes[0]->ComputeMaxLabelLength(center);
-    float lenY = this->YAxes[0]->ComputeMaxLabelLength(center);
-    float lenZ = this->ZAxes[0]->ComputeMaxLabelLength(center);
-    float lenTitleX = this->XAxes[0]->ComputeTitleLength(center);
-    float lenTitleY = this->YAxes[0]->ComputeTitleLength(center);
-    float lenTitleZ = this->ZAxes[0]->ComputeTitleLength(center);
-    float maxLabelLength = MaxOf(lenX, lenY, lenZ, 0.);
-    float maxTitleLength = MaxOf(lenTitleX, lenTitleY, lenTitleZ, 0.);
-    float bWidth  = this->Bounds[1] - this->Bounds[0];
-    float bHeight = this->Bounds[3] - this->Bounds[2];
+    double lenX = this->XAxes[0]->ComputeMaxLabelLength(center);
+    double lenY = this->YAxes[0]->ComputeMaxLabelLength(center);
+    double lenZ = this->ZAxes[0]->ComputeMaxLabelLength(center);
+    double lenTitleX = this->XAxes[0]->ComputeTitleLength(center);
+    double lenTitleY = this->YAxes[0]->ComputeTitleLength(center);
+    double lenTitleZ = this->ZAxes[0]->ComputeTitleLength(center);
+    double maxLabelLength = MaxOf(lenX, lenY, lenZ, 0.);
+    double maxTitleLength = MaxOf(lenTitleX, lenTitleY, lenTitleZ, 0.);
+    double bWidth  = this->Bounds[1] - this->Bounds[0];
+    double bHeight = this->Bounds[3] - this->Bounds[2];
 
-    float bLength = sqrt(bWidth*bWidth + bHeight*bHeight);
+    double bLength = sqrt(bWidth*bWidth + bHeight*bHeight);
 
-    float target = bLength *0.04;
-    float labelscale = 1.;
+    double target = bLength *0.04;
+    double labelscale = 1.;
     if (maxLabelLength != 0.)
       {
       labelscale = target / maxLabelLength;
       }
     target = bLength *0.10;
-    float titlescale = 1.;
+    double titlescale = 1.;
     if (maxTitleLength != 0.)
       {
       titlescale = target / maxTitleLength;
@@ -1406,8 +1406,8 @@ static int Conn[8][3] = {{1,2,4}, {0,3,5}, {3,0,6}, {2,1,7},
 // *************************************************************************
 void vtkVisItCubeAxesActor::DetermineRenderAxes(vtkViewport *viewport)
 {
-  float bounds[6], slope = 0.0, minSlope, num, den;
-  float pts[8][3], d2, d2Min, min, max;
+  double bounds[6], slope = 0.0, minSlope, num, den;
+  double pts[8][3], d2, d2Min, min, max;
   int i, idx = 0;
   int xIdx, yIdx = 0, zIdx = 0, zIdx2;
   int xAxes = 0, yAxes, zAxes, xloc, yloc, zloc;
@@ -1513,7 +1513,7 @@ void vtkVisItCubeAxesActor::DetermineRenderAxes(vtkViewport *viewport)
       } // furthest-triad
     else
       {
-      float e1[2], e2[2], e3[2];
+      double e1[2], e2[2], e3[2];
 
       // Find distance to origin
       d2Min = VTK_LARGE_FLOAT;
@@ -1684,27 +1684,27 @@ void vtkVisItCubeAxesActor::DetermineRenderAxes(vtkViewport *viewport)
   this->ZAxes[renderAxesZ[0]]->SetMinorTicksVisible(this->ZAxisMinorTickVisibility);
 }
 
-float
-MaxOf(float a, float b)
+double
+MaxOf(double a, double b)
 {
     return (a > b ? a : b); 
 }
 
-float
-MaxOf(float a, float b, float c, float d)
+double
+MaxOf(double a, double b, double c, double d)
 {
     return MaxOf(MaxOf(a, b), MaxOf(c, d));
 }
 
 
 
-inline float ffix(float value)
+inline double ffix(double value)
 {
   int ivalue = (int)value;
-  return (float) ivalue;
+  return (double) ivalue;
 }
 
-inline float fsign(float value, float sign)
+inline double fsign(double value, double sign)
 {
   value = fabs(value);
   if (sign < 0.)
@@ -1745,7 +1745,7 @@ vtkVisItCubeAxesActor::AdjustTicksComputeRange(vtkVisItAxisActor *axes[4])
   double div, major, minor;
   double majorStart, minorStart; 
   int numTicks;
-  float *inRange = axes[0]->GetRange();
+  double *inRange = axes[0]->GetRange();
 
   sortedRange[0] = (double)(inRange[0] < inRange[1] ? inRange[0] : inRange[1]);
   sortedRange[1] = (double)(inRange[0] > inRange[1] ? inRange[0] : inRange[1]);
@@ -1769,7 +1769,7 @@ vtkVisItCubeAxesActor::AdjustTicksComputeRange(vtkVisItAxisActor *axes[4])
     pow10 = pow10 - 1.;
     }
 
-  fxt = pow(10.f, ffix(pow10));
+  fxt = pow(10., ffix(pow10));
     
   // Find the number of integral points in the interval.
   fnt  = range/fxt;
@@ -1840,12 +1840,12 @@ vtkVisItCubeAxesActor::BuildLabels(vtkVisItAxisActor *axes[4])
 {
   char label[64];
   int i, labelCount = 0;
-  float majorStart = axes[0]->GetMajorStart();
-  const float deltaMajor = axes[0]->GetDeltaMajor();
-  const float *p2        = axes[0]->GetPoint2Coordinate()->GetValue();
-  const float *range     = axes[0]->GetRange();
-  float lastVal, val = majorStart;
-  float extents = range[1] - range[0];
+  double majorStart = axes[0]->GetMajorStart();
+  const double deltaMajor = axes[0]->GetDeltaMajor();
+  const double *p2        = axes[0]->GetPoint2Coordinate()->GetValue();
+  const double *range     = axes[0]->GetRange();
+  double lastVal, val = majorStart;
+  double extents = range[1] - range[0];
   bool mustAdjustValue;
   int lastPow;
   
@@ -1882,7 +1882,7 @@ vtkVisItCubeAxesActor::BuildLabels(vtkVisItAxisActor *axes[4])
 
   val = majorStart;
 
-  float scaleFactor = 1.;
+  double scaleFactor = 1.;
   if (lastPow != 0)
      scaleFactor = 1.0/pow(10., lastPow);
 

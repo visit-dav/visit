@@ -82,7 +82,7 @@ class VISWINDOW_API VisWinQuery : public VisWinColleague
     void                          EndBoundingBox(void);
     void                          StartBoundingBox(void);
 
-    virtual void                  SetForegroundColor(float, float, float);
+    virtual void                  SetForegroundColor(double, double, double);
     virtual void                  UpdateView(void);
 
     void                          QueryIsValid(const VisualCueInfo *, const VisualCueInfo *);
@@ -109,10 +109,10 @@ class VISWINDOW_API VisWinQuery : public VisWinColleague
 
   protected:
     void                          CreateTranslationVector(const double, 
-                                      const int, float vec[3]);
-    void                          CreateTranslationVector(float vec[3]);
-    void                          CreateShiftVector(float vec[3], const float);
-    float                         CalculateShiftDistance(void);
+                                      const int, double vec[3]);
+    void                          CreateTranslationVector(double vec[3]);
+    void                          CreateShiftVector(double vec[3], const double);
+    double                         CalculateShiftDistance(void);
 
     struct PickEntry {
         avtPickActor_p pickActor;

@@ -72,7 +72,7 @@ VisitSphereTool::VisitSphereTool(VisWindowToolProxy &p) :
     //
     // Set up some defaults for the sphere equation.
     //
-    float bounds[6];
+    double bounds[6];
     proxy.GetBounds(bounds);
     double dXd2 = 0.5 * (bounds[1] - bounds[0]);
     double dYd2 = 0.5 * (bounds[3] - bounds[2]);
@@ -268,10 +268,10 @@ VisitSphereTool::Stop3DMode()
 // ****************************************************************************
 
 void
-VisitSphereTool::SetForegroundColor(float r, float g, float b)
+VisitSphereTool::SetForegroundColor(double r, double g, double b)
 {
     // Set the colors for the text actors.
-    float color[3] = {r, g, b};
+    double color[3] = {r, g, b};
     sphereActor->GetProperty()->SetColor(color);
     sphereActor->GetProperty()->SetAmbient(1.);
     sphereActor->GetProperty()->SetDiffuse(1.);
@@ -517,7 +517,7 @@ VisitSphereTool::UpdateText()
             hotPoints[0].pt.y, hotPoints[0].pt.z);
     originTextActor->SetInput(str);
     avtVector originScreen = ComputeWorldToDisplay(hotPoints[0].pt);
-    float pt[3] = {originScreen.x, originScreen.y, 0.};
+    double pt[3] = {originScreen.x, originScreen.y, 0.};
     originTextActor->GetPositionCoordinate()->SetValue(pt);
 
     avtVector up(hotPoints[1].pt.x - hotPoints[0].pt.x,
@@ -528,7 +528,7 @@ VisitSphereTool::UpdateText()
     {
         radiusTextActor[i]->SetInput(str);
         avtVector radiusScreen = ComputeWorldToDisplay(hotPoints[i+1].pt);
-        float pt2[3] = {radiusScreen.x, radiusScreen.y, 0.};
+        double pt2[3] = {radiusScreen.x, radiusScreen.y, 0.};
         radiusTextActor[i]->GetPositionCoordinate()->SetValue(pt2);
     }
 }

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include <avtDatabaseMetaData.h>
+#include <avtGhostData.h>
 #include <avtIOInformation.h>
 #include <avtSimulationInformation.h>
 #include <avtSimulationCommandSpecification.h>
@@ -19,15 +20,15 @@
 
 #include <visitstream.h>
 
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
 #include <vtkFieldData.h>
 #include <vtkFloatArray.h>
+#include <vtkIdTypeArray.h>
+#include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
-#include <vtkCellArray.h>
-#include <vtkCellData.h>
-#include <vtkPolyData.h>
-#include <avtGhostData.h>
 
 using std::string;
 using std::vector;
@@ -906,7 +907,7 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
             cellTypes->SetNumberOfValues(umesh->nzones);
             unsigned char *ct = cellTypes->GetPointer(0);
 
-            vtkIntArray *cellLocations = vtkIntArray::New();
+            vtkIdTypeArray *cellLocations = vtkIdTypeArray::New();
             cellLocations->SetNumberOfValues(umesh->nzones);
             int *cl = cellLocations->GetPointer(0);
 

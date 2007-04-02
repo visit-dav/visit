@@ -756,12 +756,26 @@ avtReflectFilter::ReflectDataArray(vtkDataArray *coords, double val)
     vtkDataArray *newcoords = coords->NewInstance();
     int nc = coords->GetNumberOfTuples();
     newcoords->SetNumberOfTuples(nc);
-    float *c = coords->GetTuple(0);
-    float *n = newcoords->GetTuple(0);
-    for (int i = 0 ; i < nc ; i++)
+
+    if (coords->GetDataType() == VTK_FLOAT)
     {
-        n[nc-i-1] = 2*val - c[i];
+        float *c = (float*)coords->GetVoidPointer(0);
+        float *n = (float*)newcoords->GetVoidPointer(0);
+        for (int i = 0 ; i < nc ; i++)
+        {
+            n[nc-i-1] = 2*val - c[i];
+        }
     }
+    else if (coords->GetDataType() == VTK_DOUBLE)
+    {
+        double *c = (double*)coords->GetVoidPointer(0);
+        double *n = (double*)newcoords->GetVoidPointer(0);
+        for (int i = 0 ; i < nc ; i++)
+        {
+            n[nc-i-1] = 2*val - c[i];
+        }
+    }
+
 
     return newcoords;
 }
@@ -817,7 +831,7 @@ avtReflectFilter::ReflectPointSet(vtkPointSet *ds, int dim)
 
     for (int i = 0 ; i < nPts ; i++)
     {
-        float pt[3];
+        double pt[3];
         inPts->GetPoint(i, pt);
         if (dim & 1)
         {

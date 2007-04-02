@@ -15,6 +15,7 @@
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
 #ifndef MDSERVER
@@ -424,7 +425,7 @@ avtImageFileFormat::ProcessDataSelections(int *xmin, int *xmax,
         {
             avtSpatialBoxSelection *sel = (avtSpatialBoxSelection *) *(selList[i]);
 
-            float mins[3], maxs[3];
+            double mins[3], maxs[3];
             sel->GetMins(mins);
             sel->GetMaxs(maxs);
             avtSpatialBoxSelection::InclusionMode imode =
@@ -442,12 +443,12 @@ avtImageFileFormat::ProcessDataSelections(int *xmin, int *xmax,
             for (int j = 0; j < 3; j++)
             {
                 int imin = (int) mins[j];
-                if (((float) imin < mins[j]) &&
+                if (((double) imin < mins[j]) &&
                     (imode == avtSpatialBoxSelection::Whole))
                     imin++;
                 
                 int imax = (int) maxs[j];
-                if (((float) imax < maxs[j]) &&
+                if (((double) imax < maxs[j]) &&
                     (imode == avtSpatialBoxSelection::Partial))
                     imax++;
 
@@ -1223,7 +1224,7 @@ avtImageFileFormat::GetOneVar(const char *varname)
             {
                 for (i = 0; i < xdim; i++)
                     ptr[j*xdim + i] = 
-                     image->GetScalarComponentAsFloat(i+xmin,j+ymin,0,channel);
+                     image->GetScalarComponentAsDouble(i+xmin,j+ymin,0,channel);
             }
         }
     }
@@ -1266,9 +1267,9 @@ avtImageFileFormat::GetOneVar(const char *varname)
                 for (i = 0; i < xdim; i++)
                 {
                     float r, g, b;
-                    r = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0,0);
-                    g = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0,1);
-                    b = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0,2);
+                    r = image->GetScalarComponentAsDouble(i+xmin,j+ymin,0,0);
+                    g = image->GetScalarComponentAsDouble(i+xmin,j+ymin,0,1);
+                    b = image->GetScalarComponentAsDouble(i+xmin,j+ymin,0,2);
                     ptr[j*xdim + i] = (r + g + b) / 3.0;
                 }
             }
@@ -1346,7 +1347,7 @@ avtImageFileFormat::GetVectorVar(const char *varname)
         {
             int ii = i % xdim;
             int jj = i / xdim;
-            one_entry[j] = image->GetScalarComponentAsFloat(ii+xmin,jj+ymin,0,j);
+            one_entry[j] = image->GetScalarComponentAsDouble(ii+xmin,jj+ymin,0,j);
         }
         for (j = imgcomps ; j < ucomps; j++)
             one_entry[j] = (j == 3 ? 255.0 : 0.0);

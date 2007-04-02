@@ -28,8 +28,8 @@ public:
     virtual      ~VisWinAnnotations();
 
     // Overrides from VisWinColleague
-    virtual void SetBackgroundColor(float, float, float);
-    virtual void SetForegroundColor(float, float, float);
+    virtual void SetBackgroundColor(double, double, double);
+    virtual void SetForegroundColor(double, double, double);
 
     virtual void Start2DMode(void);
     virtual void Start3DMode(void);

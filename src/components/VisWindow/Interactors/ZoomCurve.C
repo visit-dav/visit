@@ -215,11 +215,11 @@ ZoomCurve::ZoomCamera(void)
     // Figure out the lower left and upper right hand corners in
     // display space.
     //
-    float leftX   = (float) (anchorX < lastX ? anchorX : lastX);
-    float rightX  = (float) (anchorX > lastX ? anchorX : lastX);
-    float bottomY = (float) (anchorY < lastY ? anchorY : lastY);
-    float topY    = (float) (anchorY > lastY ? anchorY : lastY);
-    float dummyZ  = 0.;
+    double leftX   = (double) (anchorX < lastX ? anchorX : lastX);
+    double rightX  = (double) (anchorX > lastX ? anchorX : lastX);
+    double bottomY = (double) (anchorY < lastY ? anchorY : lastY);
+    double topY    = (double) (anchorY > lastY ? anchorY : lastY);
+    double dummyZ  = 0.;
 
     //
     // Convert them to world coordinates.

@@ -89,9 +89,9 @@ class QUERY_API avtMinMaxQuery : virtual public avtDatasetQuery
     const avtMatrix        *invTransform;
 
     void                    GetNodeCoord(vtkDataSet *ds, const int id, 
-                                        float coord[3]);
+                                        double coord[3]);
     void                    GetCellCoord(vtkDataSet *ds, const int id, 
-                                        float coord[3]);
+                                        double coord[3]);
 
     void                    CreateResultMessage(const int);
 

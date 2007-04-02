@@ -153,7 +153,7 @@
             {
                 // float *vert = cellCenters->GetTuple3(id);
                 BEGIN_LABEL
-                    float *vectorVal = data->GetTuple2(id);
+                    double *vectorVal = data->GetTuple2(id);
                     CREATE_LABEL(labelString, MAX_LABEL_SIZE, "<%g, %g>",
                              vectorVal[0], vectorVal[1]);
                 END_LABEL
@@ -166,7 +166,7 @@
             {
                 // float *vert = cellCenters->GetTuple3(id);
                 BEGIN_LABEL
-                    float *vectorVal = data->GetTuple3(id);
+                    double *vectorVal = data->GetTuple3(id);
                     CREATE_LABEL(labelString, MAX_LABEL_SIZE, "<%g, %g, %g>",
                              vectorVal[0], vectorVal[1], vectorVal[2]);
                 END_LABEL
@@ -180,7 +180,7 @@
             {
                 // float *vert = cellCenters->GetTuple3(id);
                 BEGIN_LABEL
-                    float *tensorVal = data->GetTuple9(id);
+                    double *tensorVal = data->GetTuple9(id);
                     CREATE_LABEL(labelString, MAX_LABEL_SIZE, 
                       "(%g, %g, %g)\n(%g, %g, %g)\n(%g, %g, %g)",
                              tensorVal[0], tensorVal[1], tensorVal[2],
@@ -205,7 +205,7 @@
             {
                 BEGIN_LABEL
                     labelString[0] = '\0';
-                    float *vals = data->GetTuple(id);
+                    double *vals = data->GetTuple(id);
                     bool atStart = true;
                     for (int comp = 0 ; comp < nComps ; comp++)
                     {

@@ -310,7 +310,7 @@ avtTensorGlyphMapper::InsertFilters(vtkDataSet *ds, int dom)
 // ****************************************************************************
 
 void
-avtTensorGlyphMapper::SetScale(float s)
+avtTensorGlyphMapper::SetScale(double s)
 {
     scale = s;
 
@@ -475,9 +475,9 @@ avtTensorGlyphMapper::ColorByMagOff(const unsigned char col[3])
             if (actors[i] != NULL)
             {
                 vtkProperty *prop = actors[i]->GetProperty();
-                float r = ((float) glyphColor[0]) / 255.;
-                float g = ((float) glyphColor[1]) / 255.;
-                float b = ((float) glyphColor[2]) / 255.;
+                double r = ((double) glyphColor[0]) / 255.;
+                double g = ((double) glyphColor[1]) / 255.;
+                double b = ((double) glyphColor[2]) / 255.;
                 prop->SetColor(r, g, b);
             }
         }

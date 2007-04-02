@@ -2,16 +2,13 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkVisItDataSetReader.cxx,v $
-  Language:  C++
-  Date:      $Date: 2003/07/22 19:27:45 $
-  Version:   $Revision: 1.62 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
@@ -29,7 +26,7 @@
 #include "vtkUnstructuredGrid.h"
 #include "vtkVisItUnstructuredGridReader.h"
 
-vtkCxxRevisionMacro(vtkVisItDataSetReader, "$Revision: 1.62 $");
+vtkCxxRevisionMacro(vtkVisItDataSetReader, "$Revision: 1.64 $");
 vtkStandardNewMacro(vtkVisItDataSetReader);
 
 vtkVisItDataSetReader::vtkVisItDataSetReader()
@@ -95,7 +92,11 @@ void vtkVisItDataSetReader::Execute()
       preader->SetFieldDataName(this->GetFieldDataName());
       preader->SetReadAllScalars(this->GetReadAllScalars());
       preader->SetReadAllVectors(this->GetReadAllVectors());
+      preader->SetReadAllNormals(this->GetReadAllNormals());
       preader->SetReadAllTensors(this->GetReadAllTensors());
+      preader->SetReadAllColorScalars(this->GetReadAllColorScalars());
+      preader->SetReadAllTCoords(this->GetReadAllTCoords());
+      preader->SetReadAllFields(this->GetReadAllFields());
       preader->Update();
       // Can we use the old output?
       output = this->Outputs ? this->Outputs[0] : NULL;
@@ -131,7 +132,11 @@ void vtkVisItDataSetReader::Execute()
       preader->SetFieldDataName(this->GetFieldDataName());
       preader->SetReadAllScalars(this->GetReadAllScalars());
       preader->SetReadAllVectors(this->GetReadAllVectors());
+      preader->SetReadAllNormals(this->GetReadAllNormals());
       preader->SetReadAllTensors(this->GetReadAllTensors());
+      preader->SetReadAllColorScalars(this->GetReadAllColorScalars());
+      preader->SetReadAllTCoords(this->GetReadAllTCoords());
+      preader->SetReadAllFields(this->GetReadAllFields());
       preader->Update();
       // Can we use the old output?
       output = this->Outputs ? this->Outputs[0] : NULL;
@@ -167,7 +172,11 @@ void vtkVisItDataSetReader::Execute()
       preader->SetFieldDataName(this->GetFieldDataName());
       preader->SetReadAllScalars(this->GetReadAllScalars());
       preader->SetReadAllVectors(this->GetReadAllVectors());
+      preader->SetReadAllNormals(this->GetReadAllNormals());
       preader->SetReadAllTensors(this->GetReadAllTensors());
+      preader->SetReadAllColorScalars(this->GetReadAllColorScalars());
+      preader->SetReadAllTCoords(this->GetReadAllTCoords());
+      preader->SetReadAllFields(this->GetReadAllFields());
       preader->Update();
       // Can we use the old output?
       output = this->Outputs ? this->Outputs[0] : NULL;
@@ -203,7 +212,11 @@ void vtkVisItDataSetReader::Execute()
       preader->SetFieldDataName(this->GetFieldDataName());
       preader->SetReadAllScalars(this->GetReadAllScalars());
       preader->SetReadAllVectors(this->GetReadAllVectors());
+      preader->SetReadAllNormals(this->GetReadAllNormals());
       preader->SetReadAllTensors(this->GetReadAllTensors());
+      preader->SetReadAllColorScalars(this->GetReadAllColorScalars());
+      preader->SetReadAllTCoords(this->GetReadAllTCoords());
+      preader->SetReadAllFields(this->GetReadAllFields());
       preader->Update();
       // Can we use the old output?
       output = this->Outputs ? this->Outputs[0] : NULL;
@@ -239,7 +252,11 @@ void vtkVisItDataSetReader::Execute()
       preader->SetFieldDataName(this->GetFieldDataName());
       preader->SetReadAllScalars(this->GetReadAllScalars());
       preader->SetReadAllVectors(this->GetReadAllVectors());
+      preader->SetReadAllNormals(this->GetReadAllNormals());
       preader->SetReadAllTensors(this->GetReadAllTensors());
+      preader->SetReadAllColorScalars(this->GetReadAllColorScalars());
+      preader->SetReadAllTCoords(this->GetReadAllTCoords());
+      preader->SetReadAllFields(this->GetReadAllFields());
       preader->Update();
       // Can we use the old output?
       output = this->Outputs ? this->Outputs[0] : NULL;

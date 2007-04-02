@@ -32,6 +32,7 @@
 #include <LineoutInfo.h>
 #include <VisualCueInfo.h>
 
+class vtkCallbackCommand;
 class vtkRenderer;
 
 class AnnotationObjectList;
@@ -327,8 +328,8 @@ public:
     void                 RemovePlot(avtActor_p &);
     void                 ClearPlots(void);
 
-    void                 SetBounds(const float [6]);
-    void                 GetBounds(float [6]) const;
+    void                 SetBounds(const double [6]);
+    void                 GetBounds(double [6]) const;
     void                 UnsetBounds(void);
 
     void                 Realize(void);
@@ -374,16 +375,16 @@ public:
     void                 SetInteractionMode(INTERACTION_MODE m);
     INTERACTION_MODE     GetInteractionMode() const;
 
-    void                 SetBackgroundColor(float, float, float);
-    const float *        GetBackgroundColor() const;
-    void                 SetGradientBackgroundColors(int, float, float, float,
-                                                     float, float, float);
+    void                 SetBackgroundColor(double, double, double);
+    const double *       GetBackgroundColor() const;
+    void                 SetGradientBackgroundColors(int,double,double,double,
+                                                     double,double,double);
     void                 SetBackgroundMode(int);
     int                  GetBackgroundMode() const;
-    void                 SetForegroundColor(float, float, float);
-    const float *        GetForegroundColor() const;
+    void                 SetForegroundColor(double, double, double);
+    const double *       GetForegroundColor() const;
     void                 InvertBackgroundColor();
-    void                 SetViewport(float, float, float, float);
+    void                 SetViewport(double, double, double, double);
 
     void                 SetTitle(const char *);
 
@@ -393,7 +394,8 @@ public:
     bool                 GetSpinMode() const;
     void                 SetSpinModeSuspended(bool);
     bool                 GetSpinModeSuspended() const;
-    void                 SetViewExtentsType(avtExtentType, const float *const bnds = 0);
+    void                 SetViewExtentsType(avtExtentType, 
+                             const double *const bnds = 0);
 
     void                 ResetView(void);
     void                 SetView2D(const avtView2D &);
@@ -427,16 +429,18 @@ public:
     void                 DeleteAllAnnotationObjects();
     void                 RaiseActiveAnnotationObjects();
     void                 LowerActiveAnnotationObjects();
-    void                 SetAnnotationObjectOptions(const AnnotationObjectList &al);
+    void                 SetAnnotationObjectOptions(
+                             const AnnotationObjectList &al);
     void                 UpdateAnnotationObjectList(AnnotationObjectList &al);
-    void                 CreateAnnotationObjectsFromList(const AnnotationObjectList &al);
+    void                 CreateAnnotationObjectsFromList(
+                             const AnnotationObjectList &al);
 
     void                 SetFrameAndState(int nFrames,
-                                          int startFrame, int curFrame, int endFrame,
-                                          int startState, int curState, int endState);
+                           int startFrame, int curFrame, int endFrame,
+                           int startState, int curState, int endState);
     void                 GetFrameAndState(int &nFrames,
-                                          int &startFrame, int &curFrame, int &endFrame,
-                                          int &startState, int &curState, int &endState) const;
+                           int &startFrame, int &curFrame, int &endFrame,
+                           int &startState, int &curState, int &endState) const;
 
     void                 SetLightList(const LightList *);
     const LightList     *GetLightList() const;
@@ -450,17 +454,18 @@ public:
     void                 ClearPickPoints();
     void                 ClearRefLines();
 
-    void                 QueryIsValid(const VisualCueInfo *, const VisualCueInfo *);
+    void                 QueryIsValid(const VisualCueInfo *, 
+                                      const VisualCueInfo *);
     void                 UpdateQuery(const VisualCueInfo *);
     void                 DeleteQuery(const VisualCueInfo *);
-    void                 ScalePlots(const float [3]);
+    void                 ScalePlots(const double [3]);
 
     void                 Pick(int, int);
     void                 Pick(double, double);
     void                 Lineout(int, int, int, int);
 
     void                 GetVisualCues(const VisualCueInfo::CueType cueType,
-                                       std::vector<const VisualCueInfo*>& cues) const;
+                             std::vector<const VisualCueInfo*>& cues) const;
 
     void                *CreateToolbar(const char *name);
     void                 SetLargeIcons(bool);
@@ -477,7 +482,7 @@ public:
     void                 SetRenderInfoCallback(VisCallback *cb, void *data);
     void                 SetAntialiasing(bool enabled);
     bool                 GetAntialiasing() const;
-    void                 GetRenderTimes(float times[6]) const;
+    void                 GetRenderTimes(double times[6]) const;
     void                 SetStereoRendering(bool enabled, int type);
     bool                 GetStereo() const;
     int                  GetStereoType() const;
@@ -497,11 +502,11 @@ public:
     bool                 GetScalableRendering() const;
     void                 SetScalableRendering(bool mode);
     int                  GetScalableThreshold() const;
-    void                 SetSpecularProperties(bool,float,float,
+    void                 SetSpecularProperties(bool,double,double,
                                                const ColorAttribute&);
     bool                 GetSpecularFlag();
-    float                GetSpecularCoeff();
-    float                GetSpecularPower();
+    double               GetSpecularCoeff();
+    double               GetSpecularPower();
     const ColorAttribute &GetSpecularColor();
 
     void                 SetPickTypeToIntersection(void);
@@ -514,9 +519,9 @@ public:
 
     bool                 TransparenciesExist(void);
 
-    void                 GlyphPick(const float*, const float*, int&, int&, 
+    void                 GlyphPick(const double*, const double*, int&, int&, 
                                    bool&, const bool = false);
-    void                 GlyphPick(const float*, const float*, int&, int&, 
+    void                 GlyphPick(const double*, const double*, int&, int&, 
                                    bool&, double &, const bool = false);
 
 
@@ -547,12 +552,12 @@ protected:
     InteractorAttributes               interactorAtts;
     LightList                          lightList;
 
-    float                              foreground[3];
-    float                              background[3];
-    float                              gradientBackground[2][3];
+    double                             foreground[3];
+    double                             background[3];
+    double                             gradientBackground[2][3];
     int                                gradientBackgroundStyle;
     int                                backgroundMode;
-    float                              viewportLeft, viewportRight,
+    double                             viewportLeft, viewportRight,
                                        viewportBottom, viewportTop;
     int                                frameAndState[7];
 
@@ -576,6 +581,8 @@ protected:
     VisCallback                       *performLineoutCallback;
     LINE_OUT_INFO                     *loInfo;
 
+    vtkCallbackCommand                *startRenderCallback;
+
                          VisWindow(bool);
     void                 Initialize(VisWinRendering *);
     void                 ChangeMode(WINDOW_MODE);
@@ -592,8 +599,8 @@ protected:
     void                 NoPlots();
 
     void                 SetInteractor(VisitInteractor *);
-    void                 GetViewport(float *);
-    void                 GetForegroundColor(float *);
+    void                 GetViewport(double *);
+    void                 GetForegroundColor(double *);
 
     void                 AddColleague(VisWinColleague *);
 
@@ -614,17 +621,17 @@ protected:
     void                 MotionEnd(void);
 
     bool                 GetAmbientOn(void);
-    float                GetAmbientCoefficient(void);
+    double               GetAmbientCoefficient(void);
     bool                 GetLighting(void);
     void                 UpdateLightPositions();
 
-    float                ComputeVectorTextScaleFactor(const float *pos,
-                                                      const float *vp = NULL); 
+    double               ComputeVectorTextScaleFactor(const double *pos,
+                                                      const double *vp = NULL); 
 
     static void          ProcessResizeEvent(void *);
     void                 ReAddColleaguesToRenderWindow(void);
     void                 ReAddToolsToRenderWindow(void);
-    float                GetMaxPlotZShift(void);
+    double               GetMaxPlotZShift(void);
 };
 
 

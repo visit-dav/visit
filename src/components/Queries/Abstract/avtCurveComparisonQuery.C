@@ -172,7 +172,7 @@ avtCurveComparisonQuery::Execute(void)
     vtkDataSet *curve2 = tree2->GetSingleLeaf();
 
     int  i;
-    float pt[3];
+    double pt[3];
 
     //
     // Construct the first curve.

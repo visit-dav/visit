@@ -189,7 +189,7 @@ QvisAnnotationObjectInterface::SetUpdate(bool val)
 // ****************************************************************************
 
 bool
-QvisAnnotationObjectInterface::GetCoordinate(QLineEdit *le, float c[3],
+QvisAnnotationObjectInterface::GetCoordinate(QLineEdit *le, double c[3],
     bool force2D)
 {
     QString temp(le->displayText().stripWhiteSpace());
@@ -197,9 +197,9 @@ QvisAnnotationObjectInterface::GetCoordinate(QLineEdit *le, float c[3],
     bool okay = !temp.isEmpty();
     if (okay)
     {
-        okay = (sscanf(temp.latin1(), "%g %g %g", &c[0], &c[1], &c[2]) == 3);
+        okay = (sscanf(temp.latin1(), "%lg %lg %lg", &c[0], &c[1], &c[2]) == 3);
         if(!okay)
-            okay = (sscanf(temp.latin1(), "%g %g", &c[0], &c[1]) == 2);
+            okay = (sscanf(temp.latin1(), "%lg %lg", &c[0], &c[1]) == 2);
         if(force2D)
             c[2] = 0.;
     }
@@ -230,7 +230,7 @@ QvisAnnotationObjectInterface::GetPosition(QLineEdit *le, const QString &name)
 {
     if(annot)
     {
-        float coord[3] = {0.f, 0.f, 0.f};
+        double coord[3] = {0., 0., 0.};
 
         if(GetCoordinate(le, coord, true))
         {
@@ -269,7 +269,7 @@ QvisAnnotationObjectInterface::GetPosition2(QLineEdit *le, const QString &name)
 {
     if(annot)
     {
-        float coord[3] = {0.f, 0.f, 0.f};
+        double coord[3] = {0., 0., 0.};
 
         if(GetCoordinate(le, coord, true))
         {
@@ -309,7 +309,7 @@ QvisAnnotationObjectInterface::GetScreenPosition(QvisScreenPositionEdit *spe,
 {
     if(annot)
     {
-        float coord[3] = {0.f, 0.f, 0.f};
+        double coord[3] = {0., 0., 0.};
 
         if(spe->getPosition(coord[0], coord[1]))
         {
@@ -349,7 +349,7 @@ QvisAnnotationObjectInterface::GetScreenPosition2(QvisScreenPositionEdit *spe,
 {
     if(annot)
     {
-        float coord[3] = {0.f, 0.f, 0.f};
+        double coord[3] = {0., 0., 0.};
 
         if(spe->getPosition(coord[0], coord[1]))
         {

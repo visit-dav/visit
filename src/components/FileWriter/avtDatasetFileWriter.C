@@ -315,9 +315,9 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds, const char *fname,
         //
         // Get some information for normalizing the variable.
         //
-        float range[2];
+        double range[2];
         activeDS->GetScalarRange(range);
-        float gap = (range[1] != range[0] ? range[1] - range[0] : 1.);
+        double gap = (range[1] != range[0] ? range[1] - range[0] : 1.);
 
         //
         // Create the actual texture coordinate.
@@ -327,8 +327,8 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds, const char *fname,
         tcoords->SetNumberOfTuples(scalars->GetNumberOfTuples());
         for (int i = 0 ; i < scalars->GetNumberOfTuples() ; i++)
         {
-            float *p = scalars->GetTuple(i);
-            float s[2];
+            double *p = scalars->GetTuple(i);
+            double s[2];
             s[0] = (*p - range[0]) / gap;
             s[1] = 0.;
             tcoords->SetTuple(i, s);
@@ -612,7 +612,8 @@ avtDatasetFileWriter::WriteCurveFile(const char *filename)
 
         for (int j = 0 ; j < line_segments[i].size() ; j++)
         {
-            float *pt = pts->GetPoint(line_segments[i][j]);
+            double pt[3]; 
+            pts->GetPoint(line_segments[i][j], pt);
             ofile << pt[0] << " " << pt[1] << endl;
         }
     }

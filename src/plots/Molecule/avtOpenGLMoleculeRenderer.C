@@ -214,15 +214,15 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
                                               const MoleculeAttributes &atts)
 {
     vtkPoints *points = data->GetPoints();
-    const float *vertices = points->GetPoint(0);
+    const float *vertices = (float*)points->GetVoidPointer(0);
 
     vtkDataArray *element = data->GetCellData()->GetArray("element");
-    float *elementnos = element ? element->GetTuple(0) : NULL;
+    float *elementnos = element ? (float*)element->GetVoidPointer(0) : NULL;
 
     vtkDataArray *primary = data->GetCellData()->GetScalars();
     if (!primary)
         primary = data->GetPointData()->GetScalars();
-    float *scalar = primary->GetTuple(0);
+    float *scalar = (float*)primary->GetVoidPointer(0);
 
     bool color_by_element = primary && ct_is_discrete &&
         (string(primary->GetName()) == "element");
@@ -254,7 +254,7 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
                 // read the variable like we asked.
                 EXCEPTION1(ImproperUseException, "Couldn't read radius variable");
             }
-            radiusvar = radius_array->GetTuple(0);
+            radiusvar = (float*)radius_array->GetVoidPointer(0);
         }
     }
 
@@ -415,17 +415,17 @@ avtOpenGLMoleculeRenderer::DrawBonds(vtkPolyData *data,
 {
 
     vtkPoints *points = data->GetPoints();
-    float *vertices = points->GetPoint(0);
+    float *vertices = (float*)points->GetVoidPointer(0);
     vtkCellArray *lines = data->GetLines();
     vtkIdType *segments = lines->GetPointer();
 
     vtkDataArray *element = data->GetCellData()->GetArray("element");
-    float *elementnos = element ? element->GetTuple(0) : NULL;
+    float *elementnos = element ? (float*)element->GetVoidPointer(0) : NULL;
 
     vtkDataArray *primary = data->GetCellData()->GetScalars();
     if (!primary)
         primary = data->GetPointData()->GetScalars();
-    float *scalar = primary->GetTuple(0);
+    float *scalar = (float*)primary->GetVoidPointer(0);
 
     bool color_by_element = primary && ct_is_discrete &&
         (string(primary->GetName()) == "element");
@@ -450,7 +450,7 @@ avtOpenGLMoleculeRenderer::DrawBonds(vtkPolyData *data,
     {
         EXCEPTION1(ImproperUseException, "Couldn't read bonds array.");
     }
-    float *bonds = bond_array ? bond_array->GetTuple(0) : NULL;
+    float *bonds = bond_array ? (float*)bond_array->GetVoidPointer(0) : NULL;
 
     //
     // Create a map of atom indices for bond indexing
@@ -692,7 +692,7 @@ avtOpenGLMoleculeRenderer::Render(vtkPolyData *data,
     spec_b        = _spec_b;
 
     vtkPoints *points = data->GetPoints();
-    const float *vertices = points->GetPoint(0);
+    const float *vertices = (float*)points->GetVoidPointer(0);
     vtkCellArray *lines = data->GetLines();
     vtkIdType *segments = lines->GetPointer();
 

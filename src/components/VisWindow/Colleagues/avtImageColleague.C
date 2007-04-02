@@ -261,11 +261,11 @@ avtImageColleague::SetOptions(const AnnotationObject &annot)
                            c < iData->GetNumberOfScalarComponents();
                            ++c)
                        {
-                           tmpdata->SetScalarComponentFromFloat(
+                           tmpdata->SetScalarComponentFromDouble(
                              i, j, 0, c,
-                             iData->GetScalarComponentAsFloat(i, j, 0, c));
+                             iData->GetScalarComponentAsDouble(i, j, 0, c));
                        }
-                       tmpdata->SetScalarComponentFromFloat(i, j, 0, 3, 255.);
+                       tmpdata->SetScalarComponentFromDouble(i, j, 0, 3, 255.);
                    }
 #ifdef RESAMPLE_IMAGE
                resample->SetInput(tmpdata);
@@ -276,19 +276,19 @@ avtImageColleague::SetOptions(const AnnotationObject &annot)
 
         // Go through and set the opacity to 0 for any matching colored pixel.
 #ifdef CAN_SET_OPACITY
-        float a = float(annot.GetColor1().Alpha());
+        double a = double(annot.GetColor1().Alpha());
 #endif
         for(int i = 0; i < iData->GetDimensions()[0]; ++i)
             for(int j = 0; j < iData->GetDimensions()[1]; ++j)
             {
 #ifdef CAN_SET_OPACITY
-                iData->SetScalarComponentFromFloat(i, j, 0, 3, a);
+                iData->SetScalarComponentFromDouble(i, j, 0, 3, a);
 #endif
-                if(iData->GetScalarComponentAsFloat(i, j, 0, 0) == opacityColor.Red() &&
-                   iData->GetScalarComponentAsFloat(i, j, 0, 1) == opacityColor.Green() &&
-                   iData->GetScalarComponentAsFloat(i, j, 0, 2) == opacityColor.Blue())
+                if(iData->GetScalarComponentAsDouble(i, j, 0, 0) == opacityColor.Red() &&
+                   iData->GetScalarComponentAsDouble(i, j, 0, 1) == opacityColor.Green() &&
+                   iData->GetScalarComponentAsDouble(i, j, 0, 2) == opacityColor.Blue())
                 {
-                    iData->SetScalarComponentFromFloat(i, j, 0, 3, 0);
+                    iData->SetScalarComponentFromDouble(i, j, 0, 3, 0);
                 }
             }
 #ifdef RESAMPLE_IMAGE
@@ -486,7 +486,7 @@ avtImageColleague::GetOptions(AnnotationObject &annot)
 
     annot.SetPosition(actor->GetPosition());
 
-    float pos[] = {width, height, 0};
+    double pos[] = {width, height, 0};
     annot.SetPosition2(pos);
 
     annot.SetIntAttribute1(useOpacityColor ? 1 : 0);

@@ -126,7 +126,7 @@ vtkSurfaceFilter::ExecuteRectilinearGrid(vtkRectilinearGrid *rg)
 
   int dims[3];
   rg->GetDimensions(dims);
-  float point[3]; 
+  double point[3]; 
   float val;
   for (int i = 0; i < numPoints; ++i)
   {
@@ -209,7 +209,7 @@ vtkSurfaceFilter::ExecutePointSet(vtkPointSet *ps)
   vtkPoints *outPoints = vtkPoints::New();
   outPoints->SetNumberOfPoints(inPoints->GetNumberOfPoints());
 
-  float point[3];
+  double point[3];
   for (int i = 0; i < inScalars->GetNumberOfTuples(); ++i)
   {
      inPoints->GetPoint(i, point);

@@ -152,7 +152,7 @@ avtImageDrawable::VisibilityOff(void)
 // ****************************************************************************
 
 void
-avtImageDrawable::ShiftByVector(const float [3])
+avtImageDrawable::ShiftByVector(const double [3])
 {
     ;
 }
@@ -174,7 +174,7 @@ avtImageDrawable::ShiftByVector(const float [3])
 // ****************************************************************************
 
 void
-avtImageDrawable::ScaleByVector(const float [3])
+avtImageDrawable::ScaleByVector(const double [3])
 {
     ;
 }
@@ -275,7 +275,7 @@ avtImageDrawable::TurnLightingOff()
 // ****************************************************************************
 
 void
-avtImageDrawable::SetAmbientCoefficient(const float)
+avtImageDrawable::SetAmbientCoefficient(const double)
 {
     ;  // nothing for now
 }

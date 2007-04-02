@@ -283,16 +283,16 @@ avtLabelFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         // Figure out the center of each cell.
         //
         int    nWeights = 100;
-        float *weights = new float[nWeights];
+        double *weights = new double[nWeights];
         for(vtkIdType cellid = 0; cellid < inDS->GetNumberOfCells(); ++cellid)
         {
-            float center[] = {0.f, 0.f, 0.f};
+            double center[] = {0., 0., 0.};
 
             vtkCell *cell = inDS->GetCell(cellid);
             if(cell != 0)
             {
                 int subId = 0;
-                float pcoords[3];
+                double pcoords[3];
                 cell->GetParametricCenter(pcoords);
 
                 // Make sure that the weights array is big enough.
@@ -300,7 +300,7 @@ avtLabelFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
                 {
                     delete [] weights;
                     nWeights = int(cell->GetNumberOfPoints() * 1.25);
-                    weights = new float[nWeights];
+                    weights = new double[nWeights];
                 }
                 cell->EvaluateLocation(subId, pcoords, center, weights);
             }
@@ -421,7 +421,7 @@ avtLabelFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
                     int k;
                     for(k = i; k < j; ++k)
                     {
-                        const float *pt = cellCenters->GetTuple3(k);
+                        const double *pt = cellCenters->GetTuple3(k);
                         avgCoord[0] += pt[0];
                         avgCoord[1] += pt[1];
                         avgCoord[2] += pt[2];
@@ -503,7 +503,7 @@ avtLabelFilter::RefashionDataObjectInfo(void)
 // ****************************************************************************
 
 unsigned char
-avtLabelFilter::FindClosestVector(const float *vert) const
+avtLabelFilter::FindClosestVector(const double *vert) const
 {
     //
     // Figure out the quantized vector index, which is the index of
@@ -598,12 +598,12 @@ avtLabelFilter::CreateQuantizedNormalsFromPointNormals(vtkDataSet *outDS,
             // if they are equal so we can opt to not save the quantized normals
             // since the geometry is most likely a slice plane.
             //
-            const float *vert = normals->GetTuple3(0);
+            const double *vert = normals->GetTuple3(0);
             unsigned char first_quantized_vector = FindClosestVector(vert);
             bool vectors_same = true;
             *quant++ = first_quantized_vector;
             // Find the opposite vector too in case some cells were inverted.
-            float oppositevec[] = {
+            double oppositevec[] = {
                 -quant_vector_lookup[first_quantized_vector][0],
                 -quant_vector_lookup[first_quantized_vector][1],
                 -quant_vector_lookup[first_quantized_vector][2],
@@ -729,12 +729,12 @@ avtLabelFilter::CreateQuantizedNormalsFromCellNormals(vtkDataSet *outDS,
             // if they are equal so we can opt to not save the quantized normals
             // since the geometry is most likely a slice plane.
             //
-            const float *vert = normals->GetTuple3(0);
+            const double *vert = normals->GetTuple3(0);
             unsigned char first_quantized_vector = FindClosestVector(vert);
             bool vectors_same = true;
             *quant++ = first_quantized_vector;
             // Find the opposite vector too in case some cells were inverted.
-            float oppositevec[] = {
+            double oppositevec[] = {
                 -quant_vector_lookup[first_quantized_vector][0],
                 -quant_vector_lookup[first_quantized_vector][1],
                 -quant_vector_lookup[first_quantized_vector][2],

@@ -2,6 +2,7 @@
 
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
+#include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkMath.h>
 #include <vtkObjectFactory.h>
@@ -9,6 +10,7 @@
 #include <vtkPolyData.h>
 #include <vtkPolygon.h>
 #include <vtkTriangle.h>
+
 
 vtkCxxRevisionMacro(vtkVisItPolyDataNormals, "$Revision: 1.00 $");
 vtkStandardNewMacro(vtkVisItPolyDataNormals);
@@ -95,6 +97,10 @@ vtkVisItPolyDataNormals::Execute()
 //    Kathleen Bonnell, Fri Feb 24 09:43:20 PST 2006 
 //    Avoid divide-by-zero errors.
 //
+//    Kathleen Bonnell, Wed Mar 29 10:52:43 PST 2006
+//    VTK api computes normals using double, so create double array to store
+//    normal accumulation, then store back to vtkFloatArray.
+//
 // ****************************************************************************
 void
 vtkVisItPolyDataNormals::ExecutePointWithoutSplitting()
@@ -129,7 +135,7 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting()
     int ptIdx = 0;
     for (i = 0 ; i < nPoints ; i++)
     {
-        float pt[3];
+        double pt[3];
         inPts->GetPoint(i, pt);
         outPts->SetPoint(ptIdx, pt);
         outPD->CopyData(inPD, i, ptIdx);
@@ -139,17 +145,17 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting()
     outPts->Delete();
 
     // Create and initialize the normals array
-    vtkFloatArray *newNormals;
-    newNormals = vtkFloatArray::New();
+    vtkFloatArray *newNormals = vtkFloatArray::New();
     newNormals->SetNumberOfComponents(3);
     newNormals->SetNumberOfTuples(nPoints);
     newNormals->SetName("Normals");
-    float *newNormalPtr = (float*)newNormals->GetVoidPointer(0);
+    // Accumulate in double-array since VTK computes double normal
+    double *dnormals = new double[nPoints*3];
     for (i = 0 ; i < nPoints ; i++)
     {
-        newNormalPtr[i*3+0] = 0.;
-        newNormalPtr[i*3+1] = 0.;
-        newNormalPtr[i*3+2] = 0.;
+        dnormals[i*3+0] = 0.;
+        dnormals[i*3+1] = 0.;
+        dnormals[i*3+2] = 0.;
     }
 
     // Create the output cells, accumulating cell normals to the points
@@ -185,38 +191,40 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting()
         // over/underflow.  If so, we need to switch to double precision
         // math and avoid using the VTK code.
         //
-        float normal[3];
+        double normal[3];
         vtkPolygon::ComputeNormal(inPts, nVerts, connPtr, normal);
 
         for (int j = 0 ; j < nVerts ; j++)
         {
             int p = connPtr[j];
-            newNormalPtr[p*3+0] += normal[0];
-            newNormalPtr[p*3+1] += normal[1];
-            newNormalPtr[p*3+2] += normal[2];
+            dnormals[p*3+0] += normal[0];
+            dnormals[p*3+1] += normal[1];
+            dnormals[p*3+2] += normal[2];
         }
 
         // Increment our connectivity pointer
         connPtr += nVerts;
     }
 
-    // Renormalize the normals; ther've only been accumulated so far
+    // Renormalize the normals; ther've only been accumulated so far,
+    // and store in the vtkFloatArray.
+    float *newNormalPtr = (float*)newNormals->GetPointer(0);
     for (i = 0 ; i < nPoints ; i++)
     {
-        double nx = newNormalPtr[i*3+0];
-        double ny = newNormalPtr[i*3+1];
-        double nz = newNormalPtr[i*3+2];
+        double nx = dnormals[i*3+0];
+        double ny = dnormals[i*3+1];
+        double nz = dnormals[i*3+2];
         double length = sqrt(nx*nx + ny*ny + nz*nz);
         if (length != 0.0)
         {
-            newNormalPtr[i*3+0] = nx/length;
-            newNormalPtr[i*3+1] = ny/length;
-            newNormalPtr[i*3+2] = nz/length;
+            newNormalPtr[i*3+0] = (float)(nx/length);
+            newNormalPtr[i*3+1] = (float)(ny/length);
+            newNormalPtr[i*3+2] = (float)(nz/length);
         }
     }
-
     outPD->SetNormals(newNormals);
     newNormals->Delete();
+    delete [] dnormals;
 
     // copy the original vertices and lines to the output
     output->SetVerts(input->GetVerts());
@@ -434,8 +442,8 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting()
         // degenerate quads directly.  The code is the same algorithm as
         // vtkPolygon::ComputeNormal, but changed to make it work better.
         //
-        float v0[3], v1[3], v2[3];
-        float normal[3] = {0, 0, 0};
+        double v0[3], v1[3], v2[3];
+        double normal[3] = {0, 0, 0};
         if (nVerts == 3)
         {
             inPts->GetPoint(cell[0], v0);
@@ -459,9 +467,9 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting()
                 ax = v2[0] - v1[0]; ay = v2[1] - v1[1]; az = v2[2] - v1[2];
                 bx = v0[0] - v1[0]; by = v0[1] - v1[1]; bz = v0[2] - v1[2];
 
-                normal[0] += float(ay * bz - az * by);
-                normal[1] += float(az * bx - ax * bz);
-                normal[2] += float(ax * by - ay * bx);
+                normal[0] += (ay * bz - az * by);
+                normal[1] += (az * bx - ax * bz);
+                normal[2] += (ax * by - ay * bx);
             }
             normal[0] /= nVerts;
             normal[1] /= nVerts;
@@ -581,7 +589,7 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting()
     newNormals->SetNumberOfComponents(3);
     newNormals->SetNumberOfTuples(nOutPts);
     newNormals->SetName("Normals");
-    float *newNormalPtr = (float*)newNormals->GetVoidPointer(0);
+    float *newNormalPtr = (float*)newNormals->GetPointer(0);
 
     // Add all the original points and normals
     for (i = 0 ; i < nPoints ; i++)
@@ -685,7 +693,7 @@ vtkVisItPolyDataNormals::ExecuteCell()
     newNormals->SetNumberOfComponents(3);
     newNormals->SetNumberOfTuples(nCells);
     newNormals->SetName("Normals");
-    float *newNormalPtr = (float*)newNormals->GetVoidPointer(0);
+    float *newNormalPtr = (float*)newNormals->GetPointer(0);
 
     // The verts and lines come before the polys.  So add normals for them.
     int numPrimitivesWithoutNormals = 0;
@@ -713,8 +721,8 @@ vtkVisItPolyDataNormals::ExecuteCell()
         int nVerts = *connPtr++;
         int *cell = connPtr;
 
-        float v0[3], v1[3], v2[3];
-        float normal[3] = {0, 0, 0};
+        double v0[3], v1[3], v2[3];
+        double normal[3] = {0, 0, 0};
         if (nVerts == 3)
         {
             inPts->GetPoint(cell[0], v0);
@@ -738,9 +746,9 @@ vtkVisItPolyDataNormals::ExecuteCell()
                 ax = v2[0] - v1[0]; ay = v2[1] - v1[1]; az = v2[2] - v1[2];
                 bx = v0[0] - v1[0]; by = v0[1] - v1[1]; bz = v0[2] - v1[2];
 
-                normal[0] += float(ay * bz - az * by);
-                normal[1] += float(az * bx - ax * bz);
-                normal[2] += float(ax * by - ay * bx);
+                normal[0] += (ay * bz - az * by);
+                normal[1] += (az * bx - ax * bz);
+                normal[2] += (ax * by - ay * bx);
             }
             normal[0] /= nVerts;
             normal[1] /= nVerts;
@@ -755,15 +763,15 @@ vtkVisItPolyDataNormals::ExecuteCell()
 
         if (length != 0)
         {
-            newNormalPtr[0] = nx/length;
-            newNormalPtr[1] = ny/length;
-            newNormalPtr[2] = nz/length;
+            newNormalPtr[0] = (float)(nx/length);
+            newNormalPtr[1] = (float)(ny/length);
+            newNormalPtr[2] = (float)(nz/length);
         }
         else
         {
-            newNormalPtr[0] = 0;
-            newNormalPtr[1] = 0;
-            newNormalPtr[2] = 1;
+            newNormalPtr[0] = 0.f;
+            newNormalPtr[1] = 0.f;
+            newNormalPtr[2] = 1.f;
         }
         newNormalPtr += 3;
 
@@ -778,9 +786,9 @@ vtkVisItPolyDataNormals::ExecuteCell()
     numPrimitivesWithoutNormals += input->GetStrips()->GetNumberOfCells();
     for (i = 0 ; i < numPrimitivesWithoutNormals ; i++)
     {
-        newNormalPtr[0] = 0.;
-        newNormalPtr[1] = 0.;
-        newNormalPtr[2] = 1.;
+        newNormalPtr[0] = 0.f;
+        newNormalPtr[1] = 0.f;
+        newNormalPtr[2] = 1.f;
         newNormalPtr += 3;
     }
 

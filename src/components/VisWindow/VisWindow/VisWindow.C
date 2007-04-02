@@ -9,9 +9,11 @@
 #include <vtkActor.h>
 #include <vtkActorCollection.h>
 #include <vtkBox.h>
+#include <vtkCallbackCommand.h>
 #include <vtkCamera.h>
 #include <vtkCellData.h>
 #include <vtkCellPicker.h>
+#include <vtkCommand.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkMapper.h>
@@ -60,7 +62,7 @@ using std::vector;
 // Static Function Prototypes
 //
 
-static void      start_render(void *);
+static void      start_render(vtkObject *, unsigned long, void*, void *);
 
 
 // ****************************************************************************
@@ -187,6 +189,9 @@ VisWindow::VisWindow(bool callInit)
 void
 VisWindow::Initialize(VisWinRendering *ren)
 {
+    startRenderCallback = vtkCallbackCommand::New();
+    startRenderCallback->SetClientData(&renderProxy);
+    startRenderCallback->SetCallback(&start_render);
     //
     // Set up all of the non-colleague fields. 
     //
@@ -395,6 +400,11 @@ VisWindow::~VisWindow()
         delete annotations;
         annotations = NULL;
     }
+    if (startRenderCallback != NULL)
+    {
+        startRenderCallback->Delete();
+        startRenderCallback = NULL;
+    }
 }
 
 
@@ -501,7 +511,7 @@ VisWindow::AddColleague(VisWinColleague *col)
 // ****************************************************************************
 
 void
-VisWindow::SetBackgroundColor(float br, float bg, float bb)
+VisWindow::SetBackgroundColor(double br, double bg, double bb)
 {
     background[0] = br;
     background[1] = bg;
@@ -540,7 +550,7 @@ VisWindow::SetBackgroundColor(float br, float bg, float bb)
 
 void
 VisWindow::SetGradientBackgroundColors(int gradStyle,
-    float c1R, float c1G, float c1B, float c2R, float c2G, float c2B)
+    double c1R, double c1G, double c1B, double c2R, double c2G, double c2B)
 {
     // Set the VisWindow's internal state.
     gradientBackground[0][0] = c1R;
@@ -623,10 +633,10 @@ VisWindow::GetBackgroundMode() const
 //
 // ****************************************************************************
 
-const float *
+const double *
 VisWindow::GetBackgroundColor() const
 {
-    return (const float *)background;
+    return (const double *)background;
 }
 
 // ****************************************************************************
@@ -646,7 +656,7 @@ VisWindow::GetBackgroundColor() const
 // ****************************************************************************
 
 void
-VisWindow::SetForegroundColor(float fr, float fg, float fb)
+VisWindow::SetForegroundColor(double fr, double fg, double fb)
 {
     foreground[0] = fr;
     foreground[1] = fg;
@@ -670,10 +680,10 @@ VisWindow::SetForegroundColor(float fr, float fg, float fb)
 //
 // ****************************************************************************
 
-const float *
+const double *
 VisWindow::GetForegroundColor() const
 {
-    return (const float *)foreground;
+    return (const double *)foreground;
 }
 
 // ****************************************************************************
@@ -701,7 +711,7 @@ VisWindow::GetForegroundColor() const
 void
 VisWindow::InvertBackgroundColor()
 {
-    float tmp[3];
+    double tmp[3];
     tmp[0] = background[0];
     tmp[1] = background[1];
     tmp[2] = background[2];
@@ -733,7 +743,7 @@ VisWindow::InvertBackgroundColor()
 // ****************************************************************************
 
 void
-VisWindow::SetViewport(float vl, float vb, float vr, float vt)
+VisWindow::SetViewport(double vl, double vb, double vr, double vt)
 {
     //
     // The viewport coordinates should be numbers from 0-1.  Check to make
@@ -816,7 +826,7 @@ VisWindow::ChangeMode(WINDOW_MODE newMode)
         vtkRenderer *firstRenderer = rendering->GetFirstRenderer();
         if (firstRenderer != NULL)
         {
-            firstRenderer->SetStartRenderMethod(NULL, NULL);
+            firstRenderer->RemoveObserver(startRenderCallback);
         }
     }
 
@@ -882,7 +892,8 @@ VisWindow::ChangeMode(WINDOW_MODE newMode)
         vtkRenderer *firstRenderer = rendering->GetFirstRenderer();
         if (firstRenderer != NULL)
         {
-            firstRenderer->SetStartRenderMethod(start_render, &renderProxy);
+            firstRenderer->AddObserver(
+                vtkCommand::StartEvent, startRenderCallback);
         }
     }
 }
@@ -1841,7 +1852,7 @@ void
 VisWindow::AddPlot(avtActor_p &p)
 {
     plots->AddPlot(p);
-    float bnds[6];
+    double bnds[6];
     plots->GetBounds(bnds);
     axes3D->SetBounds(bnds);
 }
@@ -1870,7 +1881,7 @@ void
 VisWindow::RemovePlot(avtActor_p &p)
 {
     plots->RemovePlot(p);
-    float bnds[6];
+    double bnds[6];
     plots->GetBounds(bnds);
     axes3D->SetBounds(bnds);
 }
@@ -2013,9 +2024,9 @@ VisWindow::GetBoundingBoxMode() const
 // ****************************************************************************
 
 void
-VisWindow::SetViewExtentsType(avtExtentType vt, const float *const expbnds)
+VisWindow::SetViewExtentsType(avtExtentType vt, const double *const expbnds)
 {
-    float bnds[6];
+    double bnds[6];
     plots->SetViewExtentsType(vt);
     if ((vt != AVT_SPECIFIED_EXTENTS) || (expbnds == NULL))
         plots->GetBounds(bnds);
@@ -2654,7 +2665,7 @@ VisWindow::SetInteractor(VisitInteractor *i)
 // ****************************************************************************
 
 void
-VisWindow::GetForegroundColor(float *fg)
+VisWindow::GetForegroundColor(double *fg)
 {
     fg[0] = foreground[0];
     fg[1] = foreground[1];
@@ -2678,7 +2689,7 @@ VisWindow::GetForegroundColor(float *fg)
 // ****************************************************************************
 
 void
-VisWindow::GetViewport(float *vport)
+VisWindow::GetViewport(double *vport)
 {
     vport[0] = viewportLeft;
     vport[1] = viewportBottom;
@@ -2780,7 +2791,7 @@ VisWindow::StartRender(void)
 // ****************************************************************************
 
 void
-VisWindow::SetBounds(const float bounds[6])
+VisWindow::SetBounds(const double bounds[6])
 {
     plots->SetBounds(bounds);
 }
@@ -2825,7 +2836,7 @@ VisWindow::UnsetBounds()
 // ****************************************************************************
 
 void
-VisWindow::GetBounds(float bounds[6]) const
+VisWindow::GetBounds(double bounds[6]) const
 {
     plots->GetBounds(bounds);
 }
@@ -3041,19 +3052,19 @@ VisWindow::SetAnnotationAtts(const AnnotationAttributes *atts)
     if (changed)
     {
         // Set the background and foreground colors.
-        float bg[3], fg[3], gbg1[3], gbg2[3];
-        bg[0] = float(atts->GetBackgroundColor().Red()) / 255.;
-        bg[1] = float(atts->GetBackgroundColor().Green()) / 255.;
-        bg[2] = float(atts->GetBackgroundColor().Blue()) / 255.;
-        fg[0] = float(atts->GetForegroundColor().Red()) / 255.;
-        fg[1] = float(atts->GetForegroundColor().Green()) / 255.;
-        fg[2] = float(atts->GetForegroundColor().Blue()) / 255.;
-        gbg1[0] = float(atts->GetGradientColor1().Red()) / 255.;
-        gbg1[1] = float(atts->GetGradientColor1().Green()) / 255.;
-        gbg1[2] = float(atts->GetGradientColor1().Blue()) / 255.;
-        gbg2[0] = float(atts->GetGradientColor2().Red()) / 255.;
-        gbg2[1] = float(atts->GetGradientColor2().Green()) / 255.;
-        gbg2[2] = float(atts->GetGradientColor2().Blue()) / 255.;
+        double bg[3], fg[3], gbg1[3], gbg2[3];
+        bg[0] = double(atts->GetBackgroundColor().Red()) / 255.;
+        bg[1] = double(atts->GetBackgroundColor().Green()) / 255.;
+        bg[2] = double(atts->GetBackgroundColor().Blue()) / 255.;
+        fg[0] = double(atts->GetForegroundColor().Red()) / 255.;
+        fg[1] = double(atts->GetForegroundColor().Green()) / 255.;
+        fg[2] = double(atts->GetForegroundColor().Blue()) / 255.;
+        gbg1[0] = double(atts->GetGradientColor1().Red()) / 255.;
+        gbg1[1] = double(atts->GetGradientColor1().Green()) / 255.;
+        gbg1[2] = double(atts->GetGradientColor1().Blue()) / 255.;
+        gbg2[0] = double(atts->GetGradientColor2().Red()) / 255.;
+        gbg2[1] = double(atts->GetGradientColor2().Green()) / 255.;
+        gbg2[2] = double(atts->GetGradientColor2().Blue()) / 255.;
         SetBackgroundColor(bg[0], bg[1], bg[2]);
         SetGradientBackgroundColors(atts->GetGradientBackgroundStyle(),
             gbg1[0], gbg1[1], gbg1[2], gbg2[0], gbg2[1], gbg2[2]);
@@ -3702,7 +3713,7 @@ VisWindow::UpdateTextAnnotations()
 // ****************************************************************************
 
 static void
-start_render(void *p)
+start_render(vtkObject *, unsigned long, void *p, void*)
 {
     VisWindowRenderProxy  *rp = (VisWindowRenderProxy *) p;
     rp->StartRender();
@@ -3806,8 +3817,8 @@ VisWindow::Pick(int x, int y)
             // SR mode, and intersect only, need to go to the engine for this
             // so tell pick what the x, y points are by setting them in rayPt.
             //        
-            ppInfo->rayPt1[0] = (float) x;
-            ppInfo->rayPt1[1] = (float) y;
+            ppInfo->rayPt1[0] = (double) x;
+            ppInfo->rayPt1[1] = (double) y;
             ppInfo->validPick = false;
         }
         // Execute the callback.
@@ -3816,16 +3827,16 @@ VisWindow::Pick(int x, int y)
     }
 
     ppInfo->intersectionOnly = false; 
-    float cameraPos[4];
-    float cameraFocal[4];
-    float pickPos[3];
-    float cameraDOP[3];
-    float ray[3];
-    float tF, tB; 
-    float rayPt1[4], rayPt2[4];
-    float *displayCoords;
+    double cameraPos[4];
+    double cameraFocal[4];
+    double pickPos[3];
+    double cameraDOP[3];
+    double ray[3];
+    double tF, tB; 
+    double rayPt1[4], rayPt2[4];
+    double *displayCoords;
     double *clipRange;
-    float rayLength;
+    double rayLength;
     vtkRenderer *ren = GetCanvas();
     vtkCamera *cam = ren->GetActiveCamera();
 
@@ -3847,7 +3858,7 @@ VisWindow::Pick(int x, int y)
 
     ren->SetDisplayPoint(x, y, displayCoords[2]);
     ren->DisplayToView();
-    float *viewCoords = ren->GetViewPoint();
+    double *viewCoords = ren->GetViewPoint();
 
     viewPoint[0] = viewCoords[0];
     viewPoint[1] = viewCoords[1];
@@ -3857,7 +3868,7 @@ VisWindow::Pick(int x, int y)
     // Compensate for window centering and scaling.
     double *windowCenter = cam->GetWindowCenter();
     double focalDisk = cam->GetFocalDisk();
-    float *aspect = ren->GetAspect();
+    double *aspect = ren->GetAspect();
 
     viewPoint[0] = viewPoint[0] -
         (aspect[0] - 1.) * windowCenter[0] * focalDisk;
@@ -4094,13 +4105,13 @@ VisWindow::Lineout(int x1, int y1, int x2, int y2)
     //
     vtkRenderer *canvas = GetCanvas();
 
-    float pt1[3], pt2[3];
+    double pt1[3], pt2[3];
     pt1[2] = pt2[2] = 0.;
 
-    pt1[0] = (float) x1;
-    pt1[1] = (float) y1;
-    pt2[0] = (float) x2;
-    pt2[1] = (float) y2;
+    pt1[0] = (double) x1;
+    pt1[1] = (double) y1;
+    pt2[0] = (double) x2;
+    pt2[1] = (double) y2;
    
     //
     // Have the canvas translate our endpoints in display coordinates
@@ -4220,8 +4231,8 @@ VisWindow::DisableExternalRenderRequests(void)
 //
 // ****************************************************************************
 
-float
-VisWindow::ComputeVectorTextScaleFactor(const float *pos, const float *vp)
+double
+VisWindow::ComputeVectorTextScaleFactor(const double *pos, const double *vp)
 {
     return rendering->ComputeVectorTextScaleFactor(pos, vp);
 }
@@ -4414,7 +4425,7 @@ VisWindow::DeleteQuery(const VisualCueInfo *lineCue)
 // ****************************************************************************
  
 void
-VisWindow::ScalePlots(const float vec[3])
+VisWindow::ScalePlots(const double vec[3])
 {
     plots->ScalePlots(vec);
 }
@@ -4455,7 +4466,7 @@ VisWindow::GetAmbientOn()
 //
 // ****************************************************************************
  
-float
+double
 VisWindow::GetAmbientCoefficient()
 {
     return lighting->GetAmbientCoefficient();
@@ -4604,7 +4615,7 @@ VisWindow::GetAntialiasing() const
 // ****************************************************************************
 
 void
-VisWindow::GetRenderTimes(float times[6]) const
+VisWindow::GetRenderTimes(double times[6]) const
 {
     rendering->GetRenderTimes(times);
 }
@@ -4824,7 +4835,7 @@ VisWindow::GetSurfaceRepresentation() const
 // ****************************************************************************
 
 void
-VisWindow::SetSpecularProperties(bool flag, float coeff, float power,
+VisWindow::SetSpecularProperties(bool flag, double coeff, double power,
                                  const ColorAttribute &color)
 {
     std::vector< VisWinColleague * >::iterator it;
@@ -4846,7 +4857,7 @@ VisWindow::SetSpecularProperties(bool flag, float coeff, float power,
 //
 // ****************************************************************************
 
-float
+double
 VisWindow::GetSpecularCoeff()
 {
     return rendering->GetSpecularCoeff();
@@ -4880,7 +4891,7 @@ VisWindow::GetSpecularFlag()
 //
 // ****************************************************************************
 
-float
+double
 VisWindow::GetSpecularPower()
 {
     return rendering->GetSpecularPower();
@@ -5535,7 +5546,7 @@ VisWindow::ResumeTranslucentGeometry()
 //
 // ****************************************************************************
 void
-VisWindow::GlyphPick(const float *rp1, const float *rp2, int &dom, int &elNum, 
+VisWindow::GlyphPick(const double *rp1, const double *rp2, int &dom, int &elNum, 
                      bool &forCell, const bool doRender)
 {
     double dummy  = +FLT_MAX;
@@ -5543,8 +5554,8 @@ VisWindow::GlyphPick(const float *rp1, const float *rp2, int &dom, int &elNum,
 }
 
 void
-VisWindow::GlyphPick(const float *rp1, const float *rp2, int &dom, int &elNum, 
-                     bool &forCell, double & d, const bool doRender)
+VisWindow::GlyphPick(const double *rp1, const double *rp2, int &dom, 
+                     int &elNum, bool &forCell, double & d, const bool doRender)
 {
     //
     // First things first, we must make sure that the datasets have been
@@ -5554,20 +5565,20 @@ VisWindow::GlyphPick(const float *rp1, const float *rp2, int &dom, int &elNum,
         GetCanvas()->GetRenderWindow()->Render();
 
     int i, cell = -1;
-    float *bnds = NULL;
-    float dir[3];
-    float r1[3] = {rp1[0], rp1[1], rp1[2]};
-    float r2[3] = {rp2[0], rp2[1], rp2[2]};
+    double *bnds = NULL;
+    double dir[3];
+    double r1[3] = {rp1[0], rp1[1], rp1[2]};
+    double r2[3] = {rp2[0], rp2[1], rp2[2]};
 
     for (i = 0; i < 3; i++)
         dir[i] = r2[i] - r1[i];
-    float dummy1[3], dummy2;
+    double dummy1[3], dummy2;
     vtkActorCollection *actors = GetCanvas()->GetActors();
     vtkActor *actor = NULL;
     vtkDataSet *ds = NULL;
     vtkDataSet *good_ds = NULL;
-    float minDist = FLT_MAX;
-    float dist;
+    double minDist = FLT_MAX;
+    double dist;
 
     for (actors->InitTraversal(); (actor = actors->GetNextActor());) 
     {
@@ -5599,8 +5610,8 @@ VisWindow::GlyphPick(const float *rp1, const float *rp2, int &dom, int &elNum,
                 cellLocator->SetIgnoreLines(true);
                 cellLocator->SetDataSet(ds);
                 cellLocator->BuildLocator();
-                float pcoords[3] = {0., 0., 0.}, ptLine[3] = {0., 0., 0.};
-                float isect[3] = {0., 0., 0.};
+                double pcoords[3] = {0., 0., 0.}, ptLine[3] = {0., 0., 0.};
+                double isect[3] = {0., 0., 0.};
                 int subId = 0, success = 0;
                 vtkIdType foundCell; 
                 if (r1[0] == r2[0] &&
@@ -5709,7 +5720,7 @@ VisWindow::GlyphPick(const float *rp1, const float *rp2, int &dom, int &elNum,
 //
 // ****************************************************************************
 
-float
+double
 VisWindow::GetMaxPlotZShift()
 {
     return plots->GetMaxZShift();

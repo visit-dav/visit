@@ -170,10 +170,10 @@ QvisScreenPositioner::setScreenPosition(int xp, int yp)
 }
 
 void
-QvisScreenPositioner::setScreenPosition(float xp, float yp)
+QvisScreenPositioner::setScreenPosition(double xp, double yp)
 {
-    int ixp = int(xp * float(xScreenSize));
-    int iyp = int(yp * float(yScreenSize));
+    int ixp = int(xp * double(xScreenSize));
+    int iyp = int(yp * double(yScreenSize));
     setScreenPosition(ixp, iyp);
 }
 
@@ -202,8 +202,8 @@ QvisScreenPositioner::sendNewScreenPosition()
 
         emit screenPositionChanged(xPosition, yPosition);
 
-        float xp = float(xPosition) / float(xScreenSize);
-        float yp = float(yPosition) / float(yScreenSize);
+        double xp = double(xPosition) / double(xScreenSize);
+        double yp = double(yPosition) / double(yScreenSize);
         emit screenPositionChanged(xp, yp);
     }
 }
@@ -238,7 +238,7 @@ QvisScreenPositioner::setTempPositionFromWidgetCoords(int wx, int wy)
         clipped_wx = 0;
     else
         clipped_wx = W - 1;
-    int xp = int(float(clipped_wx) / float(W-1) * float(xScreenSize));
+    int xp = int(double(clipped_wx) / double(W-1) * double(xScreenSize));
     if(xTempPosition != xp)
     {
         needsUpdate = true;
@@ -252,7 +252,7 @@ QvisScreenPositioner::setTempPositionFromWidgetCoords(int wx, int wy)
         clipped_wy = 0;
     else
         clipped_wy = H - 1;
-    int yp = int((1. - float(clipped_wy) / float(H-1)) * float(yScreenSize));
+    int yp = int((1. - double(clipped_wy) / double(H-1)) * double(yScreenSize));
     if(yTempPosition != yp)
     {
         needsUpdate = true;
@@ -427,8 +427,8 @@ QvisScreenPositioner::mouseMoveEvent(QMouseEvent *e)
 
         emit intermediateScreenPositionChanged(xTempPosition, yTempPosition);
 
-        float xp = float(xTempPosition) / float(xScreenSize);
-        float yp = float(yTempPosition) / float(yScreenSize);
+        double xp = double(xTempPosition) / double(xScreenSize);
+        double yp = double(yTempPosition) / double(yScreenSize);
         emit intermediateScreenPositionChanged(xp, yp);
     }
 }
@@ -484,22 +484,22 @@ QvisScreenPositioner::drawContents(QPainter *paint)
     int h = contentsRect().height();
 
     // Draw the old position
-    float t = float(xPosition) / float(xScreenSize);
-    int oldwx = int(t * float(w - 1));
+    double t = double(xPosition) / double(xScreenSize);
+    int oldwx = int(t * double(w - 1));
     CLAMP_VALUE(oldwx, 0, w - 1);
-    t = 1.f - float(yPosition) / float(yScreenSize);
-    int oldwy = int(t * float(h - 1));
+    t = 1. - double(yPosition) / double(yScreenSize);
+    int oldwy = int(t * double(h - 1));
     CLAMP_VALUE(oldwy, 0, h - 1);
     paint->setPen(pen);
     paint->drawLine(oldwx + cx, cy, oldwx + cx, cy + h);
     paint->drawLine(cx, cy + oldwy, cx + w, cy + oldwy);
 
     // Draw the temporary position
-    t = float(xTempPosition) / float(xScreenSize);
-    int twx = int(t * float(w - 1));
+    t = double(xTempPosition) / double(xScreenSize);
+    int twx = int(t * double(w - 1));
     CLAMP_VALUE(twx, 0, w - 1);
-    t = 1.f - float(yTempPosition) / float(yScreenSize);
-    int twy = int(t * float(h - 1));
+    t = 1. - double(yTempPosition) / double(yScreenSize);
+    int twy = int(t * double(h - 1));
     CLAMP_VALUE(twy, 0, h - 1);
     pen.setStyle(Qt::DotLine);
     paint->setPen(pen);

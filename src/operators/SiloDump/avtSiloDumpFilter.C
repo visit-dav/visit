@@ -408,7 +408,8 @@ avtSiloDumpFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
     vector<float> out_z(out_npoints);
     for (int n=0; n<in_npoints; n++)
     {
-        float *point = in_ds->GetPoint(n);
+        double point[3];
+        in_ds->GetPoint(n, point);
         out_x[n] = point[0];
         out_y[n] = point[1];
         out_z[n] = point[2];

@@ -31,8 +31,8 @@ namespace vtkVisItUtility
                                               vtkDataSet *ds);
     VISIT_VTK_LIGHT_API int         ComputeStructuredCoordinates(
                                               vtkRectilinearGrid *, 
-                                              float x[3], int ijk[3]);
-    VISIT_VTK_LIGHT_API int         FindCell(vtkDataSet *, float pt[3]);
+                                              double x[3], int ijk[3]);
+    VISIT_VTK_LIGHT_API int         FindCell(vtkDataSet *, double pt[3]);
     VISIT_VTK_LIGHT_API void        GetDimensions(vtkDataSet *, int[3]);
     VISIT_VTK_LIGHT_API int         NodeGhostIdFromNonGhost(vtkDataSet *ds,
                                         const int);
@@ -47,9 +47,9 @@ namespace vtkVisItUtility
                                         const int elementId, 
                                         const bool forCell);
 
-    VISIT_VTK_LIGHT_API void       GetCellCenter(vtkCell* cell, float center[3]);
+    VISIT_VTK_LIGHT_API void       GetCellCenter(vtkCell* cell, double center[3]);
     VISIT_VTK_LIGHT_API bool       ContainsMixedGhostZoneTypes(vtkDataSet *);
-    VISIT_VTK_LIGHT_API bool       CellContainsPoint(vtkCell *, const float *);
+    VISIT_VTK_LIGHT_API bool       CellContainsPoint(vtkCell *, const double *);
 }
 
 #endif

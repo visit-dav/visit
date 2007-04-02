@@ -431,7 +431,7 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
 bool
 avtPickQuery::DeterminePickedNode(vtkDataSet *ds, int &foundEl)
 {
-   float *ppoint = pickAtts.GetPickPoint();
+   double *ppoint = pickAtts.GetPickPoint();
    vtkIdType minId = -1; 
 
    if (ppoint[0] == FLT_MAX)
@@ -451,8 +451,8 @@ avtPickQuery::DeterminePickedNode(vtkDataSet *ds, int &foundEl)
        vtkIdType id;
        ds->GetCellPoints(foundEl, ptIds);
        int numPts = ptIds->GetNumberOfIds();
-       float dist2;
-       float minDist2 = FLT_MAX;
+       double dist2;
+       double minDist2 = FLT_MAX;
        for (int i = 0; i < numPts; i++)
        {
            id = ptIds->GetId(i);
@@ -504,7 +504,7 @@ void
 avtPickQuery::GetNodeCoords(vtkDataSet *ds, const int nodeId)
 {
    char buff[80];
-   float coord[3];
+   double coord[3];
    int type = ds->GetDataObjectType();
    stringVector nodeCoords;
 
@@ -944,7 +944,7 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
     stringVector pnodeCoords;
     stringVector dnodeCoords;
     stringVector bnodeCoords;
-    float coord[3];
+    double coord[3];
     int ijk[3];
     char buff[80];
     int type = ds->GetDataObjectType();
@@ -1077,7 +1077,7 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
             //  Set pick point to be the same as the cell
             //  node for point mesh.
             //
-            float pt[3];
+            double pt[3];
             ds->GetPoint(nodes[0], pt);
             pickAtts.SetPickPoint(pt);
         }

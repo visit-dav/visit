@@ -41,7 +41,7 @@ public:
 protected:
     virtual void UpdateControls();
 private slots:
-    void positionChanged(float, float);
+    void positionChanged(double, double);
     void widthChanged(int);
     void heightChanged(int);
     void labelChanged();

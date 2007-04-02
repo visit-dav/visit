@@ -73,17 +73,17 @@ class PLOTTER_API avtBehavior
     avtDataObjectInformation       &GetInfo(void) { return info; };
     const avtDataObjectInformation &GetInfo(void) const { return info; };
 
-    void                       GetOriginalBounds(float [6]);
-    void                       GetActualBounds(float [6]);
-    void                       GetDataExtents(float &dmin, float &dmax);
+    void                       GetOriginalBounds(double [6]);
+    void                       GetActualBounds(double [6]);
+    void                       GetDataExtents(double &dmin, double &dmax);
 
     int                        GetDimension(void);
     WINDOW_MODE                GetWindowMode(void);
     bool                       RequiresReExecuteForQuery(const bool,
                                                          const bool);
 
-    void                       SetShiftFactor(float);
-    float                      GetShiftFactor(void);
+    void                       SetShiftFactor(double);
+    double                     GetShiftFactor(void);
 
     void                       SetRenderOrder(int);
     void                       SetRenderOrder(RenderOrder);
@@ -98,7 +98,7 @@ class PLOTTER_API avtBehavior
     avtDataObjectInformation   info;
     vtkRenderer               *renderer;
     avtLegend_p                legend;
-    float                      shiftFactor;
+    double                     shiftFactor;
     RenderOrder                renderOrder;
     RenderOrder                antialiasedRenderOrder;
 };

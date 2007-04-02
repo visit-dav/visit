@@ -70,31 +70,31 @@ class PLOTTER_API  avtVariableMapper : public avtMapper
     virtual                   ~avtVariableMapper();
 
     void                       SetLimitsMode(const int);
-    void                       SetMin(float);
+    void                       SetMin(double);
     void                       SetMinOff(void);
-    void                       SetMax(float);
+    void                       SetMax(double);
     void                       SetMaxOff(void);
-    virtual bool               GetRange(float &, float &);
-    virtual bool               GetCurrentRange(float &, float &);
-    bool                       GetVarRange(float &, float &);
+    virtual bool               GetRange(double &, double &);
+    virtual bool               GetCurrentRange(double &, double &);
+    bool                       GetVarRange(double &, double &);
 
     void                       TurnLightingOn(void);
     void                       TurnLightingOff(void);
     virtual bool               GetLighting(void);
 
-    void                       SetOpacity(float);
+    void                       SetOpacity(double);
     void                       SetLookupTable(vtkLookupTable *);
     void                       SetLineWidth(_LineWidth);
     void                       SetLineStyle(_LineStyle);
-    void                       SetPointSize(float);
+    void                       SetPointSize(double);
 
   protected:
-    float                      min, max;
+    double                     min, max;
     bool                       setMin, setMax;
     _LineWidth                 lineWidth;
     _LineStyle                 lineStyle;
     bool                       lighting;
-    float                      opacity;
+    double                     opacity;
     int                        limitsMode;
     vtkLookupTable            *lut;
 

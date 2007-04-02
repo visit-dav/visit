@@ -17,7 +17,7 @@ shell prompt.
     Python   2.1.2     Scripting Language     http://www.python.org
     Qt       3.3.2     GUI Toolkit            http://www.trolltech.com
     Silo     4.5       File I/O library       http://www.llnl.gov/bdiv/meshtv
-    VTK      20031028c Visualization Toolkit  http://www.kitware.com
+    VTK      20040323a Visualization Toolkit  http://www.kitware.com
 
 
 The public version of VisIt has been built with the above listed versions
@@ -26,7 +26,7 @@ all the packages except VTK and Qt, you can probably use newer versions of the
 packages and VisIt should work properly.  For Mesa, you must build a mangled
 version of Mesa.  The distribution provided has already been set up to build
 a mangled version so no additional work is required if you use it.  For VTK,
-you must use the October 28, 2003 distribution provided. The version of Qt
+you must use the March 23, 2004 distribution provided. The version of Qt
 used to build VisIt must be greater than or equal to 2.3.0. VisIt is also
 compatible with Qt versions 3.0.2 or later.
 
@@ -212,8 +212,8 @@ make
 # Build VTK
 #
 cd ..
-gunzip vtk_cvs_2003_10_28c.tar.gz
-tar xf vtk_cvs_2003_10_28c.tar
+gunzip vtk_cvs_2004.03.23a.tar.gz
+tar xf vtk_cvs_2004.03.23a.tar
 cd VTK
 #
 # On irix systems we have experienced problems with CMake not using the
@@ -291,31 +291,32 @@ make
 # Install it in the visit directory under the vtk directory.
 #
 mkdir $VISITDIR/vtk
-mkdir $VISITDIR/vtk/2003.10.28c
-mkdir $VISITDIR/vtk/2003.10.28c/$VISITARCH
-mkdir $VISITDIR/vtk/2003.10.28c/$VISITARCH/{Common,Filtering,Graphics,Hybrid,IO,Imaging,Rendering,MangleMesaInclude,lib}
-cp vtkConfigure.h                   $VISITDIR/vtk/2003.10.28c/$VISITARCH
-cp vtkToolkits.h                    $VISITDIR/vtk/2003.10.28c/$VISITARCH
-cp vtk*Instantiator.h               $VISITDIR/vtk/2003.10.28c/$VISITARCH
-cp Utilities/expat/expat.h          $VISITDIR/vtk/2003.10.28c/$VISITARCH
-cp Utilities/expat/expatDllConfig.h $VISITDIR/vtk/2003.10.28c/$VISITARCH
-cp Utilities/zlib/zlib.h            $VISITDIR/vtk/2003.10.28c/$VISITARCH
-cp Utilities/zlib/zconf.h           $VISITDIR/vtk/2003.10.28c/$VISITARCH
-cp Utilities/zlib/zlibDllConfig.h   $VISITDIR/vtk/2003.10.28c/$VISITARCH
-cp Utilities/tiff/tiffio.h          $VISITDIR/vtk/2003.10.28c/$VISITARCH
-cp Utilities/tiff/tiff.h            $VISITDIR/vtk/2003.10.28c/$VISITARCH
-cp Utilities/tiff/tiffvers.h        $VISITDIR/vtk/2003.10.28c/$VISITARCH
-cp Utilities/tiff/tconf.h           $VISITDIR/vtk/2003.10.28c/$VISITARCH
-cp Utilities/tiff/tiffDllConfig.h   $VISITDIR/vtk/2003.10.28c/$VISITARCH
-cp Common/*.h                       $VISITDIR/vtk/2003.10.28c/$VISITARCH/Common
-cp Filtering/*.h                    $VISITDIR/vtk/2003.10.28c/$VISITARCH/Filtering
-cp Graphics/*.h                     $VISITDIR/vtk/2003.10.28c/$VISITARCH/Graphics
-cp Hybrid/*.h                       $VISITDIR/vtk/2003.10.28c/$VISITARCH/Hybrid
-cp IO/*.h                           $VISITDIR/vtk/2003.10.28c/$VISITARCH/IO
-cp Imaging/*.h                      $VISITDIR/vtk/2003.10.28c/$VISITARCH/Imaging
-cp Rendering/*.h                    $VISITDIR/vtk/2003.10.28c/$VISITARCH/Rendering
-cp MangleMesaInclude/*.h            $VISITDIR/vtk/2003.10.28c/$VISITARCH/MangleMesaInclude
-cp bin/*.so                         $VISITDIR/vtk/2003.10.28c/$VISITARCH/lib
+mkdir $VISITDIR/vtk/2004.03.23a
+mkdir $VISITDIR/vtk/2004.03.23a/$VISITARCH
+mkdir $VISITDIR/vtk/2004.03.23a/$VISITARCH/{Common,Filtering,Graphics,Hybrid,IO,Imaging,Rendering,MangleMesaInclude,lib,vtkstd}
+cp vtkConfigure.h                   $VISITDIR/vtk/2004.03.23a/$VISITARCH
+cp vtkToolkits.h                    $VISITDIR/vtk/2004.03.23a/$VISITARCH
+cp vtk*Instantiator.h               $VISITDIR/vtk/2004.03.23a/$VISITARCH
+cp Utilities/expat/expat.h          $VISITDIR/vtk/2004.03.23a/$VISITARCH
+cp Utilities/expat/expatDllConfig.h $VISITDIR/vtk/2004.03.23a/$VISITARCH
+cp Utilities/zlib/zlib.h            $VISITDIR/vtk/2004.03.23a/$VISITARCH
+cp Utilities/zlib/zconf.h           $VISITDIR/vtk/2004.03.23a/$VISITARCH
+cp Utilities/zlib/zlibDllConfig.h   $VISITDIR/vtk/2004.03.23a/$VISITARCH
+cp Utilities/tiff/tiffio.h          $VISITDIR/vtk/2004.03.23a/$VISITARCH
+cp Utilities/tiff/tiff.h            $VISITDIR/vtk/2004.03.23a/$VISITARCH
+cp Utilities/tiff/tiffvers.h        $VISITDIR/vtk/2004.03.23a/$VISITARCH
+cp Utilities/tiff/tconf.h           $VISITDIR/vtk/2004.03.23a/$VISITARCH
+cp Utilities/tiff/tiffDllConfig.h   $VISITDIR/vtk/2004.03.23a/$VISITARCH
+cp Common/*.h                       $VISITDIR/vtk/2004.03.23a/$VISITARCH/Common
+cp Filtering/*.h                    $VISITDIR/vtk/2004.03.23a/$VISITARCH/Filtering
+cp Graphics/*.h                     $VISITDIR/vtk/2004.03.23a/$VISITARCH/Graphics
+cp Hybrid/*.h                       $VISITDIR/vtk/2004.03.23a/$VISITARCH/Hybrid
+cp IO/*.h                           $VISITDIR/vtk/2004.03.23a/$VISITARCH/IO
+cp Imaging/*.h                      $VISITDIR/vtk/2004.03.23a/$VISITARCH/Imaging
+cp Rendering/*.h                    $VISITDIR/vtk/2004.03.23a/$VISITARCH/Rendering
+cp MangleMesaInclude/*.h            $VISITDIR/vtk/2004.03.23a/$VISITARCH/MangleMesaInclude
+cp bin/*.so                         $VISITDIR/vtk/2004.03.23a/$VISITARCH/lib
+cp vtkstd/*                         $VISITDIR/vtk/2004.03.23a/$VISITARCH/vtkstd
 cd ..
 
 #
@@ -1159,4 +1160,6 @@ SAF files.  The third group of options are used when building with support
 for reading exodus files.
 
 If you have any problems send e-mail to visit-help@llnl.gov.
+
+
 

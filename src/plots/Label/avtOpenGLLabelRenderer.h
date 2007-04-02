@@ -36,8 +36,8 @@ public:
 protected:
     void SetupGraphicsLibrary();
     void RenderLabels();
-    void DrawLabel(const float *vert, const char *label);
-    void DrawLabel2(const float *vert, const char *label);
+    void DrawLabel(const double *vert, const char *label);
+    void DrawLabel2(const double *vert, const char *label);
     void ClearCharacterDisplayLists();
 
     void DrawLabels2D();

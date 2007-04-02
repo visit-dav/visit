@@ -50,6 +50,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkIdList.h>
+#include <vtkIdTypeArray.h>
 #include <vtkIntArray.h>
 #include <vtkFloatArray.h>
 #include <vtkMath.h>
@@ -790,7 +791,7 @@ void vtkExodusReader::ReadCells(int exoid)
   cellTypes->SetNumberOfValues(numCells);
   unsigned char *ct = cellTypes->GetPointer(0);
 
-  vtkIntArray *cellLocations = vtkIntArray::New();
+  vtkIdTypeArray *cellLocations = vtkIdTypeArray::New();
   cellLocations->SetNumberOfValues(numCells);
   int *cl = cellLocations->GetPointer(0);
 

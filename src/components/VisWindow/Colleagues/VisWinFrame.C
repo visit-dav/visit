@@ -135,7 +135,7 @@ VisWinFrame::~VisWinFrame()
 // ****************************************************************************
 
 void
-VisWinFrame::SetForegroundColor(float fr, float fg, float fb)
+VisWinFrame::SetForegroundColor(double fr, double fg, double fb)
 {
     leftBorder->GetProperty()->SetColor(fr, fg, fb);
     rightBorder->GetProperty()->SetColor(fr, fg, fb);
@@ -175,7 +175,7 @@ VisWinFrame::SetForegroundColor(float fr, float fg, float fb)
 // ****************************************************************************
 
 void
-VisWinFrame::SetViewport(float vl, float vb, float vr, float vt)
+VisWinFrame::SetViewport(double vl, double vb, double vr, double vt)
 {
     bottomBorder->GetPoint1Coordinate()->SetValue(vl, vb);
     bottomBorder->GetPoint2Coordinate()->SetValue(vr, vb);
@@ -605,7 +605,7 @@ VisWinFrame::SetLineWidth(int width)
 void
 VisWinFrame::UpdateView(void)
 {
-    float  min_x = 0., max_x = 0., min_y = 0., max_y = 0.;
+    double  min_x = 0., max_x = 0., min_y = 0., max_y = 0.;
     GetRange(min_x, max_x, min_y, max_y);
 
     //
@@ -656,7 +656,7 @@ VisWinFrame::UpdateView(void)
 // ****************************************************************************
 
 void
-VisWinFrame::GetRange(float &min_x, float &max_x, float &min_y, float &max_y)
+VisWinFrame::GetRange(double &min_x, double &max_x, double &min_y, double &max_y)
 {
     VisWindow *vw = mediator;
 

@@ -112,8 +112,8 @@ public:
   // Description:
   // Specify the (min,max) axis range. This will be used in the generation
   // of labels, if labels are visible.
-  vtkSetVector2Macro(Range,float);
-  vtkGetVectorMacro(Range,float,2);
+  vtkSetVector2Macro(Range,double);
+  vtkGetVectorMacro(Range,double,2);
 
   // Description:
   // Set/Get the number of annotation labels to show.
@@ -257,20 +257,20 @@ public:
 
   // Description:
   // Set/Get the length to use when drawing gridlines. 
-  vtkSetMacro(GridlineXLength, float);
-  vtkGetMacro(GridlineXLength, float);
-  vtkSetMacro(GridlineYLength, float);
-  vtkGetMacro(GridlineYLength, float);
+  vtkSetMacro(GridlineXLength, double);
+  vtkGetMacro(GridlineXLength, double);
+  vtkSetMacro(GridlineYLength, double);
+  vtkGetMacro(GridlineYLength, double);
 
   // Description:
   // Set/Get the axes tick label font height.
-  vtkSetClampMacro(LabelFontHeight, float, 0.002, 0.2);
-  vtkGetMacro(LabelFontHeight, float);
+  vtkSetClampMacro(LabelFontHeight, double, 0.002, 0.2);
+  vtkGetMacro(LabelFontHeight, double);
 
   // Description:
   // Set/Get the axes title font height.
-  vtkSetClampMacro(TitleFontHeight, float, 0.002, 0.2);
-  vtkGetMacro(TitleFontHeight, float);
+  vtkSetClampMacro(TitleFontHeight, double, 0.002, 0.2);
+  vtkGetMacro(TitleFontHeight, double);
 
   // Description:
   // Draw the axis. 
@@ -288,20 +288,20 @@ public:
   // Computes the range of the axis given an input range.  It does not 
   // necessarily place tick marks at the endpoints so that it can place
   // them accurately where "nice" numbers lie.
-  static void AdjustLabelsComputeRange(float inRange[2], float outRange[2],
+  static void AdjustLabelsComputeRange(double inRange[2], double outRange[2],
                                        int inNumTicks, int &outNumTicks,
-                                       float *proportion, float *ticksize, 
+                                       double *proportion, double *ticksize, 
                                        int minorVisibile, int drawGrids);
 
   // Description:
   // Computes the range based on the major tick mark location, the major tick
   // mark spacing, and the minor tick mark spacing.
-  static void SpecifiedComputeRange(float inRange[2], float outRange[2],
+  static void SpecifiedComputeRange(double inRange[2], double outRange[2],
                                     double majorTickMinimum,
                                     double majorTickMaximum,
                                     double majorTickSpacing,
                                     double minorTickSpacing, int &numTicks,
-                                    float *proportion, float *ticksize,
+                                    double *proportion, double *ticksize,
                                     int minorVisibile, int drawGrids);
 
   // Description:
@@ -321,7 +321,7 @@ protected:
   int    UseOrientationAngle;
   double OrientationAngle; 
   char   *Title;
-  float  Range[2];
+  double  Range[2];
   int    NumberOfLabels;
   char   *LabelFormat;
   int    NumberOfLabelsBuilt;
@@ -333,8 +333,8 @@ protected:
   double MinorTickSpacing;
   int    MinorTicksVisible;
   int    TitleAtEnd;
-  float  LabelFontHeight;
-  float  TitleFontHeight;
+  double  LabelFontHeight;
+  double  TitleFontHeight;
   int    TickLength;
   int    TickOffset;
   int    TickLocation;
@@ -345,8 +345,8 @@ protected:
   int    FontFamily;
 
   int    DrawGridlines;
-  float  GridlineXLength;
-  float  GridlineYLength;
+  double  GridlineXLength;
+  double  GridlineYLength;
   
   int    AxisVisibility;
   int    TickVisibility;
@@ -361,8 +361,8 @@ private:
   void operator=(const vtkVisItAxisActor2D&);
 
   void BuildAxis(vtkViewport *viewport);
-  static float ComputeStringOffset(float width, float height, float theta);
-  static void SetOffsetPosition(float xTick[3], float theta, int stringHeight, 
+  static double ComputeStringOffset(double width, double height, double theta);
+  static void SetOffsetPosition(double xTick[3], double theta, int stringHeight, 
                                 int stringWidth, int offset, vtkActor2D *actor,
                                 int titleAtEnd);
 

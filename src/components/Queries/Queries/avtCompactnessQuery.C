@@ -499,7 +499,7 @@ avtCompactnessQuery::Execute1(vtkDataSet *ds, const int dom)
     yBound.resize(oldBoundSize + npts1d);
     for (i=0; i<npts1d; i++)
     {
-        float pt[3];
+        double pt[3];
         pts1d->GetPoint(i, pt);
         xBound[oldBoundSize+i] = pt[0];
         yBound[oldBoundSize+i] = pt[1];
@@ -678,12 +678,12 @@ avtCompactnessQuery::Execute2(vtkDataSet *ds, const int dom)
 //
 // ****************************************************************************
 float
-avtCompactnessQuery::Get2DTriangleArea(float *p0, float *p1, float *p2)
+avtCompactnessQuery::Get2DTriangleArea(double *p0, double *p1, double *p2)
 {
-    float vx1 = p1[0]-p0[0];
-    float vy1 = p1[1]-p0[1];
-    float vx2 = p2[0]-p0[0];
-    float vy2 = p2[1]-p0[1];
+    double vx1 = p1[0]-p0[0];
+    double vy1 = p1[1]-p0[1];
+    double vx2 = p2[0]-p0[0];
+    double vy2 = p2[1]-p0[1];
 
     return fabs((vx1*vy2)-(vy1*vx2))/2.;
 }
@@ -710,8 +710,7 @@ avtCompactnessQuery::Get2DCellArea(vtkCell *cell)
     int npts = cell->GetNumberOfPoints();
     int cellType = cell->GetCellType();
     int i;
-
-    float p0[3],p1[3],p2[3],p3[3];
+    double p0[3],p1[3],p2[3],p3[3];
     switch (cellType)
     {
       case VTK_POLYGON:
@@ -766,7 +765,7 @@ avtCompactnessQuery::Get2DCellCentroid(vtkCell *cell,
     vtkPoints *pts = cell->GetPoints();
     int npts = cell->GetNumberOfPoints();
 
-    float pt[3];
+    double pt[3];
     for (int i=0; i<npts; i++)
     {
         pts->GetPoint(i, pt);

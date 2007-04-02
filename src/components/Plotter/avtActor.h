@@ -107,16 +107,16 @@ class PLOTTER_API avtActor
     void                          Add(vtkRenderer *, vtkRenderer *);
     void                          Remove(vtkRenderer *, vtkRenderer *);
 
-    void                          GetActualBounds(float [6]);
-    void                          GetOriginalBounds(float [6]);
-    void                          GetDataExtents(float &dmin, float &dmax);
+    void                          GetActualBounds(double [6]);
+    void                          GetOriginalBounds(double [6]);
+    void                          GetDataExtents(double &dmin, double &dmax);
     int                           GetDimension(void);
     WINDOW_MODE                   GetWindowMode(void);
     int                           GetRenderOrder(bool aa);
     avtLegend_p                   GetLegend(void);
 
-    void                          ShiftByVector(const float [3]);
-    void                          ScaleByVector(const float [3]);
+    void                          ShiftByVector(const double [3]);
+    void                          ScaleByVector(const double [3]);
     void                          UpdateScaleFactor();
 
     void                          VisibilityOn(void);
@@ -125,12 +125,12 @@ class PLOTTER_API avtActor
 
     void                          TurnLightingOn(void);
     void                          TurnLightingOff(void);
-    void                          SetAmbientCoefficient(const float);
+    void                          SetAmbientCoefficient(const double);
 
     void                          SetSurfaceRepresentation(int rep);
     void                          SetImmediateModeRendering(bool val);
 
-    void                          SetSpecularProperties(bool,float,float,
+    void                          SetSpecularProperties(bool,double,double,
                                                         const ColorAttribute&);
 
     avtDataObject_p               GetDataObject(void);
@@ -142,7 +142,7 @@ class PLOTTER_API avtActor
 
     void                          MakePickable(void);
     void                          MakeUnPickable(void);
-    float                         GetZPosition(void);
+    double                        GetZPosition(void);
 
   protected:
     avtBehavior_p                 behavior;

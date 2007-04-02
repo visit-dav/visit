@@ -96,9 +96,9 @@ ImageObject_SetPosition(PyObject *self, PyObject *args)
 {
     ImageObjectObject *obj = (ImageObjectObject *)self;
 
-    float *fvals = obj->data->GetPosition();
-/* CUSTOM - Had to make position ff, not fff. */
-    if(!PyArg_ParseTuple(args, "ff", &fvals[0], &fvals[1]))
+    double *dvals = obj->data->GetPosition();
+/* CUSTOM - Had to make position dd, not ddd. */
+    if(!PyArg_ParseTuple(args, "dd", &dvals[0], &dvals[1]))
     {
         PyObject     *tuple;
         if(!PyArg_ParseTuple(args, "O", &tuple))
@@ -114,13 +114,13 @@ ImageObject_SetPosition(PyObject *self, PyObject *args)
             {
                 PyObject *item = PyTuple_GET_ITEM(tuple, i);
                 if(PyFloat_Check(item))
-                    fvals[i] = float(PyFloat_AS_DOUBLE(item));
+                    dvals[i] = (PyFloat_AS_DOUBLE(item));
                 else if(PyInt_Check(item))
-                    fvals[i] = float(PyInt_AS_LONG(item));
+                    dvals[i] = double(PyInt_AS_LONG(item));
                 else if(PyLong_Check(item))
-                    fvals[i] = float(PyLong_AsDouble(item));
+                    dvals[i] = (PyLong_AsDouble(item));
                 else
-                    fvals[i] = 0.;
+                    dvals[i] = 0.;
             }
         }
         else
@@ -140,7 +140,7 @@ ImageObject_GetPosition(PyObject *self, PyObject *args)
     ImageObjectObject *obj = (ImageObjectObject *)self;
     // Allocate a tuple the with enough entries to hold the position.
     PyObject *retval = PyTuple_New(3);
-    const float *position = obj->data->GetPosition();
+    const double *position = obj->data->GetPosition();
     for(int i = 0; i < 3; ++i)
         PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(double(position[i])));
     return retval;
@@ -535,7 +535,7 @@ ImageObject_print(PyObject *v, FILE *fp, int flags)
         fprintf(fp, "active = 1\n");
     else
         fprintf(fp, "active = 0\n");
-    {   const float *position = obj->data->GetPosition();
+    {   const double *position = obj->data->GetPosition();
         fprintf(fp, "position = (");
         for(int i = 0; i < 3; ++i)
         {
@@ -632,7 +632,7 @@ PyImageObject_StringRepresentation(const AnnotationObject *atts)
     else
         SNPRINTF(tmpStr, 1000, "active = 0\n");
     str += tmpStr;
-    {   const float *position = atts->GetPosition();
+    {   const double *position = atts->GetPosition();
         SNPRINTF(tmpStr, 1000, "position = (");
         str += tmpStr;
         for(int i = 0; i < 3; ++i)

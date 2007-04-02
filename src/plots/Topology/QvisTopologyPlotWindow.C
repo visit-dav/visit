@@ -233,16 +233,16 @@ QvisTopologyPlotWindow::UpdateWindow(bool doAll)
             maxColorButton->setButtonColor(QColor(r,g,b));
             break;
           case 3: //minOpacity
-            minOpacity->setValue(int(atts->GetMinOpacity()*255.));
+            minOpacity->setValue(int((float)atts->GetMinOpacity()*255.f));
             break;
           case 4: //minPlateauOpacity
-            minPlateauOpacity->setValue(int(atts->GetMinPlateauOpacity()*255.));
+            minPlateauOpacity->setValue(int((float)atts->GetMinPlateauOpacity()*255.f));
             break;
           case 5: //maxPlateauOpacity
-            maxPlateauOpacity->setValue(int(atts->GetMaxPlateauOpacity()*255.));
+            maxPlateauOpacity->setValue(int((float)atts->GetMaxPlateauOpacity()*255.f));
             break;
           case 6: //maxOpacity
-            maxOpacity->setValue(int(atts->GetMaxOpacity()*255.));
+            maxOpacity->setValue(int((float)atts->GetMaxOpacity()*255.f));
             break;
           case 7: //tolerance
             temp.setNum(atts->GetTolerance());

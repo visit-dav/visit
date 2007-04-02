@@ -57,7 +57,7 @@ class VISWINDOW_API VisitLineTool : public VisitInteractiveTool
     virtual void Start3DMode();
     virtual void Stop3DMode();
 
-    virtual void SetForegroundColor(float, float, float);
+    virtual void SetForegroundColor(double, double, double);
 
     virtual const char *  GetName() const { return "Line"; };
     virtual avtToolInterface &GetInterface() { return Interface; };
@@ -101,8 +101,8 @@ class VISWINDOW_API VisitLineTool : public VisitInteractiveTool
     void InitialActorSetup(int);
     void FinalActorSetup();
 
-    float                focalDepth;
-    float                translationDistance;
+    double                focalDepth;
+    double                translationDistance;
     avtVector            depthTranslationDistance;
     vtkLineSource       *lineSource;
     vtkActor            *lineActor;

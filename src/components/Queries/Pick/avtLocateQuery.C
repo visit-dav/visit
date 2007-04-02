@@ -197,13 +197,13 @@ avtLocateQuery::GetPickAtts()
 // ****************************************************************************
 
 int                            
-avtLocateQuery::RGridIsect(vtkRectilinearGrid *rgrid, float &dist, 
-                           float isect[3])
+avtLocateQuery::RGridIsect(vtkRectilinearGrid *rgrid, double &dist, 
+                           double isect[3])
 {
     int i, ijk[3];
-    float t, dsBounds[6], rayDir[3];
-    float *rayPt1 = pickAtts.GetRayPoint1();
-    float *rayPt2 = pickAtts.GetRayPoint2();
+    double t, dsBounds[6], rayDir[3];
+    double *rayPt1 = pickAtts.GetRayPoint1();
+    double *rayPt2 = pickAtts.GetRayPoint2();
     int success = 0;
     int cellId = -1;
 
@@ -281,14 +281,14 @@ avtLocateQuery::RGridIsect(vtkRectilinearGrid *rgrid, float &dist,
 // ****************************************************************************
 
 int
-avtLocateQuery::LocatorFindCell(vtkDataSet *ds, float &dist, float *isect)
+avtLocateQuery::LocatorFindCell(vtkDataSet *ds, double &dist, double *isect)
 {
     if (ds->GetNumberOfPoints() == 0)
     {
         return -1;
     }
-    float *rayPt1 = pickAtts.GetRayPoint1();
-    float *rayPt2 = pickAtts.GetRayPoint2();
+    double *rayPt1 = pickAtts.GetRayPoint1();
+    double *rayPt2 = pickAtts.GetRayPoint2();
     dist = -1;
 
     vtkVisItCellLocator *cellLocator = vtkVisItCellLocator::New(); 
@@ -304,7 +304,7 @@ avtLocateQuery::LocatorFindCell(vtkDataSet *ds, float &dist, float *isect)
     cellLocator->SetUserBounds(pickAtts.GetPlotBounds());
     cellLocator->BuildLocator();
 
-    float pcoords[3] = {0., 0., 0.}, ptLine[3] = {0., 0., 0.};
+    double pcoords[3] = {0., 0., 0.}, ptLine[3] = {0., 0., 0.};
     int subId = 0, success = 0;
 
     vtkIdType foundCell; 
@@ -352,14 +352,14 @@ avtLocateQuery::LocatorFindCell(vtkDataSet *ds, float &dist, float *isect)
 bool
 avtLocateQuery::RayIntersectsDataSet(vtkDataSet *ds)
 {
-    float *bnds = ds->GetBounds();
-    float *pt1 = pickAtts.GetRayPoint1();
-    float *pt2 = pickAtts.GetRayPoint2();
-    float dir[3];
+    double *bnds = ds->GetBounds();
+    double *pt1 = pickAtts.GetRayPoint1();
+    double *pt2 = pickAtts.GetRayPoint2();
+    double dir[3];
     for (int i = 0; i < 3; i++)
     {
         dir[i] = pt2[i] - pt1[i];
     }
-    float dummy1[3], dummy2;
+    double dummy1[3], dummy2;
     return (vtkBox::IntersectBox(bnds, pt1, dir, dummy1, dummy2));
 }

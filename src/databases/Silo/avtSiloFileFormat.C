@@ -1294,8 +1294,8 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                     EXCEPTION1(InvalidVariableException, csgmesh_names[i]);
                 DBSetDataReadMask(mask);
 
-                float   extents[6];
-                float  *extents_to_use = NULL;
+                double   extents[6];
+                double  *extents_to_use = NULL;
                 if (!((csgm->min_extents[0] == 0.0 && csgm->max_extents[0] == 0.0 &&
                        csgm->min_extents[1] == 0.0 && csgm->max_extents[1] == 0.0 &&
                        csgm->min_extents[2] == 0.0 && csgm->max_extents[2] == 0.0) ||
@@ -1496,8 +1496,8 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             break;
         }
 
-        float extents[6];
-        float *extents_to_use = NULL;
+        double extents[6];
+        double *extents_to_use = NULL;
         if (nTimesteps == 1)
         {
             if (qm->datatype == DB_DOUBLE)
@@ -1506,8 +1506,8 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                 double *max_extents_double = (double *) qm->max_extents;
                 for (j = 0 ; j < qm->ndims ; j++)
                 {
-                    extents[2*j    ] = (float) min_extents_double[j];
-                    extents[2*j + 1] = (float) max_extents_double[j];
+                    extents[2*j    ] = min_extents_double[j];
+                    extents[2*j + 1] = max_extents_double[j];
                 }
             }
             else
@@ -1565,8 +1565,8 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         if (um == NULL)
             EXCEPTION1(InvalidVariableException, ucdmesh_names[i]);
 
-        float   extents[6];
-        float  *extents_to_use = NULL;
+        double   extents[6];
+        double  *extents_to_use = NULL;
         if (nTimesteps == 1)
         {
             if (um->datatype == DB_DOUBLE)
@@ -1575,8 +1575,8 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                 double *max_extents_double = (double *) um->max_extents;
                 for (j = 0 ; j < um->ndims ; j++)
                 {
-                    extents[2*j    ] = (float) min_extents_double[j];
-                    extents[2*j + 1] = (float) max_extents_double[j];
+                    extents[2*j    ] = min_extents_double[j];
+                    extents[2*j + 1] = max_extents_double[j];
                 }
             }
             else
@@ -1708,8 +1708,8 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             EXCEPTION1(InvalidVariableException, csgmesh_names[i]);
         DBSetDataReadMask(mask);
 
-        float   extents[6];
-        float  *extents_to_use = NULL;
+        double   extents[6];
+        double  *extents_to_use = NULL;
         if (!((csgm->min_extents[0] == 0.0 && csgm->max_extents[0] == 0.0 &&
                csgm->min_extents[1] == 0.0 && csgm->max_extents[1] == 0.0 &&
                csgm->min_extents[2] == 0.0 && csgm->max_extents[2] == 0.0) ||
@@ -4748,7 +4748,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
     cellTypes->SetNumberOfValues(numCells);
     unsigned char *ct = cellTypes->GetPointer(0);
 
-    vtkIntArray *cellLocations = vtkIntArray::New();
+    vtkIdTypeArray *cellLocations = vtkIdTypeArray::New();
     cellLocations->SetNumberOfValues(numCells);
     int *cl = cellLocations->GetPointer(0);
 
@@ -7257,7 +7257,7 @@ avtSiloFileFormat::GetSpatialExtents(const char *meshName)
 
     for (int i = 0; i < mm->nblocks; i++)
     {
-        float range[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+        double range[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
         int esize = mm->extentssize;
 
         // silo stores all the mins before all the maxs
@@ -7315,7 +7315,7 @@ avtSiloFileFormat::GetDataExtents(const char *varName)
     int ncomps = mv->extentssize / 2; 
     int esize = mv->extentssize;
     avtIntervalTree *itree = new avtIntervalTree(mv->nvars, ncomps);
-    float *range = new float[esize];
+    double *range = new double[esize];
 
     for (int i = 0; i < mv->nvars; i++)
     {

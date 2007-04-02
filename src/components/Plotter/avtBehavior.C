@@ -142,7 +142,7 @@ avtBehavior::Remove(vtkRenderer *ren)
 // ****************************************************************************
 
 void
-avtBehavior::GetOriginalBounds(float b[6])
+avtBehavior::GetOriginalBounds(double b[6])
 {
     int  dim = info.GetAttributes().GetSpatialDimension();
 
@@ -186,7 +186,7 @@ avtBehavior::GetOriginalBounds(float b[6])
 // ****************************************************************************
 
 void
-avtBehavior::GetActualBounds(float b[6])
+avtBehavior::GetActualBounds(double b[6])
 {
     int  dim = info.GetAttributes().GetSpatialDimension();
 
@@ -313,7 +313,7 @@ avtBehavior::SetLegend(avtLegend_p l)
 // ****************************************************************************
 
 void
-avtBehavior::SetShiftFactor(float sf)
+avtBehavior::SetShiftFactor(double sf)
 {
     if (sf < 0.)
     {
@@ -355,7 +355,7 @@ avtBehavior::SetShiftFactor(float sf)
 //  
 // ****************************************************************************
 
-float
+double
 avtBehavior::GetShiftFactor(void)
 {
     double rv = 0.;
@@ -656,7 +656,7 @@ avtBehavior::RequiresReExecuteForQuery(const bool needInvT,
 // ****************************************************************************
 
 void
-avtBehavior::GetDataExtents(float &dmin, float &dmax)
+avtBehavior::GetDataExtents(double &dmin, double &dmax)
 {
     double extents[2];
     bool gotExtents = info.GetAttributes().GetDataExtents(extents);
@@ -666,8 +666,8 @@ avtBehavior::GetDataExtents(float &dmin, float &dmax)
         extents[0] = extents[1] = 0.;
     }
 
-    dmin = (float) extents[0];
-    dmax = (float) extents[1];
+    dmin = extents[0];
+    dmax = extents[1];
 }
 
 

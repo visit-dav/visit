@@ -42,11 +42,11 @@ class vtkCrackWidthFilter : public vtkDataSetToDataSetFilter
 
     static vtkCrackWidthFilter *New();
 
-    vtkGetMacro(MaxCrack1Width, float);
-    vtkGetMacro(MaxCrack2Width, float);
-    vtkGetMacro(MaxCrack3Width, float);
+    vtkGetMacro(MaxCrack1Width, double);
+    vtkGetMacro(MaxCrack2Width, double);
+    vtkGetMacro(MaxCrack3Width, double);
 
-    float GetMaxCrackWidth(int w);
+    double GetMaxCrackWidth(int w);
     
     vtkSetStringMacro(Crack1Var);
     vtkSetStringMacro(Crack2Var);
@@ -62,67 +62,67 @@ class vtkCrackWidthFilter : public vtkDataSetToDataSetFilter
   private:
     vtkTriangle *triangle;
     vtkQuad *quad;
-    float MaxCrack1Width;
-    float MaxCrack2Width;
-    float MaxCrack3Width;
+    double MaxCrack1Width;
+    double MaxCrack2Width;
+    double MaxCrack3Width;
 
     char *Crack1Var;
     char *Crack2Var;
     char *Crack3Var;
     char *StrainVar;
 
-    float  CrackWidthForCell(vtkCell *cell, const float *center,
-           const float cellLength, const float delta, const float *dir);
+    double  CrackWidthForCell(vtkCell *cell, const double *center,
+           const double cellLength, const double delta, const double *dir);
 
-    int CellIntersectWithLine(vtkCell *, float [3], float [3], 
-                                float&, float [3]);
+    int CellIntersectWithLine(vtkCell *, double [3], double [3], 
+                                double&, double [3]);
 
-    int VertexIntersectWithLine(vtkVertex *, float [3], float [3], 
-                                float&, float [3]);
+    int VertexIntersectWithLine(vtkVertex *, double [3], double [3], 
+                                double&, double [3]);
 
-    int PolyVertexIntersectWithLine(vtkPolyVertex *, float [3], float [3], 
-                                float&, float [3]);
+    int PolyVertexIntersectWithLine(vtkPolyVertex *, double [3], double [3], 
+                                double&, double [3]);
 
-    int LineIntersectWithLine(vtkLine *, float [3], float [3], 
-                                float&, float [3]);
+    int LineIntersectWithLine(vtkLine *, double [3], double [3], 
+                                double&, double [3]);
 
-    int PolyLineIntersectWithLine(vtkPolyLine *, float [3], float [3], 
-                                float&, float [3]);
+    int PolyLineIntersectWithLine(vtkPolyLine *, double [3], double [3], 
+                                double&, double [3]);
 
-    int TriangleIntersectWithLine(vtkTriangle *, float [3], float [3], 
-                                float&, float [3]);
+    int TriangleIntersectWithLine(vtkTriangle *, double [3], double [3], 
+                                double&, double [3]);
 
-    int TriStripIntersectWithLine(vtkTriangleStrip *, float [3], float [3], 
-                                float&, float [3]);
+    int TriStripIntersectWithLine(vtkTriangleStrip *, double [3], double [3], 
+                                double&, double [3]);
 
-    int PolygonIntersectWithLine(vtkPolygon *, float [3], float [3], 
-                                float&, float [3]);
+    int PolygonIntersectWithLine(vtkPolygon *, double [3], double [3], 
+                                double&, double [3]);
 
-    int PixelIntersectWithLine(vtkPixel *, float [3], float [3], 
-                                float&, float [3]);
+    int PixelIntersectWithLine(vtkPixel *, double [3], double [3], 
+                                double&, double [3]);
 
-    int QuadIntersectWithLine(vtkQuad *, float [3], float [3], 
-                                float&, float [3]);
+    int QuadIntersectWithLine(vtkQuad *, double [3], double [3], 
+                                double&, double [3]);
 
-    int TetraIntersectWithLine(vtkTetra *, float [3], float [3], 
-                                float&, float [3]);
+    int TetraIntersectWithLine(vtkTetra *, double [3], double [3], 
+                                double&, double [3]);
 
-    int VoxelIntersectWithLine(vtkVoxel *, float [3], float [3], 
-                                float&, float [3]);
+    int VoxelIntersectWithLine(vtkVoxel *, double [3], double [3], 
+                                double&, double [3]);
 
-    int HexIntersectWithLine(vtkHexahedron *, float [3], float [3], 
-                                float&, float [3]);
+    int HexIntersectWithLine(vtkHexahedron *, double [3], double [3], 
+                                double&, double [3]);
 
-    int WedgeIntersectWithLine(vtkWedge *, float [3], float [3], 
-                                float&, float [3]);
+    int WedgeIntersectWithLine(vtkWedge *, double [3], double [3], 
+                                double&, double [3]);
 
-    int PyramidIntersectWithLine(vtkPyramid *, float [3], float [3], 
-                                float&, float [3]);
+    int PyramidIntersectWithLine(vtkPyramid *, double [3], double [3], 
+                                double&, double [3]);
 
-    int LineLineIsect(const float *, const float *, const float *, 
-                      const float *, float *);
+    int LineLineIsect(const double *, const double *, const double *, 
+                      const double *, double *);
 
-    int EdgeLineIsect(vtkCell *cell, const float *, const float *, float *);
+    int EdgeLineIsect(vtkCell *cell, const double *, const double *, double *);
 
 
     vtkCrackWidthFilter(const vtkCrackWidthFilter&);  // Not implemented.

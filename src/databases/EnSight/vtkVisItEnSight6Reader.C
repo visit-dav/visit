@@ -2,16 +2,13 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkVisItEnSight6Reader.cxx,v $
-  Language:  C++
-  Date:      $Date: 2003/06/02 20:43:58 $
-  Version:   $Revision: 1.40 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
@@ -32,9 +29,9 @@
 
 
 #include <ctype.h>
-#include <string>
+#include <vtkstd/string>
 
-vtkCxxRevisionMacro(vtkVisItEnSight6Reader, "$Revision: 1.40 $");
+vtkCxxRevisionMacro(vtkVisItEnSight6Reader, "$Revision: 1.46 $");
 vtkStandardNewMacro(vtkVisItEnSight6Reader);
 
 //----------------------------------------------------------------------------
@@ -160,10 +157,14 @@ int vtkVisItEnSight6Reader::ReadGeometryFile(char* fileName, int timeStep)
     vtkErrorMacro("A GeometryFileName must be specified in the case file.");
     return 0;
     }
-  std::string sfilename;
+  vtkstd::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
+    if (sfilename.at(sfilename.length()-1) != '/')
+      {
+      sfilename += "/";
+      }
     sfilename += fileName;
     vtkDebugMacro("full path to geometry file: " << sfilename.c_str());
     }
@@ -327,10 +328,14 @@ int vtkVisItEnSight6Reader::ReadMeasuredGeometryFile(char* fileName, int timeSte
     return 0;
     }
 
-  std::string sfilename;
+  vtkstd::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
+    if (sfilename.at(sfilename.length()-1) != '/')
+      {
+      sfilename += "/";
+      }
     sfilename += fileName;
     vtkDebugMacro("full path to measured geometry file: " << sfilename.c_str());
     }
@@ -448,10 +453,14 @@ int vtkVisItEnSight6Reader::ReadScalarsPerNode(char* fileName, char* description
     vtkErrorMacro("NULL ScalarPerNode variable file name");
     return 0;
     }
-  std::string sfilename;
+  vtkstd::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
+    if (sfilename.at(sfilename.length()-1) != '/')
+      {
+      sfilename += "/";
+      }
     sfilename += fileName;
     vtkDebugMacro("full path to scalar per node file: " << sfilename.c_str());
     }
@@ -656,10 +665,14 @@ int vtkVisItEnSight6Reader::ReadVectorsPerNode(char* fileName, char* description
     vtkErrorMacro("NULL VectorPerNode variable file name");
     return 0;
     }
-  std::string sfilename;
+  vtkstd::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
+    if (sfilename.at(sfilename.length()-1) != '/')
+      {
+      sfilename += "/";
+      }
     sfilename += fileName;
     vtkDebugMacro("full path to vector per node file: " << sfilename.c_str());
     }
@@ -837,10 +850,14 @@ int vtkVisItEnSight6Reader::ReadTensorsPerNode(char* fileName, char* description
     vtkErrorMacro("NULL TensorSymmPerNode variable file name");
     return 0;
     }
-  std::string sfilename;
+  vtkstd::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
+    if (sfilename.at(sfilename.length()-1) != '/')
+      {
+      sfilename += "/";
+      }
     sfilename += fileName;
     vtkDebugMacro("full path to tensor symm per node file: " << sfilename.c_str());
     }
@@ -976,10 +993,14 @@ int vtkVisItEnSight6Reader::ReadScalarsPerElement(char* fileName, char* descript
     vtkErrorMacro("NULL ScalarPerElement variable file name");
     return 0;
     }
-  std::string sfilename;
+  vtkstd::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
+    if (sfilename.at(sfilename.length()-1) != '/')
+      {
+      sfilename += "/";
+      }
     sfilename += fileName;
     vtkDebugMacro("full path to scalars per element file: " << sfilename.c_str());
     }
@@ -1148,10 +1169,14 @@ int vtkVisItEnSight6Reader::ReadVectorsPerElement(char* fileName, char* descript
     vtkErrorMacro("NULL VectorPerElement variable file name");
     return 0;
     }
-  std::string sfilename;
+  vtkstd::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
+    if (sfilename.at(sfilename.length()-1) != '/')
+      {
+      sfilename += "/";
+      }
     sfilename += fileName;
     vtkDebugMacro("full path to vector per element file: " << sfilename.c_str());
     }
@@ -1309,10 +1334,14 @@ int vtkVisItEnSight6Reader::ReadTensorsPerElement(char* fileName, char* descript
     vtkErrorMacro("NULL TensorPerElement variable file name");
     return 0;
     }
-  std::string sfilename;
+  vtkstd::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
+    if (sfilename.at(sfilename.length()-1) != '/')
+      {
+      sfilename += "/";
+      }
     sfilename += fileName;
     vtkDebugMacro("full path to tensor per element file: " << sfilename.c_str());
     }
@@ -1468,7 +1497,7 @@ int vtkVisItEnSight6Reader::CreateUnstructuredGridOutput(int partId,
   vtkCharArray* nmArray =  vtkCharArray::New();
   nmArray->SetName("Name");
   size_t len = strlen(name);
-  nmArray->SetNumberOfTuples(len+1);
+  nmArray->SetNumberOfTuples(static_cast<vtkIdType>(len)+1);
   char* copy = nmArray->GetPointer(0);
   memcpy(copy, name, len);
   copy[len] = '\0';
@@ -1964,7 +1993,7 @@ int vtkVisItEnSight6Reader::CreateStructuredGridOutput(int partId,
   int dimensions[3];
   int i, j;
   vtkPoints *points = vtkPoints::New();
-  float point[3];
+  double point[3];
   int numPts, numLines, moreCoords, moreBlanking;
   float coords[6];
   int iblanks[10];
@@ -1991,7 +2020,7 @@ int vtkVisItEnSight6Reader::CreateStructuredGridOutput(int partId,
   vtkCharArray* nmArray =  vtkCharArray::New();
   nmArray->SetName("Name");
   size_t len = strlen(name);
-  nmArray->SetNumberOfTuples(len+1);
+  nmArray->SetNumberOfTuples(static_cast<vtkIdType>(len)+1);
   char* copy = nmArray->GetPointer(0);
   memcpy(copy, name, len);
   copy[len] = '\0';
@@ -2044,7 +2073,8 @@ int vtkVisItEnSight6Reader::CreateStructuredGridOutput(int partId,
     for (j = 0; j < 6; j++)
       {
       points->GetPoint(i*6+j, point);
-      points->SetPoint(i*6+j, point[0], coords[j], point[2]);
+      points->SetPoint(i*6+j, point[0], 
+                       static_cast<double>(coords[j]), point[2]);
       }
     }
   if (moreCoords != 0)
@@ -2054,7 +2084,8 @@ int vtkVisItEnSight6Reader::CreateStructuredGridOutput(int partId,
       {
       vtkVisItEnSight6ReaderRead4(line+j*12,&coords[j]);
       points->GetPoint(i*6+j, point);
-      points->SetPoint(i*6+j, point[0], coords[j], point[2]);
+      points->SetPoint(i*6+j, point[0], 
+                       static_cast<double>(coords[j]), point[2]);
       }
     }
   for (i = 0; i < numLines; i++)
@@ -2065,7 +2096,8 @@ int vtkVisItEnSight6Reader::CreateStructuredGridOutput(int partId,
     for (j = 0; j < 6; j++)
       {
       points->GetPoint(i*6+j, point);
-      points->SetPoint(i*6+j, point[0], point[1], coords[j]);
+      points->SetPoint(i*6+j, point[0], point[1], 
+                       static_cast<double>(coords[j]));
       }
     }
   if (moreCoords != 0)
@@ -2075,7 +2107,8 @@ int vtkVisItEnSight6Reader::CreateStructuredGridOutput(int partId,
       {
       vtkVisItEnSight6ReaderRead4(line+j*12,&coords[j]);
       points->GetPoint(i*6+j, point);
-      points->SetPoint(i*6+j, point[0], point[1], coords[j]);
+      points->SetPoint(i*6+j, point[0], point[1], 
+                       static_cast<double>(coords[j]));
       }
     }
   
@@ -2084,7 +2117,6 @@ int vtkVisItEnSight6Reader::CreateStructuredGridOutput(int partId,
   output->SetPoints(points);
   if (iblanked)
     {
-    output->BlankingOn();
     for (i = 0; i < numLines; i++)
       {
       this->ReadNextDataLine(line);

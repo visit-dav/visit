@@ -2,16 +2,13 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkVisItStructuredPointsReader.cxx,v $
-  Language:  C++
-  Date:      $Date: 2002/12/26 18:18:50 $
-  Version:   $Revision: 1.54 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
@@ -24,7 +21,7 @@
 #include "vtkPointData.h"
 #include "vtkStructuredPoints.h"
 
-vtkCxxRevisionMacro(vtkVisItStructuredPointsReader, "$Revision: 1.54 $");
+vtkCxxRevisionMacro(vtkVisItStructuredPointsReader, "$Revision: 1.56 $");
 vtkStandardNewMacro(vtkVisItStructuredPointsReader);
 
 vtkVisItStructuredPointsReader::vtkVisItStructuredPointsReader()
@@ -175,7 +172,7 @@ void vtkVisItStructuredPointsReader::Execute()
 
       else if ( !strncmp(line,"aspect_ratio",12) || !strncmp(line,"spacing",7) )
         {
-        float ar[3];
+        double ar[3];
         if (!(this->Read(ar) && 
               this->Read(ar+1) && 
               this->Read(ar+2)))
@@ -192,7 +189,7 @@ void vtkVisItStructuredPointsReader::Execute()
 
       else if ( ! strncmp(line,"origin",6) )
         {
-        float origin[3];
+        double origin[3];
         if (!(this->Read(origin) && 
               this->Read(origin+1) && 
               this->Read(origin+2)))

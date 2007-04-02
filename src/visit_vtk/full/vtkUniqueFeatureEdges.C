@@ -120,7 +120,7 @@ void vtkUniqueFeatureEdges::Execute()
   vtkPolyData *Mesh;
   int i, j, numNei, cellId;
   int numBEdges, numNonManifoldEdges, numFedges, numManifoldEdges;
-  float n[3], x1[3], x2[3];
+  double n[3], x1[3], x2[3];
   float cosAngle = 0;
   vtkIdType lineIds[2];
   vtkIdType npts, *pts;

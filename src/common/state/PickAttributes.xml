@@ -64,22 +64,22 @@
     </Field>
     <Field name="activeVariable" label="activeVariable" type="string" internal="true">
     </Field>
-    <Field name="pickPoint" label="pickPoint" type="floatArray" length="3" internal="true">
+    <Field name="pickPoint" label="pickPoint" type="doubleArray" length="3" internal="true">
       0.000000
       0.000000
       0.000000
     </Field>
-    <Field name="cellPoint" label="cellPoint" type="floatArray" length="3" internal="true">
+    <Field name="cellPoint" label="cellPoint" type="doubleArray" length="3" internal="true">
       0.000000
       0.000000
       0.000000
     </Field>
-    <Field name="nodePoint" label="nodePoint" type="floatArray" length="3" internal="true">
+    <Field name="nodePoint" label="nodePoint" type="doubleArray" length="3" internal="true">
       0.000000
       0.000000
       0.000000
     </Field>
-    <Field name="plotBounds" label="plotBounds" type="floatArray" length="6" internal="true">
+    <Field name="plotBounds" label="plotBounds" type="doubleArray" length="6" internal="true">
       0.000000
       0.000000
       0.000000
@@ -87,12 +87,12 @@
       0.000000
       0.000000
     </Field>
-    <Field name="rayPoint1" label="rayPoint1" type="floatArray" length="3" internal="true">
+    <Field name="rayPoint1" label="rayPoint1" type="doubleArray" length="3" internal="true">
       0.000000
       0.000000
       0.000000
     </Field>
-    <Field name="rayPoint2" label="rayPoint2" type="floatArray" length="3" internal="true">
+    <Field name="rayPoint2" label="rayPoint2" type="doubleArray" length="3" internal="true">
       0.000000
       0.000000
       0.000000

@@ -704,7 +704,7 @@ avtExpressionEvaluatorFilter::Query(PickAttributes *pa)
 
 bool
 avtExpressionEvaluatorFilter::FindElementForPoint(const char *var, const int ts,
-    const int dom, const char *elType, float pt[3], int &elNum)
+    const int dom, const char *elType, double pt[3], int &elNum)
 {
     string dbVar = ParsingExprList::GetRealVariable(var);
     return GetInput()->GetQueryableSource()->
@@ -762,7 +762,7 @@ avtExpressionEvaluatorFilter::GetDomainName(const std::string &var, const int ts
 
 bool
 avtExpressionEvaluatorFilter::QueryCoords(const std::string &var, 
-    const int dom, const int id, const int ts, float c[3], const bool forZone,
+    const int dom, const int id, const int ts, double c[3], const bool forZone,
     const bool useGlobalId, const char* mn)
 {
     string dbVar = ParsingExprList::GetRealVariable(var);

@@ -76,7 +76,7 @@ protected:
         LabelInfo(); 
         ~LabelInfo();
 
-        float screenPoint[3];
+        double screenPoint[3];
         int   type;
         const char *label;
     };

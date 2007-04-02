@@ -82,25 +82,25 @@ class PLOTTER_API avtGeometryDrawable : public avtDrawable
     virtual void                VisibilityOff(void);
     virtual int                 SetTransparencyActor(avtTransparencyActor *);
 
-    virtual void                ShiftByVector(const float [3]);
-    virtual void                ScaleByVector(const float [3]);
+    virtual void                ShiftByVector(const double [3]);
+    virtual void                ScaleByVector(const double [3]);
     virtual void                UpdateScaleFactor(void);
 
     virtual void                TurnLightingOn(void);
     virtual void                TurnLightingOff(void);
-    virtual void                SetAmbientCoefficient(const float);
+    virtual void                SetAmbientCoefficient(const double);
 
     virtual void                SetSurfaceRepresentation(int rep);
     virtual void                SetImmediateModeRendering(bool val);
 
-    virtual void                SetSpecularProperties(bool,float,float,
+    virtual void                SetSpecularProperties(bool,double,double,
                                                       const ColorAttribute&);
 
     virtual avtDataObject_p     GetDataObject(void);
 
     virtual void                MakePickable(void);
     virtual void                MakeUnPickable(void);
-    virtual float               GetZPosition(void);
+    virtual double              GetZPosition(void);
 
   protected:
     int                         nActors;

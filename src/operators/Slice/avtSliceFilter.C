@@ -365,7 +365,7 @@ avtSliceFilter::PerformRestriction(avtPipelineSpecification_p spec)
         avtSpatialBoxSelection *sel = new avtSpatialBoxSelection;
         sel->SetInclusionMode(avtSpatialBoxSelection::Partial);
         double origin[3];
-        float mins[3], maxs[3];
+        double mins[3], maxs[3];
         GetOrigin(origin[0], origin[1], origin[2]);
         if (atts.GetAxisType() == SliceAttributes::XAxis)
         {
@@ -413,13 +413,13 @@ avtSliceFilter::PerformRestriction(avtPipelineSpecification_p spec)
         atts.GetOriginType() == SliceAttributes::Intercept || 
         atts.GetOriginType() == SliceAttributes::Percent)
     {
-        float normal[3]
+        double normal[3]
              = {atts.GetNormal()[0], atts.GetNormal()[1], atts.GetNormal()[2]};
         double origin[3];
         if (atts.GetOriginType() == SliceAttributes::Percent)
         {
             double percent = atts.GetOriginPercent() / 100.;
-            float bounds[6];
+            double bounds[6];
             it->GetExtents(bounds);
             origin[0] = (bounds[1] - bounds[0])*percent + bounds[0];
             origin[1] = (bounds[3] - bounds[2])*percent + bounds[2];
@@ -429,7 +429,7 @@ avtSliceFilter::PerformRestriction(avtPipelineSpecification_p spec)
         {
             GetOrigin(origin[0], origin[1], origin[2]);
         }
-        float tmpD = normal[0]*origin[0] + normal[1]*origin[1] +
+        double tmpD = normal[0]*origin[0] + normal[1]*origin[1] +
                      normal[2]*origin[2];
         vector<int> domains;
         it->GetDomainsList(normal, tmpD, domains);
@@ -744,7 +744,7 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
           domain -= blockOrigin;
           int zone = atts.GetOriginZone();
           zone -= cellOrigin;
-          float point[3];
+          double point[3];
           point[0] = FLT_MAX;
           point[1] = FLT_MAX;
           point[2] = FLT_MAX;
@@ -808,7 +808,7 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
           int domain = atts.GetOriginNodeDomain();
           domain -= blockOrigin;
           int node = atts.GetOriginNode();
-          float point[3];
+          double point[3];
           point[0] = DBL_MAX;
           point[1] = DBL_MAX;
           point[2] = DBL_MAX;
@@ -932,9 +932,9 @@ avtSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
     //
     // First check to see if we have to slice this domain at all.
     //
-    float bounds[6];
+    double bounds[6];
     in_ds->GetBounds(bounds);
-    float normal[3];
+    double normal[3];
     normal[0] = atts.GetNormal()[0];
     normal[1] = atts.GetNormal()[1];
     normal[2] = atts.GetNormal()[2];
@@ -950,14 +950,7 @@ avtSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
         return NULL;
     }
 
-    double dbounds[6];
-    dbounds[0] = bounds[0];
-    dbounds[1] = bounds[1];
-    dbounds[2] = bounds[2];
-    dbounds[3] = bounds[3];
-    dbounds[4] = bounds[4];
-    dbounds[5] = bounds[5];
-    SetPlaneOrientation(dbounds);
+    SetPlaneOrientation(bounds);
 
     vtkPolyData *out_ds = vtkPolyData::New();
 
@@ -1102,7 +1095,7 @@ avtSliceFilter::ReleaseData(void)
 //    Allow normals filter to decide if we need normals; it should be able
 //    to figure out if we have sliced and thus they are not needed.
 //
-//    Kathleen Bonnell, Thu Mar  2 14:26:06 PST 2006 
+//    Kathleen Bonnell, Thu Mar  2 14:26:06 PST 2006
 //    Set ZonesSplit.
 //
 // ****************************************************************************
@@ -1337,7 +1330,7 @@ avtSliceFilter::ProjectExtents(const double *b_in, double *b_out)
     for (int i = 0 ; i < pd->GetNumberOfCells() ; i++)
     {
         vtkCell *cell = pd->GetCell(i);
-        float bounds[6];
+        double bounds[6];
         cell->GetBounds(bounds);
         minmax[0] = (minmax[0] < bounds[0] ? minmax[0] : bounds[0]);
         minmax[1] = (minmax[1] > bounds[1] ? minmax[1] : bounds[1]);

@@ -11,6 +11,8 @@
 
 #include <InvalidColortableException.h>
 
+#define INV_255 0.0039215686274509803377
+
 // ****************************************************************************
 //  Method: avtLookupTable constructor
 //
@@ -76,7 +78,7 @@ avtLookupTable::~avtLookupTable()
 // ****************************************************************************
 
 void
-avtLookupTable::SetSkewFactor(const float s)
+avtLookupTable::SetSkewFactor(const double s)
 {
     skewLUT->SetSkewFactor(s);
 }
@@ -111,14 +113,13 @@ avtLookupTable::SetLUTColors(const unsigned char *colors, int nColors)
     logLUT->SetNumberOfTableValues(nColors);
     skewLUT->SetNumberOfTableValues(nColors);
 
-#define INV_255 0.0039215686
 
     const unsigned char *cptr = colors;
     for(int i = 0; i < nColors; ++i)
     {
-        float r = float(cptr[0]) * INV_255;
-        float g = float(cptr[1]) * INV_255;
-        float b = float(cptr[2]) * INV_255;
+        double r = double(cptr[0]) * INV_255;
+        double g = double(cptr[1]) * INV_255;
+        double b = double(cptr[2]) * INV_255;
         stdLUT->SetTableValue(i, r, g, b, 1.);
         logLUT->SetTableValue(i, r, g, b, 1.);
         skewLUT->SetTableValue(i, r, g, b, 1.);
@@ -156,14 +157,13 @@ avtLookupTable::SetLUTColorsWithOpacity(const unsigned char *colors,
     logLUT->SetNumberOfTableValues(nColors);
     skewLUT->SetNumberOfTableValues(nColors);
 
-#define INV_255 0.0039215686
     const unsigned char *cptr = colors;
     for(int i = 0; i < nColors; ++i)
     {
-        float r = (float) cptr[0] * INV_255 ;
-        float g = (float) cptr[1] * INV_255 ;
-        float b = (float) cptr[2] * INV_255 ;
-        float a = (float) cptr[3] * INV_255 ;
+        double r = (double) cptr[0] * INV_255 ;
+        double g = (double) cptr[1] * INV_255 ;
+        double b = (double) cptr[2] * INV_255 ;
+        double a = (double) cptr[3] * INV_255 ;
  
         stdLUT->SetTableValue(i, r, g, b, a);
         logLUT->SetTableValue(i, r, g, b, a);

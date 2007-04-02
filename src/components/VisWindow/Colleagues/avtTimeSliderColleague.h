@@ -40,7 +40,7 @@ public:
     virtual void GetOptions(AnnotationObject &annot);
 
     // Methods that are called in response to vis window events.
-    virtual void SetForegroundColor(float r, float g, float b);
+    virtual void SetForegroundColor(double r, double g, double b);
     virtual void HasPlots(void);
     virtual void NoPlots(void);
     virtual void SetFrameAndState(int, int, int, int, int, int, int);
@@ -48,9 +48,9 @@ public:
 private:
     bool ShouldBeAddedToRenderer() const;
     void SetText(const char *text, const char *format);
-    float SliderHeight(float height) const;
-    void  GetTextRect(float, float, float, float, float *) const;
-    void  GetSliderRect(float, float, float, float, float *) const;
+    double SliderHeight(double height) const;
+    void  GetTextRect(double, double, double, double, double *) const;
+    void  GetSliderRect(double, double, double, double, double *) const;
 
     vtkTimeSliderActor *timeSlider;
     vtkTextActor       *textActor;

@@ -168,7 +168,7 @@ avtVariableLegend::~avtVariableLegend()
 // ****************************************************************************
 
 void
-avtVariableLegend::GetLegendSize(float, float &w, float &h)
+avtVariableLegend::GetLegendSize(double, double &w, double &h)
 {
     w = 0.08;
 
@@ -178,7 +178,7 @@ avtVariableLegend::GetLegendSize(float, float &w, float &h)
     }
     else
     {
-        float nLines = 0.51;
+        double nLines = 0.51;
 
         if (title != NULL)        nLines += 1.0;
         if (databaseInfo != NULL) nLines += 2.0;
@@ -261,7 +261,7 @@ avtVariableLegend::SetColorBarVisibility(const int val)
 // ****************************************************************************
 
 void
-avtVariableLegend::SetRange(float nmin, float nmax)
+avtVariableLegend::SetRange(double nmin, double nmax)
 {
     min = nmin;
     max = nmax;
@@ -309,7 +309,7 @@ avtVariableLegend::SetRange(float nmin, float nmax)
 // ****************************************************************************
 
 void
-avtVariableLegend::GetRange(float &amin, float &amax)
+avtVariableLegend::GetRange(double &amin, double &amax)
 {
     amin = min;
     amax = max;
@@ -332,7 +332,7 @@ avtVariableLegend::GetRange(float &amin, float &amax)
 // ****************************************************************************
 
 void
-avtVariableLegend::SetScaling(int mode, float skew)
+avtVariableLegend::SetScaling(int mode, double skew)
 {
     switch (mode)
     {
@@ -415,7 +415,7 @@ avtVariableLegend::SetVarRangeVisibility(const int val )
 // ****************************************************************************
 
 void
-avtVariableLegend::SetVarRange(float nmin, float nmax)
+avtVariableLegend::SetVarRange(double nmin, double nmax)
 {
     sBar->SetVarRange(nmin, nmax);
 }
@@ -439,7 +439,7 @@ avtVariableLegend::SetVarRange(float nmin, float nmax)
 // ****************************************************************************
 
 void
-avtVariableLegend::ChangePosition(float x, float y)
+avtVariableLegend::ChangePosition(double x, double y)
 {
     sBar->GetPositionCoordinate()->SetCoordinateSystemToNormalizedViewport();
     sBar->GetPositionCoordinate()->SetValue(x, y, 0.);
@@ -490,7 +490,7 @@ avtVariableLegend::ChangeTitle(const char *t)
 // ****************************************************************************
 
 void
-avtVariableLegend::ChangeFontHeight(float fh)
+avtVariableLegend::ChangeFontHeight(double fh)
 {
     sBar->SetFontHeight(fh);
 }

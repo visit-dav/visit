@@ -1813,7 +1813,7 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *name)
         new_rv->SetNumberOfTuples(ntups);
         for (int i = 0 ; i < ntups ; i++)
         {
-            float orig_vals[6];
+            double orig_vals[6];
             float new_vals[9];
             rv->GetTuple(i, orig_vals);
             new_vals[0] = orig_vals[0];  // XX

@@ -72,9 +72,9 @@ class VISWINDOW_API VisWinAxes : public VisWinColleague
                               VisWinAxes(VisWindowColleagueProxy &);
     virtual                  ~VisWinAxes();
 
-    virtual void              SetForegroundColor(float, float, float);
+    virtual void              SetForegroundColor(double, double, double);
     virtual void              UpdateView(void);
-    virtual void              SetViewport(float, float, float, float);
+    virtual void              SetViewport(double, double, double, double);
     virtual void              UpdatePlotList(std::vector<avtActor_p> &);
 
     virtual void              Start2DMode(void);
@@ -131,9 +131,9 @@ class VISWINDOW_API VisWinAxes : public VisWinColleague
     bool                      userYTitle;
     bool                      userYUnits;
 
-    void                      AdjustValues(float, float, float, float);
-    void                      AdjustRange(float, float, float, float);
-    void                      GetRange(float &, float &, float &, float &);
+    void                      AdjustValues(double, double, double, double);
+    void                      AdjustRange(double, double, double, double);
+    void                      GetRange(double &, double &, double &, double &);
     void                      AddAxesToWindow(void);
     void                      RemoveAxesFromWindow(void);
     bool                      ShouldAddAxes(void);

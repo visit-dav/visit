@@ -46,11 +46,11 @@ QvisScreenPositionEdit::QvisScreenPositionEdit(QWidget *parent,
         WType_Popup);
     screenPositionPopup->setFixedSize(QSize(150,150));
     connect(screenPositionPopup,
-            SIGNAL(intermediateScreenPositionChanged(float,float)),
-            this, SLOT(updateText(float, float)));
+            SIGNAL(intermediateScreenPositionChanged(double,double)),
+            this, SLOT(updateText(double, double)));
     connect(screenPositionPopup,
-            SIGNAL(screenPositionChanged(float,float)),
-            this, SLOT(newScreenPosition(float, float)));
+            SIGNAL(screenPositionChanged(double,double)),
+            this, SLOT(newScreenPosition(double, double)));
 
     popupTimer = new QTimer(this, "popupTimer");
     connect(popupTimer, SIGNAL(timeout()),
@@ -93,10 +93,10 @@ QvisScreenPositionEdit::~QvisScreenPositionEdit()
 // ****************************************************************************
 
 void
-QvisScreenPositionEdit::setPosition(float x, float y)
+QvisScreenPositionEdit::setPosition(double x, double y)
 {
-    screenX = (x < 0.f) ? 0.f : ((x > 1.f) ? 1.f : x);
-    screenY = (y < 0.f) ? 0.f : ((y > 1.f) ? 1.f : y);
+    screenX = (x < 0.) ? 0. : ((x > 1.) ? 1. : x);
+    screenY = (y < 0.) ? 0. : ((y > 1.) ? 1. : y);
     updateText(screenX, screenY);
     screenPositionPopup->setScreenPosition(screenX, screenY);
 }
@@ -122,10 +122,10 @@ QvisScreenPositionEdit::setPosition(float x, float y)
 // ****************************************************************************
 
 bool
-QvisScreenPositionEdit::getPosition(float &x, float &y)
+QvisScreenPositionEdit::getPosition(double &x, double &y)
 {
     bool okay = false;
-    float newX, newY;
+    double newX, newY;
 
     if((okay = getCurrentValues(&newX, &newY)) == true)
     {
@@ -157,12 +157,12 @@ QvisScreenPositionEdit::getPosition(float &x, float &y)
 // ****************************************************************************
 
 bool
-QvisScreenPositionEdit::getCurrentValues(float *newX, float *newY)
+QvisScreenPositionEdit::getCurrentValues(double *newX, double *newY)
 {
     QString temp(lineEdit->displayText().simplifyWhiteSpace());
     bool okay = !temp.isEmpty();
     if(okay)
-        okay = (sscanf(temp.latin1(), "%g %g", newX, newY) == 2);
+        okay = (sscanf(temp.latin1(), "%lg %lg", newX, newY) == 2);
 
     return okay;
 }
@@ -188,7 +188,7 @@ QvisScreenPositionEdit::getCurrentValues(float *newX, float *newY)
 // ****************************************************************************
 
 void
-QvisScreenPositionEdit::updateText(float x, float y)
+QvisScreenPositionEdit::updateText(double x, double y)
 {
     QString tmp;
     tmp.sprintf("%g %g", x, y);
@@ -213,7 +213,7 @@ QvisScreenPositionEdit::updateText(float x, float y)
 // ****************************************************************************
 
 void
-QvisScreenPositionEdit::newScreenPosition(float x, float y)
+QvisScreenPositionEdit::newScreenPosition(double x, double y)
 {
     screenX = x;
     screenY = y;
@@ -306,7 +306,7 @@ QvisScreenPositionEdit::closePopup()
 void
 QvisScreenPositionEdit::returnPressed()
 {
-    float newX, newY;
+    double newX, newY;
     if(getCurrentValues(&newX, &newY))
     {
         newScreenPosition(newX, newY);

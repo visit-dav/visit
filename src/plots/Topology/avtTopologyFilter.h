@@ -60,7 +60,7 @@ class avtTopologyFilter : public avtDataTreeStreamer
                                             vtkDataArray *,vtkIdList *,bool &);
 
     bool                      GetLocalGradient(int, vtkDataSet *,
-                                               vtkDataArray *, float[3], int);
+                                               vtkDataArray *, double[3], int);
 };
 
 

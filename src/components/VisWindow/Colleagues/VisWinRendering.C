@@ -140,11 +140,11 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p)
 
     background   = vtkRenderer::New();
     background->SetInteractive(0);
-    background->SetLayer(2);
+    background->SetLayer(0);
 
     foreground   = vtkRenderer::New();
     foreground->SetInteractive(0);
-    foreground->SetLayer(0);
+    foreground->SetLayer(2);
 
     RemoveCullers(canvas);
     RemoveCullers(background);
@@ -321,7 +321,7 @@ VisWinRendering::GetForeground(void)
 // ****************************************************************************
 
 void
-VisWinRendering::SetViewport(float vl, float vb, float vr, float vt)
+VisWinRendering::SetViewport(double vl, double vb, double vr, double vt)
 {
     if (mediator.GetMode() == WINMODE_2D || mediator.GetMode() == WINMODE_CURVE)
     {
@@ -353,7 +353,7 @@ VisWinRendering::SetViewport(float vl, float vb, float vr, float vt)
 // ****************************************************************************
 
 void
-VisWinRendering::SetBackgroundColor(float br, float bg, float bb)
+VisWinRendering::SetBackgroundColor(double br, double bg, double bb)
 {
     canvas->SetBackground(br, bg, bb);
     background->SetBackground(br, bg, bb);
@@ -386,7 +386,7 @@ VisWinRendering::Start2DMode(void)
     //
     // The canvas should now be snapped to a smaller viewport.
     //
-    float vport[4];
+    double vport[4];
     mediator.GetViewport(vport);
     canvas->SetViewport(vport);
     canvas->ComputeAspect();
@@ -442,7 +442,7 @@ VisWinRendering::StartCurveMode(void)
     //
     // The canvas should now be snapped to a smaller viewport.
     //
-    float vport[4];
+    double vport[4];
     mediator.GetViewport(vport);
     canvas->SetViewport(vport);
     canvas->ComputeAspect();
@@ -545,7 +545,7 @@ VisWinRendering::Render()
     const bool forceTiming = true;
     const bool timingEnabled = visitTimer->Enabled(); 
     const int timingsIndex = visitTimer->StartTimer(forceTiming);
-    float rt = 0.;
+    double rt = 0.;
 
     if (realized)
     {
@@ -566,7 +566,7 @@ VisWinRendering::Render()
     }
 
     // Determine the time taken to render the image.
-    rt = (float)visitTimer->StopTimer(timingsIndex, "Render one frame", forceTiming);
+    rt = (double)visitTimer->StopTimer(timingsIndex, "Render one frame", forceTiming);
     if(timingEnabled)
     {
         // VisIt's timer is going so use its return value.
@@ -1324,23 +1324,23 @@ RemoveCullers(vtkRenderer *ren)
 //
 // ****************************************************************************
 
-float
-VisWinRendering::ComputeVectorTextScaleFactor(const float *pos, const float *vp)
+double
+VisWinRendering::ComputeVectorTextScaleFactor(const double *pos, const double *vp)
 {
-    float currVP[4];
+    double currVP[4];
     if (vp != NULL)
     {
         canvas->GetViewport(currVP);
         //
         // temporarily set vp to that which user specified 
         // 
-        canvas->SetViewport(const_cast<float *>(vp));
+        canvas->SetViewport(const_cast<double *>(vp));
     }
 
     //
     //  Convert our world-space position to NormalizedDisplay coordinates.
     //
-    float newX = pos[0], newY = pos[1], newZ = pos[2];
+    double newX = pos[0], newY = pos[1], newZ = pos[2];
     canvas->WorldToView(newX, newY, newZ);
     canvas->ViewToNormalizedViewport(newX, newY, newZ);
     canvas->NormalizedViewportToViewport(newX, newY);
@@ -1351,23 +1351,23 @@ VisWinRendering::ComputeVectorTextScaleFactor(const float *pos, const float *vp)
     //  x and y directions, then the normalized dispaly creates a square, whose
     //  diagonal length is sqrt(2) or 1.4142134624.  
     // 
-    const float displayDiag = 1.4142135624; 
+    const double displayDiag = 1.4142135624; 
 
     // 
     //  We want to find a position P2, that creates a diagonal with the 
     //  original point that is 1/20th of the display diagonal.
     //
 
-    const float target = displayDiag * 0.0125;
+    const double target = displayDiag * 0.0125;
 
     //
     //  Since we are dealing with a right-isosceles-triangle the new position
     //  will be offset in both x and y directions by target * cos(45); 
     //
   
-    const float cos45 = 0.7604059656;
+    const double cos45 = 0.7604059656;
 
-    float offset = target * cos45;
+    double offset = target * cos45;
 
     newX += offset;
     newY += offset;
@@ -1390,17 +1390,17 @@ VisWinRendering::ComputeVectorTextScaleFactor(const float *pos, const float *vp)
     // THIS MAY BE A DISPLAY-DEPENDENT RESULT! 
     // 
 
-    const float avgTextDiag = 1.3494765;
+    const double avgTextDiag = 1.3494765;
 
     //
     //  Calculate our scale factor, by determining the new target and using
     //  the avgTextDiag to normalize the results across all the pick letters.
     //
 
-    float dxsqr = (newX - pos[0]) * (newX - pos[0]);
-    float dysqr = (newY - pos[1]) * (newY - pos[1]);
-    float dzsqr = (newZ - pos[2]) * (newZ - pos[2]);
-    float worldTarget = sqrt(dxsqr + dysqr + dzsqr); 
+    double dxsqr = (newX - pos[0]) * (newX - pos[0]);
+    double dysqr = (newY - pos[1]) * (newY - pos[1]);
+    double dzsqr = (newZ - pos[2]) * (newZ - pos[2]);
+    double worldTarget = sqrt(dxsqr + dysqr + dzsqr); 
 
     if (vp != NULL)
     {
@@ -1484,10 +1484,10 @@ VisWinRendering::SetAntialiasing(bool enabled)
 // ****************************************************************************
 
 void
-VisWinRendering::GetRenderTimes(float times[6]) const
+VisWinRendering::GetRenderTimes(double times[6]) const
 {
     times[0] = minRenderTime;
-    times[1] = (nRenders > 0) ? (summedRenderTime / float(nRenders)) : 0.;
+    times[1] = (nRenders > 0) ? (summedRenderTime / double(nRenders)) : 0.;
     times[2] = maxRenderTime;
     times[3] = curRenderTimes[0];
     times[4] = curRenderTimes[1];
@@ -1617,7 +1617,7 @@ VisWinRendering::SetSurfaceRepresentation(int rep)
 // ****************************************************************************
 
 void
-VisWinRendering::SetSpecularProperties(bool flag, float coeff, float power,
+VisWinRendering::SetSpecularProperties(bool flag, double coeff, double power,
                                        const ColorAttribute &color)
 {
     specularFlag  = flag;

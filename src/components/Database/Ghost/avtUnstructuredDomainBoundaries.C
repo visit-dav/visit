@@ -856,8 +856,9 @@ avtUnstructuredDomainBoundaries::ConfirmMesh(vector<int>       domainNum,
             int d1ptId = smap.begin()->first;
             int d2ptId = smap.begin()->second;
 
-            float *pt1 = meshes[i]->GetPoint(d1ptId);
-            float *pt2 = meshes[j]->GetPoint(d2ptId);
+            double pt1[3], pt2[3];
+            meshes[i]->GetPoint(d1ptId, pt1);
+            meshes[j]->GetPoint(d2ptId, pt2);
 
             const double epsilon = 1e-12;
             

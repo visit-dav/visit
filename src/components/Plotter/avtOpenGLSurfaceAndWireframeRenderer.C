@@ -266,7 +266,7 @@ Draw01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
     int i, j; 
     vtkIdType npts = 0; 
 
-    const float *vertices = p->GetPoint(0);
+    const float *vertices = (float*)p->GetVoidPointer(0);
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
     int nCells = aPrim->GetNumberOfCells();
@@ -343,8 +343,8 @@ DrawN013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
 
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    const float *normals  = n->GetTuple(0);
-    const float *vertices = p->GetPoint(0);
+    const float *normals  = (float*)n->GetVoidPointer(0);
+    const float *vertices = (float*)p->GetVoidPointer(0);
  
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -423,8 +423,8 @@ DrawCN013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    const float *normals  = n->GetTuple(0);
-    const float *vertices = p->GetPoint(0);
+    const float *normals  = (float*)n->GetVoidPointer(0);
+    const float *vertices = (float*)p->GetVoidPointer(0);
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -502,7 +502,7 @@ DrawS01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
     vtkIdType npts = 0;
  
     const unsigned char *colors = c->GetPointer(0);
-    const float *vertices = p->GetPoint(0);
+    const float *vertices = (float*)p->GetVoidPointer(0);
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -583,8 +583,8 @@ DrawNS013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
 
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    const float *normals = n->GetTuple(0);
-    const float *vertices = p->GetPoint(0);
+    const float *normals  = (float*)n->GetVoidPointer(0);
+    const float *vertices = (float*)p->GetVoidPointer(0);
     const unsigned char *colors = c->GetPointer(0);
 
     int nCells = aPrim->GetNumberOfCells();
@@ -663,8 +663,8 @@ DrawCNS013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoint
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    const float *normals = n->GetTuple(0);
-    const float *vertices = p->GetPoint(0);
+    const float *normals  = (float*)n->GetVoidPointer(0);
+    const float *vertices = (float*)p->GetVoidPointer(0);
     const unsigned char *colors = c->GetPointer(0);
 
     int nCells = aPrim->GetNumberOfCells();
@@ -744,8 +744,8 @@ DrawT01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
  
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    const float *vertices = p->GetPoint(0);
-    const float *textures = t->GetTuple(0);
+    const float *vertices = (float*)p->GetVoidPointer(0);
+    const float *textures = (float*)t->GetVoidPointer(0);
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -822,9 +822,9 @@ DrawNT013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    const float *textures = t->GetTuple(0);
-    const float *normals  = n->GetTuple(0);
-    const float *vertices = p->GetPoint(0);
+    const float *textures = (float*)t->GetVoidPointer(0);
+    const float *normals  = (float*)n->GetVoidPointer(0);
+    const float *vertices = (float*)p->GetVoidPointer(0);
  
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -903,9 +903,9 @@ DrawCNT013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoint
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    const float *normals  = n->GetTuple(0);
-    const float *textures = t->GetTuple(0);
-    const float *vertices = p->GetPoint(0);
+    const float *normals  = (float*)n->GetVoidPointer(0);
+    const float *textures = (float*)t->GetVoidPointer(0);
+    const float *vertices = (float*)p->GetVoidPointer(0);
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -985,8 +985,8 @@ DrawST01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
     const unsigned char *colors = c->GetPointer(0);
-    const float *textures = t->GetTuple(0);
-    const float *vertices = p->GetPoint(0);
+    const float *textures = (float*)t->GetVoidPointer(0);
+    const float *vertices = (float*)p->GetVoidPointer(0);
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -1066,9 +1066,9 @@ DrawNST013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
     const unsigned char *colors = c->GetPointer(0);
-    const float *textures = t->GetTuple(0);
-    const float *normals = n->GetTuple(0);
-    const float *vertices = p->GetPoint(0);
+    const float *textures = (float*)t->GetVoidPointer(0);
+    const float *normals  = (float*)n->GetVoidPointer(0);
+    const float *vertices = (float*)p->GetVoidPointer(0);
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -1147,10 +1147,10 @@ DrawCNST013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum,
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    const float *normals = n->GetTuple(0);
     const unsigned char *colors = c->GetPointer(0);
-    const float *textures = t->GetTuple(0);
-    const float *vertices = p->GetPoint(0);
+    const float *normals  = (float*)n->GetVoidPointer(0);
+    const float *textures = (float*)t->GetVoidPointer(0);
+    const float *vertices = (float*)p->GetVoidPointer(0);
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -1232,7 +1232,7 @@ DrawCS01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints 
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
     const unsigned char *colors = c->GetPointer(0);
-    const float *vertices = p->GetPoint(0);
+    const float *vertices = (float*)p->GetVoidPointer(0);
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0); 
@@ -1311,8 +1311,8 @@ DrawNCS013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoint
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
     const unsigned char *colors = c->GetPointer(0);
-    const float *normals = n->GetTuple(0);
-    const float *vertices = p->GetPoint(0);
+    const float *normals  = (float*)n->GetVoidPointer(0);
+    const float *vertices = (float*)p->GetVoidPointer(0);
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0); 
@@ -1395,8 +1395,8 @@ DrawCNCS013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum,
     GLenum previousGlFunction=GL_INVALID_VALUE;
     
     const unsigned char *colors = c->GetPointer(0);
-    const float *normals = n->GetTuple(0);
-    const float *vertices = p->GetPoint(0);
+    const float *normals  = (float*)n->GetVoidPointer(0);
+    const float *vertices = (float*)p->GetVoidPointer(0);
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -1479,8 +1479,8 @@ DrawCST01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
     const unsigned char *colors = c->GetPointer(0);
-    const float *textures = t->GetTuple(0);
-    const float *vertices = p->GetPoint(0);
+    const float *textures = (float*)t->GetVoidPointer(0);
+    const float *vertices = (float*)p->GetVoidPointer(0);
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -1562,9 +1562,9 @@ DrawNCST013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum,
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
     const unsigned char *colors = c->GetPointer(0);
-    const float *textures = t->GetTuple(0);
-    const float *normals = n->GetTuple(0);
-    const float *vertices = p->GetPoint(0);
+    const float *textures = (float*)t->GetVoidPointer(0);
+    const float *normals  = (float*)n->GetVoidPointer(0);
+    const float *vertices = (float*)p->GetVoidPointer(0);
   
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -1647,9 +1647,9 @@ DrawCNCST013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum,
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
     const unsigned char *colors = c->GetPointer(0);
-    const float *normals = n->GetTuple(0); 
-    const float *textures = t->GetTuple(0); 
-    const float *vertices = p->GetPoint(0); 
+    const float *normals  = (float*)n->GetVoidPointer(0); 
+    const float *textures = (float*)t->GetVoidPointer(0); 
+    const float *vertices = (float*)p->GetVoidPointer(0); 
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -1731,7 +1731,7 @@ Draw3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    const float *vertices = p->GetPoint(0); 
+    const float *vertices = (float*)p->GetVoidPointer(0); 
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -1810,7 +1810,7 @@ DrawS3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
     const unsigned char *colors = c->GetPointer(0);
-    const float *vertices = p->GetPoint(0); 
+    const float *vertices = (float*)p->GetVoidPointer(0); 
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -1889,8 +1889,8 @@ DrawT3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    const float *textures = t->GetTuple(0); 
-    const float *vertices = p->GetPoint(0); 
+    const float *textures = (float*)t->GetVoidPointer(0); 
+    const float *vertices = (float*)p->GetVoidPointer(0); 
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -1970,8 +1970,8 @@ DrawST3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
     const unsigned char *colors = c->GetPointer(0);
-    const float *textures = t->GetTuple(0); 
-    const float *vertices = p->GetPoint(0); 
+    const float *textures = (float*)t->GetVoidPointer(0); 
+    const float *vertices = (float*)p->GetVoidPointer(0); 
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -2051,7 +2051,7 @@ DrawCS3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
     const unsigned char *colors = c->GetPointer(0);
-    const float *vertices = p->GetPoint(0); 
+    const float *vertices = (float*)p->GetVoidPointer(0); 
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -2132,8 +2132,8 @@ DrawCST3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints 
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
     const unsigned char *colors = c->GetPointer(0);
-    const float *textures = t->GetTuple(0); 
-    const float *vertices = p->GetPoint(0); 
+    const float *textures = (float*)t->GetVoidPointer(0); 
+    const float *vertices = (float*)p->GetVoidPointer(0); 
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -2214,7 +2214,7 @@ Draw2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    const float *vertices = p->GetPoint(0); 
+    const float *vertices = (float*)p->GetVoidPointer(0); 
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -2291,7 +2291,7 @@ DrawS2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
     const unsigned char *colors = c->GetPointer(0);
-    const float *vertices = p->GetPoint(0); 
+    const float *vertices = (float*)p->GetVoidPointer(0); 
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -2369,8 +2369,8 @@ DrawT2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    const float *textures = t->GetTuple(0); 
-    const float *vertices = p->GetPoint(0); 
+    const float *textures = (float*)t->GetVoidPointer(0); 
+    const float *vertices = (float*)p->GetVoidPointer(0); 
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -2449,8 +2449,8 @@ DrawST2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
     const unsigned char *colors = c->GetPointer(0);
-    const float *textures = t->GetTuple(0); 
-    const float *vertices = p->GetPoint(0); 
+    const float *textures = (float*)t->GetVoidPointer(0); 
+    const float *vertices = (float*)p->GetVoidPointer(0); 
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -2531,7 +2531,7 @@ DrawCS2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
     const unsigned char *colors = c->GetPointer(0);
-    const float *vertices = p->GetPoint(0); 
+    const float *vertices = (float*)p->GetVoidPointer(0); 
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -2612,8 +2612,8 @@ DrawCST2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints 
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
     const unsigned char *colors = c->GetPointer(0);
-    const float *textures = t->GetTuple(0); 
-    const float *vertices = p->GetPoint(0); 
+    const float *textures = (float*)t->GetVoidPointer(0); 
+    const float *vertices = (float*)p->GetVoidPointer(0); 
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -2692,7 +2692,7 @@ DrawW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p,
     int i, j;
     vtkIdType npts = 0;
 
-    const float *vertices = p->GetPoint(0); 
+    const float *vertices = (float*)p->GetVoidPointer(0); 
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -2767,8 +2767,8 @@ DrawNW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p,
     int i, j;
     vtkIdType npts = 0;
   
-    const float *normals = n->GetTuple(0); 
-    const float *vertices = p->GetPoint(0); 
+    const float *normals  = (float*)n->GetVoidPointer(0); 
+    const float *vertices = (float*)p->GetVoidPointer(0); 
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -2847,7 +2847,7 @@ DrawSW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p,
     vtkIdType npts = 0;
   
     const unsigned char *colors = c->GetPointer(0);
-    const float *vertices = p->GetPoint(0); 
+    const float *vertices = (float*)p->GetVoidPointer(0); 
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -2926,8 +2926,8 @@ DrawNSW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, vtkDataArray *n,
     vtkIdType npts = 0;
  
     const unsigned char *colors = c->GetPointer(0);
-    const float *normals = n->GetTuple(0); 
-    const float *vertices = p->GetPoint(0); 
+    const float *normals  = (float*)n->GetVoidPointer(0); 
+    const float *vertices = (float*)p->GetVoidPointer(0); 
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -3007,8 +3007,8 @@ DrawTW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, vtkDataArray *,
     int i, j; 
     vtkIdType npts = 0;
  
-    const float *textures = t->GetTuple(0); 
-    const float *vertices = p->GetPoint(0); 
+    const float *textures = (float*)t->GetVoidPointer(0); 
+    const float *vertices = (float*)p->GetVoidPointer(0); 
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -3087,9 +3087,9 @@ DrawNTW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, vtkDataArray *n,
     int i, j; 
     vtkIdType npts = 0;
   
-    const float *normals = n->GetTuple(0); 
-    const float *textures = t->GetTuple(0); 
-    const float *vertices = p->GetPoint(0); 
+    const float *normals  = (float*)n->GetVoidPointer(0); 
+    const float *textures = (float*)t->GetVoidPointer(0); 
+    const float *vertices = (float*)p->GetVoidPointer(0); 
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -3170,8 +3170,8 @@ DrawSTW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, vtkDataArray *,
     vtkIdType npts = 0;
   
     const unsigned char *colors = c->GetPointer(0);
-    const float *textures = t->GetTuple(0); 
-    const float *vertices = p->GetPoint(0); 
+    const float *textures = (float*)t->GetVoidPointer(0); 
+    const float *vertices = (float*)p->GetVoidPointer(0); 
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -3253,9 +3253,9 @@ DrawNSTW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, vtkDataArray *n
     vtkIdType npts = 0;
   
     const unsigned char *colors = c->GetPointer(0);
-    const float *normals = n->GetTuple(0); 
-    const float *textures = t->GetTuple(0); 
-    const float *vertices = p->GetPoint(0); 
+    const float *normals  = (float*)n->GetVoidPointer(0); 
+    const float *textures = (float*)t->GetVoidPointer(0); 
+    const float *vertices = (float*)p->GetVoidPointer(0); 
 
     int nCells = aPrim->GetNumberOfCells();
     vtkIdType *ids = aPrim->GetData()->GetPointer(0);
@@ -3401,7 +3401,7 @@ avtOpenGLSurfaceAndWireframeRenderer::SetupGraphicsLibrary2()
     GLenum method;
     float Info[4];
     GLenum Face;
-    float  color[4];
+    double  color[4];
 
     // unbind any textures for starters
     glDisable(GL_TEXTURE_2D);
@@ -3429,7 +3429,7 @@ avtOpenGLSurfaceAndWireframeRenderer::SetupGraphicsLibrary2()
 
     Info[3] = prop->GetOpacity();
     // set ambient color
-    float coeff = prop->GetAmbient();
+    double coeff = prop->GetAmbient();
     prop->GetAmbientColor(color);
     for (i=0; i < 3; i++) 
     {
@@ -3488,7 +3488,7 @@ avtOpenGLSurfaceAndWireframeRenderer::SetupGraphicsLibrary2()
     // points or lines are encountered without normals. 
     prop->GetColor(color);
     color[3] = 1.0;
-    glColor4fv(color);
+    glColor4dv(color);
 
     // Set the PointSize
     glPointSize(prop->GetPointSize());
@@ -4116,10 +4116,10 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
   
     p = input->GetPoints();
   
-    float edgeColor[4];
+    double edgeColor[4];
     prop->GetEdgeColor(edgeColor); 
     edgeColor[3] = 1.; 
-    glColor4fv(edgeColor);
+    glColor4dv(edgeColor);
 
     t = input->GetPointData()->GetTCoords();
     if (t) 

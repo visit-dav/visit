@@ -99,7 +99,7 @@ class avtViSUSFileFormat : public avtMTSDFileFormat
 
     int globalZoneCount[3];
 
-    float *globalNodeCoords[3];
+    double *globalNodeCoords[3];
 
     int *fieldSampleSize;
 

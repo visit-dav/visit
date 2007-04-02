@@ -76,20 +76,20 @@ class PLOTTER_API  avtVectorGlyphMapper : public avtMapper
     void                       ColorByMagOn(void);
     void                       ColorByScalarOn(const std::string &);
     void                       ColorByMagOff(const unsigned char [3]);
-    void                       SetScale(float);
+    void                       SetScale(double);
     void                       SetScaleByMagnitude(bool);
     void                       SetAutoScale(bool);
     void                       SetLookupTable(vtkLookupTable *lut);
    
     // methods for setting limits for coloring
     void                       SetLimitsMode(const int);
-    void                       SetMin(float);
+    void                       SetMin(double);
     void                       SetMinOff(void);
-    void                       SetMax(float);
+    void                       SetMax(double);
     void                       SetMaxOff(void);
-    virtual bool               GetRange(float &, float &);
-    virtual bool               GetCurrentRange(float &, float &);
-    bool                       GetVarRange(float &, float &);
+    virtual bool               GetRange(double &, double &);
+    virtual bool               GetCurrentRange(double &, double &);
+    bool                       GetVarRange(double &, double &);
 
   protected:
     vtkPolyData               *glyph;
@@ -100,11 +100,11 @@ class PLOTTER_API  avtVectorGlyphMapper : public avtMapper
     bool                       colorByScalar;
     std::string                scalarName;
     unsigned char              glyphColor[3];
-    float                      scale;
+    double                     scale;
     bool                       scaleByMagnitude;
     bool                       autoScale;
 
-    float                      min, max;
+    double                     min, max;
     bool                       setMin, setMax;
     int                        limitsMode;
 

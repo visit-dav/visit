@@ -412,7 +412,7 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
             for (int i=0; i<nx; i+=nx-1)
             {
                 int ijk[] = {i,j,k};
-                float worldpt[4] = {0,0,0,1};
+                double worldpt[4] = {0,0,0,1};
                 grid->GetPoint(grid->ComputePointId(ijk), worldpt);
 
                 // Get the world space coordinates
@@ -430,7 +430,7 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
                 bbox.t[pt_index] = float(k) / float(newnz + 0) + (0.5 / float(newnz));
 
                 // Get the camera space coordinates
-                float viewpt[4];
+                double viewpt[4];
                 cameraMatrix->MultiplyPoint(worldpt, viewpt);
                 float dist = viewpt[2];
 

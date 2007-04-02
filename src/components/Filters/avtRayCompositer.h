@@ -52,8 +52,8 @@ class AVTFILTERS_API avtRayCompositer : public avtSamplePointsToImageFilter
                                              { return "Compositing samples"; };
     void                  SetBackgroundColor(const unsigned char [3]);
     void                  SetBackgroundMode(int mode);
-    void                  SetGradientBackgroundColors(const float [3],
-                                                      const float [3]);
+    void                  SetGradientBackgroundColors(const double [3],
+                                                      const double [3]);
     void                  InsertOpaqueImage(avtImage_p);
     void                  UpdateCompositeProgress(int, int);
 
@@ -61,8 +61,8 @@ class AVTFILTERS_API avtRayCompositer : public avtSamplePointsToImageFilter
     avtRayFunction       *rayfoo;
     int                   backgroundMode;
     unsigned char         background[3];
-    float                 gradBG1[3];
-    float                 gradBG2[3];
+    double                gradBG1[3];
+    double                gradBG2[3];
     avtImage_p            opaqueImage;
 
     virtual void          Execute(void);

@@ -111,9 +111,9 @@ vtkCracksClipper::SetUpClipFunction(int cellId)
   if (cdir == NULL|| centers == NULL || cwidth == NULL)
     EXCEPTION0(ImproperUseException); 
 
-  float *dir = cdir->GetTuple(cellId);
-  float *center = centers->GetTuple(cellId);
-  float crackWidth = cwidth->GetValue(cellId);
+  double *dir = cdir->GetTuple(cellId);
+  double *center = centers->GetTuple(cellId);
+  double crackWidth = cwidth->GetValue(cellId);
 
   if (crackWidth == 0)
     {
@@ -125,7 +125,7 @@ vtkCracksClipper::SetUpClipFunction(int cellId)
 
   vtkPlane *plane = vtkPlane::New();
 
-  float multiplier = 0.5;
+  double multiplier = 0.5;
 
   if (!useOppositePlane) 
     {
@@ -137,7 +137,7 @@ vtkCracksClipper::SetUpClipFunction(int cellId)
     plane->SetNormal(dir);
     }
 
-  float po[3], tmp1[3], tmp2[3];
+  double po[3], tmp1[3], tmp2[3];
   for (int i = 0; i < 3; i++)
     {
     po[i] = center[i] +  multiplier*crackWidth*dir[i]; 

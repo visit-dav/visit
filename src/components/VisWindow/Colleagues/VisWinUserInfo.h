@@ -51,7 +51,7 @@ class VISWINDOW_API VisWinUserInfo : public VisWinColleague
                          VisWinUserInfo(VisWindowColleagueProxy &);
     virtual             ~VisWinUserInfo();
 
-    virtual void         SetForegroundColor(float, float, float);
+    virtual void         SetForegroundColor(double, double, double);
 
     virtual void         HasPlots(void);
     virtual void         NoPlots(void);

@@ -204,7 +204,7 @@ avtBestFitLineQuery::Execute(vtkDataSet *ds, const int dom)
     sums[N_SUM] += double(npts);
     for(vtkIdType i = 0; i < npts; ++i)
     {
-        float fptr[3];
+        double fptr[3];
         ds->GetPoint(i, fptr);
 
         sums[X_SUM] += double(fptr[0]);

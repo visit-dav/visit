@@ -388,7 +388,7 @@ avtTensorPlot::SetLegend(bool legendOn)
 void
 avtTensorPlot::SetLegendRanges()
 {
-    float min = 0., max = 1.;
+    double min = 0., max = 1.;
     tensorMapper->GetRange(min, max);
 
     //

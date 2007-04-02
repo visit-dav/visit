@@ -143,9 +143,9 @@ avtRevolvedVolume::GetZoneVolume(vtkCell *cell)
     vtkPoints *pts = cell->GetPoints();
     if (cellType == VTK_TRIANGLE)
     {
-        float p0[3];
-        float p1[3];
-        float p2[3];
+        double p0[3];
+        double p1[3];
+        double p2[3];
         pts->GetPoint(0, p0);
         pts->GetPoint(1, p1);
         pts->GetPoint(2, p2);
@@ -161,10 +161,10 @@ avtRevolvedVolume::GetZoneVolume(vtkCell *cell)
     }
     else if (cellType == VTK_QUAD)
     {
-        float p0[3];
-        float p1[3];
-        float p2[3];
-        float p3[3];
+        double p0[3];
+        double p1[3];
+        double p2[3];
+        double p3[3];
         pts->GetPoint(0, p0);
         pts->GetPoint(1, p1);
         pts->GetPoint(2, p2);
@@ -197,10 +197,10 @@ avtRevolvedVolume::GetZoneVolume(vtkCell *cell)
     }
     else if (cellType == VTK_PIXEL)
     {
-        float p0[3];
-        float p1[3];
-        float p2[3];
-        float p3[3];
+        double p0[3];
+        double p1[3];
+        double p2[3];
+        double p3[3];
         pts->GetPoint(0, p0);
         pts->GetPoint(1, p1);
         pts->GetPoint(2, p2);

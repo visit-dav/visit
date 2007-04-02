@@ -54,7 +54,7 @@ class QUERY_API avtNodePickQuery : public avtPickQuery
     int                             DeterminePickedNode(vtkDataSet *);
 
   private:
-    float                           minDist;
+    double                          minDist;
     int                             foundNode;
     int                             foundDomain;
 };

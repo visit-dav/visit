@@ -1,6 +1,6 @@
 SET(KIT Common)
 SET(UKIT COMMON)
-SET(KIT_TCL_LIBS ${TCL_LIBRARY})
+SET(KIT_TCL_LIBS ${VTK_TCL_LIBRARIES})
 SET(KIT_PYTHON_LIBS)
 SET(KIT_JAVA_LIBS)
 SET(KIT_LIBS)
@@ -17,6 +17,8 @@ vtkAbstractMapper.cxx
 vtkAbstractTransform.cxx
 vtkActor2D.cxx
 vtkActor2DCollection.cxx
+vtkAlgorithm.cxx
+vtkAlgorithmOutput.cxx
 vtkAmoebaMinimizer.cxx
 vtkAssemblyNode.cxx
 vtkAssemblyPath.cxx
@@ -35,6 +37,10 @@ vtkCharArray.cxx
 vtkCollection.cxx
 vtkCollectionIterator.cxx
 vtkCommand.cxx
+vtkCompositeDataIterator.cxx
+vtkCompositeDataSet.cxx
+vtkCompositeDataVisitor.cxx
+vtkCompositeDataCommand.cxx
 vtkContourValues.cxx
 vtkConvexPointSet.cxx
 vtkCoordinate.cxx
@@ -52,11 +58,13 @@ vtkDataSetCollection.cxx
 vtkDebugLeaks.cxx
 vtkDebugLeaksManager.cxx
 vtkDirectory.cxx
+vtkDistributedExecutive.cxx
 vtkDoubleArray.cxx
 vtkDynamicLoader.cxx
 vtkEdgeTable.cxx
 vtkEmptyCell.cxx
 vtkErrorCode.cxx
+vtkExecutive.cxx
 vtkExplicitCell.cxx
 vtkExtentSplitter.cxx
 vtkExtentTranslator.cxx
@@ -65,14 +73,20 @@ vtkFileOutputWindow.cxx
 vtkFloatArray.cxx
 vtkFunctionParser.cxx
 vtkFunctionSet.cxx
+vtkGarbageCollector.cxx
 vtkGeneralTransform.cxx
 vtkGenericCell.cxx
 vtkHeap.cxx
+vtkHexagonalPrism.cxx
 vtkHexahedron.cxx
+vtkHierarchicalBoxDataSet.cxx
+vtkHierarchicalBoxVisitor.cxx
+vtkHierarchicalDataSet.cxx
+vtkHierarchicalDataIterator.cxx
 vtkHomogeneousTransform.cxx
+vtkIOStream.cxx
 vtkIdList.cxx
 vtkIdListCollection.cxx
-vtkIdType.cxx
 vtkIdTypeArray.cxx
 vtkIdentityTransform.cxx
 vtkImageData.cxx
@@ -81,6 +95,17 @@ vtkImageProgressIterator.cxx
 vtkImplicitFunction.cxx
 vtkImplicitFunctionCollection.cxx
 vtkIndent.cxx
+vtkInformation.cxx
+vtkInformationDataObjectVectorKey.cxx
+vtkInformationDataObjectKey.cxx
+vtkInformationInformationKey.cxx
+vtkInformationInformationVectorKey.cxx
+vtkInformationIntegerKey.cxx
+vtkInformationIntegerVectorKey.cxx
+vtkInformationKey.cxx
+vtkInformationKeyVectorKey.cxx
+vtkInformationStringKey.cxx
+vtkInformationVector.cxx
 vtkInitialValueProblemSolver.cxx
 vtkInstantiator.cxx
 vtkIntArray.cxx
@@ -97,6 +122,9 @@ vtkMath.cxx
 vtkMatrix4x4.cxx
 vtkMatrixToHomogeneousTransform.cxx
 vtkMatrixToLinearTransform.cxx
+vtkMultiBlockDataIterator.cxx
+vtkMultiBlockDataSet.cxx
+vtkMultiBlockDataVisitor.cxx
 vtkMultiPartExtentTranslator.cxx
 vtkMultiThreader.cxx
 vtkMutexLock.cxx
@@ -112,6 +140,7 @@ vtkOrderedTriangulator.cxx
 vtkOutputWindow.cxx
 vtkOverrideInformation.cxx
 vtkOverrideInformationCollection.cxx
+vtkPentagonalPrism.cxx
 vtkPerspectiveTransform.cxx
 vtkPixel.cxx
 vtkPlane.cxx
@@ -135,9 +164,11 @@ vtkPyramid.cxx
 vtkQuad.cxx
 vtkQuadraticEdge.cxx
 vtkQuadraticHexahedron.cxx
+vtkQuadraticPyramid.cxx
 vtkQuadraticQuad.cxx
 vtkQuadraticTetra.cxx
 vtkQuadraticTriangle.cxx
+vtkQuadraticWedge.cxx
 vtkQuadric.cxx
 vtkRectilinearGrid.cxx
 vtkReferenceCount.cxx
@@ -149,9 +180,11 @@ vtkShortArray.cxx
 vtkSmartPointerBase.cxx
 vtkSource.cxx
 vtkSphericalTransform.cxx
+vtkStdString.cxx
 vtkStructuredData.cxx
 vtkStructuredGrid.cxx
 vtkStructuredPoints.cxx
+vtkStructuredVisibilityConstraint.cxx
 vtkTableExtentTranslator.cxx
 vtkTensor.cxx
 vtkTetra.cxx
@@ -161,6 +194,7 @@ vtkTransform.cxx
 vtkTransformCollection.cxx
 vtkTriangle.cxx
 vtkTriangleStrip.cxx
+vtkUniformGrid.cxx
 vtkUnsignedCharArray.cxx
 vtkUnsignedIntArray.cxx
 vtkUnsignedLongArray.cxx
@@ -192,12 +226,28 @@ vtkCallbackCommand
 vtkCell
 vtkCell3D
 vtkCommand
+vtkCompositeDataIterator
+vtkCompositeDataSet
+vtkCompositeDataVisitor
+vtkCompositeDataCommand
 vtkDataArray
 vtkDataSet
+vtkExecutive
 vtkExplicitCell
 vtkFunctionSet
+vtkGarbageCollector
+vtkHierarchicalDataSet
 vtkHomogeneousTransform
 vtkImplicitFunction
+vtkInformationDataObjectKey
+vtkInformationDataObjectVectorKey
+vtkInformationInformationKey
+vtkInformationInformationVectorKey
+vtkInformationIntegerKey
+vtkInformationIntegerVectorKey
+vtkInformationKey
+vtkInformationKeyVectorKey
+vtkInformationStringKey
 vtkInitialValueProblemSolver
 vtkLinearTransform
 vtkLocator
@@ -225,7 +275,8 @@ SET_SOURCE_FILES_PROPERTIES(
   vtkCommand.cxx
   vtkDebugLeaksManager.cxx
   vtkErrorCode.cxx
-  vtkIdType.cxx
+  vtkGarbageCollector.cxx
+  vtkIOStream.cxx
   vtkImageIterator.cxx
   vtkImageProgressIterator.cxx
   vtkIndent.cxx
@@ -234,6 +285,7 @@ SET_SOURCE_FILES_PROPERTIES(
   vtkOStreamWrapper.cxx
   vtkOldStyleCallbackCommand.cxx
   vtkSmartPointerBase.cxx
+  vtkStdString.cxx
   vtkTimeStamp.cxx
   WRAP_EXCLUDE
 )
@@ -248,11 +300,10 @@ SET(Kit_JAVA_EXTRA_SRCS vtkJavaUtil.cxx)
 # Start of common section
 
 # Setup vtkInstantiator registration for this library's classes.
-VTK_MAKE_INSTANTIATOR2(vtk${KIT}Instantiator KitInstantiator_SRCS
-                       ${Kit_SRCS}
-                       EXPORT_MACRO VTK_${UKIT}_EXPORT
-                       HEADER_LOCATION ${VTK_BINARY_DIR})
-
+VTK_MAKE_INSTANTIATOR3(vtk${KIT}Instantiator KitInstantiator_SRCS
+                       "${Kit_SRCS}"
+                       VTK_${UKIT}_EXPORT
+                       ${VTK_BINARY_DIR} "")
 ADD_LIBRARY(vtk${KIT} ${Kit_SRCS} ${Kit_EXTRA_SRCS} ${KitInstantiator_SRCS})
 
 IF(VTK_APPLE_SHARED_FLAGS_NEEDED)
@@ -297,9 +348,7 @@ IF (VTK_WRAP_PYTHON)
     ENDIF(WIN32)
   ENDIF(APPLE)
   IF(WIN32)
-    TARGET_LINK_LIBRARIES (vtk${KIT}Python
-                           debug ${PYTHON_DEBUG_LIBRARY}
-                           optimized ${PYTHON_LIBRARY})
+    TARGET_LINK_LIBRARIES (vtk${KIT}Python ${PYTHON_LIBRARY})
   ENDIF(WIN32)
   INSTALL_TARGETS(/lib/vtk vtk${KIT}Python)
 ENDIF (VTK_WRAP_PYTHON)
@@ -338,7 +387,9 @@ ENDIF(LOCALUSERMACRODEFINED)
 # -----------------------------------------------------------------
 
 INSTALL_FILES(/include/vtk .h
+  vtkAMRBox
   vtkCellType
+  vtkDataArrayTemplate
   vtkIOStream
   vtkIOStreamFwd
   vtkSetGet
@@ -359,7 +410,7 @@ IF(VTK_WRAP_PYTHON)
     vtkPythonUtil
   )
   IF (TK_LIBRARY)
-	IF(NOT VTK_USE_COCOA)
+        IF(NOT VTK_USE_COCOA)
       INSTALL_FILES(/include/vtk .h
         vtkTcl
         vtkTk
@@ -374,6 +425,7 @@ IF(VTK_WRAP_JAVA)
 ENDIF(VTK_WRAP_JAVA)
 
 INSTALL_FILES(/include/vtk .txx
+  vtkDataArrayTemplate
   vtkImageIterator
   vtkImageProgressIterator
 )

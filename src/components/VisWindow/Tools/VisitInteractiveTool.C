@@ -191,7 +191,7 @@ VisitInteractiveTool::ComputeDepthTranslationDistance()
 {
     avtVector retval;
     int *size = proxy.GetCanvas()->GetSize();
-    float bounds[6];
+    double bounds[6];
     proxy.GetBounds(bounds);
     double dX = bounds[1] - bounds[0];
     double dY = bounds[3] - bounds[2];

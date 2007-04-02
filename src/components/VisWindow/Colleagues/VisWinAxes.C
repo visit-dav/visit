@@ -20,8 +20,8 @@
 // Static Function Prototypes
 //
 
-static int   LabelExponent(float, float);
-static int   Digits(float, float);
+static int   LabelExponent(double, double);
+static int   Digits(double, double);
 
 
 using   std::string;
@@ -161,7 +161,7 @@ VisWinAxes::~VisWinAxes()
 // ****************************************************************************
 
 void
-VisWinAxes::SetForegroundColor(float fr, float fg, float fb)
+VisWinAxes::SetForegroundColor(double fr, double fg, double fb)
 {
     xAxis->GetProperty()->SetColor(fr, fg, fb);
     yAxis->GetProperty()->SetColor(fr, fg, fb);
@@ -290,7 +290,7 @@ VisWinAxes::StopCurveMode(void)
 // ****************************************************************************
 
 void
-VisWinAxes::SetViewport(float vl, float vb, float vr, float vt)
+VisWinAxes::SetViewport(double vl, double vb, double vr, double vt)
 {
     xAxis->GetPoint1Coordinate()->SetValue(vl, vb);
     xAxis->GetPoint2Coordinate()->SetValue(vr, vb);
@@ -486,7 +486,7 @@ VisWinAxes::NoPlots(void)
 void
 VisWinAxes::UpdateView(void)
 {
-    float  min_x = 0., max_x = 0., min_y = 0., max_y = 0.;
+    double  min_x = 0., max_x = 0., min_y = 0., max_y = 0.;
     GetRange(min_x, max_x, min_y, max_y);
 
     //
@@ -627,7 +627,7 @@ VisWinAxes::UpdatePlotList(vector<avtActor_p> &list)
 // ****************************************************************************
 
 void
-VisWinAxes::GetRange(float &min_x, float &max_x, float &min_y, float &max_y)
+VisWinAxes::GetRange(double &min_x, double &max_x, double &min_y, double &max_y)
 {
     VisWindow *vw = mediator;
 
@@ -690,7 +690,7 @@ VisWinAxes::GetRange(float &min_x, float &max_x, float &min_y, float &max_y)
 // ****************************************************************************
 
 void
-VisWinAxes::AdjustValues(float min_x, float max_x, float min_y, float max_y)
+VisWinAxes::AdjustValues(double min_x, double max_x, double min_y, double max_y)
 {
     int curPowX;
     int curPowY;
@@ -742,7 +742,7 @@ VisWinAxes::AdjustValues(float min_x, float max_x, float min_y, float max_y)
 // ****************************************************************************
 
 void
-VisWinAxes::AdjustRange(float min_x, float max_x, float min_y, float max_y)
+VisWinAxes::AdjustRange(double min_x, double max_x, double min_y, double max_y)
 {
     if (powX != 0)
     {
@@ -803,10 +803,10 @@ VisWinAxes::AdjustRange(float min_x, float max_x, float min_y, float max_y)
 // ****************************************************************************
 
 int
-Digits(float min, float max)
+Digits(double min, double max)
 {
-    float  range = max - min;
-    float  pow10 = -5.0;
+    double  range = max - min;
+    double  pow10 = -5.0;
     if (range > 0)
         pow10 = log10(range);
 
@@ -867,23 +867,23 @@ Digits(float min, float max)
 // ****************************************************************************
 
 int
-LabelExponent(float min, float max)
+LabelExponent(double min, double max)
 {
     //
     // Determine power of 10 to scale axis labels to.
     //
-    float range = (fabs(min) > fabs(max) ? fabs(min) : fabs(max));
+    double range = (fabs(min) > fabs(max) ? fabs(min) : fabs(max));
 
-    float pow10 = log10(range);
+    double pow10 = log10(range);
 
     //
     // Cutoffs for using scientific notation.
     //
-    static float  eformat_cut_min = -1.5;
-    static float  eformat_cut_max =  3.0;
-    static float  cut_min = pow(10.f, eformat_cut_min);
-    static float  cut_max = pow(10.f, eformat_cut_max);
-    float ipow10;
+    static double  eformat_cut_min = -1.5;
+    static double  eformat_cut_max =  3.0;
+    static double  cut_min = pow(10., eformat_cut_min);
+    static double  cut_max = pow(10., eformat_cut_max);
+    double ipow10;
     if (range < cut_min || range > cut_max)
     {
         //

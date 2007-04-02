@@ -35,8 +35,8 @@ class VISWINDOW_API VisWinBackground : public VisWinColleague
     virtual                  ~VisWinBackground();
 
     virtual void              SetGradientBackgroundColors(int,
-                                                          float, float, float,
-                                                          float, float, float);
+                                                    double, double, double,
+                                                    double, double, double);
     virtual void              SetBackgroundMode(int);
 
   protected:

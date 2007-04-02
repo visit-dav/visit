@@ -53,13 +53,13 @@ class PLOTTER_API avtImageDrawable : public avtDrawable
     virtual int                  SetTransparencyActor(avtTransparencyActor*)
                                      { return -1; };
 
-    virtual void                 ShiftByVector(const float [3]);
-    virtual void                 ScaleByVector(const float [3]);
+    virtual void                 ShiftByVector(const double [3]);
+    virtual void                 ScaleByVector(const double [3]);
     virtual void                 UpdateScaleFactor();
 
     virtual void                 TurnLightingOn(void);
     virtual void                 TurnLightingOff(void);
-    virtual void                 SetAmbientCoefficient(const float);
+    virtual void                 SetAmbientCoefficient(const double);
 
     virtual avtDataObject_p      GetDataObject(void);
 

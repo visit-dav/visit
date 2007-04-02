@@ -77,8 +77,8 @@ vtkVerticalScalarBarActor::vtkVerticalScalarBarActor() : definedLabels(), labelC
   this->TitleActor->GetPositionCoordinate()->
     SetReferenceCoordinate(this->PositionCoordinate);
 
-  this->varRange = new float [2];
-  this->range = new float [2];
+  this->varRange = new double [2];
+  this->range = new double [2];
   varRange[0] = varRange[1] = range[0] = range[1] = FLT_MAX;  
   this->RangeMapper = vtkTextMapper::New();
   this->RangeMapper->GetTextProperty()->SetJustificationToLeft();
@@ -226,25 +226,25 @@ vtkVerticalScalarBarActor::~vtkVerticalScalarBarActor()
   this->SetLookupTable(NULL);
 }
 
-void vtkVerticalScalarBarActor::SetVarRange(float *r)
+void vtkVerticalScalarBarActor::SetVarRange(double *r)
 {
   this->varRange[0] = r[0];
   this->varRange[1] = r[1];
 }
 
-void vtkVerticalScalarBarActor::SetVarRange(float min, float max)
+void vtkVerticalScalarBarActor::SetVarRange(double min, double max)
 {
   this->varRange[0] = min;
   this->varRange[1] = max;
 }
 
-void vtkVerticalScalarBarActor::SetRange(float *r)
+void vtkVerticalScalarBarActor::SetRange(double *r)
 {
   this->range[0] = r[0];
   this->range[1] = r[1];
 }
 
-void vtkVerticalScalarBarActor::SetRange(float min, float max)
+void vtkVerticalScalarBarActor::SetRange(double min, double max)
 {
   this->range[0] = min;
   this->range[1] = max;
@@ -307,7 +307,7 @@ int vtkVerticalScalarBarActor::RenderOverlay(vtkViewport *viewport)
 // Build the title for this actor 
 void vtkVerticalScalarBarActor::BuildTitle(vtkViewport *viewport)
 {
-  float titleOrigin[3] = { 0., 0., 0. };
+  double titleOrigin[3] = { 0., 0., 0. };
 
   this->TitleMapper->SetInput(this->Title);
   int *viewSize = viewport->GetSize();
@@ -341,7 +341,7 @@ void vtkVerticalScalarBarActor::BuildTitle(vtkViewport *viewport)
   int legURy = LastOrigin[1] + LastSize[1];
   int distFromOrigin = (legURy-tsizePixels[1]-LastOrigin[1]);
 
-  titleOrigin[1] = (float)(distFromOrigin) /(float)viewSize[1] ; 
+  titleOrigin[1] = (double)(distFromOrigin) /(double)viewSize[1] ; 
 
   this->TitleActor->SetProperty(this->GetProperty());
   this->TitleActor->GetPositionCoordinate()->
@@ -358,7 +358,7 @@ void vtkVerticalScalarBarActor::BuildRange(vtkViewport *viewport)
   // 
   // if user hasn't set the range, use the range from the lut
   // 
-  float *lutRange = this->LookupTable->GetRange();
+  double *lutRange = this->LookupTable->GetRange();
 
   if (range[0] == FLT_MAX || range[1] == FLT_MAX)
     {
@@ -427,15 +427,15 @@ void vtkVerticalScalarBarActor::BuildRange(vtkViewport *viewport)
 // ****************************************************************************
 
 void vtkVerticalScalarBarActor:: 
-BuildLabels(vtkViewport * viewport, float bo, float bw, float bh, int nLabels)
+BuildLabels(vtkViewport * viewport, double bo, double bw, double bh, int nLabels)
 {
   int i, idx;
-  float val;
+  double val;
   char labelString[1024];
-  float labelOrig[3] = { 0., 0., 0. };
-  float delta; 
+  double labelOrig[3] = { 0., 0., 0. };
+  double delta; 
   int* viewSize = viewport->GetSize(); 
-  float offset;
+  double offset;
 
   labelOrig[0] = (bw + bw*0.25 ) / viewSize[0]; 
 
@@ -472,7 +472,7 @@ BuildLabels(vtkViewport * viewport, float bo, float bw, float bh, int nLabels)
   else
     {
     offset = bo;
-    float min, max;
+    double min, max;
     if (this->UseLogScaling)
     {
         min = log10(range[0]);
@@ -483,11 +483,11 @@ BuildLabels(vtkViewport * viewport, float bo, float bw, float bh, int nLabels)
         min = range[0];
         max = range[1];
     }
-    float rangeDiff = max - min; 
+    double rangeDiff = max - min; 
     for (i = 0; i < nLabels; i++)
       {
       if (nLabels > 1)
-          val = min + (float)i/(nLabels-1) * rangeDiff;
+          val = min + (double)i/(nLabels-1) * rangeDiff;
       else 
           val = min; 
       if (this->UseSkewScaling)
@@ -496,7 +496,7 @@ BuildLabels(vtkViewport * viewport, float bo, float bw, float bh, int nLabels)
         }
       else if (this->UseLogScaling)
         {
-        val = (float) pow(10.f, val); 
+        val = (double) pow(10., val); 
         }
       sprintf(labelString, this->LabelFormat, val);
       this->LabelMappers[i]->SetInput(labelString);
@@ -515,7 +515,7 @@ BuildLabels(vtkViewport * viewport, float bo, float bw, float bh, int nLabels)
     tprop->SetShadow(this->Shadow);
     tprop->SetFontFamily(this->FontFamily);
 
-    labelOrig[1] = (offset + (float)i*delta);
+    labelOrig[1] = (offset + (double)i*delta);
     this->LabelActors[i]->GetPositionCoordinate()->
       SetCoordinateSystemToNormalizedViewport();
     this->LabelActors[i]->GetPositionCoordinate()->SetValue(labelOrig);
@@ -538,8 +538,8 @@ BuildLabels(vtkViewport * viewport, float bo, float bw, float bh, int nLabels)
 //
 // **********************************************************************
 
-void vtkVerticalScalarBarActor:: BuildTics(float origin, float width,
-                                           float height, int numLabels)
+void vtkVerticalScalarBarActor:: BuildTics(double origin, double width,
+                                           double height, int numLabels)
 {
   int i;
 
@@ -556,19 +556,19 @@ void vtkVerticalScalarBarActor:: BuildTics(float origin, float width,
   //
   // generate lines for color bar tics
   //
-  float x[3]; x[2] = 0.0;
-  float delta, offset;
+  double x[3]; x[2] = 0.0;
+  double delta, offset;
   if (this->UseDefinedLabels && !this->definedLabels.empty()  )
     {
-    delta = height/(float)( numLabels);
+    delta = height/(double)( numLabels);
     offset = origin + 0.5* delta;
     }
   else
     {
-    delta = height/(float)( numLabels-1);
+    delta = height/(double)( numLabels-1);
     offset = origin;
     }
-  float quarterWidth = width*0.25;
+  double quarterWidth = width*0.25;
   // first tic
   for (i = 0; i < numLabels; i++)
     {
@@ -638,16 +638,16 @@ void vtkVerticalScalarBarActor::BuildColorBar(vtkViewport *viewport)
   //
   int halfFontSize = (int)((this->FontHeight * viewSize[1]) / 2.);
 
-  float barOrigin;
+  double barOrigin;
   int rsizePixels[2];
   this->RangeMapper->GetSize(viewport, rsizePixels); 
   if (this->RangeVisibility)
-    barOrigin = (float)(rsizePixels[1] + halfFontSize);
+    barOrigin = (double)(rsizePixels[1] + halfFontSize);
   else
     barOrigin = 0.;
 
   int *titleOrigin;
-  float barHeight, barWidth;
+  double barHeight, barWidth;
 
   titleOrigin = this->TitleActor->GetPositionCoordinate()->
                                   GetComputedViewportValue(viewport);
@@ -704,8 +704,8 @@ void vtkVerticalScalarBarActor::BuildColorBar(vtkViewport *viewport)
   //
   int i, idx;
 
-  float x[3]; x[2] = 0;
-  float delta = (float)barHeight/(float)numColors;
+  double x[3]; x[2] = 0;
+  double delta = (double)barHeight/(double)numColors;
   for (i = 0; i < numPts/2; i++)
     {
     x[0] = 0.0; 
@@ -720,9 +720,9 @@ void vtkVerticalScalarBarActor::BuildColorBar(vtkViewport *viewport)
   //
   unsigned char *rgba, *rgb;
   vtkIdType ptIds[4];
-  float *lutRange = this->LookupTable->GetRange();
-  float tMin = lutRange[0];
-  float tMax = lutRange[1];
+  double *lutRange = this->LookupTable->GetRange();
+  double tMin = lutRange[0];
+  double tMax = lutRange[1];
 
   //
   // If we have a constant lookup table, then we still want the scalar bar
@@ -763,12 +763,12 @@ void vtkVerticalScalarBarActor::BuildColorBar(vtkViewport *viewport)
         }
       else
         {
-        rgba = useMe->MapValue((float)i);
+        rgba = useMe->MapValue((double)i);
         }
       }
     else
       {
-      float val = (((float)i)/(numColors-1.0)) * (tMax - tMin) + tMin;
+      double val = (((double)i)/(numColors-1.0)) * (tMax - tMin) + tMin;
       rgba = useMe->MapValue(val);
       }
  
@@ -990,12 +990,12 @@ void vtkVerticalScalarBarActor::SetDefinedLabels(const doubleVector &values)
 }
 
 
-void vtkVerticalScalarBarActor::SetPosition(float x[2]) 
+void vtkVerticalScalarBarActor::SetPosition(double x[2]) 
 {
   this->SetPosition(x[0],x[1]);
 } 
 
-void vtkVerticalScalarBarActor::SetPosition(float x, float y) 
+void vtkVerticalScalarBarActor::SetPosition(double x, double y) 
 { 
   this->PositionCoordinate->SetCoordinateSystemToNormalizedViewport(); 
   this->PositionCoordinate->SetValue(x,y); 
@@ -1006,18 +1006,18 @@ vtkCoordinate *vtkVerticalScalarBarActor::GetPosition2Coordinate()
   return this->Position2Coordinate; 
 } 
 
-void vtkVerticalScalarBarActor::SetPosition2(float x[2]) 
+void vtkVerticalScalarBarActor::SetPosition2(double x[2]) 
 {
   this->SetPosition2(x[0],x[1]);
 } 
 
-void vtkVerticalScalarBarActor::SetPosition2(float x, float y) 
+void vtkVerticalScalarBarActor::SetPosition2(double x, double y) 
 { 
   this->Position2Coordinate->SetCoordinateSystemToNormalizedViewport(); 
   this->Position2Coordinate->SetValue(x,y); 
 } 
 
-float *vtkVerticalScalarBarActor::GetPosition2() 
+double *vtkVerticalScalarBarActor::GetPosition2() 
 { 
   return this->Position2Coordinate->GetValue(); 
 }
@@ -1068,18 +1068,18 @@ void vtkVerticalScalarBarActor::ShallowCopy(vtkProp *prop)
 //
 // ****************************************************************************
  
-float
-vtkVerticalScalarBarActor::SkewTheValue(float val, float min, float max)
+double
+vtkVerticalScalarBarActor::SkewTheValue(double val, double min, double max)
 {
   if (this->SkewFactor < 0.) this->SkewFactor = 1.;
   if (this->SkewFactor == 1.) return val;
 
-  float rangeDif = max - min;
-  float log_skew_inv = 1./(log(this->SkewFactor));
-  float k = (this->SkewFactor -1.) / rangeDif;
+  double rangeDif = max - min;
+  double log_skew_inv = 1./(log(this->SkewFactor));
+  double k = (this->SkewFactor -1.) / rangeDif;
 
-  float v2 = log((val - min) * k + 1) * log_skew_inv;
-  float temp  = (rangeDif * v2 + min) ;
+  double v2 = log((val - min) * k + 1) * log_skew_inv;
+  double temp  = (rangeDif * v2 + min) ;
   return temp;
 }
 

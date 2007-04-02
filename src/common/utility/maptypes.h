@@ -7,5 +7,6 @@
 typedef std::map<std::string, int>          StringIntMap;
 typedef StringIntMap                        LevelColorMap;
 typedef std::map<std::string, stringVector> StringStringVectorMap;
+typedef std::map<double, int>               DoubleIntMap;
 
 #endif

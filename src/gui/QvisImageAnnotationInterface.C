@@ -65,8 +65,8 @@ QvisImageAnnotationInterface::QvisImageAnnotationInterface(QWidget *parent,
 
     // Add controls for the start position
     positionStartEdit = new QvisScreenPositionEdit(this, "positionStartEdit");
-    connect(positionStartEdit, SIGNAL(screenPositionChanged(float, float)),
-            this, SLOT(positionStartChanged(float, float)));
+    connect(positionStartEdit, SIGNAL(screenPositionChanged(double, double)),
+            this, SLOT(positionStartChanged(double, double)));
     cLayout->addMultiCellWidget(positionStartEdit, 1, 1, 1, 3);
     QLabel *lowerLeftLabel = new QLabel(positionStartEdit, "Lower left", this);
     QToolTip::add(lowerLeftLabel, "Lower left corner of the image in "
@@ -289,7 +289,7 @@ QvisImageAnnotationInterface::GetCurrentValues(int which_widget)
         // Get its new current value and store it in the atts.
         ForceSpinBoxUpdate(widthSpinBox);
         int w = widthSpinBox->value();
-        float pos[] = {w, annot->GetPosition2()[1], 0};
+        double pos[] = {w, annot->GetPosition2()[1], 0};
         annot->SetPosition2(pos);
         if(linkedWH->isOn())
             heightSpinBox->setValue(w);
@@ -300,7 +300,7 @@ QvisImageAnnotationInterface::GetCurrentValues(int which_widget)
         // Get its new current value and store it in the atts.
         ForceSpinBoxUpdate(heightSpinBox);
         int h = heightSpinBox->value();
-        float pos[] = {annot->GetPosition2()[0], h, 0};
+        double pos[] = {annot->GetPosition2()[0], h, 0};
         annot->SetPosition2(pos);
         if(linkedWH->isOn())
             widthSpinBox->setValue(h);
@@ -410,9 +410,9 @@ QvisImageAnnotationInterface::imageSourceEdit()
 // ****************************************************************************
 
 void
-QvisImageAnnotationInterface::positionStartChanged(float x, float y)
+QvisImageAnnotationInterface::positionStartChanged(double x, double y)
 {
-    float pos[] = {x, y, 0.f};
+    double pos[] = {x, y, 0.};
     annot->SetPosition(pos);
     SetUpdate(false);
     Apply();
@@ -438,7 +438,7 @@ QvisImageAnnotationInterface::positionStartChanged(float x, float y)
 void
 QvisImageAnnotationInterface::widthChanged(int w)
 {
-    float pos[] = {w, annot->GetPosition2()[1], 0};
+    double pos[] = {w, annot->GetPosition2()[1], 0};
     annot->SetPosition2(pos);
     SetUpdate(false);
     Apply();
@@ -467,7 +467,7 @@ QvisImageAnnotationInterface::widthChanged(int w)
 void
 QvisImageAnnotationInterface::heightChanged(int h)
 {
-    float pos[] = {annot->GetPosition2()[0], h, 0};
+    double pos[] = {annot->GetPosition2()[0], h, 0};
     annot->SetPosition2(pos);
     SetUpdate(false);
     Apply();

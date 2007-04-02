@@ -10,6 +10,6 @@
     <Field name="background" type="ucharArray" length="3">255 255 255</Field>
     <Field name="foreground" type="ucharArray" length="3">0 0 0</Field>
     <Field name="backgroundMode" type="int">0</Field>
-    <Field name="gradBG1" type="floatArray" length="3">0. 0. 1.</Field>
-    <Field name="gradBG2" type="floatArray" length="3">0. 0. 0.</Field>
+    <Field name="gradBG1" type="doubleArray" length="3">0. 0. 1.</Field>
+    <Field name="gradBG2" type="doubleArray" length="3">0. 0. 0.</Field>
   </Attribute>

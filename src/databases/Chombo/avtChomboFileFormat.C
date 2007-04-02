@@ -1104,7 +1104,7 @@ avtChomboFileFormat::GetAuxiliaryData(const char *var, int dom,
     
         for (int patch = 0 ; patch < totalPatches ; patch++)
         {
-            float bounds[6];
+            double bounds[6];
             int level, local_patch;
 
             GetLevelAndLocalPatchNumber(patch, level, local_patch);

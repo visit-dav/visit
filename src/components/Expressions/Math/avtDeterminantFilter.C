@@ -79,16 +79,16 @@ avtDeterminantFilter::DoOperation(vtkDataArray *in, vtkDataArray *out,
                                                     GetSpatialDimension() == 2;
         for (int i = 0 ; i < ntuples ; i++)
         {
-            float *vals = in->GetTuple9(i);
-            float col1[3];
+            double *vals = in->GetTuple9(i);
+            double col1[3];
             col1[0] = vals[0];
             col1[1] = vals[3];
             col1[2] = vals[6];
-            float col2[3];
+            double col2[3];
             col2[0] = vals[1];
             col2[1] = vals[4];
             col2[2] = vals[7];
-            float col3[3];
+            double col3[3];
             if (is2D)
             {
                 col3[0] = 0.;
@@ -101,7 +101,7 @@ avtDeterminantFilter::DoOperation(vtkDataArray *in, vtkDataArray *out,
                 col3[1] = vals[5];
                 col3[2] = vals[8];
             }
-            float det = vtkMath::Determinant3x3(col1, col2, col3);
+            double det = vtkMath::Determinant3x3(col1, col2, col3);
             out->SetTuple1(i, det);
         }
     }

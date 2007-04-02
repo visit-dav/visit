@@ -102,7 +102,7 @@ avtCustomRenderer::SetView(avtViewInfo &v)
 // ****************************************************************************
 
 void
-avtCustomRenderer::SetRange(float min, float max)
+avtCustomRenderer::SetRange(double min, double max)
 {
     varmin = min;
     varmax = max;
@@ -222,7 +222,7 @@ avtCustomRenderer::GlobalLightingOff()
 // ****************************************************************************
 
 void
-avtCustomRenderer::GlobalSetAmbientCoefficient(const float)
+avtCustomRenderer::GlobalSetAmbientCoefficient(const double)
 {
     ;
 }
@@ -325,7 +325,7 @@ avtCustomRenderer::ImmediateModeRenderingOff()
 // ****************************************************************************
 
 void
-avtCustomRenderer::SetSpecularProperties(bool , float , float ,
+avtCustomRenderer::SetSpecularProperties(bool , double , double ,
                                          const ColorAttribute &)
 {
     ;

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="AnnotationObject" purpose="This class defines a general set of attributes that are used to set the attributes for all annotation objects." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+  <Attribute name="AnnotationObject" purpose="This class defines a general set of attributes that are used to set the attributes for all annotation objects." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="AnnotationObject.code">
     <Enum name="AnnotationType">
       Text2D
       Text3D
@@ -24,12 +24,12 @@
     <Field name="active" label="Active" type="bool">
       false
     </Field>
-    <Field name="position" label="Position" type="floatArray" length="3">
+    <Field name="position" label="Position" type="doubleArray" length="3">
       0.000000
       0.000000
       0.000000
     </Field>
-    <Field name="position2" label="Position2" type="floatArray" length="3">
+    <Field name="position2" label="Position2" type="doubleArray" length="3">
       0.000000
       0.000000
       0.000000
@@ -57,10 +57,13 @@
     <Field name="fontShadow" label="Shadow" type="bool">
       false
     </Field>
-    <Field name="floatAttribute1" label="Float attribute 1" type="float">
+    <Field name="doubleAttribute1" label="Double attribute 1" type="double">
       0.000000
     </Field>
     <Field name="intAttribute1" label="Integer attribute 1" type="int">
       0
     </Field>
+    <Function name="SetFromNode" user="false" member="true">
+    
+    </Function>
   </Attribute>

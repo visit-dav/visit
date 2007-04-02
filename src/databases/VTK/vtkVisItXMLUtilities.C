@@ -2,16 +2,13 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkVisItXMLUtilities.cxx,v $
-  Language:  C++
-  Date:      $Date: 2003/08/22 18:18:50 $
-  Version:   $Revision: 1.4 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
@@ -27,13 +24,12 @@
 # include <io.h> /* unlink */
 #endif
 
-#include <vector>
-using std::vector;
+#include <vtkstd/vector>
 
-typedef vector<vtkVisItXMLDataElement*> vtkVisItXMLUtilitiesDataElementContainer;
+typedef vtkstd::vector<vtkVisItXMLDataElement*> vtkVisItXMLUtilitiesDataElementContainer;
 
 vtkStandardNewMacro(vtkVisItXMLUtilities);
-vtkCxxRevisionMacro(vtkVisItXMLUtilities, "$Revision: 1.4 $");
+vtkCxxRevisionMacro(vtkVisItXMLUtilities, "$Revision: 1.5 $");
 
 #define  VTK_XML_UTILITIES_FACTORED_POOL_NAME "FactoredPool"
 #define  VTK_XML_UTILITIES_FACTORED_NAME      "Factored"

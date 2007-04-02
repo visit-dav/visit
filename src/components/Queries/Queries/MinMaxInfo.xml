@@ -6,10 +6,10 @@
     <Field name="domain" label="domain" type="int">
       -1
     </Field>
-    <Field name="value" label="value" type="float">
+    <Field name="value" label="value" type="double">
       0.000000
     </Field>
-    <Field name="coord" label="coord" type="floatArray" length="3">
+    <Field name="coord" label="coord" type="doubleArray" length="3">
     </Field>
     <Field name="type" label="type" type="string">
     </Field>

@@ -22,8 +22,9 @@
 #endif
 
 
-#include <map>
-using std::map;
+#include <maptypes.h>
+
+
 
 // ****************************************************************************
 //  Method: avtCurveConstructorFilter constructor
@@ -181,12 +182,12 @@ void avtCurveConstructorFilter::Execute()
     //  "connect-the-dots" between the vertices.  
     //
     int nleaves, j, k;
-    float x;
+    double x;
     avtDataTree_p outTree;
     vtkDataSet **ds;
     ds = inTree->GetAllLeaves(nleaves);
 
-    map <float, int> minX;
+    DoubleIntMap minX;
 
     //
     //  Cannot assume that there are no overlaps of points
@@ -198,14 +199,14 @@ void avtCurveConstructorFilter::Execute()
     //  Store in map with x value as the key.  
     //  (from first point in each ds).
     //
-    float *mm = new float[nleaves*2];
+    double *mm = new double[nleaves*2];
     int npts;
 
     for (j = 0; j < nleaves; j++)
     {
         npts = ((vtkPolyData*)ds[j])->GetNumberOfPoints();
         x = ((vtkPolyData*)ds[j])->GetPoint(0)[0]; 
-        minX.insert(std::map <float, int> ::value_type(x, j));
+        minX.insert(DoubleIntMap::value_type(x, j));
         mm[j*2] = x;
         mm[j*2+1] = ((vtkPolyData*)ds[j])->GetPoint(npts-1)[0]; 
     }
@@ -236,13 +237,13 @@ void avtCurveConstructorFilter::Execute()
     verts->Delete();
 
     int nPoints; 
-    float pt[3];
+    double pt[3];
     vtkIdType i, ptIds[2];
 
     //
     //  Ensure that the output is 2d by setting z-component to zero.
     //
-    std::map <float, int>::iterator it;
+    DoubleIntMap::iterator it;
     for (it = minX.begin(); it != minX.end(); it++)
     {
         inPts = ((vtkPolyData*)ds[(*it).second])->GetPoints();
@@ -262,14 +263,14 @@ void avtCurveConstructorFilter::Execute()
     if (requiresSort)
     {
         sortedPts = vtkPoints::New();
-        map <float, int> sortedIds;
+        DoubleIntMap sortedIds;
         nPoints = outPts->GetNumberOfPoints();
         for (i = 0; i < nPoints; i++)
         {
             x = outPts->GetPoint(i)[0]; 
-            sortedIds.insert(std::map <float, int> ::value_type(x, i));
+            sortedIds.insert(DoubleIntMap::value_type(x, i));
         }
-        std::map <float, int>::iterator it;
+        DoubleIntMap::iterator it;
         for (it = sortedIds.begin(); it != sortedIds.end(); it++)
         {
             sortedPts->InsertNextPoint(outPts->GetPoint((*it).second));

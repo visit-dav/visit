@@ -165,7 +165,7 @@ avtScatterPlot::SetLimitsMode()
     //
     //  Retrieve the actual range of the data
     //
-    float min, max;
+    double min, max;
     glyphMapper->GetVarRange(min, max);
     float userMin = minFlag ? minVal : min;
     float userMax = maxFlag ? maxVal : max;

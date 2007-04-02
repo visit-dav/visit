@@ -133,7 +133,7 @@ void vtkVertexFilter::Execute(void)
       {
       if (lookupList[i] != 0)
         {
-        float pt[3];
+        double pt[3];
         input->GetPoint(i, pt);
         outPts->SetPoint(count, pt);
         outPD->CopyData(inPd, i, count);
@@ -150,7 +150,7 @@ void vtkVertexFilter::Execute(void)
     outPts->SetNumberOfPoints(nOutPts);
     outPD->CopyAllocate(inCd, nOutPts);
     int subId=0;
-    float point[3];
+    double point[3];
     for (i = 0 ; i < nOutPts ; i++)
       {
       vtkVisItUtility::GetCellCenter(input->GetCell(i), point);

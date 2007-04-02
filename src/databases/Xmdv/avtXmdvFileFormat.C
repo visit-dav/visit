@@ -162,7 +162,7 @@ avtXmdvFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     int block_origin = 0;
     int spatial_dimension = 3;
     int topological_dimension = 0;
-    float *extents = NULL;
+    double *extents = NULL;
 
     AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
                       spatial_dimension, topological_dimension);

@@ -234,7 +234,7 @@ avtXmdvWriter::WriteChunk(vtkDataSet *ds, int chunk)
 
     if (writeOutCoordinates)
     {
-        float bounds[6];
+        double bounds[6];
         ds->GetBounds(bounds);
         ofile << bounds[0] << "\t" << bounds[1] << "\t10" << endl;
         ofile << bounds[2] << "\t" << bounds[3] << "\t10" << endl;
@@ -255,7 +255,7 @@ avtXmdvWriter::WriteChunk(vtkDataSet *ds, int chunk)
     }
     for (i = 0 ; i < vectors.size() ; i++)
     {
-        float vec[3];
+        double vec[3];
         arrays_vec[i]->GetTuple(i, vec);
         float minI = vec[0];
         float maxI = vec[0];
@@ -282,7 +282,7 @@ avtXmdvWriter::WriteChunk(vtkDataSet *ds, int chunk)
     {
         if (writeOutCoordinates)
         {
-            float pt[3];
+            double pt[3];
             if (varsAreNodal)
                 ds->GetPoint(j, pt);
             else
@@ -303,7 +303,7 @@ avtXmdvWriter::WriteChunk(vtkDataSet *ds, int chunk)
         }
         for (i = 0 ; i < vectors.size() ; i++)
         {
-            float vec[3];
+            double vec[3];
             arrays_vec[i]->GetTuple(j, vec);
             ofile << vec[0] << "\t" << vec[1] << "\t" << vec[2];
             if (i != (vectors.size()-1))

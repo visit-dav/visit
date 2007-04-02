@@ -30,7 +30,7 @@ class PLOTTER_API avtLookupTable
                                   avtLookupTable();
     virtual                      ~avtLookupTable();
 
-    void                          SetSkewFactor(const float);
+    void                          SetSkewFactor(const double);
     bool                          SetColorTable(const char *ctName, bool);
     void                          SetLUTColors(const unsigned char *, int);
     void                          SetLUTColorsWithOpacity(

@@ -162,11 +162,11 @@ int main(int argc, char *argv[])
     int i;
     for (i = 0 ; i < npts ; i++)
     {
-        float pt1[3];
+        double pt1[3];
         pts1->GetPoint(i, pt1);
-        float pt2[3];
+        double pt2[3];
         pts2->GetPoint(i, pt2);
-        float pt[3];
+        double pt[3];
         pt[0] = (pt1[0] + pt2[0]) / 2.;
         pt[1] = (pt1[1] + pt2[1]) / 2.;
         pt[2] = (pt1[2] + pt2[2]) / 2.;

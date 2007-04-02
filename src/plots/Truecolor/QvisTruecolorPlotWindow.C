@@ -120,7 +120,7 @@ QvisTruecolorPlotWindow::UpdateWindow(bool doAll)
         {
           case 0: //opacity
             opacity->blockSignals(true);
-            opacity->setValue(int(atts->GetOpacity()*255.));
+            opacity->setValue(int((float)atts->GetOpacity()*255.f));
             opacity->blockSignals(false);
             break;
           case 1: //lighting

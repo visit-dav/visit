@@ -200,7 +200,7 @@ avtSphericalCompactnessFactorQuery::Execute1(vtkDataSet *ds, const int dom)
         if (ghosts != NULL && ghosts->GetTuple1(i) != 0.)
             continue;
         vtkCell *cell = ds->GetCell(i);
-        float center[3];
+        double center[3];
         vtkVisItUtility::GetCellCenter(cell, center);
         float volume = var->GetTuple1(i);
         volume = (volume < 0 ? -volume : volume);
@@ -240,7 +240,7 @@ avtSphericalCompactnessFactorQuery::Execute2(vtkDataSet *ds, const int dom)
         if (ghosts != NULL && ghosts->GetTuple1(i) != 0.)
             continue;
         vtkCell *cell = ds->GetCell(i);
-        float center[3];
+        double center[3];
         vtkVisItUtility::GetCellCenter(cell, center);
         float dist = (center[0]-sphere_center[0])*(center[0]-sphere_center[0])
                    + (center[1]-sphere_center[1])*(center[1]-sphere_center[1])

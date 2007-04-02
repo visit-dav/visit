@@ -375,7 +375,7 @@ void vtkVisItAxisActor::BuildAxis(vtkViewport *viewport, bool force)
 {
   // We'll do our computation in world coordinates. First determine the
   // location of the endpoints.
-  float *x, p1[3], p2[3];
+  double *x, p1[3], p2[3];
   x = this->Point1Coordinate->GetValue();
   p1[0] = x[0]; p1[1] = x[1]; p1[2] = x[2];
   x = this->Point2Coordinate->GetValue();
@@ -521,7 +521,7 @@ vtkVisItAxisActor::SetLabelPositions(vtkViewport *viewport, bool force)
   if (!force && (!this->LabelVisibility || this->NumberOfLabelsBuilt == 0)) 
       return;
 
-  float bounds[6], center[3], tick[3], pos[3];
+  double bounds[6], center[3], tick[3], pos[3];
   int i, xmult, ymult;
 
   switch (this->AxisType)
@@ -546,10 +546,10 @@ vtkVisItAxisActor::SetLabelPositions(vtkViewport *viewport, bool force)
   // depending upon the 'orientation' of the axis as determined
   // by its position in view space (via transformed bounds). 
   //
-  float displayBounds[6] = { 0., 0., 0., 0., 0., 0.};
+  double displayBounds[6] = { 0., 0., 0., 0., 0., 0.};
   this->TransformBounds(viewport, displayBounds);
-  float xadjust = (displayBounds[0] > displayBounds[1] ? -1 : 1);
-  float yadjust = (displayBounds[2] > displayBounds[3] ? -1 : 1);
+  double xadjust = (displayBounds[0] > displayBounds[1] ? -1 : 1);
+  double yadjust = (displayBounds[2] > displayBounds[3] ? -1 : 1);
 
   for (i=0; i < this->NumberOfLabelsBuilt; i++)
     {
@@ -558,8 +558,8 @@ vtkVisItAxisActor::SetLabelPositions(vtkViewport *viewport, bool force)
 
     this->LabelActors[i]->GetBounds(bounds);
 
-    float halfWidth  = (bounds[1] - bounds[0]) * 0.5;
-    float halfHeight = (bounds[3] - bounds[2]) * 0.5;
+    double halfWidth  = (bounds[1] - bounds[0]) * 0.5;
+    double halfHeight = (bounds[3] - bounds[2]) * 0.5;
 
     center[0] = tick[0] + xmult * (halfWidth  + this->MinorTickSize);
     center[1] = tick[1] + ymult * (halfHeight + this->MinorTickSize); 
@@ -604,12 +604,12 @@ vtkVisItAxisActor::BuildTitle(bool force)
   {
       return;
   }
-  float labBounds[6], titleBounds[6], center[3], pos[3];
-  float labHeight, maxHeight = 0, labWidth, maxWidth = 0;
-  float halfTitleWidth, halfTitleHeight;
+  double labBounds[6], titleBounds[6], center[3], pos[3];
+  double labHeight, maxHeight = 0, labWidth, maxWidth = 0;
+  double halfTitleWidth, halfTitleHeight;
 
-  float *p1 = this->Point1Coordinate->GetValue();
-  float *p2 = this->Point2Coordinate->GetValue();
+  double *p1 = this->Point1Coordinate->GetValue();
+  double *p2 = this->Point2Coordinate->GetValue();
   int xmult, ymult;
 
   if (!force && this->LabelBuildTime.GetMTime() < this->BuildTime.GetMTime() &&
@@ -671,9 +671,9 @@ vtkVisItAxisActor::BuildTitle(bool force)
 //  Transform the bounding box to display coordinates.  Used
 //  in determining orientation of the axis.
 //
-void vtkVisItAxisActor::TransformBounds(vtkViewport *viewport, float bnds[6])
+void vtkVisItAxisActor::TransformBounds(vtkViewport *viewport, double bnds[6])
 {
-    float minPt[3], maxPt[3], transMinPt[3], transMaxPt[3];
+    double minPt[3], maxPt[3], transMinPt[3], transMaxPt[3];
     minPt[0] = this->Bounds[0];
     minPt[1] = this->Bounds[2];
     minPt[2] = this->Bounds[4];
@@ -698,13 +698,13 @@ void vtkVisItAxisActor::TransformBounds(vtkViewport *viewport, float bnds[6])
 
 
 
-inline float ffix(float value)
+inline double ffix(double value)
 {
   int ivalue = (int)value;
-  return (float) ivalue;
+  return (double) ivalue;
 }
 
-inline float fsign(float value, float sign)
+inline double fsign(double value, double sign)
 {
   value = fabs(value);
   if (sign < 0.)
@@ -823,7 +823,7 @@ vtkVisItAxisActor::SetLabels(const vector<string> &labels)
 //   Allow a forced build, despite previous build time.
 //
 // **************************************************************************
-bool vtkVisItAxisActor::BuildTickPointsForXType(float p1[3], float p2[3], bool force)
+bool vtkVisItAxisActor::BuildTickPointsForXType(double p1[3], double p2[3], bool force)
 {
   if (!force && (this->AxisPosition == this->LastAxisPosition) &&
       (this->TickLocation == this->LastTickLocation ) &&
@@ -833,7 +833,7 @@ bool vtkVisItAxisActor::BuildTickPointsForXType(float p1[3], float p2[3], bool f
     }
 
 
-  float xPoint1[3], xPoint2[3], yPoint[3], zPoint[3], x;
+  double xPoint1[3], xPoint2[3], yPoint[3], zPoint[3], x;
   int numTicks;
 
   this->minorTickPts->Reset();
@@ -974,7 +974,7 @@ bool vtkVisItAxisActor::BuildTickPointsForXType(float p1[3], float p2[3], bool f
 //   Allow a forced build, despite previous build time.
 //
 // **************************************************************************
-bool vtkVisItAxisActor::BuildTickPointsForYType(float p1[3], float p2[3], bool force)
+bool vtkVisItAxisActor::BuildTickPointsForYType(double p1[3], double p2[3], bool force)
 {
   if (!force && (this->AxisPosition  == this->LastAxisPosition) &&
       (this->TickLocation == this->LastTickLocation) &&
@@ -983,7 +983,7 @@ bool vtkVisItAxisActor::BuildTickPointsForYType(float p1[3], float p2[3], bool f
     return false;
     }
 
-  float yPoint1[3], yPoint2[3], xPoint[3], zPoint[3], y;
+  double yPoint1[3], yPoint2[3], xPoint[3], zPoint[3], y;
   int numTicks;
 
   this->minorTickPts->Reset();
@@ -1130,7 +1130,7 @@ bool vtkVisItAxisActor::BuildTickPointsForYType(float p1[3], float p2[3], bool f
 //
 // **************************************************************************
 
-bool vtkVisItAxisActor::BuildTickPointsForZType(float p1[3], float p2[3], bool force)
+bool vtkVisItAxisActor::BuildTickPointsForZType(double p1[3], double p2[3], bool force)
 {
   if (!force && (this->AxisPosition  == this->LastAxisPosition) &&
       (this->TickLocation == this->LastTickLocation) &&
@@ -1151,7 +1151,7 @@ bool vtkVisItAxisActor::BuildTickPointsForZType(float p1[3], float p2[3], bool f
   int Xmult = multiplierTable1[this->AxisPosition];
   int Ymult = multiplierTable2[this->AxisPosition];
 
-  float zPoint1[3], zPoint2[3], xPoint[3], yPoint[3], z;
+  double zPoint1[3], zPoint2[3], xPoint[3], yPoint[3], z;
   int numTicks;
 
   //
@@ -1379,7 +1379,7 @@ vtkVisItAxisActor::TickVisibilityChanged()
 // Creation:    November 7, 2001
 // *********************************************************************
 void
-vtkVisItAxisActor::SetBounds(float b[6])
+vtkVisItAxisActor::SetBounds(double b[6])
 {
   if ((this->Bounds[0] != b[0]) ||
       (this->Bounds[1] != b[1]) ||
@@ -1400,7 +1400,7 @@ vtkVisItAxisActor::SetBounds(float b[6])
 // Programmer:  Kathleen Bonnell
 // Creation:    November 7, 2001
 // *********************************************************************
-float * vtkVisItAxisActor::GetBounds()
+double * vtkVisItAxisActor::GetBounds()
 {
     return this->Bounds;
 }
@@ -1412,7 +1412,7 @@ float * vtkVisItAxisActor::GetBounds()
 // Creation:    November 7, 2001
 // *********************************************************************
 
-void vtkVisItAxisActor::GetBounds(float b[6])
+void vtkVisItAxisActor::GetBounds(double b[6])
 {
     for (int i = 0; i < 6; i++)
       b[i] = this->Bounds[i];
@@ -1439,12 +1439,12 @@ void vtkVisItAxisActor::GetBounds(float b[6])
 //
 // *********************************************************************
 
-float
-vtkVisItAxisActor::ComputeMaxLabelLength(const float center[3])
+double
+vtkVisItAxisActor::ComputeMaxLabelLength(const double center[3])
 {
-  float length, maxLength = 0.;
-  float pos[3];
-  float scale;
+  double length, maxLength = 0.;
+  double pos[3];
+  double scale;
   for (int i = 0; i < this->NumberOfLabelsBuilt; i++)
     {
     this->LabelActors[i]->GetPosition(pos);
@@ -1485,10 +1485,10 @@ vtkVisItAxisActor::ComputeMaxLabelLength(const float center[3])
 //
 // *********************************************************************
 
-float
-vtkVisItAxisActor::ComputeTitleLength(const float center[3])
+double
+vtkVisItAxisActor::ComputeTitleLength(const double center[3])
 {
-  float pos[3], scale, len;
+  double pos[3], scale, len;
   this->TitleActor->GetPosition(pos);
   scale = this->TitleActor->GetScale()[0];
   this->TitleVector->SetText(this->Title);
@@ -1518,7 +1518,7 @@ vtkVisItAxisActor::ComputeTitleLength(const float center[3])
 // *********************************************************************
 
 void
-vtkVisItAxisActor::SetLabelScale(const float s)
+vtkVisItAxisActor::SetLabelScale(const double s)
 {
   for (int i=0; i < this->NumberOfLabelsBuilt; i++)
     {
@@ -1541,7 +1541,7 @@ vtkVisItAxisActor::SetLabelScale(const float s)
 // *********************************************************************
 
 void
-vtkVisItAxisActor::SetTitleScale(const float s)
+vtkVisItAxisActor::SetTitleScale(const double s)
 {
   this->TitleActor->SetScale(s);
 }

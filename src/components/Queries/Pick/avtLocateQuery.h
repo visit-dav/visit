@@ -48,19 +48,19 @@ class QUERY_API avtLocateQuery : public avtDatasetQuery
     PickAttributes                  pickAtts;
     int                             foundDomain;
     int                             foundElement;
-    float                           minDist;
+    double                          minDist;
 
     virtual void                    PreExecute(void);
     virtual void                    PostExecute(void);
     virtual void                    VerifyInput(void);
     bool                            RayIntersectsDataSet(vtkDataSet *);
     int                             RGridIsect(vtkRectilinearGrid *, 
-                                               float &dist, 
-                                               float isect[3]);
+                                               double &dist, 
+                                               double isect[3]);
                                                
     int                             LocatorFindCell(vtkDataSet *ds, 
-                                                    float &dist, 
-                                                    float *isect);
+                                                    double &dist, 
+                                                    double *isect);
 };
 
 

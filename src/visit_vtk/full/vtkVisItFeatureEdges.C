@@ -79,8 +79,9 @@ void vtkVisItFeatureEdges::Execute()
   int i;
   vtkIdType j, numNei, cellId;
   vtkIdType numBEdges, numNonManifoldEdges, numFedges, numManifoldEdges;
-  float scalar, n[3], x1[3], x2[3];
-  float cosAngle = 0;
+  double scalar; 
+  double n[3], x1[3], x2[3];
+  double cosAngle = 0;
   vtkIdType lineIds[2];
   vtkIdType npts = 0;
   vtkIdType *pts = 0;
@@ -215,7 +216,7 @@ void vtkVisItFeatureEdges::Execute()
     {
     if ( ! (cellId % progressInterval) ) //manage progress / early abort
       {
-      this->UpdateProgress ((float)cellId / numCells);
+      this->UpdateProgress ((double)cellId / numCells);
       abort = this->GetAbortExecute();
       }
 
@@ -270,8 +271,11 @@ void vtkVisItFeatureEdges::Execute()
       else if ( this->FeatureEdges && 
                 numNei == 1 && (nei=neighbors->GetId(0)) > cellId ) 
         {
-        if ( vtkMath::Dot(polyNormals->GetTuple(nei),
-                          polyNormals->GetTuple(cellId)) <= cosAngle ) 
+        double neiTuple[3];
+        double cellTuple[3];
+        polyNormals->GetTuple(nei, neiTuple);
+        polyNormals->GetTuple(cellId, cellTuple);
+        if ( vtkMath::Dot(neiTuple, cellTuple) <= cosAngle ) 
           {
           if (ghostLevels && ghostLevels[cellId] > 0)
             {

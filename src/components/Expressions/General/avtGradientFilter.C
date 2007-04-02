@@ -205,8 +205,9 @@ avtGradientFilter::DeriveVariable(vtkDataSet *in_ds)
         }
 
         float xDELTA=1e6, yDELTA=1e6, zDELTA=1e6;
-        
-        float *nodeCoords = in_ds->GetPoint(nodeId);
+       
+        double nodeCoords[3]; 
+        in_ds->GetPoint(nodeId, nodeCoords);
         float  nodeValue  = scalarValues->GetComponent(nodeId, 0);
         
         vtkIdList *neighborCellIds = vtkIdList::New();
@@ -224,7 +225,7 @@ avtGradientFilter::DeriveVariable(vtkDataSet *in_ds)
         // Find appropriate deltas
         for (int ci = 0 ; ci < nCells ; ci++)
         {
-            float *bounds = in_ds->GetCell(neighborCellIds->GetId(ci))
+            double *bounds = in_ds->GetCell(neighborCellIds->GetId(ci))
                                                                  ->GetBounds();
             if (bounds[1]-bounds[0] < xDELTA*5)
             {
@@ -372,13 +373,13 @@ float avtGradientFilter::EvaluateValue(float x, float y, float z,
                                vtkIdList *neighborCells, bool &success)
 {
     // Find which cell contains this point
-    float coords[3] = {x,y,z};
+    double coords[3] = {x,y,z};
     int   junk2;
-    float junk3[3];
-    float junk4;
-    float weights[8];  // This needs to be the max number of points a cell has
+    double junk3[3];
+    double junk4;
+    double weights[8];  // This needs to be the max number of points a cell has
 
-    float *abnormalWeights = NULL; // In case of more than 8 points
+    double *abnormalWeights = NULL; // In case of more than 8 points
     
     int cellId;
     vtkCell *c;
@@ -388,7 +389,7 @@ float avtGradientFilter::EvaluateValue(float x, float y, float z,
     
         if (c->GetNumberOfPoints() > 8)
         {
-            abnormalWeights = new float[c->GetNumberOfPoints()];
+            abnormalWeights = new double[c->GetNumberOfPoints()];
             if (c->EvaluatePosition(coords, NULL, junk2, junk3, junk4, 
                                     abnormalWeights) == 1)
             {

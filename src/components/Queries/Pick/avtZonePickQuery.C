@@ -145,7 +145,7 @@ avtZonePickQuery::Execute(vtkDataSet *ds, const int dom)
         //
         //  If a valid zone hasn't already been determined, locate it now.
         //  
-        float *cellPoint  = pickAtts.GetCellPoint();
+        double *cellPoint  = pickAtts.GetCellPoint();
         pickedZone = vtkVisItUtility::FindCell(ds, cellPoint);
 
         if (pickedZone == -1)
@@ -271,7 +271,7 @@ avtZonePickQuery::Execute(vtkDataSet *ds, const int dom)
         // PickPoint is used for placing the pick letter, so set
         // this tranformed point in CellPoint instead.
         // 
-        float ppt[3] = { v1.x, v1.y, v1.z };
+        double ppt[3] = { v1.x, v1.y, v1.z };
         pickAtts.SetCellPoint(ppt);
     }
     else 
@@ -308,7 +308,7 @@ avtZonePickQuery::Preparation(const avtDataAttributes &)
     //
     // Transform the point that will be used in locating the cell. 
     //
-    float *cellPoint  = pickAtts.GetCellPoint();
+    double *cellPoint  = pickAtts.GetCellPoint();
     if (transform != NULL)
     {
         //

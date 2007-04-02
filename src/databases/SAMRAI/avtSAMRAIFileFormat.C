@@ -26,11 +26,12 @@
 #include <stdlib.h>
 
 #include <vtkCellData.h>
-#include <vtkRectilinearGrid.h>
-#include <vtkStructuredGrid.h>
 #include <vtkFloatArray.h>
 #include <vtkIntArray.h>
 #include <vtkPoints.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkStructuredGrid.h>
+#include <vtkUnsignedCharArray.h>
 
 #include <avtDatabaseMetaData.h>
 #include <avtGhostData.h>
@@ -1965,7 +1966,7 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int patch,
                     for (int patch = 0 ; patch < num_patches ; patch++) {
 
                         if (var_extents[v][patch].data_is_defined) {
-                            float range[2] = { var_extents[v][patch].min, 
+                            double range[2] = { var_extents[v][patch].min, 
                                                var_extents[v][patch].max };
                             itree->AddDomain(patch, range);
                         }
@@ -1981,7 +1982,7 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int patch,
             itree = new avtIntervalTree(num_patches, 3);
             for (int patch = 0 ; patch < num_patches; patch++) {
                 bool data_defined = true;
-                float range[6] = { 0, 0, 0, 0, 0, 0 };
+                double range[6] = { 0, 0, 0, 0, 0, 0 };
                 int dim = num_components <= 3 ? num_components : 3;
                 for (int i=0; i<dim; i++) {
                     int ipatch = i * num_patches + patch;
@@ -2020,7 +2021,7 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int patch,
 
         itree = new avtIntervalTree(num_patches, 3);
         for (int patch = 0 ; patch < num_patches ; patch++) {
-            float bounds[] = {0, 0, 0, 0, 0, 0};
+            double bounds[] = {0, 0, 0, 0, 0, 0};
             int dim = num_dim_problem < 3 ? num_dim_problem: 3;
 
             for (int j=0; j<dim; j++) {

@@ -13,6 +13,7 @@ SET(KIT_LIBS vtkFiltering vtkDICOMParser
 
 
 SET( Kit_SRCS
+vtkAVSucdReader.cxx
 vtkBMPReader.cxx
 vtkBMPWriter.cxx
 vtkBYUReader.cxx
@@ -36,6 +37,7 @@ vtkEnSightGoldReader.cxx
 vtkEnSightMasterServerReader.cxx
 vtkEnSightReader.cxx
 vtkGESignaReader.cxx
+vtkGAMBITReader.cxx
 vtkGaussianCubeReader.cxx
 vtkGenericEnSightReader.cxx
 vtkIVWriter.cxx
@@ -50,6 +52,8 @@ vtkJPEGWriter.cxx
 vtkMCubesReader.cxx
 vtkMCubesWriter.cxx
 vtkMedicalImageReader2.cxx
+vtkMetaImageReader.cxx
+vtkMetaImageWriter.cxx
 vtkMoleculeReaderBase.cxx
 vtkOBJReader.cxx
 vtkOutputStream.cxx
@@ -165,10 +169,10 @@ SET(Kit_JAVA_EXTRA_SRCS)
 # Start of common section
 
 # Setup vtkInstantiator registration for this library's classes.
-VTK_MAKE_INSTANTIATOR2(vtk${KIT}Instantiator KitInstantiator_SRCS
-                       ${Kit_SRCS}
-                       EXPORT_MACRO VTK_${UKIT}_EXPORT
-                       HEADER_LOCATION ${VTK_BINARY_DIR})
+VTK_MAKE_INSTANTIATOR3(vtk${KIT}Instantiator KitInstantiator_SRCS
+                       "${Kit_SRCS}"
+                       VTK_${UKIT}_EXPORT
+                       ${VTK_BINARY_DIR} "")
 
 ADD_LIBRARY(vtk${KIT} ${Kit_SRCS} ${Kit_EXTRA_SRCS} ${KitInstantiator_SRCS})
 

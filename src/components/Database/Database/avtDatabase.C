@@ -1608,7 +1608,7 @@ avtDatabase::Query(PickAttributes *pa)
     int foundEl     = pa->GetElementNumber();
     int zonePick    = pa->GetPickType() == PickAttributes::Zone ||
                       pa->GetPickType() == PickAttributes::DomainZone;
-    float *PPT, *CPT, ppt[3], cpt[3];
+    double *PPT, *CPT, ppt[3], cpt[3];
     intVector incEls  = pa->GetIncidentElements();
     intVector ghostEls  = pa->GetGhosts();
     stringVector pnodeCoords  = pa->GetPnodeCoords();
@@ -1854,14 +1854,14 @@ avtDatabase::GetExtentsFromAuxiliaryData(avtDataSpecification_p spec,
         return false;
 
     avtIntervalTree *tree = (avtIntervalTree *) *(list.list[0]);
-    float fextents[6] = {0.,0.,0.,0.,0.,0.};
-    tree->GetExtents(fextents);
+    double tree_extents[6] = {0.,0.,0.,0.,0.,0.};
+    tree->GetExtents(tree_extents);
 
     int nvals = 2;
     if (strcmp(type, AUXILIARY_DATA_SPATIAL_EXTENTS) == 0)
         nvals = 6;
     for (int i = 0; i < nvals; i++)
-        extents[i] = fextents[i];
+        extents[i] = tree_extents[i];
 
     return true;
 }

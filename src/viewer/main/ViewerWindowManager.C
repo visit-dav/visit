@@ -6723,7 +6723,7 @@ ViewerWindowManager::UpdateWindowInformation(int flags, int windowIndex)
         //
         if((flags & WINDOWINFO_RENDERINFO) != 0)
         {
-            float times[6] = {0., 0., 0., 0., 0., 0.};
+            double times[6] = {0., 0., 0., 0., 0., 0.};
             win->GetRenderTimes(times);
             windowInfo->SetLastRenderMin(times[0]);
             windowInfo->SetLastRenderAvg(times[1]);

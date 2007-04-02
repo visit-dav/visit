@@ -88,7 +88,7 @@ VisWinTriad::~VisWinTriad()
 // ****************************************************************************
 
 void
-VisWinTriad::SetForegroundColor(float fr, float fg, float fb)
+VisWinTriad::SetForegroundColor(double fr, double fg, double fb)
 {
     triad->GetXAxis()->GetProperty()->SetColor(fr, fg, fb);
     triad->GetYAxis()->GetProperty()->SetColor(fr, fg, fb);

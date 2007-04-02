@@ -270,7 +270,7 @@ avtFileFormat::SetCache(avtVariableCache *c)
 
 void
 avtFileFormat::AddMeshToMetaData(avtDatabaseMetaData *md, string name,
-                                 avtMeshType type, const float *extents,
+                                 avtMeshType type, const double *extents,
                                  int blocks, int origin, int spatial, int topo)
 {
     if (type == AVT_POINT_MESH)
@@ -325,7 +325,7 @@ avtFileFormat::AddMeshToMetaData(avtDatabaseMetaData *md, string name,
 void
 avtFileFormat::AddScalarVarToMetaData(avtDatabaseMetaData *md, string name,
                                       string mesh, avtCentering cent,
-                                      const float *extents, 
+                                      const double *extents, 
                                       const bool treatAsASCII)
 {
     avtScalarMetaData *scalar = new avtScalarMetaData();
@@ -369,7 +369,7 @@ avtFileFormat::AddScalarVarToMetaData(avtDatabaseMetaData *md, string name,
 void
 avtFileFormat::AddVectorVarToMetaData(avtDatabaseMetaData *md, string name,
                                       string mesh, avtCentering cent,
-                                      int dim, const float *extents)
+                                      int dim, const double *extents)
 {
     avtVectorMetaData *vector = new avtVectorMetaData();
     vector->name = name;

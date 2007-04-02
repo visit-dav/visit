@@ -201,7 +201,7 @@ avtVolumePlot::SetAtts(const AttributeGroup *a)
 
     SetLegendOpacities();
 
-    float min, max;
+    double min, max;
     varLegend->GetRange(min, max);
     if (atts.GetUseColorVarMin())
     {
@@ -514,7 +514,7 @@ avtVolumePlot::CustomizeBehavior(void)
     behavior->SetAntialiasedRenderOrder(MUST_GO_LAST);
 
     // Add a legend.
-    float min, max;
+    double min, max;
     mapper->GetRange(min, max);
     varLegend->SetVarRange(min, max);
     if (atts.GetUseColorVarMin())

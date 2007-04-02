@@ -149,7 +149,7 @@ avtCoordSwapFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         int dims[3];
         rg->GetDimensions(dims);
 
-        vtkRectilinearGrid *out_rg = (vtkRectilinearGrid *) rg->MakeObject();
+        vtkRectilinearGrid *out_rg = (vtkRectilinearGrid *) rg->NewInstance();
         vtkDataArray *in_coords[3];
         in_coords[0] = rg->GetXCoordinates();
         in_coords[1] = rg->GetYCoordinates();
@@ -218,7 +218,7 @@ avtCoordSwapFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         vtkPoints *in_pts = ps->GetPoints();
         int npts = in_pts->GetNumberOfPoints();
 
-        vtkPointSet *out_ps = (vtkPointSet *) ps->MakeObject();
+        vtkPointSet *out_ps = (vtkPointSet *) ps->NewInstance();
         out_ps->ShallowCopy(ps);
         vtkPoints *out_pts = vtkPoints::New();
         out_ps->SetPoints(out_pts);
@@ -227,7 +227,7 @@ avtCoordSwapFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 
         for (i = 0 ; i < npts ; i++)
         {
-            float pt[3], tmp[3];
+            double pt[3], tmp[3];
             in_pts->GetPoint(i, pt);
             tmp[0] = pt[old_index[0]];
             tmp[1] = pt[old_index[1]];

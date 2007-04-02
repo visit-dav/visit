@@ -237,7 +237,7 @@ avtDisplaceFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
             float x = rg->GetXCoordinates()->GetTuple1(xi);
             float y = rg->GetYCoordinates()->GetTuple1(yi);
             float z = rg->GetZCoordinates()->GetTuple1(zi);
-            float *vec = vecs->GetTuple3(i);
+            double *vec = vecs->GetTuple3(i);
             x += factor*vec[0];
             y += factor*vec[1];
             z += factor*vec[2];

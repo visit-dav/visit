@@ -38,11 +38,11 @@ public:
   virtual int RenderOpaqueGeometry(vtkViewport *);
   virtual int RenderTranslucentGeometry(vtkViewport *);
 
-  vtkSetVector4Macro(StartColor, float);
-  vtkGetVector4Macro(StartColor, float);
+  vtkSetVector4Macro(StartColor, double);
+  vtkGetVector4Macro(StartColor, double);
 
-  vtkSetVector4Macro(EndColor, float);
-  vtkGetVector4Macro(EndColor, float);
+  vtkSetVector4Macro(EndColor, double);
+  vtkGetVector4Macro(EndColor, double);
 
   vtkSetMacro(ParametricTime, double);
   vtkGetMacro(ParametricTime, double);
@@ -66,8 +66,8 @@ protected:
   void AddEndCapCells(int, vtkCellArray *);
   void CreateSlider(vtkViewport *viewport);
 
-  float  StartColor[4];
-  float  EndColor[4];
+  double  StartColor[4];
+  double  EndColor[4];
   double ParametricTime;
 
   int    VerticalDivisions;

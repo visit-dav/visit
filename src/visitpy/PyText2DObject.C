@@ -92,8 +92,8 @@ Text2DObject_SetPosition(PyObject *self, PyObject *args)
 {
     Text2DObjectObject *obj = (Text2DObjectObject *)self;
 
-    float *fvals = obj->data->GetPosition();
-    if(!PyArg_ParseTuple(args, "ff", &fvals[0], &fvals[1]))
+    double *dvals = obj->data->GetPosition();
+    if(!PyArg_ParseTuple(args, "dd", &dvals[0], &dvals[1]))
     {
         PyObject     *tuple;
         if(!PyArg_ParseTuple(args, "O", &tuple))
@@ -109,13 +109,13 @@ Text2DObject_SetPosition(PyObject *self, PyObject *args)
             {
                 PyObject *item = PyTuple_GET_ITEM(tuple, i);
                 if(PyFloat_Check(item))
-                    fvals[i] = float(PyFloat_AS_DOUBLE(item));
+                    dvals[i] = (PyFloat_AS_DOUBLE(item));
                 else if(PyInt_Check(item))
-                    fvals[i] = float(PyInt_AS_LONG(item));
+                    dvals[i] = double(PyInt_AS_LONG(item));
                 else if(PyLong_Check(item))
-                    fvals[i] = float(PyLong_AsDouble(item));
+                    dvals[i] = (PyLong_AsDouble(item));
                 else
-                    fvals[i] = 0.;
+                    dvals[i] = 0.;
             }
         }
         else
@@ -137,7 +137,7 @@ Text2DObject_GetPosition(PyObject *self, PyObject *args)
     Text2DObjectObject *obj = (Text2DObjectObject *)self;
     // Allocate a tuple the with enough entries to hold the position.
     PyObject *retval = PyTuple_New(2);
-    const float *position = obj->data->GetPosition();
+    const double *position = obj->data->GetPosition();
     for(int i = 0; i < 2; ++i)
         PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(double(position[i])));
     return retval;
@@ -148,14 +148,14 @@ Text2DObject_SetWidth(PyObject *self, PyObject *args)
 {
     Text2DObjectObject *obj = (Text2DObjectObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
     // Set the width in the object.
 /*CUSTOM*/
-    float *pos2 = obj->data->GetPosition2();
-    pos2[0] = fval;
+    double *pos2 = obj->data->GetPosition2();
+    pos2[0] = dval;
     obj->data->SelectPosition2();
     UpdateAnnotationHelper(obj->data);
 
@@ -168,7 +168,7 @@ Text2DObject_GetWidth(PyObject *self, PyObject *args)
 {
     Text2DObjectObject *obj = (Text2DObjectObject *)self;
 /*CUSTOM*/
-    float *pos2 = obj->data->GetPosition2();
+    double *pos2 = obj->data->GetPosition2();
     PyObject *retval = PyFloat_FromDouble(double(pos2[0]));
     return retval;
 }
@@ -571,10 +571,10 @@ Text2DObject_print(PyObject *v, FILE *fp, int flags)
     else
         fprintf(fp, "active = 0\n");
 /*CUSTOM*/
-    {   const float *position = obj->data->GetPosition();
+    {   const double *position = obj->data->GetPosition();
         fprintf(fp, "position = (%g, %g)\n", position[0], position[1]);
     }
-    const float *position2 = obj->data->GetPosition2();
+    const double *position2 = obj->data->GetPosition2();
     fprintf(fp, "width = %g\n", position2[0]);
     const unsigned char *textColor = obj->data->GetTextColor().GetColor();
     fprintf(fp, "textColor = (%d, %d, %d, %d)\n", int(textColor[0]), int(textColor[1]), int(textColor[2]), int(textColor[3]));

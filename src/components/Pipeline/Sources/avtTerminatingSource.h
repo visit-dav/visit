@@ -116,12 +116,12 @@ class PIPELINE_API avtTerminatingSource : virtual public avtQueryableSource
     virtual void                   Query(PickAttributes *){;};
     virtual avtSIL                *GetSIL(int timestep){return NULL;};
     virtual bool                   FindElementForPoint(const char*, const int, 
-                                       const int, const char*, float[3], int &)
+                                       const int, const char*, double[3], int &)
                                        { return false;};
     virtual void                   GetDomainName(const std::string &, const int, 
                                        const int, std::string &) {;};
     virtual bool                   QueryCoords(const std::string &, const int, 
-                                       const int, const int, float[3],
+                                       const int, const int, double[3],
                                        const bool, const bool = false, const char *mn=NULL)
                                        { return false;};
 

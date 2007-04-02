@@ -41,13 +41,15 @@ class QUERY_API avtLocateNodeQuery : public avtLocateQuery
 
   protected:
     virtual void                    Execute(vtkDataSet *, const int);
-    int                             RGridFindNode(vtkDataSet *, float&, float*);
-    int                             DeterminePickedNode(vtkDataSet *, int, float*);
+    int                             RGridFindNode(vtkDataSet *, double&, 
+                                                  double*);
+    int                             DeterminePickedNode(vtkDataSet *, int, 
+                                                       double*);
     int                             FindClosestPoint(vtkDataSet *, const int,
-                                                  float*, int &);
+                                                  double*, int &);
     int                             FindClosestPointOnLine(vtkDataSet *, 
-                                                           float &,
-                                                           float [3]);
+                                                           double &,
+                                                           double [3]);
  
 };
 

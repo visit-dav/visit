@@ -202,7 +202,7 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
     //
     // Use the cell center as the place to position the pick letter.
     //
-    float center[3];
+    double center[3];
     vtkVisItUtility::GetCellCenter(ds->GetCell(zoneid), center);
     pickAtts.SetCellPoint(center); 
     //

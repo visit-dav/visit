@@ -19,10 +19,10 @@ using std::string;
 using std::vector;
 
 
-const float   VisWinLegends::leftColumnPosition  = 0.05;
-const float   VisWinLegends::rightColumnPosition = 0.80;
-const float   VisWinLegends::dbInfoHeight        = 0.07;
-const float   VisWinLegends::dbInfoWidth         = 0.21;
+const double   VisWinLegends::leftColumnPosition  = 0.05;
+const double   VisWinLegends::rightColumnPosition = 0.80;
+const double   VisWinLegends::dbInfoHeight        = 0.07;
+const double   VisWinLegends::dbInfoWidth         = 0.21;
 
 
 // ****************************************************************************
@@ -134,7 +134,7 @@ VisWinLegends::UpdatePlotList(vector<avtActor_p> &lst)
 // ****************************************************************************
  
 void
-VisWinLegends::SetForegroundColor(float fr, float fg, float fb)
+VisWinLegends::SetForegroundColor(double fr, double fg, double fb)
 {
     dbInfoActor->GetTextProperty()->SetColor(fr, fg, fb);
 }
@@ -183,7 +183,7 @@ VisWinLegends::PositionLegends(vector<avtActor_p> &lst)
 {
     std::vector<avtActor_p>::iterator it;
     vtkRenderer *foreground = mediator.GetForeground();
-    float yTop = 0.90;
+    double yTop = 0.90;
     for (it = lst.begin() ; it != lst.end() ; it++)
     {
         avtLegend_p legend = (*it)->GetLegend();
@@ -205,7 +205,7 @@ VisWinLegends::PositionLegends(vector<avtActor_p> &lst)
                     legend->SetDatabaseInfo(info);
                 }
 
-                float width, height;
+                double width, height;
                 legend->GetLegendSize(yTop, width, height);
 
                 if (yTop - height >= 0.)
@@ -327,8 +327,8 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
             dbInfoActor->SetWidth(dbInfoWidth);
         }
         dbInfoActor->SetHeight(dbInfoHeight+0.04);
-        float x = leftColumnPosition;
-        float y = 0.98 - dbInfoHeight;
+        double x = leftColumnPosition;
+        double y = 0.98 - dbInfoHeight;
         vtkCoordinate *c = dbInfoActor->GetPositionCoordinate();
         c->SetCoordinateSystemToNormalizedViewport();
         c->SetValue(x, y);

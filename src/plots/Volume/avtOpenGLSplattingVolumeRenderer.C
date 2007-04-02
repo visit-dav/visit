@@ -427,7 +427,7 @@ avtOpenGLSplattingVolumeRenderer::Render(vtkRectilinearGrid *grid,
                     continue;
 
                 // get the point
-                float *p = grid->GetPoint(index);
+                double *p = grid->GetPoint(index);
 
                 // do shading
                 float brightness;

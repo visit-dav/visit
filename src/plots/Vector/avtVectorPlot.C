@@ -545,7 +545,7 @@ avtVectorPlot::SetLegend(bool legendOn)
 void
 avtVectorPlot::SetLegendRanges()
 {
-    float min = 0., max = 1.;
+    double min = 0., max = 1.;
     bool validRange = false;
     if (atts.GetLimitsMode() == VectorAttributes::OriginalData)
     {
@@ -654,7 +654,7 @@ avtVectorPlot::SetMapperColors()
 void
 avtVectorPlot::SetLimitsMode(int limitsMode)
 {
-    float min, max;
+    double min, max;
     //
     //  Retrieve the actual range of the data
     //

@@ -30,6 +30,7 @@
 
 #include <math.h>
 
+
 #ifdef SUNOS
 #include <ieeefp.h> // for 'finite'
 #endif
@@ -162,16 +163,16 @@ vtkCrackWidthFilter::Execute()
     // won't calculate cell center unless it is really needed, so create a 
     // default (invalid) value to store in the array. Clipping of this cell 
     // will be contingent upon a non-zero crack width
-    float center[3] = {VTK_LARGE_FLOAT, VTK_LARGE_FLOAT, VTK_LARGE_FLOAT};
+    double center[3] = {VTK_LARGE_FLOAT, VTK_LARGE_FLOAT, VTK_LARGE_FLOAT};
     bool do_cd1 = (cd1 != NULL);
     bool do_cd2 = (cd2 != NULL);
     bool do_cd3 = (cd3 != NULL);
-    float *dir1 = NULL;
-    float *dir2 = NULL;
-    float *dir3 = NULL;
-    float delta1 = 0.f;
-    float delta2 = 0.f;
-    float delta3 = 0.f;
+    double *dir1 = NULL;
+    double *dir2 = NULL;
+    double *dir3 = NULL;
+    double delta1 = 0.f;
+    double delta2 = 0.f;
+    double delta3 = 0.f;
     if (do_cd1)
       {
       // t11 is component 0 in the strain array
@@ -244,8 +245,8 @@ vtkCrackWidthFilter::Execute()
     vtkVisItUtility::GetCellCenter(cell, center);
     cellCenters->SetTuple(cellId, center);
 
-    float cl = cell->GetLength2();
-    float crackWidth;
+    double cl = cell->GetLength2();
+    double crackWidth;
 
     if (do_cd1)
       {
@@ -301,13 +302,13 @@ vtkCrackWidthFilter::Execute()
 }
 
 
-float
-vtkCrackWidthFilter::CrackWidthForCell(vtkCell *cell, const float *center,
-  const float cellLength, const float delta, const float *dir)
+double
+vtkCrackWidthFilter::CrackWidthForCell(vtkCell *cell, const double *center,
+  const double cellLength, const double delta, const double *dir)
 {
-  float L, t, crackWidth, p1[3], p2[3], x1[3], x2[3];
+  double L, t, crackWidth, p1[3], p2[3], x1[3], x2[3];
 
-  float cl = cellLength *10;
+  double cl = cellLength *10;
   for (int i = 0; i < 3; i++)
     {
     p1[i] = center[i] + cl*dir[i];
@@ -345,8 +346,8 @@ vtkCrackWidthFilter::CrackWidthForCell(vtkCell *cell, const float *center,
 
 
 int
-vtkCrackWidthFilter::CellIntersectWithLine(vtkCell *cell, float p1[3], 
-    float p2[3], float &t, float x[3])
+vtkCrackWidthFilter::CellIntersectWithLine(vtkCell *cell, double p1[3], 
+    double p2[3], double &t, double x[3])
 {
   switch(cell->GetCellType())
     {
@@ -387,12 +388,13 @@ vtkCrackWidthFilter::CellIntersectWithLine(vtkCell *cell, float p1[3],
 }
 
 int
-vtkCrackWidthFilter::VertexIntersectWithLine(vtkVertex *cell, float p1[3], 
-    float p2[3], float &t, float x[3])
+vtkCrackWidthFilter::VertexIntersectWithLine(vtkVertex *cell, double p1[3], 
+    double p2[3], double &t, double x[3])
 {
-  float cp[3];
-  float *X = cell->Points->GetPoint(0);
-  float dist = vtkLine::DistanceToLine(X, p1, p2, t, cp);
+  double cp[3];
+  double X[3];
+  cell->Points->GetPoint(0, X);
+  double dist = vtkLine::DistanceToLine(X, p1, p2, t, cp);
   t = VTK_LARGE_FLOAT; 
   if (dist == 0)
     {
@@ -407,18 +409,19 @@ vtkCrackWidthFilter::VertexIntersectWithLine(vtkVertex *cell, float p1[3],
 
 int
 vtkCrackWidthFilter::PolyVertexIntersectWithLine(vtkPolyVertex *cell, 
-    float p1[3], float p2[3], float &t, float x[3])
+    double p1[3], double p2[3], double &t, double x[3])
 {
   int numPts=cell->Points->GetNumberOfPoints();
 
-  float tTemp, xTemp[3]; 
+  double tTemp, xTemp[3], a1[3]; 
   t = VTK_LARGE_FLOAT; 
   vtkVertex *vertex = vtkVertex::New();
   int intersection = 0;
   for (int subId=0; subId < numPts; subId++)
     {
     tTemp = VTK_LARGE_FLOAT; 
-    vertex->Points->SetPoint(0, cell->Points->GetPoint(subId));
+    cell->Points->GetPoint(subId, a1);
+    vertex->Points->SetPoint(0, a1);
 
     if (VertexIntersectWithLine(vertex, p1, p2, tTemp, xTemp));
       {
@@ -437,14 +440,14 @@ vtkCrackWidthFilter::PolyVertexIntersectWithLine(vtkPolyVertex *cell,
 }
 
 int
-vtkCrackWidthFilter::LineIntersectWithLine(vtkLine *cell, float p1[3], 
-    float p2[3], float &t, float x[3])
+vtkCrackWidthFilter::LineIntersectWithLine(vtkLine *cell, double p1[3], 
+    double p2[3], double &t, double x[3])
 {
-  float *a1, *a2, tmp;
+  double a1[3], a2[3], tmp;
   int i;
 
-  a1 = cell->Points->GetPoint(0);
-  a2 = cell->Points->GetPoint(1);
+  cell->Points->GetPoint(0, a1);
+  cell->Points->GetPoint(1, a2);
 
   if ( vtkLine::Intersection(p1, p2, a1, a2, t, tmp) == 2 )
     {
@@ -458,18 +461,18 @@ vtkCrackWidthFilter::LineIntersectWithLine(vtkLine *cell, float p1[3],
 }
 
 int
-vtkCrackWidthFilter::PolyLineIntersectWithLine(vtkPolyLine *cell, float p1[3],
-    float p2[3], float &t, float x[3])
+vtkCrackWidthFilter::PolyLineIntersectWithLine(vtkPolyLine *cell, double p1[3],
+    double p2[3], double &t, double x[3])
 {
   int i, subId, numLines=cell->Points->GetNumberOfPoints() - 1;
-  float *a1, *a2, tmp;
-  float tTemp;
+  double a1[3], a2[3], tmp;
+  double tTemp;
   int intersection = 0;
   for (subId=0; subId < numLines; subId++)
     {
     tmp = VTK_LARGE_FLOAT;
-    a1 = cell->Points->GetPoint(subId);
-    a2 = cell->Points->GetPoint(subId+1);
+    cell->Points->GetPoint(subId, a1);
+    cell->Points->GetPoint(subId+1, a1);
     if ( vtkLine::Intersection(p1, p2, a1, a2, tTemp, tmp) == 2)
       {
       if (tmp < t)
@@ -496,7 +499,7 @@ vtkCrackWidthFilter::PolyLineIntersectWithLine(vtkPolyLine *cell, float p1[3],
 //   Use smaller eps for testing when DotProduct close to zero.
 //
 //   Kathleen Bonnell, Thu Sep 18 15:48:54 PDT 2003
-//   Cast multiplication to float before setting intersection point. 
+//   Cast multiplication to double before setting intersection point. 
 //
 //   Kathleen Bonnell, Fri Oct 10 10:46:48 PDT 2003 
 //   Remove eps for testing DotProduct.
@@ -507,17 +510,15 @@ vtkCrackWidthFilter::PolyLineIntersectWithLine(vtkPolyLine *cell, float p1[3],
 //
 // ****************************************************************************
 int
-vtkCrackWidthFilter::TriangleIntersectWithLine(vtkTriangle *cell, float p1[3], 
-    float p2[3], float &t, float x[3])
+vtkCrackWidthFilter::TriangleIntersectWithLine(vtkTriangle *cell, double p1[3], 
+    double p2[3], double &t, double x[3])
 {
-  float *fp1 = cell->GetPoints()->GetPoint(0);
-  float *fp2 = cell->GetPoints()->GetPoint(1);
-  float *fp3 = cell->GetPoints()->GetPoint(2);
-
-  double pt1[3] = {fp1[0], fp1[1], fp1[2]};
-  double pt2[3] = {fp2[0], fp2[1], fp2[2]};
-  double pt3[3] = {fp3[0], fp3[1], fp3[2]};
+  double pt1[3], pt2[3], pt3[3];
  
+  cell->Points->GetPoint(0, pt1);
+  cell->Points->GetPoint(1, pt2);
+  cell->Points->GetPoint(2, pt3);
+
   double dp1[3] = {p1[0], p1[1], p1[2]};
   double dp2[3] = {p2[0], p2[1], p2[2]};
 
@@ -568,7 +569,7 @@ vtkCrackWidthFilter::TriangleIntersectWithLine(vtkTriangle *cell, float p1[3],
 
   for (i = 0; i < 3; i++)
     {
-    x[i] = (float) (dp1[i] + (float)(dt*rayDir[i]));
+    x[i] = (double) (dp1[i] + (double)(dt*rayDir[i]));
     }
   t = dt;
   return 1;
@@ -576,18 +577,21 @@ vtkCrackWidthFilter::TriangleIntersectWithLine(vtkTriangle *cell, float p1[3],
 
 int
 vtkCrackWidthFilter::TriStripIntersectWithLine(vtkTriangleStrip *cell, 
-    float p1[3], float p2[3], float &t, float x[3])
+    double p1[3], double p2[3], double &t, double x[3])
 {
-  int numTris = cell->Points->GetNumberOfPoints()-2;
+  int subTest, numTris = cell->Points->GetNumberOfPoints()-2;
   int intersection = 0;
-  float tTemp;
-  float xTemp[3];
+  double tTemp;
+  double xTemp[3], a1[3], a2[3], a3[3];
   t = VTK_LARGE_FLOAT;
   for (int subId = 0; subId < numTris; subId++)
     {
-    this->triangle->Points->SetPoint(0,cell->Points->GetPoint(subId));
-    this->triangle->Points->SetPoint(1,cell->Points->GetPoint(subId+1));
-    this->triangle->Points->SetPoint(2,cell->Points->GetPoint(subId+2));
+    cell->Points->GetPoint(subId, a1);
+    cell->Points->GetPoint(subId+1, a2);
+    cell->Points->GetPoint(subId+2, a3);
+    this->triangle->Points->SetPoint(0,a1);
+    this->triangle->Points->SetPoint(1,a2);
+    this->triangle->Points->SetPoint(2,a3);
 
     tTemp = VTK_LARGE_FLOAT; 
     if (this->TriangleIntersectWithLine(this->triangle, p1, p2, tTemp, xTemp))
@@ -615,26 +619,26 @@ vtkCrackWidthFilter::TriStripIntersectWithLine(vtkTriangleStrip *cell,
 // ****************************************************************************
 
 int
-vtkCrackWidthFilter::PolygonIntersectWithLine(vtkPolygon *cell, float p1[3], 
-    float p2[3], float &t, float x[3])
+vtkCrackWidthFilter::PolygonIntersectWithLine(vtkPolygon *cell, double p1[3], 
+    double p2[3], double &t, double x[3])
 {
   //
   // Only change from Polygon::IntersectWithLine is dependence upon tol.
   //
-  float *pt1, n[3];
-  float closestPoint[3];
-  float dist2;
+  double pt1[3], n[3];
+  double closestPoint[3];
+  double dist2;
   int npts = cell->GetNumberOfPoints();
-  float *weights;
+  double *weights;
  
   int subId = 0;
-  float pcoords[3] = {0., 0., 0.};
+  double pcoords[3] = {0., 0., 0.};
  
   // Define a plane to intersect with
   //
-  pt1 = cell->Points->GetPoint(1);
+  cell->Points->GetPoint(1, pt1);
   cell->ComputeNormal(cell->Points,n);
-  float tmpt = -1; 
+  double tmpt = -1; 
   // Intersect plane of the polygon with line
   //
   if ( ! vtkPlane::IntersectWithLine(p1,p2,n,pt1,tmpt,x) )
@@ -650,7 +654,7 @@ vtkCrackWidthFilter::PolygonIntersectWithLine(vtkPolygon *cell, float p1[3],
 
   // Evaluate position
   //
-  weights = new float[npts];
+  weights = new double[npts];
   if ( cell->EvaluatePosition(x, closestPoint, subId, pcoords, dist2, weights))
     {
       delete [] weights;
@@ -670,24 +674,24 @@ vtkCrackWidthFilter::PolygonIntersectWithLine(vtkPolygon *cell, float p1[3],
 //
 // ****************************************************************************
 int
-vtkCrackWidthFilter::PixelIntersectWithLine(vtkPixel *cell, float p1[3], 
-    float p2[3], float &t, float x[3])
+vtkCrackWidthFilter::PixelIntersectWithLine(vtkPixel *cell, double p1[3], 
+    double p2[3], double &t, double x[3])
 {
 
   // rewriting pixel code only so that tol is not needed.
-  float *pt1, *pt4, n[3];
-  float closestPoint[3];
-  float dist2, weights[4];
+  double pt1[3], pt4[3], n[3];
+  double closestPoint[3];
+  double dist2, weights[4];
   int i;
  
   int subId = 0;
-  float pcoords[3] = {0., 0., 0.};
+  double pcoords[3] = {0., 0., 0.};
 
   // 
   // Get normal for triangle
   // 
-  pt1 = cell->Points->GetPoint(0);
-  pt4 = cell->Points->GetPoint(3);
+  cell->Points->GetPoint(0, pt1);
+  cell->Points->GetPoint(3, pt4);
  
   n[0] = n[1] = n[2] = 0.0;
   for (i=0; i<3; i++)
@@ -702,7 +706,7 @@ vtkCrackWidthFilter::PixelIntersectWithLine(vtkPixel *cell, float p1[3],
   //
   // Intersect plane of pixel with line.
   //
-  float tmpt = -1;
+  double tmpt = -1;
   if ( ! vtkPlane::IntersectWithLine(p1,p2,n,pt1,tmpt,x) )
     {
     if (tmpt != VTK_LARGE_FLOAT)
@@ -727,14 +731,17 @@ vtkCrackWidthFilter::PixelIntersectWithLine(vtkPixel *cell, float p1[3],
 }
 
 int
-vtkCrackWidthFilter::QuadIntersectWithLine(vtkQuad *cell, float p1[3], 
-    float p2[3], float &t, float x[3])
+vtkCrackWidthFilter::QuadIntersectWithLine(vtkQuad *cell, double p1[3], 
+    double p2[3], double &t, double x[3])
 {
   int diagonalCase;
-  float d1 = vtkMath::Distance2BetweenPoints(cell->Points->GetPoint(0), 
-                                             cell->Points->GetPoint(2));
-  float d2 = vtkMath::Distance2BetweenPoints(cell->Points->GetPoint(1), 
-                                             cell->Points->GetPoint(3));
+  double a1[3], a2[3], a3[3], a4[3];
+  cell->Points->GetPoint(0, a1);
+  cell->Points->GetPoint(1, a2);
+  cell->Points->GetPoint(2, a3);
+  cell->Points->GetPoint(3, a4);
+  double d1 = vtkMath::Distance2BetweenPoints(a1, a3);
+  double d2 = vtkMath::Distance2BetweenPoints(a2, a4);
 
   // Figure out how to uniquely tessellate the quad. Watch out for 
   // equivalent triangulations (i.e., the triangulation is equivalent
@@ -769,16 +776,16 @@ vtkCrackWidthFilter::QuadIntersectWithLine(vtkQuad *cell, float p1[3],
   switch (diagonalCase)
     {
     case 0:
-      this->triangle->Points->SetPoint(0,cell->Points->GetPoint(0));
-      this->triangle->Points->SetPoint(1,cell->Points->GetPoint(1));
-      this->triangle->Points->SetPoint(2,cell->Points->GetPoint(2));
+      this->triangle->Points->SetPoint(0,a1);
+      this->triangle->Points->SetPoint(1,a2);
+      this->triangle->Points->SetPoint(2,a3);
       if (TriangleIntersectWithLine(this->triangle, p1, p2, t, x))
         {
         return 1;
         }
-      this->triangle->Points->SetPoint(0,cell->Points->GetPoint(2));
-      this->triangle->Points->SetPoint(1,cell->Points->GetPoint(3));
-      this->triangle->Points->SetPoint(2,cell->Points->GetPoint(0));
+      this->triangle->Points->SetPoint(0,a3);
+      this->triangle->Points->SetPoint(1,a4);
+      this->triangle->Points->SetPoint(2,a1);
       if (TriangleIntersectWithLine(this->triangle, p1, p2, t, x))
         {
         return 1;
@@ -786,16 +793,16 @@ vtkCrackWidthFilter::QuadIntersectWithLine(vtkQuad *cell, float p1[3],
       return 0;
 
     case 1:
-      this->triangle->Points->SetPoint(0,cell->Points->GetPoint(0));
-      this->triangle->Points->SetPoint(1,cell->Points->GetPoint(1));
-      this->triangle->Points->SetPoint(2,cell->Points->GetPoint(3));
+      this->triangle->Points->SetPoint(0,a1);
+      this->triangle->Points->SetPoint(1,a2);
+      this->triangle->Points->SetPoint(2,a4);
       if (TriangleIntersectWithLine(this->triangle, p1, p2, t, x))
         {  
         return 1;
         }
-      this->triangle->Points->SetPoint(0,cell->Points->GetPoint(2));
-      this->triangle->Points->SetPoint(1,cell->Points->GetPoint(3));
-      this->triangle->Points->SetPoint(2,cell->Points->GetPoint(1));
+      this->triangle->Points->SetPoint(0,a3);
+      this->triangle->Points->SetPoint(1,a4);
+      this->triangle->Points->SetPoint(2,a2);
       if (TriangleIntersectWithLine(this->triangle, p1, p2, t, x))
         {
         return 1;
@@ -806,11 +813,11 @@ vtkCrackWidthFilter::QuadIntersectWithLine(vtkQuad *cell, float p1[3],
 }
 
 int
-vtkCrackWidthFilter::TetraIntersectWithLine(vtkTetra *cell, float p1[3], 
-    float p2[3], float &t, float x[3])
+vtkCrackWidthFilter::TetraIntersectWithLine(vtkTetra *cell, double p1[3], 
+    double p2[3], double &t, double x[3])
 {
   int intersection = 0;
-  float tTemp, xTemp[3];
+  double tTemp, pc[3], xTemp[3], a1[3], a2[3], a3[3];
   int faceNum, *faceIds;
 
   t = VTK_LARGE_FLOAT;
@@ -819,9 +826,12 @@ vtkCrackWidthFilter::TetraIntersectWithLine(vtkTetra *cell, float p1[3],
     {
     tTemp = VTK_LARGE_FLOAT;
     faceIds = cell->GetFaceArray(faceNum);
-    this->triangle->Points->SetPoint(0, cell->Points->GetPoint(faceIds[0]));
-    this->triangle->Points->SetPoint(1, cell->Points->GetPoint(faceIds[1]));
-    this->triangle->Points->SetPoint(2, cell->Points->GetPoint(faceIds[2]));
+    cell->Points->GetPoint(faceIds[0], a1);
+    cell->Points->GetPoint(faceIds[1], a2);
+    cell->Points->GetPoint(faceIds[2], a3);
+    this->triangle->Points->SetPoint(0, a1);
+    this->triangle->Points->SetPoint(1, a2);
+    this->triangle->Points->SetPoint(2, a3);
     if (this->TriangleIntersectWithLine(this->triangle, p1, p2, tTemp, xTemp))
       {
       if (tTemp < t)
@@ -838,15 +848,15 @@ vtkCrackWidthFilter::TetraIntersectWithLine(vtkTetra *cell, float p1[3],
 }
 
 int
-vtkCrackWidthFilter::VoxelIntersectWithLine(vtkVoxel *cell, float p1[3], 
-    float p2[3], float &t, float x[3])
+vtkCrackWidthFilter::VoxelIntersectWithLine(vtkVoxel *cell, double p1[3], 
+    double p2[3], double &t, double x[3])
 {
-  float *minPt, *maxPt;
-  float bounds[6], p21[3];
+  double minPt[3], maxPt[3];
+  double bounds[6], p21[3];
   int i;
  
-  minPt = cell->Points->GetPoint(0);
-  maxPt = cell->Points->GetPoint(7);
+  cell->Points->GetPoint(0, minPt);
+  cell->Points->GetPoint(7, maxPt);
  
   for (i=0; i<3; i++)
     {
@@ -864,20 +874,25 @@ vtkCrackWidthFilter::VoxelIntersectWithLine(vtkVoxel *cell, float p1[3],
 }
 
 int
-vtkCrackWidthFilter::HexIntersectWithLine(vtkHexahedron *cell, float p1[3], 
-    float p2[3], float &t, float x[3])
+vtkCrackWidthFilter::HexIntersectWithLine(vtkHexahedron *cell, double p1[3], 
+    double p2[3], double &t, double x[3])
 {
   int intersection = 0, faceNum, *faceIds;
-  float tTemp, xTemp[3] = {0., 0., 0};
+  double tTemp, xTemp[3] = {0., 0., 0}, pc[3] = { 0., 0., 0.};
+  double a1[3], a2[3], a3[3], a4[3];
   t = VTK_LARGE_FLOAT;
   for (faceNum = 0; faceNum < 6; faceNum++)
     {
     tTemp = VTK_LARGE_FLOAT;
     faceIds = cell->GetFaceArray(faceNum);
-    this->quad->Points->SetPoint(0, cell->Points->GetPoint(faceIds[0]));
-    this->quad->Points->SetPoint(1, cell->Points->GetPoint(faceIds[1]));
-    this->quad->Points->SetPoint(2, cell->Points->GetPoint(faceIds[2]));
-    this->quad->Points->SetPoint(3, cell->Points->GetPoint(faceIds[3]));
+    cell->Points->GetPoint(faceIds[0], a1);
+    cell->Points->GetPoint(faceIds[1], a2);
+    cell->Points->GetPoint(faceIds[2], a3);
+    cell->Points->GetPoint(faceIds[3], a4);
+    this->quad->Points->SetPoint(0, a1);
+    this->quad->Points->SetPoint(1, a2);
+    this->quad->Points->SetPoint(2, a3);
+    this->quad->Points->SetPoint(3, a4);
     if (this->QuadIntersectWithLine(quad, p1, p2, tTemp, xTemp))
       {
       if (tTemp < t)
@@ -894,11 +909,11 @@ vtkCrackWidthFilter::HexIntersectWithLine(vtkHexahedron *cell, float p1[3],
 }
 
 int
-vtkCrackWidthFilter::WedgeIntersectWithLine(vtkWedge *cell, float p1[3], 
-    float p2[3], float& t, float x[3])
+vtkCrackWidthFilter::WedgeIntersectWithLine(vtkWedge *cell, double p1[3], 
+    double p2[3], double& t, double x[3])
 {
   int intersection = 0;
-  float tTemp, xTemp[3];
+  double tTemp, xTemp[3], pc[3], a1[3], a2[3], a3[3], a4[3];
   int faceNum, *faceIds;
 
   t = VTK_LARGE_FLOAT;
@@ -908,9 +923,12 @@ vtkCrackWidthFilter::WedgeIntersectWithLine(vtkWedge *cell, float p1[3],
     {
     tTemp = VTK_LARGE_FLOAT;
     faceIds = cell->GetFaceArray(faceNum);
-    this->triangle->Points->SetPoint(0, cell->Points->GetPoint(faceIds[0])); 
-    this->triangle->Points->SetPoint(1, cell->Points->GetPoint(faceIds[1])); 
-    this->triangle->Points->SetPoint(2, cell->Points->GetPoint(faceIds[2])); 
+    cell->Points->GetPoint(faceIds[0], a1); 
+    cell->Points->GetPoint(faceIds[1], a2); 
+    cell->Points->GetPoint(faceIds[2], a3); 
+    this->triangle->Points->SetPoint(0, a1);
+    this->triangle->Points->SetPoint(1, a2);
+    this->triangle->Points->SetPoint(2, a3);
     if (this->TriangleIntersectWithLine(this->triangle, p1, p2, tTemp, xTemp))
       {
       if (tTemp < t)
@@ -929,10 +947,14 @@ vtkCrackWidthFilter::WedgeIntersectWithLine(vtkWedge *cell, float p1[3],
     {
     tTemp = VTK_LARGE_FLOAT;
     faceIds = cell->GetFaceArray(faceNum);
-    this->quad->Points->SetPoint(0, cell->Points->GetPoint(faceIds[0]));
-    this->quad->Points->SetPoint(1, cell->Points->GetPoint(faceIds[1]));
-    this->quad->Points->SetPoint(2, cell->Points->GetPoint(faceIds[2]));
-    this->quad->Points->SetPoint(3, cell->Points->GetPoint(faceIds[3]));
+    cell->Points->GetPoint(faceIds[0], a1);
+    cell->Points->GetPoint(faceIds[1], a2);
+    cell->Points->GetPoint(faceIds[2], a3);
+    cell->Points->GetPoint(faceIds[3], a4);
+    this->quad->Points->SetPoint(0, a1);
+    this->quad->Points->SetPoint(1, a2); 
+    this->quad->Points->SetPoint(2, a3); 
+    this->quad->Points->SetPoint(3, a4); 
     if (this->QuadIntersectWithLine(this->quad, p1, p2, tTemp, xTemp))
       {
       if (tTemp < t)
@@ -949,13 +971,14 @@ vtkCrackWidthFilter::WedgeIntersectWithLine(vtkWedge *cell, float p1[3],
 }
 
 int
-vtkCrackWidthFilter::PyramidIntersectWithLine(vtkPyramid *cell, float p1[3], 
-    float p2[3], float& t, float x[3])
+vtkCrackWidthFilter::PyramidIntersectWithLine(vtkPyramid *cell, double p1[3], 
+    double p2[3], double& t, double x[3])
 {
   int intersection = 0;
   int faceNum;
   int *faceIds;
-  float xTemp[3], tTemp;
+  double xTemp[3], weights[5], pc[3], dist2, tTemp;
+  double a1[3], a2[3], a3[3], a4[3];
 
   t = VTK_LARGE_FLOAT;
 
@@ -964,9 +987,12 @@ vtkCrackWidthFilter::PyramidIntersectWithLine(vtkPyramid *cell, float p1[3],
     {
     tTemp = VTK_LARGE_FLOAT;
     faceIds = cell->GetFaceArray(faceNum);
-    this->triangle->Points->SetPoint(0, cell->Points->GetPoint(faceIds[0]));
-    this->triangle->Points->SetPoint(1, cell->Points->GetPoint(faceIds[1]));
-    this->triangle->Points->SetPoint(2, cell->Points->GetPoint(faceIds[2]));
+    cell->Points->GetPoint(faceIds[0], a1);
+    cell->Points->GetPoint(faceIds[1], a2);
+    cell->Points->GetPoint(faceIds[2], a3);
+    this->triangle->Points->SetPoint(0, a1);
+    this->triangle->Points->SetPoint(1, a2);
+    this->triangle->Points->SetPoint(2, a3);
     if (this->TriangleIntersectWithLine(this->triangle, p1, p2, tTemp, xTemp))
       {
       if (tTemp < t)
@@ -981,10 +1007,14 @@ vtkCrackWidthFilter::PyramidIntersectWithLine(vtkPyramid *cell, float p1[3],
     }
   // now intersect quad face 
   faceIds = cell->GetFaceArray(0);
-  this->quad->Points->SetPoint(0,  cell->Points->GetPoint(faceIds[0]));
-  this->quad->Points->SetPoint(1,  cell->Points->GetPoint(faceIds[1]));
-  this->quad->Points->SetPoint(2,  cell->Points->GetPoint(faceIds[2]));
-  this->quad->Points->SetPoint(3,  cell->Points->GetPoint(faceIds[3]));
+  cell->Points->GetPoint(faceIds[0], a1);
+  cell->Points->GetPoint(faceIds[1], a2);
+  cell->Points->GetPoint(faceIds[2], a3);
+  cell->Points->GetPoint(faceIds[3], a4);
+  this->quad->Points->SetPoint(0, a1); 
+  this->quad->Points->SetPoint(1, a2); 
+  this->quad->Points->SetPoint(2, a3); 
+  this->quad->Points->SetPoint(3, a4); 
 
   tTemp = VTK_LARGE_FLOAT;
   if (this->QuadIntersectWithLine(this->quad, p1, p2, tTemp, xTemp))
@@ -1027,12 +1057,12 @@ vtkCrackWidthFilter::PyramidIntersectWithLine(vtkPyramid *cell, float p1[3],
 // ****************************************************************************
 
 int
-vtkCrackWidthFilter::LineLineIsect(const float *p1, const float *p2, 
-    const float *p3, const float *p4, float *isect)
+vtkCrackWidthFilter::LineLineIsect(const double *p1, const double *p2, 
+    const double *p3, const double *p4, double *isect)
 {
-    float a1, a2, b1, b2, c1, c2, r1, r2, r3, r4;
-    float x1 = p1[0], x2 = p2[0], x3 = p3[0], x4 = p4[0]; 
-    float y1 = p1[1], y2 = p2[1], y3 = p3[1], y4 = p4[1]; 
+    double a1, a2, b1, b2, c1, c2, r1, r2, r3, r4;
+    double x1 = p1[0], x2 = p2[0], x3 = p3[0], x4 = p4[0]; 
+    double y1 = p1[1], y2 = p2[1], y3 = p3[1], y4 = p4[1]; 
 
     a1 = y2 - y1; 
     b1 = x1 - x2;
@@ -1058,7 +1088,7 @@ vtkCrackWidthFilter::LineLineIsect(const float *p1, const float *p2,
         return 0;
     }
 
-    float denom = a1 * b2 - a2 * b1;
+    double denom = a1 * b2 - a2 * b1;
     if (denom == 0)
     { // COLLINEAR
         return 0;
@@ -1090,24 +1120,24 @@ vtkCrackWidthFilter::LineLineIsect(const float *p1, const float *p2,
 //
 // ****************************************************************************
 int
-vtkCrackWidthFilter::EdgeLineIsect(vtkCell *cell, const float *p1, 
-                                const float *p2, float *x)
+vtkCrackWidthFilter::EdgeLineIsect(vtkCell *cell, const double *p1, 
+                                const double *p2, double *x)
 {
-    float *p3, *p4;
+    double p3[3], p4[3];
     bool isectedEdge = false;
     int numEdges = cell->GetNumberOfEdges();
     int i;
 
     for (i = 0; i < numEdges && !isectedEdge; i++)
     {
-        p3 = cell->GetEdge(i)->Points->GetPoint(0);
-        p4 = cell->GetEdge(i)->Points->GetPoint(1);
+        cell->GetEdge(i)->Points->GetPoint(0, p3);
+        cell->GetEdge(i)->Points->GetPoint(1, p4);
         isectedEdge = (bool) LineLineIsect(p1, p2, p3, p4, x);
     }
     return (isectedEdge ? 1 : 0); 
 }
 
-float
+double
 vtkCrackWidthFilter::GetMaxCrackWidth(int whichCrack)
 {
     switch(whichCrack)

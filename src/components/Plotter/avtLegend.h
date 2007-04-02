@@ -60,15 +60,15 @@ class PLOTTER_API  avtLegend
     virtual void                  Add(vtkRenderer *);
     virtual void                  Remove(void);
 
-    virtual void                  GetLegendPosition(float &, float &);
-    virtual void                  SetLegendPosition(float, float);
-    virtual void                  GetLegendSize(float, float &, float &);
+    virtual void                  GetLegendPosition(double &, double &);
+    virtual void                  SetLegendPosition(double, double);
+    virtual void                  GetLegendSize(double, double &, double &);
     virtual void                  LegendOn(void);
     virtual void                  LegendOff(void);
     bool                          GetLegendOn(void) const;
 
-    virtual void                  SetForegroundColor(const float [3]);
-    virtual void                  SetFontHeight(float);
+    virtual void                  SetForegroundColor(const double [3]);
+    virtual void                  SetFontHeight(double);
 
     void                          SetTitle(const char *);
     void                          SetDatabaseInfo(const char *);
@@ -80,24 +80,24 @@ class PLOTTER_API  avtLegend
     void                          Update();
 
   protected:
-    float                         position[2];
-    float                         size[2];
+    double                        position[2];
+    double                        size[2];
     bool                          legendOn;
     bool                          globalVisibility;
     bool                          currentlyDrawn;
     vtkActor2D                   *legend;
     vtkRenderer                  *renderer;
 
-    float                         fontHeight;
+    double                        fontHeight;
     char                         *title;
     char                         *databaseInfo;
     char                         *varName;
     char                         *varUnits;
     char                         *message;
 
-    virtual void                  ChangePosition(float, float) = 0;
+    virtual void                  ChangePosition(double, double) = 0;
     virtual void                  ChangeTitle(const char *) = 0;
-    virtual void                  ChangeFontHeight(float) = 0;
+    virtual void                  ChangeFontHeight(double) = 0;
 };
 
 

@@ -182,7 +182,7 @@ avtLineoutActor::Remove()
 // ****************************************************************************
 
 void 
-avtLineoutActor::Shift(const float vec[3])
+avtLineoutActor::Shift(const double vec[3])
 {
 }
 
@@ -227,40 +227,13 @@ avtLineoutActor::SetMode3D(const bool mode)
 // ****************************************************************************
 
 void 
-avtLineoutActor::SetAttachmentPoint(float x, float y, float z)
+avtLineoutActor::SetAttachmentPoint(double x, double y, double z)
 {
     attach[0] = x; 
     attach[1] = y; 
     attach[2] = z; 
     lineSource->SetPoint1(x, y, z);
     labelActor1->SetPosition(x, y, z);
-}
-
-
-// ****************************************************************************
-//  Method:  avtLineoutActor::SetAttachmentPoint
-//
-//  Purpose: Set actors' postion.
-//
-//  Arguments:
-//    pos    The attachment point in 3d world coordinates.
-//
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    June 18, 2002 
-//
-//  Modifications:
-//    Kathleen Bonnell, Tue Oct  1 16:07:40 PDT 2002 
-//    Set position for first label actor.
-//
-//    Kathleen Bonnell, Wed Jun 25 15:12:24 PDT 2003  
-//    Changed argument from double[3] to 3 doubles. Call the float version.
-//
-// ****************************************************************************
-
-void 
-avtLineoutActor::SetAttachmentPoint(double x, double y, double z)
-{
-    SetAttachmentPoint((float)x, (float)y, (float)z);
 }
 
 
@@ -285,40 +258,13 @@ avtLineoutActor::SetAttachmentPoint(double x, double y, double z)
 // ****************************************************************************
 
 void 
-avtLineoutActor::SetPoint2(float x, float y, float z)
+avtLineoutActor::SetPoint2(double x, double y, double z)
 {
     pt2[0] = x;
     pt2[1] = y;
     pt2[2] = z;
     lineSource->SetPoint2(x, y, z);
     labelActor2->SetPosition(x, y, z);
-}
-
-
-// ****************************************************************************
-//  Method:  avtLineoutActor::SetPoint2
-//
-//  Purpose: Set actors' postion.
-//
-//  Arguments:
-//    pos    The attachment point in 3d world coordinates.
-//
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    June 18, 2002 
-//
-//  Modifications:
-//    Kathleen Bonnell, Tue Oct  1 16:07:40 PDT 2002 
-//    Set position for second label actor.
-//
-//    Kathleen Bonnell, Wed Jun 25 15:12:24 PDT 2003  
-//    Changed argument from double[3] to 3 double. Call the float version.
-//
-// ****************************************************************************
-
-void 
-avtLineoutActor::SetPoint2(double x, double y, double z)
-{
-    SetPoint2((float)x, (float)y, (float)z);
 }
 
 
@@ -415,7 +361,7 @@ avtLineoutActor::GetDesignator()
 //
 // ****************************************************************************
 
-void avtLineoutActor::SetForegroundColor(float fg[3])
+void avtLineoutActor::SetForegroundColor(double fg[3])
 {
     lineActor->GetProperty()->SetColor(fg);
     labelActor1->GetProperty()->SetColor(fg);
@@ -441,7 +387,7 @@ void avtLineoutActor::SetForegroundColor(float fg[3])
 //
 // ****************************************************************************
 
-void avtLineoutActor::SetForegroundColor(float r, float g, float b)
+void avtLineoutActor::SetForegroundColor(double r, double g, double b)
 {
     lineActor->GetProperty()->SetColor(r, g, b);
     labelActor1->GetProperty()->SetColor(r, g, b);
@@ -571,7 +517,7 @@ void avtLineoutActor::SetLineWidth(int lw)
 // ****************************************************************************
  
 void
-avtLineoutActor::SetScale(float s)
+avtLineoutActor::SetScale(double s)
 {
     labelActor1->SetScale(s);
     labelActor2->SetScale(s);
@@ -627,9 +573,9 @@ avtLineoutActor::SetShowLabels(const bool mode)
 // ****************************************************************************
 
 void 
-avtLineoutActor::Translate(const float vec[3])
+avtLineoutActor::Translate(const double vec[3])
 {
-    float *newPos = labelActor1->GetPosition();
+    double *newPos = labelActor1->GetPosition();
     newPos[0] *= vec[0];
     newPos[1] *= vec[1]; 
     newPos[2] *= vec[2];

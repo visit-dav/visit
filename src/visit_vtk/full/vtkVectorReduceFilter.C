@@ -156,11 +156,11 @@ void vtkVectorReduceFilter::Execute(void)
         {
         nextToTake += actingStride;
 
-        float pt[3];
+        double pt[3];
         input->GetPoint(i, pt);
         outpts->InsertNextPoint(pt);
 
-        float v[3];
+        double v[3];
         inPvecs->GetTuple(i, v);
         outVecs->InsertNextTuple(v);
         outPd->CopyData(inPd, i, count++);
@@ -182,11 +182,11 @@ void vtkVectorReduceFilter::Execute(void)
         nextToTake += actingStride;
 
         vtkCell *cell = input->GetCell(i);
-        float pt[3];
+        double pt[3];
         cell->GetParametricCenter(pt);
         outpts->InsertNextPoint(pt);
 
-        float v[3];
+        double v[3];
         inCvecs->GetTuple(i, v);
         outVecs->InsertNextTuple(v);
         outCd->CopyData(inCd, i, count++);

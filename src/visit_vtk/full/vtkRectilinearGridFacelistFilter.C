@@ -839,7 +839,7 @@ void vtkRectilinearGridFacelistFilter::ConsolidateFacesWithoutGhostZones(void)
   for (i = 0 ; i < numOutPoints ; i++)
   {
       outPointData->CopyData(inPointData, ptIds[i], i);
-      float pt[3];
+      double pt[3];
       input->GetPoint(ptIds[i], pt);
       pts->SetPoint(i, pt);
   }

@@ -103,7 +103,7 @@ avtCurveQuery::Execute(vtkDataSet *ds, const int)
     int np = ds->GetNumberOfPoints();
     float *x = new float[np];
     float *y = new float[np];
-    float pt[3];
+    double pt[3];
     for (int i = 0 ; i < np ; i++)
     {
          ds->GetPoint(i, pt);

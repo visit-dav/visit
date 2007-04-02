@@ -40,7 +40,7 @@ public:
     virtual void GetOptions(AnnotationObject &annot);
 
     // Methods that are called in response to vis window events.
-    virtual void SetForegroundColor(float r, float g, float b);
+    virtual void SetForegroundColor(double r, double g, double b);
     virtual void HasPlots(void);
     virtual void NoPlots(void);
     virtual void UpdatePlotList(std::vector<avtActor_p> &lst);

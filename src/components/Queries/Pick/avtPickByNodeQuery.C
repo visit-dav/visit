@@ -217,7 +217,7 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
     // there is no way to determine the location of the picked node in
     // transformed space, so  ????????
     //
-    float coord[3];
+    double coord[3];
     ds->GetPoint(nodeid, coord);
     pickAtts.SetCellPoint(coord);
     if (transform != NULL)

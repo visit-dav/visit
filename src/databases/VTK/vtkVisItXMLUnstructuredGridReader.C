@@ -18,7 +18,7 @@
 #include "vtkVisItXMLUnstructuredGridReader.h"
 
 #include "vtkCellArray.h"
-#include "vtkIntArray.h"
+#include "vtkIdTypeArray.h"
 #include "vtkObjectFactory.h"
 #include "vtkUnsignedCharArray.h"
 #include "vtkUnstructuredGrid.h"
@@ -148,7 +148,7 @@ void vtkVisItXMLUnstructuredGridReader::SetupOutputData()
   cellTypes->SetNumberOfTuples(this->GetNumberOfCells());
   vtkCellArray* outCells = vtkCellArray::New();
   
-  vtkIntArray* locations = vtkIntArray::New();
+  vtkIdTypeArray* locations = vtkIdTypeArray::New();
   locations->SetNumberOfTuples(this->GetNumberOfCells());
   
   output->SetCells(cellTypes, locations, outCells);
@@ -270,7 +270,7 @@ int vtkVisItXMLUnstructuredGridReader::ReadPieceData()
     }
   
   // Construct the cell locations.
-  vtkIntArray* locations = output->GetCellLocationsArray();
+  vtkIdTypeArray* locations = output->GetCellLocationsArray();
   int* locs = locations->GetPointer(this->StartCell);
   vtkIdType* begin = output->GetCells()->GetData()->GetPointer(startLoc);
   vtkIdType* cur = begin;

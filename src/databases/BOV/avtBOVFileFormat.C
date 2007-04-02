@@ -794,7 +794,7 @@ avtBOVFileFormat::GetAuxiliaryData(const char *var, int domain,
             avtIntervalTree *itree = new avtIntervalTree(nbricks, 1);
             for (int i = 0 ; i < nbricks ; i++)
             {
-                float range[2] = { var_brick_min[i], var_brick_max[i] };
+                double range[2] = { var_brick_min[i], var_brick_max[i] };
                 itree->AddDomain(i, range);
             }
             itree->Calculate(true);
@@ -822,7 +822,7 @@ avtBOVFileFormat::GetAuxiliaryData(const char *var, int domain,
             float x_step = dimensions[0] / nx;
             float y_step = dimensions[1] / ny;
             float z_step = dimensions[2] / nz;
-            float bounds[6];
+            double bounds[6];
             bounds[0] = origin[0] + x_step*x_off;
             bounds[1] = origin[0] + x_step*(x_off+1);
             bounds[2] = origin[1] + y_step*y_off;

@@ -14,6 +14,7 @@
 #include <vtkCellData.h>
 #include <vtkCSGGrid.h>
 #include <vtkDataSet.h>
+#include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkIdList.h>
 #include <vtkIntArray.h>
@@ -3535,7 +3536,7 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
 #endif
 
             vtkCSGGrid *csgmesh = vtkCSGGrid::SafeDownCast(mesh);
-            const float *bnds = csgmesh->GetBounds();
+            const double *bnds = csgmesh->GetBounds();
 
             vtkDataSet *dgrid;
             if (dspec->DiscBoundaryOnly())
@@ -8914,7 +8915,7 @@ bool
 avtGenericDatabase::QueryNodes(const string &varName, const int dom, 
                                const int zone, bool &zoneIsGhost, const int ts, 
                                intVector &nodes, intVector &ghostNodes, 
-                               const bool includeGhosts, float ppt[3],
+                               const bool includeGhosts, double ppt[3],
                                const int dim, const bool physicalNodes, 
                                const bool logicalDNodes, const bool logicalBNodes,
                                stringVector &pnCoords, stringVector &dnCoords,
@@ -8931,7 +8932,7 @@ avtGenericDatabase::QueryNodes(const string &varName, const int dom,
     {
         vtkIdList *ptIds = vtkIdList::New();
         ds->GetCellPoints(zone, ptIds);
-        float coord[3];
+        double coord[3];
         int ijk[3];
         char buff[80];
         int type = ds->GetDataObjectType();
@@ -9237,7 +9238,7 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
                                int &foundEl, bool &elIsGhost, 
                                const int ts, intVector &zones, 
                                intVector &ghostZ, bool includeGhosts,
-                               float ppt[3], const int dimension,
+                               double ppt[3], const int dimension,
                                const bool physicalNodes, 
                                const bool logicalDNodes, 
                                const bool logicalBNodes, 
@@ -9259,7 +9260,7 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
         vtkIdList *ids = vtkIdList::New();
         vtkIdType *idptr; 
         vtkIdType minId = foundEl;
-        float coord[3];
+        double coord[3];
         int ijk[3];
         char buff[80];
         int type = ds->GetDataObjectType();
@@ -9270,9 +9271,7 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
 
         if ( minId != -1)
         {
-            ppt[0] = ds->GetPoint(minId)[0];
-            ppt[1] = ds->GetPoint(minId)[1];
-            ppt[2] = ds->GetPoint(minId)[2];
+            ds->GetPoint(minId, ppt);
 
             foundEl = minId;
 
@@ -9403,9 +9402,9 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
 void
 avtGenericDatabase::AssociateBounds(vtkDataSet *ds)
 {
-    float bounds[6];
+    double bounds[6];
     ds->GetBounds(bounds);
-    vtkFloatArray *arr = vtkFloatArray::New();
+    vtkDoubleArray *arr = vtkDoubleArray::New();
     arr->SetName("avtOriginalBounds");
     arr->SetNumberOfTuples(6);
     for (int i = 0 ; i < 6 ; i++)
@@ -9446,7 +9445,7 @@ avtGenericDatabase::ScaleMesh(vtkDataSet *ds)
     bool needZScaling = false;
     double scaleFactor = 1.;
 
-    float bounds[6];
+    double bounds[6];
     if (ds->GetFieldData()->GetArray("avtOriginalBounds") != NULL)
     {
         vtkDataArray *arr = ds->GetFieldData()->GetArray("avtOriginalBounds");
@@ -9889,7 +9888,7 @@ avtGenericDatabase::QuerySpecies(const string &varName, const int dom,
 bool                
 avtGenericDatabase::FindElementForPoint(const char *var, const int ts, 
                         const int dom, const char *elementName, 
-                        float pt[3], int &elNum)
+                        double pt[3], int &elNum)
 {
     ActivateTimestep(ts);
 
@@ -10021,7 +10020,7 @@ avtGenericDatabase::GetDomainName(const string &varName, const int ts,
 
 bool
 avtGenericDatabase::QueryCoords(const string &varName, const int dom, 
-       const int id, const int ts, float coord[3], const bool forZone,
+       const int id, const int ts, double coord[3], const bool forZone,
        const bool useGlobalId, const char *mN)
 {
     ActivateTimestep(ts);
@@ -10105,10 +10104,7 @@ avtGenericDatabase::QueryCoords(const string &varName, const int dom,
                            ijk[2] * (dims[0]) * (dims[1]);
                 }
             }
-            float *pt = ds->GetPoint(node);
-            coord[0] = pt[0] ;
-            coord[1] = pt[1] ;
-            coord[2] = pt[2] ;
+            ds->GetPoint(node, coord);
             rv = true;
         }
         ds->Delete();

@@ -274,8 +274,8 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
         return;    
     }
 
-    float val;
-    float *x;
+    double val;
+    double x[3], x9[9];
     bool zonesPreserved = GetInput()->GetInfo().GetValidity().GetZonesPreserved();
 
     avtMaterial *mat = NULL;
@@ -307,13 +307,13 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
                     val = data->GetComponent(elNum, 1);
                 break; 
             case QueryAttributes::Vector :
-                x = data->GetTuple3(elNum);
+                data->GetTuple(elNum, x);
                 val = sqrt(x[0]*x[0]+x[1]*x[1]+x[2]*x[2]);
                 break; 
             case QueryAttributes::Tensor :
             case QueryAttributes::Symmetric_Tensor :
-                x = data->GetTuple9(elNum);
-                val = MajorEigenvalue(x);
+                data->GetTuple(elNum, x9);
+                val = MajorEigenvalue(x9);
                 break; 
             case QueryAttributes::Curve :
                 val = data->GetComponent(elNum, 1);
@@ -666,12 +666,9 @@ avtMinMaxQuery::Preparation(avtDataObject_p inData)
 // ****************************************************************************
 
 void
-avtMinMaxQuery::GetNodeCoord(vtkDataSet *ds, const int id, float coord[3])
+avtMinMaxQuery::GetNodeCoord(vtkDataSet *ds, const int id, double coord[3])
 {
-    float *fp = ds->GetPoint(id);
-    coord[0] = fp[0];
-    coord[1] = fp[1];
-    coord[2] = fp[2];
+    ds->GetPoint(id, coord);
 }
 
 
@@ -696,7 +693,7 @@ avtMinMaxQuery::GetNodeCoord(vtkDataSet *ds, const int id, float coord[3])
 // ****************************************************************************
 
 void
-avtMinMaxQuery::GetCellCoord(vtkDataSet *ds, const int id, float coord[3])
+avtMinMaxQuery::GetCellCoord(vtkDataSet *ds, const int id, double coord[3])
 {
     vtkVisItUtility::GetCellCenter(ds->GetCell(id), coord);
 }
@@ -799,7 +796,7 @@ avtMinMaxQuery::InfoToString(const MinMaxInfo &info)
 
     os << "at coord <";
 
-    const float *c = info.GetCoord();
+    const double *c = info.GetCoord();
     if (queryAtts.GetVarTypes()[0] == QueryAttributes::Curve || scalarCurve)
     { 
         os << c[0];
@@ -902,7 +899,7 @@ avtMinMaxQuery::CreateMessage(const int nMsg, const MinMaxInfo &info1,
 void  
 avtMinMaxQuery::FinalizeNodeCoord(vtkDataSet *ds, MinMaxInfo &info)
 {
-    float *c = info.GetCoord();
+    double *c = info.GetCoord();
     GetNodeCoord(ds, info.GetElementNum(), c);
     info.SetCoord(c);
     //
@@ -942,7 +939,7 @@ avtMinMaxQuery::FinalizeZoneCoord(vtkDataSet *ds, vtkDataArray *oCells,
         comp  = oCells->GetNumberOfComponents() -1;
 
     int elNum = info.GetElementNum();
-    float *c = info.GetCoord();
+    double *c = info.GetCoord();
     GetCellCoord(ds, elNum, c);
 
     if (oCells)
@@ -984,7 +981,7 @@ avtMinMaxQuery::FindElement(MinMaxInfo &info)
     {
         string var = queryAtts.GetVariables()[0];
         int ts = queryAtts.GetTimeStep();
-        float *c = info.GetCoord(); 
+        double *c = info.GetCoord(); 
         src->FindElementForPoint(var.c_str(), ts, info.GetDomain(), 
                                  elementName.c_str(), c, elNum); 
         info.SetElementNum(elNum);

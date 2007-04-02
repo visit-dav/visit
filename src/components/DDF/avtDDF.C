@@ -75,7 +75,7 @@ avtDDF::CreateGrid(void)
     for (int i = 0 ; i < nCells ; i++)
     {
         vtkCell *cell = rv->GetCell(i);
-        float bbox[6];
+        double bbox[6];
         cell->GetBounds(bbox);
 
         // Note the assumption here that the X-axis corresponds to tuple 0,

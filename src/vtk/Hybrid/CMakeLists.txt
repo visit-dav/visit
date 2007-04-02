@@ -18,7 +18,6 @@ IF (WIN32)
   ENDIF (VTK_USE_MATROX_IMAGING)
 ENDIF (WIN32)
 
-
 SET ( Kit_SRCS
 vtk3DSImporter.cxx
 vtk3DWidget.cxx
@@ -32,6 +31,7 @@ vtkGreedyTerrainDecimation.cxx
 vtkGridTransform.cxx
 vtkImagePlaneWidget.cxx
 vtkImageToPolyDataFilter.cxx
+vtkImageTracerWidget.cxx
 vtkImplicitModeller.cxx
 vtkImplicitPlaneWidget.cxx
 vtkIterativeClosestPointTransform.cxx
@@ -95,11 +95,10 @@ SET(Kit_JAVA_EXTRA_SRCS)
 # Start of common section
 
 # Setup vtkInstantiator registration for this library's classes.
-VTK_MAKE_INSTANTIATOR2(vtk${KIT}Instantiator KitInstantiator_SRCS
-                       ${Kit_SRCS}
-                       EXPORT_MACRO VTK_${UKIT}_EXPORT
-                       HEADER_LOCATION ${VTK_BINARY_DIR})
-
+VTK_MAKE_INSTANTIATOR3(vtk${KIT}Instantiator KitInstantiator_SRCS
+                       "${Kit_SRCS}"
+                       VTK_${UKIT}_EXPORT
+                       ${VTK_BINARY_DIR} "")
 ADD_LIBRARY(vtk${KIT} ${Kit_SRCS} ${Kit_EXTRA_SRCS} ${KitInstantiator_SRCS})
 
 IF(VTK_APPLE_SHARED_FLAGS_NEEDED)

@@ -113,7 +113,7 @@ VariableNamesEqual(const std::string &v1, const std::string &v2)
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData()
-    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbbsiii")
+    : AttributeSubject("sssiiiiiibDDs*ii*ssbssssssibbbbbsiii")
 {
     blockTitle = "domains";
     blockPieceName = "domain";
@@ -206,10 +206,10 @@ avtMeshMetaData::avtMeshMetaData()
 //
 // ****************************************************************************
 
-avtMeshMetaData::avtMeshMetaData(const float *extents, std::string s, int nb,
+avtMeshMetaData::avtMeshMetaData(const double *extents, std::string s, int nb,
                                  int bo, int co, int go, int sd, int td,
                                  avtMeshType mt)
-    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbbsiii")
+    : AttributeSubject("sssiiiiiibDDs*ii*ssbssssssibbbbbsiii")
 {
     name                 = s;
     originalName         = name;
@@ -306,7 +306,7 @@ avtMeshMetaData::avtMeshMetaData(const float *extents, std::string s, int nb,
 
 avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int go,
                                  int sd, int td, avtMeshType mt)
-    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbbsiii")
+    : AttributeSubject("sssiiiiiibDDs*ii*ssbssssssibbbbbsiii")
 {
     name                 = s;
     originalName         = name;
@@ -406,7 +406,7 @@ avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int go,
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData(const avtMeshMetaData &rhs)
-    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbbsiii")
+    : AttributeSubject("sssiiiiiibDDs*ii*ssbssssssibbbbbsiii")
 {
     name                     = rhs.name;
     originalName             = rhs.originalName;
@@ -686,7 +686,7 @@ avtMeshMetaData::SelectAll()
 // ****************************************************************************
 
 void
-avtMeshMetaData::SetExtents(const float *extents)
+avtMeshMetaData::SetExtents(const double *extents)
 {
     if (extents == NULL)
     {
@@ -972,7 +972,7 @@ avtMeshMetaData::Print(ostream &out, int indent) const
 // ****************************************************************************
 
 avtScalarMetaData::avtScalarMetaData()
-    : AttributeSubject("ssibffbbbss")
+    : AttributeSubject("ssibddbbbss")
 {
     validVariable = true;
     treatAsASCII = false;
@@ -1008,7 +1008,7 @@ avtScalarMetaData::avtScalarMetaData()
 
 avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn, 
                                      avtCentering c)
-    : AttributeSubject("ssibffbbbss")
+    : AttributeSubject("ssibddbbbss")
 {
     name           = n;
     originalName   = name;
@@ -1050,8 +1050,8 @@ avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
 // ****************************************************************************
 
 avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
-                                     avtCentering c, float min, float max)
-    : AttributeSubject("ssibffbbbss")
+                                     avtCentering c, double min, double max)
+    : AttributeSubject("ssibddbbbss")
 {
     name           = n;
     originalName   = name;
@@ -1061,7 +1061,7 @@ avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
     treatAsASCII   = false;
     hasUnits       = false;
 
-    float  extents[2] = { min, max };
+    double  extents[2] = { min, max };
     SetExtents(extents);
 }
 
@@ -1094,7 +1094,7 @@ avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
 // ****************************************************************************
 
 avtScalarMetaData::avtScalarMetaData(const avtScalarMetaData &rhs)
-    : AttributeSubject("ssibffbbbss")
+    : AttributeSubject("ssibddbbbss")
 {
     name           = rhs.name;
     originalName   = name;
@@ -1225,7 +1225,7 @@ avtScalarMetaData::SelectAll()
 // ****************************************************************************
 
 void
-avtScalarMetaData::SetExtents(const float *extents)
+avtScalarMetaData::SetExtents(const double *extents)
 {
     if (extents == NULL)
     {
@@ -1353,7 +1353,7 @@ avtScalarMetaData::Print(ostream &out, int indent) const
 // ****************************************************************************
 
 avtVectorMetaData::avtVectorMetaData()
-    : AttributeSubject("ssiibffbbss")
+    : AttributeSubject("ssiibddbbss")
 {
     varDim = 0;
     validVariable = true;
@@ -1387,7 +1387,7 @@ avtVectorMetaData::avtVectorMetaData()
 
 avtVectorMetaData::avtVectorMetaData(std::string n, std::string mn, 
                                      avtCentering c, int vd)
-    : AttributeSubject("ssiibffbbss")
+    : AttributeSubject("ssiibddbbss")
 {
     name           = n;
     originalName   = name;
@@ -1427,8 +1427,8 @@ avtVectorMetaData::avtVectorMetaData(std::string n, std::string mn,
 
 avtVectorMetaData::avtVectorMetaData(std::string n, std::string mn,
                                      avtCentering c, int vd,
-                                     const float *extents)
-    : AttributeSubject("ssiibffbbss")
+                                     const double *extents)
+    : AttributeSubject("ssiibddbbss")
 {
     name           = n;
     originalName   = name;
@@ -1466,7 +1466,7 @@ avtVectorMetaData::avtVectorMetaData(std::string n, std::string mn,
 // ****************************************************************************
 
 avtVectorMetaData::avtVectorMetaData(const avtVectorMetaData &rhs)
-    : AttributeSubject("ssiibffbbss")
+    : AttributeSubject("ssiibddbbss")
 {
     name           = rhs.name;
     originalName   = name;
@@ -1474,8 +1474,8 @@ avtVectorMetaData::avtVectorMetaData(const avtVectorMetaData &rhs)
     centering      = rhs.centering;
     varDim         = rhs.varDim;
     hasDataExtents = rhs.hasDataExtents;
-    minDataExtents = rhs.minDataExtents; // safe on a std::vector<float>
-    maxDataExtents = rhs.maxDataExtents; // safe on a std::vector<float>
+    minDataExtents = rhs.minDataExtents; // safe on a std::vector<double>
+    maxDataExtents = rhs.maxDataExtents; // safe on a std::vector<double>
     validVariable  = rhs.validVariable;
     hasUnits       = rhs.hasUnits;
     units          = rhs.units;
@@ -1529,8 +1529,8 @@ avtVectorMetaData::operator=(const avtVectorMetaData &rhs)
     centering      = rhs.centering;
     varDim         = rhs.varDim;
     hasDataExtents = rhs.hasDataExtents;
-    minDataExtents = rhs.minDataExtents; // safe on a std::vector<float>
-    maxDataExtents = rhs.maxDataExtents; // safe on a std::vector<float>
+    minDataExtents = rhs.minDataExtents; // safe on a std::vector<double>
+    maxDataExtents = rhs.maxDataExtents; // safe on a std::vector<double>
     validVariable  = rhs.validVariable;
     hasUnits       = rhs.hasUnits;
     units          = rhs.units;
@@ -1598,7 +1598,7 @@ avtVectorMetaData::SelectAll()
 // ****************************************************************************
 
 void
-avtVectorMetaData::SetExtents(const float *extents)
+avtVectorMetaData::SetExtents(const double *extents)
 {
     if (extents == NULL)
     {
@@ -5440,7 +5440,7 @@ avtDatabaseMetaData::Add(avtDefaultPlotMetaData *pmd)
 // ****************************************************************************
 
 void
-avtDatabaseMetaData::SetExtents(std::string name, const float *extents)
+avtDatabaseMetaData::SetExtents(std::string name, const double *extents)
 {
     bool   foundVar = false;
 

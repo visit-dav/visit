@@ -25,9 +25,9 @@
 #include "vtkIdListCollection.h"
 #include "vtkObjectFactory.h"
 
-#include <string>
+#include <vtkstd/string>
 
-vtkCxxRevisionMacro(vtkVisItGenericEnSightReader, "$Revision: 1.55 $");
+vtkCxxRevisionMacro(vtkVisItGenericEnSightReader, "$Revision: 1.56 $");
 vtkStandardNewMacro(vtkVisItGenericEnSightReader);
 
 vtkCxxSetObjectMacro(vtkVisItGenericEnSightReader,TimeSets, 
@@ -274,10 +274,14 @@ int vtkVisItGenericEnSightReader::DetermineEnSightVersion()
     vtkErrorMacro("A case file name must be specified.");
     return -1;
     }
-  std::string sfilename = "";
+  vtkstd::string sfilename = "";
   if (this->FilePath)
     {
     sfilename = this->FilePath;
+    if (sfilename.at(sfilename.length()-1) != '/')
+      {
+      sfilename += "/";
+      }
     sfilename += this->CaseFileName;
     vtkDebugMacro("full path to case file: " 
                   << sfilename.c_str());
@@ -358,6 +362,10 @@ int vtkVisItGenericEnSightReader::DetermineEnSightVersion()
             if (this->FilePath)
               {
               sfilename = this->FilePath;
+              if (sfilename.at(sfilename.length()-1) != '/')
+                {
+                sfilename += "/";
+                }
               sfilename += fileName;
               vtkDebugMacro("full path to geometry file: " 
                             << sfilename.c_str());
@@ -452,6 +460,10 @@ int vtkVisItGenericEnSightReader::DetermineEnSightVersion()
         if (this->FilePath)
           {
           sfilename = this->FilePath;
+          if (sfilename.at(sfilename.length()-1) != '/')
+            {
+            sfilename += "/";
+            }
           sfilename += fileName;
           vtkDebugMacro("full path to geometry file: " 
                         << sfilename.c_str());
@@ -982,10 +994,14 @@ void vtkVisItGenericEnSightReader::ReplaceWildcards(char* fileName, int timeSet,
   char line[256], subLine[256];
   int cmpTimeSet, cmpFileSet, fileNameNum;
   
-  std::string sfilename;
+  vtkstd::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
+    if (sfilename.at(sfilename.length()-1) != '/')
+      {
+      sfilename += "/";
+      }
     sfilename += this->CaseFileName;
     vtkDebugMacro("full path to case file: " 
                   << sfilename.c_str());

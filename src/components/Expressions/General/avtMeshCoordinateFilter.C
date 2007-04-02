@@ -79,7 +79,7 @@ avtMeshCoordinateFilter::DeriveVariable(vtkDataSet *in_ds)
 
     for (int i = 0 ; i < npts ; i++)
     {
-         float pt[3];
+         double pt[3];
          in_ds->GetPoint(i, pt);
          rv->SetTuple3(i, pt[0], pt[1], pt[2]);
     }

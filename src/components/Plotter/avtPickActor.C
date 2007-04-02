@@ -210,9 +210,9 @@ avtPickActor::Remove()
 // ****************************************************************************
 
 void 
-avtPickActor::Shift(const float vec[3])
+avtPickActor::Shift(const double vec[3])
 {
-    float newPos[3], newGlyphPos[3], shiftFactor ; 
+    double newPos[3], newGlyphPos[3], shiftFactor ; 
     if (mode3D)
     {
         shiftFactor = 3.;     // completely arbitrary shift factor!!!
@@ -270,12 +270,12 @@ avtPickActor::SetMode3D(const bool mode)
 //
 //  Modifications:
 //    Kathleen Bonnell, Wed Jun 25 15:12:24 PDT 2003 
-//    Changed argument from float[3] to 3 floats, set position for glyphActor.
+//    Changed argument from double[3] to 3 doubles, set position for glyphActor.
 //
 // ****************************************************************************
 
 void 
-avtPickActor::SetAttachmentPoint(float x, float y, float z)
+avtPickActor::SetAttachmentPoint(double x, double y, double z)
 {
     attach[0] = x;
     attach[1] = y;
@@ -304,7 +304,7 @@ avtPickActor::SetAttachmentPoint(float x, float y, float z)
 // ****************************************************************************
 
 void
-avtPickActor::SetScale(float s)
+avtPickActor::SetScale(double s)
 {
     letterActor->SetScale(s);
     glyphActor->SetScale(s);
@@ -357,7 +357,7 @@ void avtPickActor::SetDesignator(const char *l)
 //
 // ****************************************************************************
 
-void avtPickActor::SetForegroundColor(float fg[3])
+void avtPickActor::SetForegroundColor(double fg[3])
 {
     letterActor->GetProperty()->SetColor(fg);
     lineActor->GetProperty()->SetColor(fg);
@@ -384,7 +384,7 @@ void avtPickActor::SetForegroundColor(float fg[3])
 // ****************************************************************************
 
 void 
-avtPickActor::SetForegroundColor(float r, float g, float b)
+avtPickActor::SetForegroundColor(double r, double g, double b)
 {
     letterActor->GetProperty()->SetColor(r, g, b);
     lineActor->GetProperty()->SetColor(r, g, b);
@@ -483,9 +483,9 @@ avtPickActor::UpdateView()
 // ****************************************************************************
 
 void 
-avtPickActor::Translate(const float vec[3])
+avtPickActor::Translate(const double vec[3])
 {
-    float *newPos = letterActor->GetPosition();
+    double *newPos = letterActor->GetPosition();
     newPos[0] *= vec[0];
     newPos[1] *= vec[1]; 
     newPos[2] *= vec[2];
@@ -546,7 +546,7 @@ avtPickActor::Translate(const float vec[3])
 // ****************************************************************************
 
 void 
-avtPickActor::ResetPosition(const float vec[3])
+avtPickActor::ResetPosition(const double vec[3])
 {
     lineSource->SetPoint1(attach[0], attach[1], attach[2]);
     letterActor->SetPosition(attach[0], attach[1], attach[2]);
@@ -567,7 +567,7 @@ avtPickActor::ResetPosition(const float vec[3])
 //
 // ****************************************************************************
 
-const float * 
+const double * 
 avtPickActor::GetLetterPosition()
 {
     return letterActor->GetPosition();

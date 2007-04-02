@@ -599,7 +599,7 @@ avtVTKFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         break;
     }
 
-    float bounds[6];
+    double bounds[6];
     dataset->GetBounds(bounds);
 
     if ((bounds[4] == bounds[5]) && (bounds[5] == 0.))
@@ -831,8 +831,8 @@ vtkDataSet *
 avtVTKFileFormat::ConvertStructuredPointsToRGrid(vtkStructuredPoints *inSP)
 {
     int coordDims[3]; 
-    float spacing[3];
-    float origin[3];
+    double spacing[3];
+    double origin[3];
     inSP->GetDimensions(coordDims);
     inSP->GetSpacing(spacing);
     inSP->GetOrigin(origin);

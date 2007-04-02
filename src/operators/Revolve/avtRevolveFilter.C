@@ -183,10 +183,10 @@ avtRevolveFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         GetRotationMatrix(angle, axis, mat);
         for (j = 0 ; j < npts ; j++)
         {
-            float pt[4];
+            double pt[4];
             in_ds->GetPoint(j, pt);
             pt[3] = 1.;
-            float outpt[4];
+            double outpt[4];
             mat->MultiplyPoint(pt, outpt);
             ptr[0] = outpt[0];
             ptr[1] = outpt[1];

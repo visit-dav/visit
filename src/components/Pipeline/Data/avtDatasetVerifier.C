@@ -171,8 +171,12 @@ avtDatasetVerifier::VerifyDataset(vtkDataSet *ds, int dom)
             vtkPoints *p = vtkPoints::New();
             p->SetDataTypeToFloat();
             p->SetNumberOfPoints(pts->GetNumberOfPoints());
+            double pt[3];
             for (i = 0; i < pts->GetNumberOfPoints(); i++)
-               p->SetPoint(i, pts->GetPoint(i));
+            {
+               pts->GetPoint(i, pt);
+               p->SetPoint(i, pt);
+            }
             ((vtkPointSet*)ds)->SetPoints(p);
             p->Delete();
         }

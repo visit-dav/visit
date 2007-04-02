@@ -805,7 +805,7 @@ avtFacelistFilter::FindEdges(vtkDataSet *in_ds)
     pts->Delete();
     for (i = 0 ; i < nPtsUsed ; i++)
     {
-        float pt[3];
+        double pt[3];
         in_ds->GetPoint(reverseLookup[i], pt);
         pts->SetPoint(i, pt);
         outPD->CopyData(inPD, reverseLookup[i], i);

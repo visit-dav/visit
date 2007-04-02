@@ -15,10 +15,10 @@
 
 #define N_COLOR_COMPONENTS 4
 #define SET_COLOR(ptr, color)  \
-        *ptr++ = (unsigned char)(color[0] * 255.); \
-        *ptr++ = (unsigned char)(color[1] * 255.); \
-        *ptr++ = (unsigned char)(color[2] * 255.); \
-        *ptr++ = (unsigned char)(color[3] * 255.);
+        *ptr++ = (unsigned char)((float)color[0] * 255.f); \
+        *ptr++ = (unsigned char)((float)color[1] * 255.f); \
+        *ptr++ = (unsigned char)((float)color[2] * 255.f); \
+        *ptr++ = (unsigned char)((float)color[3] * 255.f);
 
 vtkStandardNewMacro(vtkTimeSliderActor);
 
@@ -193,8 +193,8 @@ vtkTimeSliderActor::AddEndCapCells(int center, vtkCellArray *polys)
 void
 vtkTimeSliderActor::CreateSlider(vtkViewport *viewport)
 {
-    float BL[2] = {this->GetPosition()[0], this->GetPosition()[1]};
-    float TR[2] = {this->GetPosition()[0] + this->GetPosition2()[0],
+    double BL[2] = {this->GetPosition()[0], this->GetPosition()[1]};
+    double TR[2] = {this->GetPosition()[0] + this->GetPosition2()[0],
                    this->GetPosition()[1] + this->GetPosition2()[1]};
 
 #ifdef CREATE_POLYDATA_IN_SCREEN_SPACE
@@ -205,20 +205,20 @@ vtkTimeSliderActor::CreateSlider(vtkViewport *viewport)
     //
     // If we're drawing endcaps, move the bar in a little to make room.
     //
-    float BarHeight = TR[1] - BL[1];
+    double BarHeight = TR[1] - BL[1];
     if(BarHeight < 0.f) BarHeight = -BarHeight;
-    float EndCapRadius = BarHeight / 2.;
+    double EndCapRadius = BarHeight / 2.;
     if(this->DrawEndCaps != 0)
     {
         BL[0] += EndCapRadius;
         TR[0] -= EndCapRadius;
     }
 
-    float CY = (TR[1] + BL[1]) / 2.;
-    float CX = BL[0];
-    float CX2 = TR[0];
+    double CY = (TR[1] + BL[1]) / 2.;
+    double CX = BL[0];
+    double CX2 = TR[0];
 
-    float midX(this->ParametricTime * TR[0] + (1.-this->ParametricTime) * BL[0]);
+    double midX(this->ParametricTime * TR[0] + (1.-this->ParametricTime) * BL[0]);
 
     int numPts = 4 * (this->VerticalDivisions + 1);
     int nNewPtsPerAngle = this->VerticalDivisions / 2;
@@ -244,17 +244,17 @@ vtkTimeSliderActor::CreateSlider(vtkViewport *viewport)
     //
     // Create the points and colors to use for the cells.
     //
-    float pt[3]; pt[2] = 0.;
+    double pt[3]; pt[2] = 0.;
     int i, index = 0;
     unsigned char *rgb = colors->GetPointer(0);
     vtkIdType ptIds[4];
-    float lColor[N_COLOR_COMPONENTS], rColor[N_COLOR_COMPONENTS];
+    double lColor[N_COLOR_COMPONENTS], rColor[N_COLOR_COMPONENTS];
 
     for(i = 0; i < this->VerticalDivisions + 1; ++i)
     {
-        float t = float(i) / float(this->VerticalDivisions);
-        float omt = 1.f - t;
-        float y = t * TR[1] + omt * BL[1];
+        double t = double(i) / double(this->VerticalDivisions);
+        double omt = 1.f - t;
+        double y = t * TR[1] + omt * BL[1];
 
         pt[0] = BL[0];
         pt[1] = y;
@@ -272,8 +272,8 @@ vtkTimeSliderActor::CreateSlider(vtkViewport *viewport)
         if(this->Draw3D)
         {
             // If we're making it look 3D, then use shading in the colors.
-            float angle = omt * 3.14159;
-            float colorT = sin(angle) * 0.7;
+            double angle = omt * 3.14159;
+            double colorT = sin(angle) * 0.7;
             for(int j = 0; j < N_COLOR_COMPONENTS; ++j)
             {
                 lColor[j] = colorT * this->StartColor[j] + 0.3 * this->StartColor[j];
@@ -327,8 +327,8 @@ vtkTimeSliderActor::CreateSlider(vtkViewport *viewport)
     //
     if(this->DrawEndCaps)
     {
-        float startColor[N_COLOR_COMPONENTS];
-        float endColor[N_COLOR_COMPONENTS];
+        double startColor[N_COLOR_COMPONENTS];
+        double endColor[N_COLOR_COMPONENTS];
         int ci;
         for(ci = 0; ci < N_COLOR_COMPONENTS; ++ci)
         {
@@ -364,14 +364,14 @@ vtkTimeSliderActor::CreateSlider(vtkViewport *viewport)
 
         for(i = 0; i < this->RadialDivisions+1; ++i)
         {
-            float t = float(i) / float(this->RadialDivisions);
-            float angle = t * 3.14159;
+            double t = double(i) / double(this->RadialDivisions);
+            double angle = t * 3.14159;
             double x = cos(angle);
             double y = sin(angle);
             for(int j = 0; j < nRings; ++j)
             {
                 // Set the points for the endcap.
-                float tr = float(j+1) / float(nRings);
+                double tr = double(j+1) / double(nRings);
                 pt[0] = CX - tr * EndCapRadius * y;
                 pt[1] = CY + tr * EndCapRadius * x;
                 points->SetPoint(index++, pt);
@@ -379,9 +379,9 @@ vtkTimeSliderActor::CreateSlider(vtkViewport *viewport)
                 // Set the colors for the points in the endcap.
                 if(this->Draw3D)
                 {
-                    float a2 = tr * 3.14159f / 2. + 3.14159f / 2.;
-                    float colorT = sin(a2) * 0.7f;
-                    float lColor[N_COLOR_COMPONENTS];
+                    double a2 = tr * 3.14159f / 2. + 3.14159f / 2.;
+                    double colorT = sin(a2) * 0.7f;
+                    double lColor[N_COLOR_COMPONENTS];
                     for(ci = 0; ci < N_COLOR_COMPONENTS; ++ci)
                         lColor[ci] = colorT * startColor[ci] + 0.3 * startColor[ci];
 #if N_COLOR_COMPONENTS == 4
@@ -408,14 +408,14 @@ vtkTimeSliderActor::CreateSlider(vtkViewport *viewport)
         SET_COLOR(rgb, endColor);
         for(i = 0; i < this->RadialDivisions+1; ++i)
         {
-            float t = float(i) / float(this->RadialDivisions);
-            float angle = t * 3.14159;
+            double t = double(i) / double(this->RadialDivisions);
+            double angle = t * 3.14159;
             double x = cos(angle);
             double y = sin(angle);
             for(int j = 0; j < nRings; ++j)
             {
                 // Set the points for the endcap.
-                float tr = float(j+1) / float(nRings);
+                double tr = double(j+1) / double(nRings);
                 pt[0] = CX2 + tr * EndCapRadius * y;
                 pt[1] = CY - tr * EndCapRadius * x;
                 points->SetPoint(index++, pt);
@@ -423,9 +423,9 @@ vtkTimeSliderActor::CreateSlider(vtkViewport *viewport)
                 // Set the colors for the points in the endcap.
                 if(this->Draw3D)
                 {
-                    float a2 = tr * 3.14159f / 2. + 3.14159f / 2.;
-                    float colorT = sin(a2) * 0.7f;
-                    float rColor[N_COLOR_COMPONENTS];
+                    double a2 = tr * 3.14159f / 2. + 3.14159f / 2.;
+                    double colorT = sin(a2) * 0.7f;
+                    double rColor[N_COLOR_COMPONENTS];
                     for(ci = 0; ci < N_COLOR_COMPONENTS; ++ci)
                         rColor[ci] = colorT * endColor[ci] + 0.3 * endColor[ci];
 #if N_COLOR_COMPONENTS == 4

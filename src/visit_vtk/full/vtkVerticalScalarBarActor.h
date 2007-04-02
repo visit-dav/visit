@@ -127,17 +127,17 @@ public:
   // Access the Position instance variable. Reimplemented from base
   // class to ensure normalized viewport coordinates
   // This variable controls the lower left corner of the scalarbar. 
-  void SetPosition(float,float);
-  void SetPosition(float x[2]);
+  void SetPosition(double,double);
+  void SetPosition(double x[2]);
 
   // Description:
   // Access the Position2 instance variable. This variable controls
   // the upper right corner of the scalarbar. It is by default
   // relative to Position1 and in Normalized Viewport coordinates.
-  void SetPosition2(float,float);
-  void SetPosition2(float x[2]);
+  void SetPosition2(double,double);
+  void SetPosition2(double x[2]);
   vtkCoordinate *GetPosition2Coordinate();
-  float *GetPosition2();
+  double *GetPosition2();
   
   // Description:
   // Draw the scalar bar and annotation text to the screen.
@@ -154,8 +154,8 @@ public:
 
   // Description:
   // Set/Get the scalar bar width.
-  vtkSetClampMacro(BarWidth,float, 0.0, 0.5);
-  vtkGetMacro(BarWidth,float);
+  vtkSetClampMacro(BarWidth,double, 0.0, 0.5);
+  vtkGetMacro(BarWidth,double);
 
   // Description:
   // Set/Get the vtkLookupTable to use. The lookup table specifies the number
@@ -220,8 +220,8 @@ public:
 
   // Description:
   // Set/Get the font height for the annotation text.
-  vtkSetClampMacro(FontHeight, float, 0, 0.2);
-  vtkGetMacro(FontHeight, float);
+  vtkSetClampMacro(FontHeight, double, 0, 0.2);
+  vtkGetMacro(FontHeight, double);
 
   // Description:
   // Set/Get the format with which to print the labels on the scalar
@@ -241,15 +241,15 @@ public:
 
   // Description:
   // Set/Get the range for annotation text. 
-  void SetRange(float *);
-  void SetRange(float, float);
-  float *GetRange(void) { return this->range; } ;
+  void SetRange(double *);
+  void SetRange(double, double);
+  double *GetRange(void) { return this->range; } ;
 
   // Description:
   // Set/Get the range for limits text. 
-  void SetVarRange(float *);
-  void SetVarRange(float, float);
-  float *GetVarRange(void) { return this->varRange; } ;
+  void SetVarRange(double *);
+  void SetVarRange(double, double);
+  double *GetVarRange(void) { return this->varRange; } ;
 
   // Description:
   // Set/Get the visibility of the range annotation text. 
@@ -281,8 +281,8 @@ public:
 
   // Description:
   // Set/Get the SkewFactor.
-  vtkSetMacro(SkewFactor, float);
-  vtkGetMacro(SkewFactor, float);
+  vtkSetMacro(SkewFactor, double);
+  vtkGetMacro(SkewFactor, double);
 
   // Description:
   // Turn On/Off skew scaling.
@@ -311,11 +311,11 @@ protected:
 
   void BuildTitle(vtkViewport *);
   void BuildRange(vtkViewport *);
-  void BuildTics(float, float, float, int);
-  void BuildLabels(vtkViewport *, float, float, float, int);
+  void BuildTics(double, double, double, int);
+  void BuildLabels(vtkViewport *, double, double, double, int);
   virtual void BuildColorBar(vtkViewport *);
 
-  float SkewTheValue(float, float, float);
+  double SkewTheValue(double, double, double);
 
   vtkLookupTable *LookupTable;
   int   MaximumNumberOfColors;
@@ -327,7 +327,7 @@ protected:
   int   Italic;
   int   Shadow;
   int   FontFamily;
-  float FontHeight;
+  double FontHeight;
   char  *LabelFormat;
   char  *RangeFormat;
   vtkCoordinate *Position2Coordinate;
@@ -338,7 +338,7 @@ protected:
   int ColorBarVisibility;
   int ReverseOrder;
   
-  float BarWidth;
+  double BarWidth;
 
   vtkPolyData         *ColorBar;
   vtkPolyDataMapper2D *ColorBarMapper;
@@ -367,10 +367,10 @@ protected:
   int UseDefinedLabels;
   int UseSkewScaling;
   int UseLogScaling;
-  float SkewFactor;
+  double SkewFactor;
   stringVector definedLabels;
-  float *range;
-  float *varRange;
+  double *range;
+  double *varRange;
 
   LevelColorMap labelColorMap; 
 

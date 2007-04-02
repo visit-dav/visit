@@ -150,7 +150,7 @@ VisitLineTool::InitializePoints()
     //
     // Set up some defaults for the line endpoints.
     //
-    float bounds[6];
+    double bounds[6];
     proxy.GetBounds(bounds);
     double dY = bounds[3] - bounds[2];
     double dZ = bounds[5] - bounds[4];
@@ -339,9 +339,9 @@ VisitLineTool::Start3DMode()
 // ****************************************************************************
 
 void
-VisitLineTool::SetForegroundColor(float r, float g, float b)
+VisitLineTool::SetForegroundColor(double r, double g, double b)
 {
-    float color[3] = {r, g, b};
+    double color[3] = {r, g, b};
     lineActor->GetProperty()->SetColor(color);
     lineActor->GetProperty()->SetAmbient(1.);
     lineActor->GetProperty()->SetDiffuse(1.);
@@ -601,7 +601,7 @@ VisitLineTool::UpdateText()
                 hotPoints[i].pt.x, hotPoints[i].pt.y, hotPoints[i].pt.z);
         pointTextActor[i]->SetInput(str);
         avtVector originScreen = ComputeWorldToDisplay(hotPoints[i].pt);
-        float pt[3] = {originScreen.x, originScreen.y, 0.};
+        double pt[3] = {originScreen.x, originScreen.y, 0.};
         pointTextActor[i]->GetPositionCoordinate()->SetValue(pt);
     }
 }
@@ -769,16 +769,16 @@ VisitLineTool::UpdateGuide(int pointIndex)
     //
     // Now that we have guide points, create a polydata from that.
     //
-    float fg[3];
+    double fg[3];
     proxy.GetForegroundColor(fg);
-    unsigned char r = (unsigned char)(fg[0] * 255.);
-    unsigned char g = (unsigned char)(fg[1] * 255.);
-    unsigned char b = (unsigned char)(fg[2] * 255.);
+    unsigned char r = (unsigned char)((float)fg[0] * 255.f);
+    unsigned char g = (unsigned char)((float)fg[1] * 255.f);
+    unsigned char b = (unsigned char)((float)fg[2] * 255.f);
     int i, index;
     for(i = 0, index = 0; i < nverts; ++i, index += 3)
     {
         // Add points to the vertex list.
-        float coord[3];
+        double coord[3];
         coord[0] = verts[i].x;
         coord[1] = verts[i].y;
         coord[2] = verts[i].z;
@@ -840,7 +840,7 @@ VisitLineTool::GetGuidePoints(int pi, avtVector *pts)
     int axis = FacingAxis();
 
     // Fill the return pts array.
-    float bounds[6];
+    double bounds[6];
     proxy.GetBounds(bounds);
     double xmin = bounds[0];
     double xmax = bounds[1];
@@ -1019,7 +1019,7 @@ VisitLineTool::Translate(CB_ENUM e, int ctrl, int shift, int x, int y,
         if(enlongating)
         {
             // Get the size of the bounding box.
-            float bounds[6];
+            double bounds[6];
             proxy.GetBounds(bounds);
             double dX = bounds[1] - bounds[0];
             double dY = bounds[3] - bounds[2];

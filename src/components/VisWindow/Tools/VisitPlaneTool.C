@@ -102,7 +102,7 @@ VisitPlaneTool::VisitPlaneTool(VisWindowToolProxy &p) : VisitInteractiveTool(p),
     //
     // Set up some defaults for the plane equation.
     //
-    float bounds[6];
+    double bounds[6];
     proxy.GetBounds(bounds);
     double dX = bounds[1] - bounds[0];
     double dY = bounds[3] - bounds[2];
@@ -335,14 +335,14 @@ VisitPlaneTool::Stop3DMode()
 // ****************************************************************************
 
 void
-VisitPlaneTool::SetForegroundColor(float r, float g, float b)
+VisitPlaneTool::SetForegroundColor(double r, double g, double b)
 {
     int                   i, index;
     vtkDataArray         *scalars;
     vtkUnsignedCharArray *colorData;
-    unsigned char ur = (unsigned char)(r * 255);
-    unsigned char ug = (unsigned char)(g * 255);
-    unsigned char ub = (unsigned char)(b * 255);
+    unsigned char ur = (unsigned char)((float)r * 255);
+    unsigned char ug = (unsigned char)((float)g * 255);
+    unsigned char ub = (unsigned char)((float)b * 255);
     //
     // Change the colors in the plane
     //
@@ -378,7 +378,7 @@ VisitPlaneTool::SetForegroundColor(float r, float g, float b)
 
     // Delete the text mappers/actors so they will be created again using
     // the right colors.
-    float color[3] = {r, g, b};
+    double color[3] = {r, g, b};
     originTextActor->GetTextProperty()->SetColor(color);
     normalTextActor->GetTextProperty()->SetColor(color);
     upAxisTextActor->GetTextProperty()->SetColor(color);
@@ -451,7 +451,7 @@ VisitPlaneTool::UpdateTool()
     }
     else
     {
-        float bounds[6];
+        double bounds[6];
         proxy.GetBounds(bounds);
         double dX = bounds[1] - bounds[0];
         double dY = bounds[3] - bounds[2];
@@ -530,7 +530,7 @@ VisitPlaneTool::CreatePlaneActor()
     pts->Delete(); lines->Delete(); colors->Delete(); 
 
     // Add points to the vertex list.
-    float coord[3];
+    double coord[3];
     coord[2] = 0.;
     coord[0] = PLANE_SIZE;
     coord[1] = PLANE_SIZE;
@@ -561,14 +561,14 @@ VisitPlaneTool::CreatePlaneActor()
     lines->InsertNextCell(2, ptIds);
 
     // Write the colors into the array directly
-    float fg[3];
+    double fg[3];
     proxy.GetForegroundColor(fg);
     for(int i = 0, index = 0; i < 4; ++i, index += 3)
     {
         unsigned char *rgb = colors->GetPointer(index);
-        rgb[0] = (unsigned char)(fg[0] * 255.);
-        rgb[1] = (unsigned char)(fg[1] * 255.);
-        rgb[2] = (unsigned char)(fg[2] * 255.);
+        rgb[0] = (unsigned char)((float)fg[0] * 255.f);
+        rgb[1] = (unsigned char)((float)fg[1] * 255.f);
+        rgb[2] = (unsigned char)((float)fg[2] * 255.f);
     }
 
     planeMapper = vtkPolyDataMapper::New();
@@ -632,7 +632,7 @@ VisitPlaneTool::CreateVectorActor()
     //
     // Create the points.
     //
-    float  coords[3];
+    double  coords[3];
     vtkIdType    ptIds[4];
     int    i, ptIndex = 0;
     double theta;
@@ -722,15 +722,15 @@ VisitPlaneTool::CreateVectorActor()
     //
     // Write the cell colors into the array directly
     //
-    float fg[3];
+    double fg[3];
     proxy.GetForegroundColor(fg);
     int ii;
     for(i = 0, ii = 0; i < numCells; ++i, ii += 3)
     {
         unsigned char *rgb = colors->GetPointer(ii);
-        rgb[0] = (unsigned char)(fg[0] * 255.);
-        rgb[1] = (unsigned char)(fg[1] * 255.);
-        rgb[2] = (unsigned char)(fg[2] * 255.);
+        rgb[0] = (unsigned char)((float)fg[0] * 255.f);
+        rgb[1] = (unsigned char)((float)fg[1] * 255.f);
+        rgb[2] = (unsigned char)((float)fg[2] * 255.f);
     }
 
     vectorMapper = vtkPolyDataMapper::New();
@@ -962,14 +962,14 @@ VisitPlaneTool::UpdateText()
             hotPoints[0].pt.y, hotPoints[0].pt.z);
     originTextActor->SetInput(str);
     avtVector originScreen = ComputeWorldToDisplay(hotPoints[0].pt);
-    float pt[3] = {originScreen.x, originScreen.y, 0.};
+    double pt[3] = {originScreen.x, originScreen.y, 0.};
     originTextActor->GetPositionCoordinate()->SetValue(pt);
 
     avtVector normal(Normal());
     sprintf(str, "Normal <%1.3g %1.3g %1.3g>", normal.x, normal.y, normal.z);
     normalTextActor->SetInput(str);
     avtVector normalScreen = ComputeWorldToDisplay(hotPoints[3].pt);
-    float pt2[3] = {normalScreen.x, normalScreen.y, 0.};
+    double pt2[3] = {normalScreen.x, normalScreen.y, 0.};
     normalTextActor->GetPositionCoordinate()->SetValue(pt2);
 
     // Create a normalized up vector.
@@ -980,7 +980,7 @@ VisitPlaneTool::UpdateText()
     sprintf(str, "Up <%1.3g %1.3g %1.3g>", up.x, up.y, up.z);
     upAxisTextActor->SetInput(str);
     avtVector upAxisScreen = ComputeWorldToDisplay(hotPoints[1].pt);
-    float pt3[3] = {upAxisScreen.x, upAxisScreen.y, 0.};
+    double pt3[3] = {upAxisScreen.x, upAxisScreen.y, 0.};
     upAxisTextActor->GetPositionCoordinate()->SetValue(pt3);
 }
 
@@ -1007,7 +1007,7 @@ VisitPlaneTool::UpdateRadiusText()
     sprintf(str, "Radius = %g", rad);
     radiusTextActor->SetInput(str);
     avtVector radiusScreen = ComputeWorldToDisplay(hotPoints[4].pt);
-    float pt3[3] = {radiusScreen.x, radiusScreen.y, 0.};
+    double pt3[3] = {radiusScreen.x, radiusScreen.y, 0.};
     radiusTextActor->GetPositionCoordinate()->SetValue(pt3);
 }
 
@@ -1192,15 +1192,15 @@ VisitPlaneTool::UpdateOutline()
     //
     // Now that we have a clipped polygon, create a polydata from that.
     //
-    float fg[3];
+    double fg[3];
     proxy.GetForegroundColor(fg);
-    unsigned char r = (unsigned char)(fg[0] * 255.);
-    unsigned char g = (unsigned char)(fg[1] * 255.);
-    unsigned char b = (unsigned char)(fg[2] * 255.);
+    unsigned char r = (unsigned char)((float)fg[0] * 255.f);
+    unsigned char g = (unsigned char)((float)fg[1] * 255.f);
+    unsigned char b = (unsigned char)((float)fg[2] * 255.f);
     for(int i = 0, index = 0; i < nverts; ++i, index += 3)
     {
         // Add points to the vertex list.
-        float coord[3];
+        double coord[3];
         coord[0] = verts[i].x;
         coord[1] = verts[i].y;
         coord[2] = verts[i].z;
@@ -1251,7 +1251,7 @@ VisitPlaneTool::ClipAgainstPlane(avtVector *v, int &nverts,
     avtVector new_geometry[8], tmp, *s, *p;
     int       new_npts = 0;
     int       i, s_index, p_index;
-    float     t, s_dot_product, p_dot_product;
+    double     t, s_dot_product, p_dot_product;
 
     if(nverts < 3)
         return;
@@ -1343,7 +1343,7 @@ VisitPlaneTool::GetBoundingBoxOutline(avtVector *v, int &nverts) const
     //
     // Create a big plane.
     //
-    float bounds[6];
+    double bounds[6];
     proxy.GetBounds(bounds);
     double scale = ((bounds[1] - bounds[0]) +
                     (bounds[3] - bounds[2]) +
@@ -1421,14 +1421,14 @@ VisitPlaneTool::GetBoundingBoxOutline(avtVector *v, int &nverts) const
 // ****************************************************************************
 
 void
-VisitPlaneTool::SetAwayColor(float r, float g, float b)
+VisitPlaneTool::SetAwayColor(double r, double g, double b)
 {
     int                   i, index;
     vtkDataArray         *scalars;
     vtkUnsignedCharArray *colorData;
-    unsigned char ur = (unsigned char)(r * 255);
-    unsigned char ug = (unsigned char)(g * 255);
-    unsigned char ub = (unsigned char)(b * 255);
+    unsigned char ur = (unsigned char)((float)r * 255);
+    unsigned char ug = (unsigned char)((float)g * 255);
+    unsigned char ub = (unsigned char)((float)b * 255);
 
     scalars = vectorData->GetCellData()->GetScalars();
     colorData = vtkUnsignedCharArray::SafeDownCast(scalars);
@@ -1464,7 +1464,7 @@ VisitPlaneTool::UpdateNormalVectorColor()
     if(away != normalAway)
     {
         normalAway = away;
-        float color[3] = {1., 0., 0.};
+        double color[3] = {1., 0., 0.};
         if(!normalAway)
             proxy.GetForegroundColor(color);
 
@@ -1695,7 +1695,7 @@ VisitPlaneTool::TranslateNormal(CB_ENUM e, int, int, int, int y)
     if(e == CB_START)
     {
         // Get the size of the bounding box.
-        float bounds[6];
+        double bounds[6];
         proxy.GetBounds(bounds);
 
         // Figure out a good delta translation.

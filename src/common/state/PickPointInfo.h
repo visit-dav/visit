@@ -29,8 +29,8 @@ typedef struct PickPointInfo
 {
     bool    validPick;
     bool    intersectionOnly;
-    float   rayPt1[3];
-    float   rayPt2[3];
+    double  rayPt1[3];
+    double  rayPt2[3];
     void   *callbackData;
 } PICK_POINT_INFO;
 

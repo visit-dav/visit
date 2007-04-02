@@ -12,6 +12,7 @@
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
+#include <vtkUnsignedCharArray.h>
 
 #include <avtGhostData.h>
 #include <avtIntervalTree.h>
@@ -2988,11 +2989,11 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
 
     int ndoms = levels.size();
     avtIntervalTree itree(ndoms, 3);
-    float extf[6];
+    double extf[6];
     for (i = 0 ; i < ndoms ; i++)
     {
         for (j = 0 ; j < 6 ; j++)
-            extf[j] = (float) extents[6*i+j];
+            extf[j] = (double) extents[6*i+j];
         itree.AddDomain(i, extf);
     }
     itree.Calculate(true);
@@ -3000,13 +3001,13 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
     vector<int> neighbors(ndoms, 0);
     for (i = 0 ; i < ndoms ; i++)
     {
-        float min_vec[3], max_vec[3];
-        min_vec[0] = (float) extents[6*i+0];
-        min_vec[1] = (float) extents[6*i+2];
-        min_vec[2] = (float) extents[6*i+4];
-        max_vec[0] = (float) extents[6*i+1];
-        max_vec[1] = (float) extents[6*i+3];
-        max_vec[2] = (float) extents[6*i+5];
+        double min_vec[3], max_vec[3];
+        min_vec[0] = (double) extents[6*i+0];
+        min_vec[1] = (double) extents[6*i+2];
+        min_vec[2] = (double) extents[6*i+4];
+        max_vec[0] = (double) extents[6*i+1];
+        max_vec[1] = (double) extents[6*i+3];
+        max_vec[2] = (double) extents[6*i+5];
         vector<int> list;
         itree.GetDomainsListFromRange(min_vec, max_vec, list);
 

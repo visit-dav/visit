@@ -31,11 +31,11 @@ public:
 
   // Description:
   // Set/Get the endpoints of the line used for probing. 
-  vtkSetVector3Macro(Point1, float); 
-  vtkGetVectorMacro(Point1, float, 3); 
+  vtkSetVector3Macro(Point1, double); 
+  vtkGetVectorMacro(Point1, double, 3); 
 
-  vtkSetVector3Macro(Point2, float); 
-  vtkGetVectorMacro(Point2, float, 3); 
+  vtkSetVector3Macro(Point2, double); 
+  vtkGetVectorMacro(Point2, double, 3); 
 
   vtkSetMacro(NumberOfSamplePoints, int);
   vtkGetMacro(NumberOfSamplePoints, int);
@@ -52,8 +52,8 @@ protected:
   void Execute();
 
 private:
-  float           Point1[3];
-  float           Point2[3];
+  double          Point1[3];
+  double          Point2[3];
   int             NumberOfSamplePoints;
 
   vtkLineoutFilter(const vtkLineoutFilter&);

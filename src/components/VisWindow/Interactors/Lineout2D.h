@@ -51,8 +51,8 @@ class VISWINDOW_API Lineout2D : public VisitInteractor
   protected:
     int                    anchorX, anchorY;
 
-    float                  canvasDeviceMinX, canvasDeviceMaxX;
-    float                  canvasDeviceMinY, canvasDeviceMaxY;
+    double                  canvasDeviceMinX, canvasDeviceMaxX;
+    double                  canvasDeviceMinY, canvasDeviceMaxY;
 
     vtkPolyData           *rubberBand;
     vtkPolyDataMapper2D   *rubberBandMapper;

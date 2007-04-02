@@ -73,18 +73,18 @@ class PLOTTER_API avtVariableLegend : public avtLegend
                                avtVariableLegend(int arg);
     virtual                   ~avtVariableLegend();
 
-    virtual void               GetLegendSize(float, float &, float &);
+    virtual void               GetLegendSize(double, double &, double &);
 
     void                       SetColorBarVisibility(const int);
-    void                       SetRange(float min, float max);
-    void                       GetRange(float &, float &);
-    void                       SetScaling(int mode = 0, float skew = 1.);
+    void                       SetRange(double min, double max);
+    void                       GetRange(double &, double &);
+    void                       SetScaling(int mode = 0, double skew = 1.);
     void                       SetLookupTable(vtkLookupTable *);
     void                       SetVarRangeVisibility(const int);
-    void                       SetVarRange(float min, float max);
+    void                       SetVarRange(double min, double max);
 
   protected:
-    float                      min, max;
+    double                     min, max;
 
     vtkVerticalScalarBarActor *sBar;
     vtkLookupTable            *lut;
@@ -92,9 +92,9 @@ class PLOTTER_API avtVariableLegend : public avtLegend
     int                        barVisibility;
     int                        rangeVisibility;
 
-    virtual void               ChangePosition(float, float);
+    virtual void               ChangePosition(double, double);
     virtual void               ChangeTitle(const char *);
-    virtual void               ChangeFontHeight(float);
+    virtual void               ChangeFontHeight(double);
 };
 
 

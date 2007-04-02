@@ -52,7 +52,7 @@ class VISWINDOW_API VisitBoxTool : public VisitInteractiveTool
     virtual void Stop3DMode();
     virtual void UpdateView();
 
-    virtual void SetForegroundColor(float, float, float);
+    virtual void SetForegroundColor(double, double, double);
 
     virtual const char *  GetName() const { return "Box"; };
     virtual avtToolInterface &GetInterface() { return Interface; };
@@ -128,8 +128,8 @@ class VISWINDOW_API VisitBoxTool : public VisitInteractiveTool
     bool                addedBbox;
     bool                depthTranslate;
     int                 activeHotPoint;
-    float               focalDepth;
-    float               originalDistance;
+    double               focalDepth;
+    double               originalDistance;
     avtVector           depthTranslationDistance;
 
 };

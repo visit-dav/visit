@@ -82,8 +82,8 @@ vtkCSGGrid::Box::EvalFuncState(vtkImplicitFunction *func, double tol)
     {
         vtkSphere *sphere = vtkSphere::SafeDownCast(func);
 
-        const float *p = sphere->GetCenter();
-        const float r = sphere->GetRadius();
+        const double *p = sphere->GetCenter();
+        const double r = sphere->GetRadius();
         //float r2 = r*r;
         float r2 = r;
 
@@ -137,13 +137,13 @@ vtkCSGGrid::Box::EvalFuncState(vtkImplicitFunction *func, double tol)
     // state. So, now we examine the box's derivatives in each of
     // the coordinate axes' directions (e.g. the gradient)
     //
-    float *firstGrad = func->FunctionGradient(GetPoint(0));
+    double *firstGrad = func->FunctionGradient(GetPoint(0));
     FuncState firstStateVec[3];
     for (j = 0; j < 3; j++)
         firstStateVec[j] = ValState2(firstGrad[j]);
     for (i = 1; i < 8; i++)
     {
-        float *grad = func->FunctionGradient(GetPoint(i));
+        double *grad = func->FunctionGradient(GetPoint(i));
         for (j = 0; j < 3; j++)
         {
             if (!SameState2(firstStateVec[j], ValState2(grad[j])))
@@ -272,14 +272,14 @@ int vtkCSGGrid::GetMaxCellSize()
 }
 
 //----------------------------------------------------------------------------
-float *vtkCSGGrid::GetPoint(vtkIdType ptId)
+double *vtkCSGGrid::GetPoint(vtkIdType ptId)
 {
   vtkErrorMacro("For a vtkCSGGrid, GetPoint() means GetBoundary()");
   vtkErrorMacro("Use GetBoundary() to avoid this message");
   int dummy, n;
   double *p = 0;
   this->GetBoundary(ptId, &dummy, &n, &p);
-  const int k = sizeof(tmpFloats) / sizeof(float);
+  const int k = sizeof(tmpFloats) / sizeof(double);
   int m = n;
   if (n >= k)
   {
@@ -295,13 +295,13 @@ float *vtkCSGGrid::GetPoint(vtkIdType ptId)
 //----------------------------------------------------------------------------
 // Fast implementation of GetCellBounds().  Bounds are calculated without
 // constructing a cell.
-void vtkCSGGrid::GetCellBounds(vtkIdType cellId, float bounds[6])
+void vtkCSGGrid::GetCellBounds(vtkIdType cellId, double bounds[6])
 {
 //#warning GetCellBounds NOT IMPLEMENTED
   return;
 }
 
-void vtkCSGGrid::GetPoint(vtkIdType ptId, float x[3])
+void vtkCSGGrid::GetPoint(vtkIdType ptId, double x[3])
 {
   vtkErrorMacro("Requesting a point[3] from a vtkCSGGrid");
   vtkErrorMacro("Use GetBoundary() to avoid this message");
@@ -310,41 +310,41 @@ void vtkCSGGrid::GetPoint(vtkIdType ptId, float x[3])
 }
 
 //----------------------------------------------------------------------------
-vtkIdType vtkCSGGrid::FindPoint(float x[3])
+vtkIdType vtkCSGGrid::FindPoint(double x[3])
 {
   vtkErrorMacro("Finding a point on a vtkCSGGrid not yet implemented.");
   return -1;
 }
 
-vtkIdType vtkCSGGrid::FindCell(float x[3], vtkCell *vtkNotUsed(cell), 
+vtkIdType vtkCSGGrid::FindCell(double x[3], vtkCell *vtkNotUsed(cell), 
                                        vtkGenericCell *vtkNotUsed(gencell),
                                        vtkIdType vtkNotUsed(cellId), 
-                                       float vtkNotUsed(tol2), 
-                                       int& subId, float pcoords[3], 
-                                       float *weights)
+                                       double vtkNotUsed(tol2), 
+                                       int& subId, double pcoords[3], 
+                                       double *weights)
 {
   return
     this->FindCell( x, (vtkCell *)NULL, 0, 0.0, subId, pcoords, weights );
 }
 
 //----------------------------------------------------------------------------
-vtkIdType vtkCSGGrid::FindCell(float x[3], vtkCell *vtkNotUsed(cell), 
+vtkIdType vtkCSGGrid::FindCell(double x[3], vtkCell *vtkNotUsed(cell), 
                                        vtkIdType vtkNotUsed(cellId),
-                                       float vtkNotUsed(tol2), 
-                                       int& subId, float pcoords[3],
-                                       float *weights)
+                                       double vtkNotUsed(tol2), 
+                                       int& subId, double pcoords[3],
+                                       double *weights)
 {
 //#warning FindCell NOT IMPLEMENTED
   return -1;
 }
 
 //----------------------------------------------------------------------------
-vtkCell *vtkCSGGrid::FindAndGetCell(float x[3],
+vtkCell *vtkCSGGrid::FindAndGetCell(double x[3],
                                             vtkCell *vtkNotUsed(cell), 
                                             vtkIdType vtkNotUsed(cellId),
-                                            float vtkNotUsed(tol2),
+                                            double vtkNotUsed(tol2),
                                             int& subId, 
-                                            float pcoords[3], float *weights)
+                                            double pcoords[3], double *weights)
 {
 //#warning FindAndGetCell NOT IMPLEMENTED
   return NULL;
@@ -691,8 +691,8 @@ vtkIdType vtkCSGGrid::AddBoundary(BoundaryType type, int numcoeffs,
         {
             vtkSphere *sphere = vtkSphere::New();
 
-            sphere->SetCenter((float) coeffs[0], (float) coeffs[1], (float) coeffs[2]);
-            sphere->SetRadius((float) coeffs[3]);
+            sphere->SetCenter(const_cast<double*>(coeffs));
+            sphere->SetRadius(coeffs[3]);
 
             newBoundary = sphere;
             break;
@@ -706,9 +706,9 @@ vtkIdType vtkCSGGrid::AddBoundary(BoundaryType type, int numcoeffs,
             if ((coeffs[3] == 0.0 && coeffs[4] ==  1.0 && coeffs[5] == 0.0) ||
                 (coeffs[3] == 0.0 && coeffs[4] == -1.0 && coeffs[5] == 0.0))
             {
-                cylinder->SetCenter((float) coeffs[0],
-                                    (float) coeffs[1] + coeffs[4] * coeffs[6]/2.0,
-                                    (float) coeffs[2]);
+                cylinder->SetCenter(coeffs[0],
+                                    coeffs[1] + coeffs[4] * coeffs[6]/2.0,
+                                    coeffs[2]);
             }
             else
             {
@@ -735,7 +735,7 @@ vtkIdType vtkCSGGrid::AddBoundary(BoundaryType type, int numcoeffs,
         {
             vtkPlane *plane = vtkPlane::New();
 
-            plane->SetOrigin((float) coeffs[0], 0.0, 0.0);
+            plane->SetOrigin(coeffs[0], 0.0, 0.0);
             plane->SetNormal(1.0, 0.0, 0.0);
 
             newBoundary = plane;
@@ -746,7 +746,7 @@ vtkIdType vtkCSGGrid::AddBoundary(BoundaryType type, int numcoeffs,
         {
             vtkPlane *plane = vtkPlane::New();
 
-            plane->SetOrigin(0.0, (float) coeffs[0], 0.0);
+            plane->SetOrigin(0.0, coeffs[0], 0.0);
             plane->SetNormal(0.0, 1.0, 0.0);
 
             newBoundary = plane;
@@ -757,7 +757,7 @@ vtkIdType vtkCSGGrid::AddBoundary(BoundaryType type, int numcoeffs,
         {
             vtkPlane *plane = vtkPlane::New();
 
-            plane->SetOrigin(0.0, 0.0, (float) coeffs[0]);
+            plane->SetOrigin(0.0, 0.0, coeffs[0]);
             plane->SetNormal(0.0, 0.0, 1.0);
 
             newBoundary = plane;
@@ -767,16 +767,16 @@ vtkIdType vtkCSGGrid::AddBoundary(BoundaryType type, int numcoeffs,
         case QUADRIC_G:
         {
             vtkQuadric *quadric = vtkQuadric::New();
-            quadric->SetCoefficients((float) coeffs[0], // x^2 term
-                                     (float) coeffs[1], // y^2 term
-                                     (float) coeffs[2], // z^2 term
-                                     (float) coeffs[3], // xy term
-                                     (float) coeffs[4], // yz term
-                                     (float) coeffs[5], // xz term
-                                     (float) coeffs[6], // x^1 term
-                                     (float) coeffs[7], // y^1 term
-                                     (float) coeffs[8], // z^1 term
-                                     (float) coeffs[9]); // constant term
+            quadric->SetCoefficients( coeffs[0], // x^2 term
+                                      coeffs[1], // y^2 term
+                                      coeffs[2], // z^2 term
+                                      coeffs[3], // xy term
+                                      coeffs[4], // yz term
+                                      coeffs[5], // xz term
+                                      coeffs[6], // x^1 term
+                                      coeffs[7], // y^1 term
+                                      coeffs[8], // z^1 term
+                                      coeffs[9]); // constant term
 
             newBoundary = quadric;
             break;

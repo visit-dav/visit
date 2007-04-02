@@ -2,16 +2,13 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkVisItEnSightGoldReader.cxx,v $
-  Language:  C++
-  Date:      $Date: 2003/06/02 20:43:58 $
-  Version:   $Revision: 1.38 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
@@ -30,9 +27,9 @@
 #include "vtkUnstructuredGrid.h"
 
 #include <ctype.h>
-#include <string>
+#include <vtkstd/string>
 
-vtkCxxRevisionMacro(vtkVisItEnSightGoldReader, "$Revision: 1.38 $");
+vtkCxxRevisionMacro(vtkVisItEnSightGoldReader, "$Revision: 1.44 $");
 vtkStandardNewMacro(vtkVisItEnSightGoldReader);
 
 //----------------------------------------------------------------------------
@@ -49,10 +46,14 @@ int vtkVisItEnSightGoldReader::ReadGeometryFile(char* fileName, int timeStep)
     vtkErrorMacro("A GeometryFileName must be specified in the case file.");
     return 0;
     }
-  std::string sfilename;
+  vtkstd::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
+    if (sfilename.at(sfilename.length()-1) != '/')
+      {
+      sfilename += "/";
+      }
     sfilename += fileName;
     vtkDebugMacro("full path to geometry file: " << sfilename.c_str());
     }
@@ -72,7 +73,7 @@ int vtkVisItEnSightGoldReader::ReadGeometryFile(char* fileName, int timeStep)
   
   this->ReadNextDataLine(line);
   sscanf(line, " %*s %s", subLine);
-  if (strcmp(subLine, "Binary") == 0)
+  if (strncmp(subLine, "Binary",6) == 0)
     {
     vtkErrorMacro("This is a binary data set. Try "
                   <<"vtkVisItEnSightGoldBinaryReader.");
@@ -105,7 +106,7 @@ int vtkVisItEnSightGoldReader::ReadGeometryFile(char* fileName, int timeStep)
   this->ReadNextDataLine(line);
   
   lineRead = this->ReadNextDataLine(line); // "extents" or "part"
-  if (strcmp(line, "extents") == 0)
+  if (strncmp(line, "extents",7) == 0)
     {
     // Skipping the extent lines for now.
     this->ReadNextDataLine(line);
@@ -128,12 +129,12 @@ int vtkVisItEnSightGoldReader::ReadGeometryFile(char* fileName, int timeStep)
       {
       if (sscanf(line, " %*s %s", subLine) == 1)
         {
-        if (strcmp(subLine, "rectilinear") == 0)
+        if (strncmp(subLine, "rectilinear",11) == 0)
           {
           // block rectilinear
           lineRead = this->CreateRectilinearGridOutput(partId, line, name);
           }
-        else if (strcmp(subLine, "uniform") == 0)
+        else if (strncmp(subLine, "uniform",7) == 0)
           {
           // block uniform
           lineRead = this->CreateImageDataOutput(partId, line, name);
@@ -188,10 +189,14 @@ int vtkVisItEnSightGoldReader::ReadMeasuredGeometryFile(char* fileName,
     vtkErrorMacro("A MeasuredFileName must be specified in the case file.");
     return 0;
     }
-  std::string sfilename;
+  vtkstd::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
+    if (sfilename.at(sfilename.length()-1) != '/')
+      {
+      sfilename += "/";
+      }
     sfilename += fileName;
     vtkDebugMacro("full path to measured geometry file: " << sfilename.c_str());
     }
@@ -215,7 +220,7 @@ int vtkVisItEnSightGoldReader::ReadMeasuredGeometryFile(char* fileName,
 
   if (sscanf(line, " %*s %s", subLine) == 1)
     {
-    if (strcmp(subLine, "Binary") == 0)
+    if (strncmp(subLine, "Binary",6) == 0)
       {
       vtkErrorMacro("This is a binary data set. Try "
                     << "vtkVisItEnSight6BinaryReader.");
@@ -287,11 +292,6 @@ int vtkVisItEnSightGoldReader::ReadMeasuredGeometryFile(char* fileName,
   return 1;
 }
 
-// Modifications:
-//
-//   Hank Childs, Tue Jun 29 08:15:24 PDT 2004
-//   Allow for trailing whitespace after "part".
-//
 //----------------------------------------------------------------------------
 int vtkVisItEnSightGoldReader::ReadScalarsPerNode(char* fileName, char* description,
                                              int timeStep, int measured,
@@ -311,10 +311,14 @@ int vtkVisItEnSightGoldReader::ReadScalarsPerNode(char* fileName, char* descript
     vtkErrorMacro("NULL ScalarPerNode variable file name");
     return 0;
     }
-  std::string sfilename;
+  vtkstd::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
+    if (sfilename.at(sfilename.length()-1) != '/')
+      {
+      sfilename += "/";
+      }
     sfilename += fileName;
     vtkDebugMacro("full path to scalar per node file: " << sfilename.c_str());
     }
@@ -400,7 +404,7 @@ int vtkVisItEnSightGoldReader::ReadScalarsPerNode(char* fileName, char* descript
     }
   
   while (this->ReadNextDataLine(line) &&
-         strncmp(line, "part", 4) == 0)
+         strncmp(line, "part",4) == 0)
     {
     this->ReadNextDataLine(line);
     partId = atoi(line) - 1; // EnSight starts #ing with 1.
@@ -446,11 +450,6 @@ int vtkVisItEnSightGoldReader::ReadScalarsPerNode(char* fileName, char* descript
   return 1;
 }
 
-// Modifications:
-//
-//   Hank Childs, Tue Jun 29 08:15:24 PDT 2004
-//   Allow for trailing whitespace after "part".
-//
 //----------------------------------------------------------------------------
 int vtkVisItEnSightGoldReader::ReadVectorsPerNode(char* fileName, char* description,
                                              int timeStep, int measured)
@@ -468,10 +467,14 @@ int vtkVisItEnSightGoldReader::ReadVectorsPerNode(char* fileName, char* descript
     vtkErrorMacro("NULL VectorPerNode variable file name");
     return 0;
     }
-  std::string sfilename;
+  vtkstd::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
+    if (sfilename.at(sfilename.length()-1) != '/')
+      {
+      sfilename += "/";
+      }
     sfilename += fileName;
     vtkDebugMacro("full path to vector per node file: " << sfilename.c_str());
     }
@@ -551,7 +554,7 @@ int vtkVisItEnSightGoldReader::ReadVectorsPerNode(char* fileName, char* descript
     }
   
   while (this->ReadNextDataLine(line) &&
-         strncmp(line, "part", 4) == 0)
+         strncmp(line, "part",4) == 0)
     {
     vectors = vtkFloatArray::New();
     this->ReadNextDataLine(line);
@@ -584,11 +587,6 @@ int vtkVisItEnSightGoldReader::ReadVectorsPerNode(char* fileName, char* descript
   return 1;
 }
 
-// Modifications:
-//
-//   Hank Childs, Tue Jun 29 08:15:24 PDT 2004
-//   Allow for trailing whitespace after "part".
-//
 //----------------------------------------------------------------------------
 int vtkVisItEnSightGoldReader::ReadTensorsPerNode(char* fileName, char* description,
                                              int timeStep)
@@ -605,10 +603,14 @@ int vtkVisItEnSightGoldReader::ReadTensorsPerNode(char* fileName, char* descript
     vtkErrorMacro("NULL TensorPerNode variable file name");
     return 0;
     }
-  std::string sfilename;
+  vtkstd::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
+    if (sfilename.at(sfilename.length()-1) != '/')
+      {
+      sfilename += "/";
+      }
     sfilename += fileName;
     vtkDebugMacro("full path to tensor per node file: " << sfilename.c_str());
     }
@@ -647,7 +649,7 @@ int vtkVisItEnSightGoldReader::ReadTensorsPerNode(char* fileName, char* descript
   this->ReadNextDataLine(line); // skip the description line
 
   while (this->ReadNextDataLine(line) &&
-         strncmp(line, "part", 4) == 0)
+         strncmp(line, "part",4) == 0)
     {
     tensors = vtkFloatArray::New();
     this->ReadNextDataLine(line);
@@ -676,11 +678,6 @@ int vtkVisItEnSightGoldReader::ReadTensorsPerNode(char* fileName, char* descript
   return 1;
 }
 
-// Modifications:
-//
-//   Hank Childs, Tue Jun 29 08:15:24 PDT 2004
-//   Allow for trailing whitespace after "part".
-//
 //----------------------------------------------------------------------------
 int vtkVisItEnSightGoldReader::ReadScalarsPerElement(char* fileName,
                                                 char* description,
@@ -702,10 +699,14 @@ int vtkVisItEnSightGoldReader::ReadScalarsPerElement(char* fileName,
     vtkErrorMacro("NULL ScalarPerElement variable file name");
     return 0;
     }
-  std::string sfilename;
+  vtkstd::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
+    if (sfilename.at(sfilename.length()-1) != '/')
+      {
+      sfilename += "/";
+      }
     sfilename += fileName;
     vtkDebugMacro("full path to scalar per element file: " << sfilename.c_str());
     }
@@ -744,7 +745,7 @@ int vtkVisItEnSightGoldReader::ReadScalarsPerElement(char* fileName,
   this->ReadNextDataLine(line); // skip the description line
   lineRead = this->ReadNextDataLine(line); // "part"
   
-  while (lineRead && strncmp(line, "part", 4) == 0)
+  while (lineRead && strncmp(line, "part",4) == 0)
     {
     this->ReadNextDataLine(line);
     partId = atoi(line) - 1; // EnSight starts #ing with 1.
@@ -764,7 +765,7 @@ int vtkVisItEnSightGoldReader::ReadScalarsPerElement(char* fileName,
     
     // need to find out from CellIds how many cells we have of this element
     // type (and what their ids are) -- IF THIS IS NOT A BLOCK SECTION
-    if (strcmp(line, "block") == 0)
+    if (strncmp(line, "block",5) == 0)
       {
       for (i = 0; i < numCells; i++)
         {
@@ -776,7 +777,7 @@ int vtkVisItEnSightGoldReader::ReadScalarsPerElement(char* fileName,
       }
     else 
       {
-      while (lineRead && strncmp(line, "part", 4) != 0 &&
+      while (lineRead && strncmp(line, "part",4) != 0 &&
              strncmp(line, "END TIME STEP", 13) != 0)
         {
         elementType = this->GetElementType(line);
@@ -824,11 +825,6 @@ int vtkVisItEnSightGoldReader::ReadScalarsPerElement(char* fileName,
   return 1;
 }
 
-// Modifications:
-//
-//   Hank Childs, Tue Jun 29 08:15:24 PDT 2004
-//   Allow for trailing whitespace after "part".
-//
 //----------------------------------------------------------------------------
 int vtkVisItEnSightGoldReader::ReadVectorsPerElement(char* fileName,
                                                 char* description,
@@ -848,10 +844,14 @@ int vtkVisItEnSightGoldReader::ReadVectorsPerElement(char* fileName,
     vtkErrorMacro("NULL VectorPerElement variable file name");
     return 0;
     }
-  std::string sfilename;
+  vtkstd::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
+    if (sfilename.at(sfilename.length()-1) != '/')
+      {
+      sfilename += "/";
+      }
     sfilename += fileName;
     vtkDebugMacro("full path to vector per element file: " << sfilename.c_str());
     }
@@ -890,7 +890,7 @@ int vtkVisItEnSightGoldReader::ReadVectorsPerElement(char* fileName,
   this->ReadNextDataLine(line); // skip the description line
   lineRead = this->ReadNextDataLine(line); // "part"
   
-  while (lineRead && strncmp(line, "part", 4) == 0)
+  while (lineRead && strncmp(line, "part",4) == 0)
     {
     vectors = vtkFloatArray::New();
     this->ReadNextDataLine(line);
@@ -904,7 +904,7 @@ int vtkVisItEnSightGoldReader::ReadVectorsPerElement(char* fileName,
     
     // need to find out from CellIds how many cells we have of this element
     // type (and what their ids are) -- IF THIS IS NOT A BLOCK SECTION
-    if (strcmp(line, "block") == 0)
+    if (strncmp(line, "block",5) == 0)
       {
       for (i = 0; i < 3; i++)
         {
@@ -919,7 +919,7 @@ int vtkVisItEnSightGoldReader::ReadVectorsPerElement(char* fileName,
       }
     else 
       {
-      while (lineRead && strncmp(line, "part", 4) != 0 &&
+      while (lineRead && strncmp(line, "part",4) != 0 &&
              strncmp(line, "END TIME STEP", 13) != 0)
         {
         elementType = this->GetElementType(line);
@@ -960,11 +960,6 @@ int vtkVisItEnSightGoldReader::ReadVectorsPerElement(char* fileName,
   return 1;
 }
 
-// Modifications:
-//
-//   Hank Childs, Tue Jun 29 08:15:24 PDT 2004
-//   Allow for trailing whitespace after "part".
-//
 //----------------------------------------------------------------------------
 int vtkVisItEnSightGoldReader::ReadTensorsPerElement(char* fileName,
                                                 char* description,
@@ -984,10 +979,14 @@ int vtkVisItEnSightGoldReader::ReadTensorsPerElement(char* fileName,
     vtkErrorMacro("NULL TensorPerElement variable file name");
     return 0;
     }
-  std::string sfilename;
+  vtkstd::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
+    if (sfilename.at(sfilename.length()-1) != '/')
+      {
+      sfilename += "/";
+      }
     sfilename += fileName;
     vtkDebugMacro("full path to tensor per element file: " << sfilename.c_str());
     }
@@ -1026,7 +1025,7 @@ int vtkVisItEnSightGoldReader::ReadTensorsPerElement(char* fileName,
   this->ReadNextDataLine(line); // skip the description line
   lineRead = this->ReadNextDataLine(line); // "part"
   
-  while (lineRead && strncmp(line, "part", 4) == 0)
+  while (lineRead && strncmp(line, "part",4) == 0)
     {
     tensors = vtkFloatArray::New();
     this->ReadNextDataLine(line);
@@ -1040,7 +1039,7 @@ int vtkVisItEnSightGoldReader::ReadTensorsPerElement(char* fileName,
     
     // need to find out from CellIds how many cells we have of this element
     // type (and what their ids are) -- IF THIS IS NOT A BLOCK SECTION
-    if (strcmp(line, "block") == 0)
+    if (strncmp(line, "block",5) == 0)
       {
       for (i = 0; i < 6; i++)
         {
@@ -1055,7 +1054,7 @@ int vtkVisItEnSightGoldReader::ReadTensorsPerElement(char* fileName,
       }
     else 
       {
-      while (lineRead && strncmp(line, "part", 4) != 0 &&
+      while (lineRead && strncmp(line, "part",4) != 0 &&
              strncmp(line, "END TIME STEP", 13) != 0)
         {
         elementType = this->GetElementType(line);
@@ -1130,7 +1129,7 @@ int vtkVisItEnSightGoldReader::CreateUnstructuredGridOutput(int partId,
   vtkCharArray* nmArray =  vtkCharArray::New();
   nmArray->SetName("Name");
   size_t len = strlen(name);
-  nmArray->SetNumberOfTuples(len+1);
+  nmArray->SetNumberOfTuples(static_cast<vtkIdType>(len)+1);
   char* copy = nmArray->GetPointer(0);
   memcpy(copy, name, len);
   copy[len] = '\0';
@@ -1153,7 +1152,7 @@ int vtkVisItEnSightGoldReader::CreateUnstructuredGridOutput(int partId,
       vtkDebugMacro("coordinates");
       int numPts;
       vtkPoints *points = vtkPoints::New();
-      float point[3];
+      double point[3];
       
       this->ReadNextDataLine(line);
       numPts = atoi(line);
@@ -1682,7 +1681,7 @@ int vtkVisItEnSightGoldReader::CreateStructuredGridOutput(int partId,
   int dimensions[3];
   int i;
   vtkPoints *points = vtkPoints::New();
-  float point[3];
+  double point[3];
   int numPts;
   
   this->NumberOfNewOutputs++;
@@ -1707,7 +1706,7 @@ int vtkVisItEnSightGoldReader::CreateStructuredGridOutput(int partId,
   vtkCharArray* nmArray =  vtkCharArray::New();
   nmArray->SetName("Name");
   size_t len = strlen(name);
-  nmArray->SetNumberOfTuples(len+1);
+  nmArray->SetNumberOfTuples(static_cast<vtkIdType>(len)+1);
   char* copy = nmArray->GetPointer(0);
   memcpy(copy, name, len);
   copy[len] = '\0';
@@ -1716,7 +1715,7 @@ int vtkVisItEnSightGoldReader::CreateStructuredGridOutput(int partId,
 
   if (sscanf(line, " %*s %s", subLine) == 1)
     {
-    if (strcmp(subLine, "iblanked") == 0)
+    if (strncmp(subLine, "iblanked",8) == 0)
       {
       iblanked = 1;
       }
@@ -1750,7 +1749,6 @@ int vtkVisItEnSightGoldReader::CreateStructuredGridOutput(int partId,
   output->SetPoints(points);
   if (iblanked)
     {
-    output->BlankingOn();
     for (i = 0; i < numPts; i++)
       {
       this->ReadNextDataLine(line);
@@ -1804,7 +1802,7 @@ int vtkVisItEnSightGoldReader::CreateRectilinearGridOutput(int partId,
   vtkCharArray* nmArray =  vtkCharArray::New();
   nmArray->SetName("Name");
   size_t len = strlen(name);
-  nmArray->SetNumberOfTuples(len+1);
+  nmArray->SetNumberOfTuples(static_cast<vtkIdType>(len)+1);
   char* copy = nmArray->GetPointer(0);
   memcpy(copy, name, len);
   copy[len] = '\0';
@@ -1814,7 +1812,7 @@ int vtkVisItEnSightGoldReader::CreateRectilinearGridOutput(int partId,
   
   if (sscanf(line, " %*s %*s %s", subLine) == 1)
     {
-    if (strcmp(subLine, "iblanked") == 0)
+    if (strncmp(subLine, "iblanked",8) == 0)
       {
       iblanked = 1;
       }
@@ -1907,7 +1905,7 @@ int vtkVisItEnSightGoldReader::CreateImageDataOutput(int partId,
   vtkCharArray* nmArray =  vtkCharArray::New();
   nmArray->SetName("Name");
   size_t len = strlen(name);
-  nmArray->SetNumberOfTuples(len+1);
+  nmArray->SetNumberOfTuples(static_cast<vtkIdType>(len)+1);
   char* copy = nmArray->GetPointer(0);
   memcpy(copy, name, len);
   copy[len] = '\0';
@@ -1916,7 +1914,7 @@ int vtkVisItEnSightGoldReader::CreateImageDataOutput(int partId,
   
   if (sscanf(line, " %*s %*s %s", subLine) == 1)
     {
-    if (strcmp(subLine, "iblanked") == 0)
+    if (strncmp(subLine, "iblanked",8) == 0)
       {
       iblanked = 1;
       }

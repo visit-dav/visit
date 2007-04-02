@@ -117,7 +117,7 @@ avtRayCompositer::SetBackgroundMode(int mode)
 // ****************************************************************************
 
 void
-avtRayCompositer::SetGradientBackgroundColors(const float bg1[3], const float bg2[3])
+avtRayCompositer::SetGradientBackgroundColors(const double bg1[3], const double bg2[3])
 {
     gradBG1[0] = bg1[0];
     gradBG1[1] = bg1[1];
@@ -208,7 +208,7 @@ avtRayCompositer::FillBackground(unsigned char *data, int width, int height)
     else
     {
         // Set the order of the gradient colors based on the mode.
-        float bg1[3], bg2[3];
+        double bg1[3], bg2[3];
         if(backgroundMode == BACKGROUND_GRADIENT_TB ||
            backgroundMode == BACKGROUND_GRADIENT_RL)
         {

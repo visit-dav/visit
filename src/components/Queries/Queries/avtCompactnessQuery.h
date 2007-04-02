@@ -85,7 +85,7 @@ class QUERY_API avtCompactnessQuery : public avtTwoPassDatasetQuery
 
     static void                     Get2DCellCentroid(vtkCell*,float&,float&);
     static float                    Get2DCellArea(vtkCell*);
-    static float                    Get2DTriangleArea(float*,float*,float*);
+    static float                    Get2DTriangleArea(double*,double*,double*);
 
 };
 

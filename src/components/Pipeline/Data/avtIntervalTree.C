@@ -32,7 +32,7 @@ using     std::vector;
 
 typedef union
 {
-    float f;
+    double f;
     int   b;
 } FloatInt;
 
@@ -43,10 +43,10 @@ int globalNDims;
 // Static prototypes
 //
 
-static float    EquationsValueAtPoint(const float *, int, int, int, 
-                                      const float *);
-static bool     Intersects(const float *, float, int, int, const float *);
-static bool     Intersects(float [3], float[3], int, int, const float *);
+static double    EquationsValueAtPoint(const double *, int, int, int, 
+                                      const double *);
+static bool     Intersects(const double *, double, int, int, const double *);
+static bool     Intersects(double [3], double[3], int, int, const double *);
 static int      QsortBoundsSorter(const void *arg1, const void *arg2);
 
 
@@ -90,7 +90,7 @@ avtIntervalTree::avtIntervalTree(int doms, int dims)
     }
     nNodes = numCompleteTrees + 2 * (nDomains - exp);
 
-    nodeExtents = new float[nNodes*vectorSize];
+    nodeExtents = new double[nNodes*vectorSize];
     nodeIDs     = new int[nNodes];
     for (int i = 0 ; i < nNodes ; i++)
     {
@@ -156,7 +156,7 @@ avtIntervalTree::Destruct(void *i)
 // ****************************************************************************
 
 void
-avtIntervalTree::GetExtents(float *extents) const
+avtIntervalTree::GetExtents(double *extents) const
 {
     if ((nodeExtents == NULL) || (hasBeenCalculated == false))
     {
@@ -185,7 +185,7 @@ avtIntervalTree::GetExtents(float *extents) const
 // ****************************************************************************
 
 void
-avtIntervalTree::AddDomain(int domain, float *d)
+avtIntervalTree::AddDomain(int domain, double *d)
 {
     //
     // Sanity Check
@@ -259,7 +259,7 @@ avtIntervalTree::CollectInformation(void)
     // list on processor 0.
     //
     int totalElements = nDomains*vectorSize;
-    float *outBuff = new float[totalElements];
+    double *outBuff = new double[totalElements];
     MPI_Allreduce(nodeExtents, outBuff, totalElements, MPI_FLOAT, MPI_SUM,
                MPI_COMM_WORLD);
 
@@ -394,9 +394,9 @@ QsortBoundsSorter(const void *arg1, const void *arg2)
     int vectorSize = 2*globalNDims;
     for (int i = 0 ; i < globalNDims ; i++)
     {
-        float A_mid = (A[(2*globalCurrentDepth + 2*i) % vectorSize].f
+        double A_mid = (A[(2*globalCurrentDepth + 2*i) % vectorSize].f
                        + A[(2*globalCurrentDepth+1 + 2*i) % vectorSize].f) / 2;
-        float B_mid = (B[(2*globalCurrentDepth + 2*i) % vectorSize].f
+        double B_mid = (B[(2*globalCurrentDepth + 2*i) % vectorSize].f
                        + B[(2*globalCurrentDepth+1 + 2*i) % vectorSize].f) / 2;
         if (A_mid < B_mid)
             return true;
@@ -511,7 +511,7 @@ avtIntervalTree::SplitSize(int size)
 // ****************************************************************************
 
 void
-avtIntervalTree::GetDomainsList(const float *params, float solution,
+avtIntervalTree::GetDomainsList(const double *params, double solution,
                                 vector<int> &list) const
 {
     if (hasBeenCalculated == false)
@@ -586,8 +586,8 @@ avtIntervalTree::GetDomainsList(const float *params, float solution,
 // ****************************************************************************
  
 void
-avtIntervalTree::GetDomainsListFromRange(const float *min_vec,
-                                 const float *max_vec, vector<int> &list) const
+avtIntervalTree::GetDomainsListFromRange(const double *min_vec,
+                                 const double *max_vec, vector<int> &list) const
 {
     if (hasBeenCalculated == false)
     {
@@ -613,10 +613,10 @@ avtIntervalTree::GetDomainsListFromRange(const float *min_vec,
         bool inBlock = true;
         for (int i = 0 ; i < nDims ; i++)
         {
-            float min_extent = min_vec[i];
-            float max_extent = max_vec[i];
-            float min_node   = nodeExtents[stackIndex*nDims*2 + 2*i];
-            float max_node   = nodeExtents[stackIndex*nDims*2 + 2*i+1];
+            double min_extent = min_vec[i];
+            double max_extent = max_vec[i];
+            double min_node   = nodeExtents[stackIndex*nDims*2 + 2*i];
+            double max_node   = nodeExtents[stackIndex*nDims*2 + 2*i+1];
             if (min_node > max_extent)
                 inBlock = false;
             if (max_node < min_extent)
@@ -679,8 +679,8 @@ avtIntervalTree::GetDomainsListFromRange(const float *min_vec,
 // ****************************************************************************
 
 bool
-Intersects(const float *params, float solution, int block, int nDims,
-           const float *nodeExtents)
+Intersects(const double *params, double solution, int block, int nDims,
+           const double *nodeExtents)
 {
     int  i;
 
@@ -690,7 +690,7 @@ Intersects(const float *params, float solution, int block, int nDims,
         numEncodings *= 2;
     }
 
-    float  valAtMin  = EquationsValueAtPoint(params, block, 0, nDims,
+    double  valAtMin  = EquationsValueAtPoint(params, block, 0, nDims,
                                              nodeExtents);
     if (fabs(valAtMin-solution) < 1e-12)
     {
@@ -709,7 +709,7 @@ Intersects(const float *params, float solution, int block, int nDims,
 
     for (i = 1 ; i < numEncodings ; i++)
     {
-        float solutionAtI = EquationsValueAtPoint(params, block, i, nDims,
+        double solutionAtI = EquationsValueAtPoint(params, block, i, nDims,
                                                   nodeExtents);
         if (tooSmall && solutionAtI >= solution)
         {
@@ -771,9 +771,9 @@ Intersects(const float *params, float solution, int block, int nDims,
 //
 // ****************************************************************************
 
-float
-EquationsValueAtPoint(const float *params, int block, int point, int nDims,
-                      const float *nodeExtents)
+double
+EquationsValueAtPoint(const double *params, int block, int point, int nDims,
+                      const double *nodeExtents)
 {
     static int  encoding[32];
     static bool firstTimeThrough = true;
@@ -786,7 +786,7 @@ EquationsValueAtPoint(const float *params, int block, int point, int nDims,
         }
     }
 
-    float rv = 0;
+    double rv = 0;
     for (int i = 0 ; i < nDims ; i++)
     {
         if (point & encoding[i])
@@ -834,7 +834,7 @@ EquationsValueAtPoint(const float *params, int block, int point, int nDims,
 // ****************************************************************************
 
 int
-avtIntervalTree::GetLeafExtents(int leafIndex, float *extents) const
+avtIntervalTree::GetLeafExtents(int leafIndex, double *extents) const
 {
     int   nodeIndex = nNodes-nDomains + leafIndex;
     for (int i = 0 ; i < vectorSize ; i++)
@@ -862,7 +862,7 @@ avtIntervalTree::GetLeafExtents(int leafIndex, float *extents) const
 // ****************************************************************************
 
 void
-avtIntervalTree::GetDomainExtents(int domainIndex, float *extents) const
+avtIntervalTree::GetDomainExtents(int domainIndex, double *extents) const
 {
     int   startIndex = nNodes-nDomains;
     for (int i = startIndex ; i < nNodes ; i++)
@@ -902,12 +902,12 @@ avtIntervalTree::GetDomainExtents(int domainIndex, float *extents) const
 // ****************************************************************************
 
 bool
-Intersects(float origin[3], float rayDir[3], int block, int nDims,
-           const float *nodeExtents)
+Intersects(double origin[3], double rayDir[3], int block, int nDims,
+           const double *nodeExtents)
 {
-    float bnds[6] = { 0., 0., 0., 0., 0., 0.};
-    float coord[3] = { 0., 0., 0.};
-    float t;
+    double bnds[6] = { 0., 0., 0., 0., 0., 0.};
+    double coord[3] = { 0., 0., 0.};
+    double t;
 
     for (int i = 0; i < nDims; i++)
     {
@@ -948,7 +948,7 @@ Intersects(float origin[3], float rayDir[3], int block, int nDims,
 // ****************************************************************************
 
 void
-avtIntervalTree::GetDomainsList(float origin[3], float rayDir[3],
+avtIntervalTree::GetDomainsList(double origin[3], double rayDir[3],
                                 vector<int> &list) const
 {
     if (hasBeenCalculated == false)

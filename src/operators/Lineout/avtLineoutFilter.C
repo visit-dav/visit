@@ -26,15 +26,14 @@
 #include <vtkCellData.h>
 #include <vtkPointData.h>
 #include <vtkCellArray.h>
-#include <map>
+#include <maptypes.h>
 #include <set>
 
-using std::map;
 using std::set;
 
 struct Point
 {
-    float x[3];
+    double x[3];
 };
 
 struct CellInfo
@@ -45,8 +44,8 @@ struct CellInfo
     vector<Point> isect;  
 } ;
 
-void ClosestPointOnLine(const float *, const float *, const float*, float *);
-bool CanUseCellPoints(float *pt1, float *pt2, float *cpt);
+void ClosestPointOnLine(const double *, const double *, const double*, double *);
+bool CanUseCellPoints(double *pt1, double *pt2, double *cpt);
 
 // ****************************************************************************
 //  Method: avtLineoutFilter constructor
@@ -275,11 +274,9 @@ avtLineoutFilter::PerformRestriction(avtPipelineSpecification_p spec)
         return rv;
     }
 
-    double *dpt = atts.GetPoint1();
-    float pt1[3] = {dpt[0], dpt[1], dpt[2]};
-    dpt = atts.GetPoint2();
-    float pt2[3] = {dpt[0], dpt[1], dpt[2]};
-    float rayDir[3] = {pt2[0]-pt1[0], pt2[1]-pt1[1], pt2[2]-pt1[2]};   
+    double *pt1 = atts.GetPoint1();
+    double *pt2 = atts.GetPoint2();
+    double rayDir[3] = {pt2[0]-pt1[0], pt2[1]-pt1[1], pt2[2]-pt1[2]};   
 
     vector<int> domains;
     it->GetDomainsList(pt1, rayDir, domains);
@@ -347,7 +344,7 @@ avtLineoutFilter::PostExecute(void)
 // ****************************************************************************
 
 vtkPolyData *
-avtLineoutFilter::CreatePolys(vtkDataSet *ds, float *pt1, float *pt2,
+avtLineoutFilter::CreatePolys(vtkDataSet *ds, double *pt1, double *pt2,
                               vtkPoints *pts, vtkIdList *cells)
 {
     vtkPolyData *polys = vtkPolyData::New();
@@ -363,15 +360,15 @@ avtLineoutFilter::CreatePolys(vtkDataSet *ds, float *pt1, float *pt2,
         }
     }
     int npts = pts->GetNumberOfPoints();
-    float currentPoint[3], closestPoint[3];
-    float newPoint[3] = {0., 0., 0.};
+    double currentPoint[3], closestPoint[3];
+    double newPoint[3] = {0., 0., 0.};
     vtkPoints *outPts = vtkPoints::New();
     polys->SetPoints(outPts);
     outPts->Delete();
     vtkIdList *ptIds = vtkIdList::New();
-    float sum = 0.;
+    double sum = 0.;
     int i, j;
-    float oldX = -1.;
+    double oldX = -1.;
     bool requiresSort = false;
     for (i = 0; i < npts; i++)
     {
@@ -391,7 +388,7 @@ avtLineoutFilter::CreatePolys(vtkDataSet *ds, float *pt1, float *pt2,
             for (j = 0; j < numCellPts; j++)
                 sum += scalars->GetTuple1(ptIds->GetId(j));
             if (numCellPts > 0)
-               sum /= (float) numCellPts;
+               sum /= (double) numCellPts;
 
             newPoint[1] = sum;
         }
@@ -407,14 +404,14 @@ avtLineoutFilter::CreatePolys(vtkDataSet *ds, float *pt1, float *pt2,
     if (requiresSort)
     {
         sortedPts = vtkPoints::New();
-        std::map <float, int> sortedIds;
-        float x;
+        DoubleIntMap sortedIds;
+        double x;
         for (i = 0; i < outPts->GetNumberOfPoints(); i++)
         {
             x = outPts->GetPoint(i)[0];
-            sortedIds.insert(std::map < float, int> ::value_type(x, i));
+            sortedIds.insert(DoubleIntMap::value_type(x, i));
         }
-        std::map <float, int>::iterator it;
+        DoubleIntMap::iterator it;
         for (it = sortedIds.begin(); it != sortedIds.end(); it++)
         {
             sortedPts->InsertNextPoint(outPts->GetPoint((*it).second));
@@ -473,11 +470,8 @@ avtLineoutFilter::CreatePolys(vtkDataSet *ds, float *pt1, float *pt2,
 vtkDataSet *
 avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
 {
-    double *dpt = atts.GetPoint1();
-
-    float pt1[3] = {dpt[0], dpt[1], dpt[2]};
-    dpt = atts.GetPoint2();
-    float pt2[3] = {dpt[0], dpt[1], dpt[2]};
+    double *pt1 = atts.GetPoint1();
+    double *pt2 = atts.GetPoint2();
 
     vtkVisItCellLocator *locator = vtkVisItCellLocator::New();
     locator->SetDataSet(in_ds);
@@ -509,7 +503,7 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
         if (rv->GetNumberOfCells() == 0 ||
             rv->GetNumberOfPoints() == 0)
         {
-            debug5 << "vtkVisItCellLocator returned empty DS for domain " 
+            debug5 << "CreatePolys returned empty DS for domain " 
                    << domain << "." << endl;
             rv = NULL;
         }
@@ -576,11 +570,8 @@ avtLineoutFilter::Sampling(vtkDataSet *in_ds, int domain)
     ghosts->SetInput(in_ds);
 
     vtkLineoutFilter *filter = vtkLineoutFilter::New();
-    double *dpt = atts.GetPoint1();
-
-    float pt1[3] = {dpt[0], dpt[1], dpt[2]};
-    dpt = atts.GetPoint2();
-    float pt2[3] = {dpt[0], dpt[1], dpt[2]};
+    double *pt1 = atts.GetPoint1();
+    double *pt2 = atts.GetPoint2();
 
     filter->SetInput(ghosts->GetOutput());
     filter->SetPoint1(pt1);
@@ -639,7 +630,7 @@ avtLineoutFilter::Sampling(vtkDataSet *in_ds, int domain)
 // ****************************************************************************
 
 vtkPolyData *
-avtLineoutFilter::CreatePolysFromOrigCells(vtkDataSet *ds, float *pt1, float *pt2,
+avtLineoutFilter::CreatePolysFromOrigCells(vtkDataSet *ds, double *pt1, double *pt2,
                               vtkPoints *pts, vtkIdList *cells)
 {
     vtkPolyData *polys = vtkPolyData::New();
@@ -668,7 +659,7 @@ avtLineoutFilter::CreatePolysFromOrigCells(vtkDataSet *ds, float *pt1, float *pt
     int currentCell;
     int origCell;
     int origDomain;
-    float center[3];
+    double center[3];
     vector<CellInfo> cellInfoList;
     bool dup = false;
     for (i = 0; i < npts; i++)
@@ -712,14 +703,14 @@ avtLineoutFilter::CreatePolysFromOrigCells(vtkDataSet *ds, float *pt1, float *pt
         }
     }
 
-    float closestPoint[3];
-    float newPoint[3] = {0., 0., 0.};
+    double closestPoint[3];
+    double newPoint[3] = {0., 0., 0.};
     vtkPoints *outPts = vtkPoints::New();
     polys->SetPoints(outPts);
     outPts->Delete();
     vtkIdList *ptIds = vtkIdList::New();
-    float sum = 0.;
-    float oldX = -1.;
+    double sum = 0.;
+    double oldX = -1.;
     bool requiresSort = false;
     
     for (i = 0; i < cellInfoList.size(); i++)
@@ -738,7 +729,7 @@ avtLineoutFilter::CreatePolysFromOrigCells(vtkDataSet *ds, float *pt1, float *pt
                 ClosestPointOnLine(pt1, pt2, cellInfoList[i].isect[j].x, closestPoint);
                 sum += vtkMath::Distance2BetweenPoints(pt1, closestPoint);
             }
-            newPoint[0] = sqrt(sum/(float)nDups);
+            newPoint[0] = sqrt(sum/(double)nDups);
         }
         if (newPoint[0] < oldX)
         {
@@ -755,7 +746,7 @@ avtLineoutFilter::CreatePolysFromOrigCells(vtkDataSet *ds, float *pt1, float *pt
                 for (j = 0; j < numCellPts; j++)
                     sum += scalars->GetTuple1(ptIds->GetId(j));
                 if (numCellPts > 0)
-                   sum /= (float) numCellPts;
+                   sum /= (double) numCellPts;
                 newPoint[1] = sum;
             }
             else 
@@ -776,7 +767,7 @@ avtLineoutFilter::CreatePolysFromOrigCells(vtkDataSet *ds, float *pt1, float *pt
                     } 
                 } 
                 if (uniquePts.size() > 0)
-                   sum /= (float) uniquePts.size();
+                   sum /= (double) uniquePts.size();
                 newPoint[1] = sum;
             }
         }
@@ -791,7 +782,7 @@ avtLineoutFilter::CreatePolysFromOrigCells(vtkDataSet *ds, float *pt1, float *pt
                 newPoint[1] = 0.;
                 for (j = 0; j < nDups; j++)
                     newPoint[1] += scalars->GetTuple1(cellInfoList[i].currCell[j]);
-                newPoint[1] /= (float) cellInfoList[i].currCell.size();
+                newPoint[1] /= (double) cellInfoList[i].currCell.size();
             }
         }
         outPts->InsertNextPoint(newPoint);
@@ -802,14 +793,14 @@ avtLineoutFilter::CreatePolysFromOrigCells(vtkDataSet *ds, float *pt1, float *pt
     if (requiresSort)
     {
         sortedPts = vtkPoints::New();
-        map <float, int> sortedIds;
-        float x;
+        DoubleIntMap sortedIds;
+        double x;
         for (i = 0; i < outPts->GetNumberOfPoints(); i++)
         {
             x = outPts->GetPoint(i)[0];
-            sortedIds.insert(std::map < float, int> ::value_type(x, i));
+            sortedIds.insert(DoubleIntMap::value_type(x, i));
         }
-        std::map <float, int>::iterator it;
+        DoubleIntMap::iterator it;
         for (it = sortedIds.begin(); it != sortedIds.end(); it++)
         {
             sortedPts->InsertNextPoint(outPts->GetPoint((*it).second));
@@ -854,8 +845,8 @@ avtLineoutFilter::CreatePolysFromOrigCells(vtkDataSet *ds, float *pt1, float *pt
 // ****************************************************************************
 
 void 
-ClosestPointOnLine(const float *pt1, const float *pt2, const float *cpt, 
-                   float *npt)
+ClosestPointOnLine(const double *pt1, const double *pt2, const double *cpt, 
+                   double *npt)
 {
     // Take the points and convert them to vectors.
     avtVector p1(pt1);
@@ -894,7 +885,7 @@ ClosestPointOnLine(const float *pt1, const float *pt2, const float *cpt,
 // ****************************************************************************
 
 bool
-CanUseCellPoints(float *pt1, float *pt2, float *cpt)
+CanUseCellPoints(double *pt1, double *pt2, double *cpt)
 {
     // 
     //  Only want to use the cell-centers if the distance

@@ -298,7 +298,7 @@ avtOpenGLLabelRenderer::ClearCharacterDisplayLists()
 // ****************************************************************************
 
 void
-avtOpenGLLabelRenderer::DrawLabel(const float *screenPoint, const char *label)
+avtOpenGLLabelRenderer::DrawLabel(const double *screenPoint, const char *label)
 {
     glLoadIdentity();
 
@@ -390,7 +390,7 @@ avtOpenGLLabelRenderer::DrawLabel(const float *screenPoint, const char *label)
 // ****************************************************************************
 
 void
-avtOpenGLLabelRenderer::DrawLabel2(const float *screenPoint, const char *label)
+avtOpenGLLabelRenderer::DrawLabel2(const double *screenPoint, const char *label)
 {
 #ifdef DEBUG_MATRICES
     glBegin(GL_POINTS);
@@ -735,13 +735,13 @@ avtOpenGLLabelRenderer::BeginSize2D(int index)
     // into world space so we know how to scale the 1x1 box in which the
     // actual letters are defined.
     //
-    float pt1[] = {0,0,0};
+    double pt1[] = {0,0,0};
     VTKRen->NormalizedDisplayToViewport(pt1[0], pt1[1]);
     VTKRen->ViewportToNormalizedViewport(pt1[0], pt1[1]);
     VTKRen->NormalizedViewportToView(pt1[0], pt1[1], pt1[2]);
     VTKRen->ViewToWorld(pt1[0], pt1[1], pt1[2]);
 
-    float pt2[] = {h*0.8, h, 0};
+    double pt2[] = {h*0.8, h, 0};
     VTKRen->NormalizedDisplayToViewport(pt2[0], pt2[1]);
     VTKRen->ViewportToNormalizedViewport(pt2[0], pt2[1]);
     VTKRen->NormalizedViewportToView(pt2[0], pt2[1], pt2[2]);
@@ -822,7 +822,7 @@ avtOpenGLLabelRenderer::DrawAllLabels2D(bool drawNodeLabels, bool drawCellLabels
         BeginSize2D(0);
         for(int i = 0; i < nodeLabelsCacheSize; ++i)
         {
-            const float *vert = p->GetPoint(i);
+            const double *vert = p->GetPoint(i);
             DrawLabel2(vert, labelPtr);
             labelPtr += MAX_LABEL_SIZE;
         }
@@ -841,7 +841,7 @@ avtOpenGLLabelRenderer::DrawAllLabels2D(bool drawNodeLabels, bool drawCellLabels
         BeginSize2D(1);
         for(int i = 0; i < cellLabelsCacheSize; ++i)
         {
-            const float *vert = cellCenters->GetTuple3(i);
+            const double *vert = cellCenters->GetTuple3(i);
             DrawLabel2(vert, labelPtr);
             labelPtr += MAX_LABEL_SIZE;
         }
@@ -889,11 +889,11 @@ avtOpenGLLabelRenderer::DrawDynamicallySelectedLabels2D(bool drawNodeLabels,
     //
     // Figure out the world coordinates of the window that is being displayed.
     //
-    float lowerleft[3] = {0., 0., 0.};
+    double lowerleft[3] = {0., 0., 0.};
     VTKRen->NormalizedViewportToView(lowerleft[0], lowerleft[1], lowerleft[2]);
     VTKRen->ViewToWorld(lowerleft[0], lowerleft[1], lowerleft[2]);
 
-    float upperright[3] = {1., 1., 0.};
+    double upperright[3] = {1., 1., 0.};
     VTKRen->NormalizedViewportToView(upperright[0], upperright[1], upperright[2]);
     VTKRen->ViewToWorld(upperright[0], upperright[1], upperright[2]);
 
@@ -1021,7 +1021,7 @@ avtOpenGLLabelRenderer::DrawDynamicallySelectedLabels2D(bool drawNodeLabels,
             //
             // Which cell does the label fall within?
             //
-            const float *labelVert = p->GetPoint(i);
+            const double *labelVert = p->GetPoint(i);
             float label_x = labelVert[0];
             float label_y = labelVert[1];
             int bin_i = int((label_x - bin_x_offset) / bin_x_size);
@@ -1063,7 +1063,7 @@ avtOpenGLLabelRenderer::DrawDynamicallySelectedLabels2D(bool drawNodeLabels,
             //
             // Which bin does the label fall within?
             //
-            const float *labelVert = cellCenters->GetTuple3(i);
+            const double *labelVert = cellCenters->GetTuple3(i);
             float label_x = labelVert[0];
             float label_y = labelVert[1];
             int bin_i = int((label_x - bin_x_offset) / bin_x_size);
@@ -1834,11 +1834,11 @@ avtOpenGLLabelRenderer::InitializeZBuffer(bool haveNodeData,
 
 
 #define BEGIN_LABEL labelString = cellLabelsCache + MAX_LABEL_SIZE*id; if(!cellLabelsCached) {
-#define GET_THE_POINT const float *vert = cellCenters->GetTuple3(id);
+#define GET_THE_POINT const double *vert = cellCenters->GetTuple3(id);
 #define END_LABEL   } VISIBLE_POINT_PREDICATE\
                       { \
                           GET_THE_POINT \
-                          float v[4] = {vert[0], vert[1], vert[2], 1.f}, vprime[4]; \
+                          double v[4] = {vert[0], vert[1], vert[2], 1.f}, vprime[4]; \
                           M->MultiplyPoint(v, vprime); \
                           if (vprime[3] != 0.) \
                           { \
@@ -1897,8 +1897,8 @@ avtOpenGLLabelRenderer::DrawAllCellLabels3D()
     // should be plotted.
     //
 #define ZBUFFER_PREDICATE_START float pix = 0.;\
-                          float sx = vprime[0];\
-                          float sy = vprime[1];\
+                          double sx = vprime[0];\
+                          double sy = vprime[1];\
                           VTKRen->NormalizedDisplayToDisplay(sx, sy);\
                           int isx = int(sx);\
                           int isy = int(sy);\
@@ -1929,8 +1929,8 @@ avtOpenGLLabelRenderer::DrawAllCellLabels3D()
     // all at once.
     //
 #define ZBUFFER_PREDICATE_START float Z = 0.;\
-                          float sx = vprime[0];\
-                          float sy = vprime[1];\
+                          double sx = vprime[0];\
+                          double sy = vprime[1];\
                           VTKRen->NormalizedDisplayToDisplay(sx, sy);\
                           int isx = int(sx);\
                           int isy = int(sy);\
@@ -1987,7 +1987,7 @@ avtOpenGLLabelRenderer::DrawAllCellLabels3D()
 }
 #undef BEGIN_LABEL
 #undef GET_THE_POINT 
-#define GET_THE_POINT const float *vert = p->GetPoint(id);
+#define GET_THE_POINT const double *vert = p->GetPoint(id);
 
 // ****************************************************************************
 // Method: avtOpenGLLabelRenderer::DrawAllNodeLabels3D
@@ -2049,8 +2049,8 @@ avtOpenGLLabelRenderer::DrawAllNodeLabels3D()
     // should be plotted.
     //
 #define ZBUFFER_PREDICATE_START float pix = 0.;\
-                          float sx = vprime[0];\
-                          float sy = vprime[1];\
+                          double sx = vprime[0];\
+                          double sy = vprime[1];\
                           VTKRen->NormalizedDisplayToDisplay(sx, sy);\
                           int isx = int(sx);\
                           int isy = int(sy);\
@@ -2082,8 +2082,8 @@ avtOpenGLLabelRenderer::DrawAllNodeLabels3D()
     // all at once.
     //
 #define ZBUFFER_PREDICATE_START float Z = 0.;\
-                          float sx = vprime[0];\
-                          float sy = vprime[1];\
+                          double sx = vprime[0];\
+                          double sy = vprime[1];\
                           VTKRen->NormalizedDisplayToDisplay(sx, sy);\
                           int isx = int(sx);\
                           int isy = int(sy);\

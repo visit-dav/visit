@@ -30,20 +30,20 @@ public:
     QvisScreenPositionEdit(QWidget *parent = 0, const char *name = 0);
     virtual ~QvisScreenPositionEdit();
 
-    void setPosition(float, float);
-    bool getPosition(float &, float &);
+    void setPosition(double, double);
+    bool getPosition(double &, double &);
 signals:
-    void screenPositionChanged(float, float);
+    void screenPositionChanged(double, double);
 protected slots:
     void closePopup();
-    void newScreenPosition(float x, float y);
+    void newScreenPosition(double x, double y);
     void popup();
-    void updateText(float, float);
+    void updateText(double, double);
     void returnPressed();
 protected:
-    bool getCurrentValues(float *, float *);
+    bool getCurrentValues(double *, double *);
 
-    float                screenX, screenY;
+    double                screenX, screenY;
     QLineEdit            *lineEdit;
     QvisTurnDownButton   *turnDown;
     QvisScreenPositioner *screenPositionPopup;

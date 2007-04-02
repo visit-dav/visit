@@ -92,7 +92,7 @@ vtkPolarTransformFilter::Execute(void)
 
     for (i = 0 ; i < nPts ; i++)
     {
-        float pt[3];
+        double pt[3];
         oldPts->GetPoint(i, pt);
         float r = sqrt(pt[0]*pt[0] + pt[1]*pt[1]);
         float theta = 0.;
@@ -185,7 +185,8 @@ vtkPolarTransformFilter::Execute(void)
         // 
         for (j = 0 ; j < nPtsForThisCell ; j++)
         {
-            float *pt = newPts->GetPoint(ids->GetId(j));
+            double pt[3];
+            newPts->GetPoint(ids->GetId(j), pt);
             if (pt[0] < M_PI / 4.)
             {
                 near0PI = true;
@@ -204,7 +205,8 @@ vtkPolarTransformFilter::Execute(void)
             //
             for (j = 0 ; j < nPtsForThisCell ; j++)
             {
-                float *pt = newPts->GetPoint(ids->GetId(j));
+                double pt[3];
+                newPts->GetPoint(ids->GetId(j), pt);
                 float pt2[3];
                 if (pt[0] < M_PI)
                 {
@@ -671,11 +673,11 @@ avtConeFilter::SetUpClipping(void)
     //
     const double *normal = atts.GetNormal();
     const double *origin = atts.GetOrigin();
-    float shiftedOrigin[3];
+    double shiftedOrigin[3];
     shiftedOrigin[0] = origin[0] + 0.001*normal[0];
     shiftedOrigin[1] = origin[1] + 0.001*normal[1];
     shiftedOrigin[2] = origin[2] + 0.001*normal[2];
-    float fnormal[3];
+    double fnormal[3];
     fnormal[0] = normal[0];
     fnormal[1] = normal[1];
     fnormal[2] = normal[2];
@@ -1095,7 +1097,7 @@ ProjectExtents(double *b, vtkTransformPolyDataFilter *trans,
     for (i = 0 ; i < pd->GetNumberOfCells() ; i++)
     {
         vtkCell *cell = pd->GetCell(i);
-        float bounds[6];
+        double bounds[6];
         cell->GetBounds(bounds);
         minmax[0] = (minmax[0] < bounds[0] ? minmax[0] : bounds[0]);
         minmax[1] = (minmax[1] > bounds[1] ? minmax[1] : bounds[1]);
@@ -1217,7 +1219,7 @@ PolarExtents(double *b, vtkTransformPolyDataFilter *trans, vtkVisItCutter *cutte
     for (i = 0 ; i < pd->GetNumberOfCells() ; i++)
     {
         vtkCell *cell = pd->GetCell(i);
-        float bounds[6];
+        double bounds[6];
         cell->GetBounds(bounds);
         minmax[0] = (minmax[0] < bounds[0] ? minmax[0] : bounds[0]);
         minmax[1] = (minmax[1] > bounds[1] ? minmax[1] : bounds[1]);

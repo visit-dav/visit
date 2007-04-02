@@ -89,7 +89,7 @@ class VISWINDOW_API VisWindowInteractorProxy : public VisWindowProtectionProxy
     void                MotionBegin(void) { ProxiedMotionBegin(); };
     void                MotionEnd(void)   { ProxiedMotionEnd(); };
 
-    void                GetForegroundColor(float *fg)
+    void                GetForegroundColor(double *fg)
                                   { ProxiedGetForegroundColor(fg); };
 };
 

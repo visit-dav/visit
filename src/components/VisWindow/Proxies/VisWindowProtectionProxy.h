@@ -116,13 +116,13 @@ class VISWINDOW_API VisWindowProtectionProxy
     void                ProxiedChangeMode(WINDOW_MODE);
     vtkRenderer        *ProxiedGetBackground();
     bool                ProxiedGetBoundingBoxMode() const;
-    void                ProxiedGetBounds(float [6]);
+    void                ProxiedGetBounds(double [6]);
     vtkRenderer        *ProxiedGetCanvas();
     vtkRenderer        *ProxiedGetForeground();
-    void                ProxiedGetForegroundColor(float [3]);
+    void                ProxiedGetForegroundColor(double [3]);
     bool                ProxiedGetHotPoint(int, int, HotPoint &) const;
     WINDOW_MODE         ProxiedGetMode();
-    void                ProxiedGetViewport(float vport[4]);
+    void                ProxiedGetViewport(double vport[4]);
     void                ProxiedHasPlots(bool);
     bool                ProxiedHasPlots();
     bool                ProxiedUpdatesEnabled();
@@ -138,13 +138,13 @@ class VISWINDOW_API VisWindowProtectionProxy
     void                ProxiedPick(int, int);
     void                ProxiedUpdatePlotList(std::vector<avtActor_p> &);
     void                ProxiedLineout(int, int, int, int);
-    float               ProxiedComputeVectorTextScaleFactor(const float *p, 
-                                                        const float *v = NULL);
+    double               ProxiedComputeVectorTextScaleFactor(const double *p, 
+                                                        const double *v = NULL);
     void                ProxiedMotionBegin(void);
     void                ProxiedMotionEnd(void);
 
     bool                ProxiedGetAmbientOn();
-    float               ProxiedGetAmbientCoefficient();
+    double               ProxiedGetAmbientCoefficient();
     bool                ProxiedGetLighting();
     void                ProxiedUpdateLightPositions();
     int                 ProxiedGetSurfaceRepresentation();
@@ -155,8 +155,8 @@ class VISWINDOW_API VisWindowProtectionProxy
     bool                ProxiedGetAntialiasing();
     bool                ProxiedGetFullFrameMode();
     bool                ProxiedGetSpecularFlag();
-    float               ProxiedGetSpecularCoeff();
-    float               ProxiedGetSpecularPower();
+    double               ProxiedGetSpecularCoeff();
+    double               ProxiedGetSpecularPower();
     const ColorAttribute &ProxiedGetSpecularColor();
     bool                ProxiedTransparenciesExist();
     void                ProxiedReAddToolsToRenderWindow();
@@ -167,7 +167,7 @@ class VISWINDOW_API VisWindowProtectionProxy
     void                ProxiedSuspendTranslucentGeometry();
     void                ProxiedResumeOpaqueGeometry();
     void                ProxiedResumeTranslucentGeometry();
-    float               ProxiedGetMaxPlotZShift();
+    double               ProxiedGetMaxPlotZShift();
                                   
 };
 

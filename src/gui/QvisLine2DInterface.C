@@ -43,8 +43,8 @@ QvisLine2DInterface::QvisLine2DInterface(QWidget *parent,
 
     // Add controls for the start position
     positionStartEdit = new QvisScreenPositionEdit(this, "positionStartEdit");
-    connect(positionStartEdit, SIGNAL(screenPositionChanged(float, float)),
-            this, SLOT(positionStartChanged(float, float)));
+    connect(positionStartEdit, SIGNAL(screenPositionChanged(double, double)),
+            this, SLOT(positionStartChanged(double, double)));
     QLabel *startLabel = new QLabel(positionStartEdit, "Start", this);
     QString startTip("Start of line in screen coordinates [0,1]");
     QToolTip::add(startLabel, startTip);
@@ -53,8 +53,8 @@ QvisLine2DInterface::QvisLine2DInterface(QWidget *parent,
 
     // Add controls for the end position
     positionEndEdit = new QvisScreenPositionEdit(this, "positionEndEdit");
-    connect(positionEndEdit, SIGNAL(screenPositionChanged(float, float)),
-            this, SLOT(positionEndChanged(float, float)));
+    connect(positionEndEdit, SIGNAL(screenPositionChanged(double, double)),
+            this, SLOT(positionEndChanged(double, double)));
     QLabel *endLabel = new QLabel(positionEndEdit, "End", this);
     QString endTip("End of line in screen coordinates [0,1]");
     QToolTip::add(endLabel, endTip);
@@ -280,9 +280,9 @@ QvisLine2DInterface::GetCurrentValues(int which_widget)
 //   
 // ****************************************************************************
 void
-QvisLine2DInterface::positionStartChanged(float x, float y)
+QvisLine2DInterface::positionStartChanged(double x, double y)
 {
-    float pos[] = {x, y, 0.f};
+    double pos[] = {x, y, 0.};
     annot->SetPosition(pos);
     SetUpdate(false);
     Apply();
@@ -302,9 +302,9 @@ QvisLine2DInterface::positionStartChanged(float x, float y)
 //   
 // ****************************************************************************
 void
-QvisLine2DInterface::positionEndChanged(float x, float y)
+QvisLine2DInterface::positionEndChanged(double x, double y)
 {
-    float pos[] = {x, y, 0.f};
+    double pos[] = {x, y, 0.};
     annot->SetPosition2(pos);
     SetUpdate(false);
     Apply();

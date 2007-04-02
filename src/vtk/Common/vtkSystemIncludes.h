@@ -2,16 +2,13 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkSystemIncludes.h,v $
-  Language:  C++
-  Date:      $Date: 2003/08/21 12:34:21 $
-  Version:   $Revision: 1.29 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
@@ -43,8 +40,28 @@
 # include "vtkIOStream.h"    // Include the real C++ streams.
 #endif
 
+// define the type of floating point interface used for old and new versions
+// of VTK VTK42 and older use float and VTK 44 and newer use double for most
+// of the API calls
+#define vtkFloatingPointType vtkFloatingPointType 
+typedef double vtkFloatingPointType;
+
+// Choose an implementation for vtkIdType.
+#define VTK_HAS_ID_TYPE
+#ifdef VTK_USE_64BIT_IDS
+# define VTK_ID_TYPE_IS_NOT_BASIC_TYPE
+# define VTK_SIZEOF_ID_TYPE 8
+# ifdef _WIN32
+typedef __int64 vtkIdType;
+# else // _WIN32
+typedef long long vtkIdType;
+# endif // _WIN32
+#else // VTK_USE_64BIT_IDS
+# define VTK_SIZEOF_ID_TYPE VTK_SIZEOF_INT
+typedef int vtkIdType;
+#endif // VTK_USE_64BIT_IDS
+
 #define __VTK_SYSTEM_INCLUDES__INSIDE
-#include "vtkIdType.h"            // Define vtkIdType and its stream operators.
 #include "vtkOStreamWrapper.h"    // Include the ostream wrapper.
 #include "vtkOStrStreamWrapper.h" // Include the ostrstream wrapper.
 #undef __VTK_SYSTEM_INCLUDES__INSIDE
@@ -109,20 +126,25 @@
 #define VTK_UNSIGNED_LONG_MAX  4294967295UL
 #define VTK_FLOAT_MIN         -VTK_LARGE_FLOAT
 #define VTK_FLOAT_MAX          VTK_LARGE_FLOAT
-#define VTK_DOUBLE_MIN        -1.0e+99L
-#define VTK_DOUBLE_MAX         1.0e+99L
+#define VTK_DOUBLE_MIN        -1.0e+299
+#define VTK_DOUBLE_MAX         1.0e+299
 
 // These types are returned to distinguish data object types
-#define VTK_POLY_DATA          0
-#define VTK_STRUCTURED_POINTS  1
-#define VTK_STRUCTURED_GRID    2
-#define VTK_RECTILINEAR_GRID   3
-#define VTK_UNSTRUCTURED_GRID  4
-#define VTK_PIECEWISE_FUNCTION 5
-#define VTK_IMAGE_DATA         6
-#define VTK_DATA_OBJECT        7
-#define VTK_DATA_SET           8
-#define VTK_POINT_SET          9
+#define VTK_POLY_DATA                       0
+#define VTK_STRUCTURED_POINTS               1
+#define VTK_STRUCTURED_GRID                 2
+#define VTK_RECTILINEAR_GRID                3
+#define VTK_UNSTRUCTURED_GRID               4
+#define VTK_PIECEWISE_FUNCTION              5
+#define VTK_IMAGE_DATA                      6
+#define VTK_DATA_OBJECT                     7
+#define VTK_DATA_SET                        8
+#define VTK_POINT_SET                       9
+#define VTK_UNIFORM_GRID                   10
+#define VTK_COMPOSITE_DATA_SET             11
+#define VTK_HIERARCHICAL_DATA_SET          12
+#define VTK_MULTI_BLOCK_DATA_SET           13
+#define VTK_HIERARCHICAL_BOX_DATA_SET      14
 
 // These types define error codes for vtk functions
 #define VTK_OK                 1
@@ -140,7 +162,7 @@
 #define VTK_TEXT_BOTTOM 0
 #define VTK_TEXT_TOP    2
 
-#define VTK_TEXT_VERTICAL 0
+#define VTK_TEXT_VERTICAL   0
 #define VTK_TEXT_HORIZONTAL 1
 
 #define VTK_TEXT_GLOBAL_ANTIALIASING_SOME 0

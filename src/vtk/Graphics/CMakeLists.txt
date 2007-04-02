@@ -52,6 +52,7 @@ vtkDicer.cxx
 vtkDiskSource.cxx
 vtkEdgePoints.cxx
 vtkElevationFilter.cxx
+vtkEllipticalButtonSource.cxx
 vtkExtractEdges.cxx
 vtkExtractGeometry.cxx
 vtkExtractGrid.cxx
@@ -67,6 +68,10 @@ vtkGlyph2D.cxx
 vtkGlyph3D.cxx
 vtkGlyphSource2D.cxx
 vtkGraphLayoutFilter.cxx
+vtkHierarchicalBoxCellDataToPointData.cxx
+vtkHierarchicalBoxContour.cxx
+vtkHierarchicalBoxCutter.cxx
+vtkHierarchicalBoxOutlineFilter.cxx
 vtkHedgeHog.cxx
 vtkHull.cxx
 vtkHyperStreamline.cxx
@@ -112,6 +117,7 @@ vtkQuadricClustering.cxx
 vtkQuadricDecimation.cxx
 vtkQuantizePolyDataPoints.cxx
 vtkRearrangeFields.cxx
+vtkRectangularButtonSource.cxx
 vtkRectilinearGridGeometryFilter.cxx
 vtkRectilinearGridToTetrahedra.cxx
 vtkRecursiveDividingCubes.cxx
@@ -169,6 +175,7 @@ vtkWindowedSincPolyDataFilter.cxx
 
 SET_SOURCE_FILES_PROPERTIES(
 vtkApproximatingSubdivisionFilter
+vtkButtonSource
 vtkDicer
 vtkInterpolatingSubdivisionFilter
 vtkStreamer
@@ -185,10 +192,10 @@ SET(Kit_JAVA_EXTRA_SRCS)
 # Start of common section
 
 # Setup vtkInstantiator registration for this library's classes.
-VTK_MAKE_INSTANTIATOR2(vtk${KIT}Instantiator KitInstantiator_SRCS
-                       ${Kit_SRCS}
-                       EXPORT_MACRO VTK_${UKIT}_EXPORT
-                       HEADER_LOCATION ${VTK_BINARY_DIR})
+VTK_MAKE_INSTANTIATOR3(vtk${KIT}Instantiator KitInstantiator_SRCS
+                       "${Kit_SRCS}"
+                       VTK_${UKIT}_EXPORT
+                       ${VTK_BINARY_DIR} "")
 
 ADD_LIBRARY(vtk${KIT} ${Kit_SRCS} ${Kit_EXTRA_SRCS} ${KitInstantiator_SRCS})
 

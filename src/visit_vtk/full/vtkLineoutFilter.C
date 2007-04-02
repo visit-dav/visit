@@ -132,7 +132,7 @@ vtkLineoutFilter::Execute()
   outPolys->SetVerts(verts);
   verts->Delete();
 
-  float newPoint[3] = { 0., 0., 0. };
+  double newPoint[3] = { 0., 0., 0. };
 
   vtkDataArray *scalars = this->Probe->GetOutput()->GetPointData()->GetScalars();
   if (scalars == NULL)
@@ -155,7 +155,7 @@ vtkLineoutFilter::Execute()
   //
   //  Distance needs to be calculated for each new point.
   //
-  float currentPoint[3];
+  double currentPoint[3];
   vtkIdTypeArray *nonGhostValidPoints =  vtkIdTypeArray::New();
   for (i = 0; i < numPoints; i++)
     {

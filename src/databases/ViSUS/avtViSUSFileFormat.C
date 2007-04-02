@@ -231,8 +231,8 @@ avtViSUSFileFormat::SetupRectilinearCoordinates()
     //
     for (int i = 0; i < dataDimension; i++)
     {
-        globalNodeCoords[i] = new float[globalZoneCount[i]+1];
-        float stepSize = (globalMax[i] - globalMin[i]) / globalZoneCount[i];
+        globalNodeCoords[i] = new double[globalZoneCount[i]+1];
+        double stepSize = (globalMax[i] - globalMin[i]) / globalZoneCount[i];
         for (int j = 0; j < globalZoneCount[i]+1; j++)
             globalNodeCoords[i][j] = globalMin[i] + j * stepSize;;
     }
@@ -494,13 +494,13 @@ avtViSUSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     IDX_get_grid_spacing_3D(idxFile,
         &gridSpacing3D[0], &gridSpacing3D[1], &gridSpacing3D[2]);
 
-    float exts[6];
-    exts[0] = (float) globalMin[0];
-    exts[1] = (float) globalMax[0];
-    exts[2] = (float) globalMin[1];
-    exts[3] = (float) globalMax[1];
-    exts[4] = (float) globalMin[2];
-    exts[5] = (float) globalMax[2];
+    double exts[6];
+    exts[0] = (double) globalMin[0];
+    exts[1] = (double) globalMax[0];
+    exts[2] = (double) globalMin[1];
+    exts[3] = (double) globalMax[1];
+    exts[4] = (double) globalMin[2];
+    exts[5] = (double) globalMax[2];
 
     AddMeshToMetaData(md, "mesh", AVT_RECTILINEAR_MESH, exts, 1, 0,
         dataDimension, dataDimension);
@@ -597,7 +597,7 @@ avtViSUSFileFormat::SetupDomainAndZoneIndexing(int *outputZoneCounts,
         {
             avtSpatialBoxSelection *sel = (avtSpatialBoxSelection *) *(selList[i]);
 
-            float mins[3], maxs[3];
+            double mins[3], maxs[3];
             sel->GetMins(mins);
             sel->GetMaxs(maxs);
 

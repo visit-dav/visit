@@ -415,7 +415,7 @@ avtStreamlinePlot::SetLighting(bool lightingOn)
 void
 avtStreamlinePlot::SetLegendRanges()
 {
-    float min, max;
+    double min, max;
     varMapper->GetVarRange(min, max);
 
     //

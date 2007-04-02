@@ -165,7 +165,7 @@ avtLegend::Remove(void)
 // ****************************************************************************
 
 void
-avtLegend::GetLegendPosition(float &px, float &py)
+avtLegend::GetLegendPosition(double &px, double &py)
 {
     px = position[0];
     py = position[1];
@@ -188,7 +188,7 @@ avtLegend::GetLegendPosition(float &px, float &py)
 // ****************************************************************************
 
 void
-avtLegend::SetLegendPosition(float px, float py)
+avtLegend::SetLegendPosition(double px, double py)
 {
     position[0] = px;
     position[1] = py;
@@ -216,7 +216,7 @@ avtLegend::SetLegendPosition(float px, float py)
 // ****************************************************************************
 
 void
-avtLegend::GetLegendSize(float, float &w, float &h)
+avtLegend::GetLegendSize(double, double &w, double &h)
 {
     w = size[0];
     h = size[1];
@@ -310,7 +310,7 @@ avtLegend::GetLegendOn(void) const
 // ****************************************************************************
 
 void
-avtLegend::SetForegroundColor(const float col[3])
+avtLegend::SetForegroundColor(const double col[3])
 {
     if (legend != NULL)
     {
@@ -318,9 +318,9 @@ avtLegend::SetForegroundColor(const float col[3])
         // VTK doesn't have all of its const's set up right, so let's help it
         // out.
         //
-        float  r = col[0];
-        float  g = col[1];
-        float  b = col[2];
+        double  r = col[0];
+        double  g = col[1];
+        double  b = col[2];
         legend->GetProperty()->SetColor(r, g, b);
     }
 }
@@ -341,7 +341,7 @@ avtLegend::SetForegroundColor(const float col[3])
 // ****************************************************************************
 
 void
-avtLegend::SetFontHeight(float height)
+avtLegend::SetFontHeight(double height)
 {
     fontHeight = height;
 }

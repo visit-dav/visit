@@ -570,7 +570,7 @@ avtSourceFromDatabase::Query(PickAttributes *pa)
 
 bool
 avtSourceFromDatabase::FindElementForPoint(const char *var, const int ts,
-    const int dom, const char *elType, float pt[3], int &elNum)
+    const int dom, const char *elType, double pt[3], int &elNum)
 {
     return database->FindElementForPoint(var, ts, dom, elType, pt, elNum);
 }
@@ -633,7 +633,7 @@ avtSourceFromDatabase::GetDomainName(const std::string &var, const int ts,
 
 bool
 avtSourceFromDatabase::QueryCoords(const std::string &var, const int dom,
-    const int zone, const int ts, float coord[3], const bool forZone,
+    const int zone, const int ts, double coord[3], const bool forZone,
     const bool useGlobalId, const char *mn)
 {
     return database->QueryCoords(var, dom, zone, ts, coord, forZone, useGlobalId, mn);

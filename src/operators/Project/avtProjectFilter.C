@@ -390,18 +390,18 @@ avtProjectFilter::ProjectVectors(vtkDataSet *old_ds,
 
     for (int i=0; i<nvectors; i++)
     {
-        float *oldpt;
-        float *newpt;
+        double oldpt[3];
+        double newpt[3];
 
         if (cell_centered)
         {
-            oldpt = old_ds->GetPoint(old_ds->GetCell(i)->GetPointId(0));
-            newpt = new_ds->GetPoint(new_ds->GetCell(i)->GetPointId(0));
+            old_ds->GetPoint(old_ds->GetCell(i)->GetPointId(0), oldpt);
+            new_ds->GetPoint(new_ds->GetCell(i)->GetPointId(0), newpt);
         }
         else
         {
-            oldpt = old_ds->GetPoint(i);
-            newpt = new_ds->GetPoint(i);
+            old_ds->GetPoint(i, oldpt);
+            new_ds->GetPoint(i, newpt);
         }
 
         // What the heck is the right thing for projecting a

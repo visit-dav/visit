@@ -706,10 +706,10 @@ avtSurfacePlot::SetWireframeAttributes(bool on)
     if (on)
     {
         const unsigned char * col = atts.GetWireframeColor().GetColor();
-        float rgb[3];
-        rgb[0] = (float) col[0] / 255.0;
-        rgb[1] = (float) col[1] / 255.0;
-        rgb[2] = (float) col[2] / 255.0;
+        double rgb[3];
+        rgb[0] = (double) col[0] / 255.0;
+        rgb[1] = (double) col[1] / 255.0;
+        rgb[2] = (double) col[2] / 255.0;
         property->SetEdgeColor(rgb);
         property->EdgeVisibilityOn();
         renderer->ResolveTopologyOn();
@@ -754,7 +754,7 @@ avtSurfacePlot::SetSurfaceAttributes(bool useScalars)
     {
         renderer->ScalarVisibilityOff();
         const unsigned char * col = atts.GetSurfaceColor().GetColor();
-        float rgb[3];
+        double rgb[3];
         rgb[0] = (float) col[0] / 255.0;
         rgb[1] = (float) col[1] / 255.0;
         rgb[2] = (float) col[2] / 255.0;
@@ -790,8 +790,8 @@ avtSurfacePlot::SetSurfaceAttributes(bool useScalars)
 void
 avtSurfacePlot::SetLimitsMode(int mode)
 {
-    float origMin, origMax; 
-    float userMin, userMax;
+    double origMin, origMax; 
+    double userMin, userMax;
 
     if (!mapper->GetDataRange(origMin, origMax))
     {

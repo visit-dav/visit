@@ -53,8 +53,8 @@ VisitBoxTool::VisitBoxTool(VisWindowToolProxy &p) : VisitInteractiveTool(p),
     h.radius = NEAR_HOTPOINT_RADIUS; // See what a good value is.
     h.tool = this;
 
-    const float boxOrigin[] = {0., 0., 0.};
-    const float boxSize[] = {BOX_SIZE, BOX_SIZE, BOX_SIZE};
+    const double boxOrigin[] = {0., 0., 0.};
+    const double boxSize[] = {BOX_SIZE, BOX_SIZE, BOX_SIZE};
 
     //
     // Add the box origin hotpoint.
@@ -129,15 +129,8 @@ VisitBoxTool::VisitBoxTool(VisWindowToolProxy &p) : VisitInteractiveTool(p),
     //
     // Set up some defaults for the plane equation.
     //
-    float bounds[6];
-    proxy.GetBounds(bounds);
     double extents[6];
-    extents[0] = bounds[0];
-    extents[1] = bounds[1];
-    extents[2] = bounds[2];
-    extents[3] = bounds[3];
-    extents[4] = bounds[4];
-    extents[5] = bounds[5];
+    proxy.GetBounds(extents);
     Interface.SetExtents(extents);
 
     addedOutline = false;
@@ -333,9 +326,9 @@ VisitBoxTool::Stop3DMode()
 // ****************************************************************************
 
 void
-VisitBoxTool::SetForegroundColor(float r, float g, float b)
+VisitBoxTool::SetForegroundColor(double r, double g, double b)
 {
-    float color[3] = {r, g, b};
+    double color[3] = {r, g, b};
 
     // Change the colors in the box.
     boxActor->GetProperty()->SetColor(color);
@@ -388,12 +381,9 @@ VisitBoxTool::UpdateTool()
     // as the extents.
     if(!Interface.Initialized())
     {
-        float e[6];
+        double e[6];
         proxy.GetBounds(e);
-        double d[6];
-        for(int i = 0; i < 6; ++i)
-            d[i] = double(e[i]);
-        Interface.SetExtents(d);
+        Interface.SetExtents(e);
     }
 
     // Use the extents from the interface.
@@ -428,7 +418,7 @@ VisitBoxTool::CreateBoxActor()
 {
     // Store the colors and points in the polydata.
     vtkOutlineSource *source = vtkOutlineSource::New();
-    float extents[6];
+    double extents[6];
     extents[0] = 0.;
     extents[1] = BOX_SIZE;
     extents[2] = 0.;
@@ -636,10 +626,10 @@ VisitBoxTool::UpdateText()
     GetHotPointLabel(0, str);
     originTextActor->SetInput(str);
     avtVector originScreen = ComputeWorldToDisplay(hotPoints[0].pt);
-    float pt[3] = {originScreen.x, originScreen.y, 0.};
+    double pt[3] = {originScreen.x, originScreen.y, 0.};
     originTextActor->GetPositionCoordinate()->SetValue(pt);
 
-    float bounds[6];
+    double bounds[6];
     proxy.GetBounds(bounds);
     avtVector center((hotPoints[1].pt.x + hotPoints[2].pt.x) * 0.5,
                      (hotPoints[3].pt.y + hotPoints[4].pt.y) * 0.5,
@@ -655,7 +645,7 @@ VisitBoxTool::UpdateText()
         GetHotPointLabel(i+1, str);
         labelTextActor[i]->SetInput(str);
         avtVector originScreen = ComputeWorldToDisplay(hotPoints[i+1].pt);
-        float pt[3] = {originScreen.x, originScreen.y, 0.};
+        double pt[3] = {originScreen.x, originScreen.y, 0.};
         labelTextActor[i]->GetPositionCoordinate()->SetValue(pt);
 
         // Alter the hot point's radius based on if its face points towards
@@ -854,12 +844,12 @@ VisitBoxTool::RemoveOutline()
 void
 VisitBoxTool:: GetBoundingBoxOutline(int a, avtVector *verts, bool giveMin)
 {
-    float extents[6];
+    double extents[6];
     proxy.GetBounds(extents);
 
     if(a == 1)
     {
-        float x = giveMin ? hotPoints[0].pt.x : hotPoints[2].pt.x;
+        double x = giveMin ? hotPoints[0].pt.x : hotPoints[2].pt.x;
         verts[0] = avtVector(x, extents[2], extents[4]);
         verts[1] = avtVector(x, extents[3], extents[4]);
         verts[2] = avtVector(x, extents[3], extents[5]);
@@ -867,7 +857,7 @@ VisitBoxTool:: GetBoundingBoxOutline(int a, avtVector *verts, bool giveMin)
     }
     else if(a == 2)
     {
-        float y = giveMin ? hotPoints[0].pt.y : hotPoints[4].pt.y;
+        double y = giveMin ? hotPoints[0].pt.y : hotPoints[4].pt.y;
         verts[0] = avtVector(extents[0], y, extents[4]);
         verts[1] = avtVector(extents[1], y, extents[4]);
         verts[2] = avtVector(extents[1], y, extents[5]);
@@ -875,7 +865,7 @@ VisitBoxTool:: GetBoundingBoxOutline(int a, avtVector *verts, bool giveMin)
     }
     else if(a == 3)
     {
-        float z = giveMin ? hotPoints[0].pt.z : hotPoints[6].pt.z;
+        double z = giveMin ? hotPoints[0].pt.z : hotPoints[6].pt.z;
         verts[0] = avtVector(extents[0], extents[2], z);
         verts[1] = avtVector(extents[1], extents[2], z);
         verts[2] = avtVector(extents[1], extents[3], z);
@@ -915,7 +905,7 @@ VisitBoxTool::UpdateOutline()
 
     if(activeHotPoint == 0 || activeHotPoint == LAST_HOTPOINT)
     {
-        float totalExtents[6];
+        double totalExtents[6];
         proxy.GetBounds(totalExtents);
 
         for(int i = 0; i < 3; ++i)
@@ -924,7 +914,7 @@ VisitBoxTool::UpdateOutline()
                 outlineData[i]->Delete();
 
              vtkOutlineSource *source = vtkOutlineSource::New();
-             float extents[6];
+             double extents[6];
              extents[0] = (i == 0) ? totalExtents[0] : hotPoints[0].pt.x;
              extents[1] = (i == 0) ? totalExtents[1] : hotPoints[LAST_HOTPOINT].pt.x;
              extents[2] = (i == 1) ? totalExtents[2] : hotPoints[0].pt.y;
@@ -937,7 +927,7 @@ VisitBoxTool::UpdateOutline()
              source->Delete();
              // Set the mapper's input to be the new dataset.
              outlineMapper[i]->SetInput(outlineData[i]);
-             float color[3];
+             double color[3];
              color[0] = (i == 0) ? 1. : 0.;
              color[1] = (i == 1) ? 1. : 0.;
              color[2] = (i == 2) ? 1. : 0.;
@@ -988,15 +978,15 @@ VisitBoxTool::UpdateOutline()
             //
             // Now that we have a clipped polygon, create a polydata from that.
             //
-            float fg[3];
+            double fg[3];
             proxy.GetForegroundColor(fg);
-            unsigned char r = (unsigned char)(fg[0] * 255.);
-            unsigned char g = (unsigned char)(fg[1] * 255.);
-            unsigned char b = (unsigned char)(fg[2] * 255.);
+            unsigned char r = (unsigned char)((float)fg[0] * 255.f);
+            unsigned char g = (unsigned char)((float)fg[1] * 255.f);
+            unsigned char b = (unsigned char)((float)fg[2] * 255.f);
             for(int i = 0, index = 0; i < nverts; ++i, index += 3)
             {
                 // Add points to the vertex list.
-                float coord[3];
+                double coord[3];
                 coord[0] = verts[i].x;
                 coord[1] = verts[i].y;
                 coord[2] = verts[i].z;
@@ -1028,7 +1018,7 @@ VisitBoxTool::UpdateOutline()
         {
             outlineTextActor[i]->SetInput(str);
             avtVector originScreen = ComputeWorldToDisplay(verts[i]);
-            float pt[3] = {originScreen.x, originScreen.y, 0.};
+            double pt[3] = {originScreen.x, originScreen.y, 0.};
             outlineTextActor[i]->GetPositionCoordinate()->SetValue(pt);
         }
     }
@@ -1238,7 +1228,7 @@ VisitBoxTool::Resize(CB_ENUM e, int, int, int x, int y)
      ) : LAST_HOTPOINT;
     HotPoint &resize = hotPoints[idx];
 
-    float dX, dY, dZ;
+    double dX, dY, dZ;
     avtVector originScreen, resizeScreen;
 
     if(e == CB_START)
@@ -1260,7 +1250,7 @@ VisitBoxTool::Resize(CB_ENUM e, int, int, int x, int y)
     else if(e == CB_MIDDLE)
     {
         double scale;
-        float currentDist;
+        double currentDist;
 
         if(activeHotPoint == LAST_HOTPOINT)
         {
@@ -1274,12 +1264,12 @@ VisitBoxTool::Resize(CB_ENUM e, int, int, int x, int y)
         }
         else
         {
-            float extents[6];
+            double extents[6];
             proxy.GetBounds(extents);
             int *size = proxy.GetCanvas()->GetSize();
 
             int    screenDelta = y - lastY;
-            float wLength;
+            double wLength;
             dX = extents[1] - extents[0];
             dY = extents[3] - extents[2];
             dZ = extents[5] - extents[4];
@@ -1293,7 +1283,7 @@ VisitBoxTool::Resize(CB_ENUM e, int, int, int x, int y)
             if(wLength > TOLERANCE && wLength < TOLERANCE)
                 wLength = TOLERANCE;
 
-            float worldDelta = (float(screenDelta) / float(size[1])) * wLength;
+            double worldDelta = (double(screenDelta) / double(size[1])) * wLength;
 
             avtVector motion(resize.pt - origin.pt);
             if(activeHotPoint == 1 || activeHotPoint == 2)

@@ -92,15 +92,16 @@ avtEdgeLength::GetEdgeLength(vtkCell *cell)
     {
         vtkCell *edge = cell->GetEdge(i);
         vtkPoints *pts = edge->GetPoints();
-        float *pts_ptr = (float *) pts->GetVoidPointer(0);
-        int npts = edge->GetNumberOfPoints();
 
-        double a[3];
-        int id1 = 0;
-        int id2 = 1;
-        a[0] = pts_ptr[3*id2] - pts_ptr[3*id1];
-        a[1] = pts_ptr[3*id2+1] - pts_ptr[3*id1+1];
-        a[2] = pts_ptr[3*id2+2] - pts_ptr[3*id1+2];
+        double pt1[3], pt2[3], a[3];
+
+        pts->GetPoint(0, pt1);
+        pts->GetPoint(1, pt2);
+
+        a[0] = pt2[0] - pt1[0]; 
+        a[1] = pt2[1] - pt1[1]; 
+        a[2] = pt2[2] - pt1[2]; 
+
         double length = sqrt(a[0]*a[0] + a[1]*a[1] + a[2]*a[2]);
         if (takeMin)
             rv = (rv < length ? rv : length);

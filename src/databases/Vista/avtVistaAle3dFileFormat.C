@@ -17,7 +17,6 @@
 
 #include <vtkCellType.h>
 #include <vtkFloatArray.h>
-#include <vtkIdType.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>

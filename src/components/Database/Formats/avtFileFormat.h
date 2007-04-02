@@ -186,15 +186,15 @@ class DATABASE_API avtFileFormat
                                 return GuessTime(f); };
 
     void       AddMeshToMetaData(avtDatabaseMetaData *, std::string,
-                                 avtMeshType, const float * = NULL, int = 1,
+                                 avtMeshType, const double * = NULL, int = 1,
                                  int = 0, int = 3, int = 3);
     void       AddScalarVarToMetaData(avtDatabaseMetaData *, std::string,
                                       std::string, avtCentering,
-                                      const float * = NULL,
+                                      const double * = NULL,
                                       const bool = false);
     void       AddVectorVarToMetaData(avtDatabaseMetaData *, std::string,
                                       std::string, avtCentering, int = 3,
-                                      const float * = NULL);
+                                      const double * = NULL);
     void       AddTensorVarToMetaData(avtDatabaseMetaData *, std::string,
                                       std::string, avtCentering, int = 3);
     void       AddSymmetricTensorVarToMetaData(avtDatabaseMetaData *,

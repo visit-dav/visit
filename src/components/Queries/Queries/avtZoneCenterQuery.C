@@ -100,7 +100,7 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
         singleDomain = true;
     }
 
-    float coord[3] = {0., 0., 0.};
+    double coord[3] = {0., 0., 0.};
     bool success = false;
 
     if (!qA->GetUseGlobalId())
@@ -108,7 +108,7 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
     else 
         success = FindGlobalCenter(coord);    
 
-    GetFloatArrayToRootProc(coord, 3, success);   
+    GetDoubleArrayToRootProc(coord, 3, success);   
 
     if (PAR_Rank() != 0)
         return;
@@ -212,7 +212,7 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
 // ****************************************************************************
 
 bool
-avtZoneCenterQuery::FindGlobalCenter(float coord[3])
+avtZoneCenterQuery::FindGlobalCenter(double coord[3])
 {
     int zone        = queryAtts.GetElement();
     int ts          = queryAtts.GetTimeStep();
@@ -258,7 +258,7 @@ avtZoneCenterQuery::FindGlobalCenter(float coord[3])
 // ****************************************************************************
 
 bool
-avtZoneCenterQuery::FindLocalCenter(float coord[3])
+avtZoneCenterQuery::FindLocalCenter(double coord[3])
 {
 
     intVector dlist;

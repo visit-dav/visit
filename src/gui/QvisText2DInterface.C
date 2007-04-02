@@ -41,8 +41,8 @@ QvisText2DInterface::QvisText2DInterface(QWidget *parent,
 
     // Add controls for the position
     positionEdit = new QvisScreenPositionEdit(this, "positionEdit");
-    connect(positionEdit, SIGNAL(screenPositionChanged(float, float)),
-            this, SLOT(positionChanged(float, float)));
+    connect(positionEdit, SIGNAL(screenPositionChanged(double, double)),
+            this, SLOT(positionChanged(double, double)));
     cLayout->addMultiCellWidget(positionEdit, 0, 0, 1, 3);
     cLayout->addWidget(new QLabel(positionEdit, "Lower left",
         this), 0, 0);
@@ -316,8 +316,8 @@ QvisText2DInterface::GetCurrentValues(int which_widget)
         // Get its new current value and store it in the atts.
         ForceSpinBoxUpdate(widthSpinBox);
         int w = widthSpinBox->value();
-        float pos2[3];
-        pos2[0] = float(w) * 0.01f;
+        double pos2[3];
+        pos2[0] = double(w) * 0.01;
         pos2[1] = annot->GetPosition2()[1];
         pos2[2] = annot->GetPosition2()[2];
         annot->SetPosition2(pos2);
@@ -343,9 +343,9 @@ QvisText2DInterface::GetCurrentValues(int which_widget)
 // ****************************************************************************
 
 void
-QvisText2DInterface::positionChanged(float x, float y)
+QvisText2DInterface::positionChanged(double x, double y)
 {
-    float pos[] = {x, y, 0.f};
+    double pos[] = {x, y, 0.};
     annot->SetPosition(pos);
     SetUpdate(false);
     Apply();
@@ -371,8 +371,8 @@ QvisText2DInterface::positionChanged(float x, float y)
 void
 QvisText2DInterface::widthChanged(int w)
 {
-    float pos2[3];
-    pos2[0] = float(w) * 0.01f;
+    double pos2[3];
+    pos2[0] = double(w) * 0.01;
     pos2[1] = annot->GetPosition2()[1];
     pos2[2] = annot->GetPosition2()[2];
     annot->SetPosition2(pos2);
@@ -400,9 +400,9 @@ QvisText2DInterface::widthChanged(int w)
 void
 QvisText2DInterface::heightChanged(int h)
 {
-    float pos2[3];
+    double pos2[3];
     pos2[0] = annot->GetPosition2()[0];
-    pos2[1] = float(h) * 0.01f;
+    pos2[1] = double(h) * 0.01;
     pos2[2] = annot->GetPosition2()[2];
     annot->SetPosition2(pos2);
     SetUpdate(false);

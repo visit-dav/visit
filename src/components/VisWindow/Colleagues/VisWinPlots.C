@@ -239,7 +239,7 @@ VisWinPlots::AddPlot(avtActor_p &p)
     // We are going to need the bounds to know if we should reset the camera
     // when the new actor is added.
     //
-    float oldbounds[6];
+    double oldbounds[6];
     GetBounds(oldbounds);
 
     p->Add(mediator.GetCanvas(), mediator.GetForeground());
@@ -250,7 +250,7 @@ VisWinPlots::AddPlot(avtActor_p &p)
         double scale; 
         int type;
         mediator.GetScaleFactorAndType(scale, type);
-        float vec[3] = { 1. , 1., 1.};
+        double vec[3] = { 1. , 1., 1.};
         if (type == 0) // x-axis
             vec[0] = scale;
         else
@@ -261,14 +261,14 @@ VisWinPlots::AddPlot(avtActor_p &p)
     plots.push_back(p);
     OrderPlots();
 
-    float newbounds[6];
+    double newbounds[6];
     GetBounds(newbounds);
     AdjustCamera(oldbounds, newbounds);
 
     avtLegend_p l = p->GetLegend();
     if (*l != NULL)
     {
-        float  color[3];
+        double  color[3];
         mediator.GetForegroundColor(color);
         l->SetForegroundColor(color);
     }
@@ -279,7 +279,7 @@ VisWinPlots::AddPlot(avtActor_p &p)
     //
     if (bboxMode)
     {
-        float  bounds[6];
+        double  bounds[6];
         GetRealBounds(bounds);
         SetBoundingBox(bounds);
         p->VisibilityOff();
@@ -604,7 +604,7 @@ VisWinPlots::StartBoundingBox(void)
     // If we have mesh lines shifted towards the camera, it is going to make
     // the bounding box look weird for very thin plots.
     //
-    float zero[3];
+    double zero[3];
     zero[0] = zero[1] = zero[2] = 0.;
     ShiftPlots(zero);
 
@@ -622,7 +622,7 @@ VisWinPlots::StartBoundingBox(void)
     //
     // Create the bounding box and add it to the renderer.
     //
-    float  bounds[6];
+    double  bounds[6];
     GetRealBounds(bounds);
     SetBoundingBox(bounds);
     bbox->VisibilityOn();
@@ -719,7 +719,7 @@ VisWinPlots::EndBoundingBox(void)
 // ****************************************************************************
 
 void
-VisWinPlots::SetBoundingBox(float *bounds)
+VisWinPlots::SetBoundingBox(double *bounds)
 {
     bboxGrid->SetBounds(bounds);
 }
@@ -746,14 +746,14 @@ VisWinPlots::SetBoundingBox(float *bounds)
 // ****************************************************************************
 
 void
-VisWinPlots::SetForegroundColor(float fr, float fg, float fb)
+VisWinPlots::SetForegroundColor(double fr, double fg, double fb)
 {
     bbox->GetProperty()->SetColor(fr, fg, fb);
 
     //
     // Set the foreground color for the plot legends.
     //
-    float fgColor[3];
+    double fgColor[3];
     fgColor[0] = fr;
     fgColor[1] = fg;
     fgColor[2] = fb;
@@ -923,13 +923,13 @@ VisWinPlots::UpdateView()
     // there are no z-buffer errors.  Note that canvas issues are hidden
     // by GetCanvas routine.
     //
-    float distance = 0.003;
-    float pos[3], foc[3];
+    double distance = 0.003;
+    double pos[3], foc[3];
     double imageZoom;
     cam->GetPosition(pos);
     cam->GetFocalPoint(foc);
     imageZoom = cam->GetFocalDisk();
-    float projection[3];
+    double projection[3];
     projection[0] = distance * (pos[0] - foc[0]) / imageZoom;
     projection[1] = distance * (pos[1] - foc[1]) / imageZoom;
     projection[2] = distance * (pos[2] - foc[2]) / imageZoom;
@@ -962,7 +962,7 @@ VisWinPlots::UpdateView()
 // ****************************************************************************
 
 void
-VisWinPlots::ShiftPlots(float vec[3])
+VisWinPlots::ShiftPlots(double vec[3])
 {
     std::vector< avtActor_p >::iterator it;
     for (it = plots.begin() ; it != plots.end() ; it++)
@@ -988,7 +988,7 @@ VisWinPlots::ShiftPlots(float vec[3])
 // ****************************************************************************
 
 void
-VisWinPlots::GetBounds(float bounds[6])
+VisWinPlots::GetBounds(double bounds[6])
 {
     if (userSetBounds)
     {
@@ -1028,7 +1028,7 @@ VisWinPlots::GetBounds(float bounds[6])
 // ****************************************************************************
 
 void
-VisWinPlots::GetRealBounds(float bounds[6])
+VisWinPlots::GetRealBounds(double bounds[6])
 {
     bool   setBounds = false;
     std::vector< avtActor_p >::iterator it;
@@ -1051,7 +1051,7 @@ VisWinPlots::GetRealBounds(float bounds[6])
         }
         else
         {
-            float tmpBounds[6];
+            double tmpBounds[6];
             switch (spatialExtentType)
             {
               case AVT_ORIGINAL_EXTENTS:
@@ -1096,7 +1096,7 @@ VisWinPlots::GetRealBounds(float bounds[6])
 // ****************************************************************************
 
 void
-VisWinPlots::GetDataRange(float &dmin, float &dmax)
+VisWinPlots::GetDataRange(double &dmin, double &dmax)
 {
     bool   setRange = false;
     std::vector< avtActor_p >::iterator it;
@@ -1109,7 +1109,7 @@ VisWinPlots::GetDataRange(float &dmin, float &dmax)
         }
         else
         {
-            float tmin, tmax;
+            double tmin, tmax;
             (*it)->GetDataExtents(tmin, tmax);
             dmin = (tmin < dmin ? tmin : dmin);
             dmax = (tmax > dmax ? tmax : dmax);
@@ -1150,7 +1150,7 @@ VisWinPlots::GetDataRange(float &dmin, float &dmax)
 // ****************************************************************************
 
 void
-VisWinPlots::AdjustCamera(const float oldbounds[6], const float newbounds[6])
+VisWinPlots::AdjustCamera(const double oldbounds[6], const double newbounds[6])
 {
     VisWindow *vw = mediator;
     if (userSetBounds)
@@ -1201,7 +1201,7 @@ VisWinPlots::AdjustCamera(const float oldbounds[6], const float newbounds[6])
 // ****************************************************************************
 
 void
-VisWinPlots::SetBounds(const float bounds[6])
+VisWinPlots::SetBounds(const double bounds[6])
 {
     userSetBounds = true;
     for (int i = 0 ; i < 6 ; i++)
@@ -1471,7 +1471,7 @@ VisWinPlots::MotionEnd(void)
 // ****************************************************************************
 
 void
-VisWinPlots::ScalePlots(const float vec[3])
+VisWinPlots::ScalePlots(const double vec[3])
 {
     std::vector< avtActor_p >::iterator it;
     for (it = plots.begin() ; it != plots.end() ; it++)
@@ -1559,7 +1559,7 @@ VisWinPlots::TurnLightingOff()
 // ****************************************************************************
 
 void
-VisWinPlots::SetAmbientCoefficient(const float amb)
+VisWinPlots::SetAmbientCoefficient(const double amb)
 {
     std::vector< avtActor_p >::iterator it;
     for (it = plots.begin() ; it != plots.end() ; it++)
@@ -1640,7 +1640,7 @@ VisWinPlots::SetImmediateModeRendering(bool immediateMode)
 // ****************************************************************************
 
 void
-VisWinPlots::SetSpecularProperties(bool flag, float coeff, float power, 
+VisWinPlots::SetSpecularProperties(bool flag, double coeff, double power, 
                                    const ColorAttribute &color)
 {
     std::vector< avtActor_p >::iterator it;
@@ -1719,7 +1719,7 @@ VisWinPlots::DisableExternalRenderRequests(void)
 void
 VisWinPlots::FullFrameOn(const double scale, const int type)
 {
-    float vec[3] = {1., 1., 1.};
+    double vec[3] = {1., 1., 1.};
     if (type == 0) // x-axis is being scaled
         vec[0] = scale; 
     else // if (type == 1) // y-axis is being scaled
@@ -1743,7 +1743,7 @@ VisWinPlots::FullFrameOn(const double scale, const int type)
 void
 VisWinPlots::FullFrameOff()
 {
-    float vec[3] = {1., 1., 1.};
+    double vec[3] = {1., 1., 1.};
     ScalePlots(vec);
 }
 
@@ -1913,14 +1913,14 @@ VisWinPlots::MakeAllUnPickable()
 //
 // ****************************************************************************
 
-float
+double
 VisWinPlots::GetMaxZShift()
 {
-    float maxZShift = 0;
+    double maxZShift = 0;
     if (mediator.GetMode() ==  WINMODE_2D)
     {
         std::vector< avtActor_p >::iterator it;
-        float actorZPos;
+        double actorZPos;
         for (it = plots.begin() ; it != plots.end() ; it++)
         {
             actorZPos = (*it)->GetZPosition();

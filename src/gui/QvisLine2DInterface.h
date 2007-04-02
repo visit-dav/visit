@@ -42,8 +42,8 @@ protected:
     virtual void UpdateControls();
 
 private slots:
-    void positionStartChanged(float, float);
-    void positionEndChanged(float, float); 
+    void positionStartChanged(double, double);
+    void positionEndChanged(double, double); 
     void beginArrowChanged(int);
     void endArrowChanged(int);
     void widthChanged(int);

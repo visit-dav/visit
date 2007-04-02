@@ -15,7 +15,7 @@
 #include <avtView3D.h>
 
 
-extern float estimates[512][3];
+extern double estimates[512][3];
 
 // ****************************************************************************
 //  Function:  CalculateShadow_Hard
@@ -31,10 +31,10 @@ extern float estimates[512][3];
 //    Turned into its own function.
 //
 // ****************************************************************************
-static float CalculateShadow_Hard(int l_width, int l_height,
+static double CalculateShadow_Hard(int l_width, int l_height,
                                   float *light_image_zbuff,
-                                  float z_display,
-                                  float f_display[2], int display[2])
+                                  double z_display,
+                                  double f_display[2], int display[2])
 {
     bool found_something_close = false;
 
@@ -84,13 +84,13 @@ static float CalculateShadow_Hard(int l_width, int l_height,
 //  Modifications:
 //
 // ****************************************************************************
-static float CalculateShadow_Antialiased(int l_width, int l_height,
+static double CalculateShadow_Antialiased(int l_width, int l_height,
                                          float *light_image_zbuff,
-                                         float z_display,
-                                         float f_display[2], int display[2])
+                                         double z_display,
+                                         double f_display[2], int display[2])
 {
-    double f0 = f_display[0]-float(display[0]);
-    double f1 = f_display[1]-float(display[1]);
+    double f0 = f_display[0]-double(display[0]);
+    double f1 = f_display[1]-double(display[1]);
     int d0 = display[0];
     int d1 = display[1];
     if (display[0] < l_width-1 && display[1] < l_height-1 &&
@@ -125,7 +125,7 @@ static float CalculateShadow_Antialiased(int l_width, int l_height,
         // the shadow line instersects, and make an attempt to use this
         // information for antialiasing.
         //
-        float alpha = 1.0;
+        double alpha = 1.0;
         if (bits == 0)
         {
             alpha = 0;
@@ -138,15 +138,15 @@ static float CalculateShadow_Antialiased(int l_width, int l_height,
         {
             // A = x-normal, B = y-normal, D = normal-offset
             // i.e. line equation Ax+By+D=0
-            float A = estimates[bits][0];
-            float B = estimates[bits][1];
-            float D = estimates[bits][2];
+            double A = estimates[bits][0];
+            double B = estimates[bits][1];
+            double D = estimates[bits][2];
 
             // No division by zero!
             if (A!=0 || B!=0)
             {
-                float tmp = f0*A + f1*B + D;
-                float dist = sqrt(tmp*tmp / (A*A + B*B));
+                double tmp = f0*A + f1*B + D;
+                double dist = sqrt(tmp*tmp / (A*A + B*B));
                 if (tmp < 0)
                     dist *= -1;
 
@@ -177,10 +177,10 @@ static float CalculateShadow_Antialiased(int l_width, int l_height,
 //  Modifications:
 //
 // ****************************************************************************
-static float CalculateShadow_Soft(int l_width, int l_height,
+static double CalculateShadow_Soft(int l_width, int l_height,
                                   float *light_image_zbuff,
-                                  float z_display,
-                                  float f_display[2], int display[2])
+                                  double z_display,
+                                  double f_display[2], int display[2])
 {
     //
     // The gist here is to look at the points in the light's z-buffer
@@ -199,7 +199,7 @@ static float CalculateShadow_Soft(int l_width, int l_height,
     //    actual shadowing geometry, but instead on the shadowed
     //    geometry, and this gives us an incorrect estimate for our
 
-    float dist = 0;
+    double dist = 0;
     if (display[0] > 0 && display[1] > 0)
     {
         int d0 = display[0];
@@ -216,11 +216,11 @@ static float CalculateShadow_Soft(int l_width, int l_height,
             double B = z00 - z01;
             double C = 1;
             double D = -z00;
-            double f0 = f_display[0]-float(display[0]);
-            double f1 = f_display[1]-float(display[1]);
+            double f0 = f_display[0]-double(display[0]);
+            double f1 = f_display[1]-double(display[1]);
             if (A!=0 || B!=0)
             {
-                float tmp = f0*A + f1*B + D;
+                double tmp = f0*A + f1*B + D;
                 dist = sqrt(tmp*tmp / (A*A + B*B));
                 if (tmp < 0)
                     dist *= -1;
@@ -239,7 +239,7 @@ static float CalculateShadow_Soft(int l_width, int l_height,
         }
     }
 
-    float alpha = 1;
+    double alpha = 1;
     if (dist < .0001)
     {
     }
@@ -291,11 +291,11 @@ avtSoftwareShader::GetLightDirection(const LightAttributes &la,
         cur_view.SetViewInfoFromView(ccvi);
         ccvi.SetCameraFromView(cam);
 
-        float pos[3];
+        double pos[3];
         cam->GetPosition(pos);
-        float focus[3];
+        double focus[3];
         cam->GetFocalPoint(focus);
-        float up[3];
+        double up[3];
         cam->GetViewUp(up);
 
         avtMatrix mat;
@@ -422,7 +422,7 @@ avtSoftwareShader::AddShadows(avtImage_p light_image, avtImage_p current_image,
             //
             // Convert from "display"/screen space to view space.
             //
-            float view[4];
+            double view[4];
             view[0] = (i - cs/2.)/(cs/2.);
             view[1] = (j - rs/2.)/(rs/2.);
             // I expected the z to be from 0 to 1, but the VTK matrices
@@ -433,7 +433,7 @@ avtSoftwareShader::AddShadows(avtImage_p light_image, avtImage_p current_image,
                        + cur_clip_range[0] ;
             view[3] = 1.;
 
-            float world[4];
+            double world[4];
             cur_inverse->MultiplyPoint(view, world);
             if (world[3] != 0.)
             {
@@ -449,7 +449,7 @@ avtSoftwareShader::AddShadows(avtImage_p light_image, avtImage_p current_image,
             // If we put PPOS into the light transformation matrix, then it
             // will give us a point in view space for the light transform.
             //
-            float view_light[4];
+            double view_light[4];
             light_trans->MultiplyPoint(world, view_light);
             if (view_light[3] != 0.)
             {
@@ -464,9 +464,9 @@ avtSoftwareShader::AddShadows(avtImage_p light_image, avtImage_p current_image,
             // (Note that we are comparing z-buffer values rather than
             // converting these back into world space.)
             //
-            float f_display[2];
+            double f_display[2];
             int   display[2];
-            float z_display;
+            double z_display;
             f_display[0] = (view_light[0] * l_width/2. + l_width/2.);
             f_display[1] = (view_light[1] * l_height/2. + l_height/2.);
             display[0] = (int)(f_display[0]);
@@ -476,7 +476,7 @@ avtSoftwareShader::AddShadows(avtImage_p light_image, avtImage_p current_image,
 
 
             int mode = 0;
-            float alpha;
+            double alpha;
             switch (mode)
             {
               case 0:
@@ -504,10 +504,10 @@ avtSoftwareShader::AddShadows(avtImage_p light_image, avtImage_p current_image,
             unsigned char g = rgb[3*idx+1];
             unsigned char b = rgb[3*idx+2];
 
-            float scale = 1.0 - (strength * (1.0 - alpha));
-            r = (unsigned char)(scale * float(r));
-            g = (unsigned char)(scale * float(g));
-            b = (unsigned char)(scale * float(b));
+            double scale = 1.0 - (strength * (1.0 - alpha));
+            r = (unsigned char)(scale * double(r));
+            g = (unsigned char)(scale * double(g));
+            b = (unsigned char)(scale * double(b));
 
             rgb[3*idx+0] = r;
             rgb[3*idx+1] = g;
@@ -557,7 +557,7 @@ avtSoftwareShader::FindLightView(avtImage_p current_image,
     light_view.imagePan[1] = 0;
     light_view.nearPlane = -10;
     light_view.farPlane  =  10;
-    float dp_with_yaxis = fabs(light_view.normal[0]*0 +
+    double dp_with_yaxis = fabs(light_view.normal[0]*0 +
                                 light_view.normal[1]*1 +
                                 light_view.normal[2]*0);
     if (fabs(dp_with_yaxis) > .95)
@@ -580,7 +580,7 @@ avtSoftwareShader::FindLightView(avtImage_p current_image,
     float *cur_image_zbuff = current_image->GetImage().GetZBuffer();
     int rs, cs;
     current_image->GetImage().GetSize(&rs, &cs);
-    float aspect = double(cs)/double(rs);
+    double aspect = double(cs)/double(rs);
 
     //
     // Set up VTK camera objects corresponding to the current view.  This will
@@ -622,12 +622,12 @@ avtSoftwareShader::FindLightView(avtImage_p current_image,
     // Then we use the extents in "light source view space" to determine
     // the parallel scale and near/far planes of the light view.
     //
-    float xmin = +1e37;
-    float xmax = -1e37;
-    float ymin = +1e37;
-    float ymax = -1e37;
-    float zmin = +1e37;
-    float zmax = -1e37;
+    double xmin = +1e37;
+    double xmax = -1e37;
+    double ymin = +1e37;
+    double ymax = -1e37;
+    double zmin = +1e37;
+    double zmax = -1e37;
 
     bool found = false;
 
@@ -647,7 +647,7 @@ avtSoftwareShader::FindLightView(avtImage_p current_image,
             //
             // Convert from "display"/screen space to view space.
             //
-            float view[4];
+            double view[4];
             view[0] = (i - cs/2.)/(cs/2.);
             view[1] = (j - rs/2.)/(rs/2.);
             // I expected the z to be from 0 to 1, but the VTK matrices
@@ -658,7 +658,7 @@ avtSoftwareShader::FindLightView(avtImage_p current_image,
                        + cur_clip_range[0] ;
             view[3] = 1.;
 
-            float world[4];
+            double world[4];
             cur_inverse->MultiplyPoint(view, world);
             if (world[3] != 0.)
             {
@@ -674,7 +674,7 @@ avtSoftwareShader::FindLightView(avtImage_p current_image,
             // If we put PPOS into the light transformation matrix, then it
             // will give us a point in view space for the light transform.
             //
-            float view_light[4];
+            double view_light[4];
             light_trans->MultiplyPoint(world, view_light);
             if (view_light[3] != 0.)
             {
@@ -699,11 +699,11 @@ avtSoftwareShader::FindLightView(avtImage_p current_image,
     if (found)
     {
         // Update the focus
-        float viewcenter_light[4] = {(xmin+xmax) / 2.,
+        double viewcenter_light[4] = {(xmin+xmax) / 2.,
                                      (ymin+ymax) / 2.,
                                      (zmin+zmax) / 2.,
                                      1.};
-        float viewcenter_world[4];
+        double viewcenter_world[4];
         light_inverse->MultiplyPoint(viewcenter_light, viewcenter_world);
 
         light_view.focus[0] = viewcenter_world[0];
@@ -711,11 +711,11 @@ avtSoftwareShader::FindLightView(avtImage_p current_image,
         light_view.focus[2] = viewcenter_world[2];
 
         // Update the parallel scale and near/far planes
-        float xdist = xmax-xmin;
-        float ydist = ymax-ymin;
-        float zdist = zmax-zmin;
+        double xdist = xmax-xmin;
+        double ydist = ymax-ymin;
+        double zdist = zmax-zmin;
 
-        float max_xy_scale = xdist > ydist ? xdist : ydist;
+        double max_xy_scale = xdist > ydist ? xdist : ydist;
         light_view.parallelScale = max_xy_scale * .55;
 
         light_view.farPlane  = +zdist*.55;
@@ -750,7 +750,7 @@ avtSoftwareShader::FindLightView(avtImage_p current_image,
 // given boolean data for a 3x3 cell array.  Look at the file
 // Generate3x3DividingEstimates.C for more details.
 // ****************************************************************************
-float estimates[512][3] = {
+double estimates[512][3] = {
 {0, 0, 0},                        // 0
 {0.707107, 0.707107, -1.08538},   // 1
 {0, 0, 0},                        // 2

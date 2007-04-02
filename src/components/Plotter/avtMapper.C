@@ -491,8 +491,8 @@ avtMapper::SetDefaultRange(void)
     }
 
     int  i;
-    float minRange;
-    float maxRange;
+    double minRange;
+    double maxRange;
     if (!GetRange(minRange, maxRange))
     {
         minRange = 0;
@@ -579,7 +579,7 @@ avtMapper::CreateMapper(void)
 // ****************************************************************************
 
 bool
-avtMapper::GetRange(float &rmin, float &rmax)
+avtMapper::GetRange(double &rmin, double &rmax)
 {
     if(*GetInput() == 0)
     {
@@ -608,8 +608,8 @@ avtMapper::GetRange(float &rmin, float &rmax)
             avtDataset_p input = GetTypedInput();
             gotExtents = avtDatasetExaminer::GetDataExtents(input, de);
 
-            rmin = (float) de[0];
-            rmax = (float) de[1];
+            rmin = de[0];
+            rmax = de[1];
         }
     }
     else
@@ -765,7 +765,7 @@ avtMapper::SetLabels(vector<string> &, bool)
 // ****************************************************************************
 
 bool
-avtMapper::GetCurrentRange(float &rmin, float &rmax)
+avtMapper::GetCurrentRange(double &rmin, double &rmax)
 {
     avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
 
@@ -782,8 +782,8 @@ avtMapper::GetCurrentRange(float &rmin, float &rmax)
         gotExtents = avtDatasetExaminer::GetDataExtents(input, extents);
     }
 
-    rmin = (float) extents[0];
-    rmax = (float) extents[1];
+    rmin = extents[0];
+    rmax = extents[1];
 
     return gotExtents;
 }
@@ -963,7 +963,7 @@ avtMapper::GlobalLightingOff()
 // ****************************************************************************
 
 void
-avtMapper::GlobalSetAmbientCoefficient(const float amb)
+avtMapper::GlobalSetAmbientCoefficient(const double amb)
 {
     int i; 
     globalAmbient = amb;
@@ -1058,7 +1058,7 @@ avtMapper::GetImmediateModeRendering()
 // ****************************************************************************
 
 void
-avtMapper::SetSpecularProperties(bool flag, float coeff, float power,
+avtMapper::SetSpecularProperties(bool flag, double coeff, double power,
                                            const ColorAttribute &color)
 {
     if (specularIsInappropriate)
@@ -1078,9 +1078,9 @@ avtMapper::SetSpecularProperties(bool flag, float coeff, float power,
                 int r = color.Red();
                 int g = color.Green();
                 int b = color.Blue();
-                prop->SetSpecularColor(float(r)/255.,
-                                       float(g)/255.,
-                                       float(b)/255.);
+                prop->SetSpecularColor(double(r)/255.,
+                                       double(g)/255.,
+                                       double(b)/255.);
             }
         }
     }

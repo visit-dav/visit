@@ -62,8 +62,8 @@ class VISWINDOW_API VisitInteractiveTool
     virtual void          Stop3DMode() {; };
     virtual void          NoPlots() {; };
 
-    virtual void          SetBackgroundColor(float, float, float) {; };
-    virtual void          SetForegroundColor(float, float, float) {; };
+    virtual void          SetBackgroundColor(double, double, double) {; };
+    virtual void          SetForegroundColor(double, double, double) {; };
 
     virtual const char *  GetName() const = 0;
     virtual avtToolInterface &GetInterface() = 0;

@@ -186,7 +186,7 @@ avtDecorationsDrawable::VisibilityOff(void)
 // ****************************************************************************
 
 void
-avtDecorationsDrawable::ShiftByVector(const float vec[3])
+avtDecorationsDrawable::ShiftByVector(const double vec[3])
 {
     // nothing here for now
 }
@@ -207,7 +207,7 @@ avtDecorationsDrawable::ShiftByVector(const float vec[3])
 // ****************************************************************************
 
 void
-avtDecorationsDrawable::ScaleByVector(const float vec[3])
+avtDecorationsDrawable::ScaleByVector(const double vec[3])
 {
     //
     // Okay, this is weird, we're told to "scale" but we're telling
@@ -266,7 +266,7 @@ avtDecorationsDrawable::UpdateScaleFactor()
         //  suffice for all.  Compute once, then use that result to set
         //  the scale for all the other actors.
         //
-        float scale = actors[0]->ComputeScaleFactor();
+        double scale = actors[0]->ComputeScaleFactor();
         for (int i = 1 ; i < actors.size(); i++)
         {
             actors[i]->SetScale(scale);
@@ -323,7 +323,7 @@ avtDecorationsDrawable::TurnLightingOff()
 // ****************************************************************************
 
 void
-avtDecorationsDrawable::SetAmbientCoefficient(const float)
+avtDecorationsDrawable::SetAmbientCoefficient(const double)
 {
    ; // Nothing for now.
 }

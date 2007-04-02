@@ -274,8 +274,7 @@ avtZeusMPFileFormat::GetFileInformation()
                 debug4 << dsname << " = {";
                 for(int i = 0; i < arr->GetNumberOfTuples(); ++i)
                 {
-                    float fval;
-                    arr->GetTuple(i, &fval);
+                    float fval = arr->GetTuple1(i);
                     debug4 << fval << ", ";
                 }
                 debug4 << "}" << endl;
@@ -532,23 +531,20 @@ avtZeusMPFileFormat::GetMesh(const char *meshname)
                 float v;
                 if(j == 0)
                 {
-                    float V0, V1;
-                    coords[i]->GetTuple(0, &V0);
-                    coords[i]->GetTuple(1, &V1);
+                    float V0 = coords[i]->GetTuple1(0);
+                    float V1 = coords[i]->GetTuple1(1);
                     v = V0 - (V1 - V0) / 2.;
                 }
                 else if(j == nnodes-1)
                 {
-                    float Vjm1, Vjm2;
-                    coords[i]->GetTuple(j-1, &Vjm1);
-                    coords[i]->GetTuple(j-2, &Vjm2);
+                    float Vjm1 = coords[i]->GetTuple1(j-1);
+                    float Vjm2 = coords[i]->GetTuple1(j-2);
                     v = Vjm1 + (Vjm1 - Vjm2) / 2.;
                 }
                 else
                 {
-                    float Vjm1, Vj;
-                    coords[i]->GetTuple(j-1, &Vjm1);
-                    coords[i]->GetTuple(j, &Vj);
+                    float Vjm1 = coords[i]->GetTuple1(j-1);
+                    float Vj   = coords[i]->GetTuple1(j);
                     v = (Vjm1 + Vj) / 2.;
                 }
                 f->SetComponent(j, 0, v);
