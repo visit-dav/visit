@@ -130,10 +130,13 @@ extern "C" void __pgdbg_stub(void)          { }
 //    Hank Childs, Mon Jul 26 09:36:48 PDT 2004
 //    Sort the mesh tags after we read them.
 //
+//    Brad Whitlock, Mon Aug 28 14:26:00 PST 2006
+//    Added m_names_per_domain.
+//
 // ****************************************************************************
 
 avtKullLiteFileFormat::avtKullLiteFileFormat(const char *fname) 
-    : avtSTMDFileFormat(NULL, 0)
+    : avtSTMDFileFormat(NULL, 0), m_names_per_domain()
 {
     dataset = NULL;
 
@@ -1170,6 +1173,11 @@ avtKullLiteFileFormat::CreateZoneMeshTags(vtkUnstructuredGrid *ugrid,
 //    Hank Childs, Tue May 23 08:03:56 PDT 2006
 //    Fixed memory leak.
 //
+//    Brad Whitlock, Mon Aug 28 14:32:56 PST 2006
+//    Changed code to make it work for density var in MD files when not all
+//    files contain the material. Also changed code to fix an apparent compiler
+//    error on xlC.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1229,15 +1237,27 @@ avtKullLiteFileFormat::GetVar(int fi, const char *var)
     for (i = 0 ; i < nmats ; i++)
     {
         string densityName = "mat_" + m_names[i] + "_densities";
-        for (j = 0; j < m_tags->num_tags; j++)
-            if (!strcmp(m_tags->tags[j].tagname, densityName.c_str()))
-                break;
-        if (j == m_tags->num_tags)
+        int index = -1;
+        for (j = 0; j < m_tags->num_tags && index == -1; j++)
+            if (strcmp(m_tags->tags[j].tagname, densityName.c_str())==0)
+            {
+                index = j;
+            }
+        if (index == -1)
         {
-            Close();
-            EXCEPTION1(InvalidFilesException, my_filenames[fi].c_str());
+            if(my_filenames.size() <= 1)
+            {
+                Close();
+                EXCEPTION1(InvalidFilesException, my_filenames[fi].c_str());
+            }
+            else
+            {
+                // We have a materal name that's not represented in the file.
+                // The file is MD so just skip the material.
+                continue;
+            }
         }
-        int densitySize = m_tags->tags[j].size;
+        int densitySize = m_tags->tags[index].size;
 
         double *densities = new double[densitySize];
         if (PD_read(m_pdbFile, (char*)densityName.c_str(), densities) == false)
@@ -1254,12 +1274,13 @@ avtKullLiteFileFormat::GetVar(int fi, const char *var)
         }
 
         string mixedName = "mat_" + m_names[i] + "_mixedZones";
-        for (j = 0; j < m_tags->num_tags; j++)
-            if (!strcmp(m_tags->tags[j].tagname, mixedName.c_str()))
-                break;
+        index = -1;
+        for (j = 0; j < m_tags->num_tags && index == -1; j++)
+            if (strcmp(m_tags->tags[j].tagname, mixedName.c_str()) == 0)
+                index = j;
         int mixedSize = 0;
-        if (j != m_tags->num_tags)
-            mixedSize = m_tags->tags[j].size;
+        if (index != -1)
+            mixedSize = m_tags->tags[index].size;
         int *mixedZ = new int[mixedSize];
         if (mixedSize > 0)
         {
@@ -1342,15 +1363,25 @@ avtKullLiteFileFormat::GetVar(int fi, const char *var)
     for (i = 0 ; i < nmats ; i++)
     {
         string densityName = "mat_" + m_names[i] + "_densities";
-        for (j = 0; j < m_tags->num_tags; j++)
-            if (!strcmp(m_tags->tags[j].tagname, densityName.c_str()))
-                break;
-        if (j == m_tags->num_tags)
+        int index = -1;
+        for (j = 0; j < m_tags->num_tags && index == -1; j++)
+            if (strcmp(m_tags->tags[j].tagname, densityName.c_str()) == 0)
+                index = j;
+        if (index == -1)
         {
-            Close();
-            EXCEPTION1(InvalidFilesException, my_filenames[fi].c_str());
+            if(my_filenames.size() <= 1)
+            {
+                Close();
+                EXCEPTION1(InvalidFilesException, my_filenames[fi].c_str());
+            }
+            else
+            {
+                // We have a materal name that's not represented in the file.
+                // The file is MD so just skip the material.
+                continue;
+            }
         }
-        int densitySize = m_tags->tags[j].size;
+        int densitySize = m_tags->tags[index].size;
 
         double *densities = new double[densitySize];
         if (PD_read(m_pdbFile, (char*)densityName.c_str(), densities) == false)
@@ -1367,12 +1398,13 @@ avtKullLiteFileFormat::GetVar(int fi, const char *var)
         }
 
         string mixedName = "mat_" + m_names[i] + "_mixedZones";
-        for (j = 0; j < m_tags->num_tags; j++)
-            if (!strcmp(m_tags->tags[j].tagname, mixedName.c_str()))
-                break;
+        index = -1;
+        for (j = 0; j < m_tags->num_tags && index == -1; j++)
+            if (strcmp(m_tags->tags[j].tagname, mixedName.c_str()) == 0)
+                index = j;
         int mixedSize = 0;
-        if (j != m_tags->num_tags)
-            mixedSize = m_tags->tags[j].size;
+        if (index != -1)
+            mixedSize = m_tags->tags[index].size;
         int *mixedZ = new int[mixedSize];
         if (mixedSize > 0)
         {
@@ -2101,11 +2133,15 @@ avtKullLiteFileFormat::Close()
 //    they are primarily for handling file descriptors.  Used data members
 //    specific to this class (my_filenames, my_filenames.size()) instead.
 //
+//    Brad Whitlock, Mon Aug 28 14:26:43 PST 2006
+//    Clear out m_names_per_domain.
+//
 // ****************************************************************************
 
 void avtKullLiteFileFormat::ReadInMaterialNames()
 {
     m_names.clear();
+    m_names_per_domain.clear();
     for (int i = 0; i < my_filenames.size(); i++)
         ReadInMaterialName(i);
 }
@@ -2142,6 +2178,9 @@ void avtKullLiteFileFormat::ReadInMaterialNames()
 //
 //    Hank Childs, Fri Jul 23 16:11:55 PDT 2004
 //    Add support for mesh tags as well.
+//
+//    Brad Whitlock, Mon Aug 28 14:29:04 PST 2006
+//    Added code to keep a list of materials per domain.
 //
 // ****************************************************************************
 
@@ -2186,6 +2225,7 @@ void avtKullLiteFileFormat::ReadInMaterialName(int fi)
     // Go through each tag in the file.
     //
     int curTagI;
+    std::vector<std::string> m_names_this_domain;
     for (curTagI = 0; curTagI < m_tags->num_tags; curTagI++)
     {
         string originalName = m_tags->tags[curTagI].tagname;
@@ -2204,6 +2244,16 @@ void avtKullLiteFileFormat::ReadInMaterialName(int fi)
             if (matNumber == m_names.size()) // New material
             {
                 m_names.push_back(name);
+            }
+
+            for (matNumber = 0; matNumber < m_names_this_domain.size(); matNumber++)
+            {
+                if (name == m_names_this_domain[matNumber])
+                    break;
+            }
+            if (matNumber == m_names_this_domain.size()) // New material
+            {
+                m_names_this_domain.push_back(name);
             }
         }
         else
@@ -2243,6 +2293,9 @@ void avtKullLiteFileFormat::ReadInMaterialName(int fi)
             }
         }
     }
+
+    // Save off the material names for this domain.
+    m_names_per_domain[fi] = m_names_this_domain;
 
     // We're done, clean up.
     Close();
@@ -2554,15 +2607,23 @@ avtKullLiteFileFormat::IsRZ(void)
 //  Programmer: Hank Childs
 //  Creation:   May 10, 2006
 //
+//  Modifications:
+//    Brad Whitlock, Mon Aug 28 14:30:14 PST 2006
+//    I made it use m_names_per_domain since it will ensure that the open
+//    file contains the materials actually in the list of materials for that
+//    domain.
+//
 // ****************************************************************************
 
 bool
 avtKullLiteFileFormat::ContainsDensities(void)
 {
-    if (m_names.size() <= 0)
+    if (m_names_per_domain.size() <= 0)
+        return false;
+    if (m_names_per_domain[0].size() < 1)
         return false;
     char name[1024];
-    sprintf(name, "mat_%s_densities", m_names[0].c_str());
+    sprintf(name, "mat_%s_densities", m_names_per_domain[0][0].c_str());
     bool rv = (PD_inquire_entry(m_pdbFile,name,0,NULL) != NULL ? true : false);
     return rv;
 }

@@ -43,7 +43,7 @@
 #define AVT_KULL_LITE_FILE_FORMAT_H
 
 #include <string>
-
+#include <map>
 #include <KullFormatStructures.h>
 
 #include <avtSTMDFileFormat.h>
@@ -84,6 +84,10 @@ class vtkUnstructuredGrid;
 //    Hank Childs, Thu May 11 08:52:27 PDT 2006
 //    Add support for reading densities.
 //
+//    Brad Whitlock, Mon Aug 28 14:25:08 PST 2006
+//    Added m_names_per_domain so we can know the materials defined on
+//    each domain. This helps read density from MD files.
+//
 // ****************************************************************************
 
 class avtKullLiteFileFormat : public avtSTMDFileFormat
@@ -111,7 +115,8 @@ class avtKullLiteFileFormat : public avtSTMDFileFormat
     std::vector<std::string>       my_filenames;
     
     std::vector<std::string>       m_names;
-    
+    std::map<int, std::vector<std::string> > m_names_per_domain;
+
     // m_names is loaded at construction, so this will always be right
     inline int NumberOfMaterials()  { return m_names.size(); }
 

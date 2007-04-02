@@ -121,6 +121,9 @@ $0 = shift @ARGV;
 #    Brad Whitlock, Wed Jan 11 17:46:19 PST 2006
 #    Added help for -nowindowmetrics.
 #
+#    Hank Childs, Mon Aug 28 08:41:22 PDT 2006
+#    Add tracking of CLI usage for OMB study.
+#
 ###############################################################################
 
 
@@ -1027,6 +1030,18 @@ if ($logging and $exe_name eq "mdserver")
     $info = "$user_info"." "."$host_info"." "."$date_info"."\n";
 
     $filename=">>$visitdir/usagelog";
+    open(USERINFO, $filename);
+    print USERINFO "$info";
+    close(USERINFO);
+}
+if ($logging and $exe_name eq "cli")
+{
+    chomp ( $user_info = `whoami` );
+    chomp ( $host_info = `hostname` );
+    chomp ( $date_info = `date` );
+    $info = "$user_info"." "."$host_info"." "."$date_info"."\n";
+
+    $filename=">>$visitdir/cli_usagelog";
     open(USERINFO, $filename);
     print USERINFO "$info";
     close(USERINFO);
