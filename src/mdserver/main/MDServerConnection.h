@@ -125,6 +125,9 @@ class Xfer;
 //    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 //    Added bool arg to GetDatabase for forcing reading all cycles/times
 //
+//    Brad Whitlock, Wed Dec 14 16:58:24 PST 2005
+//    Added ReadFileListAttributes.
+//
 // ****************************************************************************
 
 class MDServerConnection
@@ -205,6 +208,7 @@ private:
                                const std::string &pattern) const;
     void ConsolidateVirtualDatabases(VirtualFileInformationMap &newVirtualFiles,
                                      GetFileListRPC::FileList &files);
+    void ReadFileListAttributes(GetFileListRPC::FileList &, bool);
 
 private:
     ParentProcess              *parent;    

@@ -1203,11 +1203,17 @@ MDServerConnection::ReadCWD()
 //   Do not call readdir if opendir failed.  This is because readdir will
 //   segfault on MCR due to bizarre Lustre group read permission issues.
 //   
+//   Brad Whitlock, Wed Dec 14 17:01:53 PST 2005
+//   I moved the code to stat files out of this method so we now just get
+//   file list (on UNIX anyway).
+//
 // ****************************************************************************
 
 void
 MDServerConnection::ReadFileList()
 {
+    int total = visitTimer->StartTimer();
+
     readFileListReturnValue = 0;
     validFileList = true;
 
@@ -1278,16 +1284,73 @@ MDServerConnection::ReadFileList()
     }
 #else
     // Clear out the current file list.
+    int timeid = visitTimer->StartTimer();
     GetFileListRPC::FileList &fl = currentFileList;
     currentFileList.Clear();
-
-    DIR     *dir;
-    dirent  *ent;
+    visitTimer->StopTimer(timeid, "Clearing file list");
 
     // If the directory cannot be opened, return an error code.
+    DIR     *dir;
+    dirent  *ent;
+    timeid = visitTimer->StartTimer();
     dir = opendir(currentWorkingDirectory.c_str());
     if (!dir)
         readFileListReturnValue = -1;
+    visitTimer->StopTimer(timeid, "Opening directory");
+
+    // Add each directory entry to the file list.
+    timeid = visitTimer->StartTimer();
+    bool haveDot = false;
+    bool haveDotDot = false;
+    if (dir != NULL)
+    {
+        while ((ent = readdir(dir)) != NULL)
+        {
+            haveDot = haveDot || (strcmp(ent->d_name, ".") == 0);
+            haveDotDot = haveDotDot || (strcmp(ent->d_name, "..") == 0);
+
+            fl.names.push_back(ent->d_name);
+            fl.types.push_back(GetFileListRPC::UNCHECKED);
+            fl.sizes.push_back(0);
+            fl.access.push_back(1);
+        }
+    }
+    visitTimer->StopTimer(timeid, "Copying filenames");
+
+    closedir(dir);
+#endif
+
+    // Sort the file list.
+    timeid = visitTimer->StartTimer();
+    currentFileList.Sort();
+    visitTimer->StopTimer(timeid, "Sorting file list");
+    visitTimer->StopTimer(total, std::string("ReadFileList: ") +
+                                 currentWorkingDirectory);
+}
+
+// ****************************************************************************
+// Method: MDServerConnection::ReadFileListAttributes
+//
+// Purpose: 
+//   This method calls stat on all of the files in the passed in FileList 
+//   when they have UNCHECKED type.
+//
+// Arguments:
+//   fl : The file list whose files we're checking.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Dec 14 17:03:28 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+MDServerConnection::ReadFileListAttributes(GetFileListRPC::FileList &fl,
+    bool allowRemoval)
+{
+#if !defined(_WIN32)
+    int total = visitTimer->StartTimer();
 
     // Get the userId and the groups for that user so we can check the
     // file permissions.
@@ -1296,29 +1359,35 @@ MDServerConnection::ReadFileList()
     int ngids;
     ngids = getgroups(100, gids);
 
-    // Add each directory entry to the file list.
-    if (dir != NULL)
+    // Check each of the UNCHECKED files.
+    unsigned int nStat = 0;
+    GetFileListRPC::FileList fl2;
+    for(unsigned int i = 0; i < fl.names.size(); ++i)
     {
-        while ((ent = readdir(dir)) != NULL)
+        GetFileListRPC::file_types origType = (GetFileListRPC::file_types)fl.types[i];
+
+        if(origType == GetFileListRPC::UNCHECKED ||
+           (allowRemoval &&
+            origType == GetFileListRPC::UNCHECKED_REMOVE_IF_NOT_DIR))
         {
+            ++nStat;
             struct stat s;
-            stat((currentWorkingDirectory + "/" + ent->d_name).c_str(), &s);
-            fl.names.push_back(ent->d_name);
+            stat((currentWorkingDirectory + "/" + fl.names[i]).c_str(), &s);
     
             mode_t mode = s.st_mode;
-    
+
             bool isdir = S_ISDIR(mode);
             bool isreg = S_ISREG(mode);
     
-            fl.types.push_back(isdir ? GetFileListRPC::DIR :
-                               isreg ? GetFileListRPC::REG : 
-                               GetFileListRPC::UNKNOWN);
-            fl.sizes.push_back((long)s.st_size);
+            fl.types[i] = (isdir ? GetFileListRPC::DIR :
+                           isreg ? GetFileListRPC::REG : 
+                                   GetFileListRPC::UNKNOWN);
+            fl.sizes[i] = (long)s.st_size;
     
             bool isuser  = (s.st_uid == uid);
             bool isgroup = false;
-            for (int i=0; i<ngids && !isgroup; i++)
-                if (s.st_gid == gids[i])
+            for (int j=0; j<ngids && !isgroup; ++j)
+                if (s.st_gid == gids[j])
                     isgroup=true;
     
             bool canaccess = false;
@@ -1348,15 +1417,42 @@ MDServerConnection::ReadFileList()
                     canaccess=true;
             }
 
-            fl.access.push_back(canaccess ? 1 : 0);
+            fl.access[i] = (canaccess ? 1 : 0);
+        }
+
+        if(allowRemoval)
+        {
+            if(origType == GetFileListRPC::UNCHECKED_REMOVE_IF_NOT_DIR)
+            {
+                if(fl.types[i] == GetFileListRPC::DIR)
+                {
+                    fl2.names.push_back(fl.names[i]);
+                    fl2.types.push_back(fl.types[i]);
+                    fl2.sizes.push_back(fl.sizes[i]);
+                    fl2.access.push_back(fl.access[i]);
+                }
+            }
+            else
+            {
+                fl2.names.push_back(fl.names[i]);
+                fl2.types.push_back(fl.types[i]);
+                fl2.sizes.push_back(fl.sizes[i]);
+                fl2.access.push_back(fl.access[i]);
+            }
         }
     }
 
-    closedir(dir);
-#endif
+    // Replace the input file list with one that has had UNCHECKED elements
+    // that were not directories removed.
+    if(allowRemoval)
+        fl = fl2;
 
-    // Sort the file list.
-    currentFileList.Sort();
+    // Keep track of the time needed to stat the files in the directory.
+    char s[1024];
+    SNPRINTF(s, 1024, "Stat %d files in %s", nStat,
+             currentWorkingDirectory.c_str());
+    visitTimer->StopTimer(total, s);
+#endif
 }
 
 // ****************************************************************************
@@ -1388,12 +1484,17 @@ MDServerConnection::GetReadFileListReturnValue() const
 // Creation:   Fri Nov 17 16:26:15 PST 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Dec 14 17:05:10 PST 2005
+//   I made it read the file attributes if necessary.
+//
 // ****************************************************************************
 
 GetFileListRPC::FileList *
 MDServerConnection::GetCurrentFileList()
 {
+    // Reads the file attributes if necessary.
+    ReadFileListAttributes(currentFileList, false);
+
     return &currentFileList;
 }
 
@@ -1653,6 +1754,8 @@ MDServerConnection::SetFileGroupingOptions(const std::string &filter,
 void
 MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
 {
+    int total = visitTimer->StartTimer();
+
     //
     // If we have not yet read a file list, read it now.
     //
@@ -1663,14 +1766,17 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
     // Compare each name in the current file list against the list of
     // filters to see if it is an acceptable filename.
     //
+    int stage1 = visitTimer->StartTimer();
     int i;
     const stringVector &names = currentFileList.names;
     std::string pattern;
     VirtualFileInformationMap newVirtualFiles;
     VirtualFileInformationMap::iterator pos;
+
     for(i = 0; i < names.size(); ++i)
     {
-        if(currentFileList.types[i] == GetFileListRPC::REG)
+        if(currentFileList.types[i] == GetFileListRPC::REG ||
+           currentFileList.types[i] == GetFileListRPC::UNCHECKED)
         {
             //
             // See if the file matches any of the filters.
@@ -1799,6 +1905,24 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
                     files.access.push_back(currentFileList.access[i]);
                 }
             }
+            else if(currentFileList.types[i] == GetFileListRPC::UNCHECKED)
+            {
+                //
+                // The files did not match anything in the filter so let's
+                // add it to the list of files so we can stat it but give it
+                // a type so that we'll remove it from the list of files if
+                // the file is not a directory.
+                //
+                // If we wanted to make both files and directories subject
+                // to the filter string code then we can omit this code here
+                // but we'd have to add "." and ".." directories to the list
+                // of files to pass on.
+                //
+                files.names.push_back(names[i]);
+                files.types.push_back(GetFileListRPC::UNCHECKED_REMOVE_IF_NOT_DIR);
+                files.sizes.push_back(0);
+                files.access.push_back(1);
+            }
         }
         else
         {
@@ -1809,6 +1933,7 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
             files.access.push_back(currentFileList.access[i]);
         }
     }
+    visitTimer->StopTimer(stage1, "stage1: Assembling files list");
 
     //
     // Now that we've assembled a list of filenames, go back and fix the
@@ -1823,6 +1948,7 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
         // Try and group virtual databases that have similar names into a 
         // larger virtual database if the names look like what we'd get
         // with Flash files.
+        int stage2 = visitTimer->StartTimer();
         if(extraSmartFileGrouping)
         {
             const char *cvdbs = getenv("VISIT_CONSOLIDATE_VIRTUAL_DATABASES");
@@ -1830,11 +1956,14 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
             if(allowConsolidate)
                 ConsolidateVirtualDatabases(newVirtualFiles, files);
         }
+        visitTimer->StopTimer(stage2, "stage2: consolidate virtual databases");
 
         //
         // Create virtual databases using the information stored in the
         // newVirtualFiles map.
         //
+        int stage3 = visitTimer->StartTimer();
+        GetFileListRPC::FileList virtualFilesToCheck;
         for(int fileIndex = 0; fileIndex < files.names.size(); ++fileIndex)
         {
             // Look for the current filename in the new virtual files map. If the
@@ -1845,11 +1974,91 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
         
             if(pos->second.files.size() == 1)
             {
-                // Change the name in the files list back to the original file name.
+                // Change the name in the files list back to the original file
+                // name, replacing the pattern string that we had inserted.
                 files.names[fileIndex] = pos->second.files[0];
+
+                // Erase the entry from newVirtualFiles because it will not be
+                // considered to be a virtual database.
+                newVirtualFiles.erase(pos);
             }
             else
             {
+                virtualFilesToCheck.names.push_back(pos->second.files[0]);
+                virtualFilesToCheck.types.push_back(files.types[fileIndex]);
+                virtualFilesToCheck.sizes.push_back(files.sizes[fileIndex]);
+                virtualFilesToCheck.access.push_back(files.access[fileIndex]);
+
+                // Mark the file as virtual in the file list so we won't get the
+                // file type if we needed it.
+                files.types[fileIndex] = GetFileListRPC::VIRTUAL;
+            }
+        }
+        visitTimer->StopTimer(stage3, "stage3: populating virtualFilesToCheck");
+
+        int stage4 = visitTimer->StartTimer();
+        ReadFileListAttributes(files, true);
+        ReadFileListAttributes(virtualFilesToCheck, false);
+        visitTimer->StopTimer(stage4, "stage4: getting file attributes");
+
+        // Now that we have the types for the files and for the first file in
+        // each virtual database, remove any virtual databases that are not
+        // composed of files.
+        int stage5 = visitTimer->StartTimer();
+        int vfIndex = 0;
+        bool needToSortFileList = false;
+        for(int fileIndex = 0; fileIndex < files.names.size(); ++fileIndex)
+        {
+            pos = newVirtualFiles.find(files.names[fileIndex]);
+            if(pos == newVirtualFiles.end())
+                continue;
+
+            if(virtualFilesToCheck.types[vfIndex] != GetFileListRPC::REG)
+            {
+                debug5 << "File " << files.names[fileIndex].c_str()
+                       << " is not a file so we're adding its components back "
+                          "to the files list." << endl;
+
+                // Restore the name and file type for the first element in the
+                // virtual database.
+                files.names[fileIndex] = pos->second.files[0];
+                files.types[fileIndex] = virtualFilesToCheck.types[vfIndex];
+                debug5 << "\t" << pos->second.files[0].c_str() << endl;
+
+                // The virtual database is not of files so it cannot be a virtual
+                // database. Put the rest of its files back into the files list.
+                for(int i = 1; i < pos->second.files.size(); ++i)
+                {
+                    debug5 << "\t" << pos->second.files[i].c_str() << endl;
+
+                    files.names.push_back(pos->second.files[i]);
+                    files.types.push_back(virtualFilesToCheck.types[vfIndex]);
+                    files.sizes.push_back(virtualFilesToCheck.sizes[vfIndex]);
+                    files.access.push_back(virtualFilesToCheck.access[vfIndex]);
+                }
+
+                newVirtualFiles.erase(pos);
+                needToSortFileList = true;
+            }
+            ++vfIndex;
+        }
+        visitTimer->StopTimer(stage5, "stage5: removing invalid virtual databases");
+
+        int stage6 = visitTimer->StartTimer();
+        if(needToSortFileList)
+            files.Sort();
+        visitTimer->StopTimer(stage6, "stage6: sorting file list");
+
+        // These remaining virtual databases should be files.
+        int stage7 = visitTimer->StartTimer();
+        if(newVirtualFiles.size() > 0)
+        {
+            for(int fileIndex = 0; fileIndex < files.names.size(); ++fileIndex)
+            {
+                pos = newVirtualFiles.find(files.names[fileIndex]);
+                if(pos == newVirtualFiles.end())
+                    continue;
+
                 // Determine a good root name for the database.
                 std::string rootName(pos->first.name + " database");
 
@@ -1880,7 +2089,15 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
                 virtualFiles[key].files.swap(pos->second.files);
             }
         }
+        visitTimer->StopTimer(stage6, "stage7: adding final virtual databases");
     }
+    else
+        ReadFileListAttributes(files, true);
+
+    // We have gotten the file information for all of the files in the files
+    // list. Should we put that information back into the currentFileList?
+    visitTimer->StopTimer(total, std::string("GetFilteredFileList: ") +
+                          currentWorkingDirectory);
 }
 
 // ****************************************************************************

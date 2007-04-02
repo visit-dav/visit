@@ -147,12 +147,17 @@ protected:
 // Creation:   Mon Mar 31 11:06:59 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Dec 15 13:19:50 PST 2005
+//   I shrank large virtual databases to 10 time states. The rest are omitted
+//   to make displaying them work better.
+//
 // ****************************************************************************
 
 class QVirtualFileListBoxItem : public QFileSelectionListBoxItem
 {
 public:
+    static const int MAX_DISPLAYED_NAMES = 5;
+
     QVirtualFileListBoxItem(QListBox *lb, const QString &name,
                             const QualifiedFilename &qf, const stringVector &n,
                             QPixmap *pm = 0) :
@@ -169,7 +174,12 @@ public:
         int textHeight = 0;
 
         if(lb)
-            textHeight = (names.size() + 1) * lb->fontMetrics().lineSpacing() + 2;
+        {
+            if(names.size() > (MAX_DISPLAYED_NAMES*2))
+                textHeight = ((MAX_DISPLAYED_NAMES*2) + 1 + 1 + 1) * lb->fontMetrics().lineSpacing() + 2;
+            else
+                textHeight = (names.size() + 1) * lb->fontMetrics().lineSpacing() + 2;
+        }
 
         if(pixmap)
             return QMAX(textHeight, pixmap->height() + 2);
@@ -196,6 +206,8 @@ public:
 protected:
     virtual void paintSpecial(QPainter *painter)
     {
+        QFileSelectionListBoxItem::paintSpecial(painter);
+
         // Draw the virtual filenames.
         if(fileName.IsVirtual())
         {
@@ -204,10 +216,35 @@ protected:
             int yIncr = fm.lineSpacing(); // + 2; //fm.ascent() + fm.leading()/2;
             int y = yIncr + fm.ascent() + fm.leading()/2;
 
-            for(int i = 0; i < names.size(); ++i)
+            if(names.size() > (MAX_DISPLAYED_NAMES*2))
             {
-                painter->drawText(offset, y, names[i].c_str());
+                QString nFilesString;
+                nFilesString.sprintf("(%d total files)", names.size());
+                painter->drawText(offset, y, nFilesString);
                 y += yIncr;
+
+                for(int i = 0; i < MAX_DISPLAYED_NAMES; ++i)
+                {
+                    painter->drawText(offset, y, names[i].c_str());
+                    y += yIncr;
+                }
+
+                painter->drawText(offset, y, "...");
+                y += yIncr;
+
+                for(int i = names.size()-MAX_DISPLAYED_NAMES; i < names.size(); ++i)
+                {
+                    painter->drawText(offset, y, names[i].c_str());
+                    y += yIncr;
+                }
+            }
+            else
+            {
+                for(int i = 0; i < names.size(); ++i)
+                {
+                    painter->drawText(offset, y, names[i].c_str());
+                    y += yIncr;
+                }
             }
         }
     }

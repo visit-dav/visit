@@ -4,6 +4,7 @@
 
 #include <TimingsManager.h>
 #include <snprintf.h>
+#include <visit-config.h>
 
 #include <map>
 #include <float.h>
@@ -19,6 +20,7 @@
 
 
 #if !defined(_WIN32)
+#include <unistd.h>
 #ifndef HAVE_FTIME_PROTOTYPE
 extern "C" {
 int ftime(struct timeb *);
@@ -173,6 +175,9 @@ TimingsManager::TimingsManager()
 //    Mark C. Miller, Fri Nov 11 09:45:42 PST 2005
 //    Added initialization of initTimeInfo
 //
+//    Brad Whitlock, Thu Dec 15 09:52:05 PDT 2005
+//    I made the filename used for the timings include the path.
+//
 // ****************************************************************************
 
 TimingsManager *
@@ -188,7 +193,22 @@ TimingsManager::Initialize(const char *fname)
     GetCurrentTimeInfo(initTimeInfo);
 #endif
 
-    visitTimer->SetFilename(fname);
+    //
+    // Make sure that the filename includes the whole path so all .timings
+    // files will be written to the right directory.
+    //
+    char currentDir[1024];
+#if defined(_WIN32)
+    _getcwd(currentDir,1023);
+#else
+    getcwd(currentDir,1023);
+#endif
+    currentDir[1023]='\0';
+    std::string filename(currentDir);
+    if(filename[filename.size()-1] != SLASH_CHAR)
+        filename += SLASH_STRING;
+    filename += fname;
+    visitTimer->SetFilename(filename);
 
     return visitTimer;
 }

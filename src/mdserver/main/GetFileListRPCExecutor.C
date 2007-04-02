@@ -2,6 +2,7 @@
 #include <GetFileListRPCExecutor.h>
 #include <GetFileListRPC.h>
 #include <MDServerConnection.h>
+#include <TimingsManager.h>
 
 // ****************************************************************************
 // Method: GetFileListRPCExecutor::GetFileListRPCExecutor
@@ -69,11 +70,15 @@ GetFileListRPCExecutor::~GetFileListRPCExecutor()
 //   Brad Whitlock, Fri Feb 4 15:17:39 PST 2005
 //   I changed how the file grouping settings are passed to the connection.
 //
+//   Brad Whitlock, Thu Dec 15 10:23:46 PDT 2005
+//   I added a timer.
+//
 // ****************************************************************************
 
 void
 GetFileListRPCExecutor::Update(Subject *s)
 {
+    int total = visitTimer->StartTimer();
     GetFileListRPC *rpc = (GetFileListRPC *)s;
 
     debug2 << "GetFileListRPCExecutor::Update\n"; debug2.flush();
@@ -104,5 +109,7 @@ GetFileListRPCExecutor::Update(Subject *s)
     }
     else
         rpc->SendError();
+
+    visitTimer->StopTimer(total, "GetFileListRPC");
 }
 

@@ -211,6 +211,13 @@ GetFileListRPC::FileList::FileList() : AttributeSubject("s*i*l*i*s*i*"),
 {
 }
 
+GetFileListRPC::FileList::FileList(const GetFileListRPC::FileList &obj) :
+    AttributeSubject("s*i*l*i*s*i*"), 
+    names(obj.names), types(obj.types), sizes(obj.sizes), access(obj.access),
+    virtualNames(obj.virtualNames), numVirtualFiles(obj.numVirtualFiles)
+{
+}
+
 // ****************************************************************************
 // Method: GetFileListRPC::FileList::~FileList
 //
