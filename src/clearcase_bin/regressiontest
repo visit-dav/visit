@@ -153,6 +153,9 @@
 #    Removed meredith from logrecipients, added miller
 #    Changed DISPLAY from elysium to staples
 #
+#    Mark C. Miller, Fri Feb 10 20:47:24 PST 2006
+#    Put defer_expr.py back into skip list for a few modes
+#
 # ----------------------------------------------------------------------------
 
 # list of users who want email every night with the log file
@@ -302,7 +305,10 @@ skipList="scalable,parallel:tests/databases/boxlib.py \
 	  optimized:tests/plots/tensor.py \
 	  optimized:tests/hybrid/lineout.py \
 	  optimized:tests/queries/database.py \
-	  optimized:tests/plots/label.py"
+	  optimized:tests/plots/label.py \
+	  parallel:tests/operators/defer_expr.py \
+	  scalable,parallel:tests/operators/defer_expr.py \
+	  optimized:tests/operators/defer_expr.py"
 
 # run the test(s)
 error=0
