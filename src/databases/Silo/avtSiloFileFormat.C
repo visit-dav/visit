@@ -926,6 +926,10 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Mark C. Miller, Wed Jan 18 19:58:47 PST 2006
 //    Made it more fault tolerant for multivar, multimat and multimatspecies
 //    objects that contained all EMPTY pieces.
+//
+//    Kathleen Bonnell, Wed Feb  8 09:41:45 PST 2006 
+//    Set mmd->meshCoordType from coord_sys. 
+// 
 // ****************************************************************************
 
 void
@@ -1190,6 +1194,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         ENDTRY
 
         avtMeshType   mt;
+        avtMeshCoordType mct;
         int ndims;
         int tdims;
         int cellOrigin;
@@ -1224,6 +1229,11 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                     yLabel = um->labels[1];
                 if (um->labels[2] != NULL)
                     zLabel = um->labels[2];
+
+                if (ndims ==2 && um->coord_sys == DB_CYLINDRICAL)
+                    mct = AVT_RZ;
+                else 
+                    mct = AVT_XY;
 
                 DBFreeUcdmesh(um);
             }
@@ -1355,6 +1365,11 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                 if (qm->labels[2] != NULL)
                     zLabel = qm->labels[2];
 
+                if (ndims ==2 && qm->coord_sys == DB_CYLINDRICAL)
+                    mct = AVT_RZ;
+                else 
+                    mct = AVT_XY;
+
                 DBFreeQuadmesh(qm);
             }
             break;
@@ -1385,6 +1400,11 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                 if (qm->labels[2] != NULL)
                     zLabel = qm->labels[2];
 
+                if (ndims ==2 && qm->coord_sys == DB_CYLINDRICAL)
+                    mct = AVT_RZ;
+                else 
+                    mct = AVT_XY;
+
                 DBFreeQuadmesh(qm);
             }
             break;
@@ -1413,6 +1433,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         mmd->xLabel = xLabel;
         mmd->yLabel = yLabel;
         mmd->zLabel = zLabel;
+        mmd->meshCoordType = mct;
         md->Add(mmd);
 
         // Store off the important info about this multimesh
@@ -1508,6 +1529,9 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         if (qm->labels[2] != NULL)
             mmd->zLabel = qm->labels[2];
 
+        if (qm->ndims == 2 && qm->coord_sys == DB_CYLINDRICAL)
+            mmd->meshCoordType = AVT_RZ;
+
         mmd->groupTitle = "blocks";
         mmd->groupPieceName = "block";
         md->Add(mmd);
@@ -1571,6 +1595,9 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             mmd->yLabel = um->labels[1];
         if (um->labels[2] != NULL)
             mmd->zLabel = um->labels[2];
+
+        if (um->ndims == 2 && um->coord_sys == DB_CYLINDRICAL)
+            mmd->meshCoordType = AVT_RZ;
 
         mmd->groupTitle = "blocks";
         mmd->groupPieceName = "block";

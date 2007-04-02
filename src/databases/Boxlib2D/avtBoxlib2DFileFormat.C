@@ -1229,6 +1229,9 @@ avtBoxlib2DFileFormat::GetVisMF(int index)
 //    Hank Childs, Wed Jan 11 09:40:17 PST 2006
 //    Change mesh type to AMR.
 //
+//    Kathleen Bonnell, Wed Feb  8 10:45:28 PST 2006 
+//    Set mesh coord type to ZR.
+//
 // ****************************************************************************
 
 void
@@ -1271,6 +1274,7 @@ avtBoxlib2DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         blockPieceNames[i] = tmpName;
     }
     mesh->blockNames = blockPieceNames;
+    mesh->meshCoordType = AVT_ZR;
     md->Add(mesh);
     md->AddGroupInformation(nLevels, totalPatches, groupIds);
 

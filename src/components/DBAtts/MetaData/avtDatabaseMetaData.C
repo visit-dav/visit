@@ -106,10 +106,14 @@ VariableNamesEqual(const std::string &v1, const std::string &v2)
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Added loadBalanceScheme
+//
+//    Kathleen Bonnell, Fri Feb  3 10:23:36 PST 2006 
+//    Added meshCoordType.
+//
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData()
-    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbbsii")
+    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbbsiii")
 {
     blockTitle = "domains";
     blockPieceName = "domain";
@@ -135,6 +139,7 @@ avtMeshMetaData::avtMeshMetaData()
     yLabel = "Y-Axis";
     zLabel = "Z-Axis";
     loadBalanceScheme = LOAD_BALANCE_UNKNOWN;
+    meshCoordType = AVT_XY;
 }
 
 // ****************************************************************************
@@ -195,12 +200,16 @@ avtMeshMetaData::avtMeshMetaData()
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Added loadBalanceScheme
+//
+//    Kathleen Bonnell, Fri Feb  3 10:23:36 PST 2006 
+//    Added meshCoordType.
+//
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData(const float *extents, std::string s, int nb,
                                  int bo, int co, int go, int sd, int td,
                                  avtMeshType mt)
-    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbbsii")
+    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbbsiii")
 {
     name                 = s;
     originalName         = name;
@@ -228,6 +237,7 @@ avtMeshMetaData::avtMeshMetaData(const float *extents, std::string s, int nb,
     yLabel = "Y-Axis";
     zLabel = "Z-Axis";
     loadBalanceScheme    = LOAD_BALANCE_UNKNOWN;
+    meshCoordType    = AVT_XY;
 }
 
 
@@ -288,11 +298,15 @@ avtMeshMetaData::avtMeshMetaData(const float *extents, std::string s, int nb,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Added loadBalanceScheme
+//
+//    Kathleen Bonnell, Fri Feb  3 10:23:36 PST 2006 
+//    Added meshCoordType.
+//
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int go,
                                  int sd, int td, avtMeshType mt)
-    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbbsii")
+    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbbsiii")
 {
     name                 = s;
     originalName         = name;
@@ -323,6 +337,7 @@ avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int go,
     zLabel = "Z-Axis";
 
     loadBalanceScheme = LOAD_BALANCE_UNKNOWN;
+    meshCoordType = AVT_XY;
 }
 
 
@@ -384,10 +399,14 @@ avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int go,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Added loadBalanceScheme
+//
+//    Kathleen Bonnell, Fri Feb  3 10:23:36 PST 2006 
+//    Added meshCoordType.
+//
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData(const avtMeshMetaData &rhs)
-    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbbsii")
+    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbbsiii")
 {
     name                     = rhs.name;
     originalName             = rhs.originalName;
@@ -425,6 +444,7 @@ avtMeshMetaData::avtMeshMetaData(const avtMeshMetaData &rhs)
     zLabel                   = rhs.zLabel;
     validVariable            = rhs.validVariable;
     loadBalanceScheme        = rhs.loadBalanceScheme;
+    meshCoordType            = rhs.meshCoordType;
 }
 
 
@@ -500,6 +520,10 @@ avtMeshMetaData::~avtMeshMetaData()
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Added loadBalanceScheme
+//
+//    Kathleen Bonnell, Fri Feb  3 10:23:36 PST 2006 
+//    Added meshCoordType.
+//
 // ****************************************************************************
 
 const avtMeshMetaData &
@@ -541,6 +565,7 @@ avtMeshMetaData::operator=(const avtMeshMetaData &rhs)
     zLabel                   = rhs.zLabel;
     validVariable            = rhs.validVariable;
     loadBalanceScheme        = rhs.loadBalanceScheme;
+    meshCoordType            = rhs.meshCoordType;
 
     return *this;
 }
@@ -596,6 +621,9 @@ avtMeshMetaData::operator=(const avtMeshMetaData &rhs)
 //    Jeremy Meredith, Thu Aug 25 09:42:45 PDT 2005
 //    Added group origin.
 //
+//    Kathleen Bonnell, Fri Feb  3 10:23:36 PST 2006 
+//    Added meshCoordType.
+//
 // ****************************************************************************
 
 void
@@ -634,6 +662,7 @@ avtMeshMetaData::SelectAll()
     Select(30, (void*)&originalName);
     Select(31, (void*)&groupOrigin);
     Select(32, (void*)&loadBalanceScheme);
+    Select(33, (void*)&meshCoordType);
 }
 
 
@@ -737,6 +766,9 @@ avtMeshMetaData::SetExtents(const float *extents)
 // 
 //    Hank Childs, Wed Jan 11 09:36:13 PST 2006
 //    Added new mesh types.
+//
+//    Kathleen Bonnell, Fri Feb  3 10:23:36 PST 2006 
+//    Added meshCoordType.
 //
 // ****************************************************************************
 
@@ -897,6 +929,21 @@ avtMeshMetaData::Print(ostream &out, int indent) const
         Indent(out, indent);
         out << "HAS A SPECIFIC LOAD BALANCE SCHEME = "
             << loadBalanceScheme << endl;
+    }
+    if (meshCoordType == AVT_XY)
+    {
+        Indent(out, indent);
+        out << "Mesh coord type is XY" << endl;
+    }
+    else if (meshCoordType == AVT_RZ)
+    {
+        Indent(out, indent);
+        out << "Mesh coord type is RZ" << endl;
+    }
+    else if (meshCoordType == AVT_ZR)
+    {
+        Indent(out, indent);
+        out << "Mesh coord type is ZR" << endl;
     }
 }
 

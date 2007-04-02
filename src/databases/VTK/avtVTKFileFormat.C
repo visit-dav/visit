@@ -557,6 +557,10 @@ avtVTKFileFormat::FreeUpResources(void)
 //    Brad Whitlock, Wed Nov 9 10:59:35 PDT 2005
 //    Added support for color vectors (ncomps==4).
 //
+//    Kathleen Bonnell, Fri Feb  3 11:20:02 PST 2006 
+//    Added support for MeshCoordType (int in FieldData of dataset,
+//    0 == XY, 1 == RZ, 2 == ZR).
+//
 // ****************************************************************************
 
 void
@@ -642,8 +646,35 @@ avtVTKFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         }
     }
  
-
-    AddMeshToMetaData(md, MESHNAME, type, bounds, 1, 0, spat, topo);
+    if (dataset->GetFieldData()->GetArray("MeshCoordType") == NULL)
+    {
+        AddMeshToMetaData(md, MESHNAME, type, bounds, 1, 0, spat, topo);
+    }
+    else 
+    {
+        avtMeshCoordType mct =(avtMeshCoordType)
+         dataset->GetFieldData()->GetArray("MeshCoordType")->GetComponent(0, 0);
+        avtMeshMetaData *mesh = new avtMeshMetaData;
+        mesh->name = MESHNAME;
+        mesh->meshType = type;
+        mesh->spatialDimension = spat;
+        mesh->topologicalDimension = topo;
+        mesh->numBlocks = 1;
+        mesh->blockOrigin = 0;
+        mesh->SetExtents(bounds);
+        mesh->meshCoordType = mct;
+        if (mct == AVT_RZ)
+        {
+             mesh->xLabel = "Z-Axis";
+             mesh->yLabel = "R-Axis";
+        }
+        else if (mct == AVT_ZR)
+        {
+             mesh->xLabel = "R-Axis";
+             mesh->yLabel = "Z-Axis";
+        }
+        md->Add(mesh); 
+    }
 
     int nvars = 0;
 

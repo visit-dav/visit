@@ -156,6 +156,9 @@ class     avtExtents;
 //    Hank Childs, Fri Oct  7 08:31:30 PDT 2005
 //    Added fullDBName.
 //
+//    Kathleen Bonnell, Fri Feb  3 10:32:12 PST 2006
+//    Added meshCoordType.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -362,6 +365,11 @@ class PIPELINE_API avtDataAttributes
     void                     SetOrigNodesRequiredForPick(bool v)
                                    { origNodesRequiredForPick = v; };
 
+    avtMeshCoordType         GetMeshCoordType(void) const
+                                   { return meshCoordType; };
+    void                     SetMeshCoordType(avtMeshCoordType t)
+                                   { meshCoordType = t; };
+
   protected:
     int                      spatialDimension;
     int                      topologicalDimension;
@@ -387,6 +395,7 @@ class PIPELINE_API avtDataAttributes
     bool                     mirOccurred;
     bool                     canUseOrigZones;
     bool                     origNodesRequiredForPick;
+    avtMeshCoordType         meshCoordType;
 
     avtExtents              *trueSpatial;
     avtExtents              *cumulativeTrueSpatial;

@@ -11,6 +11,7 @@
 
 
 class     avtBinaryMultiplyFilter;
+class     avtRevolvedVolume;
 class     avtVMetricArea;
 class     avtVMetricVolume;
 
@@ -28,6 +29,9 @@ class     avtVMetricVolume;
 //    Kathleen Bonnell, Wed Jul 28 08:50:51 PDT 2004
 //    Added VerifyInput.
 //
+//    Kathleen Bonnell, Fri Feb  3 10:32:12 PST 2006 
+//    Added revolvedVolume. 
+//
 // ****************************************************************************
 
 class QUERY_API avtWeightedVariableSummationQuery : public avtSummationQuery
@@ -42,6 +46,7 @@ class QUERY_API avtWeightedVariableSummationQuery : public avtSummationQuery
   protected:
     avtVMetricArea            *area;
     avtVMetricVolume          *volume;
+    avtRevolvedVolume         *revolvedVolume;
     avtBinaryMultiplyFilter   *multiply;
 
     virtual avtDataObject_p    ApplyFilters(avtDataObject_p);
