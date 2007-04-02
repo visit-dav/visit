@@ -57,6 +57,9 @@ class   avtDataRepresentation;
 //    Hank Childs, Thu Sep 22 17:34:12 PDT 2005
 //    Add friend status for avtCompactTreeFilter.
 //
+//    Hank Childs, Sat Jan 21 13:17:12 PST 2006
+//    Add friend status for avtSymmEvalExpression.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataset : public avtDataObject
@@ -67,6 +70,7 @@ class PIPELINE_API avtDataset : public avtDataObject
     friend                   class avtDatasetExaminer;
     friend                   class avtCMFEExpression;
     friend                   class avtCompactTreeFilter;
+    friend                   class avtSymmEvalExpression;
 
   public:
                              avtDataset(avtDataObjectSource *);

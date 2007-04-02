@@ -59,6 +59,9 @@
 #    Hank Childs, Sun Mar 27 11:22:06 PST 2005
 #    Moved avtStructuredMeshChunker to Pipeline/PrivateFilters.
 #
+#    Hank Childs, Sun Jan 22 10:27:32 PST 2006
+#    Added avtCustomTransform.
+#
 ##############################################################################
 
 ##
@@ -78,6 +81,7 @@ SRC=\
  avtCoordSystemConvert.C \
  avtCurrentExtentFilter.C \
  avtCurveConstructorFilter.C \
+ avtCustomTransform.C \
  avtFacelistFilter.C \
  avtFeatureEdgesFilter.C \
  avtGhostZoneAndFacelistFilter.C \

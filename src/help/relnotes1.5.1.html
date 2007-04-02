@@ -1,0 +1,142 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 1.5.1 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 1.5.1 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.5.1</font></b></p>
+<ul>
+<li>A new <i>"pos_cmfe"</i> expression has been added to VisIt, allowing VisIt to perform "Position-based Cross-Mesh Field Evaluation". The pos_cmfe expression samples a variable from one mesh onto another mesh using spatial coordinates instead of connectivity (like conn_cmfe). This allows you to compare variables that exist on completely different mesh structures as well as variables that exist on meshes that may not totally intersect spatially. 
+The pos_cmfe expression has the following syntax: <i>pos_cmfe(variable, mesh, 
+default_value)</i>. The <i>&quot;variable&quot;</i> argument is an expression 
+evaluating to any variable that will be sampled onto the mesh specified by the
+<i>&quot;mesh&quot;</i> argument.  The
+<i>&quot;default_value&quot;</i> argument must be an expression with the same type as the
+<i>&quot;variable&quot;</i> argument and it is used for regions where the variable cannot 
+be sampled onto the mesh. Example: <i>pos_cmfe(&lt;ucdvar.silo:pressure&gt;, quadmesh, 
+0.)</i>.</li>
+<li>VisIt's CLI writes a file called "visit.py" that contains a log of the 
+Python functions that have been executed. VisIt's CLI has been improved so that the log is more complete and now contains log entries for every action taken in the CLI as well as the GUI 
+(when it is connected). The resulting change has also allowed for the CLI to record commands coming from any VisIt client, in essence providing the ability to record 
+actions into Python code that can be used as macros. VisIt's <b>Command</b> <b>window</b> has been enhanced so that it contains controls that allow you to record macros. During macro recording, all actions taken in the GUI are logged in the CLI. 
+Once you have finished macro recording, the macro is returned to the <b>Command</b>
+<b>window</b> as Python code. You can replay the macro or edit its Python code. 
+You can even save the macro code for future VisIt sessions as part of your VisIt settings when you "Save settings".</li>
+<li>VisIt has been enhanced so that it reads directories much faster when smart file grouping is enabled. VisIt now reads directory information after file grouping has occurred, allowing VisIt to read information for far fewer files in the common case where 
+most files in large directories  can be grouped into virtual databases.</li>
+<li>VisIt now supports hardware-accelerated, parallel, scalable scalable rendering on some Linux platforms. The 
+<b>Host profiles window</b> has been enhanced so it has a <b>Hardware 
+Acceleration tab</b> that includes controls that allow you to set up hardware accelerated rendering for 
+such parallel clusters.</li>
+<li>VisIt now contains expressions for examining symmetry.  <i>symm_plane</i> can be used to create a new derived
+quantity that contains the difference between a variable and itself after being reflected across a plane.  It has syntax 
+<i>symm_plane(variable, [Nx, Ny, Nz, Ox, Oy, Oz])</i>, which specifies a plane with normal (Nx, Ny, Nz) and origin
+(Ox, Oy, Oz).  This expression does work for two-dimensional data sets, although Nz and Oz must be still be specified
+(as zero).   The other symmetry expression is <i>symm_transform</i>, which creates a new derived quantity that
+contains the difference between a variable and itself after undergoing a transformation by matrix multiplication.  This
+feature is intended to be used most often to encode rotations.  The syntax is <i>symm_transform(variable, [T00, T01, 
+T02, T10, T11, T12, T20, T21, T22])</i>.  This matrix will transform each point (X, Y, Z) to (X', Y', Z') where 
+X' = (T00*X + T01*Y + T02*Z), Y' = (T10*X + T11*Y + T12*Z), and Z' = (T20*X + T21*Y + T22*Z).</li>
+<li>VisIt now automatically generates <i>"time derivative"</i> expressions for databases that contain multiple time states, allowing you to plot the difference in variables between time states. All automatically derived expressions for time derivatives appear in the 
+<b>Plot menus</b> under the "time derivative" menu.</li>
+<li>VisIt now issues an error message and fails to import a session file if the session file references missing or invalid plugins. This change in behavior is 
+targeted at making it easier to detect when session files contain errors and at preventing movies from being made with those session files.</li>
+<li>VisIt's Mili database reader plugin has been enhanced so that it can support time-invariant nodal positions.</li>
+<li>VisIt's <b>File selection window</b> now truncates the list of files in a virtual database to prevent the window from doing too much work and to work around a flaw in the Qt GUI library. The change allows for faster interaction with the window. 
+The full list of time states is still available in the <b>Main window's File panel</b>.</li>
+<li>VisIt has a new database reader plugin that can read rectilinear Chombo data files. The new database reader can read files ending in 
+<i>".hdf5"</i> or <i>".h5"</i> as Chombo files. If your files do not have those file extensions then use the 
+<i>"-default_format Chombo"</i> command line options when you run VisIt.</li>
+<li>VisIt has a new database reader plugin that can read HDF4 output files from ZeusMP, a popular astrophysics code. Note that since each processor writes its own HDF4 file and there is no convention for creating master files in ZeusMP, you must create a 
+<i>".visit"</i> file to let VisIt know how to reassemble the files into a whole. The
+<i>&quot;.visit&quot;</i> file is a simple text file.&nbsp; For a time-varying database broken up into 4 tiles, 
+the structure looks like following:
+<table border="0" cellpadding="0" cellspacing="1" style="border-collapse: collapse" bordercolor="#111111" width="80%" id="AutoNumber1">
+  <tr>
+    <td width="100%" align="left"><i>!NBLOCKS 4</i></td>
+  </tr>
+  <tr>
+    <td width="100%" align="left"><i>hdfaa000000.000.zeus</i></td>
+  </tr>
+  <tr>
+    <td width="100%" align="left"><i>hdfaa000100.000.zeus</i></td>
+  </tr>
+  <tr>
+    <td width="100%" align="left"><i>hdfaa010000.000.zeus</i></td>
+  </tr>
+  <tr>
+    <td width="100%" align="left"><i>hdfaa010100.000.zeus</i></td>
+  </tr>
+  <tr>
+    <td width="100%" align="left"><i>hdfaa000000.001.zeus</i></td>
+  </tr>
+  <tr>
+    <td width="100%" align="left"><i>hdfaa000100.001.zeus</i></td>
+  </tr>
+  <tr>
+    <td width="100%" align="left"><i>hdfaa010000.001.zeus</i></td>
+  </tr>
+  <tr>
+    <td width="100%" align="left"><i>hdfaa010100.001.zeus</i></td>
+  </tr>
+</table>
+<p>Note that the number of tiles is given in the first line while subsequent lines contain the names of the files that make up the database for each time step. In this case, there is a new time step every 4 file names. Also note that the files have been given a 
+<i>".zeus"</i> extension so VisIt can identify the files as being from ZeusMP. If you do not provide that file extension, which can easily be done by creating symbolic links to files, you must provide the 
+<i>"-default_format ZeusMP"</i> command line options when you run VisIt. 
+Creating a &quot;.visit&quot; file allows you to visualize all of the data without having 
+to actually assemble the data into a single HDF4 file. VisIt can visualize the 
+data in parallel using the actual files that were saved by the simulation.</li>
+<li>VisIt's Contour plot now tries to produce contour levels that match the min or max values, if they have been set in the 
+<b>Contour plot attributes window</b>.</li>
+<li>A patch to VisIt's GUI from collaborators at AWE was applied. The patch allows variables at the top of a file hierarchy to be grouped into menus.</li>
+<li>VisIt no longer includes the path to external color table files in their names within the VisIt GUI, making it possible to see the entire color table name in windows such as the 
+<b>Pseudocolor plot attributes window</b>.</li>
+<li>Plot and operator attributes creation functions in the Python interface have been extended so they accept and optional integer argument that, when provided, causes them to return current plot or operator attributes instead of the default attributes.</li>
+<li>VisIt now tries to include the domain number in an error message indicating that a domain could not be read due to errors in the file that contains the domain.</li>
+<li>VisIt now reports progress for the rendering that takes place during scalable rendering mode.</li>
+<li>VisIt now issues a better error message when it cannot locate a session file.</li>
+<li>VisIt has a new <i>"-nowindowmetrics"</i> command line argument that can be used to prevent VisIt from waiting for certain window sizing events. This new argument can be used if you ever experience a hang when displaying VisIt to an X-server on a computer running MacOS X 10.4.</li>
+<li>VisIt now adds more diagnostic information to its debugging logs when connecting to a remote computer.</li>
+<li>VisIt now prints the names of plugins that failed to load to the console that started VisIt so the user can more easily identify errors caused in the event of invalid plugins.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.5.1</font></b></p>
+<ul>
+<li>Several of VisIt's operators, including the Transform operator, were making inappropriate use of extents for 
+databases that provided their own spatial extents. 
+This problem caused the Volume plot to sample data in the wrong regions of a mesh.</li>
+<li>VisIt's GUI becomes confused about which files are open after an extended sequence of opening and closing files.</li>
+<li>Problems with VisIt's dynamic lineout capability have been fixed.</li>
+<li>Passing the "-tiff" option to the "visit -movie" command causes it to exit.</li>
+<li>VisIt exhibits unpredictable behavior when node-picking on certain plot types.</li>
+<li>The Vector plot cannot plot variables that exist in subdirectories.</li>
+<li>VisIt's "EMPTY" domain indicator for multi-variables written in the Silo file format are not handled well if the variables contained all "EMPTY" entries.</li>
+<li>The stereo options in the <b>Rendering attributes window</b> are not disabled if the "-stereo" flag does not appear on the command line.</li>
+<li>Certain buttons in the <b>Volume plot attributes window</b> are not enabled until you click the 
+<b>Apply</b> button.</li>
+<li>Spin mode does not work with visualization windows whose views are locked.</li>
+<li>Specular highlighting with an unlit Surface plot does not work correctly in scalable rendering mode.</li>
+<li>Specular highlights do not always appear when restoring a session file that uses specular highlights.</li>
+<li>VisIt leaves a plot in the visualization window when the plot's operator was removed from the middle of the list of operators.</li>
+<li>VisIt's queries should identify when revolved surface area is inappropriate.</li>
+<li>A Histogram plot using an Isosurface operator yielded a flat histogram.</li>
+<li>The shadow controls in the<b> Rendering attributes window</b> do not update correctly when changing the scalable rendering mode.</li>
+<li>A harmless error message was removed from VisIt, preventing it from sometimes being displayed in the shell that launched VisIt.</li>
+<li>VisIt behaves strangely if the "-timeout" argument is provided without a corresponding timeout value.</li>
+<li>The Text2D object in VisIt's Python binding prints 3D coordinates instead of 2D coordinates.</li>
+<li>Views saved to session files do not contain all fields, which can lead to confusion.</li>
+<li>VisIt's xmledit program does not gracefully handle the removal of a code file.</li>
+<li>Pick causes plots to disappear when in scalable rendering mode.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href="relnotes1.5.html">VisIt 1.5 Release Notes</a>.</p>
+</body>
+</html>

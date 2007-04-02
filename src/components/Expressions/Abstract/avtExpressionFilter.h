@@ -57,6 +57,10 @@ class     ExprPipelineState;
 //    Hank Childs, Mon Aug 29 14:44:20 PDT 2005
 //    Added SetExpressionAtts.
 //
+//    Hank Childs, Sun Jan 22 12:38:57 PST 2006
+//    Made Recenter be a static, public function.  Also improved implementation
+//    of GetVariableDimension.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionFilter : virtual public 
@@ -74,6 +78,7 @@ class EXPRESSION_API avtExpressionFilter : virtual public
 
     virtual void             ProcessArguments(ArgsExpr *, ExprPipelineState *);
     virtual int              NumVariableArguments() = 0;
+    static vtkDataArray     *Recenter(vtkDataSet*, vtkDataArray*,avtCentering);
 
   protected:
     char                    *outputVariableName;
@@ -90,10 +95,9 @@ class EXPRESSION_API avtExpressionFilter : virtual public
                              PerformRestriction(avtPipelineSpecification_p);
     virtual void             ExamineSpecification(avtPipelineSpecification_p);
 
-    virtual int              GetVariableDimension() { return 1; };
+    virtual int              GetVariableDimension();
     virtual avtVarType       GetVariableType() { return AVT_UNKNOWN_TYPE; };
 
-    vtkDataArray            *Recenter(vtkDataSet*, vtkDataArray*,avtCentering);
     void                     UpdateExtents(avtDataTree_p);
 };
 

@@ -88,6 +88,10 @@
 #include <avtPosCMFEExpression.h>
 #include <avtExternalNodeExpression.h>
 #include <avtSurfaceNormalExpression.h>
+#include <avtEvalTransformExpression.h>
+#include <avtSymmTransformExpression.h>
+#include <avtEvalPlaneExpression.h>
+#include <avtSymmPlaneExpression.h>
 
 #include <stdio.h>
 #include <ExpressionException.h>
@@ -424,6 +428,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //      Hank Childs, Thu Jan  5 08:44:12 PST 2006
 //      Remove redundant polar_phi entry that was added with cut-n-paste.
 //
+//      Hank Childs, Sat Jan 21 14:43:45 PST 2006
+//      Added symm_eval_transform.
+//
 // ****************************************************************************
 void
 avtFunctionExpr::CreateFilters(ExprPipelineState *state)
@@ -639,6 +646,14 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtConnCMFEExpression;
     else if (functionName == "pos_cmfe")
         f = new avtPosCMFEExpression;
+    else if (functionName == "eval_transform")
+        f = new avtEvalTransformExpression;
+    else if (functionName == "symm_transform")
+        f = new avtSymmTransformExpression;
+    else if (functionName == "eval_plane")
+        f = new avtEvalPlaneExpression;
+    else if (functionName == "symm_plane")
+        f = new avtSymmPlaneExpression;
     else if (functionName == "surface_normal" || 
              functionName == "point_surface_normal")
     {
