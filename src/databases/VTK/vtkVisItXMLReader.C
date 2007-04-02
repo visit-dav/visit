@@ -254,9 +254,9 @@ void vtkVisItXMLReader::SetupCompressor(const char* type)
   vtkObject* object = vtkInstantiator::CreateInstance(type);
   vtkVisItDataCompressor* compressor = vtkVisItDataCompressor::SafeDownCast(object);
   
-  // In static builds, the vtkVisItZLibDataCompressor may not have been
+  // In static builds, the vtkZLibDataCompressor may not have been
   // registered with the vtkInstantiator.  Check for it here.
-  if(!compressor && (strcmp(type, "vtkVisItZLibDataCompressor") == 0))
+  if(!compressor && (strcmp(type, "vtkZLibDataCompressor") == 0))
     {
     compressor = vtkVisItZLibDataCompressor::New();
     }
