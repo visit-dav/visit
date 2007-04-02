@@ -2,6 +2,8 @@
 #include <QvisAnnotationObjectInterface.h>
 #include <qlayout.h>
 #include <qlineedit.h>
+#include <qspinbox.h>
+#include <qtimer.h>
 #include <QvisScreenPositionEdit.h>
 
 #include <AnnotationObject.h>
@@ -321,4 +323,80 @@ QvisAnnotationObjectInterface::GetScreenPosition(QvisScreenPositionEdit *spe,
             annot->SetPosition(annot->GetPosition());
         }
     }
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationObjectInterface::GetScreenPosition2
+//
+// Purpose: 
+//   Gets the position2 coordinate from a screen position edit and sets it into
+//   the annotation object.
+//
+// Arguments:
+//   spe   : The screen position edit that we're checking.
+//   name : The name to use in the error message.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 6 11:14:41 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAnnotationObjectInterface::GetScreenPosition2(QvisScreenPositionEdit *spe,
+    const QString &name)
+{
+    if(annot)
+    {
+        float coord[3] = {0.f, 0.f, 0.f};
+
+        if(spe->getPosition(coord[0], coord[1]))
+        {
+            annot->SetPosition2(coord);
+        }
+        else
+        {
+            QString msg; msg.sprintf("The %s value was invalid. "
+                "Resetting to the last good value.", name.latin1());
+            Error(msg);
+            annot->SetPosition2(annot->GetPosition2());
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationObjectInterface::ForceSpinBoxUpdate
+//
+// Purpose: 
+//   Utility method that lets us trick a spin box into thinking it has new
+//   text.
+//
+// Arguments:
+//   sb : The spin box to update.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 6 14:21:40 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAnnotationObjectInterface::ForceSpinBoxUpdate(QSpinBox *sb)
+{
+    // Block signals.
+    sb->blockSignals(true);
+
+    // textChanged is protected and the compiler does not let us call
+    // it directly so call it as a slot. We do this to make the spin box
+    // think that it has new text input so it will parse it again when
+    // we call value().
+    QTimer::singleShot(0, sb, SLOT(textChanged()));
+
+    // Call the value function to make the spin box parse the new value.
+    sb->value();
+
+    // Let the spinbox emit signals again.
+    sb->blockSignals(false);
 }

@@ -55,14 +55,14 @@ QvisTurnDownButton::~QvisTurnDownButton()
 // Creation:   Tue Dec 2 13:58:19 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Mar 6 14:52:07 PST 2006
+//   Added Qt 3 implementation.
+//
 // ****************************************************************************
 
 void
 QvisTurnDownButton::drawButtonLabel(QPainter *painter)
 {
-#if QT_VERSION >= 300
-#else
     int x = 0;
     int y = 0;
     int w = width();
@@ -75,6 +75,10 @@ QvisTurnDownButton::drawButtonLabel(QPainter *painter)
         h -= 4;
     }
 
+#if QT_VERSION >= 300
+    QRect r(x,y,w,h);
+    style().drawPrimitive(QStyle::PE_ArrowDown, painter, r, colorGroup(), QStyle::Style_Enabled);    
+#else
     style().drawArrow(painter, Qt::DownArrow, isDown(),
          x, y, w, h,
          colorGroup(), isEnabled());

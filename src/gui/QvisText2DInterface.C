@@ -288,7 +288,9 @@ QvisText2DInterface::UpdateControls()
 // Creation:   Wed Nov 5 11:49:08 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Mar 6 14:36:03 PST 2006
+//   Added code to grab the width.
+//
 // ****************************************************************************
 
 void
@@ -307,6 +309,18 @@ QvisText2DInterface::GetCurrentValues(int which_widget)
         stringVector sv;
         sv.push_back(textLineEdit->text().latin1());
         annot->SetText(sv);
+    }
+
+    if(which_widget == 2 || doAll)
+    {
+        // Get its new current value and store it in the atts.
+        ForceSpinBoxUpdate(widthSpinBox);
+        int w = widthSpinBox->value();
+        float pos2[3];
+        pos2[0] = float(w) * 0.01f;
+        pos2[1] = annot->GetPosition2()[1];
+        pos2[2] = annot->GetPosition2()[2];
+        annot->SetPosition2(pos2);
     }
 }
 

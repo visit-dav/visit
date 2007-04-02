@@ -19,6 +19,7 @@
 #include <QvisColorGridWidget.h>
 #include <ColorControlPoint.h>
 #include <ColorControlPointList.h>
+#include <DataNode.h>
 #include <ViewerProxy.h>
 
 // Defines. Make these part of ColorTableAttributes sometime.
@@ -336,6 +337,71 @@ QvisColorTableWindow::CreateWindowContents()
 }
 
 // ****************************************************************************
+// Method: QvisColorTableWindow::CreateNode
+//
+// Purpose: 
+//   Saves the windows settings.
+//
+// Arguments:
+//   parentNode : The node that will contain the settings.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 6 09:18:09 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisColorTableWindow::CreateNode(DataNode *parentNode)
+{
+    // Call the base class's method to save the generic window attributes.
+    QvisPostableWindowSimpleObserver::CreateNode(parentNode);
+
+    if(saveWindowDefaults && 
+       !currentColorTable.isEmpty() &&
+       currentColorTable != "none")
+    {
+        DataNode *node = parentNode->GetNode(std::string(caption().latin1()));
+
+        // Save the current color table.
+        std::string ct(currentColorTable.latin1());
+        node->AddNode(new DataNode("currentColorTable", ct));
+    }
+}
+
+// ****************************************************************************
+// Method: QvisColorTableWindow::SetFromNode
+//
+// Purpose: 
+//   Gets the window's settings.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 6 09:18:41 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
+{
+    DataNode *winNode = parentNode->GetNode(std::string(caption().latin1()));
+    if(winNode == 0)
+        return;
+
+    // Get the active tab and show it.
+    DataNode *node;
+    if((node = winNode->GetNode("currentColorTable")) != 0)
+    {
+        currentColorTable = QString(node->AsString().c_str());
+    }
+
+    // Call the base class's function.
+    QvisPostableWindowSimpleObserver::SetFromNode(parentNode, borders);
+}
+
+// ****************************************************************************
 // Method: QvisColorTableWindow::UpdateWindow
 //
 // Purpose: 
@@ -358,6 +424,10 @@ QvisColorTableWindow::CreateWindowContents()
 //   Brad Whitlock, Wed Nov 20 16:11:25 PST 2002
 //   I added support for discrete color tables.
 //
+//   Brad Whitlock, Mon Mar 6 10:18:18 PDT 2006
+//   I changed the code so it only uses the first colortable name as a last
+//   resort if the active color table is set to something invalid.
+//
 // ****************************************************************************
 
 void
@@ -366,26 +436,36 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
     bool updateNames = false;
     bool updateColorPoints = false;
 
-    // If we have never set the currentColorTable variable then set it to the
-    // name of the first applicable color table.
-    if(currentColorTable == "none")
-    {
-        currentColorTable = QString(colorAtts->GetActiveContinuous().c_str());
-        if(currentColorTable == "")
-            currentColorTable = QString(colorAtts->GetActiveDiscrete().c_str());
-        updateColorPoints = true;
-    }
-
     //
     // If our active color table, for some reason, does not appear in the
-    // list of color tables then we should choose a new colortable.
+    // list of color tables then we should choose a new colortable. Note that
+    // if we've not set the color table yet, it will be "none" and it will get
+    // set here, if possible.
     //
-    if(colorAtts->GetColorTableIndex(currentColorTable.latin1()) == -1)
+    int nct = 3;
+    bool invalidCt = true;
+    const char *ctNames[4] = {0,0,0,0};
+    ctNames[0] = currentColorTable.latin1();
+    ctNames[1] = colorAtts->GetActiveContinuous().c_str();
+    ctNames[2] = colorAtts->GetActiveDiscrete().c_str();
+    if(colorAtts->GetNames().size() > 0)
     {
-        if(colorAtts->GetNames().size() > 0)
-            currentColorTable = QString(colorAtts->GetNames()[0].c_str());
+        ctNames[3] = colorAtts->GetNames()[0].c_str();
+        ++nct;
+    }
+    for(int c = 0; c < nct && invalidCt; ++c)
+    {
+        if(colorAtts->GetColorTableIndex(ctNames[c]) != -1)
+        {
+            currentColorTable = QString(ctNames[c]);
+            invalidCt = false;
+        }
         else
-            currentColorTable = "none";
+            updateColorPoints = true;
+    }
+    if(invalidCt)
+    {
+        currentColorTable = "none";
         updateColorPoints = true;
     }
 

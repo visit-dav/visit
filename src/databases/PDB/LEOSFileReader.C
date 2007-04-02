@@ -952,6 +952,13 @@ LEOSFileReader::ReadVariableInfo(const char *matDirName,
 // Programmer: Mark C. Miller
 // Creation:   February 10, 2004 
 //
+// Modifications:
+//
+//   Mark C. Miller, Mon Mar  6 17:31:21 PST 2006
+//   Pre-pended matDirName with "L" to force correct directory match. The
+//   previous code would match "40" with "L140" and wind up reading data from
+//   wrong directory
+//
 // ****************************************************************************
 
 bool 
@@ -998,6 +1005,7 @@ LEOSFileReader::ParseContentsAndPopulateMetaData(avtDatabaseMetaData *md,
             return false;
 
         string matDirName = RemoveSpaces(dirDigits);
+        matDirName = "L" + matDirName;
 
         // the matDirName doesn't contain the full directory name, so try to find it
         // in the topDirs list
