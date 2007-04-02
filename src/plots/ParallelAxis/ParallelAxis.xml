@@ -31,5 +31,11 @@
       <Field name="extentMaxima" label="extentMaxima" type="doubleVector">
         1.0
       </Field>
+      <Field name="extMinTimeOrds" label="extMinTimeOrds" type="intVector">
+        0
+      </Field>
+      <Field name="extMaxTimeOrds" label="extMaxTimeOrds" type="intVector">
+        0
+      </Field>
     </Attribute>
   </Plugin>

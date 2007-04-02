@@ -65,7 +65,10 @@
 //   Added GetFullFrameMode and GetScaleFactorAndType. 
 //
 //   Kathleen Bonnell, Wed Dec  3 16:49:14 PST 2003
-//   Added TransparenciesExist. 
+//   Added TransparenciesExist.
+//
+//   Mark Blair, Wed Aug 30 14:09:00 PDT 2006
+//   Added GetSize, GetWindowSize, GetPlotListIndex.
 //
 // ****************************************************************************
 
@@ -101,9 +104,19 @@ class VISWINDOW_API VisWindowToolProxy : public VisWindowProtectionProxy
 
     WINDOW_MODE         GetMode() { return ProxiedGetMode(); };
 
-    bool                HasPlots(){ return ProxiedHasPlots(); };
+    void                GetSize(int &width, int &height) const
+                                  { ProxiedGetSize(width, height); };
 
+    void                GetWindowSize(int &width, int &height) const
+                                  { ProxiedGetWindowSize(width, height); };
+
+    int                 GetPlotListIndex(const char *plotName)
+                                  { return ProxiedGetPlotListIndex(plotName); };
+
+    bool                HasPlots(){ return ProxiedHasPlots(); };
+    
     void                Render()  { ProxiedRender(); };
+
     void                RecalculateRenderOrder()
                                   { ProxiedRecalculateRenderOrder(); };
 

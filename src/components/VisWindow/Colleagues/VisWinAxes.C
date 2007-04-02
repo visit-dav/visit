@@ -425,11 +425,16 @@ VisWinAxes::RemoveAxesFromWindow(void)
 //    Kathleen Bonnell, Wed May  8 14:06:50 PDT 2002 
 //    Allowed for curve mdoe.
 //
+//    Mark Blair, Mon Sep 25 11:41:09 PDT 2006
+//    No axes if axis annotations have already been disabled in the vis window.
+//
 // ****************************************************************************
 
 bool
 VisWinAxes::ShouldAddAxes(void)
 {
+    if (!mediator.AxisAnnotationsEnabled()) return false;
+    
     return ((mediator.GetMode() == WINMODE_2D || 
              mediator.GetMode() == WINMODE_CURVE) && 
              mediator.HasPlots());

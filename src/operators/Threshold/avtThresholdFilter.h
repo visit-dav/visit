@@ -76,6 +76,9 @@ class     vtkDataSet;
 //    Mark Blair, Tue Aug  8 17:47:00 PDT 2006
 //    Now accommodates an empty list of threshold variables; does pass-through.
 //
+//    Mark Blair, Wed Oct  4 17:45:48 PDT 2006
+//    Keeps track of the "active variable".
+//
 // ****************************************************************************
 
 class avtThresholdFilter : public avtPluginStructuredChunkStreamer
@@ -94,6 +97,7 @@ class avtThresholdFilter : public avtPluginStructuredChunkStreamer
 
   protected:
     ThresholdAttributes   atts;
+    std::string           activeVarName;
 
     virtual avtPipelineSpecification_p
                           PerformRestriction(avtPipelineSpecification_p);

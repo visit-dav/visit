@@ -587,6 +587,37 @@ VisWinPlots::ClearPlots(void)
 
 
 // ****************************************************************************
+//  Method: VisWinPlots::GetPlotListIndex
+//
+//  Purpose: If the vis window has a particular plot identified by name, return
+//           that plot's index in the window's list of active plots.  If not,
+//           return -1.
+//
+//  Arguments:
+//      plotName : Name of the plot being queried
+//
+//  Programmer: Mark Blair
+//  Creation:   Wed Aug 30 14:09:00 PDT 2006
+//
+// ****************************************************************************
+
+int
+VisWinPlots::GetPlotListIndex(const char *plotName)
+{
+    int plotIndex;
+
+    for (plotIndex = 0; plotIndex < plots.size(); plotIndex++)
+    {
+        if (strcmp(plots[plotIndex]->GetTypeName(), plotName) == 0) break;
+    }
+    
+    if (plotIndex >= plots.size()) plotIndex = -1;
+    
+    return plotIndex;
+}
+
+
+// ****************************************************************************
 //  Method: VisWinPlots::SetViewExtentsType
 //
 //  Purpose:

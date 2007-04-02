@@ -131,7 +131,13 @@ class     VisitInteractor;
 //    translucent geometry.
 //
 //    Kathleen Bonnell, Mon Jun 27 14:54:36 PDT 2005 
-//    Added ProxiedGetMaxPlotZShift. 
+//    Added ProxiedGetMaxPlotZShift.
+//
+//    Mark Blair, Wed Aug 30 14:09:00 PDT 2006
+//    Added ProxiedGetPlotListIndex, ProxiedGetSize, ProxiedGetWindowSize.
+//
+//    Mark Blair, Tue Sep 26 11:32:36 PDT 2006
+//    Added ProxiedAxisAnnotationsEnabled.
 //
 // ****************************************************************************
 
@@ -160,8 +166,12 @@ class VISWINDOW_API VisWindowProtectionProxy
     bool                ProxiedGetHotPoint(int, int, HotPoint &) const;
     WINDOW_MODE         ProxiedGetMode();
     void                ProxiedGetViewport(double vport[4]);
+    void                ProxiedGetSize(int &width, int &height) const;
+    void                ProxiedGetWindowSize(int &width, int &height) const;
+    int                 ProxiedGetPlotListIndex(const char *plotName);
     void                ProxiedHasPlots(bool);
     bool                ProxiedHasPlots();
+    bool                ProxiedAxisAnnotationsEnabled();
     bool                ProxiedUpdatesEnabled();
     void                ProxiedDisableUpdates();
     void                ProxiedEnableUpdates();

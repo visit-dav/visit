@@ -29,6 +29,7 @@
 //  Creation:   Mon Jun 5 18:19:57 PST 2006
 //
 // ****************************************************************************
+
 extern "C" ViewerPlotPluginInfo* GetViewerInfo()
 {
     ParallelAxisViewerPluginInfo::InitializeGlobalObjects();
@@ -57,6 +58,7 @@ ParallelAxisAttributes *ParallelAxisViewerPluginInfo::fallbackAtts = NULL;
 //      Added fallback attributes (see InitializePlotAtts).
 //
 // ****************************************************************************
+
 void
 ParallelAxisViewerPluginInfo::InitializeGlobalObjects()
 {
@@ -277,6 +279,9 @@ ParseArrayComponentVariables(
 //      Added support for fallback attributes if wizard or CLI has not provided
 //      sufficient input attributes (see fuller explanation in code below).
 //
+//      Mark Blair, Wed Sep 20 10:59:41 PDT 2006
+//      Added support for time ordinals.
+//   
 // ****************************************************************************
 
 void
@@ -305,11 +310,13 @@ ParallelAxisViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
         doubleVector axisMaxs;
         doubleVector extMins;
         doubleVector extMaxs;
+        intVector    minTimeOrds;
+        intVector    maxTimeOrds;
 
         int axisCount, axisNum;
         Expression *exp;
         const char *expChars, *arrayExpression;
-
+        
         if ((exp = ParsingExprList::GetExpression(variableName)) == NULL)
         {
             debug1 << "ParallelAxis plot variable is neither a scalar nor an expression."
@@ -347,6 +354,7 @@ ParallelAxisViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
         {
             axisMins.push_back(-1e+37); axisMaxs.push_back(+1e+37);
             extMins.push_back(0.0); extMaxs.push_back(1.0);
+            minTimeOrds.push_back(0); maxTimeOrds.push_back(0);
         }
 
         fallbackAtts->SetOrderedAxisNames(axisNames);
@@ -354,6 +362,8 @@ ParallelAxisViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
         fallbackAtts->SetAxisMaxima(axisMaxs);
         fallbackAtts->SetExtentMinima(extMins);
         fallbackAtts->SetExtentMaxima(extMaxs);
+        fallbackAtts->SetExtMinTimeOrds(minTimeOrds);
+        fallbackAtts->SetExtMaxTimeOrds(maxTimeOrds);
         
         initAtts = fallbackAtts;
     }

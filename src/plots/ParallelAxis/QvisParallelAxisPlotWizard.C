@@ -397,6 +397,9 @@ QvisParallelAxisPlotWizard::CreateFinishPage(QFrame **f,
 //
 // Modifications:
 //   
+//    Mark Blair, Wed Sep 20 10:59:41 PDT 2006
+//    Added time ordinals, for those operators and tools that need them.
+//   
 // ****************************************************************************
 
 void
@@ -407,12 +410,16 @@ QvisParallelAxisPlotWizard::InitializeParallelAxisAttributes(const std::string &
     doubleVector axisMaxs;
     doubleVector extMins;
     doubleVector extMaxs;
+    intVector    minTimeOrds;
+    intVector    maxTimeOrds;
     
     axisNames.push_back(varName);
     axisMins.push_back(-1e+37);
     axisMaxs.push_back(+1e+37);
     extMins.push_back(0.0);
     extMaxs.push_back(1.0);
+    minTimeOrds.push_back(0);
+    maxTimeOrds.push_back(0);
 
     parAxisAtts->SetOrderedAxisNames(axisNames);
     parAxisAtts->SetShownVariableAxisPosition(0);
@@ -420,6 +427,8 @@ QvisParallelAxisPlotWizard::InitializeParallelAxisAttributes(const std::string &
     parAxisAtts->SetAxisMaxima(axisMaxs);
     parAxisAtts->SetExtentMinima(extMins);
     parAxisAtts->SetExtentMaxima(extMaxs);
+    parAxisAtts->SetExtMinTimeOrds(minTimeOrds);
+    parAxisAtts->SetExtMaxTimeOrds(maxTimeOrds);
 }
 
 

@@ -83,6 +83,11 @@ class QvisVariableButton;
 //   Removed problematic mechanism for accommodating ExtentsAttributes from
 //   extents tool.
 //
+//   Mark Blair, Thu Sep 21 15:16:27 PDT 2006
+//   Added support for input from Extents tool.  Certain Threshold changes are
+//   preserved when viewer sends attributes that do not know about the changes.
+//   (See full explanation in header of RestoreAppropriateUnappliedAttributes.)
+//
 // ****************************************************************************
 
 class QvisThresholdWindow : public QvisOperatorWindow
@@ -116,6 +121,7 @@ private slots:
 
 private:
     void                UpdateShownFields();
+    void                RestoreAppropriateUnappliedAttributes();
 
     QButtonGroup        *outputMeshType;
     QButtonGroup        *zonePortion;
@@ -135,6 +141,7 @@ private:
     const QBitmap       *rightArrowBitmap;
 
     ThresholdAttributes *atts;
+    ThresholdAttributes *guiVarAtts;
 };
 
 #endif

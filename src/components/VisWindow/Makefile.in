@@ -142,7 +142,10 @@
 #    I made it use John Anderson's new annotation objects.
 #
 #    Kathleen Bonnell, Thu Jan 12 13:55:29 PST 2006 
-#    Removed Pick2D and Pick3D, added Pick. 
+#    Removed Pick2D and Pick3D, added Pick.
+#
+#    Mark Blair, Wed Aug 30 12:36:00 PDT 2006
+#    Added the Extents tool.
 #
 ##############################################################################
 
@@ -199,11 +202,13 @@ Tools_src= \
   Tools/VisitPlaneTool.C \
   Tools/VisitPointTool.C \
   Tools/VisitSphereTool.C \
+  Tools/VisitExtentsTool.C \
   Tools/avtBoxToolInterface.C \
   Tools/avtLineToolInterface.C \
   Tools/avtPlaneToolInterface.C \
   Tools/avtPointToolInterface.C \
   Tools/avtSphereToolInterface.C \
+  Tools/avtExtentsToolInterface.C \
   Tools/avtToolInterface.C
 VisWindow_src= \
   VisWindow/VisWindow.C \

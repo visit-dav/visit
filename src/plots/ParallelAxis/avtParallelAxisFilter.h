@@ -117,6 +117,8 @@ protected:
 private:
     void                        SetupParallelAxis (int plotAxisNum);
     void                        ComputeCurrentDataExtentsOverAllDomains();
+    void                        StoreDataExtentsForOutsideQueries();
+    bool                        WriteAxisVariableNamesAndExtentsFile();
 
     void                        InitializePlotAtts();
     void                        InitializeDataTupleInput();

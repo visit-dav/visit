@@ -77,7 +77,7 @@
 
 avtThresholdFilter::avtThresholdFilter()
 {
-    ;
+    activeVarName = std::string("<unused>");
 }
 
 
@@ -118,6 +118,12 @@ avtThresholdFilter::Create()
 //    Mark Blair, Tue Aug  8 17:47:00 PDT 2006
 //    Now accommodates an empty list of threshold variables; does pass-through.
 //
+//    Mark Blair, Thu Sep 28 12:07:05 PDT 2006
+//    Checks attributes for consistency.
+//
+//    Mark Blair, Wed Oct  4 17:45:48 PDT 2006
+//    Makes better use of the "active variable".
+//
 // ****************************************************************************
 
 void
@@ -125,15 +131,29 @@ avtThresholdFilter::SetAtts(const AttributeGroup *a)
 {
     atts = *(const ThresholdAttributes*)a;
     
+    atts.SupplyMissingDefaultsIfAppropriate();
+    
     if (!atts.AttributesAreConsistent()) return;
     
+    activeVarName = std::string("<unused>");
+    
     std::string shownVariable = atts.GetShownVariable();
+    std::string defaultVariable = atts.GetDefaultVarName();
+    
+    if (shownVariable == std::string("default"))
+        shownVariable = defaultVariable;
     
     if (shownVariable != std::string("(no variables in list)"))
     {
-        if (shownVariable != std::string("default"))
+        if (shownVariable != defaultVariable)
         {
-            SetActiveVariable(shownVariable.c_str());
+            activeVarName = shownVariable;
+            SetActiveVariable(activeVarName.c_str());
+        }
+        else if (atts.GetDefaultVarIsScalar())
+        {
+            activeVarName = shownVariable;
+            SetActiveVariable(activeVarName.c_str());
         }
     }
 }
@@ -263,12 +283,17 @@ static void UpdateNeighborCells(int pt, const int *pt_dims,
 //    Mark Blair, Tue Aug  8 17:47:00 PDT 2006
 //    Now accommodates an empty list of threshold variables; does pass-through.
 //
+//    Mark Blair, Thu Sep 28 12:07:05 PDT 2006
+//    Checks attributes for consistency.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtThresholdFilter::ProcessOneChunk(
     vtkDataSet *in_ds, int domain, std::string label, bool fromChunker)
 {
+    atts.SupplyMissingDefaultsIfAppropriate();
+    
     if (!atts.AttributesAreConsistent())
     {
         debug1 << "Threshold operator attributes are inconsistent." << endl;
@@ -276,7 +301,7 @@ avtThresholdFilter::ProcessOneChunk(
         in_ds->Register(NULL);
         return in_ds;
     }
-
+    
     if (atts.GetShownVariable() == std::string("(no variables in list)"))
     {
         in_ds->Register(NULL);
@@ -296,7 +321,7 @@ avtThresholdFilter::ProcessOneChunk(
         in_ds->Register(NULL);
         return in_ds;
     }
-
+    
     vtkThreshold *threshold;
 
     vtkDataSet *curOutDataSet = in_ds;
@@ -380,7 +405,7 @@ avtThresholdFilter::ProcessOneChunk(
     {
         curOutDataSet->GetFieldData()->PassData(in_ds->GetFieldData());
     }
-
+    
     return curOutDataSet;
 }
 
@@ -731,34 +756,45 @@ avtThresholdFilter::PreExecute(void)
 //   Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
 //   API change for avtIntervalTree.
 //
+//    Mark Blair, Thu Sep 28 12:07:05 PDT 2006
+//    Checks attributes for consistency.
+//
+//    Mark Blair, Tue Oct  3 13:19:11 PDT 2006
+//    Replace "default" with true variable name if scalar, otherwise delete it
+//    from list of threshold variables entirely.
+//
+//    Mark Blair, Wed Oct  4 17:45:48 PDT 2006
+//    Makes better use of the "active variable".
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
 avtThresholdFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
 {
+    atts.SupplyMissingDefaultsIfAppropriate();
+    
     if (!atts.AttributesAreConsistent())
         return in_spec;
         
-    std::string shownVariable = atts.GetShownVariable();
+    const char *pipelineVar = in_spec->GetDataSpecification()->GetVariable();
+    const char *activeVar = activeVarName.c_str();
     
-    if (shownVariable == std::string("(no variables in list)"))
+    if (activeVarName == std::string("<unused>"))
+        activeVar = pipelineVar;
+        
+    atts.SetDefaultVarName(std::string(pipelineVar));
+
+    atts.SwitchDefaultToTrueVariableNameIfScalar();
+    
+    if (atts.GetShownVariable() == std::string("(no variables in list)"))
         return in_spec;
 
-    const char *pipelineVar = in_spec->GetDataSpecification()->GetVariable();
-
-    const char *activeVar = pipelineVar;
-
-    if (atts.GetShownVariable() != std::string("default"))
-        activeVar = atts.GetShownVariable().c_str();
-
-    atts.SwitchToPipelineVariable(std::string(pipelineVar));
-    
     avtPipelineSpecification_p outSpec = new avtPipelineSpecification(in_spec);
 
+    const char *curListedVar;
     const std::vector<CharStrRef> curSecondaryVars =
         outSpec->GetDataSpecification()->GetSecondaryVariables();
     const stringVector curListedVars = atts.GetListedVariables();
-    const char *curListedVar;
     int listedVarNum, secVarNum;
 
     for (listedVarNum = 0; listedVarNum < curListedVars.size(); listedVarNum++)

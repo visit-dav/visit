@@ -194,6 +194,13 @@ ThresholdViewerPluginInfo::GetClientAtts(AttributeSubject *atts)
 //     Mark Blair, Wed Sep  6 19:13:00 PDT 2006
 //     Corrected bad policy: Was sometimes changing user's defaults explicitly.
 //
+//     Mark Blair, Thu Sep 28 12:07:05 PDT 2006
+//     Accommodate old Threshold mode in CLI by supplying any missing default
+//     attribute values if attributes are set up for a single threshold variable.
+//
+//     Mark Blair, Tue Oct  3 13:19:11 PDT 2006
+//     Set attribute flag that indicates whether plot variable is a scalar.
+//
 // ****************************************************************************
 
 void
@@ -201,68 +208,17 @@ ThresholdViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
                                                   const ViewerPlot *plot,
                                                   const bool fromDefault)
 {
-    bool setVarListEmpty = false;
-    std::string plotVarName = plot->GetVariableName();
-    ThresholdAttributes *initAtts;
-    
     if (fromDefault)
-        initAtts = new ThresholdAttributes(*defaultAtts);
+        *(ThresholdAttributes *)atts = *defaultAtts;
     else
-        initAtts = new ThresholdAttributes(*clientAtts);
-    
-    stringVector initVarNames    = initAtts->GetListedVarNames();
-    intVector initZonePortions   = initAtts->GetZonePortions();
-    doubleVector initLowerBounds = initAtts->GetLowerBounds();
-    doubleVector initUpperBounds = initAtts->GetUpperBounds();
-    
-    int varListSize = initVarNames.size();
-    int varNum;
-    
-    if (!initAtts->AttributesAreConsistent())
-    {
-        debug1 << "Threshold operator attributes are inconsistent." << endl;
-        setVarListEmpty = true;
-    }
-    else
-    {
-        bool defaultIsListed = false;
-        std::string initVarName;
-
-        for (varNum = 0; varNum < varListSize; varNum++)
-        {
-            if ((initVarName = initVarNames[varNum]) == plotVarName)
-                defaultIsListed = true;
-            else if (initVarName == std::string("default"))
-                defaultIsListed = true;
-        }
+        *(ThresholdAttributes *)atts = *clientAtts;
         
-        if (defaultIsListed)
-        {
-            if (plot->GetVarType() != AVT_SCALAR_VAR)
-                setVarListEmpty = true;
-        }
-    }
-    
-    if (setVarListEmpty)
-    {
-        initVarNames.clear();
-        initZonePortions.clear();
-        initLowerBounds.clear();
-        initUpperBounds.clear();
+    ThresholdAttributes *initAtts = (ThresholdAttributes *)atts;
         
-        initAtts->SetListedVarNames(initVarNames);
-        initAtts->SetZonePortions(initZonePortions);
-        initAtts->SetLowerBounds(initLowerBounds);
-        initAtts->SetUpperBounds(initUpperBounds);
-        
-        initAtts->SetShownVarPosition(0);
-    }
-
-    initAtts->SetDefaultVarName(plotVarName);
-
-    *(ThresholdAttributes *)atts = *initAtts;
+    initAtts->SupplyMissingDefaultsIfAppropriate();
     
-    delete initAtts;
+    initAtts->SetDefaultVarName(plot->GetVariableName());
+    initAtts->SetDefaultVarIsScalar(plot->GetVarType() == AVT_SCALAR_VAR);
 }
 
 // ****************************************************************************

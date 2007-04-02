@@ -78,6 +78,9 @@ typedef std::vector<HotPoint> HotPointVector;
 //   Kathleen Bonnell, Fri Jun  6 15:36:24 PDT 2003 
 //   Added FullFrameOn/Off methods.
 //
+//   Mark Blair, Wed Sep 13 12:18:53 PDT 2006
+//   Added ShowsHotPointHighlights method.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitInteractiveTool
@@ -92,6 +95,7 @@ class VISWINDOW_API VisitInteractiveTool
     virtual void          Disable() { enabled = false; };
     bool                  IsEnabled() const { return enabled; };
     virtual bool          IsAvailable() const { return true; };
+    virtual bool          ShowsHotPointHighlights() const { return true; };
 
     virtual void          Start2DMode() {; };
     virtual void          Stop2DMode() {; };

@@ -45,6 +45,7 @@
 #include <VisitPlaneTool.h>
 #include <VisitPointTool.h>
 #include <VisitSphereTool.h>
+#include <VisitExtentsTool.h>
 
 #include <vtkActor2D.h>
 #include <vtkCellArray.h>
@@ -134,6 +135,9 @@ protected:
 //   Brad Whitlock, Mon Oct 28 15:32:33 PST 2002
 //   Added the box tool.
 //
+//   Mark Blair, Wed Aug 30 14:19:00 PDT 2006
+//   Added the extents tool.
+//
 // ****************************************************************************
 
 VisWinTools::VisWinTools(VisWindowColleagueProxy &v) : VisWinColleague(v),
@@ -153,6 +157,7 @@ VisWinTools::VisWinTools(VisWindowColleagueProxy &v) : VisWinColleague(v),
     planeTool = new VisitPlaneTool(toolProxy);
     pointTool = new VisitPointTool(toolProxy);
     sphereTool = new VisitSphereTool(toolProxy);
+    extentsTool = new VisitExtentsTool(toolProxy);
 
     // Add the tools to the tools array.
     tools[numTools++] = boxTool;
@@ -160,6 +165,7 @@ VisWinTools::VisWinTools(VisWindowColleagueProxy &v) : VisWinColleague(v),
     tools[numTools++] = planeTool;
     tools[numTools++] = sphereTool;
     tools[numTools++] = pointTool;
+    tools[numTools++] = extentsTool;
 }
 
 // ****************************************************************************
@@ -949,6 +955,9 @@ void vtkHighlightActor2D::SetHelperRenderer(vtkRenderer *ren)
 //   vtkScalars has been deprecated in VTK 4.0, use vtkUnsignedCharArray
 //   for colors instead.
 //
+//   Mark Blair, Wed Sep 13 14:11:22 PDT 2006
+//   Add a tool's highlights to the actor only if that tool shows highlights.
+//
 // ****************************************************************************
 
 void
@@ -997,7 +1006,7 @@ vtkHighlightActor2D::RegenerateHighlight()
 
     for(i = 0; i < numTools; ++i)
     {
-        if(tools[i]->IsEnabled())
+        if(tools[i]->IsEnabled() && tools[i]->ShowsHotPointHighlights())
         {
             const HotPointVector &hpts = tools[i]->HotPoints();
             for(int j = 0; j < hpts.size(); ++j)

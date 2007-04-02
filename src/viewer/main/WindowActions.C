@@ -74,6 +74,7 @@
 #include <planetool.xpm>
 #include <pointtool.xpm>
 #include <spheretool.xpm>
+#include <extentstool.xpm>
 #include <invertbackground.xpm>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1182,6 +1183,9 @@ SetWindowModeAction::ChoiceToggled(int i) const
 // Creation:   Fri Apr 4 15:51:56 PST 2003
 //
 // Modifications:
+//
+//    Mark Blair, Wed Aug 30 14:09:00 PDT 2006
+//    Added support for Extents tool.
 //   
 // ****************************************************************************
 
@@ -1206,6 +1210,8 @@ EnableToolAction::EnableToolAction(ViewerWindow *win) :
                 AddChoice(tool.c_str(), "Sphere tool", QPixmap(spheretool_xpm));
             else if(tool == "Point")
                 AddChoice(tool.c_str(), "Point tool", QPixmap(pointtool_xpm));
+            else if(tool == "Extents")
+                AddChoice(tool.c_str(), "Extents tool", QPixmap(extentstool_xpm));
             else
                 AddChoice(tool.c_str());
         }

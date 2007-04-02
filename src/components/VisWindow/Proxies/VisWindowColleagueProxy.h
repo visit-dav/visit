@@ -120,7 +120,10 @@
 //    in VisWindowColleagueProxy.C
 //
 //    Kathleen Bonnell, Mon Jun 27 14:54:36 PDT 2005 
-//    Added GetMaxPlotZShift. 
+//    Added GetMaxPlotZShift.
+//
+//    Mark Blair, Mon Sep 25 11:41:09 PDT 2006
+//    Added AxisAnnotationsEnabled.
 //
 // ****************************************************************************
 
@@ -161,6 +164,9 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
 
     bool                HasPlots(void)
                                   { return ProxiedHasPlots(); };
+
+    bool                AxisAnnotationsEnabled()
+                                  { return ProxiedAxisAnnotationsEnabled(); };
 
     bool                UpdatesEnabled(void)
                                   { return ProxiedUpdatesEnabled(); };

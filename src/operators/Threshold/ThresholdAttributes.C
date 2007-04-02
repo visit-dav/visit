@@ -36,12 +36,7 @@
 *****************************************************************************/
 
 #include <ThresholdAttributes.h>
-/* Use of Extents tool temporarily short-curcuited so that multi-variable
-   Threshold operator can be added to VisIt 1.5.3 without the Extents tool or
-   the HighDimension plot.  (mb -- 5/12/06)
-
 #include <ExtentsAttributes.h>
-*/
 #include <DataNode.h>
 
 
@@ -146,17 +141,21 @@ ThresholdAttributes::ZonePortion_FromString(
 //   Mark Blair, Tue Mar  7 13:25:00 PST 2006
 //   Upgraded to support multiple threshold variables.
 //
+//   Mark Blair, Tue Oct  3 13:19:11 PDT 2006
+//   Added flag that indicates whether default plot variable is scalar.
+//
 // ****************************************************************************
 
-ThresholdAttributes::ThresholdAttributes() : AttributeSubject("is*ii*d*d*s")
+ThresholdAttributes::ThresholdAttributes() : AttributeSubject("is*ii*d*d*sb")
 {
     outputMeshType = (int)InputZones;
-    listedVarNames.push_back(std::string("default"));
+    listedVarNames.clear();
     shownVarPosition = 0;
-    zonePortions.push_back((int)PartOfZone);
-    lowerBounds.push_back(-1e+37);
-    upperBounds.push_back(+1e+37);
-    defaultVarName = std::string("(default)");
+    zonePortions.clear();
+    lowerBounds.clear();
+    upperBounds.clear();
+    defaultVarName = std::string("default");
+    defaultVarIsScalar = true;
 }
 
 
@@ -176,10 +175,13 @@ ThresholdAttributes::ThresholdAttributes() : AttributeSubject("is*ii*d*d*s")
 //   Mark Blair, Tue Mar  7 13:25:00 PST 2006
 //   Upgraded to support multiple threshold variables.
 //
+//   Mark Blair, Tue Oct  3 13:19:11 PDT 2006
+//   Added flag that indicates whether default plot variable is scalar.
+//
 // ****************************************************************************
 
 ThresholdAttributes::ThresholdAttributes(const ThresholdAttributes &obj) :
-    AttributeSubject("is*ii*d*d*s")
+    AttributeSubject("is*ii*d*d*sb")
 {
     outputMeshType = obj.outputMeshType;
     listedVarNames = obj.listedVarNames;
@@ -188,6 +190,7 @@ ThresholdAttributes::ThresholdAttributes(const ThresholdAttributes &obj) :
     lowerBounds = obj.lowerBounds;
     upperBounds = obj.upperBounds;
     defaultVarName = obj.defaultVarName;
+    defaultVarIsScalar = obj.defaultVarIsScalar;
 
     SelectAll();
 }
@@ -232,6 +235,9 @@ ThresholdAttributes::~ThresholdAttributes()
 //   Mark Blair, Tue Mar  7 13:25:00 PST 2006
 //   Upgraded to support multiple threshold variables.
 //
+//   Mark Blair, Tue Oct  3 13:19:11 PDT 2006
+//   Added flag that indicates whether default plot variable is scalar.
+//
 // ****************************************************************************
 
 void
@@ -244,6 +250,7 @@ ThresholdAttributes::operator = (const ThresholdAttributes &obj)
     lowerBounds = obj.lowerBounds;
     upperBounds = obj.upperBounds;
     defaultVarName = obj.defaultVarName;
+    defaultVarIsScalar = obj.defaultVarIsScalar;
 
     SelectAll();
 }
@@ -265,6 +272,9 @@ ThresholdAttributes::operator = (const ThresholdAttributes &obj)
 //   Mark Blair, Tue Mar  7 13:25:00 PST 2006
 //   Upgraded to support multiple threshold variables.
 //
+//   Mark Blair, Tue Oct  3 13:19:11 PDT 2006
+//   Added flag that indicates whether default plot variable is scalar.
+//
 // ****************************************************************************
 
 bool
@@ -277,7 +287,8 @@ ThresholdAttributes::operator == (const ThresholdAttributes &obj) const
             (zonePortions == obj.zonePortions) &&
             (lowerBounds == obj.lowerBounds) &&
             (upperBounds == obj.upperBounds) &&
-            (defaultVarName == obj.defaultVarName));
+            (defaultVarName == obj.defaultVarName) &&
+            (defaultVarIsScalar == obj.defaultVarIsScalar));
 }
 
 
@@ -341,13 +352,20 @@ ThresholdAttributes::TypeName() const
 //   Mark Blair, Tue Mar  7 13:25:00 PST 2006
 //   Upgraded to support multiple threshold variables.
 //
+//   Mark Blair, Wed Sep 20 10:59:41 PDT 2006
+//   Uses time ordinals from the Extents tool to avoid conflict with changes
+//   hand-typed by the user in the Threshold operator's GUI window.
+//   
+//   Mark Blair, Tue Oct  3 13:19:11 PDT 2006
+//   Verifies that default plot variable is scalar if in threshold variable list.
+//
 // ****************************************************************************
 
 bool
 ThresholdAttributes::CopyAttributes(const AttributeGroup *atts)
 {
     bool retval = false;
-
+    
     if (TypeName() == atts->TypeName())
     {
         // Call assignment operator.
@@ -355,48 +373,111 @@ ThresholdAttributes::CopyAttributes(const AttributeGroup *atts)
         *this = *tmp;
         retval = true;
     }
-/* Use of Extents tool temporarily short-curcuited so that multi-variable
-   Threshold operator can be added to VisIt 1.5.3 without the Extents tool or
-   the HighDimension plot.  (mb -- 5/12/06)
-
     else if (atts->TypeName() == "ExtentsAttributes")
     {
-        int varPosition, extentNum;
-        double scalarMin, extentSize;
-        std::string listedVarName;
-
         const ExtentsAttributes *extAtts = (const ExtentsAttributes *)atts;
 
-        stringVector copiedScalarNames  = extAtts->GetScalarNames();
-        doubleVector copiedScalarMinima = extAtts->GetScalarMinima();
-        doubleVector copiedScalarMaxima = extAtts->GetScalarMaxima();
-        doubleVector copiedMinima       = extAtts->GetMinima();
-        doubleVector copiedMaxima       = extAtts->GetMaxima();
+        stringVector toolVarNames     = extAtts->GetScalarNames();
+        doubleVector toolAxisMinima   = extAtts->GetScalarMinima();
+        doubleVector toolAxisMaxima   = extAtts->GetScalarMaxima();
+        doubleVector toolSliderMinima = extAtts->GetMinima();
+        doubleVector toolSliderMaxima = extAtts->GetMaxima();
+        intVector    toolMinTimeOrds  = extAtts->GetMinTimeOrdinals();
+        intVector    toolMaxTimeOrds  = extAtts->GetMaxTimeOrdinals();
+        
+        int toolVarCount = toolVarNames.size();
+        int listVarCount = listedVarNames.size();
+        int listVarNum, toolVarNum, timeOrdNum, maxOrdVarNum, maxTimeOrdinal;
+        double toolAxisMin, toolAxisRange;
+        bool updateLowerBound, updateUpperBound, maxOrdIsAMin;
+        std::string listedVarName, toolVarName;
 
-        for (varPosition = 0; varPosition < listedVarNames.size(); varPosition++)
+        for (listVarNum = 0; listVarNum < listVarCount; listVarNum++)
         {
-            listedVarName = listedVarNames[varPosition];
+            listedVarName = listedVarNames[listVarNum];
 
-            for (extentNum = 0; extentNum < copiedScalarNames.size(); extentNum++)
+            for (toolVarNum = 0; toolVarNum < toolVarCount; toolVarNum++)
             {
-                if (copiedScalarNames[extentNum] == listedVarName) break;
+                if ((toolVarName = toolVarNames[toolVarNum]) == listedVarName)
+                    break;
+                    
+                if (listedVarName == std::string("default"))
+                {
+                    if ((toolVarName == defaultVarName) && defaultVarIsScalar)
+                        break;
+                }
             }
 
-            if (extentNum < copiedScalarNames.size())
+            if (toolVarNum < toolVarCount)
             {
-                scalarMin = copiedScalarMinima[extentNum];
-                extentSize = copiedScalarMaxima[extentNum] - scalarMin;
+                updateLowerBound = false; updateUpperBound = false;
+                
+                if ((lowerBounds[listVarNum] < -9e+36) &&
+                    (upperBounds[listVarNum] > +9e+36))
+                {
+                    updateLowerBound = true; updateUpperBound = true;
+                }
+                else
+                {
+                    maxOrdVarNum = -1;
 
-                lowerBounds[varPosition] =
-                    scalarMin + copiedMinima[extentNum]*extentSize;
-                upperBounds[varPosition] =
-                    scalarMin + copiedMaxima[extentNum]*extentSize;
+                    // This must be initialized to 0, which is the ExtentsAttributes
+                    // constructor's time ordinal for all bounds.  No Threshold bound
+                    // should be updated via time ordinal comparison until the user
+                    // moves a slider in the Extents tool.
+
+                    maxTimeOrdinal = 0;
+                    
+                    for (timeOrdNum = 0; timeOrdNum < toolVarCount; timeOrdNum++)
+                    {
+                        if (toolMinTimeOrds[timeOrdNum] > maxTimeOrdinal)
+                        {
+                            maxTimeOrdinal = toolMinTimeOrds[timeOrdNum];
+                            
+                            maxOrdVarNum = timeOrdNum;
+                            maxOrdIsAMin = true;
+                        }
+                        
+                        if (toolMaxTimeOrds[timeOrdNum] > maxTimeOrdinal)
+                        {
+                            maxTimeOrdinal = toolMaxTimeOrds[timeOrdNum];
+                            
+                            maxOrdVarNum = timeOrdNum;
+                            maxOrdIsAMin = false;
+                        }
+                    }
+                    
+                    if (maxOrdVarNum == toolVarNum)
+                    {
+                        if (maxOrdIsAMin)
+                            updateLowerBound = true;
+                        else
+                            updateUpperBound = true;
+                    }
+                }
+                
+                if (updateLowerBound || updateUpperBound)
+                {
+                    toolAxisMin = toolAxisMinima[toolVarNum];
+                    toolAxisRange = toolAxisMaxima[toolVarNum] - toolAxisMin;
+                    
+                    if (updateLowerBound)
+                    {
+                        lowerBounds[listVarNum] =
+                            toolAxisMin + toolSliderMinima[toolVarNum]*toolAxisRange;
+                    }
+                    
+                    if (updateUpperBound)
+                    {
+                        upperBounds[listVarNum] =
+                            toolAxisMin + toolSliderMaxima[toolVarNum]*toolAxisRange;
+                    }
+                }
             }
         }
 
         retval = true;
     }
-*/
 
     return retval;
 }
@@ -482,6 +563,9 @@ ThresholdAttributes::NewInstance(bool copy) const
 //   Mark Blair, Tue Mar  7 13:25:00 PST 2006
 //   Upgraded to support multiple threshold variables.
 //
+//   Mark Blair, Tue Oct  3 13:19:11 PDT 2006
+//   Added flag that indicates whether default plot variable is scalar.
+//
 // ****************************************************************************
 
 bool
@@ -539,6 +623,12 @@ ThresholdAttributes::CreateNode(
         node->AddNode(new DataNode("defaultVarName", defaultVarName));
     }
 
+    if (completeSave || !FieldsEqual(7, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("defaultVarIsScalar", defaultVarIsScalar));
+    }
+
     // Add the node to the parent node.
     if (addToParent || forceAdd)
         parentNode->AddNode(node);
@@ -565,6 +655,9 @@ ThresholdAttributes::CreateNode(
 //   
 //   Mark Blair, Tue Mar  7 13:25:00 PST 2006
 //   Upgraded to support multiple threshold variables.
+//
+//   Mark Blair, Tue Oct  3 13:19:11 PDT 2006
+//   Added flag that indicates whether default plot variable is scalar.
 //
 // ****************************************************************************
 
@@ -616,6 +709,11 @@ ThresholdAttributes::SetFromNode(DataNode *parentNode)
     if ((node = searchNode->GetNode("defaultVarName")) != NULL)
     {
         SetDefaultVarName(node->AsString());
+    }
+
+    if ((node = searchNode->GetNode("defaultVarIsScalar")) != NULL)
+    {
+        SetDefaultVarIsScalar(node->AsBool());
     }
 }
 
@@ -703,6 +801,95 @@ ThresholdAttributes::SetDefaultVarName(const std::string &defaultVarName_)
 }
 
 
+void
+ThresholdAttributes::SetDefaultVarIsScalar(bool defaultVarIsScalar_)
+{
+    defaultVarIsScalar = defaultVarIsScalar_;
+    Select(7, (void *)&defaultVarIsScalar);
+}
+
+
+// ****************************************************************************
+// Method: ThresholdAttributes::SupplyMissingDefaultsIfAppropriate
+//
+// Purpose: If attributes are set up for a single threshold variable, supply
+//          default values for any attribute values that are missing.
+//
+// Programmer: Mark Blair
+// Creation:   Thu Sep 28 12:07:05 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ThresholdAttributes::SupplyMissingDefaultsIfAppropriate()
+{
+    int totalEntryCount = 0;
+    
+    if (listedVarNames.size() > 1) return;
+    totalEntryCount += listedVarNames.size();
+        
+    if (zonePortions.size() > 1) return;
+    totalEntryCount += zonePortions.size();
+        
+    if (lowerBounds.size() > 1) return;
+    totalEntryCount += lowerBounds.size();
+        
+    if (upperBounds.size() > 1) return;
+    totalEntryCount += upperBounds.size();
+    
+    if ((totalEntryCount & 3) == 0) return;
+    
+    stringVector singleVarName;
+    intVector    singleZonePortion;
+    doubleVector singleLowerBound;
+    doubleVector singleUpperBound;
+    
+    if (listedVarNames.size() == 0)
+    {
+        singleVarName.push_back(std::string("default"));
+        SetListedVarNames(singleVarName);
+    }
+        
+    if (zonePortions.size() == 0)
+    {
+        singleZonePortion.push_back((int)PartOfZone);
+        SetZonePortions(singleZonePortion);
+    }
+        
+    if (lowerBounds.size() == 0)
+    {
+        singleLowerBound.push_back(-1e+37);
+        SetLowerBounds(singleLowerBound);
+    }
+        
+    if (upperBounds.size() == 0)
+    {
+        singleUpperBound.push_back(+1e+37);
+        SetUpperBounds(singleUpperBound);
+    }
+}
+
+
+// ****************************************************************************
+// Method: ThresholdAttributes::AttributesAreConsistent
+//
+// Purpose: Returns true only if (1) all vector attributes are the same length
+//          and (2) the index of the currently displayable variable information
+//          in the Threshold GUI window is in range.
+//
+//
+// Programmer: Mark Blair
+// Creation:   Tue Mar  7 13:25:00 PST 2006
+//
+// Modifications:
+//   
+//   Mark Blair, Tue Aug  8 17:47:00 PDT 2006
+//   Now accommodates an empty list of threshold variables.
+//
+// ****************************************************************************
+
 bool
 ThresholdAttributes::AttributesAreConsistent() const
 {
@@ -722,18 +909,61 @@ ThresholdAttributes::AttributesAreConsistent() const
 }
 
 
+// ****************************************************************************
+// Method: ThresholdAttributes::SwitchDefaultToTrueVariableNameIfScalar
+//
+// Purpose: Replaces the anonymous "default" variable name with its true name
+//          if the default variable is scalar.
+//
+// Programmer: Mark Blair
+// Creation:   Tue Mar  7 13:25:00 PST 2006
+//
+// Modifications:
+//   
+//   Mark Blair, Tue Oct  3 13:19:11 PDT 2006
+//   Deletes default variable from threshold variable list if not scalar.
+//
+// ****************************************************************************
+
 void
-ThresholdAttributes::SwitchToPipelineVariable(const std::string &pipelineVarName_)
+ThresholdAttributes::SwitchDefaultToTrueVariableNameIfScalar()
 {
-    for (int varPosition = 0; varPosition < listedVarNames.size(); varPosition++)
+    int varPosition;
+    bool changedTheList;
+    std::string listedVarName;
+
+    do
     {
-        if (listedVarNames[varPosition] == std::string("default"))
+        for (varPosition = 0; varPosition < listedVarNames.size(); varPosition++)
         {
-            listedVarNames[varPosition] = pipelineVarName_;
+            listedVarName = listedVarNames[varPosition];
+
+            if (listedVarName == std::string("default")) break;
+            if (listedVarName == defaultVarName) break;
+        }
+        
+        changedTheList = false;
+    
+        if (varPosition < listedVarNames.size())
+        {
+            if (defaultVarIsScalar)
+            {
+                if (listedVarName == std::string("default"))
+                {
+                    listedVarNames[varPosition] = defaultVarName;
+                    Select(1, (void *)&listedVarNames);
+                    
+                    changedTheList = true;
+                }
+            }
+            else
+            {
+                DeleteVariable(defaultVarName);
+                changedTheList = true;
+            }
         }
     }
-
-    Select(1, (void *)&listedVarNames);
+    while (changedTheList);
 }
 
 
@@ -750,32 +980,44 @@ ThresholdAttributes::SwitchToPipelineVariable(const std::string &pipelineVarName
 void
 ThresholdAttributes::ChangeZonePortion(ZonePortion newZonePortion_)
 {
-    zonePortions[shownVarPosition] = (int)newZonePortion_;
-    Select(3, (void *)&zonePortions);
+    if (shownVarPosition < zonePortions.size())
+    {
+        zonePortions[shownVarPosition] = (int)newZonePortion_;
+        Select(3, (void *)&zonePortions);
+    }
 }
 
 
 void
 ThresholdAttributes::ChangeZonePortion(int newZonePortion_)
 {
-    zonePortions[shownVarPosition] = newZonePortion_;
-    Select(3, (void *)&zonePortions);
+    if (shownVarPosition < zonePortions.size())
+    {
+        zonePortions[shownVarPosition] = newZonePortion_;
+        Select(3, (void *)&zonePortions);
+    }
 }
 
 
 void
 ThresholdAttributes::ChangeLowerBound(double newLowerBound_)
 {
-    lowerBounds[shownVarPosition] = newLowerBound_;
-    Select(4, (void *)&lowerBounds);
+    if (shownVarPosition < lowerBounds.size())
+    {
+        lowerBounds[shownVarPosition] = newLowerBound_;
+        Select(4, (void *)&lowerBounds);
+    }
 }
 
 
 void
 ThresholdAttributes::ChangeUpperBound(double newUpperBound_)
 {
-    upperBounds[shownVarPosition] = newUpperBound_;
-    Select(5, (void *)&upperBounds);
+    if (shownVarPosition < upperBounds.size())
+    {
+        upperBounds[shownVarPosition] = newUpperBound_;
+        Select(5, (void *)&upperBounds);
+    }
 }
 
 
@@ -794,35 +1036,52 @@ ThresholdAttributes::ChangeUpperBound(double newUpperBound_)
 //   Mark Blair, Tue Aug  8 17:47:00 PDT 2006
 //   Now accommodates an empty list of threshold variables.
 //
+//   Mark Blair, Tue Oct  3 13:19:11 PDT 2006
+//   If variable to be inserted is default variable, uses true variable name.
+//
 // ****************************************************************************
 
 void
 ThresholdAttributes::InsertVariable(const std::string &variable_)
 {
     int varPosition;
-    std::string insertVarName =
-        (variable_ == defaultVarName) ? std::string("default") : variable_;
+    std::string listedVarName;
 
     for (varPosition = 0; varPosition < listedVarNames.size(); varPosition++)
     {
-        if (listedVarNames[varPosition] == insertVarName) break;
+        if ((listedVarName = listedVarNames[varPosition]) == variable_) return;
+
+        if (listedVarName == std::string("default"))
+        {
+            if (variable_ == defaultVarName)
+            {
+                if (defaultVarIsScalar)
+                {
+                    listedVarNames[varPosition] = defaultVarName;
+                    Select(1, (void *)&listedVarNames);
+                }
+                else    // Should never happen, but . . .
+                {
+                    DeleteVariable(std::string("default"));
+                }
+                
+                return;
+            }
+        }
     }
 
-    if (varPosition >= listedVarNames.size())
-    {
-        shownVarPosition = listedVarNames.size(); // Will be correct new position.
+    shownVarPosition = listedVarNames.size(); // Will be correct new position.
 
-        listedVarNames.push_back(insertVarName);
-        zonePortions.push_back((int)PartOfZone);
-        lowerBounds.push_back(-1e+37);
-        upperBounds.push_back(+1e+37);
+    listedVarNames.push_back(variable_);
+    zonePortions.push_back((int)PartOfZone);
+    lowerBounds.push_back(-1e+37);
+    upperBounds.push_back(+1e+37);
 
-        Select(1, (void *)&listedVarNames);
-        Select(2, (void *)&shownVarPosition);
-        Select(3, (void *)&zonePortions);
-        Select(4, (void *)&lowerBounds);
-        Select(5, (void *)&upperBounds);
-    }
+    Select(1, (void *)&listedVarNames);
+    Select(2, (void *)&shownVarPosition);
+    Select(3, (void *)&zonePortions);
+    Select(4, (void *)&lowerBounds);
+    Select(5, (void *)&upperBounds);
 }
 
 
@@ -849,12 +1108,16 @@ ThresholdAttributes::DeleteVariable(const std::string &variable_)
     if (listedVarNames.size() == 0) return;
 
     int varPosition, newListSize;
-    std::string deleteVarName =
-        (variable_ == defaultVarName) ? std::string("default") : variable_;
+    std::string listedVarName;
 
     for (varPosition = 0; varPosition < listedVarNames.size(); varPosition++)
     {
-        if (listedVarNames[varPosition] == deleteVarName) break;
+        if ((listedVarName = listedVarNames[varPosition]) == variable_) break;
+
+        if (listedVarName == std::string("default"))
+        {
+            if (variable_ == defaultVarName) break;
+        }
     }
 
     if (varPosition < listedVarNames.size())
@@ -898,22 +1161,28 @@ ThresholdAttributes::DeleteVariable(const std::string &variable_)
 void
 ThresholdAttributes::SwapVariable(const std::string &variable_)
 {
-    int varPosition;
-    std::string swapVarName =
-        (variable_ == defaultVarName) ? std::string("default") : variable_;
-        
     if (listedVarNames.size() == 0)
     {
-        InsertVariable(swapVarName);
+        InsertVariable(variable_);
         return;
     }
+    
+    int varPosition;
+    std::string listedVarName;
 
     for (varPosition = 0; varPosition < listedVarNames.size(); varPosition++)
     {
-        if (listedVarNames[varPosition] == swapVarName) break;
-    }
+        if ((listedVarName = listedVarNames[varPosition]) == variable_) return;
 
-    if (varPosition < listedVarNames.size()) return;
+        if (listedVarName == std::string("default"))
+        {
+            if (variable_ == defaultVarName)
+            {
+                InsertVariable(variable_);
+                return;
+            }
+        }
+    }
 
     std::string shownVarName = listedVarNames[shownVarPosition];
 
@@ -1081,6 +1350,13 @@ ThresholdAttributes::GetDefaultVarName()
 }
 
 
+bool
+ThresholdAttributes::GetDefaultVarIsScalar() const
+{
+    return defaultVarIsScalar;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1109,6 +1385,9 @@ ThresholdAttributes::SelectVariable()
 //   Mark Blair, Tue Mar  7 13:25:00 PST 2006
 //   Upgraded to support multiple threshold variables.
 //
+//   Mark Blair, Tue Oct  3 13:19:11 PDT 2006
+//   Added flag that indicates whether default plot variable is scalar.
+//
 // ****************************************************************************
 
 void
@@ -1121,6 +1400,63 @@ ThresholdAttributes::SelectAll()
     Select(4, (void *)&lowerBounds);
     Select(5, (void *)&upperBounds);
     Select(6, (void *)&defaultVarName);
+    Select(7, (void *)&defaultVarIsScalar);
+}
+
+
+void
+ThresholdAttributes::SelectOutputMeshType()
+{
+    Select(0, (void *)&outputMeshType);
+}
+
+
+void
+ThresholdAttributes::SelectListedVarNames()
+{
+    Select(1, (void *)&listedVarNames);
+}
+
+
+void
+ThresholdAttributes::SelectShownVarPosition()
+{
+    Select(2, (void *)&shownVarPosition);
+}
+
+
+void
+ThresholdAttributes::SelectZonePortions()
+{
+    Select(3, (void *)&zonePortions);
+}
+
+
+void
+ThresholdAttributes::SelectLowerBounds()
+{
+    Select(4, (void *)&lowerBounds);
+}
+
+
+void
+ThresholdAttributes::SelectUpperBounds()
+{
+    Select(5, (void *)&upperBounds);
+}
+
+
+void
+ThresholdAttributes::SelectDefaultVarName()
+{
+    Select(6, (void *)&defaultVarName);
+}
+
+
+void
+ThresholdAttributes::SelectDefaultVarIsScalar()
+{
+    Select(7, (void *)&defaultVarIsScalar);
 }
 
 
@@ -1186,55 +1522,6 @@ ThresholdAttributes::GetUpperBounds()
 }
 
 
-void
-ThresholdAttributes::SelectOutputMeshType()
-{
-    Select(0, (void *)&outputMeshType);
-}
-
-
-void
-ThresholdAttributes::SelectListedVarNames()
-{
-    Select(1, (void *)&listedVarNames);
-}
-
-
-void
-ThresholdAttributes::SelectShownVarPosition()
-{
-    Select(2, (void *)&shownVarPosition);
-}
-
-
-void
-ThresholdAttributes::SelectZonePortions()
-{
-    Select(3, (void *)&zonePortions);
-}
-
-
-void
-ThresholdAttributes::SelectLowerBounds()
-{
-    Select(4, (void *)&lowerBounds);
-}
-
-
-void
-ThresholdAttributes::SelectUpperBounds()
-{
-    Select(5, (void *)&upperBounds);
-}
-
-
-void
-ThresholdAttributes::SelectDefaultVarName()
-{
-    Select(6, (void *)&defaultVarName);
-}
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // Keyframing methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1256,6 +1543,9 @@ ThresholdAttributes::SelectDefaultVarName()
 //   Mark Blair, Tue Mar  7 13:25:00 PST 2006
 //   Upgraded to support multiple threshold variables.
 //
+//   Mark Blair, Tue Oct  3 13:19:11 PDT 2006
+//   Added flag that indicates whether default plot variable is scalar.
+//
 // ****************************************************************************
 
 std::string
@@ -1270,6 +1560,7 @@ ThresholdAttributes::GetFieldName(int index) const
         case 4: return "lowerBounds";
         case 5: return "upperBounds";
         case 6: return "defaultVarName";
+        case 7: return "defaultVarIsScalar";
         default: return "invalid index";
     }
 }
@@ -1291,6 +1582,9 @@ ThresholdAttributes::GetFieldName(int index) const
 //   Mark Blair, Tue Mar  7 13:25:00 PST 2006
 //   Upgraded to support multiple threshold variables.
 //
+//   Mark Blair, Tue Oct  3 13:19:11 PDT 2006
+//   Added flag that indicates whether default plot variable is scalar.
+//
 // ****************************************************************************
 
 AttributeGroup::FieldType
@@ -1305,6 +1599,7 @@ ThresholdAttributes::GetFieldType(int index) const
         case 4: return FieldType_doubleVector;
         case 5: return FieldType_doubleVector;
         case 6: return FieldType_string;
+        case 7: return FieldType_bool;
         default: return FieldType_unknown;
     }
 }
@@ -1326,6 +1621,9 @@ ThresholdAttributes::GetFieldType(int index) const
 //   Mark Blair, Tue Mar  7 13:25:00 PST 2006
 //   Upgraded to support multiple threshold variables.
 //
+//   Mark Blair, Tue Oct  3 13:19:11 PDT 2006
+//   Added flag that indicates whether default plot variable is scalar.
+//
 // ****************************************************************************
 
 std::string
@@ -1340,6 +1638,7 @@ ThresholdAttributes::GetFieldTypeName(int index) const
         case 4: return "doubleVector";
         case 5: return "doubleVector";
         case 6: return "string";
+        case 7: return "bool";
         default: return "invalid index";
     }
 }
@@ -1360,6 +1659,9 @@ ThresholdAttributes::GetFieldTypeName(int index) const
 //   
 //   Mark Blair, Tue Mar  7 13:25:00 PST 2006
 //   Upgraded to support multiple threshold variables.
+//
+//   Mark Blair, Tue Oct  3 13:19:11 PDT 2006
+//   Added flag that indicates whether default plot variable is scalar.
 //
 // ****************************************************************************
 
@@ -1404,6 +1706,11 @@ ThresholdAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case 6:
         {  // new scope
         retval = (defaultVarName == obj.defaultVarName);
+        }
+        break;
+    case 7:
+        {  // new scope
+        retval = (defaultVarIsScalar == obj.defaultVarIsScalar);
         }
         break;
     default: retval = false;
