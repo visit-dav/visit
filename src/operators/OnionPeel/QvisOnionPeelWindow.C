@@ -491,6 +491,9 @@ QvisOnionPeelWindow::FillCategoryBox()
 //   Kathleen Bonnell, Thu Sep  2 15:54:03 PDT 2004 
 //   Disable if zero or 1 names.
 //   
+//   Kathleen Bonnell, Thu Jan 26 07:33:29 PST 2006 
+//   Add silTopSet to argslist for GetCollectionIndex. 
+//   
 // ****************************************************************************
 
 void
@@ -508,7 +511,7 @@ QvisOnionPeelWindow::FillSubsetBox()
         //
         // Fill  with sets under the currently selected category.
         //
-        int colIndex = restriction->GetCollectionIndex(cn.latin1());
+        int colIndex = restriction->GetCollectionIndex(cn.latin1(), silTopSet);
         avtSILCollection_p collection =restriction->GetSILCollection(colIndex); 
         if (*collection != NULL)
         {

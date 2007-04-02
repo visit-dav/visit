@@ -233,7 +233,7 @@ if [ $hoth = true ]
 then
    if [ $test = no ]
    then
-      scp hoth:/var/tmp/$user/hoth/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_rhel3.tar.gz
+      scp hoth:/scratch/$user/hoth/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_rhel3.tar.gz
       scp visit$ver2.linux_rhel3.tar.gz kickit:
       scp visit-install kickit:
       scp hoth kickit:hoth_install

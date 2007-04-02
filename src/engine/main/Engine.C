@@ -387,7 +387,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     if (avtCallback::GetSoftwareRendering())
         InitVTK::ForceMesa();
     else
-        setenv("DISPLAY", ":0", 1);
+        putenv("DISPLAY=:0");
     avtCallback::SetNowinMode(true);
 
     //

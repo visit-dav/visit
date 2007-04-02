@@ -534,6 +534,10 @@ avtOnionPeelFilter::RefashionDataObjectInfo(void)
 //    Kathleen Bonnell, Wed Jan 19 16:15:35 PST 2005 
 //    Request NodeNumbers whenever zones not preserved, and seedId is a node. 
 //
+//    Kathleen Bonnell, Thu Jan 26 07:33:29 PST 2006 
+//    Add TopSet to argslist for GetCollectionIndex, added collectionID to
+//    argslist for GetSetIndex.
+//   
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -573,12 +577,13 @@ avtOnionPeelFilter::PerformRestriction(avtPipelineSpecification_p spec)
 
     avtPipelineSpecification_p rv = new avtPipelineSpecification(spec);
 
+    string category = atts.GetCategoryName();
     string subset = atts.GetSubsetName();
-    int setID;
     avtSILRestriction_p silr = spec->GetDataSpecification()->GetRestriction();
+    int collectionID = silr->GetCollectionIndex(category, silr->GetTopSet());
     CompactSILRestrictionAttributes *silAtts = silr->MakeCompactAttributes();
     const unsignedCharVector &useSet =  silAtts->GetUseSet();
-    setID = silr->GetSetIndex(subset);
+    int setID = silr->GetSetIndex(subset, collectionID);
     if (useSet[setID] == 0) 
     {
         EXCEPTION1(InvalidSetException, subset.c_str());
@@ -630,6 +635,10 @@ avtOnionPeelFilter::PerformRestriction(avtPipelineSpecification_p spec)
 //    Move connectivity check to PreExecute, since whether the connectivity
 //    has changed may be more accurate there than it is here.
 //
+//    Kathleen Bonnell, Thu Jan 26 07:33:29 PST 2006 
+//    Add TopSet to argslist for GetCollectionIndex, added collectionID to
+//    argslist for GetSetIndex.
+//   
 // ****************************************************************************
 
 void
@@ -648,8 +657,8 @@ avtOnionPeelFilter::VerifyInput()
     int setID, collectionID;
     TRY
     {
-        collectionID = silr->GetCollectionIndex(category);
-        setID = silr->GetSetIndex(subset);
+        collectionID = silr->GetCollectionIndex(category, silr->GetTopSet());
+        setID = silr->GetSetIndex(subset, collectionID);
         avtSILCollection_p coll = silr->GetSILCollection(collectionID);
 
         if (coll->GetRole() != SIL_DOMAIN && coll->GetRole() != SIL_BLOCK)
