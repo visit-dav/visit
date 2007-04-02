@@ -166,13 +166,14 @@ cat <<EOF > crier
 #!/bin/sh
 ./visit-install -r -private -c closed -g visit -b bdivp -gw -l $ver linux_rhel3 /usr/gapps/visit > installlog 2>&1
 mv /usr/gapps/visit/$ver/linux-intel /usr/gapps/visit/$ver/linux-intel-2.4.29
-echo ""                                            >> resultlog 2>&1
+rm -f resultlog
+echo ""                                            > resultlog 2>&1
 echo "        install of visit on crier"           >> resultlog 2>&1
 echo "       ---------------------------"          >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver/linux-intel/bin        >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver/linux-intel-2.4.29/bin >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/linux-intel-2.4.29/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
 echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/linux-intel-2.4.29/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
@@ -180,6 +181,7 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/linux-intel-2.4.29/pl
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver/linux-intel-2.4.29/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/linux-intel-2.4.29\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mv resultlog resultlog.crier
 EOF
 
 if [ $crier = true ]
@@ -187,10 +189,10 @@ then
    if [ $test = no ]
    then
       scp -P 22 crier:/gscratch/$user/crier/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_rhel3.tar.gz
-      scp -P 22 visit$ver2.linux_rhel3.tar.gz sunset:
-      scp visit-install sunset:
-      scp crier sunset:crier_install
-      ssh sunset "chmod 750 crier_install;./crier_install"
+      scp -P 22 visit$ver2.linux_rhel3.tar.gz crier:
+      scp -P 22 visit-install crier:
+      scp -P 22 crier crier:crier_install
+      ssh -p 22 crier "chmod 750 crier_install;./crier_install"
    fi
 fi
 
@@ -201,7 +203,8 @@ rm -f hitit
 cat <<EOF > hitit
 #!/bin/sh
 ./visit-install -private -c closed -g visit -b bdivp -gw -l $ver linux_redhat7 /usr/gapps/visit > installlog 2>&1
-echo ""                                            >> resultlog 2>&1
+rm -f resultlog
+echo ""                                            > resultlog 2>&1
 echo "        install of visit on hitit"           >> resultlog 2>&1
 echo "       ---------------------------"          >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
@@ -215,6 +218,7 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/linux-intel/plugins/p
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mv resultlog resultlog.hitit
 EOF
 
 if [ $hitit = true ]
@@ -222,7 +226,7 @@ then
    if [ $test = no ]
    then
       scp -P 22 hitit:/gscratch/$user/hitit/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_redhat7.tar.gz
-      scp -P 22 visit$ver2.linux_redhat7.tar.gz sunset:
+      scp visit$ver2.linux_redhat7.tar.gz sunset:
       scp visit-install sunset:
       scp hitit sunset:hitit_install
       ssh sunset "chmod 750 hitit_install;./hitit_install"
@@ -236,7 +240,8 @@ rm -f sunset
 cat <<EOF > sunset
 #!/bin/sh
 ./visit-install $verflag -c closed -g visit -b bdivp -gw -l $ver sunos5 /usr/gapps/visit > installlog 2>&1
-echo ""                                            >> resultlog 2>&1
+rm -f resultlog
+echo ""                                            > resultlog 2>&1
 echo "        install of visit on sunset"          >> resultlog 2>&1
 echo "       ----------------------------"         >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
@@ -250,14 +255,15 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/sun4-sunos5-sparc/plu
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver/sun4-sunos5-sparc/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/sun4-sunos5-sparc\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mv resultlog resultlog.sunset
 EOF
 
 if [ $sunset = true ]
 then
    if [ $test = no ]
    then
-      scp -P 22 sunset:/export/scratch/$user/sunset/visitbuild/visit$ver2.sunos5.tar.gz .
-      scp -P 22 visit$ver2.sunos5.tar.gz sunset:
+      scp sunset:/export/scratch/$user/sunset/visitbuild/visit$ver2.sunos5.tar.gz .
+      scp visit$ver2.sunos5.tar.gz sunset:
       scp visit-install sunset:
       scp sunset sunset:sunset_install
       ssh sunset "chmod 750 sunset_install;./sunset_install"
@@ -271,7 +277,8 @@ rm -f sc
 cat <<EOF > sc
 #!/bin/sh
 ./visit-install -r -private -c closed -g visit -b bdivp -gw -l $ver osf1 /usr/gapps/visit > installlog 2>&1
-echo ""                                            >> resultlog 2>&1
+rm -f resultlog
+echo ""                                            > resultlog 2>&1
 echo "        install of visit on sc"              >> resultlog 2>&1
 echo "       ------------------------"             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
@@ -285,6 +292,7 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/dec-osf1-alpha/plugin
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver/dec-osf1-alpha/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/dec-osf1-alpha\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mv resultlog resultlog.sc
 EOF
 
 if [ $sc = true ]
@@ -306,7 +314,8 @@ rm -f ice
 cat <<EOF > ice
 #!/bin/sh
 ./visit-install -private -c closed -g visit -b bdivp -gw -l $ver aix /usr/gapps/visit > installlog 2>&1
-echo ""                                            >> resultlog 2>&1
+rm -f resultlog
+echo ""                                            > resultlog 2>&1
 echo "        install of visit on ice"             >> resultlog 2>&1
 echo "       -------------------------"            >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
@@ -320,6 +329,7 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr/plugins/p
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver/ibm-aix-pwr/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/ibm-aix-pwr\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mv resultlog resultlog.ice
 EOF
 
 if [ $ice = true ]
@@ -329,7 +339,7 @@ then
       scp ice:/p/gi1/$user/ice/visitbuild/visit$ver2.aix.tar.gz .
       scp visit$ver2.aix.tar.gz lilac3:
       scp visit-install lilac3:
-      scp ice lilac3:sc_install
+      scp ice lilac3:ice_install
       ssh lilac3 "chmod 750 ice_install;./ice_install"
    fi
 fi
@@ -341,7 +351,8 @@ rm -f purple
 cat <<EOF > purple
 #!/bin/sh
 ./visit-install -private -c closed -g visit -b bdivp -gw -l $ver aix64-xlc /usr/gapps/visit > installlog 2>&1
-echo ""                                            >> resultlog 2>&1
+rm -f resultlog
+echo ""                                            > resultlog 2>&1
 echo "        install of visit on purple"          >> resultlog 2>&1
 echo "       ----------------------------"         >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
@@ -355,6 +366,7 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr64-xlc/plu
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver/ibm-aix-pwr64-xlc/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/ibm-aix-pwr64-xlc\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mv resultlog resultlog.purple
 EOF
 
 if [ $purple = true ]
@@ -364,7 +376,7 @@ then
       scp purple:/p/gscratch3/$user/purple/visitbuild/visit$ver2.aix64-xlc.tar.gz .
       scp visit$ver2.aix64-xlc.tar.gz lilac3:
       scp visit-install lilac3:
-      scp purple lilac3:sc_install
+      scp purple lilac3:purple_install
       ssh lilac3 "chmod 750 purple_install;./purple_install"
    fi
 fi
@@ -376,7 +388,8 @@ rm -f lilac
 cat <<EOF > lilac
 #!/bin/sh
 ./visit-install -private -c closed -g visit -b bdivp -gw -l $ver linux_chaos /usr/gapps/visit > installlog 2>&1
-echo ""                                            >> resultlog 2>&1
+rm -f resultlog
+echo ""                                            > resultlog 2>&1
 echo "        install of visit on lilac"           >> resultlog 2>&1
 echo "       ---------------------------"          >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
@@ -390,6 +403,7 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/linux-intel/plugins/p
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mv resultlog resultlog.lilac
 EOF
  
 if [ $lilac = true ]
@@ -399,7 +413,7 @@ then
       scp lilac3:/usr/tmp/$user/lilac/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_chaos.tar.gz
       scp visit$ver2.linux_chaos.tar.gz lilac3:
       scp visit-install lilac3:
-      scp lilac lilac3:sc_install
+      scp lilac lilac3:lilac_install
       ssh lilac3 "chmod 750 lilac_install;./lilac_install"
    fi
 fi
@@ -411,7 +425,8 @@ rm -f gauss
 cat <<EOF > gauss
 #!/bin/sh
 ./visit-install $verflag -c closed -g visit -b bdivp -gw -l $ver linux-x86_64-ib /usr/gapps/visit > installlog 2>&1
-echo ""                                            >> resultlog 2>&1
+rm -f resultlog
+echo ""                                            > resultlog 2>&1
 echo "        install of visit on gauss"           >> resultlog 2>&1
 echo "       ---------------------------"          >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
@@ -425,6 +440,7 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/linux-x86_64-ib/plugi
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver/linux-x86_64-ib/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/linux-x86_64-ib\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mv resultlog resultlog.gauss
 EOF
 
 if [ $gauss = true ]
@@ -434,7 +450,7 @@ then
       scp gauss2:/usr/tmp/$user/gauss/visitbuild/visit$ver2.linux-x86_64-ib.tar.gz .
       scp visit$ver2.linux-x86_64-ib.tar.gz lilac3:
       scp visit-install lilac3:
-      scp gauss lilac3:sc_install
+      scp gauss lilac3:gauss_install
       ssh lilac3 "chmod 750 gauss_install;./gauss_install"
    fi
 fi

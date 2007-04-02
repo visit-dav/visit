@@ -28,6 +28,7 @@
 #include "vtkMapper.h"
 
 class vtkPolyDataMapper;
+class vtkRectilinearGridMapper;
 class vtkDataSetSurfaceFilter;
 
 class VISIT_VTK_API vtkVisItDataSetMapper : public vtkMapper 
@@ -76,10 +77,11 @@ protected:
   vtkVisItDataSetMapper();
   ~vtkVisItDataSetMapper();
 
-  vtkDataSetSurfaceFilter *GeometryExtractor;
-  vtkPolyDataMapper       *PolyDataMapper;
-  PointTextureMode         PointTextureMethod;
-  bool                     EnableColorTexturing;
+  vtkDataSetSurfaceFilter   *GeometryExtractor;
+  vtkPolyDataMapper         *PolyDataMapper;
+  vtkRectilinearGridMapper  *RectilinearGridMapper;
+  PointTextureMode           PointTextureMethod;
+  bool                       EnableColorTexturing;
 
   virtual void ReportReferences(vtkGarbageCollector*);
   virtual int FillInputPortInformation(int port, vtkInformation *info);

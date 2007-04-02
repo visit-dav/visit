@@ -22,9 +22,13 @@
 #include "vtkObjectFactory.h"
 #include "vtkPolyData.h"
 #include "vtkPolyDataMapper.h"
+#include "vtkRectilinearGridMapper.h"
 
+#include "vtkOpenGLRectilinearGridMapper.h"
+#include "vtkMesaRectilinearGridMapper.h"
 #include <vtkVisItOpenGLPolyDataMapper.h>
 #include <vtkVisItMesaPolyDataMapper.h>
+
 
 vtkCxxRevisionMacro(vtkVisItDataSetMapper, "$Revision: 1.70 $");
 vtkStandardNewMacro(vtkVisItDataSetMapper);
@@ -43,6 +47,7 @@ vtkVisItDataSetMapper::vtkVisItDataSetMapper()
 {
   this->GeometryExtractor = NULL;
   this->PolyDataMapper = NULL;
+  this->RectilinearGridMapper = NULL;
   this->PointTextureMethod = TEXTURE_NO_POINTS;
   this->EnableColorTexturing = false;
 }
@@ -57,6 +62,10 @@ vtkVisItDataSetMapper::~vtkVisItDataSetMapper()
   if ( this->PolyDataMapper )
     {
     this->PolyDataMapper->Delete();
+    }
+  if ( this->RectilinearGridMapper )
+    {
+    this->RectilinearGridMapper->Delete();
     }
 }
 
@@ -98,6 +107,9 @@ void vtkVisItDataSetMapper::ReleaseGraphicsResources( vtkWindow *renWin )
 //   Brad Whitlock, Fri Aug 25 10:46:54 PDT 2006
 //   Added a call to SetEnableColorTexturing.
 //
+//   Hank Childs, Mon Dec 18 15:13:10 PST 2006
+//   Add support for rectilinear rendering.
+//
 // ****************************************************************************
 
 void vtkVisItDataSetMapper::Render(vtkRenderer *ren, vtkActor *act)
@@ -124,25 +136,24 @@ void vtkVisItDataSetMapper::Render(vtkRenderer *ren, vtkActor *act)
     {
     vtkDataSetSurfaceFilter *gf = vtkDataSetSurfaceFilter::New();
     vtkPolyDataMapper *pm = vtkPolyDataMapper::New();
+    vtkRectilinearGridMapper *rgm = vtkRectilinearGridMapper::New();
     pm->SetInput(gf->GetOutput());
 
     this->GeometryExtractor = gf;
     this->PolyDataMapper = pm;
+    this->RectilinearGridMapper = rgm;
     this->SetPointTextureMethod(this->PointTextureMethod);
     this->SetEnableColorTexturing(this->EnableColorTexturing);
-    }
-
-  // share clipping planes with the PolyDataMapper
-  //
-  if (this->ClippingPlanes != this->PolyDataMapper->GetClippingPlanes()) 
-    {
-    this->PolyDataMapper->SetClippingPlanes(this->ClippingPlanes);
     }
 
   // For efficiency: if input type is vtkPolyData, there's no need to 
   // pass it thru the geometry filter.
   //
-  if ( this->GetInput()->GetDataObjectType() == VTK_POLY_DATA )
+  if ( this->GetInput()->GetDataObjectType() == VTK_RECTILINEAR_GRID )
+    {
+    this->RectilinearGridMapper->SetInput((vtkRectilinearGrid *)(this->GetInput()));
+    }
+  else if ( this->GetInput()->GetDataObjectType() == VTK_POLY_DATA )
     {
     this->PolyDataMapper->SetInput((vtkPolyData *)(this->GetInput()));
     }
@@ -152,33 +163,48 @@ void vtkVisItDataSetMapper::Render(vtkRenderer *ren, vtkActor *act)
     this->PolyDataMapper->SetInput(this->GeometryExtractor->GetOutput());
     }
   
-  // update ourselves in case something has changed
-  this->PolyDataMapper->SetLookupTable(this->GetLookupTable());
-  this->PolyDataMapper->SetScalarVisibility(this->GetScalarVisibility());
-  this->PolyDataMapper->SetUseLookupTableScalarRange(
-    this->GetUseLookupTableScalarRange());
-  this->PolyDataMapper->SetScalarRange(this->GetScalarRange());
-  this->PolyDataMapper->SetImmediateModeRendering(
-    this->GetImmediateModeRendering());
-  this->PolyDataMapper->SetColorMode(this->GetColorMode());
-  this->PolyDataMapper->SetInterpolateScalarsBeforeMapping(
-                               this->GetInterpolateScalarsBeforeMapping());
-  this->PolyDataMapper->SetScalarMode(this->GetScalarMode());
+  vtkMapper *mapper = NULL;
+  if ( this->GetInput()->GetDataObjectType() == VTK_RECTILINEAR_GRID )
+    {
+    mapper = this->RectilinearGridMapper;
+    }
+  else
+    {
+    mapper = this->PolyDataMapper;
+    }
+    
+  // share clipping planes with the mapper
+  //
+  if (this->ClippingPlanes != mapper->GetClippingPlanes()) 
+    {
+    mapper->SetClippingPlanes(this->ClippingPlanes);
+    }
+
+  mapper->SetLookupTable(this->GetLookupTable());
+  mapper->SetScalarVisibility(this->GetScalarVisibility());
+  mapper->SetUseLookupTableScalarRange(
+      this->GetUseLookupTableScalarRange());
+  mapper->SetScalarRange(this->GetScalarRange());
+  mapper->SetImmediateModeRendering(
+      this->GetImmediateModeRendering());
+  mapper->SetColorMode(this->GetColorMode());
+  mapper->SetInterpolateScalarsBeforeMapping(
+                                 this->GetInterpolateScalarsBeforeMapping());
+  mapper->SetScalarMode(this->GetScalarMode());
   if ( this->ScalarMode == VTK_SCALAR_MODE_USE_POINT_FIELD_DATA ||
        this->ScalarMode == VTK_SCALAR_MODE_USE_CELL_FIELD_DATA )
     {
     if ( this->ArrayAccessMode == VTK_GET_ARRAY_BY_ID )
       {
-      this->PolyDataMapper->ColorByArrayComponent(this->ArrayId,ArrayComponent);
+    mapper->ColorByArrayComponent(this->ArrayId,ArrayComponent);
       }
     else
       {
-      this->PolyDataMapper->ColorByArrayComponent(this->ArrayName,ArrayComponent);
+    mapper->ColorByArrayComponent(this->ArrayName,ArrayComponent);
       }
     }
-  
-  this->PolyDataMapper->Render(ren,act);
-  this->TimeToDraw = this->PolyDataMapper->GetTimeToDraw();
+  mapper->Render(ren,act);
+  this->TimeToDraw = mapper->GetTimeToDraw();
 }
 
 void vtkVisItDataSetMapper::PrintSelf(ostream& os, vtkIndent indent)
@@ -192,6 +218,15 @@ void vtkVisItDataSetMapper::PrintSelf(ostream& os, vtkIndent indent)
   else
     {
     os << indent << "Poly Mapper: (none)\n";
+    }
+
+  if ( this->RectilinearGridMapper )
+    {
+    os << indent << "RGrid Mapper: (" << this->RectilinearGridMapper << ")\n";
+    }
+  else
+    {
+    os << indent << "RGrid Mapper: (none)\n";
     }
 
   if ( this->GeometryExtractor )
@@ -304,6 +339,9 @@ vtkVisItDataSetMapper::SetPointTextureMethod(
 //
 // Modifications:
 //   
+//   Hank Childs, Tue Dec 19 10:43:30 PST 2006
+//   Add support for rectilinear mappers.
+//
 // ****************************************************************************
 
 void
@@ -325,6 +363,23 @@ vtkVisItDataSetMapper::SetEnableColorTexturing(bool val)
       {
         vtkVisItMesaPolyDataMapper *m = 
             (vtkVisItMesaPolyDataMapper *)this->PolyDataMapper;
+        m->SetEnableColorTexturing(val);
+      }
+    }
+  if(this->RectilinearGridMapper != NULL)
+    {
+    if(strcmp(this->RectilinearGridMapper->GetClassName(),
+              "vtkOpenGLRectilinearGridMapper") == 0)
+      {
+        vtkOpenGLRectilinearGridMapper *m = 
+            (vtkOpenGLRectilinearGridMapper *)this->RectilinearGridMapper;
+        m->SetEnableColorTexturing(val);
+      }
+    else if(strcmp(this->RectilinearGridMapper->GetClassName(), 
+                   "vtkMesaRectilinearGridMapper") == 0)
+      {
+        vtkMesaRectilinearGridMapper *m = 
+            (vtkMesaRectilinearGridMapper *)this->RectilinearGridMapper;
         m->SetEnableColorTexturing(val);
       }
     }

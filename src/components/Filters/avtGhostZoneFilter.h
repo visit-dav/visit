@@ -71,6 +71,9 @@ class     vtkDataSetRemoveGhostCells;
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Hank Childs, Wed Dec 20 09:25:42 PST 2006
+//    Add "ghost data must be removed".
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtGhostZoneFilter : public avtStreamer
@@ -83,7 +86,15 @@ class AVTFILTERS_API avtGhostZoneFilter : public avtStreamer
     virtual const char  *GetDescription(void) 
                              { return "Removing ghost cells"; };
 
+    // There are some cases where the ghost zone filter will allow
+    // ghost data to pass through and allow the renderer to remove the
+    // ghost data on the fly.  This disallows that behavior.
+    void                 GhostDataMustBeRemoved()
+                             { ghostDataMustBeRemoved = true; };
+
   protected:
+    bool                        ghostDataMustBeRemoved;
+
     virtual vtkDataSet         *ExecuteData(vtkDataSet *, int, std::string);
     virtual void                RefashionDataObjectInfo(void);
 };

@@ -291,6 +291,11 @@ avtLabelPlot::ApplyOperators(avtDataObject_p input)
 //   I added code to set the variable's type in the label filter so the
 //   filter can conditionally apply some special subset-related features.
 //
+//   Hank Childs, Wed Dec 20 10:50:37 PST 2006
+//   Tell ghost and face filter that we need to always remove ghosts and to
+//   only produce poly data.  It used to do this by default, but its default
+//   behavior changed.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -310,6 +315,8 @@ avtLabelPlot::ApplyRenderingTransformation(avtDataObject_p input)
         delete ghostAndFaceFilter;
     ghostAndFaceFilter = new avtGhostZoneAndFacelistFilter;
     ghostAndFaceFilter->SetUseFaceFilter(true);
+    ghostAndFaceFilter->MustCreatePolyData();
+    ghostAndFaceFilter->GhostDataMustBeRemoved();
     ghostAndFaceFilter->SetInput(dob);
     dob = ghostAndFaceFilter->GetOutput();
     visitTimer->StopTimer(onefilter, "avtGhostZoneAndFacelistFilter");

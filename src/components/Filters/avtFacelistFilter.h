@@ -101,6 +101,9 @@ class   avtMultiFacelist;
 //    Hank Childs, Fri Sep 23 10:48:36 PDT 2005
 //    Add a flag that will cause edge list generation for 2D datasets.
 //
+//    Hank Childs, Wed Dec 20 09:25:42 PST 2006
+//    Add a flag that forces poly data construction.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtFacelistFilter : public avtStreamer
@@ -117,11 +120,15 @@ class AVTFILTERS_API avtFacelistFilter : public avtStreamer
     void                                 SetCreate3DCellNumbers(bool);
     void                                 SetForceFaceConsolidation(bool);
     void                                 SetCreateEdgeListFor2DDatasets(bool);
+  
+    void                                 MustCreatePolyData(void)
+                                              { mustCreatePolyData = true; };
 
   protected:
     bool                                 useFacelists;
     bool                                 create3DCellNumbers;
     bool                                 createEdgeListFor2DDatasets;
+    bool                                 mustCreatePolyData;
     int                                  forceFaceConsolidation;
 
     virtual vtkDataSet                  *ExecuteData(vtkDataSet *, int,

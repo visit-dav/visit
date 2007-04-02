@@ -103,6 +103,9 @@ using     std::vector;
 //    Hank Childs, Fri Sep 23 10:51:19 PDT 2005
 //    Initialize createEdgeListFor2DDatasets.
 //
+//    Hank Childs, Wed Dec 20 09:25:42 PST 2006
+//    Initialize mustCreatePolyData.
+//
 // ****************************************************************************
 
 avtFacelistFilter::avtFacelistFilter()
@@ -111,6 +114,7 @@ avtFacelistFilter::avtFacelistFilter()
     create3DCellNumbers = false;
     forceFaceConsolidation = false;
     createEdgeListFor2DDatasets = false;
+    mustCreatePolyData = false;
 }
 
 
@@ -249,6 +253,10 @@ avtFacelistFilter::SetCreateEdgeListFor2DDatasets(bool val)
 //    Hank Childs, Fri Sep 23 11:31:00 PDT 2005
 //    Add support for taking edges instead of 2D faces.
 //
+//    Hank Childs, Wed Dec 20 15:45:10 PST 2006
+//    Correct error in Topo = 2D, Spatial = 3D case where meshes 
+//    could pass through "unfacelisted".
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -298,17 +306,10 @@ avtFacelistFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 
       // 2D meshes or surfaces
       case 2:
-        if (sDim == 3 && !createEdgeListFor2DDatasets)
-        {
-            out_ds = in_ds;
-        }
+        if (createEdgeListFor2DDatasets)
+            out_ds = FindEdges(in_ds);
         else
-        {
-            if (createEdgeListFor2DDatasets)
-                out_ds = FindEdges(in_ds);
-            else
-                out_ds = Take2DFaces(in_ds);
-        }
+            out_ds = Take2DFaces(in_ds);
         break;
 
       // 3D meshes
@@ -540,6 +541,12 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain)
 //    Remove call to SetSource(NULL) as it now removes information necessary
 //    for the dataset. 
 //
+//    Hank Childs, Mon Dec 18 14:49:25 PST 2006
+//    Allow 2D rectilinear faces to pass through as well.
+//
+//    Hank Childs, Wed Dec 20 17:23:26 PST 2006
+//    Better support for degenerate curvilinear meshes.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -553,6 +560,16 @@ avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds)
     if (dstype == VTK_POLY_DATA)
     {
         return in_ds;
+    }
+
+    if (dstype == VTK_RECTILINEAR_GRID && !mustCreatePolyData
+        && !forceFaceConsolidation)
+    {
+         vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) in_ds;
+         int dims[3];
+         rgrid->GetDimensions(dims);
+         if (dims[2] == 1)
+             return in_ds;
     }
 
     //
@@ -570,9 +587,11 @@ avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds)
     //
     // Now create the cells.  Structured ones are easy.
     //
+
     if (dstype == VTK_RECTILINEAR_GRID)
     {
-        vtkRectilinearGridFacelistFilter *rf = vtkRectilinearGridFacelistFilter::New();
+        vtkRectilinearGridFacelistFilter *rf = 
+                                       vtkRectilinearGridFacelistFilter::New();
         rf->SetForceFaceConsolidation(forceFaceConsolidation ? 1 : 0);
         rf->SetInput((vtkRectilinearGrid *) in_ds);
         rf->SetOutput(out_ds);
@@ -585,8 +604,20 @@ avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds)
     {
         int dims[3];
         ((vtkStructuredGrid *) in_ds)->GetDimensions(dims);
-        int nx = dims[0]-1;
-        int ny = dims[1]-1;
+
+        // Code below is a bit obtuse; handle case where dims = 30x1x25,
+        // for example.
+        int d[3];
+        int dc = 0;
+        if (dims[0] > 1)
+            d[dc++] = dims[0]-1;
+        if (dims[1] > 1)
+            d[dc++] = dims[1]-1;
+        if (dims[2] > 1)
+            d[dc++] = dims[2]-1;
+        int nx = (dc > 0 ? d[0] : 0);
+        int ny = (dc > 1 ? d[1] : 0);
+
         int ncells = nx*ny;
         out_ds->Allocate(ncells);
 /* * We should be able to do this, but there is a VTK bug.

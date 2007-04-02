@@ -172,6 +172,42 @@ avtGhostZoneAndFacelistFilter::SetForceFaceConsolidation(bool val)
 
 
 // ****************************************************************************
+//  Method: avtGhostZoneAndFacelistFilter::GhostDataMustBeRemoved
+//
+//  Purpose:
+//      Tell the ghost zone filter that ghost data must be removed.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 20, 2006
+//
+// ****************************************************************************
+
+void
+avtGhostZoneAndFacelistFilter::GhostDataMustBeRemoved(void)
+{
+    ghostFilter->GhostDataMustBeRemoved();
+}
+
+
+// ****************************************************************************
+//  Method: avtGhostZoneAndFacelistFilter::MustCreatePolyData
+//
+//  Purpose:
+//      Tell the facelist filter that it must produce poly data.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 20, 2006
+//
+// ****************************************************************************
+
+void
+avtGhostZoneAndFacelistFilter::MustCreatePolyData(void)
+{
+    faceFilter->MustCreatePolyData();
+}
+
+
+// ****************************************************************************
 //  Method: avtGhostZoneAndFacelistFilter::Execute
 //
 //  Purpose:
