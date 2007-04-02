@@ -178,6 +178,9 @@ import java.util.prefs.BackingStoreException;
 //   Brad Whitlock, Tue Jan 10 16:29:28 PST 2006
 //   Added another ViewerRPC object for logging.
 //
+//   Brad Whitlock, Tue Mar 7 16:43:46 PST 2006
+//   Added RedoView.
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -1187,6 +1190,13 @@ public class ViewerProxy implements SimpleObserver
     public boolean UndoView()
     {
         rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_UNDOVIEWRPC);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean RedoView()
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_REDOVIEWRPC);
         rpc.Notify();
         return synchronous ? Synchronize() : true;
     }

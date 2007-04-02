@@ -109,6 +109,7 @@ extern const char *visit_QueriesOverTime_doc;
 extern const char *visit_Query_doc;
 extern const char *visit_QueryOverTime_doc;
 extern const char *visit_RecenterView_doc;
+extern const char *visit_RedoView_doc;
 extern const char *visit_RedrawWindow_doc;
 extern const char *visit_RemoveOperator_doc;
 extern const char *visit_ReOpenDatabase_doc;

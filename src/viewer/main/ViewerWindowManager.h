@@ -15,8 +15,6 @@
 #include <avtView3D.h>
 #include <vectortypes.h>
 
-#define VIEWER_WINDOW_MANAGER_VSTACK 10
-
 //
 // Flags to use in calls to the UpdateWindowInformation method.
 //
@@ -322,6 +320,9 @@ typedef struct {
 //    Brad Whitlock, Thu Nov 17 17:12:05 PST 2005
 //    Added methods to move and resize windows.
 //
+//    Brad Whitlock, Tue Mar 7 17:33:54 PST 2006
+//    I removed the view stacks.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public QObject
@@ -520,6 +521,7 @@ class VIEWER_API ViewerWindowManager : public QObject
     void SetToolEnabled(int toolId, bool enabled, int windowIndex = -1);
     void DisableAllTools(int windowIndex = -1);
     void UndoView(int windowIndex = -1);
+    void RedoView(int windowIndex = -1);
 
   protected:
     ViewerWindowManager();
@@ -607,14 +609,6 @@ class VIEWER_API ViewerWindowManager : public QObject
     int               lastAnimation;
 
     bool              viewStacking;
-    avtViewCurve      viewCurveStack[VIEWER_WINDOW_MANAGER_VSTACK];
-    int               viewCurveStackTop;
-    avtView2D         view2DStack[VIEWER_WINDOW_MANAGER_VSTACK];
-    int               view2DStackTop;
-    avtView3D         view3DStack[VIEWER_WINDOW_MANAGER_VSTACK];
-    int               view3DStackTop;
-
-
 private slots:
     void AnimationCallback();
 

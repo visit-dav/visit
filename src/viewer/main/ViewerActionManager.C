@@ -365,6 +365,9 @@ public:
 //   Brad Whitlock, Fri Mar 18 17:27:44 PST 2005
 //   I added ToggleLockTimeAction.
 //
+//   Brad Whitlock, Tue Mar 7 17:58:19 PST 2006
+//   I added RedoViewAction.
+//
 // ****************************************************************************
 
 
@@ -383,6 +386,7 @@ ViewerActionManager::ViewerActionManager(ViewerWindow *win) : actionGroups()
     AddAction(new SetCenterOfRotationAction(win), ViewerRPC::SetCenterOfRotationRPC);
     AddAction(new ToggleFullFrameAction(win), ViewerRPC::ToggleFullFrameRPC);
     AddAction(new UndoViewAction(win), ViewerRPC::UndoViewRPC);
+    AddAction(new RedoViewAction(win), ViewerRPC::RedoViewRPC);
 
     AddAction(new ToggleLockViewAction(win), ViewerRPC::ToggleLockViewModeRPC);
     AddAction(new ToggleLockTimeAction(win), ViewerRPC::ToggleLockTimeRPC);

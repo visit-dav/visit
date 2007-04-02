@@ -195,9 +195,12 @@ static void RotateAroundY(const avtView3D&, double, avtView3D&);
 //    Hank Childs, Sun Oct 24 13:39:57 PDT 2004
 //    Initialize doShading.
 //
+//    Brad Whitlock, Tue Mar 7 17:37:24 PST 2006
+//    Initialized undoViewStack and redoViewStack.
+//
 // ****************************************************************************
 
-ViewerWindow::ViewerWindow(int windowIndex)
+ViewerWindow::ViewerWindow(int windowIndex) : undoViewStack(true), redoViewStack()
 {
     if (doNoWinMode)
     {
@@ -2583,6 +2586,9 @@ ViewerWindow::GetView3D() const
 //    Hank Childs, Sun Dec 19 18:49:27 PST 2004
 //    Set the view extents type as well.
 //
+//    Brad Whitlock, Tue Mar 7 17:40:05 PST 2006
+//    Copy the view stacks.
+//
 // ****************************************************************************
 
 void
@@ -2596,6 +2602,12 @@ ViewerWindow::CopyViewAttributes(const ViewerWindow *source)
     visWindow->SetViewCurve(source->visWindow->GetViewCurve());
     visWindow->SetView2D(source->visWindow->GetView2D());
     visWindow->SetView3D(source->visWindow->GetView3D());
+
+    //
+    // Copy the view stacks
+    //
+    undoViewStack = source->undoViewStack;
+    redoViewStack = source->redoViewStack;
 
     //
     // Copy the view keyframes.
@@ -2627,6 +2639,7 @@ ViewerWindow::CopyViewAttributes(const ViewerWindow *source)
         boundingBox2d[i] = source->boundingBox2d[i];
     for (i = 0; i < 6; i++)
         boundingBox3d[i] = source->boundingBox3d[i];
+
 }
 
 // ****************************************************************************
@@ -2700,6 +2713,187 @@ ViewerWindow::UpdateCameraView()
             visWindow->SetView3D(view3d);
         }
     }
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::UndoView
+//
+// Purpose: 
+//   Undoes the last view change by popping off the top view on the view stack.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 7 17:50:44 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::UndoView()
+{
+    if(GetWindowMode() == WINMODE_CURVE)
+    {
+        avtViewCurve view;
+
+        // Pop off the previous view.
+        if(undoViewStack.PopViewCurve(view))
+        {
+            // Put the current view on the redo stack.
+            redoViewStack.PushViewCurve(GetViewCurve());
+
+            // Restore the previous view
+            SetViewCurve(view);
+        }
+    }
+    else if(GetWindowMode() == WINMODE_2D)
+    {
+        avtView2D view;
+
+        // Pop off the previous view.
+        if(undoViewStack.PopView2D(view))
+        {
+            // Put the current view on the redo stack.
+            redoViewStack.PushView2D(GetView2D());
+
+            // Restore the previous view
+            SetView2D(view);
+        }
+    }
+    else if(GetWindowMode() == WINMODE_3D)
+    {
+        avtView3D view;
+
+        // Pop off the previous view.
+        if(undoViewStack.PopView3D(view))
+        {
+            // Put the current view on the redo stack.
+            redoViewStack.PushView3D(GetView3D());
+
+            // Restore the previous view
+            SetView3D(view);
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::RedoView
+//
+// Purpose: 
+//   Re-does the last undo view.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 7 17:51:17 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::RedoView()
+{
+    if(GetWindowMode() == WINMODE_CURVE)
+    {
+        avtViewCurve view;
+        if(redoViewStack.PopViewCurve(view))
+        {
+            undoViewStack.PushViewCurve(view);
+            SetViewCurve(view);
+        }
+    }
+    else if(GetWindowMode() == WINMODE_2D)
+    {
+        avtView2D view;
+        if(redoViewStack.PopView2D(view))
+        {
+            undoViewStack.PushView2D(view);
+            SetView2D(view);
+        }
+    }
+    else if(GetWindowMode() == WINMODE_3D)
+    {
+        avtView3D view;
+        if(redoViewStack.PopView3D(view))
+        {
+            undoViewStack.PushView3D(view);
+            SetView3D(view);
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::PushCurrentViews
+//
+// Purpose: 
+//   Pushes the current view onto the view stack.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 7 17:52:06 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::PushCurrentViews()
+{
+    if(GetWindowMode() == WINMODE_CURVE)
+        undoViewStack.PushViewCurve(GetViewCurve());
+    else if(GetWindowMode() == WINMODE_2D)
+        undoViewStack.PushView2D(GetView2D());
+    else if(GetWindowMode() == WINMODE_3D)
+        undoViewStack.PushView3D(GetView3D());
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::UndoViewEnabled
+//
+// Purpose: 
+//   Returns whether the undo view operation is enabled.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 7 17:52:23 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerWindow::UndoViewEnabled() const
+{
+    bool retval = false;
+    if(GetWindowMode() == WINMODE_CURVE)
+        retval = undoViewStack.HasViewCurves();
+    else if(GetWindowMode() == WINMODE_2D)
+        retval = undoViewStack.HasView2Ds();
+    else if(GetWindowMode() == WINMODE_3D)
+        retval = undoViewStack.HasView3Ds();
+    return retval;
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::RedoViewEnabled
+//
+// Purpose: 
+//   Returns whether the redo view operation is enabled.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 7 17:52:23 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerWindow::RedoViewEnabled() const
+{
+    bool retval = false;
+    if(GetWindowMode() == WINMODE_CURVE)
+        retval = redoViewStack.HasViewCurves();
+    else if(GetWindowMode() == WINMODE_2D)
+        retval = redoViewStack.HasView2Ds();
+    else if(GetWindowMode() == WINMODE_3D)
+        retval = redoViewStack.HasView3Ds();
+    return retval;
 }
 
 // ****************************************************************************

@@ -89,6 +89,7 @@
       ToggleLockViewModeRPC
       ToggleFullFrameRPC
       UndoViewRPC
+      RedoViewRPC
       InvertBackgroundRPC
       ClearPickPointsRPC
       SetWindowModeRPC

@@ -177,6 +177,10 @@ LogFile_Write(const char *str)
 // Programmer: Brad Whitlock
 // Creation:   Tue Jan 10 11:50:15 PDT 2006
 //
+// Modifications:
+//   Brad Whitlock, Wed Mar 8 17:05:11 PST 2006
+//   Added RedoView.
+//
 // ****************************************************************************
 
 #define MSG_NOT_IMPLEMENTED 0
@@ -996,6 +1000,11 @@ static void log_ToggleFullFrameRPC(ViewerRPC *rpc, char *str)
 static void log_UndoViewRPC(ViewerRPC *rpc, char *str)
 {
     SNPRINTF(str, SLEN, "UndoView()\n");
+}
+
+static void log_RedoViewRPC(ViewerRPC *rpc, char *str)
+{
+    SNPRINTF(str, SLEN, "RedoView()\n");
 }
 
 static void log_InvertBackgroundRPC(ViewerRPC *rpc, char *str)
@@ -1819,6 +1828,9 @@ LogRPCs(Subject *subj, void *)
         break;
     case ViewerRPC::UndoViewRPC:
         log_UndoViewRPC(rpc, str);
+        break;
+    case ViewerRPC::RedoViewRPC:
+        log_RedoViewRPC(rpc, str);
         break;
     case ViewerRPC::InvertBackgroundRPC:
         log_InvertBackgroundRPC(rpc, str);

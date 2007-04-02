@@ -157,6 +157,9 @@ extern ViewerSubject  *viewerSubject;
 //    Eric Brugger, Thu Jun 30 11:43:22 PDT 2005
 //    Added a 2 x 3 layout and removed the 4 x 4 layout.
 //
+//    Brad Whitlock, Tue Mar 7 17:32:54 PST 2006
+//    I removed most of the view stacking members.
+//
 // ****************************************************************************
 
 ViewerWindowManager::ViewerWindowManager() : QObject()
@@ -226,14 +229,7 @@ ViewerWindowManager::ViewerWindowManager() : QObject()
     timer = new QTimer(this, "viewerTimer");
     connect(timer, SIGNAL(timeout()), this, SLOT(AnimationCallback()));
 
-    //
-    // Initialize the view stacks.
-    //
     viewStacking = true;
-    viewCurveStackTop = -1;
-    view2DStackTop = -1;
-    view3DStackTop = -1;
-
     lineoutWindow = -1;
     timeQueryWindow = -1;
 }
@@ -3451,6 +3447,9 @@ ViewerWindowManager::ToggleMaintainDataMode(int windowIndex)
 //    Eric Brugger, Wed Aug 20 13:22:14 PDT 2003
 //    I added undoing of curve views.
 //
+//    Brad Whitlock, Tue Mar 7 17:32:26 PST 2006
+//    I moved most of the code to ViewerWindow.
+//
 // ****************************************************************************
 
 void
@@ -3462,48 +3461,43 @@ ViewerWindowManager::UndoView(int windowIndex)
     int index = (windowIndex == -1) ? activeWindow : windowIndex;
     if(windows[index] != 0)
     {
-        if(windows[index]->GetWindowMode() == WINMODE_CURVE)
-        {
-            // Pop the top off of the stack
-            if(viewCurveStackTop > 0)
-            {
-                //
-                // The top of the stack contains the current view.  We
-                // want to go back to the previous view, so pop the stack
-                // and use the view that is now at the top.
-                //
-                --viewCurveStackTop;
-                windows[index]->SetViewCurve(viewCurveStack[viewCurveStackTop]);
-            }
-        }
-        else if(windows[index]->GetWindowMode() == WINMODE_2D)
-        {
-            // Pop the top off of the stack
-            if(view2DStackTop > 0)
-            {
-                //
-                // The top of the stack contains the current view.  We
-                // want to go back to the previous view, so pop the stack
-                // and use the view that is now at the top.
-                //
-                --view2DStackTop;
-                windows[index]->SetView2D(view2DStack[view2DStackTop]);
-            }
-        }
-        else if(windows[index]->GetWindowMode() == WINMODE_3D)
-        {
-            // Pop the top off of the stack
-            if(view3DStackTop > 0)
-            {
-                //
-                // The top of the stack contains the current view.  We
-                // want to go back to the previous view, so pop the stack
-                // and use the view that is now at the top.
-                //
-                --view3DStackTop;
-                windows[index]->SetView3D(view3DStack[view3DStackTop]);
-            }
-        }
+        windows[index]->UndoView();
+
+        //
+        // Send the view to the clients but do not stack it.
+        //
+        viewStacking = false;
+        UpdateViewAtts(index);
+        viewStacking = true;
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::RedoView
+//
+// Purpose: 
+//   Re-applies a view that has been previously undone.
+//
+// Arguments:
+//   windowIndex : The index of the window that called this method.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 7 17:31:44 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::RedoView(int windowIndex)
+{
+    if(windowIndex < -1 || windowIndex >= maxWindows)
+        return;
+
+    int index = (windowIndex == -1) ? activeWindow : windowIndex;
+    if(windows[index] != 0)
+    {
+        windows[index]->RedoView();
 
         //
         // Send the view to the clients but do not stack it.
@@ -4001,6 +3995,10 @@ ViewerWindowManager::UpdateGlobalAtts() const
 //    Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
 //    Added logic to UpdateWindowInformation, win mode only so that GUI
 //    would know what WINMODE the window is in
+//
+//    Brad Whitlock, Tue Mar 7 17:28:48 PST 2006
+//    Moved code to ViewerWindow::PushViews.
+//
 // ****************************************************************************
 
 void
@@ -4074,45 +4072,11 @@ ViewerWindowManager::UpdateViewAtts(int windowIndex, bool updateCurve,
     //
     if(viewStacking)
     {
-        if(windows[index]->GetWindowMode() == WINMODE_CURVE)
-        {
-            if(viewCurveStackTop == VIEWER_WINDOW_MANAGER_VSTACK - 1)
-            {
-                // Shift down
-                for(int i = 0; i < VIEWER_WINDOW_MANAGER_VSTACK - 1; ++i)
-                    viewCurveStack[i] = viewCurveStack[i+1];
-            }
-            else
-                ++viewCurveStackTop;
+        windows[index]->PushCurrentViews();
 
-            viewCurveStack[viewCurveStackTop] = viewCurve;
-        }
-        else if(windows[index]->GetWindowMode() == WINMODE_2D)
-        {
-            if(view2DStackTop == VIEWER_WINDOW_MANAGER_VSTACK - 1)
-            {
-                // Shift down
-                for(int i = 0; i < VIEWER_WINDOW_MANAGER_VSTACK - 1; ++i)
-                    view2DStack[i] = view2DStack[i+1];
-            }
-            else
-                ++view2DStackTop;
-
-            view2DStack[view2DStackTop] = view2d;
-        }
-        else if(windows[index]->GetWindowMode() == WINMODE_3D)
-        {
-            if(view3DStackTop == VIEWER_WINDOW_MANAGER_VSTACK - 1)
-            {
-                // Shift down
-                for(int i = 0; i < VIEWER_WINDOW_MANAGER_VSTACK - 1; ++i)
-                    view3DStack[i] = view3DStack[i+1];
-            }
-            else
-                ++view3DStackTop;
-
-            view3DStack[view3DStackTop] = view3d;
-        }
+        // Update the actions to make sure that the undo/redo view buttons
+        // in the toolbar are properly highlighted.
+        windows[index]->GetActionManager()->UpdateSingleWindow();
     }
 }
 
@@ -6736,12 +6700,6 @@ ViewerWindowManager::UpdateWindowInformation(int flags, int windowIndex)
             windowInfo->SetLockView(win->GetViewIsLocked());
             windowInfo->SetViewExtentsType(int(win->GetViewExtentsType()));
             windowInfo->SetWinMode(win->GetWindowMode());
-            if(win->GetWindowMode() == WINMODE_3D)
-                windowInfo->SetViewDimension(3);
-            else if(win->GetWindowMode() == WINMODE_CURVE)
-                windowInfo->SetViewDimension(1);
-            else
-                windowInfo->SetViewDimension(2);
             windowInfo->SetPerspective(win->GetPerspectiveProjection());
             windowInfo->SetLockTools(win->GetToolLock());
             windowInfo->SetLockTime(win->GetTimeLock());
@@ -6790,6 +6748,15 @@ ViewerWindowManager::UpdateWindowInformation(int flags, int windowIndex)
                 win->GetExtents(2, extents);
             windowInfo->SetExtents(extents);
         }
+
+        // Always send back the view dimension or the default value may
+        // misinform the client.
+        if(win->GetWindowMode() == WINMODE_3D)
+            windowInfo->SetViewDimension(3);
+        else if(win->GetWindowMode() == WINMODE_CURVE)
+            windowInfo->SetViewDimension(1);
+        else
+            windowInfo->SetViewDimension(2);
 
         windowInfo->Notify();
     }

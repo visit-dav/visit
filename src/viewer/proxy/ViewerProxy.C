@@ -4619,6 +4619,26 @@ ViewerProxy::UndoView()
 }
 
 // ****************************************************************************
+// Method: ViewerProxy::RedoView
+//
+// Purpose: 
+//   Tells the viewer to redo the last view change.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 7 16:36:56 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::RedoView()
+{
+    viewerRPC->SetRPCType(ViewerRPC::RedoViewRPC);
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
 // Method: ViewerProxy::ToggleLockViewMode
 //
 // Purpose: 

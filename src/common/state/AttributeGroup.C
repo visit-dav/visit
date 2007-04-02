@@ -1548,15 +1548,19 @@ AttributeGroup::ProcessOldVersions(DataNode *, const char *)
 // Creation:   Fri Mar 21 09:53:56 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 8 10:24:43 PDT 2006
+//   I improved the code so it takes beta versions into account. This way,
+//   a version of 1.5.2b will be less than 1.5.2.
+//
 // ****************************************************************************
 
-#define VERSION_3_TO_NUM(m,n,p)    ((m)+(n)/100.0+(p)/10000.0)
+#define VERSION_3_TO_NUM(m,n,p,b)    ((m)+(n)/100.0+(p)/10000.0+(b)/100000.0)
 
 bool
 AttributeGroup::VersionLessThan(const char *configVersion, const char *version)
 { 
     int versions[2][3] = {{0,0,0}, {0,0,0}};
+    int betas[2] = {0, 0};
     const char *versionStrings[] = {configVersion, version};
     char storage[30];
 
@@ -1573,6 +1577,13 @@ AttributeGroup::VersionLessThan(const char *configVersion, const char *version)
         // the buffer. 
         char *buf = storage;
         strncpy(buf, versionStrings[i], 30);
+
+        // Indicate whether the version number has a beta in it.
+        int len = strlen(buf);
+        if(len > 0)
+            betas[i] = (buf[len-1] == 'b') ? 0 : 1;
+        else
+            betas[i] = 1;
 
         // Use strtok to get all of the version numbers.  Note that atoi()
         // returns 0 if given a NULL string, which is what we want.
@@ -1591,8 +1602,8 @@ AttributeGroup::VersionLessThan(const char *configVersion, const char *version)
         }
     }
 
-    return VERSION_3_TO_NUM(versions[0][0], versions[0][1], versions[0][2]) <
-           VERSION_3_TO_NUM(versions[1][0], versions[1][1], versions[1][2]);
+    return VERSION_3_TO_NUM(versions[0][0], versions[0][1], versions[0][2], betas[0]) <
+           VERSION_3_TO_NUM(versions[1][0], versions[1][1], versions[1][2], betas[1]);
 }
 
 // ****************************************************************************

@@ -18,6 +18,7 @@
 #include <AnnotationAttributes.h>
 #include <AnnotationObjectList.h>
 #include <WindowAttributes.h>
+#include <ViewStack.h>
 #include <vectortypes.h>
 
 #include <ExternalRenderRequestInfo.h>
@@ -350,6 +351,9 @@ class ViewerToolbar;
 //    Brad Whitlock, Wed Jan 11 14:55:54 PST 2006
 //    Added SessionContainsErrors.
 //
+//    Brad Whitlock, Tue Mar 7 17:35:28 PST 2006
+//    I added view stacks.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow
@@ -421,6 +425,12 @@ public:
     void CopyGeneralAttributes(const ViewerWindow *);
     WindowAttributes GetWindowAttributes() const;
     bool SendWindowEnvironmentToEngine(const EngineKey &ek);
+
+    void UndoView();
+    void RedoView();
+    void PushCurrentViews();
+    bool UndoViewEnabled() const;
+    bool RedoViewEnabled() const;
 
     void AddPlot(avtActor_p &);
     void ClearPlots();
@@ -670,6 +680,9 @@ private:
     bool            centeringValid3d;
 
     bool            mergeViewLimits;
+
+    ViewStack       undoViewStack;
+    ViewStack       redoViewStack;
 
     static bool     doNoWinMode;
 

@@ -116,6 +116,31 @@ public:
 };
 
 // ****************************************************************************
+// Class: RedoViewAction
+//
+// Purpose:
+//   Handles the redo view action.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 7 17:55:11 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class VIEWER_API RedoViewAction : public ViewerAction
+{
+public:
+    RedoViewAction(ViewerWindow *win);
+    virtual ~RedoViewAction(){}
+
+    virtual void Execute();
+    virtual bool Enabled() const;
+};
+
+// ****************************************************************************
 // Class: ToggleFullFrameAction
 //
 // Purpose:
