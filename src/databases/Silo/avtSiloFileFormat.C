@@ -935,6 +935,9 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Mark C. Miller, Thu Mar  2 00:03:40 PST 2006
 //    Added support for curve objects
 // 
+//    Hank Childs, Thu May 18 11:33:27 PDT 2006
+//    Fix UMR with mesh coord types and point meshes.
+//
 // ****************************************************************************
 
 void
@@ -1206,7 +1209,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         ENDTRY
 
         avtMeshType   mt;
-        avtMeshCoordType mct;
+        avtMeshCoordType mct = AVT_XY;
         int ndims;
         int tdims;
         int cellOrigin;

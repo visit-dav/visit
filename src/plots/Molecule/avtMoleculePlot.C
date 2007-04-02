@@ -528,12 +528,17 @@ avtMoleculePlot::GetLegend(void)
 //  Programmer:  Jeremy Meredith
 //  Creation:    March 23, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Thu May 18 11:16:20 PDT 2006
+//    Fix UMRs.
+//
 // ****************************************************************************
 
 void
 avtMoleculePlot::SetLegendRange()
 {
-    double min,max;
+    double min = 0., max = 1.;
     mapper->GetCurrentDataRange(min,max);
 
     // Set attributes for continuous legend
