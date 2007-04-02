@@ -128,6 +128,11 @@ class Xfer;
 //    Brad Whitlock, Wed Dec 14 16:58:24 PST 2005
 //    Added ReadFileListAttributes.
 //
+//    Brad Whitlock, Tue Jan 17 17:05:59 PST 2006
+//    I changed VirtualFileInformation so the filter used when we create a
+//    virtual database is stored along with the definition in case we have to
+//    reread the definition later.
+//
 // ****************************************************************************
 
 class MDServerConnection
@@ -157,6 +162,7 @@ class MDServerConnection
         std::string  path;
         stringVector files;
         int          digitLength;
+        stringVector filterList;
     };
 
     typedef std::map<VirtualFileName, VirtualFileInformation> VirtualFileInformationMap;

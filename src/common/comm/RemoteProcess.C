@@ -466,11 +466,15 @@ RemoteProcess::GetProcessId() const
 //    Brad Whitlock, Mon Mar 17 08:51:59 PDT 2003
 //    I made it use a different starting port.
 //
+//    Brad Whitlock, Tue Jan 17 13:37:17 PST 2006
+//    Added debug logging.
+//
 // ****************************************************************************
 
 bool
 RemoteProcess::GetSocketAndPort()
 {
+    const char *mName = "RemoteProcess::GetSocketAndPort: ";
     int  on = 1;
     bool portFound = false;
 
@@ -479,8 +483,10 @@ RemoteProcess::GetSocketAndPort()
     if (listenSocketNum < 0)
     {
         // Cannot open a socket.
+        debug5 << mName << "Can't open a socket." << endl;
         return false;
     }
+    debug5 << mName << "Opened listen socket: " << listenSocketNum << endl;
 
     //
     // Look for a port that can be used.
@@ -488,6 +494,8 @@ RemoteProcess::GetSocketAndPort()
     sin.sin_family = AF_INET;
     sin.sin_addr.s_addr = htonl(INADDR_ANY);
     listenPortNum = INITIAL_PORT_NUMBER;
+    debug5 << mName << "Looking for available port starting with: "
+           << listenPortNum << endl;
     while (!portFound && listenPortNum < 32767)
     {
         sin.sin_port = htons(listenPortNum);
@@ -506,8 +514,11 @@ RemoteProcess::GetSocketAndPort()
     if (!portFound)
     {
         // Cannot find unused port.
+        debug5 << mName << "Can't find an unused port." << endl;
         return false;
     }
+
+    debug5 << mName << "Bind socket to port: " << listenPortNum << endl;
 
     return true;
 }
@@ -533,6 +544,7 @@ RemoteProcess::CloseListenSocket()
     //
     if(listenSocketNum != -1)
     {
+        debug5 << "RemoteProcess::CloseListenSocket: closing listen socket" << endl;
 #if defined(_WIN32)
         closesocket(listenSocketNum);
 #else
@@ -611,20 +623,31 @@ RemoteProcess::CallProgressCallback(int stage)
 //    I rewrote the routine so it makes use of subroutines and exception
 //    handling so we can support cancelled connections.
 //
+//    Brad Whitlock, Tue Jan 17 14:21:27 PST 2006
+//    Added debug logging.
+//
 // ****************************************************************************
 
 int
 RemoteProcess::AcceptSocket()
 {
+    const char *mName = "RemoteProcess::AcceptSocket: ";
     int desc = -1;
     int opt = 1;
 
 #ifdef HAVE_THREADS
     if(progressCallback == 0)
+    {
+        debug5 << mName << "0: Calling SingleThreadedAcceptSocket." << endl;
         desc = SingleThreadedAcceptSocket();
+    }
     else
+    {
+        debug5 << mName << "Calling MultiThreadedAcceptSocket." << endl;
         desc = MultiThreadedAcceptSocket();
+    }
 #else
+    debug5 << mName << "1: Calling SingleThreadedAcceptSocket." << endl;
     desc = SingleThreadedAcceptSocket();
 #endif
 
@@ -640,6 +663,8 @@ RemoteProcess::AcceptSocket()
     {
         EXCEPTION0(CancelledConnectException);
     }
+
+    debug4 << mName << "Setting socket options." << endl;
 
     // Disable Nagle algorithm.
 #if defined(_WIN32)
@@ -669,12 +694,15 @@ RemoteProcess::AcceptSocket()
 // Creation:   Thu Sep 26 16:42:28 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jan 17 13:41:47 PST 2006
+//   Added debug info.
+//
 // ****************************************************************************
 
 int
 RemoteProcess::SingleThreadedAcceptSocket()
 {
+    const char *mName = "RemoteProcess::SingleThreadedAcceptSocket: ";
     int desc = -1;
 
     // Wait for the socket to become available on the other side.
@@ -686,9 +714,12 @@ RemoteProcess::SingleThreadedAcceptSocket()
         int len;
 #endif
         len = sizeof(struct sockaddr);
+        debug5 << mName << "waiting for accept() to return" << endl;
         desc = accept(listenSocketNum, (struct sockaddr *)&sin, &len);
     }
     while (desc == -1 && errno == EINTR && childDied[GetProcessId()] == false);
+
+    debug5 << mName << "accept returned descriptor: " << desc << endl;
 
     return desc;
 }
@@ -779,14 +810,19 @@ static void *threaded_accept_callback(void *data)
 //   successfully started a thread, but never call its start function.  So
 //   we will curb large sizes.  ['5422]
 //
+//   Brad Whitlock, Tue Jan 17 13:43:05 PST 2006
+//   Added some debug logging.
+//
 // ****************************************************************************
 
 int
 RemoteProcess::MultiThreadedAcceptSocket()
 {
+    const char *mName = "RemoteProcess::MultiThreadedAcceptSocket: ";
 #ifdef HAVE_THREADS
     int desc = -1;
  
+    debug5 << mName << "Initializing thread callback data" << endl;
     // Set up some callback data for the thread callback.
     ThreadCallbackDataStruct cb;
     cb.pid = GetProcessId();
@@ -799,6 +835,7 @@ RemoteProcess::MultiThreadedAcceptSocket()
     // the thread callback needs the mutex.
     MUTEX_CREATE(cb.mutex);
 
+    debug5 << mName << "Creating new accept thread" << endl;
     bool validThread = true;
 #if defined(WIN32)
     // Create the thread Windows style.
@@ -836,6 +873,8 @@ RemoteProcess::MultiThreadedAcceptSocket()
 
     if(validThread)
     {
+        debug5 << mName << "New accept thread created" << endl;
+
         //
         // If the accept callback thread is still alive, then loop until it is
         // done or the user cancels the operation or there is a problem
@@ -851,9 +890,11 @@ RemoteProcess::MultiThreadedAcceptSocket()
             // Wait for the socket to become available on the other side.
             //
             bool noDescriptor, noProcessError, noCancel;
+            debug5 << mName << "Calling progress callback(1) ";
             do
             {
                 // Call the progress callback.
+                debug5 << ".";
                 noCancel = CallProgressCallback(1);
 
                 // Determine if we should keep looping. We have to access the
@@ -865,12 +906,14 @@ RemoteProcess::MultiThreadedAcceptSocket()
                 MUTEX_UNLOCK(cb.mutex);
             }
             while(noDescriptor && noProcessError && noCancel);
+            debug5 << endl;
 
             // If the thread is still alive, we encountered an error or we cancelled
             // the process launch. If the thread is still alive, cancel it.
             MUTEX_LOCK(cb.mutex);
             if(cb.alive)
             {
+                debug5 << mName << "Terminating the accept thread." << endl;
 #if defined(WIN32)
                 TerminateThread(tid, 0);
                 CloseHandle(tid);
@@ -891,11 +934,15 @@ RemoteProcess::MultiThreadedAcceptSocket()
     else
     {
         // We could not create the thread so do the single-threaded version.
+        debug5 << mName << "New accept thread was not created. Do the single "
+            "threaded version" << endl;
         desc = SingleThreadedAcceptSocket();
     }
 
     // Destroy the mutex.
     MUTEX_DESTROY(cb.mutex);
+
+    debug5 << mName << "Returning: " << desc << endl;
 
     // Return the descriptor.
     return desc;
@@ -963,6 +1010,9 @@ RemoteProcess::MultiThreadedAcceptSocket()
 //    parsed from the SSH_CLIENT (or related) environment variables.  Added
 //    ability to specify an SSH port.
 //
+//    Brad Whitlock, Tue Jan 17 13:49:43 PST 2006
+//    Adding debug logging.
+//
 // ****************************************************************************
 
 bool
@@ -974,34 +1024,72 @@ RemoteProcess::Open(const std::string &rHost,
                     int numRead, int numWrite,
                     bool createAsThoughLocal)
 {
+    // Write the arguments to the debug log.
+    const char *mName = "RemoteProcess::Open: ";
+    debug5 << mName << "Called with (rHost=" << rHost.c_str();
+    int i_chd = int(chd);
+    debug5 << ", chd=";
+    const char *chd_t[] = {"MachineName", "ManuallySpecified", "ParsedFromSSHCLIENT"};
+    if(i_chd >= 0 && i_chd <= 2)
+        debug5 << chd_t[i_chd];
+    else
+        debug5 << i_chd;
+    debug5 << ", manualSSHPort=" << (manualSSHPort?"true":"false");
+    debug5 << ", sshPort=" << sshPort;
+    debug5 << ", numRead=" << numRead;
+    debug5 << ", numWrite=" << numWrite;
+    debug5 << ", createAsThoughLocal=" << (createAsThoughLocal?"true":"false");
+    debug5 << ")" << endl;
+
     // Start making the connections and start listening.
     if(!StartMakingConnection(rHost, numRead, numWrite))
+    {
+        debug5 << "StartMakingConnection(" << rHost.c_str() << ", " << numRead
+               << ", " << numWrite << ") failed. Returning." << endl;
         return false;
+    }
 
     // Add all of the relevant command line arguments to a vector of strings.
+    debug5 << mName << "Creating the command line to use: (";
     stringVector commandLine;
     CreateCommandLine(commandLine, rHost,
                       chd, clientHostName, manualSSHPort, sshPort,
                       numRead, numWrite,
                       createAsThoughLocal);
+    for(int i = 0; i < commandLine.size(); ++i)
+    {
+        debug5 << commandLine[i];
+        if(i < commandLine.size()-1)
+            debug5 << ", ";
+    } 
+    debug5 << ")" << endl;
 
     //
     // Launch the remote process.
     //
     if (HostIsLocal(rHost) || createAsThoughLocal)
+    {
+        debug5 << mName << "Calling LaunchLocal" << endl;
         LaunchLocal(commandLine);
+    }
     else
+    {
+        debug5 << mName << "Calling LaunchRemote" << endl;
         LaunchRemote(commandLine);
+    }
 
     childDied[GetProcessId()] = false;
 
     // Finish the connections.
+    debug5 << mName << "Calling FinishMakingConnection" << endl;
     FinishMakingConnection(numRead, numWrite);
 
 #if !defined(_WIN32)
     // Stop watching for dead children
     signal(SIGCHLD, SIG_DFL);
 #endif
+
+    debug5 << mName << "Returning true" << endl;
 
     return true;
 }
@@ -1016,7 +1104,9 @@ RemoteProcess::Open(const std::string &rHost,
 // Creation:   Wed Apr 3 12:03:11 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jan 17 14:01:46 PST 2006
+//   Added debug logging.
+//
 // ****************************************************************************
 
 void
@@ -1024,6 +1114,7 @@ RemoteProcess::WaitForTermination()
 {
     if(remoteProgramPid != -1)
     {
+        debug5 << "RemoteProcess::WaitForTermination: Waiting for process to quit" << endl;
         int result;
 #if defined(_WIN32)
         _cwait(&result, remoteProgramPid, _WAIT_CHILD);
@@ -1067,12 +1158,21 @@ RemoteProcess::WaitForTermination()
 //   Brad Whitlock, Thu Dec 19 11:32:43 PDT 2002
 //   I made the code create a security key.
 //
+//   Brad Whitlock, Tue Jan 17 14:03:43 PST 2006
+//   Added debug logging.
+//
 // ****************************************************************************
 
 bool
 RemoteProcess::StartMakingConnection(const std::string &rHost, int numRead,
     int numWrite)
 {
+    const char *mName = "RemoteProcess::StartMakingConnection: ";
+    debug5 << mName << "Called with args (";
+    debug5 << "rHost=" << rHost.c_str();
+    debug5 << ", numRead=" << numRead;
+    debug5 << ", numWrite=" << numWrite << ")" << endl;
+
     //
     // If there are no sockets to be opened, get out since that seems
     // like a usedless thing to do.
@@ -1086,6 +1186,8 @@ RemoteProcess::StartMakingConnection(const std::string &rHost, int numRead,
     // whether or not remoteHost is valid if it equals "localhost" since
     // in that case we'll be spawning a local process.
     //
+    debug5 << mName << "Calling gethostbyname(\"" << remoteHost.c_str()
+           << "\") to look up the name of the remote host" << endl;
     remoteHost = rHost;
     bool remote = (remoteHost != std::string("localhost"));
     if(remote && (gethostbyname(remoteHost.c_str()) == NULL))
@@ -1097,6 +1199,7 @@ RemoteProcess::StartMakingConnection(const std::string &rHost, int numRead,
     // Get the local host name since it will be a command line option
     // for the remote process.
     //
+    debug5 << mName << "Looking up the name of the local host: ";
     char localHostStr[256];
     if (gethostname(localHostStr, 256) == -1)
     {
@@ -1104,6 +1207,9 @@ RemoteProcess::StartMakingConnection(const std::string &rHost, int numRead,
         // throw a BadHostException.
         EXCEPTION1(BadHostException, localHostStr);
     }
+    debug5 << localHostStr << endl;
+    debug5 << mName << "Looking up the host using gethostbyname(\""
+           << localHostStr << "\"): ";
     struct hostent *localHostEnt = gethostbyname(localHostStr);
     if (localHostEnt == NULL)
     {
@@ -1112,6 +1218,7 @@ RemoteProcess::StartMakingConnection(const std::string &rHost, int numRead,
         EXCEPTION1(BadHostException, localHostStr);
     }
     localHost = std::string(localHostEnt->h_name);
+    debug5 << localHost.c_str() << endl;
 #if defined(_WIN32)
     // On some Windows systems, particularly those hooked up to dial up
     // connections where the actual network hostname may not match the
@@ -1120,6 +1227,9 @@ RemoteProcess::StartMakingConnection(const std::string &rHost, int numRead,
     // back successfully.
     if(remote)
     {
+        debug5 << mName << "We're on Win32 and the host is remote. "
+            "Make sure that we have the correct name for localhost by iterating "
+            "through the localHostEnt and calling gethostbyaddr." << endl;
         bool looping = true;
         for(int i = 0; (i < localHostEnt->h_length) && looping; ++i)
         {
@@ -1131,6 +1241,8 @@ RemoteProcess::StartMakingConnection(const std::string &rHost, int numRead,
                 if(h)
                 {
                     localHost = std::string(h->h_name);
+                    debug5 << mName << "gethostbyaddr returned: " << localHost.c_str()
+                           << endl;
                 }
             }
         }
@@ -1140,6 +1252,7 @@ RemoteProcess::StartMakingConnection(const std::string &rHost, int numRead,
     //
     // Get the local user name.
     //
+    debug5 << mName << "Get the local user's login name: ";
 #if defined(_WIN32)
     char username[100];
     DWORD maxLen = 100;
@@ -1150,6 +1263,7 @@ RemoteProcess::StartMakingConnection(const std::string &rHost, int numRead,
     if((users_passwd_entry = getpwuid(getuid())) != NULL)
         localUserName = std::string(users_passwd_entry->pw_name);
 #endif
+    debug5 << localUserName.c_str() << endl;
 
     //
     // Create a security key
@@ -1159,15 +1273,18 @@ RemoteProcess::StartMakingConnection(const std::string &rHost, int numRead,
     //
     // Open the socket for listening
     //
+    debug5 << mName << "Calling GetSocketAndPort" << endl;
     if(!GetSocketAndPort())
     {
         // Could not open socket and port
+        debug5 << mName << "GetSocketAndPort returned false" << endl;
         return false;
     }
 
     //
     // Start listening for connections.
     //
+    debug5 << mName << "Start listening for connections." << endl;
     listen(listenSocketNum, 5);
 
     return true;
@@ -1204,12 +1321,20 @@ RemoteProcess::StartMakingConnection(const std::string &rHost, int numRead,
 //   Brad Whitlock, Fri Jan 3 15:27:54 PST 2003
 //   I added code to close the listen socket.
 //
+//   Brad Whitlock, Tue Jan 17 14:15:14 PST 2006
+//   Added debug logging.
+//
 // ****************************************************************************
 
 void
 RemoteProcess::FinishMakingConnection(int numRead, int numWrite)
 {
+    const char *mName = "RemoteProcess::FinishMakingConnection: ";
+
+    debug5 << mName << "Called with (" << numRead << ", " << numWrite << ")\n";
+
     // Call the progress callback.
+    debug5 << mName << "Call the progress callback(0)" << endl;
     CallProgressCallback(0);
 
     TRY
@@ -1218,6 +1343,7 @@ RemoteProcess::FinishMakingConnection(int numRead, int numWrite)
         // Accept the sockets that were created and create SocketConnection
         // objects for them.
         //
+        debug5 << mName << "Creating read connections" << endl;
         nReadConnections = 0;
         if(numRead > 0)
         {
@@ -1230,6 +1356,7 @@ RemoteProcess::FinishMakingConnection(int numRead, int numWrite)
             }
         }
 
+        debug5 << mName << "Creating write connections" << endl;
         nWriteConnections = 0;
         if(numWrite > 0)
         {
@@ -1246,6 +1373,7 @@ RemoteProcess::FinishMakingConnection(int numRead, int numWrite)
         // Now that the sockets are open, exchange type representation info
         // and set that info in the socket connections.
         //
+        debug5 << mName << "Exchanging type representations" << endl;
         ExchangeTypeRepresentations();
     }
     CATCHALL(...)
@@ -1259,6 +1387,7 @@ RemoteProcess::FinishMakingConnection(int numRead, int numWrite)
     ENDTRY
 
     // Call the progress callback.
+    debug5 << mName << "Call the progress callback(2)" << endl;
     CallProgressCallback(2);
     CloseListenSocket();
 }
@@ -1609,6 +1738,8 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
 void
 RemoteProcess::LaunchRemote(const stringVector &args)
 {
+    const char *mName = "RemoteProcess::LaunchRemote: ";
+
     // 
     // Create the parameters for the exec
     //
@@ -1619,11 +1750,13 @@ RemoteProcess::LaunchRemote(const stringVector &args)
     // Start the program on the remote host.
     // 
 #if defined(_WIN32)
+    debug5 << mName << "Starting child process using _spawnvp" << endl;
     // Start the program using the WIN32 _spawnvp function.
     remoteProgramPid = _spawnvp(_P_NOWAIT, SecureShell(), argv);
 #else
     // Start the program in UNIX
 #ifdef USE_PTY
+    debug5 << mName << "Starting child process using pty_fork" << endl;
     int ptyFileDescriptor;
     if (!disablePTY)
     {
@@ -1637,6 +1770,7 @@ RemoteProcess::LaunchRemote(const stringVector &args)
         remoteProgramPid = fork();
     }
 #else
+    debug5 << mName << "Starting child process using fork" << endl;
     signal(SIGCHLD, catch_dead_child);
     remoteProgramPid = fork();
 #endif
@@ -1738,11 +1872,16 @@ RemoteProcess::LaunchRemote(const stringVector &args)
 //   I made the command line be passed in instead of assembling it in
 //   this method.
 //
+//   Brad Whitlock, Tue Jan 17 14:20:11 PST 2006
+//   Added debug logging.
+//
 // ****************************************************************************
 
 void
 RemoteProcess::LaunchLocal(const stringVector &args)
 {
+    const char *mName = "RemoteProcess::LaunchLocal: ";
+
     // 
     // Create the parameters for the exec
     //
@@ -1754,11 +1893,13 @@ RemoteProcess::LaunchLocal(const stringVector &args)
     //
 #if defined(_WIN32)
     // Do it the WIN32 way where we use the _spawnvp system call.
+    debug5 << mName << "Starting child process using _spawnvp" << endl;
     remoteProgramPid = _spawnvp(_P_NOWAIT, remoteProgram.c_str(), argv);
 #else
     // Watch for a remote process who died
     signal(SIGCHLD, catch_dead_child);
 
+    debug5 << mName << "Starting child process using fork" << endl;
     switch (remoteProgramPid = fork())
     {
     case -1:

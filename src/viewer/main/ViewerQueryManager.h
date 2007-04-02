@@ -177,6 +177,9 @@ typedef struct {
 //    Kathleen Bonnell, Tue Aug 16 10:03:27 PDT 2005 
 //    Changed arg from ViewerWindow to ViewerPlot for EngineExistsForQuery. 
 //
+//    Kathleen Bonnell, Tue Jan 17 11:30:15 PST 2006 
+//    Removed SetLineoutsTimeSlider.
+//
 // ****************************************************************************
     
 class VIEWER_API ViewerQueryManager 
@@ -306,7 +309,6 @@ class VIEWER_API ViewerQueryManager
     void            ResetLineoutCache();
     void            SetDynamicLineout(bool);
     void            SetLineoutsFollowTime(bool);
-    void            SetLineoutsTimeSlider(bool);
 
     void            HandlePickCache();
     bool            initialPick;

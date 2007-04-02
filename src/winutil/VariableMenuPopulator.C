@@ -1129,13 +1129,17 @@ VariableMenuPopulator::VariableList::Size() const
 //    Brad Whitlock, Thu Aug 18 15:55:19 PST 2005
 //    Fixed on win32.
 //
+//    Mark C. Miller, Tue Jan 17 18:18:17 PST 2006
+//    Applied patch from Paul Selby of Wed Dec 14 13:27:45 GMT 2005
+//    so that it will group variables in top level of path.
+//
 // ****************************************************************************
 
 bool
 VariableMenuPopulator::VariableList::IsGroupingRequired(
     StringStringMap& originalNameToGroupedName)
 {
-    int i, j, k;
+    int i, j, k, jmax;
     string var;
     bool validVar;
     bool isGroupingRequired = false;
@@ -1192,8 +1196,11 @@ VariableMenuPopulator::VariableList::IsGroupingRequired(
         stringVector pathvar;
         Split(var, pathvar);
 
+        // Force grouping to occur for variables in top level of path
+        if (pathvar.size() == 1) jmax = 1; else jmax = pathvar.size() - 1;
+
         string path, newpath;
-        for (j = 0; j < pathvar.size()-1; j++)
+        for (j = 0; j < jmax; j++)
         {
             if (entriesAtPath[path].size() > 90)
             {
@@ -1221,9 +1228,13 @@ VariableMenuPopulator::VariableList::IsGroupingRequired(
                 if (groupNum != -1)
                     newpath += groupsAtPath[path][groupNum][0] + ".../";
             }
-            path += (pathvar[j] + "/");
-            newpath += (pathvar[j] + "/");
+            if (jmax != 1)
+            {
+              path += (pathvar[j] + "/");
+              newpath += (pathvar[j] + "/");
+            }
         }
+        if (jmax == 1) j = 0;
         originalNameToGroupedName[path + pathvar[j]] = newpath + pathvar[j];
     }
     return true;

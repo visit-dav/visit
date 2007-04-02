@@ -703,6 +703,9 @@ SaveViewAction::ChoiceEnabled(int i) const
 //   Brad Whitlock, Thu Dec 18 13:35:10 PST 2003
 //   Added another argument to the view objects's CreateNode methods.
 //
+//   Brad Whitlock, Tue Jan 17 10:52:08 PDT 2006
+//   I made the saved views contain all of their fields no matter what.
+//
 // ****************************************************************************
 
 bool
@@ -725,7 +728,7 @@ SaveViewAction::CreateNode(DataNode *parentNode)
             avtViewCurve *v = (avtViewCurve *)views[i].view;
             v->SetToViewCurveAttributes(&viewAtts);
 
-            if(viewAtts.CreateNode(saveviewNode, false, false))
+            if(viewAtts.CreateNode(saveviewNode, true, false))
             {
                 haveViews = true;
                 viewTypes.push_back(views[i].viewType);
@@ -738,7 +741,7 @@ SaveViewAction::CreateNode(DataNode *parentNode)
             avtView2D *v = (avtView2D *)views[i].view;
             v->SetToView2DAttributes(&viewAtts);
 
-            if(viewAtts.CreateNode(saveviewNode, false, false))
+            if(viewAtts.CreateNode(saveviewNode, true, false))
             {
                 haveViews = true;
                 viewTypes.push_back(views[i].viewType);
@@ -751,7 +754,7 @@ SaveViewAction::CreateNode(DataNode *parentNode)
             avtView3D *v = (avtView3D *)views[i].view;
             v->SetToView3DAttributes(&viewAtts);
 
-            if(viewAtts.CreateNode(saveviewNode, false, false))
+            if(viewAtts.CreateNode(saveviewNode, true, false))
             {
                 haveViews = true;
                 viewTypes.push_back(views[i].viewType);

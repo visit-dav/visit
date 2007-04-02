@@ -42,6 +42,10 @@ class avtToolInterface;
 //    Kathleen Bonnell, Thu Feb  3 16:27:10 PST 2005 
 //    Added SetLineoutsFollowTime, SetTimeSlider. 
 //
+//    Kathleen Bonnell, Tue Jan 17 11:30:15 PST 2006 
+//    Removed SetTimeSlider. 
+//
+//
 // ****************************************************************************
 
 class VIEWER_API LineoutListItem : public SimpleObserver
@@ -77,8 +81,6 @@ class VIEWER_API LineoutListItem : public SimpleObserver
     void DisableTool(void);
     void ViewDimChanged(void);
     void SetLineoutsFollowTime(bool);
-    void SetTimeSlider(bool);
-
 
   private:
     ViewerPlot *origPlot;
