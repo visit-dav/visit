@@ -368,6 +368,14 @@ void vtkVisItExodusReader::SetNumberOfCellDataArrays(int num)
 }
 
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Wed Feb 21 11:31:30 PST 2007
+//    Do not blindly call ex_get_all_times if there is only one time slice.
+//
+// ****************************************************************************
+
 void vtkVisItExodusReader::LoadTimes()
 {
   float version;
@@ -393,7 +401,10 @@ void vtkVisItExodusReader::LoadTimes()
   if (this->Times != NULL)
       delete [] Times;
   this->Times = new float[this->NumberOfTimeSteps];
-  ex_get_all_times(exoid, this->Times);
+  if (this->NumberOfTimeSteps > 1)
+      ex_get_all_times(exoid, this->Times);
+  else if (this->NumberOfTimeSteps == 1)
+      this->Times[0] = 0.;
   
   ex_close(exoid);
 }

@@ -2593,6 +2593,10 @@ visit_DeleteExpression(PyObject *self, PyObject *args)
 //   Brad Whitlock, Tue Mar 2 09:55:05 PDT 2004
 //   I made it use GetStringVectorFromPyObject.
 //
+//   Hank Childs, Tue Feb 20 16:12:41 PST 2007
+//   Improve the error message for the case where the user specifies the 
+//   processor count as an integer, not a string.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -2601,6 +2605,11 @@ OpenComponentHelper(PyObject *self, PyObject *args, bool openEngine)
     ENSURE_VIEWER_EXISTS();
 
     static const char *OCEError = "Arguments must be: hostName, arg | (args...)";
+    static const char *OCEError2 = "Arguments must be: hostName, "
+            "arg | (args...).\n\tNot all of the arguments were strings.\n"
+            "\tDid you put in a number as an integer rather than as a string?\n"
+            "\tE.g.: (\"-np\", \"2\"), not (\"-np\", 2)";
+
     char  *hostName;
     char  *arg1;
     stringVector argv;
@@ -2626,7 +2635,7 @@ OpenComponentHelper(PyObject *self, PyObject *args, bool openEngine)
                 // Make sure it's a tuple.
                 if(!GetStringVectorFromPyObject(tuple, argv))
                 {
-                    VisItErrorFunc(OCEError);
+                    VisItErrorFunc(OCEError2);
                     return NULL;
                 }
             }

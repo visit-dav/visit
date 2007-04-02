@@ -201,6 +201,11 @@ avtIntegrationRF::SetWindowSize(int s0, int s1)
 //  Programmer: Hank Childs
 //  Creation:   September 12, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Feb 20 11:09:49 PST 2007
+//    Output the window size as well.
+//
 // ****************************************************************************
 
 void
@@ -220,6 +225,7 @@ avtIntegrationRF::OutputRawValues(const char *filename)
                     " it could not open the file.");
         }
 
+        ofile << windowSize[0] << " " << windowSize[1] << endl;
         for (int i = 0 ; i < nvals ; i++)
             ofile << out_vals[i] << endl;
     }

@@ -955,6 +955,9 @@ avtUnstructuredDomainBoundaries::ConfirmMesh(vector<int>       domainNum,
 //    method signature and the contents of CommunicateDataInformation,
 //    which had to be inlined to get it to compile on Windows.
 //
+//    Hank Childs, Wed Feb 14 15:48:00 PST 2007
+//    Fix bug where last entry in the array was being overwritten.
+//
 // ****************************************************************************
 
 template <class T>
@@ -1074,12 +1077,15 @@ avtUnstructuredDomainBoundaries::ExchangeData(vector<int>         &domainNum,
             nGivenTuples += nGainedTuples[sendDom][recvDom];
         }
         
-        out[i]->Resize(nGivenTuples + out[i]->GetNumberOfTuples());
+        if (nGivenTuples > 0)
+        {
+            out[i]->Resize(nGivenTuples + out[i]->GetNumberOfTuples());
 
-        // This properly sets the internal size.
-        out[i]->InsertTuple(data[i]->GetNumberOfTuples() + nGivenTuples - 1,
-                            data[i]->GetTuple(0));
-        
+            // This properly sets the internal size.
+            out[i]->InsertTuple(data[i]->GetNumberOfTuples() + nGivenTuples - 1,
+                                data[i]->GetTuple(0));
+        }
+
         for (sendDom = 0; sendDom < nTotalDomains; ++sendDom)
         {
             if (sendDom == recvDom || nGainedTuples[sendDom][recvDom] == 0)
