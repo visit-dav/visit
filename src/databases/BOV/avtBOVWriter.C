@@ -42,7 +42,7 @@
 #include <avtBOVWriter.h>
 
 #include <float.h>
-#include <zlib.h>
+#include <vtk_zlib.h>
 #include <vector>
 
 #include <visit-config.h>

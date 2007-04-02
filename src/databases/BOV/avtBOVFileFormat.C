@@ -41,7 +41,7 @@
 
 #include <avtBOVFileFormat.h>
 
-#include <zlib.h>
+#include <vtk_zlib.h>
 
 #include <visitstream.h>
 #include <visit-config.h>

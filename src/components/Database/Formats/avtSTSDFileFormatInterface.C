@@ -376,6 +376,11 @@ avtSTSDFileFormatInterface::GetFilename(int ts)
 //    Mark C. Miller, Tue Nov 15 17:43:06 PST 2005
 //    Fixed problem where it would totally ignore trying to
 //    GetCycleFromFilename if the plugin hadn't implemented it
+//
+//    Mark C. Miller, Tue Jun  6 11:07:04 PDT 2006
+//    Fixed problem where it would only set a cycle value in md when
+//    it was deemed accurate. Now, it will set cycles whenever it has a
+//    "good" one and accuracy flag independently
 // ****************************************************************************
 
 void
@@ -498,9 +503,9 @@ avtSTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
         {
             for (i = 0 ; i < nTimesteps; i++)
             {
-                md->SetCycleIsAccurate(cycleIsAccurate[i],i);
-                if (cycleIsAccurate[i])
+                if (cycles[i] != avtFileFormat::INVALID_CYCLE)
                     md->SetCycle(i, cycles[i]);
+                md->SetCycleIsAccurate(cycleIsAccurate[i],i);
             }
         }
 
@@ -508,9 +513,9 @@ avtSTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
         {
             for (i = 0 ; i < nTimesteps; i++)
             {
-                md->SetTimeIsAccurate(timeIsAccurate[i],i);
-                if (timeIsAccurate[i])
+                if (times[i] != avtFileFormat::INVALID_TIME)
                     md->SetTime(i, times[i]);
+                md->SetTimeIsAccurate(timeIsAccurate[i],i);
             }
             if (timeIsAccurate[0] && timeIsAccurate[nTimesteps-1])
                 md->SetTemporalExtents(times[0], times[nTimesteps-1]);
