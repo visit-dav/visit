@@ -64,9 +64,13 @@ class QUrlInfo;
 //   Brad Whitlock, Thu May 25 12:12:56 PDT 2006
 //   I added some new members.
 //
+//   Hank Childs, Tue Sep 26 14:10:20 PDT 2006
+//   Added keyword `public' for inheritance of GUIBase.  This addresses
+//   compiler warning on xlC.
+//
 // ****************************************************************************
 
-class QvisVisItUpdate : public QObject, GUIBase
+class QvisVisItUpdate : public QObject, public GUIBase
 {
     Q_OBJECT
 public:

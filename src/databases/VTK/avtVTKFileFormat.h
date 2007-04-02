@@ -81,6 +81,9 @@ class DBOptionsAttributes;
 //    Kathleen Bonnell, Thu Jun 29 17:30:40 PDT 2006
 //    Added GetTime method.
 //
+//    Hank Childs, Tue Sep 26 14:09:18 PDT 2006
+//    Remove class qualification of method definition, which xlC dislikes.
+//
 // ****************************************************************************
 
 class avtVTKFileFormat : public avtSTSDFileFormat
@@ -92,7 +95,7 @@ class avtVTKFileFormat : public avtSTSDFileFormat
     virtual vtkDataSet   *GetMesh(const char *);
     virtual vtkDataArray *GetVar(const char *);
     virtual vtkDataArray *GetVectorVar(const char *);
-    virtual void         *avtVTKFileFormat::GetAuxiliaryData(const char *var,
+    virtual void         *GetAuxiliaryData(const char *var,
                               const char *type, void *, DestructorFunction &df);
 
     virtual const char   *GetType(void)  { return "VTK File Format"; };

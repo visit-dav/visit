@@ -568,6 +568,13 @@ char *bow_cat(bowglobal bg,int numbow,char **bowtab)
     return buf;
 }
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Tue Sep 26 14:02:08 PDT 2006
+//    Initialize fsum, as pointed out by Matt Wheeler.
+//
+// ****************************************************************************
 
 int bow_test(bowglobal bg,int ti,int bi,int vi,int xs,int ys,int zs,
     int x0,int y0,int z0,float *vsum,float v0,float v1,char *bow)
@@ -615,6 +622,7 @@ int bow_test(bowglobal bg,int ti,int bi,int vi,int xs,int ys,int zs,
         return -1;
     }
     f1=0.0;
+    fsum=0.0;
     for (i=0;i<n;i++)
         { f=vsum[i]-vcop[i]; if (f<0.0) f= -f; fsum+=f; if (f>f1) f1=f; }
     fsum/=(float)n;

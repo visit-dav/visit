@@ -1522,6 +1522,11 @@ int vtkVisItPointLocator::InsertUniquePoint(const double x[3], vtkIdType &id)
 
 // Given a position x, return the id of the point closest to it. This method
 // is used when performing incremental point insertion.
+//
+// Modifications:
+//   Hank Childs, Tue Sep 26 14:02:08 PDT 2006
+//   Initialize pt.
+//
 vtkIdType vtkVisItPointLocator::FindClosestInsertedPoint(const double x[3])
 {
   int i;
@@ -1580,7 +1585,7 @@ vtkIdType vtkVisItPointLocator::FindClosestInsertedPoint(const double x[3])
         for (j=0; j < ptIds->GetNumberOfIds(); j++) 
           {
           ptId = ptIds->GetId(j);
-          this->Points->GetPoint(ptId, pt);
+          pt = this->Points->GetPoint(ptId);
           if ( (dist2 = vtkMath::Distance2BetweenPoints(x,pt)) < minDist2 ) 
             {
             closest = ptId;
