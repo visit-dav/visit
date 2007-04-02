@@ -749,6 +749,9 @@ QvisHostProfileWindow::UpdateProfileList()
 //   Jeremy Meredith, Thu Sep 15 16:39:13 PDT 2005
 //   Added machinefile and useVisItScriptForEnv.
 //
+//   Jeremy Meredith, Tue Sep 27 14:10:02 PDT 2005
+//   Forgot to set a couple checkbox values to false if not a parallel profile.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::UpdateActiveProfile()
@@ -836,9 +839,15 @@ QvisHostProfileWindow::UpdateActiveProfile()
         parallelCheckBox->setChecked(current.GetParallel());
         bool parEnabled = current.GetParallel();
         if (parEnabled)
+        {
             shareMDServerCheckBox->setChecked(current.GetShareOneBatchJob());
-        if (parEnabled)
             useVisItScriptForEnvCheckBox->setChecked(current.GetVisitSetsUpEnv());
+        }
+        else
+        {
+            shareMDServerCheckBox->setChecked(false);
+            useVisItScriptForEnvCheckBox->setChecked(false);
+        }
         launchCheckBox->setChecked(parEnabled && current.GetLaunchMethodSet());
         if (parEnabled && current.GetLaunchMethodSet())
         {

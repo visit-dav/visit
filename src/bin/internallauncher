@@ -98,6 +98,9 @@ $0 = shift @ARGV;
 #    the environment on beowulf clusters (and similar).  Added -machinefile
 #    for the same enviroment under mpich.
 #
+#    Jeremy Meredith, Tue Sep 27 16:49:03 PDT 2005
+#    Added -machinefile to options for engineargs.
+#
 ###############################################################################
 
 
@@ -536,7 +539,8 @@ if ($remotehost_set)
 # -----------------------------------------------------------------------------
 
 if ((!$procs_set) and ($name_set or $part_set or $bank_set or
-                       $time_set or $part_set or $nodes_set))
+                       $time_set or $part_set or $nodes_set or
+                       $machinefile_set))
 {
     print STDERR "You specified a parallel argument without using -np to specify\n".
                  "the number of processors.  Please add an -np argument.\n";
@@ -569,6 +573,7 @@ if ((($parallel) or ($launchengine)) and
     push @engine_parallel_args, "-p",  $part             if ($part_set);
     push @engine_parallel_args, "-b",  $bank             if ($bank_set);
     push @engine_parallel_args, "-t",  $time             if ($time_set);
+    push @engine_parallel_args, "-machinefile",  $machinefile if ($machinefile_set);
 
     # ... but don't confuse the script
     $parallel=0;
@@ -579,6 +584,7 @@ if ((($parallel) or ($launchengine)) and
     $bank_set=0;
     $time_set=0;
     $nodes_set=0;
+    $machinefile_set=0;
 
     #
     # The makemili and convert tool needs these parallel arguments, but to not
