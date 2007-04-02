@@ -55,6 +55,7 @@ sunspot=true
 hyper=true
 gps=true
 berg=true
+up=true
 pengra=true
 thunder=true
 
@@ -75,6 +76,7 @@ do
          hyper=false
          gps=false
          berg=false
+         up=false
          pengra=false
          thunder=false
          shift
@@ -125,6 +127,14 @@ do
          ;;
       +berg)
          berg=true
+         shift
+         ;;
+      -up)
+         up=false
+         shift
+         ;;
+      +up)
+         up=true
          shift
          ;;
       -pengra)
@@ -470,6 +480,56 @@ then
 fi
 
 #
+# Build on up, both serial and parallel versions.
+#
+rm -f up
+cat <<EOF > up
+#!/bin/sh
+PATH=/usr/local/bin:$PATH
+if test ! -d /p/gup1/$user ; then
+   mkdir /p/gup1/$user
+fi
+if test ! -d /p/gup1/$user/up ; then
+   mkdir /p/gup1/$user/up
+fi
+rm -rf /p/gup1/$user/up/visitbuild
+mkdir /p/gup1/$user/up/visitbuild
+mv up_$dist.tar.gz /p/gup1/$user/up/visitbuild/$dist.tar.gz
+cd /p/gup1/$user/up/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../buildlog 2>&1
+gmake -j 4 >> ../buildlog 2>&1
+clearcase_bin/visit-bin-dist -compiler xlc >> ../buildlog 2>&1
+mv visit\$ver2.aix64-xlc.tar.gz ..
+cd ..
+echo "        build of visit on up"           > resultlog 2>&1
+echo "       ----------------------"          >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $up = true ]
+then
+   if [ $test = no ]
+   then
+      scp up up:up_buildit
+      scp $dist.tar.gz up:up_$dist.tar.gz
+      ssh up "chmod 750 up_buildit;./up_buildit" &
+   fi
+fi
+
+#
 # Build on pengra.
 #
 rm -f pengra
@@ -574,5 +634,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit hoth sunspot hyper gps berg pengra thunder
+   rm -f kickit hoth sunspot hyper gps berg up pengra thunder
 fi
