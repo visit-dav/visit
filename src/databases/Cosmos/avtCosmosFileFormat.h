@@ -36,6 +36,10 @@ class vtkDataSet;
 //    Fixed some code to compile on IRIX. Separated time reading code
 //    to separate function.
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Removed GetCycles as it was implementing the same functionality as
+//    the default method in the base class. Added timeState arg to 
+//    PopulateDatabaseMetaData to satisfy new interface
 // ****************************************************************************
 
 class avtCosmosFileFormat : public avtMTMDFileFormat
@@ -46,14 +50,13 @@ class avtCosmosFileFormat : public avtMTMDFileFormat
     
     virtual const char   *GetType(void) { return "Cosmos File Format"; };
     
-    virtual void          GetCycles(std::vector<int> &);
     virtual int           GetNTimesteps(void);
  
     virtual vtkDataSet   *GetMesh(int, int, const char *);
     virtual vtkDataArray *GetVar(int, int, const char *);
     virtual vtkDataArray *GetVectorVar(int, int, const char *);
 
-    virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
+    virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 
   protected:
     enum CoordinateType

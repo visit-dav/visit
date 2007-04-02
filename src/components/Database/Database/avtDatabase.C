@@ -674,10 +674,13 @@ avtDatabase::GetMostRecentTimestep(void) const
 //    Jeremy Meredith/Hank Childs, Tue Mar 23 12:26:55 PST 2004
 //    Set the file format with the meta-data.
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added bool to force reading of all cycles and times 
+//
 // ****************************************************************************
 
 void
-avtDatabase::GetNewMetaData(int timeState)
+avtDatabase::GetNewMetaData(int timeState, bool forceReadAllCyclesTimes)
 {
     // sanity check: since SIL info is currently embedded in MetaData,
     // we cannot have MD invariant but SIL NOT invariant
@@ -694,7 +697,7 @@ avtDatabase::GetNewMetaData(int timeState)
         fname = "";
     else
         fname = filename;
-    SetDatabaseMetaData(md, timeState);
+    SetDatabaseMetaData(md, timeState, forceReadAllCyclesTimes);
     md->SetDatabaseName(fname);
     md->SetFileFormat(fileFormat);
     md->SetMustRepopulateOnStateChange(!MetaDataIsInvariant() ||
@@ -828,23 +831,47 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
 //  Programmer: Mark C. Miller 
 //  Creation:   September 30, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added code to handling forcing of reading all cycles and times and
+//    to update cached metadata if we ever do read all cycles and times
+//
 // ****************************************************************************
 
 avtDatabaseMetaData *
-avtDatabase::GetMetaData(int timeState)
+avtDatabase::GetMetaData(int timeState, bool forceReadAllCyclesTimes)
 {
+    std::list<CachedMDEntry>::iterator i;
+
     if (MetaDataIsInvariant())
     {
 
-        // since its invariant, get it once at specified time 
         if (metadata.size() == 0)
-            GetNewMetaData(timeState);
-
+            GetNewMetaData(timeState, forceReadAllCyclesTimes);
+        else
+        {
+            if (forceReadAllCyclesTimes)
+            {
+                //
+                // Ok, we need to read all cycles and times. So,
+                // before we do, we check to see if all cycles/times
+                // in avtDatabaseMetaData are already accurate. If
+                // they already are, then we don't need to do anything.
+                // Otherwise, we need to re-acquire meta data except
+                // this time reading accurate cycles/times.
+                //
+                avtDatabaseMetaData *cachedMd = metadata.front().md;
+                if ((cachedMd->AreAllCyclesAccurateAndValid() == false) ||
+                    (cachedMd->AreAllTimesAccurateAndValid() == false))
+                    GetNewMetaData(timeState, forceReadAllCyclesTimes);
+            }
+        }
     }
     else
     {
+
         // see if we've already cached metadata for this timestep
-        std::list<CachedMDEntry>::iterator i;
         for (i = metadata.begin(); i != metadata.end(); i++)
         {
             if (timeState == i->ts)
@@ -857,20 +884,99 @@ avtDatabase::GetMetaData(int timeState)
             }
         }
 
-       // if we didn't find it in the cache, remove the oldest (last) entry
-       // and read new metadata
-       if (i == metadata.end())
-       {
-           if (metadata.size() >= mdCacheSize)
-           {
-               CachedMDEntry tmp = metadata.back(); 
-               metadata.pop_back();
-               delete tmp.md;
-           }
+        // if we didn't find it in the cache, remove the oldest (last) entry
+        // and read new metadata
+        avtDatabaseMetaData *frontMd;
+        avtDatabaseMetaData *thisMd;
+        if (i == metadata.end())
+        {
+            if (metadata.size() >= mdCacheSize)
+            {
+                CachedMDEntry tmp = metadata.back(); 
+                metadata.pop_back();
+                delete tmp.md;
+            }
 
-           GetNewMetaData(timeState);
-       }
+            GetNewMetaData(timeState, forceReadAllCyclesTimes);
 
+            if (forceReadAllCyclesTimes)
+            {
+                //
+                // At this point, the metadata object we've just obtained is at
+                // the front of the cache and it contains accurate cycles/times
+                // from actually opening and reading every file in the database
+                // (at least for STXX databases anyways) So, we now take that
+                // information and overwrite it for all the other md objects in
+                // the cache so that later requests for these MD's will have the
+                // best available data AND all be in agreement.
+                //
+                frontMd = metadata.front().md;
+                i = metadata.begin();
+                i++;
+                for (; i != metadata.end(); i++)
+                {
+                    thisMd = i->md;
+
+                    if (thisMd->AreAllCyclesAccurateAndValid() == false)
+                    {
+                        thisMd->SetCycles(frontMd->GetCycles());
+                        thisMd->SetCyclesAreAccurate(true);
+                    }
+                    if (thisMd->AreAllTimesAccurateAndValid() == false)
+                    {
+                        thisMd->SetTimes(frontMd->GetTimes());
+                        thisMd->SetTimesAreAccurate(true);
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (forceReadAllCyclesTimes)
+            {
+                //
+                // At this point, the metadata object in the cache is the one
+                // we need. However, if it turns out that it DOES NOT have
+                // accurate cycles and times, we're going to have to re-request
+                // it anyways.
+                //
+                frontMd = metadata.front().md;
+                if ((frontMd->AreAllCyclesAccurateAndValid() == false) ||
+                    (frontMd->AreAllTimesAccurateAndValid() == false))
+                {
+
+                    GetNewMetaData(timeState, forceReadAllCyclesTimes);
+
+                    //
+                    // At this point, the metadata object we've just obtained is at
+                    // the front of the cache and it contains accurate cycles/times
+                    // from actually opening and reading every file in the database
+                    // (at least for STXX databases anyways) So, we now take that
+                    // information and overwrite it for all the other md objects in
+                    // the cache so that later requests for these MD's will have the
+                    // best available data AND all be in agreement.
+                    //
+                    frontMd = metadata.front().md;
+                    i = metadata.begin();
+                    i++;
+                    for (; i != metadata.end(); i++)
+                    {
+                        thisMd = i->md;
+
+                        if (thisMd->AreAllCyclesAccurateAndValid() == false)
+                        {
+                            thisMd->SetCycles(frontMd->GetCycles());
+                            thisMd->SetCyclesAreAccurate(true);
+                        }
+                        if (thisMd->AreAllTimesAccurateAndValid() == false)
+                        {
+                            thisMd->SetTimes(frontMd->GetTimes());
+                            thisMd->SetTimesAreAccurate(true);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     return metadata.front().md;

@@ -253,35 +253,6 @@ avtExodusFileFormat::GetReader(void)
     return reader;
 }
 
-
-// ****************************************************************************
-//  Method: avtExodusFileFormat::GetCycles
-//
-//  Purpose:
-//      The cycles aren't in the current version of the Exodus reader, so dummy
-//      up a version.
-//
-//  Arguments:
-//      cycles  A place to put the cycle numbers.
-//
-//  Programmer: Hank Childs
-//  Creation:   October 8, 2001
-//
-// ****************************************************************************
-
-void
-avtExodusFileFormat::GetCycles(vector<int> &cycles)
-{
-    int nTimesteps = GetNTimesteps();
-
-    cycles.clear();
-    for (int i = 0 ; i < nTimesteps ; i++)
-    {
-        cycles.push_back(i);
-    }
-}
-
-
 // ****************************************************************************
 //  Method: avtExodusFileFormat::GetTimes
 //
@@ -375,10 +346,15 @@ avtExodusFileFormat::GetNTimesteps(void)
 //    Mark C. Miller, Mon Aug  9 19:12:24 PDT 2004
 //    Removed setting of avtMeshMetadata->containsGlobalNodeIds
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added timeState arg since this is an MTXX database. Nonetheless,
+//    timeState argument is ununsed
+//
 // ****************************************************************************
 
 void
-avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
+avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
+    int timeState)
 {
     if (!readInFile)
     {

@@ -351,7 +351,6 @@ DatabaseCorrelation::AddDatabase(const std::string &database, int nStates,
     }
 }
 
-
 Function: UsesDatabase
 Declaration: bool UsesDatabase(const std::string &database) const;
 Definition:
@@ -382,7 +381,6 @@ DatabaseCorrelation::UsesDatabase(const std::string &database) const
            databaseNames.end();
 }
 
-
 Function: GetNumDatabases
 Declaration: int GetNumDatabases() const;
 Definition:
@@ -404,7 +402,6 @@ DatabaseCorrelation::GetNumDatabases() const
 {
     return databaseNames.size();
 }
-
 
 Function: GetCorrelatedTimeState
 Declaration: int GetCorrelatedTimeState(const std::string &db, int state) const;
@@ -450,7 +447,6 @@ DatabaseCorrelation::GetCorrelatedTimeState(const std::string &db, int state) co
 
     return retval;
 }
-
 
 Function: GetInverseCorrelatedTimeState
 Declaration: int GetInverseCorrelatedTimeState(const std::string &db, int state) const;
@@ -502,7 +498,6 @@ DatabaseCorrelation::GetInverseCorrelatedTimeState(const std::string &db,
 
     return retval;
 }
-
 
 Function: OutputOperator
 Declaration: ostream& operator << (ostream &os, const DatabaseCorrelation &);
@@ -581,7 +576,6 @@ operator << (ostream &os, const DatabaseCorrelation &correlation)
     return os;
 }
 
-
 Function: GetCondensedCycleForState
 Declaration: int GetCondensedCycleForState(int state) const;
 Definition:
@@ -615,7 +609,6 @@ DatabaseCorrelation::GetCondensedCycleForState(int state) const
     return retval;
 }
 
-
 Function: GetCondensedTimeForState
 Declaration: double GetCondensedTimeForState(int state) const;
 Definition:
@@ -648,3 +641,51 @@ DatabaseCorrelation::GetCondensedTimeForState(int state) const
 
     return retval;
 }
+
+Function: GetMethodName
+Declaration: const char *GetMethodName() const;
+Definition:
+// ****************************************************************************
+// Method: DatabaseCorrelation::GetMethodName
+//
+// Purpose: Returns the correlation method name as a char*
+//
+// Programmer: Mark C. Miller
+// Creation:   Tuesday, May 17, 2005
+//
+// ****************************************************************************
+
+const char*
+DatabaseCorrelation::GetMethodName() const
+{
+    return GetMethodNameFromMethod(GetMethod());
+}
+
+Function: GetMethodNameFromMethod
+Declaration: static const char *GetMethodNameFromMethod(int m);
+Definition:
+// ****************************************************************************
+// Method: DatabaseCorrelation::GetMethodNameFromMethod
+//
+// Purpose: Returns the correlation method name as a char*
+//
+// Programmer: Mark C. Miller
+// Creation:   Tuesday, May 17, 2005
+//
+// ****************************************************************************
+
+const char*
+DatabaseCorrelation::GetMethodNameFromMethod(int m)
+{
+    CorrelationMethod theMethod = (CorrelationMethod) m;
+    switch(theMethod)
+    {
+        case IndexForIndexCorrelation:     return "Index";
+        case StretchedIndexCorrelation:    return "StretchedIndex";
+        case TimeCorrelation:              return "Time";
+        case CycleCorrelation:             return "Cycle";
+        case UserDefinedCorrelation:       return "User Defined";
+    }
+    return "Unknown";
+}
+

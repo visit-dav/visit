@@ -28,6 +28,8 @@ class vtkUnstructuredGrid;
 //    Hank Childs, Mon Jul 19 16:57:59 PDT 2004
 //    Added haveIssuedWarning.
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added timeState arg to PopulateDatabaseMetaData satisfy new interface
 // ****************************************************************************
 
 class avtCosmosPPFileFormat : public avtMTMDFileFormat
@@ -46,7 +48,7 @@ class avtCosmosPPFileFormat : public avtMTMDFileFormat
     virtual vtkDataArray *GetVar(int, int, const char *);
     virtual vtkDataArray *GetVectorVar(int, int, const char *);
 
-    virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
+    virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 
   protected:
     std::string                         dirname;

@@ -51,46 +51,6 @@ avtSTSDFileFormat::~avtSTSDFileFormat()
 
 
 // ****************************************************************************
-//  Method: avtSTSDFileFormat::GetCycle
-//
-//  Purpose:
-//      Tries to guess the cycle number from the filename.
-//
-//  Returns:     The guess at the cycle number.
-//
-//  Programmer:  Hank Childs
-//  Creation:    February 22, 2001
-//
-// ****************************************************************************
-
-int
-avtSTSDFileFormat::GetCycle(void)
-{
-    return GuessCycle(filename);
-}
-
-// ****************************************************************************
-// Method: avtSTSDFileFormat::GetTime
-//
-// Purpose: 
-//   Returns the time.
-//
-// Returns:    The time.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Oct 13 14:44:06 PST 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-double
-avtSTSDFileFormat::GetTime(void)
-{
-    return 0.;
-}
-
-// ****************************************************************************
 //  Method: avtSTSDFileFormat::GetAuxiliaryData
 //
 //  Purpose:

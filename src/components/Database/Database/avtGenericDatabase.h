@@ -234,10 +234,8 @@ class     PickVarInfo;
 //    Brad Whitlock, Sat Apr 2 00:31:24 PDT 2005
 //    Added methods to get Label datasets.
 //
-//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
-//    Added methods to set/get admissible data types
-//    Added methods to set/get need native precision
-//
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added bool arg, forceReadAllCyclesTimes, to SetDatabaseMetaData
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -279,7 +277,9 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
 
     virtual void               PopulateSIL(avtSIL *, int=0);
     virtual void               PopulateIOInformation(int ts, avtIOInformation &);
-    virtual void               SetDatabaseMetaData(avtDatabaseMetaData *,int=0);
+    virtual void               SetDatabaseMetaData(avtDatabaseMetaData *md,
+                                   int timeState = 0,
+                                   bool forceReadAllCyclesTimes = false);
 
     vtkDataSet                *GetDataset(const char *, int, int, const char *,
                                           const std::vector<CharStrRef> &,

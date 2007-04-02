@@ -203,38 +203,149 @@ avtMTMDFileFormatInterface::GetFilename(int)
 //    Brad Whitlock, Mon Oct 13 13:54:06 PST 2003
 //    Added code to set the times in the metadata.
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added anonymous bool arg satisfy interface. Added logic to populate
+//    cycles and times
 // ****************************************************************************
 
 void
 avtMTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
-    int)
+    int timeState, bool)
 {
-    format->SetDatabaseMetaData(md);
+    int i, j;
+
+    //
+    // Throw an exception if an invalid time state was requested.
+    //
+    int nTimesteps = format->GetNTimesteps();
+    if (timeState < 0 || timeState >= nTimesteps)
+    {
+        EXCEPTION2(BadIndexException, timeState, nTimesteps);
+    }
 
     //
     // We know for sure that the number of states is the number of timesteps.
     //
-    md->SetNumStates(format->GetNTimesteps());
+    md->SetNumStates(nTimesteps);
 
     //
-    // We are going to try and guess at the naming convention.  If we ever get
-    // two consecutive domains that are not in increasing order, assume we
-    // are guessing incorrectly and give up.
+    // Let the format plugin populate as much of database metadata as it can,
+    // first. It migth actually set cycles/times too.
     //
-    vector<int> cycles;
-    format->GetCycles(cycles);
-    md->SetCycles(cycles);
-    md->SetCyclesAreAccurate(true);
+    format->SetDatabaseMetaData(md, timeState);
 
-    // Set the times in the metadata.
-    vector<double> times;
-    format->GetTimes(times);
-    md->SetTimes(times);
-    md->SetTimesAreAccurate(true);
-    if(times.size() > 0)
-        md->SetTemporalExtents(times[0], times[times.size() - 1]);
+    if (md->AreAllCyclesAccurateAndValid(nTimesteps) != true)
+    {
+        //
+        // Note: In an MTXX format, a single file has multiple time steps in it
+        // So, we don't have the same kinds of semantics we do with STXX databases
+        // in, for example, trying to guess cycle numbers from file names
+        //
+        vector<int> cycles;
+        format->FormatGetCycles(cycles);
+        bool cyclesLookGood = true;
+        for (i = 0; i < cycles.size(); i++)
+        {
+            if ((i != 0) && (cycles[i] <= cycles[i-1]))
+            {
+                cyclesLookGood = false;
+                break;
+            }
+        }
+        if (cycles.size() != nTimesteps)
+            cyclesLookGood = false;
+        if (cyclesLookGood == false)
+        {
+            cycles.clear();
+            for (i = 0; i < nTimesteps; i++)
+            {
+                int c = format->FormatGetCycle(i);
+
+                cycles.push_back(c);
+
+                if ((c == -INT_MAX) || ((i != 0) && (cycles[i] <= cycles[i-1])))
+                {
+                    cyclesLookGood = false;
+                    break;
+                }
+            }
+        }
+
+        //
+        // Ok, now put cycles into the metadata
+        //
+        if (cyclesLookGood)
+        {
+            md->SetCycles(cycles);
+            md->SetCyclesAreAccurate(true);
+        }
+        else
+        {
+            cycles.clear();
+            for (j = 0 ; j < nTimesteps ; j++)
+            {
+                cycles.push_back(j);
+            }
+            md->SetCycles(cycles);
+            md->SetCyclesAreAccurate(false);
+        }
+    }
+
+    if (md->AreAllTimesAccurateAndValid(nTimesteps) != true)
+    {
+        // Set the times in the metadata.
+        vector<double> times;
+        format->FormatGetTimes(times);
+        bool timesLookGood = true;
+        for (i = 0; i < times.size(); i++)
+        {
+            if ((i != 0) && (times[i] <= times[i-1]))
+            {
+                timesLookGood = false;
+                break;
+            }
+        }
+        if (times.size() != nTimesteps)
+            timesLookGood = false;
+        if (timesLookGood == false)
+        {
+            times.clear();
+            for (i = 0; i < nTimesteps; i++)
+            {
+                double t = format->FormatGetTime(i);
+
+                times.push_back(t);
+
+                if ((t == -DBL_MAX) || ((i != 0) && (times[i] <= times[i-1])))
+                {
+                    timesLookGood = false;
+                    break;
+                }
+            }
+        }
+
+        //
+        // Ok, now put times into the metadata
+        //
+        if (timesLookGood)
+        {
+            md->SetTimes(times);
+            md->SetTimesAreAccurate(true);
+            md->SetTemporalExtents(times[0], times[times.size() - 1]);
+        }
+        else
+        {
+            times.clear();
+            for (j = 0 ; j < nTimesteps ; j++)
+            {
+                times.push_back((double)j);
+            }
+            md->SetTimes(times);
+            md->SetTimesAreAccurate(false);
+        }
+    }
+
 }
-
 
 // ****************************************************************************
 //  Method: avtMTMDFileFormatInterface::FreeUpResources

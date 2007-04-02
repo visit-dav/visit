@@ -55,6 +55,11 @@ class     avtIOInformation;
 //    Hank Childs, Mon Aug 16 16:22:56 PDT 2004
 //    Allow for the domain to be set.
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Removed GetCycles/Times. Added SetDatabaseMetaData and both
+//    time-qualified and non-time-qualified PopulateDatabaseMetaData methods
+//    See note below.
+//
 // ****************************************************************************
 
 class DATABASE_API avtMTSDFileFormat : public avtFileFormat
@@ -69,8 +74,6 @@ class DATABASE_API avtMTSDFileFormat : public avtFileFormat
 
     void                   SetDomain(int d) { myDomain = d; };
 
-    virtual void           GetCycles(std::vector<int> &);
-    virtual void           GetTimes(std::vector<double> &);
     virtual int            GetNTimesteps(void);
 
     virtual const char    *GetFilename(void) { return filenames[0]; };
@@ -83,10 +86,20 @@ class DATABASE_API avtMTSDFileFormat : public avtFileFormat
                                { avtFileFormat::ActivateTimestep(); };
     virtual void           PopulateIOInformation(int ts, avtIOInformation& ioInfo)
                                { avtFileFormat::PopulateIOInformation(ioInfo); };
+    virtual void           SetDatabaseMetaData(avtDatabaseMetaData *md, int ts = 0)
+                               { metadata = md; PopulateDatabaseMetaData(metadata, ts); };
   protected:
     char                 **filenames;
     int                    nFiles;
     int                    myDomain;
+
+    // The second of these should really be pure virtual and the first
+    // non-existant. However, both are just virtual to maintain 
+    // backward compatibility with older MTXX plugins and to allow 
+    // MTXX plugins to implement a time-qualified request to populate
+    // database metadata.
+    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *md);
+    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *md, int);
 
     int                    AddFile(const char *);
     static const int       MAX_FILES;

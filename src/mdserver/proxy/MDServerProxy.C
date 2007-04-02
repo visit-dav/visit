@@ -331,14 +331,18 @@ MDServerProxy::GetFileList(const std::string &filter,
 //    Brad Whitlock, Tue May 13 15:36:27 PST 2003
 //    I added timeState.
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added bool to forceReadAllCyclesAndTimes
 // ****************************************************************************
 
 const avtDatabaseMetaData *
-MDServerProxy::GetMetaData(const string &file, int timeState)
+MDServerProxy::GetMetaData(const string &file, int timeState,
+    bool forceReadAllCyclesTimes)
 {
     // Try and get the file list from the MD Server. This could throw an
     // exception, but we don't want to catch it here.
-    const avtDatabaseMetaData *md = getMetaDataRPC(file, timeState);
+    const avtDatabaseMetaData *md = getMetaDataRPC(file, timeState,
+                                        forceReadAllCyclesTimes);
 
 #ifdef DEBUG
     // Write the metadata to stdout.

@@ -291,11 +291,16 @@ ViewerFileServer::MetaDataIsInvariant(const std::string &host,
 //   Brad Whitlock, Fri Mar 26 11:48:56 PDT 2004
 //   Moved the bulk of the code into GetMetaDataHelper.
 //
+//   Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//   Added arg forceReadAllCyclesAndTimes and logic to ignore cached
+//   values if we are forcing reading of all cycles and times and
+//   the cached metadata doesn't have all accurate cycles and times
 // ****************************************************************************
 
 const avtDatabaseMetaData *
 ViewerFileServer::GetMetaData(const std::string &host, 
-                              const std::string &db)
+                              const std::string &db,
+                              const bool forceReadAllCyclesAndTimes)
 {
     //
     // We don't care about the time state so look for any cached metadata
@@ -313,11 +318,21 @@ ViewerFileServer::GetMetaData(const std::string &host,
         int         ts;
         SplitKey(pos->first, name, ts);
 
-        if(name == dbName)
+        bool cyclesAndTimesAreGood = pos->second->AreAllTimesAccurateAndValid() &&
+                                     pos->second->AreAllCyclesAccurateAndValid();
+
+        if (name == dbName && (!forceReadAllCyclesAndTimes || cyclesAndTimesAreGood))
             return pos->second;
     }
 
-    return GetMetaDataHelper(host, db, ANY_STATE);
+    // if we're here because we've forced reading all cycles and times
+    // then we can't use ANY_STATE because we are potentially ALSO making this
+    // call on a database that is different from the one the mdserver thinks
+    // is current. Our only choice is to use state zero
+    int state = forceReadAllCyclesAndTimes ? 0 : ANY_STATE;
+
+    return GetMetaDataHelper(host, db, state, forceReadAllCyclesAndTimes);
+
 }
 
 // ****************************************************************************
@@ -344,6 +359,10 @@ ViewerFileServer::GetMetaData(const std::string &host,
 // Creation:   Fri Mar 26 11:49:13 PDT 2004
 //
 // Modifications:
+//
+//   Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//   Added bool argument to force reading of all cycles and times
+//   to call to GetMetaDataHelper
 //   
 // ****************************************************************************
 
@@ -393,7 +412,8 @@ ViewerFileServer::GetMetaDataForState(const std::string &host,
         }
     }
 
-    return GetMetaDataHelper(host, db, timeState);
+    const bool forceReadAllCyclesAndTimes = false;
+    return GetMetaDataHelper(host, db, timeState, forceReadAllCyclesAndTimes);
 }
 
 // ****************************************************************************
@@ -419,11 +439,13 @@ ViewerFileServer::GetMetaDataForState(const std::string &host,
 //
 // Modifications:
 //   
+//   Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//   Added bool arg forceReadAllCyclesAndTimes
 // ****************************************************************************
 
 const avtDatabaseMetaData *
 ViewerFileServer::GetMetaDataHelper(const std::string &host, 
-    const std::string &db, int timeState)
+    const std::string &db, int timeState, bool forceReadAllCyclesAndTimes)
 {
     // Try and start a server if one does not exist.
     NoFaultStartServer(host);
@@ -449,7 +471,8 @@ ViewerFileServer::GetMetaDataHelper(const std::string &host,
             TRY
             {
                 const avtDatabaseMetaData *md =
-                    servers[host]->proxy->GetMetaData(db, timeState);
+                    servers[host]->proxy->GetMetaData(db, timeState,
+                                              forceReadAllCyclesAndTimes);
 
                 if(md != NULL)
                 {
@@ -1667,6 +1690,9 @@ ViewerFileServer::GetDatabaseCorrelationList()
 //
 // Modifications:
 //   
+//   Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//   Added logic to decide if we need to force reading of all cycles
+//   and times when getting meta data
 // ****************************************************************************
 
 DatabaseCorrelation *
@@ -1711,6 +1737,23 @@ ViewerFileServer::CreateDatabaseCorrelation(const std::string &name,
         // Get the metadata for the database.
         //
         const avtDatabaseMetaData *md = GetMetaData(host, db);
+
+        //
+        // We might need to re-acqure metadata if we are doing
+        // time or cycle correlations and times or cycles are not
+        // all accurate and valid
+        //
+        if(md)
+        {
+            const bool forceReadAllCyclesAndTimes = true;
+
+            if ((m == DatabaseCorrelation::TimeCorrelation &&
+                 md->AreAllTimesAccurateAndValid() == false) ||
+                (m == DatabaseCorrelation::CycleCorrelation &&
+                 md->AreAllCyclesAccurateAndValid() == false))
+                md = GetMetaData(host, db, forceReadAllCyclesAndTimes);
+        }
+
         if(md)
         {
             //

@@ -1550,6 +1550,10 @@ ViewerPlotList::DeleteTimeSlider(const std::string &ts, bool update)
 //   Added support for making sure that we don't keep asking the user to
 //   create a correlation if they have turned it down before.
 //
+//   Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//   Added text to the message to indicate correlation type and warn
+//   about the operation potentially taking a long time.
+//
 // ****************************************************************************
 
 bool
@@ -1571,10 +1575,31 @@ ViewerPlotList::AskForCorrelationPermission(const stringVector &dbs) const
     }
     else
     {
+        DatabaseCorrelationList *cL = fs->GetDatabaseCorrelationList();
+        int defMethod = cL->GetDefaultCorrelationMethod();
+
+        static char prompt[512];
+        if (defMethod == DatabaseCorrelation::TimeCorrelation)
+        {
+            SNPRINTF(prompt, sizeof(prompt),
+                "Would you like to create a \"Time\" correlation for\n"
+                "the following databases?\n"
+                "PLEASE BE AWARE THAT \"Time\" CORRELATIONS REQUIRE OPENING\n"
+                "AND READING TIME INFORMATION FROM ALL FILES IN THE DATABASE.\n"
+                "DEPENDING ON THE DATABASE PLUGIN TYPE AND FILESYSTEM, THIS\n"
+                "OPERATION COULD TAKE AS MUCH AS A FEW MINUTES.\n");
+        }
+        else
+        {
+            SNPRINTF(prompt, sizeof(prompt), "Would you like to create a \"%s\" "
+                "correlation for the following databases?\n",
+                DatabaseCorrelation::GetMethodNameFromMethod(
+                    cL->GetDefaultCorrelationMethod()));
+        }
+
         // Pop up a Qt dialog to ask the user whether or not to correlate
         // the specified databases.
-        QString text("Would you like to create a database correlation "
-                     "for the following databases?\n");
+        QString text(prompt);
         QString fileStr;
         for(int i = 0; i < dbs.size(); ++i)
             fileStr += (QString(dbs[i].c_str()) + QString("\n"));

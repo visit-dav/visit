@@ -125,12 +125,19 @@ avtEulerianQuery::VerifyInput()
 //    Manually remove ghost cells, since the geometry filter only removes
 //    vtkGhostLevels, not vtkGhostNodes.
 //
+//    Kathleen Bonnell, Mon May 16 10:28:15 PDT 2005 
+//    Fix memory leak. 
+//
 // ****************************************************************************
 
 void 
 avtEulerianQuery::Execute(vtkDataSet *in_ds, const int dom)
 {
-    gFilter->SetInput(in_ds);
+    vtkDataSet *nds = (vtkDataSet*) in_ds->NewInstance();
+    nds->ShallowCopy(in_ds);
+    nds->SetSource(NULL);
+
+    gFilter->SetInput(nds);
     vtkDataSetRemoveGhostCells *ghost_remover =
                                              vtkDataSetRemoveGhostCells::New();
     ghost_remover->SetInput(gFilter->GetOutput());
@@ -237,6 +244,7 @@ avtEulerianQuery::Execute(vtkDataSet *in_ds, const int dom)
 
     domToEulerMap.insert(DomainToEulerMap::value_type(dom, Eulerian));
     ghost_remover->Delete();
+    nds->Delete();
 }
 
 

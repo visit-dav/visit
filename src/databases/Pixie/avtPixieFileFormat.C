@@ -500,10 +500,13 @@ avtPixieFileFormat::MeshIsCurvilinear(const std::string &name) const
 //    Jeremy Meredith, Mon Apr  4 17:05:32 PDT 2005
 //    Added "std::" prefix to string constructors.
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added timeState arg to satisfy new interface
 // ****************************************************************************
 
 void
-avtPixieFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
+avtPixieFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
+    int timeState)
 {
 //#define ADD_POINT_MESH
     VarInfoMap::const_iterator it;
@@ -996,6 +999,11 @@ avtPixieFileFormat::CreateCurvilinearMesh(int timestate, const VarInfo &info,
 
         retval = sgrid;
     }
+
+    // free up coord data
+    if (coords[0] != 0) delete [] coords[0];
+    if (coords[1] != 0) delete [] coords[1];
+    if (coords[2] != 0) delete [] coords[2];
 
     return retval;
 }

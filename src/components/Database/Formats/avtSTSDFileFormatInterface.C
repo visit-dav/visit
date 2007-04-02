@@ -328,16 +328,22 @@ avtSTSDFileFormatInterface::GetFilename(int ts)
 //    Added code that lets the format determine whether or not the cycle is
 //    accurate. I also added support for setting the times in a similar way.
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added bool to forceReadAllCyclesTimes. Added logic to correctly
+//    deal with reading cycles/times from formats. Unified it so it behaves
+//    consistently with other format types
 // ****************************************************************************
 
 void
 avtSTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
-    int timeState)
+    int timeState, bool forceReadAllCyclesTimes)
 {
+    int i,j;
+
     //
     // Throw an exception if an invalid time state was requested.
     //
-    if(timeState < 0 || timeState >= nTimesteps)
+    if (timeState < 0 || timeState >= nTimesteps)
     {
         EXCEPTION2(BadIndexException, timeState, nTimesteps);
     }
@@ -348,83 +354,144 @@ avtSTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
     md->SetNumStates(nTimesteps);
 
     //
+    // Let the format plugin fill in whatever in can in avtDatabaseMetaData,
+    // first
+    //
+    timesteps[timeState][0]->SetDatabaseMetaData(md);
+
+    //
     // We are going to try and guess at the naming convention.  If we ever get
     // two consecutive timesteps that are not in increasing order, assume we
     // are guessing incorrectly and give up.
     //
-    vector<int> cycles;
-    bool guessLooksGood = true;
-    bool formatReturnsValidCycles = false;
-    int i, j;
-    for (i = 0 ; i < nTimesteps ; i++)
+    if (md->AreAllCyclesAccurateAndValid(nTimesteps) != true ||
+        md->AreAllTimesAccurateAndValid(nTimesteps) != true)
     {
-        cycles.push_back(timesteps[i][0]->GetCycle());
-        if (i != 0)
-        {
-            if (cycles[i] <= cycles[i-1])
-            {
-                guessLooksGood = false;
-                break;
-            }
-        }
-        else
-        {
-            // Some formats can return valid cycles. Most formats return
-            // guesses but for those formats that return valid cycles, we
-            // don't want to throw them away.
-            formatReturnsValidCycles = timesteps[i][0]->ReturnsValidCycle();
-        }
-    }
-    if (guessLooksGood)
-    {
-        md->SetCycles(cycles);
-    }
-    else
-    {
-        cycles.clear();
-        for (j = 0 ; j < nTimesteps ; j++)
-        {
-            cycles.push_back(j);
-        }
-        md->SetCycles(cycles);
-    }
-    md->SetCyclesAreAccurate(guessLooksGood && formatReturnsValidCycles);
+        //
+        // Probe the format to see if we're using the default implementation of
+        // FormatGetCycleFromFilename or one that the plugin has overridden. The default
+        // implementation which will return -XXX_MAX+1 cannot be trusted.
+        //
+        bool canGetGoodCycleFromFilename =
+                 timesteps[0][0]->FormatGetCycleFromFilename("") != -INT_MAX+1;
+        bool canGetGoodTimeFromFilename =
+                 timesteps[0][0]->FormatGetTimeFromFilename("") != -DBL_MAX+1;
 
-    //
-    // Set the times in the metadata.
-    //
-    if(nTimesteps > 0)
-    {
+        bool cyclesLookGood = true;
+        bool timesLookGood = true;
+        bool fallBackToCyclesFromFilename = false;
+        bool fallBackToTimesFromFilename = false;
+        vector<int> cycles;
         vector<double> times;
-        guessLooksGood = true;
-        bool formatReturnsValidTimes = false;
-        for (i = 0 ; i < nTimesteps ; i++)
+        for (i = 0 ; i < nTimesteps; i++)
         {
-            times.push_back(timesteps[i][0]->GetTime());
 
-            if (i != 0)
+            if (md->AreAllCyclesAccurateAndValid(nTimesteps) != true && cyclesLookGood)
             {
-                if (times[i] <= times[i-1])
+                int c = -INT_MAX;
+
+                if (forceReadAllCyclesTimes && !fallBackToCyclesFromFilename)
                 {
-                    guessLooksGood = false;
-                    break;
+                    c = timesteps[i][0]->FormatGetCycle();
+
+                    // If we get back -INT_MAX from FormatGetCycle, this indicates the
+                    // format was unable to return a valid cycle. So, we fall back
+                    // to using the filenames.
+                        if (c == -INT_MAX)
+                    {
+                        fallBackToCyclesFromFilename = true;
+                        c = timesteps[i][0]->FormatGetCycleFromFilename(timesteps[i][0]->GetFilename());
+                    }
                 }
+                else
+                {
+                    c = timesteps[i][0]->FormatGetCycleFromFilename(timesteps[i][0]->GetFilename());
+                }
+
+                cycles.push_back(c);
+
+                if ((c == -INT_MAX) || ((i != 0) && (cycles[i] <= cycles[i-1])))
+                    cyclesLookGood = false;
+            }
+
+
+            if (md->AreAllTimesAccurateAndValid(nTimesteps) != true && timesLookGood)
+            {
+                double t = -DBL_MAX;
+
+                if (forceReadAllCyclesTimes && !fallBackToTimesFromFilename)
+                {
+                    t = timesteps[i][0]->FormatGetTime();
+
+                    // If we get back -DBL_MAX from FormatGetTime, this indicates the
+                    // format was unable to return a valid time. So, we fall back
+                    // to using the filenames.
+                    if (t == -DBL_MAX)
+                    {
+                        fallBackToTimesFromFilename = true;
+                        t = timesteps[i][0]->FormatGetTimeFromFilename(timesteps[i][0]->GetFilename());
+                    }
+
+                }
+                else
+                {
+                    t = timesteps[i][0]->FormatGetTimeFromFilename(timesteps[i][0]->GetFilename());
+                }
+
+                times.push_back(t);
+
+                if ((t == -DBL_MAX) || ((i != 0) && (times[i] <= times[i-1])))
+                    timesLookGood = false;
+            }
+
+            if (cyclesLookGood == false && timesLookGood == false)
+                break;
+        }
+
+        //
+        // Ok, now put cycles/times into the metadata
+        //
+        if (md->AreAllCyclesAccurateAndValid(nTimesteps) != true)
+        {
+            if (cyclesLookGood)
+            {
+                md->SetCycles(cycles);
+                md->SetCyclesAreAccurate(forceReadAllCyclesTimes &&
+                                         !fallBackToCyclesFromFilename ||
+                                         canGetGoodCycleFromFilename);
             }
             else
             {
-                // Some formats can return valid times. Most formats return
-                // guesses but for those formats that return valid cycles, we
-                // don't want to throw them away.
-                formatReturnsValidTimes = timesteps[i][0]->ReturnsValidTime();
+                cycles.clear();
+                for (j = 0 ; j < nTimesteps ; j++)
+                {
+                    cycles.push_back(j);
+                }
+                md->SetCycles(cycles);
+                md->SetCyclesAreAccurate(false);
             }
         }
 
-        if (guessLooksGood && formatReturnsValidTimes)
+        if (md->AreAllTimesAccurateAndValid(nTimesteps) != true)
         {
-            md->SetTimes(times);
-            md->SetTimesAreAccurate(true);
-            if(times.size() > 0)
+            if (timesLookGood)
+            {
+                md->SetTimes(times);
+                md->SetTimesAreAccurate(forceReadAllCyclesTimes &&
+                                        !fallBackToTimesFromFilename ||
+                                        canGetGoodTimeFromFilename);
                 md->SetTemporalExtents(times[0], times[times.size() - 1]);
+            }
+            else
+            {
+                times.clear();
+                for (j = 0 ; j < nTimesteps ; j++)
+                {
+                    times.push_back((double)j);
+                }
+                md->SetTimes(times);
+                md->SetTimesAreAccurate(false);
+            }
         }
     }
 
@@ -435,7 +502,6 @@ avtSTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
     // know what to do with a variable that is in some timesteps and not others
     // anyways.
     //
-    timesteps[timeState][0]->SetDatabaseMetaData(md);
     for (i = 0 ; i < nTimesteps ; i++)
     {
         for (j = 0 ; j < nBlocks ; j++)

@@ -60,30 +60,6 @@ avtFileFormat::~avtFileFormat()
 
 
 // ****************************************************************************
-//  Method: avtFileFormat::SetDatabaseMetaData
-//
-//  Purpose:
-//      Sets the database meta data.  The file formats keeps a reference to the
-//      object for later reference and employs a virtual function call to have
-//      the derived type set up the object.
-//
-//  Arguments:
-//      md       The meta-data object.
-//
-//  Programmer:  Hank Childs
-//  Creation:    March 11, 2002
-//
-// ****************************************************************************
-
-void
-avtFileFormat::SetDatabaseMetaData(avtDatabaseMetaData *md)
-{
-    metadata = md;
-    PopulateDatabaseMetaData(metadata);
-}
-
-
-// ****************************************************************************
 //  Method: avtFileFormat::RegisterDatabaseMetaData
 //
 //  Purpose:
@@ -511,7 +487,7 @@ avtFileFormat::AddSpeciesToMetaData(avtDatabaseMetaData *md, string name,
 
 
 // ****************************************************************************
-//  Method: avtFileFormat::GuessCycle
+//  Method: avtFileFormat::GuessCycleOrTime
 //
 //  Purpose:
 //      Takes in a file name and tries to guess the cycle.
@@ -527,10 +503,15 @@ avtFileFormat::AddSpeciesToMetaData(avtDatabaseMetaData *md, string name,
 //    Hank Childs, Mon Mar 18 11:06:01 PST 2002
 //    Use the last set of numbers, not the first.
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Renamed to include fact that we can get cycle or time
+//    Added permitDot arg to indicate whether a dot in the filename
+//    should be permitted. Made it return double instead of int.
+//    Made it return -DBL_MAX to indicate inability to obtain cycle/time
 // ****************************************************************************
 
-int
-avtFileFormat::GuessCycle(const char *fname)
+double
+avtFileFormat::GuessCycleOrTime(const char *fname, bool permitDot) const
 {
     //
     // Take out any of the name that comes from the directory structure.
@@ -552,7 +533,8 @@ avtFileFormat::GuessCycle(const char *fname)
     bool inRun = false;
     for (int i = 0 ; i < len ; i++)
     {
-        if (isdigit(fname[i]))
+        if (isdigit(fname[i]) ||
+            (permitDot && (fname[i] == '.')))
         {
             if (!inRun)
             {
@@ -571,13 +553,13 @@ avtFileFormat::GuessCycle(const char *fname)
     //
     if (lastDigit >= 0)
     {
-        return atoi(fname+lastDigit);
+        return atof(fname+lastDigit);
     }
 
     //
     // No number in the string, so the cycle must be 0.
     //
-    return 0;
+    return -DBL_MAX;
 }
 
 

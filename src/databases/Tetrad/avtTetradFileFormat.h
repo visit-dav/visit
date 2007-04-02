@@ -21,6 +21,10 @@
 //  Programmer: Hank Childs
 //  Creation:   October 4, 2002
 //
+//  Modifications:
+//
+//   Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//   Added timeState arg to PopulateDatabaseMetaData
 // ****************************************************************************
 
 class avtTetradFileFormat : public avtMTSDFileFormat
@@ -33,7 +37,7 @@ class avtTetradFileFormat : public avtMTSDFileFormat
     virtual int                GetNTimesteps(void);
 
     virtual const char        *GetType(void) { return "Tetrad"; };
-    virtual void               PopulateDatabaseMetaData(avtDatabaseMetaData *);
+    virtual void               PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 
     virtual vtkDataSet        *GetMesh(int, const char *);
     virtual vtkDataArray      *GetVar(int, const char *);

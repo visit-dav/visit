@@ -104,6 +104,8 @@
 //    Added the ability to query for errors detected during plugin
 //    initialization.
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added bool forceReadAllCyclesAndTimes to GetMetaData
 // ****************************************************************************
 
 class MDSERVER_PROXY_API MDServerProxy : public RemoteProxyBase
@@ -161,7 +163,8 @@ public:
     std::string                GetDirectory();
     const FileList            *GetFileList(const std::string &filter, bool,
                                            bool=true);
-    const avtDatabaseMetaData *GetMetaData(const std::string &, int=0);
+    const avtDatabaseMetaData *GetMetaData(const std::string &, int=0,
+                                   bool forceReadAllCyclesTimes = false);
     const SILAttributes       *GetSIL(const std::string &, int=0);
     std::string                ExpandPath(const std::string &);
     void                       CloseDatabase();

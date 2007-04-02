@@ -161,6 +161,8 @@ class    avtVariableCache;
 //    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
 //    Added method, RegisterDataSelections
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added bool arg, forceReadAllCyclesAndTimes, to SetDatabaseMetaData
 // ****************************************************************************
 
 class DATABASE_API avtFileFormatInterface
@@ -176,7 +178,9 @@ class DATABASE_API avtFileFormatInterface
                                              DestructorFunction &) = 0;
 
     virtual const char     *GetFilename(int) = 0;
-    virtual void            SetDatabaseMetaData(avtDatabaseMetaData *,int=0) = 0;
+    virtual void            SetDatabaseMetaData(avtDatabaseMetaData *md,
+                                int timeState = 0,
+                                bool forceReadAllCyclesTimes = false) = 0;
 
     virtual void            FreeUpResources(int, int) = 0;
     virtual void            ActivateTimestep(int ts) = 0;

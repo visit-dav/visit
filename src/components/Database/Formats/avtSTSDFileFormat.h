@@ -52,6 +52,9 @@ class     avtIOInformation;
 //    Mark C. Miller, Tue Mar 16 14:28:42 PST 2004
 //    Added method, PopulateIOInformation
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Removed ReturnsValidCycle/Time GetCycle/Time. Added SetDatabaseMetaData
+//
 // ****************************************************************************
 
 class DATABASE_API avtSTSDFileFormat : public avtFileFormat
@@ -65,10 +68,6 @@ class DATABASE_API avtSTSDFileFormat : public avtFileFormat
     virtual void          *GetAuxiliaryData(const char *var, const char *type,
                                             void *args, DestructorFunction &);
 
-    virtual bool           ReturnsValidCycle() const { return false; }
-    virtual int            GetCycle(void);
-    virtual bool           ReturnsValidTime() const { return false; }
-    virtual double         GetTime(void);
     virtual const char    *GetFilename(void) { return filename; };
 
     virtual vtkDataSet    *GetMesh(const char *) = 0;
@@ -79,11 +78,16 @@ class DATABASE_API avtSTSDFileFormat : public avtFileFormat
                                { avtFileFormat::ActivateTimestep(); };
     virtual void           PopulateIOInformation(avtIOInformation& ioInfo)
                                { avtFileFormat::PopulateIOInformation(ioInfo); };
+    virtual void           SetDatabaseMetaData(avtDatabaseMetaData *md)
+                               { metadata = md; PopulateDatabaseMetaData(metadata); };
 
   protected:
     char                  *filename;
     int                    domain;
     int                    timestep;
+
+    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData*) = 0;
+
 };
 
 

@@ -211,6 +211,8 @@ typedef struct {
 //    Brad Whitlock, Mon Apr 4 11:46:10 PDT 2005
 //    Added QueryLabels.
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added forceReadAllCyclesAndTimes bool to MetaData methods
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -226,7 +228,8 @@ class DATABASE_API avtDatabase
                                                 VoidRefList &,
                                                 const char *type,void *args)=0;
 
-    avtDatabaseMetaData        *GetMetaData(int stateIndex);
+    avtDatabaseMetaData        *GetMetaData(int stateIndex,
+                                    bool forceReadAllCyclesTimes = false);
     avtSIL                     *GetSIL(int stateIndex);
     int                         GetMostRecentTimestep() const;
 
@@ -286,7 +289,8 @@ class DATABASE_API avtDatabase
     bool                                  *invariantMetaData;
     bool                                  *invariantSIL;
 
-    void                        GetNewMetaData(int stateIndex);
+    void                        GetNewMetaData(int stateIndex,
+                                    bool forceReadAllCyclesTimes = false);
     void                        GetNewSIL(int stateIndex);
     void                        AddMeshQualityExpressions(avtDatabaseMetaData *);
 
@@ -294,7 +298,8 @@ class DATABASE_API avtDatabase
     virtual bool                HasInvariantSIL(void) const = 0;
 
     virtual avtDataObjectSource *CreateSource(const char *, int) = 0;
-    virtual void                SetDatabaseMetaData(avtDatabaseMetaData *,int=0) = 0;
+    virtual void                SetDatabaseMetaData(avtDatabaseMetaData *,
+                                    int=0, bool=false) = 0;
     virtual void                PopulateSIL(avtSIL *, int=0) = 0;
 
     void                        PopulateDataObjectInformation(avtDataObject_p&,

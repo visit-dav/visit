@@ -115,6 +115,8 @@ class SILAttributes;
 //    Brad Whitlock, Fri Feb 18 10:06:02 PDT 2005
 //    Added some convenience methods for expressions.
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added bool arg, forceReadAllCyclesAndTimes, to GetMetaData methods
 // ****************************************************************************
 
 class ViewerFileServer : public ViewerServerManager
@@ -159,7 +161,8 @@ public:
     // from any time state will suffice.
     //
     const avtDatabaseMetaData *GetMetaData(const std::string &host,
-                                           const std::string &filename);
+                                           const std::string &filename,
+                                           const bool forceReadAllCyclesAndTimes = false);
 
     //
     // Use this method when you need metadata about the file at
@@ -253,7 +256,8 @@ protected:
     void SplitKey(const std::string &key, std::string &hdb, int &ts) const;
     const avtDatabaseMetaData *GetMetaDataHelper(const std::string &host, 
                                                  const std::string &db,
-                                                 int timeState);
+                                                 int timeState,
+                                                 bool forceReadAllCyclesAndTimes);
     const avtSIL *GetSILHelper(const std::string &host, 
                                const std::string &db,
                                int timeState);

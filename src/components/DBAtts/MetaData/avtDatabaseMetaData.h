@@ -477,6 +477,9 @@ public:
 //    Jeremy Meredith, Thu Apr 28 17:48:21 PDT 2005
 //    Added a non-const accessor for the simulation info.
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    const qualified args to SetCycles/SetTimes
+//    Added AreAllCycles/TimesAccurateAndValid
 //----------------------------------------------------------------------------
 
 class DBATTS_API avtDatabaseMetaData : public AttributeSubject
@@ -560,17 +563,19 @@ public:
 
     const intVector &GetCycles() const { return cycles; };
     void         SetCycle(int, int);
-    void         SetCycles(intVector &);
+    void         SetCycles(const intVector &);
     void         SetCycleIsAccurate(bool, int);
     void         SetCyclesAreAccurate(bool);
     bool         IsCycleAccurate(int) const;
+    bool         AreAllCyclesAccurateAndValid(int=-1) const;
 
     const doubleVector &GetTimes() const { return times; };
     void         SetTime(int, double);
-    void         SetTimes(doubleVector &);
+    void         SetTimes(const doubleVector &);
     void         SetTimeIsAccurate(bool, int);
     void         SetTimesAreAccurate(bool);
     bool         IsTimeAccurate(int) const;
+    bool         AreAllTimesAccurateAndValid(int=-1) const;
 
     void         SetDatabaseName(const std::string &dsn) {databaseName = dsn;};
     const std::string &GetDatabaseName() const { return databaseName; };

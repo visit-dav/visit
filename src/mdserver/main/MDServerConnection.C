@@ -571,16 +571,21 @@ MDServerConnection::GetPluginErrors()
 //   Handle errors through exceptions instead of error codes.   This allows
 //   real error messages to make it to the user.
 //
+//   Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//   Added bool arg forceReadAllCyclesAndTimes
 // ****************************************************************************
 
 void
-MDServerConnection::ReadMetaData(std::string file, int timeState)
+MDServerConnection::ReadMetaData(std::string file, int timeState,
+    bool forceReadAllCyclesAndTimes)
 {
     currentMetaData = NULL;
 
     int ts = (timeState == -1) ? currentDatabaseTimeState : timeState;
     debug2 << "Read the Metadata for " << file.c_str()
-           << ", timeState=" << ts << endl;
+           << ", timeState=" << ts
+           << ", forceReadAllCyclesAndTimes=" << forceReadAllCyclesAndTimes
+           << endl;
 
     //
     // Try and read the database. This could throw an exception.
@@ -588,7 +593,7 @@ MDServerConnection::ReadMetaData(std::string file, int timeState)
     avtDatabase *db = GetDatabase(file, ts);
     if (db != NULL)
     {
-        currentMetaData = db->GetMetaData(ts);
+        currentMetaData = db->GetMetaData(ts, forceReadAllCyclesAndTimes);
     }
     else
     {

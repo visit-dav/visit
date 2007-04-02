@@ -40,6 +40,11 @@ class     avtVariableCache;
 //    Mark C. Miller, Mon Aug  9 19:12:24 PDT 2004
 //    Added a ReadMesh mehtod
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Removed GetCycles method since all it did was the same thing the
+//    default implementation did. Added timeState arg to
+//    PopulateDatabaseMetaData
+//
 // ****************************************************************************
 
 class avtExodusFileFormat : public avtMTSDFileFormat
@@ -54,7 +59,6 @@ class avtExodusFileFormat : public avtMTSDFileFormat
     virtual void                FreeUpResources(void);
     const char                 *GetType(void) { return "Exodus File Format"; };
 
-    virtual void                GetCycles(std::vector<int> &);
     virtual void                GetTimes(std::vector<double> &);
     virtual int                 GetNTimesteps(void);
  
@@ -62,7 +66,7 @@ class avtExodusFileFormat : public avtMTSDFileFormat
     virtual vtkDataArray       *GetVar(int, const char *);
     virtual vtkDataArray       *GetVectorVar(int, const char *);
 
-    virtual void                PopulateDatabaseMetaData(avtDatabaseMetaData*);
+    virtual void                PopulateDatabaseMetaData(avtDatabaseMetaData*, int);
 
     virtual void         *GetAuxiliaryData(const char *var, int, 
                                            const char *type, void *args,

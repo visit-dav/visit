@@ -17,11 +17,14 @@ using std::string;
 //   Brad Whitlock, Tue May 13 15:23:52 PST 2003
 //   I added timeState.
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added forceReadAllCyclesAndTimes
 // ****************************************************************************
 
-GetMetaDataRPC::GetMetaDataRPC() : BlockingRPC("si",&metaData)
+GetMetaDataRPC::GetMetaDataRPC() : BlockingRPC("sib",&metaData)
 {
     timeState = 0;
+    forceReadAllCyclesAndTimes = false;
 }
 
 // ****************************************************************************
@@ -82,16 +85,21 @@ GetMetaDataRPC::TypeName() const
 //    Brad Whitlock, Tue May 13 15:24:16 PST 2003
 //    I added timeState.
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added forceReadAllCyclesAndTimes
 // ****************************************************************************
 
 const avtDatabaseMetaData *
-GetMetaDataRPC::operator()(const string &f, int ts)
+GetMetaDataRPC::operator()(const string &f, int ts, bool force)
 {
     debug3 << "Executing GetMetaData RPC on file " << f.c_str()
-           << ", timestate=" << ts << endl;
+           << ", timestate=" << ts
+           << ", forceReadAllCyclesAndTimes = " << force
+           << endl;;
 
     SetFile(f);
     SetTimeState(ts);
+    SetForceReadAllCyclesAndTimes(force);
 
     // Try to execute the RPC.
     Execute();
@@ -120,6 +128,8 @@ GetMetaDataRPC::operator()(const string &f, int ts)
 //   Brad Whitlock, Tue May 13 15:25:11 PST 2003
 //   I added timeState.
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added forceReadAllCyclesAndTimes
 // ****************************************************************************
 
 void
@@ -127,6 +137,7 @@ GetMetaDataRPC::SelectAll()
 {
     Select(0, (void*)&file);
     Select(1, (void*)&timeState);
+    Select(2, (void*)&forceReadAllCyclesAndTimes);
 }
 
 // ****************************************************************************
@@ -170,6 +181,24 @@ GetMetaDataRPC::SetTimeState(int ts)
 }
 
 // ****************************************************************************
+// Method: GetMetaDataRPC::SetForceReadAllCyclesAndTimes
+//
+// Purpose: This sets the bool for whether to read all cycles and times when
+//          getting the metadata
+//
+// Programmer: Mark C. Miller 
+// Creation:   Monday, May 16, 2005
+//
+// ****************************************************************************
+
+void
+GetMetaDataRPC::SetForceReadAllCyclesAndTimes(bool force)
+{
+    forceReadAllCyclesAndTimes = force;
+    Select(2, (void*)&forceReadAllCyclesAndTimes);
+}
+
+// ****************************************************************************
 // Method: GetMetaDataRPC::GetFile
 //
 // Purpose: 
@@ -205,4 +234,21 @@ int
 GetMetaDataRPC::GetTimeState() const
 {
     return timeState;
+}
+
+// ****************************************************************************
+// Method: GetMetaDataRPC::GetForceReadAllCyclesAndTimes
+//
+// Purpose: This gets the bool for whether to read all cycles and times when
+//          getting metadata
+//
+// Programmer: Mark C. Miller 
+// Creation:   May 16, 2005
+//
+// ****************************************************************************
+
+bool
+GetMetaDataRPC::GetForceReadAllCyclesAndTimes() const
+{
+    return forceReadAllCyclesAndTimes;
 }

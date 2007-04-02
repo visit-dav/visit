@@ -1136,6 +1136,8 @@ avtMiliFileFormat::ValidateVariables(int dom)
 
                  vars_valid[dom][sameAsVar][index] = true;
                  var_size[dom][sameAsVar][index] = sv.num_type;
+
+                 mc_cleanse_st_variable(&sv);
             }
         }
     }
@@ -1594,6 +1596,7 @@ avtMiliFileFormat::GetNTimesteps()
 //
 //  Arguments:
 //    md         The meta-data structure to populate
+//    timeState  The time index to use (if metadata varies with time)
 //
 //  Programmer:  Hank Childs
 //  Creation:    April 11, 2003
@@ -1621,10 +1624,13 @@ avtMiliFileFormat::GetNTimesteps()
 //    Hank Childs, Wed Aug 18 16:25:15 PDT 2004
 //    Added new expressions for displacement and position.
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added timeState arg to satisfy new interface
 // ****************************************************************************
 
 void
-avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
+avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
+    int timeState)
 {
     int i;
     for (i = 0; i < nmeshes; ++i)
