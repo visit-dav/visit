@@ -136,6 +136,10 @@ avtCurveConstructorFilter::~avtCurveConstructorFilter()
 //    represented as 1D RectilinearGrids.  Modified logic to handle
 //    Rectilinear Grids as needed.
 //
+//    Hank Childs, Thu Jan  4 09:29:59 PST 2007
+//    Add handling for error case where a tree is not empty, but it has no
+//    leaves (so it really is "IsEmpty").
+//
 // ****************************************************************************
 
 void avtCurveConstructorFilter::Execute()
@@ -236,6 +240,16 @@ void avtCurveConstructorFilter::Execute()
     avtDataTree_p outTree;
     vtkDataSet **ds;
     ds = inTree->GetAllLeaves(nleaves);
+
+    if (nleaves == 0)
+    {
+        // Kind of a bizarre error, since "IsEmpty" above should have returned
+        // true.  This situation does occur, and it is a little dangerous to
+        // change the behavior of IsEmpty, so just accomodate.
+        delete [] ds;
+        SetOutputDataTree(inTree);
+        return;
+    }
 
     DoubleIntMap minX;
 

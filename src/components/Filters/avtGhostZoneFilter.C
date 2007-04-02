@@ -137,6 +137,9 @@ avtGhostZoneFilter::~avtGhostZoneFilter()
 //    Hank Childs, Wed Dec 27 10:14:27 PST 2006
 //    Allow curvilinear grids to pass through.
 //
+//    Hank Childs, Wed Jan  3 12:45:31 PST 2007
+//    Look for ghost nodes for all mesh types.  Fix indexing bug.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -150,7 +153,7 @@ avtGhostZoneFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 
     bool haveGhostZones = 
                     (in_ds->GetCellData()->GetArray("avtGhostZones") != NULL);
-    bool haveGhostNodes = (in_ds->GetDataObjectType() == VTK_POLY_DATA) &&
+    bool haveGhostNodes = 
                     (in_ds->GetPointData()->GetArray("avtGhostNodes") != NULL);
     if (!haveGhostZones && !haveGhostNodes)
     {
@@ -194,8 +197,8 @@ avtGhostZoneFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
                                in_ds->GetPointData()->GetArray("avtGhostNodes");
         unsigned char *gn = ghost_nodes->GetPointer(0);
         bool allGhost = true;
-        const int nCells = in_ds->GetNumberOfCells();
-        for (int i = 0 ; i < nCells ; i++)
+        const int nNodes = in_ds->GetNumberOfPoints();
+        for (int i = 0 ; i < nNodes ; i++)
         {
             if (gn[i] == '\0')
             {

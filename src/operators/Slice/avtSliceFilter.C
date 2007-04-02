@@ -44,11 +44,13 @@
 #include <float.h>
 
 #include <vtkCell.h>
+#include <vtkCellData.h>
 #include <vtkExecutive.h>
 #include <vtkFloatArray.h>
 #include <vtkMath.h>
 #include <vtkMatrix4x4.h>
 #include <vtkMatrixToLinearTransform.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkSlicer.h>
@@ -915,6 +917,12 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
 //      domain     The domain number.
 //      <unused>   The label.
 //
+//  Notes:
+//     In the context of selection by the database it may seem like we should
+//     bypass the Slice operator.  We do *NOT* do this.  The reason is 
+//     that the database still serves up a slab of zones (a 3D mesh) 
+//     from which a 2D slice needs to be computed.
+//
 //  Returns:       The output dataset.
 //
 //  Programmer: Hank Childs
@@ -961,25 +969,109 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
 //    VTK filters no longer have a SetOutput method, Use SetOuputData from
 //    the filter's executive instead.
 //
-//   Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
-//   API change for avtIntervalTree.
+//    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
+//    API change for avtIntervalTree.
+//
+//    Hank Childs, Fri Dec 29 15:02:34 PST 2006
+//    Added support for rectilinear to rectilinear slicing.  Also moved
+//    some logic into its own subroutine.
 //
 // ****************************************************************************
 
 vtkDataSet *
 avtSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 {
+    if (!CanIntersectPlane(in_ds))
+    {
+        debug5 << "Not slicing domain " << domain
+               << ", it does not intersect the plane." << endl;
+        return NULL;
+    }
 
-    //
-    // We DO NOT by-pass the Slice operator even if the database applied the
-    // selection associated with the slice. The reason is that the database
-    // still serves up a slab of zones (a 3D mesh) from which a 2D slice is
-    // computed.
-    //
+    double bounds[6];
+    in_ds->GetBounds(bounds);
+    SetPlaneOrientation(bounds);
 
-    //
-    // First check to see if we have to slice this domain at all.
-    //
+    bool haveExecuted = false;
+
+    vtkDataSet *out_ds = NULL;
+    if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    {
+        vtkRectilinearGrid *rg = (vtkRectilinearGrid *) in_ds;
+
+        if (OutputCanBeRectilinear(rg))
+        {
+            // This method returns a data set that must be freed.  That will
+            // be done in the logic at the bottom of the routine.
+            out_ds = RectilinearToRectilinearSlice(rg);
+            haveExecuted = true;
+        }
+    }
+    if (!haveExecuted)
+    {
+        vtkPolyData *pd = vtkPolyData::New();
+    
+        if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+        {
+            CalculateRectilinearCells((vtkRectilinearGrid *) in_ds);
+        }
+        else
+        {
+            slicer->SetCellList(NULL, 0);
+        }
+        slicer->SetInput(in_ds);
+        if (atts.GetProject2d())
+        {
+            transform->SetInput(slicer->GetOutput());
+            transform->GetExecutive()->SetOutputData(0, pd);
+    
+            //
+            // Update will check the modifed time and call Execute.  We have no
+            // direct hooks into the Execute method.
+            //
+            transform->Update();
+        }
+        else
+        {
+            slicer->SetOutput(pd);
+    
+            //
+            // Update will check the modifed time and call Execute.  We have no
+            // direct hooks into the Execute method.
+            //
+            slicer->Update();
+        }
+        out_ds = pd;
+    }
+
+    vtkDataSet *rv = out_ds;
+    if (out_ds != NULL && out_ds->GetNumberOfCells() == 0)
+    {
+        rv = NULL;
+    }
+    
+    ManageMemory(rv);
+    if (out_ds != NULL)
+        out_ds->Delete();
+    
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtSliceFilter::CanIntersectPlane
+//
+//  Purpose:
+//     See if the slice plane even intersects the data set. 
+//     
+//  Programmer: Hank Childs
+//  Creation:   December 29, 2006
+//
+// ****************************************************************************
+
+bool
+avtSliceFilter::CanIntersectPlane(vtkDataSet *in_ds)
+{
     double bounds[6];
     in_ds->GetBounds(bounds);
     double normal[3];
@@ -992,57 +1084,438 @@ avtSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
     vector<int> domains;
     tree.GetElementsList(normal, D, domains);
     if (domains.size() <= 0)
-    {
-        debug5 << "Not slicing domain " << domain
-               << ", it does not intersect the plane." << endl;
-        return NULL;
-    }
+        return false;
 
-    SetPlaneOrientation(bounds);
+    return true;
+}
 
-    vtkPolyData *out_ds = vtkPolyData::New();
 
-    if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
-    {
-        CalculateRectilinearCells((vtkRectilinearGrid *) in_ds);
-    }
-    else
-    {
-        slicer->SetCellList(NULL, 0);
-    }
-    slicer->SetInput(in_ds);
+// ****************************************************************************
+//  Method: avtSliceFilter::OutputCanBeRectilinear
+//
+//  Purpose:
+//      Determines if we are taking an orthogonal slice, allowing the output
+//      of the slice to still be rectilinear.
+//      Determine if a rectilinear grid is valid to slice.  (It is not
+//      if it is 2D.)  By "valid", we mean acceptable to the optimized
+//      routine "RectilinearToRectilinearSlice"
+//
+//  Programmer: Hank Childs
+//  Creation:   December 29, 2006
+//
+// ****************************************************************************
+
+bool
+avtSliceFilter::OutputCanBeRectilinear(vtkRectilinearGrid *rg)
+{
+    const double *normal = atts.GetNormal();
+    if (! ((normal[0] != 0. && normal[1] == 0. && normal[2] == 0.) || 
+           (normal[0] == 0. && normal[1] != 0. && normal[2] == 0.) || 
+           (normal[0] == 0. && normal[1] == 0. && normal[2] != 0.)) )
+        return false;
+        
     if (atts.GetProject2d())
     {
-        transform->SetInput(slicer->GetOutput());
-        transform->GetExecutive()->SetOutputData(0, out_ds);
-
-        //
-        // Update will check the modifed time and call Execute.  We have no
-        // direct hooks into the Execute method.
-        //
-        transform->Update();
+        const double *up     = atts.GetUpAxis();
+        if (normal[0] == +1.)
+            if (up[0] != 0. || up[1] != 0. || up[2] != 1.)
+                return false;
+        if (normal[0] == -1.)
+            if (up[0] != 0. || up[1] != 1. || up[2] != 0.)
+                return false;
+        if (normal[1] == +1.)
+            if (up[0] != 1. || up[1] != 0. || up[2] != 0.)
+                return false;
+        if (normal[1] == -1.)
+            if (up[0] != 0. || up[1] != 0. || up[2] != 1.)
+                return false;
+        if (normal[2] == +1.)
+            if (up[0] != 0. || up[1] != 1. || up[2] != 0.)
+                return false;
+        if (normal[2] == -1.)
+            if (up[0] != 1. || up[1] != 0. || up[2] != 0.)
+                return false;
     }
+
+    int pt_dims[3];
+    rg->GetDimensions(pt_dims);
+    if (pt_dims[0] <= 1 || pt_dims[1] <= 1 || pt_dims[2] <= 1)
+        return false;
+
+    return true;
+}
+
+
+// ****************************************************************************
+//  Method: avtSliceFilter::RectilinearToRectilinearSlice
+//
+//  Purpose:
+//      Perform an orthogonal slice of a rectilinear grid, to produce a 
+//      rectilinear grid.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 29, 2006
+//
+// ****************************************************************************
+
+vtkRectilinearGrid *
+avtSliceFilter::RectilinearToRectilinearSlice(vtkRectilinearGrid *rg)
+{
+    int  i, j;
+    
+    const double *up     = atts.GetUpAxis();
+    const double *normal = atts.GetNormal();
+    bool  project        = atts.GetProject2d();
+
+    int pt_dims[3];
+    rg->GetDimensions(pt_dims);
+
+    // Make the coordinates easily accessible.
+    int           nCells = rg->GetNumberOfCells();
+    double  *X = new double[pt_dims[0]];
+    for (i = 0 ; i < pt_dims[0] ; i++)
+        X[i] = rg->GetXCoordinates()->GetTuple1(i);
+    double  *Y = new double[pt_dims[1]];
+    for (i = 0 ; i < pt_dims[1] ; i++)
+        Y[i] = rg->GetYCoordinates()->GetTuple1(i);
+    double  *Z = new double[pt_dims[2]];
+    for (i = 0 ; i < pt_dims[2] ; i++)
+        Z[i] = rg->GetZCoordinates()->GetTuple1(i);
+
+    vtkDataArray *flat_dim = vtkDataArray::CreateDataArray(
+                                         rg->GetXCoordinates()->GetDataType());
+    flat_dim->SetNumberOfTuples(1);
+    if (project)
+        flat_dim->SetTuple1(0, 0.);
     else
     {
-        slicer->SetOutput(out_ds);
-
-        //
-        // Update will check the modifed time and call Execute.  We have no
-        // direct hooks into the Execute method.
-        //
-        slicer->Update();
+        for (i = 0 ; i < 3 ; i++)
+            if (normal[i] != 0.)
+                flat_dim->SetTuple1(0, cachedOrigin[i]);
     }
 
-    vtkDataSet *rv = out_ds;
-    if (out_ds->GetNumberOfCells() == 0)
+    vtkRectilinearGrid *output = vtkRectilinearGrid::New();
+    vtkCellData *newCD = output->GetCellData();
+    vtkCellData *oldCD = rg->GetCellData();
+    vtkPointData *newPD = output->GetPointData();
+    vtkPointData *oldPD = rg->GetPointData();
+
+    if (normal[0] != 0.)
     {
-        rv = NULL;
+        //
+        // Determine where the origin intersects our slice.
+        //
+        int iOffset = -1;
+        float percent = 0.;
+        for (i = 0 ; i < pt_dims[0]-1 ; i++)
+        {
+            if (X[i] <= cachedOrigin[0] && cachedOrigin[0] <= X[i+1])
+            {
+                iOffset = i;
+                if (X[i] != X[i+1])
+                    percent = ((cachedOrigin[0] - X[i]) / (X[i+1] - X[i]));
+                break;
+            }
+        }
+        if (iOffset == -1)
+        {
+            // return with grid not populated / empty grid.
+            output->Delete();
+            flat_dim->Delete();
+            delete [] X; delete [] Y; delete [] Z;
+            return NULL;
+        }
+
+        //
+        // Now create a new rectilinear grid along the plane.
+        //
+        int new_dims[3];
+        bool yVariesFastest = true;
+        if (project)
+        {
+            output->SetZCoordinates(flat_dim);
+            new_dims[2] = 1;
+            if (up[0] == 0. && up[1] == 1. && up[2] == 0.)
+            {
+                yVariesFastest = false;
+                output->SetXCoordinates(rg->GetZCoordinates());
+                output->SetYCoordinates(rg->GetYCoordinates());
+                new_dims[0] = pt_dims[2];
+                new_dims[1] = pt_dims[1];
+            }
+            else if (up[0] == 0. && up[1] == 0. && up[2] == 1.)
+            {
+                yVariesFastest = true;
+                output->SetXCoordinates(rg->GetYCoordinates());
+                output->SetYCoordinates(rg->GetZCoordinates());
+                new_dims[0] = pt_dims[1];
+                new_dims[1] = pt_dims[2];
+            }
+            else
+                EXCEPTION0(ImproperUseException);
+        }
+        else
+        {
+            yVariesFastest = true;
+            output->SetXCoordinates(flat_dim);
+            output->SetYCoordinates(rg->GetYCoordinates());
+            output->SetZCoordinates(rg->GetZCoordinates());
+            new_dims[0] = 1;
+            new_dims[1] = pt_dims[1];
+            new_dims[2] = pt_dims[2];
+        }
+
+        output->SetDimensions(new_dims);
+        int nnewpts = new_dims[0]*new_dims[1]*new_dims[2];
+        int nnewcells = 1;
+        nnewcells *= (new_dims[0] > 1 ? new_dims[0]-1 : 1);
+        nnewcells *= (new_dims[1] > 1 ? new_dims[1]-1 : 1);
+        nnewcells *= (new_dims[2] > 1 ? new_dims[2]-1 : 1);
+
+        newCD->CopyAllocate(oldCD, nnewcells);
+        for (i = 0 ; i < pt_dims[1]-1 ; i++)
+            for (j = 0 ; j < pt_dims[2]-1 ; j++)
+            {
+                int new_index;
+                if (yVariesFastest)
+                    new_index = j*(pt_dims[1]-1) + i;
+                else
+                    new_index = i*(pt_dims[2]-1) + j;
+                int old_index = j*(pt_dims[1]-1)*(pt_dims[0]-1)
+                              + i*(pt_dims[0]-1) + iOffset;
+                newCD->CopyData(oldCD, old_index, new_index);
+            }
+            
+        newPD->CopyAllocate(oldPD, nnewcells);
+        for (i = 0 ; i < pt_dims[1] ; i++)
+            for (j = 0 ; j < pt_dims[2] ; j++)
+            {
+                int new_index;
+                if (yVariesFastest)
+                    new_index = j*(pt_dims[1]) + i;
+                else
+                    new_index = i*(pt_dims[2]) + j;
+                int old_index1 = j*(pt_dims[1])*(pt_dims[0]) 
+                               + i*(pt_dims[0]) + iOffset;
+                int old_index2 = j*(pt_dims[1])*(pt_dims[0]) 
+                               + i*(pt_dims[0]) + iOffset+1;
+                newPD->InterpolateEdge(oldPD, new_index, 
+                                       old_index1, old_index2, percent);
+            }
+    }
+    else if (normal[1] != 0.)
+    {
+        //
+        // Determine where the origin intersects our slice.
+        //
+        int jOffset = -1;
+        float percent = 0.;
+        for (i = 0 ; i < pt_dims[1]-1 ; i++)
+        {
+            if (Y[i] <= cachedOrigin[1] && cachedOrigin[1] <= Y[i+1])
+            {
+                jOffset = i;
+                if (Y[i] != Y[i+1])
+                    percent = ((cachedOrigin[1] - Y[i]) / (Y[i+1] - Y[i]));
+                break;
+            }
+        }
+        if (jOffset == -1)
+        {
+            // return with grid not populated / empty grid.
+            output->Delete();
+            flat_dim->Delete();
+            delete [] X; delete [] Y; delete [] Z;
+            return NULL;
+        }
+
+        //
+        // Now create a new rectilinear grid along the plane.
+        //
+        int new_dims[3];
+        bool xVariesFastest = true;
+        if (project)
+        {
+            output->SetZCoordinates(flat_dim);
+            new_dims[2] = 1;
+            if (up[0] == 1. && up[1] == 0. && up[2] == 0.)
+            {
+                xVariesFastest = false;
+                output->SetXCoordinates(rg->GetZCoordinates());
+                output->SetYCoordinates(rg->GetXCoordinates());
+                new_dims[0] = pt_dims[2];
+                new_dims[1] = pt_dims[0];
+            }
+            else if (up[0] == 0. && up[1] == 0. && up[2] == 1.)
+            {
+                xVariesFastest = true;
+                output->SetXCoordinates(rg->GetXCoordinates());
+                output->SetYCoordinates(rg->GetZCoordinates());
+                new_dims[0] = pt_dims[0];
+                new_dims[1] = pt_dims[2];
+            }
+            else
+                EXCEPTION0(ImproperUseException);
+        }
+        else
+        {
+            xVariesFastest = true;
+            output->SetXCoordinates(rg->GetXCoordinates());
+            output->SetYCoordinates(flat_dim);
+            output->SetZCoordinates(rg->GetZCoordinates());
+            new_dims[0] = pt_dims[0];
+            new_dims[1] = 1;
+            new_dims[2] = pt_dims[2];
+        }
+
+        output->SetDimensions(new_dims);
+        int nnewpts = new_dims[0]*new_dims[1]*new_dims[2];
+        int nnewcells = 1;
+        nnewcells *= (new_dims[0] > 1 ? new_dims[0]-1 : 1);
+        nnewcells *= (new_dims[1] > 1 ? new_dims[1]-1 : 1);
+        nnewcells *= (new_dims[2] > 1 ? new_dims[2]-1 : 1);
+
+        newCD->CopyAllocate(oldCD, nnewcells);
+        for (i = 0 ; i < pt_dims[0]-1 ; i++)
+            for (j = 0 ; j < pt_dims[2]-1 ; j++)
+            {
+                int new_index;
+                if (xVariesFastest)
+                    new_index = j*(pt_dims[0]-1) + i;
+                else
+                    new_index = i*(pt_dims[2]-1) + j;
+                int old_index = j*(pt_dims[1]-1)*(pt_dims[0]-1) 
+                              + i + jOffset*(pt_dims[0]-1);
+                newCD->CopyData(oldCD, old_index, new_index);
+            }
+            
+        newPD->CopyAllocate(oldPD, nnewcells);
+        for (i = 0 ; i < pt_dims[0] ; i++)
+            for (j = 0 ; j < pt_dims[2] ; j++)
+            {
+                int new_index;
+                if (xVariesFastest)
+                    new_index = j*(pt_dims[0]) + i;
+                else
+                    new_index = i*(pt_dims[2]) + j;
+                int old_index1 = j*(pt_dims[1])*(pt_dims[0]) 
+                               + i + jOffset*pt_dims[0];
+                int old_index2 = j*(pt_dims[1])*(pt_dims[0]) 
+                               + i + (jOffset+1)*pt_dims[0];
+                newPD->InterpolateEdge(oldPD, new_index, 
+                                       old_index1, old_index2, percent);
+            }
+    }
+    else if (normal[2] != 0.)
+    {
+        //
+        // Determine where the origin intersects our slice.
+        //
+        int kOffset = -1;
+        float percent = 0.;
+        for (i = 0 ; i < pt_dims[2]-1 ; i++)
+        {
+            if (Z[i] <= cachedOrigin[2] && cachedOrigin[2] <= Z[i+1])
+            {
+                kOffset = i;
+                if (Z[i] != Z[i+1])
+                    percent = ((cachedOrigin[2] - Z[i]) / (Z[i+1] - Z[i]));
+                break;
+            }
+        }
+        if (kOffset == -1)
+        {
+            // return with grid not populated / empty grid.
+            output->Delete();
+            flat_dim->Delete();
+            delete [] X; delete [] Y; delete [] Z;
+            return NULL;
+        }
+
+        //
+        // Now create a new rectilinear grid along the plane.
+        //
+        int new_dims[3];
+        bool xVariesFastest = true;
+        if (project)
+        {
+            output->SetZCoordinates(flat_dim);
+            new_dims[2] = 1;
+            if (up[0] == 1. && up[1] == 0. && up[2] == 0.)
+            {
+                xVariesFastest = false;
+                output->SetXCoordinates(rg->GetYCoordinates());
+                output->SetYCoordinates(rg->GetXCoordinates());
+                new_dims[0] = pt_dims[1];
+                new_dims[1] = pt_dims[0];
+            }
+            else if (up[0] == 0. && up[1] == 1. && up[2] == 0.)
+            {
+                xVariesFastest = true;
+                output->SetXCoordinates(rg->GetXCoordinates());
+                output->SetYCoordinates(rg->GetYCoordinates());
+                new_dims[0] = pt_dims[0];
+                new_dims[1] = pt_dims[1];
+            }
+            else
+                EXCEPTION0(ImproperUseException);
+        }
+        else
+        {
+            xVariesFastest = true;
+            output->SetXCoordinates(rg->GetXCoordinates());
+            output->SetYCoordinates(rg->GetYCoordinates());
+            output->SetZCoordinates(flat_dim);
+            new_dims[0] = pt_dims[0];
+            new_dims[1] = pt_dims[1];
+            new_dims[2] = 1;
+        }
+
+        output->SetDimensions(new_dims);
+        int nnewpts = new_dims[0]*new_dims[1]*new_dims[2];
+        int nnewcells = 1;
+        nnewcells *= (new_dims[0] > 1 ? new_dims[0]-1 : 1);
+        nnewcells *= (new_dims[1] > 1 ? new_dims[1]-1 : 1);
+        nnewcells *= (new_dims[2] > 1 ? new_dims[2]-1 : 1);
+
+        newCD->CopyAllocate(oldCD, nnewcells);
+        for (i = 0 ; i < pt_dims[0]-1 ; i++)
+            for (j = 0 ; j < pt_dims[1]-1 ; j++)
+            {
+                int new_index;
+                if (xVariesFastest)
+                    new_index = j*(pt_dims[0]-1) + i;
+                else
+                    new_index = i*(pt_dims[1]-1) + j;
+                int old_index = j*(pt_dims[0]-1) + i 
+                              + kOffset*(pt_dims[0]-1)*(pt_dims[1]-1);
+                newCD->CopyData(oldCD, old_index, new_index);
+            }
+            
+        newPD->CopyAllocate(oldPD, nnewcells);
+        for (i = 0 ; i < pt_dims[0] ; i++)
+            for (j = 0 ; j < pt_dims[1] ; j++)
+            {
+                int new_index;
+                if (xVariesFastest)
+                    new_index = j*(pt_dims[0]) + i;
+                else
+                    new_index = i*(pt_dims[1]) + j;
+                int old_index1 = j*(pt_dims[0]) + i 
+                               + kOffset*(pt_dims[0])*(pt_dims[1]);
+                int old_index2 = j*(pt_dims[0]) + i 
+                               + (kOffset+1)*pt_dims[0]*pt_dims[1];
+                newPD->InterpolateEdge(oldPD, new_index, 
+                                       old_index1, old_index2, percent);
+            }
     }
 
-    ManageMemory(rv);
-    out_ds->Delete();
+    delete [] X;
+    delete [] Y;
+    delete [] Z;
+    flat_dim->Delete();
 
-    return rv;
+    return output;
 }
 
 

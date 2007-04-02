@@ -251,6 +251,9 @@ avtWholeImageCompositerWithZ::~avtWholeImageCompositerWithZ()
 //    Hank Childs, Mon Feb  6 14:55:39 PST 2006
 //    Fix memory leak ['6829].
 //
+//    Hank Childs, Wed Jan  3 14:18:42 PST 2007
+//    Initialize memory.  This prevents purify warning.
+//
 // ****************************************************************************
 
 void
@@ -258,8 +261,8 @@ avtWholeImageCompositerWithZ::Execute(void)
 {
     int i, numRows, numCols;
     float *ioz = NULL, *rioz = NULL;
-    unsigned char *iorgb, *riorgb;
-    vtkImageData *mergedLocalImage, *mergedGlobalImage;
+    unsigned char *iorgb = NULL, *riorgb = NULL;
+    vtkImageData *mergedLocalImage = NULL, *mergedGlobalImage = NULL;
 
     // sanity checks
     if (inputImages.size() == 0)

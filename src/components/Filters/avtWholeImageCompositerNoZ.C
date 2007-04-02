@@ -218,14 +218,18 @@ avtWholeImageCompositerNoZ::~avtWholeImageCompositerNoZ()
 //    Jeremy Meredith, October 20, 2004
 //    Allowed for the use of an allreduce instead of a simple reduce.
 //
+//    Hank Childs, Wed Jan  3 16:50:14 PST 2007
+//    Initialize arrays that don't get initialized if their rank is not 0.
+//    (This removes some purify warnings ... no crashes are fixed.)
+//
 // ****************************************************************************
 
 void
 avtWholeImageCompositerNoZ::Execute(void)
 {
     int i, numRows, numCols;
-    unsigned char *iorgb, *riorgb;
-    vtkImageData *mergedLocalImage, *mergedGlobalImage;
+    unsigned char *iorgb = NULL, *riorgb = NULL;
+    vtkImageData *mergedLocalImage = NULL, *mergedGlobalImage = NULL;
 
     // sanity checks
     if (inputImages.size() == 0)

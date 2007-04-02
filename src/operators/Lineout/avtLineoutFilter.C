@@ -760,6 +760,12 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
 //    values > 1, then it can do interpolations to nodal data that can 
 //    mistakenly identify real zones as ghost.
 //
+//    Hank Childs, Thu Jan  4 09:51:34 PST 2007
+//    Manually force an update to the ghost filter.  If we don't do this, 
+//    then the lineout filter gets bad data.  I believe this is because
+//    the data set remove ghost cells filter doesn't know what it's real
+//    output is until it updates.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -767,6 +773,7 @@ avtLineoutFilter::Sampling(vtkDataSet *in_ds, int domain)
 {
     vtkDataSetRemoveGhostCells *ghosts = vtkDataSetRemoveGhostCells::New();
     ghosts->SetInput(in_ds);
+    ghosts->Update();
 
     vtkLineoutFilter *filter = vtkLineoutFilter::New();
     double *pt1 = atts.GetPoint1();
