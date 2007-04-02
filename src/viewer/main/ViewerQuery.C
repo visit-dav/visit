@@ -392,6 +392,9 @@ ViewerQuery::StopObservingPlot()
 //    Removed call to SendVisualCue (called elsewhere).  Added call to 
 //    set Lineout operator atts from GlobalLineoutAttributes.
 //
+//    Kathleen Bonnell, Wed Jun 28 15:40:28 PDT 2006
+//    Use timeslider associated with hdbName instead of ActiveTimeSlider.
+//
 // ****************************************************************************
 
 void
@@ -418,15 +421,15 @@ ViewerQuery::CreateLineout(const bool fromDefault)
     int plotType = PlotPluginManager::Instance()->GetEnabledIndex("Curve_1.0");
     ViewerPlotList *plotList = resultsWindow->GetPlotList();
 
-    // If the original plot list has an active time slider, make sure that
+    // If the original plot list has a time slider corresponding to the
+    // the originating plot's hostdabase name, make sure that
     // the the new plot list uses the same time slider.
-    if(origList->HasActiveTimeSlider())
+    if(origList->TimeSliderExists(hdbName))
     {
-        const std::string &ats = origList->GetActiveTimeSlider();
         int state, nStates;
-        origList->GetTimeSliderStates(ats, state, nStates);
-        plotList->CreateTimeSlider(ats, state);
-        plotList->SetActiveTimeSlider(ats);
+        origList->GetTimeSliderStates(hdbName, state, nStates);
+        plotList->CreateTimeSlider(hdbName, state);
+        plotList->SetActiveTimeSlider(hdbName);
     }
 
     plotList->SetHostDatabaseName(hdbName);

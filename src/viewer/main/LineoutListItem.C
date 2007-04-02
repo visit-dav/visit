@@ -656,6 +656,12 @@ LineoutListItem::DisableTool()
 //    Kathleen Bonnell, Wed Jun 21 17:52:26 PDT 2006
 //    Modified the way CacheIndex change is handled. 
 //
+//    Kathleen Bonnell, Wed Jun 28 11:42:31 PDT 2006
+//    Revert back to previous way of handling CachIndex change for times
+//    when curve is Updated -- use SetTimeSliderState of ViewerPlotList.
+//    Added call to SetActiveTimeSlider to ensure the correct plots in the
+//    window are updated.
+//
 // ****************************************************************************
 
 void
@@ -704,12 +710,9 @@ LineoutListItem::Update(Subject *TheChangedSubject)
                  else
                  {
                      int newf = origPlotQueryInfo->GetNewFrameIndex();
-                     for (i = 0; i < nQueries; i++)
-                     {
-                         queries[i]->UpdateResultsTime(newf);
-                     }
-                     resWin->SetMergeViewLimits(true);
-                     vpl->UpdateFrame(false);
+                     vpl->SetActiveTimeSlider(origWin->GetPlotList()->
+                                              GetActiveTimeSlider());
+                     vpl->SetTimeSliderState(newf);
                  }
                  break;
              case PlotQueryInfo::AddOp:          // fall through
