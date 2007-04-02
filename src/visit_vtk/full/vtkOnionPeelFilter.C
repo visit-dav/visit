@@ -904,6 +904,8 @@ vtkOnionPeelFilter::SetSeedId(const int seed)
 // Creation:   January 18, 2005 
 //
 // Modifications:
+//   Kathleen Bonnell, Tue Jun 14 11:45:21 PDT 2005
+//   Correct 'n' for loop counting.
 //  
 //=======================================================================
 
@@ -916,8 +918,8 @@ vtkOnionPeelFilter::FindCellsCorrespondingToOriginal(int orig, vtkIdList *group)
     if (origCells)
     {
         unsigned int *oc = origCells->GetPointer(0);
-        int n = origCells->GetNumberOfTuples();
         int nc = origCells->GetNumberOfComponents();
+        int n = origCells->GetNumberOfTuples() *nc;
         int comp = nc -1;
         for (int i = comp; i < n; i+=nc )
         {
@@ -947,6 +949,8 @@ vtkOnionPeelFilter::FindCellsCorrespondingToOriginal(int orig, vtkIdList *group)
 // Creation:   January 18, 2005 
 //
 // Modifications:
+//   Kathleen Bonnell, Tue Jun 14 11:45:21 PDT 2005
+//   Correct 'n' for loop counting.
 //  
 //=======================================================================
 
@@ -955,11 +959,12 @@ vtkOnionPeelFilter::FindCellsCorrespondingToOriginal(vtkIdList *origs, vtkIdList
 {
     vtkUnsignedIntArray *origCells = vtkUnsignedIntArray::SafeDownCast(
         this->GetInput()->GetCellData()->GetArray("avtOriginalCellNumbers"));
+
     if (origCells)
     {
         unsigned int *oc = origCells->GetPointer(0);
-        int n = origCells->GetNumberOfTuples();
         int nc = origCells->GetNumberOfComponents();
+        int n = origCells->GetNumberOfTuples()*nc;
         int comp = nc -1;
         for (int i = comp; i < n; i+=nc)
         {
@@ -988,6 +993,8 @@ vtkOnionPeelFilter::FindCellsCorrespondingToOriginal(vtkIdList *origs, vtkIdList
 // Creation:   January 19, 2005 
 //
 // Modifications:
+//   Kathleen Bonnell, Tue Jun 14 11:45:21 PDT 2005
+//   Correct 'n' for loop counting.
 //  
 //=======================================================================
 
@@ -1000,8 +1007,8 @@ vtkOnionPeelFilter::FindNodesCorrespondingToOriginal(int orig, vtkIdList *group)
     if (origNodes)
     {
         int *on = origNodes->GetPointer(0);
-        int n = origNodes->GetNumberOfTuples();
         int nc = origNodes->GetNumberOfComponents();
+        int n = origNodes->GetNumberOfTuples() *nc;
         int comp = nc -1;
         for (int i = comp; i < n; i+=nc )
         {
