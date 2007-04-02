@@ -258,6 +258,9 @@
 #    Brad Whitlock, Mon May 2 10:39:56 PDT 2005
 #    Added support for multiple clients driving the viewer.
 #
+#    Eric Brugger, Wed Nov 23 08:00:06 PST 2005
+#    Added PLATFORM_CPPFLAGS.
+#
 ##############################################################################
 
 ##
@@ -285,7 +288,7 @@ LDFLAGS=@LDFLAGS@ @QT_LDFLAGS@
 LIBDEP=
 MOC=@QT_MOC@
 CXXFLAGS=@CXXFLAGS@ @QT_CXXFLAGS@ 
-CPPFLAGS=@CPPFLAGS@ $(VTK_INCLUDE) -I../../vtkqt \
+CPPFLAGS=@PLATFORM_CPPFLAGS@ @CPPFLAGS@ $(VTK_INCLUDE) -I../../vtkqt \
          -I./icons -I../../include -I../../include/visit -I.
 
 

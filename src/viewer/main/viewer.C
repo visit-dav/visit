@@ -2,6 +2,8 @@
 //                                 viewer.C                                  //
 // ************************************************************************* //
 
+#include <visit-config.h>
+
 #include <DebugStream.h>
 #include <ViewerSubject.h>
 #include <VisItException.h>

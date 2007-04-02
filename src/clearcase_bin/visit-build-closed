@@ -400,6 +400,7 @@ mv white_$dist.tar.gz /p/gw1/$user/white/visitbuild/$dist.tar.gz
 cd /p/gw1/$user/white/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
+cp /usr/gapps/visit/bz2/bzlib.h include
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../buildlog 2>&1

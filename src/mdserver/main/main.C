@@ -1,3 +1,5 @@
+#include <visit-config.h>
+
 #include <VisItException.h>
 #include <MDServerApplication.h>
 #include <DebugStream.h>
