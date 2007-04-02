@@ -20,6 +20,11 @@ class     ExprPipelineState;
 //  Programmer: Hank Childs
 //  Creation:   July 21, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Aug  5 16:48:24 PDT 2005
+//    Add support for types and subnames.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtArrayComposeFilter 
@@ -38,7 +43,9 @@ class EXPRESSION_API avtArrayComposeFilter
   protected:
     int                       nargs;
 
+    virtual void              RefashionDataObjectInfo(void);
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual avtVarType        GetVariableType(void) { return AVT_ARRAY_VAR; };
 };
 
 

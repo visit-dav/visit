@@ -144,6 +144,9 @@ class     avtExtents;
 //    Kathleen Bonnell, Thu Feb  3 09:27:22 PST 2005 
 //    Added mirOccurred and Set/Get methods. 
 //
+//    Hank Childs, Thu Aug  4 09:21:34 PDT 2005
+//    Added type and variable names (for arrays).
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -206,6 +209,15 @@ class PIPELINE_API avtDataAttributes
 
     void                     SetVariableDimension(int, const char * = NULL);
     int                      GetVariableDimension(const char * = NULL) const;
+
+    void                     SetVariableType(avtVarType, const char * = NULL);
+    avtVarType               GetVariableType(const char * = NULL) const;
+
+    void                     SetVariableSubnames(
+                                              const std::vector<std::string> &,
+                                              const char * = NULL);
+    const std::vector<std::string> &
+                             GetVariableSubnames(const char * = NULL) const;
 
     avtCentering             GetCentering(const char * = NULL) const;
     void                     SetCentering(avtCentering, const char * = NULL);
@@ -356,6 +368,7 @@ class PIPELINE_API avtDataAttributes
     struct VarInfo
     {
         std::string          varname;
+        avtVarType           vartype;
         std::string          varunits;
         int                  dimension;
         avtCentering         centering;
@@ -365,6 +378,8 @@ class PIPELINE_API avtDataAttributes
         avtExtents          *effectiveData;
         avtExtents          *currentData;
         avtExtents          *cumulativeCurrentData;
+        std::vector<std::string>  subnames; // Only used for 'array' vars
+                                            // at this point.
     };
     std::vector<VarInfo>     variables;
     int                      activeVariable;
