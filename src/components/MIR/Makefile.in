@@ -82,6 +82,9 @@
 #   Brad Whitlock, Thu Jan 26 15:30:52 PST 2006
 #   Added libs for MacOS X.
 #
+#    Thomas R. Treadway, Wed Feb  7 17:53:04 PST 2007
+#    Added $(GLEW_LIBS) for MacOS X.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -117,7 +120,7 @@ CPPFLAGS=-I../../include @COMPONENT_CPPFLAGS@ @CPPFLAGS@
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libmir
-LIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS)
+LIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) $(GLEW_LIBS)
 SERLIBS=-ldbatts -lpipeline_ser -lavtmath_ser -lavtexceptions -lstate -lutility -lmisc -lcomm -lexpr -lparser -llightweight_visit_vtk $(VTK_LIBS) $(LIBS_FOR_MACOSX_PREBINDING)
 PARLIBS=-ldbatts -lpipeline_par -lavtmath_par -lavtexceptions -lstate -lutility -lmisc -lcomm -lexpr -lparser -llightweight_visit_vtk $(VTK_LIBS) $(LIBS_FOR_MACOSX_PREBINDING)
 

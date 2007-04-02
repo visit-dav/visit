@@ -62,6 +62,9 @@
 #    Hank Childs, Sat Feb 25 14:05:47 PST 2006
 #    Added avtR2Fsum, avtR2Fstddev, avtR2Fvariance.
 #
+#    Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
+#    Added $(GLEW_LIBS) 
+#
 ##############################################################################
 
 ##
@@ -82,7 +85,7 @@ CPPFLAGS=-I../../include/visit @COMPONENT_CPPFLAGS@ @CPPFLAGS@
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libavtddf
-LIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS)
+LIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) $(GLEW_LIBS)
 SERLIBS=-ldbatts -lpipeline_ser -lavtmath_ser -lavtexceptions -lvisit_vtk -llightweight_visit_vtk -lmisc -lstate -lcomm -lexpr -lparser -lutility $(VTK_LIBS) $(LIBS_FOR_MACOSX_PREBINDING) $(X_LIBS)
 PARLIBS=-ldbatts -lpipeline_par -lavtmath_par -lavtexceptions -lvisit_vtk -llightweight_visit_vtk -lmisc -lstate -lcomm -lexpr -lparser -lutility $(VTK_LIBS) $(LIBS_FOR_MACOSX_PREBINDING) $(X_LIBS)
 

@@ -167,6 +167,9 @@ vtkVisItOpenGLPolyDataMapper::~vtkVisItOpenGLPolyDataMapper()
 //    Brad Whitlock, Fri Aug 26 11:05:35 PDT 2005
 //    Added code to free textures if they have been loaded.
 //
+//    Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
+//    The gcc-4.x compiler no longer just warns about automatic type conversion.
+//
 // ****************************************************************************
 
 void vtkVisItOpenGLPolyDataMapper::ReleaseGraphicsResources(vtkWindow *win)
@@ -183,14 +186,14 @@ void vtkVisItOpenGLPolyDataMapper::ReleaseGraphicsResources(vtkWindow *win)
   if (this->SphereTexturesLoaded)
     {
         win->MakeCurrent();
-        glDeleteTextures(1, &this->TextureName);
+        glDeleteTextures(1, (GLuint*)&this->TextureName);
         this->SphereTexturesLoaded = false;
     }
 
   if (this->ColorTextureLoaded)
     {
         win->MakeCurrent();
-        glDeleteTextures(1, &this->ColorTextureName);
+        glDeleteTextures(1, (GLuint*)&this->ColorTextureName);
         this->ColorTextureLoaded = false;        
     }
 }
@@ -3426,6 +3429,9 @@ static void vtkOpenGLDrawNSTW(vtkCellArray *aPrim, GLenum,
 //     Brad Whitlock, Thu Aug 25 14:57:38 PST 2005
 //     Added code to set up point texturing.
 //
+//    Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
+//    The gcc-4.x compiler no longer just warns about automatic type conversion.
+//
 // ****************************************************************************
 
 int vtkVisItOpenGLPolyDataMapper::Draw(vtkRenderer *aren, vtkActor *act)
@@ -3452,7 +3458,7 @@ int vtkVisItOpenGLPolyDataMapper::Draw(vtkRenderer *aren, vtkActor *act)
   // Do our glGet calls before we start the display list, since they cannot
   // be issued from within a display list.
   int  lastShadeModel = -1;
-  glGetIntegerv(GL_SHADE_MODEL, &lastShadeModel);
+  glGetIntegerv(GL_SHADE_MODEL, (GLint*)&lastShadeModel);
 
   if (this->doingDisplayLists)
     {
@@ -3927,6 +3933,9 @@ void vtkVisItOpenGLPolyDataMapper::PrintSelf(ostream& os, vtkIndent indent)
 //   Brad Whitlock, Tue Dec 6 13:37:58 PST 2005
 //   Changed to 1-pass texturing.
 //
+//    Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
+//    The gcc-4.x compiler no longer just warns about automatic type conversion.
+//
 // ****************************************************************************
 
 void
@@ -3980,7 +3989,7 @@ vtkVisItOpenGLPolyDataMapper::StartFancyPoints(
         // Create and bind the textures if we have not done that yet.
         if(!this->SphereTexturesLoaded)
         {
-            glGenTextures(1, &this->TextureName);
+            glGenTextures(1, (GLuint*)&this->TextureName);
 
             // Set up the first texture
             glBindTexture(GL_TEXTURE_2D, this->TextureName);
@@ -3997,26 +4006,26 @@ vtkVisItOpenGLPolyDataMapper::StartFancyPoints(
         //
         // Get whether GL_BLEND is enabled.
         //
-        glGetIntegerv(GL_BLEND, &atts.isBlendEnabled);
+        glGetIntegerv(GL_BLEND, (GLint*)&atts.isBlendEnabled);
         if(atts.isBlendEnabled == 0)
             glEnable(GL_BLEND);
 
-        glGetIntegerv(GL_BLEND_SRC, &atts.blendFunc0);
-        glGetIntegerv(GL_BLEND_DST, &atts.blendFunc1);
+        glGetIntegerv(GL_BLEND_SRC, (GLint*)&atts.blendFunc0);
+        glGetIntegerv(GL_BLEND_DST, (GLint*)&atts.blendFunc1);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         //
         // Get the AlphaTest mode to restore it later.
         //
         int dt = 0;
-        glGetIntegerv(GL_DEPTH_TEST, &dt);
+        glGetIntegerv(GL_DEPTH_TEST, (GLint*)&dt);
         if(dt == 1)
         {
             // Get the current alpha test function
-            glGetIntegerv(GL_ALPHA_TEST, &atts.isAlphaTestEnabled);
+            glGetIntegerv(GL_ALPHA_TEST, (GLint*)&atts.isAlphaTestEnabled);
             if(atts.isAlphaTestEnabled)
             {
-                glGetIntegerv(GL_ALPHA_TEST_FUNC, &atts.alphaTestFunc);
+                glGetIntegerv(GL_ALPHA_TEST_FUNC, (GLint*)&atts.alphaTestFunc);
                 glGetFloatv(GL_ALPHA_TEST_REF, &atts.alphaTestRef);
             }
             else
@@ -4465,6 +4474,9 @@ vtkVisItOpenGLPolyDataMapper::MapScalarsWithTextureSupport(double opacity)
 //
 // Modifications:
 //   
+//    Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
+//    The gcc-4.x compiler no longer just warns about automatic type conversion.
+//
 // ****************************************************************************
 
 void
@@ -4475,7 +4487,7 @@ vtkVisItOpenGLPolyDataMapper::BeginColorTexturing()
 
     if(!this->ColorTextureLoaded)
     {
-        glGenTextures(1, &this->ColorTextureName);
+        glGenTextures(1, (GLuint*)&this->ColorTextureName);
         glBindTexture(GL_TEXTURE_1D, this->ColorTextureName);
 
 #ifdef GL_VERSION_1_2

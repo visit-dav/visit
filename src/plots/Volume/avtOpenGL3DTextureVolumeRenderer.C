@@ -136,6 +136,9 @@ avtOpenGL3DTextureVolumeRenderer::avtOpenGL3DTextureVolumeRenderer()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October  1, 2003
 //
+//    Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
+//    The gcc-4.x compiler no longer just warns about automatic type conversion.
+//
 // ****************************************************************************
 avtOpenGL3DTextureVolumeRenderer::~avtOpenGL3DTextureVolumeRenderer()
 {
@@ -145,7 +148,7 @@ avtOpenGL3DTextureVolumeRenderer::~avtOpenGL3DTextureVolumeRenderer()
     // Assumes context is current!  This is the job of the container class.
     if (volumetexId != 0)
     {
-        glDeleteTextures(1, &volumetexId);
+        glDeleteTextures(1, (GLuint*)&volumetexId);
         volumetexId = 0;
     }
 }
@@ -200,6 +203,9 @@ avtOpenGL3DTextureVolumeRenderer::~avtOpenGL3DTextureVolumeRenderer()
 //
 //    Hank Childs, Tue Feb  6 15:41:58 PST 2007
 //    Give an error that the user can see if 3D texturing is not available.
+//
+//    Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
+//    The gcc-4.x compiler no longer just warns about automatic type conversion.
 //
 // ****************************************************************************
 
@@ -296,7 +302,7 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
     // Determine if we need to invalidate the old texture
     if (volumetex && (atts != oldAtts || lights != oldLights))
     {
-        glDeleteTextures(1, &volumetexId);
+        glDeleteTextures(1, (GLuint*)&volumetexId);
         volumetexId = 0;
         delete[] volumetex;
         volumetex = NULL;
@@ -457,7 +463,7 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
 
         // Create the texture
         //glPixelStorei(GL_UNPACK_ALIGNMENT,1);
-        glGenTextures(1, &volumetexId);
+        glGenTextures(1, (GLuint*)&volumetexId);
         glBindTexture(GL_TEXTURE_3D, volumetexId);
 
 #ifndef VTK_IMPLEMENT_MESA_CXX
@@ -638,6 +644,9 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
 //    Hank Childs, Tue May 11 15:24:45 PDT 2004
 //    Turn off blending so transparent surfaces can work afterwards.
 //
+//    Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
+//    The gcc-4.x compiler no longer just warns about automatic type conversion.
+//
 // ****************************************************************************
 
 void
@@ -675,7 +684,7 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
         (atts != oldAtts ||
          lights != oldLights))
     {
-        glDeleteTextures(1, &volumetexId);
+        glDeleteTextures(1, (GLuint*)&volumetexId);
         volumetexId = 0;
         delete[] volumetex;
         volumetex = NULL;
@@ -820,7 +829,7 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
 
         // Create the texture
         //glPixelStorei(GL_UNPACK_ALIGNMENT,1);
-        glGenTextures(1, &volumetexId);
+        glGenTextures(1, (GLuint*)&volumetexId);
         glBindTexture(GL_TEXTURE_3D, volumetexId);
         glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, newnx, newny, newnz,
                      0, GL_RGBA, GL_UNSIGNED_BYTE, volumetex);

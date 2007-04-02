@@ -86,6 +86,9 @@
 //
 // Modifications:
 //   
+//    Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
+//    The gcc-4.x compiler no longer just warns about automatic type conversion.
+//
 // ****************************************************************************
 
 class TextureModeData
@@ -105,16 +108,16 @@ private:
     // Texture-related data.
     bool sphereTexturesDataCreated;
     bool sphereTexturesLoaded;
-    unsigned int  textureName;
+    GLuint  textureName;
     unsigned char sphereTexture[SPHERE_TEX_H][SPHERE_TEX_W][2];
 
     // Keep track of OpenGL state
-    int   isBlendEnabled;
-    int   blendFunc0;
-    int   blendFunc1;
+    GLint   isBlendEnabled;
+    GLint   blendFunc0;
+    GLint   blendFunc1;
     int   needAlphaTest;
-    int   isAlphaTestEnabled;
-    int   alphaTestFunc;
+    GLint   isAlphaTestEnabled;
+    GLint   alphaTestFunc;
     float alphaTestRef;
 };
 
@@ -218,7 +221,7 @@ TextureModeData::BeginSphereTexturing()
     //
     // Get the AlphaTest mode to restore it later.
     //
-    int dt = 0;
+    GLint dt = 0;
     glGetIntegerv(GL_DEPTH_TEST, &dt);
     if(dt == 1)
     {
@@ -691,6 +694,9 @@ ShaderModeData::ModeAvailable()
 //   Brad Whitlock, Fri Apr 7 11:18:26 PDT 2006
 //   Added code to use alternate programs that also set the depth.
 //
+//    Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
+//    The gcc-4.x compiler no longer just warns about automatic type conversion.
+//
 // ****************************************************************************
 
 bool
@@ -706,7 +712,7 @@ ShaderModeData::BeginSphereTexturing()
         char *log = new char[MAX_LOG_SIZE];
         memset(log, 0, MAX_LOG_SIZE);
 
-        int maxvarying = 0;
+        GLint maxvarying = 0;
         glGetIntegerv(GL_MAX_VARYING_FLOATS_ARB, &maxvarying);
         debug1 << "Maximum # of varying floats:" << maxvarying << endl;
 
@@ -720,7 +726,7 @@ ShaderModeData::BeginSphereTexturing()
         else
             glShaderSourceARB(v, 1, &GLSL_sphere_vertex_program_source, NULL);
         glCompileShaderARB(v);
-        int vc = 0;
+        GLint vc = 0;
         glGetObjectParameterivARB(v, GL_OBJECT_COMPILE_STATUS_ARB, &vc);
         debug1 << "Vertex program "
                << ((vc==1)?" compiled":" did not compile")
@@ -737,7 +743,7 @@ ShaderModeData::BeginSphereTexturing()
         else
             glShaderSourceARB(f, 1, &GLSL_sphere_fragment_program_source, NULL);
         glCompileShaderARB(f);
-        int fc = 0;
+        GLint fc = 0;
         glGetObjectParameterivARB(f, GL_OBJECT_COMPILE_STATUS_ARB, &fc);
         debug1 << "Fragment program "
                << ((fc==1)?" compiled":" did not compile")
@@ -749,7 +755,7 @@ ShaderModeData::BeginSphereTexturing()
 
         glLinkProgramARB(p);
  
-        int pls = 0;
+        GLint pls = 0;
         glGetObjectParameterivARB(p, GL_OBJECT_LINK_STATUS_ARB, &pls);
         debug1 << "Program "
                << ((pls==1)?" linked":" did not link")

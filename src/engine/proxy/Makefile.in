@@ -93,6 +93,9 @@
 #    Brad Whitlock, Wed Jan 5 09:25:20 PDT 2005
 #    Added -lexpr for MacOS X.
 #
+#    Thomas R. Treadway, Wed Feb  7 17:53:04 PST 2007
+#    Added $(GLEW_LIBS) for MacOS X.
+#
 ##############################################################################
 
 ##
@@ -111,7 +114,7 @@ SRC=EngineProxy.C
 HDR=EngineProxy.h
 OBJ=$(SRC:.C=.o)
 LIB=libengineproxy
-LIBS_FOR_MACOSX_PREBINDING=-lexpr $(BZIP2_LIBS)
+LIBS_FOR_MACOSX_PREBINDING=-lexpr $(BZIP2_LIBS) $(GLEW_LIBS)
 LIBS=-lenginerpc -ldbatts -lpipeline_ser -lavtmath_ser -lavtexceptions -lcomm -lmisc -lstate -lplugin -lparser -lutility -lproxybase -llightweight_visit_vtk $(LIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)
 
 

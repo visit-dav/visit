@@ -637,6 +637,18 @@ dnl
 dnl    Brad Whitlock, Tue Sep 19 17:04:41 PST 2006
 dnl    Added mpeg2encode support.
 dnl
+dnl    Thomas R. Treadway, Tue Feb  6 13:45:49 PST 2007
+dnl    Removed the Mac prebinding stuff, added better universal binary
+dnl    support.
+dnl
+dnl    Thomas R. Treadway, Wed Feb  7 15:32:27 PST 2007
+dnl    Added CREATE_BOXLIB2D_LINK, CREATE_BOXLIB3D_LINK,
+dnl    and CREATE_CFITSIO_LINK (and friends).
+dnl
+dnl    Thomas R. Treadway, Thu Feb  8 14:22:10 PST 2007
+dnl    Removed checking for HDF5 for the MacOS X, assumed silo always
+dnl    links with hdf5 (Never worked right anyway).
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -687,12 +699,12 @@ fi
 # Grab the version number
 AC_MSG_CHECKING(what version the package is)
 VERSION=`cat VERSION`
-AC_DEFINE_UNQUOTED(VERSION,"$VERSION")
+AC_DEFINE_UNQUOTED(VERSION,"$VERSION",[VisIt version])
 AC_MSG_RESULT($VERSION)
 
 # Set the slash characters used in filenames.
-AC_DEFINE_UNQUOTED(SLASH_CHAR,'/')
-AC_DEFINE_UNQUOTED(SLASH_STRING,"/")
+AC_DEFINE_UNQUOTED(SLASH_CHAR,'/',[Define the slash character])
+AC_DEFINE_UNQUOTED(SLASH_STRING,"/",[Define the slash string])
 
 # Load the site configuration file if present.
 # Also check for hostnames where the first field is a node name.
@@ -1310,7 +1322,7 @@ BUILD_BZIP2=""
 BZIP2_LIBS=""
 if test "$Usebzip2" = "yes"; then
     BUILD_BZIP2="bzip2"
-    AC_DEFINE(HAVE_LIBBZ2)
+    AC_DEFINE(HAVE_LIBBZ2, [1], [Define if you have the bz2 library.])
     BZIP2_LIBS="-lbz2"
 fi
 AC_SUBST(BUILD_BZIP2)
@@ -1327,7 +1339,7 @@ GLEW_LIBS=""
 GLEW_INCLUDE=""
 if test "$Useglew" = "yes"; then
     BUILD_GLEW="glew"
-    AC_DEFINE(HAVE_LIBGLEW)
+    AC_DEFINE(HAVE_LIBGLEW, [1], [Define if you have the GLEW library.])
     GLEW_LIBS="-lGLEW"
     GLEW_INCLUDE="-I$""(TOPDIR)/include/glew"
 fi
@@ -1345,7 +1357,7 @@ AC_ARG_ENABLE(bilib,
 BUILD_BILIB=""
 if test "$Usebilib" = "yes"; then
     BUILD_BILIB="bilib"
-    AC_DEFINE(HAVE_BILIB)
+    AC_DEFINE(HAVE_BILIB, [1], [Define if you have the boost interval template library.])
 fi
 AC_SUBST(BUILD_BILIB)
 
@@ -1441,7 +1453,7 @@ AC_TRY_COMPILE([#include <sys/time.h>
                 #include <sys/timeb.h>],
                [struct timeb *tp; ftime(tp)],
                AC_MSG_RESULT(yes)
-               AC_DEFINE(HAVE_FTIME_PROTOTYPE),
+               AC_DEFINE(HAVE_FTIME_PROTOTYPE, [1], [Define if you have the prototype for ftime in the <sys/timeb.h>.]),
                AC_MSG_RESULT(no))
                
 dnl Check for setbuf in streambuf
@@ -1450,14 +1462,14 @@ AC_TRY_COMPILE([#include <fstream>],
                 [fstream out("/dev/null",std::ios::out); out.rdbuf()->setbuf((char*)0,0);],
                 AC_MSG_RESULT(yes),
                 AC_MSG_RESULT(no)
-                AC_DEFINE(NO_SETBUF))
+                AC_DEFINE(NO_SETBUF, [1], [Define NO_SETBUF if streambuf::setbuf is not public.]))
 
 dnl Check for ios::noreplace
 AC_MSG_CHECKING(for ios::noreplace)
 AC_TRY_COMPILE([#include <fstream>],
                [ofstream f("dummy",std::ios::out|std::ios::noreplace);],
                AC_MSG_RESULT(yes)
-               AC_DEFINE(HAVE_IOS_NOREPLACE),
+               AC_DEFINE(HAVE_IOS_NOREPLACE, [1], [Define if you have ios::noreplace.]),
                AC_MSG_RESULT(no))
                
 AC_LANG_C
@@ -1474,7 +1486,7 @@ AC_ARG_WITH(pty,
 AC_MSG_RESULT($USE_PTY)
 
 if test "$USE_PTY" = "yes"; then
-    AC_DEFINE(USE_PTY)
+    AC_DEFINE(USE_PTY, [1], [Define USE_PTY if we want to use PTYs.])
 
     # Check for SYSV versus BSD style pseudo-ttys
     AC_MSG_CHECKING(for SYSV vs BSD style ptys)
@@ -1483,7 +1495,7 @@ if test "$USE_PTY" = "yes"; then
     else
         AC_TRY_LINK([#include <stdlib.h>], grantpt(0),
             AC_MSG_RESULT(SYSV)
-            AC_DEFINE(PTY_SYSV),
+            AC_DEFINE(PTY_SYSV, [1], [Define PTY_SYSV if we have System V style pty functions -- BSD otherwise.]),
             AC_MSG_RESULT(BSD))
     fi
 
@@ -1529,7 +1541,7 @@ AC_TRY_COMPILE([#include <sys/types.h>
                 #include <sys/socket.h>],
                [socklen_t dummy;],
                AC_MSG_RESULT(yes)
-               AC_DEFINE(HAVE_SOCKLEN_T),
+               AC_DEFINE(HAVE_SOCKLEN_T, [1], [Define if socklen_t is defined.]),
                AC_MSG_RESULT(no))
 
 
@@ -1563,9 +1575,8 @@ case $withval in
 
         AC_CHECK_HEADERS(zlib.h)
         AC_CHECK_LIB(z, compress2,
-				   ZLIB_LIB="-lz $ZLIB_LIB"
-				   AC_DEFINE(HAVE_LIBZ)
-		    )
+		ZLIB_LIB="-lz $ZLIB_LIB"
+		AC_DEFINE(HAVE_LIBZ, [1], [Define if you have the z library.]))
         ;;
     no)
         AC_MSG_CHECKING(for GNU zlib)
@@ -1590,8 +1601,8 @@ case $withval in
 	    CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE"
             LDFLAGS="$LDFLAGS -L$zlib_lib"
 	    AC_CHECK_LIB(z, compress2,
-				       ZLIB_LIB="-L$zlib_lib -lz $ZLIB_LIB"
-				       AC_DEFINE(HAVE_LIBZ)
+			ZLIB_LIB="-L$zlib_lib -lz $ZLIB_LIB"
+			AC_DEFINE(HAVE_LIBZ, [1], [Define if you have the z library.])
 			)
 	    LIBS="$saved_LIBS"
 	    LDFLAGS="$saved_LDFLAGS"
@@ -1599,8 +1610,8 @@ case $withval in
         else
 	    CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE"
             AC_CHECK_LIB(z, compress2,
-				       ZLIB_LIB="-lz $ZLIB_LIB"
-				       AC_DEFINE(HAVE_LIBZ)
+			ZLIB_LIB="-lz $ZLIB_LIB"
+			AC_DEFINE(HAVE_LIBZ, [1], [Define if you have the z library.])
 		        )
 	    LIBS="$saved_LIBS"
 	    CPPFLAGS="$saved_CPPFLAGS"
@@ -1660,8 +1671,8 @@ if test "$HDF5_LIB" != "" ; then
    if test "$HDF5_INCLUDE" != "" ; then
       HDF5="$""(HDF5)"
       AC_MSG_RESULT(yes)
-      AC_DEFINE(HAVE_HDF5_H)
-      AC_DEFINE(HAVE_LIBHDF5)
+      AC_DEFINE(HAVE_HDF5_H, [1], [Define if you have the <hdf5.h> header file.])
+      AC_DEFINE(HAVE_LIBHDF5, [1], [Define if you have the hdf5 library.])
    else
       AC_MSG_RESULT(no)
    fi
@@ -1736,8 +1747,10 @@ else
     dnl On Darwin, we build Silo as a shared library.
     if test "$SHORT_UNAME" = "darwin"; then
         LIBSILO="libsilo.dylib"
+        LIBSILOH5="libsiloh5.dylib"
     else
         LIBSILO="libsilo.a"
+        LIBSILOH5="libsiloh5.a"
     fi
 
     dnl
@@ -1750,11 +1763,11 @@ else
             SILO_LIBDIR="$DEFAULT_SILO_LIBRARY"
             AC_MSG_RESULT(user specified ("$SILO_LIBDIR"))
             silo_keep_checking="no"
-	elif test -r "$DEFAULT_SILO_LIBRARY/libsiloh5.a"; then
+	elif test -r "$DEFAULT_SILO_LIBRARY/$LIBSILOH5"; then
             SILO_LIBDIR="$DEFAULT_SILO_LIBRARY"
             AC_MSG_RESULT(user specified ("$SILO_LIBDIR"))
             silo_keep_checking="no"
-	    LIBSILO="libsiloh5.a"
+	    LIBSILO="$LIBSILOH5"
         fi
     fi
 
@@ -1786,10 +1799,14 @@ fi
 # or whether libsilo in turn depends on HDF5
 #
 if test -n "$HDF5_LIB"; then
-    if test -r "$SILO_LIBDIR/libsiloh5.a"; then
+    if test -r "$SILO_LIBDIR/$LIBSILOH5"; then
 
         AC_MSG_CHECKING(whether to use libsilo.a or libsiloh5.a)
 
+      if test "$SHORT_UNAME" = "darwin"; then
+        SILO_LIB="-L$SILO_LIBDIR -lsiloh5 $HDF5_LIB $ZLIB_LIB"
+        AC_MSG_RESULT(libsiloh5.dylib)
+      else
         saved_CPPFLAGS="$CPPFLAGS"
         saved_LIBS="$LIBS"
 	saved_SILO_LIB="$SILO_LIB"
@@ -1820,10 +1837,15 @@ if test -n "$HDF5_LIB"; then
 
         LIBS="$saved_LIBS"
         CPPFLAGS="$saved_CPPFLAGS"
+      fi
 
     else
 
         AC_MSG_CHECKING(whether libsilo.a depends on hdf5)
+      if test "$SHORT_UNAME" = "darwin"; then
+        SILO_LIB="$SILO_LIB $HDF5_LIB $ZLIB_LIB"
+        AC_MSG_RESULT(libsilo.dylib)
+      else
 
         saved_CPPFLAGS="$CPPFLAGS"
         saved_LIBS="$LIBS"
@@ -1856,6 +1878,7 @@ if test -n "$HDF5_LIB"; then
         LIBS="$saved_LIBS"
         CPPFLAGS="$saved_CPPFLAGS"
 
+      fi
     fi
 fi
 AC_SUBST(SILO_LIB)
@@ -1965,7 +1988,7 @@ if test "$pdb_specified" = "yes"; then
       PDB_LIBS="-L`echo $withval |cut -f2 -d, -s` -lpdb -lscore -lpml"
       PDB="$""(PDB)"
       PDB_EXEC="$""(PDBEXEC)"
-      AC_DEFINE(HAVE_PDB_PROPER)
+      AC_DEFINE(HAVE_PDB_PROPER, [1], [Define if you are using PDB proper instead of PDB lite.])
       AC_MSG_RESULT(using PDB proper)
    fi
 else
@@ -2073,6 +2096,7 @@ AC_MSG_CHECKING(for Boxlib2D)
 BOXLIB2D=""
 BOXLIB2D_INCLUDE=""
 BOXLIB2D_LIBS=""
+BOXLIB2D_LIBDIR=""
 AC_ARG_WITH(boxlib2d,
 	    [  --with-boxlib2d=INC-DIR,LIB-DIR      Location of Boxlib2D header and library],
            boxlib2d_specified="yes",
@@ -2082,6 +2106,7 @@ if test "$boxlib2d_specified" = "yes"; then
    if test "$withval" != "no"; then
       BOXLIB2D_INCLUDE="-I`echo $withval |cut -f1 -d,`"
       BOXLIB2D_LIBS="-L`echo $withval |cut -f2 -d, -s`"
+      BOXLIB2D_LIBDIR="`echo $withval |cut -f2 -d, -s`"
    fi
 else
    if test "$DEFAULT_BOXLIB2D_INCLUDE" != "" ; then
@@ -2089,6 +2114,7 @@ else
    fi
    if test "$DEFAULT_BOXLIB2D_LIBS" != "" ; then
       BOXLIB2D_LIBS="-L$DEFAULT_BOXLIB2D_LIBS -lbox2D"
+      BOXLIB2D_LIBDIR="$DEFAULT_BOXLIB2D_LIBS"
    fi
 fi
 if test "$BOXLIB2D_LIBS" != "" ; then
@@ -2104,6 +2130,7 @@ fi
 AC_SUBST(BOXLIB2D)
 AC_SUBST(BOXLIB2D_INCLUDE)
 AC_SUBST(BOXLIB2D_LIBS)
+AC_SUBST(BOXLIB2D_LIBDIR)
 
 
 #
@@ -2113,6 +2140,7 @@ AC_MSG_CHECKING(for Boxlib3D)
 BOXLIB3D=""
 BOXLIB3D_INCLUDE=""
 BOXLIB3D_LIBS=""
+BOXLIB3D_LIBDIR=""
 AC_ARG_WITH(boxlib3d,
 	    [  --with-boxlib3d=INC-DIR,LIB-DIR      Location of Boxlib3D header and library],
            boxlib3d_specified="yes",
@@ -2122,6 +2150,7 @@ if test "$boxlib3d_specified" = "yes"; then
    if test "$withval" != "no"; then
       BOXLIB3D_INCLUDE="-I`echo $withval |cut -f1 -d,`"
       BOXLIB3D_LIBS="-L`echo $withval |cut -f2 -d, -s`"
+      BOXLIB3D_LIBDIR="`echo $withval |cut -f2 -d, -s`"
    fi
 else
    if test "$DEFAULT_BOXLIB3D_INCLUDE" != "" ; then
@@ -2129,6 +2158,7 @@ else
    fi
    if test "$DEFAULT_BOXLIB3D_LIBS" != "" ; then
       BOXLIB3D_LIBS="-L$DEFAULT_BOXLIB3D_LIBS -lbox3D"
+      BOXLIB3D_LIBDIR="$DEFAULT_BOXLIB3D_LIBS"
    fi
 fi
 if test "$BOXLIB3D_LIBS" != "" ; then
@@ -2144,6 +2174,7 @@ fi
 AC_SUBST(BOXLIB3D)
 AC_SUBST(BOXLIB3D_INCLUDE)
 AC_SUBST(BOXLIB3D_LIBS)
+AC_SUBST(BOXLIB3D_LIBDIR)
 
 #
 # Look for ViSUS 
@@ -2218,8 +2249,8 @@ if test "$NETCDF_LIB" != "" ; then
    if test "$NETCDF_INCLUDE" != "" ; then
       NETCDF="$""(NETCDF)"
       AC_MSG_RESULT(yes)
-      AC_DEFINE(HAVE_NETCDF_H)
-      AC_DEFINE(HAVE_LIBNETCDF)
+      AC_DEFINE(HAVE_NETCDF_H, [1], [Define if you have the netcdf header.])
+      AC_DEFINE(HAVE_LIBNETCDF, [1], [Define if you have the netcdf library.])
    else
       AC_MSG_RESULT(no)
    fi
@@ -2264,8 +2295,8 @@ if test "$CGNS_LIB" != "" ; then
    if test "$CGNS_INCLUDE" != "" ; then
       CGNS="$""(CGNS)"
       AC_MSG_RESULT(yes)
-      AC_DEFINE(HAVE_CGNS_H)
-      AC_DEFINE(HAVE_LIBCGNS)
+      AC_DEFINE(HAVE_CGNS_H, [1], [Define if you have the cgns headers.])
+      AC_DEFINE(HAVE_LIBCGNS, [1], [Define if you have the cgns library.])
    else
       AC_MSG_RESULT(no)
    fi
@@ -2317,8 +2348,8 @@ if test "$GDAL_LIB" != "" ; then
       fi
       GDAL="$""(GDAL)"
       AC_MSG_RESULT(yes)
-      AC_DEFINE(HAVE_GDAL_H)
-      AC_DEFINE(HAVE_LIBGDAL)
+      AC_DEFINE(HAVE_GDAL_H, [1], [Define if you have the gdal headers.])
+      AC_DEFINE(HAVE_LIBGDAL, [1], [Define if you have the gdal library.])
    else
       AC_MSG_RESULT(no)
    fi
@@ -2337,6 +2368,7 @@ AC_MSG_CHECKING(for CFITSIO)
 CFITSIO=""
 CFITSIO_INCLUDE=""
 CFITSIO_LIB=""
+CFITSIO_LIBDIR=""
 AC_ARG_WITH(CFITSIO,
 	    [  --with-cfitsio=INC-DIR,LIB-DIR     Location of CFITSIO header and library],
            CFITSIO_specified="yes",
@@ -2351,6 +2383,7 @@ if test "$CFITSIO_specified" = "yes"; then
    if test "$withval" != "no"; then
       CFITSIO_INCLUDE="-I`echo $withval |cut -f1 -d,`"
       CFITSIO_LIB="`echo $withval |cut -f2 -d, -s`/libcfitsio.$CFITSIO_LIBEXT"
+      CFITSIO_LIBDIR="`echo $withval |cut -f2 -d, -s`"
    fi
 else
    if test "$DEFAULT_CFITSIO_INCLUDE" != "" ; then
@@ -2358,6 +2391,7 @@ else
    fi
    if test "$DEFAULT_CFITSIO_LIB" != "" ; then
       CFITSIO_LIB="$DEFAULT_CFITSIO_LIB/libcfitsio.$CFITSIO_LIBEXT $CFITSIO_LIB"
+      CFITSIO_LIBDIR="$DEFAULT_CFITSIO_LIB"
    fi
 fi
 if test "$CFITSIO_LIB" != "" ; then
@@ -2373,6 +2407,7 @@ fi
 AC_SUBST(CFITSIO)
 AC_SUBST(CFITSIO_INCLUDE)
 AC_SUBST(CFITSIO_LIB)
+AC_SUBST(CFITSIO_LIBDIR)
 
 #
 # Add Some include paths to the engine's CPPFLAGS.
@@ -2435,7 +2470,7 @@ if test "$enable_gui" = "yes"; then
 
     if test -f $QtGlobalInc; then
         ## Check for supported versions of Qt.
-	for ver in  3.3.0  3.3.1  3.3.2  3.3.3  3.3.4\
+	for ver in  3.3.0  3.3.1  3.3.2  3.3.3  3.3.4 3.3.7\
                     3.2.0  3.2.1  3.2.2  3.2.3 \
                     3.1.2  3.1.1  3.1.0 \
                     3.0.4  3.0.3  3.0.2  3.0.1  3.0.0 \
@@ -2593,7 +2628,7 @@ if test -z "$PTHREAD_LIB"; then
        ENGINE_CPPFLAGS="$ENGINE_CPPFLAGS"
        AC_SUBST(ENGINE_CPPFLAGS)
        PTHREAD_LIB="-lpthread"
-       AC_DEFINE(HAVE_THREADS)
+       AC_DEFINE(HAVE_THREADS, [1], [Define if you have the pthread library.])
        AC_MSG_RESULT(found)
    else
        PTHREAD_LIB=""
@@ -2607,7 +2642,7 @@ else
    PTHREAD_CXXFLAGS=""
    # Make sure that we define the HAVE_THREADS macro because if it does
    # not get defined then we'll never get the connection progress window
-   AC_DEFINE(HAVE_THREADS)
+   AC_DEFINE(HAVE_THREADS, [1], [Define if you have the pthread library.])
 fi
 AC_SUBST(PTHREAD_LIB)
 AC_SUBST(PTHREAD_CXXFLAGS)
@@ -2797,17 +2832,17 @@ case $SHORT_UNAME in
     # Set the post processing step to something really useless because we
     # don't need a postprocessing step since we're going to build directly
     # in the lib directory.
-    SHLIB_POSTPROCESS="$""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(LIBSHARED)"
-    SHLIB_POSTPROCESS_SER="$""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(LIBSHAREDSER)"
-    SHLIB_POSTPROCESS_PAR="$""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(LIBSHAREDPAR)"
-
-    SHLIB_POSTPROCESS_ILIBS="$""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(IDSO) ; sleep 1"
-    SHLIB_POSTPROCESS_GLIBS="$""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(GDSO) ; sleep 1"
-    SHLIB_POSTPROCESS_SLIBS="$""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(SDSO) ; sleep 1"
-    SHLIB_POSTPROCESS_VLIBS="$""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(VDSO) ; sleep 1"
-    SHLIB_POSTPROCESS_MLIBS="$""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(MDSO) ; sleep 1"
-    SHLIB_POSTPROCESS_ESERLIBS="$""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(ESERDSO) ; sleep 1"
-    SHLIB_POSTPROCESS_EPARLIBS="$""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(EPARDSO) ; sleep 1"
+    SHLIB_POSTPROCESS="sleep 1"
+    SHLIB_POSTPROCESS_SER="sleep 1" 
+    SHLIB_POSTPROCESS_PAR="sleep 1" 
+  
+    SHLIB_POSTPROCESS_ILIBS="sleep 1" 
+    SHLIB_POSTPROCESS_GLIBS="sleep 1" 
+    SHLIB_POSTPROCESS_SLIBS="sleep 1" 
+    SHLIB_POSTPROCESS_VLIBS="sleep 1" 
+    SHLIB_POSTPROCESS_MLIBS="sleep 1" 
+    SHLIB_POSTPROCESS_ESERLIBS="sleep 1" 
+    SHLIB_POSTPROCESS_EPARLIBS="sleep 1" 
 
     # Set SHLIB_TMPDIR so that libraries are created directly in the lib directory.
     SHLIB_TMPDIR="$""(TOPDIR)/lib/"
@@ -2815,25 +2850,22 @@ case $SHORT_UNAME in
     # Set SHLIB_LIBS so the right libraries are added to the link line but also ensure
     # that the shared library is created with a unique starting address so we can
     # prebind.
-    SHLIB_LIBS="$""(LIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../lib/$""(LIB).dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
-    SHLIB_SERLIBS="$""(SERLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../lib/$""(LIB)_ser.dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
-    SHLIB_PARLIBS="$""(PARLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../lib/$""(LIB)_par.dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+    SHLIB_LIBS="$""(LIBS) -Wl,-install_name,@executable_path/../lib/$""(LIB).dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION"
+    SHLIB_SERLIBS="$""(SERLIBS) -Wl,-install_name,@executable_path/../lib/$""(LIB)_ser.dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION"
+    SHLIB_PARLIBS="$""(PARLIBS) -Wl,-install_name,@executable_path/../lib/$""(LIB)_par.dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION"
 
     #
     # Targets for creating prebound plugins.
     #
-    SHLIB_ILIBS="$""(ILIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libI$""(PLUGINNAME).dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
-    SHLIB_GLIBS="$""(GLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libG$""(PLUGINNAME).dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
-    SHLIB_SLIBS="$""(SLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libS$""(PLUGINNAME).dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
-    SHLIB_VLIBS="$""(VLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libV$""(PLUGINNAME).dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
-    SHLIB_MLIBS="$""(MLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libM$""(PLUGINNAME).dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
-    SHLIB_ESERLIBS="$""(ESERLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libE$""(PLUGINNAME)_ser.dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
-    SHLIB_EPARLIBS="$""(EPARLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libE$""(PLUGINNAME)_par.dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+    SHLIB_ILIBS="$""(ILIBS) -Wl,-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libI$""(PLUGINNAME).dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION"
+    SHLIB_GLIBS="$""(GLIBS) -Wl,-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libG$""(PLUGINNAME).dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION"
+    SHLIB_SLIBS="$""(SLIBS) -Wl,-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libS$""(PLUGINNAME).dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION"
+    SHLIB_VLIBS="$""(VLIBS) -Wl,-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libV$""(PLUGINNAME).dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION"
+    SHLIB_MLIBS="$""(MLIBS) -Wl,-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libM$""(PLUGINNAME).dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION"
+    SHLIB_ESERLIBS="$""(ESERLIBS) -Wl,-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libE$""(PLUGINNAME)_ser.dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION"
+    SHLIB_EPARLIBS="$""(EPARLIBS) -Wl,-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libE$""(PLUGINNAME)_par.dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION"
 
     PREBIND_LIBS="$""(PREBIND_LIBS)"
-    # Create the address.txt file with the initial offset for the VisIt libraries.
-    rm -f address.txt linkedit.log
-    echo "0x249a8000" > address.txt
     ;;
 esac
 # Set up the defaults
@@ -2889,7 +2921,7 @@ AC_SUBST(SHLIB_POSTPROCESS_PAR)
 AC_SUBST(SHLIB_TMPDIR)
 AC_SUBST(PREBIND_LIBS)
 
-AC_DEFINE_UNQUOTED(PLUGIN_EXTENSION, ".${SHLIB_SOEXT}" )
+AC_DEFINE_UNQUOTED(PLUGIN_EXTENSION, ".${SHLIB_SOEXT}", [Shared library extension])
 
 #
 # Now that we know about shared libraries, specify the engine wrapper library.
@@ -2906,10 +2938,10 @@ AC_SUBST(ENGINEWRAPPAR)
 
 #
 # This helps the Makefile in the lib directory make the right links
-# to Silo, Mili, HDF4, HDF5, NETCDF, CGNS, GDAL, and Exodus. It is only
-# needed on MacOS X because on other platforms, these libraries are
-# statically linked into the database plugins and on MacOS X they are
-# dynamically linked.
+# to Silo, Mili, HDF4, HDF5, NETCDF, CGNS, GDAL, Exodus, BoxLib, and
+# CFITSIO. It is only needed on MacOS X because on other platforms, 
+# these libraries are statically linked into the database plugins 
+# and on MacOS X they are dynamically linked.
 #
 CREATE_SILO_LINK=""
 CREATE_MILI_LINK=""
@@ -2919,6 +2951,9 @@ CREATE_NETCDF_LINK=""
 CREATE_CGNS_LINK=""
 CREATE_GDAL_LINK=""
 CREATE_EXODUS_LINK=""
+CREATE_BOXLIB2D_LINK=""
+CREATE_BOXLIB3D_LINK=""
+CREATE_CFITSIO_LINK=""
 case $SHORT_UNAME in
   darwin)
     if test "$SILO_LIB" != "" ; then
@@ -2945,6 +2980,15 @@ case $SHORT_UNAME in
     if test "$EXODUS_LIB" != "" ; then
         CREATE_EXODUS_LINK="create_exodus_link"
     fi
+    if test "$BOXLIB2D_LIBS" != "" ; then
+        CREATE_BOXLIB2D_LINK="create_boxlib2D_link"
+    fi
+    if test "$BOXLIB3D_LIBS" != "" ; then
+        CREATE_BOXLIB3D_LINK="create_boxlib3D_link"
+    fi
+    if test "$CFITSIO_LIB" != "" ; then
+        CREATE_CFITSIO_LINK="create_cfitsio_link"
+    fi
   ;;
 esac
 AC_SUBST(CREATE_SILO_LINK)
@@ -2955,6 +2999,9 @@ AC_SUBST(CREATE_NETCDF_LINK)
 AC_SUBST(CREATE_CGNS_LINK)
 AC_SUBST(CREATE_GDAL_LINK)
 AC_SUBST(CREATE_EXODUS_LINK)
+AC_SUBST(CREATE_BOXLIB2D_LINK)
+AC_SUBST(CREATE_BOXLIB3D_LINK)
+AC_SUBST(CREATE_CFITSIO_LINK)
 
 #
 # Check for library functions that can work around, or that we have
@@ -3016,11 +3063,12 @@ AC_MSG_CHECKING(for GNU Make)
 if test "`${MAKE-make} --version -f /dev/null 2>/dev/null|sed -n 1p|cut -c1-8`" = "GNU Make"; then
    AC_MSG_RESULT(yes)
    if test -n "$GCC"; then
-      SOURCE_DEPENDENCIES=include/make-depend-gnu
-      # Darwin's gcc doesn't understand the -MG flag.
+      # Darwin's universal build doesn't like the make-depend-gnu
       if test "$UNAME" = "Darwin"; then
+         SOURCE_DEPENDENCIES=include/make-depend-std
          MG=""
       else
+         SOURCE_DEPENDENCIES=include/make-depend-gnu
          MG="-MG"
       fi
       AC_SUBST(MG)
@@ -3243,6 +3291,19 @@ AC_OUTPUT($STANDARD_FILES
           $JAVA_FILES,
           echo timestamp > include/stamp-h)
 
+# Darwin's universal build needs to modify config.h
+if test "$UNAME" = "Darwin"; then
+   if test -n "include/visit-config.h"; then
+      echo "" >> include/visit-config.h 
+      echo "/* Hooks for Darwin's universal build */" >> include/visit-config.h 
+      echo "#if defined (__APPLE__) && defined (__LITTLE_EDIAN__) && defined (WORDS_BIGENDIAN)" >> include/visit-config.h 
+      echo "#undef WORDS_BIGENDIAN" >> include/visit-config.h 
+      echo "#endif" >> include/visit-config.h 
+      echo "#if defined (__APPLE__) && defined (__BIG_EDIAN__) && !defined (WORDS_BIGENDIAN)" >> include/visit-config.h 
+      echo "#define WORDS_BIGENDIAN 1" >> include/visit-config.h 
+      echo "#endif" >> include/visit-config.h 
+   fi
+fi
 #         
 # We want to build the xml2makefile tool and the plugin makefiles
 # after config.status has been run

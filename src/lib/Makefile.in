@@ -127,6 +127,12 @@
 #    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 #    Added fast interval library (filib) 
 #
+#    Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
+#    Added $(GLEW_LIBS) for MacOS X.
+#
+#    Thomas R. Treadway, Wed Feb  7 16:05:38 PST 2007
+#    Added create a link for Boxlib, and CFITSIO.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -163,7 +169,7 @@ LIBSILO=libsilo.@SHLIB_LIBEXT@
 all: libvtkcommon libvtkdicom libvtkfiltering libvtkgraphics libvtkhybrid \
      libvtkio libvtkimaging libvtkrendering libvtkzlib libvtkpng libvtkjpeg \
      libvtkexpat libvtktiff libvtkfreetype libvtkftgl libvtksys libvtkexoIIc \
-     libvtknetcdf libvtkmpeg2encode libosmesa libmesagl libqt libqui pythondir @CREATE_SILO_LINK@ @CREATE_MILI_LINK@ @CREATE_HDF4_LINK@ @CREATE_HDF5_LINK@ @CREATE_NETCDF_LINK@ @CREATE_CGNS_LINK@ @CREATE_GDAL_LINK@ @CREATE_EXODUS_LINK@
+     libvtknetcdf libvtkmpeg2encode libosmesa libmesagl libqt libqui pythondir @CREATE_SILO_LINK@ @CREATE_MILI_LINK@ @CREATE_HDF4_LINK@ @CREATE_HDF5_LINK@ @CREATE_NETCDF_LINK@ @CREATE_CGNS_LINK@ @CREATE_GDAL_LINK@ @CREATE_EXODUS_LINK@ @CREATE_BOXLIB2D_LINK@ @CREATE_BOXLIB3D_LINK@ @CREATE_CFITSIO_LINK@
 
 libvtkcommon:
 	$(RM) $(LIBVTKCOMMON)*
@@ -292,6 +298,18 @@ create_hdf4_link:
 	$(RM) libdf.@SHLIB_LIBEXT@ libmfhdf.@SHLIB_LIBEXT@
 	ln -s @HDF4_LIBDIR@/libdf.@SHLIB_LIBEXT@ .
 	ln -s @HDF4_LIBDIR@/libmfhdf.@SHLIB_LIBEXT@ .
+
+create_boxlib2D_link:
+	$(RM) libbox2D.@SHLIB_LIBEXT@ 
+	ln -s @BOXLIB2D_LIBDIR@/libbox2D.@SHLIB_LIBEXT@ .
+
+create_boxlib3D_link:
+	$(RM) libbox3D.@SHLIB_LIBEXT@
+	ln -s @BOXLIB3D_LIBDIR@/libbox3D.@SHLIB_LIBEXT@ .
+
+create_cfitsio_link:
+	$(RM) libcfitsio.@SHLIB_LIBEXT@     
+	ln -s @CFITSIO_LIBDIR@/libcfitsio.@SHLIB_LIBEXT@ .
 
 create_netcdf_link:
 	$(RM) libnetcdf.@SHLIB_LIBEXT@

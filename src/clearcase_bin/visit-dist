@@ -79,6 +79,9 @@ $0 = shift @ARGV;
 #     I removed the -withhelp option from source_files because now it
 #     returns at least the static HTML files in the help directory.
 #
+#    Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
+#    Updated the tail syntax
+#
 
 require "newgetopt.pl";
 

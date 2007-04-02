@@ -54,7 +54,7 @@
 #if defined(_WIN32)
 #include <windows.h>
 #include <direct.h>
-#elif defined(__APPLE__)
+#elif __APPLE__ && __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ < 1030
 #include <mach-o/dyld.h>
 #include <dirent.h>
 #else
@@ -1032,7 +1032,7 @@ PluginManager::GetPluginInitializationErrors()
     return ret;
 }
 
-#if defined(__APPLE__)
+#if __APPLE__ && __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ < 1030
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 ///

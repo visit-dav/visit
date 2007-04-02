@@ -147,6 +147,9 @@
 #    Mark Blair, Wed Aug 30 12:36:00 PDT 2006
 #    Added the Extents tool.
 #
+#    Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
+#    Added $(GLEW_LIBS)  
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -219,7 +222,7 @@ CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@ @ANNOTATION_FLAGS@ @VTK_INCLUDES@ $(MES
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libviswindow
-LIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS)
+LIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS)  $(GLEW_LIBS)
 SERLIBS=-ldbatts -lpipeline_ser -lavtfilters_ser -lavtmath_ser -lavtexceptions -lavtview -lmisc -lstate -lcomm -lexpr -lparser -lutility -lplotter_ser -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser @VTKQT_LIBS@ $(LIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(X_LIBS)
 PARLIBS=-ldbatts -lpipeline_par -lavtfilters_par -lavtmath_par -lavtexceptions -lavtview -lmisc -lstate -lcomm -lexpr -lparser -lutility -lplotter_par -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_par @VTKQT_LIBS@ $(LIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(X_LIBS)
 
