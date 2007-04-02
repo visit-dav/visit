@@ -74,19 +74,23 @@ avtBasicNETCDFFileFormat::CreateInterface(NETCDFFileObject *f,
 // Creation:   Thu Aug 18 18:03:59 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr 26 17:40:20 PST 2006
+//   Initialized meshNamesCreated.
+//
 // ****************************************************************************
 
 avtBasicNETCDFFileFormat::avtBasicNETCDFFileFormat(const char *filename) :
     avtSTSDFileFormat(filename),  meshNames()
 {
     fileObject = new NETCDFFileObject(filename);
+    meshNamesCreated = false;
 }
 
 avtBasicNETCDFFileFormat::avtBasicNETCDFFileFormat(const char *filename,
     NETCDFFileObject *f) : avtSTSDFileFormat(filename),  meshNames()
 {
     fileObject = f;
+    meshNamesCreated = false;
 }
 
 // ****************************************************************************
@@ -139,7 +143,7 @@ avtBasicNETCDFFileFormat::FreeUpResources()
 // Creation:   Thu Aug 18 18:05:14 PST 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -163,6 +167,14 @@ avtBasicNETCDFFileFormat::ActivateTimestep()
 // Modifications:
 //    Jeremy Meredith, Thu Aug 25 12:55:29 PDT 2005
 //    Added group origin to mesh metadata constructor.
+//
+//    Brad Whitlock, Wed Apr 26 17:53:24 PST 2006
+//    I made it possible to call with a NULL metadata pointer so we can call
+//    this method on ActivateTimestep to ensure that the meshNames map
+//    is populated. I also added a check to set the validVariable flag for
+//    meshes and variables so that we don't have problems later. By adding
+//    the valid variable check, I was able to make 4+ dimensional arrays
+//    safely appear in the variable lists.
 //
 // ****************************************************************************
 
@@ -232,12 +244,7 @@ avtBasicNETCDFFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 }
             }
 
-            if(nDims > 3)
-            {
-                debug4 << "Variable: " << varname << " has " << varndims
-                       << " dimensions so it will not be available." << endl;
-            }
-            else if(nDims == 1)
+            if(nDims == 1)
             {
                 if(maxDim > 1 && 
                    (vartype == NC_INT ||
@@ -246,22 +253,25 @@ avtBasicNETCDFFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     vartype == NC_DOUBLE)
                   )
                 {
-                    avtCurveMetaData *cmd = new avtCurveMetaData;
-                    cmd->name = varname;
-                    cmd->yLabel = varname;
-                    fileObject->ReadStringAttribute(varname, "units",
-                        cmd->yUnits);
-
-                    char dimName[NC_MAX_NAME+1];
-                    status = nc_inq_dimname(fileObject->GetFileHandle(),
-                                            maxDimIndex, dimName);
-                    if(status == NC_NOERR)
+                    if(md != 0)
                     {
-                        cmd->xLabel = dimName;
-                        fileObject->ReadStringAttribute(dimName, "units",
-                                                        cmd->xUnits);
+                        avtCurveMetaData *cmd = new avtCurveMetaData;
+                        cmd->name = varname;
+                        cmd->yLabel = varname;
+                        fileObject->ReadStringAttribute(varname, "units",
+                            cmd->yUnits);
+
+                        char dimName[NC_MAX_NAME+1];
+                        status = nc_inq_dimname(fileObject->GetFileHandle(),
+                                                maxDimIndex, dimName);
+                        if(status == NC_NOERR)
+                        {
+                            cmd->xLabel = dimName;
+                            fileObject->ReadStringAttribute(dimName, "units",
+                                                            cmd->xUnits);
+                        }
+                        md->Add(cmd);
                     }
-                    md->Add(cmd);
 
                     intVector meshDims; meshDims.push_back(maxDim);
                     meshNames[varname] = meshDims;
@@ -301,26 +311,95 @@ avtBasicNETCDFFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                         meshName += tmp;
                     }
 
+                    // Return the dimensions that we should care about.
+                    int validDims[3];
+                    int nValidDims;
+                    bool valid = ReturnValidDimensions(meshDims, 
+                         validDims, nValidDims);
+
                     // Add the name of the mesh to the list of meshes.
                     if(meshNames.find(meshName) == meshNames.end())
                     {
                         meshNames[meshName] = meshDims;
-                        avtMeshMetaData *mmd = new avtMeshMetaData(meshName, 
-                            1, 1, 1, 0, meshDims.size(), meshDims.size(),
-                            AVT_RECTILINEAR_MESH);
-                        md->Add(mmd);
+
+                        if(md != 0)
+                        {
+                            avtMeshMetaData *mmd = new avtMeshMetaData(meshName, 
+                                1, 1, 1, 0, nValidDims, nValidDims,
+                                AVT_RECTILINEAR_MESH);
+                            mmd->validVariable = valid;
+                            md->Add(mmd);
+                        }
                     }
 
                     // Try and get the variable units.
-                    avtScalarMetaData *smd = new avtScalarMetaData(varname, meshName,
-                        AVT_NODECENT);
-                    smd->hasUnits = fileObject->ReadStringAttribute(
-                        varname, "units", smd->units);
-                    md->Add(smd);
+                    if(md != 0)
+                    {
+                        avtScalarMetaData *smd = new avtScalarMetaData(varname, meshName,
+                            AVT_NODECENT);
+                        smd->hasUnits = fileObject->ReadStringAttribute(
+                            varname, "units", smd->units);
+                        smd->validVariable = valid;
+                        md->Add(smd);
+                    }
                 } 
             }
         }
     }
+
+    meshNamesCreated = true;
+}
+
+// ****************************************************************************
+// Method: avtBasicNETCDFFileFormat::ReturnValidDimensions
+//
+// Purpose: 
+//   Returns the valid dimensions.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr 27 10:36:12 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+avtBasicNETCDFFileFormat::ReturnValidDimensions(const intVector &dims, int validDims[3], int &nValidDims)
+{
+    int i;
+    const char *mName = "avtBasicNETCDFFileFormat::ReturnValidDimensions: ";
+
+    // Look for a valid 3rd dimension.
+    nValidDims = 2;
+    validDims[0] = dims[0];
+    validDims[1] = dims[1];
+    for(i = 2; i < dims.size() && nValidDims == 2; ++i)
+    {
+        if(dims[i] > 1)
+        {
+            validDims[nValidDims++] = dims[i];
+        }
+    }
+
+    int nCells = 1;
+    debug4 << mName << "validDims=(";
+    for(i = 0; i < nValidDims; ++i)
+    {
+        nCells *= validDims[i];
+        debug4 << validDims[i] << ", ";
+    }
+    debug4 << ")" << endl;
+
+    int nValues = 1;
+    debug4 << mName << "actualDims=(";
+    for(i = 0; i < dims.size(); ++i)
+    {
+        nValues *= dims[i];
+        debug4 << dims[i] << ", ";
+    }
+    debug4 << ")" << endl;
+
+    return nCells == nValues;
 }
 
 // ****************************************************************************
@@ -338,7 +417,9 @@ avtBasicNETCDFFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 // Creation:   Thu Aug 18 18:05:59 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr 26 17:56:15 PST 2006
+//   I made it call PopulateDatabaseMetaData.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -346,6 +427,10 @@ avtBasicNETCDFFileFormat::GetMesh(const char *var)
 {
     debug4 << "avtBasicNETCDFFileFormat::GetMesh: var=" << var << endl;
     vtkDataSet *retval = 0;
+ 
+    // Populate the mesh names if we've not done so yet.
+    if(!meshNamesCreated)
+        PopulateDatabaseMetaData(0);
 
     MeshNameMap::const_iterator mesh = meshNames.find(var);
     if(mesh != meshNames.end())
@@ -390,6 +475,11 @@ avtBasicNETCDFFileFormat::GetMesh(const char *var)
             int   i, j;
             vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New(); 
 
+            // Return the dimensions that we should care about.
+            int validDims[3];
+            int nValidDims;
+            ReturnValidDimensions(mesh->second, validDims, nValidDims);
+
             //
             // Populate the coordinates.  Put in 3D points with z=0 if
             // the mesh is 2D.
@@ -401,9 +491,9 @@ avtBasicNETCDFFileFormat::GetMesh(const char *var)
                 // Default number of components for an array is 1.
                 coords[i] = vtkFloatArray::New();
 
-                if (i < mesh->second.size())
+                if (i < nValidDims)
                 {
-                    dims[i] = mesh->second[i];
+                    dims[i] = validDims[i];
                     coords[i]->SetNumberOfTuples(dims[i]);
                     for (j = 0 ; j < dims[i] ; j++)
                     {

@@ -17,12 +17,14 @@ class avtFileFormatInterface;
 //  Creation:   Wed Aug 10 15:21:14 PST 2005
 //
 //  Modifications:
+//    Brad Whitlock, Wed Apr 26 17:39:32 PST 2006
+//    Added a new flag.
 //
 // ****************************************************************************
 
 class avtBasicNETCDFFileFormat : public avtSTSDFileFormat
 {
-  public: 
+public: 
    static avtFileFormatInterface *CreateInterface(NETCDFFileObject *f, 
                        const char *const *list, int nList, int nBlock);
 
@@ -45,11 +47,15 @@ class avtBasicNETCDFFileFormat : public avtSTSDFileFormat
 
   protected:
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
-
-  private:
+    bool                   ReturnValidDimensions(const intVector &dims,
+                                                 int validDims[3],
+                                                 int &nValidDims);
+private:
+    
     NETCDFFileObject      *fileObject;
 
     typedef std::map<std::string, intVector> MeshNameMap;
+    bool                   meshNamesCreated;
     MeshNameMap            meshNames;
 };
 
