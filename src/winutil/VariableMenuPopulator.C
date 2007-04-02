@@ -10,6 +10,14 @@
 #include <QvisVariablePopupMenu.h>
 #include <qobject.h>
 
+#include <set>
+
+//#define DEBUG_PRINT
+#ifdef DEBUG_PRINT
+#include <DebugStream.h>
+#endif
+#include <TimingsManager.h>
+
 using std::map;
 using std::string;
 using std::vector;
@@ -95,13 +103,16 @@ Split(const std::string &varName, stringVector &pieces)
 //   Hank Childs, Tue Jul 19 14:23:56 PDT 2005
 //   Added arrayVars.
 //
+//   Brad Whitlock, Wed Mar 22 12:06:59 PDT 2006
+//   I added groupingInfo.
+//
 // ****************************************************************************
 
 VariableMenuPopulator::VariableMenuPopulator() :
     cachedDBName(), cachedExpressionList(),
     meshVars(), scalarVars(), materialVars(), vectorVars(), subsetVars(),
     speciesVars(), curveVars(), tensorVars(), symmTensorVars(), labelVars(),
-    arrayVars()
+    arrayVars(), groupingInfo()
 {
 }
 
@@ -115,11 +126,14 @@ VariableMenuPopulator::VariableMenuPopulator() :
 // Creation:   Mon Mar 17 14:58:14 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 22 12:07:33 PDT 2006
+//   I made it call ClearGroupingInfo.
+//
 // ****************************************************************************
 
 VariableMenuPopulator::~VariableMenuPopulator()
 {
+    ClearGroupingInfo();
 }
 
 // ****************************************************************************
@@ -140,6 +154,32 @@ void
 VariableMenuPopulator::ClearDatabaseName()
 {
     cachedDBName = "";
+}
+
+// ****************************************************************************
+// Method: VariableMenuPopulator::ClearGroupingInfo
+//
+// Purpose: 
+//   Clear out the grouping info.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 22 12:09:03 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VariableMenuPopulator::ClearGroupingInfo()
+{
+    for(IntGroupingInfoMap::iterator pos = groupingInfo.begin();
+        pos != groupingInfo.end(); ++pos)
+    {
+        if(pos->second != 0)
+            delete pos->second;
+    }
+
+    groupingInfo.clear();
 }
 
 // ****************************************************************************
@@ -219,6 +259,10 @@ VariableMenuPopulator::ClearDatabaseName()
 //   Hank Childs, Tue Jul 19 14:23:56 PDT 2005
 //   Added support for array vars.
 //
+//   Brad Whitlock, Wed Mar 22 12:10:30 PDT 2006
+//   I made it clear out the variable grouping information. I also added
+//   timing code.
+//
 // ****************************************************************************
 
 bool
@@ -229,6 +273,10 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     if(md == 0 || sil == 0 || exprList == 0)
         return false;
 
+    const char *mName = "VariableMenuPopulator::PopulateVariableLists";
+    int total = visitTimer->StartTimer();
+    int id = visitTimer->StartTimer();
+
     // The expression list can sometimes contain database expressions for
     // a database that is not the database specified by dbName. To combat
     // this problem, we only use the user-defined expressions from the
@@ -236,6 +284,7 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     // that are contained in the metadata md.
     ExpressionList newExpressionList;
     GetRelevantExpressions(newExpressionList, md, *exprList);
+    visitTimer->StopTimer(id, "GetRelevantExpressions");
 
     //
     // If the database name is the same and the expression list is the
@@ -247,13 +296,17 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     bool variableMetaData = md->GetMustRepopulateOnStateChange() ||
                             md->GetIsSimulation();
     if(dbName == cachedDBName && expressionsSame && !variableMetaData)
+    {
+        visitTimer->StopTimer(total, mName);
         return false;
+    }
 
     //
     // Save the database name and the expression list so we can check them
     // again later so we can get out of this routine early if they are the
     // same.
     //
+    id = visitTimer->StartTimer();
     cachedDBName = dbName;
     if(!expressionsSame)
         cachedExpressionList = newExpressionList;
@@ -271,7 +324,12 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     labelVars.Clear();       labelVars.SetSorted(md->GetMustAlphabetizeVariables());
     arrayVars.Clear();       arrayVars.SetSorted(md->GetMustAlphabetizeVariables());
 
+    // Clear out the variable grouping info.
+    ClearGroupingInfo();
+    visitTimer->StopTimer(id, "Clearing vectors nad grouping info");
+
     // Do stuff with the metadata
+    id = visitTimer->StartTimer(); 
     int i;
     for (i = 0; i < md->GetNumMeshes(); ++i)
     {
@@ -320,8 +378,10 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
         const avtArrayMetaData *tmd = md->GetArray(i);
         arrayVars.AddVariable(tmd->name, tmd->validVariable);
     }
+    visitTimer->StopTimer(id, "Adding variables from metadata");
 
     // Do stuff with the sil
+    id = visitTimer->StartTimer(); 
     const intVector &topSets = sil->GetWholes();
 
     // There are currently 9 role types, lets count their occurrance
@@ -397,10 +457,12 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
                 subsetVars.AddVariable(varName, validVariable);
         }
     }
+    visitTimer->StopTimer(id, "Adding SIL categories");
 
     //
     // Add the expressions from the cached expression list.
     //
+    id = visitTimer->StartTimer(); 
     int nexp = cachedExpressionList.GetNumExpressions();
     for(i = 0; i < nexp; ++i)
     {
@@ -408,6 +470,9 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
         if(!expr.GetHidden())
             AddExpression(expr);
     }
+
+    visitTimer->StopTimer(id, "Adding expressions");
+    visitTimer->StopTimer(total, mName);
 
     return true;
 }
@@ -564,14 +629,31 @@ VariableMenuPopulator::GetRelevantExpressions(ExpressionList &newExpressionList,
 //   Hank Childs, Tue Jul 19 14:23:56 PDT 2005
 //   Added array var support.
 //
+//   Brad Whitlock, Wed Mar 22 11:59:46 PDT 2006
+//   Added support for caching the variable grouping for different variable
+//   types.
+//
 // ****************************************************************************
 
 int
 VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
     int varTypes, QObject *receiver, const char *slot)
 {
+    int total = visitTimer->StartTimer();
     int numVarTypes = 0;
     int retval = 0;
+
+#define UPDATE_SINGLE_MENU(V) \
+    if(groupingInfo.find(varTypes) == groupingInfo.end())\
+    {\
+        groupingInfo[varTypes] = new GroupingInfo;\
+        groupingInfo[varTypes]->required =\
+            V.IsGroupingRequired(\
+                groupingInfo[varTypes]->grouping);\
+    }\
+    UpdateSingleMenu(menu, V, receiver, slot,\
+        groupingInfo[varTypes]);\
+    retval = V.Size();
 
     // See if we need to create a variable list that has more than one
     // category of variable in it.
@@ -605,32 +687,36 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
 
         // Construct a variable list that contains variables from multiple
         // categories then sort the list.
+        int realType = 0;
         if(varTypes & VAR_CATEGORY_MESH)
-            AddVars(vars, meshVars);
+            realType |= AddVars(vars, meshVars) ? VAR_CATEGORY_MESH : 0;
         if(varTypes & VAR_CATEGORY_SCALAR)
-            AddVars(vars, scalarVars);
+            realType |= AddVars(vars, scalarVars) ? VAR_CATEGORY_SCALAR : 0;
         if(varTypes & VAR_CATEGORY_MATERIAL)
-            AddVars(vars, materialVars);
+            realType |= AddVars(vars, materialVars) ? VAR_CATEGORY_MATERIAL : 0;
         if(varTypes & VAR_CATEGORY_VECTOR)
-            AddVars(vars, vectorVars);
+            realType |= AddVars(vars, vectorVars) ? VAR_CATEGORY_VECTOR : 0;
         if(varTypes & VAR_CATEGORY_SUBSET)
-            AddVars(vars, subsetVars);
+            realType |= AddVars(vars, subsetVars) ? VAR_CATEGORY_SUBSET : 0;
         if(varTypes & VAR_CATEGORY_SPECIES)
-            AddVars(vars, speciesVars);
+            realType |= AddVars(vars, speciesVars) ? VAR_CATEGORY_SPECIES : 0;
         if(varTypes & VAR_CATEGORY_CURVE)
-            AddVars(vars, curveVars);
+            realType |= AddVars(vars, curveVars) ? VAR_CATEGORY_CURVE : 0;
         if(varTypes & VAR_CATEGORY_TENSOR)
-            AddVars(vars, tensorVars);
+            realType |= AddVars(vars, tensorVars) ? VAR_CATEGORY_TENSOR : 0;
         if(varTypes & VAR_CATEGORY_SYMMETRIC_TENSOR)
-            AddVars(vars, symmTensorVars);
+            realType |= AddVars(vars, symmTensorVars) ? VAR_CATEGORY_SYMMETRIC_TENSOR : 0;
         if(varTypes & VAR_CATEGORY_LABEL)
-            AddVars(vars, labelVars);
+            realType |= AddVars(vars, labelVars) ? VAR_CATEGORY_LABEL : 0;
         if(varTypes & VAR_CATEGORY_ARRAY)
-            AddVars(vars, arrayVars);
+            realType |= AddVars(vars, arrayVars) ? VAR_CATEGORY_ARRAY : 0;
        
         // Update the menu with the composite variable list.
-        UpdateSingleMenu(menu, vars, receiver, slot);
-        retval = vars.Size();
+        if(realType > 0)
+        {
+            varTypes = realType;
+            UPDATE_SINGLE_MENU(vars)
+        }
     }
     else
     {
@@ -639,51 +725,42 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
         switch(varTypes)
         {
         case VAR_CATEGORY_MESH:
-            UpdateSingleMenu(menu, meshVars, receiver, slot);
-            retval = meshVars.Size();
+            UPDATE_SINGLE_MENU(meshVars)
             break;
         case VAR_CATEGORY_SCALAR:
-            UpdateSingleMenu(menu, scalarVars, receiver, slot);
-            retval = scalarVars.Size();
+            UPDATE_SINGLE_MENU(scalarVars)
             break;
         case VAR_CATEGORY_VECTOR:
-            UpdateSingleMenu(menu, vectorVars, receiver, slot);
-            retval = vectorVars.Size();
+            UPDATE_SINGLE_MENU(vectorVars)
             break;
         case VAR_CATEGORY_MATERIAL:
-            UpdateSingleMenu(menu, materialVars, receiver, slot);
-            retval = materialVars.Size();
+            UPDATE_SINGLE_MENU(materialVars)
             break;
         case VAR_CATEGORY_SUBSET:
-            UpdateSingleMenu(menu, subsetVars, receiver, slot);
-            retval = subsetVars.Size();
+            UPDATE_SINGLE_MENU(subsetVars)
             break;
         case VAR_CATEGORY_SPECIES:
-            UpdateSingleMenu(menu, speciesVars, receiver, slot);
-            retval = speciesVars.Size();
+            UPDATE_SINGLE_MENU(speciesVars)
             break;
         case VAR_CATEGORY_CURVE:
-            UpdateSingleMenu(menu, curveVars, receiver, slot);
-            retval = curveVars.Size();
+            UPDATE_SINGLE_MENU(curveVars)
             break;
         case VAR_CATEGORY_TENSOR:
-            UpdateSingleMenu(menu, tensorVars, receiver, slot);
-            retval = tensorVars.Size();
+            UPDATE_SINGLE_MENU(tensorVars)
             break;
         case VAR_CATEGORY_SYMMETRIC_TENSOR:
-            UpdateSingleMenu(menu, symmTensorVars, receiver, slot);
-            retval = symmTensorVars.Size();
+            UPDATE_SINGLE_MENU(symmTensorVars)
             break;
         case VAR_CATEGORY_LABEL:
-            UpdateSingleMenu(menu, labelVars, receiver, slot);
-            retval = labelVars.Size();
+            UPDATE_SINGLE_MENU(labelVars)
             break;
         case VAR_CATEGORY_ARRAY:
-            UpdateSingleMenu(menu, arrayVars, receiver, slot);
-            retval = arrayVars.Size();
+            UPDATE_SINGLE_MENU(arrayVars)
             break;
         }
     }
+
+    visitTimer->StopTimer(total, "VariableMenuPopulator::UpdateSingleVariableMenu");
 
     return retval;
 }
@@ -765,6 +842,7 @@ VariableMenuPopulator::ItemEnabled(int varType) const
 //   receiver : The QObject that will handle signals emitted by the menu.
 //   slot     : The slot function that will be called on the receiver when
 //              signals are emitted by the menu.
+//   ginfo    : Variable grouping info for the variable list that is passed.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Mar 17 14:31:20 PST 2003
@@ -791,11 +869,17 @@ VariableMenuPopulator::ItemEnabled(int varType) const
 //   accidentally adding empty strings to the map for expressions like 
 //   mesh quality metrics.
 //
+//   Brad Whitlock, Wed Mar 22 11:53:47 PDT 2006
+//   I added code to pass in GroupingInfo, which contains the grouped names
+//   to original names map for this variable list. We pass it in so we can
+//   calculate it and re-use it for multiple menus.
+//
 // ****************************************************************************
 
 void
 VariableMenuPopulator::UpdateSingleMenu(QvisVariablePopupMenu *menu,
-    VariableList &vars, QObject *receiver, const char *slot)
+    VariableList &vars, QObject *receiver, const char *slot, 
+    const VariableMenuPopulator::GroupingInfo *ginfo)
 {
     if (menu == 0)
         return;
@@ -805,16 +889,18 @@ VariableMenuPopulator::UpdateSingleMenu(QvisVariablePopupMenu *menu,
     int j, varCount = menu->count();
     std::string var;
     bool        validVar;
-    StringStringMap originalNameToGroupedName;
-    bool shouldUseGrouping = vars.IsGroupingRequired(originalNameToGroupedName);
+    const StringStringMap &originalNameToGroupedName = ginfo->grouping;
+    bool shouldUseGrouping = ginfo->required;
     vars.InitTraversal();
     while(vars.GetNextVariable(var, validVar))
     {
-        if (shouldUseGrouping &&
-            originalNameToGroupedName.find(var) != originalNameToGroupedName.end())
+        if (shouldUseGrouping)
         {
-            var = originalNameToGroupedName[var];
+            StringStringMap::const_iterator it = originalNameToGroupedName.find(var);
+            if(it != originalNameToGroupedName.end())
+                 var = it->second;
         }
+
         // Split the variable's path into a vector of strings.
         stringVector pathvar;
         Split(var, pathvar);
@@ -889,6 +975,8 @@ VariableMenuPopulator::UpdateSingleMenu(QvisVariablePopupMenu *menu,
 //   to   : The destination map.
 //   from : The source map.
 //
+// Returns:    True if variables were added; false otherwise.
+//
 // Programmer: Brad Whitlock
 // Creation:   Tue Mar 18 08:26:22 PDT 2003
 //
@@ -898,7 +986,7 @@ VariableMenuPopulator::UpdateSingleMenu(QvisVariablePopupMenu *menu,
 //
 // ****************************************************************************
 
-void
+bool
 VariableMenuPopulator::AddVars(VariableMenuPopulator::VariableList &to,
     VariableMenuPopulator::VariableList &from)
 {
@@ -908,6 +996,8 @@ VariableMenuPopulator::AddVars(VariableMenuPopulator::VariableList &to,
     from.InitTraversal();
     while(from.GetNextVariable(var, validVar))
         to.AddVariable(var, validVar);
+
+    return (from.Size() > 0);
 }
 
 //
@@ -1146,17 +1236,95 @@ VariableMenuPopulator::VariableList::Size() const
 //    Applied patch from Paul Selby of Wed Dec 14 13:27:45 GMT 2005
 //    so that it will group variables in top level of path.
 //
+//    Brad Whitlock, Wed Mar 22 11:11:09 PDT 2006
+//    Rewrote portions of the function to use std::set instead of vectors, 
+//    which sped up the routine 10x. Another important change that I made to
+//    this routine is that an entry in the originalNameToGroupedName map
+//    is only added if one of the variable's paths was grouped. That is, not
+//    all variables will have an entry in the map.
+//
 // ****************************************************************************
 
 bool
 VariableMenuPopulator::VariableList::IsGroupingRequired(
     StringStringMap& originalNameToGroupedName)
 {
-    int i, j, k, jmax;
+    const char *mName = "VariableMenuPopulator::VariableList::IsGroupingRequired";
+    int total = visitTimer->StartTimer(); 
+
     string var;
     bool validVar;
     bool isGroupingRequired = false;
-    std::map<std::string, stringVector> entriesAtPath;
+    const int GROUPING_CUTOFF = 90;
+
+    //
+    // STAGE 1: Do a quick and dirty check for whether we need to do
+    //          any grouping. We use a map of ints to maintain a simple
+    //          count of how many objects will go into each path. If any
+    //          of the paths exceed the grouping cutoff then we proceed
+    //          with more expensive work later. We do this quick first pass
+    //          because it's pretty cheap.
+    //
+    int stage1 = visitTimer->StartTimer();
+    if(Size() > GROUPING_CUTOFF)
+    {
+#define INCPATH \
+        std::map<std::string, int>::const_iterator p2 =\
+            entriesAtPathC.find(path);\
+        if (p2 == entriesAtPathC.end())\
+            entriesAtPathC[path] = 1;\
+        else\
+        {\
+            ++entriesAtPathC[path];\
+            if(entriesAtPathC[path])\
+            {\
+                isGroupingRequired = true;\
+                break;\
+            }\
+        }
+
+        std::map<std::string, int> entriesAtPathC;
+        InitTraversal();
+        while(GetNextVariable(var, validVar))
+        {
+            // Split the variable's path into a vector of strings.
+            stringVector pathvar;
+            Split(var, pathvar);
+
+            string path;
+            if(pathvar.size() == 1)
+            {
+                INCPATH
+            }
+            else if(pathvar.size() > 1)
+            {
+                for (int j = 0; j < pathvar.size()-1; j++)
+                    path = path + "/" + pathvar[j];
+                INCPATH
+            }
+        }
+    }
+    visitTimer->StopTimer(stage1, "Stage 1");
+
+    //
+    // Since we've now check to see if grouping is required, indicate that.
+    // Also, if we've decided grouping is NOT required, just return.
+    //
+    if (!isGroupingRequired)
+    {
+        visitTimer->StopTimer(total, mName);
+        return false;
+    }
+
+    //
+    // STAGE 2: Create the entriesAtPath map, which is a map containing
+    //          sets of names for each path. We use these sets later 
+    //          and split them up if they are over the grouping threshold.
+    //
+    int stage2 = visitTimer->StartTimer();
+    typedef std::set<std::string> StringSet;
+    typedef std::map<std::string, StringSet> StringStringSetMap;
+    StringStringSetMap entriesAtPath;
     InitTraversal();
     while(GetNextVariable(var, validVar))
     {
@@ -1165,90 +1333,150 @@ VariableMenuPopulator::VariableList::IsGroupingRequired(
         Split(var, pathvar);
 
         string path;
-        for (j = 0; j < pathvar.size(); j++)
+        for (int j = 0; j < pathvar.size(); j++)
         {
-            std::map<std::string, stringVector>::const_iterator p2 =
-                entriesAtPath.find(path);
+            // Get an iterator to the named set.
+            StringStringSetMap::iterator p2 = entriesAtPath.find(path);
             if (p2 == entriesAtPath.end())
-                entriesAtPath[path].push_back(pathvar[j]);
+                entriesAtPath[path].insert(pathvar[j]);
             else
-            {
-                bool foundIt = false;
-                for (k = 0; k < entriesAtPath[path].size(); k++)
-                {
-                    if (entriesAtPath[path][k] == pathvar[j])
-                    {
-                        foundIt = true;
-                        break;
-                    }
-                }
-                if (!foundIt)
-                {
-                    entriesAtPath[path].push_back(pathvar[j]);
-                    if (entriesAtPath[path].size() > 90)
-                        isGroupingRequired = true;
-                }
-            }
+                p2->second.insert(pathvar[j]);
 
             path += (pathvar[j] + "/");
         }
     }
+    visitTimer->StopTimer(stage2, "Stage 2");
+#ifdef DEBUG_PRINT
+    for(StringStringSetMap::const_iterator it = entriesAtPath.begin();
+        it != entriesAtPath.end(); ++it)
+    {
+        debug1 << "key = \"" << it->first.c_str() << "\", values(sz="
+               << it->second.size() << ") = {";
+        for(StringSet::const_iterator si = it->second.begin();
+            si != it->second.end(); ++si)
+        {
+            debug1 << "\"" << si->c_str() << "\", ";
+        }
+        debug1 << "}" << endl;
+    }
+    debug1 << "*********************************************" << endl;
+#endif
 
     //
-    // Since we've now check to see if grouping is required, indicate that.
-    // Also, if we've decided grouping is NOT required, just return.
+    // STAGE 3: In this stage, we iterate through the paths once more and
+    //          use the entriesAtPath map to create groupings if there are
+    //          too many entries in one set. We populate the
+    //          originalNameToGroupedName map for items that have been 
+    //          grouped so we know to use a different path for items that
+    //          have been grouped so we populate the menus correctly.
     //
-    if (!isGroupingRequired)
-        return false;
-
-    std::map<std::string, std::vector<stringVector> > groupsAtPath;
+    int stage3 = visitTimer->StartTimer();
+    typedef std::vector<StringSet> StringSetVector;
+    typedef std::map<std::string, StringSetVector > StringStringSetVectorMap;
+    StringStringSetVectorMap groupsAtPath;
     InitTraversal();
     while(GetNextVariable(var, validVar))
     {
+        bool varNeedsGrouping = false;
+
         // Split the variable's path into a vector of strings.
         stringVector pathvar;
         Split(var, pathvar);
 
         // Force grouping to occur for variables in top level of path
-        if (pathvar.size() == 1) jmax = 1; else jmax = pathvar.size() - 1;
-
         string path, newpath;
+        int j;
+        int jmax = (pathvar.size() == 1) ? 1 : (pathvar.size() - 1);
         for (j = 0; j < jmax; j++)
         {
-            if (entriesAtPath[path].size() > 90)
+            // If the set of strings at path is greater than the curoff then
+            // we should break up entriesAtPath[path] into a list of smaller
+            // groups of names so we can have smaller menus.
+            if (entriesAtPath[path].size() > GROUPING_CUTOFF)
             {
                 if (groupsAtPath.find(path) == groupsAtPath.end())
                 {
-                    vector<stringVector> groups;
-                    StringHelpers::GroupStringsFixedAlpha(entriesAtPath[path], 30, groups);
+                    StringSetVector groups;
+                    StringHelpers::GroupStringsFixedAlpha(entriesAtPath[path], 20, groups);
                     groupsAtPath[path] = groups;
                 }
 
-                int groupNum = -1;
-                for (k = 0; k < groupsAtPath[path].size(); k++)
+                // Find a group that contains pathvar[j].
+                StringStringSetVectorMap::const_iterator g = groupsAtPath.find(path);
+                if(g != groupsAtPath.end())
                 {
-                    for (i = 0; i < groupsAtPath[path][k].size(); i++)
+                    // g->second points to a StringSetVector. We want to
+                    // determine which item StringSet in the vector contains 
+                    // pathvar[j]. If we find a StringSet that contains 
+                    // pathvar[j] then we need to augment the path because 
+                    // some grouping has taken place.
+                    for(int k = 0; k < g->second.size(); ++k)
                     {
-                        if (groupsAtPath[path][k][i] == pathvar[j])
+                        if(g->second[k].find(pathvar[j]) != g->second[k].end())
                         {
-                            groupNum = k;
+                            newpath += (*g->second[k].begin()) + ".../";
+                            varNeedsGrouping = true;
                             break;
                         }
                     }
-                    if (groupNum != -1)
-                        break;
                 }
-                if (groupNum != -1)
-                    newpath += groupsAtPath[path][groupNum][0] + ".../";
             }
-            if (jmax != 1)
+
+            if (pathvar.size() != 1)
             {
-              path += (pathvar[j] + "/");
-              newpath += (pathvar[j] + "/");
+                path += (pathvar[j] + "/");
+                newpath += (pathvar[j] + "/");
             }
         }
-        if (jmax == 1) j = 0;
-        originalNameToGroupedName[path + pathvar[j]] = newpath + pathvar[j];
+
+        if(varNeedsGrouping)
+        {
+            if (pathvar.size() == 1)
+                j = 0;
+            originalNameToGroupedName[path + pathvar[j]] = newpath + pathvar[j];
+        }
     }
+    visitTimer->StopTimer(stage3, "Stage 3");
+    visitTimer->StopTimer(total, mName);
+
     return true;
 }
+
+// ****************************************************************************
+// Class: VariableMenuPopulator::GroupingInfo
+//
+// Purpose:
+//   Contains grouping info for variable menu grouping.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 22 12:17:49 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+VariableMenuPopulator::GroupingInfo::GroupingInfo() : grouping()
+{
+    required = false;
+}
+
+VariableMenuPopulator::GroupingInfo::GroupingInfo(
+    const VariableMenuPopulator::GroupingInfo::GroupingInfo &obj) :
+        grouping(obj.grouping)
+{
+    required = obj.required;
+}
+
+VariableMenuPopulator::GroupingInfo::~GroupingInfo()
+{
+}
+
+void VariableMenuPopulator::GroupingInfo::operator = (
+    const VariableMenuPopulator::GroupingInfo::GroupingInfo &obj)
+{
+    grouping = obj.grouping;
+    required = obj.required;
+}
+

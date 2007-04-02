@@ -255,6 +255,39 @@ StringHelpers::GroupStringsFixedAlpha(vector<string> stringList,
     }
 }
 
+//
+// This version does not need to sort the strings since they are already
+// sorted because they're in a set. The sort rule for the set is the same
+// as that for the other GroupStringsFixedAlpha because IGNORE_CHARS gets
+// set to "", which means use the entire string in comparisons.
+//
+void
+StringHelpers::GroupStringsFixedAlpha(
+    const std::set<std::string> &stringList,
+    int groupSize, std::vector<std::set<std::string> > &stringGroups)
+{
+    int nStrings = stringList.size();
+
+    if (nStrings == 0)
+        return;
+
+    int i = 0;
+    stringGroups.reserve(stringList.size() / groupSize);
+    for(std::set<std::string>::const_iterator it = stringList.begin();
+        it != stringList.end(); ++it, ++i)
+    {
+        int groupNum = i / groupSize;
+        int groupIdx = i % groupSize;
+
+        if (groupIdx == 0)
+        {
+            std::set<std::string> newGroup;
+            stringGroups.push_back(newGroup);
+        }
+        stringGroups[groupNum].insert(*it);
+    }
+}
+
 int
 StringHelpers::FindRE(const char *strToSearch, const char *re)
 {

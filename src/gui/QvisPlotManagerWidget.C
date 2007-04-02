@@ -27,6 +27,7 @@
 #include <QvisVariablePopupMenu.h>
 #include <PlotPluginInfo.h>
 #include <WindowInformation.h>
+#include <TimingsManager.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1120,21 +1121,29 @@ QvisPlotManagerWidget::PopulateVariableLists(VariableMenuPopulator &populator,
 //   to update variable buttons that use the active source for their
 //   variable list.
 //
+//   Brad Whitlock, Wed Mar 22 09:08:31 PDT 2006
+//   I added code to time menu creation.
+//
 // ****************************************************************************
 
 void
 QvisPlotManagerWidget::UpdatePlotVariableMenu()
 {
+    int total = visitTimer->StartTimer();
+    int id = visitTimer->StartTimer();
+
     //
     // Update the menu populator so it uses the current file. If it changed
     // then needsUpdate will be true and we need to update the variable menu.
     //
     bool needsUpdate = PopulateVariableLists(menuPopulator,
         fileServer->GetOpenFile());
+    visitTimer->StopTimer(id, "PopulateVariableLists");
 
     // Update the various menus
     if(needsUpdate)
     {
+        id = visitTimer->StartTimer();
         this->maxVarCount = 0;
         for(int i = 0; i < plotPlugins.size(); ++i)
         {
@@ -1148,6 +1157,7 @@ QvisPlotManagerWidget::UpdatePlotVariableMenu()
             if(hasEntries != plotMenu->isItemEnabled(i))
                 plotMenu->setItemEnabled(i, hasEntries);
         }
+        visitTimer->StopTimer(id, "Updating menus");
 
         //
         // Set the flag to indicate that we need to update the enabled
@@ -1158,15 +1168,21 @@ QvisPlotManagerWidget::UpdatePlotVariableMenu()
         //
         // Update the variable buttons that use the active source.
         //
+        id = visitTimer->StartTimer();
         QvisVariableButton::UpdateActiveSourceButtons(&menuPopulator);
+        visitTimer->StopTimer(id, "Updating active source buttons");
 
         //
         // If there are no plots then update the variable buttons that
         // use the plot source with the active source.
         //
+        id = visitTimer->StartTimer();
         if(plotList->GetNumPlots() < 1)
             QvisVariableButton::UpdatePlotSourceButtons(&menuPopulator);
+        visitTimer->StopTimer(id, "Updating plot source buttons");
     }
+
+    visitTimer->StopTimer(total, "QvisPlotManagerWidget::UpdatePlotVariableMenu");
 }
 
 // ****************************************************************************

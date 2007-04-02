@@ -6,6 +6,7 @@
 #define STRINGHELPERS_H
 #include <utility_exports.h>
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -29,6 +30,12 @@ namespace StringHelpers
    void UTILITY_API GroupStringsFixedAlpha(vector<string> stringList,
                      int numGroups,
                      vector<vector<string> > &stringGroups);
+   void UTILITY_API GroupStringsFixedAlpha(
+                     const std::set<std::string> &stringList,
+                     int numGroups,
+                     vector<std::set<std::string> > &stringGroups);
+
+
    int UTILITY_API FindRE(const char *stringToSearch, const char *re);
 
    const char UTILITY_API *Basename(const char *path);
