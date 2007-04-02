@@ -23,15 +23,21 @@
 //    Jeremy Meredith, Fri Feb 11 18:15:49 PST 2005
 //    Added HDF5 support to the existing HDF4 support.
 //
+//    Jeremy Meredith, Fri Jul 15 15:27:49 PDT 2005
+//    Added fixes for multi-timestep Enzo runs.
+//
 // ****************************************************************************
 
 class avtEnzoFileFormat : public avtSTMDFileFormat
 {
   public:
-                       avtEnzoFileFormat(const char *);
-    virtual           ~avtEnzoFileFormat();
+                           avtEnzoFileFormat(const char *);
+    virtual               ~avtEnzoFileFormat();
 
-    virtual int         GetCyle(void);
+    virtual bool           HasInvariantMetaData(void) const { return false; };
+    virtual bool           HasInvariantSIL(void) const { return false; };
+
+    virtual int            GetCycle(void);
 
     virtual const char    *GetType(void)   { return "Enzo"; };
     virtual void           FreeUpResources(void); 
@@ -43,6 +49,9 @@ class avtEnzoFileFormat : public avtSTMDFileFormat
     virtual void          *GetAuxiliaryData(const char *var, int,
                                             const char *type, void *args,
                                             DestructorFunction &);
+
+    void                   ActivateTimestep(void);
+    virtual int            GetCycleFromFilename(const char *f) const;
     
   protected:
     enum FileType { ENZO_FT_UNKNOWN, ENZO_FT_HDF4, ENZO_FT_HDF5 };

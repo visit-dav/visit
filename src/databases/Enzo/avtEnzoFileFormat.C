@@ -11,6 +11,7 @@
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkDataSetWriter.h>
+#include <vtkCellType.h>
 
 #include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
@@ -21,8 +22,8 @@
 
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
-#include <vtkCellType.h>
 #include <Expression.h>
+#include <DebugStream.h>
 
 #include <hdf.h>
 #include <mfhdf.h>
@@ -390,6 +391,7 @@ avtEnzoFileFormat::DetermineVariablesFromGridFile()
 
     char gridFileName[1000];
     sprintf(gridFileName, "%s.grid%04d", fname_base.c_str(), smallest_grid);
+    debug3 << "Smallest Enzo grid with particles was # "<<smallest_grid<<endl;
 
     int32 file_handle = SDstart(gridFileName, DFACC_READ);
     if (file_handle >= 0)
@@ -571,11 +573,84 @@ avtEnzoFileFormat::ReadAllMetaData()
     DetermineVariablesFromGridFile();
 }
 
+// ****************************************************************************
+//  Method:  avtEnzoFileFormat::GetCycle
+//
+//  Purpose:
+//    Return the cycle.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January  6, 2005
+//
+// ****************************************************************************
 int
-avtEnzoFileFormat::GetCyle()
+avtEnzoFileFormat::GetCycle()
 {
     return curCycle;
 }
+
+
+// ****************************************************************************
+//  Method:  avtEnzoFileFormat::GetCycleFromFilename
+//
+//  Purpose:
+//    Do a better job at guessing the cycle number for an Enzo file.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    July 15, 2005
+//
+// ****************************************************************************
+int avtEnzoFileFormat::GetCycleFromFilename(const char *cfilename) const
+{
+    string f = cfilename;
+
+    string::size_type last_slash = f.rfind('/');
+    if (last_slash != string::npos)
+        f = f.substr(last_slash+1);
+
+    string::size_type last_dot = f.rfind('.');
+    if (last_dot != string::npos)
+        f = f.substr(0, last_dot);
+
+    string::size_type last_nondigit = f.find_last_not_of("0123456789");
+    if (last_nondigit != string::npos)
+        f = f.substr(last_nondigit+1);
+
+    if (f.empty())
+        return 0;
+
+    if (f.length() > 4)
+        f = f.substr(f.length() - 4);
+
+    return atoi(f.c_str());
+}
+
+// ****************************************************************************
+//  Method: avtEnzoFileFormat::ActivateTimestep
+//
+//  Purpose:
+//      This is called by the generic database to signal that this file format
+//      is going to be used soon.  It is important that each file format defer
+//      as much work as possible, since there can be many (one per timestep),
+//      and we won't need all their work at once, if at all.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   July 15, 2005
+//
+// ****************************************************************************
+
+void
+avtEnzoFileFormat::ActivateTimestep(void)
+{
+    // Nothing to do
+}
+
 
 // ****************************************************************************
 //  Method: avtEnzoFileFormat::FreeUpResources
@@ -620,6 +695,9 @@ avtEnzoFileFormat::FreeUpResources(void)
 //
 //    Jeremy Meredith, February 23, 2005
 //    May have more than one root-level grid.  Unify extents over all of them.
+//
+//    Jeremy Meredith, Fri Jul 15 15:29:14 PDT 2005
+//    Added cycle and time to the metadata.
 //
 // ****************************************************************************
 
@@ -724,6 +802,12 @@ avtEnzoFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     md->AddExpression(&vel);
     md->AddExpression(&pvel);
+
+    // Populate cycle and time
+    md->SetCycle(timestep, curCycle);
+    md->SetTime(timestep, curTime);
+    md->SetCycleIsAccurate(true, timestep);
+    md->SetTimeIsAccurate(true, timestep);
 }
 
 
