@@ -1,9 +1,8 @@
 <?xml version="1.0"?>
   <Attribute name="MovieAttributes" purpose="This class contains the attributes used for saving movies." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
     <Enum name="MovieTypeEnum">
-      UseLastSettings
-      NewSimple
-      NewUsingTemplate
+      Simple
+      UsingTemplate
     </Enum>
     <Enum name="GenerationMethodEnum">
       NowCurrentInstance
@@ -14,7 +13,7 @@
       NowCurrentInstance
     </Field>
     <Field name="movieType" label="Movie type" type="enum" subtype="MovieTypeEnum">
-      NewSimple
+      Simple
     </Field>
     <Field name="outputDirectory" label="Output directory" type="string">
       .
@@ -32,9 +31,13 @@
     </Field>
     <Field name="scales" label="Scales" type="doubleVector">
     </Field>
-    <Field name="stereo" label="Stereo" type="bool">
-      false
+    <Field name="stereoFlags" label="Stereo" type="intVector">
     </Field>
     <Field name="templateFile" label="Template file" type="string">
+    </Field>
+    <Field name="sendEmailNotification" label="Send Email notification" type="bool">
+      false
+    </Field>
+    <Field name="emailAddress" label="Email address" type="string">
     </Field>
   </Attribute>

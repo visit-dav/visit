@@ -55,6 +55,9 @@ $0 = shift @ARGV;
 #    Jeremy Meredith, Tue Apr 19 08:36:36 PDT 2005
 #    Made sure both "-convert" and "-visitconvert" work.
 #
+#    Brad Whitlock, Tue Sep 19 17:48:12 PST 2006
+#    Added -mpeg2encode, -composite, -transition.
+#
 ###############################################################################
 
 
@@ -144,13 +147,25 @@ while (scalar(@ARGV) > 0) {
            $arg eq "-silex"           or
            $arg eq "-surfcomp"        or
            $arg eq "-text2polys"      or
-           $arg eq "-time_annotation" or
-           $arg eq "-mpeg_encode")
+           $arg eq "-time_annotation")
     {
         $progname = substr($arg, 1);
         print STDERR "NOTE:  Specifying tools as an argument to VisIt is ";
         print STDERR "no longer necessary.\nIn the future, you should ";
         print STDERR "just run '$progname' instead.\n\n";
+    }
+    elsif ($arg eq "-mpeg2encode"     or
+           $arg eq "-mpeg_encode")
+    {
+        $progname = substr($arg, 1);
+    }
+    elsif ($arg eq "-composite")
+    {
+        $progname = "visit_composite";
+    }
+    elsif ($arg eq "-transition")
+    {
+        $progname = "visit_transition";
     }
     else
     {

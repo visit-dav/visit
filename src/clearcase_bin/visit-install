@@ -113,6 +113,10 @@
 #    Hank Childs, Mon Oct 16 09:12:38 PDT 2006
 #    Add support for cli_usagelog.
 #
+#    Brad Whitlock, Wed Sep 20 11:44:49 PDT 2006
+#    I made it use mpeg2encode. I also made it install visit_composite
+#    and visit_transition.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -508,7 +512,7 @@ endif
 #
 # Make the symbolic links for the programs
 #
-set programs = "curv3dprep makemili mpeg_encode silex surfcomp text2polys time_annotation visit visitconvert xml2atts xml2avt xml2info xml2java xml2makefile xml2projectfile xml2python xml2window xmledit xmltest"
+set programs = "curv3dprep makemili mpeg2encode silex surfcomp text2polys time_annotation visit visitconvert xml2atts xml2avt xml2info xml2java xml2makefile xml2projectfile xml2python xml2window xmledit xmltest visit_composite visit_transition"
 
 cd $dir/bin
 foreach prog ($programs)

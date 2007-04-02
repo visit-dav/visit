@@ -57,6 +57,7 @@
 #include <WindowAttributes.h>
 #include <ViewStack.h>
 #include <vectortypes.h>
+#include <map>
 
 #include <ExternalRenderRequestInfo.h>
 
@@ -399,6 +400,9 @@ class ViewerToolbar;
 //    Mark C. Miller, Wed Aug  9 16:35:25 PDT 2006
 //    Removed scalableStereoType data member
 //
+//    Brad Whitlock, Thu Nov 9 16:45:04 PST 2006
+//    Added argument to CreateNode.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow
@@ -414,8 +418,11 @@ public:
     ViewerPlotList      *GetPlotList() const;
     int  GetWindowId() const;
 
-    void CreateNode(DataNode *parentNode, bool detailed);
-    void SetFromNode(DataNode *parentNode);
+    void CreateNode(DataNode *parentNode, 
+                    const std::map<std::string, std::string> &, 
+                    bool detailed);
+    void SetFromNode(DataNode *parentNode,
+                     const std::map<std::string, std::string> &);
     static bool SessionContainsErrors(DataNode *parentNode);
 
     void SetSize(const int width, const int height);

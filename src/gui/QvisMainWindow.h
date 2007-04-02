@@ -187,6 +187,9 @@ class WindowInformation;
 //   Jeremy Meredith, Mon Aug 28 17:28:42 EDT 2006
 //   Added File Open window.
 //
+//   Brad Whitlock, Tue Nov 14 15:33:47 PST 2006
+//   Added restoreSessionWithSources.
+//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -266,6 +269,7 @@ signals:
     void refreshFileList();
     void saveSession();
     void restoreSession();
+    void restoreSessionWithSources();
     void reopenOnNextFrame();
 public slots:
     void unreadOutput(bool);

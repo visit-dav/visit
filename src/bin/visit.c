@@ -101,6 +101,9 @@ int ReadKey(const char *key, char **keyval);
  *   I changed makemovie.py to makemoviemain.py so right-click movies and
  *   the "visit -movie" commands work again.
  *
+ *   Brad Whitlock, Tue Sep 19 17:09:57 PST 2006
+ *   Added support for mpeg2enc.exe so we can create MPEG movies on Windows.
+ *
  *****************************************************************************/
 
 int
@@ -169,6 +172,16 @@ main(int argc, char *argv[])
             strcpy(component, "cli");
             addMovieArguments = 1;
             useShortFileName = 1;
+        }
+        else if(ARG("-mpeg2encode"))
+        {
+            strcpy(component, "mpeg2enc.exe");
+            addVISITARGS = 1;
+        }
+        else if(ARG("-composite"))
+        {
+            strcpy(component, "visit_composite");
+            addVISITARGS = 1;
         }
         else if(ARG("-mpeg_encode"))
         {

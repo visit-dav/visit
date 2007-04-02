@@ -141,11 +141,13 @@
 #include <QvisSaveWindow.h>
 #include <QvisSessionFileDatabaseLoader.h>
 #include <QvisSimulationWindow.h>
+#include <QvisSessionSourceChangerDialog.h>
 #include <QvisSubsetWindow.h>
 #include <QvisQueryOverTimeWindow.h>
 #include <QvisVariableButton.h>
 #include <QvisViewWindow.h>
 #include <QvisVisItUpdate.h>
+#include <QvisWidgetFactory.h>
 #include <QvisWizard.h>
 
 #include <SplashScreen.h>
@@ -160,6 +162,7 @@
 #include <TimingsManager.h>
 #include <DebugStream.h>
 #include <Utility.h>
+#include <AccessViewerSession.h>
 
 #if defined(_WIN32)
 #include <windows.h> // for LoadLibrary
@@ -458,6 +461,9 @@ LongFileName(const char *shortName)
 //   Brad Whitlock, Tue Jul 25 11:41:37 PDT 2006
 //   Added support for -geometry.
 //
+//   Brad Whitlock, Tue Sep 26 14:40:10 PST 2006
+//   Added a widget factory.
+//
 // ****************************************************************************
 
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
@@ -657,6 +663,12 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     //
     clientMethodObserver = new ObserverToCallback(viewer->GetClientMethod(),
          QvisGUIApplication::ClientMethodCallback, this);
+
+    //
+    // Install a widget factory so Qt's widget factory can use it to
+    // dynamically instantiate some of VisIt's unique widgets.
+    //
+    QWidgetFactory::addWidgetFactory(new QvisWidgetFactory);
 
     //
     // Start the heavy duty initialization from within the event loop.
@@ -1179,6 +1191,9 @@ QvisGUIApplication::ClientMethodCallback(Subject *s, void *data)
 //   Brad Whitlock, Thu Jul 14 11:01:26 PDT 2005
 //   I made it use GetIsDevelopmentVersion.
 //
+//   Brad Whitlock, Tue Nov 14 14:57:37 PST 2006
+//   I changed the argument list to RestoreSessionFile.
+//
 // ****************************************************************************
 
 void
@@ -1257,9 +1272,12 @@ QvisGUIApplication::FinalInitialization()
         visitTimer->StopTimer(timeid, "stage 5 - LoadFile");
         break;
     case 6:
+        {
+        stringVector noFiles;
         // Load the initial session file.
-        RestoreSessionFile(sessionFile);
+        RestoreSessionFile(sessionFile, noFiles);
         visitTimer->StopTimer(timeid, "stage 6 - RestoreSessionFile");
+        }
         break;
     case 7:
         // Create a timer that will send keep alive signals to the mdservers
@@ -2330,6 +2348,10 @@ QvisGUIApplication::AddViewerSpaceArguments()
 //
 //   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //   Moved WindowInformation ahead of plot list in list of observers 
+//
+//   Brad Whitlock, Tue Nov 14 15:37:51 PST 2006
+//   Connected new restoreSessionWithSources signal from Main window.
+//
 // ****************************************************************************
 
 void
@@ -2371,6 +2393,7 @@ QvisGUIApplication::CreateMainWindow()
     connect(mainWin, SIGNAL(reopenOnNextFrame()),
             this, SLOT(RefreshFileListAndNextFrame()));
     connect(mainWin, SIGNAL(restoreSession()), this, SLOT(RestoreSession()));
+    connect(mainWin, SIGNAL(restoreSessionWithSources()), this, SLOT(RestoreSessionWithDifferentSources()));
     connect(mainWin, SIGNAL(saveSession()), this, SLOT(SaveSession()));
 #if QT_VERSION < 0x030100
     mainWin->updateNotAllowed();
@@ -3730,6 +3753,9 @@ QvisGUIApplication::ReadConfigFile(const char *filename)
 //   Brad Whitlock, Mon Nov 10 15:07:21 PST 2003
 //   I moved the code to restore the session to RestoreSessionFile.
 //
+//   Brad Whitlock, Tue Nov 14 14:58:13 PST 2006
+//   I added an argument to RestoreSessionFile.
+//
 // ****************************************************************************
 
 void
@@ -3743,7 +3769,86 @@ QvisGUIApplication::RestoreSession()
               "VisIt session (*.session)"));
 #endif
 
-    RestoreSessionFile(s);
+    // Restore the session.
+    stringVector noSources;
+    RestoreSessionFile(s, noSources);
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::RestoreSessionWithDifferentSources
+//
+// Purpose: 
+//   This is a Qt slot function that lets the user choose to restore the 
+//   session with different sources.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Nov 14 15:15:03 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::RestoreSessionWithDifferentSources()
+{
+    const char *mName = "QvisGUIApplication::RestoreSessionWithDifferentSources: ";
+
+    // Get the name of the session to load.
+    QString s(QFileDialog::getOpenFileName(GetUserVisItDirectory().c_str(),
+#if defined(_WIN32)
+              "VisIt session (*.vses)"));
+#else
+              "VisIt session (*.session)"));
+#endif
+
+    // If the user chose a valid filename then try to replace its sources.
+    if(!s.isNull())
+    {
+        // Try and read the session file that goes with the template
+        // so we can get the list of source ids and sources as well as
+        // how they are used so we can populate the source control.
+        AccessViewerSession sessionAccess;
+        if(sessionAccess.ReadConfigFile(s.latin1()))
+        {
+            stringVector keys, values;
+            std::map<std::string, stringVector> uses;
+            if(sessionAccess.GetSourceMap(keys, values, uses))
+            {
+                QvisSessionSourceChangerDialog *srcChanger = new 
+                    QvisSessionSourceChangerDialog(0, "srcChanger");
+                srcChanger->setSources(keys, values, uses);
+
+                // Let the user change the sources that are used to 
+                // restore the session.
+                if(srcChanger->exec() == QDialog::Accepted)
+                {
+                    RestoreSessionFile(s, srcChanger->getSources());
+                }
+
+                delete srcChanger;
+            }
+            else
+            {
+                QString warn;
+                warn.sprintf("VisIt was able to read the session file, %s, "
+                    "but the session file might be from before VisIt 1.5.5. "
+                    "Consequently, VisIt will open the session file in "
+                    "the normal manner. If you want to restore this session "
+                    "using different sources then you should first resave your "
+                    "session with a newer version of VisIt.", s.latin1());
+                Warning(warn);
+                stringVector noSources;
+                RestoreSessionFile(s, noSources);
+            }
+        }
+        else
+        {
+            // We could not read the config file. Don't sweat it just yet.
+            // Restore the session the normal way.
+            stringVector noSources;
+            RestoreSessionFile(s, noSources);
+        }
+    }
 }
 
 // ****************************************************************************
@@ -3753,7 +3858,10 @@ QvisGUIApplication::RestoreSession()
 //   Restores the specified session.
 //
 // Arguments:
-//   s : The name of the session file to restore.
+//   s       : The name of the session file to restore.
+//   sources : The list of sources to use when restoring the session. If this
+//             is an empty vector then the session file loader will use the
+//             list of sources in the GUI part of the session file.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Nov 10 15:07:37 PST 2003
@@ -3780,10 +3888,15 @@ QvisGUIApplication::RestoreSession()
 //   the session all get opened but quits the session loading if we cancel
 //   any mdserver launches.
 //
+//   Brad Whitlock, Tue Nov 14 15:12:02 PST 2006
+//   I added code to pass the list of sources that will be used to restore
+//   the session into this routine.
+//
 // ****************************************************************************
 
 void
-QvisGUIApplication::RestoreSessionFile(const QString &s)
+QvisGUIApplication::RestoreSessionFile(const QString &s, 
+    const stringVector &sources)
 {
     // If the user chose a file, tell the viewer to import that session file.
     if(!s.isEmpty())
@@ -3831,11 +3944,23 @@ QvisGUIApplication::RestoreSessionFile(const QString &s)
                     CustomizeAppearance(true);
 
                     //
-                    // Look for the list of files that we need to open up
-                    // and if we find it, open up each one of them.
+                    // Create a session file helper if needed and disconnect it
+                    // so we can hook it up based on how we're feeding it the
+                    // source filenames.
                     //
-                    DataNode *plotDatabases = guiNode->GetNode("plotDatabases");
-                    if(plotDatabases)
+                    if(sessionFileHelper == 0)
+                    {
+                        sessionFileHelper = new QvisSessionFileDatabaseLoader(
+                            this, "sessionFileHelper");
+                        connect(sessionFileHelper, SIGNAL(loadFile(const QString &)),
+                                this, SLOT(sessionFileHelper_LoadFile(const QString &)));
+                    }
+                    disconnect(sessionFileHelper, SIGNAL(complete(const QString &)),
+                               this, SLOT(sessionFileHelper_LoadSession(const QString &)));
+                    disconnect(sessionFileHelper, SIGNAL(complete(const QString &, const stringVector &)),
+                               this, SLOT(sessionFileHelper_LoadSessionWithDifferentSources(const QString &, const stringVector &)));
+
+                    if(sources.size() > 0)
                     {
                         //
                         // If we're going to be opening up files, have the
@@ -3843,21 +3968,43 @@ QvisGUIApplication::RestoreSessionFile(const QString &s)
                         //
                         viewer->ClearCacheForAllEngines();
 
+                        // Make sure that when the helper has loaded all of the
+                        // files, it calls back to this object and tells the
+                        // viewer to restore with different sources.
+                        connect(sessionFileHelper,
+                                SIGNAL(complete(const QString &, const stringVector &)),
+                                this, 
+                                SLOT(sessionFileHelper_LoadSessionWithDifferentSources(const QString &, const stringVector &)));
+
+                        // Start loading files.
+                        sessionFileHelper->SetDatabases(sources);
+                        sessionFileHelper->Start(filename.c_str());
+                    }
+                    else
+                    {
                         //
-                        // Have the session file helper open each of the files
-                        // that we'll need.
+                        // Look for the list of files that we need to open up
+                        // and if we find it, open up each one of them.
                         //
-                        if(sessionFileHelper == 0)
+                        DataNode *plotDatabases = guiNode->GetNode("plotDatabases");
+                        if(plotDatabases)
                         {
-                            sessionFileHelper = new QvisSessionFileDatabaseLoader(
-                                this, "sessionFileHelper");
+                            //
+                            // If we're going to be opening up files, have the
+                            // viewer tell all engines to clear their caches.
+                            //
+                            viewer->ClearCacheForAllEngines();
+
+                            // Make sure that when the helper has loaded all of the
+                            // files, it calls back to this object and tells the
+                            // viewer to restore the session.
                             connect(sessionFileHelper, SIGNAL(complete(const QString &)),
                                     this, SLOT(sessionFileHelper_LoadSession(const QString &)));
-                            connect(sessionFileHelper, SIGNAL(loadFile(const QString &)),
-                                    this, SLOT(sessionFileHelper_LoadFile(const QString &)));
+
+                            // Start loading files.
+                            sessionFileHelper->SetDatabases(plotDatabases->AsStringVector());
+                            sessionFileHelper->Start(filename.c_str());
                         }
-                        sessionFileHelper->SetDatabases(plotDatabases->AsStringVector());
-                        sessionFileHelper->Start(filename.c_str());
                     }
                 }
             }
@@ -3927,6 +4074,38 @@ QvisGUIApplication::sessionFileHelper_LoadSession(const QString &filename)
     // the viewer prepend the .visit directory to the file since it's
     // already part of the filename.
     viewer->ImportEntireState(filename.latin1(), false);
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::sessionFileHelper_LoadSessionWithDifferentSources
+//
+// Purpose: 
+//   Qt slot function that tells the viewer to load the session file.
+//
+// Arguments:
+//   filename : The name of the session file to load.
+//   sources  : The vector of sources that we're going to use.
+//
+// Note:       This slot is only called by sessionFileHelper if all of the
+//             required databases were loaded (no mdserver cancellations).
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct 27 16:29:28 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::sessionFileHelper_LoadSessionWithDifferentSources(
+    const QString &filename, const stringVector &sources)
+{
+    // Have the viewer read in its part of the config. Note that we
+    // pass the inVisItDir flag as false because we don't want to have
+    // the viewer prepend the .visit directory to the file since it's
+    // already part of the filename.
+    viewer->ImportEntireStateWithDifferentSources(filename.latin1(),
+        false, sources);
 }
 
 // ****************************************************************************
@@ -6391,6 +6570,9 @@ QuoteSpaces(const std::string &s)
 //   I moved the code to add the visit command to the caller. I also added 
 //   code to add the version number if we're not running a development version.
 //
+//   Brad Whitlock, Fri Oct 20 12:14:38 PDT 2006
+//   Added support for multiple stereos.
+//
 // ****************************************************************************
 
 void
@@ -6430,8 +6612,33 @@ GetMovieCommandLine(const MovieAttributes *movieAtts, stringVector &args)
     }
     args.push_back(G);
 
-    if(movieAtts->GetStereo())
+    // iterate over the geometries
+    const intVector &s = movieAtts->GetStereoFlags();
+    bool anyStereos = false;
+    std::string S;
+    for(i = 0; i < s.size(); ++i)
+    {
+        if(s[i] == 0)
+            S += "off";
+        else
+        {
+            anyStereos = true;
+            if(s[i] == 1)
+                S += "leftright";
+            else if(s[i] == 2)
+                S += "redblue";
+            else if(s[i] == 2)
+                S += "redgreen";
+        }
+
+        if(i < (s.size() - 1))
+            S += ",";
+    }
+    if(anyStereos)
+    {
         args.push_back("-stereo");
+        args.push_back(S);
+    }
 
     args.push_back("-output");
     std::string dirFile(movieAtts->GetOutputDirectory());
@@ -6586,6 +6793,9 @@ QvisGUIApplication::SaveMovie()
 //   the movie wizard so we have a good value for the current window size when
 //   we tell the wizard to use the current window size.
 //
+//   Brad Whitlock, Wed Sep 27 14:12:58 PST 2006
+//   Added support for movie templates and changed how stereo works.
+//
 // ****************************************************************************
 
 void
@@ -6620,12 +6830,6 @@ QvisGUIApplication::SaveMovieMain()
         // and send them to the viewer.
         saveMovieWizard->SendAttributes();
 
-        // Determine the movie's output name.
-        QString dirFile(movieAtts->GetOutputDirectory().c_str());
-        if(dirFile == ".")
-            dirFile += SLASH_STRING;
-        dirFile += movieAtts->GetOutputName().c_str();
-
         // Replace the widths and heights of formats using the current window
         // size with the current window size.
         UpdateCurrentWindowSizes(movieAtts, cw, ch);
@@ -6642,33 +6846,65 @@ QvisGUIApplication::SaveMovieMain()
 
             // Turn "\" into "\\" so the interpreter is happy.
             QString makemovie2(MakeCodeSlashes(makemovie.c_str()));
-            dirFile   = MakeCodeSlashes(dirFile);
 
             // Assemble a string of code to execute.
             QString code; code.sprintf("try:\n    Source('%s')\n", makemovie2.latin1());
             code += "    movie = MakeMovie()\n";
-            code += "    movie.usesCurrentPlots = 1\n";
             code += "    movie.sendClientFeedback = 1\n";
             const stringVector &formats = movieAtts->GetFileFormats();
             const intVector &widths  = movieAtts->GetWidths();
             const intVector &heights = movieAtts->GetHeights();
+            const intVector &stereos = movieAtts->GetStereoFlags();
             for(int i = 0; i < formats.size(); ++i)
             {
+                const char *stereoNames[] = {"off", "leftright", 
+                    "redblue", "redgreen"};
+                int si = (stereos[i] < 0 || stereos[i] > 3) ? 0 : stereos[i];
                 QString order;
-                order.sprintf("    movie.RequestFormat(\"%s\", %d, %d)\n",
-                    formats[i].c_str(), widths[i], heights[i]);
+                order.sprintf("    movie.RequestFormat(\"%s\", %d, %d, \"%s\")\n",
+                    formats[i].c_str(), widths[i], heights[i],
+                    stereoNames[si]);
                 code += order;
             }
-            code += "    movie.movieBase = \"" + dirFile + "\"\n";
+
+            // Set the output directory.
+            QString outputDir(movieAtts->GetOutputDirectory().c_str());
+            if(outputDir[outputDir.length()-1] == SLASH_CHAR)
+                outputDir = outputDir.left(outputDir.length()-1);
+            outputDir = MakeCodeSlashes(outputDir);
+            code += "    movie.outputDir = \"" + outputDir + "\"\n";
+
+            // Set the movie base.
+            QString movieBase(movieAtts->GetOutputName().c_str());
+            if(movieBase.isEmpty())
+                movieBase = "movie";
+            movieBase = MakeCodeSlashes(movieBase);
+            code += "    movie.movieBase = \"" + movieBase + "\"\n";
             code += "    movie.screenCaptureImages = 0\n";
-            code += "    movie.stereo = ";
-            if(movieAtts->GetStereo())
-                code += "1\n";
+
+            // If we're using movie templates then give the name of the templates here.
+            if(movieAtts->GetMovieType() == MovieAttributes::UsingTemplate)
+            {
+                QString templateFile(movieAtts->GetTemplateFile().c_str());
+                templateFile = MakeCodeSlashes(templateFile);
+                code += "    movie.usesTemplateFile = 1\n";
+                code += "    movie.templateFile = \"" + templateFile + "\"\n";
+                code += "    movie.usesCurrentPlots = 0\n";
+            }
             else
-                code += "0\n";
-            code += "    movie.GenerateFrames()\n";
-            code += "    if(movie.EncodeFrames()):\n";
-            code += "        movie.Cleanup()\n";
+                code += "    movie.usesCurrentPlots = 1\n";
+
+            // If we want e-mail notification, add that info here.
+            if(movieAtts->GetSendEmailNotification())
+            {
+                QString emailAddr(movieAtts->GetEmailAddress().c_str());
+                emailAddr = MakeCodeSlashes(emailAddr);
+                code += "    movie.emailAddresses = \"" + emailAddr + "\"\n";
+            }
+
+            code += "    if movie.GenerateFrames() > 0:\n";
+            code += "        if(movie.EncodeFrames()):\n";
+            code += "            movie.Cleanup()\n";
             code += "except VisItInterrupt:\n";
             code += "    pass\n";
             code += "except:\n";
@@ -6682,8 +6918,16 @@ QvisGUIApplication::SaveMovieMain()
         }
         else
         {
+            // Create a name for the session file.
+            QString sessionName(movieAtts->GetOutputDirectory().c_str());
+            if(sessionName[sessionName.length()-1] != SLASH_CHAR)
+                sessionName += SLASH_STRING;
+            sessionName += QString(movieAtts->GetOutputName().c_str());
+
             // Save the current session.
-            QString msg, sessionFile(SaveSessionFile(dirFile));
+            QString msg, sessionFile;
+            if(movieAtts->GetMovieType() == MovieAttributes::Simple)
+                sessionFile = SaveSessionFile(sessionName);
             bool errFlag = false;
 
             // Get the command line arguments.
@@ -6691,8 +6935,24 @@ QvisGUIApplication::SaveMovieMain()
             args.push_back(QuoteSpaces(GetVisItLauncher()));
             args.push_back("-movie");
             GetMovieCommandLine(movieAtts, args);
-            args.push_back("-sessionfile");
-            args.push_back(QuoteSpaces(std::string(sessionFile.latin1())));
+            if(movieAtts->GetMovieType() == MovieAttributes::Simple)
+            {
+                args.push_back("-sessionfile");
+                args.push_back(QuoteSpaces(std::string(sessionFile.latin1())));
+            }
+            else
+            {
+                args.push_back("-templatefile");
+                args.push_back(QuoteSpaces(movieAtts->GetTemplateFile()));
+            }
+
+            // If we want e-mail notification, add that info here.
+            if(movieAtts->GetSendEmailNotification())
+            {
+                args.push_back("-email");
+                args.push_back(movieAtts->GetEmailAddress());
+            }
+
             for(int m = 0; m < movieArguments.size(); ++m)
                 args.push_back(movieArguments[m]);
 

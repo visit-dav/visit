@@ -469,7 +469,7 @@ public:
     void BlockSocketSignals(bool);
 
     void CreateNode(DataNode *node, bool detailed);
-    bool SetFromNode(DataNode *node);
+    bool SetFromNode(DataNode *node, const std::map<std::string,std::string>&);
 
     void PostponeAction(ViewerActionBase *);
 public slots:
@@ -541,6 +541,7 @@ private:
     void WriteConfigFile();
     void ExportEntireState();
     void ImportEntireState();
+    void ImportEntireStateWithDifferentSources();
 
     void SetAnnotationAttributes();
     void SetDefaultAnnotationAttributes();

@@ -312,8 +312,11 @@ class SplashScreen;
 //    Brad Whitlock, Tue Jul 25 12:31:39 PDT 2006
 //    Added support for -geometry.
 //
-//   Jeremy Meredith, Mon Aug 28 17:28:42 EDT 2006
-//   Added File Open window.
+//    Jeremy Meredith, Mon Aug 28 17:28:42 EDT 2006
+//    Added File Open window.
+//
+//    Brad Whitlock, Tue Nov 14 15:17:53 PST 2006
+//    Added ability to restore sessions with different sources.
 //
 // ****************************************************************************
 
@@ -377,6 +380,8 @@ private:
     static void UpdateMetaDataAttributes(Subject *subj, void *data);
     static void ClientMethodCallback(Subject *subj, void *data);
 
+    void RestoreSessionFile(const QString &, const stringVector &);
+
 public slots:
     void newExpression();
     void Interpret(const QString &);
@@ -410,10 +415,12 @@ private slots:
     void RefreshFileList();
     void RefreshFileListAndNextFrame();
     void RestoreSession();
-    void RestoreSessionFile(const QString &);
+    void RestoreSessionWithDifferentSources();
     void SaveSession();
     void sessionFileHelper_LoadFile(const QString &);
     void sessionFileHelper_LoadSession(const QString &);
+    void sessionFileHelper_LoadSessionWithDifferentSources(const QString &,
+             const stringVector &);
     void UpdateSavedConfigFile();
 
     // Plot, operator related slots.

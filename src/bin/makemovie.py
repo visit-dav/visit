@@ -1,6 +1,40 @@
+##############################################################################
 #
-# This script makes a movie given a state XML file.
+# Copyright (c) 2000 - 2006, The Regents of the University of California
+# Produced at the Lawrence Livermore National Laboratory
+# All rights reserved.
 #
+# This file is part of VisIt. For details, see http://www.llnl.gov/visit/. The
+# full copyright notice is contained in the file COPYRIGHT located at the root
+# of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+#
+# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+# modification, are permitted provided that the following conditions are met:
+#
+#  - Redistributions of  source code must  retain the above  copyright notice,
+#    this list of conditions and the disclaimer below.
+#  - Redistributions in binary form must reproduce the above copyright notice,
+#    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+#    documentation and/or materials provided with the distribution.
+#  - Neither the name of the UC/LLNL nor  the names of its contributors may be
+#    used to  endorse or  promote products derived from  this software without
+#    specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+# ARE  DISCLAIMED.  IN  NO  EVENT  SHALL  THE  REGENTS  OF  THE  UNIVERSITY OF
+# CALIFORNIA, THE U.S.  DEPARTMENT  OF  ENERGY OR CONTRIBUTORS BE  LIABLE  FOR
+# ANY  DIRECT,  INDIRECT,  INCIDENTAL,  SPECIAL,  EXEMPLARY,  OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+# CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+# LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+# OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+# DAMAGE.
+#
+##############################################################################
+
 import os, string, sys, thread
 from xmllib import *
 
@@ -257,6 +291,92 @@ def EncodeQuickTimeMovieHelper(threadID, start, end, conversionargs):
     return createQuickTimeFile(subMovieName, baseFormat, start, end, xres, yres, fps)
 
 ###############################################################################
+# Function: visit_pipe
+#
+# Purpose:    This function is acts like os.popen except that instead of
+#             returning a file object, this function returns the exit code
+#             of the command and you pass a callback function to process
+#             text output from the child process.
+#
+# Programmer: Brad Whitlock
+# Date:       Wed Sep 20 10:19:07 PDT 2006
+#
+###############################################################################
+
+def visit_pipe(command, line_callback, line_callback_data):
+    import os, sys
+    child_exit = 0
+
+    iterate = 1
+    # Install a signal handler.
+    def stop_iterating(a,b):
+        iterate = 0
+
+    do_fork = 1
+    import signal
+    try:
+        signal.signal(signal.SIGCHLD, stop_iterating)
+    except ValueError:
+        # We're not running from the master thread so we should not fork
+        # and read the input. We should just call os.system. Unless we can
+        # figure out some other way of determining when the child exits
+        # instead of using signals.
+        do_fork = 0
+
+    # We're not going to do a fork so just call os.system
+    if not do_fork:
+        return os.system(command)
+
+    # We're allowed to do fork.
+    fd = os.pipe()
+    id = os.fork()
+    if id == 0:
+        # Child
+        os.dup2(fd[1], 1)
+        os.dup2(fd[1], 2)
+        #os.close(2)
+        ret = os.system(command)
+        sys.exit(ret)
+    else:
+        # Parent
+        import select
+        s = ""
+        while iterate:
+            # Wait for input from the child.
+            try:
+                fd_list = select.select([fd[0]], [], [])
+            except select.error:
+                iterate = 0
+                break
+            # If we have a file descriptor to read then read and process data.
+            if len(fd_list[0]) > 0:
+                # Read child output
+                s = s + os.read(fd_list[0][0], 100)
+
+                # Process the child output into lines.
+                if s[0] == '\n':
+                    if len(s) > 1:
+                        s = s[1:]
+                    else:
+                        s = ""
+                        continue
+                line = ""
+                len_s = len(s)
+                index = 0
+                for i in range(len_s):
+                    if s[index] == '\n':
+                        s = s[index:]
+                        line_callback(line, line_callback_data)
+                        index = 0
+                        line = ""
+                    else:
+                        line = line + s[index]
+                    index = index + 1
+        child_result = os.waitpid(id, 0)
+        child_exit = child_result[1] / 256
+    return child_exit
+
+###############################################################################
 # Function: MovieClassSaveWindow
 #
 # Purpose:    This function is called from the mangled Python script when it
@@ -445,6 +565,7 @@ class WindowSizeParser(XMLParser):
                                    continue
                     self.windowSizes = self.windowSizes + [value[:2]]
 
+
 ###############################################################################
 # Class: MakeMovie
 #
@@ -497,6 +618,9 @@ class MakeMovie:
     #   Brad Whitlock, Mon Jul 25 15:21:25 PST 2005
     #   I made img2sm and dmconvert use PNG files.
     #
+    #   Brad Whitlock, Wed Sep 20 11:50:38 PDT 2006
+    #   Added debugging logs.
+    #
     ###########################################################################
 
     def __init__(self):
@@ -522,7 +646,7 @@ class MakeMovie:
            self.FORMAT_PNG  : self.FORMAT_PNG, \
            self.FORMAT_MPEG : self.FORMAT_PPM, \
            self.FORMAT_QT   : self.FORMAT_PNG, \
-           self.FORMAT_SM   : self.FORMAT_PNG \
+           self.FORMAT_SM   : self.FORMAT_PPM \
         }
 
         # This map gives us the file extension to use for a specific file format.
@@ -551,36 +675,89 @@ class MakeMovie:
            "sm"   : self.FORMAT_SM \
         }
 
-        # Movie properties.
-        self.stateFile = ""
-        self.scriptFile = ""
-        self.usesCurrentPlots = 0
-        self.usesStateFile = 0
-        self.movieBase = "movie"
-        self.movieFormats = []
-        self.numFrames = 0
-        self.frameStep = 1
-        self.frameStart = 0
-        self.frameEnd = -1
-        self.tmpDir = os.curdir
-        self.fps = 10
-        self.stereo = 0
-        self.templateFile = "ActiveVisWindowMovieTemplate.py"
-        self.usesTemplateFile = 0
-        self.screenCaptureImages = 0
-        self.sendClientFeedback = 0
-        self.percentAllocationFrameGen = 1.
-        self.percentAllocationEncode = 0.
-
-        # Compute engine properties.
-        self.useSessionEngineInformation = 1
-        self.engineCommandLineProperties = {}
+        self.STEREO_NONE = 0
+        self.STEREO_LEFTRIGHT = 1
+        self.STEREO_REDBLUE = 2
+        self.STEREO_REDGREEN = 3
+        self.stereoNameToType = {\
+           "off"       : self.STEREO_NONE, \
+           "leftright" : self.STEREO_LEFTRIGHT, \
+           "redblue"   : self.STEREO_REDBLUE, \
+           "redgreen"  : self.STEREO_REDGREEN, \
+        }
 
         # Set the slash used in filenames based on the platform.
         self.slash = "/"
         if(sys.platform == "win32"):
             self.slash = "\\"
 
+        # Movie properties.
+        self.stateFile = ""
+        self.scriptFile = ""
+        self.usesCurrentPlots = 0
+        self.usesStateFile = 0
+        self.outputDir = os.path.abspath(os.curdir)
+        self.movieBase = "movie"
+        self.movieFormats = []
+        self.numFrames = 0
+        self.frameStep = 1
+        self.frameStart = 0
+        self.frameEnd = -1
+        self.tmpDir = os.path.abspath(os.curdir)
+        self.fps = 10
+        self.templateFile = ""
+        self.usesTemplateFile = 0
+        self.screenCaptureImages = 0
+        self.sendClientFeedback = 0
+        self.percentAllocationFrameGen = 1.
+        self.percentAllocationEncode = 0.
+        self.log = 0
+        self.debug_real = [0,0,0,0,0]
+        self.emailAddresses = ""
+
+        # Compute engine properties.
+        self.useSessionEngineInformation = 1
+        self.engineCommandLineProperties = {}
+
+        # Try and open debug logs
+        debug_level = GetDebugLevel()
+        if debug_level > 0:
+            for i in range(debug_level):
+                debug_name = "visit-movie.%d.log" % (i + 1)
+                try:
+                    self.debug_real[i] = open(debug_name, "wt")
+                except IOError: 
+                    print "Could not open debug log %s" % debug_name
+                    pass
+
+    
+    ###########################################################################
+    # Method: __del__
+    #
+    # Purpose:    Destructor
+    #
+    # Programmer: Brad Whitlock
+    # Date:       Wed Sep 20 11:28:55 PDT 2006
+    #
+    # Modifications:
+    # 
+    ###########################################################################
+
+    def __del__(self):
+        # Try and close the log.
+        try:
+            if self.log != 0:
+                self.log.close()
+        except:
+            pass
+
+        # Try and close the debug logs.
+        for file in self.debug_real:
+            if file != 0:
+               try:
+                   file.close()
+               except:
+                   pass
 
     ###########################################################################
     # Method: PrintUsage
@@ -615,6 +792,9 @@ class MakeMovie:
     #   Brad Whitlock, Fri Jun 24 10:25:36 PDT 2005
     #   Added a note about omitting the -geometry flag.
     #
+    #   Brad Whitlock, Fri Oct 20 15:59:14 PST 2006
+    #   Added templates and changed how stereo works.
+    #
     ###########################################################################
 
     def PrintUsage(self):
@@ -630,7 +810,7 @@ class MakeMovie:
         print "                       format for your movie. The supported values "
         print "                       for fmt are:"
         print ""
-        print "                       mpeg : MPEG 2 movie."
+        print "                       mpeg : MPEG 1 movie."
         print "                       qt   : Quicktime movie."
         print "                       sm   : Streaming movie format"
         print "                              (popular for powerwall demos)."
@@ -652,7 +832,7 @@ class MakeMovie:
         print "                       -format mpeg,qt,jpeg."
         print ""
         print "                       *** Important Note ***"
-        print "                       The mpeg, qt, and sm formats are not supported"
+        print "                       The qt and sm formats are not supported"
         print "                       on the Windows platform."
         print ""
         print "    -geometry size     The geometry option allows you to set the movie"
@@ -683,6 +863,11 @@ class MakeMovie:
         print "                       of a VisIt Python script to use as input for your"
         print "                       movie."
         print ""
+        print "    -templatefile name The templatefile option lets you pick the name of a"
+        print "                       VisIt movie template file to use as input for your"
+        print "                       movie. A movie template file is an XML file that "
+        print "                       describes how to put together a movie."
+        print ""
         print "    -framestep step    The number of frames to advance when going to "
         print "                       the next frame."
         print ""
@@ -696,14 +881,33 @@ class MakeMovie:
         print "    -fps number        Sets the frames per second the movie should "
         print "                       play at."
         print ""
-        print "    -stereo            Makes a stereo movie. Note that stereo movies are"
-        print "                       only created for Streaming movie format, though "
-        print "                       right and left channel images are saved if you"
-        print "                       save a movie in an image format."
+        print "    -stereo fmt        Makes a stereo movie. Note that stereo movies with"
+        print "                       left and right channels are only created for "
+        print "                       Streaming movie format, though left and right channel"
+        print "                       images are saved if you save a movie in an image "
+        print "                       format. The redblue and redgreen formats are available"
+        print "                       in any image format. The supported values for fmt are:"
+        print ""
+        print "                       off       : No stereo"
+        print "                       leftright : Left/Right channel stereo. Use this"
+        print "                                   format with streaming movie to create "
+        print "                                   movies viewable with stereo projection "
+        print "                                   and glasses."
+        print "                       redblue   : Red/Blue stereo."
+        print "                       redgreen  : Red/Green stereo."
+        print ""
+        print "                       You can specify multiple stereo formats by "
+        print "                       concatenating more than one allowed format using "
+        print "                       commas. Example: -stereo off,leftright,redgreen"
         print ""
         print "    -ignoresessionengines Prevents compute engine information in the"
         print "                          session file from being used to restart"
         print "                          the compute engine(s) during movie generation."
+        print ""
+        print "    -email addresses   If specified, this script will provide e-mail "
+        print "                       progress reports for movie generation. Multiple "
+        print "                       e-mail addresses can be provided if they are "
+        print "                       separated by commas."
         print ""
         print "Parallel arguments:"
         print "    -np   <# procs>    The number of processors to use."
@@ -718,6 +922,11 @@ class MakeMovie:
         print "    -expedite          Makes batch system give priority scheduling."
         print ""
 
+    def Log(self, str):
+        if self.log != 0:
+            self.log.write("%s\n" % str)
+            self.log.flush()
+
     ###########################################################################
     # Method: Debug
     #
@@ -726,11 +935,25 @@ class MakeMovie:
     # Programmer: Brad Whitlock
     # Date:       Mon Jul 28 13:58:06 PST 2003
     #
+    # Modifications:
+    #   Brad Whitlock, Wed Sep 20 11:50:17 PDT 2006
+    #   Changed so it writes to debug logs.
+    #
     ###########################################################################
 
-    def Debug(self, str):
-        return #print str
-
+    def Debug(self, level, str):
+        if level not in (1,2,3,4,5):
+            return
+        debug_level = GetDebugLevel()
+        if debug_level > 0:
+            for i in range(level, 6):
+                 if self.debug_real[i-1] != 0:
+                     self.debug_real[i-1].write("%s\n" % str)
+                     self.debug_real[i-1].flush()
+        # Write debug1 to the log also.
+        if level == 1:
+            self.Log(str)
+          
     ###########################################################################
     # Method: SendClientProgress
     #
@@ -741,9 +964,10 @@ class MakeMovie:
     #
     ###########################################################################
 
-    def SendClientProgress(self, str, current, total):
+    def SendClientProgress(self, s, current, total):
         if self.sendClientFeedback:
-            ClientMethod("MovieProgress", (str, current, total))
+            args = (str(s), int(current), int(total))
+            ClientMethod("MovieProgress", args)
 
     ###########################################################################
     # Method: ClientMessageBox
@@ -755,11 +979,45 @@ class MakeMovie:
     #
     ###########################################################################
 
-    def ClientMessageBox(self, str):
+    def ClientMessageBox(self, s):
         if self.sendClientFeedback:
-            ClientMethod("MessageBoxOk", str)
+            ClientMethod("MessageBoxOk", str(s))
         else:
-            print str
+            print str(s)
+
+    ###########################################################################
+    # Method: SendEmail
+    #
+    # Purpose:    Sends e-mail to the user regarding the status of the movie.
+    #
+    # Programmer: Brad Whitlock
+    # Date:       Wed Sep 20 13:19:09 PST 2006
+    #
+    ###########################################################################
+
+    def SendEmail(self, subject, msg):
+        if self.emailAddresses != "":
+            import sys, smtplib
+            server = smtplib.SMTP('localhost')
+
+            domain = "llnl.gov"
+            d = string.split(os.uname()[1], ".")
+            if len(d) > 2:
+                name = ""
+                for i in range(1, len(d)):
+                    name = name + d[i]
+                    if i < len(d)-1:
+                        name = name + "."
+            fromaddr = "visit@" + domain
+
+            msg2 = "To: %s\n" % self.emailAddresses
+            msg2 = msg2 + "Subject: %s\n" % subject
+            msg2 = msg2 + msg
+            self.Debug(2, "E-mail sent: \n" + msg)
+            server.sendmail(fromaddr, self.emailAddresses, msg2)
+            server.quit()
+        else:
+            self.Debug(2, "E-mail not sent.\n" + msg)
 
     ###########################################################################
     # Method: DetermineMovieBase
@@ -771,18 +1029,24 @@ class MakeMovie:
     # Date:       Fri Dec 5 12:22:40 PDT 2003
     #
     # Modifications:
+    #   Brad Whitlock, Wed Sep 27 16:59:47 PST 2006
+    #   Added support for template files.
     #
     ###########################################################################
 
     def DetermineMovieBase(self):
         # Get the file name that we should use
-        if(self.usesStateFile == 0):
-            fileName = LongFileName(self.scriptFile)
-        else:
+        if(self.usesStateFile == 1):
             fileName = LongFileName(self.stateFile)
+        elif(self.usesTemplateFile == 1):
+            return
+        else:
+            fileName = LongFileName(self.scriptFile)
+
+        self.Debug(5, "DetermineMovieBase: fileName=%s" % fileName)
 
         # Try and detect the extension
-        extensions = (".session", ".vses", ".VSES", ".VSE", ".py", ".PY")
+        extensions = (".session", ".vses", ".VSES", ".VSE", ".py", ".PY", ".xml", ".XML")
         extensionLocated = 0
         for ext in extensions:
             pos = string.rfind(fileName, ext)
@@ -790,16 +1054,19 @@ class MakeMovie:
                 fileName = fileName[:pos]
                 extensionLocated = 1
                 break
+        self.Debug(5, "DetermineMovieBase: extensionLocated=%d" % extensionLocated)
 
         # If we located an extension then try and look for a path separator.
         if(extensionLocated == 1):
             for separator in ("/", "\\"):
                 pos = string.rfind(fileName, separator)
                 if(pos != -1):
-                    fileName = fileName[pos+1:]
+                    self.outputDir = fileName[:pos]
+                    self.movieBase = fileName[pos+1:]
                     break
-            # Set the movie base to fileName
-            self.movieBase = fileName
+
+        self.Debug(5, "DetermineMovieBase: outputDir=%s" % self.outputDir)
+        self.Debug(5, "DetermineMovieBase: movieBase=%s" % self.movieBase)
 
     ###########################################################################
     # Method: SplitString
@@ -831,14 +1098,22 @@ class MakeMovie:
     # Date:       Wed Jun 22 14:41:25 PST 2005
     #
     # Modifications:
+    #   Brad Whitlock, Fri Oct 20 16:29:55 PST 2006
+    #   Added stereoName argument.
     #
     ###########################################################################
 
-    def RequestFormat(self, fmtName, w, h):
-        self.Debug("Requesting movie %s at %dx%d" % (fmtName, w, h))
+    def RequestFormat(self, fmtName, w, h, stereoName):
+        self.Debug(1, "Requesting movie %s at %dx%d with stereo %s" % (fmtName, w, h, stereoName))
         fmt = self.formatNameToType[fmtName]
+        sfmt = self.stereoNameToType[stereoName]
         formatString = ""
-        self.movieFormats = self.movieFormats + [[formatString, fmt, w, h]]
+        # If we're making MPEG then restrict the resolution to multiples of 16.
+        if fmt == self.FORMAT_MPEG:
+            w = int(w / 16) * 16
+            h = int(h / 16) * 16
+
+        self.movieFormats = self.movieFormats + [[formatString, fmt, w, h, sfmt]]
 
     ###########################################################################
     # Method: ProcessArguments
@@ -884,6 +1159,13 @@ class MakeMovie:
     #   for giving "-format tiff" on the command line but saving files with
     #   ".tif" extension. This lets the option work again.
     #
+    #   Brad Whitlock, Tue Sep 19 17:13:09 PST 2006
+    #   Changed to allow mpeg on Windows platform.
+    #
+    #   Brad Whitlock, Wed Sep 20 13:22:30 PST 2006
+    #   Added support for sending e-mails and for movie template files. I also
+    #   changed how stereo works.
+    #
     ###########################################################################
 
     def ProcessArguments(self):
@@ -908,8 +1190,10 @@ class MakeMovie:
         # Initially the formats and sizes are set to empty.
         formatList = []
         sizeList = []
+        stereoList = []
 
         i = 0
+        outputName = "movie"
         outputSpecified = 0
         processingLA = 0
         while(i < len(commandLine)):
@@ -926,11 +1210,7 @@ class MakeMovie:
                     formats = self.SplitString(commandLine[i+1], ",")
                     for format in formats:
                         if(format == "mpeg"):
-                            if(sys.platform != "win32"):
-                                formatList = formatList + [format]
-                            else:
-                                self.PrintUsage();
-                                sys.exit(-1)
+                            formatList = formatList + [format]
                         elif(format == "qt"):
                             if(sys.platform != "win32"):
                                 formatList = formatList + [format]
@@ -961,10 +1241,24 @@ class MakeMovie:
                 else:
                     self.PrintUsage()
                     sys.exit(-1)
+            elif(commandLine[i] == "-stereo"):
+                if((i+1) < len(commandLine)):
+                    formats = self.SplitString(commandLine[i+1], ",")
+                    for format in formats:
+                        if format not in self.stereoNameToType.keys():
+                            self.PrintUsage();
+                            sys.exit(-1)
+                        else:
+                            stereoList = stereoList + [format]
+                    i = i + 1
+                else:
+                    self.PrintUsage()
+                    sys.exit(-1)
             elif(commandLine[i] == "-sessionfile"):
                 if((i+1) < len(commandLine)):
                     self.stateFile = commandLine[i+1]
                     self.usesStateFile = 1
+                    self.usesTemplateFile = 0
                     i = i + 1
                 else:
                     self.PrintUsage()
@@ -972,6 +1266,16 @@ class MakeMovie:
             elif(commandLine[i] == "-scriptfile"):
                 if((i+1) < len(commandLine)):
                     self.scriptFile = commandLine[i+1]
+                    self.usesStateFile = 0
+                    self.usesTemplateFile = 0
+                    i = i + 1
+                else:
+                    self.PrintUsage()
+                    sys.exit(-1)
+            elif(commandLine[i] == "-templatefile"):
+                if((i+1) < len(commandLine)):
+                    self.templateFile = commandLine[i+1]
+                    self.usesTemplateFile = 1
                     self.usesStateFile = 0
                     i = i + 1
                 else:
@@ -1018,7 +1322,7 @@ class MakeMovie:
                     sys.exit(-1)
             elif(commandLine[i] == "-output"):
                 if((i+1) < len(commandLine)):
-                    self.movieBase = commandLine[i+1]
+                    outputName = commandLine[i+1]
                     outputSpecified = 1
                     i = i + 1
                 else:
@@ -1052,10 +1356,15 @@ class MakeMovie:
                 else:
                     self.PrintUsage()
                     sys.exit(-1)
-            elif(commandLine[i] == "-stereo"):
-                self.stereo = 1
             elif(commandLine[i] == "-ignoresessionengines"):
                 self.useSessionEngineInformation = 0
+            elif(commandLine[i] == "-email"):
+                if((i+1) < len(commandLine)):
+                    self.emailAddresses = commandLine[i+1]
+                    i = i + 1
+                else:
+                    self.PrintUsage()
+                    sys.exit(-1)
 
             #
             # Parallel engine options.
@@ -1172,23 +1481,67 @@ class MakeMovie:
                 lastValue = formatList[-1]
                 for i in range(len(sizeList) - len(formatList)):
                     formatList = formatList + [lastValue]
+        # If the formatList and stereoList are not the same size then make
+        # them be the same size.
+        if len(formatList) != len(stereoList):
+            if len(formatList) > len(stereoList):
+                lastValue = "off"
+                if len(stereoList) > 0:
+                    lastValue = stereoList[-1]
+                for i in range(len(formatList) - len(stereoList)):
+                    stereoList = stereoList + [lastValue]
+            else:
+                lastFormatValue = formatList[-1]
+                lastSizeValue = sizeList[-1]
+                for i in range(len(stereoList) - len(formatList)):
+                    formatList = formatList + [lastFormatValue]
+                    sizeList = sizeList + [lastSizeValue]
+
         # Now that the formatList and sizeList have been populated by the command
         # line arguments, use the information stored therein to request movie
         # formats.
         for i in range(len(formatList)):
-            self.RequestFormat(formatList[i], sizeList[i][0], sizeList[i][1])
+            self.RequestFormat(formatList[i], sizeList[i][0], sizeList[i][1], stereoList[i])
 
         # Make sure that the user provided the -sessionfile option or we can't
         # make a movie!
-        if(self.stateFile == "" and self.scriptFile == ""):
+        if(self.stateFile == "" and self.scriptFile == "" and self.templateFile == ""):
             self.PrintUsage()
-            print "You must provide the -sessionfile or the -scriptfile option!"
+            print "You must provide one of the -sessionfile,-scriptfile,-templatefile options!"
             sys.exit(-1)
 
         # If no movie output was specified, try and determine the output
         # base name from the session file or the script file.
         if(outputSpecified == 0):
             self.DetermineMovieBase()
+        else:
+            # Output was specified. Let's break it up into outputDir and movieBase.
+            if outputName[0] == '/':
+                # Absolute path
+                entirePath = outputName
+            elif string.find(outputName, self.slash) != -1:
+                # Relative path
+                entirePath = os.path.abspath(os.curdir) + self.slash + outputName
+            else:
+                # No path given.
+                entirePath = os.path.abspath(os.curdir) + self.slash + outputName
+
+            # Separate into outputDir, movieBase.
+            pos = string.rfind(entirePath, self.slash)
+            if pos != -1:
+                self.outputDir = entirePath[:pos]
+                self.movieBase = entirePath[pos+1:]
+            else:
+                self.Debug(1, "Error determining movie base from -output %s" % outputName)
+        self.Debug(1, "ProcessArguments: self.outputDir = %s" % self.outputDir)
+        self.Debug(1, "ProcessArguments: self.movieBase = %s" % self.movieBase)
+
+        # Write out a log file.
+        try:
+            logName = os.path.abspath(os.curdir) + self.slash + "%s.log" % self.movieBase
+            self.log = open(logName, "wt")
+        except:
+            self.log = 0
 
 
     ###########################################################################
@@ -1199,6 +1552,9 @@ class MakeMovie:
     #             in an animation format such as MPEG, QuickTime, or Streaming
     #             movie.
     #
+    # Notes:      The output directory will be outputDir + movieBase plus some
+    #             number.
+    #
     # Programmer: Brad Whitlock
     # Date:       Mon Jul 28 13:58:06 PST 2003
     #
@@ -1207,10 +1563,13 @@ class MakeMovie:
     #   Determines whether a temporary directory needs to be created. Changed
     #   the name of the temp directory.
     #
+    #   Brad Whitlock, Wed Sep 27 17:57:59 PST 2006
+    #   Made it use new outputDir member.
+    #
     ###########################################################################
 
     def CreateTemporaryDirectory(self):
-        retval = os.curdir
+        retval = self.outputDir
 
         # Determine if any movie formats get encoded.
         any_formats_get_encoded = 0
@@ -1222,25 +1581,21 @@ class MakeMovie:
 
         if any_formats_get_encoded == 1:
             # Determine the name of the directory to use.
-            fileName = self.movieBase
-            for separator in ("/", "\\"):
-                pos = string.rfind(self.movieBase, separator)
-                if(pos != -1):
-                    fileName = self.movieBase[pos+1:]
-                    break
             index = 0
-            d = "%s-%d" % (fileName, index)
-            files = os.listdir(os.curdir)
-            self.Debug("CreateTemporaryDirectory: d=" + str(d))
-            self.Debug("CreateTemporaryDirectory: files=" + str(files))
+            d = "%s-%d" % (self.movieBase, index)
+            files = os.listdir(self.outputDir)
+            self.Debug(1, "CreateTemporaryDirectory: d=" + str(d))
+            self.Debug(1, "CreateTemporaryDirectory: files=" + str(files))
             while(d in files):
-                self.Debug("The directory %s already exists, we'll try another name." % d)
+                self.Debug(1, "The directory %s already exists, we'll try another name." % d)
                 index = index + 1
-                d = "%s-%d" % (fileName, index)
+                d = "%s-%d" % (self.movieBase, index)
             # Create a temporary directory in which to store frames.
-            os.mkdir(d)
-            self.Debug("Created %s directory to store temporary frames" % d)
-            retval = d
+            newdir = self.outputDir + self.slash + d
+            self.Debug(1, "Creating %s directory to store temporary frames" % newdir)
+            os.mkdir(newdir)
+            self.Debug(1, "Created %s directory to store temporary frames" % newdir)
+            retval = newdir
         return retval
 
     ###########################################################################
@@ -1269,6 +1624,9 @@ class MakeMovie:
     #   Brad Whitlock, Tue May 10 09:05:35 PDT 2005
     #   Made it a little more general.
     #
+    #   Brad Whitlock, Wed Sep 27 18:09:32 PST 2006
+    #   I made frames always get saved to tmpDir. I changed how stereo works.
+    #
     ###########################################################################
 
     def SaveImage(self, index):
@@ -1277,16 +1635,37 @@ class MakeMovie:
         s.saveTiled = old_sw.saveTiled
         s.family = 0
         s.screenCapture = self.screenCaptureImages
-        s.stereo = old_sw.stereo
-        if self.stereo == 1:
-            s.stereo = 1
+        s.outputToCurrentDirectory = 0
+
+        currentRA = GetRenderingAttributes()
 
         # Save the frame in the required formats.
         retval = 1
         for format in self.movieFormats:
+            # Stereo format
+            stereo = format[4]
+            ra = GetRenderingAttributes()
+            if stereo == self.STEREO_NONE:
+                s.stereo = 0
+                ra.stereoRendering = 0
+            elif stereo == self.STEREO_LEFTRIGHT:
+                s.stereo = 1
+                ra.stereoRendering = 0
+            elif stereo == self.STEREO_REDBLUE:
+                s.stereo = 0
+                ra.stereoRendering = 1
+                ra.stereoType = ra.RedBlue
+            elif stereo == self.STEREO_REDGREEN:
+                s.stereo = 0
+                ra.stereoRendering = 1
+                ra.stereoType = ra.RedGreen
+            SetRenderingAttributes(ra)
+            currentRA = ra
+
             # Create a filename
             frameFormatString = format[0]
             s.fileName = frameFormatString % index
+            self.Debug(5, "SaveImage: %s" % s.fileName)
 
             # Determine the format of the frame that VisIt needs to save.
             frameFormat = self.outputNeedsInput[format[1]]
@@ -1303,9 +1682,15 @@ class MakeMovie:
             elif(frameFormat == self.FORMAT_PNG):
                 s.format =  s.PNG
 
+            # Images that will be used in a movie go to tmpDir while other
+            # images go directly to outputDir.
+            if frameFormat != format[1]:
+                s.outputDirectory = self.tmpDir
+            else:
+                s.outputDirectory = self.outputDir
+
             s.width = format[2]
             s.height = format[3]
-            s.outputToCurrentDirectory = 1
             SetSaveWindowAttributes(s)
             try:
                 retval = SaveWindow()
@@ -1337,8 +1722,11 @@ class MakeMovie:
     ###########################################################################
 
     def SaveImage2(self):
+        old_ra = GetRenderingAttributes()
         retval = self.SaveImage(self.numFrames)
         self.numFrames = self.numFrames + 1
+        # Restore the old rendering attributes.
+        SetRenderingAttributes(old_ra)
         return retval
 
     ###########################################################################
@@ -1568,7 +1956,7 @@ class MakeMovie:
     #
     ###########################################################################
     def IterateAndSaveFrames(self):
-        self.Debug("IterateAndSaveFrames:")
+        self.Debug(1, "IterateAndSaveFrames:")
 
         # Make sure that camera view mode is on so that if we have a
         # saved keyframe animation, we really get the keyframed view.
@@ -1584,7 +1972,10 @@ class MakeMovie:
             self.frameEnd = self.frameStart
             self.frameStart = tmp
 
-        self.Debug("*** frameStart=%d, frameEnd=%d" % (self.frameStart, self.frameEnd))
+        self.Debug(1, "*** frameStart=%d, frameEnd=%d" % (self.frameStart, self.frameEnd))
+
+        # Save the old rendering mode.
+        old_ra = GetRenderingAttributes()
 
         # Save an image for each frame in the animation.
         self.numFrames = 0
@@ -1623,6 +2014,9 @@ class MakeMovie:
 
             self.numFrames = self.numFrames + 1
             i = i + self.frameStep
+
+        # Restore the old rendering attributes.
+        SetRenderingAttributes(old_ra)
 
     ###########################################################################
     # Method: GenerateFrames
@@ -1667,62 +2061,185 @@ class MakeMovie:
     #   up to this script to launch the right parallel compute engines before
     #   restoring the session file.
     #
+    #   Brad Whitlock, Wed Sep 20 11:53:55 PDT 2006
+    #   I made it use the tmp directory in the filename. Add support for
+    #   template files and stereo.
+    #
     ###########################################################################
 
     def GenerateFrames(self):
-        self.Debug("GenerateFrames")
+        self.Debug(1, "GenerateFrames")
 
         # Make sure that the movieFormats list is not empty
         if len(self.movieFormats) < 1:
             self.ClientMessageBox("No formats were requested so no movie will be made.")
-            return
+            return 0
 
         # Create a temporary directory in which to store the frames if we're
         # generating a movie that ends up as a single file.
         self.tmpDir = self.CreateTemporaryDirectory()
+        self.Debug(1, "GenerateFrames: tmpDir = %s" % self.tmpDir)      
 
         # If we have any movies that need to get encoded, make sure that we allot
         # some time in the progress to encoding.
+        index = 0
         for format in self.movieFormats:
             fmt = format[1]
             if(fmt == self.FORMAT_MPEG or fmt == self.FORMAT_QT or fmt == self.FORMAT_SM):
                 self.percentAllocationFrameGen = 0.9
                 self.percentAllocationEncode = 0.1
+                if format[4] == self.STEREO_LEFTRIGHT:
+                    if fmt == self.FORMAT_MPEG:
+                        msg = "Left/Right stereo is not supported for MPEG movies. VisIt will instead create stereo PPM files."
+                        self.ClientMessageBox(msg)
+                        self.Log(msg)
+                        self.movieFormats[index][1] = self.FORMAT_PPM
+                    elif fmt == self.FORMAT_QT:
+                        msg = "Left/Right stereo is not supported for Quicktime movies. VisIt will instead create stereo PPM files."
+                        self.ClientMessageBox(msg)
+                        self.movieFormats[index][1] = self.FORMAT_PPM
+            index = index + 1
+
+        # Determine if the formats contain different resolutions.
+        differentResolutions = 0
+        if len(self.movieFormats) > 1:
+            w = self.movieFormats[0][2]
+            h = self.movieFormats[0][3]
+            for i in range(1, len(self.movieFormats)):
+                if w != self.movieFormats[i][2] or h != self.movieFormats[i][3]:
+                    differentResolutions = 1
+                    break
+
+        # Determine if the formats contain different stereo settings.
+        differentStereo = 0
+        if len(self.movieFormats) > 1:
+            s = self.movieFormats[0][4]
+            for i in range(1, len(self.movieFormats)):
+                if s != self.movieFormats[i][4]:
+                    differentStereo = 1
+                    break
 
         # Create file format strings for the frames.
-        for format in self.movieFormats:
-            filedir = ""
+        for index in range(len(self.movieFormats)):
             filebase = self.movieBase
-            fmt = format[1]
+            fmt = self.movieFormats[index][1]
+            si = self.movieFormats[index][4]
+            s = self.stereoNameToType.keys()[si]
 
-            # If the string begins with a slash then append the tmpDir to it.
-            if self.movieBase[0] == self.slash[0] or \
-               string.find(self.movieBase, ":\\") != -1:
-                slashPos = string.rfind(self.movieBase, self.slash)
-                filedir = self.movieBase[:slashPos+1]
-                filebase = self.movieBase[slashPos+1:]
-                if fmt != self.outputNeedsInput[fmt]:
-                    filedir = filedir + self.tmpDir + self.slash
-
-            if len(self.movieFormats) > 1:
-                w = format[2]
-                h = format[3]
-                filebase = "%s_%dx%d_%%04d" % (filebase, w, h)
+            if differentResolutions:
+                w = self.movieFormats[index][2]
+                h = self.movieFormats[index][3]
+                if differentStereo and si > 0:
+                    filebase = "%s_%dx%d_%s_%%04d" % (filebase, w, h, s)
+                else:
+                    filebase = "%s_%dx%d_%%04d" % (filebase, w, h)
             else:
-                filebase = "%s%%04d" % filebase
+                if differentStereo and si > 0:
+                    filebase = "%s_%s_%%04d" % (filebase, s)
+                else:
+                    filebase = "%s%%04d" % filebase
+
             # Store the file format string in the movieFormats list.
-            format[0] = filedir + filebase
+            self.movieFormats[index][0] = filebase
+        self.Debug(1, "GenerateFrames: movieFormats=" + str(self.movieFormats))
 
         if(self.usesTemplateFile):
-            self.Debug("GenerateFrames: using template file %s" % self.templateFile)
-            # Source the template file to get the template's class definition
-            # and the InstantiateMovieTemplate function.
-            Source(self.templateFile)
+            # Determine the name of the movie template base class's file.
+            prefix = ""
+            if os.name == "nt":
+                prefix = sys.exec_prefix[:-6]
+            else:
+                pos = string.find(sys.argv[0], "exe" + self.slash + "cli")
+                if pos != -1:
+                    # Development version
+                    prefix = sys.argv[0][:pos+4]
+                    exe_dir = self.slash + "exe" + self.slash
+                    bin_dir = self.slash + "bin" + self.slash
+                    prefix = string.replace(prefix, exe_dir, bin_dir)
+                else:
+                    # Installed version
+                    pos = string.find(sys.exec_prefix, "lib" + self.slash + "python")
+                    prefix = sys.exec_prefix[:pos] + "bin" + self.slash
+            templateBaseFile = prefix + "movietemplates" + self.slash + "visitmovietemplate.py"
+            self.Debug(1, "GenerateFrames: sourcing template base class file %s" % templateBaseFile)
+            Source(templateBaseFile)
 
-            #template = InstantiateMovieTemplate()
-            #template
+
+            # Determine the movie template's actual template file. We must read
+            # the movie template XML file to determine the template file. We may
+            # also need to prepend a path to it.
+            try:
+                # Read the XML file.
+                self.Debug(1, "Opening template file: %s" % self.templateFile)
+                f = open(self.templateFile, "rt")
+                templateReader = MovieTemplateReader()
+                parser = make_parser()    
+                parser.setContentHandler(templateReader) 
+                parser.parse(f)
+                f.close()
+
+                # Get the name of the template work file from the XML template.
+                templatePY = prefix + "movietemplates" + self.slash + "visitmovietemplate.py"
+                self.Debug(1, "GenerateFrames: generic template work file: %s" % templatePY)
+                if not templateReader.generic_data.has_key("TEMPLATEFILE"):
+                    self.Log("The movie template file did not have a TEMPLATEFILE key. Use visitmovietemplate.py")
+                    self.Debug(1,"The movie template file did not have a TEMPLATEFILE key. Use visitmovietemplate.py")
+                else:
+                    tFile = templateReader.generic_data["TEMPLATEFILE"]
+                    self.Debug(1, "TEMPLATEFILE = %s" % tFile)
+                    print tFile
+                    fileFound = 0
+                    for name in (tFile, prefix + "movietemplates" + self.slash + tFile):
+                        tmpPY = os.path.abspath(name)
+                        # Try and stat the tmpPY file.
+                        try:
+                            s = os.stat(tmpPY)
+                            templatePY = tmpPY
+                            fileFound = 1
+                        except OSError:
+                            continue
+                    if fileFound == 0:
+                        self.ClientMessageBox("VisIt could not locate the template work file %s." % tFile)
+                        return 0
+
+                # Source the template work file to get the template's class 
+                # definition and the InstantiateMovieTemplate function.
+                self.Debug(1, "GenerateFrames: sourcing %s" % templatePY)
+                try:
+                    if templatePY != templateBaseFile:
+                        Source(templatePY)
+                except VisItException:
+                    msg = "The movie template work file %s could not be read." % templatePY
+                    self.Debug(1, msg)
+                    self.ClientMessageBox(msg)
+                    return 0
+
+                try:
+                    # Call the template work file's InstantiateMovieTemplate function.
+                    template = globals()['InstantiateMovieTemplate'](self, templateReader)
+
+                    # Call the template to make it generate frames.
+                    self.Debug(1, "GenerateFrames: using template file %s" % templatePY)
+                    ret = template.GenerateFrames(self.templateFile, self.movieFormats)
+                    if ret == -1:
+                        return 0
+
+                    # The template did not return -1 for error so it must have 
+                    # returned the number of frames.
+                    self.numFrames = ret
+                except KeyError, value:
+                    msg = "The movie template work file %s contains errors or does not "\
+                          "contain an InstantiateMovieTemplate function." % templatePY
+                    self.Log(str(value))
+                    self.ClientMessageBox(msg)
+                    raise
+                    return 0
+            except IOError:
+                self.ClientMessageBox("VisIt could not open your movie template file %s\n" % self.templateFile)
+                return 0
+
         elif(self.usesCurrentPlots):
-            self.Debug("GenerateFrames: using current plots")
+            self.Debug(1, "GenerateFrames: using current plots")
 
             # Get the current time slider's state
             tsState = -1
@@ -1738,21 +2255,21 @@ class MakeMovie:
             if tsState != -1:
                 SetTimeSliderState(tsState)
         elif(self.usesStateFile):
-            self.Debug("GenerateFrames: using session file %s" % self.stateFile)
+            self.Debug(1, "GenerateFrames: using session file %s" % self.stateFile)
 
             # If we're using a session file, try and read it to determine which
             # compute engines need to be launched.
             properties = {}
             if self.useSessionEngineInformation == 1:
                 properties = self.ReadEngineProperties(self.stateFile)
-                self.Debug(properties)
+                self.Debug(1, str(properties))
 
             # Launch any compute engines that were either specified on the
             # command line or in the session file.
             for host in properties.keys():
                 if properties[host] != {}:
                     args = self.CreateEngineArguments(properties[host])
-                    self.Debug("Starting compute engine: %s" % host)
+                    self.Debug(1, "Starting compute engine: %s" % host)
                     OpenComputeEngine(host, args)
 
             # Make the viewer try and restore its session using the file that
@@ -1765,7 +2282,7 @@ class MakeMovie:
             # Iterate over all of the frames and save them out.
             self.IterateAndSaveFrames()
         else:
-            self.Debug("GenerateFrames: using Python file %s" % self.scriptFile)
+            self.Debug(1, "GenerateFrames: using Python file %s" % self.scriptFile)
             # Save the callback data so we can call methods on this object.
             globals()['classSaveWindowObj'] = self
             # Create a modified version of the user's script.
@@ -1774,6 +2291,8 @@ class MakeMovie:
             Source(name)
             # Remove the modified script.
             RemoveFile(name);
+
+        return 1
 
     ###########################################################################
     # Method: EncodeMPEGMovie
@@ -1801,20 +2320,16 @@ class MakeMovie:
     #   I changed the return values so more information gets returned. Passed
     #   in imageFormatString, xres, yres.
     #
+    #   Brad Whitlock, Tue Sep 19 17:13:51 PST 2006
+    #   Rewrote for mpeg2encode.
+    #
     ###########################################################################
 
     def EncodeMPEGMovie(self, moviename, imageFormatString, xres, yres):
-        self.Debug("EncodeMPEGMovie")
-
-        # Tell the user about MPEGs on Windows.
-        if os.name == "nt":
-            s =     "The Windows version of VisIt does not come with an MPEG\n"
-            s = s + "encoding program. You can use your own MPEG software to\n"
-            s = s + "make a movie from the frames in:\n %s." % self.tmpDir
-            return (0, moviename, s)
+        self.Debug(1, "EncodeMPEGMovie")
 
         retval = 0
-        paramFile = "%s-mpeg_encode-params" % self.movieBase
+        paramFile = "%s-mpeg2encode-params" % self.movieBase
         try:
             # We can only drive the movie at 30 fps.  So if the user wants
             # a movie at 10 fps, we have to pad frames.  Determine what that
@@ -1834,56 +2349,125 @@ class MakeMovie:
             doSymlink = "symlink" in dir(os)
             for i in range(self.numFrames):
                 imgname = imageFormatString % i
-                imgname = imgname + ".ppm"
+                imgname = self.tmpDir + self.slash + imgname + ".ppm"
                 for j in range(pad_rate):
                     linkname = self.tmpDir+self.slash+linkbase+"%04d.ppm"%(linkindex)
                     linkindex = linkindex + 1
                     CopyFile(imgname, linkname, doSymlink)
 
             nframes=pad_rate*self.numFrames
+            statFile="%s-stat.out" % moviename
 
             f = open(paramFile, "w")
-            f.write("PATTERN             IBBPBBPBBPBBPBB\n")
-            f.write("OUTPUT              %s\n" % moviename)
-            f.write("BASE_FILE_FORMAT    PPM\n")
-            f.write("GOP_SIZE            30\n")
-            f.write("SLICES_PER_FRAME    1\n")
-            f.write("PIXEL               HALF\n")
-            f.write("RANGE               10\n")
-            f.write("PSEARCH_ALG         TWOLEVEL\n")
-            f.write("BSEARCH_ALG         SIMPLE\n")
-            f.write("IQSCALE             1\n")
-            f.write("PQSCALE             1\n")
-            f.write("BQSCALE             1\n")
-            f.write("REFERENCE_FRAME     DECODED\n")
-            f.write("FORCE_ENCODE_LAST_FRAME\n")
-            f.write("YUV_SIZE            %dx%d\n" % (xres, yres))
-            f.write("INPUT_CONVERT       *\n")
-            f.write("INPUT_DIR           %s\n" % self.tmpDir)
-            f.write("INPUT\n")
-            f.write("%s*.ppm             [0000-%04d]\n" % (linkbase, nframes-1))
-            f.write("END_INPUT\n")
+            f.write('Generated by VisIt (http://www.llnl.gov/visit), MPEG-1 Movie, 30 frames/sec\n')
+            f.write(self.tmpDir + self.slash + linkbase + '%04d  /* name of source files */\n')
+            f.write('-         /* name of reconstructed images ("-": do not store) */\n')
+            f.write('-         /* name of intra quant matrix file     ("-": default matrix) */\n')
+            f.write('-         /* name of non intra quant matrix file ("-": default matrix) */\n')
+            f.write('%s        /* name of statistics file ("-": stdout ) */\n' % statFile)
+            f.write('2         /* input picture file format: 0=*.Y,*.U,*.V, 1=*.yuv, 2=*.ppm */\n')
+            f.write('%d        /* number of frames */\n' % nframes)
+            f.write('0         /* number of first frame */\n')
+            f.write('00:00:00:00 /* timecode of first frame */\n')
+            f.write('9        /* N (# of frames in GOP) */\n')  # 15
+            f.write('3         /* M (I/P frame distance) */\n')
+            f.write('1         /* ISO/IEC 11172-2 stream */\n')
+            f.write('0         /* 0:frame pictures, 1:field pictures */\n')
+            f.write('%d       /* horizontal_size */\n' % xres)
+            f.write('%d       /* vertical_size */\n' % yres)
+            f.write('8         /* aspect_ratio_information 8=CCIR601 625 line, 9=CCIR601 525 line */\n')
+            f.write('5         /* frame_rate_code 1=23.976, 2=24, 3=25, 4=29.97, 5=30 frames/sec. */\n')
+            f.write('%d.0      /* bit_rate (bits/s) */\n' % (xres * yres * 30 * 3))
+            f.write('112       /* vbv_buffer_size (in multiples of 16 kbit) */\n')
+            f.write('0         /* low_delay  */\n')
+            f.write('0         /* constrained_parameters_flag */\n')
+            f.write('4         /* Profile ID: Simple = 5, Main = 4, SNR = 3, Spatial = 2, High = 1 */\n')
+            if xres >= 1440:
+                f.write('4         /* Level ID:   Low = 10, Main = 8, High 1440 = 6, High = 4          */\n')
+            elif xres >= 720:
+                f.write('6         /* Level ID:   Low = 10, Main = 8, High 1440 = 6, High = 4          */\n')
+            else:
+                f.write('8         /* Level ID:   Low = 10, Main = 8, High 1440 = 6, High = 4          */\n')
+            f.write('1         /* progressive_sequence */\n')
+            f.write('1         /* chroma_format: 1=4:2:0, 2=4:2:2, 3=4:4:4 */\n')
+            f.write('0         /* video_format: 0=comp., 1=PAL, 2=NTSC, 3=SECAM, 4=MAC, 5=unspec. */\n')
+            f.write('5         /* color_primaries */\n')
+            f.write('5         /* transfer_characteristics */\n')
+            f.write('5         /* matrix_coefficients */\n')
+            f.write('%d        /* display_horizontal_size */\n' % xres)
+            f.write('%d        /* display_vertical_size */\n' % yres)
+            f.write('0         /* intra_dc_precision (0: 8 bit, 1: 9 bit, 2: 10 bit, 3: 11 bit */\n')
+            f.write('0         /* top_field_first */\n')
+            f.write('1 1 1     /* frame_pred_frame_dct (I P B) */\n')
+            f.write('0 0 0     /* concealment_motion_vectors (I P B) */\n')
+            f.write('0 0 0     /* q_scale_type  (I P B) */\n')
+            f.write('0 0 0     /* intra_vlc_format (I P B)*/\n')
+            f.write('0 0 0     /* alternate_scan (I P B) */\n')
+            f.write('0         /* repeat_first_field */\n')
+            f.write('1         /* progressive_frame */\n')
+            f.write('0         /* P distance between complete intra slice refresh */\n')
+            f.write('0         /* rate control: r (reaction parameter) */\n')
+            f.write('0         /* rate control: avg_act (initial average activity) */\n')
+            f.write('0         /* rate control: Xi (initial I frame global complexity measure) */\n')
+            f.write('0         /* rate control: Xp (initial P frame global complexity measure) */\n')
+            f.write('0         /* rate control: Xb (initial B frame global complexity measure) */\n')
+            f.write('0         /* rate control: d0i (initial I frame virtual buffer fullness) */\n')
+            f.write('0         /* rate control: d0p (initial P frame virtual buffer fullness) */\n')
+            f.write('0         /* rate control: d0b (initial B frame virtual buffer fullness) */\n')
+            f.write('2 2 11 11 /* P:  forw_hor_f_code forw_vert_f_code search_width/height */\n')
+            f.write('1 1 3  3  /* B1: forw_hor_f_code forw_vert_f_code search_width/height */\n')
+            f.write('1 1 7  7  /* B1: back_hor_f_code back_vert_f_code search_width/height */\n')
+            f.write('1 1 7  7  /* B2: forw_hor_f_code forw_vert_f_code search_width/height */\n')
+            f.write('1 1 3  3  /* B2: back_hor_f_code back_vert_f_code search_width/height */\n')
             f.close();
 
             # Create the movie
-            command = "visit -v %s -mpeg_encode %s" % (Version(), paramFile)
-            r = os.system(command)
+            absMovieName = self.outputDir + self.slash + moviename
+            command = "visit -v %s -mpeg2encode %s %s" % (Version(), paramFile, absMovieName)
+            self.Debug(1, command)
+            # Function to print the mpeg2encode output
+            def print_mpeg_line_cb(line, this):
+                if line[:8] == "Encoding":
+                    print line
+                    this.Debug(1, line)
+                else:
+                    this.Debug(5, line)
+            r = visit_pipe(command, print_mpeg_line_cb, self)
+            self.Debug(1, "mpeg2encode returned %d" % r)
 
-            # Remove the param file.
-            RemoveFile(paramFile);
-
-            # Remove the symbolic links.
-            linkindex = 0
-            for i in range(self.numFrames):
-                for j in range(pad_rate):
-                   linkname=self.tmpDir+self.slash+linkbase+"%04d.ppm"%(linkindex)
-                   RemoveFile(linkname)
-                   linkindex = linkindex + 1
+            # Make sure that the movie exists before we delete files.
+            files = os.listdir(self.outputDir)
+            if moviename not in files:
+                r = -1
+                self.Debug(1, "%s was not located in the %s directory. The MPEG encoder must have failed." % (moviename, self.outputDir))
+            else:
+                # The file exists but if it is too small then tell the user that the
+                # encoding failed.
+                try:
+                    movieSize = os.stat(absMovieName)[6]
+                    if movieSize < 20000:
+                        r = -1
+                    self.Debug(1, "Checking MPEG movie size. Size = %d" % movieSize)
+                except:
+                    self.Debug(1, "Could not determine MPEG movie size.")
 
             if(r == 0):
                 retval = (1, moviename, "")
+
+                # Remove the param and the statistics file.
+                RemoveFile(paramFile);
+                RemoveFile(statFile);
+
+                # Remove the symbolic links.
+                linkindex = 0
+                for i in range(self.numFrames):
+                    for j in range(pad_rate):
+                        linkname=self.tmpDir+self.slash+linkbase+"%04d.ppm"%(linkindex)
+                        self.Debug(5, "Removing link %s" % linkname)
+                        RemoveFile(linkname)
+                        linkindex = linkindex + 1
             else:
-                s =     "VisIt's mpeg_encode program was not successful. No MPEG \n"
+                s =     "VisIt's mpeg2encode program was not successful. No MPEG \n"
                 s = s + "movie was created. You can access the raw source frames\n"
                 s = s + "in: %s." % self.tmpDir
                 retval = (0, moviename, s)
@@ -1946,14 +2530,14 @@ class MakeMovie:
     ###########################################################################
 
     def EncodeQuickTimeMovie(self, moviename, imageFormatString, xres, yres):
-        self.Debug("EncodeQuickTimeMovie")
+        self.Debug(1, "EncodeQuickTimeMovie")
         retval = 0
 
         if(CommandInPath("dmconvert")):
             # Determine the image extension
             ext = self.formatExtension[self.outputNeedsInput[self.FORMAT_QT]]
             fps = self.fps
-            baseFormat = imageFormatString + ext
+            baseFormat = self.tmpDir + self.slash + imageFormatString + ext
 
             # Create small QuickTime movies
             conversionargs = (moviename, baseFormat, xres, yres, fps)
@@ -2010,10 +2594,13 @@ class MakeMovie:
     #   I made it use the extension for the filename since it did not have
     #   that and was not working.
     #
+    #   Brad Whitlock, Mon Nov 6 16:44:58 PST 2006
+    #   Added support for stereo.
+    #
     ###########################################################################
 
-    def EncodeStreamingMovie(self, moviename, imageFormatString):
-        self.Debug("EncodeStreamingMovie")
+    def EncodeStreamingMovie(self, moviename, imageFormatString, xres, yres, stereo):
+        self.Debug(1, "EncodeStreamingMovie")
         retval = 0
 
         if(CommandInPath("img2sm")):
@@ -2021,10 +2608,44 @@ class MakeMovie:
             ext = self.formatExtension[self.outputNeedsInput[self.FORMAT_SM]]
 
             # Execute the img2sm command
-            command = "img2sm -rle -FPS %d -first 0 -last %d -form png %s%s %s" % \
-                      (self.fps, self.numFrames-1, imageFormatString, ext, moviename)
-            self.Debug(command)
-            r = os.system(command)
+            r = 0
+            if stereo == self.STEREO_LEFTRIGHT:
+                # All of the frames are named left*, right* so we need to temporarily
+                # rename them all to some common file base where left and right alternate.
+                lastSlash = string.find(imageFormatString, self.slash)
+                if lastSlash != -1:
+                    leftFmt = imageFormatString[:lastSlash+1] + "left_" + imageFormatString[lastSlash+1:] + ext
+                    rightFmt = imageFormatString[:lastSlash+1] + "right_" + imageFormatString[lastSlash+1:] + ext
+                else:
+                    leftFmt = "left_" + imageFormatString + ext
+                    rightFmt = "right_" + imageFormatString + ext
+                imageFormatStringWext = imageFormatString + ext
+                index = 0
+                for i in range(self.numFrames):
+                    leftFile = leftFmt % i
+                    newFile = imageFormatStringWext % index
+                    CopyFile(leftFile, newFile, 1)
+                    self.Debug(5, "cp %s %s" % (leftFile, newFile))
+                    index = index + 1
+
+                    rightFile = rightFmt % i
+                    newFile = imageFormatStringWext % index
+                    CopyFile(rightFile, newFile, 1)
+                    self.Debug(5, "cp %s %s" % (leftFile, newFile))
+                    index = index + 1
+
+                # Now make the stereo movie.
+                format = self.tmpDir + self.slash + imageFormatString
+                command = "img2sm -rle -stereo -fps %d -first 0 -last %d -form pnm %s%s %s" % \
+                          (self.fps, (self.numFrames-1)*2, format, ext, moviename)
+                self.Debug(1, command)
+                r = os.system(command)
+            else:
+                format = self.tmpDir + self.slash + imageFormatString
+                command = "img2sm -rle -fps %d -first 0 -last %d -form png %s%s %s" % \
+                          (self.fps, self.numFrames-1, format, ext, moviename)
+                self.Debug(1, command)
+                r = os.system(command)
 
             if(r == 0):
                 retval = (1, moviename, "")
@@ -2110,10 +2731,13 @@ class MakeMovie:
     #   I made it give some feedback to the user about how the encoding went.
     #   I also made it iterate over the movies that have to be encoded.
     #
+    #   Brad Whitlock, Wed Sep 20 15:02:40 PST 2006
+    #   I made it send e-mail at the end.
+    #
     ###########################################################################
 
     def EncodeFrames(self):
-        self.Debug("EncodeFrames")
+        self.Debug(1, "EncodeFrames")
 
         # Count the number of movies that have to get encoded.
         nEncodedMovies = 0
@@ -2131,11 +2755,19 @@ class MakeMovie:
         count = 0
         framesGenerated = 0
         framesGeneratedMessage = ""
+        framesGeneratedEmail = ""
+        # Compose an e-mail message
+        emailMsg = """
+DO NOT REPLY TO THIS AUTOMATICALLY GENERATED MESSAGE.
+                       
+Message from \"visit -movie\" running on %s.\n\n""" % os.uname()[1]
+
         for format in self.movieFormats:
             formatString = format[0]
             fmt = format[1]
             xres = format[2]
             yres = format[3]
+            stereo = format[4]
             val = 0
 
             # Come up with a movie name.
@@ -2150,7 +2782,7 @@ class MakeMovie:
                 val = self.EncodeQuickTimeMovie(movieName, formatString, xres, yres)
                 encodeMovie = 1
             elif(fmt == self.FORMAT_SM):
-                val = self.EncodeStreamingMovie(movieName, formatString)
+                val = self.EncodeStreamingMovie(movieName, formatString, xres, yres, stereo)
                 encodeMovie = 1
 
             # If we encoded a movie, send the client some progress.
@@ -2164,27 +2796,55 @@ class MakeMovie:
             # Tell the user about how the movie generation went.
             if val == 0:
                 s = "VisIt completed generating frames."
-                filedir = format[0]
-                slashPos = string.rfind(filedir, self.slash)
-                if slashPos != -1:
-                    filedir = filedir[:slashPos]
-                    s = s + " They are located at: \n%s." % filedir
+                s = s + " They are located at: \n%s." % self.outputDir
+                s2 = "VisIt completed generating frames."
+                s2 = s2 + " They are located at: %s." % self.outputDir
                 framesGenerated = 1
                 framesGeneratedMessage = s
+                framesGeneratedEmail = s2
+
             elif val[0] == 0:
                 s =     "VisIt was not able to complete your movie:\n"
                 s = s + "%s because of the following problem:\n\n" % val[1]
                 s = s + val[2]
                 self.ClientMessageBox(s)
                 safeToRemoveFrames = 0
+
+                # Try and read the log so we can include it in the e-mail.
+                logContents = ""
+                try:
+                    if self.log != 0:
+                        # Close the log
+                        self.log.flush()
+                        self.log.close()
+                        # Read the log's contents
+                        f = open(self.log.name, "rt")
+                        lines = f.readlines()
+                        f.close()
+                        for line in lines:
+                            logContents = logContents + line
+                        if len(logContents) > 0:
+                            s1 = "#########################################################################\n"
+                            s2 = "Contents of \"visit -movie\" log file.\n"
+                            logContents = "\n\n" + s1 + s2 + s1 + logContents
+                        # Set the log to 0 so we don't try to close it later.
+                        self.log = 0
+                except:
+                    logContents = ""
+
+                self.SendEmail("Movie generation error", emailMsg + s + logContents)
             else:
                 s =     "VisIt completed your movie. It is located at: \n"
-                s = s + "%s." % val[1]
+                s = s + "%s." % os.path.abspath(val[1])
                 self.ClientMessageBox(s)
+                s2 =     "VisIt completed your movie. It is located at: "
+                s2 = s2 + "%s." % os.path.abspath(val[1])
+                self.SendEmail("Movie completed", emailMsg + s2)
 
         # Tell the user that frames were generated.
         if framesGenerated:
             self.ClientMessageBox(framesGeneratedMessage)
+            self.SendEmail("Frames completed", emailMsg + framesGeneratedEmail)
 
         return safeToRemoveFrames
 
@@ -2199,8 +2859,8 @@ class MakeMovie:
     ###########################################################################
 
     def Cleanup(self):
-        if(self.tmpDir != os.curdir):
-            self.Debug("Need to delete %s directory!" % self.tmpDir)
+        if(self.tmpDir != self.outputDir):
+            self.Debug(1, "Need to delete %s directory!" % self.tmpDir)
             tmpfiles = os.listdir(self.tmpDir)
             for f in tmpfiles:
                 os.remove("%s%s%s" % (self.tmpDir, self.slash, f))

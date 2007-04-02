@@ -1696,6 +1696,9 @@ ViewerSubject::LaunchEngineOnStartup()
 //   directly so they can initialize themselves without the session file
 //   validation code.
 //
+//   Brad Whitlock, Fri Nov 10 10:56:00 PDT 2006
+//   Added arguments to some SetFromNode methods.
+//
 // ****************************************************************************
 
 void
@@ -1729,8 +1732,9 @@ ViewerSubject::DelayedProcessSettings()
         }
 
         // Let the important objects read their settings.
-        ViewerFileServer::Instance()->SetFromNode(searchNode);
-        ViewerWindowManager::Instance()->SetFromNode(searchNode);
+        std::map<std::string, std::string> empty;
+        ViewerFileServer::Instance()->SetFromNode(searchNode, empty);
+        ViewerWindowManager::Instance()->SetFromNode(searchNode, empty);
         ViewerQueryManager::Instance()->SetFromNode(searchNode);
 
         delete localSettings;  localSettings = 0;
@@ -1758,8 +1762,8 @@ ViewerSubject::ProcessEventsCB(void *cbData)
 {
     if (cbData)
     {
-         ViewerSubject *This = (ViewerSubject *)cbData;
-         This->ProcessEvents();
+        ViewerSubject *This = (ViewerSubject *)cbData;
+        This->ProcessEvents();
     }
 }
 
@@ -2801,6 +2805,11 @@ ViewerSubject::ClearStatus(const char *sender)
 //   Made the engine manager save its settings so they are available in
 //   session files so visit -movie can use them.
 //
+//   Brad Whitlock, Thu Nov 9 16:13:05 PST 2006
+//   I added code to create a SourceMap node in the saved data so we
+//   can reference it from other parts of the session to make it easier to
+//   change databases.
+//
 // ****************************************************************************
 
 void
@@ -2812,8 +2821,35 @@ ViewerSubject::CreateNode(DataNode *parentNode, bool detailed)
     DataNode *vsNode = new DataNode("ViewerSubject");
     parentNode->AddNode(vsNode);
 
-    ViewerFileServer::Instance()->CreateNode(vsNode, detailed);
-    ViewerWindowManager::Instance()->CreateNode(vsNode, detailed);
+    ViewerWindowManager *wM = ViewerWindowManager::Instance();
+    stringVector databases;
+    intVector    wIds;
+    // Get the ids of the windows that currently exist.
+    int i, nWin, *windowIndices;
+    windowIndices = wM->GetWindowIndices(&nWin);
+    for(i = 0; i < nWin; ++i)
+        wIds.push_back(windowIndices[i]);
+    delete [] windowIndices;
+
+    // Get the databases that are open in the specified windows.
+    wM->GetDatabasesForWindows(wIds, databases);
+
+    // Create a map of source ids to source names and also store
+    // that information into the session.
+    char keyName[100];
+    std::map<std::string, std::string> dbToSource;
+    DataNode *sourceMapNode = new DataNode("SourceMap");
+    for(i = 0; i < databases.size(); ++i)
+    {
+        SNPRINTF(keyName, 100, "SOURCE%02d", i);
+        std::string key(keyName);
+        dbToSource[databases[i]] = key;
+        sourceMapNode->AddNode(new DataNode(key, databases[i]));
+    }
+    vsNode->AddNode(sourceMapNode);
+
+    ViewerFileServer::Instance()->CreateNode(vsNode, dbToSource, detailed);
+    wM->CreateNode(vsNode, dbToSource, detailed);
     if(detailed)
         ViewerQueryManager::Instance()->CreateNode(vsNode);
     if(detailed)
@@ -2845,27 +2881,32 @@ ViewerSubject::CreateNode(DataNode *parentNode, bool detailed)
 //   Brad Whitlock, Wed Jan 11 14:44:13 PST 2006
 //   I added some error checking to the session file processing.
 //
+//   Brad Whitlock, Thu Nov 9 17:14:12 PST 2006
+//   I added support for SourceMap, which other objects use to get the
+//   names of the databases that are used in the visualization.
+//
 // ****************************************************************************
 
 bool
-ViewerSubject::SetFromNode(DataNode *parentNode)
+ViewerSubject::SetFromNode(DataNode *parentNode, 
+    const std::map<std::string,std::string> &sourceToDB)
 {
     bool fatalError = true;
 
     if(parentNode == 0)
         return fatalError;
 
-    DataNode *searchNode = parentNode->GetNode("ViewerSubject");
-    if(searchNode == 0)
+    DataNode *vsNode = parentNode->GetNode("ViewerSubject");
+    if(vsNode == 0)
         return fatalError;
 
     // See if there are any obvious errors in the session file.
-    fatalError = ViewerWindowManager::Instance()->SessionContainsErrors(searchNode);
+    fatalError = ViewerWindowManager::Instance()->SessionContainsErrors(vsNode);
     if(!fatalError)
     {
-        ViewerFileServer::Instance()->SetFromNode(searchNode);
-        ViewerWindowManager::Instance()->SetFromNode(searchNode);
-        ViewerQueryManager::Instance()->SetFromNode(searchNode);
+        ViewerFileServer::Instance()->SetFromNode(vsNode, sourceToDB);
+        ViewerWindowManager::Instance()->SetFromNode(vsNode, sourceToDB);
+        ViewerQueryManager::Instance()->SetFromNode(vsNode);
     }
 
     return fatalError;
@@ -5488,13 +5529,40 @@ ViewerSubject::ExportEntireState()
 //   Brad Whitlock, Mon Aug 25 14:28:00 PST 2003
 //   Added the NotifyIfSelected method call.
 //
+//   Brad Whitlock, Fri Nov 10 09:38:25 PDT 2006
+//   Added arguments to the call to configMgr->ImportEntireState.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::ImportEntireState()
 {
+    stringVector empty;
+    configMgr->ImportEntireState(viewerRPC.GetVariable(),
+                                 viewerRPC.GetBoolFlag(),
+                                 empty, false);
+    configMgr->NotifyIfSelected();
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::ImportEntireStateWithDifferentSources
+//
+// Purpose: 
+//   Restores a session file with a different list of sources.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Nov 10 09:37:54 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::ImportEntireStateWithDifferentSources()
+{
      configMgr->ImportEntireState(viewerRPC.GetVariable(),
-                                  viewerRPC.GetBoolFlag());
+                                  viewerRPC.GetBoolFlag(),
+                                  viewerRPC.GetProgramOptions(), true);
      configMgr->NotifyIfSelected();
 }
 
@@ -7132,6 +7200,9 @@ ViewerSubject::SendKeepAlives()
 //    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006 
 //    Add UpdatePlotInfoAtts. 
 //
+//    Brad Whitlock, Fri Nov 10 09:39:18 PDT 2006
+//    Added ImportEntireStateWithDifferentSourcesRPC.
+//
 // ****************************************************************************
 
 void
@@ -7373,6 +7444,9 @@ ViewerSubject::HandleViewerRPC()
         break;
     case ViewerRPC::ImportEntireStateRPC:
         ImportEntireState();
+        break;
+    case ViewerRPC::ImportEntireStateWithDifferentSourcesRPC:
+        ImportEntireStateWithDifferentSources();
         break;
     case ViewerRPC::ResetPickAttributesRPC:
         ResetPickAttributes();

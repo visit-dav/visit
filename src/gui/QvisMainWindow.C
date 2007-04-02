@@ -284,8 +284,11 @@
 //    Brad Whitlock, Mon Jul 24 17:43:18 PST 2006
 //    Added splitters.
 //
-//   Jeremy Meredith, Mon Aug 28 17:28:42 EDT 2006
-//   Added File Open window.
+//    Jeremy Meredith, Mon Aug 28 17:28:42 EDT 2006
+//    Added File Open window.
+//
+//    Brad Whitlock, Tue Nov 14 15:35:44 PST 2006
+//    I added restoreSessionWithSources.
 //
 // ****************************************************************************
 
@@ -386,6 +389,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     id = filePopup->insertItem(tr("Set Print options . . ."), this, SIGNAL(activatePrintWindow()), CTRL+Key_P);
     filePopup->insertSeparator();
     id = filePopup->insertItem(tr("Restore session . . ."), this, SIGNAL(restoreSession()));
+    id = filePopup->insertItem(tr("Restore session with sources . . ."), this, SIGNAL(restoreSessionWithSources()));
     id = filePopup->insertItem(tr("Save session . . ."), this, SIGNAL(saveSession()));
     filePopup->insertSeparator();
     filePopup->insertItem( tr("E&xit"), this, SIGNAL(quit()), CTRL+Key_X );

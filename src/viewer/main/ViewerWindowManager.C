@@ -8390,6 +8390,7 @@ ViewerWindowManager::EnableExternalRenderRequestsAllWindows(
 //
 // Arguments:
 //   parentNode : The node to which we're adding information.
+//   dbToSource : A map of database names to source ids.
 //   detailed   : A flag that tells whether we should write detailed info.
 //
 // Programmer: Brad Whitlock
@@ -8412,13 +8413,17 @@ ViewerWindowManager::EnableExternalRenderRequestsAllWindows(
 //   Eric Brugger, Mon Mar 29 15:21:11 PST 2004
 //   Added writing of maintainData.
 //
-//    Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004 
-//    Added timeQueryWindow. 
+//   Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004 
+//   Added timeQueryWindow. 
+//
+//   Brad Whitlock, Thu Nov 9 16:43:00 PST 2006
+//   Added dbToSource argument.
 //
 // ****************************************************************************
 
 void
-ViewerWindowManager::CreateNode(DataNode *parentNode, bool detailed)
+ViewerWindowManager::CreateNode(DataNode *parentNode, 
+    const std::map<std::string, std::string> &dbToSource, bool detailed)
 {
     if(parentNode == 0)
         return;
@@ -8457,7 +8462,7 @@ ViewerWindowManager::CreateNode(DataNode *parentNode, bool detailed)
     for(int i = 0; i < maxWindows; ++i)
     {
         if(windows[i] != 0)
-            windows[i]->CreateNode(windowsNode, detailed);
+            windows[i]->CreateNode(windowsNode, dbToSource, detailed);
     }
 }
 
@@ -8471,6 +8476,7 @@ ViewerWindowManager::CreateNode(DataNode *parentNode, bool detailed)
 // Arguments:
 //   parentNode : The node from which to get information about how to initialize
 //                the ViewerWindowManager.
+//   sourceToDB : The source to DB map.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Jun 30 12:56:30 PDT 2003
@@ -8507,10 +8513,14 @@ ViewerWindowManager::CreateNode(DataNode *parentNode, bool detailed)
 //   I added code to override the window sizes in the session file if the
 //   viewer is run in -nowin mode.
 //
+//   Brad Whitlock, Fri Nov 10 10:00:49 PDT 2006
+//   Added sourceToDB argument.
+//
 // ****************************************************************************
 
 void
-ViewerWindowManager::SetFromNode(DataNode *parentNode)
+ViewerWindowManager::SetFromNode(DataNode *parentNode,
+    const std::map<std::string,std::string> &sourceToDB)
 {
     if(parentNode == 0)
         return;
@@ -8717,7 +8727,7 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode)
         referenced[i] = false;
         if(windows[i] != 0 && childCount < newNWindows)
         {
-            windows[i]->SetFromNode(wNodes[childCount++]);
+            windows[i]->SetFromNode(wNodes[childCount++], sourceToDB);
             if(windows[i]->GetPlotList()->GetNumPlots() > 0)
                 referenced[i] = true;
         }

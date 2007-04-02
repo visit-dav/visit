@@ -6991,6 +6991,7 @@ ViewerWindow::GetIsCompressingScalableImage() const
 //
 // Arguments:
 //   parentNode : The node to which we're saving information.
+//   dbToSource : A map from database name to source ids used in the session.
 //   detailed   : Indicates whether detailed information should be added.
 //
 // Programmer: Brad Whitlock
@@ -7039,7 +7040,9 @@ ViewerWindow::GetIsCompressingScalableImage() const
 // ****************************************************************************
 
 void
-ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
+ViewerWindow::CreateNode(DataNode *parentNode, 
+    const std::map<std::string, std::string> &dbToSource,
+    bool detailed)
 {
     if(parentNode == 0)
         return;
@@ -7180,7 +7183,7 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
         //
         // Let the plot list add its information.
         //
-        GetPlotList()->CreateNode(windowNode);
+        GetPlotList()->CreateNode(windowNode, dbToSource);
     }
 
     //
@@ -7197,6 +7200,7 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
 //
 // Arguments:
 //   parentNode : The config file information DataNode pointer.
+//   sourceToDB : The source to DB map.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Jun 30 13:11:52 PST 2003
@@ -7251,10 +7255,14 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
 //   Brad Whitlock, Mon Sep 18 11:00:09 PDT 2006
 //   Added color texturing.
 //
+//   Brad Whitlock, Fri Nov 10 10:03:10 PDT 2006
+//   Added sourceToDB.
+//
 // ****************************************************************************
 
 void
-ViewerWindow::SetFromNode(DataNode *parentNode)
+ViewerWindow::SetFromNode(DataNode *parentNode, 
+    const std::map<std::string, std::string> &sourceToDB)
 {
     DataNode *node;
 
@@ -7390,7 +7398,7 @@ ViewerWindow::SetFromNode(DataNode *parentNode)
     //
     // Read in the plot list.
     //
-    if(GetPlotList()->SetFromNode(windowNode))
+    if(GetPlotList()->SetFromNode(windowNode, sourceToDB))
         SendUpdateFrameMessage();
 
     //

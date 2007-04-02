@@ -29,9 +29,9 @@ def main():
 
         movie = MakeMovie()
         movie.ProcessArguments()
-        movie.GenerateFrames()
-        if(movie.EncodeFrames()):
-            movie.Cleanup()
+        if movie.GenerateFrames() > 0:
+            if movie.EncodeFrames():
+                movie.Cleanup()
         sys.exit(0)
 
 #

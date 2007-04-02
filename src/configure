@@ -18022,7 +18022,9 @@ TOOLS_FILES="tools/Makefile
              tools/curv3dprep/Makefile
              tools/doxygenate/Makefile
              tools/escan/Makefile
+             tools/imagetools/Makefile
              tools/makemili/Makefile
+             tools/mpeg2encode/Makefile
              tools/mpeg_encode/Makefile
              tools/prep/Makefile
              tools/silex/Makefile

@@ -1382,6 +1382,26 @@ static void log_ImportEntireStateRPC(ViewerRPC *rpc, char *str)
              rpc->GetBoolFlag()?1:0);
 }
 
+static void log_ImportEntireStateWithDifferentSourcesRPC(ViewerRPC *rpc, char *str)
+{
+    std::string stuple;
+    char tmp[1000];
+    const stringVector &sources = rpc->GetProgramOptions();
+    stuple = "(";
+    for(int i = 0; i < sources.size(); ++i)
+    {
+        stuple += std::string("\"") + sources[i] + std::string("\"");
+        if(i < sources.size()-1)
+            stuple += ",";
+    }
+    stuple += ")";
+
+    SNPRINTF(str, SLEN, "RestoreSessionWithDifferentSources(\"%s\", %d, %s)\n",
+             rpc->GetVariable().c_str(),
+             rpc->GetBoolFlag()?1:0,
+             stuple.c_str());
+}
+
 static void log_ResetPickAttributesRPC(ViewerRPC *rpc, char *str)
 {
     SNPRINTF(str, SLEN, "ResetPickAttributes()\n");
@@ -1997,6 +2017,9 @@ LogRPCs(Subject *subj, void *)
         break;
     case ViewerRPC::ImportEntireStateRPC:
         log_ImportEntireStateRPC(rpc, str);
+        break;
+    case ViewerRPC::ImportEntireStateWithDifferentSourcesRPC:
+        log_ImportEntireStateWithDifferentSourcesRPC(rpc, str);
         break;
     case ViewerRPC::ResetPickAttributesRPC:
         log_ResetPickAttributesRPC(rpc, str);
