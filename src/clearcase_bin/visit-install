@@ -8,7 +8,7 @@
 # Date:   October 26, 1996
 #
 # Usage
-#    visit-install [-c open | closed | nersc | ornl] [-g group] [-gw] [-l] [-r]
+#    visit-install [-c open | closed] [-g group] [-gw] [-l] [-r] [-dmg]
 #                  [-beta | -private] version platform directory
 #
 #    The default is to install this version as the current version.
@@ -117,15 +117,11 @@
 #    I made it use mpeg2encode. I also made it install visit_composite
 #    and visit_transition.
 #
-#    Sean Ahern, Wed Jan 17 14:20:07 EST 2007
-#    Added documentation for "-c ornl" or "-c nersc".
+#    Brad Whitlock, Fri Feb 2 12:14:08 PDT 2007
+#    Added support for spaces in the install directory name.
 #
-#    Mark C. Miller, Thu Jan 25 20:15:18 PST 2007
-#    I added mkgrdbl.
-#
-#    Hank Childs, Tue Feb  6 09:38:58 PST 2007
-#    Fix bug with installing on Macs.  There are two files named "gui" 
-#    for Mac, which screwed up an assumption.
+#    Thomas R. Treadway, Tue Feb 13 16:20:12 PST 2007
+#    Added an dmg option to create a Mac disk image.
 #
 #-----------------------------------------------------------------------
 
@@ -141,6 +137,7 @@ set logging = false
 set group_ownership = none
 set dir_permission = 755
 set file_permission = 644
+set dmg = false
 
 # Figure out the platform so if we're on a platform for which we need to
 # perform extra steps, we know it.
@@ -187,6 +184,10 @@ while ($option_found == true)
          set logging = true
          shift
          breaksw
+      case -dmg:
+         set dmg = true
+         shift
+         breaksw
       default:
          set option_found = false
          breaksw
@@ -194,9 +195,8 @@ while ($option_found == true)
 end
 
 if ($#argv != 3) then
-   echo "Usage: visit-install [-c open | closed | ornl | nersc] [-g group] [-b bank]"
-   echo "                     [-gw] [-l] [-r] [-beta | -private] version"
-   echo "                     platform directory"
+   echo "Usage: visit-install [-c open | closed] [-g group] [-b bank] [-gw] [-l] [-dmg]"
+   echo "                     [-r] [-beta | -private] version platform directory"
    exit (1)
 endif
 
@@ -288,10 +288,10 @@ if ($bank == prompt) then
     endif
 endif
 
-set version = $1;
+set version = "$1";
 set base = `echo visit$version | tr "." "_"`
-set platform = $2
-set dir = $3
+set platform = "$2"
+set dir = "$3"
 
 set fname1 = $base.$platform.tar.Z
 if (! -e $fname1) then
@@ -307,8 +307,8 @@ set fname2 = $base.$platform.tar
 #
 # If the directory name is not an absolute path then make it one.
 #
-if (`echo $dir | grep "^/"` == "") then
-   set dir = `pwd`/$dir
+if (`echo "$dir" | grep "^/"` == "") then
+   set dir = `pwd`/"$dir"
 endif
 
 #
@@ -329,26 +329,25 @@ cd ..
 #
 # If the installation directory doesn't exist, create it.
 #
-if (! -e $dir)                mkdir $dir
-if (! -e $dir/bin)            mkdir $dir/bin
-if (! -e $dir/data)           mkdir $dir/data
+if (! -e "$dir")                mkdir "$dir"
+if (! -e "$dir"/bin)            mkdir "$dir"/bin
+if (! -e "$dir"/data)           mkdir "$dir"/data
 
 #
 # If not in append mode remove any old backup files and directories
 # from the installation directory.
 #
 if ($append == false) then
-   if (-e $dir/bin/legacylauncher-)      rm -f $dir/bin/legacylauncher-
-   if (-e $dir/bin/frontendlauncher-)    rm -f $dir/bin/frontendlauncher-
-   if (-e $dir/bin/xml2plugin-)          rm -f $dir/bin/xml2plugin-
-   if (-e $dir/bin/mkgrdbl-)          rm -f $dir/bin/mkgrdbl-
-   if (-e $dir/bin/visit-)       rm -f $dir/bin/visit- # not what it used to be
+   if (-e "$dir"/bin/legacylauncher-)      rm -f "$dir"/bin/legacylauncher-
+   if (-e "$dir"/bin/frontendlauncher-)    rm -f "$dir"/bin/frontendlauncher-
+   if (-e "$dir"/bin/xml2plugin-)          rm -f "$dir"/bin/xml2plugin-
+   if (-e "$dir"/bin/visit-)       rm -f "$dir"/bin/visit- # not what it used to be
    if ($beta == true) then
-      if (-e $dir/beta-)         rm -f $dir/beta-
+      if (-e "$dir"/beta-)         rm -f "$dir"/beta-
    else if ($private == false) then
-      if (-e $dir/current-)      rm -f $dir/current-
+      if (-e "$dir"/current-)      rm -f "$dir"/current-
    endif
-   if (-e $dir/$version-)        rm -rf $dir/$version-
+   if (-e "$dir"/$version-)        rm -rf "$dir"/$version-
 endif
 
 #
@@ -357,31 +356,28 @@ endif
 # data directory.
 #
 if ($logging == false) then
-   cp distribution/visit/bin/legacylauncher $dir/bin/legacylauncher+
+   cp distribution/visit/bin/legacylauncher "$dir"/bin/legacylauncher+
 else
-   sed -e "s/logging[ \t]*= 0/logging        = 1/" distribution/visit/bin/legacylauncher > $dir/bin/legacylauncher+
+   sed -e "s/logging[ \t]*= 0/logging        = 1/" distribution/visit/bin/legacylauncher > "$dir"/bin/legacylauncher+
 endif
-cp distribution/visit/bin/frontendlauncher $dir/bin/frontendlauncher+
-cp distribution/visit/bin/xml2plugin       $dir/bin/xml2plugin+
-cp distribution/visit/bin/mkgrdbl       $dir/bin/mkgrdbl+
+cp distribution/visit/bin/frontendlauncher "$dir"/bin/frontendlauncher+
+cp distribution/visit/bin/xml2plugin       "$dir"/bin/xml2plugin+
 
-if (-e $dir/$version+)           rm -rf $dir/$version+
+if (-e "$dir"/$version+)           rm -rf "$dir"/$version+
 if ($append == false) then
-   mkdir $dir/$version+
+   mkdir "$dir"/$version+
 else
-   if (! -e $dir/$version)       mkdir $dir/$version
-   mv $dir/$version $dir/$version+
-   ln -s $version+ $dir/$version
+   if (! -e "$dir"/$version)       mkdir "$dir"/$version
+   mv "$dir"/$version "$dir"/$version+
+   ln -s $version+ "$dir"/$version
 endif
 cd distribution/visit/$version
 
 # Determine the platform
 if("$os" == "darwin") then
-    set platformDir = "darwin-ppc"
+    set platformDir = "darwin"
 else
-    # On Mac, there are multiple "gui"s that match the find command.
-    # The "head -1" finds the first one, which is the one we want.
-    set findgui = `find . -name gui | head -1`
+    set findgui = `find . -name gui`
     set platformBin = `echo "$findgui" | sed -e "s/gui//"`
     set savepwd = `pwd`
     cd $platformBin/..
@@ -393,36 +389,36 @@ else
     end
 endif
 # Copy the files
-find . -print | cpio -pmud $dir/$version+
+find . -print | cpio -pmud "$dir"/$version+
 cd ../../..
-cp distribution/visit/data/* $dir/data
+cp distribution/visit/data/* "$dir"/data
 
 #
 # Store some of the installation options so they can be used by VisIt when
 # it updates itself later in the "Check for new versions" code.
 #
-echo "1;$config;$bank;$platform" > $dir/$version+/$platformDir/.installinfo
+echo "1;$config;$bank;$platform" > "$dir"/$version+/$platformDir/.installinfo
 
 
 #
 # Use the appropriate configuration file, setting the bank to the right value.
 #
-rm -f $dir/$version+/.visit/config
+rm -f "$dir"/$version+/.visit/config
 if ($config == closed) then
-   ln -s visit-config-closed $dir/$version+/.visit/config_template
+   ln -s visit-config-closed "$dir"/$version+/.visit/config_template
 else if ($config == nersc) then
-   ln -s visit-config-nersc $dir/$version+/.visit/config_template
+   ln -s visit-config-nersc "$dir"/$version+/.visit/config_template
 else if ($config == open) then
-   ln -s visit-config-open  $dir/$version+/.visit/config_template
+   ln -s visit-config-open  "$dir"/$version+/.visit/config_template
 else if ($config == ornl) then
-   ln -s visit-config-ornl $dir/$version+/.visit/config_template
+   ln -s visit-config-ornl "$dir"/$version+/.visit/config_template
 endif
-if (-e $dir/$version+/.visit/config_template) then
-    sed -e "s/bdivp/$bank/" $dir/$version+/.visit/config_template > $dir/$version+/.visit/config
+if (-e "$dir"/$version+/.visit/config_template) then
+    sed -e "s/bdivp/$bank/" "$dir"/$version+/.visit/config_template > "$dir"/$version+/.visit/config
     if ($group_ownership != none) then
-        chgrp $group_ownership $dir/$version+/.visit/config
+        chgrp $group_ownership "$dir"/$version+/.visit/config
     endif
-    chmod 664 $dir/$version+/.visit/config
+    chmod 664 "$dir"/$version+/.visit/config
 endif
 
 #
@@ -438,20 +434,20 @@ if("$os" == "darwin") then
     while($i < 5)
         set app = $appNames[$i]
         set appscript = $scriptNames[$i]
-        if(-e $dir/bin/$appscript.command) then
-            rm -f $dir/bin/$appscript.command
+        if(-e "$dir"/bin/$appscript.command) then
+            rm -f "$dir"/bin/$appscript.command
         endif
-        echo "#\!$csh -f"           >  $dir/bin/$appscript.command
+        echo "#\!$csh -f"           >  "$dir"/bin/$appscript.command
         if($i > 1) then
-            echo "$dir/bin/visit -$app" >> $dir/bin/$appscript.command
+            echo "$dir/bin/visit -$app" >> "$dir"/bin/$appscript.command
         else
-            echo "$dir/bin/visit"       >> $dir/bin/$appscript.command
+            echo "$dir/bin/visit"       >> "$dir"/bin/$appscript.command
         endif
-        echo "exit 0"               >> $dir/bin/$appscript.command
+        echo "exit 0"               >> "$dir"/bin/$appscript.command
         if ($group_ownership != none) then
-            chgrp $group_ownership $dir/bin/$appscript.command
+            chgrp $group_ownership "$dir"/bin/$appscript.command
         endif
-        chmod $dir_permission  $dir/bin/$appscript.command
+        chmod $dir_permission  "$dir"/bin/$appscript.command
         @ i++
     end
 endif
@@ -459,47 +455,45 @@ endif
 #
 # Set the permissions properly
 #
-chmod $dir_permission $dir
-chmod $dir_permission $dir/bin
-chmod $dir_permission $dir/bin/legacylauncher+
-chmod $dir_permission $dir/bin/frontendlauncher+
-chmod $dir_permission $dir/bin/xml2plugin+
-chmod $dir_permission $dir/bin/mkgrdbl+
-chmod $dir_permission $dir/data
-chmod $file_permission $dir/data/*
-chmod $dir_permission $dir/$version+
+chmod $dir_permission "$dir"
+chmod $dir_permission "$dir"/bin
+chmod $dir_permission "$dir"/bin/legacylauncher+
+chmod $dir_permission "$dir"/bin/frontendlauncher+
+chmod $dir_permission "$dir"/bin/xml2plugin+
+chmod $dir_permission "$dir"/data
+chmod $file_permission "$dir"/data/*
+chmod $dir_permission "$dir"/$version+
 
-find $dir/$version+ -type d -exec chmod $dir_permission {} \;
-find $dir/$version+ -type f -exec chmod $file_permission {} \;
+find "$dir"/$version+ -type d -exec chmod $dir_permission {} \;
+find "$dir"/$version+ -type f -exec chmod $file_permission {} \;
 
-chmod $dir_permission $dir/$version+/*/bin/*
-chmod $dir_permission $dir/$version+/bin/*
+chmod $dir_permission "$dir"/$version+/*/bin/*
+chmod $dir_permission "$dir"/$version+/bin/*
 
 #
 # Set the group ownership properly
 #
 if ($group_ownership != none) then
-    chgrp $group_ownership $dir/bin
-    chgrp $group_ownership $dir/bin/legacylauncher+
-    chgrp $group_ownership $dir/bin/frontendlauncher+
-    chgrp $group_ownership $dir/bin/xml2plugin+
-    chgrp $group_ownership $dir/bin/mkgrdbl+
-    chgrp $group_ownership $dir/data
-    chgrp $group_ownership $dir/data/*
-    find $dir/$version+ -type d -exec chgrp $group_ownership {} \;
-    find $dir/$version+ -type f -exec chgrp $group_ownership {} \;
+    chgrp $group_ownership "$dir"/bin
+    chgrp $group_ownership "$dir"/bin/legacylauncher+
+    chgrp $group_ownership "$dir"/bin/frontendlauncher+
+    chgrp $group_ownership "$dir"/bin/xml2plugin+
+    chgrp $group_ownership "$dir"/data
+    chgrp $group_ownership "$dir"/data/*
+    find "$dir"/$version+ -type d -exec chgrp $group_ownership {} \;
+    find "$dir"/$version+ -type f -exec chgrp $group_ownership {} \;
 endif
 
 if ($logging == true) then
-    sed -e "s/logging[ \t]*= 0/logging        = 1/" distribution/visit/$version/bin/internallauncher > $dir/$version+/bin/internallauncher
-    chmod $dir_permission $dir/$version+/bin/internallauncher
-    touch $dir/$version+/usagelog
-    touch $dir/$version+/cli_usagelog
-    chmod 666 $dir/$version+/usagelog
-    chmod 666 $dir/$version+/cli_usagelog
+    sed -e "s/logging[ \t]*= 0/logging        = 1/" distribution/visit/$version/bin/internallauncher > "$dir"/$version+/bin/internallauncher
+    chmod $dir_permission "$dir"/$version+/bin/internallauncher
+    touch "$dir"/$version+/usagelog
+    touch "$dir"/$version+/cli_usagelog
+    chmod 666 "$dir"/$version+/usagelog
+    chmod 666 "$dir"/$version+/cli_usagelog
     if ($group_ownership != none) then
-        chgrp $group_ownership $dir/$version+/usagelog
-        chgrp $group_ownership $dir/$version+/cli_usagelog
+        chgrp $group_ownership "$dir"/$version+/usagelog
+        chgrp $group_ownership "$dir"/$version+/cli_usagelog
     endif
 endif
 
@@ -515,16 +509,15 @@ if ($append == false) then
    #
    # Copy any current files to the backup filenames
    #
-   if (-e $dir/bin/legacylauncher) mv $dir/bin/legacylauncher $dir/bin/legacylauncher-
-   if (-e $dir/bin/frontendlauncher) mv $dir/bin/frontendlauncher $dir/bin/frontendlauncher-
-   if (-e $dir/bin/xml2plugin) mv $dir/bin/xml2plugin $dir/bin/xml2plugin-
-   if (-e $dir/bin/mkgrdbl) mv $dir/bin/mkgrdbl $dir/bin/mkgrdbl-
+   if (-e "$dir"/bin/legacylauncher) mv "$dir"/bin/legacylauncher "$dir"/bin/legacylauncher-
+   if (-e "$dir"/bin/frontendlauncher) mv "$dir"/bin/frontendlauncher "$dir"/bin/frontendlauncher-
+   if (-e "$dir"/bin/xml2plugin) mv "$dir"/bin/xml2plugin "$dir"/bin/xml2plugin-
    if ($beta == true) then
-      if (-e $dir/beta)          mv $dir/beta      $dir/beta-
+      if (-e "$dir"/beta)          mv "$dir"/beta      "$dir"/beta-
    else if ($private == false) then
-      if (-e $dir/current)       mv $dir/current   $dir/current-
+      if (-e "$dir"/current)       mv "$dir"/current   "$dir"/current-
    endif
-   if (-e $dir/$version)         mv $dir/$version  $dir/$version-
+   if (-e "$dir"/$version)         mv "$dir"/$version  "$dir"/$version-
 endif
 
 #
@@ -532,7 +525,7 @@ endif
 #
 set programs = "curv3dprep makemili mpeg2encode silex surfcomp text2polys time_annotation visit visitconvert xml2atts xml2avt xml2info xml2java xml2makefile xml2projectfile xml2python xml2window xmledit xmltest visit_composite visit_transition"
 
-cd $dir/bin
+cd "$dir"/bin
 foreach prog ($programs)
     rm -f $prog
     ln -s frontendlauncher $prog
@@ -541,7 +534,7 @@ end
 #
 # Make the symbolic links for the version
 #
-cd $dir
+cd "$dir"
 
 #
 # If $version exists at this point it is a link and must be removed
@@ -555,12 +548,16 @@ if (-e bin/frontendlauncher)     rm -f bin/frontendlauncher
 mv bin/frontendlauncher+ bin/frontendlauncher
 if (-e bin/xml2plugin)           rm -f bin/xml2plugin
 mv bin/xml2plugin+ bin/xml2plugin
-if (-e bin/mkgrdbl)           rm -f bin/mkgrdbl
-mv bin/mkgrdbl+ bin/mkgrdbl
 if ($beta == true) then
    if (-e beta)                  rm -f beta
    ln -s $version beta
 else if ($private == false) then
    if (-e current)               rm -f current
    ln -s $version current
+endif
+
+#
+# Create dmg if requested
+if ($dmg == true) then
+   /usr/bin/hdiutil create -fs HFS+ -srcfolder $dir -volname VisIt-$version VisIt-$version.dmg
 endif

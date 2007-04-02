@@ -173,7 +173,7 @@
     <Field name="elementIsGlobal" label="elementIsGlobal" type="bool" internal="true">
       false
     </Field>
-    <Field name="displayPickLetter" label="displayPickLetter" type="bool" internal="false">
+    <Field name="displayPickLetter" label="displayPickLetter" type="bool">
       true
     </Field>
     <Field name="ghostType" label="ghostType" type="int" internal="true">
@@ -183,10 +183,13 @@
       -1
     </Field>
     <Field name="linesData" label="linesData" type="bool" internal="true">
-      false 
+      false
     </Field>
     <Field name="inputTopoDim" label="inputTopoDim" type="int" internal="true">
-      -1 
+      -1
+    </Field>
+    <Field name="meshCoordType" label="meshCoordType" type="int">
+      0
     </Field>
     <Function name="PrintSelf" user="true" member="true">
     </Function>
@@ -208,5 +211,8 @@
     </Include>
     <Include file="source" quoted="false">
       float.h
+    </Include>
+    <Include file="source" quoted="false">
+      avtTypes.h
     </Include>
   </Attribute>

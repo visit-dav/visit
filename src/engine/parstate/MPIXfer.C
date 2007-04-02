@@ -46,6 +46,8 @@
 
 #include <visitstream.h>
 
+int MPIXfer::nanoSecsOfSleeps = 50000000; // 1/20th of a second
+int MPIXfer::secsOfSpinBeforeSleeps = 5;  // 5 seconds
 void (*MPIXfer::slaveProcessInstruction)() = NULL;
 const int UI_BCAST_TAG = GetUniqueStaticMessageTag();
 
@@ -427,11 +429,30 @@ MPIXfer::SetSlaveProcessInstructionCallback(void (*spi)())
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   February 12, 2007 
+//
+//  Modifications:
+//
+//    Mark C. Miller, Wed Feb 14 14:36:11 PST 2007
+//    Added class statics to control behavior and fall back to MPI's Bcast
+//    when we specify 0 sleep time.
 // ****************************************************************************
 int
 MPIXfer::VisIt_MPI_Bcast(void *buf, int count, MPI_Datatype datatype, int root,
     MPI_Comm comm)
 {
+    //
+    // Fall back to MPI broadcast if zero sleep time is specified
+    //
+    if (nanoSecsOfSleeps <= 0)
+    {
+        static bool first = true;
+        if (first)
+            debug5 << "Using MPI's Bcast; not VisIt_MPI_Bcast" << endl;
+        first = false;
+        MPI_Bcast(buf, count, datatype, root, comm);
+        return 2;
+    }
+        
     int rank = PAR_Rank();
     int size = PAR_Size();
     MPI_Status mpiStatus;
@@ -480,8 +501,7 @@ MPIXfer::VisIt_MPI_Bcast(void *buf, int count, MPI_Datatype datatype, int root,
         //
         double startedIdlingAt = TOA_THIS_LINE;
         int mpiFlag;
-        bool first1 = true;
-        bool first2 = true;
+        bool first = true;
         while (true)
         {
             // non-blocking test for recv completion
@@ -499,20 +519,13 @@ MPIXfer::VisIt_MPI_Bcast(void *buf, int count, MPI_Datatype datatype, int root,
             // amount of time we've been sitting here in this loop
             //
             double idleTime = TOA_THIS_LINE - startedIdlingAt;
-            if (idleTime > 60.0)
+            if (idleTime > secsOfSpinBeforeSleeps)
             {
-                if (first2)
-                    debug5 << "VisIt_MPI_Bcast started using  0.5 sec. nanosleep" << endl;
-                first2 = false;
-                struct timespec ts = {0, 500000000}; // 1/2 second
-                nanosleep(&ts, 0);
-            }
-            else if (idleTime > 5.0)
-            {
-                if (first1)
-                    debug5 << "VisIt_MPI_Bcast started using 0.05 sec. nanosleep" << endl;
-                first1 = false;
-                struct timespec ts = {0, 50000000}; // 1/20th second
+                if (first)
+                    debug5 << "VisIt_MPI_Bcast started using " << nanoSecsOfSleeps / 1.0e9
+                           << " seconds of nanosleep" << endl;
+                first = false;
+                struct timespec ts = {0, nanoSecsOfSleeps};
                 nanosleep(&ts, 0);
             }
         }
