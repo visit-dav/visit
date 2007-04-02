@@ -273,8 +273,10 @@ skipList="scalable,parallel:tests/databases/boxlib.py \
           scalable,parallel:tests/hybrid/locus.py \
           dlb:tests/databases/global_node_ids.py \
           dlb:tests/queries/pick.py \
-	  serial,purify:tests/databases/global_node_ids.py \
-	  serial,purify:tests/queries/pick.py"
+	  purify:tests/databases/global_node_ids.py \
+	  purify:tests/databases/pdbdatabase.py \
+	  purify:tests/queries/queriesOverTime.py \
+	  purify:tests/queries/pick.py"
 
 # run the test(s)
 error=0
