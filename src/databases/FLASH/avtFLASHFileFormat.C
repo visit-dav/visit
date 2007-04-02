@@ -1645,6 +1645,9 @@ avtFLASHFileFormat::BuildDomainNesting()
 //    Don't attempt if we don't have any grid data in this file (i.e. only
 //    particles in the file).
 //
+//    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
+//    API change for avtIntervalTree.
+//
 // ****************************************************************************
 void *
 avtFLASHFileFormat::GetAuxiliaryData(const char *var, int dom, 
@@ -1668,7 +1671,7 @@ avtFLASHFileFormat::GetAuxiliaryData(const char *var, int dom,
         bounds[3] = blocks[b].maxSpatialExtents[1];
         bounds[4] = blocks[b].minSpatialExtents[2];
         bounds[5] = blocks[b].maxSpatialExtents[2];
-        itree->AddDomain(b, bounds);
+        itree->AddElement(b, bounds);
     }
     itree->Calculate(true);
 

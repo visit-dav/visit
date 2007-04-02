@@ -1971,6 +1971,9 @@ avtSAMRAIFileFormat::ConvertMassFractionFields(vector<int> matIds,
 //    Mark C. Miller, Thu Oct 21 22:11:28 PDT 2004
 //    Fixed spatail extents for ALE mesh
 //
+//    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
+//    API change for avtIntervalTree.
+//
 // ****************************************************************************
 
 void *
@@ -2013,7 +2016,7 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int patch,
                         if (var_extents[v][patch].data_is_defined) {
                             double range[2] = { var_extents[v][patch].min, 
                                                var_extents[v][patch].max };
-                            itree->AddDomain(patch, range);
+                            itree->AddElement(patch, range);
                         }
                         else {
                            // if the varible does no have values, what will we add?
@@ -2046,7 +2049,7 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int patch,
                     }
                 }
                 if (data_defined) {
-                    itree->AddDomain(patch, range);
+                    itree->AddElement(patch, range);
                 }
                 else {
                   // if the varible does no have values, what do we add?
@@ -2073,7 +2076,7 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int patch,
                 bounds[j*2] = patch_extents[patch].xlo[j];
                 bounds[j*2+1] = patch_extents[patch].xup[j];
             }
-            itree->AddDomain(patch, bounds);
+            itree->AddElement(patch, bounds);
         }
         itree->Calculate(true);
 

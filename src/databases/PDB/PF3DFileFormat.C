@@ -1212,7 +1212,9 @@ PF3DFileFormat::GetVarMinMaxArrays(const std::string &name,
 // Creation:   Fri Jul 9 17:19:57 PST 2004
 //
 // Modifications:
-//   
+//    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
+//    API change for avtIntervalTree.
+//
 // ****************************************************************************
 
 void *
@@ -1240,7 +1242,7 @@ PF3DFileFormat::GetAuxiliaryData(const char *var, int dom,
                 int realDomain = GetRealDomainIndex(dom);
                 range[0] = minvals[realDomain];
                 range[1] = maxvals[realDomain];
-                itree->AddDomain(dom, range);
+                itree->AddElement(dom, range);
             }
             itree->Calculate(true);
             retval = (void *)itree;
@@ -1255,7 +1257,7 @@ PF3DFileFormat::GetAuxiliaryData(const char *var, int dom,
         {
             double extents[6];
             GetExtents(dom, extents);
-            itree->AddDomain(dom, extents);
+            itree->AddElement(dom, extents);
         }
         itree->Calculate(true);
 

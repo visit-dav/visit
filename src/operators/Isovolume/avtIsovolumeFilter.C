@@ -414,6 +414,9 @@ avtIsovolumeFilter::RefashionDataObjectInfo(void)
 //    Hank Childs, Wed Oct 20 17:04:52 PDT 2004
 //    Use interval trees to only read in the domains we need.
 //
+//    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
+//    API change for avtIntervalTree.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -449,7 +452,7 @@ avtIsovolumeFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
         double min = atts.GetLbound();
         double max = atts.GetUbound();
         vector<int> dl;
-        it->GetDomainsListFromRange(&min, &max, dl);
+        it->GetElementsListFromRange(&min, &max, dl);
         spec->GetDataSpecification()->GetRestriction()->RestrictDomains(dl);
     }
 

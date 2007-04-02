@@ -39,6 +39,10 @@
 // KSB, LLNL, Added flag that allows ghost cells to be ignored. 
 // JSM, LLNL, Added FindClosestPointToLine method for point meshes.
 
+// Modifications:
+//   Kathleen Bonnell, Tue Mar 14 16:36:37 PST 2006
+//   Moved CellIntersectLine and related individual cell-line intersection
+//   methods to vtkCellIntersections. 
 
 #ifndef __vtkVisItCellLocator_h
 #define __vtkVisItCellLocator_h
@@ -48,24 +52,11 @@
 
 class vtkCell;
 class vtkCellArray;
+class vtkCellIntersections;
 class vtkGenericCell;
 class vtkIdList;
 class vtkNeighborCells;
 class vtkPoints;
-class vtkVertex;
-class vtkPolyVertex;
-class vtkLine;
-class vtkPolyLine;
-class vtkTriangle;
-class vtkTriangleStrip;
-class vtkPolygon;
-class vtkPixel;
-class vtkQuad;
-class vtkTetra;
-class vtkVoxel;
-class vtkHexahedron;
-class vtkWedge;
-class vtkPyramid;
 
 class VISIT_VTK_API vtkVisItCellLocator : public vtkLocator
 {
@@ -271,7 +262,6 @@ protected:
   int GenerateIndex(int offset, int numDivs, int i, int j, int k,
                     vtkIdType &idx);
   void GenerateFace(int face, int numDivs, int i, int j, int k,
-
                     vtkPoints *pts, vtkCellArray *polys);
 
   vtkNeighborCells *Buckets;
@@ -306,60 +296,11 @@ private:
   vtkVisItCellLocator(const vtkVisItCellLocator&);  // Not implemented.
   void operator=(const vtkVisItCellLocator&);  // Not implemented.
 
-  int CellIntersectWithLine(vtkCell *, double [3], double [3], 
-                                double&, double [3], double [3], int &);
 
-  int VertexIntersectWithLine(vtkVertex *, double [3], double [3], 
-                                double&, double [3], double [3], int &);
-
-  int PolyVertexIntersectWithLine(vtkPolyVertex *, double [3], double [3], 
-                                double&, double [3], double [3], int &);
-
-  int LineIntersectWithLine(vtkLine *, double [3], double [3], 
-                                double&, double [3], double [3], int &);
-
-  int PolyLineIntersectWithLine(vtkPolyLine *, double [3], double [3], 
-                                double&, double [3], double [3], int &);
-
-  int TriangleIntersectWithLine(vtkTriangle *, double [3], double [3], 
-                                double&, double [3], double [3], int &);
-
-  int TriStripIntersectWithLine(vtkTriangleStrip *, double [3], double [3], 
-                                double&, double [3], double [3], int &);
-
-  int PolygonIntersectWithLine(vtkPolygon *, double [3], double [3], 
-                                double&, double [3], double [3], int &);
-
-  int PixelIntersectWithLine(vtkPixel *, double [3], double [3], 
-                                double&, double [3], double [3], int &);
-
-  int QuadIntersectWithLine(vtkQuad *, double [3], double [3], 
-                                double&, double [3], double [3], int &);
-
-  int TetraIntersectWithLine(vtkTetra *, double [3], double [3], 
-                                double&, double [3], double [3], int &);
-
-  int VoxelIntersectWithLine(vtkVoxel *, double [3], double [3], 
-                                double&, double [3], double [3], int &);
-
-  int HexIntersectWithLine(vtkHexahedron *, double [3], double [3], 
-                                double&, double [3], double [3], int &);
-
-  int WedgeIntersectWithLine(vtkWedge *, double [3], double [3], 
-                                double&, double [3], double [3], int &);
-
-  int PyramidIntersectWithLine(vtkPyramid *, double [3], double [3], 
-                                double&, double [3], double [3], int &);
-
-  void PrintTriangle(void);
-  vtkTriangle *triangle;
-  vtkQuad *quad;
+  vtkCellIntersections *CellIntersections;
   double MinCellLength;
   bool userBoundsSet;
   double UserBounds[6]; // alternate bounding box root octant
-
-private:
-  bool TestCoPlanar;
 };
 
 #endif

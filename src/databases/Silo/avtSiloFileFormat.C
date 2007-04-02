@@ -7320,6 +7320,10 @@ avtSiloFileFormat::GetGlobalZoneIds(int dom, const char *mesh)
 //  Programmer: Mark C. Miller
 //  Creation:   October 14, 2004 
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
+//    API change for avtIntervalTree.
+//
 // ****************************************************************************
 
 avtIntervalTree *
@@ -7362,7 +7366,7 @@ avtSiloFileFormat::GetSpatialExtents(const char *meshName)
             range[j*2+1] = mm->extents[i*esize + j + ndims];
         }
 
-        itree->AddDomain(i, range);
+        itree->AddElement(i, range);
     }
 
     itree->Calculate(true);
@@ -7379,6 +7383,10 @@ avtSiloFileFormat::GetSpatialExtents(const char *meshName)
 //
 //  Programmer: Mark C. Miller
 //  Creation:   October 14, 2004 
+//
+//  Modifications:
+//    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
+//    API change for avtIntervalTree.
 //
 // ****************************************************************************
 
@@ -7421,7 +7429,7 @@ avtSiloFileFormat::GetDataExtents(const char *varName)
             range[j*2+1] = mv->extents[i*esize + j + ncomps];
         }
 
-        itree->AddDomain(i, range);
+        itree->AddElement(i, range);
     }
 
     delete [] range;

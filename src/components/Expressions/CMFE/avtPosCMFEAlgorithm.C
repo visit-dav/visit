@@ -1368,6 +1368,10 @@ avtPosCMFEAlgorithm::FastLookupGrouping::ClearAllInputMeshes(void)
 //  Programmer: Hank Childs
 //  Creation:   October 11, 2005
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
+//    API change for avtIntervalTree.
+//
 // ****************************************************************************
 
 void
@@ -1404,7 +1408,7 @@ avtPosCMFEAlgorithm::FastLookupGrouping::Finalize(void)
             vtkCell *cell = meshes[i]->GetCell(j);
             double bounds[6];
             cell->GetBounds(bounds);
-            itree->AddDomain(index, bounds);
+            itree->AddElement(index, bounds);
 
             map_to_ds[index] = i;
             index++;
@@ -1413,7 +1417,7 @@ avtPosCMFEAlgorithm::FastLookupGrouping::Finalize(void)
     if (degenerate)
     {
         double bounds[6] = { 0, 1, 0, 1, 0, 1 };
-        itree->AddDomain(0, bounds);
+        itree->AddElement(0, bounds);
     }
 
     int t1 = visitTimer->StartTimer();
@@ -1437,6 +1441,10 @@ avtPosCMFEAlgorithm::FastLookupGrouping::Finalize(void)
 //  Programmer: Hank Childs
 //  Creation:   March 18, 2006
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
+//    API change for avtIntervalTree.
+//
 // ****************************************************************************
 
 bool
@@ -1459,7 +1467,7 @@ avtPosCMFEAlgorithm::FastLookupGrouping::GetValue(const float *pt, float *val)
     //
     vector<int> list;
     double dpt[3] = {pt[0], pt[1] , pt[2]};
-    itree->GetDomainsListFromRange(dpt, dpt, list);
+    itree->GetElementsListFromRange(dpt, dpt, list);
     bool v = GetValueUsingList(list, pt, val);
     if (v == true)
         list_from_last_successful_search = list;
@@ -2196,6 +2204,9 @@ Boundary::AttemptSplit(Boundary *&b1, Boundary *&b2)
 //    Hank Childs, Sat Mar 18 10:15:23 PST 2006
 //    Add support for rectilinear meshes.
 //
+//    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
+//    API change for avtIntervalTree.
+//
 // ****************************************************************************
 
 void
@@ -2265,7 +2276,7 @@ avtPosCMFEAlgorithm::SpatialPartition::CreatePartition(DesiredPoints &dp,
                 continue;
             float *b = b_list[i]->GetBoundary();
             double db[6] = {b[0], b[1], b[2], b[3], b[4], b[5]};
-            it.AddDomain(nBins, db);
+            it.AddElement(nBins, db);
             nBins++;
         }
         it.Calculate(true);
@@ -2279,7 +2290,7 @@ avtPosCMFEAlgorithm::SpatialPartition::CreatePartition(DesiredPoints &dp,
         {
             dp.GetPoint(i, pt);
             double dpt[3] = {pt[0], pt[1], pt[2]};
-            it.GetDomainsListFromRange(dpt, dpt, list);
+            it.GetElementsListFromRange(dpt, dpt, list);
             for (j = 0 ; j < list.size() ; j++)
             {
                 Boundary *b = b_list[bin_lookup[list[j]]];
@@ -2302,7 +2313,7 @@ avtPosCMFEAlgorithm::SpatialPartition::CreatePartition(DesiredPoints &dp,
             max[0] = x[nX-1];
             max[1] = y[nY-1];
             max[2] = z[nY-1];
-            it.GetDomainsListFromRange(min, max, list);
+            it.GetElementsListFromRange(min, max, list);
             for (j = 0 ; j < list.size() ; j++)
             {
                 Boundary *b = b_list[bin_lookup[list[j]]];
@@ -2325,7 +2336,7 @@ avtPosCMFEAlgorithm::SpatialPartition::CreatePartition(DesiredPoints &dp,
                 pt[0] = (bbox[0] + bbox[1]) / 2.;
                 pt[1] = (bbox[2] + bbox[3]) / 2.;
                 pt[2] = (bbox[4] + bbox[5]) / 2.;
-                it.GetDomainsListFromRange(pt, pt, list);
+                it.GetElementsListFromRange(pt, pt, list);
                 float fpt[3] = {pt[0], pt[1], pt[2]};
                 for (k = 0 ; k < list.size() ; k++)
                 {
@@ -2369,7 +2380,7 @@ avtPosCMFEAlgorithm::SpatialPartition::CreatePartition(DesiredPoints &dp,
         {
             float *b = b_list[i]->GetBoundary();
             double db[6] = {b[0], b[1], b[2], b[3], b[4], b[5]};
-            itree->AddDomain(count++, db);
+            itree->AddElement(count++, db);
         }
     }
     itree->Calculate(true);
@@ -2399,7 +2410,7 @@ avtPosCMFEAlgorithm::SpatialPartition::CreatePartition(DesiredPoints &dp,
         {
             dp.GetPoint(i, pt);
             double dpt[3] = {(double)pt[0], (double)pt[1], (double)pt[2]};
-            itree->GetDomainsListFromRange(dpt, dpt, list);
+            itree->GetElementsListFromRange(dpt, dpt, list);
             for (j = 0 ; j < list.size() ; j++)
             {
                 cnts[list[j]]++;
@@ -2434,6 +2445,10 @@ avtPosCMFEAlgorithm::SpatialPartition::CreatePartition(DesiredPoints &dp,
 //  Programmer: Hank Childs
 //  Creation:   October 12, 2005
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
+//    API change for avtIntervalTree.
+//
 // ****************************************************************************
 
 int
@@ -2442,7 +2457,7 @@ avtPosCMFEAlgorithm::SpatialPartition::GetProcessor(float *pt)
     vector<int> list;
 
     double dpt[3] = {(double)pt[0], (double)pt[1],(double) pt[2]};
-    itree->GetDomainsListFromRange(dpt, dpt, list);
+    itree->GetElementsListFromRange(dpt, dpt, list);
     if (list.size() <= 0)
     {
         EXCEPTION0(ImproperUseException);
@@ -2461,6 +2476,10 @@ avtPosCMFEAlgorithm::SpatialPartition::GetProcessor(float *pt)
 //  Programmer: Hank Childs
 //  Creation:   October 12, 2005
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
+//    API change for avtIntervalTree.
+//
 // ****************************************************************************
 
 int
@@ -2478,7 +2497,7 @@ avtPosCMFEAlgorithm::SpatialPartition::GetProcessor(vtkCell *cell)
     maxs[2] = bounds[5];
 
     vector<int> list;
-    itree->GetDomainsListFromRange(mins, maxs, list);
+    itree->GetElementsListFromRange(mins, maxs, list);
     if (list.size() <= 0)
     {
         return -2;
@@ -2502,6 +2521,10 @@ avtPosCMFEAlgorithm::SpatialPartition::GetProcessor(vtkCell *cell)
 //  Programmer: Hank Childs
 //  Creation:   October 12, 2005
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
+//    API change for avtIntervalTree.
+//
 // ****************************************************************************
 
 void
@@ -2521,7 +2544,7 @@ avtPosCMFEAlgorithm::SpatialPartition::GetProcessorList(vtkCell *cell,
     maxs[1] = bounds[3];
     maxs[2] = bounds[5];
 
-    itree->GetDomainsListFromRange(mins, maxs, list);
+    itree->GetElementsListFromRange(mins, maxs, list);
 }
 
 
@@ -2534,6 +2557,10 @@ avtPosCMFEAlgorithm::SpatialPartition::GetProcessorList(vtkCell *cell,
 //
 //  Programmer: Hank Childs
 //  Creation:   March 19, 2006
+//
+//  Modifications:
+//    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
+//    API change for avtIntervalTree.
 //
 // ****************************************************************************
 
@@ -2552,14 +2579,14 @@ avtPosCMFEAlgorithm::SpatialPartition::GetProcessorBoundaries(float *bounds,
     maxs[1] = bounds[3];
     maxs[2] = bounds[5];
 
-    itree->GetDomainsListFromRange(mins, maxs, list);
+    itree->GetElementsListFromRange(mins, maxs, list);
 
     int numMatches = list.size();
     db.resize(numMatches*6);
     for (int i = 0 ; i < numMatches ; i++)
     {
         double domBounds[6];
-        itree->GetDomainExtents(list[i], domBounds);
+        itree->GetElementExtents(list[i], domBounds);
         for (int j = 0 ; j < 6 ; j++)
             db[6*i+j] = domBounds[j];
     }

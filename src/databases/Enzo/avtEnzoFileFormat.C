@@ -1798,6 +1798,10 @@ avtEnzoFileFormat::GetVectorVar(int domain, const char *varname)
 //  Programmer:  Jeremy Meredith
 //  Creation:    January  6, 2005
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
+//    API change for avtIntervalTree.
+//
 // ****************************************************************************
 void *
 avtEnzoFileFormat::GetAuxiliaryData(const char *var, int dom, 
@@ -1818,7 +1822,7 @@ avtEnzoFileFormat::GetAuxiliaryData(const char *var, int dom,
         bounds[3] = grids[grid].maxSpatialExtents[1];
         bounds[4] = grids[grid].minSpatialExtents[2];
         bounds[5] = grids[grid].maxSpatialExtents[2];
-        itree->AddDomain(grid-1, bounds);
+        itree->AddElement(grid-1, bounds);
     }
     itree->Calculate(true);
 

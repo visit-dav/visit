@@ -57,6 +57,8 @@ typedef enum {NO_TYPE, CHARARRAY_TYPE, UCHARARRAY_TYPE, SHORTARRAY_TYPE,
 //
 // Modifications:
 //   
+//   Mark C. Miller, Tue Aug 15 15:28:11 PDT 2006
+//   Added method for partial read to support on-the-fly domain decomp
 // ****************************************************************************
 
 class NETCDFFileObject
@@ -84,6 +86,8 @@ public:
     bool ReadVariable(const char *varname, TypeEnum *type, int *ndims,
                       int **dims, void **values);
     bool ReadVariableInto(const char *varname, TypeEnum t, void *arr);
+    bool ReadVariableInto(const char *varname, TypeEnum t, 
+             const int *const starts, const int *const counts, void *arr);
     bool ReadVariableIntoAsFloat(const char *varname, float *arr);
 
     bool GetVarId(const char *name, int *varid);

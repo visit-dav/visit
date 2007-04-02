@@ -44,7 +44,7 @@
 
 #include <pipeline_exports.h>
 
-#include <vector>
+#include <vectortypes.h>
 
 
 // ****************************************************************************
@@ -85,23 +85,27 @@ class PIPELINE_API avtIntervalTree
     static void               Destruct(void *);
 
     void                      GetExtents(double *) const;
-    void                      GetDomainsList(const double *, double,
+    void                      GetElementsList(const double *, double,
                                              std::vector<int> &) const;
-    void                      GetDomainsList(double [3], double[3],
+    void                      GetElementsList(double [3], double[3],
                                              std::vector<int> &) const;
-    void                      GetDomainsListFromRange(const double *,
+    void                      GetElementsListFromRange(const double *,
                                                       const double *,
                                                       std::vector<int>&) const;
+    void                      GetElementsListFromRay(double [3], double[3],
+                                          intVector &, doubleVector &) const; 
+    void                      GetElementsListFromLine(double [3], double[3],
+                                          intVector &, doubleVector &) const; 
 
-    void                      AddDomain(int, double *);
+    void                      AddElement(int, double *);
     void                      Calculate(bool = false);
 
-    int                       GetNLeaves(void) const { return nDomains; };
+    int                       GetNLeaves(void) const { return nElements; };
     int                       GetLeafExtents(int, double *) const;
-    void                      GetDomainExtents(int, double *) const;
+    void                      GetElementExtents(int, double *) const;
 
   protected:
-    int                       nDomains;
+    int                       nElements;
     int                       nNodes;
     int                       nDims;
     int                       vectorSize;

@@ -356,6 +356,9 @@ avtSliceFilter::Equivalent(const AttributeGroup *a)
 //    Don't allow dynamic load balancing if we will need to communicate the
 //    point location.
 //
+//   Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
+//   API change for avtIntervalTree.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -470,7 +473,7 @@ avtSliceFilter::PerformRestriction(avtPipelineSpecification_p spec)
         double tmpD = normal[0]*origin[0] + normal[1]*origin[1] +
                      normal[2]*origin[2];
         vector<int> domains;
-        it->GetDomainsList(normal, tmpD, domains);
+        it->GetElementsList(normal, tmpD, domains);
         rv->GetDataSpecification()->GetRestriction()->RestrictDomains(domains);
     }
 
@@ -958,6 +961,9 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
 //    VTK filters no longer have a SetOutput method, Use SetOuputData from
 //    the filter's executive instead.
 //
+//   Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
+//   API change for avtIntervalTree.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -981,10 +987,10 @@ avtSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
     normal[1] = atts.GetNormal()[1];
     normal[2] = atts.GetNormal()[2];
     avtIntervalTree tree(1, 3);
-    tree.AddDomain(0, bounds);
+    tree.AddElement(0, bounds);
     tree.Calculate(true);
     vector<int> domains;
-    tree.GetDomainsList(normal, D, domains);
+    tree.GetElementsList(normal, D, domains);
     if (domains.size() <= 0)
     {
         debug5 << "Not slicing domain " << domain

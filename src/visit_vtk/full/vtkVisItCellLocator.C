@@ -21,29 +21,15 @@
 #include <vtkBox.h>
 #include <vtkCell.h>
 #include <vtkCellArray.h>
+#include <vtkCellIntersections.h>
 #include <vtkCellType.h>
 #include <vtkCellData.h>
 #include <vtkGenericCell.h>
-#include <vtkHexahedron.h>
 #include <vtkIdList.h>
-#include <vtkLine.h>
 #include <vtkMath.h>
 #include <vtkObjectFactory.h>
-#include <vtkPixel.h>
-#include <vtkPlane.h>
 #include <vtkPoints.h>
 #include <vtkPolyData.h>
-#include <vtkPolygon.h>
-#include <vtkPolyLine.h>
-#include <vtkPolyVertex.h>
-#include <vtkPyramid.h>
-#include <vtkQuad.h>
-#include <vtkTetra.h>
-#include <vtkTriangle.h>
-#include <vtkTriangleStrip.h>
-#include <vtkVertex.h>
-#include <vtkVoxel.h>
-#include <vtkWedge.h>
 
 #include <TimingsManager.h>
 #include <vtkVisItUtility.h>
@@ -86,11 +72,6 @@ inline int vtkNeighborCells::InsertNextPoint(int *x)
   return id/3;
 }
 
-int
-LineLineIsect(const double *, const double *, const double *, const double *, double *);
-
-int
-EdgeLineIsect(vtkCell *cell, const double *, const double *, double *);
 
 // Construct with automatic computation of divisions, averaging
 // 25 cells per bucket.
@@ -104,6 +85,9 @@ EdgeLineIsect(vtkCell *cell, const double *, const double *, double *);
 //
 //   Kathleen Bonnell, Thu Nov  6 08:18:54 PST 2003 
 //   Initialize UserBounds. 
+//
+//   Kathleen Bonnell, Tue Mar 14 16:36:37 PST 2006
+//   Remove triangle and quad, add CellIntersections
 //
 vtkVisItCellLocator::vtkVisItCellLocator()
 {
@@ -136,16 +120,17 @@ vtkVisItCellLocator::vtkVisItCellLocator()
  
   this->MinCellLength = VTK_DOUBLE_MAX;
 
-  this->triangle = vtkTriangle::New();
-  this->quad = vtkQuad::New();
-
-  this->TestCoPlanar = false;
+  this->CellIntersections = vtkCellIntersections::New();
 }
 
 //
 // Modificatons:
 //   Kathleen Bonnell, Wed Jun 18 18:27:18 PDT 2003 
 //   Delete triangle and quad. 
+//
+//   Kathleen Bonnell, Tue Mar 14 16:36:37 PST 2006
+//   Remove triangle and quad, add CellIntersections
+//
 //
 
 vtkVisItCellLocator::~vtkVisItCellLocator()
@@ -169,15 +154,10 @@ vtkVisItCellLocator::~vtkVisItCellLocator()
     delete [] this->CellBounds;
     this->CellBounds = NULL;
     }
-  if (this->triangle)
+  if (this->CellIntersections)
     {
-    this->triangle->Delete();
-    this->triangle = NULL;
-    }
-  if (this->quad)
-    {
-    this->quad->Delete();
-    this->quad = NULL;
+    this->CellIntersections->Delete();
+    this->CellIntersections = NULL;
     }
 }
 
@@ -519,8 +499,12 @@ int vtkVisItCellLocator::IntersectWithLine(double a0[3], double a1[3], double to
 //   Ensure that the 't' argument gets the correct value upon successful
 //   intersection.
 //
-//    Hank Childs, Fri Aug 27 15:15:20 PDT 2004
-//    Rename ghost data array.
+//   Hank Childs, Fri Aug 27 15:15:20 PDT 2004
+//   Rename ghost data array.
+//
+//   Kathleen Bonnell, Tue Mar 14 16:36:37 PST 2006
+//   Changed CellIntersectWithLine call to 
+//   CellIntersections::CellIntersectWithLine.
 //
 int vtkVisItCellLocator::IntersectWithLine(double a0[3], double a1[3], 
                                       double& t, double x[3], double pcoords[3],
@@ -664,7 +648,8 @@ int vtkVisItCellLocator::IntersectWithLine(double a0[3], double a1[3],
                 if (IgnoreLines && cell->GetCellType() == VTK_LINE)     
                   continue;
 
-                if (CellIntersectWithLine(cell, a0, a1, tempT, tempX, pc, tempId))
+                if (this->CellIntersections->CellIntersectWithLine(
+                    cell, a0, a1, tempT, tempX, pc, tempId))
                   {
 #if 0
                   if (!this->IsInOctantBounds(tempX))
@@ -1773,7 +1758,7 @@ void vtkVisItCellLocator::BuildLocator()
         ijkMax[i] = ndivs-1;
         }
       }
-    
+
     // each octant inbetween min/max point may have cell in it
     for ( k = ijkMin[2]; k <= ijkMax[2]; k++ )
       {
@@ -1937,8 +1922,8 @@ void vtkVisItCellLocator::GenerateRepresentation(int level, vtkPolyData *pd)
   pd->Squeeze();
 }
   
-void vtkVisItCellLocator::GenerateFace(int face, int numDivs, int i, int j, int k,
-                                  vtkPoints *pts, vtkCellArray *polys)
+void vtkVisItCellLocator::GenerateFace(int face, int numDivs, int i, int j, 
+                           int k, vtkPoints *pts, vtkCellArray *polys)
 {
   int ii;
   vtkIdType ids[4];
@@ -2222,743 +2207,6 @@ void vtkVisItCellLocator::ComputeOctantBounds(int i, int j, int k)
   this->OctantBounds[5] = this->OctantBounds[4] + H[2];
 }
 
-int
-vtkVisItCellLocator::CellIntersectWithLine(vtkCell *cell, double p1[3], double p2[3], 
-    double& t, double x[3], double pc[3], int& sub)
-{
-  switch(cell->GetCellType())
-    {
-    case VTK_EMPTY_CELL : return 0;
-    case VTK_VERTEX : 
-      return VertexIntersectWithLine((vtkVertex*)cell, p1, p2, t, x, pc, sub);
-    case VTK_POLY_VERTEX : 
-      return PolyVertexIntersectWithLine((vtkPolyVertex*)cell, p1, p2, t, x, pc, sub);
-    case VTK_LINE : 
-      return LineIntersectWithLine((vtkLine*)cell, p1, p2, t, x, pc, sub);
-    case VTK_POLY_LINE : 
-      return PolyLineIntersectWithLine((vtkPolyLine*)cell, p1, p2, t, x, pc, sub);
-    case VTK_TRIANGLE : 
-      return TriangleIntersectWithLine((vtkTriangle*)cell, p1, p2, t, x, pc, sub);
-    case VTK_TRIANGLE_STRIP : 
-      return TriStripIntersectWithLine((vtkTriangleStrip*)cell, p1, p2, t, x, pc, sub);
-    case VTK_POLYGON : 
-      return PolygonIntersectWithLine((vtkPolygon*)cell, p1, p2, t, x, pc, sub);
-    case VTK_PIXEL : 
-      return PixelIntersectWithLine((vtkPixel*)cell, p1, p2, t, x, pc, sub);
-    case VTK_QUAD : 
-      return QuadIntersectWithLine((vtkQuad*)cell, p1, p2, t, x, pc, sub);
-    case VTK_TETRA : 
-      return TetraIntersectWithLine((vtkTetra*)cell, p1, p2, t, x, pc, sub);
-    case VTK_VOXEL : 
-      return VoxelIntersectWithLine((vtkVoxel*)cell, p1, p2, t, x, pc, sub);
-    case VTK_HEXAHEDRON : 
-      return HexIntersectWithLine((vtkHexahedron*)cell, p1, p2, t, x, pc, sub);
-    case VTK_WEDGE : 
-      return WedgeIntersectWithLine((vtkWedge*)cell, p1, p2, t, x, pc, sub);
-    case VTK_PYRAMID : 
-      return PyramidIntersectWithLine((vtkPyramid*)cell, p1, p2, t, x, pc, sub);
-    default:
-      vtkDebugMacro( << "CellType  " << cell->GetCellType() 
-                     << "not yet supported for CellIntersectWithLine ..." );
-      return 0;
-    }
-}
-
-int
-vtkVisItCellLocator::VertexIntersectWithLine(vtkVertex *cell, double p1[3], double p2[3], 
-    double& t, double x[3], double pcoords[3], int& subId)
-{
-  double cp[3];
-  double X[3];
-  cell->Points->GetPoint(0, X);
-  double dist = vtkLine::DistanceToLine(X, p1, p2, t, cp);
-  pcoords[1] = pcoords[2] = 0.;
-  if (dist == 0)
-    {
-    x[0] = X[0];
-    x[1] = X[1];
-    x[2] = X[2];
-    pcoords[0] =  0.;
-    return 1;
-    }
-  pcoords[0] =  -10.;
-  return 0;
-}
-
-int
-vtkVisItCellLocator::PolyVertexIntersectWithLine(vtkPolyVertex *cell, double p1[3], double p2[3], 
-    double& t, double x[3], double pcoords[3], int& subId)
-{
-  int subTest, numPts=cell->Points->GetNumberOfPoints();
-  
-  vtkVertex *vertex = vtkVertex::New();
-  double pt[3];
-  for (subId=0; subId < numPts; subId++)
-    {
-    cell->Points->GetPoint(subId, pt);
-    vertex->Points->SetPoint(0, pt);
-
-    if ( VertexIntersectWithLine(vertex, p1, p2, t, x, pcoords, subTest) )
-      {
-      return 1;
-      }
-    }
-
-  return 0;
-}
-
-int
-vtkVisItCellLocator::LineIntersectWithLine(vtkLine *cell, double p1[3], double p2[3], 
-    double& t, double x[3], double pcoords[3], int& subId)
-{
-  double a1[3], a2[3];
-  int i;
-
-  subId = 0;
-  pcoords[1] = pcoords[2] = 0.0;
-
-  cell->Points->GetPoint(0, a1);
-  cell->Points->GetPoint(1, a2);
-
-  if ( vtkLine::Intersection(p1, p2, a1, a2, t, pcoords[0]) == 2 )
-    {
-    for (i=0; i<3; i++)
-      {
-      x[i] = a1[i] + pcoords[0]*(a2[i]-a1[i]);
-      }
-    return 1;
-    }
-  return 0;
-}
-
-int
-vtkVisItCellLocator::PolyLineIntersectWithLine(vtkPolyLine *cell, double p1[3], double p2[3], 
-    double& t, double x[3], double pcoords[3], int& subId)
-{
-  int i, numLines=cell->Points->GetNumberOfPoints() - 1;
-  double a1[3], a2[3];
-  for (subId=0; subId < numLines; subId++)
-    {
-    cell->Points->GetPoint(subId, a1);
-    cell->Points->GetPoint(subId+1, a2);
-    if ( vtkLine::Intersection(p1, p2, a1, a2, t, pcoords[0]) == 2)
-      {
-      for (i=0; i<3; i++)
-        {
-        x[i] = a1[i] + pcoords[0]*(a2[i]-a1[i]);
-        }
-      return 1;
-      }
-    }
- 
-  return 0;
-}
-
-#define SUB(dest,v1,v2){dest[0]=v1[0]-v2[0]; dest[1]=v1[1]-v2[1]; dest[2]=v1[2]-v2[2];}
-
-// ****************************************************************************
-//
-// Modifications:
-//   Kathleen Bonnell, Mon Jul  7 15:57:37 PDT 2003 
-//   Use smaller eps for testing when DotProduct close to zero.
-//
-//   Kathleen Bonnell, Thu Sep 18 15:48:54 PDT 2003
-//   Cast multiplication to double before setting intersection point. 
-//
-//   Kathleen Bonnell, Fri Oct 10 10:46:48 PDT 2003 
-//   Remove eps for testing DotProduct.
-//
-//   Kathleen Bonnell, Tue Jul 27 11:06:24 PDT 2004 
-//   If the line is coplanar with the triangle, and we should test for
-//   intersection in this case, call EdgeLineIsect. 
-//
-// ****************************************************************************
-int
-vtkVisItCellLocator::TriangleIntersectWithLine(vtkTriangle *cell, double p1[3], 
-    double p2[3], double& t, double x[3], double pcoords[3], int& subId)
-{
-  double pt1[3], pt2[3], pt3[3];
-  cell->Points->GetPoint(0, pt1);
-  cell->Points->GetPoint(1, pt2);
-  cell->Points->GetPoint(2, pt3);
- 
-  double e1[3], e2[3], p[3], s[3], q[3];
-  double rayDir[3];
-  double u, v, tmp, dt;
-
-  int i;
-  SUB(rayDir, p2, p1);
-  SUB(e1, pt2, pt1);
-  SUB(e2, pt3, pt1);
-
-  vtkMath::Cross(rayDir, e2, p);
-  tmp = vtkMath::Dot(p, e1);
-
-  if (tmp == 0.)
-  {
-      if (this->TestCoPlanar)
-          return EdgeLineIsect(cell, p1, p2, x);
-      else
-          return 0;
-  }
-
-  tmp = 1.0/tmp;
-  SUB(s, p1, pt1);
-
-  u = tmp * vtkMath::Dot(s, p);
-
-  if (u < 0.0 || u > 1.0)
-    {
-    pcoords[0] = pcoords[1] = pcoords[2] = 0.0;
-    return 0;
-    }
- 
-  vtkMath::Cross(s, e1, q);
-  v = tmp * vtkMath::Dot(rayDir, q);
-
-  if (v < 0. || v > 1.) 
-    {
-    pcoords[0] = pcoords[1] = pcoords[2] = 0.0;
-    return 0;
-    }
-  if ((u+v) > 1.)
-    {
-    pcoords[0] = pcoords[1] = pcoords[2] = 0.0;
-    return 0;
-    }
-  dt = tmp * vtkMath::Dot(e2, q);
-
-  pcoords[0] = u;
-  pcoords[1] = v;
-  pcoords[2] = 0; 
-
-  for (i = 0; i < 3; i++)
-    {
-    x[i] = (double) (p1[i] + (double)(dt*rayDir[i]));
-    }
-  t = (double)dt;
-
-  return 1;
-}
-
-int
-vtkVisItCellLocator::TriStripIntersectWithLine(vtkTriangleStrip *cell, double p1[3], double p2[3], 
-    double& t, double x[3], double pcoords[3], int& subId)
-{
-  int subTest, numTris = cell->Points->GetNumberOfPoints()-2;
-  double a1[3], a2[3], a3[3];
-  for (subId = 0; subId < numTris; subId++)
-    {
-    cell->Points->GetPoint(subId, a1);
-    cell->Points->GetPoint(subId+1, a2);
-    cell->Points->GetPoint(subId+2, a3);
-    this->triangle->Points->SetPoint(0, a1);
-    this->triangle->Points->SetPoint(1, a2);
-    this->triangle->Points->SetPoint(2, a3);
- 
-    if (this->TriangleIntersectWithLine(this->triangle, p1, p2, t, x, pcoords, subTest) )
-      {
-      return 1;
-      }
-    }
- 
-  return 0;
-}
-
-// ****************************************************************************
-//
-// Modifications:
-//   Kathleen Bonnell, Tue Jul 27 11:06:24 PDT 2004 
-//   If the line is coplanar with the polygon, and we should test for
-//   intersection in this case, call EdgeLineIsect. 
-//
-// ****************************************************************************
-
-int
-vtkVisItCellLocator::PolygonIntersectWithLine(vtkPolygon *cell, double p1[3], double p2[3], 
-    double& t, double x[3], double pcoords[3], int& subId)
-{
-  //
-  // Only change from Polygon::IntersectWithLine is dependence upon tol.
-  //
-  double pt1[3], n[3];
-  double closestPoint[3];
-  double dist2;
-  int npts = cell->GetNumberOfPoints();
-  double *weights;
- 
-  subId = 0;
-  pcoords[0] = pcoords[1] = pcoords[2] = 0.0;
- 
-  // Define a plane to intersect with
-  //
-  cell->Points->GetPoint(1, pt1);
-  cell->ComputeNormal(cell->Points,n);
-  double tmpt = -1; 
-  // Intersect plane of the polygon with line
-  //
-  if ( ! vtkPlane::IntersectWithLine(p1,p2,n,pt1,tmpt,x) )
-    {
-      if (tmpt != VTK_DOUBLE_MAX || !this->TestCoPlanar)
-          return 0;
-
-       return EdgeLineIsect(cell, p1, p2, x);
-    }
-
-  t = tmpt; 
-  // Evaluate position
-  //
-  weights = new double[npts];
-  if ( cell->EvaluatePosition(x, closestPoint, subId, pcoords, dist2, weights))
-    {
-      delete [] weights;
-      return 1;
-    }
-  delete [] weights;
-  return 0;
-}
-
-// ****************************************************************************
-//
-// Modifications:
-//   Kathleen Bonnell, Tue Jul 27 11:06:24 PDT 2004 
-//   If the line is coplanar with the pixel, and we should test for
-//   intersection in this case, call EdgeLineIsect. 
-//
-// ****************************************************************************
-int
-vtkVisItCellLocator::PixelIntersectWithLine(vtkPixel *cell, double p1[3], double p2[3], 
-    double& t, double x[3], double pcoords[3], int& subId)
-{
-  // rewriting pixel code only so that tol is not needed.
-  double pt1[3], pt4[3], n[3];
-  double closestPoint[3];
-  double dist2, weights[4];
-  int i;
-  subId = 0;
-  pcoords[0] = pcoords[1] = pcoords[2] = 0.0;
-
-  // 
-  // Get normal for triangle
-  // 
-  cell->Points->GetPoint(0, pt1);
-  cell->Points->GetPoint(3, pt4);
- 
-  n[0] = n[1] = n[2] = 0.0;
-  for (i=0; i<3; i++)
-    {
-    if ( (pt4[i] - pt1[i]) <= 0.0 )
-      {
-      n[i] = 1.0;
-      break;
-      }
-    }
-  //
-  // Intersect plane of pixel with line.
-  //
-  double tmpt = -1;
-  if ( ! vtkPlane::IntersectWithLine(p1,p2,n,pt1,tmpt,x) )
-  {
-      if (tmpt != VTK_DOUBLE_MAX || !this->TestCoPlanar)
-          return 0;
-      return EdgeLineIsect(cell, p1, p2, x);
-    }
-  t = tmpt;
-  //
-  // Does intersection point lie within pixel? 
-  //
-  if (cell->EvaluatePosition(x, closestPoint, subId, pcoords, dist2, weights) )
-    {
-    return 1;
-    }
-  return 0;
-
-}
-
-int
-vtkVisItCellLocator::QuadIntersectWithLine(vtkQuad *cell, double p1[3], double p2[3], 
-    double& t, double x[3], double pcoords[3], int& subId)
-{
-  double a1[3], a2[3], a3[3], a4[3];
-  int diagonalCase;
-  cell->Points->GetPoint(0, a1);
-  cell->Points->GetPoint(1, a2);
-  cell->Points->GetPoint(2, a3);
-  cell->Points->GetPoint(3, a4);
-  double d1 = vtkMath::Distance2BetweenPoints(a1, a3);
-  double d2 = vtkMath::Distance2BetweenPoints(a2, a4);
-  subId = 0;
-
-  // Figure out how to uniquely tessellate the quad. Watch out for 
-  // equivalent triangulations (i.e., the triangulation is equivalent
-  // no matter where the diagonal). In this case use the point ids as 
-  // a tie breaker to insure unique triangulation across the quad.
-  //
-  if ( d1 == d2 ) //rare case; discriminate based on point id
-    {
-    int i, id, maxId=0, maxIdx=0;
-    for (i=0; i<4; i++) //find the maximum id
-      {
-      if ( (id=cell->PointIds->GetId(i)) > maxId )
-        {
-        maxId = id;
-        maxIdx = i;
-        }
-      }
-    if ( maxIdx == 0 || maxIdx == 2) diagonalCase = 0;
-    else diagonalCase = 1;
-    }
-  else if ( d1 < d2 )
-    {
-    diagonalCase = 0;
-    }
-  else //d2 < d1
-    {
-    diagonalCase = 1;
-    }
-
-  // Note: in the following code the parametric coords must be adjusted to
-  // reflect the use of the triangle parametric coordinate system.
-  switch (diagonalCase)
-    {
-    case 0:
-      this->triangle->Points->SetPoint(0,a1);
-      this->triangle->Points->SetPoint(1,a2);
-      this->triangle->Points->SetPoint(2,a3);
-      if (TriangleIntersectWithLine(this->triangle, p1, p2, t, x, pcoords, subId) )
-        {
-        pcoords[0] = pcoords[0] + pcoords[1];
-        return 1;
-        }
-      this->triangle->Points->SetPoint(0,a3);
-      this->triangle->Points->SetPoint(1,a4);
-      this->triangle->Points->SetPoint(2,a1);
-      if (TriangleIntersectWithLine(this->triangle, p1, p2, t, x, pcoords, subId)   )
-        {
-        pcoords[0] = 1.0 - (pcoords[0]+pcoords[1]);
-        pcoords[1] = 1.0 - pcoords[1];
-        return 1;
-        }
-      return 0;
-
-    case 1:
-      this->triangle->Points->SetPoint(0,a1);
-      this->triangle->Points->SetPoint(1,a2);
-      this->triangle->Points->SetPoint(2,a4);
-      if (TriangleIntersectWithLine(this->triangle, p1, p2, t, x, pcoords, subId) )
-        {  
-        return 1;
-        }
-      this->triangle->Points->SetPoint(0,a3);
-      this->triangle->Points->SetPoint(1,a4);
-      this->triangle->Points->SetPoint(2,a2);
-      if (TriangleIntersectWithLine(this->triangle, p1, p2, t, x, pcoords, subId) )
-        {
-        pcoords[0] = 1.0 - pcoords[0];
-        pcoords[1] = 1.0 - pcoords[1];
-        return 1;
-        }
-      return 0;
-    }  
-    return 0;
-}
-
-int
-vtkVisItCellLocator::TetraIntersectWithLine(vtkTetra *cell, double p1[3], double p2[3], 
-    double& t, double x[3], double pcoords[3], int& subId)
-{
-  int intersection = 0;
-  double tTemp, pc[3], xTemp[3], a1[3], a2[3], a3[3];
-  int faceNum, *faceIds;
-
-  t = VTK_DOUBLE_MAX;
-
-  for (faceNum = 0; faceNum < 4; faceNum++)
-    {
-    faceIds = cell->GetFaceArray(faceNum);
-    cell->Points->GetPoint(faceIds[0], a1);
-    cell->Points->GetPoint(faceIds[1], a2);
-    cell->Points->GetPoint(faceIds[2], a3);
-    this->triangle->Points->SetPoint(0, a1);
-    this->triangle->Points->SetPoint(1, a2);
-    this->triangle->Points->SetPoint(2, a3);
-    if (this->TriangleIntersectWithLine(this->triangle, p1, p2, tTemp, xTemp, pc, subId))
-      {
-      intersection = 1;
-      if (tTemp < t)
-        {
-        t = tTemp;
-        x[0] = xTemp[0];
-        x[1] = xTemp[1];
-        x[2] = xTemp[2];
-        switch (faceNum)
-          {
-          case 0:
-            pcoords[0] = pc[0]; pcoords[1] = pc[1]; pcoords[2] = 0.0;
-            break;
- 
-          case 1:
-            pcoords[0] = 0.0; pcoords[1] = pc[1]; pcoords[2] = 0.0;
-            break;
- 
-          case 2:
-            pcoords[0] = pc[0]; pcoords[1] = 0.0; pcoords[2] = 0.0;
-            break;
- 
-          case 3:
-            pcoords[0] = pc[0]; pcoords[1] = pc[1]; pcoords[2] = pc[2];
-            break;
-          }
-        }
-      }
-    }
-  return intersection;
-}
-
-int
-vtkVisItCellLocator::VoxelIntersectWithLine(vtkVoxel *cell, double p1[3], double p2[3], 
-    double& t, double x[3], double pcoords[3], int& subId)
-{
-  double minPt[3], maxPt[3];
-  double bounds[6], p21[3];
-  int i;
- 
-  subId = 0;
- 
-  cell->Points->GetPoint(0, minPt);
-  cell->Points->GetPoint(7, maxPt);
- 
-  for (i=0; i<3; i++)
-    {
-    p21[i] = p2[i] - p1[i];
-    bounds[2*i] = minPt[i];
-    bounds[2*i+1] = maxPt[i];
-    }
- 
-  if ( ! vtkBox::IntersectBox(bounds, p1, p21, x, t) )
-    {
-    return 0;
-    }
-  //
-  // Evaluate intersection
-  //
-  for (i=0; i<3; i++)
-    {
-    pcoords[i] = (x[i] - minPt[i]) / (maxPt[i] - minPt[i]);
-    }
- 
-  return 1;
-}
-
-int
-vtkVisItCellLocator::HexIntersectWithLine(vtkHexahedron *cell, double p1[3], double p2[3], 
-    double& t, double x[3], double pcoords[3], int& subId)
-{
-  int intersection = 0, faceNum, *faceIds;
-  double tTemp, xTemp[3], pc[3], a1[3], a2[3], a3[3], a4[4];
-  t = VTK_DOUBLE_MAX;
-  for (faceNum = 0; faceNum < 6; faceNum++)
-    {
-    faceIds = cell->GetFaceArray(faceNum);
-    cell->Points->GetPoint(faceIds[0], a1);
-    cell->Points->GetPoint(faceIds[1], a2);
-    cell->Points->GetPoint(faceIds[2], a3);
-    cell->Points->GetPoint(faceIds[3], a4);
-    this->quad->Points->SetPoint(0, a1);
-    this->quad->Points->SetPoint(1, a2);
-    this->quad->Points->SetPoint(2, a3);
-    this->quad->Points->SetPoint(3, a4);
-    if (this->QuadIntersectWithLine(quad, p1, p2, tTemp, xTemp, pc, subId))
-      {
-      intersection = 1;
-      if (tTemp < t)
-        {
-        t = tTemp;
-        x[0] = xTemp[0];
-        x[1] = xTemp[1];
-        x[2] = xTemp[2];
-        switch(faceNum)
-          {
-          case 0:
-            pcoords[0] = 0.0; pcoords[0] = pc[0]; pcoords[1] = 0.0;
-            break;
- 
-          case 1:
-            pcoords[0] = 1.0; pcoords[0] = pc[0]; pcoords[1] = 0.0;
-            break;
- 
-          case 2:
-            pcoords[0] = pc[0]; pcoords[1] = 0.0; pcoords[2] = pc[1];
-            break;
- 
-          case 3:
-            pcoords[0] = pc[0]; pcoords[1] = 1.0; pcoords[2] = pc[1];
-            break;
- 
-          case 4:
-            pcoords[0] = pc[0]; pcoords[1] = pc[1]; pcoords[2] = 0.0;
-            break;
- 
-          case 5:
-            pcoords[0] = pc[0]; pcoords[1] = pc[1]; pcoords[2] = 1.0;
-          }
-        }
-      }
-    }
-  return intersection;  
-}
-
-int
-vtkVisItCellLocator::WedgeIntersectWithLine(vtkWedge *cell, double p1[3], double p2[3], 
-    double& t, double x[3], double pcoords[3], int& subId)
-{
-  int intersection = 0;
-  double tTemp, xTemp[3], pc[3], a1[3], a2[3], a3[3], a4[3];
-  int faceNum, *faceIds;
-
-  t = VTK_DOUBLE_MAX;
-
-  // faces 0 & 1 are triangle-faces, intersect them first
-  for (faceNum = 0; faceNum < 2; faceNum++)
-    {
-    faceIds = cell->GetFaceArray(faceNum);
-    cell->Points->GetPoint(faceIds[0], a1); 
-    cell->Points->GetPoint(faceIds[1], a2); 
-    cell->Points->GetPoint(faceIds[2], a3); 
-    this->triangle->Points->SetPoint(0, a1);
-    this->triangle->Points->SetPoint(1, a2);
-    this->triangle->Points->SetPoint(2, a3);
-    if (this->TriangleIntersectWithLine(this->triangle, p1, p2, tTemp, xTemp, pc, subId))
-      {
-      intersection = 1;
-      if (tTemp < t)
-        {
-        t = tTemp;
-        x[0] = xTemp[0];
-        x[1] = xTemp[1];
-        x[2] = xTemp[2];
-        switch (faceNum)
-          {
-          case 0:
-            pcoords[0] = pc[0]; pcoords[1] = pc[1]; pcoords[2] = 0.0;
-            break;
- 
-          case 1:
-            pcoords[0] = pc[0]; pcoords[1] = pc[1]; pcoords[2] = 1.0;
-            break;
-          }
-        }
-      }
-    }
-
-  // faces 2 -4 are quads, now intersect them
-  for (faceNum = 2; faceNum < 5; faceNum++)
-    {
-    faceIds = cell->GetFaceArray(faceNum);
-    cell->Points->GetPoint(faceIds[0], a1);
-    cell->Points->GetPoint(faceIds[1], a2);
-    cell->Points->GetPoint(faceIds[2], a3);
-    cell->Points->GetPoint(faceIds[3], a4);
-    this->quad->Points->SetPoint(0, a1);
-    this->quad->Points->SetPoint(1, a2);
-    this->quad->Points->SetPoint(2, a3);
-    this->quad->Points->SetPoint(3, a4);
-    if (this->QuadIntersectWithLine(this->quad, p1, p2, tTemp, xTemp, pcoords, subId))
-      {
-      intersection = 1;
-      if (tTemp < t)
-        {
-        t = tTemp;
-        x[0] = xTemp[0];
-        x[1] = xTemp[1];
-        x[2] = xTemp[2];
-        switch (faceNum)
-          {
-          case 2:
-            pcoords[0] = pc[1]; pcoords[1] = 0.0; pcoords[2] = pc[0];
-            break;
- 
-          case 3:
-            pcoords[0] = 1.0-pc[1]; pcoords[1] = pc[1]; pcoords[2] = pc[0];
-            break;
- 
-          case 4:
-            pcoords[0] = 0.0; pcoords[1] = pc[1]; pcoords[2] = pc[0];
-            break;
-          }
-        }
-      }
-    }
-  return intersection;
-}
-
-int
-vtkVisItCellLocator::PyramidIntersectWithLine(vtkPyramid *cell, double p1[3], double p2[3], 
-    double& t, double x[3], double pcoords[3], int& subId)
-{
-  int intersection = 0;
-  int faceNum;
-  int *faceIds;
-  double xTemp[3], weights[5], pc[3], dist2, tTemp;
-  double a1[3], a2[3], a3[3], a4[3];
-
-  t = VTK_DOUBLE_MAX;
-
-  // faces 1-4 are triangles, intersect them first.
-  for (faceNum = 1; faceNum < 5; faceNum++)
-    {
-    faceIds = cell->GetFaceArray(faceNum);
-    cell->Points->GetPoint(faceIds[0], a1);
-    cell->Points->GetPoint(faceIds[1], a2);
-    cell->Points->GetPoint(faceIds[2], a3);
-    this->triangle->Points->SetPoint(0, a1);
-    this->triangle->Points->SetPoint(1, a2);
-    this->triangle->Points->SetPoint(2, a3);
-    if (this->TriangleIntersectWithLine(this->triangle, p1, p2, tTemp, xTemp, pc, subId))
-      {
-      intersection = 1;
-      if (tTemp < t)
-        {
-        t = tTemp;
-        x[0] = xTemp[0];
-        x[1] = xTemp[1];
-        x[2] = xTemp[2];
-        //
-        // to get the correct pcoords
-        //
-        cell->EvaluatePosition(x, xTemp, subId, pcoords, dist2, weights);
-        }
-      }
-    }
-  // now intersect quad face 
-  faceIds = cell->GetFaceArray(0);
-  cell->Points->GetPoint(faceIds[0], a1);
-  cell->Points->GetPoint(faceIds[1], a2);
-  cell->Points->GetPoint(faceIds[2], a3);
-  cell->Points->GetPoint(faceIds[3], a4);
-  this->quad->Points->SetPoint(0, a1);
-  this->quad->Points->SetPoint(1, a2);
-  this->quad->Points->SetPoint(2, a3);
-  this->quad->Points->SetPoint(3, a4);
-
-  if (this->QuadIntersectWithLine(this->quad, p1, p2, tTemp, xTemp, pc, subId))
-    {
-    intersection = 1;
-    if (tTemp < t)
-      {
-      t = tTemp;
-      x[0] = xTemp[0];
-      x[1] = xTemp[1];
-      x[2] = xTemp[2];
-      pcoords[0] = pc[0];
-      pcoords[1] = pc[1];
-      pcoords[2] = 0.0; 
-      }
-    }
-
-  return intersection; 
-}
-
 
 // ****************************************************************************
 // Purpose:
@@ -2981,109 +2229,6 @@ vtkVisItCellLocator::SetUserBounds(double b[6])
 
 
 // ****************************************************************************
-// Method:    LineLineIsect
-//
-// Description:
-//   Determines if two line segments intersect.
-//
-//   From Graphics Gems II, "Intersection of Line Segments" by Mukesh Prasad, 
-//   p. 7-9, code: p. 473-476, xlines.c.
-//
-// Returns:     1 if an intersection is found, 0 otherwise.
-//
-// Arguments:
-//   p1         The first endpoint of the first line segment. 
-//   p2         The second endpoint of the first line segment.
-//   p3         The first endpoint of the second line segment. 
-//   p4         The second endpoint of the second line segment.
-//   isect      A place to store the intersection point, if any. 
-//
-// Programmer:  Kathleen Bonnell
-// Creation:    July 27, 2004 
-//
-// ****************************************************************************
-
-int
-LineLineIsect(const double *p1, const double *p2, const double *p3, 
-              const double *p4, double *isect)
-{
-    double a1, a2, b1, b2, c1, c2, r1, r2, r3, r4;
-    double x1 = p1[0], x2 = p2[0], x3 = p3[0], x4 = p4[0]; 
-    double y1 = p1[1], y2 = p2[1], y3 = p3[1], y4 = p4[1]; 
-
-    a1 = y2 - y1; 
-    b1 = x1 - x2;
-    c1 = x2 * y1 - x1 * y2;
-
-    r3 = a1 * x3 + b1 *y3 + c1;
-    r4 = a1 * x4 + b1 *y4 + c1;
-           
-    if ((r3 < 0 && r4 < 0) || (r3 > 0 && r4 > 0))
-    {
-        return 0;
-    }
-
-    a2 = y4 - y3;
-    b2 = x3 - x4;
-    c2 = x4 * y3 - x3 * y4;
-
-    r1 = a2 * x1 + b2 * y1 + c2;
-    r2 = a2 * x2 + b2 * y2 + c2;
-            
-    if ((r1 < 0 && r2 < 0) || (r1 > 0 && r2 > 0))
-    {
-        return 0;
-    }
-
-    double denom = a1 * b2 - a2 * b1;
-    if (denom == 0)
-    { // COLLINEAR
-        return 0;
-    }
-
-    isect[0] = (b1 * c2 - b2 * c1) / denom;
-    isect[1] = (a2 * c1 - a1 * c2) / denom;
-    isect[2] = 0;
-
-    return 1;    
-}
-
-// ****************************************************************************
-// Method:    EdgeLineIsect
-//
-// Description:
-//   Determines if the finit line specified by endpoints p1 and p2 intersects
-//   any of the edges of the given cell.
-//
-// Returns:     1 if an intersection is found, 0 otherwise.A
-//
-// Arguments:
-//   cell       The cell to test for intersection.
-//   p1         The first endpoint of the finite line.
-//   p2         The second endpoint of the finite line.
-//
-// Programmer:  Kathleen Bonnell
-// Creation:    July 27, 2004 
-//
-// ****************************************************************************
-int
-EdgeLineIsect(vtkCell *cell, const double *p1, const double *p2, double *x)
-{
-    double p3[3], p4[3];
-    bool isectedEdge = false;
-    int numEdges = cell->GetNumberOfEdges();
-    int i;
-
-    for (i = 0; i < numEdges && !isectedEdge; i++)
-    {
-        cell->GetEdge(i)->Points->GetPoint(0, p3);
-        cell->GetEdge(i)->Points->GetPoint(1, p4);
-        isectedEdge = (bool) LineLineIsect(p1, p2, p3, p4, x);
-    }
-    return (isectedEdge ? 1 : 0); 
-}
-
-// ****************************************************************************
 // Method:    vtkVisItCellLocator::IntersectWithLine
 //
 // Description:
@@ -3103,15 +2248,17 @@ EdgeLineIsect(vtkCell *cell, const double *p1, const double *p2, double *x)
 //   Kathleen Bonnell, Thu May 19 11:34:05 PDT 2005 
 //   Return both cell-centers AND intersection points. 
 //
-//   Hank Childs, Fri Jun  9 13:13:20 PDT 2006
-//   Remove unused variable.
+//   Kathleen Bonnell, Tue Mar 14 16:36:37 PST 2006
+//   Changed CellIntersectWithLine call to 
+//   CellIntersections::CellIntersectWithLine.
 //
 // ****************************************************************************
+
 int vtkVisItCellLocator::IntersectWithLine(double a0[3], double a1[3], 
                                       vtkPoints *ipts, vtkPoints *cpts,
                                       vtkIdList *cells)
 {
-  this->TestCoPlanar = true;
+  this->CellIntersections->SetTestCoPlanar(1);
   vtkGenericCell *cell = vtkGenericCell::New();
 
   double origin[3];
@@ -3250,7 +2397,8 @@ int vtkVisItCellLocator::IntersectWithLine(double a0[3], double a1[3],
                 if (IgnoreLines && cell->GetCellType() == VTK_LINE)     
                   continue;
 
-                if (CellIntersectWithLine(cell, a0, a1, tempT, tempX, pc, tempId))
+                if (this->CellIntersections->CellIntersectWithLine(
+                      cell, a0, a1, tempT, tempX, pc, tempId))
                   {
                   cells->InsertNextId(cId);
                   ipts->InsertNextPoint(tempX);
@@ -3317,10 +2465,11 @@ int vtkVisItCellLocator::IntersectWithLine(double a0[3], double a1[3],
       
       idx = leafStart + pos[0] - 1 + (pos[1]-1)*this->NumberOfDivisions + 
         (pos[2]-1)*prod;
+
       }
     }
   cell->Delete();   
-  this->TestCoPlanar = false;
+  this->CellIntersections->SetTestCoPlanar(false);
   return cells->GetNumberOfIds() > 0; 
 }
 
@@ -3376,4 +2525,4 @@ vtkVisItCellLocator::FindClosestPointToLine(double a0[3], double a1[3],
         }
     }
 }
-  
+

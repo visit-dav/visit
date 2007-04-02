@@ -1142,6 +1142,9 @@ avtBOVFileFormat::GetVectorVar(int dom, const char *var)
 //    Do not throw an exception if the variable name is foreign to us -- it
 //    is probably an expression.
 //
+//    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
+//    API change for avtIntervalTree.
+//
 // ****************************************************************************
 
 void *
@@ -1168,7 +1171,7 @@ avtBOVFileFormat::GetAuxiliaryData(const char *var, int domain,
             for (int i = 0 ; i < nbricks ; i++)
             {
                 double range[2] = { var_brick_min[i], var_brick_max[i] };
-                itree->AddDomain(i, range);
+                itree->AddElement(i, range);
             }
             itree->Calculate(true);
 
@@ -1202,7 +1205,7 @@ avtBOVFileFormat::GetAuxiliaryData(const char *var, int domain,
             bounds[3] = origin[1] + y_step*(y_off+1);
             bounds[4] = origin[2] + z_step*z_off;
             bounds[5] = origin[2] + z_step*(z_off+1);
-            itree->AddDomain(i, bounds);
+            itree->AddElement(i, bounds);
         }
         itree->Calculate(true);
 

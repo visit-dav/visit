@@ -1850,6 +1850,10 @@ avtBoxlib3DFileFormat::GetMaterial(const char *var, int patch,
 //  Programmer: Hank Childs
 //  Creation:   November 8, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
+//    API change for avtIntervalTree.
+//
 // ****************************************************************************
     
 void *
@@ -1870,7 +1874,7 @@ avtBoxlib3DFileFormat::GetSpatialIntervalTree(DestructorFunction &df)
         bounds[3] = yMax[patch];
         bounds[4] = zMin[patch];
         bounds[5] = zMax[patch];
-        itree->AddDomain(patch, bounds);
+        itree->AddElement(patch, bounds);
     }
     itree->Calculate(true);
 

@@ -72,6 +72,9 @@
 #    Hank Childs, Wed Aug 18 08:34:12 PDT 2004
 #    Added ugrid facelist filter and polydata relevant points from "full".
 #
+#    Kathleen Bonnell, Mon Aug 14 11:39:22 PDT 2006 
+#    Added vtkCellIntersections. 
+#
 ##############################################################################
 
 ##
@@ -92,6 +95,7 @@ SRC=InitVTKNoGraphics.C \
     ClipCasesTri.C \
     ClipCasesWdg.C \
     ClipCasesVox.C \
+    vtkCellIntersections.C \
     vtkDataSetFromVolume.C \
     vtkDebugStream.C \
     vtkPolyDataRelevantPointsFilter.C \
