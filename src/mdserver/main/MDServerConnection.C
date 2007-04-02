@@ -584,6 +584,9 @@ MDServerConnection::GetPluginErrors()
 //
 //   Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //   Added bool arg forceReadAllCyclesAndTimes
+//
+//   Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//   Added use of forceReadAllCyclesAndTimes in call to GetDatabase
 // ****************************************************************************
 
 void
@@ -601,7 +604,7 @@ MDServerConnection::ReadMetaData(std::string file, int timeState,
     //
     // Try and read the database. This could throw an exception.
     //
-    avtDatabase *db = GetDatabase(file, ts);
+    avtDatabase *db = GetDatabase(file, ts, forceReadAllCyclesAndTimes);
     if (db != NULL)
     {
         currentMetaData = db->GetMetaData(ts, forceReadAllCyclesAndTimes);
@@ -704,6 +707,8 @@ MDServerConnection::GetCurrentMetaData() const
 //   Handle errors through exceptions instead of error codes.   This allows
 //   real error messages to make it to the user.
 //
+//   Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//   Added bool arg to GetDatabase
 // ****************************************************************************
 
 void
@@ -722,7 +727,7 @@ MDServerConnection::ReadSIL(std::string file, int timeState)
     //
     // Try and read the database. This could throw an exception.
     //
-    avtDatabase *db = GetDatabase(file, ts);
+    avtDatabase *db = GetDatabase(file, ts, false);
     if (db != NULL)
     {
         avtSIL *s  = db->GetSIL(ts);
@@ -2213,10 +2218,13 @@ MDServerConnection::GetVirtualFileDefinition(const std::string &file)
 //    I changed the test for determining whether a file is a .visit file
 //    so directories can contain ".visit".
 //
+//    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//    Added bool arg forceReadAllCyclesAndTimes
 // ****************************************************************************
 
 avtDatabase *
-MDServerConnection::GetDatabase(string file, int timeState)
+MDServerConnection::GetDatabase(string file, int timeState,
+    bool forceReadAllCyclesAndTimes)
 {
     //
     // Make sure that the plugins are loaded.
@@ -2235,7 +2243,8 @@ MDServerConnection::GetDatabase(string file, int timeState)
         int    timeid = visitTimer->StartTimer();
         debug2 << "MDServerConnection::GetDatabase: Need to get a new database"
                << ". file=" << file.c_str()
-               << ", timeState=" << timeState << endl;
+               << ", timeState=" << timeState
+               << ", forceReadAllCyclesAndTimes=" << forceReadAllCyclesAndTimes << endl;
 
         if (currentDatabase != NULL)
         {
@@ -2300,7 +2309,7 @@ MDServerConnection::GetDatabase(string file, int timeState)
 
                 // Try and make a database out of the filenames.
                 currentDatabase = avtDatabaseFactory::FileList(names,
-                    fileNames.size(), timeState);
+                    fileNames.size(), timeState, NULL, forceReadAllCyclesAndTimes);
 
                 // Free the memory that we used.
                 for(i = 0; i < fileNames.size(); ++i)
@@ -2339,11 +2348,13 @@ MDServerConnection::GetDatabase(string file, int timeState)
         }
         else if (FileHasVisItExtension(file))
         {
-            currentDatabase = avtDatabaseFactory::VisitFile(fn, timeState);
+            currentDatabase = avtDatabaseFactory::VisitFile(fn, timeState, NULL,
+                                                            forceReadAllCyclesAndTimes);
         }
         else
         {
-            currentDatabase = avtDatabaseFactory::FileList(&fn, 1, timeState);
+            currentDatabase = avtDatabaseFactory::FileList(&fn, 1, timeState, NULL,
+                                                           forceReadAllCyclesAndTimes);
         }
 
         visitTimer->StopTimer(timeid, timerMessage);

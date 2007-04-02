@@ -841,10 +841,17 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
 //    Added code to handling forcing of reading all cycles and times and
 //    to update cached metadata if we ever do read all cycles and times
 //
+//    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//    Added bool to force reading the current state's cycle/time. Added
+//    code to populate the returned metadata with current state's cycle/time
+//    if it was requested AND the metadata about to be returned doesn't think
+//    it already has accurate cycle/time information for that state.
+//
 // ****************************************************************************
 
 avtDatabaseMetaData *
-avtDatabase::GetMetaData(int timeState, bool forceReadAllCyclesTimes)
+avtDatabase::GetMetaData(int timeState, bool forceReadAllCyclesTimes,
+    bool forceReadThisStateCycleTime)
 {
     std::list<CachedMDEntry>::iterator i;
 
@@ -983,7 +990,17 @@ avtDatabase::GetMetaData(int timeState, bool forceReadAllCyclesTimes)
         }
     }
 
-    return metadata.front().md;
+    
+    avtDatabaseMetaData *retval = metadata.front().md;
+
+    if (forceReadThisStateCycleTime)
+    {
+        if (!retval->IsCycleAccurate(timeState) ||
+            !retval->IsTimeAccurate(timeState))
+            SetCycleTimeInDatabaseMetaData(retval, timeState);
+    }
+
+    return retval; 
 }
 
 
@@ -1626,7 +1643,7 @@ avtDatabase::GetExtentsFromAuxiliaryData(avtDataSpecification_p spec,
         return false;
 
     avtIntervalTree *tree = (avtIntervalTree *) *(list.list[0]);
-    float fextents[6];
+    float fextents[6] = {0.,0.,0.,0.,0.,0.};
     tree->GetExtents(fextents);
 
     int nvals = 2;

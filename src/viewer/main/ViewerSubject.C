@@ -6647,6 +6647,8 @@ ViewerSubject::SendKeepAlives()
 //    Hank Childs, Thu May 26 17:51:49 PDT 2005
 //    Added export database RPC.
 //
+//    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//    Added SetTryHarderCyclesTimesRPC
 // ****************************************************************************
 
 void
@@ -6943,6 +6945,9 @@ ViewerSubject::HandleViewerRPC()
         break;
     case ViewerRPC::ExportDBRPC:
         ExportDatabase();
+        break;
+    case ViewerRPC::SetTryHarderCyclesTimesRPC:
+        SetTryHarderCyclesTimes();
         break;
     case ViewerRPC::MaxRPC:
         break;
@@ -7575,4 +7580,21 @@ ViewerSubject::HandleSILAttsUpdated(const string &host,
     fs->SetSimulationSILAtts(host, file, *silAtts);
     silAtts->SelectAll();
     silAtts->Notify();
+}
+
+// ****************************************************************************
+//  Method:  ViewerSubject::SetTryHarderCyclesTimes
+//
+//  Purpose: Handle a SetTryHarderCyclesTimes RPC
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    May 25, 2005 
+//
+// ****************************************************************************
+
+void
+ViewerSubject::SetTryHarderCyclesTimes()
+{
+    ViewerFileServer *fs = ViewerFileServer::Instance();
+    fs->SetTryHarderCyclesTimes(viewerRPC.GetIntArg1());
 }

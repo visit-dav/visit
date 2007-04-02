@@ -472,45 +472,37 @@ PP_ZFileReader::VariableIsNodal(const std::string &var) const
 // Creation:   Thu Jun 26 15:09:18 PST 2003
 //
 // Modifications:
+// 
+//    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//    Added call to Initialize(). Always set cycles/times. Removed unused
+//    state argument
 //   
 // ****************************************************************************
 
 void
-PP_ZFileReader::GetTimeVaryingInformation(int state, avtDatabaseMetaData *md)
+PP_ZFileReader::GetTimeVaryingInformation(avtDatabaseMetaData *md)
 {
-    debug4 << "PP_ZFileReader::GetTimeVaryingInformation: state=" << state << endl;
+    debug4 << "PP_ZFileReader::GetTimeVaryingInformation" << endl;
 
-    //
-    // Make sure everything is initialized.
-    //
-    Initialize();
+    intVector c; c.reserve(nCycles);
+    for(int i = 0; i < nCycles; ++i)
+        c.push_back(cycles[i]);
 
-    // Put the cycles into the metadata.
-    if(md->GetCycles().size() < nCycles)
-    {
-        intVector c; c.reserve(nCycles);
-        for(int i = 0; i < nCycles; ++i)
-            c.push_back(cycles[i]);
-
-        // Set all of the cycles at once.
-        md->SetCycles(c);
-        md->SetCyclesAreAccurate(true);
-    }
+    // Set all of the cycles at once.
+    md->SetCycles(c);
+    md->SetCyclesAreAccurate(true);
 
     // Put the times into the metadata.
-    if(md->GetTimes().size() < nTimes)
-    {
-        doubleVector d; d.reserve(nTimes);
-        for(int i = 0; i < nTimes; ++i)
-            d.push_back(times[i]);
+    doubleVector d; d.reserve(nTimes);
+    for(int i = 0; i < nTimes; ++i)
+        d.push_back(times[i]);
 
-        // Set all of the cycles at once.
-        md->SetTimes(d);
-        md->SetTimesAreAccurate(true);
+    // Set all of the cycles at once.
+    md->SetTimes(d);
+    md->SetTimesAreAccurate(true);
 
-        if(nTimes > 0)
-            md->SetTemporalExtents(times[0], times[nTimes-1]);
-    }
+    if(nTimes > 0)
+        md->SetTemporalExtents(times[0], times[nTimes-1]);
 }
 
 // ****************************************************************************
@@ -817,6 +809,9 @@ PP_ZFileReader::PopulateMaterialNames()
 // Creation:   Wed Sep 17 12:02:38 PDT 2003
 //
 // Modifications:
+//
+//    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//    Added dummy arg for timestate to PopulateDatabaseMetaData
 //   
 // ****************************************************************************
 
@@ -826,7 +821,7 @@ PP_ZFileReader::InitializeVarStorage()
     if(!varStorageInitialized)
     {
         avtDatabaseMetaData md;
-        PopulateDatabaseMetaData(&md);
+        PopulateDatabaseMetaData(-1, &md);
     }
 }
 
@@ -860,10 +855,12 @@ PP_ZFileReader::InitializeVarStorage()
 //   Changed code to account for mixed material arrays having another
 //   suffix in Flash files.
 //
+//   Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//   Added timestep argument and code to set cycles/times
 // ****************************************************************************
 
 void
-PP_ZFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
+PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
 {
     debug4 << "PP_ZFileReader::PopulateDatabaseMetaData: start" << endl;
 
@@ -871,6 +868,38 @@ PP_ZFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // Make sure that everything is initialized.
     //
     Initialize();
+
+    if (timestep > -1)
+    {
+        if (cycles && md->GetNumStates() == nCycles)
+        {
+            for(int i = 0; i < nCycles; ++i)
+            {
+                md->SetCycle(i,cycles[i]);
+                md->SetCycleIsAccurate(true,i);
+            }
+        }
+        else if(cycles && md->GetNumStates() > timestep  && nCycles == 1)
+        {
+            md->SetCycle(timestep,cycles[0]);
+            md->SetCycleIsAccurate(true,timestep);
+        }
+
+        if(times && md->GetNumStates() == nTimes)
+        {
+            for(int i = 0; i < nTimes; ++i)
+            {
+                md->SetTime(i,times[i]);
+                md->SetTimeIsAccurate(true,i);
+            }
+            md->SetTemporalExtents(times[0], times[nTimes-1]);
+        }
+        else if(times && md->GetNumStates() > timestep && nTimes == 1)
+        {
+            md->SetTime(timestep,times[0]);
+            md->SetTimeIsAccurate(true,timestep);
+        }
+    }
 
     //
     // Add the database comment if it is present. This won't leak memory

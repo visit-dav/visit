@@ -138,6 +138,8 @@ class MessageAttributes;
 //   the engine (not the mdserver) to place the correct metadata her.
 //   This is used for simulations.
 //
+//   Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//   Added forceReadAllCyclesTimes and methods to Set/Get it
 // ****************************************************************************
 
 class GUI_API FileServerList : public AttributeSubject
@@ -172,6 +174,8 @@ public:
     void LoadPlugins();
     void SendKeepAlives();
 
+    void SetForceReadAllCyclesTimes(bool set);
+
     void OpenFile(const QualifiedFilename &filename, int timeState);
     void ReplaceFile(const QualifiedFilename &filename);
     void OverlayFile(const QualifiedFilename &filename);
@@ -192,6 +196,8 @@ public:
     bool GetUseCurrentDirectory() const;
     bool GetAutomaticFileGrouping() const;
     bool GetSmartFileGrouping() const;
+
+    bool GetForceReadAllCyclesTimes() const;
 
     const stringVector &GetRecentPaths(const std::string &host) const;
     void AddPathToRecentList(const std::string &host, const std::string &path);
@@ -267,6 +273,7 @@ private:
     std::string activeHost;
     bool        connectingServer;
     std::string filter;
+    bool        forceReadAllCyclesTimes;
 
     // The file list for the current host.
     MDServerProxy::FileList fileList;

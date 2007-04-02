@@ -134,6 +134,8 @@
 #    Added a pass for an optimized build 
 #    Added calls to clean up ipc resources
 #
+#    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+#    Updated skipList
 # ----------------------------------------------------------------------------
 
 # list of users who want email every night with the log file
@@ -279,16 +281,7 @@ skipList="scalable,parallel:tests/databases/boxlib.py \
           scalable,parallel:tests/hybrid/locus.py \
           dlb:tests/databases/global_node_ids.py \
           dlb:tests/queries/pick.py \
-	  serial:tests/databases/pdbdatabase.py \
-	  parallel:tests/databases/pdbdatabase.py \
-	  scalable,parallel:tests/databases/pdbdatabase.py \
-	  hdf5:tests/databases/pdbdatabase.py \
-	  dlb:tests/databases/pdbdatabase.py \
-	  serial:tests/hybrid/timelock.py \
-	  parallel:tests/hybrid/timelock.py \
-	  scalable,parallel:tests/hybrid/timelock.py \
-	  hdf5:tests/hybrid/timelock.py \
-	  dlb:tests/hybrid/timelock.py"
+	  optimized:tests/plots/tensor.py"
 
 # run the test(s)
 error=0
@@ -361,9 +354,9 @@ cd ..
 error=0
 cd test
 if test "$skipList" = ""; then
-    ./runtest -q -p -m optimized -d "$curdate" -notrackmem -minor-error 5 -major-error 20 
+    ./runtest -q -p -m optimized -d "$curdate" -notrackmem -minor-error 8 -major-error 20 
 else
-    ./runtest -q -s "$skipList" -p -m optimized -d "$curdate" -notrackmem -minor-error 5 -major-error 20
+    ./runtest -q -s "$skipList" -p -m optimized -d "$curdate" -notrackmem -minor-error 8 -major-error 20
 fi
 curerror=$?
 if test ! "$curerror" = "0"; then

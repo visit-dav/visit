@@ -39,21 +39,23 @@ class CommonDatabasePluginInfo;
 //    Hank Childs, Sun May  9 11:41:45 PDT 2004
 //    Allow for default file format type to be set.
 //
+//    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//    Added bool args for forcing reading of all cycles/times
 // ****************************************************************************
 
 class DATABASE_API avtDatabaseFactory
 {
   public:
     static avtDatabase           *FileList(const char * const *, int, int,
-                                           const char * = NULL);
+                                           const char * = NULL, bool = false);
     static avtDatabase           *VisitFile(const char *, int,
-                                            const char * = NULL);
+                                            const char * = NULL, bool = false);
     static void                   SetDefaultFormat(const char *);
 
   protected:
     static avtDatabase           *SetupDatabase(CommonDatabasePluginInfo *,
                                                 const char * const *, int,
-                                                int, int, int);
+                                                int, int, int, bool);
 
     static char                  *defaultFormat;
 };

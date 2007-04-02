@@ -35,6 +35,8 @@ class QSpinBox;
 //   I added toggles that let you set the prompting behavior for "make default"
 //   and "automatically apply operator".
 //
+//   Mark C. Miller, Wed Jun  1 11:12:25 PDT 2005
+//   Added setTryHarderCyclesTimes check box
 // ****************************************************************************
 
 class GUI_API QvisPreferencesWindow : public QvisPostableWindowObserver
@@ -64,6 +66,7 @@ private slots:
     void cloneWindowOnFirstRefToggled(bool val);
     void postWindowsWhenShownToggled(bool val);
     void makeDefaultConfirmToggled(bool val);
+    void tryHarderCyclesTimesToggled(bool val);
     void automaticallyApplyOperatorToggled(bool val);
     void handleTimeStateDisplayModeChange(int val);
     void timeStateNDigitsChanged(int val);
@@ -73,6 +76,7 @@ private:
     QCheckBox        *cloneWindowOnFirstRefToggle;
     QCheckBox        *postWindowsWhenShownToggle;
     QCheckBox        *makeDefaultConfirmToggle;
+    QCheckBox        *tryHarderCyclesTimesToggle;
     QCheckBox        *automaticallyApplyOperatorToggle;
     QCheckBox        *selectedFilesToggle;
     QCheckBox        *allowFileSelectionChangeToggle;

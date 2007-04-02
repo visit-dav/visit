@@ -45,8 +45,7 @@ public:
     virtual void          GetTimes(std::vector<double> &times);
     virtual int           GetNTimesteps();
     virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
-    virtual void          GetTimeVaryingInformation(int ts,
-                                                    avtDatabaseMetaData *);
+    virtual void          GetTimeVaryingInformation(avtDatabaseMetaData *);
     virtual void         *GetAuxiliaryData(const char *var,
                                            int timeState,
                                            const char *type,

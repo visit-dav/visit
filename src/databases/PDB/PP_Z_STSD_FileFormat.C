@@ -186,7 +186,7 @@ PP_Z_STSD_FileFormat::GetType()
 void
 PP_Z_STSD_FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
-    reader.PopulateDatabaseMetaData(md);
+    reader.PopulateDatabaseMetaData(timestep, md);
 }
 
 int

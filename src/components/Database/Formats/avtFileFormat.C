@@ -2,6 +2,9 @@
 //                             avtFileFormat.C                               //
 // ************************************************************************* //
 
+#include <limits.h> // for INT_MAX
+#include <float.h> // for DBL_MAX
+
 #include <avtFileFormat.h>
 
 #include <avtDatabaseMetaData.h>
@@ -20,6 +23,15 @@ using std::vector;
 //
 
 void   FileFormatCloseFileCallback(void *, int);
+
+//
+// Class statics/constants
+//
+const int    avtFileFormat::INVALID_CYCLE = -INT_MAX;
+const double avtFileFormat::INVALID_TIME  = -DBL_MAX;
+
+const int    avtFileFormat::FORMAT_INVALID_CYCLE = INVALID_CYCLE + 1;
+const double avtFileFormat::FORMAT_INVALID_TIME  = INVALID_TIME + 1;
 
 
 // ****************************************************************************

@@ -411,14 +411,16 @@ PP_Z_MTSD_FileFormat::GetNTimesteps()
 void
 PP_Z_MTSD_FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
-    readers[0]->PopulateDatabaseMetaData(md);
+    readers[0]->PopulateDatabaseMetaData(0, md);
+
+    GetTimeVaryingInformation(md);
 
     // Since some setup takes place when reading the metadata in the reader, 
     // make sure that all of the readers have a chance to do their setup.
     for(int i = 1; i < nReaders; ++i)
     {
         avtDatabaseMetaData tmp;
-        readers[i]->PopulateDatabaseMetaData(&tmp);
+        readers[i]->PopulateDatabaseMetaData(-1, &tmp);
     }
 }
 
@@ -439,30 +441,21 @@ PP_Z_MTSD_FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 // ****************************************************************************
 
 void
-PP_Z_MTSD_FileFormat::GetTimeVaryingInformation(int ts, avtDatabaseMetaData *md)
+PP_Z_MTSD_FileFormat::GetTimeVaryingInformation(avtDatabaseMetaData *md)
 {
     // Put the cycles into the metadata.
     intVector c;
     GetCycles(c);
-    if(md->GetCycles().size() < c.size())
-    {
-        // Set all of the cycles at once.
-        md->SetCycles(c);
-        md->SetCyclesAreAccurate(true);
-    }
+    md->SetCycles(c);
+    md->SetCyclesAreAccurate(true);
 
     // Put the times into the metadata.
     doubleVector t;
     GetTimes(t);
-    if(md->GetTimes().size() < t.size())
-    {
-        // Set all of the times at once.
-        md->SetTimes(t);
-        md->SetTimesAreAccurate(true);
-
-        if(t.size() > 0)
-            md->SetTemporalExtents(t[0], t[t.size()-1]);
-    }
+    md->SetTimes(t);
+    md->SetTimesAreAccurate(true);
+    if(t.size() > 0)
+        md->SetTemporalExtents(t[0], t[t.size()-1]);
 }
 
 // ****************************************************************************

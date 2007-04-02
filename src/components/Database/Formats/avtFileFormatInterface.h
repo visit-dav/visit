@@ -163,6 +163,9 @@ class    avtVariableCache;
 //
 //    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //    Added bool arg, forceReadAllCyclesAndTimes, to SetDatabaseMetaData
+//
+//    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//    Added method SetCycleTimeInDatabaseMetaData
 // ****************************************************************************
 
 class DATABASE_API avtFileFormatInterface
@@ -181,6 +184,8 @@ class DATABASE_API avtFileFormatInterface
     virtual void            SetDatabaseMetaData(avtDatabaseMetaData *md,
                                 int timeState = 0,
                                 bool forceReadAllCyclesTimes = false) = 0;
+    virtual void            SetCycleTimeInDatabaseMetaData(
+                                avtDatabaseMetaData *md, int ts) = 0;
 
     virtual void            FreeUpResources(int, int) = 0;
     virtual void            ActivateTimestep(int ts) = 0;

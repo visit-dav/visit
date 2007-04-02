@@ -122,6 +122,9 @@ class Xfer;
 //    Hank Childs, Mon May 23 14:04:43 PDT 2005
 //    Added GetDBPluginInfo.
 //
+//    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//    Added bool arg to GetDatabase for forcing reading all cycles/times
+//
 // ****************************************************************************
 
 class MDServerConnection
@@ -258,7 +261,8 @@ private:
     static bool                       currentDatabaseHasInvariantMD;
     static VirtualFileInformationMap  virtualFiles;
 
-    avtDatabase               *GetDatabase(std::string, int timeState);
+    avtDatabase               *GetDatabase(std::string, int timeState,
+                                           bool forceReadAllCyclesAndTimes);
 };
 
 #endif

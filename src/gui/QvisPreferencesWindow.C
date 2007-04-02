@@ -2,6 +2,7 @@
 
 #include <GlobalAttributes.h>
 #include <ViewerProxy.h>
+#include <FileServerList.h>
 
 #include <qbuttongroup.h>
 #include <qcheckbox.h>
@@ -97,6 +98,9 @@ QvisPreferencesWindow::~QvisPreferencesWindow()
 //   Brad Whitlock, Fri Aug 6 09:21:57 PDT 2004
 //   I added toggles for makeDefaultConfirm and automaticallyApplyOperator.
 //
+//   Mark C. Miller, Wed Jun  1 11:12:25 PDT 2005
+//   I added toggles for setTryHarderCyclesTimes
+//
 // ****************************************************************************
 
 void
@@ -122,6 +126,13 @@ QvisPreferencesWindow::CreateWindowContents()
     connect(makeDefaultConfirmToggle, SIGNAL(toggled(bool)),
             this, SLOT(makeDefaultConfirmToggled(bool)));
     topLayout->addWidget(makeDefaultConfirmToggle);
+
+    tryHarderCyclesTimesToggle =
+        new QCheckBox("Try harder to get accurate cycles/times",
+                      central, "tryHarderCyclesTimesToggle");
+    connect(tryHarderCyclesTimesToggle, SIGNAL(toggled(bool)),
+            this, SLOT(tryHarderCyclesTimesToggled(bool)));
+    topLayout->addWidget(tryHarderCyclesTimesToggle);
 
     automaticallyApplyOperatorToggle =
         new QCheckBox("Prompt before applying new operator",
@@ -218,6 +229,9 @@ QvisPreferencesWindow::CreateWindowContents()
 //   Brad Whitlock, Fri Aug 6 09:21:57 PDT 2004
 //   I added toggles for makeDefaultConfirm and automaticallyApplyOperator.
 //
+//   Mark C. Miller, Wed Jun  1 11:12:25 PDT 2005
+//   I added toggles for setTryHarderCyclesTimes
+//
 // ****************************************************************************
 
 void
@@ -254,6 +268,17 @@ QvisPreferencesWindow::UpdateWindow(bool doAll)
         automaticallyApplyOperatorToggle->setChecked(
             !atts->GetAutomaticallyAddOperator());
         automaticallyApplyOperatorToggle->blockSignals(false);
+    }
+
+    if (doAll || atts->IsSelected(14))
+    {
+        //
+        // Try harder to get accurate cycles and times 
+        //
+        tryHarderCyclesTimesToggle->blockSignals(true);
+        tryHarderCyclesTimesToggle->setChecked(
+            atts->GetTryHarderCyclesTimes());
+        tryHarderCyclesTimesToggle->blockSignals(false);
     }
 
     if(doAll)
@@ -582,4 +607,25 @@ QvisPreferencesWindow::allowFileSelectionChangeToggled(bool val)
 {
     allowFileSelChange = val;
     emit allowFileSelectionChange(val);
+}
+
+// ****************************************************************************
+// Method: QvisPreferencesWindow::tryHarderCyclesTimesToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the
+//   tryHarderCyclesTimesToggle is clicked.
+//
+// Programmer: Mark C. Miller 
+// Creation:   June 1, 2005 
+//
+// ****************************************************************************
+
+void
+QvisPreferencesWindow::tryHarderCyclesTimesToggled(bool val)
+{
+    atts->SetTryHarderCyclesTimes(val);
+    fileServer->SetForceReadAllCyclesTimes(val);
+    SetUpdate(false);
+    Apply();
 }

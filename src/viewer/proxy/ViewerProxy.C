@@ -5317,6 +5317,24 @@ ViewerProxy::SetQueryOverTimeAttributes()
 }
 
 // ****************************************************************************
+//  Method: ViewerProxy::SetTryHarderCyclesTimes
+//
+//  Purpose: Tells viewer to try harder to get accurate cycles/times
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   May 27, 2005 
+//
+// ****************************************************************************
+
+void
+ViewerProxy::SetTryHarderCyclesTimes(int flag)
+{
+    viewerRPC->SetRPCType(ViewerRPC::SetTryHarderCyclesTimesRPC);
+    viewerRPC->SetIntArg1(flag);
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
 // Method: ViewerProxy::ResetLineoutColor
 //
 // Purpose: 

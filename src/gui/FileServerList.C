@@ -66,6 +66,8 @@ static const int FILE_CLOSE = 4;
 //   Brad Whitlock, Thu Jul 29 13:41:07 PST 2004
 //   I added the notion of smart file grouping.
 //
+//   Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//   Added forceReadAllCyclesTimes
 // ****************************************************************************
 
 FileServerList::FileServerList() : AttributeSubject("bbbbbibbbb"), servers(),
@@ -85,6 +87,8 @@ FileServerList::FileServerList() : AttributeSubject("bbbbbibbbb"), servers(),
     recentPathsFlag = false;
     connectingServer = false;
     filter = "*";
+
+    forceReadAllCyclesTimes = false;
 
     // Initialize some callback functions.
     connectCallback = 0;
@@ -1117,6 +1121,23 @@ FileServerList::SetSmartFileGrouping(bool val)
 }
 
 // ****************************************************************************
+// Method: FileServerList::SetForceReadAllCyclesTimes
+//
+// Purpose: Set flag indicating if all cycles/times should be read during
+// GetMetaData calls
+//
+// Programmer: Mark C. Miller 
+// Creation:   May 25, 2005 
+//   
+// ****************************************************************************
+
+void
+FileServerList::SetForceReadAllCyclesTimes(bool set)
+{
+    forceReadAllCyclesTimes = set;
+}
+
+// ****************************************************************************
 // Method: FileServerList::OpenFile
 //
 // Purpose: 
@@ -1273,6 +1294,8 @@ FileServerList::CloseFile()
 //   file definition have the right number of states without having to
 //   reread the file list.
 //
+//   Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//   Added use of forceReadAllCyclesTimes in call to GetMetaData
 // ****************************************************************************
 
 void
@@ -1320,7 +1343,7 @@ FileServerList::OpenAndGetMetaData(const QualifiedFilename &filename,
                 // Do a GetMetaData RPC on the MD Server.
                 MDServerProxy *mds = servers[filename.host]->server;
                 const avtDatabaseMetaData *tmd = mds->GetMetaData(
-                    filename.PathAndFile(), timeState);
+                    filename.PathAndFile(), timeState, forceReadAllCyclesTimes);
 
                 // Create a new metadata object and copy the one that
                 // was returned from the MDServer.
@@ -2281,6 +2304,12 @@ bool
 FileServerList::GetSmartFileGrouping() const
 {
     return smartFileGroupingFlag;
+}
+
+bool
+FileServerList::GetForceReadAllCyclesTimes() const
+{
+    return forceReadAllCyclesTimes;
 }
 
 // ****************************************************************************

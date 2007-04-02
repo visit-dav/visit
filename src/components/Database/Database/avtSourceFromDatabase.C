@@ -134,6 +134,10 @@ avtSourceFromDatabase::~avtSourceFromDatabase()
 //    Hank Childs, Sun Mar  6 11:15:11 PST 2005
 //    Add special support for NeedBoundarySurfaces in lieu of fix for '5723.
 //
+//    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//    Made call to GetMetaData set flag to force it to read the current
+//    timeState's cycle/time information.
+//
 // ****************************************************************************
 
 bool
@@ -199,8 +203,12 @@ avtSourceFromDatabase::FetchDataset(avtDataSpecification_p spec,
         }
     }
 
+    const bool forceReadAllCyclesTimes = false;
+    const bool forceReadThisStateCycleTime = true;
     int timestep = spec->GetTimestep();
-    avtDatabaseMetaData *md = database->GetMetaData(timestep);
+    avtDatabaseMetaData *md = database->GetMetaData(timestep,
+                                                    forceReadAllCyclesTimes,
+                                                    forceReadThisStateCycleTime);
     avtDataAttributes &atts = GetOutput()->GetInfo().GetAttributes();
     if (md->IsCycleAccurate(timestep))
     {

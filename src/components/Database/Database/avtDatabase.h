@@ -213,6 +213,10 @@ typedef struct {
 //
 //    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //    Added forceReadAllCyclesAndTimes bool to MetaData methods
+//
+//    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//    Added forceReadThisStateCycleTime bool to GetMetaData
+//    Added method SetCycleTimeInDatabaseMetaData
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -229,7 +233,8 @@ class DATABASE_API avtDatabase
                                                 const char *type,void *args)=0;
 
     avtDatabaseMetaData        *GetMetaData(int stateIndex,
-                                    bool forceReadAllCyclesTimes = false);
+                                    bool forceReadAllCyclesTimes = false,
+                                    bool forceReadThisStateCycleTime = false);
     avtSIL                     *GetSIL(int stateIndex);
     int                         GetMostRecentTimestep() const;
 
@@ -298,6 +303,7 @@ class DATABASE_API avtDatabase
     virtual bool                HasInvariantSIL(void) const = 0;
 
     virtual avtDataObjectSource *CreateSource(const char *, int) = 0;
+    virtual void                SetCycleTimeInDatabaseMetaData(avtDatabaseMetaData *, int) = 0;
     virtual void                SetDatabaseMetaData(avtDatabaseMetaData *,
                                     int=0, bool=false) = 0;
     virtual void                PopulateSIL(avtSIL *, int=0) = 0;

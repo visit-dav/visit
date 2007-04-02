@@ -353,6 +353,8 @@ struct avtDefaultPlotMetaData;
 //    Hank Childs, Wed May 25 14:46:26 PDT 2005
 //    Added UpdateDBPluginInfo.
 //
+//    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//    Added SetTryHarderCyclesTimes
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -518,6 +520,8 @@ private:
     void ResetInteractorAttributes();
 
     void GetProcessAttributes();
+
+    void SetTryHarderCyclesTimes();
 
 private slots:
     void HandleViewerRPC();
