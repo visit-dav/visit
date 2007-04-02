@@ -1,6 +1,7 @@
 #include <Engine.h>
 #include <Executors.h>
 
+#include <stdlib.h>
 #if !defined(_WIN32)
 #include <strings.h>
 #include <sys/types.h>   // for getpid()
@@ -898,6 +899,9 @@ Engine::ProcessInput()
 //    Hank Childs, Thu Jan  5 14:24:06 PST 2006
 //    Don't reference NetworkManager, because it has not been instantiated yet.
 //
+//    Mark C. Miller, Thu Jan 19 18:12:46 PST 2006
+//    Made more fault tolerant to errors in specifying arg to -timeout option
+//
 // ****************************************************************************
 void
 Engine::ProcessCommandLine(int argc, char **argv)
@@ -944,8 +948,26 @@ Engine::ProcessCommandLine(int argc, char **argv)
             visitTimer->WithholdOutput(true);
         else if (strcmp(argv[i], "-timeout") == 0)
         {
-            timeout = atol(argv[i+1]);
-            i++;
+            if (i+1 < argc)
+            {
+                char *endptr = 0;
+                long int to = strtol(argv[i+1], &endptr, 10);
+                if (*(argv[i+1]) != '\0' && *endptr == '\0')
+                {
+                    timeout = (int) to;
+                }
+                else
+                {
+                    cerr << "-timeout option ignored due to bad argument." << endl;
+                    debug1 << "-timeout option ignored due to bad argument." << endl;
+                }
+                i++;
+            }
+            else
+            {
+                cerr << "-timeout option ignored due to missing argument." << endl;
+                debug1 << "-timeout option ignored due to missing argument." << endl;
+            }
         }
         else if (strcmp(argv[i], "-dump") == 0)
         {
