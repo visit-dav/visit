@@ -1027,6 +1027,9 @@ avtSpheralFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Hank Childs, Mon Mar 17 13:09:24 PST 2003
 //    Make sure we mark a domain as 'read' after we read it.
 //
+//    Kathleen Bonnell, Tue Jul 19 17:45:54 PDT 2005
+//    Make sure we don't pass along 'empty' datasets (no points).
+//
 // ****************************************************************************
 
 void
@@ -1069,8 +1072,12 @@ avtSpheralFileFormat::ReadDomain(int dom)
     for (int i = 0 ; i < nodeLists.size() ; i++)
     {
         vtkPolyData *pdata = ReadNodeList(ifile, i);
-        cache[dom].meshes[i] = pdata;
         nodeListSizes[i] = pdata->GetNumberOfPoints();
+        if (nodeListSizes[i] != 0)
+            cache[dom].meshes[i] = pdata;
+        else 
+            cache[dom].meshes[i] = NULL; 
+     
 
         int nFieldsToRead = 0;
         int j;

@@ -454,7 +454,7 @@ ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../buildlog 2>&1
 gmake -j 4 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist -compiler xlc >> ../buildlog 2>&1
-mv visit\$ver2.aix.tar.gz ..
+mv visit\$ver2.aix64-xlc.tar.gz ..
 cd ..
 echo "        build of visit on uv"           > resultlog 2>&1
 echo "       ----------------------"          >> resultlog 2>&1

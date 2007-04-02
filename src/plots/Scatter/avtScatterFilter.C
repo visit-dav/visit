@@ -12,13 +12,48 @@
 #include <vtkPointDataToCellData.h>
 #include <vtkPolyData.h>
 
+#include <avtMetaData.h>
 #include <avtExtents.h>
+#include <avtIntervalTree.h>
 
 #include <ImproperUseException.h>
+#include <InvalidLimitsException.h>
 #include <DebugStream.h>
 
 //#include <visitstream.h>
 //#include <avtDataAttributes.h>
+
+#define SCATTER_FLOAT_MIN -1e+37
+#define SCATTER_FLOAT_MAX  1e+37
+
+#define BEGIN_X_RANGE \
+                bool xInRange = true; \
+                if(d1->useMin) \
+                    xInRange = (coord[0] >= d1min); \
+                if(d1->useMax) \
+                    xInRange &= (coord[0] <= d1max); \
+                if(xInRange) {
+#define END_X_RANGE }
+
+#define BEGIN_Y_RANGE \
+                bool yInRange = true; \
+                if(d2->useMin) \
+                    yInRange = (coord[1] >= d2min); \
+                if(d2->useMax) \
+                    yInRange &= (coord[1] <= d2max); \
+                if(yInRange) { 
+
+#define END_Y_RANGE }
+
+#define BEGIN_Z_RANGE \
+                bool zInRange = true; \
+                if(d3->useMin) \
+                    zInRange = (coord[2] >= d3min); \
+                if(d3->useMax) \
+                    zInRange &= (coord[2] <= d3max); \
+                if(zInRange) { 
+
+#define END_Z_RANGE }
 
 // ****************************************************************************
 //  Method: avtScatterFilter constructor
@@ -29,12 +64,26 @@
 //  Creation:   Tue Nov 2 22:36:23 PST 2004
 //
 //  Modifications:
+//    Brad Whitlock, Mon Jul 18 11:07:35 PDT 2005
+//    Added extents arrays and flags.
 //
 // ****************************************************************************
 
 avtScatterFilter::avtScatterFilter(const std::string &v, const ScatterAttributes &a)
     : avtStreamer(), variableName(v), atts(a)
 {
+    needXExtents = false;
+    xExtents[0] = 0., xExtents[1] = 1.;
+
+    needYExtents = false;
+    yExtents[0] = 0., yExtents[1] = 1.;
+
+    needZExtents = false;
+    zExtents[0] = 0., zExtents[1] = 1.;
+
+    needColorExtents = false;
+    colorExtents[0] = 0., colorExtents[1] = 0.;
+
 #ifdef THE_FILTER_KNOWS_HOW_TO_ADD_ITS_OWN_VARS
     stringVector vars;
 
@@ -86,61 +135,61 @@ avtScatterFilter::~avtScatterFilter()
 {
 }
 
-
 // ****************************************************************************
-//  Method: avtScatterFilter::GetDataArray
+// Method: avtScatterFilter::PreExecute
 //
-//  Programmer: Brad Whitlock
-//  Creation:   Tue Nov 2 22:36:23 PST 2004
+// Purpose: 
+//   Executes before the ExecuteData method so we can get the x,y,z extents
+//   for the variables that are involved in creating the plot.
 //
-//  Modifications:
-//    Kathleen Bonnell, Fri Jan  7 13:30:30 PST 2005
-//    Moved retrieval of cenering out of TRY-CATCH block, and test for
-//    ValidVariable before retrieving centering.
+// Note:       We use this method to calculate min/max values, if needed.
 //
+// Programmer: Brad Whitlock
+// Creation:   Mon Jul 18 11:08:49 PDT 2005
+//
+// Modifications:
+//   
 // ****************************************************************************
 
-vtkDataArray *
-avtScatterFilter::GetDataArray(vtkDataSet *inDS, const std::string &name,
-    avtCentering targetCentering, bool &deleteArray)
+void
+avtScatterFilter::PreExecute(void)
 {
-    vtkDataArray *retval = 0;
+    avtStreamer::PreExecute();
 
-    avtCentering centering = AVT_UNKNOWN_CENT;
-    if (GetInput()->GetInfo().GetAttributes().ValidVariable(name.c_str()))
+    const char *vars[5] = {0,0,0,0,0};
+    PopulateNames(vars);
+
+    if (needXExtents)
     {
-        // Get the variable's centering.
-        centering = GetInput()->GetInfo().GetAttributes().
-            GetCentering(name.c_str());
-
-        // Get a pointer to the array out of the dataset.
-        if(centering == AVT_NODECENT)
-            retval = inDS->GetPointData()->GetArray(name.c_str());
-        else if (centering == AVT_ZONECENT)
-            retval = inDS->GetCellData()->GetArray(name.c_str());
+        GetDataExtents(xExtents, vars[0]);
+        needXExtents = false;
+        debug1 << "avtScatterFilter::PreExecute: Calculated xExtents=" <<
+             xExtents[0] << ", " << xExtents[1] << endl;
     }
-    TRY
+
+    if (needYExtents)
     {
-        //
-        // If we have a data array and its centering is not what we want
-        // then create a new data array that has the opposite centering.
-        //
-        if(targetCentering != centering && retval != 0)
-        {
-            debug4 << "The variable centerings do not match. Recentering..." << endl;
-
-            // Create a recentered copy of the data array.
-            retval = Recenter(inDS, retval, targetCentering);
-            deleteArray = true;
-        }
+        GetDataExtents(yExtents, vars[1]);
+        needYExtents = false;
+        debug1 << "avtScatterFilter::PreExecute: Calculated yExtents=" <<
+             yExtents[0] << ", " << yExtents[1] << endl;
     }
-    CATCH(VisItException)
+
+    if (needZExtents)
     {
-        // nothing.
+        GetDataExtents(zExtents, vars[2]);
+        needZExtents = false;
+        debug1 << "avtScatterFilter::PreExecute: Calculated zExtents=" <<
+             zExtents[0] << ", " << zExtents[1] << endl;
     }
-    ENDTRY
 
-    return retval;
+    if (needColorExtents)
+    {
+        GetDataExtents(colorExtents, vars[3]);
+        needColorExtents = false;
+        debug1 << "avtScatterFilter::PreExecute: Calculated colorExtents=" <<
+             colorExtents[0] << ", " << colorExtents[1] << endl;
+    }
 }
 
 // ****************************************************************************
@@ -160,6 +209,9 @@ avtScatterFilter::GetDataArray(vtkDataSet *inDS, const std::string &name,
 //  Creation:   Tue Nov 2 22:36:23 PST 2004
 //
 //  Modifications:
+//    Brad Whitlock, Tue Jul 19 10:40:18 PDT 2005
+//    Moved some code to other routines and made the color variable always
+//    be node-centered so the glyphers can handle it.
 //
 // ****************************************************************************
 
@@ -169,52 +221,46 @@ avtScatterFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 debug4 << "avtScatterFilter::ExecuteData" << endl;
     avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
  
-    // Determine the name of the first varaible.
+    // Determine the name of the first variable.
     std::string var1Name(variableName);
-debug4 << "avtScatterFilter::ExecuteData: var1Name = " << var1Name.c_str() << endl;
 
-    // Determine the name of the second varaible.
+    // Determine the name of the second variable.
     std::string var2Name(atts.GetVar2());
     if(var2Name == "default")
         var2Name = var1Name;
-debug4 << "avtScatterFilter::ExecuteData: var2Name = " << var2Name.c_str() << endl;
 
-    // Determine the name of the 3rd varaible.
+    // Determine the name of the 3rd variable.
     std::string var3Name(atts.GetVar3());
     if(var3Name == "default")
         var3Name = var1Name;
 
-    // Determine the name of the 4th varaible.
+    // Determine the name of the 4th variable.
     std::string var4Name(atts.GetVar4());
     if(var4Name == "default")
         var4Name = var1Name;
 
-    bool deleteArray2 = false, deleteArray3 = false, deleteArray4 = false;
-    vtkDataArray *arr1 = 0;
-    vtkDataArray *arr2 = 0;
-    vtkDataArray *arr3 = 0;
-    vtkDataArray *arr4 = 0;
-
     //
     // Determine the centering for var1 and get its data array.
     //
+    bool deleteArray2 = false, deleteArray3 = false, deleteArray4 = false;
+    vtkDataArray *arr[4] = {0,0,0,0};
     avtCentering var1Centering = datts.GetCentering(var1Name.c_str());
     if(var1Centering == AVT_NODECENT)
-        arr1 = inDS->GetPointData()->GetArray(var1Name.c_str());
+        arr[0] = inDS->GetPointData()->GetArray(var1Name.c_str());
     else
-        arr1 = inDS->GetCellData()->GetArray(var1Name.c_str());
+        arr[0] = inDS->GetCellData()->GetArray(var1Name.c_str());
 
     //
     // Get the data arrays for the secondary variables.
     //
     if(atts.GetVar2Role() != ScatterAttributes::None)
-        arr2 = GetDataArray(inDS, var2Name, var1Centering, deleteArray2);
+        arr[1] = GetDataArray(inDS, var2Name, var1Centering, deleteArray2);
 
     if(atts.GetVar3Role() != ScatterAttributes::None)
-        arr3 = GetDataArray(inDS, var3Name, var1Centering, deleteArray3);
+        arr[2] = GetDataArray(inDS, var3Name, var1Centering, deleteArray3);
 
     if(atts.GetVar4Role() != ScatterAttributes::None)
-        arr4 = GetDataArray(inDS, var4Name, var1Centering, deleteArray4);
+        arr[3] = GetDataArray(inDS, var4Name, var1Centering, deleteArray4);
 
     //
     // Put the input variables into the appropriate X,Y,Z coordinate role.
@@ -225,73 +271,7 @@ debug4 << "avtScatterFilter::ExecuteData: var2Name = " << var2Name.c_str() << en
         {0, false, false, 0., 0., 0, 0.},
         {0, false, false, 0., 0., 0, 0.},
         {0, false, false, 0., 0., 0, 0.}};
-    int index = int(atts.GetVar1Role());
-    orderedArrays[index].data = arr1;
-    orderedArrays[index].useMin = atts.GetVar1MinFlag();
-    orderedArrays[index].useMax = atts.GetVar1MaxFlag();
-    orderedArrays[index].min = atts.GetVar1Min();
-    orderedArrays[index].max = atts.GetVar1Max();
-    orderedArrays[index].scale = int(atts.GetVar1Scaling());
-    orderedArrays[index].skew = atts.GetVar1SkewFactor();
-    // Revert to Linear scaling with bad skew factor.
-    if (orderedArrays[index].scale == 2 &&
-        (orderedArrays[index].skew <= 0 || orderedArrays[index].skew == 1.)) 
-    {
-        debug4 << "Bad skew factor for var1: " << atts.GetVar1SkewFactor()
-               << endl;
-        orderedArrays[index].scale = 0;
-    }
-
-    index = int(atts.GetVar2Role());
-    orderedArrays[index].data = arr2;
-    orderedArrays[index].useMin = atts.GetVar2MinFlag();
-    orderedArrays[index].useMax = atts.GetVar2MaxFlag();
-    orderedArrays[index].min = atts.GetVar2Min();
-    orderedArrays[index].max = atts.GetVar2Max();
-    orderedArrays[index].scale = int(atts.GetVar2Scaling());
-    orderedArrays[index].skew = atts.GetVar2SkewFactor();
-    // Revert to Linear scaling with bad skew factor.
-    if (orderedArrays[index].scale == 2 &&
-        (orderedArrays[index].skew <= 0 || orderedArrays[index].skew == 1.)) 
-    {
-        debug4 << "Bad skew factor for var2: " << atts.GetVar2SkewFactor()
-               << endl;
-        orderedArrays[index].scale = 0;
-    }
-
-    index = int(atts.GetVar3Role());
-    orderedArrays[index].data = arr3;
-    orderedArrays[index].useMin = atts.GetVar3MinFlag();
-    orderedArrays[index].useMax = atts.GetVar3MaxFlag();
-    orderedArrays[index].min = atts.GetVar3Min();
-    orderedArrays[index].max = atts.GetVar3Max();
-    orderedArrays[index].scale = int(atts.GetVar3Scaling());
-    orderedArrays[index].skew = atts.GetVar3SkewFactor();
-    // Revert to Linear scaling with bad skew factor.
-    if (orderedArrays[index].scale == 2 &&
-        (orderedArrays[index].skew <= 0 || orderedArrays[index].skew == 1.)) 
-    {
-        debug4 << "Bad skew factor for var3: " << atts.GetVar3SkewFactor()
-               << endl;
-        orderedArrays[index].scale = 0;
-    }
-
-    index = int(atts.GetVar4Role());
-    orderedArrays[index].data = arr4;
-    orderedArrays[index].useMin = atts.GetVar4MinFlag();
-    orderedArrays[index].useMax = atts.GetVar4MaxFlag();
-    orderedArrays[index].min = atts.GetVar4Min();
-    orderedArrays[index].max = atts.GetVar4Max();
-    orderedArrays[index].scale = int(atts.GetVar4Scaling());
-    orderedArrays[index].skew = atts.GetVar4SkewFactor();
-    // Revert to Linear scaling with bad skew factor.
-    if (orderedArrays[index].scale == 2 &&
-        (orderedArrays[index].skew <= 0 || orderedArrays[index].skew == 1.)) 
-    {
-        debug4 << "Bad skew factor for var4: " << atts.GetVar4SkewFactor()
-               << endl;
-        orderedArrays[index].scale = 0;
-    }
+    PopulateDataInputs(orderedArrays, arr);
 
     //
     // Make sure that X,Y roles have arrays to use for coordinates.
@@ -299,92 +279,140 @@ debug4 << "avtScatterFilter::ExecuteData: var2Name = " << var2Name.c_str() << en
     if(orderedArrays[0].data == 0 || orderedArrays[1].data == 0)
     {
         if(deleteArray2)
-            arr2->Delete();
+            arr[1]->Delete();
         if(deleteArray3)
-            arr3->Delete();
+            arr[2]->Delete();
         if(deleteArray4)
-            arr4->Delete();
+            arr[3]->Delete();
         EXCEPTION1(ImproperUseException, "At least two variables must play a "
             "role in creating coordinates and the X,Y coordinate roles must be "
             "assigned to a variable.");
     }
 
-    //
-    // Create the point mesh from the input data arrays.
-    //
-    vtkDataSet *outDS = PointMeshFromVariables(&orderedArrays[0],
-        &orderedArrays[1], &orderedArrays[2]);
-
-    //
-    // If we have a variable that's taking on the color role then add it
-    // to the dataset.
-    //
-    if(orderedArrays[3].data != 0)
+    bool createdData = false;
+    vtkDataSet *outDS = 0;
+    TRY
     {
-        // Add the array to the output dataset.
-        if(var1Centering == AVT_NODECENT)
+        //
+        // Create the point mesh from the input data arrays.
+        //
+        outDS = PointMeshFromVariables(&orderedArrays[0],
+            &orderedArrays[1], &orderedArrays[2], &orderedArrays[3],
+            createdData);
+
+        //
+        // If we have a variable that's taking on the color role then add it
+        // to the dataset.
+        //
+        if(outDS != 0 && orderedArrays[3].data != 0)
         {
-            debug4 << "Adding " << orderedArrays[3].data->GetName()
-                   << " as a nodal scalar field." << endl;
-//            outDS->GetPointData()->AddArray(orderedArrays[3].data);
-//            outDS->GetPointData()->SetActiveVariable(orderedArrays[3].data->GetName());
-            outDS->GetPointData()->SetScalars(orderedArrays[3].data);
-        }
-        else
-        {
-            debug4 << "Adding " << orderedArrays[3].data->GetName()
-                   << " as a zonal scalar field." << endl;
-            outDS->GetCellData()->SetScalars(orderedArrays[3].data);
-//            outDS->GetCellData()->AddArray(orderedArrays[3].data);
-//            outDS->GetCellData()->SetActiveVariable(orderedArrays[3].data->GetName());
+            if(!createdData)
+            {
+                // Cell centering and Node centering are the same for a point
+                // mesh but let's always do node centering because the glyph
+                // mapper does not like it when we give it cell centered data
+                // and it never uses the colors in that case.
+                debug4 << "Adding " << orderedArrays[3].data->GetName()
+                       << " as a nodal scalar field." << endl;
+                outDS->GetPointData()->SetScalars(orderedArrays[3].data);
+            }
+
+            //
+            // Remove all of the variables that are not the color variable.
+            //
+            avtDataAttributes &dataAtts = GetOutput()->GetInfo().GetAttributes();
+            std::string colorVarName(orderedArrays[3].data->GetName());
+            int nvars = dataAtts.GetNumberOfVariables();
+            int delIndex = 0;
+            for(int ivar = 0; ivar < nvars; ++ivar)
+            {
+                std::string currentVar(dataAtts.GetVariableName(delIndex));
+                if(currentVar == colorVarName)
+                {
+                    ++delIndex;
+                    dataAtts.SetCentering(AVT_NODECENT, colorVarName.c_str());
+                }
+                else
+                    dataAtts.RemoveVariable(currentVar);
+            }
+
+            // Set the new active var and its extents
+            dataAtts.SetActiveVariable(colorVarName.c_str());
+            dataAtts.GetCumulativeTrueDataExtents()->Set(colorExtents);
+
+            if(!createdData && !deleteArray4)
+            {
+                // The input dataset owns the data array. Make the output dataset
+                // own it instead.
+                if(var1Centering == AVT_NODECENT)
+                    inDS->GetPointData()->RemoveArray(orderedArrays[3].data->GetName());
+                else
+                    inDS->GetCellData()->RemoveArray(orderedArrays[3].data->GetName());
+            }
         }
 
-        GetOutput()->GetInfo().GetAttributes().SetActiveVariable(
-            orderedArrays[3].data->GetName());
+        if(debug4_real)
+            GetOutput()->GetInfo().GetAttributes().Print(debug4_real);
 
-#if 1
-        if(!deleteArray4)
-        {
-            // The input dataset owns the data array. Make the output dataset
-            // own it instead.
-            if(var1Centering == AVT_NODECENT)
-                inDS->GetPointData()->RemoveArray(orderedArrays[3].data->GetName());
-            else
-                inDS->GetCellData()->RemoveArray(orderedArrays[3].data->GetName());
-        }
-#endif
+        // Clean up data arrays that we may have had to generate.
+        if(deleteArray2)
+            arr[1]->Delete();
+        if(deleteArray3)
+            arr[2]->Delete();
+        if(deleteArray4)
+            arr[3]->Delete();
     }
+    CATCH(InvalidLimitsException)
+    {
+        // Clean up data arrays that we may have had to generate.
+        if(deleteArray2)
+            arr[1]->Delete();
+        if(deleteArray3)
+            arr[2]->Delete();
+        if(deleteArray4)
+            arr[3]->Delete();
 
-    if(debug4_real)
-        GetOutput()->GetInfo().GetAttributes().Print(debug4_real);
-
-    // Clean up data arrays that we may have had to generate.
-    if(deleteArray2)
-        arr2->Delete();
-    if(deleteArray3)
-        arr3->Delete();
-    if(deleteArray4)
-        arr4->Delete();
+        RETHROW;
+    }
+    ENDTRY
 
     return outDS;
 }
 
-
 // ****************************************************************************
-//  Modifications:
+//  Method: avtScatterFilter::PointMeshFromVariables
 //
+//  Purpose:
+//      Sends the specified input and output through the scatter filter.
+//
+//  Arguments:
+//      d1 : Information about the variable in the X coordinate role.
+//      d2 : Information about the variable in the Y coordinate role.
+//      d3 : Information about the variable in the Z coordinate role.
+//
+//  Returns:       The output point mesh dataset.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Nov 2 22:36:23 PST 2004
+//
+//  Modifications:
 //    Hank Childs, Sun Mar 13 11:38:06 PST 2005
 //    Fix memory leak.
 //
 //    Jeremy Meredith, Fri Apr  1 16:07:29 PST 2005
 //    Fix UMR.
 //
+//    Brad Whitlock, Mon Jul 18 11:58:42 PDT 2005
+//    I made the extents get calculated in PreExecute so we have the extents
+//    from all domains.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtScatterFilter::PointMeshFromVariables(DataInput *d1,
-    DataInput *d2, DataInput *d3)
+    DataInput *d2, DataInput *d3, DataInput *d4, bool &createdData)
 {
+    const char *mName = "avtScatterFilter::PointMeshFromVariables: ";
     vtkPolyData *outDS = vtkPolyData::New();
     int n = d1->data->GetNumberOfTuples();
     vtkPoints *pts = vtkPoints::New();
@@ -396,25 +424,42 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
     outDS->SetVerts(cells);
     pts->Delete(); cells->Delete();
 
-    vtkDataArray *arr1 = d1->data;
-    vtkDataArray *arr2 = d2->data;
-    vtkDataArray *arr3 = d3->data;
+    vtkDataArray *arr1 = d1->data; // X
+    vtkDataArray *arr2 = d2->data; // Y
+    vtkDataArray *arr3 = d3->data; // Z
+    vtkDataArray *arr4 = d4->data; // Color
 
-    float xMin = arr1->GetTuple1(0);
-    float xMax = xMin;
-    float yMin = arr2->GetTuple1(0);
-    float yMax = yMin;
-    float zMin = 0., zMax = 0.;
+    // Indicate that we're not creating data, though that could change.
+    createdData = false;
+
+    // Initially set the min/max values to the calculated extents. Note that
+    // the extents here will not have been calculated if we are using user-
+    // specified extents but we take care of that later.
+    float xMin = float(xExtents[0]);
+    float xMax = float(xExtents[1]);
+    float yMin = float(yExtents[0]);
+    float yMax = float(yExtents[1]);
+    float zMin = float(zExtents[0]);
+    float zMax = float(zExtents[1]);
+    debug4 << mName << "xExtents = [" << xMin << ", " << xMax << "] "
+           << "yExtents = [" << yMin << ", " << yMax << "] "
+           << "zExtents = [" << zMin << ", " << zMax << "]" << endl;
+
     int nCells = 0;
     avtDataAttributes &dataAtts = GetOutput()->GetInfo().GetAttributes();
     const float EPSILON = 1.e-9;
 
-    debug4 << "avtScatterFilter::PointMeshFromVariables: arr1 = "
-           << arr1->GetName() << ", ntuples=" << arr1->GetNumberOfTuples()
-           << endl;
-    debug4 << "avtScatterFilter::PointMeshFromVariables: arr2 = "
-           << arr2->GetName() << ", ntuples=" << arr2->GetNumberOfTuples()
-           << endl;
+    debug4 << mName << "arr1 = " << arr1->GetName()
+           << ", ntuples=" << arr1->GetNumberOfTuples() << endl;
+    debug4 << mName << "arr2 = " << arr2->GetName()
+           << ", ntuples=" << arr2->GetNumberOfTuples() << endl;
+
+    float d1min = d1->min;
+    float d1max = d1->max;
+    float d2min = d2->min;
+    float d2max = d2->max;
+    float d3min = d3->min;
+    float d3max = d3->max;
 
     //
     // If arr3 == 0 then we're creating a 2D mesh.
@@ -423,52 +468,56 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
     {
         if(d1->useMin || d1->useMax || d2->useMin || d2->useMax)
         {
-            float d1min = d1->min;
-            float d1max = d1->max;
-            float d2min = d2->min;
-            float d2max = d2->max;
-            for(vtkIdType i = 0; i < n; ++i)
+            if(arr4 == 0)
             {
-                coord[0] = arr1->GetTuple1(i);
-                coord[1] = arr2->GetTuple1(i);
-                coord[2] = 0.;
-
-                // Do data min, max so we can set the min,max spatial extents.
-                xMin = (xMin < coord[0]) ? xMin : coord[0];
-                xMax = (xMax > coord[0]) ? xMax : coord[0];
-                yMin = (yMin < coord[1]) ? yMin : coord[1];
-                yMax = (yMax > coord[1]) ? yMax : coord[1];
-
-                //
-                // Only add values that are in the specified min/max range.
-                //
-                bool xInRange = true;
-                if(d1->useMin)
-                    xInRange = (coord[0] >= d1min);
-                if(d1->useMax)
-                    xInRange &= (coord[0] <= d1max);
-                if(xInRange)
+                // Not coloring the plot
+                for(vtkIdType i = 0; i < n; ++i)
                 {
-                    bool yInRange = true;
-                    if(d2->useMin)
-                        yInRange = (coord[1] >= d2min);
-                    if(d2->useMax)
-                        yInRange &= (coord[1] <= d2max);
-                    if(yInRange)
-                    {
-                        coord += 3;
-                        cells->InsertNextCell(1, &nCells);
-                        ++nCells;
-                    }            
+                    coord[0] = arr1->GetTuple1(i);
+                    coord[1] = arr2->GetTuple1(i);
+                    coord[2] = 0.;
+                    BEGIN_X_RANGE
+                        BEGIN_Y_RANGE
+                            coord += 3;
+                            cells->InsertNextCell(1, &nCells);
+                            ++nCells;
+                        END_Y_RANGE            
+                    END_X_RANGE
                 }
             }
-            pts->SetNumberOfPoints(nCells);
+            else
+            {
+                // Coloring the plot.
+                debug4 << mName << "arr4 = " << arr4->GetName()
+                       << ", ntuples=" << arr4->GetNumberOfTuples() << endl;
 
-            // Use the specified limits if they were provided.
-            xMin = d1->useMin ? d1min : xMin;
-            xMax = d1->useMax ? d1max : xMax;
-            yMin = d2->useMin ? d2min : yMin;
-            yMax = d2->useMax ? d2max : yMax;
+                vtkDataArray *newColorData = 
+                    vtkDataArray::CreateDataArray(arr4->GetDataType());
+                newColorData->SetNumberOfComponents(
+                    arr4->GetNumberOfComponents());
+                newColorData->Allocate(n);
+                newColorData->SetName(arr4->GetName());
+
+                for(vtkIdType i = 0; i < n; ++i)
+                {
+                    coord[0] = arr1->GetTuple1(i);
+                    coord[1] = arr2->GetTuple1(i);
+                    coord[2] = 0.;
+                    BEGIN_X_RANGE
+                        BEGIN_Y_RANGE
+                            coord += 3;
+                            cells->InsertNextCell(1, &nCells);
+                            newColorData->InsertNextTuple(arr4->GetTuple(i));
+                            ++nCells;
+                        END_Y_RANGE            
+                    END_X_RANGE
+                }
+
+                createdData = true;
+                newColorData->Squeeze();
+                outDS->GetPointData()->SetScalars(newColorData);
+            }
+            pts->SetNumberOfPoints(nCells);
         }
         else
         {
@@ -478,86 +527,82 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
                 coord[0] = arr1->GetTuple1(i);
                 coord[1] = arr2->GetTuple1(i);
                 coord[2] = 0.;
-
-                // Do data min, max so we can set the min,max spatial extents.
-                xMin = (xMin < coord[0]) ? xMin : coord[0];
-                xMax = (xMax > coord[0]) ? xMax : coord[0];
-                yMin = (yMin < coord[1]) ? yMin : coord[1];
-                yMax = (yMax > coord[1]) ? yMax : coord[1];
                 cells->InsertNextCell(1, &i);
             }
         }
     }
     else
     {
-        debug4 << "avtScatterFilter::PointMeshFromVariables: arr3 = "
-               << arr3->GetName() << ", ntuples=" << arr3->GetNumberOfTuples()
-               << endl;
+        debug4 << mName << "arr3 = " << arr3->GetName()
+               << ", ntuples=" << arr3->GetNumberOfTuples() << endl;
 
         if(d1->useMin || d1->useMax ||
            d2->useMin || d2->useMax ||
            d3->useMin || d3->useMax)
         {
-            float d1min = d1->min;
-            float d1max = d1->max;
-            float d2min = d2->min;
-            float d2max = d2->max;
-            float d3min = d3->min;
-            float d3max = d3->max;
-            for(vtkIdType i = 0; i < n; ++i)
+            if(arr4 == 0)
             {
-                coord[0] = arr1->GetTuple1(i);
-                coord[1] = arr2->GetTuple1(i);
-                coord[2] = arr3->GetTuple1(i);
-
-                //
-                // Only add values that are in the specified min/max range.
-                //
-                bool xInRange = true;
-                if(d1->useMin)
-                    xInRange = (coord[0] >= d1min);
-                if(d1->useMax)
-                    xInRange &= (coord[0] <= d1max);
-                if(xInRange)
+                // Not coloring the plot.
+                for(vtkIdType i = 0; i < n; ++i)
                 {
-                    bool yInRange = true;
-                    if(d2->useMin)
-                        yInRange = (coord[1] >= d2min);
-                    if(d2->useMax)
-                        yInRange &= (coord[1] <= d2max);
-                    if(yInRange)
-                    {
-                        bool zInRange = true;
-                        if(d3->useMin)
-                            zInRange = (coord[2] >= d3min);
-                        if(d3->useMax)
-                            zInRange &= (coord[2] <= d3max);
-                        if(zInRange)
-                        {
-                            coord += 3;
-                            cells->InsertNextCell(1, &nCells);
-                            ++nCells;
-                        }
-                    }            
+                    coord[0] = arr1->GetTuple1(i);
+                    coord[1] = arr2->GetTuple1(i);
+                    coord[2] = arr3->GetTuple1(i);
+
+                    //
+                    // Only add values that are in the specified min/max range.
+                    //
+                    BEGIN_X_RANGE
+                        BEGIN_Y_RANGE
+                            BEGIN_Z_RANGE
+                                coord += 3;
+                                cells->InsertNextCell(1, &nCells);
+                                ++nCells;
+                            END_Z_RANGE
+                        END_Y_RANGE            
+                    END_X_RANGE
+                }
+            }
+            else
+            {
+                // Coloring the plot.
+                debug4 << mName << "arr4 = " << arr4->GetName()
+                       << ", ntuples=" << arr4->GetNumberOfTuples() << endl;
+
+                vtkDataArray *newColorData = 
+                    vtkDataArray::CreateDataArray(arr4->GetDataType());
+                newColorData->SetNumberOfComponents(
+                    arr4->GetNumberOfComponents());
+                newColorData->Allocate(n);
+                newColorData->SetName(arr4->GetName());
+
+                for(vtkIdType i = 0; i < n; ++i)
+                {
+                    coord[0] = arr1->GetTuple1(i);
+                    coord[1] = arr2->GetTuple1(i);
+                    coord[2] = arr3->GetTuple1(i);
+
+                    //
+                    // Only add values that are in the specified min/max range.
+                    //
+                    BEGIN_X_RANGE
+                        BEGIN_Y_RANGE
+                            BEGIN_Z_RANGE
+                                coord += 3;
+                                cells->InsertNextCell(1, &nCells);
+                                newColorData->InsertNextTuple(arr4->GetTuple(i));
+                                ++nCells;
+                            END_Z_RANGE
+                        END_Y_RANGE            
+                    END_X_RANGE
                 }
 
-                // Do data min, max so we can set the min,max spatial extents.
-                xMin = (xMin < coord[0]) ? xMin : coord[0];
-                xMax = (xMax > coord[0]) ? xMax : coord[0];
-                yMin = (yMin < coord[1]) ? yMin : coord[1];
-                yMax = (yMax > coord[1]) ? yMax : coord[1];
-                zMin = (zMin < coord[2]) ? zMin : coord[2];
-                zMax = (zMax > coord[2]) ? zMax : coord[2];
+                createdData = true;
+                newColorData->Squeeze();
+                outDS->GetPointData()->SetScalars(newColorData);
             }
-            pts->SetNumberOfPoints(nCells);
 
-            // Use the specified limits if they were provided.
-            xMin = d1->useMin ? d1min : xMin;
-            xMax = d1->useMax ? d1max : xMax;
-            yMin = d2->useMin ? d2min : yMin;
-            yMax = d2->useMax ? d2max : yMax;
-            zMin = d3->useMin ? d3min : zMin;
-            zMax = d3->useMax ? d3max : zMax;
+            pts->SetNumberOfPoints(nCells);
         }
         else
         {
@@ -567,14 +612,6 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
                 coord[0] = arr1->GetTuple1(i);
                 coord[1] = arr2->GetTuple1(i);
                 coord[2] = arr3->GetTuple1(i);
-
-                // Do data min, max so we can set the min,max spatial extents.
-                xMin = (xMin < coord[0]) ? xMin : coord[0];
-                xMax = (xMax > coord[0]) ? xMax : coord[0];
-                yMin = (yMin < coord[1]) ? yMin : coord[1];
-                yMax = (yMax > coord[1]) ? yMax : coord[1];
-                zMin = (zMin < coord[2]) ? zMin : coord[2];
-                zMax = (zMax > coord[2]) ? zMax : coord[2];
                 cells->InsertNextCell(1, &i);
             }
         }
@@ -691,25 +728,38 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
         // Since Log scaling does not preserve min,max values like
         // linear and skew scaling, we must transform the min,max.
         //
+        bool badLimits = false;
         if(d1scale == 1)
         {
-            float newXmin = LOG10_X(xMin);
-            float newXmax = LOG10_X(xMax);
-            xMin = newXmin; xMax = newXmax;
+            float uxMin = d1->useMin ? d1min : xMin;
+            float uxMax = d1->useMax ? d1max : xMax;
+            badLimits |= (uxMin <= 0. || uxMax <= 0.);
+            xMin = LOG10_X(uxMin);
+            xMax = LOG10_X(uxMax);
         }
 
         if(d2scale == 1)
         {
-            float newYmin = LOG10_Y(yMin);
-            float newYmax = LOG10_Y(yMax);
-            yMin = newYmin; yMax = newYmax;
+            float uyMin = d2->useMin ? d2min : uyMin;
+            float uyMax = d2->useMax ? d2max : uyMax;
+            badLimits |= (uyMin <= 0. || uyMax <= 0.);
+            yMin = LOG10_Y(uyMin);
+            yMax = LOG10_Y(uyMax);
         }
 
         if(arr3 != 0 && d3scale == 1)
         {
-            float newZmin = LOG10_Z(zMin);
-            float newZmax = LOG10_Z(zMax);
-            zMin = newZmin; zMax = newZmax;
+            float uzMin = d3->useMin ? d3min : zMin;
+            float uzMax = d3->useMax ? d3max : zMax;
+            badLimits |= (uzMin <= 0. || uzMax <= 0.);
+            zMin = LOG10_Z(uzMin);
+            zMax = LOG10_Z(uzMax);
+        }
+
+        if(badLimits)
+        {
+            outDS->Delete();
+            EXCEPTION1(InvalidLimitsException, true);
         }
     }
 
@@ -761,6 +811,26 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
     //
     dataAtts.GetCumulativeTrueSpatialExtents()->Clear();
     dataAtts.GetTrueSpatialExtents()->Clear();
+
+    //
+    // If spatial extents were necessary then they should be available now.
+    //
+    if(NeedSpatialExtents())
+    {
+        double spatialExtents[5];
+        spatialExtents[0] = xMin;
+        spatialExtents[1] = xMax;
+        spatialExtents[2] = yMin;
+        spatialExtents[3] = yMax;
+        spatialExtents[4] = zMin;
+        spatialExtents[5] = zMax;
+        dataAtts.GetCumulativeTrueSpatialExtents()->Set(spatialExtents);
+
+        debug4 << mName << "After scaling: "
+               << "xExtents = [" << xMin << ", " << xMax << "] "
+               << "yExtents = [" << yMin << ", " << yMax << "] "
+               << "zExtents = [" << zMin << ", " << zMax << "]" << endl;
+    }
 #else
     //
     // Set the spatial extents.
@@ -818,6 +888,191 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
     outDS->Delete();
 
     return outDS;
+}
+
+// ****************************************************************************
+//  Method: avtScatterFilter::GetDataArray
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Nov 2 22:36:23 PST 2004
+//
+//  Modifications:
+//    Kathleen Bonnell, Fri Jan  7 13:30:30 PST 2005
+//    Moved retrieval of cenering out of TRY-CATCH block, and test for
+//    ValidVariable before retrieving centering.
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtScatterFilter::GetDataArray(vtkDataSet *inDS, const std::string &name,
+    avtCentering targetCentering, bool &deleteArray)
+{
+    vtkDataArray *retval = 0;
+
+    avtCentering centering = AVT_UNKNOWN_CENT;
+    if (GetInput()->GetInfo().GetAttributes().ValidVariable(name.c_str()))
+    {
+        // Get the variable's centering.
+        centering = GetInput()->GetInfo().GetAttributes().
+            GetCentering(name.c_str());
+
+        // Get a pointer to the array out of the dataset.
+        if(centering == AVT_NODECENT)
+            retval = inDS->GetPointData()->GetArray(name.c_str());
+        else if (centering == AVT_ZONECENT)
+            retval = inDS->GetCellData()->GetArray(name.c_str());
+    }
+    TRY
+    {
+        //
+        // If we have a data array and its centering is not what we want
+        // then create a new data array that has the opposite centering.
+        //
+        if(targetCentering != centering && retval != 0)
+        {
+            debug4 << "The variable centerings do not match. Recentering..." << endl;
+
+            // Create a recentered copy of the data array.
+            retval = Recenter(inDS, retval, targetCentering);
+            deleteArray = true;
+        }
+    }
+    CATCH(VisItException)
+    {
+        // nothing.
+    }
+    ENDTRY
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: avtScatterFilter::PopulateDataInputs
+//
+// Purpose: 
+//   Maps the state object's various variables into a DataInput array so we 
+//   know more easily which variable performs the X role, the Y role, etc.
+//
+// Arguments:
+//   orderedArrays : The array that we're populating.
+//   arr           : The array of data arrays to associate with the variables.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jul 18 11:50:08 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtScatterFilter::PopulateDataInputs(DataInput *orderedArrays, vtkDataArray **arr) const
+{
+    int index = int(atts.GetVar1Role());
+    orderedArrays[index].data = arr[0];
+    orderedArrays[index].useMin = atts.GetVar1MinFlag();
+    orderedArrays[index].useMax = atts.GetVar1MaxFlag();
+    orderedArrays[index].min = atts.GetVar1Min();
+    orderedArrays[index].max = atts.GetVar1Max();
+    orderedArrays[index].scale = int(atts.GetVar1Scaling());
+    orderedArrays[index].skew = atts.GetVar1SkewFactor();
+    // Revert to Linear scaling with bad skew factor.
+    if (orderedArrays[index].scale == 2 &&
+        (orderedArrays[index].skew <= 0 || orderedArrays[index].skew == 1.)) 
+    {
+        debug4 << "Bad skew factor for var1: " << atts.GetVar1SkewFactor()
+               << endl;
+        orderedArrays[index].scale = 0;
+    }
+
+    index = int(atts.GetVar2Role());
+    orderedArrays[index].data = arr[1];
+    orderedArrays[index].useMin = atts.GetVar2MinFlag();
+    orderedArrays[index].useMax = atts.GetVar2MaxFlag();
+    orderedArrays[index].min = atts.GetVar2Min();
+    orderedArrays[index].max = atts.GetVar2Max();
+    orderedArrays[index].scale = int(atts.GetVar2Scaling());
+    orderedArrays[index].skew = atts.GetVar2SkewFactor();
+    // Revert to Linear scaling with bad skew factor.
+    if (orderedArrays[index].scale == 2 &&
+        (orderedArrays[index].skew <= 0 || orderedArrays[index].skew == 1.)) 
+    {
+        debug4 << "Bad skew factor for var2: " << atts.GetVar2SkewFactor()
+               << endl;
+        orderedArrays[index].scale = 0;
+    }
+
+    index = int(atts.GetVar3Role());
+    orderedArrays[index].data = arr[2];
+    orderedArrays[index].useMin = atts.GetVar3MinFlag();
+    orderedArrays[index].useMax = atts.GetVar3MaxFlag();
+    orderedArrays[index].min = atts.GetVar3Min();
+    orderedArrays[index].max = atts.GetVar3Max();
+    orderedArrays[index].scale = int(atts.GetVar3Scaling());
+    orderedArrays[index].skew = atts.GetVar3SkewFactor();
+    // Revert to Linear scaling with bad skew factor.
+    if (orderedArrays[index].scale == 2 &&
+        (orderedArrays[index].skew <= 0 || orderedArrays[index].skew == 1.)) 
+    {
+        debug4 << "Bad skew factor for var3: " << atts.GetVar3SkewFactor()
+               << endl;
+        orderedArrays[index].scale = 0;
+    }
+
+    index = int(atts.GetVar4Role());
+    orderedArrays[index].data = arr[3];
+    orderedArrays[index].useMin = atts.GetVar4MinFlag();
+    orderedArrays[index].useMax = atts.GetVar4MaxFlag();
+    orderedArrays[index].min = atts.GetVar4Min();
+    orderedArrays[index].max = atts.GetVar4Max();
+    orderedArrays[index].scale = int(atts.GetVar4Scaling());
+    orderedArrays[index].skew = atts.GetVar4SkewFactor();
+    // Revert to Linear scaling with bad skew factor.
+    if (orderedArrays[index].scale == 2 &&
+        (orderedArrays[index].skew <= 0 || orderedArrays[index].skew == 1.)) 
+    {
+        debug4 << "Bad skew factor for var4: " << atts.GetVar4SkewFactor()
+               << endl;
+        orderedArrays[index].scale = 0;
+    }
+}
+
+// ****************************************************************************
+// Method: avtScatterFilter::PopulateNames
+//
+// Purpose: 
+//   Populates an array of names taking into account variable roles.
+//
+// Arguments:
+//   names : The array to populate.
+//
+// Note:       The names array must be at least 5 elements long.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jul 18 13:56:46 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtScatterFilter::PopulateNames(const char **names) const
+{
+    names[int(atts.GetVar1Role())] = variableName.c_str();
+
+    if(atts.GetVar2() == "default")
+        names[int(atts.GetVar2Role())] = variableName.c_str();
+    else
+        names[int(atts.GetVar2Role())] = atts.GetVar2().c_str();
+
+    if(atts.GetVar3() == "default")
+        names[int(atts.GetVar3Role())] = variableName.c_str();
+    else
+        names[int(atts.GetVar3Role())] = atts.GetVar3().c_str();
+
+    if(atts.GetVar4() == "default")
+        names[int(atts.GetVar4Role())] = variableName.c_str();
+    else
+        names[int(atts.GetVar4Role())] = atts.GetVar4().c_str();
 }
 
 // ****************************************************************************
@@ -975,26 +1230,190 @@ avtScatterFilter::Recenter(vtkDataSet *ds, vtkDataArray *arr,
     return outv;
 }
 
-#if 0
 // ****************************************************************************
-//  Method: avtScatterFilter::PerformRestriction
+// Method: avtScatterPlot::NeedSpatialExtents
 //
-//  Purpose:
-//    Turn on Zone numbers flag so that the database does not make
-//    any assumptions. 
+// Purpose: 
+//   Determines whether spatial extents are needed.
 //
-//  Programmer: Brad Whitlock
-//  Creation:   March 25, 2002
+// Returns:    True if spatial extents are needed.
 //
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 19 12:27:24 PDT 2005
+//
+// Modifications:
+//   
 // ****************************************************************************
- 
+
+bool
+avtScatterFilter::NeedSpatialExtents() const
+{
+    //
+    // We always need spatial min/max values unless we're doing
+    // Linear scaling with no min/max values set and no scale to cube.
+    //
+    bool needSpatialExtents;
+    if(atts.GetScaleCube())
+        needSpatialExtents = true;
+    else
+    {
+        //
+        // Assign variables according to their roles. var[0] == X,
+        // var[1] == Y, and var[2] == Z.
+        //
+        const char *names[5] = {0,0,0,0,0};
+        PopulateNames(names);
+        DataInput var[5] = {
+            {0, false, false, 0., 0., 0, 0.},
+            {0, false, false, 0., 0., 0, 0.},
+            {0, false, false, 0., 0., 0, 0.},
+            {0, false, false, 0., 0., 0, 0.},
+            {0, false, false, 0., 0., 0, 0.}};
+        vtkDataArray *arr[4] = {0,0,0,0};
+        PopulateDataInputs(var, arr);
+
+        bool var1LinearScaleNoMinMax = (var[0].scale == 0) &&
+                                       (!var[0].useMin && !var[0].useMax);
+        bool var2LinearScaleNoMinMax = (var[1].scale == 0) &&
+                                       (!var[1].useMin && !var[1].useMax);
+        if(names[2] == 0)
+        {
+             needSpatialExtents = !(var1LinearScaleNoMinMax &&
+                                    var2LinearScaleNoMinMax);
+        }
+        else
+        {
+            bool var3LinearScaleNoMinMax = (var[2].scale == 0) &&
+                                           (!var[2].useMin && !var[2].useMax);
+            needSpatialExtents = !(var1LinearScaleNoMinMax &&
+                                   var2LinearScaleNoMinMax &&
+                                   var3LinearScaleNoMinMax);
+        }
+    }
+
+    debug4 << "avtScatterFilter::NeedSpatialExtents = "
+           << (needSpatialExtents?"True":"False") << endl;
+
+    return needSpatialExtents;
+}
+
+// ****************************************************************************
+// Method: avtScatterFilter::PerformRestriction
+//
+// Purpose: 
+//   Returns an altered pipeline specification and determines which variables
+//   must have their min/max values calculated.
+//
+// Arguments:
+//
+// Returns:    A new pipeline specification.
+//
+// Note:       This method is used here to determine which variables need to
+//             have their min/max values calculated. If any need to have their
+//             min/max values calculated then we turn off DLB.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jul 18 11:42:11 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
 avtPipelineSpecification_p
 avtScatterFilter::PerformRestriction(avtPipelineSpecification_p spec)
 {
     avtPipelineSpecification_p rv = new avtPipelineSpecification(spec);
-    rv->GetDataSpecification()->TurnZoneNumbersOn();
+
+    //
+    // Assign variables according to their roles. var[0] == X, var[1] == Y, 
+    // and var[2] == Z.
+    //
+    const char *names[5] = {0,0,0,0,0};
+    PopulateNames(names);
+    DataInput var[5] = {
+        {0, false, false, 0., 0., 0, 0.},
+        {0, false, false, 0., 0., 0, 0.},
+        {0, false, false, 0., 0., 0, 0.},
+        {0, false, false, 0., 0., 0, 0.},
+        {0, false, false, 0., 0., 0, 0.}};
+    vtkDataArray *arr[4] = {0,0,0,0};
+    PopulateDataInputs(var, arr);
+
+    //
+    // If we need spatial extents, try and get them now.
+    //
+    if(NeedSpatialExtents())
+    {
+        if (TryDataExtents(xExtents, names[0]))
+        {
+            needXExtents = false;
+            debug1 << "avtScatterFilter::PerformRestriction: xExtents="
+                   << xExtents[0] << ", " << xExtents[1] << endl;
+        }
+        else
+            needXExtents = true;
+
+        // If we did not specify both min and max then get the extents.
+        if (TryDataExtents(yExtents, names[1]))
+        {
+            needYExtents = false;
+            debug1 << "avtScatterFilter::PerformRestriction: yExtents="
+                   << yExtents[0] << ", " << yExtents[1] << endl;
+        }
+        else
+            needYExtents = true;
+
+        if(names[2] != 0)
+        {
+            // If we did not specify both min and max then get the extents.
+            if (TryDataExtents(zExtents, names[2]))
+            {
+                needZExtents = false;
+                debug1 << "avtScatterFilter::PerformRestriction: zExtents="
+                       << zExtents[0] << ", " << zExtents[1] << endl;
+            }
+            else
+                needZExtents = true;
+        }
+    }
+
+    // If we're coloring by a variable, get the color variable's extents.
+    if(names[3] != 0)
+    {
+        // If we did not specify both min and max then get the extents.
+        if(!(var[3].useMin && var[3].useMax))
+        {
+            if (TryDataExtents(colorExtents, names[3]))
+            {
+                needColorExtents = false;
+                debug1 << "avtScatterFilter::PerformRestriction: colorExtents="
+                       << colorExtents[0] << ", " << colorExtents[1] << endl;
+            }
+            else
+                needColorExtents = true;
+        }
+    }
+
+    // If we need any extents that were not available, no DLB.
+    if(needXExtents || needYExtents || needZExtents || needColorExtents)
+        rv->NoDynamicLoadBalancing();
+
+    // Pick which domains should be considered using the interval tree.
+    for(int i = 0; i < 4; ++i)
+    {
+        if(names[i] != 0 && (var[i].useMin || var[i].useMax))
+        {
+            avtIntervalTree *it = GetMetaData()->GetDataExtents(names[i]);
+            if(it != NULL)
+            {
+                float minval = var[i].useMin ? var[i].min : SCATTER_FLOAT_MIN;
+                float maxval = var[i].useMax ? var[i].max : SCATTER_FLOAT_MAX;
+                vector<int> dl;
+                it->GetDomainsListFromRange(&minval, &maxval, dl);
+                rv->GetDataSpecification()->GetRestriction()->RestrictDomains(dl);
+            }
+        }
+    }
+
     return rv;
 }
-
-
-#endif
