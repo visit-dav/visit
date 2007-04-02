@@ -34,6 +34,7 @@
     if(data == 0 && atts.GetVarType() == LabelAttributes::LABEL_VT_VECTOR_VAR)
     {
         data = input->GetPointData()->GetVectors();
+        debug3 << "avtLabelRenderer looking for a vector variable." << endl;
     }
     if(data == 0)
     {
@@ -49,6 +50,7 @@
         }
         else
         {
+            debug3 << "avtLabelRenderer setting originalNodes=data." << endl;
             originalNodes = (vtkUnsignedIntArray *)tmpNodes;
         }
     }
@@ -319,6 +321,7 @@ debug3 << "Labelling nodes with original node indices: "
         // we don't do any sort of lookup into the originalNodes array since it
         // was not available.
         //
+        debug3 << "avtLabelRenderer: backup case for labelling nodes." << endl;
         for(vtkIdType id = 0; id < npts; id += skipIncrement)
         {
             // const float *vert = p->GetPoint(id);

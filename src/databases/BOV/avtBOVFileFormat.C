@@ -890,7 +890,7 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     int ny = full_size[1] / bricklet_size[1];
     int nz = full_size[2] / bricklet_size[2];
 
-    int dim = (nz == 1 ? 2 : 3);
+    int dim = (full_size[2] == 1 ? 2 : 3);
 
     int nbricks = nx*ny*nz;
  

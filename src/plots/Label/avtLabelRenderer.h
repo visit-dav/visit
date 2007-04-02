@@ -49,6 +49,9 @@ class vtkPolyData;
 //    I removed single cell/node stuff. I also added support for specifying
 //    whether a binned label came from nodes or cells.
 //
+//    Brad Whitlock, Tue Apr 25 10:28:17 PDT 2006
+//    I removed some methods that I moved to derived classes.
+//
 // ****************************************************************************
 
 class avtLabelRenderer : public avtCustomRenderer
@@ -92,10 +95,6 @@ protected:
     bool DepthTestPoint(float screenPoint[3]) const;
 
     vtkFloatArray *GetCellCenterArray();
-    float *TransformPoints(const float *inputPoints,
-                           const unsigned char *quantizedNormalIndices,
-                           int nPoints);
-    vtkMatrix4x4 *WorldToDisplayMatrix() const;
 
     LabelAttributes        atts;
     int                    MAX_LABEL_SIZE;

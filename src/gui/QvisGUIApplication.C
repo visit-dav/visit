@@ -2888,6 +2888,9 @@ QvisGUIApplication::LoadPlugins()
 //   Brad Whitlock, Thu Mar 13 09:49:53 PDT 2003
 //   I added support for icons in the plot and operator menus.
 //
+//   Brad Whitlock, Tue Apr 25 16:41:59 PST 2006
+//   I added support for operators influencing the variable menu contents.
+//
 // ****************************************************************************
 
 void
@@ -2938,7 +2941,8 @@ QvisGUIApplication::CreatePluginWindows()
         // Add an option to the main window's operator manager widget's
         // operator list.
         mainWin->GetPlotManager()->AddOperatorType(GUIInfo->GetMenuName(),
-                                                   GUIInfo->XPMIconData());
+            GUIInfo->GetVariableTypes(), GUIInfo->GetVariableMask(),
+            GUIInfo->GetUserSelectable(), GUIInfo->XPMIconData());
     }
 }
 

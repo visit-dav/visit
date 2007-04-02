@@ -36,6 +36,7 @@ typedef struct
 {
     QvisVariablePopupMenu *varMenu;
     int                   varTypes;
+    int                   varMask;
 } PluginEntry;
 
 typedef std::vector<PluginEntry> PluginEntryVector;
@@ -134,6 +135,9 @@ typedef std::vector<PluginEntry> PluginEntryVector;
 //   Added addPlot, addOperator signals so the code to actually perform
 //   those actions can be moved out of this class.
 //
+//   Brad Whitlock, Tue Apr 25 16:29:44 PST 2006
+//   Added support for operators that influence the plot variable menu.
+//
 // ****************************************************************************
 
 class GUI_API QvisPlotManagerWidget : public QWidget, public GUIBase,
@@ -156,7 +160,9 @@ public:
 
     void AddPlotType(const char *plotName, const int varTypes,
                      const char **iconData = 0);
-    void AddOperatorType(const char *operatorName, const char **iconData = 0);
+    void AddOperatorType(const char *operatorName, const int varTypes,
+                         const int varMask, bool userSelectable,
+                         const char **iconData = 0);
     void EnablePluginMenus();
 
     void SetSourceVisible(bool);
@@ -229,6 +235,7 @@ private:
 
     // Structures to keep track of the registered plugin types.
     PluginEntryVector        plotPlugins;
+    PluginEntryVector        operatorPlugins;
     bool                     pluginsLoaded;
 
     // State objects that this window observes.

@@ -19,6 +19,8 @@ class LineoutAttributes;
 //  Creation:   Fri Jan 6 18:13:15 PST 2006
 //
 //  Modifications:
+//    Brad Whitlock, Tue Apr 25 16:48:48 PST 2006
+//    Added new GUI methods.
 //
 // ****************************************************************************
 
@@ -45,6 +47,9 @@ class LineoutGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtua
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, QvisNotepadArea *notepad);
     virtual const char **XPMIconData() const;
+    virtual int GetVariableTypes() const;
+    virtual int GetVariableMask() const;
+    virtual bool GetUserSelectable() const;
 };
 
 class LineoutViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual LineoutCommonPluginInfo

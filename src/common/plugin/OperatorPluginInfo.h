@@ -5,6 +5,7 @@
 #ifndef OPERATOR_PLUGIN_INFO_H
 #define OPERATOR_PLUGIN_INFO_H
 #include <plugin_exports.h>
+#include <plugin_vartypes.h>
 #include <stdio.h>
 
 // Forward declarations.
@@ -58,6 +59,10 @@ class ViewerPlot;
 //    Brad Whitlock, Thu Jan 5 14:40:42 PST 2006
 //    I removed explicit support for logging from the scripting plugins.
 //
+//    Brad Whitlock, Tue Apr 25 16:46:49 PST 2006
+//    Added new methods to the operator plugin that allow it to control
+//    the types of variables that the GUI puts in the variable list.
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralOperatorPluginInfo
@@ -90,6 +95,9 @@ class PLUGIN_API GUIOperatorPluginInfo : public virtual CommonOperatorPluginInfo
         return 0;
     }
     virtual const char **XPMIconData() const { return 0; }
+    virtual int GetVariableTypes() const { return 0; }
+    virtual int GetVariableMask() const { return ~0; }
+    virtual bool GetUserSelectable() const { return true; }
 };
 
 class PLUGIN_API ViewerOperatorPluginInfo : public virtual CommonOperatorPluginInfo
