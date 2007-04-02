@@ -1643,3 +1643,24 @@ avtPickQuery::SetRealIds(vtkDataSet *ds)
     pickAtts.SetRealIncidentElements(incEls);
 }
 
+
+// ****************************************************************************
+//  Method: avtPickQuery::SetPickAttsForTimeQuery
+//
+//  Purpose:
+//    Sets the pickAtts to specific passed values necessary for a time query.
+//    These values would have been set during the Pick that is preliminary
+//    to performing the time query.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   October 24, 2006 
+//
+// ****************************************************************************
+
+void
+avtPickQuery::SetPickAttsForTimeQuery(const PickAttributes *pa)
+{
+    pickAtts.SetMatSelected(pa->GetMatSelected());
+    pickAtts.SetElementIsGlobal(pa->GetElementIsGlobal());
+}
+

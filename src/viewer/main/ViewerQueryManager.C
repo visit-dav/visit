@@ -3783,6 +3783,9 @@ ViewerQueryManager::UpdateQueryOverTimeAtts()
 //    Eric Brugger, Thu Jan  6 08:58:28 PST 2005
 //    Corrected a misuse of the CATCH_RETURN macro.
 //
+//    Kathleen Bonnell, Tue Oct 24 18:54:56 PDT 2006 
+//    Send pick atts to the Time Query for Variable by Zone/Node. 
+//
 // ***********************************************************************
 
 void
@@ -3937,6 +3940,10 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
     ViewerPlot *resultsPlot = plotList->GetPlot(pid);
 
     timeQueryAtts->SetQueryAtts(*qA);
+    if (qName == "Variable by Zone" || qName == "Variable by Node") 
+    {
+        timeQueryAtts->SetPickAtts(*pickAtts);
+    }
     bool retry = false;
     int numAttempts = 0;
 

@@ -46,6 +46,8 @@
 #include <avtDataObjectQuery.h>
 #include <avtQueryFactory.h>
 #include <avtQueryOverTimeFilter.h>
+#include <avtVariableByZoneQuery.h>
+#include <avtVariableByNodeQuery.h>
 
 #include <vtkCellData.h>
 #include <vtkDoubleArray.h>
@@ -160,6 +162,9 @@ avtQueryOverTimeFilter::Create(const AttributeGroup *atts)
 //    Added call to query.GetTimeCurveSpecs.  Only retrive time value
 //    if it will be used for the X-axis.  Store the correct number of results.
 //
+//    Kathleen Bonnell, Tue Oct 24 18:59:27 PDT 2006 
+//    Added call to query->SetPickAttsForTimeQuery for VariableByNode/Zone.
+//
 // ****************************************************************************
 
 void
@@ -197,7 +202,16 @@ avtQueryOverTimeFilter::Execute(void)
     qatts.SetTimeStep(currentTime);
     avtDataObjectQuery *query = avtQueryFactory::Instance()->
         CreateQuery(&qatts);
-
+    if (strncmp(query->GetType(), "avtVariableByNodeQuery",22) == 0)
+    {
+        PickAttributes patts = atts.GetPickAtts();
+        ((avtVariableByNodeQuery*)query)->SetPickAttsForTimeQuery(&patts);
+    }
+    else if (strncmp(query->GetType(), "avtVariableByZoneQuery",22) == 0)
+    {
+        PickAttributes patts = atts.GetPickAtts();
+        ((avtVariableByZoneQuery*)query)->SetPickAttsForTimeQuery(&patts);
+    }
     query->GetTimeCurveSpecs(useTimeForXAxis, nResultsToStore);
     query->SetTimeVarying(true);
     query->SetInput(GetInput());

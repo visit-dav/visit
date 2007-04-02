@@ -31,6 +31,8 @@
     </Field>
     <Field name="queryAtts" label="queryAtts" type="att" subtype="QueryAttributes" internal="true">
     </Field>
+    <Field name="pickAtts" label="pickAtts" type="att" subtype="PickAttributes" internal="true">
+    </Field>
     <Function name="CreateNode" user="false" member="true">
     </Function>
     <Function name="SetFromNode" user="false" member="true">

@@ -124,6 +124,9 @@ class avtExpressionEvaluatorFilter;
 //    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
 //    Added avtDataAttributes arg to Preparation.
 //    
+//    Kathleen Bonnell, Tue Oct 24 18:59:27 PDT 2006 
+//    Add SetPickAttsForTimeQuery. 
+//    
 // ****************************************************************************
 
 class QUERY_API avtPickQuery : public avtDatasetQuery
@@ -141,6 +144,7 @@ class QUERY_API avtPickQuery : public avtDatasetQuery
     virtual bool                    OriginalData(void) { return true; };
 
     void                            SetPickAtts(const PickAttributes *pa);
+    void                            SetPickAttsForTimeQuery(const PickAttributes *pa);
     const PickAttributes *          GetPickAtts(void);
     virtual void                    SetTransform(const avtMatrix *m){}; 
     virtual void                    SetInvTransform(const avtMatrix *m){};
