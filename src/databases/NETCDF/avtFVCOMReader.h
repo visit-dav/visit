@@ -41,6 +41,7 @@ class avtFVCOMReader
     virtual           ~avtFVCOMReader();
 
     void               SetDomainIndexForCaching(int dom) {CacheDomainIndex = dom; }
+    void               SetKeySuffixForCaching(const char *filename) {keysuffix = filename; }
 
 
     //
@@ -52,6 +53,7 @@ class avtFVCOMReader
     int            GetNTimesteps(void);
 
     void           FreeUpResources();
+    void           MTMDFreeUpResources();
     vtkDataSet    *GetMesh(int, const char *, avtVariableCache *);
     vtkDataArray  *GetVar(int, const char *, avtVariableCache *);
     vtkDataArray  *GetVectorVar(int, const char *, avtVariableCache *);
@@ -65,6 +67,7 @@ class avtFVCOMReader
                                             DestructorFunction &);
 
 
+
   protected:
     // DATA MEMBERS
     NETCDFFileObject      *fileObject;
@@ -72,6 +75,7 @@ class avtFVCOMReader
 
     int  CacheDomainIndex;
           
+    std::string keysuffix;
 
   private:
 
@@ -83,15 +87,20 @@ class avtFVCOMReader
     // Pass (S,T,P) to these methods!
     double        ATG(double, double, double);
     double        SVAN(double, double, double);
-
+    double        Dens3helper(double,double,double);
+    double        Thetahelper(double,double,double);
 
     virtual void          GetDimensions(void);
     bool NeedDimensions;
 
     int status, ncid, nDims, nVars, nGlobalAtts, unlimitedDimension;
     int nScalarID, nNodeID, nElemID, nSiglayID, nSiglevID, 
-      nThreeID, nFourID, nMaxnodeID, nMaxelemID, nTimeID;
+      nThreeID, nFourID, nMaxnodeID, nMaxelemID, nTimeID, dimID;
+    
+    bool xstate,ystate, hstate, zstate, latstate, lonstate;
+    bool nodestate, elemstate, siglaystate, siglevstate; 
 
+    bool mesh1, mesh2, mesh3, mesh4, mesh5;
 /*     size_t  nScalar, nNode, nElem, nSiglay, nSiglev,  */
 /*       nThree, nFour, nMaxnode, nMaxelem, nTime; */
 /*     size_t *dimSizes; */
@@ -100,8 +109,6 @@ class avtFVCOMReader
     int  nScalar, nNode, nElem, nSiglay, nSiglev, 
       nThree, nFour, nMaxnode, nMaxelem, nTime;
     int *dimSizes;
-    bool alloc_dimSizes;
-    
 
     char   DimName[NC_MAX_NAME+1],VarName[NC_MAX_NAME+1];
             
@@ -112,16 +119,20 @@ class avtFVCOMReader
     virtual void   GetStaticGridVariables(void);
     bool NeedGridVariables;  
 
-    std::map<std::string, bool> meshExists;
-
     std::string SigLayCoordType,SigLevCoordType;
 
-    float *xvals, *yvals, *zvals, *SigLayers, *SigLevels;
-    bool alloc_xvals, alloc_yvals, alloc_zvals, alloc_SigLayers,
-      alloc_SigLevels;
+    float *xvals, *yvals, *zvals, *SigLayers, *SigLevels, *latvals, *lonvals;
 
-    int *nvvals;
-    bool alloc_nvvals;
+    int *nvvals, *egid, *ngid;
+    // int *nvvals; 
+
+
+    bool IsGeoRef;
+
+    void SphereVel2Cart(float *,int);
+
+    void Sphere2Cart(float *);
+
 
 };
 

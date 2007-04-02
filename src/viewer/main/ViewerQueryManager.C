@@ -3377,6 +3377,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //
 //    Cyrus Harrison, Tue Feb 20 15:27:36 PST 2007
 //    Added connected components queries
+//    
+//    Cyrus Harrison,  Thu Mar  1 16:16:58 PST 2007
+//    Added connected components summary query
 //
 // ****************************************************************************
 
@@ -3418,6 +3421,7 @@ ViewerQueryManager::InitializeQueryList()
     QueryList::WindowType ad  = QueryList::ActualData;
     QueryList::WindowType ld  = QueryList::LineDistribution;
     QueryList::WindowType hf  = QueryList::HohlraumFlux;
+    QueryList::WindowType ccls_wt  = QueryList::ConnCompSummary;
     //QueryList::WindowType av = QueryList::ActualDataVars;
 
     QueryList::QueryMode qo = QueryList::QueryOnly;
@@ -3475,6 +3479,7 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("Connected Component Volume", dq, ccl_r, basic, 1, 0, qo);
     queryTypes->AddQuery("Connected Component Variable Sum", dq, ccl_r, basic, 1, 0, qo);
     queryTypes->AddQuery("Connected Component Weighted Variable Sum", dq, ccl_r, basic, 1, 0, qo);
+    queryTypes->AddQuery("Connected Components Summary", dq, ccl_r, ccls_wt, 1, 0, qo);
 
 
     int MinMaxVars = QUERY_SCALAR_VAR | QUERY_TENSOR_VAR | QUERY_VECTOR_VAR |

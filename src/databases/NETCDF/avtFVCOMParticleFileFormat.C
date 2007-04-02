@@ -57,7 +57,11 @@ avtFVCOMParticleFileFormat::Identify(NETCDFFileObject *fileObject)
     std::string source;
     if(fileObject->ReadStringAttribute("source", source))
     {
-        isFVCOM = strcmp("ParticleFVCOM",source.c_str() )==0;
+      //        isFVCOM = strcmp("ParticleFVCOM",source.c_str() )==0;
+
+     if(strncmp("ParticleFVCOM",source.c_str(),13 )==0 || 
+        strncmp("OFFLINE_FVCOM",source.c_str(),13 )==0)
+       isFVCOM=true;
     }
 
     return isFVCOM;
@@ -148,6 +152,7 @@ avtFVCOMParticleFileFormat::~avtFVCOMParticleFileFormat()
 int
 avtFVCOMParticleFileFormat::GetNTimesteps(void)
 {
+ 
     const char *mName = "avtFVCOMParticleFileObject::GetNTimesteps: ";
 
     debug4 << mName << endl;
@@ -156,6 +161,11 @@ avtFVCOMParticleFileFormat::GetNTimesteps(void)
     int status, time_id, ncid;
 
     ncid=fileObject->GetFileHandle();
+    if (ncid == -1)
+    {
+      std::string msg("Could not get file handle in avtParticleFileFormat::GetTimes");
+      EXCEPTION1(ImproperUseException, msg);
+    }
       
     status = nc_inq_dimid(ncid, "time", &time_id);
     if (status != NC_NOERR) fileObject-> HandleError(status);
@@ -185,44 +195,75 @@ avtFVCOMParticleFileFormat::GetNTimesteps(void)
 void
 avtFVCOMParticleFileFormat::GetTimes(doubleVector &t)
 {
-
-    const char *mName = "avtFVCOMParticleFileObject::GetTimes: ";
-
-    debug4 << mName << endl;
-    
-    int ncid;
-    ncid=fileObject->GetFileHandle(); 
-
-
-    size_t ntimesteps;
-    int time_id;
-    int status = nc_inq_dimid(ncid, "time", &time_id);
-    if (status != NC_NOERR) fileObject-> HandleError(status);
-
-    status = nc_inq_dimlen(ncid, time_id, &ntimesteps);
-    if (status != NC_NOERR) fileObject-> HandleError(status);
-
-    TypeEnum type = NO_TYPE;
-    int ndims = 0, *dims;
-    fileObject->InqVariable("time", &type, &ndims, &dims);
-
-    if (ndims==1)
+  const char *mName = "avtFVCOMParticleFileObject::GetTimes: ";
+  debug4 << mName << endl;
+  
+  int ncid;
+  ncid=fileObject->GetFileHandle(); 
+  if (ncid == -1)
     {
-        float *tf = new float[ntimesteps+1];
-        fileObject->ReadVariableInto("time", type, tf);
+      std::string msg("Could not get file handle in avtParticleFileFormat::GetTimes");
+      EXCEPTION1(ImproperUseException, msg);
+    }
+  
+  
+  char varname[NC_MAX_NAME+1];
+  nc_type vartype;
+  int  ndims;
+  int  dims[NC_MAX_VAR_DIMS];
+  int  varnatts;
+  int time_id;
+  int status = nc_inq_varid (ncid, "time", &time_id);
+  if (status != NC_NOERR) 
+    {
+      fileObject-> HandleError(status);
+      debug4 << "Could not find variable: time" << endl;
+      return;
+    }
+  // Now get variable type!
+  status = nc_inq_var(ncid, time_id, varname, &vartype, &ndims, 
+                      dims, &varnatts);
+  if (status != NC_NOERR) fileObject-> HandleError(status);
+  
+  std::string timeunits;
+  if(fileObject->ReadStringAttribute("time", "units", timeunits))
+    {
+      debug4<< "timeunits: " << timeunits << endl;
+    }
+  else
+    debug4<< "timeunits+++ could not get" << endl;
+  
+  double convert=1;
+  if (strncmp(timeunits.c_str(), "seconds",7)==0)
+    convert=convert/double(60*60*24);
+  
 
-        for(int n=0; n<ntimesteps; ++n)
+  size_t ntimesteps;
+  int ntime_id;
+  status = nc_inq_dimid(ncid, "time", &ntime_id);
+  if (status != NC_NOERR) fileObject-> HandleError(status);
+  
+  status = nc_inq_dimlen(ncid, ntime_id, &ntimesteps);
+  if (status != NC_NOERR) fileObject-> HandleError(status);
+  
+
+  if (ndims==1 && vartype == NC_FLOAT)
+    {
+      float *tf = new float[ntimesteps+1];
+      fileObject->ReadVariableInto("time",FLOATARRAY_TYPE , tf);
+      
+      for(int n=0; n<ntimesteps; ++n)
         {
-            t.push_back(double(tf[n]));
+          t.push_back(convert * double(tf[n]));
         }
-        delete [] tf;
+      delete [] tf;
     }
-    else
+  else
     {
-        debug4 << mName << "Wrong dimension for variable Time" << endl;
+      debug4 << mName << "Wrong dimension for variable Time" << endl;
     }
+  
 
-    delete [] dims;
 }
 
 
@@ -270,8 +311,13 @@ avtFVCOMParticleFileFormat::GetCycles(intVector &cyc)
     int  varnatts;
     int cycle_id;
     status = nc_inq_varid (ncid, "cycle", &cycle_id);
-    if (status != NC_NOERR) fileObject-> HandleError(status);
-    
+    if (status != NC_NOERR) 
+      {
+        fileObject-> HandleError(status);
+        debug4 << "Could not find variable: cycle" << endl;
+        return;
+      }
+
     // Now get variable type!
     status = nc_inq_var(ncid, cycle_id, varname, &vartype, &varndims, 
             vardims, &varnatts);
@@ -364,8 +410,18 @@ avtFVCOMParticleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, in
     const char *mName = "avtFVCOMParticleFileObject::PopulateDatabaseMetaData: ";
 
     debug4 << mName << endl;
+
+    
+    int ncid = fileObject->GetFileHandle();
+    
+    int nVars, nDims, nGlobalAtts, unlimitedDimension;
+    int status = nc_inq(ncid, &nDims, &nVars, &nGlobalAtts, &unlimitedDimension);
+    if(status != NC_NOERR) fileObject-> HandleError(status);
+    
+
     if(debug4_real)
         fileObject->PrintFileContents(debug4_real);
+
 
     // Assemble a database title.
     std::string comment(GetType()), titleString, source,
@@ -383,8 +439,6 @@ avtFVCOMParticleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, in
 
         md->SetDatabaseComment(comment);
     }
-
-    debug4 << mName << "Finished SetDatabaseComment in MetaData" << endl;
 
     std::string mesh_name("Drifter");
     avtMeshMetaData *mmd = new avtMeshMetaData(mesh_name, 
@@ -407,32 +461,27 @@ avtFVCOMParticleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, in
     debug4 << mName << "Added Drifter Mesh to MetaData" << endl;
 
 
-    TypeEnum t = NO_TYPE;
-    int ndims = 0, *dims1;
-    fileObject->InqVariable("s1", &t, &ndims, &dims1);
-    if (ndims > 0)
+
+  for(int i = 0; i < nVars; ++i)
     {
-        avtScalarMetaData *smd = new avtScalarMetaData("s1", "Drifter", AVT_NODECENT);
-        smd->hasUnits = fileObject->ReadStringAttribute("s1", "units", smd->units);
-        md->Add(smd);
+      
+      int VarnDims, VarnAtts, VarDimIDs[NC_MAX_VAR_DIMS];
+      char VarName[NC_MAX_NAME+1];
+      nc_type VarType;
+      status = nc_inq_var(ncid, i, VarName, &VarType, &VarnDims, 
+                          VarDimIDs, &VarnAtts);
+      if (status != NC_NOERR) fileObject-> HandleError(status);
+      
+      if (VarnDims > 1)
+        {
+          avtScalarMetaData *smd = new avtScalarMetaData(VarName, "Drifter", AVT_NODECENT);
+          smd->hasUnits = fileObject->ReadStringAttribute(VarName, "units", smd->units);
+          md->Add(smd);
+          
+        }
+
     }
-
-    int *dims2;
-    fileObject->InqVariable("s2", &t, &ndims, &dims2);
-    if (ndims > 0)
-    {
-        avtScalarMetaData *smd2 = new avtScalarMetaData("s2", "Drifter", AVT_NODECENT);
-        smd2->hasUnits = fileObject->ReadStringAttribute("s2", "units", smd2->units);
-        md->Add(smd2);
-    }
-    delete [] dims1;
-    delete [] dims2;
-
-    avtScalarMetaData *zmd = new avtScalarMetaData("z", "Drifter", AVT_NODECENT);
-    zmd->hasUnits = fileObject->ReadStringAttribute("z", "units", zmd->units);
-    md->Add(zmd);
-
-    debug4 << mName << "end" << endl;
+  debug4 << mName << "end" << endl;
 }
 
 
@@ -604,77 +653,28 @@ avtFVCOMParticleFileFormat::GetVar(int timestate, const char *varname)
     size_t starts[]={timestate,0};
     size_t counts[]={1, nlag};
     ptrdiff_t stride[]={1,1};
-    int z_id, s1_id, s2_id;
+    int s1_id;
     
-    if (strcmp("s1", varname)==0)
-    { // READ s1
-        float *s1 = new float[nlag];
-        status = nc_inq_varid (ncid, "s1", &s1_id);
-        if (status != NC_NOERR) fileObject-> HandleError(status);
-        status = nc_get_vars_float(fileObject->GetFileHandle(),s1_id,
+    float *s1 = new float[nlag];
+    status = nc_inq_varid (ncid, varname, &s1_id);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+    status = nc_get_vars_float(fileObject->GetFileHandle(),s1_id,
                                starts, counts, stride, s1);
-        if (status != NC_NOERR) fileObject-> HandleError(status);
-     
-        // Put the data into the vtkFloatArray   
-        vtkFloatArray *rv = vtkFloatArray::New();
-        rv->SetNumberOfTuples(nlag);
-        for (int i = 0 ; i < nlag ; i++)
-        {
-            rv->SetTuple1(i, s1[i]);  // you must determine value for ith entry.
-        }
-
-        delete [] s1;
+    if (status != NC_NOERR) fileObject-> HandleError(status);
     
-        return rv;
-    }
-    else if (strcmp("s2", varname)==0)
-    { // READ s2
-        float *s2 = new float[nlag];
-        status = nc_inq_varid (ncid, "s2", &s2_id);
-        if (status != NC_NOERR) fileObject-> HandleError(status);
-        status = nc_get_vars_float(fileObject->GetFileHandle(),s2_id,
-                               starts, counts, stride, s2);
-        if (status != NC_NOERR) fileObject-> HandleError(status);
-     
-        // Put the data into the vtkFloatArray   
-        vtkFloatArray *rv = vtkFloatArray::New();
-        rv->SetNumberOfTuples(nlag);
-        for (int i = 0 ; i < nlag ; i++)
-        {
-            rv->SetTuple1(i, s2[i]);  // you must determine value for ith entry.
-        }
-
-        delete [] s2;
+    // Put the data into the vtkFloatArray   
+    vtkFloatArray *rv = vtkFloatArray::New();
+    rv->SetNumberOfTuples(nlag);
+    for (int i = 0 ; i < nlag ; i++)
+      {
+        rv->SetTuple1(i, s1[i]);  // you must determine value for ith entry.
+      }
     
-        return rv;
-    }
-    else if (strcmp("z", varname)==0)
-    {
-        float *z = new float[nlag];
-
-        // READ Z
-        status = nc_inq_varid (fileObject->GetFileHandle(), "z", &z_id);
-        if (status != NC_NOERR) fileObject-> HandleError(status);
-        //    debug4 << "Status="<< status <<", var_id="<< var_id << endl;
-
-        status = nc_get_vars_float(fileObject->GetFileHandle(),z_id,
-                               starts, counts, stride, z);
-        if (status != NC_NOERR) fileObject-> HandleError(status);
-
-        // Put the data into the vtkFloatArray   
-        vtkFloatArray *rv = vtkFloatArray::New();
-        rv->SetNumberOfTuples(nlag);
-        for (int i = 0 ; i < nlag ; i++)
-        {
-            rv->SetTuple1(i, z[i]);  // you must determine value for ith entry.
-        }
-
-        delete [] z;
+    delete [] s1;
     
-        return rv;
-    }
+    return rv;
 
-    return 0;
+
 }
 
 

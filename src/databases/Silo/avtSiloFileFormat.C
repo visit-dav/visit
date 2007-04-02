@@ -2879,6 +2879,11 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Brad Whitlock, Fri Mar 16 11:53:10 PDT 2007
+//    Make sure that SelectAll is called on the metadata so the atts and 
+//    attVectors that it contains will figure into the message size.
+//
 // ****************************************************************************
 void
 avtSiloFileFormat::BroadcastGlobalInfo(avtDatabaseMetaData *metadata)
@@ -2892,7 +2897,10 @@ avtSiloFileFormat::BroadcastGlobalInfo(avtDatabaseMetaData *metadata)
     BufferConnection tmp;
     int n;
     if (rank==0)
+    {
+        metadata->SelectAll();
         n = metadata->CalculateMessageSize(tmp);
+    }
     BroadcastInt(n);
     unsigned char *buff = new unsigned char[n];
 

@@ -155,6 +155,11 @@ $0 = shift @ARGV;
 #    the qsub launch method to support qsub/mpiexec and qsub/srun.  Corrected
 #    several qsub errors.
 #
+#    Jeremy Meredith, Fri Mar 16 14:16:00 EDT 2007
+#    Clear the PYTHONHOME environment variable if exe_name is "engine_par".
+#    MPICH-2, for example, has a python-based launcher, and setting this
+#    unconditionally will prevent parallel engines from launching.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1093,6 +1098,13 @@ $ENV{VISITHOME}     = "$visitdir";
 $ENV{VISITARCHHOME} = "$visitarchdir";
 $ENV{VISITHELPHOME} = "$visithelpdir";
 $ENV{PYTHONHOME}    = "$visitlibdir/python";
+
+# Some engine launchers (like MPICH2's mpirun) may be python-based
+# and we don't want to point them to our python environment.
+if ($exe_name eq "engine_par")
+{
+    delete $ENV{PYTHONHOME};
+}
 
 # Turn off trapping of floating point exceptions.
 $ENV{TRAP_FPE} = "";

@@ -139,18 +139,21 @@ avtFVCOM_STSDFileFormat::CreateInterface(NETCDFFileObject *f,
 avtFVCOM_STSDFileFormat::avtFVCOM_STSDFileFormat(const char *filename)
     : avtSTSDFileFormat(filename)
 {
-  debug4 << "avtFVCOM_STSDFileFormat::avtFVCOM_STSDFileFormat" << endl;
+  //  debug4 << "avtFVCOM_STSDFileFormat::avtFVCOM_STSDFileFormat" << endl;
 
     reader = new avtFVCOMReader(filename);
-  debug4 << "avtFVCOM_STSDFileFormat::avtFVCOM_STSDFileFormat: end" << endl;
+    reader->SetKeySuffixForCaching(filename);
+
+      //  debug4 << "avtFVCOM_STSDFileFormat::avtFVCOM_STSDFileFormat: end" << endl;
 }
 
 avtFVCOM_STSDFileFormat::avtFVCOM_STSDFileFormat(const char *filename,
    NETCDFFileObject *f)   : avtSTSDFileFormat(filename)
 {
-  debug4 << "avtFVCOM_STSDFileFormat::avtFVCOM_STSDFileFormat(name f)" << endl;
+  //  debug4 << "avtFVCOM_STSDFileFormat::avtFVCOM_STSDFileFormat(name f)" << endl;
     reader = new avtFVCOMReader(filename,f);
-  debug4 << "avtFVCOM_STSDFileFormat::avtFVCOM_STSDFileFormat(name f): end" << endl;
+    reader->SetKeySuffixForCaching(filename);
+      //  debug4 << "avtFVCOM_STSDFileFormat::avtFVCOM_STSDFileFormat(name f): end" << endl;
 }
 
 

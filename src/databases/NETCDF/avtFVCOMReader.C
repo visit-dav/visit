@@ -17,9 +17,7 @@
 
 #include <avtDatabaseMetaData.h>
 #include <avtVariableCache.h>
-
-// Removed materials for now, 1.5.4
-//#include <avtMaterial.h>
+#include <avtMaterial.h>
 
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
@@ -69,7 +67,7 @@ avtFVCOMReader::Identify(NETCDFFileObject *fileObject)
 }
 
 // ****************************************************************************
-//  Method: avtFVCOM constructor
+//  Method: avtFVCOMReadeer::constructor
 //
 //  Programmer: David Stuebe
 //  Creation:   Thu May 18 08:39:01 PDT 2006
@@ -80,35 +78,43 @@ avtFVCOMReader::Identify(NETCDFFileObject *fileObject)
 avtFVCOMReader::avtFVCOMReader(const char *filename)
 {
   fileObject = new NETCDFFileObject(filename);
-  alloc_fileObject=true;
+
+  xvals=0;
+  yvals=0;
+  zvals=0;
+  SigLayers=0;
+  SigLevels=0;
+  latvals=0;
+  lonvals=0;
+  nvvals=0;
+  egid=0;
+  ngid=0;
+  dimSizes=0;
 
   NeedDimensions=true;
   NeedGridVariables=true;
 
-  alloc_dimSizes=false;
-  alloc_xvals=false;
-  alloc_yvals=false;
-  alloc_zvals=false;
-  alloc_SigLayers=false;
-  alloc_SigLevels=false;
-  alloc_nvvals=false;
 }
 
 avtFVCOMReader::avtFVCOMReader(const char *filename, NETCDFFileObject *f)
 {
   fileObject = f;
-  alloc_fileObject=false;
+
+  xvals=0;
+  yvals=0;
+  zvals=0;
+  SigLayers=0;
+  SigLevels=0;
+  latvals=0;
+  lonvals=0;
+  nvvals=0;
+  egid=0;
+  ngid=0;
+  dimSizes=0;
 
   NeedDimensions=true;
   NeedGridVariables=true;
 
-  alloc_dimSizes=false;
-  alloc_xvals=false;
-  alloc_yvals=false;
-  alloc_zvals=false;
-  alloc_SigLayers=false;
-  alloc_SigLevels=false;
-  alloc_nvvals=false;
 }
 
 // ****************************************************************************
@@ -130,11 +136,11 @@ avtFVCOMReader::~avtFVCOMReader()
 
   //  debug4 << "fileObject: " << fileObject << endl;
 
-  if (alloc_fileObject)  
+  if (fileObject!=0)  
     {
       debug4 << "fileObject: " << fileObject << endl;
       delete fileObject;
-      alloc_fileObject=false;
+      fileObject=0;
     }
   debug4 << "avtFVCOMReader::~avtFVCOMReader: end" << endl;
 }
@@ -158,55 +164,85 @@ avtFVCOMReader::FreeUpResources()
   debug4 << "avtFVCOMReader::FreeUpResources: closing file." << endl;
 
 
-  if (alloc_xvals)
+  if (xvals != 0)
     {
+      debug4 << "delete xvals:" << xvals << endl;
       delete [] xvals;
-      debug4 << "delete xvals" << xvals << endl;
-      alloc_xvals=false;
+      xvals=0;
     }
 
-  if (alloc_yvals)
+  if (yvals != 0)
     {
+      debug4 << "delete yvals:" << yvals << endl;
       delete [] yvals;
-      debug4 << "delete yvals" << yvals << endl;
-      alloc_yvals=false;
+      yvals=0;
     }
 
-  if (alloc_zvals)
+  if (zvals != 0)
     {
+      debug4 << "delete zvals:" << zvals << endl;
       delete [] zvals;
-      debug4 << "delete zvals" << zvals << endl;
-      alloc_zvals=false;
+      zvals=0;
     }
 
-  if (alloc_SigLayers)
+  if (SigLayers != 0)
     {
+      debug4 << "delete SigLayers:" << SigLayers << endl;
       delete [] SigLayers;
-      debug4 << "delete SigLayers" << SigLayers << endl;
-      alloc_SigLayers=false;
+      SigLayers=0;
     }
 
-  if (alloc_SigLevels)
+  if (SigLevels != 0)
     {
+      debug4 << "delete Siglevels:" << SigLevels << endl;
       delete [] SigLevels;
-      debug4 << "delete Siglevels" << SigLevels << endl;
-      alloc_SigLevels=false;
+      SigLevels=0;
     }
 
-  if(alloc_nvvals)
+  if(nvvals != 0)
     {
+      debug4 << "delete nvvals:" << nvvals << endl;
       delete [] nvvals;
-      debug4 << "delete nvvals" << nvvals << endl;
-      alloc_nvvals=false;
+      nvvals=0;
     }
 
-
-  if (alloc_dimSizes)
+  if(egid != 0)
     {
-      delete [] dimSizes;
-      debug4 << "delete dimSizes" << dimSizes << endl;
-      alloc_dimSizes=false;
+      debug4 << "delete egid:" << egid << endl;
+      delete [] egid;
+      egid=0;
     }
+
+  if(ngid != 0)
+    {
+      debug4 << "delete ngid:" << ngid << endl;
+      delete [] ngid;
+      ngid=0;
+    }
+
+
+  if (dimSizes != 0)
+    {
+      debug4 << "delete dimSizes:" << dimSizes << endl;
+      delete [] dimSizes;
+      dimSizes=0;
+    }
+
+   if (latvals != 0)
+    {
+      debug4 << "delete latvals:" << latvals << endl;
+      delete [] latvals;
+      latvals=0;
+    }
+
+ if (lonvals != 0)
+    {
+      debug4 << "delete lonvals:" << lonvals << endl;
+      delete [] lonvals;
+      lonvals=0;
+    }
+
+
 
   debug4 << "done delete" << endl;
   NeedDimensions=true;
@@ -219,8 +255,9 @@ avtFVCOMReader::FreeUpResources()
 
 }
 
+
 // ****************************************************************************
-//  Method: avtEMSTDFileFormat::GetNTimesteps
+//  Method: avtFVCOMReader::GetNTimesteps
 //
 //  Purpose:
 //      Tells the rest of the code how many timesteps there are in this file.
@@ -263,6 +300,11 @@ avtFVCOMReader::GetNTimesteps(void)
 //
 //  Purpose: Tell the rest of the code the dimension of the data in this file
 //          
+// I have upgraded this method to do most of the logical checking about what 
+// is in the file. That way it is not written twice, once in the metadata server
+// and once for the engine.
+//
+// Could add test for the right dimensions on each variable?
 //
 //  Programmer: David Stuebe
 //  Creation:   Thu May 18 08:39:01 PDT 2006
@@ -292,7 +334,6 @@ avtFVCOMReader::GetDimensions()
     
 
   dimSizes = new int[nDims];
-  alloc_dimSizes=true;
 
   size_t  tScalar, tNode, tElem, tSiglay, tSiglev,
     tThree, tFour, tMaxnode, tMaxelem, tTime;
@@ -326,68 +367,246 @@ avtFVCOMReader::GetDimensions()
   // NODE
   status = nc_inq_dimid(ncid, "node", &nNodeID);
   if (status != NC_NOERR) fileObject-> HandleError(status);
-  status = nc_inq_dimlen(ncid, nNodeID, &tNode);
-  if (status != NC_NOERR) fileObject-> HandleError(status);
-  nNode=tNode;
+  else
+    {
+      status = nc_inq_dimlen(ncid, nNodeID, &tNode);
+      if (status != NC_NOERR) fileObject-> HandleError(status);
+      nNode=tNode;
+      nodestate=true;
+    }
   
   // NELE
   status = nc_inq_dimid(ncid, "nele", &nElemID);
   if (status != NC_NOERR) fileObject-> HandleError(status);
-  status = nc_inq_dimlen(ncid, nElemID, &tElem);
-  if (status != NC_NOERR) fileObject-> HandleError(status);
-  nElem=tElem;
+  else
+    {
+      status = nc_inq_dimlen(ncid, nElemID, &tElem);
+      if (status != NC_NOERR) fileObject-> HandleError(status);
+      nElem=tElem;
+      elemstate=true;
+    }
 
+  if(!elemstate | !nodestate)
+    {
+      debug4<<"Must have both of the dimensions: 'node' and 'nele'" << endl;
+      std::string msg("FVCOM file must have one of the dimensions: 'node' or 'nele'");      
+      EXCEPTION1(ImproperUseException, msg);
+    }
+      
   //SIGLAY
   status = nc_inq_dimid(ncid, "siglay", &nSiglayID);
   if (status != NC_NOERR) fileObject-> HandleError(status);
-  status = nc_inq_dimlen(ncid, nSiglayID, &tSiglay);
-  if (status != NC_NOERR) fileObject-> HandleError(status);
-  nSiglay=tSiglay;
+  else
+    {
+      status = nc_inq_dimlen(ncid, nSiglayID, &tSiglay);
+      if (status != NC_NOERR) fileObject-> HandleError(status);
+      nSiglay=tSiglay;
+      siglaystate=true;
+    }
+
+  if(!siglaystate) debug4<<"NO SIGMA LAYERS"<< endl;
 
   //SIGLEV
   status = nc_inq_dimid(ncid, "siglev", &nSiglevID);
   if (status != NC_NOERR) fileObject->HandleError(status);
-  status = nc_inq_dimlen(ncid, nSiglevID, &tSiglev);
-  if (status != NC_NOERR) fileObject-> HandleError(status);
-  nSiglev=tSiglev;
+  else
+    {
+      status = nc_inq_dimlen(ncid, nSiglevID, &tSiglev);
+      if (status != NC_NOERR) fileObject-> HandleError(status);
+      nSiglev=tSiglev;
+      siglevstate=true;
+    }
+
+  if(!siglevstate) debug4<<"NO SIGMA LEVELS"<< endl;
+
 
   //THREE
   status = nc_inq_dimid(ncid, "three", &nThreeID);
-  if (status != NC_NOERR) fileObject->HandleError(status);
-  status = nc_inq_dimlen(ncid, nThreeID, &tThree);
-  if (status != NC_NOERR) fileObject-> HandleError(status);
-  nThree=tThree;
+  if (status != NC_NOERR)
+    {
+      fileObject->HandleError(status);
+      debug4<<"Must have the dimension 'three' for the connectivity" << endl;
+      std::string msg("FVCOM file must have the dimension 'three' for the connectivity");
+      EXCEPTION1(ImproperUseException, msg);
+    }
+  else
+    {
+      status = nc_inq_dimlen(ncid, nThreeID, &tThree);
+      if (status != NC_NOERR) fileObject-> HandleError(status);
+      nThree=tThree;
+    }
 
   //FOUR
   status = nc_inq_dimid(ncid, "four", &nFourID);
   if (status != NC_NOERR) fileObject->HandleError(status);
-  status = nc_inq_dimlen(ncid, nFourID, &tFour);
-  if (status != NC_NOERR) fileObject-> HandleError(status);
-  nFour=tFour;
+  else
+    {
+      status = nc_inq_dimlen(ncid, nFourID, &tFour);
+      if (status != NC_NOERR) fileObject-> HandleError(status);
+      nFour=tFour;
+    }
 
   //MAXNODE
   status = nc_inq_dimid(ncid, "maxnode", &nMaxnodeID);
   if (status != NC_NOERR) fileObject->HandleError(status);
-  status = nc_inq_dimlen(ncid, nMaxnodeID, &tMaxnode);
-  if (status != NC_NOERR) fileObject-> HandleError(status);
-  nMaxnode=tMaxnode;
+  else
+    {
+      status = nc_inq_dimlen(ncid, nMaxnodeID, &tMaxnode);
+      if (status != NC_NOERR) fileObject-> HandleError(status);
+      nMaxnode=tMaxnode;
+    }
 
   //MAXELEM
   status = nc_inq_dimid(ncid, "maxelem", &nMaxelemID);
   if (status != NC_NOERR) fileObject->HandleError(status);
-  status = nc_inq_dimlen(ncid, nMaxelemID, &tMaxelem);
-  if (status != NC_NOERR) fileObject-> HandleError(status);
-  nMaxelem=tMaxelem;
-
+  else
+    {
+      status = nc_inq_dimlen(ncid, nMaxelemID, &tMaxelem);
+      if (status != NC_NOERR) fileObject-> HandleError(status);
+      nMaxelem=tMaxelem;
+    }
 
   //TIME
   status = nc_inq_dimid(ncid, "time", &nTimeID);
-  if (status != NC_NOERR) fileObject-> HandleError(status);
-  status = nc_inq_dimlen(ncid, nTimeID, &tTime);
-  if (status != NC_NOERR) fileObject-> HandleError(status);
-  nTime=tTime;
+  if (status != NC_NOERR) 
+    {
+      debug4<<"FVCOM file does not have dimension time"<< endl;
+      debug4<<"Assuming one timestep and continue"<< endl; 
+      nTime=1;
+      fileObject-> HandleError(status);
+    }
+  else
+    {
+      status = nc_inq_dimlen(ncid, nTimeID, &tTime);
+      if (status != NC_NOERR) fileObject-> HandleError(status);
+      nTime=tTime;
+    }
+
+
+  // Geo reference Coordinate system stuff
+  IsGeoRef=false;
+  std::string CoordSys;
+  if(fileObject->ReadStringAttribute("CoordinateSystem", CoordSys))
+    if (strcmp(CoordSys.c_str(),"GeoReferenced")==0) IsGeoRef=true;
+  
+
+  // Check and make sure we have lon and lat if data is supposed to be georef
+  status = nc_inq_varid (ncid, "lon", &VarID);
+  if (status != NC_NOERR) 
+    {
+      fileObject-> HandleError(status);
+      if (IsGeoRef)
+        {
+          debug4 << "Critical Grid Coordinates could not be loaded" << endl;
+          debug4<<"Spherical coordinates require: lon" << endl;
+          std::string msg("Critical Grid Coordinates could not be loaded: lon");      
+          EXCEPTION1(ImproperUseException, msg);
+        }
+    }
+  else lonstate=true;
+
+  status = nc_inq_varid (ncid, "lat", &VarID);
+  if (status != NC_NOERR) 
+    {
+      fileObject-> HandleError(status);
+      if (IsGeoRef)
+        {
+          debug4 << "Critical Grid Coordinates could not be loaded" << endl;
+          debug4<<"Spherical coordinates require: lat" << endl;
+          std::string msg("Critical Grid Coordinates could not be loaded: lat");      
+          EXCEPTION1(ImproperUseException, msg);
+        }
+    }
+  else latstate=true;
 
   
+
+  // State variable used to check if variables which are 
+  // neccissary for the grid are included in the file
+  int siglevID;
+  if (siglevstate)
+    {
+      status = nc_inq_varid (ncid, "siglev", &siglevID);
+      if (status != NC_NOERR)
+        {
+          fileObject-> HandleError(status);
+          siglevstate=false;
+          debug4<< "found 'siglev' dimension but no variable" << endl;
+        }
+    }
+
+  int siglayID;
+  if (siglaystate)
+    {
+      status = nc_inq_varid (ncid, "siglay", &siglayID);
+      if (status != NC_NOERR)
+        {
+          fileObject-> HandleError(status);
+          siglaystate=false;
+          debug4<< "found 'siglay' dimension but no variable" << endl;
+        }
+    }
+
+  status = nc_inq_varid (ncid, "y", &VarID);
+  if (status != NC_NOERR) fileObject-> HandleError(status);
+  else ystate=true;
+
+
+  status = nc_inq_varid (ncid, "x", &VarID);
+  if (status != NC_NOERR) fileObject-> HandleError(status);
+  else xstate=true;
+
+  status = nc_inq_varid (ncid, "zeta", &VarID);
+  if (status != NC_NOERR) fileObject-> HandleError(status);
+  else zstate=true; 
+
+
+
+  status = nc_inq_varid (ncid, "h", &VarID);
+  if (status != NC_NOERR) fileObject-> HandleError(status);
+  else hstate=true;
+
+  // if we have sigma coordinates but 
+  // no surface elevation or depth throw an exception
+  if(siglaystate | siglevstate)
+    if ( !zstate | !hstate)
+      {
+        debug4<<"Sigma coordinate require surface elevation variable 'zeta'" << endl;
+        std::string msg("Sigma coordinate require surface elevation variable 'zeta'");
+        EXCEPTION1(ImproperUseException, msg);
+      }
+  
+  int ndims;
+  // SigLayCoordType is already declared in the header file
+  if(siglaystate)
+    if(!fileObject->ReadStringAttribute("siglay", "standard_name",SigLayCoordType)) 
+      {
+        status=nc_inq_varndims(ncid,siglayID,&ndims);
+          if(ndims==1) SigLayCoordType="Ocean_Sigma_Coordinates";
+          else if (ndims==2) SigLayCoordType="ocean_sigma/general_coordinate";
+          else 
+            {
+              debug4<<"Sigma Layer variable has no standard name and bad dimensions" << endl;
+              std::string msg("Sigma Layer variable has no standard name and bad dimensions");
+              EXCEPTION1(ImproperUseException, msg);
+              
+            }
+      }
+  
+  // SigLevCoordType is already declared in the header file
+  if(siglevstate)
+    if(!fileObject->ReadStringAttribute("siglev", "standard_name",SigLevCoordType))
+      {
+        status=nc_inq_varndims(ncid,siglevID,&ndims);
+          if(ndims==1) SigLevCoordType="Ocean_Sigma_Coordinates";
+          else if (ndims==2) SigLevCoordType="ocean_sigma/general_coordinate";
+          else 
+            {
+              debug4<<"Sigma Layer variable has no standard name and bad dimensions" << endl;
+              std::string msg("Sigma Layer variable has no standard name and bad dimensions");
+              EXCEPTION1(ImproperUseException, msg);
+            }
+      }
 
 
   NeedGridVariables=true;
@@ -428,6 +647,16 @@ avtFVCOMReader::GetTimes(doubleVector &t)
 
   if (NeedDimensions) GetDimensions();
   
+  status = nc_inq_varid (fileObject->GetFileHandle(), "time", &VarID);
+  if (status != NC_NOERR) 
+    {
+      debug4<< "No variable 'time', returning zero" << endl;
+      fileObject-> HandleError(status);
+      t.push_back(double(0));
+      return;
+    }
+
+
   
   std::string timeunits;
   if(fileObject->ReadStringAttribute("time", "units", timeunits))
@@ -527,6 +756,16 @@ avtFVCOMReader::GetCycles(intVector &cyc)
 
   TypeEnum type = NO_TYPE;
 
+  status = nc_inq_varid (fileObject->GetFileHandle(), "iint", &VarID);
+  if (status != NC_NOERR) 
+    {
+      debug4<< "No variable 'iint', returning one" << endl;
+      fileObject-> HandleError(status);
+      cyc.push_back(1);
+      return;
+    }
+
+
   int *dimlen;
   fileObject->InqVariable("iint", &type, &VarnDims, &dimlen);
   delete [] dimlen;
@@ -602,17 +841,17 @@ avtFVCOMReader::GetCycles(intVector &cyc)
           const int s1[1]={0};
           const int c1[1]={1};
               
-          fileObject->ReadVariableInto("iint",INTEGERARRAY_TYPE,s1,c1,&cyc1);
+          fileObject->ReadVariableInto("iint",FLOATARRAY_TYPE,s1,c1,&cyc1);
               
           const int s2[1]={1};
           const int c2[1]={1};
               
-          fileObject->ReadVariableInto("iint",INTEGERARRAY_TYPE,s2,c2,&cyc2);
+          fileObject->ReadVariableInto("iint",FLOATARRAY_TYPE,s2,c2,&cyc2);
               
           const int send[1]={nTime-1};
           const int cend[1]={1};
               
-          fileObject->ReadVariableInto("iint",INTEGERARRAY_TYPE,send,cend,&cycend);
+          fileObject->ReadVariableInto("iint",FLOATARRAY_TYPE,send,cend,&cycend);
               
               
           float dci=cyc2-cyc1;
@@ -674,7 +913,9 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
   // Assemble a database title.
   std::string comment(dbtype), titleString, source,
-    history, references, conventions;
+    history, references, conventions, CoordSys;
+
+
   if(fileObject->ReadStringAttribute("title", titleString))
     {
       comment += (std::string(" database: title=") + titleString);
@@ -688,48 +929,106 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         comment += (std::string(", references=") + references);
       if(fileObject->ReadStringAttribute("Conventions", conventions))
         comment += (std::string(", Conventions=") + conventions);
+      if(fileObject->ReadStringAttribute("CoordinateSystem", CoordSys))
+        comment += (std::string(", CoordinateSystem=") + CoordSys);
+
+      if(siglaystate)
+        comment += (std::string(", SigmaLayerCoordinates=") + SigLayCoordType);
+      if(siglevstate)
+        comment += (std::string(", SigmaLevelCoordinates=") + SigLevCoordType);
 
       md->SetDatabaseComment(comment);
     }
 
   debug4 << mName <<"Finished SetDatabaseComments" << endl;
+  
+  
+  std::string xUnits, xLabel, yUnits, yLabel, zUnits,zLabel, hUnits,hLabel, latUnits,latLabel, lonUnits,lonLabel; 
+  
+  // If you can't return units or labels put "none" 
+  if(! fileObject->ReadStringAttribute("lon", "units", lonUnits)) lonUnits="none";
+  if(! fileObject->ReadStringAttribute("lon", "long_name", lonLabel)) lonLabel="none";
+  
+  if(! fileObject->ReadStringAttribute("lat", "units", latUnits)) latUnits="none";
+  if(! fileObject->ReadStringAttribute("lat", "long_name", latLabel)) latLabel="none";
+  
+  if(! fileObject->ReadStringAttribute("y", "units", yUnits)) yUnits="none";
+  if(! fileObject->ReadStringAttribute("y", "long_name", yLabel)) yLabel="none";
+  
+  if(! fileObject->ReadStringAttribute("x", "units", xUnits)) xUnits="none";
+  if(! fileObject->ReadStringAttribute("x", "long_name", xLabel)) xLabel+"none";
+  
+  if(! fileObject->ReadStringAttribute("h", "units", hUnits)) hUnits="none";
+  if(! fileObject->ReadStringAttribute("h", "long_name", hLabel)) hLabel="none";
+  
+  if(! fileObject->ReadStringAttribute("zeta", "units", zUnits)) zUnits="none";
+  if(! fileObject->ReadStringAttribute("zeta", "long_name", zLabel)) zLabel="none";
+    
 
+  // Not sure what to do about units and labels... strings are loaded for future use
 
-  // Declare state variable used to check if needed info is included 
-  // in the netcdf file
+  if(IsGeoRef)
+    {
+      xUnits="meters";
+      yUnits="meters";
+      hUnits="meters";
+      zUnits="meters";
 
-  int state=1;
+      xLabel="X";
+      yLabel="Y";
+      zLabel="Z";
+      hLabel="Z";
+
+      // Bathymetry
+      mesh1= hstate * lonstate * latstate;
+      // SSH
+      mesh2= lonstate * latstate * zstate;
+      // TWOD
+      mesh3= lonstate * latstate;
+      // Sigma Layers
+      mesh4= lonstate * latstate * siglaystate * hstate * zstate;
+      // Sigma Levels
+      mesh5= lonstate * latstate * siglevstate * hstate * zstate;
+
+    }
+  else if(! IsGeoRef)
+    {
+      mesh1= hstate * xstate * ystate;
+      mesh2= xstate * ystate * zstate;
+      mesh3= xstate * ystate;
+      mesh4= xstate * ystate * siglaystate * hstate * zstate;
+      mesh5= xstate * ystate * siglevstate * hstate * zstate;
+    }
 
   // Add mesh exists statement to check if mesh loaded!
-  //  std::map<std::string, bool> meshExists;
+  std::map<std::string, bool> meshExists;
+
+  // Define mesh names:
+
+  std::string Bathymetry_Mesh("Bathymetry_Mesh");
+  std::string SSH_Mesh("SSH_Mesh");
+  std::string TWOD_Mesh("TWOD_Mesh");
+  std::string SigmaLayer_Mesh("SigmaLayer_Mesh");
+  std::string SigmaLevel_Mesh("SigmaLevel_Mesh");
+
 
   //--------------------------------------------------------------------
   //---------------------------------------------------------------
   // Add the Bathymetry_Mesh.
   //
-  std::string Bathymetry_Mesh("Bathymetry_Mesh");
-  state=1;
   //  Get the units for the mesh.
-  std::string xUnits, xLabel, yUnits, yLabel, zUnits,zLabel; 
-  state*=fileObject->ReadStringAttribute("x", "units", xUnits);
-  state*=fileObject->ReadStringAttribute("x", "long_name", xLabel);
-  state*=fileObject->ReadStringAttribute("y", "units", yUnits);
-  state*=fileObject->ReadStringAttribute("y", "long_name", yLabel);
-  state*=fileObject->ReadStringAttribute("h", "units", zUnits);
-  state*=fileObject->ReadStringAttribute("h", "long_name", zLabel);
     
-  if (state==1)
+  if (mesh1==true)
     {
       avtMeshMetaData *md_BM = new avtMeshMetaData(Bathymetry_Mesh, 
                                                    1, 1, 1, 0, 3, 2, 
                                                    AVT_UNSTRUCTURED_MESH);
-
       md_BM->xUnits = xUnits;
       md_BM->xLabel = xLabel;
       md_BM->yUnits = yUnits;
       md_BM->yLabel = yLabel;
-      md_BM->zUnits = zUnits;
-      md_BM->zLabel = zLabel;
+      md_BM->zUnits = hUnits;
+      md_BM->zLabel = hLabel;
       md->Add(md_BM);
       meshExists["Bathymetry_Mesh"] = true;
         
@@ -740,22 +1039,12 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
   //
   // Add the SSH_Mesh.
   //
-  std::string SSH_Mesh("SSH_Mesh");
-  state=1;
-  // Get the units for the mesh.
-  state*=fileObject->ReadStringAttribute("x", "units", xUnits);
-  state*=fileObject->ReadStringAttribute("x", "long_name", xLabel);
-  state*=fileObject->ReadStringAttribute("y", "units", yUnits);
-  state*=fileObject->ReadStringAttribute("y", "long_name", yLabel);
-  state*=fileObject->ReadStringAttribute("zeta", "units", zUnits);
-  state*=fileObject->ReadStringAttribute("zeta", "long_name", zLabel);
 
-  if (state==1)
+  if (mesh2==true)
     {
       avtMeshMetaData *md_SSH = new avtMeshMetaData(SSH_Mesh, 
                                                     1, 1, 1, 0, 3, 2, 
                                                     AVT_UNSTRUCTURED_MESH);
-        
       md_SSH->xUnits = xUnits;
       md_SSH->xLabel = xLabel;
       md_SSH->yUnits = yUnits;
@@ -771,27 +1060,25 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
   //
   // Add the TWOD_Mesh.
   //
-  std::string TWOD_Mesh("TWOD_Mesh");
-  state=1;
-
-  // Get the units for the mesh.
-  state*=fileObject->ReadStringAttribute("x", "units", xUnits);
-  state*=fileObject->ReadStringAttribute("x", "long_name", xLabel);
-  state*=fileObject->ReadStringAttribute("y", "units", yUnits);
-  state*=fileObject->ReadStringAttribute("y", "long_name", yLabel);
-
-  if (state==1)
+  if (mesh3==true)
     {          
-      avtMeshMetaData *md_2D = new avtMeshMetaData(TWOD_Mesh, 
-                                                   1, 1, 1, 0, 2, 2, 
-                                                   AVT_UNSTRUCTURED_MESH);
-        
+      
+      avtMeshMetaData *md_2D;
+      
+      if(IsGeoRef)
+        md_2D = new avtMeshMetaData(TWOD_Mesh, 
+                                    1, 1, 1, 0, 3, 2, 
+                                    AVT_UNSTRUCTURED_MESH);
+      else if(!IsGeoRef)
+        md_2D = new avtMeshMetaData(TWOD_Mesh, 
+                                    1, 1, 1, 0, 2, 2, 
+                                    AVT_UNSTRUCTURED_MESH);
       md_2D->xUnits = xUnits;
       md_2D->xLabel = xLabel;
       md_2D->yUnits = yUnits;
       md_2D->yLabel = yLabel;
       md->Add(md_2D);
-
+      
       meshExists["TWOD_Mesh"] = true;
       debug4 << mName << "Added TWOD_Mesh to MetaData" << endl;
     }
@@ -799,25 +1086,11 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
   //
   // Add the SigmaLayer_Mesh.
   //
-  std::string SigmaLayer_Mesh("SigmaLayer_Mesh");
-  state=1;
-
-  // Get the units for the mesh:
-  state*=fileObject->ReadStringAttribute("x", "units", xUnits);
-  state*=fileObject->ReadStringAttribute("x", "long_name", xLabel);
-  state*=fileObject->ReadStringAttribute("y", "units", yUnits);
-  state*=fileObject->ReadStringAttribute("y", "long_name", yLabel);
-  state*=fileObject->ReadStringAttribute("zeta", "units", zUnits);
-  state*=fileObject->ReadStringAttribute("zeta", "long_name", zLabel);
-  // Get Coord type here to make sure mesh exists
-  state*=fileObject->ReadStringAttribute("siglay", "standard_name",SigLayCoordType);
-
-  if (state==1)
+  if (mesh4==true)
     {
       avtMeshMetaData *md_LAY = new avtMeshMetaData(SigmaLayer_Mesh, 
                                                     1, 1, 1, 0, 3, 3, 
                                                     AVT_UNSTRUCTURED_MESH);
-        
       md_LAY->xUnits = xUnits;
       md_LAY->xLabel = xLabel;
       md_LAY->yUnits = yUnits;
@@ -832,25 +1105,13 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
   //------------------------------------------------------------------
   // Add the SigmaLevel_Mesh.
   //
-  std::string SigmaLevel_Mesh("SigmaLevel_Mesh");
-  state=1;
 
-  // Get the units for the mesh.
-  state*=fileObject->ReadStringAttribute("x", "units", xUnits);
-  state*=fileObject->ReadStringAttribute("x", "long_name", xLabel);
-  state*=fileObject->ReadStringAttribute("y", "units", yUnits);
-  state*=fileObject->ReadStringAttribute("y", "long_name", yLabel);
-  state*=fileObject->ReadStringAttribute("zeta", "units", zUnits);
-  state*=fileObject->ReadStringAttribute("zeta", "long_name", zLabel);
-  // Get Coord type here to make sure mesh exists
-  state*=fileObject->ReadStringAttribute("siglev", "standard_name",SigLevCoordType);
 
-  if (state==1)
+  if (mesh5==true)
     {
       avtMeshMetaData *md_LEV = new avtMeshMetaData(SigmaLevel_Mesh, 
                                                     1, 1, 1, 0, 3, 3, 
                                                     AVT_UNSTRUCTURED_MESH);
-        
       md_LEV->xUnits = xUnits;
       md_LEV->xLabel = xLabel;
       md_LEV->yUnits = yUnits;
@@ -920,9 +1181,14 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
       debug4<< "]" << endl;
        
       // Add flexibility for a second mesh on which to load the data: how do we keep the names straight? We can't just use the variable name anymore!?!?!
-      std::string Var_Mesh;
-      fileObject->ReadStringAttribute(VarName,"Name_Mesh", Var_Mesh);
+      std::string Var_Mesh("none");
+      if(!fileObject->ReadStringAttribute(VarName,"grid", Var_Mesh)) 
+        Var_Mesh=std::string("none");
 
+      debug4<< "Grid attribute: "<< Var_Mesh << endl;
+
+
+      int vnd=VarnDims-1;
 
       // The Grid on which to load data should be determined from the file meta data. This allows for more flexability in loading the data. The old method is kept for backward compatiablity.
 
@@ -932,10 +1198,16 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 //       debug4 << "SSH_Mesh: " << SSH_Mesh << endl;
 //       debug4 << "SigmaLayer_Mesh: " << SigmaLayer_Mesh << endl;
 //       debug4 << "SigmaLevel_Mesh: " << SigmaLevel_Mesh << endl;
+
+      if (meshExists.find( Var_Mesh.c_str() ) != meshExists.end())
+        {
+          
+          debug4<< "Grid is named: use attribute to set meta data!" << endl;
+          
       
       // BATHYMETRY MESH
       if (strcmp(Var_Mesh.c_str(),Bathymetry_Mesh.c_str())==0 &&
-          VarDimIDs[(VarnDims-1)] == nNodeID )
+          VarDimIDs[vnd] == nNodeID )
         {
           avtScalarMetaData *smd = 
             new avtScalarMetaData(VarName,Bathymetry_Mesh, AVT_NODECENT);
@@ -946,7 +1218,7 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         }
 
       else if (strcmp(Var_Mesh.c_str(),Bathymetry_Mesh.c_str())==0 &&
-               VarDimIDs[(VarnDims-1)] == nElemID )
+               VarDimIDs[vnd] == nElemID )
         {
           avtScalarMetaData *smd = 
             new avtScalarMetaData(VarName,Bathymetry_Mesh, AVT_ZONECENT);
@@ -957,7 +1229,7 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         }
       // TWOD MESH
       else if (strcmp(Var_Mesh.c_str(),TWOD_Mesh.c_str())==0 &&
-               VarDimIDs[(VarnDims-1)] == nNodeID )
+               VarDimIDs[vnd] == nNodeID )
         {
           avtScalarMetaData *smd = 
             new avtScalarMetaData(VarName,TWOD_Mesh, AVT_NODECENT);
@@ -967,10 +1239,10 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
           componentExists[VarName] = true;
         }
       else if (strcmp(Var_Mesh.c_str(),TWOD_Mesh.c_str())==0 &&
-               VarDimIDs[(VarnDims-1)] == nElemID )
+               VarDimIDs[vnd] == nElemID )
         {
           avtScalarMetaData *smd = 
-            new avtScalarMetaData(VarName,Bathymetry_Mesh, AVT_ZONECENT);
+            new avtScalarMetaData(VarName,TWOD_Mesh, AVT_ZONECENT);
           smd->hasUnits = fileObject->
             ReadStringAttribute(VarName,"units", smd->units);
           md->Add(smd);
@@ -978,7 +1250,7 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         }
       // SSH MESH
       else if (strcmp(Var_Mesh.c_str(),SSH_Mesh.c_str())==0 &&
-               VarDimIDs[(VarnDims-1)] == nNodeID )
+               VarDimIDs[vnd] == nNodeID )
         {
           avtScalarMetaData *smd = 
             new avtScalarMetaData(VarName,SSH_Mesh, AVT_NODECENT);
@@ -988,7 +1260,7 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
           componentExists[VarName] = true;
         }
       else if (strcmp(Var_Mesh.c_str(),SSH_Mesh.c_str())==0 &&
-               VarDimIDs[(VarnDims-1)] == nElemID )
+               VarDimIDs[vnd] == nElemID )
         {
           avtScalarMetaData *smd = 
             new avtScalarMetaData(VarName,SSH_Mesh, AVT_ZONECENT);
@@ -999,7 +1271,7 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         }
       // SIGMALAYER MESH
       else if (strcmp(Var_Mesh.c_str(),SigmaLayer_Mesh.c_str())==0 &&
-               VarDimIDs[(VarnDims-1)] == nNodeID )
+               VarDimIDs[vnd] == nNodeID )
         {
           avtScalarMetaData *smd = 
             new avtScalarMetaData(VarName,SigmaLayer_Mesh, AVT_NODECENT);
@@ -1009,7 +1281,7 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
           componentExists[VarName] = true;
         }
       else if (strcmp(Var_Mesh.c_str(),SigmaLayer_Mesh.c_str())==0 &&
-               VarDimIDs[(VarnDims-1)] == nElemID )
+               VarDimIDs[vnd] == nElemID )
         {
           avtScalarMetaData *smd = 
             new avtScalarMetaData(VarName,SigmaLayer_Mesh, AVT_ZONECENT);
@@ -1020,7 +1292,7 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         }
       // SIMGALEVEL MESH
       else if (strcmp(Var_Mesh.c_str(),SigmaLevel_Mesh.c_str())==0 &&
-               VarDimIDs[(VarnDims-1)] == nNodeID )
+               VarDimIDs[vnd] == nNodeID )
         {
           avtScalarMetaData *smd = 
             new avtScalarMetaData(VarName,SigmaLevel_Mesh, AVT_NODECENT);
@@ -1030,7 +1302,7 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
           componentExists[VarName] = true;
         }
       else if (strcmp(Var_Mesh.c_str(),SigmaLevel_Mesh.c_str())==0 &&
-               VarDimIDs[(VarnDims-1)] == nElemID )
+               VarDimIDs[vnd] == nElemID )
         {
           avtScalarMetaData *smd = 
             new avtScalarMetaData(VarName,SigmaLevel_Mesh, AVT_ZONECENT);
@@ -1040,6 +1312,8 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
           componentExists[VarName] = true;
         }
       
+        } // End if it has a specified mesh!
+
       else // GO BACK TO THE OLD METHOD!
         {
       //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1220,7 +1494,7 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
      componentExists.find("v") != componentExists.end() &&
      componentExists.find("ww") != componentExists.end())
     {
-      debug4 << mName << "Velocity is 3D" << endl;
+      //debug4 << mName << "Velocity is 3D" << endl;
       avtVectorMetaData *smd = new avtVectorMetaData("3DVEL",
                                                      SigmaLevel_Mesh, AVT_ZONECENT,3);
       smd->hasUnits = fileObject->ReadStringAttribute("u", 
@@ -1231,10 +1505,32 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
   if(componentExists.find("u") != componentExists.end() &&
      componentExists.find("v") != componentExists.end())
     {
-      debug4 << mName <<"Velocity is 2D" << endl;
+      //debug4 << mName <<"Velocity is 2D" << endl;
       avtVectorMetaData *smd = new avtVectorMetaData("2DVEL",
                                                      SigmaLevel_Mesh, AVT_ZONECENT,3);
       smd->hasUnits = fileObject->ReadStringAttribute("u", 
+                                                      "units", smd->units);
+      md->Add(smd);
+    }
+
+  if(componentExists.find("uuice") != componentExists.end() &&
+     componentExists.find("vvice") != componentExists.end())
+    {
+      // debug4 << mName <<"Velocity is 2D" << endl;
+      avtVectorMetaData *smd = new avtVectorMetaData("Ice_Vel",
+                                                     SSH_Mesh, AVT_ZONECENT,3);
+      smd->hasUnits = fileObject->ReadStringAttribute("uuice", 
+                                                      "units", smd->units);
+      md->Add(smd);
+    }
+
+  if(componentExists.find("uuwind") != componentExists.end() &&
+     componentExists.find("vvwind") != componentExists.end())
+    {
+      // debug4 << mName <<"Velocity is 2D" << endl;
+      avtVectorMetaData *smd = new avtVectorMetaData("Wind_Vel",
+                                                     SSH_Mesh, AVT_ZONECENT,3);
+      smd->hasUnits = fileObject->ReadStringAttribute("uuwind", 
                                                       "units", smd->units);
       md->Add(smd);
     }
@@ -1282,6 +1578,138 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
   //    debug4 << "meshExists state" << meshExists.find("SSH_MESH") << endl;
 
+
+  if(componentExists.find("ngid") != componentExists.end())
+    {
+      if (meshExists.find("SigmaLayer_Mesh") != meshExists.end() )
+        {
+          avtScalarMetaData *smdn2 = new avtScalarMetaData("ngid_Layers",
+                                                           SigmaLayer_Mesh, AVT_NODECENT);
+          md->Add(smdn2);
+        }
+      
+      if (meshExists.find("SigmaLevel_Mesh") != meshExists.end() )
+        {
+          avtScalarMetaData *smdn3 = new avtScalarMetaData("ngid_Levels",
+                                                           SigmaLevel_Mesh, AVT_NODECENT);
+          md->Add(smdn3);
+        }
+      
+      if (meshExists.find("SSH_Mesh") != meshExists.end() )
+        {
+          avtScalarMetaData *smdn4 = new avtScalarMetaData("ngid_SSH",
+                                                           SSH_Mesh, AVT_NODECENT);
+          md->Add(smdn4);
+        }
+      
+      if (meshExists.find("Bathymetry_Mesh") != meshExists.end() )
+        {
+          avtScalarMetaData *smdn5 = new avtScalarMetaData("ngid_Bathy",
+                                                           Bathymetry_Mesh, AVT_NODECENT);
+          md->Add(smdn5);
+        }
+    }
+  else
+    {
+      avtScalarMetaData *smdn1 = new avtScalarMetaData("ngid",
+                                                       TWOD_Mesh, AVT_NODECENT);
+      md->Add(smdn1);
+      
+      if (meshExists.find("SigmaLayer_Mesh") != meshExists.end() )
+        {
+          avtScalarMetaData *smdn2 = new avtScalarMetaData("ngid_Layers",
+                                                           SigmaLayer_Mesh, AVT_NODECENT);
+          md->Add(smdn2);
+        }
+      
+      if (meshExists.find("SigmaLevel_Mesh") != meshExists.end() )
+        {
+          avtScalarMetaData *smdn3 = new avtScalarMetaData("ngid_Levels",
+                                                           SigmaLevel_Mesh, AVT_NODECENT);
+          md->Add(smdn3);
+        }
+      
+      if (meshExists.find("SSH_Mesh") != meshExists.end() )
+        {
+          avtScalarMetaData *smdn4 = new avtScalarMetaData("ngid_SSH",
+                                                           SSH_Mesh, AVT_NODECENT);
+          md->Add(smdn4);
+        }
+      
+      if (meshExists.find("Bathymetry_Mesh") != meshExists.end() )
+        {
+          avtScalarMetaData *smdn5 = new avtScalarMetaData("ngid_Bathy",
+                                                           Bathymetry_Mesh, AVT_NODECENT);
+          md->Add(smdn5);
+        }
+    }
+
+
+  if(componentExists.find("egid") != componentExists.end())
+    {
+      if (meshExists.find("SigmaLayer_Mesh") != meshExists.end() )
+        {
+          avtScalarMetaData *smde2 = new avtScalarMetaData("egid_Layers",
+                                                           SigmaLayer_Mesh, AVT_ZONECENT);
+          md->Add(smde2);
+        }
+      if (meshExists.find("SigmaLevel_Mesh") != meshExists.end() )
+        {
+          avtScalarMetaData *smde3 = new avtScalarMetaData("egid_Levels",
+                                                           SigmaLevel_Mesh, AVT_ZONECENT);
+          md->Add(smde3);
+        }
+
+      if (meshExists.find("SSH_Mesh") != meshExists.end() )
+        {
+          avtScalarMetaData *smde4 = new avtScalarMetaData("egid_SSH",
+                                                           SSH_Mesh, AVT_ZONECENT);
+          md->Add(smde4);
+        }
+      if (meshExists.find("Bathymetry_Mesh") != meshExists.end() )
+        {
+          avtScalarMetaData *smde5 = new avtScalarMetaData("egid_Bathy",
+                                                           Bathymetry_Mesh, AVT_ZONECENT);
+          md->Add(smde5);
+        }
+    }
+  else
+    {
+      avtScalarMetaData *smde1 = new avtScalarMetaData("egid",
+                                                          TWOD_Mesh, AVT_ZONECENT);
+      md->Add(smde1);
+
+      if (meshExists.find("SigmaLayer_Mesh") != meshExists.end() )
+        {
+          avtScalarMetaData *smde2 = new avtScalarMetaData("egid_Layers",
+                                                           SigmaLayer_Mesh, AVT_ZONECENT);
+          md->Add(smde2);
+        }
+      if (meshExists.find("SigmaLevel_Mesh") != meshExists.end() )
+        {
+          avtScalarMetaData *smde3 = new avtScalarMetaData("egid_Levels",
+                                                           SigmaLevel_Mesh, AVT_ZONECENT);
+          md->Add(smde3);
+        }
+
+      if (meshExists.find("SSH_Mesh") != meshExists.end() )
+        {
+          avtScalarMetaData *smde4 = new avtScalarMetaData("egid_SSH",
+                                                           SSH_Mesh, AVT_ZONECENT);
+          md->Add(smde4);
+        }
+      if (meshExists.find("Bathymetry_Mesh") != meshExists.end() )
+        {
+          avtScalarMetaData *smde5 = new avtScalarMetaData("egid_Bathy",
+                                                           Bathymetry_Mesh, AVT_ZONECENT);
+          md->Add(smde5);
+        }
+    }
+
+
+
+
+
   if (meshExists.find("SigmaLayer_Mesh") != meshExists.end() )
     {
       avtScalarMetaData *Laynodes_md = new avtScalarMetaData("Select Layer",
@@ -1299,59 +1727,72 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     }
 
 
-
-  debug4 << "All dims=[" ; 
-  for(int i = 0; i < nDims; ++i)
+  if(IsGeoRef & meshExists.find("SigmaLevel_Mesh") != meshExists.end() )
     {
-      debug4<< dimSizes[i] << " ";
+      avtScalarMetaData *depth_lev_md = new avtScalarMetaData("Depth_on_Levels",
+                                                          SigmaLevel_Mesh, AVT_NODECENT);
+      depth_lev_md->hasUnits = true;
+      depth_lev_md->units = "Meters";
+      md->Add(depth_lev_md);
+      componentExists["depth"] = true;
     }
-  debug4<< "]" << endl;
-
+  if(IsGeoRef & meshExists.find("SigmaLayer_Mesh") != meshExists.end() )
+    {
+      avtScalarMetaData *depth_lay_md = new avtScalarMetaData("Depth_on_Layers",
+                                                          SigmaLayer_Mesh, AVT_NODECENT);
+      depth_lay_md->hasUnits = true;
+      depth_lay_md->units = "Meters";
+      md->Add(depth_lay_md);
+      componentExists["depth"] = true;
+    }
 
 
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // ALL Variables added to META DATA
 
-  // Removed Materials from 1.5.4
-  // Not needed because ISOSURFACE works better!
-# ifdef Materials_stuff
-  //Add Material MetaData for: SigmaLayer_Mesh
-  avtMaterialMetaData *matmd_1 = new avtMaterialMetaData;
-  matmd_1->name = "Sigma_Layers";
-  matmd_1->meshName = "SigmaLayer_Mesh";
-  matmd_1->numMaterials=nSigLayers;
 
-  for (int i=0; i < nSigLayers; ++i)
+  if(mesh4=true)
     {
-
-      char buffer[50];
-      int n;
-      n=sprintf(buffer, "Layer %d",i);
-      matmd_1->materialNames.push_back(buffer);
+      //Add Material MetaData for: SigmaLayer_Mesh
+      avtMaterialMetaData *matmd_lay = new avtMaterialMetaData;
+      matmd_lay->name = "Sigma_Layers";
+      matmd_lay->meshName = "SigmaLayer_Mesh";
+      matmd_lay->numMaterials=(nSiglay-1);
+      
+      for (int i=0; i < (nSiglay-1); ++i)
+        {
+          
+          char buffer[50];
+          int n;
+          n=sprintf(buffer, "Layer %d",(i+1));
+          matmd_lay->materialNames.push_back(buffer);
+        }
+      
+      
+      md->Add(matmd_lay);
     }
 
-
-  md->Add(matmd_1);
-
-
-  //Add Material MetaData for: SigmaLevel_Mesh
-  avtMaterialMetaData *matmd_2 = new avtMaterialMetaData;
-  matmd_2->name = "Sigma_Levels";
-  matmd_2->meshName = "SigmaLevel_Mesh";
-  matmd_2->numMaterials=nSigLayers;
-
-  for (int i=0; i < nSigLayers; ++i)
+  if(mesh5==true)
     {
-      char buffer [50];
-      int n;
-      n=sprintf(buffer, "Layer %d",i);
-      matmd_2->materialNames.push_back(buffer);
-
+      //Add Material MetaData for: SigmaLevel_Mesh
+      avtMaterialMetaData *matmd_lev = new avtMaterialMetaData;
+      matmd_lev->name = "Sigma_Levels";
+      matmd_lev->meshName = "SigmaLevel_Mesh";
+      matmd_lev->numMaterials=(nSiglev-1);
+      
+      for (int i=0; i < (nSiglev-1); ++i)
+        {
+          char buffer [50];
+          int n;
+          n=sprintf(buffer, "Layer %d",(i+1));
+          matmd_lev->materialNames.push_back(buffer);
+          
+        }
+      
+      md->Add(matmd_lev);
+      
     }
-
-  md->Add(matmd_2);
-# endif
-
+  
 
   debug4 << mName << "END" <<endl;
 }
@@ -1381,100 +1822,86 @@ avtFVCOMReader::GetStaticGridVariables(void)
 
   // Get Node locations  
   xvals = new float[nNode];
-  state*=fileObject->ReadVariableInto("x", FLOATARRAY_TYPE, xvals);
-  alloc_xvals=true;
+  fileObject->ReadVariableInto("x", FLOATARRAY_TYPE, xvals);
   
   yvals = new float[nNode];
-  state*=fileObject->ReadVariableInto("y", FLOATARRAY_TYPE, yvals);
-  alloc_yvals=true;
+  fileObject->ReadVariableInto("y", FLOATARRAY_TYPE, yvals);
 
 
   // Get Node Connectivity
   nvvals= new int[nThree * nElem];
-  state*=fileObject->ReadVariableInto("nv", INTEGERARRAY_TYPE, nvvals);
-  alloc_nvvals=true;
+  fileObject->ReadVariableInto("nv", INTEGERARRAY_TYPE, nvvals);
 
-  if (state!=1)
+
+  // READ or GET the global element and global node info
+  egid = new int[nElem];
+  status = nc_inq_varid (ncid, "egid", &VarID);
+  if (status != NC_NOERR) 
     {
-      debug4 << "Critical Grid Coordinates could not be loaded" << endl;
-      std::string msg("Critical Grid Coordinates could not be loaded");      
-      EXCEPTION1(ImproperUseException, msg);
+      fileObject-> HandleError(status);
+      for (int n=0; n < nElem; ++n)
+        egid[n]=n+1;
+    }
+  else
+    fileObject->ReadVariableInto("egid", INTEGERARRAY_TYPE, egid);
+
+  ngid = new int[nNode];
+  status = nc_inq_varid (ncid, "ngid", &VarID);
+  if (status != NC_NOERR) 
+    {
+      fileObject-> HandleError(status);
+      for (int n=0; n < nNode; ++n)
+        ngid[n]=n+1;
+    }
+  else
+    fileObject->ReadVariableInto("ngid", INTEGERARRAY_TYPE, ngid);
+
+
+  if(IsGeoRef)
+    {
+
+      debug4<< "Reading spherical coordinates variables, lat and lon"<< endl;
+      latvals = new float[nNode];
+      fileObject->ReadVariableInto("lat", FLOATARRAY_TYPE, latvals);
+
+      lonvals = new float[nNode];
+      fileObject->ReadVariableInto("lon", FLOATARRAY_TYPE, lonvals);
     }
 
 
   // Bathymetry
   zvals = new float[nNode];
   state*=fileObject->ReadVariableInto("h", FLOATARRAY_TYPE, zvals);
-  alloc_zvals=true;
 
   
-  // Added these to MetaData method
-  bool getsiglay=false;
-  state*=fileObject->ReadStringAttribute("siglay", "standard_name",SigLayCoordType);
-  if (state==1) getsiglay=true;
+  if(siglaystate)
+    if (strcmp("ocean_sigma/general_coordinate",SigLayCoordType.c_str())==0)
+      {
+        debug4<< "Reading General ocean coordinates: sigma layers"<<endl;
+        SigLayers = new float[nSiglay*nNode];
+        fileObject->ReadVariableInto("siglay", FLOATARRAY_TYPE, SigLayers);
+      }
+    else if (strcmp("ocean_sigma_coordinate",SigLayCoordType.c_str())==0)
+      {
+
+        debug4<< "Reading sigma ocean coordinates: sigma layers"<<endl;
+        SigLayers = new float[nSiglay];
+        fileObject->ReadVariableInto("siglay", FLOATARRAY_TYPE, SigLayers);
+      }
   
-
-  bool getsiglev=false;
-  state*=fileObject->ReadStringAttribute("siglev", "standard_name",SigLevCoordType);
-  if (state==1) getsiglev=true;
-    
-  if (strcmp("ocean_sigma/general_coordinate",SigLayCoordType.c_str())==0)
-    {
-      SigLayers = new float[nSiglay*nNode];
-      fileObject->ReadVariableInto("siglay", FLOATARRAY_TYPE, SigLayers);
-      alloc_SigLayers=true;
-
-    }
-  else if (strcmp("ocean_sigma_coordinate",SigLayCoordType.c_str())==0)
-    {
-      debug4 << "here I am" << endl;
-      SigLayers = new float[nSiglay];
-      fileObject->ReadVariableInto("siglay", FLOATARRAY_TYPE, SigLayers);
-      alloc_SigLayers=true;
-
-      debug4 << "SigLayers[1]= " << SigLayers[1] << endl; 
-      debug4 << "SigLayers[nSiglay]= " << SigLayers[nSiglay-1] << endl; 
-    }
-  else if (getsiglay==true) // only if the data exists but the file coord is unrecognized
-    {
-      debug4 << "Vertical coordinate type not recognized" << endl;
-      debug4 << "siglay:standard_name returned:"<< SigLayCoordType << endl;
-      debug4 << "Known options are:" << endl;
-      debug4 << "ocean_sigma-coordinates OR ocean_sigma/general_coordinate" << endl;
-      std::string msg("Unsupported principal vertical coordinate");
-      EXCEPTION1(ImproperUseException, msg);
-    }
-  else debug4 << "No Sigma Layers variable found" << endl;
-
-
-  if (strcmp("ocean_sigma/general_coordinate",SigLevCoordType.c_str())==0)
-    {
-      SigLevels = new float[nSiglev*nNode];
-      fileObject->ReadVariableInto("siglev", FLOATARRAY_TYPE, SigLevels);
-      alloc_SigLevels=true;
-
-    }
-  else if (strcmp("ocean_sigma_coordinate",SigLevCoordType.c_str())==0)
-    {
-      SigLevels = new float[nSiglev];
-      fileObject->ReadVariableInto("siglev", FLOATARRAY_TYPE, SigLevels); 
-
-      alloc_SigLevels=true;
-
-      debug4 << "SigLevels[1]= " << SigLevels[1] << endl; 
-      debug4 << "SigLevels[nsiglev]= " << SigLevels[nSiglev-1] << endl; 
-
-    }
-  else if (getsiglev==true)
-    {
-      debug4 << "Vertical coordinate type not recognized" << endl;
-      debug4 << "siglay:standard_name returned:"<< SigLayCoordType << endl;
-      debug4 << "Known options are:" << endl;
-      debug4 << "ocean_sigma-coordinates OR ocean_sigma/general_coordinate" << endl;
-      std::string msg("Unsupported principal vertical coordinate");
-      EXCEPTION1(ImproperUseException, msg);
-    }    
-  else debug4 << "No Sigma Levels variable found" << endl;
+  if (siglevstate)
+    if (strcmp("ocean_sigma/general_coordinate",SigLevCoordType.c_str())==0)
+      {
+        debug4<< "Reading General ocean coordinates: sigma levels"<<endl;
+        SigLevels = new float[nSiglev*nNode];
+        fileObject->ReadVariableInto("siglev", FLOATARRAY_TYPE, SigLevels);
+      }
+    else if (strcmp("ocean_sigma_coordinate",SigLevCoordType.c_str())==0)
+      {
+        debug4<< "Reading sigma ocean coordinates: sigma levels"<<endl;
+        SigLevels = new float[nSiglev];
+        fileObject->ReadVariableInto("siglev", FLOATARRAY_TYPE, SigLevels); 
+      }
 
   
   NeedGridVariables=false;
@@ -1513,10 +1940,12 @@ avtFVCOMReader::GetMesh(int timestate, const char *mesh, avtVariableCache *cache
 
   if(strcmp(mesh, "Bathymetry_Mesh") == 0)
     {
+      debug4<< "Reading a time invariant grid, set time state to zero!" << endl;
       timestate=0; // bathymetry is not time varying in FVCOM!
     }
   else  if(strcmp(mesh, "TWOD_Mesh") == 0)
     {
+      debug4<< "Reading a time invariant grid, set time state to zero!" << endl;
       timestate=0; // bathymetry is not time varying in FVCOM!
     }
 
@@ -1537,9 +1966,14 @@ avtFVCOMReader::GetMesh(int timestate, const char *mesh, avtVariableCache *cache
 
   debug4 << mName << "Looking to see if Mesh is in cache" << endl;
   vtkObject *obj =0;
+  
+  std::string cachekey= mesh;
+  cachekey +=keysuffix;
+  debug4 << "cachekey: " << cachekey << endl;
+
   int domain=CacheDomainIndex; //  Set domain for MTMD!!!
   const char *matname = "all";
-  obj = cache->GetVTKObject(mesh, avtVariableCache::DATASET_NAME,
+  obj = cache->GetVTKObject(cachekey.c_str(), avtVariableCache::DATASET_NAME,
                             timestate, domain, matname);
   if(obj != 0)
     {
@@ -1585,14 +2019,26 @@ avtFVCOMReader::GetMesh(int timestate, const char *mesh, avtVariableCache *cache
 
       debug4 << "Allocated ugrid and pts" << endl;
 
-
-      // insert nodes into mesh pts object
-      for(int i= 0; i< nNode; ++i)
+      if(IsGeoRef)
         {
-          float pt[3]={xvals[i], yvals[i],-zvals[i]};
-          pts->InsertNextPoint(pt);
+          for(int i= 0; i< nNode; ++i)
+            {
+              float pt[3]={lonvals[i], latvals[i],-zvals[i]};
+              float *xi=pt;
+              Sphere2Cart(xi);
+              pts->InsertNextPoint(pt);
+            }
+          
         }
-  
+      else
+        {
+          // insert nodes into mesh pts object
+          for(int i= 0; i< nNode; ++i)
+            {
+              float pt[3]={xvals[i], yvals[i],-zvals[i]};
+              pts->InsertNextPoint(pt);
+            }
+        }
 
       // insert cells in to mesh cell object
       vtkIdType verts[3];
@@ -1633,14 +2079,25 @@ avtFVCOMReader::GetMesh(int timestate, const char *mesh, avtVariableCache *cache
 
       debug4 << "Allocated ugrid and pts" << endl;
 
-
       // insert nodes into mesh pts object
-      for(int i= 0; i< nNode; ++i)
+      if (IsGeoRef)
         {
-          float pt[3]={xvals[i], yvals[i],0};
-          pts->InsertNextPoint(pt);
+          for(int i= 0; i< nNode; ++i)
+            {
+              float pt[3]={lonvals[i], latvals[i],0};
+              float *xi=pt;
+              Sphere2Cart(xi);
+              pts->InsertNextPoint(pt);
+            }
         }
-  
+      else
+        {
+          for(int i= 0; i< nNode; ++i)
+            {
+              float pt[3]={xvals[i], yvals[i],0};
+              pts->InsertNextPoint(pt);
+            }
+        }
 
       // insert cells in to mesh cell object
       vtkIdType verts[3];
@@ -1658,7 +2115,7 @@ avtFVCOMReader::GetMesh(int timestate, const char *mesh, avtVariableCache *cache
       debug4 << "Success Returning VTK_TRIANCLE for TWOD_MESH" << endl;
 
       retval = ugrid;
-    } // End if Bathymetry_Mesh
+    } // End if TWOD_MESH
       //--------------------------------------------------------------------------
       //--------------------------------------------------------------------------
       //--------------------------------------------------------------------------
@@ -1683,28 +2140,46 @@ avtFVCOMReader::GetMesh(int timestate, const char *mesh, avtVariableCache *cache
       // Need to specify time step to read SSH: timestate
       debug4 << "timestate=" << timestate << endl;
 
-      size_t starts[]={timestate,0};
-      size_t counts[]={1, nNode};
-      ptrdiff_t stride[]={1,1};
-      float *sshvals = new float[nNode];
-      int var_id;
-      status = nc_inq_varid (fileObject->GetFileHandle(), "zeta", &var_id);
-      if (status != NC_NOERR) fileObject-> HandleError(status);
+//       size_t starts[]={timestate,0};
+//       size_t counts[]={1, nNode};
+//       ptrdiff_t stride[]={1,1};
+//       float *sshvals = new float[nNode];
+//       int var_id;
+//       status = nc_inq_varid (fileObject->GetFileHandle(), "zeta", &var_id);
+//       if (status != NC_NOERR) fileObject-> HandleError(status);
 
-      status = nc_get_vars_float(fileObject->GetFileHandle(),var_id,
-                                 starts, counts, stride, sshvals);
-      if (status != NC_NOERR) fileObject-> HandleError(status);
+//       status = nc_get_vars_float(fileObject->GetFileHandle(),var_id,
+//                                  starts, counts, stride, sshvals);
+//       if (status != NC_NOERR) fileObject-> HandleError(status);
 
-
+      debug4 << mName << "Loading: zeta"<< endl;
+      vtkDataArray *SSH = GetVar(timestate,"zeta",cache);
+      float sshval;
       // insert nodes into mesh pts object
-      for(int i= 0; i< nNode; ++i)
+      if(IsGeoRef)
         {
-          float pt[3]={xvals[i], yvals[i], sshvals[i]};
-          pts->InsertNextPoint(pt);
-        } // end for nNodesPerLayer
+          for(int i= 0; i< nNode; ++i)
+            {
+              sshval=SSH->GetComponent(i,0);
+              float pt[3]={xvals[i], yvals[i], sshval};
+              float *xi=pt;
+              Sphere2Cart(xi);
+              pts->InsertNextPoint(pt);
+            } // end for nNodesPerLayer
+        }
+      else
+        {
+          for(int i= 0; i< nNode; ++i)
+            {
+              sshval=SSH->GetComponent(i,0);
+              float pt[3]={xvals[i], yvals[i], sshval};
+              pts->InsertNextPoint(pt);
+            } // end for nNodesPerLayer
+        }
 
-          // insert cells into mesh cell object
+      // insert cells into mesh cell object
       vtkIdType verts[3];
+
       for(int cell = 0; cell < nElem; ++cell)
         {
           for(int vrt =0; vrt <3; ++vrt)
@@ -1715,7 +2190,7 @@ avtFVCOMReader::GetMesh(int timestate, const char *mesh, avtVariableCache *cache
         } // End for nCellsPerLayer
 
 
-      delete [] sshvals;
+      SSH->Delete();
 
       debug4 << mName;
       debug4 << "Success Returning VTK_TRIANCLE for ssh mesh" << endl;
@@ -1752,86 +2227,109 @@ avtFVCOMReader::GetMesh(int timestate, const char *mesh, avtVariableCache *cache
       // Need to specify time step to read SSH: timestate
       debug4 << "timestate=" << timestate << endl;
 
-      size_t starts[]={timestate,0};
-      size_t counts[]={1, nNode};
-      ptrdiff_t stride[]={1,1};
-      float *sshvals = new float[nNode];
-      int var_id;
-      status = nc_inq_varid (fileObject->GetFileHandle(), "zeta", &var_id);
-      if (status != NC_NOERR) fileObject-> HandleError(status);
+//       size_t starts[]={timestate,0};
+//       size_t counts[]={1, nNode};
+//       ptrdiff_t stride[]={1,1};
+//       float *sshvals = new float[nNode];
+//       int var_id;
+//       status = nc_inq_varid (fileObject->GetFileHandle(), "zeta", &var_id);
+//       if (status != NC_NOERR) fileObject-> HandleError(status);
        
-      // SSH
-      status = nc_get_vars_float(fileObject->GetFileHandle(),var_id,
-                                 starts, counts, stride, sshvals);
-      if (status != NC_NOERR) fileObject-> HandleError(status);
-       
+//       // SSH
+//       status = nc_get_vars_float(fileObject->GetFileHandle(),var_id,
+//                                  starts, counts, stride, sshvals);
+//       if (status != NC_NOERR) fileObject-> HandleError(status);
 
-      // CHANGE TO ADD GENERAL OCEAN COORDINATES!
+      
+      debug4 << mName << "Loading: zeta"<< endl;
+      vtkDataArray *SSH = GetVar(timestate,"zeta",cache);
 
-      // the coordinates are now read in GetStaticGridVariables method
-      //      std::string CoordType;
-      //      fileObject->ReadStringAttribute("siglay", "standard_name",CoordType);
-      //        debug4 << "CoordType= " << CoordType << endl;
-
-      //        bool isGeneralCoord=false;
-      //isGeneralCoord=strcmp("ocean_sigma/general_coordinate",
-      //                       CoordType.c_str())==0;
-
-      //        debug4 << "isGeneralCoord= " << isGeneralCoord << endl;
-        
-      //        if (isGeneralCoord == true)
       if (strcmp("ocean_sigma/general_coordinate",SigLayCoordType.c_str())==0)
         {
-          // sigmalayers
-          //          float *SigLayers = new float[nSiglay*nNode];
-          //          fileObject->ReadVariableInto("siglay", FLOATARRAY_TYPE, SigLayers); 
 
           debug4 << mName; 
           debug4 << "General Coordinates!"<< endl;
 
-
           // insert nodes into mesh pts object
-          float depth;
-          for(int lay = 0; lay< nSiglay; ++lay) // order! surface -> bottom
+          if(IsGeoRef)
             {
-              for(int node= 0; node< nNode; ++node)
+              float depth, sshval;
+              int index;
+              for(int lay = 0; lay< nSiglay; ++lay) // order! surface -> bottom
                 {
-                  int index = lay*nNode + node;
-                  depth= SigLayers[index]*(zvals[node]+sshvals[node])
-                    +sshvals[node];
-
-                  float pt[3]={xvals[node], yvals[node], depth};
-                  pts->InsertNextPoint(pt);
-                }// end for nNodesPerLayer
-            }// end for nSigLevels
+                  for(int node= 0; node< nNode; ++node)
+                    {
+                      sshval=SSH->GetComponent(node,0);
+                      index = lay*nNode + node;
+                      depth= SigLayers[index]*(zvals[node]+sshval)+sshval;
+                      
+                      float pt[3]={lonvals[node], latvals[node], depth};
+                      float *xi=pt;
+                      Sphere2Cart(xi);
+                      pts->InsertNextPoint(pt);
+                    }// end for nNodesPerLayer
+                }// end for nSigLevels
+            }
+          else
+            {
+              float depth, sshval;
+              int index;
+              for(int lay = 0; lay< nSiglay; ++lay) // order! surface -> bottom
+                {
+                  for(int node= 0; node< nNode; ++node)
+                    {
+                      sshval=SSH->GetComponent(node,0);
+                      index = lay*nNode + node;
+                      depth= SigLayers[index]*(zvals[node]+sshval)+sshval;
+                      
+                      float pt[3]={xvals[node], yvals[node], depth};
+                      pts->InsertNextPoint(pt);
+                    }// end for nNodesPerLayer
+                }// end for nSigLevels
+            }
           debug4 << "Inserted points to General Coord Layer Mesh" << endl;
-
+          
         }
       else if (strcmp("ocean_sigma_coordinate",SigLayCoordType.c_str())==0) 
         // USE OCEAN SIGMA COORDINATE
         {
-          // sigmalayers
-          //          float *SigLayers = new float[nSiglay];
-          //          fileObject->ReadVariableInto("siglay", FLOATARRAY_TYPE, SigLayers); 
         
           debug4 << mName; 
           debug4 << "Sigma Coordinates!"<< endl;
 
-
           // insert nodes into mesh pts object
-          float depth;
-          for(int lay = 0; lay< nSiglay; ++lay) // order! surface -> bottom
+          if(IsGeoRef)
             {
-              for(int node= 0; node< nNode; ++node)
+              float depth, sshval;
+              for(int lay = 0; lay< nSiglay; ++lay) // order! surface -> bottom
                 {
-                  depth= SigLayers[lay]*(zvals[node]+sshvals[node])+sshvals[node];
-                  float pt[3]={xvals[node], yvals[node], depth};
-                  pts->InsertNextPoint(pt);
-                }// end for nNodesPerLayer
-            }// end for nSigLevels
-          debug4 << "Inserted points to Sigma Coord. Layer Mesh" << endl;
-
-        }
+                  for(int node= 0; node< nNode; ++node)
+                    {
+                      sshval=SSH->GetComponent(node,0);
+                      depth= SigLayers[lay]*(zvals[node]+sshval)+sshval;
+                      float pt[3]={lonvals[node], latvals[node], depth};
+                      float *xi=pt;
+                      Sphere2Cart(xi);
+                      pts->InsertNextPoint(pt);
+                    }// end for nNodesPerLayer
+                }// end for nSigLevels
+            }
+          else
+            {
+              float depth, sshval;
+              for(int lay = 0; lay< nSiglay; ++lay) // order! surface -> bottom
+                {
+                  for(int node= 0; node< nNode; ++node)
+                    {
+                      sshval=SSH->GetComponent(node,0);
+                      depth= SigLayers[lay]*(zvals[node]+sshval)+sshval;
+                      float pt[3]={xvals[node], yvals[node], depth};
+                      pts->InsertNextPoint(pt);
+                    }// end for nNodesPerLayer
+                }// end for nSigLevels
+            }
+              debug4 << "Inserted points to Sigma Coord. Layer Mesh" << endl;
+        } // end sigma coordinate type...
 
 
       // insert cells into mesh cell object
@@ -1860,7 +2358,7 @@ avtFVCOMReader::GetMesh(int timestate, const char *mesh, avtVariableCache *cache
             } // End for nCellsPerLayer
         } // End For nSigLayers
 
-      delete [] sshvals;
+      SSH->Delete();
 
       debug4 << mName;
       debug4 << "Success Returning VTK_WEDGE: SigmaLayerMesh" << endl;
@@ -1900,52 +2398,63 @@ avtFVCOMReader::GetMesh(int timestate, const char *mesh, avtVariableCache *cache
       // Need to specify time step to read SSH: timestate
       debug4 << "timestate=" << timestate << endl;
 
-      size_t starts[]={timestate,0};
-      size_t counts[]={1, nNode};
-      ptrdiff_t stride[]={1,1};
-      float *sshvals = new float[nNode];
-      int var_id;
-      status = nc_inq_varid (fileObject->GetFileHandle(), "zeta", &var_id);
-      if (status != NC_NOERR) fileObject-> HandleError(status);
+//       size_t starts[]={timestate,0};
+//       size_t counts[]={1, nNode};
+//       ptrdiff_t stride[]={1,1};
+//       float *sshvals = new float[nNode];
+//       int var_id;
+//       status = nc_inq_varid (fileObject->GetFileHandle(), "zeta", &var_id);
+//       if (status != NC_NOERR) fileObject-> HandleError(status);
 
-      // SSH
-      status = nc_get_vars_float(fileObject->GetFileHandle(),var_id,
-                                 starts, counts, stride, sshvals);
-      if (status != NC_NOERR) fileObject-> HandleError(status);
+//       // SSH
+//       status = nc_get_vars_float(fileObject->GetFileHandle(),var_id,
+//                                  starts, counts, stride, sshvals);
+//       if (status != NC_NOERR) fileObject-> HandleError(status);
+      debug4 << mName << "Loading: zeta"<< endl;
+      vtkDataArray *SSH = GetVar(timestate,"zeta",cache);
 
 
-      // CHANGE TO ADD GENERAL OCEAN COORDINATES!
-      //      std::string CoordType;
-      //      fileObject->ReadStringAttribute("siglev", "standard_name",CoordType);
-      //        debug4 << "CoordType= " << CoordType << endl;
-
-      //        bool isGeneralCoord=false;
-      //isGeneralCoord=strcmp("ocean_sigma/general_coordinate",
-      //                       CoordType.c_str())==0;
-
-      //        debug4 << "isGeneralCoord= " << isGeneralCoord << endl;
       if (strcmp("ocean_sigma/general_coordinate",SigLevCoordType.c_str())==0)
         {
-          // sigmalevels
-          //          float *SigLevels = new float[nSiglev*nNode];
-          //          fileObject->ReadVariableInto("siglev", FLOATARRAY_TYPE, SigLevels); 
-         
           debug4 << mName; 
           debug4 << "General Coordinates"<< endl;
 
           // insert nodes into mesh pts object
-          float depth;
-          for(int lev = 0; lev< nSiglev; ++lev) // order! surface -> bottom
-            {
-              for(int node= 0; node< nNode; ++node)
-                { 
-                  int index = lev*nNode + node;
-                  depth= SigLevels[index]*(zvals[node]+sshvals[node])+sshvals[node];
-                  float pt[3]={xvals[node], yvals[node], depth};
-                  pts->InsertNextPoint(pt);
-                }// end for nNodesPerLayer
-            }// end for nSigLevels
 
+          if (IsGeoRef)
+            {
+              float depth, sshval;
+              int index;
+              for(int lev = 0; lev< nSiglev; ++lev) // order! surface -> bottom
+                {
+                  for(int node= 0; node< nNode; ++node)
+                    { 
+                      sshval=SSH->GetComponent(node,0);
+                      index = lev*nNode + node;
+                      depth= SigLevels[index]*(zvals[node]+sshval)+sshval;
+                      float pt[3]={lonvals[node], latvals[node], depth};
+                      float *xi=pt;
+                      Sphere2Cart(xi);
+                      pts->InsertNextPoint(pt);
+                    }// end for nNodesPerLayer
+                }// end for nSigLevels
+            }
+          else
+            {
+              float depth, sshval;
+              int index;
+              for(int lev = 0; lev< nSiglev; ++lev) // order! surface -> bottom
+                {
+                  for(int node= 0; node< nNode; ++node)
+                    { 
+                      sshval=SSH->GetComponent(node,0);
+                      index = lev*nNode + node;
+                      depth= SigLevels[index]*(zvals[node]+sshval)+sshval;
+                      float pt[3]={xvals[node], yvals[node], depth};
+                      pts->InsertNextPoint(pt);
+                    }// end for nNodesPerLayer
+                }// end for nSigLevels
+            }
           debug4 << "Inserted points to Sigma Coord. Level Mesh" << endl;
 
         }
@@ -1959,17 +2468,37 @@ avtFVCOMReader::GetMesh(int timestate, const char *mesh, avtVariableCache *cache
           debug4 << "Sigma Coordinates!"<< endl;
 
           // insert nodes into mesh pts object
-          float depth;
-          for(int lev = 0; lev< nSiglev; ++lev) // order! surface -> bottom
+          if (IsGeoRef)
             {
-              for(int node= 0; node< nNode; ++node)
-                { 
-                  depth= SigLevels[lev]*(zvals[node]+sshvals[node])+sshvals[node];
-                  float pt[3]={xvals[node], yvals[node], depth};
-                  pts->InsertNextPoint(pt);
-                }// end for nNodesPerLayer
-            }// end for nSigLevels
-
+              float depth, sshval;
+              for(int lev = 0; lev< nSiglev; ++lev) // order! surface -> bottom
+                {
+                  for(int node= 0; node< nNode; ++node)
+                    { 
+                      sshval=SSH->GetComponent(node,0);
+                      depth= SigLevels[lev]*(zvals[node]+sshval)+sshval;
+                      float pt[3]={lonvals[node], latvals[node], depth};
+                      float *xi=pt;
+                      Sphere2Cart(xi);
+                      pts->InsertNextPoint(pt);
+                    }// end for nNodesPerLayer
+                }// end for nSigLevels
+            }
+          else
+            {
+              float depth, sshval;
+              for(int lev = 0; lev< nSiglev; ++lev) // order! surface -> bottom
+                {
+                  for(int node= 0; node< nNode; ++node)
+                    { 
+                      sshval=SSH->GetComponent(node,0);
+                      depth= SigLevels[lev]*(zvals[node]+sshval)+sshval;
+                      float pt[3]={xvals[node], yvals[node], depth};
+                      pts->InsertNextPoint(pt);
+                    }// end for nNodesPerLayer
+                }// end for nSigLevels
+              
+            }
           debug4 << "Inserted points to Sigma Coord. Level Mesh" << endl;
 
         }
@@ -1999,7 +2528,7 @@ avtFVCOMReader::GetMesh(int timestate, const char *mesh, avtVariableCache *cache
         } // End For nSigLayers
 
 
-      delete [] sshvals;
+      SSH->Delete();;
 
       debug4 << mName;
       debug4 << "Success Returning VTK_WEDGE: SigmaLevels" << endl;
@@ -2013,21 +2542,75 @@ avtFVCOMReader::GetMesh(int timestate, const char *mesh, avtVariableCache *cache
 
   // Loaded variable succesfully, add to cache
   debug4 << mName << "Add mesh to cache!" << endl;
-  cache->CacheVTKObject(mesh, avtVariableCache::DATASET_NAME, timestate, domain,
+  cache->CacheVTKObject(cachekey.c_str(), avtVariableCache::DATASET_NAME, timestate, domain,
                         matname, retval);
-
-
-  debug4 << "All dims=[" ; 
-  for(int i = 0; i < nDims; ++i)
-    {
-      debug4<< dimSizes[i] << " ";
-    }
-  debug4<< "]" << endl;
 
 
   debug4 << mName << "END" << endl;
 
   return retval;
+}
+
+// ****************************************************************************
+// Method: avtFVCOMReaderFileFormat::Sphere2Cart
+//
+// Purpose: 
+//   change the position data from longitude, latitude and depth
+//   to cartesian coordinates relative to earth center
+// Arguments: float pt[3]
+//
+// Returns: void
+//
+// Note:       
+//
+// Programmer: David Stuebe
+// Creation:   Mon Jul 17 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+
+void 
+avtFVCOMReader::Sphere2Cart(float* xi)
+{
+  //  const char *mName = "avtFVCOMReader::Sphere2Cart: ";
+  //  debug4 << mName << "running" << xi[0]<<":"<< xi[1]<<":"<< xi[2] << endl;
+  
+  // xi[0] is longitude
+  // xi[1] is latitude
+  // xi[2] is height reference to the geoid
+
+  
+  //  float rad=6000000.0;
+  float rad=100000.0;
+  float d2r=3.14159/180.0;
+
+  //======================================================================
+  // Do not use elliptical earth. Velocity transformation is too complex!
+  //=====================================================================
+  
+  // Elliptical approximation of the earths Geoid
+  //  g= 978.032(1+0.00528 cos^2(theta)+2.3*10^-5*cos^4(theta)
+  // theta is colatitude
+
+  //  float c1=0.00528;
+  //  float c1=0.528; // to make very elliptical
+  //  float c2=2.3*pow(10,-5);
+  //  rad=rad*(1+
+  //           c1*pow(cos(xi[1]*d2r),2.0)+
+  //           c2*pow(cos(xi[1]*d2r),4.0) );
+
+  float x = (rad+xi[2])*cos(xi[0]*d2r)*cos(xi[1]*d2r);
+  float y = (rad+xi[2])*sin(xi[0]*d2r)*cos(xi[1]*d2r);
+  float z = (rad+xi[2])*sin(xi[1]*d2r);
+
+  xi[0]=x;
+  xi[1]=y;
+  xi[2]=z;
+  
+  //  debug4 << mName << "finished" << xi[0]<<":"<< xi[1]<<":"<< xi[2] << endl;
+
 }
 
 
@@ -2065,75 +2648,58 @@ avtFVCOMReader::GetAuxiliaryData(const char *var, int ts,
          << "type=" << type << endl
          << "args=" << args << endl;
 
-#ifdef materials_method
-  // NOT WORKING PROPERLY>>>> compiles and runs with out error, 
-  // UNEXPECTED BEHAVIOR: does not turn on and off the right cells?
 
+  if (NeedDimensions) GetDimensions();
 
-  if(strcmp(type, AUXILIARY_DATA_MATERIAL) == 0 &&
-     strcmp(var, "Sigma_Levels") == 0)
+  if(strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
     {
-      int status;
-      int ncid;
-      ncid=fileObject->GetFileHandle(); 
+      int nMats;
+      if(strcmp(var, "Sigma_Levels") == 0)
+        {
+          nMats=nSiglev-1;
+        }
+      else if(strcmp(var, "Sigma_Layers") == 0)
+        {
+          nMats=nSiglay-1;
+        }
 
-      // NELE
-      size_t nCellsPerLayer;
-      int nele_id;
-      status = nc_inq_dimid(ncid, "nele", &nele_id);
-      if (status != NC_NOERR) fileObject-> HandleError(status);
-      status = nc_inq_dimlen(ncid, nele_id, &nCellsPerLayer);
-      if (status != NC_NOERR) fileObject-> HandleError(status);
-
-      //SIGLAY
-      size_t nSigLayers;
-      int siglay_id;
-      status = nc_inq_dimid(ncid, "siglay", &siglay_id);
-      if (status != NC_NOERR) fileObject-> HandleError(status);
-      status = nc_inq_dimlen(ncid, siglay_id, &nSigLayers);
-      if (status != NC_NOERR) fileObject-> HandleError(status);
-    
-      int nzones=nSigLayers*nCellsPerLayer; // there are nSigLayers
+      int nzones=(nMats)*nElem; // there are nSigLayers
       // in the levels mesh. There are nSigLayers-1 in the Sigma_Layers
       // mesh because its nodes are at the edge centers of the original 
       // mesh.
  
       // Create matnos and names arrays so we can create an avtMaterial.
-      int *matnos = new int[nSigLayers];
-      char **names = new char *[nSigLayers];
-      for(int i = 0; i < nSigLayers; ++i)
+      int *matnos = new int[nMats];
+      char **names = new char *[nMats];
+      for(int i = 0; i < nMats; ++i)
         {
           matnos[i] = i + 1;
-          char buffer [50];
+          char *buffer=new char[20];
           int n;
-          n=sprintf(buffer, "Layer %d",i);
+          n=sprintf(buffer, "Layer %d",matnos[i]);
           names[i] = (char *)buffer;
-          debug4 <<"i="<< i << ", matnos=" << 
-            matnos[i] << ", names=" << names[i] << endl;
-
         }
     
 
       int *matlist =new int[nzones];
       int mod;
-      int this_mat=0;
+      int this_mat=0; // start count from zero: mod(zero,x) is zero!
       for (int i =0; i< nzones; ++i)
         {
-          mod = i % nCellsPerLayer;
-          if(mod==0) matlist[i]=++this_mat;
-       
-          else matlist[i]=this_mat;
-
-          debug4 << "matlist=" << matlist[i] << endl;
+          mod = i % nElem;
+          //          if(mod==0) matlist[i]=++this_mat;
+          //          else matlist[i]=this_mat;
+          matlist[i]= (mod==0) ? ++this_mat : this_mat;
         }
     
     
       // Create the avtMaterial.
       int dims[3]= {1,1,1};
       dims[0] = nzones;
-      int ndims=3;
+      int ndims=1;
+
       avtMaterial *mat= new avtMaterial(
-                                        nSigLayers,
+                                        nMats,
                                         matnos,
                                         names,
                                         ndims,
@@ -2149,15 +2715,14 @@ avtFVCOMReader::GetAuxiliaryData(const char *var, int ts,
     
       delete [] matlist;
       delete [] matnos;
-      //    for (int i = 0; i < nSigLayers; ++i)
-      //  delete [] names[i];
+      for (int i = 0; i < nMats; ++i)
+        delete [] names[i];
       delete [] names;
       retval =(void *)mat;
       df = avtMaterial::Destruct;
     }
-    
 
-#endif
+
   debug4 << mName << "END" << endl;
     
   return retval;
@@ -2191,27 +2756,30 @@ avtFVCOMReader::GetVar(int timestate, const char *Variable, avtVariableCache *ca
   debug4 << mName << "timestate=" << timestate
          << ", Variable=" << Variable << endl;
 
+  // Variables saved in NETCDF OUT
+  // Bail out if we can't get the file handle.
+  int ncid = fileObject->GetFileHandle();
+  if(ncid == -1)
+    {
+      EXCEPTION1(InvalidVariableException, Variable);
+    }
+
+
   if (NeedDimensions) GetDimensions();
   if(NeedGridVariables) GetStaticGridVariables();
 
 
-
-
-  debug4 << "All dims=[" ; 
-  for(int i = 0; i < nDims; ++i)
-    {
-      debug4<< dimSizes[i] << " ";
-    }
-  debug4<< "]" << endl;
-
-
   debug4 << mName << "Looking to see if Variable is in cache" << endl;
   vtkObject *obj =0;
-  int domain=CacheDomainIndex;
-  // for now: Set domain in MTMD!!!
- 
+
+  std::string cachekey= Variable;
+  cachekey +=keysuffix;
+  debug4 << "cachekey: " << cachekey << endl;
+
+
+  int domain=CacheDomainIndex; //  Set domain for MTMD!!!
   const char *matname = "all";
-  obj = cache->GetVTKObject(Variable, avtVariableCache::DATASET_NAME,
+  obj = cache->GetVTKObject(cachekey.c_str(), avtVariableCache::DATASET_NAME,
                             timestate, domain, matname);
   if(obj != 0)
     {
@@ -2246,27 +2814,11 @@ avtFVCOMReader::GetVar(int timestate, const char *Variable, avtVariableCache *ca
       return rv;
     }  
 
-  //    else if (strcmp("Dens2(S,Theta,0)", VarName)==0)
-  //    {
-  //        debug4 << mName << "Variable is Dens2"<< endl;
-  //    vtkDataArray *rv =  DENS2(timestate, cache);
-  //    return rv;
-  //    }  
-
-
-    
-  // Variables saved in NETCDF OUT
-  // Bail out if we can't get the file handle.
-  int ncid = fileObject->GetFileHandle();
-  if(ncid == -1)
-    {
-      EXCEPTION1(InvalidVariableException, Variable);
-    }
-
-    
-  // Make return variable
+  //=================================================
+  //=================================================
+  //=================================================
+  // Make return variable for all other types of data!
   vtkFloatArray *rv = vtkFloatArray::New();
-
 
   // Get the threshold variables for ploting single layers
   if (strcmp("Select Layer", Variable)==0)
@@ -2314,11 +2866,168 @@ avtFVCOMReader::GetVar(int timestate, const char *Variable, avtVariableCache *ca
 
       return rv;
     }  
+  else if (strcmp("Depth_on_Levels", Variable)==0)
+    {
 
+      debug4 << mName << "Loading: zeta"<< endl;
+      vtkDataArray *SSH = GetVar(timestate,"zeta",cache);
+        
+      int ntuples = nNode*nSiglev;  
+      
+      // Put the data into the vtkFloatArray   
+      rv->SetNumberOfTuples(ntuples);
+      
+      if (strcmp("ocean_sigma/general_coordinate",SigLevCoordType.c_str())==0)
+        {
+          debug4 << mName; 
+          debug4 << "General Coordinates"<< endl; 
+          int count =0;
+          float depth, sshval;
+          int index;
+          for(int lev = 0; lev< nSiglev; ++lev) // order! surface -> bottom
+            {
+              for(int node= 0; node< nNode; ++node)
+                { 
+                  sshval=SSH->GetComponent(node,0);
+                  index = lev*nNode + node;
+                  depth= -SigLevels[index]*(zvals[node]+sshval);
+                  rv->SetTuple1(count, depth);
+                  count++;
+                }// end for nNodesPerLayer
+            }// end for nSigLevels
+        }
+      else if (strcmp("ocean_sigma_coordinate",SigLevCoordType.c_str())==0) 
+        {
+          debug4 << mName; 
+          debug4 << "Sigma Coordinates!"<< endl;
+          int count =0;
+          float depth, sshval;
+          for(int lev = 0; lev< nSiglev; ++lev) // order! surface -> bottom
+            {
+              for(int node= 0; node< nNode; ++node)
+                { 
+                  sshval=SSH->GetComponent(node,0);
+                  depth= -SigLevels[lev]*(zvals[node]+sshval);
+                  rv->SetTuple1(count, depth);
+                  count++;
+                }// end for nNodesPerLayer
+            }// end for nSigLevels  
+        }
 
+      SSH->Delete();
+
+      return rv;
+    }  
+  else if (strcmp("Depth_on_Layers", Variable)==0)
+    {
+      debug4 << mName << "Loading: zeta"<< endl;
+      vtkDataArray *SSH = GetVar(timestate,"zeta",cache);
+      
+
+      int ntuples = nNode*nSiglay;  
+      
+      // Put the data into the vtkFloatArray   
+      rv->SetNumberOfTuples(ntuples);
+      
+      if (strcmp("ocean_sigma/general_coordinate",SigLayCoordType.c_str())==0)
+        {
+          debug4 << mName; 
+          debug4 << "General Coordinates"<< endl; 
+          int count =0;
+          float depth, sshval;
+          int index;
+          for(int lay = 0; lay< nSiglay; ++lay) // order! surface -> bottom
+            {
+              for(int node= 0; node< nNode; ++node)
+                { 
+                  sshval=SSH->GetComponent(node,0);
+                  index = lay*nNode + node;
+                  depth= -SigLayers[index]*(zvals[node]+sshval);
+                  rv->SetTuple1(count, depth);
+                  count++;
+                }// end for nNodesPerLayer
+            }// end for nSigLevels
+        }
+      else if (strcmp("ocean_sigma_coordinate",SigLayCoordType.c_str())==0) 
+        {
+          debug4 << mName; 
+          debug4 << "Sigma Coordinates!"<< endl;
+          int count =0;
+          float depth, sshval;
+          for(int lay = 0; lay< nSiglay; ++lay) // order! surface -> bottom
+            {
+              for(int node= 0; node< nNode; ++node)
+                { 
+                  sshval=SSH->GetComponent(node,0);
+                  depth= -SigLayers[lay]*(zvals[node]+sshval);
+                  rv->SetTuple1(count, depth);
+                  count++;
+                }// end for nNodesPerLayer
+            }// end for nSigLevels  
+        }
+      
+      SSH->Delete();
+
+      return rv;
+    }
+  else if (strncmp("ngid",Variable,4)==0) 
+    {
+      int clt, count=0;
+      if (strcmp("ngid_Layers",Variable)==0)
+        clt=nSiglay;
+      else if (strcmp("ngid_Levels",Variable)==0)
+        clt=nSiglev;
+      else
+        clt=1;
+
+      int ntuples = nNode*clt;
+      rv->SetNumberOfTuples(ntuples);
+
+      for(int lay = 0; lay< clt; ++lay) // order! surface -> bottom
+        {
+          for(int node= 0; node< nNode; ++node)
+            { 
+              rv->SetTuple1(count, ngid[node]);
+              count++;
+            }// end for nNodesPerLayer
+        }// end for nSigLevels  
+      return rv;
+    }  
+    else if (strncmp("egid",Variable,4)==0) 
+    {
+      int clt, count=0;
+      if (strcmp("egid_Layers",Variable)==0)
+        clt=nSiglay-1;
+      else if (strcmp("egid_Levels",Variable)==0)
+        clt=nSiglev-1;
+      else
+        clt=1;
+
+      int ntuples = nElem*clt;
+      rv->SetNumberOfTuples(ntuples);
+
+      for(int lay = 0; lay< clt; ++lay) // order! surface -> bottom
+        {
+          for(int elem= 0; elem< nElem; ++elem)
+            { 
+              rv->SetTuple1(count, egid[elem]);
+              count++;
+            }// end for nNodesPerLayer
+        }// end for nSigLevels  
+      return rv;
+    }  
+
+  
   nc_type VarType;
-
+  
+  
   status=nc_inq_varid(ncid,Variable,&VarID);
+  if(status != NC_NOERR)
+   {
+     fileObject-> HandleError(status);
+     EXCEPTION1(InvalidVariableException, Variable);
+   }
+
 
   status = nc_inq_var(ncid, VarID, VarName, &VarType, &VarnDims, 
                           VarDimIDs, &VarnAtts);
@@ -2435,7 +3144,7 @@ avtFVCOMReader::GetVar(int timestate, const char *Variable, avtVariableCache *ca
 
 
   debug4 << mName << "Add Variable to cache!" << endl;
-  cache->CacheVTKObject(VarName, avtVariableCache::DATASET_NAME, timestate, domain,
+  cache->CacheVTKObject(cachekey.c_str(), avtVariableCache::DATASET_NAME, timestate, domain,
                         matname, rv);
 
 
@@ -2505,19 +3214,139 @@ avtFVCOMReader::GetVectorVar(int timestate, const char *var, avtVariableCache *c
       int ntuples = uvel->GetNumberOfTuples();
       debug4 << "ntuples=" << ntuples << endl;
 
-      const int ncomps = 3;  // This is the rank of the vector
+      int ncomps = 3;  // This is the rank of the vector
+      // use three even for the 2d Vel- setting ncomps=2 is buggy...
       rv->SetNumberOfComponents(ncomps);
       rv->SetNumberOfTuples(ntuples);
       float one_entry[ncomps];
-      for (int i = 0 ; i < ntuples ; i++)
-        {
-          one_entry[0]=uvel->GetComponent(i,0);
-          one_entry[1]=vvel->GetComponent(i,0);
-          one_entry[2]=0;
-          rv->SetTuple(i, one_entry); 
-        }
-      debug4<< mName << "Returned Velocity data" << endl;
 
+      if (IsGeoRef)
+        {
+
+          debug4<< "running georef vectors"<< endl;
+          for (int i = 0 ; i < ntuples ; i++)
+            {
+              one_entry[0]=uvel->GetComponent(i,0);
+              one_entry[1]=vvel->GetComponent(i,0);
+              one_entry[2]=0;
+              int mod = i % nElem;
+              //if (i==0) debug4<<"i="<<i<<"mod="<<mod<<endl;
+              //else if (i==nElem) debug4<<"i="<<i<<"mod="<<mod<<endl;
+              SphereVel2Cart(one_entry,mod);
+              rv->SetTuple(i, one_entry); 
+            }            
+        }
+      else
+        for (int i = 0 ; i < ntuples ; i++)
+          {
+            one_entry[0]=uvel->GetComponent(i,0);
+            one_entry[1]=vvel->GetComponent(i,0);
+            one_entry[2]=0;
+            rv->SetTuple(i, one_entry); 
+          }
+      
+      uvel->Delete();
+      vvel->Delete();
+      debug4<< mName << "Returned Velocity data" << endl;
+      
+
+    }
+  else if (strcmp("Ice_Vel", var)==0) 
+    {
+      
+      debug4 << mName << "Loading: uuice" << endl;
+      vtkDataArray *uvel = GetVar(timestate,"uuice",cache);
+
+      debug4 << mName << "Loading: vvice" << endl;
+      vtkDataArray *vvel = GetVar(timestate,"vvice",cache);
+
+      debug4 << "Setting ntuples" << endl;
+      int ntuples = uvel->GetNumberOfTuples();
+      debug4 << "ntuples=" << ntuples << endl;
+
+      int ncomps = 3;  // This is the rank of the vector
+      // use three even for the 2d Vel- setting ncomps=2 is buggy...
+      rv->SetNumberOfComponents(ncomps);
+      rv->SetNumberOfTuples(ntuples);
+      float one_entry[ncomps];
+
+      if (IsGeoRef)
+        {
+
+          debug4<< "running georef vectors"<< endl;
+          for (int i = 0 ; i < ntuples ; i++)
+            {
+              one_entry[0]=uvel->GetComponent(i,0);
+              one_entry[1]=vvel->GetComponent(i,0);
+              one_entry[2]=0;
+              int mod = i % nElem;
+              //if (i==0) debug4<<"i="<<i<<"mod="<<mod<<endl;
+              //else if (i==nElem) debug4<<"i="<<i<<"mod="<<mod<<endl;
+              SphereVel2Cart(one_entry,mod);
+              rv->SetTuple(i, one_entry); 
+            }            
+        }
+      else
+        for (int i = 0 ; i < ntuples ; i++)
+          {
+            one_entry[0]=uvel->GetComponent(i,0);
+            one_entry[1]=vvel->GetComponent(i,0);
+            one_entry[2]=0;
+            rv->SetTuple(i, one_entry); 
+          }
+      
+      uvel->Delete();
+      vvel->Delete();
+      debug4<< mName << "Returned Velocity data" << endl;
+      
+
+    }
+  else if (strcmp("Wind_Vel", var)==0) 
+    {
+      
+      debug4 << mName << "Loading: uuwind" << endl;
+      vtkDataArray *uvel = GetVar(timestate,"uuwind",cache);
+
+      debug4 << mName << "Loading: vvice" << endl;
+      vtkDataArray *vvel = GetVar(timestate,"vvwind",cache);
+
+      debug4 << "Setting ntuples" << endl;
+      int ntuples = uvel->GetNumberOfTuples();
+      debug4 << "ntuples=" << ntuples << endl;
+
+      int ncomps = 3;  // This is the rank of the vector
+      // use three even for the 2d Vel- setting ncomps=2 is buggy...
+      rv->SetNumberOfComponents(ncomps);
+      rv->SetNumberOfTuples(ntuples);
+      float one_entry[ncomps];
+
+      if (IsGeoRef)
+        {
+
+          debug4<< "running georef vectors"<< endl;
+          for (int i = 0 ; i < ntuples ; i++)
+            {
+              one_entry[0]=uvel->GetComponent(i,0);
+              one_entry[1]=vvel->GetComponent(i,0);
+              one_entry[2]=0;
+              int mod = i % nElem;
+              SphereVel2Cart(one_entry,mod);
+              rv->SetTuple(i, one_entry); 
+            }            
+        }
+      else
+        for (int i = 0 ; i < ntuples ; i++)
+          {
+            one_entry[0]=uvel->GetComponent(i,0);
+            one_entry[1]=vvel->GetComponent(i,0);
+            one_entry[2]=0;
+            rv->SetTuple(i, one_entry); 
+          }
+      
+      uvel->Delete();
+      vvel->Delete();
+      debug4<< mName << "Returned Velocity data" << endl;
+      
 
     }
   else if (strcmp("3DVEL",var)==0)
@@ -2539,18 +3368,33 @@ avtFVCOMReader::GetVectorVar(int timestate, const char *var, avtVariableCache *c
 
       debug4 << "ntuples=" << ntuples << endl;
 
-      const int ncomps = 3;  // This is the rank of the vector
+      int ncomps = 3;  // This is the rank of the vector
       rv->SetNumberOfComponents(ncomps);
       rv->SetNumberOfTuples(ntuples);
       float one_entry[ncomps];
-      for (int i = 0 ; i < ntuples ; i++)
-        {
-          one_entry[0]=uvel->GetComponent(i,0);
-          one_entry[1]=vvel->GetComponent(i,0);
-          one_entry[2]=wwvel->GetComponent(i,0);
-          rv->SetTuple(i, one_entry); 
-        }
 
+      if (IsGeoRef)
+        for (int i = 0 ; i < ntuples ; i++)
+          {
+            one_entry[0]=uvel->GetComponent(i,0);
+            one_entry[1]=vvel->GetComponent(i,0);
+            one_entry[2]=wwvel->GetComponent(i,0);
+            int mod = i % nElem;
+            SphereVel2Cart(one_entry,mod);
+            rv->SetTuple(i, one_entry); 
+          }
+      else
+        for (int i = 0 ; i < ntuples ; i++)
+          {
+            one_entry[0]=uvel->GetComponent(i,0);
+            one_entry[1]=vvel->GetComponent(i,0);
+            one_entry[2]=wwvel->GetComponent(i,0);
+            rv->SetTuple(i, one_entry); 
+          }
+
+      uvel->Delete();
+      vvel->Delete();
+      wwvel->Delete();
       debug4<< mName << "Returned Velocity data" << endl;
 
 
@@ -2624,6 +3468,109 @@ avtFVCOMReader::GetVectorVar(int timestate, const char *var, avtVariableCache *c
   return rv;    
 }
 
+// ****************************************************************************
+//  Method: avtFVCOMReader::SphereVel2Cart
+//
+//  Purpose:
+//          Transform eastward, northward and local upward velocity to 
+//          Cartesian coordinates relative to earth center
+//
+//  Arguments:
+//
+//
+//  Modified:
+//
+//  Programmer: David Stuebe
+//  Creation:   Thu DEC 19 08:39:01 EST 2006
+//
+// ****************************************************************************
+
+void 
+avtFVCOMReader::SphereVel2Cart(float* vel,int cell)
+{
+
+  //Conversion from degrees to radians
+  float d2r=3.14159/180.0;
+
+  float lon=0.0;
+  float lat=0.0;
+
+  float sinlon=0.0;
+  float coslon=0.0;
+
+  float sinlat=0.0;
+  float coslat=0.0;
+
+  float tmp1,tmp2,tmp3,tmp4;
+  tmp1=0.0;
+  tmp2=0.0;
+  tmp3=0.0;
+  tmp4=0.0;
+
+  for (int i=0; i<3; ++i)
+  {
+  int nd=nvvals[cell]-1;
+  lon=lonvals[nd];
+  lat=latvals[nd];
+
+  sinlon=sin(d2r*lon);
+  tmp1=tmp1+sinlon;
+
+  coslon=cos(d2r*lon);
+  tmp2=tmp2+coslon;
+  
+  sinlat=sin(d2r*lat);
+  tmp3=tmp3+sinlat;
+
+  coslat=cos(d2r*lat);
+  tmp4=tmp4+coslat;
+  }
+
+  sinlon=tmp1/3.0;
+  coslon=tmp2/3.0;
+
+  sinlat=tmp3/3.0;
+  coslat=tmp4/3.0;
+
+
+  float DeltaLon[3]; // The longitude unit vector writen in terms of x,y,z 
+  // mag =1
+  DeltaLon[0]=-sinlon; // x component
+  DeltaLon[1]=coslon;  // y component
+  DeltaLon[2]=0.0;       // z component
+
+  float DeltaLat[3]; // The latitude unit vector writen in terms of x,y,z 
+  //  float mag=sqrt(pow(sinlat,2)+1);
+  DeltaLat[0]=-sinlat*coslon; // x component
+  DeltaLat[1]=-sinlat*sinlon; // y component
+  DeltaLat[2]=coslat; // z component
+
+  float DeltaR[3]; // The Radius unit vector writen in terms of x,y,z 
+  //mag=1
+  DeltaR[0]=coslon*coslat; // x component
+  DeltaR[1]=sinlon*coslat; // y component
+  DeltaR[2]=sinlat;        // z component
+
+  float u=0.0;
+  float v=0.0;
+  float w=0.0;
+  
+
+  u=vel[0]*DeltaLon[0] + vel[1]*DeltaLat[0] + vel[2]*DeltaR[0];
+
+  v=vel[0]*DeltaLon[1] + vel[1]*DeltaLat[1] + vel[2]*DeltaR[1];
+
+  w=vel[0]*DeltaLon[2] + vel[1]*DeltaLat[2] + vel[2]*DeltaR[2];
+
+  vel[0]=u;
+  vel[1]=v;
+  vel[2]=w;
+    
+
+}
+
+
+
 
 
 
@@ -2676,75 +3623,132 @@ avtFVCOMReader::DENS(int timestate, avtVariableCache *cache)
     }
 
   debug4 << mName << "Loading: salinity" << endl;
-  vtkDataArray *salt = GetVar(timestate,"salinity",cache);
+  vtkDataArray *SALT = GetVar(timestate,"salinity",cache);
 
   debug4 << mName << "Loading: Theta{S,T,P,0}" << endl;
-  vtkDataArray *ptmp = GetVar(timestate,"Theta{S,T,P,0}",cache);
+  vtkDataArray *PTMP = GetVar(timestate,"Theta{S,T,P,0}",cache);
 
-  debug4 << mName << "Loading: SigmaLayer_Mesh" << endl;
-  vtkDataSet *mesh =  GetMesh(timestate,"SigmaLayer_Mesh", cache);
-    
-  int ntuples = mesh->GetNumberOfPoints();
-       
+  int ntuples = SALT->GetNumberOfTuples();;
   debug4 << "ntuples= "<< ntuples << endl;
-    
+
+
   vtkFloatArray *rv = vtkFloatArray::New();
   rv->SetNumberOfTuples(ntuples);
-    
+
   double GRAV=9.81;
-  double xyz[3];
   double sval;
   double tval;
   double pbar;
-  // ADDED CHECK VAL TO DEBUG!!! when i=ntuples do check val!
-  for (int i = 0 ; i < ntuples+1 ; i++) 
+  
+  
+  if (IsGeoRef)
     {
-    
-      if (i<ntuples)
-        {
+      
+      debug4 << mName << "Using global coordinates method!" << endl;
+      debug4 << mName << "Loading: Depth_on_Layers" << endl;
+      vtkDataArray *DEPTH = GetVar(timestate,"Depth_on_Layers",cache);
+      
 
-          tval= ptmp->GetComponent(i,0); // must be (i,0) not (i,1)
-
-          sval= salt->GetComponent(i,0);
-
-          
-
-          mesh->GetPoint(i,xyz); 
-          // This returns xyz location of each point
-          pbar = GRAV *1.025 * fabs(xyz[2]) * 0.01; 
-
-     
-          // Calculate pressure in Bar at depth z in meters
-          //dbar = 9.81 *ave_dens * depth_m /100
-        }
-      else if (i==ntuples)
-        {
-          //  Check Values go here!
-          tval=40;
-          sval=40;
-          pbar = 1000; 
-        }      
-
-      // Compute density (kg/m3) at standard one atmosphere pressure
-
-    
-      // Loaded Theta above! Converted from temp:
-      double rho = SVAN(sval,tval,pbar);
-
-      if (i<ntuples)
-        rv->SetTuple1(i, rho);
-
-      else
-        debug4 << "Dens_Fofonoff_Millard CHECK VAL!" << endl
-               << "check Values: (T=40 C, S=40 PSU, 1000 bar)" << endl
-               << "RHO1 = 59.82037     (kg/m3)" << endl
-               << "VALUE=" << rho << endl;
-
+      double dval;
+      // ADDED CHECK VAL TO DEBUG!!! when i=ntuples do check val!
+      for (int i = 0 ; i < ntuples+1 ; i++) 
+        if (i<ntuples)
+          {
+            tval= PTMP->GetComponent(i,0); // must be (i,0) not (i,1)
+            sval= SALT->GetComponent(i,0);
+            dval=DEPTH->GetComponent(i,0);
+            // This returns xyz location of each point
+            pbar = GRAV *1.025 * (dval) * 0.01; 
+            // Calculate pressure in Bar at depth z in meters
+            //bar = 9.81 *ave_dens * depth_m /100
+            
+            // Compute density (kg/m3) at standard one atmosphere pressure    
+            // Loaded Theta above! Converted from temp:
+            double rho = SVAN(sval,tval,pbar);
+            rv->SetTuple1(i, rho);
+          }
+        else if (i==ntuples)
+          {
+            //  Check Values go here!
+            tval=40;
+            sval=40;
+            pbar = 1000; 
+            
+            // Compute density (kg/m3) at standard one atmosphere pressure    
+            // Loaded Theta above! Converted from temp:
+            double rho = SVAN(sval,tval,pbar);
+            
+            debug4 << "Dens_Fofonoff_Millard CHECK VAL!" << endl
+                   << "check Values: (T=40 C, S=40 PSU, 1000 bar)" << endl
+                   << "RHO1 = 59.82037     (kg/m3)" << endl
+                   << "VALUE=" << rho << endl;
+          }      
+      PTMP->Delete();
+      SALT->Delete();
+      DEPTH->Delete();
+      debug4 << mName << "end" << endl;
+      
     }
+  else
+    {
+      debug4 << mName << "Loading: SigmaLayer_Mesh" << endl;
+      vtkDataSet *MESH =  GetMesh(timestate,"SigmaLayer_Mesh", cache);
 
+      debug4 << mName << "Loading: zeta"<< endl;
+      vtkDataArray *SSH = GetVar(timestate,"zeta",cache);
 
-  debug4 << mName << "end" << endl;
+                  
+      double xyz[3], sshval;
 
+      // ADDED CHECK VAL TO DEBUG!!! when i=ntuples do check val!
+      for (int i = 0 ; i < ntuples+1 ; i++) 
+        if (i<ntuples)
+          {
+            tval= PTMP->GetComponent(i,0); // must be (i,0) not (i,1)
+            sval= SALT->GetComponent(i,0);
+            MESH->GetPoint(i,xyz); 
+
+            int mod= i % nNode;
+            sshval=SSH->GetComponent(mod,0);
+
+            // This returns xyz location of each point
+            pbar = GRAV *1.025 * (sshval-xyz[2]) * 0.01; 
+            // Calculate pressure in Bar at depth z in meters
+            //bar = 9.81 *ave_dens * depth_m /100
+            
+            // Compute density (kg/m3) at standard one atmosphere pressure    
+            // Loaded Theta above! Converted from temp:
+
+            debug4<< "sval:"<<sval<< " tval:"<<tval<<" pbar:"<<pbar<<endl;
+            double rho = SVAN(sval,tval,pbar);
+            rv->SetTuple1(i, rho);
+          }
+        else if (i==ntuples)
+          {
+            //  Check Values go here!
+            tval=40;
+            sval=40;
+            pbar = 1000; 
+            
+            // Compute density (kg/m3) at standard one atmosphere pressure    
+            // Loaded Theta above! Converted from temp:
+            double rho = SVAN(sval,tval,pbar);
+            
+            debug4 << "Dens_Fofonoff_Millard CHECK VAL!" << endl
+                   << "check Values: (T=40 C, S=40 PSU, 1000 bar)" << endl
+                   << "RHO1 = 59.82037     (kg/m3)" << endl
+                   << "VALUE=" << rho << endl;
+          }      
+      PTMP->Delete();
+      SALT->Delete();
+      MESH->Delete();
+      SSH->Delete();
+      debug4 << mName << "end" << endl;
+      
+    }
+  
+  
+  
   return rv;
 } // END DENS
 
@@ -2955,30 +3959,129 @@ avtFVCOMReader::DENS3(int timestate, avtVariableCache *cache)
     }
 
   debug4 << mName << "Loading: salinity" << endl;
-  vtkDataArray *salt = GetVar(timestate,"salinity",cache);
+  vtkDataArray *SALT = GetVar(timestate,"salinity",cache);
 
   debug4 << mName << "Loading Potential Temperature variable: temp;" << endl;
-  vtkDataArray *ptmp = GetVar(timestate,"temp",cache);
+  vtkDataArray *PTMP = GetVar(timestate,"temp",cache);
+  
 
-  debug4 << mName << "Loading: SigmaLayer_Mesh" << endl;
-  vtkDataSet *mesh =  GetMesh(timestate,"SigmaLayer_Mesh", cache);
-    
-  int ntuples = mesh->GetNumberOfPoints();
+  int ntuples = SALT->GetNumberOfTuples();;
+  debug4 << "ntuples= "<< ntuples << endl;
     
   vtkFloatArray *rv = vtkFloatArray::New();
   rv->SetNumberOfTuples(ntuples);
     
-  double TEMP[10]; // This will be temporary storage for intermediate steps!
   double GRAV=9.81;
   double xyz[3];
-  float tval;
-  float sval;
-  float sqrtsval;
+  double tval;
+  double sval;
   double PBAR;
+  double RHOF;
     
+  if (IsGeoRef)
+    {
+      debug4 << mName << "Using global coordinates method!" << endl;
+      debug4 << mName << "Loading: Depth_on_Layers" << endl;
+      vtkDataArray *DEPTH = GetVar(timestate,"Depth_on_Layers",cache);
+      
+      double dval;
+      // ADDED CHECK VAL TO DEBUG!!! when i=ntuples do check val!
+      for (int i = 0 ; i < ntuples+1 ; i++) 
+        {
+          
+          if (i<ntuples)
+            {
+              tval= PTMP->GetComponent(i,0); // must be (i,0) not (i,1)
+              sval= SALT->GetComponent(i,0);
+              dval= DEPTH->GetComponent(i,0);
+              // This returns xyz location of each point
+              PBAR = GRAV *1.025 * dval * 0.01; 
+              // Calculate pressure in Bar at depth z in meters
+              //Bar = 9.81 *ave_dens * depth_m /100
+              RHOF = Dens3helper(sval,tval,PBAR);
+              rv->SetTuple1(i, RHOF);
+              
+              
+            }
+          else if (i==ntuples)
+            {
+              tval=3;
+              sval=35.5;
+              PBAR = 300; 
+              
+              RHOF = Dens3helper(sval,tval,PBAR);
+              
+              debug4 << "Dens_Jackett_McDougall CHECK VAL!" << endl
+                     << "check Values: (T=3 C, S=35.5 PSU, 300 bar)" << endl
+                     << "RHOF = 1041.83267     (kg/m3)" << endl
+                     << "VALUE=" << RHOF << endl;
+              
+            }      
+          
+        }
+      
+      SALT->Delete();
+      PTMP->Delete();
+      DEPTH->Delete();
+    }
+  else
+    {
+      
+      debug4 << mName << "Loading: zeta"<< endl;
+      vtkDataArray *SSH = GetVar(timestate,"zeta",cache);
+      
+      debug4 << mName << "Loading: SigmaLayer_Mesh" << endl;
+      vtkDataSet *MESH =  GetMesh(timestate,"SigmaLayer_Mesh", cache);
+      // ADDED CHECK VAL TO DEBUG!!! when i=ntuples do check val!
+      double sshval;
+      for (int i = 0 ; i < ntuples+1 ; i++) 
+        {
+          if (i<ntuples)
+            {
+              tval= PTMP->GetComponent(i,0); // must be (i,0) not (i,1)
+              sval= SALT->GetComponent(i,0);
+              MESH->GetPoint(i,xyz); 
+              int mod= i % nNode;
+              sshval=SSH->GetComponent(mod,0);
+              // This returns xyz location of each point
+              PBAR = GRAV *1.025 *(sshval-xyz[2]) * 0.01; 
+              // Calculate pressure in Bar at depth z in meters
+              //Bar = 9.81 *ave_dens * depth_m /100
+              RHOF = Dens3helper(sval,tval,PBAR);
+              rv->SetTuple1(i, RHOF);
+            }
+          else if (i==ntuples)
+            {
+              tval=3;
+              sval=35.5;
+              PBAR = 300; 
+              
+              RHOF = Dens3helper(sval,tval,PBAR);
+              
+              debug4 << "Dens_Jackett_McDougall CHECK VAL!" << endl
+                     << "check Values: (T=3 C, S=35.5 PSU, 300 bar)" << endl
+                     << "RHOF = 1041.83267     (kg/m3)" << endl
+                     << "VALUE=" << RHOF << endl;
+            }      
+        }
+      SALT->Delete();
+      PTMP->Delete();
+      MESH->Delete();
+      SSH->Delete();
+    }
 
+ debug4 << mName << "end" << endl;
+  return rv;
+}// end DENS3
 
-    
+//==============================================================================|
+// Do the business of the Dens3 Jackett and McDougall method...
+//==============================================================================|
+
+double
+avtFVCOMReader::Dens3helper(double sval, double tval, double pbar)
+{
+  
   //==============================================================================|
   //  Polynomial  expansion  coefficients for the computation of in situ          |
   //  density  via  the  nonlinear  equation of state  for seawater as a          |
@@ -3027,71 +4130,42 @@ avtFVCOMReader::DENS3(int timestate, avtVariableCache *cache)
   double V01 = +1.02270e-04;
   double V02 = -1.65460e-06;
   double W00 = +4.8314e-04;
-    
-
-  // ADDED CHECK VAL TO DEBUG!!! when i=ntuples do check val!
-  for (int i = 0 ; i < ntuples+1 ; i++) 
-    {
-    
-      if (i<ntuples)
-        {
-          tval= ptmp->GetComponent(i,0); // must be (i,0) not (i,1)
-          sval= salt->GetComponent(i,0);
-          sqrtsval = sqrt(sval);
-          mesh->GetPoint(i,xyz); 
-          // This returns xyz location of each point
-          PBAR = GRAV *1.025 * fabs(xyz[2]) * 0.01; 
-          // Calculate pressure in Bar at depth z in meters
-          //Bar = 9.81 *ave_dens * depth_m /100
-        }
-      else if (i==ntuples)
-        {
-          tval=3;
-          sval=35.5;
-          sqrtsval = sqrt(sval);
-          PBAR = 300; 
-        }      
-
-      // Compute density (kg/m3) at standard one atmosphere pressure
-    
-      TEMP[1]=Q00+tval*(Q01+tval*(Q02+tval*(Q03+tval*(Q04+tval*Q05))));
-      TEMP[2]=U00+tval*(U01+tval*(U02+tval*(U03+tval*U04)));
-      TEMP[3]=V00+tval*(V01+tval*V02);
-      double DEN1=TEMP[1]+sval*(TEMP[2]+sqrtsval*TEMP[3]+sval*W00);
-
-      // Compute secant bulk modulus (BULK = BULK0 + BULK1*PBAR + BULK2*PBAR*PBAR)
-    
-      TEMP[4]=A00+tval*(A01+tval*(A02+tval*(A03+tval*A04)));
-      TEMP[5]=B00+tval*(B01+tval*(B02+tval*B03));
-      TEMP[6]=D00+tval*(D01+tval*D02);
-      TEMP[7]=E00+tval*(E01+tval*(E02+tval*E03));
-      TEMP[8]=F00+tval*(F01+tval*F02);
-      TEMP[9]=G01+tval*(G02+tval*G03);
-      TEMP[10]=H00+tval*(H01+tval*H02);
-    
-      double BULK0=TEMP[4]+sval*(TEMP[5]+sqrtsval*TEMP[6]);
-      double BULK1=TEMP[7]+sval*(TEMP[8]+sqrtsval*G00);
-      double BULK2=TEMP[9]+sval*TEMP[10];
-      double BULK = BULK0 + PBAR * (BULK1 + PBAR * BULK2);
-    
-      //  Compute "in situ" density anomaly (kg/m3)
-      double RHOF=(DEN1*BULK)/(BULK-PBAR);
-      if (i<ntuples)
-        rv->SetTuple1(i, RHOF);
-    
-      else
-        debug4 << "Dens_Jackett_McDougall CHECK VAL!" << endl
-               << "check Values: (T=3 C, S=35.5 PSU, 300 bar)" << endl
-               << "RHOF = 1041.83267     (kg/m3)" << endl
-               << "VALUE=" << RHOF << endl;
-              
-    }
 
 
-  debug4 << mName << "end" << endl;
+  double TEMP[10]; // This will be temporary storage for intermediate steps!
 
-  return rv;
-}// end DENS3
+  double sqrtsval=sqrt(sval);
+
+  // Compute density (kg/m3) at standard one atmosphere pressure
+  
+  TEMP[1]=Q00+tval*(Q01+tval*(Q02+tval*(Q03+tval*(Q04+tval*Q05))));
+  TEMP[2]=U00+tval*(U01+tval*(U02+tval*(U03+tval*U04)));
+  TEMP[3]=V00+tval*(V01+tval*V02);
+  double DEN1=TEMP[1]+sval*(TEMP[2]+sqrtsval*TEMP[3]+sval*W00);
+  
+  // Compute secant bulk modulus (BULK = BULK0 + BULK1*PBAR + BULK2*PBAR*PBAR)
+  
+  TEMP[4]=A00+tval*(A01+tval*(A02+tval*(A03+tval*A04)));
+  TEMP[5]=B00+tval*(B01+tval*(B02+tval*B03));
+  TEMP[6]=D00+tval*(D01+tval*D02);
+  TEMP[7]=E00+tval*(E01+tval*(E02+tval*E03));
+  TEMP[8]=F00+tval*(F01+tval*F02);
+  TEMP[9]=G01+tval*(G02+tval*G03);
+  TEMP[10]=H00+tval*(H01+tval*H02);
+  
+  double BULK0=TEMP[4]+sval*(TEMP[5]+sqrtsval*TEMP[6]);
+  double BULK1=TEMP[7]+sval*(TEMP[8]+sqrtsval*G00);
+  double BULK2=TEMP[9]+sval*TEMP[10];
+  double BULK = BULK0 + pbar * (BULK1 + pbar * BULK2);
+  
+  //  Compute "in situ" density anomaly (kg/m3)
+  double RHOF=(DEN1*BULK)/(BULK-pbar);
+  
+  
+  return RHOF;
+}
+
+
 
 
 // ****************************************************************************
@@ -3152,109 +4226,152 @@ avtFVCOMReader::THETA(int timestate, avtVariableCache *cache)
     }
 
   debug4 << mName << "Loading: salinity" << endl;
-  vtkDataArray *salt = GetVar(timestate,"salinity",cache);
+  vtkDataArray *SALT = GetVar(timestate,"salinity",cache);
 
   debug4 << mName << "Loading insitu temperature variable: temp;" << endl;
-  vtkDataArray *tmp = GetVar(timestate,"temp",cache);
-
-  debug4 << mName << "Loading: SigmaLayer_Mesh" << endl;
-  vtkDataSet *mesh =  GetMesh(timestate,"SigmaLayer_Mesh", cache);
+  vtkDataArray *TMP = GetVar(timestate,"temp",cache);
     
-  int ntuples = mesh->GetNumberOfPoints();
+  int ntuples = SALT->GetNumberOfTuples();;
+  debug4 << "ntuples= "<< ntuples << endl;
     
   vtkFloatArray *rv = vtkFloatArray::New();
   rv->SetNumberOfTuples(ntuples);
   double GRAV = 9.81;   
-  double xyz[3];
-  float tval;
-  float sval;
+  double tval;
+  double sval;
   double pbar;
-    
-  // Set Reference pressure here!
-  double p_ref=0.0;
-  // if you change this please change the name of the variable in the meta data
-  // as well for clarity!!!!
+  double ptmp;
 
-
-  // ADDED CHECK VAL TO DEBUG!!! when i=ntuples do check val!
-  for (int i = 0 ; i < ntuples+1 ; i++) 
+  if(IsGeoRef)
     {
-        
-      if (i<ntuples)
+      debug4 << mName << "Using global coordinates method!" << endl;
+      debug4 << mName << "Loading: Depth_on_Layers" << endl;
+      vtkDataArray *DEPTH = GetVar(timestate,"Depth_on_Layers",cache);
+      
+      double dval;
+      // ADDED CHECK VAL TO DEBUG!!! when i=ntuples do check val!
+      for (int i = 0 ; i < ntuples+1 ; i++) 
         {
-          tval= tmp->GetComponent(i,0); // must be (i,0) not (i,1)
-          sval= salt->GetComponent(i,0);
-          mesh->GetPoint(i,xyz); 
-          // This returns xyz location of each point
-          pbar = GRAV *1.025 * fabs(xyz[2]) * 0.01; 
-          // Calculate pressure in Bar at depth z in meters
-          //Bar = 9.81 *ave_dens * depth_m /100
-
-        }
-      else if (i==ntuples)
-        {
-          tval=40;
-          sval=40;
-          pbar = 1000; 
-        }      
-        
-    
-    
-    
-    
-      //==============================================================================|
-
-      double S4 = sval;
-      double P4 = pbar*10.0; // pressure in decibar!
-      double T4 = tval;
-      double PR = p_ref;
-      double H4;
-      double XK;
-      double Q4;
-      H4 = PR - P4;
-      XK = H4 * ATG(S4,T4,P4);
-      T4 = T4 + 0.5*XK;
-      Q4 = XK;
-      P4 = P4 + 0.5*H4;
-      XK = H4 * ATG(S4,T4,P4);
-      T4 = T4 + 0.29289322*(XK-Q4);
-      Q4 = 0.58578644*XK + 0.121320344*Q4;
-      XK = H4 * ATG(S4,T4,P4);
-      T4 = T4 + 1.707106781*(XK-Q4);
-      Q4 = 3.414213562*XK - 4.121320344*Q4;
-      P4 = P4 + 0.5*H4;
-      XK = H4 * ATG(S4,T4,P4);
-      double ptmp = T4 + (XK-2.0*Q4)/6.0;
-    
-    
-      if (i<ntuples)
-        {
-          rv->SetTuple1(i, ptmp);
-          debug4 << "================" << endl;
-          debug4 << "tval: " << tval <<endl;
-          debug4 << "sval: " << sval << endl;
-          debug4 << "z(meters): " << fabs(xyz[2]) <<endl;
-          debug4 << "pbar: " << pbar << endl;
-          debug4 << "pref: " << p_ref << endl;
-          debug4 << "ptmp: " << ptmp << endl;
-          debug4 << "================" << endl;
-        }
-
-      else
-        debug4 << "THETA CHECK VAL!" << endl
-               << "check Values: (T=40 C, S=40 (ipss-78), 1000 bar)" << endl
-               << "RHOF = 36.89073   (c)" << endl
-               << "VALUE=" << ptmp << endl;
+          
+          if (i<ntuples)
+            {
+              tval= TMP->GetComponent(i,0); // must be (i,0) not (i,1)
+              sval= SALT->GetComponent(i,0);
+              dval= DEPTH->GetComponent(i,0);
+              // This returns xyz location of each point
+              pbar = GRAV *1.025 * dval * 0.01; 
+              // Calculate pressure in Bar at depth z in meters
+              //Bar = 9.81 *ave_dens * depth_m /100
               
+              ptmp =Thetahelper(sval,tval,pbar*10.0);//use pressure in decibar!
+              rv->SetTuple1(i, ptmp);
+              
+            }
+          else if (i==ntuples)
+            {
+              tval=40;
+              sval=40;
+              pbar = 1000; 
+              
+              ptmp =Thetahelper(sval,tval,pbar*10.0);//use pressure in decibar!
+              
+              debug4 << "THETA CHECK VAL!" << endl
+                     << "check Values: (T=40 C, S=40 (ipss-78), 1000 bar)" << endl
+                     << "RHOF = 36.89073   (c)" << endl
+                     << "VALUE=" << ptmp << endl;
+            }     
+        } 
+      
+      SALT->Delete();
+      TMP->Delete();
+      DEPTH->Delete();
     }
+  else
+    {
 
-
+      debug4 << mName << "Loading: zeta"<< endl;
+      vtkDataArray *SSH = GetVar(timestate,"zeta",cache);
+      
+      debug4 << mName << "Loading: SigmaLayer_Mesh" << endl;
+      vtkDataSet *MESH =  GetMesh(timestate,"SigmaLayer_Mesh", cache);
+      
+      double xyz[3];
+      double sshval;
+      // ADDED CHECK VAL TO DEBUG!!! when i=ntuples do check val!
+      for (int i = 0 ; i < ntuples+1 ; i++) 
+        {
+          
+          if (i<ntuples)
+            {
+              tval= TMP->GetComponent(i,0); // must be (i,0) not (i,1)
+              sval= SALT->GetComponent(i,0);
+              MESH->GetPoint(i,xyz); 
+              
+              int mod= i % nNode;
+              sshval=SSH->GetComponent(mod,0);
+              // This returns xyz location of each point
+              pbar = GRAV *1.025 * (sshval-xyz[2]) * 0.01; 
+              // Calculate pressure in Bar at depth z in meters
+              //Bar = 9.81 *ave_dens * depth_m /100
+              
+              ptmp =Thetahelper(sval,tval,pbar*10.0);//use pressure in decibar!
+              rv->SetTuple1(i, ptmp);
+              
+            }
+          else if (i==ntuples)
+            {
+              tval=40;
+              sval=40;
+              pbar = 1000; 
+              
+              ptmp =Thetahelper(sval,tval,pbar*10);//use pressure in decibar!
+              
+              debug4 << "THETA CHECK VAL!" << endl
+                     << "check Values: (T=40 C, S=40 (ipss-78), 1000 bar)" << endl
+                     << "Theta = 36.89073   (c)" << endl
+                     << "VALUE=" << ptmp << endl;
+            }     
+        } 
+      
+      SALT->Delete();
+      TMP->Delete();
+      MESH->Delete();
+      SSH->Delete();
+    }  
   debug4 << mName << "end" << endl;
-
   return rv;
 }// end THETA
 
+//==============================================================================|
+// Do the business of the conversion from insitu to potential temperature.
+//==============================================================================|
 
+double
+avtFVCOMReader::Thetahelper(double S4, double T4, double P4)
+{
+  //  double S4 = sval;
+  //  double P4 = pbar*10.0; // pressure in decibar!
+  //  double T4 = tval;
+  double PR = 0.0;
+  double H4;
+  double XK;
+  double Q4;
+  H4 = PR - P4;
+  XK = H4 * ATG(S4,T4,P4);
+  T4 = T4 + 0.5*XK;
+  Q4 = XK;
+  P4 = P4 + 0.5*H4;
+  XK = H4 * ATG(S4,T4,P4);
+  T4 = T4 + 0.29289322*(XK-Q4);
+  Q4 = 0.58578644*XK + 0.121320344*Q4;
+  XK = H4 * ATG(S4,T4,P4);
+  T4 = T4 + 1.707106781*(XK-Q4);
+  Q4 = 3.414213562*XK - 4.121320344*Q4;
+  P4 = P4 + 0.5*H4;
+  XK = H4 * ATG(S4,T4,P4);
+  double ptmp = T4 + (XK-2.0*Q4)/6.0;
+  return ptmp;
+}
 
 
 //==============================================================================|
@@ -3276,8 +4393,8 @@ avtFVCOMReader::ATG(double S4, double T4, double P4)
   
   double ds  = S4 - 35.0;
   double atg = (((-2.1687e-16*T4+1.8676e-14)*T4-4.6206e-13)*P4
-                +((2.7759e-12*T4-1.1351e-10)*ds+((-5.4481e-14*T4
-                                                  +8.733e-12)*T4-6.7795e-10)*T4+1.8741e-8))*P4
+                +((2.7759e-12*T4-1.1351e-10)*ds+
+                  ((-5.4481e-14*T4+8.733e-12)*T4-6.7795e-10)*T4+1.8741e-8))*P4
     +(-4.2393e-8*T4+1.8932e-6)*ds 
     +((6.6228e-10*T4-6.836e-8)*T4+8.5258e-6)*T4+3.5803e-5;
 

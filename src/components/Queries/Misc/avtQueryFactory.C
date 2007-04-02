@@ -50,6 +50,13 @@
 #include <avtBestFitLineQuery.h>
 #include <avtCentroidQuery.h>
 #include <avtCompactnessQuery.h>
+#include <avtConnComponentsQuery.h>
+#include <avtConnComponentsAreaQuery.h>
+#include <avtConnComponentsCentroidQuery.h>
+#include <avtConnComponentsSummaryQuery.h>
+#include <avtConnComponentsVolumeQuery.h>
+#include <avtConnComponentsVariableQuery.h>
+#include <avtConnComponentsWeightedVariableQuery.h>
 #include <avtCycleQuery.h>
 #include <avtDistanceFromBoundaryQuery.h>
 #include <avtEllipticalCompactnessFactorQuery.h>
@@ -87,12 +94,6 @@
 #include <avtWatertightQuery.h>
 #include <avtWeightedVariableSummationQuery.h>
 #include <avtZoneCenterQuery.h>
-#include <avtConnComponentsQuery.h>
-#include <avtConnComponentsAreaQuery.h>
-#include <avtConnComponentsCentroidQuery.h>
-#include <avtConnComponentsVolumeQuery.h>
-#include <avtConnComponentsVariableQuery.h>
-#include <avtConnComponentsWeightedVariableQuery.h>
 
 
 #include <QueryAttributes.h>
@@ -252,6 +253,9 @@ avtQueryFactory::Instance()
 //
 //    Cyrus Harrison, Tue Feb 20 15:20:14 PST 2007
 //    Added connected components queries.
+//
+//    Cyrus Harrison, Thu Mar  1 16:20:27 PST 2007
+//    Added connected components summary query.
 //
 // ****************************************************************************
 
@@ -560,6 +564,13 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     else if( qname == "Connected Component Weighted Variable Sum")
     {
         query = new avtConnComponentsWeightedVariableQuery();
+    }
+    else if( qname == "Connected Components Summary")
+    {
+        avtConnComponentsSummaryQuery *ccl_query
+                                          =new avtConnComponentsSummaryQuery();
+        ccl_query->SetOutputFileName(qa->GetVariables()[0]);
+        query = ccl_query;
     }
 
 

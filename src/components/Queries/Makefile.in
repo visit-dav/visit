@@ -183,6 +183,9 @@
 #   Cyrus Harrison, Tue Feb 20 15:10:58 PST 2007
 #   Added connected components related queries.
 #
+#   Cyrus Harrison, Fri Mar  2 09:06:07 PST 2007
+#   Added connected components summary query.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -230,8 +233,9 @@ Queries_src= \
  Queries/avtCentroidQuery.C  \
  Queries/avtCompactnessQuery.C  \
  Queries/avtConnComponentsQuery.C\
- Queries/avtConnComponentsCentroidQuery.C\
  Queries/avtConnComponentsAreaQuery.C\
+ Queries/avtConnComponentsCentroidQuery.C\
+ Queries/avtConnComponentsSummaryQuery.C\
  Queries/avtConnComponentsVolumeQuery.C\
  Queries/avtConnComponentsVariableQuery.C\
  Queries/avtConnComponentsWeightedVariableQuery.C\

@@ -35,68 +35,69 @@
 *
 *****************************************************************************/
 
-#include <QvisParallelAxisPlotWindow.h>
-#include <ParallelAxisAttributes.h>
+#include "QvisParallelAxisPlotWindow.h"
 
+#include <ParallelAxisAttributes.h>
 #include <ViewerProxy.h>
+
+#include <qbuttongroup.h>
+#include <qcheckbox.h>
+#include <qgroupbox.h>
+#include <qlabel.h>
+#include <qlayout.h>
+#include <qlineedit.h>
+#include <qlistbox.h>
+#include <qradiobutton.h>
+#include <qslider.h>
+#include <qspinbox.h>
+#include <qvbox.h>
+#include <QNarrowLineEdit.h>
+#include <QvisColorTableButton.h>
+#include <QvisOpacitySlider.h>
+#include <QvisColorButton.h>
+#include <QvisLineStyleWidget.h>
+#include <QvisLineWidthWidget.h>
+#include <QvisVariableButton.h>
 
 #include <math.h>
 #include <stdio.h>
-#include <stdlib.h>
-
-#include <qhbuttongroup.h>
-#include <qvbuttongroup.h>
-#include <qbuttongroup.h>
-#include <qhgroupbox.h>
-#include <qvgroupbox.h>
-#include <qpushbutton.h>
-#include <qradiobutton.h>
-#include <qbutton.h>
-#include <qlabel.h>
-#include <qframe.h>
-#include <qlayout.h>
-#include <qstring.h>
-#include <qbitmap.h>
-
-#include <QvisVariableButton.h>
-
-#include <DebugStream.h>
-
-#include <vector>
 #include <string>
 
+using std::string;
 
 // ****************************************************************************
 // Method: QvisParallelAxisPlotWindow::QvisParallelAxisPlotWindow
 //
-// Purpose: Constructor for the QvisParallelAxisPlotWindow class.
+// Purpose: 
+//   Constructor
 //
-// Programmer: Mark Blair
-// Creation:   Mon Mar 27 18:24:00 PST 2006
+// Programmer: xml2window
+// Creation:   Thu Mar 15 13:59:40 PST 2007
 //
 // Modifications:
-//
+//   
 // ****************************************************************************
 
 QvisParallelAxisPlotWindow::QvisParallelAxisPlotWindow(const int type,
-    ParallelAxisAttributes *parAxisAtts_, const char *caption,
-    const char *shortName, QvisNotepadArea *notepad) :
-    QvisPostableWindowObserver(parAxisAtts_, caption, shortName, notepad)
+                         ParallelAxisAttributes *subj,
+                         const char *caption,
+                         const char *shortName,
+                         QvisNotepadArea *notepad)
+    : QvisPostableWindowObserver(subj, caption, shortName, notepad)
 {
     plotType = type;
-    parAxisAtts = parAxisAtts_;
-
-    latestGUIShownOrd = parAxisAtts->GetShownVarAxisOrdinal();
+    atts = subj;
 }
 
 
 // ****************************************************************************
 // Method: QvisParallelAxisPlotWindow::~QvisParallelAxisPlotWindow
 //
-// Purpose: Destructor for the QvisParallelAxisPlotWindow class.
+// Purpose: 
+//   Destructor
 //
-// Programmer: Mark Blair
-// Creation:   Mon Mar 27 18:24:00 PST 2006
+// Programmer: xml2window
+// Creation:   Thu Mar 15 13:59:40 PST 2007
 //
 // Modifications:
 //   
@@ -104,208 +105,286 @@ QvisParallelAxisPlotWindow::QvisParallelAxisPlotWindow(const int type,
 
 QvisParallelAxisPlotWindow::~QvisParallelAxisPlotWindow()
 {
-    parAxisAtts = NULL;
 }
 
 
 // ****************************************************************************
 // Method: QvisParallelAxisPlotWindow::CreateWindowContents
 //
-// Purpose: This method creates the widgets that are in the window and sets up
-//          their signals/slots.
+// Purpose: 
+//   Creates the widgets for the window.
 //
-// Programmer: Mark Blair
-// Creation:   Mon Mar 27 18:24:00 PST 2006
+// Programmer: Jeremy Meredith
+// Creation:   March 16, 2007
 //
 // Modifications:
-//
-//      Mark Blair, Wed Aug 16 17:12:00 PDT 2006
-//      Removed widgets that display axis extents and extents selected by
-//      Extents tool.  These were considered unnecessary.
-//
+//   
 // ****************************************************************************
 
 void
 QvisParallelAxisPlotWindow::CreateWindowContents()
 {
-    static unsigned char leftArrow[8] =
-        { 0x00, 0x01, 0x07, 0x1f, 0x7f, 0x1f, 0x07, 0x01 };
-    static unsigned char rightArrow[8] =
-        { 0x00, 0x80, 0xe0, 0xf8, 0xfe, 0xf8, 0xe0, 0x80 };
+    //
+    // Axes to plot
+    //
+    axisGroup = new QGroupBox("Axes",
+                              central, "axisGroup");
+    topLayout->addWidget(axisGroup);
+    QVBoxLayout *axisSpacingLayout = new QVBoxLayout(axisGroup);
+    axisSpacingLayout->setMargin(10);
+    axisSpacingLayout->addSpacing(20);
 
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 6, 2, 10, "mainLayout");
+    QGridLayout *axisLayout = new QGridLayout(axisSpacingLayout, 4, 2, 5);
 
-    mainLayout->addWidget(new QLabel("Axis var:", central, "axisVarLabel"), 0, 0);
-    axisVariable = new QLabel("default", central, "axisVariable");
-    mainLayout->addMultiCellWidget(axisVariable, 0, 0, 1, 2);
-    mainLayout->addWidget(new QLabel("Axis pos:", central, "axisPosLabel"), 0, 3);
-    axisPosition = new QLabel("0", central, "axisPosition");
-    mainLayout->addWidget(axisPosition, 0, 4);
+    // axes list
+    axisList = new QListBox(axisGroup, "axisList");
+    axisLayout->addMultiCellWidget(axisList, 0,3, 0,0);
+    connect(axisList, SIGNAL(highlighted(int)),
+            this, SLOT(axisSelected(int)));
 
-    QButtonGroup *prevAxisOrNext = new QButtonGroup(central, "prevAxisOrNext");
-    prevAxisOrNext->setFrameStyle(QFrame::NoFrame);
-    QHBoxLayout *prevOrNextLayout = new QHBoxLayout(prevAxisOrNext);
-    prevOrNextLayout->setSpacing(0);
-    showPrevAxis = new QPushButton(prevAxisOrNext);
-    QBitmap *leftArrowBitmap = new QBitmap(8, 8, leftArrow);
-    showPrevAxis->setPixmap(*leftArrowBitmap);
-    prevOrNextLayout->addWidget(showPrevAxis);
-    connect(showPrevAxis, SIGNAL(clicked()), this, SLOT(prevAxisClicked()));
-    showNextAxis = new QPushButton(prevAxisOrNext);
-    QBitmap* rightArrowBitmap = new QBitmap(8, 8, rightArrow);
-    showNextAxis->setPixmap(*rightArrowBitmap);
-    prevOrNextLayout->addWidget(showNextAxis);
-    connect(showNextAxis, SIGNAL(clicked()), this, SLOT(nextAxisClicked()));
-    mainLayout->addWidget(prevAxisOrNext, 0, 5);
+    // axes new/del/up/down buttons
+    axisNewButton = new QvisVariableButton(false, true, true,
+                                           QvisVariableButton::Scalars,
+                                           axisGroup, "axisNewButton");
+    axisNewButton->setText("Add axis");
+    axisNewButton->setChangeTextOnVariableChange(false);
+    axisLayout->addWidget(axisNewButton, 0, 1);
+    connect(axisNewButton, SIGNAL(activated(const QString &)),
+            this, SLOT(addAxis(const QString &)));
 
-    addAxis = new QvisVariableButton(false, true, true,
-        QvisVariableButton::Scalars, central, "addAxis");
-    addAxis->setText("Add axis");
-    addAxis->setChangeTextOnVariableChange(false);
-    connect(addAxis, SIGNAL(activated(const QString &)),
-            this, SLOT(axisAdded(const QString &)));
-    mainLayout->addMultiCellWidget(addAxis, 1, 1, 0, 1);
-    deleteAxis = new QvisVariableButton(false, true, true,
-        QvisVariableButton::Scalars, central, "deleteAxis");
-    deleteAxis->setText("Delete axis");
-    deleteAxis->setChangeTextOnVariableChange(false);
-    connect(deleteAxis, SIGNAL(activated(const QString &)),
-            this, SLOT(axisDeleted(const QString &)));
-    mainLayout->addMultiCellWidget(deleteAxis, 1, 1, 2, 3);
-    leftAxis = new QvisVariableButton(false, true, true,
-        QvisVariableButton::Scalars, central, "leftAxis");
-    leftAxis->setText("Left axis");
-    leftAxis->setChangeTextOnVariableChange(false);
-    connect(leftAxis, SIGNAL(activated(const QString &)),
-            this, SLOT(leftAxisSelected(const QString &)));
-    mainLayout->addMultiCellWidget(leftAxis, 1, 1, 4, 5);
+    axisDelButton = new QPushButton("Delete", axisGroup, "axisDelButton");
+    axisLayout->addWidget(axisDelButton, 1, 1);
+    connect(axisDelButton, SIGNAL(clicked()),
+            this, SLOT(delAxis()));
+
+    axisUpButton = new QPushButton("Move up", axisGroup, "axisUpButton");
+    axisLayout->addWidget(axisUpButton, 2, 1);
+    connect(axisUpButton, SIGNAL(clicked()),
+            this, SLOT(moveAxisUp()));
+
+    axisDownButton = new QPushButton("Move down", axisGroup, "axisDownButton");
+    axisLayout->addWidget(axisDownButton, 3, 1);
+    connect(axisDownButton, SIGNAL(clicked()),
+            this, SLOT(moveAxisDown()));
+
+    //
+    // Draw lines, and the needed settings
+    //
+    drawLines = new QGroupBox("Draw individual lines",
+                              central, "drawLines");
+    drawLines->setCheckable(true);
+    connect(drawLines, SIGNAL(toggled(bool)),
+            this, SLOT(drawLinesChanged(bool)));
+    topLayout->addWidget(drawLines);
+
+    QVBoxLayout *linesSpacingLayout = new QVBoxLayout(drawLines);
+    linesSpacingLayout->setMargin(10);
+    linesSpacingLayout->addSpacing(20);
+
+    QGridLayout *linesLayout = new QGridLayout(linesSpacingLayout, 1, 2, 5);
+
+    // Lines color
+    linesColorLabel = new QLabel("Line color", drawLines, "linesColorLabel");
+    linesLayout->addWidget(linesColorLabel,0,0);
+    linesColor = new QvisColorButton(drawLines, "linesColor");
+    connect(linesColor, SIGNAL(selectedColor(const QColor&)),
+            this, SLOT(linesColorChanged(const QColor&)));
+    linesLayout->addWidget(linesColor, 0,1);
+
+    //
+    // Draw context, and the needed settings
+    //
+    drawContext = new QGroupBox("Draw context",
+                              central, "drawContext");
+    drawContext->setCheckable(true);
+    connect(drawContext, SIGNAL(toggled(bool)),
+            this, SLOT(drawContextChanged(bool)));
+    topLayout->addWidget(drawContext);
+
+    QVBoxLayout *contextSpacingLayout = new QVBoxLayout(drawContext);
+    contextSpacingLayout->setMargin(10);
+    contextSpacingLayout->addSpacing(20);
+
+    QGridLayout *contextLayout = new QGridLayout(contextSpacingLayout, 3, 3, 5);
+
+    // Contex gamma correction
+    contextGammaLabel = new QLabel("Brightness (gamma)",
+                                   drawContext, "contextGammaLabel");
+    contextLayout->addWidget(contextGammaLabel,0,0);
+    contextGamma = new QNarrowLineEdit(drawContext, "contextGamma");
+    connect(contextGamma, SIGNAL(returnPressed()),
+            this, SLOT(contextGammaProcessText()));
+    contextLayout->addWidget(contextGamma, 0,1);
+    contextGammaSlider = new QSlider(0,100,5,66,Qt::Horizontal,drawContext,
+                                     "contextGammaSlider");
+    connect(contextGammaSlider, SIGNAL(valueChanged(int)),
+            this, SLOT(contextGammaSliderChanged(int)));
+    connect(contextGammaSlider, SIGNAL(sliderReleased()),
+            this, SLOT(contextGammaSliderReleased()));
+    contextLayout->addWidget(contextGammaSlider, 0,2);
+
+    // Number of partitions
+    contextNumPartitionsLabel = new QLabel("Number of partitions", drawContext,
+                                           "contextNumPartitionsLabel");
+    contextLayout->addWidget(contextNumPartitionsLabel,1,0);
+    contextNumPartitions = new QNarrowLineEdit(drawContext,
+                                               "contextNumPartitions");
+    connect(contextNumPartitions, SIGNAL(returnPressed()),
+            this, SLOT(contextNumPartitionsProcessText()));
+    contextLayout->addWidget(contextNumPartitions, 1,1);
+    contextNumPartitionsSlider = new QSlider(1,10,1,5,Qt::Horizontal,
+                                      drawContext,"contextNumPartitionsSlider");
+    connect(contextNumPartitionsSlider, SIGNAL(valueChanged(int)),
+            this, SLOT(contextNumPartitionsSliderChanged(int)));
+    connect(contextNumPartitionsSlider, SIGNAL(sliderReleased()),
+            this, SLOT(contextNumPartitionsSliderReleased()));
+    contextLayout->addWidget(contextNumPartitionsSlider, 1,2);
+
+    // Context color
+    contextColorLabel = new QLabel("Context color",
+                                   drawContext, "contextColorLabel");
+    contextLayout->addWidget(contextColorLabel,2,0);
+    contextColor = new QvisColorButton(drawContext, "contextColor");
+    connect(contextColor, SIGNAL(selectedColor(const QColor&)),
+            this, SLOT(contextColorChanged(const QColor&)));
+    contextLayout->addWidget(contextColor, 2,1);
+
 }
 
 
 // ****************************************************************************
 // Method: QvisParallelAxisPlotWindow::UpdateWindow
 //
-// Purpose: This method is called when the window's subject is changed.  The
-//          subject tells this window what attributes changed and the new
-//          values are then assigned to corresponding widgets.
+// Purpose: 
+//   Updates the widgets in the window when the subject changes.
 //
-// Arguments:
-//   doAll : If this flag is true, update all the widgets regardless of whether
-//           or not they are selected.
-//
-// Programmer: Mark Blair
-// Creation:   Mon Mar 27 18:24:00 PST 2006
+// Programmer: Jeremy Meredith
+// Creation:   March 16, 2007
 //
 // Modifications:
-//
-//      Mark Blair, Wed Aug 16 17:12:00 PDT 2006
-//      Removed widgets that display axis extents and extents selected by
-//      Extents tool.  These were considered unnecessary.
-//
-//      Mark Blair, Wed Sep 20 10:59:41 PDT 2006
-//      Accommodates time ordinals, for those operators and tools that need them.
-//
-//      Mark Blair, Thu Oct 26 18:40:28 PDT 2006
-//      Accommodates widgets that support non-uniform axis spacing.
-//
-//      Mark Blair, Fri Feb 23 12:19:33 PST 2007
-//      Now supports all variable axis spacing and axis group conventions.
-//
+//   
 // ****************************************************************************
 
 void
 QvisParallelAxisPlotWindow::UpdateWindow(bool doAll)
 {
-    // Loop through all the attributes and do something for
-    // each of them that changed. This function is only responsible
-    // for displaying the state values and setting widget sensitivity.
+    QString temp;
+    double r;
 
-    for (int index = 0; index < parAxisAtts->NumAttributes(); index++)
+    QString oldAxis = axisList->currentText();
+
+    for(int i = 0; i < atts->NumAttributes(); ++i)
     {
-        if (!doAll) {
-            if (!parAxisAtts->IsSelected(index)) continue;
-        }
-
-        switch (index)
+        if(!doAll)
         {
-        case 0:   // Uses ParallelAxisAttributes::orderedAxisNames
-
-            break;   // Do nothing.
-
-        case 1:   // Uses ParallelAxisAttributes::shownVarAxisOrdinal
-
-            UpdateShownFields(false);
-
-            break;
-
-        case 2:   // Uses ParallelAxisAttributes::axisMinima
-
-            break;   // Do nothing.
-
-        case 3:   // Uses ParallelAxisAttributes::axisMaxima
-
-            break;   // Do nothing.
-
-        case 4:   // Uses ParallelAxisAttributes::extentMinima
-
-            break;   // Do nothing.
-
-        case 5:   // Uses ParallelAxisAttributes::extentMaxima
-
-            break;   // Do nothing.
-
-        case 6:   // Uses ParallelAxisAttributes::extMinTimeOrds
-
-            break;   // Do nothing.
-
-        case 7:   // Uses ParallelAxisAttributes::extMaxTimeOrds
-
-            break;   // Do nothing.
-
-        case 8:   // Uses ParallelAxisAttributes::plotToolModeFlags
-
-            break;   // Do nothing.
-
-        case 9:   // Uses ParallelAxisAttributes::axisGroupNames
-
-            break;   // Do nothing.
-
-        case 10:   // Uses ParallelAxisAttributes::axisInfoFlagSets
-
-            break;   // Do nothing.
-
-        case 11:   // Uses ParallelAxisAttributes::axisXPositions
-
-            break;   // Do nothing.
-
-        case 12:   // Uses ParallelAxisAttributes::axisAttributeVariables
-
-            break;   // Do nothing.
-
-        case 13:   // Uses ParallelAxisAttributes::attributesPerAxis
-
-            break;   // Do nothing.
-
-        case 14:   // Uses ParallelAxisAttributes::axisAttributeData
-
-            break;   // Do nothing.
+            if(!atts->IsSelected(i))
+            {
+                continue;
+            }
         }
-    } // end for
+
+        int   sliderpos;
+        const double         *dptr;
+        const float          *fptr;
+        const int            *iptr;
+        const char           *cptr;
+        const unsigned char  *uptr;
+        const string         *sptr;
+        QColor                tempcolor;
+        switch(i)
+        {
+          case 0: //orderedAxisNames
+            axisList->blockSignals(true);
+            axisList->clear();
+            for (int ax=0; ax<atts->GetOrderedAxisNames().size(); ax++)
+            {
+                axisList->insertItem(atts->GetOrderedAxisNames()[ax]);
+            }
+            axisList->blockSignals(false);
+            break;
+          case 10: //axisInfoFlagSets
+            break;
+          case 11: //axisXPositions
+            break;
+          case 12: //axisAttributeVariables
+            break;
+          case 15: //drawLines
+            drawLines->blockSignals(true);
+            drawLines->setChecked(atts->GetDrawLines());
+            drawLines->blockSignals(false);
+            break;
+          case 16: //linesColor
+            tempcolor = QColor(atts->GetLinesColor().Red(),
+                               atts->GetLinesColor().Green(),
+                               atts->GetLinesColor().Blue());
+            linesColor->blockSignals(true);
+            linesColor->setButtonColor(tempcolor);
+            linesColor->blockSignals(false);
+            break;
+          case 17: //drawContext
+            drawContext->blockSignals(true);
+            drawContext->setChecked(atts->GetDrawContext());
+            drawContext->blockSignals(false);
+            break;
+          case 18: //contextGamma
+            contextGamma->blockSignals(true);
+            contextGammaSlider->blockSignals(true);
+            temp.sprintf("%.2f", atts->GetContextGamma());
+            contextGamma->setText(temp);
+            sliderpos = int(50 + 50*log10(atts->GetContextGamma()) + .5);
+            sliderpos = QMIN(QMAX(0, sliderpos), 100);
+            contextGammaSlider->setValue(sliderpos);
+            contextGamma->blockSignals(false);
+            contextGammaSlider->blockSignals(false);
+            break;
+          case 19: //contextNumPartitions
+            contextNumPartitions->blockSignals(true);
+            contextNumPartitionsSlider->blockSignals(true);
+            temp.sprintf("%d", atts->GetContextNumPartitions());
+            sliderpos = int(log(atts->GetContextNumPartitions())/log(2)+.5);
+            sliderpos = QMIN(QMAX(1, sliderpos), 10);
+            contextNumPartitionsSlider->setValue(sliderpos);
+            contextNumPartitions->setText(temp);
+            contextNumPartitions->blockSignals(false);
+            contextNumPartitionsSlider->blockSignals(false);
+            break;
+          case 20: //contextColor
+            tempcolor = QColor(atts->GetContextColor().Red(),
+                               atts->GetContextColor().Green(),
+                               atts->GetContextColor().Blue());
+            contextColor->blockSignals(true);
+            contextColor->setButtonColor(tempcolor);
+            contextColor->blockSignals(false);
+            break;
+        }
+    }
+
+    // Re-select the previously selected item in case updating this window
+    // regenerated the list box contents
+    axisList->setCurrentItem(-1);
+    for (int i=0; i<axisList->count(); i++)
+    {
+        if (axisList->text(i) == oldAxis)
+        {
+            axisList->setCurrentItem(i);
+        }
+    }
+
+    // Set enabled states
+    axisDelButton->setEnabled(axisList->currentItem() >= 0);
+    axisUpButton->setEnabled(axisList->currentItem() > 0);
+    axisDownButton->setEnabled(axisList->currentItem() < axisList->count()-1);
 }
 
 
 // ****************************************************************************
 // Method: QvisParallelAxisPlotWindow::GetCurrentValues
 //
-// Purpose: Gets the current values from the text fields and assigns those
-//          values to the appropriate subject attributes.
+// Purpose: 
+//   Gets values from certain widgets and stores them in the subject.
 //
-// Arguments:
-//   which_widget : A number indicating which line edit should have its current
-//                  values read.  An index of -1 gets them all.
-//
-// Programmer: Mark Blair
-// Creation:   Mon Mar 27 18:24:00 PST 2006
+// Programmer: Jeremy Meredith
+// Creation:   March 16, 2007
 //
 // Modifications:
 //   
@@ -314,68 +393,100 @@ QvisParallelAxisPlotWindow::UpdateWindow(bool doAll)
 void
 QvisParallelAxisPlotWindow::GetCurrentValues(int which_widget)
 {
-    // Eventually the ParallelAxis GUI may have some text fields.
-    return;
+    bool okay, doAll = (which_widget == -1);
+    QString msg, temp;
+
+    // Do contextGamma
+    if(which_widget == 18 || doAll)
+    {
+        temp = contextGamma->displayText().simplifyWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            float val = temp.toFloat(&okay);
+            if (val>0 && val<1000)
+                atts->SetContextGamma(val);
+            else
+                okay = false;
+        }
+
+        if(!okay)
+        {
+            msg.sprintf("The value of contextGamma was invalid. "
+                "Resetting to the last good value of %g.",
+                atts->GetContextGamma());
+            Message(msg);
+            atts->SetContextGamma(atts->GetContextGamma());
+        }
+    }
+
+    // Do contextNumPartitions
+    if(which_widget == 19 || doAll)
+    {
+        temp = contextNumPartitions->displayText().simplifyWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            int val = temp.toInt(&okay);
+            if (val>0 && val<10000)
+                atts->SetContextNumPartitions(val);
+            else
+                okay = false;
+        }
+
+        if(!okay)
+        {
+            msg.sprintf("The value of contextNumPartitions was invalid. "
+                "Resetting to the last good value of %d.",
+                atts->GetContextNumPartitions());
+            Message(msg);
+            atts->SetContextNumPartitions(atts->GetContextNumPartitions());
+        }
+    }
 }
 
 
 // ****************************************************************************
 // Method: QvisParallelAxisPlotWindow::Apply
 //
-// Purpose: This method applies the plot attributes and optionally tells the
-//          viewer to apply them.
+// Purpose: 
+//   Called to apply changes in the subject.
 //
-// Arguments:
-//   ignore : This flag, when true, signifies that the AutoUpdate function
-//            should be ignored and that the viewer should apply the plot
-//            attributes.
-//
-// Programmer: Mark Blair
-// Creation:   Mon Mar 27 18:24:00 PST 2006
+// Programmer: xml2window
+// Creation:   Thu Mar 15 13:59:40 PST 2007
 //
 // Modifications:
-//
-//     Mark Blair, Mon Feb 26 17:57:42 PST 2007
-//     Accommodates changed API.
-//
+//   
 // ****************************************************************************
 
 void
 QvisParallelAxisPlotWindow::Apply(bool ignore)
 {
-    if (AutoUpdate() || ignore)
+    if(AutoUpdate() || ignore)
     {
-        // Get the current ParallelAxis plot attributes and tell the other
-        // observers about them.
         GetCurrentValues(-1);
-        parAxisAtts->Notify();
+        atts->Notify();
 
-        // Tell the viewer to set the ParallelAxis plot attributes.
-/* debug 022607
-        GetViewerMethods()->SetPlotOptions(plotType);
-*/
         GetViewerMethods()->SetPlotOptions(plotType);
     }
     else
-    {
-        parAxisAtts->Notify();
-    }
+        atts->Notify();
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////
-// Qt Slot functions...
-/////////////////////////////////////////////////////////////////////////////////
+//
+// Qt Slot functions
+//
 
 
 // ****************************************************************************
 // Method: QvisParallelAxisPlotWindow::apply
 //
-// Purpose: This is a Qt slot function that is called when the window's Apply
-//          button is clicked.
+// Purpose: 
+//   Qt slot function called when apply button is clicked.
 //
-// Programmer: Mark Blair
-// Creation:   Mon Mar 27 18:24:00 PST 2006
+// Programmer: xml2window
+// Creation:   Thu Mar 15 13:59:40 PST 2007
 //
 // Modifications:
 //   
@@ -391,28 +502,21 @@ QvisParallelAxisPlotWindow::apply()
 // ****************************************************************************
 // Method: QvisParallelAxisPlotWindow::makeDefault
 //
-// Purpose: This is a Qt slot function that is called when the window's
-//          "Make default" button is clicked.
+// Purpose: 
+//   Qt slot function called when "Make default" button is clicked.
 //
-// Programmer: Mark Blair
-// Creation:   Mon Mar 27 18:24:00 PST 2006
+// Programmer: xml2window
+// Creation:   Thu Mar 15 13:59:40 PST 2007
 //
 // Modifications:
 //   
-//     Mark Blair, Mon Feb 26 17:57:42 PST 2007
-//     Accommodates changed API.
-//
 // ****************************************************************************
 
 void
 QvisParallelAxisPlotWindow::makeDefault()
 {
-    // Tell the viewer to set the default high dimension plot attributes.
     GetCurrentValues(-1);
-    parAxisAtts->Notify();
-/* debug 022607
-    GetViewerMethods()->SetDefaultPlotOptions(plotType);
-*/
+    atts->Notify();
     GetViewerMethods()->SetDefaultPlotOptions(plotType);
 }
 
@@ -420,11 +524,11 @@ QvisParallelAxisPlotWindow::makeDefault()
 // ****************************************************************************
 // Method: QvisParallelAxisPlotWindow::reset
 //
-// Purpose: This is a Qt slot function that is called when the window's Reset
-//          button is clicked.
+// Purpose: 
+//   Qt slot function called when reset button is clicked.
 //
-// Programmer: Mark Blair
-// Creation:   Mon Mar 27 18:24:00 PST 2006
+// Programmer: xml2window
+// Creation:   Thu Mar 15 13:59:40 PST 2007
 //
 // Modifications:
 //   
@@ -433,174 +537,313 @@ QvisParallelAxisPlotWindow::makeDefault()
 void
 QvisParallelAxisPlotWindow::reset()
 {
-    // Tell the viewer to reset the ParallelAxis plot attributes to the last
-    // applied values.
-
-/*
     GetViewerMethods()->ResetPlotOptions(plotType);
-*/
 }
 
+// ****************************************************************************
+//
+//  Standard autogenerated Qt/Qvis slot functions.
+//
+// ****************************************************************************
+void
+QvisParallelAxisPlotWindow::drawLinesChanged(bool val)
+{
+    atts->SetDrawLines(val);
+    SetUpdate(false);
+    Apply();
+}
 
-// ****************************************************************************
-// Method: QvisParallelAxisPlotWindow::prevAxisClicked
-//
-// Purpose: This is a Qt slot function that is called when the window's
-//          "Previous Axis" button (a left arrow) is clicked.
-//
-// Programmer: Mark Blair
-// Creation:   Mon Mar 27 18:24:00 PST 2006
-//
-// Modifications:
-//   
-// ****************************************************************************
 
 void
-QvisParallelAxisPlotWindow::prevAxisClicked()
+QvisParallelAxisPlotWindow::linesColorChanged(const QColor &color)
 {
-    parAxisAtts->ShowPreviousAxisVariableData();
-    latestGUIShownOrd = parAxisAtts->GetShownVarAxisOrdinal();
-
-    UpdateShownFields(true);
+    ColorAttribute temp(color.red(), color.green(), color.blue());
+    atts->SetLinesColor(temp);
+    SetUpdate(false);
+    Apply();
 }
 
-
-// ****************************************************************************
-// Method: QvisParallelAxisPlotWindow::prevAxisClicked
-//
-// Purpose: This is a Qt slot function that is called when the window's
-//          "Next Axis" button (a right arrow) is clicked.
-//
-// Programmer: Mark Blair
-// Creation:   Mon Mar 27 18:24:00 PST 2006
-//
-// Modifications:
-//   
-// ****************************************************************************
 
 void
-QvisParallelAxisPlotWindow::nextAxisClicked()
+QvisParallelAxisPlotWindow::drawContextChanged(bool val)
 {
-    parAxisAtts->ShowNextAxisVariableData();
-    latestGUIShownOrd = parAxisAtts->GetShownVarAxisOrdinal();
-
-    UpdateShownFields(true);
+    atts->SetDrawContext(val);
+    SetUpdate(false);
+    Apply();
 }
 
-
-// ****************************************************************************
-// Method: QvisParallelAxisPlotWindow::axisAdded
-//
-// Purpose: This is a Qt slot function that is called when the user adds an
-//          axis to the plot by clicking the "Add axis" button and selecting
-//          a scalar or an expression from a cascaded list.
-//
-// Programmer: Mark Blair
-// Creation:   Mon Mar 27 18:24:00 PST 2006
-//
-// Modifications:
-//   
-// ****************************************************************************
 
 void
-QvisParallelAxisPlotWindow::axisAdded(const QString &axisToAdd)
+QvisParallelAxisPlotWindow::contextGammaProcessText()
 {
-    parAxisAtts->InsertAxis(axisToAdd.latin1());
-    latestGUIShownOrd = parAxisAtts->GetShownVarAxisOrdinal();
-
-    UpdateShownFields(true);
+    GetCurrentValues(18);
+    Apply();
 }
 
-
-// ****************************************************************************
-// Method: QvisParallelAxisPlotWindow::axisDeleted
-//
-// Purpose: This is a Qt slot function that is called when the user deletes an
-//          axis from the plot by clicking the "Delete axis" button and
-//          selecting a scalar or an expression from a cascaded list.
-//
-// Programmer: Mark Blair
-// Creation:   Mon Mar 27 18:24:00 PST 2006
-//
-// Modifications:
-//   
-// ****************************************************************************
 
 void
-QvisParallelAxisPlotWindow::axisDeleted(const QString &axisToDelete)
+QvisParallelAxisPlotWindow::contextNumPartitionsProcessText()
 {
-    parAxisAtts->DeleteAxis(axisToDelete.latin1(), 2);
-    latestGUIShownOrd = parAxisAtts->GetShownVarAxisOrdinal();
-
-    UpdateShownFields(true);
+    GetCurrentValues(19);
+    Apply();
 }
 
-
-// ****************************************************************************
-// Method: QvisParallelAxisPlotWindow::leftAxisSelected
-//
-// Purpose: This is a Qt slot function that is called when the user specifies
-//          an axis to be the plot's leftmost axis by clicking the "Left axis"
-//          button and selecting a scalar or an expression from a cascaded list.
-//
-// Programmer: Mark Blair
-// Creation:   Mon Mar 27 18:24:00 PST 2006
-//
-// Modifications:
-//   
-// ****************************************************************************
 
 void
-QvisParallelAxisPlotWindow::leftAxisSelected(const QString &axisToSelect)
+QvisParallelAxisPlotWindow::contextColorChanged(const QColor &color)
 {
-    parAxisAtts->SwitchToLeftAxis(axisToSelect.latin1());
-    latestGUIShownOrd = parAxisAtts->GetShownVarAxisOrdinal();
-
-    UpdateShownFields(true);
+    ColorAttribute temp(color.red(), color.green(), color.blue());
+    atts->SetContextColor(temp);
+    SetUpdate(false);
+    Apply();
 }
 
-
 // ****************************************************************************
-// Method: QvisParallelAxisPlotWindow::UpdateShownFields
+//  Method:  QvisParallelAxisPlotWindow::axisSelected
 //
-// Purpose: Updates all widgets in the window to display values corresponding
-//          to the axis variable whose data is to be shown.
+//  Purpose:
+//    Executed when they click on an axis in the list.
+//    This only sets the enabled states of the axis modifier buttons.
 //
-// Programmer: Mark Blair
-// Creation:   Mon Mar 27 18:24:00 PST 2006
+//  Arguments:
+//    axis       the index in the list box
 //
-// Modifications:
-//   
-//      Mark Blair, Wed Aug 16 17:12:00 PDT 2006
-//      Removed widgets that display axis extents and extents selected by
-//      Extents tool.  These were considered unnecessary.
-//
-//      Mark Blair, Wed Sep 20 10:59:41 PDT 2006
-//      Fixed range error that can occur when shown variable and list of axis
-//      are temporarily out of sync.
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 16, 2007
 //
 // ****************************************************************************
 
 void
-QvisParallelAxisPlotWindow::UpdateShownFields(bool applyvalues)
+QvisParallelAxisPlotWindow::axisSelected(int axis)
 {
-    if (latestGUIShownOrd >= parAxisAtts->GetAxisMinima().size())
-    {
-        debug1 << "ParallelAxis plot attribute consistency error." << endl;
-        latestGUIShownOrd = parAxisAtts->GetAxisMinima().size() - 1;
-    }
+    axisDelButton->setEnabled(axisList->currentItem() >= 0);
+    axisUpButton->setEnabled(axisList->currentItem() > 0);
+    axisDownButton->setEnabled(axisList->currentItem() < axisList->count()-1);
+}
 
-    parAxisAtts->SetShownVarAxisOrdinal(latestGUIShownOrd);
+// ****************************************************************************
+//  Method:  QvisParallelAxisPlotWindow::addAxis
+//
+//  Purpose:
+//    add a variable (i.e. axis) to the plot
+//
+//  Arguments:
+//    axisToAdd   the name of the new variable to add
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 16, 2007
+//
+// ****************************************************************************
 
-    QString fieldString = parAxisAtts->GetShownVariableAxisName().c_str();
-    axisVariable->setText(fieldString);
+void
+QvisParallelAxisPlotWindow::addAxis(const QString &axisToAdd)
+{
+    atts->InsertAxis(axisToAdd.latin1());
+    //SetUpdate(false);
+    Apply();
+}
 
-    fieldString.setNum(parAxisAtts->GetShownVariableAxisNormalHumanOrdinal());
-    axisPosition->setText(fieldString);
+// ****************************************************************************
+//  Method:  QvisParallelAxisPlotWindow::delAxis
+//
+//  Purpose:
+//    removes the currently selected variable (i.e. axis) from the plot
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 16, 2007
+//
+// ****************************************************************************
 
-    if (applyvalues)
-    {
-        SetUpdate(false);
-        Apply();
-    }
+void
+QvisParallelAxisPlotWindow::delAxis()
+{
+    QString axis = axisList->currentText();
+    atts->DeleteAxis(axis.latin1(), 2);
+    Apply();
+}
+
+// ****************************************************************************
+//  Method:  QvisParallelAxisPlotWindow::moveAxisUp
+//
+//  Purpose:
+//    move the currently selected variable (i.e. axis) up in the list
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 16, 2007
+//
+// ****************************************************************************
+
+void
+QvisParallelAxisPlotWindow::moveAxisUp()
+{
+    int index = axisList->currentItem();
+
+    // verify something is selected
+    if (index < 0)
+        return;
+
+    // must make a local copy
+    stringVector axes = atts->GetOrderedAxisNames();
+    int naxes = axes.size();
+
+    // can't move first axis up in list
+    if (index == 0)
+        return;
+
+    // InsertAxis() will reorder axes already in the list, so we
+    // just insert all the changed ones in the new desired order
+    atts->InsertAxis(axes[index]);
+    atts->InsertAxis(axes[index-1]);
+    for (int i=index+1; i<naxes; i++)
+        atts->InsertAxis(axes[i]);
+
+    // Done; apply changes
+    Apply();
+}
+
+// ****************************************************************************
+//  Method:  QvisParallelAxisPlotWindow::moveAxisDown
+//
+//  Purpose:
+//    move the currently selected variable (i.e. axis) down in the list
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 16, 2007
+//
+// ****************************************************************************
+
+void
+QvisParallelAxisPlotWindow::moveAxisDown()
+{
+    int index = axisList->currentItem();
+
+    // verify something is selected
+    if (index < 0)
+        return;
+
+    // must make a local copy
+    stringVector axes = atts->GetOrderedAxisNames();
+    int naxes = axes.size();
+ 
+    // can't move last axis down in list
+    if (index >= axes.size()-1)
+        return;
+
+    // InsertAxis() will reorder axes already in the list, so we
+    // just insert all the changed ones in the new desired order
+    atts->InsertAxis(axes[index+1]);
+    atts->InsertAxis(axes[index]);
+    for (int i=index+2; i<naxes; i++)
+        atts->InsertAxis(axes[i]);
+
+    // Done; apply changes
+    Apply();
+}
+
+// ****************************************************************************
+//  Method:  QvisParallelAxisPlotWindow::contextGammaSliderChanged
+//
+//  Purpose:
+//    Set the gamma based on the integral gamma slider position
+//
+//  Arguments:
+//    val        the position of the slider (currently [0,100])
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 16, 2007
+//
+// ****************************************************************************
+
+void
+QvisParallelAxisPlotWindow::contextGammaSliderChanged(int val)
+{
+    float gamma = pow(10,float(val/50.)-1);
+    //old: gamma = 0.1 * float(val);
+
+    // round:
+    gamma = int(gamma*100+.5)/100.;
+
+    // set the attributes
+    atts->SetContextGamma(gamma);
+
+    // Set the value in the line edit.
+    QString tmp;
+    tmp.sprintf("%.2f", gamma);
+    contextGamma->setText(tmp);
+}
+
+// ****************************************************************************
+//  Method:  QvisParallelAxisPlotWindow::contextGammaSliderReleased
+//
+//  Purpose:
+//    When the slider is released, update the plot atts as necessary.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 16, 2007
+//
+// ****************************************************************************
+
+void
+QvisParallelAxisPlotWindow::contextGammaSliderReleased()
+{
+    Apply();
+}
+
+
+// ****************************************************************************
+//  Method:  QvisParallelAxisPlotWindow::contextNumPartitionsSliderChanged
+//
+//  Purpose:
+//    Set the number of partitions based on the integral slider position
+//
+//  Arguments:
+//    val        the position of the slider (currently [1,10])
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 16, 2007
+//
+// ****************************************************************************
+
+void
+QvisParallelAxisPlotWindow::contextNumPartitionsSliderChanged(int val)
+{
+    int nparts = 1<<val;
+    atts->SetContextNumPartitions(nparts);
+
+    // Set the value in the line edit.
+    QString tmp;
+    tmp.sprintf("%d", nparts);
+    contextNumPartitions->setText(tmp);
+}
+
+// ****************************************************************************
+//  Method:  QvisParallelAxisPlotWindow::contextNumPartitionsSliderReleased
+//
+//  Purpose:
+//    When the slider is released, update the plot atts as necessary.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 16, 2007
+//
+// ****************************************************************************
+
+void
+QvisParallelAxisPlotWindow::contextNumPartitionsSliderReleased()
+{
+    Apply();
 }

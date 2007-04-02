@@ -278,6 +278,10 @@ avtParallelAxisFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
 //     Mark Blair, Fri Feb 23 12:19:33 PST 2007
 //     Now supports all variable axis spacing and axis group conventions.
 //
+//     Jeremy Meredith, Fri Mar 16 13:50:26 EDT 2007
+//     Create colormap labels from both the datacurve/annotation labels and
+//     the context labels.  Also initialize the context accumulation bins.
+//
 // *****************************************************************************
 
 void
@@ -376,7 +380,23 @@ avtParallelAxisFilter::PreExecute(void)
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
    
     CreateLabels();
-    outAtts.SetLabels(layerLabels);
+
+    // We need to create the colormap labels from the line, annotation,
+    // and context labels.  This ordering must match what's created
+    // in the avtParallelAxisPlot, and the intent is that the context
+    // is drawn underneath the annotations and individual lines.
+    stringVector colorMapLabels;
+    colorMapLabels.insert(colorMapLabels.end(),
+                          contextLabels.begin(),contextLabels.end());
+    colorMapLabels.insert(colorMapLabels.end(),
+                          curveAndAxisLabels.begin(),curveAndAxisLabels.end());
+    outAtts.SetLabels(colorMapLabels);
+    
+    // initialize things needed for drawing the context
+    if (parAxisAtts.GetDrawContext())
+    {
+        InitializePairwiseBins();
+    }
 }
 
 
@@ -393,6 +413,9 @@ avtParallelAxisFilter::PreExecute(void)
 //
 //     Mark Blair, Fri Feb 23 12:19:33 PST 2007
 //     Axis attribute for outside queries now stored after filter is executed.
+//
+//     Jeremy Meredith, Fri Mar 16 13:50:26 EDT 2007
+//     Draw the context, and clean up.
 //
 // ****************************************************************************
 
@@ -431,9 +454,16 @@ avtParallelAxisFilter::PostExecute(void)
     outAtts.SetXLabel("");
     outAtts.SetYLabel("");
 
-    outAtts.SetXUnits(""); outAtts.SetYUnits("");
+    outAtts.SetXUnits("");
+    outAtts.SetYUnits("");
 
     StoreAxisAttributesForOutsideQueries();
+
+    if (parAxisAtts.GetDrawContext())
+    {
+        DrawContext();
+        CleanUpPairwiseBins();
+    }
 }
 
 // ****************************************************************************
@@ -462,6 +492,11 @@ avtParallelAxisFilter::PostExecute(void)
 //
 //     Mark Blair, Fri Feb 23 12:19:33 PST 2007
 //     Now supports all variable axis spacing and axis group conventions.
+//
+//     Jeremy Meredith, Fri Mar 16 13:50:26 EDT 2007
+//     Count each tuple in the appropriate pairwise axis bins.
+//     Avoid drawing data curves (lines) if we didn't ask for them.
+//     Renamed data set labels specific to data curves and axis annotations.
 //
 // ****************************************************************************
 
@@ -629,6 +664,7 @@ avtParallelAxisFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string lab
             }
             
             InputDataTuple(inputTuple);
+            CountDataTuple(inputTuple);
         }
     }
     else
@@ -646,6 +682,7 @@ avtParallelAxisFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string lab
             }
             
             InputDataTuple(inputTuple);
+            CountDataTuple(inputTuple);
         }
     }
 
@@ -654,7 +691,10 @@ avtParallelAxisFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string lab
         pointIdList->Delete();
     }
 
-    DrawDataCurves();
+    if (parAxisAtts.GetDrawLines())
+    {
+        DrawDataCurves();
+    }
 
     if (parallelRank == 0)
     {
@@ -676,7 +716,7 @@ avtParallelAxisFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string lab
     outputDataSets[3] = subrangePolyData;
 
     avtDataTree *outputDataTree =
-        new avtDataTree(4, outputDataSets, domain, layerLabels);
+        new avtDataTree(4, outputDataSets, domain, curveAndAxisLabels);
 
     outputDataSets[0]->Delete();
     outputDataSets[1]->Delete();
@@ -712,31 +752,44 @@ avtParallelAxisFilter::RefashionDataObjectInfo(void)
 
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
 
-    outAtts.SetSpatialDimension (2);
+    outAtts.SetSpatialDimension(2);
 }
 
 
 // ****************************************************************************
 //  Method: avtParallelAxisFilter::CreateLabels
 //
-//  Purpose: (Probably unnecessary; vestigial holdover from a bygone era).
+//  Purpose: Create the labels to be used for the data set arrays.
+//           These are also concatenated into colormap labels elsewhere
+//           in this filter.
 //
 //  Programmer: Mark Blair
 //  Creation:   Mon Mar 27 18:24:00 PST 2006
 //
 //  Modifications:
+//    Jeremy Meredith, Fri Mar 16 13:54:09 EDT 2007
+//    Also create labels for the context data sets.  Renamed the old labels
+//    so it's clear they are specific to the data curves and axes annotations.
 //
 // ****************************************************************************
 
 void
 avtParallelAxisFilter::CreateLabels()
 {
-    layerLabels.clear();
+    curveAndAxisLabels.clear();
 
-    layerLabels.push_back("Data Curves");
-    layerLabels.push_back("Axes and Bounds");
-    layerLabels.push_back("Axis Titles");
-    layerLabels.push_back("Selector Arrows");
+    curveAndAxisLabels.push_back("Data Curves");
+    curveAndAxisLabels.push_back("Axes and Bounds");
+    curveAndAxisLabels.push_back("Axis Titles");
+    curveAndAxisLabels.push_back("Selector Arrows");
+
+    char str[100];
+    contextLabels.clear();
+    for (int i=0; i<PCP_CTX_BRIGHTNESS_LEVELS; i++)
+    {
+        sprintf(str, "Data Context %03d", i);
+        contextLabels.push_back(str);
+    }
 }
 
 
@@ -1468,6 +1521,53 @@ avtParallelAxisFilter::InputDataTuple(const floatVector &inputTuple)
 
 
 // *****************************************************************************
+// Method: avtParallelAxisFilter::CountDataTuple
+//
+// Purpose: Takes the n-dimensional data tuple and increments the appropriate
+//          bin for each pair of consecutive axes.
+//
+// Programmer: Jeremy Meredith
+// Creation:   March 14, 2007
+//
+// Modifications:
+// *****************************************************************************
+
+void
+avtParallelAxisFilter::CountDataTuple(const floatVector &inputTuple)
+{
+    if (!parAxisAtts.GetDrawContext())
+        return;
+
+    int nparts = parAxisAtts.GetContextNumPartitions();
+    int axisID;
+    for (axisID = 0; axisID < axisCount-1; axisID++)
+    {
+        int a0 = axisID;
+        int a1 = axisID+1;
+        // Normalize the raw values to [0,1]
+        float v0 = ((inputTuple[a0] - plotAxisMinima[a0]) / 
+                    (plotAxisMaxima[a0] - plotAxisMinima[a0]));
+        float v1 = ((inputTuple[a1] - plotAxisMinima[a1]) / 
+                    (plotAxisMaxima[a1] - plotAxisMinima[a1]));
+        // Convert to [0,nparts]
+        int i0 = int(nparts*v0);
+        int i1 = int(nparts*v1);
+        // Clamp to [0,nparts)
+        if (i0<0)
+            i0=0;
+        if (i0>=nparts)
+            i0=nparts-1;
+        if (i1<0)
+            i1=0;
+        if (i1>=nparts)
+            i1=nparts-1;
+        // Increment the bin
+        binnedAxisCounts[axisID][i0*nparts+i1]++;
+    }
+}
+
+
+// *****************************************************************************
 // Method: avtParallelAxisFilter::DrawDataCurves
 //
 // Purpose: Draws the n-vertex polylines that represent the n-dimensional data
@@ -1480,6 +1580,9 @@ avtParallelAxisFilter::InputDataTuple(const floatVector &inputTuple)
 // Creation:   Thu Jun  8 17:18:00 PDT 2006
 //
 // Modifications:
+//    Jeremy Meredith, Thu Mar  1 13:34:58 EST 2007
+//    Disabled verts.  They're not visible under the lines and they
+//    will slow things down if we add them.
 //
 // *****************************************************************************
 
@@ -1502,10 +1605,10 @@ avtParallelAxisFilter::DrawDataCurves()
             vtkPointIDs[1] = vtkPointIDs[0] + 1;
 
             dataCurveLines->InsertNextCell(2, vtkPointIDs);
-            dataCurveVerts->InsertNextCell(1, vtkPointIDs);
+            //dataCurveVerts->InsertNextCell(1, vtkPointIDs);
         }
 
-        dataCurveVerts->InsertNextCell(1, &vtkPointIDs[1]);
+        //dataCurveVerts->InsertNextCell(1, &vtkPointIDs[1]);
     }
 }
 
@@ -1974,3 +2077,209 @@ avtParallelAxisFilter::DrawDataSubrangeBounds()
 
     delete strokeList;
 }
+
+// ****************************************************************************
+//  Method:  avtParallelAxisFilter::DrawContext
+//
+//  Purpose:
+//    Draw the parallel axis context bins.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 14, 2007
+//
+// ****************************************************************************
+
+void
+avtParallelAxisFilter::DrawContext()
+{
+    int nparts = parAxisAtts.GetContextNumPartitions();
+
+#ifdef PARALLEL
+    int binsize = nparts*nparts;
+    int *newbin = new int[binsize];
+    for (int axis=0; axis<axisCount; axis++)
+    {
+        int *oldbin = binnedAxisCounts[axis];
+        SumIntArrayAcrossAllProcessors(oldbin, newbin, binsize);
+        binnedAxisCounts[axis] = newbin;
+        newbin = oldbin;
+    }
+    delete[] newbin;
+
+    if (PAR_Rank() != 0)
+    {
+        // only process 0 has to draw the context
+        return;
+    }
+#endif
+
+    vtkPolyData        *dataContextPolyData[PCP_CTX_BRIGHTNESS_LEVELS];
+    vtkPoints          *dataContextPoints[PCP_CTX_BRIGHTNESS_LEVELS];
+    vtkCellArray       *dataContextLines[PCP_CTX_BRIGHTNESS_LEVELS];
+    vtkCellArray       *dataContextVerts[PCP_CTX_BRIGHTNESS_LEVELS];
+    vtkCellArray       *dataContextPolys[PCP_CTX_BRIGHTNESS_LEVELS];
+
+    //
+    //  Initialize polygon datasets for the context.
+    //
+    for (int i=0; i<PCP_CTX_BRIGHTNESS_LEVELS; i++)
+    {
+        dataContextPolyData[i] = vtkPolyData::New();
+
+        dataContextPoints[i] = vtkPoints::New();
+        dataContextPolyData[i]->SetPoints(dataContextPoints[i]);
+        dataContextPoints[i]->Delete();
+
+        dataContextLines[i] = vtkCellArray::New();
+        dataContextPolyData[i]->SetLines(dataContextLines[i]);
+        dataContextLines[i]->Delete();
+
+        dataContextVerts[i] = vtkCellArray::New();
+        dataContextPolyData[i]->SetVerts(dataContextVerts[i]);
+        dataContextVerts[i]->Delete();
+
+        dataContextPolys[i] = vtkCellArray::New();
+        dataContextPolyData[i]->SetPolys(dataContextPolys[i]);
+        dataContextPolys[i]->Delete();
+    }
+
+    for (int part = 0 ; part <= nparts ; part++)
+    {
+        for (int axisNum = 0; axisNum < axisCount; axisNum++)
+        {
+            float varmin = plotAxisMinima[axisNum];
+            float varmax = plotAxisMaxima[axisNum];
+            float val = varmin+part*((varmax-varmin)/float(nparts));
+
+            float pt[3];
+            pt[0] = dataTransforms[axisNum][0];
+            pt[1] = dataTransforms[axisNum][1]*val+dataTransforms[axisNum][2];
+            pt[2] = 0.0;
+            for (int i = 0 ; i < PCP_CTX_BRIGHTNESS_LEVELS ; i++)
+            {
+                dataContextPoints[i]->InsertNextPoint(pt);
+            }
+        }
+    }
+
+    float gamma = parAxisAtts.GetContextGamma();
+    if (gamma<.1)
+        gamma=.1;
+    if (gamma>10)
+        gamma=10;
+
+    for (int axis = 0; axis < axisCount-1; axis++)
+    {
+        // Find the maximum count in the bins
+        int maxcount = 0;
+        for (int bin=0; bin<nparts*nparts; bin++)
+        {
+            if (binnedAxisCounts[axis][bin] > maxcount)
+                maxcount = binnedAxisCounts[axis][bin];
+        }
+        // Draw each bin as a polygon in the appropriately
+        // colored (and layered) context polydata
+        for (int a=0; a<nparts; a++)
+        {
+            for (int b=0; b<nparts; b++)
+            {
+                float alpha = float(binnedAxisCounts[axis][a*nparts+b]) /
+                              float(maxcount);
+
+                alpha = pow(alpha,1./gamma);
+
+                int c = int(float(PCP_CTX_BRIGHTNESS_LEVELS-1) * alpha);
+
+                if (c != 0)
+                {
+                    vtkIdType poly[4];
+                    poly[0] = axis + axisCount * a;
+                    poly[1] = (axis+1) + axisCount * b;
+                    poly[2] = poly[1] + axisCount;
+                    poly[3] = poly[0] + axisCount;
+                    dataContextPolys[c]->InsertNextCell(4, poly);
+                }
+            }
+        }
+    }
+
+    // We have to explicitly convert these into base types
+    vtkDataSet **outputDataSets = new vtkDataSet*[PCP_CTX_BRIGHTNESS_LEVELS];
+    for (int i=0; i<PCP_CTX_BRIGHTNESS_LEVELS; i++)
+        outputDataSets[i] = dataContextPolyData[i];
+
+    // Add them to a data tree
+    avtDataTree_p contextTree = new avtDataTree(PCP_CTX_BRIGHTNESS_LEVELS,
+                                                outputDataSets,
+                                                -1, contextLabels);
+    for (int i=0; i<PCP_CTX_BRIGHTNESS_LEVELS; i++)
+        outputDataSets[i]->Delete();
+    delete [] outputDataSets;
+
+    // Make a new data tree with the context first and lines second
+    // so that the lines are drawn on top of the context
+    avtDataTree_p linesTree = GetDataTree();
+    avtDataTree_p trees[2] = { contextTree, linesTree };
+    avtDataTree_p newOutput = new avtDataTree(2, trees);
+    SetOutputDataTree(newOutput);
+}
+
+
+// ****************************************************************************
+//  Method:  avtParallelAxisFilter::InitializePairwiseBins
+//
+//  Purpose:
+//    Allocate arrays to hold counts of binned data.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 16, 2007
+//
+// ****************************************************************************
+
+void
+avtParallelAxisFilter::InitializePairwiseBins()
+{
+    int nparts = parAxisAtts.GetContextNumPartitions();
+    binnedAxisCounts = new int*[axisCount];
+    for (int i=0; i<axisCount; i++)
+    {
+        // initialize counts to zero
+        int size = nparts*nparts;
+        binnedAxisCounts[i] = new int[size];
+        for (int j=0; j<size; j++)
+            binnedAxisCounts[i][j] = 0;
+    }
+}
+
+// ****************************************************************************
+//  Method:  avtParallelAxisFilter::CleanUpPairwiseBins
+//
+//  Purpose:
+//    Free data allocated to hold the bins for the context.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 16, 2007
+//
+// ****************************************************************************
+
+void
+avtParallelAxisFilter::CleanUpPairwiseBins()
+{
+    for (int i=0; i<axisCount; i++)
+    {
+        delete[] binnedAxisCounts[i];
+    }
+    delete[] binnedAxisCounts;
+    binnedAxisCounts = NULL;
+}
+
+
