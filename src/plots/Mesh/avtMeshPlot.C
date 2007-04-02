@@ -1145,13 +1145,16 @@ avtMeshPlot::ShouldRenderOpaque(void)
 // Creation:   Thu Jul 21 15:24:25 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Aug 25 10:13:40 PDT 2005
+//   Added sphere points.
+//
 // ****************************************************************************
 
 void
 avtMeshPlot::SetPointGlyphSize()
 {
     // Size used for points when using a point glyph.
-    if(atts.GetPointType() == MeshAttributes::Point)
+    if(atts.GetPointType() == MeshAttributes::Point ||
+       atts.GetPointType() == MeshAttributes::Sphere)
         glyphMapper->SetPointSize(atts.GetPointSizePixels());
 }

@@ -855,14 +855,17 @@ avtPseudocolorPlot::SetLegendRanges()
 // Creation:   Thu Jul 21 15:24:25 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Aug 25 10:15:01 PDT 2005
+//   Added sphere points.
+//
 // ****************************************************************************
 
 void
 avtPseudocolorPlot::SetPointGlyphSize()
 {
     // Size used for points when using a point glyph.
-    if(atts.GetPointType() == PseudocolorAttributes::Point)
+    if(atts.GetPointType() == PseudocolorAttributes::Point ||
+       atts.GetPointType() == PseudocolorAttributes::Sphere)
         glyphMapper->SetPointSize(atts.GetPointSizePixels());
 }
 

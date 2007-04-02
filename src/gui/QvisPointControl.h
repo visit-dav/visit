@@ -4,9 +4,9 @@
 #include <qwidget.h>
 
 class QCheckBox;
+class QComboBox;
 class QLabel;
 class QLineEdit;
-class QButtonGroup;
 class QvisVariableButton;
 
 // ****************************************************************************
@@ -28,6 +28,9 @@ class QvisVariableButton;
 //   Brad Whitlock, Wed Jul 20 13:44:39 PST 2005
 //   Added a control for setting the point size in terms of pixels for
 //   when we render the points as points.
+//
+//   Brad Whitlock, Thu Aug 25 09:29:56 PDT 2005
+//   I changed the point size from a button group to a combo box.
 //
 // ****************************************************************************
 
@@ -62,7 +65,7 @@ private slots:
     void processSizeText();
     void sizeVarChanged(const QString &);
     void sizeVarToggled(bool on);
-    void typeButtonChanged(int);
+    void typeComboBoxChanged(int);
 
 private:
     void UpdateSizeText();
@@ -73,7 +76,7 @@ private:
     QLineEdit              *sizeLineEdit;
     QCheckBox              *sizeVarToggle;
     QvisVariableButton     *sizeVarButton;
-    QButtonGroup           *typeButtons;
+    QComboBox              *typeComboBox;
 
     int                     lastGoodPointType;
     double                  lastGoodSize;

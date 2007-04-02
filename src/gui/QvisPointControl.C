@@ -1,7 +1,7 @@
 #include <QvisPointControl.h>
 
-#include <qbuttongroup.h>
 #include <qcheckbox.h>
+#include <qcombobox.h>
 #include <qlabel.h>
 #include <qlayout.h>
 #include <qlineedit.h>
@@ -9,6 +9,7 @@
 #include <QvisVariableButton.h>
 
 #define POINT_TYPE_POINTS 3
+#define POINT_TYPE_SPHERE 4
 
 // ****************************************************************************
 // Method: QvisPointControl::QvisPointControl
@@ -24,6 +25,9 @@
 //
 //    Brad Whitlock, Wed Jul 20 13:48:43 PST 2005
 //    Initialize lastGoodSizePixels.
+//
+//    Brad Whitlock, Thu Aug 25 09:31:41 PDT 2005
+//    I replaced the buttongroup with a combobox.
 //
 // ****************************************************************************
 
@@ -64,27 +68,17 @@ QvisPointControl::QvisPointControl(QWidget *parent, const char *name) :
             this, SLOT(sizeVarToggled(bool)));
     topLayout->addMultiCellWidget(sizeVarToggle, 1,1, 0,1);
 
-    // Create the type buttons
-    typeButtons = new QButtonGroup(0, "typeButtons");
-    connect(typeButtons, SIGNAL(clicked(int)),
-            this, SLOT(typeButtonChanged(int)));
-    QGridLayout *typeLayout = new QGridLayout(1, 5);
-    typeLayout->setSpacing(10);
-    typeLayout->setColStretch(4, 1000);
-    typeLayout->addWidget(new QLabel("Point Type", this), 0,0);
-    QRadioButton *rb = new QRadioButton("Box", this, "Box");
-    typeButtons->insert(rb);
-    typeLayout->addWidget(rb, 0, 1);
-    rb = new QRadioButton("Axis", this, "Axis");
-    typeButtons->insert(rb);
-    typeLayout->addWidget(rb, 0, 2);
-    rb = new QRadioButton("Icosahedron", this, "Icosahedron");
-    typeButtons->insert(rb);
-    typeLayout->addWidget(rb, 0, 3);
-    rb = new QRadioButton("Point", this, "Point");
-    typeButtons->insert(rb);
-    typeLayout->addWidget(rb, 0, 4);
-    topLayout->addMultiCellLayout(typeLayout, 2,2 , 0,3);
+    // Create the type combo box
+    typeComboBox = new QComboBox(this, "typeComboBox");
+    typeComboBox->insertItem("Box");
+    typeComboBox->insertItem("Axis");
+    typeComboBox->insertItem("Isocahedron");
+    typeComboBox->insertItem("Point");
+    typeComboBox->insertItem("Sphere");
+    connect(typeComboBox, SIGNAL(activated(int)),
+            this, SLOT(typeComboBoxChanged(int)));
+    topLayout->addWidget(new QLabel("Point Type", this), 2, 0);
+    topLayout->addMultiCellWidget(typeComboBox, 2,2 , 1,3);
 
     SetPointSize(lastGoodSize);
     SetPointSizeVar(lastGoodVar);
@@ -123,6 +117,9 @@ QvisPointControl::~QvisPointControl()
 //   Brad Whitlock, Wed Jul 20 13:53:17 PST 2005
 //   Made it use ProcessSizeText.
 //
+//   Brad Whitlock, Thu Aug 25 09:52:13 PDT 2005
+//   Added support for sphere points.
+//
 // ****************************************************************************
 
 void
@@ -132,8 +129,11 @@ QvisPointControl::processSizeText()
     {
         if(!signalsBlocked())
         {
-            if(lastGoodPointType == POINT_TYPE_POINTS)
+            if(lastGoodPointType == POINT_TYPE_POINTS ||
+               lastGoodPointType == POINT_TYPE_SPHERE)
+            {
                 emit pointSizePixelsChanged(lastGoodSizePixels);
+            }
             else
                 emit pointSizeChanged(lastGoodSize);
         }
@@ -157,7 +157,9 @@ QvisPointControl::processSizeText()
 // Creation:   Wed Jul 20 14:49:19 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Aug 25 09:51:31 PDT 2005
+//   Added support for sphere points.
+//
 // ****************************************************************************
 
 bool
@@ -166,7 +168,8 @@ QvisPointControl::ProcessSizeText(int pointType)
     QString temp = sizeLineEdit->displayText().stripWhiteSpace();
     bool okay = !temp.isEmpty();
 
-    if(pointType == POINT_TYPE_POINTS)
+    if(pointType == POINT_TYPE_POINTS ||
+       pointType == POINT_TYPE_SPHERE)
     {
         int val;
         if (okay)
@@ -226,13 +229,16 @@ QvisPointControl::GetPointSize()
 // Creation:   Wed Jul 20 14:49:00 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Aug 25 09:49:50 PDT 2005
+//   Added support for sphere points.
+//
 // ****************************************************************************
 
 int
 QvisPointControl::GetPointSizePixels() 
 {
-    if(lastGoodPointType == POINT_TYPE_POINTS)
+    if(lastGoodPointType == POINT_TYPE_POINTS ||
+       lastGoodPointType == POINT_TYPE_SPHERE)
     {
         blockSignals(true);
         ProcessSizeText(lastGoodPointType);
@@ -292,7 +298,7 @@ QvisPointControl::GetPointSizeVar()
 }
 
 // ****************************************************************************
-//  Method:  QvisPointControl::pointTypeChanged
+//  Method:  QvisPointControl::typeComboBoxChanged
 //
 //  Purpose:
 //    Qt slot function that is called when one of the point type buttons
@@ -314,7 +320,7 @@ QvisPointControl::GetPointSizeVar()
 // ****************************************************************************
 
 void
-QvisPointControl::typeButtonChanged(int type)
+QvisPointControl::typeComboBoxChanged(int type)
 {
     // Get the values that are in the text field.
     ProcessSizeText(lastGoodPointType);
@@ -523,6 +529,9 @@ void QvisPointControl::SetPointSizeVar(QString &var)
 //   Brad Whitlock, Wed Jul 20 14:13:43 PST 2005
 //   I made it set the lastGoodPointType and update the text.
 //
+//   Brad Whitlock, Thu Aug 25 09:57:49 PDT 2005
+//   Changed to a combobox.
+//
 // ****************************************************************************
 
 void QvisPointControl::SetPointType(int type)
@@ -530,9 +539,9 @@ void QvisPointControl::SetPointType(int type)
     if (type < 0 || type > 3)
         return;
 
-    typeButtons->blockSignals(true);
-    typeButtons->setButton(type);
-    typeButtons->blockSignals(false);
+    typeComboBox->blockSignals(true);
+    typeComboBox->setCurrentItem(type);
+    typeComboBox->blockSignals(false);
 
     lastGoodPointType = type;
     UpdateSizeText();
@@ -555,18 +564,26 @@ void QvisPointControl::SetPointType(int type)
 //   Kathleen Bonnell, Mon Jul 25 17:27:52 PDT 2005
 //   Make enabled state of sizeVarButton depend on checked state of
 //   sizeVarToggle.
-// 
+//
+//   Brad Whitlock, Thu Aug 25 09:58:49 PDT 2005
+//   Added support for sphere points.
+//
 // ****************************************************************************
 
 void
 QvisPointControl::UpdatePointType()
 {
-    if(lastGoodPointType != POINT_TYPE_POINTS)
+    bool e = false;
+    if(lastGoodPointType != POINT_TYPE_POINTS &&
+       lastGoodPointType != POINT_TYPE_SPHERE)
+    {
         sizeLabel->setText("Point size");
+        e = true;
+    }
     else
         sizeLabel->setText("Point size (pixels)");
 
-    sizeVarToggle->setEnabled(lastGoodPointType != POINT_TYPE_POINTS);
+    sizeVarToggle->setEnabled(e);
     sizeVarButton->setEnabled(sizeVarToggle->isChecked());
 }
 
@@ -583,15 +600,14 @@ QvisPointControl::UpdatePointType()
 //   Brad Whitlock, Wed Dec 15 11:12:52 PDT 2004
 //   Made it work with older versions of Qt.
 //
+//   Brad Whitlock, Thu Aug 25 10:03:41 PDT 2005
+//   Changed to a combobox.
+//
 // ****************************************************************************
 
 int
 QvisPointControl::GetPointType() const
 {
-#if QT_VERSION >= 0x030200
-    return typeButtons->selectedId();
-#else
-    return typeButtons->id(typeButtons->selected());
-#endif
+    return typeComboBox->currentItem();
 }
 

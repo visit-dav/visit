@@ -9,6 +9,7 @@
 #include <vtkDataSetMapper.h>
 #include <vtkLookupTable.h>
 
+#include <vtkVisItDataSetMapper.h>
 
 // ****************************************************************************
 //  Method: avtVariablePointGlyphMapper constructor
@@ -57,6 +58,8 @@ avtVariablePointGlyphMapper::~avtVariablePointGlyphMapper()
 //  Creation:   November 12, 2004
 //
 //  Modifications:
+//    Brad Whitlock, Thu Aug 25 15:18:17 PST 2005
+//    Added support for point texturing.
 //
 // ****************************************************************************
 
@@ -97,6 +100,31 @@ avtVariablePointGlyphMapper::CustomizeMappers(void)
     if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
     {
         CustomizeGlyphs(GetInput()->GetInfo().GetAttributes().GetSpatialDimension());
+
+        //
+        // Set the appropriate point texturing mode based on the glyph type.
+        // This might not be the best VTK way to do it because we have to have
+        // a little knowledge about which type of mapper was created but
+        // it seems a lot more efficient to enhance the mapper than to create
+        // some special textured glyph or have an actor for each point. Since
+        // I'm changing the mapper and there's no base class support for
+        // anything like this, I have to cast to the concrete types that
+        // I care about.
+        //
+        for (int i = 0; i < nMappers; i++)
+        {
+            if (mappers[i] != NULL)
+            {
+                if(strcmp(mappers[i]->GetClassName(), 
+                          "vtkVisItDataSetMapper") == 0)
+                {
+                    vtkVisItDataSetMapper *dsm = (vtkVisItDataSetMapper *)mappers[i];
+                    dsm->SetPointTextureMethod(glyphType == 4 ?
+                         vtkVisItDataSetMapper::TEXTURE_USING_POINTSPRITES :
+                         vtkVisItDataSetMapper::TEXTURE_NO_POINTS);
+                }
+            }
+        }
 
         if (!colorByScalar)
             ColorBySingleColor(singleColor);
@@ -309,13 +337,15 @@ avtVariablePointGlyphMapper::ScaleByVar(const string &sname)
 // Creation:   Fri Jul 22 11:17:08 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Aug 25 10:26:57 PDT 2005
+//   Added support for sphere glyphs.
+//
 // ****************************************************************************
 
 void
 avtVariablePointGlyphMapper::SetGlyphType(const int type)
 {
-    if (type < 0 || type > 3) 
+    if (type < 0 || type > 4) 
         return; 
 
     if (glyphType != type)
@@ -324,7 +354,8 @@ avtVariablePointGlyphMapper::SetGlyphType(const int type)
         // glyphing mode then change the mapper's input accordingly.
         // We do this switch so we don't have to glyph points but we
         // can still switch from points to glyphs and vice versa.
-        if(nMappers > 0 && (glyphType == 3 || type == 3))
+        if(nMappers > 0 && 
+          (glyphType == 3 || type == 3 || glyphType == 4 || type == 4))
         {
             avtDataObject_p input = GetInput();
             if (*input != NULL)

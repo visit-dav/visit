@@ -26,6 +26,7 @@
         Axis
         Icosahedron
         Point
+        Sphere
       </Enum>
       <Field name="legendFlag" label="Legend" type="bool">
         true

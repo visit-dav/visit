@@ -216,7 +216,6 @@ avtPointGlypher::SetUpGlyphs(int nGlyphs)
 //  Creation:   August 19, 2004 
 //
 //  Modifications:
-//
 //    Hank Childs, Wed Nov 10 11:27:23 PST 2004
 //    Do not glyphs points when our glyph type is "point".
 //
@@ -224,12 +223,15 @@ avtPointGlypher::SetUpGlyphs(int nGlyphs)
 //    Added spatDim argument, since this is no longer derived from avtMapper,
 //    and so 'GetInput' no longer is available. 
 //
+//    Brad Whitlock, Thu Aug 25 10:24:49 PDT 2005
+//    Added support for sphere points.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtPointGlypher::InsertGlyphs(vtkDataSet *ds, int whichGlyph, int spatDim)
 {
-    if (glyphType == 3) // Point
+    if (glyphType == 3 || glyphType == 4) // Point, Sphere
         return ds;
 
     if (whichGlyph < 0 || whichGlyph >= nGlyphFilters)
@@ -305,19 +307,21 @@ avtPointGlypher::SetScale(float s)
 //    Sets Glyph type, makes sure the glyph filters know about the new type. 
 //
 //  Arguments:
-//    type    The new type. (valid values 0 .. 3 )
+//    type    The new type. (valid values 0 .. 4 )
 //
 //  Programmer: Kathleen Bonnell 
 //  Creation:   August 19, 2004
 //
 //  Modifications:
+//    Brad Whitlock, Thu Aug 25 10:25:14 PDT 2005
+//    Added support for sphere points.
 //
 // ****************************************************************************
 
 void
 avtPointGlypher::SetGlyphType(const int type)
 {
-    if (type < 0 || type > 3) 
+    if (type < 0 || type > 4) 
         return; 
 
     if (glyphType != type)
@@ -352,6 +356,8 @@ avtPointGlypher::SetGlyphType(const int type)
 //  Creation:   August 19, 2004
 //
 //  Modifications:
+//    Brad Whitlock, Thu Aug 25 10:23:23 PDT 2005
+//    Added support for sphere glyphs.
 //
 // ****************************************************************************
 
@@ -551,7 +557,8 @@ avtPointGlypher::SetUpGlyph(void)
             glyph2D->InsertNextCell(VTK_TRIANGLE, 3, tri);
         }
     }
-    else if (glyphType == 3)  // POINT
+    else if (glyphType == 3 || // POINT
+             glyphType == 4)   // SPHERE (textured onto a point)
     {
         vtkPoints *pts = vtkPoints::New();
         pts->SetNumberOfPoints(1);

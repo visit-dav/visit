@@ -82,7 +82,9 @@ QvisScatterPlotWindow::~QvisScatterPlotWindow()
 // Creation:   Fri Nov 19 14:32:22 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Aug 25 10:06:06 PDT 2005
+//   Added a Sphere option for the point type.
+//
 // ****************************************************************************
 
 void
@@ -431,6 +433,7 @@ QvisScatterPlotWindow::CreateWindowContents()
     pointType->insertItem("Axis");
     pointType->insertItem("Isocahedron");
     pointType->insertItem("Point");
+    pointType->insertItem("Sphere");
     connect(pointType, SIGNAL(activated(int)),
             this, SLOT(pointTypeChanged(int)));
     aLayout->addWidget(pointType, 1, 1);
@@ -508,6 +511,9 @@ QvisScatterPlotWindow::CreateWindowContents()
 // Modifications:
 //   Brad Whitlock, Wed Jul 20 15:30:52 PST 2005
 //   I added pointSizePixels.
+//
+//   Brad Whitlock, Thu Aug 25 10:07:12 PDT 2005
+//   I added the Sphere point type.
 //
 // ****************************************************************************
 
@@ -773,7 +779,8 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
 
     if(updatePointSize)
     {
-        if(atts->GetPointType() != ScatterAttributes::Point)
+        if(atts->GetPointType() != ScatterAttributes::Point &&
+           atts->GetPointType() != ScatterAttributes::Sphere)
         {
             temp.sprintf("%g", atts->GetPointSize());
             pointSize->setText(temp);
@@ -860,6 +867,9 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
 // Modifications:
 //   Brad Whitlock, Wed Jul 20 15:27:52 PST 2005
 //   I made the point size be read differently based on its type.
+//
+//   Brad Whitlock, Thu Aug 25 10:08:02 PDT 2005
+//   Added the Sphere point type.
 //
 // ****************************************************************************
 
@@ -1222,7 +1232,8 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
     {
         temp = pointSize->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
-        if(atts->GetPointType() == ScatterAttributes::Point)
+        if(atts->GetPointType() == ScatterAttributes::Point ||
+           atts->GetPointType() == ScatterAttributes::Sphere)
         {
             if(okay)
             {

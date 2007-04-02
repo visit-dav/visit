@@ -6,6 +6,7 @@
         Axis
         Icosahedron
         Point
+        Sphere
       </Enum>
       <Enum name="SmoothingLevel">
         None
