@@ -61,6 +61,7 @@
 #include <InvalidFilesException.h>
 #include <InvalidDBTypeException.h>
 
+#define BL_SPACEDIM 3
 #include <VisMF.H>
 
 using std::vector;

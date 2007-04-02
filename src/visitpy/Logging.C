@@ -4,6 +4,7 @@
 #include <PlotPluginInfo.h>
 #include <OperatorPluginManager.h>
 #include <OperatorPluginInfo.h>
+#include <DebugStream.h>
 #include <snprintf.h>
 #include <visit-config.h>
 
@@ -663,6 +664,22 @@ static void log_SetKeyframeAttributesRPC(ViewerRPC *rpc, char *str)
     SNPRINTF(str, SLEN, "%sSetKeyframeAttributes(KeyframeAtts)\n", s.c_str());
 }
 
+// ****************************************************************************
+// Method: log_SetPlotSILRestrictionRPC
+//
+// Purpose: 
+//   Logs changes to the SIL restriction.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 11 09:55:18 PDT 2006
+//
+// Modifications:
+//   Brad Whitlock, Wed Jan 11 09:55:42 PDT 2006
+//   I removed a call to the SIL traverser's UsesAllData method because it
+//   was causing a crash sometimes.
+//
+// ****************************************************************************
+
 static void log_SetPlotSILRestrictionRPC(ViewerRPC *rpc, char *str)
 {
     std::string s("silr = SILRestriction()\n");
@@ -675,7 +692,7 @@ static void log_SetPlotSILRestrictionRPC(ViewerRPC *rpc, char *str)
         nsets[trav.UsesData(setid)?1:0]++;
     }
 
-    if(trav.UsesAllData())
+    if(nsets[1] == restriction->GetNumSets())
     {
         s += "silr.TurnOnAll()\n";
     }
@@ -2027,6 +2044,7 @@ LogRPCs(Subject *subj, void *)
         std::string rpcName(ViewerRPC::ViewerRPCType_ToString(rpc->GetRPCType()));
         SNPRINTF(str, SLEN, "# MAINTENANCE ISSUE: %s is not handled in "
                 "Logging.C. Please contact a VisIt developer.\n", rpcName.c_str());
+        debug5 << str;
         }
         break;
     }
