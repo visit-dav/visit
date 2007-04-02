@@ -159,11 +159,11 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/gapps/visit/gnu/3.2.3/linux_redhat7/lib
+LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/gapps/visit/gcc/3.2.3/linux_redhat7/lib
 export LD_LIBRARY_PATH
 env CXXFLAGS=-O2 ./configure >> ../buildlog 2>&1
-cp /usr/gapps/visit/gnu/3.2.3/linux_redhat7/lib/libgcc_s.so.1 lib
-cp /usr/gapps/visit/gnu/3.2.3/linux_redhat7/lib/libstdc++.so.5 lib
+cp /usr/gapps/visit/gcc/3.2.3/linux_redhat7/lib/libgcc_s.so.1 lib
+cp /usr/gapps/visit/gcc/3.2.3/linux_redhat7/lib/libstdc++.so.5 lib
 cd databases/Fluent
 sed "s/\\\$(CXXFLAGSORIG)/-D_LARGEFILE64_SOURCE/" Makefile > Makefile+;rm Makefile;mv Makefile+ Makefile
 cd ../..
@@ -413,16 +413,16 @@ rm -f purple
 cat <<EOF > purple
 #!/bin/sh
 PATH=/usr/local/bin:\$PATH
-if test ! -d /p/gp1/$user ; then
-   mkdir /p/gp1/$user
+if test ! -d /p/gscratch3/$user ; then
+   mkdir /p/gscratch3/$user
 fi
-if test ! -d /p/gp1/$user/purple ; then
-   mkdir /p/gp1/$user/purple
+if test ! -d /p/gscratch3/$user/purple ; then
+   mkdir /p/gscratch3/$user/purple
 fi
-rm -rf /p/gp1/$user/purple/visitbuild
-mkdir /p/gp1/$user/purple/visitbuild
-mv purple_$dist.tar.gz /p/gp1/$user/purple/visitbuild/$dist.tar.gz
-cd /p/gp1/$user/purple/visitbuild
+rm -rf /p/gscratch3/$user/purple/visitbuild
+mkdir /p/gscratch3/$user/purple/visitbuild
+mv purple_$dist.tar.gz /p/gscratch3/$user/purple/visitbuild/$dist.tar.gz
+cd /p/gscratch3/$user/purple/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`
@@ -529,7 +529,7 @@ ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
 cp /usr/local/tools/gnu/gcc/3.4.4_RH_chaos_3_x86_64/usr/lib64/libgcc_s.so.1 lib
-cp /usr/local/tools/gnu/gcc/3.4.4_RH_chaos_3_x86_64/usr/lib64/libstdc++.so.1 lib
+cp /usr/local/tools/gnu/gcc/3.4.4_RH_chaos_3_x86_64/usr/lib64/libstdc++.so.6 lib
 make -j 3 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ..

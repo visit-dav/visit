@@ -402,7 +402,7 @@ then
    then
       cat purple >> lc
 
-      scp purple:/p/gp1/$user/purple/visitbuild/visit$ver2.aix64-xlc.tar.gz .
+      scp purple:/p/gscratch3/$user/purple/visitbuild/visit$ver2.aix64-xlc.tar.gz .
       scp visit$ver2.aix64-xlc.tar.gz sc1:
    fi
 fi
