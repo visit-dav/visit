@@ -652,7 +652,7 @@ if [ $davinci = true ]
 then
    if [ $test = no ]
    then
-      scp davinci.nersc.gov:visit$ver2.linux-ia64.tar.gz visit$ver2.linux-altix.tar.gz
+      scp davinci.nersc.gov:tmp/$user/davinci/visitbuild/visit$ver2.linux-ia64.tar.gz visit$ver2.linux-altix.tar.gz
       scp visit$ver2.linux-altix.tar.gz davinci.nersc.gov:
       scp visit-install davinci.nersc.gov:
       scp davinci davinci.nersc.gov:davinci_install

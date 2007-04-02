@@ -17,7 +17,7 @@ shell prompt.
     Python   2.5       Scripting Language     http://www.python.org
     Qt       3.3.2     GUI Toolkit            http://www.trolltech.com
     Silo     4.5.1     File I/O library       http://www.llnl.gov/bdiv/meshtv
-    VTK      5.0.0b    Visualization Toolkit  http://www.kitware.com
+    VTK      5.0.0c    Visualization Toolkit  http://www.kitware.com
 
 
 The public version of VisIt has been built with the above listed versions
@@ -38,6 +38,7 @@ build and install those libraries prior to building VisIt.
     Library  Version  Description            For More Information
     =======  =======  ===========            ====================
     Boxlib   ???      An AMR I/O library     ???
+    ExodusII 4.46     File I/O library       http://www.sourceforge.net/projects/exodusII
     HDF4     2.4.1    File I/O library       http://hdf.ncsa.uiuc.edu/hdf4.html
     HDF5     1.6.5    File I/O library       http://hdf.ncsa.uiuc.edu/HDF5/
     Mili     1.10     File I/O library       (none)
@@ -241,8 +242,8 @@ make
 # Build VTK
 #
 cd ..
-gunzip vtk-5.0.0b.tar.gz
-tar xf vtk-5.0.0b.tar
+gunzip vtk-5.0.0c.tar.gz
+tar xf vtk-5.0.0c.tar
 cd VTK
 #
 # On irix systems we have experienced problems with CMake not using the
@@ -367,34 +368,34 @@ make
 # Install it in the visit directory under the vtk directory.
 #
 mkdir $VISITDIR/vtk
-mkdir $VISITDIR/vtk/5.0.0b
-mkdir $VISITDIR/vtk/5.0.0b/$VISITARCH
-mkdir $VISITDIR/vtk/5.0.0b/$VISITARCH/{Common,Filtering,GenericFiltering,Graphics,Hybrid,IO,Imaging,MangleMesaInclude,Rendering,Utilities,VolumeRendering,lib,vtkstd,Utilities/vtktiff,Utilities/vtkexpat,Utilities/vtkzlib}
-cp vtkConfigure.h                   $VISITDIR/vtk/5.0.0b/$VISITARCH
-cp vtkToolkits.h                    $VISITDIR/vtk/5.0.0b/$VISITARCH
-cp vtk*Instantiator.h               $VISITDIR/vtk/5.0.0b/$VISITARCH
-cp Common/*.h                       $VISITDIR/vtk/5.0.0b/$VISITARCH/Common
-cp Common/*.txx                     $VISITDIR/vtk/5.0.0b/$VISITARCH/Common
-cp Filtering/*.h                    $VISITDIR/vtk/5.0.0b/$VISITARCH/Filtering
-cp Filtering/*.txx                  $VISITDIR/vtk/5.0.0b/$VISITARCH/Filtering
-cp GenericFiltering/*.h             $VISITDIR/vtk/5.0.0b/$VISITARCH/GenericFiltering
-cp Graphics/*.h                     $VISITDIR/vtk/5.0.0b/$VISITARCH/Graphics
-cp Hybrid/*.h                       $VISITDIR/vtk/5.0.0b/$VISITARCH/Hybrid
-cp IO/*.h                           $VISITDIR/vtk/5.0.0b/$VISITARCH/IO
-cp Imaging/*.h                      $VISITDIR/vtk/5.0.0b/$VISITARCH/Imaging
-cp Rendering/*.h                    $VISITDIR/vtk/5.0.0b/$VISITARCH/Rendering
-cp Utilities/*.h                    $VISITDIR/vtk/5.0.0b/$VISITARCH/Utilities
-cp Utilities/vtktiff/*.h            $VISITDIR/vtk/5.0.0b/$VISITARCH/Utilities/vtktiff
-cp Utilities/vtkexpat/*.h           $VISITDIR/vtk/5.0.0b/$VISITARCH/Utilities/vtkexpat
-cp Utilities/vtkzlib/*.h            $VISITDIR/vtk/5.0.0b/$VISITARCH/Utilities/vtkzlib
-cp VolumeRendering/*.h              $VISITDIR/vtk/5.0.0b/$VISITARCH/VolumeRendering
-cp MangleMesaInclude/*.h            $VISITDIR/vtk/5.0.0b/$VISITARCH/MangleMesaInclude
-cp vtkstd/*                         $VISITDIR/vtk/5.0.0b/$VISITARCH/vtkstd
-cp -d bin/*.so*                     $VISITDIR/vtk/5.0.0b/$VISITARCH/lib
+mkdir $VISITDIR/vtk/5.0.0c
+mkdir $VISITDIR/vtk/5.0.0c/$VISITARCH
+mkdir $VISITDIR/vtk/5.0.0c/$VISITARCH/{Common,Filtering,GenericFiltering,Graphics,Hybrid,IO,Imaging,MangleMesaInclude,Rendering,Utilities,VolumeRendering,lib,vtkstd,Utilities/vtktiff,Utilities/vtkexpat,Utilities/vtkzlib}
+cp vtkConfigure.h                   $VISITDIR/vtk/5.0.0c/$VISITARCH
+cp vtkToolkits.h                    $VISITDIR/vtk/5.0.0c/$VISITARCH
+cp vtk*Instantiator.h               $VISITDIR/vtk/5.0.0c/$VISITARCH
+cp Common/*.h                       $VISITDIR/vtk/5.0.0c/$VISITARCH/Common
+cp Common/*.txx                     $VISITDIR/vtk/5.0.0c/$VISITARCH/Common
+cp Filtering/*.h                    $VISITDIR/vtk/5.0.0c/$VISITARCH/Filtering
+cp Filtering/*.txx                  $VISITDIR/vtk/5.0.0c/$VISITARCH/Filtering
+cp GenericFiltering/*.h             $VISITDIR/vtk/5.0.0c/$VISITARCH/GenericFiltering
+cp Graphics/*.h                     $VISITDIR/vtk/5.0.0c/$VISITARCH/Graphics
+cp Hybrid/*.h                       $VISITDIR/vtk/5.0.0c/$VISITARCH/Hybrid
+cp IO/*.h                           $VISITDIR/vtk/5.0.0c/$VISITARCH/IO
+cp Imaging/*.h                      $VISITDIR/vtk/5.0.0c/$VISITARCH/Imaging
+cp Rendering/*.h                    $VISITDIR/vtk/5.0.0c/$VISITARCH/Rendering
+cp Utilities/*.h                    $VISITDIR/vtk/5.0.0c/$VISITARCH/Utilities
+cp Utilities/vtktiff/*.h            $VISITDIR/vtk/5.0.0c/$VISITARCH/Utilities/vtktiff
+cp Utilities/vtkexpat/*.h           $VISITDIR/vtk/5.0.0c/$VISITARCH/Utilities/vtkexpat
+cp Utilities/vtkzlib/*.h            $VISITDIR/vtk/5.0.0c/$VISITARCH/Utilities/vtkzlib
+cp VolumeRendering/*.h              $VISITDIR/vtk/5.0.0c/$VISITARCH/VolumeRendering
+cp MangleMesaInclude/*.h            $VISITDIR/vtk/5.0.0c/$VISITARCH/MangleMesaInclude
+cp vtkstd/*                         $VISITDIR/vtk/5.0.0c/$VISITARCH/vtkstd
+cp -d bin/*.so*                     $VISITDIR/vtk/5.0.0c/$VISITARCH/lib
 # For IRIX, solaris
-# cp -R bin/*.so* $VISITDIR/vtk/5.0.0b/$VISITARCH/lib
+# cp -R bin/*.so* $VISITDIR/vtk/5.0.0c/$VISITARCH/lib
 # For true64, 
-# cp bin/*.so $VISITDIR/vtk/5.0.0b/$VISITARCH/lib
+# cp bin/*.so $VISITDIR/vtk/5.0.0c/$VISITARCH/lib
 cd ..
 
 #
@@ -1119,6 +1120,76 @@ make
 # Install CFITSIO in the visit directory under the cfitsio directory
 #
 make install
+cd ..
+
+
+ExodusII (Optional)
+====================
+
+EXODUS II is a library for reading and writing data for finite element
+analyses.  It is used for preprocessing (problem definition), postprocessing
+(results visualization), as well as code to code data transfer.  An EXODUS II
+data file is a random access, machine independent, binary file that is
+written and read via C, C++, or Fortran routines.
+
+The EXODUS II library depends on the NetCDF library, so you will need to
+build it first.  When you build NetCDF, you can either modify the source
+files as described in the README file that comes with EXODUS, or you can
+use the NetCDF sources that we have already modified.
+
+#
+# Build and install the netcdf libraries.
+#
+gunzip netcdf-3.6.0-exodusii.tar.gz
+tar xf netcdf-3.6.0-exodusii.tar
+cd netcdf-3.6.0-exodusii/src
+
+mkdir $VISITDIR/exodus
+mkdir $VISITDIR/exodus/4.46
+mkdir $VISITDIR/exodus/4.46/$VISITARCH
+mkdir $VISITDIR/exodus/4.46/$VISITARCH/{inc,lib}
+
+#
+# On itanium (ia64) systems, you should add "-fPIC" to the following CFLAGS
+# and CXXFLAGS.  On opteron systems, you should add "-fPIC -m64" to the
+# following CFLAGS and CXXFLAGS.
+#
+./configure --prefix=$VISITDIR/netcdf/3.6.0/$VISITARCH FC="" CFLAGS="-O2" CXXFLAGS="-O2"
+make
+
+#
+# Install it under the exodus directory.
+#
+cp libsrc/netcdf.h $VISITDIR/exodus/4.46/$VISITARCH/inc
+cp libsrc/libnetcdf.a $VISITDIR/exodus/4.46/$VISITARCH/lib
+
+cd ../..
+
+#
+# Build and install the exodus libraries.
+#
+gunzip exodusii-4.46.tar.gz
+tar xf exodusii-4.46.tar
+cd exodusii-4.46
+
+#
+# To modify the build flags you will need to modify Makefile.standalone.
+# The top of the Makefile sets a collection of flags based on the operating
+# system and compiler.  Add -I$(VISITDIR)/exodus/4.46/$(VISITARCH)/inc to
+# CCOPTIONS under the appropriate target in the Makefile.
+#
+# On itanium (ia64) systems, you should add "-fPIC" to the CCOPTIONS.  On
+# opteron systems, you should add "-fPIC -m64" to the CCOPTIONS.
+#
+make -f Makefile.standalone
+
+#
+# Install it under the exodus directory.
+#
+cp cbind/include/exodusII.h $VISITDIR/exodus/4.46/$VISITARCH/inc
+cp cbind/include/exodusII_ext.h $VISITDIR/exodus/4.46/$VISITARCH/inc
+cp libexoIIv2c.a $VISITDIR/exodus/4.46/$VISITARCH/lib
+
 cd ..
 
 

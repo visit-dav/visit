@@ -72,6 +72,8 @@ private:
 // Creation:   Wed Mar 7 08:59:04 PDT 2007
 //
 // Modifications:
+//   Eric Brugger, Tue Mar 13 15:50:51 PDT 2007
+//   Added coding specific to gcc 3.2 to get around a compiler bug.
 //   
 // ****************************************************************************
 
@@ -86,10 +88,20 @@ public:
 
         // Create a tessellator object and set up its callbacks.
         tess = gluNewTess();
+#if defined(__GNUC__) && (__GNUC__ == 3 && __GNUC_MINOR__ == 2 && __GNUC_PATCHLEVEL__ == 0)
+        gluTessCallback(tess, GLU_TESS_VERTEX_DATA, (GLvoid (*)(...))vertexCallb
+ack);
+        gluTessCallback(tess, GLU_TESS_BEGIN_DATA, (GLvoid (*)(...))beginCallbac
+k);
+        gluTessCallback(tess, GLU_TESS_END_DATA, (GLvoid (*)(...))endCallback);
+        gluTessCallback(tess, GLU_TESS_COMBINE_DATA, (GLvoid (*)(...))combineCal
+lback);
+#else
         gluTessCallback(tess, GLU_TESS_VERTEX_DATA, (GLvoid (*)())vertexCallback);
         gluTessCallback(tess, GLU_TESS_BEGIN_DATA, (GLvoid (*)())beginCallback);
         gluTessCallback(tess, GLU_TESS_END_DATA, (GLvoid (*)())endCallback);
         gluTessCallback(tess, GLU_TESS_COMBINE_DATA, (GLvoid (*)())combineCallback);
+#endif
         gluTessNormal(tess, 0, 0, 1);
         gluTessProperty(tess, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_ODD);
         gluTessProperty(tess, GLU_TESS_TOLERANCE, 0.);

@@ -266,6 +266,10 @@
 #    Added the header files in include/vtk/Utilities/{expat,vtktiff,vtkzlib}
 #    to the distribution.
 #
+#    Eric Brugger, Tue Mar 13 08:34:59 PDT 2007
+#    Deleted the vtk exodus and netcdf libraries from the list of required
+#    vtk libraries.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -508,7 +512,7 @@ set GLEWLibName = "libGLEW.$SHLIB_SOEXT"
 #
 # Set the names of the VTK shared libraries.
 #
-set vtklibs="libvtkCommon libvtkDICOMParser libvtkFiltering libvtkGraphics libvtkHybrid libvtkIO libvtkImaging libvtkMPEG2Encode libvtkNetCDF libvtkRendering libvtkexoIIc libvtkexpat libvtkfreetype libvtkftgl libvtkjpeg libvtkpng libvtksys libvtktiff libvtkzlib"
+set vtklibs="libvtkCommon libvtkDICOMParser libvtkFiltering libvtkGraphics libvtkHybrid libvtkIO libvtkImaging libvtkMPEG2Encode libvtkRendering libvtkexpat libvtkfreetype libvtkftgl libvtkjpeg libvtkpng libvtksys libvtktiff libvtkzlib"
 
 #
 # Check that the VTK libraries exist.

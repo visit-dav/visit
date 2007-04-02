@@ -649,6 +649,9 @@ dnl    Thomas R. Treadway, Thu Feb  8 14:22:10 PST 2007
 dnl    Removed checking for HDF5 for the MacOS X, assumed silo always
 dnl    links with hdf5 (Never worked right anyway).
 dnl
+dnl    Eric Brugger, Fri Mar  9 10:56:59 PST 2007
+dnl    Removed the exodus and netcdf libraries from the list of vtk libraries.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -902,7 +905,7 @@ if test -n "$VTK"; then
     VTK_DIR=$VTK
     VTK_INCROOT="$""(TOPDIR)/include/vtk"
     VTK_INCLUDES="-I$VTK_INCROOT -I$VTK_INCROOT/Common -I$VTK_INCROOT/Filtering -I$VTK_INCROOT/Graphics -I$VTK_INCROOT/Hybrid -I$VTK_INCROOT/IO -I$VTK_INCROOT/Imaging -I$VTK_INCROOT/Rendering -I$VTK_INCROOT/Utilities"
-    VTK_LIBS="-lvtkCommon -lvtkDICOMParser -lvtkFiltering -lvtkGraphics -lvtkHybrid -lvtkIO -lvtkImaging -lvtkRendering -lvtkzlib -lvtkexpat -lvtkjpeg -lvtkpng -lvtktiff -lvtkftgl -lvtkfreetype -lvtksys -lvtkexoIIc -lvtkMPEG2Encode -lvtkNetCDF $MESA_LIBS $GL_LIBS "
+    VTK_LIBS="-lvtkCommon -lvtkDICOMParser -lvtkFiltering -lvtkGraphics -lvtkHybrid -lvtkIO -lvtkImaging -lvtkRendering -lvtkzlib -lvtkexpat -lvtkjpeg -lvtkpng -lvtktiff -lvtkftgl -lvtkfreetype -lvtksys -lvtkMPEG2Encode $MESA_LIBS $GL_LIBS "
     if test "$SHORT_UNAME" = "darwin"; then
         VTK_LIGHTWEIGHT_LIBS=$VTK_LIBS
     else

@@ -82,6 +82,9 @@ class     avtVariableCache;
 //    default implementation did. Added timeState arg to
 //    PopulateDatabaseMetaData
 //
+//    Eric Brugger, Fri Mar  9 14:42:04 PST 2007
+//    Added support for element block names.
+//
 // ****************************************************************************
 
 class avtExodusFileFormat : public avtMTSDFileFormat
@@ -114,6 +117,7 @@ class avtExodusFileFormat : public avtMTSDFileFormat
     int                         numBlocks;
     std::vector<bool>           validBlock;
     std::vector<int>            blockId;
+    std::vector<std::string>    blockName;
     std::vector<std::string>    pointVars;
     std::vector<std::string>    cellVars;
     avtVariableCache           *exodusCache;

@@ -179,6 +179,9 @@ SocketConnection::Fill()
 //   I made it use MSG_NOSIGNAL so we don't get a signal in the event that
 //   we can't write to the socket.
 //
+//   Eric Brugger, Tue Mar 13 09:18:48 PDT 2007
+//   I made the use of MSG_NOSIGNAL conditional on its definition.
+//
 // ****************************************************************************
 
 void
@@ -199,7 +202,11 @@ SocketConnection::Flush()
 #if defined(_WIN32)
             send(descriptor, (const char FAR *)buf, count, 0);
 #else
+#ifdef MSG_NOSIGNAL
             send(descriptor, (const void *)buf, count, MSG_NOSIGNAL);
+#else
+            send(descriptor, (const void *)buf, count, 0);
+#endif
 #endif
 
             count = 0;

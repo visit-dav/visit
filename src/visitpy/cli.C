@@ -82,6 +82,9 @@ extern "C" int Py_Main(int, char **);
 //   I changed the code so argv[0] gets passed to the cli in argv2. I also
 //   made Python initialize its threading.
 //
+//   Dave Bremer, Wed Mar 14 17:58:15 PDT 2007
+//   Pass commandline arguments through to the main interpreter.
+//
 // ****************************************************************************
 
 int
@@ -191,9 +194,21 @@ main(int argc, char *argv[])
         cli_runscript(runFile);
 
         // Enter the python interpreter loop.
-        int argc3 = 1;
-        char *argv3 = argv[0];
-        retval = Py_Main(argc3, &argv3);
+        //int argc3 = 1;
+        //char *argv3 = argv[0];
+        //retval = Py_Main(argc3, &argv3);
+        
+        char **argv3 = new char*[argc+1];
+        int ii;
+        for (ii = 1 ; ii < argc ; ii++)
+        {
+            argv3[ii+1] = argv[ii];
+        }
+        argv3[0] = argv[0];
+        argv3[1] = "-";
+        retval = Py_Main(argc+1, argv3);
+        delete[] argv3;
+        
     }
     CATCHALL(...)
     {
