@@ -219,6 +219,9 @@ avtOnionPeelFilter::Equivalent(const AttributeGroup *a)
 //    Kathleen Bonnell, Wed Sep 21 17:09:03 PDT 2005 
 //    Add poly_opf, so that polydata input can be returned as polydata output. 
 //
+//    Hank Childs, Wed Jan  4 10:51:42 PST 2006
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -230,11 +233,15 @@ avtOnionPeelFilter::ExecuteData(vtkDataSet *in_ds, int DOM, std::string)
     }
     if (in_ds->GetDataObjectType() != VTK_POLY_DATA)
     {
+        if (opf != NULL)
+            opf->Delete();
         opf  = vtkOnionPeelFilter::New();
         opf->SetBadSeedCallback(avtOnionPeelFilter::BadSeedCallback, this);
     }
     else 
     {
+        if (poly_opf != NULL)
+            poly_opf->Delete();
         poly_opf  = vtkPolyDataOnionPeelFilter::New();
         poly_opf->SetBadSeedCallback(avtOnionPeelFilter::BadSeedCallback, this);
     }

@@ -146,6 +146,9 @@
 #    Hank Childs, Fri Oct 14 08:42:34 PDT 2005
 #    Temporarily add defer_expr to the skipList.
 #
+#    Hank Childs, Wed Jan  4 14:07:19 PST 2006
+#    Remove defer_expr from the skipList.
+#
 # ----------------------------------------------------------------------------
 
 # list of users who want email every night with the log file
@@ -289,7 +292,6 @@ esac
 # set list of tests/modes to skip
 skipList="scalable,parallel:tests/databases/boxlib.py \
           scalable,parallel:tests/hybrid/locus.py \
-          scalable,parallel:tests/operators/defer_expr.py \
           scalable,parallel:tests/rendering/saveformats.py \
           dlb:tests/databases/global_node_ids.py \
           dlb:tests/queries/pick.py \

@@ -82,6 +82,9 @@ avtCurveConstructorFilter::~avtCurveConstructorFilter()
 //    Mark C. Miller, Wed Jun  9 21:50:12 PDT 2004
 //    Eliminated use of MPI_ANY_TAG and modified to use GetUniqueMessageTags
 //
+//    Hank Childs, Wed Jan  4 11:21:59 PST 2006
+//    Allocate the size of the verts array front-end.
+//
 // ****************************************************************************
 
 void avtCurveConstructorFilter::Execute()
@@ -279,6 +282,8 @@ void avtCurveConstructorFilter::Execute()
         sortedPts = outPts;
     }
     nPoints = sortedPts->GetNumberOfPoints();
+    int vertsSize = (nPoints) * (1+1);
+    verts->Allocate(vertsSize);
     for (i = 0; i < nPoints-1; i++)
     {
         ptIds[0] = i; 

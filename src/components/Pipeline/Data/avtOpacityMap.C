@@ -6,6 +6,7 @@
 
 // For NULL
 #include <stdlib.h>
+#include <string.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
@@ -25,12 +26,24 @@
 //    Hank Childs, Sat Feb  3 12:00:51 PST 2001
 //    Modified to make map table-based.
 //
+//    Hank Childs, Wed Jan  4 11:26:15 PST 2006
+//    Call memset to make sure that all entries of RGBA struct are initialized.
+//    This cannot be done without a memset because of padding issues.  We
+//    want to make sure the inaccessible byte is initialized to avoid purify
+//    warnings.
+//
 // ****************************************************************************
 
 avtOpacityMap::avtOpacityMap(int te)
 {
     tableEntries = te;
     table = new RGBA[tableEntries];
+  
+    // RGBA contains a padded byte after the B and before the A.  Use a memset
+    // to make sure this inaccessible byte is initialized.  This will allow
+    // us to avoid purify issues.
+    memset(table, 0, sizeof(RGBA)*tableEntries);
+
     for (int i = 0 ; i < tableEntries ; i++)
     {
         table[i].R = 0;
