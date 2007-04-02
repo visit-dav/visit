@@ -47,6 +47,15 @@ static const int dlSize = 8192;
 
 #include <math.h>
 
+#ifdef VTK_IMPLEMENT_MESA_CXX
+// We have Mesa so allow multitexturing code to be compiled.
+#define HAVE_MULTITEXTURING
+#elif defined(GL_VERSION_1_3)
+// We're not using Mesa so only allow multitexturing code to be compiled if we
+// have OpenGL 1.3 or later.
+#define HAVE_MULTITEXTURING
+#endif
+
 
 #ifndef VTK_IMPLEMENT_MESA_CXX
 vtkCxxRevisionMacro(vtkVisItOpenGLPolyDataMapper, "$Revision: 1.78 $");
@@ -3486,13 +3495,16 @@ void vtkVisItOpenGLPolyDataMapper::PrintSelf(ostream& os, vtkIndent indent)
 // Creation:   Thu Aug 25 14:58:09 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Nov 3 13:21:08 PST 2005
+//   Added conditional compilation.
+//
 // ****************************************************************************
 
 void
 vtkVisItOpenGLPolyDataMapper::StartFancyPoints(
     vtkVisItOpenGLPolyDataMapper::TextureState &atts)
 {
+#ifdef HAVE_MULTITEXTURING
     if(this->PointTextureMethod == TEXTURE_USING_POINTSPRITES)
     {
         // Create the rextures
@@ -3593,6 +3605,7 @@ vtkVisItOpenGLPolyDataMapper::StartFancyPoints(
                   MY_COORD_REPLACE_ARB,
                   GL_TRUE);
     }
+#endif
 }
 
 // ****************************************************************************
@@ -3615,6 +3628,7 @@ void
 vtkVisItOpenGLPolyDataMapper::EndFancyPoints(
     vtkVisItOpenGLPolyDataMapper::TextureState &atts)
 {
+#ifdef HAVE_MULTITEXTURING
     if(this->PointTextureMethod == TEXTURE_USING_POINTSPRITES)
     {
         if(atts.needAlphaTest)
@@ -3637,6 +3651,7 @@ vtkVisItOpenGLPolyDataMapper::EndFancyPoints(
         glDisable(GL_TEXTURE_2D);
         glDisable(MY_POINT_SPRITE_ARB);
     }
+#endif
 }
 
 // ****************************************************************************
@@ -3662,6 +3677,7 @@ vtkVisItOpenGLPolyDataMapper::EndFancyPoints(
 void
 vtkVisItOpenGLPolyDataMapper::MakeTextures()
 {
+#ifdef HAVE_MULTITEXTURING
    int i, j;
 
    float dx = SPHERE_TEX_H * 0.5f;
@@ -3753,5 +3769,6 @@ vtkVisItOpenGLPolyDataMapper::MakeTextures()
                this->SphereMaskTexture[j][i] = (GLubyte)0;
            }
        }
-   }   
+   }
+#endif
 }

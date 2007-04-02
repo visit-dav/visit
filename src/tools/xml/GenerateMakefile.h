@@ -136,6 +136,10 @@
 //    Hank Childs, Tue May 24 09:41:53 PDT 2005
 //    Added hasoptions.
 //
+//    Brad Whitlock, Fri Nov 4 09:42:25 PDT 2005
+//    Added code to treat Mesa and OpenGL source files specially for plot
+//    plugins.
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin
@@ -257,6 +261,7 @@ class MakefileGeneratorPlugin
             visitplugininstall = visitplugdirpri;
 
         QString vtkdir = QString(visithome) + "/include/vtk";
+        QString vGraphicsObjects(""), eserGraphicsObjects(""), eparGraphicsObjects("");
 
         out << "##" << endl;
         out << "## Programs and options..." << endl;
@@ -276,7 +281,6 @@ class MakefileGeneratorPlugin
         out << "  -I"<<vtkdir<<"/Hybrid \\"<<endl;
         out << "  -I"<<vtkdir<<"/IO \\"<<endl;
         out << "  -I"<<vtkdir<<"/Imaging \\"<<endl;
-        out << "  -I"<<vtkdir<<"/MangleMesaInclude \\"<<endl;
         out << "  -I"<<vtkdir<<"/Rendering"<<endl;
         out << "MOC="<<visithome<<"/bin/moc" << endl;
         if(type == "database")
@@ -286,7 +290,7 @@ class MakefileGeneratorPlugin
         for (int i=0; i<cxxflags.size(); i++)
             out << " " << cxxflags[i];
         out << endl;
-        out << "CPPFLAGS=$(CPPFLAGSORIG) $(VTK_INCLUDE) $(MESA_INCLUDE) -I. -I"<<visithome<<"/include -I"<<visithome<<"/include/visit" << endl;
+        out << "CPPFLAGS=$(CPPFLAGSORIG) $(VTK_INCLUDE) -I. -I"<<visithome<<"/include -I"<<visithome<<"/include/visit" << endl;
         if(type == "database")
             out << "LDFLAGS=$(LDFLAGSORIG) ";
         else
@@ -437,16 +441,56 @@ class MakefileGeneratorPlugin
             out << endl;
             out << "VSRC="<<name<<"ViewerPluginInfo.C avt"<<name<<"Plot.C";
             if (customvfiles)
+            {
                 for (int i=0; i<vfiles.size(); i++)
-                    out << " " << vfiles[i];
+                {
+                    int suffix = vfiles[i].findRev(".");
+                    if(suffix > 0 && vfiles[i].find("Mesa") != -1)
+                    {
+                        if(vGraphicsObjects.length() == 0) vGraphicsObjects += " ";
+                        vGraphicsObjects += (vfiles[i].left(suffix) + "_mesa.o ");
+                    }
+                    else if(suffix > 0 && vfiles[i].find("OpenGL") != -1)
+                    {
+                        if(vGraphicsObjects.length() == 0) vGraphicsObjects += " ";
+                        vGraphicsObjects += (vfiles[i].left(suffix) + "_ogl.o ");
+                    }
+                    else
+                        out << " " << vfiles[i];
+                }
+            }
             else
                 for (int i=0; i<defaultvfiles.size(); i++)
                     out << " " << defaultvfiles[i];
             out << endl;
             out << "ESRC="<<name<<"EnginePluginInfo.C avt"<<name<<"Plot.C";
             if (customefiles)
+            {
                 for (int i=0; i<efiles.size(); i++)
-                    out << " " << efiles[i];
+                {
+                    int suffix = efiles[i].findRev(".");
+                    if(suffix > 0 && efiles[i].find("Mesa") != -1)
+                    {
+                        QString root(efiles[i].left(suffix));
+
+                        if(eserGraphicsObjects.length() == 0) eserGraphicsObjects += " ";
+                        if(eparGraphicsObjects.length() == 0) eparGraphicsObjects += " ";
+                        eserGraphicsObjects += (root + "_mesa.o ");
+                        eparGraphicsObjects += (root + "_par_mesa.o ");
+                    }
+                    else if(suffix > 0 && efiles[i].find("OpenGL") != -1)
+                    {
+                        QString root(efiles[i].left(suffix));
+
+                        if(eserGraphicsObjects.length() == 0) eserGraphicsObjects += " ";
+                        if(eparGraphicsObjects.length() == 0) eparGraphicsObjects += " ";
+                        eserGraphicsObjects += (root + "_ogl.o ");
+                        eparGraphicsObjects += (root + "_par_ogl.o ");
+                    }
+                    else
+                        out << " " << efiles[i];
+                }
+            }
             else
                 for (int i=0; i<defaultefiles.size(); i++)
                     out << " " << defaultefiles[i];
@@ -556,10 +600,10 @@ class MakefileGeneratorPlugin
         out << "IOBJ=$(ISRC:.C=.o)" << endl;
         out << "GOBJ=$(COMMONSRC:.C=.o) $(GSRC:.C=.o)" << endl;
         out << "SOBJ=$(COMMONSRC:.C=.o) $(SSRC:.C=.o)" << endl;
-        out << "VOBJ=$(COMMONSRC:.C=.o) $(VSRC:.C=.o)" << endl;
+        out << "VOBJ=$(COMMONSRC:.C=.o) $(VSRC:.C=.o)" << vGraphicsObjects << endl;
         out << "MOBJ=$(COMMONSRC:.C=.o) $(MSRC:.C=.o) $(MSPECIFICSRC:.C=_mds.o)" << endl;
-        out << "ESEROBJ=$(COMMONSRC:.C=.o) $(ESRC:.C=.o)" << endl;
-        out << "EPAROBJ=$(COMMONSRC:.C=.o) $(ESRC:.C=_par.o)" << endl;
+        out << "ESEROBJ=$(COMMONSRC:.C=.o) $(ESRC:.C=.o)" << eserGraphicsObjects << endl;
+        out << "EPAROBJ=$(COMMONSRC:.C=.o) $(ESRC:.C=_par.o)" << eparGraphicsObjects << endl;
         out << "" << endl;
         out << "MOCSRC = $(WIDGETS:.h=_moc.C)" << endl;
         out << "MOCOBJ = $(MOCSRC:.C=.o)" << endl;
