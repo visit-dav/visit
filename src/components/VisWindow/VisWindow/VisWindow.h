@@ -90,7 +90,6 @@ class VisWinTriad;
 class VisWinUserInfo;
 class VisWinView;
 
-
 class VisitInteractor;
 
 
@@ -359,6 +358,9 @@ class VisitInteractor;
 //    Mark Blair, Mon Sep 25 11:41:09 PDT 2006
 //    Added axis annotation enable/disable flag and methods.
 //
+//    Mark Blair, Wed Oct 25 15:12:55 PDT 2006
+//    Added GetPlotInfoAtts.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -372,6 +374,7 @@ public:
     void                 RemovePlot(avtActor_p &);
     void                 ClearPlots(void);
     int                  GetPlotListIndex(const char *plotName);
+    const PlotInfoAttributes *GetPlotInfoAtts(const char *plotName);
 
     void                 SetBounds(const double [6]);
     void                 GetBounds(double [6]) const;

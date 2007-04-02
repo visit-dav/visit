@@ -89,6 +89,10 @@ class vtkPoints;
 //      Removed unnecessary FILTER_EXPORTS specification so that filter will
 //      build on Windows.
 //      
+//      Mark Blair, Thu Oct 26 18:40:28 PDT 2006
+//      Removed scratch file method, which is no longer necessary.  Also added
+//      support for non-uniform axis spacing.
+//
 // ****************************************************************************
 
 class avtParallelAxisFilter : public avtDataTreeStreamer
@@ -120,8 +124,7 @@ protected:
 private:
     void                        SetupParallelAxis (int plotAxisNum);
     void                        ComputeCurrentDataExtentsOverAllDomains();
-    void                        StoreDataExtentsForOutsideQueries();
-    bool                        WriteAxisVariableNamesAndExtentsFile();
+    void                        StoreAxisAttributesForOutsideQueries();
 
     void                        InitializePlotAtts();
     void                        InitializeDataTupleInput();
@@ -145,7 +148,7 @@ private:
 
     intVector                   varTupleIndices;
     
-    doubleVector                extentsArray;
+    doubleVector                axisAttsArray;
 
     int                         axisCount;
     int                         tickMarkIntervals;

@@ -2054,6 +2054,26 @@ VisWindow::GetPlotListIndex(const char *plotName)
 
 
 // ****************************************************************************
+//  Method: VisWindow::GetPlotInfoAtts
+//
+//  Purpose: If plot identified by name is among the plots for this VisWindow,
+//           returns pointer to any attributes that were pushed by that plot.
+//           Returns NULL if no such plot exists or if no attributes were
+//           pushed by the plot.
+//
+//  Programmer: Mark Blair
+//  Creation:   Wed Oct 25 15:12:55 PDT 2006
+//
+// ****************************************************************************
+
+const PlotInfoAttributes *
+VisWindow::GetPlotInfoAtts(const char *plotName)
+{
+    return plots->GetPlotInfoAtts(plotName);
+}
+
+
+// ****************************************************************************
 //  Method: VisWindow::StartBoundingBox
 //
 //  Purpose:

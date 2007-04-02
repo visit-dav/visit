@@ -400,6 +400,9 @@ QvisParallelAxisPlotWizard::CreateFinishPage(QFrame **f,
 //    Mark Blair, Wed Sep 20 10:59:41 PDT 2006
 //    Added time ordinals, for those operators and tools that need them.
 //   
+//    Mark Blair, Thu Oct 26 18:40:28 PDT 2006
+//    Added support for non-uniform axis spacing.
+//
 // ****************************************************************************
 
 void
@@ -412,6 +415,9 @@ QvisParallelAxisPlotWizard::InitializeParallelAxisAttributes(const std::string &
     doubleVector extMaxs;
     intVector    minTimeOrds;
     intVector    maxTimeOrds;
+    stringVector groupNames;
+    intVector    labelStates;
+    doubleVector xIntervals;
     
     axisNames.push_back(varName);
     axisMins.push_back(-1e+37);
@@ -420,6 +426,9 @@ QvisParallelAxisPlotWizard::InitializeParallelAxisAttributes(const std::string &
     extMaxs.push_back(1.0);
     minTimeOrds.push_back(0);
     maxTimeOrds.push_back(0);
+    groupNames.push_back(std::string("(not_in_a_group)"));
+    labelStates.push_back(PCP_DRAW_ALL_LABELS | PCP_LABELS_NOW_VISIBLE);
+    xIntervals.push_back(-1.0);
 
     parAxisAtts->SetOrderedAxisNames(axisNames);
     parAxisAtts->SetShownVariableAxisPosition(0);
@@ -429,6 +438,10 @@ QvisParallelAxisPlotWizard::InitializeParallelAxisAttributes(const std::string &
     parAxisAtts->SetExtentMaxima(extMaxs);
     parAxisAtts->SetExtMinTimeOrds(minTimeOrds);
     parAxisAtts->SetExtMaxTimeOrds(maxTimeOrds);
+    parAxisAtts->SetPlotDrawsAxisLabels(true);
+    parAxisAtts->SetAxisGroupNames(groupNames);
+    parAxisAtts->SetAxisLabelStates(labelStates);
+    parAxisAtts->SetAxisXIntervals(xIntervals);
 }
 
 

@@ -168,6 +168,9 @@ QvisParallelAxisPlotWindow::CreateWindowContents()
 //      Mark Blair, Wed Sep 20 10:59:41 PDT 2006
 //      Accommodates time ordinals, for those operators and tools that need them.
 //
+//      Mark Blair, Thu Oct 26 18:40:28 PDT 2006
+//      Accommodates widgets that support non-uniform axis spacing.
+//
 // ****************************************************************************
 
 void
@@ -216,6 +219,22 @@ QvisParallelAxisPlotWindow::UpdateWindow(bool doAll)
             break;   // Do nothing.
 
         case 7:   // Uses ParallelAxisAttributes::extMaxTimeOrds
+
+            break;   // Do nothing.
+
+        case 8:   // Uses ParallelAxisAttributes::plotDrawsAxisLabels
+
+            break;   // Do nothing.
+
+        case 9:   // Uses ParallelAxisAttributes::axisGroupNames
+
+            break;   // Do nothing.
+
+        case 10:   // Uses ParallelAxisAttributes::axisLabelStates
+
+            break;   // Do nothing.
+
+        case 11:   // Uses ParallelAxisAttributes::axisXIntervals
 
             break;   // Do nothing.
         }

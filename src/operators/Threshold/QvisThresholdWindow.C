@@ -85,6 +85,12 @@ using std::string;
 //   preserved when viewer sends attributes that do not know about the changes.
 //   (See full explanation in header of RestoreAppropriateUnappliedAttributes.)
 //
+//   Mark Blair, Tue Oct 31 20:18:10 PST 2006
+//   Previous change undone.  Too much conflict when multiple vis windows in
+//   use.  All unapplied Threshold GUI changes are now lost if user dismisses
+//   then reopens GUI, or if user moves an arrowhead in Extents tool of a second
+//   vis window tool-locked to the Threshold operator's vis window.  Too bad.
+//
 // ****************************************************************************
 
 QvisThresholdWindow::QvisThresholdWindow(const int type,
@@ -94,8 +100,7 @@ QvisThresholdWindow::QvisThresholdWindow(const int type,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
-    atts       = subj;
-    guiVarAtts = new ThresholdAttributes(*subj);
+    atts = subj;
 }
 
 
@@ -113,15 +118,14 @@ QvisThresholdWindow::QvisThresholdWindow(const int type,
 //   Mark Blair, Thu Sep 21 15:16:27 PDT 2006
 //   Need to delete GUI variable list object.
 //
+//   Mark Blair, Tue Oct 31 20:18:10 PST 2006
+//   Previous change undone.
+//
 // ****************************************************************************
 
 QvisThresholdWindow::~QvisThresholdWindow()
 {
-    if (guiVarAtts != NULL)
-    {
-        delete guiVarAtts;
-        guiVarAtts = NULL;
-    }
+    // Nothing here.
 }
 
 
@@ -302,13 +306,17 @@ QvisThresholdWindow::CreateWindowContents()
 //   Handle default scalar variable flag, display default variable as "default"
 //   once again.
 //
+//   Mark Blair, Tue Oct 31 20:18:10 PST 2006
+//   Second change back undone.  Too much conflict when multiple vis windows in
+//   use.  All unapplied Threshold GUI changes are now lost if user dismisses
+//   then reopens GUI, or if user moves an arrowhead in Extents tool of a second
+//   vis window tool-locked to the Threshold operator's vis window.  Too bad.
+//
 // ****************************************************************************
 
 void
 QvisThresholdWindow::UpdateWindow(bool doAll)
 {
-    RestoreAppropriateUnappliedAttributes();
-
     QString fieldString;
     std::string shownVarName = atts->GetShownVariable();
     bool varListIsEmpty =
@@ -407,6 +415,9 @@ QvisThresholdWindow::UpdateWindow(bool doAll)
 //   Mark Blair, Thu Sep 21 15:16:27 PDT 2006
 //   Added support for input from Extents tool.  Save pending GUI changes.
 //
+//   Mark Blair, Tue Oct 31 20:18:10 PST 2006
+//   Previous change undone.
+//
 // ****************************************************************************
 
 void
@@ -469,8 +480,6 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
             }
         }
     }
-    
-    *guiVarAtts = *atts;
 }
 
 
@@ -484,7 +493,6 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
 void
 QvisThresholdWindow::apply()
 {
-    *atts = *guiVarAtts;
     QvisOperatorWindow::apply();
 }
 
@@ -498,7 +506,6 @@ QvisThresholdWindow::outputMeshTypeChanged(int buttonID)
     if (newOutputMeshType != atts->GetOutputMeshType())
     {
         atts->SetOutputMeshType(newOutputMeshType);
-        *guiVarAtts = *atts;
         
         bool enableZonePortion =
             ((newOutputMeshType == ThresholdAttributes::InputZones) &&
@@ -521,8 +528,6 @@ QvisThresholdWindow::zonePortionChanged(int buttonID)
     if (newZonePortion != atts->GetZonePortion())
     {
         atts->ChangeZonePortion(newZonePortion);
-        *guiVarAtts = *atts;
-        
         Apply();
     }
 }
@@ -613,6 +618,9 @@ QvisThresholdWindow::variableSwapped(const QString &variableToSwapIn)
 //   Mark Blair, Tue Oct  3 13:19:11 PDT 2006
 //   Display default variable as "default" once again.
 //
+//   Mark Blair, Tue Oct 31 20:18:10 PST 2006
+//   Second change back undone.
+//
 // ****************************************************************************
 
 void
@@ -652,8 +660,6 @@ QvisThresholdWindow::UpdateShownFields()
     upperBound->setReadOnly(varListIsEmpty);
     upperBoundLabel->setEnabled(!varListIsEmpty);
     
-    *guiVarAtts = *atts;
-
     SetUpdate(false);
     Apply();
 }
@@ -681,8 +687,15 @@ QvisThresholdWindow::UpdateShownFields()
 //   Do not restore if current applied attributes look like default attributes;
 //   probably reinitializing.
 //
+//   Mark Blair, Tue Oct 31 20:18:10 PST 2006
+//   Method no longer used.  Too much conflict when multiple vis windows in
+//   use.  All unapplied Threshold GUI changes are now lost if user dismisses
+//   then reopens GUI, or if user moves an arrowhead in Extents tool of a second
+//   vis window tool-locked to the Threshold operator's vis window.  Too bad.
+//
 // ****************************************************************************
 
+/*
 void
 QvisThresholdWindow::RestoreAppropriateUnappliedAttributes()
 {
@@ -737,3 +750,4 @@ QvisThresholdWindow::RestoreAppropriateUnappliedAttributes()
     
     *atts = *guiVarAtts;
 }
+*/

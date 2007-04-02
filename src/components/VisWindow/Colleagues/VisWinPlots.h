@@ -179,6 +179,9 @@ class avtTransparencyActor;
 //    Brad Whitlock, Mon Sep 18 11:13:40 PDT 2006
 //    Added SetColorTexturingFlag.
 //
+//    Mark Blair, Wed Oct 25 15:12:55 PDT 2006
+//    Added GetPlotInfoAtts.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinPlots : public VisWinColleague
@@ -194,6 +197,7 @@ class VISWINDOW_API VisWinPlots : public VisWinColleague
     void                          OrderPlots();
     
     int                           GetPlotListIndex(const char *plotName);
+    const PlotInfoAttributes     *GetPlotInfoAtts(const char *plotName);
 
     void                          GetBounds(double [6]);
     void                          GetDataRange(double &, double &);

@@ -2,6 +2,7 @@
 
 #include <VisitExtentsTool.h>
 #include <ExtentsAttributes.h>
+#include <PlotInfoAttributes.h>
 
 #include <vtkActor.h>
 #include <vtkCamera.h>
@@ -59,7 +60,7 @@ VisitExtentsTool::VisitExtentsTool(VisWindowToolProxy &p) : VisitInteractiveTool
         initMinTimeOrdinals.push_back(0); initMaxTimeOrdinals.push_back(0);
     }
 
-    Interface.SetScalarNames (initScalarNames);
+    Interface.SetScalarNames(initScalarNames);
 
     Interface.SetScalarMinima(initScalarMinima);
     Interface.SetScalarMaxima(initScalarMaxima);
@@ -139,10 +140,16 @@ VisitExtentsTool::~VisitExtentsTool()
 //    Mark Blair, Thu Aug 31 17:56:00 PDT 2006
 //    Changed to new interface for GetBounds in VTK.
 //
+//    Mark Blair, Thu Oct 26 18:40:28 PDT 2006
+//    Now uses PlotInfoAttributes-based mechanism instead of CreateCompatible
+//    mechanism to get ParallelAxis plot attributes.
+//
 // ****************************************************************************
 
 void VisitExtentsTool::InitializeHotPoints()
 {
+    UpdateToolAttributesWithPlotAttributes();
+
     doubleVector extentMinima = Interface.GetMinima();
     doubleVector extentMaxima = Interface.GetMaxima();
 
@@ -150,7 +157,7 @@ void VisitExtentsTool::InitializeHotPoints()
     double rightSliderX   = Interface.GetRightSliderX();
     double slidersBottomY = Interface.GetSlidersBottomY();
     double slidersTopY    = Interface.GetSlidersTopY();
-
+    
     int extentCount = extentMinima.size();
     int extentNum;
 
@@ -209,19 +216,110 @@ void VisitExtentsTool::InitializeHotPoints()
     hotPoint.tool   = this;
 
     hotPoints.clear();
-
+    
     for (extentNum = 0; extentNum < extentCount; extentNum++)
     {
         hotPoint.pt.x = (double)extentNum*sliderXStride + minSlidableX;
         hotPoint.pt.y = minSlidableY + extentMinima[extentNum]*normToWorldYScale;
         hotPoint.callback = SliderMinimumCallback;
         hotPoints.push_back(hotPoint);
-
+        
         hotPoint.pt.y =
             maxSlidableY - (1.0-extentMaxima[extentNum])*normToWorldYScale;
         hotPoint.callback = SliderMaximumCallback;
         hotPoints.push_back(hotPoint);
     }
+}
+
+
+// ****************************************************************************
+// Method: VisitExtentsTool::UpdateToolAttributesWithPlotAttributes
+//
+// Purpose: Gets attributes of the plot to which the Extents tool is applied
+//          (currently this can only be a ParallelAxis plot) and updates the
+//          tool's attributes accordingly.  This would be analogous to the
+//          plot's CreateCompatible method when called with "Extents" as the
+//          input parameter.
+//
+// Programmer: Mark Blair
+// Creation:   Thu Oct 26 18:40:28 PDT 2006
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void VisitExtentsTool::UpdateToolAttributesWithPlotAttributes()
+{
+    const PlotInfoAttributes *parAxisAtts = proxy.GetPlotInfoAtts("ParallelAxis");
+    
+    if (parAxisAtts == NULL) return;
+
+    doubleVector axisAttVals = parAxisAtts->GetOutputArray();    
+    if (axisAttVals.size() < 5) return;
+
+    stringVector newAxisNames;
+    stringVector newGroupNames;
+    doubleVector newAxisMinima;
+    doubleVector newAxisMaxima;
+    doubleVector newSliderMinima;
+    doubleVector newSliderMaxima;
+    intVector    newMinTimeOrds;
+    intVector    newMaxTimeOrds;
+    intVector    newLabelStates;
+    doubleVector newXIntervals;
+    
+    int valCount = axisAttVals.size();
+    int valIndex = 4;
+    char nameChar;
+    std::string newAxisName;
+    std::string newGroupName;
+    
+    while (axisAttVals[valIndex] != 0)
+    {
+        newAxisName.clear();
+        
+        while (valIndex < valCount)
+        {
+            if ((nameChar = (char)axisAttVals[valIndex++]) == '\0') break;
+            newAxisName += nameChar;
+        }
+        
+        if (valIndex >= valCount) return;
+
+        newGroupName.clear();
+        
+        while (valIndex < valCount)
+        {
+            if ((nameChar = (char)axisAttVals[valIndex++]) == '\0') break;
+            newGroupName += nameChar;
+        }
+        
+        if (valIndex+9 > valCount) return;
+        
+        newAxisNames.push_back(newAxisName);
+        newGroupNames.push_back(newGroupName);
+        newAxisMinima.push_back(axisAttVals[valIndex++]);
+        newAxisMaxima.push_back(axisAttVals[valIndex++]);
+        newSliderMinima.push_back(axisAttVals[valIndex++]);
+        newSliderMaxima.push_back(axisAttVals[valIndex++]);
+        newMinTimeOrds.push_back((int)axisAttVals[valIndex++]);
+        newMaxTimeOrds.push_back((int)axisAttVals[valIndex++]);
+        newLabelStates.push_back((int)axisAttVals[valIndex++]);
+        newXIntervals.push_back(axisAttVals[valIndex++]);
+    }
+
+    Interface.SetLeftSliderX(axisAttVals[0]);
+    Interface.SetRightSliderX(axisAttVals[1]);
+    Interface.SetSlidersBottomY(axisAttVals[2]);
+    Interface.SetSlidersTopY(axisAttVals[3]);    
+    
+    Interface.SetScalarNames(newAxisNames);
+    Interface.SetScalarMinima(newAxisMinima);
+    Interface.SetScalarMaxima(newAxisMaxima);
+    Interface.SetMinima(newSliderMinima);
+    Interface.SetMaxima(newSliderMaxima);
+    Interface.SetMinTimeOrdinals(newMinTimeOrds);
+    Interface.SetMaxTimeOrdinals(newMaxTimeOrds);
 }
 
 
@@ -240,6 +338,8 @@ void VisitExtentsTool::InitializeHotPoints()
 void VisitExtentsTool::Enable()
 {
     bool toolIsEnabled = IsEnabled();
+
+    Interface.ExecuteCallback();
 
     VisitInteractiveTool::Enable();
 
@@ -268,6 +368,8 @@ void VisitExtentsTool::Enable()
 void VisitExtentsTool::Disable()
 {
     bool toolIsEnabled = IsEnabled();
+    
+    Interface.ExecuteCallback();
 
     VisitInteractiveTool::Disable();
 
@@ -777,7 +879,7 @@ void VisitExtentsTool::CallMinCallback()
     
     Interface.SetMinima(newMinima);
     Interface.SetMinTimeOrdinals(newMinTimeOrdinals);
-
+    
     Interface.ExecuteCallback();
 }
 

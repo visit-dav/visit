@@ -49,6 +49,9 @@ class vtkTextActor;
 //    Added methods for updating minima and maxima on an individual basis.
 //    Also added running time ordinal for tagging slider changes.
 //
+//    Mark Blair, Thu Oct 26 18:40:28 PDT 2006
+//    Added UpdateToolAttributesWithPlotAttributes method.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitExtentsTool : public VisitInteractiveTool
@@ -85,6 +88,7 @@ class VISWINDOW_API VisitExtentsTool : public VisitInteractiveTool
     void CallMaxCallback();
 
     void InitializeHotPoints();
+    void UpdateToolAttributesWithPlotAttributes();
     void CreateSliderActor();
     void CreateTextActors();
     void DeleteTextActors();

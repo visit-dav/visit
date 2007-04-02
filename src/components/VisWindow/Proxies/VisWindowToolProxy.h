@@ -70,6 +70,9 @@
 //   Mark Blair, Wed Aug 30 14:09:00 PDT 2006
 //   Added GetSize, GetWindowSize, GetPlotListIndex.
 //
+//   Mark Blair, Wed Oct 25 15:12:55 PDT 2006
+//   Added GetPlotInfoAtts.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowToolProxy : public VisWindowProtectionProxy
@@ -110,11 +113,14 @@ class VISWINDOW_API VisWindowToolProxy : public VisWindowProtectionProxy
     void                GetWindowSize(int &width, int &height) const
                                   { ProxiedGetWindowSize(width, height); };
 
-    int                 GetPlotListIndex(const char *plotName)
-                                  { return ProxiedGetPlotListIndex(plotName); };
-
     bool                HasPlots(){ return ProxiedHasPlots(); };
     
+    int                 GetPlotListIndex(const char *plotName)
+                                  { return ProxiedGetPlotListIndex(plotName); };
+                                  
+    const PlotInfoAttributes *GetPlotInfoAtts(const char *plotName)
+                                  { return ProxiedGetPlotInfoAtts(plotName); };
+
     void                Render()  { ProxiedRender(); };
 
     void                RecalculateRenderOrder()

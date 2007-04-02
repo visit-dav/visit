@@ -228,6 +228,10 @@ avtParallelAxisFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
 //
 //  Modifications:
 //
+//      Mark Blair, Thu Oct 26 18:40:28 PDT 2006
+//      No longer writes scratch file, which is no longer necessary.  Also added
+//      support for non-uniform axis spacing.
+//
 // *****************************************************************************
 
 void
@@ -239,13 +243,7 @@ avtParallelAxisFilter::PreExecute(void)
 
     ComputeCurrentDataExtentsOverAllDomains();
 
-/*  Temporarily disable this until PlotInfoAttributes can be accessed by the
-    Extents tool.  Use kludge scratch file in the meantime.
-
-    StoreDataExtentsForOutsideQueries();
-*/
-
-    WriteAxisVariableNamesAndExtentsFile();  // FIX ME!  Kludge scratch file.
+    StoreAxisAttributesForOutsideQueries();
 
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
    
@@ -719,92 +717,109 @@ avtParallelAxisFilter::ComputeCurrentDataExtentsOverAllDomains()
 
 
 // *****************************************************************************
-//  Method: avtParallelAxisPlot::StoreDataExtentsForOutsideQueries
+//  Method: avtParallelAxisPlot::StoreAxisAttributesForOutsideQueries
 //
 //  Purpose: Stores name of each axis's scalar variable and that variable's
-//           extent in a data structure that can be queried by viewer functions.
+//           extent in a data structure that can be queried by other parts of
+//           VisIt.
 //
 //  Programmer: Mark Blair
 //  Creation:   Fri Sep  1 14:51:00 PDT 2006
 //
 //  Modifications:
 //
+//    Mark Blair, Thu Oct 26 18:40:28 PDT 2006
+//    Added support for non-uniform axis spacing.
+//   
 // *****************************************************************************
 
 void
-avtParallelAxisFilter::StoreDataExtentsForOutsideQueries()
+avtParallelAxisFilter::StoreAxisAttributesForOutsideQueries()
 {
-    stringVector curAxisVarNames = parAxisAtts.GetOrderedAxisNames();
+    stringVector curAxisNames    = parAxisAtts.GetOrderedAxisNames();
+    stringVector curGroupNames   = parAxisAtts.GetAxisGroupNames();
     doubleVector curAxisMinima   = parAxisAtts.GetAxisMinima();
     doubleVector curAxisMaxima   = parAxisAtts.GetAxisMaxima();
+    doubleVector curSliderMinima = parAxisAtts.GetExtentMinima();
+    doubleVector curSliderMaxima = parAxisAtts.GetExtentMaxima();
+    intVector    curMinTimeOrds  = parAxisAtts.GetExtMinTimeOrds();
+    intVector    curMaxTimeOrds  = parAxisAtts.GetExtMaxTimeOrds();
+    intVector    curLabelStates  = parAxisAtts.GetAxisLabelStates();
+    doubleVector curXIntervals   = parAxisAtts.GetAxisXIntervals();
     
-    const char *axisVarName;
-    int axisVarNameLen, axisNum, charNum;
+    axisCount = curAxisNames.size();
+    
+    const char *axisName, *groupName;
+    int axisNameLen, groupNameLen, axisNum, charNum;
+    double trueAxisMin, trueAxisMax, minWithMargin, maxWithMargin, axisMargin;
 
-    extentsArray.clear();
+    axisAttsArray.clear();
 
-    for (axisNum = 0; axisNum < curAxisMinima.size(); axisNum++)
+    axisAttsArray.push_back(PCP_LEFT_AXIS_X_FRACTION);
+    axisAttsArray.push_back(PCP_RIGHT_AXIS_X_FRACTION);
+
+    if (axisCount > PCP_MAX_HORIZONTAL_TITLE_AXES)
     {
-        axisVarName = curAxisVarNames[axisNum].c_str();
-        axisVarNameLen = strlen(axisVarName);
+        axisAttsArray.push_back(PCP_V_BOTTOM_AXIS_Y_FRACTION);
+        axisAttsArray.push_back(PCP_V_TOP_AXIS_Y_FRACTION);
+    }
+    else
+    {
+        axisAttsArray.push_back(PCP_H_BOTTOM_AXIS_Y_FRACTION);
+        axisAttsArray.push_back(PCP_H_TOP_AXIS_Y_FRACTION);
+    }
+
+    for (axisNum = 0; axisNum < axisCount; axisNum++)
+    {
+        axisName = curAxisNames[axisNum].c_str();
+        axisNameLen = strlen(axisName);
         
-        for (charNum = 0; charNum < axisVarNameLen; charNum++)
+        for (charNum = 0; charNum < axisNameLen; charNum++)
         {
-            extentsArray.push_back((double)axisVarName[charNum]);
+            axisAttsArray.push_back((double)axisName[charNum]);
         }
         
-        extentsArray.push_back(0.0);
+        axisAttsArray.push_back(0.0);
 
-        extentsArray.push_back(curAxisMinima[axisNum]);
-        extentsArray.push_back(curAxisMaxima[axisNum]);
+        groupName = curGroupNames[axisNum].c_str();
+        groupNameLen = strlen(groupName);
+        
+        for (charNum = 0; charNum < groupNameLen; charNum++)
+        {
+            axisAttsArray.push_back((double)groupName[charNum]);
+        }
+        
+        axisAttsArray.push_back(0.0);
+
+        if ((trueAxisMin = curAxisMinima[axisNum]) < -9e+36)
+        {
+            minWithMargin = -1e+37;
+            maxWithMargin = +1e+37;
+        }
+        else
+        {
+            trueAxisMax = curAxisMaxima[axisNum];
+            axisMargin = (trueAxisMax - trueAxisMin) * 0.05;
+            
+            minWithMargin = trueAxisMin - axisMargin;
+            maxWithMargin = trueAxisMax + axisMargin;
+        }
+
+        axisAttsArray.push_back(minWithMargin);
+        axisAttsArray.push_back(maxWithMargin);
+        axisAttsArray.push_back(curSliderMinima[axisNum]);
+        axisAttsArray.push_back(curSliderMaxima[axisNum]);
+        axisAttsArray.push_back((double)curMinTimeOrds[axisNum]);
+        axisAttsArray.push_back((double)curMaxTimeOrds[axisNum]);
+        axisAttsArray.push_back((double)curLabelStates[axisNum]);
+        axisAttsArray.push_back(curXIntervals[axisNum]);
     }
 
-    extentsArray.push_back(0.0);
+    axisAttsArray.push_back(0.0);
     
     PlotInfoAttributes plotInfoAtts;
-    plotInfoAtts.SetOutputArray(extentsArray);
+    plotInfoAtts.SetOutputArray(axisAttsArray);
     GetOutput()->GetInfo().GetAttributes().SetPlotInfoAtts(&plotInfoAtts);
-}
-
-
-// *****************************************************************************
-//  Method: avtParallelAxisFilter::WriteAxisVariableNamesAndExtentsFile
-//
-//  Purpose: Writes each axis's scalar variable name, along with the extent of
-//           the variable, into a file for use by the Extents tool.
-//
-//  Note: This is a KLUDGE intended for use only until PlotInfoAttributes can be
-//        used to communicate with the Extents tool.  Scratch file communication
-//        will of course fail if the viewer and the engine are running on
-//        different file systems.
-//
-//  Programmer: Mark Blair
-//  Creation:   Fri Sep 02 14:37:00 PDT 2005
-//
-//  Modifications:
-//
-// *****************************************************************************
-
-bool avtParallelAxisFilter::WriteAxisVariableNamesAndExtentsFile()
-{
-    FILE *avdFileStream;
-    
-    unlink (AXIS_VAR_DATA_FILE_NAME);
-
-    if ((avdFileStream = fopen(AXIS_VAR_DATA_FILE_NAME, "w")) == NULL) return false;
-
-    const stringVector curAxisVarNames = parAxisAtts.GetOrderedAxisNames();
-    const doubleVector curAxisMinima   = parAxisAtts.GetAxisMinima();
-    const doubleVector curAxisMaxima   = parAxisAtts.GetAxisMaxima();
-
-    for (int axisNum = 0; axisNum < curAxisVarNames.size(); axisNum++ ) {
-        fprintf(avdFileStream, "%s %f %f\n", curAxisVarNames[axisNum].c_str(),
-        curAxisMinima[axisNum], curAxisMaxima[axisNum]);
-    }
-
-    fclose(avdFileStream);
-
-    return true;
 }
 
 
