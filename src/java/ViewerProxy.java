@@ -169,6 +169,9 @@ import java.util.prefs.BackingStoreException;
 //   I made it possible to skip plugins that did not load while still allowing
 //   plugins that did load to get hooked up to xfer.
 //
+//   Brad Whitlock, Thu Nov 17 16:36:17 PST 2005
+//   I added methods to move and resize windows.
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -1624,6 +1627,35 @@ public class ViewerProxy implements SimpleObserver
         rpc.SetIntArg1(flag);
         rpc.Notify();
         return synchronous ? Synchronize() : true;
+    }
+
+    public boolean ResizeWindow(int win, int w, int h)
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_RESIZEWINDOWRPC);
+        rpc.SetWindowId(win);
+        rpc.SetIntArg1(w);
+        rpc.SetIntArg2(h);
+        rpc.Notify();
+    }
+
+    public boolean MoveWindow(int win, int x, int y)
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_MOVEWINDOWRPC);
+        rpc.SetWindowId(win);
+        rpc.SetIntArg1(x);
+        rpc.SetIntArg2(y);
+        rpc.Notify();
+    }
+
+    public void MoveAndResizeWindow(int win, int x, int y, int w, int h)
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_MOVEANDRESIZEWINDOWRPC);
+        rpc.SetWindowId(win);
+        rpc.SetIntArg1(x);
+        rpc.SetIntArg2(y);
+        rpc.SetIntArg3(w);
+        rpc.SetWindowLayout(h);
+        rpc.Notify();
     }
 
     public synchronized boolean Synchronize()

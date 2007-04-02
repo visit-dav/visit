@@ -378,6 +378,10 @@ struct avtDefaultPlotMetaData;
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Added mesh management attributes rpcs 
+//
+//    Brad Whitlock, Thu Nov 17 17:06:30 PST 2005
+//    Added MoveWindow, ResizeWindow, MoveAndResizeWindow.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -549,6 +553,9 @@ private:
 
     void SetTryHarderCyclesTimes();
 
+    void MoveWindow();
+    void MoveAndResizeWindow();
+    void ResizeWindow();
 
     void OpenClient();
 

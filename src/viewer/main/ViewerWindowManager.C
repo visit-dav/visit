@@ -1171,6 +1171,117 @@ ViewerWindowManager::RedrawWindow(int windowIndex)
 }
 
 // ****************************************************************************
+// Method: ViewerWindowManager::MoveWindow
+//
+// Purpose: 
+//   Moves the specified window.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Nov 17 17:18:45 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::MoveWindow(int windowIndex, int x, int y)
+{
+    if(windowIndex < 0 || windowIndex >= maxWindows)
+    {
+        char buf[200];
+        SNPRINTF(buf, 200, "Invalid window index (windowIndex = %d)",
+                 windowIndex);
+        Error(buf);
+        return;
+    }
+
+    if(windows[windowIndex] != 0)
+    {
+        windows[windowIndex]->SetLocation(x + borderLeft - shiftX,
+                                          y + borderTop  - shiftY);
+    }
+    else
+        Error("The specified window does not exist.");
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::MoveAndResizeWindow
+//
+// Purpose: 
+//   Moves and resizes the specified window.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Nov 17 17:18:59 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::MoveAndResizeWindow(int windowIndex, int x, int y,
+    int w, int h)
+{
+    if(windowIndex < 0 || windowIndex >= maxWindows)
+    {
+        char buf[200];
+        SNPRINTF(buf, 200, "Invalid window index (windowIndex = %d)",
+                 windowIndex);
+        Error(buf);
+        return;
+    }
+
+    if(windows[windowIndex] != 0)
+    {
+        windows[windowIndex]->SetLocation(x + borderLeft - shiftX,
+                                          y + borderTop  - shiftY);
+        int borderWidth  = borderLeft + borderRight;
+        int borderHeight = borderTop  + borderBottom;
+        windows[windowIndex]->SetSize(w - borderWidth, h - borderHeight);
+
+        UpdateWindowInformation(WINDOWINFO_WINDOWSIZE, windowIndex);
+    }
+    else
+        Error("The specified window does not exist.");
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::ResizeWindow
+//
+// Purpose: 
+//   Resizes the specified window.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Nov 17 17:19:19 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::ResizeWindow(int windowIndex, int w, int h)
+{
+    if(windowIndex < 0 || windowIndex >= maxWindows)
+    {
+        char buf[200];
+        SNPRINTF(buf, 200, "Invalid window index (windowIndex = %d)",
+                 windowIndex);
+        Error(buf);
+        return;
+    }
+
+    if(windows[windowIndex] != 0)
+    {
+        int borderWidth  = borderLeft + borderRight;
+        int borderHeight = borderTop  + borderBottom;
+        windows[windowIndex]->SetSize(w - borderWidth, h - borderHeight);
+
+        UpdateWindowInformation(WINDOWINFO_WINDOWSIZE, windowIndex);
+    }
+    else
+        Error("The specified window does not exist.");
+}
+
+// ****************************************************************************
 //  Method: ViewerWindowManager::ResetView
 //
 //  Purpose: 

@@ -393,6 +393,10 @@ class Xfer;
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Added mesh management attributes methods 
+//
+//    Brad Whitlock, Thu Nov 17 16:37:06 PST 2005
+//    Added methods to move and resize windows.
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -428,6 +432,9 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void PrintWindow();
     void DisableRedraw();
     void RedrawWindow();
+    void ResizeWindow(int win, int w, int h);
+    void MoveWindow(int win, int x, int y);
+    void MoveAndResizeWindow(int win, int x, int y, int w, int h);
     void HideToolbars(bool forAllWindows = false);
     void ShowToolbars(bool forAllWindows = false);
 
