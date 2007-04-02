@@ -41,6 +41,8 @@
 
 #include <avtUnstructuredDomainBoundaries.h>
 
+#include <snprintf.h>
+
 #include <vtkCellData.h>
 #include <vtkCellLinks.h>
 #include <vtkFloatArray.h>
@@ -53,6 +55,7 @@
 #include <avtGhostData.h>
 #include <avtMaterial.h>
 #include <avtMixedVariable.h>
+#include <avtParallel.h>
 
 #include <DebugStream.h>
 #include <VisItException.h>
@@ -714,7 +717,226 @@ avtUnstructuredDomainBoundaries::ExchangeIntVector(vector<int>        domainNum,
 //
 //  Purpose:
 //    Exchange the ghost zone information for some materials,
-//    returning the new ones. NOT IMPLEMENTED FOR MIXED MATERIALS.
+//    returning the new ones. 
+//
+//  Arguments:
+//    domainNum    an array of domain numbers for each mesh
+//    material     an array of materials
+//
+//  Programmer:  Hank Childs
+//  Creation:    March 9, 2007
+//
+// ****************************************************************************
+
+vector<avtMaterial*>
+avtUnstructuredDomainBoundaries::ExchangeMaterial(vector<int>    domainNum,
+                                                  vector<avtMaterial*> mats)
+{
+    bool haveMixedMaterials = false;
+    for (int i = 0; i < domainNum.size(); i++)
+        if (mats[i]->GetMixlen() != 0)
+            haveMixedMaterials = true;
+
+    int max = UnifyMaximumValue(haveMixedMaterials ? 1 : 0);
+    haveMixedMaterials = (max > 0 ? true : false);
+
+    vector<avtMaterial*> rv;
+    if (haveMixedMaterials)
+        rv = ExchangeMixedMaterials(domainNum, mats);
+    else
+        rv = ExchangeCleanMaterials(domainNum, mats);
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method:  avtUnstructuredDomainBoundaries::ExchangeMixedMaterials
+//
+//  Purpose:
+//    Exchange the ghost zone information for some materials,
+//    returning the new ones. 
+//
+//  Arguments:
+//    domainNum    an array of domain numbers for each mesh
+//    material     an array of materials
+//
+//  Programmer:  Hank Childs
+//  Creation:    February 13, 2007
+//
+// ****************************************************************************
+
+vector<avtMaterial*>
+avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
+                                                     vector<avtMaterial*> mats)
+{
+    int      i, j, k, l;
+
+    int   ***matlist = NULL;
+    int   ***mixm = NULL;
+    float ***mixvf = NULL;
+
+    vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
+
+    int **nGainedCells = NULL;
+    int **nGainedMixlen = NULL;
+    CommunicateMaterialInformation(domain2proc, domainNum, mats,
+                                   nGainedCells, nGainedMixlen,
+                                   matlist, mixm, mixvf);
+
+    vector<avtMaterial*> out(mats.size(), NULL);
+
+    for (i = 0; i < domainNum.size(); ++i)
+    {
+        avtMaterial *oldMat = mats[i];
+ 
+        //
+        // Estimate the sizes we will need for the new object.
+        // 
+        int newNCells  = oldMat->GetNZones();
+        int newMixlen  = oldMat->GetMixlen();
+        for (j = 0 ; j < nTotalDomains ; j++)
+        {
+            newNCells += nGainedCells[j][domainNum[i]];
+            newMixlen += nGainedMixlen[j][domainNum[i]];
+        }
+
+        //
+        // Start by copying in everything from this domain's material object.
+        //
+        int         *new_matlist  = new int[newNCells];
+        const int   *old_matlist  = mats[i]->GetMatlist();
+        memcpy(new_matlist, old_matlist, sizeof(int)*newNCells);
+
+        int         *new_mix_next = new int[newMixlen];
+        const int   *old_mix_next = mats[i]->GetMixNext();
+        memcpy(new_mix_next, old_mix_next, sizeof(int)*newMixlen);
+
+        int         *new_mix_mat  = new int[newMixlen];
+        const int   *old_mix_mat  = oldMat->GetMixMat();
+        memcpy(new_mix_mat, old_mix_mat, sizeof(int)*newMixlen);
+
+        float       *new_mix_vf   = new float[newMixlen];
+        const float *old_mix_vf   = oldMat->GetMixVF();
+        memcpy(new_mix_vf, old_mix_vf, sizeof(float)*newMixlen);
+
+        int         *new_mix_zone = new int[newMixlen];
+        const int   *old_mix_zone = oldMat->GetMixZone();
+        memcpy(new_mix_zone, old_mix_zone, sizeof(int)*newMixlen);
+
+        //
+        // Now copy over the ghost information.  By iterating over the
+        // domains in order, we will be constructing ghost information in
+        // the exact same order as when we construct ghost zones for the mesh.
+        //
+        int matlist_cnt = oldMat->GetNZones();
+        int mixlen_cnt  = oldMat->GetMixlen();
+        for (j = 0 ; j < nTotalDomains ; j++)
+        {
+            int ngc = nGainedCells[j][domainNum[i]];
+            int lml = 0; // "local" mixlen ... mixlen counter for this domain
+            for (k = 0 ; k < ngc ; k++)
+            {
+                if (matlist[j][domainNum[i]][k] >= 0)
+                {
+                    new_matlist[matlist_cnt] = matlist[j][domainNum[i]][k];
+                    matlist_cnt++;
+                }
+                else
+                {
+                    // Decode how many materials in the cell.
+                    new_matlist[matlist_cnt] = -(mixlen_cnt+1);
+                    matlist_cnt++;
+                    int nmats = -matlist[j][domainNum[i]][k];
+                    for (l = 0 ; l < nmats ; l++)
+                    {
+                        new_mix_mat[mixlen_cnt]  = mixm[j][domainNum[i]][lml];
+                        new_mix_vf[mixlen_cnt]   = mixvf[j][domainNum[i]][lml];
+                        new_mix_zone[mixlen_cnt] = -1;
+                        new_mix_next[mixlen_cnt] =
+                                              (l < nmats-1 ? mixlen_cnt+2 : 0);
+                        lml++;
+                        mixlen_cnt++;
+                    }
+                }
+            }
+
+        }
+
+        out[i] = new avtMaterial(oldMat->GetNMaterials(), 
+                                 oldMat->GetMaterials(), newNCells, 
+                                 new_matlist, newMixlen, new_mix_mat, 
+                                 new_mix_next, new_mix_zone, new_mix_vf);
+
+        delete [] new_matlist;
+        delete [] new_mix_mat;
+        delete [] new_mix_next;
+        delete [] new_mix_zone;
+        delete [] new_mix_vf;
+    }
+    
+    // Cleanup memory ... a bit of work.
+    if (nGainedCells != NULL)
+    {
+        for (i = 0 ; i < nTotalDomains ; i++)
+            if (nGainedCells[i] != NULL)
+                delete [] nGainedCells[i];
+        delete [] nGainedCells;
+    }
+    if (nGainedMixlen != NULL)
+    {
+        for (i = 0 ; i < nTotalDomains ; i++)
+            if (nGainedMixlen[i] != NULL)
+                delete [] nGainedMixlen[i];
+        delete [] nGainedMixlen;
+    }
+    if (matlist != NULL)
+    {
+        for (i = 0 ; i < nTotalDomains ; i++)
+            if (matlist[i] != NULL)
+            {
+                for (j = 0 ; j < nTotalDomains ; j++)
+                    if (matlist[i][j] != NULL)
+                       delete [] matlist[i][j];
+                delete [] matlist[i];
+            }
+        delete [] matlist;
+    }
+    if (mixm != NULL)
+    {
+        for (i = 0 ; i < nTotalDomains ; i++)
+            if (mixm[i] != NULL)
+            {
+                for (j = 0 ; j < nTotalDomains ; j++)
+                    if (mixm[i][j] != NULL)
+                       delete [] mixm[i][j];
+                delete [] mixm[i];
+            }
+        delete [] mixm;
+    }
+    if (mixvf != NULL)
+    {
+        for (i = 0 ; i < nTotalDomains ; i++)
+            if (mixvf[i] != NULL)
+            {
+                for (j = 0 ; j < nTotalDomains ; j++)
+                    if (mixvf[i][j] != NULL)
+                       delete [] mixvf[i][j];
+                delete [] mixvf[i];
+            }
+        delete [] mixvf;
+    }
+
+    return out;
+}
+
+
+// ****************************************************************************
+//  Method:  avtUnstructuredDomainBoundaries::ExchangeCleanMaterials
+//
+//  Purpose:
+//    Exchange the ghost zone information for some materials,
+//    returning the new ones. 
 //
 //  Arguments:
 //    domainNum    an array of domain numbers for each mesh
@@ -730,39 +952,31 @@ avtUnstructuredDomainBoundaries::ExchangeIntVector(vector<int>        domainNum,
 //    depending on the platform to work around a problem with templates
 //    using the MSVC6.0 compiler on Windows.
 //
+//    Hank Childs, Tue Feb 13 16:42:36 PST 2007
+//    Renamed method to ExchangeCleanMaterials.  This method is now only called
+//    if we know that the materials are clean.
+//
 // ****************************************************************************
 
 vector<avtMaterial*>
-avtUnstructuredDomainBoundaries::ExchangeMaterial(vector<int>    domainNum,
-                                                vector<avtMaterial*> mats)
+avtUnstructuredDomainBoundaries::ExchangeCleanMaterials(vector<int> domainNum,
+                                                     vector<avtMaterial*> mats)
 {
-    //
-    // As of its creation, this class has only been used
-    // by the Mili fileformat reader, which doesn't use
-    // mixed materials. This has yet to be implemented due
-    // to lack of data, and lack of time.
-    //
-    
-    //
-    // Since the implementation for mixed materials that will someday
-    // be made will replace most of this code, we do a small sacrifice
-    // of speed to reuse existing components (fortunately, speed shouldn't
-    // be an issue since the materials we're working with aren't mixed).
-    //    
-
     //
     // Load the materials into data arrays.
     //
     vector<vtkDataArray *> materialArrays(domainNum.size());
     int i;
-    for (i = 0; i < domainNum.size(); ++i)
+    for (i = 0 ; i < domainNum.size() ; i++)
     {
-        if (mats[i]->GetMixlen())
+        // This should never happen, but it doesn't hurt to check.
+        if (mats[i]->GetMixlen() != 0)
         {
-            EXCEPTION1(VisItException, "ExchangeMaterials for mixed materials"
-                                       " has not yet been implemented in "
-                                       " avtUnstructuredDomainBoundaries. ");
+            EXCEPTION1(VisItException, "Internal error.  This method should "
+                                       "not have been called if there were "
+                                       "mixed materials.");
         }
+
         materialArrays[i] = vtkIntArray::New();
         int nZones = mats[i]->GetNZones();
         materialArrays[i]->SetNumberOfTuples(nZones);
@@ -780,7 +994,7 @@ avtUnstructuredDomainBoundaries::ExchangeMaterial(vector<int>    domainNum,
 
     vector<avtMaterial*> out(mats.size(), NULL);
 
-    for (i = 0; i < domainNum.size(); ++i)
+    for (i = 0 ; i < domainNum.size() ; i++)
     {
         int nMaterials = mats[i]->GetNMaterials();
         int nZones = result[i]->GetNumberOfTuples();
@@ -803,14 +1017,15 @@ avtUnstructuredDomainBoundaries::ExchangeMaterial(vector<int>    domainNum,
 //
 //  Purpose:
 //    Exchange the ghost zone information for some mixvars,
-//    returning the new ones. NOT IMPLEMENTED.
+//    returning the new ones. 
 //
 //  Arguments:
 //    domainNum    an array of domain numbers for each mesh
+//    mats         The materials, which are needed to determine lengths.
 //    mixvar       an array of mixvars
 //
-//  Programmer:  Akira Haddox
-//  Creation:    August 11, 2003
+//  Programmer:  Hank Childs
+//  Creation:    March 10, 2007
 //
 // ****************************************************************************
 
@@ -819,15 +1034,75 @@ avtUnstructuredDomainBoundaries::ExchangeMixVar(vector<int>         domainNum,
                                           const vector<avtMaterial*> mats,
                                           vector<avtMixedVariable*>  mixvars)
 {
-    //
-    // As of its creation, this class has only been used
-    // by the Mili fileformat reader, which doesn't use
-    // mixed variables. This has yet to be implemented due
-    // to lack of data, and lack of time.
-    //
-    EXCEPTION1(VisItException, "ExchangeMixVar is not yet implemented for "
-                               "avtUnstructuredDomainBoundaries.");
-    return mixvars;
+    int      i, j, k, l;
+
+
+    vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
+
+    int **nGainedMixlen;
+    float ***vals;
+    CommunicateMixvarInformation(domain2proc, domainNum, mats,
+                                 mixvars, nGainedMixlen, vals);
+
+    vector<avtMixedVariable *> out(mixvars.size(), NULL);
+
+    for (i = 0; i < domainNum.size(); ++i)
+    {
+        avtMixedVariable *oldMV = mixvars[i];
+
+        //
+        // Estimate the sizes we will need for the new object.
+        //
+        int newMixlen  = oldMV->GetMixlen();
+        for (j = 0 ; j < nTotalDomains ; j++)
+            newMixlen += nGainedMixlen[j][domainNum[i]];
+
+        //
+        // Start by copying in everything from this domain's mixvar object.
+        //
+        float       *new_buff = new float[newMixlen];
+        const float *old_buff = mixvars[i]->GetBuffer();
+        int mixlen_cnt        = oldMV->GetMixlen();
+        memcpy(new_buff, old_buff, sizeof(float)*mixlen_cnt);
+
+        //
+        // Now copy over the ghost information.  By iterating over the
+        // domains in order, we will be constructing ghost information in
+        // the exact same order as when we construct ghost zones for the mesh.
+        //
+        for (j = 0 ; j < nTotalDomains ; j++)
+        {
+            memcpy(new_buff+mixlen_cnt, vals[j][domainNum[i]], 
+                   sizeof(float)*nGainedMixlen[j][domainNum[i]]);
+            mixlen_cnt += nGainedMixlen[j][domainNum[i]];
+        }          
+
+        out[i] = new avtMixedVariable(new_buff, newMixlen,oldMV->GetVarname());
+        delete [] new_buff;
+    }
+
+    // Cleanup ... a bit of effort.
+    if (vals != NULL)
+    {
+        for (i = 0 ; i < nTotalDomains ; i++)
+            if (vals[i] != NULL)
+            {
+                for (j = 0 ; j < nTotalDomains ; j++)
+                    if (vals[i][j] != NULL)
+                        delete [] vals[i][j];
+                delete [] vals[i];
+            }
+        delete [] vals;
+    }
+    if (nGainedMixlen != NULL)
+    {
+        for (i = 0 ; i < nTotalDomains ; i++)
+            if (nGainedMixlen[i] != NULL)
+                delete [] nGainedMixlen[i];
+        delete [] nGainedMixlen;
+    }
+
+    return out;
 }
 
 
@@ -1221,6 +1496,7 @@ avtUnstructuredDomainBoundaries::CreateDomainToProcessorMap(
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
 // ****************************************************************************
 
 void
@@ -1522,6 +1798,604 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
     }
 
     idList->Delete();
+
+#ifdef PARALLEL
+    MPI_Barrier(VISIT_MPI_COMM);
+#endif
+}
+
+
+// ****************************************************************************
+//  Method:  avtUnstructuredDomainBoundaries::CommunicateMixvarInformation
+//
+//  Purpose:
+//    Send and collect information needed to exchange mixed variables. 
+//
+//  Notes:
+//    Returned arguments should be passed in as uninitialized pointers.
+//    Data will be allocated as necesary, but will need to be freed by
+//    the caller. Allocation always occurs two the second level (meaning
+//    for example, vals[0][0] will always exist, but its value
+//    may be NULL).
+//
+//  Arguments:
+//    domain2proc   the map of domains to processors
+//    domainNum     the domains that are owned by the current process
+//    mats          the materials owned by the current processor
+//    mixvars       the mixed variables owned by the current processor
+//  (Returned arguments:)
+//    mixGained     the amount of new mixed entries gained from ghost data.
+//    vals          the values gained from ghost data.
+//
+//  Programmer:  Hank Childs
+//  Creation:    March 10, 2007
+//
+// ****************************************************************************
+
+void
+avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
+                                 const vector<int> &domain2proc,
+                                 const vector<int> &domainNum,
+                                 const vector<avtMaterial *> &mats,
+                                 const vector<avtMixedVariable *> &mixvars,
+                                 int **&mixGained, float ***&vals)
+{
+    // Get the processor rank
+    int rank = 0;
+#ifdef PARALLEL
+    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
+    int mpiNDataTag = GetUniqueMessageTag();
+    int mpiGainedValsTag = GetUniqueMessageTag();
+#endif
+
+    vals      = new float**[nTotalDomains];
+    mixGained = new int*[nTotalDomains];
+
+    int i;
+    int sendDom;
+    for (sendDom = 0 ; sendDom < nTotalDomains ; sendDom++)
+    {
+        vals[sendDom]      = new float*[nTotalDomains];
+        mixGained[sendDom] = new int[nTotalDomains];
+
+        int recvDom;
+        for (recvDom = 0 ; recvDom < nTotalDomains ; recvDom++)
+        {
+            vals[sendDom][recvDom] = NULL;
+            mixGained[sendDom][recvDom]  = 0;
+
+            // Cases where no computation is required.
+            if (sendDom == recvDom)
+                continue;
+            if (domain2proc[sendDom] == -1 || domain2proc[recvDom] == -1)
+                continue;
+
+            // If this process owns both of the domains, it's an internal
+            // calculation: no communication needed
+            if (domain2proc[sendDom] == rank && domain2proc[recvDom] == rank)
+            {
+                // Find the index that corresponds to the sendDom.
+                for (i = 0 ; i < domainNum.size() ; i++)
+                    if (domainNum[i] == sendDom)
+                        break;
+                
+                int index = GetGivenIndex(sendDom, recvDom);
+
+                // If no domain boundary, then there's no work to do.
+                if (index < 0)
+                    continue;
+
+                avtMaterial      *givingMat = mats[i];
+                avtMixedVariable *givingVar = mixvars[i];
+                
+                int nCells = givenCells[index].size();
+
+                // Assess the amount of mix in cells along the boundary.
+                // For each cell "C" along the boundary, assume a counting
+                // function F(C), where F(C) returns 0 for clean zones and
+                // the number of materials in the zone for mixed zones.
+                // We are calculating Sum(F(C)) where Sum is taken over
+                // all zones along the boundary of the send and recv Doms.
+                const int *mix_next = mats[i]->GetMixNext();
+                const int *matlist  = mats[i]->GetMatlist();
+                int nMixlen = 0;
+                for (i = 0; i < nCells; ++i)
+                {
+                    int cell = givenCells[index][i];
+                    if (matlist[cell] >= 0)
+                        continue;
+                    int current = -matlist[cell]-1;
+                    int nmats = 1;
+                    // nmats < 1000 just to prevent infinite loops if someone
+                    // set this structure up wrong.
+                    while ((mix_next[current] != 0) && (nmats < 1000))
+                    {
+                        current = mix_next[current]-1;
+                        nmats++;
+                    }
+                    nMixlen += nmats;
+                    if (nmats >= 1000)
+                    {
+                        char str[1024];
+                        SNPRINTF(str, 1024, 
+                                "The mixed material entry for cell %d "
+                                "of domain %d appears to be invalid.  Unable "
+                                "to proceed.", givenCells[index][i], sendDom);
+                        EXCEPTION1(VisItException, str);
+                    }
+                }
+
+                // Now that we have assessed the size, we can allocate memory
+                // and populate the buffer.
+                mixGained[sendDom][recvDom] = nMixlen;
+                vals[sendDom][recvDom] = new float[nMixlen];
+                const float *buff = givingVar->GetBuffer();
+                nMixlen = 0;
+                for (i = 0; i < nCells; ++i)
+                {
+                    int cell = givenCells[index][i];
+                    if (matlist[cell] < 0)
+                    {
+                        int current = -matlist[cell]-1;
+                        int nmats = 0;
+                        do
+                        {
+                            vals[sendDom][recvDom][nMixlen++] = buff[current];
+                            current = mix_next[current]-1;
+                        } while (mix_next[current] != 0);
+                    }
+                }
+            }
+
+            // All other cases only occur during parallel execution.
+#ifdef PARALLEL
+            // If this process owns the receiving domain, we recv information.
+            else if (domain2proc[recvDom] == rank)
+            {
+                MPI_Status stat;
+
+                int fRank = domain2proc[sendDom];
+                // Get the number of points given
+                int amt = 0;
+                MPI_Recv(&amt, 1, MPI_INT, fRank, mpiNDataTag,
+                         VISIT_MPI_COMM, &stat);
+
+                if (amt == 0)
+                    continue;
+                
+                mixGained[sendDom][recvDom] = amt;
+                vals[sendDom][recvDom] = new float[amt];
+                // Get the gained materials
+                MPI_Recv(vals[sendDom][recvDom], amt, MPI_FLOAT,
+                         fRank, mpiGainedValsTag, VISIT_MPI_COMM, &stat);
+            }
+            // If this process owns the sending domain, we send information.
+            else if (domain2proc[sendDom] == rank)
+            {
+                int tRank = domain2proc[recvDom];
+
+                int index = GetGivenIndex(sendDom, recvDom); 
+                
+                // If no domain boundary, send 0 for nPts, and continue
+                // Also continue if there are no given points.
+                int amt = 0;
+                if (index < 0 || givenPoints[index].size() == 0)
+                {
+                    MPI_Send(&amt, 1, MPI_INT,tRank,mpiNDataTag,VISIT_MPI_COMM);
+                    continue;
+                }
+
+                for (i = 0; i < domainNum.size(); ++i)
+                    if (domainNum[i] == sendDom)
+                        break;
+
+                avtMaterial *givingMat = mats[i];
+                avtMixedVariable *givingVar = mixvars[i];
+                
+                int nCells = givenCells[index].size();
+
+                // Assess the amount of mix in cells along the boundary.
+                // For each cell "C" along the boundary, assume a counting
+                // function F(C), where F(C) returns 0 for clean zones and
+                // the number of materials in the zone for mixed zones.
+                // We are calculating Sum(F(C)) where Sum is taken over
+                // all zones along the boundary of the send and recv Doms.
+                const int *mix_next = mats[i]->GetMixNext();
+                const int *matlist  = mats[i]->GetMatlist();
+                int nMixlen = 0;
+                for (i = 0; i < nCells; ++i)
+                {
+                    int cell = givenCells[index][i];
+                    if (matlist[cell] >= 0)
+                        continue;
+                    int current = -matlist[cell]-1;
+                    int nmats = 1;
+                    // nmats < 1000 just to prevent infinite loops if someone
+                    // set this structure up wrong.
+                    while ((mix_next[current] != 0) && (nmats < 1000))
+                    {
+                        current = mix_next[current]-1;
+                        nmats++;
+                    }
+                    nMixlen += nmats;
+                    if (nmats >= 1000)
+                    {
+                        char str[1024];
+                        SNPRINTF(str, 1024, 
+                                "The mixed material entry for cell %d "
+                                "of domain %d appears to be invalid.  Unable "
+                                "to proceed.", givenCells[index][i], sendDom);
+                        EXCEPTION1(VisItException, str);
+                    }
+                }
+
+                MPI_Send(&nMixlen, 1,MPI_INT,tRank,mpiNDataTag,VISIT_MPI_COMM);
+
+                // Now that we have assessed the size, we can allocate memory
+                // and populate the buffer.
+                mixGained[sendDom][recvDom] = nMixlen;
+                float *sendBuff = new float[nMixlen];
+                const float *buff = givingVar->GetBuffer();
+                nMixlen = 0;
+                for (i = 0; i < nCells; ++i)
+                {
+                    int cell = givenCells[index][i];
+                    if (matlist[cell] < 0)
+                    {
+                        int current = -matlist[cell]-1;
+                        int nmats = 0;
+                        do
+                        {
+                            sendBuff[nMixlen++] = buff[current];
+                            current = mix_next[current]-1;
+                        } while (mix_next[current] != 0);
+                    }
+                }
+
+                // Send the matlist
+                MPI_Send(sendBuff, nMixlen, MPI_FLOAT,
+                         tRank, mpiGainedValsTag, VISIT_MPI_COMM);
+
+                delete [] sendBuff;
+            }
+#endif
+        }
+    }
+
+#ifdef PARALLEL
+    MPI_Barrier(VISIT_MPI_COMM);
+#endif
+}
+
+
+// ****************************************************************************
+//  Method:  avtUnstructuredDomainBoundaries::CommunicateMaterialInformation
+//
+//  Purpose:
+//    Send and collect information needed to exchange materials. Also
+//    generates information from domains handled by this process.
+//
+//  Notes:
+//    Returned arguments should be passed in as uninitialized pointers.
+//    Data will be allocated as necesary, but will need to be freed by
+//    the caller. Allocation always occurs two the second level (meaning
+//    for example, nGainedCells[0][0] will always exist, but its value
+//    may be NULL).
+//
+//    mix_next and mix_zone are *not* communicated, because mix_next must be
+//    rebuilt in the context of the original material and mix_zone is no longer
+//    applicable.
+//
+//  Arguments:
+//    domain2proc   the map of domains to processors
+//    domainNum     the domains that are owned by the current process
+//    mats          the materials owned by the current processor
+//  (Returned arguments:)
+//    nGainedCells  the number of cells gained from other processors.
+//    nGainedMixlen the amount of mixed entries gained from other processors.
+//    gainedMatlist the matlist from other processors.  mixed cells are
+//                  negative and represent the number of mixed materials
+//                  in the cell.
+//    gainedMixmat  the mixmat from other processors.
+//    gainedMixvf   the mixvf from other processors.
+//
+//  Programmer:  Hank Childs
+//  Creation:    February 13, 2007
+//
+// ****************************************************************************
+
+void
+avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
+                                 const vector<int> &domain2proc,
+                                 const vector<int> &domainNum,
+                                 const vector<avtMaterial *> &mats,
+                                 int **&nGainedCells, int **&nGainedMixlen,
+                                 int ***&gainedMatlist, int ***&gainedMixmat, 
+                                 float ***&gainedMixvf)
+{
+    // Get the processor rank
+    int rank = 0;
+#ifdef PARALLEL
+    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
+    int mpiNDataTag = GetUniqueMessageTag();
+    int mpiGainedMatlistTag = GetUniqueMessageTag();
+    int mpiGainedMixmatTag = GetUniqueMessageTag();
+    int mpiGainedMixvfTag = GetUniqueMessageTag();
+#endif
+
+    gainedMatlist = new int**[nTotalDomains];
+    gainedMixmat  = new int**[nTotalDomains];
+    gainedMixvf   = new float**[nTotalDomains];
+
+    nGainedCells  = new int*[nTotalDomains];
+    nGainedMixlen = new int*[nTotalDomains];
+
+    int i;
+    int sendDom;
+    for (sendDom = 0 ; sendDom < nTotalDomains ; sendDom++)
+    {
+        gainedMatlist[sendDom] = new int*[nTotalDomains];
+        gainedMixmat[sendDom]  = new int*[nTotalDomains];
+        gainedMixvf[sendDom]   = new float*[nTotalDomains];
+        nGainedCells[sendDom]  = new int[nTotalDomains];
+        nGainedMixlen[sendDom] = new int[nTotalDomains];
+
+        int recvDom;
+        for (recvDom = 0 ; recvDom < nTotalDomains ; recvDom++)
+        {
+            gainedMatlist[sendDom][recvDom] = NULL;
+            gainedMixmat[sendDom][recvDom]  = NULL;
+            gainedMixvf[sendDom][recvDom] = NULL;
+            
+            nGainedCells[sendDom][recvDom]  = 0;
+            nGainedMixlen[sendDom][recvDom] = 0;
+
+            // Cases where no computation is required.
+            if (sendDom == recvDom)
+                continue;
+            if (domain2proc[sendDom] == -1 || domain2proc[recvDom] == -1)
+                continue;
+
+            // If this process owns both of the domains, it's an internal
+            // calculation: no communication needed
+            if (domain2proc[sendDom] == rank && domain2proc[recvDom] == rank)
+            {
+                // Find the index that corresponds to the sendDom.
+                for (i = 0 ; i < domainNum.size() ; i++)
+                    if (domainNum[i] == sendDom)
+                        break;
+                
+                int index = GetGivenIndex(sendDom, recvDom);
+
+                // If no domain boundary, then there's no work to do.
+                if (index < 0)
+                    continue;
+
+                avtMaterial *givingMat = mats[i];
+                
+                int nCells = givenCells[index].size();
+                nGainedCells[sendDom][recvDom] = nCells;
+
+                const int *mix_next = mats[i]->GetMixNext();
+                const int *matlist  = mats[i]->GetMatlist();
+                int nMixlen = 0;
+                for (i = 0; i < nCells; ++i)
+                {
+                    int cell = givenCells[index][i];
+                    if (matlist[cell] >= 0)
+                        continue;
+                    int current = -matlist[cell]-1;
+                    int nmats = 1;
+                    // nmats < 1000 just to prevent infinite loops if someone
+                    // set this structure up wrong.
+                    while ((mix_next[current] != 0) && (nmats < 1000))
+                    {
+                        current = mix_next[current]-1;
+                        nmats++;
+                    }
+                    nMixlen += nmats;
+                    if (nmats >= 1000)
+                    {
+                        char str[1024];
+                        SNPRINTF(str, 1024, 
+                                "The mixed material entry for cell %d "
+                                "of domain %d appears to be invalid.  Unable "
+                                "to proceed.", givenCells[index][i], sendDom);
+                        EXCEPTION1(VisItException, str);
+                    }
+                }
+                nGainedMixlen[sendDom][recvDom] = nMixlen;
+                
+                gainedMatlist[sendDom][recvDom] = new int[nCells];
+                gainedMixmat[sendDom][recvDom]  = new int[nMixlen];
+                gainedMixvf[sendDom][recvDom]   = new float[nMixlen];
+
+                const int   *mix_mat  = givingMat->GetMixMat();
+                const float *mix_vf   = givingMat->GetMixVF();
+                const int   *mix_zone = givingMat->GetMixZone();
+
+                int mixcnt = 0;
+                for (i = 0; i < nCells; ++i)
+                {
+                    int cell = givenCells[index][i];
+                    if (matlist[cell] >= 0)
+                    {
+                        gainedMatlist[sendDom][recvDom][i] = matlist[cell];
+                    }
+                    else
+                    {
+                        int current = -matlist[cell]-1;
+                        int nmats = 0;
+                        bool seenZero = false;
+                        bool shouldBreak = false;
+                        do
+                        {
+                            gainedMixmat[sendDom][recvDom][mixcnt] = mix_mat[current];
+                            gainedMixvf[sendDom][recvDom][mixcnt]  = mix_vf[current];
+                            mixcnt++;
+                            nmats++;
+                            if (seenZero)
+                                shouldBreak = true;
+                            else
+                                current = mix_next[current]-1;
+                            if (mix_next[current] == 0)
+                                seenZero = true;
+                        } while (!shouldBreak);
+                        gainedMatlist[sendDom][recvDom][i] = -nmats;
+                    }
+                }
+            }
+
+            // All other cases only occur during parallel execution.
+#ifdef PARALLEL
+            // If this process owns the receiving domain, we recv information.
+            else if (domain2proc[recvDom] == rank)
+            {
+                MPI_Status stat;
+
+                int fRank = domain2proc[sendDom];
+                // Get the number of points given
+                int amt[2];
+                MPI_Recv(amt, 2, MPI_INT, fRank, mpiNDataTag,
+                         VISIT_MPI_COMM, &stat);
+
+                if (amt[0] == 0 && amt[1] == 0)
+                    continue;
+                
+                nGainedCells[sendDom][recvDom]  += amt[0];
+                nGainedMixlen[sendDom][recvDom] += amt[1];
+
+                gainedMatlist[sendDom][recvDom] = new int[amt[0]];
+                gainedMixmat[sendDom][recvDom]  = new int[amt[1]];
+                gainedMixvf[sendDom][recvDom]   = new float[amt[1]];
+
+                // Get the gained materials
+                MPI_Recv(gainedMatlist[sendDom][recvDom], amt[0], MPI_INT,
+                         fRank, mpiGainedMatlistTag, VISIT_MPI_COMM, &stat);
+
+                // Get the gained mixmats
+                MPI_Recv(gainedMixmat[sendDom][recvDom], amt[1], MPI_INT,
+                         fRank, mpiGainedMixmatTag, VISIT_MPI_COMM, &stat);
+
+                // Get the gained mixvf
+                MPI_Recv(gainedMixvf[sendDom][recvDom], amt[1], MPI_FLOAT,
+                         fRank, mpiGainedMixvfTag, VISIT_MPI_COMM, &stat);
+            }
+            // If this process owns the sending domain, we send information.
+            else if (domain2proc[sendDom] == rank)
+            {
+                int tRank = domain2proc[recvDom];
+
+                int index = GetGivenIndex(sendDom, recvDom); 
+                
+                // If no domain boundary, send 0 for nPts, and continue
+                // Also continue if there are no given points.
+                int amt[2] = { 0, 0 };
+                if (index < 0 || givenPoints[index].size() == 0)
+                {
+                    MPI_Send(amt, 2, MPI_INT,tRank,mpiNDataTag,VISIT_MPI_COMM);
+                    continue;
+                }
+
+                for (i = 0; i < domainNum.size(); ++i)
+                    if (domainNum[i] == sendDom)
+                        break;
+
+                avtMaterial *givingMat = mats[i];
+                
+                int nCells = givenCells[index].size();
+                nGainedCells[sendDom][recvDom] = nCells;
+
+                const int *mix_next = mats[i]->GetMixNext();
+                const int *matlist  = mats[i]->GetMatlist();
+                int nMixlen = 0;
+                for (i = 0; i < nCells; ++i)
+                {
+                    int cell = givenCells[index][i];
+                    if (matlist[cell] >= 0)
+                        continue;
+                    int current = -matlist[cell]-1;
+                    int nmats = 1;
+                    // nmats < 1000 just to prevent infinite loops if someone
+                    // set this structure up wrong.
+                    while ((mix_next[current] != 0) && (nmats < 1000))
+                    {
+                        current = mix_next[current]-1;
+                        nmats++;
+                    }
+                    nMixlen += nmats;
+                    if (nmats >= 1000)
+                    {
+                        char str[1024];
+                        SNPRINTF(str, 1024, 
+                                "The mixed material entry for cell %d "
+                                "of domain %d appears to be invalid.  Unable "
+                                "to proceed.", givenCells[index][i], sendDom);
+                        EXCEPTION1(VisItException, str);
+                    }
+                }
+                nGainedMixlen[sendDom][recvDom] = nMixlen;
+                
+                amt[0] = nCells;
+                amt[1] = nMixlen;
+                MPI_Send(amt, 2, MPI_INT,tRank,mpiNDataTag,VISIT_MPI_COMM);
+              
+                int   *givenMatlist = new int[nCells];
+                int   *givenMixmat  = new int[nMixlen];
+                float *givenMixvf   = new float[nMixlen];
+
+                const int   *mix_mat  = givingMat->GetMixMat();
+                const float *mix_vf   = givingMat->GetMixVF();
+                const int   *mix_zone = givingMat->GetMixZone();
+
+                int mixcnt = 0;
+                for (i = 0; i < nCells; ++i)
+                {
+                    int cell = givenCells[index][i];
+                    if (matlist[cell] >= 0)
+                    {
+                        givenMatlist[i] = matlist[cell];
+                    }
+                    else
+                    {
+                        int current = -matlist[cell]-1;
+                        int nmats = 0;
+                        bool seenZero = false;
+                        bool shouldBreak = false;
+                        do
+                        {
+                            givenMixmat[mixcnt] = mix_mat[current];
+                            givenMixvf[mixcnt]  = mix_vf[current];
+                            mixcnt++;
+                            nmats++;
+                            if (seenZero)
+                                shouldBreak = true;
+                            else
+                                current = mix_next[current]-1;
+                            if (mix_next[current] == 0)
+                                seenZero = true;
+                        } while (!shouldBreak);
+                        givenMatlist[i] = -nmats;
+                    }
+                }
+
+                // Send the matlist
+                MPI_Send(givenMatlist, amt[0], MPI_INT,
+                         tRank, mpiGainedMatlistTag, VISIT_MPI_COMM);
+                // Send the mixmats
+                MPI_Send(givenMixmat, amt[1], MPI_INT,
+                         tRank, mpiGainedMixmatTag, VISIT_MPI_COMM);
+                // Send the mixmats
+                MPI_Send(givenMixvf, amt[1], MPI_FLOAT,
+                         tRank, mpiGainedMixvfTag, VISIT_MPI_COMM);
+
+                delete [] givenMatlist;
+                delete [] givenMixmat;
+                delete [] givenMixvf;
+            }
+#endif
+        }
+    }
 
 #ifdef PARALLEL
     MPI_Barrier(VISIT_MPI_COMM);

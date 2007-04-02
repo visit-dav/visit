@@ -87,6 +87,9 @@ class avtMaterial;
 //    Hank Childs, Thu Jan 26 10:04:34 PST 2006
 //    Add virtual method "CreatesRobustGhostNodes".
 //
+//    Hank Childs, Fri Mar  2 07:43:47 PST 2007
+//    Add support for exchanging mixed materials.
+//
 // ****************************************************************************
 
 class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
@@ -123,6 +126,12 @@ class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
                                          vector<vtkDataArray*> vectors);
 
     virtual vector<avtMaterial*>      ExchangeMaterial(vector<int>   domainNum,
+                                        vector<avtMaterial*>   mats);
+    virtual vector<avtMaterial*>      ExchangeMixedMaterials(
+                                        vector<int>   domainNum,
+                                        vector<avtMaterial*>   mats);
+    virtual vector<avtMaterial*>      ExchangeCleanMaterials(
+                                        vector<int>   domainNum,
                                         vector<avtMaterial*>   mats);
 
     virtual vector<avtMixedVariable*> ExchangeMixVar(vector<int>     domainNum,
@@ -176,6 +185,21 @@ class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
                                                int **&nGainedPoints,
                                                int **&nGainedCells,
                                                int ***&nPointsPerCell);
+
+    void            CommunicateMaterialInformation(
+                                               const vector<int> &domain2proc,
+                                               const vector<int> &domainNum,
+                                               const vector<avtMaterial*> &,
+                                               int **&, int **&, int ***&,
+                                               int ***&, float ***&);
+
+    void            CommunicateMixvarInformation(
+                                           const vector<int> &domain2proc,
+                                           const vector<int> &domainNum,
+                                           const vector<avtMaterial*> &,
+                                           const vector<avtMixedVariable *> &,
+                                           int **&, float ***&);
+                      
 
 #if !defined(USING_MSVC6)
     template <class T>

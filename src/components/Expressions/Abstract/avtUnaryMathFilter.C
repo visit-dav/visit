@@ -141,6 +141,9 @@ avtUnaryMathFilter::~avtUnaryMathFilter()
 //    Hank Childs, Tue Aug 16 09:05:03 PDT 2005
 //    Make cur_mesh accessible to derived types.
 //
+//    Hank Childs, Tue Mar 13 09:59:08 PDT 2007
+//    Refine method for determining centering of the output variable.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -164,6 +167,11 @@ avtUnaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
         // Iteration 3 says take the first scalar array if one is available,
         //             provided that array is not vtkGhostLevels, etc.
         //             This is because most constants we create are scalar.
+        //
+        // Note: this hack used to be quite important because we would use
+        // the resulting array to determine the centering of the variable.
+        // Now we use the IsPointVariable() method.  So this data array is
+        // only used to get the type.
         //
         int ncellArray = in_ds->GetCellData()->GetNumberOfArrays();
         for (i = 0 ; i < ncellArray ; i++)
@@ -245,6 +253,12 @@ avtUnaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
     //
     int ncomps = 0;
     int nvals = 0;
+    if (activeVariable == NULL || data == NULL)
+        nvals = (IsPointVariable() ? in_ds->GetNumberOfPoints() 
+                                   : in_ds->GetNumberOfCells());
+    else
+        nvals = data->GetNumberOfTuples();
+
     vtkDataArray *dv = NULL;
     if (data == NULL)
     {
@@ -253,8 +267,6 @@ avtUnaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
         // the mesh.
         //
         ncomps = 1;
-        nvals = (IsPointVariable() ? in_ds->GetNumberOfPoints() 
-                                   : in_ds->GetNumberOfCells());
         vtkFloatArray *tmp = vtkFloatArray::New();
         dv = CreateArray(tmp);
         tmp->Delete();
@@ -262,7 +274,6 @@ avtUnaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
     else
     {
         ncomps = data->GetNumberOfComponents();
-        nvals  = data->GetNumberOfTuples();
         dv = CreateArray(data);
     }
 
