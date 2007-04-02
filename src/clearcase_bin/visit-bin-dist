@@ -262,6 +262,10 @@
 #    Mark C. Miller, Thu Jan 25 20:15:18 PST 2007
 #    Added mkgrdbl to the distribution.
 #
+#    Eric Brugger, Wed Feb 21 15:07:24 PST 2007
+#    Added the header files in include/vtk/Utilities/{expat,vtktiff,vtkzlib}
+#    to the distribution.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -950,6 +954,9 @@ mkdir $incdir/vtk/Imaging
 mkdir $incdir/vtk/MangleMesaInclude
 mkdir $incdir/vtk/Rendering
 mkdir $incdir/vtk/Utilities
+mkdir $incdir/vtk/Utilities/vtkexpat
+mkdir $incdir/vtk/Utilities/vtktiff
+mkdir $incdir/vtk/Utilities/vtkzlib
 mkdir $incdir/vtk/vtkstd
 mkdir $incdir/python
 mkdir $incdir/qt
@@ -997,6 +1004,9 @@ cp $VisItDir/include/vtk/Rendering/*.h          $incdir/vtk/Rendering
 cp $VisItDir/include/vtk/Rendering/*.txx        $incdir/vtk/Rendering
 cp $VisItDir/include/vtk/Utilities/*.h          $incdir/vtk/Utilities
 cp $VisItDir/include/vtk/Utilities/*.txx        $incdir/vtk/Utilities
+cp $VisItDir/include/vtk/Utilities/vtkexpat/*.h $incdir/vtk/Utilities/vtkexpat
+cp $VisItDir/include/vtk/Utilities/vtktiff/*.h  $incdir/vtk/Utilities/vtktiff
+cp $VisItDir/include/vtk/Utilities/vtkzlib/*.h  $incdir/vtk/Utilities/vtkzlib
 cp $VisItDir/include/vtk/vtkstd/*               $incdir/vtk/vtkstd
 cp $VisItDir/include/python/*.h                 $incdir/python
 
