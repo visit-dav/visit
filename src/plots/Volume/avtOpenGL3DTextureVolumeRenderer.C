@@ -71,6 +71,9 @@
   #else
     #if defined(_WIN32)
        #include <windows.h>
+       // On Windows, we have to access glTexImage3D as an OpenGL extension.
+       // In case texture3D extension is NOT available.
+       static PFNGLTEXIMAGE3DEXTPROC glTexImage3D_ptr = 0;
     #endif
     #include <GL/gl.h>
   #endif
@@ -191,6 +194,10 @@ avtOpenGL3DTextureVolumeRenderer::~avtOpenGL3DTextureVolumeRenderer()
 //    Brad Whitlock, Fri Sep 15 12:52:53 PDT 2006
 //    I made it use GLEW for getting the texture3D function.
 //
+//    Kathleen Bonnell, Wed Jan  3 15:51:59 PST 2007 
+//    I made it revert (for Windows) to glTexImage3D_ptr if the
+//    texture3D extension is not available.
+//
 // ****************************************************************************
 
 void
@@ -211,10 +218,22 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
     // be sure that the extension exists on the display.
     if(glew_initialized && !GLEW_EXT_texture3D)
     {
+#ifdef _WIN32
+        // On Windows, glTexImage3D is an OpenGL extension. We have to look
+        // up the function pointer.
+        if(glTexImage3D_ptr == 0)
+            glTexImage3D_ptr = (PFNGLTEXIMAGE3DEXTPROC)wglGetProcAddress("glTexImage3D");
+        if(glTexImage3D_ptr == 0)
+        {
+            debug1 << "The glTexImage3D function was not located." << endl;
+            return;
+        }
+#else
         debug1 << "avtOpenGL3DTextureVolumeRenderer::Render: "
                   "returning because there is no texture3D extension."
                << endl;
         return;
+#endif
     }
 #elif !defined(GL_VERSION_1_2)
     // We're not using GLEW for some reason so return if OpenGL's
@@ -419,10 +438,20 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
 
 #ifndef VTK_IMPLEMENT_MESA_CXX
         // OpenGL mode
-#ifdef HAVE_LIBGLEW
-        // glTexImage3D via GLEW.
-        glTexImage3DEXT(GL_TEXTURE_3D, 0, GL_RGBA, newnx, newny, newnz,
-                        0, GL_RGBA, GL_UNSIGNED_BYTE, volumetex);
+#ifdef HAVE_LIBGLEW 
+        if (GLEW_EXT_texture3D)
+        {
+            // glTexImage3D via GLEW.
+            glTexImage3DEXT(GL_TEXTURE_3D, 0, GL_RGBA, newnx, newny, newnz,
+                            0, GL_RGBA, GL_UNSIGNED_BYTE, volumetex);
+        }
+#ifdef _WIN32
+        else if (glTexImage3D_ptr != 0)
+        {
+            glTexImage3D_ptr(GL_TEXTURE_3D, 0, GL_RGBA, newnx, newny, newnz,
+                             0, GL_RGBA, GL_UNSIGNED_BYTE, volumetex);
+        }
+#endif
 #elif defined(GL_VERSION_1_2)
         // OpenGL supports glTexImage3D.
         glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, newnx, newny, newnz,
