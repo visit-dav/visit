@@ -10142,15 +10142,42 @@ visit_GetProcessAttributes(PyObject *self, PyObject *args)
     PyObject *retval = PyProcessAttributes_New();
     ProcessAttributes *pa = PyProcessAttributes_FromPyObject(retval);
 
-    int id = Init::ComponentNameToID(componentName);
-    GetViewerMethods()->QueryProcessAttributes(id, engineHostName, engineDbName);
+    if (strncmp(componentName, "cli", 3) != 0)
+    {
+        int id = Init::ComponentNameToID(componentName);
+        GetViewerMethods()->QueryProcessAttributes(id, engineHostName, engineDbName);
 
-    Synchronize();
+        Synchronize();
 
-    GetViewerState()->GetProcessAttributes();
+        // Copy the viewer proxy's window information into the return data structure.
+        *pa = *(GetViewerState()->GetProcessAttributes());
 
-    // Copy the viewer proxy's window information into the return data structure.
-    *pa = *(GetViewerState()->GetProcessAttributes());
+    }
+    else
+    {
+        doubleVector pids, ppids;
+        stringVector hosts;
+
+#if defined(_WIN32)
+        int myPid = _getpid();
+        int myPpid = -1;
+#else
+        int myPid = getpid();
+        int myPpid = getppid();
+#endif
+
+        pids.push_back(myPid);
+        ppids.push_back(myPpid);
+
+        char myHost[256];
+        gethostname(myHost, sizeof(myHost));
+        hosts.push_back(myHost);
+
+        pa->SetPids(pids);
+        pa->SetPpids(ppids);
+        pa->SetHosts(hosts);
+        pa->SetIsParallel(false);
+    }
 
     return retval;
 }

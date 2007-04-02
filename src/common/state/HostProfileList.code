@@ -539,3 +539,59 @@ HostProfileList::SetFromNode(DataNode *parentNode)
         }
     }
 }
+
+Function: ProcessOldVersions
+Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
+Definition:
+// ****************************************************************************
+// Method: HostProfileList::ProcessOldVersions
+//
+// Purpose:
+//   This method creates modifies a DataNode representation of the object
+//   so it conforms to the newest representation of the object, which can
+//   can be read back in.
+//
+// Programmer: Eric Brugger
+// Creation:   March 16, 2007
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+HostProfileList::ProcessOldVersions(DataNode *parentNode,
+                                    const char *configVersion)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("HostProfileList");
+    if(searchNode == 0)
+        return;
+
+    int nChildren = searchNode->GetNumChildren();
+    DataNode **children = searchNode->GetChildren();
+
+    //
+    // If the host name is um or uv and the partition is 0, change
+    // it to pdebug.
+    //
+    for (int i = 0; i < nChildren; i++)
+    {
+        DataNode *hostNode = children[i]->GetNode("host");
+        if (hostNode != 0)
+        {
+            if (hostNode->AsString() == "um.llnl.gov" ||
+                hostNode->AsString() == "uv.llnl.gov")
+            {
+                DataNode *partNode = children[i]->GetNode("partition");
+                if (partNode != 0)
+                {
+                     if (partNode->AsString() == "0")
+                     {
+                         partNode->SetString("pdebug");
+                     }
+                }
+            }
+        }
+    }
+}

@@ -513,6 +513,10 @@ avtSiloFileFormat::GetCycleFromFilename(const char *f) const
 //  Programmer: Mark C. Miller 
 //  Creation:   May 16, 2005 
 //
+//  Modifications:
+//    Mark C. Miller, Mon Mar 19 15:52:24 PDT 2007
+//    Added fall back to 'time' if can't filed 'dtime'
+//
 // ****************************************************************************
 
 double
@@ -525,6 +529,12 @@ avtSiloFileFormat::GetTime()
         double dtime;
         DBReadVar(dbfile, "dtime", &dtime);
         return dtime;
+    }
+    else if (DBInqVarExists(dbfile, "time"))
+    {
+        float time;
+        DBReadVar(dbfile, "time", &time);
+        return (double) time;
     }
     return INVALID_TIME;
 }
