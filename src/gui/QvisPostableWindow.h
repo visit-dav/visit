@@ -36,6 +36,9 @@ class QVBoxLayout;
 //   Brad Whitlock, Fri Sep 5 15:50:16 PST 2003
 //   Added postWhenShown static member.
 //
+//   Brad Whitlock, Mon Nov 14 10:42:26 PDT 2005
+//   Added postEnabled static member.
+//
 // ****************************************************************************
 
 class GUI_API QvisPostableWindow : public QvisWindowBase
@@ -54,6 +57,8 @@ public:
 
     virtual void CreateNode(DataNode *);
     virtual void SetFromNode(DataNode *, const int *borders);
+
+    static void  SetPostEnabled(bool);
 protected:
     virtual void UpdateWindow(bool doAll);
 public slots:
@@ -73,6 +78,7 @@ protected:
     QvisNotepadArea    *notepad;
 
     static bool         postWhenShown;
+    static bool         postEnabled;
 };
 
 #endif

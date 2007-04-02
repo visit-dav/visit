@@ -45,6 +45,8 @@ ExodusCommonPluginInfo::GetDefaultExtensions()
     defaultExtensions.push_back("EXO");
     defaultExtensions.push_back("EX2");
     defaultExtensions.push_back("EXII");
+    defaultExtensions.push_back("exoII");
+    defaultExtensions.push_back("EXOII");
     defaultExtensions.push_back("GEN");
     defaultExtensions.push_back("exodus");
     defaultExtensions.push_back("EXODUS");
