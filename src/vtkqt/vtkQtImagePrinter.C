@@ -75,11 +75,21 @@ vtkQtImagePrinter::vtkQtImagePrinter() : print()
 //   stripes in the output image. This uses more memory but it looks way better
 //   in the printed image.
 //
+//   Brad Whitlock, Fri May 12 14:49:52 PST 2006
+//   Check for data == NULL just in case.
+//
 // ****************************************************************************
 
 void
 vtkQtImagePrinter::WriteFile(ofstream *, vtkImageData *data, int extent[6])
-{  
+{
+    // Make sure that data is not NULL.
+    if(data == NULL)
+    {
+        vtkErrorMacro(<< "NULL input.");
+        return;
+    }
+
     // Make sure we actually have data.
     if(!data->GetPointData()->GetScalars())
     {

@@ -108,12 +108,19 @@ QvisOutputWindow::CreateWindowContents()
 //   Brad Whitlock, Tue May 20 15:09:11 PST 2003
 //   Made it work with the regenerated MessageAttributes.
 //
+//   Brad Whitlock, Thu May 11 14:59:11 PST 2006
+//   Added support for ErrorClear.
+//
 // ****************************************************************************
 
 void
 QvisOutputWindow::UpdateWindow(bool)
 {
     MessageAttributes *msgAtts = (MessageAttributes *)subject;
+
+    // Return without doing anything if it's ErrorClear.
+    if(msgAtts->GetSeverity() == MessageAttributes::ErrorClear)
+        return;
 
     // Create a string to add to the output text.
     QString temp;

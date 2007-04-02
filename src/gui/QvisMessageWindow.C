@@ -113,6 +113,9 @@ QvisMessageWindow::~QvisMessageWindow()
 //   I made it catenate new message *only* if existing message didn't already
 //   contain text of new message.
 //
+//   Brad Whitlock, Thu May 11 15:01:21 PST 2006
+//   Return if the message is ErrorClear.
+//
 // *************************************************************************************
 
 void
@@ -120,10 +123,12 @@ QvisMessageWindow::Update(Subject *)
 {
     MessageAttributes *ma = (MessageAttributes *)subject;
 
-    double secondsSinceLastMessage = DELTA_TOA_THIS_LINE;
-
-    QString msgText;
     MessageAttributes::Severity severity = ma->GetSeverity();
+    if(severity == MessageAttributes::ErrorClear)
+        return;
+
+    double secondsSinceLastMessage = DELTA_TOA_THIS_LINE;
+    QString msgText;
     if (secondsSinceLastMessage < 5.0)
     {
         MessageAttributes::Severity oldSeverity;

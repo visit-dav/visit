@@ -2536,6 +2536,29 @@ ViewerSubject::Message(const char *message)
 }
 
 // ****************************************************************************
+// Method: ViewerSubject::ErrorClear
+//
+// Purpose: 
+//   Sends a clear errors message to the clients.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu May 11 15:06:36 PST 2006
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerSubject::ErrorClear()
+{
+    // Send the message to the observers of the viewer's messageAtts.
+    debug1 << "Sending ErrorClear message to clients." << endl;
+    messageAtts->SetText("");
+    messageAtts->SetSeverity(MessageAttributes::ErrorClear);
+    messageAtts->Notify();
+}
+
+// ****************************************************************************
 // Method: ViewerSubject::Status
 //
 // Purpose: 

@@ -130,6 +130,8 @@ avtImageFileFormat::Initialize(void)
             start = i;
     fext = string(fname, start+1, fname.size()-1);
 
+    debug4 << "File extension: " << fext.c_str() << endl;
+
     // If we have an image volume, do some special processing.
     if (fext == "imgvol")
     {
@@ -203,6 +205,10 @@ avtImageFileFormat::ActivateTimestep(void)
 //    Read in the header on processor 0 only and broadcast to the other
 //    processors.
 //
+//    Brad Whitlock, Thu May 11 16:22:03 PST 2006
+//    Added code to strip off extra windows end of line characters from the
+//    end of the file extensions so the reader is not confused later.
+//
 // ****************************************************************************
 
 void
@@ -263,7 +269,21 @@ avtImageFileFormat::ReadImageVolumeHeader(void)
                 {
                     sprintf(line_with_dir, "%s%s", dir, line);
                 }
+
+                // Trim any weird control characters off of the end.
+                int len = strlen(line_with_dir);
+                char *cptr = line_with_dir + len - 1;
+                while(cptr >= line_with_dir)
+                {
+                    if(*cptr < ' ')
+                        *cptr-- = '\0';
+                    else
+                        break;
+                }
+
                 subImages.push_back(line_with_dir);
+                debug4 << "Adding \"" << line_with_dir
+                       << "\" to the list of subImages." << endl;
             }
         }
 
@@ -565,6 +585,8 @@ void avtImageFileFormat::ReadInImage(void)
 
     int idx = indexOfImageToRead;
     idx = (idx < 0 ? 0 : idx);
+
+    debug4 << "avtImageFileFormat::ReadInImage: image_fext=" << image_fext << endl;
 
     // select the appropriate reader for the file extension
     if ((image_fext == "pnm") || (image_fext == "PNM") || 

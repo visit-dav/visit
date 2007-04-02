@@ -6,6 +6,7 @@
 VIEWER_API void Error(const char *message);
 VIEWER_API void Warning(const char *message);
 VIEWER_API void Message(const char *message);
+VIEWER_API void ErrorClear();
 
 // Functions to send status
 void Status(const char *message);
