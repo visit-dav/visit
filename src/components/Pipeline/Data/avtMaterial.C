@@ -70,6 +70,7 @@ using std::vector;
 //      matUsed      Returned referenced vector of bools indicating which
 //                   materials in mats are actually used
 //      domain       The domain string (for printing error messages only).
+//      allowmat0    Allow material number = 0 in material list
 //
 //  Programmer: Hank Childs (re-factored by Mark Miller) 
 //  Creation:   April 27, 2004 
@@ -90,6 +91,10 @@ using std::vector;
 //    Fixed a test that compared a negative 1-origin matlist entry into the
 //    mix array with mixlen in a way that assumed the entry was 0-origin.
 //
+//    Thomas R. Treadway, Tue Aug 22 14:37:42 PDT 2006
+//    Added the allowmat0 flag so material number = 0 don't display 
+//    error/warning messages.
+//
 // ****************************************************************************
 static void
 RenumberMaterialsZeroToNminusOne(int nMats, const int *const mats,
@@ -97,7 +102,8 @@ RenumberMaterialsZeroToNminusOne(int nMats, const int *const mats,
                                  int mixl, const int *const mixm,
                                  int* &newml, int* &newmixm,
                                  vector<bool> &matUsed,
-                                 const char *domain)
+                                 const char *domain,
+                                 int allowmat0)
 {
     int i;
 
@@ -155,13 +161,18 @@ RenumberMaterialsZeroToNminusOne(int nMats, const int *const mats,
             }
             else if (ml[i] > maxMat || lut[ml[i]] == -1)
             {
-                if (!haveIssuedWarning)
-                {
-                    char msg[1024];
-                    SNPRINTF(msg, sizeof(msg),"Zone %d of %s has an invalid material"
+                // Skip the issusing of a warning for matrial=0 if 
+                // allowmat0 flag is set.
+                if (!((allowmat0 > 0) && (ml[i] == 0)))
+                {    
+                    if (!haveIssuedWarning)
+                    {
+                        char msg[1024];
+                        SNPRINTF(msg, sizeof(msg),"Zone %d of %s has an invalid material"
                                  " number -- %d", i, dom, ml[i]);
-                    avtCallback::IssueWarning(msg);
-                    haveIssuedWarning = true;
+                        avtCallback::IssueWarning(msg);
+                        haveIssuedWarning = true;
+                    }
                 }
                 newml[i] = nMats;
             }
@@ -277,6 +288,7 @@ RenumberMaterialsZeroToNminusOne(int nMats, const int *const mats,
 //      mixz         The mix_zone.
 //      mixv         The mix_vf.
 //      dom          The domain string (for printing error messages only).
+//      allowmat0    Allow material number = 0
 //
 //  Programmer: Hank Childs
 //  Creation:   November 7, 2000
@@ -325,13 +337,17 @@ RenumberMaterialsZeroToNminusOne(int nMats, const int *const mats,
 //    Re-factored section of code having to do with re-numbering materials to
 //    0 to N-1 to a new function, RenumberMaterialsZeroToNminusOne
 //
+//    Thomas R. Treadway, Tue Aug 22 14:37:42 PDT 2006
+//    Added the allowmat0 flag so material number = 0 don't display 
+//    error/warning messages.
+//
 // ****************************************************************************
 
 avtMaterial::avtMaterial(int nMats, const int *mats, char **names,
                          int ndims, const int *dims, int major_order,
                          const int *ml, int mixl, const int *mixm,
                          const int *mixn, const int *mixz, const float *mixv,
-                         const char *domain)
+                         const char *domain, int allowmat0)
 {
     int timerHandle = visitTimer->StartTimer();
     int  i;
@@ -372,7 +388,7 @@ avtMaterial::avtMaterial(int nMats, const int *mats, char **names,
                                      mixl, mixm,
                                      newml, newmixm,
                                      matUsed,
-                                     domain);
+                                     domain,allowmat0);
 
     int nMatsUsed = 0;
     for (i = 0 ; i < nMats ; i++)
@@ -475,7 +491,6 @@ avtMaterial::avtMaterial(int nMats, const vector<string> &mats, int nzon,
 //      dims:        The size of the list of zones in each logical dimension. 
 //      major_order: 0==>row-major, 1==>col-major ordering for ndims>1 
 //      domain:      for use in printing error messages, may be 0
-//
 //    
 //  Programmer: Mark C. Miller 
 //  Creation:   April 28, 2004 
@@ -752,7 +767,7 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, const char **names,
                                          mixl, mixm,
                                          newml, newmixm,
                                          newmatUsed,
-                                         domain);
+                                         domain, 0);
 
         Initialize(nTotMats+addOne, matnames, matnames, newmatUsed, numZones,
             ndims, dims, major_order, newml, mixl, newmixm, mixn, mixz, mixv);
@@ -807,7 +822,8 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, const char **names,
 
 avtMaterial::avtMaterial(int nTotMats, const int *mats, char **names,
                          int ndims, const int *dims, int major_order,
-                         const float *const *vfracs, const char *domain)
+                         const float *const *vfracs, 
+                         const char *domain)
 {
     int timerHandle = visitTimer->StartTimer();
     const int notSet = INT_MAX;
@@ -1023,7 +1039,7 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, char **names,
                                          mixl, mixm,
                                          newml, newmixm,
                                          newmatUsed,
-                                         domain);
+                                         domain, 0);
 
         Initialize(nTotMats+addOne, matnames, matnames, newmatUsed, ncells,
             ndims, dims, major_order, newml, mixl, newmixm, mixn, mixz, mixv);
@@ -1394,7 +1410,8 @@ avtMaterial::Initialize(int nMats, const vector<string> &matnames,
                         const vector<bool> &matUsed, int nzon,
                         int ndims, const int *dims, int major_order,
                         const int *ml, int mixl, const int *mixm,
-                        const int *mixn, const int *mixz, const float *mixv)
+                        const int *mixn, const int *mixz, 
+                        const float *mixv)
 {
     int   i;
 

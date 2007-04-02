@@ -3322,6 +3322,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Hank Childs, Thu Jul 20 11:23:07 PDT 2006
 //    Add mass distribution query.
 //
+//    Hank Childs, Mon Aug  7 18:05:38 PDT 2006
+//    Add distance from boundary query.
+//
 // ****************************************************************************
 
 void
@@ -3378,6 +3381,7 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("Kurtosis", dq, cr, basic, 1, 0, qo);
     queryTypes->AddQuery("Chord Length Distribution", dq, mr, ld, 1, 0, qo);
     queryTypes->AddQuery("Mass Distribution", dq, vr, ld, 1, 0, qo);
+    queryTypes->AddQuery("Distance From Boundary", dq, vr, ld, 1, 0, qo);
     queryTypes->AddQuery("Skewness", dq, cr, basic, 1, 0, qo);
     queryTypes->AddQuery("Integrate", dq, cr, basic, 1, 0, qo);
     queryTypes->AddQuery("L2Norm Between Curves", dq, cr, basic, 2, 0, qo);

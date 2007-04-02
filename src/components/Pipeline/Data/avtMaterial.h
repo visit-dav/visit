@@ -136,6 +136,9 @@ struct MatZoneMap
 //    Hank Childs, Wed Aug 17 10:18:12 PDT 2005
 //    Added SimplifyHeavilyMixedZones.
 //
+//    Thomas R. Treadway, Tue Aug 22 15:58:53 PDT 2006
+//    Added allowmat0
+//
 // ****************************************************************************
 
 class PIPELINE_API avtMaterial
@@ -151,7 +154,8 @@ class PIPELINE_API avtMaterial
                                                  const int *mixn,
                                                  const int *mixz,
                                                  const float *mixv, 
-                                                 const char *domain = NULL);
+                                                 const char *domain = NULL,
+                                                 int mat0 = 0);
                                      avtMaterial(int, 
                                               const std::vector<std::string>&,
                                               int, const int *, int,
