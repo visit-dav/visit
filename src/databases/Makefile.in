@@ -187,6 +187,9 @@
 #   Jeremy Meredith, Wed Mar 22 13:46:20 PST 2006
 #   Added ProteinDataBank reader
 #
+#   Brad Whitlock, Fri Mar 31 14:31:42 PST 2006
+#   Added BOW and TSurf readers
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -206,9 +209,9 @@ NETCDF=NETCDF
 PDB=KullLite PDB
 SAF=SAF
 SAMPLES=Rect Hex
-REQUIRED=ANALYZE ANSYS AUXFile BOV CMAT Curve2D Dune EnSight Image Lines \
+REQUIRED=ANALYZE ANSYS AUXFile BOV BOW CMAT Curve2D Dune EnSight Image Lines \
  NASTRAN OVERFLOW PATRAN PLOT2D PLOT3D Point3D ProteinDataBank SAR STL \
- Shapefile Silo SimV1 Spheral TFT Tecplot Vista VTK WavefrontOBJ Xmdv
+ Shapefile Silo SimV1 Spheral TFT TSurf Tecplot Vista VTK WavefrontOBJ Xmdv
 VISUS=ViSUS
 
 OPTIONAL=
