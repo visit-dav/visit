@@ -4,5 +4,8 @@
       <Field name="removeGhosts" label="Remove ghost faces?" type="bool">
         false
       </Field>
+      <Field name="edgesIn2D" label="Find external edges for 2D datasets" type="bool">
+        true
+      </Field>
     </Attribute>
   </Plugin>

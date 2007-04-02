@@ -52,6 +52,9 @@ typedef void (*PixelProgressCallback)(void *, int, int);
 //    Hank Childs, Sat Dec 11 11:23:42 PST 2004
 //    Add ResetSamples.
 //
+//    Hank Childs, Sun Oct  2 12:06:39 PDT 2005
+//    Add image partition argument to GetVariables.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtVolume
@@ -91,7 +94,8 @@ class PIPELINE_API avtVolume
     void                      Restrict(int, int, int, int);
     void                      ResetSamples(void);
 
-    void                      GetVariables(float, vtkDataArray **);
+    void                      GetVariables(float, vtkDataArray **, 
+                                           avtImagePartition * = NULL);
     void                      SetGradientVariable(int);
 
     void                      SetProgressCallback(PixelProgressCallback,void*);

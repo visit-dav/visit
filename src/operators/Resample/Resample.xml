@@ -48,5 +48,8 @@
       <Field name="defaultValue" label="Value for uncovered regions" type="double">
         0.000000
       </Field>
+      <Field name="distributedResample" label="Distribute resampled data\nset across all processors\n(parallel only)?" type="bool">
+        false
+      </Field>
     </Attribute>
   </Plugin>

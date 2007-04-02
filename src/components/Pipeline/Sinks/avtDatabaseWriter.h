@@ -49,9 +49,12 @@ class     avtDatabaseMetaData;
 //    Hank Childs, Thu May 26 15:45:48 PDT 2005
 //    Add an "all-variables" option.
 //
+//    Hank Childs, Tue Sep 27 10:21:36 PDT 2005
+//    Use virtual inheritance.
+//
 // ****************************************************************************
 
-class PIPELINE_API avtDatabaseWriter : public avtOriginatingDatasetSink
+class PIPELINE_API avtDatabaseWriter : public virtual avtOriginatingDatasetSink
 {
   public:
                        avtDatabaseWriter();

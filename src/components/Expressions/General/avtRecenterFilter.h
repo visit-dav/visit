@@ -23,6 +23,9 @@
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Hank Childs, Thu Oct  6 15:41:21 PDT 2005
+//    Added support for recentering vectors ['6637].
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtRecenterFilter : public avtSingleInputExpressionFilter
@@ -37,6 +40,7 @@ class EXPRESSION_API avtRecenterFilter : public avtSingleInputExpressionFilter
   protected:
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual bool              IsPointVariable(void);
+    virtual int               GetVariableDimension(void);
 };
 
 

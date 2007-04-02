@@ -4,12 +4,13 @@
 
 #include <avtVolume.h>
 
+#include <vtkDataArray.h>
+
 #include <avtGradients.h>
 #include <avtImagePartition.h>
 #include <avtRay.h>
 #include <avtRayFunction.h>
 
-#include <vtkDataArray.h>
 #include <ImproperUseException.h>
 #include <Utility.h>
 
@@ -686,6 +687,10 @@ avtVolume::ContributeRay(avtRay *ray, avtGradients *grad, int factor[9],
 //    Hank Childs, Mon Dec 31 13:37:50 PST 2001
 //    Add support for more efficient byte-packing.
 //
+//    Hank Childs, Sun Oct  2 12:06:39 PDT 2005
+//    Add support for distributed resampling/duplicated points in an image
+//    partition.
+//
 // ****************************************************************************
 
 char *
@@ -709,7 +714,8 @@ avtVolume::ConstructMessages(avtImagePartition *part, char **msgs, int *cnt)
             {
                 if (rays[i][j] != NULL)
                 {
-                    int index = part->Partition(j, i);
+                    bool duplicatedOnOthers;
+                    int index = part->Partition(j, i, duplicatedOnOthers);
 
                     //
                     // Since there are often many consecutive sample points,
@@ -730,6 +736,20 @@ avtVolume::ConstructMessages(avtImagePartition *part, char **msgs, int *cnt)
                     cnt[index] += 2*rays[i][j]->numRuns*sizeof(int);
                     cnt[index] += rays[i][j]->numValidSamples * numVariables *
                                   sizeof(float);
+
+                    if (duplicatedOnOthers)
+                    {
+                        std::vector<int> otherParts = 
+                                         part->GetPartitionsAsADuplicate(j, i);
+                        for (int p = 0 ; p < otherParts.size() ; p++)
+                        {
+                            int index = otherParts[p];
+                            cnt[index] += 3*sizeof(int);
+                            cnt[index] += 2*rays[i][j]->numRuns*sizeof(int);
+                            cnt[index] += rays[i][j]->numValidSamples 
+                                          * numVariables * sizeof(float);
+                        }
+                    }
                 }
             }
         }
@@ -758,56 +778,68 @@ avtVolume::ConstructMessages(avtImagePartition *part, char **msgs, int *cnt)
             {
                 if (rays[i][j] != NULL)
                 {
-                    int index = part->Partition(j, i);
-
-                    int width  = j;
-                    int height = i;
-                    InlineCopy(current[index], (char *)&width, sizeof(int));
-                    InlineCopy(current[index], (char *)&height, sizeof(int));
-                    int numRuns = rays[i][j]->numRuns;
-                    InlineCopy(current[index], (char *)&numRuns, sizeof(int));
-
-                    //
-                    // -Optimization- Make a local copy of the rays' arrays,
-                    // so we don't have to look up their values repeatedly.
-                    //
-                    int      numSamples  = rays[i][j]->numSamples;
-                    bool    *validSample = rays[i][j]->validSample;
-                    float  **sample      = rays[i][j]->sample;
-
-                    bool inRun = false;
-                    for (k = 0 ; k < numSamples ; k++)
+                    bool duplicatedOnOthers;
+                    int index = part->Partition(j, i, duplicatedOnOthers);
+                    std::vector<int> list;
+                    if (duplicatedOnOthers)
                     {
-                        if (validSample[k])
+                        list = part->GetPartitionsAsADuplicate(j, i);
+                    }
+                    list.push_back(index);
+                    
+                    int nSamps = list.size();
+                    for (int p = 0 ; p < nSamps ; p++)
+                    {
+                        index = list[p];
+                        int width  = j;
+                        int height = i;
+                        InlineCopy(current[index], (char *)&width, sizeof(int));
+                        InlineCopy(current[index], (char *)&height, sizeof(int));
+                        int numRuns = rays[i][j]->numRuns;
+                        InlineCopy(current[index], (char *)&numRuns, sizeof(int));
+    
+                        //
+                        // -Optimization- Make a local copy of the rays' arrays,
+                        // so we don't have to look up their values repeatedly.
+                        //
+                        int      numSamples  = rays[i][j]->numSamples;
+                        bool    *validSample = rays[i][j]->validSample;
+                        float  **sample      = rays[i][j]->sample;
+    
+                        bool inRun = false;
+                        for (k = 0 ; k < numSamples ; k++)
                         {
-                            if (!inRun)
+                            if (validSample[k])
                             {
-                                //
-                                // Determine how many samples are in this run.
-                                //
-                                int ind = k;
-                                while (ind < numSamples && validSample[ind])
+                                if (!inRun)
                                 {
-                                    ind++;
+                                    //
+                                    // Determine how many samples are in this run.
+                                    //
+                                    int ind = k;
+                                    while (ind < numSamples && validSample[ind])
+                                    {
+                                        ind++;
+                                    }
+                                    int numSamplesInRun = ind-k;
+    
+                                    //
+                                    // Now copy over the start of the run and how
+                                    // many samples it has.
+                                    //
+                                    InlineCopy(current[index], (char *)&k,
+                                               sizeof(int));
+                                    InlineCopy(current[index],
+                                            (char *)&numSamplesInRun, sizeof(int));
                                 }
-                                int numSamplesInRun = ind-k;
-
-                                //
-                                // Now copy over the start of the run and how
-                                // many samples it has.
-                                //
-                                InlineCopy(current[index], (char *)&k,
-                                           sizeof(int));
-                                InlineCopy(current[index],
-                                        (char *)&numSamplesInRun, sizeof(int));
+                                for (l = 0 ; l < numVariables ; l++)
+                                {
+                                    InlineCopy(current[index],
+                                           (char *)&(sample[l][k]), sizeof(float));
+                                }
                             }
-                            for (l = 0 ; l < numVariables ; l++)
-                            {
-                                InlineCopy(current[index],
-                                       (char *)&(sample[l][k]), sizeof(float));
-                            }
+                            inRun = validSample[k];
                         }
-                        inRun = validSample[k];
                     }
                 }
             }
@@ -930,7 +962,7 @@ avtVolume::ExtractSamples(const char * const *msgs, const int *cnt, int nmsgs)
 
 
 // ****************************************************************************
-//  Method: avtVolume::GetVariable
+//  Method: avtVolume::GetVariables
 //
 //  Purpose:
 //      Gets all of the values in a volume and puts them in a vtkScalars.
@@ -954,10 +986,15 @@ avtVolume::ExtractSamples(const char * const *msgs, const int *cnt, int nmsgs)
 //    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
 //    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray instead.
 //
+//    Hank Childs, Fri Sep 30 15:03:28 PDT 2005
+//    Add support for get the variables only from our portion of the partitions
+//    subvolume.
+//
 // ****************************************************************************
 
 void
-avtVolume::GetVariables(float defaultVal, vtkDataArray **scalars)
+avtVolume::GetVariables(float defaultVal, vtkDataArray **scalars,
+                        avtImagePartition *ip)
 {
     int   i, j, k, l;
 
@@ -970,13 +1007,30 @@ avtVolume::GetVariables(float defaultVal, vtkDataArray **scalars)
     }
 
     //
+    // Set up the indices we are going to iterate over.  This is normally
+    // going to be the whole volume.  But if we have partitioned the volume
+    // across the processors, it may not be.  This happens when the resample
+    // filter does a distributed resampling.
+    //
+    int wStart = 0;
+    int wEnd   = volumeWidth;
+    int hStart = 0;
+    int hEnd   = volumeHeight;
+    if (ip != NULL)
+    {
+        ip->GetThisPartition(wStart, wEnd, hStart, hEnd);
+        wEnd++;
+        hEnd++;
+    }
+
+    //
     // Put the default value into the variable, so if we don't have samples
     // we don't have to worry about it.
     //
     int count = 0;
-    for (i = 0 ; i < volumeWidth ; i++)
+    for (i = wStart ; i < wEnd ; i++)
     {
-        for (j = 0 ; j < volumeHeight ; j++)
+        for (j = hStart ; j < hEnd ; j++)
         {
             for (k = 0 ; k < volumeDepth ; k++)
             {
@@ -992,11 +1046,13 @@ avtVolume::GetVariables(float defaultVal, vtkDataArray **scalars)
     //
     // Get all of the samples out of the rays and put them in out output.
     //
-    for (i = 0 ; i < volumeHeight ; i++)
+    int vHeight = hEnd-hStart;
+    int vWidth  = wEnd-wStart;
+    for (i = hStart ; i < hEnd ; i++)
     {
         if (rays[i] != NULL)
         {
-            for (j = 0 ; j < volumeWidth ; j++)
+            for (j = wStart ; j < wEnd ; j++)
             {
                 if (rays[i][j] != NULL)
                 {
@@ -1005,8 +1061,8 @@ avtVolume::GetVariables(float defaultVal, vtkDataArray **scalars)
                         float sample[AVT_VARIABLE_LIMIT];
                         if (rays[i][j]->GetSample(k, sample))
                         {
-                            int index = k*volumeHeight*volumeWidth
-                                        + i*volumeWidth + j;
+                            int index = k*vHeight*vWidth + (i-hStart)*vWidth 
+                                      + (j-wStart);
                             for (l = 0 ; l < numVariables ; l++)
                             {
                                 scalars[l]->SetTuple1(index, sample[l]);

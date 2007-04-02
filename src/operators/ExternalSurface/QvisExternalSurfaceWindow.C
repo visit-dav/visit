@@ -30,7 +30,7 @@ using std::string;
 //   Constructor
 //
 // Programmer: xml2window
-// Creation:   Tue Aug 23 09:43:51 PDT 2005
+// Creation:   Mon Sep 26 09:31:48 PDT 2005
 //
 // Modifications:
 //   
@@ -54,7 +54,7 @@ QvisExternalSurfaceWindow::QvisExternalSurfaceWindow(const int type,
 //   Destructor
 //
 // Programmer: xml2window
-// Creation:   Tue Aug 23 09:43:51 PDT 2005
+// Creation:   Mon Sep 26 09:31:48 PDT 2005
 //
 // Modifications:
 //   
@@ -72,7 +72,7 @@ QvisExternalSurfaceWindow::~QvisExternalSurfaceWindow()
 //   Creates the widgets for the window.
 //
 // Programmer: xml2window
-// Creation:   Tue Aug 23 09:43:51 PDT 2005
+// Creation:   Mon Sep 26 09:31:48 PDT 2005
 //
 // Modifications:
 //   
@@ -81,13 +81,18 @@ QvisExternalSurfaceWindow::~QvisExternalSurfaceWindow()
 void
 QvisExternalSurfaceWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 1,2,  10, "mainLayout");
+    QGridLayout *mainLayout = new QGridLayout(topLayout, 2,2,  10, "mainLayout");
 
 
     removeGhosts = new QCheckBox("Remove ghost faces?", central, "removeGhosts");
     connect(removeGhosts, SIGNAL(toggled(bool)),
             this, SLOT(removeGhostsChanged(bool)));
     mainLayout->addWidget(removeGhosts, 0,0);
+
+    edgesIn2D = new QCheckBox("Find external edges for 2D datasets", central, "edgesIn2D");
+    connect(edgesIn2D, SIGNAL(toggled(bool)),
+            this, SLOT(edgesIn2DChanged(bool)));
+    mainLayout->addWidget(edgesIn2D, 1,0);
 
 }
 
@@ -99,7 +104,7 @@ QvisExternalSurfaceWindow::CreateWindowContents()
 //   Updates the widgets in the window when the subject changes.
 //
 // Programmer: xml2window
-// Creation:   Tue Aug 23 09:43:51 PDT 2005
+// Creation:   Mon Sep 26 09:31:48 PDT 2005
 //
 // Modifications:
 //   
@@ -133,6 +138,9 @@ QvisExternalSurfaceWindow::UpdateWindow(bool doAll)
           case 0: //removeGhosts
             removeGhosts->setChecked(atts->GetRemoveGhosts());
             break;
+          case 1: //edgesIn2D
+            edgesIn2D->setChecked(atts->GetEdgesIn2D());
+            break;
         }
     }
 }
@@ -145,7 +153,7 @@ QvisExternalSurfaceWindow::UpdateWindow(bool doAll)
 //   Gets values from certain widgets and stores them in the subject.
 //
 // Programmer: xml2window
-// Creation:   Tue Aug 23 09:43:51 PDT 2005
+// Creation:   Mon Sep 26 09:31:48 PDT 2005
 //
 // Modifications:
 //   
@@ -163,6 +171,12 @@ QvisExternalSurfaceWindow::GetCurrentValues(int which_widget)
         // Nothing for removeGhosts
     }
 
+    // Do edgesIn2D
+    if(which_widget == 1 || doAll)
+    {
+        // Nothing for edgesIn2D
+    }
+
 }
 
 
@@ -175,6 +189,14 @@ void
 QvisExternalSurfaceWindow::removeGhostsChanged(bool val)
 {
     atts->SetRemoveGhosts(val);
+    Apply();
+}
+
+
+void
+QvisExternalSurfaceWindow::edgesIn2DChanged(bool val)
+{
+    atts->SetEdgesIn2D(val);
     Apply();
 }
 

@@ -27,7 +27,7 @@ class QvisVariableButton;
 // Notes:      This class was automatically generated!
 
 // Programmer: xml2window
-// Creation:   Tue Aug 23 09:43:51 PDT 2005
+// Creation:   Mon Sep 26 09:31:48 PDT 2005
 //
 // Modifications:
 //   
@@ -49,9 +49,12 @@ class QvisExternalSurfaceWindow : public QvisOperatorWindow
     virtual void GetCurrentValues(int which_widget);
   private slots:
     void removeGhostsChanged(bool val);
+    void edgesIn2DChanged(bool val);
   private:
     QCheckBox *removeGhosts;
+    QCheckBox *edgesIn2D;
     QLabel *removeGhostsLabel;
+    QLabel *edgesIn2DLabel;
 
     ExternalSurfaceAttributes *atts;
 };

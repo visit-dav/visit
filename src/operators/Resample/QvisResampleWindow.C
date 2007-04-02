@@ -30,7 +30,7 @@ using std::string;
 //   Constructor
 //
 // Programmer: xml2window
-// Creation:   Sat Jan 29 19:46:18 PST 2005
+// Creation:   Fri Sep 30 09:26:57 PDT 2005
 //
 // Modifications:
 //   
@@ -54,7 +54,7 @@ QvisResampleWindow::QvisResampleWindow(const int type,
 //   Destructor
 //
 // Programmer: xml2window
-// Creation:   Sat Jan 29 19:46:18 PST 2005
+// Creation:   Fri Sep 30 09:26:57 PDT 2005
 //
 // Modifications:
 //   
@@ -72,7 +72,7 @@ QvisResampleWindow::~QvisResampleWindow()
 //   Creates the widgets for the window.
 //
 // Programmer: xml2window
-// Creation:   Sat Jan 29 19:46:18 PST 2005
+// Creation:   Fri Sep 30 09:26:57 PDT 2005
 //
 // Modifications:
 //   
@@ -81,7 +81,7 @@ QvisResampleWindow::~QvisResampleWindow()
 void
 QvisResampleWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 13,2,  10, "mainLayout");
+    QGridLayout *mainLayout = new QGridLayout(topLayout, 14,2,  10, "mainLayout");
 
 
     startXLabel = new QLabel("Start X", central, "startXLabel");
@@ -184,6 +184,11 @@ QvisResampleWindow::CreateWindowContents()
             this, SLOT(defaultValueProcessText()));
     mainLayout->addWidget(defaultValue, 12,1);
 
+    distributedResample = new QCheckBox("Distribute resampled data\nset across all processors\n(parallel only)?", central, "distributedResample");
+    connect(distributedResample, SIGNAL(toggled(bool)),
+            this, SLOT(distributedResampleChanged(bool)));
+    mainLayout->addWidget(distributedResample, 13,0);
+
 }
 
 
@@ -194,7 +199,7 @@ QvisResampleWindow::CreateWindowContents()
 //   Updates the widgets in the window when the subject changes.
 //
 // Programmer: xml2window
-// Creation:   Sat Jan 29 19:46:18 PST 2005
+// Creation:   Fri Sep 30 09:26:57 PDT 2005
 //
 // Modifications:
 //   
@@ -314,6 +319,9 @@ QvisResampleWindow::UpdateWindow(bool doAll)
             temp.setNum(atts->GetDefaultValue());
             defaultValue->setText(temp);
             break;
+          case 13: //distributedResample
+            distributedResample->setChecked(atts->GetDistributedResample());
+            break;
         }
     }
 }
@@ -326,7 +334,7 @@ QvisResampleWindow::UpdateWindow(bool doAll)
 //   Gets values from certain widgets and stores them in the subject.
 //
 // Programmer: xml2window
-// Creation:   Sat Jan 29 19:46:18 PST 2005
+// Creation:   Fri Sep 30 09:26:57 PDT 2005
 //
 // Modifications:
 //   
@@ -566,6 +574,12 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
         }
     }
 
+    // Do distributedResample
+    if(which_widget == 13 || doAll)
+    {
+        // Nothing for distributedResample
+    }
+
 }
 
 
@@ -678,6 +692,14 @@ void
 QvisResampleWindow::defaultValueProcessText()
 {
     GetCurrentValues(12);
+    Apply();
+}
+
+
+void
+QvisResampleWindow::distributedResampleChanged(bool val)
+{
+    atts->SetDistributedResample(val);
     Apply();
 }
 

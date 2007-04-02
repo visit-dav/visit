@@ -51,4 +51,7 @@
     <Field name="arbitratorVarName" label="arbitratorVarName" type="string">
       default
     </Field>
+    <Field name="distributedResample" label="distributedResample" type="bool">
+      false
+    </Field>
   </Attribute>

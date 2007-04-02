@@ -27,7 +27,7 @@ class QvisVariableButton;
 // Notes:      This class was automatically generated!
 
 // Programmer: xml2window
-// Creation:   Sat Jan 29 19:46:18 PST 2005
+// Creation:   Fri Sep 30 09:09:25 PDT 2005
 //
 // Modifications:
 //   
@@ -61,6 +61,7 @@ class QvisResampleWindow : public QvisOperatorWindow
     void tieResolverChanged(int val);
     void tieResolverVariableChanged(const QString &varName);
     void defaultValueProcessText();
+    void distributedResampleChanged(bool val);
   private:
     QLineEdit *startX;
     QLineEdit *endX;
@@ -75,6 +76,7 @@ class QvisResampleWindow : public QvisOperatorWindow
     QButtonGroup *tieResolver;
     QvisVariableButton *tieResolverVariable;
     QLineEdit *defaultValue;
+    QCheckBox *distributedResample;
     QLabel *startXLabel;
     QLabel *endXLabel;
     QLabel *samplesXLabel;
@@ -88,6 +90,7 @@ class QvisResampleWindow : public QvisOperatorWindow
     QLabel *tieResolverLabel;
     QLabel *tieResolverVariableLabel;
     QLabel *defaultValueLabel;
+    QLabel *distributedResampleLabel;
 
     ResamplePluginAttributes *atts;
 };
