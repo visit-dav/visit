@@ -303,9 +303,13 @@ avtFluentFileFormat::GetVectorVar(int domain, const char *varname)
 }
 
 //----------------------------------------------------------------------------
+//  Modifications:
+//    Kathleen Bonnell, Thu Dec 21 10:23:19 PST 2006
+//    Specify binary file when opening.
+//----------------------------------------------------------------------------
 int avtFluentFileFormat::OpenCaseFile(const char *filename)
 {
-  FluentCaseFile.open(filename);
+  FluentCaseFile.open(filename, ios::binary);
 
   if (FluentCaseFile.is_open())
     {
@@ -319,13 +323,17 @@ int avtFluentFileFormat::OpenCaseFile(const char *filename)
 }
 
 //----------------------------------------------------------------------------
+//  Modifications:
+//    Kathleen Bonnell, Thu Dec 21 10:23:19 PST 2006
+//    Specify binary file when opening.
+//----------------------------------------------------------------------------
 int avtFluentFileFormat::OpenDataFile(const char *filename)
 {
   string dfilename(filename);
   dfilename.erase(dfilename.length()-3, 3);
   dfilename.append("dat");
 
-  FluentDataFile.open(dfilename.c_str());
+  FluentDataFile.open(dfilename.c_str(), ios::binary);
 
   if (FluentDataFile.is_open())
     {

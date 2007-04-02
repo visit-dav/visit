@@ -727,7 +727,10 @@ class VisItMovieTemplate:
         drawThePlots = 0
         lastProgress = -1
         for i in range(TimeSliderGetNStates()):
-            t = float(i) / float(TimeSliderGetNStates()-1);
+            if TimeSliderGetNStates() > 1:
+                t = float(i) / float(TimeSliderGetNStates()-1)
+            else:
+                t = 1.
 
             progress = int(((1.-t)*percents[0] + t*percents[1]) * 100.)
             if progress != lastProgress:

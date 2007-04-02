@@ -7,6 +7,7 @@
 #include <Expression.h>
 #include <InvalidVariableException.h>
 #include <DebugStream.h>
+#include <Utility.h>
 
 // ****************************************************************************
 //  Method: avtOpenFOAM constructor
@@ -836,6 +837,11 @@ double avtOpenFOAMFileFormat::ControlDictDataParser(std::string line)
 //  reads the controlDict File
 //  gather the necessary information to create a path to the data
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Dec 21 10:23:19 PST 2006
+//    ifstream::open fails on a directory on Windows platform, so use 
+//    VisItStat to test directory existence.
+//
 // ****************************************************************************
 void avtOpenFOAMFileFormat::ReadControlDict ()
 {
@@ -917,7 +923,6 @@ void avtOpenFOAMFileFormat::ReadControlDict ()
 
   //make sure time step dir exists
   std::vector< double > tempSteps;
-  ifstream test;
   std::stringstream parser;
   double tempStep;
   for(int i = 0; i < tempNumTimeSteps; i++)
@@ -929,10 +934,9 @@ void avtOpenFOAMFileFormat::ReadControlDict ()
       parser << tempStep;
     else
       parser << std::scientific <<tempStep;
-    test.open((PathPrefix+parser.str()).c_str(),ios::in);
-    if(!test.fail())
+    VisItStat_t fs;
+    if (VisItStat((PathPrefix+parser.str()).c_str(),&fs) == 0)
       tempSteps.push_back(tempStep);
-    test.close();
     }
 
   //Add the time steps that actually exist to steps

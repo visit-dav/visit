@@ -144,17 +144,20 @@ GetVisItMovieTemplates()
 // Creation:   Tue Oct 10 14:27:43 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Dec 21 17:16:03 PST 2006
+//   I made it use the architecture directory.
+//
 // ****************************************************************************
 
 std::string
 GetVisItMovieTemplateBaseClass()
 {
 #if defined(_WIN32)
-    std::string templateFile(GetVisItInstallationDirectory() + "\\movietemplates\\visitmovietemplate.py");
+    std::string templateFile(GetVisItArchitectureDirectory() + "\\movietemplates\\visitmovietemplate.py");
 #else
-    std::string templateFile(GetVisItInstallationDirectory() + "/bin/movietemplates/visitmovietemplate.py");
+    std::string templateFile(GetVisItArchitectureDirectory() + "/bin/movietemplates/visitmovietemplate.py");
 #endif
+    debug1 << "GetVisItMovieTemplateBaseClass = " << templateFile.c_str() << endl;
     return templateFile;
 }
 

@@ -156,7 +156,7 @@ avtSILRestrictionTraverser::GetEnumerationCount()
 {
     int count = 0;
 
-    int  i, j;
+    int  i;
     avtSILSet_p set = silr->GetSILSet(silr->topSet);
     const vector<int> &mapsOut = set->GetMapsOut();
  

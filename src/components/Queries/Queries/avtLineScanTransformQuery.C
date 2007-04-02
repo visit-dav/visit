@@ -139,8 +139,6 @@ avtLineScanTransformQuery::PreExecute(void)
 void
 avtLineScanTransformQuery::PostExecute(void)
 {
-    int   i;
-
     int times = 0;
     char name[1024];
     sprintf(name, "lst%d.ult", times++);
@@ -217,7 +215,6 @@ avtLineScanTransformQuery::ExecuteLineScan(vtkPolyData *pd)
     double pt2[3];
 
     bool bHaveLineEq = false;
-    double linePt[3], lineVec[3];
 
     double binSize = (maxLength - minLength) / (numBins - 1);
 

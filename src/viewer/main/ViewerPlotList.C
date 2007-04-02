@@ -8200,7 +8200,6 @@ ViewerPlotList::GetWindowId() const
 bool
 ViewerPlotList::SetFullFrameScaling(bool useScale, double *scale)
 {
-    int i;
     bool retval = false;
     for (int i = 0; i < nPlots; i++)
     {

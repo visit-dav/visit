@@ -527,7 +527,6 @@ int vtkVisItCellLocator::IntersectWithLine(double a0[3], double a1[3],
   double stopDist, currDist;
   double length, maxLength = 0.0;
   double tempT, tempX[3], pc[3] = {0., 0., 0.};
-  int tempId;
   vtkUnsignedCharArray *ghosts = 
     (vtkUnsignedCharArray *)this->DataSet->GetCellData()->GetArray("avtGhostZones");
 
@@ -661,7 +660,6 @@ int vtkVisItCellLocator::IntersectWithLine(double a0[3], double a1[3],
                     bestCellId = cId;
                     x[0] = tempX[0]; x[1] = tempX[1]; x[2] = tempX[2];
                     pcoords[0] = pc[0]; pcoords[1] = pc[1]; pcoords[2] = pc[2]; 
-                    subId = tempId;
                     } // t <= tMax+tol
                   } // cell Isected line
                 } // if (hitCellBounds)
@@ -2179,7 +2177,6 @@ int vtkVisItCellLocator::IntersectWithLine(double a0[3], double a1[3],
   double stopDist, currDist;
   double length, maxLength = 0.0;
   double tempT, tempX[3], pc[3] = {0., 0., 0.};
-  int tempId;
   vtkUnsignedCharArray *ghosts = 
     (vtkUnsignedCharArray *)this->DataSet->GetCellData()->GetArray("avtGhostZones");
 

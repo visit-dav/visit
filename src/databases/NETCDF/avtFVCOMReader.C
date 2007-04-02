@@ -2505,7 +2505,7 @@ avtFVCOMReader::GetVectorVar(int timestate, const char *var, avtVariableCache *c
       int ntuples = uvel->GetNumberOfTuples();
       debug4 << "ntuples=" << ntuples << endl;
 
-      int ncomps = 3;  // This is the rank of the vector
+      const int ncomps = 3;  // This is the rank of the vector
       rv->SetNumberOfComponents(ncomps);
       rv->SetNumberOfTuples(ntuples);
       float one_entry[ncomps];
@@ -2539,7 +2539,7 @@ avtFVCOMReader::GetVectorVar(int timestate, const char *var, avtVariableCache *c
 
       debug4 << "ntuples=" << ntuples << endl;
 
-      int ncomps = 3;  // This is the rank of the vector
+      const int ncomps = 3;  // This is the rank of the vector
       rv->SetNumberOfComponents(ncomps);
       rv->SetNumberOfTuples(ntuples);
       float one_entry[ncomps];

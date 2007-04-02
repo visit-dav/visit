@@ -229,7 +229,7 @@ MovieSequenceTransition::WriteUIValues(QWidget *ui, DataNode *node)
         QvisSequenceTransition *UI = (QvisSequenceTransition *)ui;
         bool frames;
         QColor c;
-        int tmp[3], nFrames;
+        int nFrames;
 
         nFrames = UI->getNFrames();
 

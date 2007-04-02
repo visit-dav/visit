@@ -301,6 +301,10 @@ def EncodeQuickTimeMovieHelper(threadID, start, end, conversionargs):
 # Programmer: Brad Whitlock
 # Date:       Wed Sep 20 10:19:07 PDT 2006
 #
+# Modifications:
+#   Brad Whitlock, Thu Dec 21 19:42:19 PST 2006
+#   Fixed for win32.
+#
 ###############################################################################
 
 def visit_pipe(command, line_callback, line_callback_data):
@@ -321,6 +325,10 @@ def visit_pipe(command, line_callback, line_callback_data):
         # and read the input. We should just call os.system. Unless we can
         # figure out some other way of determining when the child exits
         # instead of using signals.
+        do_fork = 0
+    except AttributeError:
+        # We have a lame signal module that does not have SIGCHLD so
+        # we can't do a fork.
         do_fork = 0
 
     # We're not going to do a fork so just call os.system
@@ -2147,7 +2155,7 @@ class MakeMovie:
             # Determine the name of the movie template base class's file.
             prefix = ""
             if os.name == "nt":
-                prefix = sys.exec_prefix[:-6]
+                prefix = sys.executable[:-7]
             else:
                 pos = string.find(sys.argv[0], "exe" + self.slash + "cli")
                 if pos != -1:
@@ -2734,6 +2742,9 @@ class MakeMovie:
     #   Brad Whitlock, Wed Sep 20 15:02:40 PST 2006
     #   I made it send e-mail at the end.
     #
+    #   Brad Whitlock, Thu Dec 21 19:14:02 PST 2006
+    #   Use a safer function to get the host.
+    #
     ###########################################################################
 
     def EncodeFrames(self):
@@ -2757,10 +2768,19 @@ class MakeMovie:
         framesGeneratedMessage = ""
         framesGeneratedEmail = ""
         # Compose an e-mail message
+        host = "?"
+        try:
+            import socket
+            host = socket.gethostname()
+        except ImportError:
+            try:
+                host = os.uname()[1]
+            except AttributeError:
+                host = "?"
         emailMsg = """
 DO NOT REPLY TO THIS AUTOMATICALLY GENERATED MESSAGE.
                        
-Message from \"visit -movie\" running on %s.\n\n""" % os.uname()[1]
+Message from \"visit -movie\" running on %s.\n\n""" % host
 
         for format in self.movieFormats:
             formatString = format[0]

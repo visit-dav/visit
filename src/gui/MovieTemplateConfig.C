@@ -2112,6 +2112,7 @@ MovieTemplateConfig::SequenceRename(const std::string &name,
         }
         return ret;
     }
+    return ret;
 }
 
 // ****************************************************************************
