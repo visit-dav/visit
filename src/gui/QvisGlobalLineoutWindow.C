@@ -71,6 +71,9 @@ QvisGlobalLineoutWindow::~QvisGlobalLineoutWindow()
 //   Kathleen Bonnell, Thu Feb  3 15:51:06 PST 2005 
 //   Added curveOptions and colorOptions for Dynamic mode. 
 //
+//   Kathleen Bonnell, Mon Feb 27 12:36:41 PST 2006
+//   Added more text to createWindow label, to clarify intent. 
+//   
 // ****************************************************************************
 
 void
@@ -81,7 +84,7 @@ QvisGlobalLineoutWindow::CreateWindowContents()
     //
     // CreateWindow
     //
-    createWindow = new QCheckBox("Use 1st unused window\nor create new one.", 
+    createWindow = new QCheckBox("Use 1st unused window or create\nnew one. All  subsequent lineouts\nwill use this same window.", 
                                   central, "createWindow");
     connect(createWindow, SIGNAL(toggled(bool)),
             this, SLOT(createWindowChanged(bool)));

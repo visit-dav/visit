@@ -785,6 +785,12 @@ VariableMenuPopulator::ItemEnabled(int varType) const
 //   Fixed bug where when grouping was required AND a component in a variable's
 //   pathname had 3 or fewer characters, we'd get a SEGV
 //
+//   Brad Whitlock, Mon Feb 27 17:20:36 PST 2006
+//   I added a check to make sure that the var name is in the
+//   originalNameToGroupedName map before accessing it because we were sometimes
+//   accidentally adding empty strings to the map for expressions like 
+//   mesh quality metrics.
+//
 // ****************************************************************************
 
 void
@@ -804,16 +810,23 @@ VariableMenuPopulator::UpdateSingleMenu(QvisVariablePopupMenu *menu,
     vars.InitTraversal();
     while(vars.GetNextVariable(var, validVar))
     {
-        if (shouldUseGrouping)
+        if (shouldUseGrouping &&
+            originalNameToGroupedName.find(var) != originalNameToGroupedName.end())
+        {
             var = originalNameToGroupedName[var];
-
+        }
         // Split the variable's path into a vector of strings.
         stringVector pathvar;
         Split(var, pathvar);
 
+        // If nothing resulted from the split then continue.
+        if(pathvar.size() < 1)
+            continue;
+
         // Add the submenus.
         QvisVariablePopupMenu *parent = menu;
         string path, altpath;
+
         for (j = 0; j < pathvar.size() - 1; ++j)
         {
             // Create the current path.
@@ -844,7 +857,7 @@ VariableMenuPopulator::UpdateSingleMenu(QvisVariablePopupMenu *menu,
             {
                 QvisVariablePopupMenu *newPopup =
                     new QvisVariablePopupMenu(menu->getPlotType(), parent,
-                                                      path.c_str());
+                                              path.c_str());
                 newPopup->setVarPath(altpath.c_str());
                 if (receiver != 0 && slot != 0)
                 {
