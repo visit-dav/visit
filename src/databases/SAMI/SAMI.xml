@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+  <Plugin name="SAMI" type="database" label="SAMI" version="1.0" dbtype="STSD">
+    <Extensions> sami </Extensions>
+    <CXXFLAGS> $(SILO_INCLUDE) </CXXFLAGS>
+    <LIBS> $(SILO_LIB) </LIBS>
+  </Plugin>
