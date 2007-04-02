@@ -334,6 +334,9 @@ avtQueryOverTimeFilter::SetSILAtts(const SILRestrictionAttributes *silAtts)
 //    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005 
 //    Time not always used for X-Axis. 
 //
+//    Kathleen Bonnell, Mon Dec 19 08:01:21 PST 2005
+//    Don't issue warning about 'multiples of 2' unless nResultsToStore > 1. 
+//
 // ****************************************************************************
 
 void
@@ -357,7 +360,7 @@ avtQueryOverTimeFilter::CreateFinalOutput()
             "number of timestates.  Curve being created may be missing "
             "some values.  Please contact a VisIt developer."); 
     }
-    else if (qRes.size() % 2 != 0)
+    else if (nResultsToStore > 1 && qRes.size() % 2 != 0)
     {
         debug4 << "QueryOverTime ERROR, number of results (" 
                << qRes.size() << ") is not a multiple of 2 and "
