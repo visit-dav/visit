@@ -53,6 +53,8 @@
 #include <QvisColorButton.h>
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
+#include <QvisVariableButton.h>
+
 #include <stdio.h>
 #include <string>
 
@@ -65,7 +67,7 @@ using std::string;
 //   Constructor
 //
 // Programmer: xml2window
-// Creation:   Wed Dec 11 14:17:27 PST 2002
+// Creation:   Sun Mar 18 10:37:59 PDT 2007
 //
 // Modifications:
 //   
@@ -89,7 +91,7 @@ QvisRevolveWindow::QvisRevolveWindow(const int type,
 //   Destructor
 //
 // Programmer: xml2window
-// Creation:   Wed Dec 11 14:17:27 PST 2002
+// Creation:   Sun Mar 18 10:37:59 PDT 2007
 //
 // Modifications:
 //   
@@ -107,7 +109,7 @@ QvisRevolveWindow::~QvisRevolveWindow()
 //   Creates the widgets for the window.
 //
 // Programmer: xml2window
-// Creation:   Wed Dec 11 14:17:27 PST 2002
+// Creation:   Sun Mar 18 10:37:59 PDT 2007
 //
 // Modifications:
 //   
@@ -116,32 +118,60 @@ QvisRevolveWindow::~QvisRevolveWindow()
 void
 QvisRevolveWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 4,2,  10, "mainLayout");
+    QGridLayout *mainLayout = new QGridLayout(topLayout, 6,2,  10, "mainLayout");
 
 
-    mainLayout->addWidget(new QLabel("Axis of revolution", central, "axisLabel"),0,0);
+    meshTypeLabel = new QLabel("Type of Mesh?", central, "meshTypeLabel");
+    mainLayout->addWidget(meshTypeLabel,0,0);
+    meshType = new QButtonGroup(central, "meshType");
+    meshType->setFrameStyle(QFrame::NoFrame);
+    QHBoxLayout *meshTypeLayout = new QHBoxLayout(meshType);
+    meshTypeLayout->setSpacing(10);
+    QRadioButton *meshTypeMeshTypeAuto = new QRadioButton("Auto", meshType);
+    meshTypeLayout->addWidget(meshTypeMeshTypeAuto);
+    QRadioButton *meshTypeMeshTypeXY = new QRadioButton("XY", meshType);
+    meshTypeLayout->addWidget(meshTypeMeshTypeXY);
+    QRadioButton *meshTypeMeshTypeRZ = new QRadioButton("RZ", meshType);
+    meshTypeLayout->addWidget(meshTypeMeshTypeRZ);
+    QRadioButton *meshTypeMeshTypeZR = new QRadioButton("ZR", meshType);
+    meshTypeLayout->addWidget(meshTypeMeshTypeZR);
+    connect(meshType, SIGNAL(clicked(int)),
+            this, SLOT(meshTypeChanged(int)));
+    mainLayout->addWidget(meshType, 0,1);
+
+    autoAxisLabel = NULL;
+    autoAxis = new QCheckBox("Choose axis based on mesh type?", central, "autoAxis");
+    connect(autoAxis, SIGNAL(toggled(bool)),
+            this, SLOT(autoAxisChanged(bool)));
+    mainLayout->addWidget(autoAxis, 1,0);
+
+    axisLabel = new QLabel("Axis of revolution", central, "axisLabel");
+    mainLayout->addWidget(axisLabel,2,0);
     axis = new QLineEdit(central, "axis");
     connect(axis, SIGNAL(returnPressed()),
             this, SLOT(axisProcessText()));
-    mainLayout->addWidget(axis, 0,1);
+    mainLayout->addWidget(axis, 2,1);
 
-    mainLayout->addWidget(new QLabel("Start angle", central, "startAngleLabel"),1,0);
+    startAngleLabel = new QLabel("Start angle", central, "startAngleLabel");
+    mainLayout->addWidget(startAngleLabel,3,0);
     startAngle = new QLineEdit(central, "startAngle");
     connect(startAngle, SIGNAL(returnPressed()),
             this, SLOT(startAngleProcessText()));
-    mainLayout->addWidget(startAngle, 1,1);
+    mainLayout->addWidget(startAngle, 3,1);
 
-    mainLayout->addWidget(new QLabel("Stop angle", central, "stopAngleLabel"),2,0);
+    stopAngleLabel = new QLabel("Stop angle", central, "stopAngleLabel");
+    mainLayout->addWidget(stopAngleLabel,4,0);
     stopAngle = new QLineEdit(central, "stopAngle");
     connect(stopAngle, SIGNAL(returnPressed()),
             this, SLOT(stopAngleProcessText()));
-    mainLayout->addWidget(stopAngle, 2,1);
+    mainLayout->addWidget(stopAngle, 4,1);
 
-    mainLayout->addWidget(new QLabel("Number of steps", central, "stepsLabel"),3,0);
+    stepsLabel = new QLabel("Number of steps", central, "stepsLabel");
+    mainLayout->addWidget(stepsLabel,5,0);
     steps = new QLineEdit(central, "steps");
     connect(steps, SIGNAL(returnPressed()),
             this, SLOT(stepsProcessText()));
-    mainLayout->addWidget(steps, 3,1);
+    mainLayout->addWidget(steps, 5,1);
 
 }
 
@@ -153,19 +183,17 @@ QvisRevolveWindow::CreateWindowContents()
 //   Updates the widgets in the window when the subject changes.
 //
 // Programmer: xml2window
-// Creation:   Wed Dec 11 14:17:27 PST 2002
+// Creation:   Sun Mar 18 10:37:59 PDT 2007
 //
 // Modifications:
-//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
-//   Replaced simple QString::sprintf's with a setNum because there seems
-//   to be a bug causing numbers to be incremented by .00001.  See '5263.
-//
+//   
 // ****************************************************************************
 
 void
 QvisRevolveWindow::UpdateWindow(bool doAll)
 {
     QString temp;
+    double r;
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -178,24 +206,60 @@ QvisRevolveWindow::UpdateWindow(bool doAll)
         }
 
         const double         *dptr;
+        const float          *fptr;
+        const int            *iptr;
+        const char           *cptr;
+        const unsigned char  *uptr;
+        const string         *sptr;
+        QColor                tempcolor;
         switch(i)
         {
-          case 0: //axis
+          case 0: //meshType
+            meshType->blockSignals(true);
+            meshType->setButton(atts->GetMeshType());
+            meshType->blockSignals(false);
+            break;
+          case 1: //autoAxis
+            if (atts->GetAutoAxis() == false)
+            {
+                axis->setEnabled(true);
+                if(axisLabel)
+                    axisLabel->setEnabled(true);
+            }
+            else
+            {
+                axis->setEnabled(false);
+                if(axisLabel)
+                    axisLabel->setEnabled(false);
+            }
+            autoAxis->blockSignals(true);
+            autoAxis->setChecked(atts->GetAutoAxis());
+            autoAxis->blockSignals(false);
+            break;
+          case 2: //axis
             dptr = atts->GetAxis();
             temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
+            axis->blockSignals(true);
             axis->setText(temp);
+            axis->blockSignals(false);
             break;
-          case 1: //startAngle
+          case 3: //startAngle
+            startAngle->blockSignals(true);
             temp.setNum(atts->GetStartAngle());
             startAngle->setText(temp);
+            startAngle->blockSignals(false);
             break;
-          case 2: //stopAngle
+          case 4: //stopAngle
+            stopAngle->blockSignals(true);
             temp.setNum(atts->GetStopAngle());
             stopAngle->setText(temp);
+            stopAngle->blockSignals(false);
             break;
-          case 3: //steps
+          case 5: //steps
+            steps->blockSignals(true);
             temp.sprintf("%d", atts->GetSteps());
             steps->setText(temp);
+            steps->blockSignals(false);
             break;
         }
     }
@@ -209,11 +273,9 @@ QvisRevolveWindow::UpdateWindow(bool doAll)
 //   Gets values from certain widgets and stores them in the subject.
 //
 // Programmer: xml2window
-// Creation:   Wed Dec 11 14:17:27 PST 2002
+// Creation:   Sun Mar 18 10:37:59 PDT 2007
 //
 // Modifications:
-//   Kathleen Bonnell, Wed May 21 11:10:58 PDT 2003   
-//   Disallow (0, 0, 0) as axis of revolution.
 //   
 // ****************************************************************************
 
@@ -223,22 +285,28 @@ QvisRevolveWindow::GetCurrentValues(int which_widget)
     bool okay, doAll = (which_widget == -1);
     QString msg, temp;
 
-    // Do axis
+    // Do meshType
     if(which_widget == 0 || doAll)
+    {
+        // Nothing for meshType
+    }
+
+    // Do autoAxis
+    if(which_widget == 1 || doAll)
+    {
+        // Nothing for autoAxis
+    }
+
+    // Do axis
+    if(which_widget == 2 || doAll)
     {
         temp = axis->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
         if(okay)
         {
             double val[3];
-            okay = (sscanf(temp.latin1(), "%lg %lg %lg", 
-                           &val[0], &val[1], &val[2]) == 3);
-            if (okay)
-            {
-                okay = (val[0] != 0. || val[1] != 0. || val[2] != 0.);
-                if (okay)
-                    atts->SetAxis(val);
-            }
+            sscanf(temp.latin1(), "%lg %lg %lg", &val[0], &val[1], &val[2]);
+            atts->SetAxis(val);
         }
 
         if(!okay)
@@ -253,7 +321,7 @@ QvisRevolveWindow::GetCurrentValues(int which_widget)
     }
 
     // Do startAngle
-    if(which_widget == 1 || doAll)
+    if(which_widget == 3 || doAll)
     {
         temp = startAngle->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -274,7 +342,7 @@ QvisRevolveWindow::GetCurrentValues(int which_widget)
     }
 
     // Do stopAngle
-    if(which_widget == 2 || doAll)
+    if(which_widget == 4 || doAll)
     {
         temp = stopAngle->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -295,7 +363,7 @@ QvisRevolveWindow::GetCurrentValues(int which_widget)
     }
 
     // Do steps
-    if(which_widget == 3 || doAll)
+    if(which_widget == 5 || doAll)
     {
         temp = steps->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -324,23 +392,27 @@ QvisRevolveWindow::GetCurrentValues(int which_widget)
 
 
 void
+QvisRevolveWindow::meshTypeChanged(int val)
+{
+    if(val != atts->GetMeshType())
+    {
+        atts->SetMeshType(RevolveAttributes::MeshType(val));
+        SetUpdate(false);
+        Apply();
+    }
+}
+
+
+void
+QvisRevolveWindow::autoAxisChanged(bool val)
+{
+    atts->SetAutoAxis(val);
+    Apply();
+}
+
+
+void
 QvisRevolveWindow::axisProcessText()
-{
-    GetCurrentValues(0);
-    Apply();
-}
-
-
-void
-QvisRevolveWindow::startAngleProcessText()
-{
-    GetCurrentValues(1);
-    Apply();
-}
-
-
-void
-QvisRevolveWindow::stopAngleProcessText()
 {
     GetCurrentValues(2);
     Apply();
@@ -348,9 +420,25 @@ QvisRevolveWindow::stopAngleProcessText()
 
 
 void
-QvisRevolveWindow::stepsProcessText()
+QvisRevolveWindow::startAngleProcessText()
 {
     GetCurrentValues(3);
+    Apply();
+}
+
+
+void
+QvisRevolveWindow::stopAngleProcessText()
+{
+    GetCurrentValues(4);
+    Apply();
+}
+
+
+void
+QvisRevolveWindow::stepsProcessText()
+{
+    GetCurrentValues(5);
     Apply();
 }
 

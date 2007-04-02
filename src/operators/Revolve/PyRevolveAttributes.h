@@ -45,13 +45,15 @@
 //
 void            PyRevolveAttributes_StartUp(RevolveAttributes *subj, void *data);
 void            PyRevolveAttributes_CloseDown();
-PyMethodDef    *PyRevolveAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *   PyRevolveAttributes_GetMethodTable(int *nMethods);
 bool            PyRevolveAttributes_Check(PyObject *obj);
-RevolveAttributes *PyRevolveAttributes_FromPyObject(PyObject *obj);
-PyObject       *PyRevolveAttributes_NewPyObject();
-PyObject       *PyRevolveAttributes_WrapPyObject(const RevolveAttributes *attr);
-std::string     PyRevolveAttributes_GetLogString();
+RevolveAttributes *  PyRevolveAttributes_FromPyObject(PyObject *obj);
+PyObject *      PyRevolveAttributes_New();
+PyObject *      PyRevolveAttributes_Wrap(const RevolveAttributes *attr);
+void            PyRevolveAttributes_SetParent(PyObject *obj, PyObject *parent);
 void            PyRevolveAttributes_SetDefaults(const RevolveAttributes *atts);
+std::string     PyRevolveAttributes_GetLogString();
+std::string     PyRevolveAttributes_ToString(const RevolveAttributes *, const char *);
 
 #endif
 
