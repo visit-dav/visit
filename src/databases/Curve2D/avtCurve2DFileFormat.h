@@ -75,6 +75,8 @@ class     vtkRectilinearGrid;
 //    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
 //    Added dataExtents. 
 //
+//    Mark C. Miller, Tue Oct 31 20:33:29 PST 2006
+//    Added VALID_XVALUE token to support "zone-centered" curves
 // ****************************************************************************
 
 typedef enum
@@ -82,7 +84,8 @@ typedef enum
     VALID_POINT       = 0,
     HEADER,          /* 1 */
     WHITESPACE,      /* 2 */
-    INVALID_POINT    /* 3 */
+    INVALID_POINT,   /* 3 */
+    VALID_XVALUE
 } CurveToken;
 
 

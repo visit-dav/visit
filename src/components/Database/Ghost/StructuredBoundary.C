@@ -244,6 +244,9 @@ Boundary::AddNeighbor(int d, int mi, int o[3], int e[6])
 //    Do not call FindNeighborIndex, since it assumes that any pair of domains
 //    can have at most one boundary.
 //
+//    Kathleen Bonnell, Tue Oct 31 16:30:13 PST 2006 
+//    Add sanity check, that entry is a valid index, to prevent possible SEGV. 
+//
 // ****************************************************************************
 void
 Boundary::DeleteNeighbor(int d, vector<Boundary> &wholelist)
@@ -289,7 +292,8 @@ Boundary::DeleteNeighbor(int d, vector<Boundary> &wholelist)
         {
             int d = neighbors[i].domain;
             int entry = neighbors[i].match;
-            wholelist[d].neighbors[entry].match--;
+            if (entry >= 0 && entry < wholelist[d].neighbors.size())
+                wholelist[d].neighbors[entry].match--;
             neighbors[i-1] = neighbors[i];
         }
         neighbors.resize(neighbors.size()-1);
