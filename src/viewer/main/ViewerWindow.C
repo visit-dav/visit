@@ -6865,6 +6865,9 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
 //   Hank Childs, Sun Oct 24 13:39:57 PDT 2004
 //   Read in shading properties.
 //
+//   Hank Childs, Mon Feb 20 17:03:19 PST 2006
+//   Fix type of shading strength ['5654].
+//
 // ****************************************************************************
 
 void
@@ -7130,7 +7133,7 @@ ViewerWindow::SetFromNode(DataNode *parentNode)
 
     numParamsSaved = 0;
     bool tmpDoShading = false;
-    bool tmpShadingStrength = false;
+    double tmpShadingStrength = 0.;
     if((node = windowNode->GetNode("doShading")) != 0)
     {
         tmpDoShading = node->AsBool();
