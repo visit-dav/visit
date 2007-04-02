@@ -50,6 +50,7 @@ esac
 # Parse the execute line, providing default values for error checking.
 #
 kickit=true
+hoth=true
 sunspot=true
 hyper=true
 gps=true
@@ -69,6 +70,7 @@ do
    case $1 in
       -none)
          kickit=false
+         hoth=false
          sunspot=false
          hyper=false
          gps=false
@@ -83,6 +85,14 @@ do
          ;;
       +kickit)
          kickit=true
+         shift
+         ;;
+      -hoth)
+         hoth=false
+         shift
+         ;;
+      +hoth)
+         hoth=true
          shift
          ;;
       -sunspot)
@@ -206,6 +216,56 @@ then
       scp kickit kickit:kickit_buildit
       scp $dist.tar.gz kickit:kickit_$dist.tar.gz
       ssh kickit "chmod 750 kickit_buildit;./kickit_buildit" &
+   fi
+fi
+
+#
+# Build on hoth.
+#
+rm -f hoth
+cat <<EOF > hoth
+#!/bin/sh
+if test ! -e /var/tmp/$user ; then
+   mkdir /var/tmp/$user
+fi
+if test ! -e /var/tmp/$user/hoth ; then
+   mkdir /var/tmp/$user/hoth
+fi
+rm -rf /var/tmp/$user/hoth/visitbuild
+mkdir /var/tmp/$user/hoth/visitbuild
+mv hoth_$dist.tar.gz /var/tmp/$user/hoth/visitbuild/$dist.tar.gz
+cd /var/tmp/$user/hoth/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+env CXXFLAGS=-O2 ./configure >> ../buildlog 2>&1
+make -j 4 >> ../buildlog 2>&1
+clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
+mv visit\$ver2.linux.tar.gz ..
+cd ..
+rm -f resultlog
+echo "        build of visit on hoth"         > resultlog 2>&1
+echo "       ------------------------"        >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $hoth = true ]
+then
+   if [ $test = no ]
+   then
+      scp hoth hoth:hoth_buildit
+      scp $dist.tar.gz hoth:hoth_$dist.tar.gz
+      ssh hoth "chmod 750 hoth_buildit;./hoth_buildit" &
    fi
 fi
 
@@ -514,5 +574,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit sunspot hyper gps berg pengra thunder
+   rm -f kickit hoth sunspot hyper gps berg pengra thunder
 fi

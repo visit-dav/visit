@@ -270,7 +270,7 @@ QvisEngineWindow::UpdateWindow(bool doAll)
             if (!sim[i].empty())
             {
                 int lastSlashPos = QString(sim[i].c_str()).findRev('/');
-                QString newsim = sim[i].substr(lastSlashPos+1);
+                QString newsim = QString(sim[i].substr(lastSlashPos+1).c_str());
                 int lastDotPos =  newsim.findRev('.');
                 int firstDotPos =  newsim.find('.');
 
