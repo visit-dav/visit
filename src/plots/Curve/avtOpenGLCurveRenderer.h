@@ -35,24 +35,42 @@
 *
 *****************************************************************************/
 
-#ifndef PY_CURVEATTRIBUTES_H
-#define PY_CURVEATTRIBUTES_H
-#include <Python.h>
-#include <CurveAttributes.h>
+// ************************************************************************* //
+//                      avtOpenGLCurveRenderer.h                             //
+// ************************************************************************* //
 
+#ifndef AVT_OPENGL_CURVE_RENDERER_H
+#define AVT_OPENGL_CURVE_RENDERER_H
+#include <avtCurveRenderer.h>
+
+// ****************************************************************************
+// Class: avtOpenGLCurveRenderer
 //
-// Functions exposed to the VisIt module.
+// Purpose:
+//   This renderer renders Curves using OpenGL.
 //
-void            PyCurveAttributes_StartUp(CurveAttributes *subj, void *data);
-void            PyCurveAttributes_CloseDown();
-PyMethodDef    *PyCurveAttributes_GetMethodTable(int *nMethods);
-bool            PyCurveAttributes_Check(PyObject *obj);
-CurveAttributes *PyCurveAttributes_FromPyObject(PyObject *obj);
-PyObject       *PyCurveAttributes_NewPyObject();
-PyObject       *PyCurveAttributes_WrapPyObject(const CurveAttributes *attr);
-void            PyCurveAttributes_SetDefaults(const CurveAttributes *atts);
-std::string     PyCurveAttributes_GetLogString();
-std::string     PyCurveAttributes_ToString(const CurveAttributes *, const char *);
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov 20 10:25:19 PDT 2006
+//
+// Modifications:
+//
+// ****************************************************************************
+
+class avtOpenGLCurveRenderer : public avtCurveRenderer
+{
+public:
+                            avtOpenGLCurveRenderer();
+    virtual                ~avtOpenGLCurveRenderer();
+    virtual void            ReleaseGraphicsResources();
+
+protected:
+    void SetupGraphicsLibrary();
+    void RenderCurves();
+
+    void DrawCurveAsDynamicSymbols();
+    void DrawCurveAsLines();
+};
 
 #endif
-

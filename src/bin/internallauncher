@@ -131,6 +131,11 @@ $0 = shift @ARGV;
 #    When launching the engine, choose the serial one if the number of
 #    processors is 1.
 #
+#    Brad Whitlock, Tue Nov 21 16:30:17 PST 2006
+#    Prevent -compiler flag from being passed on to most programs since
+#    they either can't deal with it or don't need it because they don't
+#    start other VisIt components.
+#
 ###############################################################################
 
 
@@ -403,10 +408,12 @@ if (grep /^\d+\.\d+$/, $ver) {
 if ($progname ne "visit")
 {
     $exe_name = $progname;
+    $exe_name_passed = 0;
 }
 else
 {
     $exe_name = "gui";
+    $exe_name_passed = 1;
 }
 
 # -----------------------------------------------------------------------------
@@ -452,13 +459,13 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-expedite")  { if($exe_name eq "engine") { $expedite_engine = 1;} else { push @visitargs, $arg; }}
     elsif ($arg eq "-host")      { $remotehost = shift; $remotehost_set = 1; }
     elsif ($arg eq "-key" )      { $security_key = shift; $security_key_set = 1;}
-    elsif ($arg eq "-viewer" )   { $exe_name = "viewer"; }
-    elsif ($arg eq "-gui" )      { $exe_name = "gui"; }
-    elsif ($arg eq "-cli" )      { $exe_name = "cli"; }
-    elsif ($arg eq "-mdserver" ) { $exe_name = "mdserver"; }
-    elsif ($arg eq "-engine" )   { $exe_name = "engine"; }
-    elsif ($arg eq "-vcl" )      { $exe_name = "vcl"; }
-    elsif ($arg eq "-movie" )    { $exe_name = "cli"; $add_movie_args = 1; }
+    elsif ($arg eq "-viewer" )   { $exe_name = "viewer"; $exe_name_passed = 1;}
+    elsif ($arg eq "-gui" )      { $exe_name = "gui"; $exe_name_passed = 1;}
+    elsif ($arg eq "-cli" )      { $exe_name = "cli"; $exe_name_passed = 1;}
+    elsif ($arg eq "-mdserver" ) { $exe_name = "mdserver"; $exe_name_passed = 1;}
+    elsif ($arg eq "-engine" )   { $exe_name = "engine"; $exe_name_passed = 1;}
+    elsif ($arg eq "-vcl" )      { $exe_name = "vcl"; $exe_name_passed = 1;}
+    elsif ($arg eq "-movie" )    { $exe_name = "cli"; $add_movie_args = 1; $exe_name_passed = 1;}
     elsif ($arg eq "-s")         { if($add_movie_args) { $sfile = shift; push @visitargs, "-scriptfile", $sfile;} else { push @visitargs, $arg;}}
     elsif ($arg eq "-publicpluginsonly"){ $publiconly = 1; push @visitargs, $arg; }
     elsif ($arg eq "-help")      { print STDERR "\nUSAGE: visit [options]
@@ -486,7 +493,7 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-xterm")            { if($debug_gdb) {$gdb_xterm = 1;} else {push @visitargs, $arg;}}
     elsif ($arg eq "-newconsole")       { $use_new_console = 1; }
     elsif ($arg eq "-break")            { if($debug_gdb) {$bp = shift; push @breakpoints, $bp; } else {push @visitargs, $arg;}}
-    elsif ($arg eq "-compiler")         { $req_compiler = shift; push @visitargs, "-compiler", $req_compiler; }
+    elsif ($arg eq "-compiler")         { $req_compiler = shift; }
     elsif ($arg eq "-totalview" )       {
                                           $debug_totalview = shift;
                                           push @norun, $debug_totalview;
@@ -511,6 +518,16 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-hw-pre" )          { $pre_command = shift; }
     elsif ($arg eq "-hw-post" )         { $post_command = shift; }
     else                         { push @visitargs, $arg; }
+}
+
+# Only add -compiler to the visitargs too if the component name was passed.
+# Other applications won't need to propagate that flag because only the
+# components that have their names passed possibly spawn any other VisIt
+# processes. When we don't add it, note that we still use it - just not
+# in subprocesses.
+if ($req_compiler ne "" && $exe_name_passed)
+{
+    push @visitargs, "-compiler", $req_compiler; 
 }
 
 if ($guesshost)

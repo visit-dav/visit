@@ -35,24 +35,43 @@
 *
 *****************************************************************************/
 
-#ifndef PY_CURVEATTRIBUTES_H
-#define PY_CURVEATTRIBUTES_H
-#include <Python.h>
-#include <CurveAttributes.h>
+// ************************************************************************* //
+//                      avtMesaCurveRenderer.h                               //
+// ************************************************************************* //
 
+#ifndef AVT_MESA_CURVE_RENDERER_H
+#define AVT_MESA_CURVE_RENDERER_H
+#include <avtCurveRenderer.h>
+
+// ****************************************************************************
+// Class: avtMesaCurveRenderer
 //
-// Functions exposed to the VisIt module.
+// Purpose:
+//   Renders the Curves using Mesa.
 //
-void            PyCurveAttributes_StartUp(CurveAttributes *subj, void *data);
-void            PyCurveAttributes_CloseDown();
-PyMethodDef    *PyCurveAttributes_GetMethodTable(int *nMethods);
-bool            PyCurveAttributes_Check(PyObject *obj);
-CurveAttributes *PyCurveAttributes_FromPyObject(PyObject *obj);
-PyObject       *PyCurveAttributes_NewPyObject();
-PyObject       *PyCurveAttributes_WrapPyObject(const CurveAttributes *attr);
-void            PyCurveAttributes_SetDefaults(const CurveAttributes *atts);
-std::string     PyCurveAttributes_GetLogString();
-std::string     PyCurveAttributes_ToString(const CurveAttributes *, const char *);
+// Notes:      The contents of this file are essentially the same as
+//             avtOpenGLCurveRenderer.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov 20 10:28:03 PDT 2006
+//
+// Modifications:
+//
+// ****************************************************************************
+
+class avtMesaCurveRenderer : public avtCurveRenderer
+{
+public:
+                            avtMesaCurveRenderer();
+    virtual                ~avtMesaCurveRenderer();
+    virtual void            ReleaseGraphicsResources();
+
+protected:
+    void SetupGraphicsLibrary();
+    void RenderCurves();
+
+    void DrawCurveAsDynamicSymbols();
+    void DrawCurveAsLines();
+};
 
 #endif
-

@@ -35,24 +35,61 @@
 *
 *****************************************************************************/
 
-#ifndef PY_CURVEATTRIBUTES_H
-#define PY_CURVEATTRIBUTES_H
-#include <Python.h>
-#include <CurveAttributes.h>
+// ************************************************************************* //
+//                             avtCurveRenderer.h                            //
+// ************************************************************************* //
 
+#ifndef AVT_VOLUME_RENDERER_H
+#define AVT_VOLUME_RENDERER_H
+
+#include <avtCustomRenderer.h>
+#include <CurveAttributes.h>
+#include <vtkSystemIncludes.h>
+#include <map>
+#include <string>
+
+class vtkDataArray;
+class vtkFloatArray;
+class vtkMatrix4x4;
+class vtkPoints;
+class vtkPolyData;
+
+// ****************************************************************************
+//  Class: avtCurveRenderer
 //
-// Functions exposed to the VisIt module.
+//  Purpose:
+//      An implementation of an avtCustomRenderer for a Curve plot.
 //
-void            PyCurveAttributes_StartUp(CurveAttributes *subj, void *data);
-void            PyCurveAttributes_CloseDown();
-PyMethodDef    *PyCurveAttributes_GetMethodTable(int *nMethods);
-bool            PyCurveAttributes_Check(PyObject *obj);
-CurveAttributes *PyCurveAttributes_FromPyObject(PyObject *obj);
-PyObject       *PyCurveAttributes_NewPyObject();
-PyObject       *PyCurveAttributes_WrapPyObject(const CurveAttributes *attr);
-void            PyCurveAttributes_SetDefaults(const CurveAttributes *atts);
-std::string     PyCurveAttributes_GetLogString();
-std::string     PyCurveAttributes_ToString(const CurveAttributes *, const char *);
+//  Programmer: Brad Whitlock
+//  Creation:   Mon Nov 20 10:23:41 PDT 2006
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+class avtCurveRenderer : public avtCustomRenderer
+{
+public:
+                            avtCurveRenderer();
+    virtual                ~avtCurveRenderer();
+
+    virtual void            Render(vtkDataSet *);
+    virtual void            ReleaseGraphicsResources();
+
+    void                    SetAtts(const CurveAttributes &);
+
+protected:
+    virtual void RenderCurves() = 0;
+
+    CurveAttributes                     atts;
+    std::map<vtkDataSet*,vtkPolyData*>  inputMap;
+    vtkPolyData                        *input;
+};
+
+
+typedef ref_ptr<avtCurveRenderer> avtCurveRenderer_p;
+
 
 #endif
+
 

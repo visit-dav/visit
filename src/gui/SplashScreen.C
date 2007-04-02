@@ -108,6 +108,11 @@
 //    Brad Whitlock, Tue Mar 8 16:07:36 PST 2005
 //    Added some code to draw the "Beta" marking back in.
 //
+//    Brad Whitlock, Tue Nov 21 13:37:26 PST 2006
+//    I renamed the splashscreen so it has a different name than the main
+//    window so window managers display something a little more sensible
+//    in the taskbar.
+//
 // ****************************************************************************
 
 SplashScreen::SplashScreen(bool cyclePictures, const char *name) :
@@ -122,8 +127,8 @@ SplashScreen::SplashScreen(bool cyclePictures, const char *name) :
 
     // If the window manager is dumb enough to put decorations on this
     // window, at least put a reasonable title on it.
-    QString ver(VERSION);
-    setCaption(QString("VisIt ") + ver);
+    QString caption; caption.sprintf("VisIt %s splash screen", VERSION);
+    setCaption(caption);
 
     // Set up a box to put the picture in
     setFrameStyle(QFrame::Panel | QFrame::Raised);
@@ -159,6 +164,7 @@ SplashScreen::SplashScreen(bool cyclePictures, const char *name) :
 #endif
 
     // If we have a beta in the version number, draw "Beta" on the pictures.
+    QString ver(VERSION);
     if(ver.right(1) == "b")
     {
         for(int i = 0; i < pictures.size(); ++i)

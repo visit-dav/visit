@@ -135,6 +135,9 @@ inline char toupper(char c)
 //    Hank Childs, Fri Jun  9 09:50:37 PDT 2006
 //    Added copyright string.
 //
+//    Brad Whitlock, Tue Nov 21 10:24:37 PDT 2006
+//    Added support for line style symbols.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1282,7 +1285,16 @@ class AttsGeneratorLineStyle : public virtual LineStyle , public virtual PythonG
         c << "        return NULL;" << endl;
         c << endl;
         c << "    // Set the " << name << " in the object." << endl;
-        c << "    obj->data->" << MethodNameSet() << "(ival);" << endl;
+        c << "    if(ival >= 0 && ival <= 3)" << endl;
+        c << "        obj->data->" << MethodNameSet() << "(ival);" << endl;
+        c << "    else" << endl;
+        c << "    {" << endl;
+        c << "        fprintf(stderr, \"An invalid  value was given. \"" << endl;
+        c << "                        \"Valid values are in the range of [0,3]. \"" << endl;
+        c << "                        \"You can also use the following names: \"" << endl;
+        c << "                        \"\\\"SOLID\\\", \\\"DASH\\\", \\\"DOT\\\", \\\"DOTDASH\\\"\\n\");" << endl;
+        c << "        return NULL;" << endl;
+        c << "    }" << endl;
     }
 
     virtual void WriteGetMethodBody(ostream &c, const QString &className)
@@ -1292,8 +1304,27 @@ class AttsGeneratorLineStyle : public virtual LineStyle , public virtual PythonG
 
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %d\\n\", prefix, atts->" << MethodNameGet() << "());" << endl;
+        c << "    const char *" << name << "_values[] = {\"SOLID\", \"DASH\", \"DOT\", \"DOTDASH\"};" << endl;
+        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %s  # SOLID, DASH, DOT, DOTDASH\\n\", prefix, " << name << "_values[atts->" << MethodNameGet() << "()]);" << endl;
         c << "    str += tmpStr;" << endl;
+    }
+
+    virtual void WriteGetAttr(ostream &c, const QString &classname)
+    {
+        if (internal)
+            return;
+
+        c << "    if(strcmp(name, \"" << name << "\") == 0)" << endl;
+        c << "        return " << classname << "_" << MethodNameGet() << "(self, NULL);" << endl;
+        c << "    if(strcmp(name, \"SOLID\") == 0)" << endl;
+        c << "        return PyInt_FromLong(long(0));" << endl;
+        c << "    else if(strcmp(name, \"DASH\") == 0)" << endl;
+        c << "        return PyInt_FromLong(long(1));" << endl;
+        c << "    else if(strcmp(name, \"DOT\") == 0)" << endl;
+        c << "        return PyInt_FromLong(long(2));" << endl;
+        c << "    else if(strcmp(name, \"DOTDASH\") == 0)" << endl;
+        c << "        return PyInt_FromLong(long(3));" << endl;
+        c << endl;
     }
 };
 

@@ -2,11 +2,29 @@
   <Plugin name="Curve" type="plot" label="Curve" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" vartype="curve" iconFile="Curve.xpm">
     <Files components="V">
       avtCurveFilter.C
+      avtCurveRenderer.C
+      avtOpenGLCurveRenderer.C
+      avtMesaCurveRenderer.C
     </Files>
     <Files components="E">
       avtCurveFilter.C
+      avtCurveRenderer.C
+      avtOpenGLCurveRenderer.C
+      avtMesaCurveRenderer.C
     </Files>
     <Attribute name="CurveAttributes" purpose="Attributes for the xy plot" persistent="true" exportAPI="" exportInclude="" codefile="CurveAttributes.code">
+      <Enum name="RenderMode">
+        RenderAsLines
+        RenderAsSymbols
+      </Enum>
+      <Enum name="SymbolTypes">
+        TriangleUp
+        TriangleDown
+        Square
+        Circle
+        Plus
+        X
+      </Enum>
       <Field name="lineStyle" label="Line Style" type="linestyle">
         0
       </Field>
@@ -35,6 +53,15 @@
       </Field>
       <Field name="cycleColors" label="cycleColors" type="bool">
         true
+      </Field>
+      <Field name="renderMode" label="Render mode" type="enum" subtype="RenderMode">
+        RenderAsLines
+      </Field>
+      <Field name="symbol" label="Symbol" type="enum" subtype="SymbolTypes">
+        TriangleUp
+      </Field>
+      <Field name="symbolDensity" label="Symbol density" type="int">
+        50
       </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>

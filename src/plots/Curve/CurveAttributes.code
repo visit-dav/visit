@@ -85,6 +85,11 @@ CurveAttributes::Print(ostream &out, bool selected_only) const
           case  4: out << "designator= " << GetDesignator().c_str();    break;
           case  5: out << "showPoints= " << GetShowPoints();    break;
           case  6: out << "pointSize=  " << GetPointSize();    break;
+          case  7: out << "legend=  " << (GetShowLegend()?"true":"false");    break;
+          case  8: out << "cycleColors=" << (GetCycleColors()?"true":"false"); break;
+          case  9: out << "renderMode=" << RenderMode_ToString(GetRenderMode()).c_str(); break;
+          case  10: out << "symbol=" << SymbolTypes_ToString(GetSymbol()).c_str(); break;
+          case  11: out << "symbolDensity=" << GetSymbolDensity(); break;
         }
         out << ",";
     }
