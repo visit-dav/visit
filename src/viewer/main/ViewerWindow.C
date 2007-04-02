@@ -6276,6 +6276,9 @@ ViewerWindow::GetNotifyForEachRender() const
 //   Removed checks for IsChangingScalableRenderingMode since this couldn't
 //   happen anyways. Removed preparingToChangeScalableRenderingMode
 //
+//   Mark C. Miller, Wed Jun  8 11:03:31 PDT 2005
+//   Made transitions into and out of SR mode smoother, less work
+//
 // ****************************************************************************
 
 void
@@ -6290,6 +6293,7 @@ ViewerWindow::ChangeScalableRenderingMode(bool newMode)
         ClearLastExternalRenderRequestInfo();
 
         // remove all plot's actors from the VisWindow
+        DisableUpdates();
         ClearPlots();
 
         // transmute the plots
@@ -6298,8 +6302,11 @@ ViewerWindow::ChangeScalableRenderingMode(bool newMode)
         // set scalable rendering mode in the vis window 
         visWindow->SetScalableRendering(newMode);
 
-        if(updatesEnabled)
+        if (updatesEnabled)
+        {
+            EnableUpdates();
             GetPlotList()->UpdateFrame();
+        }
 
         // update the window information
         ViewerWindowManager::Instance()->UpdateWindowInformation(
@@ -7241,11 +7248,18 @@ ViewerWindow::SendActivateToolMessage(const int toolId) const
 //   Bracketed all work with check to if new mode different from current mode
 //   Removed preparingToChangeScalableRenderingMode
 //
+//   Mark C. Miller, Wed Jun  8 11:03:31 PDT 2005
+//   Added early return if we're already changing SR modes to avoid possible
+//   recursion.
+//
 // ****************************************************************************
 
 void
 ViewerWindow::SendScalableRenderingModeChangeMessage(bool newMode)
 {
+    if (isChangingScalableRenderingMode)
+        return;
+
     if (GetScalableRendering() != newMode)
     {
         char msg[256];

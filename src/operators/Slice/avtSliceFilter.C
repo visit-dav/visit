@@ -1095,6 +1095,10 @@ avtSliceFilter::ReleaseData(void)
 //    I added code to make sure that the units get switched the same way
 //    as the labels. You can only notice it when X,Y,Z have different units.
 //
+//    Hank Childs, Tue Jun  7 14:11:20 PDT 2005
+//    Allow normals filter to decide if we need normals; it should be able
+//    to figure out if we have sliced and thus they are not needed.
+//
 // ****************************************************************************
 
 void
@@ -1106,9 +1110,6 @@ avtSliceFilter::RefashionDataObjectInfo(void)
    
     if (inAtts.GetTopologicalDimension() >= 1)
         outAtts.SetTopologicalDimension(inAtts.GetTopologicalDimension()-1);
-
-    if (atts.GetProject2d())
-        outValidity.SetNormalsAreInappropriate(true);
 
     outValidity.InvalidateZones();
 

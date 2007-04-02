@@ -49,11 +49,16 @@ class     avtMetaData;
 //    Hank Childs, Fri Dec  3 14:22:42 PST 2004
 //    Add variable name argument to SearchDataForDataExtents.
 //
+//    Hank Childs, Tue Jun  7 14:55:40 PDT 2005
+//    Add friend status to the facade filter.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtFilter
     : virtual public avtDataObjectSource, virtual public avtDataObjectSink
 {
+    friend class                        avtFacadeFilter;
+
   public:
                                         avtFilter();
     virtual                            ~avtFilter();

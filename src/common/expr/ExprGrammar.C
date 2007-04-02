@@ -19,56 +19,61 @@
 //    work with lists as expressions just yet.  We can change this
 //    back someday.
 //
+//    Jeremy Meredith, Wed Jun  8 17:04:23 PDT 2005
+//    Made symbols all be associated with a dictionary.
+//
+
+Dictionary D;
 
 // ------------------------------------------------------------------------
 // TERMINALS
 // ------------------------------------------------------------------------
-Symbol T_Plus          ('+');
-Symbol T_Mult          ('*');
-Symbol T_Minus         ('-');
-Symbol T_Slash         ('/');
-Symbol T_Exp           ('^');
-Symbol T_Mod           ('%');
-Symbol T_LBracket      ('[');
-Symbol T_RBracket      (']');
-Symbol T_LParen        ('(');
-Symbol T_RParen        (')');
-Symbol T_LCarat        ('<');
-Symbol T_RCarat        ('>');
-Symbol T_LBrace        ('{');
-Symbol T_RBrace        ('}');
-Symbol T_Pound         ('#');
-Symbol T_Equal         ('=');
-Symbol T_At            ('@');
-Symbol T_Comma         (',');
-Symbol T_Colon         (':');
-Symbol T_Ident         (TT_Identifier,   "Identifier");
-Symbol T_Integer       (TT_IntegerConst, "Integer");
-Symbol T_Float         (TT_FloatConst,   "Float");
-Symbol T_String        (TT_StringConst,  "String");
-Symbol T_Bool          (TT_BoolConst,    "Bool");
+Symbol T_Plus          (D, '+');
+Symbol T_Mult          (D, '*');
+Symbol T_Minus         (D, '-');
+Symbol T_Slash         (D, '/');
+Symbol T_Exp           (D, '^');
+Symbol T_Mod           (D, '%');
+Symbol T_LBracket      (D, '[');
+Symbol T_RBracket      (D, ']');
+Symbol T_LParen        (D, '(');
+Symbol T_RParen        (D, ')');
+Symbol T_LCarat        (D, '<');
+Symbol T_RCarat        (D, '>');
+Symbol T_LBrace        (D, '{');
+Symbol T_RBrace        (D, '}');
+Symbol T_Pound         (D, '#');
+Symbol T_Equal         (D, '=');
+Symbol T_At            (D, '@');
+Symbol T_Comma         (D, ',');
+Symbol T_Colon         (D, ':');
+Symbol T_Ident         (D, TT_Identifier,   "Identifier");
+Symbol T_Integer       (D, TT_IntegerConst, "Integer");
+Symbol T_Float         (D, TT_FloatConst,   "Float");
+Symbol T_String        (D, TT_StringConst,  "String");
+Symbol T_Bool          (D, TT_BoolConst,    "Bool");
 
 
 // ------------------------------------------------------------------------
 // NON-TERMINALS
 // ------------------------------------------------------------------------
-Symbol Expr            ( "Expr"         );
-Symbol Constant        ( "Constant"     );
-Symbol Vector          ( "Vector"       );
-Symbol List            ( "List"         );
-Symbol ListElems       ( "ListElems"    );
-Symbol ListElem        ( "ListElem"     );
-Symbol Function        ( "Function"     );
-Symbol Args            ( "Args"         );
-Symbol Arg             ( "Arg"          );
-Symbol PathSpec        ( "PathSpec"     );
-Symbol MultiSlash      ( "MultiSlash"   );
-Symbol Variable        ( "Variable"     );
-Symbol Database        ( "Database"     );
-Symbol DBSpec          ( "DBSpec"       );
-Symbol PathMachSpec    ( "PathMachSpec" );
-Symbol MachSpec        ( "MachSpec"     );
-Symbol TimeSpec        ( "TimeSpec"     );
+Symbol Expr            (D,  "Expr"         );
+Symbol Constant        (D,  "Constant"     );
+Symbol Vector          (D,  "Vector"       );
+Symbol List            (D,  "List"         );
+Symbol ListElems       (D,  "ListElems"    );
+Symbol ListElem        (D,  "ListElem"     );
+Symbol Function        (D,  "Function"     );
+Symbol Args            (D,  "Args"         );
+Symbol Arg             (D,  "Arg"          );
+Symbol PathSpec        (D,  "PathSpec"     );
+Symbol MultiSlash      (D,  "MultiSlash"   );
+Symbol Variable        (D,  "Variable"     );
+Symbol Database        (D,  "Database"     );
+Symbol DBSpec          (D,  "DBSpec"       );
+Symbol PathMachSpec    (D,  "PathMachSpec" );
+Symbol MachSpec        (D,  "MachSpec"     );
+Symbol TimeSpec        (D,  "TimeSpec"     );
 
 
 // ****************************************************************************
@@ -78,7 +83,7 @@ Symbol TimeSpec        ( "TimeSpec"     );
 //  Creation:    April  5, 2002
 //
 // ****************************************************************************
-ExprGrammar::ExprGrammar() : Grammar()
+ExprGrammar::ExprGrammar() : Grammar(D)
 {
   // ----------------------------------------------------------------------
 

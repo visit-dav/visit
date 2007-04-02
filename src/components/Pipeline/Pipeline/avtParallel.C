@@ -799,6 +799,54 @@ void BroadcastIntVector(vector<int> &vi, int myrank)
 }
 
 // ****************************************************************************
+//  Function:  BroadcastDouble
+//
+//  Purpose:
+//    Broadcast an double from processor 0 to all other processors
+//
+//  Arguments:
+//    i          the double
+//
+//  Programmer:  Hank Childs
+//  Creation:    June 6, 2005
+//
+// ****************************************************************************
+void BroadcastDouble(double &i)
+{
+#ifdef PARALLEL
+    MPI_Bcast(&i, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+#endif
+}
+
+// ****************************************************************************
+//  Function:  BroadcastDoubleVector
+//
+//  Purpose:
+//    Broadcast a vector<double> from processor 0 to all other processors
+//
+//  Arguments:
+//    vi         the vector<double>
+//    myrank     the rank of this process
+//
+//  Programmer:  Hank Childs
+//  Creation:    June 6, 2005
+//
+// ****************************************************************************
+void BroadcastDoubleVector(vector<double> &vi, double myrank)
+{
+#ifdef PARALLEL
+    int len;
+    if (myrank==0)
+        len = vi.size();
+    MPI_Bcast(&len, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    if (myrank!=0)
+        vi.resize(len);
+
+    MPI_Bcast(&vi[0], len, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+#endif
+}
+
+// ****************************************************************************
 //  Function:  BroadcastString
 //
 //  Purpose:
@@ -848,21 +896,64 @@ void BroadcastString(string &s, int myrank)
 //  Programmer:  Jeremy Meredith
 //  Creation:    July 15, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Jun  6 17:13:08 PDT 2005
+//    Re-implemented to improve efficiency for vectors with lots of strings.
+//
 // ****************************************************************************
 void BroadcastStringVector(vector<string> &vs, int myrank)
 {
 #ifdef PARALLEL
+    int i;
+
     int len;
     if (myrank==0)
         len = vs.size();
     MPI_Bcast(&len, 1, MPI_INT, 0, MPI_COMM_WORLD);
-    if (myrank!=0)
+
+    vector<int> lens(len);
+    if (myrank == 0)
+        for (i = 0 ; i < len ; i++)
+            lens[i] = vs[i].length();
+    MPI_Bcast(&(lens[0]), len, MPI_INT, 0, MPI_COMM_WORLD);
+
+    int total_len = 0;
+    for (i = 0 ; i < len ; i++)
+        total_len += lens[i];
+
+    char *buff = new char[total_len];
+    if (myrank == 0)
+    {
+        char *buff_ptr = buff;
+        for (i = 0 ; i < len ; i++)
+        {
+            strncpy(buff_ptr, vs[i].c_str(), lens[i]);
+            buff_ptr += lens[i];
+        }
+    }    
+
+    MPI_Bcast((void*)buff, total_len, MPI_CHAR, 0, MPI_COMM_WORLD);
+
+    if (myrank != 0)
+    {
         vs.resize(len);
 
-    for (int i=0; i<len; i++)
-    {
-        BroadcastString(vs[i], myrank);
+        int biggest = 0;
+        for (i=0; i<len; i++)
+            biggest = (biggest < lens[i] ? lens[i] : biggest);
+        char *buff2 = new char[biggest+1];
+        char *buff_ptr = buff;
+        for (i=0; i<len; i++)
+        {
+            strncpy(buff2, buff_ptr, lens[i]);
+            buff2[lens[i]] = '\0';
+            vs[i] = buff2;
+            buff_ptr += lens[i];
+        }
+        delete [] buff2;
     }
+    delete [] buff;
 #endif
 }
 

@@ -10,6 +10,7 @@
 #define MAXSYMBOLS 64
 struct SymbolSet;
 class  Rule;
+class  Dictionary;
 
 // ****************************************************************************
 //  Class:  Symbol
@@ -25,6 +26,9 @@ class  Rule;
 //    Jeremy Meredith, Wed Nov 24 12:04:23 PST 2004
 //    Added a new constructor due to some major refactoring.
 //
+//    Jeremy Meredith, Wed Jun  8 11:28:01 PDT 2005
+//    Moved static data to a new Dictionary object.
+//
 // ****************************************************************************
 class PARSER_API Symbol
 {
@@ -32,11 +36,9 @@ class PARSER_API Symbol
     enum Type { Terminal, NonTerminal };
 
   public:
-                   Symbol(int tt);
-                   Symbol(int tt, const std::string &s);
-                   Symbol(const std::string &s);
-    static Symbol *Get(int tt);
-    static Symbol *Get(const std::string &s);
+    Symbol(Dictionary&,int tt);
+    Symbol(Dictionary&,int tt, const std::string &s);
+    Symbol(Dictionary&,const std::string &s);
 
     bool      operator==(const Symbol &rhs) const;
     bool      IsNullable(const std::vector<const Rule*>&)  const;
@@ -51,12 +53,6 @@ class PARSER_API Symbol
     int         GetTerminalType()  const { return terminaltype;  }
     std::string GetDisplayString() const { return displaystring; }
   private:
-    void InitStatic();
-
-    static std::map<int,Symbol*>         *allterminals;
-    static std::map<std::string,Symbol*> *allnonterminals;
-    static int                            nsymbols;
-
     Type         type;
     int          terminaltype;
     std::string  displaystring;

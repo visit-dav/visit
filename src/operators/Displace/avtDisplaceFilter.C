@@ -138,12 +138,15 @@ avtDisplaceFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Tue Jun 29 07:21:32 PDT 2004
 //    Do not issue a warning if we get cell centered data.
 //
+//    Hank Childs, Tue Jun  7 09:35:31 PDT 2005
+//    Improve handling of cell-centered vectors.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtDisplaceFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 {
-    vtkCellDataToPointData *cd2pd = NULL;
+    vtkDataSet *tmp_ds = NULL;
 
     in_ds->GetPointData()->SetActiveVectors(atts.GetVariable().c_str());
     vtkDataArray *vecs = in_ds->GetPointData()->GetVectors();
@@ -154,26 +157,31 @@ avtDisplaceFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     //
     if (vecs == NULL)
     {
-        cd2pd = vtkCellDataToPointData::New();
-        cd2pd->SetInput(in_ds);
-        cd2pd->GetOutput()->Update();
-        vtkDataSet *new_in_ds = cd2pd->GetOutput();
-        new_in_ds->Update();
-        new_in_ds->SetSource(NULL);
-        vtkPointData *pd = in_ds->GetPointData();
-        for (int i = 0 ; i < pd->GetNumberOfArrays() ; i++)
-        {
-            new_in_ds->GetPointData()->AddArray(pd->GetArray(i));
-        }
-
-        in_ds->GetCellData()->SetActiveVectors(atts.GetVariable().c_str());
-        vecs = new_in_ds->GetPointData()->GetVectors();
-
-        if (vecs == NULL)
+        vtkDataArray *cell_vecs = in_ds->GetCellData()->
+                                          GetArray(atts.GetVariable().c_str());
+        if (cell_vecs == NULL)
         {
             EXCEPTION0(ImproperUseException);
         }
-        in_ds = new_in_ds;
+
+        vtkDataSet *one_var_ds = (vtkDataSet *) in_ds->NewInstance();
+        one_var_ds->CopyStructure(in_ds);
+        one_var_ds->GetCellData()->AddArray(cell_vecs);
+
+        vtkCellDataToPointData *cd2pd = vtkCellDataToPointData::New();
+        cd2pd->SetInput(one_var_ds);
+        cd2pd->GetOutput()->Update();
+        vtkDataSet *pt_one_var_ds = cd2pd->GetOutput();
+
+        tmp_ds = (vtkDataSet *) in_ds->NewInstance();
+        tmp_ds->ShallowCopy(in_ds);
+        tmp_ds->GetPointData()->AddArray(
+          pt_one_var_ds->GetPointData()->GetArray(atts.GetVariable().c_str()));
+        tmp_ds->GetPointData()->SetActiveVectors(atts.GetVariable().c_str());
+
+        in_ds = tmp_ds;
+        cd2pd->Delete();
+        one_var_ds->Delete();
     }
 
     vtkDataSet *rv = NULL;
@@ -239,9 +247,10 @@ avtDisplaceFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     //
     // Clean up memory.
     //
-    if (cd2pd != NULL)
+    if (tmp_ds != NULL)
     {
-        cd2pd->Delete();
+        rv->GetPointData()->RemoveArray(atts.GetVariable().c_str());
+        tmp_ds->Delete();
     }
 
     return rv;

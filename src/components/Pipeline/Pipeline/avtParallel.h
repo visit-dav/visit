@@ -33,6 +33,8 @@ PIPELINE_API void    UnifyMaximumValue(std::vector<int>&, std::vector<int>&);
 
 PIPELINE_API void    BroadcastInt(int &i);
 PIPELINE_API void    BroadcastIntVector(std::vector<int>&, int myrank);
+PIPELINE_API void    BroadcastDouble(double &i);
+PIPELINE_API void    BroadcastDoubleVector(std::vector<double>&, int myrank);
 PIPELINE_API void    BroadcastString(std::string &s, int myrank);
 PIPELINE_API void    BroadcastStringVector(std::vector<std::string>&,
                                            int myrank);

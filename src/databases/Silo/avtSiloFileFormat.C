@@ -2711,6 +2711,9 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
 //    for, leading to an ABW (array bounds write) of 1.  This was enough to
 //    crash VisIt in some circumstances.
 //
+//    Hank Childs, Wed Jun  1 10:41:59 PDT 2005
+//    The block numbers is gmap[0], not gmap[1].  gmap[1] is the domain number.
+//
 // ****************************************************************************
 
 void
@@ -2780,7 +2783,7 @@ avtSiloFileFormat::FindGmapConnectivity(DBfile *dbfile, int &ndomains,
 
         if (needGroupInfo)
         {
-            groupIds[j] = gmap_buff[1];
+            groupIds[j] = gmap_buff[0];
         }
 
     }
@@ -2831,9 +2834,12 @@ avtSiloFileFormat::FindGmapConnectivity(DBfile *dbfile, int &ndomains,
 //    Hank Childs, Mon Dec  1 14:43:59 PST 2003
 //    Add support for tensors.
 //
+//    Hank Childs, Mon Jun  6 14:12:34 PDT 2005
+//    Add support for slash characters.
+//
 // ****************************************************************************
 
-inline void GetWord(char *&s, char *word)
+inline void GetWord(char *&s, char *word, bool allowSlash)
 {
     while (isspace(*s) && *s != '\0')
     {
@@ -2841,7 +2847,8 @@ inline void GetWord(char *&s, char *word)
     }
 
     int  len = 0;
-    while ((isalnum(*s) || *s == '_') && *s != '\0')
+    while ((isalnum(*s) || *s == '_' || (allowSlash && *s == '/')) 
+           && *s != '\0')
     {
         word[len] = *s;
         len++;
@@ -2907,13 +2914,13 @@ AddDefvars(const char *defvars, avtDatabaseMetaData *md)
         // Get the name out.
         //
         char name[1024];
-        GetWord(s, name);
+        GetWord(s, name, true);
 
         //
         // Make sure what we are looking at really is a vector.
         //
         char vartype_str[1024];
-        GetWord(s, vartype_str);
+        GetWord(s, vartype_str, false);
         Expression::ExprType vartype = Expression::Unknown;
         if (strcmp(vartype_str, "mesh") == 0)
             vartype = Expression::Mesh;

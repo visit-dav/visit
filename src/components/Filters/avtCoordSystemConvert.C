@@ -542,3 +542,81 @@ FixWraparounds(vtkDataSet *in_ds, int comp_idx)
 }
 
 
+// ****************************************************************************
+//  Method: avtCoordSystemConvert::RefashionDataObjectInfo
+//
+//  Purpose:
+//      Changes the labels of the axes
+//
+//  Programmer: Hank Childs
+//  Creation:   June 8, 2005
+//
+// ****************************************************************************
+
+void
+avtCoordSystemConvert::RefashionDataObjectInfo(void)
+{
+    avtDataAttributes &inAtts  = GetInput()->GetInfo().GetAttributes();
+    avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
+    if (inputSys == CARTESIAN)
+    {
+        if (outputSys == SPHERICAL)
+        {
+            if (inAtts.GetXLabel() == "X-Axis" ||
+                inAtts.GetXLabel() == "X Axis")
+                outAtts.SetXLabel("Theta");
+            else
+                outAtts.SetXLabel(std::string("Theta / ") + 
+                                  inAtts.GetXLabel());
+
+            if (inAtts.GetYLabel() == "Y-Axis" ||
+                inAtts.GetYLabel() == "Y Axis")
+                outAtts.SetYLabel("Phi");
+            else
+                outAtts.SetYLabel(std::string("Phi / ") + 
+                                  inAtts.GetYLabel());
+
+            if (inAtts.GetZLabel() == "Z-Axis" ||
+                inAtts.GetZLabel() == "Z Axis")
+                outAtts.SetZLabel("Radius");
+            else
+                outAtts.SetZLabel(std::string("Radius / ") + 
+                                  inAtts.GetZLabel());
+        }
+        else if (outputSys == CYLINDRICAL)
+        {
+            if (inAtts.GetXLabel() == "X-Axis" ||
+                inAtts.GetXLabel() == "X Axis")
+                outAtts.SetXLabel("Theta");
+            else
+                outAtts.SetXLabel(std::string("Theta / ") + 
+                                   inAtts.GetXLabel());
+
+            if (inAtts.GetYLabel() == "Y-Axis" ||
+                inAtts.GetYLabel() == "Y Axis")
+                outAtts.SetYLabel("Height");
+            else
+                outAtts.SetYLabel(std::string("Height / ") + 
+                                   inAtts.GetYLabel());
+
+            if (inAtts.GetZLabel() == "Z-Axis" ||
+                inAtts.GetZLabel() == "Z Axis")
+                outAtts.SetZLabel("Radius");
+            else
+                outAtts.SetZLabel(std::string("Radius / ") + 
+                                   inAtts.GetZLabel());
+        }
+    }
+    if (outputSys == SPHERICAL)
+    {
+        outAtts.SetXUnits("radians");
+        outAtts.SetYUnits("radians");
+    }
+    else if (outputSys == CYLINDRICAL)
+    {
+        outAtts.SetXUnits("radians");
+    }
+    GetOutput()->GetInfo().GetValidity().SetPointsWereTransformed(true);
+}
+
+

@@ -925,6 +925,10 @@ GetCoordinates(float start, float length, int numEls)
 //    Hank Childs, Sun Mar 13 10:00:01 PST 2005
 //    Tell filters upstream that we have rectilinear optimizations.
 //
+//    Hank Childs, Tue Jun  7 14:04:39 PDT 2005
+//    Turn off ghost data, since ghost data created upstream will not be
+//    pertinent after resampling.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -938,6 +942,7 @@ avtResampleFilter::PerformRestriction(avtPipelineSpecification_p oldspec)
 
     spec->NoDynamicLoadBalancing();
     spec->SetHaveRectilinearMeshOptimizations(true);
+    spec->GetDataSpecification()->SetDesiredGhostDataType(NO_GHOST_DATA);
     if (atts.GetUseArbitrator())
     {
         if (atts.GetArbitratorVarName() != "default")

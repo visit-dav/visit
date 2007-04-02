@@ -25,6 +25,8 @@
 #include <DebugStream.h>
 #include <TimingsManager.h>
 
+#include <map>
+
 using std::vector;
 using std::map;
 
@@ -215,6 +217,65 @@ avtExternallyRenderedImagesActor::PrepareForRender(void)
    }
 }
 
+
+// ****************************************************************************
+//  Method: avtExternallyRenderedImagesActor::SaveVisibility
+//
+//  Purpose:
+//     Sets the current visibility of the ERI actor to specified state but
+//     also remembers previous state and associates that previous state with
+//     the given object pointer. Later a call to RestoreVisibilty will return
+//     it to a the previous state.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   May 5, 2005 
+//
+// ****************************************************************************
+
+bool
+avtExternallyRenderedImagesActor::SaveVisibility(void *objptr, const bool mode)
+{
+    map<void*,bool>::iterator it = savedVisibilityMap.find(objptr);
+
+    if (it != savedVisibilityMap.end())
+    {
+          EXCEPTION1(ImproperUseException,
+              "Invalid Save/Restore visibility operation."); 
+    }
+
+    savedVisibilityMap[objptr] = GetVisibility();
+    return SetVisibility(mode);
+}
+
+// ****************************************************************************
+//  Method: avtExternallyRenderedImagesActor::RestoreVisibility
+//
+//  Purpose:
+//     Sets the current visibility of the ERI actor to state it was in before
+//     the specified object set it.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   May 5, 2005 
+//
+// ****************************************************************************
+
+bool
+avtExternallyRenderedImagesActor::RestoreVisibility(void *objptr)
+{
+    map<void*,bool>::iterator it = savedVisibilityMap.find(objptr);
+
+    if (it == savedVisibilityMap.end())
+    {
+          EXCEPTION1(ImproperUseException,
+              "Invalid Save/Restore visibility operation."); 
+    }
+
+
+    bool restoreMode = it->second;
+    SetVisibility(restoreMode);
+    savedVisibilityMap.erase(it);
+    return restoreMode;
+}
 
 // ****************************************************************************
 //  Method: avtExternallyRenderedImagesActor::SetVisibility

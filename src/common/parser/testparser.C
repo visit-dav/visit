@@ -4,9 +4,15 @@
 #include "VisItParser.h"
 #include "ParseException.h"
 #include "Symbol.h"
+#include "Dictionary.h"
 
 using std::string;
 using std::vector;
+
+// ----------------------------------------------------------------------------
+// dictionary
+// ----------------------------------------------------------------------------
+Dictionary D;
 
 // ----------------------------------------------------------------------------
 // terminals
@@ -17,14 +23,14 @@ enum TokenType {
     TT_EOF        = EOF_TOKEN_ID,
     TT_Var
 };
-Symbol T_Plus('+');
-Symbol T_Mult('*');
-Symbol T_Var(TT_Var, "Var");
+Symbol T_Plus(D, '+');
+Symbol T_Mult(D, '*');
+Symbol T_Var(D, TT_Var, "Var");
 
 // ----------------------------------------------------------------------------
 // nonterminals
 // ----------------------------------------------------------------------------
-Symbol Expr("Expr");
+Symbol Expr(D, "Expr");
 
 // ----------------------------------------------------------------------------
 // Tokens
@@ -131,7 +137,7 @@ class VarExpression : public ParseTreeNode
 class TestGrammar : public Grammar
 {
   public:
-    TestGrammar() : Grammar()
+    TestGrammar() : Grammar(D)
     {
         SetStartSymbol(Expr);
 
