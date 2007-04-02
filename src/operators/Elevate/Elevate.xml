@@ -34,7 +34,7 @@
       <Field name="max" label="Max" type="double" enabler="maxFlag:true">
         1.000000
       </Field>
-      <Field name="variable" label="Elevate by Variable" type="variablename" vartypes="0100000000">
+      <Field name="variable" label="Elevate by Variable" type="variablename" vartypes="01000000000">
         default
       </Field>
     </Attribute>

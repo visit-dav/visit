@@ -52,7 +52,7 @@
       <Field name="resampleTarget" label="resampleTarget" type="int">
         50000
       </Field>
-      <Field name="opacityVariable" label="opacityVariable" type="variablename" vartypes="0100000000">
+      <Field name="opacityVariable" label="opacityVariable" type="variablename" vartypes="01000000000">
         default
       </Field>
       <Field name="freeformOpacity" label="freeformOpacity" type="ucharArray" length="256" init="true">

@@ -42,7 +42,7 @@
       <Field name="tieResolver" label="Resolve ties" type="enum" subtype="TieResolver">
         random
       </Field>
-      <Field name="tieResolverVariable" label="Variable to resolve ties" type="variablename" enabler="tieResolver:smallest,largest" vartypes="0100000000">
+      <Field name="tieResolverVariable" label="Variable to resolve ties" type="variablename" enabler="tieResolver:smallest,largest" vartypes="01000000000">
         default
       </Field>
       <Field name="defaultValue" label="Value for uncovered regions" type="double">
