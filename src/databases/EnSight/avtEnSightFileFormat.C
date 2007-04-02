@@ -488,6 +488,9 @@ avtEnSightFileFormat::GetNTimesteps(void)
 //
 // Modifications:
 //   
+//   Hank Childs, Mon Jan 29 09:24:16 PST 2007
+//   If there are no times, then spoof one time slice.
+//
 // ****************************************************************************
 
 void
@@ -515,6 +518,11 @@ avtEnSightFileFormat::GetTimes(std::vector<double> &times)
             times.push_back(t->GetComponent(j,0));
             debug4 << ", " << t->GetComponent(j,0);
         }
+    }
+    if (times.size() == 0)
+    {
+        times.push_back(0.);
+        debug4 << " <Spoofed one time slice ... no time info in file>" << endl;
     }
     debug4 << "}" << endl;
 }
