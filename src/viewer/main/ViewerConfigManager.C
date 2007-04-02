@@ -463,6 +463,9 @@ ViewerConfigManager::ExportEntireState(const std::string &filename)
 //   Brad Whitlock, Mon Aug 30 08:50:18 PDT 2004
 //   Changed the wording of a message.
 //
+//   Brad Whitlock, Wed Jan 11 11:59:43 PDT 2006
+//   I made it an error if the session file could not be located.
+//
 // ****************************************************************************
 
 void
@@ -508,21 +511,44 @@ ViewerConfigManager::ImportEntireState(const std::string &filename,
             if(viewerNode != 0)
             {
                 // Let the parent read its settings.
-                parent->SetFromNode(viewerNode);
+                bool fatalError = parent->SetFromNode(viewerNode);
 
-                std::string str("VisIt imported a session from: ");
-                str += filename;
-                str += ".";
-                str += differentVersionMessage;
+                if(fatalError)
+                {
+                    std::string str("VisIt detected serious errors in the "
+                        "session file from: ");
+                    str += filename;
+                    str += " so the session was not restored.";
+                    str += differentVersionMessage;
+                    Error(str.c_str());
+                }
+                else
+                {
+                    std::string str("VisIt imported a session from: ");
+                    str += filename;
+                    str += ".";
+                    str += differentVersionMessage;
+                    Message(str.c_str());
+                }
 
-                Message(str.c_str());
                 return;
             }
         }
     }
 
-    std::string str("VisIt could not import a session from the file: " +
-                    filename);
-    Warning(str.c_str());
+    std::string str("VisIt could not locate the session file: ");
+    if(inVisItDir)
+    {
+        str += filename;
+        str += ". VisIt looks for session files in ";
+        str += GetUserVisItDirectory();
+        str += " by default";
+    }
+    else
+        str += file2;
+    str += ". Check that you provided the correct session "
+           "file name or try including the entire path to the "
+           "session file.";
+    Error(str.c_str());
 }
 

@@ -61,7 +61,8 @@ enum avtMeshType
     AVT_POINT_MESH,          /* 3 */
     AVT_SURFACE_MESH,        /* 4 */
     AVT_CSG_MESH,            /* 5 */
-    AVT_UNKNOWN_MESH         /* 6 */
+    AVT_AMR_MESH,            /* 6 */
+    AVT_UNKNOWN_MESH         /* 7 */
 };
 
 

@@ -409,6 +409,9 @@ LongFileName(const char *shortName)
 //   Brad Whitlock, Fri Oct 28 13:50:21 PST 2005
 //   Added movieArguments.
 //
+//   Brad Whitlock, Wed Jan 11 17:15:39 PST 2006
+//   I made sure that screenX, screenY are intitialized.
+//
 // ****************************************************************************
 
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
@@ -428,6 +431,9 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     viewerInitiatedQuit = false;
     reverseLaunch = false;
 
+    // Default screen values
+    screenX = 0;
+    screenY = 0;
     // Default border values.
     borders[0] = 26; // Top
     borders[1] = 4;  // Bottom
@@ -439,6 +445,8 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     // Default preshift values.
     preshiftX = 0;
     preshiftY = 0;
+    useWindowMetrics = true;
+
     // Default values.
     localOnly = false;
     readConfig = true;
@@ -690,6 +698,9 @@ QvisGUIApplication::~QvisGUIApplication()
 //   Moved the stage where we tell the mdserver to load plugins and I added
 //   more complete timing information.
 //
+//   Brad Whitlock, Wed Jan 11 17:19:22 PST 2006
+//   I added a bool to the window metrics.
+//
 // ****************************************************************************
 
 void
@@ -713,11 +724,11 @@ QvisGUIApplication::HeavyInitialization()
     case 0:
         SplashScreenProgress("Calculating window metrics...", 5);
         // Calculate the window metrics
-        
         wm = WindowMetrics::Instance();
+        wm->MeasureScreen(useWindowMetrics);
         visitTimer->StopTimer(timeid, "stage 0 - Calculating window metrics");
 
-        // Ise the window metrics to set some internal fields.
+        // Use the window metrics to set some internal fields.
         screenX    = wm->GetScreenX();
         screenY    = wm->GetScreenY();
         screenW    = wm->GetScreenW();
@@ -1373,6 +1384,9 @@ QvisGUIApplication::Quit()
 //    Brad Whitlock, Thu Jul 14 10:52:46 PDT 2005
 //    I made it use SetIsDevelopmentVersion.
 //
+//    Brad Whitlock, Wed Jan 11 17:17:45 PST 2006
+//    I added code to parse -nowindowmetrics.
+//
 // ****************************************************************************
 
 void
@@ -1547,6 +1561,10 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
         else if(current == "-dv")
         {
             SetIsDevelopmentVersion(true);
+        }
+        else if(current == "-nowindowmetrics")
+        {
+            useWindowMetrics = false;
         }
     }
 }

@@ -36,6 +36,8 @@
 
 #include <DebugStream.h>
 #include <DataNode.h>
+#include <OperatorPluginManager.h>
+#include <PlotPluginManager.h>
 #include <InvalidLimitsException.h>
 #include <NoInputException.h>
 #include <ImproperUseException.h>
@@ -4418,6 +4420,125 @@ ViewerPlot::SetFromNode(DataNode *parentNode)
         }
         ENDTRY
     }
+}
+
+// ****************************************************************************
+// Method: ViewerPlot::SessionContainsErrors
+//
+// Purpose: 
+//   This is a static method that is used to check the validity of the 
+//   data nodes coming in from a session so we can detect errors without
+//   actually having to restore the session and disturb the state.
+//
+// Arguments:
+//   parentNode : The node that contains the plot information.
+//
+// Returns:    True 
+//
+// Note:       The pattern followed by this function is similar to the 
+//             SetFromNode function.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 11 14:48:52 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerPlot::SessionContainsErrors(DataNode *parentNode)
+{
+    bool fatalError = true;
+    DataNode *node = 0;
+    char tmp[1024];
+
+    if(parentNode == 0)
+        return fatalError;
+
+    DataNode *plotNode = parentNode->GetNode("ViewerPlot");
+    if(plotNode == 0)
+    {
+        Error("The ViewerPlot node was not found in the session file.");
+        return fatalError;
+    }
+
+    if((node = parentNode->GetNode("pluginID")) != 0)
+    {
+        std::string pluginID(node->AsString());
+
+        //
+        // Use the plot plugin manager to get the plot type index from
+        // the plugin id.
+        //
+        int type = PlotPluginManager::Instance()->GetEnabledIndex(pluginID);
+        if(type == -1)
+        {
+            SNPRINTF(tmp, 1024, "The session file wanted VisIt to "
+                     "create a plot using the \"%s\" plugin, which is either "
+                     "invalid or refers to a plugin that is not present "
+                     "in this VisIt installation.", pluginID.c_str());
+            Error(tmp);
+        }
+        else
+        {
+            // We have a good plot type. Check any operators that are on
+            // the plot.
+            fatalError = false;
+
+            DataNode *operatorNode = plotNode->GetNode("Operators");
+            if(operatorNode)
+            {
+                bool operatorsPresent = true;
+                for(int i = 0; operatorsPresent && !fatalError; ++i)
+                {
+                    char key[20];
+                    SNPRINTF(key, 20, "operator%02d", i);
+                    DataNode *opNode = operatorNode->GetNode(key);
+                    if(opNode)
+                    {
+                        //
+                        // Add the operator.
+                        //
+                        if((node = opNode->GetNode("operatorType")) != 0) 
+                        {
+                            std::string operatorID(node->AsString());
+                            int type = OperatorPluginManager::Instance()->
+                                GetEnabledIndex(operatorID);
+                            if(type == -1)
+                            {
+                                fatalError = true;
+                                SNPRINTF(tmp, 1024, "The session file contains "
+                                    "a plot that uses the %s plugin and that plot "
+                                    "references the %s operator plugin, which is "
+                                    "either invalid or it is not present in this "
+                                    "VisIt installation.",
+                                    pluginID.c_str(), operatorID.c_str());
+                                Error(tmp);
+                            }
+                        }
+                        else
+                        {
+                            fatalError = true;
+                            SNPRINTF(tmp, 1024, "The session file contains a "
+                                     "plot that uses the %s plugin and that plot "
+                                     "references an operator of an undetermined "
+                                     "type. The session file is probably "
+                                     "corrupted.", pluginID.c_str());
+                            Error(tmp);
+                        }
+                    }
+                    else
+                        operatorsPresent = false;
+                }
+            }
+        }
+    }
+    else
+    {
+        Error("The session file was missing the pluginID for a plot.");
+    }
+
+    return fatalError;
 }
 
 // ****************************************************************************

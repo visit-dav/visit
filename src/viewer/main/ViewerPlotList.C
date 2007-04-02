@@ -7820,6 +7820,62 @@ ViewerPlotList::SetFromNode(DataNode *parentNode)
     return sendUpdateFrame;
 }
 
+// ****************************************************************************
+// Method: ViewerPlotList::SessionContainsErrors
+//
+// Purpose: 
+//   Checks the data node containing the session information for errors.
+//
+// Arguments:
+//   parentNode : The data node to check.
+//
+// Returns:    True if the session contains errors; False otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 11 14:52:49 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerPlotList::SessionContainsErrors(DataNode *parentNode)
+{
+    bool fatalError = true;
+
+    if(parentNode == 0)
+        return fatalError;
+
+    DataNode *plotlistNode = parentNode->GetNode("ViewerPlotList");
+    if(plotlistNode == 0)
+        return fatalError;
+
+    int expectedPlots = 0;
+    DataNode *node = 0;
+    if((node = plotlistNode->GetNode("nPlots")) != 0)
+    {
+        // Set the number of plots that we expect to create.
+        expectedPlots = (node->AsInt() < 0) ? 0 : node->AsInt();
+        fatalError = false;
+    }
+    else
+    {
+        Error("The session file did not specify how many plots to create.");
+    }
+
+    for(int i = 0; i < expectedPlots && !fatalError; ++i)
+    {
+        char key[20];
+        SNPRINTF(key, 20, "plot%02d", i);
+        DataNode *plotNode = plotlistNode->GetNode(key);
+        if(plotNode == 0)
+            continue;
+
+        fatalError = ViewerPlot::SessionContainsErrors(plotNode);
+    }
+
+    return fatalError;
+}
 
 // ****************************************************************************
 // Method: ViewerPlotList::CanMeshPlotBeOpaque

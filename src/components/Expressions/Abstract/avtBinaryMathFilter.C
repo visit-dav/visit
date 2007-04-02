@@ -91,6 +91,9 @@ avtBinaryMathFilter::~avtBinaryMathFilter()
 //    Hank Childs, Thu Jan 20 17:32:13 PST 2005
 //    Make cur_mesh accessible to derived types.
 //
+//    Hank Childs, Thu Jan 12 10:01:41 PST 2006
+//    Make sure that all arrays are valid.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -111,6 +114,12 @@ avtBinaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
     {
         data1 = point_data1;
         centering = AVT_NODECENT;
+    }
+
+    if (data1 == NULL)
+    {
+        EXCEPTION1(ExpressionException, "An internal error occurred when "
+              "calculating an expression.  Please contact a VisIt developer.");
     }
 
     // Get the second variable.

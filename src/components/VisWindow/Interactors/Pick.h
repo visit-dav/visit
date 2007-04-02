@@ -1,10 +1,11 @@
 // ************************************************************************* //
-//                                 Pick3D.h                                  //
+//                                 Pick.h                                    //
 // ************************************************************************* //
 
-#ifndef PICK_3D_H
-#define PICK_3D_H
+#ifndef PICK__H
+#define PICK__H
 #include <viswindow_exports.h>
+#include <queue>
 
 
 class VisWindowInteractorProxy;
@@ -13,10 +14,10 @@ class VisWindowInteractorProxy;
 
 
 // ****************************************************************************
-//  Class: Pick3D
+//  Class: Pick
 //
 //  Purpose:
-//      Defines what Visit's 3D Pick interactions should look like.  
+//      Defines what Visit's  Pick interactions should look like.  
 //
 //  Programmer: Hank Childs
 //  Creation:   May 29, 2000
@@ -30,14 +31,25 @@ class VisWindowInteractorProxy;
 //    Removed arguments from StartLeftButtonAction, in order to match
 //    vtk's new interactor api.
 //
+//    Kathleen Bonnell, Thu Jan 12 14:03:39 PST 2006 
+//    Renamed from Pick3D.  Added private members picking, handlingCache,
+//    pickCache and methods HandlePickCache and DoPick.
+//
 // ****************************************************************************
 
-class VISWINDOW_API Pick3D : public VisitInteractor
+class VISWINDOW_API Pick : public VisitInteractor
 {
   public:
-                        Pick3D(VisWindowInteractorProxy &);
+                        Pick(VisWindowInteractorProxy &);
  
     virtual void        StartLeftButtonAction();
+
+  private:
+    bool                picking;
+    bool                handlingCache;
+    std::queue<int>     pickCache;
+    void                HandlePickCache();
+    void                DoPick(int x, int y);
 };
 
 

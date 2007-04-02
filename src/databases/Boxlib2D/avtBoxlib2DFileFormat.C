@@ -1226,6 +1226,9 @@ avtBoxlib2DFileFormat::GetVisMF(int index)
 //    Hank Childs, Thu Jun 23 14:39:04 PDT 2005
 //    Set time if appropriate.
 //
+//    Hank Childs, Wed Jan 11 09:40:17 PST 2006
+//    Change mesh type to AMR.
+//
 // ****************************************************************************
 
 void
@@ -1245,7 +1248,7 @@ avtBoxlib2DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     char mesh_name[32] = "Mesh";
     avtMeshMetaData *mesh = new avtMeshMetaData;
     mesh->name = mesh_name;
-    mesh->meshType = AVT_RECTILINEAR_MESH;
+    mesh->meshType = AVT_AMR_MESH;
     mesh->numBlocks = totalPatches;
     mesh->blockOrigin = 0;
     mesh->spatialDimension = dimension;

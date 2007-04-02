@@ -158,13 +158,7 @@ avtCMFEExpression::ProcessArguments(ArgsExpr *args,
     }
 
     // Check if there's a second argument.
-    if (nargs < targetArgs)
-    {
-        EXCEPTION1(ExpressionException, mismatchMsg);
-    }
-
-    // See if there are other arguments.
-    if (nargs > targetArgs)
+    if (nargs != targetArgs)
     {
         EXCEPTION1(ExpressionException, mismatchMsg);
     }
@@ -442,6 +436,12 @@ avtCMFEExpression::Execute()
 //  Programmer: Hank Childs
 //  Creation:   September 1, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Jan 12 11:34:43 PST 2006
+//    Post a special error message for time derivatives, since they will
+//    cause the error message from this routine to execute most frequently.
+//
 // ****************************************************************************
 
 int
@@ -522,7 +522,15 @@ avtCMFEExpression::GetTimestate(ref_ptr<avtDatabase> dbp)
     if (actualTimestep < 0)
     {
         actualTimestep = 0;
-        avtCallback::IssueWarning("You have instructed VisIt to use a "
+        if (isDelta && firstDBTime == 0 && timeIndex == -1)
+            avtCallback::IssueWarning("VisIt uses the current time state and "
+               "the previus time state when doing a time derivative.  Because "
+               "you are at the first time state, there is no previous time "
+               "state to difference with.  So the resulting plot will have no "
+               "differences.  This feature will work correctly, however, for "
+               "the rest of the time states.");
+        else
+            avtCallback::IssueWarning("You have instructed VisIt to use a "
                "non-existent time state when comparing databases.  VisIt "
                "is using the first time state in its place.");
     }

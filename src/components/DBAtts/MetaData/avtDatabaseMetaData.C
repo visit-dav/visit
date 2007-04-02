@@ -734,6 +734,10 @@ avtMeshMetaData::SetExtents(const float *extents)
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Added loadBalanceScheme
+// 
+//    Hank Childs, Wed Jan 11 09:36:13 PST 2006
+//    Added new mesh types.
+//
 // ****************************************************************************
 
 void
@@ -785,10 +789,6 @@ avtMeshMetaData::Print(ostream &out, int indent) const
     out << "Mesh type is ";
     switch (meshType)
     {
-      case AVT_UNSTRUCTURED_MESH:
-        out << "Unstructured Mesh";
-        break;
-
       case AVT_RECTILINEAR_MESH:
         out << "Rectilinear Mesh";
         break;
@@ -797,8 +797,24 @@ avtMeshMetaData::Print(ostream &out, int indent) const
         out << "Curvilinear Mesh";
         break;
 
+      case AVT_UNSTRUCTURED_MESH:
+        out << "Unstructured Mesh";
+        break;
+
       case AVT_POINT_MESH:
         out << "Point Mesh";
+        break;
+
+      case AVT_SURFACE_MESH:
+        out << "Surface Mesh";
+        break;
+
+      case AVT_CSG_MESH:
+        out << "CSG Mesh";
+        break;
+
+      case AVT_AMR_MESH:
+        out << "AMR Mesh";
         break;
 
       case AVT_UNKNOWN_MESH:

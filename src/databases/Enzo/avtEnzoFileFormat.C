@@ -862,6 +862,9 @@ avtEnzoFileFormat::FreeUpResources(void)
 //    Moved the unification of the problem spatial extents to a new method.
 //    This is because it had to be calculated much earlier in the process.
 //
+//    Hank Childs, Wed Jan 11 09:40:17 PST 2006
+//    Change mesh type to AMR.
+//
 // ****************************************************************************
 
 void
@@ -877,7 +880,7 @@ avtEnzoFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mesh->name = "mesh";
     mesh->originalName = "mesh";
 
-    mesh->meshType = AVT_RECTILINEAR_MESH;
+    mesh->meshType = AVT_AMR_MESH;
     mesh->topologicalDimension = dimension;
     mesh->spatialDimension = dimension;
     mesh->hasSpatialExtents = true;

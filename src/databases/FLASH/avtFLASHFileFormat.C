@@ -171,6 +171,9 @@ avtFLASHFileFormat::FreeUpResources(void)
 //    Jeremy Meredith, Thu Sep 29 11:12:29 PDT 2005
 //    Added conversion of 1D grids to curves.
 //
+//    Hank Childs, Wed Jan 11 09:40:17 PST 2006
+//    Change mesh type to AMR.
+//
 // ****************************************************************************
 
 void
@@ -188,7 +191,7 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         mesh->name = "mesh";
         mesh->originalName = "mesh";
 
-        mesh->meshType = AVT_RECTILINEAR_MESH;
+        mesh->meshType = AVT_AMR_MESH;
         mesh->topologicalDimension = dimension;
         mesh->spatialDimension = dimension;
         mesh->blockOrigin = 1;

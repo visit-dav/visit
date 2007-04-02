@@ -739,6 +739,7 @@ avtDatabase::GetNewMetaData(int timeState, bool forceReadAllCyclesTimes)
                                        !SILIsInvariant());
 
     AddMeshQualityExpressions(md);
+    AddTimeDerivativeExpressions(md);
 
     if (! OnlyServeUpMetaData())
     {
@@ -860,6 +861,154 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
             new_expr.SetAutoExpression(true);
             md->AddExpression(&new_expr);
         }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabase::AddTimeDerivativeExpressions
+//
+//  Purpose:
+//      Adds the time derivative expressions for time-varying databases.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 11, 2006
+//
+// ****************************************************************************
+
+void
+avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
+{
+    int   i, j;
+
+    if (md->GetNumStates() <= 1)
+        return;
+
+    int numMeshes = md->GetNumMeshes();
+    std::string base1 = "time_derivative";
+    for (i = 0 ; i < numMeshes ; i++)
+    {
+         const avtMeshMetaData *mmd = md->GetMesh(i);
+
+         std::string base2;
+         if (numMeshes == 1)
+             base2 = base1;
+         else
+             base2 = base1 + std::string("/") + std::string(mmd->name);
+
+         avtMeshType mt = mmd->meshType;
+         
+         bool doConn = false;
+         bool doPos  = false;
+         switch (mt)
+         {
+           case AVT_RECTILINEAR_MESH:
+             doConn = true;
+             break;
+           case AVT_CURVILINEAR_MESH:
+             doConn = true;
+             doPos  = true;
+             break;
+           case AVT_UNSTRUCTURED_MESH:
+             doConn = true;
+             doPos  = true;
+             break;
+           case AVT_POINT_MESH:
+             doConn = true;
+             break;
+           case AVT_AMR_MESH:
+             doPos  = true;
+             break;
+         }
+
+         if (!doConn && !doPos)
+             continue;
+
+         bool needPrefix = (doPos && doConn);
+         std::string conn_base = base2;
+         if (needPrefix)
+             conn_base = base2 + std::string("/") + std::string("conn_based");
+         std::string pos_base = base2;
+         if (needPrefix)
+             pos_base = base2 + std::string("/") + std::string("pos_based");
+
+         int numScalars = md->GetNumScalars();
+         for (j = 0 ; j < numScalars ; j++)
+         {
+             const avtScalarMetaData *smd = md->GetScalar(j);
+             if (smd->meshName == mmd->name)
+             {
+                 if (doConn)
+                 {
+                     Expression new_expr;
+                     std::string expr_name = conn_base + std::string("/")
+                                           + smd->name;
+                     new_expr.SetName(expr_name);
+                     char buff[1024];
+                     SNPRINTF(buff, 1024, "%s - conn_cmfe(<[-1]id:%s>, %s)",
+                                smd->name.c_str(), smd->name.c_str(),
+                                smd->meshName.c_str());
+                     new_expr.SetDefinition(buff);
+                     new_expr.SetType(Expression::ScalarMeshVar);
+                     new_expr.SetAutoExpression(true);
+                     md->AddExpression(&new_expr);
+                 }
+                 if (doPos)
+                 {
+                     Expression new_expr;
+                     std::string expr_name = pos_base + std::string("/")
+                                           + smd->name;
+                     new_expr.SetName(expr_name);
+                     char buff[1024];
+                     SNPRINTF(buff, 1024, "%s - pos_cmfe(<[-1]id:%s>, %s, 0.)",
+                                smd->name.c_str(), smd->name.c_str(),
+                                smd->meshName.c_str());
+                     new_expr.SetDefinition(buff);
+                     new_expr.SetType(Expression::ScalarMeshVar);
+                     new_expr.SetAutoExpression(true);
+                     md->AddExpression(&new_expr);
+                 }
+             }
+         }
+
+         int numVectors = md->GetNumVectors();
+         for (j = 0 ; j < numVectors ; j++)
+         {
+             const avtVectorMetaData *smd = md->GetVector(j);
+             if (smd->meshName == mmd->name)
+             {
+                 if (doConn)
+                 {
+                     Expression new_expr;
+                     std::string expr_name = conn_base + std::string("/")
+                                           + smd->name;
+                     new_expr.SetName(expr_name);
+                     char buff[1024];
+                     SNPRINTF(buff, 1024, "%s - conn_cmfe(<[-1]id:%s>, %s)",
+                                smd->name.c_str(), smd->name.c_str(),
+                                smd->meshName.c_str());
+                     new_expr.SetDefinition(buff);
+                     new_expr.SetType(Expression::VectorMeshVar);
+                     new_expr.SetAutoExpression(true);
+                     md->AddExpression(&new_expr);
+                 }
+                 if (doPos)
+                 {
+                     Expression new_expr;
+                     std::string expr_name = pos_base + std::string("/")
+                                           + smd->name;
+                     new_expr.SetName(expr_name);
+                     char buff[1024];
+                     SNPRINTF(buff, 1024, "%s - pos_cmfe(<[-1]id:%s>, %s, 0.)",
+                                smd->name.c_str(), smd->name.c_str(),
+                                smd->meshName.c_str());
+                     new_expr.SetDefinition(buff);
+                     new_expr.SetType(Expression::VectorMeshVar);
+                     new_expr.SetAutoExpression(true);
+                     md->AddExpression(&new_expr);
+                 }
+             }
+         }
     }
 }
 

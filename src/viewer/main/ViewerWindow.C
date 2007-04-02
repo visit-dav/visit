@@ -7238,6 +7238,37 @@ ViewerWindow::SetFromNode(DataNode *parentNode)
 }
 
 // ****************************************************************************
+// Method: ViewerWindow::SessionContainsErrors
+//
+// Purpose: 
+//   Determines whether the session contains errors.
+//
+// Arguments:
+//   parentNode : The data node to check.
+//
+// Returns:    True if the session contains errors; False otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 11 14:57:09 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerWindow::SessionContainsErrors(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return true;
+
+    DataNode *windowNode = parentNode->GetNode("ViewerWindow");
+    if(windowNode == 0)
+        return true;
+ 
+    return ViewerPlotList::SessionContainsErrors(windowNode);
+}
+
+// ****************************************************************************
 // Method: ViewerWindow::SendUpdateFrameMessage
 //
 // Purpose: 

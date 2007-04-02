@@ -35,6 +35,10 @@ class     avtDatabase;
 //    support for a "default" variable for when we are sampling onto 
 //    non-overlapping meshes.
 //
+//    Hank Childs, Thu Jan 12 10:13:17 PST 2006
+//    Change the number of variable arguments when we have a default
+//    argument.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtCMFEExpression : public avtExpressionFilter
@@ -47,7 +51,8 @@ class EXPRESSION_API avtCMFEExpression : public avtExpressionFilter
     virtual const char       *GetDescription(void)
                                            {return "Evaluating field";};
     virtual void              ProcessArguments(ArgsExpr*, ExprPipelineState *);
-    virtual int               NumVariableArguments() { return 1; };
+    virtual int               NumVariableArguments()
+                                    { return (HasDefaultVariable() ? 2 : 1); };
     virtual int               GetVariableDimension() { return varDim; };
     virtual bool              IsPointVariable(void) { return isNodal; };
     virtual void              AddInputVariableName(const char *);

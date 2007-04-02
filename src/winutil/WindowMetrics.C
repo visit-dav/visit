@@ -79,6 +79,9 @@ WindowMetrics::Instance()
 //    I changed the non-X11 code so that it only sets the shift and preshift
 //    if we're on Windows. This way, MacOS X is unaffected.
 //
+//    Brad Whitlock, Wed Jan 11 17:35:10 PST 2006
+//    I moved most of the code into the MeasureScreen method.
+//
 // ****************************************************************************
 
 WindowMetrics::WindowMetrics()
@@ -101,7 +104,29 @@ WindowMetrics::WindowMetrics()
 
     preshiftX = 0;
     preshiftY = 0;
+}
 
+// ****************************************************************************
+// Method: WindowMetics::MeasureScreen
+//
+// Purpose: 
+//   Measures the screen.
+//
+// Arguments:
+//   waitForWM : Determines whether we want to wait for the window manager
+//               to move the test widget. We provide this flag so the loop
+//               can be bypassed on systems where it might hang.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 11 17:33:47 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+WindowMetrics::MeasureScreen(bool waitForWM)
+{
 #ifdef Q_WS_X11
     //
     // Create the test window
@@ -116,7 +141,8 @@ WindowMetrics::WindowMetrics()
 
     // We need for the window manager to put borders on the window
     // before we can determine their sizes
-    WaitForWindowManagerToGrabWindow(win);
+    if(waitForWM)
+        WaitForWindowManagerToGrabWindow(win);
 
     // We tried to put the main window at 100,100...
     // ...see where it *really* started out
@@ -133,14 +159,19 @@ WindowMetrics::WindowMetrics()
     win->move(borderL,borderT);
     win->resize(2,2);
 
-    do
+    if(waitForWM)
     {
-        // If it's not at 0,0, then we have a shift
-        WaitForWindowManagerToMoveWindow(win);
-        CalculateTopLeft(win, shiftX, shiftY);
+        do
+        {  
+            // If it's not at 0,0, then we have a shift
+            WaitForWindowManagerToMoveWindow(win);
+            CalculateTopLeft(win, shiftX, shiftY);
+        }
+        while (shiftX == preshiftX+100  &&  shiftY == preshiftY+100);
+        // (sometimes we need to wait for more than one ConfigureNotify)
     }
-    while (shiftX == preshiftX+100  &&  shiftY == preshiftY+100);
-    // (sometimes we need to wait for more than one ConfigureNotify)
+    else
+        CalculateTopLeft(win, shiftX, shiftY);
 
     // Adjust preshift to account for the actual shift
     preshiftX += (borderL - shiftX);

@@ -472,6 +472,8 @@ private:
     int                          screenY;
     int                          screenW;
     int                          screenH;
+    bool                         useWindowMetrics;
+
     // Some appearance attributes
     QString                      foregroundColor;
     QString                      backgroundColor;

@@ -118,6 +118,9 @@ $0 = shift @ARGV;
 #    be specified without nodes being specified (ie -nn without -ln) with
 #    psub, which is tricky because syntax changes in this case.
 #
+#    Brad Whitlock, Wed Jan 11 17:46:19 PST 2006
+#    Added help for -nowindowmetrics.
+#
 ###############################################################################
 
 
@@ -191,6 +194,10 @@ $usage = "
 			     This is typically used with the -cli option.
         -stereo              Enable active stereo, also known as the
                              page-flipping, or 'CrystalEyes' mode.
+        -nowindowmetrics     Prevents X11 from grabbing and moving a test
+                             widget used in calculating window borders. This
+                             option can be useful if VisIt hangs when 
+                             displaying to an Apple X-server.
 
     Version options
     ---------------------------------------------------------------------------

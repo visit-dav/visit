@@ -476,6 +476,7 @@ class VIEWER_API ViewerWindowManager : public QObject
 
     void CreateNode(DataNode *parentNode, bool detailed);
     void SetFromNode(DataNode *parentNode);
+    static bool SessionContainsErrors(DataNode *);
 
     static GlobalAttributes              *GetClientAtts();
     static SaveWindowAttributes          *GetSaveWindowClientAtts();

@@ -15,8 +15,7 @@
 #include <Navigate3D.h>
 #include <NavigateCurve.h>
 #include <NullInteractor.h>
-#include <Pick2D.h>
-#include <Pick3D.h>
+#include <Pick.h>
 #include <Zoom2D.h>
 #include <Zoom3D.h>
 #include <ZoomCurve.h>
@@ -50,6 +49,9 @@
 //   Eric Brugger, Tue Dec 28 07:52:34 PST 2004
 //   Added dolly3D.
 //
+//   Kathleen Bonnell, Thu Jan 12 13:58:25 PST 2006 
+//   Replaced Pick3D and Pick2D with Pick.
+//
 // ****************************************************************************
 
 VisitHotPointInteractor::VisitHotPointInteractor(VisWindowInteractorProxy &v) :
@@ -61,8 +63,7 @@ VisitHotPointInteractor::VisitHotPointInteractor(VisWindowInteractorProxy &v) :
     navigate2D        = NULL;
     navigate3D        = NULL;
     navigateCurve     = NULL;
-    pick2D            = NULL;
-    pick3D            = NULL;
+    pick              = NULL;
     zoom2D            = NULL;
     zoom3D            = NULL;
     zoomCurve         = NULL;
@@ -94,6 +95,9 @@ VisitHotPointInteractor::VisitHotPointInteractor(VisWindowInteractorProxy &v) :
 //
 //   Eric Brugger, Tue Dec 28 07:52:34 PST 2004
 //   Added dolly3D.
+//
+//   Kathleen Bonnell, Thu Jan 12 13:58:25 PST 2006 
+//   Replaced Pick3D and Pick2D with Pick.
 //
 // ****************************************************************************
 
@@ -134,15 +138,10 @@ VisitHotPointInteractor::~VisitHotPointInteractor()
         nullInteractor->Delete();
         nullInteractor = NULL;
     }
-    if(pick2D != NULL)
+    if(pick != NULL)
     {
-        pick2D->Delete();
-        pick2D = NULL;
-    }
-    if(pick3D != NULL)
-    {
-        pick3D->Delete();
-        pick3D = NULL;
+        pick->Delete();
+        pick = NULL;
     }
     if(zoom2D != NULL)
     {
@@ -206,7 +205,7 @@ VisitHotPointInteractor::SetInteractor(VisitInteractor *newInteractor)
 
     newInteractor->SetInteractor(Interactor);
 
-    if (newInteractor != NULL)
+    if (newInteractor != NULL) 
     {
         if (newInteractor->LeftButtonIsDown())
             newInteractor->StartLeftButtonAction();
@@ -257,6 +256,9 @@ VisitHotPointInteractor::SetNullInteractor()
 //   Kathleen Bonnell, Fri Jun 27 16:34:31 PDT 2003  
 //   Handle NodePick, ZonePick. 
 //   
+//   Kathleen Bonnell, Thu Jan 12 13:58:25 PST 2006 
+//   Replaced Pick2D with Pick.
+//
 // ****************************************************************************
 
 void
@@ -279,11 +281,11 @@ VisitHotPointInteractor::Start2DMode(INTERACTION_MODE mode)
         break;
     case NODE_PICK:
     case ZONE_PICK:
-        if(pick2D == NULL)
+        if(pick == NULL)
         {
-            pick2D = new Pick2D(proxy);
+            pick = new Pick(proxy);
         }
-        newInteractor = pick2D;
+        newInteractor = pick;
         break;
     case ZOOM:
         if(zoom2D == NULL)
@@ -346,6 +348,9 @@ VisitHotPointInteractor::Start2DMode(INTERACTION_MODE mode)
 //   Modified to use the Dolly3D interactor when the navigation mode is
 //   Dolly and we are in navigate mode.
 //
+//   Kathleen Bonnell, Thu Jan 12 13:58:25 PST 2006 
+//   Replaced Pick3D with Pick.
+//
 // ****************************************************************************
 
 void
@@ -391,11 +396,11 @@ VisitHotPointInteractor::Start3DMode(INTERACTION_MODE mode)
         break;
     case ZONE_PICK: // fall-through
     case NODE_PICK:
-        if(pick3D == NULL)
+        if(pick == NULL)
         {
-            pick3D = new Pick3D(proxy);
+            pick = new Pick(proxy);
         }
-        newInteractor = pick3D;
+        newInteractor = pick;
         break;
     case ZOOM:
         if(zoom3D == NULL)
@@ -450,6 +455,9 @@ VisitHotPointInteractor::Start3DMode(INTERACTION_MODE mode)
 //   Make it use a navigate interactor for lineout mode so we at least have
 //   an interactor in the rare case that we enter lineout mode here.
 //
+//   Kathleen Bonnell, Thu Jan 12 13:58:25 PST 2006 
+//   Replaced Pick3D and Pick2D with Pick.
+//
 // ****************************************************************************
 
 void
@@ -480,11 +488,11 @@ VisitHotPointInteractor::StartCurveMode(INTERACTION_MODE mode)
         break;
     case ZONE_PICK:
     case NODE_PICK:
-        if(pick2D == NULL)
+        if(pick == NULL)
         {
-            pick2D = new Pick2D(proxy);
+            pick = new Pick(proxy);
         }
-        newInteractor = pick2D;
+        newInteractor = pick;
         break;
     }
 

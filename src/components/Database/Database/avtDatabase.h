@@ -224,6 +224,9 @@ typedef struct {
 //    Hank Childs, Fri Oct  7 08:21:03 PDT 2005
 //    Added fullDBName.
 //
+//    Hank Childs, Wed Jan 11 09:15:23 PST 2006
+//    Add AddTimeDerivativeExpressions.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -310,6 +313,7 @@ class DATABASE_API avtDatabase
                                     bool forceReadAllCyclesTimes = false);
     void                        GetNewSIL(int stateIndex);
     void                        AddMeshQualityExpressions(avtDatabaseMetaData *);
+    void                        AddTimeDerivativeExpressions(avtDatabaseMetaData *);
 
     virtual bool                HasInvariantMetaData(void) const = 0;
     virtual bool                HasInvariantSIL(void) const = 0;

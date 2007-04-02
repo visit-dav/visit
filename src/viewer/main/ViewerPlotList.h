@@ -216,6 +216,9 @@ typedef std::map<std::string, int> StringIntMap;
 //    Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
 //    Added DoAllPlotsAxesHaveSameUnits
 //
+//    Brad Whitlock, Wed Jan 11 14:54:42 PST 2006
+//    Added SessionContainsErrors.
+//
 // ****************************************************************************
 
 
@@ -382,6 +385,7 @@ public:
 
     void CreateNode(DataNode *);
     bool SetFromNode(DataNode *);
+    static bool SessionContainsErrors(DataNode *);
   protected:
     bool        AskForCorrelationPermission(const stringVector &dbs) const;
     bool        AllowAutomaticCorrelation(const stringVector &dbs) const;

@@ -86,6 +86,11 @@ avtPosCMFEExpression::~avtPosCMFEExpression()
 //  Programmer: Hank Childs
 //  Creation:   October 11, 2005
 // 
+//  Modifications:
+//
+//    Hank Childs, Thu Jan 12 11:24:23 PST 2006
+//    Modify index of default variable.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -229,7 +234,7 @@ avtPosCMFEExpression::PerformCMFE(avtDataTree_p output_mesh,
         vtkDataSet *in_ds1 = output_list.datasets[i];
         vtkDataArray *defaultVar = NULL;
         bool deleteDefault = false;
-        const char *defaultName = varnames[0].c_str();
+        const char *defaultName = varnames[1].c_str();
         defaultVar = (isNodal
                        ? in_ds1->GetPointData()->GetArray(defaultName)
                        : in_ds1->GetCellData()->GetArray(defaultName));

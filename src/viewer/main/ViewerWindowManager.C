@@ -8734,6 +8734,55 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode)
     }
 }
 
+// ****************************************************************************
+// Method: ViewerWindowManager::SessionContainsErrors
+//
+// Purpose: 
+//   Detects whether the session file contains errors.
+//
+// Arguments:
+//   parentNode : The data node to check.
+//
+// Returns:    True if there are errors; false if otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 11 15:10:44 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerWindowManager::SessionContainsErrors(DataNode *parentNode)
+{
+    bool fatalError = true;
+
+    if(parentNode == 0)
+        return fatalError;
+
+    DataNode *searchNode = parentNode->GetNode("ViewerWindowManager");
+    if(searchNode == 0)
+        return fatalError;
+
+    DataNode *windowsNode = parentNode->GetNode("Windows");
+    if(windowsNode == 0)
+        return fatalError;
+
+    //
+    // Iterate over the windows enumerated in the session and look for errors.
+    //
+    fatalError = false;
+    DataNode **wNodes = windowsNode->GetChildren();
+    for(int k = 0; k < windowsNode->GetNumChildren() && !fatalError; ++k)
+    {
+        if(wNodes[k]->GetKey() == "ViewerWindow")
+            fatalError = ViewerWindow::SessionContainsErrors(wNodes[k]);
+    }
+
+    return fatalError;
+}
 
 // ****************************************************************************
 // Method: ViewerWindowManager::GetEmptyWindow
