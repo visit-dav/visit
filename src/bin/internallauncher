@@ -104,6 +104,9 @@ $0 = shift @ARGV;
 #    Jeremy Meredith, Thu Sep 29 11:11:35 PDT 2005
 #    Made the "-setupenv" flag force the full path name to the visit script.
 #
+#    Brad Whitlock, Fri Oct 28 11:17:28 PDT 2005
+#    Added AWE fix for -newconsole under AIX.
+#
 ###############################################################################
 
 
@@ -1360,6 +1363,10 @@ else
                 {
                     push @newcmd, $visitlauncher;
                     push @newcmd, "-$exe_name";
+                    if("$ver" ne "")
+                    {
+                        push @newcmd, "-v", "$ver";
+                    }
                     splice @visitcmd, 0, 1, @newcmd;
 
                     open(OSAHANDLE, "| osascript");
@@ -1388,6 +1395,10 @@ else
                 {
                     push @newcmd, $visitlauncher;
                     push @newcmd, "-$exe_name";
+                    if("$ver" ne "")
+                    {
+                        push @newcmd, "-v", "$ver";
+                    }
                     splice @visitcmd, 0, 1, @newcmd;
                 }
 

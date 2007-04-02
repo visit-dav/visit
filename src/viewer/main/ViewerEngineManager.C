@@ -3041,6 +3041,10 @@ ViewerEngineManager::CloneNetwork(const EngineKey &ek, int nid,
 //   wrong profile just because there are multiple profiles for the same
 //   host.
 //
+//   Brad Whitlock, Mon Oct 31 11:56:45 PDT 2005
+//   I set the host name into the profile in case the host profile's host
+//   was not set in the stored profile.
+//
 // ****************************************************************************
 
 void
@@ -3063,6 +3067,7 @@ ViewerEngineManager::CreateNode(DataNode *parentNode) const
             if(!it->first.IsSimulation())
             {
                 HostProfile temp(it->second.profile);
+                temp.SetHost(it->first.HostName());
                 temp.SetNumProcessors(it->second.proxy->NumProcessors());
                 temp.SetNumNodes(it->second.proxy->NumNodes());
                 temp.CreateNode(runningEnginesNode, true, true);
