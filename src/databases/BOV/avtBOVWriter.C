@@ -248,6 +248,9 @@ ResampleGrid(vtkRectilinearGrid *rgrid, float *ptr, float *samples,
 //    Also quote the variable name so that we can maintain multiple word
 //    variable names. ['5733]
 //
+//    Hank Childs, Fri Apr 21 16:53:27 PDT 2006
+//    Fix cut-n-paste bug.
+//
 // ****************************************************************************
 
 void
@@ -398,7 +401,7 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
     }
 
     if (nBricklets == 1 && brickletNI == dims[0] && brickletNJ == dims[1]
-        && brickletNJ == dims[2])
+        && brickletNK == dims[2])
     {
         //
         // No resampling necessary.  Also, don't gzip, so we can stay 
