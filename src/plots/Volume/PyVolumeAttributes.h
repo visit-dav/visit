@@ -6,17 +6,15 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyVolumeAttributes_StartUp(VolumeAttributes *subj, FILE *logFile);
+void            PyVolumeAttributes_StartUp(VolumeAttributes *subj, void *data);
 void            PyVolumeAttributes_CloseDown();
 PyMethodDef    *PyVolumeAttributes_GetMethodTable(int *nMethods);
 bool            PyVolumeAttributes_Check(PyObject *obj);
 VolumeAttributes *PyVolumeAttributes_FromPyObject(PyObject *obj);
 PyObject       *PyVolumeAttributes_NewPyObject();
 PyObject       *PyVolumeAttributes_WrapPyObject(const VolumeAttributes *attr);
-void            PyVolumeAttributes_SetLogging(bool val);
+std::string     PyVolumeAttributes_GetLogString();
 void            PyVolumeAttributes_SetDefaults(const VolumeAttributes *atts);
-
-PyObject       *PyVolumeAttributes_StringRepresentation(const VolumeAttributes *atts);
 
 #endif
 

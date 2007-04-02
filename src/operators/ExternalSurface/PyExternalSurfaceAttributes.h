@@ -6,17 +6,15 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyExternalSurfaceAttributes_StartUp(ExternalSurfaceAttributes *subj, FILE *logFile);
+void            PyExternalSurfaceAttributes_StartUp(ExternalSurfaceAttributes *subj, void *data);
 void            PyExternalSurfaceAttributes_CloseDown();
 PyMethodDef    *PyExternalSurfaceAttributes_GetMethodTable(int *nMethods);
 bool            PyExternalSurfaceAttributes_Check(PyObject *obj);
 ExternalSurfaceAttributes *PyExternalSurfaceAttributes_FromPyObject(PyObject *obj);
 PyObject       *PyExternalSurfaceAttributes_NewPyObject();
 PyObject       *PyExternalSurfaceAttributes_WrapPyObject(const ExternalSurfaceAttributes *attr);
-void            PyExternalSurfaceAttributes_SetLogging(bool val);
+std::string     PyExternalSurfaceAttributes_GetLogString();
 void            PyExternalSurfaceAttributes_SetDefaults(const ExternalSurfaceAttributes *atts);
-
-PyObject       *PyExternalSurfaceAttributes_StringRepresentation(const ExternalSurfaceAttributes *atts);
 
 #endif
 

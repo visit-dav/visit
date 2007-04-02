@@ -509,11 +509,16 @@ avtVolumeRenderer::Initialize(vtkDataSet *ds)
 //    Jeremy Meredith, Thu Oct  2 13:16:15 PDT 2003
 //    Added support for multiple renderer types.
 //
+//    Hank Childs, Mon Nov 14 09:54:54 PST 2005
+//    If the attributes are the same as what we had before, do nothing.
+//
 // ****************************************************************************
 void
 avtVolumeRenderer::SetAtts(const AttributeGroup *a)
 {
     const VolumeAttributes *newAtts = (const VolumeAttributes*)a;
+    if (*newAtts == atts)
+        return;
 
     bool invalidateGradient = !(atts.GradientWontChange(*newAtts));
     currentRendererIsValid = (atts.GetRendererType() == newAtts->GetRendererType());

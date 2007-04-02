@@ -96,6 +96,9 @@ const int INTERRUPT_MESSAGE_TAG = GetUniqueStaticMessageTag();
 //    Mark C. Miller Thu Apr 21 09:37:41 PDT 2005
 //    Set simulationCommandRPC to NULL
 //
+//    Hank Childs, Thu Jan  5 14:24:06 PST 2006
+//    Initialize shouldDoDashDump.
+//
 // ****************************************************************************
 Engine::Engine()
 {
@@ -108,6 +111,7 @@ Engine::Engine()
     simulationCommandCallback = NULL;
     metaData = NULL;
     silAtts = NULL;
+    shouldDoDashDump = false;
     
     quitRPC = NULL;
     keepAliveRPC = NULL;
@@ -130,6 +134,7 @@ Engine::Engine()
     cloneNetworkRPC = NULL;
     procInfoRPC = NULL;
     simulationCommandRPC = NULL;
+
 }
 
 // ****************************************************************************
@@ -343,6 +348,10 @@ Engine::Finalize(void)
 //    Hank Childs, Sat Dec  3 20:32:37 PST 2005
 //    Add support for hardware acceleration.
 //
+//    Hank Childs, Thu Jan  5 14:24:06 PST 2006
+//    Fix issue with -dump since code that instantiates network manager has
+//    moved.
+//
 // ****************************************************************************
 
 void
@@ -381,9 +390,12 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     avtCallback::SetNowinMode(true);
 
     //
-    // Create the network manager.
+    // Create the network manager.  Note that this must be done *after* the
+    // code to set the display and decide if we are using Mesa.
     //
     netmgr = new NetworkManager;
+    if (shouldDoDashDump)
+        netmgr->DumpRenders();
 
 #if !defined(_WIN32)
     // Set up the alarm signal handler.
@@ -883,6 +895,9 @@ Engine::ProcessInput()
 //    Hank Childs, Sat Dec  3 20:27:16 PST 2005
 //    Add support for -hw-accel.
 //
+//    Hank Childs, Thu Jan  5 14:24:06 PST 2006
+//    Don't reference NetworkManager, because it has not been instantiated yet.
+//
 // ****************************************************************************
 void
 Engine::ProcessCommandLine(int argc, char **argv)
@@ -935,7 +950,7 @@ Engine::ProcessCommandLine(int argc, char **argv)
         else if (strcmp(argv[i], "-dump") == 0)
         {
             avtStreamer::DebugDump(true);
-            netmgr->DumpRenders();
+            shouldDoDashDump = true;
         }
         else if (strcmp(argv[i], "-lb-block") == 0)
         {

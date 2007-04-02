@@ -1,12 +1,13 @@
 // ************************************************************************* //
 //                        avtCommonDataFunctions.C                           //
 // ************************************************************************* //
-#include <visit-config.h>
 
 #include <avtCommonDataFunctions.h>
 
 #include <float.h>
 #include <vector>
+
+#include <visit-config.h>
 
 #include <vtkAppendFilter.h>
 #include <vtkAppendPolyData.h>
@@ -526,6 +527,46 @@ CAddInputToAppendFilter(avtDataRepresentation & data, void *arg, bool &)
     {
         pmap->af->AddInput(ds);
     }
+}
+
+
+// ****************************************************************************
+//  Method: CGetAllDatasets
+//
+//  Purpose:
+//      Puts all datasets into an append filter.
+//
+//  Arguments:
+//    data      The data to add to the list.
+//    list      The list.
+//    <unused> 
+//
+//  Notes:
+//      This method is designed to be used as the function parameter of
+//      avtDataTree::Iterate.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 11, 2005
+//
+// ****************************************************************************
+
+void
+CGetAllDatasets(avtDataRepresentation & data, void *arg, bool &)
+{
+    if (!data.Valid())
+    {
+        EXCEPTION0(NoInputException);
+    }
+    vtkDataSet *ds = data.GetDataVTK();
+    if (ds == NULL)
+    {
+        EXCEPTION0(NoInputException);
+    }
+
+    GetAllDatasetsArgs *args = (GetAllDatasetsArgs *) arg;
+    args->datasets.push_back(ds);
+    args->domains.push_back(data.GetDomain());
+    args->labels.push_back(data.GetLabel());
 }
 
 
@@ -1939,7 +1980,6 @@ MajorEigenvalue(double *vals)
     vtkMath::Jacobi(input, eigenvals, eigenvecs);
     return eigenvals[0];
 }
-
 
 // ****************************************************************************
 //  Function: CMaybeCompressedDataString

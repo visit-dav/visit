@@ -639,6 +639,7 @@ private:
     ClientInformation     *clientInformation;
     ClientInformationList *clientInformationList;
     MovieAttributes       *movieAtts;
+    ViewerRPC             *logRPC;
 
     bool                   nowin;
     std::string            borders;

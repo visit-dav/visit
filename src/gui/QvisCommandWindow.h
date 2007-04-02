@@ -3,6 +3,8 @@
 #include <QvisPostableWindow.h>
 
 class QButtonGroup;
+class QCheckBox;
+class QComboBox;
 class QPushButton;
 class QTabWidget;
 class QTextEdit;
@@ -20,7 +22,9 @@ class QTextEdit;
 // Creation:   Mon May 9 10:20:44 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Jan 6 13:35:40 PST 2006
+//   Added new buttons for recording macros.
+//
 // ****************************************************************************
 
 class QvisCommandWindow : public QvisPostableWindow
@@ -33,11 +37,20 @@ public:
     virtual ~QvisCommandWindow();
     virtual void CreateWindowContents();
     virtual void CreateNode(DataNode *);
+    virtual void SetFromNode(DataNode *, const int *borders);
 signals:
     void runCommand(const QString &);
+public slots:
+    void acceptRecordedMacro(const QString &);
 private slots:
     void executeClicked(int);
     void clearClicked(int);
+
+    void macroRecordClicked();
+    void macroPauseClicked();
+    void macroEndClicked();
+    void macroAppendClicked(bool);
+    void macroStorageActivated(int);
 
     void textChanged0();
     void textChanged1();
@@ -58,6 +71,15 @@ private:
     QButtonGroup    *clearButtonsGroup;
     QPushButton    **clearButtons;
     QTextEdit      **lineEdits;
+
+    QPushButton     *macroRecord;
+    QPushButton     *macroPause;
+    QPushButton     *macroEnd;
+    QCheckBox       *macroAppendCheckBox;
+    QComboBox       *macroStorageComboBox;
+    
+    int              macroStorageMode;
+    bool             macroAppend;
 };
 
 #endif

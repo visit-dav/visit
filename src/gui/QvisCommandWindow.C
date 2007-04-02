@@ -1,15 +1,25 @@
 #include <QvisCommandWindow.h>
 #include <qbuttongroup.h>
+#include <qcheckbox.h>
+#include <qcombobox.h>
 #include <qfile.h>
 #include <qfont.h>
+#include <qlabel.h>
 #include <qlayout.h>
 #include <qpushbutton.h>
 #include <qtabwidget.h>
 #include <qtextedit.h>
 #include <qtextstream.h>
+#include <qtooltip.h>
 #include <qvbox.h>
 
 #include <Utility.h>
+#include <DataNode.h>
+
+#include <icons/macrorecord.xpm>
+#include <icons/macropause.xpm>
+#include <icons/macrostop.xpm>
+#include <icons/macroexec.xpm>
 
 #define MAXTABS 8
 
@@ -23,7 +33,9 @@
 // Creation:   Mon May 9 10:50:53 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Jan 6 13:36:05 PST 2006
+//   Inititalized new members.
+//
 // ****************************************************************************
 
 QvisCommandWindow::QvisCommandWindow(const char *captionString,
@@ -35,6 +47,15 @@ QvisCommandWindow::QvisCommandWindow(const char *captionString,
     clearButtons = 0;
     clearButtonsGroup = 0;
     lineEdits = 0;
+
+    macroRecord = 0;
+    macroPause = 0;
+    macroEnd = 0;
+    macroAppendCheckBox = 0;
+    macroStorageComboBox = 0;
+    
+    macroStorageMode = 0;
+    macroAppend = false;
 }
 
 // ****************************************************************************
@@ -69,12 +90,67 @@ QvisCommandWindow::~QvisCommandWindow()
 // Creation:   Mon May 9 10:51:42 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Jan 6 13:36:19 PST 2006
+//   Added new buttons to record macros.
+//
 // ****************************************************************************
 
 void
 QvisCommandWindow::CreateWindowContents()
 {
+    QGroupBox *macroBox = new QGroupBox(central, "macroBox");
+    macroBox->setTitle("Macro");
+    topLayout->addWidget(macroBox);
+
+    QVBoxLayout *innerMacroLayout = new QVBoxLayout(macroBox);
+    innerMacroLayout->setMargin(10);
+    innerMacroLayout->addSpacing(15);
+    QHBoxLayout *macroLayout = new QHBoxLayout(innerMacroLayout);
+    macroLayout->setSpacing(5);
+
+    macroRecord = new QPushButton(QIconSet(QPixmap(macrorecord_xpm)),
+        "Record", macroBox, "macroRecord");
+    connect(macroRecord, SIGNAL(clicked()), this, SLOT(macroRecordClicked()));
+    QToolTip::add(macroRecord, "Start recording macro");
+    macroLayout->addWidget(macroRecord);
+
+    macroPause = new QPushButton(QIconSet(QPixmap(macropause_xpm)),
+        "Pause", macroBox, "macroPause");
+    macroPause->setToggleButton(true);
+    connect(macroPause, SIGNAL(clicked()), this, SLOT(macroPauseClicked()));
+    QToolTip::add(macroPause, "Pause macro recording");
+    macroLayout->addWidget(macroPause);
+
+    macroEnd = new QPushButton(QIconSet(QPixmap(macrostop_xpm)),
+        "Stop", macroBox, "macroEnd");
+    connect(macroEnd, SIGNAL(clicked()), this, SLOT(macroEndClicked()));
+    QToolTip::add(macroPause, "Stop macro recording");
+    macroLayout->addWidget(macroEnd);
+    macroRecord->setEnabled(true);
+    macroPause->setEnabled(false);
+    macroEnd->setEnabled(false);
+
+    // Create macro append and storage controls.
+    innerMacroLayout->addSpacing(5);
+    QGridLayout *mLayout = new QGridLayout(innerMacroLayout, 2, 2);
+    mLayout->setSpacing(5);
+    mLayout->setColStretch(1, 10);
+
+    macroStorageComboBox = new QComboBox(macroBox, "macroAppendCheckBox");
+    macroStorageComboBox->insertItem("Active tab");
+    macroStorageComboBox->insertItem("First empty tab");
+    connect(macroStorageComboBox, SIGNAL(activated(int)),
+            this, SLOT(macroStorageActivated(int)));
+    mLayout->addWidget(macroStorageComboBox, 0, 1);
+    mLayout->addWidget(new QLabel(macroStorageComboBox, "Store macro in",
+        macroBox), 0, 0);
+
+    macroAppendCheckBox = new QCheckBox("Append macro to existing text", macroBox,
+        "macroAppendCheckBox");
+    connect(macroAppendCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(macroAppendClicked(bool)));
+    mLayout->addMultiCellWidget(macroAppendCheckBox, 1, 1, 0, 1);
+
     tabWidget = new QTabWidget(central, "tabWidget");
     tabWidget->setMinimumHeight(200);
     topLayout->addWidget(tabWidget, 1000);
@@ -110,8 +186,8 @@ QvisCommandWindow::CreateWindowContents()
 
         QHBox *hb = new QHBox(vb, "hb");
         hb->setSpacing(5);
-        executeButtons[i] = new QPushButton("Execute", hb,
-            "executeButton");
+        executeButtons[i] = new QPushButton(QIconSet(QPixmap(macroexec_xpm)),
+            "Execute", hb, "executeButton");
         executeButtons[i]->setEnabled(false);
         executeButtonsGroup->insert(executeButtons[i], i);
 
@@ -143,7 +219,9 @@ QvisCommandWindow::CreateWindowContents()
 // Creation:   Wed Jun 22 16:37:28 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Jan 6 16:58:03 PST 2006
+//   Added new macro-related things.
+//
 // ****************************************************************************
 
 void
@@ -152,7 +230,57 @@ QvisCommandWindow::CreateNode(DataNode *node)
     QvisPostableWindow::CreateNode(node);
 
     if(isCreated)
+    {
         SaveScripts();
+
+        DataNode *winNode = node->GetNode(std::string(caption().latin1()));
+        if(winNode != 0)
+        {
+            winNode->AddNode(new DataNode("macroStorageMode", macroStorageMode));
+            winNode->AddNode(new DataNode("macroAppend", macroAppend));
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: QvisCommandWindow::SetFromNode
+//
+// Purpose: 
+//   Reads the macro storage mode and append mode from the log.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 6 17:01:57 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisCommandWindow::SetFromNode(DataNode *parentNode, const int *borders)
+{
+    QvisPostableWindow::SetFromNode(parentNode, borders);
+
+    DataNode *winNode = parentNode->GetNode(std::string(caption().latin1()));
+    if(winNode == 0)
+        return;
+
+    DataNode *n = 0;
+    if((n = winNode->GetNode("macroStorageMode")) != 0)
+    {
+        macroStorageMode = n->AsInt();
+        if(macroStorageMode > 1)
+            macroStorageMode = 1;
+    }
+    if((n = winNode->GetNode("macroAppend")) != 0)
+        macroAppend = n->AsBool();
+
+    macroStorageComboBox->blockSignals(true);
+    macroStorageComboBox->setCurrentItem(macroStorageMode);
+    macroStorageComboBox->blockSignals(false);
+
+    macroAppendCheckBox->blockSignals(true);
+    macroAppendCheckBox->setChecked(macroAppend);
+    macroAppendCheckBox->blockSignals(false);
 }
 
 // ****************************************************************************
@@ -328,3 +456,137 @@ TEXT_CHANGED(5)
 TEXT_CHANGED(6)
 TEXT_CHANGED(7)
 
+// ****************************************************************************
+// Method: void QvisCommandWindow::macroRecordClicked
+//
+// Purpose: 
+//   This is a Qt slot function that is called when we click on the button
+//   to start recording a macro.
+//
+// Note:       This method tells the client to start recording a macro using
+//             an interpreted ClientMethod() string so it ensures that the
+//             interpreter (who is responsible for recording macros) gets
+//             launched if it is not already launched.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 6 15:14:45 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisCommandWindow::macroRecordClicked()
+{
+    emit runCommand("ClientMethod(\"MacroStart\")");
+
+    macroRecord->setEnabled(false);
+    macroPause->setEnabled(true);
+    macroEnd->setEnabled(true);
+}
+
+// ****************************************************************************
+// Method: QvisCommandWindow::macroPauseClicked
+//
+// Purpose: 
+//   This is a Qt slot function that pauses macro recording.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 6 15:15:42 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisCommandWindow::macroPauseClicked()
+{
+    emit runCommand("ClientMethod(\"MacroPause\")");
+}
+
+// ****************************************************************************
+// Method: QvisCommandWindow::macroEndClicked
+//
+// Purpose: 
+//   This is a Qt slot function that ends macro recording.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 6 15:17:49 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisCommandWindow::macroEndClicked()
+{
+    emit runCommand("ClientMethod(\"MacroEnd\")");
+    macroRecord->setEnabled(true);
+    macroPause->setEnabled(false);
+    macroEnd->setEnabled(false);
+}
+
+void
+QvisCommandWindow::macroAppendClicked(bool val)
+{
+    macroAppend = val;
+}
+
+void
+QvisCommandWindow::macroStorageActivated(int val)
+{
+    macroStorageMode = val;
+}
+
+// ****************************************************************************
+// Method: QvisCommandWindow::acceptRecordedMacro
+//
+// Purpose: 
+//   This is a Qt slot function that pastes a recorded macro into the active
+//   tab's line edit.
+//
+// Arguments:
+//   s : The macro string.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 6 15:18:21 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisCommandWindow::acceptRecordedMacro(const QString &s)
+{
+    int index = 0;
+    if(macroStorageMode == 0)
+        index = tabWidget->currentPageIndex();
+    else
+    {
+        // Look for the first empty tab.
+        bool found = false;
+        for(int i = 0; i < MAXTABS; ++i)
+        {
+            if(lineEdits[i]->text().isEmpty())
+            {
+                index = i;
+                found = true;
+                break;
+            }
+        }
+
+        index = found ? index : 0;
+        tabWidget->blockSignals(true);
+        tabWidget->setCurrentPage(index);
+        tabWidget->blockSignals(false);
+    }
+
+    if(macroAppend)
+    {
+        QString macro(lineEdits[index]->text());
+        macro += s;
+        lineEdits[index]->setText(macro);
+    }
+    else
+        lineEdits[index]->setText(s);
+}

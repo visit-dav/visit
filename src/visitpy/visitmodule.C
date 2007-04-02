@@ -24,6 +24,7 @@
 #include <Observer.h>
 #include <ObserverToCallback.h>
 #include <ViewerProxy.h>
+#include <ViewerRPC.h>
 #include <VisItException.h>
 #include <LostConnectionException.h>
 #include <PlotPluginInfo.h>
@@ -33,6 +34,7 @@
 #include <QueryList.h>
 #include <Init.h>
 #include <DebugStream.h>
+#include <Logging.h>
 
 //
 // State object include files.
@@ -158,7 +160,6 @@ static void CloseModule();
 static void CreateListenerThread();
 static void LaunchViewer();
 static int  Synchronize();
-static void SetLogging(bool val);
 static void DelayedLoadPlugins();
 static void PlotPluginAddInterface();
 static void OperatorPluginAddInterface();
@@ -283,13 +284,12 @@ private:
 //
 // VisIt module state flags and objects.
 //
+ViewerProxy          *viewer = 0;
+
 static PyObject             *visitModule = 0;
 static bool                  moduleInitialized = false;
 static bool                  keepGoing = true;
 static bool                  viewerInitiatedQuit = false;
-static ViewerProxy          *viewer = 0;
-static FILE                 *logFile = 0;
-static bool                  logging = true;
 #ifdef THREADS
 static bool                  moduleUseThreads = true;
 #else
@@ -302,6 +302,7 @@ static VisItStatusObserver  *statusObserver = 0;
 static bool                  moduleVerbose = false;
 static ObserverToCallback   *pluginLoader = 0;
 static ObserverToCallback   *clientMethodObserver = 0;
+static ObserverToCallback   *stateLoggingObserver = 0;
 static bool                  localNameSpace = false;
 static bool                  interruptScript = false;
 static int                   syncCount = 1000;
@@ -386,6 +387,9 @@ static void WakeMainThread(Subject *, void *)
 #define MUTEX_LOCK()
 #define MUTEX_UNLOCK()
 #endif
+
+
+
 
 //
 // VisIt module functions that are written in Python.
@@ -496,6 +500,48 @@ DeprecatedMessage(const char *deprecatedFunction, const char *ver,
             "*** update your code so it uses the %s function.\n"
             "***\n",
             deprecatedFunction, ver, deprecatedFunction, newFunction);
+}
+
+// ****************************************************************************
+// Method: StringVectorToTupleString
+//
+// Purpose: 
+//   Converts a stringVector into a suitable string representation of a Python
+//   tuple.
+//
+// Arguments:
+//   s : The string vector.
+//
+// Returns:    A string representation of the string tuple.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jan 10 14:02:23 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static std::string
+StringVectorToTupleString(const stringVector &s)
+{
+    std::string str;
+
+    if(s.size() > 1)
+        str += "(";
+    for(int i = 0; i < s.size(); ++i)
+    {
+        str += "\"";
+        str += s[i];
+        str += "\"";
+        if(i < s.size()-1)
+            str += ", ";
+    }
+    if(s.size() > 1)
+        str += "(";
+
+    return str;
 }
 
 // ****************************************************************************
@@ -1050,11 +1096,6 @@ visit_Close(PyObject *self, PyObject *args)
     if(!noViewer)
     {
         CloseModule();
-
-        MUTEX_LOCK();
-        if(logging)
-            fprintf(logFile, "Close()\n");
-        MUTEX_UNLOCK();
     }
     else
     {
@@ -1136,8 +1177,6 @@ visit_AddWindow(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->AddWindow();
-        if(logging)
-            fprintf(logFile, "AddWindow()\n");
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -1167,8 +1206,6 @@ visit_ShowAllWindows(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->ShowAllWindows();
-        if(logging)
-            fprintf(logFile, "ShowAllWindows()\n");
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -1200,8 +1237,6 @@ visit_CloneWindow(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->CloneWindow();
-        if(logging)
-            fprintf(logFile, "CloneWindow()\n");
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -1276,8 +1311,6 @@ visit_TimeSliderNextState(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->TimeSliderNextState();
-        if(logging)
-            fprintf(logFile, "TimeSliderNextState()\n");
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -1305,8 +1338,6 @@ visit_TimeSliderPreviousState(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->TimeSliderPreviousState();
-        if(logging)
-            fprintf(logFile, "TimeSliderPreviousState()\n");
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -1378,8 +1409,6 @@ visit_SetTimeSliderState(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->SetTimeSliderState(state);
-        if(logging)
-            fprintf(logFile, "SetTimeSliderState(%d)\n", state);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -1407,8 +1436,6 @@ visit_SetTryHarderCyclesTimes(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->SetTryHarderCyclesTimes(flag);
-        if(logging)
-            fprintf(logFile, "SetTryHarderCyclesTimes(%d)\n", flag);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -1445,8 +1472,6 @@ visit_SetActiveTimeSlider(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->SetActiveTimeSlider(tsName);
-        if(logging)
-            fprintf(logFile, "SetActiveTimeSlider(\"%s\")\n", tsName);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -1588,8 +1613,6 @@ visit_AnimationSetNFrames(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->AnimationSetNFrames(nFrames);
-        if(logging)
-            fprintf(logFile, "AnimationSetNFrames(%d)\n", nFrames);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -1624,8 +1647,6 @@ visit_SetWindowLayout(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->SetWindowLayout(winLayout);
-        if(logging)
-            fprintf(logFile, "SetWindowLayout(%d)\n", winLayout);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -1660,8 +1681,6 @@ visit_SetActiveWindow(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->SetActiveWindow(activewin);
-        if(logging)
-            fprintf(logFile, "SetActiveWindow(%d)\n", activewin);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -1691,8 +1710,6 @@ visit_IconifyAllWindows(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->IconifyAllWindows();
-        if(logging)
-            fprintf(logFile, "IconifyAllWindows()\n");
     MUTEX_UNLOCK();
 
     Py_INCREF(Py_None);
@@ -1722,8 +1739,6 @@ visit_DeIconifyAllWindows(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->DeIconifyAllWindows();
-        if(logging)
-            fprintf(logFile, "DeIconifyAllWindows()\n");
     MUTEX_UNLOCK();
 
     Py_INCREF(Py_None);
@@ -1779,11 +1794,7 @@ visit_OpenDatabase(PyObject *self, PyObject *args)
     // Open the database.
     MUTEX_LOCK();
         viewer->OpenDatabase(fileName, timeIndex);
-        if(logging)
-        {
-            fprintf(logFile, "OpenDatabase(\"%s\", %d)\n", fileName,
-                    timeIndex);
-        }
+
         static bool loadedPluginInfo = false;
         if (!loadedPluginInfo)
         {
@@ -1825,8 +1836,6 @@ visit_ReOpenDatabase(PyObject *self, PyObject *args)
     // Open the database.
     MUTEX_LOCK();
         viewer->ReOpenDatabase(fileName);
-        if(logging)
-            fprintf(logFile, "ReOpenDatabase(\"%s\")\n", fileName);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -1865,8 +1874,6 @@ visit_OverlayDatabase(PyObject *self, PyObject *args)
     // Overlay the database.
     MUTEX_LOCK();
         viewer->OverlayDatabase(fileName);
-        if(logging)
-            fprintf(logFile, "OverlayDatabase(\"%s\")\n", fileName);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -1914,11 +1921,6 @@ visit_ReplaceDatabase(PyObject *self, PyObject *args)
     // Replace the database.
     MUTEX_LOCK();
         viewer->ReplaceDatabase(fileName, timeState);
-        if(logging)
-        {
-            fprintf(logFile, "ReplaceDatabase(\"%s\", %d)\n",
-                    fileName, timeState);
-        }
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -1952,8 +1954,6 @@ visit_ActivateDatabase(PyObject *self, PyObject *args)
     // Activate the database.
     MUTEX_LOCK();
         viewer->ActivateDatabase(fileName);
-        if(logging)
-            fprintf(logFile, "ActivateDatabase(\"%s\")\n", fileName);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -1988,8 +1988,6 @@ visit_CheckForNewStates(PyObject *self, PyObject *args)
     // Check the database for new states.
     MUTEX_LOCK();
         viewer->CheckForNewStates(fileName);
-        if(logging)
-            fprintf(logFile, "CheckForNewStates(\"%s\")\n", fileName);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -2021,8 +2019,6 @@ visit_CloseDatabase(PyObject *self, PyObject *args)
     // Close the database.
     MUTEX_LOCK();
         viewer->CloseDatabase(fileName);
-        if(logging)
-            fprintf(logFile, "CloseDatabase(\"%s\")\n", fileName);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -2075,17 +2071,6 @@ visit_CreateDatabaseCorrelation(PyObject *self, PyObject *args)
     // Create the database correlation
     MUTEX_LOCK();
         viewer->CreateDatabaseCorrelation(name, dbs, method);
-        if(logging)
-        {
-            fprintf(logFile, "CreateDatabaseCorrelation(\"%s\",(", name);
-            for(int i = 0; i < dbs.size(); ++i)
-            {
-                fprintf(logFile, "%s", dbs[i].c_str());
-                if(i < dbs.size() - 1)
-                    fprintf(logFile, ", ");
-            }
-            fprintf(logFile, "), %d)\n", method);
-        }
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -2137,17 +2122,6 @@ visit_AlterDatabaseCorrelation(PyObject *self, PyObject *args)
     // Alter the database correlation
     MUTEX_LOCK();
         viewer->AlterDatabaseCorrelation(name, dbs, method);
-        if(logging)
-        {
-            fprintf(logFile, "AlterDatabaseCorrelation(\"%s\",(", name);
-            for(int i = 0; i < dbs.size(); ++i)
-            {
-                fprintf(logFile, "%s", dbs[i].c_str());
-                if(i < dbs.size() - 1)
-                    fprintf(logFile, ", ");
-            }
-            fprintf(logFile, "), %d)\n", method);
-        }
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -2179,8 +2153,6 @@ visit_DeleteDatabaseCorrelation(PyObject *self, PyObject *args)
     // Delete the database correlation
     MUTEX_LOCK();
         viewer->DeleteDatabaseCorrelation(name);
-        if(logging)
-            fprintf(logFile, "DeleteDatabaseCorrelation(\"%s\")\n", name);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -2238,11 +2210,6 @@ visit_SetDatabaseCorrelationOptions(PyObject *self, PyObject *args)
         cL->SetWhenToCorrelate((DatabaseCorrelationList::WhenToCorrelate)
             whenToCorrelate);
         cL->Notify();
-        if(logging)
-        {
-            fprintf(logFile, "SetDatabaseCorrelationOptions(%d, %d)\n",
-                    defaultCorrelationMethod, whenToCorrelate);
-        }
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -2366,10 +2333,6 @@ ExpressionDefinitionHelper(PyObject *args, const char *name, Expression::ExprTyp
         list->AddExpression(*e);
         list->Notify();
         viewer->ProcessExpressions();
-
-        if (logging)
-            fprintf(logFile, "%s(\"%s\", \"%s\")\n", name, exprName, exprDef);
-
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -2488,10 +2451,6 @@ visit_DeleteExpression(PyObject *self, PyObject *args)
         }
         list->Notify();
         viewer->ProcessExpressions();
-
-        if (logging)
-            fprintf(logFile, "DeleteExpression(\"%s\")\n", exprName);
-
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -2571,38 +2530,10 @@ OpenComponentHelper(PyObject *self, PyObject *args, bool openEngine)
 
     MUTEX_LOCK();
         // Either open an engine or an mdserver.
-        const char *methodName = "OpenComputeEngine";
         if(openEngine)
             viewer->OpenComputeEngine(hostName, argv);
         else
-        {
             viewer->OpenMDServer(hostName, argv);
-            methodName = "OpenMDServer";
-        }
-
-        if(logging)
-        {
-            if(argv.size() == 0)
-                fprintf(logFile, "%s(\"%s\")\n", methodName, hostName);
-            else if(argv.size() == 1)
-            {
-                fprintf(logFile, "%s(\"%s\", \"%s\")\n",
-                        methodName, hostName, argv[0].c_str());
-            }
-            else
-            {
-                fprintf(logFile, "launchArguments = (");
-                for(int i = 0; i < argv.size(); ++i)
-                {
-                    fprintf(logFile, "\"%s\"", argv[i].c_str());
-                    if(i < argv.size() - 1)
-                        fprintf(logFile, ", ");
-                }
-                fprintf(logFile, ")\n");
-                fprintf(logFile, "%s(\"%s\", launchArguments)\n",
-                        methodName, hostName);
-            }
-        }
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -2687,31 +2618,6 @@ OpenClientHelper(PyObject *self, PyObject *args, int componentNumber)
     MUTEX_LOCK();
         // Open a client
         viewer->OpenClient(clientName, program, argv);
-
-        if(logging)
-        {
-            if(argv.size() == 0)
-                fprintf(logFile, "OpenClient(\"%s\", \"%s\")\n", 
-                        clientName, program);
-            else if(argv.size() == 1)
-            {
-                fprintf(logFile, "OpenClient(\"%s\", \"%s\", \"%s\")\n",
-                        clientName, program, argv[0].c_str());
-            }
-            else
-            {
-                fprintf(logFile, "launchArguments = (");
-                for(int i = 0; i < argv.size(); ++i)
-                {
-                    fprintf(logFile, "\"%s\"", argv[i].c_str());
-                    if(i < argv.size() - 1)
-                        fprintf(logFile, ", ");
-                }
-                fprintf(logFile, ")\n");
-                fprintf(logFile, "OpenClient(\"%s\", \"%s\", launchArguments)\n",
-                        clientName, program);
-            }
-        }
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -2754,8 +2660,6 @@ visit_InvertBackgroundColor(PyObject *self, PyObject *args)
     MUTEX_LOCK();
         viewer->InvertBackgroundColor();
         viewer->RedrawWindow();
-        if(logging)
-            fprintf(logFile, "InvertBackgroundColor()\n");
     MUTEX_UNLOCK();
 
     Py_INCREF(Py_None);
@@ -2816,8 +2720,6 @@ visit_AddPlot(PyObject *self, PyObject *args)
    
     MUTEX_LOCK();
         viewer->AddPlot(plotTypeIndex, varName);
-        if(logging)
-            fprintf(logFile, "AddPlot(\"%s\", \"%s\")\n", plotName, varName);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -2892,11 +2794,6 @@ visit_AddOperator(PyObject *self, PyObject *args)
 
         // Add the operator
         viewer->AddOperator(operTypeIndex);
-        if(logging)
-        {
-            fprintf(logFile, "AddOperator(\"%s\", %d)\n", operName,
-                    applyToAllPlots);
-        }
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -2928,8 +2825,6 @@ visit_DrawPlots(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->DrawPlots();
-        if(logging)
-            fprintf(logFile, "DrawPlots()\n");
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -3011,16 +2906,7 @@ visit_CloseComputeEngine(PyObject *self, PyObject *args)
          }
 
          if (engineName != 0 && simulationName != 0)
-         {
              viewer->CloseComputeEngine(engineName, simulationName);
-
-            // Write the command to the file.
-            if(logging)
-            {
-                fprintf(logFile, "CloseComputeEngine(\"%s\",\"%s\")\n",
-                        engineName, simulationName);
-            }
-         }
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -3241,10 +3127,6 @@ visit_ChangeActivePlotsVar(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
          viewer->ChangeActivePlotsVar(varName);
-
-        // Write the command to the file.
-        if(logging)
-            fprintf(logFile, "ChangeActivePlotsVar(\"%s\")\n", varName);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -3279,10 +3161,6 @@ visit_CopyAnnotationsToWindow(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
          viewer->CopyAnnotationsToWindow(from, to);
-
-        // Write the command to the file.
-        if(logging)
-            fprintf(logFile, "CopyAnnotationsToWindow(%d, %d)\n", from, to);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -3316,11 +3194,7 @@ visit_CopyLightingToWindow(PyObject *self, PyObject *args)
         return NULL;
 
     MUTEX_LOCK();
-         viewer->CopyLightingToWindow(from, to);
-
-        // Write the command to the file.
-        if(logging)
-            fprintf(logFile, "CopyLightingToWindow(%d, %d)\n", from, to);
+        viewer->CopyLightingToWindow(from, to);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -3354,11 +3228,7 @@ visit_CopyViewToWindow(PyObject *self, PyObject *args)
         return NULL;
 
     MUTEX_LOCK();
-         viewer->CopyViewToWindow(from, to);
-
-        // Write the command to the file.
-        if(logging)
-            fprintf(logFile, "CopyViewToWindow(%d, %d)\n", from, to);
+        viewer->CopyViewToWindow(from, to);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -3390,11 +3260,7 @@ visit_CopyPlotsToWindow(PyObject *self, PyObject *args)
         return NULL;
 
     MUTEX_LOCK();
-         viewer->CopyPlotsToWindow(from, to);
-
-        // Write the command to the file.
-        if(logging)
-            fprintf(logFile, "CopyPlotsToWindow(%d, %d)\n", from, to);
+        viewer->CopyPlotsToWindow(from, to);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -3424,8 +3290,6 @@ visit_DeleteActivePlots(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->DeleteActivePlots();
-        if(logging)
-            fprintf(logFile, "DeleteActivePlots()\n");
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -3467,8 +3331,6 @@ visit_DeleteAllPlots(PyObject *self, PyObject *args)
         viewer->SetActivePlots(plots);
 
         viewer->DeleteActivePlots();
-        if(logging)
-            fprintf(logFile, "DeleteAllPlots()\n");
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -3511,8 +3373,6 @@ visit_RemoveLastOperator(PyObject *self, PyObject *args)
 
         // Remove the last operator.
         viewer->RemoveLastOperator();
-        if(logging)
-            fprintf(logFile, "RemoveLastOperator(%d)\n", applyToAllPlots);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -3555,8 +3415,6 @@ visit_RemoveAllOperators(PyObject *self, PyObject *args)
 
         // Remove all operators.
         viewer->RemoveAllOperators();
-        if(logging)
-            fprintf(logFile, "RemoveAllOperators(%d)\n", applyToAllPlots);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -3586,8 +3444,6 @@ visit_ClearWindow(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->ClearWindow();
-        if(logging)
-            fprintf(logFile, "ClearWindow()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -3616,8 +3472,6 @@ visit_ClearAllWindows(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->ClearAllWindows();
-        if(logging)
-            fprintf(logFile, "ClearAllWindows()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -3661,9 +3515,6 @@ visit_ClearCache(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->ClearCache(engineName, simulationName);
-        if(logging)
-            fprintf(logFile, "ClearCache(\"%s\",\"%s\")\n",
-                    engineName, simulationName);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -3693,8 +3544,6 @@ visit_ClearCacheForAllEngines(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->ClearCacheForAllEngines();
-        if(logging)
-            fprintf(logFile, "ClearCacheForAllEngines()\n");
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -3725,8 +3574,6 @@ visit_ClearPickPoints(PyObject *self, PyObject *args)
     MUTEX_LOCK();
         viewer->ClearPickPoints();
         viewer->RedrawWindow();
-        if(logging)
-            fprintf(logFile, "ClearPickPoints()\n");
     MUTEX_UNLOCK();
 
     Py_INCREF(Py_None);
@@ -3757,8 +3604,6 @@ visit_ClearReferenceLines(PyObject *self, PyObject *args)
     MUTEX_LOCK();
         viewer->ClearReferenceLines();
         viewer->RedrawWindow();
-        if(logging)
-            fprintf(logFile, "ClearReferenceLines()\n");
     MUTEX_UNLOCK();
 
     Py_INCREF(Py_None);
@@ -3790,8 +3635,6 @@ visit_SaveWindow(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->SaveWindow();
-        if(logging)
-            fprintf(logFile, "SaveWindow()\n");
     MUTEX_UNLOCK();
     int errorFlag = Synchronize();
 
@@ -3831,8 +3674,6 @@ visit_DeleteWindow(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->DeleteWindow();
-        if(logging)
-            fprintf(logFile, "DeleteWindow()\n");
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -3862,8 +3703,6 @@ visit_DisableRedraw(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->DisableRedraw();
-        if(logging)
-            fprintf(logFile, "DisableRedraw()\n");
     MUTEX_UNLOCK();
 
     Py_INCREF(Py_None);
@@ -3893,8 +3732,6 @@ visit_RedrawWindow(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->RedrawWindow();
-        if(logging)
-            fprintf(logFile, "RedrawWindow()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -3924,8 +3761,6 @@ visit_ResizeWindow(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->ResizeWindow(win, i0, i1);
-        if(logging)
-            fprintf(logFile, "ResizeWindow(%d, %d, %d)\n", win, i0, i1);
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -3955,8 +3790,6 @@ visit_MoveWindow(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->MoveWindow(win, i0, i1);
-        if(logging)
-            fprintf(logFile, "MoveWindow(%d, %d, %d)\n", win, i0, i1);
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -3986,11 +3819,6 @@ visit_MoveAndResizeWindow(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->MoveAndResizeWindow(win, i0, i1, i2, i3);
-        if(logging)
-        {
-            fprintf(logFile, "MoveAndResizeWindow(%d, %d, %d, %d, %d)\n",
-                    win, i0, i1, i2, i3);
-        }
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -4019,8 +3847,6 @@ visit_RecenterView(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->RecenterView();
-        if(logging)
-            fprintf(logFile, "RecenterView()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -4049,8 +3875,6 @@ visit_ResetView(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->ResetView();
-        if(logging)
-            fprintf(logFile, "ResetView()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -4082,11 +3906,6 @@ visit_SetCenterOfRotation(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->SetCenterOfRotation(c0, c1, c2);
-        if(logging)
-        {
-            fprintf(logFile, "SetCenterOfRotation(%g, %g, %g)\n",
-                    c0, c1, c2);
-        }
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -4127,15 +3946,11 @@ visit_ChooseCenterOfRotation(PyObject *self, PyObject *args)
         {
             // We know where we want to pick.
             viewer->ChooseCenterOfRotation(sx, sy);
-            if(logging)
-                fprintf(logFile, "ChooseCenterOfRotation(%g ,%g)\n", sx, sy);
         }
         else
         {
             // Choose the point interactively
             viewer->ChooseCenterOfRotation();
-            if(logging)
-                fprintf(logFile, "ChooseCenterOfRotation()\n");
         }
     MUTEX_UNLOCK();
 
@@ -4169,9 +3984,6 @@ visit_RestoreSession(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->ImportEntireState(filename, sessionStoredInVisItDir!=0);
-        if(logging)
-            fprintf(logFile, "RestoreSession(%s, %d)\n", filename,
-                    sessionStoredInVisItDir);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -4204,8 +4016,6 @@ visit_SaveSession(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->ExportEntireState(filename);
-        if(logging)
-            fprintf(logFile, "SaveSession(%s)\n", filename);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -4385,9 +4195,6 @@ visit_SetAnnotationAttributes(PyObject *self, PyObject *args)
         *(viewer->GetAnnotationAttributes()) = *va;
         viewer->GetAnnotationAttributes()->Notify();
         viewer->SetAnnotationAttributes();
-
-        if(logging)
-            fprintf(logFile, "SetAnnotationAttributes()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -4420,8 +4227,6 @@ visit_SetCloneWindowOnFirstRef(PyObject *self, PyObject *args)
     MUTEX_LOCK();
         viewer->GetGlobalAttributes()->SetCloneWindowOnFirstRef(flag);
         viewer->GetGlobalAttributes()->Notify();
-        if(logging)
-            fprintf(logFile, "SetCloneWindowOnFirstRef(%d)\n", flag);
     MUTEX_UNLOCK();
     int errorFlag = Synchronize();
 
@@ -4469,9 +4274,6 @@ visit_SetDefaultAnnotationAttributes(PyObject *self, PyObject *args)
         *(viewer->GetAnnotationAttributes()) = *va;
         viewer->GetAnnotationAttributes()->Notify();
         viewer->SetDefaultAnnotationAttributes();
-
-        if(logging)
-            fprintf(logFile, "SetDefaultAnnotationAttributes()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -4547,9 +4349,6 @@ visit_SetKeyframeAttributes(PyObject *self, PyObject *args)
         *(viewer->GetKeyframeAttributes()) = *va;
         viewer->GetKeyframeAttributes()->Notify();
         viewer->SetKeyframeAttributes();
- 
-        if(logging)
-            fprintf(logFile, "SetKeyframeAttributes()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -4625,9 +4424,6 @@ visit_SetMaterialAttributes(PyObject *self, PyObject *args)
         *(viewer->GetMaterialAttributes()) = *va;
         viewer->GetMaterialAttributes()->Notify();
         viewer->SetMaterialAttributes();
-
-        if(logging)
-            fprintf(logFile, "SetMaterialAttributes()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -4673,9 +4469,6 @@ visit_SetDefaultMaterialAttributes(PyObject *self, PyObject *args)
         *(viewer->GetMaterialAttributes()) = *va;
         viewer->GetMaterialAttributes()->Notify();
         viewer->SetDefaultMaterialAttributes();
-
-        if(logging)
-            fprintf(logFile, "SetDefaultMaterialAttributes()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -4751,9 +4544,6 @@ visit_SetPrinterAttributes(PyObject *self, PyObject *args)
         // Copy the object into the view attributes.
         *(viewer->GetPrinterAttributes()) = *va;
         viewer->GetPrinterAttributes()->Notify();
-
-        if(logging)
-            fprintf(logFile, "SetPrinterAttributes()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -4801,9 +4591,6 @@ visit_SetSaveWindowAttributes(PyObject *self, PyObject *args)
         // Copy the object into the view attributes.
         *(viewer->GetSaveWindowAttributes()) = *va;
         viewer->GetSaveWindowAttributes()->Notify();
-
-        if(logging)
-            fprintf(logFile, "SetSaveWindowAttributes()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -4915,17 +4702,12 @@ visit_ExportDatabase(PyObject *self, PyObject *args)
         VisItErrorFunc(msg);
         return NULL;
     }
-        
-        
 
     MUTEX_LOCK();
         // Copy the object into the view attributes.
         *(viewer->GetExportDBAttributes()) = *va;
         viewer->GetExportDBAttributes()->Notify();
         viewer->ExportDatabase();
-
-        if(logging)
-            fprintf(logFile, "ExportDatabase()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -4971,9 +4753,6 @@ visit_SetViewCurve(PyObject *self, PyObject *args)
         *(viewer->GetViewCurveAttributes()) = *va;
         viewer->GetViewCurveAttributes()->Notify();
         viewer->SetViewCurve();
-
-        if(logging)
-            fprintf(logFile, "SetViewCurve()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -5047,9 +4826,6 @@ visit_SetView2D(PyObject *self, PyObject *args)
             *(viewer->GetView2DAttributes()) = *va;
             viewer->GetView2DAttributes()->Notify();
             viewer->SetView2D();
-
-            if(logging)
-                fprintf(logFile, "SetView2D()\n");
         MUTEX_UNLOCK();
     }
     else if (PyViewAttributes_Check(view))
@@ -5072,8 +4848,6 @@ visit_SetView2D(PyObject *self, PyObject *args)
             cerr << "Warning: Passing a ViewAttribute to SetView2D is"
                  << " deprecated.  Pass a" << endl
                  << " View2DAttribute instead." << endl;
-            if(logging)
-                fprintf(logFile, "SetView2D()\n");
         MUTEX_UNLOCK();
     }
     else
@@ -5155,9 +4929,6 @@ visit_SetView3D(PyObject *self, PyObject *args)
             *(viewer->GetView3DAttributes()) = *va;
             viewer->GetView3DAttributes()->Notify();
             viewer->SetView3D();
-
-            if(logging)
-                fprintf(logFile, "SetView3D()\n");
         MUTEX_UNLOCK();
     }
     else if (PyViewAttributes_Check(view))
@@ -5188,8 +4959,6 @@ visit_SetView3D(PyObject *self, PyObject *args)
             cerr << "Warning: Passing a ViewAttribute to SetView3D is"
                  << " deprecated.  Pass a" << endl
                  << " View3DAttribute instead." << endl;
-            if(logging)
-                fprintf(logFile, "SetView3D()\n");
         MUTEX_UNLOCK();
     }
     else
@@ -5256,8 +5025,6 @@ visit_ClearViewKeyframes(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->ClearViewKeyframes();
-        if(logging)
-            fprintf(logFile, "ClearViewKeyframes()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -5289,8 +5056,6 @@ visit_DeleteViewKeyframe(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->DeleteViewKeyframe(frame);
-        if(logging)
-            fprintf(logFile, "DeleteViewKeyframe(%d)\n", frame);
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -5322,8 +5087,6 @@ visit_MoveViewKeyframe(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->MoveViewKeyframe(oldFrame, newFrame);
-        if(logging)
-            fprintf(logFile, "MoveViewKeyframe(%d, %d)\n", oldFrame, newFrame);
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -5352,8 +5115,6 @@ visit_SetViewKeyframe(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->SetViewKeyframe();
-        if(logging)
-            fprintf(logFile, "SetViewKeyframe()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -5406,8 +5167,6 @@ visit_SetViewExtentsType(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->SetViewExtentsType(extType);
-        if(logging)
-            fprintf(logFile, "SetViewExtentsType(%d)\n", extType);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -5545,9 +5304,6 @@ visit_SetRenderingAttributes(PyObject *self, PyObject *args)
         *(viewer->GetRenderingAttributes()) = *ra;
         viewer->GetRenderingAttributes()->Notify();
         viewer->SetRenderingAttributes();
-
-        if(logging)
-            fprintf(logFile, "SetRenderingAttributes()\n");
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -5606,8 +5362,6 @@ visit_SetWindowMode(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->SetWindowMode(mode);
-        if(logging)
-            fprintf(logFile, "SetWindowMode(%d)\n", mode);
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -5654,8 +5408,6 @@ visit_EnableTool(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->EnableTool(tool, enabled==1);
-        if(logging)
-            fprintf(logFile, "EnableTool(%d, %d)\n", tool, enabled);
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -5787,8 +5539,6 @@ visit_ListPlots(PyObject *self, PyObject *args)
     }
 
     // Write the command to the file.
-    if(logging)
-        fprintf(logFile, "ListPlots()\n");
     MUTEX_UNLOCK();
 
     return PyString_FromString(outStr.c_str());
@@ -5902,11 +5652,6 @@ visit_ResetOperatorOptions(PyObject *self, PyObject *args)
 
             // Reset the operator options.
             viewer->ResetOperatorOptions(operatorTypeIndex);
-            if(logging)
-            {
-                fprintf(logFile, "ResetOperatorOptions(\"%s\", %d)\n",
-                        operatorName, applyToAllPlots);
-            }
         MUTEX_UNLOCK();
         errorFlag = Synchronize();
     }
@@ -5971,8 +5716,6 @@ visit_ResetPlotOptions(PyObject *self, PyObject *args)
     {
         MUTEX_LOCK();
             viewer->ResetPlotOptions(plotTypeIndex);
-            if(logging)
-                fprintf(logFile, "ResetPlotOptions(\"%s\")\n", plotName);
         MUTEX_UNLOCK();
         errorFlag = Synchronize();
     }
@@ -7773,8 +7516,6 @@ visit_PrintWindow(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->PrintWindow();
-        if(logging)
-            fprintf(logFile, "PrintWindow()\n");
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -7805,8 +7546,6 @@ visit_SetWindowArea(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->SetWindowArea(x, y, w, h);
-        if(logging)
-            fprintf(logFile, "SetWindowArea(%d, %d, %d, %d)\n",x,y,w,h);
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -7847,8 +7586,6 @@ visit_SetAnimationTimeout(PyObject *self, PyObject *args)
         atts->SetTimeout(milliSeconds);
         atts->Notify();
         viewer->SetAnimationAttributes();
-        if(logging)
-            fprintf(logFile, "SetAnimationTimeout(%d)\n", milliSeconds);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -7907,8 +7644,6 @@ visit_SetPipelineCachingMode(PyObject *self, PyObject *args)
         atts->SetPipelineCachingMode(val != 0);
         atts->Notify();
         viewer->SetAnimationAttributes();
-        if(logging)
-            fprintf(logFile, "SetPipelineCachingMode(%d)\n", val);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -8019,6 +7754,9 @@ visit_GetLight(PyObject *self, PyObject *args)
 //   Brad Whitlock, Fri Jun 24 10:50:12 PDT 2005
 //   Made the message include the name of the file that could not be sourced.
 //
+//   Brad Whitlock, Tue Jan 10 12:04:10 PDT 2006
+//   Changed how logging works.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -8033,13 +7771,13 @@ visit_Source(PyObject *self, PyObject *args)
     //
     // Try and open the file.
     //
+    char buf[1024];
     FILE *fp = fopen(fileName, "rb");
     if(fp == NULL)
     {
         //
         // Add a ".py" extension and try to open the file.
         //
-        char buf[1024];
         SNPRINTF(buf, 1024, "%s.py", fileName);
         fp = fopen(buf, "rb");
         if(fp == NULL)
@@ -8053,9 +7791,9 @@ visit_Source(PyObject *self, PyObject *args)
     //
     // Turn logging off.
     //
-    if(logging)
-        fprintf(logFile, "Source(\"%s\")\n", fileName);
-    SetLogging(false);
+    SNPRINTF(buf, 1024, "Source(\"%s\")\n", fileName);
+    LogFile_Write(buf);
+    LogFile_IncreaseLevel();
 
     //
     // Execute the commands in the file.
@@ -8066,7 +7804,7 @@ visit_Source(PyObject *self, PyObject *args)
     //
     // Turn logging back on.
     //
-    SetLogging(true);
+    LogFile_DecreaseLevel();
 
     //
     // Increment the reference count and return.
@@ -8096,8 +7834,6 @@ visit_ToggleMaintainViewMode(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->ToggleMaintainViewMode();
-        if(logging)
-            fprintf(logFile, "ToggleMaintainViewMode()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -8124,8 +7860,6 @@ visit_ToggleMaintainDataMode(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->ToggleMaintainDataMode();
-        if(logging)
-            fprintf(logFile, "ToggleMaintainDataMode()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -8152,8 +7886,6 @@ visit_ToggleLockTime(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->ToggleLockTime();
-        if(logging)
-            fprintf(logFile, "ToggleLockTime()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -8180,8 +7912,6 @@ visit_ToggleLockTools(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->ToggleLockTools();
-        if(logging)
-            fprintf(logFile, "ToggleLockTools()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -8210,8 +7940,6 @@ visit_ToggleBoundingBoxMode(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->ToggleBoundingBoxMode();
-        if(logging)
-            fprintf(logFile, "ToggleBoundingBoxMode()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -8240,8 +7968,6 @@ visit_ToggleLockViewMode(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->ToggleLockViewMode();
-        if(logging)
-            fprintf(logFile, "ToggleLockViewMode()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -8270,8 +7996,6 @@ visit_ToggleSpinMode(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->ToggleSpinMode();
-        if(logging)
-            fprintf(logFile, "ToggleSpinMode()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());;
@@ -8300,8 +8024,6 @@ visit_ToggleCameraViewMode(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->ToggleCameraViewMode();
-        if(logging)
-            fprintf(logFile, "ToggleViewMode()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());;
@@ -8329,8 +8051,6 @@ visit_ToggleFullFrameMode(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->ToggleFullFrameMode();
-        if(logging)
-            fprintf(logFile, "ToggleFullFrameMode()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());;
@@ -8359,8 +8079,6 @@ visit_UndoView(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->UndoView();
-        if(logging)
-            fprintf(logFile, "UndoView()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -8488,17 +8206,6 @@ visit_Query(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->DatabaseQuery(qname.c_str(), vars, false, arg1, arg2, doGlobal);
-        if(logging)
-        {
-            fprintf(logFile, "Query(%s, (", queryName);
-            for(int i = 0; i < vars.size(); ++i)
-            {
-                fprintf(logFile, "\"%s\"", vars[i].c_str());
-                if(i < vars.size()-1)
-                    fprintf(logFile, ", ");
-            }
-            fprintf(logFile, "))\n");
-        }
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -8574,6 +8281,9 @@ visit_SuppressQueryOutputOff(PyObject *self, PyObject *args)
 //   Kathleen Bonnell, Wed Feb 23 11:23:23 PST 2005 
 //   Changed arg1 default to 0 (is used to specify 'original' data). 
 //
+//   Brad Whitlock, Tue Jan 10 14:04:35 PST 2006
+//   Changed logging.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -8615,17 +8325,12 @@ visit_QueryOverTime(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->DatabaseQuery(queryName, vars, true, arg1, arg2);
-        if(logging)
-        {
-            fprintf(logFile, "Query(%s, (", queryName);
-            for(int i = 0; i < vars.size(); ++i)
-            {
-                fprintf(logFile, "\"%s\"", vars[i].c_str());
-                if(i < vars.size()-1)
-                    fprintf(logFile, ", ");
-            }
-            fprintf(logFile, "))\n");
-        }
+
+        char tmp[1024];
+        SNPRINTF(tmp, 1024, "QueryOverTime(\"%s\", %d, %d, %s)\n", queryName,
+                 arg1, arg2,
+                 StringVectorToTupleString(vars).c_str());
+        LogFile_Write(tmp);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -8659,6 +8364,9 @@ visit_QueryOverTime(PyObject *self, PyObject *args)
 //
 //   Brad Whitlock, Tue Mar 2 10:11:57 PDT 2004
 //   I made it use GetDoubleArrayFromPyObject and GetStringVectorFromPyObject.
+//
+//   Brad Whitlock, Tue Jan 10 14:05:47 PST 2006
+//   Changed logging.
 //
 // ****************************************************************************
 
@@ -8702,17 +8410,11 @@ visit_Pick(PyObject *self, PyObject *args)
             viewer->Pick(x, y, vars);
         else 
             viewer->Pick(pt,  vars);
-        if(logging)
-        {
-            fprintf(logFile, "Pick(%d, %d, (", x, y);
-            for(int i = 0; i < vars.size(); ++i)
-            {
-                fprintf(logFile, "\"%s\"", vars[i].c_str());
-                if(i < vars.size()-1)
-                    fprintf(logFile, ", ");
-            }
-            fprintf(logFile, "))\n");
-        }
+
+        char tmp[1024];
+        SNPRINTF(tmp, 1024, "Pick(%d, %d, %s)\n", x, y,
+                 StringVectorToTupleString(vars).c_str());
+        LogFile_Write(tmp);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -8740,6 +8442,9 @@ visit_Pick(PyObject *self, PyObject *args)
 //
 //   Brad Whitlock, Tue Mar 2 10:10:45 PDT 2004
 //   I made it use GetDoubleArrayFromPyObject and GetStringVectorFromPyObject.
+//
+//   Brad Whitlock, Tue Jan 10 14:07:43 PST 2006
+//   Changed logging.
 //
 // ****************************************************************************
 
@@ -8782,17 +8487,11 @@ visit_NodePick(PyObject *self, PyObject *args)
             viewer->NodePick(x, y, vars);
         else 
             viewer->NodePick(pt, vars);
-        if(logging)
-        {
-            fprintf(logFile, "Pick(%d, %d, (", x, y);
-            for(int i = 0; i < vars.size(); ++i)
-            {
-                fprintf(logFile, "\"%s\"", vars[i].c_str());
-                if(i < vars.size()-1)
-                    fprintf(logFile, ", ");
-            }
-            fprintf(logFile, "))\n");
-        }
+
+        char tmp[1024];
+        SNPRINTF(tmp, 1024, "Pick(%d, %d, %s)\n", x, y,
+                 StringVectorToTupleString(vars).c_str());
+        LogFile_Write(tmp);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -8822,9 +8521,6 @@ visit_ResetPickLetter(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->ResetPickLetter();
-
-        if(logging)
-            fprintf(logFile, "ResetPickLetter()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -8853,9 +8549,6 @@ visit_ResetLineoutColor(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->ResetLineoutColor();
-
-        if(logging)
-            fprintf(logFile, "ResetLineoutColor()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -8884,9 +8577,6 @@ visit_ResetPickAttributes(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->ResetPickAttributes();
-
-        if(logging)
-            fprintf(logFile, "ResetPickAttributes()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());;
@@ -8932,9 +8622,6 @@ visit_SetPickAttributes(PyObject *self, PyObject *args)
         *(viewer->GetPickAttributes()) = *pa;
         viewer->GetPickAttributes()->Notify();
         viewer->SetPickAttributes();
-
-        if(logging)
-            fprintf(logFile, "SetPickAttributes()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());;
@@ -8981,9 +8668,6 @@ visit_SetDefaultPickAttributes(PyObject *self, PyObject *args)
         *(viewer->GetPickAttributes()) = *pa;
         viewer->GetPickAttributes()->Notify();
         viewer->SetDefaultPickAttributes();
-
-        if(logging)
-            fprintf(logFile, "SetDefaultPickAttributes()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());;
@@ -9043,9 +8727,6 @@ visit_ResetInteractorAttributes(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->ResetInteractorAttributes();
-
-        if(logging)
-            fprintf(logFile, "ResetInteractorAttributes()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());;
@@ -9092,9 +8773,6 @@ visit_SetInteractorAttributes(PyObject *self, PyObject *args)
         *(viewer->GetInteractorAttributes()) = *ia;
         viewer->GetInteractorAttributes()->Notify();
         viewer->SetInteractorAttributes();
-
-        if(logging)
-            fprintf(logFile, "SetInteractorAttributes()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());;
@@ -9141,9 +8819,6 @@ visit_SetDefaultInteractorAttributes(PyObject *self, PyObject *args)
         *(viewer->GetInteractorAttributes()) = *ia;
         viewer->GetInteractorAttributes()->Notify();
         viewer->SetDefaultInteractorAttributes();
-
-        if(logging)
-            fprintf(logFile, "SetDefaultInteractorAttributes()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());;
@@ -9203,9 +8878,6 @@ visit_ResetQueryOverTimeAttributes(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         viewer->ResetQueryOverTimeAttributes();
-
-        if(logging)
-            fprintf(logFile, "ResetQueryOverTimeAttributes()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());;
@@ -9252,9 +8924,6 @@ visit_SetQueryOverTimeAttributes(PyObject *self, PyObject *args)
         *(viewer->GetQueryOverTimeAttributes()) = *tqa;
         viewer->GetQueryOverTimeAttributes()->Notify();
         viewer->SetQueryOverTimeAttributes();
-
-        if(logging)
-            fprintf(logFile, "SetQueryOverTimeAttributes()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());;
@@ -9302,9 +8971,6 @@ visit_SetDefaultQueryOverTimeAttributes(PyObject *self, PyObject *args)
         *(viewer->GetQueryOverTimeAttributes()) = *tqa;
         viewer->GetQueryOverTimeAttributes()->Notify();
         viewer->SetDefaultQueryOverTimeAttributes();
-
-        if(logging)
-            fprintf(logFile, "SetDefaultQueryOverTimeAttributes()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());;
@@ -9382,9 +9048,6 @@ visit_SetGlobalLineoutAttributes(PyObject *self, PyObject *args)
         *(viewer->GetGlobalLineoutAttributes()) = *gla;
         viewer->GetGlobalLineoutAttributes()->Notify();
         viewer->SetGlobalLineoutAttributes();
-
-        if(logging)
-            fprintf(logFile, "SetGlobalLineoutAttributes()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());;
@@ -9452,17 +9115,6 @@ visit_DomainPick(const char *type, int el, int dom, stringVector vars, bool doGl
 
     MUTEX_LOCK();
         viewer->PointQuery(type, pt, vars, false, el, dom, doGlobal);
-        if(logging)
-        {
-            fprintf(logFile, "%s(%d, %d (", type, el, dom);
-            for(int i = 0; i < vars.size(); ++i)
-            {
-                fprintf(logFile, "\"%s\"", vars[i].c_str());
-                if(i < vars.size()-1)
-                    fprintf(logFile, ", ");
-            }
-            fprintf(logFile, "))\n");
-        }
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -9716,18 +9368,14 @@ visit_Lineout(PyObject *self, PyObject *args)
         viewer->GetGlobalAttributes()->SetApplyOperator(false);
         viewer->GetGlobalAttributes()->Notify();
         viewer->Lineout(p0, p1, vars, samples);
-        if(logging)
-        {
-            fprintf(logFile, "Lineout((%g, %g, %g), (%g, %g, %g), (",
-                    p0[0], p0[1], p0[2], p1[0], p1[1], p1[2]);
-            for(int i = 0; i < vars.size(); ++i)
-            {
-                fprintf(logFile, "\"%s\"", vars[i].c_str());
-                if(i < vars.size()-1)
-                    fprintf(logFile, ", ");
-            }
-            fprintf(logFile, "))\n");
-        }
+
+        // Write the output to the log
+        char tmp[1024];
+        SNPRINTF(tmp, 1024, "Lineout((%g, %g, %g), (%g, %g, %g), %s)\n",
+                 p0[0], p0[1], p0[2], p1[0], p1[1], p1[2],
+                 StringVectorToTupleString(vars).c_str());
+        LogFile_Write(tmp);
+
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -10012,9 +9660,6 @@ visit_SetMeshManagementAttributes(PyObject *self, PyObject *args)
         *(viewer->GetMeshManagementAttributes()) = *ra;
         viewer->GetMeshManagementAttributes()->Notify();
         viewer->SetMeshManagementAttributes();
-
-        if(logging)
-            fprintf(logFile, "SetMeshManagementAttributes()\n");
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -10056,9 +9701,6 @@ visit_SetDefaultMeshManagementAttributes(PyObject *self, PyObject *args)
         *(viewer->GetMeshManagementAttributes()) = *va;
         viewer->GetMeshManagementAttributes()->Notify();
         viewer->SetDefaultMeshManagementAttributes();
-
-        if(logging)
-            fprintf(logFile, "SetDefaultMeshManagementAttributes()\n");
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -10498,6 +10140,9 @@ ExecuteClientMethodHelper(Subject *subj, void *)
 //   code on the listener thread so we don't mess up synchronizes on the main
 //   thread during startup.
 //
+//   Brad Whitlock, Fri Jan 6 12:02:03 PDT 2006
+//   Added support for recording macros.
+//
 // ****************************************************************************
 
 static void
@@ -10516,8 +10161,11 @@ ExecuteClientMethod(ClientMethod *method, bool onNewThread)
         // Populate the method names and prototypes that the CLI supports
         // but don't advertise _QueryClientInformation.
         info->DeclareMethod("Quit", "");
-        info->DeclareMethod("Interpret", "s");
-        info->DeclareMethod("Interrupt", "");
+        info->DeclareMethod("Interpret",  "s");
+        info->DeclareMethod("Interrupt",  "");
+        info->DeclareMethod("MacroStart", "");
+        info->DeclareMethod("MacroPause", "");
+        info->DeclareMethod("MacroEnd",   "");
         info->SelectAll();
 
         // If onNewThread is true then we got into this method on the 2nd
@@ -10547,6 +10195,50 @@ ExecuteClientMethod(ClientMethod *method, bool onNewThread)
         cbData[0] = (void *)m;
         cbData[1] = (void *)1;
         visit_exec_client_method(cbData);
+    }
+    else if(method->GetMethodName() == "MacroStart")
+    {
+        Macro_SetString("");
+        Macro_SetRecord(true);
+    }
+    else if(method->GetMethodName() == "MacroPause")
+    {
+        Macro_SetRecord(!Macro_GetRecord());
+    }
+    else if(method->GetMethodName() == "MacroEnd")
+    {
+        // Send the macro to the clients.
+        if(Macro_GetString().size() > 0)
+        {
+            // If onNewThread is true then we got into this method on the 2nd
+            // thread, which means that xfer's update will be set to false. That
+            // means that calling Notify on the client information would not make
+            // xfer send it to the viewer. To combat this problem, we set xfer's
+            // update to true temporarily so we can send the object to the viewer.
+            // We only do it on the 2nd thread because if this method is called 
+            // from the first thread, we did not arrive here from xfer and
+            // turning off its updates messes up Synchronize.
+            if(onNewThread)
+               viewer->SetXferUpdate(true);
+
+            // We don't want to get here re-entrantly so disable the client method
+            // observer temporarily.
+            clientMethodObserver->SetUpdate(false);
+
+            stringVector args;
+            args.push_back(Macro_GetString());
+            ClientMethod *newM = viewer->GetClientMethod();
+            newM->ClearArgs();
+            newM->SetMethodName("AcceptRecordedMacro");
+            newM->SetStringArgs(args);
+            newM->Notify();
+
+            if(onNewThread)
+               viewer->SetXferUpdate(false);
+        }
+
+        Macro_SetString("");
+        Macro_SetRecord(false);
     }
     else
     {
@@ -11299,25 +10991,32 @@ AddExtensions()
 //
 //   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //   Added mesh management attributes
+//
+//   Brad Whitlock, Fri Jan 6 11:00:23 PDT 2006
+//   I changed the 2nd argument in the StartUp function calls so it passes
+//   a logging callback function instead of a pointer to a log file.
+//
 // ****************************************************************************
 
 static void
 InitializeExtensions()
 {
-    PyAnnotationAttributes_StartUp(viewer->GetAnnotationAttributes(), logFile);
-    PyExportDBAttributes_StartUp(viewer->GetExportDBAttributes(), logFile);
-    PyGlobalAttributes_StartUp(viewer->GetGlobalAttributes(), logFile);
-    PyHostProfile_StartUp(0, logFile);
-    PyMaterialAttributes_StartUp(viewer->GetMaterialAttributes(), logFile);
-    PyMeshManagementAttributes_StartUp(viewer->GetMeshManagementAttributes(), logFile);
-    PyPrinterAttributes_StartUp(viewer->GetPrinterAttributes(), logFile);
-    PyProcessAttributes_StartUp(viewer->GetProcessAttributes(), logFile);
-    PyRenderingAttributes_StartUp(viewer->GetRenderingAttributes(), logFile);
-    PySaveWindowAttributes_StartUp(viewer->GetSaveWindowAttributes(), logFile);
-    PyViewCurveAttributes_StartUp(viewer->GetViewCurveAttributes(), logFile);
-    PyView2DAttributes_StartUp(viewer->GetView2DAttributes(), logFile);
-    PyView3DAttributes_StartUp(viewer->GetView3DAttributes(), logFile);
-    PyWindowInformation_StartUp(viewer->GetWindowInformation(), logFile);
+    PyAnnotationAttributes_StartUp(viewer->GetAnnotationAttributes(), 0);
+    PyExportDBAttributes_StartUp(viewer->GetExportDBAttributes(), 0);
+    PyGlobalAttributes_StartUp(viewer->GetGlobalAttributes(), 0);
+    PyHostProfile_StartUp(0, 0);
+    PyMaterialAttributes_StartUp(viewer->GetMaterialAttributes(), 0);
+    PyMeshManagementAttributes_StartUp(viewer->GetMeshManagementAttributes(), 0);
+    PyPickAttributes_StartUp(viewer->GetPickAttributes(), 0);
+    PyPrinterAttributes_StartUp(viewer->GetPrinterAttributes(), 0);
+    PyProcessAttributes_StartUp(viewer->GetProcessAttributes(), 0);
+    PyRenderingAttributes_StartUp(viewer->GetRenderingAttributes(), 0);
+    PySaveWindowAttributes_StartUp(viewer->GetSaveWindowAttributes(), 0);
+    PyWindowInformation_StartUp(viewer->GetWindowInformation(), 0);
+
+    PyViewCurveAttributes_StartUp(viewer->GetViewCurveAttributes(), (void *)SS_log_ViewCurve);
+    PyView2DAttributes_StartUp(viewer->GetView2DAttributes(), (void *)SS_log_View2D);
+    PyView3DAttributes_StartUp(viewer->GetView3DAttributes(), (void *)SS_log_View3D);
 }
 
 // ****************************************************************************
@@ -11342,6 +11041,7 @@ InitializeExtensions()
 //
 //   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //   Added mesh management attributes
+//
 // ****************************************************************************
 
 static void
@@ -11351,91 +11051,12 @@ CloseExtensions()
     PyGlobalAttributes_CloseDown();
     PyMaterialAttributes_CloseDown();
     PyMeshManagementAttributes_CloseDown();
+    PyPickAttributes_CloseDown();
     PyPrinterAttributes_CloseDown();
     PySaveWindowAttributes_CloseDown();
     PyViewCurveAttributes_CloseDown();
     PyView2DAttributes_CloseDown();
     PyView3DAttributes_CloseDown();
-}
-
-// ****************************************************************************
-// Function: SetLogging
-//
-// Purpose: 
-//   This function sets the flag that determines whether or not extensions
-//   and plugins write their changes to the log file when they change.
-//
-// Arguments:
-//   val : Whether or not to log output.
-//
-// Note:       This function is used to prevent extra information from being
-//             added to the log file.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Sep 17 11:40:50 PDT 2001
-//
-// Modifications:
-//   Jeremy Meredith, Thu Oct 24 16:48:15 PDT 2002
-//   Added material options.
-//
-//   Brad Whitlock, Thu Nov 7 09:50:03 PDT 2002
-//   I added some modules that should have been called but were not.
-//
-//   Brad Whitlock, Fri Mar 19 08:52:27 PDT 2004
-//   Added GlobalAttributes.
-//
-//   Mark C. Miller, Tue Mar  8 18:06:19 PST 2005
-//   Added ProcessAttributes
-//
-// ****************************************************************************
-
-static void
-SetLogging(bool val)
-{
-    if(logFile == NULL)
-        logging = false;
-    else
-        logging = val;
-
-    //
-    // Set the logging flag in the extensions.
-    //
-    PyAnnotationAttributes_SetLogging(val);
-    PyExportDBAttributes_SetLogging(val);
-    PyGlobalAttributes_SetLogging(val);
-    PyMaterialAttributes_SetLogging(val);
-    PyMeshManagementAttributes_SetLogging(val);
-    PyPrinterAttributes_SetLogging(val);
-    PyProcessAttributes_SetLogging(val);
-    PyRenderingAttributes_SetLogging(val);
-    PySaveWindowAttributes_SetLogging(val);
-    PyViewAttributes_SetLogging(val);
-    PyWindowInformation_SetLogging(val);
-
-    //
-    // Set the logging flag in the plot plugins.
-    //
-    int i;
-    PlotPluginManager *ppManager = PlotPluginManager::Instance();
-    for(i = 0; i < ppManager->GetNEnabledPlugins(); ++i)
-    {
-        // Get a pointer to the scripting portion of the plot plugin information.
-        std::string id(ppManager->GetEnabledID(i));
-        ScriptingPlotPluginInfo *info = ppManager->GetScriptingPluginInfo(id);
-        info->SetLogging(val);
-    }
-
-    //
-    // Set the logging flag in the operator plugins.
-    //
-    OperatorPluginManager *opManager = OperatorPluginManager::Instance();
-    for(i = 0; i < opManager->GetNEnabledPlugins(); ++i)
-    {
-        // Get a pointer to the scripting portion of the plot plugin information.
-        std::string id(opManager->GetEnabledID(i));
-        ScriptingOperatorPluginInfo *info = opManager->GetScriptingPluginInfo(id);
-        info->SetLogging(val);
-    }
 }
 
 // ****************************************************************************
@@ -11451,6 +11072,15 @@ SetLogging(bool val)
 //   Brad Whitlock, Tue Oct 7 14:08:20 PST 2003
 //   I made it use a mutex so the debug logs don't get clobbered by competing
 //   threads.
+//
+//   Brad Whitlock, Thu Jan 5 15:14:48 PST 2006
+//   The 2nd argument to the InitializePlugin method has changed from a file
+//   pointer to a void *. In the plot plugins, the value is now used to
+//   identify a callback function that gets called with a string representation
+//   of the current attributes when they update from the viewer. We pass 0 for
+//   the callback since we don't want to log plot attribute changes because
+//   they are queried when writing log for SetPlotOptions, which ensures that
+//   we only write them out when needed.
 //
 // ****************************************************************************
 
@@ -11473,7 +11103,7 @@ PlotPluginAddInterface()
         debug1 << "Initializing "
                << info->GetName()
                << " plot plugin." << endl;
-        info->InitializePlugin(viewer->GetPlotAttributes(i), logFile);
+        info->InitializePlugin(viewer->GetPlotAttributes(i), 0);
 
         // Add the plugin's methods to the visit module's table of methods.
         int  nMethods = 0;
@@ -11519,7 +11149,10 @@ PlotPluginAddInterface()
 //   Brad Whitlock, Tue Oct 7 14:08:20 PST 2003
 //   I made it use a mutex so the debug logs don't get clobbered by competing
 //   threads.
-//   
+//
+//   Brad Whitlock, Fri Jan 6 18:00:07 PST 2006
+//   I changed the 2nd argument to InitializePlugin.
+//
 // ****************************************************************************
 
 static void
@@ -11541,7 +11174,7 @@ OperatorPluginAddInterface()
         debug1 << "Initializing "
                << pluginManager->GetCommonPluginInfo(id)->GetName()
                << " operator plugin." << endl;
-        info->InitializePlugin(viewer->GetOperatorAttributes(i), logFile);
+        info->InitializePlugin(viewer->GetOperatorAttributes(i), 0);
 
         // Add the plugin's methods to the visit module's table of methods.
         int  nMethods = 0;
@@ -11675,6 +11308,9 @@ NeedToLoadPlugins(Subject *, void *)
 //   the cli_argv array now has argv[0] in it so the ParentProcess inside of
 //   the ViewerProxy can work.
 //
+//   Brad Whitlock, Tue Jan 10 11:57:31 PDT 2006
+//   I made it use LogFile_open.
+//
 // ****************************************************************************
 
 static int
@@ -11757,30 +11393,22 @@ InitializeModule()
                                           NeedToLoadPlugins);
     clientMethodObserver = new ObserverToCallback(viewer->GetClientMethod(),
                                           ExecuteClientMethodHelper);
-
+    stateLoggingObserver = new ObserverToCallback(viewer->GetLogRPC(),
+                                                  LogRPCs);
 #ifndef POLLING_SYNCHRONIZE
     synchronizeCallback = new ObserverToCallback(viewer->GetSyncAttributes(),
                                                  WakeMainThread);
 #endif
 
+    // Set the macro string to empty.
+    Macro_SetString("");
+
     //
     // Open the log file
     //
-    logFile = fopen("visit.py", "wb");
-    if(logFile)
-    {
-        fprintf(logFile, "# Visit %s log file\n", VERSION);
-        fprintf(logFile, "ScriptVersion = \"%s\"\n", VERSION);
-        fprintf(logFile, "if ScriptVersion != Version():\n");
-        fprintf(logFile, "    print \"This script is for VisIt %%s. "
-                "It may not work with version %%s\" %% "
-                "(ScriptVersion, Version())\n");
-    }
-    else
-    {
-        fprintf(stderr, "Could not open visit.py log file.\n");
-        logging = false;
-    }
+    const char *logName = "visit.py";
+    if(!LogFile_Open(logName))
+        fprintf(stderr, "Could not open %s log file.\n", logName);
 
     // Add the default methods to the module's method table.
     AddDefaultMethods();
@@ -12169,6 +11797,9 @@ initvisit()
 //   Brad Whitlock, Thu Dec 18 16:11:25 PST 2003
 //   Added a call to destroy the synchronization mutex.
 //
+//   Brad Whitlock, Tue Jan 10 11:57:03 PDT 2006
+//   I made it use LogFile_Close.
+//
 // ****************************************************************************
 
 static void
@@ -12178,8 +11809,7 @@ terminatevisit()
     CloseModule();
 
     // Close the log file
-    if(logFile)
-        fclose(logFile);
+    LogFile_Close();
 
     MUTEX_DESTROY();
 #ifndef POLLING_SYNCHRONIZE
@@ -12298,6 +11928,9 @@ visit_eventloop(void *)
 //   instead of 2 mutexes so the code won't deadlock on some systems. I also
 //   added support for script interruption.
 //
+//   Brad Whitlock, Tue Jan 10 12:06:50 PDT 2006
+//   I changed logging.
+//
 // ****************************************************************************
 
 static int
@@ -12323,9 +11956,9 @@ Synchronize()
     }
 
     // Disable logging.
-    bool logEnabled = logging;
+    bool logEnabled = LogFile_GetEnabled();
     if(logEnabled)
-        SetLogging(false);
+        LogFile_SetEnabled(false);
 
     // Send the syncAtts to the viewer and then set the proxy's syncAtts tag
     // to -1. This will allow us to loop until the viewer sends back the
@@ -12353,7 +11986,7 @@ Synchronize()
 
     // Enable logging.
     if(logEnabled)
-        SetLogging(true);
+        LogFile_SetEnabled(true);
 
     // If the viewer has terminated while we were waiting for the sync tag
     // then call the error function now that we're in thread 1.

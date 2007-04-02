@@ -6,17 +6,15 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyCracksClipperAttributes_StartUp(CracksClipperAttributes *subj, FILE *logFile);
+void            PyCracksClipperAttributes_StartUp(CracksClipperAttributes *subj, void *data);
 void            PyCracksClipperAttributes_CloseDown();
 PyMethodDef    *PyCracksClipperAttributes_GetMethodTable(int *nMethods);
 bool            PyCracksClipperAttributes_Check(PyObject *obj);
 CracksClipperAttributes *PyCracksClipperAttributes_FromPyObject(PyObject *obj);
 PyObject       *PyCracksClipperAttributes_NewPyObject();
 PyObject       *PyCracksClipperAttributes_WrapPyObject(const CracksClipperAttributes *attr);
-void            PyCracksClipperAttributes_SetLogging(bool val);
+std::string     PyCracksClipperAttributes_GetLogString();
 void            PyCracksClipperAttributes_SetDefaults(const CracksClipperAttributes *atts);
-
-PyObject       *PyCracksClipperAttributes_StringRepresentation(const CracksClipperAttributes *atts);
 
 #endif
 

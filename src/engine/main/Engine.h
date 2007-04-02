@@ -106,6 +106,9 @@ class ProcessAttributes;
 //    Mark C. Miller, Wed Dec 14 17:19:38 PST 2005
 //    Added compression bool to WriteData
 //
+//    Hank Childs, Thu Jan  5 14:24:06 PST 2006
+//    Added a Boolean for whether or not we are using "-dump".
+//
 // ****************************************************************************
 
 class Engine
@@ -199,6 +202,9 @@ class Engine
 
     // The load balancer
     LoadBalancer       *lb;
+
+    // Whether or not to do -dump.
+    bool                shouldDoDashDump;
 
     // The Xfer object
 #ifdef PARALLEL

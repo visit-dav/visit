@@ -6,14 +6,14 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PySurfCompPrepAttributes_StartUp(SurfCompPrepAttributes *subj, FILE *logFile);
+void            PySurfCompPrepAttributes_StartUp(SurfCompPrepAttributes *subj, void *data);
 void            PySurfCompPrepAttributes_CloseDown();
 PyMethodDef    *PySurfCompPrepAttributes_GetMethodTable(int *nMethods);
 bool            PySurfCompPrepAttributes_Check(PyObject *obj);
 SurfCompPrepAttributes *PySurfCompPrepAttributes_FromPyObject(PyObject *obj);
 PyObject       *PySurfCompPrepAttributes_NewPyObject();
 PyObject       *PySurfCompPrepAttributes_WrapPyObject(const SurfCompPrepAttributes *attr);
-void            PySurfCompPrepAttributes_SetLogging(bool val);
+std::string     PySurfCompPrepAttributes_GetLogString();
 void            PySurfCompPrepAttributes_SetDefaults(const SurfCompPrepAttributes *atts);
 
 #endif

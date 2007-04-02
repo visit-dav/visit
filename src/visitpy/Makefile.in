@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2005
+#                            Copyright 2000 - 2006
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -115,6 +115,9 @@
 #    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 #    Added mesh management attributes
 #
+#    Brad Whitlock, Mon Jan 9 10:35:55 PDT 2006
+#    Added Logging.C
+#
 ##############################################################################
 
 ##
@@ -127,6 +130,7 @@
 ## Files...
 ##
 SRC= \
+    PyAnimationAttributes.C \
     PyAnnotationAttributes.C \
     PyDatabaseCorrelation.C \
     PyExportDBAttributes.C \
@@ -155,9 +159,11 @@ SRC= \
     PyViewAttributes.C \
     PyViewCurveAttributes.C \
     PyWindowInformation.C \
+    Logging.C \
     visitmodule.C
 
 HDR= \
+    PyAnimationAttributes.h \
     PyAnnotationAttributes.h \
     PyExportDBAttributes.h \
     PyDatabaseCorrelation.h \

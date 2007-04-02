@@ -37,6 +37,9 @@ class     vtkDataArray;
 //    Kathleen Bonnell, Thu Mar 11 10:14:20 PST 2004 
 //    Removed GetDataMagnitudeExtents, now handled correctly by GetDataExtents. 
 //
+//    Hank Childs, Mon Jan  9 09:54:53 PST 2006
+//    Added new form of GetSpatialExtents.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatasetExaminer
@@ -47,6 +50,8 @@ class PIPELINE_API avtDatasetExaminer
     static void               GetNumberOfZones(avtDataset_p &, int &, int &);
     static void               GetVariableList(avtDataset_p &, VarList &);
     static bool               GetSpatialExtents(avtDataset_p &, double *);
+    static bool               GetSpatialExtents(std::vector<avtDataTree_p> &, 
+                                                double *);
     static bool               GetDataExtents(avtDataset_p &, double *,
                                              const char * = NULL);
     static void               FindMinimum(avtDataset_p &, double *, double &);

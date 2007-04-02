@@ -6,17 +6,15 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyMeshAttributes_StartUp(MeshAttributes *subj, FILE *logFile);
+void            PyMeshAttributes_StartUp(MeshAttributes *subj, void *data);
 void            PyMeshAttributes_CloseDown();
 PyMethodDef    *PyMeshAttributes_GetMethodTable(int *nMethods);
 bool            PyMeshAttributes_Check(PyObject *obj);
 MeshAttributes *PyMeshAttributes_FromPyObject(PyObject *obj);
 PyObject       *PyMeshAttributes_NewPyObject();
 PyObject       *PyMeshAttributes_WrapPyObject(const MeshAttributes *attr);
-void            PyMeshAttributes_SetLogging(bool val);
+std::string     PyMeshAttributes_GetLogString();
 void            PyMeshAttributes_SetDefaults(const MeshAttributes *atts);
-
-PyObject       *PyMeshAttributes_StringRepresentation(const MeshAttributes *atts);
 
 #endif
 

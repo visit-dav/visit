@@ -735,6 +735,8 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
                                     {return movieAtts; }
     MeshManagementAttributes   *GetMeshManagementAttributes() const
                                     {return meshManagementAtts;}
+    ViewerRPC                  *GetLogRPC() const
+                                    {return logRPC; }
 
     // Don't use this method unless absolutely necessary.
     void SetXferUpdate(bool val);
@@ -798,6 +800,7 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     ClientInformationList      *clientInformationList;
     MovieAttributes            *movieAtts;
     MeshManagementAttributes   *meshManagementAtts;
+    ViewerRPC                  *logRPC;
 
     AttributeSubject           **plotAtts;
     AttributeSubject           **operatorAtts;

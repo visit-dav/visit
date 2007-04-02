@@ -6,14 +6,14 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyClipAttributes_StartUp(ClipAttributes *subj, FILE *logFile);
+void            PyClipAttributes_StartUp(ClipAttributes *subj, void *data);
 void            PyClipAttributes_CloseDown();
 PyMethodDef    *PyClipAttributes_GetMethodTable(int *nMethods);
 bool            PyClipAttributes_Check(PyObject *obj);
 ClipAttributes *PyClipAttributes_FromPyObject(PyObject *obj);
 PyObject       *PyClipAttributes_NewPyObject();
 PyObject       *PyClipAttributes_WrapPyObject(const ClipAttributes *attr);
-void            PyClipAttributes_SetLogging(bool val);
+std::string     PyClipAttributes_GetLogString();
 void            PyClipAttributes_SetDefaults(const ClipAttributes *atts);
 
 #endif

@@ -6,17 +6,16 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyPickAttributes_StartUp(PickAttributes *subj, FILE *logFile);
+void            PyPickAttributes_StartUp(PickAttributes *subj, void *data);
 void            PyPickAttributes_CloseDown();
 PyMethodDef    *PyPickAttributes_GetMethodTable(int *nMethods);
 bool            PyPickAttributes_Check(PyObject *obj);
 PickAttributes *PyPickAttributes_FromPyObject(PyObject *obj);
 PyObject       *PyPickAttributes_NewPyObject();
 PyObject       *PyPickAttributes_WrapPyObject(const PickAttributes *attr);
-void            PyPickAttributes_SetLogging(bool val);
 void            PyPickAttributes_SetDefaults(const PickAttributes *atts);
-
-PyObject       *PyPickAttributes_StringRepresentation(const PickAttributes *atts);
+std::string     PyPickAttributes_GetLogString();
+std::string     PyPickAttributes_ToString(const PickAttributes *, const char *);
 
 #endif
 

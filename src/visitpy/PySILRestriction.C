@@ -640,6 +640,54 @@ SILRestriction_Wholes(PyObject *self, PyObject *args)
     return retval;
 }
 
+// ****************************************************************************
+// Method: SILRestriction_SuspendCorrectnessChecking
+//
+// Purpose: 
+//   Suspends SILR correctness checking.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jan 9 18:10:12 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static PyObject *
+SILRestriction_SuspendCorrectnessChecking(PyObject *self, PyObject *args)
+{
+    PySILRestrictionObject *obj = (PySILRestrictionObject *)self;
+    avtSILRestriction_p silr = *(obj->silr);
+    silr->SuspendCorrectnessChecking();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+// ****************************************************************************
+// Method: SILRestriction_EnableCorrectnessChecking
+//
+// Purpose: 
+//   Enables SILR correctness checking.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jan 9 18:10:12 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static PyObject *
+SILRestriction_EnableCorrectnessChecking(PyObject *self, PyObject *args)
+{
+    PySILRestrictionObject *obj = (PySILRestrictionObject *)self;
+    avtSILRestriction_p silr = *(obj->silr);
+    silr->EnableCorrectnessChecking(); 
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
 static struct PyMethodDef SILRestriction_methods[] = {
     {"Categories",       SILRestriction_Categories, METH_VARARGS},
     {"NumCategories",    SILRestriction_NumCategories, METH_VARARGS},
@@ -656,6 +704,8 @@ static struct PyMethodDef SILRestriction_methods[] = {
     {"UsesAllData",      SILRestriction_UsesAllData, METH_VARARGS},
     {"UsesData",         SILRestriction_UsesData, METH_VARARGS},
     {"Wholes",           SILRestriction_Wholes, METH_VARARGS},
+    {"SuspendCorrectnessChecking", SILRestriction_SuspendCorrectnessChecking, METH_VARARGS},
+    {"EnableCorrectnessChecking", SILRestriction_EnableCorrectnessChecking, METH_VARARGS},
     {NULL, NULL}
 };
 

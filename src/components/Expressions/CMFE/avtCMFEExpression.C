@@ -43,11 +43,15 @@
 //    Hank Childs, Fri Sep  9 10:46:17 PDT 2005
 //    Initialized varDim.
 //
+//    Hank Childs, Thu Jan  5 15:36:14 PST 2006
+//    Initialized isNodal.
+//
 // ****************************************************************************
 
 avtCMFEExpression::avtCMFEExpression()
 {
     varDim = 1;;
+    isNodal = false;
 }
 
 
@@ -66,6 +70,25 @@ avtCMFEExpression::avtCMFEExpression()
 avtCMFEExpression::~avtCMFEExpression()
 {
     ;
+}
+
+
+// ****************************************************************************
+//  Method: avtCMFEExpression::AddInputVariableName
+//
+//  Purpose:
+//      Adds an input variable's name.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 5, 2006
+//
+// ****************************************************************************
+
+void
+avtCMFEExpression::AddInputVariableName(const char *vname)
+{
+    avtExpressionFilter::AddInputVariableName(vname);
+    varnames.push_back(vname);
 }
 
 
@@ -106,6 +129,9 @@ avtCMFEExpression::PreExecute(void)
 //    Hank Childs, Fri Oct  7 08:31:30 PDT 2005
 //    Add support for implied database names.
 //
+//    Hank Childs, Thu Jan  5 16:33:39 PST 2006
+//    Add support for a third variable to set up default values.
+//
 // ****************************************************************************
 
 void
@@ -116,28 +142,45 @@ avtCMFEExpression::ProcessArguments(ArgsExpr *args,
     std::vector<ArgExpr*> *arguments = args->GetArgs();
     int nargs = arguments->size();
 
-    // Check if there's a second argument.
-    if (nargs < 2)
-    {
-        EXCEPTION1(ExpressionException, 
-                   "The database comparison expression only expects two "
+    int targetArgs = 2;
+    const char *mismatchMsg = 
+                   "The database comparison expression expects two "
                    "arguments: the database variable and a mesh to sample "
-                   "onto.");
+                   "onto.";
+    if (HasDefaultVariable())
+    {
+        targetArgs = 3;
+        mismatchMsg = 
+                   "The database comparison expression expects three "
+                   "arguments: the database variable, a mesh to sample "
+                   "onto, and a value or constant to assign to parts of"
+                   " the mesh that are not overlapping.";
+    }
+
+    // Check if there's a second argument.
+    if (nargs < targetArgs)
+    {
+        EXCEPTION1(ExpressionException, mismatchMsg);
     }
 
     // See if there are other arguments.
-    if (nargs > 2)
+    if (nargs > targetArgs)
     {
-        EXCEPTION1(ExpressionException, 
-                   "The database comparison expression only expects two "
-                   "arguments.  To specify more than one database, please "
-                   "use several cmfe expressions.");
+        EXCEPTION1(ExpressionException, mismatchMsg);
     }
 
     // Tell the second argument (the mesh) to create its filters.
     ArgExpr *secondarg = (*arguments)[1];
     avtExprNode *secondTree = dynamic_cast<avtExprNode*>(secondarg->GetExpr());
     secondTree->CreateFilters(state);
+
+    if (targetArgs == 3)
+    {
+        // Tell the third argument (the default var) to create its filters.
+        ArgExpr *thirdarg = (*arguments)[2];
+        avtExprNode *thirdTree=dynamic_cast<avtExprNode*>(thirdarg->GetExpr());
+        thirdTree->CreateFilters(state);
+    }
 
     // Pull off the first argument and see if it's a string or a list.
     ArgExpr *firstarg = (*arguments)[0];
@@ -267,6 +310,9 @@ avtCMFEExpression::ProcessArguments(ArgsExpr *args,
 //    Add support for implied database names.  Also use the same SIL
 //    restriction if the derived type thinks we should.
 //
+//    Hank Childs, Thu Jan  5 15:36:14 PST 2006
+//    Add better support for variable centering.
+//
 // ****************************************************************************
 
 void
@@ -290,7 +336,6 @@ avtCMFEExpression::Execute()
     // argument.  See extended comment below in section #2.
     std::string expr_var = "_avt_cmfe_expression_";
 
-    // HACK.  This will only work for conn_cmfe.
     avtDataSpecification_p ds = new avtDataSpecification(
                             dob->GetTerminatingSource()
                                ->GetGeneralPipelineSpecification()
@@ -300,6 +345,7 @@ avtCMFEExpression::Execute()
                 new avtPipelineSpecification(ds, 1);
     if (UseIdenticalSIL())
     {
+        // This will only work for conn_cmfe.
         ds = new avtDataSpecification(ds, firstDBSIL);
         spec = new avtPipelineSpecification(spec, ds);
     }
@@ -370,6 +416,8 @@ avtCMFEExpression::Execute()
     CopyTo(dsp, dob);
     varDim = 
         dsp->GetInfo().GetAttributes().GetVariableDimension(expr_var.c_str());
+    isNodal = (dsp->GetInfo().GetAttributes().GetCentering(expr_var.c_str())
+               == AVT_NODECENT);
 
     avtDataTree_p output = PerformCMFE(GetInputDataTree(), dsp->GetDataTree(),
                                        expr_var, outputVariableName);

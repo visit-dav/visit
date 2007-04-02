@@ -55,6 +55,9 @@ class ViewerPlot;
 //    Hank Childs, Tue Mar 22 16:06:15 PST 2005
 //    Made destructor virtual.
 //
+//    Brad Whitlock, Thu Jan 5 14:40:42 PST 2006
+//    I removed explicit support for logging from the scripting plugins.
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralOperatorPluginInfo
@@ -115,10 +118,10 @@ class PLUGIN_API EngineOperatorPluginInfo : public virtual CommonOperatorPluginI
 class PLUGIN_API ScriptingOperatorPluginInfo : public virtual CommonOperatorPluginInfo
 {
   public:
-    virtual void InitializePlugin(AttributeSubject *subj, FILE *logFile) = 0;
+    virtual void InitializePlugin(AttributeSubject *subj, void *data) = 0;
     virtual void *GetMethodTable(int *nMethods) = 0;
+    virtual char *GetLogString() = 0;
     virtual bool TypesMatch(void *pyobject) { return false; }
-    virtual void SetLogging(bool val) = 0;
     virtual void SetDefaults(const AttributeSubject *) = 0;
 };
 
