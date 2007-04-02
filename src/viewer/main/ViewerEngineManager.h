@@ -228,6 +228,9 @@ class avtDatabaseMetaData;
 //    Hank Childs, Mon Feb 13 21:59:53 PST 2006
 //    Added ConstructDDFAtts.
 //
+//    Hank Childs, Mon May 22 07:20:55 PDT 2006
+//    Add InLaunch().
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -236,7 +239,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     struct EngineInformation
     {
         EngineProxy *proxy;
-        HostProfile profile;
+        HostProfile  profile;
     };
   public:
     virtual ~ViewerEngineManager();
@@ -266,6 +269,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     void CloseEngine(const EngineKey &ek);
     void InterruptEngine(const EngineKey &ek);
     bool InExecute() const;
+    bool InLaunch() const;
     void SendKeepAlives();
 
     bool ExternalRender(const ExternalRenderRequestInfo& reqInfo,
@@ -361,6 +365,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     static EngineList          *clientEngineAtts;
 
     bool                       executing;
+    bool                       inLaunch;
     int                        nEngines;
     EngineMap                  engines;
 
