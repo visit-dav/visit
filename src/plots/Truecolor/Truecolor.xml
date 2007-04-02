@@ -4,6 +4,9 @@
       <Field name="opacity" label="opacity" type="opacity">
         1.000000
       </Field>
+      <Field name="lightingFlag" label="lightingFlag" type="bool">
+        true
+      </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
     </Attribute>

@@ -387,6 +387,9 @@ class Xfer;
 //    another client. I added a Detach method that lets the client detach from
 //    the viewer and leave the other clients running.
 //
+//    Kathleen Bonnell, Wed Jul 27 15:52:59 PDT 2005
+//    Added SuppressQueryOutput.
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -595,6 +598,7 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void SetPlotSILRestriction();
 
     // Methods for querying
+    void SuppressQueryOutput(bool onOff);
     void DatabaseQuery(const std::string &queryName, const stringVector &vars,
                        const bool = false, const int arg1 = 0, const int arg2 = 0,
                        const bool = false);

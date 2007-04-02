@@ -3445,6 +3445,9 @@ VisWindow::GetLightList() const
 //   Kathleen Bonnell, Tue Dec 16 11:34:33 PST 2003 
 //   Added the setting of the label scaling.
 //
+//   Brad Whitlock, Thu Jul 28 08:40:31 PDT 2005
+//   Added ability to set axis titles and units.
+//
 // ****************************************************************************
 
 void
@@ -3472,6 +3475,14 @@ VisWindow::UpdateAxes2D()
     //
     axes->SetTitleVisibility(annotationAtts.GetXAxisTitle2D(),
                              annotationAtts.GetYAxisTitle2D());
+    axes->SetXTitle(annotationAtts.GetXAxisUserTitle2D(),
+                    annotationAtts.GetXAxisUserTitleFlag2D());
+    axes->SetXUnits(annotationAtts.GetXAxisUserUnits2D(),
+                    annotationAtts.GetXAxisUserUnitsFlag2D());
+    axes->SetYTitle(annotationAtts.GetYAxisUserTitle2D(),
+                    annotationAtts.GetYAxisUserTitleFlag2D());
+    axes->SetYUnits(annotationAtts.GetYAxisUserUnits2D(),
+                    annotationAtts.GetYAxisUserUnitsFlag2D());
 
     //
     // GridLines
@@ -3576,6 +3587,9 @@ VisWindow::UpdateAxes2D()
 //   Kathleen Bonnell, Tue Dec 16 11:34:33 PST 2003 
 //   Added the setting of the label scaling.
 //
+//   Brad Whitlock, Thu Jul 28 10:16:47 PDT 2005
+//   Added code to set the titles and units.
+//
 // ****************************************************************************
 
 void
@@ -3597,6 +3611,18 @@ VisWindow::UpdateAxes3D()
                             annotationAtts.GetXLabelScaling(),
                             annotationAtts.GetYLabelScaling(),
                             annotationAtts.GetZLabelScaling());
+    axes3D->SetXTitle(annotationAtts.GetXAxisUserTitle(),
+                      annotationAtts.GetXAxisUserTitleFlag());
+    axes3D->SetXUnits(annotationAtts.GetXAxisUserUnits(),
+                      annotationAtts.GetXAxisUserUnitsFlag());
+    axes3D->SetYTitle(annotationAtts.GetYAxisUserTitle(),
+                      annotationAtts.GetYAxisUserTitleFlag());
+    axes3D->SetYUnits(annotationAtts.GetYAxisUserUnits(),
+                      annotationAtts.GetYAxisUserUnitsFlag());
+    axes3D->SetZTitle(annotationAtts.GetZAxisUserTitle(),
+                      annotationAtts.GetZAxisUserTitleFlag());
+    axes3D->SetZUnits(annotationAtts.GetZAxisUserUnits(),
+                      annotationAtts.GetZAxisUserUnitsFlag());
 
     //
     // Ticks

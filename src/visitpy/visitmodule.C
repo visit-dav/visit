@@ -8402,6 +8402,57 @@ visit_Query(PyObject *self, PyObject *args)
     return IntReturnValue(Synchronize());
 }
 
+
+// ****************************************************************************
+// Function: visit_SuppressQueryOutputOn
+//
+// Purpose: 
+//   Turns on the suppression of query output (the automatic printing
+//   of the QueryOutput string.)
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   July 27, 2005 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SuppressQueryOutputOn(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
+    MUTEX_LOCK();
+        viewer->SuppressQueryOutput(true);
+    MUTEX_UNLOCK();
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_SuppressQueryOutputOff
+//
+// Purpose: 
+//   Turns off the suppression of query output (the automatic printing
+//   of the QueryOutput string.) 
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   July 27, 2005 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SuppressQueryOutputOff(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
+    MUTEX_LOCK();
+        viewer->SuppressQueryOutput(false);
+    MUTEX_UNLOCK();
+    return IntReturnValue(Synchronize());
+}
+
 // ****************************************************************************
 // Function: visit_QueryOverTime
 //
@@ -10831,6 +10882,8 @@ AddDefaultMethods()
     AddMethod("SetWindowMode", visit_SetWindowMode, visit_SetWindowMode_doc);
     AddMethod("ShowAllWindows", visit_ShowAllWindows,visit_ShowAllWindows_doc);
     AddMethod("ShowToolbars", visit_ShowToolbars, visit_ShowToolbars_doc);
+    AddMethod("SuppressQueryOutputOn", visit_SuppressQueryOutputOn, visit_SuppressQueryOutput_doc);
+    AddMethod("SuppressQueryOutputOff", visit_SuppressQueryOutputOff, visit_SuppressQueryOutput_doc);
     AddMethod("TimeSliderGetNStates", visit_TimeSliderGetNStates,
                                                visit_TimeSliderGetNStates_doc);
     AddMethod("TimeSliderNextState", visit_TimeSliderNextState,

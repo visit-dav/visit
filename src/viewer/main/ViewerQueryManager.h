@@ -168,6 +168,9 @@ typedef struct {
 //    Kathleen Bonnell, Thu Jul 14 09:16:22 PDT 2005
 //    Added EngineExistsForQuery. 
 //
+//    Kathleen Bonnell, Wed Jul 27 15:47:34 PDT 2005 
+//    Added SuppressQueryOutput.
+//
 // ****************************************************************************
     
 class VIEWER_API ViewerQueryManager 
@@ -268,6 +271,9 @@ class VIEWER_API ViewerQueryManager
 
     void            ClearRefLines(ViewerWindow *);
 
+    void            SuppressQueryOutput(bool onOff)
+                        { suppressQueryOutput = onOff; } ;
+
   protected:
                     ViewerQueryManager();
 
@@ -313,6 +319,7 @@ class VIEWER_API ViewerQueryManager
 
     CachedLineout         lineoutCache;
 
+    bool                  suppressQueryOutput; 
 
 
     static QueryAttributes    *queryClientAtts;

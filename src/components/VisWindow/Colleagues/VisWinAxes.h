@@ -61,6 +61,9 @@ class VisWindowColleagueProxy;
 //    Kathleen Bonnell, Tue Dec 16 11:34:33 PST 2003 
 //    Added SetLabelScaling, autolabelscalng, userPowX, userPowY.
 //
+//    Brad Whitlock, Thu Jul 28 08:52:38 PDT 2005
+//    Added the ability to specify the axis titles and units.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinAxes : public VisWinColleague
@@ -103,6 +106,11 @@ class VISWINDOW_API VisWinAxes : public VisWinColleague
     void                      SetLineWidth(int);
     void                      SetLabelScaling(bool, int, int);
 
+    void                      SetXTitle(const std::string &, bool);
+    void                      SetXUnits(const std::string &, bool);
+    void                      SetYTitle(const std::string &, bool);
+    void                      SetYUnits(const std::string &, bool);
+
   protected:
     vtkVisItAxisActor2D       *xAxis, *yAxis;
  
@@ -118,7 +126,11 @@ class VISWINDOW_API VisWinAxes : public VisWinColleague
     bool                      autolabelScaling;
     int                       userPowX;
     int                       userPowY;
-    
+    bool                      userXTitle;
+    bool                      userXUnits;
+    bool                      userYTitle;
+    bool                      userYUnits;
+
     void                      AdjustValues(float, float, float, float);
     void                      AdjustRange(float, float, float, float);
     void                      GetRange(float &, float &, float &, float &);

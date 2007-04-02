@@ -5814,6 +5814,31 @@ ViewerProxy::SetXferUpdate(bool val)
 }
 
 
+// ****************************************************************************
+// Method: ViewerProxy::SuppressQueryOutput
+//
+// Purpose: 
+//   Shows the toolbars for the active vis window or for all vis windows.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   July 27, 2005 
+//
+// Modifications:
+//   
+// ****************************************************************************
 
+void
+ViewerProxy::SuppressQueryOutput(bool onOff)
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    viewerRPC->SetRPCType(ViewerRPC::SuppressQueryOutputRPC);
+    viewerRPC->SetBoolFlag(onOff);
 
+    //
+    // Issue the RPC.
+    //
+    viewerRPC->Notify();
+}
 

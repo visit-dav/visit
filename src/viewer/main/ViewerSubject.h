@@ -372,6 +372,9 @@ struct avtDefaultPlotMetaData;
 //    Hank Childs, Mon Jul 18 16:00:32 PDT 2005
 //    Add qt_argv, which cannot be deleted until the program exits.
 //
+//    Kathleen Bonnell, Wed Jul 27 15:47:34 PDT 2005 
+//    Added SuppressQueryOutput. 
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -515,6 +518,7 @@ private:
     void CopyAnnotationsToWindow();
     void CopyPlotsToWindow();
     void SetRenderingAttributes();
+    void SuppressQueryOutput();
     void DatabaseQuery();
     void PointQuery();
     void LineQuery();

@@ -552,7 +552,10 @@ void QvisPointControl::SetPointType(int type)
 // Creation:   Wed Jul 20 14:48:35 PST 2005
 //
 // Modifications:
-//   
+//   Kathleen Bonnell, Mon Jul 25 17:27:52 PDT 2005
+//   Make enabled state of sizeVarButton depend on checked state of
+//   sizeVarToggle.
+// 
 // ****************************************************************************
 
 void
@@ -564,7 +567,7 @@ QvisPointControl::UpdatePointType()
         sizeLabel->setText("Point size (pixels)");
 
     sizeVarToggle->setEnabled(lastGoodPointType != POINT_TYPE_POINTS);
-    sizeVarButton->setEnabled(lastGoodPointType != POINT_TYPE_POINTS);
+    sizeVarButton->setEnabled(sizeVarToggle->isChecked());
 }
 
 // ****************************************************************************

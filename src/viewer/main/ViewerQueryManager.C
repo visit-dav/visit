@@ -168,6 +168,9 @@ CreateExtentsString(const double * extents, const int dim, const char *type);
 //    Kathleen Bonnell, Thu Jul 22 15:43:56 PDT 2004 
 //    Initialize globalLineoutAtts, initialize resWinId in lineoutCache.
 //
+//    Kathleen Bonnell, Wed Jul 27 15:47:34 PDT 2005 
+//    Added suppressQueryOutput. 
+//
 // ****************************************************************************
 
 ViewerQueryManager::ViewerQueryManager()
@@ -197,6 +200,8 @@ ViewerQueryManager::ViewerQueryManager()
 
     lineoutCache.origWin = NULL;
     lineoutCache.resWinId = -1;
+
+    suppressQueryOutput = false;
 }
 
 
@@ -960,6 +965,9 @@ ViewerQueryManager::GetQueryClientAtts()
 //    Kathleen Bonnell, Thu Jul 14 09:16:22 PDT 2005 
 //    Test for existence of engine before proceeding. 
 //    
+//    Kathleen Bonnell, Wed Jul 27 15:47:34 PDT 2005 
+//    Don't send message if QueryOutput is suppressed. 
+//
 // ****************************************************************************
 
 void         
@@ -1138,7 +1146,8 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
                 qa.SetVariables(vars);
                *queryClientAtts = qa;
                 queryClientAtts->Notify();
-                Message(qa.GetResultsMessage().c_str());
+                if (!suppressQueryOutput) 
+                    Message(qa.GetResultsMessage().c_str());
             }
             else
             {

@@ -56,7 +56,11 @@ class QvisLineWidthWidget;
 //   Kathleen Bonnell, Tue Dec 16 11:34:33 PST 2003 
 //   Added buttons for automatic label scaling, and for filling in exponents
 //   of labels (when auto label scaling is off).  
-//   
+//
+//   Brad Whitlock, Wed Jul 27 16:25:15 PST 2005
+//   Split the 2D and 3D tabs in 2 and added controls for setting axis titles
+//   and units.
+//
 // ****************************************************************************
 
 class GUI_API QvisAnnotationWindow : public QvisPostableWindowSimpleObserver
@@ -84,7 +88,11 @@ protected:
     void SetButtonGroup(QButtonGroup *bg, bool *vals);
     void GetCurrentValues(int which_widget);
     void Create2DTab();
+    QWidget *Create2DTabForGridAndTicks(QWidget *);
+    QWidget *Create2DTabForTitleAndLabels(QWidget *);
     void Create3DTab();
+    QWidget *Create3DTabForGridAndTicks(QWidget *);
+    QWidget *Create3DTabForTitleAndLabels(QWidget *);
     void CreateColorTab();
     void CreateObjectsTab();
 private slots:
@@ -114,6 +122,29 @@ private slots:
     void axesLineWidthChanged2D(int index);
     void axesTicksChanged2D(int index);
     void axesTickLocationChanged2D(int index);
+
+    void xAxisUserTitleChecked2D(bool);
+    void xAxisUserTitleLineEditChanged2D();
+    void yAxisUserTitleChecked2D(bool);
+    void yAxisUserTitleLineEditChanged2D();
+    void xAxisUserUnitsChecked2D(bool);
+    void xAxisUserUnitsLineEditChanged2D();
+    void yAxisUserUnitsChecked2D(bool);
+    void yAxisUserUnitsLineEditChanged2D();
+
+    void xAxisUserTitleChecked(bool);
+    void xAxisUserTitleLineEditChanged();
+    void yAxisUserTitleChecked(bool);
+    void yAxisUserTitleLineEditChanged();
+    void zAxisUserTitleChecked(bool);
+    void zAxisUserTitleLineEditChanged();
+    void xAxisUserUnitsChecked(bool);
+    void xAxisUserUnitsLineEditChanged();
+    void yAxisUserUnitsChecked(bool);
+    void yAxisUserUnitsLineEditChanged();
+    void zAxisUserUnitsChecked(bool);
+    void zAxisUserUnitsLineEditChanged();
+
     void axes3DFlagChecked(bool val);
     void labelAutoSetScalingChecked(bool val);
     void axisLabelsChanged(int index);
@@ -190,6 +221,15 @@ private:
     QvisLineWidthWidget *axesLineWidth2D;
     QComboBox       *axesTicksComboBox2D;
     QComboBox       *axesTickLocationComboBox2D;
+    QCheckBox       *xAxisUserTitleToggle2D;
+    QNarrowLineEdit *xAxisUserTitleLineEdit2D;
+    QCheckBox       *yAxisUserTitleToggle2D;
+    QNarrowLineEdit *yAxisUserTitleLineEdit2D;
+    QCheckBox       *xAxisUserUnitsToggle2D;
+    QNarrowLineEdit *xAxisUserUnitsLineEdit2D;
+    QCheckBox       *yAxisUserUnitsToggle2D;
+    QNarrowLineEdit *yAxisUserUnitsLineEdit2D;
+
     // 3D tab widgets
     QVBox           *page3D;
     QCheckBox       *axes3DFlagToggle;
@@ -204,8 +244,21 @@ private:
     QNarrowLineEdit *zLabelScalingLineEdit;
     QComboBox       *axes3DTickLocationComboBox;
     QComboBox       *axes3DTypeComboBox;
+    QCheckBox       *xAxisUserTitleToggle;
+    QNarrowLineEdit *xAxisUserTitleLineEdit;
+    QCheckBox       *yAxisUserTitleToggle;
+    QNarrowLineEdit *yAxisUserTitleLineEdit;
+    QCheckBox       *zAxisUserTitleToggle;
+    QNarrowLineEdit *zAxisUserTitleLineEdit;
+    QCheckBox       *xAxisUserUnitsToggle;
+    QNarrowLineEdit *xAxisUserUnitsLineEdit;
+    QCheckBox       *yAxisUserUnitsToggle;
+    QNarrowLineEdit *yAxisUserUnitsLineEdit;
+    QCheckBox       *zAxisUserUnitsToggle;
+    QNarrowLineEdit *zAxisUserUnitsLineEdit;
     QCheckBox       *triadFlagToggle;
     QCheckBox       *bboxFlagToggle;
+
     // Color tab widgets
     QGroupBox       *pageColor;
     QvisColorButton *backgroundColorButton;
