@@ -120,6 +120,10 @@ QvisExportDBWindow::~QvisExportDBWindow()
 //   Tell the file format that is has "changed", so that it will always be
 //   up-to-date ('7177).
 //
+//   Brad Whitlock, Thu Nov 2 17:57:52 PST 2006
+//   I changed "File type" to "Export to" since we may not be exporting
+//   to a file after all.
+//
 // ****************************************************************************
 
 void
@@ -145,9 +149,9 @@ QvisExportDBWindow::CreateWindowContents()
     directoryNameLineEdit = new QLineEdit(directoryParent, "directoryNameLineEdit");
     connect(directoryNameLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processDirectoryNameText()));
-    QLabel *directoryNameLabel = new QLabel(directoryNameLineEdit,
+    directoryNameLabel = new QLabel(directoryNameLineEdit,
         "Directory name", infoBox, "directoryNameLabel");
-    QPushButton *directorySelectButton = new QPushButton("...",
+    directorySelectButton = new QPushButton("...",
          directoryParent, "directorySelectButton");
 #ifndef Q_WS_MACX
     directorySelectButton->setMaximumWidth(
@@ -173,7 +177,7 @@ QvisExportDBWindow::CreateWindowContents()
         
     connect(fileFormatComboBox, SIGNAL(activated(int)),
            this, SLOT(fileFormatChanged(int)));
-    QLabel *formatLabel = new QLabel(fileFormatComboBox, "File type",
+    QLabel *formatLabel = new QLabel(fileFormatComboBox, "Export to",
                                      infoBox, "formatLabel");
     infoLayout->addWidget(formatLabel, 4, 0);
     infoLayout->addWidget(fileFormatComboBox, 4, 1);
@@ -224,7 +228,9 @@ QvisExportDBWindow::CreateWindowContents()
 // Creation:   May 25, 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Nov 2 18:03:12 PST 2006
+//   Added code to disable the directory when we're saving as SimV1.
+//
 // ****************************************************************************
 
 void
@@ -273,6 +279,15 @@ QvisExportDBWindow::UpdateWindow(bool doAll)
                 else
                     fileFormatComboBox->setCurrentItem(0);
                 fileFormatComboBox->blockSignals(false);
+
+                // This isn't so clean since we should not be doing things
+                // based on a plugin name but it's okay for now.
+                // Disable directories if the database type is "SimV1".
+                bool enableDir = fileFormatComboBox->currentText() != 
+                                 QString("SimV1");
+                directoryNameLineEdit->setEnabled(enableDir);
+                directorySelectButton->setEnabled(enableDir);
+                directoryNameLabel->setEnabled(enableDir);
             }
             break;
           case 1: // db type fullname

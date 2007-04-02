@@ -3795,7 +3795,10 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
     int  i;
     const char *mName = "ViewerSubject::OpenDatabaseHelper: ";
     debug1 << mName << "Opening database " << entireDBName.c_str()
-           << ", timeState=" << timeState << endl;
+           << ", timeState=" << timeState
+           << ", addDefaultPlots=" << (addDefaultPlots?"true":"false")
+           << ", updateWindowInfo=" << (updateWindowInfo?"true":"false")
+           << ", forcedFileType=\"" << forcedFileType.c_str() << "\"" << endl;
 
     //
     // Associate the database with the currently active animation (window).

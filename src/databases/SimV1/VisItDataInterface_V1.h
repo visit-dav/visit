@@ -109,6 +109,7 @@ extern "C"
 #define VISIT_CELL_PYR                    4
 #define VISIT_CELL_WEDGE                  5
 #define VISIT_CELL_HEX                    6
+#define VISIT_CELL_POINT                  7
 
 typedef struct VisIt_DataArray
 {
@@ -327,8 +328,9 @@ typedef struct VisIt_DomainList
     VisIt_DataArray myDomains;
 } VisIt_DomainList;
 
-typedef struct VisIt_SimulationCallback
+typedef struct
 {
+    /* Reader methods */
     VisIt_SimulationMetaData *(*GetMetaData)();
     VisIt_MeshData           *(*GetMesh)(int,const char*);
     VisIt_MaterialData       *(*GetMaterial)(int,const char*);
@@ -338,6 +340,18 @@ typedef struct VisIt_SimulationCallback
     VisIt_MixedScalarData    *(*GetMixedScalar)(int,const char*);
     VisIt_DomainList         *(*GetDomainList)();
 } VisIt_SimulationCallback;
+
+typedef struct
+{
+    /* Writer methods. */
+    int (*WriteBegin)(const char *);
+    int (*WriteEnd)(const char *);
+    int (*WriteCurvilinearMesh)(const char *, int, VisIt_CurvilinearMesh*, const VisIt_MeshMetaData *);
+    int (*WriteRectilinearMesh)(const char *, int, VisIt_RectilinearMesh*, const VisIt_MeshMetaData *);
+    int (*WritePointMesh)(const char *, int, VisIt_PointMesh*, const VisIt_MeshMetaData *);
+    int (*WriteUnstructuredMesh)(const char *, int, VisIt_UnstructuredMesh*, const VisIt_MeshMetaData *);
+    int (*WriteDataArray)(const char *, const char *, int, int, void *, int, int, const VisIt_ScalarMetaData *);
+} VisIt_SimulationWriterCallback;
 
 /* Helper Methods */
 
