@@ -231,6 +231,9 @@
 #    Eric Brugger, Fri Mar 10 09:40:34 PST 2006
 #    I added visit-config-nersc and visit-config-ornl to the distrtibution.
 #
+#    Eric Brugger, Fri Mar 17 09:42:22 PST 2006
+#    I corrected an error setting the symbolic link libqui.a.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -799,7 +802,7 @@ if ("$os" != "darwin") then
     ln -s $QUILibName $libdir/libqui.$SHLIB_SOEXT.$majorVersion
     ln -s $QUILibName $libdir/libqui.$SHLIB_SOEXT
     if (-e $VisItDir/lib/libqui.a) then
-        ln -s $QtLibName $libdir/libqui.a
+        ln -s $QUILibName $libdir/libqui.a
     endif
 endif
 
