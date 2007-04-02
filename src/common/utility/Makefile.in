@@ -88,6 +88,8 @@
 #    Jeremy Meredith, Thu Mar 23 10:39:47 PDT 2006
 #    Added AtomicProperties.
 #
+#    Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+#    Added MRUCache_test.C
 ##############################################################################
 
 ##
@@ -103,7 +105,7 @@ LIBS=
 ## Files...
 ##
 SRC=AtomicProperties.C BJHash.C NamingConvention.C StringHelpers.C Utility.C\
-    void_ref_ptr.C
+    void_ref_ptr.C MRUCache_test.C
 HDR=AtomicProperties.h BJHash.h NamingConvention.h StringHelpers.h Utility.h\
     ref_ptr.h array_ref_ptr.h void_ref_ptr.h
 OBJ=$(SRC:.C=.o)

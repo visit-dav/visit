@@ -56,12 +56,48 @@
 #include <DebugStream.h>
 #include <Utility.h>
 
+#include <string>
+#include <vector>
+using std::string;
+using std::vector;
+
 // Some static constants.
 static const int FILE_NOACTION = 0;
 static const int FILE_OPEN = 1;
 static const int FILE_REPLACE = 2;
 static const int FILE_OVERLAY = 3;
 static const int FILE_CLOSE = 4;
+const bool FileServerList::ANY_STATE = true; 
+const bool FileServerList::GET_NEW_MD = false;
+
+// ****************************************************************************
+// Function: MDCacheKeys
+//
+// Purpose: Build vector of two possible keys for cached md, one that does not
+//          include state and the other that does
+//
+// Programmer: Mark C. Miller 
+// Creation:   Tue Jul 25 07:58:00 PDT 2006 
+// ****************************************************************************
+
+static vector<string>
+MDCacheKeys(const string& stateLessName, int timeState)
+{
+    vector<string> result;
+
+    // state-less name takes highest priority
+    result.push_back(stateLessName);
+
+    // build an alternative key with time state appended
+    char timeStateStr[32];
+    sprintf(timeStateStr, "%08d", timeState);
+    string stateFullName = stateLessName + string(timeStateStr);
+
+    // put the alternative key in second position
+    result.push_back(stateFullName);
+
+    return result;
+}
 
 // ****************************************************************************
 // Method: FileServerList::FileServerList
@@ -106,6 +142,9 @@ static const int FILE_CLOSE = 4;
 //
 //   Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 //   Added forceReadAllCyclesTimes
+//
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Initialized openFileTimeState 
 // ****************************************************************************
 
 FileServerList::FileServerList() : AttributeSubject("bbbbbibbbb"), servers(),
@@ -125,6 +164,8 @@ FileServerList::FileServerList() : AttributeSubject("bbbbbibbbb"), servers(),
     recentPathsFlag = false;
     connectingServer = false;
     filter = "*";
+
+    openFileTimeState = -1;
 
     forceReadAllCyclesTimes = false;
 
@@ -159,6 +200,8 @@ FileServerList::FileServerList() : AttributeSubject("bbbbbibbbb"), servers(),
 //   Eric Brugger, Thu Nov 29 12:02:21 PST 2001
 //   Added caching of SILs.
 //
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Made fileMetaData and SILData MRUCache's
 // ****************************************************************************
 
 FileServerList::~FileServerList()
@@ -176,23 +219,7 @@ FileServerList::~FileServerList()
     }
     servers.clear();
 
-    // Iterate through the file metadata list, detroying each
-    // metadata entry.
-    FileMetaDataMap::iterator fpos;
-    for(fpos = fileMetaData.begin(); fpos != fileMetaData.end(); ++fpos)
-    {
-        // Delete the metadata
-        delete fpos->second;
-    }
     fileMetaData.clear();
-
-    // Iterate through the file sil list, destroying each sil entry.
-    SILMap::iterator spos;
-    for(spos = SILData.begin(); spos != SILData.end(); ++spos)
-    {
-        // Delete the SIL
-        delete spos->second;
-    }
     SILData.clear();
 
     // delete the message attributes.
@@ -564,7 +591,7 @@ FileServerList::SilentNotify()
             TRY
             {
                 // Save the old path
-                std::string oldPath(info->path);
+                string oldPath(info->path);
 
                 // Try and restart the mdserver.
                 CloseServer(activeHost);
@@ -654,7 +681,7 @@ FileServerList::SilentNotify()
 // ****************************************************************************
 
 void
-FileServerList::SetHost(const std::string &host)
+FileServerList::SetHost(const string &host)
 {
     // If the fully qualified host name is not the same as the regular
     // hostname and we have a server under the regular hostname, migrate
@@ -783,7 +810,7 @@ FileServerList::SetHost(const std::string &host)
 // ****************************************************************************
 
 void
-FileServerList::StartServer(const std::string &host)
+FileServerList::StartServer(const string &host)
 {
     ServerInfo *info = new ServerInfo();
     info->server = 0;
@@ -838,7 +865,7 @@ FileServerList::StartServer(const std::string &host)
 // ****************************************************************************
 
 void
-FileServerList::CloseServer(const std::string &host)
+FileServerList::CloseServer(const string &host)
 {
     ServerMap::iterator pos;
     if((pos = servers.find(host)) != servers.end()) 
@@ -874,7 +901,7 @@ FileServerList::CloseServer(const std::string &host)
 // ****************************************************************************
 
 void
-FileServerList::SetPath(const std::string &path)
+FileServerList::SetPath(const string &path)
 {
     // If the activeHost is in the server map, set its path.
     ServerMap::iterator pos;
@@ -986,7 +1013,7 @@ FileServerList::SendKeepAlives()
 // ****************************************************************************
 
 void
-FileServerList::SetFilter(const std::string &newFilter)
+FileServerList::SetFilter(const string &newFilter)
 {
     if(newFilter != filter)
     {
@@ -1028,12 +1055,16 @@ FileServerList::SetFilter(const std::string &newFilter)
 //   have more time states than files so they are displayed correctly in the
 //   file panel.
 //
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Changed interfaces to GetMetaData and GetSIL. Added timeStates arg.
 // ****************************************************************************
 
 void
-FileServerList::SetAppliedFileList(const QualifiedFilenameVector &newFiles)
+FileServerList::SetAppliedFileList(const QualifiedFilenameVector &newFiles,
+    const vector<int>& timeStates)
 {
     QualifiedFilename oldOpenFile(openFile);
+    int               oldOpenFileTimeState = openFileTimeState;
 
     // Remove the metadata and SIL for any virtual files.
     for(int i = 0; i < appliedFileList.size(); ++i)
@@ -1045,7 +1076,10 @@ FileServerList::SetAppliedFileList(const QualifiedFilenameVector &newFiles)
             // we reopen it.
             //
             bool forceReopen = false;
-            const avtDatabaseMetaData *md = GetMetaData(appliedFileList[i]);
+            const avtDatabaseMetaData *md = GetMetaData(appliedFileList[i],
+                                                timeStates.size() ? timeStates[i] : 0,
+                                                ANY_STATE,
+                                                !GET_NEW_MD);
             if(md != 0 &&
                (md->GetNumStates() != GetVirtualFileDefinitionSize(appliedFileList[i])))
             {
@@ -1062,7 +1096,8 @@ FileServerList::SetAppliedFileList(const QualifiedFilenameVector &newFiles)
                 TRY
                 {
                     CloseFile();
-                    OpenFile(appliedFileList[i], 0);
+                    OpenFile(appliedFileList[i],
+                             timeStates.size() ? timeStates[i] : 0);
                 }
                 CATCH(VisItException)
                 {
@@ -1080,7 +1115,7 @@ FileServerList::SetAppliedFileList(const QualifiedFilenameVector &newFiles)
     {
         TRY
         {
-            OpenFile(oldOpenFile, 0);
+            OpenFile(oldOpenFile, oldOpenFileTimeState);
         }
         CATCH(VisItException)
         {
@@ -1273,6 +1308,8 @@ FileServerList::OverlayFile(const QualifiedFilename &filename)
 //   Actually try to close the file on the mdserver so we get new metadata
 //   the next time we open the file.
 //
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   reset openFileTimeState
 // ****************************************************************************
 
 void
@@ -1293,6 +1330,7 @@ FileServerList::CloseFile()
     }
 
     openFile = QualifiedFilename();
+    openFileTimeState = -1;
     fileAction = FILE_CLOSE;
     Select(5, (void *)&fileAction);
 }
@@ -1345,6 +1383,12 @@ FileServerList::CloseFile()
 //
 //   Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 //   Added use of forceReadAllCyclesTimes in call to GetMetaData
+//
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Changed interfaces to GetMetaData and GetSIL
+//
+//   Mark C. Miller, Thu Aug  3 13:33:20 PDT 2006
+//   Fixed missing line to set readFileFailed to false
 // ****************************************************************************
 
 void
@@ -1353,7 +1397,7 @@ FileServerList::OpenAndGetMetaData(const QualifiedFilename &filename,
 {
     // If the metadata has been seen before, indicate that we have it.
     // Otherwise, read it from the MetaData Server.
-    if(fileMetaData.find(filename.FullName()) != fileMetaData.end())
+    if (GetMetaData(filename, timeState, !ANY_STATE, !GET_NEW_MD))
     {
         // The metadata has been read previously.
         fileAction = action;
@@ -1382,7 +1426,7 @@ FileServerList::OpenAndGetMetaData(const QualifiedFilename &filename,
         int         numAttempts = 0;
         bool        tryAgain;
         bool        readFileFailed = true;
-        std::string reason;
+        string reason;
         do
         {
             tryAgain = false;
@@ -1390,31 +1434,13 @@ FileServerList::OpenAndGetMetaData(const QualifiedFilename &filename,
             TRY
             {
                 // Do a GetMetaData RPC on the MD Server.
-                MDServerProxy *mds = servers[filename.host]->server;
-                const avtDatabaseMetaData *tmd = mds->GetMetaData(
-                    filename.PathAndFile(), timeState, forceReadAllCyclesTimes);
+                const avtDatabaseMetaData *newMetaData =
+                    GetMetaData(filename, timeState, !ANY_STATE, GET_NEW_MD);
 
-                // Create a new metadata object and copy the one that
-                // was returned from the MDServer.
-                avtDatabaseMetaData *newMetaData = new avtDatabaseMetaData();
-                *newMetaData = *tmd;
+                const avtSIL *newSIL = 
+                    GetSIL(filename, timeState, !ANY_STATE, GET_NEW_MD);
 
-                // Add the new Metadata object to the map. Use the fully
-                // qualified name as a key.
-                fileMetaData[filename.FullName()] = newMetaData;
-
-                // Do a GetSIL RPC on the MD Server.
-                const SILAttributes *sil = mds->GetSIL(filename.PathAndFile(),
-                    timeState);
                 readFileFailed = false;
-
-                // Create a new SIL object and copy the one that was
-                // returned from the MDServer.
-                avtSIL *newSIL = new avtSIL(*sil);
-
-                // Add the new SIL object to the map. Use the fully
-                // qualified name as a key.
-                SILData[filename.FullName()] = newSIL;
 
                 // Assume the metadata is more complete than the virtual file
                 // definition, which is only updated when we change the selected
@@ -1490,25 +1516,28 @@ FileServerList::OpenAndGetMetaData(const QualifiedFilename &filename,
 //
 // Modifications:
 //   
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Made fileMetaData and SILData MRUCache's
 // ****************************************************************************
 
 void
 FileServerList::ClearFile(const QualifiedFilename &filename)
 {
-    // Clear cached metadata if it is in the cache.
-    FileMetaDataMap::iterator mpos;
-    if((mpos = fileMetaData.find(filename.FullName())) != fileMetaData.end())
+    const string& fullName = filename.FullName();
+    int n = fullName.size();
+
+    FileMetaDataMap::iterator mdit;
+    for (mdit = fileMetaData.begin(); mdit != fileMetaData.end(); mdit++)
     {
-        delete mpos->second;
-        fileMetaData.erase(mpos);
+        if (fullName.compare(0, n, mdit->first) == 0)
+            fileMetaData.remove(mdit->first);
     }
 
-    // Clear cached SIL information if it is in the cache.
-    SILMap::iterator spos;
-    if((spos = SILData.find(filename.FullName())) != SILData.end())
+    SILMap::iterator sit;
+    for (sit = SILData.begin(); sit != SILData.end(); sit++)
     {
-        delete spos->second;
-        SILData.erase(spos);
+        if (fullName.compare(0, n, sit->first) == 0)
+            SILData.remove(sit->first);
     }
 }
 
@@ -1526,12 +1555,14 @@ FileServerList::ClearFile(const QualifiedFilename &filename)
 //
 // Modifications:
 //   
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Changed interfaces to GetMetaData and GetSIL
 // ****************************************************************************
 
 bool
-FileServerList::HaveOpenedFile(const QualifiedFilename &filename) const
+FileServerList::HaveOpenedFile(const QualifiedFilename &filename)
 {
-    return fileMetaData.find(filename.FullName()) != fileMetaData.end();
+    return GetMetaData(filename, 0, ANY_STATE, !GET_NEW_MD) != 0;
 }
 
 // ****************************************************************************
@@ -1559,7 +1590,7 @@ FileServerList::GetFileIndex(const QualifiedFilename &fileName)
 {
     int index = 0;
     bool still_looking = true;
-    std::string fullName(fileName.FullName());
+    string fullName(fileName.FullName());
     QualifiedFilenameVector::iterator pos;
     for(pos = appliedFileList.begin();
         pos != appliedFileList.end() && still_looking; ++pos, ++index)
@@ -1593,7 +1624,7 @@ FileServerList::GetFileIndex(const QualifiedFilename &fileName)
 // ****************************************************************************
 
 QualifiedFilename
-FileServerList::QualifiedName(const std::string &fileName)
+FileServerList::QualifiedName(const string &fileName)
 {
     return QualifiedFilename(activeHost, servers[activeHost]->path,
                              fileName);
@@ -1738,7 +1769,7 @@ FileServerList::GetFilteredFileList()
 // ****************************************************************************
 
 void
-FileServerList::ParseFilterString(const std::string &filter,
+FileServerList::ParseFilterString(const string &filter,
     stringVector &filterList)
 {
     // Create a temporary C string since strtok messes up the string.
@@ -1750,7 +1781,7 @@ FileServerList::ParseFilterString(const std::string &filter,
     filterList.clear();
     while((ptr = strtok(temp2, " ")) != NULL)
     {
-        filterList.push_back(std::string(ptr));
+        filterList.push_back(string(ptr));
         temp2 = NULL;
     }
     delete[] temp;
@@ -1781,7 +1812,7 @@ FileServerList::ParseFilterString(const std::string &filter,
 // ****************************************************************************
 
 bool
-FileServerList::FileMatchesFilterList(const std::string &fileName,
+FileServerList::FileMatchesFilterList(const string &fileName,
     const stringVector &filterList)
 {
     // Try the filename against all the filters in the list until
@@ -1821,8 +1852,8 @@ FileServerList::FileMatchesFilterList(const std::string &fileName,
 // ****************************************************************************
 
 void
-FileServerList::AddPathToRecentList(const std::string &host,
-    const std::string &path)
+FileServerList::AddPathToRecentList(const string &host,
+    const string &path)
 {
     StringStringVectorMap::iterator pos = recentPaths.find(host);
     if(pos != recentPaths.end())
@@ -2213,16 +2244,16 @@ FileServerList::RecentPathsChanged() const
 // Property getting functions.
 //
 
-const std::string &
+const string &
 FileServerList::GetHost() const
 {
     return activeHost;
 }
 
-const std::string &
+const string &
 FileServerList::GetPath() const
 {
-    static std::string retval("~");
+    static string retval("~");
 
     ServerMap::const_iterator pos;
     if((pos = servers.find(activeHost)) != servers.end())
@@ -2260,7 +2291,7 @@ FileServerList::GetRecentHosts() const
 }
 
 const stringVector &
-FileServerList::GetRecentPaths(const std::string &host) const
+FileServerList::GetRecentPaths(const string &host) const
 {
     StringStringVectorMap::const_iterator pos = recentPaths.find(host);
     if(pos == recentPaths.end())
@@ -2276,7 +2307,7 @@ FileServerList::GetRecentPaths(const std::string &host) const
 //   Jeremy Meredith, Wed Jul  7 17:04:03 PDT 2004
 //   I made the filter be global to all hosts.
 //
-const std::string &
+const string &
 FileServerList::GetFilter() const
 {
     return filter;
@@ -2295,46 +2326,102 @@ FileServerList::GetAppliedFileList()
 }
 
 const QualifiedFilename &
-FileServerList::GetOpenFile()
+FileServerList::GetOpenFile() const
 {
     return openFile;
 }
 
-int
-FileServerList::GetOpenFileTimeState() const
-{
-    return openFileTimeState;
-}
+// ****************************************************************************
+// Method: FileServerList::GetMetaData
+//
+// Purpose: Get metadata for specified file and time state. First, tries to
+//          find it in the cache by either filename key only or filename+state
+//          key. If it can't find it in the cache, requests it from the MD
+//          server unless dontGetNew is set to true.
+//
+// Programmer: Mark C. Miller (totally re-wrote)
+// Creation:   July 25, 2006 
+// ****************************************************************************
 
 const avtDatabaseMetaData *
-FileServerList::GetMetaData()
+FileServerList::GetMetaData(const QualifiedFilename &filename,
+    int timeState, bool anyStateOk, bool dontGetNew, string *key)
 {
-    std::string temp(openFile.FullName());
 
-    if(fileMetaData.find(temp) != fileMetaData.end())
-        return fileMetaData[temp];
+    // build set of keys for cached metadata
+    vector<string> mdKeys = MDCacheKeys(filename.FullName(),
+                                        timeState);
+
+    // look for cached metadata in priority order of keys
+    FileMetaDataMap::const_iterator it = fileMetaData.find(mdKeys);
+
+    if (it == fileMetaData.end())
+    {// didn't find it in cache. So, get it from mdserver.
+
+        // Since queries for any time require a brute force search,
+        // we attempt those only if above failed
+        if (anyStateOk)
+        {
+            const string& fullName = filename.FullName();
+            int n = fullName.size();
+
+            FileMetaDataMap::iterator mdit;
+            for (mdit = fileMetaData.begin(); mdit != fileMetaData.end(); mdit++)
+            {
+                // gnu's compare(0,n,string) is buggy, so use compare(0,n,string,0,n)
+                if (fullName.compare(0, n, mdit->first, 0, n) == 0)
+                    return mdit->second;
+            }
+            if (dontGetNew)
+                return 0;
+        }
+        else
+        {
+            if (dontGetNew)
+                return 0;
+        }
+
+        // acquire new metadata from mdserver
+        ServerMap::const_iterator svit = servers.find(filename.host);
+        if (svit == servers.end()) 
+            return 0;
+
+        MDServerProxy *mds = svit->second->server;
+        const avtDatabaseMetaData *md =
+            mds->GetMetaData(filename.PathAndFile(), timeState,
+                             forceReadAllCyclesTimes);
+
+        // cache what we got
+        if (md)
+        {
+            // make a copy to cache
+            avtDatabaseMetaData *newmd = new avtDatabaseMetaData;
+            *newmd = *md;
+
+            // decide on the right key
+            string useKey = mdKeys[0]; // non-state-qualified key
+            if (md->GetMustRepopulateOnStateChange())
+                useKey = mdKeys[1];    // state-qualified key
+
+            // cache it. Note MRU handles deletion
+            fileMetaData[useKey] = newmd;
+
+            if (key) *key = useKey;
+            debug3 << "Caching metadata with key \"" << useKey << "\"" << endl;
+            newmd->Print(debug3_real);
+            return fileMetaData[useKey];
+        }
+        else
+        {
+            return 0;
+        }
+    }
     else
-        return 0;
-}
+    {// found it in cache, return it.
 
-const avtDatabaseMetaData *
-FileServerList::GetMetaData(const QualifiedFilename &filename)
-{
-    std::string temp(filename.FullName());
-
-    if(fileMetaData.find(temp) != fileMetaData.end())
-        return fileMetaData[temp];
-    else
-        return 0;
-}
-
-const avtDatabaseMetaData *
-FileServerList::GetMetaDataFromMDServer(
-                   const QualifiedFilename &filename,
-                   int timeState)
-{
-    MDServerProxy *mds = servers[filename.host]->server;
-    return mds->GetMetaData(filename.PathAndFile(), timeState);
+        if (key) *key = it->first;
+        return fileMetaData[it->first];
+    }
 }
 
 bool
@@ -2379,17 +2466,87 @@ FileServerList::GetForceReadAllCyclesTimes() const
 //   Eric Brugger, Thu Nov 29 12:02:21 PST 2001
 //   Added caching of SILs.
 //   
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Totally re-wrote to mimic metadata cache behavior 
 // ****************************************************************************
 
 const avtSIL *
-FileServerList::GetSIL(const QualifiedFilename &filename)
+FileServerList::GetSIL(const QualifiedFilename &filename, int timeState,
+    bool anyStateOk, bool dontGetNew, string *key)
 {
-    std::string temp(filename.FullName());
+    // build set of keys for cached SIL
+    vector<string> mdKeys = MDCacheKeys(filename.FullName(),
+                                        timeState);
 
-    if(SILData.find(temp) != SILData.end())
-        return SILData[temp];
+    // look for cached SIL in priority order of keys
+    SILMap::const_iterator it = SILData.find(mdKeys);
+
+    if (it == SILData.end())
+    {// didn't find it in cache. So, get it from mdserver.
+
+        // Since queries for any time require a brute force search,
+        // we attempt those only if above failed
+        if (anyStateOk)
+        {
+            const string& fullName = filename.FullName();
+            int n = fullName.size();
+
+            SILMap::iterator sit;
+            for (sit = SILData.begin(); sit != SILData.end(); sit++)
+            {
+                // gnu's compare(0,n,string) is buggy, so use compare(0,n,string,0,n)
+                if (fullName.compare(0, n, sit->first, 0, n) == 0)
+                    return sit->second;
+            }
+            if (dontGetNew)
+                return 0;
+        }
+        else
+        {
+            if (dontGetNew)
+                return 0;
+        }
+
+        // acquire new SIL from mdserver
+        ServerMap::const_iterator svit = servers.find(filename.host);
+        if (svit == servers.end()) 
+            return 0;
+
+        MDServerProxy *mds = svit->second->server;
+        const SILAttributes *sil = mds->GetSIL(filename.PathAndFile(), timeState);
+
+        // cache what we got
+        if (sil)
+        {
+            // Create a new SIL object and copy the one that was
+            // returned from the MDServer.
+            avtSIL *newSIL = new avtSIL(*sil);
+
+            // decide on the right key
+            string useKey = mdKeys[0]; // non-state-qualified key
+            if (GetMetaData(filename, timeState, ANY_STATE, !GET_NEW_MD, 0)->
+                GetMustRepopulateOnStateChange())
+                useKey = mdKeys[1];    // state-qualified key
+
+            // cache it. Note MRU handles deletion
+            SILData[useKey] = newSIL;
+
+            if (key) *key = useKey;
+            debug3 << "Caching SIL with key \"" << useKey << "\"" << endl;
+            newSIL->Print(debug3_real);
+            return SILData[useKey];
+        }
+        else
+        {
+            return 0;
+        }
+    }
     else
-        return 0;
+    {// found it in cache, return it.
+
+        if (key) *key = it->first;
+        return SILData[it->first];
+    }
 }
 
 // ****************************************************************************
@@ -2413,7 +2570,7 @@ FileServerList::GetSIL(const QualifiedFilename &filename)
 // ****************************************************************************
 
 void
-FileServerList::CreateGroupList(const std::string &filename,
+FileServerList::CreateGroupList(const string &filename,
     const stringVector &groupList)
 {
     ServerInfo *info = servers[activeHost];
@@ -2440,14 +2597,14 @@ FileServerList::CreateGroupList(const std::string &filename,
 //   
 // ****************************************************************************
 
-std::string
+string
 FileServerList::GetHomePath()
 {
     // Get a pointer to the mdserver for the active host.
     ServerInfo *info = servers[activeHost];
 
     // Initialize the return value.
-    std::string homePath("~");
+    string homePath("~");
 
     TRY
     {
@@ -2480,11 +2637,11 @@ FileServerList::GetHomePath()
 //   
 // ****************************************************************************
 
-std::string
-FileServerList::ExpandPath(const std::string &p)
+string
+FileServerList::ExpandPath(const string &p)
 {
     // Initialize the return value.
-    std::string homePath(p);
+    string homePath(p);
 
     if(servers.find(activeHost) != servers.end())
     {
@@ -2544,7 +2701,7 @@ void
 FileServerList::Error(const char *message)
 {
     messageAtts->SetSeverity(MessageAttributes::Error);
-    messageAtts->SetText(std::string(message));
+    messageAtts->SetText(string(message));
     messageAtts->Notify();
 }
 
@@ -2568,7 +2725,7 @@ void
 FileServerList::Warning(const char *message)
 {
     messageAtts->SetSeverity(MessageAttributes::Warning);
-    messageAtts->SetText(std::string(message));
+    messageAtts->SetText(string(message));
     messageAtts->Notify();
 }
 
@@ -2590,11 +2747,11 @@ FileServerList::Warning(const char *message)
 //   
 // ****************************************************************************
 
-std::string
-FileServerList::EncodePath(const std::string &path)
+string
+FileServerList::EncodePath(const string &path)
 {
     int index = 0;
-    std::string retval(path);
+    string retval(path);
 
     while((index = retval.find(" ", index)) != -1)
         retval.replace(index, 1, "%32");
@@ -2620,11 +2777,11 @@ FileServerList::EncodePath(const std::string &path)
 //   
 // ****************************************************************************
 
-std::string
-FileServerList::DecodePath(const std::string &path)
+string
+FileServerList::DecodePath(const string &path)
 {
     int index = 0;
-    std::string retval(path);
+    string retval(path);
 
     while((index = retval.find("%32", index)) != -1)
         retval.replace(index, 3, " ");
@@ -2671,7 +2828,7 @@ FileServerList::GetSeparator()
 }
 
 char
-FileServerList::GetSeparator(const std::string &host)
+FileServerList::GetSeparator(const string &host)
 {
     char sep = SLASH_CHAR;
     SAFE_GET_SEPARATOR(host, GetSeparator);
@@ -2694,18 +2851,18 @@ FileServerList::GetSeparator(const std::string &host)
 //   
 // ****************************************************************************
 
-std::string
+string
 FileServerList::GetSeparatorString()
 {
-    std::string sep(SLASH_STRING);
+    string sep(SLASH_STRING);
     SAFE_GET_SEPARATOR(activeHost, GetSeparatorString);
     return sep;
 }
 
-std::string
-FileServerList::GetSeparatorString(const std::string &host)
+string
+FileServerList::GetSeparatorString(const string &host)
 {
-    std::string sep(SLASH_STRING);
+    string sep(SLASH_STRING);
     SAFE_GET_SEPARATOR(host, GetSeparatorString);
     return sep;
 }
@@ -2729,14 +2886,21 @@ FileServerList::GetSeparatorString(const std::string &host)
 //    I made it check to make sure that the file exists before trying to 
 //    blindly insert the metadata into the cache.
 //
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Changed interfaces to GetMetaData and GetSIL
+//   Made fileMetaData and SILData MRUCache's
 // ****************************************************************************
 
 void
-FileServerList::SetOpenFileMetaData(const avtDatabaseMetaData *md)
+FileServerList::SetOpenFileMetaData(const avtDatabaseMetaData *md, int timeState)
 {
-    if(fileMetaData.find(openFile.FullName()) != fileMetaData.end())
+    string foundAtKey;
+    const avtDatabaseMetaData *fmd = GetMetaData(openFile, timeState, !GET_NEW_MD,
+                                                 &foundAtKey);
+
+    if (fmd)
     {
-        *(fileMetaData[openFile.FullName()]) = *md;
+        *(fileMetaData[foundAtKey]) = *fmd;
         // hack to have it return that the file changed
         fileAction=FILE_OPEN;
         Select(5, (void *)&fileAction);

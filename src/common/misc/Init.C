@@ -178,6 +178,10 @@ NewHandler(void)
 //    Jeremy Meredith, Tue May 17 11:20:51 PDT 2005
 //    Allow disabling of signal handlers.
 //
+//    Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//    Added explicit call to SetFilename for TimingsManager. This is to
+//    handle cases where TimingsManager may have already been instanced
+//    before Initialize is called as in the engine.
 // ****************************************************************************
 
 void
@@ -264,6 +268,8 @@ Init::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool sigs)
     debug1 << endl;
 
     TimingsManager::Initialize(progname);
+    // In case TimingsManager was already initialized...
+    visitTimer->SetFilename(progname);
     if(enableTimings)
         visitTimer->Enable();
 
@@ -441,14 +447,15 @@ Init::ComponentIssueError(const char *msg)
 //   Hank Childs, Tue Jun  1 11:47:36 PDT 2004
 //   Made the method be associated with the Init namespace.
 //
+//   Mark C. Miller, Tue Jul 25 18:26:10 PDT 2006
+//   Pushed timer dump and finalization down into TimingsManager::Finalize 
+//
 // ****************************************************************************
 
 void
 Init::Finalize(void)
 {
-    // Dump timings.
-    if(visitTimer)
-        visitTimer->DumpTimings();
+    TimingsManager::Finalize();
 
 #if defined(_WIN32)
     // Terminates use of the WS2_32.DLL, the Winsock DLL.

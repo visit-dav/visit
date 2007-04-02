@@ -217,6 +217,8 @@ TimingsManager::TimingsManager()
 //    Brad Whitlock, Thu Dec 15 09:52:05 PDT 2005
 //    I made the filename used for the timings include the path.
 //
+//    Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//    Moved code to set up filename into SetFilename method
 // ****************************************************************************
 
 TimingsManager *
@@ -232,26 +234,32 @@ TimingsManager::Initialize(const char *fname)
     GetCurrentTimeInfo(initTimeInfo);
 #endif
 
-    //
-    // Make sure that the filename includes the whole path so all .timings
-    // files will be written to the right directory.
-    //
-    char currentDir[1024];
-#if defined(_WIN32)
-    _getcwd(currentDir,1023);
-#else
-    getcwd(currentDir,1023);
-#endif
-    currentDir[1023]='\0';
-    std::string filename(currentDir);
-    if(filename[filename.size()-1] != SLASH_CHAR)
-        filename += SLASH_STRING;
-    filename += fname;
-    visitTimer->SetFilename(filename);
+    visitTimer->SetFilename(fname);
 
     return visitTimer;
 }
 
+// ****************************************************************************
+//  Method: TimingsManager::Finalize
+//
+//  Purpose: Terminates the TimingsManager
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   July 26, 2006 
+//
+// ****************************************************************************
+
+void
+TimingsManager::Finalize()
+{
+    if (visitTimer)
+    {
+        visitTimer->StopAllUnstoppedTimers();
+        visitTimer->DumpTimings();
+        delete visitTimer;
+        visitTimer = 0;
+    }
+}
 
 // ****************************************************************************
 //  Method: TimingsManager::SetFilename
@@ -265,14 +273,41 @@ TimingsManager::Initialize(const char *fname)
 //  Programmer: Hank Childs
 //  Creation:   March 10, 2001
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//    Moved bulk of code setting filename from constructor to here
 // ****************************************************************************
 
 void
 TimingsManager::SetFilename(const std::string &fname)
 {
-    filename = fname + ".timings";
-}
+    if (fname == "")
+        return;
 
+    //
+    // Make sure that the filename includes the whole path so all .timings
+    // files will be written to the right directory.
+    //
+    if (fname[0] != SLASH_CHAR)
+    {
+        char currentDir[1024];
+#if defined(_WIN32)
+        _getcwd(currentDir,1023);
+#else
+        getcwd(currentDir,1023);
+#endif
+        currentDir[1023]='\0';
+        std::string filenameTmp(currentDir);
+        if(filenameTmp[filenameTmp.size()-1] != SLASH_CHAR)
+            filenameTmp += SLASH_STRING;
+        filename = filenameTmp + fname + ".timings"; 
+    }
+    else
+    {
+        filename = fname + ".timings";
+    }
+}
 
 // ****************************************************************************
 //  Method: TimingsManager::Enable
@@ -470,6 +505,8 @@ TimingsManager::StopTimer(int index, const std::string &summary, bool forced)
 //    Hank Childs, Sun Mar 27 13:38:03 PST 2005
 //    Do not output if we are withholding timings.
 //
+//    Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//    Added test for emtpy filename. Added missing call to close ofile
 // ****************************************************************************
 
 void
@@ -479,11 +516,14 @@ TimingsManager::DumpTimings(void)
     // Return if timings disabled.
     //
     if (!enabled)
-    {
         return;
-    }
     if (withholdOutput && !outputAllTimings)
         return;
+    if (filename == "")
+    {
+        debug1 << "Attempted to DumpTimings without setting name of file" << endl; 
+        return;
+    }
 
     ofstream ofile;
 
@@ -513,9 +553,29 @@ TimingsManager::DumpTimings(void)
     else
     {
         DumpTimings(ofile);
+        ofile.close();
     }
 }
 
+
+// ****************************************************************************
+//  Method: TimingsManager::StopAllUnstoppedTimers
+//
+//  Purpose: stops all the timers that have not already been stopped
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   August 4, 2006
+// ****************************************************************************
+
+void
+TimingsManager::StopAllUnstoppedTimers()
+{
+    //
+    // Stop all un-stopped timers
+    //
+    for (int i = times.size(); i < visitTimer->GetNValues(); i++)
+        visitTimer->StopTimer(i, "Unknown");
+}
 
 // ****************************************************************************
 //  Method: TimingsManager::DumpTimings
@@ -533,6 +593,8 @@ TimingsManager::DumpTimings(void)
 //    Hank Childs, Sun Mar 27 13:38:03 PST 2005
 //    Do not output if we are withholding timings.
 //
+//    Mark C. Miller, Thu Aug  3 13:33:20 PDT 2006
+//    Added call to ClearValues()
 // ****************************************************************************
 
 void
@@ -557,6 +619,7 @@ TimingsManager::DumpTimings(ostream &out)
     //
     // The next time we dump timings, don't use these values.
     //
+    ClearValues();
     times.clear();
     summaries.clear();
 }

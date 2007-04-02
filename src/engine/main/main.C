@@ -271,11 +271,23 @@ void foobz2(void)
 //    Jeremy Meredith, Tue May 17 11:20:51 PDT 2005
 //    Allow disabling of signal handlers for the engine library.
 //
+//    Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//    Added code to initialize timings manager asap
+//    Removed delete of visitTimer since that is handled in
+//    TimingsManager::Finalize
 // ****************************************************************************
 
 int
 main(int argc, char *argv[])
 {
+    // Start timings asap to get info on initialization activity
+    TimingsManager::Initialize("");
+    for (int i=1; i<argc; i++)
+    {
+        if (strcmp(argv[i], "-timing")==0 || strcmp(argv[i], "-timings")==0)
+            visitTimer->Enable();
+    }
+
     Engine *engine = Engine::Instance();
 
     // Do some pre-connect initialization
@@ -305,7 +317,6 @@ main(int argc, char *argv[])
 
 #ifdef DEBUG_MEMORY_LEAKS
     delete engine;
-    delete visitTimer;
 #endif
 
 #ifdef PARALLEL

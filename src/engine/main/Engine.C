@@ -231,11 +231,16 @@ Engine::~Engine()
 //  Programmer:  Jeremy Meredith
 //  Creation:    July 10, 2003
 //
+//  Modfications:
+//    Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//    Added timer
 // ****************************************************************************
 Engine *Engine::Instance()
 {
+    int instanceTimer = visitTimer->StartTimer();
     if (!instance)
         instance = new Engine;
+    visitTimer->StopTimer(instanceTimer, "Instancing the engine");
     return instance;
 }
 
@@ -275,10 +280,13 @@ Engine *Engine::Instance()
 //    Jeremy Meredith, Tue May 17 11:20:51 PDT 2005
 //    Allow disabling of signal handlers.
 //
+//    Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//    Added timer
 // ****************************************************************************
 void
 Engine::Initialize(int *argc, char **argv[], bool sigs)
 {
+    int initTimer = visitTimer->StartTimer();
 #ifdef PARALLEL
 
     xfer = new MPIXfer;
@@ -320,6 +328,11 @@ Engine::Initialize(int *argc, char **argv[], bool sigs)
 #endif
 
     debug1 << "ENGINE started\n";
+#ifdef PARALLEL
+    visitTimer->StopTimer(initTimer, "Initializing the engine (including MPI_Init())");
+#else
+    visitTimer->StopTimer(initTimer, "Initializing the engine");
+#endif
 }
 
 // ****************************************************************************
@@ -331,10 +344,19 @@ Engine::Initialize(int *argc, char **argv[], bool sigs)
 //  Programmer:  Hank Childs
 //  Creation:    June 1, 2004
 //
+//  Modifications:
+//    Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//    Added timer
+//
+//    Mark C. Miller, Thu Aug  3 13:33:20 PDT 2006
+//    Eliminated out call to StopTimer. That call cannot be made after
+//    Finalize has been called. However, TimingsManager can still log the
+//    timer as "unknown" when writing timings to files
 // ****************************************************************************
 void
 Engine::Finalize(void)
 {
+    int finalizeTimer = visitTimer->StartTimer();
     Init::Finalize();
 }
 
@@ -394,11 +416,15 @@ Engine::Finalize(void)
 //    Hank Childs, Mon Feb 13 22:25:04 PST 2006
 //    Added constructDDFRPC.
 //
+//    Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//    Added timer
 // ****************************************************************************
 
 void
 Engine::SetUpViewerInterface(int *argc, char **argv[])
 {
+    int setupTimer = visitTimer->StartTimer();
+
     //
     // Initialize the plugin managers.
     //
@@ -572,6 +598,8 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
                                            NULL);
     avtTerminatingSource::RegisterInitializeProgressCallback(
                                        Engine::EngineInitializeProgressCallback, NULL);
+
+    visitTimer->StopTimer(setupTimer, "Setting up viewer interface");
 }
 
 // ****************************************************************************
@@ -615,11 +643,15 @@ Engine::GetInputSocket()
 //    Brad Whitlock, Tue Jul 29 11:21:22 PDT 2003
 //    I updated the interface to ParentProcess::Connect.
 //
+//    Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//    Added timer
 // ****************************************************************************
 
 bool
 Engine::ConnectViewer(int *argc, char **argv[])
 {
+    int connectTimer = visitTimer->StartTimer();
+
     // Connect to the viewer.
     TRY
     {
@@ -650,6 +682,7 @@ Engine::ConnectViewer(int *argc, char **argv[])
     noFatalExceptions = (shouldExit == 0);
 #endif
 
+    visitTimer->StopTimer(connectTimer, "Connecting to viewer");
     return noFatalExceptions;
 }
 
@@ -946,6 +979,8 @@ Engine::ProcessInput()
 //    Mark C. Miller, Thu Jan 19 18:12:46 PST 2006
 //    Made more fault tolerant to errors in specifying arg to -timeout option
 //
+//    Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//    Allowed '-timings' with an 's' too 
 // ****************************************************************************
 void
 Engine::ProcessCommandLine(int argc, char **argv)
@@ -959,7 +994,8 @@ Engine::ProcessCommandLine(int argc, char **argv)
             LoadBalancer::AllowDynamic();
         else if (strcmp(argv[i], "-hw-accel") == 0)
             haveHWAccel = true;
-        else if ((strcmp(argv[i], "-timing") == 0) && timingsAllowed)
+        else if ((strcmp(argv[i], "-timing") == 0 ||
+                  strcmp(argv[i], "-timings") == 0) && timingsAllowed)
             visitTimer->Enable();
         else if (strcmp(argv[i], "-timing-processor-stride") == 0)
         {
@@ -2109,6 +2145,8 @@ Engine::ExecuteSimulationCommand(const std::string &command,
 //    Brad Whitlock, Tue May 10 15:52:16 PST 2005
 //    Fixed for win32.
 //
+//    Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//    Removed extraneous cerr statement 
 // ****************************************************************************
 
 ProcessAttributes *
@@ -2116,9 +2154,6 @@ Engine::GetProcessAttributes()
 {
     if (procAtts == NULL)
     {
-
-        cerr << "Get Engine's Process Attributes" << endl;
-
         procAtts = new ProcessAttributes;
 
         doubleVector pids;

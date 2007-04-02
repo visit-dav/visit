@@ -39,7 +39,9 @@
 #define MRU_CACHE_H
 
 #include <map>
+#include <vector>
 using std::map;
+using std::vector;
 
 
 // ****************************************************************************
@@ -92,10 +94,19 @@ using std::map;
 //  'new gorfo'. This is important as the appropriate delete for the
 //  former is 'delete []' while it is 'delete' for the latter. Consequently,
 //  care must be taken to selecte the appropriate 'del-method' for the
-//  val-type being used in the cache.
+//  val-type being used in the cache. If all else fails, you can always
+//  set the delete callback method so MRUCache will call your special
+//  purpose delete method.
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   October 6, 2003 
+//
+//  Modifications:
+//    Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//    Fixed problems with deleteit only getting invoked on base-class.
+//    Fixed problems with clear getting called too late in deconstruction.
+//    Added find methods. Renamed existing find to exists. Added
+//    CallbackDelete specialization.
 //
 // ****************************************************************************
 
@@ -104,11 +115,11 @@ typedef enum {
    MRUCache_DontDelete,
    MRUCache_Delete,
    MRUCache_ArrayDelete,
-   MRUCache_Free
+   MRUCache_Free,
+   MRUCache_CallbackDelete
 } MRUCache_DeleteMethod;
 
-template<class kT, class vT, MRUCache_DeleteMethod dM, size_t nS>
-bool MRUCacheBase<kT,vT,dM,nS>::find(const kT& key) const
+typedef void (*MRUCache_DeleteCallback)(void*);
 
 // kT is keyType, vT is valueType
 template<class kT, class vT, MRUCache_DeleteMethod dM, size_t nS=20>
@@ -116,11 +127,11 @@ class MRUCacheBase {
 
    public:
 
-      MRUCacheBase() : numSlots(nS) { ageCounter=0; } ;
-     ~MRUCacheBase() { clear(); };
+      MRUCacheBase() : numSlots(nS), ageCounter(0) {};
+     ~MRUCacheBase() {};
 
       // explicit existence test (won't change MRU history)
-      bool find(const kT& key) const;
+      bool exists(const kT& key) const;
 
       // explicit remove of an entry from the cache
       void remove(const kT& key);
@@ -134,10 +145,43 @@ class MRUCacheBase {
       vT& operator[](const kT& key);
 
       // iterator (only allow const_iterator)
-      typedef map<kT,vT>::const_iterator const_iterator;
-      typedef map<kT,vT>::const_iterator iterator;
+      typedef typename map<kT,vT>::const_iterator const_iterator;
+      typedef typename map<kT,vT>::const_iterator iterator;
       const_iterator begin(void) const { return cache.begin(); };
       const_iterator end(void) const { return cache.end(); };
+
+      // find operators
+      iterator find(const kT& key)
+      {
+          iterator mpos = cache.find(key);
+          if (mpos != end())
+              age[key] = ageCounter++;
+          return mpos;
+      };
+      const_iterator find(const kT& key) const { return cache.find(key); };
+
+      iterator find(const vector<kT>& keys)
+      {
+          iterator mpos;
+          for (int i = 0; i < keys.size(); i++)
+          {
+              mpos = find(keys[i]);
+              if (mpos != end())
+                  return mpos;
+          }
+          return mpos;
+      }
+      const_iterator find(const vector<kT>& keys) const
+      {
+          iterator mpos;
+          for (int i = 0; i < keys.size(); i++)
+          {
+              mpos = find(keys[i]);
+              if (mpos != end())
+                  return mpos;
+          }
+          return mpos;
+      }
 
       // get most recently used entry 
       vT& mru(void) const;
@@ -158,7 +202,7 @@ class MRUCacheBase {
       kT oldest(void);
 
       // only method to be overridden based on item type 
-      void deleteit(vT& item) {} ;
+      virtual void deleteit(vT& item)  = 0;
 
       // maximum number of slots in cache
       size_t numSlots;
@@ -186,6 +230,9 @@ class MRUCache<kT,vT,MRUCache_DontDelete,nS> : public MRUCacheBase<kT,vT,MRUCach
 {
    public:
       MRUCache() : MRUCacheBase<kT,vT,MRUCache_DontDelete,nS>() {} ;
+     ~MRUCache() { clear(); };
+   private:
+      void deleteit(vT& item) {} ;
 };
 
 // Delete specialization
@@ -194,6 +241,7 @@ class MRUCache<kT,vT,MRUCache_Delete,nS> : public MRUCacheBase<kT,vT,MRUCache_De
 {
    public:
       MRUCache() : MRUCacheBase<kT,vT,MRUCache_Delete,nS>() {} ;
+     ~MRUCache() { clear(); };
    private:
       void deleteit(vT& item) { delete item; } ;
 };
@@ -204,6 +252,7 @@ class MRUCache<kT,vT,MRUCache_ArrayDelete,nS> : public MRUCacheBase<kT,vT,MRUCac
 {
    public:
       MRUCache() : MRUCacheBase<kT,vT,MRUCache_ArrayDelete,nS>() {} ;
+     ~MRUCache() { clear(); };
    private:
       void deleteit(vT& item) { delete [] item; } ;
 };
@@ -214,12 +263,26 @@ class MRUCache<kT,vT,MRUCache_Free,nS> : public MRUCacheBase<kT,vT,MRUCache_Free
 {
    public:
       MRUCache() : MRUCacheBase<kT,vT,MRUCache_Free,nS>() {} ;
+     ~MRUCache() { clear(); };
    private:
       void deleteit(vT& item) { free (item); } ;
 };
 
+// Delete callback specialization 
+template<class kT, class vT, size_t nS>
+class MRUCache<kT,vT,MRUCache_CallbackDelete,nS> : public MRUCacheBase<kT,vT,MRUCache_CallbackDelete,nS>
+{
+   public:
+      MRUCache(MRUCache_DeleteCallback cb) : MRUCacheBase<kT,vT,MRUCache_CallbackDelete,nS>(), delCb(cb) {};
+     ~MRUCache() { clear(); };
+   private:
+      MRUCache() : MRUCacheBase<kT,vT,MRUCache_CallbackDelete,nS>(), delCb(0) {};
+      MRUCache_DeleteCallback  delCb;
+      void deleteit(vT& item) { (*delCb) (item); } ;
+};
+
 // ****************************************************************************
-//  Method: MRUCacheBase::find
+//  Method: MRUCacheBase::exists
 //
 //  Purpose: an explicit test for existence of an entry in the cache. Does not
 //  change the MRU history
@@ -232,12 +295,9 @@ class MRUCache<kT,vT,MRUCache_Free,nS> : public MRUCacheBase<kT,vT,MRUCache_Free
 //
 // ****************************************************************************
 template<class kT, class vT, MRUCache_DeleteMethod dM, size_t nS>
-bool MRUCacheBase<kT,vT,dM,nS>::find(const kT& key) const
+bool MRUCacheBase<kT,vT,dM,nS>::exists(const kT& key) const
 {
-   if (cache.find(key) != cache.end())
-      return true;
-   else
-      return false;
+   return cache.find(key) != cache.end();
 }
 
 // ****************************************************************************
@@ -255,7 +315,7 @@ bool MRUCacheBase<kT,vT,dM,nS>::find(const kT& key) const
 template<class kT, class vT, MRUCache_DeleteMethod dM, size_t nS>
 void MRUCacheBase<kT,vT,dM,nS>::remove(const kT& key)
 {
-   map<kT,vT>::iterator k = cache.find(key);
+   typename map<kT,vT>::iterator k = cache.find(key);
    if (k == cache.end())
       return;
 
@@ -264,7 +324,7 @@ void MRUCacheBase<kT,vT,dM,nS>::remove(const kT& key)
 
    // erase slots from the cache
    cache.erase(k);
-   map<kT,int>::iterator j = age.find(key);
+   typename map<kT,int>::iterator j = age.find(key);
    age.erase(j);
 }
 
@@ -283,7 +343,7 @@ void MRUCacheBase<kT,vT,dM,nS>::remove(const kT& key)
 template<class kT, class vT, MRUCache_DeleteMethod dM, size_t nS>
 void MRUCacheBase<kT,vT,dM,nS>::clear(void)
 {
-   map<kT,vT>::iterator i = cache.begin();
+   typename map<kT,vT>::iterator i = cache.begin();
 
    while (i != cache.end())
    {
@@ -309,7 +369,7 @@ void MRUCacheBase<kT,vT,dM,nS>::clear(void)
 template<class kT, class vT, MRUCache_DeleteMethod dM, size_t nS>
 vT& MRUCacheBase<kT,vT,dM,nS>::operator[](const kT& key)
 {
-   map<kT,vT>::iterator mpos = cache.find(key);
+   typename map<kT,vT>::iterator mpos = cache.find(key);
 
    if (mpos == cache.end())
    {
@@ -334,7 +394,7 @@ vT& MRUCacheBase<kT,vT,dM,nS>::operator[](const kT& key)
 template<class kT, class vT, MRUCache_DeleteMethod dM, size_t nS>
 vT& MRUCacheBase<kT,vT,dM,nS>::mru(void) const
 {
-   map<kT,int>::iterator i = age.begin();
+   typename map<kT,int>::iterator i = age.begin();
    kT mruKey               = i->first;
    int newest              = i->second; 
 
@@ -388,7 +448,7 @@ size_t MRUCacheBase<kT,vT,dM,nS>::numslots(size_t newNumSlots)
 template<class kT, class vT, MRUCache_DeleteMethod dM, size_t nS>
 kT MRUCacheBase<kT,vT,dM,nS>::oldest(void)
 {
-   map<kT,int>::iterator i = age.begin();
+   typename map<kT,int>::iterator i = age.begin();
    kT retval               = i->first;
    int oldestAge           = i->second; 
 

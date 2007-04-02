@@ -40,11 +40,17 @@
 #include <gui_exports.h>
 #include <map>
 #include <string>
+#include <vector>
 #include <maptypes.h>
+#include <MRUCache.h>
 #include <AttributeSubject.h>
 #include <ConnectCallback.h>
 #include <MDServerProxy.h>
 #include <QualifiedFilename.h>
+
+using std::string;
+using std::map;
+using std::vector;
 
 // Forward declarations.
 class avtDatabaseMetaData;
@@ -177,21 +183,32 @@ class MessageAttributes;
 //
 //   Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 //   Added forceReadAllCyclesTimes and methods to Set/Get it
+//
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Made fileMetaData and SILData MRUCache's
+//   Changed interfaces to GetMetaData and GetSIL
+//   Added ANY_STATE and GET_NEW_MD constants. Repalced isntances of 'std::'
+//   with using statements, above.
 // ****************************************************************************
-
 class GUI_API FileServerList : public AttributeSubject
 {
     typedef struct
     {
-        std::string    path;
+        string    path;
         MDServerProxy *server;
     } ServerInfo;
 
-    typedef std::map<std::string, ServerInfo *> ServerMap;
-    typedef std::map<std::string, avtDatabaseMetaData *> FileMetaDataMap;
-    typedef std::map<std::string, avtSIL *> SILMap;
+    // The '50' sets the *initial* number of slots in the MRU cache. It can
+    // always be increased or decreased with a call to numslots(int n).
+    // Note that the cache itself knows how to delete its entries
+    typedef std::map<string, ServerInfo *> ServerMap;
+    typedef MRUCache<string, avtDatabaseMetaData*, MRUCache_Delete, 50> FileMetaDataMap;
+    typedef MRUCache<string, avtSIL*, MRUCache_Delete, 50> SILMap;
 
 public:
+    static const bool ANY_STATE;
+    static const bool GET_NEW_MD;
+
     FileServerList();
     virtual ~FileServerList();
     virtual void Notify();
@@ -201,10 +218,11 @@ public:
     virtual bool CreateNode(DataNode *, bool, bool);
     virtual void SetFromNode(DataNode *);
 
-    void SetHost(const std::string &host);
-    void SetPath(const std::string &path);
-    void SetFilter(const std::string &filter);
-    void SetAppliedFileList(const QualifiedFilenameVector &newFiles);
+    void SetHost(const string &host);
+    void SetPath(const string &path);
+    void SetFilter(const string &filter);
+    void SetAppliedFileList(const QualifiedFilenameVector &newFiles,
+                            const vector<int>& timeStates=vector<int>(0));
     void SetUseCurrentDirectory(bool val);
     void SetAutomaticFileGrouping(bool val);
     void SetSmartFileGrouping(bool val);
@@ -218,15 +236,15 @@ public:
     void OverlayFile(const QualifiedFilename &filename);
     void CloseFile();
     void ClearFile(const QualifiedFilename &filename);
-    void CreateGroupList(const std::string &filename,
+    void CreateGroupList(const string &filename,
                          const stringVector &groupList);
 
-    const std::string &GetHost() const;
-    const std::string &GetPath() const;
-          std::string GetHomePath();
-          std::string ExpandPath(const std::string &p);
+    const string &GetHost() const;
+    const string &GetPath() const;
+          string GetHomePath();
+          string ExpandPath(const string &p);
           stringVector GetRecentHosts() const;
-    const std::string &GetFilter() const;
+    const string &GetFilter() const;
     const MDServerProxy::FileList &GetFileList() const;
     const QualifiedFilenameVector &GetAppliedFileList();
           QualifiedFilenameVector GetFilteredFileList();
@@ -236,25 +254,27 @@ public:
 
     bool GetForceReadAllCyclesTimes() const;
 
-    const stringVector &GetRecentPaths(const std::string &host) const;
-    void AddPathToRecentList(const std::string &host, const std::string &path);
+    const stringVector &GetRecentPaths(const string &host) const;
+    void AddPathToRecentList(const string &host, const string &path);
     void ClearRecentPathList();
 
-    const QualifiedFilename &GetOpenFile();
-    int GetOpenFileTimeState() const;
-    const avtDatabaseMetaData *GetMetaDataFromMDServer(const QualifiedFilename &f,
-                                                       int timeState);
-    const avtDatabaseMetaData *GetMetaData();
-    const avtDatabaseMetaData *GetMetaData(const QualifiedFilename &f);
-    const avtSIL *GetSIL(const QualifiedFilename &f);
+    const QualifiedFilename &GetOpenFile() const;
+    const avtSIL *GetSIL(const QualifiedFilename &f,
+                         int timeState, bool anyStateOk,
+                         bool dontGetNew, string *key = 0);
+    const avtDatabaseMetaData *GetMetaData(const QualifiedFilename &filename,
+                                           int timeState, bool anyStateOk,
+                                           bool dontGetNew, string *key = 0);
+    const avtDatabaseMetaData *GetCachedMetaData(const QualifiedFilename &filename,
+                                                 int timeState) const;
     char GetSeparator();
-    char GetSeparator(const std::string &host);
-    std::string GetSeparatorString();
-    std::string GetSeparatorString(const std::string &host);
-    bool HaveOpenedFile(const QualifiedFilename &filename) const;
+    char GetSeparator(const string &host);
+    string GetSeparatorString();
+    string GetSeparatorString(const string &host);
+    bool HaveOpenedFile(const QualifiedFilename &filename);
 
     int GetFileIndex(const QualifiedFilename &fileName);
-    QualifiedFilename QualifiedName(const std::string &fileName);
+    QualifiedFilename QualifiedName(const string &fileName);
     stringVector GetVirtualFileDefinition(const QualifiedFilename &) const;
     int GetVirtualFileDefinitionSize(const QualifiedFilename &) const;
 
@@ -262,7 +282,7 @@ public:
     void SetProgressCallback(bool (*cb)(void *, int), void *data);
 
     // Used to poke metadata into here if the mdserver has incomplete metadata
-    void SetOpenFileMetaData(const avtDatabaseMetaData*);
+    void SetOpenFileMetaData(const avtDatabaseMetaData*, int timeState);
     void SetOpenFileSIL(const avtSIL*);
 
     // Convenience functions to determine if a component is selected.
@@ -281,17 +301,17 @@ public:
     MessageAttributes *GetMessageAttributes();
 private:
     virtual void SelectAll();
-    void StartServer(const std::string &host);
-    void CloseServer(const std::string &host);
+    void StartServer(const string &host);
+    void CloseServer(const string &host);
     void OpenAndGetMetaData(const QualifiedFilename &filename, int timeState,
                             int action);
-    void ParseFilterString(const std::string &, stringVector &);
-    bool FileMatchesFilterList(const std::string &, const stringVector &);
+    void ParseFilterString(const string &, stringVector &);
+    bool FileMatchesFilterList(const string &, const stringVector &);
     bool FileMatchesFilter(const char *filter, const char *str, int &index);
     void Error(const char *message);
     void Warning(const char *message);
-    std::string EncodePath(const std::string &path);
-    std::string DecodePath(const std::string &path);
+    string EncodePath(const string &path);
+    string DecodePath(const string &path);
     void DefineVirtualFiles();
 private:
     bool hostFlag;                  // attribute 0
@@ -307,9 +327,9 @@ private:
 
     // Information about the open md servers.
     ServerMap   servers;
-    std::string activeHost;
+    string      activeHost;
     bool        connectingServer;
-    std::string filter;
+    string      filter;
     bool        forceReadAllCyclesTimes;
 
     // The file list for the current host.
@@ -322,7 +342,7 @@ private:
     QualifiedFilename openFile;
     int               openFileTimeState;
 
-    // caches for MetaData and SIL
+    // MRU caches for MetaData and SIL
     FileMetaDataMap   fileMetaData;
     SILMap            SILData;
 
