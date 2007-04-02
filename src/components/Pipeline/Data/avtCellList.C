@@ -5,6 +5,7 @@
 #include <avtCellList.h>
 
 #include <avtHexahedronExtractor.h>
+#include <avtPointExtractor.h>
 #include <avtImagePartition.h>
 #include <avtPyramidExtractor.h>
 #include <avtTetrahedronExtractor.h>
@@ -25,6 +26,11 @@
 //  Programmer: Hank Childs
 //  Creation:   January 27, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Jan 27 14:51:58 PST 2006
+//    Initialized useRestriction.
+//
 // ****************************************************************************
 
 avtCellList::avtCellList(int nv)
@@ -33,6 +39,11 @@ avtCellList::avtCellList(int nv)
     celllistI = 0;
     celllistN = 1024;
     nVars     = nv;
+    useRestriction = false;
+    minWidth  = -1;
+    maxWidth  = -1;
+    minHeight = -1;
+    maxHeight = -1;
 }
 
 
@@ -61,6 +72,28 @@ avtCellList::~avtCellList()
         }
         delete [] celllist;
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtCellList::Restrict
+//
+//  Purpose:
+//      Restricts the cell list to extracting to a subvolume of interest.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 27, 2006
+//
+// ****************************************************************************
+
+void
+avtCellList::Restrict(int sw, int hw, int sh, int hh)
+{
+    useRestriction = true;
+    minWidth  = sw;
+    maxWidth  = hw;
+    minHeight = sh;
+    maxHeight = hh;
 }
 
 
@@ -173,6 +206,33 @@ avtCellList::Store(const avtWedge &wedge, int minx, int maxx, int miny,
 
 
 // ****************************************************************************
+//  Method: avtCellList::Store (Points)
+//
+//  Purpose:
+//      Stores a point
+//
+//  Arguments:
+//      pt      The point
+//      minx    The minimum x on the screen covered by the cell's bounding box. 
+//      maxx    The maximum x on the screen covered by the cell's bounding box. 
+//      miny    The minimum y on the screen covered by the cell's bounding box. 
+//      maxy    The maximum y on the screen covered by the cell's bounding box. 
+//
+//  Programmer: Hank Childs
+//  Creation:   January 25, 2006
+//
+// ****************************************************************************
+
+void
+avtCellList::Store(const avtPoint &pt, int minx, int maxx, int miny,
+                   int maxy)
+{
+    char *cell = SerializePoint(pt.bbox, pt.val);
+    Store(cell, minx, maxx, miny, maxy, 1);
+}
+
+
+// ****************************************************************************
 //  Method: avtCellList::Store
 //
 //  Purpose:
@@ -266,6 +326,38 @@ avtCellList::Serialize(const float (*pts)[3],
 
 
 // ****************************************************************************
+//  Method: avtCellList::SerializePoint
+//
+//  Purpose:
+//      Serializes a point when given arrays and their lengths.
+//
+//  Arguments:
+//      bbox     The bounding box.
+//      nvals    The number of values in each array.
+//
+//  Returns:     The serialized version of the arrays.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 25, 2006
+//
+// ****************************************************************************
+
+char *
+avtCellList::SerializePoint(const float *bbox, const float *var)
+{
+    int bboxSize     = 6;
+    int bytesPerPt   = (bboxSize+nVars)*sizeof(float);
+    char *serialized = new char[bytesPerPt];
+
+    char *tmp = serialized;
+    InlineCopy(tmp, (char *)bbox, sizeof(float)*bboxSize);
+    InlineCopy(tmp, (char *)var, sizeof(float)*nVars);
+
+    return serialized;
+}
+
+
+// ****************************************************************************
 //  Method: avtCellList::ConstructMessages
 //
 //  Purpose:
@@ -286,6 +378,9 @@ avtCellList::Serialize(const float (*pts)[3],
 //    Hank Childs, Tue Jan  1 10:47:03 PST 2002
 //    Account for multiple variables in a cell.
 //
+//    Hank Childs, Wed Jan 25 07:15:38 PST 2006
+//    Add support for points.
+//
 // ****************************************************************************
 
 char *
@@ -294,7 +389,10 @@ avtCellList::ConstructMessages(avtImagePartition *part, char **msgs, int *lens)
     int  i, j;
     int  numPartitions = part->GetNumPartitions();
 
-    const int bytesPerNode = (3+nVars)*sizeof(float); 
+    int storageForCoord = 3;
+    const int bytesPerNode = (storageForCoord+nVars)*sizeof(float); 
+    int storageForBBox = 6;
+    const int bytesForCellThatIsAPt = (storageForBBox+nVars)*sizeof(float);
 
     //
     // Set up memory to put our messages into.
@@ -313,7 +411,11 @@ avtCellList::ConstructMessages(avtImagePartition *part, char **msgs, int *lens)
         int numParts = part->PartitionList(celllist[i]->minx,celllist[i]->maxx,
                                            celllist[i]->miny,celllist[i]->maxy,
                                            partitions);
-        int size = (celllist[i]->size)*bytesPerNode + sizeof(int);
+        int size = sizeof(int);
+        if (celllist[i]->size > 1)
+            size += bytesPerNode*celllist[i]->size;
+        else
+            size += bytesForCellThatIsAPt;
         for (j = 0 ; j < numParts ; j++)
         {
             lens[partitions[j]] += size;
@@ -338,7 +440,12 @@ avtCellList::ConstructMessages(avtImagePartition *part, char **msgs, int *lens)
         {
             int p = partitions[j];
             InlineCopy(msgstemp[p], (char *)&(celllist[i]->size), sizeof(int));
-            int size = bytesPerNode*celllist[i]->size;
+            int size;
+            if (celllist[i]->size > 1)
+                size = bytesPerNode*celllist[i]->size;
+            else
+                size = bytesForCellThatIsAPt;
+
             InlineCopy(msgstemp[p], celllist[i]->cell, size);
         }
     }
@@ -372,6 +479,13 @@ avtCellList::ConstructMessages(avtImagePartition *part, char **msgs, int *lens)
 //    Hank Childs, Tue Jan  1 09:53:54 PST 2002
 //    Account for multiple variables on a cell.
 //
+//    Hank Childs, Wed Jan 25 07:15:38 PST 2006
+//    Add support for points.
+//
+//    Hank Childs, Fri Jan 27 14:40:14 PST 2006
+//    Make sure that we only extract the parts of the cells that are actually
+//    within our partition of the volume.
+//
 // ****************************************************************************
 
 void
@@ -379,12 +493,14 @@ avtCellList::ExtractCells(const char * const *msgs, const int *lens, int np,
                           avtVolume *vol)
 {
     avtHexahedron            hex;
+    avtPoint                 pt;
     avtPyramid               pyr;
     avtTetrahedron           tet;
     avtWedge                 wedge;
 
     hex.nVars   = nVars;
     pyr.nVars   = nVars;
+    pt.nVars    = nVars;
     tet.nVars   = nVars;
     wedge.nVars = nVars;
 
@@ -393,9 +509,19 @@ avtCellList::ExtractCells(const char * const *msgs, const int *lens, int np,
     int   depth  = vol->GetVolumeDepth();
 
     avtHexahedronExtractor hexExtractor(width, height, depth, vol, this);
+    avtPointExtractor pointExtractor(width, height, depth, vol, this);
     avtPyramidExtractor pyrExtractor(width, height, depth, vol, this);
     avtTetrahedronExtractor tetExtractor(width, height, depth, vol, this);
     avtWedgeExtractor wedgeExtractor(width, height, depth, vol, this);
+
+    if (useRestriction)
+    {
+        hexExtractor.Restrict(minWidth, maxWidth, minHeight, maxHeight);
+        pointExtractor.Restrict(minWidth, maxWidth, minHeight, maxHeight);
+        pyrExtractor.Restrict(minWidth, maxWidth, minHeight, maxHeight);
+        tetExtractor.Restrict(minWidth, maxWidth, minHeight, maxHeight);
+        wedgeExtractor.Restrict(minWidth, maxWidth, minHeight, maxHeight);
+    }
 
     for (int i = 0 ; i < np ; i++)
     {
@@ -407,6 +533,11 @@ avtCellList::ExtractCells(const char * const *msgs, const int *lens, int np,
            
             switch (npts)
             {
+                case 1:
+                   UnserializePoint(pt.bbox, pt.val, tmpmsg);
+                   pointExtractor.Extract(pt);
+                   break;
+
                 case 4:
                    Unserialize(tet.pts, tet.val, 4, tmpmsg);
                    tetExtractor.Extract(tet);
@@ -469,6 +600,29 @@ avtCellList::Unserialize(float (*pts)[3], float (*var)[AVT_VARIABLE_LIMIT],
     {
         InlineExtract((char *)var[i], str, nVars*sizeof(float));
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtCellList::UnserializePoint
+//
+//  Purpose:
+//      Unserializes the character string onto the arrays.
+//
+//  Arguments:
+//      bbox    The bbox for the cell.
+//      var     The variable for the cell.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 25, 2006
+//
+// ****************************************************************************
+
+void
+avtCellList::UnserializePoint(float *bbox, float *var, const char *&str)
+{
+    InlineExtract((char *)bbox, str, 6*sizeof(float));
+    InlineExtract((char *)var, str, nVars*sizeof(float));
 }
 
 

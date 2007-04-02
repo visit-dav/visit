@@ -14,6 +14,7 @@
 #include <avtExtents.h>
 #include <avtImagePartition.h>
 #include <avtParallel.h>
+#include <avtPointExtractor.h>
 #include <avtRay.h>
 #include <avtRelativeValueSamplePointArbitrator.h>
 #include <avtResampleSelection.h>
@@ -295,6 +296,9 @@ avtResampleFilter::BypassResample(void)
 //    Hank Childs, Sun Oct  2 12:02:50 PDT 2005
 //    Add support for distributed resampling.
 //
+//    Hank Childs, Mon Feb 20 15:22:57 PST 2006
+//    Automatically use kernel-based sampling when dealing with point meshes.
+//
 // ****************************************************************************
 
 void
@@ -431,9 +435,13 @@ avtResampleFilter::ResampleInput(void)
     //
     //
 
+    bool doKernel = 
+        (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0);
     avtSamplePointExtractor extractor(width, height, depth);
     extractor.Set3DMode(is3D);
     extractor.SetInput(trans.GetOutput());
+    if (doKernel)
+        extractor.SetKernelBasedSampling(true);
     avtSamplePoints_p samples = extractor.GetTypedOutput();
     
     avtSamplePointCommunicator communicator;
@@ -467,6 +475,8 @@ avtResampleFilter::ResampleInput(void)
         if ((strstr(vl.varnames[i].c_str(), "vtk") == NULL) &&
             (strstr(vl.varnames[i].c_str(), "avt") == NULL))
             myVars++;
+    if (doKernel)
+       myVars++; // For the weight variable.
 
     if (atts.GetUseArbitrator())
     {
@@ -532,6 +542,11 @@ avtResampleFilter::ResampleInput(void)
     {
         vars[i] = vtkFloatArray::New();
     }
+    if (doKernel)
+    {
+        effectiveVars -= 1;
+        samples->GetVolume()->SetUseKernel(true);
+    }
     if (myVars <= 0)
     {
         //
@@ -590,6 +605,24 @@ avtResampleFilter::ResampleInput(void)
         vtkRectilinearGrid *rg = CreateGrid(bounds, width, height, depth,
                                         width_start, width_end, height_start,
                                         height_end);
+
+        if (doKernel)
+        {
+            float min_weight = avtPointExtractor::GetMinimumWeightCutoff();
+            vtkDataArray *weights = vars[effectiveVars];
+            int numVals = weights->GetNumberOfTuples();
+            for (i = 0 ; i < effectiveVars ; i++)
+            {
+                for (j = 0 ; j < numVals ; j++)
+                {
+                    float weight = weights->GetTuple1(j);
+                    if (weight <= min_weight)
+                        vars[i]->SetTuple1(j, atts.GetDefaultVal());
+                    else
+                        vars[i]->SetTuple1(j, vars[i]->GetTuple1(j) / weight);
+                }
+            }
+        }
 
         //
         // Attach these variables to our rectilinear grid.
@@ -827,12 +860,21 @@ CreateViewFromBounds(avtViewInfo &view, const double *bounds, double scale[3])
 //  Programmer: Hank Childs
 //  Creation:   June 6, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Feb 24 11:40:57 PST 2006
+//    Tell the output that its topological dimension is the same as its
+//    spatial dimension (ie lines and points get promoted using kernel
+//    scheme).
+//
 // ****************************************************************************
 
 void
 avtResampleFilter::RefashionDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
+    GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(
+                  GetInput()->GetInfo().GetAttributes().GetSpatialDimension());
 }
 
 

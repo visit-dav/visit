@@ -36,6 +36,9 @@ class  avtVolume;
 //     Hank Childs, Mon Jun  4 08:31:22 PDT 2001
 //     Inherited from avtDataObject.
 //
+//     Hank Childs, Sun Dec  4 19:16:23 PST 2005
+//     Add [Get|Set]UseWeightingScheme.
+//
 // ****************************************************************************
 
 class PIPELINE_API  avtSamplePoints : public avtDataObject
@@ -56,10 +59,16 @@ class PIPELINE_API  avtSamplePoints : public avtDataObject
 
     virtual const char         *GetType(void)  { return "avtSamplePoints"; };
 
+    void                        SetUseWeightingScheme(bool b)
+                                    { useWeightingScheme = b; };
+    bool                        GetUseWeightingScheme(void)
+                                    { return useWeightingScheme; };
+
   protected:
     avtVolume                  *volume;
     avtCellList                *celllist;
     int                         numVars;
+    bool                        useWeightingScheme;
 };
 
 

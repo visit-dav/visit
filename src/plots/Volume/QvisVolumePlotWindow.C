@@ -205,6 +205,9 @@ QvisVolumePlotWindow::~QvisVolumePlotWindow()
 //   Kathleen Bonnell, Thu Mar  3 11:01:22 PST 2005 
 //   Added scalingButtons and skewLineEdit. 
 //
+//   Hank Childs, Sun Jan  8 08:09:23 PST 2006
+//   Added sampling.
+//
 // ****************************************************************************
 
 void
@@ -463,7 +466,7 @@ QvisVolumePlotWindow::CreateWindowContents()
     opacityMinMaxLayout->addWidget(opacityMax);
 
     // Create the resample target value
-    QGridLayout *rendererOptionsLayout = new QGridLayout(topLayout, 6,3, 10, "rendererOptionsLayout");
+    QGridLayout *rendererOptionsLayout = new QGridLayout(topLayout, 7,3, 10, "rendererOptionsLayout");
     resampleTarget = new QLineEdit(central, "resampleTarget");
     connect(resampleTarget, SIGNAL(returnPressed()),
             this, SLOT(resampleTargetProcessText()));
@@ -519,23 +522,35 @@ QvisVolumePlotWindow::CreateWindowContents()
     gradientButtonGroup->insert(rb, 1);
     rendererOptionsLayout->addWidget(rb,4,2);
 
+    // Create the sampling method buttons.
+    rendererOptionsLayout->addWidget(new QLabel("Sampling method", central),5,0);
+    samplingButtonGroup = new QButtonGroup(0, "samplingButtonGroup");
+    connect(samplingButtonGroup, SIGNAL(clicked(int)),
+            this, SLOT(samplingTypeChanged(int)));
+    rasterizationButton = new QRadioButton("Rasterization", central);
+    samplingButtonGroup->insert(rasterizationButton, 0);
+    rendererOptionsLayout->addWidget(rasterizationButton,5,1);
+    kernelButton = new QRadioButton("Kernel Based", central);
+    samplingButtonGroup->insert(kernelButton, 1);
+    rendererOptionsLayout->addWidget(kernelButton,5,2);
+
     // Create the legend toggle.
     legendToggle = new QCheckBox("Legend", central, "legendToggle");
     connect(legendToggle, SIGNAL(toggled(bool)),
             this, SLOT(legendToggled(bool)));
-    rendererOptionsLayout->addWidget(legendToggle,5,0);
+    rendererOptionsLayout->addWidget(legendToggle,6,0);
 
     // Create the lighting toggle.
     lightingToggle = new QCheckBox("Lighting", central, "lightingToggle");
     connect(lightingToggle, SIGNAL(toggled(bool)),
             this, SLOT(lightingToggled(bool)));
-    rendererOptionsLayout->addWidget(lightingToggle,5,1);
+    rendererOptionsLayout->addWidget(lightingToggle,6,1);
 
     // Create the smooth data toggle.
     smoothDataToggle = new QCheckBox("Smooth Data", central, "smoothToggle");
     connect(smoothDataToggle, SIGNAL(toggled(bool)),
             this, SLOT(smoothDataToggled(bool)));
-    rendererOptionsLayout->addWidget(smoothDataToggle,5,2);
+    rendererOptionsLayout->addWidget(smoothDataToggle,6,2);
 
     // Create the color selection widget.
     colorSelect = new QvisColorSelectionWidget(this, "colorSelect", WType_Popup);
@@ -595,6 +610,9 @@ QvisVolumePlotWindow::CreateWindowContents()
 //
 //   Kathleen Bonnell, Thu Mar  3 11:01:22 PST 2005 
 //   Added support for scaling and skew factor.
+//
+//   Hank Childs, Sun Jan  8 08:19:39 PST 2006
+//   Add support for kernel based sampling.
 //
 // ****************************************************************************
 
@@ -722,6 +740,8 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 resampleTarget->setEnabled(true);
                 resampleTargetSlider->setEnabled(true);
                 samplesPerRay->setEnabled(false);
+                rasterizationButton->setEnabled(false);
+                kernelButton->setEnabled(false);
             }
             else if (volumeAtts->GetRendererType() == VolumeAttributes::Texture3D)
             {
@@ -730,6 +750,8 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 resampleTarget->setEnabled(true);
                 resampleTargetSlider->setEnabled(true);
                 samplesPerRay->setEnabled(false);
+                rasterizationButton->setEnabled(false);
+                kernelButton->setEnabled(false);
             }
             else
             {
@@ -738,6 +760,8 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 resampleTarget->setEnabled(false);
                 resampleTargetSlider->setEnabled(false);
                 samplesPerRay->setEnabled(true);
+                rasterizationButton->setEnabled(true);
+                kernelButton->setEnabled(true);
             }
             rendererTypesComboBox->blockSignals(false);
             break;
@@ -764,8 +788,14 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             temp.setNum(volumeAtts->GetSkewFactor());
             skewLineEdit->setText(temp);
             break;
-
-
+        case 24: // sampling
+            samplingButtonGroup->blockSignals(true);
+            if (volumeAtts->GetSampling() == VolumeAttributes::Rasterization)
+                samplingButtonGroup->setButton(0);
+            else
+                samplingButtonGroup->setButton(1);
+            samplingButtonGroup->blockSignals(false);
+            break;
         }
     }
 
@@ -2137,6 +2167,39 @@ QvisVolumePlotWindow::gradientTypeChanged(int val)
       default:
         EXCEPTION1(ImproperUseException,
                    "The Volume plot received a signal for a gradient method "
+                   "that it didn't understand");
+        break;
+    }
+    Apply();
+}
+
+// ****************************************************************************
+//  Method:  QvisVolumePlotWindow::samplingTypeChanged
+//
+//  Purpose:
+//    Update the sampling type based on user input
+//
+//  Arguments:
+//    val        the new sampling type
+//
+//  Programmer:  Hank Childs
+//  Creation:    January 8, 2005
+//
+// ****************************************************************************
+void
+QvisVolumePlotWindow::samplingTypeChanged(int val)
+{
+    switch (val)
+    {
+      case 0:
+        volumeAtts->SetSampling(VolumeAttributes::Rasterization);
+        break;
+      case 1:
+        volumeAtts->SetSampling(VolumeAttributes::KernelBased);
+        break;
+      default:
+        EXCEPTION1(ImproperUseException,
+                   "The Volume plot received a signal for a sampling method "
                    "that it didn't understand");
         break;
     }

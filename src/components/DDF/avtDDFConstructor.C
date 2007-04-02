@@ -19,6 +19,9 @@
 #include <avtR2Faverage.h>
 #include <avtR2Fminimum.h>
 #include <avtR2Fmaximum.h>
+#include <avtR2Fstddev.h>
+#include <avtR2Fsum.h>
+#include <avtR2Fvariance.h>
 #include <avtUniformBinningScheme.h>
 
 #include <BadIndexException.h>
@@ -74,6 +77,11 @@ avtDDFConstructor::~avtDDFConstructor()
 //
 //  Programmer: Hank Childs
 //  Creation:   February 12, 2006
+//
+//  Modifications:
+//
+//    Hank Childs, Sat Feb 25 15:01:56 PST 2006
+//    Add support for time.
 //
 // ****************************************************************************
 
@@ -174,13 +182,22 @@ avtDDFConstructor::ConstructDDF(ConstructDDFAttributes *atts,
     switch (atts->GetStatisticalOperator())
     {
       case ConstructDDFAttributes::Average:
-        R2Foperator = new avtR2Faverage(nBins);
+        R2Foperator = new avtR2Faverage(nBins, atts->GetUndefinedValue());
         break;
       case ConstructDDFAttributes::Minimum:
-        R2Foperator = new avtR2Fminimum(nBins);
+        R2Foperator = new avtR2Fminimum(nBins, atts->GetUndefinedValue());
         break;
       case ConstructDDFAttributes::Maximum:
-        R2Foperator = new avtR2Fmaximum(nBins);
+        R2Foperator = new avtR2Fmaximum(nBins, atts->GetUndefinedValue());
+        break;
+      case ConstructDDFAttributes::StandardDeviation:
+        R2Foperator = new avtR2Fstddev(nBins, atts->GetUndefinedValue());
+        break;
+      case ConstructDDFAttributes::Sum:
+        R2Foperator = new avtR2Fsum(nBins);
+        break;
+      case ConstructDDFAttributes::Variance:
+        R2Foperator = new avtR2Fvariance(nBins, atts->GetUndefinedValue());
         break;
     }
     if (R2Foperator == NULL)
@@ -192,65 +209,16 @@ avtDDFConstructor::ConstructDDF(ConstructDDFAttributes *atts,
     //
     // Make the input pipeline execute again to get the variables we need.
     //
-    avtPipelineSpecification_p spec2 = new avtPipelineSpecification(spec);
-    avtDataSpecification_p dspec = spec2->GetDataSpecification();
-    dspec->AddSecondaryVariable(atts->GetCodomainName().c_str());
-    for (i = 0 ; i < atts->GetVarnames().size() ; i++)
-        dspec->AddSecondaryVariable(atts->GetVarnames()[i].c_str());
-    Execute(spec2);
-
-    //
-    // Get all of the input data.
-    //
-    avtDataTree_p tree = GetInputDataTree();
-    int nLeaves;
-    vtkDataSet **leaves = tree->GetAllLeaves(nLeaves);
-
-    bool coDomIsNodal = true;
-    bool *isNodal = new bool[nvars];
-    const char   *codomain_varname = info->GetCodomainName().c_str();
-    bool hasError = false;
-    bool mixedCentering = false;
-    if (nLeaves > 0)
+    int timeStart = spec->GetDataSpecification()->GetTimestep();
+    int timeEnd = timeStart+1;
+    int timeStride = 1;
+    if (atts->GetOverTime())
     {
-        for (k = 0 ; k < nvars ; k++)
-        {
-            const char *varname = info->GetDomainTupleName(k).c_str();
-            if (leaves[0]->GetPointData()->GetArray(varname) != NULL)
-                isNodal[k] = true;
-            else if (leaves[0]->GetCellData()->GetArray(varname) != NULL)
-                isNodal[k] = false;
-            else
-                hasError = true;
-        }
-
-        if (leaves[0]->GetPointData()->GetArray(codomain_varname) != NULL)
-            coDomIsNodal = true;
-        else if (leaves[0]->GetCellData()->GetArray(codomain_varname) != NULL)
-            coDomIsNodal = false;
-        else
-            hasError = true;
-
-        for (k = 0 ; k < nvars ; k++)
-            if (isNodal[k] != coDomIsNodal)
-                mixedCentering = true;
+        timeStart  = atts->GetTimeStart();
+        timeEnd    = atts->GetTimeEnd();
+        timeStride = atts->GetTimeStride();
     }
 
-    int val = UnifyMaximumValue((hasError ? 1 : 0));
-    if (val > 0)
-    {
-        debug1 << "Could not create DDF because either a "
-                                  "variable could not be located, or because"
-                                  " the centering of the variables does not "
-                                  "match." << endl;
-        EXCEPTION1(ImproperUseException, 
-                                  "Could not create DDF because either a "
-                                  "variable could not be located, or because"
-                                  " the centering of the variables does not "
-                                  "match.");
-        return NULL;
-    }
-    
     //
     // Now iterate some number of passes over the data.  This will probably
     // just be one pass, but could be multiple passes in the case of operators
@@ -259,60 +227,131 @@ avtDDFConstructor::ConstructDDF(ConstructDDFAttributes *atts,
     //
     int nPasses = R2Foperator->GetNumberOfPasses();
     float *vals = NULL;
-    vtkDataArray **arr = new vtkDataArray*[nvars];
-    float        *args = new float[nvars];
-    for (i = 0 ; i < nPasses ; i++)
+    for (int pass = 0 ; pass < nPasses ; pass++)
     {
-        for (j = 0 ; j < nLeaves ; j++)
+        for (int time = timeStart ; time < timeEnd ; time += timeStride)
         {
-            vtkDataArray *codomain = (coDomIsNodal 
+            avtPipelineSpecification_p spec2 = 
+                                            new avtPipelineSpecification(spec);
+            avtDataSpecification_p dspec = spec2->GetDataSpecification();
+            dspec->AddSecondaryVariable(atts->GetCodomainName().c_str());
+            for (i = 0 ; i < atts->GetVarnames().size() ; i++)
+                dspec->AddSecondaryVariable(atts->GetVarnames()[i].c_str());
+            dspec->SetTimestep(time);
+            GetInput()->Update(spec2);
+            //Execute(spec2);
+
+            //
+            // Get all of the input data.
+            //
+            avtDataTree_p tree = GetInputDataTree();
+            int nLeaves;
+            vtkDataSet **leaves = tree->GetAllLeaves(nLeaves);
+        
+            bool coDomIsNodal = true;
+            bool *isNodal = new bool[nvars];
+            const char   *codomain_varname = info->GetCodomainName().c_str();
+            bool hasError = false;
+            bool mixedCentering = false;
+            if (nLeaves > 0)
+            {
+                for (k = 0 ; k < nvars ; k++)
+                {
+                    const char *varname = info->GetDomainTupleName(k).c_str();
+                    if (leaves[0]->GetPointData()->GetArray(varname) != NULL)
+                        isNodal[k] = true;
+                    else if (leaves[0]->GetCellData()->GetArray(varname) 
+                                                                       != NULL)
+                        isNodal[k] = false;
+                    else
+                        hasError = true;
+                }
+    
+                if (leaves[0]->GetPointData()->GetArray(codomain_varname)
+                                                                       != NULL)
+                    coDomIsNodal = true;
+                else if (leaves[0]->GetCellData()->GetArray(codomain_varname) 
+                                                                       != NULL)
+                    coDomIsNodal = false;
+                else
+                    hasError = true;
+
+                for (k = 0 ; k < nvars ; k++)
+                    if (isNodal[k] != coDomIsNodal)
+                        mixedCentering = true;
+            }
+
+            int val = UnifyMaximumValue((hasError ? 1 : 0));
+            if (val > 0)
+            {
+                debug1 << "Could not create DDF because either a "
+                                  "variable could not be located, or because"
+                                  " the centering of the variables does not "
+                                  "match." << endl;
+                EXCEPTION1(ImproperUseException, 
+                                  "Could not create DDF because either a "
+                                  "variable could not be located, or because"
+                                  " the centering of the variables does not "
+                                  "match.");
+                return NULL;
+            }
+        
+            vtkDataArray **arr = new vtkDataArray*[nvars];
+            float        *args = new float[nvars];
+            for (j = 0 ; j < nLeaves ; j++)
+            {
+                vtkDataArray *codomain = (coDomIsNodal 
                         ? leaves[j]->GetPointData()->GetArray(codomain_varname)
                         : leaves[j]->GetCellData()->GetArray(codomain_varname));
-            for (k = 0 ; k < nvars ; k++)
-            {
-                const char *varname = info->GetDomainTupleName(k).c_str();
-                arr[k] = (isNodal[k]
+                for (k = 0 ; k < nvars ; k++)
+                {
+                    const char *varname = info->GetDomainTupleName(k).c_str();
+                    arr[k] = (isNodal[k]
                                 ? leaves[j]->GetPointData()->GetArray(varname)
                                 : leaves[j]->GetCellData()->GetArray(varname));
-            }
-            int nvals;
-            if (mixedCentering)
-                nvals = leaves[j]->GetNumberOfCells();
-            else
-                nvals = (coDomIsNodal ? leaves[j]->GetNumberOfPoints()
-                                 : leaves[j]->GetNumberOfCells());
-            for (l = 0 ; l < nvals ; l++)
-            {
-                if (!mixedCentering)
-                {
-                    for (k = 0 ; k < nvars ; k++)
-                        args[k] = arr[k]->GetTuple1(l);
-                    int binId = bs->GetBinId(args);
-                    R2Foperator->AddData(binId, codomain->GetTuple1(l));
                 }
+                int nvals;
+                if (mixedCentering)
+                    nvals = leaves[j]->GetNumberOfCells();
                 else
+                    nvals = (coDomIsNodal ? leaves[j]->GetNumberOfPoints()
+                                     : leaves[j]->GetNumberOfCells());
+                for (l = 0 ; l < nvals ; l++)
                 {
-                    vtkCell *cell = leaves[j]->GetCell(l);
-                    for (int p = 0 ; p < cell->GetNumberOfPoints() ; p++)
+                    if (!mixedCentering)
                     {
-                        vtkIdType ptId = cell->GetPointId(p);
                         for (k = 0 ; k < nvars ; k++)
-                            if (isNodal[k])
-                                args[k] = arr[k]->GetTuple1(ptId);
-                            else
-                                args[k] = arr[k]->GetTuple1(l);
+                            args[k] = arr[k]->GetTuple1(l);
                         int binId = bs->GetBinId(args);
-                        float cval = (coDomIsNodal ? codomain->GetTuple1(ptId)
-                                                   : codomain->GetTuple1(l));
                         R2Foperator->AddData(binId, codomain->GetTuple1(l));
+                    }
+                    else
+                    {
+                        vtkCell *cell = leaves[j]->GetCell(l);
+                        for (int p = 0 ; p < cell->GetNumberOfPoints() ; p++)
+                        {
+                            vtkIdType ptId = cell->GetPointId(p);
+                            for (k = 0 ; k < nvars ; k++)
+                                if (isNodal[k])
+                                    args[k] = arr[k]->GetTuple1(ptId);
+                                else
+                                    args[k] = arr[k]->GetTuple1(l);
+                            int binId = bs->GetBinId(args);
+                            float cval = (coDomIsNodal
+                                                 ? codomain->GetTuple1(ptId)
+                                                 : codomain->GetTuple1(l));
+                            R2Foperator->AddData(binId,codomain->GetTuple1(l));
+                        }
                     }
                 }
             }
+            delete [] arr;
+            delete [] leaves;
+            delete [] isNodal;
         }
 
-        vals = R2Foperator->FinalizePass(i);
+        vals = R2Foperator->FinalizePass(pass);
     }
-    delete [] arr;
 
     //
     // We can now construct the actual DDF.
@@ -322,11 +361,9 @@ avtDDFConstructor::ConstructDDF(ConstructDDFAttributes *atts,
     //
     // Clean up memory.
     //
-    delete [] leaves;
     delete R2Foperator;
     delete [] minmax;
     delete [] nvals;
-    delete [] isNodal;
     // Don't delete binning scheme (bs) function info (info), or "vals"
     // since the DDF now owns them.
 

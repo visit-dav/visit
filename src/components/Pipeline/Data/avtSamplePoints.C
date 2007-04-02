@@ -20,6 +20,11 @@
 //  Programmer: Hank Childs
 //  Creation:   December 4, 2000
 //
+//  Modifications:
+//
+//    Hank Childs, Sun Jan  8 12:52:20 PST 2006
+//    Initialize useWeightingScheme.
+//
 // ****************************************************************************
 
 avtSamplePoints::avtSamplePoints(avtDataObjectSource *up)
@@ -28,6 +33,7 @@ avtSamplePoints::avtSamplePoints(avtDataObjectSource *up)
     volume   = NULL;
     celllist = NULL;
     numVars  = -1;
+    useWeightingScheme = false;
 }
 
 
@@ -137,6 +143,9 @@ avtSamplePoints::ResetCellList(void)
 //    Hank Childs, Wed Nov 14 14:51:34 PST 2001
 //    Add support for multiple variables.
 //
+//    Hank Childs, Sun Dec  4 19:18:37 PST 2005
+//    Add support for weighting schemes.
+//
 // ****************************************************************************
 
 void
@@ -147,7 +156,10 @@ avtSamplePoints::SetVolume(int width, int height, int depth)
         EXCEPTION0(ImproperUseException);
     }
 
-    volume   = new avtVolume(width, height, depth, numVars);
+    int nv = numVars;
+    if (useWeightingScheme)
+        nv++;
+    volume = new avtVolume(width, height, depth, nv);
 }
 
 

@@ -22,12 +22,17 @@
 //  Programmer: Hank Childs
 //  Creation:   February 12, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Feb 25 15:24:49 PST 2006
+//    Added undefinedVal.
+//
 // ****************************************************************************
 
 class AVTDDF_API avtR2Foperator
 {
   public:
-                           avtR2Foperator(int);
+                           avtR2Foperator(int, double);
     virtual               ~avtR2Foperator();
 
     virtual int            GetNumberOfPasses(void) { return 1; };
@@ -36,6 +41,7 @@ class AVTDDF_API avtR2Foperator
 
   protected:
     int                    nBins;
+    double                 undefinedVal;
 };
 
 

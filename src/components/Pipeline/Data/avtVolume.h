@@ -94,6 +94,8 @@ class PIPELINE_API avtVolume
     void                      Restrict(int, int, int, int);
     void                      ResetSamples(void);
 
+    void                      SetUseKernel(bool uk) { useKernel = uk; };
+
     void                      GetVariables(float, vtkDataArray **, 
                                            avtImagePartition * = NULL);
     void                      SetGradientVariable(int);
@@ -111,6 +113,8 @@ class PIPELINE_API avtVolume
 
     int                       numVariables;
     int                       gradientVariable;
+
+    bool                      useKernel;
 
     int                       restrictedMinWidth;
     int                       restrictedMaxWidth;

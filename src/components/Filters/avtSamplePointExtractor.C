@@ -21,8 +21,11 @@
 #include <vtkWedge.h>
 
 #include <avtCellList.h>
+#include <avtDatasetExaminer.h>
 #include <avtHexahedronExtractor.h>
 #include <avtMassVoxelExtractor.h>
+#include <avtParallel.h>
+#include <avtPointExtractor.h>
 #include <avtPyramidExtractor.h>
 #include <avtRayFunction.h>
 #include <avtSamplePoints.h>
@@ -67,6 +70,12 @@
 //    Hank Childs, Wed Feb  2 08:56:00 PST 2005
 //    Initialize modeIs3D.
 //
+//    Hank Childs, Sun Dec  4 19:12:42 PST 2005
+//    Initialize kernelBasedSampling.
+//
+//    Hank Childs, Tue Jan 24 16:42:40 PST 2006
+//    Added point extractor.
+//
 // ****************************************************************************
 
 avtSamplePointExtractor::avtSamplePointExtractor(int w, int h, int d)
@@ -80,11 +89,16 @@ avtSamplePointExtractor::avtSamplePointExtractor(int w, int h, int d)
 
     hexExtractor        = NULL;
     massVoxelExtractor  = NULL;
+    pointExtractor      = NULL;
     pyramidExtractor    = NULL;
     tetExtractor        = NULL;
     wedgeExtractor      = NULL;
 
+#ifdef PARALLEL
+    sendCells        = true;
+#else
     sendCells        = false;
+#endif
     rayfoo           = NULL;
 
     rectilinearGridsAreInWorldSpace = false;
@@ -93,6 +107,7 @@ avtSamplePointExtractor::avtSamplePointExtractor(int w, int h, int d)
     shouldDoTiling = false;
 
     modeIs3D = true;
+    SetKernelBasedSampling(false);
 }
 
 
@@ -106,6 +121,9 @@ avtSamplePointExtractor::avtSamplePointExtractor(int w, int h, int d)
 //
 //    Hank Childs, Sun Dec 14 11:07:56 PST 2003
 //    Deleted massVoxelExtractor.
+//
+//    Hank Childs, Tue Jan 24 16:42:40 PST 2006
+//    Deleted pointExtractor.
 //
 // ****************************************************************************
 
@@ -131,11 +149,35 @@ avtSamplePointExtractor::~avtSamplePointExtractor()
         delete wedgeExtractor;
         wedgeExtractor = NULL;
     }
+    if (pointExtractor != NULL)
+    {
+        delete pointExtractor;
+        pointExtractor = NULL;
+    }
     if (pyramidExtractor != NULL)
     {
         delete pyramidExtractor;
         pyramidExtractor = NULL;
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtSamplePointExtractor::SetKernelBasedSampling
+//  
+//  Purpose:
+//      Sets whether or not we are doing kernel-based sampling.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 16, 2006
+//
+// ****************************************************************************
+
+void
+avtSamplePointExtractor::SetKernelBasedSampling(bool val)
+{
+    kernelBasedSampling = val;
+    avtRay::SetKernelBasedSampling(kernelBasedSampling);
 }
 
 
@@ -251,12 +293,17 @@ avtSamplePointExtractor::Execute(void)
 //    Hank Childs, Fri Dec 10 09:59:57 PST 2004
 //    Do the sampling in tiles if necessary.
 //
+//    Hank Childs, Sun Dec  4 19:12:42 PST 2005
+//    Add support for kernel based sampling.
+//
 // ****************************************************************************
 
 void
 avtSamplePointExtractor::SetUpExtractors(void)
 {
     avtSamplePoints_p output = GetTypedOutput();
+    if (kernelBasedSampling)
+        output->SetUseWeightingScheme(true);
 
     //
     // This will always be NULL the first time through.  For subsequent tiles
@@ -287,6 +334,10 @@ avtSamplePointExtractor::SetUpExtractors(void)
     {
         delete wedgeExtractor;
     }
+    if (pointExtractor != NULL)
+    {
+        delete pointExtractor;
+    }
     if (pyramidExtractor != NULL)
     {
         delete pyramidExtractor;
@@ -300,12 +351,14 @@ avtSamplePointExtractor::SetUpExtractors(void)
     massVoxelExtractor = new avtMassVoxelExtractor(width, height, depth, volume,cl);
     tetExtractor = new avtTetrahedronExtractor(width, height, depth,volume,cl);
     wedgeExtractor = new avtWedgeExtractor(width, height, depth, volume, cl);
+    pointExtractor = new avtPointExtractor(width, height, depth, volume, cl);
     pyramidExtractor = new avtPyramidExtractor(width, height, depth,volume,cl);
 
     hexExtractor->SendCellsMode(sendCells);
     massVoxelExtractor->SendCellsMode(sendCells);
     tetExtractor->SendCellsMode(sendCells);
     wedgeExtractor->SendCellsMode(sendCells);
+    pointExtractor->SendCellsMode(sendCells);
     pyramidExtractor->SendCellsMode(sendCells);
 
     if (shouldDoTiling)
@@ -318,8 +371,53 @@ avtSamplePointExtractor::SetUpExtractors(void)
                                height_min, height_max-1);
         wedgeExtractor->Restrict(width_min, width_max-1, height_min, 
                                  height_max-1);
+        pointExtractor->Restrict(width_min, width_max-1,
+                                 height_min, height_max-1);
         pyramidExtractor->Restrict(width_min, width_max-1,
                                    height_min, height_max-1);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSamplePointExtractor::PreExecute
+//
+//  Purpose:
+//      Determines how many points we have if we have a point mesh.  This will
+//      allow us to choose an appropriate radius.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 28, 2006
+//
+// ****************************************************************************
+
+void
+avtSamplePointExtractor::PreExecute(void)
+{
+    avtDatasetToSamplePointsFilter::PreExecute();
+
+    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
+    {
+        avtDataset_p ds = GetTypedInput();
+        int nzones = avtDatasetExaminer::GetNumberOfZones(ds);
+        int total_nzones = UnifyMaximumValue(nzones);
+        
+        if (total_nzones == 0)
+        {
+            point_radius = 0.1;
+            return;
+        }
+
+        // In image space, the total volume will be 4 (-1->+1 in X,-1->+1 in Y,
+        // 0->+1 in Z).  But: we want to treat all dimensions evenly.  So
+        // use 8 (doubling Z) and then correct for it later (when we use the
+        // number).
+        int dim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
+        double start_vol = (dim == 3 ? 8. : 4.);
+        double vol_per_point = start_vol / total_nzones;
+        double exp = (dim == 3 ? 0.333333 : 0.5);
+        double side_length = pow(vol_per_point, exp) / 2;
+        point_radius = side_length * 1.1; // a little extra
     }
 }
 
@@ -372,6 +470,10 @@ avtSamplePointExtractor::SetUpExtractors(void)
 //    Hank Childs, Sat Jan 29 13:32:54 PST 2005
 //    Added 2D extractors.
 //
+//    Hank Childs, Sun Jan  1 10:53:09 PST 2006
+//    Moved raster based sampling into its own method.  Added support for
+//    kernel based sampling.
+//
 // ****************************************************************************
 
 void
@@ -402,6 +504,152 @@ avtSamplePointExtractor::ExecuteTree(avtDataTree_p dt)
     //
     vtkDataSet *ds = dt->GetDataRepresentation().GetDataVTK();
 
+    //
+    // Iterate over all cells in the mesh and call the appropriate 
+    // extractor for each cell to get the sample points.
+    //
+    if (kernelBasedSampling)
+        KernelBasedSample(ds);
+    else
+        RasterBasedSample(ds);
+
+    UpdateProgress(10*currentNode+9, 10*totalNodes);
+    currentNode++;
+}
+
+
+// ****************************************************************************
+//  Method: avtSamplePointExtractor::KernelBasedSample
+//
+//  Purpose:
+//      Does kernel based sampling.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 1, 2006
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Feb 24 11:22:05 PST 2006
+//    Remove topological tests ... anything goes (points, lines, triangles).
+//
+// ****************************************************************************
+
+void
+avtSamplePointExtractor::KernelBasedSample(vtkDataSet *ds)
+{
+    int numCells = ds->GetNumberOfCells();
+    int lastMilestone = 0;
+    vtkUnsignedCharArray *ghosts = (vtkUnsignedCharArray *)
+                                  ds->GetCellData()->GetArray("avtGhostZones");
+
+    bool is2D = GetInput()->GetInfo().GetAttributes().GetSpatialDimension()==2;
+    for (int j = 0 ; j < numCells ; j++)
+    {
+        //
+        // Make sure this is a cell we should be processing.
+        //
+        if (ghosts != NULL && ghosts->GetValue(j) > 0)
+            continue;
+        vtkCell *cell = ds->GetCell(j);
+        avtPoint pt;
+        pt.nVars = 0;
+
+        //
+        // Get all the zonal variables.
+        //
+        int npts = cell->GetNumberOfPoints();
+        int v;
+        vtkFieldData *cd = ds->GetCellData();
+        int ncd = cd->GetNumberOfArrays();
+        for (v = 0 ; v < ncd ; v++)
+        {
+            vtkDataArray *arr = cd->GetArray(v);
+            if (strstr(arr->GetName(), "vtk") != NULL)
+                continue;
+            if (strstr(arr->GetName(), "avt") != NULL)
+                continue;
+            float val = arr->GetComponent(j, 0);
+            pt.val[pt.nVars] = val;
+            pt.nVars++;
+        }
+
+        //
+        // Turn all the nodal variables into zonal variables.
+        //
+        vtkFieldData *pd = ds->GetPointData();
+        int npd = pd->GetNumberOfArrays();
+        for (v = 0 ; v < npd ; v++)
+        {
+            vtkDataArray *arr = pd->GetArray(v);
+            if (strstr(arr->GetName(), "vtk") != NULL)
+                continue;
+            if (strstr(arr->GetName(), "avt") != NULL)
+                continue;
+            vtkIdList *ids = cell->GetPointIds();
+            double accum = 0;
+            for (int i = 0 ; i < npts ; i++)
+            {
+                float val = arr->GetComponent(ids->GetId(i), 0);
+                accum += val;
+            }
+            accum /= npts;
+            pt.val[pt.nVars] = accum;
+            pt.nVars++;
+        }
+
+        // 
+        // Figure out what the bounding box is.
+        //
+        float bbox[6];
+        if (npts > 1)
+            cell->GetBounds(bbox);
+        else
+        {
+            float pt_loc[3];
+            vtkIdList *ids = cell->GetPointIds();
+            vtkIdType id = ids->GetId(0);
+            ds->GetPoint(id, pt_loc);
+            bbox[0] = pt_loc[0]-point_radius;
+            bbox[1] = pt_loc[0]+point_radius;
+            bbox[2] = pt_loc[1]-point_radius;
+            bbox[3] = pt_loc[1]+point_radius;
+            bbox[4] = (is2D ? 0. : pt_loc[2]-point_radius/2.);
+            bbox[5] = (is2D ? 0. : pt_loc[2]+point_radius/2.);
+        }
+
+        pt.bbox[0] = bbox[0];
+        pt.bbox[1] = bbox[1];
+        pt.bbox[2] = bbox[2];
+        pt.bbox[3] = bbox[3];
+        pt.bbox[4] = bbox[4];
+        pt.bbox[5] = bbox[5];
+
+        pointExtractor->Extract(pt);
+
+        int currentMilestone = (int)(((float) j) / numCells * 10);
+        if (currentMilestone > lastMilestone)
+        {
+            UpdateProgress(10*currentNode+currentMilestone, 10*totalNodes);
+            lastMilestone = currentMilestone;
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSamplePointExtractor::RasterBasedSample
+//
+//  Purpose:
+//      Does raster based sampling.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 1, 2006
+//
+// ****************************************************************************
+
+void
+avtSamplePointExtractor::RasterBasedSample(vtkDataSet *ds)
+{
     if (modeIs3D && ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
         massVoxelExtractor->SetGridsAreInWorldSpace(
@@ -410,10 +658,6 @@ avtSamplePointExtractor::ExecuteTree(avtDataTree_p dt)
         return;
     }
 
-    //
-    // Iterate over all cells in the mesh and call the appropriate 
-    // extractor for each cell to get the sample points.
-    //
     int numCells = ds->GetNumberOfCells();
     int lastMilestone = 0;
     vtkUnsignedCharArray *ghosts = (vtkUnsignedCharArray *)
@@ -475,8 +719,6 @@ avtSamplePointExtractor::ExecuteTree(avtDataTree_p dt)
             lastMilestone = currentMilestone;
         }
     }
-    UpdateProgress(10*currentNode+9, 10*totalNodes);
-    currentNode++;
 }
 
 
@@ -1331,6 +1573,9 @@ avtSamplePointExtractor::ExtractPixel(vtkPixel *pixel, vtkDataSet *ds,
 //    Hank Childs, Tue Jan  1 10:01:20 PST 2002
 //    Reflect that extractors may not be initialized at this point.
 //
+//    Hank Childs, Tue Jan 24 16:42:40 PST 2006
+//    Add support for kernel based sampling.
+//
 // ****************************************************************************
 
 void
@@ -1341,6 +1586,10 @@ avtSamplePointExtractor::SendCellsMode(bool mode)
     if (hexExtractor != NULL)
     {
         hexExtractor->SendCellsMode(sendCells);
+    }
+    if (pointExtractor != NULL)
+    {
+        pointExtractor->SendCellsMode(sendCells);
     }
     if (pyramidExtractor != NULL)
     {

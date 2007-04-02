@@ -203,6 +203,9 @@
 #    Mark C. Miller, Tue Aug 16 19:28:18 PDT 2005
 #    Added avtResampleSelection.C
 #
+#    Hank Childs, Tue Jan 24 16:42:40 PST 2006
+#    Added avtPointExtractor.C
+#
 #    Brad Whitlock, Thu Jan 26 15:27:04 PST 2006
 #    Added -lbz2 for MacOS X
 #
@@ -256,6 +259,7 @@ Data_src= \
   Data/avtPhong.C \
   Data/avtPixelizer.C \
   Data/avtPointAttribute.C \
+  Data/avtPointExtractor.C \
   Data/avtPyramidExtractor.C \
   Data/avtRangeMaxTable.C \
   Data/avtRay.C \

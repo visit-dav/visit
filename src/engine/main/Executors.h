@@ -840,6 +840,7 @@ RPCExecutor<SetWinAnnotAttsRPC>::Execute(SetWinAnnotAttsRPC *rpc)
 //
 //    Mark C. Miller, Wed Dec 14 16:43:07 PST 2005
 //    Changed to pass compression bool to Engine::WriteData
+//
 // ****************************************************************************
 template<>
 void
@@ -1251,6 +1252,10 @@ RPCExecutor<DefineVirtualDatabaseRPC>::Execute(DefineVirtualDatabaseRPC *rpc)
 //
 //    Mark C. Miller, Wed Dec 14 16:43:07 PST 2005
 //    Changed to pass compression bool to Engine::WriteData
+//
+//    Hank Childs, Sat Jan 28 11:40:35 PST 2006
+//    Added OutputAllTimings.
+//
 // ****************************************************************************
 template<>
 void
@@ -1283,6 +1288,7 @@ RPCExecutor<RenderRPC>::Execute(RenderRPC *rpc)
         // Send the data back to the viewer.
         bool useCompression = netmgr->GetShouldUseCompression(rpc->GetWindowID());
         engine->WriteData(rpc, writer, useCompression);
+        visitTimer->OutputAllTimings();
 
     }
     CATCH2(VisItException, e)

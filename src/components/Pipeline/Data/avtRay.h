@@ -4,8 +4,8 @@
 
 #ifndef AVT_RAY_H
 #define AVT_RAY_H
-#include <pipeline_exports.h>
 
+#include <pipeline_exports.h>
 
 #include <avtCellTypes.h>
 #include <avtSamplePointArbitrator.h>
@@ -47,6 +47,9 @@
 //    Hank Childs, Wed Jan 23 09:49:52 PST 2002
 //    Add an arbitrator.
 //
+//    Hank Childs, Sun Jan  1 12:33:37 PST 2006
+//    Added support for kernel based sampling.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtRay
@@ -80,7 +83,10 @@ class PIPELINE_API avtRay
     int                           GetFirstSampleOfLongestRun(void) const;
     int                           GetLastSampleOfLongestRun(void) const;
              
+    void                          Finalize(void);
+
     static void                   SetArbitrator(avtSamplePointArbitrator *);
+    static void                   SetKernelBasedSampling(bool);
 
   protected:
     float                        *sample[AVT_VARIABLE_LIMIT];
@@ -90,6 +96,7 @@ class PIPELINE_API avtRay
     int                           numValidSamples;
     int                           numRuns;
     static avtSamplePointArbitrator *arbitrator;
+    static bool                   kernelBasedSampling;
 };
 
 
@@ -117,6 +124,9 @@ class PIPELINE_API avtRay
 //    Hank Childs, Wed Jan 23 09:46:24 PST 2002
 //    Make each sample point be the best contributor from its "region".
 //
+//    Hank Childs, Sun Jan  1 12:34:29 PST 2006
+//    Added support for kernel based sampling.
+//
 // ****************************************************************************
 
 inline void
@@ -124,18 +134,34 @@ avtRay::SetSample(const int &si, const float val[AVT_VARIABLE_LIMIT])
 {
     if (si < numSamples && si >= 0)
     {
-        bool shouldOverwrite = true;
-        if (validSample[si] && arbitrator != NULL)
+        if (kernelBasedSampling)
         {
-            int index = arbitrator->GetArbitrationVariable();
-            shouldOverwrite = arbitrator->ShouldOverwrite(sample[index][si],
-                                                          val[si]);
-        }
-        if (shouldOverwrite)
-        {
-            for (int i = 0 ; i < numVariables ; i++)
+            if (validSample[si])
             {
-                sample[i][si] = val[i];
+                for (int i = 0 ; i < numVariables ; i++)
+                    sample[i][si] += val[i];
+            }
+            else
+            {
+                for (int i = 0 ; i < numVariables ; i++)
+                    sample[i][si] = val[i];
+            }
+        }
+        else
+        {
+            bool shouldOverwrite = true;
+            if (validSample[si] && arbitrator != NULL)
+            {
+                int index = arbitrator->GetArbitrationVariable();
+                shouldOverwrite = arbitrator->ShouldOverwrite(sample[index][si],
+                                                              val[si]);
+            }
+            if (shouldOverwrite)
+            {
+                for (int i = 0 ; i < numVariables ; i++)
+                {
+                    sample[i][si] = val[i];
+                }
             }
         }
         if (!validSample[si])
@@ -301,7 +327,7 @@ avtRay::GetFirstSample(void) const
 
 
 // ****************************************************************************
-//  Method: avtRay::GetLasstSample
+//  Method: avtRay::GetLastSample
 //
 //  Purpose:
 //      Gets the last valid sample.

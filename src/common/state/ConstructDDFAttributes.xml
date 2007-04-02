@@ -13,7 +13,6 @@
       Percentile
       Median
       InterquartileRange
-      Mode
       Sum
     </Enum>
     <Field name="ddfName" label="ddfName" type="string">
@@ -37,5 +36,17 @@
       Uniform
     </Field>
     <Field name="numSamples" label="numSamples" type="intVector">
+    </Field>
+    <Field name="overTime" label="OverTime" type="bool">
+      false
+    </Field>
+    <Field name="timeStart" label="TimeStart" type="int">
+      0
+    </Field>
+    <Field name="timeEnd" label="TimeEnd" type="int">
+      1
+    </Field>
+    <Field name="timeStride" label="TimeStride" type="int">
+      1
     </Field>
   </Attribute>
