@@ -7847,12 +7847,26 @@ avtSiloFileFormat::GetMultimatspec(const char *path, const char *name)
 //    Hank Childs, Thu Aug 16 11:06:27 PDT 2001
 //    No longer throw an exception.
 //
+//    Jeremy Meredith, Tue Oct  4 16:08:28 PDT 2005
+//    The msg variable can actually be NULL as sent from Silo.  Trying to
+//    print this to a debug log can actually put the log itself into a
+//    bad state.  (It's clearly not a good idea anyway.)  I changed the
+//    error message for when msg==NULL.
+//
 // ****************************************************************************
 
 void
 ExceptionGenerator(char *msg)
 {
-    debug1 << "The following Silo error occurred: " << msg << endl;
+    if (msg)
+    {
+        debug1 << "The following Silo error occurred: " << msg << endl;
+    }
+    else
+    {
+        debug1 << "A Silo error occurred, but the Silo library did not "
+               << "generate an error message." << endl;
+    }
 }
 
 
