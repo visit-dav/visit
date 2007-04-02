@@ -580,6 +580,10 @@ avtOnionPeelFilter::RefashionDataObjectInfo(void)
 //    Add TopSet to argslist for GetCollectionIndex, added collectionID to
 //    argslist for GetSetIndex.
 //   
+//    Kathleen Bonnell, Tue Jan 30 16:25:23 PST 2007 
+//    Ensure global zones/nodes are requested if using a global id and
+//    subset name is "whole". 
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -588,12 +592,16 @@ avtOnionPeelFilter::PerformRestriction(avtPipelineSpecification_p spec)
     if (atts.GetSubsetName() == "Whole") 
     {
         if (!GetInput()->GetInfo().GetValidity().GetZonesPreserved() || 
-            spec->GetDataSpecification()->MayRequireZones() ||
-            atts.GetUseGlobalId())
+            spec->GetDataSpecification()->MayRequireZones()) 
         {
             spec->GetDataSpecification()->TurnZoneNumbersOn();
             if (atts.GetSeedType() == OnionPeelAttributes::SeedNode)
                 spec->GetDataSpecification()->TurnNodeNumbersOn();
+        }
+        if (atts.GetUseGlobalId()) 
+        {
+            spec->GetDataSpecification()->TurnGlobalZoneNumbersOn();
+            spec->GetDataSpecification()->TurnGlobalNodeNumbersOn();
         }
         //
         // No restriction necessary. 

@@ -23,11 +23,12 @@
 #define __vtkStructuredGridMapper_h
 
 #include "vtkMapper.h"
+#include <visit_vtk_exports.h>
 
 class vtkStructuredGrid;
 class vtkRenderer;
 
-class VTK_RENDERING_EXPORT vtkStructuredGridMapper : public vtkMapper 
+class VISIT_VTK_API vtkStructuredGridMapper : public vtkMapper 
 {
 public:
   static vtkStructuredGridMapper *New();

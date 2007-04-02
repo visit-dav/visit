@@ -27,6 +27,7 @@ ice=true
 purple=true
 lilac=true
 gauss=true
+hopi=true
 
 dist=undefined
 
@@ -47,6 +48,7 @@ do
          purple=false
          lilac=false
          gauss=false
+         hopi=false
          shift
          ;;
       -hitit)
@@ -111,6 +113,14 @@ do
          ;;
       +gauss)
          gauss=true
+         shift
+         ;;
+      -hopi)
+         hopi=false
+         shift
+         ;;
+      +hopi)
+         hopi=true
          shift
          ;;
       -d)
@@ -551,9 +561,60 @@ then
 fi
 
 #
+# Build on hopi.
+#
+rm -f hopi
+cat <<EOF > hopi
+#!/bin/sh
+XLOCALEDIR=/usr/lib/X11/locale
+PATH=/usr/bin/X11:\$PATH
+if test ! -d /usr/tmp/$user ; then
+   mkdir /usr/tmp/$user
+fi
+if test ! -d /usr/tmp/$user/hopi ; then
+   mkdir /usr/tmp/$user/hopi
+fi
+rm -rf /usr/tmp/$user/hopi/visitbuild
+mkdir /usr/tmp/$user/hopi/visitbuild
+mv hopi_$dist.tar.gz /usr/tmp/$user/hopi/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/hopi/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
+make -j 6 >> ../buildlog 2>&1
+clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
+mv visit\$ver2.linux-x86_64.tar.gz ..
+cd ..
+rm -f resultlog
+echo "        build of visit on hopi"         > resultlog 2>&1
+echo "       ------------------------"        >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+EOF
+
+if [ $hopi = true ]
+then
+   if [ $test = no ]
+   then
+      scp hopi hopi3:hopi_buildit
+      scp $dist.tar.gz hopi3:hopi_$dist.tar.gz
+      ssh hopi3 "chmod 750 hopi_buildit;./hopi_buildit" &
+   fi
+fi
+
+#
 # Clean up.
 #
 if [ $test = no ]
 then
-   rm -f hitit crier sunset sc ice purple lilac gauss
+   rm -f hitit crier sunset sc ice purple lilac gauss hopi
 fi

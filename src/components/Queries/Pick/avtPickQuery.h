@@ -127,6 +127,9 @@ class avtExpressionEvaluatorFilter;
 //    Kathleen Bonnell, Tue Oct 24 18:59:27 PDT 2006 
 //    Add SetPickAttsForTimeQuery. 
 //    
+//    Kathleen Bonnell, Tue Jan 30 13:45:43 PST 2007 
+//    Added RetrieveVarInfo with ds and int args.
+//    
 // ****************************************************************************
 
 class QUERY_API avtPickQuery : public avtDatasetQuery
@@ -173,7 +176,8 @@ class QUERY_API avtPickQuery : public avtDatasetQuery
     void                            GetNodeCoords(vtkDataSet *, const int);
     void                            GetZoneCoords(vtkDataSet *, const int);
 
-    void                            RetrieveVarInfo(vtkDataSet *);   
+    void                            RetrieveVarInfo(vtkDataSet *);
+    void                            RetrieveVarInfo(vtkDataSet *, const int);
     void                            RetrieveVarInfo(vtkDataSet *, const int, 
                                                     const intVector &);   
     bool                            RetrieveNodes(vtkDataSet *, int);   
