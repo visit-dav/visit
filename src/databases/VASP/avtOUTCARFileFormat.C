@@ -605,6 +605,15 @@ avtOUTCARFileFormat::ReadAllMetaData()
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 29, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Aug 31 21:36:35 PDT 2006
+//    AIX XLC compiler is finicky ... change variable name to make it happy.
+//    It thinks variables declared in a for loop are at the same level as the
+//    variables defined inside its block.  So if you declare var "v1" in the
+//    for loop and inside the corresponding block, it claims "v1" was declared
+//    twice.
+//
 // ****************************************************************************
 void
 avtOUTCARFileFormat::ReadAtomsForTimestep(int timestep)
@@ -637,7 +646,7 @@ avtOUTCARFileFormat::ReadAtomsForTimestep(int timestep)
     int index = 0;
     for (int et_index = 0; et_index < element_counts.size(); et_index++)
     {
-        for (int a=0; a<element_counts[et_index]; a++)
+        for (int a2=0; a2<element_counts[et_index]; a2++)
         {
             Atom &a = atoms[index];
             a.elementtype_index = et_index;
