@@ -7,12 +7,14 @@
 #include <avtActualDataNumNodesQuery.h>
 #include <avtActualDataNumZonesQuery.h>
 #include <avtAreaBetweenCurvesQuery.h>
+#include <avtCentroidQuery.h>
 #include <avtCompactnessQuery.h>
 #include <avtCycleQuery.h>
 #include <avtEulerianQuery.h>
 #include <avtIntegrateQuery.h>
 #include <avtL2NormQuery.h>
 #include <avtL2NormBetweenCurvesQuery.h>
+#include <avtMomentOfInertiaQuery.h>
 #include <avtNodeCoordsQuery.h>
 #include <avtOriginalDataMinMaxQuery.h>
 #include <avtOriginalDataNumNodesQuery.h>
@@ -128,6 +130,9 @@ avtQueryFactory::Instance()
 //    Replaced avtVariableQuery with avtVariableByNodeQuery and
 //    avtVariableByZoneQuery.
 //
+//    Hank Childs, Wed May 18 16:14:23 PDT 2005
+//    Added Moment of Inertia, Centroid queries.
+//
 // ****************************************************************************
 
 
@@ -194,6 +199,14 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     else if (qname == "Variable Sum")
     {
         query = new avtVariableSummationQuery();
+    }
+    else if (qname == "Centroid")
+    {
+        query = new avtCentroidQuery();
+    }
+    else if (qname == "Moment of Inertia")
+    {
+        query = new avtMomentOfInertiaQuery();
     }
     else if (qname == "Weighted Variable Sum")
     {

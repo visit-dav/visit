@@ -429,6 +429,9 @@ avtSiloFileFormat::GetTime()
 //    Added optional md arg. Prefers setting metadata data member over
 //    using md arg, when metadata data member is non-NULL
 //
+//    Mark C. Miller, Thu May 19 09:57:07 PDT 2005
+//    Made it indicate the specified timestep has accurate cycle/time
+//
 // ****************************************************************************
 
 void
@@ -448,12 +451,14 @@ avtSiloFileFormat::GetTimeVaryingInformation(DBfile *dbfile,
         int cycle;
         DBReadVar(dbfile, "cycle", &cycle);
         tmpMd->SetCycle(timestep, cycle);
+        tmpMd->SetCycleIsAccurate(true, timestep);
     }
     if (DBInqVarExists(dbfile, "dtime"))
     {
         double dtime;
         DBReadVar(dbfile, "dtime", &dtime);
         tmpMd->SetTime(timestep, dtime);
+        tmpMd->SetTimeIsAccurate(true, timestep);
     }
 }
 

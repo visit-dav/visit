@@ -92,8 +92,11 @@
 #   Removed avtVariableQuery, added avtVariableByNodeQuery, 
 #   avtVariableByZoneQuery. 
 #
-#    Brad Whitlock, Tue Jan 4 18:14:57 PST 2005
-#    Added -lexpr so we can link on MacOS X.
+#   Brad Whitlock, Tue Jan 4 18:14:57 PST 2005
+#   Added -lexpr so we can link on MacOS X.
+#
+#   Hank Childs, Wed May 18 16:11:57 PDT 2005
+#   Added moment of inertia query.
 #
 ##############################################################################
 
@@ -135,6 +138,7 @@ Queries_src= \
  Queries/avtActualDataNumNodesQuery.C  \
  Queries/avtActualDataNumZonesQuery.C  \
  Queries/avtAreaBetweenCurvesQuery.C  \
+ Queries/avtCentroidQuery.C  \
  Queries/avtCompactnessQuery.C  \
  Queries/avtCycleQuery.C  \
  Queries/avtEulerianQuery.C \
@@ -142,6 +146,7 @@ Queries_src= \
  Queries/avtL2NormQuery.C  \
  Queries/avtL2NormBetweenCurvesQuery.C  \
  Queries/avtMinMaxQuery.C  \
+ Queries/avtMomentOfInertiaQuery.C  \
  Queries/avtNodeCoordsQuery.C \
  Queries/avtNumNodesQuery.C  \
  Queries/avtNumZonesQuery.C  \

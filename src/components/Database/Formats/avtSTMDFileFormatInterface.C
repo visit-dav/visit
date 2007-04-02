@@ -362,14 +362,17 @@ avtSTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
         bool fallBackToTimesFromFilename = false;
         vector<int> cycles;
         vector<double> times;
+        vector<bool> cycleIsAccurate;
+        vector<bool> timeIsAccurate;
         for (i = 0 ; i < nTimesteps; i++)
         {
             int c = -INT_MAX;
             double t = -DBL_MAX;
 
-            if (md->AreAllCyclesAccurateAndValid() != true && cyclesLookGood)
+            if (md->IsCycleAccurate(i) != true && cyclesLookGood)
             {
-                if (forceReadAllCyclesTimes && !fallBackToCyclesFromFilename)
+                if (forceReadAllCyclesTimes && !fallBackToCyclesFromFilename &&
+                    !canGetGoodCycleFromFilename)
                 {
                     c = timesteps[i]->FormatGetCycle();
 
@@ -380,11 +383,17 @@ avtSTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
                     {
                         fallBackToCyclesFromFilename = true;
                         c = timesteps[i]->FormatGetCycleFromFilename(timesteps[i]->GetFilename());
+                        cycleIsAccurate.push_back(false);
+                    }
+                    else
+                    {
+                        cycleIsAccurate.push_back(true);
                     }
                 }
                 else
                 {
                     c = timesteps[i]->FormatGetCycleFromFilename(timesteps[i]->GetFilename());
+                    cycleIsAccurate.push_back(true);
                 }
 
                 cycles.push_back(c);
@@ -392,10 +401,19 @@ avtSTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
                 if ((c == -INT_MAX) || ((i != 0) && (cycles[i] <= cycles[i-1])))
                     cyclesLookGood = false;
             }
-
-            if (md->AreAllTimesAccurateAndValid() != true && timesLookGood)
+            else
             {
-                if (forceReadAllCyclesTimes && !fallBackToTimesFromFilename)
+                if (cyclesLookGood)
+                {
+                    cycles.push_back(md->GetCycles()[i]);
+                    cycleIsAccurate.push_back(true);
+                }
+            }
+
+            if (md->IsTimeAccurate(i) != true && timesLookGood)
+            {
+                if (forceReadAllCyclesTimes && !fallBackToTimesFromFilename &&
+                    !canGetGoodTimeFromFilename)
                 {
                     t = timesteps[i]->FormatGetTime();
 
@@ -406,18 +424,31 @@ avtSTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
                     {
                         fallBackToTimesFromFilename = true;
                         t = timesteps[i]->FormatGetTimeFromFilename(timesteps[i]->GetFilename());
+                        timeIsAccurate.push_back(false);
                     }
-
+                    else
+                    {
+                        timeIsAccurate.push_back(true);
+                    }
                 }
                 else
                 {
                     t = timesteps[i]->FormatGetTimeFromFilename(timesteps[i]->GetFilename());
+                    timeIsAccurate.push_back(true);
                 }
 
                 times.push_back(t);
 
                 if ((t == -DBL_MAX) || ((i != 0) && (times[i] <= times[i-1])))
                     timesLookGood = false;
+            }
+            else
+            {
+                if (timesLookGood)
+                {
+                    times.push_back(md->GetTimes()[i]);
+                    timeIsAccurate.push_back(true);
+                }
             }
 
             if (cyclesLookGood == false && timesLookGood == false)
@@ -432,9 +463,8 @@ avtSTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
             if (cyclesLookGood)
             {
                 md->SetCycles(cycles);
-                md->SetCyclesAreAccurate(forceReadAllCyclesTimes &&
-                                         !fallBackToCyclesFromFilename ||
-                                         canGetGoodCycleFromFilename);
+                for (i = 0 ; i < nTimesteps; i++)
+                    md->SetCycleIsAccurate(cycleIsAccurate[i],i);
             }
             else
             {
@@ -456,9 +486,8 @@ avtSTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
             if (timesLookGood)
             {
                 md->SetTimes(times);
-                md->SetTimesAreAccurate(forceReadAllCyclesTimes &&
-                                        !fallBackToTimesFromFilename ||
-                                        canGetGoodTimeFromFilename);
+                for (i = 0 ; i < nTimesteps; i++)
+                    md->SetTimeIsAccurate(timeIsAccurate[i],i);
                 md->SetTemporalExtents(times[0], times[times.size() - 1]);
             }
             else

@@ -117,6 +117,10 @@ avtVerdictFilter::~avtVerdictFilter()
 //    Akira Haddox, Wed Jul  2 08:26:30 PDT 2003
 //    Added conversion from pixel cell type.
 //
+//    Hank Childs, Thu May 19 10:47:08 PDT 2005
+//    Allow for sub-types to speed up execution by operating directly on the
+//    mesh.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -126,73 +130,73 @@ avtVerdictFilter::DeriveVariable(vtkDataSet *in_ds)
 
     int nCells = in_ds->GetNumberOfCells();
 
-    double *results = new double[nCells];
-
-    //
-    // Iterate over each cell in the mesh and if it matches a
-    // testData prerequisites, run the corresponding metric
-    //
-    const int MAXPOINTS = 100;
-    double coordinates[MAXPOINTS][3];
-    for (i = 0; i < nCells; i++)    
-    {
-        vtkCell *cell = in_ds->GetCell(i);
-        
-        int numPointsForThisCell = cell->GetNumberOfPoints();
-        // Grab a pointer to the cell's points' underlying data array
-        vtkDataArray *pointData = cell->GetPoints()->GetData();
-
-        //
-        // Since the Verdict functions make their own copy of the data anyway
-        // it would be nice to get the coordinate data without copying (to cut
-        // down on unneeded copying). However, this might be infesible since
-        // Verdict expects doubles, and vtk (potentially) uses floats.
-        //
-        
-        if (pointData->GetNumberOfComponents() != 3)
-        {
-            EXCEPTION0(ImproperUseException);
-        }
-
-        // Fortunately, Verdict will convert to a double[3] for us
-        for (j = 0; j < numPointsForThisCell; j++)
-        {
-            coordinates[j][2] = 0; // In case of 2d coordinates
-            pointData->GetTuple(j,coordinates[j]);
-        }
-
-        int cellType = cell->GetCellType();
-        
-        // Convert Voxel format into hexahedron format.
-        if (cellType == VTK_VOXEL)
-        {
-            Swap3(coordinates, 2,3);
-            Swap3(coordinates, 6,7);
-        }
-
-        // Convert Pixel format into quad format.
-        if (cellType == VTK_PIXEL)
-        {
-            Swap3(coordinates, 2, 3);
-            cellType = VTK_QUAD;
-        }
-
-        results[i] = Metric(coordinates, cellType);
-    }
-
-
     //
     // Set up a VTK variable reflecting the results we have calculated.
     //
     vtkFloatArray *dv = vtkFloatArray::New();
     dv->SetNumberOfTuples(nCells);
-    for (i = 0 ; i < nCells ; i++)
-    {
-        float f = (float) results[i];
-        dv->SetTuple(i, &f);
-    }
-    delete [] results;
 
+    //
+    // Iterate over each cell in the mesh and if it matches a
+    // testData prerequisites, run the corresponding metric
+    //
+    if (OperateDirectlyOnMesh(in_ds))
+    {
+        MetricForWholeMesh(in_ds, dv);
+    }
+    else
+    {
+        const int MAXPOINTS = 100;
+        double coordinates[MAXPOINTS][3];
+        for (i = 0; i < nCells; i++)    
+        {
+            vtkCell *cell = in_ds->GetCell(i);
+            
+            int numPointsForThisCell = cell->GetNumberOfPoints();
+            // Grab a pointer to the cell's points' underlying data array
+            vtkDataArray *pointData = cell->GetPoints()->GetData();
+    
+            //
+            // Since the Verdict functions make their own copy of the data
+            // anyway it would be nice to get the coordinate data without
+            // copying (to cut down on unneeded copying). However, this might 
+            // be infeasible since Verdict expects doubles, and vtk 
+            //(potentially) uses floats.
+            //
+            
+            if (pointData->GetNumberOfComponents() != 3)
+            {
+                EXCEPTION0(ImproperUseException);
+            }
+    
+            // Fortunately, Verdict will convert to a double[3] for us
+            for (j = 0; j < numPointsForThisCell; j++)
+            {
+                coordinates[j][2] = 0; // In case of 2d coordinates
+                pointData->GetTuple(j,coordinates[j]);
+            }
+    
+            int cellType = cell->GetCellType();
+            
+            // Convert Voxel format into hexahedron format.
+            if (cellType == VTK_VOXEL)
+            {
+                Swap3(coordinates, 2,3);
+                Swap3(coordinates, 6,7);
+            }
+    
+            // Convert Pixel format into quad format.
+            if (cellType == VTK_PIXEL)
+            {
+                Swap3(coordinates, 2, 3);
+                cellType = VTK_QUAD;
+            }
+    
+            float result = Metric(coordinates, cellType);
+            dv->SetTuple1(i, result);
+        }
+    }
+    
     return dv;
 }
 
@@ -249,6 +253,26 @@ avtVerdictFilter::PreExecute()
                       (double)(VerdictSizeData.quadCount));
 #endif
 }
+
+
+// ****************************************************************************
+//  Method: avtVerdictFilter::MetricForWholeMesh
+//
+//  Purpose:
+//      Calculates a metric for the whole mesh.  This should be re-defined
+//      by derived types that re-define OperateDirectlyOnMesh to return true.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 19, 2005
+//
+// ****************************************************************************
+
+void
+avtVerdictFilter::MetricForWholeMesh(vtkDataSet *ds, vtkDataArray *rv)
+{
+    EXCEPTION0(ImproperUseException);
+}
+
 
 // ****************************************************************************
 //  Function: SumSize

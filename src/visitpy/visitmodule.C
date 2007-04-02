@@ -5262,12 +5262,11 @@ visit_EnableTool(PyObject *self, PyObject *args)
 STATIC PyObject *
 visit_ListPlots(PyObject *self, PyObject *args)
 {
+    ENSURE_VIEWER_EXISTS();
+
     int stringOnly = 0;
     if (!PyArg_ParseTuple(args, "i", &stringOnly))
         stringOnly = 0;
-
-    ENSURE_VIEWER_EXISTS();
-    NO_ARGUMENTS();
 
     MUTEX_LOCK();
     //

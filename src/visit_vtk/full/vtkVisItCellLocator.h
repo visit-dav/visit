@@ -146,7 +146,8 @@ public:
   // Return intersection points AND cellids of all cells intersected by
   // the finite line.
   virtual int IntersectWithLine(float a0[3], float a1[3], 
-                                vtkPoints *pts, vtkIdList *cells);
+                                vtkPoints *ipts, vtkPoints *cpts,
+                                vtkIdList *cells);
 
 
   // Description:
