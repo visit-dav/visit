@@ -36,6 +36,9 @@ avtView2D::avtView2D()
 //    Eric Brugger, Wed Oct  8 16:45:35 PDT 2003
 //    Replaced axisScaleFactor and axisScaleType with fullFrame.
 //
+//    Mark C. Miller, Tue Mar 14 17:49:26 PST 2006
+//    Added stuff to support auto full frame
+//
 // ****************************************************************************
 
 avtView2D &
@@ -51,11 +54,17 @@ avtView2D::operator=(const avtView2D &vi)
     window[3]    = vi.window[3];
 
     fullFrame    = vi.fullFrame;
+    
+    fullFrameActivationMode = vi.fullFrameActivationMode;
+    fullFrameAutoThreshold = vi.fullFrameAutoThreshold;
+
     return *this;
 }
 
 // ****************************************************************************
-//  Method: avtView2D operator ==
+//  Method: EqualViews 
+//
+//  Purpose: Compare just view state for equality ignoring autoff stuff
 //
 //  Arguments:
 //    vi        The view info to compare to.
@@ -64,16 +73,13 @@ avtView2D::operator=(const avtView2D &vi)
 //  Creation:   August 17, 2001
 //
 //  Modifications:
-//    Kathleen Bonnell, Thu May 15 09:46:46 PDT 2003 
-//    Compare axisScaleFactor and axisScaleType.
 //
-//    Eric Brugger, Wed Oct  8 16:45:35 PDT 2003
-//    Replaced axisScaleFactor and axisScaleType with fullFrame.
-//
+//    Mark C. Miller, Tue Mar 14 10:04:56 PST 2006
+//    Renamed from operator==
 // ****************************************************************************
 
 bool
-avtView2D::operator==(const avtView2D &vi)
+avtView2D::EqualViews(const avtView2D &vi)
 {
     if (viewport[0] != vi.viewport[0] || viewport[1] != vi.viewport[1] ||
         viewport[2] != vi.viewport[2] || viewport[3] != vi.viewport[3])
@@ -87,6 +93,41 @@ avtView2D::operator==(const avtView2D &vi)
         return false;
     }
     if (fullFrame != vi.fullFrame)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+// ****************************************************************************
+//  Method: avtView2D operator ==
+//
+//  Arguments:
+//    vi        The view info to compare to.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   Tue Mar 14 10:04:56 PST 2006 
+//
+//  Modifications:
+//
+//    Mark C. Miller, Tue Mar 14 17:49:26 PST 2006
+//    Added stuff to support auto full frame
+//
+// ****************************************************************************
+
+bool
+avtView2D::operator==(const avtView2D &vi)
+{
+    if (!EqualViews(vi))
+    {
+        return false;
+    }
+    if (fullFrameActivationMode != vi.fullFrameActivationMode)
+    {
+        return false;
+    }
+    if (fullFrameAutoThreshold != vi.fullFrameAutoThreshold)
     {
         return false;
     }
@@ -111,6 +152,9 @@ avtView2D::operator==(const avtView2D &vi)
 //    Eric Brugger, Wed Oct  8 16:45:35 PDT 2003
 //    Replaced axisScaleFactor and axisScaleType with fullFrame.
 //
+//    Mark C. Miller, Tue Mar 14 17:49:26 PST 2006
+//    Added stuff to support auto full frame
+//
 // ****************************************************************************
 
 void
@@ -125,6 +169,11 @@ avtView2D::SetToDefault()
     window[2]   = 0.;
     window[3]   = 1.;
     fullFrame   = false;
+
+    View2DAttributes defaultView2DAtts;
+
+    fullFrameActivationMode = (int) defaultView2DAtts.GetFullFrameActivationMode();
+    fullFrameAutoThreshold = defaultView2DAtts.GetFullFrameAutoThreshold(); 
 }
 
 // ****************************************************************************
@@ -385,6 +434,9 @@ avtView2D::GetScaleFactor(int *size)
 //    Eric Brugger, Thu Oct 16 14:49:23 PDT 2003
 //    I added fullFrame.
 //
+//    Mark C. Miller, Tue Mar 14 17:49:26 PST 2006
+//    Added stuff to support auto full frame
+//
 // ****************************************************************************
 
 void
@@ -395,6 +447,8 @@ avtView2D::SetFromView2DAttributes(const View2DAttributes *view2DAtts)
         viewport[i] = view2DAtts->GetViewportCoords()[i];
         window[i] = view2DAtts->GetWindowCoords()[i];
     }
+    fullFrameActivationMode = view2DAtts->GetFullFrameActivationMode();
+    fullFrameAutoThreshold = view2DAtts->GetFullFrameAutoThreshold();
     fullFrame = view2DAtts->GetUseFullFrame();
 }
 
@@ -417,6 +471,9 @@ avtView2D::SetFromView2DAttributes(const View2DAttributes *view2DAtts)
 //    Eric Brugger, Thu Oct 16 14:49:23 PDT 2003
 //    I added fullFrame.
 //
+//    Mark C. Miller, Tue Mar 14 17:49:26 PST 2006
+//    Added stuff to support auto full frame
+//
 // ****************************************************************************
 
 void
@@ -424,6 +481,9 @@ avtView2D::SetToView2DAttributes(View2DAttributes *view2DAtts) const
 {
     view2DAtts->SetWindowCoords(window);
     view2DAtts->SetViewportCoords(viewport);
+    view2DAtts->SetFullFrameActivationMode((View2DAttributes::TriStateMode)
+                                           fullFrameActivationMode);
+    view2DAtts->SetFullFrameAutoThreshold(fullFrameAutoThreshold);
     view2DAtts->SetUseFullFrame(fullFrame);
 }
 

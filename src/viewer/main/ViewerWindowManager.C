@@ -2292,6 +2292,9 @@ ViewerWindowManager::SetViewCurveFromClient()
 //    Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
 //    Added logic to manage auto full frame mode
 //
+//    Mark C. Miller, Tue Mar 14 17:49:26 PST 2006
+//    Moved some parameters dealing with full frame to avtView2D
+//
 // ****************************************************************************
 
 void
@@ -2299,14 +2302,7 @@ ViewerWindowManager::SetView2DFromClient()
 {
     avtView2D view2d = windows[activeWindow]->GetView2D();
 
-    const double *viewport=view2DClientAtts->GetViewportCoords();
-    const double *window=view2DClientAtts->GetWindowCoords();
-
-    for (int i = 0; i < 4; i++)
-    {
-        view2d.viewport[i] = viewport[i];
-        view2d.window[i]   = window[i];
-    }
+    view2d.SetFromView2DAttributes(view2DClientAtts);
 
     if (view2DClientAtts->GetFullFrameActivationMode() ==
         View2DAttributes::Auto)
@@ -2318,10 +2314,6 @@ ViewerWindowManager::SetView2DFromClient()
         if (pl && !pl->DoAllPlotsAxesHaveSameUnits())
             newFullFrameMode = true;
         view2d.fullFrame = newFullFrameMode; 
-    }
-    else
-    {
-        view2d.fullFrame = view2DClientAtts->GetUseFullFrame();
     }
 
     //

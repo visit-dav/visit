@@ -818,6 +818,11 @@ avtUnstructuredDomainBoundaries::RequiresCommunication(avtGhostDataType gtype)
 //  Programmer:  Akira Haddox
 //  Creation:    August 11, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Thu Mar  9 11:15:29 PST 2006
+//    Protected loop with checks for null mesh pointers
+//
 // ****************************************************************************
 
 bool
@@ -828,6 +833,9 @@ avtUnstructuredDomainBoundaries::ConfirmMesh(vector<int>       domainNum,
     int i;
     for (i = 0; i < domainNum.size(); ++i)
     {
+        if (meshes[i] == 0)
+            continue;
+
         int d1 = domainNum[i];
         int j;
         for (j = i + 1; j < domainNum.size(); ++j)
@@ -839,6 +847,9 @@ avtUnstructuredDomainBoundaries::ConfirmMesh(vector<int>       domainNum,
 
             map<int, int> &smap = sharedPointsMap[index];
             if (smap.size() == 0)
+                continue;
+
+            if (meshes[j] == 0)
                 continue;
 
             // Found a shared domain, let's take a look.

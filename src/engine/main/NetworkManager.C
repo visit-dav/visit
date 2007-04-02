@@ -1783,6 +1783,10 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //    Hank Childs, Fri Mar  3 08:32:02 PST 2006
 //    Do not do shadowing in 2D.
 //
+//    Mark C. Miller, Tue Mar 14 17:49:26 PST 2006
+//    Fixed bug in selecting which cellCounts entries to store as global
+//    cell counts for the whole network
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -1920,7 +1924,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
 
             // update the global cell counts for each network
             for (i = 0; i < plotIds.size(); i++)
-                SetGlobalCellCount(plotIds[i], cellCounts[i+plotIds.size()]);
+                SetGlobalCellCount(plotIds[i], cellCounts[i]);
 
             plotsCurrentlyInWindow = plotIds;
             visitTimer->StopTimer(t2, "Setting up window contents");

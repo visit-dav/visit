@@ -38,6 +38,9 @@ class View2DAttributes;
 //    Eric Brugger, Tue Nov 18 08:17:28 PST 2003
 //    Replaced GetValidWindow with CheckAndCorrectWindow.
 //
+//    Mark C. Miller, Tue Mar 14 17:49:26 PST 2006
+//    Added stuff to support auto full frame
+//
 // ****************************************************************************
 
 struct AVTVIEW_API avtView2D
@@ -46,10 +49,17 @@ struct AVTVIEW_API avtView2D
     double   window[4];
     bool     fullFrame;
 
+    int      fullFrameActivationMode;
+    float    fullFrameAutoThreshold;
+
   public:
                     avtView2D();
     avtView2D     & operator=(const avtView2D &);
     bool            operator==(const avtView2D &);
+
+    // alternative to == that ignores autoff state
+    bool            EqualViews(const avtView2D &);
+
     void            SetToDefault(void);
     void            SetViewInfoFromView(avtViewInfo &, int *);
 
