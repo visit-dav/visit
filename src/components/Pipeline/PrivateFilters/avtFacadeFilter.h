@@ -58,6 +58,7 @@ class PIPELINE_API avtFacadeFilter : virtual public avtFilter
 
     virtual avtPipelineSpecification_p PerformRestriction(
                                                   avtPipelineSpecification_p);
+    virtual void                   RefashionDataObjectInfo(void);
 };
 
 

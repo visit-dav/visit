@@ -240,6 +240,9 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Hank Childs, Sun Dec  4 16:54:05 PST 2005
 //    Add progress to SR.
 //
+//    Hank Childs, Tue Jan  3 14:04:35 PST 2006
+//    Add methods to issue progress callbacks.
+//
 // ****************************************************************************
 class NetworkManager
 {
@@ -350,6 +353,10 @@ class NetworkManager
     static void                *initializeProgressCallbackArgs;
     static ProgressCallback     progressCallback;
     static void                *progressCallbackArgs;
+
+    static void                 CallInitializeProgressCallback(int);
+    static void                 CallProgressCallback(const char *, const char*,
+                                                     int, int);
 };
 
 #endif

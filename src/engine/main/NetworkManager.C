@@ -1994,7 +1994,8 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
                 nstages += imageBasedPlots[ss]
                        ->GetNumberOfStagesForImageBasedPlot(windowAttributes);
             }
-            initializeProgressCallback(initializeProgressCallbackArgs,nstages);
+            
+            CallInitializeProgressCallback(nstages);
 
             // render the image and capture it. Relies upon explicit render
             int t3 = visitTimer->StartTimer();
@@ -2007,17 +2008,14 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
             // FIRST PASS - Opaque only
             // ************************************************************
 
-            progressCallback(progressCallbackArgs, "NetworkManager",
-                              "Render geometry", 0, 1);
+            CallProgressCallback("NetworkManager", "Render geometry", 0, 1);
             avtImage_p theImage;
             if (two_pass_mode)
                 theImage=viswin->ScreenCapture(viewportedMode,true,true,false);
             else
                 theImage=viswin->ScreenCapture(viewportedMode,true);
-            progressCallback(progressCallbackArgs, "NetworkManager",
-                              "Render geometry", 1, 1);
-            progressCallback(progressCallbackArgs, "NetworkManager",
-                              "Compositing", 0, 1);
+            CallProgressCallback("NetworkManager", "Render geometry", 1, 1);
+            CallProgressCallback("NetworkManager", "Compositing", 0, 1);
             
             visitTimer->StopTimer(t3, "Screen capture for SR");
 
@@ -2076,8 +2074,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
             if (dumpRenders)
                 DumpImage(compositedImageAsDataObject,
                           "after_OpaqueComposite", two_pass_mode);
-            progressCallback(progressCallbackArgs, "NetworkManager",
-                              "Compositing", 1, 1);
+            CallProgressCallback("NetworkManager", "Compositing", 1, 1);
 
 
             // ************************************************************
@@ -2086,8 +2083,8 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
 
             if (two_pass_mode)
             {
-                progressCallback(progressCallbackArgs, "NetworkManager",
-                                 "Transparent rendering", 0, 1);
+                CallProgressCallback("NetworkManager", "Transparent rendering",
+                                     0, 1);
                 int t1 = visitTimer->StartTimer();
 
                 //
@@ -2128,8 +2125,8 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
                 imageCompositer2.Execute();
                 compositedImageAsDataObject = imageCompositer2.GetOutput();
                 visitTimer->StopTimer(t2, "tiled image compositor execute");
-                progressCallback(progressCallbackArgs, "NetworkManager",
-                                 "Transparent rendering", 1, 1);
+                CallProgressCallback("NetworkManager", "Transparent rendering",
+                                     1, 1);
             }
 
             //
@@ -2137,8 +2134,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
             //
             if (doShadows)
             {
-                progressCallback(progressCallbackArgs, "NetworkManager",
-                                 "Creating shadows", 0, 1);
+                CallProgressCallback("NetworkManager", "Creating shadows",0,1);
                 avtView3D cur_view = viswin->GetView3D();
 
                 //
@@ -2204,20 +2200,19 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
                     if (PAR_Rank() == 0)
 #endif
                     {
-                        progressCallback(progressCallbackArgs, "NetworkManager",
-                              "Synch'ing up shadows", 0, 1);
+                        CallProgressCallback("NetworkManager",
+                                             "Synch'ing up shadows", 0, 1);
                         avtSoftwareShader::AddShadows(lightImage, 
                                                       compositedImage,
                                                       light_view,
                                                       cur_view,
                                                       strength);
-                        progressCallback(progressCallbackArgs, "NetworkManager",
-                              "Synch'ing up shadows", 1, 1);
+                        CallProgressCallback("NetworkManager",
+                                             "Synch'ing up shadows", 1, 1);
                     }
                     delete wic;
                 }
-                progressCallback(progressCallbackArgs, "NetworkManager",
-                                 "Creating shadows", 1, 1);
+                CallProgressCallback("NetworkManager", "Creating shadows",1,1);
             }
 
             //
@@ -2847,6 +2842,9 @@ NetworkManager::StopQueryMode(void)
 //    depending on which plots follow the picked-plot in the pipeline. Instead
 //    retrieve the 'linesData' flag from PickAtts to determine skipLocate. 
 //
+//    Kathleen Bonnell, Tue Jan  3 15:06:23 PST 2006
+//    Set an error message in PickAttributes if GlyphPick fails.
+//
 // ****************************************************************************
 
 void
@@ -2944,6 +2942,8 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
         {
             debug5 << "VisWin GlyphPick failed" << endl;
             networkCache[id]->GetActor(NULL)->MakeUnPickable();
+            pa->SetError(true);
+            pa->SetErrorMessage("Pick could not find a valid intersection."); 
             return;
         }
     }
@@ -3666,6 +3666,45 @@ NetworkManager::RegisterProgressCallback(ProgressCallback pc, void *args)
 {
     progressCallback     = pc;
     progressCallbackArgs = args;
+}
+
+
+// ****************************************************************************
+//  Method: NetworkManager:CallInitializeProgressCallback
+//
+//  Purpose:
+//      Makes the callback to initialize progress, provided its non-NULL.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 3, 2005
+//
+// ****************************************************************************
+
+void
+NetworkManager::CallInitializeProgressCallback(int nstages)
+{
+    if (initializeProgressCallback != NULL)
+        initializeProgressCallback(initializeProgressCallbackArgs, nstages);
+}
+
+
+// ****************************************************************************
+//  Method: NetworkManager:CallProgressCallback
+//
+//  Purpose:
+//      Makes the callback to state progress, provided its non-NULL.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 3, 2005
+//
+// ****************************************************************************
+
+void
+NetworkManager::CallProgressCallback(const char *module, const char *msg, 
+                                     int amt, int total)
+{
+    if (progressCallback != NULL)
+        progressCallback(progressCallbackArgs, module, msg, amt, total);
 }
 
 

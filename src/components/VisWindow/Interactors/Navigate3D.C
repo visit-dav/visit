@@ -61,6 +61,9 @@ Navigate3D::Navigate3D(VisWindowInteractorProxy &v) : VisitInteractor(v)
 //    I moved RotateCamera, PanCamera and ZoomCamera to the VisitInteractor
 //    class as RotateAboutFocus3D, PanImage3D and ZoomImage3D.
 //
+//    Hank Childs, Thu Dec 29 10:30:53 PST 2005
+//    Issue a view callback when in spin mode.  ['4231]
+//
 // ****************************************************************************
 
 void
@@ -107,6 +110,7 @@ Navigate3D::OnTimer(void)
                 OldX = spinOldX;
                 OldY = spinOldY;
                 RotateAboutFocus3D(spinNewX, spinNewY, false);
+                IssueViewCallback(true);
                 rwi->CreateTimer(VTKI_TIMER_UPDATE);
             }
             else

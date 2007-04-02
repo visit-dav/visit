@@ -181,19 +181,31 @@ VisitInteractor::MotionEnd(void)
 //  Programmer: Hank Childs
 //  Creation:   March 18, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Dec 29 10:30:53 PST 2005
+//    Added Boolean argument that states whether or not we're in spin mode.
+//
 // ****************************************************************************
 
 void
-VisitInteractor::IssueViewCallback(void)
+VisitInteractor::IssueViewCallback(bool inSpinMode)
 {
     if (viewCallback != NULL)
     {
+        bool issueCallback = false;
         if (lastX != lastCallbackX || lastY != lastCallbackY)
+        {
+            issueCallback = true;
+            lastCallbackX = lastX;
+            lastCallbackY = lastY;
+        }
+        if (inSpinMode)
+            issueCallback = true;
+        if (issueCallback)
         {
             VisWindow *vw = proxy;
             viewCallback(vw);
-            lastCallbackX = lastX;
-            lastCallbackY = lastY;
         }
     }
 }
