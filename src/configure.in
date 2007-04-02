@@ -1318,6 +1318,22 @@ AC_SUBST(GLEW_INCLUDE)
 AC_SUBST(GLEW_LIBS)
 
 dnl
+dnl Disable building filib. Only necessary if filib won't build somewhere 
+dnl
+AC_ARG_ENABLE(filib,
+   [  --disable-filib         do not build or use filib library -- disables adaptive CSG discretization],
+   Usefilib="$enable_filib", Usefilib=yes)
+BUILD_FILIB=""
+FILIB_LIBS=""
+if test "$Usefilib" = "yes"; then
+    BUILD_FILIB="filib"
+    AC_DEFINE(HAVE_FILIB)
+    FILIB_LIBS="-lfi -lprim -lieee"
+fi
+AC_SUBST(BUILD_FILIB)
+AC_SUBST(FILIB_LIBS)
+
+dnl
 dnl Make note if no CXXFLAGS have STILL yet been specified; this is the
 dnl same check as for emptycxxflags above, except it is possible that a
 dnl config-site file added some, in which case we need to append, not
@@ -1577,55 +1593,6 @@ case $withval in
 esac
 AC_SUBST(ZLIB_INCLUDE)
 AC_SUBST(ZLIB_LIB)
-
-dnl
-dnl check for fast interval library (filib)
-dnl
-VISIT_VTK_CPPFLAGS=""
-VISIT_VTK_LDFLAGS=""
-AC_MSG_CHECKING(for filib)
-FILIB_INCLUDE=""
-FILIB_LIB=""
-FILIB_LIBS=""
-AC_ARG_WITH(filib,
-	    [  --with-filib=INC-DIR,LIB-DIR     Location of filib header and library],
-           filib_specified="yes",
-           filib_specified="no"
-           )
-if test "$SHORT_UNAME" = "darwin"; then
-    FI_LIBEXT="dylib"
-else
-    FI_LIBEXT="a"
-fi
-if test "$filib_specified" = "yes"; then
-   if test "$withval" != "no"; then
-      FILIB_INCLUDE="-I`echo $withval |cut -f1 -d,`"
-      FILIB_LIB="-L`echo $withval |cut -f2 -d, -s`"
-   fi
-else
-   if test "$DEFAULT_FILIB_INCLUDE" != "" ; then
-      FILIB_INCLUDE="-I$DEFAULT_FILIB_INCLUDE $FILIB_INCLUDE"
-   fi
-   if test "$DEFAULT_FILIB_LIB" != "" ; then
-      FILIB_LIB="-L$DEFAULT_FILIB_LIB"
-   fi
-fi
-if test "$FILIB_LIB" != "" ; then
-   if test "$FILIB_INCLUDE" != "" ; then
-      AC_MSG_RESULT(yes)
-      AC_DEFINE(HAVE_FILIB)
-      FILIB_LIBS="-lfi -lprim -lieee"
-      VISIT_VTK_CPPFLAGS="$VISIT_VTK_CPPFLAGS $FILIB_INCLUDE"
-      VISIT_VTK_LDFLAGS="$VISIT_VTK_LDFLAGS""$""(FILIB_LIB)"
-   else
-      AC_MSG_RESULT(no)
-   fi
-else
-   AC_MSG_RESULT(no)
-fi
-AC_SUBST(FILIB_INCLUDE)
-AC_SUBST(FILIB_LIB)
-AC_SUBST(FILIB_LIBS)
 
 dnl
 dnl  Is HDF5 present?
@@ -2936,7 +2903,6 @@ CREATE_NETCDF_LINK=""
 CREATE_CGNS_LINK=""
 CREATE_GDAL_LINK=""
 CREATE_EXODUS_LINK=""
-CREATE_FILIB_LINK=""
 case $SHORT_UNAME in
   darwin)
     if test "$SILO_LIB" != "" ; then
@@ -2964,11 +2930,6 @@ case $SHORT_UNAME in
         CREATE_EXODUS_LINK="create_exodus_link"
     fi
   ;;
-  *)
-    if test "$FILIB_LIBS" != ""; then
-        CREATE_FILIB_LINK="libfilib"
-    fi
-  ;;
 esac
 AC_SUBST(CREATE_SILO_LINK)
 AC_SUBST(CREATE_MILI_LINK)
@@ -2978,7 +2939,6 @@ AC_SUBST(CREATE_NETCDF_LINK)
 AC_SUBST(CREATE_CGNS_LINK)
 AC_SUBST(CREATE_GDAL_LINK)
 AC_SUBST(CREATE_EXODUS_LINK)
-AC_SUBST(CREATE_FILIB_LINK)
 
 #
 # Check for library functions that can work around, or that we have
@@ -3223,7 +3183,8 @@ SIMULATION_PROTOTYPE_FILES="sim/Makefile
 CQSCORE_FILES="cqscore/Makefile"
 THIRD_PARTY_BUILTIN_FILES="third_party_builtin/Makefile
                            third_party_builtin/bzip2/Makefile
-                           third_party_builtin/glew/Makefile"
+                           third_party_builtin/glew/Makefile
+                           third_party_builtin/filib/Makefile"
 
 if test "$enable_scripting" = "yes"; then
     VISITPY_FILES="visitpy/Makefile"

@@ -740,6 +740,13 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
         //
         // Now, deal with cell data
         //
+        vtkDataArray *da1 = ds->GetCellData()->GetScalars();
+        vtkDataArray *da2 = ds->GetCellData()->GetScalars();
+        if (da1 != da2)
+        {
+            cerr << "Problem" << endl;
+            abort();
+        }
         vtkCellData *cd = ds->GetCellData();
         for (i = 0; i < cd->GetNumberOfArrays(); i++)
         {
@@ -771,12 +778,14 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
                             newda->Delete();
                         }
                     }
-                    switch (newda->GetNumberOfComponents())
-                    {
-                        case 1: rv->GetCellData()->SetScalars(newda); break;
-                        case 3: rv->GetCellData()->SetVectors(newda); break;
-                        default: rv->GetCellData()->SetTensors(newda); break;
-                    }
+                    if (cd->GetScalars() == da)
+                        rv->GetCellData()->SetScalars(newda);
+                    else if (cd->GetVectors() == da)
+                        rv->GetCellData()->SetVectors(newda);
+                    else if (cd->GetTensors() == da)
+                        rv->GetCellData()->SetTensors(newda);
+                    else
+                        rv->GetCellData()->AddArray(newda);
                 }
             }
             else if (pass == 1)
@@ -786,12 +795,14 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
                     rv->GetCellData()->AddArray(da);
                 else
                 {
-                    switch (da->GetNumberOfComponents())
-                    {
-                        case 1: rv->GetCellData()->SetScalars(da); break;
-                        case 3: rv->GetCellData()->SetVectors(da); break;
-                        default: rv->GetCellData()->SetTensors(da); break;
-                    }
+                    if (cd->GetScalars() == da)
+                        rv->GetCellData()->SetScalars(da);
+                    else if (cd->GetVectors() == da)
+                        rv->GetCellData()->SetVectors(da);
+                    else if (cd->GetTensors() == da)
+                        rv->GetCellData()->SetTensors(da);
+                    else
+                        rv->GetCellData()->AddArray(da);
                 }
             }
         }
@@ -834,12 +845,14 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
                             cerr << "Not caching this array" << endl;
                         }
                     }
-                    switch (newda->GetNumberOfComponents())
-                    {
-                        case 1: rv->GetPointData()->SetScalars(newda); break;
-                        case 3: rv->GetPointData()->SetVectors(newda); break;
-                        default: rv->GetPointData()->SetTensors(newda); break;
-                    }
+                    if (pd->GetScalars() == da)
+                        rv->GetPointData()->SetScalars(newda);
+                    else if (pd->GetVectors() == da)
+                        rv->GetPointData()->SetVectors(newda);
+                    else if (pd->GetTensors() == da)
+                        rv->GetPointData()->SetTensors(newda);
+                    else
+                        rv->GetPointData()->AddArray(newda);
                 }
             }
             else if (pass == 1)
@@ -849,12 +862,14 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
                     rv->GetPointData()->AddArray(da);
                 else
                 {
-                    switch (da->GetNumberOfComponents())
-                    {
-                        case 1: rv->GetPointData()->SetScalars(da); break;
-                        case 3: rv->GetPointData()->SetVectors(da); break;
-                        default: rv->GetPointData()->SetTensors(da); break;
-                    }
+                    if (pd->GetScalars() == da)
+                        rv->GetPointData()->SetScalars(da);
+                    else if (pd->GetVectors() == da)
+                        rv->GetPointData()->SetVectors(da);
+                    else if (pd->GetTensors() == da)
+                        rv->GetPointData()->SetTensors(da);
+                    else
+                        rv->GetPointData()->AddArray(da);
                 }
             }
         }

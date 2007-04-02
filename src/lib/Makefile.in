@@ -163,7 +163,7 @@ LIBSILO=libsilo.@SHLIB_LIBEXT@
 all: libvtkcommon libvtkdicom libvtkfiltering libvtkgraphics libvtkhybrid \
      libvtkio libvtkimaging libvtkrendering libvtkzlib libvtkpng libvtkjpeg \
      libvtkexpat libvtktiff libvtkfreetype libvtkftgl libvtksys libvtkexoIIc \
-     libvtknetcdf libvtkmpeg2encode libosmesa libmesagl libqt libqui pythondir @CREATE_SILO_LINK@ @CREATE_MILI_LINK@ @CREATE_HDF4_LINK@ @CREATE_HDF5_LINK@ @CREATE_NETCDF_LINK@ @CREATE_CGNS_LINK@ @CREATE_GDAL_LINK@ @CREATE_EXODUS_LINK@ @CREATE_FILIB_LINK@
+     libvtknetcdf libvtkmpeg2encode libosmesa libmesagl libqt libqui pythondir @CREATE_SILO_LINK@ @CREATE_MILI_LINK@ @CREATE_HDF4_LINK@ @CREATE_HDF5_LINK@ @CREATE_NETCDF_LINK@ @CREATE_CGNS_LINK@ @CREATE_GDAL_LINK@ @CREATE_EXODUS_LINK@
 
 libvtkcommon:
 	$(RM) $(LIBVTKCOMMON)*
@@ -275,16 +275,6 @@ pythondir:
 	    ln -s @PYDIR@ python                                    ;  \
 	    ln -s python/lib/@PYVERSION@/config/lib@PYVERSION@.@SHLIB_LIBEXT@ . ;  \
 	fi
-
-libfilib:
-	if test -n "$(FILIB_LIB)"; then \
-            for lib in $(FILIB_LIBS); do \
-                lib2=`echo $$lib | cut -d'l' -f2` ;\
-                $(RM) lib$$lib2.* ;\
-            done \
-        fi
-	ln -fs `echo $(FILIB_LIB) | cut -d'L' -f2`/* .
-
 
 create_silo_link:
 	$(RM) $(LIBSILO)

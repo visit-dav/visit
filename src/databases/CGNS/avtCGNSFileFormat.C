@@ -697,7 +697,7 @@ avtCGNSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                         if(fUnits)
                             unitStack.PopUnits();
                     
-                        // See if we have Volicity and Momentum components.
+                        // See if we have Velocity and Momentum components.
                         haveVelocityX |= (strcmp(fieldname, "VelocityX") == 0);
                         haveVelocityY |= (strcmp(fieldname, "VelocityY") == 0);
                         haveVelocityZ |= (strcmp(fieldname, "VelocityZ") == 0);
@@ -834,21 +834,43 @@ avtCGNSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     }
 
     // Add some expressions.
-    if(haveVelocityX && haveVelocityY && haveVelocityZ)
+    if(cell_dim == 2)
     {
-        Expression *e = new Expression;
-        e->SetName("Velocity");
-        e->SetDefinition("{VelocityX,VelocityY,VelocityZ}");
-        e->SetType(Expression::VectorMeshVar);
-        md->AddExpression(e);
+        if(haveVelocityX && haveVelocityY)
+        {
+            Expression *e = new Expression;
+            e->SetName("Velocity");
+            e->SetDefinition("{VelocityX,VelocityY}");
+            e->SetType(Expression::VectorMeshVar);
+            md->AddExpression(e);
+        }
+        if(haveMomentumX && haveMomentumY)
+        {
+            Expression *e = new Expression;
+            e->SetName("Momentum");
+            e->SetDefinition("{MomentumX,MomentumY}");
+            e->SetType(Expression::VectorMeshVar);
+            md->AddExpression(e);
+        }
     }
-    if(haveMomentumX && haveMomentumY && haveMomentumZ)
+    else
     {
-        Expression *e = new Expression;
-        e->SetName("Momentum");
-        e->SetDefinition("{MomentumX,MomentumY,MomentumZ}");
-        e->SetType(Expression::VectorMeshVar);
-        md->AddExpression(e);
+        if(haveVelocityX && haveVelocityY && haveVelocityZ)
+        {
+            Expression *e = new Expression;
+            e->SetName("Velocity");
+            e->SetDefinition("{VelocityX,VelocityY,VelocityZ}");
+            e->SetType(Expression::VectorMeshVar);
+            md->AddExpression(e);
+        }
+        if(haveMomentumX && haveMomentumY && haveMomentumZ)
+        {
+            Expression *e = new Expression;
+            e->SetName("Momentum");
+            e->SetDefinition("{MomentumX,MomentumY,MomentumZ}");
+            e->SetType(Expression::VectorMeshVar);
+            md->AddExpression(e);
+        }
     }
 }
 
@@ -970,7 +992,10 @@ avtCGNSFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 // Creation:   Wed Aug 31 11:45:55 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Dec 11 09:28:52 PDT 2006
+//   Prevent the coordinate arrays from being too large in the structured
+//   1D, 2D cases.
+//
 // ****************************************************************************
 
 bool
@@ -1003,9 +1028,21 @@ avtCGNSFileFormat::GetCoords(int base, int zone, const int *zsize,
         int rmax[3] = {1,1,1};
         if(structured)
         {
-            rmax[0] = zsize[0];
-            rmax[1] = zsize[1];
-            rmax[2] = zsize[2];
+            if(*ncoords == 1)
+            {
+                rmax[0] = zsize[0];
+            }
+            else if(*ncoords == 2)
+            {
+                rmax[0] = zsize[0];
+                rmax[1] = zsize[1];
+            }
+            else
+            {
+                rmax[0] = zsize[0];
+                rmax[1] = zsize[1];
+                rmax[2] = zsize[2];
+            }
             nPts = zsize[0] * zsize[1] * zsize[2];
         }
         else
@@ -1074,7 +1111,9 @@ avtCGNSFileFormat::GetCoords(int base, int zone, const int *zsize,
 // Creation:   Wed Aug 31 09:30:30 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Dec 11 09:42:35 PDT 2006
+//   Corrected support for 2D.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1098,8 +1137,8 @@ avtCGNSFileFormat::GetCurvilinearMesh(int base, int zone, const char *meshname,
         // Populate the points array
         int dims[3];
         dims[0] = zsize[0];
-        dims[1] = zsize[1];
-        dims[2] = zsize[2];
+        dims[1] = (ncoords >= 2) ? zsize[1] : 1;
+        dims[2] = (ncoords == 3) ? zsize[2] : 1;
         sgrid->SetDimensions(dims);
         points->SetNumberOfPoints(dims[0] * dims[1] * dims[2]);
         float *pts = (float *) points->GetVoidPointer(0);
@@ -1133,7 +1172,15 @@ avtCGNSFileFormat::GetCurvilinearMesh(int base, int zone, const char *meshname,
                 }
             }
         }
-
+        else if(ncoords == 1)
+        {
+            for(int i = 0; i < dims[0]; ++i)
+            {
+                *pts++ = *xc++;
+                *pts++ = 0.;
+                *pts++ = 0.;
+            }
+        }
         retval = sgrid;
 
         delete [] coords[0];
@@ -1535,6 +1582,9 @@ avtCGNSFileFormat::GetUnstructuredMesh(int base, int zone, const char *meshname,
 //  Creation:   Tue Aug 30 16:08:44 PST 2005
 //
 //  Modifications:
+//    Brad Whitlock, Mon Dec 11 09:33:15 PDT 2006
+//    Changed interpretation of zsize array for 1D, 2D cases so we allocate
+//    and read the right number of values.
 //
 // ****************************************************************************
 
@@ -1558,6 +1608,25 @@ avtCGNSFileFormat::GetVar(int timestate, int domain, const char *varname)
     memset(zonename, 0, 33);
     memset(zsize, 0, 9 * sizeof(int));
 
+    //
+    // Determine the topological and spatial dimensions.
+    //
+    char namebase[33];
+    int cell_dim = 2, phys_dim = 2;
+    if(cg_base_read(GetFileHandle(), base, namebase, &cell_dim, &phys_dim) != CG_OK)
+    {
+        debug4 << cg_get_error() << endl;
+        EXCEPTION1(InvalidFilesException, filename);
+    }
+    else
+    {
+        debug4 << mName << " name=" << namebase << " cell_dim=" << cell_dim
+               << " phys_dim=" << phys_dim << endl;
+    }
+
+    //
+    // Read the zone information
+    //
     if(cg_zone_read(GetFileHandle(), base, zone, zonename, zsize) != CG_OK)
     {
         debug4 << mName << cg_get_error() << endl;
@@ -1686,15 +1755,39 @@ avtCGNSFileFormat::GetVar(int timestate, int domain, const char *varname)
                             {
                                 if(varcentering == Vertex)
                                 {
-                                    rmax[0] = zsize[0];
-                                    rmax[1] = zsize[1];
-                                    rmax[2] = zsize[2];
+                                    if(cell_dim == 1)
+                                    {
+                                        rmax[0] = zsize[0];
+                                    }
+                                    else if(cell_dim == 2)
+                                    {
+                                        rmax[0] = zsize[0];
+                                        rmax[1] = zsize[1];
+                                    }
+                                    else
+                                    {
+                                        rmax[0] = zsize[0];
+                                        rmax[1] = zsize[1];
+                                        rmax[2] = zsize[2];
+                                    }
                                 }
                                 else
                                 {
-                                    rmax[0] = zsize[3];
-                                    rmax[1] = zsize[4];
-                                    rmax[2] = zsize[5];
+                                    if(cell_dim == 1)
+                                    {
+                                        rmax[0] = zsize[1];
+                                    }
+                                    else if(cell_dim == 2)
+                                    {
+                                        rmax[0] = zsize[2];
+                                        rmax[1] = zsize[3];
+                                    }
+                                    else
+                                    {
+                                        rmax[0] = zsize[3];
+                                        rmax[1] = zsize[4];
+                                        rmax[2] = zsize[5];
+                                    }
                                 }
                                 nvals = rmax[0] * rmax[1] * rmax[2];
                             }

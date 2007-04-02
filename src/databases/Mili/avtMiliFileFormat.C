@@ -2083,8 +2083,7 @@ avtMiliFileFormat::GetNTimesteps()
 //    
 //    Thomas R. Treadway, Tue Dec  5 15:14:11 PST 2006
 //    Added a derived strain and displacement algorithms
-//    
-//    
+//
 // ****************************************************************************
 
 void
@@ -2343,46 +2342,50 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
             Expression p_dev_stress1_expr;
             p_dev_stress1_expr.SetName("derived/"+dirs[i]+"prin_dev_stress/1");
-            p_dev_stress1_expr.SetDefinition(
-                                         "principal_deviatoric_tensor(<"+dirs[i]+"stress>)[0]");
+            p_dev_stress1_expr.SetDefinition
+                ("principal_deviatoric_tensor(<"+dirs[i]+"stress>)[0]");
             p_dev_stress1_expr.SetType(Expression::ScalarMeshVar);
             md->AddExpression(&p_dev_stress1_expr);
 
             Expression p_dev_stress2_expr;
             p_dev_stress2_expr.SetName("derived/"+dirs[i]+"prin_dev_stress/2");
-            p_dev_stress2_expr.SetDefinition(
-                                         "principal_deviatoric_tensor(<"+dirs[i]+"stress>)[1]");
+            p_dev_stress2_expr.SetDefinition
+                ("principal_deviatoric_tensor(<"+dirs[i]+"stress>)[1]");
             p_dev_stress2_expr.SetType(Expression::ScalarMeshVar);
             md->AddExpression(&p_dev_stress2_expr);
 
             Expression p_dev_stress3_expr;
             p_dev_stress3_expr.SetName("derived/"+dirs[i]+"prin_dev_stress/3");
-            p_dev_stress3_expr.SetDefinition(
-                                         "principal_deviatoric_tensor(<"+dirs[i]+"stress>)[2]");
+            p_dev_stress3_expr.SetDefinition
+                ("principal_deviatoric_tensor(<"+dirs[i]+"stress>)[2]");
             p_dev_stress3_expr.SetType(Expression::ScalarMeshVar);
             md->AddExpression(&p_dev_stress3_expr);
 
             Expression maxshr_expr;
             maxshr_expr.SetName("derived/"+dirs[i]+"max_shear_stress");
-            maxshr_expr.SetDefinition("tensor_maximum_shear(<"+dirs[i]+"stress>)");
+            maxshr_expr.SetDefinition
+                ("tensor_maximum_shear(<"+dirs[i]+"stress>)");
             maxshr_expr.SetType(Expression::ScalarMeshVar);
             md->AddExpression(&maxshr_expr);
 
             Expression prin_stress1_expr;
             prin_stress1_expr.SetName("derived/"+dirs[i]+"prin_stress/1");
-            prin_stress1_expr.SetDefinition("principal_tensor(<"+dirs[i]+"stress>)[0]");
+            prin_stress1_expr.SetDefinition
+                ("principal_tensor(<"+dirs[i]+"stress>)[0]");
             prin_stress1_expr.SetType(Expression::ScalarMeshVar);
             md->AddExpression(&prin_stress1_expr);
 
             Expression prin_stress2_expr;
             prin_stress2_expr.SetName("derived/"+dirs[i]+"prin_stress/2");
-            prin_stress2_expr.SetDefinition("principal_tensor(<"+dirs[i]+"stress>)[1]");
+            prin_stress2_expr.SetDefinition
+                ("principal_tensor(<"+dirs[i]+"stress>)[1]");
             prin_stress2_expr.SetType(Expression::ScalarMeshVar);
             md->AddExpression(&prin_stress2_expr);
 
             Expression prin_stress3_expr;
             prin_stress3_expr.SetName("derived/"+dirs[i]+"prin_stress/3");
-            prin_stress3_expr.SetDefinition("principal_tensor(<"+dirs[i]+"stress>)[2]");
+            prin_stress3_expr.SetDefinition
+                ("principal_tensor(<"+dirs[i]+"stress>)[2]");
             prin_stress3_expr.SetType(Expression::ScalarMeshVar);
             md->AddExpression(&prin_stress3_expr);
         }
@@ -3113,35 +3116,35 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             string tmpvarname = 
                 "derived/"+dirs[i]+"displacement/initial_disp_coords";
                                                               
-            Expression initial_disp_coords;                   
-            initial_disp_coords.SetName(tmpvarname);          
-            initial_disp_coords.SetDefinition                 
+            Expression initial_disp_coords;              
+            initial_disp_coords.SetName(tmpvarname);
+            initial_disp_coords.SetDefinition
                 ("conn_cmfe(coord(<[0]i:"+tmpmeshname+">),"+tmpmeshname+")");
             initial_disp_coords.SetType(Expression::VectorMeshVar);
             initial_disp_coords.SetHidden(true);              
-            md->AddExpression(&initial_disp_coords);          
-                                                              
-            Expression noddisp;                               
+            md->AddExpression(&initial_disp_coords);       
+                                            
+            Expression noddisp;
             noddisp.SetName("derived/"+dirs[i]+"displacement/vec");
-            noddisp.SetDefinition(                            
+            noddisp.SetDefinition( 
                "displacement("+tmpmeshname+",<"+tmpvarname+">)");
-            noddisp.SetType(Expression::VectorMeshVar);       
-            noddisp.SetHidden(true);                          
-            md->AddExpression(&noddisp);                      
-                                                              
-            Expression dispx_expr;                            
+            noddisp.SetType(Expression::VectorMeshVar);
+            noddisp.SetHidden(true);
+            md->AddExpression(&noddisp);
+       
+            Expression dispx_expr;
             dispx_expr.SetName("derived/"+dirs[i]+"displacement/x");
-            dispx_expr.SetDefinition                          
-                ("<derived/"+dirs[i]+"displacement/vec>[0]"); 
-            dispx_expr.SetType(Expression::ScalarMeshVar);    
-            md->AddExpression(&dispx_expr);                   
-                                                              
+            dispx_expr.SetDefinition
+                ("<derived/"+dirs[i]+"displacement/vec>[0]");
+            dispx_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&dispx_expr);
+                                  
             Expression dispy_expr;                            
             dispy_expr.SetName("derived/"+dirs[i]+"displacement/y");
-            dispy_expr.SetDefinition                          
-                ("<derived/"+dirs[i]+"displacement/vec>[1]"); 
-            dispy_expr.SetType(Expression::ScalarMeshVar);    
-            md->AddExpression(&dispy_expr);                   
+            dispy_expr.SetDefinition                      
+                ("<derived/"+dirs[i]+"displacement/vec>[1]");
+            dispy_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&dispy_expr);
                                                               
             Expression dispz_expr;                            
             dispz_expr.SetName("derived/"+dirs[i]+"displacement/z");
