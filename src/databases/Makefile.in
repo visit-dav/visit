@@ -157,6 +157,9 @@
 #   Hank Childs, Wed Jul 20 16:01:09 PDT 2005
 #   Add Xmdv reader.
 #
+#   Brad Whitlock, Thu Jul 28 13:47:03 PST 2005
+#   Added PATRAN reader.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -174,7 +177,7 @@ PDB=KullLite PDB
 SAF=SAF
 SAMPLES=Rect Hex
 REQUIRED=ANALYZE ANSYS AUXFile BOV CMAT Curve2D Dune EnSight Image Lines \
- NASTRAN OVERFLOW PLOT2D PLOT3D Point3D SAR STL Shapefile Silo SimV1 \
+ NASTRAN OVERFLOW PATRAN PLOT2D PLOT3D Point3D SAR STL Shapefile Silo SimV1 \
  Spheral TFT Tecplot Vista VTK WavefrontOBJ Xmdv
 VISUS=ViSUS
 
