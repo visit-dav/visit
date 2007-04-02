@@ -79,6 +79,9 @@ $0 = shift @ARGV;
 #    Jeremy Meredith, Thu Jul 21 11:13:46 PDT 2005
 #    Q underwent a major upgrade, so the hardcoded paths changed.
 #
+#    Brad Whitlock, Mon Jul 25 11:58:46 PDT 2005
+#    Fixed problem with -newconsole on AIX.
+#
 ###############################################################################
 
 
@@ -1303,6 +1306,13 @@ else
             }
             else
             {
+                if($os eq "aix")
+                {
+                    push @newcmd, $visitlauncher;
+                    push @newcmd, "-$exe_name";
+                    splice @visitcmd, 0, 1, @newcmd;
+                }
+
                 @tmpcmd = @visitcmd;
                 @visitcmd = ("xterm", "-title", "VisIt $exe_name$ver", "-fn", "fixed", "-e");
                 push @visitcmd, @tmpcmd;
