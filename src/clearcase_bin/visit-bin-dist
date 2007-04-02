@@ -234,6 +234,9 @@
 #    Eric Brugger, Fri Mar 17 09:42:22 PST 2006
 #    I corrected an error setting the symbolic link libqui.a.
 #
+#    Eric Brugger, Wed Jun  7 16:26:14 PDT 2006
+#    I modified the script to handle the new vtk library naming conventions.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -459,47 +462,23 @@ if (("$MesaLibs" == "TRUE") && \
 endif
 
 #
-# Determine the names of the VTK shared libraries.
+# Set the names of the VTK shared libraries.
 #
-set VTKCoLibName = "libvtkCommon.$SHLIB_SOEXT"
-set VTKDiLibName = "libvtkDICOMParser.$SHLIB_SOEXT"
-set VTKFiLibName = "libvtkFiltering.$SHLIB_SOEXT"
-set VTKGrLibName = "libvtkGraphics.$SHLIB_SOEXT"
-set VTKHyLibName = "libvtkHybrid.$SHLIB_SOEXT"
-set VTKImLibName = "libvtkImaging.$SHLIB_SOEXT"
-set VTKIoLibName = "libvtkIO.$SHLIB_SOEXT"
-set VTKReLibName = "libvtkRendering.$SHLIB_SOEXT"
-set VTKExLibName = "libvtkexpat.$SHLIB_SOEXT"
-set VTKFrLibName = "libvtkfreetype.$SHLIB_SOEXT"
-set VTKFtLibName = "libvtkftgl.$SHLIB_SOEXT"
-set VTKPnLibName = "libvtkpng.$SHLIB_SOEXT"
-set VTKJpLibName = "libvtkjpeg.$SHLIB_SOEXT"
-set VTKTiLibName = "libvtktiff.$SHLIB_SOEXT"
-set VTKZlLibName = "libvtkzlib.$SHLIB_SOEXT"
+set vtklibs="libvtkCommon libvtkDICOMParser libvtkFiltering libvtkGraphics libvtkHybrid libvtkIO libvtkImaging libvtkMPEG2Encode libvtkNetCDF libvtkRendering libvtkexoIIc libvtkexpat libvtkfreetype libvtkftgl libvtkjpeg libvtkpng libvtksys libvtktiff libvtkzlib"
 
 #
 # Check that the VTK libraries exist.
 #
-if (("$VTKLibs" == "TRUE") && \
-    ((! -e $VisItDir/lib/$VTKCoLibName) || \
-     (! -e $VisItDir/lib/$VTKDiLibName) || \
-     (! -e $VisItDir/lib/$VTKFiLibName) || \
-     (! -e $VisItDir/lib/$VTKGrLibName) || \
-     (! -e $VisItDir/lib/$VTKHyLibName) || \
-     (! -e $VisItDir/lib/$VTKImLibName) || \
-     (! -e $VisItDir/lib/$VTKIoLibName) || \
-     (! -e $VisItDir/lib/$VTKReLibName) || \
-     (! -e $VisItDir/lib/$VTKExLibName) || \
-     (! -e $VisItDir/lib/$VTKFrLibName) || \
-     (! -e $VisItDir/lib/$VTKFtLibName) || \
-     (! -e $VisItDir/lib/$VTKPnLibName) || \
-     (! -e $VisItDir/lib/$VTKJpLibName) || \
-     (! -e $VisItDir/lib/$VTKTiLibName) || \
-     (! -e $VisItDir/lib/$VTKZlLibName))) then
-   echo " "
-   echo "Error: Missing VTK libraries in $VisItDir/lib. aborting ..."
-   echo " "
-   exit (1)
+if ("$VTKLibs" == "TRUE") then
+    foreach vtklib ($vtklibs)
+       echo "processing $vtklib"
+       if (! -e $VisItDir/lib/$vtklib.$SHLIB_SOEXT) then
+           echo " "
+           echo "Error: Missing VTK libraries in $VisItDir/lib. aborting ..."
+           echo " "
+           exit (1)
+       endif
+    end
 endif
 
 #
@@ -838,21 +817,21 @@ ln -s "python/lib/$pyver/config/lib${pyver}.$SHLIB_SOEXT" $libdir
 #
 # Copy the VTK libraries to the distribution.
 #
-cp $VisItDir/lib/$VTKCoLibName $libdir/$VTKCoLibName
-cp $VisItDir/lib/$VTKDiLibName $libdir/$VTKDiLibName
-cp $VisItDir/lib/$VTKFiLibName $libdir/$VTKFiLibName
-cp $VisItDir/lib/$VTKGrLibName $libdir/$VTKGrLibName
-cp $VisItDir/lib/$VTKHyLibName $libdir/$VTKHyLibName
-cp $VisItDir/lib/$VTKImLibName $libdir/$VTKImLibName
-cp $VisItDir/lib/$VTKIoLibName $libdir/$VTKIoLibName
-cp $VisItDir/lib/$VTKReLibName $libdir/$VTKReLibName
-cp $VisItDir/lib/$VTKExLibName $libdir/$VTKExLibName
-cp $VisItDir/lib/$VTKFrLibName $libdir/$VTKFrLibName
-cp $VisItDir/lib/$VTKFtLibName $libdir/$VTKFtLibName
-cp $VisItDir/lib/$VTKPnLibName $libdir/$VTKPnLibName
-cp $VisItDir/lib/$VTKJpLibName $libdir/$VTKJpLibName
-cp $VisItDir/lib/$VTKTiLibName $libdir/$VTKTiLibName
-cp $VisItDir/lib/$VTKZlLibName $libdir/$VTKZlLibName
+if ("$VTKLibs" == "TRUE") then
+    foreach vtklib ($vtklibs)
+       if ("$SHLIB_SOEXT" == "so") then
+           if ("$os" == "aix") then
+               cp $VisItDir/lib/$vtklib.so $libdir/$vtklib.so
+           else
+               cp $VisItDir/lib/$vtklib.so.5.0.0 $libdir/$vtklib.so.5.0.0
+               ln -s $vtklib.so.5.0.0 $libdir/$vtklib.so.5.0
+               ln -s $vtklib.so.5.0.0 $libdir/$vtklib.so
+           endif
+       else
+           cp $VisItDir/lib/$vtklib.dylib $libdir/$vtklib.dylib
+       endif
+    end
+endif
 
 #
 # If we're on MacOS X, copy some libraries that are statically linked on

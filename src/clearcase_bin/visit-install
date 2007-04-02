@@ -107,6 +107,9 @@
 #    Brad Whitlock, Thu May 25 15:22:32 PST 2006
 #    Added logic to create .installinfo file.
 #
+#    Eric Brugger, Wed Jun  7 16:38:48 PDT 2006
+#    Remove some debug statements.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -360,10 +363,8 @@ cd $platformBin/..
 set platformPath = `pwd`
 cd $savepwd
 set platformDir = ""
-echo "platformPath = $platformPath"
 foreach f (`echo $platformPath | tr "/" " "`)
     set platformDir = $f
-    echo "platformDir = $platformDir"
 end
 # Copy the files
 find . -print | cpio -pmud $dir/$version+
