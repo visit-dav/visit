@@ -84,6 +84,10 @@ avtGhostZoneFilter::~avtGhostZoneFilter()
 //    Hank Childs, Fri Aug 27 16:02:58 PDT 2004
 //    Rename ghost data array.  Also remove SetGhostLevel call.
 //
+//    Hank Childs, Thu Mar  2 14:15:29 PST 2006
+//    Change the way we access the vtkDataSetRemoveGhostCells filter, since
+//    it can change type of output.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -118,6 +122,10 @@ avtGhostZoneFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
     // will be removed.  Currently our 'real' zones have
     // ghostlevel ==0, 'ghost' have ghostlevel ==1.
     //
+    // Note: have to say "Update" before saying GetOutput, since output
+    // may change during execution.
+    //
+    filter->Update();
     vtkDataSet *outDS = filter->GetOutput();
     outDS->Update();
 

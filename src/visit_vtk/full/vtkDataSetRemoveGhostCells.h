@@ -56,6 +56,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //    Hank Childs, Mon Aug 30 16:27:16 PDT 2004
 //    Removed GhostLevels data member.
 //
+//    Hank Childs, Thu Mar  2 11:14:53 PST 2006
+//    Add GenericExecute.
+//
 class VISIT_VTK_API vtkDataSetRemoveGhostCells : public vtkDataSetToDataSetFilter
 {
 public:
@@ -74,6 +77,7 @@ protected:
   void UnstructuredGridExecute();
   void RectilinearGridExecute();
   void PolyDataExecute();
+  void GenericExecute();
 
 private:
   vtkDataSetRemoveGhostCells(const vtkDataSetRemoveGhostCells&);

@@ -62,6 +62,11 @@ avtDeterminantFilter::~avtDeterminantFilter()
 //  Programmer: Hank Childs
 //  Creation:   September 22, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Mar  3 08:56:52 PST 2006
+//    Add support for 2D tensors ['7063].
+//
 // ****************************************************************************
  
 void
@@ -70,6 +75,8 @@ avtDeterminantFilter::DoOperation(vtkDataArray *in, vtkDataArray *out,
 {
     if (ncomponents == 9)
     {
+        bool is2D = GetInput()->GetInfo().GetAttributes().
+                                                    GetSpatialDimension() == 2;
         for (int i = 0 ; i < ntuples ; i++)
         {
             float *vals = in->GetTuple9(i);
@@ -82,9 +89,18 @@ avtDeterminantFilter::DoOperation(vtkDataArray *in, vtkDataArray *out,
             col2[1] = vals[4];
             col2[2] = vals[7];
             float col3[3];
-            col3[0] = vals[2];
-            col3[1] = vals[5];
-            col3[2] = vals[8];
+            if (is2D)
+            {
+                col3[0] = 0.;
+                col3[1] = 0.;
+                col3[2] = 1.;
+            }
+            else
+            {
+                col3[0] = vals[2];
+                col3[1] = vals[5];
+                col3[2] = vals[8];
+            }
             float det = vtkMath::Determinant3x3(col1, col2, col3);
             out->SetTuple1(i, det);
         }

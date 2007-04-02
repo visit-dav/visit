@@ -1230,20 +1230,21 @@ ViewerEngineManager::GetEngine(const EngineKey &ek)
 void
 ViewerEngineManager::LaunchMessage(const EngineKey &ek)  const
 {
-    char message[200];
-    if (ek.SimName() != "")
+    char message[200] = { '\0' };
+    if (ek.IsSimulation())
     {
         SNPRINTF(message, 200, "VisIt is not connected to the simulation '%s' "
                  "on host %s", ek.SimName().c_str(), ek.HostName().c_str());
     }
-    else
+    else if (ek.HostName() != "<unset>")
     {
         SNPRINTF(message, 200, "VisIt could not find a compute engine to use "
                  "for the plot on host %s. VisIt will try to launch a compute "
                  "engine on that host.", ek.HostName().c_str());
     }
         
-    Warning(message);
+    if (strlen(message) > 0)
+        Warning(message);
 }
 
 // ****************************************************************************
@@ -2222,6 +2223,10 @@ ViewerEngineManager::StartPick(const EngineKey &ek, const bool forZones,
 //    Hank Childs, Mon Feb 20 16:40:37 PST 2006
 //    Do not launch an engine just to set the window annotation attributes.
 //
+//    Hank Childs, Fri Mar  3 09:19:13 PST 2006
+//    Remove behavior where engine is not launched.  This is important
+//    for picking on crashed engines (regression test pick.py will fail).
+//
 // ****************************************************************************
 
 bool
@@ -2236,15 +2241,6 @@ ViewerEngineManager::SetWinAnnotAtts(const EngineKey &ek,
                                      const string ctName,
                                      const int winID)
 {
-    //
-    // It doesn't really make sense to launch an engine so we can tell it what
-    // the annotation attributes are.
-    //
-    if (!EngineExists(ek))
-    {
-        return false;
-    }
-
     ENGINE_PROXY_RPC_BEGIN("SetWinAnnotAtts");
     engine->SetWinAnnotAtts(wa,aa,ao,extstr,visCues,frameAndState,viewExtents,
         ctName, winID);
