@@ -172,6 +172,9 @@ typedef ref_ptr<avtDataSpecification> avtDataSpecification_p;
 //
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Added flatness tolerance.
+//
+//    Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
+//    Moved implementation of SetDiscMode to .C file 
 // ****************************************************************************
 
 class PIPELINE_API avtDataSpecification
@@ -355,7 +358,7 @@ class PIPELINE_API avtDataSpecification
     void                         SetFlatTol(double tol) { flatTol = tol; };
     double                       FlatTol() const { return flatTol; };
 
-    void                         SetDiscMode(int mode) { discMode = mode; };
+    void                         SetDiscMode(int mode);
     int                          DiscMode() const { return discMode; };
 
     void                         SetDiscBoundaryOnly(bool b)

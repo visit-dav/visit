@@ -210,6 +210,7 @@ bool
 vtkCSGGrid::Box::IsFlatEnough2(const double *const gridBoundaries,
     int boundaryId, double tol)
 {
+#ifdef HAVE_FILIB
     const double *const a = &gridBoundaries[boundaryId * NUM_QCOEFFS]; 
 
     // compute spatial box
@@ -314,6 +315,9 @@ vtkCSGGrid::Box::IsFlatEnough2(const double *const gridBoundaries,
     return false;
 #endif
 
+#else
+    return false;
+#endif
 }
 
 bool
@@ -339,6 +343,7 @@ vtkCSGGrid::Box::CanBeCut2(const double *const gridBoundaries,
 vtkCSGGrid::Box::FuncState
 vtkCSGGrid::Box::EvalBoxStateOfBoundary(const double *const a, double tol) const
 {
+#ifdef HAVE_FILIB
     Interval X(x0,x1);
     Interval Y(y0,y1);
     Interval Z(z0,z1);
@@ -353,6 +358,9 @@ vtkCSGGrid::Box::EvalBoxStateOfBoundary(const double *const a, double tol) const
         return GT_ZERO;
     else
         return EQ_ZERO;
+#else
+    return EQ_ZERO;
+#endif
 }
 
 // curBox and tol are unused args here
@@ -1840,6 +1848,7 @@ vtkCSGGrid::BuildVTKImplicitFunction(int zoneId, vtkImplicitFunction **func) con
 }
 
 // This removed code needs to be re-implemented using new class
+double epsTol;
 #if 1
 vtkPolyData  *vtkCSGGrid::DiscretizeSurfaces(
     int specificZone, double tol,
@@ -1849,14 +1858,6 @@ vtkPolyData  *vtkCSGGrid::DiscretizeSurfaces(
 {
     vtkAppendPolyData *appender = vtkAppendPolyData::New();
 
-    //
-    // Turn relative tolerance into an absolute tolerance 
-    //
-    tol = ComputeRelativeTol(tol, minX, maxX, minY, maxY, minZ, maxZ);
-    int nX = (int) ((maxX - minX) / tol);
-    int nY = (int) ((maxY - minY) / tol);
-    int nZ = (int) ((maxZ - minZ) / tol);
-
     // fudge the bounds a bit
     minX -= minX * (minX < 0.0 ? -tol : tol);
     minY -= minY * (minY < 0.0 ? -tol : tol);
@@ -1864,6 +1865,15 @@ vtkPolyData  *vtkCSGGrid::DiscretizeSurfaces(
     minX += minX * (minX < 0.0 ? -tol : tol);
     minY += minY * (minY < 0.0 ? -tol : tol);
     minZ += minZ * (minZ < 0.0 ? -tol : tol);
+
+    //
+    // Turn relative tolerance into an absolute tolerance 
+    //
+    tol = ComputeRelativeTol(tol, minX, maxX, minY, maxY, minZ, maxZ);
+    epsTol = tol;
+    int nX = (int) ((maxX - minX) / tol);
+    int nY = (int) ((maxY - minY) / tol);
+    int nZ = (int) ((maxZ - minZ) / tol);
 
     int startZone = specificZone;
     int endZone = startZone + 1; 
@@ -1916,14 +1926,6 @@ vtkUnstructuredGrid *vtkCSGGrid::DiscretizeSpace(
 {
     vtkAppendFilter *appender = vtkAppendFilter::New();
 
-    //
-    // Turn relative tolerance into an absolute tolerance 
-    //
-    tol = ComputeRelativeTol(tol, minX, maxX, minY, maxY, minZ, maxZ);
-    int nX = (int) ((maxX - minX) / tol);
-    int nY = (int) ((maxY - minY) / tol);
-    int nZ = (int) ((maxZ - minZ) / tol);
-
     // fudge the bounds a bit
     minX -= minX * (minX < 0.0 ? -tol : tol);
     minY -= minY * (minY < 0.0 ? -tol : tol);
@@ -1931,6 +1933,12 @@ vtkUnstructuredGrid *vtkCSGGrid::DiscretizeSpace(
     minX += minX * (minX < 0.0 ? -tol : tol);
     minY += minY * (minY < 0.0 ? -tol : tol);
     minZ += minZ * (minZ < 0.0 ? -tol : tol);
+
+    tol = ComputeRelativeTol(tol, minX, maxX, minY, maxY, minZ, maxZ);
+    epsTol = tol;
+    int nX = (int) ((maxX - minX) / tol);
+    int nY = (int) ((maxY - minY) / tol);
+    int nZ = (int) ((maxZ - minZ) / tol);
 
     int startZone = specificZone;
     int endZone = startZone + 1;
@@ -1970,7 +1978,6 @@ vtkUnstructuredGrid *vtkCSGGrid::DiscretizeSpace(
 }
 #endif
 
-double epsTol;
 
 void
 vtkCSGGrid::AddCutZones(vtkUnstructuredGrid *cutBox,

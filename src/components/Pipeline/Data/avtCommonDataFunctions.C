@@ -1015,7 +1015,30 @@ GetDataRange(vtkDataSet *ds, double *de, const char *vname)
 //    Kathleen Bonnell, Tue May 11 08:02:51 PDT 2004
 //    Added support for VTK_DOUBLE. 
 //
+//    Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
+//    Templatized it to support all array types.
 // ****************************************************************************
+
+template <class T> static void
+GetScalarRange(T *buf, int n, double *exts)
+{
+    T min = *buf++; // buf[0] sets min/max
+    T max = min;    // so, start loop @ 1
+    for (int i = 1; i < n; i++, buf++)
+    {
+        if (*buf < min)
+        {
+            min = *buf;
+        }
+        else
+        {
+            if (*buf > max)
+                max = *buf;
+        }
+    }
+    exts[0] = (double) min;
+    exts[1] = (double) max;
+}
 
 void
 GetDataScalarRange(vtkDataSet *ds, double *exts, const char *vname)
@@ -1039,45 +1062,41 @@ GetDataScalarRange(vtkDataSet *ds, double *exts, const char *vname)
     exts[0] = +FLT_MAX;
     exts[1] = -FLT_MAX;
     
-    if (da->GetDataType() == VTK_FLOAT)
+    switch (da->GetDataType())
     {
-        float *ptr = (float *) da->GetVoidPointer(0);
-        for (i = 0 ; i < nvals ; i++)
-        {
-            exts[0] = (exts[0] < *ptr ? exts[0] : *ptr);
-            exts[1] = (exts[1] > *ptr ? exts[1] : *ptr);
-            ptr++;
-        }
-    }
-    if (da->GetDataType() == VTK_DOUBLE)
-    {
-        double *ptr = (double *) da->GetVoidPointer(0);
-        for (i = 0 ; i < nvals ; i++)
-        {
-            exts[0] = (exts[0] < *ptr ? exts[0] : *ptr);
-            exts[1] = (exts[1] > *ptr ? exts[1] : *ptr);
-            ptr++;
-        }
-    }
-    else if (da->GetDataType() == VTK_INT)
-    {
-        int *ptr = (int *) da->GetVoidPointer(0);
-        for (i = 0 ; i < nvals ; i++)
-        {
-            exts[0] = (exts[0] < *ptr ? exts[0] : *ptr);
-            exts[1] = (exts[1] > *ptr ? exts[1] : *ptr);
-            ptr++;
-        }
-    }
-    else if (da->GetDataType() == VTK_UNSIGNED_CHAR)
-    {
-        unsigned char *ptr = (unsigned char *) da->GetVoidPointer(0);
-        for (i = 0 ; i < nvals ; i++)
-        {
-            exts[0] = (exts[0] < *ptr ? exts[0] : *ptr);
-            exts[1] = (exts[1] > *ptr ? exts[1] : *ptr);
-            ptr++;
-        }
+        case VTK_CHAR:
+            GetScalarRange((char*) da->GetVoidPointer(0), nvals, exts);
+            break;
+        case VTK_UNSIGNED_CHAR:
+            GetScalarRange((unsigned char*) da->GetVoidPointer(0), nvals, exts);
+            break;
+        case VTK_SHORT:
+            GetScalarRange((short*) da->GetVoidPointer(0), nvals, exts);
+            break;
+        case VTK_UNSIGNED_SHORT:
+            GetScalarRange((unsigned short*) da->GetVoidPointer(0), nvals, exts);
+            break;
+        case VTK_INT:           
+            GetScalarRange((int*) da->GetVoidPointer(0), nvals, exts);
+            break;
+        case VTK_UNSIGNED_INT:  
+            GetScalarRange((unsigned int*) da->GetVoidPointer(0), nvals, exts);
+            break;
+        case VTK_LONG:          
+            GetScalarRange((long*) da->GetVoidPointer(0), nvals, exts);
+            break;
+        case VTK_UNSIGNED_LONG: 
+            GetScalarRange((unsigned long*) da->GetVoidPointer(0), nvals, exts);
+            break;
+        case VTK_FLOAT:         
+            GetScalarRange((float*) da->GetVoidPointer(0), nvals, exts);
+            break;
+        case VTK_DOUBLE:        
+            GetScalarRange((double*) da->GetVoidPointer(0), nvals, exts);
+            break;
+        case VTK_ID_TYPE:       
+            GetScalarRange((vtkIdType*) da->GetVoidPointer(0), nvals, exts);
+            break;
     }
 }
 
@@ -1103,7 +1122,32 @@ GetDataScalarRange(vtkDataSet *ds, double *exts, const char *vname)
 //    Hank Childs, Tue Feb 24 14:54:28 PST 2004
 //    Added a variable to get the range for.  Reduced number of sqrt calls.
 //
+//    Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
+//    Templatized it to support all array types.
 // ****************************************************************************
+
+template <class T> static void
+GetMagnitudeRange(T *buf, int n, int ncomps, double *exts)
+{
+    for (int i = 0; i < n; i++)
+    {
+        double mag = 0.0;
+        for (int j = 0; j < ncomps; j++, buf++)
+            mag += *buf * *buf;
+
+        if (mag < exts[0])
+        {
+            exts[0] = mag;
+        }
+        else
+        {
+            if (mag > exts[1])
+                exts[1] = mag;
+        }
+    }
+    exts[0] = sqrt(exts[0]);
+    exts[1] = sqrt(exts[1]);
+}
 
 void
 GetDataMagnitudeRange(vtkDataSet *ds, double *exts, const char *vname)
@@ -1129,26 +1173,42 @@ GetDataMagnitudeRange(vtkDataSet *ds, double *exts, const char *vname)
     int nvals = da->GetNumberOfTuples();
     int ncomps = da->GetNumberOfComponents();
 
-    //
-    // We only know how to deal with floats.
-    //
-    if (da->GetDataType() != VTK_FLOAT)
-        return;
-
-    float *ptr = (float *) da->GetVoidPointer(0);
-    for (i = 0 ; i < nvals ; i++)
+    switch (da->GetDataType())
     {
-        double mag = 0.;
-        for (j = 0 ; j < ncomps ; j++)
-        {
-            mag += *ptr * *ptr;
-            ptr++;
-        }
-        exts[0] = (exts[0] < mag ? exts[0] : mag);
-        exts[1] = (exts[1] > mag ? exts[1] : mag);
+        case VTK_CHAR:
+            GetMagnitudeRange((char*) da->GetVoidPointer(0), nvals, ncomps, exts);
+            break;
+        case VTK_UNSIGNED_CHAR:
+            GetMagnitudeRange((unsigned char*) da->GetVoidPointer(0), nvals, ncomps, exts);
+            break;
+        case VTK_SHORT:
+            GetMagnitudeRange((short*) da->GetVoidPointer(0), nvals, ncomps, exts);
+            break;
+        case VTK_UNSIGNED_SHORT:
+            GetMagnitudeRange((unsigned short*) da->GetVoidPointer(0), nvals, ncomps, exts);
+            break;
+        case VTK_INT:           
+            GetMagnitudeRange((int*) da->GetVoidPointer(0), nvals, ncomps, exts);
+            break;
+        case VTK_UNSIGNED_INT:  
+            GetMagnitudeRange((unsigned int*) da->GetVoidPointer(0), nvals, ncomps, exts);
+            break;
+        case VTK_LONG:          
+            GetMagnitudeRange((long*) da->GetVoidPointer(0), nvals, ncomps, exts);
+            break;
+        case VTK_UNSIGNED_LONG: 
+            GetMagnitudeRange((unsigned long*) da->GetVoidPointer(0), nvals, ncomps, exts);
+            break;
+        case VTK_FLOAT:         
+            GetMagnitudeRange((float*) da->GetVoidPointer(0), nvals, ncomps, exts);
+            break;
+        case VTK_DOUBLE:        
+            GetMagnitudeRange((double*) da->GetVoidPointer(0), nvals, ncomps, exts);
+            break;
+        case VTK_ID_TYPE:       
+            GetMagnitudeRange((vtkIdType*) da->GetVoidPointer(0), nvals, ncomps, exts);
+            break;
     }
-    exts[0] = sqrt(exts[0]);
-    exts[1] = sqrt(exts[1]);
 }
 
 

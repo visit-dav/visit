@@ -38,7 +38,6 @@
 // ************************************************************************* //
 //                           avtTransformManager.C                           //
 // ************************************************************************* //
-
 #include <vtkCellData.h>
 #include <vtkCSGGrid.h>
 #include <vtkCharArray.h>
@@ -74,6 +73,13 @@
 #include <snprintf.h>
 
 #include <vectortypes.h>
+
+#include <map>
+#include <vector>
+
+using std::vector;
+using std::map;
+
 
 // ****************************************************************************
 //  Function: GetArrayTypeName 
@@ -268,7 +274,7 @@ ConvertDataArrayToFloat(vtkDataArray *oldArr)
         float *newBuf = (float*) newArr->GetVoidPointer(0);
         void *oldBuf = oldArr->GetVoidPointer(0);
 
-        debug5 << "avtTransformManager::Converting vktDataArray, "
+        debug5 << "avtTransformManager: Converting vktDataArray, "
                << "\"" << oldArr->GetName() << "\", "
                << "with " << numTuples << " tuples and "
                << numComponents << " components from type \""
@@ -461,6 +467,16 @@ ConvertDataSetToFloat(vtkDataSet *oldds)
     return newds;
 }
 
+// ****************************************************************************
+//  Template: ConvertDataSetToFloat
+//
+//  Purpose: Build a mapping array to handle changes in zone/node numbering
+//  and order when dealing with variables
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   December 4, 2006 
+//
+// ****************************************************************************
 template <class iT>
 static iT *
 BuildMappedArray(const iT *const ibuf, int ncomps, const vector<int> &valsToMap)
@@ -478,6 +494,16 @@ BuildMappedArray(const iT *const ibuf, int ncomps, const vector<int> &valsToMap)
     return rbuf;
 }
 
+// ****************************************************************************
+//  Template: ConvertDataSetToFloat
+//
+//  Purpose: Build a mapping array to handle changes in zone/node numbering
+//  and order when dealing with variables
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   December 4, 2006 
+//
+// ****************************************************************************
 static vtkDataArray *
 BuildMappedArray(vtkDataArray *da, const vector<int> &valsToMap)
 {
@@ -550,6 +576,33 @@ BuildMappedArray(vtkDataArray *da, const vector<int> &valsToMap)
     return rv;
 }
 
+// ****************************************************************************
+//  Function: DontConvertArray 
+//
+//  Purpose: Filter certain internal AVT arrays that should not undergo
+//  conversion 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   December 5, 2006 
+//
+// ****************************************************************************
+static bool
+DontConvertArray(vtkDataArray *da)
+{
+    if (strncmp(da->GetName(), "avt", 3) == 0)
+        return true;
+    return false;
+}
+
+// ****************************************************************************
+//  Function: DestructDspec
+//
+//  Purpose: To support caching of avtDataSpecification objects 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   December 4, 2006 
+//
+// ****************************************************************************
 static void
 DestructDspec(void *p)
 {
@@ -572,6 +625,26 @@ avtTransformManager::FreeUpResources(int lastts)
     cache.ClearTimestep(lastts);
 }
 
+// ****************************************************************************
+//  Method: NativeToFloat transformation
+//
+//  Purpose: Convert dataset and/or data arrays defined on it to from their
+//  native type to float
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   December 4, 2006 
+//
+//  Modifications:
+//
+//    Mark C. Miller, Tue Dec  5 12:36:36 PST 2006
+//    Changed it to handle conversions even when object was not cached
+//    in generic db's cache.
+//
+//    Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
+//    Made it handle cases where vars are not cached in generic db's cache.
+//    Made it ignore certain internal AVT arrays. 
+//    Added more debugging output.
+// ****************************************************************************
 vtkDataSet *
 avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
     const avtDataSpecification_p &dspec, vtkDataSet *ds)
@@ -595,8 +668,14 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
         admissibleDataTypes.push_back(VTK_FLOAT);
     }
 
+    //
+    // We make two passes here, the first to simply decide of any
+    // conversion is actually needed and then the second to actually
+    // do it.
+    //
     vtkDataSet *rv = ds;
     bool anyConversionNeeded = false;
+    map<void*,bool> objectWasCachedInGenericDB;
     for (int pass = 0; pass < 1 + anyConversionNeeded; pass++)
     {
         if (pass == 1)
@@ -614,18 +693,29 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
             if (pass == 1)
             {
                 // look up this vtk object's "key" in GenericDb's cache
-                if (!gdbCache->GetVTKObjectKey(&vname, &type, &ts, &dom, &mat, ds))
+                objectWasCachedInGenericDB[ds] =
+                    gdbCache->GetVTKObjectKey(&vname, &type, &ts, &dom, &mat, ds);
+
+                // first, see if a converted result is already in tmgr's cache
+                if (objectWasCachedInGenericDB[ds])
                 {
-                    EXCEPTION1(PointerNotInCacheException, ds);
+                    rv = (vtkDataSet*) cache.GetVTKObject(vname, type, ts, dom, mat);
+                }
+                else
+                {
+                    debug5 << "avtTransformManager: dataset is not in generic db's cache" << endl;
+                    rv = 0;
                 }
 
-                // first, see if a converted result is already in cache
-                rv = (vtkDataSet*) cache.GetVTKObject(vname, type, ts, dom, mat);
                 if (!rv)
                 {
+                    debug5 << "avtTransformManager: Converting data set from native to float" << endl;
                     rv = ConvertDataSetToFloat(ds);
-                    cache.CacheVTKObject(vname, type, ts, dom, mat, rv);
-                    rv->Delete();
+                    if (objectWasCachedInGenericDB[ds])
+                    {
+                        cache.CacheVTKObject(vname, type, ts, dom, mat, rv);
+                        rv->Delete();
+                    }
                 }
                 vtkDataSet *tmprv = rv->NewInstance();
                 tmprv->CopyStructure(rv);
@@ -642,29 +732,38 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
         }
 
         //
-        // Now, deal with cell data and point data 
+        // Now, deal with cell data
         //
         vtkCellData *cd = ds->GetCellData();
         for (i = 0; i < cd->GetNumberOfArrays(); i++)
         {
             vtkDataArray *da = cd->GetArray(i);
-            if (!IsAdmissibleDataType(admissibleDataTypes, da->GetDataType()) ||
-                   (!needNativePrecision && PrecisionInBytes(da) > sizeof(float)))
+            if (!DontConvertArray(da) && 
+                (!IsAdmissibleDataType(admissibleDataTypes, da->GetDataType()) ||
+                 (!needNativePrecision && PrecisionInBytes(da) > sizeof(float))))
             {
                 anyConversionNeeded = true;
                 if (pass == 1)
                 {
                     // look up this vtk object's "key" in GenericDb's cache
-                    if (!gdbCache->GetVTKObjectKey(&vname, &type, &ts, &dom, &mat, da))
-                    {
-                        EXCEPTION1(PointerNotInCacheException, da);
-                    }
-                    vtkDataArray *newda = (vtkDataArray *) cache.GetVTKObject(vname, type, ts, dom, mat);
+                    objectWasCachedInGenericDB[da] =
+                        gdbCache->GetVTKObjectKey(&vname, &type, &ts, &dom, &mat, da);
+
+                    vtkDataArray *newda = 0;
+                    if (objectWasCachedInGenericDB[da])
+                        newda = (vtkDataArray *) cache.GetVTKObject(vname, type, ts, dom, mat);
+                    else
+                        debug5 << "avtTransformManager: Array \"" << da->GetName() << "\" was not in generic db's cache" << endl;
+
                     if (!newda)
                     {
+                        debug5 << "avtTransformManager: Array \"" << da->GetName() << "\" was not in tmngr's cache" << endl;
                         newda = ConvertDataArrayToFloat(da);
-                        cache.CacheVTKObject(vname, type, ts, dom, mat, newda);
-                        newda->Delete();
+                        if (objectWasCachedInGenericDB[da])
+                        {
+                            cache.CacheVTKObject(vname, type, ts, dom, mat, newda);
+                            newda->Delete();
+                        }
                     }
                     if (i == 0)
                         rv->GetCellData()->SetScalars(newda);
@@ -674,33 +773,51 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
             }
             else if (pass == 1)
             {
+                debug5 << "avtTransformManager: Passing along array \"" << da->GetName() << "\"" << endl;
                 if (i == 0)
                     rv->GetCellData()->SetScalars(da);
                 else
                     rv->GetCellData()->AddArray(da);
             }
         }
+
+        //
+        // And now point data
+        //
         vtkPointData *pd = ds->GetPointData();
         for (i = 0; i < pd->GetNumberOfArrays(); i++)
         {
             vtkDataArray *da = pd->GetArray(i);
-            if (!IsAdmissibleDataType(admissibleDataTypes, da->GetDataType()) ||
-                   (!needNativePrecision && PrecisionInBytes(da) > sizeof(float)))
+            if (!DontConvertArray(da) &&
+                (!IsAdmissibleDataType(admissibleDataTypes, da->GetDataType()) ||
+                 (!needNativePrecision && PrecisionInBytes(da) > sizeof(float))))
             {
                 anyConversionNeeded = true;
                 if (pass == 1)
                 {
                     // look up this vtk object's "key" in GenericDb's cache
-                    if (!gdbCache->GetVTKObjectKey(&vname, &type, &ts, &dom, &mat, da))
-                    {
-                        EXCEPTION1(PointerNotInCacheException, da);
-                    }
-                    vtkDataArray *newda = (vtkDataArray *) cache.GetVTKObject(vname, type, ts, dom, mat);
+                    objectWasCachedInGenericDB[da] = 
+                        gdbCache->GetVTKObjectKey(&vname, &type, &ts, &dom, &mat, da);
+
+                    vtkDataArray *newda = 0;
+                    if (objectWasCachedInGenericDB[da])
+                        newda = (vtkDataArray *) cache.GetVTKObject(vname, type, ts, dom, mat);
+                    else
+                        debug5 << "avtTransformManager: Array \"" << da->GetName() << "\" was not in generic db's cache" << endl;
+
                     if (!newda)
                     {
+                        debug5 << "avtTransformManager: Array \"" << da->GetName() << "\" was not in tmngr's cache" << endl;
                         newda = ConvertDataArrayToFloat(da);
-                        cache.CacheVTKObject(vname, type, ts, dom, mat, newda);
-                        newda->Delete();
+                        if (objectWasCachedInGenericDB[da])
+                        {
+                            cache.CacheVTKObject(vname, type, ts, dom, mat, newda);
+                            newda->Delete();
+                        }
+                        else
+                        {
+                            cerr << "Not caching this array" << endl;
+                        }
                     }
                     if (i == 0)
                         rv->GetPointData()->SetScalars(newda);
@@ -710,6 +827,7 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
             }
             else if (pass == 1)
             {
+                debug5 << "avtTransformManager: Passing along array \"" << da->GetName() << "\"" << endl;
                 if (i == 0)
                     rv->GetPointData()->SetScalars(da);
                 else
@@ -722,6 +840,18 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
 }
 
 
+// ****************************************************************************
+//  Method: CSGToDiscrete transformation
+//
+//  Purpose: Convert dataset and/or data arrays defined on it to from their
+//  the CSG form to a discrete, unstructured mesh form.
+//
+//  Note: We currently do not support point data
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   December 4, 2006 
+//
+// ****************************************************************************
 vtkDataSet *
 avtTransformManager::CSGToDiscrete(const avtDatabaseMetaData *const md,
     const avtDataSpecification_p &dspec, vtkDataSet *ds)
@@ -836,6 +966,18 @@ avtTransformManager::CSGToDiscrete(const avtDatabaseMetaData *const md,
         return ds;
 }
 
+// ****************************************************************************
+//  Method: TransformMaterialDataset
+//
+//  Purpose: This is a special transformation to deal with material datasets
+//  which can requested by VisIt via a GetMaterial or GetAuxiliaryData call.
+//
+//  Note: We currently do not support point data
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   December 4, 2006 
+//
+// ****************************************************************************
 bool
 avtTransformManager::TransformMaterialDataset(const avtDatabaseMetaData *const md,
     const avtDataSpecification_p &dspec, avtMaterial **mat)
@@ -929,6 +1071,25 @@ avtTransformManager::TransformMaterialDataset(const avtDatabaseMetaData *const m
     return false;
 }
 
+// ****************************************************************************
+//  Method: TransformDataset
+//
+//  Purpose: This is a the main entry point to transformation manager to
+//  transform all datasets in the dataset collection passed into it.
+//
+//  Note: We currently catch and then give-up cases where we're asked to
+//  transform data that is not already in generic db's cache. Some plugins
+//  DO NOT permit generic db to cache their data. So, those plugins will
+//  NOT be able to serve up data to VisIt requiring transformation. This
+//  restriction can and probably should be relaxed by re-writing the
+//  transformations here to, when data is not cached, simply convert it
+//  anyway and then NOT attempt to cache it in transform manager's cache
+//  either.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   December 4, 2006 
+//
+// ****************************************************************************
 bool
 avtTransformManager::TransformDataset(avtDatasetCollection &dsc,
     intVector &domains, avtDataSpecification_p &d_spec,

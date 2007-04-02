@@ -8652,6 +8652,10 @@ avtDatabaseMetaData::IssueWarning(const char *msg)
 //  Programmer: Mark C. Miller
 //  Creation:   June 28, 2006
 //
+//  Modifications:
+//    Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
+//    Fixed possible reference through 0
+//
 // ****************************************************************************
 bool
 avtDatabaseMetaData::ConvertCSGDomainToBlockAndRegion(const char *const var,
@@ -8660,7 +8664,7 @@ avtDatabaseMetaData::ConvertCSGDomainToBlockAndRegion(const char *const var,
     int domainAsVisItSeesIt = *domain;
     std::string meshname = MeshForVar(var);
     const avtMeshMetaData *mmd = GetMesh(meshname);
-    if (mmd->meshType == AVT_CSG_MESH)
+    if (mmd && mmd->meshType == AVT_CSG_MESH)
     {
         const intVector& groupIds = mmd->groupIds;
         if (groupIds.size() > domainAsVisItSeesIt)

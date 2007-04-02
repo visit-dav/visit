@@ -257,6 +257,11 @@ avtExpressionFilter::PostExecute(void)
 //  Programmer: Hank Childs
 //  Creation:   August 30, 2005
 //
+//  Modifications:
+//
+//  Thomas R. Treadway, Fri Dec  1 14:03:54 PST 2006
+//  Added check for GhostNodes in addition to the GhostZones
+//
 // ****************************************************************************
 
 void
@@ -289,7 +294,16 @@ avtExpressionFilter::UpdateExtents(avtDataTree_p tree)
         {
             double exts[6];
             unsigned char *ghosts = NULL;
-            if (!isPoint)
+            if (isPoint)
+            {
+                vtkUnsignedCharArray *g = (vtkUnsignedCharArray *)
+                                  ds->GetPointData()->GetArray("avtGhostNodes");
+                if (g != NULL)
+                {
+                    ghosts = g->GetPointer(0);
+                }
+            }
+            else
             {
                 vtkUnsignedCharArray *g = (vtkUnsignedCharArray *)
                                   ds->GetCellData()->GetArray("avtGhostZones");

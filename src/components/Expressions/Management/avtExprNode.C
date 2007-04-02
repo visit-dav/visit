@@ -67,6 +67,11 @@
 #include <avtPrincipalDeviatoricTensorFilter.h>
 #include <avtPrincipalTensorFilter.h>
 #include <avtEffectiveTensorFilter.h>
+#include <avtStrainAlmansiFilter.h>
+#include <avtStrainGreenLagrangeFilter.h>
+#include <avtStrainInfinitesimalFilter.h>
+#include <avtStrainRateFilter.h>
+#include <avtDisplacementFilter.h>
 #include <avtCurvatureExpression.h>
 #include <avtGradientFilter.h>
 #include <avtCurlFilter.h>
@@ -417,6 +422,11 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //
 // Modifications:
 //
+//    Thomas R. Treadway, Tue Dec  5 15:09:08 PST 2006
+//    added avtStrainAlmansiFilter, avtStrainGreenLagrangeFilter,
+//    avtStrainInfinitesimalFilter, avtStrainRateFilter, and
+//    avtDisplacementFilter
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -500,6 +510,16 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtPrincipalTensorFilter();
     if (functionName == "principal_deviatoric_tensor")
         return new avtPrincipalDeviatoricTensorFilter();
+    if (functionName == "strain_almansi")
+        return new avtStrainAlmansiFilter();
+    if (functionName == "strain_green_lagrange")
+        return new avtStrainGreenLagrangeFilter();
+    if (functionName == "strain_infinitesimal")
+        return new avtStrainInfinitesimalFilter();
+    if (functionName == "strain_rate")
+        return new avtStrainRateFilter();
+    if (functionName == "displacement")
+        return new avtDisplacementFilter();
     if (functionName == "degree")
         return new avtDegreeFilter();
     if (functionName == "cylindrical")

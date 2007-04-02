@@ -2663,6 +2663,9 @@ avtGenericDatabase::GetLabelVariable(const char *varname, int ts, int domain,
 //    Moved code to discretize CSG mesh to transform manager.
 //    Added call to register object pointer pair in variable cache due to
 //    fact that generic db returns copy of object in cache
+//
+//    Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
+//    Only add object pointer pair if interface can cache the variable 
 // ****************************************************************************
 
 vtkDataSet *
@@ -2754,7 +2757,8 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
     //
     vtkDataSet *rv = (vtkDataSet *) mesh->NewInstance();
     rv->CopyStructure(mesh);
-    cache.AddObjectPointerPair(rv, mesh);
+    if (Interface->CanCacheVariable(real_meshname))
+        cache.AddObjectPointerPair(rv, mesh);
 
     //
     // There are some mesh variables that we want to copy over -- namely

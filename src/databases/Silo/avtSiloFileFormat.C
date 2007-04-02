@@ -2299,7 +2299,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                                           mat->nmat, matnames);
         mmd->validVariable = valid_var;
         md->Add(mmd);
-#warning FIX MATERIAL PROBLEMS FOR CSG
+//#warning FIX MATERIAL PROBLEMS FOR CSG
 
         delete [] name_w_dir;
         delete [] meshname_w_dir;
@@ -2422,7 +2422,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 
         mmd->validVariable = valid_var;
         md->Add(mmd);
-#warning FIX MATERIAL PROBLEMS FOR CSG 
+//#warning FIX MATERIAL PROBLEMS FOR CSG 
 
         delete [] name_w_dir;
         DBFreeMaterial(mat);

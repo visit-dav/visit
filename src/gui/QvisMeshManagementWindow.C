@@ -34,9 +34,7 @@
 * DAMAGE.
 *
 *****************************************************************************/
-
 #include <vector>
-#include <snprintf.h>
 
 #include <qbuttongroup.h>
 #include <qlabel.h>
@@ -47,6 +45,9 @@
 #include <qradiobutton.h>
 #include <qtabwidget.h>
 #include <qvbox.h>
+
+#include <snprintf.h>
+#include <visit-config.h>
 
 #include <QvisMeshManagementWindow.h>
 #include <MeshManagementAttributes.h>
@@ -114,6 +115,8 @@ QvisMeshManagementWindow::~QvisMeshManagementWindow()
 //   Brad Whitlock, Mon Oct 6 16:21:12 PST 2003
 //   Added radio buttons that allow the user to set the animation style.
 //
+//   Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
+//   Changed initialization based on existence of FI library 
 // ****************************************************************************
 
 void
@@ -163,6 +166,9 @@ QvisMeshManagementWindow::CreateWindowContents()
     layoutCSGGroup->addWidget(discretizeUniform, 2, 1);
     QRadioButton *discretizeAdaptive = new QRadioButton("Adaptive", pageCSGGroup, "Adaptive");
     discretizationMode->insert(discretizeAdaptive);
+#if !HAVE_FILIB
+    discretizeAdaptive->setEnabled(false);
+#endif
     layoutCSGGroup->addWidget(discretizeAdaptive, 2, 2);
 
     discretizationToleranceLabel = new QLabel("Tolerance(s)", pageCSGGroup,
@@ -194,6 +200,9 @@ QvisMeshManagementWindow::CreateWindowContents()
 //
 //   Brad Whitlock, Mon Oct 6 16:24:09 PST 2003
 //   Added the animation style button group.
+//
+//   Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
+//   Changed behavior based on existence of FI library 
 //
 // ****************************************************************************
 
@@ -236,7 +245,16 @@ QvisMeshManagementWindow::UpdateWindow(bool doAll)
                 if (dMode == MeshManagementAttributes::Uniform)
                     discretizationMode->setButton(0);
                 else if (dMode == MeshManagementAttributes::Adaptive)
+                {
+#if HAVE_FILIB
                     discretizationMode->setButton(1);
+#else
+                    GUIBase::Warning("Adaptive not available. "
+                                     "Missing fast interval library (filib). "
+                                     "Overriding to Uniform.");
+                    discretizationMode->setButton(0);
+#endif
+                }
                 discretizationMode->blockSignals(false);
             }
             break;
@@ -419,7 +437,16 @@ QvisMeshManagementWindow::discretizationModeChanged(int val)
     if (val == 0)
         mmAtts->SetDiscretizationMode(MeshManagementAttributes::Uniform);
     else if (val == 1)
+    {
+#if HAVE_FILIB
         mmAtts->SetDiscretizationMode(MeshManagementAttributes::Adaptive);
+#else
+        GUIBase::Warning("Adaptive not available. "
+                         "Missing fast interval library (filib). "
+                         "Overriding to Uniform.");
+        mmAtts->SetDiscretizationMode(MeshManagementAttributes::Uniform);
+#endif
+    }
     SetUpdate(false);
     Apply();
 }
