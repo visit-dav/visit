@@ -60,6 +60,9 @@
 //     Mark Blair, Thu Nov  2 12:33:23 PST 2006
 //     Added methods to support selective axis labeling in associated plot.
 //
+//     Mark Blair, Fri Feb 23 12:19:33 PST 2007
+//     Now supports all variable axis spacing and axis group conventions.
+//
 // ****************************************************************************
 
 class VISWINDOW_API avtExtentsToolInterface : public avtToolInterface
@@ -75,10 +78,10 @@ public:
     void SetMaxima(const doubleVector &maxima_);
     void SetMinTimeOrdinals(const intVector &minTimeOrdinals_);
     void SetMaxTimeOrdinals(const intVector &maxTimeOrdinals_);
-    void SetToolDrawsAxisLabels(bool toolDrawsAxisLabels_);
+    void SetPlotToolModeFlags(int plotToolModeFlags_);
     void SetAxisGroupNames(const stringVector &axisGroupNames_);
-    void SetAxisLabelStates(const intVector &axisLabelStates_);
-    void SetAxisXIntervals(const doubleVector &axisXIntervals_);
+    void SetAxisInfoFlagSets(const intVector &axisInfoFlagSets_);
+    void SetAxisXPositions(const doubleVector &axisXPositions_);
     void SetLeftSliderX(const double leftSliderX_);
     void SetRightSliderX(const double rightSliderX_);
     void SetSlidersBottomY(const double slidersBottomY_);
@@ -91,10 +94,10 @@ public:
     const doubleVector &GetMaxima() const;
     const intVector &GetMinTimeOrdinals() const;
     const intVector &GetMaxTimeOrdinals() const;
-    bool GetToolDrawsAxisLabels() const;
+    int GetPlotToolModeFlags() const;
     const stringVector &GetAxisGroupNames() const;
-    const intVector &GetAxisLabelStates() const;
-    const doubleVector &GetAxisXIntervals() const;
+    const intVector &GetAxisInfoFlagSets() const;
+    const doubleVector &GetAxisXPositions() const;
     double GetLeftSliderX() const;
     double GetRightSliderX() const;
     double GetSlidersBottomY() const;

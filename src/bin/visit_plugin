@@ -419,9 +419,18 @@ furnished to you to address the following problem...
 
 $commentString
 
-To build and install this plugin, untar it
-(gunzip < $pluginName.tar.gz | tar xvf -), cd into the directory
-and follow the instructions in the README file there.
+To build and install this plugin,
+
+    % visit_plugin -install $pluginName
+
+Note: no '.tar.gz' after the plugin's name.
+
+For versions of VisIt older than 1.6...
+
+    % gunzip < $pluginName.tar.gz | tar xvf -
+
+cd into the directory and follow the instructions in
+the README file there.
 EOF
          if test "$execEmail" = "unknown"; then
              mutt -s "Updated $pluginName plugin" -a $pluginName.tar.gz $em < mutt.msg
@@ -429,6 +438,7 @@ EOF
              mutt -c $execEmail -s "Updated $pluginName plugin" -a $pluginName.tar.gz $em < mutt.msg
          fi
          tarballsToRemove="$tarballsToRemove $pluginName.tar.gz"
+	 sleep 3
          rm -f mutt.msg
     done
 

@@ -55,6 +55,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <DebugStream.h>
+
 
 // ****************************************************************************
 //  Method: avtParallelAxisPlot
@@ -359,7 +361,11 @@ avtPipelineSpecification_p
 avtParallelAxisPlot::EnhanceSpecification(avtPipelineSpecification_p in_spec)
 {
     if (!atts.AttributesAreConsistent())
+    {
+        debug3 << "PCP/aPAP/ES/1: ParallelAxis plot attributes are inconsistent."
+               << endl;
         return in_spec;
+    }
 
     stringVector curAxisVarNames = atts.GetOrderedAxisNames();
     stringVector needSecondaryVars;

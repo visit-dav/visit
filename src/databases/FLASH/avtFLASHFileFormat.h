@@ -73,13 +73,17 @@
 //    Kathleen Bonnell, Thu Jul 20 11:22:13 PDT 2006
 //    Added methods and structs to support for FLASH3 formats.
 //
+//    Mark C. Miller, Mon Mar  5 22:04:50 PST 2007
+//    Added support for Cycles/Times. Added methods to explicitly initialize
+//    and finalize the hdf5 library
+//
 // ****************************************************************************
 
 class avtFLASHFileFormat : public avtSTMDFileFormat
 {
   public:
                        avtFLASHFileFormat(const char *);
-    virtual           ~avtFLASHFileFormat() {;};
+    virtual           ~avtFLASHFileFormat();
 
     virtual bool           HasInvariantMetaData(void) const { return false; };
     virtual bool           HasInvariantSIL(void) const { return false; };
@@ -87,6 +91,10 @@ class avtFLASHFileFormat : public avtSTMDFileFormat
     virtual const char    *GetType(void)   { return "FLASH"; };
     virtual void           FreeUpResources(void); 
     virtual void           ActivateTimestep(void);
+
+    int                    GetCycle();
+    int                    GetCycleFromFilename(const char *f) const;
+    double                 GetTime();
 
     virtual void          *GetAuxiliaryData(const char *var, int,
                                             const char *type, void *args,
@@ -103,7 +111,7 @@ class avtFLASHFileFormat : public avtSTMDFileFormat
 
     void BuildDomainNesting();
 
-    void ReadSimulationParameters();
+    void ReadSimulationParameters(hid_t file_id);
     void ReadBlockStructure();
     void ReadBlockExtents();
     void ReadRefinementLevels();
@@ -113,10 +121,14 @@ class avtFLASHFileFormat : public avtSTMDFileFormat
 
     // FLASH3 support
     void ReadParticleAttributes_FLASH3();
-    void ReadVersionInfo();
-    void ReadIntegerScalars();
-    void ReadRealScalars();
+    void ReadVersionInfo(hid_t file_id);
+    void ReadIntegerScalars(hid_t file_id);
+    void ReadRealScalars(hid_t file_id);
     void ReadParticleVar(hid_t pointId, const char *, double *);
+
+    // HDF5 lib initialization
+    void InitializeHDF5();
+    void FinalizeHDF5();
 
   protected:
     struct SimParams
@@ -160,6 +172,7 @@ class avtFLASHFileFormat : public avtSTMDFileFormat
     }; 
 
   protected:
+    static int                objcnt;
     std::string               filename;
     int                       dimension;
     int                       numBlocks;
@@ -169,6 +182,7 @@ class avtFLASHFileFormat : public avtSTMDFileFormat
     std::string               particleHDFVarName;
     hid_t                     fileId;
     SimParams                 simParams;
+    bool                      simParamsHaveBeenRead;
     std::vector<Block>        blocks;
     int                       numChildrenPerBlock;
     int                       numNeighborsPerBlock;

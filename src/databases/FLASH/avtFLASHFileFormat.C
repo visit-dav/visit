@@ -74,6 +74,7 @@
 using std::vector;
 using std::string;
 
+int avtFLASHFileFormat::objcnt = 0;
 
 // ****************************************************************************
 //  Function:  GetNiceParticleName
@@ -98,7 +99,6 @@ static string GetNiceParticleName(const string &varname)
     }
     return nicename;
 }
-
 
 // ****************************************************************************
 //  Method:  avtFLASHFileFormat::Block::Print
@@ -140,10 +140,48 @@ avtFLASHFileFormat::Block::Print(ostream &out)
 }
 
 // ****************************************************************************
+//  Function:  avtFLASHFileFormat::InitializeHDF5
+//
+//  Purpose:   Initialize interaction with the HDF5 library
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    Decmeber 10, 2003
+//
+// ****************************************************************************
+void
+avtFLASHFileFormat::InitializeHDF5(void)
+{
+    debug5 << "Initializing HDF5 Library" << endl;
+    H5open();
+    H5Eset_auto(NULL, NULL);
+}
+
+// ****************************************************************************
+//  Function:  avtFLASHFileFormat::FinalizeHDF5
+//
+//  Purpose:   End interaction with the HDF5 library
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    March 5, 2007 
+//
+// ****************************************************************************
+void
+avtFLASHFileFormat::FinalizeHDF5(void)
+{
+    debug5 << "Finalizing HDF5 Library" << endl;
+    H5close();
+}
+
+// ****************************************************************************
 //  Method: avtFLASH constructor
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   August 23, 2005
+//
+//  Modifications:
+//
+//    Mark C. Miller, Mon Mar  5 22:04:50 PST 2007
+//    Added initialization of HDF5, simParamsHaveBeenRead
 //
 // ****************************************************************************
 
@@ -155,8 +193,33 @@ avtFLASHFileFormat::avtFLASHFileFormat(const char *cfilename)
     dimension = 0;
     numBlocks = 0;
     numLevels = 0;
+    simParamsHaveBeenRead = false;
+
+    // do HDF5 library initialization on consturction of first instance
+    if (avtFLASHFileFormat::objcnt == 0)
+        InitializeHDF5();
+    avtFLASHFileFormat::objcnt++;
 }
 
+
+// ****************************************************************************
+//  Function:  avtFLASHFileFormat::~avtFLASHFileFormat
+//
+//  Purpose:   Destructor; free up resources, including hdf5 lib 
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    March 5, 2007 
+//
+// ****************************************************************************
+avtFLASHFileFormat::~avtFLASHFileFormat()
+{
+    FreeUpResources();
+
+    // handle HDF5 library termination on descrution of last instance
+    avtFLASHFileFormat::objcnt--;
+    if (avtFLASHFileFormat::objcnt == 0)
+        FinalizeHDF5();
+}
 
 // ****************************************************************************
 //  Method: avtFLASHFileFormat::ActivateTimestep
@@ -174,6 +237,88 @@ void
 avtFLASHFileFormat::ActivateTimestep(void)
 {
     BuildDomainNesting();
+}
+
+// ****************************************************************************
+//  Method: avtFLASHFileFormat::GetCycleFromFilename
+//
+//  Purpose: Try to get a cycle number from a file name 
+//
+//  Notes: Although all this method does is simply call the format's base
+//  class implementation of GuessCycle, doing this is a way for the FLASH 
+//  format to "bless" the guesses that that method makes. Otherwise, VisIt
+//  wouldn't know that FLASH thinks those guesses are good. See notes in
+//  avtSTXXFileFormatInterface::SetDatabaseMetaData for further explanation.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   March 5, 2007 
+//
+// ****************************************************************************
+
+int
+avtFLASHFileFormat::GetCycleFromFilename(const char *f) const
+{
+    return GuessCycle(f);
+}
+
+// ****************************************************************************
+//  Method: avtFLASHFileFormat::GetCycle
+//
+//  Purpose: Do as little work on file meta data as possible to get
+//  current cycle
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   March 5, 2007 
+//
+// ****************************************************************************
+
+int
+avtFLASHFileFormat::GetCycle()
+{
+    if (simParamsHaveBeenRead)
+    {
+        return simParams.nsteps;
+    }
+    else
+    {
+        hid_t file_id = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+        if (file_id < 0)
+            return INVALID_CYCLE;
+        ReadVersionInfo(file_id);
+        ReadSimulationParameters(file_id);
+        H5Fclose(file_id);
+        return simParams.nsteps;
+    }
+}
+
+// ****************************************************************************
+//  Method: avtFLASHFileFormat::GetCycle
+//
+//  Purpose: Do as little work on file meta data as possible to get
+//  current time 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   March 5, 2007 
+//
+// ****************************************************************************
+
+double
+avtFLASHFileFormat::GetTime()
+{
+    if (simParamsHaveBeenRead)
+    {
+        return simParams.time;
+    }
+    else
+    {
+        hid_t file_id = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+        if (file_id < 0)
+            return INVALID_TIME;
+        ReadVersionInfo(file_id);
+        ReadSimulationParameters(file_id);
+        H5Fclose(file_id);
+        return simParams.time;
+    }
 }
 
 
@@ -932,7 +1077,7 @@ avtFLASHFileFormat::ReadAllMetaData()
         EXCEPTION1(InvalidFilesException, filename.c_str());
     }
 
-    ReadVersionInfo();
+    ReadVersionInfo(fileId);
 
     if (fileFormatVersion < FLASH3)
     {
@@ -954,7 +1099,7 @@ avtFLASHFileFormat::ReadAllMetaData()
     {
         ReadBlockExtents();
         ReadRefinementLevels();
-        ReadSimulationParameters();
+        ReadSimulationParameters(fileId);
         ReadUnknownNames();
         DetermineGlobalLogicalExtentsForAllBlocks();
     }
@@ -1259,14 +1404,14 @@ void avtFLASHFileFormat::ReadRefinementLevels()
 //    Added support for FLASH3 file versions.
 //
 // ****************************************************************************
-void avtFLASHFileFormat::ReadSimulationParameters()
+void avtFLASHFileFormat::ReadSimulationParameters(hid_t file_id)
 {
     if (fileFormatVersion < FLASH3)
     {
         //
         // Read the simulation parameters
         //
-        hid_t simparamsId = H5Dopen(fileId, "simulation parameters");
+        hid_t simparamsId = H5Dopen(file_id, "simulation parameters");
         if (simparamsId < 0)
         {
             EXCEPTION1(InvalidFilesException, filename.c_str());
@@ -1293,8 +1438,8 @@ void avtFLASHFileFormat::ReadSimulationParameters()
     }
     else
     {
-        ReadIntegerScalars();
-        ReadRealScalars();
+        ReadIntegerScalars(file_id);
+        ReadRealScalars(file_id);
     }
 
     // Sanity check: size of the gid array better match number of blocks
@@ -1336,6 +1481,7 @@ void avtFLASHFileFormat::ReadSimulationParameters()
         block_ndims[2] = simParams.nzb+1;
         block_zdims[2] = simParams.nzb;
     }
+    simParamsHaveBeenRead = true;
 }
 
 // ****************************************************************************
@@ -1769,7 +1915,7 @@ avtFLASHFileFormat::GetAuxiliaryData(const char *var, int dom,
 // ****************************************************************************
 
 void
-avtFLASHFileFormat::ReadVersionInfo()
+avtFLASHFileFormat::ReadVersionInfo(hid_t file_id)
 {
     debug5 << "Determining FLASH file format version." << endl;
     // temporarily disable error reporting
@@ -1785,7 +1931,7 @@ avtFLASHFileFormat::ReadVersionInfo()
     // (FLASH3) making it impossible to determine format version in the
     // usual manner.
    
-    hid_t h5_PN = H5Dopen(fileId, "particle names");
+    hid_t h5_PN = H5Dopen(file_id, "particle names");
     if (h5_PN >= 0)
     {
         debug5 << " Found particle names, assuming FLASH3" << endl;
@@ -1800,13 +1946,13 @@ avtFLASHFileFormat::ReadVersionInfo()
     //
     // Read the file format version  (<= 7 means FLASH2)
     //
-    hid_t h5_FFV = H5Dopen(fileId, "file format version");
+    hid_t h5_FFV = H5Dopen(file_id, "file format version");
 
     if (h5_FFV < 0)
     {
         debug5 << "File format version not found in global attributes.  " 
                << "Looking for sim info." << endl;
-        hid_t h5_SI = H5Dopen(fileId, "sim info");
+        hid_t h5_SI = H5Dopen(file_id, "sim info");
         if (h5_SI < 0)
         {
             debug5 << "sim info not found, assuming FLASH2." << endl;
@@ -1849,13 +1995,13 @@ avtFLASHFileFormat::ReadVersionInfo()
 // ****************************************************************************
 
 void 
-avtFLASHFileFormat::ReadIntegerScalars()
+avtFLASHFileFormat::ReadIntegerScalars(hid_t file_id)
 {
     // Should only be used for FLASH3 files
     if (fileFormatVersion != FLASH3)
         return;
 
-    hid_t intScalarsId = H5Dopen(fileId, "integer scalars");
+    hid_t intScalarsId = H5Dopen(file_id, "integer scalars");
     //
     //
     // Read the integer scalars
@@ -1925,13 +2071,13 @@ avtFLASHFileFormat::ReadIntegerScalars()
 // ****************************************************************************
 
 void 
-avtFLASHFileFormat::ReadRealScalars()
+avtFLASHFileFormat::ReadRealScalars(hid_t file_id)
 {
     // Should only be used for FLASH3 files
     if (fileFormatVersion != FLASH3)
         return;
 
-    hid_t realScalarsId = H5Dopen(fileId, "real scalars");
+    hid_t realScalarsId = H5Dopen(file_id, "real scalars");
     //
     // Read the real scalars
     //

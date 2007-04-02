@@ -36,13 +36,13 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//  File: ParallelAxisViewerPluginInfo.C
+//                          ParallelAxisViewerPluginInfo.C                   //
 // ************************************************************************* //
 
 #include <ParallelAxisPluginInfo.h>
 #include <avtParallelAxisPlot.h>
 
-#include <avtDatabaseMetaData.h>
+#include <ViewerPlot.h>
 #include <ParsingExprList.h>
 #include <Expression.h>
 
@@ -51,6 +51,7 @@
 #include <DebugStream.h>
 #include <ViewerPlot.h>
 
+#include <stdlib.h>
 #include <string.h>
 
 #if defined(__APPLE__)
@@ -205,92 +206,363 @@ ParallelAxisViewerPluginInfo::AllocAvtPlot()
 
 
 // ****************************************************************************
-//  Method: ParallelAxisViewerPluginInfo::ParseArrayComponentVariables
+//  Method: TokenizeExtendedArrayExpression
 //
-//  Purpose: Parses an "array_component" expression.
+//  Purpose: Breaks an "extended" array expression into text tokens.  The
+//           extended format of an array expression makes it possible to
+//           associate one or more scalar attribute values with each component
+//           scalar variable of the expression.
 //
-//  Returns: Component variable names in the input expression.
-//
-//  Note: This is only intended to be used as a stopgap until array variable
-//        component information is available in the metadata.
+//  Returns:
+//      tokenList  : A list of tokens
+//      tokenTypes : A corresponding list of token types
 //
 //  Programmer: Mark Blair
-//  Creation:   Fri Apr 21 17:22:00 PDT 2006
+//  Creation:   Wed Jan 31 12:05:19 PST 2007
 //
 // ****************************************************************************
 
 void
-ParseArrayComponentVariables(
-    stringVector &componentVars, const char *arrayExp)
+TokenizeExtendedArrayExpression(
+    stringVector &tokenList, intVector &tokenTypes, const char *arrayExpression)
 {
-    componentVars.clear();
+    tokenList.clear(); tokenTypes.clear();
 
-    if (strncmp(arrayExp, "array_compose", 13) != 0) return;
-    
-    int tokenLen;
-    bool foundAlphanumeric;
+    if (strncmp(arrayExpression, "array_compose", 13) != 0) return;
+
+    bool endOfExpression = false;
     bool badExpression = false;
+    bool insideToken = false;
+    bool storeToken = false;
+    bool charIsDelimiter;
+    int tokenLen, tokenType;
     char tokenChar;
-    char *expCharPtr = (char *)arrayExp + 13;
-    char *tokenPtr;
-    int parseState = 0;     // Expecting '(' or space
+    char *expCharPtr = (char *)arrayExpression + 13;
+    char *tokenCharPtr;
+    char *suffixPtr;
     char token[121];
     
-    do {
-        tokenPtr = token; tokenLen = 0;
-        foundAlphanumeric = false;
+    while (!endOfExpression)
+    {
+        tokenChar = *expCharPtr++;
 
-        while ((tokenChar = *expCharPtr++) != '\0')
+        if (isspace(tokenChar) || (tokenChar == '\0'))
         {
-            if (isspace(tokenChar))
+            if (insideToken) storeToken = true;
+            if (tokenChar == '\0') endOfExpression = true;
+        }
+        else
+        {
+            if (tokenChar == '(')
+                charIsDelimiter = true;
+            else if (tokenChar == ')')
+                charIsDelimiter = true;
+            else if (tokenChar == ',')
+                charIsDelimiter = true;
+            else
+                charIsDelimiter = false;
+                
+            if (insideToken)
             {
-                if (tokenLen > 0) parseState = 2; // Expecting ',' or ')' or space
-                continue;
+                if (charIsDelimiter)
+                {
+                    expCharPtr--;
+                    storeToken = true;
+                }
+                else if (tokenLen == 120)
+                {
+                    badExpression = true;
+                }
+                else
+                {
+                    *tokenCharPtr++ = tokenChar;
+                    tokenLen++;
+                }
+            }
+            else
+            {
+                tokenCharPtr = token;
+
+                *tokenCharPtr++ = tokenChar;
+                tokenLen = 1;
+                
+                insideToken = true;
+                
+                if (charIsDelimiter) storeToken = true;
+            }
+        }
+
+        if (storeToken)
+        {
+            *tokenCharPtr = '\0';
+            tokenList.push_back(std::string(token));
+                
+            if (strcmp(token, "(") == 0)
+                tokenType = PCP_LEFT_PARENTHESIS_TOKEN;
+            else if (strcmp(token, ")") == 0)
+                tokenType = PCP_RIGHT_PARENTHESIS_TOKEN;
+            else if (strcmp(token, ",") == 0)
+                tokenType = PCP_COMMA_TOKEN;
+            else
+            {
+                strtod(token, &suffixPtr);
+                    
+                if (*suffixPtr == '\0')
+                {
+                    if (strchr(token, '.') != NULL)
+                        tokenType = PCP_FLOATING_POINT_NUMBER_TOKEN;
+                    else if (strchr(token, 'e') != NULL)
+                        tokenType = PCP_FLOATING_POINT_NUMBER_TOKEN;
+                    else if (strchr(token, 'E') != NULL)
+                        tokenType = PCP_FLOATING_POINT_NUMBER_TOKEN;
+                    else
+                        tokenType = PCP_INTEGER_TOKEN;
+                }
+                else
+                {
+                    tokenCharPtr = token;
+                    
+                    while ((tokenChar = *tokenCharPtr++) != '\0')
+                    {
+                        if (!isalpha(tokenChar) && !isdigit(tokenChar))
+                        {
+                            if (tokenChar != '_') badExpression = true;
+                        }
+                    }
+                    
+                    if (!isalpha(token[0])) badExpression = true;
+                    
+                    if (strcmp(token, "NO_VALUE") == 0)
+                        tokenType = PCP_NO_VALUE_TOKEN;
+                    else if (strcmp(token, "no_value") == 0)
+                        tokenType = PCP_NO_VALUE_TOKEN;
+                    else
+                        tokenType = PCP_VARIABLE_NAME_TOKEN;
+                }
             }
             
-            if (tokenChar == '(') break;
-            if (tokenChar == ')') break;
-            if (tokenChar == ',') break;
+            tokenTypes.push_back(tokenType);
             
-            *tokenPtr++ = tokenChar; tokenLen++;
-            
-            if (parseState != 1)
-                badExpression = true;
-            else if (isalnum(tokenChar))
-                foundAlphanumeric = true;
-            else if (tokenChar != '_')
-                badExpression = true;
-            
-            if (badExpression) break;
+            storeToken = false; insideToken = false;
         }
         
-        if (!badExpression)
+        if (badExpression) break;
+    }
+    
+    tokenList.push_back(std::string("<end_of_expression>"));
+    tokenTypes.push_back(PCP_END_OF_EXPRESSION_TOKEN);
+    
+    if (badExpression)
+    {
+        tokenList.clear(); tokenTypes.clear();
+    }
+}
+
+
+// ****************************************************************************
+//  Method: ParseExtendedArrayExpression
+//
+//  Purpose: Parses an "extended" array expression.  The extended format of an
+//           array expression makes it possible to associate one or more scalar
+//           attribute values with each component scalar variable of the
+//           expression.
+//
+//  Returns:
+//      axisVariableList  : A list of the expression's component variables
+//      axisAttributeList : A corresponding list of N attribute values per
+//                          component variable
+//
+//  Programmer: Mark Blair
+//  Creation:   Wed Jan 31 12:05:19 PST 2007
+//
+// ****************************************************************************
+
+void
+ParseExtendedArrayExpression(stringVector &axisVariableList,
+    doubleVector &axisAttributeList, const char *arrayExpression)
+{
+    bool badExpression = false;
+    bool needCommaOrParen;
+    int valueMap, valueNum;
+    int valueIndex = 0;
+    int tokenIndex = 1;
+    int tokenCount, tokenType;
+    double numberValue;
+
+    stringVector tokenList;
+    intVector    tokenTypes;
+    
+    doubleVector numberValues;
+    boolVector   numberExists;
+
+    axisVariableList.clear(); axisAttributeList.clear();
+    
+    TokenizeExtendedArrayExpression(tokenList, tokenTypes, arrayExpression);
+    
+    if ((tokenCount = tokenList.size()) < 4) return;
+    
+    if (tokenTypes[0]            != PCP_LEFT_PARENTHESIS_TOKEN ) return;
+    if (tokenTypes[1]            != PCP_VARIABLE_NAME_TOKEN    ) return;
+    if (tokenTypes[tokenCount-2] != PCP_RIGHT_PARENTHESIS_TOKEN) return;
+    if (tokenTypes[tokenCount-1] != PCP_END_OF_EXPRESSION_TOKEN) return;
+
+    do
+    {
+        axisVariableList.push_back(tokenList[tokenIndex]);
+        
+        valueMap = 0;
+        
+        for (valueNum = 0; valueNum < PCP_ATTRIBUTES_PER_AXIS; valueNum++)
+            axisAttributeList.push_back(0.0);
+            
+        if ((tokenType = tokenTypes[++tokenIndex]) == PCP_RIGHT_PARENTHESIS_TOKEN)
         {
-            if (tokenChar == '\0')
-                badExpression = true;
-            else if (tokenChar == '(')
+            axisAttributeList.push_back((double)valueMap);
+            break;
+        }
+        else if (tokenType != PCP_COMMA_TOKEN)
+        {
+            badExpression = true;
+            break;
+        }
+        
+        if ((tokenType = tokenTypes[++tokenIndex]) == PCP_VARIABLE_NAME_TOKEN)
+        {
+            axisAttributeList.push_back((double)valueMap);
+            valueIndex += PCP_ATTRIBUTES_PER_AXIS + 1;
+
+            continue;
+        }
+        else if (tokenType == PCP_INTEGER_TOKEN)
+        {
+            numberValue = strtod(tokenList[tokenIndex].c_str(), NULL);
+
+            axisAttributeList[valueIndex+PCP_GROUP_ID_ATTRIBUTE_OFFSET] =
+                numberValue;
+            valueMap |= PCP_GROUP_ID_ATTRIBUTE_FLAG;
+            
+            needCommaOrParen = true;
+        }
+        else if (tokenType == PCP_NO_VALUE_TOKEN)
+            needCommaOrParen = true;
+        else if (tokenType == PCP_FLOATING_POINT_NUMBER_TOKEN)
+            needCommaOrParen = false;
+        else
+        {
+            badExpression = true;
+            break;
+        }
+
+        if (needCommaOrParen)
+        {
+            if ((tokenType = tokenTypes[++tokenIndex]) == PCP_RIGHT_PARENTHESIS_TOKEN)
             {
-                if (parseState != 0) badExpression = true;
+                axisAttributeList.push_back((double)valueMap);
+                break;
             }
-            else if (!foundAlphanumeric)
+            else if (tokenType != PCP_COMMA_TOKEN)
+            {
                 badExpression = true;
-            else if (isdigit(token[0]))
-                badExpression = true;
-            else
-            {   
-                *tokenPtr = '\0';
-                componentVars.push_back(std::string(token));
+                break;
+            }
+
+            if ((tokenType = tokenTypes[++tokenIndex]) == PCP_VARIABLE_NAME_TOKEN)
+            {
+                axisAttributeList.push_back((double)valueMap);
+                valueIndex += PCP_ATTRIBUTES_PER_AXIS + 1;
+
+                continue;
             }
         }
+        
+        numberValues.clear(); numberExists.clear();
 
-        if (badExpression)
+        do
         {
-            componentVars.clear();
-            return;
-        }
+            if (tokenType == PCP_NO_VALUE_TOKEN)
+            {
+                numberValues.push_back(0.0);
+                numberExists.push_back(false);
+            }
+            else
+            {
+                if (tokenType != PCP_FLOATING_POINT_NUMBER_TOKEN)
+                {
+                    if (tokenType != PCP_INTEGER_TOKEN)
+                    {
+                        badExpression = true;
+                        break;
+                    }
+                }
 
-        parseState = 1;     // Expecting variable name character or space
-    } while (tokenChar != ')');
+                numberValue = strtod(tokenList[tokenIndex].c_str(), NULL);
+
+                numberValues.push_back(numberValue);
+                numberExists.push_back(true);
+            }
+            
+            if ((tokenType = tokenTypes[++tokenIndex]) != PCP_COMMA_TOKEN)
+            {
+                if (tokenType != PCP_RIGHT_PARENTHESIS_TOKEN) badExpression = true;
+                break;
+            }
+        } while ((tokenType = tokenTypes[++tokenIndex]) != PCP_VARIABLE_NAME_TOKEN);
+        
+        if (numberValues.size() > 3) badExpression = true;
+        
+        if (badExpression) break;
+        
+        if (numberValues.size() == 2)
+        {
+            axisAttributeList[valueIndex+PCP_LOWER_BOUND_ATTRIBUTE_OFFSET] =
+                numberValues[0];
+            axisAttributeList[valueIndex+PCP_UPPER_BOUND_ATTRIBUTE_OFFSET] =
+                numberValues[1];
+            
+            if (numberExists[0] && numberExists[1])
+            {
+                if (numberValues[0] < numberValues[1])
+                {
+                    valueMap |= PCP_LOWER_BOUND_ATTRIBUTE_FLAG;
+                    valueMap |= PCP_UPPER_BOUND_ATTRIBUTE_FLAG;
+                }
+            }
+        }
+        else
+        {
+            axisAttributeList[valueIndex+PCP_AXIS_SPACING_ATTRIBUTE_OFFSET] =
+                numberValues[0];
+            if (numberExists[0] && (numberValues[0] > 0.0))
+                valueMap |= PCP_AXIS_SPACING_ATTRIBUTE_FLAG;
+            
+            if (numberValues.size() == 3)
+            {
+                axisAttributeList[valueIndex+PCP_LOWER_BOUND_ATTRIBUTE_OFFSET] =
+                    numberValues[1];
+                axisAttributeList[valueIndex+PCP_UPPER_BOUND_ATTRIBUTE_OFFSET] =
+                    numberValues[2];
+            
+                if (numberExists[1] && numberExists[2])
+                {
+                    if (numberValues[1] < numberValues[2])
+                    {
+                        valueMap |= PCP_LOWER_BOUND_ATTRIBUTE_FLAG;
+                        valueMap |= PCP_UPPER_BOUND_ATTRIBUTE_FLAG;
+                    }
+                }
+            }
+        }
+        
+        axisAttributeList.push_back((double)valueMap);
+        valueIndex += PCP_ATTRIBUTES_PER_AXIS + 1;
+        
+        if (tokenType == PCP_RIGHT_PARENTHESIS_TOKEN) break;
+    } while (tokenIndex < tokenCount-1);
+    
+    if (badExpression)
+    {
+        axisVariableList.clear(); axisAttributeList.clear();
+    }
 }
 
 
@@ -323,6 +595,18 @@ ParseArrayComponentVariables(
 //      Brad Whitlock, Wed Feb 21 14:37:05 PST 2007
 //      Changed API.
 //
+//      Mark Blair, Wed Jan 17 16:40:37 PST 2007
+//      Added support for selective axis information and axis sequence expansion.
+//
+//      Mark Blair, Wed Jan 31 12:05:19 PST 2007
+//      Added support for extended array expressions.
+//
+//      Mark Blair, Fri Feb 23 12:19:33 PST 2007
+//      Records diagnostic information in debug log if user input is invalid.
+//
+//      Mark Blair, Mon Feb 26 17:57:42 PST 2007
+//      Changed API to accommodate corresponding API change throughout VisIt.
+//   
 // ****************************************************************************
 
 void
@@ -353,15 +637,20 @@ ParallelAxisViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
         doubleVector extMaxs;
         intVector    minTimeOrds;
         intVector    maxTimeOrds;
+        stringVector groupNames;
+        intVector    infoFlagSets;
+        doubleVector xPositions;
+        doubleVector axisAttData;
 
-        int axisCount, axisNum;
+        int axisCount, axisNum, infoFlags;
         Expression *exp;
         const char *expChars, *arrayExpression;
+        const char *variableName = plot->GetVariableName().c_str();
         
         if ((exp = ParsingExprList::GetExpression(plot->GetVariableName())) == NULL)
         {
-            debug1 << "ParallelAxis plot variable is neither a scalar nor an expression."
-                   << endl;
+            debug1 << "PCP/PAVPI/IPA/1: ParallelAxis plot variable is "
+                   << "neither a scalar nor an expression." << endl;
             EXCEPTION1(InvalidVariableException, plot->GetVariableName());
         }
 
@@ -369,33 +658,48 @@ ParallelAxisViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
         
         if ((arrayExpression = strstr(expChars,"array_compose")) == NULL)
         {
-            debug1 << "ParallelAxis plot input expression is not an array expression."
-                   << endl;
+            debug1 << "PCP/PAVPI/IPA/2: ParallelAxis plot input expression "
+                   << "is not an array expression." << endl;
             EXCEPTION1(ImproperUseException,
                 "ParallelAxis plot input expressions must be array expressions.");
         }
-
-        ParseArrayComponentVariables(axisNames, arrayExpression);
+        
+        ParseExtendedArrayExpression(axisNames, axisAttData, arrayExpression);
             
         if ((axisCount = axisNames.size()) == 0)
         {
-            debug1 << "ParallelAxis plot variable is an invalid array expression."
-                   << endl;
+            debug1 << "PCP/PAVPI/IPA/3: ParallelAxis plot variable is "
+                   << "an invalid array expression." << endl;
             EXCEPTION1(ImproperUseException, "Invalid array expression.");
         }
             
         if (axisCount < 2)
         {
-            debug1 << "ParallelAxis plot array expression is a 1-tuple." << endl;
+            debug1 << "PCP/PAVPI/IPA/4: ParallelAxis plot input expression "
+                   << "has only 1 scalar variable." << endl;
             EXCEPTION1(ImproperUseException,
             "ParallelAxis plot needs at least 2 input scalars for coordinate axes.");
         }
             
-        for (axisNum = 0; axisNum < axisNames.size(); axisNum++)
+        for (axisNum = 0; axisNum < axisCount; axisNum++)
         {
-            axisMins.push_back(-1e+37); axisMaxs.push_back(+1e+37);
-            extMins.push_back(0.0); extMaxs.push_back(1.0);
-            minTimeOrds.push_back(0); maxTimeOrds.push_back(0);
+            infoFlags = EA_THRESHOLD_BY_EXTENT_FLAG |
+                EA_SHOW_ALL_AXIS_INFO_FLAGS | EA_AXIS_INFO_SHOWN_FLAG;
+
+            if (axisNum == 0)
+                infoFlags |= EA_LEFT_SHOWN_AXIS_FLAG | EA_LEFT_SELECTED_AXIS_FLAG;
+            if (axisNum == axisCount-1)
+                infoFlags |= EA_RIGHT_SHOWN_AXIS_FLAG | EA_RIGHT_SELECTED_AXIS_FLAG;
+
+            axisMins.push_back(-1e+37);
+            axisMaxs.push_back(+1e+37);
+            extMins.push_back(0.0);
+            extMaxs.push_back(1.0);
+            minTimeOrds.push_back(0);
+            maxTimeOrds.push_back(0);
+            groupNames.push_back(std::string("(not_in_a_group)"));
+            infoFlagSets.push_back(infoFlags);
+            xPositions.push_back(-1.0);
         }
 
         fallbackAtts->SetOrderedAxisNames(axisNames);
@@ -405,13 +709,21 @@ ParallelAxisViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
         fallbackAtts->SetExtentMaxima(extMaxs);
         fallbackAtts->SetExtMinTimeOrds(minTimeOrds);
         fallbackAtts->SetExtMaxTimeOrds(maxTimeOrds);
-        
+        fallbackAtts->SetPlotToolModeFlags(EA_AXIS_INFO_AUTO_LAYOUT_FLAG);
+        fallbackAtts->SetAxisGroupNames(groupNames);
+        fallbackAtts->SetAxisInfoFlagSets(infoFlagSets);
+        fallbackAtts->SetAxisXPositions(xPositions);
+        fallbackAtts->SetAxisAttributeVariables(axisNames);
+        fallbackAtts->SetAttributesPerAxis(PCP_ATTRIBUTES_PER_AXIS);
+        fallbackAtts->SetAxisAttributeData(axisAttData);
+
         initAtts = fallbackAtts;
     }
     
     if (!initAtts->AttributesAreConsistent())
     {
-        debug1 << "ParallelAxis plot attributes are inconsistent." << endl;
+        debug1 << "PCP/PAVPI/IPA/5: ParallelAxis plot internal data is "
+               << "inconsistent." << endl;
         EXCEPTION1(ImproperUseException, 
                    "ParallelAxis plot is not set up correctly.");
     }
