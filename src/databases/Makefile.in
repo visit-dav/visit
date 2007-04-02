@@ -247,8 +247,8 @@ PDB=KullLite PDB
 SAF=SAF
 SAMPLES=Rect Hex
 REQUIRED=ANALYZE ANSYS AUXFile BOV BOW CMAT Curve2D Dune EnSight Image Lines \
- MFIX MM5 NASTRAN OVERFLOW PATRAN PLOT2D PLOT3D Point3D ProteinDataBank SAR \
- STL Shapefile Silo SimV1 Spheral TFT TSurf Tecplot Vis5D Vista VTK \
+ MFIX MM5 NASTRAN OpenFOAM OVERFLOW PATRAN PLOT2D PLOT3D Point3D ProteinDataBank \
+ SAR STL Shapefile Silo SimV1 Spheral TFT TSurf Tecplot Vis5D Vista VTK \
  WavefrontOBJ Xmdv
 VISUS=ViSUS
 CFITSIO=FITS

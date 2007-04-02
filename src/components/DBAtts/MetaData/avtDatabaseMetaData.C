@@ -5973,6 +5973,9 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in, bool do_expr) const
 //    Hank Childs, Tue Jul 19 13:24:19 PDT 2005
 //    Added support for arrays.
 //
+//    Mark C. Miller, Mon Aug 21 18:47:45 PDT 2006
+//    Added test for numBlocks>1 to matching on block/groupTitle
+//
 // ****************************************************************************
 
 std::string
@@ -6012,8 +6015,9 @@ avtDatabaseMetaData::MeshForVar(std::string var) const
             //
             return var;
         }
-        else if (VariableNamesEqual(meshes[i]->blockTitle, var) ||
-                 VariableNamesEqual(meshes[i]->groupTitle, var))
+        else if ((VariableNamesEqual(meshes[i]->blockTitle, var) ||
+                  VariableNamesEqual(meshes[i]->groupTitle, var)) &&
+                 meshes[i]->numBlocks > 1)
         {
             return meshes[i]->name;
         }
