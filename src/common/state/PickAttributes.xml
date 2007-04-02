@@ -176,6 +176,9 @@
     <Field name="displayPickLetter" label="displayPickLetter" type="bool" internal="false">
       true
     </Field>
+    <Field name="ghostType" label="ghostType" type="int" internal="true">
+      0
+    </Field>
     <Function name="PrintSelf" user="true" member="true">
     </Function>
     <Function name="CreateOutputString" user="true" member="true">

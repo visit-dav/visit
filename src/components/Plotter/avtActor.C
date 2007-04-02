@@ -887,3 +887,21 @@ avtActor::MakeUnPickable()
     }
 }
 
+
+// ****************************************************************************
+//  Method: avtActor::GetZPosition
+//
+//  Purpose:
+//    Retrieves the z-position of the underlying vtk actor. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   June 27, 2005 
+//
+// ****************************************************************************
+
+float
+avtActor::GetZPosition()
+{
+    return drawable->GetZPosition();
+}
+

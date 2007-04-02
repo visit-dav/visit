@@ -23,9 +23,9 @@
 #include <layout1x1.xpm>
 #include <layout1x2.xpm>
 #include <layout2x2.xpm>
+#include <layout2x3.xpm>
 #include <layout2x4.xpm>
 #include <layout3x3.xpm>
-#include <layout4x4.xpm>
 #include <navigatemode.xpm>
 #include <nodepickmode.xpm>
 #include <zonepickmode.xpm>
@@ -740,6 +740,8 @@ ToggleBoundingBoxModeAction::Toggled() const
 // Creation:   Fri Apr 4 15:42:42 PST 2003
 //
 // Modifications:
+//   Eric Brugger, Thu Jun 30 09:45:55 PDT 2005
+//   Added a 2x3 window layout and removed the 4x4 window layout.
 //   
 // ****************************************************************************
 
@@ -757,18 +759,18 @@ SetWindowLayoutAction::SetWindowLayoutAction(ViewerWindow *win) :
         AddChoice("1x1", "1 x 1 window layout", QPixmap(layout1x1_xpm), QPixmap(layout1x1_xpm));
         AddChoice("1x2", "1 x 2 window layout", QPixmap(layout1x2_xpm), QPixmap(layout1x2_xpm));
         AddChoice("2x2", "2 x 2 window layout", QPixmap(layout2x2_xpm), QPixmap(layout2x2_xpm));
+        AddChoice("2x3", "2 x 3 window layout", QPixmap(layout2x3_xpm), QPixmap(layout2x3_xpm));
         AddChoice("2x4", "2 x 4 window layout", QPixmap(layout2x4_xpm), QPixmap(layout2x4_xpm));
         AddChoice("3x3", "3 x 3 window layout", QPixmap(layout3x3_xpm), QPixmap(layout3x3_xpm));
-        AddChoice("4x4", "4 x 4 window layout", QPixmap(layout4x4_xpm), QPixmap(layout4x4_xpm));
     }
     else
     {
         AddChoice("1x1");
         AddChoice("1x2");
         AddChoice("2x2");
+        AddChoice("2x3");
         AddChoice("2x4");
         AddChoice("3x3");
-        AddChoice("4x4");
     }
 }
 
@@ -783,6 +785,8 @@ SetWindowLayoutAction::SetWindowLayoutAction(ViewerWindow *win) :
 // Creation:   Fri Apr 4 15:43:15 PST 2003
 //
 // Modifications:
+//   Eric Brugger, Thu Jun 30 09:45:55 PDT 2005
+//   Added a 2x3 window layout and removed the 4x4 window layout.
 //   
 // ****************************************************************************
 
@@ -794,11 +798,11 @@ SetWindowLayoutAction::Setup()
     else if(activeAction == 2)
         args.SetWindowLayout(4);
     else if(activeAction == 3)
-        args.SetWindowLayout(8);
+        args.SetWindowLayout(6);
     else if(activeAction == 4)
-        args.SetWindowLayout(9);
+        args.SetWindowLayout(8);
     else if(activeAction == 5)
-        args.SetWindowLayout(16);
+        args.SetWindowLayout(9);
     else
         args.SetWindowLayout(1);
 }
@@ -843,6 +847,8 @@ SetWindowLayoutAction::Execute(int)
 // Creation:   Fri Apr 4 15:44:31 PST 2003
 //
 // Modifications:
+//   Eric Brugger, Thu Jun 30 09:45:55 PDT 2005
+//   Added a 2x3 window layout and removed the 4x4 window layout.
 //   
 // ****************************************************************************
 
@@ -860,13 +866,13 @@ SetWindowLayoutAction::ChoiceToggled(int i) const
         retval = windowMgr->GetWindowLayout() == 4;
         break;
     case 3:
-        retval = windowMgr->GetWindowLayout() == 8;
+        retval = windowMgr->GetWindowLayout() == 6;
         break;
     case 4:
-        retval = windowMgr->GetWindowLayout() == 9;
+        retval = windowMgr->GetWindowLayout() == 8;
         break;
     case 5:
-        retval = windowMgr->GetWindowLayout() == 16;
+        retval = windowMgr->GetWindowLayout() == 9;
         break;
     default:
         retval = windowMgr->GetWindowLayout() == 1;

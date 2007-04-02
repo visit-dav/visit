@@ -45,6 +45,9 @@ class avtMaterial;
 //    Added pure virtual methods RequiresCommunication.  Added "allDomains"
 //    argument to CreateGhostNodes.
 //
+//    Hank Childs, Mon Jun 27 16:28:22 PDT 2005
+//    Added virtual method ResetCachedMembers.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDomainBoundaries
@@ -80,6 +83,7 @@ class DATABASE_API avtDomainBoundaries
     virtual bool                      RequiresCommunication(avtGhostDataType) = 0;
     virtual bool                      ConfirmMesh(vector<int>      domainNum,
                                                vector<vtkDataSet*> meshes)  =0;
+    virtual void                      ResetCachedMembers(void) {;};
 };
 
 #endif

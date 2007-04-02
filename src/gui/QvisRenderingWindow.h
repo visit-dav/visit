@@ -48,6 +48,9 @@ class QvisOpacitySlider;
 //   Mark C. Miller, Fri Mar  4 13:05:02 PST 2005
 //   Changed approxNumTriangles to approxNumPrimitives
 //
+//   Kathleen Bonnell, Thu Jun 30 15:29:55 PDT 2005 
+//   Added redgreen radio button. 
+//
 // ****************************************************************************
 
 class GUI_API QvisRenderingWindow : public QvisPostableWindowSimpleObserver
@@ -98,6 +101,7 @@ private:
     QRadioButton *redblue;
     QRadioButton *interlace;
     QRadioButton *crystalEyes;
+    QRadioButton *redgreen;
     QCheckBox    *renderNotifyToggle;
     QButtonGroup *scalrenActivationMode;
     QRadioButton *scalrenAuto;

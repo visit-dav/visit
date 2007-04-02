@@ -33,6 +33,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>The Transform operator now changes the axis labels when switching from Cartesian coordinates to cylindrical or spherical coordinates.</li>
 <li>The KullLite database reader plugin can now adaptively switch its axis labels from X-Y to R-Z.</li>
 <li>VisIt's metadata server no longer automatically consolidates virtual databases of Flash files into larger virtual databases since that behavior caused problems for some users. If you want to make VisIt do this again, set the <i>VISIT_CONSOLIDATE_VIRTUAL_DATABASES</i> environment variable to <i>on</i>.</li>
+<li>Many optimizations were put in place to support large AMR problems with large numbers of patches.</li>
+<li>VisIt's ghost zone communication was heavily optimized.</li>
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.4.4</font></b></p>
 <ul>
@@ -41,7 +43,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>It is not possible to select a high cell seed number for an OnionPeel operator that has been applied to a FilledBoundary plot.</li>
 <li>VisIt's Silo database reader plugin does not correctly recognize blocks/groups from Hydra.</li>
 <li>Creating an elevated Surface of a 2D dataset using the Elevate operator makes VisIt lose the ability to control lighting on that surface.</li>
-<li>The <i>divergence</i> expression does not work on 2D vectors.</li>
+<li>The <i>divergence</i> expression now works on 2D vectors.</li>
 <li>Unhiding a Mesh plot when VisIt is in scalable-rendering mode forces the Mesh plot to be opaque.</li>
 <li>VisIt's image reader has several problems that result in incorrect colors being used as well as general inefficiency.</li>
 <li>Node picking on sliced FilledBoundary plots can return the wrong information because VisIt is not using the right coordinates to extract the data.</li>
@@ -52,6 +54,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>Some VisIt filters do not make use of spatial and data extents when they should due to a coding issue a filter that is a facade for other filters.</li>
 <li>VisIt's <i>visitconvert</i> program issues a lot of warnings when converting image files to another format.</li>
 <li>Recentering a color image from zonal to nodal causes the Truecolor plot to display nothing.</li>
+<li>The spatial extents query now has the correct return type in the command-line interface</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.4.3.html">VisIt 1.4.3 Release Notes</a>.</p>

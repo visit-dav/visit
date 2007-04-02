@@ -516,13 +516,183 @@ avtExpressionEvaluatorFilter::ReleaseData(void)
 //    using an 'Update' so that information that gets retrieved always
 //    reflect the current SILRestriction. (about March, 2004).
 //
+//    Kathleen Bonnell, Thu Jun 30 10:59:50 PDT 2005 
+//    Re-add the parsing code.  In some way I don't understand, this code
+//    affects the avtDataAttributes that Pick uses to query from. 
+// 
 // ****************************************************************************
 
 void
 avtExpressionEvaluatorFilter::Query(PickAttributes *pa)
 {
+    int   i, j, k;
+
+    //
+    // Sanity check.
+    //
+    if (*(GetInput()) == NULL)
+        EXCEPTION0(NoInputException);
+
+    //
+    // We need to identify if there are expression variables that have been
+    // requested for the pick that are missing.  If so, we will have to
+    // re-execute.
+    //
+    const stringVector &orig_vars = pa->GetVariables();
+    stringVector expr_vars;
+    std::vector<int> indices;
+    for (i = 0 ; i < orig_vars.size() ; i++)
+    {
+        Expression *exp = ParsingExprList::GetExpression(orig_vars[i]);
+        if (exp != NULL)
+        {
+            expr_vars.push_back(orig_vars[i]);
+            indices.push_back(i);
+        }
+    }
+    stringVector unmatched_vars;
+    if (expr_vars.size() > 0)
+    {
+        avtDataset_p output = GetTypedOutput();
+        VarList vl;
+        avtDatasetExaminer::GetVariableList(output, vl);
+        for (i = 0 ; i < expr_vars.size() ; i++)
+        {
+            bool foundMatch = false;
+            for (j = 0 ; j < vl.nvars ; j++)
+            {
+                if (expr_vars[i] == vl.varnames[j])
+                    foundMatch = true;
+            }
+            if (!foundMatch)
+            {
+                unmatched_vars.push_back(expr_vars[i]);
+            }
+        }
+        modified = true;
+    }
+    if (unmatched_vars.size() > 0)
+    {
+        for (i = 0 ; i < unmatched_vars.size() ; i++)
+            lastUsedSpec->GetDataSpecification()->AddSecondaryVariable(
+                                                    unmatched_vars[i].c_str());
+
+        //
+        // Force the update.
+        //
+        GetOutput()->Update(lastUsedSpec);
+    }
+
+    //
+    // Start by going to the new queryable source upstream (most likely the
+    // terminating source corresponding to the database) and ask it to pick
+    // with our new pick attributes.
+    //
     avtQueryableSource *src = GetInput()->GetQueryableSource();
     src->Query(pa);
+
+    //
+    // Now iterate over the expressions and add where possible.
+    //
+    if (expr_vars.size() > 0)
+    {
+        bool canUseNativeArray = 
+                      GetInput()->GetInfo().GetValidity().GetZonesPreserved();
+
+        const intVector &incidentElements = pa->GetIncidentElements();
+        int element = pa->GetElementNumber();
+        int domain  = pa->GetDomain();
+        bool zonePick = pa->GetPickType() == PickAttributes::Zone || 
+                        pa->GetPickType() == PickAttributes::DomainZone;
+
+        avtDataset_p output = GetTypedOutput();
+        for (i = 0 ; i < expr_vars.size() ; i++)
+        {
+            avtCentering cent = AVT_UNKNOWN_CENT;
+            vtkDataArray *arr = avtDatasetExaminer::GetArray(output,
+                                           expr_vars[i].c_str(), domain, cent);
+            if (arr == NULL)
+            {
+                continue;
+            }
+
+            PickVarInfo varInfo;
+            varInfo.SetVariableName(expr_vars[i]);
+            int ncomps = arr->GetNumberOfComponents();
+            if (ncomps == 1)
+                varInfo.SetVariableType("scalar");
+            else if (ncomps == 3)
+                varInfo.SetVariableType("vector");
+            else if (ncomps == 9)
+                varInfo.SetVariableType("tensor");
+
+            bool zoneCent = (cent == AVT_ZONECENT);
+            varInfo.SetCentering(zoneCent ? PickVarInfo::Zonal
+                                          : PickVarInfo::Nodal);
+            std::vector<double> vals;
+            std::vector<std::string> names;
+            char temp[1024];
+            if (canUseNativeArray)
+            {
+                if (zoneCent != zonePick)
+                {
+                    for (j = 0 ; j < incidentElements.size() ; j++)
+                    {
+                        sprintf(temp, "(%d)", incidentElements[j]);
+                        names.push_back(temp);
+                        float mag = 0.;
+                        for (k = 0 ; k < arr->GetNumberOfComponents() ; k++)
+                        {
+                            float val=arr->GetComponent(incidentElements[j],k);
+                            mag += val*val;
+                            vals.push_back(val);
+                        }
+                        mag = sqrt(mag);
+                        vals.push_back(mag);
+                    }
+                }
+                else
+                {
+                    // the info we're after is associated with element
+                    sprintf(temp, "(%d)", element);
+                    names.push_back(temp);
+                    float mag = 0.;
+                    for (k = 0 ; k < arr->GetNumberOfComponents() ; k++)
+                    {
+                        float val = arr->GetComponent(element, k);
+                        mag += val*val;
+                        vals.push_back(val);
+                    }
+                    mag = sqrt(mag);
+                    vals.push_back(mag);
+                }
+            }
+            if (!vals.empty())
+            {
+                varInfo.SetNames(names);
+                varInfo.SetValues(vals);
+                int index = -1;
+                for (int ii = 0 ; ii < pa->GetNumPickVarInfos() ; ii++)
+                {
+                    PickVarInfo &vi = pa->GetPickVarInfo(ii);
+                    if (vi.GetVariableName() == varInfo.GetVariableName())
+                    {
+                        index = ii;
+                        break;
+                    }
+                }
+                if (index >= 0)
+                {
+                    PickVarInfo &varInfo2 = pa->GetPickVarInfo(index);
+                    varInfo2 = varInfo;
+                }
+                else
+                {
+                    pa->AddPickVarInfo(varInfo);
+                }
+            }
+        }
+    }
 }
 
 

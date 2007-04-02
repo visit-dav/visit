@@ -95,11 +95,12 @@ avtLocateNodeQuery::Execute(vtkDataSet *ds, const int dom)
         return;
     }
 
+    avtDataObjectInformation &info = GetInput()->GetInfo();
     float dist, isect[3] = { 0., 0., 0.};
     int foundNode = -1;
     int origNode = -1;
-    int topodim = GetInput()->GetInfo().GetAttributes().GetTopologicalDimension();
-    int spatdim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
+    int topodim = info.GetAttributes().GetTopologicalDimension();
+    int spatdim = info.GetAttributes().GetSpatialDimension();
 
     // Find the cell, intersection point, and distance along the ray.
     //
@@ -118,7 +119,7 @@ avtLocateNodeQuery::Execute(vtkDataSet *ds, const int dom)
                 if (!pickAtts.GetMatSelected())
                     foundNode = DeterminePickedNode(ds, foundCell, isect);
                 else 
-                    foundNode = FindClosestPoint(ds, foundCell, isect, origNode);
+                    foundNode = FindClosestPoint(ds,foundCell,isect,origNode);
             }
         }
     }
@@ -142,34 +143,36 @@ avtLocateNodeQuery::Execute(vtkDataSet *ds, const int dom)
                 int comp = origNodes->GetNumberOfComponents() -1;
                 foundElement = (int) origNodes->GetComponent(foundNode, comp);
             }
-            else if (GetInput()->GetInfo().GetValidity().GetZonesPreserved() &&
-                     GetInput()->GetInfo().GetAttributes().GetContainsGhostZones() 
+            else if (info.GetValidity().GetZonesPreserved() &&
+                     info.GetAttributes().GetContainsGhostZones() 
                         != AVT_CREATED_GHOSTS)
             {
                 foundElement = foundNode;
             }
-            else if (!GetInput()->GetInfo().GetValidity().GetPointsWereTransformed())
+            else if (!info.GetValidity().GetPointsWereTransformed())
             {
                 // Points were not transformed, so node id found here is valid.
                 foundElement = foundNode; 
             }
-            // else ... Zones not preserved or we created ghosts, or points were
-            // transformed, so node id found here is not valid, so don't set it.
+            // else ... Zones not preserved or we created ghosts, or points 
+            // were transformed, so node id found here is not valid, so don't 
+            // set it.
         }
         else if (origNode != -1)
         {
-            // MaterialSelection occurred, but we found an original node, use that
+            // MaterialSelection occurred, but we found an original node, 
+            // use that
             foundElement = origNode; 
         }
-        else if (!GetInput()->GetInfo().GetValidity().SubdivisionOccurred())
+        else if (!info.GetValidity().SubdivisionOccurred())
         {
             // MaterialSelection occurred without subdivision, can use the
             // node id found here.
             foundElement = foundNode; 
         }
-        // else ... MaterialSelection occurred with subdivision, and the original
-        // nodes array was not present, so the node id found here will not be
-        // valid, so don't set it.
+        // else ... MaterialSelection occurred with subdivision, and the 
+        // original nodes array was not present, so the node id found here 
+        // will not be valid, so don't set it.
    
         pickAtts.SetCellPoint(isect);
         pickAtts.SetNodePoint(ds->GetPoint(foundNode));
@@ -206,6 +209,9 @@ avtLocateNodeQuery::Execute(vtkDataSet *ds, const int dom)
 //    Kathleen Bonnell, Thu Oct 21 18:02:50 PDT 2004 
 //    Correct test for whether a node is ghost or not. 
 //
+//    Kathleen Bonnell, Mon Jun 27 15:54:52 PDT 2005
+//    Match new interface for RGridIsect. 
+//
 // ****************************************************************************
 
 int
@@ -213,21 +219,21 @@ avtLocateNodeQuery::RGridFindNode(vtkDataSet *ds, float &dist, float *isect)
 {
     vtkRectilinearGrid *rgrid = vtkRectilinearGrid::SafeDownCast(ds);
 
-    int ijk[3], nodeId = -1;
+    int nodeId = -1;
 
-    if (RGridIsect(rgrid, dist, isect, ijk))
+    if (RGridIsect(rgrid, dist, isect) != -1)
     {
         nodeId = ds->FindPoint(isect);
-        vtkUnsignedCharArray *ghosts = (vtkUnsignedCharArray *)ds->
-                     GetPointData()->GetArray("avtGhostZones");
-        if (ghosts && ghosts->GetValue(nodeId) > 0)
+
+        vtkUnsignedCharArray *ghostNodes = (vtkUnsignedCharArray *)ds->
+                     GetPointData()->GetArray("avtGhostNodes");
+        if (ghostNodes && ghostNodes->GetValue(nodeId) > 0)
         {
             nodeId = -1;
         }
     }
     return nodeId;
 }
-
 
 
 // ****************************************************************************
@@ -254,7 +260,8 @@ avtLocateNodeQuery::RGridFindNode(vtkDataSet *ds, float &dist, float *isect)
 // ****************************************************************************
 
 int
-avtLocateNodeQuery::DeterminePickedNode(vtkDataSet *ds, int foundCell, float *ppoint)
+avtLocateNodeQuery::DeterminePickedNode(vtkDataSet *ds, int foundCell, 
+                                        float *ppoint)
 {
    vtkIdType minId = -1; 
 
@@ -437,5 +444,3 @@ avtLocateNodeQuery::FindClosestPointOnLine(vtkDataSet *ds, float &minDist,
     pointLocator->Delete();
     return foundPoint;
 }
-
-

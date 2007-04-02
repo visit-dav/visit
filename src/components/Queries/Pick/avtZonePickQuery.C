@@ -4,6 +4,8 @@
 
 #include <avtZonePickQuery.h>
 
+#include <vtkCellData.h>
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkFieldData.h>
 #include <vtkVisItUtility.h>
@@ -94,6 +96,12 @@ avtZonePickQuery::SetInvTransform(const avtMatrix *m)
 //    Removed 'needRealId' test, no longer needed (we are reporting ghost
 //    zones when ghostType == AVT_HAS_GHOSTS). 
 //
+//    Kathleen Bonnell, Tue Jun 28 10:57:39 PDT 2005 
+//    Readded 'needRealId' test, modified so that Real ids are calculated only
+//    under specific conditions:  we don't already know the picked Node, ghosts
+//    were Created, we have the Ghosts array and the data is structured.  
+//    E.g. when we are picking on the Contour plot of AMR data.
+//
 // ****************************************************************************
 
 void
@@ -109,6 +117,15 @@ avtZonePickQuery::Execute(vtkDataSet *ds, const int dom)
     }
 
     int pickedZone = pickAtts.GetElementNumber();
+    int type = ds->GetDataObjectType();
+    bool hasGhosts = (ds->GetCellData()->GetArray("avtGhostZones") != NULL);
+    //
+    // We may need the real Id when we are picking on a Contour of an
+    // AMR mesh. 
+    //
+    int needRealId = (pickedZone == -1 && hasGhosts &&
+                      ghostType == AVT_CREATED_GHOSTS &&
+               (type == VTK_STRUCTURED_GRID || type == VTK_RECTILINEAR_GRID));
 
     if (pickedZone == -1)
     {
@@ -138,9 +155,13 @@ avtZonePickQuery::Execute(vtkDataSet *ds, const int dom)
             }
             return;
         }
+
+        vtkDataArray *ghost = ds->GetCellData()->GetArray("avtGhostZones");
+        if (ghost && ghost->GetTuple1(pickedZone) > 0)
+            return;
+
         pickAtts.SetElementNumber(pickedZone);
     }
-
 
     if (!pickAtts.GetMatSelected())
     {
@@ -173,6 +194,12 @@ avtZonePickQuery::Execute(vtkDataSet *ds, const int dom)
     if (pickAtts.GetDomain() == -1)
         pickAtts.SetDomain(dom);
     
+    if (needRealId && pickAtts.GetMatSelected())
+    {
+        SetRealIds(ds);
+        pickAtts.SetElementNumber(pickAtts.GetRealElementNumber());
+    }
+
     //
     //  Allow the database to add any missing information.
     // 
@@ -185,9 +212,9 @@ avtZonePickQuery::Execute(vtkDataSet *ds, const int dom)
         // to this dataset.  Retrieve the correct one for use with 
         // RetrieveVarInfo, then reset it.
         //
-        int currentZone = GetCurrentZoneForOriginal(ds, pickAtts.GetElementNumber());
-        RetrieveVarInfo(ds, currentZone, pickAtts.GetIncidentElements()); 
-      
+        int currentZone = GetCurrentZoneForOriginal(ds, 
+                            pickAtts.GetElementNumber());
+        RetrieveVarInfo(ds, currentZone, pickAtts.GetIncidentElements());
     }
 
     //
@@ -205,6 +232,16 @@ avtZonePickQuery::Execute(vtkDataSet *ds, const int dom)
     else
     {
         pickAtts.SetDomain(dom+blockOrigin);
+    }
+
+    if (needRealId && !pickAtts.GetMatSelected())
+    {
+        SetRealIds(ds);
+        //
+        // Put the real ids in the correct spot for output.
+        //
+        pickAtts.SetElementNumber(pickAtts.GetRealElementNumber());
+        pickAtts.SetIncidentElements(pickAtts.GetRealIncidentElements());
     }
 
     pickAtts.SetElementNumber(pickAtts.GetElementNumber() + cellOrigin);
@@ -271,3 +308,4 @@ avtZonePickQuery::Preparation()
         pickAtts.SetCellPoint(cellPoint);
     }
 }
+

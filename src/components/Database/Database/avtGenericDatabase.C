@@ -1118,20 +1118,22 @@ avtGenericDatabase::ManageMemoryForNonCachableMesh(vtkDataSet *v)
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added support for data type conversion
 //
+//    Hank Childs, Mon Jun 27 16:24:23 PDT 2005
+//    Added data specification argument.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtGenericDatabase::GetDataset(const char *varname, int ts, int domain,
                         const char *matname, const vector<CharStrRef> &vars2nd, 
-                        avtSourceFromDatabase *src)
+                        avtDataSpecification_p spec,avtSourceFromDatabase *src)
 {
     vtkDataSet *rv = NULL;
     avtVarType type = GetMetaData(ts)->DetermineVarType(varname);
 
     // get information to control data type 
-    const avtDataSpecification_p dspec = src->GetFullDataSpecification();
-    bool needNativePrecision = dspec->NeedNativePrecision();
-    vector<int> admissibleDataTypes = dspec->GetAdmissibleDataTypes();
+    bool needNativePrecision = spec->NeedNativePrecision();
+    vector<int> admissibleDataTypes = spec->GetAdmissibleDataTypes();
 
     if (strcmp(matname, "_all") == 0)
     {
@@ -4758,6 +4760,9 @@ avtGenericDatabase::ActivateTimestep(int stateIndex)
 //    Hank Childs, Tue Feb 15 07:21:10 PST 2005
 //    Make translations when we have hidden characters.
 //
+//    Hank Childs, Mon Jun 27 16:24:23 PDT 2005
+//    Add argument to GetDataset.
+//
 // ****************************************************************************
 
 void
@@ -4858,7 +4863,8 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
             debug5 << "Generic database instructing get for var = " 
                    << var << ", timestep = " << ts << " domain = "
                    << domains[i] << endl;
-            single_ds = GetDataset(var, ts, domains[i], "_all", vars2nd, src);
+            single_ds = GetDataset(var, ts, domains[i], "_all", vars2nd, 
+                                   spec, src);
 
             // Determine if there are mixed vars.  If so, force
             // material selection if it was requested for mixed vars
@@ -4942,7 +4948,7 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
                            << domains[i] << ", material = " 
                            << matnames[j].c_str() << endl;
                     vtkDataSet *ds1 = GetDataset(var, ts, domains[i],
-                                          matnames[j].c_str(), vars2nd, src);
+                                      matnames[j].c_str(), vars2nd, spec, src);
                     ds.SetDataset(i, j, ds1);
                     if (ds1 != NULL)
                     {
@@ -5407,6 +5413,9 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundariesFromFile(
 //    Hank Childs, Sun Mar 13 10:47:59 PST 2005
 //    Fix memory leak.
 //
+//    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
+//    Call ResetCachedMembers.
+//
 // ****************************************************************************
 
 bool
@@ -5492,6 +5501,11 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
                    (nummixvars > 0 ? 1:0) +
                    (spec->NeedZoneNumbers()||spec->NeedStructuredIndices()
                             ? 1: 0));
+
+    //
+    // Don't let cache data members from the last execution affect this one.
+    //
+    dbi->ResetCachedMembers();
 
     //
     //  Exchange Meshes

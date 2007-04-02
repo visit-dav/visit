@@ -88,6 +88,9 @@ class     avtTransparencyActor;
 //    Kathleen Bonnell, Mon Sep 27 10:19:11 PDT 2004 
 //    Added MakePickable and MakeUnPickable. 
 //
+//    Kathleen Bonnell, Mon Jun 27 14:48:12 PDT 2005 
+//    Added GetZPosition. 
+//
 // ****************************************************************************
 
 class PLOTTER_API avtActor
@@ -139,6 +142,7 @@ class PLOTTER_API avtActor
 
     void                          MakePickable(void);
     void                          MakeUnPickable(void);
+    float                         GetZPosition(void);
 
   protected:
     avtBehavior_p                 behavior;

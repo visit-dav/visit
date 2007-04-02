@@ -133,6 +133,9 @@ class avtTransparencyActor;
 //    Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
 //    Removed bool for antialiasing arg from OrderPlots
 //
+//    Kathleen Bonnell, Mon Jun 27 14:54:36 PDT 2005 
+//    Added GetMaxZShift. 
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinPlots : public VisWinColleague
@@ -200,6 +203,7 @@ class VISWINDOW_API VisWinPlots : public VisWinColleague
 
     void                          MakeAllPickable(void);
     void                          MakeAllUnPickable(void);
+    float                         GetMaxZShift(void);
 
   protected:
     std::vector< avtActor_p >     plots;

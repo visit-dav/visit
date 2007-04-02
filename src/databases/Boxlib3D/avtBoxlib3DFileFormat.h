@@ -31,6 +31,9 @@ class VisMF;
 //    Hank Childs, Sun Mar  6 16:21:15 PST 2005
 //    Add support for GeoDyne material names.
 //
+//    Hank Childs, Thu Jun 23 14:46:22 PDT 2005
+//    Broadcast Header from proc. 0
+//
 // ****************************************************************************
 
 class avtBoxlib3DFileFormat : public avtSTMDFileFormat
@@ -56,6 +59,7 @@ class avtBoxlib3DFileFormat : public avtSTMDFileFormat
                                            DestructorFunction &);
     
     virtual void          FreeUpResources(void);
+    virtual void          ActivateTimestep(void);
 
   protected:
     // This relative location of the multifab files.  It contains entries for
@@ -86,6 +90,8 @@ class avtBoxlib3DFileFormat : public avtSTMDFileFormat
     // This entry is per level, but level 0 is omitted.
     std::vector<int>                        refinement_ratio;
 
+    bool                                    haveReadTimeAndCycle;
+    double                                  time;
     int                                     cycle;
     std::string                             timestepPath;
     bool                                    initializedReader;

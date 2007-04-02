@@ -27,6 +27,19 @@ using     std::vector;
 
 
 //
+// Types and globals (needed for qsort). 
+//
+
+typedef union
+{
+    float f;
+    int   b;
+} FloatInt;
+
+int globalCurrentDepth;
+int globalNDims;
+
+//
 // Static prototypes
 //
 
@@ -34,6 +47,7 @@ static float    EquationsValueAtPoint(const float *, int, int, int,
                                       const float *);
 static bool     Intersects(const float *, float, int, int, const float *);
 static bool     Intersects(float [3], float[3], int, int, const float *);
+static int      QsortBoundsSorter(const void *arg1, const void *arg2);
 
 
 // ****************************************************************************
@@ -267,20 +281,29 @@ avtIntervalTree::CollectInformation(void)
 //  Programmer: Hank Childs
 //  Creation:   August 8, 2000
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Jun 27 09:01:01 PDT 2005
+//    Re-written to use qsort.
+//
 // ****************************************************************************
 
 void
 avtIntervalTree::ConstructTree(void)
 {
-    int    i;
+    int    i, j;
 
     //
     // Make a local copy of the bounds so that we can move them around.
     //
-    float  *bounds = new float[nDomains*vectorSize];
-    for (i = 0 ; i < nDomains*vectorSize ; i++)
+    int totalSize = vectorSize+1;
+    globalNDims = nDims;
+    FloatInt  *bounds = new FloatInt[nDomains*totalSize];
+    for (i = 0 ; i < nDomains ; i++)
     {
-        bounds[i] = nodeExtents[i];
+        for (j = 0 ; j < vectorSize ; j++)
+            bounds[totalSize*i+j].f = nodeExtents[vectorSize*i+j];
+        bounds[totalSize*i+(totalSize-1)].b = i;
     }
 
     int      offsetStack[100];   // Only need log nDomains
@@ -288,12 +311,6 @@ avtIntervalTree::ConstructTree(void)
     int      sizeStack  [100];   // Only need log nDomains
     int      depthStack [100];   // Only need log nDomains
     int      stackCount = 0;
-    int     *blockID    = new int[nDomains];
-
-    for (i = 0 ; i < nDomains ; i++)
-    {
-        blockID[i] = i;
-    }
 
     //
     // Initialize the arguments for the stack
@@ -315,17 +332,17 @@ avtIntervalTree::ConstructTree(void)
 
         if (currentSize <= 1)
         {
-            nodeIDs[currentNode] = blockID[currentOffset];
+            nodeIDs[currentNode] = 
+                             bounds[currentOffset*totalSize + (totalSize-1)].b;
             for (int j = 0 ; j < vectorSize ; j++)
-            {
                 nodeExtents[currentNode*vectorSize + j] =
-                                        bounds[currentOffset*vectorSize + j];
-            }
+                                         bounds[currentOffset*totalSize + j].f;
             continue;
         }
 
-        Sort(bounds + currentOffset*vectorSize, blockID + currentOffset,
-             currentSize, currentDepth);
+        globalCurrentDepth = currentDepth;
+        qsort(bounds + currentOffset*totalSize, currentSize,
+              totalSize*sizeof(FloatInt), QsortBoundsSorter);
 
         leftSize = SplitSize(currentSize);
 
@@ -344,97 +361,46 @@ avtIntervalTree::ConstructTree(void)
 
     SetIntervals();
 
-    delete [] blockID;
     delete [] bounds;
 }
 
 
 // ****************************************************************************
-//  Method: avtIntervalTree method Sort
+//  Function: QsortBoundsSorter
 //
 //  Purpose:
 //      Sorts a vector of bounds with respect to the dimension that
 //      corresponds to the depth.
 //
-//  Programmer: Hank Childs
-//  Creation:   August 8, 2000
-//
-// ****************************************************************************
-
-void
-avtIntervalTree::Sort(float *bounds, int *blockID, int size, int depth)
-{
-    float    temp;
-    int      temp2;
-
-    for (int i = 0 ; i < size ; i++)
-    {
-        for (int j = i + 1 ; j < size ; j++)
-        {
-            if (Less(bounds + j*vectorSize, bounds + i*vectorSize, depth))
-            {
-                for (int k = 0 ; k < vectorSize ; k++)
-                {
-                    temp = bounds[j*vectorSize + k];
-                    bounds[j*vectorSize + k] = bounds[i*vectorSize + k];
-                    bounds[i*vectorSize + k] = temp;
-                }
-                temp2 = blockID[j];
-                blockID[j] = blockID[i];
-                blockID[i] = temp2;
-            }
-        }
-    }
-}
-
-
-// ****************************************************************************
-//  Method: avtIntervalTree::Less
-//
-//  Purpose:
-//      An operator that can sort a variable according to any dimension.
-//
-//  Arguments:
-//      A        A vector of variables of size vectorSize.
-//      B        A vector of variables of size vectorSize.
-//      depth    The level of this node in the interval tree.  This is used
-//               to find what dimension to sort across.
-//
-//  Returns:    True if A < B, false otherwise.
+//  Notes:
+//     Adapted from deprecated methods 'Sort' and 'Less' written in 
+//     August of 2000.
 //
 //  Programmer: Hank Childs
-//  Creation:   August 8, 2000
+//  Creation:   June 27, 2005
 //
 // ****************************************************************************
 
-bool
-avtIntervalTree::Less(float *A, float *B, int depth)
+int
+QsortBoundsSorter(const void *arg1, const void *arg2)
 {
-    int        i;
-    const int  N_DIMS_LIMIT = 32;
-    float      A2[N_DIMS_LIMIT], B2[N_DIMS_LIMIT];
+    FloatInt *A = (FloatInt *) arg1;
+    FloatInt *B = (FloatInt *) arg2;
 
     //
-    // Construct an array of the mid-points of the extents.  The first
-    // element of the array will be the first dimension to sort along,
-    // the second element will be the second, etc.
+    // Walk through the mid-points of the extents, starting with the current
+    // depth and moving forward.
     //
-    for (i = 0 ; i < nDims ; i++)
+    int vectorSize = 2*globalNDims;
+    for (int i = 0 ; i < globalNDims ; i++)
     {
-        A2[i] = (A[(2*depth + 2*i) % vectorSize]
-                                + A[(2*depth+1 + 2*i) % vectorSize]) / 2;
-        B2[i] = (B[(2*depth + 2*i) % vectorSize]
-                                + B[(2*depth+1 + 2*i) % vectorSize]) / 2;
-    }
-
-    //
-    // Sort across axis.  If there is a tie, then sort across next axis, etc.
-    //
-    for (i = 0 ; i < nDims ; i++)
-    {
-        if (A2[i] < B2[i])
+        float A_mid = (A[(2*globalCurrentDepth + 2*i) % vectorSize].f
+                       + A[(2*globalCurrentDepth+1 + 2*i) % vectorSize].f) / 2;
+        float B_mid = (B[(2*globalCurrentDepth + 2*i) % vectorSize].f
+                       + B[(2*globalCurrentDepth+1 + 2*i) % vectorSize].f) / 2;
+        if (A_mid < B_mid)
             return true;
-        else if (A2[i] > B2[i])
+        else if (A_mid > B_mid)
             return false;
     }
 

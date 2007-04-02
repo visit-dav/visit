@@ -49,9 +49,9 @@
 #include <icons/layout1x1.xpm>
 #include <icons/layout1x2.xpm>
 #include <icons/layout2x2.xpm>
+#include <icons/layout2x3.xpm>
 #include <icons/layout2x4.xpm>
 #include <icons/layout3x3.xpm>
-#include <icons/layout4x4.xpm>
 #include <icons/newwindow.xpm>
 #include <icons/deletewindow.xpm>
 #include <icons/copymenu.xpm>
@@ -224,6 +224,9 @@
 //    Hank Childs, Tue May 24 17:02:15 PDT 2005
 //    Added export database.
 //
+//    Eric Brugger, Thu Jun 30 09:17:12 PDT 2005
+//    Added a 2x3 window layout and removed the 4x4 window layout.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -374,9 +377,9 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     layoutPopup->insertItem(QPixmap(layout1x1_xpm), tr("1x1"), this, SLOT(windowLayout1x1()), 0, 0);
     layoutPopup->insertItem(QPixmap(layout1x2_xpm), tr("1x2"), this, SLOT(windowLayout1x2()), 0, 1);
     layoutPopup->insertItem(QPixmap(layout2x2_xpm), tr("2x2"), this, SLOT(windowLayout2x2()), 0, 2);
-    layoutPopup->insertItem(QPixmap(layout2x4_xpm), tr("2x4"), this, SLOT(windowLayout2x4()), 0, 3);
-    layoutPopup->insertItem(QPixmap(layout3x3_xpm), tr("3x3"), this, SLOT(windowLayout3x3()), 0, 4);
-    layoutPopup->insertItem(QPixmap(layout4x4_xpm), tr("4x4"), this, SLOT(windowLayout4x4()), 0, 5);
+    layoutPopup->insertItem(QPixmap(layout2x3_xpm), tr("2x3"), this, SLOT(windowLayout2x3()), 0, 3);
+    layoutPopup->insertItem(QPixmap(layout2x4_xpm), tr("2x4"), this, SLOT(windowLayout2x4()), 0, 4);
+    layoutPopup->insertItem(QPixmap(layout3x3_xpm), tr("3x3"), this, SLOT(windowLayout3x3()), 0, 5);
     winPopup->insertItem(QPixmap(layout2x2_xpm), tr("Layouts"), layoutPopup);
     // Active window sub menu
     activeWindowPopup = new QPopupMenu( winPopup );
@@ -879,6 +882,9 @@ QvisMainWindow::Update(Subject *TheChangedSubject)
 //   Brad Whitlock, Mon Apr 5 16:19:18 PST 2004
 //   Renamed a method.
 //
+//   Eric Brugger, Thu Jun 30 09:17:12 PDT 2005
+//   Added a 2x3 window layout and removed the 4x4 window layout.
+//
 // ****************************************************************************
 
 void
@@ -931,9 +937,9 @@ QvisMainWindow::UpdateGlobalArea(bool doAll)
             layoutPopup->setItemChecked(0,globalAtts->GetWindowLayout() == 1);
             layoutPopup->setItemChecked(1,globalAtts->GetWindowLayout() == 2);
             layoutPopup->setItemChecked(2,globalAtts->GetWindowLayout() == 4);
-            layoutPopup->setItemChecked(3,globalAtts->GetWindowLayout() == 8);
-            layoutPopup->setItemChecked(4,globalAtts->GetWindowLayout() == 9);
-            layoutPopup->setItemChecked(5,globalAtts->GetWindowLayout() == 16);
+            layoutPopup->setItemChecked(3,globalAtts->GetWindowLayout() == 6);
+            layoutPopup->setItemChecked(4,globalAtts->GetWindowLayout() == 8);
+            layoutPopup->setItemChecked(5,globalAtts->GetWindowLayout() == 9);
             for(int j = 0; j < 6; ++j)
                 layoutPopup->setItemEnabled(j, true);
         }
@@ -1617,6 +1623,13 @@ QvisMainWindow::windowLayout2x2()
 }
 
 void
+QvisMainWindow::windowLayout2x3()
+{
+    // Tell the viewer to change the layout.
+    viewer->SetWindowLayout(6);
+}
+
+void
 QvisMainWindow::windowLayout2x4()
 {
     // Tell the viewer to change the layout.
@@ -1628,13 +1641,6 @@ QvisMainWindow::windowLayout3x3()
 {
     // Tell the viewer to change the layout.
     viewer->SetWindowLayout(9);
-}
-
-void
-QvisMainWindow::windowLayout4x4()
-{
-    // Tell the viewer to change the layout.
-    viewer->SetWindowLayout(16);
 }
 
 // ****************************************************************************

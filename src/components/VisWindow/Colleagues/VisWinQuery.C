@@ -374,6 +374,11 @@ VisWinQuery::QueryIsValid(const VisualCueInfo *vqPoint, const VisualCueInfo *vqL
 //    Brad Whitlock, Tue Jun 29 10:53:44 PDT 2004
 //    Fixed so it works with MSVC++ 6.0 again.
 //
+//    Kathleen Bonnell, Mon Jun 27 15:19:14 PDT 2005 
+//    Ensure that the attachment point's z-value for 2D is larger than
+//    the maximum amount that any plot has been shifted in z. (otherwise
+//    pick letters may not be visible).
+//
 // ****************************************************************************
 
 void 
@@ -392,6 +397,9 @@ VisWinQuery::Pick(const VisualCueInfo *vq)
     else
     {
         pp->SetMode3D(false);
+        float maxShift = mediator.GetMaxPlotZShift();
+        if (maxShift > distance)
+            distance += maxShift;
         pp->SetAttachmentPoint(pt[0], pt[1], distance);
     }
 

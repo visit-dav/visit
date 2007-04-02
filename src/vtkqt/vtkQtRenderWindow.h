@@ -87,6 +87,9 @@ class vtkFloatArray;
 class vtkUnsignedCharArray;
 class vtkQtGLWidget;
 
+#define VTK_STEREO_RED_GREEN     7
+
+
 class VTKQT_API vtkQtRenderWindow : public vtkRenderWindow, public QMainWindow
 {
 // ****************************************************************************
@@ -94,6 +97,10 @@ class VTKQT_API vtkQtRenderWindow : public vtkRenderWindow, public QMainWindow
 //
 //  Hank Childs, Sun May  9 15:38:40 PDT 2004
 //  Added IsDirect method.
+//
+//  Kathleen Bonnell, Thu Jun 30 15:33:54 PDT 2005 
+//  Added stereo methods, to override base class in order to enable red-green
+//  stereo support.
 //
 // ****************************************************************************
 
@@ -268,6 +275,17 @@ public:
     // Description:
     // Set the cursor for the GL part of the vis window.
     virtual void setCursor(const QCursor &);
+
+    // Added by LLNL
+    // Description:
+    // Set the stereo type to RedGreen
+    void SetStereoTypeToRedGreen() 
+        {this->SetStereoType(VTK_STEREO_RED_GREEN);};
+
+    // Overridden by LLNL to enable red-green stereo support. 
+    virtual void StereoUpdate(void);
+    virtual void StereoRenderComplete(void);
+    virtual void StereoMidpoint(void);
 
 protected:
     virtual void resizeEvent(QResizeEvent *);

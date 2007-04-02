@@ -121,6 +121,9 @@ QvisRenderingWindow::~QvisRenderingWindow()
 //   Mark C. Miller, Fri Mar  4 13:05:02 PST 2005
 //   Changed approxNumTriangles to approxNumPrimitives
 //
+//   Kathleen Bonnell, Thu Jun 30 15:29:55 PDT 2005 
+//   Added redgreen radiobutton.
+//
 // ****************************************************************************
 
 void
@@ -201,40 +204,43 @@ QvisRenderingWindow::CreateWindowContents()
     crystalEyes = new QRadioButton("Crystal Eyes", options,
         "crystalEyes");
     stereoType->insert(crystalEyes);
-    oLayout->addWidget(crystalEyes, 7, 3);
+    oLayout->addWidget(crystalEyes, 8, 1);
+    redgreen = new QRadioButton("Red/Green", options, "redgreen");
+    stereoType->insert(redgreen);
+    oLayout->addWidget(redgreen, 8, 2);
 
     // Create the scalable rendering widgets.
     QLabel *scalrenLabel = new QLabel("Use scalable rendering", options,"scalrenLabel");
-    oLayout->addMultiCellWidget(scalrenLabel, 8, 8, 0, 3);
+    oLayout->addMultiCellWidget(scalrenLabel, 9, 9, 0, 3);
     scalrenActivationMode = new QButtonGroup(0, "scalrenActivationMode");
     connect(scalrenActivationMode, SIGNAL(clicked(int)),
             this, SLOT(scalrenActivationModeChanged(int)));
     scalrenAuto = new QRadioButton("Auto", options, "auto");
     scalrenActivationMode->insert(scalrenAuto);
-    oLayout->addWidget(scalrenAuto, 9, 1);
+    oLayout->addWidget(scalrenAuto, 10, 1);
     scalrenAlways = new QRadioButton("Always", options, "always");
     scalrenActivationMode->insert(scalrenAlways);
-    oLayout->addWidget(scalrenAlways, 9, 2);
+    oLayout->addWidget(scalrenAlways, 10, 2);
     scalrenNever = new QRadioButton("Never", options, "never");
     scalrenActivationMode->insert(scalrenNever);
-    oLayout->addWidget(scalrenNever, 9, 3);
+    oLayout->addWidget(scalrenNever, 10, 3);
 
     // Create the polygon count spin box for scalable rendering threshold
     scalrenGeometryLabel =  new QLabel("When polygon count exceeds", options, "scalrenGeometryLabel");
-    oLayout->addMultiCellWidget(scalrenGeometryLabel, 10, 10, 1, 2);
+    oLayout->addMultiCellWidget(scalrenGeometryLabel, 11, 11, 1, 2);
     scalrenAutoThreshold = new QSpinBox(0, 10000, 500, options, "scalrenAutoThreshold");
     scalrenAutoThreshold->setValue(RenderingAttributes::DEFAULT_SCALABLE_AUTO_THRESHOLD);
     scalrenAutoThresholdChanged(RenderingAttributes::DEFAULT_SCALABLE_AUTO_THRESHOLD);
     connect(scalrenAutoThreshold, SIGNAL(valueChanged(int)),
             this, SLOT(scalrenAutoThresholdChanged(int)));
-    oLayout->addWidget(scalrenAutoThreshold, 10, 3);
+    oLayout->addWidget(scalrenAutoThreshold, 11, 3);
 
     // Create the specular lighting options
     specularToggle = new QCheckBox("Specular lighting", options,
                                    "specularToggle");
     connect(specularToggle, SIGNAL(toggled(bool)),
             this, SLOT(specularToggled(bool)));
-    oLayout->addMultiCellWidget(specularToggle, 11, 11, 0,3);
+    oLayout->addMultiCellWidget(specularToggle, 12, 12, 0,3);
 
     specularStrengthSlider = new QvisOpacitySlider(0, 100, 10, 60, options,
                                              "specularStrengthSlider", NULL);
@@ -243,8 +249,8 @@ QvisRenderingWindow::CreateWindowContents()
             this, SLOT(specularStrengthChanged(int, const void*)));
     specularStrengthLabel = new QLabel(specularStrengthSlider, "Strength",
                                        options, "specularStrengthLabel");
-    oLayout->addWidget(specularStrengthLabel, 12,1);
-    oLayout->addMultiCellWidget(specularStrengthSlider, 12,12, 2,3);
+    oLayout->addWidget(specularStrengthLabel, 13,1);
+    oLayout->addMultiCellWidget(specularStrengthSlider, 13,13, 2,3);
 
     specularPowerSlider = new QvisOpacitySlider(0, 1000, 100, 100, options,
                                                 "specularPowerSlider", NULL);
@@ -253,15 +259,15 @@ QvisRenderingWindow::CreateWindowContents()
             this, SLOT(specularPowerChanged(int, const void*)));
     specularPowerLabel = new QLabel(specularPowerSlider, "Sharpness",
                                     options, "specularPowerLabel");
-    oLayout->addWidget(specularPowerLabel, 13,1);
-    oLayout->addMultiCellWidget(specularPowerSlider, 13,13, 2,3);
+    oLayout->addWidget(specularPowerLabel, 14,1);
+    oLayout->addMultiCellWidget(specularPowerSlider, 14,14, 2,3);
 
     // Create the shadow lighting options
     shadowToggle = new QCheckBox("Shadows", options,
                                    "shadowToggle");
     connect(shadowToggle, SIGNAL(toggled(bool)),
             this, SLOT(shadowToggled(bool)));
-    oLayout->addMultiCellWidget(shadowToggle, 14, 14, 0,3);
+    oLayout->addMultiCellWidget(shadowToggle, 15, 15, 0,3);
 
     shadowStrengthSlider = new QvisOpacitySlider(0, 100, 10, 60, options,
                                              "shadowStrengthSlider", NULL);
@@ -270,8 +276,8 @@ QvisRenderingWindow::CreateWindowContents()
             this, SLOT(shadowStrengthChanged(int, const void*)));
     shadowStrengthLabel = new QLabel(shadowStrengthSlider, "Strength",
                                        options, "shadowStrengthLabel");
-    oLayout->addWidget(shadowStrengthLabel, 15,1);
-    oLayout->addMultiCellWidget(shadowStrengthSlider, 15,15, 2,3);
+    oLayout->addWidget(shadowStrengthLabel, 16,1);
+    oLayout->addMultiCellWidget(shadowStrengthSlider, 16,16, 2,3);
 
 
     //
@@ -404,6 +410,9 @@ QvisRenderingWindow::UpdateWindow(bool doAll)
 //   Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //   Fixed problem with updating scalable auto threshold
 //
+//   Kathleen Bonnell, Thu Jun 30 15:29:55 PDT 2005 
+//   Added redgreen radiobutton.
+//
 // ****************************************************************************
 
 void
@@ -456,6 +465,7 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             redblue->setEnabled(renderAtts->GetStereoRendering());
             interlace->setEnabled(renderAtts->GetStereoRendering());
             crystalEyes->setEnabled(renderAtts->GetStereoRendering());
+            redgreen->setEnabled(renderAtts->GetStereoRendering());
             break;
         case 4: //stereoType
             stereoType->blockSignals(true);

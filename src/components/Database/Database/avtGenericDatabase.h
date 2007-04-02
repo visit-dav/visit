@@ -239,6 +239,10 @@ class     PickVarInfo;
 //
 //    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 //    Added method SetCycleTimeInDatabaseMetaData
+//
+//    Hank Childs, Mon Jun 27 16:24:23 PDT 2005
+//    Added argument to GetDataset.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -287,6 +291,7 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
 
     vtkDataSet                *GetDataset(const char *, int, int, const char *,
                                           const std::vector<CharStrRef> &,
+                                          avtDataSpecification_p, 
                                           avtSourceFromDatabase *);
     vtkDataSet                *GetScalarVarDataset(const char *, int, int,
                                                    const char *,

@@ -81,6 +81,9 @@ class avtExpressionEvaluatorFilter;
 //    Kathleen Bonnell, Wed May 11 17:50:53 PDT 2005 
 //    Added ConvertElNamesToGlobal.
 //
+//    Kathleen Bonnell, Tue Jun 28 10:47:35 PDT 2005 
+//    Re-added SetRealIds. 
+// 
 // ****************************************************************************
 
 class QUERY_API avtPickQuery : public avtDatasetQuery
@@ -141,6 +144,7 @@ class QUERY_API avtPickQuery : public avtDatasetQuery
     void                            SetGlobalIds(vtkDataSet *, int);
                                                               
     void                            ConvertElNamesToGlobal(void);
+    void                            SetRealIds(vtkDataSet *);
 
     PickAttributes                  pickAtts;
     avtExpressionEvaluatorFilter   *eef;

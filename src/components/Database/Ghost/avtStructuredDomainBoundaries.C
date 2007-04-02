@@ -12,9 +12,11 @@
 #include <vtkStructuredGrid.h>
 
 #include <avtGhostData.h>
+#include <avtIntervalTree.h>
 #include <avtMaterial.h>
 #include <avtMixedVariable.h>
 
+#include <TimingsManager.h>
 #include <VisItException.h>
 
 
@@ -89,11 +91,17 @@ avtStructuredDomainBoundaries::CreateDomainToProcessorMap(const vector<int> &dom
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 20, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Jun 27 10:02:55 PDT 2005
+//    Added timing info.
+//
 // ****************************************************************************
 void
 avtStructuredDomainBoundaries::CreateCurrentDomainBoundaryInformation(
                                                 const vector<int> &domain2proc)
 {
+    int t0 = visitTimer->StartTimer();
     boundary = wholeBoundary;
     for (int i=0; i<wholeBoundary.size(); i++)
     {
@@ -111,6 +119,7 @@ avtStructuredDomainBoundaries::CreateCurrentDomainBoundaryInformation(
                 boundary[i].DeleteNeighbor(wbi.neighbors[j].domain);
         }
     }
+    visitTimer->StopTimer(t0, "avtStructuredDomainBoundaries::CurrentDBI");
 }
 
 // ****************************************************************************
@@ -402,6 +411,9 @@ BoundaryHelperFunctions<T>::FillMixedBoundaryData(int          d1,
 //    Mark C. Miller, Wed Jun  9 21:50:12 PDT 2004
 //    Eliminated use of MPI_ANY_TAG and modified to use GetUniqueMessageTags
 //
+//    Hank Childs, Thu Jun 23 10:27:01 PDT 2005
+//    Re-wrote using all-to-all for efficiency.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -418,6 +430,18 @@ BoundaryHelperFunctions<T>::CommunicateBoundaryData(const vector<int> &domain2pr
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+    int nprocs;
+    MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
+
+    int *sendcount = new int[nprocs];
+    int *recvcount = new int[nprocs];
+    int i;
+    for (i = 0 ; i < nprocs ; i++)
+    {
+        sendcount[i] = 0;
+        recvcount[i] = 0;
+    }
+
     for (int d1 = 0; d1 < sdb->boundary.size(); d1++)
     {
         Boundary *bi = &sdb->boundary[d1];
@@ -427,28 +451,102 @@ BoundaryHelperFunctions<T>::CommunicateBoundaryData(const vector<int> &domain2pr
         {
             Neighbor *n1 = &bi->neighbors[n];
             int d2 = n1->domain;
-            int mi = sdb->boundary[d2].FindNeighborIndex(bi->domain);
             int size = ncomp * (isPointData ? n1->npts : n1->ncells);
 
             if (domain2proc[d1] != domain2proc[d2])
             {
                 if (domain2proc[d1] == rank)
-                {
-                    MPI_Send(bnddata[d1][n], size, mpi_datatype,
-                             domain2proc[d2], mpiMsgTag, MPI_COMM_WORLD);
-                }
+                    sendcount[domain2proc[d2]] += size;
                 else if (domain2proc[d2] == rank)
+                    recvcount[domain2proc[d1]] += size;
+            }
+        }
+    }
+
+    int *senddisp = new int[nprocs];
+    int *recvdisp = new int[nprocs];
+    senddisp[0] = recvdisp[0] = 0;
+    for (i = 1 ; i < nprocs ; i++)
+    {
+        senddisp[i] = senddisp[i-1] + sendcount[i-1];
+        recvdisp[i] = recvdisp[i-1] + recvcount[i-1];
+    }
+    int total_send = 0;
+    int total_recv = 0;
+    for (i = 0 ; i < nprocs ; i++)
+    {
+        total_send += sendcount[i];
+        total_recv += recvcount[i];
+    }
+
+    T *sendbuff = new T[total_send];
+    T *recvbuff = new T[total_recv];
+
+    T **tmp_ptr = new T*[nprocs];
+    for (i = 0 ; i < nprocs ; i++)
+        tmp_ptr[i] = sendbuff + senddisp[i];
+    for (int d1 = 0; d1 < sdb->boundary.size(); d1++)
+    {
+        Boundary *bi = &sdb->boundary[d1];
+
+        // find matching neighbors
+        for (int n=0; n<bi->neighbors.size(); n++)
+        {
+            Neighbor *n1 = &bi->neighbors[n];
+            int d2 = n1->domain;
+            int size = ncomp * (isPointData ? n1->npts : n1->ncells);
+
+            if (domain2proc[d1] != domain2proc[d2])
+                if (domain2proc[d1] == rank)
+                    for (i = 0 ; i < size ; i++)
+                    {
+                        int p2 = domain2proc[d2];
+                        *(tmp_ptr[p2]) = bnddata[d1][n][i];
+                        (tmp_ptr[p2])++;
+                    }
+        }
+    }
+
+    MPI_Alltoallv(sendbuff, sendcount, senddisp, mpi_datatype,
+                  recvbuff, recvcount, recvdisp, mpi_datatype,
+                  MPI_COMM_WORLD);
+
+    for (i = 0 ; i < nprocs ; i++)
+        tmp_ptr[i] = recvbuff + recvdisp[i];
+    for (int d1 = 0; d1 < sdb->boundary.size(); d1++)
+    {
+        Boundary *bi = &sdb->boundary[d1];
+
+        // find matching neighbors
+        for (int n=0; n<bi->neighbors.size(); n++)
+        {
+            Neighbor *n1 = &bi->neighbors[n];
+            int d2 = n1->domain;
+            int size = ncomp * (isPointData ? n1->npts : n1->ncells);
+
+            if (domain2proc[d1] != domain2proc[d2])
+            {
+                if (domain2proc[d2] == rank)
                 {
                     bnddata[d1][n] = new T[size];
-
-                    MPI_Status stat;
-                    MPI_Recv(bnddata[d1][n], size, mpi_datatype,
-                             domain2proc[d1], mpiMsgTag, MPI_COMM_WORLD, &stat);
+                    for (i = 0 ; i < size ; i++)
+                    {
+                        int p2 = domain2proc[d1];
+                        bnddata[d1][n][i] = *(tmp_ptr[p2]);
+                        (tmp_ptr[p2])++;
+                    }
                 }
             }
         }
     }
     MPI_Barrier(MPI_COMM_WORLD);
+
+    delete [] sendbuff;
+    delete [] recvbuff;
+    delete [] senddisp;
+    delete [] recvdisp;
+    delete [] sendcount;
+    delete [] recvcount;
 #endif
 }
 
@@ -1396,14 +1494,20 @@ avtStructuredDomainBoundaries::ExchangeScalar(vector<int>           domainNum,
 //    Jeremy Meredith, Fri Nov  7 15:13:56 PST 2003
 //    Renamed to include the "Float" in the name.
 //
+//    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
+//    Cache domain2proc.
+//
 // ****************************************************************************
 vector<vtkDataArray*>
 avtStructuredDomainBoundaries::ExchangeFloatScalar(vector<int>     domainNum,
                                              bool                  isPointData,
                                              vector<vtkDataArray*> scalars)
 {
-    vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
-    CreateCurrentDomainBoundaryInformation(domain2proc);
+    if (domain2proc.size() == 0)
+    {
+        domain2proc = CreateDomainToProcessorMap(domainNum);
+        CreateCurrentDomainBoundaryInformation(domain2proc);
+    }
 
     vector<vtkDataArray*> out(scalars.size(), NULL);
 
@@ -1470,14 +1574,20 @@ avtStructuredDomainBoundaries::ExchangeFloatScalar(vector<int>     domainNum,
 //
 //  Modifications:
 //
+//    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
+//    Cache domain2proc.
+//
 // ****************************************************************************
 vector<vtkDataArray*>
 avtStructuredDomainBoundaries::ExchangeIntScalar(vector<int>       domainNum,
                                              bool                  isPointData,
                                              vector<vtkDataArray*> scalars)
 {
-    vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
-    CreateCurrentDomainBoundaryInformation(domain2proc);
+    if (domain2proc.size() == 0)
+    {
+        domain2proc = CreateDomainToProcessorMap(domainNum);
+        CreateCurrentDomainBoundaryInformation(domain2proc);
+    }
 
     vector<vtkDataArray*> out(scalars.size(), NULL);
 
@@ -1544,14 +1654,20 @@ avtStructuredDomainBoundaries::ExchangeIntScalar(vector<int>       domainNum,
 //
 //  Modifications:
 //
+//    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
+//    Cache domain2proc.
+//
 // ****************************************************************************
 vector<vtkDataArray*>
 avtStructuredDomainBoundaries::ExchangeUCharScalar(vector<int>     domainNum,
                                              bool                  isPointData,
                                              vector<vtkDataArray*> scalars)
 {
-    vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
-    CreateCurrentDomainBoundaryInformation(domain2proc);
+    if (domain2proc.size() == 0)
+    {
+        domain2proc = CreateDomainToProcessorMap(domainNum);
+        CreateCurrentDomainBoundaryInformation(domain2proc);
+    }
 
     vector<vtkDataArray*> out(scalars.size(), NULL);
 
@@ -1633,14 +1749,20 @@ avtStructuredDomainBoundaries::ExchangeUCharScalar(vector<int>     domainNum,
 //    Hank Childs, Fri Dec  6 14:56:20 PST 2002
 //    Do not assume that the number of vectors is > 0.
 //
+//    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
+//    Cache domain2proc.
+//
 // ****************************************************************************
 vector<vtkDataArray*>
 avtStructuredDomainBoundaries::ExchangeFloatVector(vector<int>      domainNum,
                                               bool                  isPointData,
                                               vector<vtkDataArray*> vectors)
 {
-    vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
-    CreateCurrentDomainBoundaryInformation(domain2proc);
+    if (domain2proc.size() == 0)
+    {
+        domain2proc = CreateDomainToProcessorMap(domainNum);
+        CreateCurrentDomainBoundaryInformation(domain2proc);
+    }
 
     vector<vtkDataArray*> out(vectors.size(), NULL);
 
@@ -1718,14 +1840,20 @@ avtStructuredDomainBoundaries::ExchangeFloatVector(vector<int>      domainNum,
 //    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
 //    Use NewInstance instead of MakeObject, new vtk api. 
 //
+//    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
+//    Cache domain2proc.
+//
 // ****************************************************************************
 vector<vtkDataArray*>
 avtStructuredDomainBoundaries::ExchangeIntVector(vector<int>        domainNum,
                                                  bool               isPointData,
                                                  vector<vtkDataArray*> vectors)
 {
-    vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
-    CreateCurrentDomainBoundaryInformation(domain2proc);
+    if (domain2proc.size() == 0)
+    {
+        domain2proc = CreateDomainToProcessorMap(domainNum);
+        CreateCurrentDomainBoundaryInformation(domain2proc);
+    }
 
     vector<vtkDataArray*> out(vectors.size(), NULL);
 
@@ -1792,13 +1920,19 @@ avtStructuredDomainBoundaries::ExchangeIntVector(vector<int>        domainNum,
 //    Added newmixlen as an argument to SetNewMixedBoundaryData since
 //    it may get shortened when some neighbors are missing.
 //
+//    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
+//    Cache domain2proc.
+//
 // ****************************************************************************
 vector<avtMaterial*>
 avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
                                                 vector<avtMaterial*> mats)
 {
-    vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
-    CreateCurrentDomainBoundaryInformation(domain2proc);
+    if (domain2proc.size() == 0)
+    {
+        domain2proc = CreateDomainToProcessorMap(domainNum);
+        CreateCurrentDomainBoundaryInformation(domain2proc);
+    }
 
     vector<avtMaterial*> out(mats.size(), NULL);
 
@@ -1932,14 +2066,20 @@ avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
 //    Changed the way the mixvar name was communicated in parallel.
 //    IBMs don't seem to like MPI_MAX with a char (even unsigned) data type.
 //
+//    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
+//    Cache domain2proc.
+//
 // ****************************************************************************
 vector<avtMixedVariable*>
 avtStructuredDomainBoundaries::ExchangeMixVar(vector<int>            domainNum,
                                           const vector<avtMaterial*> mats,
                                           vector<avtMixedVariable*>  mixvars)
 {
-    vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
-    CreateCurrentDomainBoundaryInformation(domain2proc);
+    if (domain2proc.size() == 0)
+    {
+        domain2proc = CreateDomainToProcessorMap(domainNum);
+        CreateCurrentDomainBoundaryInformation(domain2proc);
+    }
 
     vector<avtMixedVariable*> out(mats.size(), NULL);
 
@@ -2142,6 +2282,25 @@ avtStructuredDomainBoundaries::ConfirmMesh(vector<int>         domainNum,
     return true;
 }
 
+
+// ****************************************************************************
+//  Method: avtStructuredDomainBoundaries::ResetCachedMembers
+//
+//  Purpose:
+//      Resets cached data members, in this case domain2proc.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 29, 2005
+//
+// ****************************************************************************
+
+void
+avtStructuredDomainBoundaries::ResetCachedMembers(void)
+{
+    domain2proc.clear();
+}
+
+
 // ****************************************************************************
 //  Method: avtStructuredDomainBoundaries::CreateGhostZones
 //
@@ -2251,13 +2410,19 @@ avtStructuredDomainBoundaries::CreateGhostZones(vtkDataSet *outMesh,
 //    Mark C. Miller, Mon Jan 12 19:21:22 PST 2004
 //    Added check and exception for wrong VTK grid type
 //
+//    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
+//    Cache domain2proc.
+//
 // ****************************************************************************
 vector<vtkDataSet*>
 avtCurvilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
                                              vector<vtkDataSet*> meshes)
 {
-    vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
-    CreateCurrentDomainBoundaryInformation(domain2proc);
+    if (domain2proc.size() == 0)
+    {
+        domain2proc = CreateDomainToProcessorMap(domainNum);
+        CreateCurrentDomainBoundaryInformation(domain2proc);
+    }
 
     vector<vtkDataSet*> out(meshes.size(), NULL);
 
@@ -2340,33 +2505,32 @@ avtCurvilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
 //    Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
 //    Fixed leak for coord arrays
 //
+//    Hank Childs, Tue Jun 21 14:50:55 PDT 2005
+//    Just fake the new coordinates rather than undertaking a painful
+//    communication phase.  This should only bite us if we are doing gradient
+//    calculations, or something that depends on mesh position.
+//
+//    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
+//    Cache domain2proc.
+//
 // ****************************************************************************
 
 vector<vtkDataSet*>
 avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>        domainNum,
                                             vector<vtkDataSet*> meshes)
 {
-    vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
-    CreateCurrentDomainBoundaryInformation(domain2proc);
+    if (domain2proc.size() == 0)
+    {
+        domain2proc = CreateDomainToProcessorMap(domainNum);
+        CreateCurrentDomainBoundaryInformation(domain2proc);
+    }
 
     vector<vtkDataSet*> out(meshes.size(), NULL);
 
     //
     // Create the matching arrays for the given meshes
     //
-    float ***coord = bhf_float->InitializeBoundaryData();
     int d;
-    for (d = 0; d < meshes.size(); d++)
-    {
-        vtkRectilinearGrid *mesh = (vtkRectilinearGrid*)(meshes[d]);
-        float *x = (float*)mesh->GetXCoordinates()->GetVoidPointer(0);
-        float *y = (float*)mesh->GetYCoordinates()->GetVoidPointer(0);
-        float *z = (float*)mesh->GetZCoordinates()->GetVoidPointer(0);
-        bhf_float->FillRectilinearBoundaryData(domainNum[d], x, y, z, coord);
-    }
-
-    bhf_float->CommunicateBoundaryData(domain2proc, coord, true, 3);
-
     for (d = 0; d < meshes.size(); d++)
     {
         if (meshes[d]->GetDataObjectType() != VTK_RECTILINEAR_GRID)
@@ -2376,11 +2540,11 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>        domainNum,
                        "VTK data object type not VTK_RECTILINEAR_GRID");
         }
 
-        int d1 = domainNum[d];
         vtkRectilinearGrid *mesh = (vtkRectilinearGrid*)(meshes[d]);
+
+        int d1 = domainNum[d];
         Boundary *bi = &boundary[d1];
 
-        // Create the VTK objects
         vtkRectilinearGrid    *outm  = vtkRectilinearGrid::New(); 
         vtkFloatArray         *x     = vtkFloatArray::New();
         vtkFloatArray         *y     = vtkFloatArray::New();
@@ -2402,25 +2566,91 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>        domainNum,
         float *newx = (float *)x->GetVoidPointer(0);
         float *newy = (float *)y->GetVoidPointer(0);
         float *newz = (float *)z->GetVoidPointer(0);
-
-        // Set the known ones
-        bhf_float->CopyOldRectilinearValues(d1, oldx, newx, 0);
-        bhf_float->CopyOldRectilinearValues(d1, oldy, newy, 1);
-        bhf_float->CopyOldRectilinearValues(d1, oldz, newz, 2);
-
-        // Match the unknown ones
-        bhf_float->SetNewRectilinearBoundaryData(d1, coord, newx, newy, newz);
-
-        // Set the remaining unset ones (reduced connectivity, etc.)
-        //bhf_float->FakeNonexistentBoundaryData(d1, newcoord, true, 3);
+     
+        int  i;
+        for (i = 0 ; i < bi->newndims[0] ; i++)
+        {
+            int id = i+bi->newnextents[0];
+            if (id < bi->oldnextents[0])
+            {
+                float last_dist = (oldx[1] - oldx[0]);
+                int   num_off = (bi->oldnextents[0]-id);
+                newx[i] = oldx[0] - last_dist*num_off;
+            }
+            else if (id >= bi->oldnextents[1])
+            {
+                float last_dist = (oldx[bi->oldndims[0]-1] - 
+                                   oldx[bi->oldndims[0]-2]);
+                int   num_off = (id - bi->oldnextents[1]);
+                newx[i] = oldx[bi->oldndims[0]-1] + last_dist*num_off;
+            }
+            else
+            {
+                int oldindex = bi->OldPointIndex(id, 0, 0);
+                int newindex = bi->NewPointIndex(id, 0, 0);
+                int oldI = oldindex % bi->oldndims[0];
+                int newI = newindex % bi->newndims[0];
+                newx[newI] = oldx[oldI];
+            }
+        }
+        for (i = 0 ; i < bi->newndims[1] ; i++)
+        {
+            int id = i+bi->newnextents[2];
+            if (id < bi->oldnextents[2])
+            {
+                float last_dist = (oldy[1] - oldy[0]);
+                int   num_off = (bi->oldnextents[2]-id);
+                newy[i] = oldy[0] - last_dist*num_off;
+            }
+            else if (id >= bi->oldnextents[3])
+            {
+                float last_dist = (oldy[bi->oldndims[1]-1] - 
+                                   oldy[bi->oldndims[1]-2]);
+                int   num_off = (id - bi->oldnextents[3]);
+                newy[i] = oldy[bi->oldndims[1]-1] + last_dist*num_off;
+            }
+            else
+            {
+                int oldindex = bi->OldPointIndex(0, id, 0);
+                int newindex = bi->NewPointIndex(0, id, 0);
+                int oldJ = (oldindex/bi->oldndims[0]) % bi->oldndims[1];
+                int newJ = (newindex/bi->newndims[0]) % bi->newndims[1];
+                newy[newJ] = oldy[oldJ];
+            }
+        }
+        for (i = 0 ; i < bi->newndims[2] ; i++)
+        {
+            int id = i+bi->newnextents[4];
+            if (id < bi->oldnextents[4])
+            {
+                float last_dist = (oldz[1] - oldz[0]);
+                int   num_off = (bi->oldnextents[4]-id);
+                newz[i] = oldz[0] - last_dist*num_off;
+            }
+            else if (id >= bi->oldnextents[5])
+            {
+                float last_dist = (oldz[bi->oldndims[2]-1] - 
+                                   oldz[bi->oldndims[2]-2]);
+                int   num_off = (id - bi->oldnextents[5]);
+                newz[i] = oldz[bi->oldndims[2]-1] + last_dist*num_off;
+            }
+            else
+            {
+                int oldindex = bi->OldPointIndex(0, 0, id);
+                int newindex = bi->NewPointIndex(0, 0, id);
+                int oldK = (oldindex/(bi->oldndims[0]*bi->oldndims[1])) 
+                         % bi->oldndims[2];
+                int newK = (newindex/(bi->newndims[0]*bi->newndims[1])) 
+                         % bi->newndims[2];
+                newz[newK] = oldz[oldK];
+            }
+        }
 
         CreateGhostZones(outm, mesh, bi);
 
         out[d] = outm;
     }
 
-    bhf_float->FreeBoundaryData(coord);
- 
     return out;
 }
 
@@ -2663,6 +2893,9 @@ avtStructuredDomainBoundaries::SetIndicesForAMRPatch(int domain,
 //    Added code to disallow operation if shouldComputeNeighborsFromExtents is
 //    not true.
 //
+//    Hank Childs, Mon Jun 27 10:48:41 PDT 2005
+//    Re-wrote to use interval trees for more efficient overlap finding.
+//
 // ****************************************************************************
 
 void
@@ -2678,252 +2911,62 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
                    "computation of neighbors from index extents");
     }
 
-    //
-    // Here's the approach: we are going to sort all of the patches into
-    // bins where they start and stop (for i, j, and k).  Then we are going
-    // to try and match up patches that stop at i0 with patches that start at
-    // i0 and see if they are connected.  If so, we will declare them 
-    // neighbors.  And so on for all the i's, then all the j's and then all
-    // the k's.
-    //
-    vector< vector<int> > i_starts;
-    vector< vector<int> > i_stops;
-    vector< vector<int> > j_starts;
-    vector< vector<int> > j_stops;
-    vector< vector<int> > k_starts;
-    vector< vector<int> > k_stops;
-
     int ndoms = levels.size();
-    int i_max = 0;
-    int j_max = 0;
-    int k_max = 0;
+    avtIntervalTree itree(ndoms, 3);
+    float extf[6];
     for (i = 0 ; i < ndoms ; i++)
     {
-        if (i_max < extents[6*i+1])
-            i_max = extents[6*i+1];
-        if (j_max < extents[6*i+3])
-            j_max = extents[6*i+3];
-        if (k_max < extents[6*i+5])
-            k_max = extents[6*i+5];
+        for (j = 0 ; j < 6 ; j++)
+            extf[j] = (float) extents[6*i+j];
+        itree.AddDomain(i, extf);
     }
+    itree.Calculate(true);
 
-    i_starts.resize(i_max+1);
-    i_stops.resize(i_max+1);
-    j_starts.resize(j_max+1);
-    j_stops.resize(j_max+1);
-    k_starts.resize(k_max+1);
-    k_stops.resize(k_max+1);
-
-    for (i = 0 ; i < ndoms ; i++)
-    {
-        i_starts[extents[6*i+0]].push_back(i);
-        i_stops[extents[6*i+1]].push_back(i);
-        j_starts[extents[6*i+2]].push_back(i);
-        j_stops[extents[6*i+3]].push_back(i);
-        k_starts[extents[6*i+4]].push_back(i);
-        k_stops[extents[6*i+5]].push_back(i);
-    }
-
-    //
-    // We can get away with focusing on the "stops" and ignoring the "starts".
-    // The "starts" will be included when we match them up with the "stops".
-    //
     vector<int> neighbors(ndoms, 0);
-    for (i = 0 ; i <= i_max ; i++)
+    for (i = 0 ; i < ndoms ; i++)
     {
-        for (j = 0 ; j < i_stops[i].size() ; j++)
+        float min_vec[3], max_vec[3];
+        min_vec[0] = (float) extents[6*i+0];
+        min_vec[1] = (float) extents[6*i+2];
+        min_vec[2] = (float) extents[6*i+4];
+        max_vec[0] = (float) extents[6*i+1];
+        max_vec[1] = (float) extents[6*i+3];
+        max_vec[2] = (float) extents[6*i+5];
+        vector<int> list;
+        itree.GetDomainsListFromRange(min_vec, max_vec, list);
+        for (j = 0 ; j < list.size() ; j++)
         {
-            int dom = i_stops[i][j];
-            int level = levels[dom];
-            int j_min = extents[6*dom+2];
-            int j_max = extents[6*dom+3];
-            int k_min = extents[6*dom+4];
-            int k_max = extents[6*dom+5];
-            for (k = 0 ; k < i_starts[i].size() ; k++)
-            {
-                int candidate_dom = i_starts[i][k];
-                int candidate_level = levels[candidate_dom];
-                if (candidate_level != level)
-                    continue;
-                int can_j_min = extents[6*candidate_dom+2];
-                int can_j_max = extents[6*candidate_dom+3];
-                int can_k_min = extents[6*candidate_dom+4];
-                int can_k_max = extents[6*candidate_dom+5];
+            if (i == list[j])
+                continue; // Not interested in self-intersection.
 
-                int j_overlap_start = (j_min > can_j_min ? j_min : can_j_min);
-                int j_overlap_end = (j_max < can_j_max ? j_max : can_j_max);
-                int k_overlap_start = (k_min > can_k_min ? k_min : can_k_min);
-                int k_overlap_end = (k_max < can_k_max ? k_max : can_k_max);
-                if (j_overlap_start > j_overlap_end)
-                    continue;
-                if (k_overlap_start > k_overlap_end)
-                    continue;
-
-                //
-                // We have a match between 'dom' and 'candidate_dom'!
-                //
-                // The match is from j_min_overlap_start - j_max_overlap_start
-                // and k_min_overlap_start - k_max_overlap_start.  The indexing
-                // is 1-based, so we will add 1 to both of these numbers.
-                //
-                // Add both matches (for dom and candidate_dom) at the same
-                // time.
-                //
-                int orientation[3] = { 1, 2, 3 }; // this doesn't really
-                                                  // apply for rectilinear.
-                int e[6]; 
-                e[0] = extents[6*dom+1] - extents[6*dom]+1;
-                e[1] = extents[6*dom+1] - extents[6*dom]+1;
-                e[2] = j_overlap_start - extents[6*dom+2] + 1;
-                e[3] = j_overlap_end - extents[6*dom+2]+1;
-                e[4] = k_overlap_start - extents[6*dom+4] + 1;
-                e[5] = k_overlap_end - extents[6*dom+4]+1;
-                int index = neighbors[candidate_dom];
-                neighbors[candidate_dom]++;
-                AddNeighbor(dom, candidate_dom, index, orientation, e);
-
-                e[0] = 1;
-                e[1] = 1;
-                e[2] = j_overlap_start - extents[6*candidate_dom+2] + 1;
-                e[3] = j_overlap_end - extents[6*candidate_dom+2]+1;
-                e[4] = k_overlap_start - extents[6*candidate_dom+4] + 1;
-                e[5] = k_overlap_end - extents[6*candidate_dom+4]+1;
-                index = neighbors[dom];
-                neighbors[dom]++;
-                AddNeighbor(candidate_dom, dom, index, orientation, e);
-            }
-        }
-    }
-
-    for (i = 0 ; i <= j_max ; i++)
-    {
-        for (j = 0 ; j < j_stops[i].size() ; j++)
-        {
-            int dom = j_stops[i][j];
-            int level = levels[dom];
-            int i_min = extents[6*dom+0];
-            int i_max = extents[6*dom+1];
-            int k_min = extents[6*dom+4];
-            int k_max = extents[6*dom+5];
-            for (k = 0 ; k < j_starts[i].size() ; k++)
-            {
-                int candidate_dom = j_starts[i][k];
-                int candidate_level = levels[candidate_dom];
-                if (candidate_level != level)
-                    continue;
-                int can_i_min = extents[6*candidate_dom+0];
-                int can_i_max = extents[6*candidate_dom+1];
-                int can_k_min = extents[6*candidate_dom+4];
-                int can_k_max = extents[6*candidate_dom+5];
-
-                int i_overlap_start = (i_min > can_i_min ? i_min : can_i_min);
-                int i_overlap_end = (i_max < can_i_max ? i_max : can_i_max);
-                int k_overlap_start = (k_min > can_k_min ? k_min : can_k_min);
-                int k_overlap_end = (k_max < can_k_max ? k_max : can_k_max);
-                if (i_overlap_start > i_overlap_end)
-                    continue;
-                if (k_overlap_start > k_overlap_end)
-                    continue;
-
-                //
-                // We have a match between 'dom' and 'candidate_dom'!
-                //
-                // The match is from i_min_overlap_start - i_max_overlap_start
-                // and k_min_overlap_start - k_max_overlap_start.  The indexing
-                // is 1-based, so we will add 1 to both of these numbers.
-                //
-                // Add both matches (for dom and candidate_dom) at the same
-                // time.
-                //
-                int orientation[3] = { 1, 2, 3 }; // this doesn't really
-                                                  // apply for rectilinear.
-                int e[6]; 
-                e[0] = i_overlap_start - extents[6*dom+0] + 1;
-                e[1] = i_overlap_end - extents[6*dom+0] + 1;
-                e[2] = extents[6*dom+3] - extents[6*dom+2] + 1;
-                e[3] = extents[6*dom+3] - extents[6*dom+2] + 1;
-                e[4] = k_overlap_start - extents[6*dom+4] + 1;
-                e[5] = k_overlap_end - extents[6*dom+4] + 1;
-                int index = neighbors[candidate_dom];
-                neighbors[candidate_dom]++;
-                AddNeighbor(dom, candidate_dom, index, orientation, e);
-
-                e[0] = i_overlap_start - extents[6*candidate_dom+0] + 1;
-                e[1] = i_overlap_end - extents[6*candidate_dom+0] + 1;
-                e[2] = 1;
-                e[3] = 1;
-                e[4] = k_overlap_start - extents[6*candidate_dom+4] + 1;
-                e[5] = k_overlap_end - extents[6*candidate_dom+4] + 1;
-                index = neighbors[dom];
-                neighbors[dom]++;
-                AddNeighbor(candidate_dom, dom, index, orientation, e);
-            }
-        }
-    }
-
-    for (i = 0 ; i <= k_max ; i++)
-    {
-        for (j = 0 ; j < k_stops[i].size() ; j++)
-        {
-            int dom = k_stops[i][j];
-            int level = levels[dom];
-            int i_min = extents[6*dom+0];
-            int i_max = extents[6*dom+1];
-            int j_min = extents[6*dom+2];
-            int j_max = extents[6*dom+3];
-            for (k = 0 ; k < k_starts[i].size() ; k++)
-            {
-                int candidate_dom = k_starts[i][k];
-                int candidate_level = levels[candidate_dom];
-                if (candidate_level != level)
-                    continue;
-                int can_i_min = extents[6*candidate_dom+0];
-                int can_i_max = extents[6*candidate_dom+1];
-                int can_j_min = extents[6*candidate_dom+2];
-                int can_j_max = extents[6*candidate_dom+3];
-
-                int i_overlap_start = (i_min > can_i_min ? i_min : can_i_min);
-                int i_overlap_end = (i_max < can_i_max ? i_max : can_i_max);
-                int j_overlap_start = (j_min > can_j_min ? j_min : can_j_min);
-                int j_overlap_end = (j_max < can_j_max ? j_max : can_j_max);
-                if (i_overlap_start > i_overlap_end)
-                    continue;
-                if (j_overlap_start > j_overlap_end)
-                    continue;
-
-                //
-                // We have a match between 'dom' and 'candidate_dom'!
-                //
-                // The match is from i_min_overlap_start - i_max_overlap_start
-                // and j_min_overlap_start - j_max_overlap_start.  The indexing
-                // is 1-based, so we will add 1 to both of these numbers.
-                //
-                // Add both matches (for dom and candidate_dom) at the same
-                // time.
-                //
-                int orientation[3] = { 1, 2, 3 }; // this doesn't really
-                                                  // apply for rectilinear.
-                int e[6]; 
-                e[0] = i_overlap_start - extents[6*dom+0] + 1;
-                e[1] = i_overlap_end - extents[6*dom+0] + 1;
-                e[2] = j_overlap_start - extents[6*dom+2] + 1;
-                e[3] = j_overlap_end - extents[6*dom+2] + 1;
-                e[4] = extents[6*dom+5] - extents[6*dom+4] + 1;
-                e[5] = extents[6*dom+5] - extents[6*dom+4] + 1;
-                int index = neighbors[candidate_dom];
-                neighbors[candidate_dom]++;
-                AddNeighbor(dom, candidate_dom, index, orientation, e);
-
-                e[0] = i_overlap_start - extents[6*candidate_dom+0] + 1;
-                e[1] = i_overlap_end - extents[6*candidate_dom+0] + 1;
-                e[2] = j_overlap_start - extents[6*candidate_dom+2] + 1;
-                e[3] = j_overlap_end - extents[6*candidate_dom+2] + 1;
-                e[4] = 1;
-                e[5] = 1;
-                index = neighbors[dom];
-                neighbors[dom]++;
-                AddNeighbor(candidate_dom, dom, index, orientation, e);
-            }
+            int orientation[3] = { 1, 2, 3 }; // this doesn't really
+                                              // apply for rectilinear.
+            int d1 = i;
+            int d2 = list[j];
+            if (levels[d1] != levels[d2])
+                continue;
+            int e[6];
+            e[0] = (extents[6*d1+0] > extents[6*d2+0] ? extents[6*d1+0] 
+                                                      : extents[6*d2+0]);
+            e[0] -= extents[6*d1+0] - 1;
+            e[1] = (extents[6*d1+1] < extents[6*d2+1] ? extents[6*d1+1] 
+                                                      : extents[6*d2+1]);
+            e[1] -= extents[6*d1+0] - 1;
+            e[2] = (extents[6*d1+2] > extents[6*d2+2] ? extents[6*d1+2] 
+                                                      : extents[6*d2+2]);
+            e[2] -= extents[6*d1+2] - 1;
+            e[3] = (extents[6*d1+3] < extents[6*d2+3] ? extents[6*d1+3] 
+                                                      : extents[6*d2+3]);
+            e[3] -= extents[6*d1+2] - 1;
+            e[4] = (extents[6*d1+4] > extents[6*d2+4] ? extents[6*d1+4] 
+                                                      : extents[6*d2+4]);
+            e[4] -= extents[6*d1+4] - 1;
+            e[5] = (extents[6*d1+5] < extents[6*d2+5] ? extents[6*d1+5] 
+                                                      : extents[6*d2+5]);
+            e[5] -= extents[6*d1+4] - 1;
+            int index = neighbors[d2];
+            neighbors[d2]++;
+            AddNeighbor(d1, d2, index, orientation, e);
         }
     }
 

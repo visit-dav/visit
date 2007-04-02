@@ -1153,10 +1153,135 @@ vtkQtRenderWindow::setCursor(const QCursor &c)
     gl->setCursor(c);
 }
 
+
+// Update the system, if needed, due to stereo rendering. For some stereo 
+// methods, subclasses might need to switch some hardware settings here.
+void vtkQtRenderWindow::StereoUpdate(void)
+{
+  // if stereo is on and it wasn't before
+  if (this->StereoRender && (!this->StereoStatus))
+    {
+    switch (this->StereoType) 
+      {
+      case VTK_STEREO_RED_BLUE:
+        this->StereoStatus = 1;
+        break;
+      case VTK_STEREO_INTERLACED:
+        this->StereoStatus = 1;
+        break;      
+      case VTK_STEREO_CRYSTAL_EYES:
+        this->StereoStatus = 1;
+        break;      
+      case VTK_STEREO_RED_GREEN:
+        this->StereoStatus = 1;
+        break;      
+      }
+    }
+  else if ((!this->StereoRender) && this->StereoStatus)
+    {
+    switch (this->StereoType) 
+      {
+      case VTK_STEREO_RED_BLUE:
+        this->StereoStatus = 0;
+        break;
+      case VTK_STEREO_INTERLACED:
+        this->StereoStatus = 0;
+        break;
+      case VTK_STEREO_CRYSTAL_EYES:
+        this->StereoStatus = 0;
+        break;
+      case VTK_STEREO_RED_GREEN:
+        this->StereoStatus = 0;
+        break;
+      }
+    }
+}
+
+// Handles work required once both views have been rendered when using
+// stereo rendering.
+void vtkQtRenderWindow::StereoRenderComplete(void)
+{
+  switch (this->StereoType) 
+    {
+    case VTK_STEREO_RED_GREEN:
+      {
+      unsigned char *buff;
+      unsigned char *p1, *p2, *p3;
+      unsigned char* result;
+      int *size;
+      int x,y;
+      int res;
+
+      // get the size
+      size = this->GetSize();
+      // get the data
+      buff = this->GetPixelData(0,0,size[0]-1,size[1]-1,!this->DoubleBuffer);
+      p1 = this->StereoBuffer;
+      p2 = buff;
+
+      // allocate the result
+      result = new unsigned char [size[0]*size[1]*3];
+      if (!result)
+        {
+        vtkErrorMacro(<<"Couldn't allocate memory for RED BLUE stereo.");
+        return;
+        }
+      p3 = result;
+
+      // now merge the two images 
+      for (x = 0; x < size[0]; x++)
+        {
+        for (y = 0; y < size[1]; y++)
+          {
+          res = p1[0] + p1[1] + p1[2];
+          p3[0] = res/3;
+          res = p2[0] + p2[1] + p2[2];
+          p3[1] = res/3;
+          p3[2] = 0;
+          
+          p1 += 3;
+          p2 += 3;
+          p3 += 3;
+          }
+        }
+      this->ResultFrame = result;
+      delete [] this->StereoBuffer;
+      this->StereoBuffer = NULL;
+      delete [] buff;
+      }
+      break;
+    default:
+      vtkRenderWindow::StereoRenderComplete(); 
+      break;
+    }
+}
+
+// Intermediate method performs operations required between the rendering
+// of the left and right eye.
+void vtkQtRenderWindow::StereoMidpoint(void)
+{
+  if ((this->StereoType == VTK_STEREO_RED_BLUE) ||
+      (this->StereoType == VTK_STEREO_INTERLACED) ||
+          (this->StereoType == VTK_STEREO_RED_GREEN) )
+    {
+    int *size;
+    // get the size
+    size = this->GetSize();
+    // get the data
+    this->StereoBuffer = this->GetPixelData(0,0,size[0]-1,size[1]-1,!this->DoubleBuffer);
+    }
+}
+
+
+
+
+
+
+
 //
-// Include more source code for vtkQtRenderWindow that deals with getting/setting
-// pixels to and from the GL widget. This code, though needed by VTK, is boilerplate
-// and we don't need to change it too often.
+// Include more source code for vtkQtRenderWindow that deals with 
+// getting/setting pixels to and from the GL widget. This code, though 
+// needed by VTK, is boilerplate and we don't need to change it too often.
 //
 #include "vtkQtRenderWindow_pixelops.C"
 

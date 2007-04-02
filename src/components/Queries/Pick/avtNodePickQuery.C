@@ -6,12 +6,14 @@
 
 #include <float.h>
 
+#include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkFieldData.h>
 #include <vtkMath.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
 #include <vtkUnsignedCharArray.h>
+#include <vtkVisItUtility.h>
 
 #include <avtMatrix.h>
 #include <avtParallel.h>
@@ -91,6 +93,11 @@ avtNodePickQuery::~avtNodePickQuery()
 //    Hank Childs, Thu Mar 10 10:35:37 PST 2005
 //    Fix memory leak.
 //
+//    Kathleen Bonnell, Tue Jun 28 10:45:28 PDT 2005 
+//    Calculate 'real' ids under the proper circumstances (Created ghosts,
+//    the ghost array is available, we don't have the picked node right
+//    away and the ds is structured). 
+//
 // ****************************************************************************
 
 void
@@ -106,6 +113,15 @@ avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
     }
 
     int pickedNode = pickAtts.GetElementNumber();
+    int type = ds->GetDataObjectType();
+    bool hasGhosts = (ds->GetCellData()->GetArray("avtGhostZones") != NULL);
+    //
+    // We may need the real id when picking on a Contour plot of
+    // an AMR dataset. 
+    //
+    int needRealId = (pickedNode == -1 && hasGhosts &&
+                      ghostType == AVT_CREATED_GHOSTS &&
+                (type == VTK_STRUCTURED_GRID || type == VTK_RECTILINEAR_GRID));
 
     if (pickedNode == -1)
     {
@@ -117,8 +133,8 @@ avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
             pickAtts.SetDomain(-1);
             pickAtts.SetElementNumber(-1);
             debug4 << "PICK BIG PROBLEM!  "
-                   << "Could not find zone corresponding to pick point" << endl;
- 
+                   << "Could not find zone corresponding to pick point" 
+                   << endl;
             pickAtts.SetErrorMessage("Pick encountered an internal "
                         "error (could not find closest node).\n"
                         "Please contact a VisIt developer"); 
@@ -145,8 +161,8 @@ avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
             return;
         }
     }
-    pickAtts.SetCellPoint(ds->GetPoint(pickedNode)); 
 
+    pickAtts.SetCellPoint(ds->GetPoint(pickedNode)); 
 
     if (!pickAtts.GetMatSelected())
     {
@@ -159,7 +175,7 @@ avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
         }
         else
         {
-            // the zone/node could not be found, no further processing required.
+            // the zones could not be found, no further processing required.
             // SetDomain and ElementNumber to -1 to indicate failure. 
             pickAtts.SetDomain(-1);
             pickAtts.SetElementNumber(-1);
@@ -176,7 +192,6 @@ avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
     // 
     if (pickAtts.GetDomain() == -1)
         pickAtts.SetDomain(dom);
-    
  
     //
     //  Allow the database to add any missing information.
@@ -210,6 +225,16 @@ avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
     else
     {
         pickAtts.SetDomain(dom+blockOrigin);
+    }
+
+    if (needRealId)
+    {
+        SetRealIds(ds);
+        //
+        // Put the real ids in the correct spot for output.
+        //
+        pickAtts.SetElementNumber(pickAtts.GetRealElementNumber());
+        pickAtts.SetIncidentElements(pickAtts.GetRealIncidentElements());
     }
 
     //
@@ -247,11 +272,10 @@ avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
 
     if (skippedLocate)
     {
-        // reset so that future domains will also check.
-        pickAtts.SetFulfilled(false);
-        pickAtts.SetDomain(-1);
-        pickAtts.SetElementNumber(-1);
-        foundNode = pickedNode;
+        if (!needRealId)
+            foundNode = pickedNode;
+        else 
+            foundNode = pickAtts.GetRealElementNumber();
         foundDomain = dom;
     }
 }
@@ -277,6 +301,10 @@ avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
 //    Add logic to return -1 when pickpoint does not lie in dataset bounds,
 //    and if 'FindPoint' returns a ghost node.
 //    
+//    Kathleen Bonnell, Tue Jun 28 10:47:35 PDT 2005 
+//    Find intersected cell and test if it is a ghost before proceeding
+//    further.  
+//
 // ****************************************************************************
 
 int
@@ -291,7 +319,18 @@ avtNodePickQuery::DeterminePickedNode(vtkDataSet *ds)
     {
         return -1;
     }
-   
+
+    int zone = vtkVisItUtility::FindCell(ds, pp);
+
+    if (zone == -1)
+        return -1;
+
+    vtkDataArray *ghostZones = ds->GetCellData()->GetArray("avtGhostZones");
+    if (ghostZones && ghostZones->GetTuple1(zone) > 0)
+    {
+        return -1;
+    }
+
     int node = ds->FindPoint(pickAtts.GetPickPoint());
     vtkUnsignedCharArray *ghostNodes = vtkUnsignedCharArray::SafeDownCast(
         ds->GetPointData()->GetArray("avtGhostNodes"));

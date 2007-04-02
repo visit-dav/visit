@@ -831,8 +831,13 @@ void BroadcastDouble(double &i)
 //  Programmer:  Hank Childs
 //  Creation:    June 6, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Jun 23 14:02:03 PDT 2005
+//    Change type of "myrank" to be int.  Too much cut-n-paste previously.
+//
 // ****************************************************************************
-void BroadcastDoubleVector(vector<double> &vi, double myrank)
+void BroadcastDoubleVector(vector<double> &vi, int myrank)
 {
 #ifdef PARALLEL
     int len;

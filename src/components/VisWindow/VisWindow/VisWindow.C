@@ -5613,3 +5613,22 @@ VisWindow::GlyphPick(const float *rp1, const float *rp2, int &dom, int &elNum,
         }
     }
 }
+
+
+// ****************************************************************************
+//  Method: VisWinPlots::GetMaxPlotZShift
+//
+//  Purpose:
+//    Returns the maximum that have plots have been shifted in Z.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   June 27, 2005 
+//
+// ****************************************************************************
+
+float
+VisWindow::GetMaxPlotZShift()
+{
+    return plots->GetMaxZShift();
+}
+

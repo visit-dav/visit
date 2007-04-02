@@ -975,3 +975,20 @@ VisWindowProtectionProxy::ProxiedResumeTranslucentGeometry()
 {
     viswin->ResumeTranslucentGeometry();
 }
+
+// ****************************************************************************
+//  Method: VisWindowProtectionProxy::ProxiedGetMaxPlotZShift
+//
+//  Purpose:
+//    Returns the maximum amount the plots have been shifted in Z.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   June 27, 2005 
+//
+// ***************************************************************************
+
+float
+VisWindowProtectionProxy::ProxiedGetMaxPlotZShift()
+{
+    return viswin->GetMaxPlotZShift();
+}

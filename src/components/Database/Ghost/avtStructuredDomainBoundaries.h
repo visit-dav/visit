@@ -175,6 +175,9 @@ class BoundaryHelperFunctions
 //    Hank Childs, Sun Feb 27 12:14:32 PST 2005
 //    Added RequiresCommunication.  Added new argument to CreateGhostNodes.
 //
+//    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
+//    Added ResetCachedMembers, as well as domain2proc member.
+//
 // ****************************************************************************
 
 class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
@@ -223,6 +226,7 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
     virtual bool                      RequiresCommunication(avtGhostDataType);
     virtual bool                      ConfirmMesh(vector<int>      domainNum,
                                                vector<vtkDataSet*> meshes);
+    virtual void                      ResetCachedMembers();
 
   private:
     virtual vector<vtkDataArray*>     ExchangeFloatScalar(vector<int> domainNum,
@@ -247,6 +251,7 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
     bool shouldComputeNeighborsFromExtents;
     vector<int>   extents;
     vector<int>   levels;
+    vector<int>   domain2proc;
 
     friend class BoundaryHelperFunctions<int>;
     friend class BoundaryHelperFunctions<float>;

@@ -137,6 +137,9 @@ class WindowInformation;
 //   Brad Whitlock, Wed Apr 20 17:37:56 PST 2005
 //   Added command window and a quit signal.
 //
+//   Eric Brugger, Thu Jun 30 09:13:18 PDT 2005
+//   Added a 2x3 window layout and removed the 4x4 window layout.
+//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -233,9 +236,9 @@ private slots:
     void windowLayout1x1();
     void windowLayout1x2();
     void windowLayout2x2();
+    void windowLayout2x3();
     void windowLayout2x4();
     void windowLayout3x3();
-    void windowLayout4x4();
 
     void copyView(int);
     void copyLighting(int);

@@ -1472,6 +1472,8 @@ VisWinRendering::GetRenderTimes(float times[3]) const
 // Creation:   Mon Sep 23 14:23:06 PST 2002
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Jun 30 15:29:55 PDT 2005
+//   Support red-green stereo type.
 //   
 // ****************************************************************************
 
@@ -1488,8 +1490,13 @@ VisWinRendering::SetStereoRendering(bool enabled, int type)
                 GetRenderWindow()->SetStereoType(VTK_STEREO_RED_BLUE);
             else if(stereoType == 1)
                 GetRenderWindow()->SetStereoType(VTK_STEREO_INTERLACED);
-            else
+            else if(stereoType == 2)
                 GetRenderWindow()->SetStereoType(VTK_STEREO_CRYSTAL_EYES);
+            else 
+            {
+                //GetRenderWindow()->SetStereoType(VTK_STEREO_RED_GREEN);
+                GetRenderWindow()->SetStereoType(7);
+            }
             GetRenderWindow()->SetStereoRender(1);
         }
         else

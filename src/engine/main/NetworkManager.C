@@ -2711,6 +2711,10 @@ NetworkManager::StopQueryMode(void)
 //    UnifyMaximumValue call to ensure all processors know if they should 
 //    perform an ActualCoords query.
 //
+//    Kathleen Bonnell, Tue Jun 28 10:57:39 PDT 2005 
+//    Re-add test for topological dimension of 1 to skipLocate test. Retrieve
+//    ghost type from queryInputAtts and set in PickAtts.
+//
 // ****************************************************************************
 
 void
@@ -2741,13 +2745,13 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
     avtDataObject_p queryInput = 
         networkCache[id]->GetPlot()->GetIntermediateDataObject();
 
-    avtSILRestriction_p silr = networkCache[id]->GetDataSpec()->GetRestriction();
-
     if (*queryInput == NULL)
     {
         debug1 << "Could not retrieve query input." << endl;
         EXCEPTION0(NoInputException);
     }
+
+    avtSILRestriction_p silr = networkCache[id]->GetDataSpec()->GetRestriction();
 
     avtDataAttributes &queryInputAtts = queryInput->GetInfo().GetAttributes();
     pa->SetMatSelected(queryInputAtts.MIROccurred() || pa->GetMatSelected());
@@ -2832,11 +2836,18 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
     haveBoundarySurfaces = spec->NeedBoundarySurfaces();
 /* END NEW IMPLEMENTATION */
    
-    bool skipLocate = haveBoundarySurfaces && 
+    bool skipLocate = (haveBoundarySurfaces || 
+                      queryInputAtts.GetTopologicalDimension() == 1) &&
                       (queryInputAtts.GetSpatialDimension() == 2);
+
     avtLocateQuery *lQ = NULL;
     avtPickQuery *pQ = NULL;
     avtCurvePickQuery *cpQ = NULL;
+    //
+    // This appears to be the only way to get the correct ghost type,
+    // no matter which pipelines are in existence.
+    //
+    pa->SetGhostType(queryInputAtts.GetContainsGhostZones());
     TRY
     {
         QueryAttributes qa;

@@ -1864,6 +1864,10 @@ QvisGUIApplication::AddViewerArguments(int argc, char **argv)
 //   the height in the case of a vertical gui and the width to be at most
 //   twice the height in the case of a horizontal gui.
 //
+//   Eric Brugger, Thu Jun 30 08:21:41 PDT 2005
+//   I removed the restrictions on the width so that the entire available
+//   screen area would be passed to the viewer.
+//
 // ****************************************************************************
 
 void
@@ -1878,7 +1882,6 @@ QvisGUIApplication::CalculateViewerArea(int orientation, int &x, int &y,
         y = screenY;
         width = screenW - mw - borders[2] - borders[3];
         height = screenH;
-        width = width < height ? width : height;
     }
     else
     {
@@ -1888,7 +1891,6 @@ QvisGUIApplication::CalculateViewerArea(int orientation, int &x, int &y,
         y = mh + borders[0] + borders[1];
         width = screenW;
         height = screenH - mh - borders[0] - borders[1];
-        width = width < height * 2 ? width : height * 2;
     }
 }
 
