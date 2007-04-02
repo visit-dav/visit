@@ -31,7 +31,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">true</Field>
-                <Field name="arguments" type="stringVector">-pl prun -dir /usr/projects/llnl_b/visit </Field>
+                <Field name="arguments" type="stringVector">"-pl" "prun" "-dir" "/usr/projects/llnl_b/visit" </Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
             <Object name="HostProfile">
@@ -52,7 +52,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">false</Field>
-                <Field name="arguments" type="stringVector">-pl prun -dir /usr/projects/llnl_b/visit </Field>
+                <Field name="arguments" type="stringVector">"-pl" "prun" "-dir" "/usr/projects/llnl_b/visit" </Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
             <Object name="HostProfile">
@@ -73,7 +73,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">false</Field>
-                <Field name="arguments" type="stringVector">-pl prun -dir /usr/projects/llnl_b/visit </Field>
+                <Field name="arguments" type="stringVector">"-pl" "prun" "-dir" "/usr/projects/llnl_b/visit" </Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
             <Object name="HostProfile">
@@ -94,7 +94,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">false</Field>
-                <Field name="arguments" type="stringVector">-pl prun -dir /usr/projects/llnl_b/visit </Field>
+                <Field name="arguments" type="stringVector">"-pl" "prun" "-dir" "/usr/projects/llnl_b/visit" </Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
             <Object name="HostProfile">
@@ -115,7 +115,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">false</Field>
-                <Field name="arguments" type="stringVector">-pl prun -dir /usr/projects/llnl_b/visit </Field>
+                <Field name="arguments" type="stringVector">"-pl" "prun" "-dir" "/usr/projects/llnl_b/visit" </Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
             <Object name="HostProfile">
@@ -138,7 +138,7 @@
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">true</Field>
                 <Field name="parallel" type="bool">false</Field>
-                <Field name="arguments" type="stringVector">-dir /projects/llnl/visit </Field>
+                <Field name="arguments" type="stringVector">"-dir" "/projects/llnl/visit" </Field>
             </Object>
             <Object name="HostProfile">
                 <Field name="profileName" type="string">parallel batch</Field>
@@ -151,7 +151,7 @@
                 <Field name="launchMethod" type="string">qsub</Field>
                 <Field name="active" type="bool">false</Field>
                 <Field name="parallel" type="bool">true</Field>
-                <Field name="arguments" type="stringVector">-dir /projects/llnl/visit </Field>
+                <Field name="arguments" type="stringVector">"-dir" "/projects/llnl/visit" </Field>
             </Object>
             <Object name="HostProfile">
                 <Field name="profileName" type="string">serial</Field>
@@ -172,7 +172,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">true</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                 <Field name="parallel" type="bool">false</Field>
             </Object>
             <Object name="HostProfile">
@@ -194,7 +194,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">true</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                 <Field name="parallel" type="bool">false</Field>
             </Object>
             <Object name="HostProfile">
@@ -216,7 +216,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">false</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit</Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
             <Object name="HostProfile">
@@ -238,7 +238,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">false</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit</Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
             <Object name="HostProfile">
@@ -260,7 +260,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">true</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                 <Field name="parallel" type="bool">false</Field>
             </Object>
             <Object name="HostProfile">
@@ -282,7 +282,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">false</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
             <Object name="HostProfile">
@@ -304,7 +304,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">false</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
             <Object name="HostProfile">
@@ -326,7 +326,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">true</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                 <Field name="parallel" type="bool">false</Field>
             </Object>
             <Object name="HostProfile">
@@ -348,7 +348,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">false</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
             <Object name="HostProfile">
@@ -370,7 +370,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">false</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
             <Object name="HostProfile">
@@ -392,7 +392,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">true</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-compiler" "xlc" </Field>
                 <Field name="parallel" type="bool">false</Field>
             </Object>
             <Object name="HostProfile">
@@ -414,7 +414,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">false</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-compiler" "xlc" </Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
             <Object name="HostProfile">
@@ -436,7 +436,73 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">false</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-compiler" "xlc" </Field>
+                <Field name="parallel" type="bool">true</Field>
+            </Object>
+            <Object name="HostProfile">
+                <Field name="profileName" type="string">serial</Field>
+                <Field name="host" type="string">purple.llnl.gov</Field>
+                <Field name="hostAliases" type="string">purple.llnl.gov purple####.llnl.gov</Field>
+                <Field name="timeout" type="int">480</Field>
+                <Field name="numProcessors" type="int">1</Field>
+                <Field name="numNodesSet" type="bool">false</Field>
+                <Field name="numNodes" type="int">0</Field>
+                <Field name="partitionSet" type="bool">false</Field>
+                <Field name="partition" type="string"></Field>
+                <Field name="bankSet" type="bool">false</Field>
+                <Field name="bank" type="string"></Field>
+                <Field name="timeLimitSet" type="bool">false</Field>
+                <Field name="timeLimit" type="string"></Field>
+                <Field name="launchMethodSet" type="bool">false</Field>
+                <Field name="launchMethod" type="string"></Field>
+                <Field name="forceStatic" type="bool">true</Field>
+                <Field name="forceDynamic" type="bool">false</Field>
+                <Field name="active" type="bool">true</Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-compiler" "xlc" </Field>
+                <Field name="parallel" type="bool">false</Field>
+            </Object>
+            <Object name="HostProfile">
+                <Field name="profileName" type="string">parallel pbatch</Field>
+                <Field name="host" type="string">purple.llnl.gov</Field>
+                <Field name="hostAliases" type="string">purple.llnl.gov purple####.llnl.gov</Field>
+                <Field name="timeout" type="int">480</Field>
+                <Field name="numProcessors" type="int">32</Field>
+                <Field name="numNodesSet" type="bool">true</Field>
+                <Field name="numNodes" type="int">4</Field>
+                <Field name="partitionSet" type="bool">true</Field>
+                <Field name="partition" type="string">pu,pbatch</Field>
+                <Field name="bankSet" type="bool">true</Field>
+                <Field name="bank" type="string">bdivp</Field>
+                <Field name="timeLimitSet" type="bool">true</Field>
+                <Field name="timeLimit" type="string">30m</Field>
+                <Field name="launchMethodSet" type="bool">true</Field>
+                <Field name="launchMethod" type="string">psub</Field>
+                <Field name="forceStatic" type="bool">true</Field>
+                <Field name="forceDynamic" type="bool">false</Field>
+                <Field name="active" type="bool">false</Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-compiler" "xlc" </Field>
+                <Field name="parallel" type="bool">true</Field>
+            </Object>
+            <Object name="HostProfile">
+                <Field name="profileName" type="string">parallel viz interactive</Field>
+                <Field name="host" type="string">purple.llnl.gov</Field>
+                <Field name="hostAliases" type="string">purple.llnl.gov purple####.llnl.gov</Field>
+                <Field name="timeout" type="int">480</Field>
+                <Field name="numProcessors" type="int">32</Field>
+                <Field name="numNodesSet" type="bool">true</Field>
+                <Field name="numNodes" type="int">4</Field>
+                <Field name="partitionSet" type="bool">true</Field>
+                <Field name="partition" type="string">viz</Field>
+                <Field name="bankSet" type="bool">false</Field>
+                <Field name="bank" type="string"></Field>
+                <Field name="timeLimitSet" type="bool">false</Field>
+                <Field name="timeLimit" type="string"></Field>
+                <Field name="launchMethodSet" type="bool">true</Field>
+                <Field name="launchMethod" type="string">poe</Field>
+                <Field name="forceStatic" type="bool">true</Field>
+                <Field name="forceDynamic" type="bool">false</Field>
+                <Field name="active" type="bool">false</Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-compiler" "xlc" </Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
             <Object name="HostProfile">
@@ -458,7 +524,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">true</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                 <Field name="parallel" type="bool">false</Field>
             </Object>
             <Object name="HostProfile">
@@ -480,7 +546,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">false</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
             <Object name="HostProfile">
@@ -501,7 +567,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">true</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                 <Field name="parallel" type="bool">false</Field>
             </Object>
             <Object name="HostProfile">
@@ -522,7 +588,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">false</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
             <Object name="HostProfile">
@@ -544,7 +610,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">true</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                 <Field name="parallel" type="bool">false</Field>
             </Object>
             <Object name="HostProfile">
@@ -566,7 +632,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">false</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
             <Object name="HostProfile">
@@ -590,7 +656,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">false</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
             <Object name="HostProfile">
@@ -612,7 +678,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">false</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
             <Object name="HostProfile">
@@ -634,7 +700,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">true</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit -compiler xlc </Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-compiler" "xlc" </Field>
                 <Field name="parallel" type="bool">false</Field>
             </Object>
             <Object name="HostProfile">
@@ -656,7 +722,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">false</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit -compiler xlc </Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-compiler" "xlc" </Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
             <Object name="HostProfile">
@@ -678,7 +744,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">false</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit -compiler xlc </Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-compiler" "xlc" </Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
             <Object name="HostProfile">
@@ -700,7 +766,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">true</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit -compiler xlc </Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-compiler" "xlc" </Field>
                 <Field name="parallel" type="bool">false</Field>
             </Object>
             <Object name="HostProfile">
@@ -722,7 +788,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">false</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit -compiler xlc </Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-compiler" "xlc" </Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
             <Object name="HostProfile">
@@ -744,7 +810,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">false</Field>
-                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit -compiler xlc </Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-compiler" "xlc" </Field>
                 <Field name="parallel" type="bool">true</Field>
             </Object>
             <Field name="activeProfile" type="int">1</Field>
