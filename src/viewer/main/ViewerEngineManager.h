@@ -61,6 +61,7 @@ class PickAttributes;
 class ProcessAttributes;
 class QueryAttributes;
 class QueryOverTimeAttributes;
+class SimulationCommand;
 class ViewerPlot;
 class AnnotationAttributes;
 class AnnotationObjectList;
@@ -268,6 +269,9 @@ class avtDatabaseMetaData;
 //    Hank Childs, Mon May 22 07:20:55 PDT 2006
 //    Add InLaunch().
 //
+//    Brad Whitlock, Thu Jan 25 14:14:29 PST 2007
+//    Added GetCommandFromSimulation.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -301,6 +305,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     void                 ReadDataAndProcess(const EngineKey &ek);
     avtDatabaseMetaData *GetSimulationMetaData(const EngineKey &ek);
     SILAttributes       *GetSimulationSILAtts(const EngineKey &ek);
+    SimulationCommand   *GetCommandFromSimulation(const EngineKey &ek);
 
     void CloseEngines();
     void CloseEngine(const EngineKey &ek);

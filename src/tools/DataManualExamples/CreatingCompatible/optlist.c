@@ -15,7 +15,7 @@ write_rect2d(DBfile *dbfile)
     double dtime = 1.23456789;
     DBoptlist *optlist = DBMakeOptlist(2);
     DBAddOption(optlist, DBOPT_CYCLE, (void *)&cycle);
-    DBAddOption(optlist, DBOPT_TIME, (void *)&dtime);
+    DBAddOption(optlist, DBOPT_DTIME, (void *)&dtime);
     /* Write a quadmesh with an option list. */
     DBPutQuadmesh(dbfile, "quadmesh", NULL, coords, dims, ndims,
                   DB_FLOAT, DB_COLLINEAR, optlist);

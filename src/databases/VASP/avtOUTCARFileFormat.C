@@ -460,6 +460,10 @@ avtOUTCARFileFormat::GetNTimesteps(void)
 //    If ntimesteps is zero, that means this is an intial-conditions-only
 //    file -- fake that ntimesteps is actually "1" when needed.
 //
+//    Jeremy Meredith, Fri Feb 23 15:22:37 EST 2007
+//    Added support for seeking directly to preset timesteps.
+//    Sped up parsing by using C string functions.
+//
 // ****************************************************************************
 void
 avtOUTCARFileFormat::ReadAllMetaData()
@@ -480,9 +484,8 @@ avtOUTCARFileFormat::ReadAllMetaData()
     ntimesteps = 0;
     while (in)
     {
-        string s(line);
-        if (s.substr(0,46) ==
-            "  FREE ENERGIE OF THE ION-ELECTRON SYSTEM (eV)")
+        //string s(line);
+        if (!strncmp(line,"  FREE ENERGIE OF THE ION-ELECTRON SYSTEM (eV)",46))
         {
             string tmp = "";
             while (tmp != "=")
@@ -493,14 +496,15 @@ avtOUTCARFileFormat::ReadAllMetaData()
             in >> energy;
             free_energy.push_back(energy);
         }
-        if (s.substr(0,9) == " POSITION")
+        else if (!strncmp(line," POSITION",9))
         {
+            file_positions.push_back(in.tellg());
             ntimesteps++;
         }
         /*
           NOT SURE WHY, BUT THESE ARE IN THE WRONG ORDER AND NEGATIVE
           ... instead, use the version below this one
-        else if (s.substr(0,18) == "  Lattice vectors:")
+        else if (!strncmp(line,"  Lattice vectors:",18))
         {
             // skip a line
             in.getline(line, 132);
@@ -524,7 +528,7 @@ avtOUTCARFileFormat::ReadAllMetaData()
             unitCell[2][2] = atof(s.substr(39,15).c_str());
         }*/
         else if (read_lattice == false &&
-                 s.substr(0,28) == "      direct lattice vectors")
+                 !strncmp(line,"      direct lattice vectors",28))
         {
             float tmp;
             in >> unitCell[0][0];
@@ -541,9 +545,9 @@ avtOUTCARFileFormat::ReadAllMetaData()
             in >> tmp >> tmp >> tmp;
             read_lattice = true;
         }
-        else if (s.substr(0,8) == "   TITEL" && !all_ions_read)
+        else if (!all_ions_read && !strncmp(line,"   TITEL",8))
         {
-            istringstream sin(s);
+            istringstream sin(line);
             string arg1,arg2,arg3,arg4;
             sin >> arg1 >> arg2 >> arg3 >> arg4;
             char element[3];
@@ -595,10 +599,10 @@ avtOUTCARFileFormat::ReadAllMetaData()
             element_names.push_back(element);
             element_types.push_back(number);
         }
-        else if (s.substr(0,18) == "   ions per type =" && !all_ions_read)
+        else if (!all_ions_read && !strncmp(line,"   ions per type =",18))
         {
             all_ions_read = true;
-            istringstream sin(s.substr(18));
+            istringstream sin(&(line[18]));
             int n;
             sin >> n;
             while (sin)
@@ -641,6 +645,9 @@ avtOUTCARFileFormat::ReadAllMetaData()
 //    If ntimesteps is zero, that means this is an intial-conditions-only
 //    file.  Read the atoms from a different location in the file.
 //
+//    Jeremy Meredith, Fri Feb 23 15:22:37 EST 2007
+//    Added support for seeking directly to preset timesteps.
+//
 // ****************************************************************************
 void
 avtOUTCARFileFormat::ReadAtomsForTimestep(int timestep)
@@ -656,20 +663,27 @@ avtOUTCARFileFormat::ReadAtomsForTimestep(int timestep)
 
     if (ntimesteps > 0)
     {
-        in.getline(line, 132);
-
-        int curtime = -1;
-        while (in && curtime < timestep)
+        if (file_positions.size() > timestep)
         {
-            string s(line);
-            if (s.substr(0,9) == " POSITION")
-            {
-                curtime++;
-            }
-            in.getline(line, 132);
+            in.seekg(file_positions[timestep]);
+            in.getline(line, 132); // skip the separator
         }
+        else
+        {
+            in.getline(line, 132);
 
-        // skip the separator
+            int curtime = -1;
+            while (in && curtime < timestep)
+            {
+                string s(line);
+                if (s.substr(0,9) == " POSITION")
+                {
+                    curtime++;
+                }
+                in.getline(line, 132);
+            }
+            // skip the separator
+        }
 
         atoms.resize(natoms);
 

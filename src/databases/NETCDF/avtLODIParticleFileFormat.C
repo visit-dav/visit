@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2006, The Regents of the University of California
+* Copyright (c) 2000 - 2007, The Regents of the University of California
 * Produced at the Lawrence Livermore National Laboratory
 * All rights reserved.
 *
@@ -366,6 +366,9 @@ avtLODIParticleFileFormat::GetTimes(doubleVector &t)
 //    Jeremy Meredith, Thu Aug 25 12:55:29 PDT 2005
 //    Added group origin to mesh metadata constructor.
 //   
+//    Hank Childs, Fri Feb 23 09:22:20 PST 2007
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 void
@@ -434,6 +437,8 @@ avtLODIParticleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
             mmd->zLabel = zL;
             debug4 << mName << "zLabel = " << zL << endl;
+
+            delete [] labels;
         }
 
         delete [] dims;

@@ -60,6 +60,7 @@
 #include <QueryRPC.h>
 #include <ReleaseDataRPC.h>
 #include <SetWinAnnotAttsRPC.h>
+#include <SimulationCommand.h>
 #include <SimulationCommandRPC.h>
 #include <SILAttributes.h>
 #include <StartPickRPC.h>
@@ -278,6 +279,11 @@ class ExportDBAttributes;
 //
 //    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
 //    Added bool arg (leftEye) to Render method to support stereo SR
+//
+//    Brad Whitlock, Thu Jan 25 13:51:10 PST 2007
+//    Added a SimulationCommand object so the simulation can send simulation
+//    commands back to the viewer.
+//
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -304,6 +310,7 @@ public:
     void                     ReadDataAndProcess();
     avtDatabaseMetaData     *GetSimulationMetaData();
     SILAttributes           *GetSimulationSILAtts();
+    SimulationCommand       *GetCommandFromSimulation();
 
     StatusAttributes        *GetStatusAttributes() const;
 
@@ -417,6 +424,7 @@ private:
     // Metadata, SIL published by a simulation
     avtDatabaseMetaData     *metaData;
     SILAttributes           *silAtts;
+    SimulationCommand       *commandFromSim;
 
     // Information that can be queried about the engine.
     int                      numProcs;

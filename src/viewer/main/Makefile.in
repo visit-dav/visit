@@ -301,6 +301,10 @@
 #    Brad Whitlock, Mon Feb 12 12:14:30 PDT 2007
 #    Moved ViewerState to the rpc lib and added ViewerBase here.
 #
+#
+#    Brad Whitlock, Thu Jan 25 14:05:03 PST 2007
+#    Added ViewerCommandFromSimObserver.C
+#
 ##############################################################################
 
 ##
@@ -357,6 +361,7 @@ PRIVATE_SRC=\
     ViewerActionBase.C \
     ViewerActionManager.C \
     ViewerClientConnection.C \
+    ViewerCommandFromSimObserver.C \
     ViewerConfigManager.C \
     ViewerConnectionProgressDialog.C \
     ViewerEngineManager.C \
@@ -394,6 +399,7 @@ HDRMOC = \
     ViewerAction.h \
     ViewerActionBase.h \
     ViewerClientConnection.h \
+    ViewerCommandFromSimObserver.h \
     ViewerConnectionProgressDialog.h \
     ViewerHostProfileSelectorWithWin.h \
     ViewerMetaDataObserver.h \

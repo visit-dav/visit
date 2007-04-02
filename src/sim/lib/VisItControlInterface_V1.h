@@ -53,6 +53,9 @@
  *    Shelly Prevost, Wed Jan 25 08:52:18 PST 2006
  *    Added a guifile argument to VisItInitializeSocketAndDumpSimFile.
  *
+ *    Brad Whitlock, Thu Jan 25 14:53:11 PST 2007
+ *    Added VisItUpdatePlots and VisItExecuteCommand.
+ *
  *****************************************************************************/
 #ifdef __cplusplus
 extern "C" {
@@ -77,6 +80,8 @@ void  VisItSetSlaveProcessCallback(void(*)(void));
 void  VisItSetCommandCallback(void(*)(const char*,int,float,const char*));
 int   VisItProcessEngineCommand(void);
 void  VisItTimeStepChanged(void);
+void  VisItUpdatePlots(void);
+void  VisItExecuteCommand(const char *);
 void  VisItDisconnect(void);
 char *VisItGetLastError(void);
 

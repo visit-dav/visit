@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2006, The Regents of the University of California
+* Copyright (c) 2000 - 2007, The Regents of the University of California
 * Produced at the Lawrence Livermore National Laboratory
 * All rights reserved.
 *
@@ -69,6 +69,7 @@
 #include <ParentProcess.h>
 #include <QueryAttributes.h>
 #include <SILAttributes.h>
+#include <SimulationCommand.h>
 #include <SocketConnection.h>
 #include <TimingsManager.h>
 
@@ -139,7 +140,11 @@ const int INTERRUPT_MESSAGE_TAG = GetUniqueStaticMessageTag();
 //    Hank Childs, Thu Jan  5 14:24:06 PST 2006
 //    Initialize shouldDoDashDump.
 //
+//    Brad Whitlock, Thu Jan 25 13:56:24 PST 2007
+//    Added commandFromSim.
+//
 // ****************************************************************************
+
 Engine::Engine()
 {
     vtkConnection = 0;
@@ -151,6 +156,7 @@ Engine::Engine()
     simulationCommandCallback = NULL;
     metaData = NULL;
     silAtts = NULL;
+    commandFromSim = NULL;
     shouldDoDashDump = false;
     
     quitRPC = NULL;
@@ -174,7 +180,6 @@ Engine::Engine()
     cloneNetworkRPC = NULL;
     procInfoRPC = NULL;
     simulationCommandRPC = NULL;
-
 }
 
 // ****************************************************************************
@@ -191,7 +196,11 @@ Engine::Engine()
 //    Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
 //    deleted simulationCommandRPC
 //
+//    Brad Whitlock, Thu Jan 25 13:56:24 PST 2007
+//    Added commandFromSim.
+//
 // ****************************************************************************
+
 Engine::~Engine()
 {
     delete netmgr;
@@ -199,6 +208,7 @@ Engine::~Engine()
     delete lb;
     delete silAtts;
     delete metaData;
+    delete commandFromSim;
 
     for (int i=0; i<rpcExecutors.size(); i++)
         delete rpcExecutors[i];
@@ -425,6 +435,9 @@ Engine::Finalize(void)
 //    functionality that takes a long time: queries over time and line scan
 //    queries.
 //
+//    Brad Whitlock, Thu Jan 25 14:02:10 PST 2007
+//    Added commandFromSim.
+//
 // ****************************************************************************
 
 void
@@ -565,8 +578,10 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     // This is intended to only be used for simulations.
     metaData = new avtDatabaseMetaData;
     silAtts = new SILAttributes;
+    commandFromSim = new SimulationCommand;
     xfer->Add(metaData);
     xfer->Add(silAtts);
+    xfer->Add(commandFromSim);
 
     //
     // Hook up the viewer connections to Xfer
@@ -2125,9 +2140,12 @@ Engine::PopulateSimulationMetaData(const std::string &db,
     delete tmp;
 
     // Send the metadata and SIL to the viewer
-    metaData->Notify();
-    silAtts->SelectAll();
-    silAtts->Notify();
+    if(!quitRPC->GetQuit())
+    {
+        metaData->Notify();
+        silAtts->SelectAll();
+        silAtts->Notify();
+    }
 }
 
 // ****************************************************************************
@@ -2166,6 +2184,37 @@ Engine::SimulationTimeStepChanged()
 
     // Send new metadata to the viewer
     PopulateSimulationMetaData(filename, format);
+}
+
+// ****************************************************************************
+// Method: Engine::SimulationInitiateCommand
+//
+// Purpose: 
+//   Tells the viewer to initiate a command.
+//
+// Arguments:
+//   command : The command to execute.
+//
+// Note:       "UpdatePlots" is a special command that can be sent to make the
+//             viewer update its plots using new data. Alternatively, any
+//             command prefixed with "Interpret:" will be sent to the clients
+//             where the CLI will interpret the code if the CLI exists.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 25 15:07:29 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+Engine::SimulationInitiateCommand(const char *command)
+{
+    if(!quitRPC->GetQuit())
+    {
+        commandFromSim->SetCommand(command);
+        commandFromSim->Notify();
+    }
 }
 
 // ****************************************************************************

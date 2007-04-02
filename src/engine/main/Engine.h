@@ -56,6 +56,7 @@ class ReadRPC;
 class ReleaseDataRPC;
 class RenderRPC;
 class SetWinAnnotAttsRPC;
+class SimulationCommand;
 class StartPickRPC;
 class StartQueryRPC;
 class UpdatePlotAttsRPC;
@@ -154,6 +155,9 @@ class ProcessAttributes;
 //    Make ResetTimeout be a public function, since query over time and
 //    some of the line scan algorithms may take more than ten minutes.
 //
+//    Brad Whitlock, Thu Jan 25 15:26:45 PST 2007
+//    Added SimulationInitiateCommand.
+//
 // ****************************************************************************
 
 class Engine
@@ -172,6 +176,7 @@ class Engine
     void            PopulateSimulationMetaData(const std::string &db,
                                                const std::string &fmt);
     void            SimulationTimeStepChanged();
+    void            SimulationInitiateCommand(const char *);
     void            SetSimulationCommandCallback(void(*)(const char*,
                                                        int,float,const char*));
     void            ExecuteSimulationCommand(const std::string&,
@@ -293,6 +298,7 @@ class Engine
     std::string               format;
     avtDatabaseMetaData      *metaData;
     SILAttributes            *silAtts;
+    SimulationCommand        *commandFromSim;
     void                    (*simulationCommandCallback)(const char*,
                                                         int,float,const char*);
 

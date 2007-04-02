@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2006, The Regents of the University of California
+* Copyright (c) 2000 - 2007, The Regents of the University of California
 * Produced at the Lawrence Livermore National Laboratory
 * All rights reserved.
 *
@@ -1702,6 +1702,12 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender,
 //  Programmer:  Mark C. Miller 
 //  Creation:    May 12, 2005 
 //
+//  Modifications:
+//
+//    Hank Childs, Sun Feb 25 12:47:26 PST 2007
+//    Make logic in this method match that of the ViewerPlotList, where
+//    Label plots are counted as mesh plots.
+//
 // ****************************************************************************
 bool
 NetworkManager::HasNonMeshPlots(const intVector plotIds)
@@ -1711,7 +1717,8 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
     {
         workingNet = NULL;
         UseNetwork(plotIds[i]);
-        if (string(workingNet->GetPlot()->GetName()) != "MeshPlot")
+        if (string(workingNet->GetPlot()->GetName()) != "MeshPlot" &&
+            string(workingNet->GetPlot()->GetName()) != "LabelPlot")
         {
             hasNonMeshPlots = true;
             break;

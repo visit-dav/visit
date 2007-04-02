@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2006, The Regents of the University of California
+* Copyright (c) 2000 - 2007, The Regents of the University of California
 * Produced at the Lawrence Livermore National Laboratory
 * All rights reserved.
 *
@@ -44,6 +44,7 @@
 #include <float.h>
 
 #include <vtkCellData.h>
+#include <vtkMatrix4x4.h>
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
 #include <vtkRectilinearGrid.h>
@@ -254,7 +255,18 @@ avtReplicateFilter::RefashionDataObjectInfo(void)
 //  Programmer: Jeremy Meredith
 //  Creation:   August 29, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Feb 27 11:04:04 EST 2007
+//    Enhanced to support transformed rectilinear grids.  In these cases
+//    the x/y/z vectors need to be 
+//
 // ****************************************************************************
+static void TransformVector(const double m[16], double v[3])
+{
+    double tmpa[4] = {v[0], v[1], v[2],  0.0}, tmpb[4];
+    vtkMatrix4x4::MultiplyPoint(m, tmpa, tmpb);
+    v[0] = tmpb[0];    v[1] = tmpb[1];    v[2] = tmpb[2];
+}
 
 avtDataTree_p 
 avtReplicateFilter::ExecuteDataTree(vtkDataSet *in_ds, int dom, string str)
@@ -280,8 +292,8 @@ avtReplicateFilter::ExecuteDataTree(vtkDataSet *in_ds, int dom, string str)
     double yvec[3];
     double zvec[3];
 
-    const float *unitcell = GetInput()->GetInfo().GetAttributes().
-                                                         GetUnitCellVectors();
+    const avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
+    const float *unitcell = datts.GetUnitCellVectors();
 
     for (int i=0; i<3; i++)
     {
@@ -297,6 +309,16 @@ avtReplicateFilter::ExecuteDataTree(vtkDataSet *in_ds, int dom, string str)
             yvec[i] = atts.GetYVector()[i];
             zvec[i] = atts.GetZVector()[i];
         }
+    }
+
+    if (datts.GetRectilinearGridHasTransform())
+    {
+        double inv[16];
+        vtkMatrix4x4::Invert(datts.GetRectilinearGridTransform(), inv);
+
+        TransformVector(inv, xvec);
+        TransformVector(inv, yvec);
+        TransformVector(inv, zvec);
     }
 
     vtkDataSet **replications = new vtkDataSet*[nrep];
@@ -519,7 +541,7 @@ avtReplicateFilter::ReplicateRectilinear(vtkRectilinearGrid *ds, double offset[3
 //
 //  Purpose:
 //      Replicates a single data array across a line.  This is used as a
-//      convenience function for replicateing rectilinear grids.
+//      convenience function for replicating rectilinear grids.
 //
 //  Arguments:
 //      coords  The coordinates to replicate.
@@ -534,6 +556,8 @@ avtReplicateFilter::ReplicateRectilinear(vtkRectilinearGrid *ds, double offset[3
 //  Note: taken largely from avtReflectFilter.C
 //
 //  Modifications:
+//    Jeremy Meredith, Fri Feb 23 12:45:16 EST 2007
+//    Had to account for single vs double in coord arrays.
 //
 // ****************************************************************************
 
@@ -546,11 +570,24 @@ avtReplicateFilter::OffsetDataArray(vtkDataArray *coords, double val)
     vtkDataArray *newcoords = coords->NewInstance();
     int nc = coords->GetNumberOfTuples();
     newcoords->SetNumberOfTuples(nc);
-    double *c = coords->GetTuple(0);
-    double *n = newcoords->GetTuple(0);
-    for (int i = 0 ; i < nc ; i++)
+
+    if (coords->GetDataType() == VTK_FLOAT)
     {
-        n[i] = c[i] + val;
+        float *c = (float*)coords->GetVoidPointer(0);
+        float *n = (float*)newcoords->GetVoidPointer(0);
+        for (int i = 0 ; i < nc ; i++)
+        {
+            n[i] = c[i] + val;
+        }
+    }
+    else if (coords->GetDataType() == VTK_DOUBLE)
+    {
+        double *c = (double*)coords->GetVoidPointer(0);
+        double *n = (double*)newcoords->GetVoidPointer(0);
+        for (int i = 0 ; i < nc ; i++)
+        {
+            n[i] = c[i] + val;
+        }
     }
 
     return newcoords;
@@ -605,3 +642,25 @@ avtReplicateFilter::ReplicatePointSet(vtkPointSet *ds, double offset[3])
     return out;
 }
 
+// ****************************************************************************
+//  Method:  avtReplicateFilter::FilterUnderstandsTransformedRectMesh
+//
+//  Purpose:
+//    If this filter returns true, this means that it correctly deals
+//    with rectilinear grids having an implied transform set in the
+//    data attributes.  It can do this conditionally if desired.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 23, 2007
+//
+// ****************************************************************************
+
+bool
+avtReplicateFilter::FilterUnderstandsTransformedRectMesh()
+{
+    // This has been optimized to deal with these data sets
+    return true;
+}

@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2006, The Regents of the University of California
+* Copyright (c) 2000 - 2007, The Regents of the University of California
 * Produced at the Lawrence Livermore National Laboratory
 * All rights reserved.
 *
@@ -137,6 +137,10 @@ void GetDataMajorEigenvalueRange(vtkDataSet *, double *, const char *);
 //    Note that both the spatial extents array and the implied transform
 //    must be passed in as input now.
 //
+//    Jeremy Meredith, Tue Feb 27 10:51:17 EST 2007
+//    Fixed the code to find extents of transformed rect grids -- it was
+//    only working for special cases before.  I also made it clearer.
+//
 // ****************************************************************************
 
 void 
@@ -151,20 +155,17 @@ CGetSpatialExtents(avtDataRepresentation &data, void *info, bool &success)
         vtkDataSet *ds = data.GetDataVTK();
         if (xform && ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
         {
-            double bounds[6];
-            ds->GetBounds(bounds);
-            float min_pt_in[4] = {bounds[0],bounds[2],bounds[4],1};
-            float max_pt_in[4] = {bounds[1],bounds[3],bounds[5],1};
-            float corner[2][4];
-            vtkMatrix4x4::PointMultiply(xform, min_pt_in, corner[0]);
-            vtkMatrix4x4::PointMultiply(xform, max_pt_in, corner[1]);
+            double bnds[6];
+            ds->GetBounds(bnds);
             for (int i=0; i<=1; i++)
             {
                 for (int j=0; j<=1; j++)
                 {
                     for (int k=0; k<=1; k++)
                     {
-                        float pt[3] = {corner[i][0],corner[j][1],corner[k][2]};
+                        float pt_in[4]={bnds[0*2+i],bnds[1*2+j],bnds[2*2+k],1};
+                        float pt[4];
+                        vtkMatrix4x4::MultiplyPoint(xform, pt_in, pt);
                         for (int axis=0; axis<3; axis++)
                         {
                             if (fse[2*axis] > pt[axis])

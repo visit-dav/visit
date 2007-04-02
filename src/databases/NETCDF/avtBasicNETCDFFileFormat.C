@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2006, The Regents of the University of California
+* Copyright (c) 2000 - 2007, The Regents of the University of California
 * Produced at the Lawrence Livermore National Laboratory
 * All rights reserved.
 *
@@ -261,6 +261,9 @@ avtBasicNETCDFFileFormat::ActivateTimestep()
 //    Added test to make sure a variable had >0 dimensions before examining
 //    them.
 //
+//    Hank Childs, Fri Feb 23 09:20:38 PST 2007
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 void
@@ -436,6 +439,7 @@ avtBasicNETCDFFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         }
     }
 
+    delete [] dimSizes;
     meshNamesCreated = true;
 }
 

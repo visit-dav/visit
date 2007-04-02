@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2006, The Regents of the University of California
+* Copyright (c) 2000 - 2007, The Regents of the University of California
 * Produced at the Lawrence Livermore National Laboratory
 * All rights reserved.
 *
@@ -59,6 +59,7 @@
 #include <PickAttributes.h>
 #include <ProcessAttributes.h>
 #include <QueryAttributes.h>
+#include <SimulationCommand.h>
 #include <StatusAttributes.h>
 #include <ViewerFileServer.h>
 #include <ViewerOperator.h>
@@ -3437,6 +3438,29 @@ ViewerEngineManager::GetSimulationSILAtts(const EngineKey &ek)
         EXCEPTION0(NoEngineException);
 }
 
+// ****************************************************************************
+//  Method:  ViewerEngineManager::GetCommandFromSimulation
+//
+//  Purpose:
+//    Get the SimulationCommand for the simulation so we can watch to see if
+//    it sent any commands to VisIt.
+//
+//  Arguments:
+//    ek         the key that identifies the engine
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Thu Jan 25 14:13:03 PST 2007
+//
+// ****************************************************************************
+
+SimulationCommand *
+ViewerEngineManager::GetCommandFromSimulation(const EngineKey &ek)
+{
+    if (EngineExists(ek))
+        return engines[ek].proxy->GetCommandFromSimulation();
+    else
+        EXCEPTION0(NoEngineException);
+}
 
 // ****************************************************************************
 //  Method:  ViewerEngineManager::UpdateExpressionsFromPlot

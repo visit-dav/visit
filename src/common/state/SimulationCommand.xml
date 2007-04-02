@@ -1,12 +1,5 @@
 <?xml version="1.0"?>
   <Attribute name="SimulationCommand" purpose="Commands to control simulations" persistent="false" exportAPI="STATE_API" exportInclude="state_exports.h">
-    <Enum name="Command">
-      NoCommand
-      Pause
-      Step
-      Run
-    </Enum>
-    <Field name="commandType" label="Command Type" type="enum" subtype="Command">
-      NoCommand
+    <Field name="command" label="Command" type="string">
     </Field>
   </Attribute>

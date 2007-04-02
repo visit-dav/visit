@@ -65,6 +65,7 @@ class QTimer;
 class SILAttributes;
 class ViewerActionBase;
 class ViewerClientConnection;
+class ViewerCommandFromSimObserver;
 class ViewerConfigManager;
 class ViewerMessageBuffer;
 class ViewerMetaDataObserver;
@@ -416,6 +417,9 @@ struct avtDefaultPlotMetaData;
 //    Added return value for OpenDatabase so that we can do a better job
 //    when opening a bad file.
 //
+//    Brad Whitlock, Thu Jan 25 14:21:23 PST 2007
+//    Added engineCommandObserver and the HandleCommandFromSimulation method.
+//
 //    Brad Whitlock, Tue Feb 13 14:00:29 PST 2007
 //    I made it use ViewerState for all of its state objects.
 //
@@ -606,6 +610,8 @@ private slots:
                                const avtDatabaseMetaData *md);
     void HandleSILAttsUpdated(const std::string &host, const std::string &db,
                               const SILAttributes *md);
+    void HandleCommandFromSimulation(const EngineKey &key, const std::string &db,
+                                     const std::string &command);
     void HandleColorTable();
     void ProcessRendererMessage();
     void ReadFromParentAndProcess(int);
@@ -684,6 +690,7 @@ private:
     std::map<EngineKey,QSocketNotifier*>        engineKeyToNotifier;
     std::map<EngineKey,ViewerMetaDataObserver*> engineMetaDataObserver;
     std::map<EngineKey,ViewerSILAttsObserver*>  engineSILAttsObserver;
+    std::map<EngineKey,ViewerCommandFromSimObserver*>  engineCommandObserver;
 
     // note: we may only want to use the engineParallelArguments for
     // the first launch of an engine

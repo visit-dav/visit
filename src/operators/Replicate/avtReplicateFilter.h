@@ -63,6 +63,10 @@ class vtkRectilinearGrid;
 //  Programmer: Jeremy Meredith
 //  Creation:   August 29, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Feb 23 12:27:29 EST 2007
+//    Added support for transformed rectilinear grids.  Also fixed a typo.
+//
 // ****************************************************************************
 
 class avtReplicateFilter : public virtual avtDataTreeStreamer,
@@ -76,7 +80,7 @@ class avtReplicateFilter : public virtual avtDataTreeStreamer,
 
     virtual const char  *GetType(void)  { return "avtReplicateFilter"; };
     virtual const char  *GetDescription(void)
-                             { return "Replicateing the data"; };
+                             { return "Replicating the data"; };
 
     virtual void         SetAtts(const AttributeGroup*);
     virtual bool         Equivalent(const AttributeGroup*);
@@ -94,6 +98,8 @@ class avtReplicateFilter : public virtual avtDataTreeStreamer,
     vtkDataSet           *ReplicateRectilinear(vtkRectilinearGrid *, double[3]);
     vtkDataSet           *ReplicatePointSet(vtkPointSet *, double[3]);
     vtkDataArray         *OffsetDataArray(vtkDataArray *, double);
+
+    virtual bool          FilterUnderstandsTransformedRectMesh();
 };
 
 

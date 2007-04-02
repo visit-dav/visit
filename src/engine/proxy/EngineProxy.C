@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2006, The Regents of the University of California
+* Copyright (c) 2000 - 2007, The Regents of the University of California
 * Produced at the Lawrence Livermore National Laboratory
 * All rights reserved.
 *
@@ -84,6 +84,9 @@
 //     Jeremy Meredith, Tue Aug 24 22:12:21 PDT 2004
 //     Added metadata and sil atts for simulations.
 //
+//     Brad Whitlock, Thu Jan 25 13:53:15 PST 2007
+//     Added commandFromSim.
+//
 // ****************************************************************************
 
 EngineProxy::EngineProxy() : RemoteProxyBase("-engine")
@@ -101,6 +104,7 @@ EngineProxy::EngineProxy() : RemoteProxyBase("-engine")
     statusAtts = new StatusAttributes;
     metaData = new avtDatabaseMetaData;
     silAtts = new SILAttributes;
+    commandFromSim = new SimulationCommand;
 }
 
 // ****************************************************************************
@@ -134,6 +138,9 @@ EngineProxy::EngineProxy() : RemoteProxyBase("-engine")
 //    Kathleen Bonnell, Tue Jan 11 16:06:33 PST 2005 
 //    Delete metaData and silAtts.
 //
+//    Brad Whitlock, Thu Jan 25 13:53:36 PST 2007
+//    Delete commandFromSim.
+//
 // ****************************************************************************
 
 EngineProxy::~EngineProxy()
@@ -141,6 +148,7 @@ EngineProxy::~EngineProxy()
     delete statusAtts;
     delete metaData;
     delete silAtts;
+    delete commandFromSim;
 }
 
 // ****************************************************************************
@@ -189,6 +197,9 @@ EngineProxy::~EngineProxy()
 //    Hank Childs, Mon Feb 13 22:21:42 PST 2006
 //    Add constructDDFRPC.
 //
+//    Brad Whitlock, Thu Jan 25 13:54:02 PST 2007
+//    Added commandFromSim.
+//
 // ****************************************************************************
 void
 EngineProxy::SetupComponentRPCs()
@@ -224,6 +235,7 @@ EngineProxy::SetupComponentRPCs()
     xfer.Add(&exprList);
     xfer.Add(metaData);
     xfer.Add(silAtts);
+    xfer.Add(commandFromSim);
 
     // Extract some information about the engine from the command line
     // arguments that were used to create it.
@@ -1485,6 +1497,26 @@ EngineProxy::GetSimulationSILAtts()
     return silAtts;
 }
 
+// ****************************************************************************
+//  Method:  EngineProxy::GetCommandFromSimulation
+//
+//  Purpose:
+//    Return a command object that simulations can use to send the viewer 
+//    commands.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Thu Jan 25 13:55:06 PST 2007
+//
+// ****************************************************************************
+
+SimulationCommand *
+EngineProxy::GetCommandFromSimulation()
+{
+    return commandFromSim;
+}
 
 // ****************************************************************************
 //  Method:  EngineProxy::UpdateExpressions
