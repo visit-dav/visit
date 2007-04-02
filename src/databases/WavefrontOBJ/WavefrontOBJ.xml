@@ -1,4 +1,12 @@
 <?xml version="1.0"?>
   <Plugin name="WavefrontOBJ" label="WavefrontOBJ" type="database" dbtype="STSD" version="1.0">
     <Extensions> obj </Extensions>
+    <Files components="M">
+        avtWavefrontOBJFileFormat.C
+        vtkOBJReader.C
+    </Files>
+    <Files components="E">
+        avtWavefrontOBJFileFormat.C
+        vtkOBJReader.C
+    </Files>
   </Plugin>

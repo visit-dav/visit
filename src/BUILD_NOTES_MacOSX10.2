@@ -34,7 +34,7 @@ shell prompt.
     cmake    2.0.3    Cross-Platform Build   http://www.cmake.org
     VTK      20031028 Visualization Toolkit  http://www.kitware.com
     Python   2.3.5    Scripting Language     http://www.python.org
-    Silo     4.4.3    File I/O library       ftp://ftp.llnl.gov/pub/visit
+    Silo     4.5      File I/O library       ftp://ftp.llnl.gov/pub/visit
     HDF5     1.6.3    I/O library            http://hdf.ncsa.uiuc.edu/HDF5/
     
     Optional Version  Description            For More information
@@ -629,8 +629,8 @@ offsets will not be affected since the HDF5 version of the Silo library
 should be larger.
 
 # Build silo source into an archive library
-sh silo050506.sh
-cd silo050506
+sh silo051121.sh
+cd silo051121
 # Set the values of some helper variables
 export HDF5INCLUDE=$VISITPATH/hdf5/include
 export HDF5LIB=$VISITPATH/hdf5/lib
@@ -744,8 +744,8 @@ More information about building VisIt follows after that.
 # Configure VisIt
 #
 
-tar -zxf visit050307.tar.gz
-cd visit050307/config-site
+tar -zxf visit051121.tar.gz
+cd visit051121/config-site
 echo VISITHOME=$VISITPATH > `hostname`.conf
 cat Template.conf >> `hostname`.conf
 # Edit `hostname`.conf so that:
@@ -808,7 +808,7 @@ export DYLD_LIBRARY_PATH=`pwd`/lib:$DYLD_LIBRARY_PATH
 # Build VisIt
 make
 clearcase_bin/visit-bin-dist
-clearcase_bin/visit-install 1.4.5 darwin $VISITPATH
+clearcase_bin/visit-install 1.5 darwin $VISITPATH
 
 
 If you have any problems send e-mail to visit-help@llnl.gov.

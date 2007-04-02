@@ -1,4 +1,12 @@
 <?xml version="1.0"?>
   <Plugin name="STL" label="STL" type="database" dbtype="STSD" version="1.0">
     <Extensions> stl </Extensions>
+    <Files components="M">
+        avtSTLFileFormat.C
+        vtkSTLReader.C
+    </Files>
+    <Files components="E">
+        avtSTLFileFormat.C
+        vtkSTLReader.C
+    </Files>
   </Plugin>

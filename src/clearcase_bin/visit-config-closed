@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Object name="VisIt">
-    <Field name="Version" type="string">1.4.4</Field>
+    <Field name="Version" type="string">1.5</Field>
     <Object name="VIEWER">
         <Object name="GlobalAttributes">
             <Field name="cloneWindowOnFirstRef" type="bool">true</Field>
@@ -152,6 +152,28 @@
                 <Field name="active" type="bool">false</Field>
                 <Field name="parallel" type="bool">true</Field>
                 <Field name="arguments" type="stringVector">-dir /projects/llnl/visit </Field>
+            </Object>
+            <Object name="HostProfile">
+                <Field name="profileName" type="string">serial</Field>
+                <Field name="host" type="string">ace.llnl.gov</Field>
+                <Field name="hostAliases" type="string">ace#.llnl.gov ace##.llnl.gov</Field>
+                <Field name="timeout" type="int">480</Field>
+                <Field name="numProcessors" type="int">1</Field>
+                <Field name="numNodesSet" type="bool">false</Field>
+                <Field name="numNodes" type="int">0</Field>
+                <Field name="partitionSet" type="bool">false</Field>
+                <Field name="partition" type="string"></Field>
+                <Field name="bankSet" type="bool">false</Field>
+                <Field name="bank" type="string"></Field>
+                <Field name="timeLimitSet" type="bool">false</Field>
+                <Field name="timeLimit" type="string"></Field>
+                <Field name="launchMethodSet" type="bool">false</Field>
+                <Field name="launchMethod" type="string"></Field>
+                <Field name="forceStatic" type="bool">true</Field>
+                <Field name="forceDynamic" type="bool">false</Field>
+                <Field name="active" type="bool">true</Field>
+                <Field name="arguments" type="stringVector">-dir /usr/gapps/visit </Field>
+                <Field name="parallel" type="bool">false</Field>
             </Object>
             <Object name="HostProfile">
                 <Field name="profileName" type="string">serial</Field>
@@ -419,7 +441,7 @@
             </Object>
             <Object name="HostProfile">
                 <Field name="profileName" type="string">serial</Field>
-                <Field name="host" type="string">sc1.llnl.gov sc2.llnl.gov sc39.llnl.gov sc40.llnl.gov</Field>
+                <Field name="host" type="string">sc1.llnl.gov sc2.llnl.gov</Field>
                 <Field name="hostAliases" type="string">sc#.llnl.gov sc##.llnl.gov</Field>
                 <Field name="timeout" type="int">480</Field>
                 <Field name="numProcessors" type="int">1</Field>
@@ -441,7 +463,7 @@
             </Object>
             <Object name="HostProfile">
                 <Field name="profileName" type="string">parallel</Field>
-                <Field name="host" type="string">sc1.llnl.gov sc2.llnl.gov sc39.llnl.gov sc40.llnl.gov</Field>
+                <Field name="host" type="string">sc1.llnl.gov sc2.llnl.gov</Field>
                 <Field name="hostAliases" type="string">sc#.llnl.gov sc##.llnl.gov</Field>
                 <Field name="timeout" type="int">480</Field>
                 <Field name="numProcessors" type="int">2</Field>

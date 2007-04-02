@@ -63,6 +63,9 @@ avtLocateQuery::~avtLocateQuery()
 //  Creation:   September 3, 2004
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Nov 17 13:39:42 PST 2005
+//    Don't test Input's topodim, may be unreliable.  Use value stored in
+//    pickatts instead, it came directly from the plot, not the pipeline.
 //
 // ****************************************************************************
 
@@ -70,7 +73,7 @@ void
 avtLocateQuery::VerifyInput()
 {
     avtDataObjectQuery::VerifyInput();
-    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
+    if (pickAtts.GetInputTopoDim() == 0)
     {
         EXCEPTION1(NonQueryableInputException,
             "Requires plot with topological dimension > 0.");

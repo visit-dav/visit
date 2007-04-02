@@ -2790,6 +2790,13 @@ NetworkManager::StopQueryMode(void)
 //    Ensure that Pick's input has the same DataAttributes as the plot
 //    being picked.
 //
+//    Kathleen Bonnell, Thu Nov 17 13:39:42 PST 2005
+//    Back-out yesterdays changes, did not work well.  
+//    Remove skipLocate test of pipeline-DataSpec-NeedBoundarySurfaces, and
+//    dataatts-topodim and dataatts-spat dim.  Those values unreliable
+//    depending on which plots follow the picked-plot in the pipeline. Instead
+//    retrieve the 'linesData' flag from PickAtts to determine skipLocate. 
+//
 // ****************************************************************************
 
 void
@@ -2827,12 +2834,7 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
     }
 
     avtSILRestriction_p silr = networkCache[id]->GetDataSpec()->GetRestriction();
-
-    //
-    // Create a copy that we can use to set Pick's Input DataAtts.
-    //
-    avtDataAttributes queryInputAtts;
-    queryInputAtts.Copy(queryInput->GetInfo().GetAttributes());
+    avtDataAttributes &queryInputAtts = queryInput->GetInfo().GetAttributes();
 
     pa->SetMatSelected(queryInputAtts.MIROccurred() || pa->GetMatSelected());
     if (pa->GetRequiresGlyphPick())
@@ -2897,28 +2899,7 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
     }
 
     avtDataValidity   &queryInputVal  = queryInput->GetInfo().GetValidity();
-    bool haveBoundarySurfaces = false;
-/* OLD IMPLEMENTATION
-    haveBoundarySurfaces = 
-                       networkCache[id]->GetDataSpec()->NeedBoundarySurfaces();
- */
-
-/* NEW IMPLEMENTATION.  STILL HAS LOTS OF PROBLEMS.  NOTE ACCOMPANYING 
-   WORK-AROUND IN avtSourceFromDatabase::GetFullDataSpecification() SHOULD ALSO
-   BE IMPROVED WHEN THIS IS CLEANED UP.
-   
-   I BELIEVE AN APPROACH MORE CONSISTENT WITH HOW WE PASS INFORMATION WOULD
-   BE TO PUT THIS INFORMATION IN THE DATA ATTRIBUTES AND QUERY THAT.  BUT THAT
-   WON'T WORK RELIABLY UNTIL '5723 IS RESOLVED.
- */
-    avtDataSpecification_p spec = 
-                 queryInput->GetTerminatingSource()->GetFullDataSpecification();
-    haveBoundarySurfaces = spec->NeedBoundarySurfaces();
-/* END NEW IMPLEMENTATION */
-   
-    bool skipLocate = (haveBoundarySurfaces || 
-                      queryInputAtts.GetTopologicalDimension() == 1) &&
-                      (queryInputAtts.GetSpatialDimension() == 2);
+    bool skipLocate = pa->GetLinesData();
 
     avtLocateQuery *lQ = NULL;
     avtPickQuery *pQ = NULL;
@@ -3001,12 +2982,6 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
                     pQ->SetSILRestriction(silr->MakeAttributes());
                 }
                 pQ->SetNeedTransform(queryInputVal.GetPointsWereTransformed());
-                //
-                // DataAttributes from the DB Node may not match the 
-                // plot we are currently picking, so copy the correct atts.
-                //
-                networkCache[id]->GetNodeList()[0]->GetOutput()->GetInfo().
-                   GetAttributes().Copy(queryInputAtts);
                 pQ->SetInput(networkCache[id]->GetNodeList()[0]->GetOutput());
 
                 pQ->SetPickAtts(pa);
