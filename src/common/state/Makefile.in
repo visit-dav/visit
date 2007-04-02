@@ -237,6 +237,9 @@
 #    Hank Childs, Tue Feb  1 08:49:27 PST 2005
 #    Added SurfaceFilterAttributes.
 #
+#    Hank Childs, Mon May 23 11:50:39 PDT 2005
+#    Added DBOptionsAttributes, DBPluginInfoAttributes.
+#
 ##############################################################################
 
 ##
@@ -273,7 +276,10 @@ SRC=    AnimationAttributes.C \
         DatabaseCorrelation.C \
         DatabaseCorrelationList.C \
         DataNode.C \
+        DBOptionsAttributes.C \
+        DBPluginInfoAttributes.C \
         EngineList.C \
+        ExportDBAttributes.C \
         Expression.C \
         ExpressionList.C \
         GaussianControlPoint.C \

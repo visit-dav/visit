@@ -17,6 +17,7 @@
 #include <CancelledConnectException.h>
 #include <CouldNotConnectException.h>
 #include <AnnotationAttributes.h>
+#include <ExportDBAttributes.h>
 #include <PickAttributes.h>
 #include <ProcessAttributes.h>
 #include <QueryAttributes.h>
@@ -254,6 +255,7 @@ EngineList *ViewerEngineManager::clientEngineAtts=0;
 
 MaterialAttributes *ViewerEngineManager::materialClientAtts=0;
 MaterialAttributes *ViewerEngineManager::materialDefaultAtts=0;
+ExportDBAttributes *ViewerEngineManager::exportDBAtts=0;
 
 //
 // Function prototypes.
@@ -2925,6 +2927,73 @@ ViewerEngineManager::SetDefaultMaterialAttsFromClient()
     {
         *materialDefaultAtts = *materialClientAtts;
     }
+}
+
+
+// ****************************************************************************
+//  Method: ViewerEngineManager::GetExportDBAtts
+//
+//  Purpose:
+//      Gets the export database atts.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 25, 2005
+//
+// ****************************************************************************
+
+ExportDBAttributes *
+ViewerEngineManager::GetExportDBAtts(void)
+{
+    if (exportDBAtts == 0)
+    {
+        exportDBAtts = new ExportDBAttributes();
+    }
+
+    return exportDBAtts;
+}
+
+
+// ****************************************************************************
+//  Method: ViewerEngineManager::SetExportDBAtts
+//
+//  Purpose:
+//      Sets the export database atts.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 25, 2005
+//
+// ****************************************************************************
+
+void
+ViewerEngineManager::SetExportDBAtts(ExportDBAttributes *e)
+{
+    if (exportDBAtts == 0)
+    {
+        exportDBAtts = new ExportDBAttributes();
+    }
+
+    *exportDBAtts = *e;
+    exportDBAtts->Notify();
+}
+
+
+// ****************************************************************************
+//  Method: ViewerEngineManager::ExportDatabase
+//
+//  Purpose:
+//      Exports a database.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 25, 2005
+//
+// ****************************************************************************
+
+bool
+ViewerEngineManager::ExportDatabase(const EngineKey &ek, int id)
+{
+    ENGINE_PROXY_RPC_BEGIN("ExportDatabase");
+    engine->ExportDatabase(id, exportDBAtts);
+    ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }
 
 

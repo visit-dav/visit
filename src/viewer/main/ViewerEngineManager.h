@@ -27,6 +27,7 @@ class ViewerPlot;
 class AnnotationAttributes;
 class AnnotationObjectList;
 class WindowAttributes;
+class ExportDBAttributes;
 class avtDatabaseMetaData;
 
 // ****************************************************************************
@@ -216,6 +217,9 @@ class avtDatabaseMetaData;
 //    Jeremy Meredith, Mon May  9 14:39:44 PDT 2005
 //    Added security key to simulation connection.
 //
+//    Hank Childs, Wed May 25 15:24:49 PDT 2005
+//    Added ExportDBAtts.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -279,6 +283,9 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     static void SetClientMaterialAttsFromDefault();
     static void SetDefaultMaterialAttsFromClient();
 
+    static ExportDBAttributes *GetExportDBAtts();
+    static void SetExportDBAtts(ExportDBAttributes *);
+
     //
     // Engine RPCs
     //
@@ -315,6 +322,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     bool ReleaseData(const EngineKey &ek, int id);
     bool CloneNetwork(const EngineKey &ek, int id, 
                       const QueryOverTimeAttributes *qatts);
+    bool ExportDatabase(const EngineKey &ek, int id);
 
     void CreateNode(DataNode *) const;
     void UpdateExpressionsFromPlot(const ViewerPlot *);
@@ -345,6 +353,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     // Global engine computation attributes
     static MaterialAttributes *materialClientAtts;
     static MaterialAttributes *materialDefaultAtts;
+    static ExportDBAttributes *exportDBAtts;
 };
 
 #endif

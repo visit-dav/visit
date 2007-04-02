@@ -141,12 +141,16 @@ avtDatabaseWriter::Write(const std::string &filename,
 //    Jeremy Meredith, Wed Feb 16 15:01:40 PST 2005
 //    Added ability to disable MIR and Expressions.
 //
+//    Hank Childs, Thu May 26 15:45:48 PDT 2005
+//    Do not write auto-expressions.  Also allow for re-execution to be turned
+//    off.
+//
 // ****************************************************************************
 
 void
 avtDatabaseWriter::Write(const std::string &filename,
                          const avtDatabaseMetaData *md,
-                         std::vector<std::string> &varlist)
+                         std::vector<std::string> &varlist, bool allVars)
 {
     int  i, j;
 
@@ -154,116 +158,138 @@ avtDatabaseWriter::Write(const std::string &filename,
     if (*dob == NULL)
         EXCEPTION0(NoInputException);
 
-    //
-    // We will need a pipeline specification to force an update. Get that here.
-    //
-    avtTerminatingSource *src = dob->GetTerminatingSource();
-    avtPipelineSpecification_p spec = src->GetGeneralPipelineSpecification();
-    avtDataSpecification_p ds = spec->GetDataSpecification();
-    const avtMeshMetaData *mmd = md->GetMesh(0);
-
-    //
-    // We want to process all of the variables in the dataset, so dummy up the
-    // data specification to include every variable in the dataset that
-    // pertains to mesh 0.
-    //
     std::vector<std::string> scalarList;
     std::vector<std::string> vectorList;
-    if (varlist.size() > 0)
+    std::vector<std::string> materialList;
+
+    if (allVars || varlist.size() > 0)
     {
-        for (j = 0 ; j < varlist.size() ; j++)
+        //
+        // We will need a pipeline specification to force an update. Get that 
+        //here.
+        //
+        avtTerminatingSource *src = dob->GetTerminatingSource();
+        avtPipelineSpecification_p spec = 
+                                        src->GetGeneralPipelineSpecification();
+        avtDataSpecification_p ds = spec->GetDataSpecification();
+        const avtMeshMetaData *mmd = md->GetMesh(0);
+    
+        //
+        // We want to process all of the variables in the dataset, so dummy up
+        // the data specification to include every variable in the dataset that
+        // pertains to mesh 0.
+        //
+        if (varlist.size() > 0)
+        {
+            for (j = 0 ; j < varlist.size() ; j++)
+            {
+                for (i = 0 ; i < md->GetNumScalars() ; i++)
+                {
+                    const avtScalarMetaData *smd = md->GetScalar(i);
+                    if (smd->name == varlist[j])
+                       scalarList.push_back(smd->name);
+                }
+                for (i = 0 ; i < md->GetNumVectors() ; i++)
+                {
+                    const avtVectorMetaData *vmd = md->GetVector(i);
+                    if (vmd->name == varlist[j])
+                       scalarList.push_back(vmd->name);
+                }
+                ds->AddSecondaryVariable(varlist[j].c_str());
+            }
+        }
+        else
         {
             for (i = 0 ; i < md->GetNumScalars() ; i++)
             {
                 const avtScalarMetaData *smd = md->GetScalar(i);
-                if (smd->name == varlist[j])
-                   scalarList.push_back(smd->name);
+                if (md->MeshForVar(smd->name) == mmd->name)
+                {
+                    ds->AddSecondaryVariable(smd->name.c_str());
+                    scalarList.push_back(smd->name);
+                }
             }
             for (i = 0 ; i < md->GetNumVectors() ; i++)
             {
                 const avtVectorMetaData *vmd = md->GetVector(i);
-                if (vmd->name == varlist[j])
-                   scalarList.push_back(vmd->name);
+                if (md->MeshForVar(vmd->name) == mmd->name)
+                {
+                    ds->AddSecondaryVariable(vmd->name.c_str());
+                    vectorList.push_back(vmd->name);
+                }
             }
-            ds->AddSecondaryVariable(varlist[j].c_str());
+    
+            //
+            // We only want the expressions that correspond to the mesh we are
+            // operating on.  If there is more than one mesh, then we don't 
+            // really know, so don't add expressions.
+            //
+            if (md->GetNumMeshes() == 1 && !shouldNeverDoExpressions)
+            {
+                for (i = 0 ; i < md->GetNumberOfExpressions() ; i++)
+                {
+                    const Expression *expr = md->GetExpression(i);
+                    if (expr->GetAutoExpression())
+                        continue;
+                    Expression::ExprType type = expr->GetType();
+                    bool shouldAdd = false;
+                    if (type == Expression::ScalarMeshVar)
+                    {
+                        shouldAdd = true;
+                        scalarList.push_back(expr->GetName());
+                    }
+                    else if (type == Expression::VectorMeshVar)
+                    {
+                        shouldAdd = true;
+                        vectorList.push_back(expr->GetName());
+                    }
+                    if (shouldAdd)
+                        ds->AddSecondaryVariable(expr->GetName().c_str());
+                }
+            }
         }
+
+        for (i = 0 ; i < md->GetNumMaterials() ; i++)
+        {
+            const avtMaterialMetaData *mat_md = md->GetMaterial(i);
+            if (md->MeshForVar(mat_md->name) == mmd->name)
+            {
+                hasMaterialsInProblem = true;
+                mustGetMaterialsAdditionally = true;
+                if (!shouldNeverDoMIR &&
+                    (shouldAlwaysDoMIR || !CanHandleMaterials()))
+                {
+                    ds->ForceMaterialInterfaceReconstructionOn();
+                    mustGetMaterialsAdditionally = false;
+                }
+                else
+                {
+                    mustGetMaterialsAdditionally = true;
+                }
+                materialList.push_back(mat_md->name);
+            }
+        }
+    
+    
+        //
+        // Actually force the read of the data.
+        //
+        dob->Update(spec);
     }
     else
     {
-        for (i = 0 ; i < md->GetNumScalars() ; i++)
+        avtDataAttributes &atts = dob->GetInfo().GetAttributes();
+        int nVars = atts.GetNumberOfVariables();
+        for (int i = 0 ; i < nVars ; i++)
         {
-            const avtScalarMetaData *smd = md->GetScalar(i);
-            if (md->MeshForVar(smd->name) == mmd->name)
-            {
-                ds->AddSecondaryVariable(smd->name.c_str());
-                scalarList.push_back(smd->name);
-            }
-        }
-        for (i = 0 ; i < md->GetNumVectors() ; i++)
-        {
-            const avtVectorMetaData *vmd = md->GetVector(i);
-            if (md->MeshForVar(vmd->name) == mmd->name)
-            {
-                ds->AddSecondaryVariable(vmd->name.c_str());
-                vectorList.push_back(vmd->name);
-            }
-        }
-
-        //
-        // We only want the expressions that correspond to the mesh we are
-        // operating on.  If there is more than one mesh, then we don't 
-        // really know, so don't add expressions.
-        //
-        if (md->GetNumMeshes() == 1 && !shouldNeverDoExpressions)
-        {
-            for (i = 0 ; i < md->GetNumberOfExpressions() ; i++)
-            {
-                const Expression *expr = md->GetExpression(i);
-                Expression::ExprType type = expr->GetType();
-                bool shouldAdd = false;
-                if (type == Expression::ScalarMeshVar)
-                {
-                    shouldAdd = true;
-                    scalarList.push_back(expr->GetName());
-                }
-                else if (type == Expression::VectorMeshVar)
-                {
-                    shouldAdd = true;
-                    vectorList.push_back(expr->GetName());
-                }
-                if (shouldAdd)
-                    ds->AddSecondaryVariable(expr->GetName().c_str());
-            }
+            const std::string &name = atts.GetVariableName(i);
+            int dim = atts.GetVariableDimension(name.c_str());
+            if (dim == 1)
+                scalarList.push_back(name);
+            else if (dim == 3)
+                vectorList.push_back(name);
         }
     }
-
-    std::vector<std::string> materialList;
-    for (i = 0 ; i < md->GetNumMaterials() ; i++)
-    {
-        const avtMaterialMetaData *mat_md = md->GetMaterial(i);
-        if (md->MeshForVar(mat_md->name) == mmd->name)
-        {
-            hasMaterialsInProblem = true;
-            mustGetMaterialsAdditionally = true;
-            if (!shouldNeverDoMIR &&
-                (shouldAlwaysDoMIR || !CanHandleMaterials()))
-            {
-                ds->ForceMaterialInterfaceReconstructionOn();
-                mustGetMaterialsAdditionally = false;
-            }
-            else
-            {
-                mustGetMaterialsAdditionally = true;
-            }
-            materialList.push_back(mat_md->name);
-        }
-    }
-
-
-    //
-    // Actually force the read of the data.
-    //
-    dob->Update(spec);
 
     //
     // Call virtual function that the derived type re-defines to do the

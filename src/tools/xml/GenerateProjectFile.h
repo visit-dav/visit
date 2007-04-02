@@ -41,6 +41,9 @@
 //    some minor errors that caused confusing build failures when building
 //    in Debug mode with MSVC6.0.
 //
+//    Hank Childs, Tue May 24 09:41:53 PDT 2005
+//    Added hasoptions.
+//
 // ****************************************************************************
 
 class ProjectFileGeneratorPlugin
@@ -53,6 +56,7 @@ class ProjectFileGeneratorPlugin
     QString vartype;
     QString dbtype;
     bool    haswriter;
+    bool    hasoptions;
     bool    enabledByDefault;
     bool    has_MDS_specific_code;
     bool    onlyEnginePlugin;
@@ -83,8 +87,13 @@ class ProjectFileGeneratorPlugin
 
     Attribute *atts;
   public:
-    ProjectFileGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString&w, bool hw, bool onlyengine, bool noengine)
-        : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), haswriter(hw), onlyEnginePlugin(onlyengine), noEnginePlugin(noengine), atts(NULL)
+    ProjectFileGeneratorPlugin(const QString &n,const QString &l,
+             const QString &t,const QString &vt,const QString &dt,
+             const QString &v, const QString&w, bool hw, bool ho, 
+             bool onlyengine, bool noengine)
+        : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt),
+          haswriter(hw), hasoptions(ho), onlyEnginePlugin(onlyengine), 
+          noEnginePlugin(noengine), atts(NULL)
     {
         enabledByDefault = true;
         customgfiles = false;
@@ -1566,6 +1575,10 @@ protected:
         {
             srcFiles.push_back(QString("avt") + name + QString("Writer.C"));
         }
+        if (hasoptions)
+        {
+            srcFiles.push_back(QString("avt") + name + QString("Options.C"));
+        }
         if (custommfiles)
         {
             for (int i=0; i<mfiles.size(); i++)
@@ -1595,6 +1608,10 @@ protected:
         if (haswriter)
         {
             srcFiles.push_back(QString("avt") + name + QString("Writer.C"));
+        }
+        if (hasoptions)
+        {
+            srcFiles.push_back(QString("avt") + name + QString("Options.C"));
         }
         if (custommfiles)
         {

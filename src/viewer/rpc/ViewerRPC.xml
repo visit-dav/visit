@@ -150,6 +150,8 @@
       ResetInteractorAttributesRPC
       GetProcInfoRPC
       SendSimulationCommandRPC
+      UpdateDBPluginInfoRPC
+      ExportDBRPC
       MaxRPC
     </Enum>
     <Field name="RPCType" label="RPCType" type="enum" subtype="ViewerRPCType">

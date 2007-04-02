@@ -9,6 +9,7 @@
 
 #include <string>
 
+class DBOptionsAttributes;
 
 // ****************************************************************************
 //  Class: avtVTKWriter
@@ -25,11 +26,12 @@ class
 avtVTKWriter : public avtDatabaseWriter
 {
   public:
-                   avtVTKWriter() {;};
+                   avtVTKWriter(DBOptionsAttributes *);
     virtual       ~avtVTKWriter() {;};
 
   protected:
     std::string    stem;
+    bool           doBinary;
 
     virtual void   OpenFile(const std::string &);
     virtual void   WriteHeaders(const avtDatabaseMetaData *,

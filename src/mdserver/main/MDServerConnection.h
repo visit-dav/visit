@@ -17,6 +17,8 @@ class ConnectRPC;
 class ConnectRPCExecutor;
 class ExpandPathRPC;
 class ExpandPathRPCExecutor;
+class GetDBPluginInfoRPC;
+class GetDBPluginInfoRPCExecutor;
 class GetDirectoryRPC;
 class GetDirectoryRPCExecutor;
 class GetFileListRPCExecutor;
@@ -34,6 +36,7 @@ class CreateGroupListRPC;
 class CreateGroupListRPCExecutor;
 class Observer;
 class ParentProcess;
+class DBPluginInfoAttributes;
 class SILAttributes;
 class QuitRPC;
 class QuitRPCExecutor;
@@ -115,6 +118,10 @@ class Xfer;
 //
 //    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //    Added bool arg to force reading all cycles/times to ReadMetaData  
+//
+//    Hank Childs, Mon May 23 14:04:43 PDT 2005
+//    Added GetDBPluginInfo.
+//
 // ****************************************************************************
 
 class MDServerConnection
@@ -165,6 +172,8 @@ public:
     void ReadSIL(std::string file, int timeState);
     SILAttributes *GetCurrentSIL() const;
 
+    DBPluginInfoAttributes *GetDBPluginInfo();
+
     void CloseDatabase(const std::string &db);
     void LoadPlugins();
 
@@ -212,6 +221,7 @@ private:
     CloseDatabaseRPC           *closeDatabaseRPC;
     LoadPluginsRPC             *loadPluginsRPC;
     GetPluginErrorsRPC         *getPluginErrorsRPC;
+    GetDBPluginInfoRPC         *getDBPluginInfoRPC;
 
     // RPC Executors.
     QuitRPCExecutor            *quitExecutor;
@@ -227,6 +237,7 @@ private:
     CloseDatabaseRPCExecutor   *closeDatabaseExecutor;
     LoadPluginsRPCExecutor     *loadPluginsExecutor;
     GetPluginErrorsRPCExecutor *getPluginErrorsRPCExecutor;
+    GetDBPluginInfoRPCExecutor *getDBPluginInfoRPCExecutor;
 
     // State information for the program using this MDServer.
     avtDatabaseMetaData        *currentMetaData;

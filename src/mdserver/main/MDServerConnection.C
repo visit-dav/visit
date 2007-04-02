@@ -30,10 +30,15 @@
 #include <ConnectRPC.h>
 #include <ConnectRPCExecutor.h>
 #include <DatabaseException.h>
+#include <DatabasePluginInfo.h>
 #include <DatabasePluginManager.h>
+#include <DBOptionsAttributes.h>
+#include <DBPluginInfoAttributes.h>
 #include <DebugStream.h>
 #include <ExpandPathRPC.h>
 #include <ExpandPathRPCExecutor.h>
+#include <GetDBPluginInfoRPC.h>
+#include <GetDBPluginInfoRPCExecutor.h>
 #include <GetDirectoryRPC.h>
 #include <GetDirectoryRPCExecutor.h>
 #include <GetFileListRPC.h>
@@ -197,6 +202,9 @@ MDServerConnection::VirtualFileInformationMap MDServerConnection::virtualFiles;
 //    Jeremy Meredith, Tue Feb  8 08:48:34 PST 2005
 //    Added the ability to query for plugin initialization errors.
 //
+//    Hank Childs, Wed May 25 10:29:30 PDT 2005
+//    Added new RPCs.
+//
 // ****************************************************************************
 
 MDServerConnection::MDServerConnection(int *argc, char **argv[])
@@ -268,6 +276,7 @@ MDServerConnection::MDServerConnection(int *argc, char **argv[])
     closeDatabaseRPC = new CloseDatabaseRPC;
     loadPluginsRPC = new LoadPluginsRPC;
     getPluginErrorsRPC = new GetPluginErrorsRPC;
+    getDBPluginInfoRPC = new GetDBPluginInfoRPC;
 
     // Hook up the RPCs to the xfer object.
     xfer->Add(quitRPC);
@@ -283,6 +292,7 @@ MDServerConnection::MDServerConnection(int *argc, char **argv[])
     xfer->Add(closeDatabaseRPC);
     xfer->Add(loadPluginsRPC);
     xfer->Add(getPluginErrorsRPC);
+    xfer->Add(getDBPluginInfoRPC);
 
     // Create the RPC Observers.
     quitExecutor = new QuitRPCExecutor(quitRPC);
@@ -299,6 +309,7 @@ MDServerConnection::MDServerConnection(int *argc, char **argv[])
     closeDatabaseExecutor = new CloseDatabaseRPCExecutor(this, closeDatabaseRPC);
     loadPluginsExecutor = new LoadPluginsRPCExecutor(this, loadPluginsRPC);
     getPluginErrorsRPCExecutor = new GetPluginErrorsRPCExecutor(this, getPluginErrorsRPC);
+    getDBPluginInfoRPCExecutor = new GetDBPluginInfoRPCExecutor(this, getDBPluginInfoRPC);
 
     // Indicate that the file list is not valid since we have not read
     // one yet.
@@ -751,6 +762,47 @@ SILAttributes *
 MDServerConnection::GetCurrentSIL() const
 {
     return currentSIL;
+}
+
+// ****************************************************************************
+// Method: MDServerConnection::GetDBPluginInfo
+//
+// Purpose: 
+//   Returns the DB plugin info.
+//
+// Programmer: Hank Childs
+// Creation:   May 23, 2005
+//
+// ****************************************************************************
+
+DBPluginInfoAttributes *
+MDServerConnection::GetDBPluginInfo()
+{
+    LoadPlugins();
+
+    DBPluginInfoAttributes *rv = new DBPluginInfoAttributes;
+
+    DatabasePluginManager *manager = DatabasePluginManager::Instance();
+    int nPlugins = manager->GetNEnabledPlugins();
+    std::vector<std::string> types(nPlugins);
+    std::vector<std::string> fullnames(nPlugins);
+    std::vector<int>         hasWriter(nPlugins);
+    for (int i = 0 ; i < manager->GetNEnabledPlugins() ; i++)
+    {
+        std::string fullname = manager->GetEnabledID(i);
+        fullnames[i] = fullname;
+        std::string name = manager->GetPluginName(fullname);
+        types[i] = name;
+        hasWriter[i] = manager->PluginHasWriter(fullname);
+        CommonDatabasePluginInfo *info =manager->GetCommonPluginInfo(fullname);
+        rv->AddDBOptionsAttributes(*(info->GetReadOptions()));
+        rv->AddDBOptionsAttributes(*(info->GetWriteOptions()));
+    }
+    rv->SetTypes(types);
+    rv->SetTypesFullNames(fullnames);
+    rv->SetHasWriter(hasWriter);
+
+    return rv;
 }
 
 // ****************************************************************************

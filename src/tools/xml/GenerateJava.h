@@ -54,6 +54,9 @@ using std::vector;
 //    Brad Whitlock, Wed Dec 8 15:52:36 PST 2004
 //    Added support for variable names.
 //
+//    Hank Childs, Tue May 24 10:19:40 PDT 2005
+//    Add hasoptions.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1925,8 +1928,11 @@ class AttsGeneratorPlugin
 
     AttsGeneratorAttribute *atts;
   public:
-    AttsGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v,const QString &, bool,bool,bool)
-        : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), atts(NULL)
+    AttsGeneratorPlugin(const QString &n,const QString &l,const QString &t,
+                        const QString &vt,const QString &dt,const QString &v,
+                        const QString &, bool,bool,bool,bool)
+        : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), 
+          atts(NULL)
     {
         enabledByDefault = true;
         has_MDS_specific_code = false;

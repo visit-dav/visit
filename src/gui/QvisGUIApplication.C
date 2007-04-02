@@ -69,6 +69,7 @@
 #include <QvisColorTableWindow.h>
 #include <QvisDatabaseCorrelationListWindow.h>
 #include <QvisEngineWindow.h>
+#include <QvisExportDBWindow.h>
 #include <QvisExpressionsWindow.h>
 #include <QvisFileInformationWindow.h>
 #include <QvisFileSelectionWindow.h>
@@ -148,6 +149,7 @@
 #define WINDOW_TIMEQUERY        25
 #define WINDOW_INTERACTOR       26
 #define WINDOW_SIMULATION       27
+#define WINDOW_EXPORT_DB        28
 
 const char *QvisGUIApplication::windowNames[] = {
 "File selection",
@@ -177,7 +179,8 @@ const char *QvisGUIApplication::windowNames[] = {
 "Database correlation list",
 "QueryOverTime",
 "Interactors",
-"Simulations"
+"Simulations",
+"Export Database"
 };
 
 // Some internal prototypes.
@@ -748,6 +751,7 @@ QvisGUIApplication::HeavyInitialization()
         // Loading plugins before that stalls the gui if the mdserver is
         // slow about loading plugins.
         fileServer->LoadPlugins();
+        viewer->UpdateDBPluginInfo(fileServer->GetHost());
         visitTimer->StopTimer(timeid, "stage 15 - Telling mdserver to load plugins");
         break;
     case 16:
@@ -1898,6 +1902,9 @@ QvisGUIApplication::CreateMainWindow()
 //   Jeremy Meredith, Mon Apr  4 16:06:50 PDT 2005
 //   Added the Simulations window.
 //
+//   Hank Childs, Tue May 24 17:11:00 PDT 2005
+//   Added the Export DB window.
+//
 // ****************************************************************************
 
 void
@@ -2005,6 +2012,8 @@ QvisGUIApplication::SetupWindows()
              this, SLOT(showInteractorWindow()));
      connect(mainWin, SIGNAL(activateSimulationWindow()),
              this, SLOT(showSimulationWindow()));
+     connect(mainWin, SIGNAL(activateExportDBWindow()),
+             this, SLOT(showExportDBWindow()));
 }
 
 // ****************************************************************************
@@ -2032,6 +2041,9 @@ QvisGUIApplication::SetupWindows()
 //
 //   Jeremy Meredith, Thu Apr 28 17:49:31 PDT 2005
 //   Changed the exact information sent to the Simulations window.
+//
+//   Hank Childs, Tue May 24 17:11:00 PDT 2005
+//   Added the Export DB window.
 //
 // ****************************************************************************
 
@@ -2220,6 +2232,11 @@ QvisGUIApplication::WindowFactory(int i)
                                fileServer->GetMetaData());
           win = swin;
         }
+        break;
+    case WINDOW_EXPORT_DB:
+        // Create the export DB window.
+        win = new QvisExportDBWindow(viewer->GetExportDBAttributes(),
+           windowNames[i], "Export Database", mainWin->GetNotepad());
         break;
     }
 
@@ -5160,3 +5177,4 @@ void QvisGUIApplication::showCorrelationListWindow() { GetInitializedWindowPoint
 void QvisGUIApplication::showQueryOverTimeWindow()   { GetInitializedWindowPointer(WINDOW_TIMEQUERY)->show(); }
 void QvisGUIApplication::showInteractorWindow()      { GetInitializedWindowPointer(WINDOW_INTERACTOR)->show(); }
 void QvisGUIApplication::showSimulationWindow()      { GetInitializedWindowPointer(WINDOW_SIMULATION)->show(); }
+void QvisGUIApplication::showExportDBWindow()        { GetInitializedWindowPointer(WINDOW_EXPORT_DB)->show(); }

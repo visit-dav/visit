@@ -10,6 +10,7 @@
 #include <DatabaseCorrelation.h>
 #include <DatabaseCorrelationList.h>
 #include <DataNode.h>
+#include <DBPluginInfoAttributes.h>
 #include <GetMetaDataException.h>
 #include <HostProfileList.h>
 #include <HostProfile.h>
@@ -60,12 +61,16 @@ ViewerFileServer *ViewerFileServer::instance = NULL;
 //   Brad Whitlock, Tue Apr 13 23:19:08 PST 2004
 //   I added declinedFiles and declinedFilesLength.
 //
+//   Hank Childs, Wed May 25 10:51:15 PDT 2005
+//   Added dbPluginInfoAtts.
+//
 // ****************************************************************************
 
 ViewerFileServer::ViewerFileServer() : ViewerServerManager(), servers(),
     fileMetaData(), fileSIL(), declinedFiles(), declinedFilesLength()
 {
     databaseCorrelationList = new DatabaseCorrelationList;
+    dbPluginInfoAtts = new DBPluginInfoAttributes;
 }
 
 // ****************************************************************************
@@ -1519,6 +1524,26 @@ ViewerFileServer::TerminateConnectionRequest(const stringVector &args, int failC
     ENDTRY
 
     delete [] argv;
+}
+
+// ****************************************************************************
+// Method: ViewerFileServer::UpdateDBPluginInfo
+//
+// Purpose:
+//   Tells the mdserver to update the database plugin information.
+//
+// Programmer: Hank Childs
+// Creation:   May 25, 2005
+//
+// ****************************************************************************
+void
+ViewerFileServer::UpdateDBPluginInfo(const std::string &host)
+{
+    if(servers.find(host) != servers.end())
+    {
+        *dbPluginInfoAtts = *(servers[host]->proxy->GetDBPluginInfo());
+        dbPluginInfoAtts->Notify();
+    }
 }
 
 // ****************************************************************************

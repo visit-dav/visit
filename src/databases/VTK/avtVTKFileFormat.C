@@ -39,9 +39,14 @@ static void GetListOfUniqueCellTypes(vtkUnstructuredGrid *ug,
 //  Programmer:  Hank Childs
 //  Creation:    February 23, 2001
 //
+//   Modifications:
+//
+//     Hank Childs, Tue May 24 12:05:52 PDT 2005
+//     Added arguments.
+//
 // ****************************************************************************
 
-avtVTKFileFormat::avtVTKFileFormat(const char *fname) 
+avtVTKFileFormat::avtVTKFileFormat(const char *fname, DBOptionsAttributes *) 
     : avtSTSDFileFormat(fname)
 {
     dataset = NULL;

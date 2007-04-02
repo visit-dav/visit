@@ -23,6 +23,8 @@
 #include <AppearanceAttributes.h>
 #include <ColorTableAttributes.h>
 #include <DatabaseCorrelationList.h>
+#include <DBPluginInfoAttributes.h>
+#include <ExportDBAttributes.h>
 #include <ExpressionList.h>
 #include <EngineList.h>
 #include <GlobalAttributes.h>
@@ -172,6 +174,9 @@
 //    Brad Whitlock, Fri Apr 15 11:02:54 PDT 2005
 //    Added postponedAction.
 //
+//    Hank Childs, Wed May 25 10:38:37 PDT 2005
+//    Added dbPluginInfoAtts.
+//
 // ****************************************************************************
 
 ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
@@ -215,6 +220,8 @@ ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
     metaData             = new avtDatabaseMetaData;
     silAtts              = new SILAttributes;
     procAtts             = new ProcessAttributes;
+    dbPluginInfoAtts     = new DBPluginInfoAttributes;
+    exportDBAtts         = new ExportDBAttributes;
 
     // Make the proxy observe the SIL restriction attributes.
     silRestrictionAtts->Attach(this);
@@ -359,6 +366,9 @@ ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
 //    Brad Whitlock, Fri Apr 15 11:03:21 PDT 2005
 //    Added postponedAction.
 //
+//    Hank Childs, Wed May 25 10:38:37 PDT 2005
+//    Added dbPluginInfoAtts.
+//
 // ****************************************************************************
 
 ViewerProxy::~ViewerProxy()
@@ -408,6 +418,8 @@ ViewerProxy::~ViewerProxy()
     delete metaData;
     delete silAtts;
     delete procAtts;
+    delete dbPluginInfoAtts;
+    delete exportDBAtts;
 
     //
     // Delete the plot attribute state objects.
@@ -786,6 +798,9 @@ ViewerProxy::AddArgument(const std::string &arg)
 //    has to be in place because the internal viewer implementation needs a
 //    slot in xfer to use to store postponed actions.
 //
+//    Hank Childs, Wed May 25 10:38:37 PDT 2005
+//    Added dbPluginInfoAtts.
+//
 // ****************************************************************************
 
 void
@@ -861,6 +876,8 @@ ViewerProxy::Create()
     xfer->Add(annotationObjectList);
     xfer->Add(queryOverTimeAtts);
     xfer->Add(interactorAtts);
+    xfer->Add(dbPluginInfoAtts);
+    xfer->Add(exportDBAtts);
     xfer->Add(metaData);
     xfer->Add(silAtts);
     xfer->Add(procAtts);
@@ -1604,6 +1621,31 @@ ViewerProxy::OverlayDatabase(const std::string &database)
 }
 
 // ****************************************************************************
+// Method: ViewerProxy::ExportDatabase
+//
+// Purpose: 
+//     Exports a database.
+//
+// Programmer: Hank Childs
+// Creation:   May 25, 2005
+//
+// ****************************************************************************
+
+void
+ViewerProxy::ExportDatabase()
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    viewerRPC->SetRPCType(ViewerRPC::ExportDBRPC);
+
+    //
+    // Issue the RPC.
+    //
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
 // Method: ViewerProxy::ClearCache
 //
 // Purpose: 
@@ -1660,6 +1702,35 @@ ViewerProxy::ClearCacheForAllEngines()
     // Set the rpc type and arguments.
     //
     viewerRPC->SetRPCType(ViewerRPC::ClearCacheForAllEnginesRPC);
+
+    //
+    // Issue the RPC.
+    //
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerProxy::UpdateDBPluginInfo
+//
+// Purpose: 
+//     Tells the viewer to update the DB plugin info.
+//
+// Arguments:
+//   hostName : The host where the compute engine is running.
+//
+// Programmer: Hank Childs
+// Creation:   May 25, 2005
+//
+// ****************************************************************************
+
+void
+ViewerProxy::UpdateDBPluginInfo(const std::string &hostName)
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    viewerRPC->SetRPCType(ViewerRPC::UpdateDBPluginInfoRPC);
+    viewerRPC->SetProgramHost(hostName);
 
     //
     // Issue the RPC.

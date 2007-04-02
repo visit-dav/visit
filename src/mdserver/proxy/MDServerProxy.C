@@ -53,11 +53,15 @@ using std::vector;
 //    Brad Whitlock, Fri May 2 15:09:04 PST 2003
 //    I made it inherit from the new RemoteProxyBase class.
 //
+//    Hank Childs, Mon May 23 13:40:35 PDT 2005
+//    Added constructors for new RPC.
+//
 // ****************************************************************************
 
 MDServerProxy::MDServerProxy() : RemoteProxyBase("-mdserver"),
     getDirectoryRPC(), changeDirectoryRPC(), getFileListRPC(), connectRPC(),
-    createGroupListRPC(), expandPathRPC(), closeDatabaseRPC(), loadPluginsRPC()
+    createGroupListRPC(), expandPathRPC(), closeDatabaseRPC(),
+    loadPluginsRPC(), getPluginErrorsRPC(), getDBPluginInfoRPC()
 {
     separator = SLASH_CHAR;
 }
@@ -116,6 +120,9 @@ MDServerProxy::GetComponentName() const
 //   Added the ability to query for errors detected during plugin
 //   initialization.
 //
+//   Hank Childs, Mon May 23 13:40:35 PDT 2005
+//   Added new RPC.
+//
 // ****************************************************************************
 
 void
@@ -135,6 +142,7 @@ MDServerProxy::SetupComponentRPCs()
     xfer.Add(&closeDatabaseRPC);
     xfer.Add(&loadPluginsRPC);
     xfer.Add(&getPluginErrorsRPC);
+    xfer.Add(&getDBPluginInfoRPC);
 
     // Determine the separator to use in filenames.
     DetermineSeparator();
@@ -230,6 +238,25 @@ std::string
 MDServerProxy::GetPluginErrors()
 {
     return getPluginErrorsRPC();
+}
+
+// ****************************************************************************
+//  Method:  MDServerProxy::GetDBPluginInfo
+//
+//  Purpose:
+//    Returns the types of database plugins and info about them.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Hank Childs
+//  Creation:    May 25, 2005
+//
+// ****************************************************************************
+const DBPluginInfoAttributes *
+MDServerProxy::GetDBPluginInfo()
+{
+    return getDBPluginInfoRPC();
 }
 
 // ****************************************************************************

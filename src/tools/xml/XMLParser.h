@@ -128,6 +128,9 @@ ParseCharacters(const QString &buff)
 //    Jeremy Meredith, Wed Aug 25 11:50:14 PDT 2004
 //    Added the concept of an engine-only or everything-but-the-engine plugin.
 //
+//    Hank Childs, Tue May 24 09:41:53 PDT 2005
+//    Added hasoptions.
+//
 // ****************************************************************************
 
 class XMLParser : public QXmlDefaultHandler
@@ -214,6 +217,7 @@ class XMLParser : public QXmlDefaultHandler
             QString vartype   = atts.value("vartype");
             QString dbtype    = atts.value("dbtype");
             QString haswriter = atts.value("haswriter");
+            QString hasoptions= atts.value("hasoptions");
             QString version   = atts.value("version");
             QString iconFile  = atts.value("iconFile");
             QString enabled   = atts.value("enabled");
@@ -223,6 +227,7 @@ class XMLParser : public QXmlDefaultHandler
             currentPlugin = new Plugin(name, label, type, vartype,
                                        dbtype, version, iconFile, 
                                        haswriter.isNull() ? false : Text2Bool(haswriter),
+                                       hasoptions.isNull() ? false : Text2Bool(hasoptions),
                                        onlyengine.isNull() ? false : Text2Bool(onlyengine),
                                        noengine.isNull() ? false : Text2Bool(noengine));
             if (!enabled.isNull())

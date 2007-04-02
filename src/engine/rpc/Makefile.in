@@ -117,6 +117,9 @@
 #    Jeremy Meredith, Fri Mar 18 09:18:47 PST 2005
 #    Added SimulationCommandRPC.
 #
+#    Hank Childs, Thu May 26 11:42:40 PDT 2005
+#    Added ExportDatabaseRPC.
+#
 ###############################################################################
 
 ##
@@ -137,6 +140,7 @@ SRC= \
     CloneNetworkRPC.C \
     DefineVirtualDatabaseRPC.C \
     ExecuteRPC.C \
+    ExportDatabaseRPC.C \
     MakePlotRPC.C \
     OpenDatabaseRPC.C \
     PickRPC.C \

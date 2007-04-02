@@ -12,6 +12,7 @@ class avtSIL;
 class DatabaseCorrelation;
 class DatabaseCorrelationList;
 class DataNode;
+class DBPluginInfoAttributes;
 class ExpressionList;
 class SILAttributes;
 
@@ -117,6 +118,10 @@ class SILAttributes;
 //
 //    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //    Added bool arg, forceReadAllCyclesAndTimes, to GetMetaData methods
+//
+//    Hank Childs, Wed May 25 10:48:50 PDT 2005
+//    Added DBPluginInfo.
+//
 // ****************************************************************************
 
 class ViewerFileServer : public ViewerServerManager
@@ -224,6 +229,7 @@ public:
                                                          int, int=-1);
     void                       UpdateDatabaseCorrelation(const std::string &);
     DatabaseCorrelation       *GetMostSuitableCorrelation(const stringVector &) const;
+
     std::string                CreateNewCorrelationName() const;
     bool                       PreviouslyDeclinedCorrelationCreation(
                                    const stringVector &) const;
@@ -249,6 +255,9 @@ public:
     void                       SetFromNode(DataNode *);
     std::string                GetPluginErrors(const std::string &host);
 
+    void                       UpdateDBPluginInfo(const std::string &host);
+    DBPluginInfoAttributes    *GetDBPluginInfoAtts(void)
+                                                  { return dbPluginInfoAtts; };
 protected:
     ViewerFileServer();
     ViewerFileServer(const ViewerFileServer&);
@@ -269,6 +278,7 @@ private:
     FileMetaDataMap           fileMetaData;
     FileSILMap                fileSIL;
     DatabaseCorrelationList  *databaseCorrelationList;
+    DBPluginInfoAttributes   *dbPluginInfoAtts;
     stringVector              declinedFiles;
     intVector                 declinedFilesLength;
 };

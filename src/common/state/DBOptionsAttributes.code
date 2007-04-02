@@ -1,0 +1,433 @@
+Function: FindIndex
+Declaration: int FindIndex(const std::string &name);
+Definition:
+// ****************************************************************************
+//  Method: DBOptionsAttributes::FindIndex
+//
+//  Purpose:
+//     Finds the index of a member.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 23, 2005
+//
+// ****************************************************************************
+
+int
+DBOptionsAttributes::FindIndex(const std::string &name)
+{
+    for (int i = 0 ; i < names.size() ; i++)
+        if (names[i] == name)
+        {
+            // Now find the index within its type.
+            int nMatches = 0;
+            for (int j = 0 ; j < i ; j++)
+                 if (types[j] == types[i])
+                     nMatches++;
+            return nMatches;
+        }
+
+    return -1;
+}
+
+Function: SetBool
+Declaration: void SetBool(const std::string &name, bool defaultValue);
+Definition:
+// ****************************************************************************
+//  Method: DBOptionsAttributes::SetBool
+//
+//  Purpose:
+//      Sets a boolean value.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 23, 2005
+//
+// ****************************************************************************
+
+void
+DBOptionsAttributes::SetBool(const std::string &name, bool defaultValue)
+{
+    int bIndex = FindIndex(name);
+    if (bIndex < 0)
+    {
+        names.push_back(name);
+        types.push_back(Bool);
+        optBools.push_back(defaultValue);
+    }
+    else
+        optBools[bIndex] = defaultValue;
+}
+
+Function: GetBool
+Declaration: bool GetBool(const std::string &name);
+Definition:
+// ****************************************************************************
+//  Method: DBOptionsAttributes::GetBool
+//
+//  Purpose:
+//      Gets a boolean value.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 23, 2005
+//
+// ****************************************************************************
+
+bool
+DBOptionsAttributes::GetBool(const std::string &name)
+{
+    int bIndex = FindIndex(name);
+    if (bIndex < 0)
+        EXCEPTION0(BadDeclareFormatString);
+    return (bool) optBools[bIndex];
+}
+
+Function: SetFloat
+Declaration: void SetFloat(const std::string &name, float defaultValue);
+Definition:
+// ****************************************************************************
+//  Method: DBOptionsAttributes::SetFloat
+//
+//  Purpose:
+//      Sets a floating point value.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 23, 2005
+//
+// ****************************************************************************
+
+void
+DBOptionsAttributes::SetFloat(const std::string &name, float defaultValue)
+{
+    int bIndex = FindIndex(name);
+    if (bIndex < 0)
+    {
+        names.push_back(name);
+        types.push_back(Float);
+        optFloats.push_back(defaultValue);
+    }
+    else
+        optFloats[bIndex] = defaultValue;
+}
+
+Function: GetFloat
+Declaration: float GetFloat(const std::string &name);
+Definition:
+// ****************************************************************************
+//  Method: DBOptionsAttributes::GetFloat
+//
+//  Purpose:
+//      Gets a floating point value.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 23, 2005
+//
+// ****************************************************************************
+
+float
+DBOptionsAttributes::GetFloat(const std::string &name)
+{
+    int bIndex = FindIndex(name);
+    if (bIndex < 0)
+        EXCEPTION0(BadDeclareFormatString);
+    return (float) optFloats[bIndex];
+}
+
+Function: SetDouble
+Declaration: void SetDouble(const std::string &name, double defaultValue);
+Definition:
+// ****************************************************************************
+//  Method: DBOptionsAttributes::SetDouble
+//
+//  Purpose:
+//      Sets a double precision value.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 23, 2005
+//
+// ****************************************************************************
+
+void
+DBOptionsAttributes::SetDouble(const std::string &name, double defaultValue)
+{
+    int bIndex = FindIndex(name);
+    if (bIndex < 0)
+    {
+        names.push_back(name);
+        types.push_back(Double);
+        optDoubles.push_back(defaultValue);
+    }
+    else
+        optDoubles[bIndex] = defaultValue;
+}
+
+Function: GetDouble
+Declaration: double GetDouble(const std::string &name);
+Definition:
+// ****************************************************************************
+//  Method: DBOptionsAttributes::GetDouble
+//
+//  Purpose:
+//      Gets a double precision value.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 23, 2005
+//
+// ****************************************************************************
+
+double
+DBOptionsAttributes::GetDouble(const std::string &name)
+{
+    int bIndex = FindIndex(name);
+    if (bIndex < 0)
+        EXCEPTION0(BadDeclareFormatString);
+    return optDoubles[bIndex];
+}
+
+Function: SetInt
+Declaration: void SetInt(const std::string &name, int defaultValue);
+Definition:
+// ****************************************************************************
+//  Method: DBOptionsAttributes::SetInt
+//
+//  Purpose:
+//      Sets an integer value.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 23, 2005
+//
+// ****************************************************************************
+
+void
+DBOptionsAttributes::SetInt(const std::string &name, int defaultValue)
+{
+    int bIndex = FindIndex(name);
+    if (bIndex < 0)
+    {
+        names.push_back(name);
+        types.push_back(Int);
+        optInts.push_back(defaultValue);
+    }
+    else
+        optInts[bIndex] = defaultValue;
+}
+
+Function: GetInt
+Declaration: int GetInt(const std::string &name);
+Definition:
+// ****************************************************************************
+//  Method: DBOptionsAttributes::GetInt
+//
+//  Purpose:
+//      Gets an integer value.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 23, 2005
+//
+// ****************************************************************************
+
+int
+DBOptionsAttributes::GetInt(const std::string &name)
+{
+    int bIndex = FindIndex(name);
+    if (bIndex < 0)
+        EXCEPTION0(BadDeclareFormatString);
+    return optInts[bIndex];
+}
+
+Function: SetString
+Declaration: void SetString(const std::string &name, const std::string &defaultValue);
+Definition:
+// ****************************************************************************
+//  Method: DBOptionsAttributes::SetString
+//
+//  Purpose:
+//      Sets a string value.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 23, 2005
+//
+// ****************************************************************************
+
+void
+DBOptionsAttributes::SetString(const std::string &name, const std::string &defaultValue)
+{
+    int bIndex = FindIndex(name);
+    if (bIndex < 0)
+    {
+        names.push_back(name);
+        types.push_back(String);
+        optStrings.push_back(defaultValue);
+    }
+    else
+        optStrings[bIndex] = defaultValue;
+}
+
+Function: GetString
+Declaration: const std::string &GetString(const std::string &name);
+Definition:
+// ****************************************************************************
+//  Method: DBOptionsAttributes::GetString
+//
+//  Purpose:
+//      Gets a string value.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 23, 2005
+//
+// ****************************************************************************
+
+const std::string &
+DBOptionsAttributes::GetString(const std::string &name)
+{
+    int bIndex = FindIndex(name);
+    if (bIndex < 0)
+        EXCEPTION0(BadDeclareFormatString);
+    return optStrings[bIndex];
+}
+
+Function: SetEnum
+Declaration: void SetEnum(const std::string &name, int defaultValue);
+Definition:
+// ****************************************************************************
+//  Method: DBOptionsAttributes::SetEnum
+//
+//  Purpose:
+//      Sets a enumerated value (encoded as int).
+//
+//  Programmer: Hank Childs
+//  Creation:   May 23, 2005
+//
+// ****************************************************************************
+
+void
+DBOptionsAttributes::SetEnum(const std::string &name, int defaultValue)
+{
+    int bIndex = FindIndex(name);
+    if (bIndex < 0)
+    {
+        names.push_back(name);
+        types.push_back(Enum);
+        optEnums.push_back(defaultValue);
+    }
+    else
+        optEnums[bIndex] = defaultValue;
+}
+
+Function: GetEnum
+Declaration: int GetEnum(const std::string &name);
+Definition:
+// ****************************************************************************
+//  Method: DBOptionsAttributes::GetEnum
+//
+//  Purpose:
+//      Gets a enumerated value (encoded as int).
+//
+//  Programmer: Hank Childs
+//  Creation:   May 23, 2005
+//
+// ****************************************************************************
+
+int
+DBOptionsAttributes::GetEnum(const std::string &name)
+{
+    int bIndex = FindIndex(name);
+    if (bIndex < 0)
+        EXCEPTION0(BadDeclareFormatString);
+    return optEnums[bIndex];
+}
+
+Function: SetEnumStrings
+Declaration: void SetEnumStrings(const std::string &name, const std::vector<std::string> &values);
+Definition:
+// ****************************************************************************
+//  Method: DBOptionsAttributes::SetEnumStrings
+//
+//  Purpose:
+//      Sets the strings for an enumerated type.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 23, 2005
+//
+// ****************************************************************************
+
+void
+DBOptionsAttributes::SetEnumStrings(const std::string &name, 
+                                    const std::vector<std::string> &values)
+{
+    int eIndex = FindIndex(name);
+    if (eIndex < 0)
+        EXCEPTION0(BadDeclareFormatString);
+
+    int numEnums = optEnums.size();
+    std::vector<std::string> newList;
+    int idx = 0;
+    for (int i = 0 ; i < numEnums ; i++)
+    {
+         if (i == eIndex)
+         {
+             for (int j = 0 ; j < values.size() ; j++)
+                 newList.push_back(values[j]);
+         }
+         else
+         {
+             for (int j = 0 ; j < enumStringsSizes[i] ; j++)
+                 newList.push_back(enumStrings[idx+j]);
+         }
+         idx += enumStringsSizes[i];
+    }
+    enumStrings = newList;
+    enumStringsSizes[eIndex] = values.size();
+}
+
+Function: GetNumberOfOptions
+Declaration: int GetNumberOfOptions(void);
+Definition:
+int
+DBOptionsAttributes::GetNumberOfOptions(void)
+{
+    return names.size();
+}
+
+Function: GetType
+Declaration: DBOptionsAttributes::OptionType GetType(int);
+Definition:
+DBOptionsAttributes::OptionType
+DBOptionsAttributes::GetType(int index)
+{
+    if (index < 0 || index >= types.size())
+        EXCEPTION0(BadDeclareFormatString);
+
+    return (DBOptionsAttributes::OptionType) types[index];
+}
+
+Function: GetEnumStrings
+Declaration: std::vector<std::string> GetEnumStrings(const std::string &name);
+Definition:
+std::vector<std::string>
+DBOptionsAttributes::GetEnumStrings(const std::string &name)
+{
+    int  i;
+
+    int eIndex = FindIndex(name);
+    if (eIndex < 0)
+        EXCEPTION0(BadDeclareFormatString);
+
+    int start = 0;
+    for (i = 0 ; i < eIndex ; i++)
+         start += enumStringsSizes[i];
+
+    std::vector<std::string> rv(enumStringsSizes[eIndex]);
+    for (i = 0 ; i < enumStringsSizes[eIndex] ; i++)
+         rv[i] = enumStrings[start+i];
+
+    return rv;
+}
+
+Function: GetName
+Declaration: std::string GetName(int);
+Definition:
+std::string
+DBOptionsAttributes::GetName(int idx)
+{
+    return names[idx];
+}
+

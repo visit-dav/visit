@@ -65,6 +65,9 @@
 #    Jeremy Meredith, Thu Aug 22 13:56:49 PDT 2002
 #    Added database plugins.
 #
+#    Hank Childs, Mon May 23 17:21:33 PDT 2005
+#    Add database plugins.
+#
 ##############################################################################
 
 ##
@@ -84,7 +87,7 @@ CPPFLAGS=@CPPFLAGS@ -I. -I../../include -I../../include/visit
 ##
 SRC=PluginManager.C DatabasePluginManager.C \
     PlotPluginManager.C OperatorPluginManager.C \
-    InvalidDirectoryException.C InvalidPluginException.C
+    InvalidDirectoryException.C InvalidPluginException.C DatabasePluginInfo.C
 OBJ=$(SRC:.C=.o)
 
 LIB=libplugin

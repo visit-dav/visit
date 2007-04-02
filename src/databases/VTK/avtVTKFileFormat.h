@@ -9,6 +9,9 @@
 
 class vtkStructuredPoints;
 
+class DBOptionsAttributes;
+
+
 // ****************************************************************************
 //  Class: avtVTKFileFormat
 //
@@ -26,12 +29,15 @@ class vtkStructuredPoints;
 //    Kathleen Bonnell, Thu Mar 11 12:53:12 PST 2004 
 //    Added ConvertStructuredPointsToRGrid. 
 //
+//    Hank Childs, Tue May 24 12:06:52 PDT 2005
+//    Added argument to constructor for DB options.
+//
 // ****************************************************************************
 
 class avtVTKFileFormat : public avtSTSDFileFormat
 {
   public:
-                          avtVTKFileFormat(const char *);
+                          avtVTKFileFormat(const char *,DBOptionsAttributes *);
     virtual              ~avtVTKFileFormat();
 
     virtual vtkDataSet   *GetMesh(const char *);

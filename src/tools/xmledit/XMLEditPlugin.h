@@ -35,6 +35,9 @@ class QCheckBox;
 //    Brad Whitlock, Fri Apr 1 16:14:33 PST 2005
 //    Added label var type.
 //
+//    Hank Childs, Tue May 24 09:26:14 PDT 2005
+//    Added hasOptions.
+//
 // ****************************************************************************
 
 class XMLEditPlugin : public QFrame
@@ -54,6 +57,7 @@ class XMLEditPlugin : public QFrame
     void iconFileTextChanged(const QString&);
     void hasIconChanged(bool);
     void hasWriterChanged(bool);
+    void hasOptionsChanged(bool);
     void enabledByDefaultChanged(bool);
     void pluginTypeChanged(int);
     void varTypesChanged();
@@ -69,6 +73,7 @@ class XMLEditPlugin : public QFrame
     QLineEdit       *version;
     QCheckBox       *hasIcon;
     QCheckBox       *hasWriter;
+    QCheckBox       *hasOptions;
     QCheckBox       *enabledByDefault;
     QLineEdit       *iconFile;
     QCheckBox       *varTypeMesh;

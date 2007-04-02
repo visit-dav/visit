@@ -215,6 +215,9 @@
 //    Jeremy Meredith, Mon Apr  4 16:35:02 PDT 2005
 //    Added the simulations window to the menu.
 //
+//    Hank Childs, Tue May 24 17:02:15 PDT 2005
+//    Added export database.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -301,6 +304,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     filePopup->insertItem( tr("Set Save &options . . ."), this, SIGNAL(activateSaveWindow()), CTRL+Key_O);
 //    id = file->insertItem( tr("Save movie . . ."), this, SIGNAL(saveMovie()));
 //    file->setItemEnabled(id, false);
+    id = filePopup->insertItem(tr("Export database . . ."), this, SIGNAL(activateExportDBWindow()));
     id = filePopup->insertItem(printIcon, tr("Print window"), this, SIGNAL(printWindow()));
     id = filePopup->insertItem(tr("Set Print options . . ."), this, SIGNAL(activatePrintWindow()));
     filePopup->insertSeparator();

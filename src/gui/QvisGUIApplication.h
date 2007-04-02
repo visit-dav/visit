@@ -240,6 +240,9 @@ class SplashScreen;
 //    Jeremy Meredith, Mon Apr  4 16:07:59 PDT 2005
 //    Added a simulations window.
 //
+//    Hank Childs, Tue May 24 17:07:58 PDT 2005
+//    Added a export DB window.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -351,6 +354,7 @@ private slots:
     void showQueryOverTimeWindow();
     void showInteractorWindow();
     void showSimulationWindow();
+    void showExportDBWindow();
 
     void updateVisIt();
     void updateVisItCompleted(const QString &);

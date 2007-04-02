@@ -5,6 +5,8 @@
 #include <DebugStream.h>
 #include <avtDatabaseFactory.h>
 #include <LoadBalancer.h>
+#include <DBOptionsAttributes.h>
+#include <ExportDBAttributes.h>
 #include <MaterialAttributes.h>
 #include <avtExpressionEvaluatorFilter.h>
 #include <ImproperUseException.h>
@@ -27,6 +29,7 @@
 #include <avtMultipleInputQuery.h>
 #include <avtAreaBetweenCurvesQuery.h>
 #include <avtFileWriter.h>
+#include <avtDatabaseWriter.h>
 #include <avtL2NormBetweenCurvesQuery.h>
 #include <avtLocateQuery.h>
 #include <avtLocateCellQuery.h>
@@ -55,12 +58,15 @@
 #include <VisWindow.h>
 #include <ParsingExprList.h>
 #include <avtExprNode.h>
+#include <DatabasePluginManager.h>
+#include <DatabasePluginInfo.h>
 #include <PlotPluginManager.h>
 #include <PlotPluginInfo.h>
 #ifdef PARALLEL
 #include <mpi.h>
 #include <parallel.h>
 #endif
+#include <visit-config.h>
 #include <TimingsManager.h>
 
 #include <set>
@@ -3108,6 +3114,100 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
     }
     ENDTRY
 }
+
+// ****************************************************************************
+//  Method:  NetworkManager::ExportDatabase
+//
+//  Purpose:
+//      Exports a database.
+//
+//  Arguments:
+//    id         The network to use.
+//    atts       The export database attributes.
+//
+//  Programmer:  Hank Childs
+//  Creation:    May 26, 2005
+//
+// ****************************************************************************
+
+void
+NetworkManager::ExportDatabase(int id, ExportDBAttributes *atts)
+{
+    if (id >= networkCache.size())
+    {
+        debug1 << "Internal error:  asked to use network ID (" << id 
+               << ") >= num saved networks ("
+               << networkCache.size() << ")" << endl;
+        EXCEPTION0(ImproperUseException);
+    }
+ 
+    if (networkCache[id] == NULL)
+    {
+        debug1 << "Asked to export a DB from a network that has already "
+               << "been cleared." << endl;
+        EXCEPTION0(ImproperUseException);
+    }
+
+    if (id != networkCache[id]->GetNetID())
+    {
+        debug1 << "Internal error: network at position[" << id << "] "
+               << "does not have same id (" << networkCache[id]->GetNetID()
+               << ")" << endl;
+        EXCEPTION0(ImproperUseException);
+    }
+
+    avtDataObject_p dob = 
+        networkCache[id]->GetPlot()->GetIntermediateDataObject();
+
+    if (*dob == NULL)
+    {
+        debug1 << "Could not find a valid input to export." << endl;
+        EXCEPTION0(NoInputException);
+    }
+
+    const std::string &db_type = atts->GetDb_type_fullname();
+    DatabasePluginManager *manager = DatabasePluginManager::Instance();
+    if (!manager->PluginAvailable(db_type))
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+    EngineDatabasePluginInfo *info = manager->GetEnginePluginInfo(db_type);
+    DBOptionsAttributes opts = atts->GetOpts();
+    info->SetWriteOptions(&opts);
+    avtDatabaseWriter *wrtr = info->GetWriter();
+
+    if (wrtr == NULL)
+    {
+        debug1 << "Unable to locate writer for \"" << db_type << "\"" << endl;
+        EXCEPTION0(ImproperUseException);
+    }
+
+    if (strcmp(dob->GetType(), "avtDataset") != 0)
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+
+    int time = networkCache[id]->GetTime();
+    ref_ptr<avtDatabase> db = networkCache[id]->GetNetDB()->GetDatabase();
+    wrtr->SetInput(dob);
+    
+    string qualFilename;
+    if (atts->GetDirname() == "")
+        qualFilename = atts->GetFilename();
+    else
+        qualFilename = atts->GetDirname() + std::string(SLASH_STRING)
+                     + atts->GetFilename();
+    bool doAll = false;
+    std::vector<std::string> vars = atts->GetVariables();
+    if (vars.size() == 1 && vars[0] == "<all>")
+    {
+        doAll = true;
+        vars.clear();
+    }
+    wrtr->Write(qualFilename, db->GetMetaData(time), vars, doAll);
+    delete wrtr;
+}
+
 
 // ****************************************************************************
 //  Function:  RenderBalance 

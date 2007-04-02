@@ -10,8 +10,24 @@
 
 #include <avtDatabaseMetaData.h>
 
+#include <DBOptionsAttributes.h>
+
 using     std::string;
 using     std::vector;
+
+
+// ****************************************************************************
+//  Method: avtVTKWriter constructor
+//
+//  Programmer: Hank Childs
+//  Creation:   May 24, 2005
+//
+// ****************************************************************************
+
+avtVTKWriter::avtVTKWriter(DBOptionsAttributes *atts)
+{
+    doBinary = atts->GetBool("Binary format");
+}
 
 
 // ****************************************************************************
@@ -71,6 +87,11 @@ avtVTKWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //  Programmer: Hank Childs
 //  Creation:   September 12, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Thu May 26 17:23:39 PDT 2005
+//    Add support for binary writes through DB options.
+//
 // ****************************************************************************
 
 void
@@ -79,6 +100,8 @@ avtVTKWriter::WriteChunk(vtkDataSet *ds, int chunk)
     char chunkname[1024];
     sprintf(chunkname, "%s.%d.vtk", stem.c_str(), chunk);
     vtkDataSetWriter *wrtr = vtkDataSetWriter::New();
+    if (doBinary)
+        wrtr->SetFileTypeToBinary();
     wrtr->SetInput(ds);
     wrtr->SetFileName(chunkname);
     wrtr->Write();
