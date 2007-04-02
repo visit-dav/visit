@@ -749,6 +749,9 @@ Engine::ConnectViewer(int *argc, char **argv[])
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Mark C. Miller, Tue Feb 13 16:24:58 PST 2007
+//    Replaced MPI_Bcast with MPIXfer::VisIt_MPI_Bcast
 // ****************************************************************************
 
 void
@@ -780,7 +783,8 @@ Engine::PAR_EventLoop()
             ResetTimeout(timeout * 60);
 
             // Get state information from the UI process.
-            MPI_Bcast((void *)&par_buf, 1, PAR_STATEBUFFER, 0, VISIT_MPI_COMM);
+            MPIXfer::VisIt_MPI_Bcast((void *)&par_buf, 1,
+                PAR_STATEBUFFER, 0, VISIT_MPI_COMM);
 
             // We have work to do, so cancel the alarm.
             int num_seconds_in_ten_minutes = 10*60;
@@ -813,6 +817,9 @@ Engine::PAR_EventLoop()
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Mark C. Miller, Tue Feb 13 16:24:58 PST 2007
+//    Replaced MPI_Bcast with MPIXfer::VisIt_MPI_Bcast
 // ****************************************************************************
 void
 Engine::PAR_ProcessInput()
@@ -823,7 +830,8 @@ Engine::PAR_ProcessInput()
     }
     else
     {
-        MPI_Bcast((void *)&par_buf, 1, PAR_STATEBUFFER, 0, VISIT_MPI_COMM);
+        MPIXfer::VisIt_MPI_Bcast((void *)&par_buf, 1,
+            PAR_STATEBUFFER, 0, VISIT_MPI_COMM);
         par_conn.Append((unsigned char *)par_buf.buffer, par_buf.nbytes);
         xfer->Process();
     }

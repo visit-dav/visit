@@ -336,6 +336,8 @@ avtSiloFileFormat::GetFile(int f)
 //    Changed open to try explicit silo drivers; PDB first, then HDF5
 //    then everything else
 //
+//    Mark C. Miller, Tue Feb 13 16:24:58 PST 2007
+//    Made it fail if the file it opened didn't look like a silo file
 // ****************************************************************************
 
 DBfile *
@@ -369,6 +371,34 @@ avtSiloFileFormat::OpenFile(int f, bool skipGlobalInfo)
         ((dbfiles[f] = DBOpen(filenames[f], DB_UNKNOWN, DB_READ)) == NULL))
     {
         EXCEPTION1(InvalidFilesException, filenames[f]);
+    }
+
+    //
+    // Lets try to make absolutely sure this is really a Silo file and
+    // not just a PDB file that PD_Open succeeded on.
+    //
+    if (!DBInqVarExists(dbfiles[f], "_silolibinfo")) // newer silo files have this
+    {
+        //
+        // See how many silo objects we have
+        //
+        DBtoc *toc = DBGetToc(dbfiles[f]);
+        int nSiloObjects = toc->nmultimesh + toc->ncsgmesh + toc->nqmesh +
+                toc->nucdmesh + toc->nptmesh + toc->nmultivar + toc->ncsgvar +
+                toc->nqvar + toc->nucdvar + toc->nptvar + toc->nmat +
+                toc->nmultimat + toc->nmatspecies + toc->nmultimatspecies +
+                toc->ndir + toc->ndefvars + toc->ncurve;
+
+        //
+        // We don't appear to have any silo objects, so we'll fail it
+        //
+        if (nSiloObjects <= 0)
+        {
+            char str[1024];
+            SNPRINTF(str, sizeof(str), "Although the Silo library succesfully opened \"%s,\"\n" 
+                 "the file contains no silo objects. It may be a PDB file.");
+            EXCEPTION1(InvalidFilesException, str);
+        }
     }
 
     RegisterFile(f);

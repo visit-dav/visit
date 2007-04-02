@@ -41,7 +41,9 @@
 #include <Engine.h>
 #include <LostConnectionException.h>
 #include <LoadBalancer.h>
+#ifdef PARALLEL
 #include <MPIXfer.h>
+#endif
 #include <VisItException.h>
 
 #include <visitstream.h>
