@@ -1,10 +1,11 @@
 // ************************************************************************* //
-//                             avtCurvePlot.C                                 //
+//                             avtCurvePlot.C                                //
 // ************************************************************************* //
 
 #include <avtCurvePlot.h>
 
 #include <avtCurveFilter.h>
+#include <avtCurveLegend.h>
 #include <avtCompactTreeFilter.h>
 #include <avtSurfaceAndWireframeRenderer.h>                                                          
 #include <LineAttributes.h>
@@ -28,10 +29,16 @@
 //    Kathleen Bonnell, Fri Jul 12 16:53:11 PDT 2002  
 //    Add a labeled curve mapper for decorations.  
 //    
+//    Kathleen Bonnell, Thu Oct 27 15:12:13 PDT 2005 
+//    Added a legend.
+//    
 // ****************************************************************************
 
 avtCurvePlot::avtCurvePlot()
 {
+    curveLegend = new avtCurveLegend;
+    curveLegend->SetTitle("Curve");
+
     CurveFilter = new avtCurveFilter();
     renderer = avtSurfaceAndWireframeRenderer::New();
     avtCustomRenderer_p ren;
@@ -55,6 +62,14 @@ avtCurvePlot::avtCurvePlot()
     renderer->EdgePolysOff();
 
     decoMapper = new avtLabeledCurveMapper();
+
+    //
+    // This is to allow the legend to reference counted so the behavior can
+    // still access it after the plot is deleted.  The legend cannot be
+    // reference counted all of the time since we need to know that it is a 
+    // CurveLegend.
+    //
+    curveLegendRefPtr = curveLegend;
 }
 
 
@@ -225,11 +240,15 @@ avtCurvePlot::ApplyRenderingTransformation(avtDataObject_p input)
 //    Eric Brugger, Wed Aug 20 10:23:51 PDT 2003
 //    I added code to set the window mode to curve.
 //
+//    Kathleen Bonnell, Thu Oct 27 15:12:13 PDT 2005 
+//    Set the legend.
+//    
 // ****************************************************************************
 
 void
 avtCurvePlot::CustomizeBehavior(void)
 {
+    behavior->SetLegend(curveLegendRefPtr);
     behavior->GetInfo().GetAttributes().SetWindowMode(WINMODE_CURVE);
 
     renderer->SetProperty(property);            
@@ -258,6 +277,9 @@ avtCurvePlot::CustomizeBehavior(void)
 //    Kathleen Bonnell, Tue Dec 23 11:08:38 PST 2003 
 //    Added ShowPoints and PointSize. 
 //
+//    Kathleen Bonnell, Thu Oct 27 15:12:13 PDT 2005 
+//    Set the legend's color.
+//    
 // ****************************************************************************
 
 void
@@ -270,6 +292,16 @@ avtCurvePlot::SetAtts(const AttributeGroup *a)
     double rgba[4];
     atts.GetColor().GetRgba(rgba);
     property->SetColor((float)rgba[0], (float)rgba[1], (float)rgba[2]);
+    curveLegend->SetColor((float)rgba[0], (float)rgba[1], (float)rgba[2]);
+
+    if (atts.GetShowLegend())
+    {
+        curveLegend->LegendOn();
+    }
+    else
+    {
+        curveLegend->LegendOff();
+    }
 
     SetLineWidth(atts.GetLineWidth());
     SetLineStyle(atts.GetLineStyle());
@@ -295,12 +327,17 @@ avtCurvePlot::SetAtts(const AttributeGroup *a)
 //  Programmer: Kathleen Bonnell
 //  Creation:   April 24, 2002 
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Oct 27 15:12:13 PDT 2005 
+//    Set the legend's line width.
+//    
 // ****************************************************************************
  
 void
 avtCurvePlot::SetLineWidth(int lw)
 {
     property->SetLineWidth(LineWidth2Int(Int2LineWidth(lw)));
+    curveLegend->SetLineWidth(Int2LineWidth(lw));
 }
  
  
@@ -313,12 +350,17 @@ avtCurvePlot::SetLineWidth(int lw)
 //  Programmer: Kathleen Bonnell
 //  Creation:   April 24, 2002 
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Oct 27 15:12:13 PDT 2005 
+//    Set the legend's line style.
+//    
 // ****************************************************************************
  
 void
 avtCurvePlot::SetLineStyle(int ls)
 {
     property->SetLineStipplePattern(LineStyle2StipplePattern(Int2LineStyle(ls)));
+    curveLegend->SetLineStyle(Int2LineStyle(ls));
 }
 
 

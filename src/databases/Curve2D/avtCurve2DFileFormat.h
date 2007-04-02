@@ -29,6 +29,9 @@ class     vtkPolyData;
 //    Hank Childs, Fri Aug  1 21:16:55 PDT 2003
 //    Made the format be a STSD.
 //
+//    Kathleen Bonnell, Fri Oct 28 13:02:51 PDT 2005 
+//    Added methods GetTime, GetCycle, and members curveTime, curveCycle.
+//
 // ****************************************************************************
 
 typedef enum
@@ -47,6 +50,9 @@ class avtCurve2DFileFormat : public avtSTSDFileFormat
     virtual              ~avtCurve2DFileFormat();
     
     virtual const char   *GetType(void) { return "Curve File Format"; };
+
+    virtual double        GetTime(void);
+    virtual int           GetCycle(void);
     
     virtual vtkDataSet   *GetMesh(const char *);
     virtual vtkDataArray *GetVar(const char *);
@@ -59,6 +65,8 @@ class avtCurve2DFileFormat : public avtSTSDFileFormat
 
     std::vector<vtkPolyData *> curves;
     std::vector<std::string>   curveNames;
+    double                     curveTime;
+    int                        curveCycle;
 
     void                  ReadFile(void);
     CurveToken            GetPoint(ifstream &, float &, float &,

@@ -4,7 +4,7 @@
 
 #include <avtLegend.h>
 
-#include <vtkVerticalScalarBarActor.h>
+#include <vtkActor2D.h>
 #include <vtkProperty2D.h>
 #include <vtkRenderer.h>
 
@@ -515,6 +515,10 @@ avtLegend::SetMessage(const char *str)
 //    Brad Whitlock, Tue Jul 20 16:48:56 PST 2004
 //    Added varUnits.
 //
+//    Kathleen Bonnell, Tue Oct 25 11:13:14 PDT 2005 
+//    Call ChangeFontHeight/ChangeTitle instead of legend->SetFontHeight/
+//    legend->SetTitle.
+//
 // ****************************************************************************
 
 void
@@ -523,7 +527,7 @@ avtLegend::Update()
     //
     // Set the font size.
     //
-    legend->SetFontHeight(fontHeight);
+    ChangeFontHeight(fontHeight);
 
     //
     // Set the title.
@@ -569,8 +573,7 @@ avtLegend::Update()
             strcpy(tmpstr, "\n");
             strcat(tmpstr, message);
         }
-
-        legend->SetTitle(str);
+        ChangeTitle(str);
         delete [] str;
     }
 }
@@ -592,3 +595,4 @@ avtLegend::SetGlobalVisibility(bool v)
 {
     globalVisibility = v;
 }
+

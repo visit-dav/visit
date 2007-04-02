@@ -13,6 +13,7 @@
 #include <CurveAttributes.h>
 
 class     avtCurveFilter;
+class     avtCurveLegend;
 class     avtUserDefinedMapper;
 class     avtLabeledCurveMapper;
 class     vtkProperty;
@@ -33,6 +34,9 @@ class     vtkProperty;
 //
 //    Kathleen Bonnell, Tue Oct 22 08:33:26 PDT 2002
 //    Added ApplyRenderingTransformation. 
+//    
+//    Kathleen Bonnell, Thu Oct 27 15:12:13 PDT 2005 
+//    Added Legend. 
 //    
 // ****************************************************************************
 
@@ -55,6 +59,9 @@ class avtCurvePlot : public avtLineDataPlot
   protected:
     CurveAttributes                atts;
 
+    avtCurveLegend                *curveLegend;
+    avtLegend_p                    curveLegendRefPtr;
+
     avtSurfaceAndWireframeRenderer_p renderer;
     avtUserDefinedMapper           *mapper;
     avtLabeledCurveMapper          *decoMapper;
@@ -67,7 +74,7 @@ class avtCurvePlot : public avtLineDataPlot
     virtual avtDataObject_p     ApplyRenderingTransformation(avtDataObject_p);
     virtual void                CustomizeBehavior(void);
 
-    virtual avtLegend_p         GetLegend(void) { return NULL; };
+    virtual avtLegend_p         GetLegend(void) { return curveLegendRefPtr; };
     virtual avtDecorationsMapper *GetDecorationsMapper(void); 
 };
 

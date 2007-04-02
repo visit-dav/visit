@@ -35,6 +35,9 @@ using std::string;
 //    Hank Childs, Tue Apr  8 11:09:03 PDT 2003
 //    Do not do so much work in the constructor.
 //
+//    Kathleen Bonnell, Fri Oct 28 13:02:51 PDT 2005
+//    Added curveTime, curveCycle.
+//
 // ****************************************************************************
 
 avtCurve2DFileFormat::avtCurve2DFileFormat(const char *fname)
@@ -42,6 +45,8 @@ avtCurve2DFileFormat::avtCurve2DFileFormat(const char *fname)
 {
     filename = fname;
     readFile = false;
+    curveTime = INVALID_TIME;
+    curveCycle = INVALID_CYCLE;
 }
 
 
@@ -215,6 +220,9 @@ avtCurve2DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Add support for files with extra whitespace and files that have no 
 //    headers.
 //
+//    Kathleen Bonnell, Fri Oct 28 13:02:51 PDT 2005
+//    Parse 'TIME' and 'CYCLE' from headers not followed by data values. 
+//
 // ****************************************************************************
 
 void
@@ -237,6 +245,8 @@ avtCurve2DFileFormat::ReadFile(void)
     vector<bool>  breakpoint_following;
     vector<int>   cutoff;
     string  headerName = "";
+    curveTime = INVALID_TIME;
+    curveCycle = INVALID_CYCLE;
     while (!ifile.eof())
     {
         float   x, y;
@@ -273,6 +283,33 @@ avtCurve2DFileFormat::ReadFile(void)
           }
           case HEADER:
           {
+            if (headerName != "")
+            {
+                // If we parsed a header followed by another header,
+                // see if it has TIME. 
+                int timePos = headerName.find("TIME");
+                if ( timePos != string::npos)
+                {
+                    string tStr = headerName.substr(timePos+4);
+                    char *endstr = NULL;
+                    curveTime = strtod(tStr.c_str(), &endstr);
+                    if (strcmp(endstr, tStr.c_str()) == 0)
+                        curveTime = INVALID_TIME;
+                }
+                else
+                {
+                    int cyclePos = headerName.find("CYCLE");
+                    if ( cyclePos != string::npos)
+                    {
+                        string cyStr = headerName.substr(cyclePos+5);
+                        char *endstr = NULL;
+                        curveCycle = (int)strtod(cyStr.c_str(), &endstr);
+                        if (strcmp(endstr, cyStr.c_str()) == 0)
+                            curveCycle = INVALID_CYCLE;
+                    }
+                }
+            }
+  
             if (lineName.find_first_not_of("#") != string::npos)
             {
                 headerName = lineName;
@@ -293,6 +330,32 @@ avtCurve2DFileFormat::ReadFile(void)
        }
     }  
 
+    // If we parsed a header not followed by data values, see if
+    // it is TIME. 
+    if (headerName != "")
+    {
+        int timePos = headerName.find("TIME");
+        if ( timePos != string::npos)
+        {
+            string tStr = headerName.substr(timePos+4);
+            char *endstr = NULL;
+            curveTime = strtod(tStr.c_str(), &endstr);
+            if (strcmp(endstr, tStr.c_str()) == 0)
+                curveTime = INVALID_TIME;
+        }
+        else
+        {
+            int cyclePos = headerName.find("CYCLE");
+            if ( cyclePos != string::npos)
+            {
+                string cyStr = headerName.substr(cyclePos+5);
+                char *endstr = NULL;
+                curveCycle = (int)strtod(cyStr.c_str(), &endstr);
+                if (strcmp(endstr, cyStr.c_str()) == 0)
+                    curveCycle = INVALID_CYCLE;
+            }
+        }
+    }
     //
     // Now we can construct the curve as vtkPolyData.
     //
@@ -474,6 +537,39 @@ avtCurve2DFileFormat::GetPoint(ifstream &ifile, float &x, float &y, string &ln)
 
     ln = "";
     return VALID_POINT;
+}    
+
+
+// ****************************************************************************
+//  Method: avtCurve2DFileFormat::GetTime
+//
+//  Purpose: Return the time associated with this curve file
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   October 28, 2005 
+//
+// ****************************************************************************
+
+double 
+avtCurve2DFileFormat::GetTime(void)
+{
+    return curveTime;
 }
 
+
+// ****************************************************************************
+//  Method: avtCurve2DFileFormat::GetCycle
+//
+//  Purpose: Return the cycle associated with this curve file
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   October 28, 2005 
+//
+// ****************************************************************************
+
+int 
+avtCurve2DFileFormat::GetCycle(void)
+{
+    return curveCycle;
+}
 

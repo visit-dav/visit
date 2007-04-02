@@ -28,6 +28,9 @@ class QvisLineWidthWidget;
 //   Kathleen Bonnell, Tue Dec 23 13:27:22 PST 2003
 //   Added showPoints, pointSize and pointSizeLabel widgets. 
 //   Added showPointChanged and processPointSizeText slots.
+//
+//   Kathleen Bonnell, Thu Oct 27 15:35:11 PDT 2005 
+//   Added showLegend.
 //   
 // ****************************************************************************
 
@@ -55,6 +58,7 @@ class QvisCurvePlotWindow : public QvisPostableWindowObserver
     void lineWidthChanged(int style);
     void colorChanged(const QColor &color);
     void showLabelsChanged(bool val);
+    void showLegendChanged(bool val);
     void showPointsChanged(bool val);
     void processPointSizeText();
   private:
@@ -63,6 +67,7 @@ class QvisCurvePlotWindow : public QvisPostableWindowObserver
     QvisLineWidthWidget *lineWidth;
     QvisColorButton     *color;
     QCheckBox           *showLabels;
+    QCheckBox           *showLegend;
     QCheckBox           *showPoints;
     QNarrowLineEdit     *pointSize;
     QLabel              *pointSizeLabel;

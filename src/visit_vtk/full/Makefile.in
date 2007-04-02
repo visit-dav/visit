@@ -254,6 +254,9 @@
 #    Kathleen Bonnell, Wed Sep 21 17:15:58 PDT 2005
 #    Added vtkPolyDataOnionPeelFilter.
 #
+#    Kathleen Bonnell, Thu Oct 27 15:02:44 PDT 2005 
+#    Added vtkLineLegend.
+#
 ##############################################################################
 
 ##
@@ -274,6 +277,7 @@ SRC=InitVTK.C \
     vtkDashedXorGridMapper2D.C \
     vtkDataSetRemoveGhostCells.C \
     vtkDisjointCubesFacelistFilter.C \
+    vtkLineLegend.C \
     vtkLineoutFilter.C \
     vtkLinesFromOriginalCells.C \
     vtkOBJWriter.C \

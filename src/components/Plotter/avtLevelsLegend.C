@@ -422,3 +422,51 @@ avtLevelsLegend::ChangePosition(float x, float y)
 }
 
 
+// ****************************************************************************
+//  Method: avtLevelsLegend::ChangeTitle
+//
+//  Purpose:
+//      Because the base type doesn't know what kind of 2D actor we have used,
+//      this is the hook that allows it to do the bookkeeping and the derived
+//      type to do the actual work of changing the legend's title.
+//
+//  Arguments:
+//      t       The new title.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   October 25, 2005 
+// 
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtLevelsLegend::ChangeTitle(const char *t)
+{
+    sBar->SetTitle(t);
+}
+
+
+// ****************************************************************************
+//  Method: avtLevelsLegend::ChangeFontHeight
+//
+//  Purpose:
+//      Because the base type doesn't know what kind of 2D actor we have used,
+//      this is the hook that allows it to do the bookkeeping and the derived
+//      type to do the actual work of changing the legend's font height.
+//
+//  Arguments:
+//      fh      The new font height.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   October 25, 2005 
+// 
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtLevelsLegend::ChangeFontHeight(float fh)
+{
+    sBar->SetFontHeight(fh);
+}
