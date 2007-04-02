@@ -323,6 +323,9 @@ avtPickQuery::PostExecute(void)
 //    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
 //    Added avtDatAttributes arg.
 //
+//    Kathleen Bonnell, Wed Jun 14 16:41:03 PDT 2006
+//    Require update if Pick's timestep doesn't match the pipeline timestep.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -349,7 +352,7 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
 
     avtDataSpecification_p dspec = 
         inData->GetTerminatingSource()->GetFullDataSpecification();
-
+    int currentTime = dspec->GetTimestep(); 
     intVector dlist;
     dspec->GetSIL().GetDomainList(dlist);
     if (dlist.size() == 1 && dspec->UsesAllDomains())
@@ -362,7 +365,6 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
     }
 
     bool requiresUpdate = false;
-
     dspec = new avtDataSpecification(pickAtts.GetActiveVariable().c_str(),
                                      pickAtts.GetTimeStep(), querySILR);
     //  
@@ -406,8 +408,11 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
             requiresUpdate = true;
         }
     }
+    if (currentTime != pickAtts.GetTimeStep())
+    {
+        requiresUpdate = true;
+    }
     requiresUpdate = (bool)UnifyMaximumValue((int)requiresUpdate);
-
     if (requiresUpdate && !singleDomain && maxDom != -1)
     {
         intVector dlist;

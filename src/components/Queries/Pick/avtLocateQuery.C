@@ -50,6 +50,8 @@
 #include <vtkVisItCellLocator.h>
 #include <vtkVisItUtility.h>
 #include <NonQueryableInputException.h>
+#include <avtTerminatingSource.h>
+#include <avtExpressionEvaluatorFilter.h>
 
 
 #include <avtParallel.h>
@@ -399,4 +401,44 @@ avtLocateQuery::RayIntersectsDataSet(vtkDataSet *ds)
     }
     double dummy1[3], dummy2;
     return (vtkBox::IntersectBox(bnds, pt1, dir, dummy1, dummy2));
+}
+
+
+// ****************************************************************************
+//  Method: avtLocateQuery::ApplyFilters
+//
+//  Purpose:
+//      Retrieves the terminating source to use as input. 
+//
+//  Programmer: Kathleen Bonnell  
+//  Creation:   June 14, 2006 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtDataObject_p
+avtLocateQuery::ApplyFilters(avtDataObject_p inData)
+{
+    avtDataSpecification_p dspec = 
+        inData->GetTerminatingSource()->GetFullDataSpecification();
+
+    if (timeVarying || dspec->GetTimestep() == pickAtts.GetTimeStep())
+        return avtDatasetQuery::ApplyFilters(inData);
+
+    avtPipelineSpecification_p orig_pspec = inData->GetTerminatingSource()->
+        GetGeneralPipelineSpecification();
+
+    avtDataSpecification_p oldSpec = orig_pspec->GetDataSpecification();
+    avtDataSpecification_p newDS = new
+        avtDataSpecification(oldSpec, querySILR);
+
+    newDS->SetTimestep(pickAtts.GetTimeStep());
+
+    avtPipelineSpecification_p pspec =
+        new avtPipelineSpecification(newDS, queryAtts.GetPipeIndex());
+    avtDataObject_p rv;
+    CopyTo(rv, inData);
+    rv->Update(pspec);
+    return rv;
 }

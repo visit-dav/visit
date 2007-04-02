@@ -2961,8 +2961,11 @@ NetworkManager::StopQueryMode(void)
 //    Kathleen Bonnell, Tue Jan  3 15:06:23 PST 2006
 //    Set an error message in PickAttributes if GlyphPick fails.
 //
+//    Kathleen Bonnell, Wed Jun 14 16:41:03 PDT 2006
+//    Send silr and pipeline Index (via QueryAtts) to LocateQuery. 
+//
 // ****************************************************************************
-
+ 
 void
 NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
 {
@@ -3078,6 +3081,7 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
     TRY
     {
         QueryAttributes qa;
+        qa.SetPipeIndex(networkCache[id]->GetPipelineSpec()->GetPipelineIndex());
         if (pa->GetPickType() != PickAttributes::CurveNode &&
             pa->GetPickType() != PickAttributes::CurveZone)
         {
@@ -3098,6 +3102,10 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
                     lQ = new avtLocateCellQuery;
                     lQ->SetInput(queryInput);
                     lQ->SetPickAtts(pa);
+                    if (*silr != NULL)
+                    {
+                        lQ->SetSILRestriction(silr->MakeAttributes());
+                    }
                     int queryTimer = visitTimer->StartTimer();
                     lQ->PerformQuery(&qa); 
                     visitTimer->StopTimer(queryTimer, lQ->GetType());
@@ -3113,6 +3121,10 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
                     lQ = new avtLocateNodeQuery;
                     lQ->SetInput(queryInput);
                     lQ->SetPickAtts(pa);
+                    if (*silr != NULL)
+                    {
+                        lQ->SetSILRestriction(silr->MakeAttributes());
+                    }
                     int queryTimer = visitTimer->StartTimer();
                     lQ->PerformQuery(&qa); 
                     visitTimer->StopTimer(queryTimer, lQ->GetType());
