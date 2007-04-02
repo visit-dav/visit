@@ -213,6 +213,7 @@ const char *expr_vector[] = {
     "cross",
     "dot",
     "magnitude",
+    "normalize",
     NULL
 };
 

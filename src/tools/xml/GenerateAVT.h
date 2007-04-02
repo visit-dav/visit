@@ -889,8 +889,8 @@ class AVTGeneratorPlugin
             h << "    // This is used to return unconvention data -- ranging from material" << endl;
             h << "    // information to information about block connectivity." << endl;
             h << "    //" << endl;
-            h << "    // virtual void      *GetAuxiliaryData(const char *var, const char *type," << endl;
-            h << "    //                                     int timestep, void *args, " << endl;
+            h << "    // virtual void      *GetAuxiliaryData(const char *var, int timestep, " << endl;
+            h << "    //                                     const char *type, void *args, " << endl;
             h << "    //                                     DestructorFunction &);" << endl;
             h << "    //" << endl;
             h << "" << endl;
@@ -961,8 +961,8 @@ class AVTGeneratorPlugin
             h << "    // This is used to return unconvention data -- ranging from material" << endl;
             h << "    // information to information about block connectivity." << endl;
             h << "    //" << endl;
-            h << "    // virtual void      *GetAuxiliaryData(const char *var, const char *type," << endl;
-            h << "    //                                     int domain, void *args, " << endl;
+            h << "    // virtual void      *GetAuxiliaryData(const char *var, int domain," << endl;
+            h << "    //                                     const char *type, void *args, " << endl;
             h << "    //                                     DestructorFunction &);" << endl;
             h << "    //" << endl;
             h << "" << endl;
@@ -1030,8 +1030,8 @@ class AVTGeneratorPlugin
             h << "    // This is used to return unconvention data -- ranging from material" << endl;
             h << "    // information to information about block connectivity." << endl;
             h << "    //" << endl;
-            h << "    // virtual void      *GetAuxiliaryData(const char *var, const char *type," << endl;
-            h << "    //                                     int timestep, int domain,void *args, " << endl;
+            h << "    // virtual void      *GetAuxiliaryData(const char *var, int timestep, " << endl;
+            h << "    //                                     int domain, const char *type, void *args, " << endl;
             h << "    //                                     DestructorFunction &);" << endl;
             h << "    //" << endl;
             h << "" << endl;
