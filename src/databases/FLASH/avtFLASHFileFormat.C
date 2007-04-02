@@ -65,8 +65,11 @@
 
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
+#include <DebugStream.h>
 
 #include <visit-hdf5.h>
+
+#define FLASH3 8
 
 using std::vector;
 using std::string;
@@ -369,6 +372,9 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Jeremy Meredith, Thu Sep 29 11:12:50 PDT 2005
 //    Added support for converting 1D AMR grids to curves.
 //
+//    Kathleen Bonnell, Thu Jul 20 11:22:13 PDT 2006
+//    Added support for FLASH3 formats.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -420,36 +426,67 @@ avtFLASHFileFormat::GetMesh(int domain, const char *meshname)
         vtkPoints *points  = vtkPoints::New();
         points->SetNumberOfPoints(numParticles);
         float *pts = (float *) points->GetVoidPointer(0);
-        int i;
+        int i, index = 0;
 
-        hid_t xtype = H5Tcreate(H5T_COMPOUND, sizeof(double));
-        hid_t ytype = H5Tcreate(H5T_COMPOUND, sizeof(double));
-        hid_t ztype = H5Tcreate(H5T_COMPOUND, sizeof(double));
-        H5Tinsert(xtype, "particle_x", 0, H5T_NATIVE_DOUBLE);
-        H5Tinsert(ytype, "particle_y", 0, H5T_NATIVE_DOUBLE);
-        H5Tinsert(ztype, "particle_z", 0, H5T_NATIVE_DOUBLE);
-
+        hid_t xtype, ytype, ztype; 
+ 
         double *ddata = new double[numParticles];
-
+        if (fileFormatVersion < FLASH3)
+        {
+            xtype = H5Tcreate(H5T_COMPOUND, sizeof(double));
+            ytype = H5Tcreate(H5T_COMPOUND, sizeof(double));
+            ztype = H5Tcreate(H5T_COMPOUND, sizeof(double));
+            H5Tinsert(xtype, "particle_x", 0, H5T_NATIVE_DOUBLE);
+            H5Tinsert(ytype, "particle_y", 0, H5T_NATIVE_DOUBLE);
+            H5Tinsert(ztype, "particle_z", 0, H5T_NATIVE_DOUBLE);
+        }
         if (dimension >= 1)
         {
-            H5Dread(pointId, xtype, H5S_ALL,H5S_ALL,H5P_DEFAULT, ddata);
+            if (fileFormatVersion < FLASH3)
+            {
+                H5Dread(pointId, xtype, H5S_ALL,H5S_ALL,H5P_DEFAULT, ddata);
+            }
+            else 
+            {
+                ReadParticleVar(pointId, "Particles/posx", ddata);
+            }
             for (i=0; i<numParticles; i++)
+            {
                 pts[i*3+0] = float(ddata[i]);
+            }
+ 
         }
 
         if (dimension >= 2)
         {
-            H5Dread(pointId, ytype, H5S_ALL,H5S_ALL,H5P_DEFAULT, ddata);
+            if (fileFormatVersion < FLASH3) 
+            {
+                H5Dread(pointId, ytype, H5S_ALL,H5S_ALL,H5P_DEFAULT, ddata);
+            }
+            else 
+            {
+                ReadParticleVar(pointId, "Particles/posy", ddata);
+            }
             for (i=0; i<numParticles; i++)
+            {
                 pts[i*3+1] = float(ddata[i]);
+            }
         }
 
         if (dimension >= 3)
         {
-            H5Dread(pointId, ztype, H5S_ALL,H5S_ALL,H5P_DEFAULT, ddata);
+            if (fileFormatVersion < FLASH3) 
+            {
+                 H5Dread(pointId, ztype, H5S_ALL,H5S_ALL,H5P_DEFAULT, ddata);
+            }
+            else 
+            {
+                ReadParticleVar(pointId, "Particles/posz", ddata);
+            }
             for (i=0; i<numParticles; i++)
+            {
                 pts[i*3+2] = float(ddata[i]);
+            }
         }
 
         // fill in zeros
@@ -459,9 +496,12 @@ avtFLASHFileFormat::GetMesh(int domain, const char *meshname)
                 pts[i*3 + d] = 0;
         }
 
-        H5Tclose(xtype);
-        H5Tclose(ytype);
-        H5Tclose(ztype);
+        if (fileFormatVersion < FLASH3)
+        {
+            H5Tclose(xtype);
+            H5Tclose(ytype);
+            H5Tclose(ztype);
+        }
         H5Dclose(pointId);
 
         vtkUnstructuredGrid  *ugrid = vtkUnstructuredGrid::New(); 
@@ -639,16 +679,16 @@ avtFLASHFileFormat::GetMesh(int domain, const char *meshname)
 // ****************************************************************************
 
 vtkDataArray *
-avtFLASHFileFormat::GetVar(int domain, const char *varname)
+avtFLASHFileFormat::GetVar(int domain, const char *vname)
 {
     ReadAllMetaData();
 
-    if (particleOriginalIndexMap.count(varname))
+    if (particleOriginalIndexMap.count(vname))
     {
         //
         // It's a particle variable
         //
-        int    index = particleOriginalIndexMap[varname];
+        int    index = particleOriginalIndexMap[vname];
         string varname = particleVarNames[index];
         hid_t  vartype = particleVarTypes[index];
 
@@ -660,16 +700,22 @@ avtFLASHFileFormat::GetVar(int domain, const char *varname)
 
         if (vartype == H5T_NATIVE_DOUBLE)
         {
-            hid_t h5type = H5Tcreate(H5T_COMPOUND, sizeof(double));
-            H5Tinsert(h5type, varname.c_str(), 0, H5T_NATIVE_DOUBLE);
-
             double *ddata = new double[numParticles];
-            H5Dread(pointId, h5type, H5S_ALL,H5S_ALL,H5P_DEFAULT, ddata);
+            if (fileFormatVersion < FLASH3)
+            {
+                hid_t h5type = H5Tcreate(H5T_COMPOUND, sizeof(double));
+                H5Tinsert(h5type, varname.c_str(), 0, H5T_NATIVE_DOUBLE);
 
+                H5Dread(pointId, h5type, H5S_ALL,H5S_ALL,H5P_DEFAULT, ddata);
+                H5Tclose(h5type);
+            }
+            else
+            {
+                ReadParticleVar(pointId, vname, ddata);
+            }
             for (int i=0; i<numParticles; i++)
                 data[i] = ddata[i];
 
-            H5Tclose(h5type);
         }
         else if (vartype == H5T_NATIVE_INT)
         {
@@ -699,10 +745,10 @@ avtFLASHFileFormat::GetVar(int domain, const char *varname)
         // It's a grid variable
         //
 
-        hid_t varId = H5Dopen(fileId, varname);
+        hid_t varId = H5Dopen(fileId, vname);
         if (varId < 0)
         {
-            EXCEPTION1(InvalidVariableException, varname);
+            EXCEPTION1(InvalidVariableException, vname);
         }
 
         hid_t spaceId = H5Dget_space(varId);
@@ -712,7 +758,7 @@ avtFLASHFileFormat::GetVar(int domain, const char *varname)
 
         if (ndims != 4)
         {
-            EXCEPTION1(InvalidVariableException, varname);
+            EXCEPTION1(InvalidVariableException, vname);
         }
 
         int ntuples = dims[1]*dims[2]*dims[3];  //dims[0]==numBlocks
@@ -805,7 +851,7 @@ avtFLASHFileFormat::GetVar(int domain, const char *varname)
         else
         {
             // ERROR: UKNOWN TYPE
-            EXCEPTION1(InvalidVariableException, varname);
+            EXCEPTION1(InvalidVariableException, vname);
         }
 
         // Done with hyperslab
@@ -886,7 +932,17 @@ avtFLASHFileFormat::ReadAllMetaData()
         EXCEPTION1(InvalidFilesException, filename.c_str());
     }
 
-    ReadParticleAttributes();
+    ReadVersionInfo();
+
+    if (fileFormatVersion < FLASH3)
+    {
+        ReadParticleAttributes(); // FLASH2 version
+    }
+    else 
+    {
+        ReadParticleAttributes_FLASH3(); // FLASH3 version
+    }
+
     ReadBlockStructure();
 
     if (numParticles == 0 && numBlocks == 0)
@@ -923,6 +979,7 @@ avtFLASHFileFormat::ReadAllMetaData()
 //    particles and no grids, and we want to support those without errors.
 //
 // ****************************************************************************
+
 void avtFLASHFileFormat::ReadBlockStructure()
 {
     // temporarily disable error reporting
@@ -1198,30 +1255,47 @@ void avtFLASHFileFormat::ReadRefinementLevels()
 //    order or as different data types, and thus we can't assume a single
 //    data structure.
 //
+//    Kathleen Bonnell, Thu Jul 20 11:22:13 PDT 2006
+//    Added support for FLASH3 file versions.
+//
 // ****************************************************************************
 void avtFLASHFileFormat::ReadSimulationParameters()
 {
-    //
-    // Read the simulation parameters
-    //
-    hid_t simparamsId = H5Dopen(fileId, "simulation parameters");
-    if (simparamsId < 0)
+    if (fileFormatVersion < FLASH3)
     {
-        EXCEPTION1(InvalidFilesException, filename.c_str());
-    }
+        //
+        // Read the simulation parameters
+        //
+        hid_t simparamsId = H5Dopen(fileId, "simulation parameters");
+        if (simparamsId < 0)
+        {
+            EXCEPTION1(InvalidFilesException, filename.c_str());
+        }
 
-    hid_t sp_type = H5Tcreate(H5T_COMPOUND, sizeof(SimParams));
-    H5Tinsert(sp_type, "total blocks",   HOFFSET(SimParams, total_blocks), H5T_NATIVE_INT);
-    H5Tinsert(sp_type, "time",           HOFFSET(SimParams, time),         H5T_NATIVE_DOUBLE);
-    H5Tinsert(sp_type, "timestep",       HOFFSET(SimParams, timestep),     H5T_NATIVE_DOUBLE);
-    H5Tinsert(sp_type, "redshift",       HOFFSET(SimParams, redshift),     H5T_NATIVE_DOUBLE);
-    H5Tinsert(sp_type, "number of steps",HOFFSET(SimParams, nsteps),       H5T_NATIVE_INT);
-    H5Tinsert(sp_type, "nxb",            HOFFSET(SimParams, nxb),          H5T_NATIVE_INT);
-    H5Tinsert(sp_type, "nyb",            HOFFSET(SimParams, nyb),          H5T_NATIVE_INT);
-    H5Tinsert(sp_type, "nzb",            HOFFSET(SimParams, nzb),          H5T_NATIVE_INT);
+        hid_t sp_type = H5Tcreate(H5T_COMPOUND, sizeof(SimParams));
+        H5Tinsert(sp_type, "total blocks",   HOFFSET(SimParams, total_blocks), H5T_NATIVE_INT);
+        H5Tinsert(sp_type, "time",           HOFFSET(SimParams, time),         H5T_NATIVE_DOUBLE);
+        H5Tinsert(sp_type, "timestep",       HOFFSET(SimParams, timestep),     H5T_NATIVE_DOUBLE);
+        H5Tinsert(sp_type, "redshift",       HOFFSET(SimParams, redshift),     H5T_NATIVE_DOUBLE);
+        H5Tinsert(sp_type, "number of steps",HOFFSET(SimParams, nsteps),       H5T_NATIVE_INT);
+        H5Tinsert(sp_type, "nxb",            HOFFSET(SimParams, nxb),          H5T_NATIVE_INT);
+        H5Tinsert(sp_type, "nyb",            HOFFSET(SimParams, nyb),          H5T_NATIVE_INT);
+        H5Tinsert(sp_type, "nzb",            HOFFSET(SimParams, nzb),          H5T_NATIVE_INT);
 
-    H5Dread(simparamsId, sp_type, H5S_ALL, H5S_ALL, H5P_DEFAULT,
+        H5Dread(simparamsId, sp_type, H5S_ALL, H5S_ALL, H5P_DEFAULT,
             &simParams);
+
+        // Done with the type
+        H5Tclose(sp_type);
+
+        // Done with the variable; don't leak it
+        H5Dclose(simparamsId);
+    }
+    else
+    {
+        ReadIntegerScalars();
+        ReadRealScalars();
+    }
 
     // Sanity check: size of the gid array better match number of blocks
     //               reported in the simulation parameters
@@ -1262,12 +1336,6 @@ void avtFLASHFileFormat::ReadSimulationParameters()
         block_ndims[2] = simParams.nzb+1;
         block_zdims[2] = simParams.nzb;
     }
-
-    // Done with the type
-    H5Tclose(sp_type);
-
-    // Done with the variable; don't leak it
-    H5Dclose(simparamsId);
 }
 
 // ****************************************************************************
@@ -1680,3 +1748,427 @@ avtFLASHFileFormat::GetAuxiliaryData(const char *var, int dom,
     return ((void *) itree);
 }
 
+
+// ****************************************************************************
+//  Method:  avtFLASHFileFormat::ReadVersionInfo
+//
+//  Purpose:
+//    Read the version info.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    July 18, 2006 
+//
+//  Modifications:
+//    Kathleen Bonnell, Fri Aug 18 16:47:44 PDT 2006
+//    Add test for particles files, as version test cannot be done for them
+//    in the usual manner.
+//
+// ****************************************************************************
+
+void
+avtFLASHFileFormat::ReadVersionInfo()
+{
+    debug5 << "Determining FLASH file format version." << endl;
+    // temporarily disable error reporting
+    H5E_auto_t  old_errorfunc;
+    void       *old_clientdata;
+    H5Eget_auto(&old_errorfunc, &old_clientdata);
+    H5Eset_auto(NULL, NULL);
+  
+    // If this is a FLASH3 Particles file, or a FLASH3 file with particles, 
+    // then it will have the "particle names" field.  Otherwise more checking 
+    // needs to be done.  We perform this check first because particles
+    // files will not have "file format version" (FLASH2) or "sim info" 
+    // (FLASH3) making it impossible to determine format version in the
+    // usual manner.
+   
+    hid_t h5_PN = H5Dopen(fileId, "particle names");
+    if (h5_PN >= 0)
+    {
+        debug5 << " Found particle names, assuming FLASH3" << endl;
+        fileFormatVersion = FLASH3;
+        H5Dclose(h5_PN);
+
+        // turn back on error reporting
+        H5Eset_auto(old_errorfunc, old_clientdata);
+        return;
+    }
+
+    //
+    // Read the file format version  (<= 7 means FLASH2)
+    //
+    hid_t h5_FFV = H5Dopen(fileId, "file format version");
+
+    if (h5_FFV < 0)
+    {
+        debug5 << "File format version not found in global attributes.  " 
+               << "Looking for sim info." << endl;
+        hid_t h5_SI = H5Dopen(fileId, "sim info");
+        if (h5_SI < 0)
+        {
+            debug5 << "sim info not found, assuming FLASH2." << endl;
+            fileFormatVersion = 7;
+        }
+        else
+        {
+            debug5 << "sim info found, assuming FLASH3."  << endl;
+            fileFormatVersion = FLASH3; // FLASH3 
+            H5Dclose(h5_SI);
+        }
+        // turn back on error reporting
+        H5Eset_auto(old_errorfunc, old_clientdata);
+        return;
+    }
+
+    // FLASH 2 has file format version available in global attributes.
+    H5Dread(h5_FFV, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
+        &fileFormatVersion);
+
+    H5Dclose(h5_FFV);
+    // turn back on error reporting
+    H5Eset_auto(old_errorfunc, old_clientdata);
+}
+
+// ****************************************************************************
+//  Method:  avtFLASHFileFormat::ReadIntegerScalars
+//
+//  Purpose:
+//    Read the integer scalars from the file.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    July 18, 2006 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void 
+avtFLASHFileFormat::ReadIntegerScalars()
+{
+    // Should only be used for FLASH3 files
+    if (fileFormatVersion != FLASH3)
+        return;
+
+    hid_t intScalarsId = H5Dopen(fileId, "integer scalars");
+    //
+    //
+    // Read the integer scalars
+    //
+    if (intScalarsId < 0)
+    {
+        debug5 <<  "FLASH3  could not read integer scalars"<< endl;
+        EXCEPTION1(InvalidFilesException, filename.c_str());
+    }
+
+    hid_t spaceId = H5Dget_space(intScalarsId);
+    if (spaceId < 0)
+    {
+        debug5 << "FLASH3 could not get the space of integer scalars" << endl;
+        EXCEPTION1(InvalidFilesException, filename.c_str());
+    }
+
+    hsize_t scalarDims[1];
+    hsize_t ndims = H5Sget_simple_extent_dims(spaceId, scalarDims, NULL);
+    int nScalars = scalarDims[0];
+
+    hid_t datatype = H5Tcreate(H5T_COMPOUND, sizeof(IntegerScalars));
+
+    hid_t string20 = H5Tcopy(H5T_C_S1);
+    H5Tset_size(string20, 20);
+
+    H5Tinsert(datatype, "name", HOFFSET(IntegerScalars,name), string20);
+    H5Tinsert(datatype, "value", HOFFSET(IntegerScalars,value), H5T_NATIVE_INT);
+    IntegerScalars *is = new IntegerScalars[nScalars];
+
+    H5Dread(intScalarsId, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, is);
+
+    for (int i = 0; i < nScalars; i++)
+    { 
+        if (strncmp(is[i].name, "nxb", 3) == 0)
+            simParams.nxb = is[i].value;
+        else if (strncmp(is[i].name, "nyb", 3) == 0)
+            simParams.nyb = is[i].value;
+        else if (strncmp(is[i].name, "nzb", 3) == 0)
+            simParams.nzb = is[i].value;
+        else if (strncmp(is[i].name, "globalnumblocks", 15) == 0)
+            simParams.total_blocks = is[i].value;
+        else if (strncmp(is[i].name, "nstep", 5) == 0)
+            simParams.nsteps = is[i].value;
+    } 
+    // Done with the variable; don't leak it
+    H5Tclose(string20);
+    H5Tclose(datatype);
+    H5Sclose(spaceId);
+    H5Dclose(intScalarsId);
+}
+
+// ****************************************************************************
+//  Method:  avtFLASHFileFormat::ReadRealScalars
+//
+//  Purpose:
+//    Read the real scalars from the file.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    July 18, 2006 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void 
+avtFLASHFileFormat::ReadRealScalars()
+{
+    // Should only be used for FLASH3 files
+    if (fileFormatVersion != FLASH3)
+        return;
+
+    hid_t realScalarsId = H5Dopen(fileId, "real scalars");
+    //
+    // Read the real scalars
+    //
+    if (realScalarsId < 0)
+    {
+        debug5 << "FLASH3 could not read real scalars" << endl;
+        EXCEPTION1(InvalidFilesException, filename.c_str());
+    }
+
+    hid_t spaceId = H5Dget_space(realScalarsId);
+    if (spaceId < 0)
+    {
+        debug5 << "FLASH3 could not get the space of real scalars" << endl;
+        EXCEPTION1(InvalidFilesException, filename.c_str());
+    }
+
+    hsize_t scalarDims[10];
+    hsize_t ndims = H5Sget_simple_extent_dims(spaceId, scalarDims, NULL);
+
+    int nScalars = scalarDims[0];
+
+    hid_t datatype = H5Tcreate(H5T_COMPOUND, sizeof(RealScalars));
+
+    hid_t string20 = H5Tcopy(H5T_C_S1);
+    H5Tset_size(string20, 20);
+
+    H5Tinsert(datatype, "name", HOFFSET(RealScalars,name), string20);
+    H5Tinsert(datatype, "value", HOFFSET(RealScalars,value), H5T_NATIVE_DOUBLE);
+
+    RealScalars *rs = new RealScalars[nScalars];
+
+    H5Dread(realScalarsId, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, rs);
+
+    for (int i = 0; i < nScalars; i++)
+    { 
+        if (strncmp(rs[i].name, "time", 4) == 0)
+            simParams.time = rs[i].value;
+    } 
+    // Done with the variable; don't leak it
+    H5Tclose(string20);
+    H5Tclose(datatype);
+    H5Sclose(spaceId);
+    H5Dclose(realScalarsId);
+}
+
+
+// ****************************************************************************
+//  Method:  avtFLASHFileFormat::ReadParticleAttributes_FLASH3
+//
+//  Purpose:
+//    Read the the variable names and the dims for the particle attributes.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    July 18, 2006 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtFLASHFileFormat::ReadParticleAttributes_FLASH3()
+{
+    // Should only be used for FLASH3 files
+    if (fileFormatVersion != FLASH3)
+        return;
+
+    // temporarily disable error reporting
+    H5E_auto_t  old_errorfunc;
+    void       *old_clientdata;
+    H5Eget_auto(&old_errorfunc, &old_clientdata);
+    H5Eset_auto(NULL, NULL);
+
+    hid_t pnameId = H5Dopen(fileId, "particle names");
+
+    // turn back on error reporting
+    H5Eset_auto(old_errorfunc, old_clientdata);
+
+    // do we have particle names?
+    if (pnameId < 0)
+    {
+        debug5 << "FLASH3 no particles names" << endl;
+        numParticles = 0; 
+        return;
+    }
+    
+    hid_t pnamespace = H5Dget_space(pnameId);
+    hsize_t dims[10];
+    hsize_t ndims =  H5Sget_simple_extent_dims(pnamespace, dims, NULL);
+
+    // particle names ndims should be 2, and if the second dim isn't 1,
+    // need to come up with a way to handle it!
+    if (ndims != 2 || dims[1] != 1) 
+    {
+        if (ndims != 2)
+        {
+            debug5 << "FLASH3 expecting particle names ndims of 2, got "  
+                   << ndims << endl;
+        }
+        if (dims[1] != 1)
+        {
+            debug5 << "FLASH3 expecting particle names dims[1] of 1, got "  
+                   << dims[1] << endl;
+        }
+        EXCEPTION1(InvalidFilesException, filename.c_str());
+    }
+
+    int numNames = dims[0];
+
+    // create the right-size string, and a char array to read the data into
+    hid_t string24 = H5Tcopy(H5T_C_S1);
+    H5Tset_size(string24, 24);
+    char cnames[24*numNames];
+    H5Dread(pnameId, string24, H5S_ALL, H5S_ALL, H5P_DEFAULT, cnames);
+
+    // Convert the single string to individual variable names.
+    string  snames(cnames);
+    for (int i = 0; i < numNames; i++)
+    { 
+        string name = snames.substr(i*24, 24);
+        int sp = name.find_first_of(' ');
+        if (sp < 24);
+            name = name.substr(0, sp);
+        string nice_name = GetNiceParticleName(name);
+        particleVarTypes.push_back(H5T_NATIVE_DOUBLE);
+        particleVarNames.push_back(name);
+        particleOriginalIndexMap[nice_name] = i;
+
+        // We read the particles before the grids.  Just in case we
+        // don't have any grids, take a stab at the problem dimension
+        // based purely on the existence of various data members.
+        // This will be overwritten by the true grid topological
+        // dimension if the grid exists.
+        if (name == "posx" && dimension < 1)
+            dimension = 1;
+        if (name == "posy" && dimension < 2)
+            dimension = 2;
+        if (name == "posz" && dimension < 3)
+            dimension = 3;
+    } 
+    H5Tclose(string24);
+    H5Sclose(pnamespace);
+    H5Dclose(pnameId);
+   
+    // 
+    // Read particle dimensions and particle HDFVarName 
+    // 
+
+    // temporarily disable error reporting
+    H5Eget_auto(&old_errorfunc, &old_clientdata);
+    H5Eset_auto(NULL, NULL);
+
+    // find the particle variable (if it exists)
+    hid_t pointId;
+    particleHDFVarName = "particle tracers";
+    pointId = H5Dopen(fileId, particleHDFVarName.c_str());
+    if (pointId < 0)
+    {
+        particleHDFVarName = "tracer particles";
+        pointId = H5Dopen(fileId, particleHDFVarName.c_str());
+    }
+
+    // turn back on error reporting
+    H5Eset_auto(old_errorfunc, old_clientdata);
+
+    // Doesn't exist?  No problem -- we just don't have any particles
+    if (pointId < 0)
+    {
+        debug5 << "FLASH3 no tracer particles" << endl;
+        numParticles = 0;
+        return;
+    }
+
+    hid_t pointSpaceId = H5Dget_space(pointId);
+
+    hsize_t p_dims[10];
+    hsize_t p_ndims =  H5Sget_simple_extent_dims(pointSpaceId, p_dims, NULL);
+    if (p_ndims != 2)
+    {
+        debug5 << "FLASH3, expecting particle tracer ndims of 2, got"
+               << p_ndims << endl;
+        EXCEPTION1(InvalidFilesException, filename.c_str());
+    }
+    numParticles = p_dims[0];
+
+    H5Sclose(pointSpaceId);
+    H5Dclose(pointId);
+} 
+
+
+
+// ****************************************************************************
+//  Method:  avtFLASHFileFormat::ReadParticleVar
+//
+//  Purpose:
+//    Read the data associated with a particle var.
+//
+//  Arguments:
+//    pointId    The identifier for the particles dataset.
+//    vname      The name of the variable to retrieve
+//    ddata      A place to store the data. 
+//
+//  Notes:
+//    Assumes the particles dataset associated with pointId is already opened
+//    and will be closed by calling method.
+//    Assumes ddata has already been created to appropriate size.
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    July 18, 2006 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtFLASHFileFormat::ReadParticleVar(hid_t pointId, const char *vname, 
+    double *ddata)
+{
+    // Should only be used for FLASH3 files
+    if (fileFormatVersion != FLASH3)
+        return;
+
+    hsize_t dataspace = H5Dget_space(pointId);
+    hsize_t memdims[1] = {numParticles};
+    hsize_t memspace = H5Screate_simple(1, memdims, NULL);
+    int index = particleOriginalIndexMap[vname];
+
+    hsize_t offset[2] = {0, index};
+    hsize_t count[2] = {numParticles, 1}; 
+
+    H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, offset, NULL, 
+                                    count, NULL);
+    H5Dread(pointId, H5T_NATIVE_DOUBLE, memspace, dataspace, 
+                        H5P_DEFAULT, ddata); 
+ 
+    H5Sclose(dataspace);
+    H5Sclose(memspace);
+}
