@@ -32,4 +32,7 @@
     <Field name="colorOption" label="colorOption" type="enum" subtype="ColorOptions" enable="curveOption:CreateCurve">
       RepeatColor
     </Field>
+    <Field name="freezeInTime" label="freezeInTime" type="bool">
+      false
+    </Field>
   </Attribute>

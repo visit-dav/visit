@@ -111,6 +111,9 @@ QvisGlobalLineoutWindow::~QvisGlobalLineoutWindow()
 //   Kathleen Bonnell, Mon Feb 27 12:36:41 PST 2006
 //   Added more text to createWindow label, to clarify intent. 
 //   
+//   Kathleen Bonnell, Thu Nov  2 14:01:01 PST 2006 
+//   Added freezInTime.
+//   
 // ****************************************************************************
 
 void
@@ -137,22 +140,31 @@ QvisGlobalLineoutWindow::CreateWindowContents()
             this, SLOT(windowIdProcessText()));
     mainLayout->addWidget(windowId, 1,1);
 
+
+    // Freeze In Time
+    freezeInTime = new QCheckBox("Freeze In Time", central, "freezeInTime");
+    connect(freezeInTime, SIGNAL(toggled(bool)),
+            this, SLOT(freezeInTimeChanged(bool)));
+    mainLayout->addMultiCellWidget(freezeInTime,2,2,0,1);
+
     //
     // Dynamic 
     //
     QGroupBox *dbox;
 #if QT_VERSION >= 0x030200
-    dynamic = new QGroupBox("Dynamic", central, "dynamic");
+    dynamic = new QGroupBox("Synchronize with originating plot",
+                             central, "dynamic");
     dynamic->setCheckable(true);
     dbox = dynamic;
     connect(dynamic, SIGNAL(toggled(bool)),
             this, SLOT(dynamicChanged(bool)));
     topLayout->addWidget(dynamic);
 #else
-    dynamic = new QCheckBox("Dynamic", central, "dynamic");
+    dynamic = new QCheckBox("Synchronize with originating plot",
+                             central, "dynamic");
     connect(dynamic, SIGNAL(toggled(bool)),
             this, SLOT(dynamicChanged(bool)));
-    mainLayout->addMultiCellWidget(dynamic,2,2,0,1);
+    mainLayout->addMultiCellWidget(dynamic,3,3,0,1);
 
     dynamicGroup = new QGroupBox("Dynamic options", central, "dynamic");
     topLayout->addWidget(dynamicGroup);
@@ -255,6 +267,9 @@ QvisGlobalLineoutWindow::CreateWindowContents()
 //   Kathleen Bonnell, Thu Feb  3 15:51:06 PST 2005 
 //   Added curveOptions and colorOptions for Dynamic mode. 
 //
+//   Kathleen Bonnell, Thu Nov  2 14:01:01 PST 2006 
+//   Added freezInTime.
+//   
 // ****************************************************************************
 
 void
@@ -275,6 +290,11 @@ QvisGlobalLineoutWindow::UpdateWindow(bool doAll)
         {
           case 0: //Dynamic
             dynamic->setChecked(atts->GetDynamic());
+            if (atts->GetDynamic())
+            {
+                freezeInTime->setChecked(false); 
+            }
+            freezeInTime->setEnabled(!atts->GetDynamic()); 
             curveOptions->setEnabled(atts->GetDynamic()) ;
             curveLabel->setEnabled(atts->GetDynamic()) ;
             colorOptions->setEnabled(atts->GetDynamic() && 
@@ -330,6 +350,12 @@ QvisGlobalLineoutWindow::UpdateWindow(bool doAll)
             break;
           case 7: //colorOption
             colorOptions->setCurrentItem(atts->GetColorOption());
+            break;
+          case 8: //freezeInTime
+            freezeInTime->setChecked(atts->GetFreezeInTime());
+            if (atts->GetFreezeInTime())
+                dynamic->setChecked(false);
+            dynamic->setEnabled(!atts->GetFreezeInTime());
             break;
         }
     }
@@ -540,3 +566,9 @@ QvisGlobalLineoutWindow::colorOptionsChanged(int mode)
     Apply();
 }
 
+void
+QvisGlobalLineoutWindow::freezeInTimeChanged(bool val)
+{
+    atts->SetFreezeInTime(val);
+    Apply();
+}
