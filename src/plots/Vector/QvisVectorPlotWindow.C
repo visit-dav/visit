@@ -46,6 +46,7 @@
 #include <qlineedit.h>
 #include <qpushbutton.h>
 #include <qradiobutton.h>
+#include <qtabwidget.h>
 
 #include <VectorAttributes.h>
 #include <ViewerProxy.h>
@@ -146,42 +147,182 @@ QvisVectorPlotWindow::~QvisVectorPlotWindow()
 //   Kathleen Bonnell, Wed Dec 22 16:42:35 PST 2004
 //   Added widgets for min/max and limits selection. 
 //
+//   Jeremy Meredith, Mon Mar 19 16:24:08 EDT 2007
+//   Added controls for lineStem, stemWidth, and highQuality.
+//   Reorganized the window a bit.  Allowed disabling use of tabs
+//   by simply removing the TABS #define below -- this puts it back
+//   to the tall version of the window with groupboxes for sections.
+//
 // ****************************************************************************
-
+#define TABS
 void
 QvisVectorPlotWindow::CreateWindowContents()
 {
-    QGridLayout *gLayout = new QGridLayout(topLayout, 6, 4);
+    QRadioButton *rb;
+
+#ifdef TABS
+    QTabWidget *topTab = new QTabWidget(central, "topTab");
+    topLayout->addWidget(topTab);
+#endif
+    QGridLayout *gLayout = new QGridLayout(topLayout, 6, 2);
     gLayout->setSpacing(10);
 
+    //
+    // Create the reduce-related widgets.
+    //
+    reduceGroupBox = new QGroupBox(central, "reduceGroupBox");
+#ifdef TABS
+    topTab->addTab(reduceGroupBox, "Reduce by");
+    reduceGroupBox->setFrameStyle(QFrame::NoFrame);
+#else
+    gLayout->addMultiCellWidget(reduceGroupBox, 0,0, 0,1);
+    reduceGroupBox->setTitle("Reduce by");
+#endif
+    QVBoxLayout *rgTopLayout = new QVBoxLayout(reduceGroupBox);
+    rgTopLayout->setMargin(10);
+    rgTopLayout->addSpacing(15);
+    QGridLayout *rgLayout = new QGridLayout(rgTopLayout, 3, 2);
+    rgLayout->setSpacing(10);
+    rgLayout->setColStretch(1, 10);
+
+    // Create the reduce button group.
+    reduceButtonGroup = new QButtonGroup(0, "reduceButtonGroup");
+    connect(reduceButtonGroup, SIGNAL(clicked(int)),
+            this, SLOT(reduceMethodChanged(int)));
+    rb= new QRadioButton("N vectors", reduceGroupBox);
+    rb->setChecked(true);
+    reduceButtonGroup->insert(rb, 0);
+    rgLayout->addWidget(rb, 0, 0);
+    rb = new QRadioButton("Stride", reduceGroupBox);
+    reduceButtonGroup->insert(rb, 1);
+    rgLayout->addWidget(rb, 1, 0);
+
+    // Add the N vectors line edit.
+    nVectorsLineEdit = new QLineEdit(reduceGroupBox, "nVectorsLineEdit");
+    connect(nVectorsLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processNVectorsText()));
+    rgLayout->addWidget(nVectorsLineEdit, 0, 1);
+
+    // Add the stride line edit.
+    strideLineEdit = new QLineEdit(reduceGroupBox, "strideLineEdit");
+    connect(strideLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processStrideText()));
+    rgLayout->addWidget(strideLineEdit, 1, 1);
+
+
+    //
+    // Create the style-related widgets
+    //
+    styleGroupBox = new QGroupBox(central, "styleGroupBox");
+#ifdef TABS
+    topTab->addTab(styleGroupBox, "Style");
+    styleGroupBox->setFrameStyle(QFrame::NoFrame);
+#else
+    gLayout->addMultiCellWidget(styleGroupBox, 1,1, 0,1);
+    styleGroupBox->setTitle("Vector style");
+#endif
+    QVBoxLayout *styleTopLayout = new QVBoxLayout(styleGroupBox);
+    styleTopLayout->setMargin(10);
+    styleTopLayout->addSpacing(15);
+    QGridLayout *styleLayout = new QGridLayout(styleTopLayout, 8, 4);
+    styleLayout->setSpacing(10);
+    styleLayout->setColSpacing(0, 20);
+    styleLayout->setColStretch(1, 10);
+
+    // Create the line stem method radio buttons
+    lineStemButtonGroup = new QButtonGroup(0, "lineStemButtonGroup");
+    connect(lineStemButtonGroup, SIGNAL(clicked(int)),
+            this, SLOT(lineStemMethodChanged(int)));
+    rb = new QRadioButton("Line:", styleGroupBox);
+    lineStemButtonGroup->insert(rb, 0);
+    styleLayout->addMultiCellWidget(rb, 0,0, 0,0);
+    rb = new QRadioButton("Cylinder:", styleGroupBox);
+    lineStemButtonGroup->insert(rb, 1);
+    styleLayout->addMultiCellWidget(rb, 2,2, 0,0);
+
     // Create the lineStyle widget.
-    lineStyle = new QvisLineStyleWidget(0, central, "lineStyle");
-    gLayout->addWidget(lineStyle, 0, 1);
+    lineStyle = new QvisLineStyleWidget(0, styleGroupBox, "lineStyle");
+    styleLayout->addWidget(lineStyle, 0, 2);
     connect(lineStyle, SIGNAL(lineStyleChanged(int)),
             this, SLOT(lineStyleChanged(int)));
-    QLabel *lineStyleLabel = new QLabel(lineStyle, "Line style",
-                                        central, "lineStyleLabel");
-    gLayout->addWidget(lineStyleLabel, 0, 0);
+    lineStyleLabel = new QLabel(lineStyle, "Style",
+                                        styleGroupBox, "lineStyleLabel");
+    styleLayout->addWidget(lineStyleLabel, 0, 1);
 
     // Create the lineWidth widget.
-    lineWidth = new QvisLineWidthWidget(0, central, "lineWidth");
-    gLayout->addWidget(lineWidth, 0, 3);
+    lineWidth = new QvisLineWidthWidget(0, styleGroupBox, "lineWidth");
+    styleLayout->addWidget(lineWidth, 1, 2);
     connect(lineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(lineWidthChanged(int)));
-    QLabel *lineWidthLabel = new QLabel(lineWidth, "Line width",
-                                        central, "lineWidthLabel");
-    gLayout->addWidget(lineWidthLabel, 0, 2);
+    lineWidthLabel = new QLabel(lineWidth, "Width",
+                                        styleGroupBox, "lineWidthLabel");
+    styleLayout->addWidget(lineWidthLabel, 1, 1);
+
+    // Add the stem width edit.
+    stemWidthEdit = new QLineEdit(styleGroupBox, "stemWidthEdit");
+    connect(stemWidthEdit, SIGNAL(returnPressed()),
+            this, SLOT(processStemWidthText()));
+    styleLayout->addMultiCellWidget(stemWidthEdit, 2,2, 2,2);
+    stemWidthLabel = new QLabel(stemWidthEdit, "Width",
+                                styleGroupBox, "stemWidthLabel");
+    styleLayout->addWidget(stemWidthLabel, 2, 1);
+
+    // Add the "draw head" toggle button.
+    drawHeadToggle = new QCheckBox("Draw head:", styleGroupBox,
+                                   "drawHeadToggle");
+    connect(drawHeadToggle, SIGNAL(clicked()),
+            this, SLOT(drawHeadToggled()));
+    styleLayout->addMultiCellWidget(drawHeadToggle, 4, 4, 0, 0);
+
+    // Add the head size edit.
+    headSizeLineEdit = new QLineEdit(styleGroupBox, "headSizeLineEdit");
+    connect(headSizeLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processHeadSizeText()));
+    styleLayout->addMultiCellWidget(headSizeLineEdit, 4,4, 2,2);
+    QLabel *headSizeLabel = new QLabel(headSizeLineEdit, "Size",
+                                       styleGroupBox, "headSizeLabel");
+    styleLayout->addMultiCellWidget(headSizeLabel, 4,4, 1,1);
+
+    // Create the high quality toggle
+    highQualityToggle = new QCheckBox("High quality geometry", styleGroupBox,
+                                   "highQualityToggle");
+    styleLayout->addMultiCellWidget(highQualityToggle, 6,6, 0,2);
+    connect(highQualityToggle, SIGNAL(toggled(bool)),
+            this, SLOT(highQualityToggled(bool)));
+
+    //
+    // Create the radio buttons to choose the glyph origin
+    //
+    originButtonGroup = new QButtonGroup(0, "originButtonGroup");
+    QHBox *originBox = new QHBox(styleGroupBox, "originBox");
+    originBox->setSpacing(10);
+    new QLabel("Vector origin", originBox, "originLabel");
+    connect(originButtonGroup, SIGNAL(clicked(int)),
+            this, SLOT(originTypeChanged(int)));
+    rb = new QRadioButton("Head", originBox);
+    originButtonGroup->insert(rb,0);
+    rb = new QRadioButton("Middle", originBox);
+    originButtonGroup->insert(rb,1);
+    rb = new QRadioButton("Tail", originBox);
+    originButtonGroup->insert(rb,2);
+    styleLayout->addMultiCellWidget(originBox, 7, 7, 0, 2);
+
 
     //
     // Create the color-related widgets.
     //
     colorGroupBox = new QGroupBox(central, "colorGroupBox");
+#ifdef TABS
+    topTab->addTab(colorGroupBox, "Color");
+    colorGroupBox->setFrameStyle(QFrame::NoFrame);
+#else
+    gLayout->addMultiCellWidget(colorGroupBox, 2, 2, 0, 1);
     colorGroupBox->setTitle("Vector color");
-    gLayout->addMultiCellWidget(colorGroupBox, 1, 1, 0, 3);
+#endif
     QVBoxLayout *cgTopLayout = new QVBoxLayout(colorGroupBox);
     cgTopLayout->setMargin(10);
     cgTopLayout->addSpacing(15);
-    QGridLayout *cgLayout = new QGridLayout(cgTopLayout, 3, 3);
+    QGridLayout *cgLayout = new QGridLayout(cgTopLayout, 4, 3);
     cgLayout->setSpacing(10);
     cgLayout->setColStretch(1, 10);
 
@@ -189,7 +330,7 @@ QvisVectorPlotWindow::CreateWindowContents()
     colorButtonGroup = new QButtonGroup(0, "colorModeButtons");
     connect(colorButtonGroup, SIGNAL(clicked(int)),
             this, SLOT(colorModeChanged(int)));
-    QRadioButton *rb = new QRadioButton("Magnitude", colorGroupBox, "Magnitude");
+    rb = new QRadioButton("Magnitude", colorGroupBox, "Magnitude");
     colorButtonGroup->insert(rb, 0);
     cgLayout->addWidget(rb, 0, 0);
     rb = new QRadioButton("Constant", colorGroupBox, "constant");
@@ -254,8 +395,13 @@ QvisVectorPlotWindow::CreateWindowContents()
     // Create the scale-related widgets.
     //
     scaleGroupBox = new QGroupBox(central, "scaleGroupBox");
+#ifdef TABS
+    topTab->addTab(scaleGroupBox, "Scale");
+    scaleGroupBox->setFrameStyle(QFrame::NoFrame);
+#else
+    gLayout->addMultiCellWidget(scaleGroupBox, 3, 3, 0, 1);
     scaleGroupBox->setTitle("Vector scale");
-    gLayout->addMultiCellWidget(scaleGroupBox, 2, 2, 0, 3);
+#endif
     QVBoxLayout *sgTopLayout = new QVBoxLayout(scaleGroupBox);
     sgTopLayout->setMargin(10);
     sgTopLayout->addSpacing(15);
@@ -281,68 +427,6 @@ QvisVectorPlotWindow::CreateWindowContents()
     connect(autoScaleToggle, SIGNAL(clicked()), this, SLOT(autoScaleToggled()));
     sgLayout->addMultiCellWidget(autoScaleToggle, 2, 2, 0, 1);
 
-    // Add the head size edit.
-    headSizeLineEdit = new QLineEdit(scaleGroupBox, "headSizeLineEdit");
-    connect(headSizeLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processHeadSizeText()));
-    sgLayout->addWidget(headSizeLineEdit, 3, 1);
-    QLabel *headSizeLabel = new QLabel(headSizeLineEdit, "Head size",
-                                       scaleGroupBox, "headSizeLabel");
-    sgLayout->addWidget(headSizeLabel, 3, 0, AlignRight | AlignVCenter);
-
-    //
-    // Create the reduce-related widgets.
-    //
-    reduceGroupBox = new QGroupBox(central, "reduceGroupBox");
-    reduceGroupBox->setTitle("Reduce by");
-    gLayout->addMultiCellWidget(reduceGroupBox, 3, 3, 0, 3);
-    QVBoxLayout *rgTopLayout = new QVBoxLayout(reduceGroupBox);
-    rgTopLayout->setMargin(10);
-    rgTopLayout->addSpacing(15);
-    QGridLayout *rgLayout = new QGridLayout(rgTopLayout, 2, 2);
-    rgLayout->setSpacing(10);
-    rgLayout->setColStretch(1, 10);
-
-    // Create the reduce button group.
-    reduceButtonGroup = new QButtonGroup(0, "reduceButtonGroup");
-    connect(reduceButtonGroup, SIGNAL(clicked(int)),
-            this, SLOT(reduceMethodChanged(int)));
-    rb= new QRadioButton("N vectors", reduceGroupBox);
-    rb->setChecked(true);
-    reduceButtonGroup->insert(rb, 0);
-    rgLayout->addWidget(rb, 0, 0);
-    rb = new QRadioButton("Stride", reduceGroupBox);
-    reduceButtonGroup->insert(rb, 1);
-    rgLayout->addWidget(rb, 1, 0);
-
-    // Add the N vectors line edit.
-    nVectorsLineEdit = new QLineEdit(reduceGroupBox, "nVectorsLineEdit");
-    connect(scaleLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processNVectorsText()));
-    rgLayout->addWidget(nVectorsLineEdit, 0, 1);
-
-    // Add the stride line edit.
-    strideLineEdit = new QLineEdit(reduceGroupBox, "strideLineEdit");
-    connect(strideLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processStrideText()));
-    rgLayout->addWidget(strideLineEdit, 1, 1);
-
-    //
-    // Create the radio buttons to choose the glyph origin
-    //
-    originButtonGroup = new QButtonGroup(0, "originButtonGroup");
-    QHBox *originBox = new QHBox(central, "originBox");
-    originBox->setSpacing(10);
-    new QLabel("Vector origin", originBox, "originLabel");
-    connect(originButtonGroup, SIGNAL(clicked(int)),
-            this, SLOT(originTypeChanged(int)));
-    rb = new QRadioButton("Head", originBox);
-    originButtonGroup->insert(rb,0);
-    rb = new QRadioButton("Middle", originBox);
-    originButtonGroup->insert(rb,1);
-    rb = new QRadioButton("Tail", originBox);
-    originButtonGroup->insert(rb,2);
-    gLayout->addMultiCellWidget(originBox, 4, 4, 0, 3);
 
     //
     // Add the toggle buttons
@@ -351,12 +435,7 @@ QvisVectorPlotWindow::CreateWindowContents()
     // Add the legend toggle button.
     legendToggle = new QCheckBox("Legend", central, "legendToggle");
     connect(legendToggle, SIGNAL(clicked()), this, SLOT(legendToggled()));
-    gLayout->addMultiCellWidget(legendToggle, 5, 5, 0, 1);
-
-    // Add the "draw head" toggle button.
-    drawHeadToggle = new QCheckBox("Draw head", central, "drawHeadToggle");
-    connect(drawHeadToggle, SIGNAL(clicked()), this, SLOT(drawHeadToggled()));
-    gLayout->addMultiCellWidget(drawHeadToggle, 5, 5, 2, 3);
+    gLayout->addMultiCellWidget(legendToggle, 4, 4, 0, 1);
 }
 
 // ****************************************************************************
@@ -404,6 +483,9 @@ QvisVectorPlotWindow::CreateWindowContents()
 //
 //   Kathleen Bonnell, Wed Dec 22 16:42:35 PST 2004
 //   Update widgets for min/max and limits selection. 
+//
+//   Jeremy Meredith, Mon Mar 19 16:24:08 EDT 2007
+//   Added controls for lineStem, stemWidth, and highQuality.
 //
 // ****************************************************************************
 
@@ -546,6 +628,26 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
             temp.setNum(vectorAtts->GetMax());
             maxLineEdit->setText(temp);
             break;
+        case 20: // lineStem
+            lineStemButtonGroup->blockSignals(true);
+            lineStemButtonGroup->setButton(vectorAtts->GetLineStem()?0:1);
+            lineStemButtonGroup->blockSignals(false);
+            lineWidth->setEnabled(vectorAtts->GetLineStem());
+            lineStyle->setEnabled(vectorAtts->GetLineStem());
+            lineWidthLabel->setEnabled(vectorAtts->GetLineStem());
+            lineStyleLabel->setEnabled(vectorAtts->GetLineStem());
+            stemWidthEdit->setEnabled(!vectorAtts->GetLineStem());
+            stemWidthLabel->setEnabled(!vectorAtts->GetLineStem());
+            break;
+        case 21: // highQuality
+            highQualityToggle->blockSignals(true);
+            highQualityToggle->setChecked(vectorAtts->GetHighQuality());
+            highQualityToggle->blockSignals(false);
+            break;
+        case 22: // stemWidth
+            temp.setNum(vectorAtts->GetStemWidth());
+            stemWidthEdit->setText(temp);
+            break;
         }
     } // end for
 }
@@ -569,6 +671,9 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
 //
 //   Kathleen Bonnell, Wed Dec 22 16:42:35 PST 2004
 //   Get values for min and max.
+//
+//   Jeremy Meredith, Mon Mar 19 16:24:08 EDT 2007
+//   Added stemWidth.
 //
 // ****************************************************************************
 
@@ -698,6 +803,30 @@ QvisVectorPlotWindow::GetCurrentValues(int which_widget)
                 "Resetting to the last good value of %g.", vectorAtts->GetMax());
             Message(msg);
             vectorAtts->SetMax(vectorAtts->GetMax());
+        }
+    }
+
+    // Do the stem width value.
+    if(which_widget == 22 || doAll)
+    {
+        temp = stemWidthEdit->displayText().stripWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            double val = temp.toDouble(&okay);
+            if (val >=0 && val <= 0.5)
+                vectorAtts->SetStemWidth(val);
+            else
+                okay = false;
+        }
+
+        if(!okay)
+        {
+            msg.sprintf("The stem width was invalid. "
+                "Resetting to the last good value of %g.",
+                vectorAtts->GetStemWidth());
+            Message(msg);
+            vectorAtts->SetStemWidth(vectorAtts->GetStemWidth());
         }
     }
 
@@ -1223,4 +1352,64 @@ QvisVectorPlotWindow::maxToggled(bool val)
     Apply();
 }
 
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::lineStemMethodChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   window's line stem method.
+//
+// Programmer: Jeremy Meredith
+// Creation:   March 19, 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisVectorPlotWindow::lineStemMethodChanged(int val)
+{
+    vectorAtts->SetLineStem(val==0 ? true : false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::highQualityToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user toggles the
+//   window's high quality button.
+//
+// Programmer: Jeremy Meredith
+// Creation:   March 19, 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisVectorPlotWindow::highQualityToggled(bool val)
+{
+    vectorAtts->SetHighQuality(val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::processStemWidthText
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   window's stem width edit text. 
+//
+// Programmer: Jeremy Meredith
+// Creation:   March 19, 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisVectorPlotWindow::processStemWidthText()
+{
+    GetCurrentValues(22);
+    Apply();
+}
 

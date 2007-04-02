@@ -301,9 +301,13 @@
 #    Brad Whitlock, Mon Feb 12 12:14:30 PDT 2007
 #    Moved ViewerState to the rpc lib and added ViewerBase here.
 #
-#
 #    Brad Whitlock, Thu Jan 25 14:05:03 PST 2007
 #    Added ViewerCommandFromSimObserver.C
+#
+#    Eric Brugger, Tue Mar 20 11:33:29 PDT 2007
+#    Added MesaStub and GL_LIBS to the list of VTK libraries since VTK_LIBS
+#    no longer includes MESA_LIBS and GL_LIBS and I am replacing the mesa
+#    libraries with MesaStub in the viewer.
 #
 ##############################################################################
 
@@ -318,7 +322,7 @@
 ##
 LIB=libviewer
 
-VTK_LIBS=@VTK_LIBS@
+VTK_LIBS=@VTK_LIBS@ -lMesaStub $(GL_LIBS)
 VTK_INCLUDE=@VTK_INCLUDES@
 LIBS=-L../../lib -L../../vtkqt -lengineproxy -lenginerpc -lviewerrpc \
      -lmdserverproxy -lmdserverrpc -lvclproxy -lvclrpc -ldbatts -lexpr \

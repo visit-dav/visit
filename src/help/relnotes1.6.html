@@ -1,0 +1,135 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 1.6 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 1.6 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.6</font></b></p>
+<ul>
+<li>VisIt's is now more proactive about deleting intermediate copies of datasets. Consequently, VisIt's memory footprint while processing data has been drastically reduced.</li>
+<li>VisIt's treatment of rectilinear and curvilinear meshes has been substantially improved so rendering them is faster and uses far less memory. 
+Specific improvements include:</li>
+<p><ul>
+<li>Direct rendering of 2D rectilinear and curvilinear meshes</li>
+<li>Facelists of 3D structured meshes produce 6 2D structured meshes</li>
+<li>Orthogonal slices of 3D rectilinear meshes produce 2D rectilinear meshes</li>
+</ul></p>
+<li>
+VisIt now includes a Spreadsheet plot. The Spreadsheet plot allows users to select a single domain and "plot" its scalar data in a custom Spreadsheet window provided by the plot. The Spreadsheet window is tied to the plot that created it so you can have N Spreadsheet windows open to look at different domains or variables. The Spreadsheet window shows tabs that each contain a table for a slice through the data (1 table for 2D). It is possible to quickly step through the tabs to see different logical slices of the dataset. The slice is also depicted in the visualization window and the slice moves as you change slices in the Spreadsheet window. The Spreadsheet window contains controls for formatting the precision of the text output, coloring the displayed text using a color table, and switching the slice axis used to display the data. In addition, there are features such as min,max buttons to highlight the cells in the spreadsheet that contain the min,max values. Each Spreadsheet window contains its own menu, which provides options for selecting cells, saving selected cells to a text file, copying selected cells to the clipboard, and summing or averaging selected cells.
+</li>
+<li>The ParallelAxis plot has a new <i>Context</i> rendering mode that condenses groups of lines into bands colored by the number of lines in each band. The helps to highlight the overall behavior of  multivariate data because it highlights trends in line clustering using color. The individual lines between each axis can still be displayed and are useful when 
+restricted (using the Extents tool) and drawn over the context. The ParallelAxis plot's attributes window has been completely redesigned in order to make adding axes and reordering them more intuitive.
+</li>
+<li>VisIt now provides expressions and queries to identify connected components.</li>
+<li>VisIt's viewer component no longer links against Mesa so it avoids symbol conflicts with some Mesa-based Linux graphics drivers. Since symbol conflicts related to Mesa are no longer possible, this class of failures should be eliminated.</li>
+<li>Curve plots can now be scaled logarithmically.</li>
+<li>It is now possible to set properties for VisIt's plot legends. Most plots create legends. For  plots that create legends, a legend annotation object is also now created. The legend annotation object appears in the list of annotation objects in the Annotation window's Object's tab. When you select a legend annotation object in the Objects tab, the window will change to show the legend properties that can be set, including:
+    <p>
+    <ul>
+    <li>Whether VisIt positions the legend automatically</li>
+    <li>Position</li>
+    <li>The format string used to display numbers, allowing you to control the number of significant digits</li>
+    <li>Font</li>
+    <li>Font size</li>
+    <li>Font style (bold, italic)</li>
+    <li>Font color</li>
+    <li>Scale the legend to make it larger or smaller</li>
+    <li>Turn off parts of the legend</li>
+    <li>Draw an optional bounding box under the legend to distinguish it from plots</li>
+    </ul>
+    </p>
+</li>
+<li>VisIt's CLI now provides a <i>GetMetaData</i> function that allows the user to obtain a meta-data object that allows for database introspection. For example, the new meta-data object can be used to create menus for a Python-based user interface or it could be used to compare multiple databases.</li>
+<li>VisIt's libsim library, which allows simulations to be used as VisIt compute engines, now provides a 
+function called <i>VisItUpdatePlots()</i> to force VisIt to update its plots of simulation data.</li>
+<li>VisIt's Histogram plot now includes an option to calculate the histogram based on the number of zones that fall within a bin.</li>
+<li>VisIt's support for launching the parallel engine with <i>qsub</i> has been enhanced. VisIt now supports using mpiexec and srun under qsub. In addition, users can specify sublauncher arguments, making it possible to send the right arguments down to different versions of mpiexec.</li>
+<li>VisIt's Volume plot now incorporates distance when using the <i>Integrate</i> ray function.</li>
+<li>VisIt now provides a database reader for the new Miranda file format.</li>
+<li>VisIt now provides a query to determine what a detector at AGEX would see in terms of flux coming from Hohlraum. The query integrates a group of random rays through a 2D, 3D, or RZ dataset and computes the amount of energy escaping in a given direction.  The query needs two variables, defining absorption and emission of energy in each zone, and can handle scalar 
+variables or arrays which represent energy groups.</li>
+<li>Pick has been enhanced so it outputs coordinates from RZ and ZR meshes in the order that the users expect.</li>
+<li>Users can now set the font that VisIt uses for its GUI windows using new controls in the Appearance window.</li>
+<li>VisIt's Vector plot now provides an option for creating better-looking vector glyphs that are more suitable for publication. The Vector plot attributes window has also been redesigned.</li>
+<li>VisIt's error message when it cannot open a file has been improved so that it is issued only once and indicates the names of the plugins that were used when trying to open the file.</li>
+<li>The Python binding for the Volume plot attributes now exposes colors and gaussian control points so they can be scripted. This makes it much easier to design color tables for the Volume plot in Python scripts.</li>
+<li>The legend used for VisIt's Boundary plot is now smaller when there is a single boundary.</li>
+<li>VisIt now provides an expression that can test symmetry about a point.</li>
+<li>The <i>Getting Data Into VisIt</i> manual now includes examples describing how to instrument a parallel Fortran simulation with VisIt's libsim.</li>
+<li>Progress reported by queries over time has been improved so it gives a better indication of how long the operation will take.</li>
+<li>VisIt's FLASH database reader was enhanced to report accurate time values.</li>
+<li>The <i>Try harder to get cycles and times</i> flag in VisIt's Preferences window is now saved to the configuration file.</li>
+<li>VisIt's Revolve operator does not revolve the mesh about the correct axis when the mesh is RZ or ZR.</li>
+<li>VisIt's ESRI Shapefile database reader plugin has been enhanced to tessellate complex polygons into triangles so the polygons are rendered properly in VisIt. This enhancement greatly improves image quality for files that contain complex shapes such as coastlines.</li>
+<li>VisIt's Exodus database reader has been enhanced so it supports reading material names.</li>
+<li>VisIt's Streamline plot now provides an <i>auto</i> checkbox for the Box streamline source type that tells VisIt to use the dataset extents as the box extents.</li>
+<li>VisIt's Python code generation tools have been enhanced so they can generate Python bindings for embedded AttributeSubject objects.</li>
+<li>VisIt's Curve plot legend has been improved so that it takes much less vertical space, allowing VisIt to show legends for many more Curve plots. The line drawn in the Curve plot is also longer than before.</li>
+<li>VisIt can now read TSTT files.</li>
+<li>VisIt's NETCDF database reader better handles meshes with extra dimensions of 1 and no longer allocates too much memory in those situations.</li>
+<li>Performance and memory usage in VisIt's FVCOM database reader have been 
+improved.</li>
+<li>When 3D texturing is not available, the Volume plot should issue a warning.</li>
+<li>VisIt now uses Python 2.5.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.6</font></b></p>
+<ul>
+<li>VisIt's symmetry CMFE expressions are broken, resulting in invalid results.</li>
+<li>Reopening .visit files that have been removed can lead to failure of VisIt's viewer.</li>
+<li>Histogram of array variables not using correct time.</li>
+<li>The Fortran interface to VisIt's libsim library has a flaw that leads to a crash in parallel simulations.</li>
+<li>Operator attribute windows generated by VisIt's Window code generation tools can cause the GUI to crash due to uninitialized label pointers.</li>
+<li>Ale3d files with global zone numbers cause VisIt to generate an error message related to mixed variables.</li>
+<li>VisIt's <i>PickByGlobalZone</i> query returns the local zone information when the database has global zone numbers.</li>
+<li>VisIt's domain boundary filter for unstructured meshes contains a memory overwrite that leads to incorrect coloring of Pseudocolor plots.</li>
+<li>The <i>visitconvert</i> data conversion program does not produce BOV format files that VisIt can read.</li>
+<li>Advancing in time with an ESRI Shapefile database causes VisIt's viewer to crash.</li>
+<li>Plotting expression variables in the Streamline plot causes the compute engine to crash.</li>
+<li>The <i>visit-install</i> script fails on MacOS X.</li>
+<li>The Windows version of VisIt fails to launch if its startup directory is set to the <i>movietemplates</i> directory.</li>
+<li>VisIt's Exodus database reader assumes that global node ids are available and causes the compute engine to crash if the dataset does not have them.</li>
+<li>VisIt's EnSight database reader cannot read single time-step EnSight files.</li>
+<li>VisIt's interval tree coding can cause domains to be omitted from the Contour plot when processing peculiar data files.</li>
+<li>VisIt's code generation tools do not allow more than one AttributeSubject of a given type to be members of another AttributeSubject.</li>
+<li>VisIt's compute engine crashes when slicing a mesh that has been reduced to 1 zone thick in dimensions other than Z.</li>
+<li>The <i>Point mesh</i> option in VisIt's Threshold operator ignores subset selection.</li>
+<li>Malformed color tables can terminate VisIt and the Windowing system in the MacOS X / PPC version of VisIt.</li>
+<li>VisIt's Point3D database reader does not release memory when requested to do so and this results in an out of memory condition that eventually causes the compute engine to exit.</li>
+<li>VisIt's VisSUS database reader does not work on 64-bit AIX computers.</li>
+<li>Complex expressions involving constants and multiple other variables of different 
+variable-centering can confuse VisIt and lead to incorrect results for the Isovolume operator.</li>
+<li>Drawing a transparent plot after having plotted a Histogram plot causes the transparent plot to appear flat.</li>
+<li>Several of VisIt's host profiles for LLNL computers use <i>0</i> for the pool instead of <i>pdebug</i>.</li>
+<li>The spin box widgets in the Streamline and Curve plot attributes windows require you to press the <i>Enter</i> key in order to accept new values.</li>
+<li>VisIt's CLI does not always have access to the sys.argv tuple that contains command line arguments.</li>
+<li>VisIt silently fails to load a configuration file with the <i>-config</i> argument when the name of the configuration file does not contain a fully qualified path name.</li>
+<li>VisIt does not issue an error message when a source image for image annotations cannot be loaded.</li>
+<li>Transparent Pseudocolor plots of rectilinear datasets have errors on some faces.</li>
+<li>VisIt's Volume plot does not treat empty space caused by resampling properly when using Log scaling.</li>
+<li>VisIt's build process does not indicate how to force VisIt to compile with a different default font.</li>
+<li>CSG meshing attributes are not saved in session files.</li>
+<li>The CracksClipper operator does not permit secondary variables that it did not add in the VisIt pipeline.</li>
+<li>VisIt's Makefiles need to be updated so that components that require libvisit_vtk also link with $(GLEW_LIBS).</li>
+<li>Material interface reconstruction options are not saved in session files.</li>
+<li>VisIt's Volume plot does not use the user-specified min and max scaling values correctly when scaling is set to Log.</li>
+<li>VisIt's Python code generation tools assume certain source code files will exist.</li>
+<li>The visit-bin-dist and visit-install scripts do not package up VTK's Utility directory header files, which are required for VisIt plug-in development.</li>
+<li>VisIt's Exodus database reader outputs a warning to the console when reading a file that contains a single time state.</li>
+<li>The legend in VisIt's Streamline plot always shows a constant range.</li>
+<li>The automatic opaque setting for the Mesh plot is set differently in the viewer and compute engine components, causing inconsistent images depending on where the displayed image is rendered.</li>
+<li>When the <i>specmf</i> expression is inserted into the Expression window, it uses the wrong syntax.</li>
+<li>The Streamline plot's legend is not useful when showing constant colors.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href="relnotes1.5.5.html">VisIt 1.5.5 Release Notes</a>.</p>
+</body>
+</html>

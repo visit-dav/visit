@@ -35,24 +35,40 @@
 *
 *****************************************************************************/
 
-#ifndef PY_VECTORATTRIBUTES_H
-#define PY_VECTORATTRIBUTES_H
-#include <Python.h>
-#include <VectorAttributes.h>
+#include <GL/osmesa.h>
 
-//
-// Functions exposed to the VisIt module.
-//
-void            PyVectorAttributes_StartUp(VectorAttributes *subj, void *data);
-void            PyVectorAttributes_CloseDown();
-PyMethodDef    *PyVectorAttributes_GetMethodTable(int *nMethods);
-bool            PyVectorAttributes_Check(PyObject *obj);
-VectorAttributes *PyVectorAttributes_FromPyObject(PyObject *obj);
-PyObject       *PyVectorAttributes_NewPyObject();
-PyObject       *PyVectorAttributes_WrapPyObject(const VectorAttributes *attr);
-void            PyVectorAttributes_SetDefaults(const VectorAttributes *atts);
-std::string     PyVectorAttributes_GetLogString();
-std::string     PyVectorAttributes_ToString(const VectorAttributes *, const char *);
+OSMesaContext OSMesaCreateContext( GLenum format, OSMesaContext sharelist )
+{}
 
-#endif
+OSMesaContext OSMesaCreateContextExt( GLenum format, GLint depthBits,
+                                      GLint stencilBits, GLint accumBits,
+                                      OSMesaContext sharelist)
+{}
 
+void OSMesaDestroyContext( OSMesaContext ctx )
+{}
+
+GLboolean OSMesaMakeCurrent( OSMesaContext ctx, void *buffer, GLenum type,
+                             GLsizei width, GLsizei height )
+{}
+
+OSMesaContext OSMesaGetCurrentContext( void )
+{}
+
+void OSMesaPixelStore( GLint pname, GLint value )
+{}
+
+void OSMesaGetIntegerv( GLint pname, GLint *value )
+{}
+
+GLboolean OSMesaGetDepthBuffer( OSMesaContext c,
+                                GLint *width, GLint *height,
+                                GLint *bytesPerValue, void **buffer )
+{}
+
+GLboolean OSMesaGetColorBuffer( OSMesaContext c, GLint *width, GLint *height,
+                                GLint *format, void **buffer )
+{}
+
+void *OSMesaGetProcAddress( const char *funcName )
+{}

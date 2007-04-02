@@ -146,6 +146,10 @@ using     std::map;
 //
 //    Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
 //    Set discMode based on existence of FI library
+//
+//    Cyrus Harrison, Fri Mar 23 07:48:16 PDT 2007
+//    Set default MIR algorithm to Zoo
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts,
@@ -166,7 +170,7 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
     needMixedVariableReconstruction = false;
     needSmoothMaterialInterfaces = false;
     needCleanZonesOnly = false;
-    mirAlgorithm = 0; // 0=Tet 1==Zoo 2=Isovolume
+    mirAlgorithm = 1; // 0=Tet 1==Zoo 2=Isovolume
     isovolumeMIRVF = 0.5;
     simplifyHeavilyMixedZones = false;
     maxMatsPerZone = 3;

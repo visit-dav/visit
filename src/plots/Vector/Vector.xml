@@ -73,6 +73,15 @@
       <Field name="max" label="Max" type="double" enabler="maxFlag:true">
         1.000000
       </Field>
+      <Field name="lineStem" label="Draw stem as line" type="bool">
+        true
+      </Field>
+      <Field name="highQuality" label="High quality geometry" type="bool">
+        false
+      </Field>
+      <Field name="stemWidth" label="Stem width" type="double">
+        0.080000
+      </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
     </Attribute>

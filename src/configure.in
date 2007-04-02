@@ -655,6 +655,12 @@ dnl
 dnl    Brad Whitlock, Tue Mar 13 18:20:38 PST 2007
 dnl    Changed how Python is used in CLI.
 dnl
+dnl    Eric Brugger, Tue Mar 20 11:27:01 PDT 2007
+dnl    Removed MESA_LIBS and GL_LIBS from the definition of VTK_LIBS.
+dnl
+dnl    Eric Brugger, Wed Mar 21 14:51:01 PDT 2007
+dnl    Added support for building mesa_stub.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -908,7 +914,7 @@ if test -n "$VTK"; then
     VTK_DIR=$VTK
     VTK_INCROOT="$""(TOPDIR)/include/vtk"
     VTK_INCLUDES="-I$VTK_INCROOT -I$VTK_INCROOT/Common -I$VTK_INCROOT/Filtering -I$VTK_INCROOT/Graphics -I$VTK_INCROOT/Hybrid -I$VTK_INCROOT/IO -I$VTK_INCROOT/Imaging -I$VTK_INCROOT/Rendering -I$VTK_INCROOT/Utilities"
-    VTK_LIBS="-lvtkCommon -lvtkDICOMParser -lvtkFiltering -lvtkGraphics -lvtkHybrid -lvtkIO -lvtkImaging -lvtkRendering -lvtkzlib -lvtkexpat -lvtkjpeg -lvtkpng -lvtktiff -lvtkftgl -lvtkfreetype -lvtksys -lvtkMPEG2Encode $MESA_LIBS $GL_LIBS "
+    VTK_LIBS="-lvtkCommon -lvtkDICOMParser -lvtkFiltering -lvtkGraphics -lvtkHybrid -lvtkIO -lvtkImaging -lvtkRendering -lvtkzlib -lvtkexpat -lvtkjpeg -lvtkpng -lvtktiff -lvtkftgl -lvtkfreetype -lvtksys -lvtkMPEG2Encode "
     if test "$SHORT_UNAME" = "darwin"; then
         VTK_LIGHTWEIGHT_LIBS=$VTK_LIBS
     else
@@ -3299,7 +3305,8 @@ CQSCORE_FILES="cqscore/Makefile"
 THIRD_PARTY_BUILTIN_FILES="third_party_builtin/Makefile
                            third_party_builtin/bzip2/Makefile
                            third_party_builtin/glew/Makefile
-                           third_party_builtin/bilib/Makefile"
+                           third_party_builtin/bilib/Makefile
+                           third_party_builtin/mesa_stub/Makefile"
 
 if test "$enable_scripting" = "yes"; then
     VISITPY_FILES="visitpy/Makefile
