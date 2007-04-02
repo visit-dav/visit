@@ -62,6 +62,10 @@ class     vtkUnstructuredGrid;
 //  Programmer: Hank Childs
 //  Creation:   May 28, 2002
 //
+//  Modifications:
+//   Brad Whitlock, Mon Jun 5 10:43:55 PDT 2006
+//   Added config file support.
+//
 // ****************************************************************************
 
 class avtPoint3DFileFormat : public avtSTSDFileFormat
@@ -91,6 +95,7 @@ class avtPoint3DFileFormat : public avtSTSDFileFormat
     static const char         *MESHNAME;
 
     void                       ReadData(void);
+    bool                       ReadConfigFile(int &);
 };
 
 

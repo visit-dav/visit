@@ -52,9 +52,14 @@
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
 
+#include <Utility.h>
+#include <DebugStream.h>
 
 const char      *avtPoint3DFileFormat::MESHNAME = "points";
 
+#define COORDINATE_ORDER_DEFAULT 0
+#define COORDINATE_ORDER_XYZV    0
+#define COORDINATE_ORDER_XYVZ    1
 
 using std::string;
 using std::vector;
@@ -256,11 +261,16 @@ avtPoint3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Removed another bogus line, this time it was at the beginning, with
 //    the variable declaration.
 //
+//    Brad Whitlock, Mon Jun 5 10:58:49 PDT 2006
+//    Added support for a config file as well as setting coordflag in the
+//    file itself.
+//
 // ****************************************************************************
 
 void
 avtPoint3DFileFormat::ReadData(void)
 {
+    const char *mName = "avtPoint3DFileFormat::ReadData: ";
     int      i;
 
     ifstream ifile(filename);
@@ -269,6 +279,11 @@ avtPoint3DFileFormat::ReadData(void)
         EXCEPTION1(InvalidFilesException, filename);
     }
 
+    // Read the coordinate ordering out of the file.
+    int coordFlag = COORDINATE_ORDER_XYZV;
+    ReadConfigFile(coordFlag);
+
+    // Read the variable names.
     for (i = 0 ; i < 4 ; i++)
     {
         char buf[1024];
@@ -291,12 +306,35 @@ avtPoint3DFileFormat::ReadData(void)
     {
         line[0] = '\0';
         ifile.getline(line, 1024);
-        float a, b, c, d;
-        sscanf(line, "%f %f %f %f", &a, &b, &c, &d);
-        var1.push_back(a);
-        var2.push_back(b);
-        var3.push_back(c);
-        var4.push_back(d);
+
+        // Allow the user to specify "coordflag" in the file.
+        if(line[0] == '#')
+        {
+            if(strncmp(line+1, "coordflag", 9) == 0)
+            {
+                debug4 << mName << "Reading coordflag value from file: ";
+                if(strncmp(line+9+2, "xyzv", 4) == 0)
+                {
+                    coordFlag = COORDINATE_ORDER_XYZV;
+                    debug4 << "xyzv";
+                }
+                else if(strncmp(line+9+2, "xyvz", 4) == 0)
+                {
+                    coordFlag = COORDINATE_ORDER_XYVZ;
+                    debug4 << "xyvz";
+                }
+                debug4 << endl;
+            }
+        }
+        else
+        {
+            float a, b, c, d;
+            sscanf(line, "%f %f %f %f", &a, &b, &c, &d);
+            var1.push_back(a);
+            var2.push_back(b);
+            var3.push_back(c);
+            var4.push_back(d);
+        }
     }
 
     int npts = var1.size();
@@ -333,9 +371,15 @@ avtPoint3DFileFormat::ReadData(void)
 
     vtkPoints *p = vtkPoints::New();
     p->SetNumberOfPoints(npts);
-    for (i = 0 ; i < npts ; i++)
+    if(coordFlag == COORDINATE_ORDER_XYZV)
     {
-        p->SetPoint(i, var1[i], var2[i], var4[i]);  // Not a typo.
+        for (i = 0 ; i < npts ; i++)
+             p->SetPoint(i, var1[i], var2[i], var3[i]);
+    }
+    else // COORDINATE_ORDER_XYVZ
+    {
+        for (i = 0 ; i < npts ; i++)
+             p->SetPoint(i, var1[i], var2[i], var4[i]);
     }
 
     points = vtkUnstructuredGrid::New();
@@ -353,4 +397,77 @@ avtPoint3DFileFormat::ReadData(void)
     haveReadData = true;
 }
 
+// ****************************************************************************
+// Method: avtPoint3DFileFormat::ReadConfigFile
+//
+// Purpose: 
+//   Reads a config file out of the home VisIt directory that allows the user
+//   to configure the Point3D file format.
+//
+// Arguments:
+//   coordFlag : The order of the coordinates.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 5 10:51:59 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
 
+bool
+avtPoint3DFileFormat::ReadConfigFile(int &coordFlag)
+{
+    const char *mName = "avtPoint3DFileFormat::ReadConfigFile: ";
+    bool retval = false;
+
+    std::string configFile(GetUserVisItDirectory());
+    configFile += "Point3D.ini";
+ 
+    coordFlag = COORDINATE_ORDER_DEFAULT;
+ 
+    // Open the file.
+    ifstream ifile(configFile.c_str());
+    if (ifile.fail())
+    {
+        debug4 << mName << "Could not open config file: "
+               << configFile.c_str() << endl;
+    }
+    else
+    {
+        debug4 << mName << "Opened config file: "
+               << configFile.c_str() << endl;
+
+        char line[1024];
+        for(int lineIndex = 0; !ifile.eof(); ++lineIndex)
+        {
+            // Get the line
+            ifile.getline(line, 1024);
+
+            if(strncmp(line, "coordflag", 9) == 0)
+            {
+                debug4 << mName << "Reading coordflag value from file: ";
+                if(strncmp(line+9+1, "xyzv", 4) == 0)
+                {
+                    coordFlag = COORDINATE_ORDER_XYZV;
+                    debug4 << "xyzv";
+                }
+                else if(strncmp(line+9+1, "xyvz", 4) == 0)
+                {
+                    coordFlag = COORDINATE_ORDER_XYVZ;
+                    debug4 << "xyvz";
+                }
+                debug4 << endl;
+            }
+        }
+
+        retval = true;
+    }
+
+    debug4 << mName << "coordFlag=" << coordFlag << endl;
+
+    return retval;
+}
