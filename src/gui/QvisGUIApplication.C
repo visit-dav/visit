@@ -4396,6 +4396,11 @@ QvisGUIApplication::RefreshFileListAndNextFrame()
 //   Brad Whitlock, Thu Oct 27 16:08:29 PST 2005
 //   Added code to catch CancelledConnectException.
 //
+//   Brad Whitlock, Thu Apr 13 13:49:32 PST 2006
+//   Added code to change the host before expanding the filename if the
+//   hosts are different. This is required to ensure that the filename gets
+//   expanded correctly.
+//
 // ****************************************************************************
 
 void
@@ -4415,6 +4420,14 @@ QvisGUIApplication::LoadFile(QualifiedFilename &f, bool addDefaultPlots)
 
         TRY
         {
+            // First change the host if it is different so we can
+            // correctly expand relative paths.
+            if(f.host != oldHost)
+            {
+                fileServer->SetHost(f.host);
+                fileServer->Notify();                
+            }
+
             // In case the path was relative, expand the path to a full path.
             f.path = fileServer->ExpandPath(f.path);
 
@@ -4518,7 +4531,9 @@ QvisGUIApplication::LoadFile(QualifiedFilename &f, bool addDefaultPlots)
 
             // Now set the path to the user's home directory and get the file
             // list and notify.
+            fileServer->SetHost(oldHost);
             fileServer->SetPath(oldPath);
+            fileServer->SetFilter(oldFilter);
             fileServer->Notify();
 
             // Now that the path has been applied, use it to get the filtered
