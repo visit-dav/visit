@@ -452,6 +452,9 @@ LongFileName(const char *shortName)
 //   Brad Whitlock, Wed Jan 11 17:15:39 PST 2006
 //   I made sure that screenX, screenY are intitialized.
 //
+//   Brad Whitlock, Tue Jul 25 11:41:37 PDT 2006
+//   Added support for -geometry.
+//
 // ****************************************************************************
 
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
@@ -508,6 +511,11 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     interpreter = 0;
     movieProgress = 0;
     sessionFileHelper = 0;
+    savedGUIGeometry = false;
+    savedGUISize[0] = 0;
+    savedGUISize[1] = 0;
+    savedGUILocation[0] = 0;
+    savedGUILocation[1] = 0;
 
     // Create the viewer, statusSubject, and fileServer for GUIBase.
     viewer = new ViewerProxy;
@@ -542,12 +550,6 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     if(applicationStyle.length() > 0)
         aa->SetStyle(applicationStyle.latin1());
 
-    // Add left-over arguments to the viewer.
-    AddViewerArguments(argc, argv);
-
-    // Add some left-over arguments to the movie script.
-    AddMovieArguments(argc, argv);
-
     //
     // Create the application and customize its appearance. Note that we
     // are setting the initial font through the command line because Qt
@@ -557,14 +559,66 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     qt_argv = new char *[argc + 3];
     qt_argc = argc + 2;
     for(int i = 0; i < argc; ++i)
-        qt_argv[i] = argv[i];
-    qt_argv[argc] = "-font";
-    qt_argv[argc+1] = (char*)viewer->GetAppearanceAttributes()->GetFontDescription().c_str();
+    {
+        qt_argv[i] = strdup(argv[i]);
+    }
+    qt_argv[argc] = strdup("-font");
+    qt_argv[argc+1] = strdup((char*)viewer->GetAppearanceAttributes()->GetFontDescription().c_str());
     qt_argv[argc+2] = NULL;
     mainApp = new QvisApplication(qt_argc, qt_argv);
     SetWaitCursor();
     viewer->GetAppearanceAttributes()->SelectAll();
     CustomizeAppearance(false);
+
+    // If the geometry was not passed on the command line then the 
+    // savedGUIGeometry flag will still be set to false. If we
+    // can, read the GUI geometry from the config file so we can
+    // create a viewer area relative to it.
+    if(localSettings && !savedGUIGeometry)
+    {
+        // Calculate the window metrics
+        WindowMetrics *wm = WindowMetrics::Instance();
+        wm->MeasureScreen(useWindowMetrics);
+
+        // Use the window metrics to set some internal fields.
+        screenX    = wm->GetScreenX();
+        screenY    = wm->GetScreenY();
+        screenW    = wm->GetScreenW();
+        screenH    = wm->GetScreenH();
+        borders[0] = wm->GetBorderT();
+        borders[1] = wm->GetBorderB();
+        borders[2] = wm->GetBorderL();
+        borders[3] = wm->GetBorderR();
+        shiftX     = wm->GetShiftX();
+        shiftY     = wm->GetShiftY();
+        preshiftX  = wm->GetPreshiftX();
+        preshiftY  = wm->GetPreshiftY();
+
+        // Skip the first stage.
+        heavyInitStage = 1;
+
+        bool xy_set = false, wh_set = false;
+        int x, y, w, h;
+        ReadSavedMainWindowGeometry(localSettings, wh_set, w, h, 
+            xy_set, x, y);
+ 
+        if(wh_set)
+        {
+            savedGUIGeometry = true;
+            savedGUISize[0] = w;
+            savedGUISize[1] = h;
+            savedGUILocation[0] = xy_set ? x : 0;
+            savedGUILocation[1] = xy_set ? y : 0;
+            debug1 << "Saved GUI geometry: w=" << w << " h=" << h 
+                   << " x=" << x << " y=" << y << endl;
+        }
+    }
+
+    // Add left-over arguments to the viewer.
+    AddViewerArguments(argc, argv);
+
+    // Add some left-over arguments to the movie script.
+    AddMovieArguments(argc, argv);
 
     //
     // Create the splashscreen.
@@ -1437,6 +1491,9 @@ QvisGUIApplication::Quit()
 //    Brad Whitlock, Fri Mar 24 14:17:48 PST 2006
 //    Added support for specifying virtual databases on the command line.
 //
+//    Brad Whitlock, Tue Jul 25 11:32:46 PDT 2006
+//    Added support for -geometry.
+//
 // ****************************************************************************
 
 void
@@ -1475,7 +1532,6 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
         // Remove any arguments that could be dangerous to the viewer.
         if(stripHostAndPort || 
            current == std::string("-borders") ||
-           current == std::string("-geometry") ||
            current == std::string("-o") ||
            current == std::string("-sessionfile"))
         {
@@ -1573,10 +1629,50 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
         }
         else if(current == std::string("-geometry"))
         {
-            // Print a warning message to the console
-            cerr << "The -geometry command-line flag is ignored by VisIt's "
-                 << "GUI because geometry can be set from within the GUI."
-                 << endl;
+            if(i + 1 >= argc)
+            {
+                cerr << "The -geometry option must be followed by a geometry string."
+                     << endl;
+                continue;
+            }
+            
+            // Parse the geometry string.
+            int w,h,x,y;
+            if(sscanf(argv[i+1], "%dx%d+%d+%d", &w, &h, &x, &y) == 4)
+            {
+                savedGUIGeometry = true;
+                savedGUISize[0] = w;
+                savedGUISize[1] = h;
+                savedGUILocation[0] = x;
+                savedGUILocation[1] = y;
+                debug1 << "Command line geometry: " << w << "x" << h
+                       << "+" << x << "+" << y << endl;
+            }
+            else if(sscanf(argv[i+1], "%dx%d+%d", &w, &h, &x) == 3)
+            {
+                savedGUIGeometry = true;
+                savedGUISize[0] = w;
+                savedGUISize[1] = h;
+                savedGUILocation[0] = x;
+                savedGUILocation[1] = 0;
+                debug1 << "Command line geometry: " << w << "x" << h
+                       << "+" << x << endl;
+            }
+            else if(sscanf(argv[i+1], "%dx%d", &w, &h) == 2)
+            {
+                savedGUIGeometry = true;
+                savedGUISize[0] = w;
+                savedGUISize[1] = h;
+                savedGUILocation[0] = 0;
+                savedGUILocation[1] = 0;
+                debug1 << "Command line geometry: " << w << "x" << h << endl;
+            }
+            else
+            {
+                cerr << "A malformed geometry string was provided:"
+                     << argv[i+1] << endl;
+            }
+            ++i;
         }
         else if(current == std::string("-background") ||
                 current == std::string("-bg"))
@@ -1871,6 +1967,7 @@ QvisGUIApplication::SetOrientation(int orientation)
 void
 QvisGUIApplication::MoveAndResizeMainWindow(int orientation)
 {
+    const char *mName = "QvisGUIApplication::MoveAndResizeMainWindow: ";
     int x, y, w, h;
 
     //
@@ -1885,20 +1982,37 @@ QvisGUIApplication::MoveAndResizeMainWindow(int orientation)
 #endif
     if (orientation < 2)
     {
-        w = 400;
-        h = screenH - borders[0] - borders[1];
+        debug1 << mName << "Vertical main window" << endl;
+        if(savedGUIGeometry)
+        {
+            w = savedGUISize[0];
+            h = savedGUISize[1];
+            x = savedGUILocation[0];
+            y = savedGUILocation[1];
+        }
+        else
+        {
+            w = 400;
+            h = screenH - borders[0] - borders[1];
+        }
     }
     else
     {
+        debug1 << mName << "Horizontal main window" << endl;
         w = screenW - borders[2] - borders[3];
         h = 400;
     }
 
+#if 0
+    // These were here to prevent the main window from changing shape.
     mainWin->setMaximumWidth(w);
     mainWin->setMinimumWidth(w);
     mainWin->setMaximumHeight(h);
     mainWin->setMinimumHeight(h);
+#endif
+    debug1 << mName << "Resizing main window to: " << w << "x" << h << endl;
     mainWin->resize(w, h);
+    debug1 << mName << "Moving main window to: " << x << "x" << y << endl;
     mainWin->move(x, y);
 }
 
@@ -2039,20 +2153,66 @@ QvisGUIApplication::AddMovieArguments(int argc, char **argv)
 //   I removed the restrictions on the width so that the entire available
 //   screen area would be passed to the viewer.
 //
+//   Brad Whitlock, Tue Jul 25 12:09:55 PDT 2006
+//   I added support for choosing the viewer window area around saved 
+//   main window geometries.
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::CalculateViewerArea(int orientation, int &x, int &y,
                                         int &width, int &height)
 {
+    const char *mName = "QvisGUIApplication::CalculateViewerArea: ";
+
     if (orientation < 2)
     {
         // vertical gui
-        int mw = mainWin->width();
-        x = screenX + mw + borders[2] + borders[3];
-        y = screenY;
-        width = screenW - mw - borders[2] - borders[3];
-        height = screenH;
+        if(savedGUIGeometry)
+        {
+            // Figure out the best place to put the viewer area since we want
+            // the GUI in a particular location.
+            int dx1 = savedGUILocation[0];
+            int dx2 = screenW - (savedGUILocation[0] + savedGUISize[0]);
+            if(dx1 <= dx2)
+            {
+                // The width of the area on the left of the GUI is smaller so put
+                // viewer windows to the right of the GUI window.
+                int leftX = savedGUILocation[0] + savedGUISize[0];
+                x = screenX + leftX + borders[2] + borders[3];
+                y = screenY + savedGUILocation[1];
+                width = screenW - x;
+                height = screenH - y;
+
+                debug1 << mName << "Using saved geometry. Putting viewer "
+                    "windows to the right of the GUI windows at: "
+                       << width << "x" << height << "+" << x << "+" << y << endl;
+            }
+            else
+            {
+                // The width of the area on the left of the GUI is larger so put
+                // viewer windows to the left of the GUI window.
+                x = screenX;
+                y = screenY + savedGUILocation[1];
+                width = savedGUILocation[0];
+                height = screenH - y;
+
+                debug1 << mName << "Using saved geometry. Putting viewer "
+                    "windows to the left of the GUI windows at: "
+                       << width << "x" << height << "+" << x << "+" << y << endl;
+            }
+        }
+        else
+        {
+            int mw = mainWin->width();
+            x = screenX + mw + borders[2] + borders[3];
+            y = screenY;
+            width = screenW - mw - borders[2] - borders[3];
+            height = screenH;
+
+            debug1 << mName << "Vertical orientation. Putting viewer windows at: "
+                   << width << "x" << height << "+" << x << "+" << y << endl;
+        }
     }
     else
     {
@@ -2062,6 +2222,9 @@ QvisGUIApplication::CalculateViewerArea(int orientation, int &x, int &y,
         y = mh + borders[0] + borders[1];
         width = screenW;
         height = screenH - mh - borders[0] - borders[1];
+
+        debug1 << mName << "Horizontal orientation. Putting viewer windows at: "
+               << width << "x" << height << "+" << x << "+" << y << endl;
     }
 }
 
@@ -2218,6 +2381,7 @@ QvisGUIApplication::CreateMainWindow()
 
     // Move and resize the GUI so that we can get accurate size and
     // position information from it.
+    mainWin->SetOrientation(orientation);
     MoveAndResizeMainWindow(orientation);
 }
 
@@ -3124,6 +3288,9 @@ QvisGUIApplication::EnsureOperatorWindowIsCreated(int i)
 //    Brad Whitlock, Thu Feb 17 16:02:55 PST 2005
 //    I made it return a bool.
 //
+//    Brad Whitlock, Tue Jul 25 10:19:22 PDT 2006
+//    I added code to make the main window save its settings.
+//
 // ****************************************************************************
 
 bool
@@ -3150,6 +3317,9 @@ QvisGUIApplication::WriteConfigFile(const char *filename)
     {
         pos->second->CreateNode(guiNode);
     }
+
+    // Make the main window save its settings.
+    mainWin->CreateNode(guiNode);
 
     // Make the plugin windows add their information to the guiNode that is
     // saved into the config file.
@@ -3811,7 +3981,10 @@ QvisGUIApplication::ProcessConfigSettings(DataNode *node, bool systemConfig)
 //   Brad Whitlock, Wed May 5 15:50:59 PST 2004
 //   I removed some code that processed the config settings for the non-plugin
 //   windows.
-//  
+//
+//   Brad Whitlock, Tue Jul 25 10:18:13 PDT 2006
+//   I added code to make the main window process its settings.
+//
 // ****************************************************************************
 
 void
@@ -3862,6 +4035,10 @@ QvisGUIApplication::ProcessWindowConfigSettings(DataNode *node)
 
     // Read the config file stuff for the plugin windows.
     ReadPluginWindowConfigs(guiNode, configVersion);
+
+    // Read the main window's config settings now.
+    mainWin->SetFromNode(guiNode, savedGUIGeometry, savedGUISize, 
+        savedGUILocation, borders);
 }
 
 // ****************************************************************************
@@ -3960,6 +4137,85 @@ QvisGUIApplication::ReadPluginWindowConfigs(DataNode *parentNode,
             operatorWindows[i]->SetFromNode(parentNode, borders);
         }
     }
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::ReadSavedMainWindowGeometry
+//
+// Purpose: 
+//   Reads the main window's geometry from the config file.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 25 12:32:28 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::ReadSavedMainWindowGeometry(DataNode *parentNode, 
+    bool &wh_set, int &w, int &h, bool &xy_set, int &x, int &y)
+{
+    wh_set = false;
+    w = h = 0;
+    xy_set = false;
+    x = y = 0;
+
+    // If the node is not created, return.
+    if(parentNode == 0)
+        return;
+
+    // Look for the VisIt tree.
+    DataNode *visitRoot = parentNode->GetNode("VisIt");
+    if(visitRoot == 0)
+        return;
+
+    // Get the gui node.
+    DataNode *guiNode = visitRoot->GetNode("GUI");
+    if(guiNode == 0)
+        return;
+
+    DataNode *winNode = guiNode->GetNode("MainWin");
+    if(winNode == 0)
+        return;
+
+    // See if any attributes are set.
+    DataNode *node = 0;
+    if((node = winNode->GetNode("x")) != 0)
+    {
+        int x_pos = node->AsInt();
+        if (x_pos < 0)
+            x_pos = 0;
+        x = x_pos;// + borders[2];
+        xy_set = true;
+    }
+    if((node = winNode->GetNode("y")) != 0)
+    {
+        int y_pos = node->AsInt();
+        if (y_pos < 0)
+            y_pos = 0;
+        y = y_pos;// + borders[0];
+        xy_set = true;
+    }
+    if((node = winNode->GetNode("width")) != 0)
+    {
+        w = node->AsInt();
+        wh_set = true;
+    }
+    if((node = winNode->GetNode("height")) != 0)
+    {
+        h = node->AsInt();
+        wh_set = true;
+    }
+
+    // Make sure that the window will fit on the screen.
+    QvisWindowBase::FitToScreen(x, y, w, h);
 }
 
 // ****************************************************************************

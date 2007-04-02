@@ -49,6 +49,7 @@
 #include <qpixmapcache.h>
 #include <qpopupmenu.h>
 #include <qpushbutton.h>
+#include <qvbox.h>
 
 #include <ViewerProxy.h>
 #include <PlotList.h>
@@ -380,6 +381,9 @@ QvisPlotManagerWidget::SetSourceVisible(bool val)
 //   Brad Whitlock, Fri Aug 15 15:10:00 PST 2003
 //   I added support for MacOS X.
 //
+//   Brad Whitlock, Mon Jul 24 17:45:04 PST 2006
+//   I wrapped the menu in a widget to prevent it from shrinking.
+//
 // ****************************************************************************
 
 void
@@ -393,8 +397,10 @@ QvisPlotManagerWidget::CreateMenus(QMenuBar *menuBar)
     // run along the top of the screen instead of being part of each window.
     plotMenuBar = menuBar;
 #else
-    plotMenuBar = new QMenuBar(this, "plotMenu");
-    topLayout->addMultiCellWidget(plotMenuBar, 3, 3, 0, 3);
+    QVBox *menuContainer = new QVBox(this);
+    plotMenuBar = new QMenuBar(menuContainer, "plotMenu");
+    topLayout->addMultiCellWidget(menuContainer, 3, 3, 0, 3);
+    menuContainer->setMaximumHeight(plotMenuBar->height() + 4);
 #endif
 
     // Create the Plot menu. Each time we highlight a plot, we

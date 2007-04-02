@@ -290,7 +290,7 @@ QvisWindowBase::SetFromNode(DataNode *parentNode, const int *borders)
 // ****************************************************************************
 
 void
-QvisWindowBase::FitToScreen(int &x, int &y, int &w, int &h) const
+QvisWindowBase::FitToScreen(int &x, int &y, int &w, int &h)
 {
     const int screenW = qApp->desktop()->width();
     const int screenH = qApp->desktop()->height();
