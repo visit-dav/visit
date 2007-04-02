@@ -1141,6 +1141,10 @@ avtUnstructuredDomainBoundaries::ExchangeData(vector<int>         &domainNum,
 //  Programmer:  Akira Haddox
 //  Creation:    August 14, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 vector<int>
@@ -1150,7 +1154,7 @@ avtUnstructuredDomainBoundaries::CreateDomainToProcessorMap(
     // Get the processor rank
     int rank = 0;
 #ifdef PARALLEL
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
 #endif
 
     // Create the map
@@ -1161,7 +1165,7 @@ avtUnstructuredDomainBoundaries::CreateDomainToProcessorMap(
 #ifdef PARALLEL
     vector<int> domain2proc_tmp(domain2proc);
     MPI_Allreduce(&domain2proc_tmp[0], &domain2proc[0], nTotalDomains, MPI_INT,
-                  MPI_MAX, MPI_COMM_WORLD);
+                  MPI_MAX, VISIT_MPI_COMM);
 #endif
 
     return domain2proc;
@@ -1209,6 +1213,8 @@ avtUnstructuredDomainBoundaries::CreateDomainToProcessorMap(
 //    Mark C. Miller, Wed Jun  9 21:50:12 PDT 2004
 //    Eliminated use of MPI_ANY_TAG and modified to use GetUniqueMessageTags
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -1224,7 +1230,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
     // Get the processor rank
     int rank = 0;
 #ifdef PARALLEL
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
     int mpiNPtsTag = GetUniqueMessageTag();
     int mpiGainedPointsTag = GetUniqueMessageTag();
     int mpiOriginalIdsTag = GetUniqueMessageTag();
@@ -1347,7 +1353,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                 // Get the number of points given
                 int nPts;
                 MPI_Recv(&nPts, 1, MPI_INT, fRank, mpiNPtsTag,
-                         MPI_COMM_WORLD, &stat);
+                         VISIT_MPI_COMM, &stat);
 
                 if (nPts == 0)
                     continue;
@@ -1358,16 +1364,16 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
 
                 // Get the gained points
                 MPI_Recv(gainedPoints[sendDom][recvDom], nPts * 3, MPI_FLOAT,
-                         fRank, mpiGainedPointsTag, MPI_COMM_WORLD, &stat);
+                         fRank, mpiGainedPointsTag, VISIT_MPI_COMM, &stat);
 
                 // Get the original ids for the gained points
                 MPI_Recv(origPointIds[sendDom][recvDom], nPts, MPI_INT,
-                         fRank, mpiOriginalIdsTag, MPI_COMM_WORLD, &stat);
+                         fRank, mpiOriginalIdsTag, VISIT_MPI_COMM, &stat);
 
                 // Get the number of given cells
                 int nCells;
                 MPI_Recv(&nCells, 1, MPI_INT, fRank,
-                         mpiNumGivenCellsTag, MPI_COMM_WORLD, &stat);
+                         mpiNumGivenCellsTag, VISIT_MPI_COMM, &stat);
                 
                 nGainedCells[sendDom][recvDom] += nCells;
                 
@@ -1377,11 +1383,11 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
 
                 // Get the cell types
                 MPI_Recv(cellTypes[sendDom][recvDom], nCells, MPI_INT,
-                         fRank, mpiCellTypesTag, MPI_COMM_WORLD, &stat);
+                         fRank, mpiCellTypesTag, VISIT_MPI_COMM, &stat);
 
                 // Get the number of points per cell
                 MPI_Recv(nPointsPerCell[sendDom][recvDom], nCells, MPI_INT,
-                         fRank, mpiNumPointsPerCellTag, MPI_COMM_WORLD, &stat);
+                         fRank, mpiNumPointsPerCellTag, VISIT_MPI_COMM, &stat);
 
                 // Prepare for getting the cell point ids
                 int k;
@@ -1396,7 +1402,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                 // Get the cell point ids
                 int * pntIds = new int[pntArrSize];
                 MPI_Recv(pntIds, pntArrSize, MPI_INT,
-                         fRank, mpiCellPointIdsTag, MPI_COMM_WORLD, &stat);
+                         fRank, mpiCellPointIdsTag, VISIT_MPI_COMM, &stat);
 
                 // Move over the point ids
                 int *ptr = pntIds;
@@ -1420,7 +1426,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                 if (index < 0 || givenPoints[index].size() == 0)
                 {
                     int nPts = 0;
-                    MPI_Send(&nPts, 1, MPI_INT, tRank, mpiNPtsTag, MPI_COMM_WORLD);
+                    MPI_Send(&nPts, 1, MPI_INT, tRank, mpiNPtsTag, VISIT_MPI_COMM);
                     continue;
                 }
 
@@ -1453,19 +1459,19 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                 }
 
                 // Send the number of points given
-                MPI_Send(&nPts, 1, MPI_INT, tRank, mpiNPtsTag, MPI_COMM_WORLD); 
+                MPI_Send(&nPts, 1, MPI_INT, tRank, mpiNPtsTag, VISIT_MPI_COMM); 
                 
                 // Send the gained points
                 MPI_Send(gainedPtrStart, nPts * 3, MPI_FLOAT, tRank, mpiGainedPointsTag,
-                         MPI_COMM_WORLD);
+                         VISIT_MPI_COMM);
                 
                 // Send the original ids for the gained points
                 MPI_Send(origIdPtrStart, nPts, MPI_INT, tRank, mpiOriginalIdsTag, 
-                         MPI_COMM_WORLD);
+                         VISIT_MPI_COMM);
 
                 // Send the number of given cells
                 int nCells = givenCells[index].size();
-                MPI_Send(&nCells, 1, MPI_INT, tRank, mpiNumGivenCellsTag, MPI_COMM_WORLD);
+                MPI_Send(&nCells, 1, MPI_INT, tRank, mpiNumGivenCellsTag, VISIT_MPI_COMM);
                 
                 // Prepare for sending the cell info
                 int *cellPtr = new int[nCells];
@@ -1489,15 +1495,15 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                 
                 // Send the cell types
                 MPI_Send(cellPtr, nCells, MPI_INT, tRank, mpiCellTypesTag,
-                    MPI_COMM_WORLD);
+                    VISIT_MPI_COMM);
 
                 // Send the number of points per cell
                 MPI_Send(nPtsPerCellPtr, nCells, MPI_INT, tRank,
-                    mpiNumPointsPerCellTag, MPI_COMM_WORLD);
+                    mpiNumPointsPerCellTag, VISIT_MPI_COMM);
 
                 // Send the point cells
                 MPI_Send(&(cellPtsVector[0]), cellPtsVector.size(), MPI_INT,
-                         tRank, mpiCellPointIdsTag, MPI_COMM_WORLD);
+                         tRank, mpiCellPointIdsTag, VISIT_MPI_COMM);
 
 
                 delete [] gainedPtrStart;
@@ -1512,7 +1518,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
     idList->Delete();
 
 #ifdef PARALLEL
-    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Barrier(VISIT_MPI_COMM);
 #endif
 }
 
@@ -1552,6 +1558,8 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
 //    I made it use the correct return type for GetMPIDataType() so that it
 //    works with other MPI implementations.
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 #if !defined(_WIN32) || (defined(_WIN32) && !defined(USING_MSVC6))
 template <class T>
@@ -1566,7 +1574,7 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
     // Get the processor rank
     int rank = 0;
 #ifdef PARALLEL
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
     int mpiNumTuplesTag = GetUniqueMessageTag();
     int mpiTupleDataTag = GetUniqueMessageTag();
 #endif
@@ -1644,7 +1652,7 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
                 // Get the number of incoming tuples
                 int nTup;
                 MPI_Recv(&nTup, 1, MPI_INT, fRank, mpiNumTuplesTag,
-                         MPI_COMM_WORLD, &stat);
+                         VISIT_MPI_COMM, &stat);
                 
                 if (nTup == 0)
                     continue;
@@ -1654,7 +1662,7 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
 
                 // Get the data
                 MPI_Recv(gainedData[sendDom][recvDom], nTup * nComponents,
-                         type, fRank, mpiTupleDataTag, MPI_COMM_WORLD, &stat);
+                         type, fRank, mpiTupleDataTag, VISIT_MPI_COMM, &stat);
             }
             // If this process owns the sending domain, we send information.
             else if (domain2proc[sendDom] == rank)
@@ -1669,7 +1677,7 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
                 {
                     int nTup = 0;
                     MPI_Send(&nTup, 1, MPI_INT, tRank, mpiNumTuplesTag,
-                        MPI_COMM_WORLD);
+                        VISIT_MPI_COMM);
                     continue;
                 }
 
@@ -1678,7 +1686,7 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
                                                   : givenCells[index];
                 int nTup = mapRef.size();
                 MPI_Send(&nTup, 1, MPI_INT, tRank, mpiNumTuplesTag,
-                    MPI_COMM_WORLD);
+                    VISIT_MPI_COMM);
 
                 // If there are no tuples to give, continue
                 if (nTup == 0)
@@ -1707,7 +1715,7 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
 
                 // Send the data
                 MPI_Send(dataArr, nTup * nComponents, type, tRank,
-                    mpiTupleDataTag, MPI_COMM_WORLD);
+                    mpiTupleDataTag, VISIT_MPI_COMM);
 
                 delete [] dataArr;
             }
@@ -1716,7 +1724,7 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
     }
 
 #ifdef PARALLEL
-    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Barrier(VISIT_MPI_COMM);
 #endif
 }
 #endif

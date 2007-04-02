@@ -139,6 +139,8 @@ avtCompactTreeFilter::avtCompactTreeFilter()
 //    Hank Childs, Fri Jun  9 13:25:31 PDT 2006
 //    Use ifdef PARALLELs to remove compiler warnings.
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -175,10 +177,10 @@ avtCompactTreeFilter::Execute(void)
                 int len = 0;
                 MPI_Status stat;
                 MPI_Recv(&len, 1, MPI_INT, i, mpiSendObjSizeTag, 
-                         MPI_COMM_WORLD, &stat);
+                         VISIT_MPI_COMM, &stat);
                 char *buff = new char[len];
                 MPI_Recv(buff, len, MPI_CHAR, i, mpiSendDataTag, 
-                         MPI_COMM_WORLD, &stat);
+                         VISIT_MPI_COMM, &stat);
                 reader.Read(len, buff);
                 avtDataObject_p ds2 = reader.GetOutput();
                 bigDS->Merge(*(ds2));
@@ -200,8 +202,8 @@ avtCompactTreeFilter::Execute(void)
             int len = 0;
             char *buff = NULL;
             str.GetWholeString(buff, len);
-            MPI_Send(&len, 1, MPI_INT, 0, mpiSendObjSizeTag, MPI_COMM_WORLD);
-            MPI_Send(buff, len, MPI_CHAR, 0, mpiSendDataTag, MPI_COMM_WORLD);
+            MPI_Send(&len, 1, MPI_INT, 0, mpiSendObjSizeTag, VISIT_MPI_COMM);
+            MPI_Send(buff, len, MPI_CHAR, 0, mpiSendDataTag, VISIT_MPI_COMM);
 #endif
 
             inTree = new avtDataTree(); // Make an empty tree, so we exit early

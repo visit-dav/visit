@@ -155,6 +155,10 @@ avtDataObjectInformation::Merge(const avtDataObjectInformation &di)
 //  Programmer: Mark C. Miller
 //  Creation:   02Sep03 
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 void
 avtDataObjectInformation::RecvResult(const avtDataObjectWriter_p dobw,
@@ -165,9 +169,9 @@ avtDataObjectInformation::RecvResult(const avtDataObjectWriter_p dobw,
    MPI_Status mpiStatus;
    int dstLen;
 
-   MPI_Recv(&dstLen, 1, MPI_INT, swapWithProc, mpiResultLenTag, MPI_COMM_WORLD, &mpiStatus);
+   MPI_Recv(&dstLen, 1, MPI_INT, swapWithProc, mpiResultLenTag, VISIT_MPI_COMM, &mpiStatus);
    char *dstStr = new char [dstLen];
-   MPI_Recv(dstStr, dstLen, MPI_CHAR, swapWithProc, mpiResultStrTag, MPI_COMM_WORLD, &mpiStatus);
+   MPI_Recv(dstStr, dstLen, MPI_CHAR, swapWithProc, mpiResultStrTag, VISIT_MPI_COMM, &mpiStatus);
 
    avtDataObjectInformation dstDobInfo;
    dstDobInfo.Read(dstStr);
@@ -191,9 +195,11 @@ avtDataObjectInformation::RecvResult(const avtDataObjectWriter_p dobw,
 //
 //  Modifications:
 //
-//     Mark C. Miller, Thu Jun 10 10:05:09 PDT 2004
-//     Modified to use unique message tags
+//    Mark C. Miller, Thu Jun 10 10:05:09 PDT 2004
+//    Modified to use unique message tags
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 void
 avtDataObjectInformation::SendResult(const avtDataObjectWriter_p dobw,
@@ -208,8 +214,8 @@ avtDataObjectInformation::SendResult(const avtDataObjectWriter_p dobw,
    Write(srcDobStr, *dobw);
    srcDobStr.GetWholeString(srcStr, srcLen);
 
-   MPI_Send(&srcLen, 1, MPI_INT, swapWithProc, mpiResultLenTag, MPI_COMM_WORLD);
-   MPI_Send(srcStr, srcLen, MPI_CHAR, swapWithProc, mpiResultStrTag, MPI_COMM_WORLD);
+   MPI_Send(&srcLen, 1, MPI_INT, swapWithProc, mpiResultLenTag, VISIT_MPI_COMM);
+   MPI_Send(srcStr, srcLen, MPI_CHAR, swapWithProc, mpiResultStrTag, VISIT_MPI_COMM);
 
 #endif
 }
@@ -226,9 +232,11 @@ avtDataObjectInformation::SendResult(const avtDataObjectWriter_p dobw,
 //
 //  Modifications:
 //
-//     Mark C. Miller, Thu Jun 10 10:05:09 PDT 2004
-//     Modified to use unique message tags
+//    Mark C. Miller, Thu Jun 10 10:05:09 PDT 2004
+//    Modified to use unique message tags
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 void
 avtDataObjectInformation::SwapAndMerge(const avtDataObjectWriter_p dobw,
@@ -248,14 +256,14 @@ avtDataObjectInformation::SwapAndMerge(const avtDataObjectWriter_p dobw,
    // swap string lengths
    MPI_Sendrecv(&srcLen, 1, MPI_INT, swapWithProc, mpiSwapLenTag,
                 &dstLen, 1, MPI_INT, swapWithProc, mpiSwapLenTag,
-                MPI_COMM_WORLD, &mpiStatus);
+                VISIT_MPI_COMM, &mpiStatus);
 
    dstStr = new char [dstLen];
 
    // swap strings
    MPI_Sendrecv(srcStr, srcLen, MPI_CHAR, swapWithProc, mpiSwapStrTag,
                 dstStr, dstLen, MPI_CHAR, swapWithProc, mpiSwapStrTag,
-                MPI_COMM_WORLD, &mpiStatus);
+                VISIT_MPI_COMM, &mpiStatus);
 
    // unserialize the dst string only
    avtDataObjectInformation dstDobInfo;
@@ -309,6 +317,8 @@ avtDataObjectInformation::SwapAndMerge(const avtDataObjectWriter_p dobw,
 //     Mark C. Miller, Thu Jun 10 10:05:09 PDT 2004
 //     Modified to use unique message tags
 //
+//     Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//     Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -319,8 +329,8 @@ avtDataObjectInformation::ParallelMerge(const avtDataObjectWriter_p dobw)
    int groupSize = 1;
    int myRank, commSize;
 
-   MPI_Comm_size(MPI_COMM_WORLD, &commSize);
-   MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
+   MPI_Comm_size(VISIT_MPI_COMM, &commSize);
+   MPI_Comm_rank(VISIT_MPI_COMM, &myRank);
    int mpiResultLenTag = GetUniqueMessageTag();
    int mpiResultStrTag = GetUniqueMessageTag();
    int mpiSwapLenTag   = GetUniqueMessageTag();

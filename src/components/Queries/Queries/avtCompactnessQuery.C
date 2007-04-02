@@ -219,6 +219,8 @@ avtCompactnessQuery::PreExecute(void)
 //    Added a check to make sure we got at least *some* boundary data.
 //    We will wind up with invalid results if there are no boundaries.
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -243,7 +245,7 @@ avtCompactnessQuery::MidExecute(void)
 
     int mySize = xBound.size();
     int totalSize;
-    MPI_Allreduce(&mySize, &totalSize, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(&mySize, &totalSize, 1, MPI_INT, MPI_SUM, VISIT_MPI_COMM);
 
     xBound.resize(totalSize);
     yBound.resize(totalSize);
@@ -254,17 +256,17 @@ avtCompactnessQuery::MidExecute(void)
         {
             // Sending
             int len = mySize;
-            MPI_Bcast(&len, 1, MPI_INT, proc, MPI_COMM_WORLD);
-            MPI_Bcast(&xBound[0], len, MPI_FLOAT, proc, MPI_COMM_WORLD);
-            MPI_Bcast(&yBound[0], len, MPI_FLOAT, proc, MPI_COMM_WORLD);
+            MPI_Bcast(&len, 1, MPI_INT, proc, VISIT_MPI_COMM);
+            MPI_Bcast(&xBound[0], len, MPI_FLOAT, proc, VISIT_MPI_COMM);
+            MPI_Bcast(&yBound[0], len, MPI_FLOAT, proc, VISIT_MPI_COMM);
         }
         else
         {
             // Receiving
             int len;
-            MPI_Bcast(&len, 1, MPI_INT, proc, MPI_COMM_WORLD);
-            MPI_Bcast(&xBound[position], len, MPI_FLOAT, proc, MPI_COMM_WORLD);
-            MPI_Bcast(&yBound[position], len, MPI_FLOAT, proc, MPI_COMM_WORLD);
+            MPI_Bcast(&len, 1, MPI_INT, proc, VISIT_MPI_COMM);
+            MPI_Bcast(&xBound[position], len, MPI_FLOAT, proc, VISIT_MPI_COMM);
+            MPI_Bcast(&yBound[position], len, MPI_FLOAT, proc, VISIT_MPI_COMM);
             position += len;
         }
     }

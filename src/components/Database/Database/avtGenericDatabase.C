@@ -408,6 +408,8 @@ avtGenericDatabase::SetCycleTimeInDatabaseMetaData(avtDatabaseMetaData *md, int 
 //    Moved GetMetaData to top of routine so transform manager would have it
 //    Changed uses of GetMetaData()-> to md->. Added call to TransformDataset
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 avtDataTree_p
@@ -552,7 +554,7 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
         int tmp[2], rtmp[2];
         tmp[0] = (shouldDoMatSelect ? 1 : 0);
         tmp[1] = (hadError ? 1 : 0);
-        MPI_Allreduce(tmp, rtmp, 2, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+        MPI_Allreduce(tmp, rtmp, 2, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
         shouldDoMatSelect = bool(rtmp[0]);
         hadError = bool(rtmp[1]);
     }
@@ -4801,6 +4803,8 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
 //    Hank Childs, Thu Jan 26 10:07:14 PST 2006
 //    Do not use non-robust ghost nodes. ['6900]
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 bool
@@ -4830,7 +4834,7 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
     {
         int  parallelShouldStop;
         MPI_Allreduce(&shouldStop, &parallelShouldStop, 1, MPI_INT, MPI_MAX,
-                      MPI_COMM_WORLD);
+                      VISIT_MPI_COMM);
         shouldStop = parallelShouldStop;
     }
 #endif
@@ -4844,7 +4848,7 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
     {
         int hdbi = (hasDomainBoundaryInfo ? 1 : 0);
         int phdbi;
-        MPI_Allreduce(&hdbi, &phdbi, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
+        MPI_Allreduce(&hdbi, &phdbi, 1, MPI_INT, MPI_MIN, VISIT_MPI_COMM);
         if (phdbi < 1)
             hasDomainBoundaryInfo = false;
     }
@@ -4868,7 +4872,7 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
         int tmp1[2], tmp2[2];
         tmp1[0] = (haveDomainWithoutGlobalNodeIds ? 1 : 0);
         tmp1[1] = (haveGlobalNodeIdsForAtLeastOneDom ? 1 : 0);
-        MPI_Allreduce(tmp1, tmp2, 2, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+        MPI_Allreduce(tmp1, tmp2, 2, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
         haveDomainWithoutGlobalNodeIds = (tmp2[0] == 1 ? true : false);
         haveGlobalNodeIdsForAtLeastOneDom = (tmp2[1] == 1 ? true : false);
     }
@@ -5095,6 +5099,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundariesFromFile(
 //    Hank Childs, Fri Jan 27 08:57:17 PST 2006
 //    Add support for exchanging global node and zone numbers.
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 bool
@@ -5147,12 +5153,12 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
     int allmats_tmp    = allmats; 
     int least_mix_tmp  = least_mixvars;
     int most_mix_tmp   = most_mixvars;
-    MPI_Allreduce(&anymats_tmp, &anymats,1,MPI_INT,MPI_MAX,MPI_COMM_WORLD);
-    MPI_Allreduce(&allmats_tmp, &allmats,1,MPI_INT,MPI_MIN,MPI_COMM_WORLD);
+    MPI_Allreduce(&anymats_tmp, &anymats,1,MPI_INT,MPI_MAX,VISIT_MPI_COMM);
+    MPI_Allreduce(&allmats_tmp, &allmats,1,MPI_INT,MPI_MIN,VISIT_MPI_COMM);
     MPI_Allreduce(&most_mix_tmp, &most_mixvars, 1, MPI_INT, MPI_MAX,
-                  MPI_COMM_WORLD);
+                  VISIT_MPI_COMM);
     MPI_Allreduce(&least_mix_tmp, &least_mixvars, 1, MPI_INT, MPI_MIN,
-                  MPI_COMM_WORLD);
+                  VISIT_MPI_COMM);
 #endif
 
     if (anymats && !allmats)
@@ -5693,6 +5699,9 @@ avtGenericDatabase::CommunicateGhostNodesFromDomainBoundariesFromFile(
 //
 //    Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
 //    Fixed leak for 'ln' object
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 bool
@@ -5894,7 +5903,7 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
         totalSend += sendcount[i];
     }
 
-    MPI_Alltoall(sendcount, 1, MPI_INT, recvcount, 1, MPI_INT, MPI_COMM_WORLD);
+    MPI_Alltoall(sendcount, 1, MPI_INT, recvcount, 1, MPI_INT, VISIT_MPI_COMM);
 
     int totalRecv = 0;
     for (i = 0 ; i < num_procs ; i++)
@@ -5931,7 +5940,7 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
     //
     MPI_Alltoallv(big_send_buffer, sendcount, senddisp, MPI_INT,
                   big_recv_buffer, recvcount, recvdisp, MPI_INT,
-                  MPI_COMM_WORLD);
+                  VISIT_MPI_COMM);
 
     //
     // Now take everything in the receive buffer and add update our
@@ -6064,7 +6073,7 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
         totalSend += sendcount[i];
     }
 
-    MPI_Alltoall(sendcount, 1, MPI_INT, recvcount, 1, MPI_INT, MPI_COMM_WORLD);
+    MPI_Alltoall(sendcount, 1, MPI_INT, recvcount, 1, MPI_INT, VISIT_MPI_COMM);
 
     totalRecv = 0;
     for (i = 0 ; i < num_procs ; i++)
@@ -6131,7 +6140,7 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
     //
     MPI_Alltoallv(big_send_buffer, sendcount, senddisp, MPI_INT,
                   big_recv_buffer, recvcount, recvdisp, MPI_INT,
-                  MPI_COMM_WORLD);
+                  VISIT_MPI_COMM);
 
     //
     // Now add the shared points to the domain boundary information that comes
@@ -6237,6 +6246,8 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
 //    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
 //    Changed 'vector<int>' to 'intVector'.
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 bool
@@ -6330,7 +6341,7 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
         totalSend += sendcount[i];
     }
 
-    MPI_Alltoall(sendcount, 1, MPI_INT, recvcount, 1, MPI_INT, MPI_COMM_WORLD);
+    MPI_Alltoall(sendcount, 1, MPI_INT, recvcount, 1, MPI_INT, VISIT_MPI_COMM);
 
     int totalRecv = 0;
     for (i = 0 ; i < num_procs ; i++)
@@ -6361,7 +6372,7 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
     //
     MPI_Alltoallv(big_send_buffer, sendcount, senddisp, MPI_INT,
                   big_recv_buffer, recvcount, recvdisp, MPI_INT,
-                  MPI_COMM_WORLD);
+                  VISIT_MPI_COMM);
 
     //
     // Now take everything in the receive buffer and add update our
@@ -6402,7 +6413,7 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
 
     MPI_Alltoallv(new_big_send_buffer, new_sendcount, new_senddisp,MPI_CHAR,
                   new_big_recv_buffer, new_recvcount, new_recvdisp,MPI_CHAR,
-                  MPI_COMM_WORLD);
+                  VISIT_MPI_COMM);
 
     // 
     // We are almost there!  Each processor has now sent us whether or not
@@ -6512,6 +6523,8 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
 //    Hank Childs, Fri Jan 20 17:11:59 PST 2006
 //    Added error message.
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 bool
@@ -6563,7 +6576,7 @@ avtGenericDatabase::ApplyGhostForDomainNesting(avtDatasetCollection &ds,
     {
         int  parallelShouldStop;
         MPI_Allreduce(&shouldStop, &parallelShouldStop, 1, MPI_INT, MPI_MAX,
-                      MPI_COMM_WORLD);
+                      VISIT_MPI_COMM);
         shouldStop = parallelShouldStop;
     }
 #endif

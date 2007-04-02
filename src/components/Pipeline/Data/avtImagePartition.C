@@ -92,6 +92,8 @@ void          QuicksortTuple3(Tuple3 *, int);
 //    Hank Childs, Fri Sep 30 17:27:02 PDT 2005
 //    Initialize shouldProduceOverlaps.
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 avtImagePartition::avtImagePartition(int w, int h, int np, int tp)
@@ -105,7 +107,7 @@ avtImagePartition::avtImagePartition(int w, int h, int np, int tp)
     if (numProcessors < 0)
     {
 #ifdef PARALLEL
-        MPI_Comm_size(MPI_COMM_WORLD, &numProcessors);
+        MPI_Comm_size(VISIT_MPI_COMM, &numProcessors);
 #else
         numProcessors = 1;
 #endif
@@ -115,7 +117,7 @@ avtImagePartition::avtImagePartition(int w, int h, int np, int tp)
     if (thisProcessor < 0)
     {
 #ifdef PARALLEL
-        MPI_Comm_rank(MPI_COMM_WORLD, &thisProcessor);
+        MPI_Comm_rank(VISIT_MPI_COMM, &thisProcessor);
 #else
         thisProcessor = 0;
 #endif
@@ -428,6 +430,8 @@ avtImagePartition::EstablishPartitionBoundaries(int *samples)
 //    Hank Childs, Mon Dec 17 17:54:25 PST 2001 
 //    Fixed array bounds write.
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -464,7 +468,7 @@ avtImagePartition::DetermineAssignments(int *amount)
     //
     int *allAmounts = new int[numProcessors*numProcessors];
     MPI_Allgather(amount, numProcessors, MPI_INT, allAmounts, numProcessors,
-                  MPI_INT, MPI_COMM_WORLD);
+                  MPI_INT, VISIT_MPI_COMM);
 
     //
     // Set up a data structure that has the partition and processor associated

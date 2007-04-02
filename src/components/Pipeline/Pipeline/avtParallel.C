@@ -57,6 +57,11 @@ using std::vector;
 
 // handle for user-defined reduction operator for min/max in single reduce
 #ifdef PARALLEL
+
+// VisIt's own MPI communicator
+static MPI_Comm VISIT_MPI_COMM_OBJ;
+void *VISIT_MPI_COMM_PTR;
+
 static MPI_Op AVT_MPI_MINMAX = MPI_OP_NULL;
 static int mpiTagUpperBound = 32767;
 
@@ -129,6 +134,8 @@ PAR_Exit(void)
 //    again, and (2) we don't want to call MPI_Finalize when we quit.  This
 //    check will come into play with the VisIt Library for simulations.
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Added call to dup MPI_COMM_WORLD to create VISIT_MPI_COMM 
 // ****************************************************************************
 
 void
@@ -142,14 +149,21 @@ PAR_Init (int &argc, char **&argv)
     if (we_initialized_MPI)
         MPI_Init (&argc, &argv);
 
+    // duplicate the communicator
+    if (MPI_Comm_dup(MPI_COMM_WORLD, &VISIT_MPI_COMM_OBJ) != MPI_SUCCESS)
+        VISIT_MPI_COMM_OBJ = MPI_COMM_WORLD;
+    VISIT_MPI_COMM_PTR = (void*) &VISIT_MPI_COMM_OBJ;
+
     //
     // Find the current process rank and the size of the process pool.
     //
-    MPI_Comm_rank (MPI_COMM_WORLD, &par_rank);
-    MPI_Comm_size (MPI_COMM_WORLD, &par_size);
+    MPI_Comm_rank (VISIT_MPI_COMM, &par_rank);
+    MPI_Comm_size (VISIT_MPI_COMM, &par_size);
 
     int success = 0;
     // MPI_Attr_get requires void *
+    // Also, MPI_TAG_UB is perm attr of the lib and accessible only
+    // from MPI_COMM_WORLD
     void *value; 
     MPI_Attr_get(MPI_COMM_WORLD, MPI_TAG_UB, &value, &success);
     if (success)
@@ -160,6 +174,7 @@ PAR_Init (int &argc, char **&argv)
     {
         // Cannot use debug logs here, because they haven't been initialized.
         cerr << "Unable to get value for MPI_TAG_UB, assuming 32767." << endl;
+        cerr << "success = " << success << endl;
         mpiTagUpperBound = 32767; 
     }
 #endif
@@ -300,6 +315,8 @@ MinMaxOp(void *ibuf, void *iobuf, int *len, MPI_Datatype *dtype)
 //    size upon exit. An altsize of -1 means to do an initial communication
 //    to get all processors to agree on a size before proceeding.
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 /* ARGSUSED */
@@ -318,7 +335,7 @@ UnifyMinMax(double *buff, int size, int altsize)
     // have an agreed upon size to work with. This will have effect of 
     // overwriting altsize with a maximum agreed upon size
     if (altsize == -1)
-        MPI_Allreduce(&size, &altsize, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+        MPI_Allreduce(&size, &altsize, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
 
     if (altsize == 0)
     {
@@ -330,7 +347,7 @@ UnifyMinMax(double *buff, int size, int altsize)
 
         rbuff = new double[size];
 
-        MPI_Allreduce(buff, rbuff, size, MPI_DOUBLE, AVT_MPI_MINMAX, MPI_COMM_WORLD);
+        MPI_Allreduce(buff, rbuff, size, MPI_DOUBLE, AVT_MPI_MINMAX, VISIT_MPI_COMM);
     }
     else if (altsize > 0)
     {
@@ -352,7 +369,7 @@ UnifyMinMax(double *buff, int size, int altsize)
             tbuff[i+1] = -DBL_MAX;
         }
 
-        MPI_Allreduce(tbuff, rbuff, altsize, MPI_DOUBLE, AVT_MPI_MINMAX, MPI_COMM_WORLD);
+        MPI_Allreduce(tbuff, rbuff, altsize, MPI_DOUBLE, AVT_MPI_MINMAX, VISIT_MPI_COMM);
 
     }
     else
@@ -384,6 +401,10 @@ UnifyMinMax(double *buff, int size, int altsize)
 //  Programmer:  Hank Childs
 //  Creation:    February 6, 2002
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 /* ARGSUSED */
@@ -392,7 +413,7 @@ UnifyMaximumValue(int mymax)
 {
 #ifdef PARALLEL
     int allmax;
-    MPI_Allreduce(&mymax, &allmax, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+    MPI_Allreduce(&mymax, &allmax, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
     return allmax;
 #else
     return mymax;
@@ -423,6 +444,8 @@ UnifyMaximumValue(int mymax)
 //    Hank Childs, Tue Dec 18 07:55:21 PST 2001
 //    Fix memory leak.
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 /* ARGSUSED */
@@ -432,9 +455,9 @@ Collect(float *buff, int size)
 #ifdef PARALLEL
 
     float *newbuff = new float[size];
-    MPI_Reduce(buff, newbuff, size, MPI_FLOAT, MPI_MAX, 0, MPI_COMM_WORLD);
+    MPI_Reduce(buff, newbuff, size, MPI_FLOAT, MPI_MAX, 0, VISIT_MPI_COMM);
     int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
     if (rank == 0)
     {
         for (int i = 0 ; i < size ; i++)
@@ -471,6 +494,10 @@ Collect(float *buff, int size)
 //  Programmer: Hank Childs
 //  Creation:   June 30, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 /* ARGSUSED */
@@ -480,9 +507,9 @@ Collect(int *buff, int size)
 #ifdef PARALLEL
 
     int *newbuff = new int[size];
-    MPI_Reduce(buff, newbuff, size, MPI_INT, MPI_MAX, 0, MPI_COMM_WORLD);
+    MPI_Reduce(buff, newbuff, size, MPI_INT, MPI_MAX, 0, VISIT_MPI_COMM);
     int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
     if (rank == 0)
     {
         for (int i = 0 ; i < size ; i++)
@@ -511,13 +538,17 @@ Collect(int *buff, int size)
 //  Programmer: Hank Childs
 //  Creation:   November 28, 2001
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
 Barrier(void)
 {
 #ifdef PARALLEL
-    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Barrier(VISIT_MPI_COMM);
 #endif
 }
 
@@ -536,13 +567,17 @@ Barrier(void)
 //  Programmer:    Hank Childs
 //  Creation:      January 1, 2002
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
 SumIntArrayAcrossAllProcessors(int *inArray, int *outArray, int nArray)
 {
 #ifdef PARALLEL
-    MPI_Allreduce(inArray, outArray, nArray, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(inArray, outArray, nArray, MPI_INT, MPI_SUM, VISIT_MPI_COMM);
 #else
     for (int i = 0 ; i < nArray ; i++)
     {
@@ -566,6 +601,10 @@ SumIntArrayAcrossAllProcessors(int *inArray, int *outArray, int nArray)
 //  Programmer:    Hank Childs
 //  Creation:      August 30, 2002
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -573,7 +612,7 @@ SumDoubleArrayAcrossAllProcessors(double *inArray, double *outArray,int nArray)
 {
 #ifdef PARALLEL
     MPI_Allreduce(inArray, outArray, nArray, MPI_DOUBLE, MPI_SUM,
-                  MPI_COMM_WORLD);
+                  VISIT_MPI_COMM);
 #else
     for (int i = 0 ; i < nArray ; i++)
     {
@@ -597,6 +636,10 @@ SumDoubleArrayAcrossAllProcessors(double *inArray, double *outArray,int nArray)
 //  Programmer:    Hank Childs
 //  Creation:      June 26, 2002
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -604,7 +647,7 @@ SumFloatArrayAcrossAllProcessors(float *inArray, float *outArray, int nArray)
 {
 #ifdef PARALLEL
     MPI_Allreduce(inArray, outArray, nArray, MPI_FLOAT, MPI_SUM,
-                  MPI_COMM_WORLD);
+                  VISIT_MPI_COMM);
 #else
     for (int i = 0 ; i < nArray ; i++)
     {
@@ -626,6 +669,10 @@ SumFloatArrayAcrossAllProcessors(float *inArray, float *outArray, int nArray)
 //  Programmer:    Jeremy Meredith
 //  Creation:      April 12, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -634,7 +681,7 @@ SumFloatAcrossAllProcessors(float &value)
 #ifdef PARALLEL
     float newvalue;
     MPI_Allreduce(&value, &newvalue, 1, MPI_FLOAT, MPI_SUM,
-                  MPI_COMM_WORLD);
+                  VISIT_MPI_COMM);
     value = newvalue;
 #endif
 }
@@ -655,6 +702,10 @@ SumFloatAcrossAllProcessors(float &value)
 //  Programmer:    Hank Childs
 //  Creation:      February 20, 2006
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -663,7 +714,7 @@ UnifyMinimumFloatArrayAcrossAllProcessors(float *inArray, float *outArray,
 {
 #ifdef PARALLEL
     MPI_Allreduce(inArray, outArray, nArray, MPI_FLOAT, MPI_MIN,
-                  MPI_COMM_WORLD);
+                  VISIT_MPI_COMM);
 #else
     memcpy(outArray, inArray, nArray*sizeof(float));
 #endif
@@ -685,6 +736,10 @@ UnifyMinimumFloatArrayAcrossAllProcessors(float *inArray, float *outArray,
 //  Programmer:    Hank Childs
 //  Creation:      February 20, 2006
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -693,7 +748,7 @@ UnifyMaximumFloatArrayAcrossAllProcessors(float *inArray, float *outArray,
 {
 #ifdef PARALLEL
     MPI_Allreduce(inArray, outArray, nArray, MPI_FLOAT, MPI_MAX,
-                  MPI_COMM_WORLD);
+                  VISIT_MPI_COMM);
 #else
     memcpy(outArray, inArray, nArray*sizeof(float));
 #endif
@@ -712,6 +767,10 @@ UnifyMaximumFloatArrayAcrossAllProcessors(float *inArray, float *outArray,
 //  Programmer:    Jeremy Meredith
 //  Creation:      April 17, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -720,7 +779,7 @@ SumIntAcrossAllProcessors(int &value)
 #ifdef PARALLEL
     int newvalue;
     MPI_Allreduce(&value, &newvalue, 1, MPI_INT, MPI_SUM,
-                  MPI_COMM_WORLD);
+                  VISIT_MPI_COMM);
     value = newvalue;
 #endif
 }
@@ -738,6 +797,10 @@ SumIntAcrossAllProcessors(int &value)
 //  Programmer:    Jeremy Meredith
 //  Creation:      April 12, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -746,7 +809,7 @@ SumDoubleAcrossAllProcessors(double &value)
 #ifdef PARALLEL
     double newvalue;
     MPI_Allreduce(&value, &newvalue, 1, MPI_DOUBLE, MPI_SUM,
-                  MPI_COMM_WORLD);
+                  VISIT_MPI_COMM);
     value = newvalue;
 #endif
 }
@@ -784,6 +847,8 @@ SumDoubleAcrossAllProcessors(double &value)
 //    is identical. And, now there is no need to allocate an array of size
 //    numProcs or do an expensive Allgather.
 //    
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 bool
@@ -791,11 +856,11 @@ ThisProcessorHasMinimumValue(double min)
 {
 #ifdef PARALLEL
     int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
     struct { double val; int rank; } tmp, rtmp;
     tmp.val = min;
     tmp.rank = rank;
-    MPI_Allreduce(&tmp, &rtmp, 1, MPI_DOUBLE_INT, MPI_MINLOC, MPI_COMM_WORLD);
+    MPI_Allreduce(&tmp, &rtmp, 1, MPI_DOUBLE_INT, MPI_MINLOC, VISIT_MPI_COMM);
     return (rtmp.rank == rank ? true : false);
 #else
     return true;
@@ -828,6 +893,8 @@ ThisProcessorHasMinimumValue(double min)
 //    is identical. And, now there is no need to allocate an array of size
 //    numProcs or do an expensive Allgather.
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 bool
@@ -835,11 +902,11 @@ ThisProcessorHasMaximumValue(double max)
 {
 #ifdef PARALLEL
     int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
     struct { double val; int rank; } tmp, rtmp;
     tmp.val = max;
     tmp.rank = rank;
-    MPI_Allreduce(&tmp, &rtmp, 1, MPI_DOUBLE_INT, MPI_MAXLOC, MPI_COMM_WORLD);
+    MPI_Allreduce(&tmp, &rtmp, 1, MPI_DOUBLE_INT, MPI_MAXLOC, VISIT_MPI_COMM);
     return (rtmp.rank == rank ? true : false);
 #else
     return true;
@@ -859,11 +926,15 @@ ThisProcessorHasMaximumValue(double max)
 //  Programmer:  Jeremy Meredith
 //  Creation:    July 15, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 void BroadcastInt(int &i)
 {
 #ifdef PARALLEL
-    MPI_Bcast(&i, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&i, 1, MPI_INT, 0, VISIT_MPI_COMM);
 #endif
 }
 
@@ -899,6 +970,10 @@ void BroadcastBool(bool &b)
 //  Programmer:  Jeremy Meredith
 //  Creation:    July 15, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 void BroadcastIntVector(vector<int> &vi, int myrank)
 {
@@ -906,11 +981,11 @@ void BroadcastIntVector(vector<int> &vi, int myrank)
     int len;
     if (myrank==0)
         len = vi.size();
-    MPI_Bcast(&len, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&len, 1, MPI_INT, 0, VISIT_MPI_COMM);
     if (myrank!=0)
         vi.resize(len);
 
-    MPI_Bcast(&vi[0], len, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&vi[0], len, MPI_INT, 0, VISIT_MPI_COMM);
 #endif
 }
 
@@ -926,11 +1001,15 @@ void BroadcastIntVector(vector<int> &vi, int myrank)
 //  Programmer:  Hank Childs
 //  Creation:    June 6, 2005
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 void BroadcastDouble(double &i)
 {
 #ifdef PARALLEL
-    MPI_Bcast(&i, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&i, 1, MPI_DOUBLE, 0, VISIT_MPI_COMM);
 #endif
 }
 
@@ -959,11 +1038,11 @@ void BroadcastDoubleVector(vector<double> &vi, int myrank)
     int len;
     if (myrank==0)
         len = vi.size();
-    MPI_Bcast(&len, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&len, 1, MPI_INT, 0, VISIT_MPI_COMM);
     if (myrank!=0)
         vi.resize(len);
 
-    MPI_Bcast(&vi[0], len, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&vi[0], len, MPI_DOUBLE, 0, VISIT_MPI_COMM);
 #endif
 }
 
@@ -980,6 +1059,10 @@ void BroadcastDoubleVector(vector<double> &vi, int myrank)
 //  Programmer:  Jeremy Meredith
 //  Creation:    July 15, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 void BroadcastString(string &s, int myrank)
 {
@@ -987,17 +1070,17 @@ void BroadcastString(string &s, int myrank)
     int len;
     if (myrank==0)
         len = s.length();
-    MPI_Bcast(&len, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&len, 1, MPI_INT, 0, VISIT_MPI_COMM);
     if (broadcastBuffer.size() < len+1)
         broadcastBuffer.resize(len+1);
 
     if (myrank==0)
     {
-        MPI_Bcast((void*)(s.c_str()), len, MPI_CHAR, 0, MPI_COMM_WORLD);
+        MPI_Bcast((void*)(s.c_str()), len, MPI_CHAR, 0, VISIT_MPI_COMM);
     }
     else
     {
-        MPI_Bcast(&broadcastBuffer[0], len, MPI_CHAR, 0, MPI_COMM_WORLD);
+        MPI_Bcast(&broadcastBuffer[0], len, MPI_CHAR, 0, VISIT_MPI_COMM);
         broadcastBuffer[len] = '\0';
         s = &broadcastBuffer[0];
     }
@@ -1022,6 +1105,8 @@ void BroadcastString(string &s, int myrank)
 //    Hank Childs, Mon Jun  6 17:13:08 PDT 2005
 //    Re-implemented to improve efficiency for vectors with lots of strings.
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 void BroadcastStringVector(vector<string> &vs, int myrank)
 {
@@ -1031,13 +1116,13 @@ void BroadcastStringVector(vector<string> &vs, int myrank)
     int len;
     if (myrank==0)
         len = vs.size();
-    MPI_Bcast(&len, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&len, 1, MPI_INT, 0, VISIT_MPI_COMM);
 
     vector<int> lens(len);
     if (myrank == 0)
         for (i = 0 ; i < len ; i++)
             lens[i] = vs[i].length();
-    MPI_Bcast(&(lens[0]), len, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&(lens[0]), len, MPI_INT, 0, VISIT_MPI_COMM);
 
     int total_len = 0;
     for (i = 0 ; i < len ; i++)
@@ -1054,7 +1139,7 @@ void BroadcastStringVector(vector<string> &vs, int myrank)
         }
     }    
 
-    MPI_Bcast((void*)buff, total_len, MPI_CHAR, 0, MPI_COMM_WORLD);
+    MPI_Bcast((void*)buff, total_len, MPI_CHAR, 0, VISIT_MPI_COMM);
 
     if (myrank != 0)
     {
@@ -1092,6 +1177,10 @@ void BroadcastStringVector(vector<string> &vs, int myrank)
 //  Programmer:  Jeremy Meredith
 //  Creation:    July 15, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 void BroadcastStringVectorVector(vector< vector<string> > &vvs, int myrank)
 {
@@ -1099,7 +1188,7 @@ void BroadcastStringVectorVector(vector< vector<string> > &vvs, int myrank)
     int len;
     if (myrank==0)
         len = vvs.size();
-    MPI_Bcast(&len, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&len, 1, MPI_INT, 0, VISIT_MPI_COMM);
     if (myrank!=0)
         vvs.resize(len);
 
@@ -1126,13 +1215,15 @@ void BroadcastStringVectorVector(vector< vector<string> > &vvs, int myrank)
 //    Mark C. Miller, Wed Jun  9 21:50:12 PDT 2004
 //    Eliminated use of MPI_ANY_TAG and modified to use GetUniqueMessageTags
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 bool GetListToRootProc(std::vector<std::string> &vars, int total)
 {
 #ifdef PARALLEL
     int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
     int red_val = 10000000;
     if (vars.size() == total)
         red_val = rank;
@@ -1142,7 +1233,7 @@ bool GetListToRootProc(std::vector<std::string> &vars, int total)
        
     int lowest_with_list = 0;
     MPI_Allreduce(&red_val, &lowest_with_list, 1, MPI_INT, MPI_MIN,
-                  MPI_COMM_WORLD);
+                  VISIT_MPI_COMM);
 
     if (lowest_with_list == 0)
         return (rank == 0);
@@ -1152,9 +1243,9 @@ bool GetListToRootProc(std::vector<std::string> &vars, int total)
         for (int i = 0 ; i < total ; i++)
         {
             int size = strlen(vars[i].c_str());
-            MPI_Send(&size, 1, MPI_INT, mpiSizeTag, rank, MPI_COMM_WORLD);
+            MPI_Send(&size, 1, MPI_INT, mpiSizeTag, rank, VISIT_MPI_COMM);
             void *ptr = (void *) vars[i].c_str();
-            MPI_Send(ptr, size, MPI_CHAR, mpiDataTag, rank, MPI_COMM_WORLD);
+            MPI_Send(ptr, size, MPI_CHAR, mpiDataTag, rank, VISIT_MPI_COMM);
         }
     }
     else if (rank == 0)
@@ -1165,11 +1256,11 @@ bool GetListToRootProc(std::vector<std::string> &vars, int total)
             int len;
             MPI_Status stat;
             MPI_Recv(&len, 1, MPI_INT, MPI_ANY_SOURCE, mpiSizeTag,
-                     MPI_COMM_WORLD, &stat);
+                     VISIT_MPI_COMM, &stat);
             char *varname = new char[len+1];
             void *buff = (void *) varname;
             MPI_Recv(buff, len, MPI_CHAR, stat.MPI_SOURCE, mpiDataTag,
-                     MPI_COMM_WORLD, &stat);
+                     VISIT_MPI_COMM, &stat);
             varname[len] = '\0';
             vars.push_back(varname);
             delete [] varname;
@@ -1266,6 +1357,8 @@ int GetUniqueStaticMessageTag()
 //
 //  Modifications:
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void 
@@ -1276,8 +1369,8 @@ GetAttToRootProc(AttributeGroup &att, int hasAtt)
     BufferConnection b;
     unsigned char *buf;
 
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
+    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
+    MPI_Comm_size(VISIT_MPI_COMM, &nprocs);
 
     int mpiHasAttTag = GetUniqueMessageTag();
     int mpiSizeTag = GetUniqueMessageTag();
@@ -1289,14 +1382,14 @@ GetAttToRootProc(AttributeGroup &att, int hasAtt)
         {
             MPI_Status stat, stat2;
             MPI_Recv(&hasAtt, 1, MPI_INT, MPI_ANY_SOURCE,
-                     mpiHasAttTag, MPI_COMM_WORLD, &stat);
+                     mpiHasAttTag, VISIT_MPI_COMM, &stat);
             if (hasAtt)
             {
                 MPI_Recv(&size, 1, MPI_INT, stat.MPI_SOURCE, mpiSizeTag,
-                         MPI_COMM_WORLD, &stat2);
+                         VISIT_MPI_COMM, &stat2);
                 buf = new unsigned char[size];
                 MPI_Recv(buf, size, MPI_UNSIGNED_CHAR, stat.MPI_SOURCE, mpiDataTag,
-                         MPI_COMM_WORLD, &stat2);
+                         VISIT_MPI_COMM, &stat2);
                 b.Append(buf, size);
                 att.Read(b);
                 delete [] buf;
@@ -1305,7 +1398,7 @@ GetAttToRootProc(AttributeGroup &att, int hasAtt)
     }
     else 
     {
-        MPI_Send(&hasAtt, 1, MPI_INT, 0, mpiHasAttTag, MPI_COMM_WORLD);
+        MPI_Send(&hasAtt, 1, MPI_INT, 0, mpiHasAttTag, VISIT_MPI_COMM);
         if (hasAtt)
         {
             att.SelectAll();
@@ -1315,8 +1408,8 @@ GetAttToRootProc(AttributeGroup &att, int hasAtt)
             for (int i = 0; i < size; ++i)
                 b.Read(buf+i);
  
-            MPI_Send(&size, 1, MPI_INT, 0, mpiSizeTag, MPI_COMM_WORLD);
-            MPI_Send(buf, size, MPI_UNSIGNED_CHAR, 0, mpiDataTag, MPI_COMM_WORLD);
+            MPI_Send(&size, 1, MPI_INT, 0, mpiSizeTag, VISIT_MPI_COMM);
+            MPI_Send(buf, size, MPI_UNSIGNED_CHAR, 0, mpiDataTag, VISIT_MPI_COMM);
             delete [] buf;
         }
     }
@@ -1340,6 +1433,8 @@ GetAttToRootProc(AttributeGroup &att, int hasAtt)
 //
 //  Modifications:
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -1347,8 +1442,8 @@ GetFloatArrayToRootProc(float *fa, int nf, bool &success)
 {
 #ifdef PARALLEL
     int myRank, numProcs;
-    MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
-    MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
+    MPI_Comm_rank(VISIT_MPI_COMM, &myRank);
+    MPI_Comm_size(VISIT_MPI_COMM, &numProcs);
     int mpiGoodTag = GetUniqueMessageTag();
     int mpiFloatArrayTag = GetUniqueMessageTag();
 
@@ -1359,21 +1454,21 @@ GetFloatArrayToRootProc(float *fa, int nf, bool &success)
         for (int i = 1; i < numProcs; i++)
         {
             MPI_Recv(&good, 1, MPI_INT, MPI_ANY_SOURCE,
-                     mpiGoodTag, MPI_COMM_WORLD, &stat);
+                     mpiGoodTag, VISIT_MPI_COMM, &stat);
             if (good)
             {
                 MPI_Recv(fa, nf, MPI_FLOAT, stat.MPI_SOURCE, mpiFloatArrayTag,
-                         MPI_COMM_WORLD, &stat2);
+                         VISIT_MPI_COMM, &stat2);
                 success = good;
             }
         }
     }
     else
     {
-        MPI_Send(&success, 1, MPI_INT, 0, mpiGoodTag, MPI_COMM_WORLD);
+        MPI_Send(&success, 1, MPI_INT, 0, mpiGoodTag, VISIT_MPI_COMM);
         if (success)
         {
-            MPI_Send(fa, nf, MPI_FLOAT, 0, mpiFloatArrayTag, MPI_COMM_WORLD);
+            MPI_Send(fa, nf, MPI_FLOAT, 0, mpiFloatArrayTag, VISIT_MPI_COMM);
         }    
     }
 #endif
@@ -1396,6 +1491,10 @@ GetFloatArrayToRootProc(float *fa, int nf, bool &success)
 //  Programmer:  Kathleen Bonnell
 //  Creation:    November 9, 2004 
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 /* ARGSUSED */
@@ -1405,7 +1504,7 @@ UnifyMaximumValue(vector<int> &mymax, vector<int> &results)
 #ifdef PARALLEL
     results.resize(mymax.size());
     MPI_Allreduce(&mymax[0], &results[0], mymax.size(), MPI_INT, MPI_MAX, 
-                  MPI_COMM_WORLD);
+                  VISIT_MPI_COMM);
 #else
     results = mymax;
 #endif
@@ -1428,6 +1527,8 @@ UnifyMaximumValue(vector<int> &mymax, vector<int> &results)
 //
 //  Modifications:
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -1435,8 +1536,8 @@ GetDoubleArrayToRootProc(double *da, int nd, bool &success)
 {
 #ifdef PARALLEL
     int myRank, numProcs;
-    MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
-    MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
+    MPI_Comm_rank(VISIT_MPI_COMM, &myRank);
+    MPI_Comm_size(VISIT_MPI_COMM, &numProcs);
     int mpiGoodTag = GetUniqueMessageTag();
     int mpiDoubleArrayTag = GetUniqueMessageTag();
 
@@ -1447,21 +1548,21 @@ GetDoubleArrayToRootProc(double *da, int nd, bool &success)
         for (int i = 1; i < numProcs; i++)
         {
             MPI_Recv(&good, 1, MPI_INT, MPI_ANY_SOURCE,
-                     mpiGoodTag, MPI_COMM_WORLD, &stat);
+                     mpiGoodTag, VISIT_MPI_COMM, &stat);
             if (good)
             {
                 MPI_Recv(da, nd, MPI_DOUBLE, stat.MPI_SOURCE, mpiDoubleArrayTag,
-                         MPI_COMM_WORLD, &stat2);
+                         VISIT_MPI_COMM, &stat2);
                 success = good;
             }
         }
     }
     else
     {
-        MPI_Send(&success, 1, MPI_INT, 0, mpiGoodTag, MPI_COMM_WORLD);
+        MPI_Send(&success, 1, MPI_INT, 0, mpiGoodTag, VISIT_MPI_COMM);
         if (success)
         {
-            MPI_Send(da, nd, MPI_DOUBLE, 0, mpiDoubleArrayTag, MPI_COMM_WORLD);
+            MPI_Send(da, nd, MPI_DOUBLE, 0, mpiDoubleArrayTag, VISIT_MPI_COMM);
         }    
     }
 #endif

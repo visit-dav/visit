@@ -1866,6 +1866,8 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //    Mark C. Miller, Mon Aug 14 12:26:18 PDT 2006
 //    Added code to return viswin to its true stereo type upon completion
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -2054,7 +2056,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
 #ifdef PARALLEL
             int *reducedCounts = new int[2 * plotIds.size()];
             MPI_Allreduce(cellCounts, reducedCounts, 2 * plotIds.size(),
-                MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+                MPI_INT, MPI_SUM, VISIT_MPI_COMM);
             for (i = 0; i < 2 * plotIds.size(); i++)
                 if (cellCounts[i] != INT_MAX) // if accounts for overflow
                     cellCounts[i] = reducedCounts[i];
@@ -3726,6 +3728,8 @@ NetworkManager::ExportDatabase(int id, ExportDBAttributes *atts)
 //    Initialize argument to prevent UMR.  (The array being initialized is
 //    not used for rank != 0.  Regardless, this fixes a purify error.)
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 static double
 RenderBalance(int numTrianglesIHave)
@@ -3740,7 +3744,7 @@ RenderBalance(int numTrianglesIHave)
    size = PAR_Size();
    if (rank == 0)
       triCounts = new int [size]; 
-   MPI_Gather(&numTrianglesIHave, 1, MPI_INT, triCounts, 1, MPI_INT, 0, MPI_COMM_WORLD);
+   MPI_Gather(&numTrianglesIHave, 1, MPI_INT, triCounts, 1, MPI_INT, 0, VISIT_MPI_COMM);
    if (rank == 0)
    {  int i, maxTriangles, minTriangles, totTriangles, avgTriangles;
       minTriangles = triCounts[0];

@@ -653,6 +653,9 @@ Engine::GetInputSocket()
 //
 //    Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //    Added timer
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 bool
@@ -686,7 +689,7 @@ Engine::ConnectViewer(int *argc, char **argv[])
     // connecting to the viewer.
     //
     int shouldExit = noFatalExceptions ? 0 : 1;
-    MPI_Bcast((void *)&shouldExit, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast((void *)&shouldExit, 1, MPI_INT, 0, VISIT_MPI_COMM);
     noFatalExceptions = (shouldExit == 0);
 #endif
 
@@ -744,6 +747,8 @@ Engine::ConnectViewer(int *argc, char **argv[])
 //    Kathleen Bonnell, Mon May  9 13:27:18 PDT 200 
 //    Changed the timeout to 10 minutes. 
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -775,7 +780,7 @@ Engine::PAR_EventLoop()
             ResetTimeout(timeout * 60);
 
             // Get state information from the UI process.
-            MPI_Bcast((void *)&par_buf, 1, PAR_STATEBUFFER, 0, MPI_COMM_WORLD);
+            MPI_Bcast((void *)&par_buf, 1, PAR_STATEBUFFER, 0, VISIT_MPI_COMM);
 
             // We have work to do, so cancel the alarm.
             int num_seconds_in_ten_minutes = 10*60;
@@ -804,6 +809,10 @@ Engine::PAR_EventLoop()
 //  Programmer:  Jeremy Meredith
 //  Creation:    November  1, 2004
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 void
 Engine::PAR_ProcessInput()
@@ -814,7 +823,7 @@ Engine::PAR_ProcessInput()
     }
     else
     {
-        MPI_Bcast((void *)&par_buf, 1, PAR_STATEBUFFER, 0, MPI_COMM_WORLD);
+        MPI_Bcast((void *)&par_buf, 1, PAR_STATEBUFFER, 0, VISIT_MPI_COMM);
         par_conn.Append((unsigned char *)par_buf.buffer, par_buf.nbytes);
         xfer->Process();
     }
@@ -1136,6 +1145,11 @@ Engine::AlarmHandler(int signal)
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   Tue Jun 29 17:34:19 PDT 2004
+//
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -1151,7 +1165,7 @@ Engine::NewHandler(void)
     //cerr << msg << endl;
 
 #ifdef PARALLEL
-    MPI_Abort(MPI_COMM_WORLD, 18);
+    MPI_Abort(VISIT_MPI_COMM, 18);
 #else
     abort();
 #endif
@@ -1372,6 +1386,8 @@ WriteByteStreamToSocket(NonBlockingRPC *rpc, Connection *vtkConnection,
 //    Mark C. Miller, Wed Dec 14 17:19:38 PST 2005
 //    Added compression bool arg to method and appropriate calls to writers
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 void
 Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
@@ -1449,7 +1465,7 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
 
                 // recv the "num cells I have" message from any proc
                 MPI_Recv(&proc_i_localCellCount, 1, MPI_INT, MPI_ANY_SOURCE,
-                    mpiCellCountTag, MPI_COMM_WORLD, &stat);
+                    mpiCellCountTag, VISIT_MPI_COMM, &stat);
 
                 mpiSource = stat.MPI_SOURCE;
 
@@ -1475,14 +1491,14 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
                 // tell source processor whether or not to send data with
                 // the "should send data" message
                 MPI_Send(&shouldGetData, 1, MPI_INT, mpiSource, 
-                    mpiSendDataTag, MPI_COMM_WORLD);
+                    mpiSendDataTag, VISIT_MPI_COMM);
                 debug5 << "told processor " << mpiSource << (shouldGetData==1?" to":" NOT to")
                        << " send data" << endl;
 
                 if (shouldGetData)
                 {
                     MPI_Recv(&size, 1, MPI_INT, mpiSource, 
-                             mpiDataObjSizeTag, MPI_COMM_WORLD, &stat);
+                             mpiDataObjSizeTag, VISIT_MPI_COMM, &stat);
                     debug5 << "receiving size=" << size << endl;
 
                     debug5 << "receiving " << size << " bytes from MPI_SOURCE "
@@ -1490,7 +1506,7 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
 
                     char *str = new char[size];
                     MPI_Recv(str, size, MPI_CHAR, mpiSource, 
-                             mpiDataObjDataTag, MPI_COMM_WORLD, &stat);
+                             mpiDataObjDataTag, VISIT_MPI_COMM, &stat);
                     debug5 << "receiving data" << endl;
     
                     // The data object reader will delete the string.
@@ -1585,18 +1601,18 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
                              (writer->GetInput()->GetNumberOfCells(polysOnly) *
                                                       cellCountMultiplier);
             debug5 << "sending \"num cells I have\" message (=" << numCells << ")" << endl;
-            MPI_Send(&numCells, 1, MPI_INT, 0, mpiCellCountTag, MPI_COMM_WORLD);
+            MPI_Send(&numCells, 1, MPI_INT, 0, mpiCellCountTag, VISIT_MPI_COMM);
 
             // recv the "should send data" message from proc 0
-            MPI_Recv(&shouldSendData, 1, MPI_INT, 0, mpiSendDataTag, MPI_COMM_WORLD, &stat);
+            MPI_Recv(&shouldSendData, 1, MPI_INT, 0, mpiSendDataTag, VISIT_MPI_COMM, &stat);
 
             if (shouldSendData)
             {
                debug5 << "sending size=" << size << endl; 
-               MPI_Send(&size, 1, MPI_INT, 0, mpiDataObjSizeTag, MPI_COMM_WORLD);
+               MPI_Send(&size, 1, MPI_INT, 0, mpiDataObjSizeTag, VISIT_MPI_COMM);
                debug5 << "sending " << size << " bytes to proc 0" << endl;
                debug5 << "sending data" << endl; 
-               MPI_Send(str, size, MPI_CHAR, 0, mpiDataObjDataTag, MPI_COMM_WORLD);
+               MPI_Send(str, size, MPI_CHAR, 0, mpiDataObjDataTag, VISIT_MPI_COMM);
             }
             else
             {
@@ -1616,7 +1632,7 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
     // scalable threshold was exceeded
     //
     int tmp[2] = {currentCellCount, thresholdExceeded?1:0};
-    MPI_Bcast(tmp, 2, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(tmp, 2, MPI_INT, 0, VISIT_MPI_COMM);
     currentCellCount  = tmp[0];
     thresholdExceeded = tmp[1]==1;
 
@@ -1737,6 +1753,8 @@ Engine::SendKeepAliveReply()
 //    Mark C. Miller, Fri Jun 11 13:21:42 PDT 2004
 //    Made it use a static, file-scope const int as the message tag
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 bool
@@ -1760,11 +1778,11 @@ Engine::EngineAbortCallbackParallel(void *data, bool informSlaves)
     {
         int flag;
         MPI_Status status;
-        MPI_Iprobe(0, INTERRUPT_MESSAGE_TAG, MPI_COMM_WORLD, &flag, &status);
+        MPI_Iprobe(0, INTERRUPT_MESSAGE_TAG, VISIT_MPI_COMM, &flag, &status);
         if (flag)
         {
             char buf[1];
-            MPI_Recv(buf, 1, MPI_CHAR, 0, INTERRUPT_MESSAGE_TAG, MPI_COMM_WORLD, &status);
+            MPI_Recv(buf, 1, MPI_CHAR, 0, INTERRUPT_MESSAGE_TAG, VISIT_MPI_COMM, &status);
             return true;
         }
         return false;
@@ -2167,6 +2185,9 @@ Engine::ExecuteSimulationCommand(const std::string &command,
 //
 //    Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //    Removed extraneous cerr statement 
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 ProcessAttributes *
@@ -2208,11 +2229,11 @@ Engine::GetProcessAttributes()
         }
 
         MPI_Gather(&myPid, 1, MPI_INT,
-                   allPids, 1, MPI_INT, 0, MPI_COMM_WORLD);
+                   allPids, 1, MPI_INT, 0, VISIT_MPI_COMM);
         MPI_Gather(&myPpid, 1, MPI_INT,
-                   allPpids, 1, MPI_INT, 0, MPI_COMM_WORLD);
+                   allPpids, 1, MPI_INT, 0, VISIT_MPI_COMM);
         MPI_Gather(&myHost, sizeof(myHost), MPI_CHAR,
-                   allHosts, sizeof(myHost), MPI_CHAR, 0, MPI_COMM_WORLD);
+                   allHosts, sizeof(myHost), MPI_CHAR, 0, VISIT_MPI_COMM);
 
         if (PAR_Rank() == 0)
         {

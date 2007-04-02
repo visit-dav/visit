@@ -64,6 +64,12 @@
 //                              
 // **************************************************************************//
 
+// It is necessary to define BL_USE_MPI for Boxlib to avoid collision of
+// type definitions for MPI_Comm in Boxlib header files with MPI library
+#ifdef PARALLEL
+#define BL_USE_MPI 1
+#endif
+
 #include <avtBoxlib3DFileFormat.h>
 
 #include <vector>

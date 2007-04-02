@@ -313,6 +313,8 @@ avtEulerianQuery::Execute(vtkDataSet *in_ds, const int dom)
 //    Mark C. Miller, Wed Jun  9 21:50:12 PDT 2004
 //    Eliminated use of MPI_ANY_TAG and modified to use GetUniqueMessageTags
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -323,8 +325,8 @@ avtEulerianQuery::PostExecute(void)
     int size, i, j;
     int *buf;
  
-    MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
-    MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
+    MPI_Comm_rank(VISIT_MPI_COMM, &myRank);
+    MPI_Comm_size(VISIT_MPI_COMM, &numProcs);
     int mpiSizeTag = GetUniqueMessageTag();
     int mpiDataTag = GetUniqueMessageTag();
     if (myRank == 0)
@@ -334,12 +336,12 @@ avtEulerianQuery::PostExecute(void)
             MPI_Status stat, stat2;
              
             MPI_Recv(&size, 1, MPI_INT, MPI_ANY_SOURCE,
-                     mpiSizeTag, MPI_COMM_WORLD, &stat);
+                     mpiSizeTag, VISIT_MPI_COMM, &stat);
             if (size > 0)
             {
                 buf = new int [size];
                 MPI_Recv(buf, size, MPI_INT, stat.MPI_SOURCE, mpiDataTag,
-                         MPI_COMM_WORLD, &stat2);
+                         VISIT_MPI_COMM, &stat2);
                 for (j = 0; j < size/2; j++)
                 { 
                     domToEulerMap.insert(DomainToEulerMap::value_type(
@@ -352,7 +354,7 @@ avtEulerianQuery::PostExecute(void)
     else
     {
         size = domToEulerMap.size() * 2;
-        MPI_Send(&size, 1, MPI_INT, 0, mpiSizeTag, MPI_COMM_WORLD);
+        MPI_Send(&size, 1, MPI_INT, 0, mpiSizeTag, VISIT_MPI_COMM);
         if (size > 0)
         {
             buf = new int[size];
@@ -363,7 +365,7 @@ avtEulerianQuery::PostExecute(void)
                 buf[2*i] = (*iter).first;
                 buf[2*i+1] = (*iter).second;
             }
-            MPI_Send(buf, size, MPI_INT, 0, mpiDataTag, MPI_COMM_WORLD);
+            MPI_Send(buf, size, MPI_INT, 0, mpiDataTag, VISIT_MPI_COMM);
             delete [] buf;
         }
         return;

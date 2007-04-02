@@ -118,6 +118,10 @@ StructuredTopology_Prep::Consolidate(void)
 //  Programmer: Hank Childs
 //  Creation:   January 20, 2000
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -138,7 +142,7 @@ StructuredTopology_Prep::WrapUp(void)
     {
         float   *out = new float[dimensionsSize];
         MPI_Allreduce(dimensions, out, dimensionsSize, MPI_FLOAT,
-                      MPI_SUM, MPI_COMM_WORLD);
+                      MPI_SUM, VISIT_MPI_COMM);
         for (int i = 0 ; i < dimensionsSize ; i++)
         {
             dimensions[i] = out[i];

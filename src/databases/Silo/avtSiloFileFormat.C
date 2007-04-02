@@ -2845,6 +2845,8 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 //    Remove broadcasting of defvars.  This is now handled through a different
 //    mechanism at a higher level.
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 void
 avtSiloFileFormat::BroadcastGlobalInfo(avtDatabaseMetaData *metadata)
@@ -2871,7 +2873,7 @@ avtSiloFileFormat::BroadcastGlobalInfo(avtDatabaseMetaData *metadata)
             tmp.Read(&buff[i]);
         }
     }
-    MPI_Bcast(buff, n, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
+    MPI_Bcast(buff, n, MPI_UNSIGNED_CHAR, 0, VISIT_MPI_COMM);
     if (rank != 0)
     {
         tmp.Append(buff, n);
@@ -3002,6 +3004,8 @@ avtSiloFileFormat::DoRootDirectoryWork(avtDatabaseMetaData *md)
 //    Cached connectivity and group information for given timestep or -1
 //    depending on database setting for "ConnectivityIsTimeVarying" var
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -3035,7 +3039,7 @@ avtSiloFileFormat::GetConnectivityAndGroupInformation(DBfile *dbfile)
 
 #ifdef PARALLEL
     int rank = 0;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
     if (rank == 0)
     {
 #endif
@@ -3047,7 +3051,7 @@ avtSiloFileFormat::GetConnectivityAndGroupInformation(DBfile *dbfile)
     //
     // Communicate processor 0's information to the rest of the processors.
     //
-    MPI_Bcast(&ndomains, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&ndomains, 1, MPI_INT, 0, VISIT_MPI_COMM);
     if (ndomains != -1)
     {
         if (rank != 0)
@@ -3055,24 +3059,24 @@ avtSiloFileFormat::GetConnectivityAndGroupInformation(DBfile *dbfile)
             extents = new int[ndomains*6];
             nneighbors = new int[ndomains];
         }
-        MPI_Bcast(extents,     ndomains*6, MPI_INT, 0, MPI_COMM_WORLD);
-        MPI_Bcast(nneighbors,  ndomains,   MPI_INT, 0, MPI_COMM_WORLD);
-        MPI_Bcast(&lneighbors, 1,          MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Bcast(extents,     ndomains*6, MPI_INT, 0, VISIT_MPI_COMM);
+        MPI_Bcast(nneighbors,  ndomains,   MPI_INT, 0, VISIT_MPI_COMM);
+        MPI_Bcast(&lneighbors, 1,          MPI_INT, 0, VISIT_MPI_COMM);
         if (rank != 0)
         {
             neighbors = new int[lneighbors];
         }
-        MPI_Bcast(neighbors,   lneighbors, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Bcast(neighbors,   lneighbors, MPI_INT, 0, VISIT_MPI_COMM);
     }
 
-    MPI_Bcast(&numGroups, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&numGroups, 1, MPI_INT, 0, VISIT_MPI_COMM);
     if (numGroups > 0)
     {
         if (rank != 0)
         {
             groupIds = new int[ndomains];
         }
-        MPI_Bcast(groupIds, ndomains, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Bcast(groupIds, ndomains, MPI_INT, 0, VISIT_MPI_COMM);
     }
 #endif
 

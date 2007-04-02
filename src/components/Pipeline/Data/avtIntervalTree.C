@@ -45,6 +45,7 @@
 #include <mpi.h>
 #endif
 
+#include <avtParallel.h>
 #include <avtIntervalTree.h>
 #include <float.h>
 
@@ -300,6 +301,10 @@ avtIntervalTree::Calculate(bool alreadyCollectedAllInformation)
 //  Programmer: Hank Childs
 //  Creation:   August 8, 2000
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -314,7 +319,7 @@ avtIntervalTree::CollectInformation(void)
     int totalElements = nElements*vectorSize;
     double *outBuff = new double[totalElements];
     MPI_Allreduce(nodeExtents, outBuff, totalElements, MPI_FLOAT, MPI_SUM,
-               MPI_COMM_WORLD);
+               VISIT_MPI_COMM);
 
     for (int i = 0 ; i < totalElements ; i++)
     {

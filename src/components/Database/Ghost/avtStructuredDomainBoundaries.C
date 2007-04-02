@@ -95,6 +95,10 @@ template <>        MPI_Datatype GetMPIDataType<unsigned char>()  { return MPI_UN
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 20, 2001
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 vector<int>
 avtStructuredDomainBoundaries::CreateDomainToProcessorMap(const vector<int> &domainNum)
@@ -102,7 +106,7 @@ avtStructuredDomainBoundaries::CreateDomainToProcessorMap(const vector<int> &dom
     // get the processor rank
     int rank = 0;
 #ifdef PARALLEL
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
 #endif
 
     // find the number of domains
@@ -115,7 +119,7 @@ avtStructuredDomainBoundaries::CreateDomainToProcessorMap(const vector<int> &dom
 #ifdef PARALLEL
     vector<int> domain2proc_tmp(domain2proc);
     MPI_Allreduce(&domain2proc_tmp[0], &domain2proc[0], ntotaldomains, MPI_INT,
-                  MPI_MAX, MPI_COMM_WORLD);
+                  MPI_MAX, VISIT_MPI_COMM);
 #endif
 
     return domain2proc;
@@ -480,6 +484,8 @@ BoundaryHelperFunctions<T>::FillMixedBoundaryData(int          d1,
 //    I made it use MPI_Datatype for the return type of GetMPIDataType so
 //    it can build with LAM.
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 template <class T>
 void
@@ -494,10 +500,10 @@ BoundaryHelperFunctions<T>::CommunicateBoundaryData(const vector<int> &domain2pr
     int mpiMsgTag = GetUniqueMessageTag();
 
     int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
 
     int nprocs;
-    MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
+    MPI_Comm_size(VISIT_MPI_COMM, &nprocs);
 
     int *sendcount = new int[nprocs];
     int *recvcount = new int[nprocs];
@@ -575,7 +581,7 @@ BoundaryHelperFunctions<T>::CommunicateBoundaryData(const vector<int> &domain2pr
 
     MPI_Alltoallv(sendbuff, sendcount, senddisp, mpi_datatype,
                   recvbuff, recvcount, recvdisp, mpi_datatype,
-                  MPI_COMM_WORLD);
+                  VISIT_MPI_COMM);
 
     for (i = 0 ; i < nprocs ; i++)
         tmp_ptr[i] = recvbuff + recvdisp[i];
@@ -605,7 +611,7 @@ BoundaryHelperFunctions<T>::CommunicateBoundaryData(const vector<int> &domain2pr
             }
         }
     }
-    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Barrier(VISIT_MPI_COMM);
 
     delete [] sendbuff;
     delete [] recvbuff;
@@ -648,6 +654,8 @@ BoundaryHelperFunctions<T>::CommunicateBoundaryData(const vector<int> &domain2pr
 //    I made it use MPI_Datatype for the return type of GetMPIDataType so
 //    it can build with LAM.
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 template <class T>
 void
@@ -663,7 +671,7 @@ BoundaryHelperFunctions<T>::CommunicateMixedBoundaryData(const vector<int> &doma
     MPI_Status stat;
 
     int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
 
     int mpiMsgTag = GetUniqueMessageTag();
 
@@ -683,12 +691,12 @@ BoundaryHelperFunctions<T>::CommunicateMixedBoundaryData(const vector<int> &doma
                 if (domain2proc[d1] == rank)
                 {
                     MPI_Send(&(bndmixlen[d1][n]), 1, MPI_INT,
-                             domain2proc[d2], mpiMsgTag, MPI_COMM_WORLD);
+                             domain2proc[d2], mpiMsgTag, VISIT_MPI_COMM);
                 }
                 else if (domain2proc[d2] == rank)
                 {
                     MPI_Recv(&(bndmixlen[d1][n]), 1, MPI_INT,
-                             domain2proc[d1], mpiMsgTag, MPI_COMM_WORLD, &stat);
+                             domain2proc[d1], mpiMsgTag, VISIT_MPI_COMM, &stat);
                 }
             }
         }
@@ -717,13 +725,13 @@ BoundaryHelperFunctions<T>::CommunicateMixedBoundaryData(const vector<int> &doma
                 {
                     if (bnddata)
                         MPI_Send(bnddata[d1][n], size, mpi_datatype,
-                                 domain2proc[d2], mpiBndDataTag, MPI_COMM_WORLD);
+                                 domain2proc[d2], mpiBndDataTag, VISIT_MPI_COMM);
                     if (bndmixmat)
                         MPI_Send(bndmixmat[d1][n], size, MPI_INT,
-                                 domain2proc[d2], mpiBndMixMatTag, MPI_COMM_WORLD);
+                                 domain2proc[d2], mpiBndMixMatTag, VISIT_MPI_COMM);
                     if (bndmixzone)
                         MPI_Send(bndmixzone[d1][n], size, MPI_INT,
-                                 domain2proc[d2], mpiBndMixZoneTag, MPI_COMM_WORLD);
+                                 domain2proc[d2], mpiBndMixZoneTag, VISIT_MPI_COMM);
                 }
                 else if (domain2proc[d2] == rank)
                 {
@@ -731,26 +739,26 @@ BoundaryHelperFunctions<T>::CommunicateMixedBoundaryData(const vector<int> &doma
                     {
                         bnddata[d1][n] = new T[size];
                         MPI_Recv(bnddata[d1][n], size, mpi_datatype,
-                                 domain2proc[d1], mpiBndDataTag, MPI_COMM_WORLD, &stat);
+                                 domain2proc[d1], mpiBndDataTag, VISIT_MPI_COMM, &stat);
                     }
                     if (bndmixmat)
                     {
                         bndmixmat[d1][n] = new int[size];
                         MPI_Recv(bndmixmat[d1][n], size, MPI_INT,
-                                 domain2proc[d1], mpiBndMixMatTag, MPI_COMM_WORLD, &stat);
+                                 domain2proc[d1], mpiBndMixMatTag, VISIT_MPI_COMM, &stat);
                     }
                     if (bndmixzone)
                     {
                         bndmixzone[d1][n] = new int[size];
                         MPI_Recv(bndmixzone[d1][n], size, MPI_INT,
-                                 domain2proc[d1], mpiBndMixZoneTag, MPI_COMM_WORLD, &stat);
+                                 domain2proc[d1], mpiBndMixZoneTag, VISIT_MPI_COMM, &stat);
                     }
                 }
             }
         }
     }
 
-    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Barrier(VISIT_MPI_COMM);
 #endif
 }
 
@@ -1520,6 +1528,8 @@ avtStructuredDomainBoundaries::Finish(int domain)
 //    Hank Childs, Tue Nov 25 17:32:53 PST 2003
 //    Fix typo that comes up in parallel only.
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 vector<vtkDataArray*>
 avtStructuredDomainBoundaries::ExchangeScalar(vector<int>           domainNum,
@@ -1531,7 +1541,7 @@ avtStructuredDomainBoundaries::ExchangeScalar(vector<int>           domainNum,
 #ifdef PARALLEL
     // Let's get them all to agree on one data type.
     int myDataType = dataType;
-    MPI_Allreduce(&myDataType, &dataType, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+    MPI_Allreduce(&myDataType, &dataType, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
 #endif
 
     if (dataType < 0)
@@ -2176,6 +2186,8 @@ avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
 //    Hank Childs, Fri Jun  9 14:18:11 PDT 2006
 //    Remove unused variable.
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 vector<avtMixedVariable*>
 avtStructuredDomainBoundaries::ExchangeMixVar(vector<int>            domainNum,
@@ -2204,7 +2216,7 @@ avtStructuredDomainBoundaries::ExchangeMixVar(vector<int>            domainNum,
 
 #ifdef PARALLEL
     int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
 
     int length = 0;
     if (mixvarname != NULL)
@@ -2214,7 +2226,7 @@ avtStructuredDomainBoundaries::ExchangeMixVar(vector<int>            domainNum,
     struct {int length; int rank;} len_rank_out, len_rank_in={length, rank};
 
     MPI_Allreduce(&len_rank_in, &len_rank_out, 1, MPI_2INT, MPI_MAXLOC,
-                  MPI_COMM_WORLD);
+                  VISIT_MPI_COMM);
     length = len_rank_out.length;
 
     char *mvname = new char[length];
@@ -2223,7 +2235,7 @@ avtStructuredDomainBoundaries::ExchangeMixVar(vector<int>            domainNum,
         strcpy(mvname, mixvarname);
     }
 
-    MPI_Bcast(mvname, length, MPI_CHAR, len_rank_out.rank, MPI_COMM_WORLD);
+    MPI_Bcast(mvname, length, MPI_CHAR, len_rank_out.rank, VISIT_MPI_COMM);
     mixvarname = mvname;
 #else
     char *mvname = NULL;

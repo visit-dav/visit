@@ -336,6 +336,10 @@ avtSiloDumpFilter::Equivalent(const AttributeGroup *a)
 //  Programmer: Jeremy Meredith
 //  Creation:   January  4, 2002
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -345,7 +349,7 @@ avtSiloDumpFilter::PreExecute()
     char file[256];
 #ifdef PARALLEL
     int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
     sprintf(file, "%s-%05d.silo", atts.GetFilename().c_str(), rank);
 #else
     sprintf(file, "%s.silo", atts.GetFilename().c_str());
@@ -666,6 +670,8 @@ avtSiloDumpFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 //    Mark C. Miller, Wed Jun  9 21:50:12 PDT 2004
 //    Eliminated use of MPI_ANY_TAG and modified to use GetUniqueMessageTags
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -677,8 +683,8 @@ avtSiloDumpFilter::PostExecute()
 
     int rank;
     int size;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
+    MPI_Comm_size(VISIT_MPI_COMM, &size);
     int mpiDomListSizeTag = GetUniqueMessageTag();
     int mpiDomListTag     = GetUniqueMessageTag();
     int mpiVarListSizeTag = GetUniqueMessageTag();
@@ -688,17 +694,17 @@ avtSiloDumpFilter::PostExecute()
     if (rank!=0)
     {
         int nd = domains.size();
-        MPI_Send(&nd, 1, MPI_INT, 0, mpiDomListSizeTag, MPI_COMM_WORLD);
+        MPI_Send(&nd, 1, MPI_INT, 0, mpiDomListSizeTag, VISIT_MPI_COMM);
         if (nd)
-            MPI_Send(&domains[0], nd, MPI_INT, 0, mpiDomListTag, MPI_COMM_WORLD);
+            MPI_Send(&domains[0], nd, MPI_INT, 0, mpiDomListTag, VISIT_MPI_COMM);
 
         int nv = vars.size();
-        MPI_Send(&nv, 1, MPI_INT, 0, mpiVarListSizeTag, MPI_COMM_WORLD);
+        MPI_Send(&nv, 1, MPI_INT, 0, mpiVarListSizeTag, VISIT_MPI_COMM);
         for (int v=0; v<nv; v++)
         {
             int len = vars[v].length()+1;
-            MPI_Send(&len, 1, MPI_INT, 0, mpiVarNameSizeTag, MPI_COMM_WORLD);
-            MPI_Send((char*)vars[v].c_str(), len, MPI_CHAR, 0, mpiVarNameTag, MPI_COMM_WORLD);
+            MPI_Send(&len, 1, MPI_INT, 0, mpiVarNameSizeTag, VISIT_MPI_COMM);
+            MPI_Send((char*)vars[v].c_str(), len, MPI_CHAR, 0, mpiVarNameTag, VISIT_MPI_COMM);
         }
         return;
     }
@@ -709,22 +715,22 @@ avtSiloDumpFilter::PostExecute()
     {
         MPI_Status stat;
         int nd;
-        MPI_Recv(&nd, 1, MPI_INT, i, mpiDomListSizeTag, MPI_COMM_WORLD, &stat);
+        MPI_Recv(&nd, 1, MPI_INT, i, mpiDomListSizeTag, VISIT_MPI_COMM, &stat);
         if (nd)
         {
             all_domains[i].resize(nd);
             MPI_Recv(&all_domains[i][0], nd, MPI_INT, i, mpiDomListTag,
-                     MPI_COMM_WORLD, &stat);
+                     VISIT_MPI_COMM, &stat);
         }
 
         int nv;
-        MPI_Recv(&nv, 1, MPI_INT, i, mpiVarListSizeTag, MPI_COMM_WORLD, &stat);
+        MPI_Recv(&nv, 1, MPI_INT, i, mpiVarListSizeTag, VISIT_MPI_COMM, &stat);
         for (int v=0; v<nv; v++)
         {
             int  len;
             char var[1024];
-            MPI_Recv(&len, 1, MPI_INT, i, mpiVarNameSizeTag, MPI_COMM_WORLD, &stat);
-            MPI_Recv(var, len, MPI_CHAR, i, mpiVarNameTag, MPI_COMM_WORLD, &stat);
+            MPI_Recv(&len, 1, MPI_INT, i, mpiVarNameSizeTag, VISIT_MPI_COMM, &stat);
+            MPI_Recv(var, len, MPI_CHAR, i, mpiVarNameTag, VISIT_MPI_COMM, &stat);
 
             if (find(vars.begin(), vars.end(), string(var)) == vars.end())
                 vars.push_back(var);

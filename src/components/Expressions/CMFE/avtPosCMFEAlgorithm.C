@@ -812,6 +812,8 @@ avtPosCMFEAlgorithm::DesiredPoints::GetSubgridForBoundary(int grid,
 //    Hank Childs, Sat Mar 18 11:03:48 PST 2006
 //    Add support for rectilinear grids.
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -976,7 +978,7 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
     }
 
     int *recvcount = new int[nProcs];
-    MPI_Alltoall(sendcount, 1, MPI_INT, recvcount, 1, MPI_INT, MPI_COMM_WORLD);
+    MPI_Alltoall(sendcount, 1, MPI_INT, recvcount, 1, MPI_INT, VISIT_MPI_COMM);
 
     char **recvmessages = new char*[nProcs];
     char *big_recv_msg = CreateMessageStrings(recvmessages, recvcount, nProcs);
@@ -993,7 +995,7 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
 
     MPI_Alltoallv(big_send_msg, sendcount, senddisp, MPI_CHAR,
                   big_recv_msg, recvcount, recvdisp, MPI_CHAR,
-                  MPI_COMM_WORLD);
+                  VISIT_MPI_COMM);
     delete [] sendcount;
     delete [] senddisp;
     delete [] big_send_msg;
@@ -1109,6 +1111,8 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
 //    Hank Childs, Sat Mar 18 11:09:51 PST 2006
 //    Add support for rectilinear grids.
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -1178,7 +1182,7 @@ avtPosCMFEAlgorithm::DesiredPoints::UnRelocatePoints(
     }
 
     int *recvcount = new int[nProcs];
-    MPI_Alltoall(sendcount, 1, MPI_INT, recvcount, 1, MPI_INT, MPI_COMM_WORLD);
+    MPI_Alltoall(sendcount, 1, MPI_INT, recvcount, 1, MPI_INT, VISIT_MPI_COMM);
 
     char **recvmessages = new char*[nProcs];
     char *big_recv_msg = CreateMessageStrings(recvmessages, recvcount, nProcs);
@@ -1195,7 +1199,7 @@ avtPosCMFEAlgorithm::DesiredPoints::UnRelocatePoints(
 
     MPI_Alltoallv(big_send_msg, sendcount, senddisp, MPI_CHAR,
                   big_recv_msg, recvcount, recvdisp, MPI_CHAR,
-                  MPI_COMM_WORLD);
+                  VISIT_MPI_COMM);
     delete [] sendcount;
     delete [] senddisp;
 
@@ -1579,6 +1583,8 @@ avtPosCMFEAlgorithm::FastLookupGrouping::GetValueUsingList(vector<int> &list,
 //    VTK api changes.  Removed call to SetSource(NULL) as it also removes
 //    necessary information from the dataset.
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -1725,7 +1731,7 @@ avtPosCMFEAlgorithm::FastLookupGrouping::RelocateDataUsingPartition(
     delete [] msg_tmp;
 
     int *recvcount = new int[nProcs];
-    MPI_Alltoall(sendcount, 1, MPI_INT, recvcount, 1, MPI_INT, MPI_COMM_WORLD);
+    MPI_Alltoall(sendcount, 1, MPI_INT, recvcount, 1, MPI_INT, VISIT_MPI_COMM);
 
     char **recvmessages = new char*[nProcs];
     char *big_recv_msg = CreateMessageStrings(recvmessages, recvcount, nProcs);
@@ -1742,7 +1748,7 @@ avtPosCMFEAlgorithm::FastLookupGrouping::RelocateDataUsingPartition(
 
     MPI_Alltoallv(big_send_msg, sendcount, senddisp, MPI_CHAR,
                   big_recv_msg, recvcount, recvdisp, MPI_CHAR,
-                  MPI_COMM_WORLD);
+                  VISIT_MPI_COMM);
     delete [] sendcount;
     delete [] senddisp;
     delete [] big_send_msg;

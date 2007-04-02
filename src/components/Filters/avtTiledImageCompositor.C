@@ -115,6 +115,8 @@ avtTiledImageCompositor::~avtTiledImageCompositor()
 //    Hank Childs, Sun Mar 13 11:19:18 PST 2005
 //    Fix memory leak.
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -156,7 +158,7 @@ avtTiledImageCompositor::Execute(void)
     int pixelSize = mywidth * myheight * 3;
     int *pixelSizes = (rank == mpiRoot) ? new int[size] : NULL;
     MPI_Gather(&pixelSize, 1, MPI_INT,  pixelSizes, 1, MPI_INT,
-               mpiRoot, MPI_COMM_WORLD);
+               mpiRoot, VISIT_MPI_COMM);
 
     // Count 'em up
     // ... okay, so there's probably no point ....
@@ -175,7 +177,7 @@ avtTiledImageCompositor::Execute(void)
     // NOTE: assumes all pixels are contiguous in memory!
     MPI_Gatherv(&inrgb[3*(width*y1+x1)], pixelSize, MPI_UNSIGNED_CHAR,
                 outrgb, pixelSizes, displacements, MPI_UNSIGNED_CHAR,
-                mpiRoot, MPI_COMM_WORLD);
+                mpiRoot, VISIT_MPI_COMM);
 
 
     // Set the output

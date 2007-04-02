@@ -45,6 +45,7 @@
 
 #include <avtImagePartition.h>
 #include <avtImageRepresentation.h>
+#include <avtParallel.h>
 
 #include <ImproperUseException.h>
 #include <TimingsManager.h>
@@ -64,13 +65,17 @@
 //  Programmer: Hank Childs
 //  Creation:   January 25, 2001
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 avtImageCommunicator::avtImageCommunicator()
 {
 #ifdef PARALLEL
-    MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
-    MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
+    MPI_Comm_size(VISIT_MPI_COMM, &numProcs);
+    MPI_Comm_rank(VISIT_MPI_COMM, &myRank);
 #else
     numProcs = 1; myRank = 0;
 #endif
@@ -147,6 +152,8 @@ avtImageCommunicator::SetImagePartition(avtImagePartition *ip)
 //    Hank Childs, Fri Jan  4 10:03:52 PST 2002
 //    Account for case when processor 0 got an empty partition.
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -192,7 +199,7 @@ avtImageCommunicator::Execute(void)
     {
         sizelist = new int[numProcs];
     }
-    MPI_Gather(&size, 1, MPI_INT, sizelist, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Gather(&size, 1, MPI_INT, sizelist, 1, MPI_INT, 0, VISIT_MPI_COMM);
 
     //
     // Calculate the displacements for the gathering of the data.
@@ -226,7 +233,7 @@ avtImageCommunicator::Execute(void)
     // Gather all of the data onto processor 0.
     //
     MPI_Gatherv(data, size, MPI_UNSIGNED_CHAR, alldata, sizelist, disp,
-                MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
+                MPI_UNSIGNED_CHAR, 0, VISIT_MPI_COMM);
 
     //
     // Create the VTK image from all of the scanlines.
