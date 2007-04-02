@@ -158,10 +158,11 @@ typedef struct VisIt_SimulationMetaData
 
 typedef struct VisIt_CurvilinearMesh
 {
+    int ndims;
     int dims[3];
     int baseIndex[3];
-    int firstRealZone[3];
-    int lastRealZone[3];
+    int minRealIndex[3];
+    int maxRealIndex[3];
     VisIt_DataArray xcoords;
     VisIt_DataArray ycoords;
     VisIt_DataArray zcoords;
@@ -169,10 +170,11 @@ typedef struct VisIt_CurvilinearMesh
 
 typedef struct VisIt_RectilinearMesh
 {
+    int ndims;
     int dims[3];
     int baseIndex[3];
-    int firstRealZone[3];
-    int lastRealZone[3];
+    int minRealIndex[3];
+    int maxRealIndex[3];
     VisIt_DataArray xcoords;
     VisIt_DataArray ycoords;
     VisIt_DataArray zcoords;
@@ -225,6 +227,11 @@ typedef struct VisIt_MaterialData
     float *mix_vf;
 } VisIt_MaterialData;
 
+typedef struct VisIt_SpeciesData
+{
+    /* FILL IN */
+} VisIt_SpeciesData;
+
 typedef struct VisIt_CurveData
 {
     int len;
@@ -232,14 +239,23 @@ typedef struct VisIt_CurveData
     VisIt_DataArray y;
 } VisIt_CurveData;
 
+typedef struct VisIt_DomainList
+{
+    int nTotalDomains;
+    int nMyDomains;
+    VisIt_DataArray myDomains;
+} VisIt_DomainList;
+
 typedef struct VisIt_SimulationCallback
 {
     VisIt_SimulationMetaData *(*GetMetaData)();
     VisIt_MeshData           *(*GetMesh)(int,const char*);
     VisIt_MaterialData       *(*GetMaterial)(int,const char*);
+    VisIt_SpeciesData        *(*GetSpecies)(int,const char*);
     VisIt_ScalarData         *(*GetScalar)(int,const char*);
     VisIt_CurveData          *(*GetCurve)(const char*);
     VisIt_MixedScalarData    *(*GetMixedScalar)(int,const char*);
+    VisIt_DomainList         *(*GetDomainList)();
 } VisIt_SimulationCallback;
 
 /* Helper Methods */

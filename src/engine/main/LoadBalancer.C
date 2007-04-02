@@ -408,6 +408,11 @@ LoadBalancer::CheckDynamicLoadBalancing(avtPipelineSpecification_p input)
 //    Take more care in setting up unique message tags.  These methods may be
 //    called a different number of times.  So use a static.
 //
+//    Jeremy Meredith, Wed May 11 09:12:40 PDT 2005
+//    Added "restricted" load balancing mode.  This is intended for
+//    non-global filesystems and simulation-mode engines.  It occurs when
+//    each processor can only access a limited subset of the domains.
+//
 // ****************************************************************************
 
 avtDataSpecification_p
@@ -509,6 +514,29 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
             {
                 if (j % nProcs == rank)
                     mylist.push_back(list[j]);
+            }
+        }
+        else if (scheme == LOAD_BALANCE_RESTRICTED)
+        {
+            LBInfo &lbInfo(pipelineInfo[input->GetPipelineIndex()]);
+            IOInfo &ioInfo(ioMap[lbInfo.db]);
+            const HintList &hints(ioInfo.ioInfo.GetHints());
+
+            for (int j = 0 ; j < list.size() ; j++)
+            {
+                if (hints.size() >= rank)
+                {
+                    const vector<int> &doms = hints[rank];
+                    int ndoms = doms.size();
+                    for (int h=0; h<ndoms; h++)
+                    {
+                        if (doms[h] == list[j])
+                        {
+                            mylist.push_back(list[j]);
+                            break;
+                        }
+                    }
+                }
             }
         }
         else if (scheme == LOAD_BALANCE_RANDOM_ASSIGNMENT)

@@ -69,7 +69,7 @@ static int BroadcastString(char *str, int len, int sender)
 
 // ----------------------------------------------------------------------------
 
-#define INITIAL_PORT_NUMBER 5600
+#define INITIAL_PORT_NUMBER 5609
 #define TRUE 1
 #define FALSE 0
 
@@ -143,45 +143,115 @@ void VisItDisconnect(void)
     v_engine = 0;
 }
 
-static void GetConnectionParameters(int desc)
+static void ReceiveSingleLineFromSocket(char *buffer, int maxlen, int desc)
+{
+    sprintf(buffer, "");
+    char *buf = buffer;
+    char *ptr = buffer;
+    int n;
+
+    char *tmp = strstr(buf, "\n");
+    while (!tmp)
+    {
+        n = recv(desc, ptr, maxlen, 0);
+        ptr += n;
+        *ptr = 0;
+        tmp = strstr(buf, "\n");
+    }
+    *tmp = 0;
+}
+
+static char *ReceiveContinuousLineFromSocket(char *buffer, int maxlen, int desc)
+{
+    char *buf = buffer;
+    char *ptr = buffer;
+    int n;
+
+    char *tmp = strstr(buf, "\n");
+    while (!tmp)
+    {
+        n = recv(desc, ptr, maxlen, 0);
+        ptr += n;
+        *ptr = 0;
+        tmp = strstr(buf, "\n");
+    }
+    *tmp = 0;
+
+    return tmp+1;
+}
+
+static int SendStringOverSocket(char *buffer, int desc)
+{
+    size_t      nleft, nwritten;
+    const char *sptr;
+    // Send it!
+    sptr = (const char*)buffer;
+    nleft = strlen(buffer);
+    while (nleft > 0)
+    {
+        if ((nwritten = send(desc, (const char *)sptr, nleft, 0)) <= 0)
+            return FALSE;
+
+        nleft -= nwritten;
+        sptr  += nwritten;
+    }
+
+    return TRUE;
+}
+
+static int GetConnectionParameters(int desc)
 {
     char buf[2000] = "";
+    char *tmpbuf;
+    char *nxtbuf;
     int i;
+    int securityKeyLen;
+    int keylen;
+    char key[2000] = "";
 
     if (par_rank == 0)
     {
-        char *tbuf = buf;
-        char *ptr = buf;
-        int done = 0;
-        int n;
+        // The first thing the VCL sends is the key
+        ReceiveSingleLineFromSocket(key, 2000, desc);
+
+        if (ifparallel)
+        {
+            // Broadcast the known key
+            securityKeyLen = strlen(securityKey);
+            BroadcastInt(&securityKeyLen, 0);
+            BroadcastString(securityKey,  securityKeyLen+1, 0);
+
+            // Broadcast the received key
+            keylen = strlen(key);
+            BroadcastInt(&keylen, 0);
+            BroadcastString(key,  keylen+1, 0);
+        }
+
+        // Make sure the keys match
+        if (strcmp(securityKey, key) != 0)
+        {
+            SendStringOverSocket("failure\n", desc);
+            return FALSE;
+        }
+        else
+        {
+            SendStringOverSocket("success\n", desc);
+        }
 
         v_argc = 0;
 
-        printf("Engine launch command:");
-        while (!done)
+        tmpbuf = buf;
+        while (1)
         {
-            char *tmp = strstr(tbuf, "\n");
-            while (!tmp)
-            {
-                n = recv(desc, ptr, 2000, 0);
-                ptr += n;
-                *ptr = 0;
-                tmp = strstr(tbuf, "\n");
-                
-            }
+            nxtbuf = ReceiveContinuousLineFromSocket(tmpbuf, 2000, desc);
 
-            if (tbuf == tmp)
-            {
+            if (strlen(tmpbuf) == 0)
                 break;
-            }
 
-            *tmp = 0;
-            v_argv[v_argc] = strdup(tbuf);
-            printf("%s ", v_argv[v_argc]);
+            v_argv[v_argc] = strdup(tmpbuf);
             v_argc++;
-            tbuf = tmp+1;
+            tmpbuf = nxtbuf;
         }
-        printf("\n");
 
         if (ifparallel)
         {
@@ -196,6 +266,16 @@ static void GetConnectionParameters(int desc)
     }
     else
     {
+        BroadcastInt(&securityKeyLen, 0);
+        BroadcastString(securityKey, securityKeyLen+1, 0);
+        BroadcastInt(&keylen, 0);
+        BroadcastString(key, keylen+1, 0);
+        if (strcmp(securityKey, key) != 0)
+        {
+            // Error: keys didn't match
+            return FALSE;
+        }
+
         BroadcastInt(&v_argc, 0);
         for (i = 0 ; i < v_argc; i++)
         {
@@ -203,9 +283,10 @@ static void GetConnectionParameters(int desc)
             BroadcastInt(&len, 0);
             BroadcastString(buf, len+1, 0);
             v_argv[i] = strdup(buf);
-            printf("process %d: argv[%d] = %s\n",par_rank, i, v_argv[i]);
         }
     }
+
+    return TRUE;
 }
 
 static int CreateEngineAndConnectToViewer(void)
@@ -471,7 +552,8 @@ int VisItAttemptToCompleteConnection(void)
     }
 
     /* get the connection parameters */
-    GetConnectionParameters(socket);
+    if (!GetConnectionParameters(socket))
+        return FALSE;
 
     /* load the library */
     if (LoadVisItLibrary() == 0)

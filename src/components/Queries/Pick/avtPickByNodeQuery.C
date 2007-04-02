@@ -84,6 +84,9 @@ avtPickByNodeQuery::~avtPickByNodeQuery()
 //    Hank Childs, Thu Mar 10 10:36:51 PST 2005
 //    Fix memory leak.
 //
+//    Kathleen Bonnell, Wed May 11 17:14:03 PDT 200 
+//    Convert varnmames to Global names when the DB supplied the ids. 
+//
 // ****************************************************************************
 
 void
@@ -103,9 +106,9 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
     {
         pickAtts.SetDomain(-1);
         pickAtts.SetElementNumber(-1);
-        pickAtts.SetErrorMessage("Pick could not be performed because a global "
-                                 "node id was specified for Pick but the mesh "
-                                 "does not contain global node information.");
+        pickAtts.SetErrorMessage("Pick could not be performed because a global"
+                                 " node id was specified for Pick but the mesh"
+                                 " does not contain global node information.");
         pickAtts.SetError(true);
         return; 
     }
@@ -124,7 +127,8 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
     {
         if (pickAtts.GetElementIsGlobal())
         {
-            nodeid = vtkVisItUtility::GetLocalElementForGlobal(ds, nodeid, false);
+            nodeid = vtkVisItUtility::GetLocalElementForGlobal(ds, nodeid, 
+                                                               false);
             if (nodeid == -1)
                 return;
             pickAtts.SetGlobalElement(pickAtts.GetElementNumber());
@@ -139,7 +143,8 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
         }
         else
         {
-            // the incidient zones could not be found, no further processing required.
+            // the incidient zones could not be found, 
+            // no further processing required.
             // SetDomain and ElementNumber to -1 to indicate failure. 
             pickAtts.SetDomain(-1);
             pickAtts.SetElementNumber(-1);
@@ -159,11 +164,13 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
     // 
     src->Query(&pickAtts);
 
+    if (!pickAtts.GetFulfilled())
+        return;
+
     if (pickAtts.GetElementIsGlobal() && DBsuppliedNodeId)
     {
-        if (!pickAtts.GetFulfilled())
-            return;
         nodeid = GetCurrentNodeForOriginal(ds, pickAtts.GetElementNumber());
+        ConvertElNamesToGlobal();
     }
 
     if (pickAtts.GetMatSelected())
@@ -203,8 +210,8 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
     // placed.  This should be the actual node coordinates if the plot was 
     // NOT transformed.
     //
-    // If the plot was transformed && the transform is available, then transform
-    // the node coordinates.
+    // If the plot was transformed && the transform is available, 
+    // then transform the node coordinates.
     //
     // If the plot was transformed && inverseTransform is NOT available,
     // there is no way to determine the location of the picked node in

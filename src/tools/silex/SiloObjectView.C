@@ -1,6 +1,7 @@
 #include "SiloObjectView.h"
 #include <SiloFile.h>
 #include <qapplication.h>
+#include <qmessagebox.h>
 #include <visitstream.h>
 
 // ----------------------------------------------------------------------------
@@ -59,6 +60,9 @@ SiloObjectViewWindow::ShowItem(QListViewItem *i)
 //    Mark C. Miller, Wed Apr 20 17:08:36 PDT 2005
 //    Added code to deal with hdf5 formatted strings in pdbname
 //
+//    Jeremy Meredith, Wed May 11 12:42:12 PDT 2005
+//    Show an error message if we get an invalid object.
+//
 // ****************************************************************************
 SiloObjectView::SiloObjectView(SiloFile *s, const QString &n, QWidget *p)
     : QListView(p, n), silo(s), name(n)
@@ -72,8 +76,9 @@ SiloObjectView::SiloObjectView(SiloFile *s, const QString &n, QWidget *p)
     DBobject *object = silo->GetObject(name);
     if (!object)
     {
-        cerr << "SiloObjectView::SiloObjectView -- not an object\n";
-        throw;
+        QMessageBox::warning(this, "silex", "Could not read this object.\n"
+           "The file may have been written using an incomplete driver.", "OK");
+        return;
     }
 
     QListViewItem *lastItem = NULL;

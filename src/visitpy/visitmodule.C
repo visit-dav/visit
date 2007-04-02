@@ -5254,11 +5254,18 @@ visit_EnableTool(PyObject *self, PyObject *args)
 //   Jeremy Meredith, Tue Jun 17 17:41:04 PDT 2003
 //   Made it use the "enabled" plugin index instead the "all" index.
 //
+//   Mark C. Miller, Tue May 10 19:53:08 PDT 2005
+//   Made it return its results as a python string that is easily parsable
+//
 // ****************************************************************************
 
 STATIC PyObject *
 visit_ListPlots(PyObject *self, PyObject *args)
 {
+    int stringOnly = 0;
+    if (!PyArg_ParseTuple(args, "i", &stringOnly))
+        stringOnly = 0;
+
     ENSURE_VIEWER_EXISTS();
     NO_ARGUMENTS();
 
@@ -5268,6 +5275,7 @@ visit_ListPlots(PyObject *self, PyObject *args)
     //
     PlotList *pl = viewer->GetPlotList();
     PlotPluginManager *plugins = PlotPluginManager::Instance();
+    std::string outStr;
 
     for(int i = 0; i < pl->GetNumPlots(); ++i)
     {
@@ -5277,45 +5285,70 @@ visit_ListPlots(PyObject *self, PyObject *args)
 
         if(info != 0)
         {
+             char tmpStr[2048];
+             int  strLen = 0;
+
              int j;
-             printf("Plot[%d] = {type=\"%s\", database=\"%s\", var=%s, active=%d, framerange=(%d, %d), keyframes={", i,
+             SNPRINTF(tmpStr, sizeof(tmpStr),
+                 "Plot[%d]|id=%d;type=\"%s\";database=\"%s\";var=%s;active=%d;"
+                 "hidden=%d;framerange=(%d, %d);keyframes={", i,
+                    plot.GetId(),
                     info->GetName(),
                     plot.GetDatabaseName().c_str(),
                     plot.GetPlotVar().c_str(),
                     plot.GetActiveFlag(),
+                    plot.GetHiddenFlag(),
                     plot.GetBeginFrame(),
                     plot.GetEndFrame());
+             strLen = strlen(tmpStr);
  
              // Print out the keyframes.
              const std::vector<int> &keyframes = plot.GetKeyframes();
              for(j = 0; j < keyframes.size(); ++j)
              {
-                 printf("%d", keyframes[j]);
+                 SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen, "%d", keyframes[j]);
+                 strLen = strlen(tmpStr);
                  if(j < keyframes.size() - 1)
-                     printf(", ");
+                     SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen, ", ");
+                 strLen = strlen(tmpStr);
              }
-             printf("}, database keyframes={");
+             SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen, "};database keyframes={");
+             strLen = strlen(tmpStr);
 
              // Print out the database keyframes.
              const std::vector<int> &databaseKeyframes =
                  plot.GetDatabaseKeyframes();
              for(j = 0; j < databaseKeyframes.size(); ++j)
              {
-                 printf("%d", databaseKeyframes[j]);
+                 SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen, "%d", databaseKeyframes[j]);
+                 strLen = strlen(tmpStr);
                  if(j < databaseKeyframes.size() - 1)
-                     printf(", ");
+                     SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen, ", ");
+                 strLen = strlen(tmpStr);
              }
-             printf("}, operators={");
+             SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen, "};operators={");
+             strLen = strlen(tmpStr);
 
              // Print out the plot operators.
              for(j = 0; j < plot.GetNumOperators(); ++j)
              {
                  int op = plot.GetOperator(j);
-                 printf("\"%s\"", OperatorPluginManager::Instance()->GetEnabledID(op).c_str());
+                 SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen, "\"%s\"",
+                     OperatorPluginManager::Instance()->GetEnabledID(op).c_str());
+                 strLen = strlen(tmpStr);
                  if(j < plot.GetNumOperators() - 1)
-                     printf(", ");
+                     SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen, ", ");
+                 strLen = strlen(tmpStr);
              }
-             printf("}, activeOperator=%d}\n", plot.GetActiveOperator());
+             SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen,
+                 "};activeOperator=%d", plot.GetActiveOperator());
+             strLen = strlen(tmpStr);
+
+             if (stringOnly != 1)
+                 printf("%s\n", tmpStr);
+
+             outStr += std::string(tmpStr);
+             outStr += "#";
         }
     }
 
@@ -5324,9 +5357,7 @@ visit_ListPlots(PyObject *self, PyObject *args)
         fprintf(logFile, "ListPlots()\n");
     MUTEX_UNLOCK();
 
-    // Increment the reference count and return.
-    Py_INCREF(Py_None);
-    return Py_None;
+    return PyString_FromString(outStr.c_str());
 }
 
 // ****************************************************************************

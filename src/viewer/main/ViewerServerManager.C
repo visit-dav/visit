@@ -755,6 +755,9 @@ ViewerServerManager::OpenWithLauncher(
 //    Brad Whitlock, Wed Mar 31 10:20:33 PDT 2004
 //    Fixed code so it builds on the SGI.
 //
+//    Jeremy Meredith, Wed May 11 09:04:52 PDT 2005
+//    Added security key to simulation connection.
+//
 // ****************************************************************************
 
 void
@@ -772,7 +775,7 @@ ViewerServerManager::SimConnectThroughLauncher(const std::string &remoteHost,
         {
             // We use the data argument to pass in a pointer to the connection
             // progress window.
-            typedef struct {std::string h; int p;} SimData;
+            typedef struct {std::string h; int p; std::string k;} SimData;
             SimData *simData = (SimData*)data;
 
             // Search the args list and see if we've supplied the path to
@@ -791,7 +794,10 @@ ViewerServerManager::SimConnectThroughLauncher(const std::string &remoteHost,
             StartLauncher(remoteHost, visitPath, NULL);
 
             // Try to make the launcher launch the process.
-            launchers[remoteHost]->ConnectSimulation(args, simData->h, simData->p);
+            launchers[remoteHost]->ConnectSimulation(args,
+                                                     simData->h,
+                                                     simData->p,
+                                                     simData->k);
 
             // Indicate success.
             launched = true;

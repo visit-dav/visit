@@ -8,23 +8,32 @@
 #include <vector>
 
 #include <avtDatabaseMetaData.h>
+#include <avtIOInformation.h>
 #include <avtSimulationInformation.h>
 #include <avtSimulationCommandSpecification.h>
 
+#include <DebugStream.h>
 #include <InvalidFilesException.h>
 
 #include <visitstream.h>
 
+#include <vtkFieldData.h>
 #include <vtkFloatArray.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellArray.h>
+#include <vtkCellData.h>
 #include <vtkPolyData.h>
+#include <avtGhostData.h>
 
 using std::string;
 using std::vector;
 
+#ifdef PARALLEL
+#include <mpi.h>
+#include <avtParallel.h>
+#endif
 
 #ifndef MDSERVER
 extern "C" VisIt_SimulationCallback visitCallbacks;
@@ -67,6 +76,124 @@ static void FreeDataArray(VisIt_DataArray &da)
         free(da.dArray);
         da.dArray = NULL;
         break;
+    }
+}
+
+// ****************************************************************************
+//  Function:  GetQuadGhostZones
+//
+//  Purpose:  Add ghost zone information to a dataset.
+//    
+//  Note:  stolen from the Silo file format method of the same name
+//
+// ****************************************************************************
+static void 
+GetQuadGhostZones(int nnodes, int ndims,
+                  int *dims, int *min_index, int *max_index,
+                  vtkDataSet *ds)
+{
+    //
+    //  Determine if we have ghost points
+    //
+    int first[3];
+    int last[3];
+    bool ghostPresent = false;
+    bool badIndex = false;
+    for (int i = 0; i < 3; i++)
+    {
+        first[i] = (i < ndims ? min_index[i] : 0);
+        last[i]  = (i < ndims ? max_index[i] : 0);
+
+        if (first[i] < 0 || first[i] >= dims[i])
+        {
+            debug1 << "bad Index on first[" << i << "] dims is: " 
+                   << dims[i] << endl;
+            badIndex = true;
+        }
+
+        if (last[i] < 0 || last[i] >= dims[i])
+        {
+            debug1 << "bad Index on last[" << i << "] dims is: " 
+                   << dims[i] << endl;
+            badIndex = true;
+        }
+
+        if (first[i] != 0 || last[i] != dims[i] -1)
+        {
+            ghostPresent = true;
+        }
+    }
+
+    //
+    //  Create the ghost zones array if necessary
+    //
+    if (ghostPresent && !badIndex)
+    {
+        bool *ghostPoints = new bool[nnodes];
+        //
+        // Initialize as all ghost levels
+        //
+        for (int ii = 0; ii < nnodes; ii++)
+            ghostPoints[ii] = true; 
+
+        //
+        // Set real values
+        //
+        for (int k = first[2]; k <= last[2]; k++)
+            for (int j = first[1]; j <= last[1]; j++)
+                for (int i = first[0]; i <= last[0]; i++)
+                {
+                    int index = k*dims[1]*dims[0] + j*dims[0] + i;
+                    ghostPoints[index] = false; 
+                }
+
+        //
+        //  okay, now we have ghost points, but what we really want
+        //  are ghost cells ... convert:  if all points associated with
+        //  cell are 'real' then so is the cell.
+        //
+        unsigned char realVal = 0;
+        unsigned char ghostVal = 0;
+        avtGhostData::AddGhostZoneType(ghostVal, 
+                                       DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+        int ncells = ds->GetNumberOfCells();
+        vtkIdList *ptIds = vtkIdList::New();
+        vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
+        ghostCells->SetName("avtGhostZones");
+        ghostCells->Allocate(ncells);
+ 
+        for (int i = 0; i < ncells; i++)
+        {
+            ds->GetCellPoints(i, ptIds);
+            bool ghost = false;
+            for (int idx = 0; idx < ptIds->GetNumberOfIds(); idx++)
+                ghost |= ghostPoints[ptIds->GetId(idx)];
+
+            if (ghost)
+                ghostCells->InsertNextValue(ghostVal);
+            else
+                ghostCells->InsertNextValue(realVal);
+ 
+        } 
+        ds->GetCellData()->AddArray(ghostCells);
+        delete [] ghostPoints;
+        ghostCells->Delete();
+        ptIds->Delete();
+
+        vtkIntArray *realDims = vtkIntArray::New();
+        realDims->SetName("avtRealDims");
+        realDims->SetNumberOfValues(6);
+        realDims->SetValue(0, first[0]);
+        realDims->SetValue(1, last[0]);
+        realDims->SetValue(2, first[1]);
+        realDims->SetValue(3, last[1]);
+        realDims->SetValue(4, first[2]);
+        realDims->SetValue(5, last[2]);
+        ds->GetFieldData()->AddArray(realDims);
+        ds->GetFieldData()->CopyFieldOn("avtRealDims");
+        realDims->Delete();
+
+        ds->SetUpdateGhostLevel(0);
     }
 }
 
@@ -405,6 +532,9 @@ avtSimV1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Jeremy Meredith, Thu Apr 28 18:00:32 PDT 2005
 //    Added true data array structures in place of raw array pointers.
 //
+//    Jeremy Meredith, Wed May 11 10:56:01 PDT 2005
+//    Added ghost zone support.
+//
 // ****************************************************************************
 vtkDataSet *
 avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
@@ -449,8 +579,6 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
             points->SetNumberOfPoints(ni * nj * nk);
             float *pts = (float *) points->GetVoidPointer(0);
 
-            // USE THE BASEINDEX AND REAL/GHOST ZONE STUFF!
-
             if (cmesh->xcoords.dataType == VISIT_DATATYPE_FLOAT)
             {
                 int npts = 0;
@@ -462,7 +590,10 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
                         {
                             pts[npts*3 + 0] = cmesh->xcoords.fArray[npts];
                             pts[npts*3 + 1] = cmesh->ycoords.fArray[npts];
-                            pts[npts*3 + 2] = cmesh->zcoords.fArray[npts];
+                            if (cmesh->ndims==3)
+                                pts[npts*3 + 2] = cmesh->zcoords.fArray[npts];
+                            else
+                                pts[npts*3 + 2] = 0;
                             npts++;
                         }
                     }
@@ -479,7 +610,10 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
                         {
                             pts[npts*3 + 0] = cmesh->xcoords.dArray[npts];
                             pts[npts*3 + 1] = cmesh->ycoords.dArray[npts];
-                            pts[npts*3 + 2] = cmesh->zcoords.dArray[npts];
+                            if (cmesh->ndims==3)
+                                pts[npts*3 + 2] = cmesh->zcoords.dArray[npts];
+                            else
+                                pts[npts*3 + 2] = 0;
                             npts++;
                         }
                     }
@@ -494,6 +628,22 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
             FreeDataArray(cmesh->xcoords);
             FreeDataArray(cmesh->ycoords);
             FreeDataArray(cmesh->zcoords);
+
+            GetQuadGhostZones(ni*nj*nk,
+                              cmesh->ndims,
+                              cmesh->dims,
+                              cmesh->minRealIndex,
+                              cmesh->maxRealIndex,
+                              sgrid);
+
+            vtkIntArray *arr = vtkIntArray::New();
+            arr->SetNumberOfTuples(3);
+            arr->SetValue(0, cmesh->baseIndex[0]);
+            arr->SetValue(1, cmesh->baseIndex[1]);
+            arr->SetValue(2, cmesh->baseIndex[2]);
+            arr->SetName("base_index");
+            sgrid->GetFieldData()->AddArray(arr);
+            arr->Delete();
 
             return sgrid;
         }
@@ -518,8 +668,6 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
             int nj = rmesh->dims[1];
             int nk = rmesh->dims[2];
 
-            // USE THE BASEINDEX AND REAL/GHOST ZONE STUFF!
-
             vtkFloatArray *xcoords;
             vtkFloatArray *ycoords;
             vtkFloatArray *zcoords;
@@ -539,8 +687,16 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
                 for (int j=0; j<nj; j++)
                     ycoords->SetComponent(j, 0, rmesh->ycoords.fArray[j]);
 
-                for (int k=0; k<nk; k++)
-                    zcoords->SetComponent(k, 0, rmesh->zcoords.fArray[k]);
+                if (rmesh->ndims==3)
+                {
+                    for (int k=0; k<nk; k++)
+                        zcoords->SetComponent(k, 0, rmesh->zcoords.fArray[k]);
+                }
+                else
+                {
+                    for (int k=0; k<nk; k++)
+                        zcoords->SetComponent(k, 0, 0);
+                }
             }
             else if (rmesh->xcoords.dataType == VISIT_DATATYPE_DOUBLE)
             {
@@ -550,8 +706,16 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
                 for (int j=0; j<nj; j++)
                     ycoords->SetComponent(j, 0, rmesh->ycoords.dArray[j]);
 
-                for (int k=0; k<nk; k++)
-                    zcoords->SetComponent(k, 0, rmesh->zcoords.dArray[k]);
+                if (rmesh->ndims==3)
+                {
+                    for (int k=0; k<nk; k++)
+                        zcoords->SetComponent(k, 0, rmesh->zcoords.dArray[k]);
+                }
+                else
+                {
+                    for (int k=0; k<nk; k++)
+                        zcoords->SetComponent(k, 0, 0);
+                }
             }
             else
             {
@@ -569,6 +733,22 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
             ycoords->Delete();
             rgrid->SetZCoordinates(zcoords);
             zcoords->Delete();
+
+            GetQuadGhostZones(ni*nj*nk,
+                              rmesh->ndims,
+                              rmesh->dims,
+                              rmesh->minRealIndex,
+                              rmesh->maxRealIndex,
+                              rgrid);
+
+            vtkIntArray *arr = vtkIntArray::New();
+            arr->SetNumberOfTuples(3);
+            arr->SetValue(0, rmesh->baseIndex[0]);
+            arr->SetValue(1, rmesh->baseIndex[1]);
+            arr->SetValue(2, rmesh->baseIndex[2]);
+            arr->SetName("base_index");
+            rgrid->GetFieldData()->AddArray(arr);
+            arr->Delete();
 
             return rgrid;
         }
@@ -605,6 +785,9 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
 //    Jeremy Meredith, Thu Apr 28 18:00:32 PDT 2005
 //    Added true data array structures in place of raw array pointers.
 //
+//    Jeremy Meredith, Wed May 11 10:56:21 PDT 2005
+//    Allowed for NULL responses.  Added int/char support.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -617,7 +800,7 @@ avtSimV1FileFormat::GetVar(int domain, const char *varname)
         return NULL;
 
     VisIt_ScalarData *sd = cb.GetScalar(domain,varname);
-    if (sd->len<=0)
+    if (!sd || sd->len<=0)
         return NULL;
 
      vtkFloatArray *array = vtkFloatArray::New();
@@ -629,11 +812,25 @@ avtSimV1FileFormat::GetVar(int domain, const char *varname)
              array->SetTuple1(i, sd->data.fArray[i]);
          }
      }
-     else
+     else if (sd->data.dataType == VISIT_DATATYPE_DOUBLE)
      {
          for (int i=0; i<sd->len; i++)
          {
              array->SetTuple1(i, sd->data.dArray[i]);
+         }
+     }
+     else if (sd->data.dataType == VISIT_DATATYPE_INT)
+     {
+         for (int i=0; i<sd->len; i++)
+         {
+             array->SetTuple1(i, sd->data.iArray[i]);
+         }
+     }
+     else // (sd->data.dataType == VISIT_DATATYPE_CHAR)
+     {
+         for (int i=0; i<sd->len; i++)
+         {
+             array->SetTuple1(i, sd->data.cArray[i]);
          }
      }
 
@@ -838,4 +1035,46 @@ avtSimV1FileFormat::GetCurve(const char *name)
     line->Delete();
 
     return pd;
+}
+
+// ****************************************************************************
+//  Method:  avtSimV1FileFormat::PopulateIOInformation
+//
+//  Purpose:
+//    Populate the list of acceptable domains for this processor.
+//
+//  Arguments:
+//    ioinfo     the avtIOInformation containing the output domain list
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    May 9, 2005
+//
+// ****************************************************************************
+void
+avtSimV1FileFormat::PopulateIOInformation(avtIOInformation& ioInfo)
+{
+     if (!cb.GetDomainList)
+        return;
+
+     VisIt_DomainList *dl = cb.GetDomainList();
+     if (!dl)
+         return;
+
+     int rank = 0;
+     int size = 1;
+#ifdef PARALLEL
+     rank = PAR_Rank();
+     size = PAR_Size();
+#endif
+
+     vector< vector<int> > hints;
+     hints.resize(size);
+     hints[rank].resize(dl->nMyDomains);
+     for (int i=0; i<dl->nMyDomains; i++)
+     {
+         hints[rank][i] = dl->myDomains.iArray[i];
+     }
+     ioInfo.AddHints(hints);
+
+     ioInfo.SetNDomains(dl->nTotalDomains);
 }

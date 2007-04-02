@@ -124,9 +124,10 @@ RPCExecutor<ConnectSimRPC>::Execute(ConnectSimRPC *connect)
            << "  Host=" << connect->GetSimHost().c_str()
            << "  Port=" << connect->GetSimPort() << endl;
     LauncherApplication::Instance()->ConnectSimulation(
-                                                  connect->GetLaunchArgs(),
-                                                  connect->GetSimHost(),
-                                                  connect->GetSimPort());
+                                                 connect->GetLaunchArgs(),
+                                                 connect->GetSimHost(),
+                                                 connect->GetSimPort(),
+                                                 connect->GetSimSecurityKey());
     connect->SendReply();
 }
 
@@ -628,10 +629,15 @@ LauncherApplication::LaunchProcess(const stringVector &launchArgs)
 //  Programmer:  Jeremy Meredith
 //  Creation:    March 23, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Wed May 11 09:04:52 PDT 2005
+//    Added security key to simulation connection.
+//
 // ****************************************************************************
 void
 LauncherApplication::ConnectSimulation(const stringVector &launchArgs,
-                                       const std::string &simHost, int simPort)
+                                       const std::string &simHost, int simPort,
+                                       const std::string &simSecurityKey)
 {
     int                s;
     struct hostent     *hp;
@@ -648,7 +654,7 @@ LauncherApplication::ConnectSimulation(const stringVector &launchArgs,
     hp = (struct hostent *)hostInfo;
     if (hp == NULL)
     {
-        return;// error
+        EXCEPTION0(CouldNotConnectException);
     }
 
     memset(&server, 0, sizeof(server));
@@ -662,7 +668,7 @@ LauncherApplication::ConnectSimulation(const stringVector &launchArgs,
     s = socket(AF_INET, SOCK_STREAM, 0);
     if (s < 0)
     {
-        return;// error
+        EXCEPTION0(CouldNotConnectException);
     }
 
     // Disable the Nagle algorithm 
@@ -673,18 +679,62 @@ LauncherApplication::ConnectSimulation(const stringVector &launchArgs,
     setsockopt(s, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(int));
 #endif
 
-    if (connect(s, (struct sockaddr *)&server, sizeof(server)) < 0)
+    int success = connect(s, (struct sockaddr *)&server, sizeof(server));
+    if (success < 0)
     {
 #if defined(_WIN32)
         closesocket(s);
 #else
         close(s);
 #endif
-        return;// error
+        EXCEPTION0(CouldNotConnectException);
     }
 
-    // Create the data!
-    char tmp[2000] = "";
+    //
+    // Send the security key and launch information to the simulation
+    //
+    char tmp[2000];
+    size_t          nleft, nwritten;
+    const char      *ptr;
+
+    sprintf(tmp, "%s\n", simSecurityKey.c_str());
+
+    ptr = (const char*)tmp;
+    nleft = strlen(tmp);
+    while (nleft > 0)
+    {
+        if((nwritten = send(s, (const char *)ptr, nleft, 0)) <= 0)
+        {
+            EXCEPTION0(CouldNotConnectException);
+        }
+
+        nleft -= nwritten;
+        ptr   += nwritten;
+    }
+
+    //
+    // Receive a reply
+    //
+    sprintf(tmp,"");
+    char *tbuf = tmp;
+    char *tptr = tmp;
+    int n;
+    char *newline = strstr(tbuf, "\n");
+    while (!newline)
+    {
+        n = recv(s, tptr, 2000, 0);
+        tptr += n;
+        *tptr = 0;
+        newline = strstr(tbuf, "\n");
+    }
+    *newline = 0;
+    if (strcmp(tmp, "success") != 0)
+    {
+        EXCEPTION0(CouldNotConnectException);
+    }
+
+    // Create the Launch args
+    sprintf(tmp, "");
     for (int i=0; i<launchArgs.size(); i++)
     {
         strcat(tmp, launchArgs[i].c_str());
@@ -693,15 +743,14 @@ LauncherApplication::ConnectSimulation(const stringVector &launchArgs,
     strcat(tmp, "\n");
 
     // Send it!
-    size_t          nleft, nwritten;
-    const char      *ptr;
-
     ptr = (const char*)tmp;
     nleft = strlen(tmp);
     while (nleft > 0)
     {
         if((nwritten = send(s, (const char *)ptr, nleft, 0)) <= 0)
-            return;//error (nwritten);
+        {
+            EXCEPTION0(CouldNotConnectException);
+        }
 
         nleft -= nwritten;
         ptr   += nwritten;

@@ -20,6 +20,9 @@
 //    Jeremy Meredith, Tue Mar 30 10:08:18 PST 2004
 //    I added support for simulations.
 //
+//    Jeremy Meredith, Wed May 11 09:04:52 PDT 2005
+//    Added security key to simulation connection.
+//
 // ****************************************************************************
 
 class LAUNCHER_PROXY_API LauncherProxy : public RemoteProxyBase
@@ -33,7 +36,8 @@ public:
     // RPCs to access functionality on the visit component launcher.
     void LaunchProcess(const stringVector &programArgs);
     void ConnectSimulation(const stringVector &programArgs,
-                           const std::string &simHost, int simPort);
+                           const std::string &simHost, int simPort,
+                           const std::string &simSecurityKey);
 
 protected:
     virtual void SetupComponentRPCs();

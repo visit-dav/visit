@@ -114,11 +114,16 @@ LauncherProxy::LaunchProcess(const stringVector &programArgs)
 //  Programmer:  Jeremy Meredith
 //  Creation:    March 23, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Wed May 11 09:04:52 PDT 2005
+//    Added security key to simulation connection.
+//
 // ****************************************************************************
 
 void
 LauncherProxy::ConnectSimulation(const stringVector &programArgs,
-                                 const std::string &simHost, int simPort)
+                                 const std::string &simHost, int simPort,
+                                 const std::string &simSecurityKey)
 {
-    connectSimRPC(programArgs, simHost, simPort);
+    connectSimRPC(programArgs, simHost, simPort, simSecurityKey);
 }

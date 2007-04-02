@@ -3346,6 +3346,9 @@ ViewerSubject::CreateAttributesDataNode(const avtDefaultPlotMetaData *dp) const
 //    Jeremy Meredith, Tue Feb  8 08:58:49 PST 2005
 //    Added a query for errors detected during plugin initialization.
 //
+//    Jeremy Meredith, Wed May 11 09:04:52 PDT 2005
+//    Added security key to simulation connection.
+//
 // ****************************************************************************
 
 int
@@ -3492,7 +3495,8 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
             ViewerEngineManager *vem = ViewerEngineManager::Instance();
             success = vem->ConnectSim(ek, noArgs,
                                       md->GetSimInfo().GetHost(),
-                                      md->GetSimInfo().GetPort());
+                                      md->GetSimInfo().GetPort(),
+                                      md->GetSimInfo().GetSecurityKey());
 
             if (success)
             {

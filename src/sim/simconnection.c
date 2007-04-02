@@ -2,9 +2,12 @@
 // Date      : April  4, 2005
 //
 // Modifications:
-//   Modifications:
-//   Changed it to a rectilinear mesh.
-
+//    Jeremy Meredith, Thu Apr 28 18:17:02 PDT 2005
+//    Changed it to a rectilinear mesh.
+//
+//    Jeremy Meredith, Wed May 11 11:05:50 PDT 2005
+//    Added ghost zones.  Added domain lists for restricted load balancing.
+// 
 #include "sim.h"
 
 #include <VisItV1.h>
@@ -16,8 +19,6 @@
 
 VisIt_SimulationMetaData *VisItGetMetaData()
 {
-    fprintf(stderr, "VisItGetMetaData\n");
-
     VisIt_SimulationMetaData *md = malloc(sizeof(VisIt_SimulationMetaData));
     md->currentCycle = cycle;
     md->currentTime  = 0;
@@ -81,12 +82,28 @@ VisIt_SimulationMetaData *VisItGetMetaData()
 VisIt_MeshData *VisItGetMesh(int domain,const char *name)
 {
     VisIt_MeshData *mesh = malloc(sizeof(VisIt_MeshData));
+
     mesh->meshType = VISIT_MESHTYPE_RECTILINEAR;
     mesh->rmesh = malloc(sizeof(VisIt_RectilinearMesh));
-    
+
+    mesh->rmesh->ndims = 3;
+
+    mesh->rmesh->baseIndex[0] = 0;
+    mesh->rmesh->baseIndex[1] = 0;
+    mesh->rmesh->baseIndex[2] = 0;
+
+    mesh->rmesh->minRealIndex[0] = 0;
+    mesh->rmesh->minRealIndex[1] = 0;
+    mesh->rmesh->minRealIndex[2] = 0;
+
+    mesh->rmesh->maxRealIndex[0] = p_nx-1;
+    mesh->rmesh->maxRealIndex[1] = p_ny-1;
+    mesh->rmesh->maxRealIndex[2] = p_nz-1;
+
     mesh->rmesh->dims[0] = p_nx;
     mesh->rmesh->dims[1] = p_ny;
     mesh->rmesh->dims[2] = p_nz;
+
     mesh->rmesh->xcoords = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_SIM,p_xcoords);
     mesh->rmesh->ycoords = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_SIM,p_ycoords);
     mesh->rmesh->zcoords = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_SIM,p_zcoords);
@@ -120,13 +137,29 @@ VisIt_ScalarData *VisItGetScalar(int domain,const char *name)
     return NULL;
 }
 
+VisIt_DomainList *VisItGetDomainList()
+{
+    int i;
+    VisIt_DomainList *dl = malloc(sizeof(VisIt_DomainList));
+
+    dl->nTotalDomains = numdomains;
+
+    dl->nMyDomains = 1;
+    dl->myDomains = VisIt_CreateDataArrayFromInt(VISIT_OWNER_VISIT,
+                                               malloc(sizeof(int)));
+    dl->myDomains.iArray[0] = par_rank;
+
+    return dl;
+}
 
 VisIt_SimulationCallback visitCallbacks =
 {
     &VisItGetMetaData,
     &VisItGetMesh,
     NULL, /* material */
+    NULL, /* species */
     &VisItGetScalar,
     NULL, /* curve */
-    NULL  /* mixed scalar */
+    NULL,  /* mixed scalar */
+    VisItGetDomainList
 };

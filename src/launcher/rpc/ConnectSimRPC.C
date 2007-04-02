@@ -10,10 +10,12 @@
 //  Creation:   January 23, 2004
 //
 //  Modifications:
+//    Jeremy Meredith, Mon May  9 14:39:44 PDT 2005
+//    Added security key to simulation connection.
 //
 // ****************************************************************************
 
-ConnectSimRPC::ConnectSimRPC() : BlockingRPC("s*si"), launchArgs()
+ConnectSimRPC::ConnectSimRPC() : BlockingRPC("s*sis"), launchArgs()
 {
 }
 
@@ -48,16 +50,21 @@ ConnectSimRPC::~ConnectSimRPC()
 //  Creation:   January 23, 2004
 //
 //  Modifications:
+//    Jeremy Meredith, Mon May  9 14:39:44 PDT 2005
+//    Added security key to simulation connection.
 //
 // ****************************************************************************
 
 void
 ConnectSimRPC::operator()(const stringVector &args,
-                          const std::string  &host, int port)
+                          const std::string  &host,
+                          int port,
+                          const std::string  &securityKey)
 {
-    launchArgs = args;
-    simHost    = host;
-    simPort    = port;
+    launchArgs     = args;
+    simHost        = host;
+    simPort        = port;
+    simSecurityKey = securityKey;
     Execute();
 }
 
@@ -72,6 +79,8 @@ ConnectSimRPC::operator()(const stringVector &args,
 //  Creation:   January 23, 2004
 //
 //  Modifications:
+//    Jeremy Meredith, Mon May  9 14:39:44 PDT 2005
+//    Added security key to simulation connection.
 //
 // ****************************************************************************
 
@@ -81,6 +90,7 @@ ConnectSimRPC::SelectAll()
     Select(0, (void *)&launchArgs);
     Select(1, (void *)&simHost);
     Select(2, (void *)&simPort);
+    Select(3, (void *)&simSecurityKey);
 }
 
 // ****************************************************************************
@@ -144,5 +154,26 @@ int
 ConnectSimRPC::GetSimPort() const
 {
     return simPort;
+}
+
+// ****************************************************************************
+//  Method: ConnectSimRPC::GetSimSecurityKey
+//
+//  Purpose: 
+//    Returns the security key simulation is waiting for.
+//
+//  Returns:    The security key.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   May  9, 2005
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+const std::string &
+ConnectSimRPC::GetSimSecurityKey() const
+{
+    return simSecurityKey;
 }
 

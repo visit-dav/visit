@@ -30,6 +30,9 @@
 //    Jeremy Meredith, Thu Apr 14 16:47:07 PDT 2005
 //    Added Curve and Material support.
 //
+//    Jeremy Meredith, Wed May 11 11:02:34 PDT 2005
+//    Added ghost zone support.  Added restricted load balancing support.
+//
 // ****************************************************************************
 
 class avtSimV1FileFormat : public avtSTMDFileFormat
@@ -51,6 +54,8 @@ class avtSimV1FileFormat : public avtSTMDFileFormat
     virtual void          *GetAuxiliaryData(const char *var, int domain,
                                             const char *type, void *,
                                             DestructorFunction &df);
+
+    virtual void           PopulateIOInformation(avtIOInformation& ioInfo);
 
   protected:
     avtSimulationInformation simInfo;

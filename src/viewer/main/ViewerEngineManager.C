@@ -714,13 +714,17 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
 //    I changed EngineMap. I also changed the exception messages so they say
 //    "simulation" instead of "compute engine".
 //
+//    Jeremy Meredith, Mon May  9 14:39:44 PDT 2005
+//    Added security key.
+//
 // ****************************************************************************
 
 bool
 ViewerEngineManager::ConnectSim(const EngineKey &ek,
                                 const stringVector &args,
                                 const string &simHost,
-                                int simPort)
+                                int simPort,
+                                const string &simSecurityKey)
 {
     //
     // Check if an engine already exists for the host.
@@ -773,12 +777,13 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
         //
         // Launch the engine.
         //
-        typedef struct {string h; int p;} SimData;
+        typedef struct {string h; int p; string k;} SimData;
         SimData simData;
         // The windows compiler can't accept non aggregate types in an
         // initializer list so initialize them like this:
         simData.h = simHost;
         simData.p = simPort;
+        simData.k = simSecurityKey;
 
         newEngine.proxy->Create(ek.HostName(),  chd, clientHostName,
                           manualSSHPort, sshPort,

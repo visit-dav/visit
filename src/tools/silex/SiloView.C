@@ -6,6 +6,7 @@
 #include <SiloArrayView.h>
 #include <SiloObjectView.h>
 #include <qheader.h>
+#include <qmessagebox.h>
 
 // ----------------------------------------------------------------------------
 //                            Silo View
@@ -151,11 +152,25 @@ SiloView::ShowObject(const QString &name)
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 12, 2001
 //
+//  Modifications:
+//    Jeremy Meredith, Wed May 11 12:42:12 PDT 2005
+//    Show an error message if we get an invalid object.
+//
 // ****************************************************************************
 void
 SiloView::ShowUnknown(const QString &name)
 {
     DBObjectType type = silo->InqVarType(name);
+
+    if (type == DB_INVALID_OBJECT)
+    {
+        QMessageBox::warning(this, "silex",
+           "Could not determine the type of this object.\n"
+           "The file may have been written using an incomplete driver.", "OK");
+        return;
+    }
+
+
     bool isObject = (type != DB_VARIABLE);
 
     if (isObject)
