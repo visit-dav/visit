@@ -74,6 +74,65 @@ avtMedianFilterExpression::PreExecute(void)
 
 
 // ****************************************************************************
+//  Function: FindMedian
+//
+//  Purpose:
+//      Finds the median in a manner efficient for small lists.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 19, 2005
+//
+// ****************************************************************************
+
+static float
+FindMedian(float *list, int nlist)
+{
+    int half = nlist/2;
+    if (nlist % 2 == 0)
+        half--;
+
+    float cantBeSmallerThan = -FLT_MAX;
+    float cantBeBiggerThan = +FLT_MAX;
+    for (int i = 0 ; i < nlist ; i++)
+    {
+        if (list[i] <= cantBeSmallerThan)
+            continue;
+        if (list[i] >= cantBeBiggerThan)
+            continue;
+        int numSmaller = 0;
+        int numBigger  = 0;
+        int numSame    = 0;
+        for (int j = 0 ; j < nlist ; j++)
+        {
+             if (i == j)
+                 continue;
+             if (list[i] == list[j])
+                 numSame++;
+             else if (list[i] < list[j])
+                 numBigger++;
+             else
+                 numSmaller++;
+        }
+        bool enoughSmaller = false;
+        if ((numSmaller + numSame) >= half)
+            enoughSmaller = true;
+        else
+            cantBeSmallerThan = list[i];
+        bool enoughBigger = false;
+        if ((numBigger + numSame) >= half)
+            enoughBigger = true;
+        else
+            cantBeBiggerThan = list[i];
+        if (enoughSmaller && enoughBigger)
+            return list[i];
+    }
+
+    // Wow.  Should never get here.
+    return list[0];
+}
+
+
+// ****************************************************************************
 //  Method: avtMedianFilterExpression::DoOperation
 //
 //  Purpose:
@@ -90,6 +149,11 @@ avtMedianFilterExpression::PreExecute(void)
 //
 //  Programmer: Hank Childs
 //  Creation:   August 14, 2005
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 19 11:08:56 PDT 2005
+//    Use a more efficient method to determine the median.
 //
 // ****************************************************************************
 
@@ -134,6 +198,9 @@ avtMedianFilterExpression::DoOperation(vtkDataArray *in1, vtkDataArray *out,
         dims[2] -= 1;
     }
 
+    float all_vals[27];
+    int   numSamps = 0;
+
     if (dims[2] <= 1)
     {
         for (int i = 0 ; i < dims[0] ; i++)
@@ -141,8 +208,7 @@ avtMedianFilterExpression::DoOperation(vtkDataArray *in1, vtkDataArray *out,
             for (int j = 0 ; j < dims[1] ; j++)
             {
                 int idx = j*dims[0]+i;
-                vector<float> all_vals(9);
-                int numSamps = 0;
+                numSamps = 0;
                 for (int ii = i-1 ; ii <= i+1 ; ii++)
                 {
                     if (ii < 0 || ii >= dims[0])
@@ -156,8 +222,8 @@ avtMedianFilterExpression::DoOperation(vtkDataArray *in1, vtkDataArray *out,
                         numSamps++;
                     }
                 }
-                sort(all_vals.begin(), all_vals.end());
-                out->SetTuple1(idx, all_vals[numSamps/2+1]);
+                float median = FindMedian(all_vals, numSamps);
+                out->SetTuple1(idx, median);
             }
         }
     }
@@ -170,8 +236,7 @@ avtMedianFilterExpression::DoOperation(vtkDataArray *in1, vtkDataArray *out,
                 for (int k = 0 ; k < dims[2] ; k++)
                 {
                     int idx = k*dims[0]*dims[1] + j*dims[0]+i;
-                    vector<float> all_vals(27);
-                    int numSamps = 0;
+                    numSamps = 0;
                     for (int ii = i-1 ; ii <= i+1 ; ii++)
                     {
                         if (ii < 0 || ii >= dims[0])
@@ -190,8 +255,8 @@ avtMedianFilterExpression::DoOperation(vtkDataArray *in1, vtkDataArray *out,
                             }
                         }
                     }
-                    sort(all_vals.begin(), all_vals.end());
-                    out->SetTuple1(idx, all_vals[numSamps/2+1]);
+                    float median = FindMedian(all_vals, numSamps);
+                    out->SetTuple1(idx, median);
                 }
             }
         }

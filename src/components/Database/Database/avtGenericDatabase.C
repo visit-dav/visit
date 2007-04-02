@@ -4005,6 +4005,9 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 //    Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
 //    Made error message a little clearer
 //
+//    Jeremy Meredith, Thu Aug 18 17:54:51 PDT 2005
+//    Added a new isovolume algorithm, with adjustable VF cutoff.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -4020,6 +4023,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
                         bool simplifyHeavilyMixedZones,
                         int  maxMatsPerZone,
                         int  mirAlgorithm,
+                        float isovolumeMIRVF,
                         bool didGhosts,
                         bool &subdivisionOccurred,
                         bool &notAllCellsSubdivided,
@@ -4061,7 +4065,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
                                  needValidConnectivity,
                                  needSmoothMaterialInterfaces,
                                  needCleanZonesOnly, simplifyHeavilyMixedZones,
-                                 maxMatsPerZone, mirAlgorithm,
+                                 maxMatsPerZone, mirAlgorithm, isovolumeMIRVF,
                                  didGhosts,
                                  subdivisionOccurred,
                                  notAllCellsSubdivided, reUseMIR);
@@ -4711,6 +4715,9 @@ avtGenericDatabase::SpeciesSelect(avtDatasetCollection &dsc,
 //    Hank Childs, Wed Aug 17 09:10:35 PDT 2005
 //    Add support for simplifying heavily mixed zones.
 //
+//    Jeremy Meredith, Thu Aug 18 17:54:51 PDT 2005
+//    Added a new isovolume algorithm, with adjustable VF cutoff.
+//
 // ****************************************************************************
 void_ref_ptr
 avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
@@ -4720,19 +4727,21 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
                            bool needCleanZonesOnly, 
                            bool simplifyHeavilyMixedZones, int maxMatsPerZone,
                            int  mirAlgorithm,
+                           float isovolumeMIRVF,
                            bool didGhosts,
                            bool &subdivisionOccurred,
                            bool &notAllCellsSubdivided, bool reUseMIR)
 {
     char cacheLbl[1000];
-    sprintf(cacheLbl, "MIR_%s_%s_%s_%s_%s_%d_%s",
+    sprintf(cacheLbl, "MIR_%s_%s_%s_%s_%s_%d_%f_%s",
             needValidConnectivity        ? "FullSubdiv" : "MinimalSubdiv",
             needSmoothMaterialInterfaces ? "Smooth"     : "NotSmooth",
             needCleanZonesOnly           ? "CleanOnly"  : "SplitMixed",
             didGhosts                    ? "DidGhosts"  : "NoDidGhosts",
             simplifyHeavilyMixedZones    ? "Simplify"   : "NoSimplify",
             maxMatsPerZone,
-            mirAlgorithm==0              ? "TetMIR"     : "ZooMIR");
+            isovolumeMIRVF,
+            mirAlgorithm==0 ? "TetMIR" : (mirAlgorithm==1 ? "ZooMIR" : "IsovolumeMIR"));
 
     //
     // See if we already have the data lying around.
@@ -4764,18 +4773,25 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
 
         MIR *mir = NULL;
 
-        //
-        // Right new the new algorithm (index==1) is only
-        // available in 3D.
-        //
-        if (mirAlgorithm == 1)
-            mir = new ZooMIR;
-        else
+        switch (mirAlgorithm)
+        {
+          case 0:
             mir = new TetMIR;
+            break;
 
+          case 1:
+          case 2:
+            // Both the recursive clipping and isovolume clipping
+            // use the Zoo clipping MIR
+            mir = new ZooMIR;
+            break;
+        }
+
+        mir->SetAlgorithm(mirAlgorithm);
         mir->SetLeaveCleanZonesWhole(!needValidConnectivity);
         mir->SetSmoothing(needSmoothMaterialInterfaces);
         mir->SetCleanZonesOnly(needCleanZonesOnly);
+        mir->SetIsovolumeVF(isovolumeMIRVF);
         if (topoDim == 3)
         {
             mir->Reconstruct3DMesh(ds, mat_to_use);
@@ -7221,6 +7237,9 @@ avtGenericDatabase::ApplyGhostForDomainNesting(avtDatasetCollection &ds,
 //    Hank Childs, Wed Aug 17 09:23:38 PDT 2005
 //    Use new material options for simplifying heavily mixed zones.
 //
+//    Jeremy Meredith, Thu Aug 18 17:54:51 PDT 2005
+//    Added a new isovolume algorithm, with adjustable VF cutoff.
+//
 // ****************************************************************************
 
 void
@@ -7294,7 +7313,8 @@ avtGenericDatabase::MaterialSelect(avtDatasetCollection &ds,
                                 spec->MustDoMaterialInterfaceReconstruction(),
                                 spec->SimplifyHeavilyMixedZones(),
                                 spec->MaxMaterialsPerZone(),
-                                spec->UseNewMIRAlgorithm() ? 1 : 0,
+                                spec->MIRAlgorithm(),
+                                spec->IsovolumeMIRVF(),
                                 didGhosts, so, nacs, reUseMIR);
 
             notAllCellsSubdivided = notAllCellsSubdivided || nacs ||

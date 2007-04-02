@@ -33,8 +33,17 @@
 //      speed that is attainable by having the center of the pinwheel at 
 //      (X,Y,Z).
 //
+//      Also: John Boyd felt that we should define curl for 2D variables as 
+//      well.  In this case, only the third component of the vector will be
+//      non-zero, so we return a scalar (instead of a vector) in this case.
+//
 //  Programmer: Hank Childs
 //  Creation:   December 27, 2004
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 19 08:50:02 PDT 2005
+//    Move definition of GetVariableDimension to the .C file.
 //
 // ****************************************************************************
 
@@ -49,7 +58,7 @@ class EXPRESSION_API avtCurlFilter : public avtMacroExpressionFilter
                                { return "Calculating Curl"; };
 
   protected:
-    virtual int               GetVariableDimension() { return 3; }
+    virtual int               GetVariableDimension();
     virtual void              GetMacro(std::vector<std::string> &, 
                                        std::string &, Expression::ExprType &);
 };

@@ -88,6 +88,13 @@ using     std::map;
 //    Hank Childs, Tue Aug 16 16:17:03 PDT 2005
 //    Add support for simplifying heavily mixed zones.
 //
+//    Jeremy Meredith, Thu Aug 18 17:54:51 PDT 2005
+//    Added a new isovolume algorithm, with adjustable VF cutoff.
+//
+//    Jeremy Meredith, Fri Aug 19 17:20:41 PDT 2005
+//    Set the default back to Tet temporarily.  This is only to make sure
+//    the test suite still passes.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts,
@@ -108,7 +115,8 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
     needMixedVariableReconstruction = false;
     needSmoothMaterialInterfaces = false;
     needCleanZonesOnly = false;
-    useNewMIRAlgorithm = false;
+    mirAlgorithm = 0; // 0=Tet 1==Zoo 2=Isovolume
+    isovolumeMIRVF = 0.5;
     simplifyHeavilyMixedZones = false;
     maxMatsPerZone = 3;
     desiredGhostDataType = NO_GHOST_DATA;
@@ -201,6 +209,9 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
 //    Hank Childs, Tue Aug 16 16:17:03 PDT 2005
 //    Add support for simplifying heavily mixed zones.
 //
+//    Jeremy Meredith, Thu Aug 18 17:54:51 PDT 2005
+//    Added a new isovolume algorithm, with adjustable VF cutoff.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
@@ -220,7 +231,8 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
     needMixedVariableReconstruction = false;
     needSmoothMaterialInterfaces = false;
     needCleanZonesOnly = false;
-    useNewMIRAlgorithm = false;
+    mirAlgorithm = 1; // 0=Tet 1==Zoo 2=Isovolume
+    isovolumeMIRVF = 0.5;
     simplifyHeavilyMixedZones = false;
     maxMatsPerZone = 3;
     desiredGhostDataType = NO_GHOST_DATA;
@@ -445,6 +457,9 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec)
 //    Hank Childs, Tue Aug 16 16:17:03 PDT 2005
 //    Add support for simplifying heavily mixed zones.
 //
+//    Jeremy Meredith, Thu Aug 18 17:54:51 PDT 2005
+//    Added a new isovolume algorithm, with adjustable VF cutoff.
+//
 // ****************************************************************************
 
 avtDataSpecification &
@@ -494,7 +509,8 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
     needCleanZonesOnly              = spec.needCleanZonesOnly;
     simplifyHeavilyMixedZones       = spec.simplifyHeavilyMixedZones;
     maxMatsPerZone                  = spec.maxMatsPerZone;
-    useNewMIRAlgorithm              = spec.useNewMIRAlgorithm;
+    mirAlgorithm                    = spec.mirAlgorithm;
+    isovolumeMIRVF                  = spec.isovolumeMIRVF;
     desiredGhostDataType            = spec.desiredGhostDataType;
     maintainOriginalConnectivity    = spec.maintainOriginalConnectivity;
     needNativePrecision             = spec.needNativePrecision;
@@ -585,6 +601,9 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
 //
 //    Hank Childs, Tue Aug 16 16:17:03 PDT 2005
 //    Add support for simplifying heavily mixed zones.
+//
+//    Jeremy Meredith, Thu Aug 18 17:54:51 PDT 2005
+//    Added a new isovolume algorithm, with adjustable VF cutoff.
 //
 // ****************************************************************************
 
@@ -698,7 +717,12 @@ avtDataSpecification::operator==(const avtDataSpecification &ds)
         return false;
     }
 
-    if (useNewMIRAlgorithm != ds.useNewMIRAlgorithm)
+    if (mirAlgorithm != ds.mirAlgorithm)
+    {
+        return false;
+    }
+
+    if (isovolumeMIRVF != ds.isovolumeMIRVF)
     {
         return false;
     }

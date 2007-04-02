@@ -208,3 +208,35 @@ avtBinaryMathFilter::CreateArray(vtkDataArray *in1)
 }
 
 
+// ****************************************************************************
+//  Method: avtBinaryMathFilter::GetVariableDimension
+//
+//  Purpose:
+//      Determines what the variable dimension of the output is.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 19, 2005
+//
+// ****************************************************************************
+
+int
+avtBinaryMathFilter::GetVariableDimension(void)
+{
+    if (*(GetInput()) == NULL)
+        return avtMultipleInputExpressionFilter::GetVariableDimension();
+    if (varnames.size() != 2)
+        return avtMultipleInputExpressionFilter::GetVariableDimension();
+
+    avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
+    if (! atts.ValidVariable(varnames[0]))
+        return avtMultipleInputExpressionFilter::GetVariableDimension();
+    int ncomp1 = atts.GetVariableDimension(varnames[0]);
+
+    if (! atts.ValidVariable(varnames[1]))
+        return avtMultipleInputExpressionFilter::GetVariableDimension();
+    int ncomp2 = atts.GetVariableDimension(varnames[1]);
+
+    return GetNumberOfComponentsInOutput(ncomp1, ncomp2);
+}
+
+

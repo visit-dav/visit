@@ -12,14 +12,21 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    September 15, 2003
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Aug 18 18:02:38 PDT 2005
+//    I was able to re-use most of this class for a new isovolume based
+//    reconstruction algorithm.  Everything stayed except I made
+//    ReconstructCell pure-virtual, and I needed to keep track of whether
+//    or not edge points were shared across materials.
+//
 // ****************************************************************************
 class CellReconstructor
 {
   public:
-    CellReconstructor(vtkDataSet*, avtMaterial*, ResampledMat&, int, int,
+    CellReconstructor(vtkDataSet*, avtMaterial*, ResampledMat&, int, int, bool,
                       MIRConnectivity&, ZooMIR&);
-    ~CellReconstructor();
-    void ReconstructCell(int, int, int, int*);
+    virtual ~CellReconstructor();
+    virtual void ReconstructCell(int, int, int, int*) = 0;
 
   protected:
     vtkDataSet                             *mesh;
@@ -45,6 +52,7 @@ class CellReconstructor
     int           interpIDs[4];
     float         interpVFs[4];
 
+    bool            allMaterialsSharePoints;
     int             startIndex;
     unsigned char  *splitCase;
     int             numOutput;

@@ -560,6 +560,9 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
 //    Hank Childs, Wed Aug 17 21:55:55 PDT 2005
 //    Pass along the material options to simplify the interface reconstruction.
 //
+//    Jeremy Meredith, Thu Aug 18 17:54:51 PDT 2005
+//    Added a new isovolume algorithm, with adjustable VF cutoff.
+//
 // ****************************************************************************
 
 void
@@ -610,9 +613,10 @@ NetworkManager::StartNetwork(const string &format,
     dspec->SetNeedSmoothMaterialInterfaces(matopts.GetSmoothing());
     dspec->SetNeedCleanZonesOnly(matopts.GetCleanZonesOnly());
     dspec->SetNeedValidFaceConnectivity(matopts.GetNeedValidConnectivity());
-    dspec->SetUseNewMIRAlgorithm(matopts.GetUseNewMIRAlgorithm());
+    dspec->SetMIRAlgorithm(matopts.GetAlgorithm());
     dspec->SetSimplifyHeavilyMixedZones(matopts.GetSimplifyHeavilyMixedZones());
     dspec->SetMaxMaterialsPerZone(matopts.GetMaxMaterialsPerZone());
+    dspec->SetIsovolumeMIRVF(matopts.GetIsoVolumeFraction());
     workingNet->SetDataSpec(dspec);
     workingNet->SetTime(dspec->GetTimestep());
 

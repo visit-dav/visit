@@ -259,6 +259,11 @@ avtIndexSelectFilter::Equivalent(const AttributeGroup *a)
 //    Account for the fact the vtkExtractGrid and vtkRectilinearExtractGrid
 //    may return 'empty' datasets, so we want to return a NULL dataset. 
 //
+//    Kathleen Bonnell, Fri Aug 19 15:45:46 PDT 2005
+//    Remove ghost nodes array, ensure ghost zones are skipped in
+//    'zones not preserved' case.   Removed retrieval and use of
+//    'avtRealDims'.  Its retrieval was incorrect so it was never ever used.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -304,6 +309,7 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
             ds->Update();
             ds->SetSource(NULL);
         }
+        in_ds->GetPointData()->RemoveArray("avtGhostNodes");
     
         //
         // The indices should reflect the "base_index"'s, so dummy one up if
@@ -414,15 +420,11 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
                 base[2] += ar2->GetValue(2);
             }
         }
-        vtkUnsignedIntArray *real_dims = (vtkUnsignedIntArray *)
-                                         in_ds->GetCellData()->
-                                         GetArray("avtRealDims");
-        if (real_dims != NULL)
-        {
-            base[0] -= real_dims->GetValue(0)-1;
-            base[1] -= real_dims->GetValue(1)-1;
-            base[2] -= real_dims->GetValue(2)-1;
-        }
+        
+        vtkDataArray *ghosts = in_ds->GetCellData()->GetArray("avtGhostZones");
+        unsigned char *gz = NULL;
+        if (ghosts)
+            gz = (unsigned char *)ghosts->GetVoidPointer(0);
 
         //
         // We should have everything lined up now -- we know what the original
@@ -475,6 +477,10 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
                 if (z < zmin || z >= zmax)
                     continue;
             }
+            // only allow AMR ghosts to be part of the output.
+            if (gz && !(gz[i] == 0 || gz[i] == 8))
+                continue;
+
             out_cd->CopyData(in_cd, i, out_cell++);
             vtkCell *cell = in_ds->GetCell(i);
             vtkIdList *list = cell->GetPointIds();

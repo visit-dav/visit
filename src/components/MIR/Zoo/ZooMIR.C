@@ -22,7 +22,8 @@
 
 #include <Array.h>
 #include "BitUtils.h"
-#include "CellReconstructor.h"
+#include "RecursiveCellReconstructor.h"
+#include "IsovolumeCellReconstructor.h"
 #include "ResampledMat.h"
 
 // ****************************************************************************
@@ -125,6 +126,9 @@ ZooMIR::Reconstruct2DMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig)
 //    Jeremy Meredith, Tue Oct 21 11:23:04 PDT 2003
 //    Keep track of the number of original materials.  Fixed memory leak.
 //
+//    Jeremy Meredith, Thu Aug 18 17:59:13 PDT 2005
+//    Added a new isovolume algorithm, with adjustable VF cutoff.
+//
 // ****************************************************************************
 bool
 ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
@@ -188,7 +192,18 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
     zonesList.reserve(int(float(nCells)*1.5));
     indexList.reserve(int(float(nCells)*10));
 
-    CellReconstructor cr(mesh, mat, rm, nPoints, nCells, conn, *this);
+    CellReconstructor *cr;
+    if (options.algorithm == 1) // Recursive Clipping
+    {
+        cr = new RecursiveCellReconstructor(mesh, mat, rm, nPoints,
+                                            nCells, conn, *this);
+    }
+    else // algorithm == 2 // Isovolume
+    {
+        cr = new IsovolumeCellReconstructor(mesh, mat, rm, nPoints,
+                                            nCells, conn, *this);
+    }
+
 
     int *conn_ptr = conn.connectivity;
     for (int c = 0 ; c < nCells ; c++, conn_ptr += (*conn_ptr) + 1)
@@ -197,8 +212,10 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
         int *ids      = conn_ptr+1;
         int  nids     = *conn_ptr;
 
-        cr.ReconstructCell(c, celltype, nids, ids);
+        cr->ReconstructCell(c, celltype, nids, ids);
     }
+
+    delete cr;
 
     visitTimer->StopTimer(timerHandle2, "MIR: Cell clipping");
     visitTimer->StopTimer(timerHandle, "Full MIR reconstruction");
@@ -716,6 +733,12 @@ ZooMIR::SetUpCoords()
 //       Taken blatantly from vtkDataSetFromVolume.  These should be
 //       refactored into a common place.
 //
+// Modifications:
+//    Jeremy Meredith, Thu Aug 18 17:59:46 PDT 2005
+//    Added a new member for each edge -- the material number.  This is
+//    because we are now also using this for an isovolume MIR method where
+//    we do NOT want the edge points to be reused across materials.
+//
 // ****************************************************************************
 
 ZooMIR::EdgeHashEntryMemoryManager::EdgeHashEntryMemoryManager()
@@ -767,9 +790,9 @@ ZooMIR::EdgeHashTable::~EdgeHashTable()
  
  
 int
-ZooMIR::EdgeHashTable::GetKey(int p1, int p2)
+ZooMIR::EdgeHashTable::GetKey(int p1, int p2, int m)
 {
-    int rv = ((p1*18457 + p2*234749) % nHashes);
+    int rv = ((m*521 + p1*18457 + p2*234749) % nHashes);
  
     // In case of overflows and modulo with negative numbers.
     if (rv < 0)
@@ -780,7 +803,7 @@ ZooMIR::EdgeHashTable::GetKey(int p1, int p2)
 
 
 ZooMIR::EdgeHashEntry *
-ZooMIR::EdgeHashTable::GetEdge(int ap1, int ap2)
+ZooMIR::EdgeHashTable::GetEdge(int ap1, int ap2, int m)
 {
     int p1, p2;
     if (ap2 < ap1)
@@ -794,7 +817,7 @@ ZooMIR::EdgeHashTable::GetEdge(int ap1, int ap2)
         p2 = ap2;
     }
 
-    int key = GetKey(p1, p2);
+    int key = GetKey(p1, p2, m);
  
     //
     // See if we have any matches in the current hashes.
@@ -802,7 +825,7 @@ ZooMIR::EdgeHashTable::GetEdge(int ap1, int ap2)
     EdgeHashEntry *cur = hashes[key];
     while (cur != NULL)
     {
-        if (cur->IsMatch(p1, p2))
+        if (cur->IsMatch(p1, p2, m))
         {
             //
             // We found a match.
@@ -819,6 +842,7 @@ ZooMIR::EdgeHashTable::GetEdge(int ap1, int ap2)
  
     new_one->SetNext(hashes[key]);
     new_one->SetEndpoints(p1, p2);
+    new_one->SetMatNo(m);
     hashes[key] = new_one;
  
     return new_one;

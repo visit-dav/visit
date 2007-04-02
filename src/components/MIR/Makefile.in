@@ -46,6 +46,9 @@
 #   Brad Whitlock, Fri Apr 29 11:35:19 PDT 2005
 #   I made it be ser/par for parallel build on MacOS X.
 #
+#   Jeremy Meredith, Thu Aug 18 17:13:02 PDT 2005
+#   Split cell reconstructor into a recursive and an isovolume version.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -71,6 +74,8 @@ Tet_src= \
 Zoo_src= \
   Zoo/BitUtils.C \
   Zoo/CellReconstructor.C \
+  Zoo/IsovolumeCellReconstructor.C \
+  Zoo/RecursiveCellReconstructor.C \
   Zoo/ResampledMat.C \
   Zoo/ZooMIR.C
 

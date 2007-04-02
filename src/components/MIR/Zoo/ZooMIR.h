@@ -35,6 +35,11 @@ struct ResampledMat;
 //    Jeremy Meredith, Tue Oct 21 11:24:42 PDT 2003
 //    Added data member to track original number of materials.
 //
+//    Jeremy Meredith, Thu Aug 18 17:59:46 PDT 2005
+//    Added a new member of the edge hash entries -- the material number.
+//    This is because we are now also using this for an isovolume MIR method
+//    where we do NOT want the edge points to be reused across materials.
+//
 // ****************************************************************************
 class MIR_API ZooMIR : public MIR
 {
@@ -79,18 +84,20 @@ class MIR_API ZooMIR : public MIR
     class EdgeHashEntry
     {
       public:
-        EdgeHashEntry() : id1(-1), id2(-1), ptId(-1), next(NULL) { }
+        EdgeHashEntry() : id1(-1), id2(-1), ptId(-1), matno(-1), next(NULL) { }
         ~EdgeHashEntry() { }
  
         void            SetEndpoints(int i1, int i2) { id1 = i1; id2 = i2;              }
+        void            SetMatNo(int m)              { matno = m;                       }
         void            SetPointId(int i)            { ptId = i;                        }
-        bool            IsMatch(int i1, int i2)      { return (i1 == id1 && i2 == id2); }
+        bool            IsMatch(int i1, int i2,int m){ return (i1 == id1 && i2 == id2 && m == matno); }
         int             GetPointId(void)             { return ptId;                     }
         EdgeHashEntry  *GetNext(void)                { return next;                     }
         void            SetNext(EdgeHashEntry *n)    { next = n;                        }
  
       protected:
         int             id1, id2;
+        int             matno;
         int             ptId;
         EdgeHashEntry  *next;
     };
@@ -138,17 +145,18 @@ class MIR_API ZooMIR : public MIR
         EdgeHashTable(int);
         virtual          ~EdgeHashTable();
  
-        int               AddPoint(int, int, float);
-        EdgeHashEntry    *GetEdge(int, int);
+        EdgeHashEntry    *GetEdge(int, int, int);
       protected:
         int                             nHashes;
         EdgeHashEntry                 **hashes;
         EdgeHashEntryMemoryManager      emm;
 
-        int               GetKey(int, int);
+        int               GetKey(int, int, int);
     };
 
     friend class CellReconstructor;
+    friend class RecursiveCellReconstructor;
+    friend class IsovolumeCellReconstructor;
     friend class EdgeHashTable;
 
   protected:

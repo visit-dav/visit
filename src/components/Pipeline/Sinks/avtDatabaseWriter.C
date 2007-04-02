@@ -8,6 +8,7 @@
 #include <ParsingExprList.h>
 
 #include <avtDatabaseMetaData.h>
+#include <avtParallel.h>
 #include <avtTerminatingSource.h>
 
 #include <NoInputException.h>
@@ -148,6 +149,10 @@ avtDatabaseWriter::Write(const std::string &filename,
 //
 //    Hank Childs, Thu Jul 21 16:11:55 PDT 2005
 //    Add more support for expressions.  Fix typo with vectors/scalars.
+//
+//    Hank Childs, Fri Aug 19 15:47:58 PDT 2005
+//    If the database does domain decomposition, then we need to change the
+//    chunk id to be our processor id.
 //
 // ****************************************************************************
 
@@ -342,6 +347,9 @@ avtDatabaseWriter::Write(const std::string &filename,
         {
             vtkDataSet *in_ds = dt->GetDataRepresentation().GetDataVTK();
             int chunk = dt->GetDataRepresentation().GetDomain();
+            if (md->GetFormatCanDoDomainDecomposition())
+                chunk = PAR_Rank();
+
             WriteChunk(in_ds, chunk);
         }
     }

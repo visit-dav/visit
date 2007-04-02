@@ -136,6 +136,9 @@
 #
 #    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 #    Updated skipList
+#
+#    Mark C. Miller, Fri Aug 19 10:16:30 PDT 2005
+#    Added label.py to skipList for optimized mode
 # ----------------------------------------------------------------------------
 
 # list of users who want email every night with the log file
@@ -283,7 +286,8 @@ skipList="scalable,parallel:tests/databases/boxlib.py \
           dlb:tests/queries/pick.py \
 	  optimized:tests/plots/tensor.py \
 	  optimized:tests/hybrid/lineout.py \
-	  optimized:tests/queries/database.py"
+	  optimized:tests/queries/database.py \
+	  optimized:tests/plots/label.py"
 
 # run the test(s)
 error=0

@@ -37,6 +37,9 @@ class avtSpecies;
 //    Jeremy Meredith, Wed Oct 15 16:47:49 PDT 2003
 //    Added space for a material to get passed in to GetDataset.
 //
+//    Jeremy Meredith, Thu Aug 18 16:35:05 PDT 2005
+//    Added algorithm selector, and added VF for isovolume algorithm.
+//
 // ****************************************************************************
 class MIR_API MIR
 {
@@ -47,11 +50,13 @@ class MIR_API MIR
     static void Destruct(void *);
 
     // set the options
+    void SetAlgorithm(int);
     void SetSubdivisionLevel(MIROptions::SubdivisionLevel);
     void SetNumIterations(int);
     void SetSmoothing(bool);
     void SetLeaveCleanZonesWhole(bool);
     void SetCleanZonesOnly(bool);
+    void SetIsovolumeVF(float);
 
     // do the processing
     virtual bool Reconstruct3DMesh(vtkDataSet *, avtMaterial *) = 0;

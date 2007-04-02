@@ -123,6 +123,9 @@ typedef ref_ptr<avtDataSpecification> avtDataSpecification_p;
 //    Hank Childs, Tue Aug 16 16:11:57 PDT 2005
 //    Added methods to simplify heavily mixed zones.
 //
+//    Jeremy Meredith, Thu Aug 18 16:24:07 PDT 2005
+//    Added an isovolume MIR algorithm and a VF flag for it.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataSpecification
@@ -260,10 +263,15 @@ class PIPELINE_API avtDataSpecification
     void                         SetNeedCleanZonesOnly(bool czo)
                                      { needCleanZonesOnly = czo; }
 
-    bool                         UseNewMIRAlgorithm(void)
-                                     { return useNewMIRAlgorithm;}
-    void                         SetUseNewMIRAlgorithm(bool unma)
-                                     { useNewMIRAlgorithm = unma; }
+    int                          MIRAlgorithm(void)
+                                     { return mirAlgorithm;}
+    void                         SetMIRAlgorithm(int ma)
+                                     { mirAlgorithm = ma; }
+
+    float                        IsovolumeMIRVF(void)
+                                     { return isovolumeMIRVF;}
+    void                         SetIsovolumeMIRVF(float vf)
+                                     { isovolumeMIRVF = vf; }
 
     bool                         SimplifyHeavilyMixedZones(void)
                                      { return simplifyHeavilyMixedZones;}
@@ -322,7 +330,8 @@ class PIPELINE_API avtDataSpecification
     bool                         needMixedVariableReconstruction;
     bool                         needSmoothMaterialInterfaces;
     bool                         needCleanZonesOnly;
-    bool                         useNewMIRAlgorithm;
+    int                          mirAlgorithm;
+    float                        isovolumeMIRVF;
     bool                         simplifyHeavilyMixedZones;
     int                          maxMatsPerZone;
     bool                         maintainOriginalConnectivity;

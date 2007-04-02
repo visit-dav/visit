@@ -148,7 +148,7 @@ avtExpressionEvaluatorFilter::Execute(void)
         GetOutput()->Copy(*dObj);
     }
 
-    //VerifyVariableTypes();
+    VerifyVariableTypes();
 
     // Stop the timer
     visitTimer->StopTimer(timingIndex, "Expression Evaluator Filter");
@@ -166,6 +166,11 @@ avtExpressionEvaluatorFilter::Execute(void)
 //  Programmer: Hank Childs
 //  Creation:   August 16, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 19 09:20:24 PDT 2005
+//    Switch ordering of arguments in error message.
+//
 // ****************************************************************************
 
 void
@@ -175,7 +180,7 @@ avtExpressionEvaluatorFilter::VerifyVariableTypes(void)
     int nvars = atts.GetNumberOfVariables();
     for (int i = 0 ; i < nvars ; i++)
     {
-        const std::string &varname = atts.GetVariableName();
+        const std::string &varname = atts.GetVariableName(i);
         avtVarType vt = atts.GetVariableType(varname.c_str());
         Expression *exp = ParsingExprList::GetExpression(varname.c_str());
         if (exp == NULL)
@@ -211,8 +216,8 @@ avtExpressionEvaluatorFilter::VerifyVariableTypes(void)
                          "confirm that the variable was declared correctly.  "
                         "Contact visit-help@llnl.gov if you believe that "
                          "the variable has been declared correctly.",
-                         varname.c_str(), avtVarTypeToString(vt).c_str(),
-                         avtVarTypeToString(et_as_avt).c_str());
+                         varname.c_str(),avtVarTypeToString(et_as_avt).c_str(),
+                         avtVarTypeToString(vt).c_str());
             EXCEPTION1(VisItException, msg);
         }
     }
