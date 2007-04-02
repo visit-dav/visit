@@ -182,6 +182,10 @@ class avtTransparencyActor;
 //    Mark Blair, Wed Oct 25 15:12:55 PDT 2006
 //    Added GetPlotInfoAtts.
 //
+//    Mark C. Miller, Wed Mar 28 15:56:15 PDT 2007
+//    Added IsMakingExternalRenderRequests, GetAverageExternalRenderingTime
+//    and DoNextExternalRenderAsVisualQueue to support the 'in-progress'
+//    visual queue for SR mode.
 // ****************************************************************************
 
 class VISWINDOW_API VisWinPlots : public VisWinColleague
@@ -240,6 +244,10 @@ class VISWINDOW_API VisWinPlots : public VisWinColleague
                                       VisCallbackWithDob *cb, void *data);
     bool                          EnableExternalRenderRequests(void);
     bool                          DisableExternalRenderRequests(void);
+    bool                          IsMakingExternalRenderRequests(void) const;
+    double                        GetAverageExternalRenderingTime(void) const;
+    void                          DoNextExternalRenderAsVisualQueue(int w, int h,
+                                      const double *color);
 
     virtual void                  FullFrameOn(const double, const int);
     virtual void                  FullFrameOff(void);

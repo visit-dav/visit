@@ -81,6 +81,10 @@ struct avtMeshMetaData;
 //    Hank Childs, Tue Sep 27 10:21:36 PDT 2005
 //    Use virtual inheritance.
 //
+//    Jeremy Meredith, Tue Mar 27 11:39:24 EDT 2007
+//    Added numblocks to the OpenFile method, and save off the actual
+//    encountered mesh types, because we cannot trust the metadata.
+//
 // ****************************************************************************
 
 class
@@ -94,6 +98,8 @@ avtSiloWriter : public virtual avtDatabaseWriter
     string         stem;
     string         meshname;
     string         matname;
+    int            nblocks;
+    avtMeshType    meshtype;
     DBoptlist     *optlist;
 
     // places to hold args passed in WriteHeaders
@@ -111,7 +117,7 @@ avtSiloWriter : public virtual avtDatabaseWriter
 
     virtual bool   CanHandleMaterials(void) { return true; };
 
-    virtual void   OpenFile(const string &);
+    virtual void   OpenFile(const string &, int);
     virtual void   WriteHeaders(const avtDatabaseMetaData *,
                                 vector<string> &, 
                                 vector<string> &,

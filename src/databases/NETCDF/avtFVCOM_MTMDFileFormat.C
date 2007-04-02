@@ -206,9 +206,15 @@ avtFVCOM_MTMDFileFormat::Init()
 {
     if(init) return;
     
+    
     const char *mName = "avtFVCOM_MTMDFileFormat::Init(): ";
     debug4 << mName << endl;
 
+    ndoms=0;
+    nfnames=0;
+    ntime=0;
+    ntwo=0;
+     
     int ncid;
     int status;
     ncid=fileObject->GetFileHandle(); 

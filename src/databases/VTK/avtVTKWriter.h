@@ -65,6 +65,10 @@ class DBOptionsAttributes;
 //    Hank Childs, Thu Mar 30 12:20:24 PST 2006
 //    Better support for single-block.
 //
+//    Jeremy Meredith, Tue Mar 27 11:39:24 EDT 2007
+//    Added numblocks to the OpenFile method, and save off the actual
+//    encountered mesh types, because we cannot trust the metadata.
+//
 // ****************************************************************************
 
 class
@@ -78,8 +82,9 @@ avtVTKWriter : public virtual avtDatabaseWriter
     std::string    stem;
     bool           doBinary;
     bool           doMultiBlock;
+    int            nblocks;
 
-    virtual void   OpenFile(const std::string &);
+    virtual void   OpenFile(const std::string &, int);
     virtual void   WriteHeaders(const avtDatabaseMetaData *,
                                 std::vector<std::string> &, 
                                 std::vector<std::string> &,

@@ -3653,6 +3653,15 @@ NetworkManager::GetDDF(const char *name)
 //  Programmer:  Hank Childs
 //  Creation:    May 26, 2005
 //
+//  Modifications:
+//
+//    Jeremy Meredith, Tue Mar 27 17:10:38 EDT 2007
+//    We need to give the pipeline specification to the writer, otherwise
+//    it doesn't load balance (and all processors write the whole dataset).
+//
+//    Hank Childs, Wed Mar 28 10:01:24 PDT 2007
+//    Beef up error messages.
+//
 // ****************************************************************************
 
 void
@@ -3663,7 +3672,10 @@ NetworkManager::ExportDatabase(int id, ExportDBAttributes *atts)
         debug1 << "Internal error:  asked to use network ID (" << id 
                << ") >= num saved networks ("
                << networkCache.size() << ")" << endl;
-        EXCEPTION0(ImproperUseException);
+        EXCEPTION1(ImproperUseException, " this condition often arises when"
+           " you have tried to export a database after the engine has just been"
+           " closed or crashed.  Try \"ReOpen\"ing the file and exporting "
+           "again.");
     }
  
     if (networkCache[id] == NULL)
@@ -3694,7 +3706,10 @@ NetworkManager::ExportDatabase(int id, ExportDBAttributes *atts)
     DatabasePluginManager *manager = DatabasePluginManager::Instance();
     if (!manager->PluginAvailable(db_type))
     {
-        EXCEPTION0(ImproperUseException);
+        char msg[1024];
+        SNPRINTF(msg, 1024, "Unable to load plugin \"%s\" for exporting.", 
+                 db_type.c_str());
+        EXCEPTION1(ImproperUseException, msg);
     }
     EngineDatabasePluginInfo *info = manager->GetEnginePluginInfo(db_type);
     DBOptionsAttributes opts = atts->GetOpts();
@@ -3703,9 +3718,10 @@ NetworkManager::ExportDatabase(int id, ExportDBAttributes *atts)
 
     if (wrtr == NULL)
     {
-        debug1 << "Unable to locate writer for \"" << db_type.c_str()
-               << "\"" << endl;
-        EXCEPTION0(ImproperUseException);
+        char msg[1024];
+        SNPRINTF(msg, 1024, "Unable to locate writer for \"%s\".", 
+                 db_type.c_str());
+        EXCEPTION1(ImproperUseException, msg);
     }
 
     if (strcmp(dob->GetType(), "avtDataset") != 0)
@@ -3716,6 +3732,8 @@ NetworkManager::ExportDatabase(int id, ExportDBAttributes *atts)
     int time = networkCache[id]->GetTime();
     ref_ptr<avtDatabase> db = networkCache[id]->GetNetDB()->GetDatabase();
     wrtr->SetInput(dob);
+
+    wrtr->SetPipelineSpecToUse(networkCache[id]->GetPipelineSpec());
     
     string qualFilename;
     if (atts->GetDirname() == "")

@@ -40,6 +40,12 @@
 #   Removed incorrect instructions verbage regarding having to install
 #   plugin on both client and server.
 #
+#   Mark C. Miller, Thu Mar 29 11:26:36 PDT 2007
+#   Added ability to have -c option specify a file. Re-arranged instructions
+#   a bit to make them clearer. Fixed some usage comments.
+#
+#   Mark C. Miller, Thu Mar 29 13:21:55 PDT 2007
+#   Set email and reply-to fields of mutt's message
 # ----------------------------------------------------------------------------
 #
 
@@ -64,14 +70,36 @@ cleanPluginDir () {
 makeInstructionsFile () {
     typeset upperPluginName=`echo $pluginName | tr \[a-z\] \[A-Z\]`
 
-cat > $1 <<- EOF
-    The associated tarball is a VisIt plugin. This update is being
-    furnished to you to address the following problem(s)...
+rm -f $1
+echo "The associated tarball is a VisIt plugin. This update is being" > $1
+echo "furnished to you to address the following problem(s)..." >> $1
+echo "" >> $1
 
-        $commentString
+if test -n "$commentSource"; then
+    if test -e "$commentSource"; then
+        cat "$commentSource" >> $1
+    else
+        echo "$commentSource" >> $1
+    fi
+    echo "" >> $1
+fi
+
+if test $testBuild -ne 0; then
+    if test -n "$testRun"; then
+        echo "Prior to sending you this tarball, it was confirmed to build and" >> $1
+        echo "run correctly with version $versionBuiltWith of VisIt." >> $1
+        echo "" >> $1
+    else
+        echo "Prior to sending you this tarball, it was confirmed to build with" >> $1
+        echo "version $versionBuiltWith of VisIt." >> $1
+        echo "" >> $1
+    fi
+fi
+
+cat >> $1 <<- EOF
 
     Simple commands for installing and UNinstalling a plugin
-    (Works in most cases)
+    (Works in most cases for VisIt versions 1.6 and newer)
     --------------------------------------------------------------
     (Note: no '.tar.gz' after the plugin's name)
     To install...
@@ -95,6 +123,20 @@ cat > $1 <<- EOF
 
     Additional information to be aware of
     -------------------------------------
+    If you would like VisIt to test the plugin and automatically
+    uninstall it if the test fails and the visit_plugin tool is 
+    available in your installation, give the command
+        % visit_plugin -install . -testrun <Filename>:<PlotType>:<Varname>
+    VisIt will build the plugin, install it and then attempt to open
+    the specified file and display the specified plot with the
+    specified variable.  If this test fails, VisIt will automatically
+    uninstall the plugin and inform you of the failure.
+
+    If the tarball we've sent you was test-run'd before we emailed it
+    to you, installing it will automatically behave as described above.
+    That is, it will automatically attempt to run the plugin and, if
+    it cannot, UNinstall it.
+
     If you are running a version of VisIt that is older than the most
     current release, be aware there is always a chance the plugin
     will not install or, once installed, not run correctly. You may
@@ -103,25 +145,6 @@ cat > $1 <<- EOF
     trys to avoid this situation but depending on where we are in a
     release cycle, it can crop up and is something to be aware of.
 
-EOF
-
-    if test $testBuild -ne 0; then
-        if test -n "$testRun"; then
-            cat >> $1 <<- EOF
-    Prior to sending you this tarball, it was confirmed to build and
-    run correctly with version $versionBuiltWith of VisIt.
-
-EOF
-        else
-            cat >> $1 <<- EOF
-    Prior to sending you this tarball, it was confirmed to build with
-    version $versionBuiltWith of VisIt.
-
-EOF
-	fi
-    fi
-
-cat >> $1 <<- EOF
     The commands to install and uninstall a plugin create and remove
     shared libraries in ~/.visit/<arch>/plugins/databases.
     When VisIt starts up, it looks in ~/.visit/<arch>/plugins/databases
@@ -142,11 +165,12 @@ cat >> $1 <<- EOF
     you did not build and install it from sources) or if VisIt was
     installed on your system without this database plugin,
     then you will most likely have to use the Manual approach for
-    installing and UNinstalling the plugin. Also, you will most likely
-    have to modify the Makefile that gets created by xml2makefile to
-    specify the location(s) of any applicable third party include and
-    library files. Typically, you would do this by editing Makefile
-    and defining something like... 
+    installing and UNinstalling the plugin. Also, if you know the
+    plugin you are using requires special purpose libraries to read
+    the files, you will have to modify the Makefile that gets created
+    by xml2makefile to specify the location(s) of these libraries. 
+    Typically, you would do this by editing Makefile and defining
+    something like... 
 
     ${upperPluginName}_INCLUDE="-I/usr/local/foo/include -I/usr/local/bar/include"
     ${upperPluginName}_LIB="-L/usr/local/foo/lib -lfoo -L/usr/local/bar/lib -lbar"
@@ -162,19 +186,6 @@ cat >> $1 <<- EOF
     ${upperPluginName}_LIB like so...
 
     ${upperPluginName}_LIB="/usr/local/foo/lib/libfoo.a /usr/local/bar/lib/libbar.a"
-
-    If you would like VisIt to test the plugin and automatically
-    uninstall it if the test fails, give the command
-        % visit_plugin -install . -testrun <Filename>:<PlotType>:<Varname>
-    VisIt will build the plugin, install it and then attempt to open
-    the specified file and display the specified plot with the
-    specified variable.  If this test fails, VisIt will automatically
-    uninstall the plugin and inform you of the failure.
-
-    If the tarball we've sent you was test-run'd before we emailed it
-    to you, installing it will automatically behave as described above.
-    That is, it will automatically attempt to run the plugin and, if
-    it cannot, UNinstall it from your private plugins.
 EOF
 }
 
@@ -193,9 +204,9 @@ packagePluginDir () {
     fi
     if test -n "$testRun"; then
         inputFileName=`echo $testRun | cut -d':' -f1`
-	pushd
+	pushd 1>/dev/null 2>&1
         cp $inputFileName $TMPDIR/${theDir}_tmp.$$/$theDir/. 
-	pushd
+	pushd 1>/dev/null 2>1
         echo $testRun > $theDir/.TEST_RUN_COMMAND
     fi
     tar cf - $theDir | gzip > $theDir.tar.gz
@@ -313,8 +324,9 @@ origArgs=$*
 testBuild=0
 versionBuiltWith=
 testRun=
-commentString="user requested update `date`"
+commentSource="user requested update `date`"
 dontRemoveTarball=0
+meEmail=visit-help@llnl.gov
 for options
 do
    case $1 in
@@ -380,12 +392,21 @@ do
              shift 2
          fi
          ;;
-      -c|-comment)
+      -me)
          if test -z "$2"; then
-             echo "Expected quoted string for $1"
+             echo "Expected email address for $1"
              optError=1
          else
-             commentString=$2
+             meEmail="$2"
+             shift 2
+         fi
+         ;;
+      -c|-comment)
+         if test -z "$2"; then
+             echo "Expected either quoted string or name of file for $1"
+             optError=1
+         else
+             commentSource=$2
              shift 2
          fi
          ;;
@@ -440,30 +461,28 @@ if test "$optError" = "1"; then
     echo "        -v  | -versions   quoted list of space separated version numbers(s)."
     echo "                          Multiple -v options are also allowed."
     echo "        -p  | -pack       Pack up the plugin into a tarball for email."
-    echo "        -i  | -install    Install the plugin."
+    echo "        -i  | -install    Install the plugin from a .tar.gz file."
     echo "        -u  | -uninstall  Uninstall the plugin."
     echo "        -tb | -testbuild  After packing up, test that it will build."
     echo "        -tr | -testrun <Filename:PlotType:VarName>"
     echo "                          After packing up, test that it will run with"
     echo "                          specified plot and variable. -tr implies -tb."
-    echo "        -dr | dontremove  Don't remove the tarball after its emailed."
+    echo "        -dr | -dontremove Don't remove the tarball after its emailed."
     echo "        -e  | -email      email address or quoted list of email addresses"
-    echo "                          to send tarball too."
-    echo "        -c  | -comment    Add a short comment to the email/readme file indicating"
-    echo "                          what is new about this plugin."
+    echo "                          to send tarball too. Multiple -email options are allowed"
+    echo "        -me               email address of person executing this script. Both the"
+    echo "                          sender and reply-to field of the email header will be set"
+    echo "                          to this address. Default is 'visit-help@llnl.gov'"
+    echo "        -c  | -comment <string>"
+    echo "                          Add a comment to the email/readme file indicating"
+    echo "                          what is new about this plugin. If <string> is the name"
+    echo "                          of a file, use the contents of the file."
     echo "        <plugin name>     plugin name to process (e.g. SAMI or CGNS)."
     echo "                          If -p is specified, $0 will search for directories with"
     echo "                          the given name to package up. If -i is specified, $0 will"
     echo "                          search for .tar.gz files with the given name."
     exit 1
 fi
-
-#
-# This is supposed to be the email of the person executing this
-# script (e.g. a VisIt developer most likely). I don't have
-# a good way of generating it from a login name.
-#
-execEmail=unknown
 
 #
 # Set the versionBuilWith variable if we every need it
@@ -552,11 +571,7 @@ if test $action = pack; then
 	chmod 700 $TMPDIR
         makeInstructionsFile mutt.msg 1>/dev/null 2>&1
 	while true; do
-            if test "$execEmail" = "unknown"; then
-                mutt -s "Updated $pluginName plugin" -a $pluginName.tar.gz $emailRecipients < mutt.msg >& $TMPDIR/mutt.errors
-            else
-                mutt -c $execEmail -s "Updated $pluginName plugin" -a $pluginName.tar.gz $emailRecipients < mutt.msg
-            fi
+            env EMAIL="$meEmail" REPLYTO="$meEmail" mutt -s "Updated $pluginName plugin" -a $pluginName.tar.gz $emailRecipients < mutt.msg >& $TMPDIR/mutt.errors
 	    if test -z "`cat $TMPDIR/mutt.errors`"; then
 	        break;
 	    else

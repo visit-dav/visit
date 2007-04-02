@@ -65,6 +65,10 @@ class DBOptionsAttributes;
 //    Hank Childs, Tue Sep 27 10:21:36 PDT 2005
 //    Use virtual inheritance.
 //
+//    Jeremy Meredith, Tue Mar 27 15:10:21 EDT 2007
+//    Added nblocks to OpenFile and save it so we don't have to 
+//    trust the meta data.
+//
 // ****************************************************************************
 
 class
@@ -81,8 +85,9 @@ avtXmdvWriter : virtual public avtDatabaseWriter
     vector<string> vectors;
     bool           varsAreNodal;
     bool           writeOutCoordinates;
+    int            nblocks;
 
-    virtual void   OpenFile(const std::string &);
+    virtual void   OpenFile(const std::string &, int);
     virtual void   WriteHeaders(const avtDatabaseMetaData *,
                                 std::vector<std::string> &, 
                                 std::vector<std::string> &,

@@ -79,12 +79,18 @@ using std::vector;
 //    Mark C. Miller, Tue Mar  9 09:13:03 PST 2004
 //    Added initialization of headerDbMd
 //
+//    Jeremy Meredith, Tue Mar 27 15:09:30 EDT 2007
+//    Initialize nblocks and meshtype -- these were added because we
+//    cannot trust what was in the metadata.
+//
 // ****************************************************************************
 
 avtSiloWriter::avtSiloWriter()
 {
     headerDbMd = 0;
     optlist = 0;
+    nblocks = 0;
+    meshtype = AVT_UNKNOWN_MESH;
 }
 
 
@@ -115,12 +121,18 @@ avtSiloWriter::~avtSiloWriter()
 //  Programmer: Hank Childs
 //  Creation:   September 11, 2003
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Mar 27 15:10:21 EDT 2007
+//    Added nblocks to this function and save it so we don't have to 
+//    trust the meta data.
+//
 // ****************************************************************************
 
 void
-avtSiloWriter::OpenFile(const string &stemname)
+avtSiloWriter::OpenFile(const string &stemname, int nb)
 {
     stem = stemname;
+    nblocks = nb;
 }
 
 
@@ -128,7 +140,7 @@ avtSiloWriter::OpenFile(const string &stemname)
 //  Method: avtSiloWriter::WriteHeaders
 //
 //  Purpose:
-//      This will right out the multi-vars for the Silo constructs.
+//      This will write out the multi-vars for the Silo constructs.
 //
 //  Programmer: Hank Childs
 //  Creation:   September 11, 2003
@@ -137,6 +149,10 @@ avtSiloWriter::OpenFile(const string &stemname)
 //    Mark C. Miller, Tue Mar  9 09:13:03 PST 2004
 //    Moved bulk of code to CloseFile. Stored away args in data members for
 //    eventual use in CloseFile
+//
+//    Jeremy Meredith, Tue Mar 27 15:10:43 EDT 2007
+//    Added meshtype as a member variable, and only start with the initial
+//    guess from the mesh meta-data.
 //
 // ****************************************************************************
 
@@ -154,6 +170,12 @@ avtSiloWriter::WriteHeaders(const avtDatabaseMetaData *md,
     headerScalars   = scalars;
     headerVectors   = vectors;
     headerMaterials = materials;
+
+    // Initial guess for mesh type.  Note that we're assuming there is
+    // one mesh type for all domains, but it's possible this is not
+    // always true.  Parallel unification of the actual chunks written
+    // out is needed to solve this correctly.
+    meshtype = mmd->meshType;
 
     ConstructChunkOptlist(md);
 }
@@ -176,20 +198,23 @@ avtSiloWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //    Changed to use test for DBOPT_EXTENTS_SIZE for code that adds extents
 //    options
 //
+//    Jeremy Meredith, Tue Mar 27 11:36:57 EDT 2007
+//    Use the saved mesh type and number of blocks instead of assuming
+//    the metadata was correct.
+//
 // ****************************************************************************
 
 void
 avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd)
 {
     int   i,j,k;
-    int nblocks = mmd->numBlocks;
 
     //
     // Determine what the Silo type is.
     //
     int *meshtypes = new int[nblocks];
     int silo_mesh_type = DB_INVALID_OBJECT;
-    switch (mmd->meshType)
+    switch (meshtype)
     {
       case AVT_RECTILINEAR_MESH:
       case AVT_CURVILINEAR_MESH:
@@ -299,6 +324,10 @@ avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd)
 //    Changed code that outputs extents options to use DBOPT_EXTENTS_SIZE for
 //    conditional compilation
 //
+//    Jeremy Meredith, Tue Mar 27 11:36:57 EDT 2007
+//    Use the saved mesh type and number of blocks instead of assuming
+//    the metadata was correct.
+//
 // ****************************************************************************
 
 void
@@ -306,14 +335,13 @@ avtSiloWriter::ConstructMultivar(DBfile *dbfile, const string &sname,
                                  const avtMeshMetaData *mmd)
 {
     int   i,j,k;
-    int nblocks = mmd->numBlocks;
 
     //
     // Determine what the Silo type is.
     //
     int *vartypes = new int[nblocks];
     int silo_var_type = DB_INVALID_OBJECT;
-    switch (mmd->meshType)
+    switch (meshtype)
     {
       case AVT_RECTILINEAR_MESH:
       case AVT_CURVILINEAR_MESH:
@@ -429,6 +457,11 @@ avtSiloWriter::ConstructMultivar(DBfile *dbfile, const string &sname,
 //  Programmer: Hank Childs
 //  Creation:   September 12, 2003
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Mar 27 11:36:57 EDT 2007
+//    Use the saved mesh type and number of blocks instead of assuming
+//    the metadata was correct.
+//
 // ****************************************************************************
 
 void
@@ -436,7 +469,6 @@ avtSiloWriter::ConstructMultimat(DBfile *dbfile, const string &mname,
                                  const avtMeshMetaData *mmd)
 {
     int   i;
-    int nblocks = mmd->numBlocks;
 
     //
     // Construct the names for each mat
@@ -520,6 +552,13 @@ avtSiloWriter::ConstructChunkOptlist(const avtDatabaseMetaData *md)
 //    Nonetheless, PDB only checks during file creation and otherwise silently
 //    ignores the setting.
 //
+//    Jeremy Meredith, Tue Mar 27 11:36:57 EDT 2007
+//    Save off the actual mesh type we encountered, as this may differ
+//    from what was in the metadata.
+//
+//    Hank Childs, Wed Mar 28 10:12:01 PDT 2007
+//    Name the file differently for single block.
+//
 // ****************************************************************************
 
 void
@@ -530,7 +569,11 @@ avtSiloWriter::WriteChunk(vtkDataSet *ds, int chunk)
     // have the same name.  Set up that file now.
     //
     char filename[1024];
-    sprintf(filename, "%s.%d.silo", stem.c_str(), chunk);
+    if (nblocks > 1)
+        sprintf(filename, "%s.%d.silo", stem.c_str(), chunk);
+    else
+        sprintf(filename, "%s.silo", stem.c_str(), chunk);
+
 #ifdef E_CHECKSUM
     int oldEnable = DBSetEnableChecksums(0);
 #endif
@@ -546,18 +589,22 @@ avtSiloWriter::WriteChunk(vtkDataSet *ds, int chunk)
     switch (ds->GetDataObjectType())
     {
        case VTK_UNSTRUCTURED_GRID:
+         meshtype = AVT_UNSTRUCTURED_MESH;
          WriteUnstructuredMesh(dbfile, (vtkUnstructuredGrid *) ds, chunk);
          break;
 
        case VTK_STRUCTURED_GRID:
+         meshtype = AVT_CURVILINEAR_MESH;
          WriteCurvilinearMesh(dbfile, (vtkStructuredGrid *) ds, chunk);
          break;
 
        case VTK_RECTILINEAR_GRID:
+         meshtype = AVT_RECTILINEAR_MESH;
          WriteRectilinearMesh(dbfile, (vtkRectilinearGrid *) ds, chunk);
          break;
 
        case VTK_POLY_DATA:
+         meshtype = AVT_UNSTRUCTURED_MESH;
          WritePolygonalMesh(dbfile, (vtkPolyData *) ds, chunk);
          break;
 
@@ -590,6 +637,9 @@ avtSiloWriter::WriteChunk(vtkDataSet *ds, int chunk)
 //    Nonetheless, PDB only checks during file creation and otherwise silently
 //    ignores the setting.
 //
+//    Hank Childs, Wed Mar 28 10:19:18 PDT 2007
+//    Don't write a root file if there is only one block.
+//
 // ****************************************************************************
 
 void
@@ -599,12 +649,16 @@ avtSiloWriter::CloseFile(void)
  
     const avtMeshMetaData *mmd = headerDbMd->GetMesh(0);
 
-
     // free the optlist
     if (optlist != 0)
     {
         DBFreeOptlist(optlist);
         optlist = 0;
+    }
+
+    if (nblocks == 1)
+    {
+        return;
     }
 
     if (PAR_Rank() == 0)
@@ -630,7 +684,6 @@ avtSiloWriter::CloseFile(void)
 
         DBClose(dbfile);
     }
-
 }
 
 

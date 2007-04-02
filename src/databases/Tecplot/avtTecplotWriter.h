@@ -64,6 +64,9 @@ class vtkUnstructuredGrid;
 //    Hank Childs, Tue Sep 27 10:21:36 PDT 2005
 //    Use virtual inheritance.
 //
+//    Jeremy Meredith, Tue Mar 27 17:03:47 EDT 2007
+//    Added numblocks (currently ignored) to the OpenFile interface.
+//
 // ****************************************************************************
 
 class
@@ -77,7 +80,7 @@ avtTecplotWriter : public virtual avtDatabaseWriter
     std::string    stem;
     ofstream       file;
 
-    virtual void   OpenFile(const std::string &);
+    virtual void   OpenFile(const std::string &, int);
     virtual void   WriteHeaders(const avtDatabaseMetaData *,
                                 std::vector<std::string> &, 
                                 std::vector<std::string> &,

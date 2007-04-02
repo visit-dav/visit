@@ -1833,6 +1833,55 @@ VisWinPlots::DisableExternalRenderRequests(void)
     return extRenderedImagesActor->DisableExternalRenderRequests();
 }
 
+// ****************************************************************************
+//  Method: VisWinPlots::IsMakingExternalRenderRequests
+//
+//  Purpose: Query externally rendered images actor to see if it is making
+//  requests
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   March 27, 2007 
+//
+// ****************************************************************************
+
+bool
+VisWinPlots::IsMakingExternalRenderRequests(void) const
+{
+    return extRenderedImagesActor->IsMakingExternalRenderRequests();
+}
+
+// ****************************************************************************
+//  Method: VisWinPlots::GetAverageExternalRenderingTime
+//
+//  Purpose: Return average rendering time for last 5 most recent external
+//  renders 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   March 27, 2007 
+//
+// ****************************************************************************
+
+double
+VisWinPlots::GetAverageExternalRenderingTime(void) const
+{
+    return extRenderedImagesActor->GetAverageRenderingTime();
+}
+
+// ****************************************************************************
+//  Method: VisWinPlots::DoNextExternalRenderAsVisualQueue
+//
+//  Purpose: For next render only, render the 'in-progress' visual que 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   March 27, 2007 
+//
+// ****************************************************************************
+
+void
+VisWinPlots::DoNextExternalRenderAsVisualQueue(int w, int h, const double *c)
+{
+    extRenderedImagesActor->DoNextExternalRenderAsVisualQueue(w, h, c);
+}
 
 // ****************************************************************************
 //  Method: VisWinPlots::FullFrameOn

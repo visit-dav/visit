@@ -1133,3 +1133,49 @@ VisWindowProtectionProxy::ProxiedGetMaxPlotZShift()
 {
     return viswin->GetMaxPlotZShift();
 }
+
+// ****************************************************************************
+//  Method: VisWindowProtectionProxy::ProxiedIsMakingExternalRenderRequests
+//
+//  Purpose: Query of the window is making external render requests
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   March 28, 2007 
+//
+// ***************************************************************************
+bool
+VisWindowProtectionProxy::ProxiedIsMakingExternalRenderRequests(void) const
+{
+    return viswin->IsMakingExternalRenderRequests();
+}
+
+// ****************************************************************************
+//  Method: VisWindowProtectionProxy::ProxiedGetAverageExternalRenderingTime
+//
+//  Purpose: Return average rendering time for external render requests 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   March 28, 2007 
+//
+// ***************************************************************************
+double
+VisWindowProtectionProxy::ProxiedGetAverageExternalRenderingTime(void) const
+{
+    return viswin->GetAverageExternalRenderingTime();
+}
+
+// ****************************************************************************
+//  Method: VisWindowProtectionProxy::ProxiedDoNextExternalRenderAsVisualQueue
+//
+//  Purpose: Force next render to render only the 'in-progress' visual queue
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   March 28, 2007 
+//
+// ***************************************************************************
+void
+VisWindowProtectionProxy::ProxiedDoNextExternalRenderAsVisualQueue(
+    int w, int h, const double *c)
+{
+    viswin->DoNextExternalRenderAsVisualQueue(w,h,c);
+};

@@ -65,6 +65,10 @@
 //    Jeremy Meredith, Wed Feb 16 15:01:40 PST 2005
 //    Initialized members to disable MIR and Expressions.
 //
+//    Jeremy Meredith, Tue Mar 27 17:16:23 EDT 2007
+//    Added a saved pipeline spec in case we need to re-execute the
+//    pipeline to get the requested variables.
+//
 // ****************************************************************************
 
 avtDatabaseWriter::avtDatabaseWriter()
@@ -79,6 +83,7 @@ avtDatabaseWriter::avtDatabaseWriter()
     shouldChangeTotalZones = false;
     nTargetChunks = 1;
     targetTotalZones = 1;
+    savedPipelineSpec = NULL;
 }
 
 
@@ -197,6 +202,16 @@ avtDatabaseWriter::Write(const std::string &filename,
 //    Hank Childs, Thu Mar 30 12:05:56 PST 2006
 //    Do not assume we are writing a mesh.  It might be a curve.
 //
+//    Jeremy Meredith, Tue Mar 27 17:11:14 EDT 2007
+//    Fixed a number of bugs:  (a) in parallel with all or specified
+//    variables, all processors execute and save all domains, (b) chunk
+//    IDs are not guaranteed to be unique or sequential, (c) the number
+//    of domains/blocks is incorrectly taken from the metadata instead
+//    of using what was actually in the data tree.
+//
+//    Hank Childs, Wed Mar 28 10:29:36 PDT 2007
+//    Add support for "default".
+//
 // ****************************************************************************
 
 void
@@ -221,8 +236,11 @@ avtDatabaseWriter::Write(const std::string &filename,
         // here.
         //
         avtTerminatingSource *src = dob->GetTerminatingSource();
-        avtPipelineSpecification_p spec = 
-                                        src->GetGeneralPipelineSpecification();
+        avtPipelineSpecification_p spec;
+        if (*savedPipelineSpec)
+            spec = savedPipelineSpec;
+        else
+            spec = src->GetGeneralPipelineSpecification();
         avtDataSpecification_p ds = spec->GetDataSpecification();
         std::string meshname;
         if (md->GetNumMeshes() > 0)
@@ -230,7 +248,8 @@ avtDatabaseWriter::Write(const std::string &filename,
         else if (md->GetNumCurves() > 0)
             meshname = md->GetCurve(0)->name;
         else
-            EXCEPTION0(ImproperUseException);
+            EXCEPTION1(ImproperUseException,
+                       "No meshes or curves appear to exist");
     
         //
         // We want to process all of the variables in the dataset, so dummy up
@@ -241,6 +260,9 @@ avtDatabaseWriter::Write(const std::string &filename,
         {
             for (j = 0 ; j < varlist.size() ; j++)
             {
+                if (varlist[j] == "default")
+                    varlist[j] = ds->GetVariable();
+
                 for (i = 0 ; i < md->GetNumScalars() ; i++)
                 {
                     const avtScalarMetaData *smd = md->GetScalar(i);
@@ -352,6 +374,11 @@ avtDatabaseWriter::Write(const std::string &filename,
         //
         // Actually force the read of the data.
         //
+        // Note: if we attempt to export in the middle
+        // of an already existing pipeline (e.g. via a
+        // hypothetical Export Operator, this call 
+        // needs to be skipped.)
+        //
         dob->Update(spec);
     }
     else
@@ -370,14 +397,40 @@ avtDatabaseWriter::Write(const std::string &filename,
     }
 
     //
+    // Get the data tree
+    //
+    avtDataTree_p rootnode = GetInputDataTree();
+
+    //
+    // In parallel, we need to find a start chunk ID for this processor
+    // to guarantee that chunk IDs go from 0..n-1 across all processors.
+    // 
+    int  numMyChunks = rootnode->GetNumberOfLeaves();
+    int  arrlen = PAR_Size()+1;
+    int *startIndexArrayTmp = new int[arrlen];
+    int *startIndexArray = new int[arrlen];
+    for (int i=0; i<arrlen; i++)
+        startIndexArrayTmp[i] = (i>PAR_Rank()) ? numMyChunks : 0;
+    SumIntArrayAcrossAllProcessors(startIndexArrayTmp,startIndexArray,arrlen);
+    int numTotalChunks = startIndexArray[arrlen-1];
+    int startIndex = startIndexArray[PAR_Rank()];
+    delete[] startIndexArrayTmp;
+    delete[] startIndexArray;
+
+    if (numTotalChunks == 0)
+    {
+        EXCEPTION1(ImproperUseException, "Dataset to export was empty. "
+                   "It is possible an invalid variable was requested.");
+    }
+
+    //
     // Call virtual function that the derived type re-defines to do the
     // actual writing.  All of the remaining code is devoted to writing out
     // the file.
     //
-    OpenFile(filename);
+    OpenFile(filename, numTotalChunks);
     WriteHeaders(md, scalarList, vectorList, materialList);
 
-    avtDataTree_p rootnode = GetInputDataTree();
     std::vector<avtDataTree_p> nodelist;
     nodelist.push_back(rootnode);
 
@@ -385,6 +438,7 @@ avtDatabaseWriter::Write(const std::string &filename,
     // This 'for' loop is a bit tricky.  We are adding to the nodelist as we
     // go, so nodelist.size() keeps going.  This is in lieu of recursion.
     //
+    int chunkID = startIndex;
     for (int cur_index = 0 ; cur_index < nodelist.size() ; cur_index++)
     {
         avtDataTree_p dt = nodelist[cur_index];
@@ -398,11 +452,8 @@ avtDatabaseWriter::Write(const std::string &filename,
         else
         {
             vtkDataSet *in_ds = dt->GetDataRepresentation().GetDataVTK();
-            int chunk = dt->GetDataRepresentation().GetDomain();
-            if (md->GetFormatCanDoDomainDecomposition())
-                chunk = PAR_Rank();
-
-            WriteChunk(in_ds, chunk);
+            WriteChunk(in_ds, chunkID);
+            chunkID++;
         }
     }
 
@@ -410,3 +461,24 @@ avtDatabaseWriter::Write(const std::string &filename,
 }
 
 
+// ****************************************************************************
+//  Method:  avtDatabaseWriter::SetPipelineSpecToUse
+//
+//  Purpose:
+//    Save a pipeline specification to use when re-executing a pipeline.
+///   If this is not set by the caller, then all processors will
+//    get all domains if the pipeline re-executes, which is a problem
+//    in parallel.
+//
+//  Arguments:
+//    ps         the pipeline specification to use later
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 28, 2007
+//
+// ****************************************************************************
+void
+avtDatabaseWriter::SetPipelineSpecToUse(avtPipelineSpecification_p ps)
+{
+    savedPipelineSpec = ps;
+}

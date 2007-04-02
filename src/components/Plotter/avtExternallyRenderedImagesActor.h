@@ -42,8 +42,8 @@
 #ifndef AVT_EXTERNALLY_RENDERED_IMAGES_ACTOR_H
 #define AVT_EXTERNALLY_RENDERED_IMAGES_ACTOR_H
 #include <plotter_exports.h>
+
 #include <map>
-#include <vector>
 
 #include <avtDataObject.h>
 #include <VisCallback.h>
@@ -54,6 +54,8 @@ class     vtkActor2D;
 class     vtkCamera;
 class     vtkImageData;
 class     vtkImageMapper;
+class     vtkTextMapper;
+class     vtkTextProperty;
 class     vtkMatrix4x4;
 class     vtkRenderer;
 
@@ -122,6 +124,11 @@ class     vtkRenderer;
 //
 //    Mark C. Miller, Fri Jul 21 08:05:15 PDT 2006
 //    To support stereo SR mode, added vtkCamera argument to PrepareForRender
+//
+//    Mark C. Miller, Wed Mar 28 15:56:15 PDT 2007
+//    Added IsMakingExternalRenderRequests, GetAverageExternalRenderingTime
+//    and DoNextExternalRenderAsVisualQueue to support the 'in-progress'
+//    visual queue for SR mode.
 // ****************************************************************************
 
 class PLOTTER_API avtExternallyRenderedImagesActor
@@ -147,7 +154,7 @@ class PLOTTER_API avtExternallyRenderedImagesActor
 
     // used to temporarily control visibility of ERIA while its in a window
     bool                 SetVisibility(const bool mode);
-    bool                 GetVisibility();
+    bool                 GetVisibility() const;
 
     // like Set/Get but used to set and restore to value before set
     bool                 SaveVisibility(void *theObj, const bool mode);
@@ -156,6 +163,11 @@ class PLOTTER_API avtExternallyRenderedImagesActor
     // used to enable and disable external render requests 
     bool                 EnableExternalRenderRequests(void);
     bool                 DisableExternalRenderRequests(void);
+
+    bool                 IsMakingExternalRenderRequests(void) const;
+    double               GetAverageRenderingTime(void) const;
+    void                 DoNextExternalRenderAsVisualQueue(int width,
+                             int height, const double *color);
 
   private:
 
@@ -172,11 +184,20 @@ class PLOTTER_API avtExternallyRenderedImagesActor
     // ALL externally rendered images in that vis window. 
     vtkActor2D          *myActor;
     vtkImageMapper      *myMapper;
+    vtkTextMapper       *visualQueueMapper;
+    vtkTextProperty     *visualQueueProps;
     vtkImageData        *dummyImage;
     vtkImageData        *lastNonDummyImage;
 
     VisCallbackWithDob          *extRenderCallback;
     void                        *extRenderCallbackArgs;
+
+    double               renderTimeHistory[5];
+    int                  rtIdx;
+    bool                 doNextExternalRenderAsVisualQueue;
+    int                  nextWidth;
+    int                  nextHeight;
+    double               nextForegroundColor[3];
 };
 
 

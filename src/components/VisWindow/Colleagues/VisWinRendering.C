@@ -579,6 +579,10 @@ VisWinRendering::EnableUpdates(void)
 //    Hank Childs, Wed Mar  1 10:05:25 PST 2006
 //    Look for exceptions that occurred during a Render.
 //
+//    Mark C. Miller, Wed Mar 28 15:56:15 PDT 2007
+//    Added logic for an 'extra' render so that we can render the 'in-progress'
+//    visual queue while in SR mode.
+//
 // ****************************************************************************
 
 void
@@ -593,6 +597,19 @@ VisWinRendering::Render()
     {
         if (mediator.UpdatesEnabled() && !avtCallback::GetNowinMode())
         {
+            // Do an extra render for 'in progress' visual queue if
+            // average time to ender is more than 2 seconds
+            if (mediator.IsMakingExternalRenderRequests() &&
+                mediator.GetAverageExternalRenderingTime() > 2.0)
+            {
+                int w, h;
+                double color[3];
+                GetSize(w, h);
+                mediator.GetForegroundColor(color);
+                mediator.DoNextExternalRenderAsVisualQueue(w,h,color);
+                GetRenderWindow()->Render();
+            }
+
             avtCallback::ClearRenderingExceptions();
             GetRenderWindow()->Render();
             std::string errorMsg = avtCallback::GetRenderingException();

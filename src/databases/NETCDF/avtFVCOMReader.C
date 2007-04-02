@@ -79,20 +79,7 @@ avtFVCOMReader::avtFVCOMReader(const char *filename)
 {
   fileObject = new NETCDFFileObject(filename);
 
-  xvals=0;
-  yvals=0;
-  zvals=0;
-  SigLayers=0;
-  SigLevels=0;
-  latvals=0;
-  lonvals=0;
-  nvvals=0;
-  egid=0;
-  ngid=0;
-  dimSizes=0;
-
-  NeedDimensions=true;
-  NeedGridVariables=true;
+  InitializeReader();
 
 }
 
@@ -100,6 +87,29 @@ avtFVCOMReader::avtFVCOMReader(const char *filename, NETCDFFileObject *f)
 {
   fileObject = f;
 
+  InitializeReader();
+
+}
+
+
+// ****************************************************************************
+// Method: avtFVCOMReader::InitializeReader
+//
+// Purpose: 
+//   Explicitely initialize all variables used in the reader.
+//
+// Programmer: David Stuebe
+// Creation:   Wed March 28 16:18:57 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+avtFVCOMReader::InitializeReader()
+{
+  debug4<< "avtFVCOMReader::InitializeReader;"<< endl;
+
+  //Initialize dynamic memory variables
   xvals=0;
   yvals=0;
   zvals=0;
@@ -111,11 +121,72 @@ avtFVCOMReader::avtFVCOMReader(const char *filename, NETCDFFileObject *f)
   egid=0;
   ngid=0;
   dimSizes=0;
-
+  
+  //Initialize boolen variables
   NeedDimensions=true;
   NeedGridVariables=true;
-
+  IsGeoRef=false;
+  xstate=false;
+  ystate=false;
+  hstate=false;
+  zstate=false;
+  latstate=false;
+  lonstate=false;
+  nodestate=false;
+  elemstate=false;
+  siglaystate=false;
+  siglevstate=false;
+  mesh1=false;
+  mesh2=false;
+  mesh3=false;
+  mesh4=false;
+  mesh5=false;
+  
+  
+  
+  //Initialize Integer variables
+  status=0;
+  ncid=0;
+  nDims=0;
+  nVars=0;
+  nGlobalAtts=0;
+  unlimitedDimension=0;
+  nScalarID=0;
+  nNodeID=0;
+  nElemID=0;
+  nSiglayID=0;
+  nSiglevID=0;
+  nThreeID=0;
+  nFourID=0;
+  nMaxnodeID=0;
+  nMaxelemID=0;
+  nTimeID=0;
+  dimID=0;
+  nScalar=0;
+  nNode=0;
+  nElem=0;
+  nSiglay=0;
+  nSiglev=0;
+  nThree=0;
+  nFour=0;
+  nMaxnode=0;
+  nMaxelem=0;
+  nTime=0;
+  VarnDims=0;
+  VarnAtts=0;
+  for(int i = 0; i < NC_MAX_VAR_DIMS; ++i)
+    VarDimIDs[i]=0;
+  VarID=0;
+  
+  //Initialize strings
+  SigLayCoordType=' ';
+  SigLevCoordType=' ';
+  
+  
+  
+  debug4<< "avtFVCOMReader::InitializeReader: end;"<< endl;
 }
+
 
 // ****************************************************************************
 // Method: avtFVCOMReader::~avtFVCOMReader
@@ -560,8 +631,6 @@ avtFVCOMReader::GetDimensions()
   if (status != NC_NOERR) fileObject-> HandleError(status);
   else zstate=true; 
 
-
-
   status = nc_inq_varid (ncid, "h", &VarID);
   if (status != NC_NOERR) fileObject-> HandleError(status);
   else hstate=true;
@@ -1000,6 +1069,7 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
       mesh5= xstate * ystate * siglevstate * hstate * zstate;
     }
 
+
   // Add mesh exists statement to check if mesh loaded!
   std::map<std::string, bool> meshExists;
 
@@ -1289,6 +1359,17 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             ReadStringAttribute(VarName,"units", smd->units);
           md->Add(smd);
           componentExists[VarName] = true;
+
+          // This catches all the usual scalars and puts them on cellcent!
+          std::string ccvarname("CellCent_");
+          ccvarname+= VarName;
+          avtScalarMetaData *ccsmd = 
+            new avtScalarMetaData(ccvarname.c_str(),SigmaLevel_Mesh, AVT_ZONECENT);
+          ccsmd->hasUnits = fileObject->
+            ReadStringAttribute(VarName,"units", smd->units);
+          md->Add(ccsmd);
+          componentExists[ccvarname] = true;
+
         }
       // SIMGALEVEL MESH
       else if (strcmp(Var_Mesh.c_str(),SigmaLevel_Mesh.c_str())==0 &&
@@ -1321,7 +1402,7 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         {
           if (VarDimIDs[0] == nNodeID )
             {
-              if (strncmp(VarName, "h",1)==0)
+              if (strcmp(VarName, "h")==0)
                 {
                   // THIS GETS THE BATHYMETRY, WHICH HAS THE SAME DIMESIONS
                   // AS THE GRID VARIABLES.
@@ -1456,6 +1537,17 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                 ReadStringAttribute(VarName,"units", smd->units);
               md->Add(smd);
               componentExists[VarName] = true;
+
+              // This catches all the usual scalars and puts them on cellcent!
+              std::string ccvarname("CellCent_");
+              ccvarname+= VarName;
+              avtScalarMetaData *ccsmd = 
+                new avtScalarMetaData(ccvarname.c_str(),SigmaLevel_Mesh, AVT_ZONECENT);
+              ccsmd->hasUnits = fileObject->
+                ReadStringAttribute(VarName,"units", smd->units);
+              md->Add(ccsmd);
+              componentExists[ccvarname] = true;
+
             }
           else if (VarDimIDs[0] == nTimeID &&
                    VarDimIDs[1] == nSiglevID &&
@@ -1566,6 +1658,26 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
       md->Add(theta_md);
       componentExists["Theta{S,T,P,0}"] = true;
 
+
+      // ADDED the variables again, interpolated to the sigmalevel mesh!
+      avtScalarMetaData *dens3_mdl = new avtScalarMetaData("CellCent_Dens3{S,Theta,P}",
+                                                          SigmaLevel_Mesh, AVT_ZONECENT);
+      dens3_mdl->hasUnits = true;
+      dens3_mdl->units = "kg/m3";
+      md->Add(dens3_mdl);
+
+      avtScalarMetaData *dens_mdl = new avtScalarMetaData("CellCent_Dens{S,T,P}",
+                                                         SigmaLevel_Mesh, AVT_ZONECENT);
+      dens_mdl->hasUnits = true;
+      dens_mdl->units = "kg/m3";
+      md->Add(dens_mdl);
+
+      avtScalarMetaData *theta_mdl = new avtScalarMetaData("CellCent_Theta{S,T,P,0}",
+                                                          SigmaLevel_Mesh, AVT_ZONECENT);
+      theta_mdl->hasUnits = true;
+      theta_mdl->units = "Degrees_C";
+      md->Add(theta_mdl);
+ 
       // Removed for 1.5.4 release
       //      avtScalarMetaData *dens2_md = new avtScalarMetaData("Dens2(S,Theta,0)",
       //          SigmaLayer_Mesh, AVT_NODECENT);
@@ -1961,7 +2073,7 @@ avtFVCOMReader::GetMesh(int timestate, const char *mesh, avtVariableCache *cache
   // nvvals[i=2*nElem,i<3*nElem] are the third verticies of each cell
   // ***************************************************************
   // nvvals as stored from fvcom counts nodes from 1 to nNodes
-  // Visit must cound from 0 to nNodes-1
+  // Visit must count from 0 to nNodes-1
   // ***************************************************************
 
   debug4 << mName << "Looking to see if Mesh is in cache" << endl;
@@ -2799,20 +2911,62 @@ avtFVCOMReader::GetVar(int timestate, const char *Variable, avtVariableCache *ca
     {
       debug4 << mName << "Variable is Dens3"<< endl;
       vtkDataArray *rv =  DENS3(timestate, cache);
+      debug4 << mName << "Add Variable to cache!" << endl;
+      cache->CacheVTKObject(cachekey.c_str(), avtVariableCache::DATASET_NAME, timestate, domain,
+                        matname, rv);
       return rv;
     }  
   else if (strcmp("Dens{S,T,P}", Variable)==0)
     {
       debug4 << mName << "Variable is Dens"<< endl;
       vtkDataArray *rv =  DENS(timestate, cache);
+      cache->CacheVTKObject(cachekey.c_str(), avtVariableCache::DATASET_NAME, timestate, domain,
+                            matname, rv);
       return rv;
     }  
   else if (strcmp("Theta{S,T,P,0}", Variable)==0)
     {
       debug4 << mName << "Variable is Theta"<< endl;
       vtkDataArray *rv =  THETA(timestate, cache);
+      cache->CacheVTKObject(cachekey.c_str(), avtVariableCache::DATASET_NAME, timestate, domain,
+                            matname, rv);
       return rv;
     }  
+  // add again, interpolated to sigma level mesh zones
+  else if (strncmp("CellCent_", Variable,9)==0)
+    {
+      std::string strvarname(Variable);
+      int namelength;
+      namelength = strlen(Variable);
+      char vnm[namelength];
+      size_t tmplen=namelength-9;
+      int length;
+      length=strvarname.copy(vnm,tmplen,9);
+      vnm[length]='\0';
+
+      debug4 << mName << "Variable: "<< vnm << endl;
+      vtkDataArray *tmp =  GetVar(timestate,vnm, cache);
+      int ntuples = nElem * (nSiglev-1);
+      vtkFloatArray *rv = vtkFloatArray::New();
+      rv->SetNumberOfTuples(ntuples);
+      float rval;
+      for(int i = 0; i < (nSiglev-1) ; i++)
+        for(int j = 0; j < nElem ; j++)
+          {
+            rval=0;
+            for(int k = 0; k < 3 ; k++)
+              {
+                int ind = nvvals[j+k*nElem] -1;
+                rval += tmp->GetComponent(ind+nNode*i,0);
+              }
+            rval /=3.0;
+            rv->SetTuple1(j+i*nElem, rval);
+          }
+      tmp->Delete();
+      debug4 << mName << "Returning variable: " << Variable << endl;
+      return rv;
+    }  
+
 
   //=================================================
   //=================================================
@@ -3214,7 +3368,7 @@ avtFVCOMReader::GetVectorVar(int timestate, const char *var, avtVariableCache *c
       int ntuples = uvel->GetNumberOfTuples();
       debug4 << "ntuples=" << ntuples << endl;
 
-      const int ncomps = 3;  // This is the rank of the vector
+      int ncomps = 3;  // This is the rank of the vector
       // use three even for the 2d Vel- setting ncomps=2 is buggy...
       rv->SetNumberOfComponents(ncomps);
       rv->SetNumberOfTuples(ntuples);
@@ -3264,7 +3418,7 @@ avtFVCOMReader::GetVectorVar(int timestate, const char *var, avtVariableCache *c
       int ntuples = uvel->GetNumberOfTuples();
       debug4 << "ntuples=" << ntuples << endl;
 
-      const int ncomps = 3;  // This is the rank of the vector
+      int ncomps = 3;  // This is the rank of the vector
       // use three even for the 2d Vel- setting ncomps=2 is buggy...
       rv->SetNumberOfComponents(ncomps);
       rv->SetNumberOfTuples(ntuples);
@@ -3314,7 +3468,7 @@ avtFVCOMReader::GetVectorVar(int timestate, const char *var, avtVariableCache *c
       int ntuples = uvel->GetNumberOfTuples();
       debug4 << "ntuples=" << ntuples << endl;
 
-      const int ncomps = 3;  // This is the rank of the vector
+      int ncomps = 3;  // This is the rank of the vector
       // use three even for the 2d Vel- setting ncomps=2 is buggy...
       rv->SetNumberOfComponents(ncomps);
       rv->SetNumberOfTuples(ntuples);
@@ -3368,7 +3522,7 @@ avtFVCOMReader::GetVectorVar(int timestate, const char *var, avtVariableCache *c
 
       debug4 << "ntuples=" << ntuples << endl;
 
-      const int ncomps = 3;  // This is the rank of the vector
+      int ncomps = 3;  // This is the rank of the vector
       rv->SetNumberOfComponents(ncomps);
       rv->SetNumberOfTuples(ntuples);
       float one_entry[ncomps];
@@ -3719,7 +3873,7 @@ avtFVCOMReader::DENS(int timestate, avtVariableCache *cache)
             // Compute density (kg/m3) at standard one atmosphere pressure    
             // Loaded Theta above! Converted from temp:
 
-            debug4<< "sval:"<<sval<< " tval:"<<tval<<" pbar:"<<pbar<<endl;
+            // debug4<< "sval:"<<sval<< " tval:"<<tval<<" pbar:"<<pbar<<endl;
             double rho = SVAN(sval,tval,pbar);
             rv->SetTuple1(i, rho);
           }
