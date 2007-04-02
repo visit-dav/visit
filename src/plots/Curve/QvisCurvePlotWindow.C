@@ -74,6 +74,9 @@ QvisCurvePlotWindow::~QvisCurvePlotWindow()
 //   Kathleen Bonnell, Thu Oct 27 16:10:29 PDT 2005 
 //   Added showLegend.
 //   
+//   Kathleen Bonnell, Mon Oct 31 17:05:35 PST 2005
+//   Added cycleColors. 
+// 
 // ****************************************************************************
 
 void
@@ -93,13 +96,19 @@ QvisCurvePlotWindow::CreateWindowContents()
             this, SLOT(lineWidthChanged(int)));
     mainLayout->addWidget(lineWidth, 1,1);
 
+    cycleColors = new QCheckBox("Cycle colors", central, "cycleColors");
+    connect(cycleColors, SIGNAL(toggled(bool)),
+            this, SLOT(cycleColorsChanged(bool)));
+    mainLayout->addWidget(cycleColors, 2,0);
+
     // Create the single color button.
-    mainLayout->addWidget(new QLabel("Color", central, "colorLabel"),2,0);
+    colorLabel = new QLabel("Color", central, "colorLabel");
+    mainLayout->addWidget(colorLabel,2,1);
     color = new QvisColorButton(central, "colorButton");
     color->setButtonColor(QColor(255, 0, 0));
     connect(color, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(colorChanged(const QColor &)));
-    mainLayout->addWidget(color, 2, 1);
+    mainLayout->addWidget(color, 2, 2);
 
 
     showLabels = new QCheckBox("Labels", central, "showLabels");
@@ -149,6 +158,10 @@ QvisCurvePlotWindow::CreateWindowContents()
 //   Kathleen Bonnell, Thu Oct 27 16:10:29 PDT 2005 
 //   Added showLegend.
 //   
+//   Kathleen Bonnell, Mon Oct 31 17:05:35 PST 2005
+//   Added cycleColors, made the enabled state of color be dependent upon
+//   the value of cycleColors.
+//   
 // ****************************************************************************
 
 void
@@ -179,12 +192,15 @@ QvisCurvePlotWindow::UpdateWindow(bool doAll)
             break;
           case 2: //color
             { // new scope
-            QColor temp(atts->GetColor().Red(),
-                        atts->GetColor().Green(),
-                        atts->GetColor().Blue());
-            color->blockSignals(true);
-            color->setButtonColor(temp);
-            color->blockSignals(false);
+              if (color->isEnabled())
+              {
+                QColor temp(atts->GetColor().Red(),
+                            atts->GetColor().Green(),
+                            atts->GetColor().Blue());
+                color->blockSignals(true);
+                color->setButtonColor(temp);
+                color->blockSignals(false);
+              }
             }
             break;
           case 3: //showLabels
@@ -205,6 +221,11 @@ QvisCurvePlotWindow::UpdateWindow(bool doAll)
             break;
           case 7: //showLegend
             showLegend->setChecked(atts->GetShowLegend());
+            break;
+          case 8: //cycleColors
+            cycleColors->setChecked(atts->GetCycleColors());
+            color->setEnabled(!atts->GetCycleColors()); 
+            colorLabel->setEnabled(!atts->GetCycleColors()); 
             break;
         }
     }
@@ -374,6 +395,12 @@ QvisCurvePlotWindow::colorChanged(const QColor &color_)
     Apply();
 }
 
+void
+QvisCurvePlotWindow::cycleColorsChanged(bool val)
+{
+    atts->SetCycleColors(val);
+    Apply();
+}
 
 void
 QvisCurvePlotWindow::showLabelsChanged(bool val)

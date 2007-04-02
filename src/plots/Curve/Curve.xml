@@ -27,6 +27,9 @@
       <Field name="showLegend" label="Legend" type="bool">
         true
       </Field>
+      <Field name="cycleColors" label="cycleColors" type="bool">
+        true
+      </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>
       <Function name="CreateCompatible" user="false" member="true">
