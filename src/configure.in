@@ -620,6 +620,11 @@ dnl    Brad Whitlock, Fri Sep 15 10:31:23 PDT 2006
 dnl    Added support for GLEW library and removed GL_GLEXT_PROTOTYPES. Also
 dnl    fixed a problem with building beta versions on the Mac.
 dnl
+dnl    Mark C. Miller, Wed Oct 18 08:21:44 PDT 2006
+dnl    Made it handle situation where there was a libsiloh5.a but not also
+dnl    a libsilo.a in the DEFAULT_SILO_LIBRARY directory. Previously, it
+dnl    would attempt to find there a libsilo.a and if not, fail to correctly
+dnl    set SILO_LIB variable.
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1945,6 +1950,11 @@ else
             SILO_LIBDIR="$DEFAULT_SILO_LIBRARY"
             AC_MSG_RESULT(user specified ("$SILO_LIBDIR"))
             silo_keep_checking="no"
+	elif test -r "$DEFAULT_SILO_LIBRARY/libsiloh5.a"; then
+            SILO_LIBDIR="$DEFAULT_SILO_LIBRARY"
+            AC_MSG_RESULT(user specified ("$SILO_LIBDIR"))
+            silo_keep_checking="no"
+	    LIBSILO="libsiloh5.a"
         fi
     fi
 

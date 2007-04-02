@@ -115,6 +115,10 @@ void avtEnzoFileFormat::Grid::Print()
 //    Jeremy Meredith, Thu Aug 11 14:35:00 PDT 2005
 //    Fixed logical extents when there are multiple root grids.
 //
+//    Eric Brugger, Tue Oct 17 09:49:26 PDT 2006
+//    Removed coding to throw an exception if a non 2:1 refinement ratio
+//    was encountered.
+//
 // ****************************************************************************
 void avtEnzoFileFormat::Grid::DetermineExtentsInParent(vector<Grid> &grids)
 {
@@ -142,14 +146,6 @@ void avtEnzoFileFormat::Grid::DetermineExtentsInParent(vector<Grid> &grids)
             refinementRatio[2] = double(zdims[2]) / double(maxLogicalExtentsInParent[2]-minLogicalExtentsInParent[2]);
         else
             refinementRatio[2] = 1;
-
-        if (refinementRatio[0] != 2 ||
-            refinementRatio[1] != 2 ||
-            (dimension==3 && refinementRatio[2] != 2))
-        {
-            EXCEPTION1(ImproperUseException,
-                       "Found a refinement ratio that was not exactly 2.");
-        }
     }
     else
     {
@@ -1413,6 +1409,10 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
 //    Jeremy Meredith, Wed Aug  3 10:22:36 PDT 2005
 //    Added support for 2D files.
 //
+//    Eric Brugger, Tue Oct 17 09:49:26 PDT 2006
+//    Replaced the coding that hardcoded the refinement ratio at 2 with
+//    the actual refinement ratio.
+//
 // ****************************************************************************
 
 void
@@ -1466,26 +1466,49 @@ avtEnzoFileFormat::BuildDomainNesting()
             //
 
             // NOTE: this appears to be on a per-level basis, not a
-            //       per-grid basis.  We will just force them all to 
-            //       a 2:1 ratio for now.  There is no reason internally
+            //       per-grid basis.  There is no reason internally
             //       that refinement ratios could not change on a
             //       per-grid basis, but it is only stored on a per-
-            //       level basis
-            int ratio = 1;
-            vector<int> ratios(3);
-            ratios[0] = ratio;
-            ratios[1] = ratio;
-            ratios[2] = ratio;
-            dn->SetLevelRefinementRatios(0, ratios);
-            for (i = 1; i < numLevels; i++)
+            //       level basis.  Since the refinement ratios are
+            //       per-level and they are stored per-grid in the
+            //       reader, the per-grid ratios must be mapped to
+            //       a per-level basis and checked to make sure that
+            //       all the per-grid ratios are the same for a given
+            //       level.
+            int *levelRatios = new int[numLevels*3];   
+            for (i = 0; i < numLevels*3; i++)
             {
-                ratio = 2;
-                vector<int> ratios(3);
-                ratios[0] = ratio;
-                ratios[1] = ratio;
-                ratios[2] = ratio;
+                levelRatios[i] = -1;
+            }
+
+            for (i = 1; i <= numGrids; i++)
+            {
+                int level = grids[i].level;
+                if (levelRatios[level*3] == -1)
+                {
+                    levelRatios[level*3]   = int(grids[i].refinementRatio[0]);
+                    levelRatios[level*3+1] = int(grids[i].refinementRatio[1]);
+                    levelRatios[level*3+2] = int(grids[i].refinementRatio[2]);
+                }
+                else if (levelRatios[level*3]   != grids[i].refinementRatio[0] ||
+                         levelRatios[level*3+1] != grids[i].refinementRatio[1] ||
+                         levelRatios[level*3+2] != grids[i].refinementRatio[2])
+                {
+                    EXCEPTION1(ImproperUseException,
+                               "Refinement ratios not uniform for a level.");
+                }
+            }
+
+            vector<int> ratios(3);
+            for (i = 0; i < numLevels; i++)
+            {
+                ratios[0] = levelRatios[i*3];
+                ratios[1] = levelRatios[i*3+1];
+                ratios[2] = levelRatios[i*3+2];
                 dn->SetLevelRefinementRatios(i, ratios);
             }
+
+            delete [] levelRatios;
 
             //
             // set each domain's level, children and logical extents

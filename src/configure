@@ -9186,6 +9186,12 @@ else
             echo "$as_me:$LINENO: result: user specified (\"$SILO_LIBDIR\")" >&5
 echo "${ECHO_T}user specified (\"$SILO_LIBDIR\")" >&6
             silo_keep_checking="no"
+	elif test -r "$DEFAULT_SILO_LIBRARY/libsiloh5.a"; then
+            SILO_LIBDIR="$DEFAULT_SILO_LIBRARY"
+            echo "$as_me:$LINENO: result: user specified (\"$SILO_LIBDIR\")" >&5
+echo "${ECHO_T}user specified (\"$SILO_LIBDIR\")" >&6
+            silo_keep_checking="no"
+	    LIBSILO="libsiloh5.a"
         fi
     fi
 
@@ -11279,6 +11285,7 @@ case $SHORT_UNAME in
 
     # Set SHLIB_TMPDIR so that libraries are created directly in the lib directory.
     SHLIB_TMPDIR="$""(TOPDIR)/lib/"
+    COMPATIBILITY_VERSION=`sed -e "s/b//" VERSION`
     # Set SHLIB_LIBS so the right libraries are added to the link line but also ensure
     # that the shared library is created with a unique starting address so we can
     # prebind.
@@ -11289,7 +11296,6 @@ case $SHORT_UNAME in
     #
     # Targets for creating prebound plugins.
     #
-    COMPATIBILITY_VERSION=`sed -e "s/b//" VERSION`
     SHLIB_ILIBS="$""(ILIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libI$""(PLUGINNAME).dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
     SHLIB_GLIBS="$""(GLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libG$""(PLUGINNAME).dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
     SHLIB_SLIBS="$""(SLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libS$""(PLUGINNAME).dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
