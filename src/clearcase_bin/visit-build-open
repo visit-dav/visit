@@ -249,7 +249,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure >> ../buildlog 2>&1
+env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
 make -j 4 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.linux.tar.gz ..

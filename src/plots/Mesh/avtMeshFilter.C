@@ -372,15 +372,22 @@ avtMeshFilter::RefashionDataObjectInfo(void)
 //    Kathleen Bonnell, Tue Nov  2 10:37:14 PST 2004
 //    Handle point meshes differently.
 //
+//    Jeremy Meredith, Thu Aug 18 10:55:35 PDT 2005
+//    Don't turn on zone numbers for point meshes.  It doesn't make sense, and
+//    it can wind up doing strange things later (e.g. with pick -- see '6550).
+//
 // ****************************************************************************
  
 avtPipelineSpecification_p
 avtMeshFilter::PerformRestriction(avtPipelineSpecification_p spec)
 {
     avtPipelineSpecification_p rv = new avtPipelineSpecification(spec);
-    rv->GetDataSpecification()->TurnZoneNumbersOn();
-  
-    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
+
+    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() != 0)
+    {
+        rv->GetDataSpecification()->TurnZoneNumbersOn();
+    }
+    else
     {
         string pointVar = atts.GetPointSizeVar();
         avtDataSpecification_p dspec = spec->GetDataSpecification();

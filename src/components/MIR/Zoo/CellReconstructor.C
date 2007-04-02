@@ -78,6 +78,14 @@ CellReconstructor::~CellReconstructor()
 //    Jeremy Meredith, Thu Jun 24 10:38:05 PDT 2004
 //    Added Voxel and Pixel input shapes.
 //
+//    Jeremy Meredith, Thu Aug 18 13:27:25 PDT 2005
+//    There was a test for a "real clean" zone that assumed the material
+//    that wound up being clean would always have a positive (clean) entry
+//    in the original matlist array.  It turns out that occasionally there
+//    will be cells marked as mixed (negative) in the matlist array where
+//    all but one material have zero mix_vf's.  I changed the test slightly
+//    to account for this.
+//
 // ****************************************************************************
 void
 CellReconstructor::ReconstructCell(int cellid_, int celltype_,
@@ -120,7 +128,7 @@ CellReconstructor::ReconstructCell(int cellid_, int celltype_,
         // of 0.0, so we don't have to worry about other
         // materials intersecting with this one.  In other words,
         // these are the "real clean zones".
-        if (nm==1 && matno!=mat->GetMatlist()[cellid])
+        if (nm==1 && allZeros)
             continue;
 
         if (allZeros && nextOneAllZeros)
