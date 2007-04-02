@@ -13,7 +13,7 @@
 //  Class: avtDivergenceFilter
 //
 //  Purpose:
-//      A filter that calculates the divergence.  The curl takes in a vector 
+//      A filter that calculates the divergence.  Divergence takes in a vector 
 //      and produces a scalar.  This depends on several partial derivatives, 
 //      which are accomplished using the gradient expression.
 //

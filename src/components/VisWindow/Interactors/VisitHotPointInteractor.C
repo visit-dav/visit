@@ -704,6 +704,13 @@ VisitHotPointInteractor::EndLeftButtonAction()
 //    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
 //    Removed arguments to match vtk's new interactor api.  
 //
+//    Eric Brugger, Mon Aug 15 13:32:17 PDT 2005
+//    Modified the routine to no longer call AbortLeftButtonAction for
+//    the current interactor if it isn't in hot point mode.  The previous
+//    behavior caused AbortLeftButtonAction to be erroneously called
+//    twice, once for the hot point interactor and once for the current
+//    interactor.
+//
 // ****************************************************************************
 
 void
@@ -712,10 +719,6 @@ VisitHotPointInteractor::AbortLeftButtonAction()
     if (hotPointMode)
     {
         VisitInteractor::AbortLeftButtonAction();
-    }
-    else
-    {
-        currentInteractor->AbortLeftButtonAction();
     }
 }
 
@@ -832,6 +835,13 @@ VisitHotPointInteractor::EndMiddleButtonAction()
 //    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
 //    Removed arguments to match vtk's new interactor api.  
 //
+//    Eric Brugger, Mon Aug 15 13:32:17 PDT 2005
+//    Modified the routine to no longer call AbortMiddleButtonAction for
+//    the current interactor if it isn't in hot point mode.  The previous
+//    behavior caused AbortMiddleButtonAction to be erroneously called
+//    twice, once for the hot point interactor and once for the current
+//    interactor.
+//
 // ****************************************************************************
 
 void
@@ -840,10 +850,6 @@ VisitHotPointInteractor::AbortMiddleButtonAction()
     if (hotPointMode)
     {
         VisitInteractor::AbortMiddleButtonAction();
-    }
-    else
-    {
-        currentInteractor->AbortMiddleButtonAction();
     }
 }
 

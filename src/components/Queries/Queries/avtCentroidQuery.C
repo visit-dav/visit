@@ -15,6 +15,7 @@
 #include <vtkDataSet.h>
 #include <vtkVisItUtility.h>
 
+#include <avtAbsValFilter.h>
 #include <avtBinaryMultiplyFilter.h>
 #include <avtCallback.h>
 #include <avtParallel.h>
@@ -45,10 +46,16 @@ using     std::vector;
 //  Programmer: Hank Childs
 //  Creation:   May 19, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 12 15:25:07 PDT 2005
+//    Add absval.
+//
 // ****************************************************************************
 
 avtCentroidQuery::avtCentroidQuery()
 {
+    absval = new avtAbsValFilter;
     multiply = new avtBinaryMultiplyFilter;
     area = new avtVMetricArea;
     volume = new avtVMetricVolume;
@@ -65,10 +72,16 @@ avtCentroidQuery::avtCentroidQuery()
 //  Programmer: Hank Childs
 //  Creation:   May 19, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 12 15:25:07 PDT 2005
+//    Destruct absval.
+//
 // ****************************************************************************
 
 avtCentroidQuery::~avtCentroidQuery()
 {
+    delete absval;
     delete multiply;
     delete volume;
     delete area;
@@ -178,6 +191,11 @@ avtCentroidQuery::Execute(vtkDataSet *ds, const int dom)
 //  Programmer: Hank Childs
 //  Creation:   May 19, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 12 15:25:07 PDT 2005
+//    Use absolute value of the volume or area.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -211,14 +229,17 @@ avtCentroidQuery::ApplyFilters(avtDataObject_p inData)
         vf = volume;
     else
         vf = area;
-
-    if (useVar)
-        vf->SetOutputVariableName("avt_weights");
-    else
-        vf->SetOutputVariableName("avt_mass");
+    vf->SetOutputVariableName("avt_verdict");
     vf->SetInput(dob);
-    dob = vf->GetOutput();
  
+    absval->SetInput(vf->GetOutput());
+    absval->AddInputVariableName("avt_verdict");
+    if (useVar)
+        absval->SetOutputVariableName("avt_weights");
+    else
+        absval->SetOutputVariableName("avt_mass");
+    dob = absval->GetOutput();
+
     if (useVar)
     {
         multiply->SetInput(dob);

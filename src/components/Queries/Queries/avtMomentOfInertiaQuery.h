@@ -15,6 +15,7 @@
 class vtkDataSet;
 class vtkCell;
 
+class avtAbsValFilter;
 class avtBinaryMultiplyFilter;
 class avtVMetricVolume;
 
@@ -27,6 +28,11 @@ class avtVMetricVolume;
 //
 //  Programmer: Hank Childs
 //  Creation:   May 17, 2005
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 12 15:30:59 PDT 2005
+//    Add absval.
 //
 // ****************************************************************************
 
@@ -45,6 +51,7 @@ class QUERY_API avtMomentOfInertiaQuery : public avtDatasetQuery
     double                          I[9];
     avtVMetricVolume               *volume;
     avtBinaryMultiplyFilter        *multiply;
+    avtAbsValFilter                *absval;
 
     virtual void                    Execute(vtkDataSet *, const int);
     virtual void                    PreExecute(void);

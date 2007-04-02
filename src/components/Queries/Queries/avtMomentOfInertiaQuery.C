@@ -15,6 +15,7 @@
 #include <vtkDataSet.h>
 #include <vtkVisItUtility.h>
 
+#include <avtAbsValFilter.h>
 #include <avtBinaryMultiplyFilter.h>
 #include <avtCallback.h>
 #include <avtParallel.h>
@@ -44,10 +45,16 @@ using     std::vector;
 //  Programmer: Hank Childs
 //  Creation:   May 17, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 12 15:30:59 PDT 2005
+//    Added absval.
+//
 // ****************************************************************************
 
 avtMomentOfInertiaQuery::avtMomentOfInertiaQuery()
 {
+    absval = new avtAbsValFilter;
     multiply = new avtBinaryMultiplyFilter;
     volume = new avtVMetricVolume;
 }
@@ -61,12 +68,18 @@ avtMomentOfInertiaQuery::avtMomentOfInertiaQuery()
 //      because it causes problems for certain compilers.
 //
 //  Programmer: Hank Childs
-//  Creation:   May 17, 2004
+//  Creation:   May 17, 2005
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 12 15:30:59 PDT 2005
+//    Added absval.
 //
 // ****************************************************************************
 
 avtMomentOfInertiaQuery::~avtMomentOfInertiaQuery()
 {
+    delete absval;
     delete multiply;
     delete volume;
 }
@@ -204,6 +217,11 @@ avtMomentOfInertiaQuery::Execute(vtkDataSet *ds, const int dom)
 //  Programmer: Hank Childs
 //  Creation:   May 18, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 12 15:30:59 PDT 2005
+//    Added absval.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -232,12 +250,16 @@ avtMomentOfInertiaQuery::ApplyFilters(avtDataObject_p inData)
             useVar = true;
     }
 
-    if (useVar)
-        volume->SetOutputVariableName("avt_weights");
-    else
-        volume->SetOutputVariableName("avt_mass");
+    volume->SetOutputVariableName("avt_verdict");
     volume->SetInput(dob);
-    dob = volume->GetOutput();
+
+    if (useVar)
+        absval->SetOutputVariableName("avt_weights");
+    else
+        absval->SetOutputVariableName("avt_mass");
+    absval->AddInputVariableName("avt_verdict");
+    absval->SetInput(volume->GetOutput());
+    dob = absval->GetOutput();
  
     if (useVar)
     {
