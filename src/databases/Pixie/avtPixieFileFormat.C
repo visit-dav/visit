@@ -28,6 +28,7 @@
 #include <InvalidFilesException.h>
 #include <InvalidTimeStepException.h>
 #include <snprintf.h>
+#include <visit-hdf5.h>
 
 
 #define MAKE_SURE_THE_FILE_IS_NOT_TETRAD
@@ -1159,6 +1160,9 @@ avtPixieFileFormat::GetVar(int timestate, const char *varname)
 //   Modified the reader to handle gaps in the cycle numbering (e.g. allowing
 //   0, 10, 20, 30 instead of requiring 0, 1, 2, 3).
 //   
+//    Mark C. Miller, Thu Apr  6 17:06:33 PDT 2006
+//    Added conditional compilation for hssize_t type
+//
 // ****************************************************************************
 
 bool
@@ -1196,7 +1200,11 @@ avtPixieFileFormat::ReadVariableFromFile(int timestate, const std::string &varna
         H5Dclose(dataId);
         EXCEPTION1(InvalidVariableException, varname);
     }
+#if HDF5_VERSION_GE(1,6,4)
+    hsize_t start[3];
+#else
     hssize_t start[3];
+#endif
     start[0] = 0; start[1] = 0; start[2] = 0;
     H5Sselect_hyperslab(spaceId, H5S_SELECT_SET, start, NULL, dims, NULL);
 

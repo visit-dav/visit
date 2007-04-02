@@ -2295,6 +2295,9 @@ ViewerWindowManager::SetViewCurveFromClient()
 //    Mark C. Miller, Tue Mar 14 17:49:26 PST 2006
 //    Moved some parameters dealing with full frame to avtView2D
 //
+//    Mark C. Miller, Thu Apr  6 01:45:57 PDT 2006
+//    Moved code to check axes' units to ViewerWindow.
+//
 // ****************************************************************************
 
 void
@@ -2310,7 +2313,7 @@ ViewerWindowManager::SetView2DFromClient()
         double extents[4];
         windows[activeWindow]->GetExtents(2, extents);
         bool newFullFrameMode = view2DClientAtts->GetUseFullFrame(extents);
-        if (windows[activeWindow]->DoAllPlotsAxesHaveSameUnits())
+        if (!windows[activeWindow]->DoAllPlotsAxesHaveSameUnits())
             newFullFrameMode = true;
         view2d.fullFrame = newFullFrameMode; 
     }
