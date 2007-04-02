@@ -94,6 +94,9 @@
 #    Jeremy Meredith, Wed Apr 20 15:36:36 PDT 2005
 #    I ensured that "internallauncher" had the right permissions.
 #
+#    Jeremy Meredith, Wed Aug 31 16:48:05 PDT 2005
+#    I added xml2plugin.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -248,6 +251,7 @@ if (! -e $dir/data)           mkdir $dir/data
 if ($append == false) then
    if (-e $dir/bin/legacylauncher-)      rm -f $dir/bin/legacylauncher-
    if (-e $dir/bin/frontendlauncher-)    rm -f $dir/bin/frontendlauncher-
+   if (-e $dir/bin/xml2plugin-)          rm -f $dir/bin/xml2plugin-
    if (-e $dir/bin/visit-)       rm -f $dir/bin/visit- # not what it used to be
    if ($beta == true) then
       if (-e $dir/beta-)         rm -f $dir/beta-
@@ -268,6 +272,7 @@ else
    sed -e "s/logging[ \t]*= 0/logging        = 1/" distribution/visit/bin/legacylauncher > $dir/bin/legacylauncher+
 endif
 cp distribution/visit/bin/frontendlauncher $dir/bin/frontendlauncher+
+cp distribution/visit/bin/xml2plugin       $dir/bin/xml2plugin+
 
 if (-e $dir/$version+)           rm -rf $dir/$version+
 if ($append == false) then
@@ -331,6 +336,7 @@ chmod $dir_permission $dir
 chmod $dir_permission $dir/bin
 chmod $dir_permission $dir/bin/legacylauncher+
 chmod $dir_permission $dir/bin/frontendlauncher+
+chmod $dir_permission $dir/bin/xml2plugin+
 chmod $dir_permission $dir/data
 chmod $file_permission $dir/data/*
 chmod $dir_permission $dir/$version+
@@ -348,6 +354,7 @@ if ($group_ownership != none) then
     chgrp $group_ownership $dir/bin
     chgrp $group_ownership $dir/bin/legacylauncher+
     chgrp $group_ownership $dir/bin/frontendlauncher+
+    chgrp $group_ownership $dir/bin/xml2plugin+
     chgrp $group_ownership $dir/data
     chgrp $group_ownership $dir/data/*
     find $dir/$version+ -type d -exec chgrp $group_ownership {} \;
@@ -378,6 +385,7 @@ if ($append == false) then
    #
    if (-e $dir/bin/legacylauncher) mv $dir/bin/legacylauncher $dir/bin/legacylauncher-
    if (-e $dir/bin/frontendlauncher) mv $dir/bin/frontendlauncher $dir/bin/frontendlauncher-
+   if (-e $dir/bin/xml2plugin) mv $dir/bin/xml2plugin $dir/bin/xml2plugin-
    if ($beta == true) then
       if (-e $dir/beta)          mv $dir/beta      $dir/beta-
    else if ($private == false) then
@@ -412,6 +420,8 @@ if (-e bin/legacylauncher)       rm -f bin/legacylauncher
 mv bin/legacylauncher+ bin/legacylauncher
 if (-e bin/frontendlauncher)     rm -f bin/frontendlauncher
 mv bin/frontendlauncher+ bin/frontendlauncher
+if (-e bin/xml2plugin)           rm -f bin/xml2plugin
+mv bin/xml2plugin+ bin/xml2plugin
 if ($beta == true) then
    if (-e beta)                  rm -f beta
    ln -s $version beta
