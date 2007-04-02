@@ -178,6 +178,9 @@
 #   Mark C. Miller, Thu Dec 15 07:30:03 PST 2005
 #   Temporarily removed Miranda from build
 #
+#   Brad Whitlock, Fri Jan 13 13:47:09 PST 2006
+#   Added ZeusMP reader.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -190,7 +193,7 @@ BOXLIB3D=Boxlib3D
 CGNS=CGNS
 EXODUS=Exodus TimeVaryingExodus
 GDAL=GDAL
-HDF4=Cosmos Enzo
+HDF4=Cosmos Enzo ZeusMP
 HDF5=Tetrad SAMRAI CosmosPP Pixie FLASH
 MILI=Mili
 NETCDF=NETCDF
