@@ -377,61 +377,6 @@ QvisIsosurfaceWindow::ProcessSelectByText()
 }
 
 // ****************************************************************************
-// Method: QvisIsosurfaceWindow::StringToDoubleList
-//
-// Purpose:
-//   Dissects a string into a list of doubles and stores it in the passed-in
-//   doubleVector.
-//
-// Arguments:
-//   str : The string to be searched for doubles.
-//   dv  : The return vector to contain the doubles.
-//
-// Programmer: Brad Whitlock
-// Creation:   Sat Feb 17 13:05:15 PST 2001
-//
-// Modifications:
-//   Brad Whitlock, Thu Feb 14 15:18:35 PST 2002
-//   Added code to prevent adding any more than MAX_CONTOURS elements to
-//   the dv vector.
-//
-// ****************************************************************************
- 
-void
-QvisIsosurfaceWindow::StringToDoubleList(const char *str, doubleVector &dv)
-{
-    int length, offset = 0;
- 
-    // Clear the vector.
-    dv.clear();
- 
-    // Get out if the input string is nothing.
-    if(str == NULL || ((length = strlen(str)) == 0))
-    {
-        return;
-    }
- 
-    do {
-        // Skip any preceding spaces, stop at end of string too.
-        for(; str[offset] == ' ' || str[offset] == '\0'; ++offset);
- 
-        if(offset < length)
-        {
-            char buf[30];
-            sscanf(str + offset, "%s", buf);
-            offset += strlen(buf);
- 
-            // Only add if the token was something.
-            if(strlen(buf) > 0)
-            {
-                double dtemp = (double)atof(buf);
-                dv.push_back(dtemp);
-            }
-        }
-    } while(offset < length);
-}
-
-// ****************************************************************************
 // Method: QvisIsosurfaceWindow::GetCurrentValues
 //
 // Purpose: 

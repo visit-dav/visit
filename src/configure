@@ -9824,7 +9824,7 @@ fi
 #
 if test "$no_x" != "yes" && test "$user_specified_x_libraries" = NONE; then
     oldlibs="$LIBS"
-    LIBS="-lX11 $LIBS"
+    LIBS="-lX11 -lXt $LIBS"
 
     echo "$as_me:$LINENO: checking if linker knows about X11 libraries" >&5
 echo $ECHO_N "checking if linker knows about X11 libraries... $ECHO_C" >&6
@@ -9884,7 +9884,7 @@ if test "${ac_cv_lib_X11_main+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   ac_check_lib_save_LIBS=$LIBS
-LIBS="-lX11 $X_LIBS $LIBS"
+LIBS="-lX11 -lXt $X_LIBS $LIBS"
 cat >conftest.$ac_ext <<_ACEOF
 #line $LINENO "configure"
 /* confdefs.h.  */
@@ -9927,7 +9927,7 @@ fi
 echo "$as_me:$LINENO: result: $ac_cv_lib_X11_main" >&5
 echo "${ECHO_T}$ac_cv_lib_X11_main" >&6
 if test $ac_cv_lib_X11_main = yes; then
-  X_LIBS="-lX11 $X_LIBS"
+  X_LIBS="-lX11 -lXt $X_LIBS"
 fi
 
 else

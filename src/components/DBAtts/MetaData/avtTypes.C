@@ -161,3 +161,26 @@ GuessVarTypeFromNumDimsAndComps(int numSpatialDims, int componentCount)
 
     return retval;
 }
+
+std::string
+LoadBalanceSchemeToString(LoadBalanceScheme s)
+{
+    switch (s)
+    {
+        case LOAD_BALANCE_CONTIGUOUS_BLOCKS_TOGETHER:
+            return "contiguous blocks together";
+        case LOAD_BALANCE_STRIDE_ACROSS_BLOCKS:
+            return "stride across blocks";
+        case LOAD_BALANCE_RANDOM_ASSIGNMENT:
+            return "random assignment";
+        case LOAD_BALANCE_DBPLUGIN_DYNAMIC:
+            return "dbplugin dynamic";
+        case LOAD_BALANCE_RESTRICTED:
+            return "restricted";
+        case LOAD_BALANCE_ABSOLUTE:
+            return "absolute";
+        case LOAD_BALANCE_UNKNOWN:
+        default:
+            return "unknown";
+    }
+}

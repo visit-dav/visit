@@ -93,6 +93,8 @@
 #   Added ClientMethod, ClientInformation, ClientInformationList, and
 #   MovieAttributes.
 #
+#   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+#   Added mesh management attributes 
 ##############################################################################
 
 ##
@@ -145,6 +147,7 @@ KeyframeAttributes.java \
 LightAttributes.java \
 LightList.java \
 MaterialAttributes.java \
+MeshManagementAttributes.java \
 MessageAttributes.java \
 MovieAttributes.java \
 NamespaceAttributes.java \

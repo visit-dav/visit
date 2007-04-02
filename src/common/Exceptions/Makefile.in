@@ -89,6 +89,9 @@
 #    Mark C. Miller, Mon Apr 19 12:00:52 PDT 2004
 #    Added PlotterException base class
 #
+#    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+#    Added LibPipelineStubs
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -131,6 +134,7 @@ Pipeline_src= \
   Pipeline/NoDefaultVariableException.C \
   Pipeline/NoInputException.C \
   Pipeline/NonQueryableInputException.C \
+  Pipeline/StubReferencedException.C \
   Pipeline/UnexpectedValueException.C
 
 Plotter_src= \

@@ -345,6 +345,8 @@ EngineProxy::SendKeepAlive()
 //    stored in ParsingExprList since that can be unreliable with respect
 //    to database expressions.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added mesh management attributes 
 // ****************************************************************************
 
 void
@@ -352,7 +354,8 @@ EngineProxy::ReadDataObject(const string &format, const string &file,
                             const string &var, const int time,
                             avtSILRestriction_p silr,
                             const MaterialAttributes &matopts,
-                            const ExpressionList &expressions)
+                            const ExpressionList &expressions,
+                            const MeshManagementAttributes &meshopts)
 {
     // Make sure the engine knows about our current expression list.
     if (exprList != expressions)
@@ -362,7 +365,7 @@ EngineProxy::ReadDataObject(const string &format, const string &file,
     }
 
     CompactSILRestrictionAttributes *atts = silr->MakeCompactAttributes();
-    readRPC(format, file, var, time, *atts, matopts);
+    readRPC(format, file, var, time, *atts, matopts, meshopts);
     if (readRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(readRPC.GetExceptionType(),

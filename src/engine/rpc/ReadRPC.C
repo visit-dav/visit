@@ -22,9 +22,11 @@ using std::string;
 //    Hank Childs, Tue Mar  9 14:27:31 PST 2004
 //    Added file format type.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added mesh management attributes 
 // ****************************************************************************
 
-ReadRPC::ReadRPC() : BlockingRPC("ssiaas")
+ReadRPC::ReadRPC() : BlockingRPC("ssiaasa")
 {
 }
 
@@ -73,12 +75,16 @@ ReadRPC::~ReadRPC()
 //    Hank Childs, Tue Mar  9 14:27:31 PST 2004
 //    Added file format type.
 //
+//    Mark C. Miller Sun Nov  6 07:07:53 PST 2005
+//    Added mesh management attributes
+//
 // ****************************************************************************
 
 void
 ReadRPC::operator()(const string &ft, const string &f, const string &v, int t,
                     const CompactSILRestrictionAttributes &s,
-                    const MaterialAttributes &m)
+                    const MaterialAttributes &m,
+                    const MeshManagementAttributes &mm)
 {
     debug3 << "Executing read RPC" 
            << "\n\t file format='" << ft.c_str() << "'"
@@ -93,6 +99,7 @@ ReadRPC::operator()(const string &ft, const string &f, const string &v, int t,
     SetTime(t);
     SetCSRAttributes(s);
     SetMaterialAttributes(m);
+    SetMeshManagementAttributes(mm);
 
     Execute();
 }
@@ -115,6 +122,9 @@ ReadRPC::operator()(const string &ft, const string &f, const string &v, int t,
 //    Hank Childs, Tue Mar  9 14:27:31 PST 2004
 //    Added file format type.
 //
+//    Mark C. Miller Sun Nov  6 07:07:53 PST 2005
+//    Added mesh management attributes
+//
 // ****************************************************************************
 
 void
@@ -126,6 +136,7 @@ ReadRPC::SelectAll()
     Select(3, (void*)&silr_atts);
     Select(4, (void*)&materialAtts);
     Select(5, (void*)&format);
+    Select(6, (void*)&meshManagementAtts);
 }
 
 
@@ -254,6 +265,23 @@ ReadRPC::SetMaterialAttributes(const MaterialAttributes &m)
 }
 
 // ****************************************************************************
+//  Method:  ReadRPC::SetMeshManagementAttributes
+//
+//  Purpose: Sets the mesh management attributes.
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    November 6, 2005
+//
+// ****************************************************************************
+
+void
+ReadRPC::SetMeshManagementAttributes(const MeshManagementAttributes &mm)
+{
+    meshManagementAtts = mm;
+    Select(6, (void*)&meshManagementAtts);
+}
+
+// ****************************************************************************
 //  Method: ReadRPC::GetFile
 //
 //  Purpose: 
@@ -363,4 +391,20 @@ const MaterialAttributes &
 ReadRPC::GetMaterialAttributes() const
 {
     return materialAtts;
+}
+
+// ****************************************************************************
+//  Method:  ReadRPC::GetMeshManagementAttributes
+//
+//  Purpose: Returns the mesh management attributes.
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    November 6, 2005 
+//
+// ****************************************************************************
+
+const MeshManagementAttributes &
+ReadRPC::GetMeshManagementAttributes() const
+{
+    return meshManagementAtts;
 }

@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+  <Attribute name="MeshManagementAttributes" purpose="Global variables controlling reading and conversion of non-standard meshes" persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Enum name="DiscretizationModes">
+      Uniform
+      Adaptive
+    </Enum>
+    <Field name="discretizationTolerance" label="discretizationTolerance" type="doubleVector">
+      0.010000
+      0.025000
+      0.050000
+    </Field>
+    <Field name="discretizationToleranceX" label="discretizationToleranceX" type="doubleVector">
+    </Field>
+    <Field name="discretizationToleranceY" label="discretizationToleranceY" type="doubleVector">
+    </Field>
+    <Field name="discretizationToleranceZ" label="discretizationToleranceZ" type="doubleVector">
+    </Field>
+    <Field name="discretizationMode" label="discretizationMode" type="enum" subtype="DiscretizationModes">
+      Adaptive
+    </Field>
+    <Field name="discretizeBoundaryOnly" label="discretizeBoundaryOnly" type="bool">
+      false
+    </Field>
+    <Field name="passNativeCSG" label="passNativeCSG" type="bool">
+      false
+    </Field>
+  </Attribute>

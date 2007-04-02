@@ -1,4 +1,5 @@
 #include "vtkCSGGrid.h"
+#include <vtkAppendFilter.h>
 #include <vtkAppendPolyData.h>
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
@@ -21,11 +22,134 @@
 #include <vtkSampleFunction.h>
 #include <vtkSphere.h>
 #include <vtkTransform.h>
+#include <vtkUnstructuredGrid.h>
 
-#include <float.h>
+#include <vtkVisItClipper.h>
+
+#include <deque>
+#include <map>
+#include <vector>
+
+using std::deque;
+using std::map;
+using std::vector;
+
+
+static
+double ComputeRelativeTol(double absTol,
+                          double minX, double maxX,
+                          double minY, double maxY,
+                          double minZ, double maxZ)
+{
+    //
+    // Turn relative tolerance into an absolute tolerance
+    //
+    if ((maxX - minX) > (maxY - minY))
+    {
+        if ((maxX - minX) > (maxZ - minZ))
+            absTol *= (maxX - minX);
+        else
+            absTol *= (maxZ - minZ);
+    }
+    else
+    {
+        if ((maxY - minY) > (maxZ - minZ))
+            absTol *= (maxY - minY);
+        else
+            absTol *= (maxZ - minZ);
+    }
+    return absTol;
+}
 
 vtkCxxRevisionMacro(vtkCSGGrid, "$Revision: 1.53 $");
 vtkStandardNewMacro(vtkCSGGrid);
+
+vtkCSGGrid::Box::FuncState
+vtkCSGGrid::Box::EvalFuncState(vtkImplicitFunction *func, double tol)
+{
+    int i,j;
+
+    const char *funcName = func->GetClassName();
+
+    //
+    // Acceleration code for spheres
+    //
+    if (strcmp(funcName, "vtkSphere") == 0)
+    {
+        vtkSphere *sphere = vtkSphere::SafeDownCast(func);
+
+        const float *p = sphere->GetCenter();
+        const float r = sphere->GetRadius();
+        //float r2 = r*r;
+        float r2 = r;
+
+        float sx = x1 - x0;
+        float sy = y1 - y0;
+        float sz = z1 - z0;
+        //float s2 = (sx*sx + sy*sy + sz*sz) / 4.0;
+        float s2 = sqrt((sx*sx + sy*sy + sz*sz) / 2.0);
+
+        float dx = (x1 + x0) / 2.0 - p[0];
+        float dy = (y1 + y0) / 2.0 - p[1];
+        float dz = (z1 + z0) / 2.0 - p[2];
+        //float d2 = dx*dx + dy*dy + dz*dz;
+        float d2 = sqrt(dx*dx + dy*dy + dz*dz);
+
+        if (r2 > s2)
+        {
+            if (d2 > r2 + s2)
+                return GT_ZERO;
+            else if (d2 < r2 - s2)
+                return LT_ZERO;
+            else
+                return EQ_ZERO;
+        }
+        else
+        {
+            if (d2 > s2 + r2)
+                return GT_ZERO;
+            else
+                return EQ_ZERO;
+        }
+    }
+
+    FuncState firstState = ValState2(GetFunctionValue(func, 0));
+
+    //
+    // First, lets examine function values at the 8 corners to see if
+    // we've got a region boundary inside the box
+    //
+    for (i = 1; i < 8; i++)
+    {
+        if (!SameState2(firstState, ValState2(GetFunctionValue(func, i))))
+            return EQ_ZERO;
+    }
+
+    if (Resolution() < tol)
+        return firstState;
+
+    //
+    // If we reach here, then all 8 corners of the box have the same
+    // state. So, now we examine the box's derivatives in each of
+    // the coordinate axes' directions (e.g. the gradient)
+    //
+    float *firstGrad = func->FunctionGradient(GetPoint(0));
+    FuncState firstStateVec[3];
+    for (j = 0; j < 3; j++)
+        firstStateVec[j] = ValState2(firstGrad[j]);
+    for (i = 1; i < 8; i++)
+    {
+        float *grad = func->FunctionGradient(GetPoint(i));
+        for (j = 0; j < 3; j++)
+        {
+            if (!SameState2(firstStateVec[j], ValState2(grad[j])))
+                return EQ_ZERO;
+        }
+    }
+
+    return firstState;
+
+}
 
 // internal type used only for implementation
 typedef enum {
@@ -121,26 +245,26 @@ void vtkCSGGrid::CopyStructure(vtkDataSet *ds)
 //----------------------------------------------------------------------------
 vtkCell *vtkCSGGrid::GetCell(vtkIdType cellId)
 {
-#warning GetCell NOT IMPLEMENTED
+//#warning GetCell NOT IMPLEMENTED
   return NULL;
 }
 
 //----------------------------------------------------------------------------
 void vtkCSGGrid::GetCell(vtkIdType cellId, vtkGenericCell *cell)
 {
-#warning GetCell NOT IMPLEMENTED
+//#warning GetCell NOT IMPLEMENTED
   cell->SetCellTypeToEmptyCell();
 }
 
 int vtkCSGGrid::GetCellType(vtkIdType cellId)
 {
-#warning GetCellType NOT IMPLEMENTED
+//#warning GetCellType NOT IMPLEMENTED
   return VTK_EMPTY_CELL;
 }
 
 int vtkCSGGrid::GetMaxCellSize()
 {
-#warning GetMaxCellSize NOT IMPLEMENTED
+//#warning GetMaxCellSize NOT IMPLEMENTED
   return -1;
 }
 
@@ -170,7 +294,7 @@ float *vtkCSGGrid::GetPoint(vtkIdType ptId)
 // constructing a cell.
 void vtkCSGGrid::GetCellBounds(vtkIdType cellId, float bounds[6])
 {
-#warning GetCellBounds NOT IMPLEMENTED
+//#warning GetCellBounds NOT IMPLEMENTED
   return;
 }
 
@@ -207,7 +331,7 @@ vtkIdType vtkCSGGrid::FindCell(float x[3], vtkCell *vtkNotUsed(cell),
                                        int& subId, float pcoords[3],
                                        float *weights)
 {
-#warning FindCell NOT IMPLEMENTED
+//#warning FindCell NOT IMPLEMENTED
   return -1;
 }
 
@@ -219,7 +343,7 @@ vtkCell *vtkCSGGrid::FindAndGetCell(float x[3],
                                             int& subId, 
                                             float pcoords[3], float *weights)
 {
-#warning FindAndGetCell NOT IMPLEMENTED
+//#warning FindAndGetCell NOT IMPLEMENTED
   return NULL;
 #if 0
   int loc[3];
@@ -246,22 +370,19 @@ vtkCell *vtkCSGGrid::FindAndGetCell(float x[3],
 //----------------------------------------------------------------------------
 void vtkCSGGrid::GetCellPoints(vtkIdType cellId, vtkIdList *ptIds)
 {
-#warning CellPoints NOT IMPLEMENTED
+//#warning CellPoints NOT IMPLEMENTED
 }
 
 //----------------------------------------------------------------------------
 void vtkCSGGrid::GetPointCells(vtkIdType ptId, vtkIdList *cellIds)
 {
-#warning GetPointCells NOT IMPLEMENTED
+//#warning GetPointCells NOT IMPLEMENTED
 }
 
 
 //----------------------------------------------------------------------------
 void vtkCSGGrid::ComputeBounds()
 {
-  this->Bounds[0] = this->Bounds[1] = this->Bounds[2] = this->Bounds[3] =
-  this->Bounds[4] = this->Bounds[5] = 0.0;
-#warning ComputeBounds NOT IMPLEMENTED
 }
 
 static unsigned long GetActualMemorySizeOfImplicitFunc(vtkImplicitFunction *func)
@@ -341,7 +462,7 @@ void vtkCSGGrid::GetCellNeighbors(vtkIdType cellId, vtkIdList *ptIds,
                                           vtkIdList *cellIds)
 {
 
-#warning GetCellNeighbors NOT IMPLEMENTED
+//#warning GetCellNeighbors NOT IMPLEMENTED
   cellIds->Reset();
   return;
 }
@@ -519,7 +640,7 @@ void vtkCSGGrid::PrintSelf(ostream& os, vtkIndent indent)
                     vtkIdType leftId  = funcMap[leftFunc];
                     vtkIdType rightId = funcMap[rightFunc];
 
-                    cerr << "of items " << leftId << " and " << rightId << endl;
+                    os << "of items " << leftId << " and " << rightId << endl;
                 }
                 break;
             }
@@ -579,9 +700,12 @@ vtkIdType vtkCSGGrid::AddBoundary(BoundaryType type, int numcoeffs,
             vtkCylinder *cylinder = vtkCylinder::New();
 
             // if the desired cylinder is y-axis aligned, we don't need xform
-            if (coeffs[3] == 0.0 && coeffs[4] == 1.0 && coeffs[5] == 0.0)
+            if ((coeffs[3] == 0.0 && coeffs[4] ==  1.0 && coeffs[5] == 0.0) ||
+                (coeffs[3] == 0.0 && coeffs[4] == -1.0 && coeffs[5] == 0.0))
             {
-                cylinder->SetCenter((float) coeffs[0], (float) coeffs[1], (float) coeffs[2]);
+                cylinder->SetCenter((float) coeffs[0],
+                                    (float) coeffs[1] + coeffs[4] * coeffs[6]/2.0,
+                                    (float) coeffs[2]);
             }
             else
             {
@@ -593,7 +717,7 @@ vtkIdType vtkCSGGrid::AddBoundary(BoundaryType type, int numcoeffs,
                 xform->RotateZ(-rotz);
                 xform->RotateY(-roty);
                 xform->Translate(-coeffs[0], -coeffs[1], -coeffs[2]);
-#warning were not setting length
+//#warning were not setting length
 
                 cylinder->SetTransform(xform);
                 xform->Delete();
@@ -690,7 +814,7 @@ vtkImplicitFunction *vtkCSGGrid::GetRegionFunc(vtkIdType id) const
 void vtkCSGGrid::GetBoundary(vtkIdType id, int *type, int *numcoeffs,
                              double **coeffs) const
 {
-#warning GetBoundary NOT IMPLEMENTED
+//#warning GetBoundary NOT IMPLEMENTED
 }
 
 //----------------------------------------------------------------------------
@@ -940,7 +1064,7 @@ vtkIdType vtkCSGGrid::AddRegion(vtkIdType regId, const double *coeffs)
 void vtkCSGGrid::GetRegion(vtkIdType id, vtkIdType *id1, vtkIdType *id2,
                  RegionOp *op, double **xform) const
 {
-#warning GetRegion NOT IMPLEMENTED
+//#warning GetRegion NOT IMPLEMENTED
 }
 
 //----------------------------------------------------------------------------
@@ -959,12 +1083,29 @@ vtkIdType vtkCSGGrid::GetCellRegionId(vtkIdType cellId) const
     return -1;
 }
 
-vtkPolyData  *vtkCSGGrid::DiscretizeSurfaces(int specificZone,
-    double minX, double maxX, int nX,
-    double minY, double maxY, int nY,
-    double minZ, double maxZ, int nZ)
+vtkPolyData  *vtkCSGGrid::DiscretizeSurfaces(
+    int specificZone, double tol,
+    double minX, double maxX,
+    double minY, double maxY,
+    double minZ, double maxZ)
 {
     vtkAppendPolyData *appender = vtkAppendPolyData::New();
+
+    //
+    // Turn relative tolerance into an absolute tolerance 
+    //
+    tol = ComputeRelativeTol(tol, minX, maxX, minY, maxY, minZ, maxZ);
+    int nX = (int) ((maxX - minX) / tol);
+    int nY = (int) ((maxY - minY) / tol);
+    int nZ = (int) ((maxZ - minZ) / tol);
+
+    // fudge the bounds a bit
+    minX -= minX * (minX < 0.0 ? -tol : tol);
+    minY -= minY * (minY < 0.0 ? -tol : tol);
+    minZ -= minZ * (minZ < 0.0 ? -tol : tol);
+    minX += minX * (minX < 0.0 ? -tol : tol);
+    minY += minY * (minY < 0.0 ? -tol : tol);
+    minZ += minZ * (minZ < 0.0 ? -tol : tol);
 
     int startZone = 0;
     int endZone = CellRegionIds->GetNumberOfTuples();
@@ -979,39 +1120,396 @@ vtkPolyData  *vtkCSGGrid::DiscretizeSurfaces(int specificZone,
         vtkImplicitFunction *reg = GetRegionFunc(CellRegionIds->GetValue(i));
 
         //
-        // We restrict each region (zone) in the mesh to the
-        // spatial bounding box so that upon contouring using the
-        // algorithm below, the surfaces will be closed off
-        //
-        vtkPlanes           *box = vtkPlanes::New();
-        box->SetBounds(minX, maxX, minY, maxY, minZ, maxZ);
-
-        vtkImplicitBoolean *boxedReg = vtkImplicitBoolean::New();
-        boxedReg->SetOperationTypeToIntersection();
-        boxedReg->AddFunction(box);
-        boxedReg->AddFunction(reg);
-
-        //
         // Resample onto a regular grid and iso-contour
         //
         vtkSampleFunction *regSample = vtkSampleFunction::New();
-        regSample->SetImplicitFunction(boxedReg);
+        regSample->SetImplicitFunction(reg);
         regSample->SetModelBounds(minX, maxX, minY, maxY, minZ, maxZ);
         regSample->SetSampleDimensions(nX, nY, nZ);
+        regSample->SetCapValue(0.0);
         regSample->ComputeNormalsOff();
+        regSample->CappingOn();
 
         vtkContourFilter *regContour = vtkContourFilter::New();
         regContour->SetInput((vtkDataSet*)regSample->GetOutput());
         regContour->SetValue(0, 0.0);
 
-        boxedReg->Delete();
-        box->Delete();
-
         appender->AddInput(regContour->GetOutput());
+        regContour->Delete();
+        regSample->Delete();
     }
-#warning FIX LEAKS HERE
-    appender->Update();
-    //this->PrintSelf(cerr, 0);
 
+    appender->Update();
     return appender->GetOutput();
+}
+
+vtkUnstructuredGrid *vtkCSGGrid::DiscretizeSpace(
+    int specificZone, double tol,
+    double minX, double maxX,
+    double minY, double maxY,
+    double minZ, double maxZ)
+{
+    vtkUnstructuredGrid *retval = 0;
+    vtkAppendFilter *appender = vtkAppendFilter::New();
+
+    //
+    // Turn relative tolerance into an absolute tolerance 
+    //
+    tol = ComputeRelativeTol(tol, minX, maxX, minY, maxY, minZ, maxZ);
+    int nX = (int) ((maxX - minX) / tol);
+    int nY = (int) ((maxY - minY) / tol);
+    int nZ = (int) ((maxZ - minZ) / tol);
+
+    // fudge the bounds a bit
+    minX -= minX * (minX < 0.0 ? -tol : tol);
+    minY -= minY * (minY < 0.0 ? -tol : tol);
+    minZ -= minZ * (minZ < 0.0 ? -tol : tol);
+    minX += minX * (minX < 0.0 ? -tol : tol);
+    minY += minY * (minY < 0.0 ? -tol : tol);
+    minZ += minZ * (minZ < 0.0 ? -tol : tol);
+
+    int startZone = 0;
+    int endZone = CellRegionIds->GetNumberOfTuples();
+    if (specificZone >= 0)
+    {
+        startZone = specificZone;
+        endZone = startZone+1;
+    }
+
+    for (int i = startZone; i < endZone; i++)
+    {
+        vtkImplicitFunction *reg = GetRegionFunc(CellRegionIds->GetValue(i));
+
+        //
+        // Resample onto a regular grid and iso-contour
+        //
+        vtkSampleFunction *regSample = vtkSampleFunction::New();
+        regSample->SetImplicitFunction(reg);
+        regSample->SetModelBounds(minX, maxX, minY, maxY, minZ, maxZ);
+        regSample->SetSampleDimensions(nX, nY, nZ);
+        regSample->SetCapValue(0.0);
+        regSample->ComputeNormalsOff();
+        regSample->CappingOn();
+
+        vtkVisItClipper *regClipper = vtkVisItClipper::New();
+        regClipper->SetInput((vtkDataSet*)regSample->GetOutput());
+        regClipper->SetClipFunction(reg);
+        regClipper->SetInsideOut(true);
+
+        appender->AddInput(regClipper->GetOutput());
+        regClipper->Delete();
+        regSample->Delete();
+    }
+
+    appender->Update();
+    return appender->GetOutput();
+}
+
+void
+vtkCSGGrid::MakeMeshZone(const Box *theBox,
+    vtkPoints *points, vtkUnstructuredGrid *ugrid,
+    map<float, map<float, map<float, int> > >& nodemap)
+{
+    // Add points first
+    int pointIds[8] = {0,0,0,0,0,0,0,0};
+    for (int i = 0; i < 8; i++)
+    {
+        double x, y, z;
+        if (i==0 || i==1 || i==4 || i==5)
+            x = theBox->x0;
+        else
+            x = theBox->x1;
+        if (i==1 || i==2 || i==5 || i==6)
+            y = theBox->y0;
+        else
+            y = theBox->y1;
+        if (i==0 || i==1 || i==2 || i==3)
+            z = theBox->z0; 
+        else
+            z = theBox->z1; 
+
+        int nodeId, mapId = nodemap[x][y][z];
+        if (mapId == 0)
+        {
+            points->InsertNextPoint(x,y,z);
+            nodemap[x][y][z] = points->GetNumberOfPoints()-1;
+            pointIds[i] = points->GetNumberOfPoints()-1;
+        }
+        else
+        {
+            pointIds[i] = nodemap[x][y][z];
+        }
+    }
+    ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, pointIds);
+}
+
+vtkUnstructuredGrid *vtkCSGGrid::DiscretizeSpace(
+    int specificZone, int rank, int nprocs, double tol,
+    double minX, double maxX,
+    double minY, double maxY,
+    double minZ, double maxZ)
+{
+    int i;
+    deque<Box*> boxDeque;
+
+    // for building unstructured grid
+    vtkPoints *points = vtkPoints::New();
+    points->InsertNextPoint(0.0,0.0,0.0); // nodemap entry 0 used for "not set"
+    vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+    ugrid->SetPoints(points);
+    map<float, map<float, map<float, int> > > nodemap;
+
+    int startZone = 0;
+    int endZone = CellRegionIds->GetNumberOfTuples();
+    if (specificZone >= 0)
+    {
+        startZone = specificZone;
+        endZone = startZone+1;
+    }
+
+    vector<int> zoneIds;
+    for (i = startZone; i < endZone; i++)
+        zoneIds.push_back(i);            
+
+    // fudge the bounds a bit
+    minX -= minX * (minX < 0.0 ? -tol : tol);
+    minY -= minY * (minY < 0.0 ? -tol : tol);
+    minZ -= minZ * (minZ < 0.0 ? -tol : tol);
+    minX += minX * (minX < 0.0 ? -tol : tol);
+    minY += minY * (minY < 0.0 ? -tol : tol);
+    minZ += minZ * (minZ < 0.0 ? -tol : tol);
+
+    Box* boxZero = new Box(minX, maxX, minY, maxY, minZ, maxZ, zoneIds,
+                           DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX,
+                           DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX);
+    boxDeque.push_back(boxZero);
+
+    //
+    // Turn relative tolerance into an absolute tolerance 
+    //
+    tol = ComputeRelativeTol(tol, minX, maxX, minY, maxY, minZ, maxZ);
+
+    int K = 100;
+
+    for (int pass = 0; pass < 2; pass++)
+    {
+        // split the deque on 2nd pass
+        if (pass == 1)
+        {
+            deque<Box*> tmpDeque;
+
+            int numBoxes  = boxDeque.size() / nprocs;
+            int nprocs1   = boxDeque.size() % nprocs;
+
+            int next = nprocs1 ? numBoxes+1 : numBoxes;
+            int proc = 0;
+            for (int q = 0; q < boxDeque.size(); q++)
+            {
+                if (q == next)
+                {
+                    proc++;
+                    next += numBoxes;
+                    if (proc < nprocs1)
+                        next++;
+                }
+
+                if (proc == rank)
+                    tmpDeque.push_back(boxDeque[q]);
+            }
+
+            boxDeque = tmpDeque;
+        }
+
+    while (boxDeque.size() > 0 &&
+           ((pass == 0 && boxDeque.size() < K * nprocs) ||
+            (pass == 1 && boxDeque.size() > 0)))
+    {
+        Box* curBox = boxDeque.front();
+        boxDeque.pop_front();
+
+        vector<int>& idref = curBox->zids;
+        vector<int>  idcpy = curBox->zids;
+
+        for (i = 0; i < idcpy.size(); i++)
+        {
+            vtkImplicitFunction *reg = GetRegionFunc(CellRegionIds->GetValue(idcpy[i]));
+
+            Box::FuncState boxState = curBox->EvalFuncState(reg, tol);
+
+            if (boxState == Box::LT_ZERO)
+            {
+                if ((pass == 0 && rank == 0) || (pass == 1))
+                    MakeMeshZone(curBox, points, ugrid, nodemap);
+                break;
+            }
+            else if (boxState == Box::GT_ZERO)
+            {
+                vector<int>::iterator ii;
+                for (ii = idref.begin(); ii != idref.end(); ii++)
+                {
+                    if (*ii == i)
+                    {
+                        idref.erase(ii);
+                        break;
+                    }
+                }
+                if (idref.size() == 0)
+                {
+                    //MakeMeshZone(curBox, points, ugrid, nodemap);
+                }
+            }
+            else if (curBox->Resolution() > tol)
+            {
+
+               //
+               // Subdivide this box
+               //
+               int j;
+               int numX = 0, numY = 0, numZ = 0;
+               Box::FuncState newState;
+               vector<Box*> newBoxes, newXBoxes, newYBoxes, newZBoxes;
+
+#if 0
+               //
+               // Try subdividing in X first 
+               //
+               newXBoxes = curBox->SubdivideX();
+               for (j = 0; j < newXBoxes.size(); j++)
+               {
+                   newState = newXBoxes[j]->EvalFuncState(reg, tol); 
+                   if (newState == Box::LT_ZERO || newState == Box::GT_ZERO)
+                       numX++;
+               }
+
+               //
+               // Now, try subidiving in Y
+               //
+               newYBoxes = curBox->SubdivideY();
+               for (j = 0; j < newYBoxes.size(); j++)
+               {
+                   newState = newYBoxes[j]->EvalFuncState(reg, tol); 
+                   if (newState == Box::LT_ZERO || newState == Box::GT_ZERO)
+                       numY++;
+               }
+
+               //
+               // Now, try subidiving in Z
+               //
+               newZBoxes = curBox->SubdivideZ();
+               for (j = 0; j < newZBoxes.size(); j++)
+               {
+                   newState = newZBoxes[j]->EvalFuncState(reg, tol); 
+                   if (newState == Box::LT_ZERO || newState == Box::GT_ZERO)
+                       numZ++;
+               }
+
+               if (numX > numY)
+               {
+                   if (numZ > numX)
+                       newBoxes = newZBoxes;
+                   else if (numX > numZ)
+                       newBoxes = newXBoxes;
+                   else
+                   {
+                       int j=1+(int) (10.0*rand()/(RAND_MAX+1.0));
+                       if (j <= 5)
+                           newBoxes = newXBoxes;
+                       else
+                           newBoxes = newZBoxes;
+                   }
+               }
+               else if (numY > numX)
+               {
+                   if (numZ > numY)
+                       newBoxes = newZBoxes;
+                   else if (numY > numZ)
+                       newBoxes = newYBoxes;
+                   else
+                   {
+                       int j=1+(int) (10.0*rand()/(RAND_MAX+1.0));
+                       if (j <= 5)
+                           newBoxes = newYBoxes;
+                       else
+                           newBoxes = newZBoxes;
+                   }
+               }
+               else
+               {
+                   if (numZ > numY)
+                       newBoxes = newZBoxes;
+                   else if (numY > numZ)
+                   {
+                       int j=1+(int) (10.0*rand()/(RAND_MAX+1.0));
+                       if (j <= 5)
+                           newBoxes = newYBoxes;
+                       else
+                           newBoxes = newXBoxes;
+                   }
+                   else
+                   {
+                       int j=1+(int) (12.0*rand()/(RAND_MAX+1.0));
+                       if (j <= 4)
+                           newBoxes = newXBoxes;
+                       else if (j <= 8)
+                           newBoxes = newYBoxes;
+                       else
+                           newBoxes = newZBoxes;
+                   }
+               }
+               if (newBoxes != newXBoxes)
+               {
+                   for (j = 0; j < newXBoxes.size(); j++)
+                       delete newXBoxes[j];
+               }
+               if (newBoxes != newYBoxes)
+               {
+                   for (j = 0; j < newYBoxes.size(); j++)
+                       delete newYBoxes[j];
+               }
+               if (newBoxes != newZBoxes)
+               {
+                   for (j = 0; j < newZBoxes.size(); j++)
+                       delete newZBoxes[j];
+               }
+#else
+               newBoxes = curBox->Subdivide();
+#endif
+               for (j = 0; j < newBoxes.size(); j++)
+                   boxDeque.push_back(newBoxes[j]);
+
+#if 0
+               if (curBox->Resolution() <= 8 * tol)
+                   MakeMeshZone(curBox, points, ugrid2, nodemap);
+
+               if (curBox->Resolution() <= 64 * tol)
+                   MakeMeshZone(curBox, points, ugrid1, nodemap);
+#endif
+                  
+           }
+           else
+           {
+               if ((pass == 0 && rank == 0) || (pass == 1))
+                   MakeMeshZone(curBox, points, ugrid, nodemap);
+           }
+        }
+
+        delete curBox;
+    }
+
+
+    } // for pass
+
+    vtkVisItClipper *regClipper = vtkVisItClipper::New();
+    regClipper->SetInput(ugrid);
+    regClipper->SetClipFunction(GetRegionFunc(CellRegionIds->GetValue(specificZone)));
+    regClipper->SetInsideOut(true);
+    regClipper->Update();
+
+    vtkUnstructuredGrid *clippedGrid = regClipper->GetOutput();
+    clippedGrid->Update();
+    clippedGrid->Register(NULL);
+    regClipper->Delete();
+    ugrid->Delete();
+
+    return clippedGrid;
 }

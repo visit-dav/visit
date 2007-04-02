@@ -42,6 +42,7 @@
 #include <avtParallel.h>
 #include <avtStreamer.h>
 #include <avtTerminatingSource.h>
+#include <avtTypes.h>
 #include <avtVariableMapper.h>
 #include <vtkDataSetWriter.h>
 

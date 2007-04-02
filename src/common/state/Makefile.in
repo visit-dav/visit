@@ -244,6 +244,9 @@
 #    Hank Childs, Mon May 23 11:50:39 PDT 2005
 #    Added DBOptionsAttributes, DBPluginInfoAttributes.
 #
+#    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+#    Added MeshManagementAttributes
+#
 ##############################################################################
 
 ##
@@ -302,6 +305,7 @@ SRC=    AnimationAttributes.C \
 	LightList.C \
 	Line.C \
         MaterialAttributes.C \
+	MeshManagementAttributes.C \
         MessageAttributes.C \
         MovieAttributes.C \
         NamespaceAttributes.C \

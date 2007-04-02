@@ -30,6 +30,10 @@
 
 #include <math.h>
 
+#ifdef SUNOS
+#include <ieeefp.h> // for 'finite'
+#endif
+
 
 vtkCxxRevisionMacro(vtkCrackWidthFilter, "$Revision: 1.00 $");
 vtkStandardNewMacro(vtkCrackWidthFilter);
@@ -574,7 +578,7 @@ int
 vtkCrackWidthFilter::TriStripIntersectWithLine(vtkTriangleStrip *cell, 
     float p1[3], float p2[3], float &t, float x[3])
 {
-  int subTest, numTris = cell->Points->GetNumberOfPoints()-2;
+  int numTris = cell->Points->GetNumberOfPoints()-2;
   int intersection = 0;
   float tTemp;
   float xTemp[3];
@@ -806,7 +810,7 @@ vtkCrackWidthFilter::TetraIntersectWithLine(vtkTetra *cell, float p1[3],
     float p2[3], float &t, float x[3])
 {
   int intersection = 0;
-  float tTemp, pc[3], xTemp[3];
+  float tTemp, xTemp[3];
   int faceNum, *faceIds;
 
   t = VTK_LARGE_FLOAT;
@@ -864,7 +868,7 @@ vtkCrackWidthFilter::HexIntersectWithLine(vtkHexahedron *cell, float p1[3],
     float p2[3], float &t, float x[3])
 {
   int intersection = 0, faceNum, *faceIds;
-  float tTemp, xTemp[3] = {0., 0., 0}, pc[3] = { 0., 0., 0.};
+  float tTemp, xTemp[3] = {0., 0., 0};
   t = VTK_LARGE_FLOAT;
   for (faceNum = 0; faceNum < 6; faceNum++)
     {
@@ -894,7 +898,7 @@ vtkCrackWidthFilter::WedgeIntersectWithLine(vtkWedge *cell, float p1[3],
     float p2[3], float& t, float x[3])
 {
   int intersection = 0;
-  float tTemp, xTemp[3], pc[3];
+  float tTemp, xTemp[3];
   int faceNum, *faceIds;
 
   t = VTK_LARGE_FLOAT;
@@ -951,7 +955,7 @@ vtkCrackWidthFilter::PyramidIntersectWithLine(vtkPyramid *cell, float p1[3],
   int intersection = 0;
   int faceNum;
   int *faceIds;
-  float xTemp[3], weights[5], pc[3], dist2, tTemp;
+  float xTemp[3], tTemp;
 
   t = VTK_LARGE_FLOAT;
 

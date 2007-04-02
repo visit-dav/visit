@@ -23,6 +23,7 @@ class PickAttributes;
 class QueryAttributes;
 class QueryOverTimeAttributes;
 class MaterialAttributes;
+class MeshManagementAttributes;
 class VisWindow;
 
 typedef struct _EngineVisWinInfo
@@ -228,6 +229,9 @@ typedef struct _EngineVisWinInfo
 //
 //    Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
 //    Added GetShouldUseCompression()
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added mesh management attributes to StartNetwork 
 // ****************************************************************************
 class NetworkManager
 {
@@ -244,7 +248,8 @@ class NetworkManager
     void          StartNetwork(const std::string&, const std::string &,
                                const std::string &, int,
                                const CompactSILRestrictionAttributes &,
-                               const MaterialAttributes &);
+                               const MaterialAttributes &,
+                               const MeshManagementAttributes &);
     void          DefineDB(const std::string &, const std::string &,
                            const stringVector &, int, const std::string &);
     void          AddFilter(const std::string&,

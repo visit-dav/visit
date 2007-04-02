@@ -38,6 +38,8 @@ class  vtkImageData;
 //    Mark C. Miller, Mon Oct 31 18:12:49 PST 2005
 //    Added code to support compression of data object string
 //
+//    Mark C. Miller, Wed Nov 16 14:17:01 PST 2005
+//    Added additional compression related data members 
 // ****************************************************************************
 
 class PIPELINE_API avtImageRepresentation
@@ -65,7 +67,10 @@ class PIPELINE_API avtImageRepresentation
     void                 SetOrigin(const int rowOrigin, const int colOrigin);
     void                 GetOrigin(int *rowOrigin, int *colOrigin) const;
     virtual int          GetNumberOfCells(bool polysOnly = false) const; 
+
     float                GetCompressionRatio() const;
+    float                GetTimeToCompress() const;
+    float                GetTimeToDecompress() const;
 
     bool                 Valid(void);
     void                 ReleaseData(void);
@@ -82,7 +87,10 @@ class PIPELINE_API avtImageRepresentation
 
     int                  rowOrigin;
     int                  colOrigin;
+
     float                compressionRatio;
+    float                timeToCompress;
+    float                timeToDecompress;
 
     void                 Copy(const avtImageRepresentation &);
     void                 DestructSelf(void);

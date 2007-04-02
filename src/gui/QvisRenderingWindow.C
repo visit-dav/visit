@@ -132,6 +132,9 @@ QvisRenderingWindow::~QvisRenderingWindow()
 //
 //   Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
 //   Added compression controls
+//
+//   Mark C. Miller, Wed Nov 16 14:17:01 PST 2005
+//   Changed label string for compression 
 // ****************************************************************************
 
 void
@@ -244,7 +247,7 @@ QvisRenderingWindow::CreateWindowContents()
     oLayout->addWidget(scalrenAutoThreshold, 11, 3);
 
     // Create the compress mode widgets.
-    scalrenCompressLabel = new QLabel("Compress scalable rendered image",
+    scalrenCompressLabel = new QLabel("Compress images (geom too) from engine",
                                                    options, "compressModeLabel");
     oLayout->addMultiCellWidget(scalrenCompressLabel, 12, 12, 0, 3);
     scalrenCompressMode = new QButtonGroup(0, "compressMode");
@@ -336,8 +339,8 @@ QvisRenderingWindow::CreateWindowContents()
 
     QGridLayout *iLayout = new QGridLayout(vLayout, 2, 4);
     iLayout->setSpacing(5);
-    QLabel *fpsLabel2 = new QLabel("Frames per second:", info, "fpsLabel2");
-    iLayout->addWidget(fpsLabel2, 0, 0);
+    fpsLabel = new QLabel("Frames per second:", info, "fpsLabel");
+    iLayout->addWidget(fpsLabel, 0, 0);
     fpsMinLabel = new QLabel("0.", info, "fpsMinLabel");
     iLayout->addWidget(fpsMinLabel, 0, 1);
     fpsAvgLabel = new QLabel("0.", info, "fpsAvgLabel");
@@ -614,6 +617,8 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
 //   Mark C. Miller, Thu Jul 21 20:16:42 PDT 2005
 //   Added a break; statement after case label 16
 //
+//   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//   Added seconds per frame for < 1 fps cases 
 // ****************************************************************************
 
 void
@@ -673,6 +678,15 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
                 fps = 1. / windowInfo->GetLastRenderAvg();
             else
                 fps = 0.;
+            if (fps > 0.0 && fps < 1.0)
+            {
+                fps = 1.0 / fps;
+                fpsLabel->setText("Seconds per frame:");
+            }
+            else
+            {
+                fpsLabel->setText("Frames per second:");
+            }
             tmp.sprintf("%1.3g", fps);
             fpsAvgLabel->setText(tmp);
             break;
@@ -1012,8 +1026,6 @@ QvisRenderingWindow::scalrenActivationModeChanged(int val)
     {
         scalrenAutoThreshold->setEnabled(1);
         scalrenGeometryLabel->setEnabled(1);
-        scalrenCompressMode->setEnabled(1);
-        scalrenCompressLabel->setEnabled(1);
         renderAtts->SetScalableActivationMode(RenderingAttributes::Auto);
         scalrenAutoThresholdChanged(scalrenAutoThreshold->value());
     }
@@ -1021,16 +1033,12 @@ QvisRenderingWindow::scalrenActivationModeChanged(int val)
     {
         scalrenAutoThreshold->setEnabled(0);
         scalrenGeometryLabel->setEnabled(0);
-        scalrenCompressMode->setEnabled(1);
-        scalrenCompressLabel->setEnabled(1);
         renderAtts->SetScalableActivationMode(RenderingAttributes::Always);
     }
     else
     {
         scalrenAutoThreshold->setEnabled(0);
         scalrenGeometryLabel->setEnabled(0);
-        scalrenCompressMode->setEnabled(0);
-        scalrenCompressLabel->setEnabled(0);
         renderAtts->SetScalableActivationMode(RenderingAttributes::Never);
     }
     SetUpdate(false);

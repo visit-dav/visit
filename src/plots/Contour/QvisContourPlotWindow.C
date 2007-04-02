@@ -838,6 +838,8 @@ QvisContourPlotWindow::GetCurrentValues(int which_widget)
 //   Brad Whitlock, Thu Feb 14 15:20:33 PST 2002
 //   Added a code to prevent more than MAX_CONTOURS contours.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added MAX_CONTOURS args to calls to StringToDoubleList 
 // ****************************************************************************
 
 void
@@ -849,7 +851,8 @@ QvisContourPlotWindow::ProcessSelectByText()
     {
         // Try converting the line edit to a double vector so we can take
         // the first element as the number of levels.
-        StringToDoubleList(selectByLineEdit->displayText().latin1(), temp);
+        StringToDoubleList(selectByLineEdit->displayText().latin1(), temp,
+                           ContourAttributes::MAX_CONTOURS);
 
         // If there were elements in the list use the first one, else use 10.
         int nlevels = (temp.size() > 0) ? int(temp[0]) : 10;
@@ -877,77 +880,18 @@ QvisContourPlotWindow::ProcessSelectByText()
     {
         // Convert the text fo a list of doubles and store them in the
         // contour's value vector.
-        StringToDoubleList(selectByLineEdit->displayText().latin1(), temp);
+        StringToDoubleList(selectByLineEdit->displayText().latin1(), temp,
+                           ContourAttributes::MAX_CONTOURS);
         contourAtts->SetContourValue(temp);
     }
     else if(contourAtts->GetContourMethod() == ContourAttributes::Percent)
     {
         // Convert the text to a list of doubles and store them in the
         // contour's percent vector.
-        StringToDoubleList(selectByLineEdit->displayText().latin1(), temp);
+        StringToDoubleList(selectByLineEdit->displayText().latin1(), temp,
+                           ContourAttributes::MAX_CONTOURS);
         contourAtts->SetContourPercent(temp);
     }
-}
-
-// ****************************************************************************
-// Method: QvisContourPlotWindow::StringToDoubleList
-//
-// Purpose: 
-//   Dissects a string into a list of doubles and stores it in the passed-in
-//   doubleVector.
-//
-// Arguments:
-//   str : The string to be searched for doubles.
-//   dv  : The return vector to contain the doubles.
-//
-// Programmer: Brad Whitlock
-// Creation:   Sat Feb 17 13:05:15 PST 2001
-//
-// Modifications:
-//   Brad Whitlock, Thu Feb 14 15:18:35 PST 2002
-//   Added code to prevent adding any more than MAX_CONTOURS elements to
-//   the dv vector.
-//
-//   Brad Whitlock, Mon Dec 9 15:06:23 PST 2002
-//   I fixed a bug that was causing ABR's.
-//
-// ****************************************************************************
-
-void 
-QvisContourPlotWindow::StringToDoubleList(const char *str, doubleVector &dv)
-{
-    int length, offset = 0;
-
-    // Clear the vector.
-    dv.clear();
-
-    // Get out if the input string is nothing.
-    if(str == NULL || ((length = strlen(str)) == 0))
-    {
-        return;
-    }
-
-    do {
-        // Skip any preceding spaces, stop at end of string too.
-        for(; str[offset] == ' ' && str[offset] != '\0'; ++offset);
-
-        if(offset < length)
-        {
-            char buf[30];
-            sscanf(str + offset, "%s", buf);
-            offset += strlen(buf); 
-
-            // Only add if the token was something.
-            if(strlen(buf) > 0)
-            {
-                double dtemp = (double)atof(buf);
-                if(dv.size() < ContourAttributes::MAX_CONTOURS)
-                    dv.push_back(dtemp);
-                else
-                    offset = length * 2;
-            }
-        }
-    } while(offset < length);
 }
 
 // ****************************************************************************

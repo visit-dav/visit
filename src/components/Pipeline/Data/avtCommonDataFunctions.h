@@ -56,6 +56,8 @@ class     vtkDataArray;
 //    Hank Childs, Tue Jul 27 08:49:51 PDT 2004
 //    Add CConvertUnstructuredGridToPolyData.
 //
+//    Mark C. Miller, Wed Nov 16 14:17:01 PST 2005
+//    Added compression support functions 
 // ****************************************************************************
 
 //
@@ -87,6 +89,16 @@ PIPELINE_API void GetDataRange(vtkDataSet *, double *, const char *);
 PIPELINE_API double MajorEigenvalue(float *);
 PIPELINE_API double MajorEigenvalue(double *);
 
+PIPELINE_API bool CCompressDataString(const unsigned char *dstr, int len, 
+                      unsigned char **newdstr, int *newlen,
+                      float *timeToCompress, float *compressionRatio);
+PIPELINE_API bool CDecompressDataString(const unsigned char *dstr, int len, 
+                      unsigned char **newdstr, int *newlen,
+                      float *timeToCompress, float *timeToDecompress,
+                      float *compressionRatio);
+PIPELINE_API bool CMaybeCompressedDataString(const unsigned char *dstr);
+PIPELINE_API void CGetCompressionInfoFromDataString(const unsigned char *dstr,
+                      int len, float *timeToCompress, float *compressionRatio);
 
 typedef struct
 {

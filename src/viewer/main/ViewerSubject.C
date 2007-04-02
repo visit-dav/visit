@@ -45,6 +45,7 @@
 #include <KeyframeAttributes.h>
 #include <LostConnectionException.h>
 #include <MaterialAttributes.h>
+#include <MeshManagementAttributes.h>
 #include <MessageAttributes.h>
 #include <MovieAttributes.h>
 #include <PickAttributes.h>
@@ -576,6 +577,8 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
 //
 // Modifications:
 //   
+//   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//   Added mesh management attributes
 // ****************************************************************************
 
 void
@@ -650,6 +653,7 @@ ViewerSubject::CreateState()
     viewerState->Add(ViewerWindowManager::Instance()->GetInteractorClientAtts());
     viewerState->Add(procAtts);
     viewerState->Add(movieAtts);
+    viewerState->Add(ViewerEngineManager::GetMeshManagementClientAtts());
 }
 
 // ****************************************************************************
@@ -1445,6 +1449,8 @@ ViewerSubject::LoadOperatorPlugins()
 //   Kathleen Bonnell, Wed Aug 18 09:25:33 PDT 2004 
 //   Added InteractorAtts.
 //
+//   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//   Added mesh management attributes
 // ****************************************************************************
 
 void
@@ -1497,6 +1503,9 @@ ViewerSubject::ProcessConfigFileSettings()
 
     // Send the queries to the client.
     ViewerQueryManager::Instance()->GetQueryTypes()->Notify();
+
+    // Copy the default mesh management atts to the client material atts
+    ViewerEngineManager::SetClientMeshManagementAttsFromDefault();
 
     visitTimer->StopTimer(timeid, "Processing config file data.");
 }
@@ -5621,6 +5630,57 @@ ViewerSubject::ResetMaterialAttributes()
 }
 
 // ****************************************************************************
+//  Method: ViewerSubject::SetMeshManagementAttributes
+//
+//  Purpose: Execute the SetMeshManagementAttributes RPC.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 5, 2005 
+//
+// ****************************************************************************
+
+void
+ViewerSubject::SetMeshManagementAttributes()
+{
+    // Do nothing; there is only a global copy, and nothing
+    // is regenerated automatically just yet
+}
+
+// ****************************************************************************
+//  Method: ViewerSubject::SetDefaultMeshManagementAttributes
+//
+//  Purpose: Sets the default material atts from the client material atts.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 5, 2005 
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::SetDefaultMeshManagementAttributes()
+{
+    ViewerEngineManager *eM=ViewerEngineManager::Instance();
+    eM->SetDefaultMeshManagementAttsFromClient();
+}
+
+// ****************************************************************************
+//  Method: ViewerSubject::ResetMeshManagementAttributes
+//
+//  Purpose: Sets the default material attributes into the material attributes
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 5, 2005 
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::ResetMeshManagementAttributes()
+{
+    ViewerEngineManager *eM=ViewerEngineManager::Instance();
+    eM->SetClientMeshManagementAttsFromDefault();
+}
+
+// ****************************************************************************
 // Method: ViewerSubject::SetAppearanceAttributes
 //
 // Purpose: 
@@ -6813,6 +6873,8 @@ ViewerSubject::SendKeepAlives()
 //    Kathleen Bonnell, Wed Jul 27 15:47:34 PDT 2005
 //    Added SuppressQueryOutputRPC.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added mesh management attributes rpcs 
 // ****************************************************************************
 
 void
@@ -7118,6 +7180,15 @@ ViewerSubject::HandleViewerRPC()
         break;
     case ViewerRPC::SuppressQueryOutputRPC:
         SuppressQueryOutput();
+        break;
+    case ViewerRPC::SetMeshManagementAttributesRPC:
+        SetMeshManagementAttributes();
+        break;
+    case ViewerRPC::SetDefaultMeshManagementAttributesRPC:
+        SetDefaultMeshManagementAttributes();
+        break;
+    case ViewerRPC::ResetMeshManagementAttributesRPC:
+        ResetMeshManagementAttributes();
         break;
     case ViewerRPC::MaxRPC:
         break;

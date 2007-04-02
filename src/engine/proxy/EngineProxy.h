@@ -234,6 +234,8 @@ class ExportDBAttributes;
 //    Jeremy Meredith, Mon Mar 21 08:50:09 PST 2005
 //    Added ExecuteSimulationControlCommand methods.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added mesh management attributes to ReadDataObject
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -276,7 +278,8 @@ public:
                                             const std::string&, const int,
                                             avtSILRestriction_p,
                                             const MaterialAttributes&,
-                                            const ExpressionList &);
+                                            const ExpressionList &,
+                                            const MeshManagementAttributes &);
     void                     ApplyOperator(const std::string&, 
                                            const AttributeSubject*);
     void                     ApplyNamedFunction(const std::string &name,

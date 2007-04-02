@@ -56,6 +56,8 @@ typedef enum
 //    Hank Childs, Wed Mar 17 19:16:48 PST 2004
 //    Added a static null dataset to prevent unnecessary memory usage with SR.
 //
+//    Mark C. Miller, Wed Nov 16 13:31:19 PST 2005
+//    Added compression
 // ****************************************************************************
 
 class PIPELINE_API avtDataRepresentation
@@ -73,7 +75,12 @@ class PIPELINE_API avtDataRepresentation
 
     vtkDataSet         *GetDataVTK(void);
     unsigned char      *GetDataString(int &, DataSetType &);
+    unsigned char      *GetCompressedDataString(int &, DataSetType &);
     int                 GetNumberOfCells(int topoDim, bool polysOnly) const;
+
+    float               GetCompressionRatio() const;
+    float               GetTimeToCompress() const;
+    float               GetTimeToDecompress() const;
 
     bool                Valid(void);
 
@@ -87,12 +94,17 @@ class PIPELINE_API avtDataRepresentation
     CharStrRef          originalString;
     DataSetType         datasetType;
 
+    float               compressionRatio;
+    float               timeToCompress;
+    float               timeToDecompress;
+
     int                 domain;
     std::string         label;
 
     static bool         initializedNullDataset;
     static vtkDataSet  *nullDataset;
 
+    unsigned char      *GetDataString(int &, DataSetType &, bool);
     static void         InitializeNullDataset(void);
     static DataSetType  DatasetTypeForVTK(vtkDataSet *);
 };

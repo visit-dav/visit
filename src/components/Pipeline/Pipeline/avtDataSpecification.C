@@ -98,6 +98,8 @@ using     std::map;
 //    Hank Childs, Fri Sep 23 10:10:12 PDT 2005
 //    Change db_variable to orig_variable.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added members for mesh discretization 
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts,
@@ -125,6 +127,10 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
     desiredGhostDataType = NO_GHOST_DATA;
     maintainOriginalConnectivity = false;
     needNativePrecision = false;
+    discTol = 0.01;
+    discMode = 1; // adaptive
+    discBoundaryOnly = false;
+    passNativeCSG = false;
 
     InitAdmissibleDataTypes();
 
@@ -218,6 +224,8 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
 //    Hank Childs, Fri Sep 23 10:10:12 PDT 2005
 //    Change db_variable to orig_variable.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added members for mesh discretization 
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
@@ -244,6 +252,10 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
     desiredGhostDataType = NO_GHOST_DATA;
     maintainOriginalConnectivity = false;
     needNativePrecision = false;
+    discTol = 0.01;
+    discMode = 1; // adaptive
+    discBoundaryOnly = false;
+    passNativeCSG = false;
 
     InitAdmissibleDataTypes();
 
@@ -481,6 +493,8 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec)
 //    Hank Childs, Fri Sep 23 10:10:12 PDT 2005
 //    Change db_variable to orig_variable.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added members for mesh discretization 
 // ****************************************************************************
 
 avtDataSpecification &
@@ -536,6 +550,10 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
     maintainOriginalConnectivity    = spec.maintainOriginalConnectivity;
     needNativePrecision             = spec.needNativePrecision;
     admissibleDataTypes             = spec.admissibleDataTypes;
+    discTol                         = spec.discTol;
+    discMode                        = spec.discMode;
+    discBoundaryOnly                = spec.discBoundaryOnly;
+    passNativeCSG                   = spec.passNativeCSG;
 
     secondaryVariables = spec.secondaryVariables;
 
@@ -629,6 +647,8 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
 //    Hank Childs, Fri Sep 23 10:10:12 PDT 2005
 //    Change db_variable to orig_variable.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added members for mesh discretization 
 // ****************************************************************************
 
 bool
@@ -792,6 +812,18 @@ avtDataSpecification::operator==(const avtDataSpecification &ds)
     }
 
     if (admissibleDataTypes != ds.admissibleDataTypes)
+        return false;
+
+    if (discTol != ds.discTol)
+        return false;
+   
+    if (discMode != ds.discMode)
+        return false;
+
+    if (discBoundaryOnly != ds.discBoundaryOnly)
+        return false;
+
+    if (passNativeCSG != ds.passNativeCSG)
         return false;
 
     return true;

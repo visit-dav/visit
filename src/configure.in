@@ -580,6 +580,9 @@ dnl
 dnl    Eric Brugger, Mon Nov 14 11:25:18 PST 2005
 dnl    I removed VTK_CAMERA_SRC.
 dnl
+dnl    Kathleen Bonnell, Wed Nov 16 08:51:43 PST 2005 
+dnl    Added -lXt to X_LIBS. 
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -2619,7 +2622,7 @@ fi
 #
 if test "$no_x" != "yes" && test "$user_specified_x_libraries" = NONE; then
     oldlibs="$LIBS"
-    LIBS="-lX11 $LIBS"
+    LIBS="-lX11 -lXt $LIBS"
 
     AC_MSG_CHECKING(if linker knows about X11 libraries)
     AC_TRY_LINK([#include <X11/Xlib.h>],[XOpenDisplay((char*)0)],
@@ -2637,7 +2640,7 @@ fi
 # Is the X library available if we need it?
 #
 if test "$no_x" != "yes"; then
-    AC_CHECK_LIB(X11,  main, X_LIBS="-lX11 $X_LIBS"         ,,$X_LIBS)
+    AC_CHECK_LIB(X11,  main, X_LIBS="-lX11 -lXt $X_LIBS"         ,,$X_LIBS)
 else
     X_LIBS=""
 fi

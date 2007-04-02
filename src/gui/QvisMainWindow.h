@@ -140,6 +140,8 @@ class WindowInformation;
 //   Eric Brugger, Thu Jun 30 09:13:18 PDT 2005
 //   Added a 2x3 window layout and removed the 4x4 window layout.
 //
+//   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//   Added mesh management attributes window
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -204,6 +206,7 @@ signals:
     void activateGlobalLineoutWindow();
     void activateQueryOverTimeWindow();
     void activateInteractorWindow();
+    void activateMeshManagementWindow();
     void updateVisIt();
 
     void saveSettings();

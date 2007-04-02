@@ -179,6 +179,9 @@ public:
         SetTryHarderCyclesTimesRPC,
         OpenClientRPC,
         SuppressQueryOutputRPC,
+        SetMeshManagementAttributesRPC,
+        SetDefaultMeshManagementAttributesRPC,
+        ResetMeshManagementAttributesRPC,
         MaxRPC
     };
 

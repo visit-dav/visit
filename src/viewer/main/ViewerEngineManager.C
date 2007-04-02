@@ -35,6 +35,7 @@
 #include <ViewerRemoteProcessChooser.h>
 #include <ViewerWindowManager.h>
 #include <MaterialAttributes.h>
+#include <MeshManagementAttributes.h>
 #include <TimingsManager.h>
 
 #include <avtCallback.h>
@@ -255,6 +256,8 @@ EngineList *ViewerEngineManager::clientEngineAtts=0;
 
 MaterialAttributes *ViewerEngineManager::materialClientAtts=0;
 MaterialAttributes *ViewerEngineManager::materialDefaultAtts=0;
+MeshManagementAttributes *ViewerEngineManager::meshManagementClientAtts=0;
+MeshManagementAttributes *ViewerEngineManager::meshManagementDefaultAtts=0;
 ExportDBAttributes *ViewerEngineManager::exportDBAtts=0;
 
 //
@@ -1648,6 +1651,8 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
 //    since it was possible to call methods on a NULL metadata pointer,
 //    thus crashing the viewer.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added mesh management attributes 
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -1701,7 +1706,8 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
                                    plot->GetVariableName(),
                                    state, plot->GetSILRestriction(),
                                    *GetMaterialClientAtts(),
-                                   plot->GetExpressions());
+                                   plot->GetExpressions(),
+                                   *GetMeshManagementClientAtts());
         }
 
         //
@@ -2932,6 +2938,91 @@ ViewerEngineManager::SetDefaultMaterialAttsFromClient()
     }
 }
 
+// ****************************************************************************
+//  Method: ViewerWindowManager::GetMeshManagementClientAtts
+//
+//  Purpose: Returns a pointer to the mesh management attributes.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 5, 2005
+//
+// ****************************************************************************
+
+MeshManagementAttributes *
+ViewerEngineManager::GetMeshManagementClientAtts()
+{
+    //
+    // If the client attributes haven't been allocated then do so.
+    //
+    if (meshManagementClientAtts == 0)
+    {
+        meshManagementClientAtts = new MeshManagementAttributes;
+    }
+
+    return meshManagementClientAtts;
+}
+
+// ****************************************************************************
+//  Method: ViewerWindowManager::GetMeshManagementDefaultAtts
+//
+//  Purpose: Returns a pointer to the default meshManagement attributes.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 5, 2005
+//
+// ****************************************************************************
+
+MeshManagementAttributes *
+ViewerEngineManager::GetMeshManagementDefaultAtts()
+{
+    //
+    // If the client attributes haven't been allocated then do so.
+    //
+    if (meshManagementDefaultAtts == 0)
+    {
+        meshManagementDefaultAtts = new MeshManagementAttributes;
+    }
+
+    return meshManagementDefaultAtts;
+}
+
+// ****************************************************************************
+//  Method:  ViewerEngineManager::SetClientMeshManagementAttsFromDefault
+//
+//  Purpose: Copy the current client atts to be the default.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 5, 2005
+// ****************************************************************************
+
+void
+ViewerEngineManager::SetClientMeshManagementAttsFromDefault()
+{
+    if (meshManagementDefaultAtts != 0 && meshManagementClientAtts != 0)
+    {
+        *meshManagementClientAtts = *meshManagementDefaultAtts;
+        meshManagementClientAtts->Notify();
+    }
+}
+
+// ****************************************************************************
+//  Method:  ViewerEngineManager::SetDefaultMeshManagementAttsFromClient
+//
+//  Purpose: Copy the default atts back to the client.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 5, 2005
+//
+// ****************************************************************************
+
+void
+ViewerEngineManager::SetDefaultMeshManagementAttsFromClient()
+{
+    if (meshManagementDefaultAtts != 0 && meshManagementClientAtts != 0)
+    {
+        *meshManagementDefaultAtts = *meshManagementClientAtts;
+    }
+}
 
 // ****************************************************************************
 //  Method: ViewerEngineManager::GetExportDBAtts

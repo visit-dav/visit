@@ -263,6 +263,8 @@ class SplashScreen;
 //    Added movie arguments so the user can pass certain arguments to the
 //    movie script on the command line when we launch a new VisIt.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added mesh management attributes window
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -390,6 +392,7 @@ private slots:
     void showInteractorWindow();
     void showSimulationWindow();
     void showExportDBWindow();
+    void showMeshManagementWindow();
 
     void updateVisIt();
     void updateVisItCompleted(const QString &);

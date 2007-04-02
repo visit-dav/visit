@@ -1,6 +1,7 @@
 // ************************************************************************* //
 //                        avtCommonDataFunctions.C                           //
 // ************************************************************************* //
+#include <visit-config.h>
 
 #include <avtCommonDataFunctions.h>
 
@@ -27,6 +28,11 @@
 
 #include <NoInputException.h>
 #include <DebugStream.h>
+
+#ifdef HAVE_LIBBZ2
+#include <bzlib.h>
+#include <TimingsManager.h>
+#endif
 
 using std::vector;
 using std::string;
@@ -1932,4 +1938,166 @@ MajorEigenvalue(double *vals)
     double eigenvals[3];
     vtkMath::Jacobi(input, eigenvals, eigenvecs);
     return eigenvals[0];
+}
+
+
+// ****************************************************************************
+//  Function: CMaybeCompressedDataString
+//
+//  Purpose: Check a data string for leading characters indicating it *might*
+//           be a BZ2 compressed string. 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 15, 2005 
+//
+// ****************************************************************************
+
+bool
+CMaybeCompressedDataString(const unsigned char *dstr)
+{
+    if (dstr[0] == 'B' && dstr[1] == 'Z' && dstr[2] == 'h')
+        return true;
+    return false;
+}
+
+// ****************************************************************************
+//  Function: CCompressDataString 
+//
+//  Purpose: Attempts to compress a data string to a size no larger than a
+//           specified size. The maximum specified size is read from *newlen
+//           on entrance.  If *newlen is zero, then it will default to using
+//           a maximum specified size of 1/2 of the input string's size.
+//           If it is able to compress into the specified size, the compressed
+//           string and its size is returned in the new args and a value of
+//           true is returned for the function. If it is unable to compress
+//           into the specified size, the new args are unchanged and a value
+//           of false is returned for the function.
+//
+//  Notes:   Information about the compression is tacked onto the end of the
+//           returned string.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 15, 2005 
+//
+// ****************************************************************************
+bool CCompressDataString(const unsigned char *dstr, int len,
+                         unsigned char **newdstr, int *newlen,
+                         float *timec, float *ratioc)
+{
+#ifdef HAVE_LIBBZ2
+    unsigned int lenBZ2 = *newlen == 0 ? len / 2 : *newlen;
+    unsigned char *dstrBZ2 = new unsigned char [lenBZ2+20];
+    int startCompress = visitTimer->StartTimer(true);
+    if (BZ2_bzBuffToBuffCompress((char*)dstrBZ2, &lenBZ2, (char*) dstr, len,
+                                 1, 0, 250) != BZ_OK)
+    {
+        double dummy =
+            visitTimer->StopTimer(startCompress,
+                        "Failed attempt to compress data", true);
+        delete [] dstrBZ2;
+        return false;
+    }
+    else
+    {
+        double timeToCompress = 
+            visitTimer->StopTimer(startCompress, "Compressing data", true);
+        debug5 << "Compressed data "
+               << (float) len / (float) lenBZ2
+               << ":1 in " << timeToCompress << " seconds" << endl;
+        sprintf((char*) &dstrBZ2[lenBZ2], "%10d", len);
+        sprintf((char*) &dstrBZ2[lenBZ2+10], "% 10.6f", timeToCompress);
+        *newdstr = dstrBZ2;
+        *newlen = lenBZ2+20;
+        if (timec) *timec = timeToCompress;
+        if (ratioc) *ratioc = (float) len / (float) lenBZ2;
+        return true;
+    }
+#else
+    return false;
+#endif
+}
+
+// ****************************************************************************
+// Function: CDecompressDataString
+//
+// Purpose: Decompress a possibly compressed data string. Return true if
+//          decompression succeeded, false otherwise
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 15, 2005 
+//
+// ****************************************************************************
+
+bool CDecompressDataString(const unsigned char *dstr, int len,
+                           unsigned char **newdstr, int *newlen,
+                           float *timec, float *timedc, float *ratioc)
+{
+#ifdef HAVE_LIBBZ2
+    if (CMaybeCompressedDataString(dstr))
+    {
+        unsigned int strLengthOrig;
+        double timeToCompress;
+        sscanf((char*) &dstr[len-20], "%10d", &strLengthOrig);
+        sscanf((char*) &dstr[len-10], "% 10.6f", &timeToCompress);
+        unsigned char *strOrig = new unsigned char[strLengthOrig];
+        int startDecompress = visitTimer->StartTimer(true);
+        if (BZ2_bzBuffToBuffDecompress((char*) strOrig, &strLengthOrig,
+                                       (char*) dstr, len, 0, 0) != BZ_OK)
+        {
+            double dummy =
+                visitTimer->StopTimer(startDecompress,
+                            "Failed attempt to decompress data", true);
+            debug5 << "Found 3 character \"BZh\" header in data string "
+                   << "but failed to decompress. Assuming coincidence." << endl;
+            delete [] strOrig;
+            return false;
+        }
+        else
+        {
+            double timeToDecompress =
+                visitTimer->StopTimer(startDecompress, "Decompressing data", true);
+            debug5 << "Uncompressed data 1:"
+                   << (float) strLengthOrig / (float) len 
+                   << " in " << timeToDecompress << " seconds" << endl;
+            *newdstr = strOrig;
+            *newlen = strLengthOrig;
+            if (timec) *timec = timeToCompress;
+            if (timedc) *timedc = timeToDecompress;
+            if (ratioc) *ratioc = (float) strLengthOrig / (float) len;
+            return true;
+        }
+    }
+    else
+    {
+        return false;
+    }
+#else
+    return false;
+#endif
+}
+
+// ****************************************************************************
+//  Function: CGetCompressionInfoFromDataString 
+//
+//  Purpose: Without actually doing a decompression, obtain compression
+//           information from the end of the datastring
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 15, 2005 
+//
+// ****************************************************************************
+
+void
+CGetCompressionInfoFromDataString(const unsigned char *dstr,
+                      int len, float *timec, float *ratioc)
+{
+    if (CMaybeCompressedDataString(dstr))
+    {
+        int uncompressedLen;
+        float timeToCompress;
+        sscanf((char*) &dstr[len-20], "%10d", &uncompressedLen);
+        sscanf((char*) &dstr[len-10], "% 10.6f", &timeToCompress);
+        if (timec) *timec = timeToCompress;
+        if (ratioc) *ratioc = (float) uncompressedLen / (float) len;
+    }
 }

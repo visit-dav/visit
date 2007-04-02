@@ -82,6 +82,18 @@ enum SetState
     AllUsedOtherProc /* 3 */
 }; 
 
+
+enum LoadBalanceScheme
+{
+    LOAD_BALANCE_UNKNOWN                       =-1,
+    LOAD_BALANCE_CONTIGUOUS_BLOCKS_TOGETHER    = 0,
+    LOAD_BALANCE_STRIDE_ACROSS_BLOCKS,        /* 1 */
+    LOAD_BALANCE_RANDOM_ASSIGNMENT,           /* 2 */
+    LOAD_BALANCE_DBPLUGIN_DYNAMIC,            /* 3 */
+    LOAD_BALANCE_RESTRICTED,                  /* 4 */
+    LOAD_BALANCE_ABSOLUTE                     /* 5 */
+};
+
 typedef std::vector<std::string> MaterialList;
 
 DBATTS_API extern const char * AUXILIARY_DATA_DATA_EXTENTS;
@@ -100,6 +112,8 @@ DBATTS_API std::string avtExtentType_ToString(int);
 DBATTS_API bool avtExtentType_FromString(const std::string &, avtExtentType &);
 
 DBATTS_API std::string avtVarTypeToString(avtVarType);
+
+DBATTS_API std::string LoadBalanceSchemeToString(LoadBalanceScheme);
 
 DBATTS_API avtVarType GuessVarTypeFromNumDimsAndComps(int numSpatialDims,
                                                       int componentCount);

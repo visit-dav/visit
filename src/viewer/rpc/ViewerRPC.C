@@ -58,7 +58,9 @@ static const char *ViewerRPCType_strings[] = {
 "ResetLineoutColorRPC", "SetInteractorAttributesRPC", "SetDefaultInteractorAttributesRPC", 
 "ResetInteractorAttributesRPC", "GetProcInfoRPC", "SendSimulationCommandRPC", 
 "UpdateDBPluginInfoRPC", "ExportDBRPC", "SetTryHarderCyclesTimesRPC", 
-"OpenClientRPC", "SuppressQueryOutputRPC", "MaxRPC"
+"OpenClientRPC", "SuppressQueryOutputRPC",
+"SetMeshManagementAttributesRPC", "SetDefaultMeshManagementAttributesRPC",
+"ResetMeshManagementAttributesRPC", "MaxRPC"
 };
 
 std::string

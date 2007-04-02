@@ -1111,6 +1111,8 @@ avtGenericDatabase::ManageMemoryForNonCachableMesh(vtkDataSet *v)
 //    Hank Childs, Tue Jul 19 14:54:22 PDT 2005
 //    Add support for arrays.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Passed data spec down Get function call tree 
 // ****************************************************************************
 
 vtkDataSet *
@@ -1120,10 +1122,6 @@ avtGenericDatabase::GetDataset(const char *varname, int ts, int domain,
 {
     vtkDataSet *rv = NULL;
     avtVarType type = GetMetaData(ts)->DetermineVarType(varname);
-
-    // get information to control data type 
-    bool needNativePrecision = spec->NeedNativePrecision();
-    vector<int> admissibleDataTypes = spec->GetAdmissibleDataTypes();
 
     if (strcmp(matname, "_all") == 0)
     {
@@ -1137,49 +1135,40 @@ avtGenericDatabase::GetDataset(const char *varname, int ts, int domain,
     switch (type)
     {
       case AVT_SCALAR_VAR:
-        rv = GetScalarVarDataset(varname, ts, domain, matname,
-                 needNativePrecision, admissibleDataTypes);
+        rv = GetScalarVarDataset(varname, ts, domain, matname, spec);
         break;
 
       case AVT_VECTOR_VAR:
-        rv = GetVectorVarDataset(varname, ts, domain, matname,
-                 needNativePrecision, admissibleDataTypes);
+        rv = GetVectorVarDataset(varname, ts, domain, matname, spec);
         break;
 
       case AVT_TENSOR_VAR:
-        rv = GetTensorVarDataset(varname, ts, domain, matname,
-                 needNativePrecision, admissibleDataTypes);
+        rv = GetTensorVarDataset(varname, ts, domain, matname, spec);
         break;
 
       case AVT_SYMMETRIC_TENSOR_VAR:
-        rv = GetSymmetricTensorVarDataset(varname, ts, domain, matname,
-                 needNativePrecision, admissibleDataTypes);
+        rv = GetSymmetricTensorVarDataset(varname, ts, domain, matname, spec);
         break;
 
       case AVT_ARRAY_VAR:
-        rv = GetArrayVarDataset(varname, ts, domain, matname,
-                 needNativePrecision, admissibleDataTypes);
+        rv = GetArrayVarDataset(varname, ts, domain, matname, spec);
         break;
 
       case AVT_LABEL_VAR:
-        rv = GetLabelVarDataset(varname, ts, domain, matname,
-                 needNativePrecision, admissibleDataTypes);
+        rv = GetLabelVarDataset(varname, ts, domain, matname, spec);
         break;
 
       case AVT_MATERIAL:
-        rv = GetMaterialDataset(varname, ts, domain, matname,
-                 needNativePrecision, admissibleDataTypes);
+        rv = GetMaterialDataset(varname, ts, domain, matname, spec);
         break;
 
       case AVT_MESH:
       case AVT_CURVE:
-        rv = GetMeshDataset(varname, ts, domain, matname,
-                 needNativePrecision, admissibleDataTypes);
+        rv = GetMeshDataset(varname, ts, domain, matname, spec);
         break;
 
       case AVT_MATSPECIES:
-        rv = GetSpeciesDataset(varname, ts, domain, matname,
-                 needNativePrecision, admissibleDataTypes);
+        rv = GetSpeciesDataset(varname, ts, domain, matname, spec);
         break;
 
       default:
@@ -1188,8 +1177,7 @@ avtGenericDatabase::GetDataset(const char *varname, int ts, int domain,
 
     if (rv != NULL && vars2nd.size() > 0)
     {
-        AddSecondaryVariables(rv, ts, domain, matname, vars2nd,
-            needNativePrecision, admissibleDataTypes);
+        AddSecondaryVariables(rv, ts, domain, matname, vars2nd, spec);
     }
 
     Interface->TurnMaterialSelectionOff();
@@ -1256,13 +1244,14 @@ avtGenericDatabase::GetDataset(const char *varname, int ts, int domain,
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added support for data type conversion
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification 
 // ****************************************************************************
 
 vtkDataSet *
 avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
                                         int domain, const char *material,
-                                        const bool needNativePrecision,
-                                        const vector<int>& admissibleDataTypes)
+                                         const avtDataSpecification_p dspec)
 {
     const avtScalarMetaData *smd = GetMetaData(ts)->GetScalar(varname);
     if (smd == NULL)
@@ -1271,8 +1260,7 @@ avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
     }
 
     string meshname  = GetMetaData(ts)->MeshForVar(varname);
-    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material,
-                               needNativePrecision, admissibleDataTypes);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dspec);
 
     if (mesh == NULL)
     {
@@ -1283,8 +1271,7 @@ avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
         return NULL;
     }
 
-    vtkDataArray *var  = GetScalarVariable(varname, ts, domain, material,
-                             needNativePrecision, admissibleDataTypes);
+    vtkDataArray *var  = GetScalarVariable(varname, ts, domain, material, dspec);
 
     if (var == NULL)
     {
@@ -1359,13 +1346,14 @@ avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
 //    Hank Childs, Tue Jul 19 14:54:22 PDT 2005
 //    Add support for array variables.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification 
 // ****************************************************************************
 
 void
 avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
                   const char *material, const vector<CharStrRef> &vars2nd,
-                  const bool needNativePrecision,
-                  const vector<int>& admissibleDataTypes)
+                  const avtDataSpecification_p dspec)
 {
     int nzones = ds->GetNumberOfCells();
 
@@ -1495,27 +1483,22 @@ avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
         switch (vt)
         {
           case AVT_SCALAR_VAR:
-            dat = GetScalarVariable(varName, ts, domain, material,
-                      needNativePrecision, admissibleDataTypes);
+            dat = GetScalarVariable(varName, ts, domain, material, dspec);
             break;
           case AVT_VECTOR_VAR:
-            dat = GetVectorVariable(varName, ts, domain, material,
-                      needNativePrecision, admissibleDataTypes);
+            dat = GetVectorVariable(varName, ts, domain, material, dspec);
             break;
           case AVT_TENSOR_VAR:
-            dat = GetTensorVariable(varName, ts, domain, material,
-                      needNativePrecision, admissibleDataTypes);
+            dat = GetTensorVariable(varName, ts, domain, material, dspec);
             break;
           case AVT_SYMMETRIC_TENSOR_VAR:
-            dat = GetSymmetricTensorVariable(varName, ts, domain, material,
-                      needNativePrecision, admissibleDataTypes);
+            dat = GetSymmetricTensorVariable(varName, ts, domain, material, dspec);
             break;
           case AVT_LABEL_VAR:
             dat = GetLabelVariable(varName, ts, domain, material);
             break;
           case AVT_ARRAY_VAR:
-            dat = GetArrayVariable(varName, ts, domain, material,
-                      needNativePrecision, admissibleDataTypes);
+            dat = GetArrayVariable(varName, ts, domain, material, dspec);
             break;
           case AVT_MATSPECIES:
             dat = GetSpeciesVariable(varName, ts, domain, material, nzones);
@@ -1568,17 +1551,17 @@ avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added support for data type conversion
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification 
 // ****************************************************************************
 
 vtkDataSet *
 avtGenericDatabase::GetMeshDataset(const char *varname, int ts, int domain,
                                    const char *material,
-                                   const bool needNativePrecision,
-                                   const vector<int>& admissibleDataTypes)
+                                   const avtDataSpecification_p dspec)
 {
     string meshname  = GetMetaData(ts)->MeshForVar(varname);
-    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material,
-                           needNativePrecision, admissibleDataTypes);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dspec);
 
     return mesh;
 }
@@ -1631,13 +1614,14 @@ avtGenericDatabase::GetMeshDataset(const char *varname, int ts, int domain,
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added support for data type conversion
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification 
 // ****************************************************************************
 
 vtkDataSet *
 avtGenericDatabase::GetVectorVarDataset(const char *varname, int ts,
                                         int domain, const char *material,
-                                        const bool needNativePrecision,
-                                        const vector<int>& admissibleDataTypes)
+                                        const avtDataSpecification_p dspec)
 {
     const avtVectorMetaData *vmd = GetMetaData(ts)->GetVector(varname);
     if (vmd == NULL)
@@ -1646,8 +1630,7 @@ avtGenericDatabase::GetVectorVarDataset(const char *varname, int ts,
     }
 
     string meshname  = GetMetaData(ts)->MeshForVar(varname);
-    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material,
-                            needNativePrecision, admissibleDataTypes);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dspec);
 
     if (mesh == NULL)
     {
@@ -1658,8 +1641,7 @@ avtGenericDatabase::GetVectorVarDataset(const char *varname, int ts,
         return NULL;
     }
 
-    vtkDataArray *var = GetVectorVariable(varname, ts, domain, material,
-                            needNativePrecision, admissibleDataTypes);
+    vtkDataArray *var = GetVectorVariable(varname, ts, domain, material, dspec);
 
     if (var == NULL)
     {
@@ -1729,13 +1711,14 @@ avtGenericDatabase::GetVectorVarDataset(const char *varname, int ts,
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added support for data type conversion
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification 
 // ****************************************************************************
 
 vtkDataSet *
 avtGenericDatabase::GetTensorVarDataset(const char *varname, int ts,
                                         int domain, const char *material,
-                                        const bool needNativePrecision,
-                                        const vector<int>& admissibleDataTypes)
+                                        const avtDataSpecification_p dspec)
 {
     const avtTensorMetaData *tmd = GetMetaData(ts)->GetTensor(varname);
     if (tmd == NULL)
@@ -1744,8 +1727,7 @@ avtGenericDatabase::GetTensorVarDataset(const char *varname, int ts,
     }
 
     string meshname  = GetMetaData(ts)->MeshForVar(varname);
-    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material,
-                            needNativePrecision, admissibleDataTypes);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dspec);
 
     if (mesh == NULL)
     {
@@ -1756,8 +1738,7 @@ avtGenericDatabase::GetTensorVarDataset(const char *varname, int ts,
         return NULL;
     }
 
-    vtkDataArray *var = GetTensorVariable(varname, ts, domain, material,
-                            needNativePrecision, admissibleDataTypes);
+    vtkDataArray *var = GetTensorVariable(varname, ts, domain, material, dspec);
 
     if (var == NULL)
     {
@@ -1813,13 +1794,14 @@ avtGenericDatabase::GetTensorVarDataset(const char *varname, int ts,
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added support for data type conversion
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification 
 // ****************************************************************************
 
 vtkDataSet *
 avtGenericDatabase::GetSymmetricTensorVarDataset(const char *varname, int ts,
                                         int domain, const char *material,
-                                        const bool needNativePrecision,
-                                        const vector<int>& admissibleDataTypes)
+                                        const avtDataSpecification_p dspec)
 {
     const avtSymmetricTensorMetaData *tmd = 
                                          GetMetaData(ts)->GetSymmTensor(varname);
@@ -1829,8 +1811,7 @@ avtGenericDatabase::GetSymmetricTensorVarDataset(const char *varname, int ts,
     }
 
     string meshname  = GetMetaData(ts)->MeshForVar(varname);
-    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material,
-                               needNativePrecision, admissibleDataTypes);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dspec);
 
     if (mesh == NULL)
     {
@@ -1842,9 +1823,7 @@ avtGenericDatabase::GetSymmetricTensorVarDataset(const char *varname, int ts,
     }
 
     vtkDataArray *var = GetSymmetricTensorVariable(varname, ts, domain,
-                                                   material,
-                                                   needNativePrecision,
-                                                   admissibleDataTypes);
+                                                   material, dspec);
 
     if (var == NULL)
     {
@@ -1890,13 +1869,16 @@ avtGenericDatabase::GetSymmetricTensorVarDataset(const char *varname, int ts,
 //  Programmer: Hank Childs
 //  Creation:   July 19, 2005
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification 
 // ****************************************************************************
 
 vtkDataSet *
 avtGenericDatabase::GetArrayVarDataset(const char *varname, int ts,
                                         int domain, const char *material,
-                                        const bool needNativePrecision,
-                                        const vector<int>& admissibleDataTypes)
+                                        const avtDataSpecification_p dspec)
 {
     const avtArrayMetaData *tmd = GetMetaData(ts)->GetArray(varname);
     if (tmd == NULL)
@@ -1905,8 +1887,7 @@ avtGenericDatabase::GetArrayVarDataset(const char *varname, int ts,
     }
 
     string meshname  = GetMetaData(ts)->MeshForVar(varname);
-    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material,
-                            needNativePrecision, admissibleDataTypes);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dspec);
 
     if (mesh == NULL)
     {
@@ -1917,8 +1898,7 @@ avtGenericDatabase::GetArrayVarDataset(const char *varname, int ts,
         return NULL;
     }
 
-    vtkDataArray *var = GetArrayVariable(varname, ts, domain, material,
-                            needNativePrecision, admissibleDataTypes);
+    vtkDataArray *var = GetArrayVariable(varname, ts, domain, material, dspec);
 
     if (var == NULL)
     {
@@ -1980,17 +1960,17 @@ avtGenericDatabase::GetArrayVarDataset(const char *varname, int ts,
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added support for data type conversion
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification 
 // ****************************************************************************
 
 vtkDataSet *
 avtGenericDatabase::GetMaterialDataset(const char *matname, int ts, int domain,
                                        const char *material,
-                                       const bool needNativePrecision,
-                                       const vector<int>& admissibleDataTypes)
+                                       const avtDataSpecification_p dspec)
 {
     string meshname  = GetMetaData(ts)->MeshForVar(matname);
-    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material,
-                               needNativePrecision, admissibleDataTypes);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dspec);
 
     return mesh;
 }
@@ -2029,17 +2009,17 @@ avtGenericDatabase::GetMaterialDataset(const char *matname, int ts, int domain,
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added support for data type conversion
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification 
 // ****************************************************************************
 
 vtkDataSet *
 avtGenericDatabase::GetSpeciesDataset(const char *specname, int ts, int domain,
                                       const char *material,
-                                      const bool needNativePrecision,
-                                      const vector<int>& admissibleDataTypes)
+                                      const avtDataSpecification_p dspec)
 {
     string meshname  = GetMetaData(ts)->MeshForVar(specname);
-    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material,
-                               needNativePrecision, admissibleDataTypes);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dspec);
 
     if (mesh == NULL)
     {
@@ -2082,13 +2062,14 @@ avtGenericDatabase::GetSpeciesDataset(const char *specname, int ts, int domain,
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added support for data type conversion
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification 
 // ****************************************************************************
 
 vtkDataSet *
 avtGenericDatabase::GetLabelVarDataset(const char *varname, int ts,
                                        int domain, const char *material,
-                                       const bool needNativePrecision,
-                                       const vector<int>& admissibleDataTypes)
+                                       const avtDataSpecification_p dspec)
 {
     const avtLabelMetaData *lmd = GetMetaData(ts)->GetLabel(varname);
     if (lmd == NULL)
@@ -2097,8 +2078,7 @@ avtGenericDatabase::GetLabelVarDataset(const char *varname, int ts,
     }
 
     string meshname  = GetMetaData(ts)->MeshForVar(varname);
-    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material,
-                               needNativePrecision, admissibleDataTypes);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dspec);
 
     if (mesh == NULL)
     {
@@ -2253,14 +2233,27 @@ avtGenericDatabase::GetSpeciesVariable(const char *specname, int ts,
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added support for data type conversion
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification 
 // ****************************************************************************
 
 vtkDataArray *
 avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
                                       const char *material,
-                                      const bool needNativePrecision,
-                                      const vector<int>& admissibleDataTypes)
+                                      const avtDataSpecification_p dspec)
 {
+    bool needNativePrecision;
+    vector<int> admissibleDataTypes;
+    if (*dspec)
+    {
+        needNativePrecision = dspec->NeedNativePrecision();
+        admissibleDataTypes = dspec->GetAdmissibleDataTypes();
+    }
+    else
+    {
+        needNativePrecision = false;
+        admissibleDataTypes.push_back(VTK_FLOAT);
+    }
 
     //
     // We have to be leery about doing any caching when the variables are
@@ -2457,14 +2450,28 @@ avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added support for data type conversion
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification 
 // ****************************************************************************
 
 vtkDataArray *
 avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
                                       const char *material,
-                                      const bool needNativePrecision,
-                                      const vector<int>& admissibleDataTypes)
+                                      const avtDataSpecification_p dspec)
 {
+    bool needNativePrecision;
+    vector<int> admissibleDataTypes;
+    if (*dspec)
+    {
+        needNativePrecision = dspec->NeedNativePrecision();
+        admissibleDataTypes = dspec->GetAdmissibleDataTypes();
+    }
+    else
+    {
+        needNativePrecision = false;
+        admissibleDataTypes.push_back(VTK_FLOAT);
+    }
+
     //
     // We have to be leery about doing any caching when the variables are
     // defined on sub-meshes.  This is because if we add new secondary
@@ -2646,14 +2653,28 @@ avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added support for data type conversion
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification 
 // ****************************************************************************
 
 vtkDataArray *
 avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
                                       const char *material,
-                                      const bool needNativePrecision,
-                                      const vector<int>& admissibleDataTypes)
+                                      const avtDataSpecification_p dspec)
 {
+    bool needNativePrecision;
+    vector<int> admissibleDataTypes;
+    if (*dspec)
+    {
+        needNativePrecision = dspec->NeedNativePrecision();
+        admissibleDataTypes = dspec->GetAdmissibleDataTypes();
+    }
+    else
+    {
+        needNativePrecision = false;
+        admissibleDataTypes.push_back(VTK_FLOAT);
+    }
+
     //
     // We have to be leery about doing any caching when the variables are
     // defined on sub-meshes.  This is because if we add new secondary
@@ -2837,14 +2858,28 @@ avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added support for data type conversion
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification 
 // ****************************************************************************
 
 vtkDataArray *
 avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
                                                int domain,const char *material,
-                                               const bool needNativePrecision,
-                                        const vector<int>& admissibleDataTypes)
+                                           const avtDataSpecification_p dspec)
 {
+    bool needNativePrecision;
+    vector<int> admissibleDataTypes;
+    if (*dspec)
+    {
+        needNativePrecision = dspec->NeedNativePrecision();
+        admissibleDataTypes = dspec->GetAdmissibleDataTypes();
+    }
+    else
+    {
+        needNativePrecision = false;
+        admissibleDataTypes.push_back(VTK_FLOAT);
+    }
+
     //
     // We have to be leery about doing any caching when the variables are
     // defined on sub-meshes.  This is because if we add new secondary
@@ -3021,14 +3056,30 @@ avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
 //  Programmer: Hank Childs
 //  Creation:   July 19, 2005
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification 
 // ****************************************************************************
 
 vtkDataArray *
 avtGenericDatabase::GetArrayVariable(const char *varname, int ts, int domain,
                                      const char *material,
-                                     const bool needNativePrecision,
-                                     const vector<int>& admissibleDataTypes)
+                                     const avtDataSpecification_p dspec)
 {
+    bool needNativePrecision;
+    vector<int> admissibleDataTypes;
+    if (*dspec)
+    {
+        needNativePrecision = dspec->NeedNativePrecision();
+        admissibleDataTypes = dspec->GetAdmissibleDataTypes();
+    }
+    else
+    {
+        needNativePrecision = false;
+        admissibleDataTypes.push_back(VTK_FLOAT);
+    }
+
     //
     // We have to be leery about doing any caching when the variables are
     // defined on sub-meshes.  This is because if we add new secondary
@@ -3342,13 +3393,30 @@ avtGenericDatabase::GetLabelVariable(const char *varname, int ts, int domain,
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added support for data type conversion
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification 
+//    Added CSG Mesh Discretization
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
-                            const char *material, const bool needNativePrecision,
-                            const vector<int>& admissibleDataTypes)
+                            const char *material,
+                            const avtDataSpecification_p dspec)
 {
+    bool needNativePrecision;
+    vector<int> admissibleDataTypes;
+    if (*dspec)
+    {
+        needNativePrecision = dspec->NeedNativePrecision();
+        admissibleDataTypes = dspec->GetAdmissibleDataTypes();
+    }
+    else
+    {
+        needNativePrecision = false;
+        admissibleDataTypes.push_back(VTK_FLOAT);
+    }
+
     //
     // We have to be leery about doing any caching when the variables are
     // defined on sub-meshes.  This is because if we add new secondary
@@ -3444,6 +3512,50 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
             debug5 << "Mesh returned by file format is NULL for domain "
                    << domain << ", material = " << material << endl;
             return NULL;
+        }
+
+        //
+        // If this is a CSG mesh, then discretize it now
+        // This is a bit of a Hack right now. This code should be
+        // replaced by a call to a MeshManager database services
+        // object in the future.
+        if (mesh->GetDataObjectType() == VTK_CSG_GRID)
+        {
+            int rank = 0;
+            int nprocs = 1;
+#ifdef PARALLEL
+            rank = PAR_Rank();
+            nprocs = PAR_Size();
+#endif
+
+            vtkCSGGrid *csgmesh = vtkCSGGrid::SafeDownCast(mesh);
+            const float *bnds = csgmesh->GetBounds();
+
+            vtkDataSet *dgrid;
+            if (dspec->DiscBoundaryOnly())
+            {
+                dgrid = csgmesh->DiscretizeSurfaces(domain,
+                                                 dspec->DiscTol(),
+                                                 bnds[0], bnds[1], bnds[2],
+                                                 bnds[3], bnds[4], bnds[5]);
+            }
+            else if (dspec->DiscMode() == 1)
+            {
+                dgrid = csgmesh->DiscretizeSpace(domain, rank, nprocs,
+                                                 dspec->DiscTol(),
+                                                 bnds[0], bnds[1], bnds[2],
+                                                 bnds[3], bnds[4], bnds[5]);
+            }
+            else
+            {
+                dgrid = csgmesh->DiscretizeSpace(domain,
+                                                 dspec->DiscTol(),
+                                                 bnds[0], bnds[1], bnds[2],
+                                                 bnds[3], bnds[4], bnds[5]);
+            }
+            csgmesh->Delete();
+
+            mesh = dgrid;
         }
 
         //
@@ -7692,6 +7804,9 @@ avtGenericDatabase::NumStagesForFetch(avtDataSpecification_p spec)
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added dummy args for data type conversion for calls to get variable
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Changed dummy args for type conversion to dummy arg for data spec
+//
 // ****************************************************************************
 
 bool
@@ -7716,16 +7831,13 @@ avtGenericDatabase::QueryScalars(const string &varName, const int dom,
         char temp[80];
 
         //
-        // admissibleDataTypes and needNative are place-holders for
+        // dspec is a place-holder for
         // information that will eventually be obtained either through
         // additional args to this method or from PickVarInfo
         //
-        vector<int> admissibleDataTypes;
-        admissibleDataTypes.push_back(VTK_FLOAT);
-        bool needNative = false;
+        avtDataSpecification_p dspec;
         vtkDataArray *scalars = GetScalarVariable(varName.c_str(), ts, dom,
-                                                  "_all", needNative,
-                                                  admissibleDataTypes);
+                                                  "_all", dspec); 
         if (scalars) 
         {
             varInfo.SetTreatAsASCII(smd->treatAsASCII);
@@ -7909,6 +8021,8 @@ avtGenericDatabase::QueryScalars(const string &varName, const int dom,
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added dummy args for data type conversion for calls to get variable
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Changed dummy args for type conversion to dummy arg for data spec
 // ****************************************************************************
 
 bool
@@ -7932,16 +8046,13 @@ avtGenericDatabase::QueryVectors(const string &varName, const int dom,
         char buff[80];
 
         //
-        // admissibleDataTypes and needNativePrecision are placeholders for
-        // information that will eventually come from either new args to
-        // this method or from PickVarInfo
+        // dspec is a place-holder for
+        // information that will eventually be obtained either through
+        // additional args to this method or from PickVarInfo
         //
-        vector<int> admissibleDataTypes;
-        admissibleDataTypes.push_back(VTK_FLOAT);
-        bool needNativePrecision = false;
+        avtDataSpecification_p dspec;
         vtkDataArray *vectors = GetVectorVariable(varName.c_str(), ts, dom,
-                                                  "_all", needNativePrecision,
-                                                  admissibleDataTypes);
+                                                  "_all", dspec); 
         int nComponents = 0;; 
         double *temp = NULL; 
         double mag = 0.;
@@ -8053,6 +8164,8 @@ avtGenericDatabase::QueryVectors(const string &varName, const int dom,
 //    Kathleen Bonnell, Tue Aug 30 09:35:44 PDT 2005 
 //    Compute Major Eigenvalue.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Changed dummy args for type conversion to dummy arg for data spec
 // ****************************************************************************
 
 bool
@@ -8077,16 +8190,13 @@ avtGenericDatabase::QueryTensors(const string &varName, const int dom,
         char buff[80];
 
         //
-        // admissibleDataTypes and needNativePrecision are placeholders for
-        // information that will eventually come from additional args to this
-        // method or PickVarInfo
+        // dspec is a place-holder for
+        // information that will eventually be obtained either through
+        // additional args to this method or from PickVarInfo
         //
-        vector<int> admissibleDataTypes;
-        admissibleDataTypes.push_back(VTK_FLOAT);
-        bool needNativePrecision = false;
+        avtDataSpecification_p dspec;
         vtkDataArray *tensors = GetTensorVariable(varName.c_str(), ts, dom,
-                                                  "_all", needNativePrecision,
-                                                  admissibleDataTypes);
+                                                  "_all", dspec); 
         int nComponents = 0;; 
         double *temp = NULL; 
         if (tensors)
@@ -8172,6 +8282,10 @@ avtGenericDatabase::QueryTensors(const string &varName, const int dom,
 //  Programmer:   Hank Childs
 //  Creation:     July 19, 2005
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Changed dummy args for type conversion to dummy arg for data spec
 // ****************************************************************************
 
 bool
@@ -8196,16 +8310,13 @@ avtGenericDatabase::QueryArrays(const string &varName, const int dom,
         char buff[80];
 
         //
-        // admissibleDataTypes and needNativePrecision are placeholders for
-        // information that will eventually come from additional args to this
-        // method or PickVarInfo
+        // dspec is a place-holder for
+        // information that will eventually be obtained either through
+        // additional args to this method or from PickVarInfo
         //
-        vector<int> admissibleDataTypes;
-        admissibleDataTypes.push_back(VTK_FLOAT);
-        bool needNativePrecision = false;
+        avtDataSpecification_p dspec;
         vtkDataArray *array = GetArrayVariable(varName.c_str(), ts, dom,
-                                                  "_all", needNativePrecision,
-                                                  admissibleDataTypes);
+                                                  "_all", dspec); 
         int nComponents = 0;; 
         double *temp = NULL; 
         if (array)
@@ -8301,6 +8412,8 @@ avtGenericDatabase::QueryArrays(const string &varName, const int dom,
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added dummy args for data type conversion for calls to get variable
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Changed dummy args for type conversion to dummy arg for data spec
 // ****************************************************************************
 
 bool
@@ -8326,17 +8439,13 @@ avtGenericDatabase::QuerySymmetricTensors(const string &varName,
         char buff[80];
 
         //
-        // admissibleDataTypes and needNativePrecision are placeholds for 
-        // information that will eventually come from new args to this method
-        // or from PickVarInfo
+        // dspec is a place-holder for
+        // information that will eventually be obtained either through
+        // additional args to this method or from PickVarInfo
         //
-        bool needNativePrecision = false;
-        vector<int> admissibleDataTypes;
-        admissibleDataTypes.push_back(VTK_FLOAT);
+        avtDataSpecification_p dspec;
         vtkDataArray *tensors = GetSymmetricTensorVariable(varName.c_str(), ts,
-                                                           dom, "_all",
-                                                           needNativePrecision,
-                                                           admissibleDataTypes);
+                                                           dom, "_all", dspec);
         int nComponents = 0;; 
         if (tensors)
         {
@@ -8699,6 +8808,8 @@ avtGenericDatabase::QueryMaterial(const string &varName, const int dom,
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added dummy args for data type conversion for calls to get variable
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Changed dummy args for type conversion to dummy arg for data spec
 // ****************************************************************************
 
 bool
@@ -8713,14 +8824,10 @@ avtGenericDatabase::QueryNodes(const string &varName, const int dom,
                                const bool logicalDZones, const bool logicalBZones,
                                stringVector &dzCoords, stringVector &bzCoords)
 {
-    // needNativePrecision and admissibleDataTypes are placeholders for when
-    // this information will come from somewhere else
-    bool needNativePrecision = false;
-    vector<int> admissibleDataTypes;
-    admissibleDataTypes.push_back(VTK_FLOAT);
+    // dspec is a placeholder for when this information will come from elsewhere 
+    avtDataSpecification_p dspec;
     string meshName = GetMetaData(ts)->MeshForVar(varName);
-    vtkDataSet *ds = GetMeshDataset(meshName.c_str(), ts, dom, "_all",
-                                    needNativePrecision, admissibleDataTypes);
+    vtkDataSet *ds = GetMeshDataset(meshName.c_str(), ts, dom, "_all", dspec);
     bool rv = false; 
     if (ds)
     {
@@ -9023,6 +9130,8 @@ avtGenericDatabase::QueryMesh(const string &varName, const int ts,
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added dummy args for data type conversion for calls to get variable
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Changed dummy args for type conversion to dummy arg for data spec
 // ****************************************************************************
 
 bool
@@ -9042,14 +9151,10 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
                                stringVector &dzoneCoords,
                                stringVector &bzoneCoords)
 {
-    // needNativePrecision and admissibleDataTypes are placeholders for when
-    // this information will come from somewhere else
-    bool needNativePrecision = false;
-    vector<int> admissibleDataTypes;
-    admissibleDataTypes.push_back(VTK_FLOAT);
+    // dspec is a placeholder for when this information will come from elsewhere 
+    avtDataSpecification_p dspec;
     string meshName = GetMetaData(ts)->MeshForVar(varName);
-    vtkDataSet *ds = GetMeshDataset(meshName.c_str(), ts, dom, "_all",
-                         needNativePrecision, admissibleDataTypes);
+    vtkDataSet *ds = GetMeshDataset(meshName.c_str(), ts, dom, "_all", dspec);
     bool rv = false; 
     if (ds)
     {
@@ -9459,6 +9564,8 @@ avtGenericDatabase::ScaleMesh(vtkDataSet *ds)
 //    Kathleen Bonnell, Fri May 13 16:26:41 PDT 2005 
 //    Fix memory leak.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Changed dummy args for type conversion to dummy arg for data spec
 // ****************************************************************************
 
 bool
@@ -9481,11 +9588,9 @@ avtGenericDatabase::QuerySpecies(const string &varName, const int dom,
     // 
     string matName = smd->materialName;
     string meshname  = GetMetaData(ts)->MeshForVar(varName);
-    bool needNativePrecision = false;
-    vector<int> admissibleDataTypes;
-    admissibleDataTypes.push_back(VTK_FLOAT);
-    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, dom, matName.c_str(),
-                           needNativePrecision, admissibleDataTypes);
+    // dspec is a placeholder for when this information will come from elsewhere 
+    avtDataSpecification_p dspec;
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, dom, matName.c_str(), dspec);
     vtkDataArray *species = GetSpeciesVariable(varName.c_str(), ts, dom, 
                                 matName.c_str(), mesh->GetNumberOfCells());
     mesh->Delete();
@@ -9679,6 +9784,8 @@ avtGenericDatabase::QuerySpecies(const string &varName, const int dom,
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added dummy args for data type conversion for calls to get variable
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Changed dummy args for type conversion to dummy arg for data spec
 // ****************************************************************************
 
 bool                
@@ -9688,14 +9795,10 @@ avtGenericDatabase::FindElementForPoint(const char *var, const int ts,
 {
     ActivateTimestep(ts);
 
-    // needNativePrecision and admissibleDataTypes are placeholders for when
-    // this information will come from somewhere else
-    bool needNativePrecision = false;
-    vector<int> admissibleDataTypes;
-    admissibleDataTypes.push_back(VTK_FLOAT);
+    // dspec is a placeholder for when this information will come from elsewhere 
+    avtDataSpecification_p dspec;
     string mesh = GetMetaData(ts)->MeshForVar(var);
-    vtkDataSet *ds = GetMeshDataset(mesh.c_str(), ts, dom, "_all",
-                         needNativePrecision, admissibleDataTypes);
+    vtkDataSet *ds = GetMeshDataset(mesh.c_str(), ts, dom, "_all", dspec);
 
     if (strcmp(elementName, "node") == 0)
     {
@@ -9814,6 +9917,8 @@ avtGenericDatabase::GetDomainName(const string &varName, const int ts,
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added dummy args for data type conversion for calls to get variable
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Changed dummy args for type conversion to dummy arg for data spec
 // ****************************************************************************
 
 bool
@@ -9838,13 +9943,9 @@ avtGenericDatabase::QueryCoords(const string &varName, const int dom,
     vtkDataSet *ds =  NULL;
     TRY
     {
-        // needNativePrecision and admissibleDataTypes are placeholders for when
-        // this information will come from somewhere else
-        bool needNativePrecision = false;
-        vector<int> admissibleDataTypes;
-        admissibleDataTypes.push_back(VTK_FLOAT);
-        ds = GetMeshDataset(meshName.c_str(), ts, dom, "_all",
-                            needNativePrecision, admissibleDataTypes);
+        // dspec is a placeholder for when this information will come from elsewhere 
+        avtDataSpecification_p dspec;
+        ds = GetMeshDataset(meshName.c_str(), ts, dom, "_all", dspec);
     }
     CATCH(BadDomainException)
     {

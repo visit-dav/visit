@@ -31,6 +31,8 @@
 # product endorsement purposes.
 #
 # Modifications:
+#   Kathleen Bonnell, Wed Nov 16 08:51:43 PST 2005 
+#   Added PTHREAD_LIB and X_LIBS.
 #
 ##############################################################################
 
@@ -42,7 +44,7 @@
 
 CXXFLAGS=-I. @VTK_INCLUDES@ @CXXFLAGS@
 
-LIBS=@VTK_LIBS@
+LIBS=@VTK_LIBS@ @PTHREAD_LIB@ @X_LIBS@
 
 ##
 ## Files...

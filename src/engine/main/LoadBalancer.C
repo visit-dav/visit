@@ -16,6 +16,7 @@
 #include <avtTerminatingSource.h>
 #include <avtIOInformation.h>
 #include <avtSILRestrictionTraverser.h>
+#include <avtTypes.h>
 #include <VisItException.h>
 #include <DebugStream.h>
 #include <AbortException.h>
@@ -342,6 +343,45 @@ LoadBalancer::CheckDynamicLoadBalancing(avtPipelineSpecification_p input)
     return true;
 }
 
+
+// ****************************************************************************
+//  Method: LoadBalancer::DetermineAppropriateScheme
+//
+//  Purpose: Permits a mesh to override the default load balance scheme
+//
+//  Programmer: Mark C. Miller
+//  Creation:   October 4, 2005
+// ****************************************************************************
+LoadBalanceScheme
+LoadBalancer::DetermineAppropriateScheme(avtPipelineSpecification_p input)
+{
+
+    //
+    // See if we have already have decided.  If so, just return our cached
+    // decision.
+    //
+    int index = input->GetPipelineIndex();
+    const LBInfo &lbinfo = pipelineInfo[index];
+    std::string dbname = lbinfo.db;
+    avtDatabase *db = dbMap[dbname];
+    avtDatabaseMetaData *md = db->GetMetaData(db->GetMostRecentTimestep());
+    avtDataSpecification_p data = input->GetDataSpecification();
+    string meshName = md->MeshForVar(data->GetVariable());
+    const avtMeshMetaData *mmd = md->GetMesh(meshName);
+
+    if (mmd->loadBalanceScheme != LOAD_BALANCE_UNKNOWN)
+    {
+        debug1 << "Default load balance scheme \""
+               << LoadBalanceSchemeToString(scheme) << "\""
+               << " being overridden in favor of \""
+               << LoadBalanceSchemeToString(mmd->loadBalanceScheme) << "\""
+               << " for mesh \"" << meshName << "\"" << endl;
+        return mmd->loadBalanceScheme;
+    }
+
+    return scheme;
+}
+
 // ****************************************************************************
 //  Method: LoadBalancer::Reduce
 //
@@ -422,6 +462,11 @@ LoadBalancer::CheckDynamicLoadBalancing(avtPipelineSpecification_p input)
 //    a number of processors to achieve adaquate performance in the
 //    worst-case plotting scanerio, this scheme will certainly do no worse
 //    and might do better due to guarenteeing that no re-reading is done.
+//    
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added call to DetermineAppropriateLoadBalanceScheme 
+//    Changed DBPLUGIN_DYNAMIC scheme so that every processors gets the
+//    complete list of domains
 //
 // ****************************************************************************
 
@@ -500,7 +545,13 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
         vector<int> mylist;
         trav.GetDomainList(list);
 
-        if (scheme == LOAD_BALANCE_CONTIGUOUS_BLOCKS_TOGETHER)
+        //
+        // For variables (including meshes) that require specific types of
+        // load balancing, we override the scheme here
+        //
+        LoadBalanceScheme theScheme = DetermineAppropriateScheme(input);
+
+        if (theScheme == LOAD_BALANCE_CONTIGUOUS_BLOCKS_TOGETHER)
         {
             int amountPer = list.size() / nProcs;
             int oneExtraUntil = list.size() % nProcs;
@@ -518,7 +569,7 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
                 lastDomain += amountPer + (i < oneExtraUntil ? 1 : 0);
             }
         }
-        else if (scheme == LOAD_BALANCE_STRIDE_ACROSS_BLOCKS)
+        else if (theScheme == LOAD_BALANCE_STRIDE_ACROSS_BLOCKS)
         {
             for (int j = 0 ; j < list.size() ; j++)
             {
@@ -526,7 +577,7 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
                     mylist.push_back(list[j]);
             }
         }
-        else if (scheme == LOAD_BALANCE_ABSOLUTE)
+        else if (theScheme == LOAD_BALANCE_ABSOLUTE)
         {
             for (int j = 0 ; j < list.size() ; j++)
             {
@@ -534,7 +585,7 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
                     mylist.push_back(list[j]);
             }
         }
-        else if (scheme == LOAD_BALANCE_RESTRICTED)
+        else if (theScheme == LOAD_BALANCE_RESTRICTED)
         {
             LBInfo &lbInfo(pipelineInfo[input->GetPipelineIndex()]);
             IOInfo &ioInfo(ioMap[lbInfo.db]);
@@ -557,7 +608,7 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
                 }
             }
         }
-        else if (scheme == LOAD_BALANCE_RANDOM_ASSIGNMENT)
+        else if (theScheme == LOAD_BALANCE_RANDOM_ASSIGNMENT)
         {
             // all procs randomly jumble the list of domain ids
             // all procs compute same jumbled list due to same seed
@@ -580,14 +631,10 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
                     mylist.push_back(jumbledList[j]);
             }
         }
-        else if (scheme == LOAD_BALANCE_DBPLUGIN_DYNAMIC)
+        else if (theScheme == LOAD_BALANCE_DBPLUGIN_DYNAMIC)
         {
-            if (list.size()!=1 && list[0]!=0)
-            {
-                EXCEPTION1(VisItException,
-                    "invalid use of DBPLUGIN_DYNAMIC scheme"); 
-            }
-            mylist.push_back(0); // every processor gets only, whole block
+            // Every processor gets the complete list
+            mylist = list;
         }
 
         silr->RestrictDomainsForLoadBalance(mylist);
@@ -822,12 +869,16 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
 //    Hank Childs, Sun Feb 27 11:12:44 PST 2005
 //    Added avtDatabase argument.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Removed avtIOInformation and avtDatabaseMetaData args because the
+//    are obtainable from the database_ptr
 // ****************************************************************************
 
 void
-LoadBalancer::AddDatabase(const string &db, avtDatabase *db_ptr,
-                     const avtIOInformation &io, const avtDatabaseMetaData *md)
+LoadBalancer::AddDatabase(const string &db, avtDatabase *db_ptr, int time)
 {
+    const avtIOInformation& io = db_ptr->GetIOInformation(time);
+
     dbMap[db] = db_ptr;
     ioMap[db].ioInfo = io;
     ioMap[db].fileMap.resize(io.GetNDomains());
@@ -850,11 +901,11 @@ LoadBalancer::AddDatabase(const string &db, avtDatabase *db_ptr,
     }
     debug4 << "]  " << endl;
 
+    const avtDatabaseMetaData *md = db_ptr->GetMetaData(time);
     if (md->GetFormatCanDoDomainDecomposition())
         SetScheme(LOAD_BALANCE_DBPLUGIN_DYNAMIC);
 }
 
- 
 // ****************************************************************************
 //  Method: LoadBalancer::AddPipeline
 //
